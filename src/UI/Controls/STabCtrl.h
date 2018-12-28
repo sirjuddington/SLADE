@@ -17,7 +17,7 @@ public:
 		int       height        = -1,
 		bool      main_tabs     = false,
 		bool      move_tabs     = false);
-	~STabCtrl() {}
+	~STabCtrl() = default;
 
 	static TabControl* createControl(
 		wxWindow* parent,
@@ -28,5 +28,5 @@ public:
 		bool      move_tabs     = false);
 
 protected:
-	wxSize DoGetBestClientSize() const;
+	wxSize DoGetBestClientSize() const override;
 };

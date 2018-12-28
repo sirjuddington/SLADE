@@ -254,15 +254,15 @@ void TextureXListView::updateList(bool clear)
 // -----------------------------------------------------------------------------
 bool TextureXListView::sizeSort(long left, long right)
 {
-	auto tl = dynamic_cast<TextureXListView*>(lv_current)->txList()->texture(left);
-	auto tr = dynamic_cast<TextureXListView*>(lv_current)->txList()->texture(right);
+	auto tl = dynamic_cast<TextureXListView*>(lv_current_)->txList()->texture(left);
+	auto tr = dynamic_cast<TextureXListView*>(lv_current_)->txList()->texture(right);
 	int  s1 = tl->width() * tl->height();
 	int  s2 = tr->width() * tr->height();
 
 	if (s1 == s2)
 		return left < right;
 	else
-		return lv_current->sortDescend() ? s1 > s2 : s2 > s1;
+		return lv_current_->sortDescend() ? s1 > s2 : s2 > s1;
 }
 
 // -----------------------------------------------------------------------------
@@ -270,7 +270,7 @@ bool TextureXListView::sizeSort(long left, long right)
 // -----------------------------------------------------------------------------
 void TextureXListView::sortItems()
 {
-	lv_current = this;
+	lv_current_ = this;
 	if (sort_column_ == 1)
 		std::sort(items_.begin(), items_.end(), &TextureXListView::sizeSort);
 	else

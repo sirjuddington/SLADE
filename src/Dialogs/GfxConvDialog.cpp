@@ -427,13 +427,13 @@ void GfxConvDialog::updatePreviewGfx()
 	else
 		gfx_current_->setPalette(pal_chooser_current_->selectedPalette(item.entry));
 	if (pal_chooser_target_->globalSelected())
-		gfx_target_->setPalette(gfx_current_->palette());
+		gfx_target_->setPalette(&gfx_current_->palette());
 	else
 		gfx_target_->setPalette(pal_chooser_target_->selectedPalette(item.entry));
 
 	// Load the image to both gfx canvases
-	gfx_current_->getImage()->copyImage(&item.image);
-	gfx_target_->getImage()->copyImage(&item.image);
+	gfx_current_->image().copyImage(&item.image);
+	gfx_target_->image().copyImage(&item.image);
 
 	// Update controls
 	updateControls();
@@ -447,7 +447,7 @@ void GfxConvDialog::updatePreviewGfx()
 
 	// Do conversion
 	// LOG_MESSAGE(1, "Converting to %s", current_format.format->getName());
-	current_format_.format->convertWritable(*(gfx_target_->getImage()), opt);
+	current_format_.format->convertWritable(gfx_target_->image(), opt);
 
 
 	// Refresh
@@ -467,11 +467,9 @@ void GfxConvDialog::updateControls() const
 		return;
 
 	// Set colourbox palette if source image has one
-	auto coltype = gfx_current_->getImage()->type();
+	auto coltype = gfx_current_->image().type();
 	if (coltype == SImage::Type::PalMask)
-	{
-		colbox_transparent_->setPalette(gfx_current_->palette());
-	}
+		colbox_transparent_->setPalette(&gfx_current_->palette());
 	else
 		colbox_transparent_->setPalette(nullptr);
 
@@ -582,7 +580,7 @@ void GfxConvDialog::applyConversion()
 	auto& item = items_[current_item_];
 
 	// Write converted image data to it
-	item.image.copyImage(gfx_target_->getImage());
+	item.image.copyImage(&gfx_target_->image());
 
 	// Update item info
 	item.modified   = true;
@@ -731,7 +729,7 @@ void GfxConvDialog::onPreviewCurrentMouseDown(wxMouseEvent& e)
 		return;
 
 	// Get the colour at that point
-	auto col = gfx_current_->getImage()->pixelAt(imgcoord.x, imgcoord.y, gfx_current_->palette());
+	auto col = gfx_current_->image().pixelAt(imgcoord.x, imgcoord.y, &gfx_current_->palette());
 
 	// Set the background colour
 	colbox_transparent_->setColour(col);

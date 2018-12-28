@@ -482,7 +482,7 @@ void TextureEditorPanel::setPalette(Palette* pal) const
 // -----------------------------------------------------------------------------
 Palette* TextureEditorPanel::palette() const
 {
-	return tex_canvas_->palette();
+	return &tex_canvas_->palette();
 }
 
 // -----------------------------------------------------------------------------

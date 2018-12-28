@@ -54,8 +54,7 @@ CVAR(Bool, tabs_condensed, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // STabCtrl class constructor
 // -----------------------------------------------------------------------------
-STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int height, bool main_tabs, bool move_tabs) :
-	wxAuiNotebook()
+STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int height, bool main_tabs, bool move_tabs)
 {
 	// Init height
 	if (height < 0)
@@ -75,7 +74,7 @@ STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int h
 
 	// Setup tabs
 	SetArtProvider(new SAuiTabArt(close_buttons, main_tabs));
-	SetTabCtrlHeight(UI::scalePx(height));
+	wxAuiNotebook::SetTabCtrlHeight(UI::scalePx(height));
 }
 
 // -----------------------------------------------------------------------------
@@ -88,7 +87,7 @@ wxSize STabCtrl::DoGetBestClientSize() const
 	wxSize ret;
 	for (unsigned i = 0; i < GetPageCount(); i++)
 	{
-		wxWindow* page = GetPage(i);
+		auto page = GetPage(i);
 		ret.IncTo(page->GetBestSize());
 	}
 

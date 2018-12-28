@@ -65,7 +65,7 @@ EXTERN_CVAR(Int, toolbar_size);
 // -----------------------------------------------------------------------------
 // SToolBarButton class constructor
 // -----------------------------------------------------------------------------
-SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, bool show_name) :
+SToolBarButton::SToolBarButton(wxWindow* parent, const string& action, const string& icon, bool show_name) :
 	wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton"),
 	action_{ SAction::fromId(action) },
 	show_name_{ show_name },
@@ -87,8 +87,8 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, boo
 	// Set size
 	int height = pad_outer_ * 2 + pad_inner_ * 2 + icon_size_;
 	int width  = height + text_width_;
-	SetSizeHints(width, height, width, height);
-	SetMinSize(wxSize(width, height));
+	wxWindowBase::SetSizeHints(width, height, width, height);
+	wxWindowBase::SetMinSize(wxSize(width, height));
 	SetSize(width, height);
 
 	// Load icon
@@ -150,8 +150,8 @@ SToolBarButton::SToolBarButton(
 	// Set size
 	int height = pad_outer_ * 2 + pad_inner_ * 2 + icon_size_;
 	int width  = height + text_width_;
-	SetSizeHints(width, height, width, height);
-	SetMinSize(wxSize(width, height));
+	wxWindowBase::SetSizeHints(width, height, width, height);
+	wxWindowBase::SetMinSize(wxSize(width, height));
 	SetSize(width, height);
 
 	// Load icon
@@ -175,7 +175,7 @@ SToolBarButton::SToolBarButton(
 // -----------------------------------------------------------------------------
 // Allows to dynamically change the button's icon
 // -----------------------------------------------------------------------------
-void SToolBarButton::setIcon(string icon)
+void SToolBarButton::setIcon(const string& icon)
 {
 	if (!icon.IsEmpty())
 		icon_ = Icons::getIcon(Icons::General, icon, icon_size_ > 16);
@@ -217,15 +217,15 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	wxPaintDC dc(this);
 
 	// Get system colours needed
-	wxColour col_background = GetBackgroundColour();
-	wxColour col_hilight    = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
+	auto col_background = GetBackgroundColour();
+	auto col_hilight    = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 
 	// Draw background
 	dc.SetBackground(wxBrush(col_background));
 	dc.Clear();
 
 	// Create graphics context
-	wxGraphicsContext* gc = wxGraphicsContext::Create(dc);
+	auto gc = wxGraphicsContext::Create(dc);
 	if (!gc)
 		return;
 
@@ -235,7 +235,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	if (show_name_)
 	{
 		name.Replace("&", "");
-		wxSize name_size = GetTextExtent(name);
+		auto name_size = GetTextExtent(name);
 		name_height      = name_size.y;
 	}
 
@@ -338,7 +338,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 // -----------------------------------------------------------------------------
 void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 {
-	wxFrame* parent_window = (wxFrame*)wxGetTopLevelParent(this);
+	auto parent_window = dynamic_cast<wxFrame*>(wxGetTopLevelParent(this));
 
 	// Mouse enter
 	if (e.GetEventType() == wxEVT_ENTER_WINDOW)

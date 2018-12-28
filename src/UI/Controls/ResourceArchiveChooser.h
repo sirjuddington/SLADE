@@ -14,9 +14,9 @@ public:
 	string           selectedResourceList();
 
 private:
-	wxCheckListBox*  list_resources_;
-	wxButton*        btn_open_resource_;
-	wxButton*        btn_recent_;
+	wxCheckListBox*  list_resources_    = nullptr;
+	wxButton*        btn_open_resource_ = nullptr;
+	wxButton*        btn_recent_        = nullptr;
 	vector<Archive*> archives_;
 
 	// Events

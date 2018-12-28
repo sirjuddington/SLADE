@@ -2,14 +2,15 @@
 
 #include "Archive/Archive.h"
 #include "OGLCanvas.h"
+#include "OpenGL/GLTexture.h"
 
 class GLTexture;
 
 class MapPreviewCanvas : public OGLCanvas
 {
 public:
-	MapPreviewCanvas(wxWindow* parent);
-	~MapPreviewCanvas();
+	MapPreviewCanvas(wxWindow* parent) : OGLCanvas(parent, -1) {}
+	~MapPreviewCanvas() = default;
 
 	void addVertex(double x, double y);
 	void addLine(unsigned v1, unsigned v2, bool twosided, bool special, bool macro = false);
@@ -20,14 +21,14 @@ public:
 	bool readThings(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format);
 	void clearMap();
 	void showMap();
-	void draw();
+	void draw() override;
 	void createImage(ArchiveEntry& ae, int width, int height);
 
 	unsigned nVertices();
-	unsigned nSides();
-	unsigned nLines();
-	unsigned nSectors();
-	unsigned nThings();
+	unsigned nSides() const { return n_sides_; }
+	unsigned nLines() const { return lines_.size(); }
+	unsigned nSectors() const { return n_sectors_; }
+	unsigned nThings() const { return things_.size(); }
 	unsigned width();
 	unsigned height();
 
@@ -46,16 +47,27 @@ private:
 
 	struct Line
 	{
-		unsigned v1;
-		unsigned v2;
-		bool     twosided;
-		bool     special;
-		bool     macro;
-		bool     segment;
-		Line(unsigned v1, unsigned v2)
+		unsigned v1       = 0;
+		unsigned v2       = 0;
+		bool     twosided = false;
+		bool     special  = false;
+		bool     macro    = false;
+		bool     segment  = false;
+
+		Line(
+			unsigned v1,
+			unsigned v2,
+			bool     twosided = false,
+			bool     special  = false,
+			bool     macro    = false,
+			bool     segment  = false) :
+			v1{ v1 },
+			v2{ v2 },
+			twosided{ twosided },
+			special{ special },
+			macro{ macro },
+			segment{ segment }
 		{
-			this->v1 = v1;
-			this->v2 = v2;
 		}
 	};
 
@@ -63,17 +75,17 @@ private:
 	{
 		double x;
 		double y;
+		Thing(double x, double y) : x{ x }, y{ y } {}
 	};
 
-	vector<Vertex> verts_;
-	vector<Line>   lines_;
-	vector<Thing>  things_;
-	unsigned       n_sides_;
-	unsigned       n_sectors_;
-	double         zoom_;
-	double         offset_x_;
-	double         offset_y_;
-	Archive*       temp_archive_;
-	GLTexture*     tex_thing_;
-	bool           tex_loaded_;
+	vector<Vertex>  verts_;
+	vector<Line>    lines_;
+	vector<Thing>   things_;
+	unsigned        n_sides_   = 0;
+	unsigned        n_sectors_ = 0;
+	double          zoom_      = 1.;
+	Vec2f           offset_;
+	Archive*        temp_archive_ = nullptr;
+	GLTexture::UPtr tex_thing_;
+	bool            tex_loaded_ = false;
 };

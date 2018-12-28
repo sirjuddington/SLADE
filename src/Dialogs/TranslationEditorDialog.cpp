@@ -315,7 +315,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	gfx_preview_ = new GfxCanvas(this, -1);
 	gfx_preview_->setPalette(&palette_);
 	gfx_preview_->setViewType(GfxCanvas::View::Centered);
-	gfx_preview_->getImage()->copyImage(&image_preview_);
+	gfx_preview_->image().copyImage(&image_preview_);
 	framesizer->Add(gfx_preview_->toPanel(this), 1, wxEXPAND | wxALL, UI::pad());
 
 
@@ -782,8 +782,8 @@ void TranslationEditorDialog::updatePreviews()
 	pal_canvas_preview_->Refresh();
 
 	// Update image preview
-	gfx_preview_->getImage()->copyImage(&image_preview_);
-	gfx_preview_->getImage()->applyTranslation(&translation_, &palette_, cb_truecolor_->GetValue());
+	gfx_preview_->image().copyImage(&image_preview_);
+	gfx_preview_->image().applyTranslation(&translation_, &palette_, cb_truecolor_->GetValue());
 
 	// Update UI
 	gfx_preview_->updateImageTexture();
@@ -1308,7 +1308,7 @@ void TranslationEditorDialog::onGfxPreviewMouseMotion(wxMouseEvent& e)
 
 	// Get palette index at position
 	if (pos.x >= 0)
-		index = gfx_preview_->getImage()->pixelIndexAt(pos.x, pos.y);
+		index = gfx_preview_->image().pixelIndexAt(pos.x, pos.y);
 	else
 		index = -1;
 

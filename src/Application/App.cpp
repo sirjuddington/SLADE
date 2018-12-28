@@ -463,7 +463,7 @@ bool App::init(vector<string>& args, double ui_scale)
 	SIFormat::initFormats();
 
 	// Init brushes
-	theBrushManager->initBrushes();
+	SBrush::initBrushes();
 
 	// Load program icons
 	Log::info("Loading icons");

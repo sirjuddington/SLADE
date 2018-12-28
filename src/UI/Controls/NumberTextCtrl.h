@@ -6,12 +6,12 @@ public:
 	NumberTextCtrl(wxWindow* parent, bool allow_decimal = false);
 	~NumberTextCtrl() {}
 
-	int    number(int base = 0);
-	double decNumber(double base = 0);
-	bool   isIncrement();
-	bool   isDecrement();
-	bool   isFactor();
-	bool   isDivisor();
+	int    number(int base = 0) const;
+	double decNumber(double base = 0) const;
+	bool   isIncrement() const;
+	bool   isDecrement() const;
+	bool   isFactor() const;
+	bool   isDivisor() const;
 
 	void setNumber(int num);
 	void setDecNumber(double num);
@@ -19,8 +19,8 @@ public:
 
 private:
 	string last_value_;
-	int    last_point_;
-	bool   allow_decimal_;
+	int    last_point_    = 0;
+	bool   allow_decimal_ = false;
 
 	// Events
 	void onChar(wxKeyEvent& e);

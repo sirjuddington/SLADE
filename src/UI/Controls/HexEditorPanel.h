@@ -3,8 +3,8 @@
 class HexTable : public wxGridTableBase
 {
 public:
-	HexTable() {}
-	~HexTable() {}
+	HexTable() = default;
+	~HexTable() = default;
 
 	MemChunk& getData() { return data_; }
 
@@ -15,11 +15,11 @@ public:
 	void   SetValue(int row, int col, const string& value) override;
 
 	bool     loadData(MemChunk& mc);
-	uint32_t offset(int row, int col);
+	uint32_t offset(int row, int col) const;
 	void     setViewType(int type) { view_type_ = type; }
 
 	// Get values
-	uint8_t  uByteValue(uint32_t offset);
+	uint8_t  uByteValue(uint32_t offset) const;
 	uint16_t uShortValue(uint32_t offset);
 	uint32_t uInt32Value(uint32_t offset);
 	uint64_t uInt64Value(uint32_t offset);
@@ -39,7 +39,7 @@ class HexEditorPanel : public wxPanel
 {
 public:
 	HexEditorPanel(wxWindow* parent);
-	~HexEditorPanel() {}
+	~HexEditorPanel() = default;
 
 	bool loadData(MemChunk& mc);
 

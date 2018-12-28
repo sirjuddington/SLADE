@@ -110,10 +110,10 @@ void UndoListView::updateItemAttr(long item, long column, long index) const
 // -----------------------------------------------------------------------------
 void UndoListView::setManager(UndoManager* manager)
 {
-	if (this->manager_)
-		stopListening(this->manager_);
+	if (manager_)
+		stopListening(manager_);
 
-	this->manager_ = manager;
+	manager_ = manager;
 	listenTo(manager);
 
 	updateFromManager();
@@ -159,7 +159,7 @@ UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* 
 	manager_{ manager }
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Add undo levels list
@@ -177,7 +177,7 @@ UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* 
 // -----------------------------------------------------------------------------
 void UndoManagerHistoryPanel::setManager(UndoManager* manager)
 {
-	this->manager_ = manager;
+	manager_ = manager;
 	list_levels_->setManager(manager);
 }
 

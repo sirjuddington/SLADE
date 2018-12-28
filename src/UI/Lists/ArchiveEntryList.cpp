@@ -80,16 +80,8 @@ EXTERN_CVAR(Bool, list_font_monospace)
 // -----------------------------------------------------------------------------
 ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 {
-	// Init variables
-	archive_         = nullptr;
-	filter_category_ = "";
-	current_dir_     = nullptr;
-	show_dir_back_   = false;
-	undo_manager_    = nullptr;
-	entries_update_  = true;
-
 	// Create dummy 'up folder' entry
-	entry_dir_back_ = new ArchiveEntry();
+	entry_dir_back_ = std::make_unique<ArchiveEntry>();
 	entry_dir_back_->setType(EntryType::folderType());
 	entry_dir_back_->setState(ArchiveEntry::State::Unmodified);
 	entry_dir_back_->setName("..");
@@ -98,15 +90,15 @@ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 	setupColumns();
 
 	// Setup entry icons
-	auto          image_list   = WxUtils::createSmallImageList();
-	wxArrayString et_icon_list = EntryType::iconList();
-	for (size_t a = 0; a < et_icon_list.size(); a++)
+	auto image_list   = WxUtils::createSmallImageList();
+	auto et_icon_list = EntryType::iconList();
+	for (const auto& name : et_icon_list)
 	{
-		if (image_list->Add(Icons::getIcon(Icons::Entry, et_icon_list[a])) < 0)
+		if (image_list->Add(Icons::getIcon(Icons::Entry, name)) < 0)
 			image_list->Add(Icons::getIcon(Icons::Entry, "default"));
 	}
 
-	SetImageList(image_list, wxIMAGE_LIST_SMALL);
+	wxListCtrl::SetImageList(image_list, wxIMAGE_LIST_SMALL);
 
 	// Bind events
 	Bind(wxEVT_LIST_COL_RIGHT_CLICK, &ArchiveEntryList::onColumnHeaderRightClick, this);
@@ -119,20 +111,12 @@ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 }
 
 // -----------------------------------------------------------------------------
-// ArchiveEntryList class destructor
-// -----------------------------------------------------------------------------
-ArchiveEntryList::~ArchiveEntryList()
-{
-	delete entry_dir_back_;
-}
-
-// -----------------------------------------------------------------------------
 // Called when the widget requests the text for [item] at [column]
 // -----------------------------------------------------------------------------
 string ArchiveEntryList::itemText(long item, long column, long index) const
 {
 	// Get entry
-	ArchiveEntry* entry = entryAt(index, false);
+	auto entry = entryAt(index, false);
 
 	// Check entry
 	if (!entry)
@@ -152,9 +136,9 @@ string ArchiveEntryList::itemText(long item, long column, long index) const
 			ArchiveTreeNode* dir = nullptr;
 
 			// Get selected directory
-			if (entry == entry_dir_back_)
-				dir = (ArchiveTreeNode*)
-						  current_dir_->parent(); // If it's the 'back directory', get the current dir's parent
+			if (entry == entry_dir_back_.get())
+				dir = dynamic_cast<ArchiveTreeNode*>(
+					current_dir_->parent()); // If it's the 'back directory', get the current dir's parent
 			else
 				dir = archive_->dir(entry->name(), current_dir_);
 
@@ -191,7 +175,7 @@ int ArchiveEntryList::itemIcon(long item, long column, long index) const
 		return -1;
 
 	// Get associated entry
-	ArchiveEntry* entry = entryAt(item);
+	auto entry = entryAt(item);
 
 	// If entry doesn't exist, return invalid image
 	if (!entry)
@@ -207,10 +191,10 @@ int ArchiveEntryList::itemIcon(long item, long column, long index) const
 void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 {
 	// Get associated entry
-	ArchiveEntry* entry = entryAt(item);
+	auto entry = entryAt(item);
 
 	// Init attributes
-	wxColour col_bg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX);
+	auto col_bg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX);
 	item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("error")));
 	item_attr_->SetBackgroundColour(col_bg);
 
@@ -220,12 +204,12 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 
 	// Set font
 	if (elist_name_monospace && !list_font_monospace)
-		item_attr_->SetFont((column == 0) ? *font_monospace_ : *font_normal_);
+		item_attr_->SetFont((column == 0) ? font_monospace_ : font_normal_);
 	else
-		item_attr_->SetFont(list_font_monospace ? *font_monospace_ : *font_normal_);
+		item_attr_->SetFont(list_font_monospace ? font_monospace_ : font_normal_);
 
 	// Set background colour defined in entry type (if any)
-	ColRGBA col = entry->type()->colour();
+	auto col = entry->type()->colour();
 	if ((col.r != 255 || col.g != 255 || col.b != 255) && elist_type_bgcol)
 	{
 		ColRGBA bcol;
@@ -240,7 +224,7 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 	// Alternating row colour
 	if (elist_alt_row_colour && item % 2 > 0)
 	{
-		wxColour dark = item_attr_->GetBackgroundColour().ChangeLightness(95);
+		auto dark = item_attr_->GetBackgroundColour().ChangeLightness(95);
 		item_attr_->SetBackgroundColour(dark);
 	}
 
@@ -265,11 +249,11 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 void ArchiveEntryList::setArchive(Archive* archive)
 {
 	// Stop listening to current archive (if any)
-	if (this->archive_)
-		stopListening(this->archive_);
+	if (archive_)
+		stopListening(archive_);
 
 	// Set archive (allow null)
-	this->archive_ = archive;
+	archive_ = archive;
 
 	// Init new archive if given
 	if (archive)
@@ -378,28 +362,26 @@ void ArchiveEntryList::updateList(bool clear)
 // Filters the list to only entries and directories with names matching
 // [filter], and with type categories matching [category].
 // -----------------------------------------------------------------------------
-void ArchiveEntryList::filterList(string filter, string category)
+void ArchiveEntryList::filterList(const string& filter, const string& category)
 {
 	// Update variables
 	filter_text_     = filter;
 	filter_category_ = category;
 
 	// Save current selection
-	vector<ArchiveEntry*> selection = selectedEntries();
-	ArchiveEntry*         focus     = focusedEntry();
+	auto selection = selectedEntries();
+	auto focus     = focusedEntry();
 
 	// Apply the filter
 	clearSelection();
 	applyFilter();
 
-	// Restore selection (if selected entries aren't filtered)
-	ArchiveEntry* entry = nullptr;
 	for (int a = 0; a < GetItemCount(); a++)
 	{
-		entry = entryAt(a, false);
-		for (unsigned b = 0; b < selection.size(); b++)
+		auto entry = entryAt(a, false);
+		for (auto& selected_entry : selection)
 		{
-			if (entry == selection[b])
+			if (entry == selected_entry)
 			{
 				selectItem(a);
 				break;
@@ -435,8 +417,8 @@ void ArchiveEntryList::applyFilter()
 	}
 
 	// Filter by category
-	unsigned      index = 0;
-	ArchiveEntry* entry = entryAt(index, false);
+	unsigned index = 0;
+	auto     entry = entryAt(index, false);
 	while (entry)
 	{
 		if (filter_category_.IsEmpty() || entry->type() == EntryType::folderType())
@@ -455,17 +437,17 @@ void ArchiveEntryList::applyFilter()
 	if (!filter_text_.IsEmpty())
 	{
 		// Split filter by ,
-		wxArrayString terms = wxSplit(filter_text_, ',');
+		auto terms = wxSplit(filter_text_, ',');
 
 		// Process filter strings
-		for (unsigned a = 0; a < terms.size(); a++)
+		for (auto& term : terms)
 		{
 			// Remove spaces
-			terms[a].Replace(" ", "");
+			term.Replace(" ", "");
 
 			// Set to lowercase and add * to the end
-			if (!terms[a].IsEmpty())
-				terms[a] = terms[a].Lower() + "*";
+			if (!term.IsEmpty())
+				term = term.Lower() + "*";
 		}
 
 		// Go through filtered list
@@ -479,9 +461,9 @@ void ArchiveEntryList::applyFilter()
 
 			// Check for name match with filter
 			bool match = false;
-			for (unsigned b = 0; b < terms.size(); b++)
+			for (const auto& term : terms)
 			{
-				if (entry == entry_dir_back_ || entry->name().Lower().Matches(terms[b]))
+				if (entry == entry_dir_back_.get() || entry->name().Lower().Matches(term))
 				{
 					match = true;
 					continue;
@@ -541,12 +523,12 @@ bool ArchiveEntryList::goUpDir()
 // Returns either the size of the entry at [index], or if it is a folder, the
 // number of entries+subfolders within it
 // -----------------------------------------------------------------------------
-int ArchiveEntryList::entrySize(long index)
+int ArchiveEntryList::entrySize(long index) const
 {
-	ArchiveEntry* entry = entryAt(index, false);
+	auto entry = entryAt(index, false);
 	if (entry->type() == EntryType::folderType())
 	{
-		ArchiveTreeNode* dir = archive_->dir(entry->name(), current_dir_);
+		auto dir = archive_->dir(entry->name(), current_dir_);
 		if (dir)
 			return dir->numEntries() + dir->nChildren();
 		else
@@ -561,7 +543,7 @@ int ArchiveEntryList::entrySize(long index)
 // -----------------------------------------------------------------------------
 void ArchiveEntryList::sortItems()
 {
-	lv_current = this;
+	lv_current_ = this;
 	std::sort(items_.begin(), items_.end(), [&](long left, long right) {
 		auto le = entryAt(left, false);
 		auto re = entryAt(right, false);
@@ -593,7 +575,7 @@ void ArchiveEntryList::sortItems()
 // Returns the index of the first list item that is an entry (rather than a
 // directory), or -1 if no directory/archive is open)
 // -----------------------------------------------------------------------------
-int ArchiveEntryList::entriesBegin()
+int ArchiveEntryList::entriesBegin() const
 {
 	// Check directory is open
 	if (!current_dir_)
@@ -631,7 +613,7 @@ ArchiveEntry* ArchiveEntryList::entryAt(int index, bool filtered) const
 	if (show_dir_back_ && current_dir_->parent())
 	{
 		if (index == 0)
-			return entry_dir_back_;
+			return entry_dir_back_.get();
 		else
 			index--;
 	}
@@ -639,7 +621,7 @@ ArchiveEntry* ArchiveEntryList::entryAt(int index, bool filtered) const
 	// Subdirectories
 	int subdirs = current_dir_->nChildren();
 	if (index < subdirs)
-		return ((ArchiveTreeNode*)(current_dir_->child(index)))->dirEntry();
+		return dynamic_cast<ArchiveTreeNode*>(current_dir_->child(index))->dirEntry();
 
 	// Entries
 	if ((unsigned)index < subdirs + current_dir_->numEntries())
@@ -754,15 +736,16 @@ vector<ArchiveTreeNode*> ArchiveEntryList::selectedDirectories()
 	// Go through the selection
 	for (long index : selection())
 	{
-		ArchiveEntry* entry = entryAt(index);
+		auto entry = entryAt(index);
 
 		// If the selected entry is the 'back folder', ignore it
-		if (entry == entry_dir_back_)
+		if (entry == entry_dir_back_.get())
 			continue;
-		else if (entry->type() == EntryType::folderType())
+
+		if (entry->type() == EntryType::folderType())
 		{
 			// If the entry is a folder type, get its ArchiveTreeNode counterpart
-			ArchiveTreeNode* dir = archive_->dir(entry->name(), current_dir_);
+			auto dir = archive_->dir(entry->name(), current_dir_);
 
 			// Add it to the return list
 			if (dir)
@@ -776,13 +759,13 @@ vector<ArchiveTreeNode*> ArchiveEntryList::selectedDirectories()
 // -----------------------------------------------------------------------------
 // Called when a label has been edited
 // -----------------------------------------------------------------------------
-void ArchiveEntryList::labelEdited(int col, int index, string new_label)
+void ArchiveEntryList::labelEdited(int col, int index, const string& new_label)
 {
 	if (undo_manager_)
 		undo_manager_->beginRecord("Rename Entry");
 
 	// Rename the entry
-	ArchiveEntry* entry = entryAt(index);
+	auto entry = entryAt(index);
 	if (entry->parent())
 		entry->parent()->renameEntry(entry, new_label);
 	else
@@ -932,7 +915,7 @@ void ArchiveEntryList::onColumnResize(wxListEvent& e)
 void ArchiveEntryList::onListItemActivated(wxListEvent& e)
 {
 	// Get item entry
-	ArchiveEntry* entry = entryAt(e.GetIndex());
+	auto entry = entryAt(e.GetIndex());
 
 	// Do nothing if NULL (shouldn't be)
 	if (!entry)
@@ -943,8 +926,9 @@ void ArchiveEntryList::onListItemActivated(wxListEvent& e)
 	{
 		// Get directory to open
 		ArchiveTreeNode* dir = nullptr;
-		if (entry == entry_dir_back_)
-			dir = (ArchiveTreeNode*)current_dir_->parent(); // 'Back directory' entry, open current dir's parent
+		if (entry == entry_dir_back_.get())
+			dir = dynamic_cast<ArchiveTreeNode*>(
+				current_dir_->parent()); // 'Back directory' entry, open current dir's parent
 		else
 			dir = archive_->dir(entry->name(), current_dir_);
 

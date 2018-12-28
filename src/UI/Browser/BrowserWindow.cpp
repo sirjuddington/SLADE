@@ -78,12 +78,12 @@ int expandTree(wxTreeListCtrl* tree, wxTreeListItem& item, bool expand, int dept
 		tree->Expand(item);
 
 	// Expand first sibling
-	wxTreeListItem sibling = tree->GetNextSibling(item);
+	auto sibling = tree->GetNextSibling(item);
 	expandTree(tree, sibling, expand, depth);
 
 	// Expand first child
-	wxTreeListItem child = tree->GetFirstChild(item);
-	depth                = expandTree(tree, child, expand, depth + 1);
+	auto child = tree->GetFirstChild(item);
+	depth      = expandTree(tree, child, expand, depth + 1);
 
 	if (!expand)
 		tree->Collapse(item);
@@ -101,25 +101,10 @@ int expandTree(wxTreeListCtrl* tree, wxTreeListItem& item, bool expand, int dept
 
 
 // -----------------------------------------------------------------------------
-// BrowserTreeNode class constructor
-// -----------------------------------------------------------------------------
-BrowserTreeNode::BrowserTreeNode(BrowserTreeNode* parent) : STreeNode(parent) {}
-
-// -----------------------------------------------------------------------------
-// BrowserTreeNode class destructor
-// -----------------------------------------------------------------------------
-BrowserTreeNode::~BrowserTreeNode()
-{
-	clearItems();
-}
-
-// -----------------------------------------------------------------------------
 // Clears all items in the node
 // -----------------------------------------------------------------------------
 void BrowserTreeNode::clearItems()
 {
-	for (unsigned a = 0; a < items_.size(); a++)
-		delete items_[a];
 	items_.clear();
 }
 
@@ -133,7 +118,7 @@ BrowserItem* BrowserTreeNode::item(unsigned index)
 		return nullptr;
 
 	// Return the item
-	return items_[index];
+	return items_[index].get();
 }
 
 // -----------------------------------------------------------------------------
@@ -144,9 +129,9 @@ void BrowserTreeNode::addItem(BrowserItem* item, unsigned index)
 {
 	// Check where to add item
 	if (index >= items_.size())
-		items_.push_back(item);
+		items_.emplace_back(item);
 	else
-		items_.insert(items_.begin() + index, item);
+		items_.emplace(items_.begin() + index, item);
 }
 
 
@@ -159,7 +144,7 @@ class BrowserTreeItemData : public wxClientData
 {
 public:
 	BrowserTreeItemData(BrowserTreeNode* node = nullptr) : node_{ node } {}
-	~BrowserTreeItemData() {}
+	~BrowserTreeItemData() = default;
 
 	BrowserTreeNode* node() const { return node_; }
 
@@ -185,7 +170,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	truncate_names_{ truncate_names }
 {
 	// Init size/pos
-	Misc::WindowInfo info = Misc::getWindowInfo("browser");
+	auto info = Misc::getWindowInfo("browser");
 	if (!info.id.IsEmpty())
 	{
 		SetClientSize(info.width, info.height);
@@ -199,10 +184,10 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	items_root_->setName("All");
 
 	// Setup layout
-	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);
+	auto m_vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(m_vbox);
 
-	wxBoxSizer* m_hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto m_hbox = new wxBoxSizer(wxHORIZONTAL);
 	m_vbox->Add(m_hbox, 1, wxEXPAND | wxALL, UI::padLarge());
 
 	// Browser tree
@@ -210,11 +195,11 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	m_hbox->Add(tree_items_, 0, wxEXPAND | wxRIGHT, UI::pad());
 
 	// Browser area
-	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
+	auto vbox = new wxBoxSizer(wxVERTICAL);
 	m_hbox->Add(vbox, 1, wxEXPAND);
 
 	// Zoom
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
 	slider_zoom_ = new wxSlider(this, -1, browser_item_size, 64, 256);
 	slider_zoom_->SetLineSize(16);
@@ -240,7 +225,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	hbox->Add(canvas_, 1, wxEXPAND);
 
 	// Canvas scrollbar
-	wxScrollBar* scrollbar = new wxScrollBar(this, -1, wxDefaultPosition, wxDefaultSize, wxSB_VERTICAL);
+	auto scrollbar = new wxScrollBar(this, -1, wxDefaultPosition, wxDefaultSize, wxSB_VERTICAL);
 	hbox->Add(scrollbar, 0, wxEXPAND);
 	canvas_->setScrollBar(scrollbar);
 
@@ -249,8 +234,8 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	vbox->Add(sizer_bottom_, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 	// Buttons and info label
-	label_info_          = new wxStaticText(this, -1, "");
-	wxSizer* buttonsizer = CreateButtonSizer(wxOK | wxCANCEL);
+	label_info_      = new wxStaticText(this, -1, "");
+	auto buttonsizer = CreateButtonSizer(wxOK | wxCANCEL);
 	buttonsizer->Insert(0, label_info_, 1, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, UI::pad());
 
 	m_vbox->Add(buttonsizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
@@ -269,11 +254,11 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	Bind(wxEVT_BROWSERCANVAS_SELECTION_CHANGED, &BrowserWindow::onCanvasSelectionChanged, this, canvas_->GetId());
 	canvas_->Bind(wxEVT_CHAR, &BrowserWindow::onCanvasKeyChar, this);
 
-	Layout();
-	SetMinSize(WxUtils::scaledSize(540, 400));
+	wxWindowBase::Layout();
+	wxTopLevelWindowBase::SetMinSize(WxUtils::scaledSize(540, 400));
 
 	if (browser_maximised)
-		Maximize();
+		wxTopLevelWindow::Maximize();
 	else
 		CenterOnParent();
 
@@ -286,8 +271,8 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 // -----------------------------------------------------------------------------
 BrowserWindow::~BrowserWindow()
 {
-	browser_maximised = IsMaximized();
-	if (!IsMaximized())
+	browser_maximised = wxTopLevelWindow::IsMaximized();
+	if (!wxTopLevelWindow::IsMaximized())
 		Misc::setWindowInfo("browser", GetClientSize().x, GetClientSize().y, GetPosition().x, GetPosition().y);
 }
 
@@ -295,10 +280,10 @@ BrowserWindow::~BrowserWindow()
 // Adds [item] to the browser tree at the tree path [where].
 // This will be created if it doesn't exist
 // -----------------------------------------------------------------------------
-bool BrowserWindow::addItem(BrowserItem* item, string where)
+bool BrowserWindow::addItem(BrowserItem* item, const string& where)
 {
-	item->parent_           = this;
-	BrowserTreeNode* target = (BrowserTreeNode*)items_root_->addChild(where);
+	item->parent_ = this;
+	auto target   = dynamic_cast<BrowserTreeNode*>(items_root_->addChild(where));
 	if (target)
 	{
 		target->addItem(item);
@@ -321,7 +306,7 @@ void BrowserWindow::addGlobalItem(BrowserItem* item)
 // -----------------------------------------------------------------------------
 // Removes all items from [node] and its children recursively
 // -----------------------------------------------------------------------------
-void BrowserWindow::clearItems(BrowserTreeNode* node)
+void BrowserWindow::clearItems(BrowserTreeNode* node) const
 {
 	// Check node was given to begin clear
 	if (!node)
@@ -333,7 +318,7 @@ void BrowserWindow::clearItems(BrowserTreeNode* node)
 	// Clear all child nodes
 	while (node->nChildren() > 0)
 	{
-		BrowserTreeNode* child = (BrowserTreeNode*)node->child(0);
+		auto child = dynamic_cast<BrowserTreeNode*>(node->child(0));
 		clearItems(child);
 		node->removeChild(child);
 		delete child;
@@ -343,7 +328,7 @@ void BrowserWindow::clearItems(BrowserTreeNode* node)
 // -----------------------------------------------------------------------------
 // Reloads (clears) all item images in [node] and its children recursively
 // -----------------------------------------------------------------------------
-void BrowserWindow::reloadItems(BrowserTreeNode* node)
+void BrowserWindow::reloadItems(BrowserTreeNode* node) const
 {
 	// Check node was given to begin reload
 	if (!node)
@@ -355,15 +340,15 @@ void BrowserWindow::reloadItems(BrowserTreeNode* node)
 
 	// Go through child nodes
 	for (unsigned a = 0; a < node->nChildren(); a++)
-		reloadItems((BrowserTreeNode*)node->child(a));
+		reloadItems(dynamic_cast<BrowserTreeNode*>(node->child(a)));
 }
 
 // -----------------------------------------------------------------------------
 // Returns the currently selected item
 // -----------------------------------------------------------------------------
-BrowserItem* BrowserWindow::selectedItem()
+BrowserItem* BrowserWindow::selectedItem() const
 {
-	return canvas_->getSelectedItem();
+	return canvas_->selectedItem();
 }
 
 // -----------------------------------------------------------------------------
@@ -371,19 +356,19 @@ BrowserItem* BrowserWindow::selectedItem()
 // If the item is found, its parent node is opened in the browser and the item
 // is selected
 // -----------------------------------------------------------------------------
-bool BrowserWindow::selectItem(string name, BrowserTreeNode* node)
+bool BrowserWindow::selectItem(const string& name, BrowserTreeNode* node)
 {
 	// Check node was given, if not start from root
 	if (!node)
 		node = items_root_;
 
 	// Check global items
-	for (unsigned a = 0; a < items_global_.size(); a++)
+	for (auto& item : items_global_)
 	{
-		if (S_CMPNOCASE(name, items_global_[a]->name()))
+		if (S_CMPNOCASE(name, item->name()))
 		{
 			openTree(node);
-			canvas_->selectItem(items_global_[a]);
+			canvas_->selectItem(item);
 			canvas_->showSelectedItem();
 			return true;
 		}
@@ -408,7 +393,7 @@ bool BrowserWindow::selectItem(string name, BrowserTreeNode* node)
 	// Item not found in this one, try its child nodes
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		if (selectItem(name, (BrowserTreeNode*)node->child(a)))
+		if (selectItem(name, dynamic_cast<BrowserTreeNode*>(node->child(a))))
 			return true;
 	}
 
@@ -429,7 +414,7 @@ bool sortBIName(BrowserItem* left, BrowserItem* right)
 // -----------------------------------------------------------------------------
 // Adds a sorting type [name] to the window
 // -----------------------------------------------------------------------------
-unsigned BrowserWindow::addSortType(string name)
+unsigned BrowserWindow::addSortType(const string& name) const
 {
 	choice_sort_->AppendString(name);
 	return choice_sort_->GetCount() - 1;
@@ -443,7 +428,7 @@ unsigned BrowserWindow::addSortType(string name)
 void BrowserWindow::doSort(unsigned sort_type)
 {
 	// Get item list
-	vector<BrowserItem*>& items = canvas_->itemList();
+	auto& items = canvas_->itemList();
 
 	// Do sorting
 
@@ -489,8 +474,8 @@ void BrowserWindow::openTree(BrowserTreeNode* node, bool clear)
 		canvas_->clearItems();
 
 		// Also add global items
-		for (unsigned a = 0; a < items_global_.size(); a++)
-			canvas_->addItem(items_global_[a]);
+		for (auto& item : items_global_)
+			canvas_->addItem(item);
 	}
 
 	// Add all items in the node
@@ -502,7 +487,7 @@ void BrowserWindow::openTree(BrowserTreeNode* node, bool clear)
 
 	// Add all child nodes' items
 	for (unsigned a = 0; a < node->nChildren(); a++)
-		openTree((BrowserTreeNode*)node->child(a), false);
+		openTree(dynamic_cast<BrowserTreeNode*>(node->child(a)), false);
 
 	// If the list was cleared, sort it, filter it and update the canvas scrollbar
 	if (clear)
@@ -524,7 +509,7 @@ void BrowserWindow::populateItemTree(bool collapse_all)
 
 	// Add root item
 	tree_items_->AppendColumn("Categories", wxCOL_WIDTH_AUTOSIZE);
-	wxTreeListItem item = tree_items_->AppendItem(tree_items_->GetRootItem(), "All");
+	auto item = tree_items_->AppendItem(tree_items_->GetRootItem(), "All");
 	tree_items_->SetItemData(item, new BrowserTreeItemData(items_root_));
 
 	// Add tree
@@ -546,25 +531,25 @@ void BrowserWindow::populateItemTree(bool collapse_all)
 // -----------------------------------------------------------------------------
 // Adds [node] to the wxTreeCtrl after [item]
 // -----------------------------------------------------------------------------
-void BrowserWindow::addItemTree(BrowserTreeNode* node, wxTreeListItem& item)
+void BrowserWindow::addItemTree(BrowserTreeNode* node, wxTreeListItem& item) const
 {
 	// Go through child items
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
 		// Add tree item
-		BrowserTreeNode* child = (BrowserTreeNode*)node->child(a);
-		wxTreeListItem   i     = tree_items_->AppendItem(item, child->name(), -1, -1, new BrowserTreeItemData(child));
-		child->setTreeId(i);
+		auto child = dynamic_cast<BrowserTreeNode*>(node->child(a));
+		auto id    = tree_items_->AppendItem(item, child->name(), -1, -1, new BrowserTreeItemData(child));
+		child->setTreeId(id);
 
 		// Add children
-		addItemTree(child, i);
+		addItemTree(child, id);
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Sets the font to be used for item names
 // -----------------------------------------------------------------------------
-void BrowserWindow::setFont(Drawing::Font font)
+void BrowserWindow::setFont(Drawing::Font font) const
 {
 	canvas_->setFont(font);
 }
@@ -572,7 +557,7 @@ void BrowserWindow::setFont(Drawing::Font font)
 // -----------------------------------------------------------------------------
 // Sets the type of item names to show (in normal view mode)
 // -----------------------------------------------------------------------------
-void BrowserWindow::setItemNameType(BrowserCanvas::NameType type)
+void BrowserWindow::setItemNameType(BrowserCanvas::NameType type) const
 {
 	canvas_->setItemNameType(type);
 }
@@ -596,7 +581,7 @@ void BrowserWindow::setItemSize(int size)
 // -----------------------------------------------------------------------------
 // Sets the item view type
 // -----------------------------------------------------------------------------
-void BrowserWindow::setItemViewType(BrowserCanvas::ItemView type)
+void BrowserWindow::setItemViewType(BrowserCanvas::ItemView type) const
 {
 	canvas_->setItemViewType(type);
 }
@@ -614,7 +599,7 @@ void BrowserWindow::setItemViewType(BrowserCanvas::ItemView type)
 // -----------------------------------------------------------------------------
 void BrowserWindow::onTreeItemSelected(wxTreeListEvent& e)
 {
-	BrowserTreeItemData* data = (BrowserTreeItemData*)tree_items_->GetItemData(e.GetItem());
+	auto data = dynamic_cast<BrowserTreeItemData*>(tree_items_->GetItemData(e.GetItem()));
 	if (data)
 		openTree(data->node());
 	canvas_->Refresh();
@@ -680,7 +665,7 @@ void BrowserWindow::onZoomChanged(wxCommandEvent& e)
 void BrowserWindow::onCanvasSelectionChanged(wxEvent& e)
 {
 	// Get selected item
-	BrowserItem* item = canvas_->getSelectedItem();
+	auto item = canvas_->selectedItem();
 	if (!item)
 	{
 		// Clear info if nothing selected
@@ -710,7 +695,7 @@ void BrowserWindow::onCanvasSelectionChanged(wxEvent& e)
 void BrowserWindow::onCanvasKeyChar(wxKeyEvent& e)
 {
 	// Backspace
-	if (e.GetKeyCode() == WXK_BACK && text_filter_->GetValue().size() > 0)
+	if (e.GetKeyCode() == WXK_BACK && !text_filter_->GetValue().empty())
 	{
 		string filter = text_filter_->GetValue();
 		filter.RemoveLast(1);

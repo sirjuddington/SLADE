@@ -73,19 +73,12 @@ int cmp_int(int* a, int* b)
 ListView::ListView(wxWindow* parent, int id, long style) :
 	wxListCtrl(parent, id, wxDefaultPosition, wxDefaultSize, style)
 {
-	icons_        = true;
-	update_width_ = true;
 }
-
-// -----------------------------------------------------------------------------
-// ListView class destructor
-// -----------------------------------------------------------------------------
-ListView::~ListView() {}
 
 // -----------------------------------------------------------------------------
 // Adds an item to the list at [index] with [text]
 // -----------------------------------------------------------------------------
-bool ListView::addItem(int index, string text)
+bool ListView::addItem(int index, const string& text)
 {
 	// Check index
 	if (index < 0)
@@ -151,15 +144,15 @@ bool ListView::deleteItems(wxArrayInt items)
 // -----------------------------------------------------------------------------
 // Calculates the 'disabled' item colour based on the list text and bg colours
 // -----------------------------------------------------------------------------
-ColRGBA ListView::disabledColour()
+ColRGBA ListView::disabledColour() const
 {
-	wxColour fg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
-	wxColour bg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX);
+	auto fg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
+	auto bg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX);
 
-	int red   = fg.Red() * 0.5 + bg.Red() * 0.5;
-	int green = fg.Green() * 0.5 + bg.Green() * 0.5;
-	int blue  = fg.Blue() * 0.5 + bg.Blue() * 0.5;
-	return ColRGBA(red, green, blue);
+	uint8_t red   = fg.Red() * 0.5 + bg.Red() * 0.5;
+	uint8_t green = fg.Green() * 0.5 + bg.Green() * 0.5;
+	uint8_t blue  = fg.Blue() * 0.5 + bg.Blue() * 0.5;
+	return {red, green, blue};
 }
 
 // -----------------------------------------------------------------------------
@@ -204,7 +197,7 @@ bool ListView::setItemStatus(int item, ItemStatus status)
 // -----------------------------------------------------------------------------
 // Sets the text of [item] at [column] to [text]
 // -----------------------------------------------------------------------------
-bool ListView::setItemText(int item, int column, string text)
+bool ListView::setItemText(int item, int column, const string& text)
 {
 	// Check if column is in range
 	if (column < 0 || column >= GetColumnCount())
@@ -297,7 +290,7 @@ bool ListView::deSelectItem(int item)
 // -----------------------------------------------------------------------------
 // Returns a list with the indices of all selected items
 // -----------------------------------------------------------------------------
-wxArrayInt ListView::selectedItems()
+wxArrayInt ListView::selectedItems() const
 {
 	// Init return array
 	wxArrayInt ret;
@@ -381,10 +374,8 @@ bool ListView::updateSize()
 	{
 		for (int a = 0; a < GetColumnCount(); a++)
 		{
-			// Get header width
-			int maxsize = 0;
 			SetColumnWidth(a, (a == GetColumnCount() - 1 ? wxLIST_AUTOSIZE : wxLIST_AUTOSIZE_USEHEADER));
-			maxsize = GetColumnWidth(a);
+			int maxsize = GetColumnWidth(a);
 
 			// Autosize column
 			SetColumnWidth(a, wxLIST_AUTOSIZE);

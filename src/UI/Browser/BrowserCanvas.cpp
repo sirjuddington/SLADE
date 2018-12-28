@@ -60,15 +60,8 @@ DEFINE_EVENT_TYPE(wxEVT_BROWSERCANVAS_SELECTION_CHANGED)
 // -----------------------------------------------------------------------------
 BrowserCanvas::BrowserCanvas(wxWindow* parent) :
 	OGLCanvas{ parent, -1 },
-	scrollbar_{ nullptr },
-	item_selected_{ nullptr },
-	yoff_{ 0 },
 	item_border_{ UI::scalePx(8) },
-	font_{ Drawing::Font::Bold },
-	show_names_{ NameType::Normal },
-	item_size_{ -1 },
-	item_type_{ ItemView::Normal },
-	num_cols_{ -1 }
+	font_{ Drawing::Font::Bold }
 {
 	// Bind events
 	Bind(wxEVT_SIZE, &BrowserCanvas::onSize, this);
@@ -118,7 +111,7 @@ void BrowserCanvas::clearItems()
 // -----------------------------------------------------------------------------
 // Returns the 'full' (including border) width of each item
 // -----------------------------------------------------------------------------
-int BrowserCanvas::fullItemSizeX()
+int BrowserCanvas::fullItemSizeX() const
 {
 	int base_size;
 	if (item_size_ > 0)
@@ -135,7 +128,7 @@ int BrowserCanvas::fullItemSizeX()
 // -----------------------------------------------------------------------------
 // Returns the 'full' (including border and row gap) height of each item
 // -----------------------------------------------------------------------------
-int BrowserCanvas::fullItemSizeY()
+int BrowserCanvas::fullItemSizeY() const
 {
 	int gap = 16;
 	if (show_names_ == NameType::None || item_type_ == ItemView::Tiles)
@@ -169,15 +162,15 @@ void BrowserCanvas::draw()
 	if (browser_bg_type == 1)
 	{
 		// Get system panel background colour
-		wxColour bgcolwx = Drawing::systemPanelBGColour();
+		auto bgcolwx = Drawing::systemPanelBGColour();
 		col_bg.set(COLWX(bgcolwx));
 
 		// Get system text colour
-		wxColour textcol = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
+		auto textcol = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
 		col_text.set(COLWX(textcol));
 
 		// Check text colour brightness, if it's dark don't draw text shadow
-		ColRGBA col_temp = col_text;
+		auto col_temp = col_text;
 		wxColor::MakeGrey(&col_temp.r, &col_temp.g, &col_temp.b);
 		if (col_temp.r < 60)
 			text_shadow = false;
@@ -365,7 +358,7 @@ void BrowserCanvas::updateLayout(int viewed_index)
 // -----------------------------------------------------------------------------
 // Returns the currently selected BrowserItem, or NULL if nothing is selected
 // -----------------------------------------------------------------------------
-BrowserItem* BrowserCanvas::getSelectedItem()
+BrowserItem* BrowserCanvas::selectedItem() const
 {
 	return item_selected_;
 }
@@ -410,9 +403,9 @@ void BrowserCanvas::selectItem(BrowserItem* item)
 	else
 	{
 		// Check the item exists in the current set
-		for (unsigned a = 0; a < items_.size(); a++)
+		for (auto& browser_item : items_)
 		{
-			if (items_[a] == item)
+			if (browser_item == item)
 				item_selected_ = item;
 		}
 	}
@@ -495,8 +488,6 @@ void BrowserCanvas::showItem(int item, int where)
 	int y_top    = (item / num_cols) * fullItemSizeY();
 	int y_bottom = y_top + fullItemSizeY();
 
-	int _yoff = yoff_;
-
 	// Check if item is outside current view (but always center an item if
 	// asked)
 	if (y_top < yoff_ || y_bottom > yoff_ + GetSize().y || where == 0)
@@ -534,9 +525,8 @@ void BrowserCanvas::showSelectedItem()
 // -----------------------------------------------------------------------------
 bool BrowserCanvas::searchItemFrom(int from)
 {
-	int  index    = from;
-	bool looped   = false;
-	bool gotmatch = false;
+	int  index  = from;
+	bool looped = false;
 	while ((!looped && index < (int)items_filter_.size()) || (looped && index < from))
 	{
 		string name = items_[items_filter_[index]]->name();
@@ -550,7 +540,7 @@ bool BrowserCanvas::searchItemFrom(int from)
 
 		// No match, next item; look in the above entries
 		// if no matches were found below.
-		if (++index == items_filter_.size() && !looped)
+		if (++index == (int)items_filter_.size() && !looped)
 		{
 			looped = true;
 			index  = 0;
@@ -560,7 +550,7 @@ bool BrowserCanvas::searchItemFrom(int from)
 	return false;
 }
 
-int BrowserCanvas::longestItemTextWidth()
+int BrowserCanvas::longestItemTextWidth() const
 {
 	return 144;
 

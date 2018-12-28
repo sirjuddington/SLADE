@@ -61,35 +61,11 @@ CVAR(Bool, map_view_things, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
-// MapPreviewCanvas class constructor
-// -----------------------------------------------------------------------------
-MapPreviewCanvas::MapPreviewCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
-{
-	zoom_         = 1;
-	offset_x_     = 0;
-	offset_y_     = 0;
-	temp_archive_ = nullptr;
-	tex_thing_    = nullptr;
-	tex_loaded_   = false;
-	n_sides_      = 0;
-	n_sectors_    = 0;
-}
-
-// -----------------------------------------------------------------------------
-// MapPreviewCanvas class destructor
-// -----------------------------------------------------------------------------
-MapPreviewCanvas::~MapPreviewCanvas()
-{
-	if (tex_thing_)
-		delete tex_thing_;
-}
-
-// -----------------------------------------------------------------------------
 // Adds a vertex to the map data
 // -----------------------------------------------------------------------------
 void MapPreviewCanvas::addVertex(double x, double y)
 {
-	verts_.push_back(Vertex(x, y));
+	verts_.emplace_back(x, y);
 }
 
 // -----------------------------------------------------------------------------
@@ -97,11 +73,7 @@ void MapPreviewCanvas::addVertex(double x, double y)
 // -----------------------------------------------------------------------------
 void MapPreviewCanvas::addLine(unsigned v1, unsigned v2, bool twosided, bool special, bool macro)
 {
-	Line line(v1, v2);
-	line.twosided = twosided;
-	line.special  = special;
-	line.macro    = macro;
-	lines_.push_back(line);
+	lines_.emplace_back(v1, v2, twosided, special, macro);
 }
 
 // -----------------------------------------------------------------------------
@@ -109,10 +81,7 @@ void MapPreviewCanvas::addLine(unsigned v1, unsigned v2, bool twosided, bool spe
 // -----------------------------------------------------------------------------
 void MapPreviewCanvas::addThing(double x, double y)
 {
-	Thing thing;
-	thing.x = x;
-	thing.y = y;
-	things_.push_back(thing);
+	things_.emplace_back(x, y);
 }
 
 // -----------------------------------------------------------------------------
@@ -138,10 +107,10 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 		}
 
 		// Detect maps
-		vector<Archive::MapDesc> maps = temp_archive_->detectMaps();
+		auto maps = temp_archive_->detectMaps();
 
 		// Set map if there are any in the archive
-		if (maps.size() > 0)
+		if (!maps.empty())
 			map = maps[0];
 		else
 			return false;
@@ -151,7 +120,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 	if (map.format == MapFormat::UDMF)
 	{
 		ArchiveEntry* udmfdata = nullptr;
-		for (ArchiveEntry* mapentry = map.head; mapentry != map.end; mapentry = mapentry->nextEntry())
+		for (auto mapentry = map.head; mapentry != map.end; mapentry = mapentry->nextEntry())
 		{
 			// Check entry type
 			if (mapentry->type() == EntryType::fromId("udmf_textmap"))
@@ -426,13 +395,13 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 		return false;
 
 	// Read vertex data
-	MemChunk& mc = vertexes->data();
+	auto& mc = vertexes->data();
 	mc.seek(0, SEEK_SET);
 
 	if (map_format == MapFormat::Doom64)
 	{
 		MapVertex::Doom64Data v;
-		while (1)
+		while (true)
 		{
 			// Read vertex
 			if (!mc.read(&v, 8))
@@ -445,7 +414,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 	else
 	{
 		MapVertex::DoomData v;
-		while (1)
+		while (true)
 		{
 			// Read vertex
 			if (!mc.read(&v, 4))
@@ -487,11 +456,11 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 		return false;
 
 	// Read line data
-	MemChunk& mc = linedefs->data();
+	auto& mc = linedefs->data();
 	mc.seek(0, SEEK_SET);
 	if (map_format == MapFormat::Doom)
 	{
-		while (1)
+		while (true)
 		{
 			// Read line
 			MapLine::DoomData l;
@@ -512,7 +481,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 	}
 	else if (map_format == MapFormat::Doom64)
 	{
-		while (1)
+		while (true)
 		{
 			// Read line
 			MapLine::Doom64Data l;
@@ -539,7 +508,7 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 	}
 	else if (map_format == MapFormat::Hexen)
 	{
-		while (1)
+		while (true)
 		{
 			// Read line
 			MapLine::HexenData l;
@@ -592,22 +561,22 @@ bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end,
 	// Read things data
 	if (map_format == MapFormat::Doom)
 	{
-		MapThing::DoomData* thng_data = (MapThing::DoomData*)things->rawData(true);
-		unsigned            nt        = things->size() / sizeof(MapThing::DoomData);
+		auto     thng_data = (MapThing::DoomData*)things->rawData(true);
+		unsigned nt        = things->size() / sizeof(MapThing::DoomData);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MapFormat::Doom64)
 	{
-		MapThing::Doom64Data* thng_data = (MapThing::Doom64Data*)things->rawData(true);
-		unsigned              nt        = things->size() / sizeof(MapThing::Doom64Data);
+		auto     thng_data = (MapThing::Doom64Data*)things->rawData(true);
+		unsigned nt        = things->size() / sizeof(MapThing::Doom64Data);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MapFormat::Hexen)
 	{
-		MapThing::HexenData* thng_data = (MapThing::HexenData*)things->rawData(true);
-		unsigned             nt        = things->size() / sizeof(MapThing::HexenData);
+		auto     thng_data = (MapThing::HexenData*)things->rawData(true);
+		unsigned nt        = things->size() / sizeof(MapThing::HexenData);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
@@ -635,23 +604,22 @@ void MapPreviewCanvas::showMap()
 	// Find extents of map
 	Vertex m_min(999999.0, 999999.0);
 	Vertex m_max(-999999.0, -999999.0);
-	for (unsigned a = 0; a < verts_.size(); a++)
+	for (auto& vert : verts_)
 	{
-		if (verts_[a].x < m_min.x)
-			m_min.x = verts_[a].x;
-		if (verts_[a].x > m_max.x)
-			m_max.x = verts_[a].x;
-		if (verts_[a].y < m_min.y)
-			m_min.y = verts_[a].y;
-		if (verts_[a].y > m_max.y)
-			m_max.y = verts_[a].y;
+		if (vert.x < m_min.x)
+			m_min.x = vert.x;
+		if (vert.x > m_max.x)
+			m_max.x = vert.x;
+		if (vert.y < m_min.y)
+			m_min.y = vert.y;
+		if (vert.y > m_max.y)
+			m_max.y = vert.y;
 	}
 
 	// Offset to center of map
 	double width  = m_max.x - m_min.x;
 	double height = m_max.y - m_min.y;
-	offset_x_     = m_min.x + (width * 0.5);
-	offset_y_     = m_min.y + (height * 0.5);
+	offset_       = { m_min.x + (width * 0.5), m_min.y + (height * 0.5) };
 
 	// Zoom to fit whole map
 	double x_scale = ((double)GetClientSize().x) / width;
@@ -666,12 +634,12 @@ void MapPreviewCanvas::showMap()
 void MapPreviewCanvas::draw()
 {
 	// Setup colours
-	ColRGBA col_view_background   = ColourConfiguration::colour("map_view_background");
-	ColRGBA col_view_line_1s      = ColourConfiguration::colour("map_view_line_1s");
-	ColRGBA col_view_line_2s      = ColourConfiguration::colour("map_view_line_2s");
-	ColRGBA col_view_line_special = ColourConfiguration::colour("map_view_line_special");
-	ColRGBA col_view_line_macro   = ColourConfiguration::colour("map_view_line_macro");
-	ColRGBA col_view_thing        = ColourConfiguration::colour("map_view_thing");
+	auto col_view_background   = ColourConfiguration::colour("map_view_background");
+	auto col_view_line_1s      = ColourConfiguration::colour("map_view_line_1s");
+	auto col_view_line_2s      = ColourConfiguration::colour("map_view_line_2s");
+	auto col_view_line_special = ColourConfiguration::colour("map_view_line_special");
+	auto col_view_line_macro   = ColourConfiguration::colour("map_view_line_macro");
+	auto col_view_thing        = ColourConfiguration::colour("map_view_thing");
 
 	// Setup the viewport
 	glViewport(0, 0, GetSize().x, GetSize().y);
@@ -706,7 +674,7 @@ void MapPreviewCanvas::draw()
 	glScaled(zoom_, zoom_, 1);
 
 	// Translate to offset
-	glTranslated(-offset_x_, -offset_y_, 0);
+	glTranslated(-offset_.x, -offset_.y, 0);
 
 	// Setup drawing
 	glDisable(GL_TEXTURE_2D);
@@ -715,17 +683,15 @@ void MapPreviewCanvas::draw()
 	glEnable(GL_LINE_SMOOTH);
 
 	// Draw lines
-	for (unsigned a = 0; a < lines_.size(); a++)
+	for (auto& line : lines_)
 	{
-		Line line = lines_[a];
-
 		// Check ends
 		if (line.v1 >= verts_.size() || line.v2 >= verts_.size())
 			continue;
 
 		// Get vertices
-		Vertex v1 = verts_[lines_[a].v1];
-		Vertex v2 = verts_[lines_[a].v2];
+		auto v1 = verts_[line.v1];
+		auto v2 = verts_[line.v2];
 
 		// Set colour
 		if (line.special)
@@ -748,12 +714,12 @@ void MapPreviewCanvas::draw()
 	if (!tex_loaded_)
 	{
 		// Load thing texture
-		SImage        image;
-		ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("images/thing/normal_n.png");
+		SImage image;
+		auto   entry = App::archiveManager().programResourceArchive()->entryAtPath("images/thing/normal_n.png");
 		if (entry)
 		{
 			image.open(entry->data());
-			tex_thing_ = new GLTexture(false);
+			tex_thing_ = std::make_unique<GLTexture>(false);
 			tex_thing_->setFilter(GLTexture::Filter::Mipmap);
 			tex_thing_->loadImage(&image);
 		}
@@ -772,10 +738,10 @@ void MapPreviewCanvas::draw()
 			double radius = 20;
 			glEnable(GL_TEXTURE_2D);
 			tex_thing_->bind();
-			for (unsigned a = 0; a < things_.size(); a++)
+			for (auto& thing : things_)
 			{
 				glPushMatrix();
-				glTranslated(things_[a].x, things_[a].y, 0);
+				glTranslated(thing.x, thing.y, 0);
 				glBegin(GL_QUADS);
 				glTexCoord2f(0.0f, 0.0f);
 				glVertex2d(-radius, -radius);
@@ -794,8 +760,8 @@ void MapPreviewCanvas::draw()
 			glEnable(GL_POINT_SMOOTH);
 			glPointSize(8.0f);
 			glBegin(GL_POINTS);
-			for (unsigned a = 0; a < things_.size(); a++)
-				glVertex2d(things_[a].x, things_[a].y);
+			for (auto& thing : things_)
+				glVertex2d(thing.x, thing.y);
 			glEnd();
 		}
 	}
@@ -818,16 +784,16 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	// Find extents of map
 	Vertex m_min(999999.0, 999999.0);
 	Vertex m_max(-999999.0, -999999.0);
-	for (unsigned a = 0; a < verts_.size(); a++)
+	for (auto& vert : verts_)
 	{
-		if (verts_[a].x < m_min.x)
-			m_min.x = verts_[a].x;
-		if (verts_[a].x > m_max.x)
-			m_max.x = verts_[a].x;
-		if (verts_[a].y < m_min.y)
-			m_min.y = verts_[a].y;
-		if (verts_[a].y > m_max.y)
-			m_max.y = verts_[a].y;
+		if (vert.x < m_min.x)
+			m_min.x = vert.x;
+		if (vert.x > m_max.x)
+			m_max.x = vert.x;
+		if (vert.y < m_min.y)
+			m_min.y = vert.y;
+		if (vert.y > m_max.y)
+			m_max.y = vert.y;
 	}
 	double mapwidth  = m_max.x - m_min.x;
 	double mapheight = m_max.y - m_min.y;
@@ -842,26 +808,26 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 		height = mapheight / abs(height);
 
 	// Setup colours
-	ColRGBA col_save_background   = ColourConfiguration::colour("map_image_background");
-	ColRGBA col_save_line_1s      = ColourConfiguration::colour("map_image_line_1s");
-	ColRGBA col_save_line_2s      = ColourConfiguration::colour("map_image_line_2s");
-	ColRGBA col_save_line_special = ColourConfiguration::colour("map_image_line_special");
-	ColRGBA col_save_line_macro   = ColourConfiguration::colour("map_image_line_macro");
+	auto col_save_background   = ColourConfiguration::colour("map_image_background");
+	auto col_save_line_1s      = ColourConfiguration::colour("map_image_line_1s");
+	auto col_save_line_2s      = ColourConfiguration::colour("map_image_line_2s");
+	auto col_save_line_special = ColourConfiguration::colour("map_image_line_special");
+	auto col_save_line_macro   = ColourConfiguration::colour("map_image_line_macro");
 
 	// Setup OpenGL rigmarole
-	GLuint texID, fboID;
+	GLuint tex_id, fbo_id;
 	if (GLEW_ARB_framebuffer_object)
 	{
-		glGenTextures(1, &texID);
-		glBindTexture(GL_TEXTURE_2D, texID);
+		glGenTextures(1, &tex_id);
+		glBindTexture(GL_TEXTURE_2D, tex_id);
 		// We don't use mipmaps, but OpenGL will refuse to attach
 		// the texture to the framebuffer if they are not present
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 		glBindTexture(GL_TEXTURE_2D, 0);
-		glGenFramebuffersEXT(1, &fboID);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboID);
-		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, texID, 0);
+		glGenFramebuffersEXT(1, &fbo_id);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, tex_id, 0);
 		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 	}
 
@@ -889,8 +855,7 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 
 	// Zoom/offset to show full map
 	// Offset to center of map
-	offset_x_ = m_min.x + (mapwidth * 0.5);
-	offset_y_ = m_min.y + (mapheight * 0.5);
+	offset_ = { m_min.x + (mapwidth * 0.5), m_min.y + (mapheight * 0.5) };
 
 	// Zoom to fit whole map
 	double x_scale = ((double)width) / mapwidth;
@@ -905,7 +870,7 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	glScaled(zoom_, zoom_, 1);
 
 	// Translate to offset
-	glTranslated(-offset_x_, -offset_y_, 0);
+	glTranslated(-offset_.x, -offset_.y, 0);
 
 	// Setup drawing
 	glDisable(GL_TEXTURE_2D);
@@ -914,10 +879,8 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	glEnable(GL_LINE_SMOOTH);
 
 	// Draw 2s lines
-	for (unsigned a = 0; a < lines_.size(); a++)
+	for (auto& line : lines_)
 	{
-		Line line = lines_[a];
-
 		if (!line.twosided)
 			continue;
 
@@ -926,8 +889,8 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 			continue;
 
 		// Get vertices
-		Vertex v1 = verts_[lines_[a].v1];
-		Vertex v2 = verts_[lines_[a].v2];
+		auto v1 = verts_[line.v1];
+		auto v2 = verts_[line.v2];
 
 		// Set colour
 		if (line.special)
@@ -947,10 +910,8 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	}
 
 	// Draw 1s lines
-	for (unsigned a = 0; a < lines_.size(); a++)
+	for (auto& line : lines_)
 	{
-		Line line = lines_[a];
-
 		if (line.twosided)
 			continue;
 
@@ -959,8 +920,8 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 			continue;
 
 		// Get vertices
-		Vertex v1 = verts_[lines_[a].v1];
-		Vertex v2 = verts_[lines_[a].v2];
+		auto v1 = verts_[line.v1];
+		auto v2 = verts_[line.v2];
 
 		// Set colour
 		if (line.special)
@@ -986,8 +947,8 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	if (GLEW_ARB_framebuffer_object)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glDeleteTextures(1, &texID);
-		glDeleteFramebuffersEXT(1, &fboID);
+		glDeleteTextures(1, &tex_id);
+		glDeleteFramebuffersEXT(1, &fbo_id);
 	}
 	SImage img;
 	img.setImageData(buffer, width, height, SImage::Type::RGBA);
@@ -1006,53 +967,21 @@ unsigned MapPreviewCanvas::nVertices()
 	vector<bool> v_used;
 	for (unsigned a = 0; a < verts_.size(); a++)
 		v_used.push_back(false);
-	for (unsigned a = 0; a < lines_.size(); a++)
+	for (auto& line : lines_)
 	{
-		v_used[lines_[a].v1] = true;
-		v_used[lines_[a].v2] = true;
+		v_used[line.v1] = true;
+		v_used[line.v2] = true;
 	}
 
 	// Get count of used vertices
 	unsigned count = 0;
-	for (unsigned a = 0; a < v_used.size(); a++)
+	for (auto&& a : v_used)
 	{
-		if (v_used[a])
+		if (a)
 			count++;
 	}
 
 	return count;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the number of sides in the map
-// -----------------------------------------------------------------------------
-unsigned MapPreviewCanvas::nSides()
-{
-	return n_sides_;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the number of lines in the map
-// -----------------------------------------------------------------------------
-unsigned MapPreviewCanvas::nLines()
-{
-	return lines_.size();
-}
-
-// -----------------------------------------------------------------------------
-// Returns the number of sectors in the map
-// -----------------------------------------------------------------------------
-unsigned MapPreviewCanvas::nSectors()
-{
-	return n_sectors_;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the number of things in the map
-// -----------------------------------------------------------------------------
-unsigned MapPreviewCanvas::nThings()
-{
-	return things_.size();
 }
 
 // -----------------------------------------------------------------------------
@@ -1063,12 +992,12 @@ unsigned MapPreviewCanvas::width()
 	int min_x = wxINT32_MAX;
 	int max_x = wxINT32_MIN;
 
-	for (unsigned a = 0; a < verts_.size(); a++)
+	for (auto& vertex : verts_)
 	{
-		if (verts_[a].x < min_x)
-			min_x = verts_[a].x;
-		if (verts_[a].x > max_x)
-			max_x = verts_[a].x;
+		if (vertex.x < min_x)
+			min_x = vertex.x;
+		if (vertex.x > max_x)
+			max_x = vertex.x;
 	}
 
 	return max_x - min_x;
@@ -1082,12 +1011,12 @@ unsigned MapPreviewCanvas::height()
 	int min_y = wxINT32_MAX;
 	int max_y = wxINT32_MIN;
 
-	for (unsigned a = 0; a < verts_.size(); a++)
+	for (auto& vertex : verts_)
 	{
-		if (verts_[a].y < min_y)
-			min_y = verts_[a].y;
-		if (verts_[a].y > max_y)
-			max_y = verts_[a].y;
+		if (vertex.y < min_y)
+			min_y = vertex.y;
+		if (vertex.y > max_y)
+			max_y = vertex.y;
 	}
 
 	return max_y - min_y;

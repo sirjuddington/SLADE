@@ -10,5 +10,5 @@ public:
 		SIconButton(parent, Icons::General, icon, tooltip)
 	{
 	}
-	~SIconButton() {}
+	~SIconButton() = default;
 };

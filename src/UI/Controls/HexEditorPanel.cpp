@@ -116,7 +116,7 @@ bool HexTable::loadData(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Returns the offset of the byte at [row],[col]
 // -----------------------------------------------------------------------------
-uint32_t HexTable::offset(int row, int col)
+uint32_t HexTable::offset(int row, int col) const
 {
 	return row * hex_grid_width + col;
 }
@@ -124,7 +124,7 @@ uint32_t HexTable::offset(int row, int col)
 // -----------------------------------------------------------------------------
 // Returns the value at [offset] as an unsigned byte
 // -----------------------------------------------------------------------------
-uint8_t HexTable::uByteValue(uint32_t offset)
+uint8_t HexTable::uByteValue(uint32_t offset) const
 {
 	if (offset < data_.size())
 		return data_[offset];
@@ -287,7 +287,7 @@ HexEditorPanel::HexEditorPanel(wxWindow* parent) : wxPanel(parent, -1)
 	rb_view_ascii_->Bind(wxEVT_RADIOBUTTON, &HexEditorPanel::onRBViewType, this);
 
 	SetInitialSize(wxDefaultSize);
-	Layout();
+	wxWindowBase::Layout();
 }
 
 // -----------------------------------------------------------------------------

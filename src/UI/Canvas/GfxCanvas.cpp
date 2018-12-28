@@ -63,31 +63,10 @@ CVAR(Bool, gfx_arc, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // GfxCanvas class constructor
 // -----------------------------------------------------------------------------
-GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
+GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id), scale_{ UI::scaleFactor() }
 {
-	// Init variables
-	image_          = new SImage();
-	view_type_      = View::Default;
-	scale_          = UI::scaleFactor();
-	tex_image_      = new GLTexture();
-	update_texture_ = false;
-	image_hilight_  = false;
-	drag_pos_.set(0, 0);
-	drag_origin_.set(Vec2i::outside());
-	allow_drag_   = false;
-	allow_scroll_ = false;
-	editing_mode_ = EditMode::None;
-	paint_colour_ = COL_BLACK;
-	translation_  = nullptr;
-	drawing_      = false;
-	drawing_mask_ = nullptr;
-	brush_        = nullptr;
-	tex_brush_    = new GLTexture();
-	cursor_pos_.set(Vec2i::outside());
-	prev_pos_.set(Vec2i::outside());
-
 	// Listen to the image for changes
-	listenTo(image_);
+	listenTo(&image_);
 
 	// Bind events
 	Bind(wxEVT_LEFT_DOWN, &GfxCanvas::onMouseLeftDown, this);
@@ -96,15 +75,6 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 	Bind(wxEVT_MOTION, &GfxCanvas::onMouseMovement, this);
 	Bind(wxEVT_LEAVE_WINDOW, &GfxCanvas::onMouseLeaving, this);
 	Bind(wxEVT_KEY_DOWN, &GfxCanvas::onKeyDown, this);
-}
-
-// -----------------------------------------------------------------------------
-// GfxCanvas class destructor
-// -----------------------------------------------------------------------------
-GfxCanvas::~GfxCanvas()
-{
-	delete image_;
-	delete tex_image_;
 }
 
 // -----------------------------------------------------------------------------
@@ -155,7 +125,7 @@ void GfxCanvas::draw()
 	}
 
 	// Scale by UI scale
-	//glScaled(UI::scaleFactor(), UI::scaleFactor(), 1.);
+	// glScaled(UI::scaleFactor(), UI::scaleFactor(), 1.);
 
 	// Draw offset lines
 	if (view_type_ == View::Sprite || view_type_ == View::HUD)
@@ -171,7 +141,7 @@ void GfxCanvas::draw()
 // -----------------------------------------------------------------------------
 // Draws the offset center lines
 // -----------------------------------------------------------------------------
-void GfxCanvas::drawOffsetLines()
+void GfxCanvas::drawOffsetLines() const
 {
 	if (view_type_ == View::Sprite)
 	{
@@ -203,7 +173,7 @@ void GfxCanvas::drawOffsetLines()
 void GfxCanvas::drawImage()
 {
 	// Check image is valid
-	if (!image_->isValid())
+	if (!image_.isValid())
 		return;
 
 	// Save current matrix
@@ -215,13 +185,13 @@ void GfxCanvas::drawImage()
 
 	// Pan
 	if (view_type_ == View::Centered)
-		glTranslated(-(image_->width() * 0.5), -(image_->height() * 0.5), 0); // Pan to center image
+		glTranslated(-(image_.width() * 0.5), -(image_.height() * 0.5), 0); // Pan to center image
 	else if (view_type_ == View::Sprite)
-		glTranslated(-image_->offset().x, -image_->offset().y, 0); // Pan by offsets
+		glTranslated(-image_.offset().x, -image_.offset().y, 0); // Pan by offsets
 	else if (view_type_ == View::HUD)
 	{
-		glTranslated(-160, -100, 0);                               // Pan to hud 'top left'
-		glTranslated(-image_->offset().x, -image_->offset().y, 0); // Pan by offsets
+		glTranslated(-160, -100, 0);                             // Pan to hud 'top left'
+		glTranslated(-image_.offset().x, -image_.offset().y, 0); // Pan by offsets
 	}
 
 	// Enable textures
@@ -233,37 +203,36 @@ void GfxCanvas::drawImage()
 		// If the image change isn't caused by drawing, resize drawing mask
 		if (!drawing_)
 		{
-			if (drawing_mask_)
-				delete[] drawing_mask_;
-			drawing_mask_ = new bool[image_->width() * image_->height()];
-			memset(drawing_mask_, false, image_->width() * image_->height());
+			delete[] drawing_mask_;
+			drawing_mask_ = new bool[image_.width() * image_.height()];
+			memset(drawing_mask_, false, image_.width() * image_.height());
 		}
-		tex_image_->loadImage(image_, &palette_);
+		tex_image_.loadImage(&image_, &palette_);
 		update_texture_ = false;
 	}
 
 	// Determine (texture)coordinates
-	double x = (double)image_->width();
-	double y = (double)image_->height();
+	double x = (double)image_.width();
+	double y = (double)image_.height();
 
 	// If tiled view
 	if (view_type_ == View::Tiled)
 	{
 		// Draw tiled image
 		OpenGL::setColour(255, 255, 255, 255, 0);
-		tex_image_->draw2dTiled(GetSize().x / scale_, GetSize().y / scale_);
+		tex_image_.draw2dTiled(GetSize().x / scale_, GetSize().y / scale_);
 	}
 	else if (drag_origin_.x < 0) // If not dragging
 	{
 		// Draw the image
 		OpenGL::setColour(255, 255, 255, 255, 0);
-		tex_image_->draw2d();
+		tex_image_.draw2d();
 
 		// Draw hilight otherwise
 		if (image_hilight_ && gfx_hilight_mouseover && editing_mode_ == EditMode::None)
 		{
 			OpenGL::setColour(255, 255, 255, 80, 1);
-			tex_image_->draw2d();
+			tex_image_.draw2d();
 
 			// Reset colour
 			OpenGL::setColour(255, 255, 255, 255, 0);
@@ -273,20 +242,20 @@ void GfxCanvas::drawImage()
 	{
 		// Draw the original
 		OpenGL::setColour(ColRGBA(0, 0, 0, 180, 0));
-		tex_image_->draw2d();
+		tex_image_.draw2d();
 
 		// Draw the dragged image
 		int off_x = (drag_pos_.x - drag_origin_.x) / scale_;
 		int off_y = (drag_pos_.y - drag_origin_.y) / scale_;
 		glTranslated(off_x, off_y, 0);
 		OpenGL::setColour(255, 255, 255, 255, 0);
-		tex_image_->draw2d();
+		tex_image_.draw2d();
 	}
 	// Draw brush shadow when in editing mode
 	if (editing_mode_ != EditMode::None && cursor_pos_ != Vec2i::outside())
 	{
 		OpenGL::setColour(255, 255, 255, 160, 0);
-		tex_brush_->draw2d();
+		tex_brush_.draw2d();
 		OpenGL::setColour(255, 255, 255, 255, 0);
 	}
 
@@ -331,8 +300,8 @@ void GfxCanvas::zoomToFit(bool mag, float padding)
 	double pad = (double)std::min<int>(GetSize().x, GetSize().y) * padding;
 
 	// Get image dimensions
-	double x_dim = (double)image_->width();
-	double y_dim = (double)image_->height();
+	double x_dim = (double)image_.width();
+	double y_dim = (double)image_.height();
 
 	// Get max scale for x and y (including padding)
 	double x_scale = ((double)GetSize().x - pad) / x_dim;
@@ -364,7 +333,7 @@ bool GfxCanvas::onImage(int x, int y)
 // Returns the image coordinates at [x,y] in screen coordinates, or [-1, -1] if
 // not on the image
 // -----------------------------------------------------------------------------
-Vec2i GfxCanvas::imageCoords(int x, int y)
+Vec2i GfxCanvas::imageCoords(int x, int y) const
 {
 	// Determine top-left coordinates of image in screen coords
 	double left   = GetSize().x * 0.5 + offset_.x;
@@ -378,25 +347,25 @@ Vec2i GfxCanvas::imageCoords(int x, int y)
 	}
 	else if (view_type_ == View::Centered)
 	{
-		left -= (double)image_->width() * 0.5 * scale_;
-		top -= (double)image_->height() * 0.5 * yscale;
+		left -= (double)image_.width() * 0.5 * scale_;
+		top -= (double)image_.height() * 0.5 * yscale;
 	}
 	else if (view_type_ == View::Sprite)
 	{
-		left -= image_->offset().x * scale_;
-		top -= image_->offset().y * yscale;
+		left -= image_.offset().x * scale_;
+		top -= image_.offset().y * yscale;
 	}
 	else if (view_type_ == View::HUD)
 	{
 		left -= 160 * scale_;
 		top -= 100 * scale_ * (gfx_arc ? 1.2 : 1);
-		left -= image_->offset().x * scale_;
-		top -= image_->offset().y * yscale;
+		left -= image_.offset().x * scale_;
+		top -= image_.offset().y * yscale;
 	}
 
 	// Determine bottom-right coordinates of image in screen coords
-	double right  = left + image_->width() * scale_;
-	double bottom = top + image_->height() * yscale;
+	double right  = left + image_.width() * scale_;
+	double bottom = top + image_.height() * yscale;
 
 	// Check if the pointer is within the image
 	if (x >= left && x <= right && y >= top && y <= bottom)
@@ -407,7 +376,7 @@ Vec2i GfxCanvas::imageCoords(int x, int y)
 		double xpos = double(x - left) / w;
 		double ypos = double(y - top) / h;
 
-		return Vec2i(xpos * image_->width(), ypos * image_->height());
+		return { int(xpos * image_.width()), int(ypos * image_.height()) };
 	}
 	else
 		return Vec2i::outside();
@@ -426,8 +395,8 @@ void GfxCanvas::endOffsetDrag()
 	if (x != 0 || y != 0)
 	{
 		// Set image offsets
-		image_->setXOffset(image_->offset().x - x);
-		image_->setYOffset(image_->offset().y - y);
+		image_.setXOffset(image_.offset().x - x);
+		image_.setYOffset(image_.offset().y - y);
 
 		// Generate event
 		wxNotifyEvent e(wxEVT_GFXCANVAS_OFFSET_CHANGED, GetId());
@@ -446,7 +415,7 @@ void GfxCanvas::paintPixel(int x, int y)
 {
 	// With large brushes, it's very possible that some of the pixels
 	// are out of the image area; so don't process them.
-	if (x < 0 || y < 0 || x >= image_->width() || y >= image_->height())
+	if (x < 0 || y < 0 || x >= image_.width() || y >= image_.height())
 		return;
 
 	// Do not process pixels that were already modified in the
@@ -455,27 +424,27 @@ void GfxCanvas::paintPixel(int x, int y)
 	// of mouse events can happen while the mouse moves, leading
 	// to the same pixel being processed over and over, and that
 	// does not play well when applying translations.
-	size_t pos = x + image_->width() * y;
+	size_t pos = x + image_.width() * y;
 	if (drawing_mask_[pos])
 		return;
 
 	bool painted = false;
 	if (editing_mode_ == EditMode::Erase) // eraser
-		painted = image_->setPixel(x, y, 255, 0);
+		painted = image_.setPixel(x, y, 255, 0);
 	else if (editing_mode_ == EditMode::Translate) // translator
 	{
 		if (translation_ != nullptr)
 		{
-			ColRGBA ocol  = image_->pixelAt(x, y, palette());
+			auto    ocol  = image_.pixelAt(x, y, &palette_);
 			uint8_t alpha = ocol.a;
-			ColRGBA ncol  = (translation_->translate(ocol, palette()));
+			auto    ncol  = (translation_->translate(ocol, &palette_));
 			ncol.a        = alpha;
 			if (!ocol.equals(ncol, false, true))
-				painted = image_->setPixel(x, y, ncol);
+				painted = image_.setPixel(x, y, ncol);
 		}
 	}
 	else
-		painted = image_->setPixel(x, y, paint_colour_);
+		painted = image_.setPixel(x, y, paint_colour_);
 
 	// Mark the modification, if any, and announce the modification
 	drawing_mask_[pos] = painted;
@@ -495,7 +464,7 @@ void GfxCanvas::brushCanvas(int x, int y)
 {
 	if (brush_ == nullptr)
 		return;
-	Vec2i coord = imageCoords(x, y);
+	auto coord = imageCoords(x, y);
 	for (int i = -4; i < 5; ++i)
 		for (int j = -4; j < 5; ++j)
 			if (brush_->pixel(i, j))
@@ -508,10 +477,10 @@ void GfxCanvas::brushCanvas(int x, int y)
 void GfxCanvas::pickColour(int x, int y)
 {
 	// Get the pixel
-	Vec2i coord = imageCoords(x, y);
+	auto coord = imageCoords(x, y);
 
 	// Pick its colour
-	paint_colour_ = image_->pixelAt(coord.x, coord.y, palette());
+	paint_colour_ = image_.pixelAt(coord.x, coord.y, &palette_);
 
 	// Announce it triumphantly to the world
 	wxNotifyEvent e(wxEVT_GFXCANVAS_COLOUR_PICKED, GetId());
@@ -529,15 +498,15 @@ void GfxCanvas::generateBrushShadow()
 
 	// Generate image
 	SImage img;
-	img.create(image_->width(), image_->height(), SImage::Type::RGBA);
+	img.create(image_.width(), image_.height(), SImage::Type::RGBA);
 	for (int i = -4; i < 5; ++i)
 		for (int j = -4; j < 5; ++j)
 			if (brush_->pixel(i, j))
 			{
-				ColRGBA col = paint_colour_;
+				auto col = paint_colour_;
 				if (editing_mode_ == EditMode::Translate && translation_)
 					col = translation_->translate(
-						image_->pixelAt(cursor_pos_.x + i, cursor_pos_.y + j, palette()), palette());
+						image_.pixelAt(cursor_pos_.x + i, cursor_pos_.y + j, &palette_), &palette_);
 				// Not sure what's the best way to preview cutting out
 				// Mimicking the checkerboard pattern perhaps?
 				// Cyan will do for now
@@ -547,7 +516,7 @@ void GfxCanvas::generateBrushShadow()
 			}
 
 	// Load it as a GL texture
-	tex_brush_->loadImage(&img);
+	tex_brush_.loadImage(&img);
 }
 
 // -----------------------------------------------------------------------------
@@ -556,7 +525,7 @@ void GfxCanvas::generateBrushShadow()
 // -----------------------------------------------------------------------------
 void GfxCanvas::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
 {
-	if (announcer == image_ && event_name.Cmp("image_changed") == 0)
+	if (announcer == &image_ && event_name.Cmp("image_changed") == 0)
 		update_texture_ = true;
 }
 
@@ -623,7 +592,7 @@ void GfxCanvas::onMouseLeftUp(wxMouseEvent& e)
 	if (drawing_)
 	{
 		drawing_ = false;
-		memset(drawing_mask_, false, image_->width() * image_->height());
+		memset(drawing_mask_, false, image_.width() * image_.height());
 	}
 	// Stop dragging
 	if (drag_origin_.x >= 0)

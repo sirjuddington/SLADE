@@ -47,7 +47,7 @@
 // -----------------------------------------------------------------------------
 wxDEFINE_EVENT(EVT_VLV_SELECTION_CHANGED, wxCommandEvent);
 CVAR(Bool, list_font_monospace, false, CVar::Flag::Save)
-VirtualListView* VirtualListView::lv_current = nullptr;
+VirtualListView* VirtualListView::lv_current_ = nullptr;
 namespace
 {
 int vlv_chars[] = {
@@ -71,28 +71,19 @@ int n_vlv_chars = 30;
 VirtualListView::VirtualListView(wxWindow* parent)
 #ifdef __WXMSW__
 	:
-	wxListCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_VIRTUAL | wxLC_EDIT_LABELS)
-{
+	wxListCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_VIRTUAL | wxLC_EDIT_LABELS),
 #else
 	:
-	wxListCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_VIRTUAL)
-{
+	wxListCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_VIRTUAL),
 #endif
-	item_attr_          = new wxListItemAttr();
-	last_focus_         = 0;
-	col_search_         = 0;
-	filter_text_        = "";
-	sort_column_        = -1;
-	filter_column_      = -1;
-	sort_descend_       = false;
-	selection_updating_ = false;
-	memset(cols_editable_, 0, 100);
+	font_normal_{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) },
+	font_monospace_{ WxUtils::monospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)) }
+{
+	item_attr_ = std::make_unique<wxListItemAttr>();
 
 	// Set monospace font if configured
-	font_normal_    = new wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
-	font_monospace_ = new wxFont(WxUtils::monospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
 	if (list_font_monospace)
-		item_attr_->SetFont(*font_monospace_);
+		item_attr_->SetFont(font_monospace_);
 
 		// Bind events
 #ifndef __WXMSW__
@@ -108,16 +99,6 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	// Not sure if this is needed any more - causes duplicate selection events in linux
 	// Bind(wxEVT_LIST_ITEM_SELECTED, &VirtualListView::onItemSelected, this);
 #endif
-}
-
-// -----------------------------------------------------------------------------
-// VirtualListView class destructor
-// -----------------------------------------------------------------------------
-VirtualListView::~VirtualListView()
-{
-	delete item_attr_;
-	delete font_monospace_;
-	delete font_normal_;
 }
 
 // -----------------------------------------------------------------------------
@@ -220,7 +201,7 @@ void VirtualListView::clearSelection()
 // If [item_indices] is true, the returned indices will have sorting and
 // filtering applied
 // -----------------------------------------------------------------------------
-vector<long> VirtualListView::selection(bool item_indices)
+vector<long> VirtualListView::selection(bool item_indices) const
 {
 	// Init return array
 	vector<long> ret;
@@ -246,7 +227,7 @@ vector<long> VirtualListView::selection(bool item_indices)
 // -----------------------------------------------------------------------------
 // Returns the first selected item index
 // -----------------------------------------------------------------------------
-long VirtualListView::firstSelected()
+long VirtualListView::firstSelected() const
 {
 	return GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 }
@@ -254,7 +235,7 @@ long VirtualListView::firstSelected()
 // -----------------------------------------------------------------------------
 // Returns the last selected item index
 // -----------------------------------------------------------------------------
-long VirtualListView::lastSelected()
+long VirtualListView::lastSelected() const
 {
 	// Go through all items
 	long item = -1;
@@ -296,7 +277,7 @@ void VirtualListView::focusItem(long item, bool focus)
 // -----------------------------------------------------------------------------
 // Returns the index of the currently focused item
 // -----------------------------------------------------------------------------
-long VirtualListView::focusedIndex()
+long VirtualListView::focusedIndex() const
 {
 	return GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
 }
@@ -308,19 +289,19 @@ long VirtualListView::focusedIndex()
 bool VirtualListView::defaultSort(long left, long right)
 {
 	// No sort column, just sort by index
-	if (lv_current->sort_column_ < 0)
-		return lv_current->sort_descend_ ? right < left : left < right;
+	if (lv_current_->sort_column_ < 0)
+		return lv_current_->sort_descend_ ? right < left : left < right;
 
 	// Sort by column text > index
 	else
 	{
-		int result = lv_current->itemText(left, lv_current->sort_column_, left)
+		int result = lv_current_->itemText(left, lv_current_->sort_column_, left)
 						 .Lower()
-						 .compare(lv_current->itemText(right, lv_current->sort_column_, right).Lower());
+						 .compare(lv_current_->itemText(right, lv_current_->sort_column_, right).Lower());
 		if (result == 0)
 			return left < right;
 		else
-			return lv_current->sort_descend_ ? result > 0 : result < 0;
+			return lv_current_->sort_descend_ ? result > 0 : result < 0;
 	}
 }
 
@@ -352,7 +333,7 @@ void VirtualListView::updateList(bool clear)
 // -----------------------------------------------------------------------------
 void VirtualListView::sortItems()
 {
-	lv_current = this;
+	lv_current_ = this;
 	std::sort(items_.begin(), items_.end(), &VirtualListView::defaultSort);
 }
 
@@ -360,7 +341,7 @@ void VirtualListView::sortItems()
 // Sets the sorting arrow indicator on [column], [arrow] can be 0 (none), 1 (up)
 // or 2 (down)
 // -----------------------------------------------------------------------------
-void VirtualListView::setColumnHeaderArrow(long column, int arrow)
+void VirtualListView::setColumnHeaderArrow(long column, int arrow) const
 {
 	// Win32 implementation
 #ifdef __WXMSW__

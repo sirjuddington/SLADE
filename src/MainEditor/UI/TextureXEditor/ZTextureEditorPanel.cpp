@@ -1040,10 +1040,10 @@ void ZTextureEditorPanel::onBtnEditTranslation(wxCommandEvent& e)
 
 	// Create patch image
 	SImage image(SImage::Type::PalMask);
-	tex_canvas_->texture()->loadPatchImage(selection[0], image, tx_editor_->archive(), tex_canvas_->palette());
+	tex_canvas_->texture()->loadPatchImage(selection[0], image, tx_editor_->archive(), &tex_canvas_->palette());
 
 	// Open translation editor dialog
-	TranslationEditorDialog ted(MainEditor::windowWx(), *tex_canvas_->palette(), "Edit Translation", &image);
+	TranslationEditorDialog ted(MainEditor::windowWx(), tex_canvas_->palette(), "Edit Translation", &image);
 	ted.openTranslation(trans);
 	if (ted.ShowModal() == wxID_OK)
 	{

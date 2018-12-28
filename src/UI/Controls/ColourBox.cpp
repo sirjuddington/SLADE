@@ -61,8 +61,6 @@ DEFINE_EVENT_TYPE(wxEVT_COLOURBOX_CHANGED)
 // -----------------------------------------------------------------------------
 ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode) :
 	wxPanel{ parent, id, wxDefaultPosition, WxUtils::scaledSize(32, 22), wxNO_BORDER },
-	colour_{ COL_BLACK },
-	palette_{ nullptr },
 	alpha_{ enable_alpha },
 	altmode_{ mode }
 {
@@ -78,7 +76,6 @@ ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode) :
 ColourBox::ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha, bool mode) :
 	wxPanel{ parent, id, wxDefaultPosition, WxUtils::scaledSize(32, 22), wxNO_BORDER },
 	colour_{ col },
-	palette_{ nullptr },
 	alpha_{ enable_alpha },
 	altmode_{ mode }
 {
@@ -109,7 +106,7 @@ void ColourBox::popPalette()
 		PaletteDialog pd(palette_);
 		if (pd.ShowModal() == wxID_OK)
 		{
-			ColRGBA col = pd.selectedColour();
+			auto col = pd.selectedColour();
 			if (col.a > 0)
 			{
 				colour_ = col;
@@ -126,7 +123,7 @@ void ColourBox::popPalette()
 // -----------------------------------------------------------------------------
 void ColourBox::popColourPicker()
 {
-	wxColour col = wxGetColourFromUser(GetParent(), wxColour(colour_.r, colour_.g, colour_.b));
+	auto col = wxGetColourFromUser(GetParent(), wxColour(colour_.r, colour_.g, colour_.b));
 
 	if (col.Ok())
 	{
@@ -137,8 +134,8 @@ void ColourBox::popColourPicker()
 
 		if (palette_)
 		{
-			int16_t index = palette_->nearestColour(colour_);
-			ColRGBA pcol  = palette_->colour(index);
+			auto index = palette_->nearestColour(colour_);
+			auto pcol  = palette_->colour(index);
 			if (pcol.equals(colour_))
 				colour_.index = index;
 		}
@@ -158,10 +155,10 @@ void ColourBox::popAlphaSlider()
 		return;
 
 	// Popup a dialog with a slider control for alpha
-	wxDialog    dlg(nullptr, -1, "Set Alpha", wxDefaultPosition, wxDefaultSize);
-	wxBoxSizer* box = new wxBoxSizer(wxVERTICAL);
+	wxDialog dlg(nullptr, -1, "Set Alpha", wxDefaultPosition, wxDefaultSize);
+	auto     box = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(box);
-	wxSlider* slider = new wxSlider(&dlg, -1, colour_.a, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+	auto slider = new wxSlider(&dlg, -1, colour_.a, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
 	box->Add(slider, 1, wxEXPAND | wxALL, UI::padLarge());
 	box->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
 	dlg.SetInitialSize();

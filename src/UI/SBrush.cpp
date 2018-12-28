@@ -33,7 +33,6 @@
 #include "SBrush.h"
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
-#include "Graphics/SImage/SImage.h"
 
 
 // -----------------------------------------------------------------------------
@@ -41,7 +40,11 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-SBrushManager* SBrushManager::instance_ = nullptr;
+//SBrushManager* SBrushManager::instance_ = nullptr;
+namespace
+{
+vector<std::unique_ptr<SBrush>> brushes;
+}
 
 
 // -----------------------------------------------------------------------------
@@ -54,22 +57,18 @@ SBrushManager* SBrushManager::instance_ = nullptr;
 // -----------------------------------------------------------------------------
 // SBrush class constructor
 // -----------------------------------------------------------------------------
-SBrush::SBrush(string name)
+SBrush::SBrush(const string& name) : name_{ name }, icon_{ name.AfterFirst('_') }
 {
-	image_      = nullptr;
-	this->name_ = name;
-	icon_       = name.AfterFirst('_');
-
-	Archive* res = App::archiveManager().programResourceArchive();
+	auto res = App::archiveManager().programResourceArchive();
 	if (res == nullptr)
 		return;
-	ArchiveEntry* file = res->entryAtPath(S_FMT("icons/general/%s.png", icon_));
+	auto file = res->entryAtPath(S_FMT("icons/general/%s.png", icon_));
 	if (file == nullptr || file->size() == 0)
 	{
 		LOG_MESSAGE(2, "error, no file at icons/general/%s.png", icon_);
 		return;
 	}
-	image_ = new SImage();
+	image_ = std::make_unique<SImage>();
 	if (!image_->open(file->data(), 0, "png"))
 	{
 		LOG_MESSAGE(2, "couldn't load image data for icons/general/%s.png", icon_);
@@ -78,24 +77,13 @@ SBrush::SBrush(string name)
 	image_->convertAlphaMap(SImage::AlphaSource::Alpha);
 	center_.x = image_->width() >> 1;
 	center_.y = image_->height() >> 1;
-
-	theBrushManager->add(this);
-}
-
-// -----------------------------------------------------------------------------
-// SBrush class destructor
-// -----------------------------------------------------------------------------
-SBrush::~SBrush()
-{
-	if (image_)
-		delete image_;
 }
 
 // -----------------------------------------------------------------------------
 // Returns intensity of how much this pixel is affected by the brush;
 // [0, 0] is the brush's center
 // -----------------------------------------------------------------------------
-uint8_t SBrush::pixel(int x, int y)
+uint8_t SBrush::pixel(int x, int y) const
 {
 	x += center_.x;
 	y += center_.y;
@@ -107,83 +95,54 @@ uint8_t SBrush::pixel(int x, int y)
 
 // -----------------------------------------------------------------------------
 //
-// SBrushManager Class Functions
+// SBrush Class Static Functions
 //
 // -----------------------------------------------------------------------------
 
 
 // -----------------------------------------------------------------------------
-// SBrushManager class constructor
-// -----------------------------------------------------------------------------
-SBrushManager::SBrushManager()
-{
-	brushes_.clear();
-}
-
-// -----------------------------------------------------------------------------
-// SBrushManager class destructor
-// -----------------------------------------------------------------------------
-SBrushManager::~SBrushManager()
-{
-	for (size_t i = brushes_.size(); i > 0; --i)
-	{
-		delete brushes_[i - 1];
-		brushes_[i - 1] = nullptr;
-	}
-	brushes_.clear();
-}
-
-// -----------------------------------------------------------------------------
 // Get a brush from its name
 // -----------------------------------------------------------------------------
-SBrush* SBrushManager::get(string name)
+SBrush* SBrush::get(const string& name)
 {
-	for (size_t i = 0; i < brushes_.size(); ++i)
-		if (S_CMPNOCASE(name, brushes_[i]->name()))
-			return brushes_[i];
+	for (auto& brush : brushes)
+		if (S_CMPNOCASE(name, brush->name()))
+			return brush.get();
 
 	return nullptr;
 }
 
 // -----------------------------------------------------------------------------
-// Add a brush
-// -----------------------------------------------------------------------------
-void SBrushManager::add(SBrush* brush)
-{
-	brushes_.push_back(brush);
-}
-
-// -----------------------------------------------------------------------------
 // Init brushes
 // -----------------------------------------------------------------------------
-bool SBrushManager::initBrushes()
+bool SBrush::initBrushes()
 {
-	new SBrush("pgfx_brush_sq_1");
-	new SBrush("pgfx_brush_sq_3");
-	new SBrush("pgfx_brush_sq_5");
-	new SBrush("pgfx_brush_sq_7");
-	new SBrush("pgfx_brush_sq_9");
-	new SBrush("pgfx_brush_ci_5");
-	new SBrush("pgfx_brush_ci_7");
-	new SBrush("pgfx_brush_ci_9");
-	new SBrush("pgfx_brush_di_3");
-	new SBrush("pgfx_brush_di_5");
-	new SBrush("pgfx_brush_di_7");
-	new SBrush("pgfx_brush_di_9");
-	new SBrush("pgfx_brush_pa_a");
-	new SBrush("pgfx_brush_pa_b");
-	new SBrush("pgfx_brush_pa_c");
-	new SBrush("pgfx_brush_pa_d");
-	new SBrush("pgfx_brush_pa_e");
-	new SBrush("pgfx_brush_pa_f");
-	new SBrush("pgfx_brush_pa_g");
-	new SBrush("pgfx_brush_pa_h");
-	new SBrush("pgfx_brush_pa_i");
-	new SBrush("pgfx_brush_pa_j");
-	new SBrush("pgfx_brush_pa_k");
-	new SBrush("pgfx_brush_pa_l");
-	new SBrush("pgfx_brush_pa_m");
-	new SBrush("pgfx_brush_pa_n");
-	new SBrush("pgfx_brush_pa_o");
+	brushes.emplace_back(new SBrush("pgfx_brush_sq_1"));
+	brushes.emplace_back(new SBrush("pgfx_brush_sq_3"));
+	brushes.emplace_back(new SBrush("pgfx_brush_sq_5"));
+	brushes.emplace_back(new SBrush("pgfx_brush_sq_7"));
+	brushes.emplace_back(new SBrush("pgfx_brush_sq_9"));
+	brushes.emplace_back(new SBrush("pgfx_brush_ci_5"));
+	brushes.emplace_back(new SBrush("pgfx_brush_ci_7"));
+	brushes.emplace_back(new SBrush("pgfx_brush_ci_9"));
+	brushes.emplace_back(new SBrush("pgfx_brush_di_3"));
+	brushes.emplace_back(new SBrush("pgfx_brush_di_5"));
+	brushes.emplace_back(new SBrush("pgfx_brush_di_7"));
+	brushes.emplace_back(new SBrush("pgfx_brush_di_9"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_a"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_b"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_c"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_d"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_e"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_f"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_g"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_h"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_i"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_j"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_k"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_l"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_m"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_n"));
+	brushes.emplace_back(new SBrush("pgfx_brush_pa_o"));
 	return true;
 }

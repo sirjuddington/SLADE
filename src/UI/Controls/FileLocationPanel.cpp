@@ -48,12 +48,12 @@ wxDEFINE_EVENT(wxEVT_COMMAND_FLP_LOCATION_CHANGED, wxCommandEvent);
 // FileLocationPanel class constructor
 // -----------------------------------------------------------------------------
 FileLocationPanel::FileLocationPanel(
-	wxWindow* parent,
-	string    path,
-	bool      editable,
-	string    browse_caption,
-	string    browse_extensions,
-	string    browse_default_filename) :
+	wxWindow*     parent,
+	const string& path,
+	bool          editable,
+	const string& browse_caption,
+	const string& browse_extensions,
+	const string& browse_default_filename) :
 	wxPanel(parent, -1),
 	browse_caption_{ browse_caption },
 	browse_extensions_{ browse_extensions },

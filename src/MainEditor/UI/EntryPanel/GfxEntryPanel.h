@@ -37,7 +37,7 @@ public:
 	SImage* image() const
 	{
 		if (gfx_canvas_)
-			return gfx_canvas_->getImage();
+			return &gfx_canvas_->image();
 		else
 			return nullptr;
 	}

@@ -270,7 +270,7 @@ bool GfxEntryPanel::saveEntry()
 				LOG_MESSAGE(1, "Image converted for writing");
 			}
 
-			if (format->saveImage(*image, entry_->data(), gfx_canvas_->palette()))
+			if (format->saveImage(*image, entry_->data(), &gfx_canvas_->palette()))
 				ok = true;
 			else
 				error = "Error writing image";
@@ -329,7 +329,7 @@ void GfxEntryPanel::setupToolbar()
 	auto g_edit = new SToolBarGroup(toolbar_, "Editing");
 	g_edit->addActionButton("pgfx_settrans", "");
 	cb_colour_ = new ColourBox(g_edit, -1, COL_BLACK, false, true);
-	cb_colour_->setPalette(gfx_canvas_->palette());
+	cb_colour_->setPalette(&gfx_canvas_->palette());
 	button_brush_ = g_edit->addActionButton("pgfx_setbrush", "");
 	g_edit->addCustomControl(cb_colour_);
 	g_edit->addActionButton("pgfx_drag", "");
@@ -429,7 +429,7 @@ bool GfxEntryPanel::extractAll() const
 			auto newimg = parent->addNewEntry(newname, index + pos + 1, entry_->parentDir());
 			if (newimg == nullptr)
 				return false;
-			SIFormat::getFormat("png")->saveImage(*image(), newimg->data(), gfx_canvas_->palette());
+			SIFormat::getFormat("png")->saveImage(*image(), newimg->data(), &gfx_canvas_->palette());
 			EntryType::detectEntryType(newimg);
 			pos++;
 		}
@@ -678,7 +678,7 @@ bool GfxEntryPanel::handleEntryPanelAction(const string& id)
 	// For pgfx_brush actions, the string after pgfx is a brush name
 	if (id.StartsWith("pgfx_brush"))
 	{
-		gfx_canvas_->setBrush(theBrushManager->get(id));
+		gfx_canvas_->setBrush(SBrush::get(id));
 		button_brush_->setIcon(id.AfterFirst('_'));
 	}
 
@@ -798,7 +798,7 @@ bool GfxEntryPanel::handleEntryPanelAction(const string& id)
 	{
 		// Create translation editor dialog
 		auto                    pal = MainEditor::currentPalette();
-		TranslationEditorDialog ted(theMainWindow, *pal, " Colour Remap", gfx_canvas_->getImage());
+		TranslationEditorDialog ted(theMainWindow, *pal, " Colour Remap", &gfx_canvas_->image());
 
 		// Create translation to edit
 		ted.openTranslation(prev_translation_);
@@ -1156,7 +1156,7 @@ void GfxEntryPanel::onAnnouncement(Announcer* announcer, const string& event_nam
 // -----------------------------------------------------------------------------
 void GfxEntryPanel::onBtnNextImg(wxCommandEvent& e)
 {
-	int num = gfx_canvas_->getImage()->size();
+	int num = gfx_canvas_->image().size();
 	if (num > 1)
 	{
 		if (cur_index_ < num - 1)
@@ -1171,7 +1171,7 @@ void GfxEntryPanel::onBtnNextImg(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void GfxEntryPanel::onBtnPrevImg(wxCommandEvent& e)
 {
-	int num = gfx_canvas_->getImage()->size();
+	int num = gfx_canvas_->image().size();
 	if (num > 1)
 	{
 		if (cur_index_ > 0)
@@ -1195,8 +1195,8 @@ void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 		Vec2i offsets = dlg.calculateOffsets(
 			spin_xoffset_->GetValue(),
 			spin_yoffset_->GetValue(),
-			gfx_canvas_->getImage()->width(),
-			gfx_canvas_->getImage()->height());
+			gfx_canvas_->image().width(),
+			gfx_canvas_->image().height());
 
 		// Change offsets
 		spin_xoffset_->SetValue(offsets.x);

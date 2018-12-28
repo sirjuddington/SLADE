@@ -1,7 +1,9 @@
 #pragma once
 
 #include "General/ListenerAnnouncer.h"
+#include "Graphics/SImage/SImage.h"
 #include "OGLCanvas.h"
+#include "OpenGL/GLTexture.h"
 
 class SImage;
 class SBrush;
@@ -29,27 +31,27 @@ public:
 	};
 
 	GfxCanvas(wxWindow* parent, int id);
-	~GfxCanvas();
+	~GfxCanvas() = default;
 
-	SImage* getImage() { return image_; }
+	SImage& image() { return image_; }
 
 	void    setViewType(View type) { view_type_ = type; }
-	View    viewType() { return view_type_; }
+	View    viewType() const { return view_type_; }
 	void    setScale(double scale);
-	bool    allowDrag() { return allow_drag_; }
+	bool    allowDrag() const { return allow_drag_; }
 	void    allowDrag(bool allow) { allow_drag_ = allow; }
-	bool    allowScroll() { return allow_scroll_; }
+	bool    allowScroll() const { return allow_scroll_; }
 	void    allowScroll(bool allow) { allow_scroll_ = allow; }
 	void    setPaintColour(const ColRGBA& col) { paint_colour_.set(col); }
 	void    setEditingMode(EditMode mode) { editing_mode_ = mode; }
 	void    setTranslation(Translation* tr) { translation_ = tr; }
 	void    setBrush(SBrush* br) { brush_ = br; }
-	SBrush* brush() { return brush_; }
-	ColRGBA paintColour() { return paint_colour_; }
+	SBrush* brush() const { return brush_; }
+	ColRGBA paintColour() const { return paint_colour_; }
 
-	void draw();
+	void draw() override;
 	void drawImage();
-	void drawOffsetLines();
+	void drawOffsetLines() const;
 	void updateImageTexture();
 	void endOffsetDrag();
 	void paintPixel(int x, int y);
@@ -61,33 +63,32 @@ public:
 	void resetOffsets() { offset_.x = offset_.y = 0; }
 
 	bool  onImage(int x, int y);
-	Vec2i imageCoords(int x, int y);
+	Vec2i imageCoords(int x, int y) const;
 
 	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 private:
-	SImage*      image_;
-	View         view_type_;
-	double       scale_;
+	SImage       image_;
+	View         view_type_ = View::Default;
+	double       scale_     = 1.;
 	Vec2f        offset_; // panning offsets (not image offsets)
-	GLTexture*   tex_image_;
-	bool         update_texture_;
-	bool         image_hilight_;
-	bool         image_split_;
-	bool         allow_drag_;
-	bool         allow_scroll_;
-	Vec2i        drag_pos_;
-	Vec2i        drag_origin_;
+	GLTexture    tex_image_;
+	bool         update_texture_ = false;
+	bool         image_hilight_  = false;
+	bool         allow_drag_     = false;
+	bool         allow_scroll_   = false;
+	Vec2i        drag_pos_       = { 0, 0 };
+	Vec2i        drag_origin_    = Vec2i::outside();
 	Vec2i        mouse_prev_;
-	EditMode     editing_mode_;
-	ColRGBA      paint_colour_; // the colour to apply to pixels in editing mode 1
-	Translation* translation_;  // the translation to apply to pixels in editing mode 3
-	bool         drawing_;      // true if a drawing operation is ongoing
-	bool*        drawing_mask_; // keeps track of which pixels were already modified in this pass
-	SBrush*      brush_;        // the brush used to paint the image
-	Vec2i        cursor_pos_;   // position of cursor, relative to image
-	Vec2i        prev_pos_;     // previous position of cursor
-	GLTexture*   tex_brush_;    // preview the effect of the brush
+	EditMode     editing_mode_ = EditMode::None;
+	ColRGBA      paint_colour_ = COL_BLACK;        // the colour to apply to pixels in editing mode 1
+	Translation* translation_  = nullptr;          // the translation to apply to pixels in editing mode 3
+	bool         drawing_      = false;            // true if a drawing operation is ongoing
+	bool*        drawing_mask_ = nullptr;          // keeps track of which pixels were already modified in this pass
+	SBrush*      brush_        = nullptr;          // the brush used to paint the image
+	Vec2i        cursor_pos_   = Vec2i::outside(); // position of cursor, relative to image
+	Vec2i        prev_pos_     = Vec2i::outside(); // previous position of cursor
+	GLTexture    tex_brush_;                       // preview the effect of the brush
 
 	// Events
 	void onMouseLeftDown(wxMouseEvent& e);

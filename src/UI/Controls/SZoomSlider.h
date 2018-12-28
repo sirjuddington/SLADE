@@ -13,8 +13,8 @@ public:
 	int    zoomPercent() const;
 	double zoomFactor() const { return (double)zoomPercent() * 0.01; }
 
-	void setZoom(int percent);
-	void setZoom(double factor);
+	void setZoom(int percent) const;
+	void setZoom(double factor) const;
 
 	void linkGfxCanvas(GfxCanvas* canvas) { linked_gfx_canvas_ = canvas; }
 	void linkTextureCanvas(CTextureCanvas* canvas) { linked_texture_canvas_ = canvas; }

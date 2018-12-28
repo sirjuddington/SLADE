@@ -13,30 +13,30 @@ class OGLCanvas : public wxGLCanvas
 #endif
 public:
 	OGLCanvas(wxWindow* parent, int id, bool handle_timer = true, int timer_interval = 100);
-	~OGLCanvas();
+	~OGLCanvas() = default;
 
-	Palette*     palette() { return &palette_; }
-	void         setPalette(Palette* pal) { palette_.copyPalette(pal); }
-	bool         setContext();
-	void         createSFML();
-	void         init();
-	virtual void draw() = 0;
-	virtual void update(long frametime) {}
-	void         drawCheckeredBackground();
-	wxWindow*    toPanel(wxWindow* parent);
-	bool         setActive();
-	void         setup2D();
+	virtual Palette& palette() { return palette_; }
+	void             setPalette(Palette* pal) { palette_.copyPalette(pal); }
+	bool             setContext() const;
+	void             createSFML();
+	void             init();
+	virtual void     draw() = 0;
+	virtual void     update(long frametime) {}
+	void             drawCheckeredBackground() const;
+	wxWindow*        toPanel(wxWindow* parent);
+	bool             setActive();
+	void             setup2D() const;
 
 #ifdef USE_SFML_RENDERWINDOW
 	void SwapBuffers() { display(); }
 #endif
 
 protected:
-	bool    init_done_;
+	bool    init_done_ = false;
 	Palette palette_;
 	wxTimer timer_;
-	long    last_time_;
-	bool    recreate_;
+	long    last_time_ = 0;
+	bool    recreate_  = false;
 
 	// Events
 	void onPaint(wxPaintEvent& e);

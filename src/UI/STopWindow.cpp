@@ -47,14 +47,15 @@
 // -----------------------------------------------------------------------------
 // STopWindow class constructor
 // -----------------------------------------------------------------------------
-STopWindow::STopWindow(string title, string id, int x, int y, int width, int height)
+STopWindow::STopWindow(const string& title, const string& id, int x, int y, int width, int height)
 #ifndef __WXOSX__
 	:
-	wxFrame(nullptr, -1, title, wxPoint(x, y), wxSize(width, height))
+	wxFrame(nullptr, -1, title, wxPoint(x, y), wxSize(width, height)),
 #else
 	:
-	wxFrame(nullptr, -1, title, wxDefaultPosition, wxSize(width, height))
+	wxFrame(nullptr, -1, title, wxDefaultPosition, wxSize(width, height)),
 #endif
+	id_{ id }
 {
 	// Enable fullscreen mode on OSX
 #if __APPLE__ && ((wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1) || wxMAJOR_VERSION > 3)
@@ -72,10 +73,6 @@ STopWindow::STopWindow(string title, string id, int x, int y, int width, int hei
 	else
 		Misc::setWindowInfo(id, width, height, x, y);
 #endif
-
-	// Init variables
-	custom_menus_begin_ = 0;
-	id_                 = id;
 
 	// Init toolbar menu action(s)
 	action_toolbar_menu_ =
@@ -98,7 +95,7 @@ STopWindow::~STopWindow()
 // -----------------------------------------------------------------------------
 // Adds [menu] to the menu bar after the 'Entry' menu
 // -----------------------------------------------------------------------------
-void STopWindow::addCustomMenu(wxMenu* menu, string title)
+void STopWindow::addCustomMenu(wxMenu* menu, const string& title)
 {
 	// Check menu doesn't already exist
 	for (unsigned a = 0; a < custom_menus_.size(); a++)
@@ -144,7 +141,7 @@ void STopWindow::removeAllCustomMenus()
 // -----------------------------------------------------------------------------
 // Enables/disables the toolbar group matching [name]
 // -----------------------------------------------------------------------------
-void STopWindow::enableToolBar(string name, bool enable)
+void STopWindow::enableToolBar(const string& name, bool enable) const
 {
 	toolbar_->enableGroup(name, enable);
 }
@@ -153,7 +150,7 @@ void STopWindow::enableToolBar(string name, bool enable)
 // Adds a custom toolbar group to the toolbar, with buttons for each action in
 // [actions]
 // -----------------------------------------------------------------------------
-void STopWindow::addCustomToolBar(string name, wxArrayString actions)
+void STopWindow::addCustomToolBar(const string& name, const wxArrayString& actions) const
 {
 	toolbar_->addActionGroup(name, actions);
 	populateToolbarsMenu();
@@ -162,7 +159,7 @@ void STopWindow::addCustomToolBar(string name, wxArrayString actions)
 // -----------------------------------------------------------------------------
 // Removes the toolbar group matching [name]
 // -----------------------------------------------------------------------------
-void STopWindow::removeCustomToolBar(string name)
+void STopWindow::removeCustomToolBar(const string& name) const
 {
 	toolbar_->deleteGroup(name);
 	populateToolbarsMenu();
@@ -171,7 +168,7 @@ void STopWindow::removeCustomToolBar(string name)
 // -----------------------------------------------------------------------------
 // Removes all custom toolbar groups
 // -----------------------------------------------------------------------------
-void STopWindow::removeAllCustomToolBars()
+void STopWindow::removeAllCustomToolBars() const
 {
 	toolbar_->deleteCustomGroups();
 	populateToolbarsMenu();

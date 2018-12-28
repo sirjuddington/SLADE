@@ -86,9 +86,9 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, co
 	gfx_preview_->setViewType(GfxCanvas::View::Centered);
 	gfx_preview_->setPalette(&palette_);
 	gfx_preview_->SetInitialSize(wxSize(192, 192));
-	Misc::loadImageFromEntry(gfx_preview_->getImage(), entry);
+	Misc::loadImageFromEntry(&gfx_preview_->image(), entry);
 	auto col = cb_colour_->colour();
-	gfx_preview_->getImage()->colourise(col, &palette_);
+	gfx_preview_->image().colourise(col, &palette_);
 	gfx_preview_->updateImageTexture();
 
 	// Init layout
@@ -120,7 +120,7 @@ void GfxColouriseDialog::setColour(const string& col)
 	wxColour colour(col);
 	ColRGBA  rgba = ColRGBA(COLWX(colour));
 	cb_colour_->setColour(rgba);
-	gfx_preview_->getImage()->colourise(rgba, &palette_);
+	gfx_preview_->image().colourise(rgba, &palette_);
 	gfx_preview_->updateImageTexture();
 	gfx_preview_->Refresh();
 }
@@ -138,8 +138,8 @@ void GfxColouriseDialog::setColour(const string& col)
 // -----------------------------------------------------------------------------
 void GfxColouriseDialog::onColourChanged(wxEvent& e)
 {
-	Misc::loadImageFromEntry(gfx_preview_->getImage(), entry_);
-	gfx_preview_->getImage()->colourise(cb_colour_->colour(), &palette_);
+	Misc::loadImageFromEntry(&gfx_preview_->image(), entry_);
+	gfx_preview_->image().colourise(cb_colour_->colour(), &palette_);
 	gfx_preview_->updateImageTexture();
 	gfx_preview_->Refresh();
 }

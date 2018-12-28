@@ -46,21 +46,11 @@
 // -----------------------------------------------------------------------------
 PaletteCanvas::PaletteCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 {
-	sel_begin_       = -1;
-	sel_end_         = -1;
-	double_width_    = false;
-	allow_selection_ = SelectionType::None;
-
 	// Bind events
 	Bind(wxEVT_LEFT_DOWN, &PaletteCanvas::onMouseLeftDown, this);
 	Bind(wxEVT_RIGHT_DOWN, &PaletteCanvas::onMouseRightDown, this);
 	Bind(wxEVT_MOTION, &PaletteCanvas::onMouseMotion, this);
 }
-
-// -----------------------------------------------------------------------------
-// PaletteCanvas class destructor
-// -----------------------------------------------------------------------------
-PaletteCanvas::~PaletteCanvas() {}
 
 // -----------------------------------------------------------------------------
 // Draws the palette as 16x16 (or 32x8) coloured squares
@@ -187,12 +177,12 @@ void PaletteCanvas::draw()
 // Returns the currently selected colour, or a completely black + transparent
 // colour if nothing is selected
 // -----------------------------------------------------------------------------
-ColRGBA PaletteCanvas::selectedColour()
+ColRGBA PaletteCanvas::selectedColour() const
 {
 	if (sel_begin_ >= 0)
 		return palette_.colour(sel_begin_);
 	else
-		return ColRGBA(0, 0, 0, 0);
+		return { 0, 0, 0, 0 };
 }
 
 // -----------------------------------------------------------------------------

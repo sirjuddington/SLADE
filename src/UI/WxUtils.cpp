@@ -73,11 +73,11 @@ wxFont WxUtils::monospaceFont(wxFont base)
 	wxFont font(base.GetPointSize(), wxFONTFAMILY_MODERN, base.GetStyle(), base.GetWeight());
 
 	auto split = wxSplit(font_monospace, ',');
-	for (unsigned a = 0; a < split.size(); a++)
+	for (const auto& name : split)
 	{
-		if (base.SetFaceName(split[a]))
+		if (base.SetFaceName(name))
 		{
-			font.SetFaceName(split[a]);
+			font.SetFaceName(name);
 			break;
 		}
 	}
@@ -167,8 +167,8 @@ wxSizer* WxUtils::layoutHorizontally(vector<wxObject*> widgets, int expand_col)
 		if (widget->IsKindOf(&wxWindow::ms_classInfo))
 		{
 			hbox->Add(
-				(wxWindow*)widget,
-				expand_col == a ? 1 : 0,
+				dynamic_cast<wxWindow*>(widget),
+				expand_col == (int)a ? 1 : 0,
 				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxLEFT,
 				UI::pad());
 		}
@@ -177,8 +177,8 @@ wxSizer* WxUtils::layoutHorizontally(vector<wxObject*> widgets, int expand_col)
 		else if (widget->IsKindOf(&wxSizer::ms_classInfo))
 		{
 			hbox->Add(
-				(wxSizer*)widget,
-				expand_col == a ? 1 : 0,
+				dynamic_cast<wxSizer*>(widget),
+				expand_col == (int)a ? 1 : 0,
 				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxLEFT,
 				UI::pad());
 		}
@@ -193,7 +193,7 @@ wxSizer* WxUtils::layoutHorizontally(vector<wxObject*> widgets, int expand_col)
 // -----------------------------------------------------------------------------
 void WxUtils::layoutHorizontally(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags, int expand_col)
 {
-	sizer->Add(layoutHorizontally(widgets, expand_col), flags);
+	sizer->Add(layoutHorizontally(std::move(widgets), expand_col), flags);
 }
 
 // -----------------------------------------------------------------------------
@@ -213,8 +213,8 @@ wxSizer* WxUtils::layoutVertically(vector<wxObject*> widgets, int expand_row)
 		if (widget->IsKindOf(&wxWindow::ms_classInfo))
 		{
 			vbox->Add(
-				(wxWindow*)widget,
-				expand_row == a ? 1 : 0,
+				dynamic_cast<wxWindow*>(widget),
+				expand_row == (int)a ? 1 : 0,
 				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxTOP,
 				UI::pad());
 		}
@@ -223,8 +223,8 @@ wxSizer* WxUtils::layoutVertically(vector<wxObject*> widgets, int expand_row)
 		else if (widget->IsKindOf(&wxSizer::ms_classInfo))
 		{
 			vbox->Add(
-				(wxSizer*)widget,
-				expand_row == a ? 1 : 0,
+				dynamic_cast<wxSizer*>(widget),
+				expand_row == (int)a ? 1 : 0,
 				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxTOP,
 				UI::pad());
 		}
@@ -239,7 +239,7 @@ wxSizer* WxUtils::layoutVertically(vector<wxObject*> widgets, int expand_row)
 // -----------------------------------------------------------------------------
 void WxUtils::layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags, int expand_row)
 {
-	sizer->Add(layoutVertically(widgets, expand_row), flags);
+	sizer->Add(layoutVertically(std::move(widgets), expand_row), flags);
 }
 
 // -----------------------------------------------------------------------------
@@ -256,7 +256,7 @@ wxArrayString WxUtils::arrayString(vector<string> vector)
 // -----------------------------------------------------------------------------
 wxSize WxUtils::scaledSize(int x, int y)
 {
-	return wxSize(x < 0 ? -1 : UI::scalePx(x), y < 0 ? -1 : UI::scalePx(y));
+	return { x < 0 ? -1 : UI::scalePx(x), y < 0 ? -1 : UI::scalePx(y) };
 }
 
 // -----------------------------------------------------------------------------
@@ -264,7 +264,7 @@ wxSize WxUtils::scaledSize(int x, int y)
 // -----------------------------------------------------------------------------
 wxPoint WxUtils::scaledPoint(int x, int y)
 {
-	return wxPoint(UI::scalePx(x), UI::scalePx(y));
+	return { UI::scalePx(x), UI::scalePx(y) };
 }
 
 // -----------------------------------------------------------------------------
@@ -273,5 +273,5 @@ wxPoint WxUtils::scaledPoint(int x, int y)
 // -----------------------------------------------------------------------------
 wxRect WxUtils::scaledRect(int x, int y, int width, int height)
 {
-	return wxRect(UI::scalePx(x), UI::scalePx(y), UI::scalePx(width), UI::scalePx(height));
+	return { UI::scalePx(x), UI::scalePx(y), UI::scalePx(width), UI::scalePx(height) };
 }

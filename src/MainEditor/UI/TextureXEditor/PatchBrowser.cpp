@@ -58,7 +58,6 @@
 // -----------------------------------------------------------------------------
 PatchBrowserItem::~PatchBrowserItem()
 {
-	// TODO: Why isn't this done in the BrowserItem destructor?
 	delete image_;
 }
 

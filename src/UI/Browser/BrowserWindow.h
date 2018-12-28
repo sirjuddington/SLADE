@@ -17,28 +17,28 @@ class wxStaticText;
 class BrowserTreeNode : public STreeNode
 {
 public:
-	BrowserTreeNode(BrowserTreeNode* parent = nullptr);
-	~BrowserTreeNode();
+	BrowserTreeNode(BrowserTreeNode* parent = nullptr) : STreeNode(parent) {}
+	~BrowserTreeNode() { clearItems(); }
 
 	string         name() override { return name_; }
-	wxTreeListItem treeId() { return tree_id_; }
+	wxTreeListItem treeId() const { return tree_id_; }
 	void           setName(string name) override { this->name_ = name; }
 	void           setTreeId(wxTreeListItem id) { this->tree_id_ = id; }
 
 	void         clearItems();
-	unsigned     nItems() { return items_.size(); }
+	unsigned     nItems() const { return items_.size(); }
 	BrowserItem* item(unsigned index);
 	void         addItem(BrowserItem* item, unsigned index = 0xFFFFFFFF);
 
 private:
-	string               name_;
-	vector<BrowserItem*> items_;
-	wxTreeListItem       tree_id_;
+	string                    name_;
+	vector<BrowserItem::UPtr> items_;
+	wxTreeListItem            tree_id_;
 
 	STreeNode* createChild(string name) override
 	{
-		BrowserTreeNode* node = new BrowserTreeNode();
-		node->name_           = name;
+		auto node   = new BrowserTreeNode();
+		node->name_ = name;
 		return node;
 	}
 };
@@ -54,26 +54,26 @@ public:
 	Palette* palette() { return &palette_; }
 	void     setPalette(Palette* pal) { palette_.copyPalette(pal); }
 
-	bool         addItem(BrowserItem* item, string where = "");
+	bool         addItem(BrowserItem* item, const string& where = "");
 	void         addGlobalItem(BrowserItem* item);
-	void         clearItems(BrowserTreeNode* node = nullptr);
-	void         reloadItems(BrowserTreeNode* node = nullptr);
-	BrowserItem* selectedItem();
-	bool         selectItem(string name, BrowserTreeNode* root = nullptr);
+	void         clearItems(BrowserTreeNode* node = nullptr) const;
+	void         reloadItems(BrowserTreeNode* node = nullptr) const;
+	BrowserItem* selectedItem() const;
+	bool         selectItem(const string& name, BrowserTreeNode* node = nullptr);
 
-	unsigned     addSortType(string name);
+	unsigned     addSortType(const string& name) const;
 	virtual void doSort(unsigned sort_type = 0);
 	void         setSortType(int type);
 
 	void openTree(BrowserTreeNode* node, bool clear = true);
 	void populateItemTree(bool collapse_all = true);
-	void addItemTree(BrowserTreeNode* node, wxTreeListItem& item);
+	void addItemTree(BrowserTreeNode* node, wxTreeListItem& item) const;
 
 	// Canvas display options
-	void setFont(Drawing::Font font);
-	void setItemNameType(BrowserCanvas::NameType type);
+	void setFont(Drawing::Font font) const;
+	void setItemNameType(BrowserCanvas::NameType type) const;
 	void setItemSize(int size);
-	void setItemViewType(BrowserCanvas::ItemView type);
+	void setItemViewType(BrowserCanvas::ItemView type) const;
 
 protected:
 	BrowserTreeNode*     items_root_   = nullptr;

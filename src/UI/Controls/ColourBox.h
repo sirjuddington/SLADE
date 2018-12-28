@@ -7,9 +7,9 @@ class ColourBox : public wxPanel
 public:
 	ColourBox(wxWindow* parent, int id = -1, bool enable_alpha = false, bool mode = false);
 	ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha = false, bool mode = false);
-	~ColourBox() {}
+	~ColourBox() = default;
 
-	ColRGBA colour() { return colour_; }
+	ColRGBA colour() const { return colour_; }
 
 	void setPalette(Palette* pal) { palette_ = pal; }
 	void setColour(ColRGBA col)
@@ -23,7 +23,7 @@ public:
 	void popAlphaSlider();
 
 private:
-	ColRGBA  colour_;
+	ColRGBA  colour_  = COL_BLACK;
 	Palette* palette_ = nullptr;
 	bool     alpha_   = false;
 	bool     altmode_ = false;

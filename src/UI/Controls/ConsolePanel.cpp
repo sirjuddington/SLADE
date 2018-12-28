@@ -50,10 +50,6 @@
 // -----------------------------------------------------------------------------
 ConsolePanel::ConsolePanel(wxWindow* parent, int id) : wxPanel(parent, id)
 {
-	// Init variables
-	cmd_log_index_      = 0;
-	next_message_index_ = 0;
-
 	// Setup layout
 	initLayout();
 
@@ -65,11 +61,6 @@ ConsolePanel::ConsolePanel(wxWindow* parent, int id) : wxPanel(parent, id)
 	timer_update_.Bind(wxEVT_TIMER, [&](wxTimerEvent&) { update(); });
 	timer_update_.Start(100);
 }
-
-// -----------------------------------------------------------------------------
-// ConsolePanel class destructor
-// -----------------------------------------------------------------------------
-ConsolePanel::~ConsolePanel() {}
 
 // -----------------------------------------------------------------------------
 // Sets up the panel layout

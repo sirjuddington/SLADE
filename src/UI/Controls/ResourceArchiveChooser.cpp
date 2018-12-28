@@ -50,7 +50,7 @@
 ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archive) : wxPanel(parent, -1)
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Resource archive list
@@ -62,7 +62,7 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 	int index = 0;
 	for (int a = 0; a < App::archiveManager().numArchives(); a++)
 	{
-		Archive* arch = App::archiveManager().getArchive(a);
+		auto arch = App::archiveManager().getArchive(a);
 		if (arch != archive)
 		{
 			list_resources_->Append(arch->filename(false));
@@ -74,7 +74,7 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 	}
 
 	// 'Open Resource' button
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND | wxRIGHT, UI::pad());
 	btn_open_resource_ = new wxButton(this, -1, "Open Archive");
 	hbox->Add(btn_open_resource_, 0, wxEXPAND | wxRIGHT, UI::pad());
@@ -88,7 +88,7 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 	btn_recent_->Bind(wxEVT_BUTTON, &ResourceArchiveChooser::onBtnRecent, this);
 	list_resources_->Bind(wxEVT_CHECKLISTBOX, &ResourceArchiveChooser::onResourceChecked, this);
 
-	Layout();
+	wxWindowBase::Layout();
 }
 
 // -----------------------------------------------------------------------------
@@ -133,7 +133,7 @@ void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 	if (SFileDialog::openFile(info, "Open Resource Archive", App::archiveManager().getArchiveExtensionsString(), this))
 	{
 		UI::showSplash("Opening Resource Archive", true);
-		Archive* na = App::archiveManager().openArchive(info.filenames[0], true, true);
+		auto na = App::archiveManager().openArchive(info.filenames[0], true, true);
 		UI::hideSplash();
 		if (na)
 		{

@@ -21,7 +21,7 @@ protected:
 	void   updateItemAttr(long item, long column, long index) const override;
 
 private:
-	UndoManager* manager_;
+	UndoManager* manager_ = nullptr;
 
 	void updateFromManager();
 };
@@ -35,8 +35,8 @@ public:
 	void setManager(UndoManager* manager);
 
 private:
-	UndoManager*  manager_;
-	UndoListView* list_levels_;
+	UndoManager*  manager_     = nullptr;
+	UndoListView* list_levels_ = nullptr;
 
 	// Events
 	void onItemRightClick(wxCommandEvent& e);

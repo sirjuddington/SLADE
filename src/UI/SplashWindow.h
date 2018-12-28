@@ -4,14 +4,14 @@ class SplashWindow : public wxMiniFrame
 {
 public:
 	SplashWindow();
-	~SplashWindow() {}
+	~SplashWindow() = default;
 
 	float progress() const { return progress_; }
-	void  setMessage(string message);
-	void  setProgressMessage(string message);
+	void  setMessage(const string& message);
+	void  setProgressMessage(const string& message);
 	void  setProgress(float progress);
 
-	void show(string message, bool progress = false, wxWindow* parent = nullptr);
+	void show(const string& message, bool progress = false, wxWindow* parent = nullptr);
 	void hide();
 	void forceRedraw();
 
@@ -23,8 +23,8 @@ public:
 private:
 	string      message_;
 	string      message_progress_;
-	float       progress_;
-	float       progress_indefinite_anim_;
-	bool        show_progress_;
+	float       progress_                 = 0.f;
+	float       progress_indefinite_anim_ = 0.f;
+	bool        show_progress_            = false;
 	wxStopWatch timer_;
 };

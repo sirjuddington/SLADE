@@ -60,12 +60,9 @@
 // -----------------------------------------------------------------------------
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval) :
 	wxControl(parent, id, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
-	timer_(this)
+	timer_{ this },
+	last_time_{ App::runTimer() }
 {
-	init_done_ = false;
-	recreate_  = false;
-	last_time_ = App::runTimer();
-
 	if (handle_timer)
 		timer_.Start(timer_interval);
 
@@ -88,37 +85,23 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 // -----------------------------------------------------------------------------
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval) :
 	wxGLCanvas(parent, id, OpenGL::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
-	timer_(this)
+	timer_{ this },
+	last_time_{ App::runTimer() }
 {
-	init_done_ = false;
-	last_time_ = App::runTimer();
-
-	// if (handle_timer)
-	//	timer.Start(timer_interval);
-
 	// Bind events
 	Bind(wxEVT_PAINT, &OGLCanvas::onPaint, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::onEraseBackground, this);
-	// Bind(wxEVT_IDLE, &OGLCanvas::onIdle, this);
-	// if (handle_timer)
-	//	Bind(wxEVT_TIMER, &OGLCanvas::onTimer, this);
 
 	GLTexture::resetBgTex();
 }
 #endif
-
-
-// -----------------------------------------------------------------------------
-// OGLCanvas class constructor
-// -----------------------------------------------------------------------------
-OGLCanvas::~OGLCanvas() {}
 
 // -----------------------------------------------------------------------------
 // Sets the current gl context to the canvas' context, and creates it if it
 // doesn't exist.
 // Returns true if the context is valid, false otherwise
 // -----------------------------------------------------------------------------
-bool OGLCanvas::setContext()
+bool OGLCanvas::setContext() const
 {
 #ifndef USE_SFML_RENDERWINDOW
 	wxGLContext* context = OpenGL::getContext(this);
@@ -196,7 +179,7 @@ void OGLCanvas::init()
 // Fills the canvas with a checkered pattern
 // (generally used as the 'background' - to indicate transparency)
 // -----------------------------------------------------------------------------
-void OGLCanvas::drawCheckeredBackground()
+void OGLCanvas::drawCheckeredBackground() const
 {
 	// Save current matrix
 	glPushMatrix();
@@ -243,13 +226,13 @@ wxWindow* OGLCanvas::toPanel(wxWindow* parent)
 #endif
 
 	// Create panel
-	wxPanel* panel = new wxPanel(parent, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL | wxBORDER_SIMPLE);
+	auto panel = new wxPanel(parent, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL | wxBORDER_SIMPLE);
 
 	// Reparent
 	Reparent(panel);
 
 	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	panel->SetSizer(sizer);
 
 	// Add to sizer
@@ -281,7 +264,7 @@ bool OGLCanvas::setActive()
 // -----------------------------------------------------------------------------
 // Sets up the OpenGL matrices for generic 2d (ortho)
 // -----------------------------------------------------------------------------
-void OGLCanvas::setup2D()
+void OGLCanvas::setup2D() const
 {
 	// Setup the viewport
 	glViewport(0, 0, GetSize().x, GetSize().y);

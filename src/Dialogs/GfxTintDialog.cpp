@@ -97,8 +97,8 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, const Palett
 	gfx_preview_->setViewType(GfxCanvas::View::Centered);
 	gfx_preview_->setPalette(&palette_);
 	gfx_preview_->SetInitialSize(wxSize(256, 256));
-	Misc::loadImageFromEntry(gfx_preview_->getImage(), entry);
-	gfx_preview_->getImage()->tint(colour(), amount(), &palette_);
+	Misc::loadImageFromEntry(&gfx_preview_->image(), entry);
+	gfx_preview_->image().tint(colour(), amount(), &palette_);
 	gfx_preview_->updateImageTexture();
 
 	// Init layout
@@ -143,7 +143,7 @@ void GfxTintDialog::setValues(const string& col, int val)
 	cb_colour_->setColour(ColRGBA(COLWX(wxcol)));
 	slider_amount_->SetValue(val);
 	label_amount_->SetLabel(S_FMT("%d%% ", slider_amount_->GetValue()));
-	gfx_preview_->getImage()->tint(colour(), amount(), &palette_);
+	gfx_preview_->image().tint(colour(), amount(), &palette_);
 	gfx_preview_->updateImageTexture();
 	gfx_preview_->Refresh();
 }
@@ -161,8 +161,8 @@ void GfxTintDialog::setValues(const string& col, int val)
 // -----------------------------------------------------------------------------
 void GfxTintDialog::onColourChanged(wxEvent& e)
 {
-	Misc::loadImageFromEntry(gfx_preview_->getImage(), entry_);
-	gfx_preview_->getImage()->tint(colour(), amount(), &palette_);
+	Misc::loadImageFromEntry(&gfx_preview_->image(), entry_);
+	gfx_preview_->image().tint(colour(), amount(), &palette_);
 	gfx_preview_->updateImageTexture();
 	gfx_preview_->Refresh();
 }
@@ -172,8 +172,8 @@ void GfxTintDialog::onColourChanged(wxEvent& e)
 // -----------------------------------------------------------------------------
 void GfxTintDialog::onAmountChanged(wxCommandEvent& e)
 {
-	Misc::loadImageFromEntry(gfx_preview_->getImage(), entry_);
-	gfx_preview_->getImage()->tint(colour(), amount(), &palette_);
+	Misc::loadImageFromEntry(&gfx_preview_->image(), entry_);
+	gfx_preview_->image().tint(colour(), amount(), &palette_);
 	gfx_preview_->updateImageTexture();
 	gfx_preview_->Refresh();
 	label_amount_->SetLabel(S_FMT("%d%% ", slider_amount_->GetValue()));

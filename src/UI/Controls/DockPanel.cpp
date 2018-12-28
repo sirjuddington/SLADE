@@ -46,9 +46,6 @@
 // -----------------------------------------------------------------------------
 DockPanel::DockPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
-	// Init variables
-	current_layout_ = Orient::Uninitialised;
-
 	// Size event
 	Bind(wxEVT_SIZE, [&](wxSizeEvent& e) {
 		// Get parent's AUI manager (if it exists)

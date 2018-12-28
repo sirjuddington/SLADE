@@ -51,8 +51,7 @@
 PaletteChooser::PaletteChooser(wxWindow* parent, int id) : wxChoice(parent, id)
 {
 	// Init variables
-	pal_global_ = new Palette();
-	pal_global_->copyPalette(App::paletteManager()->globalPalette());
+	pal_global_.copyPalette(App::paletteManager()->globalPalette());
 
 	// Add first 'existing' item
 	Append("Existing/Global");
@@ -65,18 +64,10 @@ PaletteChooser::PaletteChooser(wxWindow* parent, int id) : wxChoice(parent, id)
 	Append("Greyscale");
 
 	// Select first item
-	SetSelection(0);
+	wxChoice::SetSelection(0);
 
 	// Bind events
 	Bind(wxEVT_CHOICE, &PaletteChooser::onPaletteChanged, this);
-}
-
-// -----------------------------------------------------------------------------
-// PaletteChooser class destructor
-// -----------------------------------------------------------------------------
-PaletteChooser::~PaletteChooser()
-{
-	delete pal_global_;
 }
 
 // -----------------------------------------------------------------------------
@@ -94,9 +85,9 @@ void PaletteChooser::onPaletteChanged(wxCommandEvent& e)
 void PaletteChooser::setGlobalFromArchive(Archive* archive, int lump)
 {
 	if (!archive)
-		pal_global_->copyPalette(App::paletteManager()->globalPalette());
+		pal_global_.copyPalette(App::paletteManager()->globalPalette());
 
-	else if (!Misc::loadPaletteFromArchive(pal_global_, archive, lump))
+	else if (!Misc::loadPaletteFromArchive(&pal_global_, archive, lump))
 		setGlobalFromArchive(archive->parentArchive(), lump);
 }
 
@@ -108,14 +99,14 @@ Palette* PaletteChooser::selectedPalette(ArchiveEntry* entry)
 	if (GetSelection() > 0)
 		return App::paletteManager()->palette(GetSelection() - 1);
 	else if (entry)
-		Misc::loadPaletteFromArchive(pal_global_, entry->parent(), Misc::detectPaletteHack(entry));
-	return pal_global_;
+		Misc::loadPaletteFromArchive(&pal_global_, entry->parent(), Misc::detectPaletteHack(entry));
+	return &pal_global_;
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if the 'Archive/Global Palette' entry is selected
 // -----------------------------------------------------------------------------
-bool PaletteChooser::globalSelected()
+bool PaletteChooser::globalSelected() const
 {
 	return (GetSelection() == 0);
 }

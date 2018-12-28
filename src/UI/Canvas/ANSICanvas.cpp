@@ -59,21 +59,19 @@ const int NUMCOLS = 80;
 // -----------------------------------------------------------------------------
 // ANSICanvas class constructor
 // -----------------------------------------------------------------------------
-ANSICanvas::ANSICanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
+ANSICanvas::ANSICanvas(wxWindow* parent, int id) : OGLCanvas(parent, id), tex_image_{ new GLTexture() }
 {
 	// Get the all-important font data
-	Archive* res_archive = App::archiveManager().programResourceArchive();
+	auto res_archive = App::archiveManager().programResourceArchive();
 	if (!res_archive)
 		return;
-	ArchiveEntry* ansi_font = res_archive->entryAtPath("vga-rom-font.16");
+	auto ansi_font = res_archive->entryAtPath("vga-rom-font.16");
 	if (!ansi_font || ansi_font->size() % 256)
 		return;
 
 	fontdata_ = ansi_font->rawData();
 
 	// Init variables
-	ansidata_    = nullptr;
-	tex_image_   = new GLTexture();
 	char_width_  = 8;
 	char_height_ = ansi_font->size() / 256;
 	width_       = NUMCOLS * char_width_;
@@ -95,12 +93,12 @@ ANSICanvas::~ANSICanvas()
 // -----------------------------------------------------------------------------
 // Converts image data into RGBA format
 // -----------------------------------------------------------------------------
-void ANSICanvas::writeRGBAData(uint8_t* dest)
+void ANSICanvas::writeRGBAData(uint8_t* dest) const
 {
 	for (size_t i = 0; i < width_ * height_; ++i)
 	{
-		size_t  j   = i << 2;
-		ColRGBA c   = CodePages::ansiColor(picdata_[i]);
+		size_t j    = i << 2;
+		auto   c    = CodePages::ansiColor(picdata_[i]);
 		dest[j + 0] = c.r;
 		dest[j + 1] = c.g;
 		dest[j + 2] = c.b;
@@ -146,7 +144,7 @@ void ANSICanvas::draw()
 // Draws the image
 // (reloads the image as a texture each time, will change this later...)
 // -----------------------------------------------------------------------------
-void ANSICanvas::drawImage()
+void ANSICanvas::drawImage() const
 {
 	// Check image is valid
 	if (!picdata_)
@@ -159,9 +157,9 @@ void ANSICanvas::drawImage()
 	glEnable(GL_TEXTURE_2D);
 
 	// Load texture data
-	uint8_t* RGBAData = new uint8_t[width_ * height_ * 4];
-	writeRGBAData(RGBAData);
-	tex_image_->loadRawData(RGBAData, width_, height_);
+	vector<uint8_t> rgba_data(width_ * height_ * 4);
+	writeRGBAData(rgba_data.data());
+	tex_image_->loadRawData(rgba_data.data(), width_, height_);
 
 	// Determine (texture)coordinates
 	double x = (double)width_;
@@ -185,13 +183,12 @@ void ANSICanvas::drawImage()
 
 	// Restore previous matrix
 	glPopMatrix();
-	delete[] RGBAData;
 }
 
 // -----------------------------------------------------------------------------
 // Draws a single character. This is called from the parent ANSIPanel
 // -----------------------------------------------------------------------------
-void ANSICanvas::drawCharacter(size_t index)
+void ANSICanvas::drawCharacter(size_t index) const
 {
 	if (!ansidata_)
 		return;
@@ -205,10 +202,6 @@ void ANSICanvas::drawCharacter(size_t index)
 
 	// Draw character (including background)
 	for (int y = 0; y < char_height_; ++y)
-	{
 		for (int x = 0; x < char_width_; ++x)
-		{
 			pic[x + (y * width_)] = (fnt[y] & (1 << (char_width_ - 1 - x))) ? (color & 15) : ((color & 112) >> 4);
-		}
-	}
 }

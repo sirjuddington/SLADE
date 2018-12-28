@@ -51,6 +51,8 @@ public:
 	static GLTexture& missingTex();
 	static void       resetBgTex();
 
+	typedef std::unique_ptr<GLTexture> UPtr;
+
 private:
 	struct SubTex
 	{

@@ -66,9 +66,6 @@ SplashWindow::SplashWindow() :
 	wxMiniFrame{ nullptr, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE }
 {
 	// Init
-	show_progress_            = false;
-	progress_                 = 0.0f;
-	progress_indefinite_anim_ = 0.0f;
 	wxMiniFrame::SetBackgroundStyle(wxBG_STYLE_PAINT);
 	wxMiniFrame::SetBackgroundColour(wxColour(180, 186, 200));
 
@@ -76,22 +73,22 @@ SplashWindow::SplashWindow() :
 	Bind(wxEVT_PAINT, &SplashWindow::onPaint, this);
 
 	// Hide initially
-	Show(false);
+	wxTopLevelWindow::Show(false);
 }
 
 // -----------------------------------------------------------------------------
 // Changes the splash window message
 // -----------------------------------------------------------------------------
-void SplashWindow::setMessage(string message)
+void SplashWindow::setMessage(const string& message)
 {
-	this->message_ = message;
+	message_ = message;
 	forceRedraw();
 }
 
 // -----------------------------------------------------------------------------
 // Changes the progress bar message
 // -----------------------------------------------------------------------------
-void SplashWindow::setProgressMessage(string message)
+void SplashWindow::setProgressMessage(const string& message)
 {
 	message_progress_ = message;
 	forceRedraw();
@@ -105,7 +102,7 @@ void SplashWindow::setProgressMessage(string message)
 // -----------------------------------------------------------------------------
 void SplashWindow::setProgress(float progress)
 {
-	this->progress_ = progress;
+	progress_ = progress;
 
 	// Refresh if last redraw was > 20ms ago
 	if (timer_.Time() >= 20)
@@ -122,7 +119,7 @@ void SplashWindow::init()
 
 	// Load logo image
 	string        tempfile = App::path("temp.png", App::Dir::Temp);
-	ArchiveEntry* logo     = App::archiveManager().programResourceArchive()->entry("logo.png");
+	auto logo     = App::archiveManager().programResourceArchive()->entry("logo.png");
 	if (logo)
 	{
 		logo->exportFile(tempfile);
@@ -147,7 +144,7 @@ void SplashWindow::init()
 // Shows the splash window with [message].
 // If [progress] is true, a progress bar will also be shown
 // -----------------------------------------------------------------------------
-void SplashWindow::show(string message, bool progress, wxWindow* parent)
+void SplashWindow::show(const string& message, bool progress, wxWindow* parent)
 {
 	// Setup progress bar
 	int rheight = img_height;
@@ -228,9 +225,9 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 
 	// Draw version
 	string vers = "v" + App::version().toString();
-	wxSize text_size = dc.GetTextExtent(vers);
-	wxCoord x = img_width - text_size.GetWidth() - UI::scalePx(8);
-	wxCoord y = UI::scalePx(190) - text_size.GetHeight();
+	auto text_size = dc.GetTextExtent(vers);
+	auto x = img_width - text_size.GetWidth() - UI::scalePx(8);
+	auto y = UI::scalePx(190) - text_size.GetHeight();
 	dc.DrawText(vers, x, y);
 
 	// Draw message

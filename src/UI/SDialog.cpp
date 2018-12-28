@@ -45,12 +45,12 @@
 // -----------------------------------------------------------------------------
 // SDialog class constructor
 // -----------------------------------------------------------------------------
-SDialog::SDialog(wxWindow* parent, string title, string id, int x, int y, int width, int height) :
-	wxDialog(parent, -1, title, wxPoint(x, y), wxSize(width, height), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+SDialog::SDialog(wxWindow* parent, const string& title, const string& id, int x, int y, int width, int height) :
+	wxDialog(parent, -1, title, wxPoint(x, y), wxSize(width, height), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+	id_{ id }
 {
 	// Init size/pos
-	this->id_             = id;
-	Misc::WindowInfo info = Misc::getWindowInfo(id);
+	auto info = Misc::getWindowInfo(id);
 	if (!info.id.IsEmpty())
 	{
 		SetClientSize(info.width, info.height);
@@ -60,7 +60,7 @@ SDialog::SDialog(wxWindow* parent, string title, string id, int x, int y, int wi
 		Misc::setWindowInfo(id, width, height, x, y);
 
 	// Bind events
-	if (id != "")
+	if (!id.empty())
 	{
 		// Bind(wxEVT_SIZE, &SDialog::onSize, this);
 		// Bind(wxEVT_MOVE, &SDialog::onMove, this);
@@ -73,7 +73,7 @@ SDialog::SDialog(wxWindow* parent, string title, string id, int x, int y, int wi
 // -----------------------------------------------------------------------------
 SDialog::~SDialog()
 {
-	if (id_ != "")
+	if (!id_.empty())
 		Misc::setWindowInfo(id_, GetClientSize().x, GetClientSize().y, GetPosition().x, GetPosition().y);
 }
 
@@ -82,7 +82,7 @@ SDialog::~SDialog()
 // -----------------------------------------------------------------------------
 void SDialog::setSavedSize(int def_width, int def_height)
 {
-	Misc::WindowInfo info = Misc::getWindowInfo(id_);
+	auto info = Misc::getWindowInfo(id_);
 	if (!info.id.IsEmpty())
 	{
 		SetInitialSize(wxSize(info.width, info.height));

@@ -14,27 +14,27 @@ public:
 	};
 
 	ListView(wxWindow* parent, int id, long style = wxLC_REPORT);
+	~ListView() = default;
 
-	~ListView();
-	bool showIcons() { return icons_; }
+	bool showIcons() const { return icons_; }
 	void showIcons(bool show) { icons_ = show; }
-	bool enableSizeUpdate() { return update_width_; }
+	bool enableSizeUpdate() const { return update_width_; }
 	void enableSizeUpdate(bool update) { update_width_ = update; }
 
-	bool addItem(int index, string text);
+	bool addItem(int index, const string& text);
 	bool addItem(int index, wxArrayString text);
 
 	bool deleteItems(wxArrayInt items);
 
-	ColRGBA disabledColour();
+	ColRGBA disabledColour() const;
 	bool    setItemStatus(int item, ItemStatus status);
-	bool    setItemText(int item, int column, string text);
+	bool    setItemText(int item, int column, const string& text);
 
 	void clearSelection();
 	bool selectItem(int item, bool focus = true);
 	bool deSelectItem(int item);
 
-	wxArrayInt selectedItems();
+	wxArrayInt selectedItems() const;
 
 	bool showItem(int item);
 	bool swapItems(int item1, int item2);
@@ -42,6 +42,6 @@ public:
 	bool updateSize();
 
 private:
-	bool icons_;
-	bool update_width_;
+	bool icons_        = true;
+	bool update_width_ = true;
 };

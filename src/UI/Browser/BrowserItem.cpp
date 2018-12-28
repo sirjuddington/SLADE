@@ -60,15 +60,6 @@ BrowserItem::BrowserItem(const string& name, unsigned index, const string& type)
 }
 
 // -----------------------------------------------------------------------------
-// BrowserItem class destructor
-// -----------------------------------------------------------------------------
-BrowserItem::~BrowserItem()
-{
-	if (text_box_)
-		delete text_box_;
-}
-
-// -----------------------------------------------------------------------------
 // Loads the item image (base class does nothing, must be overridden by child
 // classes to be useful at all)
 // -----------------------------------------------------------------------------
@@ -105,7 +96,7 @@ void BrowserItem::draw(
 		// textures/AQDIRT01.png -> t./AQDIRT01.png
 		if (draw_name.Find('/') != wxNOT_FOUND)
 		{
-			int lastPos = 0;
+			int    lastPos       = 0;
 			string new_draw_name = "";
 			while (draw_name.Mid(lastPos).Find('/') != wxNOT_FOUND)
 			{
@@ -132,7 +123,8 @@ void BrowserItem::draw(
 	{
 		// Create text box if needed
 		if (!text_box_)
-			text_box_ = new TextBox(S_FMT("%d\n%s", index_, name_), font, UI::scalePx(144), UI::scalePx(16));
+			text_box_ =
+				std::make_unique<TextBox>(S_FMT("%d\n%s", index_, name_), font, UI::scalePx(144), UI::scalePx(16));
 
 		int top = y;
 		top += ((size - text_box_->height()) * 0.5);
@@ -235,7 +227,7 @@ void BrowserItem::draw(
 // -----------------------------------------------------------------------------
 // Clears the item image
 // -----------------------------------------------------------------------------
-void BrowserItem::clearImage()
+void BrowserItem::clearImage() const
 {
 	if (image_)
 		image_->clear();

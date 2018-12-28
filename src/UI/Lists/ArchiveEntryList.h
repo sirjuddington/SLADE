@@ -12,7 +12,7 @@ class ArchiveEntryList : public VirtualListView, public Listener, public SAction
 {
 public:
 	ArchiveEntryList(wxWindow* parent);
-	~ArchiveEntryList();
+	~ArchiveEntryList() = default;
 
 	ArchiveTreeNode* currentDir() const { return current_dir_; }
 
@@ -25,9 +25,9 @@ public:
 	void setupColumns();
 	int  columnType(int column) const;
 	void updateList(bool clear = false) override;
-	int  entriesBegin();
+	int  entriesBegin() const;
 
-	void filterList(string filter = "", string category = "");
+	void filterList(const string& filter = "", const string& category = "");
 	void applyFilter() override;
 	bool goUpDir();
 	bool setDir(ArchiveTreeNode* dir);
@@ -45,7 +45,7 @@ public:
 	vector<ArchiveTreeNode*> selectedDirectories();
 
 	// Label editing
-	void labelEdited(int col, int index, string new_label) override;
+	void labelEdited(int col, int index, const string& new_label) override;
 
 	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
@@ -64,17 +64,17 @@ protected:
 	void   updateItemAttr(long item, long column, long index) const override;
 
 private:
-	Archive*         archive_;
-	string           filter_category_;
-	ArchiveTreeNode* current_dir_;
-	ArchiveEntry*    entry_dir_back_;
-	bool             show_dir_back_;
-	UndoManager*     undo_manager_;
-	int              col_index_;
-	int              col_name_;
-	int              col_size_;
-	int              col_type_;
-	bool             entries_update_;
+	Archive*           archive_ = nullptr;
+	string             filter_category_;
+	ArchiveTreeNode*   current_dir_ = nullptr;
+	ArchiveEntry::UPtr entry_dir_back_;
+	bool               show_dir_back_  = false;
+	UndoManager*       undo_manager_   = nullptr;
+	int                col_index_      = 0;
+	int                col_name_       = 0;
+	int                col_size_       = 0;
+	int                col_type_       = 0;
+	bool               entries_update_ = true;
 
-	int entrySize(long index);
+	int entrySize(long index) const;
 };

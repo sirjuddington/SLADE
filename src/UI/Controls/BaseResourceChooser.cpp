@@ -73,7 +73,7 @@ BaseResourceChooser::BaseResourceChooser(wxWindow* parent, bool load_change) :
 	});
 
 	if (App::platform() != App::Platform::Linux)
-		SetMinSize(WxUtils::scaledSize(128, -1));
+		wxWindowBase::SetMinSize(WxUtils::scaledSize(128, -1));
 }
 
 // -----------------------------------------------------------------------------

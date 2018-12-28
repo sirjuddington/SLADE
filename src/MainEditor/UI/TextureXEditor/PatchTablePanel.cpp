@@ -174,13 +174,13 @@ void PatchTableListView::onAnnouncement(Announcer* announcer, const string& even
 // -----------------------------------------------------------------------------
 bool PatchTableListView::usageSort(long left, long right)
 {
-	auto& p1 = dynamic_cast<PatchTableListView*>(lv_current)->patchTable()->patch(left);
-	auto& p2 = dynamic_cast<PatchTableListView*>(lv_current)->patchTable()->patch(right);
+	auto& p1 = dynamic_cast<PatchTableListView*>(lv_current_)->patchTable()->patch(left);
+	auto& p2 = dynamic_cast<PatchTableListView*>(lv_current_)->patchTable()->patch(right);
 
 	if (p1.used_in.size() == p2.used_in.size())
 		return left < right;
 	else
-		return lv_current->sortDescend() ? p2.used_in.size() < p1.used_in.size() :
+		return lv_current_->sortDescend() ? p2.used_in.size() < p1.used_in.size() :
 										   p1.used_in.size() < p2.used_in.size();
 }
 
@@ -189,7 +189,7 @@ bool PatchTableListView::usageSort(long left, long right)
 // -----------------------------------------------------------------------------
 void PatchTableListView::sortItems()
 {
-	lv_current = this;
+	lv_current_ = this;
 	if (sort_column_ == 2)
 		std::sort(items_.begin(), items_.end(), &PatchTableListView::usageSort);
 	else
@@ -469,16 +469,16 @@ void PatchTablePanel::updateDisplay()
 
 	// Load the image
 	auto entry = patch_table_->patchEntry(index);
-	if (Misc::loadImageFromEntry(patch_canvas_->getImage(), entry))
+	if (Misc::loadImageFromEntry(&patch_canvas_->image(), entry))
 	{
 		theMainWindow->paletteChooser()->setGlobalFromArchive(entry->parent());
 		patch_canvas_->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 		label_dimensions_->SetLabel(
-			S_FMT("Size: %d x %d", patch_canvas_->getImage()->width(), patch_canvas_->getImage()->height()));
+			S_FMT("Size: %d x %d", patch_canvas_->image().width(), patch_canvas_->image().height()));
 	}
 	else
 	{
-		patch_canvas_->getImage()->clear();
+		patch_canvas_->image().clear();
 		label_dimensions_->SetLabel("Size: ? x ?");
 	}
 	patch_canvas_->Refresh();

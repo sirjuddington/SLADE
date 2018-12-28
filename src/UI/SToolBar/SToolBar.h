@@ -6,21 +6,21 @@ class SToolBar;
 class SToolBarGroup : public wxPanel
 {
 public:
-	SToolBarGroup(SToolBar* parent, string name, bool force_name = false);
-	~SToolBarGroup();
+	SToolBarGroup(SToolBar* parent, const string& name, bool force_name = false);
+	~SToolBarGroup() = default;
 
 	string name() const { return name_; }
 	bool   hidden() const { return hidden_; }
 	void   hide(bool hide = true);
 	void   redraw();
 
-	SToolBarButton* addActionButton(string action, string icon = "", bool show_name = false);
+	SToolBarButton* addActionButton(const string& action, const string& icon = "", bool show_name = false);
 	SToolBarButton* addActionButton(
-		string action_id,
-		string action_name,
-		string icon,
-		string help_text,
-		bool   show_name = false);
+		const string& action_id,
+		const string& action_name,
+		const string& icon,
+		const string& help_text,
+		bool          show_name = false);
 	void addCustomControl(wxWindow* control);
 
 	void onButtonClicked(wxCommandEvent& e);
@@ -34,7 +34,7 @@ class SToolBar : public wxPanel
 {
 public:
 	SToolBar(wxWindow* parent, bool main_toolbar = false);
-	~SToolBar();
+	~SToolBar() = default;
 
 	const vector<SToolBarGroup*>& groups() const { return groups_; }
 	int                           minHeight() const { return min_height_; }
@@ -42,10 +42,10 @@ public:
 
 	SToolBarGroup* group(const string& name);
 	void           addGroup(SToolBarGroup* group);
-	void           deleteGroup(string name);
+	void           deleteGroup(const string& name);
 	void           deleteCustomGroups();
-	void           addActionGroup(string name, wxArrayString actions);
-	void           enableGroup(string name, bool enable = true);
+	void           addActionGroup(const string& name, wxArrayString actions);
+	void           enableGroup(const string& name, bool enable = true);
 	void           populateGroupsMenu(wxMenu* menu, int start_id = 0);
 	void           enableContextMenu(bool enable = true) { enable_context_menu_ = enable; }
 
@@ -61,11 +61,11 @@ private:
 	vector<SToolBarGroup*> groups_;
 	vector<wxWindow*>      separators_;
 	vector<wxWindow*>      vlines_;
-	int                    min_height_;
-	int                    n_rows_;
-	bool                   draw_border_;
-	bool                   main_toolbar_;
-	bool                   enable_context_menu_;
+	int                    min_height_          = 0;
+	int                    n_rows_              = 0;
+	bool                   draw_border_         = true;
+	bool                   main_toolbar_        = false;
+	bool                   enable_context_menu_ = false;
 
 	// Events
 	void onSize(wxSizeEvent& e);

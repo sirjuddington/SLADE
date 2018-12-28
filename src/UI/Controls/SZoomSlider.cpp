@@ -116,7 +116,7 @@ int SZoomSlider::zoomPercent() const
 // -----------------------------------------------------------------------------
 // Sets the zoom level to [percent]
 // -----------------------------------------------------------------------------
-void SZoomSlider::setZoom(int percent)
+void SZoomSlider::setZoom(int percent) const
 {
 	// Lock to 10% increments
 	int remainder = percent % 10;
@@ -128,7 +128,7 @@ void SZoomSlider::setZoom(int percent)
 // -----------------------------------------------------------------------------
 // Sets the zoom level to [factor]
 // -----------------------------------------------------------------------------
-void SZoomSlider::setZoom(double factor)
+void SZoomSlider::setZoom(double factor) const
 {
 	setZoom(int(factor * 100));
 }

@@ -4,7 +4,7 @@ class DockPanel : public wxPanel
 {
 public:
 	DockPanel(wxWindow* parent);
-	~DockPanel() {}
+	~DockPanel() = default;
 
 	virtual void layoutNormal() {}
 	virtual void layoutVertical() { layoutNormal(); }
@@ -18,5 +18,5 @@ protected:
 		Vertical,
 		Uninitialised
 	};
-	Orient current_layout_;
+	Orient current_layout_ = Orient::Uninitialised;
 };
