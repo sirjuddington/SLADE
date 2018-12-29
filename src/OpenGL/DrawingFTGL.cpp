@@ -219,6 +219,19 @@ int initFonts()
 }
 
 // -----------------------------------------------------------------------------
+// Cleans up all created fonts
+// -----------------------------------------------------------------------------
+void cleanupFonts()
+{
+	delete font_normal;
+	delete font_condensed;
+	delete font_bold;
+	delete font_boldcondensed;
+	delete font_mono;
+	delete font_small;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the requested [font]
 // -----------------------------------------------------------------------------
 FTFont* getFont(Font font)

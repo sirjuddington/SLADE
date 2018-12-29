@@ -101,10 +101,10 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 // doesn't exist.
 // Returns true if the context is valid, false otherwise
 // -----------------------------------------------------------------------------
-bool OGLCanvas::setContext() const
+bool OGLCanvas::setContext()
 {
 #ifndef USE_SFML_RENDERWINDOW
-	wxGLContext* context = OpenGL::getContext(this);
+	auto context = OpenGL::getContext(this);
 
 	if (context)
 	{

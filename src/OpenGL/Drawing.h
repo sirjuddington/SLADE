@@ -29,6 +29,9 @@ enum class Align
 // Initialisation
 int initFonts();
 
+// Cleanup
+void cleanupFonts();
+
 // Info
 int fontSize();
 

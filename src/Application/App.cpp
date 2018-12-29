@@ -652,6 +652,7 @@ void App::exit(bool save_config)
 
 	// Clean up
 	EntryType::cleanupEntryTypes();
+	Drawing::cleanupFonts();
 
 	// Clear temp folder
 	wxDir temp;

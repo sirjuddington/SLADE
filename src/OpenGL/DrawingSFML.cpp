@@ -45,13 +45,15 @@
 // -----------------------------------------------------------------------------
 namespace Drawing
 {
-sf::Font font_normal;
-sf::Font font_condensed;
-sf::Font font_bold;
-sf::Font font_boldcondensed;
-sf::Font font_mono;
+typedef std::unique_ptr<sf::Font> FontPtr;
 
-sf::RenderWindow* render_target = nullptr;
+FontPtr font_normal;
+FontPtr font_condensed;
+FontPtr font_bold;
+FontPtr font_boldcondensed;
+FontPtr font_mono;
+
+sf::RenderWindow* render_target    = nullptr;
 bool              text_state_reset = true;
 } // namespace Drawing
 
@@ -77,39 +79,20 @@ EXTERN_CVAR(Int, gl_font_size)
 namespace Drawing
 {
 // -----------------------------------------------------------------------------
-// Loads all needed fonts for rendering. SFML 2.x implementation
+// Returns an SFML font created from the resource archive entry [res_path]
 // -----------------------------------------------------------------------------
-int initFonts()
+FontPtr createFont(const string& res_path, int& counter)
 {
-	// --- Load general fonts ---
-	int ret = 0;
+	auto entry = App::archiveManager().programResourceArchive()->entryAtPath(res_path);
+	if (!entry)
+		return nullptr;
 
-	// Normal
-	auto entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry)
-		++ret, font_normal.loadFromMemory(entry->rawData(), entry->size());
+	auto font = std::make_unique<sf::Font>();
+	font->loadFromMemory(entry->rawData(), entry->size());
 
-	// Condensed
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
-	if (entry)
-		++ret, font_condensed.loadFromMemory(entry->rawData(), entry->size());
+	++counter;
 
-	// Bold
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
-	if (entry)
-		++ret, font_bold.loadFromMemory(entry->rawData(), entry->size());
-
-	// Condensed Bold
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
-	if (entry)
-		++ret, font_boldcondensed.loadFromMemory(entry->rawData(), entry->size());
-
-	// Monospace
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
-	if (entry)
-		++ret, font_mono.loadFromMemory(entry->rawData(), entry->size());
-
-	return ret;
+	return font;
 }
 
 // -----------------------------------------------------------------------------
@@ -119,17 +102,45 @@ sf::Font* getFont(Font font)
 {
 	switch (font)
 	{
-	case Font::Normal: return &font_normal;
-	case Font::Condensed: return &font_condensed;
-	case Font::Bold: return &font_bold;
-	case Font::BoldCondensed: return &font_boldcondensed;
-	case Font::Monospace: return &font_mono;
-	case Font::Small: return &font_normal;
-	default: return &font_normal;
+	case Font::Normal: return font_normal.get();
+	case Font::Condensed: return font_condensed.get();
+	case Font::Bold: return font_bold.get();
+	case Font::BoldCondensed: return font_boldcondensed.get();
+	case Font::Monospace: return font_mono.get();
+	case Font::Small: return font_normal.get();
+	default: return font_normal.get();
 	};
 }
 } // namespace Drawing
 
+// -----------------------------------------------------------------------------
+// Loads all needed fonts for rendering. SFML 2.x implementation
+// -----------------------------------------------------------------------------
+int Drawing::initFonts()
+{
+	// --- Load general fonts ---
+	int ret = 0;
+
+	font_normal        = createFont("fonts/dejavu_sans.ttf", ret);
+	font_condensed     = createFont("fonts/dejavu_sans_c.ttf", ret);
+	font_bold          = createFont("fonts/dejavu_sans_b.ttf", ret);
+	font_boldcondensed = createFont("fonts/dejavu_sans_cb.ttf", ret);
+	font_mono          = createFont("fonts/dejavu_mono.ttf", ret);
+
+	return ret;
+}
+
+// -----------------------------------------------------------------------------
+// Cleans up all created fonts
+// -----------------------------------------------------------------------------
+void Drawing::cleanupFonts()
+{
+	font_normal.reset(nullptr);
+	font_condensed.reset(nullptr);
+	font_bold.reset(nullptr);
+	font_boldcondensed.reset(nullptr);
+	font_mono.reset(nullptr);
+}
 
 // -----------------------------------------------------------------------------
 // Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of

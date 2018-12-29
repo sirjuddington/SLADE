@@ -17,7 +17,7 @@ public:
 
 	virtual Palette& palette() { return palette_; }
 	void             setPalette(Palette* pal) { palette_.copyPalette(pal); }
-	bool             setContext() const;
+	bool             setContext();
 	void             createSFML();
 	void             init();
 	virtual void     draw() = 0;
