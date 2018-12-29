@@ -494,8 +494,8 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, ArchiveEnt
 	// Merge subdirectories
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto child = (ArchiveTreeNode*)STreeNode::addChild(node->child(a)->name());
-		child->merge((ArchiveTreeNode*)node->child(a));
+		auto child = dynamic_cast<ArchiveTreeNode*>(STreeNode::addChild(node->child(a)->name()));
+		child->merge(dynamic_cast<ArchiveTreeNode*>(node->child(a)), 0xFFFFFFFF, state);
 		child->dirEntry()->setState(state, true);
 	}
 

@@ -231,6 +231,8 @@ public:
 		// Backup child entries and subdirs if deleting
 		if (!created)
 		{
+			tree_ = std::make_unique<ArchiveTreeNode>();
+
 			// Get child entries
 			vector<ArchiveEntry*> entries;
 			for (unsigned a = 0; a < dir->numEntries(); a++)
@@ -239,19 +241,15 @@ public:
 			// Get subdirectories
 			vector<ArchiveTreeNode*> subdirs;
 			for (unsigned a = 0; a < dir->nChildren(); a++)
-				subdirs.push_back((ArchiveTreeNode*)dir->child(a));
+				subdirs.push_back(dynamic_cast<ArchiveTreeNode*>(dir->child(a)));
 
 			// Copy entries
 			for (auto& entry : entries)
 				tree_->addEntry(new ArchiveEntry(*entry));
 
 			// Copy dirs
-			for (auto& dir : subdirs)
-				tree_->addChild(dir->clone());
-
-			//// Backup to clipboard item
-			//if (!entries.empty() || !subdirs.empty())
-			//	cb_tree_ = std::make_unique<EntryTreeClipboardItem>(entries, subdirs);
+			for (auto& subdir : subdirs)
+				tree_->addChild(subdir->clone());
 		}
 	}
 
@@ -284,9 +282,9 @@ public:
 	}
 
 private:
-	bool                                    created_;
-	Archive*                                archive_;
-	string                                  path_;
+	bool                             created_;
+	Archive*                         archive_;
+	string                           path_;
 	std::unique_ptr<ArchiveTreeNode> tree_;
 };
 
@@ -344,7 +342,7 @@ string Archive::fileExtensionString() const
 	{
 		string         ext_all = S_FMT("Any %s File|", CHR(fmt.name));
 		vector<string> ext_strings;
-		for (auto ext : fmt.extensions)
+		for (const auto& ext : fmt.extensions)
 		{
 			string ext_case = S_FMT("*.%s;", CHR(ext.first.Lower()));
 			ext_case += S_FMT("*.%s;", CHR(ext.first.Upper()));
