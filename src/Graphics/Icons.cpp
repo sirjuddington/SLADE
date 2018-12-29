@@ -247,7 +247,7 @@ wxBitmap Icons::getIcon(Type type, const string& name, bool large, bool log_miss
 			icon = getIcon(TextEditor, name, large, false);
 
 		if (!icon.IsOk() && log_missing)
-			LOG_MESSAGE(2, "Icon \"%s\" does not exist", name);
+			Log::warning(2, S_FMT("Icon \"%s\" does not exist", name));
 
 		return icon;
 	}
@@ -272,7 +272,7 @@ wxBitmap Icons::getIcon(Type type, const string& name, bool large, bool log_miss
 	}
 
 	if (log_missing)
-		LOG_MESSAGE(2, "Icon \"%s\" does not exist", name);
+		Log::warning(2, S_FMT("Icon \"%s\" does not exist", name));
 
 	return wxNullBitmap;
 }

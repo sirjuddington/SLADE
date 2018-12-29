@@ -158,7 +158,7 @@ public:
 			}
 			else
 			{
-				LOG_MESSAGE(1, "Unable to convert external png to %s", format->name());
+				Log::error(S_FMT("Unable to convert external png to %s", format->name()));
 			}
 		}
 	}
@@ -405,7 +405,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, const string& e
 	for (auto& file_monitor : file_monitors_)
 		if (file_monitor->getEntry() == entry)
 		{
-			LOG_MESSAGE(1, "Entry %s is already open in an external editor", entry->name());
+			Log::warning(S_FMT("Entry %s is already open in an external editor", entry->name()));
 			return true;
 		}
 

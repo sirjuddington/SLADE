@@ -542,7 +542,7 @@ bool SLADEWxApp::OnInit()
 	// Get Windows version
 #ifdef __WXMSW__
 	wxGetOsVersion(&Global::win_version_major, &Global::win_version_minor);
-	LOG_MESSAGE(1, "Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor);
+	Log::info(S_FMT("Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor));
 #endif
 
 	// Reroute wx log messages
@@ -672,7 +672,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	// Check failed
 	if (e.GetString() == "connect_failed")
 	{
-		LOG_MESSAGE(1, "Version check failed, unable to connect");
+		Log::error("Version check failed, unable to connect");
 		if (update_check_message_box)
 			wxMessageBox(
 				"Update check failed: unable to connect to internet. "

@@ -100,13 +100,12 @@ bool ArchiveManager::validResDir(const string& dir) const
 		wxFileName fn(dir + "/" + path);
 		if (!wxFileExists(fn.GetFullPath()))
 		{
-			LOG_MESSAGE(
-				1,
+			Log::info(S_FMT(
 				"Resource %s was not found in dir %s!\n"
 				"This resource folder cannot be used. "
 				"(Did you install SLADE 3 in a SLumpEd folder?)",
 				path,
-				dir);
+				dir));
 			return false;
 		}
 	}
@@ -132,7 +131,7 @@ bool ArchiveManager::init()
 		res_archive_open_ = (program_resource_archive_->numEntries() > 0);
 
 		if (!initArchiveFormats())
-			LOG_MESSAGE(1, "An error occurred reading archive formats configuration");
+			Log::error("An error occurred reading archive formats configuration");
 
 		return res_archive_open_;
 	}
@@ -151,14 +150,14 @@ bool ArchiveManager::init()
 	// Open slade.pk3
 	if (!program_resource_archive_->open(dir_slade_pk3))
 	{
-		LOG_MESSAGE(1, "Unable to find slade.pk3!");
+		Log::error("Unable to find slade.pk3!");
 		res_archive_open_ = false;
 	}
 	else
 		res_archive_open_ = true;
 
 	if (!initArchiveFormats())
-		LOG_MESSAGE(1, "An error occurred reading archive formats configuration");
+		Log::error("An error occurred reading archive formats configuration");
 
 	return res_archive_open_;
 }
@@ -265,7 +264,7 @@ Archive* ArchiveManager::openArchive(const string& filename, bool manage, bool s
 
 	auto new_archive = getArchive(filename);
 
-	LOG_MESSAGE(1, "Opening archive %s", filename);
+	Log::info(S_FMT("Opening archive %s", filename));
 
 	// If the archive is already open, just return it
 	if (new_archive)
@@ -363,7 +362,7 @@ Archive* ArchiveManager::openArchive(const string& filename, bool manage, bool s
 	}
 	else
 	{
-		LOG_MESSAGE(1, "Error: " + Global::error);
+		Log::error(Global::error);
 		delete new_archive;
 		return nullptr;
 	}
@@ -481,7 +480,7 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 	}
 	else
 	{
-		LOG_MESSAGE(1, "Error: " + Global::error);
+		Log::error(Global::error);
 		delete new_archive;
 		return nullptr;
 	}
@@ -495,7 +494,7 @@ Archive* ArchiveManager::openDirArchive(const string& dir, bool manage, bool sil
 {
 	auto new_archive = getArchive(dir);
 
-	LOG_MESSAGE(1, "Opening directory %s as archive", dir);
+	Log::info(S_FMT("Opening directory %s as archive", dir));
 
 	// If the archive is already open, just return it
 	if (new_archive)
@@ -541,7 +540,7 @@ Archive* ArchiveManager::openDirArchive(const string& dir, bool manage, bool sil
 	}
 	else
 	{
-		LOG_MESSAGE(1, "Error: " + Global::error);
+		Log::error(Global::error);
 		delete new_archive;
 		return nullptr;
 	}
@@ -1272,12 +1271,12 @@ void ArchiveManager::onAnnouncement(Announcer* announcer, const string& event_na
 // -----------------------------------------------------------------------------
 CONSOLE_COMMAND(list_archives, 0, true)
 {
-	LOG_MESSAGE(1, "%d Open Archives:", App::archiveManager().numArchives());
+	Log::info(S_FMT("%d Open Archives:", App::archiveManager().numArchives()));
 
 	for (int a = 0; a < App::archiveManager().numArchives(); a++)
 	{
-		Archive* archive = App::archiveManager().getArchive(a);
-		LOG_MESSAGE(1, "%d: \"%s\"", a + 1, archive->filename());
+		auto archive = App::archiveManager().getArchive(a);
+		Log::info(S_FMT("%d: \"%s\"", a + 1, archive->filename()));
 	}
 }
 

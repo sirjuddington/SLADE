@@ -79,7 +79,7 @@ bool BSPArchive::open(MemChunk& mc)
 	size_t size = mc.size();
 	if (size < 64)
 	{
-		LOG_MESSAGE(1, "BSPArchive::open: Opening failed, invalid header");
+		Log::error("BSPArchive::open: Opening failed, invalid header");
 		Global::error = "Invalid BSP header";
 		return false;
 	}
@@ -93,7 +93,7 @@ bool BSPArchive::open(MemChunk& mc)
 	version = wxINT32_SWAP_ON_BE(version);
 	if (version != 0x17 && version != 0x1D)
 	{
-		LOG_MESSAGE(1, "BSPArchive::open: Opening failed, unknown BSP version");
+		Log::error("BSPArchive::open: Opening failed, unknown BSP version");
 		Global::error = "Unknown BSP version";
 		return false;
 	}
@@ -113,7 +113,7 @@ bool BSPArchive::open(MemChunk& mc)
 		// Check that content stays within bounds
 		if (wxINT32_SWAP_ON_BE(sz) + wxINT32_SWAP_ON_BE(ofs) > size)
 		{
-			LOG_MESSAGE(1, "BSPArchive::open: Opening failed, invalid header (data out of bounds)");
+			Log::error("BSPArchive::open: Opening failed, invalid header (data out of bounds)");
 			Global::error = "Invalid BSP header";
 			return false;
 		}
@@ -126,7 +126,7 @@ bool BSPArchive::open(MemChunk& mc)
 			// If there are no textures, no need to bother
 			if (texsize == 0)
 			{
-				LOG_MESSAGE(1, "BSPArchive::open: Opening failed, no texture");
+				Log::error("BSPArchive::open: Opening failed, no texture");
 				Global::error = "No texture content";
 				return false;
 			}
@@ -143,7 +143,7 @@ bool BSPArchive::open(MemChunk& mc)
 	// Check that the offset table is within bounds
 	if (texoffset + ((numtex + 1) << 2) > size)
 	{
-		LOG_MESSAGE(1, "BSPArchive::open: Opening failed, miptex entry out of bounds");
+		Log::error("BSPArchive::open: Opening failed, miptex entry out of bounds");
 		Global::error = "Out of bounds";
 		return false;
 	}
@@ -306,7 +306,7 @@ bool BSPArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "BSPArchive::loadEntryData: Unable to open archive file %s", filename_);
+		Log::error(S_FMT("BSPArchive::loadEntryData: Unable to open archive file %s", filename_));
 		return false;
 	}
 

@@ -99,7 +99,7 @@ bool DiskArchive::open(MemChunk& mc)
 		// Check offset+size
 		if (dent.offset + dent.length > mcsize)
 		{
-			LOG_MESSAGE(1, "DiskArchive::open: Disk archive is invalid or corrupt (entry goes past end of file)");
+			Log::error("DiskArchive::open: Disk archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -223,8 +223,8 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		// The leading "GAME:\" part of the name means there is only 58 usable characters for path
 		if (name.Len() > 58)
 		{
-			LOG_MESSAGE(
-				1, "Warning: Entry %s path is too long (> 58 characters), putting it in the root directory", name);
+			Log::warning(
+				S_FMT("Warning: Entry %s path is too long (> 58 characters), putting it in the root directory", name));
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 57)
@@ -298,7 +298,7 @@ bool DiskArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "DiskArchive::loadEntryData: Unable to open archive file %s", filename_);
+		Log::error(S_FMT("DiskArchive::loadEntryData: Unable to open archive file %s", filename_));
 		return false;
 	}
 

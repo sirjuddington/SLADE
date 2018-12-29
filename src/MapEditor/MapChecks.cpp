@@ -153,7 +153,7 @@ public:
 			}
 		}
 
-		LOG_MESSAGE(3, "Missing Texture Check: %lu missing textures", parts_.size());
+		Log::info(3, S_FMT("Missing Texture Check: %lu missing textures", parts_.size()));
 	}
 
 	unsigned nProblems() override { return lines_.size(); }

@@ -115,7 +115,7 @@ bool PodArchive::open(MemChunk& mc)
 
 		new_entry->setState(ArchiveEntry::State::Unmodified);
 
-		LOG_MESSAGE(5, "File size: %d, offset: %d, name: %s", files[a].size, files[a].offset, files[a].name);
+		Log::info(5, S_FMT("File size: %d, offset: %d, name: %s", files[a].size, files[a].offset, files[a].name));
 	}
 
 	// Detect entry types
@@ -148,7 +148,7 @@ bool PodArchive::open(MemChunk& mc)
 
 		// Set entry to unchanged
 		all_entries[a]->setState(ArchiveEntry::State::Unmodified);
-		LOG_MESSAGE(5, "entry %s size %d", CHR(all_entries[a]->name()), all_entries[a]->size());
+		Log::info(5, S_FMT("entry %s size %d", CHR(all_entries[a]->name()), all_entries[a]->size()));
 	}
 
 	// Setup variables
@@ -185,15 +185,15 @@ bool PodArchive::write(MemChunk& mc, bool update)
 	// Init MemChunk
 	mc.clear();
 	mc.reSize(4 + 80 + (entries.size() * 40) + data_size, false);
-	LOG_MESSAGE(5, "MC size %d", mc.size());
+	Log::info(5, S_FMT("MC size %d", mc.size()));
 
 	// Write no. entries
 	uint32_t n_entries = entries.size() - ndirs;
-	LOG_MESSAGE(5, "n_entries %d", n_entries);
+	Log::info(5, S_FMT("n_entries %d", n_entries));
 	mc.write(&n_entries, 4);
 
 	// Write id
-	LOG_MESSAGE(5, "id %s", id_);
+	Log::info(5, S_FMT("id %s", id_));
 	mc.write(id_, 80);
 
 	// Write directory
@@ -209,7 +209,7 @@ bool PodArchive::write(MemChunk& mc, bool update)
 		string path = entry->path(true);
 		path.Replace("/", "\\");
 		path = path.AfterFirst('\\');
-		// LOG_MESSAGE(2, path);
+		// Log::info(2, path);
 		memcpy(fe.name, CHR(path), path.Len());
 
 		// Size
@@ -219,13 +219,14 @@ bool PodArchive::write(MemChunk& mc, bool update)
 		mc.write(fe.name, 32);
 		mc.write(&fe.size, 4);
 		mc.write(&fe.offset, 4);
-		LOG_MESSAGE(
+		Log::info(
 			5,
-			"entry %s: old=%d new=%d size=%d",
-			fe.name,
-			entry->exProp("Offset").intValue(),
-			fe.offset,
-			entry->size());
+			S_FMT(
+				"entry %s: old=%d new=%d size=%d",
+				fe.name,
+				entry->exProp("Offset").intValue(),
+				fe.offset,
+				entry->size()));
 
 		// Next offset
 		fe.offset += fe.size;
@@ -263,7 +264,7 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "PodArchive::loadEntryData: Failed to open file %s", filename_);
+		Log::error(S_FMT("PodArchive::loadEntryData: Failed to open file %s", filename_));
 		return false;
 	}
 

@@ -674,11 +674,11 @@ void VirtualListView::onColumnLeftClick(wxListEvent& e)
 
 	if (sort_column_ >= 0)
 	{
-		LOG_MESSAGE(2, "Sort column %d (%s)", sort_column_, sort_descend_ ? "descending" : "ascending");
+		Log::info(2, S_FMT("Sort column %d (%s)", sort_column_, sort_descend_ ? "descending" : "ascending"));
 	}
 	else
 	{
-		LOG_MESSAGE(2, "No sorting");
+		Log::info(2, "No sorting");
 	}
 
 	updateList();

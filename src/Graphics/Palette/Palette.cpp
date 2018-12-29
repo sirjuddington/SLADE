@@ -36,8 +36,8 @@
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/Translation.h"
 #include "Utility/CIEDeltaEquations.h"
-#include "Utility/Tokenizer.h"
 #include "Utility/StringUtils.h"
+#include "Utility/Tokenizer.h"
 
 
 // -----------------------------------------------------------------------------
@@ -160,14 +160,14 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 		if (!image.isValid())
 		{
 			Global::error = "Palette information cannot be loaded from an invalid image";
-			LOG_MESSAGE(0, Global::error);
+			Log::error(Global::error);
 			return false;
 		}
 		int side = image.height();
 		if (side != image.width() || side % 16)
 		{
 			Global::error = "Palette information cannot be loaded from a non-square image";
-			LOG_MESSAGE(0, Global::error);
+			Log::error(Global::error);
 			return false;
 		}
 
@@ -193,15 +193,14 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			for (int b = x; b < (x + (cell > 3 ? cell - 1 : cell)); ++b)
 				for (int c = y; c < (y + (cell > 3 ? cell - 1 : cell)); ++c)
 					if (!col.equals(image.pixelAt(b, c)))
-						LOG_MESSAGE(
-							0,
+						Log::warning(S_FMT(
 							"Image does not seem to be a valid palette, color discrepancy in cell %u at [%u, %u]",
 							a,
 							b,
-							c);
+							c));
 
 			// Color is validated, so add it
-			LOG_MESSAGE(3, "Colour index %d / at %d,%d / rgb %d,%d,%d", a, x, y, col.r, col.g, col.b);
+			Log::info(3, S_FMT("Colour index %d / at %d,%d / rgb %d,%d,%d", a, x, y, col.r, col.g, col.b));
 			setColour(a, col);
 		}
 
@@ -224,14 +223,14 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			if (!tz.checkToken("JASC-PAL") || !tz.checkToken("0100"))
 			{
 				Global::error = "Invalid JASC palette (unknown header)";
-				LOG_MESSAGE(0, Global::error);
+				Log::error(Global::error);
 				return false;
 			}
 			int count = tz.getInteger();
 			if (count > 256 || count < 0)
 			{
 				Global::error = "Invalid JASC palette (wrong count)";
-				LOG_MESSAGE(0, Global::error);
+				Log::error(Global::error);
 				return false;
 			}
 		}
@@ -240,7 +239,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			if (!tz.checkToken("GIMP") || !tz.checkToken("Palette"))
 			{
 				Global::error = "Invalid GIMP palette (unknown header)";
-				LOG_MESSAGE(0, Global::error);
+				Log::error(Global::error);
 				return false;
 			}
 		}
@@ -294,7 +293,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 	else
 	{
 		Global::error = "Palette could not be imported, this format is not supported yet for import.";
-		LOG_MESSAGE(0, Global::error);
+		Log::error(Global::error);
 	}
 
 	return false;

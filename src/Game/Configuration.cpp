@@ -353,7 +353,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 					map_formats_[MapFormat::UDMF] = true;
 				}
 				else
-					LOG_MESSAGE(1, "Warning: Unknown/unsupported map format \"%s\"", node->stringValue(v));
+					Log::warning(S_FMT("Unknown/unsupported map format \"%s\"", node->stringValue(v)));
 			}
 		}
 
@@ -471,7 +471,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 				}
 
 				else
-					LOG_MESSAGE(1, "Unknown defaults block \"%s\"", block->name());
+					Log::warning(S_FMT("Unknown defaults block \"%s\"", block->name()));
 			}
 		}
 
@@ -568,7 +568,7 @@ bool Configuration::readConfiguration(string& cfg, const string& source, MapForm
 		}
 		if (!node_game)
 		{
-			LOG_MESSAGE(1, "No game section found, something is pretty wrong.");
+			Log::error("No game section found, something is pretty wrong.");
 			return false;
 		}
 		readGameSection(node_game, false);
@@ -854,7 +854,7 @@ bool Configuration::readConfiguration(string& cfg, const string& source, MapForm
 
 		// Unknown/unexpected section
 		else
-			LOG_MESSAGE(1, "Warning: Unexpected game configuration section \"%s\", skipping", node->name());
+			Log::warning(S_FMT("Unexpected game configuration section \"%s\", skipping", node->name()));
 	}
 
 	return true;
@@ -880,7 +880,7 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 				StringUtils::processIncludes(filename, full_config);
 			else
 			{
-				LOG_MESSAGE(1, "Error: Game configuration file \"%s\" not found", filename);
+				Log::error(S_FMT("Error: Game configuration file \"%s\" not found", filename));
 				return false;
 			}
 		}
@@ -912,7 +912,7 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 					StringUtils::processIncludes(filename, full_config);
 				else
 				{
-					LOG_MESSAGE(1, "Error: Port configuration file \"%s\" not found", filename);
+					Log::error(S_FMT("Error: Port configuration file \"%s\" not found", filename));
 					return false;
 				}
 			}
@@ -943,11 +943,11 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 		current_port_      = port;
 		game_configuration = game;
 		port_configuration = port;
-		LOG_MESSAGE(1, "Read game configuration \"%s\" + \"%s\"", current_game_, current_port_);
+		Log::info(2, S_FMT("Read game configuration \"%s\" + \"%s\"", current_game_, current_port_));
 	}
 	else
 	{
-		LOG_MESSAGE(1, "Error reading game configuration, not loaded");
+		Log::error("Error reading game configuration, not loaded");
 		ok = false;
 	}
 
@@ -960,12 +960,12 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 		// Log message
 		auto parent = cfg_entry->parent();
 		if (parent)
-			LOG_MESSAGE(1, "Reading SLADECFG in %s", parent->filename());
+			Log::info(S_FMT("Reading SLADECFG in %s", parent->filename()));
 
 		// Read embedded config
 		string config = wxString::FromAscii(cfg_entry->rawData(), cfg_entry->size());
 		if (!readConfiguration(config, cfg_entry->name(), format, true, false))
-			LOG_MESSAGE(1, "Error reading embedded game configuration, not loaded");
+			Log::info(1, "Error reading embedded game configuration, not loaded");
 	}
 
 	return ok;
@@ -1081,7 +1081,7 @@ bool Configuration::thingFlagSet(const string& udmf_name, MapThing* thing, MapFo
 		if (i.udmf == udmf_name)
 			return !!(flags & i.flag);
 	}
-	LOG_MESSAGE(2, "Flag %s does not exist in this configuration", udmf_name);
+	Log::warning(2, S_FMT("Flag %s does not exist in this configuration", udmf_name));
 	return false;
 }
 
@@ -1235,7 +1235,7 @@ void Configuration::setThingFlag(const string& udmf_name, MapThing* thing, MapFo
 
 	if (flag_val == 0)
 	{
-		LOG_MESSAGE(2, "Flag %s does not exist in this configuration", udmf_name);
+		Log::warning(2, S_FMT("Flag %s does not exist in this configuration", udmf_name));
 		return;
 	}
 
@@ -1467,7 +1467,7 @@ bool Configuration::lineFlagSet(const string& udmf_name, MapLine* line, MapForma
 		if (i.udmf == udmf_name)
 			return !!(flags & i.flag);
 	}
-	LOG_MESSAGE(2, "Flag %s does not exist in this configuration", udmf_name);
+	Log::warning(2, S_FMT("Flag %s does not exist in this configuration", udmf_name));
 	return false;
 }
 
@@ -1584,7 +1584,7 @@ void Configuration::setLineFlag(const string& udmf_name, MapLine* line, MapForma
 
 	if (flag_val == 0)
 	{
-		LOG_MESSAGE(2, "Flag %s does not exist in this configuration", udmf_name);
+		Log::warning(2, S_FMT("Flag %s does not exist in this configuration", udmf_name));
 		return;
 	}
 
@@ -2193,7 +2193,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 			object->setFloatProperty(prop_names[a], prop_vals[a].floatValue());
 		else if (prop_vals[a].type() == Property::Type::String)
 			object->setStringProperty(prop_names[a], prop_vals[a].stringValue());
-		LOG_MESSAGE(3, "Applied default property %s = %s", prop_names[a], prop_vals[a].stringValue());
+		Log::info(3, S_FMT("Applied default property %s = %s", prop_names[a], prop_vals[a].stringValue()));
 	}
 }
 
@@ -2259,8 +2259,7 @@ int Configuration::downLightLevel(int light_level)
 void Configuration::dumpActionSpecials()
 {
 	for (auto& i : action_specials_)
-		// if (i.second.defined())
-		LOG_MESSAGE(1, "Action special %d = %s", i.first, i.second.stringDesc());
+		Log::info(S_FMT("Action special %d = %s", i.first, i.second.stringDesc()));
 }
 
 // -----------------------------------------------------------------------------
@@ -2270,7 +2269,7 @@ void Configuration::dumpThingTypes()
 {
 	for (auto& i : thing_types_)
 		if (i.second.defined())
-			LOG_MESSAGE(1, "Thing type %d = %s", i.first, i.second.stringDesc());
+			Log::info(S_FMT("Thing type %d = %s", i.first, i.second.stringDesc()));
 }
 
 // -----------------------------------------------------------------------------
@@ -2278,7 +2277,7 @@ void Configuration::dumpThingTypes()
 // -----------------------------------------------------------------------------
 void Configuration::dumpValidMapNames()
 {
-	LOG_MESSAGE(1, "Valid Map Names:");
+	Log::info("Valid Map Names:");
 	for (auto& map : maps_)
 		Log::info(map.mapname);
 }
@@ -2289,27 +2288,27 @@ void Configuration::dumpValidMapNames()
 void Configuration::dumpUDMFProperties()
 {
 	// Vertex
-	Log::info(1, "\nVertex properties:");
+	Log::info("\nVertex properties:");
 	for (auto& i : udmf_vertex_props_)
 		Log::info(i.second.getStringRep());
 
 	// Line
-	Log::info(1, "\nLine properties:");
+	Log::info("\nLine properties:");
 	for (auto& i : udmf_linedef_props_)
 		Log::info(i.second.getStringRep());
 
 	// Side
-	Log::info(1, "\nSide properties:");
+	Log::info("\nSide properties:");
 	for (auto& i : udmf_sidedef_props_)
 		Log::info(i.second.getStringRep());
 
 	// Sector
-	Log::info(1, "\nSector properties:");
+	Log::info("\nSector properties:");
 	for (auto& i : udmf_sector_props_)
 		Log::info(i.second.getStringRep());
 
 	// Thing
-	Log::info(1, "\nThing properties:");
+	Log::info("\nThing properties:");
 	for (auto& i : udmf_thing_props_)
 		Log::info(i.second.getStringRep());
 }

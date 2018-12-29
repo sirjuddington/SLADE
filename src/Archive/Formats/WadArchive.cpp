@@ -267,7 +267,7 @@ void WadArchive::updateNamespaces()
 		ns.end_index   = entryIndex(ns.end);
 
 		// Testing
-		// LOG_MESSAGE(1, "Namespace %s from %s (%d) to %s (%d)", ns.name,
+		// Log::info(1, "Namespace %s from %s (%d) to %s (%d)", ns.name,
 		//	ns.start->getName(), ns.start_index, ns.end->getName(), ns.end_index);
 	}
 }
@@ -310,7 +310,7 @@ bool WadArchive::open(MemChunk& mc)
 	// Check the header
 	if (wad_type[1] != 'W' || wad_type[2] != 'A' || wad_type[3] != 'D')
 	{
-		LOG_MESSAGE(1, "WadArchive::openFile: File %s has invalid header", filename_);
+		Log::error(S_FMT("WadArchive::openFile: File %s has invalid header", filename_));
 		Global::error = "Invalid wad header";
 		return false;
 	}
@@ -351,12 +351,12 @@ bool WadArchive::open(MemChunk& mc)
 		{
 			if (offset == 0)
 			{
-				LOG_MESSAGE(2, "No.");
+				Log::info(2, "No.");
 				continue;
 			}
 			if (VECTOR_EXISTS(offsets, offset))
 			{
-				LOG_MESSAGE(1, "Ignoring entry %d: %s, is a clone of a previous entry", d, name);
+				Log::warning(S_FMT("Ignoring entry %d: %s, is a clone of a previous entry", d, name));
 				continue;
 			}
 			offsets.push_back(offset);
@@ -408,7 +408,7 @@ bool WadArchive::open(MemChunk& mc)
 		// the wadfile is invalid
 		if (offset + actualsize > mc.size())
 		{
-			LOG_MESSAGE(1, "WadArchive::open: Wad archive is invalid or corrupt");
+			Log::error("WadArchive::open: Wad archive is invalid or corrupt");
 			Global::error =
 				S_FMT("Archive is invalid and/or corrupt (lump %d: %s data goes past end of file)", d, name);
 			setMuted(false);
@@ -457,12 +457,11 @@ bool WadArchive::open(MemChunk& mc)
 					&& (unsigned)(int)(entry->exProp("FullSize")) > entry->size())
 					edata.reSize((int)(entry->exProp("FullSize")), true);
 				if (!WadJArchive::jaguarDecode(edata))
-					LOG_MESSAGE(
-						1,
+					Log::warning(S_FMT(
 						"%i: %s (following %s), did not decode properly",
 						a,
 						entry->name(),
-						a > 0 ? entryAt(a - 1)->name() : "nothing");
+						a > 0 ? entryAt(a - 1)->name() : "nothing"));
 			}
 			entry->importMemChunk(edata);
 		}
@@ -674,7 +673,7 @@ bool WadArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "WadArchive::loadEntryData: Failed to open wadfile %s", filename_);
+		Log::error(S_FMT("WadArchive::loadEntryData: Failed to open wadfile %s", filename_));
 		return false;
 	}
 

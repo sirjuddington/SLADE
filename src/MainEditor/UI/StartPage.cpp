@@ -166,7 +166,7 @@ void SStartPage::load(bool new_tip)
 	// Can't do anything without html entry
 	if (!entry_base_html_)
 	{
-		LOG_MESSAGE(1, "No start page resource found");
+		Log::error("No start page resource found");
 		html_startpage_->SetPage(
 			"<html><head><title>SLADE</title></head><body><center><h1>"
 			"Something is wrong with slade.pk3 :(</h1><center></body></html>",
@@ -386,8 +386,6 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 	if (!href.EndsWith("startpage.htm"))
 		href.Replace("file://", "");
 #endif
-
-	// LOG_MESSAGE(2, "URL %s", href);
 
 	if (href.EndsWith("/"))
 		href.RemoveLast(1);

@@ -122,7 +122,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 				tx_list->removePatch(p.name);
 
 			// Remove the patch from the patch table
-			LOG_MESSAGE(1, "Removed patch %s", p.name);
+			Log::info(S_FMT("Removed patch %s", p.name));
 			removed++;
 			ptable.removePatch(a--);
 		}
@@ -131,7 +131,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 	// Remove unused patch entries
 	for (auto& a : to_remove)
 	{
-		LOG_MESSAGE(1, "Removed entry %s", a->name());
+		Log::info(S_FMT("Removed entry %s", a->name()));
 		archive->removeEntry(a);
 	}
 
@@ -587,7 +587,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 		{
 			if (texture.CmpNoCase(unused_tex[a]) == 0)
 			{
-				LOG_MESSAGE(3, "Texture " + texture + " is in base resource");
+				Log::info(3, "Texture " + texture + " is in base resource");
 				br_tex = true;
 				break;
 			}
@@ -738,7 +738,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 			if (flatname == flat_anim_start[b])
 			{
 				anim = true;
-				LOG_MESSAGE(1, "%s anim start", flatname);
+				Log::info(S_FMT("%s anim start", flatname));
 				break;
 			}
 		}
@@ -751,7 +751,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 			{
 				anim    = false;
 				thisend = true;
-				LOG_MESSAGE(1, "%s anim end", flatname);
+				Log::info(S_FMT("%s anim end", flatname));
 				break;
 			}
 		}
@@ -984,14 +984,14 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 				case MapFormat::Hexen: achanged = replaceThingsHexen(things, oldtype, newtype); break;
 				case MapFormat::Doom64: achanged = replaceThingsDoom64(things, oldtype, newtype); break;
 				case MapFormat::UDMF: achanged = replaceThingsUDMF(things, oldtype, newtype); break;
-				default: LOG_MESSAGE(1, "Unknown map format for " + map.head->name()); break;
+				default: Log::warning("Unknown map format for " + map.head->name()); break;
 				}
 			}
 		}
 		report += S_FMT("%s:\t%i things changed\n", map.head->name(), achanged);
 		changed += achanged;
 	}
-	LOG_MESSAGE(1, report);
+	Log::info(1, report);
 	return changed;
 }
 
@@ -1435,14 +1435,14 @@ size_t ArchiveOperations::replaceSpecials(
 						newarg3,
 						newarg4);
 					break;
-				default: LOG_MESSAGE(1, "Unknown map format for " + map.head->name()); break;
+				default: Log::warning("Unknown map format for " + map.head->name()); break;
 				}
 			}
 		}
 		report += S_FMT("%s:\t%i specials changed\n", map.head->name(), achanged);
 		changed += achanged;
 	}
-	LOG_MESSAGE(1, report);
+	Log::info(1, report);
 	return changed;
 }
 
@@ -1468,7 +1468,7 @@ CONSOLE_COMMAND(replacespecials, 2, true)
 		case 6: arg1 = args[oldtail--].ToLong(&oldarg1) && args[newtail--].ToLong(&newarg1);
 		case 4: arg0 = args[oldtail--].ToLong(&oldarg0) && args[newtail--].ToLong(&newarg0);
 		case 2: run = args[oldtail--].ToLong(&oldtype) && args[newtail--].ToLong(&newtype); break;
-		default: LOG_MESSAGE(1, "Invalid number of arguments: %d", fullarg);
+		default: Log::warning(S_FMT("Invalid number of arguments: %d", fullarg));
 		}
 	}
 
@@ -1824,14 +1824,14 @@ size_t ArchiveOperations::replaceTextures(
 				case MapFormat::UDMF:
 					achanged = replaceTexturesUDMF(sectors, oldtex, newtex, floor, ceiling, lower, middle, upper);
 					break;
-				default: LOG_MESSAGE(1, "Unknown map format for " + map.head->name()); break;
+				default: Log::warning("Unknown map format for " + map.head->name()); break;
 				}
 			}
 		}
 		report += S_FMT("%s:\t%i elements changed\n", map.head->name(), achanged);
 		changed += achanged;
 	}
-	LOG_MESSAGE(1, report);
+	Log::info(1, report);
 	return changed;
 }
 

@@ -160,7 +160,7 @@ protected:
 		auto rgba = FreeImage_ConvertTo32Bits(bm);
 		if (!rgba)
 		{
-			LOG_MESSAGE(1, "FreeImage_ConvertTo32Bits failed for image data");
+			Log::error("FreeImage_ConvertTo32Bits failed for image data");
 			Global::error = "Error reading PNG data";
 			return false;
 		}

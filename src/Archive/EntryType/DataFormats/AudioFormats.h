@@ -884,11 +884,11 @@ public:
 			{
 				size_t size = mc.readB32(4) + 8;
 				if (debugaiff)
-					LOG_MESSAGE(1, "size %d", size);
+					Log::info(S_FMT("size %d", size));
 				if (size > mc.size())
 				{
 					if (debugaiff)
-						LOG_MESSAGE(1, "%d <= %d fails", size, mc.size());
+						Log::info(S_FMT("%d <= %d fails", size, mc.size()));
 					return MATCH_FALSE;
 				}
 				size_t s          = 12;
@@ -897,7 +897,7 @@ public:
 				while (s < size && !(comm_found && ssnd_found))
 				{
 					if (debugaiff)
-						LOG_MESSAGE(1, "%d/%d", s, size);
+						Log::info(S_FMT("%d/%d", s, size));
 					if (mc[s + 0] == 'C' && mc[s + 1] == 'O' && mc[s + 2] == 'M' && mc[s + 3] == 'M')
 						comm_found = true;
 					else if (mc[s + 0] == 'S' && mc[s + 1] == 'S' && mc[s + 2] == 'N' && mc[s + 3] == 'D')
@@ -906,13 +906,13 @@ public:
 					if (s % 2)
 						++s;
 					if (debugaiff)
-						LOG_MESSAGE(1, "looking now at offset %d", s);
+						Log::info(S_FMT("looking now at offset %d", s));
 				}
 				if (comm_found && ssnd_found)
 					return MATCH_TRUE;
 				if (debugaiff)
-					LOG_MESSAGE(
-						1, "COMM was %sfound and SSND was %sfound", comm_found ? "" : "not ", ssnd_found ? "" : "not ");
+					Log::info(S_FMT(
+						"COMM was %sfound and SSND was %sfound", comm_found ? "" : "not ", ssnd_found ? "" : "not "));
 			}
 		}
 		return MATCH_FALSE;

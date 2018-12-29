@@ -884,7 +884,7 @@ bool PaletteEntryPanel::clearOne()
 	// Always keep at least one palette
 	if (cur_palette_ == 0 && palettes_.size() == 1)
 	{
-		LOG_MESSAGE(1, "Palette cannot be removed, no other palette in this entry.");
+		Log::warning("Palette cannot be removed, no other palette in this entry.");
 		return false;
 	}
 
@@ -1604,5 +1604,5 @@ void PaletteEntryPanel::analysePalettes()
 #endif
 	}
 
-	LOG_MESSAGE(1, report);
+	Log::info(1, report);
 }

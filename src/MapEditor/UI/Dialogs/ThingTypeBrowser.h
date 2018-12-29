@@ -30,7 +30,7 @@ public:
 	~ThingTypeBrowser() = default;
 
 	void setupViewOptions();
-	int  selectedType();
+	int  selectedType() const;
 
 private:
 	wxCheckBox* cb_view_tiles_ = nullptr;

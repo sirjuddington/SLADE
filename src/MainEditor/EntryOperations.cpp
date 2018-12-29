@@ -142,9 +142,9 @@ bool EntryOperations::gfxConvert(
 	if (target_colformat != SImage::Type::Unknown && !fmt->canWriteType(target_colformat))
 	{
 		if (target_colformat == SImage::Type::RGBA)
-			LOG_MESSAGE(1, "Format \"%s\" cannot be written as RGBA data", fmt->name());
+			Log::error(S_FMT("Format \"%s\" cannot be written as RGBA data", fmt->name()));
 		else if (target_colformat == SImage::Type::PalMask)
-			LOG_MESSAGE(1, "Format \"%s\" cannot be written as paletted data", fmt->name());
+			Log::error(S_FMT("Format \"%s\" cannot be written as paletted data", fmt->name()));
 
 		return false;
 	}
@@ -156,7 +156,7 @@ bool EntryOperations::gfxConvert(
 	auto writable = fmt->canWrite(image);
 	if (writable == SIFormat::Writable::No)
 	{
-		LOG_MESSAGE(1, "Entry \"%s\" could not be converted to target format \"%s\"", entry->name(), fmt->name());
+		Log::error(S_FMT("Entry \"%s\" could not be converted to target format \"%s\"", entry->name(), fmt->name()));
 		return false;
 	}
 	else if (writable == SIFormat::Writable::Convert)
@@ -190,8 +190,8 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog*
 	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" || entryformat == "img_doom_alpha"
 		  || entryformat == "img_doom_beta" || entryformat == "img_png"))
 	{
-		LOG_MESSAGE(
-			1, "Entry \"%s\" is of type \"%s\" which does not support offsets", entry->name(), entry->type()->name());
+		Log::error(S_FMT(
+			"Entry \"%s\" is of type \"%s\" which does not support offsets", entry->name(), entry->type()->name()));
 		return false;
 	}
 
@@ -340,8 +340,8 @@ bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
 	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" || entryformat == "img_doom_alpha"
 		  || entryformat == "img_doom_beta" || entryformat == "img_png"))
 	{
-		LOG_MESSAGE(
-			1, "Entry \"%s\" is of type \"%s\" which does not support offsets", entry->name(), entry->type()->name());
+		Log::error(S_FMT(
+			"Entry \"%s\" is of type \"%s\" which does not support offsets", entry->name(), entry->type()->name()));
 		return false;
 	}
 
@@ -570,7 +570,7 @@ bool EntryOperations::modifyalPhChunk(ArchiveEntry* entry, bool value)
 	// Check entry type
 	if (!(entry->type()->formatId() == "img_png"))
 	{
-		LOG_MESSAGE(1, "Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->type()->name());
+		Log::error(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->type()->name()));
 		return false;
 	}
 
@@ -677,7 +677,7 @@ bool EntryOperations::modifytRNSChunk(ArchiveEntry* entry, bool value)
 	// Check entry type
 	if (!(entry->type()->formatId() == "img_png"))
 	{
-		LOG_MESSAGE(1, "Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString());
+		Log::error(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString()));
 		return false;
 	}
 
@@ -791,7 +791,7 @@ bool EntryOperations::getalPhChunk(ArchiveEntry* entry)
 	// Check entry type
 	if (entry->type()->formatId() != "img_png")
 	{
-		LOG_MESSAGE(1, "Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString());
+		Log::error(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString()));
 		return false;
 	}
 
@@ -823,7 +823,7 @@ bool EntryOperations::gettRNSChunk(ArchiveEntry* entry)
 	// Check entry type
 	if (entry->type()->formatId() != "img_png")
 	{
-		LOG_MESSAGE(1, "Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString());
+		Log::error(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString()));
 		return false;
 	}
 
@@ -857,7 +857,7 @@ bool EntryOperations::readgrAbChunk(ArchiveEntry* entry, Vec2i& offsets)
 	// Check entry type
 	if (entry->type()->formatId() != "img_png")
 	{
-		LOG_MESSAGE(1, "Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString());
+		Log::error(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString()));
 		return false;
 	}
 
@@ -946,17 +946,16 @@ bool EntryOperations::addToPatchTable(const vector<ArchiveEntry*>& entries)
 		// Check entry type
 		if (!(entry->type()->extraProps().propertyExists("image")))
 		{
-			LOG_MESSAGE(1, "Entry %s is not a valid image", entry->name());
+			Log::error(S_FMT("Entry %s is not a valid image", entry->name()));
 			continue;
 		}
 
 		// Check entry name
 		if (entry->name(true).Length() > 8)
 		{
-			LOG_MESSAGE(
-				1,
+			Log::error(S_FMT(
 				"Entry %s has too long a name to add to the patch table (name must be 8 characters max)",
-				entry->name());
+				entry->name()));
 			continue;
 		}
 
@@ -1052,7 +1051,7 @@ bool EntryOperations::createTexture(const vector<ArchiveEntry*>& entries)
 		// Check entry type
 		if (!(entry->type()->extraProps().propertyExists("image")))
 		{
-			LOG_MESSAGE(1, "Entry %s is not a valid image", entry->name());
+			Log::error(S_FMT("Entry %s is not a valid image", entry->name()));
 			continue;
 		}
 
@@ -1060,10 +1059,9 @@ bool EntryOperations::createTexture(const vector<ArchiveEntry*>& entries)
 		string name = entry->name(true);
 		if (name.Length() > 8)
 		{
-			LOG_MESSAGE(
-				1,
+			Log::error(S_FMT(
 				"Entry %s has too long a name to add to the patch table (name must be 8 characters max)",
-				entry->name());
+				entry->name()));
 			continue;
 		}
 
@@ -1268,7 +1266,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		string path = App::path(res_entry->name(true) + ".acs", App::Dir::Temp);
 		res_entry->exportFile(path);
 		lib_paths.Add(path);
-		LOG_MESSAGE(2, "Exporting ACS library %s", res_entry->name());
+		Log::info(2, S_FMT("Exporting ACS library %s", res_entry->name()));
 	}
 
 	// Export script to file
@@ -1410,7 +1408,7 @@ bool EntryOperations::exportAsPNG(ArchiveEntry* entry, const string& filename)
 	SImage image;
 	if (!Misc::loadImageFromEntry(&image, entry))
 	{
-		LOG_MESSAGE(1, "Error converting %s: %s", entry->name(), Global::error);
+		Log::error(S_FMT("Error converting %s: %s", entry->name(), Global::error));
 		return false;
 	}
 
@@ -1419,7 +1417,7 @@ bool EntryOperations::exportAsPNG(ArchiveEntry* entry, const string& filename)
 	auto     fmt_png = SIFormat::getFormat("png");
 	if (!fmt_png->saveImage(image, png, MainEditor::currentPalette(entry)))
 	{
-		LOG_MESSAGE(1, "Error converting %s", entry->name());
+		Log::error(S_FMT("Error converting %s", entry->name()));
 		return false;
 	}
 
@@ -1454,7 +1452,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 	if ((pngpathc.IsEmpty() || !wxFileExists(pngpathc)) && (pngpatho.IsEmpty() || !wxFileExists(pngpatho))
 		&& (pngpathd.IsEmpty() || !wxFileExists(pngpathd)))
 	{
-		LOG_MESSAGE(1, "PNG tool paths not defined or invalid, no optimization done.");
+		Log::error(1, "PNG tool paths not defined or invalid, no optimization done.");
 		return false;
 	}
 
@@ -1517,7 +1515,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 				for (size_t i = 0; i < output.GetCount(); ++i)
 					crushlog += output[i] + "\n";
 			}
-			LOG_MESSAGE(1, crushlog);
+			Log::info(1, crushlog);
 		}
 	}
 
@@ -1570,7 +1568,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 				for (size_t i = 0; i < output.GetCount(); ++i)
 					pngoutlog += output[i] + "\n";
 			}
-			LOG_MESSAGE(1, pngoutlog);
+			Log::info(1, pngoutlog);
 		}
 	}
 
@@ -1608,7 +1606,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 				for (size_t i = 0; i < output.GetCount(); ++i)
 					defloptlog += output[i] + "\n";
 			}
-			LOG_MESSAGE(1, defloptlog);
+			Log::info(1, defloptlog);
 		}
 	}
 	output.Clear();
@@ -1620,15 +1618,14 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 	if (grabchunk)
 		setGfxOffsets(entry, offsets.x, offsets.y);
 
-	LOG_MESSAGE(
-		1,
+	Log::info(S_FMT(
 		"PNG %s size %i =PNGCrush=> %i =PNGout=> %i =DeflOpt=> %i =+grAb/alPh=> %i",
 		entry->name(),
 		oldsize,
 		crushsize,
 		outsize,
 		deflsize,
-		entry->size());
+		entry->size()));
 
 
 	if (!crushed && !outed && !errormessages.IsEmpty())
@@ -1892,25 +1889,24 @@ void fixpngsrc(ArchiveEntry* entry)
 	{
 		if (pointer + 12 > entry->size())
 		{
-			LOG_MESSAGE(1, "Entry %s cannot be repaired.", entry->name());
+			Log::error(S_FMT("Entry %s cannot be repaired.", entry->name()));
 			return;
 		}
 		uint32_t chsz = Memory::readB32(data.data(), pointer);
 		if (pointer + 12 + chsz > entry->size())
 		{
-			LOG_MESSAGE(1, "Entry %s cannot be repaired.", entry->name());
+			Log::error(S_FMT("Entry %s cannot be repaired.", entry->name()));
 			return;
 		}
 		uint32_t crc = Misc::crc(data.data() + pointer + 4, 4 + chsz);
 		if (crc != Memory::readB32(data.data(), pointer + 8 + chsz))
 		{
-			LOG_MESSAGE(
-				1,
+			Log::error(S_FMT(
 				"Chunk %c%c%c%c has bad CRC",
 				data[pointer + 4],
 				data[pointer + 5],
 				data[pointer + 6],
-				data[pointer + 7]);
+				data[pointer + 7]));
 			neededchange              = true;
 			data[pointer + 8 + chsz]  = crc >> 24;
 			data[pointer + 9 + chsz]  = (crc & 0x00ffffff) >> 16;
@@ -1938,7 +1934,7 @@ CONSOLE_COMMAND(fixpngcrc, 0, true)
 	auto selection = MainEditor::currentEntrySelection();
 	if (selection.empty())
 	{
-		LOG_MESSAGE(1, "No entry selected");
+		Log::info(1, "No entry selected");
 		return;
 	}
 	for (auto& entry : selection)

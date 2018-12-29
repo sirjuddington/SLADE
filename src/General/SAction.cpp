@@ -498,12 +498,12 @@ bool SActionHandler::doAction(const string& id)
 
 	// Warn if nothing handled it
 	if (!handled)
-		LOG_MESSAGE(1, "Warning: Action \"%s\" not handled", id);
+		Log::warning(S_FMT("Warning: Action \"%s\" not handled", id));
 
 	// Log action (to log file only)
 	// TODO: this
 	// exiting = true;
-	// LOG_MESSAGE(1, "**** Action \"%s\"", id);
+	// Log::info(1, "**** Action \"%s\"", id);
 	// exiting = false;
 
 	// Return true if handled

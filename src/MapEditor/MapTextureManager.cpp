@@ -484,7 +484,7 @@ void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* 
 		{
 			// Create texture in hashmap
 			string name = path + entry->name(true);
-			LOG_MESSAGE(4, "Loading editor texture %s", name);
+			Log::info(4, S_FMT("Loading editor texture %s", name));
 			auto& mtex   = map[name];
 			mtex.texture = new GLTexture(false);
 			mtex.texture->setFilter(GLTexture::Filter::Mipmap);
@@ -536,7 +536,6 @@ void MapTextureManager::refreshResources()
 	MapEditor::forceRefresh(true);
 	palette_->copyPalette(resourcePalette());
 	buildTexInfoList();
-	// LOG_MESSAGE(1, "texture manager cleared");
 }
 
 // -----------------------------------------------------------------------------

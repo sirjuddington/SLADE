@@ -267,7 +267,7 @@ bool GfxEntryPanel::saveEntry()
 			if (writable == SIFormat::Writable::Convert)
 			{
 				format->convertWritable(*image, SIFormat::ConvertOptions());
-				LOG_MESSAGE(1, "Image converted for writing");
+				Log::info("Image converted for writing");
 			}
 
 			if (format->saveImage(*image, entry_->data(), &gfx_canvas_->palette()))
@@ -1258,33 +1258,33 @@ CONSOLE_COMMAND(rotate, 1, true)
 			val = 270.;
 		else
 		{
-			LOG_MESSAGE(1, "Invalid parameter: %s is not a number.", bluh.mb_str());
+			Log::error(S_FMT("Invalid parameter: %s is not a number.", bluh.mb_str()));
 			return;
 		}
 	}
 	int angle = (int)val;
 	if (angle % 90)
 	{
-		LOG_MESSAGE(1, "Invalid parameter: %i is not a multiple of 90.", angle);
+		Log::error(S_FMT("Invalid parameter: %i is not a multiple of 90.", angle));
 		return;
 	}
 
 	auto foo = CH::getCurrentArchivePanel();
 	if (!foo)
 	{
-		LOG_MESSAGE(1, "No active panel.");
+		Log::info(1, "No active panel.");
 		return;
 	}
 	auto bar = foo->currentEntry();
 	if (!bar)
 	{
-		LOG_MESSAGE(1, "No active entry.");
+		Log::info(1, "No active entry.");
 		return;
 	}
 	auto meep = CH::getCurrentGfxPanel();
 	if (!meep)
 	{
-		LOG_MESSAGE(1, "No image selected.");
+		Log::info(1, "No image selected.");
 		return;
 	}
 
@@ -1311,25 +1311,25 @@ CONSOLE_COMMAND(mirror, 1, true)
 		vertical = false;
 	else
 	{
-		LOG_MESSAGE(1, "Invalid parameter: %s is not a known value.", bluh.mb_str());
+		Log::error(S_FMT("Invalid parameter: %s is not a known value.", bluh.mb_str()));
 		return;
 	}
 	auto foo = CH::getCurrentArchivePanel();
 	if (!foo)
 	{
-		LOG_MESSAGE(1, "No active panel.");
+		Log::info(1, "No active panel.");
 		return;
 	}
 	auto bar = foo->currentEntry();
 	if (!bar)
 	{
-		LOG_MESSAGE(1, "No active entry.");
+		Log::info(1, "No active entry.");
 		return;
 	}
 	auto meep = CH::getCurrentGfxPanel();
 	if (!meep)
 	{
-		LOG_MESSAGE(1, "No image selected.");
+		Log::info(1, "No image selected.");
 		return;
 	}
 	if (meep->image())
@@ -1350,19 +1350,19 @@ CONSOLE_COMMAND(crop, 4, true)
 		auto foo = CH::getCurrentArchivePanel();
 		if (!foo)
 		{
-			LOG_MESSAGE(1, "No active panel.");
+			Log::info(1, "No active panel.");
 			return;
 		}
 		auto meep = CH::getCurrentGfxPanel();
 		if (!meep)
 		{
-			LOG_MESSAGE(1, "No image selected.");
+			Log::info(1, "No image selected.");
 			return;
 		}
 		auto bar = foo->currentEntry();
 		if (!bar)
 		{
-			LOG_MESSAGE(1, "No active entry.");
+			Log::info(1, "No active entry.");
 			return;
 		}
 		if (meep->image())
@@ -1381,19 +1381,19 @@ CONSOLE_COMMAND(adjust, 0, true)
 	auto foo = CH::getCurrentArchivePanel();
 	if (!foo)
 	{
-		LOG_MESSAGE(1, "No active panel.");
+		Log::info(1, "No active panel.");
 		return;
 	}
 	auto meep = CH::getCurrentGfxPanel();
 	if (!meep)
 	{
-		LOG_MESSAGE(1, "No image selected.");
+		Log::info(1, "No image selected.");
 		return;
 	}
 	auto bar = foo->currentEntry();
 	if (!bar)
 	{
-		LOG_MESSAGE(1, "No active entry.");
+		Log::info(1, "No active entry.");
 		return;
 	}
 	if (meep->image())
@@ -1411,19 +1411,19 @@ CONSOLE_COMMAND(mirrorpad, 0, true)
 	auto foo = CH::getCurrentArchivePanel();
 	if (!foo)
 	{
-		LOG_MESSAGE(1, "No active panel.");
+		Log::info(1, "No active panel.");
 		return;
 	}
 	auto meep = CH::getCurrentGfxPanel();
 	if (!meep)
 	{
-		LOG_MESSAGE(1, "No image selected.");
+		Log::info(1, "No image selected.");
 		return;
 	}
 	auto bar = foo->currentEntry();
 	if (!bar)
 	{
-		LOG_MESSAGE(1, "No active entry.");
+		Log::info(1, "No active entry.");
 		return;
 	}
 	if (meep->image())
@@ -1441,19 +1441,19 @@ CONSOLE_COMMAND(imgconv, 0, true)
 	auto foo = CH::getCurrentArchivePanel();
 	if (!foo)
 	{
-		LOG_MESSAGE(1, "No active panel.");
+		Log::info(1, "No active panel.");
 		return;
 	}
 	auto bar = foo->currentEntry();
 	if (!bar)
 	{
-		LOG_MESSAGE(1, "No active entry.");
+		Log::info(1, "No active entry.");
 		return;
 	}
 	auto meep = CH::getCurrentGfxPanel();
 	if (!meep)
 	{
-		LOG_MESSAGE(1, "No image selected.");
+		Log::info(1, "No image selected.");
 		return;
 	}
 	if (meep->image())

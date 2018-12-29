@@ -95,7 +95,7 @@ bool DirArchive::open(const string& filename)
 		if (name.StartsWith(separator_))
 			name.Remove(0, 1);
 
-		// LOG_MESSAGE(3, fn.GetPath(true, wxPATH_UNIX));
+		// Log::info(3, fn.GetPath(true, wxPATH_UNIX));
 
 		// Create entry
 		wxFileName fn(name);
@@ -215,7 +215,7 @@ bool DirArchive::save(const string& filename)
 	DirArchiveTraverser traverser(files, dirs);
 	wxDir               dir(this->filename_);
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
-	LOG_MESSAGE(2, "GetAllFiles took %lums", App::runTimer() - time);
+	Log::info(2, S_FMT("GetAllFiles took %lums", App::runTimer() - time));
 
 	// Check for any files to remove
 	time = App::runTimer();
@@ -223,7 +223,7 @@ bool DirArchive::save(const string& filename)
 	{
 		if (wxFileExists(removed_file))
 		{
-			LOG_MESSAGE(2, "Removing file %s", removed_file);
+			Log::info(2, S_FMT("Removing file %s", removed_file));
 			wxRemoveFile(removed_file);
 		}
 	}
@@ -246,9 +246,9 @@ bool DirArchive::save(const string& filename)
 		// (Note that this will fail if there are any untracked files in the
 		// directory)
 		if (!found && wxRmdir(dirs[a]))
-			LOG_MESSAGE(2, "Removing directory %s", dirs[a]);
+			Log::info(2, S_FMT("Removing directory %s", dirs[a]));
 	}
-	LOG_MESSAGE(2, "Remove check took %lums", App::runTimer() - time);
+	Log::info(2, S_FMT("Remove check took %lums", App::runTimer() - time));
 
 	// Go through entries
 	vector<string> files_written;
@@ -276,9 +276,7 @@ bool DirArchive::save(const string& filename)
 
 		// Write entry to file
 		if (!entries[a]->exportFile(path))
-		{
-			LOG_MESSAGE(1, "Unable to save entry %s: %s", entries[a]->name(), Global::error);
-		}
+			Log::error(S_FMT("Unable to save entry %s: %s", entries[a]->name(), Global::error));
 		else
 			files_written.push_back(path);
 
@@ -336,7 +334,7 @@ bool DirArchive::removeDir(const string& path, ArchiveTreeNode* base)
 	// Add to removed files list
 	for (auto& entry : entries)
 	{
-		LOG_MESSAGE(2, entry->exProp("filePath").stringValue());
+		Log::info(2, entry->exProp("filePath").stringValue());
 		removed_files_.push_back(entry->exProp("filePath").stringValue());
 	}
 
@@ -355,7 +353,7 @@ bool DirArchive::renameDir(ArchiveTreeNode* dir, const string& new_name)
 		path.Replace("/", separator_);
 	StringPair rename(path + dir->name(), path + new_name);
 	renamed_dirs_.push_back(rename);
-	LOG_MESSAGE(2, "RENAME %s to %s", rename.first, rename.second);
+	Log::info(2, S_FMT("RENAME %s to %s", rename.first, rename.second));
 
 	return Archive::renameDir(dir, new_name);
 }

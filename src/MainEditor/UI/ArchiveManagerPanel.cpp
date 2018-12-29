@@ -1086,7 +1086,7 @@ void ArchiveManagerPanel::openFile(const string& filename) const
 	auto new_archive = App::archiveManager().openArchive(filename);
 
 	sw.Pause();
-	LOG_MESSAGE(1, "Opening took %d ms", (int)sw.Time());
+	Log::info(S_FMT("Opening took %d ms", (int)sw.Time()));
 
 	// Hide splash screen
 	UI::hideSplash();
@@ -1128,7 +1128,7 @@ void ArchiveManagerPanel::openDirAsArchive(const string& dir) const
 	auto new_archive = App::archiveManager().openDirArchive(dir);
 
 	sw.Pause();
-	LOG_MESSAGE(1, "Opening took %d ms", (int)sw.Time());
+	Log::info(S_FMT("Opening took %d ms", (int)sw.Time()));
 
 	// Hide splash screen
 	UI::hideSplash();
@@ -1293,7 +1293,7 @@ void ArchiveManagerPanel::checkDirArchives()
 		if (VECTOR_EXISTS(checking_archives_, archive))
 			continue;
 
-		LOG_MESSAGE(2, "Checking %s for external changes...", CHR(archive->filename()));
+		Log::info(2, S_FMT("Checking %s for external changes...", CHR(archive->filename())));
 		checking_archives_.push_back(archive);
 		auto check = new DirArchiveCheck(this, (DirArchive*)archive);
 		check->Create();

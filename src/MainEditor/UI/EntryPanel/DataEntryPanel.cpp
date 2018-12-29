@@ -1194,7 +1194,7 @@ void DataEntryPanel::onGridRightClick(wxGridEvent& e)
 {
 	// Check if only one column is selected
 	int col = getColWithSelection();
-	LOG_MESSAGE(2, "Column %d", col);
+	Log::info(2, S_FMT("Column %d", col));
 
 	wxMenu menu;
 	SAction::fromId("data_add_row")->addToMenu(&menu);

@@ -261,8 +261,6 @@ void MapSide::writeBackup(Backup* backup)
 	// Offsets
 	backup->props_internal["offsetx"] = offset_x_;
 	backup->props_internal["offsety"] = offset_y_;
-
-	// LOG_MESSAGE(1, "Side %d backup sector #%d", id, sector->getIndex());
 }
 
 // -----------------------------------------------------------------------------
@@ -277,7 +275,6 @@ void MapSide::readBackup(Backup* backup)
 		sector_->disconnectSide(this);
 		sector_ = dynamic_cast<MapSector*>(s);
 		sector_->connectSide(this);
-		// LOG_MESSAGE(1, "Side %d load backup sector #%d", id, s->getIndex());
 	}
 	else
 	{

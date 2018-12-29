@@ -220,7 +220,7 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 	//			{
 	//				priority = mypriority;
 	//				props["sprite"] = sprite;
-	//				//LOG_MESSAGE(3, "Actor %s found sprite %s from state %s", name, sprite, spritestate);
+	//				//Log::info(3, "Actor %s found sprite %s from state %s", name, sprite, spritestate);
 	//				lastpriority = -1;
 	//			}
 	//		}
@@ -416,10 +416,10 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 			tz.adv();
 		}
 
-		LOG_MESSAGE(3, "Parsed actor %s: %d", name, ednum);
+		Log::info(3, S_FMT("Parsed actor %s: %d", name, ednum));
 	}
 	else
-		LOG_MESSAGE(1, "Warning: Invalid actor definition for %s", name);
+		Log::warning(S_FMT("Warning: Invalid actor definition for %s", name));
 
 	// Ignore actors filtered for other games,
 	// and actors with a negative or null type
@@ -557,10 +557,10 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 		// Set parsed properties
 		types[type].loadProps(found_props);
 
-		LOG_MESSAGE(3, "Parsed %s %s: %d", group.length() ? group : "decoration", name, type);
+		Log::info(3, S_FMT("Parsed %s %s: %d", group.length() ? group : "decoration", name, type));
 	}
 	else
-		LOG_MESSAGE(3, "Not adding %s %s, no editor number", group.length() ? group : "decoration", name);
+		Log::info(3, S_FMT("Not adding %s %s, no editor number", group.length() ? group : "decoration", name));
 }
 
 // -----------------------------------------------------------------------------

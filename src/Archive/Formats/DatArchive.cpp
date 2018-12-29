@@ -98,7 +98,7 @@ bool DatArchive::open(MemChunk& mc)
 		// the data file is invalid
 		if (offset + size > mc.size())
 		{
-			LOG_MESSAGE(1, "DatArchive::open: Dat archive is invalid or corrupt at entry %i", d);
+			Log::error(S_FMT("DatArchive::open: Dat archive is invalid or corrupt at entry %i", d));
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -546,7 +546,7 @@ bool DatArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "DatArchive::loadEntryData: Failed to open datfile %s", filename_);
+		Log::error(S_FMT("DatArchive::loadEntryData: Failed to open datfile %s", filename_));
 		return false;
 	}
 

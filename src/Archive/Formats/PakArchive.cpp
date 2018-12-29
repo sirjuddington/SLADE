@@ -71,7 +71,7 @@ bool PakArchive::open(MemChunk& mc)
 	// Check it
 	if (pack[0] != 'P' || pack[1] != 'A' || pack[2] != 'C' || pack[3] != 'K')
 	{
-		LOG_MESSAGE(1, "PakArchive::open: Opening failed, invalid header");
+		Log::error("PakArchive::open: Opening failed, invalid header");
 		Global::error = "Invalid pak header";
 		return false;
 	}
@@ -103,7 +103,7 @@ bool PakArchive::open(MemChunk& mc)
 		// Check offset+size
 		if ((unsigned)(offset + size) > mc.size())
 		{
-			LOG_MESSAGE(1, "PakArchive::open: Pak archive is invalid or corrupt (entry goes past end of file)");
+			Log::error("PakArchive::open: Pak archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -225,8 +225,8 @@ bool PakArchive::write(MemChunk& mc, bool update)
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 56)
 		{
-			LOG_MESSAGE(
-				1, "Warning: Entry %s path is too long (> 56 characters), putting it in the root directory", name);
+			Log::warning(
+				S_FMT("Warning: Entry %s path is too long (> 56 characters), putting it in the root directory", name));
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 56)
@@ -289,7 +289,7 @@ bool PakArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "PakArchive::loadEntryData: Unable to open archive file %s", filename_);
+		Log::error(S_FMT("PakArchive::loadEntryData: Unable to open archive file %s", filename_));
 		return false;
 	}
 

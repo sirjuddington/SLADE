@@ -129,7 +129,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		// No change, clear
 		vertices_.clear();
 		vertices_.push_back(0);
-		LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No vertices added/deleted");
+		Log::info(3, "MapObjectCreateDeleteUS: No vertices added/deleted");
 	}
 
 	// Check lines changed
@@ -148,7 +148,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		// No change, clear
 		lines_.clear();
 		lines_.push_back(0);
-		LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No lines added/deleted");
+		Log::info(3, "MapObjectCreateDeleteUS: No lines added/deleted");
 	}
 
 	// Check sides changed
@@ -167,7 +167,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		// No change, clear
 		sides_.clear();
 		sides_.push_back(0);
-		LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No sides added/deleted");
+		Log::info(3, "MapObjectCreateDeleteUS: No sides added/deleted");
 	}
 
 	// Check sectors changed
@@ -186,7 +186,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		// No change, clear
 		sectors_.clear();
 		sectors_.push_back(0);
-		LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No sectors added/deleted");
+		Log::info(3, "MapObjectCreateDeleteUS: No sectors added/deleted");
 	}
 
 	// Check things changed
@@ -205,7 +205,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		// No change, clear
 		things_.clear();
 		things_.push_back(0);
-		LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No things added/deleted");
+		Log::info(3, "MapObjectCreateDeleteUS: No things added/deleted");
 	}
 }
 
@@ -229,7 +229,7 @@ MultiMapObjectPropertyChangeUS::MultiMapObjectPropertyChangeUS()
 		if (bak)
 		{
 			backups_.emplace_back(bak);
-			// LOG_MESSAGE(1, "%s #%d modified", objects[a]->getTypeName(), objects[a]->getIndex());
+			// Log::info(1, "%s #%d modified", objects[a]->getTypeName(), objects[a]->getIndex());
 		}
 	}
 
@@ -264,7 +264,7 @@ bool MultiMapObjectPropertyChangeUS::doUndo()
 
 bool MultiMapObjectPropertyChangeUS::doRedo()
 {
-	// LOG_MESSAGE(2, "Restore %lu objects", backups.size());
+	// Log::info(2, "Restore %lu objects", backups.size());
 	for (unsigned a = 0; a < backups_.size(); a++)
 	{
 		auto obj = UndoRedo::currentMap()->getObjectById(backups_[a]->id);

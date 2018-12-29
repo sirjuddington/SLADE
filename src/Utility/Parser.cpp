@@ -576,7 +576,7 @@ bool Parser::parseText(MemChunk& mc, const string& source) const
 	tz.setReadLowerCase(!case_sensitive_);
 	if (!tz.openMem(mc, source))
 	{
-		LOG_MESSAGE(1, "Unable to open text data for parsing");
+		Log::error("Unable to open text data for parsing");
 		return false;
 	}
 
@@ -591,7 +591,7 @@ bool Parser::parseText(const string& text, const string& source) const
 	tz.setReadLowerCase(!case_sensitive_);
 	if (!tz.openString(text, 0, 0, source))
 	{
-		LOG_MESSAGE(1, "Unable to open text data for parsing");
+		Log::error("Unable to open text data for parsing");
 		return false;
 	}
 

@@ -76,12 +76,12 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	key.QueryValue("IsInstalled", &value);
 	if (value == 0)
 	{
-		LOG_MESSAGE(1, "Windows Media Player not installed, mp3 playback disabled.");
+		Log::warning("Windows Media Player not installed, mp3 playback disabled.");
 		media_ctrl_ = nullptr;
 	}
 	else
 	{
-		LOG_MESSAGE(3, "Windows Media Player installed, using wxMediaCtrl");
+		Log::info(3, "Windows Media Player installed, using wxMediaCtrl");
 		media_ctrl_ = new wxMediaCtrl(this, -1);
 	}
 #else
@@ -391,7 +391,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, const string& filename)
 	// Load into buffer
 	if (sound_buffer_->loadFromMemory((const char*)audio.data(), audio.size()))
 	{
-		LOG_MESSAGE(3, "opened as sound");
+		Log::info(3, "opened as sound");
 		// Bind to sound
 		sound_->setBuffer(*sound_buffer_);
 		audio_type_ = Sound;
@@ -413,7 +413,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, const string& filename)
 	}
 	else if (music_->openFromMemory((const char*)audio.data(), audio.size()))
 	{
-		LOG_MESSAGE(3, "opened as music");
+		Log::info(3, "opened as music");
 		// Couldn't open the audio as a sf::SoundBuffer, try sf::Music instead
 		audio_type_ = Music;
 
@@ -427,7 +427,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, const string& filename)
 	else
 	{
 		// Couldn't open as sound or music, try the wxMediaCtrl
-		LOG_MESSAGE(3, "opened as media");
+		Log::info(3, "opened as media");
 
 		// Dump audio to temp file
 		audio.exportFile(filename);

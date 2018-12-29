@@ -496,7 +496,7 @@ void ResourceManager::listAllPatches()
 		if (i.second.length() == 0)
 			continue;
 
-		LOG_MESSAGE(1, "%s (%d)", i.first, i.second.length());
+		Log::info(S_FMT("%s (%d)", i.first, i.second.length()));
 	}
 }
 

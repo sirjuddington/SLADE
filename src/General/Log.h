@@ -59,11 +59,6 @@ inline void	console(const wxString& text) { message(MessageType::Console, text);
 // clang-format on
 } // namespace Log
 
-// Try to avoid using these and use Log::message/error/warning with S_FMT instead
-#define LOG_MESSAGE(level, ...) Log::message(Log::MessageType::Info, level, wxString::Format(__VA_ARGS__))
-#define LOG_WARNING(level, ...) Log::message(Log::MessageType::Warning, level, wxString::Format(__VA_ARGS__))
-#define LOG_ERROR(level, ...) Log::message(Log::MessageType::Error, level, wxString::Format(__VA_ARGS__))
-
 // Debug helper type
 // Note: NDEBUG is a standard C macro indicating that assert()s should be
 // disabled, but it's also the only macro cmake defines differently between

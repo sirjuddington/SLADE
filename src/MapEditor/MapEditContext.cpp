@@ -371,7 +371,7 @@ bool MapEditContext::update(long frametime)
 // -----------------------------------------------------------------------------
 bool MapEditContext::openMap(Archive::MapDesc map)
 {
-	LOG_MESSAGE(1, "Opening map %s", map.name);
+	Log::info(S_FMT("Opening map %s", map.name));
 	if (!map_.readMap(map))
 		return false;
 
@@ -2225,12 +2225,12 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, Vec2f positio
 
 		if (!v1)
 		{
-			LOG_MESSAGE(1, "no v1");
+			Log::info(1, "no v1");
 			continue;
 		}
 		if (!v2)
 		{
-			LOG_MESSAGE(1, "no v2");
+			Log::info(1, "no v2");
 		}
 
 		auto newline = map->createLine(v1, v2, true);
@@ -2447,7 +2447,7 @@ CONSOLE_COMMAND(m_test_sector, 0, false)
 	for (unsigned a = 0; a < map.nThings(); a++)
 		map.sectorAt(map.thing(a)->position());
 	long ms = clock.getElapsedTime().asMilliseconds();
-	LOG_MESSAGE(1, "Took %ldms", ms);
+	Log::info(S_FMT("Took %ldms", ms));
 }
 
 CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
@@ -2460,33 +2460,33 @@ CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
 	// Vertices
 	for (unsigned a = 0; a < map.nVertices(); a++)
 		map.vertex(a)->backupTo(backup);
-	LOG_MESSAGE(1, "Vertices: %dms", clock.getElapsedTime().asMilliseconds());
+	Log::info(S_FMT("Vertices: %dms", clock.getElapsedTime().asMilliseconds()));
 
 	// Lines
 	clock.restart();
 	for (unsigned a = 0; a < map.nLines(); a++)
 		map.line(a)->backupTo(backup);
-	LOG_MESSAGE(1, "Lines: %dms", clock.getElapsedTime().asMilliseconds());
+	Log::info(S_FMT("Lines: %dms", clock.getElapsedTime().asMilliseconds()));
 
 	// Sides
 	clock.restart();
 	for (unsigned a = 0; a < map.nSides(); a++)
 		map.side(a)->backupTo(backup);
-	LOG_MESSAGE(1, "Sides: %dms", clock.getElapsedTime().asMilliseconds());
+	Log::info(S_FMT("Sides: %dms", clock.getElapsedTime().asMilliseconds()));
 
 	// Sectors
 	clock.restart();
 	for (unsigned a = 0; a < map.nSectors(); a++)
 		map.sector(a)->backupTo(backup);
-	LOG_MESSAGE(1, "Sectors: %dms", clock.getElapsedTime().asMilliseconds());
+	Log::info(S_FMT("Sectors: %dms", clock.getElapsedTime().asMilliseconds()));
 
 	// Things
 	clock.restart();
 	for (unsigned a = 0; a < map.nThings(); a++)
 		map.thing(a)->backupTo(backup);
-	LOG_MESSAGE(1, "Things: %dms", clock.getElapsedTime().asMilliseconds());
+	Log::info(S_FMT("Things: %dms", clock.getElapsedTime().asMilliseconds()));
 
-	LOG_MESSAGE(1, "Total: %dms", totalClock.getElapsedTime().asMilliseconds());
+	Log::info(S_FMT("Total: %dms", totalClock.getElapsedTime().asMilliseconds()));
 }
 
 CONSOLE_COMMAND(m_vertex_attached, 1, false)
@@ -2494,9 +2494,9 @@ CONSOLE_COMMAND(m_vertex_attached, 1, false)
 	MapVertex* vertex = MapEditor::editContext().map().vertex(atoi(CHR(args[0])));
 	if (vertex)
 	{
-		LOG_MESSAGE(1, "Attached lines:");
+		Log::info(1, "Attached lines:");
 		for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
-			LOG_MESSAGE(1, "Line #%lu", vertex->connectedLine(a)->index());
+			Log::info(S_FMT("Line #%lu", vertex->connectedLine(a)->index()));
 	}
 }
 

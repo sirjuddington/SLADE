@@ -112,7 +112,7 @@ bool LibArchive::open(MemChunk& mc)
 		// the wadfile is invalid
 		if (offset + size > dir_offset)
 		{
-			LOG_MESSAGE(1, "LibArchive::open: Lib archive is invalid or corrupt");
+			Log::error("LibArchive::open: Lib archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -256,7 +256,7 @@ bool LibArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		LOG_MESSAGE(1, "LibArchive::loadEntryData: Failed to open libfile %s", filename_);
+		Log::error(S_FMT("LibArchive::loadEntryData: Failed to open libfile %s", filename_));
 		return false;
 	}
 

@@ -410,7 +410,7 @@ string RunDialog::selectedCommandLine(Archive* archive, const string& map_name, 
 			path += text_extra_params_->GetValue();
 		}
 
-		LOG_MESSAGE(2, "Run command: %s", path);
+		Log::info(2, S_FMT("Run command: %s", path));
 		return path;
 	}
 

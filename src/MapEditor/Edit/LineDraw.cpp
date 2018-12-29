@@ -325,7 +325,7 @@ void LineDraw::end(bool apply)
 		// Check for intersections
 		auto intersect =
 			map.cutLines(draw_points_[a].x, draw_points_[a].y, draw_points_[a + 1].x, draw_points_[a + 1].y);
-		LOG_MESSAGE(2, "%lu intersect points", intersect.size());
+		Log::info(2, S_FMT("%lu intersect points", intersect.size()));
 
 		// Create line normally if no intersections
 		if (intersect.empty())

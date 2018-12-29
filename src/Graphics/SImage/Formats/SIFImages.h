@@ -347,7 +347,7 @@ protected:
 			auto rgb = FreeImage_ConvertTo32Bits(bm);
 			if (!rgb)
 			{
-				LOG_MESSAGE(1, "FreeImage_ConvertTo32Bits failed for PNG data");
+				Log::error("FreeImage_ConvertTo32Bits failed for PNG data");
 				Global::error = "Error reading PNG data";
 				return false;
 			}
@@ -500,7 +500,7 @@ protected:
 		// Check it loaded ok
 		if (png.size() == 0)
 		{
-			LOG_MESSAGE(1, "Error reading temporary file");
+			Log::error("Error reading temporary file");
 			return false;
 		}
 

@@ -859,7 +859,7 @@ void TextureXPanel::newTextureFromFile()
 			// If it's not a valid image type, ignore this file
 			if (!entry->type()->extraProps().propertyExists("image"))
 			{
-				LOG_MESSAGE(1, "%s is not a valid image file", file);
+				Log::warning(S_FMT("%s is not a valid image file", file));
 				continue;
 			}
 
@@ -1345,7 +1345,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, const string& filename, bool 
 	SImage image;
 	if (!texture->toImage(image, nullptr, texture_editor_->palette(), force_rgba))
 	{
-		LOG_MESSAGE(1, "Error converting %s: %s", texture->name(), Global::error);
+		Log::error(S_FMT("Error converting %s: %s", texture->name(), Global::error));
 		return false;
 	}
 
@@ -1354,7 +1354,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, const string& filename, bool 
 	auto     fmt_png = SIFormat::getFormat("png");
 	if (!fmt_png->saveImage(image, png, texture_editor_->palette()))
 	{
-		LOG_MESSAGE(1, "Error converting %s", texture->name());
+		Log::error(S_FMT("Error converting %s", texture->name()));
 		return false;
 	}
 

@@ -229,12 +229,12 @@ double CIE::CIEDE2000(ColLAB& col1, ColLAB& col2)
 
 #ifdef DEBUGCIEDE2000
 // This can be moved to before the "return" line in CIE::CIEDE2000() and de-commented to investigate incorrect results.
-/*	LOG_MESSAGE(	// Fun fact: this call hits the parameter limit for wx's log system. One more and it breaks.
+/*	Log::info(S_FMT(	// Fun fact: this call hits the parameter limit for wx's log system. One more and it breaks.
 		"Lab1 (%f; %f; %f), Lab2 (%f; %f; %f), c1 %f, c2 %f, average c %f, a'1 %f, a'2 %f, C'1 %f, C'2 %f, "
 		"h'1 %f, h'2 %f, h' avg %f, G %f, T %f, DL' %f, DC' %f, DH' %f, dTheta %f, RT %f, RC %f, SL %f, SC %f, SH %f, "
 		"d1 %f, d2 %f, d3 %f\n",
 		col1.l, col1.a, col1.b, col2.l, col2.a, col2.b, c1, c2, cavg, ap1, ap2, cp1, cp2,
-		hp1, hp2, hpavg, g, t, dlp, dcp, dhp, dt, rt, rc, sl, sc, sh, d1, d2, d3);
+		hp1, hp2, hpavg, g, t, dlp, dcp, dhp, dt, rt, rc, sl, sc, sh, d1, d2, d3));
 */
 
 /* This function verifies the validity of the algorithm for the "official" test data.
@@ -309,6 +309,6 @@ CONSOLE_COMMAND(testciede, 0)
 		report += S_FMT("\nThere were %d error%s in the results.", errors, (errors > 1 ? "s" : ""));
 	else
 		report += "\nAll results are accurate enough.";
-	LOG_MESSAGE(report);
+	Log::info(report);
 }
 #endif // DEBUGCIEDE2000

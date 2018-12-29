@@ -253,7 +253,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		tz.adv();
 	}
 
-	LOG_MESSAGE(2, "Parsed ZMapInfo entry %s successfully", entry->name());
+	Log::info(2, S_FMT("Parsed ZMapInfo entry %s successfully", entry->name()));
 
 	return true;
 }
@@ -423,7 +423,7 @@ bool MapInfo::parseZMap(Tokenizer& tz, const string& type)
 
 	if (type == "map")
 	{
-		LOG_MESSAGE(2, "Parsed ZMapInfo Map %s (%s) successfully", map.entry_name, map.name);
+		Log::info(2, S_FMT("Parsed ZMapInfo Map %s (%s) successfully", map.entry_name, map.name));
 
 		// Update existing map
 		bool updated = false;
@@ -575,8 +575,7 @@ void MapInfo::dumpDoomEdNums()
 		if (num.second.actor_class.empty())
 			continue;
 
-		LOG_MESSAGE(
-			1,
+		Log::info(S_FMT(
 			"DoomEdNum %d: Class \"%s\", Special \"%s\", Args %d,%d,%d,%d,%d",
 			num.first,
 			num.second.actor_class,
@@ -585,7 +584,7 @@ void MapInfo::dumpDoomEdNums()
 			num.second.args[1],
 			num.second.args[2],
 			num.second.args[3],
-			num.second.args[4]);
+			num.second.args[4]));
 	}
 }
 

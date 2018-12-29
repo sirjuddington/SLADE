@@ -350,7 +350,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 			// If it's not a valid image type, ignore this file
 			if (!entry->type()->extraProps().propertyExists("image"))
 			{
-				LOG_MESSAGE(1, "%s is not a valid image file", file);
+				Log::warning(S_FMT("%s is not a valid image file", file));
 				continue;
 			}
 

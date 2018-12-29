@@ -151,7 +151,7 @@ bool Property::boolValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Boolean)
-		LOG_MESSAGE(1, "Warning: Requested Boolean value of a %s Property", typeString());
+		Log::warning(S_FMT("Requested Boolean value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::Boolean)
@@ -189,7 +189,7 @@ int Property::intValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Int)
-		LOG_MESSAGE(1, "Warning: Requested Integer value of a %s Property", typeString());
+		Log::warning(S_FMT("Requested Integer value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::Int)
@@ -229,7 +229,7 @@ double Property::floatValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Float)
-		LOG_MESSAGE(1, "Warning: Requested Float value of a %s Property", typeString());
+		Log::warning(S_FMT("Requested Float value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::Float)
@@ -269,7 +269,7 @@ string Property::stringValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::String)
-		LOG_MESSAGE(1, "Warning: Requested String value of a %s Property", typeString());
+		Log::warning(S_FMT("Warning: Requested String value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::String)
@@ -309,7 +309,7 @@ unsigned Property::unsignedValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Int)
-		LOG_MESSAGE(1, "Warning: Requested Integer value of a %s Property", typeString());
+		Log::warning(S_FMT("Requested Integer value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::Int)

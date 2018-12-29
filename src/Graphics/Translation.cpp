@@ -370,7 +370,7 @@ void Translation::read(const uint8_t* data)
 		}
 		val = data[i];
 	}
-	LOG_MESSAGE(3, "Translation table analyzed as " + asText());
+	Log::info(3, S_FMT("Translation table analyzed as " + asText()));
 }
 
 // -----------------------------------------------------------------------------

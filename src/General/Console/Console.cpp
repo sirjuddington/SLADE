@@ -62,7 +62,7 @@ void Console::addCommand(ConsoleCommand& c)
 // -----------------------------------------------------------------------------
 void Console::execute(const string& command)
 {
-	LOG_MESSAGE(1, "> %s", command);
+	Log::info(S_FMT("> %s", command));
 
 	// Don't bother doing anything else with an empty command
 	if (command.empty())

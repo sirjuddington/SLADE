@@ -368,13 +368,6 @@ bool MapSector::isWithin(Vec2f point)
 	for (auto& connected_side : connected_sides_)
 	{
 		// Calculate distance to line
-		// if (connected_sides[a] == NULL) {
-		//	LOG_MESSAGE(3, "Warning: connected side #%i is a NULL pointer!", a);
-		//	continue;
-		//} else if (connected_sides[a]->getParentLine() == NULL) {
-		//	LOG_MESSAGE(3, "Warning: connected side #%i has a NULL pointer parent line!",
-		// connected_sides[a]->getIndex()); 	continue;
-		//}
 		dist = connected_side->parentLine()->distanceTo(point);
 
 		// Check distance

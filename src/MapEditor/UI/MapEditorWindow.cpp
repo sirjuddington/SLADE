@@ -646,7 +646,7 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 		if (map.head
 			&& !MapEditor::backupManager().writeBackup(
 				   map_data_, map.head->topParent()->filename(false), map.head->name(true)))
-			LOG_MESSAGE(1, "Warning: Failed to backup map data");
+			Log::warning("Failed to backup map data");
 	}
 
 	return ok;
@@ -768,14 +768,14 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	if (wxFileExists(builder.path))
 	{
 		wxArrayString out;
-		LOG_MESSAGE(1, "execute \"%s %s\"", builder.path, command);
+		Log::info(S_FMT("execute \"%s %s\"", builder.path, command));
 		wxGetApp().SetTopWindow(this);
 		auto focus = wxWindow::FindFocus();
 		wxExecute(S_FMT("\"%s\" %s", builder.path, command), out, wxEXEC_HIDE_CONSOLE);
 		wxGetApp().SetTopWindow(MainEditor::windowWx());
 		if (focus)
 			focus->SetFocusFromKbd();
-		LOG_MESSAGE(1, "Nodebuilder output:");
+		Log::info(1, "Nodebuilder output:");
 		for (const auto& line : out)
 			Log::info(line);
 
@@ -784,7 +784,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		wad->open(filename);
 	}
 	else if (nb_warned)
-		LOG_MESSAGE(1, "Nodebuilder path not set up, no nodes were built");
+		Log::info(1, "Nodebuilder path not set up, no nodes were built");
 }
 
 // -----------------------------------------------------------------------------

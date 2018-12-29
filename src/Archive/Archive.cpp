@@ -422,7 +422,7 @@ bool Archive::open(const string& filename)
 	sf::Clock timer;
 	if (open(mc))
 	{
-		LOG_MESSAGE(2, "Archive::open took %dms", timer.getElapsedTime().asMilliseconds());
+		Log::info(2, S_FMT("Archive::open took %dms", timer.getElapsedTime().asMilliseconds()));
 		on_disk_ = true;
 		return true;
 	}
@@ -630,7 +630,7 @@ bool Archive::save(const string& filename)
 			{
 				// Copy current file contents to new backup file
 				string bakfile = filename_ + ".bak";
-				LOG_MESSAGE(1, "Creating backup %s", bakfile);
+				Log::info(S_FMT("Creating backup %s", bakfile));
 				wxCopyFile(filename_, bakfile, true);
 			}
 
@@ -1111,7 +1111,7 @@ bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 	// Check they are both in the same directory
 	if (entry2->parentDir() != dir)
 	{
-		LOG_MESSAGE(1, "Error: Can't swap two entries in different directories");
+		Log::error("Can't swap two entries in different directories");
 		return false;
 	}
 
@@ -1650,21 +1650,15 @@ bool Archive::loadFormats(MemChunk& mc)
 			}
 		}
 
-		LOG_MESSAGE(3, "Read archive format %s: \"%s\"", fmt.id, fmt.name);
+		Log::info(3, S_FMT("Read archive format %s: \"%s\"", fmt.id, fmt.name));
 		if (fmt.supports_dirs)
-		{
-			LOG_MESSAGE(3, "  Supports folders");
-		}
+			Log::info(3, "  Supports folders");
 		if (fmt.names_extensions)
-		{
-			LOG_MESSAGE(3, "  Entry names have extensions");
-		}
+			Log::info(3, "  Entry names have extensions");
 		if (fmt.max_name_length >= 0)
-		{
-			LOG_MESSAGE(3, "  Max entry name length: %d", fmt.max_name_length);
-		}
+			Log::info(3, S_FMT("  Max entry name length: %d", fmt.max_name_length));
 		for (auto ext : fmt.extensions)
-			LOG_MESSAGE(3, "  Extension \"%s\" = \"%s\"", ext.first, ext.second);
+			Log::info(3, S_FMT("  Extension \"%s\" = \"%s\"", ext.first, ext.second));
 
 		formats.push_back(fmt);
 	}

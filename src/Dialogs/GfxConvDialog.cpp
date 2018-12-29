@@ -446,7 +446,6 @@ void GfxConvDialog::updatePreviewGfx()
 	convertOptions(opt);
 
 	// Do conversion
-	// LOG_MESSAGE(1, "Converting to %s", current_format.format->getName());
 	current_format_.format->convertWritable(gfx_target_->image(), opt);
 
 

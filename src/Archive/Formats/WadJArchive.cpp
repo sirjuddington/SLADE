@@ -84,7 +84,7 @@ bool WadJArchive::open(MemChunk& mc)
 	// Check the header
 	if (wad_type_[1] != 'W' || wad_type_[2] != 'A' || wad_type_[3] != 'D')
 	{
-		LOG_MESSAGE(1, "WadJArchive::openFile: File %s has invalid header", filename_);
+		Log::error(S_FMT("WadJArchive::openFile: File %s has invalid header", filename_));
 		Global::error = "Invalid wad header";
 		return false;
 	}
@@ -152,7 +152,7 @@ bool WadJArchive::open(MemChunk& mc)
 		// the wadfile is invalid
 		if (offset + actualsize > mc.size())
 		{
-			LOG_MESSAGE(1, "WadJArchive::open: Wad archive is invalid or corrupt");
+			Log::error("WadJArchive::open: Wad archive is invalid or corrupt");
 			Global::error =
 				S_FMT("Archive is invalid and/or corrupt (lump %d: %s data goes past end of file)", d, name);
 			setMuted(false);
@@ -202,12 +202,11 @@ bool WadJArchive::open(MemChunk& mc)
 					&& (unsigned)(int)(entry->exProp("FullSize")) > entry->size())
 					edata.reSize((int)(entry->exProp("FullSize")), true);
 				if (!jaguarDecode(edata))
-					LOG_MESSAGE(
-						1,
+					Log::warning(S_FMT(
 						"%i: %s (following %s), did not decode properly",
 						a,
 						entry->name(),
-						a > 0 ? entryAt(a - 1)->name() : "nothing");
+						a > 0 ? entryAt(a - 1)->name() : "nothing"));
 			}
 			entry->importMemChunk(edata);
 		}
@@ -462,7 +461,7 @@ bool WadJArchive::jaguarDecode(MemChunk& mc)
 	}
 	// Finalize stuff
 	size_t osize = output - ostart;
-	// LOG_MESSAGE(1, "Input size = %d, used input = %d, computed length = %d, output size = %d", isize, input - istart,
+	// Log::info(1, "Input size = %d, used input = %d, computed length = %d, output size = %d", isize, input - istart,
 	// length, osize);
 	mc.importMem(ostart, osize);
 	delete[] ostart;

@@ -169,7 +169,6 @@ void MapRenderer3D::refresh()
 	skytex1_      = minf.sky1;
 	skytex2_      = minf.sky2;
 	skycol_top_.a = 0;
-	// LOG_MESSAGE(1, "sky1: %s, sky2: %s", skytex1, skytex2);
 }
 
 // -----------------------------------------------------------------------------

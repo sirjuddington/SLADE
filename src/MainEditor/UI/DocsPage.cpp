@@ -123,12 +123,6 @@ void DocsPage::updateNavButtons() const
 	tb_back_->Enable(wv_browser_->CanGoBack());
 	tb_forward_->Enable(wv_browser_->CanGoForward());
 	toolbar_->updateLayout(true);
-
-	/*if (wv_browser->CanGoBack())
-		LOG_MESSAGE(0, "Can Go Back");
-
-	if (wv_browser->CanGoForward())
-		LOG_MESSAGE(0, "Can Go Forward");*/
 }
 
 // -----------------------------------------------------------------------------
@@ -203,9 +197,6 @@ void DocsPage::onHTMLLinkClicked(wxEvent& e)
 void DocsPage::onNavigationDone(wxEvent& e)
 {
 	updateNavButtons();
-
-	// wxWebViewEvent& ev = (wxWebViewEvent&)e;
-	// LOG_MESSAGE(0, ev.GetURL());
 }
 
 #endif // USE_WEBVIEW_STARTPAGE

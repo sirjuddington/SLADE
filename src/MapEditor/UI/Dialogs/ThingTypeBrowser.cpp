@@ -156,12 +156,12 @@ void ThingTypeBrowser::setupViewOptions()
 // -----------------------------------------------------------------------------
 // Returns the currently selected thing type
 // -----------------------------------------------------------------------------
-int ThingTypeBrowser::selectedType()
+int ThingTypeBrowser::selectedType() const
 {
 	auto selected = selectedItem();
 	if (selected)
 	{
-		LOG_MESSAGE(1, "Selected item %d", selected->index());
+		Log::info(S_FMT("Selected item %d", selected->index()));
 		return selected->index();
 	}
 	else

@@ -989,8 +989,6 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 					if (!group_custom_)
 						group_custom_ = pg_properties_->Append(new wxPropertyCategory("Custom"));
 
-					// LOG_MESSAGE(2, "Add custom property \"%s\"", objprops[b].name);
-
 					// Add property
 					switch (prop.value.type())
 					{

@@ -129,7 +129,7 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry::UPtr>& map_data, string 
 
 		if (same)
 		{
-			LOG_MESSAGE(2, "Same data as previous backup - ignoring");
+			Log::info(2, "Same data as previous backup - ignoring");
 			return true;
 		}
 	}

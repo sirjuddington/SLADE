@@ -662,7 +662,7 @@ void App::exit(bool save_config)
 	while (files)
 	{
 		if (!wxRemoveFile(App::path(filename, App::Dir::Temp)))
-			LOG_WARNING(1, "Warning: Could not clean up temporary file \"%s\"", filename);
+			Log::warning(S_FMT("Could not clean up temporary file \"%s\"", filename));
 		files = temp.GetNext(&filename);
 	}
 

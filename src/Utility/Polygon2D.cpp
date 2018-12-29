@@ -630,7 +630,7 @@ bool PolygonSplitter::tracePolyOutline(int edge_start)
 	if (a >= 99999)
 	{
 		if (verbose_)
-			LOG_MESSAGE(1, "Possible infinite loop in tracePolyOutline");
+			Log::info("Possible infinite loop in tracePolyOutline");
 		return false;
 	}
 
@@ -688,7 +688,7 @@ bool PolygonSplitter::testTracePolyOutline(int edge_start)
 	if (a >= 99999)
 	{
 		if (verbose_)
-			LOG_MESSAGE(1, "Possible infinite loop in tracePolyOutline");
+			Log::info("Possible infinite loop in tracePolyOutline");
 		return false;
 	}
 
@@ -891,7 +891,7 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		tracePolyOutline(a);
 	}
 	if (verbose_)
-		LOG_MESSAGE(1, "%lu Polygon outlines detected", polygon_outlines_.size());
+		Log::info(S_FMT("%lu Polygon outlines detected", polygon_outlines_.size()));
 
 	// Check if any edges are not part of a polygon outline
 	for (auto& edge : edges_)
@@ -922,7 +922,7 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		if (separate && polygon_outlines_[a].clockwise && polygon_outlines_[a].convex)
 		{
 			if (verbose_)
-				LOG_MESSAGE(1, "Separate, convex polygon exists, cutting (valid)");
+				Log::info("Separate, convex polygon exists, cutting (valid)");
 			for (int edge : polygon_outlines_[a].edges)
 			{
 				// Set the edge to 'done' so it is ignored, but still used to build polygons
@@ -943,7 +943,7 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		else if (separate && !polygon_outlines_[a].clockwise)
 		{
 			if (verbose_)
-				LOG_MESSAGE(1, "Separate, anticlockwise polygon exists, cutting (invalid)");
+				Log::info("Separate, anticlockwise polygon exists, cutting (invalid)");
 			for (int edge : polygon_outlines_[a].edges)
 			{
 				// Set the edge to 'done' so it is ignored, but still used to build polygons
