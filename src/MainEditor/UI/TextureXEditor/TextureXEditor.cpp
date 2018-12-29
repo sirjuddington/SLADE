@@ -213,7 +213,7 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 	listenTo(&patch_table_);
 
 	// Listen to resource manager
-	listenTo(theResourceManager);
+	listenTo(&App::resources());
 
 	// Update + layout
 	wxWindowBase::Layout();
@@ -473,7 +473,7 @@ bool TextureXEditor::removePatch(unsigned index, bool delete_entry)
 		texture_editor->txList().removePatch(name);
 
 	// Delete patch entry if it's part of this archive (and delete_entry is true)
-	auto entry = theResourceManager->getPatchEntry(name, "patches", archive_);
+	auto entry = App::resources().getPatchEntry(name, "patches", archive_);
 	if (delete_entry && entry && entry->parent() == archive_)
 		archive_->removeEntry(entry);
 
@@ -551,9 +551,9 @@ bool TextureXEditor::checkTextures()
 				// Extended texture, check if each patch exists in any open archive (or as a composite texture)
 				for (unsigned p = 0; p < tex->nPatches(); p++)
 				{
-					auto pentry = theResourceManager->getPatchEntry(tex->patch(p)->name());
-					auto fentry = theResourceManager->getFlatEntry(tex->patch(p)->name());
-					auto ptex   = theResourceManager->getTexture(tex->patch(p)->name());
+					auto pentry = App::resources().getPatchEntry(tex->patch(p)->name());
+					auto fentry = App::resources().getFlatEntry(tex->patch(p)->name());
+					auto ptex   = App::resources().getTexture(tex->patch(p)->name());
 					if (!pentry && !fentry && !ptex)
 						problems +=
 							S_FMT("Texture %s contains invalid/unknown patch %s\n", tex->name(), tex->patch(p)->name());
@@ -577,7 +577,7 @@ bool TextureXEditor::checkTextures()
 	{
 		// Check patch entry is valid
 		auto& patch = patch_table_.patch(a);
-		auto  entry = theResourceManager->getPatchEntry(patch.name, "patches", archive_);
+		auto  entry = App::resources().getPatchEntry(patch.name, "patches", archive_);
 
 		if (!entry)
 		{
@@ -710,7 +710,7 @@ void TextureXEditor::onAnnouncement(Announcer* announcer, const string& event_na
 		pb_update_ = true;
 	}
 
-	if (announcer == theResourceManager && event_name == "resources_updated")
+	if (announcer == &App::resources() && event_name == "resources_updated")
 	{
 		pb_update_ = true;
 		updateTexturePalette();

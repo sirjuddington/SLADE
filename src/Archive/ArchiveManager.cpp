@@ -200,7 +200,7 @@ bool ArchiveManager::addArchive(Archive* archive)
 		announce("archive_added");
 
 		// Add to resource manager
-		theResourceManager->addArchive(archive);
+		App::resources().addArchive(archive);
 
 		// ZDoom also loads any WADs found in the root of a PK3 or directory
 		if ((archive->formatId() == "zip" || archive->formatId() == "folder") && auto_open_wads_root)
@@ -598,7 +598,7 @@ bool ArchiveManager::closeArchive(int index)
 	deleteBookmarksInArchive(open_archives_[index].archive);
 
 	// Remove from resource manager
-	theResourceManager->removeArchive(open_archives_[index].archive);
+	App::resources().removeArchive(open_archives_[index].archive);
 
 	// Close any open child archives
 	// Clear out the open_children vector first, lest the children try to remove themselves from it
@@ -790,9 +790,9 @@ void ArchiveManager::setArchiveResource(Archive* archive, bool resource)
 
 		// Update resource manager
 		if (resource && !was_resource)
-			theResourceManager->addArchive(archive);
+			App::resources().addArchive(archive);
 		else if (!resource && was_resource)
-			theResourceManager->removeArchive(archive);
+			App::resources().removeArchive(archive);
 	}
 }
 
@@ -869,7 +869,7 @@ bool ArchiveManager::openBaseResource(int index)
 	// Close/delete current base resource archive
 	if (base_resource_archive_)
 	{
-		theResourceManager->removeArchive(base_resource_archive_.get());
+		App::resources().removeArchive(base_resource_archive_.get());
 		base_resource_archive_ = nullptr;
 	}
 
@@ -896,7 +896,7 @@ bool ArchiveManager::openBaseResource(int index)
 	{
 		base_resource = index;
 		UI::hideSplash();
-		theResourceManager->addArchive(base_resource_archive_.get());
+		App::resources().addArchive(base_resource_archive_.get());
 		announce("base_resource_changed");
 		return true;
 	}

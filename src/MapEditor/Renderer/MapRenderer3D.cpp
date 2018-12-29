@@ -99,7 +99,7 @@ MapRenderer3D::MapRenderer3D(SLADEMap* map) : map_{ map }
 
 	// Listen to stuff
 	listenTo(theMainWindow->paletteChooser());
-	listenTo(theResourceManager);
+	listenTo(&App::resources());
 }
 
 // -----------------------------------------------------------------------------
@@ -3136,7 +3136,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 // -----------------------------------------------------------------------------
 void MapRenderer3D::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
 {
-	if (announcer != theMainWindow->paletteChooser() && announcer != theResourceManager)
+	if (announcer != theMainWindow->paletteChooser() && announcer != &App::resources())
 		return;
 
 	if (event_name == "resources_updated" || event_name == "main_palette_changed")

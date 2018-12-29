@@ -72,7 +72,7 @@ MapTextureManager::MapTextureManager(Archive* archive) : archive_{ archive }, pa
 void MapTextureManager::init()
 {
 	// Listen to the various managers
-	listenTo(theResourceManager);
+	listenTo(&App::resources());
 	listenTo(&App::archiveManager());
 	listenTo(theMainWindow->paletteChooser());
 	palette_->copyPalette(resourcePalette());
@@ -86,7 +86,7 @@ Palette* MapTextureManager::resourcePalette() const
 {
 	if (theMainWindow->paletteChooser()->globalSelected())
 	{
-		auto entry = theResourceManager->getPaletteEntry("PLAYPAL", archive_);
+		auto entry = App::resources().getPaletteEntry("PLAYPAL", archive_);
 
 		if (!entry)
 			return theMainWindow->paletteChooser()->selectedPalette();
@@ -136,11 +136,11 @@ GLTexture* MapTextureManager::texture(const string& name, bool mixed)
 	// Texture not found or unloaded, look for it
 
 	// Look for stand-alone textures first
-	auto etex         = theResourceManager->getTextureEntry(name, "hires", archive_);
+	auto etex         = App::resources().getTextureEntry(name, "hires", archive_);
 	auto textypefound = CTexture::Type::HiRes;
 	if (etex == nullptr)
 	{
-		etex         = theResourceManager->getTextureEntry(name, "textures", archive_);
+		etex         = App::resources().getTextureEntry(name, "textures", archive_);
 		textypefound = CTexture::Type::Texture;
 	}
 	if (etex)
@@ -156,7 +156,7 @@ GLTexture* MapTextureManager::texture(const string& name, bool mixed)
 			// Handle hires texture scale
 			if (textypefound == CTexture::Type::HiRes)
 			{
-				auto ref = theResourceManager->getTextureEntry(name, "textures", archive_);
+				auto ref = App::resources().getTextureEntry(name, "textures", archive_);
 				if (ref)
 				{
 					SImage imgref;
@@ -176,7 +176,7 @@ GLTexture* MapTextureManager::texture(const string& name, bool mixed)
 	}
 
 	// Try composite textures then
-	auto ctex = theResourceManager->getTexture(name, archive_);
+	auto ctex = App::resources().getTexture(name, archive_);
 	if (ctex) // Composite textures take precedence over the textures directory
 	{
 		textypefound = CTexture::Type::WallTexture;
@@ -249,7 +249,7 @@ GLTexture* MapTextureManager::flat(const string& name, bool mixed)
 
 	if (mixed)
 	{
-		auto ctex = theResourceManager->getTexture(name, archive_);
+		auto ctex = App::resources().getTexture(name, archive_);
 		if (ctex && ctex->isExtended() && ctex->type() != "WallTexture")
 		{
 			SImage image;
@@ -275,11 +275,11 @@ GLTexture* MapTextureManager::flat(const string& name, bool mixed)
 	// Palette8bit* pal = getResourcePalette();
 	if (!mtex.texture)
 	{
-		auto entry = theResourceManager->getTextureEntry(name, "hires", archive_);
+		auto entry = App::resources().getTextureEntry(name, "hires", archive_);
 		if (entry == nullptr)
-			entry = theResourceManager->getTextureEntry(name, "flats", archive_);
+			entry = App::resources().getTextureEntry(name, "flats", archive_);
 		if (entry == nullptr)
-			entry = theResourceManager->getFlatEntry(name, archive_);
+			entry = App::resources().getFlatEntry(name, archive_);
 		if (entry)
 		{
 			SImage image;
@@ -355,9 +355,9 @@ GLTexture* MapTextureManager::sprite(string name, const string& translation, con
 	bool   mirror = false;
 	SImage image;
 	// Palette8bit* pal = getResourcePalette();
-	auto entry = theResourceManager->getPatchEntry(name, "sprites", archive_);
+	auto entry = App::resources().getPatchEntry(name, "sprites", archive_);
 	if (!entry)
-		entry = theResourceManager->getPatchEntry(name, "", archive_);
+		entry = App::resources().getPatchEntry(name, "", archive_);
 	if (!entry && name.length() == 8)
 	{
 		string newname = name;
@@ -365,7 +365,7 @@ GLTexture* MapTextureManager::sprite(string name, const string& translation, con
 		newname[5]     = name[7];
 		newname[6]     = name[4];
 		newname[7]     = name[5];
-		entry          = theResourceManager->getPatchEntry(newname, "sprites", archive_);
+		entry          = App::resources().getPatchEntry(newname, "sprites", archive_);
 		if (entry)
 			mirror = true;
 	}
@@ -376,7 +376,7 @@ GLTexture* MapTextureManager::sprite(string name, const string& translation, con
 	}
 	else // Try composite textures then
 	{
-		auto ctex = theResourceManager->getTexture(name, archive_);
+		auto ctex = App::resources().getTexture(name, archive_);
 		if (ctex && ctex->toImage(image, archive_, palette_.get(), true))
 			found = true;
 	}
@@ -393,7 +393,7 @@ GLTexture* MapTextureManager::sprite(string name, const string& translation, con
 		// Apply palette override
 		if (!palette.IsEmpty())
 		{
-			auto newpal = theResourceManager->getPaletteEntry(palette, archive_);
+			auto newpal = App::resources().getPaletteEntry(palette, archive_);
 			if (newpal && newpal->size() == 768)
 			{
 				pal = image.palette();
@@ -449,9 +449,9 @@ int MapTextureManager::verticalOffset(const string& name) const
 		return 0;
 
 	// Get sprite matching name
-	auto entry = theResourceManager->getPatchEntry(name, "sprites", archive_);
+	auto entry = App::resources().getPatchEntry(name, "sprites", archive_);
 	if (!entry)
-		entry = theResourceManager->getPatchEntry(name, "", archive_);
+		entry = App::resources().getPatchEntry(name, "", archive_);
 	if (entry)
 	{
 		SImage image;
@@ -553,7 +553,7 @@ void MapTextureManager::buildTexInfoList()
 
 	// Composite textures
 	vector<TextureResource::Texture*> textures;
-	theResourceManager->putAllTextures(textures, App::archiveManager().baseResourceArchive());
+	App::resources().putAllTextures(textures, App::archiveManager().baseResourceArchive());
 	for (auto& texture : textures)
 	{
 		auto tex    = &texture->tex;
@@ -581,7 +581,7 @@ void MapTextureManager::buildTexInfoList()
 	if (Game::configuration().featureSupported(Game::Feature::TxTextures))
 	{
 		vector<ArchiveEntry*> patches;
-		theResourceManager->putAllPatchEntries(
+		App::resources().putAllPatchEntries(
 			patches, nullptr, Game::configuration().featureSupported(Game::Feature::LongNames));
 		for (unsigned a = 0; a < patches.size(); a++)
 		{
@@ -599,7 +599,7 @@ void MapTextureManager::buildTexInfoList()
 
 	// Flats
 	vector<ArchiveEntry*> flats;
-	theResourceManager->putAllFlatEntries(
+	App::resources().putAllFlatEntries(
 		flats, nullptr, Game::configuration().featureSupported(Game::Feature::LongNames));
 	for (unsigned a = 0; a < flats.size(); a++)
 	{
@@ -630,7 +630,7 @@ void MapTextureManager::onAnnouncement(Announcer* announcer, const string& event
 {
 	// Only interested in the resource manager,
 	// archive manager and palette chooser.
-	if (announcer != theResourceManager && announcer != theMainWindow->paletteChooser()
+	if (announcer != &App::resources() && announcer != theMainWindow->paletteChooser()
 		&& announcer != &App::archiveManager())
 		return;
 

@@ -36,12 +36,13 @@
 #include "Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "External/dumb/dumb.h"
 #include "Game/Configuration.h"
+#include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
 #include "General/Console/Console.h"
-#include "General/Clipboard.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
 #include "General/Misc.h"
+#include "General/ResourceManager.h"
 #include "General/SAction.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
@@ -88,10 +89,11 @@ string dir_separator = "/";
 #endif
 
 // App objects (managers, etc.)
-Console        console_main;
-PaletteManager palette_manager;
-ArchiveManager archive_manager;
-Clipboard      clip_board;
+Console         console_main;
+PaletteManager  palette_manager;
+ArchiveManager  archive_manager;
+Clipboard       clip_board;
+ResourceManager resource_manager;
 } // namespace App
 
 CVAR(Int, temp_location, 0, CVar::Flag::Save)
@@ -379,6 +381,14 @@ ArchiveManager& App::archiveManager()
 Clipboard& App::clipboard()
 {
 	return clip_board;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the Resource Manager
+// -----------------------------------------------------------------------------
+ResourceManager& App::resources()
+{
+	return resource_manager;
 }
 
 // -----------------------------------------------------------------------------

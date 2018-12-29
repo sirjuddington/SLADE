@@ -65,15 +65,15 @@ CTPatch::CTPatch(const string& name, int16_t offset_x, int16_t offset_y) :
 ArchiveEntry* CTPatch::patchEntry(Archive* parent)
 {
 	// Default patches should be in patches namespace
-	auto entry = theResourceManager->getPatchEntry(name_, "patches", parent);
+	auto entry = App::resources().getPatchEntry(name_, "patches", parent);
 
 	// Not found in patches, check in graphics namespace
 	if (!entry)
-		entry = theResourceManager->getPatchEntry(name_, "graphics", parent);
+		entry = App::resources().getPatchEntry(name_, "graphics", parent);
 
 	// Not found in patches, check in stand-alone texture namespace
 	if (!entry)
-		entry = theResourceManager->getPatchEntry(name_, "textures", parent);
+		entry = App::resources().getPatchEntry(name_, "textures", parent);
 
 	return entry;
 }
@@ -123,22 +123,22 @@ ArchiveEntry* CTPatchEx::patchEntry(Archive* parent)
 	// 'Patch' type: patches > graphics
 	if (type_ == Type::Patch)
 	{
-		auto entry = theResourceManager->getPatchEntry(name_, "patches", parent);
+		auto entry = App::resources().getPatchEntry(name_, "patches", parent);
 		if (!entry)
-			entry = theResourceManager->getFlatEntry(name_, parent);
+			entry = App::resources().getFlatEntry(name_, parent);
 		if (!entry)
-			entry = theResourceManager->getPatchEntry(name_, "graphics", parent);
+			entry = App::resources().getPatchEntry(name_, "graphics", parent);
 		return entry;
 	}
 
 	// 'Graphic' type: graphics > patches
 	if (type_ == Type::Graphic)
 	{
-		auto entry = theResourceManager->getPatchEntry(name_, "graphics", parent);
+		auto entry = App::resources().getPatchEntry(name_, "graphics", parent);
 		if (!entry)
-			entry = theResourceManager->getPatchEntry(name_, "patches", parent);
+			entry = App::resources().getPatchEntry(name_, "patches", parent);
 		if (!entry)
-			entry = theResourceManager->getFlatEntry(name_, parent);
+			entry = App::resources().getFlatEntry(name_, parent);
 		return entry;
 	}
 	// Silence warnings
@@ -689,7 +689,7 @@ bool CTexture::parseDefine(Tokenizer& tz)
 	def_height_ = tz.next().asInt();
 	width_      = def_width_;
 	height_     = def_height_;
-	auto entry  = theResourceManager->getPatchEntry(name_);
+	auto entry  = App::resources().getPatchEntry(name_);
 	if (entry)
 	{
 		SImage image;
@@ -970,7 +970,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 
 		// Otherwise, try the resource manager
 		// TODO: Something has to be ignored here. The entire archive or just the current list?
-		auto tex = theResourceManager->getTexture(patch->name(), parent);
+		auto tex = App::resources().getTexture(patch->name(), parent);
 		if (tex)
 			return tex->toImage(image, parent, pal);
 	}
@@ -983,7 +983,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 		return Misc::loadImageFromEntry(&image, entry);
 
 	// Maybe it's a texture?
-	entry = theResourceManager->getTextureEntry(patch->name(), "", parent);
+	entry = App::resources().getTextureEntry(patch->name(), "", parent);
 
 	if (entry)
 		return Misc::loadImageFromEntry(&image, entry);

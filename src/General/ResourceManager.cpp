@@ -43,8 +43,7 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-ResourceManager* ResourceManager::instance_ = nullptr;
-string           ResourceManager::doom64_hash_table_[65536];
+string ResourceManager::doom64_hash_table_[65536];
 
 
 // -----------------------------------------------------------------------------
@@ -770,7 +769,7 @@ void ResourceManager::onAnnouncement(Announcer* announcer, const string& event_n
 
 CONSOLE_COMMAND(list_res_patches, 0, false)
 {
-	theResourceManager->listAllPatches();
+	App::resources().listAllPatches();
 }
 
 #include "App.h"
@@ -787,12 +786,12 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 		auto start = App::runTimer();
 		for (unsigned a = 0; a < 100; a++)
 		{
-			theResourceManager->putAllPatchEntries(list, nullptr);
+			App::resources().putAllPatchEntries(list, nullptr);
 			list.clear();
 		}
 		for (unsigned a = 0; a < 100; a++)
 		{
-			theResourceManager->putAllFlatEntries(list, nullptr);
+			App::resources().putAllFlatEntries(list, nullptr);
 			list.clear();
 		}
 		auto end = App::runTimer();

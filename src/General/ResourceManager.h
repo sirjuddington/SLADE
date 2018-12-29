@@ -12,8 +12,8 @@ class Resource
 	friend class ResourceManager;
 
 public:
-	Resource(string type) { this->type_ = type; }
-	virtual ~Resource() {}
+	Resource(const string& type) : type_{ type } {}
+	virtual ~Resource() = default;
 
 	virtual int length() { return 0; }
 
@@ -27,7 +27,7 @@ class EntryResource : public Resource
 
 public:
 	EntryResource() : Resource("entry") {}
-	virtual ~EntryResource() {}
+	virtual ~EntryResource() = default;
 
 	void add(ArchiveEntry::SPtr& entry);
 	void remove(ArchiveEntry::SPtr& entry);
@@ -55,7 +55,7 @@ public:
 	};
 
 	TextureResource() : Resource("texture") {}
-	virtual ~TextureResource() {}
+	virtual ~TextureResource() = default;
 
 	void add(CTexture* tex, Archive* parent);
 	void remove(Archive* parent);
@@ -72,16 +72,8 @@ typedef std::map<string, TextureResource> TextureResourceMap;
 class ResourceManager : public Listener, public Announcer
 {
 public:
-	ResourceManager() {}
-	~ResourceManager() {}
-
-	static ResourceManager* getInstance()
-	{
-		if (!instance_)
-			instance_ = new ResourceManager();
-
-		return instance_;
-	}
+	ResourceManager()  = default;
+	~ResourceManager() = default;
 
 	void addArchive(Archive* archive);
 	void removeArchive(Archive* archive);
@@ -126,9 +118,5 @@ private:
 	// EntryResourceMap	satextures_fp_only_; // Probably not needed
 	TextureResourceMap textures_; // Composite textures (defined in a TEXTUREx/TEXTURES lump)
 
-	static ResourceManager* instance_;
-	static string           doom64_hash_table_[65536];
+	static string doom64_hash_table_[65536];
 };
-
-// Define for less cumbersome ResourceManager::getInstance()
-#define theResourceManager ResourceManager::getInstance()

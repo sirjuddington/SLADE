@@ -440,9 +440,9 @@ bool SLADEMap::addSide(MapSide::Doom64Data& s)
 	MapSide* ns = new MapSide(sector(s.sector), this);
 
 	// Setup side properties
-	ns->tex_upper_  = theResourceManager->doom64TextureName(s.tex_upper);
-	ns->tex_lower_  = theResourceManager->doom64TextureName(s.tex_lower);
-	ns->tex_middle_ = theResourceManager->doom64TextureName(s.tex_middle);
+	ns->tex_upper_  = App::resources().doom64TextureName(s.tex_upper);
+	ns->tex_lower_  = App::resources().doom64TextureName(s.tex_lower);
+	ns->tex_middle_ = App::resources().doom64TextureName(s.tex_middle);
 	ns->offset_x_   = s.x_offset;
 	ns->offset_y_   = s.y_offset;
 
@@ -618,8 +618,8 @@ bool SLADEMap::addSector(MapSector::Doom64Data& s)
 {
 	// Create sector
 	// We need to retrieve the texture name from the hash value
-	MapSector* ns = new MapSector(
-		theResourceManager->doom64TextureName(s.f_tex), theResourceManager->doom64TextureName(s.c_tex), this);
+	MapSector* ns =
+		new MapSector(App::resources().doom64TextureName(s.f_tex), App::resources().doom64TextureName(s.c_tex), this);
 
 	// Setup sector properties
 	ns->setFloorHeight(s.f_height);
@@ -2184,9 +2184,9 @@ bool SLADEMap::writeDoom64Sidedefs(ArchiveEntry* entry)
 			d64_side.sector = side->sector_->index();
 
 		// Textures
-		d64_side.tex_middle = theResourceManager->getTextureHash(side->tex_middle_);
-		d64_side.tex_upper  = theResourceManager->getTextureHash(side->tex_upper_);
-		d64_side.tex_lower  = theResourceManager->getTextureHash(side->tex_lower_);
+		d64_side.tex_middle = App::resources().getTextureHash(side->tex_middle_);
+		d64_side.tex_upper  = App::resources().getTextureHash(side->tex_upper_);
+		d64_side.tex_lower  = App::resources().getTextureHash(side->tex_lower_);
 
 		entry->write(&d64_side, sizeof(MapSide::Doom64Data));
 	}
@@ -2260,8 +2260,8 @@ bool SLADEMap::writeDoom64Sectors(ArchiveEntry* entry)
 		d64_sector.c_height = sector->ceiling_.height;
 
 		// Textures
-		d64_sector.f_tex = theResourceManager->getTextureHash(sector->stringProperty("texturefloor"));
-		d64_sector.c_tex = theResourceManager->getTextureHash(sector->stringProperty("textureceiling"));
+		d64_sector.f_tex = App::resources().getTextureHash(sector->stringProperty("texturefloor"));
+		d64_sector.c_tex = App::resources().getTextureHash(sector->stringProperty("textureceiling"));
 
 		// Colors
 		d64_sector.color[0] = sector->intProperty("color_things");

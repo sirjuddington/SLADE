@@ -113,7 +113,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 			// Unused
 
 			// If its entry is in the archive, flag it to be removed
-			auto entry = theResourceManager->getPatchEntry(p.name, "patches", archive);
+			auto entry = App::resources().getPatchEntry(p.name, "patches", archive);
 			if (entry && entry->parent() == archive)
 				to_remove.push_back(entry);
 
@@ -1611,8 +1611,8 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, const string& oldtex, const strin
 	bool   fchanged, cchanged;
 	size_t changed = 0;
 
-	uint16_t oldhash = theResourceManager->getTextureHash(oldtex);
-	uint16_t newhash = theResourceManager->getTextureHash(newtex);
+	uint16_t oldhash = App::resources().getTextureHash(oldtex);
+	uint16_t newhash = App::resources().getTextureHash(newtex);
 
 	auto sectors = new MapSector::Doom64Data[numsectors];
 	memcpy(sectors, entry->rawData(), size);
@@ -1657,8 +1657,8 @@ size_t replaceWallsDoom64(
 	bool   lchanged, mchanged, uchanged;
 	size_t changed = 0;
 
-	uint16_t oldhash = theResourceManager->getTextureHash(oldtex);
-	uint16_t newhash = theResourceManager->getTextureHash(newtex);
+	uint16_t oldhash = App::resources().getTextureHash(oldtex);
+	uint16_t newhash = App::resources().getTextureHash(newtex);
 
 	auto sides = new MapSide::Doom64Data[numsides];
 	memcpy(sides, entry->rawData(), size);

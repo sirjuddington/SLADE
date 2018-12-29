@@ -6,16 +6,18 @@ class Console;
 class PaletteManager;
 class ArchiveManager;
 class Clipboard;
+class ResourceManager;
 
 namespace App
 {
-bool            isInitialised();
-Console*        console();
-PaletteManager* paletteManager();
-long            runTimer();
-bool            isExiting();
-ArchiveManager& archiveManager();
-Clipboard&      clipboard();
+bool             isInitialised();
+Console*         console();
+PaletteManager*  paletteManager();
+long             runTimer();
+bool             isExiting();
+ArchiveManager&  archiveManager();
+Clipboard&       clipboard();
+ResourceManager& resources();
 
 bool init(vector<string>& args, double ui_scale = 1.);
 void saveConfigFile();
@@ -37,7 +39,7 @@ struct Version
 	{
 	}
 
-	int cmp(const Version& rhs) const;
+	int    cmp(const Version& rhs) const;
 	string toString() const;
 };
 const Version& version();

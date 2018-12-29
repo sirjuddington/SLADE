@@ -72,7 +72,7 @@ bool PatchBrowserItem::loadImage()
 	if (type_ == Type::Patch)
 	{
 		// Find patch entry
-		auto entry = theResourceManager->getPatchEntry(name_, nspace_, archive_);
+		auto entry = App::resources().getPatchEntry(name_, nspace_, archive_);
 
 		// Load entry to image, if it exists
 		if (entry)
@@ -85,7 +85,7 @@ bool PatchBrowserItem::loadImage()
 	if (type_ == Type::CTexture)
 	{
 		// Find texture
-		auto tex = theResourceManager->getTexture(name_, archive_);
+		auto tex = App::resources().getTexture(name_, archive_);
 
 		// Load texture to image, if it exists
 		if (tex)
@@ -180,7 +180,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 		string whereis = "Unknown";
 
 		// Get patch entry
-		auto entry = theResourceManager->getPatchEntry(patch.name);
+		auto entry = App::resources().getPatchEntry(patch.name);
 
 		// Check its parent archive
 		Archive* parent_archive = nullptr;
@@ -239,12 +239,12 @@ bool PatchBrowser::openArchive(Archive* archive)
 
 	// Get a list of all available patch entries
 	vector<ArchiveEntry*> patches;
-	theResourceManager->putAllPatchEntries(patches, archive, full_path_);
+	App::resources().putAllPatchEntries(patches, archive, full_path_);
 
 	// Add flats, too
 	{
 		vector<ArchiveEntry*> flats;
-		theResourceManager->putAllFlatEntries(flats, archive, full_path_);
+		App::resources().putAllFlatEntries(flats, archive, full_path_);
 		for (auto& flat : flats)
 			if (flat->isInNamespace("flats") && flat->parent()->isTreeless())
 				patches.push_back(flat);
@@ -362,7 +362,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 
 	// Get list of all available textures (that aren't in the given archive)
 	vector<TextureResource::Texture*> textures;
-	theResourceManager->putAllTextures(textures, nullptr, archive);
+	App::resources().putAllTextures(textures, nullptr, archive);
 
 	// Go through the list
 	for (auto res : textures)
