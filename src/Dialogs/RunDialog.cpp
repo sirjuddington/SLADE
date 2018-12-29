@@ -563,7 +563,7 @@ void RunDialog::onBtnRun(wxCommandEvent& e)
 	if (text_exe_path_->GetValue().empty()
 		|| (!wxFileExists(text_exe_path_->GetValue())
 #ifdef __WXOSX_MAC__
-			&& !(text_exe_path->GetValue().EndsWith(".app"))
+			&& !(text_exe_path_->GetValue().EndsWith(".app"))
 #endif
 				))
 	{

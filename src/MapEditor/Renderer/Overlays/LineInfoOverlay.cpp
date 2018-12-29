@@ -58,7 +58,7 @@
 // -----------------------------------------------------------------------------
 LineInfoOverlay::LineInfoOverlay() :
 	scale_{ Drawing::fontSize() / 12.0 },
-	text_box_{ "", Drawing::Font::Condensed, 100, 16 * scale_ }
+	text_box_{ "", Drawing::Font::Condensed, 100, int(16 * scale_) }
 {
 }
 
