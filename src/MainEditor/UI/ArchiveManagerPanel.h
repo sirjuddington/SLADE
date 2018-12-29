@@ -149,7 +149,7 @@ public:
 	void goToBookmark(long index = -1) const;
 
 	// SAction handler
-	bool handleAction(string id) override;
+	bool handleAction(const string& id) override;
 
 	vector<int> selectedArchives() const;
 	vector<int> selectedBookmarks() const;

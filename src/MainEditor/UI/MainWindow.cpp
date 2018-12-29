@@ -556,7 +556,7 @@ void MainWindow::openDocs(const string& page_name)
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool MainWindow::handleAction(string id)
+bool MainWindow::handleAction(const string& id)
 {
 	// We're only interested in "main_" actions
 	if (!id.StartsWith("main_"))

@@ -3020,7 +3020,7 @@ wxMenu* ArchivePanel::createEntryOpenMenu(const string& category)
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchivePanel::handleAction(string id)
+bool ArchivePanel::handleAction(const string& id)
 {
 	// Don't handle actions if hidden
 	if (!IsShown())

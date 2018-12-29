@@ -55,7 +55,7 @@ private:
 #endif
 
 	// Action handling
-	bool handleAction(string id) override;
+	bool handleAction(const string& id) override;
 
 	// Events
 	void onClose(wxCloseEvent& e);

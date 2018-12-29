@@ -49,7 +49,7 @@ public:
 	void showShapeDrawPanel(bool show = true);
 
 	// SAction handler
-	bool handleAction(string id) override;
+	bool handleAction(const string& id) override;
 
 private:
 	MapCanvas*                 map_canvas_          = nullptr;

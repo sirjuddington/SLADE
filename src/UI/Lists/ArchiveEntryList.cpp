@@ -791,7 +791,7 @@ void ArchiveEntryList::onAnnouncement(Announcer* announcer, const string& event_
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntryList::handleAction(string id)
+bool ArchiveEntryList::handleAction(const string& id)
 {
 	// Don't handle action if hidden
 	if (!IsShown())

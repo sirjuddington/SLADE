@@ -107,7 +107,7 @@ public:
 protected:
 	static int wx_id_offset_;
 
-	virtual bool handleAction(string id) { return false; }
+	virtual bool handleAction(const string& id) { return false; }
 
 private:
 	static vector<SActionHandler*> action_handlers_;

@@ -685,7 +685,7 @@ string ScriptManagerWindow::currentScriptText() const
 // Handles the SAction [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ScriptManagerWindow::handleAction(string id)
+bool ScriptManagerWindow::handleAction(const string& id)
 {
 	using namespace ScriptManager;
 

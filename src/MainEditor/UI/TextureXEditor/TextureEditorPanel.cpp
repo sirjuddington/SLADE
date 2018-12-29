@@ -706,7 +706,7 @@ void TextureEditorPanel::duplicatePatch(int xoff, int yoff)
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureEditorPanel::handleAction(string id)
+bool TextureEditorPanel::handleAction(const string& id)
 {
 	// Don't handle actions if hidden
 	if (!IsShown())

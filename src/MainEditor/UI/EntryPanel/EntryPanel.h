@@ -66,7 +66,7 @@ private:
 	wxStaticBox* frame_;
 	string       id_;
 
-	bool handleAction(string id) override
+	bool handleAction(const string& id) override
 	{
 		if (isActivePanel())
 			return handleEntryPanelAction(id);

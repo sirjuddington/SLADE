@@ -234,7 +234,7 @@ void ScriptEditorPanel::updateUI() const
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ScriptEditorPanel::handleAction(string name)
+bool ScriptEditorPanel::handleAction(const string& name)
 {
 	// Compile Script
 	if (name == "mapw_script_compile")

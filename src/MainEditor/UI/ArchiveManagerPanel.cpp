@@ -1752,7 +1752,7 @@ void ArchiveManagerPanel::removeSelection() const
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveManagerPanel::handleAction(string id)
+bool ArchiveManagerPanel::handleAction(const string& id)
 {
 	// We're only interested in "aman_" actions
 	if (!id.StartsWith("aman_"))

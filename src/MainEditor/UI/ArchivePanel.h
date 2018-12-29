@@ -104,7 +104,7 @@ public:
 	wxMenu* createEntryOpenMenu(const string& category);
 
 	// SAction handler
-	bool handleAction(string id) override;
+	bool handleAction(const string& id) override;
 
 	// Listener
 	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;

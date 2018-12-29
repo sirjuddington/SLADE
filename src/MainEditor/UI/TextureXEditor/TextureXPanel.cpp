@@ -1509,7 +1509,7 @@ void TextureXPanel::onRedo(const string& undo_action) const
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureXPanel::handleAction(string id)
+bool TextureXPanel::handleAction(const string& id)
 {
 	// Skip event if this panel is not the current page
 	auto parent = dynamic_cast<TabControl*>(GetParent());

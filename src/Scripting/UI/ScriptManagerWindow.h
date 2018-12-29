@@ -51,5 +51,5 @@ private:
 	void         showDocs(const string& url = "");
 
 	// SActionHandler
-	bool handleAction(string id) override;
+	bool handleAction(const string& id) override;
 };

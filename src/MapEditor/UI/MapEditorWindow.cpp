@@ -1126,7 +1126,7 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool MapEditorWindow::handleAction(string id)
+bool MapEditorWindow::handleAction(const string& id)
 {
 	auto& mdesc_current = MapEditor::editContext().mapDesc();
 

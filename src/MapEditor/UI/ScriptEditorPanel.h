@@ -21,7 +21,7 @@ public:
 	void saveScripts() const;
 	void updateUI() const;
 
-	bool handleAction(string name) override;
+	bool handleAction(const string& name) override;
 
 private:
 	string        script_text_;

@@ -74,7 +74,7 @@ public:
 	void onRedo(const string& undo_action) const;
 
 	// SAction handler
-	bool handleAction(string id) override;
+	bool handleAction(const string& id) override;
 
 private:
 	TextureXList    texturex_;
