@@ -41,8 +41,8 @@
 // -----------------------------------------------------------------------------
 namespace MathStuff
 {
-const double rad2deg = 180. / PI;
-const double deg2rad = PI / 180.;
+const double RAD_TO_DEG = 180. / PI;
+const double DEG_TO_RAD = PI / 180.;
 } // namespace MathStuff
 
 
@@ -146,7 +146,7 @@ Vec2f MathStuff::closestPointOnLine(Vec2f point, Seg2f line)
 	}
 
 	// Return intersection point
-	return Vec2f(line.x1() + u * line.width(), line.y1() + u * line.height());
+	return { line.x1() + u * line.width(), line.y1() + u * line.height() };
 }
 
 // -----------------------------------------------------------------------------
@@ -155,7 +155,7 @@ Vec2f MathStuff::closestPointOnLine(Vec2f point, Seg2f line)
 double MathStuff::distanceToLine(Vec2f point, Seg2f line)
 {
 	// Calculate intersection point
-	Vec2f i = closestPointOnLine(point, line);
+	auto i = closestPointOnLine(point, line);
 
 	// Return distance between intersection and point
 	// which is the shortest distance to the line
@@ -170,7 +170,7 @@ double MathStuff::distanceToLine(Vec2f point, Seg2f line)
 double MathStuff::distanceToLineFast(Vec2f point, Seg2f line)
 {
 	// Calculate intersection point
-	Vec2f i = closestPointOnLine(point, line);
+	auto i = closestPointOnLine(point, line);
 
 	// Return fast distance between intersection and point
 	// which is the shortest distance to the line
@@ -325,13 +325,13 @@ Vec2f MathStuff::rotatePoint(Vec2f origin, Vec2f point, double angle)
 	double y = point.y - origin.y;
 
 	// Maths yay
-	double srot = sin(angle * deg2rad);
-	double crot = cos(angle * deg2rad);
+	double srot = sin(angle * DEG_TO_RAD);
+	double crot = cos(angle * DEG_TO_RAD);
 	double nx   = crot * x - srot * y;
 	double ny   = srot * x + crot * y;
 
 	// Return rotated point
-	return Vec2f(nx + origin.x, ny + origin.y);
+	return { nx + origin.x, ny + origin.y };
 }
 
 // -----------------------------------------------------------------------------
@@ -369,7 +369,7 @@ Vec3f MathStuff::rotateVector3D(Vec3f vector, Vec3f axis, double angle)
 // -----------------------------------------------------------------------------
 double MathStuff::degToRad(double angle)
 {
-	return angle * deg2rad;
+	return angle * DEG_TO_RAD;
 }
 
 // -----------------------------------------------------------------------------
@@ -377,7 +377,7 @@ double MathStuff::degToRad(double angle)
 // -----------------------------------------------------------------------------
 double MathStuff::radToDeg(double angle)
 {
-	return angle * rad2deg;
+	return angle * RAD_TO_DEG;
 }
 
 // -----------------------------------------------------------------------------
@@ -385,7 +385,7 @@ double MathStuff::radToDeg(double angle)
 // -----------------------------------------------------------------------------
 Vec2f MathStuff::vectorAngle(double angle_rad)
 {
-	return Vec2f(cos(-angle_rad), -sin(-angle_rad));
+	return { cos(-angle_rad), -sin(-angle_rad) };
 }
 
 // -----------------------------------------------------------------------------
@@ -465,11 +465,11 @@ bool MathStuff::boxLineIntersect(Rectf box, Seg2f line)
 // -----------------------------------------------------------------------------
 Plane MathStuff::planeFromTriangle(Vec3f p1, Vec3f p2, Vec3f p3)
 {
-	Vec3f v1 = p3 - p1;
-	Vec3f v2 = p2 - p1;
+	auto v1 = p3 - p1;
+	auto v2 = p2 - p1;
 	v1.normalize();
 	v2.normalize();
-	Vec3f normal = v1.cross(v2);
+	auto normal = v1.cross(v2);
 	normal.normalize();
 
 	Plane plane;

@@ -201,18 +201,18 @@ public:
 
 private:
 	vector<char>  data_;
-	Token         token_current_;
-	Token         token_next_;
-	TokenizeState state_;
+	Token         token_current_ = {};
+	Token         token_next_    = {};
+	TokenizeState state_         = {};
 
 	// Configuration
-	int          comment_types_;      // Types of comments to skip
-	vector<char> special_characters_; // These will always be read as separate tokens
-	string       source_;             // What file/entry/chunk is being tokenized
-	bool         decorate_;           // Special handling for //$ comments
-	bool         read_lowercase_;     // If true, tokens will all be read in lowercase
-									  // (except for quoted strings, obviously)
-	bool debug_;                      // Log each token read
+	int          comment_types_;          // Types of comments to skip
+	vector<char> special_characters_;     // These will always be read as separate tokens
+	string       source_;                 // What file/entry/chunk is being tokenized
+	bool         decorate_       = false; // Special handling for //$ comments
+	bool         read_lowercase_ = false; // If true, tokens will all be read in lowercase
+										  // (except for quoted strings, obviously)
+	bool debug_ = false;                  // Log each token read
 
 	// Static
 	static Token invalid_token_;

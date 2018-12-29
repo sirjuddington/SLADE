@@ -21,14 +21,14 @@ public:
 	};
 
 	Property(Type type = Type::Boolean); // Default property type is bool
-	Property(const Property& copy);
+	Property(const Property& copy) = default;
 	Property(bool value);
 	Property(int value);
 	Property(float value);
 	Property(double value);
-	Property(string value);
+	Property(const string& value);
 	Property(unsigned value);
-	~Property();
+	~Property() = default;
 
 	Type type() const { return type_; }
 	bool isType(Type type) const { return this->type_ == type; }
@@ -37,42 +37,47 @@ public:
 	void changeType(Type newtype);
 	void setHasValue(bool hv) { has_value_ = hv; }
 
-	inline operator bool() const { return boolValue(); }
-	inline operator int() const { return intValue(); }
-	inline operator float() const { return (float)floatValue(); }
-	inline operator double() const { return floatValue(); }
-	inline operator string() const { return stringValue(); }
-	inline operator unsigned() const { return unsignedValue(); }
+	operator bool() const { return boolValue(); }
+	operator int() const { return intValue(); }
+	operator float() const { return (float)floatValue(); }
+	operator double() const { return floatValue(); }
+	operator string() const { return stringValue(); }
+	operator unsigned() const { return unsignedValue(); }
 
-	inline bool operator=(bool val)
+	Property& operator=(bool val)
 	{
 		setValue(val);
-		return val;
+		return *this;
 	}
-	inline int operator=(int val)
+
+	Property& operator=(int val)
 	{
 		setValue(val);
-		return val;
+		return *this;
 	}
-	inline float operator=(float val)
+
+	Property& operator=(float val)
 	{
-		setValue((double)val);
-		return val;
+		setValue(static_cast<double>(val));
+		return *this;
 	}
-	inline double operator=(double val)
-	{
-		setValue(val);
-		return val;
-	}
-	inline string operator=(string val)
+
+	Property& operator=(double val)
 	{
 		setValue(val);
-		return val;
+		return *this;
 	}
-	inline unsigned operator=(unsigned val)
+
+	Property& operator=(const string& val)
 	{
 		setValue(val);
-		return val;
+		return *this;
+	}
+
+	Property& operator=(unsigned val)
+	{
+		setValue(val);
+		return *this;
 	}
 
 	bool     boolValue(bool warn_wrong_type = false) const;
@@ -84,14 +89,14 @@ public:
 	void setValue(bool val);
 	void setValue(int val);
 	void setValue(double val);
-	void setValue(string val);
+	void setValue(const string& val);
 	void setValue(unsigned val);
 
 	string typeString() const;
 
 private:
-	Type   type_;
+	Type   type_ = Type::Boolean;
 	Value  value_;
 	string val_string_; // I *would* put this in the union but i'm not sure about using const char* there
-	bool   has_value_;
+	bool   has_value_ = false;
 };

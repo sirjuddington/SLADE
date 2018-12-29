@@ -56,12 +56,12 @@ EXTERN_CVAR(String, dir_last)
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
 bool SFileDialog::openFile(
-	FDInfo&   info,
-	string    caption,
-	string    extensions,
-	wxWindow* parent,
-	string    fn_default,
-	int       ext_default)
+	FDInfo&       info,
+	const string& caption,
+	const string& extensions,
+	wxWindow*     parent,
+	const string& fn_default,
+	int           ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
@@ -93,12 +93,12 @@ bool SFileDialog::openFile(
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
 bool SFileDialog::openFiles(
-	FDInfo&   info,
-	string    caption,
-	string    extensions,
-	wxWindow* parent,
-	string    fn_default,
-	int       ext_default)
+	FDInfo&       info,
+	const string& caption,
+	const string& extensions,
+	wxWindow*     parent,
+	const string& fn_default,
+	int           ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(
@@ -131,12 +131,12 @@ bool SFileDialog::openFiles(
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
 bool SFileDialog::saveFile(
-	FDInfo&   info,
-	string    caption,
-	string    extensions,
-	wxWindow* parent,
-	string    fn_default,
-	int       ext_default)
+	FDInfo&       info,
+	const string& caption,
+	const string& extensions,
+	wxWindow*     parent,
+	const string& fn_default,
+	int           ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
@@ -168,7 +168,12 @@ bool SFileDialog::saveFile(
 // Returns true and sets [info] if the user clicked ok, false otherwise.
 // This is used to replace wxDirDialog, which sucks
 // -----------------------------------------------------------------------------
-bool SFileDialog::saveFiles(FDInfo& info, string caption, string extensions, wxWindow* parent, int ext_default)
+bool SFileDialog::saveFiles(
+	FDInfo&       info,
+	const string& caption,
+	const string& extensions,
+	wxWindow*     parent,
+	int           ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(parent, caption, dir_last, "ignored", extensions, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);

@@ -561,16 +561,16 @@ int MapLine::needsTexture() const
 	int tex = 0;
 
 	// Check the floor
-	front_height = floor_front.height_at(x1(), y1());
-	back_height  = floor_back.height_at(x1(), y1());
+	front_height = floor_front.heightAt(x1(), y1());
+	back_height  = floor_back.heightAt(x1(), y1());
 
 	if (front_height - back_height > EPSILON)
 		tex |= Part::BackLower;
 	if (back_height - front_height > EPSILON)
 		tex |= Part::FrontLower;
 
-	front_height = floor_front.height_at(x2(), y2());
-	back_height  = floor_back.height_at(x2(), y2());
+	front_height = floor_front.heightAt(x2(), y2());
+	back_height  = floor_back.heightAt(x2(), y2());
 
 	if (front_height - back_height > EPSILON)
 		tex |= Part::BackLower;
@@ -578,16 +578,16 @@ int MapLine::needsTexture() const
 		tex |= Part::FrontLower;
 
 	// Check the ceiling
-	front_height = ceiling_front.height_at(x1(), y1());
-	back_height  = ceiling_back.height_at(x1(), y1());
+	front_height = ceiling_front.heightAt(x1(), y1());
+	back_height  = ceiling_back.heightAt(x1(), y1());
 
 	if (back_height - front_height > EPSILON)
 		tex |= Part::BackUpper;
 	if (front_height - back_height > EPSILON)
 		tex |= Part::FrontUpper;
 
-	front_height = ceiling_front.height_at(x2(), y2());
-	back_height  = ceiling_back.height_at(x2(), y2());
+	front_height = ceiling_front.heightAt(x2(), y2());
+	back_height  = ceiling_back.heightAt(x2(), y2());
 
 	if (back_height - front_height > EPSILON)
 		tex |= Part::BackUpper;

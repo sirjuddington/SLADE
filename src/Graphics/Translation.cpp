@@ -43,6 +43,7 @@
 #include "Archive/ArchiveManager.h"
 #include "MainEditor/MainEditor.h"
 #include "Palette/Palette.h"
+#include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
 
@@ -135,7 +136,7 @@ void Translation::parse(string def)
 	else if (test.StartsWith("desaturate,", &temp))
 	{
 		built_in_name_ = "Desaturate";
-		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(std::stoi(CHR(temp)), 31), 1);
+		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(StringUtils::toInt(temp), 31), 1);
 		return;
 	}
 

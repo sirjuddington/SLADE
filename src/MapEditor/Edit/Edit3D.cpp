@@ -1570,13 +1570,13 @@ void Edit3D::getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& lis
 		auto left  = line->v1()->position();
 		auto right = line->v2()->position();
 
-		double this_left_z  = this_plane.height_at(left);
-		double other_left_z = other_plane.height_at(left);
+		double this_left_z  = this_plane.heightAt(left);
+		double other_left_z = other_plane.heightAt(left);
 		if (fabs(this_left_z - other_left_z) > 1)
 			continue;
 
-		double this_right_z  = this_plane.height_at(right);
-		double other_right_z = other_plane.height_at(right);
+		double this_right_z  = this_plane.heightAt(right);
+		double other_right_z = other_plane.heightAt(right);
 		if (fabs(this_right_z - other_right_z) > 1)
 			continue;
 

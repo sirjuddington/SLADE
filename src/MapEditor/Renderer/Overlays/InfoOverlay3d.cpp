@@ -237,10 +237,10 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			auto floor2   = other_sector->floor().plane;
 			auto ceiling1 = this_sector->ceiling().plane;
 			auto ceiling2 = other_sector->ceiling().plane;
-			left_height   = min(ceiling1.height_at(left_point), ceiling2.height_at(left_point))
-						  - max(floor1.height_at(left_point), floor2.height_at(left_point));
-			right_height = min(ceiling1.height_at(right_point), ceiling2.height_at(right_point))
-						   - max(floor1.height_at(right_point), floor2.height_at(right_point));
+			left_height   = min(ceiling1.heightAt(left_point), ceiling2.heightAt(left_point))
+						  - max(floor1.heightAt(left_point), floor2.heightAt(left_point));
+			right_height = min(ceiling1.heightAt(right_point), ceiling2.heightAt(right_point))
+						   - max(floor1.heightAt(right_point), floor2.heightAt(right_point));
 		}
 		else
 		{
@@ -266,8 +266,8 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 				}
 			}
 
-			left_height  = top_plane.height_at(left_point) - bottom_plane.height_at(left_point);
-			right_height = top_plane.height_at(right_point) - bottom_plane.height_at(right_point);
+			left_height  = top_plane.heightAt(left_point) - bottom_plane.heightAt(left_point);
+			right_height = top_plane.heightAt(right_point) - bottom_plane.heightAt(right_point);
 		}
 		if (fabs(left_height - right_height) < 0.001)
 			info2_.push_back(S_FMT("Height: %d", (int)left_height));

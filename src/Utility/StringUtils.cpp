@@ -145,8 +145,8 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 			string name = entry->path() + tz.next().text;
 
 			// Get the entry
-			bool          done      = false;
-			ArchiveEntry* entry_inc = entry->parent()->entryAtPath(name);
+			bool done      = false;
+			auto entry_inc = entry->parent()->entryAtPath(name);
 			// DECORATE paths start from the root, not from the #including entry's directory
 			if (!entry_inc)
 				entry_inc = entry->parent()->entryAtPath(tz.current().text);
@@ -209,4 +209,43 @@ bool StringUtils::isHex(const string& str)
 bool StringUtils::isFloat(const string& str)
 {
 	return (re_float.Matches(str));
+}
+
+// -----------------------------------------------------------------------------
+// Returns [str] as an integer, or 0 if it can't be converted
+// -----------------------------------------------------------------------------
+int StringUtils::toInt(const string& str)
+{
+	long tmp;
+	if (str.ToLong(&tmp))
+		return tmp;
+
+	Log::error(S_FMT("Can't convert \"%s\" to an integer", CHR(str)));
+	return 0;
+}
+
+// -----------------------------------------------------------------------------
+// Returns [str] as a float, or 0 if it can't be converted
+// -----------------------------------------------------------------------------
+float StringUtils::toFloat(const string& str)
+{
+	double tmp;
+	if (str.ToDouble(&tmp))
+		return tmp;
+
+	Log::error(S_FMT("Can't convert \"%s\" to a float", CHR(str)));
+	return 0.f;
+}
+
+// -----------------------------------------------------------------------------
+// Returns [str] as a double, or 0 if it can't be converted
+// -----------------------------------------------------------------------------
+double StringUtils::toDouble(const string& str)
+{
+	double tmp;
+	if (str.ToDouble(&tmp))
+		return tmp;
+
+	Log::error(S_FMT("Can't convert \"%s\" to a double", CHR(str)));
+	return 0.;
 }

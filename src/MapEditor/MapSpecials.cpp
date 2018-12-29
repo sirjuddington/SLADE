@@ -770,13 +770,13 @@ template<SurfaceType T> void MapSpecials::applyLineSlopeThing(SLADEMap* map, Map
 			if (containing_sector_idx < 0)
 				return;
 			containing_sector = map->sector(containing_sector_idx);
-			thingz = (containing_sector->plane<T>().height_at(thing->position()) + thing->floatProperty("height"));
+			thingz = (containing_sector->plane<T>().heightAt(thing->position()) + thing->floatProperty("height"));
 		}
 
 		// Three points: endpoints of the line, and the thing itself
 		auto  target_plane = target->plane<T>();
-		Vec3f p1(b->x1(), b->y1(), target_plane.height_at(b->point1()));
-		Vec3f p2(b->x2(), b->y2(), target_plane.height_at(b->point2()));
+		Vec3f p1(b->x1(), b->y1(), target_plane.heightAt(b->point1()));
+		Vec3f p2(b->x2(), b->y2(), target_plane.heightAt(b->point2()));
 		Vec3f p3(thing->xPos(), thing->yPos(), thingz);
 		target->setPlane<T>(MathStuff::planeFromTriangle(p1, p2, p3));
 	}

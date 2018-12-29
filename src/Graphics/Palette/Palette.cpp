@@ -37,6 +37,7 @@
 #include "Graphics/Translation.h"
 #include "Utility/CIEDeltaEquations.h"
 #include "Utility/Tokenizer.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -280,9 +281,9 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 				tz.advToEndOfLine();
 
 			// If we haven't skipped this part from a continue, then we have a colour triplet.
-			col.r     = std::stoi(CHR(s1));
-			col.g     = std::stoi(CHR(s2));
-			col.b     = std::stoi(CHR(s3));
+			col.r     = StringUtils::toInt(s1);
+			col.g     = StringUtils::toInt(s2);
+			col.b     = StringUtils::toInt(s3);
 			col.index = c;
 			setColour(c++, col);
 		} while (c < 256 && !tz.peekToken().IsEmpty());

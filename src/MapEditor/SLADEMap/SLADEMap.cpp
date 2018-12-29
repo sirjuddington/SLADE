@@ -2856,7 +2856,7 @@ int SLADEMap::nearestVertex(Vec2f point, double min)
 		v = vertices_[a];
 
 		// Get 'quick' distance (no need to get real distance)
-		dist = point.taxicab_distance_to(v->position());
+		dist = point.taxicabDistanceTo(v->position());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
@@ -2930,7 +2930,7 @@ int SLADEMap::nearestThing(Vec2f point, double min)
 		t = things_[a];
 
 		// Get 'quick' distance (no need to get real distance)
-		dist = point.taxicab_distance_to(t->position());
+		dist = point.taxicabDistanceTo(t->position());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
@@ -2969,7 +2969,7 @@ vector<int> SLADEMap::nearestThingMulti(Vec2f point)
 		t = things_[a];
 
 		// Get 'quick' distance (no need to get real distance)
-		dist = point.taxicab_distance_to(t->position());
+		dist = point.taxicabDistanceTo(t->position());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)

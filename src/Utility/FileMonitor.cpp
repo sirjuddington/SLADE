@@ -47,31 +47,20 @@
 // -----------------------------------------------------------------------------
 // FileMonitor class constructor
 // -----------------------------------------------------------------------------
-FileMonitor::FileMonitor(string filename, bool start)
+FileMonitor::FileMonitor(const string& filename, bool start) : filename_{ filename }
 {
-	// Init variables
-	this->filename_ = filename;
-
 	// Create process
-	process_ = new wxProcess(this);
+	process_ = std::make_unique<wxProcess>(this);
 
 	// Start timer (updates every 1 sec)
 	if (start)
 	{
 		file_modified_ = wxFileModificationTime(filename);
-		Start(1000);
+		wxTimer::Start(1000);
 	}
 
 	// Bind events
 	Bind(wxEVT_END_PROCESS, &FileMonitor::onEndProcess, this);
-}
-
-// -----------------------------------------------------------------------------
-// FileMonitor class destructor
-// -----------------------------------------------------------------------------
-FileMonitor::~FileMonitor()
-{
-	delete process_;
 }
 
 // -----------------------------------------------------------------------------
@@ -80,7 +69,7 @@ FileMonitor::~FileMonitor()
 void FileMonitor::Notify()
 {
 	// Check if the file has been modified since last update
-	time_t modified = wxFileModificationTime(filename_);
+	auto modified = wxFileModificationTime(filename_);
 	if (modified > file_modified_)
 	{
 		// Modified, update modification time and run any custom code
@@ -98,7 +87,7 @@ void FileMonitor::onEndProcess(wxProcessEvent& e)
 	processTerminated();
 
 	// Check if the file has been modified since last update
-	time_t modified = wxFileModificationTime(filename_);
+	auto modified = wxFileModificationTime(filename_);
 	if (modified > file_modified_)
 	{
 		// Modified, update modification time and run any custom code
@@ -124,17 +113,12 @@ void FileMonitor::onEndProcess(wxProcessEvent& e)
 // -----------------------------------------------------------------------------
 // DB2MapFileMonitor class constructor
 // -----------------------------------------------------------------------------
-DB2MapFileMonitor::DB2MapFileMonitor(string filename, Archive* archive, string map_name) : FileMonitor(filename)
+DB2MapFileMonitor::DB2MapFileMonitor(const string& filename, Archive* archive, const string& map_name) :
+	FileMonitor(filename),
+	archive_{ archive },
+	map_name_{ map_name }
 {
-	// Init variables
-	this->archive_  = archive;
-	this->map_name_ = map_name;
 }
-
-// -----------------------------------------------------------------------------
-// DB2MapFileMonitor class destructor
-// -----------------------------------------------------------------------------
-DB2MapFileMonitor::~DB2MapFileMonitor() {}
 
 // -----------------------------------------------------------------------------
 // Called when the external wad file has been modified
@@ -146,32 +130,31 @@ void DB2MapFileMonitor::fileModified()
 		return;
 
 	// Load file into temp archive
-	Archive* wad = new WadArchive();
+	Archive::UPtr wad = std::make_unique<WadArchive>();
 	wad->open(filename_);
 
 	// Get map info for target archive
-	vector<Archive::MapDesc> maps = archive_->detectMaps();
-	for (unsigned a = 0; a < maps.size(); a++)
+	for (auto& map : archive_->detectMaps())
 	{
-		if (S_CMPNOCASE(maps[a].name, map_name_))
+		if (S_CMPNOCASE(map.name, map_name_))
 		{
 			// Check for simple case (map is in zip archive)
-			if (maps[a].archive)
+			if (map.archive)
 			{
-				maps[a].head->unlock();
-				maps[a].head->importFile(filename_);
-				maps[a].head->lock();
+				map.head->unlock();
+				map.head->importFile(filename_);
+				map.head->lock();
 				break;
 			}
 
 			// Delete existing map entries
-			ArchiveEntry* entry = maps[a].head;
-			bool          done  = false;
+			auto entry = map.head;
+			bool done  = false;
 			while (!done)
 			{
-				ArchiveEntry* next = entry->nextEntry();
+				auto next = entry->nextEntry();
 
-				if (entry == maps[a].end)
+				if (entry == map.end)
 					done = true;
 
 				entry->unlock();
@@ -183,16 +166,13 @@ void DB2MapFileMonitor::fileModified()
 			unsigned index = archive_->entryIndex(entry);
 			for (unsigned b = 0; b < wad->numEntries(); b++)
 			{
-				ArchiveEntry* ne = archive_->addEntry(wad->entryAt(b), index, nullptr, true);
+				auto ne = archive_->addEntry(wad->entryAt(b), index, nullptr, true);
 				if (index <= archive_->numEntries())
 					index++;
 				ne->lock();
 			}
 		}
 	}
-
-	// Clean up
-	delete wad;
 }
 
 // -----------------------------------------------------------------------------
@@ -201,17 +181,16 @@ void DB2MapFileMonitor::fileModified()
 void DB2MapFileMonitor::processTerminated()
 {
 	// Get map info for target archive
-	vector<Archive::MapDesc> maps = archive_->detectMaps();
-	for (unsigned a = 0; a < maps.size(); a++)
+	for (auto& map : archive_->detectMaps())
 	{
-		if (S_CMPNOCASE(maps[a].name, map_name_))
+		if (S_CMPNOCASE(map.name, map_name_))
 		{
 			// Unlock map entries
-			ArchiveEntry* entry = maps[a].head;
+			auto entry = map.head;
 			while (true)
 			{
 				entry->unlock();
-				if (entry == maps[a].end)
+				if (entry == map.end)
 					break;
 				entry = entry->nextEntry();
 			}

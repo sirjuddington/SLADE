@@ -301,7 +301,7 @@ void Renderer::setCameraThing(MapThing* thing)
 	Vec3f pos(thing->position(), 40);
 	int   sector = context_.map().sectorAt(thing->position());
 	if (sector >= 0)
-		pos.z += context_.map().sector(sector)->floor().plane.height_at(pos.x, pos.y);
+		pos.z += context_.map().sector(sector)->floor().plane.heightAt(pos.x, pos.y);
 
 	// Set camera position & direction
 	renderer_3d_.cameraSet(pos, MathStuff::vectorAngle(MathStuff::degToRad(thing->angle())));

@@ -39,10 +39,10 @@
 #include "General/Console/Console.h"
 #include "General/UndoRedo.h"
 #include "MapChecks.h"
+#include "MapEditor/Renderer/Overlays/InfoOverlay3d.h"
 #include "MapEditor/Renderer/Overlays/LineTextureOverlay.h"
 #include "MapEditor/Renderer/Overlays/QuickTextureOverlay3d.h"
 #include "MapEditor/Renderer/Overlays/SectorTextureOverlay.h"
-#include "MapEditor/Renderer/Overlays/InfoOverlay3d.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ShowItemDialog.h"
@@ -50,6 +50,7 @@
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
 #include "UndoSteps.h"
+#include "Utility/StringUtils.h"
 
 using MapEditor::Input;
 using MapEditor::Mode;
@@ -131,9 +132,7 @@ MapEditContext::MapEditContext()
 	undo_manager_ = std::make_unique<UndoManager>(&map_);
 }
 
-MapEditContext::~MapEditContext()
-{
-}
+MapEditContext::~MapEditContext() {}
 
 // -----------------------------------------------------------------------------
 // Changes the current edit mode to [mode]
@@ -1847,7 +1846,7 @@ bool MapEditContext::handleAction(string id)
 		Vec3f pos(input().mousePosMap());
 		auto  sector = map_.sector(map_.sectorAt(input_.mousePosMap()));
 		if (sector)
-			pos.z = sector->floor().plane.height_at(pos.x, pos.y) + 40;
+			pos.z = sector->floor().plane.heightAt(pos.x, pos.y) + 40;
 		renderer_.renderer3D().cameraSetPosition(pos);
 		return true;
 	}
@@ -2365,7 +2364,7 @@ void MapThingsClipboardItem::putThings(vector<MapThing*>& list)
 
 CONSOLE_COMMAND(m_show_item, 1, true)
 {
-	int index = std::stoi(CHR(args[0]));
+	int index = StringUtils::toInt(args[0]);
 	MapEditor::editContext().showItem(index);
 }
 

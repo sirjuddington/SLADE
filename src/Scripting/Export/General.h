@@ -114,7 +114,7 @@ void registerMiscTypes(sol::state& lua)
 
 		// Functions
 		"heightAt",
-		sol::resolve<double(Vec2f) const>(&Plane::height_at));
+		sol::resolve<double(Vec2f) const>(&Plane::heightAt));
 }
 
 void registerAppNamespace(sol::state& lua)

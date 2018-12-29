@@ -43,32 +43,19 @@
 
 
 // -----------------------------------------------------------------------------
-// PropertyList class constructor
-// -----------------------------------------------------------------------------
-PropertyList::PropertyList() {}
-
-// -----------------------------------------------------------------------------
-// PropertyList class destructor
-// -----------------------------------------------------------------------------
-PropertyList::~PropertyList() {}
-
-// -----------------------------------------------------------------------------
 // Returns true if a property with the given name exists, false otherwise
 // -----------------------------------------------------------------------------
-bool PropertyList::propertyExists(string key)
+bool PropertyList::propertyExists(const string& key)
 {
 	// Try to find specified key
-	if (properties_.empty() || properties_.find(key) == properties_.end())
-		return false;
-	else
-		return true;
+	return !(properties_.empty() || properties_.find(key) == properties_.end());
 }
 
 // -----------------------------------------------------------------------------
 // Removes a property value, returns true if [key] was removed or false if key
 // didn't exist
 // -----------------------------------------------------------------------------
-bool PropertyList::removeProperty(string key)
+bool PropertyList::removeProperty(const string& key)
 {
 	return properties_.erase(key) > 0;
 }
@@ -81,22 +68,16 @@ void PropertyList::copyTo(PropertyList& list)
 	// Clear given list
 	list.clear();
 
-	// Get iterator to first property
-	std::map<string, Property>::iterator i = properties_.begin();
-
-	// Add all properties to given list
-	while (i != properties_.end())
-	{
-		if (i->second.hasValue())
-			list[i->first] = i->second;
-		i++;
-	}
+	// Copy
+	for (auto& i : properties_)
+		if (i.second.hasValue())
+			list[i.first] = i.second;
 }
 
 // -----------------------------------------------------------------------------
 // Adds a 'flag' property [key]
 // -----------------------------------------------------------------------------
-void PropertyList::addFlag(string key)
+void PropertyList::addFlag(const string& key)
 {
 	Property flag;
 	properties_[key] = flag;
@@ -110,37 +91,24 @@ string PropertyList::toString(bool condensed)
 	// Init return string
 	string ret = wxEmptyString;
 
-	// Get iterator to first property
-	std::map<string, Property>::iterator i = properties_.begin();
-
 	// Go through all properties
-	while (i != properties_.end())
+	for (auto& i : properties_)
 	{
 		// Skip if no value
-		if (!i->second.hasValue())
-		{
-			i++;
+		if (!i.second.hasValue())
 			continue;
-		}
 
 		// Add "key = value;\n" to the return string
-		string key = i->first;
-		string val = i->second.stringValue();
+		string key = i.first;
+		string val = i.second.stringValue();
 
-		if (i->second.type() == Property::Type::String)
+		if (i.second.type() == Property::Type::String)
 			val = "\"" + val + "\"";
 
-		// if (!val.empty()) {
 		if (condensed)
 			ret += key + "=" + val + ";\n";
 		else
 			ret += key + " = " + val + ";\n";
-		//}
-
-		// LOG_MESSAGE(1, "key %s type %s value %s", key, i->second.typeString(), val);
-
-		// Next property
-		i++;
 	}
 
 	return ret;
@@ -149,31 +117,21 @@ string PropertyList::toString(bool condensed)
 // -----------------------------------------------------------------------------
 // Adds all existing properties to [list]
 // -----------------------------------------------------------------------------
-void PropertyList::allProperties(vector<Property>& list)
+void PropertyList::allProperties(vector<Property>& list, bool ignore_no_value)
 {
-	// Get iterator to first property
-	std::map<string, Property>::iterator i = properties_.begin();
-
 	// Add all properties to the list
-	while (i != properties_.end())
-	{
-		list.push_back(i->second);
-		i++;
-	}
+	for (auto& i : properties_)
+		if (!(ignore_no_value && !i.second.hasValue()))
+			list.push_back(i.second);
 }
 
 // -----------------------------------------------------------------------------
 // Adds all existing property names to [list]
 // -----------------------------------------------------------------------------
-void PropertyList::allPropertyNames(vector<string>& list)
+void PropertyList::allPropertyNames(vector<string>& list, bool ignore_no_value)
 {
-	// Get iterator to first property
-	std::map<string, Property>::iterator i = properties_.begin();
-
 	// Add all properties to the list
-	while (i != properties_.end())
-	{
-		list.push_back(i->first);
-		i++;
-	}
+	for (auto& i : properties_)
+		if (!(ignore_no_value && !i.second.hasValue()))
+			list.push_back(i.first);
 }

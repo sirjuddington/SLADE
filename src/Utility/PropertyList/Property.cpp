@@ -45,12 +45,8 @@
 // -----------------------------------------------------------------------------
 // Property class default constructor
 // -----------------------------------------------------------------------------
-Property::Property(Type type)
+Property::Property(Type type) : type_{ type }
 {
-	// Set property type
-	this->type_      = type;
-	this->has_value_ = false;
-
 	// Set default value depending on type
 	if (type == Type::Boolean)
 		value_.Boolean = false;
@@ -67,20 +63,9 @@ Property::Property(Type type)
 	else
 	{
 		// Invalid type given, default to boolean
-		this->type_    = Type::Boolean;
+		type_          = Type::Boolean;
 		value_.Boolean = true;
 	}
-}
-
-// -----------------------------------------------------------------------------
-// Property class copy constructor
-// -----------------------------------------------------------------------------
-Property::Property(const Property& copy)
-{
-	this->type_       = copy.type_;
-	this->value_      = copy.value_;
-	this->val_string_ = copy.val_string_;
-	this->has_value_  = copy.has_value_;
 }
 
 // -----------------------------------------------------------------------------
@@ -89,9 +74,9 @@ Property::Property(const Property& copy)
 Property::Property(bool value)
 {
 	// Init boolean property
-	this->type_          = Type::Boolean;
-	this->value_.Boolean = value;
-	this->has_value_     = true;
+	type_          = Type::Boolean;
+	value_.Boolean = value;
+	has_value_     = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -100,9 +85,20 @@ Property::Property(bool value)
 Property::Property(int value)
 {
 	// Init integer property
-	this->type_          = Type::Int;
-	this->value_.Integer = value;
-	this->has_value_     = true;
+	type_          = Type::Int;
+	value_.Integer = value;
+	has_value_     = true;
+}
+
+// -----------------------------------------------------------------------------
+// Property class constructor (floating point)
+// -----------------------------------------------------------------------------
+Property::Property(float value)
+{
+	// Init float property
+	type_           = Type::Float;
+	value_.Floating = value;
+	has_value_      = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -111,20 +107,20 @@ Property::Property(int value)
 Property::Property(double value)
 {
 	// Init float property
-	this->type_           = Type::Float;
-	this->value_.Floating = value;
-	this->has_value_      = true;
+	type_           = Type::Float;
+	value_.Floating = value;
+	has_value_      = true;
 }
 
 // -----------------------------------------------------------------------------
 // Property class constructor (string)
 // -----------------------------------------------------------------------------
-Property::Property(string value)
+Property::Property(const string& value) : value_{}
 {
 	// Init string property
-	this->type_       = Type::String;
-	this->val_string_ = value;
-	this->has_value_  = true;
+	type_       = Type::String;
+	val_string_ = value;
+	has_value_  = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -133,15 +129,10 @@ Property::Property(string value)
 Property::Property(unsigned value)
 {
 	// Init string property
-	this->type_           = Type::UInt;
-	this->value_.Unsigned = value;
-	this->has_value_      = true;
+	type_           = Type::UInt;
+	value_.Unsigned = value;
+	has_value_      = true;
 }
-
-// -----------------------------------------------------------------------------
-// Property class destructor
-// -----------------------------------------------------------------------------
-Property::~Property() {}
 
 // -----------------------------------------------------------------------------
 // Returns the property value as a bool.
@@ -174,10 +165,7 @@ bool Property::boolValue(bool warn_wrong_type) const
 	else if (type_ == Type::String)
 	{
 		// Anything except "0", "no" or "false" is considered true
-		if (!val_string_.Cmp("0") || !val_string_.CmpNoCase("no") || !val_string_.CmpNoCase("false"))
-			return false;
-		else
-			return true;
+		return !(!val_string_.Cmp("0") || !val_string_.CmpNoCase("no") || !val_string_.CmpNoCase("false"));
 	}
 
 	// Return default boolean value
@@ -213,7 +201,12 @@ int Property::intValue(bool warn_wrong_type) const
 	else if (type_ == Type::Float)
 		return (int)value_.Floating;
 	else if (type_ == Type::String)
-		return atoi(CHR(val_string_));
+	{
+		long tmp;
+		if (val_string_.ToLong(&tmp))
+			return tmp;
+		return 0;
+	}
 
 	// Return default integer value
 	return 0;
@@ -248,7 +241,12 @@ double Property::floatValue(bool warn_wrong_type) const
 	else if (type_ == Type::UInt)
 		return (double)value_.Unsigned;
 	else if (type_ == Type::String)
-		return (double)atof(CHR(val_string_));
+	{
+		double tmp;
+		if (val_string_.ToDouble(&tmp))
+			return tmp;
+		return 0.;
+	}
 
 	// Return default float value
 	return 0.0f;
@@ -321,7 +319,12 @@ unsigned Property::unsignedValue(bool warn_wrong_type) const
 	else if (type_ == Type::Float)
 		return (int)value_.Floating;
 	else if (type_ == Type::String)
-		return atoi(CHR(val_string_));
+	{
+		unsigned long tmp;
+		if (val_string_.ToULong(&tmp))
+			return tmp;
+		return 0;
+	}
 	else if (type_ == Type::UInt)
 		return value_.Unsigned;
 
@@ -375,7 +378,7 @@ void Property::setValue(double val)
 // -----------------------------------------------------------------------------
 // Sets the property to [val], and changes its type to string if necessary
 // -----------------------------------------------------------------------------
-void Property::setValue(string val)
+void Property::setValue(const string& val)
 {
 	// Change type if necessary
 	if (type_ != Type::String)

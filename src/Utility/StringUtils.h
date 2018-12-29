@@ -27,4 +27,8 @@ void processIncludes(ArchiveEntry* entry, string& out, bool use_res = true);
 bool isInteger(const string& str, bool allow_hex = true);
 bool isHex(const string& str);
 bool isFloat(const string& str);
+
+int    toInt(const string& str);
+float  toFloat(const string& str);
+double toDouble(const string& str);
 } // namespace StringUtils

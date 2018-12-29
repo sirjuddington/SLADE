@@ -394,8 +394,8 @@ void MapRenderer3D::cameraApplyGravity(double mult)
 
 	// Get target height
 	int view_height = (map_->currentFormat() == MapFormat::Doom64) ? 56 : 41;
-	int fheight     = map_->sector(sector)->floor().plane.height_at(cam_position_.get2d()) + view_height;
-	int cheight     = map_->sector(sector)->ceiling().plane.height_at(cam_position_.get2d());
+	int fheight     = map_->sector(sector)->floor().plane.heightAt(cam_position_.get2d()) + view_height;
+	int cheight     = map_->sector(sector)->ceiling().plane.heightAt(cam_position_.get2d());
 	if (fheight > cheight - 4)
 		fheight = cheight - 4;
 
@@ -1137,8 +1137,8 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 		glBegin(GL_LINES);
 		for (auto& line : lines)
 		{
-			glVertex3d(line->x1(), line->y1(), plane.height_at(line->x1(), line->y1()));
-			glVertex3d(line->x2(), line->y2(), plane.height_at(line->x2(), line->y2()));
+			glVertex3d(line->x1(), line->y1(), plane.heightAt(line->x1(), line->y1()));
+			glVertex3d(line->x2(), line->y2(), plane.heightAt(line->x2(), line->y2()));
 		}
 		glEnd();
 
@@ -1200,10 +1200,10 @@ void MapRenderer3D::setupQuad(
 	quad->points[2].y = quad->points[3].y = y2;
 
 	// Top/bottom
-	quad->points[0].z = top.height_at(quad->points[0].x, quad->points[0].y);
-	quad->points[1].z = bottom.height_at(quad->points[1].x, quad->points[1].y);
-	quad->points[2].z = bottom.height_at(quad->points[2].x, quad->points[2].y);
-	quad->points[3].z = top.height_at(quad->points[3].x, quad->points[3].y);
+	quad->points[0].z = top.heightAt(quad->points[0].x, quad->points[0].y);
+	quad->points[1].z = bottom.heightAt(quad->points[1].x, quad->points[1].y);
+	quad->points[2].z = bottom.heightAt(quad->points[2].x, quad->points[2].y);
+	quad->points[3].z = top.heightAt(quad->points[3].x, quad->points[3].y);
 }
 
 // -----------------------------------------------------------------------------
@@ -1388,14 +1388,14 @@ void MapRenderer3D::updateLine(unsigned index)
 	string hidden_tex  = map_->currentFormat() == MapFormat::Doom64 ? "?" : "-";
 	bool   show_midtex = (map_->currentFormat() != MapFormat::Doom64) || (line->intProperty("flags") & 512);
 	// Heights at both endpoints, for both planes, on both sides
-	double f1h1 = fp1.height_at(line->x1(), line->y1());
-	double f1h2 = fp1.height_at(line->x2(), line->y2());
-	double f2h1 = fp2.height_at(line->x1(), line->y1());
-	double f2h2 = fp2.height_at(line->x2(), line->y2());
-	double c1h1 = cp1.height_at(line->x1(), line->y1());
-	double c1h2 = cp1.height_at(line->x2(), line->y2());
-	double c2h1 = cp2.height_at(line->x1(), line->y1());
-	double c2h2 = cp2.height_at(line->x2(), line->y2());
+	double f1h1 = fp1.heightAt(line->x1(), line->y1());
+	double f1h2 = fp1.heightAt(line->x2(), line->y2());
+	double f2h1 = fp2.heightAt(line->x1(), line->y1());
+	double f2h2 = fp2.heightAt(line->x2(), line->y2());
+	double c1h1 = cp1.heightAt(line->x1(), line->y1());
+	double c1h2 = cp1.heightAt(line->x2(), line->y2());
+	double c2h1 = cp2.heightAt(line->x1(), line->y1());
+	double c2h2 = cp2.heightAt(line->x2(), line->y2());
 
 	if (render_shade_orthogonal_lines)
 	{
@@ -2114,13 +2114,13 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 		float zheight = thing->floatProperty("height");
 		if (things_[index].type->hanging())
 		{
-			sheight = things_[index].sector->ceiling().plane.height_at(thing->xPos(), thing->yPos());
+			sheight = things_[index].sector->ceiling().plane.heightAt(thing->xPos(), thing->yPos());
 			sheight -= theight;
 			zheight = -zheight;
 		}
 		else
 		{
-			sheight = things_[index].sector->floor().plane.height_at(thing->xPos(), thing->yPos());
+			sheight = things_[index].sector->floor().plane.heightAt(thing->xPos(), thing->yPos());
 		}
 
 		// Set height
@@ -2865,7 +2865,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 		if (dist >= 0 && dist < min_dist)
 		{
 			// Check if on the correct side of the plane
-			if (cam_position_.z > floors_[a].plane.height_at(cam_position_.x, cam_position_.y))
+			if (cam_position_.z > floors_[a].plane.heightAt(cam_position_.x, cam_position_.y))
 			{
 				// Check if intersection is within sector
 				if (map_->sector(a)->isWithin((cam_position_ + cam_dir3d_ * dist).get2d()))
@@ -2882,7 +2882,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 		if (dist >= 0 && dist < min_dist)
 		{
 			// Check if on the correct side of the plane
-			if (cam_position_.z < ceilings_[a].plane.height_at(cam_position_.x, cam_position_.y))
+			if (cam_position_.z < ceilings_[a].plane.heightAt(cam_position_.x, cam_position_.y))
 			{
 				// Check if intersection is within sector
 				if (map_->sector(a)->isWithin((cam_position_ + cam_dir3d_ * dist).get2d()))
@@ -3062,8 +3062,8 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 		glBegin(GL_LINES);
 		for (auto& line : lines)
 		{
-			glVertex3d(line->x1(), line->y1(), plane.height_at(line->x1(), line->y1()));
-			glVertex3d(line->x2(), line->y2(), plane.height_at(line->x2(), line->y2()));
+			glVertex3d(line->x1(), line->y1(), plane.heightAt(line->x1(), line->y1()));
+			glVertex3d(line->x2(), line->y2(), plane.heightAt(line->x2(), line->y2()));
 		}
 		glEnd();
 

@@ -35,6 +35,7 @@
 #include "General/CVar.h"
 #include "MainEditor/MainEditor.h"
 #include "Utility/Tokenizer.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -108,9 +109,9 @@ void Console::execute(const string& command)
 					*((CBoolCVar*)cvar) = true;
 			}
 			else if (cvar->type == CVar::Type::Integer)
-				*((CIntCVar*)cvar) = std::stoi(CHR(args[0]));
+				*((CIntCVar*)cvar) = StringUtils::toInt(args[0]);
 			else if (cvar->type == CVar::Type::Float)
-				*((CFloatCVar*)cvar) = (float)std::stof(CHR(args[0]));
+				*((CFloatCVar*)cvar) = StringUtils::toFloat(args[0]);
 			else if (cvar->type == CVar::Type::String)
 				*((CStringCVar*)cvar) = args[0];
 		}

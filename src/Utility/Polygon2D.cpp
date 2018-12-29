@@ -46,20 +46,6 @@
 // -----------------------------------------------------------------------------
 
 
-Polygon2D::Polygon2D()
-{
-	vbo_update_ = 2;
-	colour_[0]  = 1.0f;
-	colour_[1]  = 1.0f;
-	colour_[2]  = 1.0f;
-	colour_[3]  = 1.0f;
-}
-
-Polygon2D::~Polygon2D()
-{
-	clear();
-}
-
 void Polygon2D::setColour(float r, float g, float b, float a)
 {
 	colour_[0] = r;
@@ -71,37 +57,34 @@ void Polygon2D::setColour(float r, float g, float b, float a)
 void Polygon2D::setZ(float z)
 {
 	// Go through all sub-polys
-	for (unsigned a = 0; a < subpolys_.size(); a++)
+	for (auto& subpoly : subpolys_)
 	{
 		// Set all vertex z values
-		for (unsigned v = 0; v < subpolys_[a]->n_vertices; v++)
-			subpolys_[a]->vertices[v].z = z;
+		for (auto& v : subpoly.vertices)
+			v.z = z;
 	}
 }
 
 void Polygon2D::setZ(Plane plane)
 {
 	// Go through all sub-polys
-	for (unsigned a = 0; a < subpolys_.size(); a++)
+	for (auto& subpoly : subpolys_)
 	{
 		// Set all vertex z values
-		for (unsigned v = 0; v < subpolys_[a]->n_vertices; v++)
-			subpolys_[a]->vertices[v].z = plane.height_at(subpolys_[a]->vertices[v].x, subpolys_[a]->vertices[v].y);
+		for (auto& v : subpoly.vertices)
+			v.z = plane.heightAt(v.x, v.y);
 	}
 }
 
 void Polygon2D::addSubPoly()
 {
-	subpolys_.push_back(new SubPoly());
+	subpolys_.emplace_back();
 	vbo_update_ = 2;
 }
 
 Polygon2D::SubPoly* Polygon2D::subPoly(unsigned index)
 {
-	if (index >= subpolys_.size())
-		return nullptr;
-	else
-		return subpolys_[index];
+	return index >= subpolys_.size() ? nullptr : &subpolys_[index];
 }
 
 void Polygon2D::removeSubPoly(unsigned index)
@@ -109,7 +92,6 @@ void Polygon2D::removeSubPoly(unsigned index)
 	if (index >= subpolys_.size())
 		return;
 
-	delete subpolys_[index];
 	subpolys_.erase(subpolys_.begin() + index);
 
 	vbo_update_ = 2;
@@ -117,8 +99,6 @@ void Polygon2D::removeSubPoly(unsigned index)
 
 void Polygon2D::clear()
 {
-	for (unsigned a = 0; a < subpolys_.size(); a++)
-		delete subpolys_[a];
 	subpolys_.clear();
 	vbo_update_ = 2;
 	texture_    = nullptr;
@@ -127,8 +107,8 @@ void Polygon2D::clear()
 unsigned Polygon2D::totalVertices()
 {
 	unsigned total = 0;
-	for (unsigned a = 0; a < subpolys_.size(); a++)
-		total += subpolys_[a]->n_vertices;
+	for (auto& subpoly : subpolys_)
+		total += subpoly.vertices.size();
 	return total;
 }
 
@@ -143,20 +123,20 @@ bool Polygon2D::openSector(MapSector* sector)
 	clear();
 
 	// Get list of sides connected to this sector
-	vector<MapSide*>& sides = sector->connectedSides();
+	auto& sides = sector->connectedSides();
 
 	// Go through sides
 	MapLine* line;
-	for (unsigned a = 0; a < sides.size(); a++)
+	for (auto& side : sides)
 	{
-		line = sides[a]->parentLine();
+		line = side->parentLine();
 
 		// Ignore this side if its parent line has the same sector on both sides
 		if (!line || line->doubleSector())
 			continue;
 
 		// Add the edge to the splitter (direction depends on what side of the line this is)
-		if (line->s1() == sides[a])
+		if (line->s1() == side)
 			splitter.addEdge(line->v1()->xPos(), line->v1()->yPos(), line->v2()->xPos(), line->v2()->yPos());
 		else
 			splitter.addEdge(line->v2()->xPos(), line->v2()->yPos(), line->v1()->xPos(), line->v1()->yPos());
@@ -190,12 +170,12 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 
 	// Set texture coordinates
 	double x, y;
-	for (unsigned p = 0; p < subpolys_.size(); p++)
+	for (auto& subpoly : subpolys_)
 	{
-		for (unsigned a = 0; a < subpolys_[p]->n_vertices; a++)
+		for (auto& v : subpoly.vertices)
 		{
-			x = subpolys_[p]->vertices[a].x;
-			y = subpolys_[p]->vertices[a].y;
+			x = v.x;
+			y = v.y;
 
 			// Apply rotation if any
 			if (rotation != 0)
@@ -209,8 +189,8 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 			y = (scale_y * offset_y) - y;
 
 			// Set texture coordinate for vertex
-			subpolys_[p]->vertices[a].tx = x * owidth;
-			subpolys_[p]->vertices[a].ty = y * oheight;
+			v.tx = x * owidth;
+			v.ty = y * oheight;
 		}
 	}
 
@@ -221,8 +201,8 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 unsigned Polygon2D::vboDataSize()
 {
 	unsigned total = 0;
-	for (unsigned a = 0; a < subpolys_.size(); a++)
-		total += subpolys_[a]->n_vertices * 20;
+	for (auto& subpoly : subpolys_)
+		total += subpoly.vertices.size() * 20;
 	return total;
 }
 
@@ -231,16 +211,16 @@ unsigned Polygon2D::writeToVBO(unsigned offset, unsigned index)
 	// Go through subpolys
 	unsigned ofs = offset;
 	unsigned i   = index;
-	for (unsigned a = 0; a < subpolys_.size(); a++)
+	for (auto& subpoly : subpolys_)
 	{
 		// Write subpoly data to VBO at the correct offset
-		glBufferSubData(GL_ARRAY_BUFFER, ofs, subpolys_[a]->n_vertices * 20, subpolys_[a]->vertices);
+		glBufferSubData(GL_ARRAY_BUFFER, ofs, subpoly.vertices.size() * 20, subpoly.vertices.data());
 
 		// Update the subpoly vbo offset
-		subpolys_[a]->vbo_offset = ofs;
-		subpolys_[a]->vbo_index  = i;
-		ofs += subpolys_[a]->n_vertices * 20;
-		i += subpolys_[a]->n_vertices;
+		subpoly.vbo_offset = ofs;
+		subpoly.vbo_index  = i;
+		ofs += subpoly.vertices.size() * 20;
+		i += subpoly.vertices.size();
 	}
 
 	// Update variables
@@ -253,9 +233,8 @@ unsigned Polygon2D::writeToVBO(unsigned offset, unsigned index)
 void Polygon2D::updateVBOData()
 {
 	// Go through subpolys
-	for (unsigned a = 0; a < subpolys_.size(); a++)
-		glBufferSubData(
-			GL_ARRAY_BUFFER, subpolys_[a]->vbo_offset, subpolys_[a]->n_vertices * 20, subpolys_[a]->vertices);
+	for (auto& subpoly : subpolys_)
+		glBufferSubData(GL_ARRAY_BUFFER, subpoly.vbo_offset, subpoly.vertices.size() * 20, subpoly.vertices.data());
 
 	// Update variables
 	vbo_update_ = 0;
@@ -264,14 +243,13 @@ void Polygon2D::updateVBOData()
 void Polygon2D::render()
 {
 	// Go through sub-polys
-	for (unsigned a = 0; a < subpolys_.size(); a++)
+	for (auto& poly : subpolys_)
 	{
-		SubPoly* poly = subpolys_[a];
 		glBegin(GL_TRIANGLE_FAN);
-		for (unsigned v = 0; v < poly->n_vertices; v++)
+		for (auto& v : poly.vertices)
 		{
-			glTexCoord2f(poly->vertices[v].tx, poly->vertices[v].ty);
-			glVertex3d(poly->vertices[v].x, poly->vertices[v].y, poly->vertices[v].z);
+			glTexCoord2f(v.tx, v.ty);
+			glVertex3d(v.x, v.y, v.z);
 		}
 		glEnd();
 	}
@@ -280,14 +258,13 @@ void Polygon2D::render()
 void Polygon2D::renderWireframe()
 {
 	// Go through sub-polys
-	for (unsigned a = 0; a < subpolys_.size(); a++)
+	for (auto& poly : subpolys_)
 	{
-		SubPoly* poly = subpolys_[a];
 		glBegin(GL_LINE_LOOP);
-		for (unsigned v = 0; v < poly->n_vertices; v++)
+		for (auto& v : poly.vertices)
 		{
-			glTexCoord2f(poly->vertices[v].tx, poly->vertices[v].ty);
-			glVertex2d(poly->vertices[v].x, poly->vertices[v].y);
+			glTexCoord2f(v.tx, v.ty);
+			glVertex2d(v.x, v.y);
 		}
 		glEnd();
 	}
@@ -297,11 +274,11 @@ void Polygon2D::renderVBO(bool colour)
 {
 	// Render
 	// glColor4f(this->colour[0], this->colour[1], this->colour[2], this->colour[3]);
-	for (unsigned a = 0; a < subpolys_.size(); a++)
-		glDrawArrays(GL_TRIANGLE_FAN, subpolys_[a]->vbo_index, subpolys_[a]->n_vertices);
+	for (const auto& subpoly : subpolys_)
+		glDrawArrays(GL_TRIANGLE_FAN, subpoly.vbo_index, subpoly.vertices.size());
 }
 
-void Polygon2D::renderWireframeVBO(bool colour) {}
+void Polygon2D::renderWireframeVBO(bool colour) const {}
 
 void Polygon2D::setupVBOPointers()
 {
@@ -320,13 +297,6 @@ void Polygon2D::setupVBOPointers()
 // -----------------------------------------------------------------------------
 
 
-PolygonSplitter::PolygonSplitter()
-{
-	verbose_ = false;
-}
-
-PolygonSplitter::~PolygonSplitter() {}
-
 void PolygonSplitter::clear()
 {
 	vertices_.clear();
@@ -344,7 +314,7 @@ int PolygonSplitter::addVertex(double x, double y)
 	}
 
 	// Add vertex
-	vertices_.push_back(Vertex(x, y));
+	vertices_.emplace_back(x, y);
 	vertices_.back().distance = 999999;
 	return vertices_.size() - 1;
 }
@@ -391,16 +361,16 @@ int PolygonSplitter::addEdge(int v1, int v2)
 
 int PolygonSplitter::findNextEdge(int edge, bool ignore_done, bool only_convex, bool ignore_inpoly)
 {
-	Edge&   e  = edges_[edge];
-	Vertex& v2 = vertices_[e.v2];
-	Vertex& v1 = vertices_[e.v1];
+	auto& e  = edges_[edge];
+	auto& v2 = vertices_[e.v2];
+	auto& v1 = vertices_[e.v1];
 
 	// Go through all edges starting from the end of this one
 	double min_angle = 2 * MathStuff::PI;
 	int    next      = -1;
 	for (unsigned a = 0; a < v2.edges_out.size(); a++)
 	{
-		Edge& out = edges_[v2.edges_out[a]];
+		auto& out = edges_[v2.edges_out[a]];
 
 		// Ignore 'done' edges
 		if (ignore_done && edges_[v2.edges_out[a]].done)
@@ -429,17 +399,14 @@ int PolygonSplitter::findNextEdge(int edge, bool ignore_done, bool only_convex, 
 	}
 
 	last_angle_ = min_angle;
-	if (only_convex && min_angle > MathStuff::PI)
-		return -1;
-	else
-		return next;
+	return only_convex && min_angle > MathStuff::PI ? -1 : next;
 }
 
 void PolygonSplitter::flipEdge(int edge)
 {
-	Edge&   e  = edges_[edge];
-	Vertex& v1 = vertices_[e.v1];
-	Vertex& v2 = vertices_[e.v2];
+	auto& e  = edges_[edge];
+	auto& v1 = vertices_[e.v1];
+	auto& v2 = vertices_[e.v2];
 
 	// Remove the edge from its vertices' edge lists
 	for (unsigned a = 0; a < v1.edges_out.size(); a++)
@@ -512,43 +479,43 @@ bool PolygonSplitter::detectUnclosed()
 	{
 		// Print invalid vertices info if verbose
 		string info = "Vertices with no outgoing edges: ";
-		for (unsigned a = 0; a < end_verts.size(); a++)
+		for (int end_vert : end_verts)
 		{
-			info += S_FMT("%1.2f", vertices_[end_verts[a]].x);
+			info += S_FMT("%1.2f", vertices_[end_vert].x);
 			info += ",";
-			info += S_FMT("%1.2f", vertices_[end_verts[a]].y);
+			info += S_FMT("%1.2f", vertices_[end_vert].y);
 			info += " ";
 		}
 		Log::info(info);
 		info = "Vertices with no incoming edges: ";
-		for (unsigned a = 0; a < start_verts.size(); a++)
+		for (int start_vert : start_verts)
 		{
-			info += S_FMT("%1.2f", vertices_[start_verts[a]].x);
+			info += S_FMT("%1.2f", vertices_[start_vert].x);
 			info += ",";
-			info += S_FMT("%1.2f", vertices_[start_verts[a]].y);
+			info += S_FMT("%1.2f", vertices_[start_vert].y);
 			info += " ";
 		}
 		Log::info(info);
 	}
 
 	// Check if any of this is caused by flipped edges
-	for (unsigned a = 0; a < end_verts.size(); a++)
+	for (int end_vert : end_verts)
 	{
-		Vertex& ev = vertices_[end_verts[a]];
+		auto& ev = vertices_[end_vert];
 
 		// Check all the edges coming out of this vertex,
 		// and see if any go into another 'unattacted' vertex
-		for (unsigned e = 0; e < ev.edges_in.size(); e++)
+		for (int e : ev.edges_in)
 		{
-			Edge& edge = edges_[ev.edges_in[e]];
+			auto& edge = edges_[e];
 
 			bool flipped = false;
-			for (unsigned b = 0; b < start_verts.size(); b++)
+			for (int start_vert : start_verts)
 			{
-				Vertex& sv = vertices_[start_verts[b]];
+				auto& sv = vertices_[start_vert];
 
-				if (edge.v1 == start_verts[b] && edge.v2 == end_verts[a])
-					flipEdge(ev.edges_in[e]); // Flip the edge
+				if (edge.v1 == start_vert && edge.v2 == end_vert)
+					flipEdge(e); // Flip the edge
 			}
 		}
 	}
@@ -573,16 +540,16 @@ bool PolygonSplitter::detectUnclosed()
 		return false;
 
 	// If it still isn't closed, check for completely detached edges and 'remove' them
-	for (unsigned a = 0; a < edges_.size(); a++)
+	for (auto& edge : edges_)
 	{
-		if (vertices_[edges_[a].v1].edges_in.empty() && vertices_[edges_[a].v2].edges_out.empty())
+		if (vertices_[edge.v1].edges_in.empty() && vertices_[edge.v2].edges_out.empty())
 		{
 			// Invalidate edge
-			edges_[a].ok = false;
+			edge.ok = false;
 
 			// Invalidate vertices
-			vertices_[edges_[a].v1].ok = false;
-			vertices_[edges_[a].v2].ok = false;
+			vertices_[edge.v1].ok = false;
+			vertices_[edge.v2].ok = false;
 		}
 	}
 
@@ -611,8 +578,8 @@ bool PolygonSplitter::detectUnclosed()
 
 bool PolygonSplitter::tracePolyOutline(int edge_start)
 {
-	polygon_outlines_.push_back(Outline());
-	Outline& poly   = polygon_outlines_.back();
+	polygon_outlines_.emplace_back();
+	auto& poly      = polygon_outlines_.back();
 	poly.convex     = true;
 	double edge_sum = 0;
 
@@ -641,8 +608,8 @@ bool PolygonSplitter::tracePolyOutline(int edge_start)
 		// Abort if no next edge was found
 		if (next < 0)
 		{
-			for (unsigned b = 0; b < poly.edges.size(); b++)
-				edges_[poly.edges[b]].inpoly = false;
+			for (int ei : poly.edges)
+				edges_[ei].inpoly = false;
 
 			polygon_outlines_.pop_back();
 			return false;
@@ -729,16 +696,16 @@ bool PolygonSplitter::testTracePolyOutline(int edge_start)
 }
 
 
-struct vdist_t
+struct VDist
 {
 	int    index;
 	double distance;
-	vdist_t(int index, double distance)
+	VDist(int index, double distance)
 	{
 		this->index    = index;
 		this->distance = distance;
 	}
-	bool operator<(const vdist_t& right) const { return distance < right.distance; }
+	bool operator<(const VDist& right) const { return distance < right.distance; }
 };
 bool PolygonSplitter::splitFromEdge(int splitter_edge)
 {
@@ -772,18 +739,15 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	// (this will be the case most of the time)
 	bool  intersect = false;
 	Vec2f pointi;
-	for (unsigned a = 0; a < edges_.size(); a++)
+	for (auto& edge : edges_)
 	{
 		// Ignore edge if adjacent to the vertices we are looking at
-		if (edges_[a].v1 == closest || edges_[a].v2 == closest || edges_[a].v1 == v2 || edges_[a].v2 == v2
-			|| !edges_[a].ok)
+		if (edge.v1 == closest || edge.v2 == closest || edge.v1 == v2 || edge.v2 == v2 || !edge.ok)
 			continue;
 
 		// Intersection test
 		if (MathStuff::linesIntersect(
-				Seg2f(vertices_[v2], vertices_[closest]),
-				Seg2f(vertices_[edges_[a].v1], vertices_[edges_[a].v2]),
-				pointi))
+				Seg2f(vertices_[v2], vertices_[closest]), Seg2f(vertices_[edge.v1], vertices_[edge.v2]), pointi))
 		{
 			intersect = true;
 			break;
@@ -802,34 +766,33 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 
 
 	// Otherwise, we'll have to find the next closest vertex
-	vector<vdist_t> sorted_verts;
+	vector<VDist> sorted_verts;
 
 	// Build a list of potential vertices, ordered by distance
 	for (unsigned a = 0; a < vertices_.size(); a++)
 	{
 		if (vertices_[a].distance < 999999)
-			sorted_verts.push_back(vdist_t(a, vertices_[a].distance));
+			sorted_verts.emplace_back(a, vertices_[a].distance);
 	}
 
 	// Go through potential split vertices, closest first
 	std::sort(sorted_verts.begin(), sorted_verts.end());
-	for (unsigned a = 0; a < sorted_verts.size(); a++)
+	for (auto& sorted_vertex : sorted_verts)
 	{
-		int     index = sorted_verts[a].index;
-		Vertex& vert  = vertices_[index];
+		int   index = sorted_vertex.index;
+		auto& vert  = vertices_[index];
 
 		// Check if a split from the edge to this vertex would cross any other edges
 		intersect = false;
-		for (unsigned a = 0; a < edges_.size(); a++)
+		for (auto& edge : edges_)
 		{
 			// Ignore edge if adjacent to the vertices we are looking at
-			if (edges_[a].v1 == index || edges_[a].v2 == index || edges_[a].v1 == v2 || edges_[a].v2 == v2
-				|| !edges_[a].ok)
+			if (edge.v1 == index || edge.v2 == index || edge.v1 == v2 || edge.v2 == v2 || !edge.ok)
 				continue;
 
 			// Intersection test
 			if (MathStuff::linesIntersect(
-					Seg2f(vertices_[v2], vert), Seg2f(vertices_[edges_[a].v1], vertices_[edges_[a].v2]), pointi))
+					Seg2f(vertices_[v2], vert), Seg2f(vertices_[edge.v1], vertices_[edge.v2]), pointi))
 			{
 				intersect = true;
 				break;
@@ -900,8 +863,7 @@ bool PolygonSplitter::buildSubPoly(int edge_start, Polygon2D::SubPoly* poly)
 	if (verts.size() >= 3)
 	{
 		// Allocate polygon vertex data
-		poly->n_vertices = verts.size();
-		poly->vertices   = new Polygon2D::Vertex[poly->n_vertices];
+		poly->vertices.resize(verts.size());
 
 		// Add vertex data to polygon
 		for (unsigned a = 0; a < verts.size(); a++)
@@ -932,10 +894,10 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		LOG_MESSAGE(1, "%lu Polygon outlines detected", polygon_outlines_.size());
 
 	// Check if any edges are not part of a polygon outline
-	for (unsigned a = 0; a < edges_.size(); a++)
+	for (auto& edge : edges_)
 	{
-		if (!edges_[a].inpoly)
-			edges_[a].ok = false; // Invalidate it
+		if (!edge.inpoly)
+			edge.ok = false; // Invalidate it
 	}
 
 	// Let's check for some cases where we can 'throw away' edges/vertices from further consideration
@@ -947,8 +909,8 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		{
 			if (b == a)
 				continue;
-			BBox& bb1 = polygon_outlines_[a].bbox;
-			BBox& bb2 = polygon_outlines_[b].bbox;
+			auto& bb1 = polygon_outlines_[a].bbox;
+			auto& bb2 = polygon_outlines_[b].bbox;
 			if (!(bb2.min.x > bb1.max.x || bb2.max.x < bb1.min.x || bb2.min.y > bb1.max.y || bb2.max.y < bb1.min.y))
 			{
 				separate = false;
@@ -961,17 +923,17 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		{
 			if (verbose_)
 				LOG_MESSAGE(1, "Separate, convex polygon exists, cutting (valid)");
-			for (unsigned b = 0; b < polygon_outlines_[a].edges.size(); b++)
+			for (int edge : polygon_outlines_[a].edges)
 			{
 				// Set the edge to 'done' so it is ignored, but still used to build polygons
-				edges_[polygon_outlines_[a].edges[b]].done = true;
+				edges_[edge].done = true;
 
 				// If the edge's vertices aren't attached to anything else, also preclude these from later calculations
-				int v1 = edges_[polygon_outlines_[a].edges[b]].v1;
+				int v1 = edges_[edge].v1;
 				if (vertices_[v1].edges_in.size() == 1 && vertices_[v1].edges_out.size() == 1)
 					vertices_[v1].ok = false;
 
-				int v2 = edges_[polygon_outlines_[a].edges[b]].v2;
+				int v2 = edges_[edge].v2;
 				if (vertices_[v2].edges_in.size() == 1 && vertices_[v2].edges_out.size() == 1)
 					vertices_[v2].ok = false;
 			}
@@ -982,17 +944,17 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		{
 			if (verbose_)
 				LOG_MESSAGE(1, "Separate, anticlockwise polygon exists, cutting (invalid)");
-			for (unsigned b = 0; b < polygon_outlines_[a].edges.size(); b++)
+			for (int edge : polygon_outlines_[a].edges)
 			{
 				// Set the edge to 'done' so it is ignored, but still used to build polygons
-				edges_[polygon_outlines_[a].edges[b]].ok = false;
+				edges_[edge].ok = false;
 
 				// If the edge's vertices aren't attached to anything else, also preclude these from later calculations
-				int v1 = edges_[polygon_outlines_[a].edges[b]].v1;
+				int v1 = edges_[edge].v1;
 				if (vertices_[v1].edges_in.size() == 1 && vertices_[v1].edges_out.size() == 1)
 					vertices_[v1].ok = false;
 
-				int v2 = edges_[polygon_outlines_[a].edges[b]].v2;
+				int v2 = edges_[edge].v2;
 				if (vertices_[v2].edges_in.size() == 1 && vertices_[v2].edges_out.size() == 1)
 					vertices_[v2].ok = false;
 			}
@@ -1006,8 +968,8 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 	// (we'll limit the number of rounds to 100 to avoid infinite loops, just in case)
 	for (unsigned loop = 0; loop < 100; loop++)
 	{
-		for (unsigned a = 0; a < concave_edges_.size(); a++)
-			splitFromEdge(concave_edges_[a]);
+		for (int concave_edge : concave_edges_)
+			splitFromEdge(concave_edge);
 
 		detectConcavity();
 		if (concave_edges_.empty())
@@ -1038,8 +1000,8 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 	}
 
 	// Reset edge 'done' status
-	for (unsigned a = 0; a < edges_.size(); a++)
-		edges_[a].done = false;
+	for (auto& edge : edges_)
+		edge.done = false;
 
 	// Build polygons
 	for (unsigned a = 0; a < edges_.size(); a++)
@@ -1065,20 +1027,20 @@ void PolygonSplitter::openSector(MapSector* sector)
 	clear();
 
 	// Get list of sides connected to this sector
-	vector<MapSide*>& sides = sector->connectedSides();
+	auto& sides = sector->connectedSides();
 
 	// Go through sides
 	MapLine* line;
-	for (unsigned a = 0; a < sides.size(); a++)
+	for (auto& side : sides)
 	{
-		line = sides[a]->parentLine();
+		line = side->parentLine();
 
 		// Ignore this side if its parent line has the same sector on both sides
 		if (!line || line->doubleSector())
 			continue;
 
 		// Add the edge to the splitter (direction depends on what side of the line this is)
-		if (line->s1() == sides[a])
+		if (line->s1() == side)
 			addEdge(line->v1()->xPos(), line->v1()->yPos(), line->v2()->xPos(), line->v2()->yPos());
 		else
 			addEdge(line->v2()->xPos(), line->v2()->yPos(), line->v1()->xPos(), line->v1()->yPos());
@@ -1091,8 +1053,8 @@ void PolygonSplitter::testRender()
 	// Draw vertices
 	OpenGL::setColour(255, 255, 255, 255, 0);
 	glBegin(GL_POINTS);
-	for (unsigned a = 0; a < vertices_.size(); a++)
-		glVertex2d(vertices_[a].x, vertices_[a].y);
+	for (auto& vertex : vertices_)
+		glVertex2d(vertex.x, vertex.y);
 	glEnd();
 
 	// Draw original edges

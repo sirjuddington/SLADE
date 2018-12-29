@@ -47,7 +47,7 @@
 // -----------------------------------------------------------------------------
 // ParseTreeNode class constructor
 // -----------------------------------------------------------------------------
-ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveTreeNode* archive_dir, string type) :
+ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveTreeNode* archive_dir, const string& type) :
 	STreeNode{ parent },
 	type_{ type },
 	parser_{ parser },
@@ -55,11 +55,6 @@ ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveTreeN
 {
 	allowDup(true);
 }
-
-// -----------------------------------------------------------------------------
-// ParseTreeNode class destructor
-// -----------------------------------------------------------------------------
-ParseTreeNode::~ParseTreeNode() {}
 
 // -----------------------------------------------------------------------------
 // Returns the node's value at [index] as a Property.
@@ -93,10 +88,8 @@ string ParseTreeNode::stringValue(unsigned index)
 vector<string> ParseTreeNode::stringValues()
 {
 	vector<string> string_values;
-	for (unsigned idx = 0; idx < values_.size(); ++idx)
-	{
-		string_values.push_back(values_[idx].stringValue());
-	}
+	for (auto& value : values_)
+		string_values.push_back(value.stringValue());
 	return string_values;
 }
 
@@ -144,7 +137,7 @@ double ParseTreeNode::floatValue(unsigned index)
 // -----------------------------------------------------------------------------
 ParseTreeNode* ParseTreeNode::addChildPTN(const string& name, const string& type)
 {
-	auto node   = static_cast<ParseTreeNode*>(addChild(name));
+	auto node   = dynamic_cast<ParseTreeNode*>(addChild(name));
 	node->type_ = type;
 	return node;
 }
@@ -310,7 +303,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 			tz.adv(); // Skip it
 		else if (tz.peek() != list_end)
 		{
-			logError(tz, S_FMT("Expected \",\" or \"%c\", got \"%s\"", list_end, CHR(tz.peek().text)));
+			logError(tz, S_FMT(R"(Expected "," or "%c", got "%s")", list_end, CHR(tz.peek().text)));
 			return false;
 		}
 
@@ -431,7 +424,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			}
 			else
 			{
-				logError(tz, S_FMT("Expecting \"{\" or \";\", got \"%s\"", CHR(tz.next().text)));
+				logError(tz, S_FMT(R"(Expecting "{" or ";", got "%s")", CHR(tz.next().text)));
 				return false;
 			}
 		}
@@ -485,7 +478,7 @@ void ParseTreeNode::write(string& out, int indent) const
 		out += " : " + inherit_;
 
 	// Leaf node - write value(s)
-	if (children_.size() == 0)
+	if (children_.empty())
 	{
 		out += " = ";
 
@@ -516,8 +509,8 @@ void ParseTreeNode::write(string& out, int indent) const
 		// Opening brace
 		out += "\n" + tabs + "{\n";
 
-		for (unsigned a = 0; a < children_.size(); a++)
-			static_cast<ParseTreeNode*>(children_[a])->write(out, indent + 1);
+		for (auto node : children_)
+			dynamic_cast<ParseTreeNode*>(node)->write(out, indent + 1);
 
 		// Closing brace
 		out += tabs + "}\n";
@@ -540,11 +533,6 @@ Parser::Parser(ArchiveTreeNode* dir_root) : archive_dir_root_{ dir_root }
 	// Create parse tree root node
 	pt_root_ = std::make_unique<ParseTreeNode>(nullptr, this, archive_dir_root_);
 }
-
-// -----------------------------------------------------------------------------
-// Parser class destructor
-// -----------------------------------------------------------------------------
-Parser::~Parser() {}
 
 // -----------------------------------------------------------------------------
 // Parses the given text data to build a tree of ParseTreeNodes.
@@ -580,7 +568,7 @@ Parser::~Parser() {}
 // 		</base>
 // 	</root>
 // -----------------------------------------------------------------------------
-bool Parser::parseText(MemChunk& mc, string source)
+bool Parser::parseText(MemChunk& mc, const string& source) const
 {
 	Tokenizer tz;
 
@@ -595,7 +583,7 @@ bool Parser::parseText(MemChunk& mc, string source)
 	// Do parsing
 	return pt_root_->parse(tz);
 }
-bool Parser::parseText(const string& text, string source)
+bool Parser::parseText(const string& text, const string& source) const
 {
 	Tokenizer tz;
 

@@ -8,55 +8,35 @@ class Polygon2D
 public:
 	struct Vertex
 	{
-		float x, y, z;
-		float tx, ty;
-		Vertex(float x = 0.0f, float y = 0.0f, float z = 0.0f)
-		{
-			this->x  = x;
-			this->y  = y;
-			this->z  = z;
-			this->tx = 0.0f;
-			this->ty = 0.0f;
-		}
+		float x = 0.f, y = 0.f, z = 0.f;
+		float tx = 0.f, ty = 0.f;
+		Vertex(float x = 0.0f, float y = 0.0f, float z = 0.0f) : x{ x }, y{ y }, z{ z } {}
 	};
 
 	struct SubPoly
 	{
-		Vertex*  vertices;
-		unsigned n_vertices;
-		unsigned vbo_offset;
-		unsigned vbo_index;
-
-		SubPoly()
-		{
-			vertices   = nullptr;
-			n_vertices = 0;
-			vbo_offset = 0;
-		}
-		~SubPoly()
-		{
-			if (vertices)
-				delete[] vertices;
-		}
+		vector<Vertex> vertices;
+		unsigned       vbo_offset = 0;
+		unsigned       vbo_index  = 0;
 	};
 
-	Polygon2D();
-	~Polygon2D();
+	Polygon2D() = default;
+	~Polygon2D() { clear(); }
 
-	GLTexture* texture() { return texture_; }
+	GLTexture* texture() const { return texture_; }
 	float      colRed() { return colour_[0]; }
 	float      colGreen() { return colour_[1]; }
 	float      colBlue() { return colour_[2]; }
 	float      colAlpha() { return colour_[3]; }
 
-	void setTexture(GLTexture* tex) { this->texture_ = tex; }
+	void setTexture(GLTexture* tex) { texture_ = tex; }
 	void setColour(float r, float g, float b, float a);
-	bool hasPolygon() { return !subpolys_.empty(); }
-	int  vboUpdate() { return vbo_update_; }
+	bool hasPolygon() const { return !subpolys_.empty(); }
+	int  vboUpdate() const { return vbo_update_; }
 	void setZ(float z);
 	void setZ(Plane plane);
 
-	unsigned nSubPolys() { return subpolys_.size(); }
+	unsigned nSubPolys() const { return subpolys_.size(); }
 	void     addSubPoly();
 	SubPoly* subPoly(unsigned index);
 	void     removeSubPoly(unsigned index);
@@ -78,17 +58,17 @@ public:
 	void render();
 	void renderWireframe();
 	void renderVBO(bool colour = true);
-	void renderWireframeVBO(bool colour = true);
+	void renderWireframeVBO(bool colour = true) const;
 
 	static void setupVBOPointers();
 
 private:
 	// Polygon data
-	vector<SubPoly*> subpolys_;
-	GLTexture*       texture_;
-	float            colour_[4];
+	vector<SubPoly> subpolys_;
+	GLTexture*      texture_   = nullptr;
+	float           colour_[4] = { 1.f, 1.f, 1.f, 1.f };
 
-	int vbo_update_;
+	int vbo_update_ = 2;
 };
 
 
@@ -97,8 +77,8 @@ class PolygonSplitter
 	friend class Polygon2D;
 
 public:
-	PolygonSplitter();
-	~PolygonSplitter();
+	PolygonSplitter()  = default;
+	~PolygonSplitter() = default;
 
 	void clear();
 	void setVerbose(bool v) { verbose_ = v; }
@@ -107,7 +87,7 @@ public:
 	int addEdge(double x1, double y1, double x2, double y2);
 	int addEdge(int v1, int v2);
 
-	int  findNextEdge(int edge, bool ignore_valid = true, bool only_convex = true, bool ignore_inpoly = false);
+	int  findNextEdge(int edge, bool ignore_done = true, bool only_convex = true, bool ignore_inpoly = false);
 	void flipEdge(int edge);
 
 	void detectConcavity();
@@ -139,16 +119,11 @@ private:
 		double      x, y;
 		vector<int> edges_in;
 		vector<int> edges_out;
-		bool        ok;
-		double      distance;
-		Vertex(double x = 0, double y = 0)
-		{
-			this->x = x;
-			this->y = y;
-			ok      = true;
-		}
+		bool        ok       = true;
+		double      distance = 0;
+		Vertex(double x = 0, double y = 0) : x{ x }, y{ y } {}
 
-		operator Vec2f() const { return Vec2f(x, y); }
+		operator Vec2f() const { return { x, y }; }
 	};
 	struct Outline
 	{
@@ -163,7 +138,7 @@ private:
 	vector<Edge>    edges_;
 	vector<int>     concave_edges_;
 	vector<Outline> polygon_outlines_;
-	int             split_edges_start_;
-	bool            verbose_;
-	double          last_angle_;
+	int             split_edges_start_ = 0;
+	bool            verbose_           = false;
+	double          last_angle_        = 0.;
 };

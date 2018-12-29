@@ -45,12 +45,8 @@
 // -----------------------------------------------------------------------------
 // MemChunk class constructor
 // -----------------------------------------------------------------------------
-MemChunk::MemChunk(uint32_t size)
+MemChunk::MemChunk(uint32_t size) : size_{ size }
 {
-	// Init variables
-	this->size_    = size;
-	this->cur_ptr_ = 0;
-
 	// If a size is specified, allocate that much memory
 	if (size)
 		allocData(size);
@@ -61,13 +57,8 @@ MemChunk::MemChunk(uint32_t size)
 // -----------------------------------------------------------------------------
 // MemChunk class constructor taking initial data
 // -----------------------------------------------------------------------------
-MemChunk::MemChunk(const uint8_t* data, uint32_t size)
+MemChunk::MemChunk(const uint8_t* data, uint32_t size) : size_{ size }
 {
-	// Init variables
-	this->cur_ptr_ = 0;
-	this->data_    = nullptr;
-	this->size_    = size;
-
 	// Load given data
 	importMem(data, size);
 }
@@ -78,8 +69,7 @@ MemChunk::MemChunk(const uint8_t* data, uint32_t size)
 MemChunk::~MemChunk()
 {
 	// Free memory
-	if (data_)
-		delete[] data_;
+	delete[] data_;
 }
 
 // -----------------------------------------------------------------------------
@@ -87,10 +77,7 @@ MemChunk::~MemChunk()
 // -----------------------------------------------------------------------------
 bool MemChunk::hasData() const
 {
-	if (size_ > 0 && data_)
-		return true;
-	else
-		return false;
+	return size_ > 0 && data_;
 }
 
 // -----------------------------------------------------------------------------
@@ -125,7 +112,7 @@ bool MemChunk::reSize(uint32_t new_size, bool preserve_data)
 	}
 
 	// Attempt to allocate memory for new size
-	uint8_t* ndata = allocData(new_size, false);
+	auto ndata = allocData(new_size, false);
 	if (!ndata)
 		return false;
 
@@ -156,7 +143,7 @@ bool MemChunk::reSize(uint32_t new_size, bool preserve_data)
 // Loads a file (or part of it) into the MemChunk.
 // Returns false if file couldn't be opened, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::importFile(string filename, uint32_t offset, uint32_t len)
+bool MemChunk::importFile(const string& filename, uint32_t offset, uint32_t len)
 {
 	// Open the file
 	wxFile file(filename);
@@ -276,7 +263,7 @@ bool MemChunk::importMem(const uint8_t* start, uint32_t len)
 // to [start+size].
 // If [size] is 0, writes from [start] to the end of the data
 // -----------------------------------------------------------------------------
-bool MemChunk::exportFile(string filename, uint32_t start, uint32_t size)
+bool MemChunk::exportFile(const string& filename, uint32_t start, uint32_t size) const
 {
 	// Check data exists
 	if (!hasData())
@@ -310,7 +297,7 @@ bool MemChunk::exportFile(string filename, uint32_t start, uint32_t size)
 // [start+size].
 // If [size] is 0, writes from [start] to the end of the data
 // -----------------------------------------------------------------------------
-bool MemChunk::exportMemChunk(MemChunk& mc, uint32_t start, uint32_t size)
+bool MemChunk::exportMemChunk(MemChunk& mc, uint32_t start, uint32_t size) const
 {
 	// Check data exists
 	if (!hasData())
@@ -453,7 +440,7 @@ bool MemChunk::readMC(MemChunk& mc, uint32_t size)
 // Overwrites all data bytes with [val] (basically is memset).
 // Returns false if no data exists, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::fillData(uint8_t val)
+bool MemChunk::fillData(uint8_t val) const
 {
 	// Check data exists
 	if (!hasData())
@@ -470,12 +457,9 @@ bool MemChunk::fillData(uint8_t val)
 // Calculates the 32bit CRC value of the data.
 // Returns the CRC or 0 if no data is present
 // -----------------------------------------------------------------------------
-uint32_t MemChunk::crc()
+uint32_t MemChunk::crc() const
 {
-	if (hasData())
-		return Misc::crc(data_, size_);
-	else
-		return 0;
+	return hasData() ? Misc::crc(data_, size_) : 0;
 }
 
 
@@ -487,7 +471,7 @@ uint32_t MemChunk::crc()
 // -----------------------------------------------------------------------------
 uint8_t* MemChunk::allocData(uint32_t size, bool set_data)
 {
-	uint8_t* ndata = nullptr;
+	uint8_t* ndata;
 	try
 	{
 		ndata = new uint8_t[size];

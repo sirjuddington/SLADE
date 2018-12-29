@@ -12,14 +12,14 @@ public:
 	virtual ~STreeNode();
 
 	void allowDup(bool dup) { allow_dup_child_ = dup; }
-	bool allowDup() { return allow_dup_child_; }
+	bool allowDup() const { return allow_dup_child_; }
 
-	STreeNode*     parent() { return parent_; }
+	STreeNode*     parent() const { return parent_; }
 	virtual string name()               = 0;
 	virtual void   setName(string name) = 0;
 	virtual string path();
 
-	unsigned                   nChildren() { return children_.size(); }
+	unsigned                   nChildren() const { return children_.size(); }
 	STreeNode*                 child(unsigned index);
 	virtual STreeNode*         child(string name);
 	virtual vector<STreeNode*> children(string name);

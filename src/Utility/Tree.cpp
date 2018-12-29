@@ -62,8 +62,8 @@ STreeNode::STreeNode(STreeNode* parent)
 STreeNode::~STreeNode()
 {
 	// Delete children
-	for (unsigned a = 0; a < children_.size(); a++)
-		delete children_[a];
+	for (auto& child : children_)
+		delete child;
 }
 
 // -----------------------------------------------------------------------------
@@ -112,10 +112,10 @@ STreeNode* STreeNode::child(string name)
 	if (fn.GetDirCount() == 0)
 	{
 		// Find child of this node
-		for (unsigned a = 0; a < children_.size(); a++)
+		for (auto& child : children_)
 		{
-			if (S_CMPNOCASE(name, children_[a]->name()))
-				return children_[a];
+			if (S_CMPNOCASE(name, child->name()))
+				return child;
 		}
 
 		// Child not found
@@ -127,7 +127,7 @@ STreeNode* STreeNode::child(string name)
 		string dir = fn.GetDirs()[0];
 
 		// See if it is a child of this node
-		STreeNode* c = child(dir);
+		auto c = child(dir);
 		if (c)
 		{
 			// It is, remove the first directory and continue searching that child
@@ -163,10 +163,10 @@ vector<STreeNode*> STreeNode::children(string name)
 	if (fn.GetDirCount() == 0)
 	{
 		// Find child of this node
-		for (unsigned a = 0; a < children_.size(); a++)
+		for (auto& child : children_)
 		{
-			if (S_CMPNOCASE(name, children_[a]->name()))
-				ret.push_back(children_[a]);
+			if (S_CMPNOCASE(name, child->name()))
+				ret.push_back(child);
 		}
 	}
 	else
@@ -175,7 +175,7 @@ vector<STreeNode*> STreeNode::children(string name)
 		string dir = fn.GetDirs()[0];
 
 		// See if it is a child of this node
-		STreeNode* c = child(dir);
+		auto c = child(dir);
 		if (c)
 		{
 			// It is, remove the first directory and continue searching that child

@@ -31,6 +31,7 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -145,13 +146,13 @@ void CVar::set(const string& name, const string& value)
 		if (name == cvars[c]->name)
 		{
 			if (cvars[c]->type == Type::Integer)
-				*((CIntCVar*)cvars[c]) = std::stoi(CHR(value));
+				*((CIntCVar*)cvars[c]) = StringUtils::toInt(value);
 
 			if (cvars[c]->type == Type::Boolean)
-				*((CBoolCVar*)cvars[c]) = !!(std::stoi(CHR(value)));
+				*((CBoolCVar*)cvars[c]) = !!(StringUtils::toInt(value));
 
 			if (cvars[c]->type == Type::Float)
-				*((CFloatCVar*)cvars[c]) = std::stof(CHR(value));
+				*((CFloatCVar*)cvars[c]) =StringUtils::toFloat(value);
 
 			if (cvars[c]->type == Type::String)
 				*((CStringCVar*)cvars[c]) = wxString::FromUTF8(CHR(value));

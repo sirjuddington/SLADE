@@ -122,10 +122,7 @@ void Tokenizer::Token::toBool(bool& val) const
 // -----------------------------------------------------------------------------
 Tokenizer::Tokenizer(int comments, const string& special_characters) :
 	comment_types_{ comments },
-	special_characters_{ special_characters.begin(), special_characters.end() },
-	decorate_{ false },
-	read_lowercase_{ false },
-	debug_{ false }
+	special_characters_{ special_characters.begin(), special_characters.end() }
 {
 }
 

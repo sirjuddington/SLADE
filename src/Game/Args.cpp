@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "Args.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 using namespace Game;
 
@@ -244,14 +245,14 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 		if (val)
 		{
 			for (auto cv : val->allChildren())
-				custom_values.push_back({ Parser::node(cv)->stringValue(), std::stoi(CHR(cv->name())) });
+				custom_values.push_back({ Parser::node(cv)->stringValue(), StringUtils::toInt(cv->name()) });
 		}
 
 		val = node->childPTN("custom_flags");
 		if (val)
 		{
 			for (auto cf : val->allChildren())
-				custom_flags.push_back({ Parser::node(cf)->stringValue(), std::stoi(CHR(cf->name())) });
+				custom_flags.push_back({ Parser::node(cf)->stringValue(), StringUtils::toInt(cf->name()) });
 		}
 	}
 }
