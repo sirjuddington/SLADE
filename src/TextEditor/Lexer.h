@@ -33,6 +33,7 @@ public:
 	virtual bool doStyling(TextEditorCtrl* editor, int start, int end);
 	virtual void addWord(const string& word, int style);
 	virtual void clearWords() { word_list_.clear(); }
+	virtual void resetLineInfo() { lines_.clear(); }
 
 	void setWordChars(const string& chars);
 	void setOperatorChars(const string& chars);

@@ -1496,6 +1496,13 @@ void TextEditorCtrl::onCharAdded(wxStyledTextEvent& e)
 		// Comma, possibly update calltip
 		if (e.GetKey() == ',' && txed_calltips_parenthesis)
 			updateCalltip();
+
+		// Block comment ended
+		for (auto& end_token : language_->commentEndL())
+		{
+			if (GetTextRange(GetCurrentPos() - end_token.size(), GetCurrentPos()) == end_token)
+				block_comment_closed_ = true;
+		}
 	}
 
 	// Continue
@@ -1795,6 +1802,14 @@ void TextEditorCtrl::onStyleNeeded(wxStyledTextEvent& e)
 	// Get range of lines to be updated
 	int line_start = LineFromPosition(GetEndStyled());
 	int line_end   = LineFromPosition(e.GetPosition());
+
+	// If a block comment was just closed, we need to style to the end of the text
+	if (block_comment_closed_)
+	{
+		lexer_->resetLineInfo();
+		line_end              = GetNumberOfLines();
+		block_comment_closed_ = false;
+	}
 
 	// Lex until done (end of lines, end of file or end of block comment)
 	int  l          = line_start;

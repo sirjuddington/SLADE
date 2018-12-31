@@ -103,9 +103,10 @@ private:
 	long                   last_modified_ = 0;
 
 	// State tracking for updates
-	int prev_cursor_pos_ = -1;
-	int prev_text_length_ = -1;
-	int prev_brace_match_ = -1;
+	int  prev_cursor_pos_      = -1;
+	int  prev_text_length_     = -1;
+	int  prev_brace_match_     = -1;
+	bool block_comment_closed_ = false;
 
 	// Timed update stuff
 	wxTimer timer_update_;
