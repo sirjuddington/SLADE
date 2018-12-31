@@ -271,12 +271,16 @@ void EntryPanel::updateStatus()
 		);
 
 		theMainWindow->CallAfter(&MainWindow::SetStatusText, text, 1);
+
+		// Extended info
+		theMainWindow->CallAfter(&MainWindow::SetStatusText, statusString(), 2);
 	}
 	else
+	{
+		// Clear status
 		theMainWindow->CallAfter(&MainWindow::SetStatusText, "", 1);
-
-	// Extended info
-	theMainWindow->CallAfter(&MainWindow::SetStatusText, statusString(), 2);
+		theMainWindow->CallAfter(&MainWindow::SetStatusText, "", 2);
+	}
 }
 
 // ----------------------------------------------------------------------------
