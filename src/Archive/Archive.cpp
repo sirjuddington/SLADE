@@ -881,7 +881,7 @@ bool Archive::renameDir(ArchiveTreeNode* dir, const string& new_name)
 		return false;
 
 	// Rename the directory if needed
-	if (!(S_CMPNOCASE(dir->name(), new_name)))
+	if (!(S_CMP(dir->name(), new_name)))
 	{
 		if (UndoRedo::currentlyRecording())
 			UndoRedo::currentManager()->recordUndoStep(new DirRenameUS(dir, new_name));
