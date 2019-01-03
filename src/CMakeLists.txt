@@ -83,18 +83,14 @@ if (CMAKE_INSTALL_PREFIX)
 ADD_DEFINITIONS(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 endif(CMAKE_INSTALL_PREFIX)
 
-find_package (PkgConfig REQUIRED)
-if (APPLE)
-	# There is no need to have GTK2 installed on OS X
-	# Although, GLib is required by FluidSynth
-	pkg_check_modules (GLib REQUIRED glib-2.0)
-else (APPLE)
+if (NOT APPLE)
+	find_package (PkgConfig REQUIRED)
 if (WX_GTK3)
 	pkg_check_modules (GTK3 REQUIRED gtk+-3.0)
 else (WX_GTK3)
 	pkg_check_modules (GTK2 REQUIRED gtk+-2.0)
 endif (WX_GTK3)
-endif (APPLE)
+endif (NOT APPLE)
 
 if(NOT NO_FLUIDSYNTH)
 	find_package(FluidSynth REQUIRED)
