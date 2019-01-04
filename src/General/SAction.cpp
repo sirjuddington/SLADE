@@ -73,7 +73,7 @@ SAction::SAction(
 	int           radio_group,
 	int           reserve_ids) :
 	id_{ id },
-	wx_id_{ -1 },
+	wx_id_{ 0 },
 	reserved_ids_{ reserve_ids },
 	text_{ text },
 	icon_{ icon },
@@ -254,7 +254,7 @@ bool SAction::addToToolbar(wxToolBar* toolbar, const string& icon_override, int 
 bool SAction::parse(ParseTreeNode* node)
 {
 	string linked_cvar;
-	int    custom_wxid = -1;
+	int    custom_wxid = 0;
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
@@ -305,7 +305,7 @@ bool SAction::parse(ParseTreeNode* node)
 	}
 
 	// Setup wxWidgets id stuff
-	if (custom_wxid == -1)
+	if (custom_wxid == 0)
 	{
 		wx_id_ = cur_id_;
 		cur_id_ += reserved_ids_;
