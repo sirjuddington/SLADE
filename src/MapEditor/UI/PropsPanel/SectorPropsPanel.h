@@ -4,7 +4,6 @@
 #include "UI/Canvas/OGLCanvas.h"
 #include "UI/Controls/STabCtrl.h"
 
-class GLTexture;
 class SectorSpecialPanel;
 class MapObject;
 class MapObjectPropsPanel;
@@ -21,8 +20,8 @@ public:
 	void   draw() override;
 
 private:
-	GLTexture* texture_ = nullptr;
-	string     texname_;
+	unsigned texture_ = 0;
+	string   texname_;
 };
 
 class FlatComboBox : public wxComboBox

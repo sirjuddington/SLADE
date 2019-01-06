@@ -36,6 +36,7 @@
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
 
 
 // -----------------------------------------------------------------------------
@@ -128,7 +129,8 @@ void CTextureCanvas::clearTexture()
 	hilight_patch_ = -1;
 
 	// Clear full preview
-	tex_preview_.clear();
+	OpenGL::Texture::clear(tex_preview_);
+	tex_preview_ = 0;
 
 	// Refresh canvas
 	Refresh();
@@ -152,10 +154,14 @@ void CTextureCanvas::updatePatchTextures()
 {
 	// Unload single patch textures
 	for (auto& patch_texture : patch_textures_)
-		patch_texture->clear();
+	{
+		OpenGL::Texture::clear(patch_texture);
+		patch_texture = 0;
+	}
 
 	// Unload full preview
-	tex_preview_.clear();
+	OpenGL::Texture::clear(tex_preview_);
+	tex_preview_ = 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -164,7 +170,8 @@ void CTextureCanvas::updatePatchTextures()
 void CTextureCanvas::updateTexturePreview()
 {
 	// Unload full preview
-	tex_preview_.clear();
+	OpenGL::Texture::clear(tex_preview_);
+	tex_preview_ = 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -184,7 +191,7 @@ bool CTextureCanvas::openTexture(CTexture* tex, Archive* parent)
 	for (uint32_t a = 0; a < tex->nPatches(); a++)
 	{
 		// Create GL texture
-		patch_textures_.push_back(std::make_unique<GLTexture>());
+		patch_textures_.push_back(OpenGL::Texture::create());
 
 		// Set selection
 		selected_patches_.push_back(false);
@@ -314,7 +321,7 @@ void CTextureCanvas::drawTexture()
 	else
 	{
 		// Generate if needed
-		if (!tex_preview_.isLoaded())
+		if (!tex_preview_)
 		{
 			// Determine image type
 			auto type = SImage::Type::PalMask;
@@ -324,11 +331,11 @@ void CTextureCanvas::drawTexture()
 			// CTexture -> temp Image -> GLTexture
 			SImage temp(type);
 			texture_->toImage(temp, parent_, &palette_, blend_rgba_);
-			tex_preview_.loadImage(&temp, &palette_);
+			tex_preview_ = OpenGL::Texture::createFromImage(temp, &palette_);
 		}
 
 		// Draw it
-		tex_preview_.draw2d();
+		Drawing::drawTexture(tex_preview_);
 	}
 
 	// Disable textures
@@ -349,16 +356,15 @@ void CTextureCanvas::drawTexture()
 		auto epatch = dynamic_cast<CTPatchEx*>(patch);
 
 		// Check for rotation
+		auto& tex_info = OpenGL::Texture::info(patch_textures_[a]);
 		if (texture_->isExtended() && (epatch->rotation() == 90 || epatch->rotation() == -90))
 		{
 			// Draw outline, width/height swapped
 			glBegin(GL_LINE_LOOP);
 			glVertex2i(patch->xOffset(), patch->yOffset());
-			glVertex2i(patch->xOffset(), patch->yOffset() + (int)patch_textures_[a]->width());
-			glVertex2i(
-				patch->xOffset() + (int)patch_textures_[a]->height(),
-				patch->yOffset() + (int)patch_textures_[a]->width());
-			glVertex2i(patch->xOffset() + (int)patch_textures_[a]->height(), patch->yOffset());
+			glVertex2i(patch->xOffset(), patch->yOffset() + tex_info.size.x);
+			glVertex2i(patch->xOffset() + tex_info.size.y, patch->yOffset() + tex_info.size.x);
+			glVertex2i(patch->xOffset() + tex_info.size.y, patch->yOffset());
 			glEnd();
 		}
 		else
@@ -366,11 +372,9 @@ void CTextureCanvas::drawTexture()
 			// Draw outline
 			glBegin(GL_LINE_LOOP);
 			glVertex2i(patch->xOffset(), patch->yOffset());
-			glVertex2i(patch->xOffset(), patch->yOffset() + (int)patch_textures_[a]->height());
-			glVertex2i(
-				patch->xOffset() + (int)patch_textures_[a]->width(),
-				patch->yOffset() + (int)patch_textures_[a]->height());
-			glVertex2i(patch->xOffset() + (int)patch_textures_[a]->width(), patch->yOffset());
+			glVertex2i(patch->xOffset(), patch->yOffset() + tex_info.size.y);
+			glVertex2i(patch->xOffset() + tex_info.size.x, patch->yOffset() + tex_info.size.y);
+			glVertex2i(patch->xOffset() + tex_info.size.x, patch->yOffset());
 			glEnd();
 		}
 	}
@@ -384,17 +388,18 @@ void CTextureCanvas::drawTexture()
 		// Get patch
 		auto patch         = texture_->patch(hilight_patch_);
 		auto epatch        = dynamic_cast<CTPatchEx*>(patch);
-		auto patch_texture = patch_textures_[hilight_patch_].get();
+		auto patch_texture = patch_textures_[hilight_patch_];
 
 		// Check for rotation
+		auto& tex_info = OpenGL::Texture::info(patch_texture);
 		if (texture_->isExtended() && (epatch->rotation() == 90 || epatch->rotation() == -90))
 		{
 			// Draw outline, width/height swapped
 			glBegin(GL_LINE_LOOP);
 			glVertex2i(patch->xOffset(), patch->yOffset());
-			glVertex2i(patch->xOffset(), patch->yOffset() + (int)patch_texture->width());
-			glVertex2i(patch->xOffset() + (int)patch_texture->height(), patch->yOffset() + (int)patch_texture->width());
-			glVertex2i(patch->xOffset() + (int)patch_texture->height(), patch->yOffset());
+			glVertex2i(patch->xOffset(), patch->yOffset() + tex_info.size.x);
+			glVertex2i(patch->xOffset() + tex_info.size.y, patch->yOffset() + tex_info.size.x);
+			glVertex2i(patch->xOffset() + tex_info.size.y, patch->yOffset());
 			glEnd();
 		}
 		else
@@ -402,9 +407,9 @@ void CTextureCanvas::drawTexture()
 			// Draw outline
 			glBegin(GL_LINE_LOOP);
 			glVertex2i(patch->xOffset(), patch->yOffset());
-			glVertex2i(patch->xOffset(), patch->yOffset() + (int)patch_texture->height());
-			glVertex2i(patch->xOffset() + (int)patch_texture->width(), patch->yOffset() + (int)patch_texture->height());
-			glVertex2i(patch->xOffset() + (int)patch_texture->width(), patch->yOffset());
+			glVertex2i(patch->xOffset(), patch->yOffset() + tex_info.size.y);
+			glVertex2i(patch->xOffset() + tex_info.size.x, patch->yOffset() + tex_info.size.y);
+			glVertex2i(patch->xOffset() + tex_info.size.x, patch->yOffset());
 			glEnd();
 		}
 	}
@@ -428,16 +433,16 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 		return;
 
 	// Load the patch as an opengl texture if it isn't already
-	if (!patch_textures_[num]->isLoaded())
+	if (!OpenGL::Texture::isLoaded(patch_textures_[num]))
 	{
 		SImage temp(SImage::Type::PalMask);
 		if (texture_->loadPatchImage(num, temp, parent_, &palette_))
 		{
 			// Load the image as a texture
-			patch_textures_[num]->loadImage(&temp, &palette_);
+			OpenGL::Texture::loadImage(patch_textures_[num], temp, &palette_);
 		}
 		else
-			patch_textures_[num]->genChequeredTexture(8, COL_RED, COL_BLACK);
+			patch_textures_[num] = OpenGL::Texture::missingTexture();
 	}
 
 	// Translate to position
@@ -465,19 +470,20 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 			flipy = true;
 
 		// Rotation
+		auto& tex_info = OpenGL::Texture::info(patch_textures_[num]);
 		if (epatch->rotation() == 90)
 		{
-			glTranslated(patch_textures_[num]->height(), 0, 0);
+			glTranslated(tex_info.size.y, 0, 0);
 			glRotated(90, 0, 0, 1);
 		}
 		else if (epatch->rotation() == 180)
 		{
-			glTranslated(patch_textures_[num]->width(), patch_textures_[num]->height(), 0);
+			glTranslated(tex_info.size.x, tex_info.size.y, 0);
 			glRotated(180, 0, 0, 1);
 		}
 		else if (epatch->rotation() == -90)
 		{
-			glTranslated(0, patch_textures_[num]->width(), 0);
+			glTranslated(0, tex_info.size.x, 0);
 			glRotated(-90, 0, 0, 1);
 		}
 	}
@@ -489,7 +495,7 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 		glColor4f(col.fr(), col.fg(), col.fb(), alpha);
 
 	// Draw the patch
-	patch_textures_[num]->draw2d(0, 0, flipx, flipy);
+	Drawing::drawTexture(patch_textures_[num], 0, 0, flipx, flipy);
 
 	glPopMatrix();
 }
@@ -749,9 +755,10 @@ int CTextureCanvas::patchAt(int x, int y)
 	for (int a = texture_->nPatches() - 1; a >= 0; a--)
 	{
 		// Check if x,y is within patch bounds
-		auto patch = texture_->patch(a);
-		if (x >= patch->xOffset() && x < patch->xOffset() + (int)patch_textures_[a]->width() && y >= patch->yOffset()
-			&& y < patch->yOffset() + (int)patch_textures_[a]->height())
+		auto  patch    = texture_->patch(a);
+		auto& tex_info = OpenGL::Texture::info(patch_textures_[a]);
+		if (x >= patch->xOffset() && x < patch->xOffset() + tex_info.size.x && y >= patch->yOffset()
+			&& y < patch->yOffset() + tex_info.size.y)
 		{
 			return a;
 		}
@@ -776,7 +783,9 @@ bool CTextureCanvas::swapPatches(size_t p1, size_t p2)
 		return false;
 
 	// Swap patch gl textures
-	patch_textures_[p1].swap(patch_textures_[p2]);
+	unsigned tmp        = patch_textures_[p1];
+	patch_textures_[p1] = patch_textures_[p2];
+	patch_textures_[p2] = tmp;
 
 	// Swap patches in the texture itself
 	return texture_->swapPatches(p1, p2);
@@ -802,7 +811,7 @@ void CTextureCanvas::onAnnouncement(Announcer* announcer, const string& event_na
 		for (uint32_t a = 0; a < texture_->nPatches(); a++)
 		{
 			// Create GL texture
-			patch_textures_.push_back(std::make_unique<GLTexture>());
+			patch_textures_.push_back(OpenGL::Texture::create());
 
 			// Set selection
 			selected_patches_.push_back(false);

@@ -2,7 +2,6 @@
 
 #include "BrowserCanvas.h"
 #include "OpenGL/Drawing.h"
-#include "OpenGL/GLTexture.h"
 
 class BrowserWindow;
 
@@ -27,7 +26,7 @@ public:
 				BrowserCanvas::ItemView viewtype    = BrowserCanvas::ItemView::Normal,
 				ColRGBA                 colour      = COL_WHITE,
 				bool                    text_shadow = true);
-	void           clearImage() const;
+	virtual void   clearImage() {}
 	virtual string itemInfo() { return ""; }
 
 	typedef std::unique_ptr<BrowserItem> UPtr;
@@ -35,9 +34,9 @@ public:
 protected:
 	string                   type_;
 	string                   name_;
-	unsigned                 index_  = 0;
-	GLTexture*               image_  = nullptr;
-	BrowserWindow*           parent_ = nullptr;
-	bool                     blank_  = false;
+	unsigned                 index_     = 0;
+	unsigned                 image_tex_ = 0;
+	BrowserWindow*           parent_    = nullptr;
+	bool                     blank_     = false;
 	std::unique_ptr<TextBox> text_box_;
 };

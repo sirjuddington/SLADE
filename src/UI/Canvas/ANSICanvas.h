@@ -2,8 +2,6 @@
 
 #include "OGLCanvas.h"
 
-class GLTexture;
-
 class ANSICanvas : public OGLCanvas
 {
 public:
@@ -11,7 +9,7 @@ public:
 	~ANSICanvas();
 
 	void draw() override;
-	void drawImage() const;
+	void drawImage();
 	void writeRGBAData(uint8_t* dest) const;
 	void loadData(uint8_t* data) { ansidata_ = data; }
 	void drawCharacter(size_t index) const;
@@ -22,7 +20,7 @@ private:
 	uint8_t*       picdata_     = nullptr;
 	const uint8_t* fontdata_    = nullptr;
 	uint8_t*       ansidata_    = nullptr;
-	GLTexture*     tex_image_   = nullptr;
+	unsigned       tex_image_   = 0;
 	int            char_width_  = 8;
 	int            char_height_ = 8;
 };

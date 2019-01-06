@@ -61,7 +61,7 @@ EXTERN_CVAR(Float, col_greyscale_b)
 // Loads the image as RGBA data into [mc].
 // Returns false if image is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool SImage::putRGBAData(MemChunk& mc, Palette* pal)
+bool SImage::putRGBAData(MemChunk& mc, Palette* pal) const
 {
 	// Check the image is valid
 	if (!isValid())
@@ -81,14 +81,13 @@ bool SImage::putRGBAData(MemChunk& mc, Palette* pal)
 	else if (type_ == Type::PalMask)
 	{
 		// Get palette to use
-		if (has_palette_ || !pal)
-			pal = &palette_;
+		const auto& palette = (has_palette_ || !pal) ? palette_ : *pal;
 
 		uint8_t rgba[4];
 		for (int a = 0; a < width_ * height_; a++)
 		{
 			// Get colour
-			ColRGBA col = pal->colour(data_[a]);
+			ColRGBA col = palette.colour(data_[a]);
 
 			// Set alpha
 			if (mask_.data())
@@ -125,7 +124,7 @@ bool SImage::putRGBAData(MemChunk& mc, Palette* pal)
 // Loads the image as RGB data into [mc].
 // Returns false if image is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool SImage::putRGBData(MemChunk& mc, Palette* pal)
+bool SImage::putRGBData(MemChunk& mc, Palette* pal) const
 {
 	// Check the image is valid
 	if (!isValid())
@@ -147,14 +146,13 @@ bool SImage::putRGBData(MemChunk& mc, Palette* pal)
 		// Paletted, convert to RGB
 
 		// Get palette to use
-		if (has_palette_ || !pal)
-			pal = &palette_;
+		const auto& palette = (has_palette_ || !pal) ? palette_ : *pal;
 
 		// Build RGB data
 		uint8_t rgba[4];
 		for (int a = 0; a < width_ * height_; a++)
 		{
-			pal->colour(data_[a]).write(rgba);
+			palette.colour(data_[a]).write(rgba);
 			mc.write(rgba, 3);
 		}
 

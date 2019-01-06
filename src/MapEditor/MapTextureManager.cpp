@@ -51,6 +51,10 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
+namespace
+{
+MapTextureManager::Texture tex_invalid;
+}
 CVAR(Int, map_tex_filter, 0, CVar::Flag::Save)
 
 
@@ -102,34 +106,34 @@ Palette* MapTextureManager::resourcePalette() const
 // Returns the texture matching [name], loading it from resources if necessary.
 // If [mixed] is true, flats are also searched if no matching texture is found
 // -----------------------------------------------------------------------------
-GLTexture* MapTextureManager::texture(const string& name, bool mixed)
+const MapTextureManager::Texture& MapTextureManager::texture(const string& name, bool mixed)
 {
 	// Get texture matching name
 	auto& mtex = textures_[name.Upper()];
 
 	// Get desired filter type
-	auto filter = GLTexture::Filter::Linear;
+	auto filter = OpenGL::TexFilter::Linear;
 	if (map_tex_filter == 0)
-		filter = GLTexture::Filter::NearestLinearMin;
+		filter = OpenGL::TexFilter::NearestLinearMin;
 	else if (map_tex_filter == 1)
-		filter = GLTexture::Filter::Linear;
+		filter = OpenGL::TexFilter::Linear;
 	else if (map_tex_filter == 2)
-		filter = GLTexture::Filter::LinearMipmap;
+		filter = OpenGL::TexFilter::LinearMipmap;
 	else if (map_tex_filter == 3)
-		filter = GLTexture::Filter::NearestMipmap;
+		filter = OpenGL::TexFilter::NearestMipmap;
 
 	// If the texture is loaded
-	if (mtex.texture)
+	if (mtex.gl_id)
 	{
 		// If the texture filter matches the desired one, return it
-		if (mtex.texture->filter() == filter)
-			return mtex.texture;
+		auto& tex_info = OpenGL::Texture::info(mtex.gl_id);
+		if (tex_info.filter == filter)
+			return mtex;
 		else
 		{
 			// Otherwise, reload the texture
-			if (mtex.texture != &(GLTexture::missingTex()))
-				delete mtex.texture;
-			mtex.texture = nullptr;
+			OpenGL::Texture::clear(mtex.gl_id);
+			mtex.gl_id = 0;
 		}
 	}
 
@@ -149,9 +153,7 @@ GLTexture* MapTextureManager::texture(const string& name, bool mixed)
 		// Get image format hint from type, if any
 		if (Misc::loadImageFromEntry(&image, etex))
 		{
-			mtex.texture = new GLTexture(false);
-			mtex.texture->setFilter(filter);
-			mtex.texture->loadImage(&image, palette_.get());
+			mtex.gl_id = OpenGL::Texture::createFromImage(image, palette_.get(), filter);
 
 			// Handle hires texture scale
 			if (textypefound == CTexture::Type::HiRes)
@@ -163,12 +165,12 @@ GLTexture* MapTextureManager::texture(const string& name, bool mixed)
 					if (Misc::loadImageFromEntry(&imgref, ref))
 					{
 						int w, h, sw, sh;
-						w  = image.width();
-						h  = image.height();
-						sw = imgref.width();
-						sh = imgref.height();
-						mtex.texture->setWorldPanning(true);
-						mtex.texture->setScale((double)sw / (double)w, (double)sh / (double)h);
+						w                  = image.width();
+						h                  = image.height();
+						sw                 = imgref.width();
+						sh                 = imgref.height();
+						mtex.world_panning = true;
+						mtex.scale         = { (double)sw / (double)w, (double)sh / (double)h };
 					}
 				}
 			}
@@ -183,67 +185,66 @@ GLTexture* MapTextureManager::texture(const string& name, bool mixed)
 		SImage image;
 		if (ctex->toImage(image, archive_, palette_.get(), true))
 		{
-			mtex.texture = new GLTexture(false);
-			mtex.texture->setFilter(filter);
-			mtex.texture->loadImage(&image, palette_.get());
+			mtex.gl_id = OpenGL::Texture::createFromImage(image, palette_.get(), filter);
+
 			double sx = ctex->scaleX();
 			if (sx == 0)
 				sx = 1.0;
 			double sy = ctex->scaleY();
 			if (sy == 0)
 				sy = 1.0;
-			mtex.texture->setWorldPanning(ctex->worldPanning());
-			mtex.texture->setScale(1.0 / sx, 1.0 / sy);
+
+			mtex.world_panning = ctex->worldPanning();
+			mtex.scale         = { 1.0 / sx, 1.0 / sy };
 		}
 	}
 
 	// Not found
-	if (!mtex.texture)
+	if (!mtex.gl_id)
 	{
 		// Try flats if mixed
 		if (mixed)
 			return flat(name, false);
 
 		// Otherwise use missing texture
-		else
-			mtex.texture = &(GLTexture::missingTex());
+		mtex.gl_id = OpenGL::Texture::missingTexture();
 	}
 
-	return mtex.texture;
+	return mtex;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the flat matching [name], loading it from resources if necessary.
 // If [mixed] is true, textures are also searched if no matching flat is found
 // -----------------------------------------------------------------------------
-GLTexture* MapTextureManager::flat(const string& name, bool mixed)
+const MapTextureManager::Texture& MapTextureManager::flat(const string& name, bool mixed)
 {
 	// Get flat matching name
 	auto& mtex = flats_[name.Upper()];
 
 	// Get desired filter type
-	auto filter = GLTexture::Filter::Linear;
+	auto filter = OpenGL::TexFilter::Linear;
 	if (map_tex_filter == 0)
-		filter = GLTexture::Filter::NearestLinearMin;
+		filter = OpenGL::TexFilter::NearestLinearMin;
 	else if (map_tex_filter == 1)
-		filter = GLTexture::Filter::Linear;
+		filter = OpenGL::TexFilter::Linear;
 	else if (map_tex_filter == 2)
-		filter = GLTexture::Filter::LinearMipmap;
+		filter = OpenGL::TexFilter::LinearMipmap;
 	else if (map_tex_filter == 3)
-		filter = GLTexture::Filter::NearestMipmap;
+		filter = OpenGL::TexFilter::NearestMipmap;
 
 	// If the texture is loaded
-	if (mtex.texture)
+	if (mtex.gl_id)
 	{
 		// If the texture filter matches the desired one, return it
-		if (mtex.texture->filter() == filter)
-			return mtex.texture;
+		auto& tex_info = OpenGL::Texture::info(mtex.gl_id);
+		if (tex_info.filter == filter)
+			return mtex;
 		else
 		{
 			// Otherwise, reload the texture
-			if (mtex.texture != &(GLTexture::missingTex()))
-				delete mtex.texture;
-			mtex.texture = nullptr;
+			OpenGL::Texture::clear(mtex.gl_id);
+			mtex.gl_id = 0;
 		}
 	}
 
@@ -255,25 +256,26 @@ GLTexture* MapTextureManager::flat(const string& name, bool mixed)
 			SImage image;
 			if (ctex->toImage(image, archive_, palette_.get(), true))
 			{
-				mtex.texture = new GLTexture(false);
-				mtex.texture->setFilter(filter);
-				mtex.texture->loadImage(&image, palette_.get());
+				mtex.gl_id = OpenGL::Texture::createFromImage(image, palette_.get(), filter);
+
 				double sx = ctex->scaleX();
 				if (sx == 0)
 					sx = 1.0;
 				double sy = ctex->scaleY();
 				if (sy == 0)
 					sy = 1.0;
-				mtex.texture->setScale(1.0 / sx, 1.0 / sy);
-				mtex.texture->setWorldPanning(ctex->worldPanning());
-				return mtex.texture;
+
+				mtex.scale         = { 1.0 / sx, 1.0 / sy };
+				mtex.world_panning = ctex->worldPanning();
+
+				return mtex;
 			}
 		}
 	}
 
 	// Flat not found, look for it
 	// Palette8bit* pal = getResourcePalette();
-	if (!mtex.texture)
+	if (!mtex.gl_id)
 	{
 		auto entry = App::resources().getTextureEntry(name, "hires", archive_);
 		if (entry == nullptr)
@@ -284,16 +286,12 @@ GLTexture* MapTextureManager::flat(const string& name, bool mixed)
 		{
 			SImage image;
 			if (Misc::loadImageFromEntry(&image, entry))
-			{
-				mtex.texture = new GLTexture(false);
-				mtex.texture->setFilter(filter);
-				mtex.texture->loadImage(&image, palette_.get());
-			}
+				mtex.gl_id = OpenGL::Texture::createFromImage(image, palette_.get(), filter);
 		}
 	}
 
 	// Not found
-	if (!mtex.texture)
+	if (!mtex.gl_id)
 	{
 		// Try textures if mixed
 		if (mixed)
@@ -301,21 +299,24 @@ GLTexture* MapTextureManager::flat(const string& name, bool mixed)
 
 		// Otherwise use missing texture
 		else
-			mtex.texture = &(GLTexture::missingTex());
+			mtex.gl_id = OpenGL::Texture::missingTexture();
 	}
 
-	return mtex.texture;
+	return mtex;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the sprite matching [name], loading it from resources if necessary.
 // Sprite name also supports wildcards (?)
 // -----------------------------------------------------------------------------
-GLTexture* MapTextureManager::sprite(string name, const string& translation, const string& palette)
+const MapTextureManager::Texture& MapTextureManager::sprite(
+	string        name,
+	const string& translation,
+	const string& palette)
 {
 	// Don't bother looking for nameless sprites
 	if (name.IsEmpty())
-		return nullptr;
+		return tex_invalid;
 
 	// Get sprite matching name
 	string hashname = name.Upper();
@@ -326,27 +327,28 @@ GLTexture* MapTextureManager::sprite(string name, const string& translation, con
 	auto& mtex = sprites_[hashname];
 
 	// Get desired filter type
-	auto filter = GLTexture::Filter::Linear;
+	auto filter = OpenGL::TexFilter::Linear;
 	if (map_tex_filter == 0)
-		filter = GLTexture::Filter::NearestLinearMin;
+		filter = OpenGL::TexFilter::NearestLinearMin;
 	else if (map_tex_filter == 1)
-		filter = GLTexture::Filter::Linear;
+		filter = OpenGL::TexFilter::Linear;
 	else if (map_tex_filter == 2)
-		filter = GLTexture::Filter::Linear;
+		filter = OpenGL::TexFilter::Linear;
 	else if (map_tex_filter == 3)
-		filter = GLTexture::Filter::NearestMipmap;
+		filter = OpenGL::TexFilter::NearestMipmap;
 
 	// If the texture is loaded
-	if (mtex.texture)
+	if (mtex.gl_id)
 	{
 		// If the texture filter matches the desired one, return it
-		if (mtex.texture->filter() == filter)
-			return mtex.texture;
+		auto& tex_info = OpenGL::Texture::info(mtex.gl_id);
+		if (tex_info.filter == filter)
+			return mtex;
 		else
 		{
 			// Otherwise, reload the texture
-			delete mtex.texture;
-			mtex.texture = nullptr;
+			OpenGL::Texture::clear(mtex.gl_id);
+			mtex.gl_id = 0;
 		}
 	}
 
@@ -406,35 +408,32 @@ GLTexture* MapTextureManager::sprite(string name, const string& translation, con
 			image.mirror(false);
 
 		// Turn into GL texture
-		mtex.texture = new GLTexture(false);
-		mtex.texture->setFilter(filter);
-		mtex.texture->setTiling(false);
-		mtex.texture->loadImage(&image, pal);
-		return mtex.texture;
+		mtex.gl_id = OpenGL::Texture::createFromImage(image, pal, filter, false);
+		return mtex;
 	}
 	else if (name.EndsWith("?"))
 	{
 		auto sname = name.Left(name.size() - 1);
-		auto stex  = sprite(sname + '0', translation, palette);
-		if (!stex)
-			stex = sprite(sname + '1', translation, palette);
-		if (stex)
-			return stex;
-		if (!stex && sname.length() == 5)
+		auto stex  = &sprite(sname + '0', translation, palette);
+		if (!stex->gl_id)
+			stex = &sprite(sname + '1', translation, palette);
+		if (stex->gl_id)
+			return *stex;
+		if (!stex->gl_id && sname.length() == 5)
 		{
 			for (char chr = 'A'; chr <= ']'; ++chr)
 			{
-				stex = sprite(sname + '0' + chr + '0', translation, palette);
-				if (stex)
-					return stex;
-				stex = sprite(sname + '1' + chr + '1', translation, palette);
-				if (stex)
-					return stex;
+				stex = &sprite(sname + '0' + chr + '0', translation, palette);
+				if (stex->gl_id)
+					return *stex;
+				stex = &sprite(sname + '1' + chr + '1', translation, palette);
+				if (stex->gl_id)
+					return *stex;
 			}
 		}
 	}
 
-	return nullptr;
+	return tex_invalid;
 }
 
 // -----------------------------------------------------------------------------
@@ -485,10 +484,8 @@ void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* 
 			// Create texture in hashmap
 			string name = path + entry->name(true);
 			Log::info(4, S_FMT("Loading editor texture %s", name));
-			auto& mtex   = map[name];
-			mtex.texture = new GLTexture(false);
-			mtex.texture->setFilter(GLTexture::Filter::Mipmap);
-			mtex.texture->loadImage(&image);
+			auto& mtex = map[name];
+			mtex.gl_id = OpenGL::Texture::createFromImage(image, nullptr, OpenGL::TexFilter::Mipmap);
 		}
 	}
 
@@ -503,10 +500,10 @@ void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* 
 // -----------------------------------------------------------------------------
 // Returns the editor image matching [name]
 // -----------------------------------------------------------------------------
-GLTexture* MapTextureManager::editorImage(const string& name)
+const MapTextureManager::Texture& MapTextureManager::editorImage(const string& name)
 {
 	if (!OpenGL::isInitialised())
-		return nullptr;
+		return tex_invalid;
 
 	// Load thing image textures if they haven't already
 	if (!editor_images_loaded_)
@@ -520,7 +517,7 @@ GLTexture* MapTextureManager::editorImage(const string& name)
 		editor_images_loaded_ = true;
 	}
 
-	return editor_images_[name].texture;
+	return editor_images_[name];
 }
 
 // -----------------------------------------------------------------------------

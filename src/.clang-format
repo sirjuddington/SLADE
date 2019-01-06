@@ -61,3 +61,4 @@ Standard: Cpp11
 TabWidth: 4
 UseTab: ForContinuationAndIndentation
 PenaltyReturnTypeOnItsOwnLine: 1000
+PenaltyBreakAssignment: 1000

@@ -67,10 +67,11 @@ void SideTexCanvas::setTexture(const string& tex)
 {
 	texname_ = tex;
 	if (tex.empty() || tex == "-")
-		texture_ = nullptr;
+		texture_ = 0;
 	else
-		texture_ = MapEditor::textureManager().texture(
-			tex, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+		texture_ = MapEditor::textureManager()
+					   .texture(tex, Game::configuration().featureSupported(Game::Feature::MixTexFlats))
+					   .gl_id;
 
 	Refresh();
 }
@@ -103,15 +104,15 @@ void SideTexCanvas::draw()
 	drawCheckeredBackground();
 
 	// Draw texture
-	if (texture_ && texture_ != &(GLTexture::missingTex()))
+	if (texture_ && texture_ != OpenGL::Texture::missingTexture())
 	{
 		glEnable(GL_TEXTURE_2D);
 		Drawing::drawTextureWithin(texture_, 0, 0, GetSize().x, GetSize().y, 0);
 	}
-	else if (texture_ == &(GLTexture::missingTex()))
+	else if (texture_ == OpenGL::Texture::missingTexture())
 	{
 		// Draw unknown icon
-		auto tex = MapEditor::textureManager().editorImage("thing/unknown");
+		auto tex = MapEditor::textureManager().editorImage("thing/unknown").gl_id;
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0);
 		Drawing::drawTextureWithin(tex, 0, 0, GetSize().x, GetSize().y, 0, 0.25);

@@ -33,8 +33,10 @@
 #include "Main.h"
 #include "ANSICanvas.h"
 #include "Archive/ArchiveManager.h"
+#include "MainEditor/UI/TextureXEditor/TextureXEditor.h"
 #include "OpenGL/GLTexture.h"
 #include "Utility/CodePages.h"
+
 
 
 // -----------------------------------------------------------------------------
@@ -59,7 +61,7 @@ const int NUMCOLS = 80;
 // -----------------------------------------------------------------------------
 // ANSICanvas class constructor
 // -----------------------------------------------------------------------------
-ANSICanvas::ANSICanvas(wxWindow* parent, int id) : OGLCanvas(parent, id), tex_image_{ new GLTexture() }
+ANSICanvas::ANSICanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 {
 	// Get the all-important font data
 	auto res_archive = App::archiveManager().programResourceArchive();
@@ -84,7 +86,7 @@ ANSICanvas::ANSICanvas(wxWindow* parent, int id) : OGLCanvas(parent, id), tex_im
 // -----------------------------------------------------------------------------
 ANSICanvas::~ANSICanvas()
 {
-	delete tex_image_;
+	OpenGL::Texture::clear(tex_image_);
 	delete[] picdata_;
 	// fontdata belongs to the ansi_font ArchiveEntry
 	// ansidata belongs to the parent ANSIPanel
@@ -144,7 +146,7 @@ void ANSICanvas::draw()
 // Draws the image
 // (reloads the image as a texture each time, will change this later...)
 // -----------------------------------------------------------------------------
-void ANSICanvas::drawImage() const
+void ANSICanvas::drawImage()
 {
 	// Check image is valid
 	if (!picdata_)
@@ -157,9 +159,12 @@ void ANSICanvas::drawImage() const
 	glEnable(GL_TEXTURE_2D);
 
 	// Load texture data
-	vector<uint8_t> rgba_data(width_ * height_ * 4);
-	writeRGBAData(rgba_data.data());
-	tex_image_->loadRawData(rgba_data.data(), width_, height_);
+	if (!tex_image_)
+	{
+		vector<uint8_t> rgba_data(width_ * height_ * 4);
+		writeRGBAData(rgba_data.data());
+		tex_image_ = OpenGL::Texture::createFromData(rgba_data.data(), width_, height_);
+	}
 
 	// Determine (texture)coordinates
 	double x = (double)width_;
@@ -167,7 +172,7 @@ void ANSICanvas::drawImage() const
 
 	// Draw the image
 	OpenGL::setColour(COL_WHITE);
-	tex_image_->draw2d();
+	Drawing::drawTexture(tex_image_);
 
 	// Disable textures
 	glDisable(GL_TEXTURE_2D);

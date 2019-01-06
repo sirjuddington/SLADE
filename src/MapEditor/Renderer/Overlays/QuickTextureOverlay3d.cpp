@@ -302,11 +302,11 @@ void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom,
 	if (!textures_[index].texture)
 	{
 		if (sel_walls_ && !sel_flats_)
-			textures_[index].texture = MapEditor::textureManager().texture(textures_[index].name, false);
+			textures_[index].texture = MapEditor::textureManager().texture(textures_[index].name, false).gl_id;
 		else if (!sel_walls_ && sel_flats_)
-			textures_[index].texture = MapEditor::textureManager().flat(textures_[index].name, false);
+			textures_[index].texture = MapEditor::textureManager().flat(textures_[index].name, false).gl_id;
 		else
-			textures_[index].texture = MapEditor::textureManager().texture(textures_[index].name, true);
+			textures_[index].texture = MapEditor::textureManager().texture(textures_[index].name, true).gl_id;
 	}
 
 	// Draw name
@@ -323,7 +323,7 @@ void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom,
 	Rectf rect = Drawing::fitTextureWithin(
 		textures_[index].texture, x - 48 * size, bottom - (96 * size), x + 48 * size, bottom, 0, 2);
 	glColor4f(brightness, brightness, brightness, brightness * fade);
-	textures_[index].texture->bind();
+	OpenGL::Texture::bind(textures_[index].texture);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.0f);
 	glVertex2d(rect.x1(), rect.y1());

@@ -35,7 +35,9 @@
 #include "SFont.h"
 #include "Archive/ArchiveManager.h"
 #include "Graphics/SImage/SImage.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+
 
 
 // -----------------------------------------------------------------------------
@@ -139,7 +141,9 @@ bool SFont::loadFontM(MemChunk& mc)
 	}
 
 	// Load the generated image to the font texture
-	texture_.loadImage(&image);
+	if (texture_ > 0)
+		OpenGL::Texture::clear(texture_);
+	texture_ = OpenGL::Texture::createFromImage(image);
 
 	return true;
 }
@@ -157,9 +161,12 @@ bool SFont::loadBMF(MemChunk& mc)
 // -----------------------------------------------------------------------------
 void SFont::drawCharacter(char c, ColRGBA colour)
 {
-	// Bind texture
-	if (!texture_.bind())
+	// Check texture is loaded
+	if (!OpenGL::Texture::isLoaded(texture_))
 		return;
+
+	// Bind texture
+	OpenGL::Texture::bind(texture_);
 
 	// Set colour
 	OpenGL::setColour(colour);
@@ -171,12 +178,11 @@ void SFont::drawCharacter(char c, ColRGBA colour)
 
 	// Draw it
 	Rectf tex_rect;
+	auto& tex_info = OpenGL::Texture::info(texture_);
 	tex_rect.tl.set(
-		(double)ch.tex_bounds_.x1() / (double)texture_.width(),
-		(double)ch.tex_bounds_.y1() / (double)texture_.height());
+		(double)ch.tex_bounds_.x1() / (double)tex_info.size.x, (double)ch.tex_bounds_.y1() / (double)tex_info.size.y);
 	tex_rect.br.set(
-		(double)ch.tex_bounds_.x2() / (double)texture_.width(),
-		(double)ch.tex_bounds_.y2() / (double)texture_.height());
+		(double)ch.tex_bounds_.x2() / (double)tex_info.size.x, (double)ch.tex_bounds_.y2() / (double)tex_info.size.y);
 	glBegin(GL_QUADS);
 	glTexCoord2d(tex_rect.x1(), tex_rect.y1());
 	glVertex2d(0, 0);
@@ -194,9 +200,12 @@ void SFont::drawCharacter(char c, ColRGBA colour)
 // -----------------------------------------------------------------------------
 void SFont::drawString(const string& str, ColRGBA colour, SFont::Align align)
 {
-	// Bind texture
-	if (!texture_.bind())
+	// Check texture is loaded
+	if (!OpenGL::Texture::isLoaded(texture_))
 		return;
+
+	// Bind texture
+	OpenGL::Texture::bind(texture_);
 
 	// Set colour
 	OpenGL::setColour(colour);
@@ -236,12 +245,13 @@ void SFont::drawString(const string& str, ColRGBA colour, SFont::Align align)
 
 		// Draw it
 		Rectf tex_rect;
+		auto& tex_info = OpenGL::Texture::info(texture_);
 		tex_rect.tl.set(
-			(double)ch.tex_bounds_.x1() / (double)texture_.width(),
-			(double)ch.tex_bounds_.y1() / (double)texture_.height());
+			(double)ch.tex_bounds_.x1() / (double)tex_info.size.x,
+			(double)ch.tex_bounds_.y1() / (double)tex_info.size.y);
 		tex_rect.br.set(
-			(double)ch.tex_bounds_.x2() / (double)texture_.width(),
-			(double)ch.tex_bounds_.y2() / (double)texture_.height());
+			(double)ch.tex_bounds_.x2() / (double)tex_info.size.x,
+			(double)ch.tex_bounds_.y2() / (double)tex_info.size.y);
 		glBegin(GL_QUADS);
 		glTexCoord2d(tex_rect.x1(), tex_rect.y1());
 		glVertex2d(xoff, 0);
@@ -273,7 +283,7 @@ void SFont::drawString(const string& str, ColRGBA colour, SFont::Align align)
 // -----------------------------------------------------------------------------
 SFont& SFont::sladeFont()
 {
-	if (!font_slade_.texture_.isLoaded())
+	if (!font_slade_.texture_)
 	{
 		// Load slade font
 	}
@@ -286,10 +296,10 @@ SFont& SFont::sladeFont()
 // -----------------------------------------------------------------------------
 SFont& SFont::vgaFont()
 {
-	if (!font_vga_.texture_.isLoaded())
+	if (!font_vga_.texture_)
 	{
 		// Get vga font entry
-		ArchiveEntry* entry_vgafont = App::archiveManager().programResourceArchive()->entryAtPath("vga-rom-font.16");
+		auto entry_vgafont = App::archiveManager().programResourceArchive()->entryAtPath("vga-rom-font.16");
 
 		// Load font
 		if (entry_vgafont)

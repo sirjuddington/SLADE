@@ -43,7 +43,9 @@
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
+#include "OpenGL/GLTexture.h"
 #include "UI/Controls/PaletteChooser.h"
+
 
 
 // -----------------------------------------------------------------------------
@@ -58,7 +60,7 @@
 // -----------------------------------------------------------------------------
 PatchBrowserItem::~PatchBrowserItem()
 {
-	delete image_;
+	OpenGL::Texture::clear(image_tex_);
 }
 
 // -----------------------------------------------------------------------------
@@ -95,9 +97,9 @@ bool PatchBrowserItem::loadImage()
 	}
 
 	// Create gl texture from image
-	delete image_;
-	image_ = new GLTexture();
-	return image_->loadImage(&img, parent_->palette());
+	OpenGL::Texture::clear(image_tex_);
+	image_tex_ = OpenGL::Texture::createFromImage(img, parent_->palette());
+	return image_tex_ > 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -108,8 +110,11 @@ string PatchBrowserItem::itemInfo()
 	string info;
 
 	// Add dimensions if known
-	if (image_)
-		info += S_FMT("%dx%d", image_->width(), image_->height());
+	if (image_tex_)
+	{
+		auto& tex_info = OpenGL::Texture::info(image_tex_);
+		info += S_FMT("%dx%d", tex_info.size.x, tex_info.size.y);
+	}
 	else
 		info += "Unknown size";
 
@@ -128,6 +133,15 @@ string PatchBrowserItem::itemInfo()
 	}
 
 	return info;
+}
+
+// -----------------------------------------------------------------------------
+// Clears the item image
+// -----------------------------------------------------------------------------
+void PatchBrowserItem::clearImage()
+{
+	OpenGL::Texture::clear(image_tex_);
+	image_tex_ = 0;
 }
 
 

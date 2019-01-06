@@ -2,7 +2,6 @@
 
 #include "UI/Canvas/OGLCanvas.h"
 
-class GLTexture;
 class MapSide;
 class NumberTextCtrl;
 
@@ -17,8 +16,8 @@ public:
 	void   draw() override;
 
 private:
-	GLTexture* texture_ = nullptr;
-	string     texname_;
+	unsigned texture_ = 0;
+	string   texname_;
 };
 
 class TextureComboBox : public wxComboBox

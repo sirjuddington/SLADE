@@ -293,16 +293,17 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const 
 	OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
 	glPushMatrix();
 	glTranslated(tex.position.x - halfsize, tex.position.y - halfsize, 0);
-	GLTexture::bgTex().draw2dTiled(size, size);
+	Drawing::drawTextureTiled(OpenGL::Texture::backgroundTexture(), size, size);
 	glPopMatrix();
 
-	GLTexture* tex_first = nullptr;
+	unsigned tex_first = 0;
 	if (!tex.textures.empty())
 	{
 		// Draw first texture
 		OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
-		tex_first = MapEditor::textureManager().texture(
-			tex.textures[0], Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+		tex_first = MapEditor::textureManager()
+						.texture(tex.textures[0], Game::configuration().featureSupported(Game::Feature::MixTexFlats))
+						.gl_id;
 		Drawing::drawTextureWithin(
 			tex_first,
 			tex.position.x - halfsize,
@@ -316,8 +317,10 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const 
 		OpenGL::setColour(255, 255, 255, 127 * alpha, 0);
 		for (unsigned a = 1; a < tex.textures.size() && a < 5; a++)
 		{
-			auto gl_tex = MapEditor::textureManager().texture(
-				tex.textures[a], Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+			auto gl_tex = MapEditor::textureManager()
+							  .texture(
+								  tex.textures[a], Game::configuration().featureSupported(Game::Feature::MixTexFlats))
+							  .gl_id;
 
 			Drawing::drawTextureWithin(
 				gl_tex,
@@ -358,7 +361,10 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const 
 	// Determine texture name text
 	string str_texture;
 	if (tex.textures.size() == 1)
-		str_texture = S_FMT("%s (%dx%d)", tex.textures[0], tex_first->width(), tex_first->height());
+	{
+		auto& tex_info = OpenGL::Texture::info(tex_first);
+		str_texture    = S_FMT("%s (%dx%d)", tex.textures[0], tex_info.size.x, tex_info.size.y);
+	}
 	else if (tex.textures.size() > 1)
 		str_texture = S_FMT("Multiple (%lu)", tex.textures.size());
 	else

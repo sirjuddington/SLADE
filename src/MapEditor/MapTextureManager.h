@@ -22,13 +22,10 @@ public:
 
 	struct Texture
 	{
-		GLTexture* texture;
-		Texture() { texture = nullptr; }
-		~Texture()
-		{
-			if (texture && texture != &(GLTexture::missingTex()))
-				delete texture;
-		}
+		unsigned gl_id         = 0;
+		bool     world_panning = false;
+		Vec2f    scale         = { 1., 1. };
+		~Texture() { OpenGL::Texture::clear(gl_id); }
 	};
 	typedef std::map<string, Texture> MapTexHashMap;
 
@@ -42,12 +39,12 @@ public:
 		string   long_name;
 
 		TexInfo(
-			string   short_name,
-			Category category,
-			Archive* archive,
-			string   path,
-			unsigned index     = 0,
-			string   long_name = "") :
+			const string& short_name,
+			Category      category,
+			Archive*      archive,
+			const string& path,
+			unsigned      index     = 0,
+			const string& long_name = "") :
 			short_name(short_name),
 			category(category),
 			archive(archive),
@@ -66,12 +63,12 @@ public:
 	void refreshResources();
 	void buildTexInfoList();
 
-	Palette*   resourcePalette() const;
-	GLTexture* texture(const string& name, bool mixed);
-	GLTexture* flat(const string& name, bool mixed);
-	GLTexture* sprite(string name, const string& translation = "", const string& palette = "");
-	GLTexture* editorImage(const string& name);
-	int        verticalOffset(const string& name) const;
+	Palette*       resourcePalette() const;
+	const Texture& texture(const string& name, bool mixed);
+	const Texture& flat(const string& name, bool mixed);
+	const Texture& sprite(string name, const string& translation = "", const string& palette = "");
+	const Texture& editorImage(const string& name);
+	int            verticalOffset(const string& name) const;
 
 	vector<TexInfo>& allTexturesInfo() { return tex_info_; }
 	vector<TexInfo>& allFlatsInfo() { return flat_info_; }

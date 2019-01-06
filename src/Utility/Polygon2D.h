@@ -1,6 +1,5 @@
 #pragma once
 
-class GLTexture;
 class MapSector;
 
 class Polygon2D
@@ -23,13 +22,13 @@ public:
 	Polygon2D() = default;
 	~Polygon2D() { clear(); }
 
-	GLTexture* texture() const { return texture_; }
-	float      colRed() { return colour_[0]; }
-	float      colGreen() { return colour_[1]; }
-	float      colBlue() { return colour_[2]; }
-	float      colAlpha() { return colour_[3]; }
+	unsigned texture() const { return texture_; }
+	float    colRed() { return colour_[0]; }
+	float    colGreen() { return colour_[1]; }
+	float    colBlue() { return colour_[2]; }
+	float    colAlpha() { return colour_[3]; }
 
-	void setTexture(GLTexture* tex) { texture_ = tex; }
+	void setTexture(unsigned tex) { texture_ = tex; }
 	void setColour(float r, float g, float b, float a);
 	bool hasPolygon() const { return !subpolys_.empty(); }
 	int  vboUpdate() const { return vbo_update_; }
@@ -65,7 +64,7 @@ public:
 private:
 	// Polygon data
 	vector<SubPoly> subpolys_;
-	GLTexture*      texture_   = nullptr;
+	unsigned        texture_   = 0;
 	float           colour_[4] = { 1.f, 1.f, 1.f, 1.f };
 
 	int vbo_update_ = 2;

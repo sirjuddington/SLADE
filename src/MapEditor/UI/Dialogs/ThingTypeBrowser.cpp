@@ -61,26 +61,26 @@ CVAR(Bool, use_zeth_icons, false, CVar::Flag::Save)
 bool ThingBrowserItem::loadImage()
 {
 	// Get sprite
-	auto tex = MapEditor::textureManager().sprite(type_.sprite(), type_.translation(), type_.palette());
+	auto tex = MapEditor::textureManager().sprite(type_.sprite(), type_.translation(), type_.palette()).gl_id;
 	if (!tex && use_zeth_icons && type_.zethIcon() >= 0)
 	{
 		// Sprite not found, try the Zeth icon
-		tex = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", type_.zethIcon()));
+		tex = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", type_.zethIcon())).gl_id;
 	}
 	if (!tex)
 	{
 		// Sprite not found, try an icon
-		tex = MapEditor::textureManager().editorImage(S_FMT("thing/%s", type_.icon()));
+		tex = MapEditor::textureManager().editorImage(S_FMT("thing/%s", type_.icon())).gl_id;
 	}
 	if (!tex)
 	{
 		// Icon not found either, use unknown icon
-		tex = MapEditor::textureManager().editorImage("thing/unknown");
+		tex = MapEditor::textureManager().editorImage("thing/unknown").gl_id;
 	}
 
 	if (tex)
 	{
-		image_ = tex;
+		image_tex_ = tex;
 		return true;
 	}
 	else

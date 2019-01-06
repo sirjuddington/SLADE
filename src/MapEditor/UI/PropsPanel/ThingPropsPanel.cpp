@@ -72,12 +72,12 @@ void SpriteTexCanvas::setSprite(const Game::ThingType& type)
 	colour_  = COL_WHITE;
 
 	// Sprite
-	texture_ = MapEditor::textureManager().sprite(texname_, type.translation(), type.palette());
+	texture_ = MapEditor::textureManager().sprite(texname_, type.translation(), type.palette()).gl_id;
 
 	// Icon
 	if (!texture_)
 	{
-		texture_ = MapEditor::textureManager().editorImage(S_FMT("thing/%s", type.icon()));
+		texture_ = MapEditor::textureManager().editorImage(S_FMT("thing/%s", type.icon())).gl_id;
 		colour_  = type.colour();
 		icon_    = true;
 	}
@@ -85,7 +85,7 @@ void SpriteTexCanvas::setSprite(const Game::ThingType& type)
 	// Unknown
 	if (!texture_)
 	{
-		texture_ = MapEditor::textureManager().editorImage("thing/unknown");
+		texture_ = MapEditor::textureManager().editorImage("thing/unknown").gl_id;
 		icon_    = true;
 	}
 

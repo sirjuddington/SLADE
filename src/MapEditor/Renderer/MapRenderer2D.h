@@ -3,7 +3,6 @@
 #include "MapEditor/MapEditor.h"
 
 // Forward declarations
-class GLTexture;
 class ItemSelection;
 class MapLine;
 class MapSector;
@@ -123,11 +122,11 @@ public:
 	void   clearTextureCache() { tex_flats_.clear(); }
 
 private:
-	SLADEMap*  map_              = nullptr;
-	GLTexture* tex_last_         = nullptr;
-	long       vertices_updated_ = 0;
-	long       lines_updated_    = 0;
-	long       flats_updated_    = 0;
+	SLADEMap* map_ = nullptr;
+	// unsigned  tex_last_         = 0;
+	long vertices_updated_ = 0;
+	long lines_updated_    = 0;
+	long flats_updated_    = 0;
 
 	// VBOs etc
 	unsigned vbo_vertices_ = 0;
@@ -173,10 +172,10 @@ private:
 	double   view_scale_inv_ = 0.;
 	bool     things_angles_  = false;
 
-	vector<GLTexture*> tex_flats_;
-	int                last_flat_type_ = -1;
-	vector<GLTexture*> thing_sprites_;
-	long               thing_sprites_updated_ = 0;
+	vector<unsigned> tex_flats_;
+	int              last_flat_type_ = -1;
+	vector<unsigned> thing_sprites_;
+	long             thing_sprites_updated_ = 0;
 
 	// Thing paths
 	enum class PathType

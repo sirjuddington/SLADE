@@ -188,19 +188,20 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 	OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
 	glPushMatrix();
 	glTranslated(x, y, 0);
-	GLTexture::bgTex().draw2dTiled(size, size);
+	Drawing::drawTextureTiled(OpenGL::Texture::backgroundTexture(), size, size);
 	glPopMatrix();
 
 	// Draw first texture
 	bool mixed = Game::configuration().featureSupported(Game::Feature::MixTexFlats);
 	OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
-	Drawing::drawTextureWithin(MapEditor::textureManager().flat(textures[0], mixed), x, y, x + size, y + size, 0, 100);
+	Drawing::drawTextureWithin(
+		MapEditor::textureManager().flat(textures[0], mixed).gl_id, x, y, x + size, y + size, 0, 100);
 
 	// Draw up to 4 subsequent textures (overlaid)
 	OpenGL::setColour(255, 255, 255, 127 * alpha, 0);
 	for (unsigned a = 1; a < textures.size() && a < 5; a++)
 		Drawing::drawTextureWithin(
-			MapEditor::textureManager().flat(textures[a], mixed), x, y, x + size, y + size, 0, 100);
+			MapEditor::textureManager().flat(textures[a], mixed).gl_id, x, y, x + size, y + size, 0, 100);
 
 	glDisable(GL_TEXTURE_2D);
 

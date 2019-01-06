@@ -5,7 +5,6 @@
 #include "MapEditor/SLADEMap/SLADEMap.h"
 
 class ItemSelection;
-class GLTexture;
 class Polygon2D;
 
 namespace Game
@@ -46,13 +45,13 @@ public:
 	};
 	struct Quad
 	{
-		GLVertex   points[4] = { {}, {}, {}, {} };
-		ColRGBA    colour;
-		ColRGBA    fogcolour;
-		uint8_t    light   = 0;
-		GLTexture* texture = nullptr;
-		uint8_t    flags   = 0;
-		float      alpha   = 1.f;
+		GLVertex points[4] = { {}, {}, {}, {} };
+		ColRGBA  colour;
+		ColRGBA  fogcolour;
+		uint8_t  light   = 0;
+		unsigned texture = 0;
+		uint8_t  flags   = 0;
+		float    alpha   = 1.f;
 
 		Quad() : colour{ 255, 255, 255, 255, 0 } {}
 	};
@@ -70,7 +69,7 @@ public:
 		MapSector*             sector       = nullptr;
 		float                  z            = 0.f;
 		float                  height       = 0.f;
-		GLTexture*             sprite       = nullptr;
+		unsigned               sprite       = 0;
 		long                   updated_time = 0;
 	};
 	struct Flat
@@ -79,7 +78,8 @@ public:
 		uint8_t    light = 255;
 		ColRGBA    colour;
 		ColRGBA    fogcolour;
-		GLTexture* texture = nullptr;
+		unsigned   texture = 0;
+		Vec2f      scale;
 		Plane      plane;
 		float      alpha        = 1.f;
 		MapSector* sector       = nullptr;
@@ -185,17 +185,16 @@ public:
 	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 private:
-	SLADEMap*  map_;
-	bool       fullbright_       = false;
-	bool       fog_              = true;
-	GLTexture* tex_last_         = nullptr;
-	unsigned   n_quads_          = 0;
-	unsigned   n_flats_          = 0;
-	int        flat_last_        = 0;
-	bool       render_hilight_   = true;
-	bool       render_selection_ = true;
-	ColRGBA    fog_colour_last_;
-	float      fog_depth_last_ = 0.f;
+	SLADEMap* map_;
+	bool      fullbright_       = false;
+	bool      fog_              = true;
+	unsigned  n_quads_          = 0;
+	unsigned  n_flats_          = 0;
+	int       flat_last_        = 0;
+	bool      render_hilight_   = true;
+	bool      render_selection_ = true;
+	ColRGBA   fog_colour_last_;
+	float     fog_depth_last_ = 0.f;
 
 	// Visibility
 	vector<float> dist_sectors_;

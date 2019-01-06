@@ -101,7 +101,7 @@ void Polygon2D::clear()
 {
 	subpolys_.clear();
 	vbo_update_ = 2;
-	texture_    = nullptr;
+	texture_    = 0;
 }
 
 unsigned Polygon2D::totalVertices()
@@ -153,8 +153,9 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 		return;
 
 	// Check dimensions and scale
-	double width  = texture_->width();
-	double height = texture_->height();
+	auto&  tex_info = OpenGL::Texture::info(texture_);
+	double width    = tex_info.size.x;
+	double height   = tex_info.size.y;
 	if (scale_x == 0)
 		scale_x = 1;
 	if (scale_y == 0)

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "OpenGL/GLTexture.h"
 #include <array>
 
 class SFontChar
@@ -49,7 +48,7 @@ public:
 
 private:
 	std::array<SFontChar, 256> characters_;
-	GLTexture                  texture_;
+	unsigned                   texture_;
 	int                        line_height_;
 	int                        spacing_;
 

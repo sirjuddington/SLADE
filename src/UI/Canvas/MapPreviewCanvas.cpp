@@ -719,12 +719,10 @@ void MapPreviewCanvas::draw()
 		if (entry)
 		{
 			image.open(entry->data());
-			tex_thing_ = std::make_unique<GLTexture>(false);
-			tex_thing_->setFilter(GLTexture::Filter::Mipmap);
-			tex_thing_->loadImage(&image);
+			tex_thing_ = OpenGL::Texture::createFromImage(image, nullptr, OpenGL::TexFilter::Mipmap);
 		}
 		else
-			tex_thing_ = nullptr;
+			tex_thing_ = 0;
 
 		tex_loaded_ = true;
 	}
@@ -737,7 +735,7 @@ void MapPreviewCanvas::draw()
 		{
 			double radius = 20;
 			glEnable(GL_TEXTURE_2D);
-			tex_thing_->bind();
+			OpenGL::Texture::bind(tex_thing_);
 			for (auto& thing : things_)
 			{
 				glPushMatrix();
@@ -819,12 +817,12 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	if (GLEW_ARB_framebuffer_object)
 	{
 		glGenTextures(1, &tex_id);
-		glBindTexture(GL_TEXTURE_2D, tex_id);
+		OpenGL::Texture::bind(tex_id);
 		// We don't use mipmaps, but OpenGL will refuse to attach
 		// the texture to the framebuffer if they are not present
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		OpenGL::Texture::bind(0);
 		glGenFramebuffersEXT(1, &fbo_id);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, tex_id, 0);

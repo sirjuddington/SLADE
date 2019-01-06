@@ -33,6 +33,7 @@ public:
 
 	bool   loadImage() override;
 	string itemInfo() override;
+	void   clearImage() override;
 
 private:
 	Archive* archive_ = nullptr;

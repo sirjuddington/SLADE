@@ -3,13 +3,12 @@
 #include "MapEditor/Edit/Edit3D.h"
 
 class SLADEMap;
-class GLTexture;
 class MapObject;
 
 class InfoOverlay3D
 {
 public:
-	InfoOverlay3D() = default;
+	InfoOverlay3D()  = default;
 	~InfoOverlay3D() = default;
 
 	void update(int item_index, MapEditor::ItemType item_type, SLADEMap* map);
@@ -17,7 +16,7 @@ public:
 	void drawTexture(float alpha, int x, int y);
 	void reset()
 	{
-		texture_ = nullptr;
+		texture_ = 0;
 		object_  = nullptr;
 	}
 
@@ -26,7 +25,7 @@ private:
 	vector<string>      info2_;
 	MapEditor::ItemType current_type_ = MapEditor::ItemType::WallMiddle;
 	string              texname_;
-	GLTexture*          texture_     = nullptr;
+	unsigned            texture_     = 0;
 	bool                thing_icon_  = false;
 	MapObject*          object_      = nullptr;
 	long                last_update_ = 0;

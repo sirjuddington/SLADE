@@ -77,8 +77,8 @@ public:
 	bool isValid() const { return (width_ > 0 && height_ > 0 && data_.data()); }
 
 	Type      type() const { return type_; }
-	bool      putRGBAData(MemChunk& mc, Palette* pal = nullptr);
-	bool      putRGBData(MemChunk& mc, Palette* pal = nullptr);
+	bool      putRGBAData(MemChunk& mc, Palette* pal = nullptr) const;
+	bool      putRGBData(MemChunk& mc, Palette* pal = nullptr) const;
 	bool      putIndexedData(MemChunk& mc) const;
 	int       width() const { return width_; }
 	int       height() const { return height_; }

@@ -35,6 +35,7 @@
 #include "Graphics/Icons.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
 #include "UI/Controls/NumberTextCtrl.h"
 
 
@@ -52,8 +53,7 @@ CropCanvas::CropCanvas(wxWindow* parent, SImage* image, Palette* palette) : OGLC
 {
 	if (image && image->isValid())
 	{
-		texture_ = std::make_unique<GLTexture>();
-		texture_->loadImage(image, palette);
+		texture_ = OpenGL::Texture::createFromImage(*image, palette);
 		crop_rect_.set(0, 0, image->width(), image->height());
 	}
 
@@ -77,8 +77,9 @@ void CropCanvas::draw()
 	double height = GetSize().y;
 
 	// Get image dimensions
-	double x_dim = (double)texture_->width();
-	double y_dim = (double)texture_->height();
+	auto&  tex_info = OpenGL::Texture::info(texture_);
+	double x_dim    = (double)tex_info.size.x;
+	double y_dim    = (double)tex_info.size.y;
 
 	// Get max scale for x and y (including padding)
 	double x_scale = ((double)width - UI::scalePx(24)) / x_dim;
@@ -97,9 +98,9 @@ void CropCanvas::draw()
 	if (texture_)
 	{
 		glEnable(GL_TEXTURE_2D);
-		hw = texture_->width() * -0.5;
-		hh = texture_->height() * -0.5;
-		texture_->draw2d(hw, hh);
+		hw = x_dim * -0.5;
+		hh = y_dim * -0.5;
+		Drawing::drawTexture(texture_, hw, hh);
 	}
 
 	// Draw cropping rectangle

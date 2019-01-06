@@ -1,11 +1,9 @@
 #pragma once
 
-#include "OpenGL/GLTexture.h"
 #include "UI/Canvas/OGLCanvas.h"
 
 class SImage;
 class NumberTextCtrl;
-class GLTexture;
 
 class CropCanvas : public OGLCanvas
 {
@@ -18,8 +16,8 @@ public:
 	void draw() override;
 
 private:
-	std::unique_ptr<GLTexture> texture_;
-	Recti                      crop_rect_;
+	unsigned texture_ = 0;
+	Recti    crop_rect_;
 };
 
 class GfxCropDialog : public wxDialog
@@ -40,7 +38,7 @@ private:
 	wxRadioButton*  rb_absolute_    = nullptr;
 	wxRadioButton*  rb_relative_    = nullptr;
 
-	int   max_width_ = 0;
+	int   max_width_  = 0;
 	int   max_height_ = 0;
 	Recti crop_rect_;
 

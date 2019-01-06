@@ -22,7 +22,8 @@ public:
 	void   setUsage(int count) { usage_count_ = count; }
 
 private:
-	int usage_count_ = 0;
+	int   usage_count_ = 0;
+	Vec2f scale_       = { 1., 1. };
 };
 
 class MapTextureBrowser : public BrowserWindow

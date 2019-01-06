@@ -75,17 +75,18 @@ MapTexBrowserItem::MapTexBrowserItem(const string& name, const string& type, uns
 // -----------------------------------------------------------------------------
 bool MapTexBrowserItem::loadImage()
 {
-	GLTexture* tex = nullptr;
+	const MapTextureManager::Texture* tex = nullptr;
 
 	// Get texture or flat depending on type
 	if (type_ == "texture")
-		tex = MapEditor::textureManager().texture(name_, false);
+		tex = &MapEditor::textureManager().texture(name_, false);
 	else if (type_ == "flat")
-		tex = MapEditor::textureManager().flat(name_, false);
+		tex = &MapEditor::textureManager().flat(name_, false);
 
 	if (tex)
 	{
-		image_ = tex;
+		image_tex_ = tex->gl_id;
+		scale_     = tex->scale;
 		return true;
 	}
 	else
@@ -104,8 +105,9 @@ string MapTexBrowserItem::itemInfo()
 		return "No Texture";
 
 	// Add dimensions if known
-	if (image_ || loadImage())
-		info += S_FMT("%dx%d", image_->width(), image_->height());
+	auto& tex_info = OpenGL::Texture::info(image_tex_);
+	if (image_tex_ || loadImage())
+		info += S_FMT("%dx%d", tex_info.size.x, tex_info.size.y);
 	else
 		info += "Unknown size";
 
@@ -116,7 +118,7 @@ string MapTexBrowserItem::itemInfo()
 		info += ", Flat";
 
 	// Add scaling info
-	if (image_->scaleX() != 1.0 || image_->scaleY() != 1.0)
+	if (scale_.x != 1. || scale_.y != 1.)
 		info += ", Scaled";
 
 	// Add usage count

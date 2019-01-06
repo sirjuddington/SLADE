@@ -51,6 +51,7 @@
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/NodeBuilders.h"
 #include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
 #include "SLADEWxApp.h"
 #include "Scripting/Lua.h"
 #include "Scripting/ScriptManager.h"
@@ -653,6 +654,7 @@ void App::exit(bool save_config)
 	// Clean up
 	EntryType::cleanupEntryTypes();
 	Drawing::cleanupFonts();
+	OpenGL::Texture::clearAll();
 
 	// Clear temp folder
 	wxDir temp;

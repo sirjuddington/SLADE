@@ -60,7 +60,8 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 // -----------------------------------------------------------------------------
 // ThingInfoOverlay class constructor
 // -----------------------------------------------------------------------------
-ThingInfoOverlay::ThingInfoOverlay() : text_box_{ "", Drawing::Font::Condensed, 100, int(16 * (Drawing::fontSize() / 12.0)) }
+ThingInfoOverlay::ThingInfoOverlay() :
+	text_box_{ "", Drawing::Font::Condensed, 100, int(16 * (Drawing::fontSize() / 12.0)) }
 {
 }
 
@@ -206,21 +207,22 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 
 	// Draw sprite
 	bool isicon = false;
-	auto tex    = MapEditor::textureManager().sprite(sprite_, translation_, palette_);
+	auto tex    = MapEditor::textureManager().sprite(sprite_, translation_, palette_).gl_id;
 	if (!tex)
 	{
 		if (use_zeth_icons && zeth_icon_ >= 0)
-			tex = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", zeth_icon_));
+			tex = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", zeth_icon_)).gl_id;
 		if (!tex)
-			tex = MapEditor::textureManager().editorImage(S_FMT("thing/%s", icon_));
+			tex = MapEditor::textureManager().editorImage(S_FMT("thing/%s", icon_)).gl_id;
 		isicon = true;
 	}
 	glEnable(GL_TEXTURE_2D);
 	OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
 	if (tex)
 	{
-		double twidth  = tex->width();
-		double theight = tex->height();
+		auto&  tex_info = OpenGL::Texture::info(tex);
+		double twidth   = tex_info.size.x;
+		double theight  = tex_info.size.y;
 		if (twidth > 128.0 || theight > 128.0)
 		{
 			double factor = max(twidth, theight) / 128.0;
@@ -232,7 +234,7 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 			twidth  = 64;
 			theight = 64;
 		}
-		tex->bind();
+		OpenGL::Texture::bind(tex);
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0f, 0.0f);
 		glVertex2d(right - 8 - twidth, bottom - 8 - theight);

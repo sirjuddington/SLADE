@@ -4,7 +4,6 @@
 #include "MapEditor/Edit/Edit3D.h"
 
 class ItemSelection;
-class GLTexture;
 class MapEditContext;
 
 class QuickTextureOverlay3d : public MCOverlay
@@ -32,9 +31,9 @@ public:
 private:
 	struct QTTex
 	{
-		GLTexture* texture;
-		string     name;
-		QTTex(string name) : texture{ nullptr }, name{ name } {}
+		unsigned texture;
+		string   name;
+		QTTex(string name) : texture{ 0 }, name{ name } {}
 	};
 
 	vector<QTTex>   textures_;

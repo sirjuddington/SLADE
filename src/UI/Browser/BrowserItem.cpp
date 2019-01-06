@@ -36,7 +36,9 @@
 #include "BrowserWindow.h"
 #include "General/UI.h"
 #include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+
 
 using NameType = BrowserCanvas::NameType;
 using ItemView = BrowserCanvas::ItemView;
@@ -123,8 +125,8 @@ void BrowserItem::draw(
 	{
 		// Create text box if needed
 		if (!text_box_)
-			text_box_ =
-				std::make_unique<TextBox>(S_FMT("%d\n%s", index_, name_), font, UI::scalePx(144), UI::scalePx(16));
+			text_box_ = std::make_unique<TextBox>(
+				S_FMT("%d\n%s", index_, name_), font, UI::scalePx(144), UI::scalePx(16));
 
 		int top = y;
 		top += ((size - text_box_->height()) * 0.5);
@@ -139,11 +141,11 @@ void BrowserItem::draw(
 		return;
 
 	// Try to load image if it isn't already
-	if (!image_ || (image_ && !image_->isLoaded()))
+	if (!image_tex_ || (image_tex_ && !OpenGL::Texture::isLoaded(image_tex_)))
 		loadImage();
 
 	// If it still isn't just draw a red box with an X
-	if (!image_ || (image_ && !image_->isLoaded()))
+	if (!image_tex_ || (image_tex_ && !OpenGL::Texture::isLoaded(image_tex_)))
 	{
 		glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
 
@@ -172,8 +174,9 @@ void BrowserItem::draw(
 	}
 
 	// Determine texture dimensions
-	double width  = image_->width();
-	double height = image_->height();
+	auto&  tex_info = OpenGL::Texture::info(image_tex_);
+	double width    = tex_info.size.x;
+	double height   = tex_info.size.y;
 
 	// Scale up if size > 128
 	if (size > 128)
@@ -209,7 +212,7 @@ void BrowserItem::draw(
 	double left = x + ((double)size * 0.5) - (width * 0.5);
 
 	// Draw
-	image_->bind();
+	OpenGL::Texture::bind(image_tex_);
 	OpenGL::setColour(COL_WHITE, false);
 
 	glBegin(GL_QUADS);
@@ -222,13 +225,4 @@ void BrowserItem::draw(
 	glTexCoord2f(1.0f, 0.0f);
 	glVertex2d(left + width, top);
 	glEnd();
-}
-
-// -----------------------------------------------------------------------------
-// Clears the item image
-// -----------------------------------------------------------------------------
-void BrowserItem::clearImage() const
-{
-	if (image_)
-		image_->clear();
 }

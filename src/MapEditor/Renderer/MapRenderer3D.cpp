@@ -534,9 +534,6 @@ void MapRenderer3D::renderMap()
 	glDepthMask(GL_TRUE);
 	glAlphaFunc(GL_GREATER, 0.0f);
 
-	// Init
-	tex_last_ = nullptr;
-
 	// Init VBO stuff
 	if (OpenGL::vboSupport())
 	{
@@ -733,22 +730,24 @@ void MapRenderer3D::renderSky()
 	glTranslatef(0.0f, 0.0f, -10.0f);
 
 	// Get sky texture
-	GLTexture* sky;
+	unsigned sky;
 	if (!skytex2_.IsEmpty())
-		sky = MapEditor::textureManager().texture(skytex2_, false);
+		sky = MapEditor::textureManager().texture(skytex2_, false).gl_id;
 	else
-		sky = MapEditor::textureManager().texture(skytex1_, false);
+		sky = MapEditor::textureManager().texture(skytex1_, false).gl_id;
 	if (sky)
 	{
 		// Bind texture
-		sky->bind();
+		OpenGL::Texture::bind(sky);
 
 		// Get average colour if needed
+		auto& tex_info = OpenGL::Texture::info(sky);
 		if (skycol_top_.a == 0)
 		{
-			int theight    = sky->height() * 0.4;
-			skycol_top_    = sky->averageColour(Recti(0, 0, sky->width(), theight));
-			skycol_bottom_ = sky->averageColour(Recti(0, sky->height() - theight, sky->width(), sky->height()));
+			int theight    = tex_info.size.y * 0.4;
+			skycol_top_    = OpenGL::Texture::averageColour(sky, { 0, 0, tex_info.size.x, theight });
+			skycol_bottom_ = OpenGL::Texture::averageColour(
+				sky, { 0, tex_info.size.y - theight, tex_info.size.x, tex_info.size.y });
 		}
 
 		// Render top cap
@@ -778,9 +777,9 @@ void MapRenderer3D::renderSky()
 		// Check for odd sky sizes
 		float tx = 0.125f;
 		float ty = 2.0f;
-		if (sky->width() > 256)
-			tx = 0.125f / ((float)sky->width() / 256.0f);
-		if (sky->height() > 128)
+		if (tex_info.size.x > 256)
+			tx = 0.125f / ((float)tex_info.size.x / 256.0f);
+		if (tex_info.size.y > 128)
 			ty = 1.0f;
 
 		renderSkySlice(1.0f, 0.5f, 0.0f, 1.0f, size, tx, ty);   // Top
@@ -841,11 +840,11 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 	auto sector = map_->sector(index);
 
 	// Get scaling/offset info
-	double ox  = 0;
-	double oy  = 0;
-	double sx  = floor ? floors_[index].texture->scaleX() : ceilings_[index].texture->scaleX();
-	double sy  = floor ? floors_[index].texture->scaleY() : ceilings_[index].texture->scaleY();
-	double rot = 0;
+	double ox  = 0.;
+	double oy  = 0.;
+	double sx  = floor ? floors_[index].scale.x : ceilings_[index].scale.x;
+	double sy  = floor ? floors_[index].scale.y : ceilings_[index].scale.y;
+	double rot = 0.;
 
 	// Check for UDMF + panning/scaling/rotation
 	if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
@@ -905,10 +904,12 @@ void MapRenderer3D::updateSector(unsigned index)
 		return;
 
 	// Update floor
-	auto sector            = map_->sector(index);
-	floors_[index].sector  = sector;
-	floors_[index].texture = MapEditor::textureManager().flat(
-		sector->floor().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+	bool  mix_tex_flats      = Game::configuration().featureSupported(Game::Feature::MixTexFlats);
+	auto  sector             = map_->sector(index);
+	auto& ftex               = MapEditor::textureManager().flat(sector->floor().texture, mix_tex_flats);
+	floors_[index].sector    = sector;
+	floors_[index].texture   = ftex.gl_id;
+	floors_[index].scale     = ftex.scale;
 	floors_[index].colour    = sector->colourAt(1, true);
 	floors_[index].fogcolour = sector->fogColour();
 	floors_[index].light     = sector->lightAt(1);
@@ -928,9 +929,10 @@ void MapRenderer3D::updateSector(unsigned index)
 	}
 
 	// Update ceiling
-	ceilings_[index].sector  = sector;
-	ceilings_[index].texture = MapEditor::textureManager().flat(
-		sector->ceiling().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+	auto& ctex                 = MapEditor::textureManager().flat(sector->ceiling().texture, mix_tex_flats);
+	ceilings_[index].sector    = sector;
+	ceilings_[index].texture   = ctex.gl_id;
+	ceilings_[index].scale     = ctex.scale;
 	ceilings_[index].colour    = sector->colourAt(2, true);
 	ceilings_[index].fogcolour = sector->fogColour();
 	ceilings_[index].light     = sector->lightAt(2);
@@ -1050,21 +1052,22 @@ void MapRenderer3D::renderFlats()
 	glEnable(GL_TEXTURE_2D);
 
 	// Render all visible flats, ordered by texture
-	unsigned a = 0;
-	flat_last_ = 0;
+	unsigned a        = 0;
+	unsigned tex_last = 0;
+	flat_last_        = 0;
 	while (n_flats_ > 0)
 	{
-		tex_last_ = nullptr;
-		a         = 0;
+		a        = 0;
+		tex_last = 0;
 		while (a < n_flats_)
 		{
 			// Check texture
-			if (!tex_last_ && flats_[a]->texture)
+			if (!tex_last && flats_[a]->texture)
 			{
-				tex_last_ = flats_[a]->texture;
-				flats_[a]->texture->bind();
+				tex_last = flats_[a]->texture;
+				OpenGL::Texture::bind(flats_[a]->texture);
 			}
-			if (flats_[a]->texture != tex_last_)
+			if (flats_[a]->texture != tex_last)
 			{
 				a++;
 				continue;
@@ -1227,16 +1230,17 @@ void MapRenderer3D::setupQuadTexCoords(
 	int height = MathStuff::round(h_top - h_bottom);
 
 	// Initial offsets
-	double y1 = o_top;
-	double y2 = o_top + height;
+	double y1       = o_top;
+	double y2       = o_top + height;
+	auto&  tex_info = OpenGL::Texture::info(quad->texture);
 	if (pegbottom)
 	{
-		y2 = o_top + quad->texture->height() * sy;
+		y2 = o_top + tex_info.size.y * sy;
 		y1 = y2 - height;
 	}
 
-	double x_mult = 1.0 / (quad->texture->width() * sx);
-	double y_mult = 1.0 / (quad->texture->height() * sy);
+	double x_mult = 1.0 / (tex_info.size.x * sx);
+	double y_mult = 1.0 / (tex_info.size.y * sy);
 
 	// Set texture coordinates
 	quad->points[0].tx = o_left * x_mult;
@@ -1336,9 +1340,10 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		quad.texture = MapEditor::textureManager().texture(line->s1()->texMiddle(), mixed);
-		sx           = quad.texture->scaleX();
-		sy           = quad.texture->scaleY();
+		auto& tex    = MapEditor::textureManager().texture(line->s1()->texMiddle(), mixed);
+		quad.texture = tex.gl_id;
+		sx           = tex.scale.x;
+		sy           = tex.scale.y;
 		if (Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (line->s1()->hasProp("scalex_mid"))
@@ -1346,7 +1351,7 @@ void MapRenderer3D::updateLine(unsigned index)
 			if (line->s1()->hasProp("scaley_mid"))
 				lsy = 1.0 / line->s1()->floatProperty("scaley_mid");
 		}
-		if (!quad.texture->worldPanning())
+		if (!tex.world_panning)
 		{
 			xoff *= sx;
 			yoff *= sy;
@@ -1438,9 +1443,10 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		quad.texture = MapEditor::textureManager().texture(line->s1()->texLower(), mixed);
-		sx           = quad.texture->scaleX();
-		sy           = quad.texture->scaleY();
+		auto& tex    = MapEditor::textureManager().texture(line->s1()->texLower(), mixed);
+		quad.texture = tex.gl_id;
+		sx           = tex.scale.x;
+		sy           = tex.scale.y;
 		if (map_->currentFormat() == MapFormat::UDMF
 			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
@@ -1449,7 +1455,7 @@ void MapRenderer3D::updateLine(unsigned index)
 			if (line->s1()->hasProp("scaley_bottom"))
 				lsy = 1.0 / line->s1()->floatProperty("scaley_bottom");
 		}
-		if (!quad.texture->worldPanning())
+		if (!tex.world_panning)
 		{
 			xoff *= sx;
 			yoff *= sy;
@@ -1485,7 +1491,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		Quad quad;
 
 		// Get texture
-		quad.texture = MapEditor::textureManager().texture(midtex1, mixed);
+		auto& tex    = MapEditor::textureManager().texture(line->s1()->texMiddle(), mixed);
+		quad.texture = tex.gl_id;
 
 		// Determine offsets
 		xoff        = xoff1;
@@ -1501,8 +1508,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		sx = quad.texture->scaleX();
-		sy = quad.texture->scaleY();
+		sx = tex.scale.x;
+		sy = tex.scale.y;
 		if (map_->currentFormat() == MapFormat::UDMF
 			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
@@ -1511,7 +1518,7 @@ void MapRenderer3D::updateLine(unsigned index)
 			if (line->s1()->hasProp("scaley_mid"))
 				lsy = 1.0 / line->s1()->floatProperty("scaley_mid");
 		}
-		if (!quad.texture->worldPanning())
+		if (!tex.world_panning)
 		{
 			xoff *= sx;
 			yoff *= sy;
@@ -1536,13 +1543,15 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 		else if (lpeg)
 		{
-			bottom = highfloor + yoff;
-			top    = bottom + (quad.texture->height() * sy);
+			auto& tex_info = OpenGL::Texture::info(quad.texture);
+			bottom         = highfloor + yoff;
+			top            = bottom + (tex_info.size.y * sy);
 		}
 		else
 		{
-			top    = lowceil + yoff;
-			bottom = top - (quad.texture->height() * sy);
+			auto& tex_info = OpenGL::Texture::info(quad.texture);
+			top            = lowceil + yoff;
+			bottom         = top - (tex_info.size.y * sy);
 		}
 		// The "correct" thing here is to allow textures to run into the floor
 		// unless clipmidtex is on, but OpenGL is designed not to allow that to
@@ -1590,9 +1599,10 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		quad.texture = MapEditor::textureManager().texture(line->s1()->texUpper(), mixed);
-		sx           = quad.texture->scaleX();
-		sy           = quad.texture->scaleY();
+		auto& tex    = MapEditor::textureManager().texture(line->s1()->texUpper(), mixed);
+		quad.texture = tex.gl_id;
+		sx           = tex.scale.x;
+		sy           = tex.scale.y;
 		if (map_->currentFormat() == MapFormat::UDMF
 			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
@@ -1601,7 +1611,7 @@ void MapRenderer3D::updateLine(unsigned index)
 			if (line->s1()->hasProp("scaley_top"))
 				lsy = 1.0 / line->s1()->floatProperty("scaley_top");
 		}
-		if (!quad.texture->worldPanning())
+		if (!tex.world_panning)
 		{
 			xoff *= sx;
 			yoff *= sy;
@@ -1648,9 +1658,10 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		quad.texture = MapEditor::textureManager().texture(line->s2()->texLower(), mixed);
-		sx           = quad.texture->scaleX();
-		sy           = quad.texture->scaleY();
+		auto& tex    = MapEditor::textureManager().texture(line->s2()->texLower(), mixed);
+		quad.texture = tex.gl_id;
+		sx           = tex.scale.x;
+		sy           = tex.scale.y;
 		if (map_->currentFormat() == MapFormat::UDMF
 			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
@@ -1659,7 +1670,7 @@ void MapRenderer3D::updateLine(unsigned index)
 			if (line->s2()->hasProp("scaley_bottom"))
 				lsy = 1.0 / line->s2()->floatProperty("scaley_bottom");
 		}
-		if (!quad.texture->worldPanning())
+		if (!tex.world_panning)
 		{
 			xoff *= sx;
 			yoff *= sy;
@@ -1696,7 +1707,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		Quad quad;
 
 		// Get texture
-		quad.texture = MapEditor::textureManager().texture(midtex2, mixed);
+		auto& tex    = MapEditor::textureManager().texture(midtex2, mixed);
+		quad.texture = tex.gl_id;
 
 		// Determine offsets
 		xoff        = xoff2;
@@ -1712,8 +1724,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		sx = quad.texture->scaleX();
-		sy = quad.texture->scaleY();
+		sx = tex.scale.x;
+		sy = tex.scale.y;
 		if (map_->currentFormat() == MapFormat::UDMF
 			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
@@ -1722,7 +1734,7 @@ void MapRenderer3D::updateLine(unsigned index)
 			if (line->s2()->hasProp("scaley_mid"))
 				lsy = 1.0 / line->s2()->floatProperty("scaley_mid");
 		}
-		if (!quad.texture->worldPanning())
+		if (!tex.world_panning)
 		{
 			xoff *= sx;
 			yoff *= sy;
@@ -1747,13 +1759,15 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 		else if (lpeg)
 		{
-			bottom = highfloor + yoff;
-			top    = bottom + (quad.texture->height() * sy);
+			auto& tex_info = OpenGL::Texture::info(quad.texture);
+			bottom         = highfloor + yoff;
+			top            = bottom + (tex_info.size.y * sy);
 		}
 		else
 		{
-			top    = lowceil + yoff;
-			bottom = top - (quad.texture->height() * sy);
+			auto& tex_info = OpenGL::Texture::info(quad.texture);
+			top            = lowceil + yoff;
+			bottom         = top - (tex_info.size.y * sy);
 		}
 		// The "correct" thing here is to allow textures to run into the floor
 		// unless clipmidtex is on, but OpenGL is designed not to allow that to
@@ -1802,9 +1816,10 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Texture scale
-		quad.texture = MapEditor::textureManager().texture(line->s2()->texUpper(), mixed);
-		sx           = quad.texture->scaleX();
-		sy           = quad.texture->scaleY();
+		auto& tex    = MapEditor::textureManager().texture(line->s2()->texUpper(), mixed);
+		quad.texture = tex.gl_id;
+		sx           = tex.scale.x;
+		sy           = tex.scale.y;
 		if (map_->currentFormat() == MapFormat::UDMF
 			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
@@ -1813,7 +1828,7 @@ void MapRenderer3D::updateLine(unsigned index)
 			if (line->s2()->hasProp("scaley_top"))
 				lsy = 1.0 / line->s2()->floatProperty("scaley_top");
 		}
-		if (!quad.texture->worldPanning())
+		if (!tex.world_panning)
 		{
 			xoff *= sx;
 			yoff *= sy;
@@ -1904,11 +1919,12 @@ void MapRenderer3D::renderWalls()
 	glCullFace(GL_BACK);
 
 	// Render all visible quads, ordered by texture
-	unsigned a = 0;
+	unsigned a        = 0;
+	unsigned tex_last = 0;
 	while (n_quads_ > 0)
 	{
-		tex_last_ = nullptr;
-		a         = 0;
+		tex_last = 0;
+		a        = 0;
 		while (a < n_quads_)
 		{
 			// Check alpha
@@ -1921,12 +1937,12 @@ void MapRenderer3D::renderWalls()
 			}
 
 			// Check texture
-			if (!tex_last_ && quads_[a]->texture)
+			if (!tex_last && quads_[a]->texture)
 			{
-				tex_last_ = quads_[a]->texture;
-				quads_[a]->texture->bind();
+				tex_last = quads_[a]->texture;
+				OpenGL::Texture::bind(quads_[a]->texture);
 			}
-			if (quads_[a]->texture != tex_last_)
+			if (quads_[a]->texture != tex_last)
 			{
 				a++;
 				continue;
@@ -1954,15 +1970,10 @@ void MapRenderer3D::renderTransparentWalls()
 	glCullFace(GL_BACK);
 
 	// Render all transparent quads
-	tex_last_ = nullptr;
 	for (auto& quad : quads_transparent_)
 	{
-		// Check texture
-		if (quad->texture != tex_last_)
-		{
-			tex_last_ = quad->texture;
-			quad->texture->bind();
-		}
+		// Bind texture
+		OpenGL::Texture::bind(quad->texture, false);
 
 		// Render quad
 		renderQuad(quad, quad->alpha);
@@ -2081,28 +2092,33 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 
 	// Get sprite texture
 	uint32_t theight      = render_thing_icon_size;
-	things_[index].sprite = MapEditor::textureManager().sprite(
-		things_[index].type->sprite(), things_[index].type->translation(), things_[index].type->palette());
+	things_[index].sprite = MapEditor::textureManager()
+								.sprite(
+									things_[index].type->sprite(),
+									things_[index].type->translation(),
+									things_[index].type->palette())
+								.gl_id;
 	if (!things_[index].sprite)
 	{
 		// Sprite not found, try an icon
 		if (use_zeth_icons && things_[index].type->zethIcon() >= 0)
 		{
-			things_[index].sprite =
-				MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", things_[index].type->zethIcon()));
+			things_[index].sprite = MapEditor::textureManager()
+										.editorImage(S_FMT("zethicons/zeth%02d", things_[index].type->zethIcon()))
+										.gl_id;
 			things_[index].flags |= ZETH;
 		}
 		if (!things_[index].sprite)
-			things_[index].sprite =
-				MapEditor::textureManager().editorImage(S_FMT("thing/%s", things_[index].type->icon()));
+			things_[index]
+				.sprite = MapEditor::textureManager().editorImage(S_FMT("thing/%s", things_[index].type->icon())).gl_id;
 		things_[index].flags |= ICON;
 	}
 	else
-		theight = things_[index].type->scaleY() * things_[index].sprite->height();
+		theight = things_[index].type->scaleY() * OpenGL::Texture::info(things_[index].sprite).size.y;
 	if (!things_[index].sprite)
 	{
 		// Icon not found either, use unknown icon
-		things_[index].sprite = MapEditor::textureManager().editorImage("thing/unknown");
+		things_[index].sprite = MapEditor::textureManager().editorImage("thing/unknown").gl_id;
 	}
 
 	// Determine z position
@@ -2145,7 +2161,7 @@ void MapRenderer3D::renderThings()
 	// Init
 	glEnable(GL_TEXTURE_2D);
 	glCullFace(GL_BACK);
-	GLTexture* tex = nullptr;
+	unsigned tex = 0;
 
 	// Go through things
 	double dist, halfwidth, theight;
@@ -2194,15 +2210,12 @@ void MapRenderer3D::renderThings()
 		tex = things_[a].sprite;
 
 		// Bind texture if needed
-		if (tex != tex_last_)
-		{
-			tex->bind();
-			tex_last_ = tex;
-		}
+		OpenGL::Texture::bind(tex, false);
 
 		// Determine coordinates
-		halfwidth = things_[a].type->scaleX() * tex->width() * 0.5;
-		theight   = things_[a].type->scaleY() * tex->height();
+		auto& tex_info = OpenGL::Texture::info(tex);
+		halfwidth      = things_[a].type->scaleX() * tex_info.size.x * 0.5;
+		theight        = things_[a].type->scaleY() * tex_info.size.y;
 		if (things_[a].flags & ICON)
 		{
 			halfwidth = render_thing_icon_size * 0.5;
@@ -2429,8 +2442,9 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 			continue;
 
 		// Determine coordinates
-		halfwidth = things_[item.index].sprite->width() * 0.5;
-		theight   = things_[item.index].sprite->height();
+		auto& tex_info = OpenGL::Texture::info(things_[item.index].sprite);
+		halfwidth      = tex_info.size.x * 0.5;
+		theight        = tex_info.size.y;
 		if (things_[item.index].flags & ICON)
 		{
 			halfwidth = render_thing_icon_size * 0.5;
@@ -2823,10 +2837,10 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			// Check intersection height
 			// Need to handle slopes by finding the floor and ceiling height of
 			// the quad at the intersection point
-			Vec2f  seg_left  = Vec2f(quad.points[1].x, quad.points[1].y);
-			Vec2f  seg_right = Vec2f(quad.points[2].x, quad.points[2].y);
-			double dist_along_segment =
-				(intersection.get2d() - seg_left).magnitude() / (seg_right - seg_left).magnitude();
+			Vec2f  seg_left           = Vec2f(quad.points[1].x, quad.points[1].y);
+			Vec2f  seg_right          = Vec2f(quad.points[2].x, quad.points[2].y);
+			double dist_along_segment = (intersection.get2d() - seg_left).magnitude()
+										/ (seg_right - seg_left).magnitude();
 			double top    = quad.points[0].z + (quad.points[3].z - quad.points[0].z) * dist_along_segment;
 			double bottom = quad.points[1].z + (quad.points[2].z - quad.points[1].z) * dist_along_segment;
 			if (bottom <= intersection.z && intersection.z <= top)
@@ -2920,7 +2934,8 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			continue;
 
 		// Find distance to thing sprite
-		halfwidth = things_[a].sprite->width() * 0.5;
+		auto& tex_info = OpenGL::Texture::info(things_[a].sprite);
+		halfwidth      = tex_info.size.x * 0.5;
 		if (things_[a].flags & ICON)
 			halfwidth = render_thing_icon_size * 0.5;
 		dist = MathStuff::distanceRayLine(
@@ -2934,7 +2949,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			continue;
 
 		// Check intersection height
-		theight = things_[a].sprite->height();
+		theight = tex_info.size.y;
 		height  = cam_position_.z + cam_dir3d_.z * dist;
 		if (things_[a].flags & ICON)
 			theight = render_thing_icon_size;
@@ -3090,8 +3105,9 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 			return;
 
 		// Determine coordinates
-		double halfwidth = things_[hilight.index].type->scaleX() * things_[hilight.index].sprite->width() * 0.5;
-		double theight   = things_[hilight.index].type->scaleY() * things_[hilight.index].sprite->height();
+		auto&  tex_info  = OpenGL::Texture::info(things_[hilight.index].sprite);
+		double halfwidth = things_[hilight.index].type->scaleX() * tex_info.size.x * 0.5;
+		double theight   = things_[hilight.index].type->scaleY() * tex_info.size.y;
 		if (things_[hilight.index].flags & ICON)
 		{
 			halfwidth = render_thing_icon_size * 0.5;
@@ -3144,7 +3160,7 @@ void MapRenderer3D::onAnnouncement(Announcer* announcer, const string& event_nam
 		for (auto& line : lines_)
 		{
 			for (auto& quad : line.quads)
-				quad.texture = nullptr;
+				quad.texture = 0;
 
 			line.updated_time = 0;
 		}
@@ -3152,19 +3168,19 @@ void MapRenderer3D::onAnnouncement(Announcer* announcer, const string& event_nam
 		// Refresh flats
 		for (auto& floor : floors_)
 		{
-			floor.texture      = nullptr;
+			floor.texture      = 0;
 			floor.updated_time = 0;
 		}
 		for (auto& ceiling : ceilings_)
 		{
-			ceiling.texture      = nullptr;
+			ceiling.texture      = 0;
 			ceiling.updated_time = 0;
 		}
 
 		// Refresh things
 		for (auto& thing : things_)
 		{
-			thing.sprite       = nullptr;
+			thing.sprite       = 0;
 			thing.updated_time = 0;
 		}
 	}

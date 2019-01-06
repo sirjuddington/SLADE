@@ -449,11 +449,12 @@ void Edit3D::autoAlignX(MapEditor::Item start) const
 		return;
 
 	// Get texture width
-	auto gl_tex =
-		MapEditor::textureManager().texture(tex, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+	auto gl_tex = MapEditor::textureManager()
+					  .texture(tex, Game::configuration().featureSupported(Game::Feature::MixTexFlats))
+					  .gl_id;
 	int tex_width = -1;
 	if (gl_tex)
-		tex_width = gl_tex->width();
+		tex_width = OpenGL::Texture::info(gl_tex).size.x;
 
 	// Init aligned wall list
 	vector<MapEditor::Item> walls_done;
@@ -1242,7 +1243,7 @@ void Edit3D::changeTexture() const
 
 	// Get initial texture
 	string tex;
-	auto type    = MapEditor::TextureType::Texture;
+	auto   type  = MapEditor::TextureType::Texture;
 	auto&  first = selection[0];
 	auto&  map   = context_.map();
 	if (first.type == MapEditor::ItemType::Floor)

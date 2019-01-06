@@ -72,7 +72,7 @@ private:
 	View         view_type_ = View::Default;
 	double       scale_     = 1.;
 	Vec2f        offset_; // panning offsets (not image offsets)
-	GLTexture    tex_image_;
+	unsigned     tex_image_;
 	bool         update_texture_ = false;
 	bool         image_hilight_  = false;
 	bool         allow_drag_     = false;
@@ -88,7 +88,7 @@ private:
 	SBrush*      brush_        = nullptr;          // the brush used to paint the image
 	Vec2i        cursor_pos_   = Vec2i::outside(); // position of cursor, relative to image
 	Vec2i        prev_pos_     = Vec2i::outside(); // previous position of cursor
-	GLTexture    tex_brush_;                       // preview the effect of the brush
+	unsigned     tex_brush_;                       // preview the effect of the brush
 
 	// Events
 	void onMouseLeftDown(wxMouseEvent& e);

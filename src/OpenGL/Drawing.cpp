@@ -305,6 +305,76 @@ void Drawing::drawFilledEllipse(Vec2f mid, double radius_x, double radius_y, int
 	glEnd();
 }
 
+void Drawing::drawTexture(unsigned id, double x, double y, bool flipx, bool flipy)
+{
+	// Ignore empty texture
+	if (!OpenGL::Texture::isLoaded(id))
+		return;
+
+	// Flipping?
+	auto& tex_info = OpenGL::Texture::info(id);
+	if (flipx)
+		x += tex_info.size.x;
+	if (flipy)
+		y += tex_info.size.y;
+
+	// Bind the texture
+	OpenGL::Texture::bind(id);
+
+	// Setup metrics
+	double h = (double)tex_info.size.x;
+	double v = (double)tex_info.size.y;
+	if (flipx)
+		h = -h;
+	if (flipy)
+		v = -v;
+
+	// Translate to position
+	glPushMatrix();
+	glTranslated(x, y, 0);
+
+	// Draw
+	glBegin(GL_QUADS);
+	glTexCoord2d(0, 0);
+	glVertex2d(0, 0);
+	glTexCoord2d(0, 1);
+	glVertex2d(0, v);
+	glTexCoord2d(1, 1);
+	glVertex2d(h, v);
+	glTexCoord2d(1, 0);
+	glVertex2d(h, 0);
+	glEnd();
+
+	glPopMatrix();
+}
+
+void Drawing::drawTextureTiled(unsigned id, uint32_t width, uint32_t height)
+{
+	// Ignore empty texture
+	if (!OpenGL::Texture::isLoaded(id))
+		return;
+
+	// Bind the texture
+	OpenGL::Texture::bind(id);
+
+	// Calculate texture coordinates
+	auto&  tex_info = OpenGL::Texture::info(id);
+	double tex_x    = (double)width / (double)tex_info.size.x;
+	double tex_y    = (double)height / (double)tex_info.size.y;
+
+	// Draw
+	glBegin(GL_QUADS);
+	glTexCoord2d(0, 0);
+	glVertex2d(0, 0);
+	glTexCoord2d(0, tex_y);
+	glVertex2d(0, height);
+	glTexCoord2d(tex_x, tex_y);
+	glVertex2d(width, height);
+	glTexCoord2d(tex_x, 0);
+	glVertex2d(width, 0);
+	glEnd();
+}
+
 // -----------------------------------------------------------------------------
 // Fits [tex] within the rectangle from [x1,y1] to [x2,y2], centered and keeping
 // the correct aspect ratio.
@@ -312,24 +382,25 @@ void Drawing::drawFilledEllipse(Vec2f mid, double radius_x, double radius_y, int
 // Returns the resulting texture rectangle coordinates
 // -----------------------------------------------------------------------------
 Rectf Drawing::fitTextureWithin(
-	GLTexture* tex,
-	double     x1,
-	double     y1,
-	double     x2,
-	double     y2,
-	double     padding,
-	double     max_scale)
+	unsigned id,
+	double   x1,
+	double   y1,
+	double   x2,
+	double   y2,
+	double   padding,
+	double   max_scale)
 {
-	// Ignore null texture
-	if (!tex)
+	// Ignore empty texture
+	if (!OpenGL::Texture::isLoaded(id))
 		return {};
 
 	double width  = x2 - x1;
 	double height = y2 - y1;
 
 	// Get image dimensions
-	double x_dim = (double)tex->width();
-	double y_dim = (double)tex->height();
+	auto&  tex_info = OpenGL::Texture::info(id);
+	double x_dim    = (double)tex_info.size.x;
+	double y_dim    = (double)tex_info.size.y;
 
 	// Get max scale for x and y (including padding)
 	double x_scale = ((double)width - padding) / x_dim;
@@ -343,10 +414,10 @@ Rectf Drawing::fitTextureWithin(
 		scale = max_scale;
 
 	// Return the fitted rectangle
-	return { x1 + width * 0.5 - (scale * tex->width() * 0.5),
-			 y1 + height * 0.5 - (scale * tex->height() * 0.5),
-			 x1 + width * 0.5 + (scale * tex->width() * 0.5),
-			 y1 + height * 0.5 + (scale * tex->height() * 0.5) };
+	return { x1 + width * 0.5 - (scale * x_dim * 0.5),
+			 y1 + height * 0.5 - (scale * y_dim * 0.5),
+			 x1 + width * 0.5 + (scale * x_dim * 0.5),
+			 y1 + height * 0.5 + (scale * y_dim * 0.5) };
 }
 
 // -----------------------------------------------------------------------------
@@ -355,24 +426,25 @@ Rectf Drawing::fitTextureWithin(
 // If [upscale] is true the texture will be zoomed to fit the rectangle
 // -----------------------------------------------------------------------------
 void Drawing::drawTextureWithin(
-	GLTexture* tex,
-	double     x1,
-	double     y1,
-	double     x2,
-	double     y2,
-	double     padding,
-	double     max_scale)
+	unsigned id,
+	double   x1,
+	double   y1,
+	double   x2,
+	double   y2,
+	double   padding,
+	double   max_scale)
 {
-	// Ignore null texture
-	if (!tex)
+	// Ignore empty texture
+	if (!OpenGL::Texture::isLoaded(id))
 		return;
 
 	double width  = x2 - x1;
 	double height = y2 - y1;
 
 	// Get image dimensions
-	double x_dim = (double)tex->width();
-	double y_dim = (double)tex->height();
+	auto&  tex_info = OpenGL::Texture::info(id);
+	double x_dim    = (double)tex_info.size.x;
+	double y_dim    = (double)tex_info.size.y;
 
 	// Get max scale for x and y (including padding)
 	double x_scale = ((double)width - padding) / x_dim;
@@ -386,10 +458,21 @@ void Drawing::drawTextureWithin(
 		scale = max_scale;
 
 	// Now draw the texture
+	OpenGL::Texture::bind(id);
 	glPushMatrix();
 	glTranslated(x1 + width * 0.5, y1 + height * 0.5, 0); // Translate to middle of area
 	glScaled(scale, scale, scale);                        // Scale to fit within area
-	tex->draw2d(tex->width() * -0.5, tex->height() * -0.5);
+	glTranslated(x_dim * -0.5, y_dim * -0.5, 0);
+	glBegin(GL_QUADS);
+	glTexCoord2d(0, 0);
+	glVertex2d(0, 0);
+	glTexCoord2d(0, 1);
+	glVertex2d(0, y_dim);
+	glTexCoord2d(1, 1);
+	glVertex2d(x_dim, y_dim);
+	glTexCoord2d(1, 0);
+	glVertex2d(x_dim, 0);
+	glEnd();
 	glPopMatrix();
 }
 

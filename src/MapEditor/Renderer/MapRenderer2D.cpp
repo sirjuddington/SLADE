@@ -134,27 +134,27 @@ bool MapRenderer2D::setupVertexRendering(float size_scale, bool overlay) const
 	if (OpenGL::pointSpriteSupport())
 	{
 		// Get appropriate vertex texture
-		GLTexture* tex;
+		unsigned tex;
 		if (overlay)
 		{
 			if (vertex_round)
-				tex = MapEditor::textureManager().editorImage("vertex/hilight_r");
+				tex = MapEditor::textureManager().editorImage("vertex/hilight_r").gl_id;
 			else
-				tex = MapEditor::textureManager().editorImage("vertex/hilight_s");
+				tex = MapEditor::textureManager().editorImage("vertex/hilight_s").gl_id;
 		}
 		else
 		{
 			if (vertex_round)
-				tex = MapEditor::textureManager().editorImage("vertex/round");
+				tex = MapEditor::textureManager().editorImage("vertex/round").gl_id;
 			else
-				tex = MapEditor::textureManager().editorImage("vertex/square");
+				tex = MapEditor::textureManager().editorImage("vertex/square").gl_id;
 		}
 
 		// If it was found, enable point sprites
 		if (tex)
 		{
 			glEnable(GL_TEXTURE_2D);
-			tex->bind();
+			OpenGL::Texture::bind(tex);
 			glEnable(GL_POINT_SPRITE);
 			glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
 			point = true;
@@ -708,10 +708,10 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade) cons
 bool MapRenderer2D::setupThingOverlay() const
 {
 	// Get hilight texture
-	auto tex = MapEditor::textureManager().editorImage("thing/hilight");
+	auto tex = MapEditor::textureManager().editorImage("thing/hilight").gl_id;
 	if (thing_drawtype == ThingDrawType::Square || thing_drawtype == ThingDrawType::SquareSprite
 		|| thing_drawtype == ThingDrawType::FramedSprite)
-		tex = MapEditor::textureManager().editorImage("thing/square/hilight");
+		tex = MapEditor::textureManager().editorImage("thing/square/hilight").gl_id;
 
 	// Nothing to do if thing_overlay_square is true and thing_drawtype is 1 or 2 (circles or sprites)
 	// or if the hilight circle texture isn't found for some reason
@@ -725,7 +725,7 @@ bool MapRenderer2D::setupThingOverlay() const
 
 	// Otherwise, we want the textured selection overlay
 	glEnable(GL_TEXTURE_2D);
-	tex->bind();
+	OpenGL::Texture::bind(tex);
 
 	// Setup point sprites if supported
 	bool point = false;
@@ -802,8 +802,8 @@ void MapRenderer2D::renderRoundThing(
 	double                 radius_mult)
 {
 	// --- Determine texture to use ---
-	GLTexture* tex    = nullptr;
-	bool       rotate = false;
+	unsigned tex    = 0;
+	bool     rotate = false;
 
 	// Set colour
 	glColor4f(type.colour().fr(), type.colour().fg(), type.colour().fb(), alpha);
@@ -812,9 +812,9 @@ void MapRenderer2D::renderRoundThing(
 	if (!type.icon().IsEmpty() && !thing_force_dir && !things_angles_)
 	{
 		if (use_zeth_icons && type.zethIcon() >= 0)
-			tex = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", type.zethIcon()));
+			tex = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", type.zethIcon())).gl_id;
 		if (!tex)
-			tex = MapEditor::textureManager().editorImage(S_FMT("thing/%s", type.icon()));
+			tex = MapEditor::textureManager().editorImage(S_FMT("thing/%s", type.icon())).gl_id;
 	}
 
 	if (!tex)
@@ -826,10 +826,10 @@ void MapRenderer2D::renderRoundThing(
 		{
 			if (angle != 0)
 				rotate = true; // Also rotate to angle
-			tex = MapEditor::textureManager().editorImage("thing/normal_d");
+			tex = MapEditor::textureManager().editorImage("thing/normal_d").gl_id;
 		}
 		else
-			tex = MapEditor::textureManager().editorImage("thing/normal_n");
+			tex = MapEditor::textureManager().editorImage("thing/normal_n").gl_id;
 	}
 
 	// If for whatever reason the thing texture doesn't exist, just draw a basic, square thing
@@ -840,11 +840,7 @@ void MapRenderer2D::renderRoundThing(
 	}
 
 	// Bind texture
-	if (tex_last_ != tex)
-	{
-		tex->bind();
-		tex_last_ = tex;
-	}
+	OpenGL::Texture::bind(tex, false);
 
 	// Rotate if needed
 	if (rotate)
@@ -893,17 +889,17 @@ bool MapRenderer2D::renderSpriteThing(
 	{
 		thing_sprites_.clear();
 		for (unsigned a = 0; a < map_->nThings(); a++)
-			thing_sprites_.push_back(nullptr);
+			thing_sprites_.push_back(0);
 	}
 
 	// --- Determine texture to use ---
 	bool show_angle = false;
-	auto tex        = index < thing_sprites_.size() ? thing_sprites_[index] : nullptr;
+	auto tex        = index < thing_sprites_.size() ? thing_sprites_[index] : 0;
 
 	// Attempt to get sprite texture
 	if (!tex)
 	{
-		tex = MapEditor::textureManager().sprite(type.sprite(), type.translation(), type.palette());
+		tex = MapEditor::textureManager().sprite(type.sprite(), type.translation(), type.palette()).gl_id;
 
 		if (index < thing_sprites_.size())
 		{
@@ -927,15 +923,12 @@ bool MapRenderer2D::renderSpriteThing(
 		show_angle = true;
 
 	// Bind texture
-	if (tex_last_ != tex)
-	{
-		tex->bind();
-		tex_last_ = tex;
-	}
+	OpenGL::Texture::bind(tex, false);
 
 	// Draw thing
-	double hw = tex->width() * 0.5;
-	double hh = tex->height() * 0.5;
+	auto&  tex_info = OpenGL::Texture::info(tex);
+	double hw       = tex_info.size.x * 0.5;
+	double hh       = tex_info.size.y * 0.5;
 
 	// Fit to radius if needed
 	if (fitradius)
@@ -1003,7 +996,7 @@ bool MapRenderer2D::renderSquareThing(
 	bool                   framed)
 {
 	// --- Determine texture to use ---
-	GLTexture* tex = nullptr;
+	unsigned tex = 0;
 
 	// Set colour
 	glColor4f(type.colour().fr(), type.colour().fg(), type.colour().fb(), alpha);
@@ -1014,7 +1007,7 @@ bool MapRenderer2D::renderSquareThing(
 
 	// Check for custom thing icon
 	if (!type.icon().IsEmpty() && showicon && !thing_force_dir && !things_angles_ && !framed)
-		tex = MapEditor::textureManager().editorImage(S_FMT("thing/square/%s", type.icon()));
+		tex = MapEditor::textureManager().editorImage(S_FMT("thing/square/%s", type.icon())).gl_id;
 
 	// Otherwise, no icon
 	int tc_start = 0;
@@ -1022,15 +1015,15 @@ bool MapRenderer2D::renderSquareThing(
 	{
 		if (framed)
 		{
-			tex = MapEditor::textureManager().editorImage("thing/square/frame");
+			tex = MapEditor::textureManager().editorImage("thing/square/frame").gl_id;
 		}
 		else
 		{
-			tex = MapEditor::textureManager().editorImage("thing/square/normal_n");
+			tex = MapEditor::textureManager().editorImage("thing/square/normal_n").gl_id;
 
 			if ((type.angled() && showicon) || thing_force_dir || things_angles_)
 			{
-				tex = MapEditor::textureManager().editorImage("thing/square/normal_d1");
+				tex = MapEditor::textureManager().editorImage("thing/square/normal_d1").gl_id;
 
 				// Setup variables depending on angle
 				switch ((int)angle)
@@ -1038,31 +1031,31 @@ bool MapRenderer2D::renderSquareThing(
 				case 0: // East: normal, texcoord 0
 					break;
 				case 45: // Northeast: diagonal, texcoord 0
-					tex = MapEditor::textureManager().editorImage("thing/square/normal_d2");
+					tex = MapEditor::textureManager().editorImage("thing/square/normal_d2").gl_id;
 					break;
 				case 90: // North: normal, texcoord 2
 					tc_start = 2;
 					break;
 				case 135: // Northwest: diagonal, texcoord 2
-					tex      = MapEditor::textureManager().editorImage("thing/square/normal_d2");
+					tex      = MapEditor::textureManager().editorImage("thing/square/normal_d2").gl_id;
 					tc_start = 2;
 					break;
 				case 180: // West: normal, texcoord 4
 					tc_start = 4;
 					break;
 				case 225: // Southwest: diagonal, texcoord 4
-					tex      = MapEditor::textureManager().editorImage("thing/square/normal_d2");
+					tex      = MapEditor::textureManager().editorImage("thing/square/normal_d2").gl_id;
 					tc_start = 4;
 					break;
 				case 270: // South: normal, texcoord 6
 					tc_start = 6;
 					break;
 				case 315: // Southeast: diagonal, texcoord 6
-					tex      = MapEditor::textureManager().editorImage("thing/square/normal_d2");
+					tex      = MapEditor::textureManager().editorImage("thing/square/normal_d2").gl_id;
 					tc_start = 6;
 					break;
 				default: // Unsupported angle, don't draw arrow
-					tex = MapEditor::textureManager().editorImage("thing/square/normal_n");
+					tex = MapEditor::textureManager().editorImage("thing/square/normal_n").gl_id;
 					break;
 				};
 			}
@@ -1077,11 +1070,7 @@ bool MapRenderer2D::renderSquareThing(
 	}
 
 	// Bind texture
-	if (tex && tex_last_ != tex)
-	{
-		tex->bind();
-		tex_last_ = tex;
-	}
+	OpenGL::Texture::bind(tex, false);
 
 	// Draw thing
 	double radius = type.radius();
@@ -1186,7 +1175,6 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, alpha);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	tex_last_ = nullptr;
 
 	// Go through things
 	MapThing*   thing;
@@ -1198,13 +1186,13 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 	if (thing_shadow > 0.01f && thing_drawtype != ThingDrawType::Sprite)
 	{
 		glEnable(GL_TEXTURE_2D);
-		auto tex_shadow = MapEditor::textureManager().editorImage("thing/shadow");
+		auto tex_shadow = MapEditor::textureManager().editorImage("thing/shadow").gl_id;
 		if (thing_drawtype == ThingDrawType::Square || thing_drawtype == ThingDrawType::SquareSprite
 			|| thing_drawtype == ThingDrawType::FramedSprite)
-			tex_shadow = MapEditor::textureManager().editorImage("thing/square/shadow");
+			tex_shadow = MapEditor::textureManager().editorImage("thing/square/shadow").gl_id;
 		if (tex_shadow)
 		{
-			tex_shadow->bind();
+			OpenGL::Texture::bind(tex_shadow);
 			glColor4f(0.0f, 0.0f, 0.0f, alpha * thing_shadow);
 
 			// Setup point sprites if supported
@@ -1293,7 +1281,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 
 		// Reset thing sprite if modified
 		if (thing->modifiedTime() > last_update && thing_sprites_.size() > a)
-			thing_sprites_[a] = nullptr;
+			thing_sprites_[a] = 0;
 
 		// Draw thing depending on 'things_drawtype' cvar
 		if (thing_drawtype == ThingDrawType::Sprite) // Drawtype 2: Sprites
@@ -1354,11 +1342,11 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 		acol.a    = 255 * alpha * arrow_alpha;
 		OpenGL::setColour(acol);
 		// glColor4f(1.0f, 1.0f, 1.0f, alpha * arrow_alpha);
-		auto tex_arrow = MapEditor::textureManager().editorImage("arrow");
+		auto tex_arrow = MapEditor::textureManager().editorImage("arrow").gl_id;
 		if (tex_arrow)
 		{
 			glEnable(GL_TEXTURE_2D);
-			tex_arrow->bind();
+			OpenGL::Texture::bind(tex_arrow);
 
 			for (int things_arrow : things_arrows)
 			{
@@ -1464,16 +1452,16 @@ void MapRenderer2D::renderThingHilight(int index, float fade) const
 	radius += halo_width * view_scale_inv_;
 
 	// Setup hilight thing texture
-	GLTexture* tex = nullptr;
+	unsigned tex = 0;
 	if (thing_drawtype == ThingDrawType::Square || thing_drawtype == ThingDrawType::SquareSprite
 		|| thing_drawtype == ThingDrawType::FramedSprite)
-		tex = MapEditor::textureManager().editorImage("thing/square/hilight");
+		tex = MapEditor::textureManager().editorImage("thing/square/hilight").gl_id;
 	else
-		tex = MapEditor::textureManager().editorImage("thing/hilight");
+		tex = MapEditor::textureManager().editorImage("thing/hilight").gl_id;
 	if (tex)
 	{
 		glEnable(GL_TEXTURE_2D);
-		tex->bind();
+		OpenGL::Texture::bind(tex);
 	}
 
 	glBegin(GL_QUADS);
@@ -1859,7 +1847,7 @@ void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
 // -----------------------------------------------------------------------------
 bool sortPolyByTex(Polygon2D* left, Polygon2D* right)
 {
-	return left->texture()->glId() < right->texture()->glId();
+	return left->texture() < right->texture();
 }
 
 // -----------------------------------------------------------------------------
@@ -1886,14 +1874,14 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 	{
 		tex_flats_.clear();
 		for (unsigned a = 0; a < map_->nSectors(); a++)
-			tex_flats_.push_back(nullptr);
+			tex_flats_.push_back(0);
 
 		last_flat_type_ = type;
 	}
 
 	// Go through sectors
-	GLTexture* tex_last = nullptr;
-	GLTexture* tex      = nullptr;
+	unsigned tex_last = 0;
+	unsigned tex      = 0;
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		auto sector = map_->sector(a);
@@ -1902,22 +1890,19 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 		if (vis_s_[a] > 0)
 			continue;
 
+		const MapTextureManager::Texture* map_tex_props = nullptr;
 		if (texture)
 		{
 			if (!tex_flats_[a] || sector->modifiedTime() > flats_updated_ - 100)
 			{
 				// Get the sector texture
+				bool mix_tex_flats = Game::configuration().featureSupported(Feature::MixTexFlats);
 				if (type <= 1)
-				{
-					tex = MapEditor::textureManager().flat(
-						sector->floor().texture, Game::configuration().featureSupported(Feature::MixTexFlats));
-				}
+					map_tex_props = &MapEditor::textureManager().flat(sector->floor().texture, mix_tex_flats);
 				else
-				{
-					tex = MapEditor::textureManager().flat(
-						sector->ceiling().texture, Game::configuration().featureSupported(Feature::MixTexFlats));
-				}
+					map_tex_props = &MapEditor::textureManager().flat(sector->ceiling().texture, mix_tex_flats);
 
+				tex           = map_tex_props->gl_id;
 				tex_flats_[a] = tex;
 			}
 			else
@@ -1929,7 +1914,7 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 				if (!tex_last)
 					glEnable(GL_TEXTURE_2D);
 				if (tex != tex_last)
-					tex->bind();
+					OpenGL::Texture::bind(tex);
 			}
 			else if (tex_last)
 				glDisable(GL_TEXTURE_2D);
@@ -1944,11 +1929,11 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 			poly->setTexture(tex);
 
 			// Get scaling/offset info
-			double ox  = 0;
-			double oy  = 0;
-			double sx  = tex->scaleX();
-			double sy  = tex->scaleY();
-			double rot = 0;
+			double ox  = 0.;
+			double oy  = 0.;
+			double sx  = map_tex_props ? map_tex_props->scale.x : 1.;
+			double sy  = map_tex_props ? map_tex_props->scale.y : 1.;
+			double rot = 0.;
 			// Check for various UDMF extensions
 			if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
 			{
@@ -2028,7 +2013,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 	{
 		tex_flats_.clear();
 		for (unsigned a = 0; a < map_->nSectors(); a++)
-			tex_flats_.push_back(nullptr);
+			tex_flats_.push_back(0);
 
 		last_flat_type_ = type;
 	}
@@ -2060,10 +2045,10 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 	Polygon2D::setupVBOPointers();
 
 	// Go through sectors
-	GLTexture* tex_last = nullptr;
-	GLTexture* tex      = nullptr;
-	bool       first    = true;
-	unsigned   update   = 0;
+	unsigned tex_last = 0;
+	unsigned tex      = 0;
+	bool     first    = true;
+	unsigned update   = 0;
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		auto sector = map_->sector(a);
@@ -2072,19 +2057,20 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 		if (vis_s_[a] > 0)
 			continue;
 
-		first = false;
+		first                                           = false;
+		const MapTextureManager::Texture* map_tex_props = nullptr;
 		if (texture)
 		{
 			if (!tex_flats_[a] || sector->modifiedTime() > flats_updated_ - 100)
 			{
 				// Get the sector texture
+				bool mix_tex_flats = Game::configuration().featureSupported(Feature::MixTexFlats);
 				if (type <= 1)
-					tex = MapEditor::textureManager().flat(
-						sector->floor().texture, Game::configuration().featureSupported(Feature::MixTexFlats));
+					map_tex_props = &MapEditor::textureManager().flat(sector->floor().texture, mix_tex_flats);
 				else
-					tex = MapEditor::textureManager().flat(
-						sector->ceiling().texture, Game::configuration().featureSupported(Feature::MixTexFlats));
+					map_tex_props = &MapEditor::textureManager().flat(sector->ceiling().texture, mix_tex_flats);
 
+				tex           = map_tex_props->gl_id;
 				tex_flats_[a] = tex;
 			}
 			else
@@ -2098,11 +2084,11 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 			poly->setTexture(tex); // Set polygon texture
 
 			// Get scaling/offset info
-			double ox  = 0;
-			double oy  = 0;
-			double sx  = tex->scaleX();
-			double sy  = tex->scaleY();
-			double rot = 0;
+			double ox  = 0.;
+			double oy  = 0.;
+			double sx  = map_tex_props ? map_tex_props->scale.x : 1.;
+			double sy  = map_tex_props ? map_tex_props->scale.y : 1.;
+			double rot = 0.;
 			// Check for various UDMF extensions
 			if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
 			{
@@ -2162,7 +2148,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 			if (!tex_last || first)
 				glEnable(GL_TEXTURE_2D);
 			if (tex != tex_last)
-				tex->bind();
+				OpenGL::Texture::bind(tex);
 		}
 		else if (!tex_last || first)
 			glDisable(GL_TEXTURE_2D);
@@ -2586,7 +2572,6 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, Ve
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	tex_last_ = nullptr;
 
 	// Draw things
 	MapThing* thing;
@@ -2673,7 +2658,6 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, Vec2f pos)
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	tex_last_ = nullptr;
 
 	// Draw things
 	double x, y, angle;
@@ -2820,7 +2804,6 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 		glEnable(GL_TEXTURE_2D);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		tex_last_ = nullptr;
 
 		// Draw things
 		MapThing* thing;

@@ -199,7 +199,7 @@ void MapSector::setFloatProperty(const string& key, double value)
 				&& (key == "xscalefloor" || key == "yscalefloor" || key == "xscaleceiling" || key == "yscaleceiling"))
 			|| (Game::configuration().featureSupported(UDMFFeature::FlatRotation)
 				&& (key == "rotationfloor" || key == "rotationceiling")))
-			polygon_.setTexture(nullptr); // Clear texture to force update
+			polygon_.setTexture(0); // Clear texture to force update
 	}
 
 	MapObject::setFloatProperty(key, value);

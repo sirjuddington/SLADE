@@ -4,7 +4,6 @@
 #include <SFML/Graphics.hpp>
 #endif
 
-class GLTexture;
 class FontManager;
 
 namespace Drawing
@@ -56,22 +55,10 @@ void drawEllipse(Vec2f mid, double radius_x, double radius_y, int sides, ColRGBA
 void drawFilledEllipse(Vec2f mid, double radius_x, double radius_y, int sides, ColRGBA colour);
 
 // Texture drawing
-Rectf fitTextureWithin(
-	GLTexture* tex,
-	double     x1,
-	double     y1,
-	double     x2,
-	double     y2,
-	double     padding,
-	double     max_scale = 1);
-void drawTextureWithin(
-	GLTexture* tex,
-	double     x1,
-	double     y1,
-	double     x2,
-	double     y2,
-	double     padding,
-	double     max_scale = 1);
+void  drawTexture(unsigned id, double x = 0, double y = 0, bool flipx = false, bool flipy = false);
+void  drawTextureTiled(unsigned id, uint32_t width, uint32_t height);
+Rectf fitTextureWithin(unsigned id, double x1, double y1, double x2, double y2, double padding, double max_scale = 1);
+void  drawTextureWithin(unsigned id, double x1, double y1, double x2, double y2, double padding, double max_scale = 1);
 
 // Text drawing
 void drawText(

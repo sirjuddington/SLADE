@@ -2,7 +2,6 @@
 
 #include "General/ListenerAnnouncer.h"
 #include "OGLCanvas.h"
-#include "OpenGL/GLTexture.h"
 
 wxDECLARE_EVENT(EVT_DRAG_END, wxCommandEvent);
 
@@ -62,21 +61,21 @@ public:
 	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
 
 private:
-	CTexture*               texture_ = nullptr;
-	Archive*                parent_  = nullptr;
-	vector<GLTexture::UPtr> patch_textures_;
-	GLTexture               tex_preview_;
-	vector<bool>            selected_patches_;
-	int                     hilight_patch_ = -1;
-	Vec2f                   offset_;
-	Vec2i                   mouse_prev_;
-	double                  scale_        = 1.;
-	bool                    draw_outside_ = true;
-	bool                    dragging_     = false;
-	bool                    show_grid_    = false;
-	bool                    blend_rgba_   = false;
-	bool                    tex_scale_    = false;
-	View                    view_type_    = View::Normal;
+	CTexture*        texture_ = nullptr;
+	Archive*         parent_  = nullptr;
+	vector<unsigned> patch_textures_;
+	unsigned         tex_preview_;
+	vector<bool>     selected_patches_;
+	int              hilight_patch_ = -1;
+	Vec2f            offset_;
+	Vec2i            mouse_prev_;
+	double           scale_        = 1.;
+	bool             draw_outside_ = true;
+	bool             dragging_     = false;
+	bool             show_grid_    = false;
+	bool             blend_rgba_   = false;
+	bool             tex_scale_    = false;
+	View             view_type_    = View::Normal;
 
 	// Events
 	void onMouseEvent(wxMouseEvent& e);

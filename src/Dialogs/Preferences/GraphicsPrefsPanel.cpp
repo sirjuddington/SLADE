@@ -113,7 +113,7 @@ void GraphicsPrefsPanel::applyPreferences()
 	bgtx_colour1 = wxc.GetAsString();
 	wxc          = cp_colour2_->GetColour();
 	bgtx_colour2 = wxc.GetAsString();
-	GLTexture::resetBgTex();
+	OpenGL::Texture::resetBackgroundTexture();
 	gfx_show_border       = cb_show_border_->GetValue();
 	gfx_extraconv         = cb_extra_gfxconv_->GetValue();
 	browser_bg_type       = choice_browser_bg_->GetSelection();

@@ -294,18 +294,19 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	col_fg.a       = col_fg.a * alpha;
 
 	// Get texture
-	auto tex = MapEditor::textureManager().texture(
-		texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+	auto tex = MapEditor::textureManager()
+				   .texture(texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats))
+				   .gl_id;
 
 	// Valid texture
-	if (texture != "-" && tex != &(GLTexture::missingTex()))
+	if (texture != "-" && tex != OpenGL::Texture::missingTexture())
 	{
 		// Draw background
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
 		glPushMatrix();
 		glTranslated(x, y - tex_box_size - line_height, 0);
-		GLTexture::bgTex().draw2dTiled(tex_box_size, tex_box_size);
+		Drawing::drawTextureTiled(OpenGL::Texture::backgroundTexture(), tex_box_size, tex_box_size);
 		glPopMatrix();
 
 		// Draw texture
@@ -321,10 +322,10 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	}
 
 	// Unknown texture
-	else if (tex == &(GLTexture::missingTex()) && texture != "-")
+	else if (tex == OpenGL::Texture::missingTexture() && texture != "-")
 	{
 		// Draw unknown icon
-		auto icon = MapEditor::textureManager().editorImage("thing/unknown");
+		auto icon = MapEditor::textureManager().editorImage("thing/unknown").gl_id;
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
 		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);
@@ -337,7 +338,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	else if (required)
 	{
 		// Draw missing icon
-		auto icon = MapEditor::textureManager().editorImage("thing/minus");
+		auto icon = MapEditor::textureManager().editorImage("thing/minus").gl_id;
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
 		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);

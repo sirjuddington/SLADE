@@ -1008,21 +1008,21 @@ public:
 				string lower  = line->s1()->stringProperty("texturebottom");
 
 				// Upper
-				if (upper != "-" && texman_->texture(upper, mixed) == &(GLTexture::missingTex()))
+				if (upper != "-" && texman_->texture(upper, mixed).gl_id == OpenGL::Texture::missingTexture())
 				{
 					lines_.push_back(line);
 					parts_.push_back(MapLine::Part::FrontUpper);
 				}
 
 				// Middle
-				if (middle != "-" && texman_->texture(middle, mixed) == &(GLTexture::missingTex()))
+				if (middle != "-" && texman_->texture(middle, mixed).gl_id == OpenGL::Texture::missingTexture())
 				{
 					lines_.push_back(line);
 					parts_.push_back(MapLine::Part::FrontMiddle);
 				}
 
 				// Lower
-				if (lower != "-" && texman_->texture(lower, mixed) == &(GLTexture::missingTex()))
+				if (lower != "-" && texman_->texture(lower, mixed).gl_id == OpenGL::Texture::missingTexture())
 				{
 					lines_.push_back(line);
 					parts_.push_back(MapLine::Part::FrontLower);
@@ -1038,21 +1038,21 @@ public:
 				string lower  = line->s2()->stringProperty("texturebottom");
 
 				// Upper
-				if (upper != "-" && texman_->texture(upper, mixed) == &(GLTexture::missingTex()))
+				if (upper != "-" && texman_->texture(upper, mixed).gl_id == OpenGL::Texture::missingTexture())
 				{
 					lines_.push_back(line);
 					parts_.push_back(MapLine::Part::BackUpper);
 				}
 
 				// Middle
-				if (middle != "-" && texman_->texture(middle, mixed) == &(GLTexture::missingTex()))
+				if (middle != "-" && texman_->texture(middle, mixed).gl_id == OpenGL::Texture::missingTexture())
 				{
 					lines_.push_back(line);
 					parts_.push_back(MapLine::Part::BackMiddle);
 				}
 
 				// Lower
-				if (lower != "-" && texman_->texture(lower, mixed) == &(GLTexture::missingTex()))
+				if (lower != "-" && texman_->texture(lower, mixed).gl_id == OpenGL::Texture::missingTexture())
 				{
 					lines_.push_back(line);
 					parts_.push_back(MapLine::Part::BackLower);
@@ -1179,14 +1179,14 @@ public:
 		for (unsigned a = 0; a < map_->nSectors(); a++)
 		{
 			// Check floor texture
-			if (texman_->flat(map_->sector(a)->floor().texture, mixed) == &(GLTexture::missingTex()))
+			if (texman_->flat(map_->sector(a)->floor().texture, mixed).gl_id == OpenGL::Texture::missingTexture())
 			{
 				sectors_.push_back(map_->sector(a));
 				floor_.push_back(true);
 			}
 
 			// Check ceiling texture
-			if (texman_->flat(map_->sector(a)->ceiling().texture, mixed) == &(GLTexture::missingTex()))
+			if (texman_->flat(map_->sector(a)->ceiling().texture, mixed).gl_id == OpenGL::Texture::missingTexture())
 			{
 				sectors_.push_back(map_->sector(a));
 				floor_.push_back(false);

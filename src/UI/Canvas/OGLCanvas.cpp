@@ -77,7 +77,7 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 		Bind(wxEVT_TIMER, &OGLCanvas::onTimer, this);
 	Bind(wxEVT_SIZE, &OGLCanvas::onResize, this);
 
-	GLTexture::resetBgTex();
+	OpenGL::Texture::resetBackgroundTexture();
 }
 #else
 // -----------------------------------------------------------------------------
@@ -188,7 +188,7 @@ void OGLCanvas::drawCheckeredBackground() const
 	glEnable(GL_TEXTURE_2D);
 
 	// Bind background texture
-	GLTexture::bgTex().bind();
+	OpenGL::Texture::bind(OpenGL::Texture::backgroundTexture());
 
 	// Draw background
 	Rectf rect(0, 0, GetSize().x, GetSize().y);

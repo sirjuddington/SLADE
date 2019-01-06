@@ -168,19 +168,19 @@ void MCAThingSelection::draw()
 	if (!thing_overlay_square)
 	{
 		// Get thing selection texture
-		GLTexture* tex;
+		unsigned tex;
 		if (thing_drawtype == MapRenderer2D::ThingDrawType::Round
 			|| thing_drawtype == MapRenderer2D::ThingDrawType::Sprite)
-			tex = MapEditor::textureManager().editorImage("thing/hilight");
+			tex = MapEditor::textureManager().editorImage("thing/hilight").gl_id;
 		else
-			tex = MapEditor::textureManager().editorImage("thing/square/hilight");
+			tex = MapEditor::textureManager().editorImage("thing/square/hilight").gl_id;
 
 		if (!tex)
 			return;
 
 		// Bind the texture
 		glEnable(GL_TEXTURE_2D);
-		tex->bind();
+		OpenGL::Texture::bind(tex);
 	}
 
 	// Animate radius
@@ -335,30 +335,30 @@ void MCAVertexSelection::draw()
 	if (OpenGL::pointSpriteSupport())
 	{
 		// Get appropriate vertex texture
-		GLTexture* tex;
+		unsigned tex;
 		// if (vertex_round) tex = MapEditor::textureManager().getEditorImage("vertex_r");
 		// else tex = MapEditor::textureManager().getEditorImage("vertex_s");
 
 		if (select_)
 		{
 			if (vertex_round)
-				tex = MapEditor::textureManager().editorImage("vertex/round");
+				tex = MapEditor::textureManager().editorImage("vertex/round").gl_id;
 			else
-				tex = MapEditor::textureManager().editorImage("vertex/square");
+				tex = MapEditor::textureManager().editorImage("vertex/square").gl_id;
 		}
 		else
 		{
 			if (vertex_round)
-				tex = MapEditor::textureManager().editorImage("vertex/hilight_r");
+				tex = MapEditor::textureManager().editorImage("vertex/hilight_r").gl_id;
 			else
-				tex = MapEditor::textureManager().editorImage("vertex/hilight_s");
+				tex = MapEditor::textureManager().editorImage("vertex/hilight_s").gl_id;
 		}
 
 		// If it was found, enable point sprites
 		if (tex)
 		{
 			glEnable(GL_TEXTURE_2D);
-			tex->bind();
+			OpenGL::Texture::bind(tex);
 			glEnable(GL_POINT_SPRITE);
 			glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
 			point = true;

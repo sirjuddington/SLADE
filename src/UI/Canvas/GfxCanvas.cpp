@@ -207,7 +207,10 @@ void GfxCanvas::drawImage()
 			drawing_mask_ = new bool[image_.width() * image_.height()];
 			memset(drawing_mask_, false, image_.width() * image_.height());
 		}
-		tex_image_.loadImage(&image_, &palette_);
+
+		OpenGL::Texture::clear(tex_image_);
+		tex_image_ = OpenGL::Texture::createFromImage(image_, &palette_);
+
 		update_texture_ = false;
 	}
 
@@ -220,19 +223,19 @@ void GfxCanvas::drawImage()
 	{
 		// Draw tiled image
 		OpenGL::setColour(255, 255, 255, 255, 0);
-		tex_image_.draw2dTiled(GetSize().x / scale_, GetSize().y / scale_);
+		Drawing::drawTextureTiled(tex_image_, GetSize().x / scale_, GetSize().y / scale_);
 	}
 	else if (drag_origin_.x < 0) // If not dragging
 	{
 		// Draw the image
 		OpenGL::setColour(255, 255, 255, 255, 0);
-		tex_image_.draw2d();
+		Drawing::drawTexture(tex_image_);
 
 		// Draw hilight otherwise
 		if (image_hilight_ && gfx_hilight_mouseover && editing_mode_ == EditMode::None)
 		{
 			OpenGL::setColour(255, 255, 255, 80, 1);
-			tex_image_.draw2d();
+			Drawing::drawTexture(tex_image_);
 
 			// Reset colour
 			OpenGL::setColour(255, 255, 255, 255, 0);
@@ -242,20 +245,20 @@ void GfxCanvas::drawImage()
 	{
 		// Draw the original
 		OpenGL::setColour(ColRGBA(0, 0, 0, 180, 0));
-		tex_image_.draw2d();
+		Drawing::drawTexture(tex_image_);
 
 		// Draw the dragged image
 		int off_x = (drag_pos_.x - drag_origin_.x) / scale_;
 		int off_y = (drag_pos_.y - drag_origin_.y) / scale_;
 		glTranslated(off_x, off_y, 0);
 		OpenGL::setColour(255, 255, 255, 255, 0);
-		tex_image_.draw2d();
+		Drawing::drawTexture(tex_image_);
 	}
 	// Draw brush shadow when in editing mode
 	if (editing_mode_ != EditMode::None && cursor_pos_ != Vec2i::outside())
 	{
 		OpenGL::setColour(255, 255, 255, 160, 0);
-		tex_brush_.draw2d();
+		Drawing::drawTexture(tex_brush_);
 		OpenGL::setColour(255, 255, 255, 255, 0);
 	}
 
@@ -516,7 +519,8 @@ void GfxCanvas::generateBrushShadow()
 			}
 
 	// Load it as a GL texture
-	tex_brush_.loadImage(&img);
+	OpenGL::Texture::clear(tex_brush_);
+	tex_brush_ = OpenGL::Texture::createFromImage(img);
 }
 
 // -----------------------------------------------------------------------------

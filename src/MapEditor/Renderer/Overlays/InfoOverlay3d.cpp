@@ -75,7 +75,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 	// Setup variables
 	current_type_   = item_type;
 	texname_        = "";
-	texture_        = nullptr;
+	texture_        = 0;
 	thing_icon_     = false;
 	auto map_format = MapEditor::editContext().mapDesc().format;
 
@@ -281,8 +281,9 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			texname_ = side->texMiddle();
 		else
 			texname_ = side->texUpper();
-		texture_ =
-			MapEditor::textureManager().texture(texname_, Game::configuration().featureSupported(Feature::MixTexFlats));
+		texture_ = MapEditor::textureManager()
+					   .texture(texname_, Game::configuration().featureSupported(Feature::MixTexFlats))
+					   .gl_id;
 	}
 
 
@@ -406,8 +407,9 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			texname_ = sector->floor().texture;
 		else
 			texname_ = sector->ceiling().texture;
-		texture_ =
-			MapEditor::textureManager().flat(texname_, Game::configuration().featureSupported(Feature::MixTexFlats));
+		texture_ = MapEditor::textureManager()
+					   .flat(texname_, Game::configuration().featureSupported(Feature::MixTexFlats))
+					   .gl_id;
 	}
 
 	// Thing
@@ -472,13 +474,13 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 
 		// Texture
-		texture_ = MapEditor::textureManager().sprite(tt.sprite(), tt.translation(), tt.palette());
+		texture_ = MapEditor::textureManager().sprite(tt.sprite(), tt.translation(), tt.palette()).gl_id;
 		if (!texture_)
 		{
 			if (use_zeth_icons && tt.zethIcon() >= 0)
-				texture_ = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", tt.zethIcon()));
+				texture_ = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", tt.zethIcon())).gl_id;
 			if (!texture_)
-				texture_ = MapEditor::textureManager().editorImage(S_FMT("thing/%s", tt.icon()));
+				texture_ = MapEditor::textureManager().editorImage(S_FMT("thing/%s", tt.icon())).gl_id;
 			thing_icon_ = true;
 		}
 		texname_ = "";
@@ -582,11 +584,11 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 		OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
 		glPushMatrix();
 		glTranslated(x, y - tex_box_size - line_height, 0);
-		GLTexture::bgTex().draw2dTiled(tex_box_size, tex_box_size);
+		Drawing::drawTextureTiled(OpenGL::Texture::backgroundTexture(), tex_box_size, tex_box_size);
 		glPopMatrix();
 
 		// Draw texture
-		if (texture_ && texture_ != &(GLTexture::missingTex()))
+		if (texture_ && texture_ != OpenGL::Texture::missingTexture())
 		{
 			OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
 			Drawing::drawTextureWithin(
@@ -595,16 +597,16 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 		else if (texname_ == "-")
 		{
 			// Draw missing icon
-			auto icon = MapEditor::textureManager().editorImage("thing/minus");
+			auto icon = MapEditor::textureManager().editorImage("thing/minus").gl_id;
 			glEnable(GL_TEXTURE_2D);
 			OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
 			Drawing::drawTextureWithin(
 				icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.2);
 		}
-		else if (texname_ != "-" && texture_ == &(GLTexture::missingTex()))
+		else if (texname_ != "-" && texture_ == OpenGL::Texture::missingTexture())
 		{
 			// Draw unknown icon
-			auto icon = MapEditor::textureManager().editorImage("thing/unknown");
+			auto icon = MapEditor::textureManager().editorImage("thing/unknown").gl_id;
 			glEnable(GL_TEXTURE_2D);
 			OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
 			Drawing::drawTextureWithin(

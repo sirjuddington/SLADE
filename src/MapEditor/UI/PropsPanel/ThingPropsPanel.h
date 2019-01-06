@@ -4,7 +4,6 @@
 #include "UI/Canvas/OGLCanvas.h"
 #include "UI/Controls/STabCtrl.h"
 
-class GLTexture;
 class NumberTextCtrl;
 class MapObjectPropsPanel;
 class ArgsPanel;
@@ -25,10 +24,10 @@ public:
 	void   draw() override;
 
 private:
-	GLTexture* texture_ = nullptr;
-	string     texname_;
-	ColRGBA    colour_ = COL_WHITE;
-	bool       icon_   = false;
+	unsigned texture_ = 0;
+	string   texname_;
+	ColRGBA  colour_ = COL_WHITE;
+	bool     icon_   = false;
 };
 
 class AngleControl;
@@ -66,8 +65,8 @@ public:
 	bool angleSet() const;
 
 private:
-	int             angle_ = 0;
-	ThingDirCanvas* dc_angle_ = nullptr;
+	int             angle_      = 0;
+	ThingDirCanvas* dc_angle_   = nullptr;
 	NumberTextCtrl* text_angle_ = nullptr;
 
 	void onAngleTextChanged(wxCommandEvent& e);
