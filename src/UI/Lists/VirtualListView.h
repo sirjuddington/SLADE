@@ -79,11 +79,13 @@ protected:
 		return item_attr_.get();
 	}
 
+#ifdef __WXMSW__
 	wxListItemAttr* OnGetItemColumnAttr(long item, long column) const override
 	{
 		updateItemAttr(item, column, itemIndex(item));
 		return item_attr_.get();
 	}
+#endif // __WXMSW__
 
 	// Events
 	void onColumnResize(wxListEvent& e);
