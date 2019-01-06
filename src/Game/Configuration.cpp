@@ -131,7 +131,7 @@ Configuration::MapConf Configuration::mapInfo(const string& mapname)
 {
 	for (auto& map : maps_)
 	{
-		if (map.mapname == mapname)
+		if (S_CMPNOCASE(map.mapname, mapname))
 			return map;
 	}
 
