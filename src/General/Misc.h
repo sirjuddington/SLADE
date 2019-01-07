@@ -25,8 +25,8 @@ namespace PaletteHack
 	static const int SOD_TITLE = 9;
 	static const int SOD_END   = 10;
 }; // namespace PaletteHack
-int      detectPaletteHack(ArchiveEntry* entry);
-bool     loadPaletteFromArchive(Palette* pal, Archive* archive, int lump = PaletteHack::NONE);
+int  detectPaletteHack(ArchiveEntry* entry);
+bool loadPaletteFromArchive(Palette* pal, Archive* archive, int lump = PaletteHack::NONE);
 
 string   sizeAsString(uint32_t size);
 string   lumpNameToFileName(string lump);

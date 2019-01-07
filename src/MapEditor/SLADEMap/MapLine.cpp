@@ -431,7 +431,7 @@ Vec2f MapLine::point2() const
 // -----------------------------------------------------------------------------
 Seg2f MapLine::seg() const
 {
-	return {vertex1_->position(), vertex2_->position()};
+	return { vertex1_->position(), vertex2_->position() };
 }
 
 // -----------------------------------------------------------------------------
@@ -501,7 +501,7 @@ Vec2f MapLine::dirTabPoint(double tab_length)
 	// Calculate tab endpoint
 	if (front_vec_.x == 0 && front_vec_.y == 0)
 		frontVector();
-	return {mid.x - front_vec_.x * tab_length, mid.y - front_vec_.y * tab_length};
+	return { mid.x - front_vec_.x * tab_length, mid.y - front_vec_.y * tab_length };
 }
 
 // -----------------------------------------------------------------------------
@@ -661,16 +661,16 @@ void MapLine::flip(bool sides)
 	setModified();
 
 	// Flip vertices
-	auto v = vertex1_;
-	vertex1_     = vertex2_;
-	vertex2_     = v;
+	auto v   = vertex1_;
+	vertex1_ = vertex2_;
+	vertex2_ = v;
 
 	// Flip sides if needed
 	if (sides)
 	{
 		auto s = side1_;
-		side1_     = side2_;
-		side2_     = s;
+		side1_ = side2_;
+		side2_ = s;
 	}
 
 	resetInternals();
@@ -728,8 +728,8 @@ void MapLine::readBackup(Backup* backup)
 	// Sides
 	auto s1 = parent_map_->getObjectById(backup->props_internal["s1"]);
 	auto s2 = parent_map_->getObjectById(backup->props_internal["s2"]);
-	side1_        = dynamic_cast<MapSide*>(s1);
-	side2_        = dynamic_cast<MapSide*>(s2);
+	side1_  = dynamic_cast<MapSide*>(s1);
+	side2_  = dynamic_cast<MapSide*>(s2);
 	if (side1_)
 		side1_->parent_ = this;
 	if (side2_)

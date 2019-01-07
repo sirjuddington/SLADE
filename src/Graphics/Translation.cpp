@@ -551,12 +551,12 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 			float grey = (gcol.r * 0.3f + gcol.g * 0.59f + gcol.b * 0.11f) / 255.0f;
 
 			// Apply new colour
-			colour.r =
-				std::min<uint8_t>(255, int((td->rgbStart().r + grey * (td->rgbEnd().r - td->rgbStart().r)) * 255.0f));
-			colour.g =
-				std::min<uint8_t>(255, int((td->rgbStart().g + grey * (td->rgbEnd().g - td->rgbStart().g)) * 255.0f));
-			colour.b =
-				std::min<uint8_t>(255, int((td->rgbStart().b + grey * (td->rgbEnd().b - td->rgbStart().b)) * 255.0f));
+			colour.r = std::min<uint8_t>(
+				255, int((td->rgbStart().r + grey * (td->rgbEnd().r - td->rgbStart().r)) * 255.0f));
+			colour.g = std::min<uint8_t>(
+				255, int((td->rgbStart().g + grey * (td->rgbEnd().g - td->rgbStart().g)) * 255.0f));
+			colour.b = std::min<uint8_t>(
+				255, int((td->rgbStart().b + grey * (td->rgbEnd().b - td->rgbStart().b)) * 255.0f));
 			colour.index = pal->nearestColour(colour);
 		}
 

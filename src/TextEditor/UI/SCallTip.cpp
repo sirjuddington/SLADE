@@ -534,8 +534,8 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 					dc.DrawLine(xoff, bottom + 5, 2000, bottom + 5);
 				}
 
-				rect =
-					drawFunctionContext(dc, context, xoff, bottom + (first ? 0 : UI::scalePx(11)), wxcol_faded, bold);
+				rect = drawFunctionContext(
+					dc, context, xoff, bottom + (first ? 0 : UI::scalePx(11)), wxcol_faded, bold);
 				bottom    = (int)round(rect.GetBottom() + UI::scaleFactor());
 				max_right = std::max(max_right, rect.GetRight());
 				first     = false;

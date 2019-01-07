@@ -700,11 +700,11 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChunk*
 			if (bext->MaxTruePeakLevel)
 				bextstr += S_FMT("Maximum True Peak Level: %d\n", wxUINT16_SWAP_ON_BE(bext->MaxTruePeakLevel));
 			if (bext->MaxMomentaryLoudness)
-				bextstr +=
-					S_FMT("Highest Momentary Loudness Level: %d\n", wxUINT16_SWAP_ON_BE(bext->MaxMomentaryLoudness));
+				bextstr += S_FMT(
+					"Highest Momentary Loudness Level: %d\n", wxUINT16_SWAP_ON_BE(bext->MaxMomentaryLoudness));
 			if (bext->MaxShortTermLoudness)
-				bextstr +=
-					S_FMT("Highest Short-Term Loudness Level: %d\n", wxUINT16_SWAP_ON_BE(bext->MaxShortTermLoudness));
+				bextstr += S_FMT(
+					"Highest Short-Term Loudness Level: %d\n", wxUINT16_SWAP_ON_BE(bext->MaxShortTermLoudness));
 			if (tempsize > 602 && bext->CodingHistory[0])
 				bextstr += S_FMT("History: %s\n", string::From8BitData(bext->CodingHistory, tempsize - 602));
 
@@ -1068,8 +1068,8 @@ string Audio::getITComments(MemChunk& mc)
 		// To keep only valid strings, we trim whitespace and then print the string into itself.
 		// The second step gets rid of strings full of invalid characters where length() does not
 		// report the actual printable length correctly.
-		string comment =
-			string::From8BitData(data + wxUINT16_SWAP_ON_BE(head->msgoffset), wxUINT16_SWAP_ON_BE(head->msglength));
+		string comment = string::From8BitData(
+			data + wxUINT16_SWAP_ON_BE(head->msgoffset), wxUINT16_SWAP_ON_BE(head->msglength));
 		comment.Trim();
 		comment = S_FMT("%s", comment);
 		if (comment.length())

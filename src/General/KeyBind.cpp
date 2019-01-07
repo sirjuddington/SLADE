@@ -153,12 +153,12 @@ bool KeyBind::isPressed(const string& name)
 // Adds a new keybind
 // -----------------------------------------------------------------------------
 bool KeyBind::addBind(
-	const string& name,
-	const Keypress&      key,
-	const string& desc,
-	const string& group,
-	bool          ignore_shift,
-	int           priority)
+	const string&   name,
+	const Keypress& key,
+	const string&   desc,
+	const string&   group,
+	bool            ignore_shift,
+	int             priority)
 {
 	// Find keybind
 	KeyBind* bind = nullptr;

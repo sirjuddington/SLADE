@@ -168,9 +168,9 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 			// Read properties
 			for (unsigned b = 0; b < def->nChildren(); b++)
 			{
-				auto    prop = def->childPTN(b);
+				auto  prop = def->childPTN(b);
 				auto& col  = cc_colours[def->name()];
-				col.exists   = true;
+				col.exists = true;
 
 				// Colour name
 				if (prop->name() == "name")

@@ -450,8 +450,8 @@ public:
 			}
 			else // not in a group
 			{
-				wxControl* control =
-					new wxCheckBox(this, -1, S_FMT("%d: %s", arg.custom_flags[i].value, arg.custom_flags[i].name));
+				wxControl* control = new wxCheckBox(
+					this, -1, S_FMT("%d: %s", arg.custom_flags[i].value, arg.custom_flags[i].name));
 				addControl(control, i, 0);
 			}
 		}

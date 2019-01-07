@@ -132,8 +132,8 @@ void processError(sol::protected_function_result& result)
 	// Error Message
 	sol::error error     = result;
 	script_error.message = error.what();
-	script_error.message =
-		script_error.message.Right(script_error.message.size() - script_error.message.Find("]:") - 2);
+	script_error.message = script_error.message.Right(
+		script_error.message.size() - script_error.message.Find("]:") - 2);
 
 	// Line No.
 	auto split = wxSplit(script_error.message, ':');
@@ -144,8 +144,8 @@ void processError(sol::protected_function_result& result)
 			script_error.line_no = tmp;
 	}
 
-	script_error.message =
-		script_error.message.Right(script_error.message.size() - script_error.message.Find(": ") - 2);
+	script_error.message = script_error.message.Right(
+		script_error.message.size() - script_error.message.Find(": ") - 2);
 }
 
 // -----------------------------------------------------------------------------

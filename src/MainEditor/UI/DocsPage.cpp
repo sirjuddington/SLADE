@@ -92,8 +92,8 @@ DocsPage::DocsPage(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Toolbar 'Links' group
 	auto g_links = new SToolBarGroup(toolbar_, "Links");
-	tb_home_ =
-		g_links->addActionButton("home", "Home", "wiki", "Return to the SLADE Documentation Wiki main page", true);
+	tb_home_     = g_links->addActionButton(
+        "home", "Home", "wiki", "Return to the SLADE Documentation Wiki main page", true);
 	g_links->addActionButton("tutorials", "Tutorials", "wiki", "Go to the tutorials index", true);
 	g_links->addActionButton("index", "Wiki Index", "wiki", "Go to the wiki index", true);
 	if (Global::debug)

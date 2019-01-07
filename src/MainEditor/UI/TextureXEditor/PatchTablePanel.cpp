@@ -181,7 +181,7 @@ bool PatchTableListView::usageSort(long left, long right)
 		return left < right;
 	else
 		return lv_current_->sortDescend() ? p2.used_in.size() < p1.used_in.size() :
-										   p1.used_in.size() < p2.used_in.size();
+											p1.used_in.size() < p2.used_in.size();
 }
 
 // -----------------------------------------------------------------------------
@@ -220,8 +220,8 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	btn_remove_patch_    = new SIconButton(this, "patch_remove", "Remove Patch");
 	btn_change_patch_    = new SIconButton(this, "patch_replace", "Change Patch");
 	label_dimensions_    = new wxStaticText(this, -1, "Size: N/A");
-	label_textures_ =
-		new wxStaticText(this, -1, "In Textures: -", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
+	label_textures_      = new wxStaticText(
+        this, -1, "In Textures: -", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
 	patch_canvas_ = new GfxCanvas(this, -1);
 	patch_canvas_->setViewType(GfxCanvas::View::Centered);
 	patch_canvas_->allowDrag(true);

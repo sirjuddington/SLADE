@@ -618,8 +618,8 @@ bool SLADEMap::addSector(MapSector::Doom64Data& s)
 {
 	// Create sector
 	// We need to retrieve the texture name from the hash value
-	MapSector* ns =
-		new MapSector(ResourceManager::doom64TextureName(s.f_tex), ResourceManager::doom64TextureName(s.c_tex), this);
+	MapSector* ns = new MapSector(
+		ResourceManager::doom64TextureName(s.f_tex), ResourceManager::doom64TextureName(s.c_tex), this);
 
 	// Setup sector properties
 	ns->setFloorHeight(s.f_height);
@@ -2413,8 +2413,8 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		object_def = S_FMT("linedef//#%u\n{\n", a);
 
 		// Basic properties
-		object_def +=
-			S_FMT("v1=%d;\nv2=%d;\nsidefront=%d;\n", lines_[a]->v1Index(), lines_[a]->v2Index(), lines_[a]->s1Index());
+		object_def += S_FMT(
+			"v1=%d;\nv2=%d;\nsidefront=%d;\n", lines_[a]->v1Index(), lines_[a]->v2Index(), lines_[a]->s1Index());
 		if (lines_[a]->s2())
 			object_def += S_FMT("sideback=%d;\n", lines_[a]->s2Index());
 		if (lines_[a]->special_ != 0)

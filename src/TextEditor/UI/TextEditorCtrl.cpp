@@ -997,8 +997,8 @@ void TextEditorCtrl::updateJumpToList()
 
 	// Begin jump to calculation thread
 	choice_jump_to_->Enable(false);
-	jump_to_calculator_ =
-		new JumpToCalculator(this, GetText(), language_->jumpBlocks(), language_->jumpBlocksIgnored());
+	jump_to_calculator_ = new JumpToCalculator(
+		this, GetText(), language_->jumpBlocks(), language_->jumpBlocksIgnored());
 	jump_to_calculator_->Run();
 }
 

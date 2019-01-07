@@ -28,7 +28,7 @@ class Clipboard
 {
 public:
 	Clipboard()  = default;
-	~Clipboard() = default;;
+	~Clipboard() = default;
 
 	unsigned size() const { return items_.size(); }
 	bool     empty() const { return items_.empty(); }

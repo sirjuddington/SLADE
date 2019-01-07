@@ -65,7 +65,7 @@ protected:
 	wxRegEx               re_int2_;
 	wxRegEx               re_int3_;
 	wxRegEx               re_float_;
-	bool                  fold_comments_ = false;
+	bool                  fold_comments_     = false;
 	bool                  fold_preprocessor_ = false;
 	char                  preprocessor_char_;
 	int                   curr_comment_idx_ = -1;

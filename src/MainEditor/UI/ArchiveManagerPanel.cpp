@@ -2172,9 +2172,10 @@ void ArchiveManagerPanel::onArchiveTabClose(wxAuiNotebookEvent& e)
 			// Ask if needed
 			if (autosave_entry_changes > 1)
 			{
-				int result = wxMessageBox(S_FMT("Save changes to entry \"%s\"?", ep->entry()->name()),
-										  "Unsaved Changes",
-										  wxYES_NO | wxCANCEL | wxICON_QUESTION);
+				int result = wxMessageBox(
+					S_FMT("Save changes to entry \"%s\"?", ep->entry()->name()),
+					"Unsaved Changes",
+					wxYES_NO | wxCANCEL | wxICON_QUESTION);
 
 				// Stop if user clicked cancel
 				if (result == wxCANCEL)

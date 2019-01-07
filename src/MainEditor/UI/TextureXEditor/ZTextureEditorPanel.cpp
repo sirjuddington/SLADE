@@ -98,10 +98,10 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(spin_tex_height_, { 1, 2 }, { 1, 1 });
 
 	// Scale
-	spin_tex_scalex_ =
-		new wxSpinCtrlDouble(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0.1, 100, 1, 0.1);
-	spin_tex_scaley_ =
-		new wxSpinCtrlDouble(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0.1, 100, 1, 0.1);
+	spin_tex_scalex_ = new wxSpinCtrlDouble(
+		panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0.1, 100, 1, 0.1);
+	spin_tex_scaley_ = new wxSpinCtrlDouble(
+		panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0.1, 100, 1, 0.1);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Scale:"), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_scalex_, { 2, 1 }, { 1, 1 });
 	gb_sizer->Add(spin_tex_scaley_, { 2, 2 }, { 1, 1 });

@@ -152,7 +152,7 @@ void CVar::set(const string& name, const string& value)
 				*((CBoolCVar*)cvars[c]) = !!(StringUtils::toInt(value));
 
 			if (cvars[c]->type == Type::Float)
-				*((CFloatCVar*)cvars[c]) =StringUtils::toFloat(value);
+				*((CFloatCVar*)cvars[c]) = StringUtils::toFloat(value);
 
 			if (cvars[c]->type == Type::String)
 				*((CStringCVar*)cvars[c]) = wxString::FromUTF8(CHR(value));

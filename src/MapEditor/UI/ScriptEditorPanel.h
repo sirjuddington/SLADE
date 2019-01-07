@@ -24,7 +24,7 @@ public:
 	bool handleAction(const string& name) override;
 
 private:
-	string        script_text_;
+	string                        script_text_;
 	std::unique_ptr<ArchiveEntry> entry_script_;
 	std::unique_ptr<ArchiveEntry> entry_compiled_;
 

@@ -435,8 +435,8 @@ void Edit2D::changeSectorTexture() const
 	context_.selection().lockHilight();
 
 	// Open texture browser
-	string selected_tex =
-		MapEditor::browseTexture(texture, MapEditor::TextureType::Flat, context_.map(), browser_title);
+	string selected_tex = MapEditor::browseTexture(
+		texture, MapEditor::TextureType::Flat, context_.map(), browser_title);
 	if (!selected_tex.empty())
 	{
 		// Set texture depending on edit mode

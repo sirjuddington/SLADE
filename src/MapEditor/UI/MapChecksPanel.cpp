@@ -115,9 +115,7 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : DockPanel{ par
 	btn_export_->Enable(false);
 }
 
-MapChecksPanel::~MapChecksPanel()
-{
-}
+MapChecksPanel::~MapChecksPanel() {}
 
 // -----------------------------------------------------------------------------
 // Updates the check status label text
@@ -378,8 +376,8 @@ void MapChecksPanel::onBtnFix1(wxCommandEvent& e)
 	{
 		MapEditor::editContext().beginUndoRecord(btn_fix1_->GetLabel());
 		MapEditor::editContext().selection().clear();
-		bool fixed =
-			check_items_[selected].check->fixProblem(check_items_[selected].index, 0, &MapEditor::editContext());
+		bool fixed = check_items_[selected].check->fixProblem(
+			check_items_[selected].index, 0, &MapEditor::editContext());
 		MapEditor::editContext().endUndoRecord(fixed);
 		if (fixed)
 		{
@@ -399,8 +397,8 @@ void MapChecksPanel::onBtnFix2(wxCommandEvent& e)
 	{
 		MapEditor::editContext().beginUndoRecord(btn_fix2_->GetLabel());
 		MapEditor::editContext().selection().clear();
-		bool fixed =
-			check_items_[selected].check->fixProblem(check_items_[selected].index, 1, &MapEditor::editContext());
+		bool fixed = check_items_[selected].check->fixProblem(
+			check_items_[selected].index, 1, &MapEditor::editContext());
 		MapEditor::editContext().endUndoRecord(fixed);
 		if (fixed)
 		{

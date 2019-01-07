@@ -226,8 +226,7 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 120)
 		{
-			Log::warning(
-				S_FMT("Entry %s path is too long (> 120 characters), putting it in the root directory", name));
+			Log::warning(S_FMT("Entry %s path is too long (> 120 characters), putting it in the root directory", name));
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 120)

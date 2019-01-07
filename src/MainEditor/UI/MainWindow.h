@@ -42,11 +42,11 @@ public:
 
 private:
 	ArchiveManagerPanel*     panel_archivemanager_ = nullptr;
-	UndoManagerHistoryPanel* panel_undo_history_ = nullptr;
-	STabCtrl*                stc_tabs_ = nullptr;
-	wxAuiManager*            aui_mgr_ = nullptr;
-	int                      lasttipindex_ = 0;
-	PaletteChooser*          palette_chooser_ = nullptr;
+	UndoManagerHistoryPanel* panel_undo_history_   = nullptr;
+	STabCtrl*                stc_tabs_             = nullptr;
+	wxAuiManager*            aui_mgr_              = nullptr;
+	int                      lasttipindex_         = 0;
+	PaletteChooser*          palette_chooser_      = nullptr;
 
 	// Start page
 	SStartPage* start_page_ = nullptr;

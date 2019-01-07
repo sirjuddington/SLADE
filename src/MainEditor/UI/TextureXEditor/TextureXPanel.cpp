@@ -362,9 +362,7 @@ class TextureCreateDeleteUS : public UndoStep
 {
 public:
 	// Texture Created
-	TextureCreateDeleteUS(TextureXPanel* tx_panel, int created_index) :
-		tx_panel_{ tx_panel },
-		index_{ created_index }
+	TextureCreateDeleteUS(TextureXPanel* tx_panel, int created_index) : tx_panel_{ tx_panel }, index_{ created_index }
 	{
 	}
 

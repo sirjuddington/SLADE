@@ -8,7 +8,7 @@ class MapSide;
 class LineTextureOverlay : public MCOverlay
 {
 public:
-	LineTextureOverlay() = default;
+	LineTextureOverlay()  = default;
 	~LineTextureOverlay() = default;
 
 	void openLines(vector<MapLine*>& list);

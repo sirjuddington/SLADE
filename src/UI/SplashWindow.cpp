@@ -118,8 +118,8 @@ void SplashWindow::init()
 		return;
 
 	// Load logo image
-	string        tempfile = App::path("temp.png", App::Dir::Temp);
-	auto logo     = App::archiveManager().programResourceArchive()->entry("logo.png");
+	string tempfile = App::path("temp.png", App::Dir::Temp);
+	auto   logo     = App::archiveManager().programResourceArchive()->entry("logo.png");
 	if (logo)
 	{
 		logo->exportFile(tempfile);
@@ -224,10 +224,10 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	dc.SetFont(font);
 
 	// Draw version
-	string vers = "v" + App::version().toString();
-	auto text_size = dc.GetTextExtent(vers);
-	auto x = img_width - text_size.GetWidth() - UI::scalePx(8);
-	auto y = UI::scalePx(190) - text_size.GetHeight();
+	string vers      = "v" + App::version().toString();
+	auto   text_size = dc.GetTextExtent(vers);
+	auto   x         = img_width - text_size.GetWidth() - UI::scalePx(8);
+	auto   y         = UI::scalePx(190) - text_size.GetHeight();
 	dc.DrawText(vers, x, y);
 
 	// Draw message

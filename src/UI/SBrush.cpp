@@ -40,7 +40,7 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-//SBrushManager* SBrushManager::instance_ = nullptr;
+// SBrushManager* SBrushManager::instance_ = nullptr;
 namespace
 {
 vector<std::unique_ptr<SBrush>> brushes;

@@ -128,10 +128,10 @@ bool Palette::loadMem(const uint8_t* data, uint32_t size)
 	{
 		// Set colour in palette
 		colours_[c].set(data[a], data[a + 1], data[a + 2], 255, -1, c);
-		colours_lab_[c] =
-			Misc::rgbToLab((double)data[a] / 255.0, (double)data[a + 1] / 255.0, (double)data[a + 2] / 255.0);
-		colours_hsl_[c++] =
-			Misc::rgbToHsl((double)data[a] / 255.0, (double)data[a + 1] / 255.0, (double)data[a + 2] / 255.0);
+		colours_lab_[c] = Misc::rgbToLab(
+			(double)data[a] / 255.0, (double)data[a + 1] / 255.0, (double)data[a + 2] / 255.0);
+		colours_hsl_[c++] = Misc::rgbToHsl(
+			(double)data[a] / 255.0, (double)data[a + 1] / 255.0, (double)data[a + 2] / 255.0);
 
 		// If we have read 256 colours, finish
 		if (c == 256)

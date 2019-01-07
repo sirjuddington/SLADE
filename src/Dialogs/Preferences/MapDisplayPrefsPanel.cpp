@@ -216,8 +216,8 @@ void MapDisplayPrefsPanel::setupLinesTab()
 		{ WxUtils::createLabelHBox(
 			  panel,
 			  "Line width:",
-			  slider_line_width_ =
-				  new wxSlider(panel, -1, line_width * 10, 10, 30, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS)),
+			  slider_line_width_ = new wxSlider(
+				  panel, -1, line_width * 10, 10, 30, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS)),
 		  cb_line_smooth_ = new wxCheckBox(panel, -1, "Smooth lines"),
 		  cb_line_fade_   = new wxCheckBox(panel, -1, "Fade when not in lines mode") },
 		wxSizerFlags(0).Expand());
@@ -253,15 +253,15 @@ void MapDisplayPrefsPanel::setupThingsTab()
 
 	// Shadow opacity
 	gb_sizer->Add(new wxStaticText(panel, -1, "Thing shadow opacity: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	slider_thing_shadow_ =
-		new wxSlider(panel, -1, thing_shadow * 10, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
+	slider_thing_shadow_ = new wxSlider(
+		panel, -1, thing_shadow * 10, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
 	gb_sizer->Add(slider_thing_shadow_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Arrow opacity
 	gb_sizer->Add(
 		new wxStaticText(panel, -1, "Thing angle arrow opacity: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	slider_thing_arrow_alpha_ =
-		new wxSlider(panel, -1, thing_shadow * 10, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
+	slider_thing_arrow_alpha_ = new wxSlider(
+		panel, -1, thing_shadow * 10, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
 	gb_sizer->Add(slider_thing_arrow_alpha_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Halo width

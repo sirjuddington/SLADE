@@ -277,8 +277,8 @@ void GfxConvDialog::setupLayout()
 	pal_chooser_target_ = new PaletteChooser(this, -1);
 	pal_chooser_target_->selectPalette(target_palette_name_);
 	gbsizer->Add(pal_chooser_target_, { 2, 1 }, { 1, 1 }, wxEXPAND);
-	btn_colorimetry_settings_ =
-		new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "settings"), wxDefaultPosition, wxDefaultSize);
+	btn_colorimetry_settings_ = new wxBitmapButton(
+		this, -1, Icons::getIcon(Icons::General, "settings"), wxDefaultPosition, wxDefaultSize);
 	btn_colorimetry_settings_->SetToolTip("Adjust Colorimetry Settings...");
 	gbsizer->Add(btn_colorimetry_settings_, { 2, 2 }, { 1, 1 }, wxALIGN_CENTER);
 	gbsizer->AddGrowableCol(0, 1);
@@ -301,8 +301,8 @@ void GfxConvDialog::setupLayout()
 	gbsizer->Add(cb_enable_transparency_, { 0, 0 }, { 1, 2 });
 
 	// Keep existing transparency
-	rb_transparency_existing_ =
-		new wxRadioButton(this, 100, "Existing w/Threshold:", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+	rb_transparency_existing_ = new wxRadioButton(
+		this, 100, "Existing w/Threshold:", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 	rb_transparency_existing_->SetValue(true);
 	gbsizer->Add(rb_transparency_existing_, { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 

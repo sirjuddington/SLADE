@@ -34,8 +34,9 @@
 #include "App.h"
 #include "General/CVar.h"
 #include "MainEditor/MainEditor.h"
-#include "Utility/Tokenizer.h"
 #include "Utility/StringUtils.h"
+#include "Utility/Tokenizer.h"
+
 
 
 // -----------------------------------------------------------------------------

@@ -859,9 +859,9 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 			if (list_patches_->GetSelectedItemCount() > 0)
 			{
 				// Get drag amount according to texture
-				Vec2i tex_cur = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
-				Vec2i tex_prev =
-					tex_canvas_->screenToTexPosition(tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y);
+				Vec2i tex_cur  = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
+				Vec2i tex_prev = tex_canvas_->screenToTexPosition(
+					tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y);
 				Vec2i diff = tex_cur - tex_prev;
 
 				// Move any selected patches
@@ -886,9 +886,9 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 				tex_current_ && tex_current_->isExtended() && tex_canvas_->viewType() != CTextureCanvas::View::Normal)
 			{
 				// Get drag amount according to texture
-				Vec2i tex_cur = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
-				Vec2i tex_prev =
-					tex_canvas_->screenToTexPosition(tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y);
+				Vec2i tex_cur  = tex_canvas_->screenToTexPosition(e.GetX(), e.GetY());
+				Vec2i tex_prev = tex_canvas_->screenToTexPosition(
+					tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y);
 				Vec2i diff = tex_cur - tex_prev;
 
 				// Modify offsets

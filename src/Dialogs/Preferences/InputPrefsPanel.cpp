@@ -241,8 +241,8 @@ void InputPrefsPanel::initBindsList() const
 
 		// Add to list
 		auto group = getListGroupItem(bind->group());
-		auto item =
-			list_binds_->AppendItem(group, bind->description(), -1, -1, new BindListItemData(bind->key(0), bind));
+		auto item  = list_binds_->AppendItem(
+            group, bind->description(), -1, -1, new BindListItemData(bind->key(0), bind));
 
 		// Add any extra key binds
 		for (int b = 1; b < bind->nKeys(); b++)

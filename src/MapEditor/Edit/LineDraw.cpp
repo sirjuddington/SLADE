@@ -304,8 +304,8 @@ void LineDraw::end(bool apply)
 	auto& map = context_.map();
 	for (unsigned a = 0; a < draw_points_.size() - 1; a++)
 	{
-		auto v =
-			map.lineCrossVertex(draw_points_[a].x, draw_points_[a].y, draw_points_[a + 1].x, draw_points_[a + 1].y);
+		auto v = map.lineCrossVertex(
+			draw_points_[a].x, draw_points_[a].y, draw_points_[a + 1].x, draw_points_[a + 1].y);
 		while (v)
 		{
 			draw_points_.insert(draw_points_.begin() + a + 1, Vec2f(v->xPos(), v->yPos()));
@@ -323,8 +323,8 @@ void LineDraw::end(bool apply)
 	for (unsigned a = 0; a < draw_points_.size() - 1; a++)
 	{
 		// Check for intersections
-		auto intersect =
-			map.cutLines(draw_points_[a].x, draw_points_[a].y, draw_points_[a + 1].x, draw_points_[a + 1].y);
+		auto intersect = map.cutLines(
+			draw_points_[a].x, draw_points_[a].y, draw_points_[a + 1].x, draw_points_[a + 1].y);
 		Log::info(2, S_FMT("%lu intersect points", intersect.size()));
 
 		// Create line normally if no intersections

@@ -188,8 +188,7 @@ private:
 // -----------------------------------------------------------------------------
 // SpecialPresetDialog class constructor
 // -----------------------------------------------------------------------------
-SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) :
-	SDialog{ parent, "Special Presets", "special_presets" }
+SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) : SDialog{ parent, "Special Presets", "special_presets" }
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);

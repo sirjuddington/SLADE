@@ -153,8 +153,8 @@ bool WadJArchive::open(MemChunk& mc)
 		if (offset + actualsize > mc.size())
 		{
 			Log::error("WadJArchive::open: Wad archive is invalid or corrupt");
-			Global::error =
-				S_FMT("Archive is invalid and/or corrupt (lump %d: %s data goes past end of file)", d, name);
+			Global::error = S_FMT(
+				"Archive is invalid and/or corrupt (lump %d: %s data goes past end of file)", d, name);
 			setMuted(false);
 			return false;
 		}

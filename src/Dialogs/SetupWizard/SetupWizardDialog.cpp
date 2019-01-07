@@ -59,7 +59,7 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 		wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
 	// Create pages
-	//pages_.push_back(new TempFolderWizardPage(this));
+	// pages_.push_back(new TempFolderWizardPage(this));
 	pages_.push_back(new BaseResourceWizardPage(this));
 	pages_.push_back(new NodeBuildersWizardPage(this));
 	current_page_ = 0;
@@ -102,8 +102,8 @@ void SetupWizardDialog::setupLayout()
 	SetSizer(sizer);
 
 	// Page title
-	label_page_title_ =
-		new wxStaticText(this, -1, pages_[0]->title(), wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
+	label_page_title_ = new wxStaticText(
+		this, -1, pages_[0]->title(), wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
 	label_page_title_->SetFont(label_page_title_->GetFont().MakeLarger().MakeBold());
 	sizer->Add(label_page_title_, 0, wxEXPAND | wxALL, pad_xl);
 

@@ -59,7 +59,7 @@ public:
 	~CIntCVar() = default;
 
 	// Operators so the cvar name can be used like a normal variable
-	operator int() const { return value; }
+		operator int() const { return value; }
 	int operator*() const { return value; }
 
 	int operator=(int val)
@@ -84,7 +84,7 @@ public:
 	CBoolCVar(const string& NAME, bool defval, uint16_t FLAGS);
 	~CBoolCVar() {}
 
-	operator bool() const { return value; }
+		 operator bool() const { return value; }
 	bool operator*() const { return value; }
 
 	bool operator=(bool val)
@@ -109,7 +109,7 @@ public:
 	CFloatCVar(const string& NAME, double defval, uint16_t FLAGS);
 	~CFloatCVar() {}
 
-	operator double() const { return value; }
+		   operator double() const { return value; }
 	double operator*() const { return value; }
 
 	double operator=(double val)
@@ -134,7 +134,7 @@ public:
 	CStringCVar(const string& NAME, const string& defval, uint16_t FLAGS);
 	~CStringCVar() {}
 
-	operator string() const { return value; }
+		   operator string() const { return value; }
 	string operator*() const { return value; }
 
 	string operator=(string val)

@@ -41,9 +41,10 @@
 #include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/StartPage.h"
 #include "OpenGL/OpenGL.h"
-#include <wx/statbmp.h>
-#include "Utility/Tokenizer.h"
 #include "Utility/Parser.h"
+#include "Utility/Tokenizer.h"
+#include <wx/statbmp.h>
+
 
 #undef BOOL
 
@@ -696,8 +697,8 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 			auto node_version = node_stable->childPTN("version");
 			if (node_version)
 			{
-				stable.major = node_version->intValue(0);
-				stable.minor = node_version->intValue(1);
+				stable.major    = node_version->intValue(0);
+				stable.minor    = node_version->intValue(1);
 				stable.revision = node_version->intValue(2);
 			}
 
@@ -747,12 +748,12 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 		return;
 	}
 
-	Log::info(1, S_FMT("Latest stable release: v%s",stable.toString()));
+	Log::info(1, S_FMT("Latest stable release: v%s", stable.toString()));
 	Log::info(1, S_FMT("Latest beta release: v%s", beta.toString()));
 
 	// Check if new stable version
 	bool new_stable = App::version().cmp(stable) < 0;
-	bool new_beta = App::version().cmp(beta) < 0;
+	bool new_beta   = App::version().cmp(beta) < 0;
 
 	// Set up for new beta/stable version prompt (if any)
 	string message, caption, version;

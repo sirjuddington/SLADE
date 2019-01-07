@@ -113,7 +113,8 @@ bool Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 	else
 		curr_comment_idx_ = -1;
 
-#if wxMAJOR_VERSION < 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION < 1) || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION == 1 && wxRELEASE_NUMBER == 0)
+#if wxMAJOR_VERSION < 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION < 1) \
+	|| (wxMAJOR_VERSION == 3 && wxMINOR_VERSION == 1 && wxRELEASE_NUMBER == 0)
 	editor->StartStyling(start, 0);
 #else
 	editor->StartStyling(start);
@@ -668,8 +669,8 @@ bool Lexer::checkToken(LexerState& state, int pos, vector<string>& tokens, int* 
 {
 	if (!tokens.empty())
 	{
-		unsigned    idx = 0;
-		string token;
+		unsigned idx = 0;
+		string   token;
 		while (idx < tokens.size())
 		{
 			token = tokens[idx];

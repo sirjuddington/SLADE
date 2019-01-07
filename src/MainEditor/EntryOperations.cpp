@@ -1732,8 +1732,8 @@ bool EntryOperations::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, b
 		// Create animation string
 		if (animdefs)
 		{
-			conversion =
-				S_FMT("Switch\tDoom %d\t\t%-8s\tOn Pic\t%-8s\tTics 0\n", switches->type, switches->off, switches->on);
+			conversion = S_FMT(
+				"Switch\tDoom %d\t\t%-8s\tOn Pic\t%-8s\tTics 0\n", switches->type, switches->off, switches->on);
 		}
 		else
 		{

@@ -66,8 +66,8 @@ public:
 		m_vbox->Add(framesizer, 0, wxEXPAND | wxALL, UI::pad());
 
 		// Doom format
-		rb_format_doom_ =
-			new wxRadioButton(this, -1, "Doom (TEXTURE1 + PNAMES)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+		rb_format_doom_ = new wxRadioButton(
+			this, -1, "Doom (TEXTURE1 + PNAMES)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 		rb_format_strife_   = new wxRadioButton(this, -1, "Strife (TEXTURE1 + PNAMES)");
 		rb_format_textures_ = new wxRadioButton(this, -1, "ZDoom (TEXTURES)");
 		WxUtils::layoutVertically(
@@ -555,8 +555,8 @@ bool TextureXEditor::checkTextures()
 					auto fentry = App::resources().getFlatEntry(tex->patch(p)->name());
 					auto ptex   = App::resources().getTexture(tex->patch(p)->name());
 					if (!pentry && !fentry && !ptex)
-						problems +=
-							S_FMT("Texture %s contains invalid/unknown patch %s\n", tex->name(), tex->patch(p)->name());
+						problems += S_FMT(
+							"Texture %s contains invalid/unknown patch %s\n", tex->name(), tex->patch(p)->name());
 				}
 			}
 			else
@@ -565,8 +565,8 @@ bool TextureXEditor::checkTextures()
 				for (unsigned p = 0; p < tex->nPatches(); p++)
 				{
 					if (patch_table_.patchIndex(tex->patch(p)->name()) == -1)
-						problems +=
-							S_FMT("Texture %s contains invalid/unknown patch %s\n", tex->name(), tex->patch(p)->name());
+						problems += S_FMT(
+							"Texture %s contains invalid/unknown patch %s\n", tex->name(), tex->patch(p)->name());
 				}
 			}
 		}

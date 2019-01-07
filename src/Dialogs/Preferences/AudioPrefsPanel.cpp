@@ -67,8 +67,8 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	cb_snd_autoplay_ = new wxCheckBox(this, -1, "Automatically play audio entries when opened");
 	cb_dmx_padding_  = new wxCheckBox(this, -1, "Use DMX padding when appropriate");
 	rb_fluidsynth_   = new wxRadioButton(this, -1, "Use Fluidsynth");
-	flp_soundfont_ =
-		new FileLocationPanel(this, "", true, "Browse for MIDI Soundfont", "Soundfont files (*.sf2)|*.sf2");
+	flp_soundfont_   = new FileLocationPanel(
+        this, "", true, "Browse for MIDI Soundfont", "Soundfont files (*.sf2)|*.sf2");
 	rb_timidity_  = new wxRadioButton(this, -1, "Use Timidity");
 	flp_timidity_ = new FileLocationPanel(
 		this, "", true, "Browse for Timidity Executable", SFileDialog::executableExtensionString());

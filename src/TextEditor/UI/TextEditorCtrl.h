@@ -1,10 +1,11 @@
 #pragma once
 
-#include <utility>
 #include "Archive/ArchiveEntry.h"
 #include "TextEditor/Lexer.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/TextStyle.h"
+#include <utility>
+
 
 class wxButton;
 class wxCheckBox;
@@ -91,10 +92,10 @@ public:
 	void cycleComments() const;
 
 private:
-	TextLanguage*          language_ = nullptr;
-	FindReplacePanel*      panel_fr_ = nullptr;
-	SCallTip*              call_tip_ = nullptr;
-	wxChoice*              choice_jump_to_ = nullptr;
+	TextLanguage*          language_           = nullptr;
+	FindReplacePanel*      panel_fr_           = nullptr;
+	SCallTip*              call_tip_           = nullptr;
+	wxChoice*              choice_jump_to_     = nullptr;
 	JumpToCalculator*      jump_to_calculator_ = nullptr;
 	std::unique_ptr<Lexer> lexer_;
 	string                 prev_word_match_;
@@ -110,14 +111,14 @@ private:
 
 	// Timed update stuff
 	wxTimer timer_update_;
-	bool    update_jump_to_ = false;
+	bool    update_jump_to_    = false;
 	bool    update_word_match_ = false;
 
 	// Calltip stuff
 	TLFunction* ct_function_ = nullptr;
-	int         ct_argset_ = 0;
-	int         ct_start_ = 0;
-	bool        ct_dwell_ = false;
+	int         ct_argset_   = 0;
+	int         ct_start_    = 0;
+	bool        ct_dwell_    = false;
 
 	// Default comment strings
 	const string default_line_comment_  = "//";

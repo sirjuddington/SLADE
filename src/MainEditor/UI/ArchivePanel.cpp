@@ -86,8 +86,7 @@ namespace
 wxMenu* menu_archive = nullptr;
 wxMenu* menu_entry   = nullptr;
 
-const auto ERROR_UNWRITABLE_IMAGE_FORMAT =
-	"Could not write image data to entry %s, unsupported format for writing";
+const auto ERROR_UNWRITABLE_IMAGE_FORMAT = "Could not write image data to entry %s, unsupported format for writing";
 } // namespace
 CVAR(Int, autosave_entry_changes, 2, CVar::Flag::Save) // 0=no, 1=yes, 2=ask
 CVAR(Bool, confirm_entry_delete, true, CVar::Flag::Save)
@@ -158,8 +157,8 @@ public:
 						// Since there is no standard "Yes/No to all" button or "Don't ask me again" checkbox,
 						// we will instead hack the Cancel button into being a "Yes to all" button. This is
 						// despite the existence of a wxID_YESTOALL return value...
-						string message =
-							S_FMT("Overwrite existing entry %s%s", list_->currentDir()->path(), fn.GetFullName());
+						string message = S_FMT(
+							"Overwrite existing entry %s%s", list_->currentDir()->path(), fn.GetFullName());
 						wxMessageDialog dlg(parent_, message, caption, wxCANCEL | wxYES_NO | wxCENTRE);
 						dlg.SetYesNoCancelLabels(_("Yes"), _("No"), _("Yes to all"));
 						int result = dlg.ShowModal();
@@ -1123,8 +1122,8 @@ bool ArchivePanel::renameEntry(bool each) const
 		string old_name = selected_dirs[a]->name();
 
 		// Prompt for a new name
-		string new_name =
-			wxGetTextFromUser("Enter new directory name:", S_FMT("Rename Directory %s", old_name), old_name);
+		string new_name = wxGetTextFromUser(
+			"Enter new directory name:", S_FMT("Rename Directory %s", old_name), old_name);
 
 		// Do nothing if no name was entered
 		if (new_name.IsEmpty())

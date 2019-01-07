@@ -116,8 +116,8 @@ void SStartPage::init()
 	auto res_archive = App::archiveManager().programResourceArchive();
 	if (res_archive)
 	{
-		entry_base_html_ =
-			res_archive->entryAtPath(App::useWebView() ? "html/startpage.htm" : "html/startpage_basic.htm");
+		entry_base_html_ = res_archive->entryAtPath(
+			App::useWebView() ? "html/startpage.htm" : "html/startpage_basic.htm");
 
 		entry_css_ = res_archive->entryAtPath(web_dark_theme ? "html/theme-dark.css" : "html/theme-light.css");
 

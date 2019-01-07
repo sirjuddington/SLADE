@@ -45,7 +45,7 @@ void registerThingType(sol::state& lua)
 		sol::property(&Game::ThingType::solid),
 
 		//"tagged",
-		//sol::property(&Game::ThingType::needsTag),
+		// sol::property(&Game::ThingType::needsTag),
 
 		"sprite",
 		sol::property(&Game::ThingType::sprite),

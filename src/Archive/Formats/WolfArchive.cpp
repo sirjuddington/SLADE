@@ -873,8 +873,8 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 
 	if (dict.size() != 1024)
 	{
-		Global::error =
-			S_FMT("WolfArchive::openGraph: VGADICT is improperly sized (%d bytes instead of 1024)", dict.size());
+		Global::error = S_FMT(
+			"WolfArchive::openGraph: VGADICT is improperly sized (%d bytes instead of 1024)", dict.size());
 		return false;
 	}
 	HuffNode nodes[256];

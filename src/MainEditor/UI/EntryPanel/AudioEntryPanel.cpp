@@ -594,8 +594,8 @@ void AudioEntryPanel::resetStream() const
 bool AudioEntryPanel::updateInfo() const
 {
 	txt_info_->Clear();
-	string    info = entry_->typeString() + "\n";
-	auto& mc   = entry_->data();
+	string info = entry_->typeString() + "\n";
+	auto&  mc   = entry_->data();
 	switch (audio_type_)
 	{
 	case Sound:

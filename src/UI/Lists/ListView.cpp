@@ -152,7 +152,7 @@ ColRGBA ListView::disabledColour() const
 	uint8_t red   = fg.Red() * 0.5 + bg.Red() * 0.5;
 	uint8_t green = fg.Green() * 0.5 + bg.Green() * 0.5;
 	uint8_t blue  = fg.Blue() * 0.5 + bg.Blue() * 0.5;
-	return {red, green, blue};
+	return { red, green, blue };
 }
 
 // -----------------------------------------------------------------------------

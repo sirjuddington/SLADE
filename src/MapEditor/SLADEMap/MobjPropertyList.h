@@ -14,7 +14,7 @@ public:
 		Prop(const string& name, const Property& value) : name{ name }, value{ value } {}
 	};
 
-	MobjPropertyList() = default;
+	MobjPropertyList()  = default;
 	~MobjPropertyList() = default;
 
 	// Operator for direct access to hash map

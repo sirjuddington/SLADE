@@ -153,8 +153,8 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 			flag_mid--;
 		for (unsigned a = 0; a < flags_udmf.size(); a++)
 		{
-			auto cb_flag =
-				new wxCheckBox(panel_flags, -1, flags_udmf[a].name(), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+			auto cb_flag = new wxCheckBox(
+				panel_flags, -1, flags_udmf[a].name(), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
 			gb_sizer_flags->Add(cb_flag, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
 			flags_.push_back({ cb_flag, (int)a, flags_udmf[a].propName() });
 

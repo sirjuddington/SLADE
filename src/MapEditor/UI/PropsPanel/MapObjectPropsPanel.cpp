@@ -772,8 +772,8 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 			auto g_args = pg_properties_->Append(new wxPropertyCategory("Args"));
 			for (unsigned a = 0; a < 5; a++)
 			{
-				auto prop =
-					dynamic_cast<MOPGIntProperty*>(addIntProperty(g_args, S_FMT("Arg%u", a + 1), S_FMT("arg%u", a)));
+				auto prop = dynamic_cast<MOPGIntProperty*>(
+					addIntProperty(g_args, S_FMT("Arg%u", a + 1), S_FMT("arg%u", a)));
 				args_[a] = prop;
 			}
 		}

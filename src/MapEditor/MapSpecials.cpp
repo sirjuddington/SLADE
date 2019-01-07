@@ -714,8 +714,7 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 
 	if (!furthest_vertex || furthest_dist < 0.01)
 	{
-		Log::warning(
-			S_FMT(
+		Log::warning(S_FMT(
 			"Ignoring Plane_Align on line %d; sector %d has no appropriate reference vertex",
 			line->index(),
 			target->index()));

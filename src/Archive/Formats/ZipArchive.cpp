@@ -161,8 +161,8 @@ bool ZipArchive::open(const string& filename)
 			wxFileName fn(zip_entry->GetName(wxPATH_UNIX), wxPATH_UNIX);
 
 			// Create entry
-			auto new_entry =
-				std::make_shared<ArchiveEntry>(Misc::fileNameToLumpName(fn.GetFullName()), zip_entry->GetSize());
+			auto new_entry = std::make_shared<ArchiveEntry>(
+				Misc::fileNameToLumpName(fn.GetFullName()), zip_entry->GetSize());
 
 			// Setup entry info
 			new_entry->setLoaded(false);
@@ -193,8 +193,8 @@ bool ZipArchive::open(const string& filename)
 			}
 			else
 			{
-				Global::error =
-					S_FMT("Entry too large: %s is %u mb", zip_entry->GetName(wxPATH_UNIX), ze_size / (1 << 20));
+				Global::error = S_FMT(
+					"Entry too large: %s is %u mb", zip_entry->GetName(wxPATH_UNIX), ze_size / (1 << 20));
 				setMuted(false);
 				return false;
 			}

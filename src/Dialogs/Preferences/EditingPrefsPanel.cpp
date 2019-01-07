@@ -227,8 +227,8 @@ wxPanel* EditingPrefsPanel::setupGeneralTab()
 	// Create controls
 	cb_wad_force_uppercase_  = new wxCheckBox(panel, -1, "Force uppercase entry names in Wad Archives");
 	cb_zip_percent_encoding_ = new wxCheckBox(panel, -1, "Use percent encoding if needed outside of Wad Archives");
-	cb_auto_entry_replace_ =
-		new wxCheckBox(panel, -1, "Automatically replace entries with same name as drag-and-dropped files");
+	cb_auto_entry_replace_   = new wxCheckBox(
+        panel, -1, "Automatically replace entries with same name as drag-and-dropped files");
 	cb_save_archive_with_map_ = new wxCheckBox(panel, -1, "Save the map's parent archive when saving a map");
 	cb_confirm_entry_delete_  = new wxCheckBox(panel, -1, "Show confirmation dialog on deleting an entry");
 	cb_confirm_entry_revert_  = new wxCheckBox(panel, -1, "Show confirmation dialog on reverting entry changes");

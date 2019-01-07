@@ -3,7 +3,7 @@
 class HexTable : public wxGridTableBase
 {
 public:
-	HexTable() = default;
+	HexTable()  = default;
 	~HexTable() = default;
 
 	MemChunk& getData() { return data_; }

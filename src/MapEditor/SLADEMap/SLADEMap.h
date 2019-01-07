@@ -250,7 +250,7 @@ private:
 	vector<MobjCD>     created_deleted_objects_;
 
 	long geometry_updated_ = 0; // The last time the map geometry was updated
-	long things_updated_ = 0;   // The last time the thing list was modified
+	long things_updated_   = 0; // The last time the thing list was modified
 
 	// Usage counts
 	std::map<string, int> usage_tex_;
