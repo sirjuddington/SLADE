@@ -32,8 +32,10 @@
 #include "Main.h"
 #include "MapSide.h"
 #include "Game/Configuration.h"
+#include "General/ResourceManager.h"
 #include "MapSector.h"
 #include "SLADEMap.h"
+#include "Utility/Parser.h"
 
 
 // -----------------------------------------------------------------------------
@@ -51,6 +53,89 @@ MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(Type::Side, pa
 	// Add to parent sector
 	if (sector)
 		sector->connectSide(this);
+}
+
+// -----------------------------------------------------------------------------
+// MapSide class constructor from doom-format data
+// -----------------------------------------------------------------------------
+MapSide::MapSide(SLADEMap* parent, const DoomData& data) :
+	MapObject(Type::Side, parent),
+	sector_{ parent ? parent->sector(data.sector) : nullptr },
+	tex_upper_{ wxString::FromAscii(data.tex_upper, 8) },
+	tex_middle_{ wxString::FromAscii(data.tex_middle, 8) },
+	tex_lower_{ wxString::FromAscii(data.tex_lower, 8) },
+	offset_x_{ data.x_offset },
+	offset_y_{ data.y_offset }
+{
+	// Add to parent sector
+	if (sector_)
+		sector_->connectSide(this);
+}
+
+// -----------------------------------------------------------------------------
+// MapSide class constructor from doom64-format data
+// -----------------------------------------------------------------------------
+MapSide::MapSide(SLADEMap* parent, const Doom64Data& data) :
+	MapObject(Type::Side, parent),
+	sector_{ parent ? parent->sector(data.sector) : nullptr },
+	tex_upper_{ ResourceManager::doom64TextureName(data.tex_upper) },
+	tex_middle_{ ResourceManager::doom64TextureName(data.tex_middle) },
+	tex_lower_{ ResourceManager::doom64TextureName(data.tex_lower) },
+	offset_x_{ data.x_offset },
+	offset_y_{ data.y_offset }
+{
+	// Add to parent sector
+	if (sector_)
+		sector_->connectSide(this);
+}
+
+// -----------------------------------------------------------------------------
+// Creates the side from a parsed UDMF definition [def]
+// -----------------------------------------------------------------------------
+bool MapSide::createFromUDMF(ParseTreeNode* def)
+{
+	// Check for required properties
+	auto prop_sector = def->childPTN("sector");
+	if (!prop_sector)
+		return false;
+
+	// Check sector index
+	int sector_index = prop_sector->intValue();
+	if (!parent_map_ || sector_index < 0 || sector_index >= (int)parent_map_->sectors().size())
+		return false;
+
+	// Set sector
+	sector_ = parent_map_->sector(sector_index);
+	if (sector_)
+		sector_->connectSide(this);
+
+	// Add extra side info
+	ParseTreeNode* prop = nullptr;
+	for (unsigned a = 0; a < def->nChildren(); a++)
+	{
+		prop = def->childPTN(a);
+
+		// Skip required properties
+		if (prop == prop_sector)
+			continue;
+
+		if (S_CMPNOCASE(prop->name(), "texturetop"))
+			tex_upper_ = prop->stringValue();
+		else if (S_CMPNOCASE(prop->name(), "texturemiddle"))
+			tex_middle_ = prop->stringValue();
+		else if (S_CMPNOCASE(prop->name(), "texturebottom"))
+			tex_lower_ = prop->stringValue();
+		else if (S_CMPNOCASE(prop->name(), "offsetx"))
+			offset_x_ = prop->intValue();
+		else if (S_CMPNOCASE(prop->name(), "offsety"))
+			offset_y_ = prop->intValue();
+		else
+			properties_[prop->name()] = prop->value();
+		// Log::info(1, "Property %s type %s (%s)", prop->getName(), prop->getValue().typeString(),
+		// prop->getValue().getStringValue());
+	}
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------

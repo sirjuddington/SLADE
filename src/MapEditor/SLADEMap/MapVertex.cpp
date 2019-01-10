@@ -33,6 +33,7 @@
 #include "MapVertex.h"
 #include "App.h"
 #include "MapLine.h"
+#include "Utility/Parser.h"
 
 
 // -----------------------------------------------------------------------------
@@ -46,6 +47,36 @@
 // MapVertex class constructor
 // -----------------------------------------------------------------------------
 MapVertex::MapVertex(double x, double y, SLADEMap* parent) : MapObject(Type::Vertex, parent), position_{ x, y } {}
+
+// -----------------------------------------------------------------------------
+// Creates the vertex from a parsed UDMF definition [def]
+// -----------------------------------------------------------------------------
+bool MapVertex::createFromUDMF(ParseTreeNode* def)
+{
+	// Check for required properties
+	auto prop_x = def->childPTN("x");
+	auto prop_y = def->childPTN("y");
+	if (!prop_x || !prop_y)
+		return false;
+
+	// Set position
+	position_.set(prop_x->floatValue(), prop_y->floatValue());
+
+	// Add extra vertex info
+	ParseTreeNode* prop;
+	for (unsigned a = 0; a < def->nChildren(); a++)
+	{
+		prop = def->childPTN(a);
+
+		// Skip required properties
+		if (prop == prop_x || prop == prop_y)
+			continue;
+
+		properties_[prop->name()] = prop->value();
+	}
+
+	return true;
+}
 
 // -----------------------------------------------------------------------------
 // Returns the object point [point].

@@ -42,7 +42,12 @@ public:
 
 	MapThing(SLADEMap* parent = nullptr) : MapObject(Type::Thing, parent) {}
 	MapThing(double x, double y, short type, SLADEMap* parent = nullptr);
+	MapThing(SLADEMap* parent, const DoomData& data);
+	MapThing(SLADEMap* parent, const HexenData& data);
+	MapThing(SLADEMap* parent, const Doom64Data& data);
 	~MapThing() = default;
+
+	bool createFromUDMF(ParseTreeNode* def) override;
 
 	double xPos() const { return position_.x; }
 	double yPos() const { return position_.y; }

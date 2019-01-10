@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "MapThing.h"
 #include "App.h"
+#include "Utility/Parser.h"
 
 
 // -----------------------------------------------------------------------------
@@ -49,6 +50,88 @@ MapThing::MapThing(double x, double y, short type, SLADEMap* parent) :
 	type_{ type },
 	position_{ x, y }
 {
+}
+
+// -----------------------------------------------------------------------------
+// MapThing class constructor from doom-format data
+// -----------------------------------------------------------------------------
+MapThing::MapThing(SLADEMap* parent, const DoomData& data) :
+	MapObject(Type::Thing, parent),
+	type_{ data.type },
+	position_{ (double)data.x, (double)data.y },
+	angle_{ data.angle }
+{
+	properties_["flags"] = data.flags;
+}
+
+// -----------------------------------------------------------------------------
+// MapThing class constructor from hexen-format data
+// -----------------------------------------------------------------------------
+MapThing::MapThing(SLADEMap* parent, const HexenData& data) :
+	MapObject(Type::Thing, parent),
+	type_{ data.type },
+	position_{ (double)data.x, (double)data.y },
+	angle_{ data.angle }
+{
+	properties_["height"]  = (double)data.z;
+	properties_["special"] = data.special;
+	properties_["flags"]   = data.flags;
+	properties_["id"]      = data.tid;
+	properties_["arg0"]    = data.args[0];
+	properties_["arg1"]    = data.args[1];
+	properties_["arg2"]    = data.args[2];
+	properties_["arg3"]    = data.args[3];
+	properties_["arg4"]    = data.args[4];
+}
+
+// -----------------------------------------------------------------------------
+// MapThing class constructor from doom64-format data
+// -----------------------------------------------------------------------------
+MapThing::MapThing(SLADEMap* parent, const Doom64Data& data) :
+	MapObject(Type::Thing, parent),
+	type_{ data.type },
+	position_{ (double)data.x, (double)data.y },
+	angle_{ data.angle }
+{
+	properties_["height"] = (double)data.z;
+	properties_["flags"]  = data.flags;
+	properties_["id"]     = data.tid;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the thing from a parsed UDMF definition [def]
+// -----------------------------------------------------------------------------
+bool MapThing::createFromUDMF(ParseTreeNode* def)
+{
+	// Check for required properties
+	auto prop_x    = def->childPTN("x");
+	auto prop_y    = def->childPTN("y");
+	auto prop_type = def->childPTN("type");
+	if (!prop_x || !prop_y || !prop_type)
+		return false;
+
+	// Set required values
+	position_ = { prop_x->floatValue(), prop_y->floatValue() };
+	type_     = prop_type->intValue();
+
+	// Add extra thing info
+	ParseTreeNode* prop;
+	for (unsigned a = 0; a < def->nChildren(); a++)
+	{
+		prop = def->childPTN(a);
+
+		// Skip required properties
+		if (prop == prop_x || prop == prop_y || prop == prop_type)
+			continue;
+
+		// Builtin properties
+		if (S_CMPNOCASE(prop->name(), "angle"))
+			angle_ = prop->intValue();
+		else
+			properties_[prop->name()] = prop->value();
+	}
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------

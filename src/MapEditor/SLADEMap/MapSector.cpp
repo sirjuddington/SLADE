@@ -33,11 +33,13 @@
 #include "MapSector.h"
 #include "App.h"
 #include "Game/Configuration.h"
+#include "General/ResourceManager.h"
 #include "MapLine.h"
 #include "MapSide.h"
 #include "MapVertex.h"
 #include "SLADEMap.h"
 #include "Utility/MathStuff.h"
+#include "Utility/Parser.h"
 
 
 // -----------------------------------------------------------------------------
@@ -72,6 +74,89 @@ MapSector::MapSector(const string& f_tex, const string& c_tex, SLADEMap* parent)
 	ceiling_{ c_tex },
 	geometry_updated_{ App::runTimer() }
 {
+}
+
+// -----------------------------------------------------------------------------
+// MapSector class constructor from doom-format data
+// -----------------------------------------------------------------------------
+MapSector::MapSector(SLADEMap* parent, const DoomData& data) :
+	MapObject(Type::Sector, parent),
+	floor_{ wxString::FromAscii(data.f_tex, 8), data.f_height, Plane::flat(data.f_height) },
+	ceiling_{ wxString::FromAscii(data.c_tex, 8), data.c_height, Plane::flat(data.c_height) },
+	light_{ data.light },
+	special_{ data.special },
+	id_{ data.tag },
+	geometry_updated_{ App::runTimer() }
+{
+}
+
+// -----------------------------------------------------------------------------
+// MapSector class constructor from doom64-format data
+// -----------------------------------------------------------------------------
+MapSector::MapSector(SLADEMap* parent, const Doom64Data& data) :
+	MapObject(Type::Sector, parent),
+	floor_{ ResourceManager::doom64TextureName(data.f_tex), data.f_height, Plane::flat(data.f_height) },
+	ceiling_{ ResourceManager::doom64TextureName(data.c_tex), data.c_height, Plane::flat(data.c_height) },
+	light_{ 255 },
+	special_{ data.special },
+	id_{ data.tag },
+	geometry_updated_{ App::runTimer() }
+{
+	properties_["flags"]         = data.flags;
+	properties_["color_things"]  = data.color[0];
+	properties_["color_floor"]   = data.color[1];
+	properties_["color_ceiling"] = data.color[2];
+	properties_["color_upper"]   = data.color[3];
+	properties_["color_lower"]   = data.color[4];
+}
+
+// -----------------------------------------------------------------------------
+// Creates the sector from a parsed UDMF definition [def]
+// -----------------------------------------------------------------------------
+bool MapSector::createFromUDMF(ParseTreeNode* def)
+{
+	// Check for required properties
+	auto prop_ftex = def->childPTN("texturefloor");
+	auto prop_ctex = def->childPTN("textureceiling");
+	if (!prop_ftex || !prop_ctex)
+		return false;
+
+	// Set textures
+	floor_.texture   = prop_ftex->stringValue();
+	ceiling_.texture = prop_ctex->stringValue();
+
+	// Set UDMF defaults
+	setFloorHeight(0);
+	setCeilingHeight(0);
+	light_   = 160;
+	special_ = 0;
+	id_      = 0;
+
+	// Add extra sector info
+	ParseTreeNode* prop;
+	for (unsigned a = 0; a < def->nChildren(); a++)
+	{
+		prop = def->childPTN(a);
+
+		// Skip required properties
+		if (prop == prop_ftex || prop == prop_ctex)
+			continue;
+
+		if (S_CMPNOCASE(prop->name(), "heightfloor"))
+			setFloorHeight(prop->intValue());
+		else if (S_CMPNOCASE(prop->name(), "heightceiling"))
+			setCeilingHeight(prop->intValue());
+		else if (S_CMPNOCASE(prop->name(), "lightlevel"))
+			light_ = prop->intValue();
+		else if (S_CMPNOCASE(prop->name(), "special"))
+			special_ = prop->intValue();
+		else if (S_CMPNOCASE(prop->name(), "id"))
+			id_ = prop->intValue();
+		else
+			properties_[prop->name()] = prop->value();
+	}
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------

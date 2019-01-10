@@ -58,6 +58,12 @@ public:
 	MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMap* parent = nullptr);
 	~MapLine() = default;
 
+	bool create(int v1_index, int v2_index, int s1_index, int s2_index);
+	bool create(const DoomData& data);
+	bool create(const HexenData& data);
+	bool create(const Doom64Data& data);
+	bool createFromUDMF(ParseTreeNode* def) override;
+
 	bool isOk() const { return vertex1_ && vertex2_; }
 
 	MapVertex* v1() const { return vertex1_; }

@@ -31,10 +31,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapLine.h"
+#include "Game/Configuration.h"
 #include "MapSide.h"
 #include "MapVertex.h"
 #include "SLADEMap.h"
 #include "Utility/MathStuff.h"
+#include "Utility/Parser.h"
 
 
 // -----------------------------------------------------------------------------
@@ -65,6 +67,236 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMa
 		s1->parent_ = this;
 	if (s2)
 		s2->parent_ = this;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the line from the given vertex and side indices
+// -----------------------------------------------------------------------------
+bool MapLine::create(int v1_index, int v2_index, int s1_index, int s2_index)
+{
+	// Can't create from indices without a parent map
+	if (!parent_map_)
+		return false;
+
+	// Get relevant sides
+	auto s1 = parent_map_->side(s1_index);
+	auto s2 = parent_map_->side(s2_index);
+
+	// Get relevant vertices
+	auto v1 = parent_map_->vertex(v1_index);
+	auto v2 = parent_map_->vertex(v2_index);
+
+	// Check everything is valid
+	if (!v1 || !v2)
+		return false;
+
+	// Check if either side already belongs to a line, duplicate if necessary
+	if (s1 && s1->parent_)
+		s1 = parent_map_->duplicateSide(s1);
+	if (s2 && s2->parent_)
+		s2 = parent_map_->duplicateSide(s2);
+
+	// Set vertices+sides
+	vertex1_ = v1;
+	vertex2_ = v2;
+	side1_   = s1;
+	side2_   = s2;
+
+	// Connect to vertices
+	if (v1)
+		v1->connectLine(this);
+	if (v2)
+		v2->connectLine(this);
+
+	// Connect to sides
+	if (s1)
+		s1->parent_ = this;
+	if (s2)
+		s2->parent_ = this;
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the line from the given doom-format [data]
+// -----------------------------------------------------------------------------
+bool MapLine::create(const DoomData& data)
+{
+	// Can't create from data without a parent map
+	if (!parent_map_)
+		return false;
+
+	// Get side indices
+	int s1_index = data.side1;
+	int s2_index = data.side2;
+	if (parent_map_->sides().size() > 32767)
+	{
+		// Support for > 32768 sides
+		if (data.side1 != 65535)
+			s1_index = static_cast<unsigned short>(data.side1);
+		if (data.side2 != 65535)
+			s2_index = static_cast<unsigned short>(data.side2);
+	}
+
+	// Create from vertex+side indices
+	if (!create(data.vertex1, data.vertex2, s1_index, s2_index))
+		return false;
+
+	// Set properties
+	properties_["arg0"]  = data.sector_tag;
+	properties_["id"]    = data.sector_tag;
+	special_             = data.type;
+	properties_["flags"] = data.flags;
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the line from the given hexen-format [data]
+// -----------------------------------------------------------------------------
+bool MapLine::create(const HexenData& data)
+{
+	// Can't create from data without a parent map
+	if (!parent_map_)
+		return false;
+
+	// Get side indices
+	int s1_index = data.side1;
+	int s2_index = data.side2;
+	if (parent_map_->sides().size() > 32767)
+	{
+		// Support for > 32768 sides
+		if (data.side1 != 65535)
+			s1_index = static_cast<unsigned short>(data.side1);
+		if (data.side2 != 65535)
+			s2_index = static_cast<unsigned short>(data.side2);
+	}
+
+	// Create from vertex+side indices
+	if (!create(data.vertex1, data.vertex2, s1_index, s2_index))
+		return false;
+
+	// Set properties
+	properties_["arg0"]  = data.args[0];
+	properties_["arg1"]  = data.args[1];
+	properties_["arg2"]  = data.args[2];
+	properties_["arg3"]  = data.args[3];
+	properties_["arg4"]  = data.args[4];
+	special_             = data.type;
+	properties_["flags"] = data.flags;
+
+	// Handle some special cases
+	if (data.type)
+	{
+		switch (Game::configuration().actionSpecial(data.type).needsTag())
+		{
+		case Game::TagType::LineId:
+		case Game::TagType::LineId1Line2: properties_["id"] = data.args[0]; break;
+		case Game::TagType::LineIdHi5: properties_["id"] = (data.args[0] + (data.args[4] << 8)); break;
+		default: break;
+		}
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the line from the given doom64-format [data]
+// -----------------------------------------------------------------------------
+bool MapLine::create(const Doom64Data& data)
+{
+	// Can't create from data without a parent map
+	if (!parent_map_)
+		return false;
+
+	// Get side indices
+	int s1_index = data.side1;
+	int s2_index = data.side2;
+	if (parent_map_->sides().size() > 32767)
+	{
+		// Support for > 32768 sides
+		if (data.side1 != 65535)
+			s1_index = static_cast<unsigned short>(data.side1);
+		if (data.side2 != 65535)
+			s2_index = static_cast<unsigned short>(data.side2);
+	}
+
+	// Create from vertex+side indices
+	if (!create(data.vertex1, data.vertex2, s1_index, s2_index))
+		return false;
+
+	// Set properties
+	properties_["arg0"] = data.sector_tag;
+	if (data.type & 0x100)
+		properties_["macro"] = data.type & 0xFF;
+	else
+		special_ = data.type & 0xFF;
+	properties_["flags"]      = (int)data.flags;
+	properties_["extraflags"] = data.type >> 9;
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the line from a parsed UDMF definition [def]
+// -----------------------------------------------------------------------------
+bool MapLine::createFromUDMF(ParseTreeNode* def)
+{
+	if (!parent_map_)
+		return false;
+
+	// Check for required properties
+	auto prop_v1 = def->childPTN("v1");
+	auto prop_v2 = def->childPTN("v2");
+	auto prop_s1 = def->childPTN("sidefront");
+	if (!prop_v1 || !prop_v2 || !prop_s1)
+		return false;
+
+	// Check indices
+	auto v1 = parent_map_->vertex(prop_v1->intValue());
+	auto v2 = parent_map_->vertex(prop_v2->intValue());
+	auto s1 = parent_map_->side(prop_s1->intValue());
+	if (!v1 || !v2 || !s1)
+		return false;
+
+	// Set required values
+	vertex1_ = v1;
+	vertex2_ = v2;
+	side1_   = s1;
+
+	// Add extra line info
+	ParseTreeNode* prop;
+	for (unsigned a = 0; a < def->nChildren(); a++)
+	{
+		prop = def->childPTN(a);
+
+		// Skip required properties
+		if (prop == prop_v1 || prop == prop_v2 || prop == prop_s1)
+			continue;
+
+		if (prop->name() == "sideback")
+			side2_ = parent_map_->side(prop->intValue());
+		else if (prop->name() == "special")
+			special_ = prop->intValue();
+		else if (prop->name() == "id")
+			line_id_ = prop->intValue();
+		else
+			properties_[prop->name()] = prop->value();
+	}
+
+	// Connect to vertices
+	if (vertex1_)
+		vertex1_->connectLine(this);
+	if (vertex2_)
+		vertex2_->connectLine(this);
+
+	// Connect to sides
+	if (side1_)
+		side1_->parent_ = this;
+	if (side2_)
+		side2_->parent_ = this;
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------

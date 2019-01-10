@@ -80,66 +80,6 @@ SLADEMap::~SLADEMap()
 }
 
 // -----------------------------------------------------------------------------
-// Returns the vertex at [index], or NULL if [index] is invalid
-// -----------------------------------------------------------------------------
-MapVertex* SLADEMap::vertex(unsigned index) const
-{
-	// Check index
-	if (index >= vertices_.size())
-		return nullptr;
-
-	return vertices_[index];
-}
-
-// -----------------------------------------------------------------------------
-// Returns the side at [index], or NULL if [index] is invalid
-// -----------------------------------------------------------------------------
-MapSide* SLADEMap::side(unsigned index) const
-{
-	// Check index
-	if (index >= sides_.size())
-		return nullptr;
-
-	return sides_[index];
-}
-
-// -----------------------------------------------------------------------------
-// Returns the line at [index], or NULL if [index] is invalid
-// -----------------------------------------------------------------------------
-MapLine* SLADEMap::line(unsigned index) const
-{
-	// Check index
-	if (index >= lines_.size())
-		return nullptr;
-
-	return lines_[index];
-}
-
-// -----------------------------------------------------------------------------
-// Returns the sector at [index], or NULL if [index] is invalid
-// -----------------------------------------------------------------------------
-MapSector* SLADEMap::sector(unsigned index) const
-{
-	// Check index
-	if (index >= sectors_.size())
-		return nullptr;
-
-	return sectors_[index];
-}
-
-// -----------------------------------------------------------------------------
-// Returns the thing at [index], or NULL if [index] is invalid
-// -----------------------------------------------------------------------------
-MapThing* SLADEMap::thing(unsigned index) const
-{
-	// Check index
-	if (index >= things_.size())
-		return nullptr;
-
-	return things_[index];
-}
-
-// -----------------------------------------------------------------------------
 // Returns the object of [type] at [index], or NULL if [index] is invalid
 // -----------------------------------------------------------------------------
 MapObject* SLADEMap::object(MapObject::Type type, unsigned index) const
@@ -387,299 +327,6 @@ bool SLADEMap::readMap(Archive::MapDesc map)
 }
 
 // -----------------------------------------------------------------------------
-// Adds a vertex to the map from a doom vertex definition [v]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addVertex(MapVertex::DoomData& v)
-{
-	MapVertex* nv = new MapVertex(v.x, v.y, this);
-	vertices_.push_back(nv);
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a vertex to the map from a doom64 vertex definition [v]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addVertex(MapVertex::Doom64Data& v)
-{
-	MapVertex* nv = new MapVertex((double)v.x / 65536, (double)v.y / 65536, this);
-	vertices_.push_back(nv);
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a side to the map from a doom sidedef definition [s]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addSide(MapSide::DoomData& s)
-{
-	// Create side
-	MapSide* ns = new MapSide(sector(s.sector), this);
-
-	// Setup side properties
-	ns->tex_upper_  = wxString::FromAscii(s.tex_upper, 8);
-	ns->tex_lower_  = wxString::FromAscii(s.tex_lower, 8);
-	ns->tex_middle_ = wxString::FromAscii(s.tex_middle, 8);
-	ns->offset_x_   = s.x_offset;
-	ns->offset_y_   = s.y_offset;
-
-	// Update texture counts
-	usage_tex_[ns->tex_upper_.Upper()] += 1;
-	usage_tex_[ns->tex_middle_.Upper()] += 1;
-	usage_tex_[ns->tex_lower_.Upper()] += 1;
-
-	// Add side
-	sides_.push_back(ns);
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a side to the map from a doom64 sidedef definition [s]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addSide(MapSide::Doom64Data& s)
-{
-	// Create side
-	MapSide* ns = new MapSide(sector(s.sector), this);
-
-	// Setup side properties
-	ns->tex_upper_  = ResourceManager::doom64TextureName(s.tex_upper);
-	ns->tex_lower_  = ResourceManager::doom64TextureName(s.tex_lower);
-	ns->tex_middle_ = ResourceManager::doom64TextureName(s.tex_middle);
-	ns->offset_x_   = s.x_offset;
-	ns->offset_y_   = s.y_offset;
-
-	// Update texture counts
-	usage_tex_[ns->tex_upper_.Upper()] += 1;
-	usage_tex_[ns->tex_middle_.Upper()] += 1;
-	usage_tex_[ns->tex_lower_.Upper()] += 1;
-
-	// Add side
-	sides_.push_back(ns);
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a line to the map from a doom linedef definition [l]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addLine(MapLine::DoomData& l)
-{
-	// Get relevant sides
-	MapSide* s1 = nullptr;
-	MapSide* s2 = nullptr;
-	if (sides_.size() > 32767)
-	{
-		// Support for > 32768 sides
-		if (l.side1 != 65535)
-			s1 = side(static_cast<unsigned short>(l.side1));
-		if (l.side2 != 65535)
-			s2 = side(static_cast<unsigned short>(l.side2));
-	}
-	else
-	{
-		s1 = side(l.side1);
-		s2 = side(l.side2);
-	}
-
-	// Get relevant vertices
-	MapVertex* v1 = vertex(l.vertex1);
-	MapVertex* v2 = vertex(l.vertex2);
-
-	// Check everything is valid
-	if (!v1 || !v2)
-		return false;
-
-	// Check if side1 already belongs to a line
-	if (s1 && s1->parent_)
-	{
-		// Duplicate side
-		MapSide* ns = new MapSide(s1->sector_, this);
-		ns->copy(s1);
-		s1 = ns;
-		sides_.push_back(s1);
-	}
-
-	// Check if side2 already belongs to a line
-	if (s2 && s2->parent_)
-	{
-		// Duplicate side
-		MapSide* ns = new MapSide(s2->sector_, this);
-		ns->copy(s2);
-		s2 = ns;
-		sides_.push_back(s2);
-	}
-
-	// Create line
-	MapLine* nl = new MapLine(v1, v2, s1, s2, this);
-
-	// Setup line properties
-	nl->properties_["arg0"]  = l.sector_tag;
-	nl->properties_["id"]    = l.sector_tag;
-	nl->special_             = l.type;
-	nl->properties_["flags"] = l.flags;
-
-	// Add line
-	lines_.push_back(nl);
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a line to the map from a doom64 linedef definition [l]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addLine(MapLine::Doom64Data& l)
-{
-	// Get relevant sides
-	MapSide* s1 = nullptr;
-	MapSide* s2 = nullptr;
-	if (sides_.size() > 32767)
-	{
-		// Support for > 32768 sides
-		if (l.side1 != 65535)
-			s1 = side(static_cast<unsigned short>(l.side1));
-		if (l.side2 != 65535)
-			s2 = side(static_cast<unsigned short>(l.side2));
-	}
-	else
-	{
-		s1 = side(l.side1);
-		s2 = side(l.side2);
-	}
-
-	// Get relevant vertices
-	MapVertex* v1 = vertex(l.vertex1);
-	MapVertex* v2 = vertex(l.vertex2);
-
-	// Check everything is valid
-	if (!v1 || !v2)
-		return false;
-
-	// Check if side1 already belongs to a line
-	if (s1 && s1->parent_)
-	{
-		// Duplicate side
-		MapSide* ns = new MapSide(s1->sector_, this);
-		ns->copy(s1);
-		s1 = ns;
-		sides_.push_back(s1);
-	}
-
-	// Check if side2 already belongs to a line
-	if (s2 && s2->parent_)
-	{
-		// Duplicate side
-		MapSide* ns = new MapSide(s2->sector_, this);
-		ns->copy(s2);
-		s2 = ns;
-		sides_.push_back(s2);
-	}
-
-	// Create line
-	MapLine* nl = new MapLine(v1, v2, s1, s2, this);
-
-	// Setup line properties
-	nl->properties_["arg0"] = l.sector_tag;
-	if (l.type & 0x100)
-		nl->properties_["macro"] = l.type & 0xFF;
-	else
-		nl->special_ = l.type & 0xFF;
-	nl->properties_["flags"]      = (int)l.flags;
-	nl->properties_["extraflags"] = l.type >> 9;
-
-	// Add line
-	lines_.push_back(nl);
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a sector to the map from a doom sector definition [s]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addSector(MapSector::DoomData& s)
-{
-	// Create sector
-	MapSector* ns = new MapSector(wxString::FromAscii(s.f_tex, 8), wxString::FromAscii(s.c_tex, 8), this);
-
-	// Setup sector properties
-	ns->setFloorHeight(s.f_height);
-	ns->setCeilingHeight(s.c_height);
-	ns->light_   = s.light;
-	ns->special_ = s.special;
-	ns->id_      = s.tag;
-
-	// Update texture counts
-	usage_flat_[ns->floor_.texture.Upper()] += 1;
-	usage_flat_[ns->ceiling_.texture.Upper()] += 1;
-
-	// Add sector
-	sectors_.push_back(ns);
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a sector to the map from a doom64 sector definition [s]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addSector(MapSector::Doom64Data& s)
-{
-	// Create sector
-	// We need to retrieve the texture name from the hash value
-	MapSector* ns = new MapSector(
-		ResourceManager::doom64TextureName(s.f_tex), ResourceManager::doom64TextureName(s.c_tex), this);
-
-	// Setup sector properties
-	ns->setFloorHeight(s.f_height);
-	ns->setCeilingHeight(s.c_height);
-	ns->light_                       = 255;
-	ns->special_                     = s.special;
-	ns->id_                          = s.tag;
-	ns->properties_["flags"]         = s.flags;
-	ns->properties_["color_things"]  = s.color[0];
-	ns->properties_["color_floor"]   = s.color[1];
-	ns->properties_["color_ceiling"] = s.color[2];
-	ns->properties_["color_upper"]   = s.color[3];
-	ns->properties_["color_lower"]   = s.color[4];
-
-	// Update texture counts
-	usage_flat_[ns->floor_.texture.Upper()] += 1;
-	usage_flat_[ns->ceiling_.texture.Upper()] += 1;
-
-	// Add sector
-	sectors_.push_back(ns);
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a thing to the map from a doom thing definition [t]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addThing(MapThing::DoomData& t)
-{
-	// Create thing
-	MapThing* nt = new MapThing(t.x, t.y, t.type, this);
-
-	// Setup thing properties
-	nt->angle_               = t.angle;
-	nt->properties_["flags"] = t.flags;
-
-	// Add thing
-	things_.push_back(nt);
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a thing to the map from a doom64 thing definition [t]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addThing(MapThing::Doom64Data& t)
-{
-	// Create thing
-	MapThing* nt = new MapThing(t.x, t.y, t.type, this);
-
-	// Setup thing properties
-	nt->angle_                = t.angle;
-	nt->properties_["height"] = (double)t.z;
-	nt->properties_["flags"]  = t.flags;
-	nt->properties_["id"]     = t.tid;
-
-	// Add thing
-	things_.push_back(nt);
-	return true;
-}
-
-// -----------------------------------------------------------------------------
 // Reads in doom format vertex definitions from [entry]
 // -----------------------------------------------------------------------------
 bool SLADEMap::readDoomVertexes(ArchiveEntry* entry)
@@ -704,7 +351,7 @@ bool SLADEMap::readDoomVertexes(ArchiveEntry* entry)
 	for (size_t a = 0; a < nv; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / nv) * 0.2f);
-		addVertex(vert_data[a]);
+		vertices_.push_back(new MapVertex(vert_data[a].x, vert_data[a].y, this));
 	}
 
 	Log::info(3, S_FMT("Read %lu vertices", vertices_.size()));
@@ -737,7 +384,15 @@ bool SLADEMap::readDoomSidedefs(ArchiveEntry* entry)
 	for (size_t a = 0; a < ns; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / ns) * 0.2f);
-		addSide(side_data[a]);
+
+		// Add side
+		auto side = new MapSide(this, side_data[a]);
+		sides_.push_back(side);
+
+		// Update texture counts
+		usage_tex_[side->tex_upper_.Upper()] += 1;
+		usage_tex_[side->tex_middle_.Upper()] += 1;
+		usage_tex_[side->tex_lower_.Upper()] += 1;
 	}
 
 	Log::info(3, S_FMT("Read %lu sides", sides_.size()));
@@ -770,8 +425,14 @@ bool SLADEMap::readDoomLinedefs(ArchiveEntry* entry)
 	for (size_t a = 0; a < nl; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / nl) * 0.2f);
-		if (!addLine(line_data[a]))
+		auto line = new MapLine(this);
+		if (line->create(line_data[a]))
+			lines_.push_back(line);
+		else
+		{
 			Log::warning(S_FMT("Line %lu invalid, not added", a));
+			delete line;
+		}
 	}
 
 	Log::info(3, S_FMT("Read %lu lines", lines_.size()));
@@ -804,7 +465,14 @@ bool SLADEMap::readDoomSectors(ArchiveEntry* entry)
 	for (size_t a = 0; a < ns; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / ns) * 0.2f);
-		addSector(sect_data[a]);
+
+		// Add sector
+		auto sector = new MapSector(this, sect_data[a]);
+		sectors_.push_back(sector);
+
+		// Update texture counts
+		usage_flat_[sector->floor_.texture.Upper()] += 1;
+		usage_flat_[sector->ceiling_.texture.Upper()] += 1;
 	}
 
 	Log::info(3, S_FMT("Read %lu sectors", sectors_.size()));
@@ -837,7 +505,7 @@ bool SLADEMap::readDoomThings(ArchiveEntry* entry)
 	for (size_t a = 0; a < nt; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / nt) * 0.2f);
-		addThing(thng_data[a]);
+		things_.push_back(new MapThing(this, thng_data[a]));
 	}
 
 	Log::info(3, S_FMT("Read %lu things", things_.size()));
@@ -926,110 +594,6 @@ bool SLADEMap::readDoomMap(Archive::MapDesc map)
 }
 
 // -----------------------------------------------------------------------------
-// Adds a line to the map from a hexen linedef definition [l]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addLine(MapLine::HexenData& l)
-{
-	// Get relevant sides
-	MapSide* s1 = nullptr;
-	MapSide* s2 = nullptr;
-	if (sides_.size() > 32767)
-	{
-		// Support for > 32768 sides
-		if (l.side1 != 65535)
-			s1 = side(static_cast<unsigned short>(l.side1));
-		if (l.side2 != 65535)
-			s2 = side(static_cast<unsigned short>(l.side2));
-	}
-	else
-	{
-		s1 = side(l.side1);
-		s2 = side(l.side2);
-	}
-
-	// Get relevant vertices
-	MapVertex* v1 = vertex(l.vertex1);
-	MapVertex* v2 = vertex(l.vertex2);
-
-	// Check everything is valid
-	if (!v1 || !v2)
-		return false;
-
-	// Check if side1 already belongs to a line
-	if (s1 && s1->parent_)
-	{
-		// Duplicate side
-		MapSide* ns = new MapSide(s1->sector_, this);
-		ns->copy(s1);
-		s1 = ns;
-		sides_.push_back(s1);
-	}
-
-	// Check if side2 already belongs to a line
-	if (s2 && s2->parent_)
-	{
-		// Duplicate side
-		MapSide* ns = new MapSide(s2->sector_, this);
-		ns->copy(s2);
-		s2 = ns;
-		sides_.push_back(s2);
-	}
-
-	// Create line
-	MapLine* nl = new MapLine(v1, v2, s1, s2, this);
-
-	// Setup line properties
-	nl->properties_["arg0"]  = l.args[0];
-	nl->properties_["arg1"]  = l.args[1];
-	nl->properties_["arg2"]  = l.args[2];
-	nl->properties_["arg3"]  = l.args[3];
-	nl->properties_["arg4"]  = l.args[4];
-	nl->special_             = l.type;
-	nl->properties_["flags"] = l.flags;
-
-	// Handle some special cases
-	if (l.type)
-	{
-		switch (Game::configuration().actionSpecial(l.type).needsTag())
-		{
-		case Game::TagType::LineId:
-		case Game::TagType::LineId1Line2: nl->properties_["id"] = l.args[0]; break;
-		case Game::TagType::LineIdHi5: nl->properties_["id"] = (l.args[0] + (l.args[4] << 8)); break;
-		default: break;
-		}
-	}
-
-	// Add line
-	lines_.push_back(nl);
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a thing to the map from a hexen thing definition [t]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addThing(MapThing::HexenData& t)
-{
-	// Create thing
-	MapThing* nt = new MapThing(t.x, t.y, t.type, this);
-
-	// Setup thing properties
-	nt->angle_                 = t.angle;
-	nt->properties_["height"]  = (double)t.z;
-	nt->properties_["special"] = t.special;
-	nt->properties_["flags"]   = t.flags;
-	nt->properties_["id"]      = t.tid;
-	nt->properties_["arg0"]    = t.args[0];
-	nt->properties_["arg1"]    = t.args[1];
-	nt->properties_["arg2"]    = t.args[2];
-	nt->properties_["arg3"]    = t.args[3];
-	nt->properties_["arg4"]    = t.args[4];
-
-	// Add thing
-	things_.push_back(nt);
-	return true;
-}
-
-// -----------------------------------------------------------------------------
 // Reads in hexen format linedef definitions from [entry]
 // -----------------------------------------------------------------------------
 bool SLADEMap::readHexenLinedefs(ArchiveEntry* entry)
@@ -1053,7 +617,14 @@ bool SLADEMap::readHexenLinedefs(ArchiveEntry* entry)
 	for (size_t a = 0; a < nl; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / nl) * 0.2f);
-		addLine(line_data[a]);
+		auto line = new MapLine(this);
+		if (line->create(line_data[a]))
+			lines_.push_back(line);
+		else
+		{
+			Log::warning(S_FMT("Line %lu invalid, not added", a));
+			delete line;
+		}
 	}
 
 	Log::info(3, S_FMT("Read %lu lines", lines_.size()));
@@ -1085,7 +656,7 @@ bool SLADEMap::readHexenThings(ArchiveEntry* entry)
 	for (size_t a = 0; a < nt; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / nt) * 0.2f);
-		addThing(thng_data[a]);
+		things_.push_back(new MapThing(this, thng_data[a]));
 	}
 
 	Log::info(3, S_FMT("Read %lu things", things_.size()));
@@ -1194,7 +765,7 @@ bool SLADEMap::readDoom64Vertexes(ArchiveEntry* entry)
 	for (size_t a = 0; a < n; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
-		addVertex(vert_data[a]);
+		vertices_.push_back(new MapVertex((double)vert_data[a].x / 65536, (double)vert_data[a].y / 65536, this));
 	}
 
 	Log::info(3, S_FMT("Read %lu vertices", vertices_.size()));
@@ -1226,7 +797,15 @@ bool SLADEMap::readDoom64Sidedefs(ArchiveEntry* entry)
 	for (size_t a = 0; a < n; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
-		addSide(side_data[a]);
+
+		// Add side
+		auto side = new MapSide(this, side_data[a]);
+		sides_.push_back(side);
+
+		// Update texture counts
+		usage_tex_[side->tex_upper_.Upper()] += 1;
+		usage_tex_[side->tex_middle_.Upper()] += 1;
+		usage_tex_[side->tex_lower_.Upper()] += 1;
 	}
 
 	Log::info(3, S_FMT("Read %lu sides", sides_.size()));
@@ -1258,7 +837,14 @@ bool SLADEMap::readDoom64Linedefs(ArchiveEntry* entry)
 	for (size_t a = 0; a < n; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
-		addLine(line_data[a]);
+		auto line = new MapLine(this);
+		if (line->create(line_data[a]))
+			lines_.push_back(line);
+		else
+		{
+			Log::warning(S_FMT("Line %lu invalid, not added", a));
+			delete line;
+		}
 	}
 
 	Log::info(3, S_FMT("Read %lu lines", lines_.size()));
@@ -1290,7 +876,14 @@ bool SLADEMap::readDoom64Sectors(ArchiveEntry* entry)
 	for (size_t a = 0; a < n; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
-		addSector(sect_data[a]);
+
+		// Add sector
+		auto sector = new MapSector(this, sect_data[a]);
+		sectors_.push_back(sector);
+
+		// Update texture counts
+		usage_flat_[sector->floor_.texture.Upper()] += 1;
+		usage_flat_[sector->ceiling_.texture.Upper()] += 1;
 	}
 
 	Log::info(3, S_FMT("Read %lu sectors", sectors_.size()));
@@ -1322,7 +915,7 @@ bool SLADEMap::readDoom64Things(ArchiveEntry* entry)
 	for (size_t a = 0; a < n; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
-		addThing(thng_data[a]);
+		things_.push_back(new MapThing(this, thng_data[a]));
 	}
 
 	Log::info(3, S_FMT("Read %lu things", things_.size()));
@@ -1408,252 +1001,6 @@ bool SLADEMap::readDoom64Map(Archive::MapDesc map)
 }
 
 // -----------------------------------------------------------------------------
-// Adds a vertex to the map from parsed UDMF vertex definition [def]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addVertex(ParseTreeNode* def)
-{
-	// Check for required properties
-	auto prop_x = def->childPTN("x");
-	auto prop_y = def->childPTN("y");
-	if (!prop_x || !prop_y)
-		return false;
-
-	// Create new vertex
-	MapVertex* nv = new MapVertex(prop_x->floatValue(), prop_y->floatValue(), this);
-
-	// Add extra vertex info
-	ParseTreeNode* prop = nullptr;
-	for (unsigned a = 0; a < def->nChildren(); a++)
-	{
-		prop = def->childPTN(a);
-
-		// Skip required properties
-		if (prop == prop_x || prop == prop_y)
-			continue;
-
-		nv->properties_[prop->name()] = prop->value();
-	}
-
-	// Add vertex to map
-	vertices_.push_back(nv);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a side to the map from parsed UDMF side definition [def]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addSide(ParseTreeNode* def)
-{
-	// Check for required properties
-	auto prop_sector = def->childPTN("sector");
-	if (!prop_sector)
-		return false;
-
-	// Check sector index
-	int sector = prop_sector->intValue();
-	if (sector < 0 || sector >= (int)sectors_.size())
-		return false;
-
-	// Create new side
-	MapSide* ns = new MapSide(sectors_[sector], this);
-
-	// Set defaults
-	ns->offset_x_   = 0;
-	ns->offset_y_   = 0;
-	ns->tex_upper_  = "-";
-	ns->tex_middle_ = "-";
-	ns->tex_lower_  = "-";
-
-	// Add extra side info
-	ParseTreeNode* prop = nullptr;
-	for (unsigned a = 0; a < def->nChildren(); a++)
-	{
-		prop = def->childPTN(a);
-
-		// Skip required properties
-		if (prop == prop_sector)
-			continue;
-
-		if (S_CMPNOCASE(prop->name(), "texturetop"))
-			ns->tex_upper_ = prop->stringValue();
-		else if (S_CMPNOCASE(prop->name(), "texturemiddle"))
-			ns->tex_middle_ = prop->stringValue();
-		else if (S_CMPNOCASE(prop->name(), "texturebottom"))
-			ns->tex_lower_ = prop->stringValue();
-		else if (S_CMPNOCASE(prop->name(), "offsetx"))
-			ns->offset_x_ = prop->intValue();
-		else if (S_CMPNOCASE(prop->name(), "offsety"))
-			ns->offset_y_ = prop->intValue();
-		else
-			ns->properties_[prop->name()] = prop->value();
-		// Log::info(1, "Property %s type %s (%s)", prop->getName(), prop->getValue().typeString(),
-		// prop->getValue().getStringValue());
-	}
-
-	// Update texture counts
-	usage_tex_[ns->tex_upper_.Upper()] += 1;
-	usage_tex_[ns->tex_middle_.Upper()] += 1;
-	usage_tex_[ns->tex_lower_.Upper()] += 1;
-
-	// Add side to map
-	sides_.push_back(ns);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a line to the map from parsed UDMF line definition [def]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addLine(ParseTreeNode* def)
-{
-	// Check for required properties
-	auto prop_v1 = def->childPTN("v1");
-	auto prop_v2 = def->childPTN("v2");
-	auto prop_s1 = def->childPTN("sidefront");
-	if (!prop_v1 || !prop_v2 || !prop_s1)
-		return false;
-
-	// Check indices
-	int v1 = prop_v1->intValue();
-	int v2 = prop_v2->intValue();
-	int s1 = prop_s1->intValue();
-	if (v1 < 0 || v1 >= (int)vertices_.size())
-		return false;
-	if (v2 < 0 || v2 >= (int)vertices_.size())
-		return false;
-	if (s1 < 0 || s1 >= (int)sides_.size())
-		return false;
-
-	// Get second side if any
-	MapSide* side2   = nullptr;
-	auto     prop_s2 = def->childPTN("sideback");
-	if (prop_s2)
-		side2 = side(prop_s2->intValue());
-
-	// Create new line
-	MapLine* nl = new MapLine(vertices_[v1], vertices_[v2], sides_[s1], side2, this);
-
-	// Set defaults
-	nl->special_ = 0;
-	nl->line_id_ = 0;
-
-	// Add extra line info
-	ParseTreeNode* prop = nullptr;
-	for (unsigned a = 0; a < def->nChildren(); a++)
-	{
-		prop = def->childPTN(a);
-
-		// Skip required properties
-		if (prop == prop_v1 || prop == prop_v2 || prop == prop_s1 || prop == prop_s2)
-			continue;
-
-		if (prop->name() == "special")
-			nl->special_ = prop->intValue();
-		else if (prop->name() == "id")
-			nl->line_id_ = prop->intValue();
-		else
-			nl->properties_[prop->name()] = prop->value();
-	}
-
-	// Add line to map
-	lines_.push_back(nl);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a sector to the map from parsed UDMF sector definition [def]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addSector(ParseTreeNode* def)
-{
-	// Check for required properties
-	auto prop_ftex = def->childPTN("texturefloor");
-	auto prop_ctex = def->childPTN("textureceiling");
-	if (!prop_ftex || !prop_ctex)
-		return false;
-
-	// Create new sector
-	MapSector* ns = new MapSector(prop_ftex->stringValue(), prop_ctex->stringValue(), this);
-	usage_flat_[ns->floor_.texture.Upper()] += 1;
-	usage_flat_[ns->ceiling_.texture.Upper()] += 1;
-
-	// Set defaults
-	ns->setFloorHeight(0);
-	ns->setCeilingHeight(0);
-	ns->light_   = 160;
-	ns->special_ = 0;
-	ns->id_      = 0;
-
-	// Add extra sector info
-	ParseTreeNode* prop = nullptr;
-	for (unsigned a = 0; a < def->nChildren(); a++)
-	{
-		prop = def->childPTN(a);
-
-		// Skip required properties
-		if (prop == prop_ftex || prop == prop_ctex)
-			continue;
-
-		if (S_CMPNOCASE(prop->name(), "heightfloor"))
-			ns->setFloorHeight(prop->intValue());
-		else if (S_CMPNOCASE(prop->name(), "heightceiling"))
-			ns->setCeilingHeight(prop->intValue());
-		else if (S_CMPNOCASE(prop->name(), "lightlevel"))
-			ns->light_ = prop->intValue();
-		else if (S_CMPNOCASE(prop->name(), "special"))
-			ns->special_ = prop->intValue();
-		else if (S_CMPNOCASE(prop->name(), "id"))
-			ns->id_ = prop->intValue();
-		else
-			ns->properties_[prop->name()] = prop->value();
-	}
-
-	// Add sector to map
-	sectors_.push_back(ns);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a thing to the map from parsed UDMF thing definition [def]
-// -----------------------------------------------------------------------------
-bool SLADEMap::addThing(ParseTreeNode* def)
-{
-	// Check for required properties
-	auto prop_x    = def->childPTN("x");
-	auto prop_y    = def->childPTN("y");
-	auto prop_type = def->childPTN("type");
-	if (!prop_x || !prop_y || !prop_type)
-		return false;
-
-	// Create new thing
-	MapThing* nt = new MapThing(prop_x->floatValue(), prop_y->floatValue(), prop_type->intValue(), this);
-
-	// Add extra thing info
-	ParseTreeNode* prop = nullptr;
-	for (unsigned a = 0; a < def->nChildren(); a++)
-	{
-		prop = def->childPTN(a);
-
-		// Skip required properties
-		if (prop == prop_x || prop == prop_y || prop == prop_type)
-			continue;
-
-		// Builtin properties
-		if (S_CMPNOCASE(prop->name(), "angle"))
-			nt->angle_ = prop->intValue();
-		else
-			nt->properties_[prop->name()] = prop->value();
-	}
-
-	// Add thing to map
-	things_.push_back(nt);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
 // Reads a UDMF format map using info in [map]
 // -----------------------------------------------------------------------------
 bool SLADEMap::readUDMFMap(Archive::MapDesc map)
@@ -1724,7 +1071,16 @@ bool SLADEMap::readUDMFMap(Archive::MapDesc map)
 	for (unsigned a = 0; a < defs_vertices.size(); a++)
 	{
 		UI::setSplashProgress(((float)a / defs_vertices.size()) * 0.2f);
-		addVertex(defs_vertices[a]);
+
+		auto vertex = new MapVertex(this);
+		if (!vertex->createFromUDMF(defs_vertices[a]))
+		{
+			Log::warning(S_FMT("Invalid UDMF vertex definition %d, not added", a));
+			delete vertex;
+			continue;
+		}
+
+		vertices_.push_back(vertex);
 	}
 
 	// Create sectors from parsed data
@@ -1732,7 +1088,20 @@ bool SLADEMap::readUDMFMap(Archive::MapDesc map)
 	for (unsigned a = 0; a < defs_sectors.size(); a++)
 	{
 		UI::setSplashProgress(0.2f + ((float)a / defs_sectors.size()) * 0.2f);
-		addSector(defs_sectors[a]);
+
+		auto sector = new MapSector(this);
+		if (!sector->createFromUDMF(defs_sectors[a]))
+		{
+			Log::warning(S_FMT("Invalid UDMF sector definition %d, not added", a));
+			delete sector;
+			continue;
+		}
+
+		// Update texture usage
+		usage_flat_[sector->floor_.texture.Upper()] += 1;
+		usage_flat_[sector->ceiling_.texture.Upper()] += 1;
+
+		sectors_.push_back(sector);
 	}
 
 	// Create sides from parsed data
@@ -1740,7 +1109,21 @@ bool SLADEMap::readUDMFMap(Archive::MapDesc map)
 	for (unsigned a = 0; a < defs_sides.size(); a++)
 	{
 		UI::setSplashProgress(0.4f + ((float)a / defs_sides.size()) * 0.2f);
-		addSide(defs_sides[a]);
+
+		auto side = new MapSide(this);
+		if (!side->createFromUDMF(defs_sides[a]))
+		{
+			Log::warning(S_FMT("Invalid UDMF side definition %d, not added", a));
+			delete side;
+			continue;
+		}
+
+		// Update texture counts
+		usage_tex_[side->tex_upper_.Upper()] += 1;
+		usage_tex_[side->tex_middle_.Upper()] += 1;
+		usage_tex_[side->tex_lower_.Upper()] += 1;
+
+		sides_.push_back(side);
 	}
 
 	// Create lines from parsed data
@@ -1748,7 +1131,16 @@ bool SLADEMap::readUDMFMap(Archive::MapDesc map)
 	for (unsigned a = 0; a < defs_lines.size(); a++)
 	{
 		UI::setSplashProgress(0.6f + ((float)a / defs_lines.size()) * 0.2f);
-		addLine(defs_lines[a]);
+
+		auto line = new MapLine(this);
+		if (!line->createFromUDMF(defs_lines[a]))
+		{
+			Log::warning(S_FMT("Invalid UDMF line definition %d, not added", a));
+			delete line;
+			continue;
+		}
+
+		lines_.push_back(line);
 	}
 
 	// Create things from parsed data
@@ -1756,7 +1148,16 @@ bool SLADEMap::readUDMFMap(Archive::MapDesc map)
 	for (unsigned a = 0; a < defs_things.size(); a++)
 	{
 		UI::setSplashProgress(0.8f + ((float)a / defs_things.size()) * 0.2f);
-		addThing(defs_things[a]);
+
+		auto thing = new MapThing(this);
+		if (!thing->createFromUDMF(defs_things[a]))
+		{
+			Log::warning(S_FMT("Invalid UDMF thing definition %d, not added", a));
+			delete thing;
+			continue;
+		}
+
+		things_.push_back(thing);
 	}
 
 	// Keep map-scope values
@@ -4250,6 +3651,17 @@ MapSide* SLADEMap::createSide(MapSector* sector)
 	sides_.push_back(side);
 
 	return side;
+}
+
+// -----------------------------------------------------------------------------
+// Creates a new side duplicated from the given [side] and returns it
+// -----------------------------------------------------------------------------
+MapSide* SLADEMap::duplicateSide(MapSide* side)
+{
+	auto ns = new MapSide(side->sector_, this);
+	ns->copy(side);
+	sides_.push_back(ns);
+	return ns;
 }
 
 // -----------------------------------------------------------------------------

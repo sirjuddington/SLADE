@@ -26,6 +26,8 @@ public:
 	MapVertex(double x, double y, SLADEMap* parent = nullptr);
 	~MapVertex() = default;
 
+	bool createFromUDMF(ParseTreeNode* def) override;
+
 	double xPos() const { return position_.x; }
 	double yPos() const { return position_.y; }
 	Vec2f  position() const { return position_; }

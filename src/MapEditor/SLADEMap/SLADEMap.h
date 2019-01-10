@@ -41,11 +41,11 @@ public:
 	void      setThingsUpdated();
 
 	// MapObject access
-	MapVertex* vertex(unsigned index) const;
-	MapSide*   side(unsigned index) const;
-	MapLine*   line(unsigned index) const;
-	MapSector* sector(unsigned index) const;
-	MapThing*  thing(unsigned index) const;
+	MapVertex* vertex(unsigned index) const { return index < vertices_.size() ? vertices_[index] : nullptr; }
+	MapSide*   side(unsigned index) const { return index < sides_.size() ? sides_[index] : nullptr; }
+	MapLine*   line(unsigned index) const { return index < lines_.size() ? lines_[index] : nullptr; }
+	MapSector* sector(unsigned index) const { return index < sectors_.size() ? sectors_[index] : nullptr; }
+	MapThing*  thing(unsigned index) const { return index < things_.size() ? things_[index] : nullptr; }
 	MapObject* object(MapObject::Type type, unsigned index) const;
 	size_t     nVertices() const { return vertices_.size(); }
 	size_t     nLines() const { return lines_.size(); }
@@ -146,6 +146,7 @@ public:
 	MapThing*  createThing(double x, double y);
 	MapSector* createSector();
 	MapSide*   createSide(MapSector* sector);
+	MapSide*   duplicateSide(MapSide* side);
 
 	// Editing
 	void       moveVertex(unsigned vertex, double nx, double ny);
@@ -258,12 +259,6 @@ private:
 	std::map<int, int>    usage_thing_type_;
 
 	// Doom format
-	bool addVertex(MapVertex::DoomData& v);
-	bool addSide(MapSide::DoomData& s);
-	bool addLine(MapLine::DoomData& l);
-	bool addSector(MapSector::DoomData& s);
-	bool addThing(MapThing::DoomData& t);
-
 	bool readDoomVertexes(ArchiveEntry* entry);
 	bool readDoomSidedefs(ArchiveEntry* entry);
 	bool readDoomLinedefs(ArchiveEntry* entry);
@@ -277,9 +272,6 @@ private:
 	bool writeDoomThings(ArchiveEntry* entry);
 
 	// Hexen format
-	bool addLine(MapLine::HexenData& l);
-	bool addThing(MapThing::HexenData& t);
-
 	bool readHexenLinedefs(ArchiveEntry* entry);
 	bool readHexenThings(ArchiveEntry* entry);
 
@@ -287,12 +279,6 @@ private:
 	bool writeHexenThings(ArchiveEntry* entry);
 
 	// Doom 64 format
-	bool addVertex(MapVertex::Doom64Data& v);
-	bool addSide(MapSide::Doom64Data& s);
-	bool addLine(MapLine::Doom64Data& l);
-	bool addSector(MapSector::Doom64Data& s);
-	bool addThing(MapThing::Doom64Data& t);
-
 	bool readDoom64Vertexes(ArchiveEntry* entry);
 	bool readDoom64Sidedefs(ArchiveEntry* entry);
 	bool readDoom64Linedefs(ArchiveEntry* entry);
@@ -304,11 +290,4 @@ private:
 	bool writeDoom64Linedefs(ArchiveEntry* entry);
 	bool writeDoom64Sectors(ArchiveEntry* entry);
 	bool writeDoom64Things(ArchiveEntry* entry);
-
-	// UDMF
-	bool addVertex(ParseTreeNode* def);
-	bool addSide(ParseTreeNode* def);
-	bool addLine(ParseTreeNode* def);
-	bool addSector(ParseTreeNode* def);
-	bool addThing(ParseTreeNode* def);
 };

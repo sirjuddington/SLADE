@@ -6,6 +6,7 @@
 
 #include "MobjPropertyList.h"
 
+class ParseTreeNode;
 class SLADEMap;
 
 class MapObject
@@ -40,6 +41,9 @@ public:
 
 	MapObject(Type type = Type::Object, SLADEMap* parent = nullptr);
 	virtual ~MapObject() = default;
+
+	virtual bool createFromUDMF(ParseTreeNode* def) { return false; }
+
 	bool operator<(const MapObject& right) const { return (index_ < right.index_); }
 	bool operator>(const MapObject& right) const { return (index_ > right.index_); }
 

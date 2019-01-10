@@ -58,7 +58,11 @@ public:
 
 	MapSector(SLADEMap* parent = nullptr);
 	MapSector(const string& f_tex, const string& c_tex, SLADEMap* parent = nullptr);
+	MapSector(SLADEMap* parent, const DoomData& data);
+	MapSector(SLADEMap* parent, const Doom64Data& data);
 	~MapSector() = default;
+
+	bool createFromUDMF(ParseTreeNode* def) override;
 
 	void copy(MapObject* obj) override;
 

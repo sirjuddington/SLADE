@@ -32,8 +32,12 @@ public:
 	};
 
 	MapSide(SLADEMap* parent) : MapObject(Type::Side, parent) {}
+	MapSide(SLADEMap* parent, const DoomData& data);
+	MapSide(SLADEMap* parent, const Doom64Data& data);
 	MapSide(MapSector* sector = nullptr, SLADEMap* parent = nullptr);
 	~MapSide() = default;
+
+	bool createFromUDMF(ParseTreeNode* def) override;
 
 	void copy(MapObject* c) override;
 
