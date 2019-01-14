@@ -953,6 +953,29 @@ bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 // ----------------------------------------------------------------------------
 bool DataEntryPanel::saveEntry()
 {
+	// Special handling for certain entry types
+	auto type = entry_->getType()->id();
+	if (type == "pnames" || type == "notpnames")
+	{
+		// PNAMES
+		if (wxMessageBox("Modifying PNAMES directly can cause TEXTUREx errors if you don't know what you are doing. It "
+						 "is highly recommended that you use the texture editor to modify PNAMES safely.\nAre you sure "
+						 "you want to continue saving?",
+						 "PNAMES Entry Modification Warning",
+						 wxYES_NO | wxICON_WARNING,
+						 this)
+			== wxYES)
+		{
+			// Write number of entries
+			uint32_t n_pnames = table_data_->GetNumberRows();
+			auto&    data     = table_data_->getData();
+			data.seek(0, SEEK_SET);
+			data.write(&n_pnames, 4);
+		}
+		else
+			return false;
+	}
+
 	entry_->importMemChunk(table_data_->getData());
 	setModified(false);
 	return true;
