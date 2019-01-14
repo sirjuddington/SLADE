@@ -28,6 +28,7 @@ public:
 	virtual wxPanel*	createPatchControls(wxWindow* parent);
 	virtual void		populatePatchList();
 	virtual void		updatePatchControls();
+	void                updateTextureName(const string& new_name);
 
 	bool	openTexture(CTexture* tex, TextureXList* list);
 	void	clearTexture();

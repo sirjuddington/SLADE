@@ -1194,6 +1194,9 @@ void TextureXPanel::renameTexture(bool each)
 			{
 				selection[a]->setName(new_name);
 				selection[a]->setState(1);
+				if (selection[a] == tex_current_)
+					texture_editor_->updateTextureName(new_name);
+
 				modified_ = true;
 			}
 		}
@@ -1225,6 +1228,8 @@ void TextureXPanel::renameTexture(bool each)
 				{
 					selection[a]->setName(names[a]);
 					selection[a]->setState(1);
+					if (selection[a] == tex_current_)
+						texture_editor_->updateTextureName(new_name);
 					modified_ = true;
 				}
 			}
