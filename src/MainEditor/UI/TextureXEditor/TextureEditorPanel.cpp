@@ -418,7 +418,15 @@ void TextureEditorPanel::updatePatchControls()
 	}
 }
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// Updates the texture name textbox with [new_name]
+// ----------------------------------------------------------------------------
+void TextureEditorPanel::updateTextureName(const string& new_name)
+{
+	text_tex_name_->SetValue(new_name);
+}
+
+// ----------------------------------------------------------------------------
 // Loads a TEXTUREX format texture into the editor
 // -----------------------------------------------------------------------------
 bool TextureEditorPanel::openTexture(CTexture* tex, TextureXList* list)
