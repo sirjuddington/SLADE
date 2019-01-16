@@ -390,7 +390,7 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 	if (href.EndsWith("/"))
 		href.RemoveLast(1);
 
-	if (href.StartsWith("http://"))
+	if (href.StartsWith("http://") || href.StartsWith("https://"))
 	{
 		wxLaunchDefaultBrowser(ev.GetURL());
 		ev.Veto();
@@ -466,7 +466,7 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 	wxHtmlLinkEvent& ev = (wxHtmlLinkEvent&)e;
 	string href = ev.GetLinkInfo().GetHref();
 
-	if (href.StartsWith("http://"))
+	if (href.StartsWith("http://") || href.StartsWith("https://"))
 		wxLaunchDefaultBrowser(ev.GetLinkInfo().GetHref());
 	else if (href.StartsWith("recent://"))
 	{

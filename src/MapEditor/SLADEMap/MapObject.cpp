@@ -99,7 +99,7 @@ string MapObject::typeName() const
 void MapObject::setModified()
 {
 	// Backup current properties if required
-	if (modified_time_ < prop_backup_time)
+	if (obj_id_ > 0 && modified_time_ < prop_backup_time)
 	{
 		obj_backup_ = std::make_unique<Backup>();
 		backupTo(obj_backup_.get());
