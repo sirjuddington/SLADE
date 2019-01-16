@@ -646,6 +646,8 @@ void Renderer::drawSelectionNumbers() const
 	{
 		if ((int)a > map_max_selection_numbers)
 			break;
+		if (!selection[a])
+			continue;
 
 		auto tp = selection[a]->getPoint(MOBJ_POINT_TEXT);
 		tp.x = view_.screenX(tp.x);

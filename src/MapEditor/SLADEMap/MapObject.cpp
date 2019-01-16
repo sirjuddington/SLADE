@@ -111,7 +111,7 @@ string MapObject::getTypeName()
 void MapObject::setModified()
 {
 	// Backup current properties if required
-	if (modified_time < prop_backup_time)
+	if (id > 0 && modified_time < prop_backup_time)
 	{
 		if (obj_backup) delete obj_backup;
 		obj_backup = new mobj_backup_t();
