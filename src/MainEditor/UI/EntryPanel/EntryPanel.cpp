@@ -320,7 +320,7 @@ void EntryPanel::onToolbarButton(wxCommandEvent& e)
 			if (undo_manager_)
 			{
 				undo_manager_->beginRecord("Save Entry Modifications");
-				undo_manager_->recordUndoStep(new EntryDataUS(entry_));
+				undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry_));
 			}
 
 			if (saveEntry())

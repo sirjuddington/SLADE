@@ -240,7 +240,7 @@ void SLADEMap::putObjectIdList(MapObject::Type type, vector<unsigned>& list)
 	else if (type == MapObject::Type::Sector)
 	{
 		for (auto& sector : sectors_)
-			list.push_back(sector->id_);
+			list.push_back(sector->obj_id_);
 	}
 	else if (type == MapObject::Type::Thing)
 	{
@@ -304,7 +304,7 @@ void SLADEMap::restoreObjectIdList(MapObject::Type type, vector<unsigned>& list)
 	{
 		// Clear
 		for (auto& sector : sectors_)
-			all_objects_[sector->id_].in_map = false;
+			all_objects_[sector->obj_id_].in_map = false;
 		sectors_.clear();
 
 		// Restore

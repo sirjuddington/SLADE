@@ -639,7 +639,7 @@ void TextureXPanel::applyChanges()
 
 		// Create single 'modify texture' undo level
 		undo_manager_->beginRecord("Modify Texture");
-		undo_manager_->recordUndoStep(new TextureModificationUS(this, *tex_current_));
+		undo_manager_->recordUndoStep(std::make_unique<TextureModificationUS>(this, *tex_current_));
 		undo_manager_->endRecord(true);
 
 		undo_manager_->setResetPoint();
@@ -736,7 +736,7 @@ void TextureXPanel::newTexture()
 
 	// Record undo level
 	undo_manager_->beginRecord("New Texture");
-	undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, selected + 1));
+	undo_manager_->recordUndoStep(std::make_unique<TextureCreateDeleteUS>(this, selected + 1));
 	undo_manager_->endRecord(true);
 
 	// Update texture list
@@ -787,7 +787,7 @@ void TextureXPanel::newTextureFromPatch()
 
 		// Record undo level
 		undo_manager_->beginRecord("New Texture from Patch");
-		undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, selected + 1));
+		undo_manager_->recordUndoStep(std::make_unique<TextureCreateDeleteUS>(this, selected + 1));
 		undo_manager_->endRecord(true);
 
 		// Update texture list
@@ -889,7 +889,7 @@ void TextureXPanel::newTextureFromFile()
 
 			// Record undo level
 			undo_manager_->beginRecord("New Texture from File");
-			undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, selected + 1));
+			undo_manager_->recordUndoStep(std::make_unique<TextureCreateDeleteUS>(this, selected + 1));
 			undo_manager_->endRecord(true);
 
 			// Update texture list
@@ -929,7 +929,7 @@ void TextureXPanel::removeTexture()
 		auto removed = texturex_.removeTexture(selection[a]);
 
 		// Record undo step
-		undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, std::move(removed), selection[a]));
+		undo_manager_->recordUndoStep(std::make_unique<TextureCreateDeleteUS>(this, std::move(removed), selection[a]));
 	}
 
 	// End recording undo level
@@ -966,7 +966,7 @@ void TextureXPanel::moveUp()
 		texturex_.swapTextures(index, index - 1);
 
 		// Record undo step
-		undo_manager_->recordUndoStep(new TextureSwapUS(texturex_, index, index - 1));
+		undo_manager_->recordUndoStep(std::make_unique<TextureSwapUS>(texturex_, index, index - 1));
 	}
 
 	// End recording undo level
@@ -1006,7 +1006,7 @@ void TextureXPanel::moveDown()
 		texturex_.swapTextures(selection[a], selection[a] + 1);
 
 		// Record undo step
-		undo_manager_->recordUndoStep(new TextureSwapUS(texturex_, selection[a], selection[a] + 1));
+		undo_manager_->recordUndoStep(std::make_unique<TextureSwapUS>(texturex_, selection[a], selection[a] + 1));
 	}
 
 	// End recording undo level
@@ -1073,7 +1073,7 @@ void TextureXPanel::sort()
 			origindex[index]       = origindex[itr->second];
 			origindex[itr->second] = tmp;
 			texturex_.swapTextures(index, itr->second);
-			undo_manager_->recordUndoStep(new TextureSwapUS(texturex_, index, itr->second));
+			undo_manager_->recordUndoStep(std::make_unique<TextureSwapUS>(texturex_, index, itr->second));
 			// Update the position of the displaced texture in the tmap
 			string name = S_FMT("%-8s%8d", texturex_.texture(itr->second)->name(), tmp);
 			tmap[name]  = itr->second;
@@ -1147,7 +1147,7 @@ void TextureXPanel::paste()
 		texturex_.addTexture(std::move(ntex), ++selected);
 
 		// Record undo step
-		undo_manager_->recordUndoStep(new TextureCreateDeleteUS(this, selected));
+		undo_manager_->recordUndoStep(std::make_unique<TextureCreateDeleteUS>(this, selected));
 
 		// Deal with patches
 		for (unsigned p = 0; p < ntex_ptr->nPatches(); p++)

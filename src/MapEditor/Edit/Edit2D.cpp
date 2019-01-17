@@ -246,7 +246,7 @@ void Edit2D::flipLines(bool sides) const
 	context_.undoManager()->beginRecord("Flip Line");
 	for (auto& line : lines)
 	{
-		context_.undoManager()->recordUndoStep(new MapEditor::PropertyChangeUS(line));
+		context_.undoManager()->recordUndoStep(std::make_unique<MapEditor::PropertyChangeUS>(line));
 		line->flip(sides);
 	}
 	context_.undoManager()->endRecord(true);

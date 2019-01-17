@@ -809,7 +809,7 @@ void Edit3D::paste(CopyType type) const
 		if (MapEditor::baseItemType(item.type) == ItemType::Side)
 		{
 			auto side = context_.map().side(item.index);
-			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(side));
+			undo_manager_->recordUndoStep(std::make_unique<MapEditor::PropertyChangeUS>(side));
 
 			// Upper wall
 			if (item.type == ItemType::WallTop)
@@ -840,7 +840,7 @@ void Edit3D::paste(CopyType type) const
 		else if (item.type == ItemType::Floor || item.type == ItemType::Ceiling)
 		{
 			auto sector = context_.map().sector(item.index);
-			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(sector));
+			undo_manager_->recordUndoStep(std::make_unique<MapEditor::PropertyChangeUS>(sector));
 
 			// Floor
 			if (item.type == ItemType::Floor)
@@ -863,7 +863,7 @@ void Edit3D::paste(CopyType type) const
 		else if (item.type == ItemType::Thing)
 		{
 			MapThing* thing = context_.map().thing(item.index);
-			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(thing));
+			undo_manager_->recordUndoStep(std::make_unique<MapEditor::PropertyChangeUS>(thing));
 
 			// Type
 			if (type == CopyType::TexType)
@@ -925,7 +925,7 @@ void Edit3D::floodFill(CopyType type) const
 		if (item.type == ItemType::WallTop || item.type == ItemType::WallMiddle || item.type == ItemType::WallBottom)
 		{
 			auto side = context_.map().side(item.index);
-			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(side));
+			undo_manager_->recordUndoStep(std::make_unique<MapEditor::PropertyChangeUS>(side));
 
 			// Upper wall
 			if (item.type == ItemType::WallTop)
@@ -956,7 +956,7 @@ void Edit3D::floodFill(CopyType type) const
 		else if (item.type == ItemType::Floor || item.type == ItemType::Ceiling)
 		{
 			auto sector = context_.map().sector(item.index);
-			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(sector));
+			undo_manager_->recordUndoStep(std::make_unique<MapEditor::PropertyChangeUS>(sector));
 
 			// Floor
 			if (item.type == ItemType::Floor)

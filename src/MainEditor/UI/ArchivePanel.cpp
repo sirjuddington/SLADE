@@ -1258,7 +1258,7 @@ bool ArchivePanel::revertEntry() const
 	// Go through selection
 	for (auto& entry : selected_entries)
 	{
-		undo_manager_->recordUndoStep(new EntryDataUS(entry));
+		undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
 		archive_->revertEntry(entry);
 	}
 
@@ -1681,7 +1681,7 @@ bool ArchivePanel::importEntry()
 			}
 
 			// Create undo step
-			undo_manager_->recordUndoStep(new EntryDataUS(entry));
+			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
 
 			// If a file was selected, import it
 			entry->importFile(info.filenames[0]);
@@ -2020,7 +2020,7 @@ bool ArchivePanel::gfxRemap()
 				temp.applyTranslation(&ted.getTranslation(), pal);
 
 				// Create undo step
-				undo_manager_->recordUndoStep(new EntryDataUS(entry));
+				undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
 
 				// Write modified image data
 				if (!temp.format()->saveImage(temp, mc, pal))
@@ -2077,7 +2077,7 @@ bool ArchivePanel::gfxColourise()
 				temp.colourise(gcd.colour(), pal);
 
 				// Create undo step
-				undo_manager_->recordUndoStep(new EntryDataUS(entry));
+				undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
 
 				// Write modified image data
 				if (!temp.format()->saveImage(temp, mc, pal))
@@ -2132,7 +2132,7 @@ bool ArchivePanel::gfxTint()
 				temp.tint(gtd.colour(), gtd.amount(), pal);
 
 				// Create undo step
-				undo_manager_->recordUndoStep(new EntryDataUS(entry));
+				undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
 
 				// Write modified image data
 				if (!temp.format()->saveImage(temp, mc, pal))
@@ -2175,7 +2175,7 @@ bool ArchivePanel::gfxModifyOffsets() const
 	auto selection = entry_list_->selectedEntries();
 	for (auto& entry : selection)
 	{
-		undo_manager_->recordUndoStep(new EntryDataUS(entry));
+		undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
 		EntryOperations::modifyGfxOffsets(entry, &mod);
 	}
 	MainEditor::currentEntryPanel()->callRefresh();
@@ -2478,10 +2478,10 @@ bool ArchivePanel::wavDSndConvert() const
 				errors = true;
 				continue;
 			}
-			undo_manager_->recordUndoStep(new EntryDataUS(selection[a])); // Create undo step
-			selection[a]->importMemChunk(dsnd);                           // Load doom sound data
-			EntryType::detectEntryType(selection[a]);                     // Update entry type
-			selection[a]->setExtensionByType();                           // Update extension if necessary
+			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a])); // Create undo step
+			selection[a]->importMemChunk(dsnd);                                         // Load doom sound data
+			EntryType::detectEntryType(selection[a]);                                   // Update entry type
+			selection[a]->setExtensionByType();                                         // Update extension if necessary
 		}
 	}
 	entry_list_->setEntriesAutoUpdate(true);
@@ -2538,10 +2538,10 @@ bool ArchivePanel::dSndWavConvert() const
 		// If successfully converted, update the entry
 		if (worked)
 		{
-			undo_manager_->recordUndoStep(new EntryDataUS(selection[a])); // Create undo step
-			selection[a]->importMemChunk(wav);                            // Load wav data
-			EntryType::detectEntryType(selection[a]);                     // Update entry type
-			selection[a]->setExtensionByType();                           // Update extension if necessary
+			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a])); // Create undo step
+			selection[a]->importMemChunk(wav);                                          // Load wav data
+			EntryType::detectEntryType(selection[a]);                                   // Update entry type
+			selection[a]->setExtensionByType();                                         // Update extension if necessary
 		}
 		else
 		{
@@ -2584,7 +2584,7 @@ bool ArchivePanel::musMidiConvert() const
 		if (selection[a]->type()->formatId().StartsWith("midi_") && selection[a]->type()->formatId() != "midi_smf")
 		{
 			MemChunk midi;
-			undo_manager_->recordUndoStep(new EntryDataUS(selection[a])); // Create undo step
+			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a])); // Create undo step
 			if (selection[a]->type()->formatId() == "midi_mus")
 				Conversions::musToMidi(selection[a]->data(), midi); // Convert
 			else if (selection[a]->type()->formatId() == "midi_gmid")
@@ -2664,7 +2664,7 @@ bool ArchivePanel::optimizePNG() const
 		UI::setSplashProgress(float(a) / float(selection.size()));
 		if (selection[a]->type()->formatId() == "img_png")
 		{
-			undo_manager_->recordUndoStep(new EntryDataUS(selection[a]));
+			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a]));
 			EntryOperations::optimizePNG(selection[a]);
 		}
 	}
