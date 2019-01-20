@@ -42,7 +42,6 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, wad_force_uppercase, true, CVar::Flag::Save)
 CVAR(Bool, iwad_lock, true, CVar::Flag::Save)
 
 namespace
@@ -101,6 +100,27 @@ vector<SpecialNS> special_namespaces = {
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, archive_load_data)
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Returns true if [entry] is a namespace marker (*_START / *_END)
+// -----------------------------------------------------------------------------
+bool isNamespaceEntry(ArchiveEntry* entry)
+{
+	static string start = "_START";
+	static string end   = "_END";
+
+	auto uname = entry->upperName();
+	return uname.EndsWith(start) || uname.EndsWith(end);
+}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -707,15 +727,11 @@ ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 	if (copy)
 		entry = new ArchiveEntry(*entry);
 
-	// Set new wad-friendly name
-	string name = processEntryName(entry->name());
-	entry->setName(name);
-
 	// Do default entry addition (to root directory)
-	Archive::addEntry(entry, position);
+	TreelessArchive::addEntry(entry, position);
 
 	// Update namespaces if necessary
-	if (name.EndsWith("_START") || name.EndsWith("_END"))
+	if (isNamespaceEntry(entry))
 		updateNamespaces();
 
 	return entry;
@@ -763,42 +779,19 @@ bool WadArchive::removeEntry(ArchiveEntry* entry)
 		return false;
 
 	// Get entry name (for later)
-	string name = entry->name();
+	string name = entry->upperName();
 
 	// Do default remove
 	if (Archive::removeEntry(entry))
 	{
 		// Update namespaces if necessary
-		if (name.Upper().Matches("*_START") || name.Upper().Matches("*_END"))
+		if (name.EndsWith("_START") || name.EndsWith("_END"))
 			updateNamespaces();
 
 		return true;
 	}
 	else
 		return false;
-}
-
-// -----------------------------------------------------------------------------
-// Contains the WadArchive::renameEntry logic
-// -----------------------------------------------------------------------------
-string WadArchive::processEntryName(const string& name)
-{
-	// Perform character substitution if needed
-	auto new_name = Misc::fileNameToLumpName(name);
-
-	// Check for \ character (e.g., from Arch-Viles graphics). They have to be kept.
-	if (new_name.length() <= 8 && new_name.find('\\') != wxNOT_FOUND) {} // Don't process as a file name
-
-	// Process name (must be 8 characters max, also cut any extension as wad entries don't usually want them)
-	else
-	{
-		wxFileName fn(new_name);
-		new_name = fn.GetName().Truncate(8);
-	}
-	if (wad_force_uppercase)
-		new_name.MakeUpper();
-
-	return new_name;
 }
 
 // -----------------------------------------------------------------------------
@@ -812,11 +805,14 @@ bool WadArchive::renameEntry(ArchiveEntry* entry, const string& name)
 	if (!checkEntry(entry))
 		return false;
 
+	// Get current name (for later)
+	string name_prev = entry->upperName();
+
 	// Do default rename
-	if (Archive::renameEntry(entry, processEntryName(name)))
+	if (Archive::renameEntry(entry, name))
 	{
 		// Update namespaces if necessary
-		if (entry->name().Upper().Matches("*_START") || entry->name().Upper().Matches("*_END"))
+		if (name_prev.EndsWith("_START") || name_prev.EndsWith("_END") || isNamespaceEntry(entry))
 			updateNamespaces();
 
 		return true;
@@ -837,8 +833,7 @@ bool WadArchive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 	if (Archive::swapEntries(entry1, entry2))
 	{
 		// Update namespaces if needed
-		if (entry1->name().Upper().Matches("*_START") || entry1->name().Upper().Matches("*_END")
-			|| entry2->name().Upper().Matches("*_START") || entry2->name().Upper().Matches("*_END"))
+		if (isNamespaceEntry(entry1) || isNamespaceEntry(entry2))
 			updateNamespaces();
 
 		return true;
@@ -860,7 +855,7 @@ bool WadArchive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNo
 	if (Archive::moveEntry(entry, position, nullptr))
 	{
 		// Update namespaces if necessary
-		if (entry->name().Upper().Matches("*_START") || entry->name().Upper().Matches("*_END"))
+		if (isNamespaceEntry(entry))
 			updateNamespaces();
 
 		return true;

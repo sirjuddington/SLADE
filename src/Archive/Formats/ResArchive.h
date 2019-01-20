@@ -20,17 +20,6 @@ public:
 	// Misc
 	bool loadEntryData(ArchiveEntry* entry) override;
 
-	// Entry addition/removal
-	ArchiveEntry* addEntry(
-		ArchiveEntry*    entry,
-		unsigned         position = 0xFFFFFFFF,
-		ArchiveTreeNode* dir      = nullptr,
-		bool             copy     = false) override;
-	ArchiveEntry* addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy = false) override;
-
-	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, const string& name) override;
-
 	// Static functions
 	static bool isResArchive(MemChunk& mc);
 	static bool isResArchive(MemChunk& mc, size_t& d_o, size_t& n_l);

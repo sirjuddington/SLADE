@@ -41,6 +41,14 @@
 
 // -----------------------------------------------------------------------------
 //
+// Variables
+//
+// -----------------------------------------------------------------------------
+CVAR(Bool, wad_force_uppercase, true, CVar::Flag::Save)
+
+
+// -----------------------------------------------------------------------------
+//
 // ArchiveEntry Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -251,6 +259,43 @@ void ArchiveEntry::unlock()
 
 	// Inform parent
 	stateChanged();
+}
+
+// -----------------------------------------------------------------------------
+// Sanitizes the entry name so that it is valid for archive format [format]
+// -----------------------------------------------------------------------------
+void ArchiveEntry::formatName(const ArchiveFormat& format)
+{
+	bool changed = false;
+
+	// Perform character substitution if needed
+	name_ = Misc::fileNameToLumpName(name_);
+
+	// Max length
+	if (format.max_name_length > 0 && (int)name_.size() > format.max_name_length)
+	{
+		name_.Truncate(format.max_name_length);
+		changed = true;
+	}
+
+	// Uppercase
+	if (format.prefer_uppercase && wad_force_uppercase)
+		name_.MakeUpper();
+
+	// Remove \ or / if the format supports folders
+	if (format.supports_dirs && name_.Contains(StringUtils::SLASH_FORWARD) || name_.Contains(StringUtils::SLASH_BACK))
+	{
+		Misc::lumpNameToFileName(name_);
+		changed = true;
+	}
+
+	// Remove extension if the format doesn't have them
+	if (!format.names_extensions && name_.Contains(StringUtils::FULLSTOP))
+		name_.Truncate(name_.Find('.'));
+
+	// Update upper name
+	if (changed)
+		upper_name_ = name_.Upper();
 }
 
 // -----------------------------------------------------------------------------

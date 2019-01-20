@@ -271,62 +271,6 @@ bool LibArchive::loadEntryData(ArchiveEntry* entry)
 }
 
 // -----------------------------------------------------------------------------
-// Override of Archive::addEntry to force entry addition to the root directory
-// and rename the entry if necessary to be lib-friendly (12 characters max)
-// -----------------------------------------------------------------------------
-ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
-{
-	// Check entry
-	if (!entry)
-		return nullptr;
-
-	// Check if read-only
-	if (isReadOnly())
-		return nullptr;
-
-	// Copy if necessary
-	if (copy)
-		entry = new ArchiveEntry(*entry);
-
-	// Process name (must be 12 characters max)
-	string name = entry->name().Truncate(12);
-
-	// Set new wad-friendly name
-	entry->setName(name);
-
-	// Do default entry addition (to root directory)
-	Archive::addEntry(entry, position);
-
-	return entry;
-}
-
-// -----------------------------------------------------------------------------
-// There is no namespaces in lib archives, so just put it at the end
-// -----------------------------------------------------------------------------
-ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
-{
-	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
-}
-
-// -----------------------------------------------------------------------------
-// Override of Archive::renameEntry to rename the entry if necessary to be
-// lib-friendly (12 characters max)
-// -----------------------------------------------------------------------------
-bool LibArchive::renameEntry(ArchiveEntry* entry, const string& name)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return false;
-
-	// Process name (must be 12 characters max)
-	auto new_name = name;
-	new_name.Truncate(12);
-
-	// Do default rename
-	return Archive::renameEntry(entry, new_name);
-}
-
-// -----------------------------------------------------------------------------
 // Checks if the given data is a valid Shadowcaster lib archive
 // -----------------------------------------------------------------------------
 bool LibArchive::isLibArchive(MemChunk& mc)

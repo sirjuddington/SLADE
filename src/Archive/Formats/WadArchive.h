@@ -35,7 +35,6 @@ public:
 	bool          removeEntry(ArchiveEntry* entry) override;
 
 	// Entry modification
-	string processEntryName(const string& name);
 	bool   renameEntry(ArchiveEntry* entry, const string& name) override;
 
 	// Entry moving

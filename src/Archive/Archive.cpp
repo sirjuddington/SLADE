@@ -932,6 +932,7 @@ ArchiveEntry* Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveT
 
 	// Add the entry
 	dir->addEntry(entry, position);
+	entry->formatName(formatDesc());
 
 	// Update variables etc
 	setModified(true);
@@ -1219,7 +1220,12 @@ bool Archive::renameEntry(ArchiveEntry* entry, const string& name)
 		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntryRenameUS>(entry, name));
 
 	// Rename the entry
-	entry->rename(name);
+	entry->setName(name);
+	entry->formatName(formatDesc());
+	entry->setState(ArchiveEntry::State::Modified, true);
+
+	// Announce modification
+	entryStateChanged(entry);
 
 	return true;
 }
@@ -1648,6 +1654,10 @@ bool Archive::loadFormats(MemChunk& mc)
 					fmt.extensions.emplace_back(ext->name(), ext->stringValue());
 				}
 			}
+
+			// Prefer uppercase entry names
+			else if (S_CMPNOCASE(prop->name(), "prefer_uppercase"))
+				fmt.prefer_uppercase = prop->boolValue();
 		}
 
 		Log::info(3, S_FMT("Read archive format %s: \"%s\"", fmt.id, fmt.name));
