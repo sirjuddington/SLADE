@@ -15,7 +15,7 @@ zscript
 		break, continue, deprecated, state, null, readonly, true, false, struct,
 		extend, clearscope, vararg, ui, play, virtual, virtualscope, meta, Property,
 		version, in, out, states, action, override, super, is, let, const, replaces,
-		protected, self, abstract, enum
+		protected, self, abstract, enum, switch, case, until
 	}
 
 	types =

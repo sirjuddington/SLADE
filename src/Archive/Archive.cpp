@@ -817,7 +817,7 @@ ArchiveTreeNode* Archive::createDir(const string& path, ArchiveTreeNode* base)
 
 	// Record undo step
 	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(new DirCreateDeleteUS(true, dir));
+		UndoRedo::currentManager()->recordUndoStep(std::make_unique<DirCreateDeleteUS>(true, dir));
 
 	// Set the archive state to modified
 	setModified(true);
@@ -851,7 +851,7 @@ bool Archive::removeDir(const string& path, ArchiveTreeNode* base)
 
 	// Record undo step
 	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(new DirCreateDeleteUS(false, dir));
+		UndoRedo::currentManager()->recordUndoStep(std::make_unique<DirCreateDeleteUS>(false, dir));
 
 	// Remove the directory from its parent
 	if (dir->parent())
@@ -884,7 +884,7 @@ bool Archive::renameDir(ArchiveTreeNode* dir, const string& new_name)
 	if (!(S_CMP(dir->name(), new_name)))
 	{
 		if (UndoRedo::currentlyRecording())
-			UndoRedo::currentManager()->recordUndoStep(new DirRenameUS(dir, new_name));
+			UndoRedo::currentManager()->recordUndoStep(std::make_unique<DirRenameUS>(dir, new_name));
 
 		dir->setName(new_name);
 		dir->dirEntry()->setState(ArchiveEntry::State::Modified);
@@ -946,7 +946,7 @@ ArchiveEntry* Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveT
 
 	// Create undo step
 	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(new EntryCreateDeleteUS(true, entry));
+		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntryCreateDeleteUS>(true, entry));
 
 	return entry;
 }
@@ -1020,7 +1020,7 @@ bool Archive::removeEntry(ArchiveEntry* entry)
 
 	// Create undo step
 	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(new EntryCreateDeleteUS(false, entry));
+		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntryCreateDeleteUS>(false, entry));
 
 	// Get the entry index
 	int index = dir->entryIndex(entry);
@@ -1065,7 +1065,7 @@ bool Archive::swapEntries(unsigned index1, unsigned index2, ArchiveTreeNode* dir
 
 	// Create undo step
 	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(new EntrySwapUS(dir, index1, index2));
+		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntrySwapUS>(dir, index1, index2));
 
 	// Do swap
 	if (dir->swapEntries(index1, index2))
@@ -1125,7 +1125,7 @@ bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 
 	// Create undo step
 	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(new EntrySwapUS(dir, i1, i2));
+		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntrySwapUS>(dir, i1, i2));
 
 	// Swap entries
 	dir->swapEntries(i1, i2);
@@ -1216,7 +1216,7 @@ bool Archive::renameEntry(ArchiveEntry* entry, const string& name)
 
 	// Create undo step
 	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(new EntryRenameUS(entry, name));
+		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntryRenameUS>(entry, name));
 
 	// Rename the entry
 	entry->rename(name);

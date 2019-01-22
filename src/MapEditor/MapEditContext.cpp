@@ -1343,7 +1343,7 @@ void MapEditContext::beginUndoRecord(const string& name, bool mod, bool create, 
 	if (undo_modified_)
 		MapObject::beginPropBackup(App::runTimer());
 	if (undo_deleted_ || undo_created_)
-		us_create_delete_ = new MapEditor::MapObjectCreateDeleteUS();
+		us_create_delete_ = std::make_unique<MapEditor::MapObjectCreateDeleteUS>();
 
 	// Make sure all modified objects will be picked up
 	wxMilliSleep(5);
@@ -1380,18 +1380,19 @@ void MapEditContext::endUndoRecord(bool success)
 		bool modified        = false;
 		bool created_deleted = false;
 		if (undo_modified_)
-			modified = manager->recordUndoStep(new MapEditor::MultiMapObjectPropertyChangeUS());
+			modified = manager->recordUndoStep(std::make_unique<MapEditor::MultiMapObjectPropertyChangeUS>());
 		if (undo_created_ || undo_deleted_)
 		{
-			((MapEditor::MapObjectCreateDeleteUS*)us_create_delete_)->checkChanges();
-			created_deleted = manager->recordUndoStep(us_create_delete_);
+			auto ustep = dynamic_cast<MapEditor::MapObjectCreateDeleteUS*>(us_create_delete_.get());
+			ustep->checkChanges();
+			created_deleted = manager->recordUndoStep(std::move(us_create_delete_));
 		}
 
 		// End recording
 		manager->endRecord(success && (modified || created_deleted));
 	}
 	updateThingLists();
-	us_create_delete_ = nullptr;
+	us_create_delete_.reset(nullptr);
 	map_.recomputeSpecials();
 }
 
@@ -1401,7 +1402,7 @@ void MapEditContext::endUndoRecord(bool success)
 void MapEditContext::recordPropertyChangeUndoStep(MapObject* object) const
 {
 	auto manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
-	manager->recordUndoStep(new MapEditor::PropertyChangeUS(object));
+	manager->recordUndoStep(std::make_unique<MapEditor::PropertyChangeUS>(object));
 }
 
 // -----------------------------------------------------------------------------

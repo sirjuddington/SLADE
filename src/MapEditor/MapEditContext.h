@@ -153,7 +153,7 @@ private:
 
 	// Undo/Redo stuff
 	std::unique_ptr<UndoManager> undo_manager_     = nullptr;
-	UndoStep*                    us_create_delete_ = nullptr;
+	UndoStep::UPtr               us_create_delete_ = nullptr;
 
 	// Editor state
 	MapEditor::Mode       edit_mode_      = MapEditor::Mode::Lines;

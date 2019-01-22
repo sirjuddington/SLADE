@@ -174,7 +174,7 @@ void MoveObjects::end(bool accept)
 		for (auto& item : items_)
 		{
 			auto thing = context_.map().thing(item.index);
-			context_.undoManager()->recordUndoStep(new MapEditor::PropertyChangeUS(thing));
+			context_.undoManager()->recordUndoStep(std::make_unique<MapEditor::PropertyChangeUS>(thing));
 			thing->move(thing->position() + offset_);
 		}
 		context_.endUndoRecord(true);
