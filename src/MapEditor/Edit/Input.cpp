@@ -293,7 +293,7 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 		// Sector tagging state
 		else if (mouse_state_ == MouseState::TagSectors)
 		{
-			context_.tagSectorAt(mouse_pos_map_.x, mouse_pos_map_.y);
+			context_.tagSectorAt(mouse_pos_map_);
 		}
 
 		else if (mouse_state_ == MouseState::Normal)
@@ -849,7 +849,7 @@ void Input::handleKeyBind2d(const string& name)
 				mouse_state_ = MouseState::LineDraw;
 			}
 			else
-				context_.edit2D().createObject(mouse_pos_map_.x, mouse_pos_map_.y);
+				context_.edit2D().createObject(mouse_pos_map_);
 		}
 
 		// Delete object

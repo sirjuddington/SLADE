@@ -1238,11 +1238,11 @@ bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEven
 		// Get unused tag/id depending on object type
 		int tag = GetValue().GetInteger();
 		if (id_type_ == IdType::Sector)
-			tag = objects[0]->parentMap()->findUnusedSectorTag();
+			tag = objects[0]->parentMap()->sectors().firstFreeId();
 		else if (id_type_ == IdType::Line)
-			tag = objects[0]->parentMap()->findUnusedLineId();
+			tag = objects[0]->parentMap()->lines().firstFreeId(objects[0]->parentMap()->currentFormat());
 		else if (id_type_ == IdType::Thing)
-			tag = objects[0]->parentMap()->findUnusedThingId();
+			tag = objects[0]->parentMap()->things().firstFreeId();
 
 		GetGrid()->ChangePropertyValue(this, tag);
 		return true;

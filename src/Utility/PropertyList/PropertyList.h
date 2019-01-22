@@ -20,7 +20,7 @@ public:
 	void allPropertyNames(vector<string>& list, bool ignore_no_value = false);
 	bool empty() const { return properties_.empty(); }
 
-	string toString(bool condensed = false);
+	string toString(bool condensed = false) const;
 
 private:
 	std::map<string, Property> properties_;

@@ -61,7 +61,7 @@ CVAR(Bool, map_remove_invalid_lines, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 Edit2D::Edit2D(MapEditContext& context) :
 	context_{ context },
-	copy_line_{ nullptr, nullptr, &copy_side_front_, &copy_side_back_, nullptr }
+	copy_line_{ nullptr, nullptr, &copy_side_front_, &copy_side_back_ }
 {
 }
 
@@ -91,9 +91,9 @@ void Edit2D::mirror(bool x_axis) const
 		{
 			// Position
 			if (x_axis)
-				context_.map().moveThing(thing->index(), bbox.midX() - (thing->xPos() - bbox.midX()), thing->yPos());
+				thing->move({ bbox.midX() - (thing->xPos() - bbox.midX()), thing->yPos() });
 			else
-				context_.map().moveThing(thing->index(), thing->xPos(), bbox.midY() - (thing->yPos() - bbox.midY()));
+				thing->move({ thing->xPos(), bbox.midY() - (thing->yPos() - bbox.midY()) });
 
 			// Direction
 			int angle = thing->angle();
@@ -153,15 +153,9 @@ void Edit2D::mirror(bool x_axis) const
 		{
 			// Position
 			if (x_axis)
-			{
-				context_.map().moveVertex(
-					vertex->index(), bbox.midX() - (vertex->xPos() - bbox.midX()), vertex->yPos());
-			}
+				vertex->move(bbox.midX() - (vertex->xPos() - bbox.midX()), vertex->yPos());
 			else
-			{
-				context_.map().moveVertex(
-					vertex->index(), vertex->xPos(), bbox.midY() - (vertex->yPos() - bbox.midY()));
-			}
+				vertex->move(vertex->xPos(), bbox.midY() - (vertex->yPos() - bbox.midY()));
 		}
 
 		// Flip lines (just swap vertices)
@@ -209,8 +203,7 @@ void Edit2D::splitLine(double x, double y, double min_dist) const
 	Vec2f point(x, y);
 
 	// Get the closest line
-	int  lindex = context_.map().nearestLine(point, min_dist);
-	auto line   = context_.map().line(lindex);
+	auto line = context_.map().lines().nearest(point, min_dist);
 
 	// Do nothing if no line is close enough
 	if (!line)
@@ -223,7 +216,7 @@ void Edit2D::splitLine(double x, double y, double min_dist) const
 	auto closest = MathStuff::closestPointOnLine(point, line->seg());
 
 	// Create vertex there
-	auto vertex = context_.map().createVertex(closest.x, closest.y);
+	auto vertex = context_.map().createVertex(closest);
 
 	// Do line split
 	context_.map().splitLine(line, vertex);
@@ -826,7 +819,7 @@ void Edit2D::pasteProperties()
 // -----------------------------------------------------------------------------
 // Creates an object (depending on edit mode) at [x,y]
 // -----------------------------------------------------------------------------
-void Edit2D::createObject(double x, double y) const
+void Edit2D::createObject(Vec2f pos) const
 {
 	using MapEditor::Mode;
 
@@ -835,7 +828,7 @@ void Edit2D::createObject(double x, double y) const
 	{
 		// If there are less than 2 vertices currently selected, just create a vertex at x,y
 		if (context_.selection().size() < 2)
-			createVertex(x, y);
+			createVertex(pos);
 		else
 		{
 			// Otherwise, create lines between selected vertices
@@ -859,33 +852,33 @@ void Edit2D::createObject(double x, double y) const
 		// Sector
 		if (context_.map().nLines() > 0)
 		{
-			createSector(x, y);
+			createSector(pos);
 		}
 		else
 		{
 			// Just create a vertex
-			createVertex(x, y);
+			createVertex(pos);
 			context_.setEditMode(Mode::Lines);
 		}
 	}
 
 	// Things mode
 	else if (context_.editMode() == Mode::Things)
-		createThing(x, y);
+		createThing(pos);
 }
 
 // -----------------------------------------------------------------------------
 // Creates a new vertex at [x,y]
 // -----------------------------------------------------------------------------
-void Edit2D::createVertex(double x, double y) const
+void Edit2D::createVertex(Vec2f pos) const
 {
 	// Snap coordinates to grid if necessary
-	x = context_.snapToGrid(x, false);
-	y = context_.snapToGrid(y, false);
+	pos.x = context_.snapToGrid(pos.x, false);
+	pos.y = context_.snapToGrid(pos.y, false);
 
 	// Create vertex
 	context_.beginUndoRecord("Create Vertex", true, true, false);
-	auto vertex = context_.map().createVertex(x, y, 2);
+	auto vertex = context_.map().createVertex(pos, 2);
 	context_.endUndoRecord(true);
 
 	// Editor message
@@ -896,17 +889,17 @@ void Edit2D::createVertex(double x, double y) const
 // -----------------------------------------------------------------------------
 // Creates a new thing at [x,y]
 // -----------------------------------------------------------------------------
-void Edit2D::createThing(double x, double y) const
+void Edit2D::createThing(Vec2f pos) const
 {
 	// Snap coordinates to grid if necessary
-	x = context_.snapToGrid(x, false);
-	y = context_.snapToGrid(y, false);
+	pos.x = context_.snapToGrid(pos.x, false);
+	pos.y = context_.snapToGrid(pos.y, false);
 
 	// Begin undo step
 	context_.beginUndoRecord("Create Thing", false, true, false);
 
 	// Create thing
-	auto thing = context_.map().createThing(x, y);
+	auto thing = context_.map().createThing(pos);
 
 	// Setup properties
 	Game::configuration().applyDefaults(thing, context_.map().currentFormat() == MapFormat::UDMF);
@@ -928,19 +921,17 @@ void Edit2D::createThing(double x, double y) const
 // -----------------------------------------------------------------------------
 // Creates a new sector at [x,y]
 // -----------------------------------------------------------------------------
-void Edit2D::createSector(double x, double y) const
+void Edit2D::createSector(Vec2f pos) const
 {
-	Vec2f point(x, y);
 	auto& map = context_.map();
 
 	// Find nearest line
-	int  nearest = map.nearestLine(point, 99999999);
-	auto line    = map.line(nearest);
+	auto line = map.lines().nearest(pos, 99999999);
 	if (!line)
 		return;
 
 	// Determine side
-	double side = MathStuff::lineSide(point, line->seg());
+	double side = MathStuff::lineSide(pos, line->seg());
 
 	// Get sector to copy if we're in sectors mode
 	MapSector* sector_copy = nullptr;

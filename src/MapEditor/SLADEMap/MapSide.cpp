@@ -32,10 +32,22 @@
 #include "Main.h"
 #include "MapSide.h"
 #include "Game/Configuration.h"
-#include "General/ResourceManager.h"
-#include "MapSector.h"
 #include "SLADEMap.h"
 #include "Utility/Parser.h"
+
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+const string MapSide::TEX_NONE       = "-";
+const string MapSide::PROP_SECTOR    = "sector";
+const string MapSide::PROP_TEXUPPER  = "texturetop";
+const string MapSide::PROP_TEXMIDDLE = "texturemiddle";
+const string MapSide::PROP_TEXLOWER  = "texturebottom";
+const string MapSide::PROP_OFFSETX   = "offsetx";
+const string MapSide::PROP_OFFSETY   = "offsety";
 
 
 // -----------------------------------------------------------------------------
@@ -48,94 +60,56 @@
 // -----------------------------------------------------------------------------
 // MapSide class constructor
 // -----------------------------------------------------------------------------
-MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(Type::Side, parent), sector_{ sector }
+MapSide::MapSide(
+	MapSector*    sector,
+	const string& tex_upper,
+	const string& tex_middle,
+	const string& tex_lower,
+	Vec2i         tex_offset) :
+	MapObject{ Type::Side },
+	sector_{ sector },
+	tex_upper_{ tex_upper },
+	tex_middle_{ tex_middle },
+	tex_lower_{ tex_lower },
+	tex_offset_{ tex_offset }
 {
-	// Add to parent sector
 	if (sector)
 		sector->connectSide(this);
 }
 
 // -----------------------------------------------------------------------------
-// MapSide class constructor from doom-format data
+// MapSide class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapSide::MapSide(SLADEMap* parent, const DoomData& data) :
-	MapObject(Type::Side, parent),
-	sector_{ parent ? parent->sector(data.sector) : nullptr },
-	tex_upper_{ wxString::FromAscii(data.tex_upper, 8) },
-	tex_middle_{ wxString::FromAscii(data.tex_middle, 8) },
-	tex_lower_{ wxString::FromAscii(data.tex_lower, 8) },
-	offset_x_{ data.x_offset },
-	offset_y_{ data.y_offset }
+MapSide::MapSide(MapSector* sector, ParseTreeNode* udmf_def) : MapObject{ Type::Side }, sector_{ sector }
 {
-	// Add to parent sector
-	if (sector_)
-		sector_->connectSide(this);
-}
+	if (sector)
+		sector->connectSide(this);
 
-// -----------------------------------------------------------------------------
-// MapSide class constructor from doom64-format data
-// -----------------------------------------------------------------------------
-MapSide::MapSide(SLADEMap* parent, const Doom64Data& data) :
-	MapObject(Type::Side, parent),
-	sector_{ parent ? parent->sector(data.sector) : nullptr },
-	tex_upper_{ ResourceManager::doom64TextureName(data.tex_upper) },
-	tex_middle_{ ResourceManager::doom64TextureName(data.tex_middle) },
-	tex_lower_{ ResourceManager::doom64TextureName(data.tex_lower) },
-	offset_x_{ data.x_offset },
-	offset_y_{ data.y_offset }
-{
-	// Add to parent sector
-	if (sector_)
-		sector_->connectSide(this);
-}
-
-// -----------------------------------------------------------------------------
-// Creates the side from a parsed UDMF definition [def]
-// -----------------------------------------------------------------------------
-bool MapSide::createFromUDMF(ParseTreeNode* def)
-{
-	// Check for required properties
-	auto prop_sector = def->childPTN("sector");
-	if (!prop_sector)
-		return false;
-
-	// Check sector index
-	int sector_index = prop_sector->intValue();
-	if (!parent_map_ || sector_index < 0 || sector_index >= (int)parent_map_->sectors().size())
-		return false;
-
-	// Set sector
-	sector_ = parent_map_->sector(sector_index);
-	if (sector_)
-		sector_->connectSide(this);
-
-	// Add extra side info
-	ParseTreeNode* prop = nullptr;
-	for (unsigned a = 0; a < def->nChildren(); a++)
+	// Set properties from UDMF definition
+	ParseTreeNode* prop;
+	for (unsigned a = 0; a < udmf_def->nChildren(); a++)
 	{
-		prop = def->childPTN(a);
+		prop = udmf_def->childPTN(a);
 
 		// Skip required properties
-		if (prop == prop_sector)
+		if (prop->nameIsCI(PROP_SECTOR))
 			continue;
 
-		if (S_CMPNOCASE(prop->name(), "texturetop"))
+		if (prop->nameIsCI(PROP_TEXUPPER))
 			tex_upper_ = prop->stringValue();
-		else if (S_CMPNOCASE(prop->name(), "texturemiddle"))
+		else if (prop->nameIsCI(PROP_TEXMIDDLE))
 			tex_middle_ = prop->stringValue();
-		else if (S_CMPNOCASE(prop->name(), "texturebottom"))
+		else if (prop->nameIsCI(PROP_TEXLOWER))
 			tex_lower_ = prop->stringValue();
-		else if (S_CMPNOCASE(prop->name(), "offsetx"))
-			offset_x_ = prop->intValue();
-		else if (S_CMPNOCASE(prop->name(), "offsety"))
-			offset_y_ = prop->intValue();
+		else if (prop->nameIsCI(PROP_OFFSETX))
+			tex_offset_.x = prop->intValue();
+		else if (prop->nameIsCI(PROP_OFFSETY))
+			tex_offset_.y = prop->intValue();
 		else
 			properties_[prop->name()] = prop->value();
 		// Log::info(1, "Property %s type %s (%s)", prop->getName(), prop->getValue().typeString(),
 		// prop->getValue().getStringValue());
 	}
-
-	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -146,29 +120,12 @@ void MapSide::copy(MapObject* c)
 	if (c->objType() != Type::Side)
 		return;
 
-	// Update texture counts (decrement previous)
-	if (parent_map_)
-	{
-		parent_map_->updateTexUsage(tex_lower_, -1);
-		parent_map_->updateTexUsage(tex_middle_, -1);
-		parent_map_->updateTexUsage(tex_upper_, -1);
-	}
-
 	// Copy properties
-	auto side   = dynamic_cast<MapSide*>(c);
-	tex_lower_  = side->tex_lower_;
-	tex_middle_ = side->tex_middle_;
-	tex_upper_  = side->tex_upper_;
-	offset_x_   = side->offset_x_;
-	offset_y_   = side->offset_y_;
-
-	// Update texture counts (increment new)
-	if (parent_map_)
-	{
-		parent_map_->updateTexUsage(tex_lower_, 1);
-		parent_map_->updateTexUsage(tex_middle_, 1);
-		parent_map_->updateTexUsage(tex_upper_, 1);
-	}
+	auto side = dynamic_cast<MapSide*>(c);
+	setTexLower(side->tex_lower_);
+	setTexMiddle(side->tex_middle_);
+	setTexUpper(side->tex_upper_);
+	tex_offset_ = side->tex_offset_;
 
 	MapObject::copy(c);
 }
@@ -211,6 +168,48 @@ void MapSide::changeLight(int amount)
 }
 
 // -----------------------------------------------------------------------------
+// Set the upper texture to [tex]
+// -----------------------------------------------------------------------------
+void MapSide::setTexUpper(const string& tex)
+{
+	if (parent_map_)
+	{
+		parent_map_->sides().updateTexUsage(tex_upper_, -1);
+		parent_map_->sides().updateTexUsage(tex, 1);
+	}
+
+	tex_upper_ = tex;
+}
+
+// -----------------------------------------------------------------------------
+// Set the middle texture to [tex]
+// -----------------------------------------------------------------------------
+void MapSide::setTexMiddle(const string& tex)
+{
+	if (parent_map_)
+	{
+		parent_map_->sides().updateTexUsage(tex_middle_, -1);
+		parent_map_->sides().updateTexUsage(tex, 1);
+	}
+
+	tex_middle_ = tex;
+}
+
+// -----------------------------------------------------------------------------
+// Set the lower texture to [tex]
+// -----------------------------------------------------------------------------
+void MapSide::setTexLower(const string& tex)
+{
+	if (parent_map_)
+	{
+		parent_map_->sides().updateTexUsage(tex_lower_, -1);
+		parent_map_->sides().updateTexUsage(tex, 1);
+	}
+
+	tex_lower_ = tex;
+}
+
+// -----------------------------------------------------------------------------
 // Sets the side's sector to [sector]
 // -----------------------------------------------------------------------------
 void MapSide::setSector(MapSector* sector)
@@ -235,17 +234,17 @@ void MapSide::setSector(MapSector* sector)
 // -----------------------------------------------------------------------------
 int MapSide::intProperty(const string& key)
 {
-	if (key == "sector")
+	if (key == PROP_SECTOR)
 	{
 		if (sector_)
 			return sector_->index();
 		else
 			return -1;
 	}
-	else if (key == "offsetx")
-		return offset_x_;
-	else if (key == "offsety")
-		return offset_y_;
+	else if (key == PROP_OFFSETX)
+		return tex_offset_.x;
+	else if (key == PROP_OFFSETY)
+		return tex_offset_.y;
 	else
 		return MapObject::intProperty(key);
 }
@@ -258,12 +257,12 @@ void MapSide::setIntProperty(const string& key, int value)
 	// Update modified time
 	setModified();
 
-	if (key == "sector" && parent_map_)
+	if (key == PROP_SECTOR && parent_map_)
 		setSector(parent_map_->sector(value));
-	else if (key == "offsetx")
-		offset_x_ = value;
-	else if (key == "offsety")
-		offset_y_ = value;
+	else if (key == PROP_OFFSETX)
+		tex_offset_.x = value;
+	else if (key == PROP_OFFSETY)
+		tex_offset_.y = value;
 	else
 		MapObject::setIntProperty(key, value);
 }
@@ -273,11 +272,11 @@ void MapSide::setIntProperty(const string& key, int value)
 // -----------------------------------------------------------------------------
 string MapSide::stringProperty(const string& key)
 {
-	if (key == "texturetop")
+	if (key == PROP_TEXUPPER)
 		return tex_upper_;
-	else if (key == "texturemiddle")
+	else if (key == PROP_TEXMIDDLE)
 		return tex_middle_;
-	else if (key == "texturebottom")
+	else if (key == PROP_TEXLOWER)
 		return tex_lower_;
 	else
 		return MapObject::stringProperty(key);
@@ -291,30 +290,12 @@ void MapSide::setStringProperty(const string& key, const string& value)
 	// Update modified time
 	setModified();
 
-	if (key == "texturetop")
-	{
-		if (parent_map_)
-			parent_map_->updateTexUsage(tex_upper_, -1);
-		tex_upper_ = value;
-		if (parent_map_)
-			parent_map_->updateTexUsage(tex_upper_, 1);
-	}
-	else if (key == "texturemiddle")
-	{
-		if (parent_map_)
-			parent_map_->updateTexUsage(tex_middle_, -1);
-		tex_middle_ = value;
-		if (parent_map_)
-			parent_map_->updateTexUsage(tex_middle_, 1);
-	}
-	else if (key == "texturebottom")
-	{
-		if (parent_map_)
-			parent_map_->updateTexUsage(tex_lower_, -1);
-		tex_lower_ = value;
-		if (parent_map_)
-			parent_map_->updateTexUsage(tex_lower_, 1);
-	}
+	if (key == PROP_TEXUPPER)
+		setTexUpper(value);
+	else if (key == PROP_TEXMIDDLE)
+		setTexMiddle(value);
+	else if (key == PROP_TEXLOWER)
+		setTexLower(value);
 	else
 		MapObject::setStringProperty(key, value);
 }
@@ -324,7 +305,7 @@ void MapSide::setStringProperty(const string& key, const string& value)
 // -----------------------------------------------------------------------------
 bool MapSide::scriptCanModifyProp(const string& key)
 {
-	return key != "sector";
+	return key != PROP_SECTOR;
 }
 
 // -----------------------------------------------------------------------------
@@ -334,18 +315,18 @@ void MapSide::writeBackup(Backup* backup)
 {
 	// Sector
 	if (sector_)
-		backup->props_internal["sector"] = sector_->objId();
+		backup->props_internal[PROP_SECTOR] = sector_->objId();
 	else
-		backup->props_internal["sector"] = 0;
+		backup->props_internal[PROP_SECTOR] = 0;
 
 	// Textures
-	backup->props_internal["texturetop"]    = tex_upper_;
-	backup->props_internal["texturemiddle"] = tex_middle_;
-	backup->props_internal["texturebottom"] = tex_lower_;
+	backup->props_internal[PROP_TEXUPPER]  = tex_upper_;
+	backup->props_internal[PROP_TEXMIDDLE] = tex_middle_;
+	backup->props_internal[PROP_TEXLOWER]  = tex_lower_;
 
 	// Offsets
-	backup->props_internal["offsetx"] = offset_x_;
-	backup->props_internal["offsety"] = offset_y_;
+	backup->props_internal[PROP_OFFSETX] = tex_offset_.x;
+	backup->props_internal[PROP_OFFSETY] = tex_offset_.y;
 }
 
 // -----------------------------------------------------------------------------
@@ -354,7 +335,7 @@ void MapSide::writeBackup(Backup* backup)
 void MapSide::readBackup(Backup* backup)
 {
 	// Sector
-	auto s = parent_map_->getObjectById(backup->props_internal["sector"]);
+	auto s = parent_map_->mapData().getObjectById(backup->props_internal[PROP_SECTOR]);
 	if (s)
 	{
 		sector_->disconnectSide(this);
@@ -368,22 +349,39 @@ void MapSide::readBackup(Backup* backup)
 		sector_ = nullptr;
 	}
 
-	// Update texture counts (decrement previous)
-	parent_map_->updateTexUsage(tex_upper_, -1);
-	parent_map_->updateTexUsage(tex_middle_, -1);
-	parent_map_->updateTexUsage(tex_lower_, -1);
-
 	// Textures
-	tex_upper_  = backup->props_internal["texturetop"].stringValue();
-	tex_middle_ = backup->props_internal["texturemiddle"].stringValue();
-	tex_lower_  = backup->props_internal["texturebottom"].stringValue();
-
-	// Update texture counts (increment new)
-	parent_map_->updateTexUsage(tex_upper_, 1);
-	parent_map_->updateTexUsage(tex_middle_, 1);
-	parent_map_->updateTexUsage(tex_lower_, 1);
+	setTexUpper(backup->props_internal[PROP_TEXUPPER].stringValue());
+	setTexMiddle(backup->props_internal[PROP_TEXMIDDLE].stringValue());
+	setTexLower(backup->props_internal[PROP_TEXLOWER].stringValue());
 
 	// Offsets
-	offset_x_ = backup->props_internal["offsetx"].intValue();
-	offset_y_ = backup->props_internal["offsety"].intValue();
+	tex_offset_.x = backup->props_internal[PROP_OFFSETX].intValue();
+	tex_offset_.y = backup->props_internal[PROP_OFFSETY].intValue();
+}
+
+// -----------------------------------------------------------------------------
+// Writes the side as a UDMF text definition to [def]
+// -----------------------------------------------------------------------------
+void MapSide::writeUDMF(string& def)
+{
+	def = S_FMT("sidedef//#%u\n{\n", index_);
+
+	// Basic properties
+	def += S_FMT("sector=%u;\n", sector_->index());
+	if (tex_upper_ != "-")
+		def += S_FMT("texturetop=\"%s\";\n", tex_upper_);
+	if (tex_middle_ != "-")
+		def += S_FMT("texturemiddle=\"%s\";\n", tex_middle_);
+	if (tex_lower_ != "-")
+		def += S_FMT("texturebottom=\"%s\";\n", tex_lower_);
+	if (tex_offset_.x != 0)
+		def += S_FMT("offsetx=%d;\n", tex_offset_.x);
+	if (tex_offset_.y != 0)
+		def += S_FMT("offsety=%d;\n", tex_offset_.y);
+
+	// Other properties
+	if (!properties_.isEmpty())
+		def += properties_.toString(true);
+
+	def += "}\n\n";
 }

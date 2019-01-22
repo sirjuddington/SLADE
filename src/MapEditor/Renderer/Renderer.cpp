@@ -299,9 +299,9 @@ void Renderer::setCameraThing(MapThing* thing)
 {
 	// Determine position
 	Vec3f pos(thing->position(), 40);
-	int   sector = context_.map().sectorAt(thing->position());
-	if (sector >= 0)
-		pos.z += context_.map().sector(sector)->floor().plane.heightAt(pos.x, pos.y);
+	auto  sector = context_.map().sectors().atPos(thing->position());
+	if (sector)
+		pos.z += sector->floor().plane.heightAt(pos.x, pos.y);
 
 	// Set camera position & direction
 	renderer_3d_.cameraSet(pos, MathStuff::vectorAngle(MathStuff::degToRad(thing->angle())));
@@ -736,11 +736,11 @@ void Renderer::drawLineDrawLines(bool snap_nearest_vertex) const
 	if (snap_nearest_vertex)
 	{
 		// If shift is held down, snap to the nearest vertex (if any)
-		int vertex = context_.map().nearestVertex(end);
-		if (vertex >= 0)
+		auto vertex = context_.map().vertices().nearest(end);
+		if (vertex)
 		{
-			end.x = context_.map().vertex(vertex)->xPos();
-			end.y = context_.map().vertex(vertex)->yPos();
+			end.x = vertex->xPos();
+			end.y = vertex->yPos();
 		}
 		else if (context_.gridSnap())
 		{

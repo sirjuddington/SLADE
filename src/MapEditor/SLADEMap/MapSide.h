@@ -2,55 +2,45 @@
 
 #include "MapObject.h"
 
-class MapSector;
-class MapLine;
-
 class MapSide : public MapObject
 {
 	friend class SLADEMap;
 	friend class MapLine;
+	friend class SideList;
 
 public:
-	struct DoomData
-	{
-		short x_offset;
-		short y_offset;
-		char  tex_upper[8];
-		char  tex_lower[8];
-		char  tex_middle[8];
-		short sector;
-	};
+	static const string TEX_NONE;
 
-	struct Doom64Data
-	{
-		short    x_offset;
-		short    y_offset;
-		uint16_t tex_upper;
-		uint16_t tex_lower;
-		uint16_t tex_middle;
-		short    sector;
-	};
+	// UDMF property names
+	static const string PROP_SECTOR;
+	static const string PROP_TEXUPPER;
+	static const string PROP_TEXMIDDLE;
+	static const string PROP_TEXLOWER;
+	static const string PROP_OFFSETX;
+	static const string PROP_OFFSETY;
 
-	MapSide(SLADEMap* parent) : MapObject(Type::Side, parent) {}
-	MapSide(SLADEMap* parent, const DoomData& data);
-	MapSide(SLADEMap* parent, const Doom64Data& data);
-	MapSide(MapSector* sector = nullptr, SLADEMap* parent = nullptr);
+	MapSide(
+		MapSector*    sector     = nullptr,
+		const string& tex_upper  = TEX_NONE,
+		const string& tex_middle = TEX_NONE,
+		const string& tex_lower  = TEX_NONE,
+		Vec2i         tex_offset = { 0, 0 });
+	MapSide(MapSector* sector, ParseTreeNode* udmf_def);
 	~MapSide() = default;
-
-	bool createFromUDMF(ParseTreeNode* def) override;
 
 	void copy(MapObject* c) override;
 
 	bool isOk() const { return !!sector_; }
 
-	MapSector* sector() const { return sector_; }
-	MapLine*   parentLine() const { return parent_; }
-	string     texUpper() const { return tex_upper_; }
-	string     texMiddle() const { return tex_middle_; }
-	string     texLower() const { return tex_lower_; }
-	short      offsetX() const { return offset_x_; }
-	short      offsetY() const { return offset_y_; }
-	uint8_t    light();
+	MapSector*    sector() const { return sector_; }
+	MapLine*      parentLine() const { return parent_; }
+	const string& texUpper() const { return tex_upper_; }
+	const string& texMiddle() const { return tex_middle_; }
+	const string& texLower() const { return tex_lower_; }
+	short         texOffsetX() const { return tex_offset_.x; }
+	short         texOffsetY() const { return tex_offset_.y; }
+	Vec2i         texOffset() const { return tex_offset_; }
+	uint8_t       light();
 
 	void setSector(MapSector* sector);
 	void changeLight(int amount);
@@ -64,6 +54,8 @@ public:
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
 
+	void writeUDMF(string& def) override;
+
 private:
 	// Basic data
 	MapSector* sector_     = nullptr;
@@ -71,6 +63,9 @@ private:
 	string     tex_upper_  = "-";
 	string     tex_middle_ = "-";
 	string     tex_lower_  = "-";
-	short      offset_x_   = 0;
-	short      offset_y_   = 0;
+	Vec2i      tex_offset_ = { 0, 0 };
+
+	void setTexUpper(const string& tex);
+	void setTexMiddle(const string& tex);
+	void setTexLower(const string& tex);
 };

@@ -213,7 +213,7 @@ void MapRenderer2D::renderVertices(float alpha)
 void MapRenderer2D::renderVerticesImmediate()
 {
 	if (list_vertices_ > 0 && map_->nVertices() == n_vertices_ && map_->geometryUpdated() <= vertices_updated_
-		&& !map_->modifiedSince(vertices_updated_, MapObject::Type::Vertex))
+		&& !map_->mapData().modifiedSince(vertices_updated_, MapObject::Type::Vertex))
 		glCallList(list_vertices_);
 	else
 	{
@@ -403,7 +403,8 @@ void MapRenderer2D::renderLinesImmediate(bool show_direction, float alpha)
 {
 	// Use display list if it's built
 	if (list_lines_ > 0 && show_direction == lines_dirs_ && map_->nLines() == n_lines_
-		&& map_->geometryUpdated() <= lines_updated_ && !map_->modifiedSince(lines_updated_, MapObject::Type::Line))
+		&& map_->geometryUpdated() <= lines_updated_
+		&& !map_->mapData().modifiedSince(lines_updated_, MapObject::Type::Line))
 	{
 		glCallList(list_lines_);
 		return;
@@ -468,7 +469,8 @@ void MapRenderer2D::renderLinesVBO(bool show_direction, float alpha)
 
 	// Update lines VBO if required
 	if (vbo_lines_ == 0 || show_direction != lines_dirs_ || map_->nLines() != n_lines_
-		|| map_->geometryUpdated() > lines_updated_ || map_->modifiedSince(lines_updated_, MapObject::Type::Line))
+		|| map_->geometryUpdated() > lines_updated_
+		|| map_->mapData().modifiedSince(lines_updated_, MapObject::Type::Line))
 		updateLinesVBO(show_direction, alpha);
 
 	// Disable any blending
@@ -1685,7 +1687,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 			// Dragon Path
 			if (tt.flags() & Game::ThingType::Flags::Dragon)
 			{
-				auto first = map_->findFirstThingWithId(thing->intProperty("id"));
+				auto first = map_->things().firstWithId(thing->intProperty("id"));
 				if (first)
 				{
 					path.from_index = thing->index();

@@ -31,9 +31,17 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapVertex.h"
-#include "App.h"
-#include "MapLine.h"
+#include "SLADEMap.h"
 #include "Utility/Parser.h"
+
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+const string MapVertex::PROP_X = "x";
+const string MapVertex::PROP_Y = "y";
 
 
 // -----------------------------------------------------------------------------
@@ -46,36 +54,25 @@
 // -----------------------------------------------------------------------------
 // MapVertex class constructor
 // -----------------------------------------------------------------------------
-MapVertex::MapVertex(double x, double y, SLADEMap* parent) : MapObject(Type::Vertex, parent), position_{ x, y } {}
+MapVertex::MapVertex(const Vec2f& pos) : MapObject(Type::Vertex), position_{ pos } {}
 
 // -----------------------------------------------------------------------------
-// Creates the vertex from a parsed UDMF definition [def]
+// MapVertex class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-bool MapVertex::createFromUDMF(ParseTreeNode* def)
+MapVertex::MapVertex(const Vec2f& pos, ParseTreeNode* udmf_def) : MapObject(Type::Vertex), position_{ pos }
 {
-	// Check for required properties
-	auto prop_x = def->childPTN("x");
-	auto prop_y = def->childPTN("y");
-	if (!prop_x || !prop_y)
-		return false;
-
-	// Set position
-	position_.set(prop_x->floatValue(), prop_y->floatValue());
-
-	// Add extra vertex info
+	// Set properties from UDMF definition
 	ParseTreeNode* prop;
-	for (unsigned a = 0; a < def->nChildren(); a++)
+	for (unsigned a = 0; a < udmf_def->nChildren(); a++)
 	{
-		prop = def->childPTN(a);
+		prop = udmf_def->childPTN(a);
 
 		// Skip required properties
-		if (prop == prop_x || prop == prop_y)
+		if (prop->nameRef() == PROP_X || prop->nameRef() == PROP_Y)
 			continue;
 
-		properties_[prop->name()] = prop->value();
+		properties_[prop->nameRef()] = prop->value();
 	}
-
-	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -88,13 +85,30 @@ Vec2f MapVertex::getPoint(Point point)
 }
 
 // -----------------------------------------------------------------------------
+// Moves the vertex to new a position [nx,ny]
+// -----------------------------------------------------------------------------
+void MapVertex::move(double nx, double ny)
+{
+	// Move the vertex
+	setModified();
+	position_.x = nx;
+	position_.y = ny;
+
+	// Reset all attached lines' geometry info
+	for (auto& connected_line : connected_lines_)
+		connected_line->resetInternals();
+
+	parent_map_->setGeometryUpdated();
+}
+
+// -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
 int MapVertex::intProperty(const string& key)
 {
-	if (key == "x")
+	if (key == PROP_X)
 		return (int)position_.x;
-	else if (key == "y")
+	else if (key == PROP_Y)
 		return (int)position_.y;
 	else
 		return MapObject::intProperty(key);
@@ -105,9 +119,9 @@ int MapVertex::intProperty(const string& key)
 // -----------------------------------------------------------------------------
 double MapVertex::floatProperty(const string& key)
 {
-	if (key == "x")
+	if (key == PROP_X)
 		return position_.x;
-	else if (key == "y")
+	else if (key == PROP_Y)
 		return position_.y;
 	else
 		return MapObject::floatProperty(key);
@@ -121,13 +135,13 @@ void MapVertex::setIntProperty(const string& key, int value)
 	// Update modified time
 	setModified();
 
-	if (key == "x")
+	if (key == PROP_X)
 	{
 		position_.x = value;
 		for (auto& connected_line : connected_lines_)
 			connected_line->resetInternals();
 	}
-	else if (key == "y")
+	else if (key == PROP_Y)
 	{
 		position_.y = value;
 		for (auto& connected_line : connected_lines_)
@@ -145,9 +159,9 @@ void MapVertex::setFloatProperty(const string& key, double value)
 	// Update modified time
 	setModified();
 
-	if (key == "x")
+	if (key == PROP_X)
 		position_.x = value;
-	else if (key == "y")
+	else if (key == PROP_Y)
 		position_.y = value;
 	else
 		return MapObject::setFloatProperty(key, value);
@@ -158,7 +172,7 @@ void MapVertex::setFloatProperty(const string& key, double value)
 // -----------------------------------------------------------------------------
 bool MapVertex::scriptCanModifyProp(const string& key)
 {
-	if (key == "x" || key == "y")
+	if (key == PROP_X || key == PROP_Y)
 		return false;
 
 	return true;
@@ -204,8 +218,8 @@ MapLine* MapVertex::connectedLine(unsigned index)
 void MapVertex::writeBackup(Backup* backup)
 {
 	// Position
-	backup->props_internal["x"] = position_.x;
-	backup->props_internal["y"] = position_.y;
+	backup->props_internal[PROP_X] = position_.x;
+	backup->props_internal[PROP_Y] = position_.y;
 }
 
 // -----------------------------------------------------------------------------
@@ -214,6 +228,23 @@ void MapVertex::writeBackup(Backup* backup)
 void MapVertex::readBackup(Backup* backup)
 {
 	// Position
-	position_.x = backup->props_internal["x"].floatValue();
-	position_.y = backup->props_internal["y"].floatValue();
+	position_.x = backup->props_internal[PROP_X].floatValue();
+	position_.y = backup->props_internal[PROP_Y].floatValue();
+}
+
+// -----------------------------------------------------------------------------
+// Writes the vertex as a UDMF text definition to [def]
+// -----------------------------------------------------------------------------
+void MapVertex::writeUDMF(string& def)
+{
+	def = S_FMT("vertex//#%u\n{\n", index_);
+
+	// Basic properties
+	def += S_FMT("x=%1.3f;\ny=%1.3f;\n", position_.x, position_.y);
+
+	// Other properties
+	if (!properties_.isEmpty())
+		def += properties_.toString(true);
+
+	def += "}\n\n";
 }

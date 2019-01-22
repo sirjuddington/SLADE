@@ -7,47 +7,15 @@ class MapThing : public MapObject
 	friend class SLADEMap;
 
 public:
-	struct DoomData
-	{
-		short x;
-		short y;
-		short angle;
-		short type;
-		short flags;
-	};
+	static const string PROP_X;
+	static const string PROP_Y;
+	static const string PROP_TYPE;
+	static const string PROP_ANGLE;
+	static const string PROP_FLAGS;
 
-	struct HexenData
-	{
-		short   tid;
-		short   x;
-		short   y;
-		short   z;
-		short   angle;
-		short   type;
-		short   flags;
-		uint8_t special;
-		uint8_t args[5];
-	};
-
-	struct Doom64Data
-	{
-		short x;
-		short y;
-		short z;
-		short angle;
-		short type;
-		short flags;
-		short tid;
-	};
-
-	MapThing(SLADEMap* parent = nullptr) : MapObject(Type::Thing, parent) {}
-	MapThing(double x, double y, short type, SLADEMap* parent = nullptr);
-	MapThing(SLADEMap* parent, const DoomData& data);
-	MapThing(SLADEMap* parent, const HexenData& data);
-	MapThing(SLADEMap* parent, const Doom64Data& data);
+	MapThing(const Vec2f& pos = { 0, 0 }, short type = -1, short angle = 0, short flags = 0);
+	MapThing(const Vec2f& pos, short type, ParseTreeNode* def);
 	~MapThing() = default;
-
-	bool createFromUDMF(ParseTreeNode* def) override;
 
 	double xPos() const { return position_.x; }
 	double yPos() const { return position_.y; }
@@ -57,8 +25,6 @@ public:
 
 	Vec2f getPoint(Point point) override;
 
-	void setPos(double x, double y) { position_.set(x, y); }
-
 	int    intProperty(const string& key) override;
 	double floatProperty(const string& key) override;
 	void   setIntProperty(const string& key, int value) override;
@@ -66,10 +32,14 @@ public:
 
 	void copy(MapObject* c) override;
 
-	void setAnglePoint(Vec2f point);
+	void move(Vec2f pos, bool modify = true);
+	void setAngle(int angle, bool modify = true);
+	void setAnglePoint(Vec2f point, bool modify = true);
 
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
+
+	void writeUDMF(string& def) override;
 
 	operator Debuggable() const
 	{

@@ -793,21 +793,11 @@ void MapEditorWindow::buildNodes(Archive* wad)
 bool MapEditorWindow::writeMap(WadArchive& wad, const string& name, bool nodes)
 {
 	auto& mdesc_current = MapEditor::editContext().mapDesc();
+	auto& map           = MapEditor::editContext().map();
 
 	// Get map data entries
 	vector<ArchiveEntry*> new_map_data;
-	auto&                 map = MapEditor::editContext().map();
-	if (mdesc_current.format == MapFormat::Doom)
-		map.writeDoomMap(new_map_data);
-	else if (mdesc_current.format == MapFormat::Hexen)
-		map.writeHexenMap(new_map_data);
-	else if (mdesc_current.format == MapFormat::UDMF)
-	{
-		auto udmf = new ArchiveEntry("TEXTMAP");
-		map.writeUDMFMap(udmf);
-		new_map_data.push_back(udmf);
-	}
-	else // TODO: doom64
+	if (!map.writeMap(new_map_data))
 		return false;
 
 	// Check script language

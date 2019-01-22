@@ -2,10 +2,6 @@
 
 #include "MapObject.h"
 
-class MapVertex;
-class MapSide;
-class MapSector;
-
 class MapLine : public MapObject
 {
 	friend class SLADEMap;
@@ -22,47 +18,16 @@ public:
 		BackLower   = 0x20,
 	};
 
-	// Binary map format structs
-	struct DoomData
-	{
-		uint16_t vertex1;
-		uint16_t vertex2;
-		uint16_t flags;
-		uint16_t type;
-		uint16_t sector_tag;
-		uint16_t side1;
-		uint16_t side2;
-	};
-	struct HexenData
-	{
-		uint16_t vertex1;
-		uint16_t vertex2;
-		uint16_t flags;
-		uint8_t  type;
-		uint8_t  args[5];
-		uint16_t side1;
-		uint16_t side2;
-	};
-	struct Doom64Data
-	{
-		uint16_t vertex1;
-		uint16_t vertex2;
-		uint32_t flags;
-		uint16_t type;
-		uint16_t sector_tag;
-		uint16_t side1;
-		uint16_t side2;
-	};
+	static const string PROP_V1;
+	static const string PROP_V2;
+	static const string PROP_S1;
+	static const string PROP_S2;
+	static const string PROP_SPECIAL;
+	static const string PROP_ID;
 
-	MapLine(SLADEMap* parent = nullptr) : MapObject(Type::Line, parent) {}
-	MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMap* parent = nullptr);
+	MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1 = nullptr, MapSide* s2 = nullptr, int special = 0);
+	MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, ParseTreeNode* udmf_def);
 	~MapLine() = default;
-
-	bool create(int v1_index, int v2_index, int s1_index, int s2_index);
-	bool create(const DoomData& data);
-	bool create(const HexenData& data);
-	bool create(const Doom64Data& data);
-	bool createFromUDMF(ParseTreeNode* def) override;
 
 	bool isOk() const { return vertex1_ && vertex2_; }
 
@@ -71,6 +36,7 @@ public:
 	MapSide*   s1() const { return side1_; }
 	MapSide*   s2() const { return side2_; }
 	int        special() const { return special_; }
+	int        id() const { return line_id_; }
 
 	MapSector* frontSector() const;
 	MapSector* backSector() const;
@@ -97,6 +63,8 @@ public:
 
 	void setS1(MapSide* side);
 	void setS2(MapSide* side);
+	void setV1(MapVertex* vertex);
+	void setV2(MapVertex* vertex);
 
 	Vec2f  getPoint(Point point) override;
 	Vec2f  point1() const;
@@ -108,6 +76,8 @@ public:
 	Vec2f  dirTabPoint(double tab_length = 0.);
 	double distanceTo(Vec2f point);
 	int    needsTexture() const;
+	bool   overlaps(MapLine* other) const;
+	bool   intersects(MapLine* other, Vec2f& intersect_point) const;
 
 	void clearUnneededTextures();
 	void resetInternals();
@@ -116,6 +86,8 @@ public:
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
 	void copy(MapObject*) override;
+
+	void writeUDMF(string& def) override;
 
 	operator Debuggable() const
 	{

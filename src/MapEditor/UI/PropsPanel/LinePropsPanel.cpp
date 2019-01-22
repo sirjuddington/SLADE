@@ -213,7 +213,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 
 		// Bind event
 		btn_new_tag_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, [&](wxCommandEvent& e) {
-			text_tag_->setNumber(MapEditor::editContext().map().findUnusedSectorTag());
+			text_tag_->setNumber(MapEditor::editContext().map().sectors().firstFreeId());
 		});
 	}
 
@@ -229,7 +229,8 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 
 		// Bind event
 		btn_new_id_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, [&](wxCommandEvent& e) {
-			text_id_->setNumber(MapEditor::editContext().map().findUnusedLineId());
+			auto& map = MapEditor::editContext().map();
+			text_id_->setNumber(map.lines().firstFreeId(map.currentFormat()));
 		});
 	}
 

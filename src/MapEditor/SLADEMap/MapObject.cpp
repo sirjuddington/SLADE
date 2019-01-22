@@ -63,8 +63,6 @@ MapObject::MapObject(Type type, SLADEMap* parent) :
 	modified_time_{ App::runTimer() },
 	type_{ type }
 {
-	if (parent)
-		parent->addMapObject(this);
 }
 
 // -----------------------------------------------------------------------------

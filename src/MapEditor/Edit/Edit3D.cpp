@@ -895,12 +895,12 @@ void Edit3D::floodFill(CopyType type) const
 	// Restrict floodfill to selection, if any
 	if (!selection.empty())
 	{
-		for (auto item = items.begin(); item < items.end(); ++item)
+		for (unsigned i = 0; i < items.size(); ++i)
 		{
 			bool found = false;
 			for (auto& sel_item : selection)
 			{
-				if (sel_item.type == item->type && sel_item.index == item->index)
+				if (sel_item.type == items[i].type && sel_item.index == items[i].index)
 				{
 					found = true;
 					break;
@@ -908,8 +908,8 @@ void Edit3D::floodFill(CopyType type) const
 			}
 			if (!found)
 			{
-				items.erase(item);
-				--item;
+				items.erase(items.begin() + i);
+				--i;
 			}
 		}
 	}

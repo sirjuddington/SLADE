@@ -532,6 +532,6 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void SectorPropsPanel::onBtnNewTag(wxCommandEvent& e)
 {
-	int tag = MapEditor::editContext().map().findUnusedSectorTag();
+	int tag = MapEditor::editContext().map().sectors().firstFreeId();
 	text_tag_->SetValue(S_FMT("%d", tag));
 }

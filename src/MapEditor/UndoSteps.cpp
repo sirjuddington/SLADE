@@ -20,7 +20,7 @@ void PropertyChangeUS::doSwap(MapObject* obj)
 
 bool PropertyChangeUS::doUndo()
 {
-	auto obj = UndoRedo::currentMap()->getObjectById(backup_->id);
+	auto obj = UndoRedo::currentMap()->mapData().getObjectById(backup_->id);
 	if (obj)
 		doSwap(obj);
 
@@ -29,7 +29,7 @@ bool PropertyChangeUS::doUndo()
 
 bool PropertyChangeUS::doRedo()
 {
-	auto obj = UndoRedo::currentMap()->getObjectById(backup_->id);
+	auto obj = UndoRedo::currentMap()->mapData().getObjectById(backup_->id);
 	if (obj)
 		doSwap(obj);
 
@@ -40,11 +40,11 @@ bool PropertyChangeUS::doRedo()
 MapObjectCreateDeleteUS::MapObjectCreateDeleteUS()
 {
 	auto map = UndoRedo::currentMap();
-	map->putObjectIdList(MapObject::Type::Vertex, vertices_);
-	map->putObjectIdList(MapObject::Type::Line, lines_);
-	map->putObjectIdList(MapObject::Type::Side, sides_);
-	map->putObjectIdList(MapObject::Type::Sector, sectors_);
-	map->putObjectIdList(MapObject::Type::Thing, things_);
+	map->mapData().putObjectIdList(MapObject::Type::Vertex, vertices_);
+	map->mapData().putObjectIdList(MapObject::Type::Line, lines_);
+	map->mapData().putObjectIdList(MapObject::Type::Side, sides_);
+	map->mapData().putObjectIdList(MapObject::Type::Sector, sectors_);
+	map->mapData().putObjectIdList(MapObject::Type::Thing, things_);
 }
 
 void MapObjectCreateDeleteUS::swapLists()
@@ -57,15 +57,15 @@ void MapObjectCreateDeleteUS::swapLists()
 	vector<unsigned> things;
 	auto             map = UndoRedo::currentMap();
 	if (isValid(vertices_))
-		map->putObjectIdList(MapObject::Type::Vertex, vertices);
+		map->mapData().putObjectIdList(MapObject::Type::Vertex, vertices);
 	if (isValid(lines_))
-		map->putObjectIdList(MapObject::Type::Line, lines);
+		map->mapData().putObjectIdList(MapObject::Type::Line, lines);
 	if (isValid(sides_))
-		map->putObjectIdList(MapObject::Type::Side, sides);
+		map->mapData().putObjectIdList(MapObject::Type::Side, sides);
 	if (isValid(sectors_))
-		map->putObjectIdList(MapObject::Type::Sector, sectors);
+		map->mapData().putObjectIdList(MapObject::Type::Sector, sectors);
 	if (isValid(things_))
-		map->putObjectIdList(MapObject::Type::Thing, things);
+		map->mapData().putObjectIdList(MapObject::Type::Thing, things);
 
 	// Restore
 	if (isValid(vertices_))
@@ -222,7 +222,7 @@ bool MapObjectCreateDeleteUS::isOk()
 MultiMapObjectPropertyChangeUS::MultiMapObjectPropertyChangeUS()
 {
 	// Get backups of recently modified map objects
-	auto objects = UndoRedo::currentMap()->allModifiedObjects(MapObject::propBackupTime());
+	auto objects = UndoRedo::currentMap()->mapData().allModifiedObjects(MapObject::propBackupTime());
 	for (auto& object : objects)
 	{
 		auto bak = object->backup(true);
@@ -254,7 +254,7 @@ bool MultiMapObjectPropertyChangeUS::doUndo()
 {
 	for (unsigned a = 0; a < backups_.size(); a++)
 	{
-		auto obj = UndoRedo::currentMap()->getObjectById(backups_[a]->id);
+		auto obj = UndoRedo::currentMap()->mapData().getObjectById(backups_[a]->id);
 		if (obj)
 			doSwap(obj, a);
 	}
@@ -267,7 +267,7 @@ bool MultiMapObjectPropertyChangeUS::doRedo()
 	// Log::info(2, "Restore %lu objects", backups.size());
 	for (unsigned a = 0; a < backups_.size(); a++)
 	{
-		auto obj = UndoRedo::currentMap()->getObjectById(backups_[a]->id);
+		auto obj = UndoRedo::currentMap()->mapData().getObjectById(backups_[a]->id);
 		if (obj)
 			doSwap(obj, a);
 	}

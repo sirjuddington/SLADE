@@ -31,12 +31,24 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapLine.h"
-#include "Game/Configuration.h"
 #include "MapSide.h"
 #include "MapVertex.h"
 #include "SLADEMap.h"
 #include "Utility/MathStuff.h"
 #include "Utility/Parser.h"
+
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+const string MapLine::PROP_V1      = "v1";
+const string MapLine::PROP_V2      = "v2";
+const string MapLine::PROP_S1      = "sidefront";
+const string MapLine::PROP_S2      = "sideback";
+const string MapLine::PROP_SPECIAL = "special";
+const string MapLine::PROP_ID      = "id";
 
 
 // -----------------------------------------------------------------------------
@@ -49,8 +61,32 @@
 // -----------------------------------------------------------------------------
 // MapLine class constructor
 // -----------------------------------------------------------------------------
-MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMap* parent) :
-	MapObject(Type::Line, parent),
+MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, int special) :
+	MapObject(Type::Line),
+	vertex1_{ v1 },
+	vertex2_{ v2 },
+	side1_{ s1 },
+	side2_{ s2 },
+	special_{ special }
+{
+	// Connect to vertices
+	if (v1)
+		v1->connectLine(this);
+	if (v2)
+		v2->connectLine(this);
+
+	// Connect to sides
+	if (s1)
+		s1->parent_ = this;
+	if (s2)
+		s2->parent_ = this;
+}
+
+// -----------------------------------------------------------------------------
+// MapLine class constructor from UDMF definition
+// -----------------------------------------------------------------------------
+MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, ParseTreeNode* udmf_def) :
+	MapObject(Type::Line),
 	vertex1_{ v1 },
 	vertex2_{ v2 },
 	side1_{ s1 },
@@ -67,236 +103,24 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMa
 		s1->parent_ = this;
 	if (s2)
 		s2->parent_ = this;
-}
 
-// -----------------------------------------------------------------------------
-// Creates the line from the given vertex and side indices
-// -----------------------------------------------------------------------------
-bool MapLine::create(int v1_index, int v2_index, int s1_index, int s2_index)
-{
-	// Can't create from indices without a parent map
-	if (!parent_map_)
-		return false;
-
-	// Get relevant sides
-	auto s1 = parent_map_->side(s1_index);
-	auto s2 = parent_map_->side(s2_index);
-
-	// Get relevant vertices
-	auto v1 = parent_map_->vertex(v1_index);
-	auto v2 = parent_map_->vertex(v2_index);
-
-	// Check everything is valid
-	if (!v1 || !v2)
-		return false;
-
-	// Check if either side already belongs to a line, duplicate if necessary
-	if (s1 && s1->parent_)
-		s1 = parent_map_->duplicateSide(s1);
-	if (s2 && s2->parent_)
-		s2 = parent_map_->duplicateSide(s2);
-
-	// Set vertices+sides
-	vertex1_ = v1;
-	vertex2_ = v2;
-	side1_   = s1;
-	side2_   = s2;
-
-	// Connect to vertices
-	if (v1)
-		v1->connectLine(this);
-	if (v2)
-		v2->connectLine(this);
-
-	// Connect to sides
-	if (s1)
-		s1->parent_ = this;
-	if (s2)
-		s2->parent_ = this;
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Creates the line from the given doom-format [data]
-// -----------------------------------------------------------------------------
-bool MapLine::create(const DoomData& data)
-{
-	// Can't create from data without a parent map
-	if (!parent_map_)
-		return false;
-
-	// Get side indices
-	int s1_index = data.side1;
-	int s2_index = data.side2;
-	if (parent_map_->sides().size() > 32767)
-	{
-		// Support for > 32768 sides
-		if (data.side1 != 65535)
-			s1_index = static_cast<unsigned short>(data.side1);
-		if (data.side2 != 65535)
-			s2_index = static_cast<unsigned short>(data.side2);
-	}
-
-	// Create from vertex+side indices
-	if (!create(data.vertex1, data.vertex2, s1_index, s2_index))
-		return false;
-
-	// Set properties
-	properties_["arg0"]  = data.sector_tag;
-	properties_["id"]    = data.sector_tag;
-	special_             = data.type;
-	properties_["flags"] = data.flags;
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Creates the line from the given hexen-format [data]
-// -----------------------------------------------------------------------------
-bool MapLine::create(const HexenData& data)
-{
-	// Can't create from data without a parent map
-	if (!parent_map_)
-		return false;
-
-	// Get side indices
-	int s1_index = data.side1;
-	int s2_index = data.side2;
-	if (parent_map_->sides().size() > 32767)
-	{
-		// Support for > 32768 sides
-		if (data.side1 != 65535)
-			s1_index = static_cast<unsigned short>(data.side1);
-		if (data.side2 != 65535)
-			s2_index = static_cast<unsigned short>(data.side2);
-	}
-
-	// Create from vertex+side indices
-	if (!create(data.vertex1, data.vertex2, s1_index, s2_index))
-		return false;
-
-	// Set properties
-	properties_["arg0"]  = data.args[0];
-	properties_["arg1"]  = data.args[1];
-	properties_["arg2"]  = data.args[2];
-	properties_["arg3"]  = data.args[3];
-	properties_["arg4"]  = data.args[4];
-	special_             = data.type;
-	properties_["flags"] = data.flags;
-
-	// Handle some special cases
-	if (data.type)
-	{
-		switch (Game::configuration().actionSpecial(data.type).needsTag())
-		{
-		case Game::TagType::LineId:
-		case Game::TagType::LineId1Line2: properties_["id"] = data.args[0]; break;
-		case Game::TagType::LineIdHi5: properties_["id"] = (data.args[0] + (data.args[4] << 8)); break;
-		default: break;
-		}
-	}
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Creates the line from the given doom64-format [data]
-// -----------------------------------------------------------------------------
-bool MapLine::create(const Doom64Data& data)
-{
-	// Can't create from data without a parent map
-	if (!parent_map_)
-		return false;
-
-	// Get side indices
-	int s1_index = data.side1;
-	int s2_index = data.side2;
-	if (parent_map_->sides().size() > 32767)
-	{
-		// Support for > 32768 sides
-		if (data.side1 != 65535)
-			s1_index = static_cast<unsigned short>(data.side1);
-		if (data.side2 != 65535)
-			s2_index = static_cast<unsigned short>(data.side2);
-	}
-
-	// Create from vertex+side indices
-	if (!create(data.vertex1, data.vertex2, s1_index, s2_index))
-		return false;
-
-	// Set properties
-	properties_["arg0"] = data.sector_tag;
-	if (data.type & 0x100)
-		properties_["macro"] = data.type & 0xFF;
-	else
-		special_ = data.type & 0xFF;
-	properties_["flags"]      = (int)data.flags;
-	properties_["extraflags"] = data.type >> 9;
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Creates the line from a parsed UDMF definition [def]
-// -----------------------------------------------------------------------------
-bool MapLine::createFromUDMF(ParseTreeNode* def)
-{
-	if (!parent_map_)
-		return false;
-
-	// Check for required properties
-	auto prop_v1 = def->childPTN("v1");
-	auto prop_v2 = def->childPTN("v2");
-	auto prop_s1 = def->childPTN("sidefront");
-	if (!prop_v1 || !prop_v2 || !prop_s1)
-		return false;
-
-	// Check indices
-	auto v1 = parent_map_->vertex(prop_v1->intValue());
-	auto v2 = parent_map_->vertex(prop_v2->intValue());
-	auto s1 = parent_map_->side(prop_s1->intValue());
-	if (!v1 || !v2 || !s1)
-		return false;
-
-	// Set required values
-	vertex1_ = v1;
-	vertex2_ = v2;
-	side1_   = s1;
-
-	// Add extra line info
+	// Set properties from UDMF definition
 	ParseTreeNode* prop;
-	for (unsigned a = 0; a < def->nChildren(); a++)
+	for (unsigned a = 0; a < udmf_def->nChildren(); a++)
 	{
-		prop = def->childPTN(a);
+		prop = udmf_def->childPTN(a);
 
 		// Skip required properties
-		if (prop == prop_v1 || prop == prop_v2 || prop == prop_s1)
+		if (prop->nameIsCI(PROP_V1) || prop->nameIsCI(PROP_V2) || prop->nameIsCI(PROP_S1) || prop->nameIsCI(PROP_S2))
 			continue;
 
-		if (prop->name() == "sideback")
-			side2_ = parent_map_->side(prop->intValue());
-		else if (prop->name() == "special")
+		if (prop->nameIsCI(PROP_SPECIAL))
 			special_ = prop->intValue();
-		else if (prop->name() == "id")
+		else if (prop->nameIsCI(PROP_ID))
 			line_id_ = prop->intValue();
 		else
-			properties_[prop->name()] = prop->value();
+			properties_[prop->nameRef()] = prop->value();
 	}
-
-	// Connect to vertices
-	if (vertex1_)
-		vertex1_->connectLine(this);
-	if (vertex2_)
-		vertex2_->connectLine(this);
-
-	// Connect to sides
-	if (side1_)
-		side1_->parent_ = this;
-	if (side2_)
-		side2_->parent_ = this;
-
-	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -405,17 +229,17 @@ int MapLine::intProperty(const string& key)
 		return side1_->intProperty(key.Mid(6));
 	else if (key.StartsWith("side2.") && side2_)
 		return side2_->intProperty(key.Mid(6));
-	else if (key == "v1")
+	else if (key == PROP_V1)
 		return v1Index();
-	else if (key == "v2")
+	else if (key == PROP_V2)
 		return v2Index();
-	else if (key == "sidefront")
+	else if (key == PROP_S1)
 		return s1Index();
-	else if (key == "sideback")
+	else if (key == PROP_S2)
 		return s2Index();
-	else if (key == "special")
+	else if (key == PROP_SPECIAL)
 		return special_;
-	else if (key == "id")
+	else if (key == PROP_ID)
 		return line_id_;
 	else
 		return MapObject::intProperty(key);
@@ -504,7 +328,7 @@ void MapLine::setIntProperty(const string& key, int value)
 	setModified();
 
 	// Vertices
-	if (key == "v1")
+	if (key == PROP_V1)
 	{
 		MapVertex* vertex;
 		if ((vertex = parent_map_->vertex(value)))
@@ -515,7 +339,7 @@ void MapLine::setIntProperty(const string& key, int value)
 			resetInternals();
 		}
 	}
-	else if (key == "v2")
+	else if (key == PROP_V2)
 	{
 		MapVertex* vertex;
 		if ((vertex = parent_map_->vertex(value)))
@@ -528,13 +352,13 @@ void MapLine::setIntProperty(const string& key, int value)
 	}
 
 	// Sides
-	else if (key == "sidefront")
+	else if (key == PROP_S1)
 	{
 		auto side = parent_map_->side(value);
 		if (side)
 			parent_map_->setLineSide(this, side, true);
 	}
-	else if (key == "sideback")
+	else if (key == PROP_S2)
 	{
 		auto side = parent_map_->side(value);
 		if (side)
@@ -542,11 +366,11 @@ void MapLine::setIntProperty(const string& key, int value)
 	}
 
 	// Special
-	else if (key == "special")
+	else if (key == PROP_SPECIAL)
 		special_ = value;
 
 	// Id
-	else if (key == "id")
+	else if (key == PROP_ID)
 		line_id_ = value;
 
 	// Line property
@@ -611,7 +435,7 @@ void MapLine::setStringProperty(const string& key, const string& value)
 // -----------------------------------------------------------------------------
 bool MapLine::scriptCanModifyProp(const string& key)
 {
-	return !(key == "v1" || key == "v2" || key == "sidefront" || key == "sideback");
+	return !(key == PROP_V1 || key == PROP_V2 || key == PROP_S1 || key == PROP_S2);
 }
 
 // -----------------------------------------------------------------------------
@@ -630,6 +454,36 @@ void MapLine::setS2(MapSide* side)
 {
 	if (!side2_ && parent_map_)
 		parent_map_->setLineSide(this, side, false);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the start vertex of the line to [vertex]
+// -----------------------------------------------------------------------------
+void MapLine::setV1(MapVertex* vertex)
+{
+	if (!vertex)
+		return;
+
+	setModified();
+	vertex1_->disconnectLine(this);
+	vertex1_ = vertex;
+	vertex1_->connectLine(this);
+	resetInternals();
+}
+
+// -----------------------------------------------------------------------------
+// Sets the end vertex of the line to [vertex]
+// -----------------------------------------------------------------------------
+void MapLine::setV2(MapVertex* vertex)
+{
+	if (!vertex)
+		return;
+
+	setModified();
+	vertex2_->disconnectLine(this);
+	vertex2_ = vertex;
+	vertex2_->connectLine(this);
+	resetInternals();
 }
 
 // -----------------------------------------------------------------------------
@@ -830,6 +684,26 @@ int MapLine::needsTexture() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if this line overlaps with [other]
+// (ie. both lines share the same vertices)
+// -----------------------------------------------------------------------------
+bool MapLine::overlaps(MapLine* other) const
+{
+	return other != this
+		   && (vertex1_ == other->vertex1_ && vertex2_ == other->vertex2_
+			   || vertex2_ == other->vertex1_ && vertex1_ == other->vertex2_);
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if this line intersects with [other].
+// If an intersection occurs, [intersect_point] is set to the intersection point
+// -----------------------------------------------------------------------------
+bool MapLine::intersects(MapLine* other, Vec2f& intersect_point) const
+{
+	return MathStuff::linesIntersect(seg(), other->seg(), intersect_point);
+}
+
+// -----------------------------------------------------------------------------
 // Clears any textures not needed on the line
 // (eg. a front upper texture that would be invisible)
 // -----------------------------------------------------------------------------
@@ -916,8 +790,8 @@ void MapLine::flip(bool sides)
 void MapLine::writeBackup(Backup* backup)
 {
 	// Vertices
-	backup->props_internal["v1"] = vertex1_->objId();
-	backup->props_internal["v2"] = vertex2_->objId();
+	backup->props_internal[PROP_V1] = vertex1_->objId();
+	backup->props_internal[PROP_V2] = vertex2_->objId();
 
 	// Sides
 	if (side1_)
@@ -930,8 +804,8 @@ void MapLine::writeBackup(Backup* backup)
 		backup->props_internal["s2"] = 0;
 
 	// Special
-	backup->props_internal["special"] = special_;
-	backup->props_internal["id"]      = line_id_;
+	backup->props_internal[PROP_SPECIAL] = special_;
+	backup->props_internal[PROP_ID]      = line_id_;
 }
 
 // -----------------------------------------------------------------------------
@@ -940,8 +814,8 @@ void MapLine::writeBackup(Backup* backup)
 void MapLine::readBackup(Backup* backup)
 {
 	// Vertices
-	auto v1 = parent_map_->getObjectById(backup->props_internal["v1"]);
-	auto v2 = parent_map_->getObjectById(backup->props_internal["v2"]);
+	auto v1 = parent_map_->mapData().getObjectById(backup->props_internal[PROP_V1]);
+	auto v2 = parent_map_->mapData().getObjectById(backup->props_internal[PROP_V2]);
 	if (v1)
 	{
 		vertex1_->disconnectLine(this);
@@ -958,8 +832,8 @@ void MapLine::readBackup(Backup* backup)
 	}
 
 	// Sides
-	auto s1 = parent_map_->getObjectById(backup->props_internal["s1"]);
-	auto s2 = parent_map_->getObjectById(backup->props_internal["s2"]);
+	auto s1 = parent_map_->mapData().getObjectById(backup->props_internal["s1"]);
+	auto s2 = parent_map_->mapData().getObjectById(backup->props_internal["s2"]);
 	side1_  = dynamic_cast<MapSide*>(s1);
 	side2_  = dynamic_cast<MapSide*>(s2);
 	if (side1_)
@@ -968,8 +842,8 @@ void MapLine::readBackup(Backup* backup)
 		side2_->parent_ = this;
 
 	// Special
-	special_ = backup->props_internal["special"];
-	line_id_ = backup->props_internal["id"];
+	special_ = backup->props_internal[PROP_SPECIAL];
+	line_id_ = backup->props_internal[PROP_ID];
 }
 
 // -----------------------------------------------------------------------------
@@ -992,4 +866,27 @@ void MapLine::copy(MapObject* c)
 
 	special_ = l->special_;
 	line_id_ = l->line_id_;
+}
+
+// -----------------------------------------------------------------------------
+// Writes the line as a UDMF text definition to [def]
+// -----------------------------------------------------------------------------
+void MapLine::writeUDMF(string& def)
+{
+	def = S_FMT("linedef//#%u\n{\n", index_);
+
+	// Basic properties
+	def += S_FMT("v1=%d;\nv2=%d;\nsidefront=%d;\n", v1Index(), v2Index(), s1Index());
+	if (s2())
+		def += S_FMT("sideback=%d;\n", s2Index());
+	if (special_ != 0)
+		def += S_FMT("special=%d;\n", special_);
+	if (line_id_ != 0)
+		def += S_FMT("id=%d;\n", line_id_);
+
+	// Other properties
+	if (!properties_.isEmpty())
+		def += properties_.toString(true);
+
+	def += "}\n\n";
 }

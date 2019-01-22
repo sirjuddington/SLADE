@@ -86,7 +86,7 @@ void PropertyList::addFlag(const string& key)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the property list
 // -----------------------------------------------------------------------------
-string PropertyList::toString(bool condensed)
+string PropertyList::toString(bool condensed) const
 {
 	// Init return string
 	string ret = wxEmptyString;

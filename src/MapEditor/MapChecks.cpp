@@ -406,25 +406,19 @@ public:
 				case TagType::Sector:
 				case TagType::SectorOrBack:
 				{
-					std::vector<MapSector*> foundsectors;
-					map_->putSectorsWithTag(tag, foundsectors);
-					if (!foundsectors.empty())
+					if (map_->sectors().firstWithId(tag))
 						okay = true;
 				}
 				break;
 				case TagType::Line:
 				{
-					std::vector<MapLine*> foundlines;
-					map_->putLinesWithId(tag, foundlines);
-					if (!foundlines.empty())
+					if (map_->lines().firstWithId(tag))
 						okay = true;
 				}
 				break;
 				case TagType::Thing:
 				{
-					std::vector<MapThing*> foundthings;
-					map_->putThingsWithId(tag, foundthings);
-					if (!foundthings.empty())
+					if (map_->things().firstWithId(tag))
 						okay = true;
 				}
 				break;
@@ -499,7 +493,7 @@ public:
 
 	void checkIntersections(vector<MapLine*> lines)
 	{
-		double   x, y;
+		Vec2f    pos;
 		MapLine* line1;
 		MapLine* line2;
 
@@ -517,8 +511,8 @@ public:
 				line2 = lines[b];
 
 				// Check intersection
-				if (map_->linesIntersect(line1, line2, x, y))
-					intersections_.emplace_back(line1, line2, x, y);
+				if (line1->intersects(line2, pos))
+					intersections_.emplace_back(line1, line2, pos.x, pos.y);
 			}
 		}
 	}
@@ -562,8 +556,7 @@ public:
 			editor->beginUndoRecord("Split Lines");
 
 			// Create split vertex
-			auto nv = map_->createVertex(
-				intersections_[index].intersect_point.x, intersections_[index].intersect_point.y, -1);
+			auto nv = map_->createVertex(intersections_[index].intersect_point, -1);
 
 			// Split first line
 			map_->splitLine(line1, nv);
@@ -1428,8 +1421,7 @@ public:
 			editor->beginUndoRecord("Move Thing", true, false, false);
 
 			// Move along line direction
-			map_->moveThing(
-				thing->index(), np.x - (line->frontVector().x * dist), np.y - (line->frontVector().y * dist));
+			thing->move(np - line->frontVector() * dist);
 
 			editor->endUndoRecord();
 
@@ -1660,7 +1652,7 @@ public:
 			else if (fix_type == 1)
 			{
 				auto pos = line->dirTabPoint(0.1);
-				editor->edit2D().createSector(pos.x, pos.y);
+				editor->edit2D().createSector(pos);
 				doCheck();
 				return true;
 			}
@@ -1679,7 +1671,7 @@ public:
 			else if (fix_type == 1)
 			{
 				auto pos = line->dirTabPoint(0.1);
-				editor->edit2D().createSector(pos.x, pos.y);
+				editor->edit2D().createSector(pos);
 				doCheck();
 				return true;
 			}

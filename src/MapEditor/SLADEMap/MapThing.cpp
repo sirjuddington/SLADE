@@ -31,8 +31,19 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapThing.h"
-#include "App.h"
 #include "Utility/Parser.h"
+
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+const string MapThing::PROP_X     = "x";
+const string MapThing::PROP_Y     = "y";
+const string MapThing::PROP_TYPE  = "type";
+const string MapThing::PROP_ANGLE = "angle";
+const string MapThing::PROP_FLAGS = "flags";
 
 
 // -----------------------------------------------------------------------------
@@ -45,93 +56,39 @@
 // -----------------------------------------------------------------------------
 // MapThing class constructor
 // -----------------------------------------------------------------------------
-MapThing::MapThing(double x, double y, short type, SLADEMap* parent) :
-	MapObject(Type::Thing, parent),
+MapThing::MapThing(const Vec2f& pos, short type, short angle, short flags) :
+	MapObject(Type::Thing),
 	type_{ type },
-	position_{ x, y }
+	position_{ pos },
+	angle_{ angle }
 {
+	properties_[PROP_FLAGS] = flags; // TODO: convert to member variable
 }
 
 // -----------------------------------------------------------------------------
-// MapThing class constructor from doom-format data
+// MapThing class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapThing::MapThing(SLADEMap* parent, const DoomData& data) :
-	MapObject(Type::Thing, parent),
-	type_{ data.type },
-	position_{ (double)data.x, (double)data.y },
-	angle_{ data.angle }
+MapThing::MapThing(const Vec2f& pos, short type, ParseTreeNode* def) :
+	MapObject(Type::Thing),
+	type_{ type },
+	position_{ pos }
 {
-	properties_["flags"] = data.flags;
-}
-
-// -----------------------------------------------------------------------------
-// MapThing class constructor from hexen-format data
-// -----------------------------------------------------------------------------
-MapThing::MapThing(SLADEMap* parent, const HexenData& data) :
-	MapObject(Type::Thing, parent),
-	type_{ data.type },
-	position_{ (double)data.x, (double)data.y },
-	angle_{ data.angle }
-{
-	properties_["height"]  = (double)data.z;
-	properties_["special"] = data.special;
-	properties_["flags"]   = data.flags;
-	properties_["id"]      = data.tid;
-	properties_["arg0"]    = data.args[0];
-	properties_["arg1"]    = data.args[1];
-	properties_["arg2"]    = data.args[2];
-	properties_["arg3"]    = data.args[3];
-	properties_["arg4"]    = data.args[4];
-}
-
-// -----------------------------------------------------------------------------
-// MapThing class constructor from doom64-format data
-// -----------------------------------------------------------------------------
-MapThing::MapThing(SLADEMap* parent, const Doom64Data& data) :
-	MapObject(Type::Thing, parent),
-	type_{ data.type },
-	position_{ (double)data.x, (double)data.y },
-	angle_{ data.angle }
-{
-	properties_["height"] = (double)data.z;
-	properties_["flags"]  = data.flags;
-	properties_["id"]     = data.tid;
-}
-
-// -----------------------------------------------------------------------------
-// Creates the thing from a parsed UDMF definition [def]
-// -----------------------------------------------------------------------------
-bool MapThing::createFromUDMF(ParseTreeNode* def)
-{
-	// Check for required properties
-	auto prop_x    = def->childPTN("x");
-	auto prop_y    = def->childPTN("y");
-	auto prop_type = def->childPTN("type");
-	if (!prop_x || !prop_y || !prop_type)
-		return false;
-
-	// Set required values
-	position_ = { prop_x->floatValue(), prop_y->floatValue() };
-	type_     = prop_type->intValue();
-
-	// Add extra thing info
+	// Set properties from UDMF definition
 	ParseTreeNode* prop;
 	for (unsigned a = 0; a < def->nChildren(); a++)
 	{
 		prop = def->childPTN(a);
 
 		// Skip required properties
-		if (prop == prop_x || prop == prop_y || prop == prop_type)
+		if (prop->nameIsCI(PROP_X) || prop->nameIsCI(PROP_Y) || prop->nameIsCI(PROP_TYPE))
 			continue;
 
 		// Builtin properties
-		if (S_CMPNOCASE(prop->name(), "angle"))
+		if (prop->nameIsCI(PROP_ANGLE))
 			angle_ = prop->intValue();
 		else
 			properties_[prop->name()] = prop->value();
 	}
-
-	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -148,13 +105,13 @@ Vec2f MapThing::getPoint(Point point)
 // -----------------------------------------------------------------------------
 int MapThing::intProperty(const string& key)
 {
-	if (key == "type")
+	if (key == PROP_TYPE)
 		return type_;
-	else if (key == "x")
+	else if (key == PROP_X)
 		return (int)position_.x;
-	else if (key == "y")
+	else if (key == PROP_Y)
 		return (int)position_.y;
-	else if (key == "angle")
+	else if (key == PROP_ANGLE)
 		return angle_;
 	else
 		return MapObject::intProperty(key);
@@ -165,9 +122,9 @@ int MapThing::intProperty(const string& key)
 // -----------------------------------------------------------------------------
 double MapThing::floatProperty(const string& key)
 {
-	if (key == "x")
+	if (key == PROP_X)
 		return position_.x;
-	else if (key == "y")
+	else if (key == PROP_Y)
 		return position_.y;
 	else
 		return MapObject::floatProperty(key);
@@ -181,13 +138,13 @@ void MapThing::setIntProperty(const string& key, int value)
 	// Update modified time
 	setModified();
 
-	if (key == "type")
+	if (key == PROP_TYPE)
 		type_ = value;
-	else if (key == "x")
+	else if (key == PROP_X)
 		position_.x = value;
-	else if (key == "y")
+	else if (key == PROP_Y)
 		position_.y = value;
-	else if (key == "angle")
+	else if (key == PROP_ANGLE)
 		angle_ = value;
 	else
 		return MapObject::setIntProperty(key, value);
@@ -201,9 +158,9 @@ void MapThing::setFloatProperty(const string& key, double value)
 	// Update modified time
 	setModified();
 
-	if (key == "x")
+	if (key == PROP_X)
 		position_.x = value;
-	else if (key == "y")
+	else if (key == PROP_Y)
 		position_.y = value;
 	else
 		return MapObject::setFloatProperty(key, value);
@@ -230,9 +187,32 @@ void MapThing::copy(MapObject* c)
 }
 
 // -----------------------------------------------------------------------------
-// Sets the angle of the thing to be facing towards [point]
+// Sets the position of the thing to [pos].
+// If [modify] is false, the thing won't be marked as modified
 // -----------------------------------------------------------------------------
-void MapThing::setAnglePoint(Vec2f point)
+void MapThing::move(Vec2f pos, bool modify)
+{
+	if (modify)
+		setModified();
+	position_ = pos;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the angle (direction) of the thing to [angle].
+// If [modify] is false, the thing won't be marked as modified
+// -----------------------------------------------------------------------------
+void MapThing::setAngle(int angle, bool modify)
+{
+	if (modify)
+		setModified();
+	angle_ = angle;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the angle (direction) of the thing to be facing towards [point].
+// If [modify] is false, the thing won't be marked as modified
+// -----------------------------------------------------------------------------
+void MapThing::setAnglePoint(Vec2f point, bool modify)
 {
 	// Calculate direction vector
 	Vec2f  vec(point.x - position_.x, point.y - position_.y);
@@ -260,7 +240,9 @@ void MapThing::setAnglePoint(Vec2f point)
 		angle = 315;
 
 	// Set thing angle
-	setIntProperty("angle", angle);
+	if (modify)
+		setModified();
+	angle_ = angle;
 }
 
 // -----------------------------------------------------------------------------
@@ -269,14 +251,14 @@ void MapThing::setAnglePoint(Vec2f point)
 void MapThing::writeBackup(Backup* backup)
 {
 	// Type
-	backup->props_internal["type"] = type_;
+	backup->props_internal[PROP_TYPE] = type_;
 
 	// Position
-	backup->props_internal["x"] = position_.x;
-	backup->props_internal["y"] = position_.y;
+	backup->props_internal[PROP_X] = position_.x;
+	backup->props_internal[PROP_Y] = position_.y;
 
 	// Angle
-	backup->props_internal["angle"] = angle_;
+	backup->props_internal[PROP_ANGLE] = angle_;
 }
 
 // -----------------------------------------------------------------------------
@@ -285,12 +267,31 @@ void MapThing::writeBackup(Backup* backup)
 void MapThing::readBackup(Backup* backup)
 {
 	// Type
-	type_ = backup->props_internal["type"].intValue();
+	type_ = backup->props_internal[PROP_TYPE].intValue();
 
 	// Position
-	position_.x = backup->props_internal["x"].floatValue();
-	position_.y = backup->props_internal["y"].floatValue();
+	position_.x = backup->props_internal[PROP_X].floatValue();
+	position_.y = backup->props_internal[PROP_Y].floatValue();
 
 	// Angle
-	angle_ = backup->props_internal["angle"].intValue();
+	angle_ = backup->props_internal[PROP_ANGLE].intValue();
+}
+
+// -----------------------------------------------------------------------------
+// Writes the thing as a UDMF text definition to [def]
+// -----------------------------------------------------------------------------
+void MapThing::writeUDMF(string& def)
+{
+	def = S_FMT("thing//#%u\n{\n", index_);
+
+	// Basic properties
+	def += S_FMT("x=%1.3f;\ny=%1.3f;\ntype=%d;\n", position_.x, position_.y, type_);
+	if (angle_ != 0)
+		def += S_FMT("angle=%d;\n", angle_);
+
+	// Other properties
+	if (!properties_.isEmpty())
+		def += properties_.toString(true);
+
+	def += "}\n\n";
 }

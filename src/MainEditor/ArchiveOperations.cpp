@@ -39,9 +39,10 @@
 #include "Graphics/CTexture/TextureXList.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
-#include "MapEditor/SLADEMap/MapLine.h"
+#include "MapEditor/SLADEMap/MapFormat/Doom64MapFormat.h"
+#include "MapEditor/SLADEMap/MapFormat/DoomMapFormat.h"
+#include "MapEditor/SLADEMap/MapFormat/HexenMapFormat.h"
 #include "MapEditor/SLADEMap/MapSector.h"
-#include "MapEditor/SLADEMap/MapSide.h"
 #include "MapEditor/SLADEMap/MapThing.h"
 #include "Utility/Tokenizer.h"
 
@@ -417,8 +418,8 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 	total_maps += sidedefs.size();
 
 	// Go through and add used textures to list
-	MapSide::DoomData sdef;
-	string            tex_lower, tex_middle, tex_upper;
+	DoomMapFormat::SideDef sdef;
+	string                 tex_lower, tex_middle, tex_upper;
 	for (auto& sidedef : sidedefs)
 	{
 		int nsides = sidedef->size() / 30;
@@ -649,8 +650,8 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 	total_maps += sectors.size();
 
 	// Go through and add used flats to list
-	MapSector::DoomData sec;
-	string              tex_floor, tex_ceil;
+	DoomMapFormat::Sector sec;
+	string                tex_floor, tex_ceil;
 	for (auto& sector : sectors)
 	{
 		int nsec = sector->size() / 26;
@@ -813,10 +814,10 @@ size_t replaceThingsDoom(ArchiveEntry* entry, int oldtype, int newtype)
 		return 0;
 
 	size_t size      = entry->size();
-	size_t numthings = size / sizeof(MapThing::DoomData);
+	size_t numthings = size / sizeof(DoomMapFormat::Thing);
 	size_t changed   = 0;
 
-	auto things = new MapThing::DoomData[numthings];
+	auto things = new DoomMapFormat::Thing[numthings];
 	memcpy(things, entry->rawData(), size);
 
 	// Perform replacement
@@ -841,10 +842,10 @@ size_t replaceThingsDoom64(ArchiveEntry* entry, int oldtype, int newtype)
 		return 0;
 
 	size_t size      = entry->size();
-	size_t numthings = size / sizeof(MapThing::Doom64Data);
+	size_t numthings = size / sizeof(Doom64MapFormat::Thing);
 	size_t changed   = 0;
 
-	auto things = new MapThing::Doom64Data[numthings];
+	auto things = new Doom64MapFormat::Thing[numthings];
 	memcpy(things, entry->rawData(), size);
 
 	// Perform replacement
@@ -869,10 +870,10 @@ size_t replaceThingsHexen(ArchiveEntry* entry, int oldtype, int newtype)
 		return 0;
 
 	size_t size      = entry->size();
-	size_t numthings = size / sizeof(MapThing::HexenData);
+	size_t numthings = size / sizeof(HexenMapFormat::Thing);
 	size_t changed   = 0;
 
-	auto things = new MapThing::HexenData[numthings];
+	auto things = new HexenMapFormat::Thing[numthings];
 	memcpy(things, entry->rawData(), size);
 
 	// Perform replacement
@@ -1081,10 +1082,10 @@ size_t replaceSpecialsDoom(ArchiveEntry* entry, int oldtype, int newtype, bool t
 		return 0;
 
 	size_t size     = entry->size();
-	size_t numlines = size / sizeof(MapLine::DoomData);
+	size_t numlines = size / sizeof(DoomMapFormat::LineDef);
 	size_t changed  = 0;
 
-	auto lines = new MapLine::DoomData[numlines];
+	auto lines = new DoomMapFormat::LineDef[numlines];
 	memcpy(lines, entry->rawData(), size);
 
 	// Perform replacement
@@ -1142,9 +1143,9 @@ size_t replaceSpecialsHexen(
 	if (l_entry)
 	{
 		size            = l_entry->size();
-		size_t numlines = size / sizeof(MapLine::HexenData);
+		size_t numlines = size / sizeof(HexenMapFormat::LineDef);
 
-		auto lines = new MapLine::HexenData[numlines];
+		auto lines = new HexenMapFormat::LineDef[numlines];
 		memcpy(lines, l_entry->rawData(), size);
 		size_t lchanged = 0;
 
@@ -1184,9 +1185,9 @@ size_t replaceSpecialsHexen(
 	if (t_entry)
 	{
 		size             = t_entry->size();
-		size_t numthings = size / sizeof(MapThing::HexenData);
+		size_t numthings = size / sizeof(HexenMapFormat::Thing);
 
-		auto things = new MapThing::HexenData[numthings];
+		auto things = new HexenMapFormat::Thing[numthings];
 		memcpy(things, t_entry->rawData(), size);
 		size_t tchanged = 0;
 
@@ -1535,11 +1536,11 @@ size_t replaceFlatsDoomHexen(ArchiveEntry* entry, const string& oldtex, const st
 		return 0;
 
 	size_t size       = entry->size();
-	size_t numsectors = size / sizeof(MapSector::DoomData);
+	size_t numsectors = size / sizeof(DoomMapFormat::Sector);
 	bool   fchanged, cchanged;
 	size_t changed = 0;
 
-	auto sectors = new MapSector::DoomData[numsectors];
+	auto sectors = new DoomMapFormat::Sector[numsectors];
 	memcpy(sectors, entry->rawData(), size);
 
 	// Perform replacement
@@ -1572,11 +1573,11 @@ size_t replaceWallsDoomHexen(
 		return 0;
 
 	size_t size     = entry->size();
-	size_t numsides = size / sizeof(MapSide::DoomData);
+	size_t numsides = size / sizeof(DoomMapFormat::SideDef);
 	bool   lchanged, mchanged, uchanged;
 	size_t changed = 0;
 
-	MapSide::DoomData* sides = new MapSide::DoomData[numsides];
+	DoomMapFormat::SideDef* sides = new DoomMapFormat::SideDef[numsides];
 	memcpy(sides, entry->rawData(), size);
 	char compare[9];
 	compare[8] = 0;
@@ -1607,14 +1608,14 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, const string& oldtex, const strin
 		return 0;
 
 	size_t size       = entry->size();
-	size_t numsectors = size / sizeof(MapSector::Doom64Data);
+	size_t numsectors = size / sizeof(Doom64MapFormat::Sector);
 	bool   fchanged, cchanged;
 	size_t changed = 0;
 
 	uint16_t oldhash = App::resources().getTextureHash(oldtex);
 	uint16_t newhash = App::resources().getTextureHash(newtex);
 
-	auto sectors = new MapSector::Doom64Data[numsectors];
+	auto sectors = new Doom64MapFormat::Sector[numsectors];
 	memcpy(sectors, entry->rawData(), size);
 
 	// Perform replacement
@@ -1653,14 +1654,14 @@ size_t replaceWallsDoom64(
 		return 0;
 
 	size_t size     = entry->size();
-	size_t numsides = size / sizeof(MapSide::Doom64Data);
+	size_t numsides = size / sizeof(Doom64MapFormat::SideDef);
 	bool   lchanged, mchanged, uchanged;
 	size_t changed = 0;
 
 	uint16_t oldhash = App::resources().getTextureHash(oldtex);
 	uint16_t newhash = App::resources().getTextureHash(newtex);
 
-	auto sides = new MapSide::Doom64Data[numsides];
+	auto sides = new Doom64MapFormat::SideDef[numsides];
 	memcpy(sides, entry->rawData(), size);
 
 	// Perform replacement

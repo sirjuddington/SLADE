@@ -338,10 +338,10 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 
 	// X
 	bool multi = false;
-	int  ofs   = sides[0]->offsetX();
+	int  ofs   = sides[0]->texOffsetX();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
-		if (sides[a]->offsetX() != ofs)
+		if (sides[a]->texOffsetX() != ofs)
 		{
 			multi = true;
 			break;
@@ -352,10 +352,10 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 
 	// Y
 	multi = false;
-	ofs   = sides[0]->offsetY();
+	ofs   = sides[0]->texOffsetY();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
-		if (sides[a]->offsetY() != ofs)
+		if (sides[a]->texOffsetY() != ofs)
 		{
 			multi = true;
 			break;
@@ -391,11 +391,11 @@ void SidePropsPanel::applyTo(vector<MapSide*>& sides) const
 
 		// X Offset
 		if (!text_offsetx_->GetValue().IsEmpty())
-			side->setIntProperty("offsetx", text_offsetx_->number(side->offsetX()));
+			side->setIntProperty("offsetx", text_offsetx_->number(side->texOffsetX()));
 
 		// Y Offset
 		if (!text_offsety_->GetValue().IsEmpty())
-			side->setIntProperty("offsety", text_offsety_->number(side->offsetY()));
+			side->setIntProperty("offsety", text_offsety_->number(side->texOffsetY()));
 	}
 }
 

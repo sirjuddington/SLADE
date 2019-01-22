@@ -87,7 +87,7 @@ public:
 
 	// Tag edit
 	int  beginTagEdit();
-	void tagSectorAt(double x, double y);
+	void tagSectorAt(Vec2f pos);
 	void endTagEdit(bool accept = true);
 
 	// Editing handlers

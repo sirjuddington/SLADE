@@ -286,8 +286,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		if (e.GetKeyCode() == WXK_F7)
 		{
 			// Get nearest line
-			int  nearest = context_->map().nearestLine(context_->input().mousePosMap(), 999999);
-			auto line    = context_->map().line(nearest);
+			auto line = context_->map().lines().nearest(context_->input().mousePosMap(), 999999);
 			if (line)
 			{
 				SectorBuilder sbuilder;
@@ -303,8 +302,9 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		if (e.GetKeyCode() == WXK_F5)
 		{
 			// Get nearest line
-			int  nearest = context_->map().nearestLine(context_->input().mousePosMap(), 999999);
-			auto line    = context_->map().line(nearest);
+			auto line = context_->map().lines().nearest(context_->input().mousePosMap(), 999999);
+			if (!line)
+				return;
 
 			// Get sectors
 			auto sec1 = context_->map().lineSideSector(line, true);

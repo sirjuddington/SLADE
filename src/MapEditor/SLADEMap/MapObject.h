@@ -9,9 +9,17 @@
 class ParseTreeNode;
 class SLADEMap;
 
+// Forward declare map object types
+class MapVertex;
+class MapSide;
+class MapLine;
+class MapSector;
+class MapThing;
+
 class MapObject
 {
 	friend class SLADEMap;
+	friend class MapObjectCollection;
 
 public:
 	enum class Type
@@ -42,7 +50,7 @@ public:
 	MapObject(Type type = Type::Object, SLADEMap* parent = nullptr);
 	virtual ~MapObject() = default;
 
-	virtual bool createFromUDMF(ParseTreeNode* def) { return false; }
+	virtual void readUDMF(ParseTreeNode* def) {}
 
 	bool operator<(const MapObject& right) const { return (index_ < right.index_); }
 	bool operator>(const MapObject& right) const { return (index_ > right.index_); }
@@ -55,6 +63,7 @@ public:
 	unsigned  objId() const { return obj_id_; }
 	string    typeName() const;
 	void      setModified();
+	void      setIndex(unsigned index) { index_ = index; }
 
 	MobjPropertyList& props() { return properties_; }
 	bool              hasProp(const string& key);
@@ -82,6 +91,8 @@ public:
 
 	virtual void writeBackup(Backup* backup) = 0;
 	virtual void readBackup(Backup* backup)  = 0;
+
+	virtual void writeUDMF(string& def) {}
 
 	static long propBackupTime();
 	static void beginPropBackup(long current_time);

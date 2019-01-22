@@ -466,9 +466,9 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		}
 
 		// Sector
-		int sector = map->sectorAt(thing->position());
-		if (sector >= 0)
-			info2_.emplace_back(S_FMT("In Sector #%d", sector));
+		auto sector = map->sectors().atPos(thing->position());
+		if (sector)
+			info2_.emplace_back(S_FMT("In Sector #%d", sector->index()));
 		else
 			info2_.emplace_back("No Sector");
 

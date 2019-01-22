@@ -387,14 +387,14 @@ void MapRenderer3D::cameraSetPosition(Vec3f position)
 void MapRenderer3D::cameraApplyGravity(double mult)
 {
 	// Get current sector
-	int sector = map_->sectorAt(cam_position_.get2d());
-	if (sector < 0)
+	auto sector = map_->sectors().atPos(cam_position_.get2d());
+	if (!sector)
 		return;
 
 	// Get target height
 	int view_height = (map_->currentFormat() == MapFormat::Doom64) ? 56 : 41;
-	int fheight     = map_->sector(sector)->floor().plane.heightAt(cam_position_.get2d()) + view_height;
-	int cheight     = map_->sector(sector)->ceiling().plane.heightAt(cam_position_.get2d());
+	int fheight     = sector->floor().plane.heightAt(cam_position_.get2d()) + view_height;
+	int cheight     = sector->ceiling().plane.heightAt(cam_position_.get2d());
 	if (fheight > cheight - 4)
 		fheight = cheight - 4;
 
@@ -1295,8 +1295,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	auto colour1    = line->frontSector()->colourAt(0, true);
 	auto fogcolour1 = line->frontSector()->fogColour();
 	int  light1     = line->s1()->light();
-	int  xoff1      = line->s1()->offsetX();
-	int  yoff1      = line->s1()->offsetY();
+	int  xoff1      = line->s1()->texOffsetX();
+	int  yoff1      = line->s1()->texOffsetY();
 
 	if (render_shade_orthogonal_lines)
 	{
@@ -1384,8 +1384,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	auto   colour2     = line->backSector()->colourAt(0, true);
 	auto   fogcolour2  = line->backSector()->fogColour();
 	int    light2      = line->s2()->light();
-	int    xoff2       = line->s2()->offsetX();
-	int    yoff2       = line->s2()->offsetY();
+	int    xoff2       = line->s2()->texOffsetX();
+	int    yoff2       = line->s2()->texOffsetY();
 	int    lowceil     = min(ceiling1, ceiling2);
 	int    highfloor   = max(floor1, floor2);
 	string sky_flat    = Game::configuration().skyFlat();
@@ -2088,7 +2088,7 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 
 	// Setup thing info
 	things_[index].type   = &(Game::configuration().thingType(thing->type()));
-	things_[index].sector = map_->sector(map_->sectorAt(thing->position()));
+	things_[index].sector = map_->sectors().atPos(thing->position());
 
 	// Get sprite texture
 	uint32_t theight      = render_thing_icon_size;
@@ -2881,7 +2881,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			if (cam_position_.z > floors_[a].plane.heightAt(cam_position_.x, cam_position_.y))
 			{
 				// Check if intersection is within sector
-				if (map_->sector(a)->isWithin((cam_position_ + cam_dir3d_ * dist).get2d()))
+				if (map_->sector(a)->containsPoint((cam_position_ + cam_dir3d_ * dist).get2d()))
 				{
 					current.index = a;
 					current.type  = MapEditor::ItemType::Floor;
@@ -2898,7 +2898,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			if (cam_position_.z < ceilings_[a].plane.heightAt(cam_position_.x, cam_position_.y))
 			{
 				// Check if intersection is within sector
-				if (map_->sector(a)->isWithin((cam_position_ + cam_dir3d_ * dist).get2d()))
+				if (map_->sector(a)->containsPoint((cam_position_ + cam_dir3d_ * dist).get2d()))
 				{
 					current.index = a;
 					current.type  = MapEditor::ItemType::Ceiling;
