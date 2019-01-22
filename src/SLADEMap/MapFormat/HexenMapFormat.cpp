@@ -35,8 +35,8 @@
 #include "HexenMapFormat.h"
 #include "Game/Configuration.h"
 #include "General/UI.h"
-#include "MapEditor/SLADEMap/MapLine.h"
-#include "MapEditor/SLADEMap/MapObjectCollection.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObjectCollection.h"
 
 
 // -----------------------------------------------------------------------------

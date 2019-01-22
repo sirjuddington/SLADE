@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MapEditor/SLADEMap/MapObject.h"
+#include "SLADEMap/MapObject/MapObject.h"
 
 class wxChoice;
 class wxTextCtrl;

@@ -37,11 +37,11 @@
 #include "General/ColourConfiguration.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
-#include "MapEditor/SLADEMap/MapFormat/Doom64MapFormat.h"
-#include "MapEditor/SLADEMap/MapFormat/DoomMapFormat.h"
-#include "MapEditor/SLADEMap/MapFormat/HexenMapFormat.h"
-#include "MapEditor/SLADEMap/MapThing.h"
 #include "OpenGL/GLTexture.h"
+#include "SLADEMap/MapFormat/Doom64MapFormat.h"
+#include "SLADEMap/MapFormat/DoomMapFormat.h"
+#include "SLADEMap/MapFormat/HexenMapFormat.h"
+#include "SLADEMap/MapObject/MapThing.h"
 #include "Utility/Tokenizer.h"
 
 

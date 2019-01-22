@@ -1,7 +1,7 @@
 #pragma once
 
-#include "MapEditor/SLADEMap/MapSide.h"
 #include "MapObjectList.h"
+#include "SLADEMap/MapObject/MapSide.h"
 
 class SideList : public MapObjectList<MapSide>
 {

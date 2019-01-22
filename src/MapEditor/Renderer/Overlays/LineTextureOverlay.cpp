@@ -37,10 +37,10 @@
 #include "General/ColourConfiguration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/MapLine.h"
-#include "MapEditor/SLADEMap/MapSide.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "OpenGL/Drawing.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSide.h"
 
 
 // -----------------------------------------------------------------------------

@@ -4,7 +4,7 @@
 #pragma clang diagnostic ignored "-Wundefined-bool-conversion"
 #endif
 
-#include "MobjPropertyList.h"
+#include "SLADEMap/MobjPropertyList.h"
 
 class ParseTreeNode;
 class SLADEMap;

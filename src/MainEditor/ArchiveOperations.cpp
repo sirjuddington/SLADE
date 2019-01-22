@@ -39,11 +39,11 @@
 #include "Graphics/CTexture/TextureXList.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
-#include "MapEditor/SLADEMap/MapFormat/Doom64MapFormat.h"
-#include "MapEditor/SLADEMap/MapFormat/DoomMapFormat.h"
-#include "MapEditor/SLADEMap/MapFormat/HexenMapFormat.h"
-#include "MapEditor/SLADEMap/MapSector.h"
-#include "MapEditor/SLADEMap/MapThing.h"
+#include "SLADEMap/MapFormat/Doom64MapFormat.h"
+#include "SLADEMap/MapFormat/DoomMapFormat.h"
+#include "SLADEMap/MapFormat/HexenMapFormat.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapThing.h"
 #include "Utility/Tokenizer.h"
 
 

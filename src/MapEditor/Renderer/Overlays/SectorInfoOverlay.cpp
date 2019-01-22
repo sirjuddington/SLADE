@@ -37,9 +37,9 @@
 #include "General/ColourConfiguration.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/MapSector.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/MapObject/MapSector.h"
 
 
 // -----------------------------------------------------------------------------

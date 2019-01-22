@@ -34,7 +34,7 @@
 #include "MapObject.h"
 #include "App.h"
 #include "Game/Configuration.h"
-#include "SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 
 
 // -----------------------------------------------------------------------------

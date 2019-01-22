@@ -34,11 +34,11 @@
 #include "App.h"
 #include "Game/Configuration.h"
 #include "General/UI.h"
-#include "MapEditor/SLADEMap/MapLine.h"
-#include "MapEditor/SLADEMap/MapObjectCollection.h"
-#include "MapEditor/SLADEMap/MapSector.h"
-#include "MapEditor/SLADEMap/MapVertex.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapObjectCollection.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/Parser.h"
 
 

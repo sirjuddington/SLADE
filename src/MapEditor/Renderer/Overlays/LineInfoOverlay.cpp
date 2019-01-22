@@ -38,11 +38,11 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/MapLine.h"
-#include "MapEditor/SLADEMap/MapSide.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSide.h"
 #include "Utility/MathStuff.h"
 
 

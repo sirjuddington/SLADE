@@ -38,7 +38,7 @@
 #include "General/UI.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
 using namespace MapEditor;

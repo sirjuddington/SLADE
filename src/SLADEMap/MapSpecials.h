@@ -1,9 +1,10 @@
 #pragma once
 
-#include "SLADEMap/MapLine.h"
-#include "SLADEMap/MapSector.h"
-#include "SLADEMap/MapThing.h"
+#include "SLADEMap/MapObject/MapSector.h"
 
+class MapVertex;
+class MapThing;
+class MapLine;
 class SLADEMap;
 class ArchiveEntry;
 

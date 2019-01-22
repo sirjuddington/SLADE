@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/SLADEMap/MapThing.h"
+#include "SLADEMap/MapObject/MapThing.h"
 
 class MapEditContext;
 class MapSide;

@@ -39,7 +39,7 @@
 #include "Decorate.h"
 #include "GenLineSpecial.h"
 #include "General/Console/Console.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include "ZScript.h"

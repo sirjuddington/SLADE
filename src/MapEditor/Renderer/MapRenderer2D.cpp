@@ -39,10 +39,10 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/Polygon2D.h"
 
 

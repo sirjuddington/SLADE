@@ -1,15 +1,15 @@
 #pragma once
 
-#include "MapEditor/SLADEMap/MapSector.h"
 #include "MapObjectList.h"
+#include "SLADEMap/MapObject/MapSector.h"
 
 class SectorList : public MapObjectList<MapSector>
 {
 public:
 	// MapObjectList overrides
-	void               clear() override;
-	void               add(MapSector* sector) override;
-	void               remove(unsigned index) override;
+	void clear() override;
+	void add(MapSector* sector) override;
+	void remove(unsigned index) override;
 
 	MapSector*         atPos(Vec2f point) const;
 	BBox               allSectorBounds() const;

@@ -38,9 +38,9 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/MapSector.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "OpenGL/Drawing.h"
+#include "SLADEMap/MapObject/MapSector.h"
 
 
 // -----------------------------------------------------------------------------

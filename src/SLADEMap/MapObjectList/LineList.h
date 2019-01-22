@@ -1,8 +1,8 @@
 #pragma once
 
 #include "General/Defs.h"
-#include "MapEditor/SLADEMap/MapLine.h"
 #include "MapObjectList.h"
+#include "SLADEMap/MapObject/MapLine.h"
 
 class LineList : public MapObjectList<MapLine>
 {

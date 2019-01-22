@@ -37,12 +37,12 @@
 #include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
+#include "SLADEMap/SLADEMap.h"
 
 using namespace MapEditor;
 

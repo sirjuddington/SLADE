@@ -33,7 +33,7 @@
 #include "Doom64MapFormat.h"
 #include "General/ResourceManager.h"
 #include "General/UI.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 
 
 // -----------------------------------------------------------------------------

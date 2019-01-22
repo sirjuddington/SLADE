@@ -34,7 +34,7 @@
 #include "Main.h"
 #include "ThingList.h"
 #include "Game/Configuration.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
 

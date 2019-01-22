@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapVertex.h"
-#include "SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/Parser.h"
 
 

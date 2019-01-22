@@ -33,7 +33,7 @@
 #include "MapLine.h"
 #include "MapSide.h"
 #include "MapVertex.h"
-#include "SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 #include "Utility/Parser.h"
 

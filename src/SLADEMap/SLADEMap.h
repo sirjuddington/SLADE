@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Archive/Archive.h"
-#include "MapEditor/MapSpecials.h"
+#include "MapSpecials.h"
 #include "MapObjectCollection.h"
 
 class ParseTreeNode;

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "MOPGProperty.h"
-#include "MapEditor/SLADEMap/MapObject.h"
 #include "PropsPanelBase.h"
+#include "SLADEMap/MapObject/MapObject.h"
 #include "UI/Controls/STabCtrl.h"
 
 class wxPropertyGrid;

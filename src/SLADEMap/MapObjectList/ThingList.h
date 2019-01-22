@@ -1,7 +1,7 @@
 #pragma once
 
-#include "MapEditor/SLADEMap/MapThing.h"
 #include "MapObjectList.h"
+#include "SLADEMap/MapObject/MapThing.h"
 
 class ThingList : public MapObjectList<MapThing>
 {

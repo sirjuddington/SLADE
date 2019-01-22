@@ -1,9 +1,9 @@
 #pragma once
 
-#include "MapEditor/SLADEMap/MapLine.h"
-#include "MapEditor/SLADEMap/MapSector.h"
-#include "MapEditor/SLADEMap/MapSide.h"
-#include "MapEditor/SLADEMap/MapThing.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
 
 class MapObject;
 class MapEditContext;

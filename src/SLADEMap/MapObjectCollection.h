@@ -6,7 +6,6 @@
 #include "MapObjectList/SideList.h"
 #include "MapObjectList/ThingList.h"
 #include "MapObjectList/VertexList.h"
-#include "MapThing.h"
 
 class MapObjectCollection
 {

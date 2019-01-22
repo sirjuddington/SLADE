@@ -1,7 +1,7 @@
 #pragma once
 
-#include "MapEditor/SLADEMap/MapVertex.h"
 #include "MapObjectList.h"
+#include "SLADEMap/MapObject/MapVertex.h"
 
 class VertexList : public MapObjectList<MapVertex>
 {

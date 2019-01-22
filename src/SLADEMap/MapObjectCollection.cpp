@@ -6,7 +6,7 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    MapObjectCollection.cpp
-// Description: Contains and keeps track of all MapObjects (vertices, lines 
+// Description: Contains and keeps track of all MapObjects (vertices, lines
 //              etc.) for a map.
 //
 // This program is free software; you can redistribute it and/or modify it
@@ -33,8 +33,8 @@
 #include "Main.h"
 #include "MapObjectCollection.h"
 #include "Game/Configuration.h"
-#include "MapLine.h"
-#include "MapSector.h"
+#include "MapObject/MapLine.h"
+#include "MapObject/MapSector.h"
 #include "SLADEMap.h"
 
 

@@ -35,10 +35,10 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
+#include "SLADEMap/SLADEMap.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
 

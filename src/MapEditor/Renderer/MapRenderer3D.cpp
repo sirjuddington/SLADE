@@ -40,8 +40,8 @@
 #include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/SLADEMap.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "Utility/MathStuff.h"
 

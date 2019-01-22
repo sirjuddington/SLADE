@@ -35,11 +35,11 @@
 #include "General/ColourConfiguration.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/MapLine.h"
-#include "MapEditor/SLADEMap/MapVertex.h"
 #include "MapRenderer2D.h"
 #include "MapRenderer3D.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapVertex.h"
 
 
 // -----------------------------------------------------------------------------

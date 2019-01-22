@@ -36,7 +36,7 @@
 #include "General/ResourceManager.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 
 using namespace MapEditor;
 
