@@ -49,6 +49,6 @@ struct ArgSpec
 	Arg&       operator[](int index) { return args[index]; }
 	const Arg& operator[](int index) const { return args[index]; }
 
-	string stringDesc(int values[5], string values_str[2]) const;
+	string stringDesc(const int values[5], string values_str[2]) const;
 };
 } // namespace Game

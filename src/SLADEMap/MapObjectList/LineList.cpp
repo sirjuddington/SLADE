@@ -201,7 +201,7 @@ void LineList::putAllTaggingWithId(int id, int type, vector<MapLine*>& list) con
 		int special = line->special();
 		if (special)
 		{
-			tag       = line->intProperty("arg0");
+			tag       = line->arg(0);
 			bool fits = false;
 			switch (Game::configuration().actionSpecial(special).needsTag())
 			{
@@ -212,67 +212,67 @@ void LineList::putAllTaggingWithId(int id, int type, vector<MapLine*>& list) con
 			case TagType::Line: fits = (IDEQ(tag) && type == SLADEMap::LINEDEFS); break;
 			case TagType::Thing: fits = (IDEQ(tag) && type == SLADEMap::THINGS); break;
 			case TagType::Thing1Sector2:
-				arg2 = line->intProperty("arg1");
+				arg2 = line->arg(1);
 				fits = (type == SLADEMap::THINGS ? IDEQ(tag) : (IDEQ(arg2) && type == SLADEMap::SECTORS));
 				break;
 			case TagType::Thing1Sector3:
-				arg3 = line->intProperty("arg2");
+				arg3 = line->arg(2);
 				fits = (type == SLADEMap::THINGS ? IDEQ(tag) : (IDEQ(arg3) && type == SLADEMap::SECTORS));
 				break;
 			case TagType::Thing1Thing2:
-				arg2 = line->intProperty("arg1");
+				arg2 = line->arg(1);
 				fits = (type == SLADEMap::THINGS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
 			case TagType::Thing1Thing4:
-				arg4 = line->intProperty("arg3");
+				arg4 = line->arg(3);
 				fits = (type == SLADEMap::THINGS && (IDEQ(tag) || IDEQ(arg4)));
 				break;
 			case TagType::Thing1Thing2Thing3:
-				arg2 = line->intProperty("arg1");
-				arg3 = line->intProperty("arg2");
+				arg2 = line->arg(1);
+				arg3 = line->arg(2);
 				fits = (type == SLADEMap::THINGS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3)));
 				break;
 			case TagType::Sector1Thing2Thing3Thing5:
-				arg2 = line->intProperty("arg1");
-				arg3 = line->intProperty("arg2");
-				arg5 = line->intProperty("arg4");
+				arg2 = line->arg(1);
+				arg3 = line->arg(2);
+				arg5 = line->arg(4);
 				fits =
 					(type == SLADEMap::SECTORS ?
 						 (IDEQ(tag)) :
 						 (type == SLADEMap::THINGS && (IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg5))));
 				break;
 			case TagType::LineId1Line2:
-				arg2 = line->intProperty("arg1");
+				arg2 = line->arg(1);
 				fits = (type == SLADEMap::LINEDEFS && IDEQ(arg2));
 				break;
 			case TagType::Thing4:
-				arg4 = line->intProperty("arg3");
+				arg4 = line->arg(3);
 				fits = (type == SLADEMap::THINGS && IDEQ(arg4));
 				break;
 			case TagType::Thing5:
-				arg5 = line->intProperty("arg4");
+				arg5 = line->arg(4);
 				fits = (type == SLADEMap::THINGS && IDEQ(arg5));
 				break;
 			case TagType::Line1Sector2:
-				arg2 = line->intProperty("arg1");
+				arg2 = line->arg(1);
 				fits = (type == SLADEMap::LINEDEFS ? (IDEQ(tag)) : (IDEQ(arg2) && type == SLADEMap::SECTORS));
 				break;
 			case TagType::Sector1Sector2:
-				arg2 = line->intProperty("arg1");
+				arg2 = line->arg(1);
 				fits = (type == SLADEMap::SECTORS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
 			case TagType::Sector1Sector2Sector3Sector4:
-				arg2 = line->intProperty("arg1");
-				arg3 = line->intProperty("arg2");
-				arg4 = line->intProperty("arg3");
+				arg2 = line->arg(1);
+				arg3 = line->arg(2);
+				arg4 = line->arg(3);
 				fits = (type == SLADEMap::SECTORS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg4)));
 				break;
 			case TagType::Sector2Is3Line:
-				arg2 = line->intProperty("arg1");
+				arg2 = line->arg(1);
 				fits = (IDEQ(tag) && (arg2 == 3 ? type == SLADEMap::LINEDEFS : type == SLADEMap::SECTORS));
 				break;
 			case TagType::Sector1Thing2:
-				arg2 = line->intProperty("arg1");
+				arg2 = line->arg(1);
 				fits = (type == SLADEMap::SECTORS ? (IDEQ(tag)) : (IDEQ(arg2) && type == SLADEMap::THINGS));
 				break;
 			default: break;
@@ -311,7 +311,7 @@ int LineList::firstFreeId(MapFormat format) const
 	{
 		for (unsigned a = 0; a < count_; a++)
 		{
-			if (objects_[a]->special() == 121 && objects_[a]->intProperty("arg0") == id)
+			if (objects_[a]->special() == 121 && objects_[a]->arg(0) == id)
 			{
 				id++;
 				a = 0;
@@ -324,7 +324,7 @@ int LineList::firstFreeId(MapFormat format) const
 	{
 		for (unsigned a = 0; a < count_; a++)
 		{
-			if (objects_[a]->intProperty("arg0") == id)
+			if (objects_[a]->arg(0) == id)
 			{
 				id++;
 				a = 0;

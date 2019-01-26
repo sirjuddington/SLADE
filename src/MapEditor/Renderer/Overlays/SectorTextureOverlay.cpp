@@ -236,8 +236,8 @@ void SectorTextureOverlay::openSectors(vector<MapSector*>& list)
 		sectors_.push_back(sector);
 
 		// Get textures
-		string ftex = sector->stringProperty("texturefloor");
-		string ctex = sector->stringProperty("textureceiling");
+		string ftex = sector->floor().texture;
+		string ctex = sector->ceiling().texture;
 
 		// Add floor texture if different
 		bool exists = false;
@@ -282,9 +282,9 @@ void SectorTextureOverlay::close(bool cancel)
 		for (auto& sector : sectors_)
 		{
 			if (tex_floor_.size() == 1)
-				sector->setStringProperty("texturefloor", tex_floor_[0]);
+				sector->setFloorTexture(tex_floor_[0]);
 			if (tex_ceil_.size() == 1)
-				sector->setStringProperty("textureceiling", tex_ceil_[0]);
+				sector->setCeilingTexture(tex_ceil_[0]);
 		}
 		MapEditor::editContext().endUndoRecord();
 	}
@@ -350,7 +350,7 @@ void SectorTextureOverlay::browseFloorTexture()
 	// Get initial texture
 	string texture;
 	if (tex_floor_.empty())
-		texture = sectors_[0]->stringProperty("texturefloor");
+		texture = sectors_[0]->floor().texture;
 	else
 		texture = tex_floor_[0];
 
@@ -375,7 +375,7 @@ void SectorTextureOverlay::browseCeilingTexture()
 	// Get initial texture
 	string texture;
 	if (tex_ceil_.empty())
-		texture = sectors_[0]->stringProperty("textureceiling");
+		texture = sectors_[0]->ceiling().texture;
 	else
 		texture = tex_ceil_[0];
 

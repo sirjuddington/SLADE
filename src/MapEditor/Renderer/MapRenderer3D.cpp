@@ -1390,7 +1390,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	int    highfloor   = max(floor1, floor2);
 	string sky_flat    = Game::configuration().skyFlat();
 	string hidden_tex  = map_->currentFormat() == MapFormat::Doom64 ? "?" : "-";
-	bool   show_midtex = (map_->currentFormat() != MapFormat::Doom64) || (line->intProperty("flags") & 512);
+	bool   show_midtex = (map_->currentFormat() != MapFormat::Doom64) || (line->flagSet(512));
 	// Heights at both endpoints, for both planes, on both sides
 	double f1h1 = fp1.heightAt(line->x1(), line->y1());
 	double f1h2 = fp1.heightAt(line->x2(), line->y2());
@@ -2126,7 +2126,7 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 	{
 		// Get sector floor (or ceiling) height
 		int   sheight;
-		float zheight = thing->floatProperty("height");
+		float zheight = thing->zPos();
 		if (things_[index].type->hanging())
 		{
 			sheight = things_[index].sector->ceiling().plane.heightAt(thing->xPos(), thing->yPos());
@@ -2509,13 +2509,11 @@ void MapRenderer3D::updateFlatsVBO()
 	// Write polygon data to VBO
 	unsigned offset = 0;
 	unsigned index  = 0;
-	int      height = 0;
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		// Set polygon z height
 		auto poly = map_->sector(a)->polygon();
-		height    = map_->sector(a)->intProperty("heightfloor");
-		poly->setZ(height);
+		poly->setZ(map_->sector(a)->floor().height);
 
 		// Write to VBO
 		offset = poly->writeToVBO(offset, index);
@@ -2536,8 +2534,7 @@ void MapRenderer3D::updateFlatsVBO()
 	{
 		// Set polygon z height
 		auto poly = map_->sector(a)->polygon();
-		height    = map_->sector(a)->intProperty("heightceiling");
-		poly->setZ(height);
+		poly->setZ(map_->sector(a)->ceiling().height);
 
 		// Write to VBO
 		offset = poly->writeToVBO(offset, index);
@@ -2671,7 +2668,7 @@ void MapRenderer3D::checkVisibleQuads()
 		// Check side of camera
 		if (cam_pitch_ > -0.9 && cam_pitch_ < 0.9)
 		{
-			if (MathStuff::lineSide(line->point1(), strafe) > 0 && MathStuff::lineSide(line->point2(), strafe) > 0)
+			if (MathStuff::lineSide(line->start(), strafe) > 0 && MathStuff::lineSide(line->end(), strafe) > 0)
 				continue;
 		}
 
@@ -2817,7 +2814,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 
 		// Find (2d) distance to line
 		dist = MathStuff::distanceRayLine(
-			cam_position_.get2d(), (cam_position_ + cam_dir3d_).get2d(), line->point1(), line->point2());
+			cam_position_.get2d(), (cam_position_ + cam_dir3d_).get2d(), line->start(), line->end());
 
 		// Ignore if no intersection or something was closer
 		if (dist < 0 || dist >= min_dist)

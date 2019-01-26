@@ -349,7 +349,7 @@ ColRGBA MapRenderer2D::lineColour(MapLine* line, bool ignore_filter) const
 	if (line)
 	{
 		// Check for special line
-		if (line->intProperty("special") > 0)
+		if (line->special() > 0)
 			col.set(ColourConfiguration::colour("map_line_special"));
 		else if (line->s1())
 			col.set(ColourConfiguration::colour("map_line_normal"));
@@ -1687,7 +1687,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 			// Dragon Path
 			if (tt.flags() & Game::ThingType::Flags::Dragon)
 			{
-				auto first = map_->things().firstWithId(thing->intProperty("id"));
+				auto first = map_->things().firstWithId(thing->id());
 				if (first)
 				{
 					path.from_index = thing->index();
@@ -1700,21 +1700,21 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 					map_->putDragonTargets(first, dragon_things);
 					for (unsigned d = 0; d < dragon_things.size(); ++d)
 					{
-						int   id1 = dragon_things[d]->intProperty("id");
-						int   a11 = dragon_things[d]->intProperty("arg0");
-						int   a12 = dragon_things[d]->intProperty("arg1");
-						int   a13 = dragon_things[d]->intProperty("arg2");
-						int   a14 = dragon_things[d]->intProperty("arg3");
-						int   a15 = dragon_things[d]->intProperty("arg4");
+						int   id1 = dragon_things[d]->id();
+						int   a11 = dragon_things[d]->arg(0);
+						int   a12 = dragon_things[d]->arg(1);
+						int   a13 = dragon_things[d]->arg(2);
+						int   a14 = dragon_things[d]->arg(3);
+						int   a15 = dragon_things[d]->arg(4);
 						auto& tt1 = Game::configuration().thingType(dragon_things[d]->type());
 						for (unsigned e = d + 1; e < dragon_things.size(); ++e)
 						{
-							int   id2  = dragon_things[e]->intProperty("id");
-							int   a21  = dragon_things[e]->intProperty("arg0");
-							int   a22  = dragon_things[e]->intProperty("arg1");
-							int   a23  = dragon_things[e]->intProperty("arg2");
-							int   a24  = dragon_things[e]->intProperty("arg3");
-							int   a25  = dragon_things[e]->intProperty("arg4");
+							int   id2  = dragon_things[e]->id();
+							int   a21  = dragon_things[e]->arg(0);
+							int   a22  = dragon_things[e]->arg(1);
+							int   a23  = dragon_things[e]->arg(2);
+							int   a24  = dragon_things[e]->arg(3);
+							int   a25  = dragon_things[e]->arg(4);
 							auto& tt2  = Game::configuration().thingType(dragon_things[e]->type());
 							bool l1to2 = ((a11 == id2) || (a12 == id2) || (a13 == id2) || (a14 == id2) || (a15 == id2));
 							bool l2to1 = ((a21 == id1) || (a22 == id1) || (a23 == id1) || (a24 == id1) || (a25 == id1));
@@ -1747,17 +1747,13 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 			int nextargs = tt.nextArgs();
 			if (nextargs)
 			{
-				int    pos = nextargs % 10;
-				string na  = "arg_";
-				na[3]      = ('0' + pos - 1);
-				tid        = thing->intProperty(na);
+				int pos = nextargs % 10;
+				tid     = thing->arg(pos - 1);
 			}
 			if (nextargs >= 10)
 			{
-				int    pos = nextargs / 10;
-				string na  = "arg_";
-				na[3]      = ('0' + pos - 1);
-				tid += (256 * thing->intProperty(na));
+				int pos = nextargs / 10;
+				tid += (256 * thing->arg(pos - 1));
 			}
 			for (unsigned b = a + 1; b < things.size(); ++b)
 			{
@@ -1768,25 +1764,21 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 					nextargs  = tt2.nextArgs();
 					if (nextargs)
 					{
-						int    pos = nextargs % 10;
-						string na  = "arg_";
-						na[3]      = ('0' + pos - 1);
-						tid2       = thing2->intProperty(na);
+						int pos = nextargs % 10;
+						tid2    = thing2->arg(pos - 1);
 					}
 					if (nextargs >= 10)
 					{
-						int    pos = nextargs / 10;
-						string na  = "arg_";
-						na[3]      = ('0' + pos - 1);
-						tid2 += (256 * thing2->intProperty(na));
+						int pos = nextargs / 10;
+						tid2 += (256 * thing2->arg(pos - 1));
 					}
-					if (thing2->intProperty("id") == tid)
+					if (thing2->id() == tid)
 					{
 						path.from_index = thing->index();
 						path.to_index   = thing2->index();
-						path.type       = (tid2 == thing->intProperty("id")) ? PathType::NormalBoth : PathType::Normal;
+						path.type       = (tid2 == thing->id()) ? PathType::NormalBoth : PathType::Normal;
 					}
-					else if (thing->intProperty("id") == tid2)
+					else if (thing->id() == tid2)
 					{
 						path.from_index = thing2->index();
 						path.to_index   = thing->index();
@@ -1809,7 +1801,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 
 		auto from = map_->thing(thing_path.from_index);
 
-		if (from && ((from->intProperty("arg3") | (from->intProperty("arg4") << 8)) > 0))
+		if (from && ((from->arg(3) | (from->arg(4) << 8)) > 0))
 		{
 			auto to = map_->thing(thing_path.to_index);
 			if (!to)

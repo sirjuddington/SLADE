@@ -39,11 +39,19 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-const string MapThing::PROP_X     = "x";
-const string MapThing::PROP_Y     = "y";
-const string MapThing::PROP_TYPE  = "type";
-const string MapThing::PROP_ANGLE = "angle";
-const string MapThing::PROP_FLAGS = "flags";
+const string MapThing::PROP_X       = "x";
+const string MapThing::PROP_Y       = "y";
+const string MapThing::PROP_Z       = "height";
+const string MapThing::PROP_TYPE    = "type";
+const string MapThing::PROP_ANGLE   = "angle";
+const string MapThing::PROP_FLAGS   = "flags";
+const string MapThing::PROP_ARG0    = "arg0";
+const string MapThing::PROP_ARG1    = "arg1";
+const string MapThing::PROP_ARG2    = "arg2";
+const string MapThing::PROP_ARG3    = "arg3";
+const string MapThing::PROP_ARG4    = "arg4";
+const string MapThing::PROP_ID      = "id";
+const string MapThing::PROP_SPECIAL = "special";
 
 
 // -----------------------------------------------------------------------------
@@ -56,38 +64,60 @@ const string MapThing::PROP_FLAGS = "flags";
 // -----------------------------------------------------------------------------
 // MapThing class constructor
 // -----------------------------------------------------------------------------
-MapThing::MapThing(const Vec2f& pos, short type, short angle, short flags) :
+MapThing::MapThing(const Vec3f& pos, short type, short angle, short flags, const ArgSet& args, int id, int special) :
 	MapObject(Type::Thing),
 	type_{ type },
-	position_{ pos },
-	angle_{ angle }
+	position_{ pos.x, pos.y },
+	z_{ pos.z },
+	angle_{ angle },
+	flags_{ flags },
+	args_{ args },
+	id_{ id },
+	special_{ special }
 {
-	properties_[PROP_FLAGS] = flags; // TODO: convert to member variable
 }
 
 // -----------------------------------------------------------------------------
 // MapThing class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapThing::MapThing(const Vec2f& pos, short type, ParseTreeNode* def) :
+MapThing::MapThing(const Vec3f& pos, short type, ParseTreeNode* def) :
 	MapObject(Type::Thing),
 	type_{ type },
-	position_{ pos }
+	position_{ pos.x, pos.y },
+	z_{ pos.z }
 {
 	// Set properties from UDMF definition
 	ParseTreeNode* prop;
 	for (unsigned a = 0; a < def->nChildren(); a++)
 	{
-		prop = def->childPTN(a);
+		prop           = def->childPTN(a);
+		auto& propName = prop->nameRef();
 
 		// Skip required properties
-		if (prop->nameIsCI(PROP_X) || prop->nameIsCI(PROP_Y) || prop->nameIsCI(PROP_TYPE))
+		if (propName == PROP_X || propName == PROP_Y || propName == PROP_Z || propName == PROP_TYPE)
 			continue;
 
 		// Builtin properties
-		if (prop->nameIsCI(PROP_ANGLE))
+		if (propName == PROP_ANGLE)
 			angle_ = prop->intValue();
+		else if (propName == PROP_FLAGS)
+			flags_ = prop->intValue();
+		else if (propName == PROP_ARG0)
+			args_[0] = prop->intValue();
+		else if (propName == PROP_ARG1)
+			args_[1] = prop->intValue();
+		else if (propName == PROP_ARG2)
+			args_[2] = prop->intValue();
+		else if (propName == PROP_ARG3)
+			args_[3] = prop->intValue();
+		else if (propName == PROP_ARG4)
+			args_[4] = prop->intValue();
+		else if (propName == PROP_ID)
+			id_ = prop->intValue();
+		else if (propName == PROP_SPECIAL)
+			special_ = prop->intValue();
 		else
-			properties_[prop->name()] = prop->value();
+			properties_[prop->nameRef()] = prop->value();
 	}
 }
 
@@ -107,14 +137,32 @@ int MapThing::intProperty(const string& key)
 {
 	if (key == PROP_TYPE)
 		return type_;
-	else if (key == PROP_X)
+	if (key == PROP_X)
 		return (int)position_.x;
-	else if (key == PROP_Y)
+	if (key == PROP_Y)
 		return (int)position_.y;
-	else if (key == PROP_ANGLE)
+	if (key == PROP_Z)
+		return (int)z_;
+	if (key == PROP_ANGLE)
 		return angle_;
-	else
-		return MapObject::intProperty(key);
+	if (key == PROP_FLAGS)
+		return flags_;
+	if (key == PROP_ARG0)
+		return args_[0];
+	if (key == PROP_ARG1)
+		return args_[1];
+	if (key == PROP_ARG2)
+		return args_[2];
+	if (key == PROP_ARG3)
+		return args_[3];
+	if (key == PROP_ARG4)
+		return args_[4];
+	if (key == PROP_ID)
+		return id_;
+	if (key == PROP_SPECIAL)
+		return special_;
+
+	return MapObject::intProperty(key);
 }
 
 // -----------------------------------------------------------------------------
@@ -124,10 +172,12 @@ double MapThing::floatProperty(const string& key)
 {
 	if (key == PROP_X)
 		return position_.x;
-	else if (key == PROP_Y)
+	if (key == PROP_Y)
 		return position_.y;
-	else
-		return MapObject::floatProperty(key);
+	if (key == PROP_Z)
+		return z_;
+
+	return MapObject::floatProperty(key);
 }
 
 // -----------------------------------------------------------------------------
@@ -144,8 +194,26 @@ void MapThing::setIntProperty(const string& key, int value)
 		position_.x = value;
 	else if (key == PROP_Y)
 		position_.y = value;
+	else if (key == PROP_Z)
+		z_ = value;
 	else if (key == PROP_ANGLE)
 		angle_ = value;
+	else if (key == PROP_FLAGS)
+		flags_ = value;
+	else if (key == PROP_ARG0)
+		args_[0] = value;
+	else if (key == PROP_ARG1)
+		args_[1] = value;
+	else if (key == PROP_ARG2)
+		args_[2] = value;
+	else if (key == PROP_ARG3)
+		args_[3] = value;
+	else if (key == PROP_ARG4)
+		args_[4] = value;
+	else if (key == PROP_ID)
+		id_ = value;
+	else if (key == PROP_SPECIAL)
+		special_ = value;
 	else
 		return MapObject::setIntProperty(key, value);
 }
@@ -162,6 +230,8 @@ void MapThing::setFloatProperty(const string& key, double value)
 		position_.x = value;
 	else if (key == PROP_Y)
 		position_.y = value;
+	else if (key == PROP_Z)
+		z_ = value;
 	else
 		return MapObject::setFloatProperty(key, value);
 }
@@ -176,11 +246,16 @@ void MapThing::copy(MapObject* c)
 		return;
 
 	// Basic variables
-	auto thing        = dynamic_cast<MapThing*>(c);
-	this->position_.x = thing->position_.x;
-	this->position_.y = thing->position_.y;
-	this->type_       = thing->type_;
-	this->angle_      = thing->angle_;
+	auto thing  = dynamic_cast<MapThing*>(c);
+	position_.x = thing->position_.x;
+	position_.y = thing->position_.y;
+	type_       = thing->type_;
+	angle_      = thing->angle_;
+	flags_      = thing->flags_;
+	id_         = thing->id_;
+	special_    = thing->special_;
+	for (unsigned i = 0; i < 5; ++i)
+		args_[i] = thing->args_[i];
 
 	// Other properties
 	MapObject::copy(c);
@@ -195,6 +270,24 @@ void MapThing::move(Vec2f pos, bool modify)
 	if (modify)
 		setModified();
 	position_ = pos;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the Z-position (height) of the thing to [pos]
+// -----------------------------------------------------------------------------
+void MapThing::setZ(double z)
+{
+	setModified();
+	z_ = z;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the thing [type]
+// -----------------------------------------------------------------------------
+void MapThing::setType(int type)
+{
+	setModified();
+	type_ = type;
 }
 
 // -----------------------------------------------------------------------------
@@ -246,19 +339,80 @@ void MapThing::setAnglePoint(Vec2f point, bool modify)
 }
 
 // -----------------------------------------------------------------------------
+// Sets the thing id to [id]
+// -----------------------------------------------------------------------------
+void MapThing::setId(int id)
+{
+	setModified();
+	id_ = id;
+}
+
+// -----------------------------------------------------------------------------
+// Sets all thing flags to [flags]
+// -----------------------------------------------------------------------------
+void MapThing::setFlags(int flags)
+{
+	setModified();
+	flags_ = flags;
+}
+
+// -----------------------------------------------------------------------------
+// Sets a thing [flag]
+// -----------------------------------------------------------------------------
+void MapThing::setFlag(int flag)
+{
+	setModified();
+	flags_ |= flag;
+}
+
+// -----------------------------------------------------------------------------
+// Clears a thing [flag]
+// -----------------------------------------------------------------------------
+void MapThing::clearFlag(int flag)
+{
+	setModified();
+	flags_ = flags_ & ~flag;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the thing arg at [index] to [value]
+// -----------------------------------------------------------------------------
+void MapThing::setArg(unsigned index, int value)
+{
+	if (index < 5)
+	{
+		setModified();
+		args_[index] = value;
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Sets the thing action special to [special]
+// -----------------------------------------------------------------------------
+void MapThing::setSpecial(int special)
+{
+	setModified();
+	special_ = special;
+}
+
+// -----------------------------------------------------------------------------
 // Write all thing info to a Backup struct
 // -----------------------------------------------------------------------------
 void MapThing::writeBackup(Backup* backup)
 {
-	// Type
-	backup->props_internal[PROP_TYPE] = type_;
-
-	// Position
-	backup->props_internal[PROP_X] = position_.x;
-	backup->props_internal[PROP_Y] = position_.y;
-
-	// Angle
-	backup->props_internal[PROP_ANGLE] = angle_;
+	backup->props_internal[PROP_TYPE]    = type_;
+	backup->props_internal[PROP_X]       = position_.x;
+	backup->props_internal[PROP_Y]       = position_.y;
+	backup->props_internal[PROP_Z]       = z_;
+	backup->props_internal[PROP_ANGLE]   = angle_;
+	backup->props_internal[PROP_FLAGS]   = flags_;
+	backup->props_internal[PROP_ARG0]    = args_[0];
+	backup->props_internal[PROP_ARG1]    = args_[1];
+	backup->props_internal[PROP_ARG2]    = args_[2];
+	backup->props_internal[PROP_ARG3]    = args_[3];
+	backup->props_internal[PROP_ARG4]    = args_[4];
+	backup->props_internal[PROP_ID]      = id_;
+	backup->props_internal[PROP_SPECIAL] = special_;
 }
 
 // -----------------------------------------------------------------------------
@@ -266,15 +420,19 @@ void MapThing::writeBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 void MapThing::readBackup(Backup* backup)
 {
-	// Type
-	type_ = backup->props_internal[PROP_TYPE].intValue();
-
-	// Position
+	type_       = backup->props_internal[PROP_TYPE].intValue();
 	position_.x = backup->props_internal[PROP_X].floatValue();
 	position_.y = backup->props_internal[PROP_Y].floatValue();
-
-	// Angle
-	angle_ = backup->props_internal[PROP_ANGLE].intValue();
+	z_          = backup->props_internal[PROP_Z].floatValue();
+	angle_      = backup->props_internal[PROP_ANGLE].intValue();
+	flags_      = backup->props_internal[PROP_FLAGS].intValue();
+	args_[0]    = backup->props_internal[PROP_ARG0].intValue();
+	args_[1]    = backup->props_internal[PROP_ARG1].intValue();
+	args_[2]    = backup->props_internal[PROP_ARG2].intValue();
+	args_[3]    = backup->props_internal[PROP_ARG3].intValue();
+	args_[4]    = backup->props_internal[PROP_ARG4].intValue();
+	id_         = backup->props_internal[PROP_ID].intValue();
+	special_    = backup->props_internal[PROP_SPECIAL].intValue();
 }
 
 // -----------------------------------------------------------------------------
@@ -286,8 +444,19 @@ void MapThing::writeUDMF(string& def)
 
 	// Basic properties
 	def += S_FMT("x=%1.3f;\ny=%1.3f;\ntype=%d;\n", position_.x, position_.y, type_);
+	if (z_ != 0)
+		def += S_FMT("height=%1.3f;\n", z_);
 	if (angle_ != 0)
 		def += S_FMT("angle=%d;\n", angle_);
+	if (flags_ != 0)
+		def += S_FMT("flags=%d;\n", flags_);
+	if (id_ != 0)
+		def += S_FMT("id=%d;\n", id_);
+	for (unsigned i = 0; i < 5; ++i)
+		if (args_[i] != 0)
+			def += S_FMT("arg%d=%d;\n", i, args_[i]);
+	if (special_ != 0)
+		def += S_FMT("special=%d;\n", special_);
 
 	// Other properties
 	if (!properties_.isEmpty())

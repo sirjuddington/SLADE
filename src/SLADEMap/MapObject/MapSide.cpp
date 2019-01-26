@@ -122,9 +122,9 @@ void MapSide::copy(MapObject* c)
 
 	// Copy properties
 	auto side = dynamic_cast<MapSide*>(c);
-	setTexLower(side->tex_lower_);
-	setTexMiddle(side->tex_middle_);
-	setTexUpper(side->tex_upper_);
+	setTexLower(side->tex_lower_, false);
+	setTexMiddle(side->tex_middle_, false);
+	setTexUpper(side->tex_upper_, false);
 	tex_offset_ = side->tex_offset_;
 
 	MapObject::copy(c);
@@ -158,7 +158,7 @@ uint8_t MapSide::light()
 }
 
 // -----------------------------------------------------------------------------
-// Change the light level of a side, if supported
+// Changes the light level of a side, if supported
 // -----------------------------------------------------------------------------
 void MapSide::changeLight(int amount)
 {
@@ -168,10 +168,13 @@ void MapSide::changeLight(int amount)
 }
 
 // -----------------------------------------------------------------------------
-// Set the upper texture to [tex]
+// Sets the upper texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSide::setTexUpper(const string& tex)
+void MapSide::setTexUpper(const string& tex, bool modify)
 {
+	if (modify)
+		setModified();
+
 	if (parent_map_)
 	{
 		parent_map_->sides().updateTexUsage(tex_upper_, -1);
@@ -182,10 +185,13 @@ void MapSide::setTexUpper(const string& tex)
 }
 
 // -----------------------------------------------------------------------------
-// Set the middle texture to [tex]
+// Sets the middle texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSide::setTexMiddle(const string& tex)
+void MapSide::setTexMiddle(const string& tex, bool modify)
 {
+	if (modify)
+		setModified();
+
 	if (parent_map_)
 	{
 		parent_map_->sides().updateTexUsage(tex_middle_, -1);
@@ -196,10 +202,13 @@ void MapSide::setTexMiddle(const string& tex)
 }
 
 // -----------------------------------------------------------------------------
-// Set the lower texture to [tex]
+// Sets the lower texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSide::setTexLower(const string& tex)
+void MapSide::setTexLower(const string& tex, bool modify)
 {
+	if (modify)
+		setModified();
+
 	if (parent_map_)
 	{
 		parent_map_->sides().updateTexUsage(tex_lower_, -1);
@@ -207,6 +216,24 @@ void MapSide::setTexLower(const string& tex)
 	}
 
 	tex_lower_ = tex;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the X offset to [offset]
+// -----------------------------------------------------------------------------
+void MapSide::setTexOffsetX(int offset)
+{
+	setModified();
+	tex_offset_.x = offset;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the Y offset to [offset]
+// -----------------------------------------------------------------------------
+void MapSide::setTexOffsetY(int offset)
+{
+	setModified();
+	tex_offset_.y = offset;
 }
 
 // -----------------------------------------------------------------------------
@@ -291,11 +318,11 @@ void MapSide::setStringProperty(const string& key, const string& value)
 	setModified();
 
 	if (key == PROP_TEXUPPER)
-		setTexUpper(value);
+		setTexUpper(value, false);
 	else if (key == PROP_TEXMIDDLE)
-		setTexMiddle(value);
+		setTexMiddle(value, false);
 	else if (key == PROP_TEXLOWER)
-		setTexLower(value);
+		setTexLower(value, false);
 	else
 		MapObject::setStringProperty(key, value);
 }
@@ -350,9 +377,9 @@ void MapSide::readBackup(Backup* backup)
 	}
 
 	// Textures
-	setTexUpper(backup->props_internal[PROP_TEXUPPER].stringValue());
-	setTexMiddle(backup->props_internal[PROP_TEXMIDDLE].stringValue());
-	setTexLower(backup->props_internal[PROP_TEXLOWER].stringValue());
+	setTexUpper(backup->props_internal[PROP_TEXUPPER].stringValue(), false);
+	setTexMiddle(backup->props_internal[PROP_TEXMIDDLE].stringValue(), false);
+	setTexLower(backup->props_internal[PROP_TEXLOWER].stringValue(), false);
 
 	// Offsets
 	tex_offset_.x = backup->props_internal[PROP_OFFSETX].intValue();

@@ -107,7 +107,7 @@ void Edit2D::mirror(bool x_axis) const
 				angle = 360 - angle;
 			while (angle < 0)
 				angle += 360;
-			thing->setIntProperty("angle", angle);
+			thing->setAngle(angle);
 		}
 		context_.endUndoRecord(true);
 	}
@@ -308,17 +308,11 @@ void Edit2D::changeSectorHeight(int amount, bool floor, bool ceiling) const
 	{
 		// Change floor height
 		if (floor)
-		{
-			int height = sector->intProperty("heightfloor");
-			sector->setIntProperty("heightfloor", height + amount);
-		}
+			sector->setFloorHeight(sector->floor().height + amount);
 
 		// Change ceiling height
 		if (ceiling)
-		{
-			int height = sector->intProperty("heightceiling");
-			sector->setIntProperty("heightceiling", height + amount);
-		}
+			sector->setCeilingHeight(sector->ceiling().height + amount);
 	}
 
 	// End record undo level
@@ -366,7 +360,7 @@ void Edit2D::changeSectorLight(bool up, bool fine) const
 	for (auto& sector : selection)
 	{
 		// Get current light
-		int light = sector->intProperty("lightlevel");
+		int light = sector->lightLevel();
 
 		// Increment/decrement
 		if (up)
@@ -375,7 +369,7 @@ void Edit2D::changeSectorLight(bool up, bool fine) const
 			light = fine ? light - 1 : Game::configuration().downLightLevel(light);
 
 		// Change light level
-		sector->setIntProperty("lightlevel", light);
+		sector->setLightLevel(light);
 	}
 
 	// End record undo level
@@ -405,15 +399,16 @@ void Edit2D::changeSectorTexture() const
 
 	// Determine the initial texture
 	string texture, browser_title, undo_name;
-	if (context_.sectorEditMode() == SectorMode::Floor)
+	auto   mode = context_.sectorEditMode();
+	if (mode == SectorMode::Floor)
 	{
-		texture       = selection[0]->stringProperty("texturefloor");
+		texture       = selection[0]->floor().texture;
 		browser_title = "Browse Floor Texture";
 		undo_name     = "Change Floor Texture";
 	}
-	else if (context_.sectorEditMode() == SectorMode::Ceiling)
+	else if (mode == SectorMode::Ceiling)
 	{
-		texture       = selection[0]->stringProperty("textureceiling");
+		texture       = selection[0]->ceiling().texture;
 		browser_title = "Browse Ceiling Texture";
 		undo_name     = "Change Ceiling Texture";
 	}
@@ -436,10 +431,10 @@ void Edit2D::changeSectorTexture() const
 		context_.beginUndoRecord(undo_name, true, false, false);
 		for (auto& sector : selection)
 		{
-			if (context_.sectorEditMode() == SectorMode::Floor)
-				sector->setStringProperty("texturefloor", selected_tex);
-			else if (context_.sectorEditMode() == SectorMode::Ceiling)
-				sector->setStringProperty("textureceiling", selected_tex);
+			if (mode == SectorMode::Floor)
+				sector->setFloorTexture(selected_tex);
+			else if (mode == SectorMode::Ceiling)
+				sector->setCeilingTexture(selected_tex);
 		}
 		context_.endUndoRecord();
 	}
@@ -558,7 +553,7 @@ void Edit2D::changeThingType() const
 		// Go through selection
 		context_.beginUndoRecord("Thing Type Change", true, false, false);
 		for (auto& thing : selection)
-			thing->setIntProperty("type", newtype);
+			thing->setType(newtype);
 		context_.endUndoRecord(true);
 
 		// Add editor message
@@ -906,8 +901,8 @@ void Edit2D::createThing(Vec2f pos) const
 	if (thing_copied_ && thing)
 	{
 		// Copy type and angle from the last copied thing
-		thing->setIntProperty("type", copy_thing_.type());
-		thing->setIntProperty("angle", copy_thing_.angle());
+		thing->setType(copy_thing_.type());
+		thing->setAngle(copy_thing_.angle());
 	}
 
 	// End undo step
@@ -1156,13 +1151,13 @@ void Edit2D::deleteSector() const
 
 		// Inherit textures from upper or lower
 		if (side->texUpper() != "-")
-			side->setStringProperty("texturemiddle", side->texUpper());
+			side->setTexMiddle(side->texUpper());
 		else if (side->texLower() != "-")
-			side->setStringProperty("texturemiddle", side->texLower());
+			side->setTexMiddle(side->texLower());
 
 		// Clear any existing textures, which are no longer visible
-		side->setStringProperty("texturetop", "-");
-		side->setStringProperty("texturebottom", "-");
+		side->setTexUpper(MapSide::TEX_NONE);
+		side->setTexLower(MapSide::TEX_NONE);
 	}
 
 	// Editor message

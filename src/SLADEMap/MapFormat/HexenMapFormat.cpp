@@ -103,15 +103,11 @@ bool HexenMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_
 			s2 = map_data.duplicateSide(s2);
 
 		// Create line
-		auto line = map_data.addLine(std::make_unique<MapLine>(v1, v2, s1, s2, data.type));
+		auto line = map_data.addLine(std::make_unique<MapLine>(v1, v2, s1, s2, data.type, data.flags));
 
 		// Set properties
-		line->setIntProperty("arg0", data.args[0]);
-		line->setIntProperty("arg1", data.args[1]);
-		line->setIntProperty("arg2", data.args[2]);
-		line->setIntProperty("arg3", data.args[3]);
-		line->setIntProperty("arg4", data.args[4]);
-		line->setIntProperty("flags", data.flags);
+		for (unsigned i = 0; i < 5; ++i)
+			line->setArg(i, data.args[i]);
 
 		// Handle some special cases
 		if (data.type)
@@ -119,8 +115,8 @@ bool HexenMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_
 			switch (Game::configuration().actionSpecial(data.type).needsTag())
 			{
 			case Game::TagType::LineId:
-			case Game::TagType::LineId1Line2: line->setIntProperty("id", data.args[0]); break;
-			case Game::TagType::LineIdHi5: line->setIntProperty("id", (data.args[0] + (data.args[4] << 8))); break;
+			case Game::TagType::LineId1Line2: line->setId(data.args[0]); break;
+			case Game::TagType::LineIdHi5: line->setId((data.args[0] + (data.args[4] << 8))); break;
 			default: break;
 			}
 		}
@@ -150,27 +146,28 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 		return true;
 	}
 
-	auto     thng_data = (Thing*)entry->rawData(true);
-	unsigned nt        = entry->size() / sizeof(Thing);
-	float    p         = UI::getSplashProgress();
+	auto              thng_data = (Thing*)entry->rawData(true);
+	unsigned          nt        = entry->size() / sizeof(Thing);
+	float             p         = UI::getSplashProgress();
+	MapObject::ArgSet args;
 	for (size_t a = 0; a < nt; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / nt) * 0.2f);
 		const auto& data = thng_data[a];
 
-		// Create thing
-		auto thing = map_data.addThing(
-			std::make_unique<MapThing>(Vec2f{ (double)data.x, (double)data.y }, data.type, data.angle, data.flags));
+		// Set args
+		for (unsigned i = 0; i < 5; ++i)
+			args[i] = data.args[i];
 
-		// Set properties
-		thing->setIntProperty("height", data.z);
-		thing->setIntProperty("special", data.special);
-		thing->setIntProperty("id", data.tid);
-		thing->setIntProperty("arg0", data.args[0]);
-		thing->setIntProperty("arg1", data.args[1]);
-		thing->setIntProperty("arg2", data.args[2]);
-		thing->setIntProperty("arg3", data.args[3]);
-		thing->setIntProperty("arg4", data.args[4]);
+		// Create thing
+		map_data.addThing(std::make_unique<MapThing>(
+			Vec3f{ (double)data.x, (double)data.y, (double)data.z },
+			data.type,
+			data.angle,
+			data.flags,
+			args,
+			data.tid,
+			data.special));
 	}
 
 	Log::info(3, S_FMT("Read %lu things", map_data.things().size()));
@@ -198,13 +195,10 @@ ArchiveEntry::UPtr HexenMapFormat::writeLINEDEFS(const LineList& lines) const
 		data.vertex2 = line->v2Index();
 
 		// Properties
-		data.flags   = line->intProperty("flags");
-		data.type    = line->special();
-		data.args[0] = line->intProperty("arg0");
-		data.args[1] = line->intProperty("arg1");
-		data.args[2] = line->intProperty("arg2");
-		data.args[3] = line->intProperty("arg3");
-		data.args[4] = line->intProperty("arg4");
+		data.flags = line->flags();
+		data.type  = line->special();
+		for (unsigned i = 0; i < 5; ++i)
+			data.args[i] = line->arg(i);
 
 		// Sides
 		data.side1 = line->s1Index();
@@ -235,19 +229,19 @@ ArchiveEntry::UPtr HexenMapFormat::writeTHINGS(const ThingList& things) const
 		// Position
 		data.x = thing->xPos();
 		data.y = thing->yPos();
-		data.z = thing->intProperty("height");
+		data.z = thing->zPos();
 
 		// Properties
 		data.angle   = thing->angle();
 		data.type    = thing->type();
-		data.flags   = thing->intProperty("flags");
-		data.special = thing->intProperty("special");
-		data.tid     = thing->intProperty("id");
-		data.args[0] = thing->intProperty("arg0");
-		data.args[1] = thing->intProperty("arg1");
-		data.args[2] = thing->intProperty("arg2");
-		data.args[3] = thing->intProperty("arg3");
-		data.args[4] = thing->intProperty("arg4");
+		data.flags   = thing->flags();
+		data.special = thing->special();
+		data.tid     = thing->id();
+		data.args[0] = thing->arg(0);
+		data.args[1] = thing->arg(1);
+		data.args[2] = thing->arg(2);
+		data.args[3] = thing->arg(3);
+		data.args[4] = thing->arg(4);
 
 		entry->write(&data, sizeof(Thing));
 	}

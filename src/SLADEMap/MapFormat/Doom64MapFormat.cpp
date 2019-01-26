@@ -244,12 +244,12 @@ bool Doom64MapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 			std::make_unique<MapLine>(v1, v2, map_data.sides().at(s1_index), map_data.sides().at(s2_index)));
 
 		// Set properties
-		line->setIntProperty("arg0", data.sector_tag);
+		line->setArg(0, data.sector_tag);
 		if (data.type & 0x100)
 			line->setIntProperty("macro", data.type & 0xFF);
 		else
-			line->setIntProperty("special", data.type & 0xFF);
-		line->setIntProperty("flags", (int)data.flags);
+			line->setSpecial(data.type & 0xFF);
+		line->setFlags(data.flags);
 		line->setIntProperty("extraflags", data.type >> 9);
 	}
 
@@ -328,21 +328,23 @@ bool Doom64MapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_d
 		return true;
 	}
 
-	auto     thng_data = (Thing*)entry->rawData(true);
-	unsigned nt        = entry->size() / sizeof(Thing);
-	float    p         = UI::getSplashProgress();
+	auto              thng_data = (Thing*)entry->rawData(true);
+	unsigned          nt        = entry->size() / sizeof(Thing);
+	float             p         = UI::getSplashProgress();
+	MapObject::ArgSet args;
 	for (size_t a = 0; a < nt; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / nt) * 0.2f);
 		const auto& data = thng_data[a];
 
 		// Create thing
-		auto thing = map_data.addThing(
-			std::make_unique<MapThing>(Vec2f{ (double)data.x, (double)data.y }, data.type, data.angle, data.flags));
-
-		// Set properties
-		thing->setIntProperty("height", data.z);
-		thing->setIntProperty("id", data.tid);
+		auto thing = map_data.addThing(std::make_unique<MapThing>(
+			Vec3f{ (double)data.x, (double)data.y, (double)data.z },
+			data.type,
+			data.angle,
+			data.flags,
+			args,
+			data.tid));
 	}
 
 	Log::info(3, S_FMT("Read %lu things", map_data.things().size()));

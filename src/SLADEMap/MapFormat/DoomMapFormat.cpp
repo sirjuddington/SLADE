@@ -251,13 +251,17 @@ bool DoomMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 		}
 
 		// Create line
-		auto line = map_data.addLine(
-			std::make_unique<MapLine>(v1, v2, map_data.sides().at(s1_index), map_data.sides().at(s2_index), data.type));
+		auto line = map_data.addLine(std::make_unique<MapLine>(
+			v1,
+			v2,
+			map_data.sides().at(s1_index),
+			map_data.sides().at(s2_index),
+			data.type,
+			data.flags));
 
 		// Set properties
-		line->setIntProperty("arg0", data.sector_tag);
-		line->setIntProperty("id", data.sector_tag);
-		line->setIntProperty("flags", data.flags);
+		line->setArg(0, data.sector_tag);
+		line->setId(data.sector_tag);
 	}
 
 	Log::info(3, S_FMT("Read %lu lines", map_data.lines().size()));
@@ -334,7 +338,7 @@ bool DoomMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_dat
 	{
 		UI::setSplashProgress(p + ((float)a / nt) * 0.2f);
 		map_data.addThing(std::make_unique<MapThing>(
-			Vec2f{ (double)thng_data[a].x, (double)thng_data[a].y },
+			Vec3f{ (double)thng_data[a].x, (double)thng_data[a].y, 0. },
 			thng_data[a].type,
 			thng_data[a].angle,
 			thng_data[a].flags));
@@ -428,9 +432,9 @@ ArchiveEntry::UPtr DoomMapFormat::writeLINEDEFS(const LineList& lines) const
 		data.vertex2 = line->v2Index();
 
 		// Properties
-		data.flags      = line->intProperty("flags");
+		data.flags      = line->flags();
 		data.type       = line->special();
-		data.sector_tag = line->intProperty("arg0");
+		data.sector_tag = line->arg(0);
 
 		// Sides
 		data.side1 = line->s1Index();
@@ -502,7 +506,7 @@ ArchiveEntry::UPtr DoomMapFormat::writeTHINGS(const ThingList& things) const
 		// Properties
 		data.angle = thing->angle();
 		data.type  = thing->type();
-		data.flags = thing->intProperty("flags");
+		data.flags = thing->flags();
 
 		entry->write(&data, 10);
 	}

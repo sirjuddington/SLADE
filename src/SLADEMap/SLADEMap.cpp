@@ -260,7 +260,7 @@ MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x,
 		if (s_line == line)
 			continue;
 
-		double dist = MathStuff::distanceRayLine(mid, mid + vec, s_line->point1(), s_line->point2());
+		double dist = MathStuff::distanceRayLine(mid, mid + vec, s_line->start(), s_line->end());
 
 		if (dist < min_dist && dist > 0)
 		{
@@ -291,7 +291,7 @@ void SLADEMap::putThingsWithIdInSectorTag(int id, int tag, vector<MapThing*>& li
 	// Find things with matching id contained in sector with matching tag
 	for (auto& thing : data_.things())
 	{
-		if (thing->intProperty("id") == id)
+		if (thing->id() == id)
 		{
 			auto sector = data_.sectors().atPos(thing->position());
 			if (sector && sector->id_ == tag)
@@ -332,7 +332,7 @@ void SLADEMap::putDragonTargets(MapThing* first, vector<MapThing*>& list)
 string SLADEMap::adjacentLineTexture(MapVertex* vertex, int tex_part) const
 {
 	// Go through adjacent lines
-	string tex = "-";
+	string tex = MapSide::TEX_NONE;
 	for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
 	{
 		auto l = vertex->connectedLine(a);
@@ -342,24 +342,24 @@ string SLADEMap::adjacentLineTexture(MapVertex* vertex, int tex_part) const
 			// Front middle
 			if (tex_part & MapLine::Part::FrontMiddle)
 			{
-				tex = l->stringProperty("side1.texturemiddle");
-				if (tex != "-")
+				tex = l->side1_->texMiddle();
+				if (tex != MapSide::TEX_NONE)
 					return tex;
 			}
 
 			// Front upper
 			if (tex_part & MapLine::Part::FrontUpper)
 			{
-				tex = l->stringProperty("side1.texturetop");
-				if (tex != "-")
+				tex = l->side1_->texUpper();
+				if (tex != MapSide::TEX_NONE)
 					return tex;
 			}
 
 			// Front lower
 			if (tex_part & MapLine::Part::FrontLower)
 			{
-				tex = l->stringProperty("side1.texturebottom");
-				if (tex != "-")
+				tex = l->side1_->texLower();
+				if (tex != MapSide::TEX_NONE)
 					return tex;
 			}
 		}
@@ -369,24 +369,24 @@ string SLADEMap::adjacentLineTexture(MapVertex* vertex, int tex_part) const
 			// Back middle
 			if (tex_part & MapLine::Part::BackMiddle)
 			{
-				tex = l->stringProperty("side2.texturemiddle");
-				if (tex != "-")
+				tex = l->side2_->texMiddle();
+				if (tex != MapSide::TEX_NONE)
 					return tex;
 			}
 
 			// Back upper
 			if (tex_part & MapLine::Part::BackUpper)
 			{
-				tex = l->stringProperty("side2.texturetop");
-				if (tex != "-")
+				tex = l->side2_->texUpper();
+				if (tex != MapSide::TEX_NONE)
 					return tex;
 			}
 
 			// Back lower
 			if (tex_part & MapLine::Part::BackLower)
 			{
-				tex = l->stringProperty("side2.texturebottom");
-				if (tex != "-")
+				tex = l->side2_->texLower();
+				if (tex != MapSide::TEX_NONE)
 					return tex;
 			}
 		}
@@ -423,7 +423,7 @@ MapSector* SLADEMap::lineSideSector(MapLine* line, bool front)
 		if (lines[a] == line)
 			continue;
 
-		dist = MathStuff::distanceRayLine(mid, dir, lines[a]->point1(), lines[a]->point2());
+		dist = MathStuff::distanceRayLine(mid, dir, lines[a]->start(), lines[a]->end());
 		if (dist < min_dist && dist > 0)
 		{
 			min_dist = dist;
@@ -1428,20 +1428,20 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		line->clearUnneededTextures();
 
 		// Set middle texture if needed
-		if (side == line->s1() && !line->s2() && side->stringProperty("texturemiddle") == "-")
+		if (side == line->s1() && !line->s2() && side->texMiddle() == MapSide::TEX_NONE)
 		{
 			// Log::info(1, "midtex");
 			// Find adjacent texture (any)
 			string tex = adjacentLineTexture(line->v1());
-			if (tex == "-")
+			if (tex == MapSide::TEX_NONE)
 				tex = adjacentLineTexture(line->v2());
 
 			// If no adjacent texture, get default from game configuration
-			if (tex == "-")
+			if (tex == MapSide::TEX_NONE)
 				tex = Game::configuration().defaultString(MapObject::Type::Side, "texturemiddle");
 
 			// Set texture
-			side->setStringProperty("texturemiddle", tex);
+			side->setTexMiddle(tex);
 		}
 	}
 
@@ -1490,77 +1490,77 @@ bool SLADEMap::convertToUDMF()
 		// Handle special cases for conversion from Hexen format
 		for (auto& line : lines())
 		{
-			int special = line->intProperty("special");
+			int special = line->special();
 			int flags   = 0;
 			int id, hi;
 			switch (special)
 			{
 			case 1:
-				id = line->intProperty("arg3");
-				line->setIntProperty("id", id);
-				line->setIntProperty("arg3", 0);
+				id = line->arg(3);
+				line->setId(id);
+				line->setArg(3, 0);
 				break;
 
 			case 5:
-				id = line->intProperty("arg4");
-				line->setIntProperty("id", id);
-				line->setIntProperty("arg4", 0);
+				id = line->arg(4);
+				line->setId(id);
+				line->setArg(4, 0);
 				break;
 
 			case 121:
-				id    = line->intProperty("arg0");
-				hi    = line->intProperty("arg4");
+				id    = line->arg(0);
+				hi    = line->arg(4);
 				id    = (hi * 256) + id;
-				flags = line->intProperty("arg1");
+				flags = line->arg(1);
 
-				line->setIntProperty("special", 0);
-				line->setIntProperty("id", id);
-				line->setIntProperty("arg0", 0);
-				line->setIntProperty("arg1", 0);
-				line->setIntProperty("arg2", 0);
-				line->setIntProperty("arg3", 0);
-				line->setIntProperty("arg4", 0);
+				line->setSpecial(0);
+				line->setId(id);
+				line->setArg(0, 0);
+				line->setArg(1, 0);
+				line->setArg(2, 0);
+				line->setArg(3, 0);
+				line->setArg(4, 0);
 				break;
 
 			case 160:
-				hi = id = line->intProperty("arg4");
-				flags   = line->intProperty("arg1");
+				hi = id = line->arg(4);
+				flags   = line->arg(1);
 				if (flags & 8)
 				{
-					line->setIntProperty("id", id);
+					line->setId(id);
 				}
 				else
 				{
-					id = line->intProperty("arg0");
-					line->setIntProperty("id", (hi * 256) + id);
+					id = line->arg(0);
+					line->setId((hi * 256) + id);
 				}
-				line->setIntProperty("arg4", 0);
+				line->setArg(4, 0);
 				flags = 0; // don't keep it set!
 				break;
 
 			case 181:
-				id = line->intProperty("arg2");
-				line->setIntProperty("id", id);
-				line->setIntProperty("arg2", 0);
+				id = line->arg(2);
+				line->setId(id);
+				line->setArg(2, 0);
 				break;
 
 			case 208:
-				id    = line->intProperty("arg0");
-				flags = line->intProperty("arg3");
+				id    = line->arg(0);
+				flags = line->arg(3);
 
-				line->setIntProperty("id", id); // arg0 must be preserved
-				line->setIntProperty("arg3", 0);
+				line->setId(id); // arg0 must be preserved
+				line->setArg(3, 0);
 				break;
 
 			case 215:
-				id = line->intProperty("arg0");
-				line->setIntProperty("id", id);
-				line->setIntProperty("arg0", 0);
+				id = line->arg(0);
+				line->setId(id);
+				line->setArg(0, 0);
 				break;
 
 			case 222:
-				id = line->intProperty("arg0");
-				line->setIntProperty("id", id); // arg0 must be preserved
+				id = line->arg(0);
+				line->setId(id); // arg0 must be preserved
 				break;
 			default: break;
 			}

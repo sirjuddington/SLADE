@@ -379,23 +379,23 @@ void SidePropsPanel::applyTo(vector<MapSide*>& sides) const
 	{
 		// Upper Texture
 		if (!tex_upper.IsEmpty())
-			side->setStringProperty("texturetop", tex_upper);
+			side->setTexUpper(tex_upper);
 
 		// Middle Texture
 		if (!tex_middle.IsEmpty())
-			side->setStringProperty("texturemiddle", tex_middle);
+			side->setTexMiddle(tex_middle);
 
 		// Lower Texture
 		if (!tex_lower.IsEmpty())
-			side->setStringProperty("texturebottom", tex_lower);
+			side->setTexLower(tex_lower);
 
 		// X Offset
 		if (!text_offsetx_->GetValue().IsEmpty())
-			side->setIntProperty("offsetx", text_offsetx_->number(side->texOffsetX()));
+			side->setTexOffsetX(text_offsetx_->number(side->texOffsetX()));
 
 		// Y Offset
 		if (!text_offsety_->GetValue().IsEmpty())
-			side->setIntProperty("offsety", text_offsety_->number(side->texOffsetY()));
+			side->setTexOffsetY(text_offsety_->number(side->texOffsetY()));
 	}
 }
 

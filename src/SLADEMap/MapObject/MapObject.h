@@ -5,6 +5,7 @@
 #endif
 
 #include "SLADEMap/MobjPropertyList.h"
+#include <array>
 
 class ParseTreeNode;
 class SLADEMap;
@@ -46,6 +47,8 @@ public:
 		unsigned         id   = 0;
 		Type             type = Type::Object;
 	};
+
+	typedef std::array<int, 5> ArgSet;
 
 	MapObject(Type type = Type::Object, SLADEMap* parent = nullptr);
 	virtual ~MapObject() = default;

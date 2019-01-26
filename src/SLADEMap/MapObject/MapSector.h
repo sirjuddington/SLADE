@@ -56,6 +56,7 @@ public:
 	short          lightLevel() const { return light_; }
 	short          special() const { return special_; }
 	short          tag() const { return id_; }
+	short          id() const { return id_; }
 
 	string stringProperty(const string& key) override;
 	int    intProperty(const string& key) override;

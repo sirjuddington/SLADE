@@ -445,27 +445,27 @@ void SectorPropsPanel::applyChanges()
 
 		// Floor texture
 		if (!fcb_floor_->GetValue().IsEmpty())
-			sector->setStringProperty("texturefloor", fcb_floor_->GetValue());
+			sector->setFloorTexture(fcb_floor_->GetValue());
 
 		// Ceiling texture
 		if (!fcb_ceiling_->GetValue().IsEmpty())
-			sector->setStringProperty("textureceiling", fcb_ceiling_->GetValue());
+			sector->setCeilingTexture(fcb_ceiling_->GetValue());
 
 		// Floor height
 		if (!text_height_floor_->GetValue().IsEmpty())
-			sector->setIntProperty("heightfloor", text_height_floor_->number(sector->floor().height));
+			sector->setFloorHeight(text_height_floor_->number(sector->floor().height));
 
 		// Ceiling height
 		if (!text_height_ceiling_->GetValue().IsEmpty())
-			sector->setIntProperty("heightceiling", text_height_ceiling_->number(sector->ceiling().height));
+			sector->setCeilingHeight(text_height_ceiling_->number(sector->ceiling().height));
 
 		// Light level
 		if (!text_light_->GetValue().IsEmpty())
-			sector->setIntProperty("lightlevel", text_light_->number(sector->lightLevel()));
+			sector->setLightLevel(text_light_->number(sector->lightLevel()));
 
 		// Tag
 		if (!text_tag_->GetValue().IsEmpty())
-			sector->setIntProperty("id", text_tag_->number(sector->tag()));
+			sector->setTag(text_tag_->number(sector->tag()));
 	}
 
 	if (mopp_all_props_)

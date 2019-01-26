@@ -132,7 +132,7 @@ BBox ThingList::allThingBounds() const
 void ThingList::putAllWithId(int id, vector<MapThing*>& list, unsigned start, int type) const
 {
 	for (unsigned i = start; i < count_; ++i)
-		if (objects_[i]->intProperty("id") == id && (type == 0 || objects_[i]->type() == type))
+		if (objects_[i]->id() == id && (type == 0 || objects_[i]->type() == type))
 			list.push_back(objects_[i]);
 }
 
@@ -154,7 +154,7 @@ vector<MapThing*> ThingList::allWithId(int id, unsigned start, int type) const
 MapThing* ThingList::firstWithId(int id, unsigned start, int type, bool ignore_dragon) const
 {
 	for (unsigned i = start; i < count_; ++i)
-		if (objects_[i]->intProperty("id") == id && (type == 0 || objects_[i]->type() == type))
+		if (objects_[i]->id() == id && (type == 0 || objects_[i]->type() == type))
 		{
 			if (ignore_dragon)
 			{
@@ -198,11 +198,11 @@ void ThingList::putAllTaggingWithId(int id, int type, vector<MapThing*>& list, i
 		auto& tt        = Game::configuration().thingType(thing->type());
 		auto  needs_tag = tt.needsTag();
 		if (needs_tag != TagType::None
-			|| (thing->intProperty("special") && !(tt.flags() & Game::ThingType::Flags::Script)))
+			|| (thing->special() && !(tt.flags() & Game::ThingType::Flags::Script)))
 		{
 			if (needs_tag == TagType::None)
-				needs_tag = Game::configuration().actionSpecial(thing->intProperty("special")).needsTag();
-			tag       = thing->intProperty("arg0");
+				needs_tag = Game::configuration().actionSpecial(thing->special()).needsTag();
+			tag       = thing->arg(0);
 			bool fits = false;
 			int  path_type;
 			switch (needs_tag)
@@ -214,67 +214,67 @@ void ThingList::putAllTaggingWithId(int id, int type, vector<MapThing*>& list, i
 			case TagType::Line: fits = (IDEQ(tag) && type == SLADEMap::LINEDEFS); break;
 			case TagType::Thing: fits = (IDEQ(tag) && type == SLADEMap::THINGS); break;
 			case TagType::Thing1Sector2:
-				arg2 = thing->intProperty("arg1");
+				arg2 = thing->arg(1);
 				fits = (type == SLADEMap::THINGS ? IDEQ(tag) : (IDEQ(arg2) && type == SLADEMap::SECTORS));
 				break;
 			case TagType::Thing1Sector3:
-				arg3 = thing->intProperty("arg2");
+				arg3 = thing->arg(2);
 				fits = (type == SLADEMap::THINGS ? IDEQ(tag) : (IDEQ(arg3) && type == SLADEMap::SECTORS));
 				break;
 			case TagType::Thing1Thing2:
-				arg2 = thing->intProperty("arg1");
+				arg2 = thing->arg(1);
 				fits = (type == SLADEMap::THINGS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
 			case TagType::Thing1Thing4:
-				arg4 = thing->intProperty("arg3");
+				arg4 = thing->arg(3);
 				fits = (type == SLADEMap::THINGS && (IDEQ(tag) || IDEQ(arg4)));
 				break;
 			case TagType::Thing1Thing2Thing3:
-				arg2 = thing->intProperty("arg1");
-				arg3 = thing->intProperty("arg2");
+				arg2 = thing->arg(1);
+				arg3 = thing->arg(2);
 				fits = (type == SLADEMap::THINGS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3)));
 				break;
 			case TagType::Sector1Thing2Thing3Thing5:
-				arg2 = thing->intProperty("arg1");
-				arg3 = thing->intProperty("arg2");
-				arg5 = thing->intProperty("arg4");
+				arg2 = thing->arg(1);
+				arg3 = thing->arg(2);
+				arg5 = thing->arg(4);
 				fits =
 					(type == SLADEMap::SECTORS ?
 						 (IDEQ(tag)) :
 						 (type == SLADEMap::THINGS && (IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg5))));
 				break;
 			case TagType::LineId1Line2:
-				arg2 = thing->intProperty("arg1");
+				arg2 = thing->arg(1);
 				fits = (type == SLADEMap::LINEDEFS && IDEQ(arg2));
 				break;
 			case TagType::Thing4:
-				arg4 = thing->intProperty("arg3");
+				arg4 = thing->arg(3);
 				fits = (type == SLADEMap::THINGS && IDEQ(arg4));
 				break;
 			case TagType::Thing5:
-				arg5 = thing->intProperty("arg4");
+				arg5 = thing->arg(4);
 				fits = (type == SLADEMap::THINGS && IDEQ(arg5));
 				break;
 			case TagType::Line1Sector2:
-				arg2 = thing->intProperty("arg1");
+				arg2 = thing->arg(1);
 				fits = (type == SLADEMap::LINEDEFS ? (IDEQ(tag)) : (IDEQ(arg2) && type == SLADEMap::SECTORS));
 				break;
 			case TagType::Sector1Sector2:
-				arg2 = thing->intProperty("arg1");
+				arg2 = thing->arg(1);
 				fits = (type == SLADEMap::SECTORS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
 			case TagType::Sector1Sector2Sector3Sector4:
-				arg2 = thing->intProperty("arg1");
-				arg3 = thing->intProperty("arg2");
-				arg4 = thing->intProperty("arg3");
+				arg2 = thing->arg(1);
+				arg3 = thing->arg(2);
+				arg4 = thing->arg(3);
 				fits = (type == SLADEMap::SECTORS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg4)));
 				break;
 			case TagType::Sector2Is3Line:
-				arg2 = thing->intProperty("arg1");
+				arg2 = thing->arg(1);
 				fits = (IDEQ(tag) && (arg2 == 3 ? type == SLADEMap::LINEDEFS : type == SLADEMap::SECTORS));
 				break;
 			case TagType::Sector1Thing2:
-				arg2 = thing->intProperty("arg1");
+				arg2 = thing->arg(1);
 				fits = (type == SLADEMap::SECTORS ? (IDEQ(tag)) : (IDEQ(arg2) && type == SLADEMap::THINGS));
 				break;
 			case TagType::Patrol: path_type = 9047;
@@ -282,7 +282,7 @@ void ThingList::putAllTaggingWithId(int id, int type, vector<MapThing*>& list, i
 			{
 				path_type = 9075;
 
-				tid  = thing->intProperty("id");
+				tid  = thing->id();
 				fits = ((path_type == ttype) && (IDEQ(tid)) && (tt.needsTag() == needs_tag));
 			}
 			break;
@@ -303,7 +303,7 @@ int ThingList::firstFreeId() const
 	int id = 1;
 	for (unsigned i = 0; i < count_; ++i)
 	{
-		if (objects_[i]->intProperty("id") == id)
+		if (objects_[i]->id() == id)
 		{
 			id++;
 			i = 0;

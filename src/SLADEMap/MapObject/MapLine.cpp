@@ -49,6 +49,12 @@ const string MapLine::PROP_S1      = "sidefront";
 const string MapLine::PROP_S2      = "sideback";
 const string MapLine::PROP_SPECIAL = "special";
 const string MapLine::PROP_ID      = "id";
+const string MapLine::PROP_FLAGS   = "flags";
+const string MapLine::PROP_ARG0    = "arg0";
+const string MapLine::PROP_ARG1    = "arg1";
+const string MapLine::PROP_ARG2    = "arg2";
+const string MapLine::PROP_ARG3    = "arg3";
+const string MapLine::PROP_ARG4    = "arg4";
 
 
 // -----------------------------------------------------------------------------
@@ -61,13 +67,15 @@ const string MapLine::PROP_ID      = "id";
 // -----------------------------------------------------------------------------
 // MapLine class constructor
 // -----------------------------------------------------------------------------
-MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, int special) :
+MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, int special, int flags, ArgSet args) :
 	MapObject(Type::Line),
 	vertex1_{ v1 },
 	vertex2_{ v2 },
 	side1_{ s1 },
 	side2_{ s2 },
-	special_{ special }
+	special_{ special },
+	flags_{ flags },
+	args_{ args }
 {
 	// Connect to vertices
 	if (v1)
@@ -117,7 +125,19 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, ParseTr
 		if (prop->nameIsCI(PROP_SPECIAL))
 			special_ = prop->intValue();
 		else if (prop->nameIsCI(PROP_ID))
-			line_id_ = prop->intValue();
+			id_ = prop->intValue();
+		else if (prop->nameIsCI(PROP_FLAGS))
+			flags_ = prop->intValue();
+		else if (prop->nameIsCI(PROP_ARG0))
+			args_[0] = prop->intValue();
+		else if (prop->nameIsCI(PROP_ARG1))
+			args_[1] = prop->intValue();
+		else if (prop->nameIsCI(PROP_ARG2))
+			args_[2] = prop->intValue();
+		else if (prop->nameIsCI(PROP_ARG3))
+			args_[3] = prop->intValue();
+		else if (prop->nameIsCI(PROP_ARG4))
+			args_[4] = prop->intValue();
 		else
 			properties_[prop->nameRef()] = prop->value();
 	}
@@ -227,22 +247,35 @@ int MapLine::intProperty(const string& key)
 {
 	if (key.StartsWith("side1.") && side1_)
 		return side1_->intProperty(key.Mid(6));
-	else if (key.StartsWith("side2.") && side2_)
+	if (key.StartsWith("side2.") && side2_)
 		return side2_->intProperty(key.Mid(6));
-	else if (key == PROP_V1)
+
+	if (key == PROP_V1)
 		return v1Index();
-	else if (key == PROP_V2)
+	if (key == PROP_V2)
 		return v2Index();
-	else if (key == PROP_S1)
+	if (key == PROP_S1)
 		return s1Index();
-	else if (key == PROP_S2)
+	if (key == PROP_S2)
 		return s2Index();
-	else if (key == PROP_SPECIAL)
+	if (key == PROP_SPECIAL)
 		return special_;
-	else if (key == PROP_ID)
-		return line_id_;
-	else
-		return MapObject::intProperty(key);
+	if (key == PROP_ID)
+		return id_;
+	if (key == PROP_FLAGS)
+		return flags_;
+	if (key == PROP_ARG0)
+		return args_[0];
+	if (key == PROP_ARG1)
+		return args_[1];
+	if (key == PROP_ARG2)
+		return args_[2];
+	if (key == PROP_ARG3)
+		return args_[3];
+	if (key == PROP_ARG4)
+		return args_[4];
+
+	return MapObject::intProperty(key);
 }
 
 // -----------------------------------------------------------------------------
@@ -371,7 +404,23 @@ void MapLine::setIntProperty(const string& key, int value)
 
 	// Id
 	else if (key == PROP_ID)
-		line_id_ = value;
+		id_ = value;
+
+	// Flags
+	else if (key == PROP_FLAGS)
+		flags_ = value;
+
+	// Args
+	else if (key == PROP_ARG0)
+		args_[0] = value;
+	else if (key == PROP_ARG1)
+		args_[1] = value;
+	else if (key == PROP_ARG2)
+		args_[2] = value;
+	else if (key == PROP_ARG3)
+		args_[3] = value;
+	else if (key == PROP_ARG4)
+		args_[4] = value;
 
 	// Line property
 	else
@@ -487,19 +536,76 @@ void MapLine::setV2(MapVertex* vertex)
 }
 
 // -----------------------------------------------------------------------------
+// Sets the line special to [special]
+// -----------------------------------------------------------------------------
+void MapLine::setSpecial(int special)
+{
+	setModified();
+	special_ = special;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the line id to [id]
+// -----------------------------------------------------------------------------
+void MapLine::setId(int id)
+{
+	setModified();
+	id_ = id;
+}
+
+// -----------------------------------------------------------------------------
+// Sets all line flags to [flags]
+// -----------------------------------------------------------------------------
+void MapLine::setFlags(int flags)
+{
+	setModified();
+	flags_ = flags;
+}
+
+// -----------------------------------------------------------------------------
+// Sets a line [flag]
+// -----------------------------------------------------------------------------
+void MapLine::setFlag(int flag)
+{
+	setModified();
+	flags_ |= flag;
+}
+
+// -----------------------------------------------------------------------------
+// Clears a line [flag]
+// -----------------------------------------------------------------------------
+void MapLine::clearFlag(int flag)
+{
+	setModified();
+	flags_ = flags_ & ~flag;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the line arg at [index] to [value]
+// -----------------------------------------------------------------------------
+void MapLine::setArg(unsigned index, int value)
+{
+	if (index < 5)
+	{
+		setModified();
+		args_[index] = value;
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Returns the object point [point].
 // Currently for lines this is always the mid point
 // -----------------------------------------------------------------------------
 Vec2f MapLine::getPoint(Point point)
 {
 	// if (point == MOBJ_POINT_MID || point == MOBJ_POINT_WITHIN)
-	return point1() + (point2() - point1()) * 0.5;
+	return start() + (end() - start()) * 0.5;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the point at the first vertex.
 // -----------------------------------------------------------------------------
-Vec2f MapLine::point1() const
+Vec2f MapLine::start() const
 {
 	return vertex1_->position();
 }
@@ -507,7 +613,7 @@ Vec2f MapLine::point1() const
 // -----------------------------------------------------------------------------
 // Returns the point at the second vertex.
 // -----------------------------------------------------------------------------
-Vec2f MapLine::point2() const
+Vec2f MapLine::end() const
 {
 	return vertex2_->position();
 }
@@ -707,7 +813,7 @@ bool MapLine::intersects(MapLine* other, Vec2f& intersect_point) const
 // Clears any textures not needed on the line
 // (eg. a front upper texture that would be invisible)
 // -----------------------------------------------------------------------------
-void MapLine::clearUnneededTextures()
+void MapLine::clearUnneededTextures() const
 {
 	// Check needed textures
 	int tex = needsTexture();
@@ -716,20 +822,20 @@ void MapLine::clearUnneededTextures()
 	if (side1_)
 	{
 		if ((tex & Part::FrontMiddle) == 0)
-			setStringProperty("side1.texturemiddle", "-");
+			side1_->setTexMiddle(MapSide::TEX_NONE);
 		if ((tex & Part::FrontUpper) == 0)
-			setStringProperty("side1.texturetop", "-");
+			side1_->setTexUpper(MapSide::TEX_NONE);
 		if ((tex & Part::FrontLower) == 0)
-			setStringProperty("side1.texturebottom", "-");
+			side1_->setTexLower(MapSide::TEX_NONE);
 	}
 	if (side2_)
 	{
 		if ((tex & Part::BackMiddle) == 0)
-			setStringProperty("side2.texturemiddle", "-");
+			side2_->setTexMiddle(MapSide::TEX_NONE);
 		if ((tex & Part::BackUpper) == 0)
-			setStringProperty("side2.texturetop", "-");
+			side2_->setTexUpper(MapSide::TEX_NONE);
 		if ((tex & Part::BackLower) == 0)
-			setStringProperty("side2.texturebottom", "-");
+			side2_->setTexLower(MapSide::TEX_NONE);
 	}
 }
 
@@ -803,9 +909,17 @@ void MapLine::writeBackup(Backup* backup)
 	else
 		backup->props_internal["s2"] = 0;
 
+	// Flags
+	backup->props_internal[PROP_FLAGS] = flags_;
+
 	// Special
 	backup->props_internal[PROP_SPECIAL] = special_;
-	backup->props_internal[PROP_ID]      = line_id_;
+	backup->props_internal[PROP_ID]      = id_;
+	backup->props_internal[PROP_ARG0]    = args_[0];
+	backup->props_internal[PROP_ARG1]    = args_[1];
+	backup->props_internal[PROP_ARG2]    = args_[2];
+	backup->props_internal[PROP_ARG3]    = args_[3];
+	backup->props_internal[PROP_ARG4]    = args_[4];
 }
 
 // -----------------------------------------------------------------------------
@@ -841,9 +955,17 @@ void MapLine::readBackup(Backup* backup)
 	if (side2_)
 		side2_->parent_ = this;
 
+	// Flags
+	flags_ = backup->props_internal[PROP_FLAGS];
+
 	// Special
 	special_ = backup->props_internal[PROP_SPECIAL];
-	line_id_ = backup->props_internal[PROP_ID];
+	id_      = backup->props_internal[PROP_ID];
+	args_[0] = backup->props_internal[PROP_ARG0];
+	args_[1] = backup->props_internal[PROP_ARG1];
+	args_[2] = backup->props_internal[PROP_ARG2];
+	args_[3] = backup->props_internal[PROP_ARG3];
+	args_[4] = backup->props_internal[PROP_ARG4];
 }
 
 // -----------------------------------------------------------------------------
@@ -864,8 +986,14 @@ void MapLine::copy(MapObject* c)
 	if (side2_ && l->side2_)
 		side2_->copy(l->side2_);
 
+	flags_   = l->flags_;
 	special_ = l->special_;
-	line_id_ = l->line_id_;
+	id_      = l->id_;
+	args_[0] = l->args_[0];
+	args_[1] = l->args_[1];
+	args_[2] = l->args_[2];
+	args_[3] = l->args_[3];
+	args_[4] = l->args_[4];
 }
 
 // -----------------------------------------------------------------------------
@@ -881,8 +1009,13 @@ void MapLine::writeUDMF(string& def)
 		def += S_FMT("sideback=%d;\n", s2Index());
 	if (special_ != 0)
 		def += S_FMT("special=%d;\n", special_);
-	if (line_id_ != 0)
-		def += S_FMT("id=%d;\n", line_id_);
+	if (id_ != 0)
+		def += S_FMT("id=%d;\n", id_);
+	if (flags_ != 0)
+		def += S_FMT("flags=%d;\n", flags_);
+	for (unsigned i = 0; i < 5; ++i)
+		if (args_[i] != 0)
+			def += S_FMT("arg%d=%d;\n", i, args_[i]);
 
 	// Other properties
 	if (!properties_.isEmpty())

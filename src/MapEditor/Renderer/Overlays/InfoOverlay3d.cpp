@@ -131,7 +131,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			&& Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			// Get x offset info
-			int    xoff      = side->intProperty("offsetx");
+			int    xoff      = side->texOffsetX();
 			double xoff_part = 0;
 			if (item_type == MapEditor::ItemType::WallBottom)
 				xoff_part = side->floatProperty("offsetx_bottom");
@@ -150,7 +150,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 				xoff_info = S_FMT("%1.2f (%d-%1.2f)", (double)xoff + xoff_part, xoff, -xoff_part);
 
 			// Get y offset info
-			int    yoff      = side->intProperty("offsety");
+			int    yoff      = side->texOffsetY();
 			double yoff_part = 0;
 			if (item_type == MapEditor::ItemType::WallBottom)
 				yoff_part = side->floatProperty("offsety_bottom");
@@ -173,7 +173,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		else
 		{
 			// Basic offsets
-			info2_.push_back(S_FMT("Offsets: %d, %d", side->intProperty("offsetx"), side->intProperty("offsety")));
+			info2_.push_back(S_FMT("Offsets: %d, %d", side->texOffsetX(), side->texOffsetY()));
 		}
 
 		// UDMF extras
@@ -297,8 +297,8 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		object_ = sector;
 
 		// Get basic info
-		int fheight = sector->intProperty("heightfloor");
-		int cheight = sector->intProperty("heightceiling");
+		int fheight = sector->floor().height;
+		int cheight = sector->ceiling().height;
 
 		// --- Sector info ---
 
@@ -327,7 +327,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			info2_.push_back(S_FMT("Ceiling Height: %d", cheight));
 
 		// Light
-		int light = sector->intProperty("lightlevel");
+		int light = sector->lightLevel();
 		if (Game::configuration().featureSupported(UDMFFeature::FlatLighting))
 		{
 			// Get extra light info
@@ -430,7 +430,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		if (MapEditor::editContext().mapDesc().format == MapFormat::Hexen
 			|| MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
 			info_.push_back(S_FMT(
-				"Position: %d, %d, %d", (int)thing->xPos(), (int)thing->yPos(), (int)thing->floatProperty("height")));
+				"Position: %d, %d, %d", (int)thing->xPos(), (int)thing->yPos(), (int)thing->zPos()));
 		else
 			info_.push_back(S_FMT("Position: %d, %d", (int)thing->xPos(), (int)thing->yPos()));
 
@@ -448,16 +448,10 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 				&& Game::configuration().getUDMFProperty("arg0", MapObject::Type::Thing)))
 		{
 			// Get thing args
-			int args[5];
-			args[0] = thing->intProperty("arg0");
-			args[1] = thing->intProperty("arg1");
-			args[2] = thing->intProperty("arg2");
-			args[3] = thing->intProperty("arg3");
-			args[4] = thing->intProperty("arg4");
 			string argxstr[2];
 			argxstr[0]    = thing->stringProperty("arg0str");
 			argxstr[1]    = thing->stringProperty("arg1str");
-			string argstr = tt.argSpec().stringDesc(args, argxstr);
+			string argstr = tt.argSpec().stringDesc(thing->args().data(), argxstr);
 
 			if (argstr.IsEmpty())
 				info2_.emplace_back("No Args");

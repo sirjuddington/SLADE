@@ -822,7 +822,7 @@ void MapSector::findTextPoint()
 			continue;
 
 		auto   line = connected_side->parentLine();
-		double dist = MathStuff::distanceRayLine(r_o, r_o + r_d, line->point1(), line->point2());
+		double dist = MathStuff::distanceRayLine(r_o, r_o + r_d, line->start(), line->end());
 
 		if (dist > 0 && dist < min_dist)
 			min_dist = dist;

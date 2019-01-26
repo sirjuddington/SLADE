@@ -226,15 +226,9 @@ void Edit3D::changeOffset(int amount, bool x) const
 
 				// Change the appropriate offset
 				if (x)
-				{
-					int offset = side->intProperty("offsetx");
-					side->setIntProperty("offsetx", offset + amount);
-				}
+					side->setIntProperty("offsetx", side->texOffsetX() + amount);
 				else
-				{
-					int offset = side->intProperty("offsety");
-					side->setIntProperty("offsety", offset + amount);
-				}
+					side->setIntProperty("offsety", side->texOffsetY() + amount);
 
 				// Add to done list
 				done.push_back(item.index);
@@ -255,7 +249,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 					ofs += "_mid";
 
 				// Change the offset
-				int offset = side->floatProperty(ofs);
+				double offset = side->floatProperty(ofs);
 				side->setFloatProperty(ofs, offset + amount);
 			}
 
@@ -362,8 +356,7 @@ void Edit3D::changeSectorHeight(int amount) const
 				continue;
 
 			// Change height
-			int height = sector->intProperty("heightceiling");
-			sector->setIntProperty("heightceiling", height + amount);
+			sector->setCeilingHeight(sector->ceiling().height + amount);
 
 			// Set to changed
 			ceilings.push_back(index);
@@ -437,14 +430,13 @@ void Edit3D::autoAlignX(MapEditor::Item start) const
 	// Get texture to match
 	string tex;
 	if (start.type == ItemType::WallBottom)
-		tex = side->stringProperty("texturebottom");
+		tex = side->texLower();
 	else if (start.type == ItemType::WallMiddle)
-		tex = side->stringProperty("texturemiddle");
+		tex = side->texMiddle();
 	else if (start.type == ItemType::WallTop)
-		tex = side->stringProperty("texturetop");
+		tex = side->texUpper();
 
-	// Don't try to auto-align a missing texture (every line on the map will
-	// probably match)
+	// Don't try to auto-align a missing texture (every line on the map will probably match)
 	if (tex == "-")
 		return;
 
@@ -463,7 +455,7 @@ void Edit3D::autoAlignX(MapEditor::Item start) const
 	context_.beginUndoRecord("Auto Align X", true, false, false);
 
 	// Do alignment
-	doAlignX(side, side->intProperty("offsetx"), tex, walls_done, tex_width);
+	doAlignX(side, side->texOffsetX(), tex, walls_done, tex_width);
 
 	// End undo level
 	context_.endUndoRecord();
@@ -612,10 +604,10 @@ void Edit3D::resetOffsets() const
 
 			// Reset height
 			if (context_.mapDesc().format != MapFormat::UDMF)
-				thing->setIntProperty("height", 0);
+				thing->setZ(0);
 			else
 			{
-				thing->setFloatProperty("height", 0);
+				thing->setZ(0);
 				// Reset scale
 				if (Game::configuration().featureSupported(UDMFFeature::ThingScaling))
 				{
@@ -736,7 +728,7 @@ void Edit3D::copy(CopyType type)
 	{
 		// Texture
 		if (type == CopyType::TexType)
-			copy_texture_ = map.side(hl.index)->stringProperty("texturetop");
+			copy_texture_ = map.side(hl.index)->texUpper();
 	}
 
 	// Middle wall
@@ -744,7 +736,7 @@ void Edit3D::copy(CopyType type)
 	{
 		// Texture
 		if (type == CopyType::TexType)
-			copy_texture_ = map.side(hl.index)->stringProperty("texturemiddle");
+			copy_texture_ = map.side(hl.index)->texMiddle();
 	}
 
 	// Lower wall
@@ -752,7 +744,7 @@ void Edit3D::copy(CopyType type)
 	{
 		// Texture
 		if (type == CopyType::TexType)
-			copy_texture_ = map.side(hl.index)->stringProperty("texturebottom");
+			copy_texture_ = map.side(hl.index)->texLower();
 	}
 
 	// Floor
@@ -816,7 +808,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setStringProperty("texturetop", copy_texture_);
+					side->setTexUpper(copy_texture_);
 			}
 
 			// Middle wall
@@ -824,7 +816,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setStringProperty("texturemiddle", copy_texture_);
+					side->setTexMiddle(copy_texture_);
 			}
 
 			// Lower wall
@@ -832,7 +824,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setStringProperty("texturebottom", copy_texture_);
+					side->setTexLower(copy_texture_);
 			}
 		}
 
@@ -847,7 +839,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					sector->setStringProperty("texturefloor", copy_texture_);
+					sector->setFloorTexture(copy_texture_);
 			}
 
 			// Ceiling
@@ -855,7 +847,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					sector->setStringProperty("textureceiling", copy_texture_);
+					sector->setCeilingTexture(copy_texture_);
 			}
 		}
 
@@ -867,7 +859,7 @@ void Edit3D::paste(CopyType type) const
 
 			// Type
 			if (type == CopyType::TexType)
-				thing->setIntProperty("type", copy_thing_.type());
+				thing->setType(copy_thing_.type());
 		}
 	}
 
@@ -932,7 +924,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setStringProperty("texturetop", copy_texture_);
+					side->setTexUpper(copy_texture_);
 			}
 
 			// Middle wall
@@ -940,7 +932,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setStringProperty("texturemiddle", copy_texture_);
+					side->setTexMiddle(copy_texture_);
 			}
 
 			// Lower wall
@@ -948,7 +940,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setStringProperty("texturebottom", copy_texture_);
+					side->setTexLower(copy_texture_);
 			}
 		}
 
@@ -963,7 +955,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					sector->setStringProperty("texturefloor", copy_texture_);
+					sector->setFloorTexture(copy_texture_);
 			}
 
 			// Ceiling
@@ -971,7 +963,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					sector->setStringProperty("textureceiling", copy_texture_);
+					sector->setCeilingTexture(copy_texture_);
 			}
 		}
 	}
@@ -1006,9 +998,9 @@ void Edit3D::changeThingZ(int amount) const
 			{
 				// Change z height
 				context_.recordPropertyChangeUndoStep(thing);
-				double z = thing->intProperty("height");
+				double z = thing->zPos();
 				z += amount;
-				thing->setIntProperty("height", z);
+				thing->setZ(z);
 			}
 		}
 	}
@@ -1158,9 +1150,9 @@ void Edit3D::changeHeight(int amount) const
 			auto thing = map.thing(item.index);
 			if (thing)
 			{
-				double z = thing->intProperty("height");
+				double z = thing->zPos();
 				z += amount;
-				thing->setIntProperty("height", z);
+				thing->setZ(z);
 			}
 		}
 
@@ -1257,11 +1249,11 @@ void Edit3D::changeTexture() const
 		type = MapEditor::TextureType::Flat;
 	}
 	else if (first.type == MapEditor::ItemType::WallBottom)
-		tex = map.side(first.index)->stringProperty("texturebottom");
+		tex = map.side(first.index)->texLower();
 	else if (first.type == MapEditor::ItemType::WallMiddle)
-		tex = map.side(first.index)->stringProperty("texturemiddle");
+		tex = map.side(first.index)->texMiddle();
 	else if (first.type == MapEditor::ItemType::WallTop)
-		tex = map.side(first.index)->stringProperty("texturetop");
+		tex = map.side(first.index)->texUpper();
 
 	// Open texture browser
 	tex = MapEditor::browseTexture(tex, type, map);
@@ -1282,18 +1274,18 @@ void Edit3D::changeTexture() const
 				for (auto& item : selection)
 				{
 					if (item.type == MapEditor::ItemType::Floor)
-						map.sector(item.index)->setStringProperty("texturefloor", tex);
+						map.sector(item.index)->setFloorTexture(tex);
 					else if (item.type == MapEditor::ItemType::Ceiling)
-						map.sector(item.index)->setStringProperty("textureceiling", tex);
+						map.sector(item.index)->setCeilingTexture(tex);
 				}
 			}
 			else if (hl.index >= 0)
 			{
 				// Hilight if no selection
 				if (hl.type == MapEditor::ItemType::Floor)
-					map.sector(hl.index)->setStringProperty("texturefloor", tex);
+					map.sector(hl.index)->setFloorTexture(tex);
 				else if (hl.type == MapEditor::ItemType::Ceiling)
-					map.sector(hl.index)->setStringProperty("textureceiling", tex);
+					map.sector(hl.index)->setCeilingTexture(tex);
 			}
 		}
 
@@ -1306,22 +1298,22 @@ void Edit3D::changeTexture() const
 				for (auto& item : selection)
 				{
 					if (item.type == MapEditor::ItemType::WallBottom)
-						map.side(item.index)->setStringProperty("texturebottom", tex);
+						map.side(item.index)->setTexLower(tex);
 					else if (item.type == MapEditor::ItemType::WallMiddle)
-						map.side(item.index)->setStringProperty("texturemiddle", tex);
+						map.side(item.index)->setTexMiddle(tex);
 					else if (item.type == MapEditor::ItemType::WallTop)
-						map.side(item.index)->setStringProperty("texturetop", tex);
+						map.side(item.index)->setTexUpper(tex);
 				}
 			}
 			else if (hl.index >= 0)
 			{
 				// Hilight if no selection
 				if (hl.type == MapEditor::ItemType::WallBottom)
-					map.side(hl.index)->setStringProperty("texturebottom", tex);
+					map.side(hl.index)->setTexLower(tex);
 				else if (hl.type == MapEditor::ItemType::WallMiddle)
-					map.side(hl.index)->setStringProperty("texturemiddle", tex);
+					map.side(hl.index)->setTexMiddle(tex);
 				else if (hl.type == MapEditor::ItemType::WallTop)
-					map.side(hl.index)->setStringProperty("texturetop", tex);
+					map.side(hl.index)->setTexUpper(tex);
 			}
 		}
 
@@ -1384,11 +1376,11 @@ bool Edit3D::wallMatches(MapSide* side, ItemType part, string tex)
 	}
 
 	// Check texture
-	if (part == ItemType::WallTop && side->stringProperty("texturetop") != tex)
+	if (part == ItemType::WallTop && side->texUpper() != tex)
 		return false;
-	if (part == ItemType::WallMiddle && side->stringProperty("texturemiddle") != tex)
+	if (part == ItemType::WallMiddle && side->texMiddle() != tex)
 		return false;
-	if (part == ItemType::WallBottom && side->stringProperty("texturebottom") != tex)
+	if (part == ItemType::WallBottom && side->texLower() != tex)
 		return false;
 
 	return true;
@@ -1421,11 +1413,11 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 	// Get texture to match
 	string tex;
 	if (item.type == ItemType::WallBottom)
-		tex = side->stringProperty("texturebottom");
+		tex = side->texLower();
 	else if (item.type == ItemType::WallMiddle)
-		tex = side->stringProperty("texturemiddle");
+		tex = side->texMiddle();
 	else
-		tex = side->stringProperty("texturetop");
+		tex = side->texUpper();
 
 	// Go through attached lines (vertex 1)
 	for (unsigned a = 0; a < line->v1()->nConnectedLines(); a++)
@@ -1645,8 +1637,7 @@ void Edit3D::doAlignX(MapSide* side, int offset, const string& tex, vector<MapEd
 		if (s)
 		{
 			// Check for matching texture
-			if (s->stringProperty("texturetop") == tex || s->stringProperty("texturemiddle") == tex
-				|| s->stringProperty("texturebottom") == tex)
+			if (s->texUpper() == tex || s->texMiddle() == tex || s->texLower() == tex)
 				doAlignX(s, offset + intlen, tex, walls_done, tex_width);
 		}
 
@@ -1655,8 +1646,7 @@ void Edit3D::doAlignX(MapSide* side, int offset, const string& tex, vector<MapEd
 		if (s)
 		{
 			// Check for matching texture
-			if (s->stringProperty("texturetop") == tex || s->stringProperty("texturemiddle") == tex
-				|| s->stringProperty("texturebottom") == tex)
+			if (s->texUpper() == tex || s->texMiddle() == tex || s->texLower() == tex)
 				doAlignX(s, offset + intlen, tex, walls_done, tex_width);
 		}
 	}

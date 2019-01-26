@@ -561,18 +561,18 @@ void MapEditContext::updateTagged()
 		if (edit_mode_ == Mode::Lines)
 		{
 			type = SLADEMap::LINEDEFS;
-			tag  = map_.line(hilight_item)->intProperty("id");
+			tag  = map_.line(hilight_item)->id();
 		}
 		else if (edit_mode_ == Mode::Things)
 		{
 			type  = SLADEMap::THINGS;
-			tag   = map_.thing(hilight_item)->intProperty("id");
+			tag   = map_.thing(hilight_item)->id();
 			ttype = map_.thing(hilight_item)->type();
 		}
 		else if (edit_mode_ == Mode::Sectors)
 		{
 			type = SLADEMap::SECTORS;
-			tag  = map_.sector(hilight_item)->intProperty("id");
+			tag  = map_.sector(hilight_item)->tag();
 		}
 		if (tag)
 		{
@@ -597,12 +597,12 @@ void MapEditContext::updateTagged()
 					back = line->s2()->sector();
 				if (line->s1())
 					front = line->s1()->sector();
-				needs_tag = Game::configuration().actionSpecial(line->intProperty("special")).needsTag();
-				tag       = line->intProperty("arg0");
-				arg2      = line->intProperty("arg1");
-				arg3      = line->intProperty("arg2");
-				arg4      = line->intProperty("arg3");
-				arg5      = line->intProperty("arg4");
+				needs_tag = Game::configuration().actionSpecial(line->special()).needsTag();
+				tag       = line->arg(0);
+				arg2      = line->arg(1);
+				arg3      = line->arg(2);
+				arg4      = line->arg(3);
+				arg5      = line->arg(4);
 				tid       = 0;
 
 				// Hexen and UDMF things can have specials too
@@ -616,13 +616,13 @@ void MapEditContext::updateTagged()
 				{
 					needs_tag = Game::configuration().thingType(thing->type()).needsTag();
 					if (needs_tag == TagType::None)
-						needs_tag = Game::configuration().actionSpecial(thing->intProperty("special")).needsTag();
-					tag  = thing->intProperty("arg0");
-					arg2 = thing->intProperty("arg1");
-					arg3 = thing->intProperty("arg2");
-					arg4 = thing->intProperty("arg3");
-					arg5 = thing->intProperty("arg4");
-					tid  = thing->intProperty("id");
+						needs_tag = Game::configuration().actionSpecial(thing->special()).needsTag();
+					tag  = thing->arg(0);
+					arg2 = thing->arg(1);
+					arg3 = thing->arg(2);
+					arg4 = thing->arg(3);
+					arg5 = thing->arg(4);
+					tid  = thing->id();
 				}
 			}
 
@@ -841,7 +841,7 @@ int MapEditContext::beginTagEdit()
 		return 0;
 
 	// Get current tag
-	int tag = lines[0]->intProperty("arg0");
+	int tag = lines[0]->arg(0);
 	if (tag == 0)
 		tag = map_.sectors().firstFreeId();
 	current_tag_ = tag;
@@ -855,7 +855,7 @@ int MapEditContext::beginTagEdit()
 	for (unsigned a = 0; a < map_.nSectors(); a++)
 	{
 		auto sector = map_.sector(a);
-		if (sector->intProperty("id") == current_tag_)
+		if (sector->tag() == current_tag_)
 			tagged_sectors_.push_back(sector);
 	}
 	return 1;
@@ -906,8 +906,8 @@ void MapEditContext::endTagEdit(bool accept)
 		for (unsigned a = 0; a < map_.nSectors(); a++)
 		{
 			auto sector = map_.sector(a);
-			if (sector->intProperty("id") == current_tag_)
-				sector->setIntProperty("id", 0);
+			if (sector->tag() == current_tag_)
+				sector->setTag(0);
 		}
 
 		// If nothing selected, clear line tags
@@ -916,11 +916,11 @@ void MapEditContext::endTagEdit(bool accept)
 
 		// Set line tags (in case of multiple selection)
 		for (auto& line : lines)
-			line->setIntProperty("arg0", current_tag_);
+			line->setArg(0, current_tag_);
 
 		// Set sector tags
 		for (auto& sector : tagged_sectors_)
-			sector->setIntProperty("id", current_tag_);
+			sector->setTag(current_tag_);
 
 		// Editor message
 		if (tagged_sectors_.empty())
@@ -1962,14 +1962,14 @@ bool MapEditContext::handleAction(const string& id)
 		if (!selection.empty())
 		{
 			SectorSpecialDialog dlg(MapEditor::windowWx());
-			dlg.setup(selection[0]->intProperty("special"));
+			dlg.setup(selection[0]->special());
 			if (dlg.ShowModal() == wxID_OK)
 			{
 				// Set specials of selected sectors
 				int special = dlg.getSelectedSpecial();
 				beginUndoRecord("Change Sector Special", true, false, false);
 				for (auto sector : selection)
-					sector->setIntProperty("special", special);
+					sector->setSpecial(special);
 				endUndoRecord();
 			}
 		}

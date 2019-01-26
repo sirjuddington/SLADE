@@ -44,6 +44,11 @@ public:
 
 	void setSector(MapSector* sector);
 	void changeLight(int amount);
+	void setTexUpper(const string& tex, bool modify = true);
+	void setTexMiddle(const string& tex, bool modify = true);
+	void setTexLower(const string& tex, bool modify = true);
+	void setTexOffsetX(int offset);
+	void setTexOffsetY(int offset);
 
 	int    intProperty(const string& key) override;
 	void   setIntProperty(const string& key, int value) override;
@@ -64,8 +69,4 @@ private:
 	string     tex_middle_ = "-";
 	string     tex_lower_  = "-";
 	Vec2i      tex_offset_ = { 0, 0 };
-
-	void setTexUpper(const string& tex);
-	void setTexMiddle(const string& tex);
-	void setTexLower(const string& tex);
 };
