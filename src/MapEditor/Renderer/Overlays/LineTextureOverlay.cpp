@@ -37,10 +37,10 @@
 #include "General/ColourConfiguration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/MapLine.h"
-#include "MapEditor/SLADEMap/MapSide.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "OpenGL/Drawing.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSide.h"
 
 
 // -----------------------------------------------------------------------------
@@ -140,29 +140,29 @@ void LineTextureOverlay::close(bool cancel)
 		for (auto& line : lines_)
 		{
 			// Front Upper
-			if (textures_[FrontUpper].changed && !textures_[FrontUpper].textures.empty())
-				line->setStringProperty("side1.texturetop", textures_[FrontUpper].textures[0]);
+			if (textures_[FrontUpper].changed && !textures_[FrontUpper].textures.empty() && line->s1())
+				line->s1()->setTexUpper(textures_[FrontUpper].textures[0]);
 
 			// Front Middle
-			if (textures_[FrontMiddle].changed && !textures_[FrontMiddle].textures.empty())
-				line->setStringProperty("side1.texturemiddle", textures_[FrontMiddle].textures[0]);
+			if (textures_[FrontMiddle].changed && !textures_[FrontMiddle].textures.empty() && line->s1())
+				line->s1()->setTexMiddle(textures_[FrontMiddle].textures[0]);
 
 			// Front Lower
-			if (textures_[FrontLower].changed && !textures_[FrontLower].textures.empty())
-				line->setStringProperty("side1.texturebottom", textures_[FrontLower].textures[0]);
+			if (textures_[FrontLower].changed && !textures_[FrontLower].textures.empty() && line->s1())
+				line->s1()->setTexLower(textures_[FrontLower].textures[0]);
 
 
 			// Back Upper
-			if (textures_[BackUpper].changed && !textures_[BackUpper].textures.empty())
-				line->setStringProperty("side2.texturetop", textures_[BackUpper].textures[0]);
+			if (textures_[BackUpper].changed && !textures_[BackUpper].textures.empty() && line->s2())
+				line->s2()->setTexUpper(textures_[BackUpper].textures[0]);
 
 			// Back Middle
-			if (textures_[BackMiddle].changed && !textures_[BackMiddle].textures.empty())
-				line->setStringProperty("side2.texturemiddle", textures_[BackMiddle].textures[0]);
+			if (textures_[BackMiddle].changed && !textures_[BackMiddle].textures.empty() && line->s2())
+				line->s2()->setTexMiddle(textures_[BackMiddle].textures[0]);
 
 			// Back Lower
-			if (textures_[BackLower].changed && !textures_[BackLower].textures.empty())
-				line->setStringProperty("side2.texturebottom", textures_[BackLower].textures[0]);
+			if (textures_[BackLower].changed && !textures_[BackLower].textures.empty() && line->s2())
+				line->s2()->setTexLower(textures_[BackLower].textures[0]);
 		}
 
 		MapEditor::editContext().endUndoRecord();

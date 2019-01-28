@@ -34,7 +34,7 @@
 #include "MapObject.h"
 #include "App.h"
 #include "Game/Configuration.h"
-#include "SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 
 
 // -----------------------------------------------------------------------------
@@ -63,8 +63,6 @@ MapObject::MapObject(Type type, SLADEMap* parent) :
 	modified_time_{ App::runTimer() },
 	type_{ type }
 {
-	if (parent)
-		parent->addMapObject(this);
 }
 
 // -----------------------------------------------------------------------------

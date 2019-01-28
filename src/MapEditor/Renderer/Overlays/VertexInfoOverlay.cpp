@@ -34,9 +34,9 @@
 #include "Main.h"
 #include "VertexInfoOverlay.h"
 #include "General/ColourConfiguration.h"
-#include "MapEditor/SLADEMap/MapVertex.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/MapObject/MapVertex.h"
 #include "Utility/MathStuff.h"
 
 

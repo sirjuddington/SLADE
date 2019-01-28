@@ -37,10 +37,11 @@
 #include "General/ColourConfiguration.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
-#include "MapEditor/SLADEMap/MapLine.h"
-#include "MapEditor/SLADEMap/MapThing.h"
-#include "MapEditor/SLADEMap/MapVertex.h"
 #include "OpenGL/GLTexture.h"
+#include "SLADEMap/MapFormat/Doom64MapFormat.h"
+#include "SLADEMap/MapFormat/DoomMapFormat.h"
+#include "SLADEMap/MapFormat/HexenMapFormat.h"
+#include "SLADEMap/MapObject/MapThing.h"
 #include "Utility/Tokenizer.h"
 
 
@@ -400,7 +401,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 
 	if (map_format == MapFormat::Doom64)
 	{
-		MapVertex::Doom64Data v;
+		Doom64MapFormat::Vertex v;
 		while (true)
 		{
 			// Read vertex
@@ -413,7 +414,7 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 	}
 	else
 	{
-		MapVertex::DoomData v;
+		DoomMapFormat::Vertex v;
 		while (true)
 		{
 			// Read vertex
@@ -463,8 +464,8 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 		while (true)
 		{
 			// Read line
-			MapLine::DoomData l;
-			if (!mc.read(&l, sizeof(MapLine::DoomData)))
+			DoomMapFormat::LineDef l;
+			if (!mc.read(&l, sizeof(DoomMapFormat::LineDef)))
 				break;
 
 			// Check properties
@@ -484,8 +485,8 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 		while (true)
 		{
 			// Read line
-			MapLine::Doom64Data l;
-			if (!mc.read(&l, sizeof(MapLine::Doom64Data)))
+			Doom64MapFormat::LineDef l;
+			if (!mc.read(&l, sizeof(Doom64MapFormat::LineDef)))
 				break;
 
 			// Check properties
@@ -511,8 +512,8 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 		while (true)
 		{
 			// Read line
-			MapLine::HexenData l;
-			if (!mc.read(&l, sizeof(MapLine::HexenData)))
+			HexenMapFormat::LineDef l;
+			if (!mc.read(&l, sizeof(HexenMapFormat::LineDef)))
 				break;
 
 			// Check properties
@@ -561,22 +562,22 @@ bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end,
 	// Read things data
 	if (map_format == MapFormat::Doom)
 	{
-		auto     thng_data = (MapThing::DoomData*)things->rawData(true);
-		unsigned nt        = things->size() / sizeof(MapThing::DoomData);
+		auto     thng_data = (DoomMapFormat::Thing*)things->rawData(true);
+		unsigned nt        = things->size() / sizeof(DoomMapFormat::Thing);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MapFormat::Doom64)
 	{
-		auto     thng_data = (MapThing::Doom64Data*)things->rawData(true);
-		unsigned nt        = things->size() / sizeof(MapThing::Doom64Data);
+		auto     thng_data = (Doom64MapFormat::Thing*)things->rawData(true);
+		unsigned nt        = things->size() / sizeof(Doom64MapFormat::Thing);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}
 	else if (map_format == MapFormat::Hexen)
 	{
-		auto     thng_data = (MapThing::HexenData*)things->rawData(true);
-		unsigned nt        = things->size() / sizeof(MapThing::HexenData);
+		auto     thng_data = (HexenMapFormat::Thing*)things->rawData(true);
+		unsigned nt        = things->size() / sizeof(HexenMapFormat::Thing);
 		for (size_t a = 0; a < nt; a++)
 			addThing(thng_data[a].x, thng_data[a].y);
 	}

@@ -300,10 +300,10 @@ void registerMapSide(sol::state& lua)
 		sol::property(&MapSide::texUpper),
 
 		"offsetX",
-		sol::property(&MapSide::offsetX),
+		sol::property(&MapSide::texOffsetX),
 
 		"offsetY",
-		sol::property(&MapSide::offsetY));
+		sol::property(&MapSide::texOffsetY));
 }
 
 void registerMapSector(sol::state& lua)
@@ -362,7 +362,7 @@ void registerMapSector(sol::state& lua)
 		// Functions
 		// ---------------------------------------------------------------------------
 		"containsPoint",
-		&MapSector::isWithin);
+		&MapSector::containsPoint);
 }
 
 bool thingFlag(MapThing& self, const string& flag)

@@ -124,9 +124,6 @@
     <Filter Include="Map Editor\Renderer\Overlays">
       <UniqueIdentifier>{2825745b-4b26-4d1f-ab5d-07bed7feb6c1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Map Editor\SLADEMap">
-      <UniqueIdentifier>{7e714e7c-f40f-427e-b58a-88c904669f9a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Map Editor\UI">
       <UniqueIdentifier>{7f918170-2c47-4971-a646-5754ab51b936}</UniqueIdentifier>
     </Filter>
@@ -186,6 +183,18 @@
     </Filter>
     <Filter Include="UI\Controls">
       <UniqueIdentifier>{df7203c4-44f4-4f91-adaf-0269fe29db65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SLADEMap">
+      <UniqueIdentifier>{b65678c2-1ded-497c-9716-68283d2ac10f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SLADEMap\MapFormat">
+      <UniqueIdentifier>{a4333a92-a858-4d79-a29a-a7339aadfe68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SLADEMap\MapObjectList">
+      <UniqueIdentifier>{5e06474e-4b4f-482e-8617-7aa480a6b4d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SLADEMap\MapObject">
+      <UniqueIdentifier>{b0590a65-315e-4e14-88c6-6abbee8593b4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1005,9 +1014,6 @@
     <ClCompile Include="..\..\src\MapEditor\MapEditor.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\MapSpecials.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\MapTextureManager.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
@@ -1034,30 +1040,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\SectorTextureOverlay.cpp">
       <Filter>Map Editor\Renderer\Overlays</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapLine.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapObject.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapSector.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapSide.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapThing.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapVertex.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MobjPropertyList.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\SLADEMap\SLADEMap.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\UI\GenLineSpecialPanel.cpp">
       <Filter>Map Editor\UI</Filter>
@@ -1508,6 +1490,66 @@
     </ClCompile>
     <ClCompile Include="..\..\src\OpenGL\DrawingFTGL.cpp">
       <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapObjectCollection.cpp">
+      <Filter>SLADEMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MobjPropertyList.cpp">
+      <Filter>SLADEMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\SLADEMap.cpp">
+      <Filter>SLADEMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapFormat\Doom64MapFormat.cpp">
+      <Filter>SLADEMap\MapFormat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapFormat\DoomMapFormat.cpp">
+      <Filter>SLADEMap\MapFormat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapFormat\HexenMapFormat.cpp">
+      <Filter>SLADEMap\MapFormat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapFormat\MapFormatHandler.cpp">
+      <Filter>SLADEMap\MapFormat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapFormat\UniversalDoomMapFormat.cpp">
+      <Filter>SLADEMap\MapFormat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapObjectList\LineList.cpp">
+      <Filter>SLADEMap\MapObjectList</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapObjectList\SectorList.cpp">
+      <Filter>SLADEMap\MapObjectList</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapObjectList\SideList.cpp">
+      <Filter>SLADEMap\MapObjectList</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapObjectList\ThingList.cpp">
+      <Filter>SLADEMap\MapObjectList</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapObjectList\VertexList.cpp">
+      <Filter>SLADEMap\MapObjectList</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapObject\MapLine.cpp">
+      <Filter>SLADEMap\MapObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapObject\MapObject.cpp">
+      <Filter>SLADEMap\MapObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapObject\MapSector.cpp">
+      <Filter>SLADEMap\MapObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapObject\MapSide.cpp">
+      <Filter>SLADEMap\MapObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapObject\MapThing.cpp">
+      <Filter>SLADEMap\MapObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapObject\MapVertex.cpp">
+      <Filter>SLADEMap\MapObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SLADEMap\MapSpecials.cpp">
+      <Filter>SLADEMap</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2127,9 +2169,6 @@
     <ClInclude Include="..\..\src\MapEditor\MapEditor.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\MapSpecials.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\MapTextureManager.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
@@ -2159,30 +2198,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\SectorTextureOverlay.h">
       <Filter>Map Editor\Renderer\Overlays</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapLine.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapObject.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapSector.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapSide.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapThing.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapVertex.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MobjPropertyList.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\SLADEMap\SLADEMap.h">
-      <Filter>Map Editor\SLADEMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\UI\GenLineSpecialPanel.h">
       <Filter>Map Editor\UI</Filter>
@@ -2644,6 +2659,69 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\GfxTintDialog.h">
       <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapObjectCollection.h">
+      <Filter>SLADEMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MobjPropertyList.h">
+      <Filter>SLADEMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\SLADEMap.h">
+      <Filter>SLADEMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapFormat\Doom64MapFormat.h">
+      <Filter>SLADEMap\MapFormat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapFormat\DoomMapFormat.h">
+      <Filter>SLADEMap\MapFormat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapFormat\HexenMapFormat.h">
+      <Filter>SLADEMap\MapFormat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapFormat\MapFormatHandler.h">
+      <Filter>SLADEMap\MapFormat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapFormat\UniversalDoomMapFormat.h">
+      <Filter>SLADEMap\MapFormat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapObjectList\LineList.h">
+      <Filter>SLADEMap\MapObjectList</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapObjectList\MapObjectList.h">
+      <Filter>SLADEMap\MapObjectList</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapObjectList\SectorList.h">
+      <Filter>SLADEMap\MapObjectList</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapObjectList\SideList.h">
+      <Filter>SLADEMap\MapObjectList</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapObjectList\ThingList.h">
+      <Filter>SLADEMap\MapObjectList</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapObjectList\VertexList.h">
+      <Filter>SLADEMap\MapObjectList</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapObject\MapLine.h">
+      <Filter>SLADEMap\MapObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapObject\MapObject.h">
+      <Filter>SLADEMap\MapObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapObject\MapSector.h">
+      <Filter>SLADEMap\MapObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapObject\MapSide.h">
+      <Filter>SLADEMap\MapObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapObject\MapThing.h">
+      <Filter>SLADEMap\MapObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapObject\MapVertex.h">
+      <Filter>SLADEMap\MapObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SLADEMap\MapSpecials.h">
+      <Filter>SLADEMap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

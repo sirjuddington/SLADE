@@ -1,9 +1,9 @@
 #pragma once
 
-#include "MapEditor/SLADEMap/MapLine.h"
-#include "MapEditor/SLADEMap/MapSector.h"
-#include "MapEditor/SLADEMap/MapSide.h"
-#include "MapEditor/SLADEMap/MapThing.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
 
 class MapObject;
 class MapEditContext;
@@ -39,10 +39,10 @@ public:
 	void pasteProperties();
 
 	// Create / Delete
-	void createObject(double x, double y) const;
-	void createVertex(double x, double y) const;
-	void createThing(double x, double y) const;
-	void createSector(double x, double y) const;
+	void createObject(Vec2f pos) const;
+	void createVertex(Vec2f pos) const;
+	void createThing(Vec2f pos) const;
+	void createSector(Vec2f pos) const;
 	void deleteObject() const;
 	void deleteVertex() const;
 	void deleteLine() const;

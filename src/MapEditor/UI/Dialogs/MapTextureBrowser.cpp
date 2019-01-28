@@ -36,7 +36,7 @@
 #include "General/ResourceManager.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 
 using namespace MapEditor;
 
@@ -345,8 +345,8 @@ void MapTextureBrowser::updateUsage() const
 	{
 		auto item = dynamic_cast<MapTexBrowserItem*>(i);
 		if (type_ == TextureType::Texture)
-			item->setUsage(map_->texUsageCount(item->name()));
+			item->setUsage(map_->sides().texUsageCount(item->name()));
 		else
-			item->setUsage(map_->flatUsageCount(item->name()));
+			item->setUsage(map_->sectors().texUsageCount(item->name()));
 	}
 }

@@ -86,15 +86,15 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 		// Get initial texture
 		string tex_init;
 		if (sel[initial].type == MapEditor::ItemType::Ceiling)
-			tex_init = editor->map().sector(sel[initial].index)->stringProperty("textureceiling");
+			tex_init = editor->map().sector(sel[initial].index)->ceiling().texture;
 		else if (sel[initial].type == MapEditor::ItemType::Floor)
-			tex_init = editor->map().sector(sel[initial].index)->stringProperty("texturefloor");
+			tex_init = editor->map().sector(sel[initial].index)->floor().texture;
 		else if (sel[initial].type == MapEditor::ItemType::WallTop)
-			tex_init = editor->map().side(sel[initial].index)->stringProperty("texturetop");
+			tex_init = editor->map().side(sel[initial].index)->texUpper();
 		else if (sel[initial].type == MapEditor::ItemType::WallMiddle)
-			tex_init = editor->map().side(sel[initial].index)->stringProperty("texturemiddle");
+			tex_init = editor->map().side(sel[initial].index)->texMiddle();
 		else if (sel[initial].type == MapEditor::ItemType::WallBottom)
-			tex_init = editor->map().side(sel[initial].index)->stringProperty("texturebottom");
+			tex_init = editor->map().side(sel[initial].index)->texLower();
 
 		auto map_format = editor->map().currentFormat();
 
@@ -207,7 +207,7 @@ void QuickTextureOverlay3d::applyTexture()
 			{
 				auto sector = editor_->map().sector(item.index);
 				if (sector)
-					sector->setStringProperty("texturefloor", textures_[current_index_].name);
+					sector->setFloorTexture(textures_[current_index_].name);
 			}
 
 			// Ceiling
@@ -215,7 +215,7 @@ void QuickTextureOverlay3d::applyTexture()
 			{
 				auto sector = editor_->map().sector(item.index);
 				if (sector)
-					sector->setStringProperty("textureceiling", textures_[current_index_].name);
+					sector->setCeilingTexture(textures_[current_index_].name);
 			}
 
 			// Wall
@@ -226,13 +226,13 @@ void QuickTextureOverlay3d::applyTexture()
 				{
 					// Upper
 					if (item.type == MapEditor::ItemType::WallTop)
-						side->setStringProperty("texturetop", textures_[current_index_].name);
+						side->setTexUpper(textures_[current_index_].name);
 					// Middle
 					else if (item.type == MapEditor::ItemType::WallMiddle)
-						side->setStringProperty("texturemiddle", textures_[current_index_].name);
+						side->setTexMiddle(textures_[current_index_].name);
 					// Lower
 					else if (item.type == MapEditor::ItemType::WallBottom)
-						side->setStringProperty("texturebottom", textures_[current_index_].name);
+						side->setTexLower(textures_[current_index_].name);
 				}
 			}
 		}

@@ -5,8 +5,10 @@
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    MapVertex.cpp
-// Description: MapVertex class, represents a vertex object in a map
+// Filename:    SectorList.cpp
+// Description: A (non-owning) list of map sectors. Includes std::vector-like
+//              API for accessing items and some misc functions to get info
+//              about the contained items.
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -30,159 +32,170 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "MapVertex.h"
-#include "App.h"
-#include "MapLine.h"
+#include "SectorList.h"
+#include "General/UI.h"
 
 
 // -----------------------------------------------------------------------------
 //
-// MapVertex Class Functions
+// SectorList Class Functions
 //
 // -----------------------------------------------------------------------------
 
 
 // -----------------------------------------------------------------------------
-// MapVertex class constructor
+// Clears the list (and texture usage)
 // -----------------------------------------------------------------------------
-MapVertex::MapVertex(double x, double y, SLADEMap* parent) : MapObject(Type::Vertex, parent), position_{ x, y } {}
-
-// -----------------------------------------------------------------------------
-// Returns the object point [point].
-// Currently for vertices this is always the vertex position
-// -----------------------------------------------------------------------------
-Vec2f MapVertex::getPoint(Point point)
+void SectorList::clear()
 {
-	return position_;
+	usage_tex_.clear();
+	MapObjectList::clear();
 }
 
 // -----------------------------------------------------------------------------
-// Returns the value of the integer property matching [key]
+// Adds [sector] to the list and updates texture usage
 // -----------------------------------------------------------------------------
-int MapVertex::intProperty(const string& key)
+void SectorList::add(MapSector* sector)
 {
-	if (key == "x")
-		return (int)position_.x;
-	else if (key == "y")
-		return (int)position_.y;
-	else
-		return MapObject::intProperty(key);
+	// Update texture counts
+	usage_tex_[sector->floor().texture.Upper()] += 1;
+	usage_tex_[sector->ceiling().texture.Upper()] += 1;
+
+	MapObjectList::add(sector);
 }
 
 // -----------------------------------------------------------------------------
-// Returns the value of the float property matching [key]
+// Removes [sector] from the list and updates texture usage
 // -----------------------------------------------------------------------------
-double MapVertex::floatProperty(const string& key)
+void SectorList::remove(unsigned index)
 {
-	if (key == "x")
-		return position_.x;
-	else if (key == "y")
-		return position_.y;
-	else
-		return MapObject::floatProperty(key);
+	if (index >= objects_.size())
+		return;
+
+	// Update texture counts
+	usage_tex_[objects_[index]->floor().texture.Upper()] -= 1;
+	usage_tex_[objects_[index]->ceiling().texture.Upper()] -= 1;
+
+	MapObjectList::remove(index);
 }
 
 // -----------------------------------------------------------------------------
-// Sets the integer value of the property [key] to [value]
+// Returns the sector at the given [point], or null if not within a sector
 // -----------------------------------------------------------------------------
-void MapVertex::setIntProperty(const string& key, int value)
+MapSector* SectorList::atPos(Vec2f point) const
 {
-	// Update modified time
-	setModified();
-
-	if (key == "x")
+	// Go through sectors
+	for (const auto& sector : objects_)
 	{
-		position_.x = value;
-		for (auto& connected_line : connected_lines_)
-			connected_line->resetInternals();
+		// Check if point is within sector
+		if (sector->containsPoint(point))
+			return sector;
 	}
-	else if (key == "y")
+
+	// Not within a sector
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Returns a bounding box containing all sectors in the list
+// -----------------------------------------------------------------------------
+BBox SectorList::allSectorBounds() const
+{
+	BBox bbox;
+
+	if (count_ == 0)
+		return bbox;
+
+	// Go through sectors
+	// This is quicker than generating it from vertices,
+	// but relies on sector bboxes being up-to-date (which they should be)
+	bbox = objects_[0]->boundingBox();
+	for (unsigned i = 1; i < count_; ++i)
 	{
-		position_.y = value;
-		for (auto& connected_line : connected_lines_)
-			connected_line->resetInternals();
+		auto sbb = objects_[i]->boundingBox();
+		if (sbb.min.x < bbox.min.x)
+			bbox.min.x = sbb.min.x;
+		if (sbb.min.y < bbox.min.y)
+			bbox.min.y = sbb.min.y;
+		if (sbb.max.x > bbox.max.x)
+			bbox.max.x = sbb.max.x;
+		if (sbb.max.y > bbox.max.y)
+			bbox.max.y = sbb.max.y;
 	}
-	else
-		return MapObject::setIntProperty(key, value);
+
+	return bbox;
 }
 
 // -----------------------------------------------------------------------------
-// Sets the float value of the property [key] to [value]
+// Forces building of polygons for all sectors in the list
 // -----------------------------------------------------------------------------
-void MapVertex::setFloatProperty(const string& key, double value)
+void SectorList::initPolygons()
 {
-	// Update modified time
-	setModified();
-
-	if (key == "x")
-		position_.x = value;
-	else if (key == "y")
-		position_.y = value;
-	else
-		return MapObject::setFloatProperty(key, value);
-}
-
-// -----------------------------------------------------------------------------
-// Returns true if the property [key] can be modified via script
-// -----------------------------------------------------------------------------
-bool MapVertex::scriptCanModifyProp(const string& key)
-{
-	if (key == "x" || key == "y")
-		return false;
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds [line] to the list of lines connected to this vertex
-// -----------------------------------------------------------------------------
-void MapVertex::connectLine(MapLine* line)
-{
-	VECTOR_ADD_UNIQUE(connected_lines_, line);
-}
-
-// -----------------------------------------------------------------------------
-// Removes [line] from the list of lines connected to this vertex
-// -----------------------------------------------------------------------------
-void MapVertex::disconnectLine(MapLine* line)
-{
-	for (unsigned a = 0; a < connected_lines_.size(); a++)
+	UI::setSplashProgressMessage("Building sector polygons");
+	UI::setSplashProgress(0.0f);
+	for (unsigned i = 0; i < count_; ++i)
 	{
-		if (connected_lines_[a] == line)
+		UI::setSplashProgress((float)i / (float)count_);
+		objects_[i]->polygon();
+	}
+	UI::setSplashProgress(1.0f);
+}
+
+// -----------------------------------------------------------------------------
+// Forces update of bounding boxes for all sectors in the list
+// -----------------------------------------------------------------------------
+void SectorList::initBBoxes()
+{
+	for (auto& sector : objects_)
+		sector->updateBBox();
+}
+
+// -----------------------------------------------------------------------------
+// Adds all sectors with tag [id] to [list]
+// -----------------------------------------------------------------------------
+void SectorList::putAllWithId(int id, vector<MapSector*>& list) const
+{
+	for (auto& sector : objects_)
+		if (sector->tag() == id)
+			list.push_back(sector);
+}
+
+// -----------------------------------------------------------------------------
+// Returns a list of all sectors with tag [id]
+// -----------------------------------------------------------------------------
+vector<MapSector*> SectorList::allWithId(int id) const
+{
+	vector<MapSector*> list;
+	putAllWithId(id, list);
+	return list;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the first sector found with tag [id], or null if none found
+// -----------------------------------------------------------------------------
+MapSector* SectorList::firstWithId(int id) const
+{
+	for (auto& sector : objects_)
+		if (sector->tag() == id)
+			return sector;
+
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the lowest unused sector tag
+// -----------------------------------------------------------------------------
+int SectorList::firstFreeId() const
+{
+	int id = 1;
+	for (unsigned i = 0; i < count_; ++i)
+	{
+		if (objects_[i]->tag() == id)
 		{
-			connected_lines_.erase(connected_lines_.begin() + a);
-			return;
+			id++;
+			i = 0;
 		}
 	}
-}
 
-// -----------------------------------------------------------------------------
-// Returns the connected line at [index]
-// -----------------------------------------------------------------------------
-MapLine* MapVertex::connectedLine(unsigned index)
-{
-	if (index >= connected_lines_.size())
-		return nullptr;
-
-	return connected_lines_[index];
-}
-
-// -----------------------------------------------------------------------------
-// Write all vertex info to a Backup struct
-// -----------------------------------------------------------------------------
-void MapVertex::writeBackup(Backup* backup)
-{
-	// Position
-	backup->props_internal["x"] = position_.x;
-	backup->props_internal["y"] = position_.y;
-}
-
-// -----------------------------------------------------------------------------
-// Read all vertex info from a Backup struct
-// -----------------------------------------------------------------------------
-void MapVertex::readBackup(Backup* backup)
-{
-	// Position
-	position_.x = backup->props_internal["x"].floatValue();
-	position_.y = backup->props_internal["y"].floatValue();
+	return id;
 }

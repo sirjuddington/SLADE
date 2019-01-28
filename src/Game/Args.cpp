@@ -268,7 +268,7 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 // -----------------------------------------------------------------------------
 // Returns a string representation of [values] depending on the spec arg types
 // -----------------------------------------------------------------------------
-string ArgSpec::stringDesc(int values[5], string values_str[2]) const
+string ArgSpec::stringDesc(const int values[5], string values_str[2]) const
 {
 	string ret;
 

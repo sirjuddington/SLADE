@@ -774,6 +774,21 @@ struct BBox
 			max.y = y;
 	}
 
+	void extend(const Vec2f& other) { extend(other.x, other.y); }
+
+	void extend(const BBox& other)
+	{
+		if (other.min.x < min.x)
+			min.x = other.min.x;
+		if (other.min.y < min.y)
+			min.y = other.min.y;
+
+		if (other.max.x > max.x)
+			max.x = other.max.x;
+		if (other.max.y > max.y)
+			max.y = other.max.y;
+	}
+
 	bool pointWithin(double x, double y) const { return (x >= min.x && x <= max.x && y >= min.y && y <= max.y); }
 	bool contains(Vec2f point) const { return pointWithin(point.x, point.y); }
 	bool isWithin(Vec2f bmin, Vec2f bmax) const

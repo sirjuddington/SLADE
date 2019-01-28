@@ -37,9 +37,9 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/MapThing.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/MapObject/MapThing.h"
 
 
 // -----------------------------------------------------------------------------
@@ -91,12 +91,12 @@ void ThingInfoOverlay::update(MapThing* thing)
 	// Position
 	if (map_format != MapFormat::Doom)
 		info_text += S_FMT(
-			"Position: %d, %d, %d\n", (int)thing->xPos(), (int)thing->yPos(), (int)(thing->floatProperty("height")));
+			"Position: %d, %d, %d\n", (int)thing->xPos(), (int)thing->yPos(), (int)(thing->zPos()));
 	else
 		info_text += S_FMT("Position: %d, %d\n", (int)thing->xPos(), (int)thing->yPos());
 
 	// Direction
-	int    angle = thing->intProperty("angle");
+	int    angle = thing->angle();
 	string dir   = S_FMT("%d degrees", angle);
 	if (angle == 0)
 		dir = "East";
@@ -120,22 +120,16 @@ void ThingInfoOverlay::update(MapThing* thing)
 	if (map_format == MapFormat::Hexen
 		|| (map_format == MapFormat::UDMF && Game::configuration().getUDMFProperty("arg0", MapObject::Type::Thing)))
 	{
-		int as_id = thing->intProperty("special");
+		int as_id = thing->special();
 		info_text += S_FMT("Special: %d (%s)\n", as_id, Game::configuration().actionSpecialName(as_id));
-		int args[5];
-		args[0] = thing->intProperty("arg0");
-		args[1] = thing->intProperty("arg1");
-		args[2] = thing->intProperty("arg2");
-		args[3] = thing->intProperty("arg3");
-		args[4] = thing->intProperty("arg4");
 		string argxstr[2];
 		argxstr[0] = thing->stringProperty("arg0str");
 		argxstr[1] = thing->stringProperty("arg1str");
 		string argstr;
 		if (tt.argSpec().count > 0)
-			argstr = tt.argSpec().stringDesc(args, argxstr);
+			argstr = tt.argSpec().stringDesc(thing->args().data(), argxstr);
 		else
-			argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(args, argxstr);
+			argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(thing->args().data(), argxstr);
 
 		if (!argstr.IsEmpty())
 			info_text += S_FMT("%s\n", argstr);
@@ -145,11 +139,11 @@ void ThingInfoOverlay::update(MapThing* thing)
 
 	// Flags
 	if (map_format != MapFormat::UDMF)
-		info_text += S_FMT("Flags: %s\n", Game::configuration().thingFlagsString(thing->intProperty("flags")));
+		info_text += S_FMT("Flags: %s\n", Game::configuration().thingFlagsString(thing->flags()));
 
 	// TID (if in doom64/hexen/udmf format)
 	if (map_format != MapFormat::Doom)
-		info_text += S_FMT("TID: %i", thing->intProperty("id"));
+		info_text += S_FMT("TID: %i", thing->id());
 
 	if (info_text.EndsWith("\n"))
 		info_text.RemoveLast(1);

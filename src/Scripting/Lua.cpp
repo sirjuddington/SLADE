@@ -43,7 +43,7 @@
 #include "Lua.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditContext.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/SFileDialog.h"
 
 

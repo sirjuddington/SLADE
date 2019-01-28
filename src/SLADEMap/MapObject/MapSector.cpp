@@ -33,11 +33,9 @@
 #include "MapSector.h"
 #include "App.h"
 #include "Game/Configuration.h"
-#include "MapLine.h"
-#include "MapSide.h"
-#include "MapVertex.h"
-#include "SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
+#include "Utility/Parser.h"
 
 
 // -----------------------------------------------------------------------------
@@ -45,10 +43,13 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace
-{
-const double TAU = M_PI * 2; // Number of radians in the unit circle
-} // namespace
+const string MapSector::PROP_TEXFLOOR      = "texturefloor";
+const string MapSector::PROP_TEXCEILING    = "textureceiling";
+const string MapSector::PROP_HEIGHTFLOOR   = "heightfloor";
+const string MapSector::PROP_HEIGHTCEILING = "heightceiling";
+const string MapSector::PROP_LIGHTLEVEL    = "lightlevel";
+const string MapSector::PROP_SPECIAL       = "special";
+const string MapSector::PROP_ID            = "id";
 
 
 // -----------------------------------------------------------------------------
@@ -61,17 +62,58 @@ const double TAU = M_PI * 2; // Number of radians in the unit circle
 // -----------------------------------------------------------------------------
 // MapSector class constructor
 // -----------------------------------------------------------------------------
-MapSector::MapSector(SLADEMap* parent) : MapObject(Type::Sector, parent), geometry_updated_{ App::runTimer() } {}
-
-// -----------------------------------------------------------------------------
-// MapSector class constructor
-// -----------------------------------------------------------------------------
-MapSector::MapSector(const string& f_tex, const string& c_tex, SLADEMap* parent) :
-	MapObject(Type::Sector, parent),
-	floor_{ f_tex },
-	ceiling_{ c_tex },
+MapSector::MapSector(
+	int           f_height,
+	const string& f_tex,
+	int           c_height,
+	const string& c_tex,
+	short         light,
+	short         special,
+	short         id) :
+	MapObject(Type::Sector),
+	floor_{ f_tex, f_height, Plane::flat(f_height) },
+	ceiling_{ c_tex, c_height, Plane::flat(c_height) },
+	light_{ light },
+	special_{ special },
+	id_{ id },
 	geometry_updated_{ App::runTimer() }
 {
+}
+
+// -----------------------------------------------------------------------------
+// MapSector class constructor from UDMF definition
+// -----------------------------------------------------------------------------
+MapSector::MapSector(const string& f_tex, const string& c_tex, ParseTreeNode* udmf_def) :
+	MapObject(Type::Sector),
+	floor_{ f_tex },
+	ceiling_{ c_tex }
+{
+	// Set UDMF defaults
+	light_ = 160;
+
+	// Set properties from UDMF definition
+	ParseTreeNode* prop;
+	for (unsigned a = 0; a < udmf_def->nChildren(); a++)
+	{
+		prop = udmf_def->childPTN(a);
+
+		// Skip required properties
+		if (prop->nameIsCI(PROP_TEXFLOOR) || prop->nameIsCI(PROP_TEXCEILING))
+			continue;
+
+		if (prop->nameIsCI(PROP_HEIGHTFLOOR))
+			setFloorHeight(prop->intValue());
+		else if (prop->nameIsCI(PROP_HEIGHTCEILING))
+			setCeilingHeight(prop->intValue());
+		else if (prop->nameIsCI(PROP_LIGHTLEVEL))
+			light_ = prop->intValue();
+		else if (prop->nameIsCI(PROP_SPECIAL))
+			special_ = prop->intValue();
+		else if (prop->nameIsCI(PROP_ID))
+			id_ = prop->intValue();
+		else
+			properties_[prop->nameRef()] = prop->value();
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -88,8 +130,8 @@ void MapSector::copy(MapObject* obj)
 	// Update texture counts (decrement previous)
 	if (parent_map_)
 	{
-		parent_map_->updateFlatUsage(floor_.texture, -1);
-		parent_map_->updateFlatUsage(ceiling_.texture, -1);
+		parent_map_->sectors().updateTexUsage(floor_.texture, -1);
+		parent_map_->sectors().updateTexUsage(ceiling_.texture, -1);
 	}
 
 	// Basic variables
@@ -107,8 +149,8 @@ void MapSector::copy(MapObject* obj)
 	// Update texture counts (increment new)
 	if (parent_map_)
 	{
-		parent_map_->updateFlatUsage(floor_.texture, 1);
-		parent_map_->updateFlatUsage(ceiling_.texture, 1);
+		parent_map_->sectors().updateTexUsage(floor_.texture, 1);
+		parent_map_->sectors().updateTexUsage(ceiling_.texture, 1);
 	}
 
 	// Other properties
@@ -128,9 +170,9 @@ void MapSector::setGeometryUpdated()
 // -----------------------------------------------------------------------------
 string MapSector::stringProperty(const string& key)
 {
-	if (key == "texturefloor")
+	if (key == PROP_TEXFLOOR)
 		return floor_.texture;
-	else if (key == "textureceiling")
+	else if (key == PROP_TEXCEILING)
 		return ceiling_.texture;
 	else
 		return MapObject::stringProperty(key);
@@ -141,15 +183,15 @@ string MapSector::stringProperty(const string& key)
 // -----------------------------------------------------------------------------
 int MapSector::intProperty(const string& key)
 {
-	if (key == "heightfloor")
+	if (key == PROP_HEIGHTFLOOR)
 		return floor_.height;
-	else if (key == "heightceiling")
+	else if (key == PROP_HEIGHTCEILING)
 		return ceiling_.height;
-	else if (key == "lightlevel")
+	else if (key == PROP_LIGHTLEVEL)
 		return light_;
-	else if (key == "special")
+	else if (key == PROP_SPECIAL)
 		return special_;
-	else if (key == "id")
+	else if (key == PROP_ID)
 		return id_;
 	else
 		return MapObject::intProperty(key);
@@ -160,25 +202,10 @@ int MapSector::intProperty(const string& key)
 // -----------------------------------------------------------------------------
 void MapSector::setStringProperty(const string& key, const string& value)
 {
-	// Update modified time
-	setModified();
-
-	if (key == "texturefloor")
-	{
-		if (parent_map_)
-			parent_map_->updateFlatUsage(floor_.texture, -1);
-		floor_.texture = value;
-		if (parent_map_)
-			parent_map_->updateFlatUsage(floor_.texture, 1);
-	}
-	else if (key == "textureceiling")
-	{
-		if (parent_map_)
-			parent_map_->updateFlatUsage(ceiling_.texture, -1);
-		ceiling_.texture = value;
-		if (parent_map_)
-			parent_map_->updateFlatUsage(ceiling_.texture, 1);
-	}
+	if (key == PROP_TEXFLOOR)
+		setFloorTexture(value);
+	else if (key == PROP_TEXCEILING)
+		setCeilingTexture(value);
 	else
 		return MapObject::setStringProperty(key, value);
 }
@@ -213,15 +240,15 @@ void MapSector::setIntProperty(const string& key, int value)
 	// Update modified time
 	setModified();
 
-	if (key == "heightfloor")
+	if (key == PROP_HEIGHTFLOOR)
 		setFloorHeight(value);
-	else if (key == "heightceiling")
+	else if (key == PROP_HEIGHTCEILING)
 		setCeilingHeight(value);
-	else if (key == "lightlevel")
+	else if (key == PROP_LIGHTLEVEL)
 		light_ = value;
-	else if (key == "special")
+	else if (key == PROP_SPECIAL)
 		special_ = value;
-	else if (key == "id")
+	else if (key == PROP_ID)
 		id_ = value;
 	else
 		MapObject::setIntProperty(key, value);
@@ -233,7 +260,11 @@ void MapSector::setIntProperty(const string& key, int value)
 void MapSector::setFloorTexture(const string& tex)
 {
 	setModified();
+	if (parent_map_)
+		parent_map_->sectors().updateTexUsage(floor_.texture, -1);
 	floor_.texture = tex;
+	if (parent_map_)
+		parent_map_->sectors().updateTexUsage(floor_.texture, 1);
 }
 
 // -----------------------------------------------------------------------------
@@ -242,7 +273,11 @@ void MapSector::setFloorTexture(const string& tex)
 void MapSector::setCeilingTexture(const string& tex)
 {
 	setModified();
+	if (parent_map_)
+		parent_map_->sectors().updateTexUsage(ceiling_.texture, -1);
 	ceiling_.texture = tex;
+	if (parent_map_)
+		parent_map_->sectors().updateTexUsage(ceiling_.texture, 1);
 }
 
 // -----------------------------------------------------------------------------
@@ -286,6 +321,33 @@ void MapSector::setCeilingPlane(const Plane& p)
 }
 
 // -----------------------------------------------------------------------------
+// Sets the [light] level
+// -----------------------------------------------------------------------------
+void MapSector::setLightLevel(int light)
+{
+	setModified();
+	light_ = light;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the [special]
+// -----------------------------------------------------------------------------
+void MapSector::setSpecial(int special)
+{
+	setModified();
+	special_ = special;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the [tag]
+// -----------------------------------------------------------------------------
+void MapSector::setTag(int tag)
+{
+	setModified();
+	id_ = tag;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the object point [point]:
 // Mid = the absolute mid point of the sector,
 // Within/Text = a calculated point that is within the actual sector
@@ -300,7 +362,7 @@ Vec2f MapSector::getPoint(Point point)
 	else
 	{
 		if (text_point_.x == 0 && text_point_.y == 0 && parent_map_)
-			parent_map_->findSectorTextPoint(this);
+			findTextPoint();
 		return text_point_;
 	}
 }
@@ -353,9 +415,9 @@ Polygon2D* MapSector::polygon()
 }
 
 // -----------------------------------------------------------------------------
-// Returns true if the point is inside the sector
+// Returns true if the given [point] is inside the sector
 // -----------------------------------------------------------------------------
-bool MapSector::isWithin(Vec2f point)
+bool MapSector::containsPoint(Vec2f point)
 {
 	// Check with bbox first
 	if (!boundingBox().contains(point))
@@ -715,6 +777,62 @@ ColRGBA MapSector::fogColour()
 }
 
 // -----------------------------------------------------------------------------
+// Finds the 'text point' for the sector. This is a point within the sector that
+// is reasonably close to the middle of the sector bbox while still being within
+// the sector itself
+// -----------------------------------------------------------------------------
+void MapSector::findTextPoint()
+{
+	// Check if actual sector midpoint can be used
+	text_point_ = getPoint(Point::Mid);
+	if (containsPoint(text_point_))
+		return;
+
+	if (connected_sides_.empty())
+		return;
+
+	// Find nearest line to sector midpoint (that is also part of the sector)
+	double   min_dist        = 9999999999.0;
+	auto     mid_side        = connected_sides_[0];
+	MapLine* mid_side_parent = nullptr;
+	for (auto& connected_side : connected_sides_)
+	{
+		auto   l    = connected_side->parentLine();
+		double dist = MathStuff::distanceToLineFast(text_point_, l->seg());
+
+		if (dist < min_dist)
+		{
+			min_dist        = dist;
+			mid_side        = connected_side;
+			mid_side_parent = l;
+		}
+	}
+
+	// Calculate ray
+	auto r_o = mid_side_parent->getPoint(Point::Mid);
+	auto r_d = mid_side_parent->frontVector();
+	if (mid_side == mid_side_parent->s1())
+		r_d.set(-r_d.x, -r_d.y);
+
+	// Find nearest intersecting line
+	min_dist = 9999999999.0;
+	for (auto& connected_side : connected_sides_)
+	{
+		if (connected_side == mid_side)
+			continue;
+
+		auto   line = connected_side->parentLine();
+		double dist = MathStuff::distanceRayLine(r_o, r_o + r_d, line->start(), line->end());
+
+		if (dist > 0 && dist < min_dist)
+			min_dist = dist;
+	}
+
+	// Set text point to halfway between the two lines
+	text_point_.set(r_o.x + (r_d.x * min_dist * 0.5), r_o.y + (r_d.y * min_dist * 0.5));
+}
+
+// -----------------------------------------------------------------------------
 // Adds [side] to the list of 'connected sides'
 // (sides that are part of this sector)
 // -----------------------------------------------------------------------------
@@ -752,13 +870,13 @@ void MapSector::disconnectSide(MapSide* side)
 // -----------------------------------------------------------------------------
 void MapSector::writeBackup(Backup* backup)
 {
-	backup->props_internal["texturefloor"]   = floor_.texture;
-	backup->props_internal["textureceiling"] = ceiling_.texture;
-	backup->props_internal["heightfloor"]    = floor_.height;
-	backup->props_internal["heightceiling"]  = ceiling_.height;
-	backup->props_internal["lightlevel"]     = light_;
-	backup->props_internal["special"]        = special_;
-	backup->props_internal["id"]             = id_;
+	backup->props_internal[PROP_TEXFLOOR]      = floor_.texture;
+	backup->props_internal[PROP_TEXCEILING]    = ceiling_.texture;
+	backup->props_internal[PROP_HEIGHTFLOOR]   = floor_.height;
+	backup->props_internal[PROP_HEIGHTCEILING] = ceiling_.height;
+	backup->props_internal[PROP_LIGHTLEVEL]    = light_;
+	backup->props_internal[PROP_SPECIAL]       = special_;
+	backup->props_internal[PROP_ID]            = id_;
 }
 
 // -----------------------------------------------------------------------------
@@ -767,25 +885,52 @@ void MapSector::writeBackup(Backup* backup)
 void MapSector::readBackup(Backup* backup)
 {
 	// Update texture counts (decrement previous)
-	parent_map_->updateFlatUsage(floor_.texture, -1);
-	parent_map_->updateFlatUsage(ceiling_.texture, -1);
+	parent_map_->sectors().updateTexUsage(floor_.texture, -1);
+	parent_map_->sectors().updateTexUsage(ceiling_.texture, -1);
 
-	floor_.texture   = backup->props_internal["texturefloor"].stringValue();
-	ceiling_.texture = backup->props_internal["textureceiling"].stringValue();
-	floor_.height    = backup->props_internal["heightfloor"].intValue();
-	ceiling_.height  = backup->props_internal["heightceiling"].intValue();
+	floor_.texture   = backup->props_internal[PROP_TEXFLOOR].stringValue();
+	ceiling_.texture = backup->props_internal[PROP_TEXCEILING].stringValue();
+	floor_.height    = backup->props_internal[PROP_HEIGHTFLOOR].intValue();
+	ceiling_.height  = backup->props_internal[PROP_HEIGHTCEILING].intValue();
 	floor_.plane.set(0, 0, 1, floor_.height);
 	ceiling_.plane.set(0, 0, 1, ceiling_.height);
-	light_   = backup->props_internal["lightlevel"].intValue();
-	special_ = backup->props_internal["special"].intValue();
-	id_      = backup->props_internal["id"].intValue();
+	light_   = backup->props_internal[PROP_LIGHTLEVEL].intValue();
+	special_ = backup->props_internal[PROP_SPECIAL].intValue();
+	id_      = backup->props_internal[PROP_ID].intValue();
 
 	// Update texture counts (increment new)
-	parent_map_->updateFlatUsage(floor_.texture, 1);
-	parent_map_->updateFlatUsage(ceiling_.texture, 1);
+	parent_map_->sectors().updateTexUsage(floor_.texture, 1);
+	parent_map_->sectors().updateTexUsage(ceiling_.texture, 1);
 
 	// Update geometry info
 	poly_needsupdate_ = true;
 	bbox_.reset();
 	setGeometryUpdated();
+}
+
+// -----------------------------------------------------------------------------
+// Writes the sector as a UDMF text definition to [def]
+// -----------------------------------------------------------------------------
+void MapSector::writeUDMF(string& def)
+{
+	def = S_FMT("sector//#%u\n{\n", index_);
+
+	// Basic properties
+	def += S_FMT("texturefloor=\"%s\";\ntextureceiling=\"%s\";\n", floor_.texture, ceiling_.texture);
+	if (floor_.height != 0)
+		def += S_FMT("heightfloor=%d;\n", floor_.height);
+	if (ceiling_.height != 0)
+		def += S_FMT("heightceiling=%d;\n", ceiling_.height);
+	if (light_ != 160)
+		def += S_FMT("lightlevel=%d;\n", light_);
+	if (special_ != 0)
+		def += S_FMT("special=%d;\n", special_);
+	if (id_ != 0)
+		def += S_FMT("id=%d;\n", id_);
+
+	// Other properties
+	if (!properties_.isEmpty())
+		def += properties_.toString(true);
+
+	def += "}\n\n";
 }

@@ -507,7 +507,7 @@ string MapEditContext::modeString(bool plural) const
 void MapEditContext::updateThingLists()
 {
 	pathed_things_.clear();
-	map_.putPathedThings(pathed_things_);
+	map_.things().putAllPathed(pathed_things_);
 	map_.setThingsUpdated();
 }
 
@@ -561,23 +561,23 @@ void MapEditContext::updateTagged()
 		if (edit_mode_ == Mode::Lines)
 		{
 			type = SLADEMap::LINEDEFS;
-			tag  = map_.line(hilight_item)->intProperty("id");
+			tag  = map_.line(hilight_item)->id();
 		}
 		else if (edit_mode_ == Mode::Things)
 		{
 			type  = SLADEMap::THINGS;
-			tag   = map_.thing(hilight_item)->intProperty("id");
+			tag   = map_.thing(hilight_item)->id();
 			ttype = map_.thing(hilight_item)->type();
 		}
 		else if (edit_mode_ == Mode::Sectors)
 		{
 			type = SLADEMap::SECTORS;
-			tag  = map_.sector(hilight_item)->intProperty("id");
+			tag  = map_.sector(hilight_item)->tag();
 		}
 		if (tag)
 		{
-			map_.putTaggingLinesWithId(tag, type, tagging_lines_);
-			map_.putTaggingThingsWithId(tag, type, tagging_things_, ttype);
+			map_.lines().putAllTaggingWithId(tag, type, tagging_lines_);
+			map_.things().putAllTaggingWithId(tag, type, tagging_things_, ttype);
 		}
 
 		// Gather affected objects
@@ -597,12 +597,12 @@ void MapEditContext::updateTagged()
 					back = line->s2()->sector();
 				if (line->s1())
 					front = line->s1()->sector();
-				needs_tag = Game::configuration().actionSpecial(line->intProperty("special")).needsTag();
-				tag       = line->intProperty("arg0");
-				arg2      = line->intProperty("arg1");
-				arg3      = line->intProperty("arg2");
-				arg4      = line->intProperty("arg3");
-				arg5      = line->intProperty("arg4");
+				needs_tag = Game::configuration().actionSpecial(line->special()).needsTag();
+				tag       = line->arg(0);
+				arg2      = line->arg(1);
+				arg3      = line->arg(2);
+				arg4      = line->arg(3);
+				arg5      = line->arg(4);
 				tid       = 0;
 
 				// Hexen and UDMF things can have specials too
@@ -616,19 +616,19 @@ void MapEditContext::updateTagged()
 				{
 					needs_tag = Game::configuration().thingType(thing->type()).needsTag();
 					if (needs_tag == TagType::None)
-						needs_tag = Game::configuration().actionSpecial(thing->intProperty("special")).needsTag();
-					tag  = thing->intProperty("arg0");
-					arg2 = thing->intProperty("arg1");
-					arg3 = thing->intProperty("arg2");
-					arg4 = thing->intProperty("arg3");
-					arg5 = thing->intProperty("arg4");
-					tid  = thing->intProperty("id");
+						needs_tag = Game::configuration().actionSpecial(thing->special()).needsTag();
+					tag  = thing->arg(0);
+					arg2 = thing->arg(1);
+					arg3 = thing->arg(2);
+					arg4 = thing->arg(3);
+					arg5 = thing->arg(4);
+					tid  = thing->id();
 				}
 			}
 
 			// Sector tag
 			if (needs_tag == TagType::Sector || (needs_tag == TagType::SectorAndBack && tag > 0))
-				map_.putSectorsWithTag(tag, tagged_sectors_);
+				map_.sectors().putAllWithId(tag, tagged_sectors_);
 
 			// Backside sector (for local doors)
 			else if ((needs_tag == TagType::Back || needs_tag == TagType::SectorAndBack) && back)
@@ -638,18 +638,18 @@ void MapEditContext::updateTagged()
 			else if (needs_tag == TagType::SectorOrBack)
 			{
 				if (tag > 0)
-					map_.putSectorsWithTag(tag, tagged_sectors_);
+					map_.sectors().putAllWithId(tag, tagged_sectors_);
 				else if (back)
 					tagged_sectors_.push_back(back);
 			}
 
 			// Thing ID
 			else if (needs_tag == TagType::Thing)
-				map_.putThingsWithId(tag, tagged_things_);
+				map_.things().putAllWithId(tag, tagged_things_);
 
 			// Line ID
 			else if (needs_tag == TagType::Line)
-				map_.putLinesWithId(tag, tagged_lines_);
+				map_.lines().putAllWithId(tag, tagged_lines_);
 
 			// ZDoom quirkiness
 			else if (needs_tag != TagType::None)
@@ -667,77 +667,77 @@ void MapEditContext::updateTagged()
 					if ((thingtag | sectag) == 0)
 						break;
 					else if (thingtag == 0)
-						map_.putSectorsWithTag(sectag, tagged_sectors_);
+						map_.sectors().putAllWithId(sectag, tagged_sectors_);
 					else if (sectag == 0)
-						map_.putThingsWithId(thingtag, tagged_things_);
+						map_.things().putAllWithId(thingtag, tagged_things_);
 					else // neither thingtag nor sectag are 0
 						map_.putThingsWithIdInSectorTag(thingtag, sectag, tagged_things_);
 				}
 				break;
 				case TagType::Thing1Thing2Thing3:
 					if (arg3)
-						map_.putThingsWithId(arg3, tagged_things_);
+						map_.things().putAllWithId(arg3, tagged_things_);
 				case TagType::Thing1Thing2:
 					if (arg2)
-						map_.putThingsWithId(arg2, tagged_things_);
+						map_.things().putAllWithId(arg2, tagged_things_);
 				case TagType::Thing1Thing4:
 					if (tag)
-						map_.putThingsWithId(tag, tagged_things_);
+						map_.things().putAllWithId(tag, tagged_things_);
 				case TagType::Thing4:
 					if (needs_tag == TagType::Thing1Thing4 || needs_tag == TagType::Thing4)
 						if (arg4)
-							map_.putThingsWithId(arg4, tagged_things_);
+							map_.things().putAllWithId(arg4, tagged_things_);
 					break;
 				case TagType::Thing5:
 					if (arg5)
-						map_.putThingsWithId(arg5, tagged_things_);
+						map_.things().putAllWithId(arg5, tagged_things_);
 					break;
 				case TagType::LineNegative:
 					if (tag)
-						map_.putLinesWithId(abs(tag), tagged_lines_);
+						map_.lines().putAllWithId(abs(tag), tagged_lines_);
 					break;
 				case TagType::LineId1Line2:
 					if (arg2)
-						map_.putLinesWithId(arg2, tagged_lines_);
+						map_.lines().putAllWithId(arg2, tagged_lines_);
 					break;
 				case TagType::Line1Sector2:
 					if (tag)
-						map_.putLinesWithId(tag, tagged_lines_);
+						map_.lines().putAllWithId(tag, tagged_lines_);
 					if (arg2)
-						map_.putSectorsWithTag(arg2, tagged_sectors_);
+						map_.sectors().putAllWithId(arg2, tagged_sectors_);
 					break;
 				case TagType::Sector1Thing2Thing3Thing5:
 					if (arg5)
-						map_.putThingsWithId(arg5, tagged_things_);
+						map_.things().putAllWithId(arg5, tagged_things_);
 					if (arg3)
-						map_.putThingsWithId(arg3, tagged_things_);
+						map_.things().putAllWithId(arg3, tagged_things_);
 				case TagType::Sector1Sector2Sector3Sector4:
 					if (arg4)
-						map_.putSectorsWithTag(arg4, tagged_sectors_);
+						map_.sectors().putAllWithId(arg4, tagged_sectors_);
 					if (arg3)
-						map_.putSectorsWithTag(arg3, tagged_sectors_);
+						map_.sectors().putAllWithId(arg3, tagged_sectors_);
 				case TagType::Sector1Sector2:
 					if (arg2)
-						map_.putSectorsWithTag(arg2, tagged_sectors_);
+						map_.sectors().putAllWithId(arg2, tagged_sectors_);
 					if (tag)
-						map_.putSectorsWithTag(tag, tagged_sectors_);
+						map_.sectors().putAllWithId(tag, tagged_sectors_);
 					break;
 				case TagType::Sector2Is3Line:
 					if (tag)
 					{
 						if (arg2 == 3)
-							map_.putLinesWithId(tag, tagged_lines_);
+							map_.lines().putAllWithId(tag, tagged_lines_);
 						else
-							map_.putSectorsWithTag(tag, tagged_sectors_);
+							map_.sectors().putAllWithId(tag, tagged_sectors_);
 					}
 					break;
 				case TagType::Patrol:
 					if (tid)
-						map_.putThingsWithId(tid, tagged_things_, 0, 9047);
+						map_.things().putAllWithId(tid, tagged_things_, 0, 9047);
 					break;
 				case TagType::Interpolation:
 					if (tid)
-						map_.putThingsWithId(tid, tagged_things_, 0, 9075);
+						map_.things().putAllWithId(tid, tagged_things_, 0, 9075);
 					break;
 				default: break;
 				}
@@ -841,9 +841,9 @@ int MapEditContext::beginTagEdit()
 		return 0;
 
 	// Get current tag
-	int tag = lines[0]->intProperty("arg0");
+	int tag = lines[0]->arg(0);
 	if (tag == 0)
-		tag = map_.findUnusedSectorTag();
+		tag = map_.sectors().firstFreeId();
 	current_tag_ = tag;
 
 	// Clear tagged lists
@@ -855,7 +855,7 @@ int MapEditContext::beginTagEdit()
 	for (unsigned a = 0; a < map_.nSectors(); a++)
 	{
 		auto sector = map_.sector(a);
-		if (sector->intProperty("id") == current_tag_)
+		if (sector->tag() == current_tag_)
 			tagged_sectors_.push_back(sector);
 	}
 	return 1;
@@ -865,15 +865,12 @@ int MapEditContext::beginTagEdit()
 // Applies the current tag edit tag to the sector at [x,y], or clears the
 // sector tag if it is already the same
 // -----------------------------------------------------------------------------
-void MapEditContext::tagSectorAt(double x, double y)
+void MapEditContext::tagSectorAt(Vec2f pos)
 {
-	Vec2f point(x, y);
-
-	int index = map_.sectorAt(point);
-	if (index < 0)
+	auto sector = map_.sectors().atPos(pos);
+	if (!sector)
 		return;
 
-	auto sector = map_.sector(index);
 	for (unsigned a = 0; a < tagged_sectors_.size(); a++)
 	{
 		// Check if already tagged
@@ -909,8 +906,8 @@ void MapEditContext::endTagEdit(bool accept)
 		for (unsigned a = 0; a < map_.nSectors(); a++)
 		{
 			auto sector = map_.sector(a);
-			if (sector->intProperty("id") == current_tag_)
-				sector->setIntProperty("id", 0);
+			if (sector->tag() == current_tag_)
+				sector->setTag(0);
 		}
 
 		// If nothing selected, clear line tags
@@ -919,11 +916,11 @@ void MapEditContext::endTagEdit(bool accept)
 
 		// Set line tags (in case of multiple selection)
 		for (auto& line : lines)
-			line->setIntProperty("arg0", current_tag_);
+			line->setArg(0, current_tag_);
 
 		// Set sector tags
 		for (auto& sector : tagged_sectors_)
-			sector->setIntProperty("id", current_tag_);
+			sector->setTag(current_tag_);
 
 		// Editor message
 		if (tagged_sectors_.empty())
@@ -1509,8 +1506,8 @@ void MapEditContext::swapPlayerStart3d()
 	player_start_dir_ = pstart->angle();
 
 	auto campos = renderer_.cameraPos2D();
-	pstart->setPos(campos.x, campos.y);
-	pstart->setAnglePoint(campos + renderer_.cameraDir2D());
+	pstart->move(campos, false);
+	pstart->setAnglePoint(campos + renderer_.cameraDir2D(), false);
 }
 
 // -----------------------------------------------------------------------------
@@ -1533,7 +1530,7 @@ void MapEditContext::swapPlayerStart2d(Vec2f pos)
 	player_start_pos_.set(pstart->position());
 	player_start_dir_ = pstart->angle();
 
-	pstart->setPos(pos.x, pos.y);
+	pstart->move(pos, false);
 }
 
 // -----------------------------------------------------------------------------
@@ -1552,8 +1549,8 @@ void MapEditContext::resetPlayerStart() const
 	if (!pstart)
 		return;
 
-	pstart->setPos(player_start_pos_.x, player_start_pos_.y);
-	pstart->setIntProperty("angle", player_start_dir_);
+	pstart->move(player_start_pos_, false);
+	pstart->setAngle(player_start_dir_, false);
 }
 
 // -----------------------------------------------------------------------------
@@ -1845,7 +1842,7 @@ bool MapEditContext::handleAction(const string& id)
 	else if (id == "mapw_camera_set")
 	{
 		Vec3f pos(input().mousePosMap());
-		auto  sector = map_.sector(map_.sectorAt(input_.mousePosMap()));
+		auto  sector = map_.sectors().atPos(input_.mousePosMap());
 		if (sector)
 			pos.z = sector->floor().plane.heightAt(pos.x, pos.y) + 40;
 		renderer_.renderer3D().cameraSetPosition(pos);
@@ -1861,7 +1858,7 @@ bool MapEditContext::handleAction(const string& id)
 	// Create vertex
 	else if (id == "mapw_vertex_create")
 	{
-		edit_2d_.createVertex(input_.mousePosMap().x, input_.mousePosMap().y);
+		edit_2d_.createVertex(input_.mousePosMap());
 		return true;
 	}
 
@@ -1942,7 +1939,7 @@ bool MapEditContext::handleAction(const string& id)
 	// Create thing
 	else if (id == "mapw_thing_create")
 	{
-		edit_2d_.createThing(input_.mouseDownPosMap().x, input_.mouseDownPosMap().y);
+		edit_2d_.createThing(input_.mouseDownPosMap());
 		return true;
 	}
 
@@ -1965,14 +1962,14 @@ bool MapEditContext::handleAction(const string& id)
 		if (!selection.empty())
 		{
 			SectorSpecialDialog dlg(MapEditor::windowWx());
-			dlg.setup(selection[0]->intProperty("special"));
+			dlg.setup(selection[0]->special());
 			if (dlg.ShowModal() == wxID_OK)
 			{
 				// Set specials of selected sectors
 				int special = dlg.getSelectedSpecial();
 				beginUndoRecord("Change Sector Special", true, false, false);
 				for (auto sector : selection)
-					sector->setIntProperty("special", special);
+					sector->setSpecial(special);
 				endUndoRecord();
 			}
 		}
@@ -1981,7 +1978,7 @@ bool MapEditContext::handleAction(const string& id)
 	// Create sector
 	else if (id == "mapw_sector_create")
 	{
-		edit_2d_.createSector(input_.mouseDownPosMap().x, input_.mouseDownPosMap().y);
+		edit_2d_.createSector(input_.mouseDownPosMap());
 		return true;
 	}
 
@@ -2044,7 +2041,7 @@ void MapArchClipboardItem::addLines(const vector<MapLine*>& lines)
 	// Copy sectors
 	for (auto& sector : copy_sectors)
 	{
-		auto copy = std::make_unique<MapSector>(nullptr);
+		auto copy = std::make_unique<MapSector>();
 		copy->copy(sector);
 		sectors_.push_back(std::move(copy));
 	}
@@ -2112,7 +2109,7 @@ void MapArchClipboardItem::addLines(const vector<MapLine*>& lines)
 	// Copy vertices
 	for (auto& vertex : copy_verts)
 	{
-		auto copy = std::make_unique<MapVertex>(vertex->xPos() - mid_x, vertex->yPos() - mid_y);
+		auto copy = std::make_unique<MapVertex>(vertex->position() - midpoint_);
 		copy->copy(vertex);
 		vertices_.push_back(std::move(copy));
 	}
@@ -2191,7 +2188,7 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, Vec2f positio
 	vector<MapVertex*> new_verts;
 	for (auto& vertex : vertices_)
 	{
-		new_verts.push_back(map->createVertex(position.x + vertex->xPos(), position.y + vertex->yPos()));
+		new_verts.push_back(map->createVertex(position + vertex->position()));
 		new_verts.back()->copy(vertex.get());
 		vertMap[vertex.get()] = new_verts.back();
 	}
@@ -2323,7 +2320,7 @@ void MapThingsClipboardItem::addThings(vector<MapThing*>& things)
 
 	// Adjust thing positions
 	for (auto& thing : things_)
-		thing->setPos(thing->xPos() - mid_x, thing->yPos() - mid_y);
+		thing->move(thing->position() - midpoint_);
 }
 
 // -----------------------------------------------------------------------------
@@ -2341,9 +2338,9 @@ void MapThingsClipboardItem::pasteToMap(SLADEMap* map, Vec2f position)
 {
 	for (auto& thing : things_)
 	{
-		auto newthing = map->createThing(0, 0);
+		auto newthing = map->createThing({ 0., 0. });
 		newthing->copy(thing.get());
-		newthing->setPos(position.x + thing->xPos(), position.y + thing->yPos());
+		newthing->move(position + thing->position());
 	}
 }
 
@@ -2446,7 +2443,7 @@ CONSOLE_COMMAND(m_test_sector, 0, false)
 	sf::Clock clock;
 	SLADEMap& map = MapEditor::editContext().map();
 	for (unsigned a = 0; a < map.nThings(); a++)
-		map.sectorAt(map.thing(a)->position());
+		map.sectors().atPos(map.thing(a)->position());
 	long ms = clock.getElapsedTime().asMilliseconds();
 	Log::info(S_FMT("Took %ldms", ms));
 }
@@ -2516,7 +2513,7 @@ CONSOLE_COMMAND(mobj_info, 1, false)
 	long id;
 	args[0].ToLong(&id);
 
-	MapObject* obj = MapEditor::editContext().map().getObjectById(id);
+	auto obj = MapEditor::editContext().map().mapData().getObjectById(id);
 	if (!obj)
 		Log::console("Object id out of range");
 	else

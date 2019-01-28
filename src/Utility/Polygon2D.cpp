@@ -33,10 +33,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Polygon2D.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MathStuff.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/SLADEMap.h"
 
 
 // -----------------------------------------------------------------------------

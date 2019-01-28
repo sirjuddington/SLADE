@@ -2,10 +2,6 @@
 
 #include "MapObject.h"
 
-class MapVertex;
-class MapSide;
-class MapSector;
-
 class MapLine : public MapObject
 {
 	friend class SLADEMap;
@@ -22,49 +18,42 @@ public:
 		BackLower   = 0x20,
 	};
 
-	// Binary map format structs
-	struct DoomData
-	{
-		uint16_t vertex1;
-		uint16_t vertex2;
-		uint16_t flags;
-		uint16_t type;
-		uint16_t sector_tag;
-		uint16_t side1;
-		uint16_t side2;
-	};
-	struct HexenData
-	{
-		uint16_t vertex1;
-		uint16_t vertex2;
-		uint16_t flags;
-		uint8_t  type;
-		uint8_t  args[5];
-		uint16_t side1;
-		uint16_t side2;
-	};
-	struct Doom64Data
-	{
-		uint16_t vertex1;
-		uint16_t vertex2;
-		uint32_t flags;
-		uint16_t type;
-		uint16_t sector_tag;
-		uint16_t side1;
-		uint16_t side2;
-	};
+	static const string PROP_V1;
+	static const string PROP_V2;
+	static const string PROP_S1;
+	static const string PROP_S2;
+	static const string PROP_SPECIAL;
+	static const string PROP_ID;
+	static const string PROP_FLAGS;
+	static const string PROP_ARG0;
+	static const string PROP_ARG1;
+	static const string PROP_ARG2;
+	static const string PROP_ARG3;
+	static const string PROP_ARG4;
 
-	MapLine(SLADEMap* parent = nullptr) : MapObject(Type::Line, parent) {}
-	MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMap* parent = nullptr);
+	MapLine(
+		MapVertex* v1,
+		MapVertex* v2,
+		MapSide*   s1      = nullptr,
+		MapSide*   s2      = nullptr,
+		int        special = 0,
+		int        flags   = 0,
+		ArgSet     args    = {});
+	MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, ParseTreeNode* udmf_def);
 	~MapLine() = default;
 
 	bool isOk() const { return vertex1_ && vertex2_; }
 
-	MapVertex* v1() const { return vertex1_; }
-	MapVertex* v2() const { return vertex2_; }
-	MapSide*   s1() const { return side1_; }
-	MapSide*   s2() const { return side2_; }
-	int        special() const { return special_; }
+	MapVertex*    v1() const { return vertex1_; }
+	MapVertex*    v2() const { return vertex2_; }
+	MapSide*      s1() const { return side1_; }
+	MapSide*      s2() const { return side2_; }
+	int           special() const { return special_; }
+	int           id() const { return id_; }
+	int           flags() const { return flags_; }
+	bool          flagSet(int flag) const { return (flags_ & flag) != 0; }
+	int           arg(unsigned index) const { return index < 5 ? args_[index] : 0; }
+	const ArgSet& args() const { return args_; }
 
 	MapSector* frontSector() const;
 	MapSector* backSector() const;
@@ -91,10 +80,18 @@ public:
 
 	void setS1(MapSide* side);
 	void setS2(MapSide* side);
+	void setV1(MapVertex* vertex);
+	void setV2(MapVertex* vertex);
+	void setSpecial(int special);
+	void setId(int id);
+	void setFlags(int flags);
+	void setFlag(int flag);
+	void clearFlag(int flag);
+	void setArg(unsigned index, int value);
 
 	Vec2f  getPoint(Point point) override;
-	Vec2f  point1() const;
-	Vec2f  point2() const;
+	Vec2f  start() const;
+	Vec2f  end() const;
 	Seg2f  seg() const;
 	double length();
 	bool   doubleSector() const;
@@ -102,14 +99,18 @@ public:
 	Vec2f  dirTabPoint(double tab_length = 0.);
 	double distanceTo(Vec2f point);
 	int    needsTexture() const;
+	bool   overlaps(MapLine* other) const;
+	bool   intersects(MapLine* other, Vec2f& intersect_point) const;
 
-	void clearUnneededTextures();
+	void clearUnneededTextures() const;
 	void resetInternals();
 	void flip(bool sides = true);
 
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
 	void copy(MapObject*) override;
+
+	void writeUDMF(string& def) override;
 
 	operator Debuggable() const
 	{
@@ -126,7 +127,9 @@ private:
 	MapSide*   side1_   = nullptr;
 	MapSide*   side2_   = nullptr;
 	int        special_ = 0;
-	int        line_id_ = 0;
+	int        id_      = 0;
+	int        flags_   = 0;
+	ArgSet     args_    = {};
 
 	// Internally used info
 	double length_ = -1.;

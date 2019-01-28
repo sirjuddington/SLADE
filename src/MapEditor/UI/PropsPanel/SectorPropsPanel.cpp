@@ -35,11 +35,11 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/MapObject.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapObjectPropsPanel.h"
 #include "OpenGL/Drawing.h"
+#include "SLADEMap/MapObject/MapObject.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/WxUtils.h"
@@ -445,27 +445,27 @@ void SectorPropsPanel::applyChanges()
 
 		// Floor texture
 		if (!fcb_floor_->GetValue().IsEmpty())
-			sector->setStringProperty("texturefloor", fcb_floor_->GetValue());
+			sector->setFloorTexture(fcb_floor_->GetValue());
 
 		// Ceiling texture
 		if (!fcb_ceiling_->GetValue().IsEmpty())
-			sector->setStringProperty("textureceiling", fcb_ceiling_->GetValue());
+			sector->setCeilingTexture(fcb_ceiling_->GetValue());
 
 		// Floor height
 		if (!text_height_floor_->GetValue().IsEmpty())
-			sector->setIntProperty("heightfloor", text_height_floor_->number(sector->floor().height));
+			sector->setFloorHeight(text_height_floor_->number(sector->floor().height));
 
 		// Ceiling height
 		if (!text_height_ceiling_->GetValue().IsEmpty())
-			sector->setIntProperty("heightceiling", text_height_ceiling_->number(sector->ceiling().height));
+			sector->setCeilingHeight(text_height_ceiling_->number(sector->ceiling().height));
 
 		// Light level
 		if (!text_light_->GetValue().IsEmpty())
-			sector->setIntProperty("lightlevel", text_light_->number(sector->lightLevel()));
+			sector->setLightLevel(text_light_->number(sector->lightLevel()));
 
 		// Tag
 		if (!text_tag_->GetValue().IsEmpty())
-			sector->setIntProperty("id", text_tag_->number(sector->tag()));
+			sector->setTag(text_tag_->number(sector->tag()));
 	}
 
 	if (mopp_all_props_)
@@ -532,6 +532,6 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void SectorPropsPanel::onBtnNewTag(wxCommandEvent& e)
 {
-	int tag = MapEditor::editContext().map().findUnusedSectorTag();
+	int tag = MapEditor::editContext().map().sectors().firstFreeId();
 	text_tag_->SetValue(S_FMT("%d", tag));
 }

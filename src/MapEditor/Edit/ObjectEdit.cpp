@@ -38,7 +38,7 @@
 #include "General/UI.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
 using namespace MapEditor;
@@ -568,13 +568,13 @@ void ObjectEditGroup::applyEdit()
 
 	// Move vertices
 	for (auto& vertex : vertices_)
-		map->moveVertex(vertex->map_vertex->index(), vertex->position.x, vertex->position.y);
+		vertex->map_vertex->move(vertex->position.x, vertex->position.y);
 
 	// Move things
 	for (auto& thing : things_)
 	{
-		map->moveThing(thing.map_thing->index(), thing.position.x, thing.position.y);
-		thing.map_thing->setIntProperty("angle", thing.angle);
+		thing.map_thing->move(thing.position);
+		thing.map_thing->setAngle(thing.angle);
 	}
 
 	// Flip lines if needed

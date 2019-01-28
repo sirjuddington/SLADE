@@ -2,28 +2,21 @@
 
 #include "MapObject.h"
 
-class MapLine;
+class VertexList;
 
 class MapVertex : public MapObject
 {
 	friend class SLADEMap;
+	friend class VertexList;
 
 public:
-	struct DoomData
-	{
-		short x;
-		short y;
-	};
+	typedef std::unique_ptr<MapVertex> UPtr;
 
-	// Those are actually fixed_t
-	struct Doom64Data
-	{
-		int32_t x;
-		int32_t y;
-	};
+	static const string PROP_X;
+	static const string PROP_Y;
 
-	MapVertex(SLADEMap* parent = nullptr) : MapObject(Type::Vertex, parent) {}
-	MapVertex(double x, double y, SLADEMap* parent = nullptr);
+	MapVertex(const Vec2f& pos);
+	MapVertex(const Vec2f& pos, ParseTreeNode* udmf_def);
 	~MapVertex() = default;
 
 	double xPos() const { return position_.x; }
@@ -31,6 +24,8 @@ public:
 	Vec2f  position() const { return position_; }
 
 	Vec2f getPoint(Point point) override;
+
+	void move(double nx, double ny);
 
 	int    intProperty(const string& key) override;
 	double floatProperty(const string& key) override;
@@ -42,11 +37,15 @@ public:
 	void     disconnectLine(MapLine* line);
 	unsigned nConnectedLines() const { return connected_lines_.size(); }
 	MapLine* connectedLine(unsigned index);
+	void     clearConnectedLines() { connected_lines_.clear(); }
+	bool     isDetached() const { return connected_lines_.empty(); }
 
 	const vector<MapLine*>& connectedLines() const { return connected_lines_; }
 
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
+
+	void writeUDMF(string& def) override;
 
 	operator Debuggable() const
 	{

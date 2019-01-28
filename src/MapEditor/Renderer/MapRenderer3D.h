@@ -2,7 +2,7 @@
 
 #include "General/ListenerAnnouncer.h"
 #include "MapEditor/Edit/Edit3D.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 
 class ItemSelection;
 class Polygon2D;

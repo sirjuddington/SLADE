@@ -78,9 +78,9 @@ bool LineDraw::addPoint(Vec2f point, bool nearest)
 	// Snap to nearest vertex if necessary
 	if (nearest)
 	{
-		int vertex = context_.map().nearestVertex(point);
-		if (vertex >= 0)
-			point = context_.map().vertex(vertex)->position();
+		auto vertex = context_.map().vertices().nearest(point);
+		if (vertex)
+			point = vertex->position();
 	}
 
 	// Otherwise, snap to grid if necessary
@@ -139,9 +139,9 @@ void LineDraw::setShapeOrigin(Vec2f point, bool nearest)
 	// Snap to nearest vertex if necessary
 	if (nearest)
 	{
-		int vertex = context_.map().nearestVertex(point);
-		if (vertex >= 0)
-			point = context_.map().vertex(vertex)->position();
+		auto vertex = context_.map().vertices().nearest(point);
+		if (vertex)
+			point = vertex->position();
 	}
 
 	// Otherwise, snap to grid if necessary
@@ -304,45 +304,44 @@ void LineDraw::end(bool apply)
 	auto& map = context_.map();
 	for (unsigned a = 0; a < draw_points_.size() - 1; a++)
 	{
-		auto v = map.lineCrossVertex(
-			draw_points_[a].x, draw_points_[a].y, draw_points_[a + 1].x, draw_points_[a + 1].y);
+		auto v = map.vertices().firstCrossed({ draw_points_[a], draw_points_[a + 1] });
 		while (v)
 		{
 			draw_points_.insert(draw_points_.begin() + a + 1, Vec2f(v->xPos(), v->yPos()));
 			a++;
-			v = map.lineCrossVertex(draw_points_[a].x, draw_points_[a].y, draw_points_[a + 1].x, draw_points_[a + 1].y);
+			v = map.vertices().firstCrossed({ draw_points_[a], draw_points_[a + 1] });
 		}
 	}
 
 	// Create vertices
 	for (auto& draw_point : draw_points_)
-		map.createVertex(draw_point.x, draw_point.y, 1);
+		map.createVertex(draw_point, 1);
 
 	// Create lines
 	unsigned nl_start = map.nLines();
 	for (unsigned a = 0; a < draw_points_.size() - 1; a++)
 	{
 		// Check for intersections
-		auto intersect = map.cutLines(
-			draw_points_[a].x, draw_points_[a].y, draw_points_[a + 1].x, draw_points_[a + 1].y);
+		Seg2f line_seg{ draw_points_[a], draw_points_[a + 1] };
+		auto  intersect = map.lines().cutPoints(line_seg);
 		Log::info(2, S_FMT("%lu intersect points", intersect.size()));
 
 		// Create line normally if no intersections
 		if (intersect.empty())
-			map.createLine(draw_points_[a].x, draw_points_[a].y, draw_points_[a + 1].x, draw_points_[a + 1].y, 1);
+			map.createLine(line_seg.tl, line_seg.br, 1);
 		else
 		{
 			// Intersections exist, create multiple lines between intersection points
 
 			// From first point to first intersection
-			map.createLine(draw_points_[a].x, draw_points_[a].y, intersect[0].x, intersect[0].y, 1);
+			map.createLine(line_seg.tl, line_seg.br, 1);
 
 			// Between intersection points
 			for (unsigned p = 0; p < intersect.size() - 1; p++)
-				map.createLine(intersect[p].x, intersect[p].y, intersect[p + 1].x, intersect[p + 1].y, 1);
+				map.createLine(intersect[p], intersect[p + 1], 1);
 
 			// From last intersection to next point
-			map.createLine(intersect.back().x, intersect.back().y, draw_points_[a + 1].x, draw_points_[a + 1].y, 1);
+			map.createLine(intersect.back(), draw_points_[a + 1], 1);
 		}
 	}
 

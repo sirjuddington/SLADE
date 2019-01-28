@@ -35,10 +35,10 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
+#include "SLADEMap/SLADEMap.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
 
@@ -338,10 +338,10 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 
 	// X
 	bool multi = false;
-	int  ofs   = sides[0]->offsetX();
+	int  ofs   = sides[0]->texOffsetX();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
-		if (sides[a]->offsetX() != ofs)
+		if (sides[a]->texOffsetX() != ofs)
 		{
 			multi = true;
 			break;
@@ -352,10 +352,10 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 
 	// Y
 	multi = false;
-	ofs   = sides[0]->offsetY();
+	ofs   = sides[0]->texOffsetY();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
-		if (sides[a]->offsetY() != ofs)
+		if (sides[a]->texOffsetY() != ofs)
 		{
 			multi = true;
 			break;
@@ -379,23 +379,23 @@ void SidePropsPanel::applyTo(vector<MapSide*>& sides) const
 	{
 		// Upper Texture
 		if (!tex_upper.IsEmpty())
-			side->setStringProperty("texturetop", tex_upper);
+			side->setTexUpper(tex_upper);
 
 		// Middle Texture
 		if (!tex_middle.IsEmpty())
-			side->setStringProperty("texturemiddle", tex_middle);
+			side->setTexMiddle(tex_middle);
 
 		// Lower Texture
 		if (!tex_lower.IsEmpty())
-			side->setStringProperty("texturebottom", tex_lower);
+			side->setTexLower(tex_lower);
 
 		// X Offset
 		if (!text_offsetx_->GetValue().IsEmpty())
-			side->setIntProperty("offsetx", text_offsetx_->number(side->offsetX()));
+			side->setTexOffsetX(text_offsetx_->number(side->texOffsetX()));
 
 		// Y Offset
 		if (!text_offsety_->GetValue().IsEmpty())
-			side->setIntProperty("offsety", text_offsety_->number(side->offsetY()));
+			side->setTexOffsetY(text_offsety_->number(side->texOffsetY()));
 	}
 }
 

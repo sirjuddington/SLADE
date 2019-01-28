@@ -38,11 +38,11 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/MapLine.h"
-#include "MapEditor/SLADEMap/MapSide.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSide.h"
 #include "Utility/MathStuff.h"
 
 
@@ -82,7 +82,7 @@ void LineInfoOverlay::update(MapLine* line)
 	info_text += (S_FMT("Length: %d\n", MathStuff::round(line->length())));
 
 	// Line special
-	int as_id = line->intProperty("special");
+	int as_id = line->special();
 	if (line->props().propertyExists("macro"))
 	{
 		int macro = line->intProperty("macro");
@@ -98,23 +98,17 @@ void LineInfoOverlay::update(MapLine* line)
 	// Line args (or sector tag)
 	if (map_format == MapFormat::Hexen || map_format == MapFormat::UDMF)
 	{
-		int args[5];
-		args[0] = line->intProperty("arg0");
-		args[1] = line->intProperty("arg1");
-		args[2] = line->intProperty("arg2");
-		args[3] = line->intProperty("arg3");
-		args[4] = line->intProperty("arg4");
 		string argxstr[2];
 		argxstr[0]    = line->stringProperty("arg0str");
 		argxstr[1]    = line->stringProperty("arg1str");
-		string argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(args, argxstr);
+		string argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(line->args().data(), argxstr);
 		if (!argstr.IsEmpty())
 			info_text += (S_FMT("%s", argstr));
 		else
 			info_text += ("No Args");
 	}
 	else
-		info_text += (S_FMT("Sector Tag: %d", line->intProperty("arg0")));
+		info_text += (S_FMT("Sector Tag: %d", line->arg(0)));
 
 	// Line flags
 	if (map_format != MapFormat::UDMF)
@@ -130,14 +124,12 @@ void LineInfoOverlay::update(MapLine* line)
 	auto s = line->s1();
 	if (s)
 	{
-		int xoff           = s->intProperty("offsetx");
-		int yoff           = s->intProperty("offsety");
 		side_front_.exists = true;
 		if (Global::debug)
 			side_front_.info = S_FMT("Front Side #%d (%d) (Sector %d)", s->index(), s->objId(), s->sector()->index());
 		else
 			side_front_.info = S_FMT("Front Side #%d (Sector %d)", s->index(), s->sector()->index());
-		side_front_.offsets      = S_FMT("Offsets: (%d, %d)", xoff, yoff);
+		side_front_.offsets      = S_FMT("Offsets: (%d, %d)", s->texOffsetX(), s->texOffsetY());
 		side_front_.tex_upper    = s->texUpper();
 		side_front_.tex_middle   = s->texMiddle();
 		side_front_.tex_lower    = s->texLower();
@@ -152,14 +144,12 @@ void LineInfoOverlay::update(MapLine* line)
 	s = line->s2();
 	if (s)
 	{
-		int xoff          = s->intProperty("offsetx");
-		int yoff          = s->intProperty("offsety");
 		side_back_.exists = true;
 		if (Global::debug)
 			side_back_.info = S_FMT("Back Side #%d (%d) (Sector %d)", s->index(), s->objId(), s->sector()->index());
 		else
 			side_back_.info = S_FMT("Back Side #%d (Sector %d)", s->index(), s->sector()->index());
-		side_back_.offsets      = S_FMT("Offsets: (%d, %d)", xoff, yoff);
+		side_back_.offsets      = S_FMT("Offsets: (%d, %d)", s->texOffsetX(), s->texOffsetY());
 		side_back_.tex_upper    = s->texUpper();
 		side_back_.tex_middle   = s->texMiddle();
 		side_back_.tex_lower    = s->texLower();

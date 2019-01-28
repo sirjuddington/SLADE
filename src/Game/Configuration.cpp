@@ -39,7 +39,7 @@
 #include "Decorate.h"
 #include "GenLineSpecial.h"
 #include "General/Console/Console.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include "ZScript.h"
@@ -1056,11 +1056,7 @@ bool Configuration::thingFlagSet(unsigned flag_index, MapThing* thing)
 		return false;
 
 	// Check if flag is set
-	unsigned long flags = thing->intProperty("flags");
-	if (flags & flags_thing_[flag_index].flag)
-		return true;
-	else
-		return false;
+	return thing->flagSet(flags_thing_[flag_index].flag);
 }
 
 // -----------------------------------------------------------------------------
@@ -1072,14 +1068,11 @@ bool Configuration::thingFlagSet(const string& udmf_name, MapThing* thing, MapFo
 	if (map_format == MapFormat::UDMF)
 		return thing->boolProperty(udmf_name);
 
-	// Get current flags
-	unsigned long flags = thing->intProperty("flags");
-
 	// Iterate through flags
 	for (auto& i : flags_thing_)
 	{
 		if (i.udmf == udmf_name)
-			return !!(flags & i.flag);
+			return thing->flagSet(i.flag);
 	}
 	Log::warning(2, S_FMT("Flag %s does not exist in this configuration", udmf_name));
 	return false;
@@ -1094,42 +1087,39 @@ bool Configuration::thingBasicFlagSet(const string& flag, MapThing* thing, MapFo
 	if (map_format == MapFormat::UDMF)
 		return thing->boolProperty(flag);
 
-	// Get current flags
-	unsigned long flags = thing->intProperty("flags");
-
 	// Hexen-style flags in Hexen-format maps
 	bool hexen = map_format == MapFormat::Hexen;
 
 	// Easy Skill
 	if (flag == "skill2" || flag == "skill1")
-		return !!(flags & 1);
+		return thing->flagSet(1);
 
 	// Medium Skill
 	else if (flag == "skill3")
-		return !!(flags & 2);
+		return thing->flagSet(2);
 
 	// Hard Skill
 	else if (flag == "skill4" || flag == "skill5")
-		return !!(flags & 4);
+		return thing->flagSet(4);
 
 	// Game mode flags
 	else if (flag == "single")
 	{
 		// Single Player
 		if (hexen)
-			return !!(flags & 256);
+			return thing->flagSet(256);
 		// *Not* Multiplayer
 		else
-			return !(flags & 16);
+			return !thing->flagSet(16);
 	}
 	else if (flag == "coop")
 	{
 		// Coop
 		if (hexen)
-			return !!(flags & 512);
+			return thing->flagSet(512);
 		// *Not* Not In Coop
 		else if (supported_features_[Feature::Boom])
-			return !(flags & 64);
+			return !thing->flagSet(64);
 		else
 			return true;
 	}
@@ -1137,10 +1127,10 @@ bool Configuration::thingBasicFlagSet(const string& flag, MapThing* thing, MapFo
 	{
 		// Deathmatch
 		if (hexen)
-			return !!(flags & 1024);
+			return thing->flagSet(1024);
 		// *Not* Not In DM
 		else if (supported_features_[Feature::Boom])
-			return !(flags & 32);
+			return !thing->flagSet(32);
 		else
 			return true;
 	}
@@ -1150,13 +1140,13 @@ bool Configuration::thingBasicFlagSet(const string& flag, MapThing* thing, MapFo
 	{
 		// Fighter
 		if (flag == "class1")
-			return !!(flags & 32);
+			return thing->flagSet(32);
 		// Cleric
 		else if (flag == "class2")
-			return !!(flags & 64);
+			return thing->flagSet(64);
 		// Mage
 		else if (flag == "class3")
-			return !!(flags & 128);
+			return thing->flagSet(128);
 	}
 
 	// Not basic
@@ -1198,15 +1188,10 @@ void Configuration::setThingFlag(unsigned flag_index, MapThing* thing, bool set)
 	if (flag_index >= flags_thing_.size())
 		return;
 
-	// Determine new flags value
-	unsigned long flags = thing->intProperty("flags");
 	if (set)
-		flags |= flags_thing_[flag_index].flag;
+		thing->setFlag(flags_thing_[flag_index].flag);
 	else
-		flags = (flags & ~flags_thing_[flag_index].flag);
-
-	// Update thing flags
-	thing->setIntProperty("flags", flags);
+		thing->clearFlag(flags_thing_[flag_index].flag);
 }
 
 // -----------------------------------------------------------------------------
@@ -1239,15 +1224,11 @@ void Configuration::setThingFlag(const string& udmf_name, MapThing* thing, MapFo
 		return;
 	}
 
-	// Determine new flags value
-	unsigned long flags = thing->intProperty("flags");
-	if (set)
-		flags |= flag_val;
-	else
-		flags = (flags & ~flag_val);
-
 	// Update thing flags
-	thing->setIntProperty("flags", flags);
+	if (set)
+		thing->setFlag(flag_val);
+	else
+		thing->clearFlag(flag_val);
 }
 
 // -----------------------------------------------------------------------------
@@ -1346,15 +1327,12 @@ void Configuration::setThingBasicFlag(const string& flag, MapThing* thing, MapFo
 
 	if (flag_val)
 	{
-		// Determine new flags value
-		unsigned long flags = thing->intProperty("flags");
-		if (set)
-			flags |= flag_val;
-		else
-			flags = (flags & ~flag_val);
-
 		// Update thing flags
-		thing->setIntProperty("flags", flags);
+		if (set)
+			thing->setFlag(flag_val);
+		else
+			thing->clearFlag(flag_val);
+
 		return;
 	}
 
@@ -1442,11 +1420,7 @@ bool Configuration::lineFlagSet(unsigned flag_index, MapLine* line)
 		return false;
 
 	// Check if flag is set
-	unsigned long flags = line->intProperty("flags");
-	if (flags & flags_line_[flag_index].flag)
-		return true;
-	else
-		return false;
+	return line->flagSet(flags_line_[flag_index].flag);
 }
 
 // -----------------------------------------------------------------------------
@@ -1459,7 +1433,7 @@ bool Configuration::lineFlagSet(const string& udmf_name, MapLine* line, MapForma
 		return line->boolProperty(udmf_name);
 
 	// Get current flags
-	unsigned long flags = line->intProperty("flags");
+	unsigned long flags = line->flags();
 
 	// Iterate through flags
 	for (auto& i : flags_line_)
@@ -1482,24 +1456,21 @@ bool Configuration::lineBasicFlagSet(const string& flag, MapLine* line, MapForma
 	if (map_format == MapFormat::UDMF)
 		return line->boolProperty(flag);
 
-	// Get current flags
-	unsigned long flags = line->intProperty("flags");
-
 	// Impassable
 	if (flag == "blocking")
-		return !!(flags & 1);
+		return line->flagSet(1);
 
 	// Two Sided
-	else if (flag == "twosided")
-		return !!(flags & 4);
+	if (flag == "twosided")
+		return line->flagSet(4);
 
 	// Upper unpegged
-	else if (flag == "dontpegtop")
-		return !!(flags & 8);
+	if (flag == "dontpegtop")
+		return line->flagSet(8);
 
 	// Lower unpegged
-	else if (flag == "dontpegbottom")
-		return !!(flags & 16);
+	if (flag == "dontpegbottom")
+		return line->flagSet(16);
 
 	// Not basic
 	return lineFlagSet(flag, line, map_format);
@@ -1513,15 +1484,13 @@ string Configuration::lineFlagsString(MapLine* line)
 	if (!line)
 		return "None";
 
-	// Get raw flags
-	unsigned flags = line->intProperty("flags");
 	// TODO: UDMF flags
 
 	// Check against all flags
 	string ret = "";
 	for (auto& flag : flags_line_)
 	{
-		if (flags & flag.flag)
+		if (line->flagSet(flag.flag))
 		{
 			// Add flag name to string
 			ret += flag.name;
@@ -1547,15 +1516,10 @@ void Configuration::setLineFlag(unsigned flag_index, MapLine* line, bool set)
 	if (flag_index >= flags_line_.size())
 		return;
 
-	// Determine new flags value
-	unsigned long flags = line->intProperty("flags");
 	if (set)
-		flags |= flags_line_[flag_index].flag;
+		line->setFlag(flags_line_[flag_index].flag);
 	else
-		flags = (flags & ~flags_line_[flag_index].flag);
-
-	// Update line flags
-	line->setIntProperty("flags", flags);
+		line->clearFlag(flags_line_[flag_index].flag);
 }
 
 // -----------------------------------------------------------------------------
@@ -1572,7 +1536,7 @@ void Configuration::setLineFlag(const string& udmf_name, MapLine* line, MapForma
 	}
 
 	// Iterate through flags
-	unsigned long flag_val = 0;
+	int flag_val = 0;
 	for (auto& i : flags_line_)
 	{
 		if (i.udmf == udmf_name)
@@ -1589,14 +1553,10 @@ void Configuration::setLineFlag(const string& udmf_name, MapLine* line, MapForma
 	}
 
 	// Determine new flags value
-	unsigned long flags = line->intProperty("flags");
 	if (set)
-		flags |= flag_val;
+		line->setFlag(flag_val);
 	else
-		flags = (flags & ~flag_val);
-
-	// Update line flags
-	line->setIntProperty("flags", flags);
+		line->clearFlag(flag_val);
 }
 
 // -----------------------------------------------------------------------------
@@ -1612,9 +1572,7 @@ void Configuration::setLineBasicFlag(const string& flag, MapLine* line, MapForma
 		return;
 	}
 
-	// Get current flags
-	unsigned long flags = line->intProperty("flags");
-	unsigned long fval  = 0;
+	int fval = 0;
 
 	// Impassable
 	if (flag == "blocking")
@@ -1636,9 +1594,9 @@ void Configuration::setLineBasicFlag(const string& flag, MapLine* line, MapForma
 	if (fval)
 	{
 		if (set)
-			line->setIntProperty("flags", flags | fval);
+			line->setFlag(fval);
 		else
-			line->setIntProperty("flags", flags & ~fval);
+			line->clearFlag(fval);
 	}
 	// Not basic
 	else
@@ -1657,7 +1615,7 @@ string Configuration::spacTriggerString(MapLine* line, MapFormat map_format)
 	if (map_format == MapFormat::Hexen)
 	{
 		// Get raw flags
-		int flags = line->intProperty("flags");
+		int flags = line->flags();
 
 		// Get SPAC trigger value from flags
 		int trigger = ((flags & 0x1c00) >> 10);
@@ -1709,7 +1667,7 @@ string Configuration::spacTriggerString(MapLine* line, MapFormat map_format)
 int Configuration::spacTriggerIndexHexen(MapLine* line)
 {
 	// Get raw flags
-	int flags = line->intProperty("flags");
+	int flags = line->flags();
 
 	// Get SPAC trigger value from flags
 	int trigger = ((flags & 0x1c00) >> 10);
@@ -1750,7 +1708,7 @@ void Configuration::setLineSpacTrigger(unsigned trigger_index, MapLine* line)
 	int trigger = triggers_line_[trigger_index].flag;
 
 	// Get raw line flags
-	int flags = line->intProperty("flags");
+	int flags = line->flags();
 
 	// Apply trigger to flags
 	trigger = trigger << 10;
@@ -1758,7 +1716,7 @@ void Configuration::setLineSpacTrigger(unsigned trigger_index, MapLine* line)
 	flags |= trigger;
 
 	// Update line flags
-	line->setIntProperty("flags", flags);
+	line->setFlags(flags);
 }
 
 // -----------------------------------------------------------------------------

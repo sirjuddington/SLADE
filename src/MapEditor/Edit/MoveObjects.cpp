@@ -175,7 +175,7 @@ void MoveObjects::end(bool accept)
 		{
 			auto thing = context_.map().thing(item.index);
 			context_.undoManager()->recordUndoStep(std::make_unique<MapEditor::PropertyChangeUS>(thing));
-			context_.map().moveThing(item.index, thing->xPos() + offset_.x, thing->yPos() + offset_.y);
+			thing->move(thing->position() + offset_);
 		}
 		context_.endUndoRecord(true);
 	}
@@ -221,10 +221,10 @@ void MoveObjects::end(bool accept)
 			if (!move_verts[a])
 				continue;
 
-			context_.map().moveVertex(
-				a, context_.map().vertex(a)->xPos() + offset_.x, context_.map().vertex(a)->yPos() + offset_.y);
+			auto vertex = context_.map().vertex(a);
+			vertex->move(vertex->xPos() + offset_.x, vertex->yPos() + offset_.y);
 
-			moved_verts.push_back(context_.map().vertex(a));
+			moved_verts.push_back(vertex);
 		}
 
 		// Begin extra 'Merge' undo step if wanted
@@ -248,5 +248,5 @@ void MoveObjects::end(bool accept)
 	items_.clear();
 
 	// Update map item indices
-	context_.map().refreshIndices();
+	// context_.map().refreshIndices();
 }

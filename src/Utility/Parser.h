@@ -20,9 +20,13 @@ public:
 	string name() override { return name_; }
 	void   setName(string name) override { this->name_ = name; }
 
+	const string&           nameRef() const { return name_; }
 	const string&           inherit() const { return inherit_; }
 	const string&           type() const { return type_; }
 	const vector<Property>& values() const { return values_; }
+
+	bool nameIs(const string& name) const { return name_ == name; }
+	bool nameIsCI(const string& name) const { return S_CMPNOCASE(name_, name); }
 
 	size_t         nValues() const { return values_.size(); }
 	Property       value(unsigned index = 0);

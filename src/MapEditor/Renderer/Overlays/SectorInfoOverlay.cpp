@@ -37,9 +37,9 @@
 #include "General/ColourConfiguration.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "MapEditor/SLADEMap/MapSector.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
+#include "SLADEMap/MapObject/MapSector.h"
 
 
 // -----------------------------------------------------------------------------
@@ -68,23 +68,22 @@ void SectorInfoOverlay::update(MapSector* sector)
 	string info_text;
 
 	// Info (index + type)
-	int    t    = sector->intProperty("special");
-	string type = S_FMT("%s (Type %d)", Game::configuration().sectorTypeName(t), t);
+	string type = S_FMT("%s (Type %d)", Game::configuration().sectorTypeName(sector->special()), sector->special());
 	if (Global::debug)
 		info_text += S_FMT("Sector #%d (%d): %s\n", sector->index(), sector->objId(), type);
 	else
 		info_text += S_FMT("Sector #%d: %s\n", sector->index(), type);
 
 	// Height
-	int fh = sector->intProperty("heightfloor");
-	int ch = sector->intProperty("heightceiling");
+	int fh = sector->floor().height;
+	int ch = sector->ceiling().height;
 	info_text += S_FMT("Height: %d to %d (%d total)\n", fh, ch, ch - fh);
 
 	// Brightness
-	info_text += S_FMT("Brightness: %d\n", sector->intProperty("lightlevel"));
+	info_text += S_FMT("Brightness: %d\n", sector->lightLevel());
 
 	// Tag
-	info_text += S_FMT("Tag: %d", sector->intProperty("id"));
+	info_text += S_FMT("Tag: %d", sector->tag());
 
 	// Textures
 	ftex_ = sector->floor().texture;

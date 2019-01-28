@@ -3,10 +3,6 @@
 #include "MapObject.h"
 #include "Utility/Polygon2D.h"
 
-class MapSide;
-class MapLine;
-class MapVertex;
-
 class MapSector : public MapObject
 {
 	friend class SLADEMap;
@@ -33,31 +29,24 @@ public:
 		}
 	};
 
-	struct DoomData
-	{
-		short f_height;
-		short c_height;
-		char  f_tex[8];
-		char  c_tex[8];
-		short light;
-		short special;
-		short tag;
-	};
+	// UDMF properties
+	static const string PROP_TEXFLOOR;
+	static const string PROP_TEXCEILING;
+	static const string PROP_HEIGHTFLOOR;
+	static const string PROP_HEIGHTCEILING;
+	static const string PROP_LIGHTLEVEL;
+	static const string PROP_SPECIAL;
+	static const string PROP_ID;
 
-	struct Doom64Data
-	{
-		short    f_height;
-		short    c_height;
-		uint16_t f_tex;
-		uint16_t c_tex;
-		uint16_t color[5];
-		short    special;
-		short    tag;
-		uint16_t flags;
-	};
-
-	MapSector(SLADEMap* parent = nullptr);
-	MapSector(const string& f_tex, const string& c_tex, SLADEMap* parent = nullptr);
+	MapSector(
+		int           f_height = 0,
+		const string& f_tex    = "",
+		int           c_height = 0,
+		const string& c_tex    = "",
+		short         light    = 0,
+		short         special  = 0,
+		short         id       = 0);
+	MapSector(const string& f_tex, const string& c_tex, ParseTreeNode* udmf_def);
 	~MapSector() = default;
 
 	void copy(MapObject* obj) override;
@@ -67,6 +56,7 @@ public:
 	short          lightLevel() const { return light_; }
 	short          special() const { return special_; }
 	short          tag() const { return id_; }
+	short          id() const { return id_; }
 
 	string stringProperty(const string& key) override;
 	int    intProperty(const string& key) override;
@@ -81,6 +71,9 @@ public:
 	void setCeilingHeight(short height);
 	void setFloorPlane(const Plane& p);
 	void setCeilingPlane(const Plane& p);
+	void setLightLevel(int light);
+	void setSpecial(int special);
+	void setTag(int tag);
 
 	template<SurfaceType p> short planeHeight();
 	template<SurfaceType p> Plane plane();
@@ -92,7 +85,7 @@ public:
 	vector<MapSide*>& connectedSides() { return connected_sides_; }
 	void              resetPolygon() { poly_needsupdate_ = true; }
 	Polygon2D*        polygon();
-	bool              isWithin(Vec2f point);
+	bool              containsPoint(Vec2f point);
 	double            distanceTo(Vec2f point, double maxdist = -1);
 	bool              putLines(vector<MapLine*>& list);
 	bool              putVertices(vector<MapVertex*>& list);
@@ -102,14 +95,18 @@ public:
 	ColRGBA           colourAt(int where = 0, bool fullbright = false);
 	ColRGBA           fogColour();
 	long              geometryUpdatedTime() const { return geometry_updated_; }
+	void              findTextPoint();
 
 	void connectSide(MapSide* side);
 	void disconnectSide(MapSide* side);
+	void clearConnectedSides() { connected_sides_.clear(); }
 
 	void updateBBox();
 
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
+
+	void writeUDMF(string& def) override;
 
 	operator Debuggable() const
 	{

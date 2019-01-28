@@ -37,12 +37,12 @@
 #include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
+#include "SLADEMap/SLADEMap.h"
 
 using namespace MapEditor;
 
@@ -1238,11 +1238,11 @@ bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEven
 		// Get unused tag/id depending on object type
 		int tag = GetValue().GetInteger();
 		if (id_type_ == IdType::Sector)
-			tag = objects[0]->parentMap()->findUnusedSectorTag();
+			tag = objects[0]->parentMap()->sectors().firstFreeId();
 		else if (id_type_ == IdType::Line)
-			tag = objects[0]->parentMap()->findUnusedLineId();
+			tag = objects[0]->parentMap()->lines().firstFreeId(objects[0]->parentMap()->currentFormat());
 		else if (id_type_ == IdType::Thing)
-			tag = objects[0]->parentMap()->findUnusedThingId();
+			tag = objects[0]->parentMap()->things().firstFreeId();
 
 		GetGrid()->ChangePropertyValue(this, tag);
 		return true;

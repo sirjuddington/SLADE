@@ -114,32 +114,39 @@ bool ItemSelection::updateHilight(Vec2f mouse_pos, double dist_scale)
 	// Update hilighted object depending on mode
 	auto& map = context_->map();
 	if (context_->editMode() == Mode::Vertices)
-		hilight_ = { map.nearestVertex(mouse_pos, 32 / dist_scale), ItemType::Vertex };
+	{
+		auto vertex = map.vertices().nearest(mouse_pos, 32 / dist_scale);
+		hilight_    = { vertex ? (int)vertex->index() : -1, ItemType::Vertex };
+	}
 	else if (context_->editMode() == Mode::Lines)
-		hilight_ = { map.nearestLine(mouse_pos, 32 / dist_scale), ItemType::Line };
+	{
+		auto line = map.lines().nearest(mouse_pos, 32 / dist_scale);
+		hilight_  = { line ? (int)line->index() : -1, ItemType::Line };
+	}
 	else if (context_->editMode() == Mode::Sectors)
-		hilight_ = { map.sectorAt(mouse_pos), ItemType::Sector };
+	{
+		auto sector = map.sectors().atPos(mouse_pos);
+		hilight_    = { sector ? (int)sector->index() : -1, ItemType::Sector };
+	}
 	else if (context_->editMode() == Mode::Things)
 	{
 		hilight_ = { -1, ItemType::Thing };
 
 		// Get (possibly multiple) nearest-thing(s)
-		auto nearest = map.nearestThingMulti(mouse_pos);
+		auto nearest = map.things().multiNearest(mouse_pos);
 		if (nearest.size() == 1)
 		{
-			auto  t    = map.thing(nearest[0]);
-			auto& type = Game::configuration().thingType(t->type());
-			if (MathStuff::distance(mouse_pos, t->position()) <= type.radius() + (32 / dist_scale))
-				hilight_.index = nearest[0];
+			auto& type = Game::configuration().thingType(nearest[0]->type());
+			if (MathStuff::distance(mouse_pos, nearest[0]->position()) <= type.radius() + (32 / dist_scale))
+				hilight_.index = nearest[0]->index();
 		}
 		else
 		{
-			for (int index : nearest)
+			for (auto& t : nearest)
 			{
-				auto  t    = map.thing(index);
 				auto& type = Game::configuration().thingType(t->type());
 				if (MathStuff::distance(mouse_pos, t->position()) <= type.radius() + (32 / dist_scale))
-					hilight_.index = index;
+					hilight_.index = t->index();
 			}
 		}
 	}
