@@ -79,12 +79,12 @@ void RenderView::zoom(double amount)
 }
 
 // -----------------------------------------------------------------------------
-// Zooms the view by [amount] towards [point]
+// Zooms the view by [amount] towards [point] (in map coords)
 // -----------------------------------------------------------------------------
-void RenderView::zoomToward(double amount, const Vec2f point)
+void RenderView::zoomToward(double amount, const Vec2d point)
 {
-	// Get current [point] in map coordinates
-	auto orig_point = mapPos(point);
+	// Get current [point] before zooming
+	auto orig_point = point;
 
 	// Zoom view
 	scale_ *= amount;
@@ -96,8 +96,8 @@ void RenderView::zoomToward(double amount, const Vec2f point)
 		scale_ = max_scale_;
 
 	// Zoom towards [point]
-	offset_.x += orig_point.x - mapX(point.x);
-	offset_.y += orig_point.y - mapY(point.y);
+	offset_.x += orig_point.x - point.x;
+	offset_.y += orig_point.y - point.y;
 
 	// Update screen limits
 	updateMapBounds();
@@ -133,7 +133,7 @@ void RenderView::fitTo(BBox bbox)
 // If [towards] is not nullptr, the scale interpolation will also interpolate
 // offsets towards [towards]
 // -----------------------------------------------------------------------------
-bool RenderView::interpolate(double mult, const Vec2f* towards)
+bool RenderView::interpolate(double mult, const Vec2d* towards)
 {
 	bool interpolating = false;
 
@@ -205,7 +205,7 @@ bool RenderView::interpolate(double mult, const Vec2f* towards)
 // Translates an x position on the screen to the corresponding x position on the
 // map itself
 // -----------------------------------------------------------------------------
-double RenderView::mapX(double screen_x, bool inter) const
+double RenderView::mapX(int screen_x, bool inter) const
 {
 	return inter ? double(screen_x / scale_inter_) + offset_inter_.x - (double(size_.x * 0.5) / scale_inter_) :
 				   double(screen_x / scale_) + offset_.x - (double(size_.x * 0.5) / scale_);
@@ -215,7 +215,7 @@ double RenderView::mapX(double screen_x, bool inter) const
 // Translates a y position on the screen to the corresponding y position on the
 // map itself
 // -----------------------------------------------------------------------------
-double RenderView::mapY(double screen_y, bool inter) const
+double RenderView::mapY(int screen_y, bool inter) const
 {
 	return inter ? double(-screen_y / scale_inter_) + offset_inter_.y + (double(size_.y * 0.5) / scale_inter_) :
 				   double(-screen_y / scale_) + offset_.y + (double(size_.y * 0.5) / scale_);
@@ -225,7 +225,7 @@ double RenderView::mapY(double screen_y, bool inter) const
 // Translates a position on the screen to the corresponding position on the map
 // itself
 // -----------------------------------------------------------------------------
-Vec2f RenderView::mapPos(const Vec2f& screen_pos, bool inter) const
+Vec2d RenderView::mapPos(const Vec2i& screen_pos, bool inter) const
 {
 	return { mapX(screen_pos.x, inter), mapY(screen_pos.y, inter) };
 }

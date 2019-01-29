@@ -143,7 +143,7 @@ bool Doom64MapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map
 	{
 		UI::setSplashProgress(p + ((float)a / nv) * 0.2f);
 		map_data.addVertex(
-			std::make_unique<MapVertex>(Vec2f{ (double)vert_data[a].x / 65536, (double)vert_data[a].y / 65536 }));
+			std::make_unique<MapVertex>(Vec2d{ (double)vert_data[a].x / 65536, (double)vert_data[a].y / 65536 }));
 	}
 
 	Log::info(3, S_FMT("Read %lu vertices", map_data.vertices().size()));
@@ -339,7 +339,7 @@ bool Doom64MapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_d
 
 		// Create thing
 		auto thing = map_data.addThing(std::make_unique<MapThing>(
-			Vec3f{ (double)data.x, (double)data.y, (double)data.z },
+			Vec3d{ (double)data.x, (double)data.y, (double)data.z },
 			data.type,
 			data.angle,
 			data.flags,

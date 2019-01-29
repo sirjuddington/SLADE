@@ -71,24 +71,24 @@ private:
 	SImage       image_;
 	View         view_type_ = View::Default;
 	double       scale_     = 1.;
-	Vec2f        offset_; // panning offsets (not image offsets)
+	Vec2d        offset_; // panning offsets (not image offsets)
 	unsigned     tex_image_;
 	bool         update_texture_ = false;
 	bool         image_hilight_  = false;
 	bool         allow_drag_     = false;
 	bool         allow_scroll_   = false;
 	Vec2i        drag_pos_       = { 0, 0 };
-	Vec2i        drag_origin_    = Vec2i::outside();
+	Vec2i        drag_origin_    = { -1, -1 };
 	Vec2i        mouse_prev_;
 	EditMode     editing_mode_ = EditMode::None;
-	ColRGBA      paint_colour_ = COL_BLACK;        // the colour to apply to pixels in editing mode 1
-	Translation* translation_  = nullptr;          // the translation to apply to pixels in editing mode 3
-	bool         drawing_      = false;            // true if a drawing operation is ongoing
-	bool*        drawing_mask_ = nullptr;          // keeps track of which pixels were already modified in this pass
-	SBrush*      brush_        = nullptr;          // the brush used to paint the image
-	Vec2i        cursor_pos_   = Vec2i::outside(); // position of cursor, relative to image
-	Vec2i        prev_pos_     = Vec2i::outside(); // previous position of cursor
-	unsigned     tex_brush_;                       // preview the effect of the brush
+	ColRGBA      paint_colour_ = COL_BLACK;  // the colour to apply to pixels in editing mode 1
+	Translation* translation_  = nullptr;    // the translation to apply to pixels in editing mode 3
+	bool         drawing_      = false;      // true if a drawing operation is ongoing
+	bool*        drawing_mask_ = nullptr;    // keeps track of which pixels were already modified in this pass
+	SBrush*      brush_        = nullptr;    // the brush used to paint the image
+	Vec2i        cursor_pos_   = { -1, -1 }; // position of cursor, relative to image
+	Vec2i        prev_pos_     = { -1, -1 }; // previous position of cursor
+	unsigned     tex_brush_;                 // preview the effect of the brush
 
 	// Events
 	void onMouseLeftDown(wxMouseEvent& e);

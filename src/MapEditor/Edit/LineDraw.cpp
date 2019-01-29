@@ -60,7 +60,7 @@ CVAR(Int, shapedraw_sides, 16, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // Returns the line drawing point at [index]
 // -----------------------------------------------------------------------------
-Vec2f LineDraw::point(unsigned index)
+Vec2d LineDraw::point(unsigned index)
 {
 	// Check index
 	if (index >= draw_points_.size())
@@ -73,7 +73,7 @@ Vec2f LineDraw::point(unsigned index)
 // Adds a line drawing point at [point], or at the nearest vertex to [point] if
 // [nearest] is true
 // -----------------------------------------------------------------------------
-bool LineDraw::addPoint(Vec2f point, bool nearest)
+bool LineDraw::addPoint(Vec2d point, bool nearest)
 {
 	// Snap to nearest vertex if necessary
 	if (nearest)
@@ -134,7 +134,7 @@ void LineDraw::removePoint()
 // Sets the shape drawing origin to [point], or the nearest vertex to [point] if
 // [nearest] is true
 // -----------------------------------------------------------------------------
-void LineDraw::setShapeOrigin(Vec2f point, bool nearest)
+void LineDraw::setShapeOrigin(Vec2d point, bool nearest)
 {
 	// Snap to nearest vertex if necessary
 	if (nearest)
@@ -158,7 +158,7 @@ void LineDraw::setShapeOrigin(Vec2f point, bool nearest)
 // Builds the current shape as line drawing points using the shape draw origin
 // and [point] for the size
 // -----------------------------------------------------------------------------
-void LineDraw::updateShape(Vec2f point)
+void LineDraw::updateShape(Vec2d point)
 {
 	// Clear line draw points
 	draw_points_.clear();
@@ -171,7 +171,7 @@ void LineDraw::updateShape(Vec2f point)
 	}
 
 	// Lock width:height at 1:1 if needed
-	Vec2f  origin = draw_origin_;
+	Vec2d  origin = draw_origin_;
 	double width  = fabs(point.x - origin.x);
 	double height = fabs(point.y - origin.y);
 	if (shapedraw_lockratio)
@@ -201,8 +201,8 @@ void LineDraw::updateShape(Vec2f point)
 	}
 
 	// Get box from tl->br
-	Vec2f tl(min(origin.x, point.x), min(origin.y, point.y));
-	Vec2f br(max(origin.x, point.x), max(origin.y, point.y));
+	Vec2d tl(min(origin.x, point.x), min(origin.y, point.y));
+	Vec2d br(max(origin.x, point.x), max(origin.y, point.y));
 	width  = br.x - tl.x;
 	height = br.y - tl.y;
 
@@ -220,7 +220,7 @@ void LineDraw::updateShape(Vec2f point)
 	else if (shapedraw_shape == 1)
 	{
 		// Get midpoint
-		Vec2f mid;
+		Vec2d mid;
 		mid.x = tl.x + ((br.x - tl.x) * 0.5);
 		mid.y = tl.y + ((br.y - tl.y) * 0.5);
 
@@ -230,11 +230,11 @@ void LineDraw::updateShape(Vec2f point)
 
 		// Add ellipse points
 		double rot = 0;
-		Vec2f  start;
+		Vec2d  start;
 		for (int a = 0; a < shapedraw_sides; a++)
 		{
 			// Calculate point (rounded)
-			Vec2f p(MathStuff::round(mid.x + sin(rot) * width), MathStuff::round(mid.y - cos(rot) * height));
+			Vec2d p(MathStuff::round(mid.x + sin(rot) * width), MathStuff::round(mid.y - cos(rot) * height));
 
 			// Add point
 			draw_points_.push_back(p);
@@ -307,7 +307,7 @@ void LineDraw::end(bool apply)
 		auto v = map.vertices().firstCrossed({ draw_points_[a], draw_points_[a + 1] });
 		while (v)
 		{
-			draw_points_.insert(draw_points_.begin() + a + 1, Vec2f(v->xPos(), v->yPos()));
+			draw_points_.insert(draw_points_.begin() + a + 1, Vec2d(v->xPos(), v->yPos()));
 			a++;
 			v = map.vertices().firstCrossed({ draw_points_[a], draw_points_[a + 1] });
 		}
@@ -322,7 +322,7 @@ void LineDraw::end(bool apply)
 	for (unsigned a = 0; a < draw_points_.size() - 1; a++)
 	{
 		// Check for intersections
-		Seg2f line_seg{ draw_points_[a], draw_points_[a + 1] };
+		Seg2d line_seg{ draw_points_[a], draw_points_[a + 1] };
 		auto  intersect = map.lines().cutPoints(line_seg);
 		Log::info(2, S_FMT("%lu intersect points", intersect.size()));
 

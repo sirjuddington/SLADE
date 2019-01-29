@@ -2369,7 +2369,7 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade) c
 // Renders the moving overlay for vertex indices in [vertices], to show movement
 // by [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices, Vec2f move_vec) const
+void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices, Vec2d move_vec) const
 {
 	vector<uint8_t> lines_drawn(map_->nLines(), 0);
 
@@ -2448,7 +2448,7 @@ void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices
 // Renders the moving overlay for line indices in [lines], to show movement by
 // [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, Vec2f move_vec) const
+void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, Vec2d move_vec) const
 {
 	vector<uint8_t> lines_drawn(map_->nLines(), 0);
 
@@ -2532,7 +2532,7 @@ void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, Vec2
 // Renders the moving overlay for sector indices in [sectors], to show movement
 // by [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingSectors(const vector<MapEditor::Item>& sectors, Vec2f move_vec) const
+void MapRenderer2D::renderMovingSectors(const vector<MapEditor::Item>& sectors, Vec2d move_vec) const
 {
 	// Determine what lines are being moved
 	vector<uint8_t> lines_moved(map_->nLines(), 0);
@@ -2560,7 +2560,7 @@ void MapRenderer2D::renderMovingSectors(const vector<MapEditor::Item>& sectors, 
 // Renders the moving overlay for thing indices in [things], to show movement by
 // [move_vec]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, Vec2f move_vec)
+void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, Vec2d move_vec)
 {
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
@@ -2646,7 +2646,7 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, Ve
 // -----------------------------------------------------------------------------
 // Renders pasting overlay for [things] at [pos]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, Vec2f pos)
+void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, Vec2d pos)
 {
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
@@ -2731,7 +2731,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, Vec2f pos)
 void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 {
 	// Simple test
-	vector<Vec2f> vertex_points;
+	vector<Vec2d> vertex_points;
 	group->putVerticesToDraw(vertex_points);
 	vector<ObjectEditGroup::Line> lines;
 	group->putLinesToDraw(lines);
@@ -3019,7 +3019,7 @@ void MapRenderer2D::updateFlatsVBO()
 // -----------------------------------------------------------------------------
 // Updates map object visibility info depending on the current view
 // -----------------------------------------------------------------------------
-void MapRenderer2D::updateVisibility(Vec2f view_tl, Vec2f view_br)
+void MapRenderer2D::updateVisibility(Vec2d view_tl, Vec2d view_br)
 {
 	// Sector visibility
 	if (map_->nSectors() != vis_s_.size())

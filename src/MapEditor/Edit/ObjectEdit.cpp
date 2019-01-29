@@ -224,12 +224,12 @@ void ObjectEditGroup::resetPositions()
 // and sets [v1]/[v2] to the line vertices.
 // Returns true if a line was found within the distance specified
 // -----------------------------------------------------------------------------
-bool ObjectEditGroup::nearestLineEndpoints(Vec2f pos, double min, Vec2f& v1, Vec2f& v2)
+bool ObjectEditGroup::nearestLineEndpoints(Vec2d pos, double min, Vec2d& v1, Vec2d& v2)
 {
 	double min_dist = min;
 	for (auto& line : lines_)
 	{
-		double d = MathStuff::distanceToLineFast(pos, Seg2f(line.v1->position, line.v2->position));
+		double d = MathStuff::distanceToLineFast(pos, { line.v1->position, line.v2->position });
 
 		if (d < min_dist)
 		{
@@ -245,7 +245,7 @@ bool ObjectEditGroup::nearestLineEndpoints(Vec2f pos, double min, Vec2f& v1, Vec
 // -----------------------------------------------------------------------------
 // Fills [list] with the positions of all group vertices
 // -----------------------------------------------------------------------------
-void ObjectEditGroup::putVerticesToDraw(vector<Vec2f>& list)
+void ObjectEditGroup::putVerticesToDraw(vector<Vec2d>& list)
 {
 	for (auto& vertex : vertices_)
 		if (!vertex->ignored)
@@ -398,10 +398,10 @@ void ObjectEditGroup::doScale(double xoff, double yoff, bool left, bool top, boo
 // This is used when rotating via the mouse ([p1] is the drag origin and [p2]
 // is the current point)
 // -----------------------------------------------------------------------------
-void ObjectEditGroup::doRotate(Vec2f p1, Vec2f p2, bool lock45)
+void ObjectEditGroup::doRotate(Vec2d p1, Vec2d p2, bool lock45)
 {
 	// Get midpoint
-	Vec2f mid(old_bbox_.min.x + old_bbox_.width() * 0.5, old_bbox_.min.y + old_bbox_.height() * 0.5);
+	Vec2d mid(old_bbox_.min.x + old_bbox_.width() * 0.5, old_bbox_.min.y + old_bbox_.height() * 0.5);
 
 	// Determine angle
 	double angle = MathStuff::angle2DRad(p1, mid, p2);

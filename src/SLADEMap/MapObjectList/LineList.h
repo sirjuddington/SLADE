@@ -7,9 +7,9 @@
 class LineList : public MapObjectList<MapLine>
 {
 public:
-	MapLine*         nearest(Vec2f point, double min = 64) const;
+	MapLine*         nearest(Vec2d point, double min = 64) const;
 	MapLine*         withVertices(MapVertex* v1, MapVertex* v2, bool reverse = true) const;
-	vector<Vec2f>    cutPoints(const Seg2f& cutter) const;
+	vector<Vec2d>    cutPoints(const Seg2d& cutter) const;
 	MapLine*         firstWithId(int id) const;
 	void             putAllWithId(int id, vector<MapLine*>& list) const;
 	vector<MapLine*> allWithId(int id) const;

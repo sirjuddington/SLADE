@@ -154,7 +154,7 @@ bool DoomMapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_d
 	for (size_t a = 0; a < nv; a++)
 	{
 		UI::setSplashProgress(p + ((float)a / nv) * 0.2f);
-		map_data.addVertex(std::make_unique<MapVertex>(Vec2f{ (double)vert_data[a].x, (double)vert_data[a].y }));
+		map_data.addVertex(std::make_unique<MapVertex>(Vec2d{ (double)vert_data[a].x, (double)vert_data[a].y }));
 	}
 
 	Log::info(3, S_FMT("Read %lu vertices", map_data.vertices().size()));
@@ -338,7 +338,7 @@ bool DoomMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_dat
 	{
 		UI::setSplashProgress(p + ((float)a / nt) * 0.2f);
 		map_data.addThing(std::make_unique<MapThing>(
-			Vec3f{ (double)thng_data[a].x, (double)thng_data[a].y, 0. },
+			Vec3d{ (double)thng_data[a].x, (double)thng_data[a].y, 0. },
 			thng_data[a].type,
 			thng_data[a].angle,
 			thng_data[a].flags));

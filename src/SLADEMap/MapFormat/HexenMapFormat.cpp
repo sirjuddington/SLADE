@@ -161,7 +161,7 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 
 		// Create thing
 		map_data.addThing(std::make_unique<MapThing>(
-			Vec3f{ (double)data.x, (double)data.y, (double)data.z },
+			Vec3d{ (double)data.x, (double)data.y, (double)data.z },
 			data.type,
 			data.angle,
 			data.flags,

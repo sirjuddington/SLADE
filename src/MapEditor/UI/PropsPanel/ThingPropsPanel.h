@@ -44,7 +44,7 @@ public:
 
 private:
 	AngleControl* parent_ = nullptr;
-	vector<Vec2f> dir_points_;
+	vector<Vec2d> dir_points_;
 	ColRGBA       col_bg_;
 	ColRGBA       col_fg_;
 	int           point_hl_   = -1;

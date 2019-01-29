@@ -146,7 +146,7 @@ void Drawing::cleanupFonts()
 // Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
 // the rendered text string are written to it.
 // -----------------------------------------------------------------------------
-void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectf* bounds)
+void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
 {
 	// Setup SFML string
 	sf::Text sf_str;
@@ -204,7 +204,7 @@ void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font fo
 // -----------------------------------------------------------------------------
 // Returns the width and height of [text] when drawn with [font]
 // -----------------------------------------------------------------------------
-Vec2f Drawing::textExtents(const string& text, Font font)
+Vec2d Drawing::textExtents(const string& text, Font font)
 {
 	// Setup SFML string
 	sf::Text sf_str;

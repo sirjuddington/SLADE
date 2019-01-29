@@ -93,13 +93,13 @@ public:
 	void renderTaggedFlats(vector<MapSector*>& sectors, float fade) const;
 
 	// Moving
-	void renderMovingVertices(const vector<MapEditor::Item>& vertices, Vec2f move_vec) const;
-	void renderMovingLines(const vector<MapEditor::Item>& lines, Vec2f move_vec) const;
-	void renderMovingSectors(const vector<MapEditor::Item>& sectors, Vec2f move_vec) const;
-	void renderMovingThings(const vector<MapEditor::Item>& things, Vec2f move_vec);
+	void renderMovingVertices(const vector<MapEditor::Item>& vertices, Vec2d move_vec) const;
+	void renderMovingLines(const vector<MapEditor::Item>& lines, Vec2d move_vec) const;
+	void renderMovingSectors(const vector<MapEditor::Item>& sectors, Vec2d move_vec) const;
+	void renderMovingThings(const vector<MapEditor::Item>& things, Vec2d move_vec);
 
 	// Paste
-	void renderPasteThings(vector<MapThing*>& things, Vec2f pos);
+	void renderPasteThings(vector<MapThing*>& things, Vec2d pos);
 
 	// Object Edit
 	void renderObjectEditGroup(ObjectEditGroup* group);
@@ -115,7 +115,7 @@ public:
 		view_scale_     = scale;
 		view_scale_inv_ = 1.0 / scale;
 	}
-	void   updateVisibility(Vec2f view_tl, Vec2f view_br);
+	void   updateVisibility(Vec2d view_tl, Vec2d view_br);
 	void   forceUpdate(float line_alpha = 1.0f);
 	double scaledRadius(int radius) const;
 	bool   visOK() const;

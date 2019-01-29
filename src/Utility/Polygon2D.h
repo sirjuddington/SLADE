@@ -122,7 +122,7 @@ private:
 		double      distance = 0;
 		Vertex(double x = 0, double y = 0) : x{ x }, y{ y } {}
 
-		operator Vec2f() const { return { x, y }; }
+		operator Vec2d() const { return { x, y }; }
 	};
 	struct Outline
 	{

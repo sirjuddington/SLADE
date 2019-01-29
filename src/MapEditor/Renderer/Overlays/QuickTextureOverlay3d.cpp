@@ -320,7 +320,7 @@ void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom,
 		Drawing::Align::Center);
 
 	// Draw texture
-	Rectf rect = Drawing::fitTextureWithin(
+	auto rect = Drawing::fitTextureWithin(
 		textures_[index].texture, x - 48 * size, bottom - (96 * size), x + 48 * size, bottom, 0, 2);
 	glColor4f(brightness, brightness, brightness, brightness * fade);
 	OpenGL::Texture::bind(textures_[index].texture);

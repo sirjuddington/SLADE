@@ -82,7 +82,7 @@ void SectorList::remove(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns the sector at the given [point], or null if not within a sector
 // -----------------------------------------------------------------------------
-MapSector* SectorList::atPos(Vec2f point) const
+MapSector* SectorList::atPos(Vec2d point) const
 {
 	// Go through sectors
 	for (const auto& sector : objects_)

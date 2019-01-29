@@ -200,7 +200,7 @@ void Edit2D::editObjectProperties()
 // -----------------------------------------------------------------------------
 void Edit2D::splitLine(double x, double y, double min_dist) const
 {
-	Vec2f point(x, y);
+	Vec2d point(x, y);
 
 	// Get the closest line
 	auto line = context_.map().lines().nearest(point, min_dist);
@@ -571,7 +571,7 @@ void Edit2D::changeThingType() const
 // -----------------------------------------------------------------------------
 // Sets the angle of all selected things to face toward [mouse_pos]
 // -----------------------------------------------------------------------------
-void Edit2D::thingQuickAngle(Vec2f mouse_pos) const
+void Edit2D::thingQuickAngle(Vec2d mouse_pos) const
 {
 	// Do nothing if not in things mode
 	if (context_.editMode() != MapEditor::Mode::Things)
@@ -642,7 +642,7 @@ void Edit2D::copy() const
 // -----------------------------------------------------------------------------
 // Pastes previously copied objects at [mouse_pos]
 // -----------------------------------------------------------------------------
-void Edit2D::paste(Vec2f mouse_pos) const
+void Edit2D::paste(Vec2d mouse_pos) const
 {
 	// Go through clipboard items
 	for (unsigned a = 0; a < App::clipboard().size(); a++)
@@ -814,7 +814,7 @@ void Edit2D::pasteProperties()
 // -----------------------------------------------------------------------------
 // Creates an object (depending on edit mode) at [x,y]
 // -----------------------------------------------------------------------------
-void Edit2D::createObject(Vec2f pos) const
+void Edit2D::createObject(Vec2d pos) const
 {
 	using MapEditor::Mode;
 
@@ -865,7 +865,7 @@ void Edit2D::createObject(Vec2f pos) const
 // -----------------------------------------------------------------------------
 // Creates a new vertex at [x,y]
 // -----------------------------------------------------------------------------
-void Edit2D::createVertex(Vec2f pos) const
+void Edit2D::createVertex(Vec2d pos) const
 {
 	// Snap coordinates to grid if necessary
 	pos.x = context_.snapToGrid(pos.x, false);
@@ -884,7 +884,7 @@ void Edit2D::createVertex(Vec2f pos) const
 // -----------------------------------------------------------------------------
 // Creates a new thing at [x,y]
 // -----------------------------------------------------------------------------
-void Edit2D::createThing(Vec2f pos) const
+void Edit2D::createThing(Vec2d pos) const
 {
 	// Snap coordinates to grid if necessary
 	pos.x = context_.snapToGrid(pos.x, false);
@@ -916,7 +916,7 @@ void Edit2D::createThing(Vec2f pos) const
 // -----------------------------------------------------------------------------
 // Creates a new sector at [x,y]
 // -----------------------------------------------------------------------------
-void Edit2D::createSector(Vec2f pos) const
+void Edit2D::createSector(Vec2d pos) const
 {
 	auto& map = context_.map();
 

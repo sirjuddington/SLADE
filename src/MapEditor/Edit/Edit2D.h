@@ -30,19 +30,19 @@ public:
 
 	// Things
 	void changeThingType() const;
-	void thingQuickAngle(Vec2f mouse_pos) const;
+	void thingQuickAngle(Vec2d mouse_pos) const;
 
 	// Copy / Paste
 	void copy() const;
-	void paste(Vec2f mouse_pos) const;
+	void paste(Vec2d mouse_pos) const;
 	void copyProperties(MapObject* object = nullptr);
 	void pasteProperties();
 
 	// Create / Delete
-	void createObject(Vec2f pos) const;
-	void createVertex(Vec2f pos) const;
-	void createThing(Vec2f pos) const;
-	void createSector(Vec2f pos) const;
+	void createObject(Vec2d pos) const;
+	void createVertex(Vec2d pos) const;
+	void createThing(Vec2d pos) const;
+	void createSector(Vec2d pos) const;
 	void deleteObject() const;
 	void deleteVertex() const;
 	void deleteLine() const;

@@ -818,7 +818,7 @@ double MapEditContext::snapToGrid(double position, bool force) const
 // Used for pasting. Given an [origin] point and the current [mouse_pos], snaps
 // in such a way that the mouse is a number of grid units away from the origin.
 // -----------------------------------------------------------------------------
-Vec2f MapEditContext::relativeSnapToGrid(Vec2f origin, Vec2f mouse_pos) const
+Vec2d MapEditContext::relativeSnapToGrid(Vec2d origin, Vec2d mouse_pos) const
 {
 	auto delta = mouse_pos - origin;
 	delta.x    = snapToGrid(delta.x, false);
@@ -865,7 +865,7 @@ int MapEditContext::beginTagEdit()
 // Applies the current tag edit tag to the sector at [x,y], or clears the
 // sector tag if it is already the same
 // -----------------------------------------------------------------------------
-void MapEditContext::tagSectorAt(Vec2f pos)
+void MapEditContext::tagSectorAt(Vec2d pos)
 {
 	auto sector = map_.sectors().atPos(pos);
 	if (!sector)
@@ -993,7 +993,7 @@ void MapEditContext::setFeatureHelp(const vector<string>& lines)
 // -----------------------------------------------------------------------------
 // Handles the keybind [key]
 // -----------------------------------------------------------------------------
-bool MapEditContext::handleKeyBind(const string& key, Vec2f position)
+bool MapEditContext::handleKeyBind(const string& key, Vec2d position)
 {
 	// --- General keybinds ---
 
@@ -1513,7 +1513,7 @@ void MapEditContext::swapPlayerStart3d()
 // -----------------------------------------------------------------------------
 // Moves the player 1 start thing to [pos]
 // -----------------------------------------------------------------------------
-void MapEditContext::swapPlayerStart2d(Vec2f pos)
+void MapEditContext::swapPlayerStart2d(Vec2d pos)
 {
 	// Find player 1 start
 	MapThing* pstart = nullptr;
@@ -1841,7 +1841,7 @@ bool MapEditContext::handleAction(const string& id)
 	// Move 3d mode camera
 	else if (id == "mapw_camera_set")
 	{
-		Vec3f pos(input().mousePosMap());
+		Vec3d pos    = input().mousePosMap();
 		auto  sector = map_.sectors().atPos(input_.mousePosMap());
 		if (sector)
 			pos.z = sector->floor().plane.heightAt(pos.x, pos.y) + 40;
@@ -2176,7 +2176,7 @@ string MapArchClipboardItem::info() const
 // -----------------------------------------------------------------------------
 // Pastes copied architecture to [map] at [position]
 // -----------------------------------------------------------------------------
-vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, Vec2f position)
+vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, Vec2d position)
 {
 	std::map<MapVertex*, MapVertex*> vertMap;
 	std::map<MapSector*, MapSector*> sectMap;
@@ -2334,7 +2334,7 @@ string MapThingsClipboardItem::info() const
 // -----------------------------------------------------------------------------
 // Pastes copied things to [map] at [position]
 // -----------------------------------------------------------------------------
-void MapThingsClipboardItem::pasteToMap(SLADEMap* map, Vec2f position)
+void MapThingsClipboardItem::pasteToMap(SLADEMap* map, Vec2d position)
 {
 	for (auto& thing : things_)
 	{

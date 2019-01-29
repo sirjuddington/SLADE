@@ -596,7 +596,7 @@ void MapLine::setArg(unsigned index, int value)
 // Returns the object point [point].
 // Currently for lines this is always the mid point
 // -----------------------------------------------------------------------------
-Vec2f MapLine::getPoint(Point point)
+Vec2d MapLine::getPoint(Point point)
 {
 	// if (point == MOBJ_POINT_MID || point == MOBJ_POINT_WITHIN)
 	return start() + (end() - start()) * 0.5;
@@ -605,7 +605,7 @@ Vec2f MapLine::getPoint(Point point)
 // -----------------------------------------------------------------------------
 // Returns the point at the first vertex.
 // -----------------------------------------------------------------------------
-Vec2f MapLine::start() const
+Vec2d MapLine::start() const
 {
 	return vertex1_->position();
 }
@@ -613,7 +613,7 @@ Vec2f MapLine::start() const
 // -----------------------------------------------------------------------------
 // Returns the point at the second vertex.
 // -----------------------------------------------------------------------------
-Vec2f MapLine::end() const
+Vec2d MapLine::end() const
 {
 	return vertex2_->position();
 }
@@ -621,7 +621,7 @@ Vec2f MapLine::end() const
 // -----------------------------------------------------------------------------
 // Returns this line as a segment.
 // -----------------------------------------------------------------------------
-Seg2f MapLine::seg() const
+Seg2d MapLine::seg() const
 {
 	return { vertex1_->position(), vertex2_->position() };
 }
@@ -659,7 +659,7 @@ bool MapLine::doubleSector() const
 // -----------------------------------------------------------------------------
 // Returns the vector perpendicular to the front side of the line
 // -----------------------------------------------------------------------------
-Vec2f MapLine::frontVector()
+Vec2d MapLine::frontVector()
 {
 	// Check if vector needs to be recalculated
 	if (front_vec_.x == 0 && front_vec_.y == 0)
@@ -675,10 +675,10 @@ Vec2f MapLine::frontVector()
 // Calculates and returns the end point of the 'direction tab' for the line
 // (used as a front side indicator for 2d map display)
 // -----------------------------------------------------------------------------
-Vec2f MapLine::dirTabPoint(double tab_length)
+Vec2d MapLine::dirTabPoint(double tab_length)
 {
 	// Calculate midpoint
-	Vec2f mid(x1() + ((x2() - x1()) * 0.5), y1() + ((y2() - y1()) * 0.5));
+	Vec2d mid(x1() + ((x2() - x1()) * 0.5), y1() + ((y2() - y1()) * 0.5));
 
 	// Calculate tab length
 	if (tab_length == 0)
@@ -699,7 +699,7 @@ Vec2f MapLine::dirTabPoint(double tab_length)
 // -----------------------------------------------------------------------------
 // Returns the minimum distance from the point to the line
 // -----------------------------------------------------------------------------
-double MapLine::distanceTo(Vec2f point)
+double MapLine::distanceTo(Vec2d point)
 {
 	// Update length data if needed
 	if (length_ < 0)
@@ -804,7 +804,7 @@ bool MapLine::overlaps(MapLine* other) const
 // Returns true if this line intersects with [other].
 // If an intersection occurs, [intersect_point] is set to the intersection point
 // -----------------------------------------------------------------------------
-bool MapLine::intersects(MapLine* other, Vec2f& intersect_point) const
+bool MapLine::intersects(MapLine* other, Vec2d& intersect_point) const
 {
 	return MathStuff::linesIntersect(seg(), other->seg(), intersect_point);
 }

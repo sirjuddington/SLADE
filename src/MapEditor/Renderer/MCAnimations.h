@@ -30,15 +30,15 @@ protected:
 class MCASelboxFader : public MCAnimation
 {
 public:
-	MCASelboxFader(long start, Vec2f tl, Vec2f br);
+	MCASelboxFader(long start, Vec2d tl, Vec2d br);
 	~MCASelboxFader() = default;
 
 	bool update(long time) override;
 	void draw() override;
 
 private:
-	Vec2f tl_;
-	Vec2f br_;
+	Vec2d tl_;
+	Vec2d br_;
 	float fade_ = 1.f;
 };
 
@@ -88,7 +88,7 @@ public:
 	void draw() override;
 
 private:
-	vector<Vec2f> vertices_;
+	vector<Vec2d> vertices_;
 	double        size_   = 0.;
 	bool          select_ = true;
 	float         fade_   = 1.f;

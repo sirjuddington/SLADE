@@ -492,7 +492,7 @@ public:
 
 	void checkIntersections(vector<MapLine*> lines)
 	{
-		Vec2f    pos;
+		Vec2d    pos;
 		MapLine* line1;
 		MapLine* line2;
 
@@ -614,7 +614,7 @@ private:
 	{
 		MapLine* line1;
 		MapLine* line2;
-		Vec2f    intersect_point;
+		Vec2d    intersect_point;
 
 		Intersection(MapLine* line1, MapLine* line2, double x, double y) :
 			line1{ line1 },
@@ -1415,7 +1415,7 @@ public:
 
 			// Get distance to move
 			double r    = Game::configuration().thingType(thing->type()).radius();
-			double dist = MathStuff::distance(Vec2f(), Vec2f(r, r));
+			double dist = MathStuff::distance(Vec2d(), Vec2d(r, r));
 
 			editor->beginUndoRecord("Move Thing", true, false, false);
 

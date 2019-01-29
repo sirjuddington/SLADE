@@ -24,7 +24,7 @@ public:
 	{
 		unsigned gl_id         = 0;
 		bool     world_panning = false;
-		Vec2f    scale         = { 1., 1. };
+		Vec2d    scale         = { 1., 1. };
 		~Texture() { OpenGL::Texture::clear(gl_id); }
 	};
 	typedef std::map<string, Texture> MapTexHashMap;

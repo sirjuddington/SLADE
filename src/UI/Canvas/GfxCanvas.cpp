@@ -255,7 +255,7 @@ void GfxCanvas::drawImage()
 		Drawing::drawTexture(tex_image_);
 	}
 	// Draw brush shadow when in editing mode
-	if (editing_mode_ != EditMode::None && cursor_pos_ != Vec2i::outside())
+	if (editing_mode_ != EditMode::None && cursor_pos_ != Vec2i{ -1, -1 })
 	{
 		OpenGL::setColour(255, 255, 255, 160, 0);
 		Drawing::drawTexture(tex_brush_);
@@ -329,7 +329,7 @@ bool GfxCanvas::onImage(int x, int y)
 		return false;
 
 	// No need to duplicate the imageCoords code.
-	return imageCoords(x, y) != Vec2i::outside();
+	return imageCoords(x, y) != Vec2i{ -1, -1 };
 }
 
 // -----------------------------------------------------------------------------
@@ -382,7 +382,7 @@ Vec2i GfxCanvas::imageCoords(int x, int y) const
 		return { int(xpos * image_.width()), int(ypos * image_.height()) };
 	}
 	else
-		return Vec2i::outside();
+		return { -1, -1 };
 }
 
 // -----------------------------------------------------------------------------
@@ -408,7 +408,7 @@ void GfxCanvas::endOffsetDrag()
 	}
 
 	// Stop drag
-	drag_origin_.set(Vec2i::outside());
+	drag_origin_.set({ -1, -1 });
 }
 
 // -----------------------------------------------------------------------------
@@ -656,7 +656,7 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	}
 	else if (e.MiddleIsDown())
 	{
-		offset_ = offset_ + Vec2i(e.GetPosition().x - mouse_prev_.x, e.GetPosition().y - mouse_prev_.y);
+		offset_ = offset_ + Vec2d(e.GetPosition().x - mouse_prev_.x, e.GetPosition().y - mouse_prev_.y);
 		refresh = true;
 	}
 	// Right mouse down

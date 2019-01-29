@@ -34,8 +34,8 @@ public:
 
 	// 3d Mode
 	void  setCameraThing(MapThing* thing);
-	Vec2f cameraPos2D() const;
-	Vec2f cameraDir2D() const;
+	Vec2d cameraPos2D() const;
+	Vec2d cameraDir2D() const;
 
 	// Drawing
 	void draw();
@@ -78,7 +78,7 @@ private:
 	void drawFeatureHelpText() const;
 	void drawSelectionNumbers() const;
 	void drawThingQuickAngleLines() const;
-	void drawLineLength(Vec2f p1, Vec2f p2, ColRGBA col) const;
+	void drawLineLength(Vec2d p1, Vec2d p2, ColRGBA col) const;
 	void drawLineDrawLines(bool snap_nearest_vertex) const;
 	void drawPasteLines() const;
 	void drawObjectEdit();

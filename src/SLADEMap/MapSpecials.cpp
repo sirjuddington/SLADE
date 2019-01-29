@@ -704,9 +704,9 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	// (at the model sector's height) and the found vertex (at this sector's height).
 	double modelz  = model->planeHeight<T>();
 	double targetz = target->planeHeight<T>();
-	Vec3f  p1(line->x1(), line->y1(), modelz);
-	Vec3f  p2(line->x2(), line->y2(), modelz);
-	Vec3f  p3(furthest_vertex->position(), targetz);
+	Vec3d  p1(line->x1(), line->y1(), modelz);
+	Vec3d  p2(line->x2(), line->y2(), modelz);
+	Vec3d  p3(furthest_vertex->position(), targetz);
 	target->setPlane<T>(MathStuff::planeFromTriangle(p1, p2, p3));
 }
 
@@ -750,9 +750,9 @@ template<SurfaceType T> void MapSpecials::applyLineSlopeThing(SLADEMap* map, Map
 
 		// Three points: endpoints of the line, and the thing itself
 		auto  target_plane = target->plane<T>();
-		Vec3f p1(line->x1(), line->y1(), target_plane.heightAt(line->start()));
-		Vec3f p2(line->x2(), line->y2(), target_plane.heightAt(line->end()));
-		Vec3f p3(thing->xPos(), thing->yPos(), thingz);
+		Vec3d p1(line->x1(), line->y1(), target_plane.heightAt(line->start()));
+		Vec3d p2(line->x2(), line->y2(), target_plane.heightAt(line->end()));
+		Vec3d p3(thing->xPos(), thing->yPos(), thingz);
 		target->setPlane<T>(MathStuff::planeFromTriangle(p1, p2, p3));
 	}
 }
@@ -774,12 +774,12 @@ template<SurfaceType T> void MapSpecials::applySectorTiltThing(SLADEMap* map, Ma
 	if (raw_angle == 0 || raw_angle == 180)
 		// Exact vertical tilt is nonsense
 		return;
-
+	
 	double angle = thing->angle() / 360.0 * TAU;
 	double tilt  = (raw_angle - 90) / 360.0 * TAU;
 	// Resulting plane goes through the position of the thing
 	double z = target->planeHeight<T>() + thing->zPos();
-	Vec3f  point(thing->xPos(), thing->yPos(), z);
+	Vec3d  point(thing->xPos(), thing->yPos(), z);
 
 	double cos_angle = cos(angle);
 	double sin_angle = sin(angle);
@@ -791,13 +791,13 @@ template<SurfaceType T> void MapSpecials::applySectorTiltThing(SLADEMap* map, Ma
 	// thing faces lies "flat", because this is the axis the tilt thing rotates
 	// around.  "Rotate" the angle a quarter turn to get this vector -- switch
 	// x and y, and negate one.
-	Vec3f vec1(-sin_angle, cos_angle, 0.0);
+	Vec3d vec1(-sin_angle, cos_angle, 0.0);
 
 	// For the second: the tilt angle makes a triangle between the floor plane
 	// and the z axis.  sin gives us the distance along the z-axis, but cos
 	// only gives us the distance away /from/ the z-axis.  Break that into x
 	// and y by multiplying by cos and sin of the thing's facing angle.
-	Vec3f vec2(cos_tilt * cos_angle, cos_tilt * sin_angle, sin_tilt);
+	Vec3d vec2(cos_tilt * cos_angle, cos_tilt * sin_angle, sin_tilt);
 
 	target->setPlane<T>(MathStuff::planeFromTriangle(point, point + vec1, point + vec2));
 }
@@ -832,9 +832,9 @@ template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 		}
 
 		short height = target->planeHeight<T>();
-		Vec3f p1(thing->xPos(), thing->yPos(), thing->zPos());
-		Vec3f p2(lines[a]->x1(), lines[a]->y1(), height);
-		Vec3f p3(lines[a]->x2(), lines[a]->y2(), height);
+		Vec3d p1(thing->xPos(), thing->yPos(), thing->zPos());
+		Vec3d p2(lines[a]->x1(), lines[a]->y1(), height);
+		Vec3d p3(lines[a]->x2(), lines[a]->y2(), height);
 
 		target->setPlane<T>(MathStuff::planeFromTriangle(p1, p2, p3));
 		return;
@@ -869,8 +869,8 @@ void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& 
 	double z2 = heights.count(vertices[1]) ? heights[vertices[1]] : vertexHeight<T>(vertices[1], target);
 	double z3 = heights.count(vertices[2]) ? heights[vertices[2]] : vertexHeight<T>(vertices[2], target);
 
-	Vec3f p1(vertices[0]->xPos(), vertices[0]->yPos(), z1);
-	Vec3f p2(vertices[1]->xPos(), vertices[1]->yPos(), z2);
-	Vec3f p3(vertices[2]->xPos(), vertices[2]->yPos(), z3);
+	Vec3d p1(vertices[0]->xPos(), vertices[0]->yPos(), z1);
+	Vec3d p2(vertices[1]->xPos(), vertices[1]->yPos(), z2);
+	Vec3d p3(vertices[2]->xPos(), vertices[2]->yPos(), z3);
 	target->setPlane<T>(MathStuff::planeFromTriangle(p1, p2, p3));
 }

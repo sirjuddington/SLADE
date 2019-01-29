@@ -49,7 +49,7 @@
 // Returns the thing closest to the point, or null if none found.
 // Igonres any thing further away than [min]
 // -----------------------------------------------------------------------------
-MapThing* ThingList::nearest(Vec2f point, double min) const
+MapThing* ThingList::nearest(Vec2d point, double min) const
 {
 	// Go through things
 	double    dist;
@@ -84,7 +84,7 @@ MapThing* ThingList::nearest(Vec2f point, double min) const
 // Same as 'nearest', but returns a list of things for the case where there are
 // multiple things at the same point
 // -----------------------------------------------------------------------------
-vector<MapThing*> ThingList::multiNearest(Vec2f point) const
+vector<MapThing*> ThingList::multiNearest(Vec2d point) const
 {
 	vector<MapThing*> ret;
 

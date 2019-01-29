@@ -207,7 +207,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// Height of this section of the wall
 		// TODO this is wrong in the case of slopes, but slope support only
 		// exists in the 3.1.1 branch
-		Vec2f    left_point, right_point;
+		Vec2d    left_point, right_point;
 		MapSide* other_side;
 		if (side == line->s1())
 		{

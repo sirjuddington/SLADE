@@ -16,21 +16,21 @@ public:
 
 	State                state() const { return state_current_; }
 	unsigned             nPoints() const { return draw_points_.size(); }
-	Vec2f                point(unsigned index);
-	const vector<Vec2f>& points() const { return draw_points_; }
+	Vec2d                point(unsigned index);
+	const vector<Vec2d>& points() const { return draw_points_; }
 
 	void setState(State new_state) { state_current_ = new_state; }
-	void setShapeOrigin(Vec2f point, bool nearest = false);
+	void setShapeOrigin(Vec2d point, bool nearest = false);
 
-	bool addPoint(Vec2f point, bool nearest = false);
+	bool addPoint(Vec2d point, bool nearest = false);
 	void removePoint();
-	void updateShape(Vec2f point);
+	void updateShape(Vec2d point);
 	void begin(bool shape = false);
 	void end(bool apply = true);
 
 private:
-	vector<Vec2f>   draw_points_;
-	Vec2f           draw_origin_;
+	vector<Vec2d>   draw_points_;
+	Vec2d           draw_origin_;
 	MapEditContext& context_;
 	State           state_current_ = State::Line;
 };

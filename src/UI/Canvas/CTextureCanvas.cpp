@@ -836,7 +836,7 @@ void CTextureCanvas::onMouseEvent(wxMouseEvent& e)
 		// Pan if middle button is down
 		if (e.MiddleIsDown())
 		{
-			offset_   = offset_ + Vec2i(e.GetPosition().x - mouse_prev_.x, e.GetPosition().y - mouse_prev_.y);
+			offset_   = offset_ + Vec2d(e.GetPosition().x - mouse_prev_.x, e.GetPosition().y - mouse_prev_.y);
 			refresh   = true;
 			dragging_ = true;
 		}

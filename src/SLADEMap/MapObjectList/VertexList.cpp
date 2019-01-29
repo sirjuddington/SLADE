@@ -47,7 +47,7 @@
 // Returns the vertex closest to the point, or null if none found.
 // Igonres any vertices further away than [min]
 // -----------------------------------------------------------------------------
-MapVertex* VertexList::nearest(Vec2f point, double min) const
+MapVertex* VertexList::nearest(Vec2d point, double min) const
 {
 	// Go through vertices
 	double     dist;
@@ -97,7 +97,7 @@ MapVertex* VertexList::vertexAt(double x, double y) const
 // -----------------------------------------------------------------------------
 // Returns the first vertex that [line] crosses over
 // -----------------------------------------------------------------------------
-MapVertex* VertexList::firstCrossed(const Seg2f& line) const
+MapVertex* VertexList::firstCrossed(const Seg2d& line) const
 {
 	// Go through vertices
 	MapVertex* cv       = nullptr;
@@ -111,14 +111,14 @@ MapVertex* VertexList::firstCrossed(const Seg2f& line) const
 			continue;
 
 		// Skip if it's at an end of the line
-		if (point == line.p1() || point == line.p2())
+		if (point == line.start() || point == line.end())
 			continue;
 
 		// Check if on line
 		if (MathStuff::distanceToLineFast(point, line) == 0)
 		{
 			// Check distance between line start and vertex
-			double dist = MathStuff::distance(line.p1(), point);
+			double dist = MathStuff::distance(line.start(), point);
 			if (dist < min_dist)
 			{
 				cv       = vertex;

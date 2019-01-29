@@ -103,7 +103,7 @@ bool ItemSelection::setHilight(int index)
 // Hilights the map object closest to [mouse_pos], and updates anything needed
 // if the hilight is changed
 // -----------------------------------------------------------------------------
-bool ItemSelection::updateHilight(Vec2f mouse_pos, double dist_scale)
+bool ItemSelection::updateHilight(Vec2d mouse_pos, double dist_scale)
 {
 	// Do nothing if hilight is locked or we have no context
 	if (hilight_lock_ || !context_)
@@ -290,7 +290,7 @@ bool ItemSelection::toggleCurrent(bool clear_none)
 // -----------------------------------------------------------------------------
 // Selects all vertices in [map] that are within [rect]
 // -----------------------------------------------------------------------------
-void ItemSelection::selectVerticesWithin(const SLADEMap& map, const Rectf& rect)
+void ItemSelection::selectVerticesWithin(const SLADEMap& map, const Rectd& rect)
 {
 	// Start new change set
 	last_change_.clear();
@@ -304,7 +304,7 @@ void ItemSelection::selectVerticesWithin(const SLADEMap& map, const Rectf& rect)
 // -----------------------------------------------------------------------------
 // Selects all lines in [map] that are within [rect]
 // -----------------------------------------------------------------------------
-void ItemSelection::selectLinesWithin(const SLADEMap& map, const Rectf& rect)
+void ItemSelection::selectLinesWithin(const SLADEMap& map, const Rectd& rect)
 {
 	// Start new change set
 	last_change_.clear();
@@ -318,7 +318,7 @@ void ItemSelection::selectLinesWithin(const SLADEMap& map, const Rectf& rect)
 // -----------------------------------------------------------------------------
 // Selects all sectors in [map] that are within [rect]
 // -----------------------------------------------------------------------------
-void ItemSelection::selectSectorsWithin(const SLADEMap& map, const Rectf& rect)
+void ItemSelection::selectSectorsWithin(const SLADEMap& map, const Rectd& rect)
 {
 	// Start new change set
 	last_change_.clear();
@@ -332,7 +332,7 @@ void ItemSelection::selectSectorsWithin(const SLADEMap& map, const Rectf& rect)
 // -----------------------------------------------------------------------------
 // Selects all things in [map] that are within [rect]
 // -----------------------------------------------------------------------------
-void ItemSelection::selectThingsWithin(const SLADEMap& map, const Rectf& rect)
+void ItemSelection::selectThingsWithin(const SLADEMap& map, const Rectd& rect)
 {
 	// Start new change set
 	last_change_.clear();
@@ -347,7 +347,7 @@ void ItemSelection::selectThingsWithin(const SLADEMap& map, const Rectf& rect)
 // Selects all objects within [rect].
 // If [add] is false, the selection will be cleared first
 // -----------------------------------------------------------------------------
-bool ItemSelection::selectWithin(const Rectf& rect, bool add)
+bool ItemSelection::selectWithin(const Rectd& rect, bool add)
 {
 	// Do nothing if no context
 	if (!context_)

@@ -22,20 +22,20 @@ public:
 	static const string PROP_SPECIAL;
 
 	MapThing(
-		const Vec3f&  pos     = { 0., 0., 0. },
+		const Vec3d&  pos     = { 0., 0., 0. },
 		short         type    = -1,
 		short         angle   = 0,
 		short         flags   = 0,
 		const ArgSet& args    = {},
 		int           id      = 0,
 		int           special = 0);
-	MapThing(const Vec3f& pos, short type, ParseTreeNode* def);
+	MapThing(const Vec3d& pos, short type, ParseTreeNode* def);
 	~MapThing() = default;
 
 	double        xPos() const { return position_.x; }
 	double        yPos() const { return position_.y; }
 	double        zPos() const { return z_; }
-	Vec2f         position() const { return position_; }
+	Vec2d         position() const { return position_; }
 	double        height() const { return z_; }
 	short         type() const { return type_; }
 	short         angle() const { return angle_; }
@@ -46,7 +46,7 @@ public:
 	int           id() const { return id_; }
 	int           special() const { return special_; }
 
-	Vec2f getPoint(Point point) override;
+	Vec2d getPoint(Point point) override;
 
 	int    intProperty(const string& key) override;
 	double floatProperty(const string& key) override;
@@ -55,11 +55,11 @@ public:
 
 	void copy(MapObject* c) override;
 
-	void move(Vec2f pos, bool modify = true);
+	void move(Vec2d pos, bool modify = true);
 	void setZ(double z);
 	void setType(int type);
 	void setAngle(int angle, bool modify = true);
-	void setAnglePoint(Vec2f point, bool modify = true);
+	void setAnglePoint(Vec2d point, bool modify = true);
 	void setId(int id);
 	void setFlags(int flags);
 	void setFlag(int flag);
@@ -83,7 +83,7 @@ public:
 private:
 	// Basic data
 	short  type_ = 1;
-	Vec2f  position_;
+	Vec2d  position_;
 	double z_       = 0.;
 	short  angle_   = 0;
 	int    flags_   = 0;

@@ -79,7 +79,7 @@ public:
 		ColRGBA    colour;
 		ColRGBA    fogcolour;
 		unsigned   texture = 0;
-		Vec2f      scale;
+		Vec2d      scale;
 		Plane      plane;
 		float      alpha        = 1.f;
 		MapSector* sector       = nullptr;
@@ -112,14 +112,14 @@ public:
 	void cameraStrafe(double distance);
 	void cameraPitch(double amount);
 	void cameraUpdateVectors();
-	void cameraSet(Vec3f position, Vec2f direction);
-	void cameraSetPosition(Vec3f position);
+	void cameraSet(Vec3d position, Vec2d direction);
+	void cameraSetPosition(Vec3d position);
 	void cameraApplyGravity(double mult);
 	void cameraLook(double xrel, double yrel);
 
 	double camPitch() const { return cam_pitch_; }
-	Vec3f  camPosition() const { return cam_position_; }
-	Vec2f  camDirection() const { return cam_direction_; }
+	Vec3d  camPosition() const { return cam_position_; }
+	Vec2d  camDirection() const { return cam_direction_; }
 
 	// -- Rendering --
 	void setupView(int width, int height);
@@ -200,12 +200,12 @@ private:
 	vector<float> dist_sectors_;
 
 	// Camera
-	Vec3f  cam_position_;
-	Vec2f  cam_direction_;
+	Vec3d  cam_position_;
+	Vec2d  cam_direction_;
 	double cam_pitch_ = 0.;
 	double cam_angle_ = 0.;
-	Vec3f  cam_dir3d_;
-	Vec3f  cam_strafe_;
+	Vec3d  cam_dir3d_;
+	Vec3d  cam_strafe_;
 	double gravity_   = 0.5;
 	int    item_dist_ = 0;
 
@@ -234,5 +234,5 @@ private:
 	string  skytex2_;
 	ColRGBA skycol_top_;
 	ColRGBA skycol_bottom_;
-	Vec2f   sky_circle_[32];
+	Vec2d   sky_circle_[32];
 };

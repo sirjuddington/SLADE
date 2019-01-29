@@ -35,29 +35,29 @@ void cleanupFonts();
 int fontSize();
 
 // Basic drawing
-void drawLine(Vec2f start, Vec2f end);
+void drawLine(Vec2d start, Vec2d end);
 void drawLine(double x1, double y1, double x2, double y2);
-void drawLineTabbed(Vec2f start, Vec2f end, double tab = 0.1, double tab_max = 16);
+void drawLineTabbed(Vec2d start, Vec2d end, double tab = 0.1, double tab_max = 16);
 void drawArrow(
-	Vec2f   p1,
-	Vec2f   p2,
+	Vec2d   p1,
+	Vec2d   p2,
 	ColRGBA color            = COL_WHITE,
 	bool    twoway           = false,
 	double  arrowhead_angle  = 0.7854f,
 	double  arrowhead_length = 25.f);
-void drawRect(Vec2f tl, Vec2f br);
+void drawRect(Vec2d tl, Vec2d br);
 void drawRect(double x1, double y1, double x2, double y2);
-void drawFilledRect(Vec2f tl, Vec2f br);
+void drawFilledRect(Vec2d tl, Vec2d br);
 void drawFilledRect(double x1, double y1, double x2, double y2);
-void drawBorderedRect(Vec2f tl, Vec2f br, ColRGBA colour, ColRGBA border_colour);
+void drawBorderedRect(Vec2d tl, Vec2d br, ColRGBA colour, ColRGBA border_colour);
 void drawBorderedRect(double x1, double y1, double x2, double y2, ColRGBA colour, ColRGBA border_colour);
-void drawEllipse(Vec2f mid, double radius_x, double radius_y, int sides, ColRGBA colour);
-void drawFilledEllipse(Vec2f mid, double radius_x, double radius_y, int sides, ColRGBA colour);
+void drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides, ColRGBA colour);
+void drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int sides, ColRGBA colour);
 
 // Texture drawing
 void  drawTexture(unsigned id, double x = 0, double y = 0, bool flipx = false, bool flipy = false);
 void  drawTextureTiled(unsigned id, uint32_t width, uint32_t height);
-Rectf fitTextureWithin(unsigned id, double x1, double y1, double x2, double y2, double padding, double max_scale = 1);
+Rectd fitTextureWithin(unsigned id, double x1, double y1, double x2, double y2, double padding, double max_scale = 1);
 void  drawTextureWithin(unsigned id, double x1, double y1, double x2, double y2, double padding, double max_scale = 1);
 
 // Text drawing
@@ -68,8 +68,8 @@ void drawText(
 	ColRGBA       colour    = COL_WHITE,
 	Font          font      = Font::Normal,
 	Align         alignment = Align::Left,
-	Rectf*        bounds    = nullptr);
-Vec2f textExtents(const string& text, Font font = Font::Normal);
+	Rectd*        bounds    = nullptr);
+Vec2d textExtents(const string& text, Font font = Font::Normal);
 void  enableTextStateReset(bool enable = true);
 void  setTextState(bool set = true);
 void  setTextOutline(double thickness, ColRGBA colour = COL_BLACK);

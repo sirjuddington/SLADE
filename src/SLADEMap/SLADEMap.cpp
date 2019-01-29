@@ -519,7 +519,7 @@ bool SLADEMap::writeMap(vector<ArchiveEntry*>& map_entries) const
 // Creates a new vertex at [x,y] and returns it.
 // Splits any lines within [split_dist] from the position
 // -----------------------------------------------------------------------------
-MapVertex* SLADEMap::createVertex(Vec2f pos, double split_dist)
+MapVertex* SLADEMap::createVertex(Vec2d pos, double split_dist)
 {
 	// Round position to integral if fractional positions are disabled
 	if (!position_frac_)
@@ -562,7 +562,7 @@ MapVertex* SLADEMap::createVertex(Vec2f pos, double split_dist)
 // -----------------------------------------------------------------------------
 // Creates a new line and needed vertices from [p1] to [p2] and returns it
 // -----------------------------------------------------------------------------
-MapLine* SLADEMap::createLine(Vec2f p1, Vec2f p2, double split_dist)
+MapLine* SLADEMap::createLine(Vec2d p1, Vec2d p2, double split_dist)
 {
 	// Round coordinates to integral if fractional positions are disabled
 	if (!position_frac_)
@@ -623,7 +623,7 @@ MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force
 // -----------------------------------------------------------------------------
 // Creates a new thing at [x,y] and returns it
 // -----------------------------------------------------------------------------
-MapThing* SLADEMap::createThing(Vec2f pos, int type)
+MapThing* SLADEMap::createThing(Vec2d pos, int type)
 {
 	// Create the thing
 	return data_.addThing(std::make_unique<MapThing>(pos, type));
@@ -705,7 +705,7 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 // -----------------------------------------------------------------------------
 // Merges all vertices at [x,1] and returns the resulting single vertex
 // -----------------------------------------------------------------------------
-MapVertex* SLADEMap::mergeVerticesPoint(const Vec2f& pos)
+MapVertex* SLADEMap::mergeVerticesPoint(const Vec2d& pos)
 {
 	// Go through all vertices
 	int merge = -1;
@@ -1028,7 +1028,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	}
 
 	// Split lines (by lines)
-	Seg2f seg1;
+	Seg2d seg1;
 	for (unsigned a = 0; a < connected_lines_.size(); a++)
 	{
 		auto line1 = connected_lines_[a];
@@ -1045,7 +1045,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 				continue;
 
 			// Check for intersection
-			Vec2f intersection;
+			Vec2d intersection;
 			if (MathStuff::linesIntersect(seg1, line2->seg(), intersection))
 			{
 				// Create split vertex

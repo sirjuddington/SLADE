@@ -82,7 +82,7 @@ public:
 	virtual void   setStringProperty(const string& key, const string& value);
 	virtual bool   scriptCanModifyProp(const string& key) { return true; }
 
-	virtual Vec2f getPoint(Point point) { return { 0, 0 }; }
+	virtual Vec2d getPoint(Point point) { return { 0, 0 }; }
 
 	void filter(bool f = true) { filtered_ = f; }
 

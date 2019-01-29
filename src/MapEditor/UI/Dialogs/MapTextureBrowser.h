@@ -23,7 +23,7 @@ public:
 
 private:
 	int   usage_count_ = 0;
-	Vec2f scale_       = { 1., 1. };
+	Vec2d scale_       = { 1., 1. };
 };
 
 class MapTextureBrowser : public BrowserWindow

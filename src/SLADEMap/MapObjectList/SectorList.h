@@ -11,7 +11,7 @@ public:
 	void add(MapSector* sector) override;
 	void remove(unsigned index) override;
 
-	MapSector*         atPos(Vec2f point) const;
+	MapSector*         atPos(Vec2d point) const;
 	BBox               allSectorBounds() const;
 	void               initPolygons();
 	void               initBBoxes();

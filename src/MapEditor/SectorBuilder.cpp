@@ -244,7 +244,7 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front)
 // -----------------------------------------------------------------------------
 int SectorBuilder::nearestEdge(double x, double y)
 {
-	Vec2f point(x, y);
+	Vec2d point(x, y);
 
 	// Init variables
 	double min_dist = 99999999;
@@ -274,7 +274,7 @@ int SectorBuilder::nearestEdge(double x, double y)
 // -----------------------------------------------------------------------------
 bool SectorBuilder::pointWithinOutline(double x, double y)
 {
-	Vec2f point(x, y);
+	Vec2d point(x, y);
 
 	// Check with bounding box
 	if (!o_bbox_.pointWithin(x, y))
@@ -455,9 +455,9 @@ SectorBuilder::Edge SectorBuilder::findInnerEdge()
 
 		// Determine angle
 		double angle = MathStuff::angle2DRad(
-			Vec2f(vertex_right_->xPos() + 32, vertex_right_->yPos()),
-			Vec2f(vertex_right_->xPos(), vertex_right_->yPos()),
-			Vec2f(opposite->xPos(), opposite->yPos()));
+			Vec2d(vertex_right_->xPos() + 32, vertex_right_->yPos()),
+			Vec2d(vertex_right_->xPos(), vertex_right_->yPos()),
+			Vec2d(opposite->xPos(), opposite->yPos()));
 
 		// Check if minimum
 		if (angle < min_angle)

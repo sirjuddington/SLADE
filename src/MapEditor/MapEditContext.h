@@ -83,11 +83,11 @@ public:
 	void   incrementGrid();
 	void   decrementGrid();
 	double snapToGrid(double position, bool force = true) const;
-	Vec2f  relativeSnapToGrid(Vec2f origin, Vec2f mouse_pos) const;
+	Vec2d  relativeSnapToGrid(Vec2d origin, Vec2d mouse_pos) const;
 
 	// Tag edit
 	int  beginTagEdit();
-	void tagSectorAt(Vec2f pos);
+	void tagSectorAt(Vec2d pos);
 	void endTagEdit(bool accept = true);
 
 	// Editing handlers
@@ -129,12 +129,12 @@ public:
 
 	// Player start swapping
 	void swapPlayerStart3d();
-	void swapPlayerStart2d(Vec2f pos);
+	void swapPlayerStart2d(Vec2d pos);
 	void resetPlayerStart() const;
 
 	// Misc
 	string modeString(bool plural = true) const;
-	bool   handleKeyBind(const string& key, Vec2f position);
+	bool   handleKeyBind(const string& key, Vec2d position);
 	void   updateDisplay();
 	void   updateStatusText() const;
 	void   updateThingLists();
@@ -204,7 +204,7 @@ private:
 	vector<string> feature_help_lines_;
 
 	// Player start swap
-	Vec2f player_start_pos_;
+	Vec2d player_start_pos_;
 	int   player_start_dir_ = 0;
 
 	// Renderer
@@ -233,16 +233,16 @@ public:
 
 	void               addLines(const vector<MapLine*>& lines);
 	string             info() const;
-	vector<MapVertex*> pasteToMap(SLADEMap* map, Vec2f position);
+	vector<MapVertex*> pasteToMap(SLADEMap* map, Vec2d position);
 	void               putLines(vector<MapLine*>& list);
-	Vec2f              midpoint() const { return midpoint_; }
+	Vec2d              midpoint() const { return midpoint_; }
 
 private:
 	vector<std::unique_ptr<MapVertex>> vertices_;
 	vector<std::unique_ptr<MapSide>>   sides_;
 	vector<std::unique_ptr<MapLine>>   lines_;
 	vector<std::unique_ptr<MapSector>> sectors_;
-	Vec2f                              midpoint_;
+	Vec2d                              midpoint_;
 };
 
 class MapThingsClipboardItem : public ClipboardItem
@@ -253,11 +253,11 @@ public:
 
 	void   addThings(vector<MapThing*>& things);
 	string info() const;
-	void   pasteToMap(SLADEMap* map, Vec2f position);
+	void   pasteToMap(SLADEMap* map, Vec2d position);
 	void   putThings(vector<MapThing*>& list);
-	Vec2f  midpoint() const { return midpoint_; }
+	Vec2d  midpoint() const { return midpoint_; }
 
 private:
 	vector<std::unique_ptr<MapThing>> things_;
-	Vec2f                             midpoint_;
+	Vec2d                             midpoint_;
 };

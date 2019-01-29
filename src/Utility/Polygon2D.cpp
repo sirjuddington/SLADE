@@ -181,7 +181,7 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 			// Apply rotation if any
 			if (rotation != 0)
 			{
-				Vec2f np = MathStuff::rotatePoint(Vec2f(0, 0), Vec2f(x, y), rotation);
+				Vec2d np = MathStuff::rotatePoint(Vec2d(0, 0), Vec2d(x, y), rotation);
 				x        = np.x;
 				y        = np.y;
 			}
@@ -391,7 +391,7 @@ int PolygonSplitter::findNextEdge(int edge, bool ignore_done, bool only_convex, 
 
 		// Determine angle between edges
 		double angle = MathStuff::angle2DRad(
-			Vec2f(v1.x, v1.y), Vec2f(v2.x, v2.y), Vec2f(vertices_[out.v2].x, vertices_[out.v2].y));
+			Vec2d(v1.x, v1.y), Vec2d(v2.x, v2.y), Vec2d(vertices_[out.v2].x, vertices_[out.v2].y));
 		if (angle < min_angle)
 		{
 			min_angle = angle;
@@ -719,7 +719,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	int    closest  = -1;
 	for (unsigned a = 0; a < vertices_.size(); a++)
 	{
-		if (MathStuff::lineSide(vertices_[a], Seg2f(vertices_[v1], vertices_[v2])) > 0 && vertices_[a].ok)
+		if (MathStuff::lineSide(vertices_[a], Seg2d(vertices_[v1], vertices_[v2])) > 0 && vertices_[a].ok)
 		{
 			vertices_[a].distance = MathStuff::distance(vertices_[v2], vertices_[a]);
 			if (vertices_[a].distance < min_dist)
@@ -739,7 +739,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	// See if we can split to here without crossing anything
 	// (this will be the case most of the time)
 	bool  intersect = false;
-	Vec2f pointi;
+	Vec2d pointi;
 	for (auto& edge : edges_)
 	{
 		// Ignore edge if adjacent to the vertices we are looking at
@@ -748,7 +748,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 
 		// Intersection test
 		if (MathStuff::linesIntersect(
-				Seg2f(vertices_[v2], vertices_[closest]), Seg2f(vertices_[edge.v1], vertices_[edge.v2]), pointi))
+				Seg2d(vertices_[v2], vertices_[closest]), Seg2d(vertices_[edge.v1], vertices_[edge.v2]), pointi))
 		{
 			intersect = true;
 			break;
@@ -793,7 +793,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 
 			// Intersection test
 			if (MathStuff::linesIntersect(
-					Seg2f(vertices_[v2], vert), Seg2f(vertices_[edge.v1], vertices_[edge.v2]), pointi))
+					Seg2d(vertices_[v2], vert), Seg2d(vertices_[edge.v1], vertices_[edge.v2]), pointi))
 			{
 				intersect = true;
 				break;

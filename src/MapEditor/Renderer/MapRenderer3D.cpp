@@ -294,8 +294,8 @@ void MapRenderer3D::cameraMove(double distance, bool z)
 void MapRenderer3D::cameraTurn(double angle)
 {
 	// Find rotated view point
-	Vec2f cp2d(cam_position_.x, cam_position_.y);
-	Vec2f nd = MathStuff::rotatePoint(cp2d, cp2d + cam_direction_, angle);
+	Vec2d cp2d(cam_position_.x, cam_position_.y);
+	Vec2d nd = MathStuff::rotatePoint(cp2d, cp2d + cam_direction_, angle);
 
 	// Update direction
 	cam_direction_.x = nd.x - cam_position_.x;
@@ -351,18 +351,18 @@ void MapRenderer3D::cameraUpdateVectors()
 	cam_direction_.normalize();
 
 	// Calculate strafe vector
-	cam_strafe_ = Vec3f(cam_direction_, 0).cross(Vec3f(0, 0, 1));
+	cam_strafe_ = Vec3d(cam_direction_, 0).cross(Vec3d(0, 0, 1));
 	cam_strafe_.normalize();
 
 	// Calculate 3d direction vector
-	cam_dir3d_ = MathStuff::rotateVector3D(Vec3f(cam_direction_, 0), cam_strafe_, cam_pitch_);
+	cam_dir3d_ = MathStuff::rotateVector3D(Vec3d(cam_direction_, 0), cam_strafe_, cam_pitch_);
 	cam_dir3d_.normalize();
 }
 
 // -----------------------------------------------------------------------------
 // Sets the camera position to [position], facing [direction]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::cameraSet(Vec3f position, Vec2f direction)
+void MapRenderer3D::cameraSet(Vec3d position, Vec2d direction)
 {
 	// Set camera position/direction
 	cam_position_  = position;
@@ -376,7 +376,7 @@ void MapRenderer3D::cameraSet(Vec3f position, Vec2f direction)
 // -----------------------------------------------------------------------------
 // Moves the camera to [position]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::cameraSetPosition(Vec3f position)
+void MapRenderer3D::cameraSetPosition(Vec3d position)
 {
 	cam_position_ = position;
 }
@@ -2172,7 +2172,7 @@ void MapRenderer3D::renderThings()
 	uint8_t  light;
 	float    x1, y1, x2, y2;
 	unsigned update = 0;
-	Seg2f    strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	Seg2d    strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
 	for (unsigned a = 0; a < map_->nThings(); a++)
 	{
 		auto thing       = map_->thing(a);
@@ -2428,7 +2428,7 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 			continue;
 
 		// Get thing
-		Vec2f strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
+		Vec2d strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
 		auto  thing = map_->thing(item.index);
 		if (!thing)
 			return;
@@ -2567,7 +2567,7 @@ void MapRenderer3D::quickVisDiscard()
 	// Go through all sectors
 	auto   cam = cam_position_.get2d();
 	double min_dist, dist;
-	Seg2f  strafe(cam, cam + cam_strafe_.get2d());
+	Seg2d  strafe(cam, cam + cam_strafe_.get2d());
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		// Get sector bbox
@@ -2584,9 +2584,9 @@ void MapRenderer3D::quickVisDiscard()
 		if (cam_pitch_ > -0.9 && cam_pitch_ < 0.9)
 		{
 			if (MathStuff::lineSide(bbox.min, strafe) > 0
-				&& MathStuff::lineSide(Vec2f(bbox.max.x, bbox.min.y), strafe) > 0
+				&& MathStuff::lineSide(Vec2d(bbox.max.x, bbox.min.y), strafe) > 0
 				&& MathStuff::lineSide(bbox.max, strafe) > 0
-				&& MathStuff::lineSide(Vec2f(bbox.min.x, bbox.max.y), strafe) > 0)
+				&& MathStuff::lineSide(Vec2d(bbox.min.x, bbox.max.y), strafe) > 0)
 			{
 				// Behind camera, invisible
 				dist_sectors_[a] = -1.0f;
@@ -2656,7 +2656,7 @@ void MapRenderer3D::checkVisibleQuads()
 	n_quads_         = 0;
 	unsigned updates = 0;
 	bool     update  = false;
-	Seg2f    strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	Seg2d    strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
 	for (unsigned a = 0; a < lines_.size(); a++)
 	{
 		line = map_->line(a);
@@ -2714,7 +2714,7 @@ void MapRenderer3D::checkVisibleQuads()
 			// Check we're on the right side of the quad
 			if (MathStuff::lineSide(
 					cam_position_.get2d(),
-					Seg2f(quad.points[0].x, quad.points[0].y, quad.points[2].x, quad.points[2].y))
+					Seg2d(quad.points[0].x, quad.points[0].y, quad.points[2].x, quad.points[2].y))
 				< 0)
 				continue;
 
@@ -2795,7 +2795,7 @@ MapEditor::Item MapRenderer3D::determineHilight()
 	// Init
 	double          min_dist = 9999999;
 	MapEditor::Item current;
-	Seg2f           strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
+	Seg2d           strafe(cam_position_.get2d(), (cam_position_ + cam_strafe_).get2d());
 
 	// Check for required map structures
 	if (!map_ || lines_.size() != map_->nLines() || floors_.size() != map_->nSectors()
@@ -2827,15 +2827,15 @@ MapEditor::Item MapRenderer3D::determineHilight()
 			// Check side of camera
 			if (MathStuff::lineSide(
 					cam_position_.get2d(),
-					Seg2f(quad.points[0].x, quad.points[0].y, quad.points[2].x, quad.points[2].y))
+					Seg2d(quad.points[0].x, quad.points[0].y, quad.points[2].x, quad.points[2].y))
 				< 0)
 				continue;
 
 			// Check intersection height
 			// Need to handle slopes by finding the floor and ceiling height of
 			// the quad at the intersection point
-			Vec2f  seg_left           = Vec2f(quad.points[1].x, quad.points[1].y);
-			Vec2f  seg_right          = Vec2f(quad.points[2].x, quad.points[2].y);
+			Vec2d  seg_left           = Vec2d(quad.points[1].x, quad.points[1].y);
+			Vec2d  seg_right          = Vec2d(quad.points[2].x, quad.points[2].y);
 			double dist_along_segment = (intersection.get2d() - seg_left).magnitude()
 										/ (seg_right - seg_left).magnitude();
 			double top    = quad.points[0].z + (quad.points[3].z - quad.points[0].z) * dist_along_segment;
@@ -3096,7 +3096,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	if (hilight.type == MapEditor::ItemType::Thing)
 	{
 		// Get thing
-		Vec2f strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
+		Vec2d strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
 		auto  thing = map_->thing(hilight.index);
 		if (!thing)
 			return;

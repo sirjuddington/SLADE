@@ -116,7 +116,7 @@ public:
 	uint16_t height() const { return height_; }
 	double   scaleX() const { return scale_.x; }
 	double   scaleY() const { return scale_.y; }
-	Vec2f    scale() const { return scale_; }
+	Vec2d    scale() const { return scale_; }
 	int16_t  offsetX() const { return offset_x_; }
 	int16_t  offsetY() const { return offset_y_; }
 	bool     worldPanning() const { return world_panning_; }
@@ -135,7 +135,7 @@ public:
 	void setHeight(uint16_t height) { height_ = height; }
 	void setScaleX(double scale) { scale_.x = scale; }
 	void setScaleY(double scale) { scale_.y = scale; }
-	void setScale(const Vec2f& scale) { scale_ = scale; }
+	void setScale(const Vec2d& scale) { scale_ = scale; }
 	void setOffsetX(int16_t offset) { offset_x_ = offset; }
 	void setOffsetY(int16_t offset) { offset_y_ = offset; }
 	void setWorldPanning(bool wp) { world_panning_ = wp; }
@@ -173,7 +173,7 @@ private:
 	string                name_;
 	uint16_t              width_         = 0;
 	uint16_t              height_        = 0;
-	Vec2f                 scale_         = { 1., 1. };
+	Vec2d                 scale_         = { 1., 1. };
 	bool                  world_panning_ = false;
 	vector<CTPatch::UPtr> patches_;
 	int                   index_ = -1;

@@ -79,14 +79,14 @@ public:
 	template<SurfaceType p> Plane plane();
 	template<SurfaceType p> void  setPlane(const Plane& plane);
 
-	Vec2f             getPoint(Point point) override;
+	Vec2d             getPoint(Point point) override;
 	void              resetBBox() { bbox_.reset(); }
 	BBox              boundingBox();
 	vector<MapSide*>& connectedSides() { return connected_sides_; }
 	void              resetPolygon() { poly_needsupdate_ = true; }
 	Polygon2D*        polygon();
-	bool              containsPoint(Vec2f point);
-	double            distanceTo(Vec2f point, double maxdist = -1);
+	bool              containsPoint(Vec2d point);
+	double            distanceTo(Vec2d point, double maxdist = -1);
 	bool              putLines(vector<MapLine*>& list);
 	bool              putVertices(vector<MapVertex*>& list);
 	bool              putVertices(vector<MapObject*>& list);
@@ -130,7 +130,7 @@ private:
 	Polygon2D        polygon_;
 	bool             poly_needsupdate_ = true;
 	long             geometry_updated_ = 0;
-	Vec2f            text_point_;
+	Vec2d            text_point_;
 
 	void setGeometryUpdated();
 };

@@ -328,7 +328,7 @@ std::unique_ptr<MapVertex> UniversalDoomMapFormat::createVertex(ParseTreeNode* d
 		return nullptr;
 
 	// Create vertex
-	return std::make_unique<MapVertex>(Vec2f{ prop_x->floatValue(), prop_y->floatValue() }, def);
+	return std::make_unique<MapVertex>(Vec2d{ prop_x->floatValue(), prop_y->floatValue() }, def);
 }
 
 // -----------------------------------------------------------------------------
@@ -407,5 +407,6 @@ std::unique_ptr<MapThing> UniversalDoomMapFormat::createThing(ParseTreeNode* def
 		return nullptr;
 
 	// Create thing
-	return std::make_unique<MapThing>(Vec2f{ prop_x->floatValue(), prop_y->floatValue() }, prop_type->intValue(), def);
+	return std::make_unique<MapThing>(
+		Vec3d{ prop_x->floatValue(), prop_y->floatValue(), 0. }, prop_type->intValue(), def);
 }

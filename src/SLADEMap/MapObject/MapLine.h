@@ -89,18 +89,18 @@ public:
 	void clearFlag(int flag);
 	void setArg(unsigned index, int value);
 
-	Vec2f  getPoint(Point point) override;
-	Vec2f  start() const;
-	Vec2f  end() const;
-	Seg2f  seg() const;
+	Vec2d  getPoint(Point point) override;
+	Vec2d  start() const;
+	Vec2d  end() const;
+	Seg2d  seg() const;
 	double length();
 	bool   doubleSector() const;
-	Vec2f  frontVector();
-	Vec2f  dirTabPoint(double tab_length = 0.);
-	double distanceTo(Vec2f point);
+	Vec2d  frontVector();
+	Vec2d  dirTabPoint(double tab_length = 0.);
+	double distanceTo(Vec2d point);
 	int    needsTexture() const;
 	bool   overlaps(MapLine* other) const;
-	bool   intersects(MapLine* other, Vec2f& intersect_point) const;
+	bool   intersects(MapLine* other, Vec2d& intersect_point) const;
 
 	void clearUnneededTextures() const;
 	void resetInternals();
@@ -135,5 +135,5 @@ private:
 	double length_ = -1.;
 	double ca_     = 0.; // Used for intersection calculations
 	double sa_     = 0.; // ^^
-	Vec2f  front_vec_;
+	Vec2d  front_vec_;
 };

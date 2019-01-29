@@ -69,16 +69,16 @@ bool showArchive(Archive* archive)
 
 void registerMiscTypes(sol::state& lua)
 {
-	lua.new_simple_usertype<Vec2f>(
+	lua.new_simple_usertype<Vec2d>(
 		"Point",
 
-		sol::constructors<Vec2f(), Vec2f(double, double)>(),
+		sol::constructors<Vec2d(), Vec2d(double, double)>(),
 
 		// Properties
 		"x",
-		&Vec2f::x,
+		&Vec2d::x,
 		"y",
-		&Vec2f::y);
+		&Vec2d::y);
 
 
 	lua.new_simple_usertype<ColRGBA>(
@@ -114,7 +114,7 @@ void registerMiscTypes(sol::state& lua)
 
 		// Functions
 		"heightAt",
-		sol::resolve<double(Vec2f) const>(&Plane::heightAt));
+		sol::resolve<double(Vec2d) const>(&Plane::heightAt));
 }
 
 void registerAppNamespace(sol::state& lua)

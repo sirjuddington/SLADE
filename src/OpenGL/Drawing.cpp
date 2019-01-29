@@ -83,7 +83,7 @@ int Drawing::fontSize()
 // -----------------------------------------------------------------------------
 // Draws a line from [start] to [end]
 // -----------------------------------------------------------------------------
-void Drawing::drawLine(Vec2f start, Vec2f end)
+void Drawing::drawLine(Vec2d start, Vec2d end)
 {
 	glBegin(GL_LINES);
 	glVertex2d(start.x, start.y);
@@ -105,7 +105,7 @@ void Drawing::drawLine(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 // Draws a line from [start] to [end]
 // -----------------------------------------------------------------------------
-void Drawing::drawLineTabbed(Vec2f start, Vec2f end, double tab, double tab_max)
+void Drawing::drawLineTabbed(Vec2d start, Vec2d end, double tab, double tab_max)
 {
 	// Draw line
 	glBegin(GL_LINES);
@@ -114,7 +114,7 @@ void Drawing::drawLineTabbed(Vec2f start, Vec2f end, double tab, double tab_max)
 	glEnd();
 
 	// Calculate midpoint
-	Vec2f mid;
+	Vec2d mid;
 	mid.x = start.x + ((end.x - start.x) * 0.5);
 	mid.y = start.y + ((end.y - start.y) * 0.5);
 
@@ -126,7 +126,7 @@ void Drawing::drawLineTabbed(Vec2f start, Vec2f end, double tab, double tab_max)
 		tablen = 2;
 
 	// Calculate tab endpoint
-	Vec2f invdir(-(end.y - start.y), end.x - start.x);
+	Vec2d invdir(-(end.y - start.y), end.x - start.x);
 	invdir.normalize();
 
 	// Draw tab
@@ -140,10 +140,10 @@ void Drawing::drawLineTabbed(Vec2f start, Vec2f end, double tab, double tab_max)
 // Draws a line from [p1] to [p2] with an arrowhead at the [p1] end.
 // If [twoway] is true, an arrowhead is also drawn at the [p2] end
 // -----------------------------------------------------------------------------
-void Drawing::drawArrow(Vec2f p1, Vec2f p2, ColRGBA color, bool twoway, double arrowhead_angle, double arrowhead_length)
+void Drawing::drawArrow(Vec2d p1, Vec2d p2, ColRGBA color, bool twoway, double arrowhead_angle, double arrowhead_length)
 {
-	Vec2f  a1l, a1r, a2l, a2r;
-	Vec2f  vector = p1 - p2;
+	Vec2d  a1l, a1r, a2l, a2r;
+	Vec2d  vector = p1 - p2;
 	double angle  = atan2(-vector.y, vector.x);
 	a1l = a1r = p1;
 	a1l.x += arrowhead_length * sin(angle - arrowhead_angle);
@@ -185,7 +185,7 @@ void Drawing::drawArrow(Vec2f p1, Vec2f p2, ColRGBA color, bool twoway, double a
 // -----------------------------------------------------------------------------
 // Draws a rectangle from [tl] to [br]
 // -----------------------------------------------------------------------------
-void Drawing::drawRect(Vec2f tl, Vec2f br)
+void Drawing::drawRect(Vec2d tl, Vec2d br)
 {
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(tl.x, tl.y);
@@ -211,7 +211,7 @@ void Drawing::drawRect(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 // Draws a filled rectangle from [tl] to [br]
 // -----------------------------------------------------------------------------
-void Drawing::drawFilledRect(Vec2f tl, Vec2f br)
+void Drawing::drawFilledRect(Vec2d tl, Vec2d br)
 {
 	glBegin(GL_QUADS);
 	glVertex2d(tl.x, tl.y);
@@ -237,7 +237,7 @@ void Drawing::drawFilledRect(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 // Draws a filled rectangle with a border from [x1,y1] to [x2,y2]
 // -----------------------------------------------------------------------------
-void Drawing::drawBorderedRect(Vec2f tl, Vec2f br, ColRGBA colour, ColRGBA border_colour)
+void Drawing::drawBorderedRect(Vec2d tl, Vec2d br, ColRGBA colour, ColRGBA border_colour)
 {
 	drawBorderedRect(tl.x, tl.y, br.x, br.y, colour, border_colour);
 }
@@ -269,7 +269,7 @@ void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, ColRG
 // -----------------------------------------------------------------------------
 // Draws an ellipse at [mid]
 // -----------------------------------------------------------------------------
-void Drawing::drawEllipse(Vec2f mid, double radius_x, double radius_y, int sides, ColRGBA colour)
+void Drawing::drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides, ColRGBA colour)
 {
 	// Set colour
 	OpenGL::setColour(colour, false);
@@ -288,7 +288,7 @@ void Drawing::drawEllipse(Vec2f mid, double radius_x, double radius_y, int sides
 // -----------------------------------------------------------------------------
 // Draws a filled ellipse at [mid]
 // -----------------------------------------------------------------------------
-void Drawing::drawFilledEllipse(Vec2f mid, double radius_x, double radius_y, int sides, ColRGBA colour)
+void Drawing::drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int sides, ColRGBA colour)
 {
 	// Set colour
 	OpenGL::setColour(colour, false);
@@ -381,7 +381,7 @@ void Drawing::drawTextureTiled(unsigned id, uint32_t width, uint32_t height)
 // If [upscale] is true the texture will be zoomed to fit the rectangle.
 // Returns the resulting texture rectangle coordinates
 // -----------------------------------------------------------------------------
-Rectf Drawing::fitTextureWithin(
+Rectd Drawing::fitTextureWithin(
 	unsigned id,
 	double   x1,
 	double   y1,
@@ -743,7 +743,7 @@ void TextBox::setSize(int width)
 // -----------------------------------------------------------------------------
 void TextBox::draw(int x, int y, ColRGBA colour, Drawing::Align alignment)
 {
-	Rectf b;
+	Rectd b;
 	Drawing::enableTextStateReset(false);
 	Drawing::setTextState(true);
 	for (const auto& line : lines_)

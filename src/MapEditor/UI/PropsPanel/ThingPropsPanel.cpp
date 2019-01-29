@@ -237,7 +237,7 @@ void ThingDirCanvas::draw()
 	glEnable(GL_LINE_SMOOTH);
 	ColRGBA col_faded(
 		col_bg_.r * 0.6 + col_fg_.r * 0.4, col_bg_.g * 0.6 + col_fg_.g * 0.4, col_bg_.b * 0.6 + col_fg_.b * 0.4);
-	Drawing::drawEllipse(Vec2f(0, 0), 1, 1, 48, col_faded);
+	Drawing::drawEllipse(Vec2d(0, 0), 1, 1, 48, col_faded);
 
 	// Draw dir points
 	for (auto dir_point : dir_points_)
@@ -250,8 +250,8 @@ void ThingDirCanvas::draw()
 	glLineWidth(2.0f);
 	if (parent_->angleSet())
 	{
-		auto tip = MathStuff::rotatePoint(Vec2f(0, 0), Vec2f(0.8, 0), -parent_->angle());
-		Drawing::drawArrow(tip, Vec2f(0, 0), col_fg_, false, 1.2, 0.2);
+		auto tip = MathStuff::rotatePoint(Vec2d(0, 0), Vec2d(0.8, 0), -parent_->angle());
+		Drawing::drawArrow(tip, Vec2d(0, 0), col_fg_, false, 1.2, 0.2);
 	}
 
 	// Draw hover point
@@ -300,7 +300,7 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 			// Get cursor position in canvas coordinates
 			double x = -1.2 + ((double)e.GetX() / (double)GetSize().x) * 2.4;
 			double y = -1.2 + ((double)e.GetY() / (double)GetSize().y) * 2.4;
-			Vec2f  cursor_pos(x, y);
+			Vec2d  cursor_pos(x, y);
 
 			// Find closest dir point to cursor
 			point_hl_       = -1;

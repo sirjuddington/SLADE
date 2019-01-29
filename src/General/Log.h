@@ -79,7 +79,7 @@ public:
 	Debuggable(unsigned long v) { repr = S_FMT("%lu", v); }
 	Debuggable(double v) { repr = S_FMT("%g", v); }
 
-	Debuggable(Vec2f v) { repr = S_FMT("(%0.6f, %0.6f)", v.x, v.y); }
+	Debuggable(Vec2d v) { repr = S_FMT("(%0.6f, %0.6f)", v.x, v.y); }
 	Debuggable(Vec3f v) { repr = S_FMT("(%0.6f, %0.6f, %0.6f)", v.x, v.y, v.z); }
 	Debuggable(Rectf v) { repr = S_FMT("(%0.6f, %0.6f to %0.6f, %0.6f)", v.x1(), v.y1(), v.x2(), v.y2()); }
 

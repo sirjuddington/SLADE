@@ -64,7 +64,7 @@ const string MapThing::PROP_SPECIAL = "special";
 // -----------------------------------------------------------------------------
 // MapThing class constructor
 // -----------------------------------------------------------------------------
-MapThing::MapThing(const Vec3f& pos, short type, short angle, short flags, const ArgSet& args, int id, int special) :
+MapThing::MapThing(const Vec3d& pos, short type, short angle, short flags, const ArgSet& args, int id, int special) :
 	MapObject(Type::Thing),
 	type_{ type },
 	position_{ pos.x, pos.y },
@@ -80,7 +80,7 @@ MapThing::MapThing(const Vec3f& pos, short type, short angle, short flags, const
 // -----------------------------------------------------------------------------
 // MapThing class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapThing::MapThing(const Vec3f& pos, short type, ParseTreeNode* def) :
+MapThing::MapThing(const Vec3d& pos, short type, ParseTreeNode* def) :
 	MapObject(Type::Thing),
 	type_{ type },
 	position_{ pos.x, pos.y },
@@ -125,7 +125,7 @@ MapThing::MapThing(const Vec3f& pos, short type, ParseTreeNode* def) :
 // Returns the object point [point].
 // Currently for things this is always the thing position
 // -----------------------------------------------------------------------------
-Vec2f MapThing::getPoint(Point point)
+Vec2d MapThing::getPoint(Point point)
 {
 	return position_;
 }
@@ -265,7 +265,7 @@ void MapThing::copy(MapObject* c)
 // Sets the position of the thing to [pos].
 // If [modify] is false, the thing won't be marked as modified
 // -----------------------------------------------------------------------------
-void MapThing::move(Vec2f pos, bool modify)
+void MapThing::move(Vec2d pos, bool modify)
 {
 	if (modify)
 		setModified();
@@ -305,10 +305,10 @@ void MapThing::setAngle(int angle, bool modify)
 // Sets the angle (direction) of the thing to be facing towards [point].
 // If [modify] is false, the thing won't be marked as modified
 // -----------------------------------------------------------------------------
-void MapThing::setAnglePoint(Vec2f point, bool modify)
+void MapThing::setAnglePoint(Vec2d point, bool modify)
 {
 	// Calculate direction vector
-	Vec2f  vec(point.x - position_.x, point.y - position_.y);
+	Vec2d  vec(point.x - position_.x, point.y - position_.y);
 	double mag = sqrt((vec.x * vec.x) + (vec.y * vec.y));
 	double x   = vec.x / mag;
 	double y   = vec.y / mag;

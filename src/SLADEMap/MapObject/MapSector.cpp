@@ -352,7 +352,7 @@ void MapSector::setTag(int tag)
 // Mid = the absolute mid point of the sector,
 // Within/Text = a calculated point that is within the actual sector
 // -----------------------------------------------------------------------------
-Vec2f MapSector::getPoint(Point point)
+Vec2d MapSector::getPoint(Point point)
 {
 	if (point == Point::Mid)
 	{
@@ -417,7 +417,7 @@ Polygon2D* MapSector::polygon()
 // -----------------------------------------------------------------------------
 // Returns true if the given [point] is inside the sector
 // -----------------------------------------------------------------------------
-bool MapSector::containsPoint(Vec2f point)
+bool MapSector::containsPoint(Vec2d point)
 {
 	// Check with bbox first
 	if (!boundingBox().contains(point))
@@ -457,7 +457,7 @@ bool MapSector::containsPoint(Vec2f point)
 // -----------------------------------------------------------------------------
 // Returns the minimum distance from the point to the closest line in the sector
 // -----------------------------------------------------------------------------
-double MapSector::distanceTo(Vec2f point, double maxdist)
+double MapSector::distanceTo(Vec2d point, double maxdist)
 {
 	// Init
 	if (maxdist < 0)

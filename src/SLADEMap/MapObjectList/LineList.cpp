@@ -49,7 +49,7 @@
 // Returns the line closest to the point, or null if none is found.
 // Ignores lines further away than [mindist]
 // -----------------------------------------------------------------------------
-MapLine* LineList::nearest(Vec2f point, double min) const
+MapLine* LineList::nearest(Vec2d point, double min) const
 {
 	// Go through lines
 	double   dist;
@@ -96,24 +96,24 @@ MapLine* LineList::withVertices(MapVertex* v1, MapVertex* v2, bool reverse) cons
 // existing lines in the list.
 // The point list is sorted along the direction of [cutter]
 // -----------------------------------------------------------------------------
-vector<Vec2f> LineList::cutPoints(const Seg2f& cutter) const
+vector<Vec2d> LineList::cutPoints(const Seg2d& cutter) const
 {
 	// Init
-	vector<Vec2f> intersect_points;
-	Vec2f         intersection;
+	vector<Vec2d> intersect_points;
+	Vec2d         intersection;
 
 	// Go through map lines
 	for (const auto& line : objects_)
 	{
 		// Check for intersection
-		intersection = cutter.p1();
+		intersection = cutter.start();
 		if (MathStuff::linesIntersect(cutter, line->seg(), intersection))
 		{
 			// Add intersection point to vector
 			intersect_points.push_back(intersection);
 			LOG_DEBUG("Intersection point", intersection, "valid with", line);
 		}
-		else if (intersection != cutter.p1())
+		else if (intersection != cutter.start())
 		{
 			LOG_DEBUG("Intersection point", intersection, "invalid");
 		}
@@ -130,11 +130,11 @@ vector<Vec2f> LineList::cutPoints(const Seg2f& cutter) const
 	{
 		// Sort points along x axis
 		if (xdif >= 0)
-			std::sort(intersect_points.begin(), intersect_points.end(), [](const Vec2f& left, const Vec2f& right) {
+			std::sort(intersect_points.begin(), intersect_points.end(), [](const Vec2d& left, const Vec2d& right) {
 				return left.x < right.x;
 			});
 		else
-			std::sort(intersect_points.begin(), intersect_points.end(), [](const Vec2f& left, const Vec2f& right) {
+			std::sort(intersect_points.begin(), intersect_points.end(), [](const Vec2d& left, const Vec2d& right) {
 				return left.x > right.x;
 			});
 	}
@@ -142,11 +142,11 @@ vector<Vec2f> LineList::cutPoints(const Seg2f& cutter) const
 	{
 		// Sort points along y axis
 		if (ydif >= 0)
-			std::sort(intersect_points.begin(), intersect_points.end(), [](const Vec2f& left, const Vec2f& right) {
+			std::sort(intersect_points.begin(), intersect_points.end(), [](const Vec2d& left, const Vec2d& right) {
 				return left.y < right.y;
 			});
 		else
-			std::sort(intersect_points.begin(), intersect_points.end(), [](const Vec2f& left, const Vec2f& right) {
+			std::sort(intersect_points.begin(), intersect_points.end(), [](const Vec2d& left, const Vec2d& right) {
 				return left.y > right.y;
 			});
 	}

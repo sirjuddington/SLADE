@@ -54,12 +54,12 @@ const string MapVertex::PROP_Y = "y";
 // -----------------------------------------------------------------------------
 // MapVertex class constructor
 // -----------------------------------------------------------------------------
-MapVertex::MapVertex(const Vec2f& pos) : MapObject(Type::Vertex), position_{ pos } {}
+MapVertex::MapVertex(const Vec2d& pos) : MapObject(Type::Vertex), position_{ pos } {}
 
 // -----------------------------------------------------------------------------
 // MapVertex class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapVertex::MapVertex(const Vec2f& pos, ParseTreeNode* udmf_def) : MapObject(Type::Vertex), position_{ pos }
+MapVertex::MapVertex(const Vec2d& pos, ParseTreeNode* udmf_def) : MapObject(Type::Vertex), position_{ pos }
 {
 	// Set properties from UDMF definition
 	ParseTreeNode* prop;
@@ -79,7 +79,7 @@ MapVertex::MapVertex(const Vec2f& pos, ParseTreeNode* udmf_def) : MapObject(Type
 // Returns the object point [point].
 // Currently for vertices this is always the vertex position
 // -----------------------------------------------------------------------------
-Vec2f MapVertex::getPoint(Point point)
+Vec2d MapVertex::getPoint(Point point)
 {
 	return position_;
 }

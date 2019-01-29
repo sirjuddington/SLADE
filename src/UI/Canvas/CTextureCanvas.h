@@ -67,7 +67,7 @@ private:
 	unsigned         tex_preview_;
 	vector<bool>     selected_patches_;
 	int              hilight_patch_ = -1;
-	Vec2f            offset_;
+	Vec2d            offset_;
 	Vec2i            mouse_prev_;
 	double           scale_        = 1.;
 	bool             draw_outside_ = true;

@@ -83,7 +83,7 @@ private:
 	unsigned       n_sides_   = 0;
 	unsigned       n_sectors_ = 0;
 	double         zoom_      = 1.;
-	Vec2f          offset_;
+	Vec2d          offset_;
 	Archive*       temp_archive_ = nullptr;
 	unsigned       tex_thing_;
 	bool           tex_loaded_ = false;

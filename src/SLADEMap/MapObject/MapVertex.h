@@ -15,15 +15,15 @@ public:
 	static const string PROP_X;
 	static const string PROP_Y;
 
-	MapVertex(const Vec2f& pos);
-	MapVertex(const Vec2f& pos, ParseTreeNode* udmf_def);
+	MapVertex(const Vec2d& pos);
+	MapVertex(const Vec2d& pos, ParseTreeNode* udmf_def);
 	~MapVertex() = default;
 
 	double xPos() const { return position_.x; }
 	double yPos() const { return position_.y; }
-	Vec2f  position() const { return position_; }
+	Vec2d  position() const { return position_; }
 
-	Vec2f getPoint(Point point) override;
+	Vec2d getPoint(Point point) override;
 
 	void move(double nx, double ny);
 
@@ -57,7 +57,7 @@ public:
 
 private:
 	// Basic data
-	Vec2f position_;
+	Vec2d position_;
 
 	// Internal info
 	vector<MapLine*> connected_lines_;

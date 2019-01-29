@@ -67,10 +67,10 @@ public:
 	bool writeMap(vector<ArchiveEntry*>& map_entries) const;
 
 	// Creation
-	MapVertex* createVertex(Vec2f pos, double split_dist = -1.);
-	MapLine*   createLine(Vec2f p1, Vec2f p2, double split_dist = -1.);
+	MapVertex* createVertex(Vec2d pos, double split_dist = -1.);
+	MapLine*   createLine(Vec2d p1, Vec2d p2, double split_dist = -1.);
 	MapLine*   createLine(MapVertex* vertex1, MapVertex* vertex2, bool force = false);
-	MapThing*  createThing(Vec2f pos, int type = 1);
+	MapThing*  createThing(Vec2d pos, int type = 1);
 	MapSector* createSector();
 	MapSide*   createSide(MapSector* sector);
 
@@ -104,7 +104,7 @@ public:
 
 	// Editing
 	void       mergeVertices(unsigned vertex1, unsigned vertex2);
-	MapVertex* mergeVerticesPoint(const Vec2f& pos);
+	MapVertex* mergeVerticesPoint(const Vec2d& pos);
 	MapLine*   splitLine(MapLine* line, MapVertex* vertex);
 	void       splitLinesAt(MapVertex* vertex, double split_dist = 0);
 	bool       setLineSector(unsigned line_index, unsigned sector_index, bool front = true);

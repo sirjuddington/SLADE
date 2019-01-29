@@ -74,7 +74,7 @@ private:
 	ColRGBA colour_     = { 170, 170, 180, 255, 0 };
 	int     radius_     = 20;
 	int     height_     = -1;
-	Vec2f   scale_      = { 1., 1. };
+	Vec2d   scale_      = { 1., 1. };
 	bool    angled_     = true;
 	bool    hanging_    = false;
 	bool    shrink_     = false;

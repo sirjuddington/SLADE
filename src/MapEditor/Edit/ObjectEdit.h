@@ -12,8 +12,8 @@ class ObjectEditGroup
 public:
 	struct Vertex
 	{
-		Vec2f      position;
-		Vec2f      old_position;
+		Vec2d      position;
+		Vec2d      old_position;
 		MapVertex* map_vertex;
 		bool       ignored;
 
@@ -31,8 +31,8 @@ public:
 
 	struct Thing
 	{
-		Vec2f     position;
-		Vec2f     old_position;
+		Vec2d     position;
+		Vec2d     old_position;
 		MapThing* map_thing;
 		int       angle;
 	};
@@ -49,18 +49,18 @@ public:
 	void    filterObjects(bool filter);
 	void    resetPositions();
 	bool    empty() const { return vertices_.empty() && things_.empty(); }
-	bool    nearestLineEndpoints(Vec2f pos, double min, Vec2f& v1, Vec2f& v2);
+	bool    nearestLineEndpoints(Vec2d pos, double min, Vec2d& v1, Vec2d& v2);
 	void    putMapVertices(vector<MapVertex*>& list);
 
 	// Drawing
-	void putVerticesToDraw(vector<Vec2f>& list);
+	void putVerticesToDraw(vector<Vec2d>& list);
 	void putLinesToDraw(vector<Line>& list);
 	void putThingsToDraw(vector<Thing>& list);
 
 	// Modification
 	void doMove(double xoff, double yoff);
 	void doScale(double xoff, double yoff, bool left, bool top, bool right, bool bottom);
-	void doRotate(Vec2f p1, Vec2f p2, bool lock45);
+	void doRotate(Vec2d p1, Vec2d p2, bool lock45);
 	void doAll(double xoff, double yoff, double xscale, double yscale, double rotation, bool mirror_x, bool mirror_y);
 	void applyEdit();
 
@@ -71,7 +71,7 @@ private:
 	BBox                 bbox_;          // Current
 	BBox                 old_bbox_;      // Before drag operation
 	BBox                 original_bbox_; // From first init
-	Vec2f                offset_prev_ = { 0, 0 };
+	Vec2d                offset_prev_ = { 0, 0 };
 	double               rotation_    = 0;
 	bool                 mirrored_    = false;
 };

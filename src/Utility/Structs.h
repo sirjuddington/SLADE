@@ -8,92 +8,58 @@ using std::min;
 // This is basically a collection of handy little structs I use a lot,
 // with some useful functions for each of them
 
-// point2_t: A 2d coordinate
-struct Vec2i
+// 2D Vector/Point
+template<typename T> struct Vec2
 {
-	int x, y;
+	T x, y;
 
-	Vec2i() { x = y = 0; }
-	Vec2i(int X, int Y)
+	Vec2<T>() : x{}, y{} {}
+	Vec2<T>(T X, T Y) : x{ X }, y{ Y } {}
+
+	void set(T X, T Y)
 	{
 		x = X;
 		y = Y;
 	}
-
-	void set(int X, int Y)
+	void set(const Vec2<T>& v)
 	{
-		x = X;
-		y = Y;
-	}
-	void set(Vec2i p)
-	{
-		x = p.x;
-		y = p.y;
+		x = v.x;
+		y = v.y;
 	}
 
-	Vec2i operator+(Vec2i point) const { return { point.x + x, point.y + y }; }
-	Vec2i operator-(Vec2i point) const { return { x - point.x, y - point.y }; }
-	Vec2i operator*(double num) const { return { (int)((double)x * num), (int)((double)y * num) }; }
-	Vec2i operator/(double num) const
+	Vec2<T> operator+(const Vec2<T>& v) const { return { v.x + x, v.y + y }; }
+	Vec2<T> operator-(const Vec2<T>& v) const { return { x - v.x, y - v.y }; }
+	Vec2<T> operator*(T num) const { return { x * num, y * num }; }
+	Vec2<T> operator/(T num) const
 	{
 		if (num == 0)
-			return { 0, 0 };
-		else
-			return { (int)((double)x / num), (int)((double)y / num) };
+			return Vec2<T>{};
+
+		return Vec2<T>{ x / num, y / num };
 	}
-	bool operator==(Vec2i rhs) const { return (x == rhs.x && y == rhs.y); }
-	bool operator!=(Vec2i rhs) const { return (x != rhs.x || y != rhs.y); }
-
-	static Vec2i outside() { return { -1, -1 }; }
-};
-
-// fpoint2_t: A 2d coordinate (or vector) with floating-point precision
-struct Vec2f
-{
-	double x, y;
-
-	Vec2f() { x = y = 0.0f; }
-	Vec2f(double X, double Y)
+	bool     operator==(const Vec2<T>& rhs) const { return (x == rhs.x && y == rhs.y); }
+	bool     operator!=(const Vec2<T>& rhs) const { return (x != rhs.x || y != rhs.y); }
+	Vec2<T>& operator=(const Vec2<T>& rhs)
 	{
-		x = X;
-		y = Y;
-	}
-	Vec2f(Vec2i p)
-	{
-		x = p.x;
-		y = p.y;
+		x = rhs.x;
+		y = rhs.y;
+		return *this;
 	}
 
-	void set(double X, double Y)
-	{
-		x = X;
-		y = Y;
-	}
-	void set(Vec2f p)
-	{
-		x = p.x;
-		y = p.y;
-	}
-	void set(Vec2i p)
-	{
-		x = p.x;
-		y = p.y;
-	}
+	double magnitude() const { return std::sqrt((x * x) + (y * y)); }
 
-	double magnitude() const { return (double)sqrt((long double)(x * x + y * y)); }
-
-	Vec2f normalized() const
+	Vec2<T> normalized() const
 	{
-		double mag = magnitude();
-		if (mag == 0.0f)
-			return { 0.0f, 0.0f };
-		else
-			return { x / mag, y / mag };
+		auto mag = magnitude();
+		if (mag == 0)
+			return {};
+
+		return { T(x / mag), T(y / mag) };
 	}
 
 	void normalize()
 	{
-		double mag = magnitude();
+		auto mag = magnitude();
 		if (mag == 0)
 		{
 			x = 0;
@@ -106,91 +72,87 @@ struct Vec2f
 		}
 	}
 
-	double distanceTo(Vec2f point) const
+	double distanceTo(const Vec2<T> other) const
 	{
-		double dist_x = point.x - x;
-		double dist_y = point.y - y;
+		T dist_x = other.x - x;
+		T dist_y = other.y - y;
 
-		return (double)sqrt((long double)(dist_x * dist_x + dist_y * dist_y));
+		return std::sqrt((dist_x * dist_x) + (dist_y * dist_y));
 	}
 
 	// aka "Manhattan" distance -- just the sum of the vertical and horizontal
 	// distance, and an upper bound on the true distance
-	double taxicabDistanceTo(Vec2f point) const
+	T taxicabDistanceTo(const Vec2<T>& other) const
 	{
-		double dist;
-		if (point.x < x)
-			dist = x - point.x;
+		T dist;
+		if (other.x < x)
+			dist = x - other.x;
 		else
-			dist = point.x - x;
-		if (point.y < y)
-			dist += y - point.y;
+			dist = other.x - x;
+		if (other.y < y)
+			dist += y - other.y;
 		else
-			dist += point.y - y;
+			dist += other.y - y;
 
 		return dist;
 	}
 
-	double dot(Vec2f vec) const { return x * vec.x + y * vec.y; }
-	double cross(Vec2f p2) const { return (x * p2.y) - (y * p2.x); }
+	T dot(const Vec2<T>& other) const { return x * other.x + y * other.y; }
 
-	Vec2f operator+(Vec2f point) const { return { point.x + x, point.y + y }; }
-	Vec2f operator-(Vec2f point) const { return { x - point.x, y - point.y }; }
-	Vec2f operator*(double num) const { return { x * num, y * num }; }
-	Vec2f operator/(double num) const
-	{
-		if (num == 0.0f)
-			return { 0.0f, 0.0f };
-		else
-			return { x / num, y / num };
-	}
-	bool operator==(Vec2f rhs) const { return (x == rhs.x && y == rhs.y); }
-	bool operator!=(Vec2f rhs) const { return (x != rhs.x || y != rhs.y); }
+	T cross(const Vec2<T>& other) const { return (x * other.y) - (y * other.x); }
 };
 
+typedef Vec2<int>    Vec2i;
+typedef Vec2<float>  Vec2f;
+typedef Vec2<double> Vec2d;
 
-// fpoint3_t: A 3d coordinate (or vector) with floating-point precision
-struct Vec3f
+template<typename T> using Point2 = Vec2<T>;
+typedef Point2<int>    Point2i;
+typedef Point2<float>  Point2f;
+typedef Point2<double> Point2d;
+
+
+// 3D Vector/Point
+template<typename T> struct Vec3
 {
-	double x, y, z;
+	T x, y, z;
 
-	Vec3f() { x = y = z = 0; }
-	Vec3f(double X, double Y, double Z)
-	{
-		x = X;
-		y = Y;
-		z = Z;
-	}
-	Vec3f(Vec2f p, double Z = 0)
-	{
-		x = p.x;
-		y = p.y;
-		z = Z;
-	}
+	Vec3<T>() : x{}, y{}, z{} {}
+	Vec3<T>(T x, T y, T z) : x{ x }, y{ y }, z{ z } {}
+	Vec3<T>(const Vec2<T>& p, T z = {}) : x{ p.x }, y{ p.y }, z{ z } {}
 
-	void set(double X, double Y, double Z)
+	void set(T x, T y, T z)
 	{
-		x = X;
-		y = Y;
-		z = Z;
+		this->x = x;
+		this->y = y;
+		this->z = z;
 	}
-	void set(Vec3f p)
+	void set(const Vec3<T>& p)
 	{
 		x = p.x;
 		y = p.y;
 		z = p.z;
 	}
 
-	double magnitude() const { return (double)sqrt((long double)(x * x + y * y + z * z)); }
-	double dot(Vec3f vec) const { return x * vec.x + y * vec.y + z * vec.z; }
-
-	Vec3f normalized() const
+	Vec3<T>& operator=(const Vec3<T>& rhs)
 	{
-		double mag = magnitude();
+		x = rhs.x;
+		y = rhs.y;
+		z = rhs.z;
+		return *this;
+	}
+
+	double magnitude() const { return sqrt((x * x) + (y * y) + (z * z)); }
+
+	T dot(const Vec3<T>& vec) const { return x * vec.x + y * vec.y + z * vec.z; }
+
+	Vec3<T> normalized() const
+	{
+		auto mag = magnitude();
 		if (mag == 0)
-			return { 0, 0, 0 };
+			return {};
 		else
-			return { x / mag, y / mag, z / mag };
+			return { T(x / mag), T(y / mag), T(z / mag) };
 	}
 
 	void normalize()
@@ -206,29 +168,32 @@ struct Vec3f
 		}
 	}
 
-	double distanceTo(Vec3f point) const
+	double distanceTo(const Vec3<T>& point) const
 	{
-		double dist_x = point.x - x;
-		double dist_y = point.y - y;
-		double dist_z = point.z - z;
+		auto dist_x = point.x - x;
+		auto dist_y = point.y - y;
+		auto dist_z = point.z - z;
 
-		return (double)sqrt((long double)(dist_x * dist_x + dist_y * dist_y + dist_z * dist_z));
+		return sqrt((dist_x * dist_x) + (dist_y * dist_y) + (dist_z * dist_z));
 	}
 
-	Vec3f operator+(Vec3f point) const { return { point.x + x, point.y + y, point.z + z }; }
-	Vec3f operator-(Vec3f point) const { return { x - point.x, y - point.y, z - point.z }; }
-	Vec3f operator*(double num) const { return { x * num, y * num, z * num }; }
-	Vec3f operator/(double num) const
+	Vec3<T> operator+(const Vec3<T>& point) const { return { point.x + x, point.y + y, point.z + z }; }
+
+	Vec3<T> operator-(const Vec3<T>& point) const { return { x - point.x, y - point.y, z - point.z }; }
+
+	Vec3<T> operator*(T num) const { return { x * num, y * num, z * num }; }
+
+	Vec3<T> operator/(T num) const
 	{
 		if (num == 0)
-			return { 0, 0, 0 };
+			return {};
 		else
 			return { x / num, y / num, z / num };
 	}
 
-	Vec3f cross(Vec3f p2) const
+	Vec3<T> cross(const Vec3<T>& p2) const
 	{
-		Vec3f cross_product;
+		Vec3<T> cross_product;
 
 		cross_product.x = ((y * p2.z) - (z * p2.y));
 		cross_product.y = ((z * p2.x) - (x * p2.z));
@@ -237,8 +202,16 @@ struct Vec3f
 		return cross_product;
 	}
 
-	Vec2f get2d() const { return { x, y }; }
+	Vec2<T> get2d() const { return { x, y }; }
 };
+typedef Vec3<int>    Vec3i;
+typedef Vec3<float>  Vec3f;
+typedef Vec3<double> Vec3d;
+
+template<typename T> using Point3 = Vec3<T>;
+typedef Point3<int>    Point3i;
+typedef Point3<float>  Point3f;
+typedef Point3<double> Point3d;
 
 
 // ColRGBA: A 32-bit colour definition
@@ -429,52 +402,34 @@ struct ColLAB
 	}
 };
 
-// Recti: A rectangle (int points)
-struct Recti
+// Rectangle
+template<typename T> struct Rect
 {
-	Vec2i tl, br;
+	Vec2<T> tl, br;
 
 	// Constructors
-	Recti()
+	Rect() = default;
+	Rect(const Vec2<T>& tl, const Vec2<T>& br) : tl{ tl }, br{ br } {}
+	Rect(T x1, T y1, T x2, T y2) : tl{ x1, y1 }, br{ x2, y2 } {}
+	Rect(T x, T y, T width, T height, bool center)
 	{
-		tl.set(0, 0);
-		br.set(0, 0);
-	}
-
-	Recti(Vec2i TL, Vec2i BR)
-	{
-		tl.set(TL);
-		br.set(BR);
-	}
-
-	Recti(int x1, int y1, int x2, int y2)
-	{
-		tl.set(x1, y1);
-		br.set(x2, y2);
-	}
-
-	Recti(int x, int y, int width, int height, int align)
-	{
-		// Top-left
-		if (align == 0)
+		if (center)
+		{
+			tl.set(x - (width * 0.5), y - (height * 0.5));
+			br.set(x + (width * 0.5), y + (height * 0.5));
+		}
+		else
 		{
 			tl.set(x, y);
 			br.set(x + width, y + height);
 		}
-
-		// Centered
-		else if (align == 1)
-		{
-			tl.set(x - (width / 2), y - (height / 2));
-			br.set(x + (width / 2), y + (height / 2));
-		}
 	}
 
 	// Functions
-	void set(Vec2i TL, Vec2i BR)
+	void set(const Vec2<T>& tl, const Vec2<T>& br)
 	{
-		tl.set(TL);
-		br.set(BR);
+		this->tl = tl;
+		this->br = br;
 	}
 
 	void set(int x1, int y1, int x2, int y2)
@@ -483,33 +438,37 @@ struct Recti
 		br.set(x2, y2);
 	}
 
-	void set(Recti rect)
+	void set(const Rect<T>& rect)
 	{
 		tl.set(rect.tl);
 		br.set(rect.br);
 	}
 
-	int x1() const { return tl.x; }
-	int y1() const { return tl.y; }
-	int x2() const { return br.x; }
-	int y2() const { return br.y; }
+	// TR/BL aliases that make more sense for line segments
+	const Vec2<T>& start() const { return tl; }
+	const Vec2<T>& end() const { return br; }
 
-	int left() const { return min(tl.x, br.x); }
-	int top() const { return min(tl.y, br.y); }
-	int right() const { return max(br.x, tl.x); }
-	int bottom() const { return max(br.y, tl.y); }
+	T x1() const { return tl.x; }
+	T y1() const { return tl.y; }
+	T x2() const { return br.x; }
+	T y2() const { return br.y; }
 
-	int width() const { return br.x - tl.x; }
-	int height() const { return br.y - tl.y; }
+	T left() const { return std::min<T>(tl.x, br.x); }
+	T top() const { return std::min<T>(tl.y, br.y); }
+	T right() const { return std::max<T>(br.x, tl.x); }
+	T bottom() const { return std::max<T>(br.y, tl.y); }
 
-	int awidth() const { return max(br.x, tl.x) - min(tl.x, br.x); }
-	int aheight() const { return max(br.y, tl.y) - min(tl.y, br.y); }
+	T width() const { return br.x - tl.x; }
+	T height() const { return br.y - tl.y; }
 
-	Vec2i middle() const { return { left() + (awidth() / 2), top() + (aheight() / 2) }; }
+	T awidth() const { return std::max<T>(br.x, tl.x) - std::min<T>(tl.x, br.x); }
+	T aheight() const { return std::max<T>(br.y, tl.y) - std::min<T>(tl.y, br.y); }
 
-	void expand(int x, int y)
+	Vec2<T> middle() const { return { left() + T(awidth() * 0.5), top() + T(aheight() * 0.5) }; }
+
+	void expand(T x, T y)
 	{
-		if (x1() < x2())
+		if (tl.x < br.x)
 		{
 			tl.x -= x;
 			br.x += x;
@@ -520,7 +479,7 @@ struct Recti
 			br.x -= x;
 		}
 
-		if (y1() < y2())
+		if (tl.y < br.y)
 		{
 			tl.y -= y;
 			br.y += y;
@@ -532,166 +491,30 @@ struct Recti
 		}
 	}
 
-	double length() const
+	T length() const
 	{
-		double dist_x = x2() - x1();
-		double dist_y = y2() - y1();
+		T dist_x = br.x - tl.x;
+		T dist_y = br.y - tl.y;
 
-		return (double)sqrt((long double)(dist_x * dist_x + dist_y * dist_y));
+		return sqrt(dist_x * dist_x + dist_y * dist_y);
 	}
 
-	bool contains(Vec2i point) const
-	{
-		return (point.x >= left() && point.x <= right() && point.y >= top() && point.y <= bottom());
-	}
-};
-
-
-// Rectf: A rectangle (float points)
-struct Rectf
-{
-	Vec2f tl, br;
-
-	// Constructors
-	Rectf()
-	{
-		tl.set(0, 0);
-		br.set(0, 0);
-	}
-
-	Rectf(Recti rect)
-	{
-		tl.set(rect.tl);
-		br.set(rect.br);
-	}
-
-	Rectf(Vec2f TL, Vec2f BR)
-	{
-		tl.set(TL);
-		br.set(BR);
-	}
-
-	Rectf(Vec2i TL, Vec2i BR)
-	{
-		tl.set(TL);
-		br.set(BR);
-	}
-
-	Rectf(double x1, double y1, double x2, double y2)
-	{
-		tl.set(x1, y1);
-		br.set(x2, y2);
-	}
-
-	Rectf(double x, double y, double width, double height, int align)
-	{
-		// Top-left
-		if (align == 0)
-		{
-			tl.set(x, y);
-			br.set(x + width, y + height);
-		}
-
-		// Centered
-		else if (align == 1)
-		{
-			tl.set(x - (width / 2), y - (height / 2));
-			br.set(x + (width / 2), y + (height / 2));
-		}
-	}
-
-	// Functions
-	void set(Recti rect)
-	{
-		tl.set(rect.tl);
-		br.set(rect.br);
-	}
-
-	void set(Vec2f TL, Vec2f BR)
-	{
-		tl.set(TL);
-		br.set(BR);
-	}
-
-	void set(Vec2i TL, Vec2i BR)
-	{
-		tl.set(TL);
-		br.set(BR);
-	}
-
-	void set(double x1, double y1, double x2, double y2)
-	{
-		tl.set(x1, y1);
-		br.set(x2, y2);
-	}
-
-	void set(Rectf rect)
-	{
-		tl.set(rect.tl);
-		br.set(rect.br);
-	}
-
-	double x1() const { return tl.x; }
-	double y1() const { return tl.y; }
-	double x2() const { return br.x; }
-	double y2() const { return br.y; }
-	Vec2f  p1() const { return tl; }
-	Vec2f  p2() const { return br; }
-
-	double left() const { return min(tl.x, br.x); }
-	double top() const { return min(tl.y, br.y); }
-	double right() const { return max(br.x, tl.x); }
-	double bottom() const { return max(br.y, tl.y); }
-
-	double width() const { return br.x - tl.x; }
-	double height() const { return br.y - tl.y; }
-
-	double awidth() const { return max(br.x, tl.x) - min(tl.x, br.x); }
-	double aheight() const { return max(br.y, tl.y) - min(tl.y, br.y); }
-
-	Vec2f middle() const { return { left() + (awidth() / 2), top() + (aheight() / 2) }; }
-
-	void expand(double x, double y)
-	{
-		if (x1() < x2())
-		{
-			tl.x -= x;
-			br.x += x;
-		}
-		else
-		{
-			tl.x += x;
-			br.x -= x;
-		}
-
-		if (y1() < y2())
-		{
-			tl.y -= y;
-			br.y += y;
-		}
-		else
-		{
-			tl.y += y;
-			br.y -= y;
-		}
-	}
-
-	double length() const
-	{
-		double dist_x = x2() - x1();
-		double dist_y = y2() - y1();
-
-		return (double)sqrt((long double)(dist_x * dist_x + dist_y * dist_y));
-	}
-
-	bool contains(Vec2f point) const
+	bool contains(Vec2<T> point) const
 	{
 		return (point.x >= left() && point.x <= right() && point.y >= top() && point.y <= bottom());
 	}
 };
+
+typedef Rect<int>    Recti;
+typedef Rect<float>  Rectf;
+typedef Rect<double> Rectd;
+
 // Rectangle is not really any different from a 2D segment, but using it to
 // mean that can be confusing, so here's an alias.
-typedef Rectf Seg2f;
+template<typename T> using Seg2 = Rect<T>;
+typedef Seg2<int>    Seg2i;
+typedef Seg2<double> Seg2d;
+typedef Seg2<float>  Seg2f;
 
 
 // Plane: A 3d plane
@@ -717,16 +540,16 @@ struct Plane
 		this->d = d;
 	}
 
-	Vec3f normal() const
+	Vec3d normal() const
 	{
-		Vec3f norm(a, b, c);
+		Vec3d norm(a, b, c);
 		norm.normalize();
 		return norm;
 	}
 
 	void normalize()
 	{
-		Vec3f  vec(a, b, c);
+		Vec3d  vec(a, b, c);
 		double mag = vec.magnitude();
 		a          = a / mag;
 		b          = b / mag;
@@ -734,7 +557,7 @@ struct Plane
 		d          = d / mag;
 	}
 
-	double heightAt(Vec2f point) const { return heightAt(point.x, point.y); }
+	double heightAt(Vec2d point) const { return heightAt(point.x, point.y); }
 	double heightAt(double x, double y) const { return ((-a * x) + (-b * y) + d) / c; }
 };
 
@@ -742,8 +565,8 @@ struct Plane
 // BBox: A simple bounding box with related functions
 struct BBox
 {
-	Vec2f min;
-	Vec2f max;
+	Vec2d min;
+	Vec2d max;
 
 	BBox() { reset(); }
 
@@ -774,7 +597,7 @@ struct BBox
 			max.y = y;
 	}
 
-	void extend(const Vec2f& other) { extend(other.x, other.y); }
+	void extend(const Vec2d& other) { extend(other.x, other.y); }
 
 	void extend(const BBox& other)
 	{
@@ -790,26 +613,26 @@ struct BBox
 	}
 
 	bool pointWithin(double x, double y) const { return (x >= min.x && x <= max.x && y >= min.y && y <= max.y); }
-	bool contains(Vec2f point) const { return pointWithin(point.x, point.y); }
-	bool isWithin(Vec2f bmin, Vec2f bmax) const
+	bool contains(Vec2d point) const { return pointWithin(point.x, point.y); }
+	bool isWithin(Vec2d bmin, Vec2d bmax) const
 	{
 		return (min.x >= bmin.x && max.x <= bmax.x && min.y >= bmin.y && max.y <= bmax.y);
 	}
 
 	bool isValid() const { return ((max.x - min.x > 0) && (max.y - min.y) > 0); }
 
-	Vec2f  size() const { return { max.x - min.x, max.y - min.y }; }
+	Vec2d  size() const { return { max.x - min.x, max.y - min.y }; }
 	double width() const { return max.x - min.x; }
 	double height() const { return max.y - min.y; }
 
-	Vec2f  mid() const { return { midX(), midY() }; }
+	Vec2d  mid() const { return { midX(), midY() }; }
 	double midX() const { return min.x + ((max.x - min.x) * 0.5); }
 	double midY() const { return min.y + ((max.y - min.y) * 0.5); }
 
-	Seg2f leftSide() const { return { min.x, min.y, min.x, max.y }; }
-	Seg2f rightSide() const { return { max.x, min.y, max.x, max.y }; }
-	Seg2f bottomSide() const { return { min.x, max.y, max.x, max.y }; }
-	Seg2f topSide() const { return { min.x, min.y, max.x, min.y }; }
+	Seg2d leftSide() const { return { min.x, min.y, min.x, max.y }; }
+	Seg2d rightSide() const { return { max.x, min.y, max.x, max.y }; }
+	Seg2d bottomSide() const { return { min.x, max.y, max.x, max.y }; }
+	Seg2d topSide() const { return { min.x, min.y, max.x, min.y }; }
 };
 
 // Formerly key_value_t

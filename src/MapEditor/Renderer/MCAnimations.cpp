@@ -65,7 +65,7 @@ EXTERN_CVAR(Bool, sector_selected_fill)
 // -----------------------------------------------------------------------------
 // MCASelboxFader class constructor
 // -----------------------------------------------------------------------------
-MCASelboxFader::MCASelboxFader(long start, Vec2f tl, Vec2f br) : MCAnimation(start), tl_{ tl }, br_{ br } {}
+MCASelboxFader::MCASelboxFader(long start, Vec2d tl, Vec2d br) : MCAnimation(start), tl_{ tl }, br_{ br } {}
 
 // -----------------------------------------------------------------------------
 // Updates the animation based on [time] elapsed in ms
