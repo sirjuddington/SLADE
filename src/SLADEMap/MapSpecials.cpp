@@ -774,7 +774,7 @@ template<SurfaceType T> void MapSpecials::applySectorTiltThing(SLADEMap* map, Ma
 	if (raw_angle == 0 || raw_angle == 180)
 		// Exact vertical tilt is nonsense
 		return;
-	
+
 	double angle = thing->angle() / 360.0 * TAU;
 	double tilt  = (raw_angle - 90) / 360.0 * TAU;
 	// Resulting plane goes through the position of the thing

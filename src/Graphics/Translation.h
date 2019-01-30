@@ -1,4 +1,5 @@
 #pragma once
+#include "Utility/Colour.h"
 
 class Translation;
 
@@ -84,7 +85,10 @@ class TransRangeColour : public TransRange
 	friend class Translation;
 
 public:
-	TransRangeColour(IndexRange range, const ColRGBA& col_start = COL_BLACK, const ColRGBA& col_end = COL_WHITE) :
+	TransRangeColour(
+		IndexRange     range,
+		const ColRGBA& col_start = ColRGBA::BLACK,
+		const ColRGBA& col_end   = ColRGBA::WHITE) :
 		TransRange{ Type::Colour, range },
 		col_start_{ col_start },
 		col_end_{ col_end }
@@ -174,7 +178,7 @@ class TransRangeBlend : public TransRange
 	friend class Translation;
 
 public:
-	TransRangeBlend(IndexRange range, const ColRGBA& colour = COL_RED) :
+	TransRangeBlend(IndexRange range, const ColRGBA& colour = ColRGBA::RED) :
 		TransRange{ Type::Blend, range },
 		colour_{ colour }
 	{
@@ -198,7 +202,7 @@ class TransRangeTint : public TransRange
 	friend class Translation;
 
 public:
-	TransRangeTint(IndexRange range, const ColRGBA& colour = COL_RED, uint8_t amount = 50) :
+	TransRangeTint(IndexRange range, const ColRGBA& colour = ColRGBA::RED, uint8_t amount = 50) :
 		TransRange{ Type::Tint, range },
 		colour_{ colour },
 		amount_{ amount }

@@ -328,7 +328,7 @@ void GfxEntryPanel::setupToolbar()
 	// Editing operations
 	auto g_edit = new SToolBarGroup(toolbar_, "Editing");
 	g_edit->addActionButton("pgfx_settrans", "");
-	cb_colour_ = new ColourBox(g_edit, -1, COL_BLACK, false, true);
+	cb_colour_ = new ColourBox(g_edit, -1, ColRGBA::BLACK, false, true);
 	cb_colour_->setPalette(&gfx_canvas_->palette());
 	button_brush_ = g_edit->addActionButton("pgfx_setbrush", "");
 	g_edit->addCustomControl(cb_colour_);

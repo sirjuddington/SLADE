@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Utility/Colour.h"
+
 namespace ColourConfiguration
 {
 struct Colour

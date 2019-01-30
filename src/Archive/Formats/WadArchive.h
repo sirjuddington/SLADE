@@ -35,7 +35,7 @@ public:
 	bool          removeEntry(ArchiveEntry* entry) override;
 
 	// Entry modification
-	bool   renameEntry(ArchiveEntry* entry, const string& name) override;
+	bool renameEntry(ArchiveEntry* entry, const string& name) override;
 
 	// Entry moving
 	bool swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override;

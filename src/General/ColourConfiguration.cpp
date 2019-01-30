@@ -69,7 +69,7 @@ ColRGBA ColourConfiguration::colour(const string& name)
 	if (col.exists)
 		return col.colour;
 	else
-		return COL_WHITE;
+		return ColRGBA::WHITE;
 }
 
 // -----------------------------------------------------------------------------

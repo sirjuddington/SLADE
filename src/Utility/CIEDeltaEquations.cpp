@@ -81,7 +81,7 @@ CVAR(Float, col_cie_tristim_z, 108.82, CVar::Flag::Save) // to illuminant D65 an
 // The oldest and simplest formula, merely the geometric distance between two
 // points in the colorspace.
 // -----------------------------------------------------------------------------
-double CIE::CIE76(ColLAB& col1, ColLAB& col2)
+double CIE::CIE76(const ColLAB& col1, const ColLAB& col2)
 {
 	double dl = col1.l - col2.l;
 	double da = col1.a - col2.a;
@@ -94,7 +94,7 @@ double CIE::CIE76(ColLAB& col1, ColLAB& col2)
 // This one starts to become complicated as it transforms the Lab colorspace
 // into an LCh colorspace to try to be more accurate.
 // -----------------------------------------------------------------------------
-double CIE::CIE94(ColLAB& col1, ColLAB& col2)
+double CIE::CIE94(const ColLAB& col1, const ColLAB& col2)
 {
 	double dl = col1.l - col2.l;
 	double da = col1.a - col2.a;
@@ -117,7 +117,7 @@ double CIE::CIE94(ColLAB& col1, ColLAB& col2)
 // Adds hue rotation and multiple compensations.
 // But it really is a lot better than CIE94 for color matching.
 // -----------------------------------------------------------------------------
-double CIE::CIEDE2000(ColLAB& col1, ColLAB& col2)
+double CIE::CIEDE2000(const ColLAB& col1, const ColLAB& col2)
 {
 	constexpr double doublePi = 2.0 * MathStuff::PI;
 	constexpr double pi6      = MathStuff::PI / 6.0;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Utility/Colour.h"
 #include "Utility/Parser.h"
 
 class TextEditorCtrl;

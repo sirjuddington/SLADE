@@ -145,7 +145,7 @@ void GfxCanvas::drawOffsetLines() const
 {
 	if (view_type_ == View::Sprite)
 	{
-		OpenGL::setColour(COL_BLACK);
+		OpenGL::setColour(ColRGBA::BLACK);
 
 		glBegin(GL_LINES);
 		glVertex2d(-9999, 0);
@@ -514,7 +514,7 @@ void GfxCanvas::generateBrushShadow()
 				// Mimicking the checkerboard pattern perhaps?
 				// Cyan will do for now
 				else if (editing_mode_ == EditMode::Erase)
-					col = COL_CYAN;
+					col = ColRGBA::CYAN;
 				img.setPixel(cursor_pos_.x + i, cursor_pos_.y + j, col);
 			}
 

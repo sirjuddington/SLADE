@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EntryDataFormat.h"
+#include "Utility/Colour.h"
 #include "Utility/PropertyList/PropertyList.h"
 class ArchiveEntry;
 
@@ -54,7 +55,7 @@ private:
 	string  editor_      = "default"; // The in-program editor to use (hardcoded ids, see *EntryPanel constructors)
 	string  category_    = "Data";    // The type 'category', used for type filtering
 	int     index_       = -1;
-	ColRGBA colour_      = COL_WHITE;
+	ColRGBA colour_      = ColRGBA::WHITE;
 	bool    detectable_  = true; // False only for special types that should be set not detected
 	uint8_t reliability_ = 255;  // How 'reliable' this type's detection is. A higher value means it's less likely this
 								 // type can be detected erroneously. 0-255 (default is 255)

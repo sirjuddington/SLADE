@@ -236,7 +236,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	{
 		name.Replace("&", "");
 		auto name_size = GetTextExtent(name);
-		name_height      = name_size.y;
+		name_height    = name_size.y;
 	}
 
 	int  height   = icon_size_ + pad_inner_ * 2;

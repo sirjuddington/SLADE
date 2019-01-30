@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Args.h"
+#include "Utility/Colour.h"
 
 class PropertyList;
 class ParseTreeNode;

@@ -33,7 +33,6 @@
 #include "ConsolePanel.h"
 #include "App.h"
 #include "General/Console/Console.h"
-#include "General/Misc.h"
 #include "TextEditor/TextStyle.h"
 #include "UI/WxUtils.h"
 
@@ -106,15 +105,15 @@ void ConsolePanel::setupTextArea() const
 	text_log_->SetMarginWidth(1, 8);
 
 	// Message type colours
-	auto hsl = Misc::rgbToHsl(StyleSet::currentSet()->styleForeground("default"));
+	auto hsl = StyleSet::currentSet()->styleForeground("default").asHSL();
 	if (hsl.l > 0.8)
 		hsl.l = 0.8;
 	if (hsl.l < 0.2)
 		hsl.l = 0.2;
-	text_log_->StyleSetForeground(200, WXCOL(Misc::hslToRgb(0.99, 1., hsl.l)));
-	text_log_->StyleSetForeground(201, WXCOL(Misc::hslToRgb(0.1, 1., hsl.l)));
-	text_log_->StyleSetForeground(202, WXCOL(Misc::hslToRgb(0.5, 0.8, hsl.l)));
-	text_log_->StyleSetForeground(203, WXCOL(Misc::hslToRgb(hsl.h, hsl.s, 0.5)));
+	text_log_->StyleSetForeground(200, WXCOL(ColHSL(0.99, 1., hsl.l).asRGB()));
+	text_log_->StyleSetForeground(201, WXCOL(ColHSL(0.1, 1., hsl.l).asRGB()));
+	text_log_->StyleSetForeground(202, WXCOL(ColHSL(0.5, 0.8, hsl.l).asRGB()));
+	text_log_->StyleSetForeground(203, WXCOL(ColHSL(hsl.h, hsl.s, 0.5).asRGB()));
 }
 
 // -----------------------------------------------------------------------------

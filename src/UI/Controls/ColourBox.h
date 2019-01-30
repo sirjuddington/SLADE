@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Utility/Colour.h"
+
 class Palette;
 
 class ColourBox : public wxPanel
@@ -23,7 +25,7 @@ public:
 	void popAlphaSlider();
 
 private:
-	ColRGBA  colour_  = COL_BLACK;
+	ColRGBA  colour_  = ColRGBA::BLACK;
 	Palette* palette_ = nullptr;
 	bool     alpha_   = false;
 	bool     altmode_ = false;

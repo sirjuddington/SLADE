@@ -304,7 +304,7 @@ void CTextureCanvas::drawTexture()
 	}
 
 	// Reset colouring
-	OpenGL::setColour(COL_WHITE);
+	OpenGL::setColour(ColRGBA::WHITE);
 
 	// If we're currently dragging, draw a 'basic' preview of the texture using opengl
 	if (dragging_)
@@ -457,7 +457,7 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 	bool   flipy        = false;
 	double alpha        = 1.0;
 	bool   shade_select = true;
-	auto   col          = COL_WHITE;
+	auto   col          = ColRGBA::WHITE;
 	if (texture_->isExtended())
 	{
 		// Get extended patch
@@ -508,7 +508,7 @@ void CTextureCanvas::drawTextureBorder() const
 	// Draw the texture border
 	double ext = 0.11;
 	glLineWidth(2.0f);
-	OpenGL::setColour(COL_BLACK);
+	OpenGL::setColour(ColRGBA::BLACK);
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(-ext, -ext);
 	glVertex2d(-ext, texture_->height() + ext);
@@ -615,7 +615,7 @@ void CTextureCanvas::drawOffsetLines() const
 {
 	if (view_type_ == View::Sprite)
 	{
-		OpenGL::setColour(COL_BLACK);
+		OpenGL::setColour(ColRGBA::BLACK);
 
 		glBegin(GL_LINES);
 		glVertex2d(-9999, 0);

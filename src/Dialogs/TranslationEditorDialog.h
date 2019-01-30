@@ -25,8 +25,8 @@ public:
 	void draw() override;
 
 private:
-	ColRGBA col_start_ = COL_BLACK;
-	ColRGBA col_end_   = COL_WHITE;
+	ColRGBA col_start_ = ColRGBA::BLACK;
+	ColRGBA col_end_   = ColRGBA::WHITE;
 	int     steps_     = 0;
 };
 

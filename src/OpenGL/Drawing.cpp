@@ -61,7 +61,7 @@ CVAR(Int, gl_font_size, 12, CVar::Flag::Save)
 namespace Drawing
 {
 double  text_outline_width  = 0;
-ColRGBA text_outline_colour = COL_BLACK;
+ColRGBA text_outline_colour = ColRGBA::BLACK;
 }; // namespace Drawing
 
 
@@ -582,14 +582,14 @@ wxColour Drawing::lightColour(const wxColour& colour, float percent)
 	}
 
 	// Convert to HSL
-	ColHSL hsl = Misc::rgbToHsl(ColRGBA(COLWX(colour)));
+	ColHSL hsl = ColRGBA(COLWX(colour)).asHSL();
 
 	// Increase luminance
 	hsl.l += (float)((percent * 5.0) / 100.0);
 	if (hsl.l > 1.0)
 		hsl.l = 1.0;
 
-	ColRGBA rgb = Misc::hslToRgb(hsl);
+	ColRGBA rgb = hsl.asRGB();
 	return wxColour(rgb.r, rgb.g, rgb.b);
 }
 
@@ -601,14 +601,14 @@ wxColour Drawing::darkColour(const wxColour& colour, float percent)
 	}
 
 	// Convert to HSL
-	ColHSL hsl = Misc::rgbToHsl(ColRGBA(COLWX(colour)));
+	ColHSL hsl = ColRGBA(COLWX(colour)).asHSL();
 
 	// Decrease luminance
 	hsl.l -= (float)((percent * 5.0) / 100.0);
 	if (hsl.l < 0)
 		hsl.l = 0;
 
-	ColRGBA rgb = Misc::hslToRgb(hsl);
+	ColRGBA rgb = hsl.asRGB();
 	return wxColour(rgb.r, rgb.g, rgb.b);
 }
 

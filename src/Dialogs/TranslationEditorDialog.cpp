@@ -246,14 +246,14 @@ TranslationEditorDialog::TranslationEditorDialog(
 	vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
 	cb_range_begin_ = new ColourBox(panel_target_gradient_, -1, false, true);
-	cb_range_begin_->setColour(COL_BLACK);
+	cb_range_begin_->setColour(ColRGBA::BLACK);
 	cb_range_begin_->setPalette(&palette_);
 	hbox->Add(cb_range_begin_, 0, wxEXPAND | wxRIGHT, UI::pad());
 	hbox->Add(new wxStaticText(panel_target_gradient_, -1, "From"), 0, wxALIGN_CENTER_VERTICAL);
 
 	// End colour
 	cb_range_end_ = new ColourBox(panel_target_gradient_, -1, false, true);
-	cb_range_end_->setColour(COL_WHITE);
+	cb_range_end_->setColour(ColRGBA::WHITE);
 	cb_range_end_->setPalette(&palette_);
 	hbox->AddStretchSpacer();
 	hbox->Add(new wxStaticText(panel_target_gradient_, -1, "To"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
@@ -275,7 +275,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	vbox->Add(hbox, 0, wxEXPAND | wxALL, UI::pad());
 
 	cb_target_tint_ = new ColourBox(panel_target_tint_, -1, false, true);
-	cb_target_tint_->setColour(COL_RED);
+	cb_target_tint_->setColour(ColRGBA::RED);
 	cb_target_tint_->setPalette(&palette_);
 	hbox->Add(cb_target_tint_, 0, wxEXPAND | wxRIGHT, UI::pad());
 	hbox->Add(new wxStaticText(panel_target_tint_, -1, "Colour"), 1, wxALIGN_CENTER_VERTICAL);

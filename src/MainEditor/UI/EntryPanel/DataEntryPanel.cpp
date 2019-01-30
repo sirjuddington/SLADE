@@ -924,12 +924,13 @@ bool DataEntryPanel::saveEntry()
 	if (type == "pnames" || type == "notpnames")
 	{
 		// PNAMES
-		if (wxMessageBox("Modifying PNAMES directly can cause TEXTUREx errors if you don't know what you are doing. It "
-						 "is highly recommended that you use the texture editor to modify PNAMES safely.\nAre you sure "
-						 "you want to continue saving?",
-						 "PNAMES Entry Modification Warning",
-						 wxYES_NO | wxICON_WARNING,
-						 this)
+		if (wxMessageBox(
+				"Modifying PNAMES directly can cause TEXTUREx errors if you don't know what you are doing. It "
+				"is highly recommended that you use the texture editor to modify PNAMES safely.\nAre you sure "
+				"you want to continue saving?",
+				"PNAMES Entry Modification Warning",
+				wxYES_NO | wxICON_WARNING,
+				this)
 			== wxYES)
 		{
 			// Write number of entries

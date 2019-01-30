@@ -1,4 +1,5 @@
 #pragma once
+#include "Utility/Colour.h"
 
 class Translation;
 
@@ -39,7 +40,7 @@ public:
 	bool saveMem(MemChunk& mc, Format format = Format::Raw, const string& name = "");
 	bool saveFile(const string& filename, Format format = Format::Raw);
 
-	void setColour(uint8_t index, ColRGBA col);
+	void setColour(uint8_t index, const ColRGBA& col);
 	void setColourR(uint8_t index, uint8_t val);
 	void setColourG(uint8_t index, uint8_t val);
 	void setColourB(uint8_t index, uint8_t val);
@@ -47,19 +48,19 @@ public:
 	void setTransIndex(short index) { index_trans_ = index; }
 
 	void   copyPalette(const Palette* copy);
-	short  findColour(ColRGBA colour);
-	short  nearestColour(ColRGBA colour, ColourMatch match = ColourMatch::Default);
+	short  findColour(const ColRGBA& colour);
+	short  nearestColour(const ColRGBA& colour, ColourMatch match = ColourMatch::Default);
 	size_t countColours();
 	void   applyTranslation(Translation* trans);
 
 	// Advanced palette modification
-	void colourise(ColRGBA col, int start, int end);
-	void tint(ColRGBA col, float amount, int start, int end);
+	void colourise(const ColRGBA& col, int start, int end);
+	void tint(const ColRGBA& col, float amount, int start, int end);
 	void saturate(float amount, int start, int end);
 	void illuminate(float amount, int start, int end);
 	void shift(float amount, int start, int end);
 	void invert(int start, int end);
-	void setGradient(uint8_t startIndex, uint8_t endIndex, ColRGBA startCol, ColRGBA endCol);
+	void setGradient(uint8_t startIndex, uint8_t endIndex, const ColRGBA& startCol, const ColRGBA& endCol);
 
 	// For automated palette generation
 	void idtint(int r, int g, int b, int shift, int steps);
@@ -72,5 +73,5 @@ private:
 	vector<ColLAB>  colours_lab_;
 	short           index_trans_;
 
-	double colourDiff(ColRGBA& rgb, ColHSL& hsl, ColLAB& lab, int index, ColourMatch match);
+	double colourDiff(const ColRGBA& rgb, const ColHSL& hsl, const ColLAB& lab, int index, ColourMatch match);
 };

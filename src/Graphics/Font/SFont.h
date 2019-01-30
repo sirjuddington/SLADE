@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Utility/Colour.h"
 #include <array>
 
 class SFontChar
@@ -39,8 +40,8 @@ public:
 	bool loadBMF(MemChunk& mc);
 
 	// Rendering
-	void drawCharacter(char c, ColRGBA colour = COL_WHITE);
-	void drawString(const string& str, ColRGBA colour = COL_WHITE, Align align = Align::Left);
+	void drawCharacter(char c, ColRGBA colour = ColRGBA::WHITE);
+	void drawString(const string& str, ColRGBA colour = ColRGBA::WHITE, Align align = Align::Left);
 
 	// Static
 	static SFont& vgaFont();

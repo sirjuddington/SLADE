@@ -634,10 +634,10 @@ void Renderer::drawSelectionNumbers() const
 	Drawing::setTextState(true);
 	view_.setOverlayCoords(true);
 #if USE_SFML_RENDERWINDOW && ((SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR >= 4) || SFML_VERSION_MAJOR > 2)
-	Drawing::setTextOutline(1.0f, COL_BLACK);
+	Drawing::setTextOutline(1.0f, ColRGBA::BLACK);
 #else
 	if (context_.selection().size() <= map_max_selection_numbers * 0.5)
-		Drawing::setTextOutline(1.0f, COL_BLACK);
+		Drawing::setTextOutline(1.0f, ColRGBA::BLACK);
 #endif
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
@@ -846,7 +846,7 @@ void Renderer::drawObjectEdit()
 	renderer_2d_.renderObjectEditGroup(&group);
 
 	// Bounding box
-	OpenGL::setColour(COL_WHITE);
+	OpenGL::setColour(ColRGBA::WHITE);
 	glColor4f(col.fr(), col.fg(), col.fb(), 1.0f);
 	auto bbox = group.bbox();
 	bbox.min.x -= 4 / view_.scale(true);
@@ -942,8 +942,8 @@ void Renderer::drawObjectEdit()
 		int   x      = view_.mapX(mid.x);
 		int   y      = view_.mapY(mid.y) - 8;
 		view_.setOverlayCoords(true);
-		Drawing::setTextOutline(1.0f, COL_BLACK);
-		Drawing::drawText(S_FMT("%d", length), x, y, COL_WHITE, Drawing::Font::Bold, Drawing::Align::Center);
+		Drawing::setTextOutline(1.0f, ColRGBA::BLACK);
+		Drawing::drawText(S_FMT("%d", length), x, y, ColRGBA::WHITE, Drawing::Font::Bold, Drawing::Align::Center);
 		Drawing::setTextOutline(0);
 		view_.setOverlayCoords(false);
 		glDisable(GL_TEXTURE_2D);
@@ -976,7 +976,7 @@ void Renderer::drawMap2d()
 		renderer_2d_.updateVisibility(view_.mapBounds().tl, view_.mapBounds().br);
 
 	// Draw flats if needed
-	OpenGL::setColour(COL_WHITE);
+	OpenGL::setColour(ColRGBA::WHITE);
 	if (flat_drawtype > 0)
 	{
 		bool texture = false;

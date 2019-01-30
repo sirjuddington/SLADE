@@ -429,8 +429,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// Position
 		if (MapEditor::editContext().mapDesc().format == MapFormat::Hexen
 			|| MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
-			info_.push_back(S_FMT(
-				"Position: %d, %d, %d", (int)thing->xPos(), (int)thing->yPos(), (int)thing->zPos()));
+			info_.push_back(S_FMT("Position: %d, %d, %d", (int)thing->xPos(), (int)thing->yPos(), (int)thing->zPos()));
 		else
 			info_.push_back(S_FMT("Position: %d, %d", (int)thing->xPos(), (int)thing->yPos()));
 

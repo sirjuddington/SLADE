@@ -3,6 +3,7 @@
 #ifdef USE_SFML_RENDERWINDOW
 #include <SFML/Graphics.hpp>
 #endif
+#include "Utility/Colour.h"
 
 class FontManager;
 
@@ -41,7 +42,7 @@ void drawLineTabbed(Vec2d start, Vec2d end, double tab = 0.1, double tab_max = 1
 void drawArrow(
 	Vec2d   p1,
 	Vec2d   p2,
-	ColRGBA color            = COL_WHITE,
+	ColRGBA color            = ColRGBA::WHITE,
 	bool    twoway           = false,
 	double  arrowhead_angle  = 0.7854f,
 	double  arrowhead_length = 25.f);
@@ -65,14 +66,14 @@ void drawText(
 	const string& text,
 	int           x         = 0,
 	int           y         = 0,
-	ColRGBA       colour    = COL_WHITE,
+	ColRGBA       colour    = ColRGBA::WHITE,
 	Font          font      = Font::Normal,
 	Align         alignment = Align::Left,
 	Rectd*        bounds    = nullptr);
 Vec2d textExtents(const string& text, Font font = Font::Normal);
 void  enableTextStateReset(bool enable = true);
 void  setTextState(bool set = true);
-void  setTextOutline(double thickness, ColRGBA colour = COL_BLACK);
+void  setTextOutline(double thickness, ColRGBA colour = ColRGBA::BLACK);
 
 // Specific
 void drawHud();
@@ -103,7 +104,7 @@ public:
 	void setText(const string& text);
 	void setSize(int width);
 	void setLineHeight(int height) { line_height_ = height; }
-	void draw(int x, int y, ColRGBA colour = COL_WHITE, Drawing::Align alignment = Drawing::Align::Left);
+	void draw(int x, int y, ColRGBA colour = ColRGBA::WHITE, Drawing::Align alignment = Drawing::Align::Left);
 
 private:
 	string         text_;

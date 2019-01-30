@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Utility/Colour.h"
+
 class ListView : public wxListCtrl
 {
 public:

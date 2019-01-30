@@ -70,7 +70,7 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, co
 	sizer->Add(hbox, 0, wxEXPAND | wxALL, 4);
 
 	cb_colour_ = new ColourBox(this, -1, false, true);
-	cb_colour_->setColour(COL_RED);
+	cb_colour_->setColour(ColRGBA::RED);
 	cb_colour_->setPalette(&palette_);
 	hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
 	hbox->Add(cb_colour_, 0, wxEXPAND);

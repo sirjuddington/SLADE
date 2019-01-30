@@ -192,7 +192,7 @@ void OGLCanvas::drawCheckeredBackground() const
 
 	// Draw background
 	Rectf rect(0, 0, GetSize().x, GetSize().y);
-	OpenGL::setColour(COL_WHITE);
+	OpenGL::setColour(ColRGBA::WHITE);
 	glBegin(GL_QUADS);
 	glTexCoord2d(rect.x1() * 0.0625, rect.y1() * 0.0625);
 	glVertex2d(rect.x1(), rect.y1());

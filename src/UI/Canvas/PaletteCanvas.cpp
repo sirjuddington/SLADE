@@ -109,7 +109,7 @@ void PaletteCanvas::draw()
 			// Draw selection outline if needed
 			if (c >= sel_begin_ && c <= sel_end_)
 			{
-				OpenGL::setColour(COL_WHITE);
+				OpenGL::setColour(ColRGBA::WHITE);
 				glBegin(GL_LINES);
 				glVertex2d(x * size, y * size);
 				glVertex2d(x * size + size, y * size);
@@ -117,7 +117,7 @@ void PaletteCanvas::draw()
 				glVertex2d(x * size + size, y * size + size - 1);
 				glEnd();
 
-				OpenGL::setColour(COL_BLACK);
+				OpenGL::setColour(ColRGBA::BLACK);
 				glBegin(GL_LINES);
 				glVertex2d(x * size + 1, y * size + 1);
 				glVertex2d(x * size + size - 1, y * size + 1);
@@ -128,13 +128,13 @@ void PaletteCanvas::draw()
 				// Selection beginning
 				if (c == sel_begin_)
 				{
-					OpenGL::setColour(COL_WHITE);
+					OpenGL::setColour(ColRGBA::WHITE);
 					glBegin(GL_LINES);
 					glVertex2d(x * size, y * size);
 					glVertex2d(x * size, y * size + size);
 					glEnd();
 
-					OpenGL::setColour(COL_BLACK);
+					OpenGL::setColour(ColRGBA::BLACK);
 					glBegin(GL_LINES);
 					glVertex2d(x * size + 1, y * size + 1);
 					glVertex2d(x * size + 1, y * size + size - 1);
@@ -144,13 +144,13 @@ void PaletteCanvas::draw()
 				// Selection ending
 				if (c == sel_end_)
 				{
-					OpenGL::setColour(COL_WHITE);
+					OpenGL::setColour(ColRGBA::WHITE);
 					glBegin(GL_LINES);
 					glVertex2d(x * size + size - 1, y * size + size - 2);
 					glVertex2d(x * size + size - 1, y * size);
 					glEnd();
 
-					OpenGL::setColour(COL_BLACK);
+					OpenGL::setColour(ColRGBA::BLACK);
 					glBegin(GL_LINES);
 					glVertex2d(x * size + size - 2, y * size + 1);
 					glVertex2d(x * size + size - 2, y * size + size - 1);

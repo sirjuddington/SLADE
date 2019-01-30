@@ -69,7 +69,7 @@ void SpriteTexCanvas::setSprite(const Game::ThingType& type)
 {
 	texname_ = type.sprite();
 	icon_    = false;
-	colour_  = COL_WHITE;
+	colour_  = ColRGBA::WHITE;
 
 	// Sprite
 	texture_ = MapEditor::textureManager().sprite(texname_, type.translation(), type.palette()).gl_id;

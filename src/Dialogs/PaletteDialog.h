@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Utility/Colour.h"
+
 class PaletteCanvas;
 class Palette;
 

@@ -90,8 +90,7 @@ void ThingInfoOverlay::update(MapThing* thing)
 
 	// Position
 	if (map_format != MapFormat::Doom)
-		info_text += S_FMT(
-			"Position: %d, %d, %d\n", (int)thing->xPos(), (int)thing->yPos(), (int)(thing->zPos()));
+		info_text += S_FMT("Position: %d, %d, %d\n", (int)thing->xPos(), (int)thing->yPos(), (int)(thing->zPos()));
 	else
 		info_text += S_FMT("Position: %d, %d\n", (int)thing->xPos(), (int)thing->yPos());
 

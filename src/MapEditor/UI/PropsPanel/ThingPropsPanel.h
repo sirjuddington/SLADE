@@ -26,7 +26,7 @@ public:
 private:
 	unsigned texture_ = 0;
 	string   texname_;
-	ColRGBA  colour_ = COL_WHITE;
+	ColRGBA  colour_ = ColRGBA::WHITE;
 	bool     icon_   = false;
 };
 

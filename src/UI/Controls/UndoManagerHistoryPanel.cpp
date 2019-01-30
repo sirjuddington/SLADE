@@ -35,6 +35,7 @@
 #include "UndoManagerHistoryPanel.h"
 #include "General/UndoRedo.h"
 #include "UI/WxUtils.h"
+#include "Utility/Colour.h"
 
 
 // -----------------------------------------------------------------------------

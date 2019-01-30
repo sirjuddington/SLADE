@@ -721,7 +721,7 @@ string PaletteEntryPanel::statusString()
 {
 	// Get current colour
 	ColRGBA col  = pal_canvas_->selectedColour();
-	ColHSL  col2 = Misc::rgbToHsl(col);
+	ColHSL  col2 = col.asHSL();
 
 	return S_FMT(
 		"Index %i\tR %d, G %d, B %d\tH %1.3f, S %1.3f, L %1.3f",
@@ -1503,8 +1503,8 @@ void PaletteEntryPanel::analysePalettes()
 		{
 			ColRGBA ref1 = palettes_[0]->colour(c);
 			ColRGBA cmp1 = palettes_[i]->colour(c);
-			ColHSL  ref2 = Misc::rgbToHsl(ref1);
-			ColHSL  cmp2 = Misc::rgbToHsl(cmp1);
+			ColHSL  ref2 = ref1.asHSL();
+			ColHSL  cmp2 = cmp1.asHSL();
 #ifdef GPALCOMPANALYSIS
 			int    r, g, b;
 			double h, s, l;

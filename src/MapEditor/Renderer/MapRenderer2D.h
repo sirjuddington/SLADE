@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MapEditor/MapEditor.h"
+#include "Utility/Colour.h"
 
 // Forward declarations
 class ItemSelection;

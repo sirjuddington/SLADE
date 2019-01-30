@@ -118,7 +118,8 @@ void BrowserItem::draw(
 	if (viewtype == ItemView::Normal)
 	{
 		if (text_shadow)
-			Drawing::drawText(draw_name, x + (size * 0.5 + 1), y + size + 5, COL_BLACK, font, Drawing::Align::Center);
+			Drawing::drawText(
+				draw_name, x + (size * 0.5 + 1), y + size + 5, ColRGBA::BLACK, font, Drawing::Align::Center);
 		Drawing::drawText(draw_name, x + (size * 0.5), y + size + 4, colour, font, Drawing::Align::Center);
 	}
 	else if (viewtype == ItemView::Tiles)
@@ -132,7 +133,7 @@ void BrowserItem::draw(
 		top += ((size - text_box_->height()) * 0.5);
 
 		if (text_shadow)
-			text_box_->draw(x + size + 9, top + 1, COL_BLACK);
+			text_box_->draw(x + size + 9, top + 1, ColRGBA::BLACK);
 		text_box_->draw(x + size + 8, top, colour);
 	}
 
@@ -213,7 +214,7 @@ void BrowserItem::draw(
 
 	// Draw
 	OpenGL::Texture::bind(image_tex_);
-	OpenGL::setColour(COL_WHITE, false);
+	OpenGL::setColour(ColRGBA::WHITE, false);
 
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.0f);

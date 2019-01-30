@@ -197,8 +197,7 @@ void ThingList::putAllTaggingWithId(int id, int type, vector<MapThing*>& list, i
 	{
 		auto& tt        = Game::configuration().thingType(thing->type());
 		auto  needs_tag = tt.needsTag();
-		if (needs_tag != TagType::None
-			|| (thing->special() && !(tt.flags() & Game::ThingType::Flags::Script)))
+		if (needs_tag != TagType::None || (thing->special() && !(tt.flags() & Game::ThingType::Flags::Script)))
 		{
 			if (needs_tag == TagType::None)
 				needs_tag = Game::configuration().actionSpecial(thing->special()).needsTag();

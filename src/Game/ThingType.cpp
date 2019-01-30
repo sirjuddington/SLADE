@@ -117,7 +117,7 @@ void ThingType::reset()
 	angled_      = true;
 	hanging_     = false;
 	shrink_      = false;
-	colour_      = COL_WHITE;
+	colour_      = ColRGBA::WHITE;
 	radius_      = 20;
 	height_      = -1;
 	scale_       = { 1.0, 1.0 };

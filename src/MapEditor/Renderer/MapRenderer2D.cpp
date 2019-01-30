@@ -1340,7 +1340,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 	// Draw any thing direction arrows needed
 	if (!things_arrows.empty())
 	{
-		auto acol = COL_WHITE;
+		auto acol = ColRGBA::WHITE;
 		acol.a    = 255 * alpha * arrow_alpha;
 		OpenGL::setColour(acol);
 		// glColor4f(1.0f, 1.0f, 1.0f, alpha * arrow_alpha);
@@ -2770,7 +2770,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 
 	// Setup rendering properties
 	bool point = setupVertexRendering(1.0f);
-	OpenGL::setColour(COL_WHITE);
+	OpenGL::setColour(ColRGBA::WHITE);
 	OpenGL::setColour(ColourConfiguration::colour("map_object_edit"), false);
 
 	// Render vertices

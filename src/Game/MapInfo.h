@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Utility/Colour.h"
 #include "Utility/Tokenizer.h"
 
 class Archive;
@@ -23,8 +24,8 @@ public:
 		bool    sky_double           = false;
 		bool    sky_force_no_stretch = false;
 		bool    sky_stretch          = false;
-		ColRGBA fade                 = COL_BLACK;
-		ColRGBA fade_outside         = COL_BLACK; // OutsideFog
+		ColRGBA fade                 = ColRGBA::BLACK;
+		ColRGBA fade_outside         = ColRGBA::BLACK; // OutsideFog
 		string  music;
 		bool    lighting_smooth      = false;
 		int     lighting_wallshade_v = 0;

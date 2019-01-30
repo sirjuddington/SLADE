@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TextEditor/TextLanguage.h"
+#include "Utility/Colour.h"
 
 class SCallTip : public wxPopupWindow
 {

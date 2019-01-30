@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Colour.h"
+
 namespace CodePages
 {
 string  fromASCII(uint8_t val);

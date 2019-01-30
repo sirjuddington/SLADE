@@ -104,7 +104,7 @@ void CropCanvas::draw()
 	}
 
 	// Draw cropping rectangle
-	OpenGL::setColour(COL_BLACK);
+	OpenGL::setColour(ColRGBA::BLACK);
 	glDisable(GL_TEXTURE_2D);
 	glTranslated(hw, hh, 0);                                          // Translate to top-left of graphic
 	Drawing::drawLine(crop_rect_.tl.x, -1000, crop_rect_.tl.x, 1000); // Left

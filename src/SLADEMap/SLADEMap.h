@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Archive/Archive.h"
-#include "MapSpecials.h"
 #include "MapObjectCollection.h"
+#include "MapSpecials.h"
 
 class ParseTreeNode;
 namespace Game

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MapObject.h"
+#include "Utility/Colour.h"
 #include "Utility/Polygon2D.h"
 
 class MapSector : public MapObject

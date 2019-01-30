@@ -90,7 +90,7 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 			"No sectors are open. Just press escape and pretend this never happened.",
 			width * 0.5,
 			height * 0.5,
-			COL_WHITE,
+			ColRGBA::WHITE,
 			Drawing::Font::Normal,
 			Drawing::Align::Center);
 		return;

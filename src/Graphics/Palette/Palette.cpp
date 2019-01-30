@@ -32,7 +32,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Palette.h"
-#include "General/Misc.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/Translation.h"
 #include "Utility/CIEDeltaEquations.h"
@@ -100,8 +99,8 @@ bool Palette::loadMem(MemChunk& mc)
 		{
 			// Set colour in palette
 			colours_[c].set(rgb[0], rgb[1], rgb[2], 255, -1, c);
-			colours_lab_[c]   = Misc::rgbToLab((double)rgb[0] / 255.0, (double)rgb[1] / 255.0, (double)rgb[2] / 255.0);
-			colours_hsl_[c++] = Misc::rgbToHsl((double)rgb[0] / 255.0, (double)rgb[1] / 255.0, (double)rgb[2] / 255.0);
+			colours_lab_[c] = colours_[c].asLAB();
+			colours_hsl_[c] = colours_[c].asHSL();
 		}
 
 		// If we have read 256 colours, finish
@@ -128,10 +127,8 @@ bool Palette::loadMem(const uint8_t* data, uint32_t size)
 	{
 		// Set colour in palette
 		colours_[c].set(data[a], data[a + 1], data[a + 2], 255, -1, c);
-		colours_lab_[c] = Misc::rgbToLab(
-			(double)data[a] / 255.0, (double)data[a + 1] / 255.0, (double)data[a + 2] / 255.0);
-		colours_hsl_[c++] = Misc::rgbToHsl(
-			(double)data[a] / 255.0, (double)data[a + 1] / 255.0, (double)data[a + 2] / 255.0);
+		colours_lab_[c] = colours_[c].asLAB();
+		colours_hsl_[c] = colours_[c].asHSL();
 
 		// If we have read 256 colours, finish
 		if (c == 256)
@@ -433,12 +430,12 @@ bool Palette::loadFile(const string& filename, Format format)
 // -----------------------------------------------------------------------------
 // Sets the colour at [index]
 // -----------------------------------------------------------------------------
-void Palette::setColour(uint8_t index, ColRGBA col)
+void Palette::setColour(uint8_t index, const ColRGBA& col)
 {
 	colours_[index].set(col);
 	colours_[index].index = index;
-	colours_lab_[index]   = Misc::rgbToLab(col.dr(), col.dg(), col.db());
-	colours_hsl_[index]   = Misc::rgbToHsl(col.dr(), col.dg(), col.db());
+	colours_lab_[index]   = colours_[index].asLAB();
+	colours_hsl_[index]   = colours_[index].asHSL();
 }
 
 // -----------------------------------------------------------------------------
@@ -447,8 +444,8 @@ void Palette::setColour(uint8_t index, ColRGBA col)
 void Palette::setColourR(uint8_t index, uint8_t val)
 {
 	colours_[index].r   = val;
-	colours_lab_[index] = Misc::rgbToLab(colours_[index].dr(), colours_[index].dg(), colours_[index].db());
-	colours_hsl_[index] = Misc::rgbToHsl(colours_[index].dr(), colours_[index].dg(), colours_[index].db());
+	colours_lab_[index] = colours_[index].asLAB();
+	colours_hsl_[index] = colours_[index].asHSL();
 }
 
 // -----------------------------------------------------------------------------
@@ -457,8 +454,8 @@ void Palette::setColourR(uint8_t index, uint8_t val)
 void Palette::setColourG(uint8_t index, uint8_t val)
 {
 	colours_[index].g   = val;
-	colours_lab_[index] = Misc::rgbToLab(colours_[index].dr(), colours_[index].dg(), colours_[index].db());
-	colours_hsl_[index] = Misc::rgbToHsl(colours_[index].dr(), colours_[index].dg(), colours_[index].db());
+	colours_lab_[index] = colours_[index].asLAB();
+	colours_hsl_[index] = colours_[index].asHSL();
 }
 
 // -----------------------------------------------------------------------------
@@ -467,14 +464,14 @@ void Palette::setColourG(uint8_t index, uint8_t val)
 void Palette::setColourB(uint8_t index, uint8_t val)
 {
 	colours_[index].b   = val;
-	colours_lab_[index] = Misc::rgbToLab(colours_[index].dr(), colours_[index].dg(), colours_[index].db());
-	colours_hsl_[index] = Misc::rgbToHsl(colours_[index].dr(), colours_[index].dg(), colours_[index].db());
+	colours_lab_[index] = colours_[index].asLAB();
+	colours_hsl_[index] = colours_[index].asHSL();
 }
 
 // -----------------------------------------------------------------------------
 // Creates a gradient between two colous along a specified index range
 // -----------------------------------------------------------------------------
-void Palette::setGradient(uint8_t startIndex, uint8_t endIndex, ColRGBA startCol, ColRGBA endCol)
+void Palette::setGradient(uint8_t startIndex, uint8_t endIndex, const ColRGBA& startCol, const ColRGBA& endCol)
 {
 	ColRGBA gradCol = ColRGBA();
 	int     range   = endIndex - startIndex;
@@ -525,7 +522,7 @@ void Palette::copyPalette(const Palette* copy)
 // Returns the index of the colour in the palette matching [colour], or -1 if
 // no match is found
 // -----------------------------------------------------------------------------
-short Palette::findColour(ColRGBA colour)
+short Palette::findColour(const ColRGBA& colour)
 {
 	for (int a = 0; a < 256; a++)
 	{
@@ -541,7 +538,7 @@ short Palette::findColour(ColRGBA colour)
 // palette colour at [index], using the colour matching method specified in
 // [match]
 // -----------------------------------------------------------------------------
-double Palette::colourDiff(ColRGBA& rgb, ColHSL& hsl, ColLAB& lab, int index, ColourMatch match)
+double Palette::colourDiff(const ColRGBA& rgb, const ColHSL& hsl, const ColLAB& lab, int index, ColourMatch match)
 {
 	double d1, d2, d3;
 	switch (match)
@@ -583,12 +580,12 @@ double Palette::colourDiff(ColRGBA& rgb, ColHSL& hsl, ColLAB& lab, int index, Co
 // -----------------------------------------------------------------------------
 // Returns the index of the closest colour in the palette to [colour]
 // -----------------------------------------------------------------------------
-short Palette::nearestColour(ColRGBA colour, ColourMatch match)
+short Palette::nearestColour(const ColRGBA& colour, ColourMatch match)
 {
 	double min_d = 999999;
 	short  index = 0;
-	ColHSL chsl  = Misc::rgbToHsl(colour);
-	ColLAB clab  = Misc::rgbToLab(colour);
+	ColHSL chsl  = colour.asHSL();
+	ColLAB clab  = colour.asLAB();
 
 	// Be nice if there was an easier way to convert from int -> enum class,
 	// but then that's kind of the point of them I guess
@@ -667,7 +664,7 @@ void Palette::applyTranslation(Translation* trans)
 // -----------------------------------------------------------------------------
 // Colourises the palette to [colour]
 // -----------------------------------------------------------------------------
-void Palette::colourise(ColRGBA colour, int start, int end)
+void Palette::colourise(const ColRGBA& colour, int start, int end)
 {
 	// Handle default values: a range of (-1, -1) means the entire palette
 	if (start < 0 || start > 255)
@@ -692,7 +689,7 @@ void Palette::colourise(ColRGBA colour, int start, int end)
 // -----------------------------------------------------------------------------
 // Tints the palette to [colour] by [amount]
 // -----------------------------------------------------------------------------
-void Palette::tint(ColRGBA colour, float amount, int start, int end)
+void Palette::tint(const ColRGBA& colour, float amount, int start, int end)
 {
 	// Handle default values: a range of (-1, -1) means the entire palette
 	if (start < 0 || start > 255)
@@ -783,8 +780,8 @@ void Palette::saturate(float amount, int start, int end)
 		colours_hsl_[i].s *= amount;
 		if (colours_hsl_[i].s > 1.)
 			colours_hsl_[i].s = 1.;
-		setColour(i, Misc::hslToRgb(colours_hsl_[i]));
-		colours_lab_[i] = Misc::rgbToLab(colours_[i].dr(), colours_[i].dg(), colours_[i].db());
+		colours_[i]     = colours_hsl_[i].asRGB();
+		colours_lab_[i] = colours_[i].asLAB();
 	}
 }
 
@@ -811,8 +808,8 @@ void Palette::illuminate(float amount, int start, int end)
 		colours_hsl_[i].l *= amount;
 		if (colours_hsl_[i].l > 1.)
 			colours_hsl_[i].l = 1.;
-		setColour(i, Misc::hslToRgb(colours_hsl_[i]));
-		colours_lab_[i] = Misc::rgbToLab(colours_[i].dr(), colours_[i].dg(), colours_[i].db());
+		colours_[i]     = colours_hsl_[i].asRGB();
+		colours_lab_[i] = colours_[i].asLAB();
 	}
 }
 
@@ -839,8 +836,8 @@ void Palette::shift(float amount, int start, int end)
 		colours_hsl_[i].h += amount;
 		if (colours_hsl_[i].h >= 1.)
 			colours_hsl_[i].h -= 1.;
-		setColour(i, Misc::hslToRgb(colours_hsl_[i]));
-		colours_lab_[i] = Misc::rgbToLab(colours_[i].dr(), colours_[i].dg(), colours_[i].db());
+		colours_[i]     = colours_hsl_[i].asRGB();
+		colours_lab_[i] = colours_[i].asLAB();
 	}
 }
 

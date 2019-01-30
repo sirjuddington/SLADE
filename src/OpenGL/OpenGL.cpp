@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "OpenGL.h"
+#include "Utility/Colour.h"
 
 
 // -----------------------------------------------------------------------------
@@ -247,7 +248,7 @@ int* OpenGL::getWxGLAttribs()
 // Sets the colour to [col], and changes the colour blend mode if needed and
 // [set_blend] is true
 // -----------------------------------------------------------------------------
-void OpenGL::setColour(ColRGBA col, bool set_blend)
+void OpenGL::setColour(const ColRGBA& col, bool set_blend)
 {
 	// Colour
 	glColor4ub(col.r, col.g, col.b, col.a);

@@ -99,7 +99,7 @@ unsigned OpenGL::Texture::missingTexture()
 	if (tex_missing.id == 0)
 	{
 		auto id = create();
-		genChequeredTexture(id, 8, COL_BLACK, COL_RED);
+		genChequeredTexture(id, 8, ColRGBA::BLACK, ColRGBA::RED);
 		tex_missing = textures[id];
 	}
 
@@ -357,7 +357,7 @@ ColRGBA OpenGL::Texture::averageColour(unsigned id, Recti area)
 {
 	// Check texture is loaded
 	if (!isLoaded(id))
-		return COL_BLACK;
+		return ColRGBA::BLACK;
 
 	// Empty area rect means full texture
 	const auto& tex_info = textures[id];

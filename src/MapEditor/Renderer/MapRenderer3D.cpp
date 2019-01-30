@@ -584,7 +584,7 @@ void MapRenderer3D::renderMap()
 	// Render sky
 	if (render_3d_sky)
 		renderSky();
-	OpenGL::setColour(COL_WHITE);
+	OpenGL::setColour(ColRGBA::WHITE);
 
 	if (fog_)
 	{
@@ -718,7 +718,7 @@ void MapRenderer3D::renderSkySlice(float top, float bottom, float atop, float ab
 // -----------------------------------------------------------------------------
 void MapRenderer3D::renderSky()
 {
-	OpenGL::setColour(COL_WHITE);
+	OpenGL::setColour(ColRGBA::WHITE);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_FOG);
 	glDisable(GL_DEPTH_TEST);
@@ -3140,7 +3140,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	}
 
 	// glEnable(GL_DEPTH_TEST);
-	OpenGL::setColour(COL_WHITE);
+	OpenGL::setColour(ColRGBA::WHITE);
 }
 
 // -----------------------------------------------------------------------------

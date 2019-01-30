@@ -1551,6 +1551,9 @@
     <ClCompile Include="..\..\src\SLADEMap\MapSpecials.cpp">
       <Filter>SLADEMap</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utility\Colour.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2722,6 +2725,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\SLADEMap\MapSpecials.h">
       <Filter>SLADEMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\Colour.h">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

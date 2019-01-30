@@ -26,6 +26,8 @@
 #undef None // Why does <X11/X.h> #define this? Idiotic
 #endif
 
+struct ColRGBA;
+
 namespace OpenGL
 {
 static const int8_t BLEND_NORMAL   = 0;
@@ -57,7 +59,7 @@ bool     accuracyTweak();
 #ifndef USE_SFML_RENDERWINDOW
 int* getWxGLAttribs();
 #endif
-void setColour(ColRGBA col, bool set_blend = true);
+void setColour(const ColRGBA& col, bool set_blend = true);
 void setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, int8_t blend = BLEND_IGNORE);
 void setBlend(int blend);
 void resetBlend();
