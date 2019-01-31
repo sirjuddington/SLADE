@@ -42,7 +42,6 @@
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, archive_load_data)
-EXTERN_CVAR(Bool, wad_force_uppercase)
 
 
 // -----------------------------------------------------------------------------
@@ -272,60 +271,6 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
 	entry->setLoaded();
 
 	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Override of Archive::addEntry to force entry addition to the root directory
-// and rename the entry if necessary to be wad2-friendly (16 characters max and
-// no file extension)
-// -----------------------------------------------------------------------------
-ArchiveEntry* Wad2Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
-{
-	// Check entry
-	if (!entry)
-		return nullptr;
-
-	// Check if read-only
-	if (isReadOnly())
-		return nullptr;
-
-	// Copy if necessary
-	if (copy)
-		entry = new ArchiveEntry(*entry);
-
-	// Process name (must be 16 characters max, also cut any extension as wad entries don't usually want them)
-	wxFileName fn(entry->name());
-	string     name = fn.GetName().Truncate(16);
-	if (wad_force_uppercase)
-		name.MakeUpper();
-
-	// Set new wad-friendly name
-	entry->setName(name);
-
-	// Do default entry addition (to root directory)
-	Archive::addEntry(entry, position);
-
-	return entry;
-}
-
-// -----------------------------------------------------------------------------
-// Override of Archive::renameEntry enforce wad2-friendly entry names
-// (16 characters max and uppercase if forced)
-// -----------------------------------------------------------------------------
-bool Wad2Archive::renameEntry(ArchiveEntry* entry, const string& name)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return false;
-
-	// Process name (must be 16 characters max, also cut any extension as wad entries don't usually want them)
-	wxFileName fn(name);
-	auto       new_name = fn.GetName().Truncate(16);
-	if (wad_force_uppercase)
-		new_name.MakeUpper();
-
-	// Do default rename
-	return Archive::renameEntry(entry, new_name);
 }
 
 

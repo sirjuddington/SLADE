@@ -9,20 +9,14 @@ struct ArchiveFormat
 {
 	string             id;
 	string             name;
-	bool               supports_dirs;
-	bool               names_extensions;
-	int                max_name_length;
+	bool               supports_dirs    = false;
+	bool               names_extensions = true;
+	int                max_name_length  = -1;
 	string             entry_format;
 	vector<StringPair> extensions;
+	bool               prefer_uppercase = false;
 
-	ArchiveFormat(const string& id) :
-		id{ id },
-		name{ id },
-		supports_dirs{ false },
-		names_extensions{ true },
-		max_name_length{ -1 }
-	{
-	}
+	ArchiveFormat(const string& id) : id{ id }, name{ id } {}
 };
 
 class Archive : public Announcer

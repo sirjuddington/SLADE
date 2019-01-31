@@ -3,6 +3,7 @@
 #include "EntryType/EntryType.h"
 #include "Utility/PropertyList/PropertyList.h"
 
+struct ArchiveFormat;
 class ArchiveTreeNode;
 class Archive;
 
@@ -78,6 +79,7 @@ public:
 	void unlock();
 	void lockState() { state_locked_ = true; }
 	void unlockState() { state_locked_ = false; }
+	void formatName(const ArchiveFormat& format);
 
 	// Entry modification (will change entry state)
 	bool rename(const string& new_name);

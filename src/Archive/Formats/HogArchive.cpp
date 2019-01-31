@@ -346,9 +346,8 @@ bool HogArchive::loadEntryData(ArchiveEntry* entry)
 }
 
 // -----------------------------------------------------------------------------
-// Override of Archive::addEntry to force entry addition to the root directory,
-// update namespaces if needed and rename the entry if necessary to be
-// hog-friendly (12 characters max with extension)
+// Override of Archive::addEntry to force entry addition to the root directory
+// and set encryption for the entry
 // -----------------------------------------------------------------------------
 ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
 {
@@ -364,14 +363,11 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 	if (copy)
 		entry = new ArchiveEntry(*entry);
 
-	// Process name (must be 12 characters max)
-	string name = entry->name().Truncate(12);
-
-	// Set new hog-friendly name
-	entry->setName(name);
+	if (shouldEncodeTxb(entry->name()))
+		entry->setEncryption(ArchiveEntry::Encryption::TXB);
 
 	// Do default entry addition (to root directory)
-	Archive::addEntry(entry, position);
+	TreelessArchive::addEntry(entry, position);
 
 	return entry;
 }
@@ -381,34 +377,27 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // -----------------------------------------------------------------------------
 ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
 {
-	if (shouldEncodeTxb(entry->name()))
-		entry->setEncryption(ArchiveEntry::Encryption::TXB);
-
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
 
 // -----------------------------------------------------------------------------
-// Override of Archive::renameEntry to update namespaces if needed and rename
-// the entry if necessary to be hog-friendly (twelve characters max)
+// Override of Archive::renameEntry to update entry encryption info
 // -----------------------------------------------------------------------------
 bool HogArchive::renameEntry(ArchiveEntry* entry, const string& name)
 {
-	// Check entry
-	if (!checkEntry(entry))
-		return false;
-
-	// Process name (must be 12 characters max)
-	auto new_name = name;
-	new_name.Truncate(12);
-
-	// Update encode status
-	if (shouldEncodeTxb(new_name))
-		entry->setEncryption(ArchiveEntry::Encryption::TXB);
-	else
-		entry->setEncryption(ArchiveEntry::Encryption::None);
-
 	// Do default rename
-	return Archive::renameEntry(entry, new_name);
+	if (Archive::renameEntry(entry, name))
+	{
+		// Update encode status
+		if (shouldEncodeTxb(entry->name()))
+			entry->setEncryption(ArchiveEntry::Encryption::TXB);
+		else
+			entry->setEncryption(ArchiveEntry::Encryption::None);
+
+		return true;
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------

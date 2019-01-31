@@ -350,67 +350,6 @@ bool ResArchive::loadEntryData(ArchiveEntry* entry)
 }
 
 // -----------------------------------------------------------------------------
-// Override of Archive::addEntry to force entry addition to the root directory,
-// update namespaces if needed and rename the entry if necessary to be
-// res-friendly (14 characters max)
-// -----------------------------------------------------------------------------
-ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
-{
-	// Check entry
-	if (!entry)
-		return nullptr;
-
-	// Check if read-only
-	if (isReadOnly())
-		return nullptr;
-
-	// Copy if necessary
-	if (copy)
-		entry = new ArchiveEntry(*entry);
-
-	// Process name (must be 14 characters max)
-	wxFileName fn(entry->name());
-	string     name = fn.GetName().Truncate(14);
-
-	// Set new res-friendly name
-	entry->setName(name);
-
-	// Do default entry addition (to root directory)
-	Archive::addEntry(entry, position);
-
-	return entry;
-}
-
-// -----------------------------------------------------------------------------
-// Adds [entry] to the end of the namespace matching [add_namespace].
-// If [copy] is true a copy of the entry is added.
-// Returns the added entry or NULL if the entry is invalid
-// -----------------------------------------------------------------------------
-ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
-{
-	// Namespace not found, add to global namespace (ie end of archive)
-	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
-}
-
-// -----------------------------------------------------------------------------
-// Override of Archive::renameEntry to update namespaces if needed and rename
-// the entry if necessary to be res-friendly (14 chars max)
-// -----------------------------------------------------------------------------
-bool ResArchive::renameEntry(ArchiveEntry* entry, const string& name)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return false;
-
-	// Process name (must be 14 characters max)
-	wxFileName fn(name);
-	auto       new_name = fn.GetName().Truncate(14);
-
-	// Do default rename
-	return Archive::renameEntry(entry, new_name);
-}
-
-// -----------------------------------------------------------------------------
 // Checks if the given data is a valid A&A res archive
 // -----------------------------------------------------------------------------
 bool ResArchive::isResArchive(MemChunk& mc)

@@ -40,7 +40,6 @@
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, wad_force_uppercase)
 EXTERN_CVAR(Bool, archive_load_data)
 
 
@@ -323,67 +322,6 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry)
 	entry->setLoaded();
 
 	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Override of Archive::addEntry to force entry addition to the root directory,
-// update namespaces if needed and rename the entry if necessary to be
-// lfd-friendly (13 characters max with extension)
-// -----------------------------------------------------------------------------
-ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
-{
-	// Check entry
-	if (!entry)
-		return nullptr;
-
-	// Check if read-only
-	if (isReadOnly())
-		return nullptr;
-
-	// Copy if necessary
-	if (copy)
-		entry = new ArchiveEntry(*entry);
-
-	// Process name (must be 13 characters max)
-	string name = entry->name().Truncate(13);
-	if (wad_force_uppercase)
-		name.MakeUpper();
-
-	// Set new lfd-friendly name
-	entry->setName(name);
-
-	// Do default entry addition (to root directory)
-	Archive::addEntry(entry, position);
-
-	return entry;
-}
-
-// -----------------------------------------------------------------------------
-// Since lfd files have no namespaces, just call the other function.
-// -----------------------------------------------------------------------------
-ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
-{
-	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
-}
-
-// -----------------------------------------------------------------------------
-// Override of Archive::renameEntry to update namespaces if needed and rename
-// the entry if necessary to be lfd-friendly (twelve characters max)
-// -----------------------------------------------------------------------------
-bool LfdArchive::renameEntry(ArchiveEntry* entry, const string& name)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return false;
-
-	// Process name (must be 13 characters max)
-	auto new_name = name;
-	new_name.Truncate(13);
-	if (wad_force_uppercase)
-		new_name.MakeUpper();
-
-	// Do default rename
-	return Archive::renameEntry(entry, new_name);
 }
 
 // -----------------------------------------------------------------------------
