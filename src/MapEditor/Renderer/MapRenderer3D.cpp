@@ -210,7 +210,7 @@ MapRenderer3D::Quad* MapRenderer3D::getQuad(MapEditor::Item item)
 		return nullptr;
 
 	// Get side
-	auto side = map_->side(item.index);
+	auto side = item.asSide(*map_);
 	if (!side)
 		return nullptr;
 
@@ -1121,7 +1121,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 			continue;
 
 		// Get sector
-		auto sector = map_->sector(item.index);
+		auto sector = item.asSector(*map_);
 		if (!sector)
 			return;
 
@@ -2017,12 +2017,12 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 			continue;
 
 		// Get side
-		auto side = map_->side(item.index);
+		auto side = item.asSide(*map_);
 		if (!side)
 			continue;
 
 		// Get parent line index
-		int line = map_->side(item.index)->parentLine()->index();
+		int line = side->parentLine()->index();
 
 		// Get appropriate quad
 		Quad* quad = nullptr;
@@ -2428,8 +2428,7 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 			continue;
 
 		// Get thing
-		Vec2f strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
-		auto  thing = map_->thing(item.index);
+		auto  thing = item.asThing(*map_);
 		if (!thing)
 			return;
 
@@ -2991,12 +2990,12 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 		|| hilight.type == MapEditor::ItemType::WallTop)
 	{
 		// Get side
-		auto side = map_->side(hilight.index);
+		auto side = hilight.asSide(*map_);
 		if (!side)
 			return;
 
 		// Get parent line index
-		int line = map_->side(hilight.index)->parentLine()->index();
+		int line = side->parentLine()->index();
 
 		// Get appropriate quad
 		Quad* quad = nullptr;
@@ -3056,7 +3055,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	if (hilight.type == MapEditor::ItemType::Floor || hilight.type == MapEditor::ItemType::Ceiling)
 	{
 		// Get sector
-		auto sector = map_->sector(hilight.index);
+		auto sector = hilight.asSector(*map_);
 		if (!sector)
 			return;
 
@@ -3096,8 +3095,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	if (hilight.type == MapEditor::ItemType::Thing)
 	{
 		// Get thing
-		Vec2f strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
-		auto  thing = map_->thing(hilight.index);
+		auto  thing = hilight.asThing(*map_);
 		if (!thing)
 			return;
 

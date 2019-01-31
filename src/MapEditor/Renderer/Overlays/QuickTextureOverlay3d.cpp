@@ -203,26 +203,23 @@ void QuickTextureOverlay3d::applyTexture()
 				continue;
 
 			// Floor
-			else if (item.type == MapEditor::ItemType::Floor && sel_flats_)
+			if (item.type == MapEditor::ItemType::Floor && sel_flats_)
 			{
-				auto sector = editor_->map().sector(item.index);
-				if (sector)
+				if (auto sector = item.asSector(editor_->map()))
 					sector->setFloorTexture(textures_[current_index_].name);
 			}
 
 			// Ceiling
 			else if (item.type == MapEditor::ItemType::Ceiling && sel_flats_)
 			{
-				auto sector = editor_->map().sector(item.index);
-				if (sector)
+				if (auto sector = item.asSector(editor_->map()))
 					sector->setCeilingTexture(textures_[current_index_].name);
 			}
 
 			// Wall
 			else if (sel_walls_)
 			{
-				auto side = editor_->map().side(item.index);
-				if (side)
+				if (auto side = item.asSide(editor_->map()))
 				{
 					// Upper
 					if (item.type == MapEditor::ItemType::WallTop)

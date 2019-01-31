@@ -35,7 +35,7 @@ public:
 	// Copy / Paste
 	void copy() const;
 	void paste(Vec2f mouse_pos) const;
-	void copyProperties(MapObject* object = nullptr);
+	void copyProperties();
 	void pasteProperties();
 
 	// Create / Delete

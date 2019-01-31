@@ -187,8 +187,11 @@ void Edit2D::editObjectProperties()
 		context_.renderer().forceUpdate();
 		context_.updateDisplay();
 
-		if (context_.editMode() == MapEditor::Mode::Things)
-			copyProperties(selection[0]);
+		if (context_.editMode() == MapEditor::Mode::Things && selection[0]->objType() == MapObject::Type::Thing)
+		{
+			copy_thing_.copy(selection[0]);
+			thing_copied_ = true;
+		}
 	}
 
 	// End undo level
@@ -675,68 +678,40 @@ void Edit2D::paste(Vec2f mouse_pos) const
 }
 
 // -----------------------------------------------------------------------------
-// Copies the properties from [object] to be used for paste/create
+// Copies the properties from the first selected or current hilighted item
 // -----------------------------------------------------------------------------
-void Edit2D::copyProperties(MapObject* object)
+void Edit2D::copyProperties()
 {
-	auto selection = context_.selection();
-
-	// Do nothing if no selection or hilight
-	if (!selection.hasHilightOrSelection())
+	// Get MapObject to copy from
+	auto copy_object = context_.selection().firstSelectedOrHilight().asObject(context_.map());
+	if (!copy_object)
 		return;
 
 	// Sectors mode
 	if (context_.editMode() == MapEditor::Mode::Sectors)
 	{
-		// Copy selection/hilight properties
-		if (!selection.empty())
-			copy_sector_.copy(context_.map().sector(selection[0].index));
-		else if (selection.hasHilight())
-			copy_sector_.copy(selection.hilightedSector());
-
-		// Editor message
-		if (!object)
-			context_.addEditorMessage("Copied sector properties");
-
+		copy_sector_.copy(copy_object);
 		sector_copied_ = true;
+
+		context_.addEditorMessage(S_FMT("Copied sector #%d properties", copy_object->index()));
 	}
 
 	// Things mode
 	else if (context_.editMode() == MapEditor::Mode::Things)
 	{
-		// Copy given object properties (if any)
-		if (object && object->objType() == MapObject::Type::Thing)
-			copy_thing_.copy(object);
-		else
-		{
-			// Otherwise copy selection/hilight properties
-			if (!selection.empty())
-				copy_thing_.copy(context_.map().thing(selection[0].index));
-			else if (selection.hasHilight())
-				copy_thing_.copy(selection.hilightedThing());
-			else
-				return;
-		}
-
-		// Editor message
-		if (!object)
-			context_.addEditorMessage("Copied thing properties");
-
+		copy_thing_.copy(copy_object);
 		thing_copied_ = true;
+
+		context_.addEditorMessage(S_FMT("Copied thing #%d properties", copy_object->index()));
 	}
 
 	// Lines mode
 	else if (context_.editMode() == MapEditor::Mode::Lines)
 	{
-		if (!selection.empty())
-			copy_line_.copy(context_.map().line(selection[0].index));
-		else if (selection.hasHilight())
-			copy_line_.copy(selection.hilightedLine());
-
-		if (!object)
-			context_.addEditorMessage("Copied line properties");
-
+		copy_line_.copy(copy_object);
 		line_copied_ = true;
+
+		context_.addEditorMessage(S_FMT("Copied line #%d properties", copy_object->index()));
 	}
 }
 
@@ -931,7 +906,7 @@ void Edit2D::createSector(Vec2f pos) const
 	// Get sector to copy if we're in sectors mode
 	MapSector* sector_copy = nullptr;
 	if (context_.editMode() == MapEditor::Mode::Sectors && !context_.selection().empty())
-		sector_copy = map.sector(context_.selection().begin()->index);
+		sector_copy = context_.selection()[0].asSector(map);
 
 	// Run sector builder
 	SectorBuilder builder;

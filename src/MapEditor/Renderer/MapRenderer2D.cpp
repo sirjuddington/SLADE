@@ -322,13 +322,10 @@ void MapRenderer2D::renderVertexSelection(const ItemSelection& selection, float 
 
 	// Draw selected vertices
 	glBegin(GL_POINTS);
-	for (auto item : selection)
+	for (const auto& item : selection)
 	{
-		auto v = map_->vertex(item.index);
-		if (!v)
-			continue;
-
-		glVertex2d(v->xPos(), v->yPos());
+		if (auto v = item.asVertex(*map_))
+			glVertex2d(v->xPos(), v->yPos());
 	}
 	glEnd();
 
@@ -565,29 +562,21 @@ void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fa
 
 	// Render selected lines
 	MapLine* line;
-	double   x1, y1, x2, y2;
 	glBegin(GL_LINES);
-	for (auto item : selection)
+	for (const auto& item : selection)
 	{
-		line = map_->line(item.index);
-		if (!line)
-			continue;
+		if ((line = item.asLine(*map_)))
+		{
+			// Draw line
+			glVertex2d(line->x1(), line->y1());
+			glVertex2d(line->x2(), line->y2());
 
-		// Get line properties
-		x1 = line->v1()->xPos();
-		y1 = line->v1()->yPos();
-		x2 = line->v2()->xPos();
-		y2 = line->v2()->yPos();
-
-		// Draw line
-		glVertex2d(x1, y1);
-		glVertex2d(x2, y2);
-
-		// Direction tab
-		auto mid = line->getPoint(MapObject::Point::Mid);
-		auto tab = line->dirTabPoint();
-		glVertex2d(mid.x, mid.y);
-		glVertex2d(tab.x, tab.y);
+			// Direction tab
+			auto mid = line->getPoint(MapObject::Point::Mid);
+			auto tab = line->dirTabPoint();
+			glVertex2d(mid.x, mid.y);
+			glVertex2d(tab.x, tab.y);
+		}
 	}
 	glEnd();
 }
@@ -1502,24 +1491,23 @@ void MapRenderer2D::renderThingSelection(const ItemSelection& selection, float f
 	bool point = setupThingOverlay();
 
 	// Draw all selection overlays
-	for (auto item : selection)
+	for (const auto& item : selection)
 	{
-		auto thing = map_->thing(item.index);
-		if (!thing)
-			continue;
+		if (auto thing = item.asThing(*map_))
+		{
+			auto&  tt     = Game::configuration().thingType(thing->type());
+			double radius = tt.radius();
+			if (tt.shrinkOnZoom())
+				radius = scaledRadius(radius);
 
-		auto&  tt     = Game::configuration().thingType(thing->type());
-		double radius = tt.radius();
-		if (tt.shrinkOnZoom())
-			radius = scaledRadius(radius);
+			// Adjust radius if the overlay isn't square
+			if (!thing_overlay_square)
+				radius += 8;
+			radius += halo_width * view_scale_inv_;
 
-		// Adjust radius if the overlay isn't square
-		if (!thing_overlay_square)
-			radius += 8;
-		radius += halo_width * view_scale_inv_;
-
-		// Draw it
-		renderThingOverlay(thing->xPos(), thing->yPos(), radius * (0.8 + (0.2 * fade)), point);
+			// Draw it
+			renderThingOverlay(thing->xPos(), thing->yPos(), radius * (0.8 + (0.2 * fade)), point);
+		}
 	}
 
 	// Clean up gl state
@@ -2247,42 +2235,41 @@ void MapRenderer2D::renderFlatSelection(const ItemSelection& selection, float fa
 	// Draw selection
 	glColor4f(col.fr(), col.fg(), col.fb(), col.fa() * 0.75f);
 	vector<MapSide*> sides_selected;
-	for (auto item : selection)
+	for (const auto& item : selection)
 	{
-		// Don't draw if outside screen (but still draw if it's small)
-		if (vis_s_[item.index] > 0 && vis_s_[item.index] != VIS_SMALL)
-			continue;
-
-		auto sector = map_->sector(item.index);
-		if (!sector)
-			continue;
-
-		// Get the sector's polygon
-		auto  poly  = sector->polygon();
-		auto& sides = sector->connectedSides();
-
-		if (poly->hasPolygon())
+		if (auto sector = item.asSector(*map_))
 		{
-			if (sector_selected_fill)
-				sector->polygon()->render();
+			// Don't draw if outside screen (but still draw if it's small)
+			if (vis_s_[item.index] > 0 && vis_s_[item.index] != VIS_SMALL)
+				continue;
 
-			for (auto side : sides)
-				sides_selected.push_back(side);
-		}
-		else
-		{
-			// Something went wrong with the polygon, just draw sector outline instead
-			glColor4f(col.fr(), col.fg(), col.fb(), col.fa());
-			glBegin(GL_LINES);
-			for (auto& side : sides)
+			// Get the sector's polygon
+			auto  poly  = sector->polygon();
+			auto& sides = sector->connectedSides();
+
+			if (poly->hasPolygon())
 			{
-				auto line = side->parentLine();
-				glVertex2d(line->v1()->xPos(), line->v1()->yPos());
-				glVertex2d(line->v2()->xPos(), line->v2()->yPos());
-			}
-			glEnd();
+				if (sector_selected_fill)
+					sector->polygon()->render();
 
-			glColor4f(col.fr(), col.fg(), col.fb(), col.fa() * 0.6f);
+				for (auto side : sides)
+					sides_selected.push_back(side);
+			}
+			else
+			{
+				// Something went wrong with the polygon, just draw sector outline instead
+				glColor4f(col.fr(), col.fg(), col.fb(), col.fa());
+				glBegin(GL_LINES);
+				for (auto& side : sides)
+				{
+					auto line = side->parentLine();
+					glVertex2d(line->v1()->xPos(), line->v1()->yPos());
+					glVertex2d(line->v2()->xPos(), line->v2()->yPos());
+				}
+				glEnd();
+
+				glColor4f(col.fr(), col.fg(), col.fb(), col.fa() * 0.6f);
+			}
 		}
 	}
 
@@ -2374,20 +2361,17 @@ void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices
 	vector<uint8_t> lines_drawn(map_->nLines(), 0);
 
 	// Determine what lines need drawing (and which of their vertices are being moved)
-	for (auto item : vertices)
+	for (const auto& item : vertices)
 	{
-		if (item.type != MapEditor::ItemType::Vertex)
-			continue;
-
-		auto v = map_->vertex(item.index);
-		for (unsigned l = 0; l < v->nConnectedLines(); l++)
+		if (auto v = item.asVertex(*map_))
 		{
-			auto line = v->connectedLine(l);
-
-			if (line->v1() == v)
-				lines_drawn[line->index()] |= 1;
-			if (line->v2() == v)
-				lines_drawn[line->index()] |= 2;
+			for (const auto& line : v->connectedLines())
+			{
+				if (line->v1() == v)
+					lines_drawn[line->index()] |= 1;
+				if (line->v2() == v)
+					lines_drawn[line->index()] |= 2;
+			}
 		}
 	}
 
@@ -2427,12 +2411,10 @@ void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices
 	// Draw moving vertex overlays
 	bool point = setupVertexRendering(1.5f);
 	glBegin(GL_POINTS);
-	for (auto item : vertices)
+	for (const auto& item : vertices)
 	{
-		if (item.type != MapEditor::ItemType::Vertex)
-			continue;
-
-		glVertex2d(map_->vertex(item.index)->xPos() + move_vec.x, map_->vertex(item.index)->yPos() + move_vec.y);
+		if (auto v = item.asVertex(*map_))
+			glVertex2d(v->xPos() + move_vec.x, v->yPos() + move_vec.y);
 	}
 	glEnd();
 
@@ -2453,33 +2435,33 @@ void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, Vec2
 	vector<uint8_t> lines_drawn(map_->nLines(), 0);
 
 	// Determine what lines need drawing (and which of their vertices are being moved)
-	for (auto item : lines)
+	for (const auto& item : lines)
 	{
-		if (item.type != MapEditor::ItemType::Line)
-			continue;
-
-		// Check first vertex
-		auto v = map_->line(item.index)->v1();
-		for (unsigned l = 0; l < v->nConnectedLines(); l++)
+		if (auto line = item.asLine(*map_))
 		{
-			auto line = v->connectedLine(l);
+			// Check first vertex
+			auto v = line->v1();
+			for (unsigned l = 0; l < v->nConnectedLines(); l++)
+			{
+				auto cline = v->connectedLine(l);
 
-			if (line->v1() == v)
-				lines_drawn[line->index()] |= 1;
-			if (line->v2() == v)
-				lines_drawn[line->index()] |= 2;
-		}
+				if (cline->v1() == v)
+					lines_drawn[cline->index()] |= 1;
+				if (cline->v2() == v)
+					lines_drawn[cline->index()] |= 2;
+			}
 
-		// Check second vertex
-		v = map_->line(item.index)->v2();
-		for (unsigned l = 0; l < v->nConnectedLines(); l++)
-		{
-			auto line = v->connectedLine(l);
+			// Check second vertex
+			v = line->v2();
+			for (unsigned l = 0; l < v->nConnectedLines(); l++)
+			{
+				auto cline = v->connectedLine(l);
 
-			if (line->v1() == v)
-				lines_drawn[line->index()] |= 1;
-			if (line->v2() == v)
-				lines_drawn[line->index()] |= 2;
+				if (cline->v1() == v)
+					lines_drawn[cline->index()] |= 1;
+				if (cline->v2() == v)
+					lines_drawn[cline->index()] |= 2;
+			}
 		}
 	}
 
@@ -2519,11 +2501,13 @@ void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, Vec2
 	// Draw moving line overlays
 	glLineWidth(line_width * 3);
 	glBegin(GL_LINES);
-	for (auto item : lines)
+	for (const auto& item : lines)
 	{
-		auto line = map_->line(item.index);
-		glVertex2d(line->x1() + move_vec.x, line->y1() + move_vec.y);
-		glVertex2d(line->x2() + move_vec.x, line->y2() + move_vec.y);
+		if (auto line = item.asLine(*map_))
+		{
+			glVertex2d(line->x1() + move_vec.x, line->y1() + move_vec.y);
+			glVertex2d(line->x2() + move_vec.x, line->y2() + move_vec.y);
+		}
 	}
 	glEnd();
 }
@@ -2536,12 +2520,15 @@ void MapRenderer2D::renderMovingSectors(const vector<MapEditor::Item>& sectors, 
 {
 	// Determine what lines are being moved
 	vector<uint8_t> lines_moved(map_->nLines(), 0);
-	for (auto sector : sectors)
+	for (auto item : sectors)
 	{
-		// Go through connected sides
-		auto& sides = map_->sector(sector.index)->connectedSides();
-		for (auto& side : sides)
-			lines_moved[side->parentLine()->index()] = 1; // Mark parent line as moved
+		if (auto sector = item.asSector(*map_))
+		{
+			// Go through connected sides
+			auto& sides = sector->connectedSides();
+			for (auto& side : sides)
+				lines_moved[side->parentLine()->index()] = 1; // Mark parent line as moved
+		}
 	}
 
 	// Build list of moving lines
@@ -2572,8 +2559,11 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, Ve
 	double    x, y, angle;
 	for (unsigned a = 0; a < things.size(); a++)
 	{
+		thing = things[a].asThing(*map_);
+		if (!thing)
+			continue;
+
 		// Get thing info
-		thing = map_->thing(things[a].index);
 		x     = thing->xPos() + move_vec.x;
 		y     = thing->yPos() + move_vec.y;
 		angle = thing->angle();
@@ -2602,16 +2592,18 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, Ve
 	{
 		glEnable(GL_TEXTURE_2D);
 
-		for (auto item : things)
+		for (const auto& item : things)
 		{
-			// Get thing info
-			thing    = map_->thing(item.index);
-			auto& tt = Game::configuration().thingType(thing->type());
-			x        = thing->xPos() + move_vec.x;
-			y        = thing->yPos() + move_vec.y;
-			angle    = thing->angle();
+			if ((thing = item.asThing(*map_)))
+			{
+				// Get thing info
+				auto& tt = Game::configuration().thingType(thing->type());
+				x        = thing->xPos() + move_vec.x;
+				y        = thing->yPos() + move_vec.y;
+				angle    = thing->angle();
 
-			renderSpriteThing(x, y, angle, tt, item.index, 1.0f, true);
+				renderSpriteThing(x, y, angle, tt, item.index, 1.0f, true);
+			}
 		}
 	}
 
@@ -2620,9 +2612,12 @@ void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, Ve
 
 	// Draw moving thing overlays
 	bool point = setupThingOverlay();
-	for (auto a : things)
+	for (auto item : things)
 	{
-		thing         = map_->thing(a.index);
+		thing = item.asThing(*map_);
+		if (!thing)
+			continue;
+
 		auto&  tt     = Game::configuration().thingType(thing->type());
 		double radius = tt.radius();
 		if (tt.shrinkOnZoom())

@@ -1639,7 +1639,7 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 	else if (item.type == ItemType::Thing)
 	{
 		// Get thing
-		auto t = context_.map().thing(item.index);
+		auto t = item.asThing(context_.map());
 		if (!t)
 			return;
 
@@ -1658,19 +1658,21 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 	else if (item.type == ItemType::Line)
 	{
 		// Get line
-		vector<MapLine*> vec;
-		vec.push_back(context_.map().line(item.index));
+		auto line = item.asLine(context_.map());
+		if (!line)
+			return;
 
 		// Start animation
-		animations_.push_back(std::make_unique<MCALineSelection>(App::runTimer(), vec, selected));
+		animations_.push_back(std::make_unique<MCALineSelection>(App::runTimer(), vector<MapLine*>{ line }, selected));
 	}
 
 	// 2d mode vertex
 	else if (item.type == ItemType::Vertex)
 	{
 		// Get vertex
-		vector<MapVertex*> verts;
-		verts.push_back(context_.map().vertex(item.index));
+		auto vertex = item.asVertex(context_.map());
+		if (!vertex)
+			return;
 
 		// Determine current vertex size
 		float vs = vertex_size;
@@ -1680,18 +1682,21 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 			vs = 2.0;
 
 		// Start animation
-		animations_.push_back(std::make_unique<MCAVertexSelection>(App::runTimer(), verts, vs, selected));
+		animations_.push_back(
+			std::make_unique<MCAVertexSelection>(App::runTimer(), vector<MapVertex*>{ vertex }, vs, selected));
 	}
 
 	// 2d mode sector
 	else if (item.type == ItemType::Sector)
 	{
 		// Get sector polygon
-		vector<Polygon2D*> polys;
-		polys.push_back(context_.map().sector(item.index)->polygon());
+		auto sector = item.asSector(context_.map());
+		if (!sector)
+			return;
 
 		// Start animation
-		animations_.push_back(std::make_unique<MCASectorSelection>(App::runTimer(), polys, selected));
+		animations_.push_back(
+			std::make_unique<MCASectorSelection>(App::runTimer(), vector<Polygon2D*>{ sector->polygon() }, selected));
 	}
 }
 

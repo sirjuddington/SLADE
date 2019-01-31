@@ -66,7 +66,7 @@ private:
 	vector<MapEditor::Item> getAdjacent(MapEditor::Item item) const;
 
 	// Helper for selectAdjacent
-	static bool wallMatches(MapSide* side, MapEditor::ItemType part, string tex);
+	static bool wallMatches(MapSide* side, MapEditor::ItemType part, const string& tex);
 	void        getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& list) const;
 	void        getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& list) const;
 
