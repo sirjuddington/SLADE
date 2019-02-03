@@ -39,14 +39,14 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-const ColRGBA ColRGBA::WHITE{ 255, 255, 255, 255, 0 };
-const ColRGBA ColRGBA::BLACK{ 0, 0, 0, 255, 0 };
-const ColRGBA ColRGBA::RED{ 255, 0, 0, 255, 0 };
-const ColRGBA ColRGBA::GREEN{ 0, 255, 0, 255, 0 };
-const ColRGBA ColRGBA::BLUE{ 0, 0, 255, 255, 0 };
-const ColRGBA ColRGBA::YELLOW{ 255, 255, 0, 255, 0 };
-const ColRGBA ColRGBA::PURPLE{ 255, 0, 255, 255, 0 };
-const ColRGBA ColRGBA::CYAN{ 0, 255, 255, 255, 0 };
+const ColRGBA ColRGBA::WHITE{ 255, 255, 255, 255 };
+const ColRGBA ColRGBA::BLACK{ 0, 0, 0, 255 };
+const ColRGBA ColRGBA::RED{ 255, 0, 0, 255 };
+const ColRGBA ColRGBA::GREEN{ 0, 255, 0, 255 };
+const ColRGBA ColRGBA::BLUE{ 0, 0, 255, 255 };
+const ColRGBA ColRGBA::YELLOW{ 255, 255, 0, 255 };
+const ColRGBA ColRGBA::PURPLE{ 255, 0, 255, 255 };
+const ColRGBA ColRGBA::CYAN{ 0, 255, 255, 255 };
 
 
 // -----------------------------------------------------------------------------
@@ -75,6 +75,7 @@ ColHSL ColRGBA::asHSL() const
 	auto blue  = db();
 
 	ColHSL ret;
+	ret.alpha    = a;
 	double v_min = std::min(red, std::min(green, blue));
 	double v_max = std::max(red, std::max(green, blue));
 	double delta = v_max - v_min;
@@ -122,6 +123,7 @@ ColLAB ColRGBA::asLAB() const
 	auto   blue  = db();
 	double x, y, z;
 	ColLAB ret;
+	ret.alpha = a;
 
 	// Step #1: convert RGB to CIE-XYZ
 	NORMALIZERGB(red);
@@ -159,7 +161,7 @@ ColLAB ColRGBA::asLAB() const
 // -----------------------------------------------------------------------------
 ColRGBA ColHSL::asRGB() const
 {
-	ColRGBA ret(0, 0, 0, 255, -1);
+	ColRGBA ret(0, 0, 0, uint8_t(alpha * 255.), -1);
 
 	// No saturation means grey
 	if (s == 0.)

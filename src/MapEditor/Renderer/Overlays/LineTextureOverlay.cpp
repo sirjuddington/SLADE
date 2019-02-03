@@ -246,15 +246,9 @@ void LineTextureOverlay::draw(int width, int height, float fade)
 	if (width != last_width_ || height != last_height_)
 		updateLayout(width, height);
 
-	// Get colours
-	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
-	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
-	col_bg.a *= fade;
-	col_fg.a *= fade;
-
 	// Draw background
 	glDisable(GL_TEXTURE_2D);
-	OpenGL::setColour(col_bg);
+	ColourConfiguration::setGLColour("map_overlay_background", fade);
 	Drawing::drawFilledRect(0, 0, width, height);
 
 	// Draw textures
@@ -290,7 +284,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const 
 	// Draw background
 	int halfsize = size * 0.5;
 	glEnable(GL_TEXTURE_2D);
-	OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
+	OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
 	glPushMatrix();
 	glTranslated(tex.position.x - halfsize, tex.position.y - halfsize, 0);
 	Drawing::drawTextureTiled(OpenGL::Texture::backgroundTexture(), size, size);
@@ -300,7 +294,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const 
 	if (!tex.textures.empty())
 	{
 		// Draw first texture
-		OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
+		OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
 		tex_first = MapEditor::textureManager()
 						.texture(tex.textures[0], Game::configuration().featureSupported(Game::Feature::MixTexFlats))
 						.gl_id;
@@ -314,7 +308,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const 
 			2);
 
 		// Draw up to 4 subsequent textures (overlaid)
-		OpenGL::setColour(255, 255, 255, 127 * alpha, 0);
+		OpenGL::setColour(255, 255, 255, 127 * alpha, OpenGL::Blend::Normal);
 		for (unsigned a = 1; a < tex.textures.size() && a < 5; a++)
 		{
 			auto gl_tex = MapEditor::textureManager()
@@ -338,12 +332,12 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const 
 	// Draw outline
 	if (tex.hover)
 	{
-		OpenGL::setColour(col_sel.r, col_sel.g, col_sel.b, 255 * alpha, 0);
+		OpenGL::setColour(col_sel.r, col_sel.g, col_sel.b, 255 * alpha, OpenGL::Blend::Normal);
 		glLineWidth(3.0f);
 	}
 	else
 	{
-		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, 0);
+		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, OpenGL::Blend::Normal);
 		glLineWidth(1.5f);
 	}
 	Drawing::drawRect(

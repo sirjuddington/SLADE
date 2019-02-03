@@ -66,7 +66,7 @@ bool              text_state_reset = true;
 namespace Drawing
 {
 extern double  text_outline_width;
-extern ColRGBA text_outline_colour;
+extern ColRGBA outline_colour;
 } // namespace Drawing
 EXTERN_CVAR(Int, gl_font_size)
 
@@ -190,7 +190,7 @@ void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font fo
 		{
 			sf_str.setOutlineThickness(text_outline_width);
 			sf_str.setOutlineColor(
-				sf::Color(text_outline_colour.r, text_outline_colour.g, text_outline_colour.b, text_outline_colour.a));
+				sf::Color(outline_colour.r, outline_colour.g, outline_colour.b, outline_colour.a));
 		}
 
 		// Draw

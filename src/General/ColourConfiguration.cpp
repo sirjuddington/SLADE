@@ -75,7 +75,7 @@ ColRGBA ColourConfiguration::colour(const string& name)
 // -----------------------------------------------------------------------------
 // Returns the colour definition [name]
 // -----------------------------------------------------------------------------
-ColourConfiguration::Colour ColourConfiguration::colDef(const string& name)
+const ColourConfiguration::Colour& ColourConfiguration::colDef(const string& name)
 {
 	return cc_colours[name];
 }
@@ -83,7 +83,7 @@ ColourConfiguration::Colour ColourConfiguration::colDef(const string& name)
 // -----------------------------------------------------------------------------
 // Sets the colour definition [name]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::setColour(const string& name, int red, int green, int blue, int alpha, int blend)
+void ColourConfiguration::setColour(const string& name, int red, int green, int blue, int alpha, bool blend_additive)
 {
 	auto& col = cc_colours[name];
 	if (red >= 0)
@@ -94,9 +94,18 @@ void ColourConfiguration::setColour(const string& name, int red, int green, int 
 		col.colour.b = blue;
 	if (alpha >= 0)
 		col.colour.a = alpha;
-	if (blend >= 0)
-		col.colour.blend = blend;
-	col.exists = true;
+
+	col.blend_additive = blend_additive;
+	col.exists         = true;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the current OpenGL colour and blend mode to match definition [name]
+// -----------------------------------------------------------------------------
+void ColourConfiguration::setGLColour(const string& name, float alpha_mult)
+{
+	auto& col = cc_colours[name];
+	OpenGL::setColour(col.colour.r, col.colour.g, col.colour.b, col.colour.a * alpha_mult, col.blendMode());
 }
 
 // -----------------------------------------------------------------------------
@@ -190,12 +199,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 
 				// Additive
 				else if (prop->name() == "additive")
-				{
-					if (prop->boolValue())
-						col.colour.blend = 1;
-					else
-						col.colour.blend = 0;
-				}
+					col.blend_additive = prop->boolValue();
 
 				else
 					Log::warning(S_FMT("Unknown colour definition property \"%s\"", prop->name()));
@@ -261,7 +265,7 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 			cfgstring += S_FMT("\t\talpha = %d;\n", cc.colour.a);
 
 		// Additive
-		if (cc.colour.blend == 1)
+		if (cc.blend_additive)
 			cfgstring += "\t\tadditive = true;\n";
 
 		cfgstring += "\t}\n\n";
@@ -400,8 +404,9 @@ CONSOLE_COMMAND(ccfg, 1, false)
 		}
 
 		// Print colour
-		ColRGBA col = ColourConfiguration::colour(args[0]);
-		Log::console(S_FMT("Colour \"%s\" = %d %d %d %d %d", args[0], col.r, col.g, col.b, col.a, col.blend));
+		auto def = ColourConfiguration::colDef(args[0]);
+		Log::console(S_FMT(
+			"Colour \"%s\" = %d %d %d %d %d", args[0], def.colour.r, def.colour.g, def.colour.b, def.blend_additive));
 	}
 }
 

@@ -86,12 +86,8 @@ void MCASelboxFader::draw()
 {
 	glDisable(GL_TEXTURE_2D);
 
-	ColRGBA col;
-
 	// Outline
-	col.set(ColourConfiguration::colour("map_selbox_outline"));
-	col.a *= fade_;
-	OpenGL::setColour(col);
+	ColourConfiguration::setGLColour("map_selbox_outline", fade_);
 	glLineWidth(2.0f);
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(tl_.x, tl_.y);
@@ -101,9 +97,7 @@ void MCASelboxFader::draw()
 	glEnd();
 
 	// Fill
-	col.set(ColourConfiguration::colour("map_selbox_fill"));
-	col.a *= fade_;
-	OpenGL::setColour(col);
+	ColourConfiguration::setGLColour("map_selbox_fill", fade_);
 	glBegin(GL_QUADS);
 	glVertex2d(tl_.x, tl_.y);
 	glVertex2d(tl_.x, br_.y);
@@ -154,15 +148,10 @@ bool MCAThingSelection::update(long time)
 void MCAThingSelection::draw()
 {
 	// Setup colour
-	ColRGBA col;
 	if (select_)
-		col.set(255, 255, 255, 255 * fade_, 1);
+		OpenGL::setColour(255, 255, 255, 255 * fade_, OpenGL::Blend::Additive);
 	else
-	{
-		col = ColourConfiguration::colour("map_selection");
-		col.a *= fade_;
-	}
-	OpenGL::setColour(col);
+		ColourConfiguration::setGLColour("map_selection", fade_);
 
 	// Get texture if needed
 	if (!thing_overlay_square)
@@ -251,15 +240,10 @@ bool MCALineSelection::update(long time)
 void MCALineSelection::draw()
 {
 	// Setup colour
-	ColRGBA col;
 	if (select_)
-		col.set(255, 255, 255, 255 * fade_, 1);
+		OpenGL::setColour(255, 255, 255, 255 * fade_, OpenGL::Blend::Additive);
 	else
-	{
-		col = ColourConfiguration::colour("map_selection");
-		col.a *= fade_;
-	}
-	OpenGL::setColour(col);
+		ColourConfiguration::setGLColour("map_selection", fade_);
 
 	// Draw lines
 	glLineWidth(line_width * ColourConfiguration::lineSelectionWidth());
@@ -320,15 +304,10 @@ bool MCAVertexSelection::update(long time)
 void MCAVertexSelection::draw()
 {
 	// Setup colour
-	ColRGBA col;
 	if (select_)
-		col.set(255, 255, 255, 255 * fade_, 1);
+		OpenGL::setColour(255, 255, 255, 255 * fade_, OpenGL::Blend::Additive);
 	else
-	{
-		col = ColourConfiguration::colour("map_selection");
-		col.a *= fade_;
-	}
-	OpenGL::setColour(col);
+		ColourConfiguration::setGLColour("map_selection", fade_);
 
 	// Setup point sprites if supported
 	bool point = false;
@@ -433,15 +412,10 @@ void MCASectorSelection::draw()
 		return;
 
 	// Setup colour
-	ColRGBA col;
 	if (select_)
-		col.set(255, 255, 255, 180 * fade_, 1);
+		OpenGL::setColour(255, 255, 255, 180 * fade_, OpenGL::Blend::Additive);
 	else
-	{
-		col = ColourConfiguration::colour("map_selection");
-		col.a *= fade_ * 0.75;
-	}
-	OpenGL::setColour(col);
+		ColourConfiguration::setGLColour("map_selection", fade_);
 
 	// Draw polygons
 	for (auto& polygon : polygons_)
@@ -484,15 +458,10 @@ bool MCA3dWallSelection::update(long time)
 void MCA3dWallSelection::draw()
 {
 	// Setup colour
-	ColRGBA col;
 	if (select_)
-		col.set(255, 255, 255, 90 * fade_, 1);
+		OpenGL::setColour(255, 255, 255, 90 * fade_, OpenGL::Blend::Additive);
 	else
-	{
-		col = ColourConfiguration::colour("map_3d_selection");
-		col.a *= fade_ * 0.75;
-	}
-	OpenGL::setColour(col);
+		ColourConfiguration::setGLColour("map_3d_selection", fade_);
 
 	// Draw quad outline
 	glLineWidth(2.0f);
@@ -503,8 +472,7 @@ void MCA3dWallSelection::draw()
 	glEnd();
 
 	// Draw quad fill
-	col.a *= 0.5;
-	OpenGL::setColour(col, false);
+	ColourConfiguration::setGLColour("map_3d_selection", fade_ * 0.5f);
 	glBegin(GL_QUADS);
 	for (auto& point : points_)
 		glVertex3d(point.x, point.y, point.z);
@@ -551,15 +519,10 @@ void MCA3dFlatSelection::draw()
 		return;
 
 	// Setup colour
-	ColRGBA col;
 	if (select_)
-		col.set(255, 255, 255, 60 * fade_, 1);
+		OpenGL::setColour(255, 255, 255, 60 * fade_, OpenGL::Blend::Additive);
 	else
-	{
-		col = ColourConfiguration::colour("map_3d_selection");
-		col.a *= fade_ * 0.75 * 0.5;
-	}
-	OpenGL::setColour(col);
+		ColourConfiguration::setGLColour("map_3d_selection", fade_);
 	glDisable(GL_CULL_FACE);
 
 	// Set polygon to plane height

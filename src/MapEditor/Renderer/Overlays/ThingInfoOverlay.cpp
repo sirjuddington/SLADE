@@ -210,7 +210,7 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 		isicon = true;
 	}
 	glEnable(GL_TEXTURE_2D);
-	OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
+	OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
 	if (tex)
 	{
 		auto&  tex_info = OpenGL::Texture::info(tex);

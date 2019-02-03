@@ -457,7 +457,6 @@ TransRange* Translation::range(unsigned index)
 ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 {
 	ColRGBA colour(col);
-	colour.blend = -1;
 	if (pal == nullptr)
 		pal = MainEditor::currentPalette();
 	uint8_t i = (col.index == -1) ? pal->nearestColour(col) : col.index;

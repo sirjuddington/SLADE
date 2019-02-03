@@ -574,7 +574,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 	{
 		// Draw background
 		glEnable(GL_TEXTURE_2D);
-		OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
+		OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
 		glPushMatrix();
 		glTranslated(x, y - tex_box_size - line_height, 0);
 		Drawing::drawTextureTiled(OpenGL::Texture::backgroundTexture(), tex_box_size, tex_box_size);
@@ -583,7 +583,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 		// Draw texture
 		if (texture_ && texture_ != OpenGL::Texture::missingTexture())
 		{
-			OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
+			OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
 			Drawing::drawTextureWithin(
 				texture_, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0);
 		}
@@ -592,7 +592,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 			// Draw missing icon
 			auto icon = MapEditor::textureManager().editorImage("thing/minus").gl_id;
 			glEnable(GL_TEXTURE_2D);
-			OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
+			OpenGL::setColour(180, 0, 0, 255 * alpha, OpenGL::Blend::Normal);
 			Drawing::drawTextureWithin(
 				icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.2);
 		}
@@ -601,7 +601,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 			// Draw unknown icon
 			auto icon = MapEditor::textureManager().editorImage("thing/unknown").gl_id;
 			glEnable(GL_TEXTURE_2D);
-			OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
+			OpenGL::setColour(180, 0, 0, 255 * alpha, OpenGL::Blend::Normal);
 			Drawing::drawTextureWithin(
 				icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.2);
 		}
@@ -609,7 +609,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 		glDisable(GL_TEXTURE_2D);
 
 		// Draw outline
-		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, 0);
+		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, OpenGL::Blend::Normal);
 		glLineWidth(1.0f);
 		glDisable(GL_LINE_SMOOTH);
 		Drawing::drawRect(x, y - tex_box_size - line_height, x + tex_box_size, y - line_height);

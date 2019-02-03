@@ -121,7 +121,7 @@ void ColourPrefsPanel::refreshPropGrid() const
 
 		// Add extra colour properties
 		auto opacity = pg_colours_->AppendIn(colour, new wxIntProperty("Opacity (0-255)", "alpha", cdef.colour.a));
-		pg_colours_->AppendIn(colour, new wxBoolProperty("Additive", "additive", (cdef.colour.blend == 1)));
+		pg_colours_->AppendIn(colour, new wxBoolProperty("Additive", "additive", cdef.blend_additive));
 		pg_colours_->Collapse(colour);
 
 		// Set opacity limits

@@ -1052,7 +1052,7 @@ void PolygonSplitter::testRender()
 {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// Draw vertices
-	OpenGL::setColour(255, 255, 255, 255, 0);
+	OpenGL::setColour(255, 255, 255, 255, OpenGL::Blend::Normal);
 	glBegin(GL_POINTS);
 	for (auto& vertex : vertices_)
 		glVertex2d(vertex.x, vertex.y);

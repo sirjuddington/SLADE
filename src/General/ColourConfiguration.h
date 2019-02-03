@@ -1,5 +1,6 @@
 #pragma once
 
+#include "OpenGL/OpenGL.h"
 #include "Utility/Colour.h"
 
 namespace ColourConfiguration
@@ -11,11 +12,22 @@ struct Colour
 	string  name;
 	string  group;
 	ColRGBA colour;
+	bool    blend_additive;
+
+	OpenGL::Blend blendMode() const { return blend_additive ? OpenGL::Blend::Additive : OpenGL::Blend::Normal; }
 };
 
-ColRGBA colour(const string& name);
-Colour  colDef(const string& name);
-void    setColour(const string& name, int red = -1, int green = -1, int blue = -1, int alpha = -1, int blend = -1);
+ColRGBA       colour(const string& name);
+const Colour& colDef(const string& name);
+void          setColour(
+			 const string& name,
+			 int           red            = -1,
+			 int           green          = -1,
+			 int           blue           = -1,
+			 int           alpha          = -1,
+			 bool          blend_additive = false);
+
+void setGLColour(const string& name, float alpha_mult = 1.f);
 
 double lineHilightWidth();
 double lineSelectionWidth();

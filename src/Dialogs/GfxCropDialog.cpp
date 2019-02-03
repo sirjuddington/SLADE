@@ -104,7 +104,7 @@ void CropCanvas::draw()
 	}
 
 	// Draw cropping rectangle
-	OpenGL::setColour(ColRGBA::BLACK);
+	OpenGL::setColour(0, 0, 0, 255, OpenGL::Blend::Normal);
 	glDisable(GL_TEXTURE_2D);
 	glTranslated(hw, hh, 0);                                          // Translate to top-left of graphic
 	Drawing::drawLine(crop_rect_.tl.x, -1000, crop_rect_.tl.x, 1000); // Left
@@ -113,7 +113,7 @@ void CropCanvas::draw()
 	Drawing::drawLine(-1000, crop_rect_.br.y, 1000, crop_rect_.br.y); // Bottom
 
 	// Shade cropped-out area
-	OpenGL::setColour(ColRGBA(0, 0, 0, 100, OpenGL::BLEND_NORMAL));
+	OpenGL::setColour(0, 0, 0, 100, OpenGL::Blend::Normal);
 	Drawing::drawFilledRect(-1000, -1000, crop_rect_.tl.x, 1000);                      // Left
 	Drawing::drawFilledRect(crop_rect_.br.x, -1000, 1000, 1000);                       // Right
 	Drawing::drawFilledRect(crop_rect_.tl.x, -1000, crop_rect_.br.x, crop_rect_.tl.y); // Top

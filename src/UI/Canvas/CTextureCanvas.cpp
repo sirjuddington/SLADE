@@ -304,7 +304,7 @@ void CTextureCanvas::drawTexture()
 	}
 
 	// Reset colouring
-	OpenGL::setColour(ColRGBA::WHITE);
+	OpenGL::setColour(ColRGBA::WHITE, OpenGL::Blend::Normal);
 
 	// If we're currently dragging, draw a 'basic' preview of the texture using opengl
 	if (dragging_)
@@ -342,7 +342,7 @@ void CTextureCanvas::drawTexture()
 	glDisable(GL_TEXTURE_2D);
 
 	// Now loop through selected patches and draw selection outlines
-	OpenGL::setColour(70, 210, 220, 255, OpenGL::BLEND_NORMAL);
+	OpenGL::setColour(70, 210, 220, 255, OpenGL::Blend::Normal);
 	glEnable(GL_LINE_SMOOTH);
 	glLineWidth(1.5f);
 	for (size_t a = 0; a < selected_patches_.size(); a++)
@@ -383,7 +383,7 @@ void CTextureCanvas::drawTexture()
 	if (hilight_patch_ >= 0 && hilight_patch_ < (int)texture_->nPatches())
 	{
 		// Set colour
-		OpenGL::setColour(255, 255, 255, 150, OpenGL::BLEND_ADDITIVE);
+		OpenGL::setColour(255, 255, 255, 150, OpenGL::Blend::Additive);
 
 		// Get patch
 		auto patch         = texture_->patch(hilight_patch_);
@@ -508,7 +508,7 @@ void CTextureCanvas::drawTextureBorder() const
 	// Draw the texture border
 	double ext = 0.11;
 	glLineWidth(2.0f);
-	OpenGL::setColour(ColRGBA::BLACK);
+	OpenGL::setColour(ColRGBA::BLACK, OpenGL::Blend::Normal);
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(-ext, -ext);
 	glVertex2d(-ext, texture_->height() + ext);
@@ -615,7 +615,7 @@ void CTextureCanvas::drawOffsetLines() const
 {
 	if (view_type_ == View::Sprite)
 	{
-		OpenGL::setColour(ColRGBA::BLACK);
+		OpenGL::setColour(ColRGBA::BLACK, OpenGL::Blend::Normal);
 
 		glBegin(GL_LINES);
 		glVertex2d(-9999, 0);

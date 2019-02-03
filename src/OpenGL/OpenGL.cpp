@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "OpenGL.h"
 #include "Utility/Colour.h"
+#include "General/ColourConfiguration.h"
 
 
 // -----------------------------------------------------------------------------
@@ -57,7 +58,7 @@ unsigned max_tex_size   = 128;
 unsigned pow_two[]      = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
 uint8_t  n_pow_two      = 16;
 float    max_point_size = -1.0f;
-int8_t   last_blend     = BLEND_NORMAL;
+Blend    last_blend     = Blend::Normal;
 Info     info;
 } // namespace OpenGL
 
@@ -248,20 +249,20 @@ int* OpenGL::getWxGLAttribs()
 // Sets the colour to [col], and changes the colour blend mode if needed and
 // [set_blend] is true
 // -----------------------------------------------------------------------------
-void OpenGL::setColour(const ColRGBA& col, bool set_blend)
+void OpenGL::setColour(const ColRGBA& col, Blend blend)
 {
 	// Colour
 	glColor4ub(col.r, col.g, col.b, col.a);
 
 	// Blend
-	if (set_blend && col.blend != last_blend)
+	if (blend != Blend::Ignore && blend != last_blend)
 	{
-		if (col.blend == BLEND_NORMAL)
+		if (blend == Blend::Normal)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else if (col.blend == BLEND_ADDITIVE)
+		else if (blend == Blend::Additive)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-		last_blend = col.blend;
+		last_blend = blend;
 	}
 }
 
@@ -269,17 +270,17 @@ void OpenGL::setColour(const ColRGBA& col, bool set_blend)
 // Sets the colour to [r,g,b,a], and changes the colour blend mode to [blend] if
 // needed
 // -----------------------------------------------------------------------------
-void OpenGL::setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a, int8_t blend)
+void OpenGL::setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a, Blend blend)
 {
 	// Colour
 	glColor4ub(r, g, b, a);
 
 	// Blend
-	if (blend != BLEND_IGNORE && blend != last_blend)
+	if (blend != Blend::Ignore && blend != last_blend)
 	{
-		if (blend == BLEND_NORMAL)
+		if (blend == Blend::Normal)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else if (blend == BLEND_ADDITIVE)
+		else if (blend == Blend::Additive)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 		last_blend = blend;
@@ -289,13 +290,13 @@ void OpenGL::setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a, int8_t blend)
 // -----------------------------------------------------------------------------
 // Sets the colour blend mode to [blend] if needed
 // -----------------------------------------------------------------------------
-void OpenGL::setBlend(int blend)
+void OpenGL::setBlend(Blend blend)
 {
-	if (blend != BLEND_IGNORE && blend != last_blend)
+	if (blend != Blend::Ignore && blend != last_blend)
 	{
-		if (blend == BLEND_NORMAL)
+		if (blend == Blend::Normal)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else if (blend == BLEND_ADDITIVE)
+		else if (blend == Blend::Additive)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 		last_blend = blend;
@@ -308,7 +309,7 @@ void OpenGL::setBlend(int blend)
 void OpenGL::resetBlend()
 {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	last_blend = BLEND_NORMAL;
+	last_blend = Blend::Normal;
 }
 
 // -----------------------------------------------------------------------------

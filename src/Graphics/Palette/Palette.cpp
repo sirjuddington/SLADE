@@ -242,7 +242,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 		}
 		// Now, parse
 		string  s1, s2, s3;
-		ColRGBA col(0, 0, 0, 255, -1);
+		ColRGBA col(0, 0, 0, 255);
 		int     c = 0;
 		do
 		{
@@ -675,7 +675,7 @@ void Palette::colourise(const ColRGBA& colour, int start, int end)
 	// Colourise all colours in the range
 	for (int i = start; i <= end; ++i)
 	{
-		ColRGBA ncol(colours_[i].r, colours_[i].g, colours_[i].b, colours_[i].a, colours_[i].blend);
+		ColRGBA ncol(colours_[i].r, colours_[i].g, colours_[i].b, colours_[i].a);
 		double  grey = (ncol.r * col_greyscale_r + ncol.g * col_greyscale_g + ncol.b * col_greyscale_b) / 255.0f;
 		if (grey > 1.0)
 			grey = 1.0;
@@ -715,8 +715,7 @@ void Palette::tint(const ColRGBA& colour, float amount, int start, int end)
 			colours_[i].r * inv_amt + colour.r * amount + round_delta,
 			colours_[i].g * inv_amt + colour.g * amount + round_delta,
 			colours_[i].b * inv_amt + colour.b * amount + round_delta,
-			colours_[i].a,
-			colours_[i].blend);
+			colours_[i].a);
 		setColour(i, ncol);
 	}
 }
@@ -752,7 +751,7 @@ void Palette::idtint(int r, int g, int b, int shift, int steps)
 		else if (fb > 255)
 			fb = 255;
 		// Set the result in the palette
-		ColRGBA col(fr, fg, fb, colours_[i].a, colours_[i].blend, i);
+		ColRGBA col(fr, fg, fb, colours_[i].a, i);
 		setColour(i, col);
 	}
 }

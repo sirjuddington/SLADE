@@ -145,7 +145,7 @@ void GfxCanvas::drawOffsetLines() const
 {
 	if (view_type_ == View::Sprite)
 	{
-		OpenGL::setColour(ColRGBA::BLACK);
+		OpenGL::setColour(ColRGBA::BLACK, OpenGL::Blend::Normal);
 
 		glBegin(GL_LINES);
 		glVertex2d(-9999, 0);
@@ -222,44 +222,44 @@ void GfxCanvas::drawImage()
 	if (view_type_ == View::Tiled)
 	{
 		// Draw tiled image
-		OpenGL::setColour(255, 255, 255, 255, 0);
+		OpenGL::setColour(255, 255, 255, 255, OpenGL::Blend::Normal);
 		Drawing::drawTextureTiled(tex_image_, GetSize().x / scale_, GetSize().y / scale_);
 	}
 	else if (drag_origin_.x < 0) // If not dragging
 	{
 		// Draw the image
-		OpenGL::setColour(255, 255, 255, 255, 0);
+		OpenGL::setColour(255, 255, 255, 255, OpenGL::Blend::Normal);
 		Drawing::drawTexture(tex_image_);
 
 		// Draw hilight otherwise
 		if (image_hilight_ && gfx_hilight_mouseover && editing_mode_ == EditMode::None)
 		{
-			OpenGL::setColour(255, 255, 255, 80, 1);
+			OpenGL::setColour(255, 255, 255, 80, OpenGL::Blend::Additive);
 			Drawing::drawTexture(tex_image_);
 
 			// Reset colour
-			OpenGL::setColour(255, 255, 255, 255, 0);
+			OpenGL::setColour(255, 255, 255, 255, OpenGL::Blend::Normal);
 		}
 	}
 	else // Dragging
 	{
 		// Draw the original
-		OpenGL::setColour(ColRGBA(0, 0, 0, 180, 0));
+		OpenGL::setColour(ColRGBA(0, 0, 0, 180), OpenGL::Blend::Normal);
 		Drawing::drawTexture(tex_image_);
 
 		// Draw the dragged image
 		int off_x = (drag_pos_.x - drag_origin_.x) / scale_;
 		int off_y = (drag_pos_.y - drag_origin_.y) / scale_;
 		glTranslated(off_x, off_y, 0);
-		OpenGL::setColour(255, 255, 255, 255, 0);
+		OpenGL::setColour(255, 255, 255, 255, OpenGL::Blend::Normal);
 		Drawing::drawTexture(tex_image_);
 	}
 	// Draw brush shadow when in editing mode
 	if (editing_mode_ != EditMode::None && cursor_pos_ != Vec2i{ -1, -1 })
 	{
-		OpenGL::setColour(255, 255, 255, 160, 0);
+		OpenGL::setColour(255, 255, 255, 160, OpenGL::Blend::Normal);
 		Drawing::drawTexture(tex_brush_);
-		OpenGL::setColour(255, 255, 255, 255, 0);
+		OpenGL::setColour(255, 255, 255, 255, OpenGL::Blend::Normal);
 	}
 
 	// Disable textures

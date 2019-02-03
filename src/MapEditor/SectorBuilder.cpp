@@ -704,7 +704,7 @@ void SectorBuilder::createSector(MapSector* sector, MapSector* sector_copy)
 void SectorBuilder::drawResult()
 {
 	glDisable(GL_TEXTURE_2D);
-	OpenGL::setColour(255, 255, 255, 255, 0);
+	OpenGL::setColour(255, 255, 255, 255, OpenGL::Blend::Normal);
 
 	// Go through sector edges
 	for (auto& edge : sector_edges_)

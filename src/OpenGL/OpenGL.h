@@ -26,13 +26,18 @@
 #undef None // Why does <X11/X.h> #define this? Idiotic
 #endif
 
+// Forward declarations
 struct ColRGBA;
 
 namespace OpenGL
 {
-static const int8_t BLEND_NORMAL   = 0;
-static const int8_t BLEND_ADDITIVE = 1;
-static const int8_t BLEND_IGNORE   = -1;
+enum class Blend
+{
+	Normal,
+	Additive,
+
+	Ignore
+};
 
 struct Info
 {
@@ -59,9 +64,9 @@ bool     accuracyTweak();
 #ifndef USE_SFML_RENDERWINDOW
 int* getWxGLAttribs();
 #endif
-void setColour(const ColRGBA& col, bool set_blend = true);
-void setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, int8_t blend = BLEND_IGNORE);
-void setBlend(int blend);
+void setColour(const ColRGBA& col, Blend blend = Blend::Ignore);
+void setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, Blend blend = Blend::Ignore);
+void setBlend(Blend blend);
 void resetBlend();
 Info sysInfo();
 } // namespace OpenGL

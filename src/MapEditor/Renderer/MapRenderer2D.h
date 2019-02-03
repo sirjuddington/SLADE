@@ -58,7 +58,7 @@ public:
 		double                 angle,
 		const Game::ThingType& type,
 		float                  alpha       = 1.0f,
-		double                 radius_mult = 1.0);
+		double                 radius_mult = 1.0) const;
 	bool renderSpriteThing(
 		double                 x,
 		double                 y,
@@ -76,7 +76,7 @@ public:
 		const Game::ThingType& type,
 		float                  alpha    = 1.0f,
 		bool                   showicon = true,
-		bool                   framed   = false);
+		bool                   framed   = false) const;
 	void renderThings(float alpha = 1.0f, bool force_dir = false);
 	void renderThingsImmediate(float alpha);
 	void renderThingHilight(int index, float fade) const;

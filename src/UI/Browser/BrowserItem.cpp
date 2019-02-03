@@ -214,7 +214,7 @@ void BrowserItem::draw(
 
 	// Draw
 	OpenGL::Texture::bind(image_tex_);
-	OpenGL::setColour(ColRGBA::WHITE, false);
+	OpenGL::setColour(ColRGBA::WHITE);
 
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.0f);

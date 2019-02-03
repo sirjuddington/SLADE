@@ -342,7 +342,7 @@ void Renderer::drawGrid() const
 		glEnable(GL_LINE_STIPPLE);
 	}
 
-	OpenGL::setColour(ColourConfiguration::colour("map_grid"), false);
+	OpenGL::setColour(ColourConfiguration::colour("map_grid"));
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Determine smallest grid size to bother drawing
@@ -406,7 +406,7 @@ void Renderer::drawGrid() const
 		if (gridsize < cross_size)
 			cross_size = gridsize;
 
-		OpenGL::setColour(ColourConfiguration::colour("map_64grid"));
+		ColourConfiguration::setGLColour("map_64grid");
 
 		// Vertical
 		int ofs = start_x % 64;
@@ -471,7 +471,8 @@ void Renderer::drawGrid() const
 		auto   mouse_pos = context_.input().mousePos();
 		double x         = context_.snapToGrid(view_.mapX(mouse_pos.x), false);
 		double y         = context_.snapToGrid(view_.mapY(mouse_pos.y), false);
-		auto   col       = ColourConfiguration::colour("map_64grid");
+		auto&  def       = ColourConfiguration::colDef("map_64grid");
+		auto   col       = def.colour;
 
 		// Small
 		glLineWidth(2.0f);
@@ -482,25 +483,27 @@ void Renderer::drawGrid() const
 			double size = context_.gridSize();
 			double one  = 1.0 / view_.scale(true);
 
+			OpenGL::setBlend(def.blendMode());
+
 			glBegin(GL_LINES);
-			OpenGL::setColour(col, false);
+			OpenGL::setColour(col);
 			glVertex2d(x + one, y);
-			OpenGL::setColour(col2, false);
+			OpenGL::setColour(col2);
 			glVertex2d(x + size, y);
 
-			OpenGL::setColour(col, false);
+			OpenGL::setColour(col);
 			glVertex2d(x - one, y);
-			OpenGL::setColour(col2, false);
+			OpenGL::setColour(col2);
 			glVertex2d(x - size, y);
 
-			OpenGL::setColour(col, false);
+			OpenGL::setColour(col);
 			glVertex2d(x, y + one);
-			OpenGL::setColour(col2, false);
+			OpenGL::setColour(col2);
 			glVertex2d(x, y + size);
 
-			OpenGL::setColour(col, false);
+			OpenGL::setColour(col);
 			glVertex2d(x, y - one);
-			OpenGL::setColour(col2, false);
+			OpenGL::setColour(col2);
 			glVertex2d(x, y - size);
 			glEnd();
 		}
@@ -508,7 +511,7 @@ void Renderer::drawGrid() const
 		// Full
 		else if (map_crosshair == 2)
 		{
-			OpenGL::setColour(col);
+			OpenGL::setColour(col, def.blendMode());
 
 			glBegin(GL_LINES);
 			glVertex2d(x, view_.mapBounds().tl.y);
@@ -846,7 +849,7 @@ void Renderer::drawObjectEdit()
 	renderer_2d_.renderObjectEditGroup(&group);
 
 	// Bounding box
-	OpenGL::setColour(ColRGBA::WHITE);
+	OpenGL::setColour(ColRGBA::WHITE, OpenGL::Blend::Normal);
 	glColor4f(col.fr(), col.fg(), col.fb(), 1.0f);
 	auto bbox = group.bbox();
 	bbox.min.x -= 4 / view_.scale(true);
@@ -976,7 +979,7 @@ void Renderer::drawMap2d()
 		renderer_2d_.updateVisibility(view_.mapBounds().tl, view_.mapBounds().br);
 
 	// Draw flats if needed
-	OpenGL::setColour(ColRGBA::WHITE);
+	OpenGL::setColour(ColRGBA::WHITE, OpenGL::Blend::Normal);
 	if (flat_drawtype > 0)
 	{
 		bool texture = false;
@@ -1127,7 +1130,7 @@ void Renderer::drawMap2d()
 	if (mouse_state == Input::MouseState::Selection)
 	{
 		// Outline
-		OpenGL::setColour(ColourConfiguration::colour("map_selbox_outline"));
+		ColourConfiguration::setGLColour("map_selbox_outline");
 		glLineWidth(2.0f);
 		glBegin(GL_LINE_LOOP);
 		glVertex2d(mdx, mdy);
@@ -1137,7 +1140,7 @@ void Renderer::drawMap2d()
 		glEnd();
 
 		// Fill
-		OpenGL::setColour(ColourConfiguration::colour("map_selbox_fill"));
+		ColourConfiguration::setGLColour("map_selbox_fill");
 		glBegin(GL_QUADS);
 		glVertex2d(mdx, mdy);
 		glVertex2d(mdx, my);
@@ -1262,8 +1265,9 @@ void Renderer::draw()
 	if (context_.editMode() == Mode::Visual)
 	{
 		// Get crosshair colour
-		auto col = ColourConfiguration::colour("map_3d_crosshair");
-		OpenGL::setColour(col);
+		auto& def = ColourConfiguration::colDef("map_3d_crosshair");
+		auto  col = def.colour;
+		OpenGL::setColour(col, def.blendMode());
 
 		glDisable(GL_TEXTURE_2D);
 		glEnable(GL_LINE_SMOOTH);
@@ -1275,25 +1279,25 @@ void Renderer::draw()
 
 		glBegin(GL_LINES);
 		// Right
-		OpenGL::setColour(col, false);
+		OpenGL::setColour(col);
 		glVertex2d(midx + 1, midy);
 		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
 		glVertex2d(midx + size, midy);
 
 		// Left
-		OpenGL::setColour(col, false);
+		OpenGL::setColour(col);
 		glVertex2d(midx - 1, midy);
 		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
 		glVertex2d(midx - size, midy);
 
 		// Bottom
-		OpenGL::setColour(col, false);
+		OpenGL::setColour(col);
 		glVertex2d(midx, midy + 1);
 		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
 		glVertex2d(midx, midy + size);
 
 		// Top
-		OpenGL::setColour(col, false);
+		OpenGL::setColour(col);
 		glVertex2d(midx, midy - 1);
 		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
 		glVertex2d(midx, midy - size);

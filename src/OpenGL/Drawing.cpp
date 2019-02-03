@@ -60,8 +60,9 @@ CVAR(Int, gl_font_size, 12, CVar::Flag::Save)
 
 namespace Drawing
 {
-double  text_outline_width  = 0;
-ColRGBA text_outline_colour = ColRGBA::BLACK;
+double  text_outline_width = 0;
+ColRGBA fill_colour        = ColRGBA::WHITE;
+ColRGBA outline_colour     = ColRGBA::BLACK;
 }; // namespace Drawing
 
 
@@ -160,7 +161,7 @@ void Drawing::drawArrow(Vec2d p1, Vec2d p2, ColRGBA color, bool twoway, double a
 		a2r.x -= arrowhead_length * sin(angle + arrowhead_angle);
 		a2r.y -= arrowhead_length * cos(angle + arrowhead_angle);
 	}
-	OpenGL::setColour(color);
+	OpenGL::setColour(fill_colour);
 	glBegin(GL_LINES);
 	glVertex2d(p1.x, p1.y);
 	glVertex2d(p2.x, p2.y);
@@ -248,7 +249,7 @@ void Drawing::drawBorderedRect(Vec2d tl, Vec2d br, ColRGBA colour, ColRGBA borde
 void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, ColRGBA colour, ColRGBA border_colour)
 {
 	// Rect
-	OpenGL::setColour(colour, false);
+	OpenGL::setColour(colour);
 	glBegin(GL_QUADS);
 	glVertex2d(x1, y1);
 	glVertex2d(x1, y2);
@@ -257,7 +258,7 @@ void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, ColRG
 	glEnd();
 
 	// Border
-	OpenGL::setColour(border_colour, false);
+	OpenGL::setColour(border_colour);
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(x1, y1);
 	glVertex2d(x1, y2 - 1);
@@ -272,7 +273,7 @@ void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, ColRG
 void Drawing::drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides, ColRGBA colour)
 {
 	// Set colour
-	OpenGL::setColour(colour, false);
+	OpenGL::setColour(colour);
 
 	// Draw circle as line loop
 	glBegin(GL_LINE_LOOP);
@@ -291,7 +292,7 @@ void Drawing::drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides
 void Drawing::drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int sides, ColRGBA colour)
 {
 	// Set colour
-	OpenGL::setColour(colour, false);
+	OpenGL::setColour(colour);
 
 	// Draw circle as line loop
 	glBegin(GL_TRIANGLE_FAN);
@@ -481,8 +482,8 @@ void Drawing::drawTextureWithin(
 // -----------------------------------------------------------------------------
 void Drawing::setTextOutline(double thickness, ColRGBA colour)
 {
-	text_outline_width  = thickness;
-	text_outline_colour = colour;
+	text_outline_width = thickness;
+	outline_colour     = colour;
 }
 
 // -----------------------------------------------------------------------------

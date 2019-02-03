@@ -7,30 +7,27 @@ struct ColLAB;
 struct ColRGBA
 {
 	uint8_t r = 0, g = 0, b = 0, a = 0;
-	int     index = -1; // -1=not indexed
-	char    blend = -1; // 0=normal, 1=additive
+	short   index = -1; // -1 = not indexed
 
 	// Constructors
 	ColRGBA() = default;
-	ColRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, char blend = -1, int index = -1) :
+	ColRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, char blend = -1, short index = -1) :
 		r{ r },
 		g{ g },
 		b{ b },
 		a{ a },
-		index{ index },
-		blend{ blend }
+		index{ index }
 	{
 	}
-	ColRGBA(const ColRGBA& c) : r{ c.r }, g{ c.g }, b{ c.b }, a{ c.a }, index{ c.index }, blend{ c.blend } {}
+	ColRGBA(const ColRGBA& c) : r{ c.r }, g{ c.g }, b{ c.b }, a{ c.a }, index{ c.index } {}
 
 	// Functions
-	void set(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, char blend = -1, int index = -1)
+	void set(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, char blend = -1, short index = -1)
 	{
 		this->r     = r;
 		this->g     = g;
 		this->b     = b;
 		this->a     = a;
-		this->blend = blend;
 		this->index = index;
 	}
 
@@ -40,7 +37,6 @@ struct ColRGBA
 		g     = colour.g;
 		b     = colour.b;
 		a     = colour.a;
-		blend = colour.blend;
 		index = colour.index;
 	}
 
@@ -91,7 +87,7 @@ struct ColRGBA
 		if (na < 0)
 			na = 0;
 
-		return { (uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend, -1 };
+		return { (uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, -1 };
 	}
 
 	// Amplify/fade colour components by factors
@@ -119,7 +115,7 @@ struct ColRGBA
 		if (na < 0)
 			na = 0;
 
-		return { (uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend, -1 };
+		return { (uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, -1 };
 	}
 
 	void write(uint8_t* ptr) const
@@ -137,7 +133,7 @@ struct ColRGBA
 	ColRGBA greyscale() const
 	{
 		uint8_t l = r * 0.3 + g * 0.59 + b * 0.11;
-		return { l, l, l, a, blend };
+		return { l, l, l, a };
 	}
 
 	ColHSL asHSL() const;
@@ -162,9 +158,10 @@ struct ColRGBA
 struct ColHSL
 {
 	double h = 0., s = 0., l = 0.;
+	double alpha = 1.;
 
 	ColHSL() = default;
-	ColHSL(double h, double s, double l) : h{ h }, s{ s }, l{ l } {}
+	ColHSL(double h, double s, double l, double a = 1.) : h{ h }, s{ s }, l{ l }, alpha{ a } {}
 
 	ColRGBA asRGB() const;
 };
@@ -173,9 +170,8 @@ struct ColHSL
 struct ColLAB
 {
 	double l = 0., a = 0., b = 0.;
+	double alpha = 1.;
 
 	ColLAB() = default;
-	ColLAB(double l, double a, double b) : l{ l }, a{ a }, b{ b } {}
-
-	ColRGBA asRGB();
+	ColLAB(double l, double a, double b, double alpha = 1.) : l{ l }, a{ a }, b{ b }, alpha{ alpha } {}
 };

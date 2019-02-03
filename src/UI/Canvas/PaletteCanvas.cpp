@@ -96,7 +96,7 @@ void PaletteCanvas::draw()
 		for (int x = 0; x < cols; x++)
 		{
 			// Set colour
-			OpenGL::setColour(palette_.colour(c));
+			OpenGL::setColour(palette_.colour(c), OpenGL::Blend::Normal);
 
 			// Draw square
 			glBegin(GL_QUADS);

@@ -171,7 +171,7 @@ void ANSICanvas::drawImage()
 	double y = (double)height_;
 
 	// Draw the image
-	OpenGL::setColour(ColRGBA::WHITE);
+	OpenGL::setColour(ColRGBA::WHITE, OpenGL::Blend::Normal);
 	Drawing::drawTexture(tex_image_);
 
 	// Disable textures

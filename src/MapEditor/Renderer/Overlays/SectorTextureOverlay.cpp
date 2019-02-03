@@ -73,14 +73,11 @@ void SectorTextureOverlay::update(long frametime)
 void SectorTextureOverlay::draw(int width, int height, float fade)
 {
 	// Get colours
-	auto col_bg = ColourConfiguration::colour("map_overlay_background");
-	auto col_fg = ColourConfiguration::colour("map_overlay_foreground");
-	col_bg.a *= fade;
-	col_fg.a *= fade;
+	auto& col_fg = ColourConfiguration::colDef("map_overlay_foreground");
 
 	// Draw background
 	glDisable(GL_TEXTURE_2D);
-	OpenGL::setColour(col_bg);
+	ColourConfiguration::setGLColour("map_overlay_background", fade);
 	Drawing::drawFilledRect(0, 0, width, height);
 
 	// Check if any sectors are open
@@ -137,14 +134,14 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 		"Floor:",
 		middlex_ - border_ - tex_size_ * 0.5,
 		middley_ - tex_size_ * 0.5 - 18,
-		col_fg,
+		col_fg.colour,
 		Drawing::Font::Bold,
 		Drawing::Align::Center);
 	Drawing::drawText(
 		ftex,
 		middlex_ - border_ - tex_size_ * 0.5,
 		middley_ + tex_size_ * 0.5 + 2,
-		col_fg,
+		col_fg.colour,
 		Drawing::Font::Bold,
 		Drawing::Align::Center);
 
@@ -160,14 +157,14 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 		"Ceiling:",
 		middlex_ + border_ + tex_size_ * 0.5,
 		middley_ - tex_size_ * 0.5 - 18,
-		col_fg,
+		col_fg.colour,
 		Drawing::Font::Bold,
 		Drawing::Align::Center);
 	Drawing::drawText(
 		ctex,
 		middlex_ + border_ + tex_size_ * 0.5,
 		middley_ + tex_size_ * 0.5 + 2,
-		col_fg,
+		col_fg.colour,
 		Drawing::Font::Bold,
 		Drawing::Align::Center);
 }
@@ -185,7 +182,7 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 
 	// Draw background
 	glEnable(GL_TEXTURE_2D);
-	OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
+	OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
 	glPushMatrix();
 	glTranslated(x, y, 0);
 	Drawing::drawTextureTiled(OpenGL::Texture::backgroundTexture(), size, size);
@@ -193,12 +190,12 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 
 	// Draw first texture
 	bool mixed = Game::configuration().featureSupported(Game::Feature::MixTexFlats);
-	OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
+	OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
 	Drawing::drawTextureWithin(
 		MapEditor::textureManager().flat(textures[0], mixed).gl_id, x, y, x + size, y + size, 0, 100);
 
 	// Draw up to 4 subsequent textures (overlaid)
-	OpenGL::setColour(255, 255, 255, 127 * alpha, 0);
+	OpenGL::setColour(255, 255, 255, 127 * alpha, OpenGL::Blend::Normal);
 	for (unsigned a = 1; a < textures.size() && a < 5; a++)
 		Drawing::drawTextureWithin(
 			MapEditor::textureManager().flat(textures[a], mixed).gl_id, x, y, x + size, y + size, 0, 100);
@@ -208,12 +205,12 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 	// Draw outline
 	if (hover)
 	{
-		OpenGL::setColour(col_sel.r, col_sel.g, col_sel.b, 255 * alpha, 0);
+		OpenGL::setColour(col_sel.r, col_sel.g, col_sel.b, 255 * alpha, OpenGL::Blend::Normal);
 		glLineWidth(3.0f);
 	}
 	else
 	{
-		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, 0);
+		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, OpenGL::Blend::Normal);
 		glLineWidth(1.5f);
 	}
 	Drawing::drawRect(x, y, x + size, y + size);

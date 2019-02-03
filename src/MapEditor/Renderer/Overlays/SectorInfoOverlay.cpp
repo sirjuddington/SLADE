@@ -171,20 +171,20 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, c
 	{
 		// Draw background
 		glEnable(GL_TEXTURE_2D);
-		OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
+		OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
 		glPushMatrix();
 		glTranslated(x, y - tex_box_size - line_height, 0);
 		Drawing::drawTextureTiled(OpenGL::Texture::backgroundTexture(), tex_box_size, tex_box_size);
 		glPopMatrix();
 
 		// Draw texture
-		OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
+		OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
 		Drawing::drawTextureWithin(tex, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0);
 
 		glDisable(GL_TEXTURE_2D);
 
 		// Draw outline
-		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, 0);
+		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, OpenGL::Blend::Normal);
 		glDisable(GL_LINE_SMOOTH);
 		Drawing::drawRect(x, y - tex_box_size - line_height, x + tex_box_size, y - line_height);
 	}
@@ -195,7 +195,7 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, c
 		// Draw unknown icon
 		auto icon = MapEditor::textureManager().editorImage("thing/unknown").gl_id;
 		glEnable(GL_TEXTURE_2D);
-		OpenGL::setColour(180, 0, 0, 255 * alpha, 0);
+		OpenGL::setColour(180, 0, 0, 255 * alpha, OpenGL::Blend::Normal);
 		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);
 
 		// Set colour to red (for text)

@@ -72,7 +72,7 @@ public:
 private:
 	string  name_;
 	string  group_;
-	ColRGBA colour_     = { 170, 170, 180, 255, 0 };
+	ColRGBA colour_     = { 170, 170, 180, 255 };
 	int     radius_     = 20;
 	int     height_     = -1;
 	Vec2d   scale_      = { 1., 1. };

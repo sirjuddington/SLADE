@@ -753,7 +753,7 @@ void MapRenderer3D::renderSky()
 		// Render top cap
 		float size = 64.0f;
 		glDisable(GL_TEXTURE_2D);
-		OpenGL::setColour(skycol_top_, false);
+		OpenGL::setColour(skycol_top_);
 		glBegin(GL_QUADS);
 		glVertex3f(cam_position_.x - (size * 10), cam_position_.y - (size * 10), cam_position_.z + size);
 		glVertex3f(cam_position_.x - (size * 10), cam_position_.y + (size * 10), cam_position_.z + size);
@@ -762,7 +762,7 @@ void MapRenderer3D::renderSky()
 		glEnd();
 
 		// Render bottom cap
-		OpenGL::setColour(skycol_bottom_, false);
+		OpenGL::setColour(skycol_bottom_);
 		glBegin(GL_QUADS);
 		glVertex3f(cam_position_.x - (size * 10), cam_position_.y - (size * 10), cam_position_.z - size);
 		glVertex3f(cam_position_.x - (size * 10), cam_position_.y + (size * 10), cam_position_.z - size);
@@ -1107,9 +1107,10 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 	glEnable(GL_CULL_FACE);
 
 	// Setup colour
-	auto col1 = ColourConfiguration::colour("map_3d_selection");
+	auto& def = ColourConfiguration::colDef("map_3d_selection");
+	auto  col1 = def.colour;
 	col1.a *= alpha;
-	OpenGL::setColour(col1);
+	OpenGL::setColour(col1, def.blendMode());
 	auto col2 = col1;
 	col2.a *= 0.5;
 
@@ -1135,7 +1136,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 		// Draw sector outline
 		vector<MapLine*> lines;
 		sector->putLines(lines);
-		OpenGL::setColour(col1, false);
+		OpenGL::setColour(col1);
 		glBegin(GL_LINES);
 		for (auto& line : lines)
 		{
@@ -1145,7 +1146,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 		glEnd();
 
 		// Render fill
-		OpenGL::setColour(col2, false);
+		OpenGL::setColour(col2);
 		glDisable(GL_CULL_FACE);
 		sector->polygon()->setZ(plane);
 		sector->polygon()->render();
@@ -2002,7 +2003,8 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 	glCullFace(GL_BACK);
 
 	// Setup colour
-	auto col1 = ColourConfiguration::colour("map_3d_selection");
+	auto& def  = ColourConfiguration::colDef("map_3d_selection");
+	auto  col1 = def.colour;
 	col1.a *= alpha;
 	OpenGL::setColour(col1);
 	auto col2 = col1;
@@ -2062,14 +2064,14 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 			continue;
 
 		// Render quad outline
-		OpenGL::setColour(col1, false);
+		OpenGL::setColour(col1);
 		glBegin(GL_LINE_LOOP);
 		for (auto& point : quad->points)
 			glVertex3f(point.x, point.y, point.z);
 		glEnd();
 
 		// Render quad fill
-		OpenGL::setColour(col2, false);
+		OpenGL::setColour(col2);
 		glBegin(GL_QUADS);
 		for (auto& point : quad->points)
 			glVertex3f(point.x, point.y, point.z);
@@ -2457,7 +2459,7 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 
 		// Render outline
 		double z = things_[item.index].z;
-		OpenGL::setColour(col1, false);
+		OpenGL::setColour(col1);
 		glBegin(GL_LINE_LOOP);
 		glVertex3f(x1, y1, z + theight);
 		glVertex3f(x1, y1, z);
@@ -2466,7 +2468,7 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 		glEnd();
 
 		// Render fill
-		OpenGL::setColour(col2, false);
+		OpenGL::setColour(col2);
 		glBegin(GL_QUADS);
 		glVertex3f(x1, y1, z + theight);
 		glVertex3f(x1, y1, z);
@@ -2982,7 +2984,8 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	glDisable(GL_FOG);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_LINE_SMOOTH);
-	auto col_hilight = ColourConfiguration::colour("map_3d_hilight");
+	auto& def = ColourConfiguration::colDef("map_3d_hilight");
+	auto  col_hilight = def.colour;
 	col_hilight.a *= alpha;
 	OpenGL::setColour(col_hilight);
 
@@ -3044,7 +3047,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 		{
 			glCullFace(GL_BACK);
 			col_hilight.a *= 0.3;
-			OpenGL::setColour(col_hilight, false);
+			OpenGL::setColour(col_hilight);
 			glBegin(GL_QUADS);
 			for (auto& point : quad->points)
 				glVertex3f(point.x, point.y, point.z);
@@ -3082,7 +3085,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 		if (render_3d_hilight > 1)
 		{
 			col_hilight.a *= 0.3;
-			OpenGL::setColour(col_hilight, false);
+			OpenGL::setColour(col_hilight);
 			glDisable(GL_CULL_FACE);
 			sector->polygon()->setZ(plane);
 			sector->polygon()->render();
@@ -3129,7 +3132,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 		{
 			glCullFace(GL_BACK);
 			col_hilight.a *= 0.3;
-			OpenGL::setColour(col_hilight, false);
+			OpenGL::setColour(col_hilight);
 			glBegin(GL_QUADS);
 			glVertex3f(x1, y1, z + theight);
 			glVertex3f(x1, y1, z);
