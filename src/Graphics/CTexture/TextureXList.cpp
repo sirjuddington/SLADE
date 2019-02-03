@@ -408,8 +408,8 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		tdef.cleanupName();
 		auto tex      = std::make_unique<CTexture>();
 		tex->name_    = wxString::FromAscii(tdef.name, 8);
-		tex->width_   = wxINT16_SWAP_ON_BE(tdef.width);
-		tex->height_  = wxINT16_SWAP_ON_BE(tdef.height);
+		tex->size_.x  = wxINT16_SWAP_ON_BE(tdef.width);
+		tex->size_.y  = wxINT16_SWAP_ON_BE(tdef.height);
 		tex->scale_.x = tdef.scale[0] / 8.0;
 		tex->scale_.y = tdef.scale[1] / 8.0;
 

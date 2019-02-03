@@ -15,22 +15,23 @@ public:
 	CTPatch(const string& name, int16_t offset_x = 0, int16_t offset_y = 0);
 	virtual ~CTPatch() = default;
 
-	string  name() const { return name_; }
-	int16_t xOffset() const { return offset_x_; }
-	int16_t yOffset() const { return offset_y_; }
+	string        name() const { return name_; }
+	Vec2<int16_t> offset() const { return offset_; }
+	int16_t       xOffset() const { return offset_.x; }
+	int16_t       yOffset() const { return offset_.y; }
 
 	void setName(const string& name) { name_ = name; }
-	void setOffsetX(int16_t offset) { offset_x_ = offset; }
-	void setOffsetY(int16_t offset) { offset_y_ = offset; }
+	void setOffset(const Vec2<int16_t>& offset) { offset_ = offset; }
+	void setOffsetX(int16_t offset) { offset_.x = offset; }
+	void setOffsetY(int16_t offset) { offset_.y = offset; }
 
 	virtual ArchiveEntry* patchEntry(Archive* parent = nullptr);
 
 	typedef std::unique_ptr<CTPatch> UPtr;
 
 protected:
-	string  name_;
-	int16_t offset_x_ = 0;
-	int16_t offset_y_ = 0;
+	string        name_;
+	Vec2<int16_t> offset_ = { 0, 0 };
 };
 
 // Extended patch (for TEXTURES)
@@ -111,33 +112,36 @@ public:
 
 	void copyTexture(const CTexture& tex, bool keep_type = false);
 
-	string   name() const { return name_; }
-	uint16_t width() const { return width_; }
-	uint16_t height() const { return height_; }
-	double   scaleX() const { return scale_.x; }
-	double   scaleY() const { return scale_.y; }
-	Vec2d    scale() const { return scale_; }
-	int16_t  offsetX() const { return offset_x_; }
-	int16_t  offsetY() const { return offset_y_; }
-	bool     worldPanning() const { return world_panning_; }
-	string   type() const { return type_; }
-	bool     isExtended() const { return extended_; }
-	bool     isOptional() const { return optional_; }
-	bool     noDecals() const { return no_decals_; }
-	bool     nullTexture() const { return null_texture_; }
-	size_t   nPatches() const { return patches_.size(); }
-	CTPatch* patch(size_t index) const;
-	uint8_t  state() const { return state_; }
-	int      index() const;
+	string         name() const { return name_; }
+	Vec2<uint16_t> size() const { return size_; }
+	uint16_t       width() const { return size_.x; }
+	uint16_t       height() const { return size_.y; }
+	double         scaleX() const { return scale_.x; }
+	double         scaleY() const { return scale_.y; }
+	Vec2d          scale() const { return scale_; }
+	int16_t        offsetX() const { return offset_.x; }
+	int16_t        offsetY() const { return offset_.y; }
+	bool           worldPanning() const { return world_panning_; }
+	string         type() const { return type_; }
+	bool           isExtended() const { return extended_; }
+	bool           isOptional() const { return optional_; }
+	bool           noDecals() const { return no_decals_; }
+	bool           nullTexture() const { return null_texture_; }
+	size_t         nPatches() const { return patches_.size(); }
+	CTPatch*       patch(size_t index) const;
+	uint8_t        state() const { return state_; }
+	int            index() const;
 
 	void setName(const string& name) { name_ = name; }
-	void setWidth(uint16_t width) { width_ = width; }
-	void setHeight(uint16_t height) { height_ = height; }
+	void setSize(const Vec2<uint16_t>& size) { size_ = size; }
+	void setWidth(uint16_t width) { size_.x = width; }
+	void setHeight(uint16_t height) { size_.y = height; }
 	void setScaleX(double scale) { scale_.x = scale; }
 	void setScaleY(double scale) { scale_.y = scale; }
 	void setScale(const Vec2d& scale) { scale_ = scale; }
-	void setOffsetX(int16_t offset) { offset_x_ = offset; }
-	void setOffsetY(int16_t offset) { offset_y_ = offset; }
+	void setOffset(const Vec2<int16_t>& offset) { offset_ = offset; }
+	void setOffsetX(int16_t offset) { offset_.x = offset; }
+	void setOffsetY(int16_t offset) { offset_.y = offset; }
 	void setWorldPanning(bool wp) { world_panning_ = wp; }
 	void setType(const string& type) { type_ = type; }
 	void setExtended(bool ext) { extended_ = ext; }
@@ -171,24 +175,21 @@ public:
 private:
 	// Basic info
 	string                name_;
-	uint16_t              width_         = 0;
-	uint16_t              height_        = 0;
+	Vec2<uint16_t>        size_          = { 0, 0 };
 	Vec2d                 scale_         = { 1., 1. };
 	bool                  world_panning_ = false;
 	vector<CTPatch::UPtr> patches_;
 	int                   index_ = -1;
 
 	// Extended (TEXTURES) info
-	string  type_;
-	bool    extended_     = false;
-	bool    defined_      = false;
-	bool    optional_     = false;
-	bool    no_decals_    = false;
-	bool    null_texture_ = false;
-	int16_t offset_x_     = 0;
-	int16_t offset_y_     = 0;
-	int16_t def_width_    = 0;
-	int16_t def_height_   = 0;
+	string         type_;
+	bool           extended_     = false;
+	bool           defined_      = false;
+	bool           optional_     = false;
+	bool           no_decals_    = false;
+	bool           null_texture_ = false;
+	Vec2<int16_t>  offset_       = { 0, 0 };
+	Vec2<uint16_t> def_size_     = { 0, 0 };
 
 	// Editor info
 	uint8_t       state_   = 0;

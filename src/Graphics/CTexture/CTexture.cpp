@@ -50,10 +50,7 @@
 // -----------------------------------------------------------------------------
 // CTPatch class constructor w/initial values
 // -----------------------------------------------------------------------------
-CTPatch::CTPatch(const string& name, int16_t offset_x, int16_t offset_y) :
-	name_{ name },
-	offset_x_{ offset_x },
-	offset_y_{ offset_y }
+CTPatch::CTPatch(const string& name, int16_t offset_x, int16_t offset_y) : name_{ name }, offset_{ offset_x, offset_y }
 {
 }
 
@@ -154,9 +151,9 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 	type_ = type;
 	name_ = tz.next().text.Upper();
 	tz.adv(); // Skip ,
-	offset_x_ = tz.next().asInt();
+	offset_.x = tz.next().asInt();
 	tz.adv(); // Skip ,
-	offset_y_ = tz.next().asInt();
+	offset_.y = tz.next().asInt();
 
 	// Check if there is any extended info
 	if (tz.advIfNext("{", 2))
@@ -277,7 +274,7 @@ string CTPatchEx::asText()
 	string typestring = "Patch";
 	if (type_ == Type::Graphic)
 		typestring = "Graphic";
-	string text = S_FMT("\t%s \"%s\", %d, %d\n", typestring, name_, offset_x_, offset_y_);
+	string text = S_FMT("\t%s \"%s\", %d, %d\n", typestring, name_, offset_.x, offset_.y);
 
 	// Check if we need to write any extra properties
 	if (!flip_x_ && !flip_y_ && !use_offsets_ && rotation_ == 0 && blendtype_ == 0 && alpha_ == 1.0f
@@ -342,10 +339,8 @@ void CTexture::copyTexture(const CTexture& tex, bool keep_type)
 
 	// Copy texture info
 	name_          = tex.name_;
-	width_         = tex.width_;
-	height_        = tex.height_;
-	def_width_     = tex.def_width_;
-	def_height_    = tex.def_height_;
+	size_          = tex.size_;
+	def_size_      = tex.def_size_;
 	scale_         = tex.scale_;
 	world_panning_ = tex.world_panning_;
 	if (!keep_type)
@@ -356,8 +351,7 @@ void CTexture::copyTexture(const CTexture& tex, bool keep_type)
 	optional_     = tex.optional_;
 	no_decals_    = tex.no_decals_;
 	null_texture_ = tex.null_texture_;
-	offset_x_     = tex.offset_x_;
-	offset_y_     = tex.offset_y_;
+	offset_       = tex.offset_;
 	type_         = tex.type_;
 
 	// Update scaling
@@ -425,18 +419,15 @@ int CTexture::index() const
 void CTexture::clear()
 {
 	name_          = "";
-	width_         = 0;
-	height_        = 0;
-	def_width_     = 0;
-	def_height_    = 0;
+	size_          = { 0, 0 };
+	def_size_      = { 0, 0 };
 	scale_         = { 1., 1. };
 	defined_       = false;
 	world_panning_ = false;
 	optional_      = false;
 	no_decals_     = false;
 	null_texture_  = false;
-	offset_x_      = 0;
-	offset_y_      = 0;
+	offset_        = { 0, 0 };
 	patches_.clear();
 }
 
@@ -607,9 +598,9 @@ bool CTexture::parse(Tokenizer& tz, const string& type)
 	defined_  = false;
 	name_     = tz.next().text.Upper();
 	tz.adv(); // Skip ,
-	width_ = tz.next().asInt();
+	size_.x = tz.next().asInt();
 	tz.adv(); // Skip ,
-	height_ = tz.next().asInt();
+	size_.y = tz.next().asInt();
 
 	// Check for extended info
 	if (tz.advIfNext("{", 2))
@@ -635,9 +626,9 @@ bool CTexture::parse(Tokenizer& tz, const string& type)
 			// Offset
 			else if (tz.checkNC("Offset"))
 			{
-				offset_x_ = tz.next().asInt();
+				offset_.x = tz.next().asInt();
 				tz.skipToken(); // Skip ,
-				offset_y_ = tz.next().asInt();
+				offset_.y = tz.next().asInt();
 			}
 
 			// WorldPanning
@@ -685,20 +676,19 @@ bool CTexture::parseDefine(Tokenizer& tz)
 	extended_   = true;
 	defined_    = true;
 	name_       = tz.next().text.Upper();
-	def_width_  = tz.next().asInt();
-	def_height_ = tz.next().asInt();
-	width_      = def_width_;
-	height_     = def_height_;
+	def_size_.x = tz.next().asInt();
+	def_size_.y = tz.next().asInt();
+	size_       = def_size_;
 	auto entry  = App::resources().getPatchEntry(name_);
 	if (entry)
 	{
 		SImage image;
 		if (image.open(entry->data()))
 		{
-			width_   = image.width();
-			height_  = image.height();
-			scale_.x = (double)width_ / (double)def_width_;
-			scale_.y = (double)height_ / (double)def_height_;
+			size_.x  = image.width();
+			size_.y  = image.height();
+			scale_.x = (double)size_.x / (double)def_size_.x;
+			scale_.y = (double)size_.y / (double)def_size_.y;
 		}
 	}
 	patches_.push_back(std::make_unique<CTPatchEx>(name_));
@@ -716,22 +706,22 @@ string CTexture::asText()
 
 	// Define block
 	if (defined_)
-		return S_FMT("define \"%s\" %d %d\n", name_, def_width_, def_height_);
+		return S_FMT("define \"%s\" %d %d\n", name_, def_size_.x, def_size_.y);
 
 	// Init text string
 	string text;
 	if (optional_)
-		text = S_FMT("%s Optional \"%s\", %d, %d\n{\n", type_, name_, width_, height_);
+		text = S_FMT("%s Optional \"%s\", %d, %d\n{\n", type_, name_, size_.x, size_.y);
 	else
-		text = S_FMT("%s \"%s\", %d, %d\n{\n", type_, name_, width_, height_);
+		text = S_FMT("%s \"%s\", %d, %d\n{\n", type_, name_, size_.x, size_.y);
 
 	// Write texture properties
 	if (scale_.x != 1.0)
 		text += S_FMT("\tXScale %1.3f\n", scale_.x);
 	if (scale_.y != 1.0)
 		text += S_FMT("\tYScale %1.3f\n", scale_.y);
-	if (offset_x_ != 0 || offset_y_ != 0)
-		text += S_FMT("\tOffset %d, %d\n", offset_x_, offset_y_);
+	if (offset_.x != 0 || offset_.y != 0)
+		text += S_FMT("\tOffset %d, %d\n", offset_.x, offset_.y);
 	if (world_panning_)
 		text += "\tWorldPanning\n";
 	if (no_decals_)
@@ -822,7 +812,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 {
 	// Init image
 	image.clear();
-	image.resize(width_, height_);
+	image.resize(size_.x, size_.y);
 
 	// Add patches
 	SImage            p_img(SImage::Type::PalMask);
@@ -832,11 +822,11 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 	{
 		if (!loadPatchImage(0, p_img, parent, pal))
 			return false;
-		width_  = p_img.width();
-		height_ = p_img.height();
-		image.resize(width_, height_);
-		scale_.x = (double)width_ / (double)def_width_;
-		scale_.y = (double)height_ / (double)def_height_;
+		size_.x  = p_img.width();
+		size_.y = p_img.height();
+		image.resize(size_.x, size_.y);
+		scale_.x = (double)size_.x / (double)def_size_.x;
+		scale_.y = (double)size_.y / (double)def_size_.y;
 		image.drawImage(p_img, 0, 0, dp, pal, pal);
 	}
 	else if (extended_)
