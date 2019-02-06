@@ -26,33 +26,32 @@
     <ProjectGuid>{33CC5FBD-4EB0-48A9-9069-0EC0B5FF5A46}</ProjectGuid>
     <RootNamespace>SLADE</RootNamespace>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -159,6 +158,7 @@
       <PrecompiledHeaderFile>Main.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase31ud.lib;wxbase31ud_net.lib;wxmsw31ud_core.lib;wxmsw31ud_gl.lib;wxmsw31ud_aui.lib;wxmsw31ud_webview.lib;wxmsw31ud_adv.lib;wxmsw31ud_stc.lib;wxmsw31ud_propgrid.lib;wxmsw31ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;sfml-network-s-d.lib;sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-main-d.lib;freetype.lib;openal32.lib;wsock32.lib;flac.lib;ogg.lib;vorbis.lib;vorbisfile.lib;libcurl_a_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -192,6 +192,7 @@
       <PrecompiledHeaderFile>Main.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase31u.lib;wxbase31u_net.lib;wxmsw31u_core.lib;wxmsw31u_gl.lib;wxmsw31u_aui.lib;wxmsw31u_webview.lib;wxmsw31u_adv.lib;wxmsw31u_stc.lib;wxmsw31u_propgrid.lib;wxmsw31u_media.lib;wxregexu.lib;wxzlib.lib;wxpng.lib;wxtiff.lib;wxjpeg.lib;wxscintilla.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s.lib;sfml-audio-s.lib;sfml-window-s.lib;sfml-system-s.lib;sfml-main.lib;sfml-network-s.lib;freetype.lib;openal32.lib;wsock32.lib;flac.lib;ogg.lib;vorbis.lib;vorbisfile.lib;libcurl_a.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -230,6 +231,7 @@
       <PrecompiledHeaderFile>Main.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase31u.lib;wxbase31u_net.lib;wxmsw31u_core.lib;wxmsw31u_gl.lib;wxmsw31u_aui.lib;wxmsw31u_webview.lib;wxmsw31u_adv.lib;wxmsw31u_stc.lib;wxmsw31u_propgrid.lib;wxmsw31u_media.lib;wxregexu.lib;wxzlib.lib;wxpng.lib;wxtiff.lib;wxjpeg.lib;wxscintilla.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s.lib;sfml-audio-s.lib;sfml-window-s.lib;sfml-system-s.lib;sfml-main.lib;sfml-network-s.lib;freetype.lib;openal32.lib;wsock32.lib;flac.lib;ogg.lib;vorbis.lib;vorbisfile.lib;libcurl_a.lib;ftgl_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -268,6 +270,7 @@
       <PrecompiledHeaderFile>Main.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase31u.lib;wxbase31u_net.lib;wxmsw31u_core.lib;wxmsw31u_gl.lib;wxmsw31u_aui.lib;wxmsw31u_adv.lib;wxmsw31u_stc.lib;wxmsw31u_propgrid.lib;wxmsw31u_media.lib;wxmsw31u_html.lib;wxregexu.lib;wxzlib.lib;wxpng.lib;wxtiff.lib;wxjpeg.lib;wxscintilla.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-network-s.lib;sfml-graphics-s.lib;sfml-audio-s.lib;sfml-window-s.lib;sfml-system-s.lib;sfml-main.lib;freetype.lib;openal32.lib;wsock32.lib;flac.lib;ogg.lib;vorbis.lib;vorbisfile.lib;libcurl_a.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -306,6 +309,7 @@
       <PrecompiledHeaderFile>Main.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase31u.lib;wxbase31u_net.lib;wxmsw31u_core.lib;wxmsw31u_gl.lib;wxmsw31u_aui.lib;wxmsw31u_webview.lib;wxmsw31u_adv.lib;wxmsw31u_stc.lib;wxmsw31u_propgrid.lib;wxmsw31u_media.lib;wxregexu.lib;wxzlib.lib;wxpng.lib;wxtiff.lib;wxjpeg.lib;wxscintilla.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-network-s.lib;sfml-graphics-s.lib;sfml-audio-s.lib;sfml-window-s.lib;sfml-system-s.lib;sfml-main.lib;freetype.lib;openal32.lib;wsock32.lib;flac.lib;ogg.lib;vorbis.lib;vorbisfile.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
