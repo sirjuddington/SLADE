@@ -17,10 +17,10 @@ public:
 	};
 
 	PatchBrowserItem(
-		string   name,
+		wxString name,
 		Archive* archive = nullptr,
 		Type     type    = Type::Patch,
-		string   nspace  = "",
+		wxString nspace  = "",
 		unsigned index   = 0) :
 		BrowserItem{ name, index, "patch" },
 		archive_{ archive },
@@ -31,14 +31,14 @@ public:
 
 	~PatchBrowserItem();
 
-	bool   loadImage() override;
-	string itemInfo() override;
-	void   clearImage() override;
+	bool     loadImage() override;
+	wxString itemInfo() override;
+	void     clearImage() override;
 
 private:
 	Archive* archive_ = nullptr;
 	Type     type_    = Type::Patch;
-	string   nspace_;
+	wxString nspace_;
 };
 
 class PatchBrowser : public BrowserWindow, Listener
@@ -52,7 +52,7 @@ public:
 	bool openTextureXList(TextureXList* texturex, Archive* parent);
 	int  selectedPatch();
 	void selectPatch(int pt_index);
-	void selectPatch(const string& name);
+	void selectPatch(const wxString& name);
 	void setFullPath(bool enabled) { full_path_ = enabled; }
 
 private:
@@ -60,5 +60,5 @@ private:
 	bool        full_path_   = false; // Texture definition format supports full path texture and/or patch names
 
 	// Events
-	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
 };

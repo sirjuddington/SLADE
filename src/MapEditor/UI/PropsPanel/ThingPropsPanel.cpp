@@ -534,7 +534,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	if (map_format == MapFormat::UDMF)
 	{
 		// Get all udmf flag properties
-		vector<string> flags;
+		vector<wxString> flags;
 		for (auto& i : props)
 		{
 			if (i.second.isFlag())
@@ -652,7 +652,7 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 	int col = 0;
 
 	// Get all extra flag names
-	vector<string> flags;
+	vector<wxString> flags;
 	for (const auto& a : udmf_flags_extra_)
 	{
 		auto prop = Game::configuration().getUDMFProperty(a, MapObject::Type::Thing);

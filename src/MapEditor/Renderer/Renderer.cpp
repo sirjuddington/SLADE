@@ -629,7 +629,7 @@ void Renderer::drawSelectionNumbers() const
 	auto col = ColourConfiguration::colour("map_editor_message");
 
 	// Go through selection
-	string text;
+	wxString text;
 	Drawing::enableTextStateReset(false);
 	Drawing::setTextState(true);
 	view_.setOverlayCoords(true);
@@ -715,8 +715,8 @@ void Renderer::drawLineLength(Vec2f p1, Vec2f p2, ColRGBA col) const
 	Vec2f tp(mid.x + (vec.x * tdist), mid.y + (vec.y * tdist));
 
 	// Determine text half-height for vertical alignment
-	string length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1, p2)));
-	double hh     = Drawing::textExtents(length).y * 0.5;
+	wxString length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1, p2)));
+	double   hh     = Drawing::textExtents(length).y * 0.5;
 
 	// Draw text
 	Drawing::drawText(

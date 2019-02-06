@@ -280,7 +280,7 @@ BrowserWindow::~BrowserWindow()
 // Adds [item] to the browser tree at the tree path [where].
 // This will be created if it doesn't exist
 // -----------------------------------------------------------------------------
-bool BrowserWindow::addItem(BrowserItem* item, const string& where)
+bool BrowserWindow::addItem(BrowserItem* item, const wxString& where)
 {
 	item->parent_ = this;
 	auto target   = dynamic_cast<BrowserTreeNode*>(items_root_->addChild(where));
@@ -356,7 +356,7 @@ BrowserItem* BrowserWindow::selectedItem() const
 // If the item is found, its parent node is opened in the browser and the item
 // is selected
 // -----------------------------------------------------------------------------
-bool BrowserWindow::selectItem(const string& name, BrowserTreeNode* node)
+bool BrowserWindow::selectItem(const wxString& name, BrowserTreeNode* node)
 {
 	// Check node was given, if not start from root
 	if (!node)
@@ -414,7 +414,7 @@ bool sortBIName(BrowserItem* left, BrowserItem* right)
 // -----------------------------------------------------------------------------
 // Adds a sorting type [name] to the window
 // -----------------------------------------------------------------------------
-unsigned BrowserWindow::addSortType(const string& name) const
+unsigned BrowserWindow::addSortType(const wxString& name) const
 {
 	choice_sort_->AppendString(name);
 	return choice_sort_->GetCount() - 1;
@@ -675,8 +675,8 @@ void BrowserWindow::onCanvasSelectionChanged(wxEvent& e)
 	}
 
 	// Build info string
-	string info       = item->name();
-	string info_extra = item->itemInfo();
+	wxString info       = item->name();
+	wxString info_extra = item->itemInfo();
 	if (!info_extra.IsEmpty())
 	{
 		info += ": ";
@@ -697,7 +697,7 @@ void BrowserWindow::onCanvasKeyChar(wxKeyEvent& e)
 	// Backspace
 	if (e.GetKeyCode() == WXK_BACK && !text_filter_->GetValue().empty())
 	{
-		string filter = text_filter_->GetValue();
+		wxString filter = text_filter_->GetValue();
 		filter.RemoveLast(1);
 		text_filter_->SetValue(filter);
 		e.Skip();
@@ -726,7 +726,7 @@ void BrowserWindow::onCanvasKeyChar(wxKeyEvent& e)
 
 	if (isRealChar)
 	{
-		string filter = text_filter_->GetValue();
+		wxString filter = text_filter_->GetValue();
 		filter += e.GetKeyCode();
 		filter.MakeUpper();
 		text_filter_->SetValue(filter);

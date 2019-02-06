@@ -21,5 +21,5 @@ public:
 
 	// Static functions
 	static bool isRffArchive(MemChunk& mc);
-	static bool isRffArchive(const string& filename);
+	static bool isRffArchive(const wxString& filename);
 };

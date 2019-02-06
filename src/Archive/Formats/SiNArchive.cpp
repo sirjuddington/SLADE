@@ -222,7 +222,7 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Check entry name
-		string name = entry->path(true);
+		auto name = entry->path(true);
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 120)
 		{
@@ -348,7 +348,7 @@ bool SiNArchive::isSiNArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Ritual SiN archive
 // -----------------------------------------------------------------------------
-bool SiNArchive::isSiNArchive(const string& filename)
+bool SiNArchive::isSiNArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

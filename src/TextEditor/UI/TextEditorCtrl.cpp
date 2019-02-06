@@ -87,13 +87,13 @@ wxDEFINE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
 // -----------------------------------------------------------------------------
 wxThread::ExitCode JumpToCalculator::Entry()
 {
-	string jump_points;
+	wxString jump_points;
 
 	Tokenizer tz;
 	tz.setSpecialCharacters(";,:|={}/()");
 	tz.openString(text_);
 
-	string token = tz.getToken();
+	wxString token = tz.getToken();
 	while (!tz.atEnd())
 	{
 		if (token == "{")
@@ -116,7 +116,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 
 			if (S_CMPNOCASE(token, block))
 			{
-				string name = tz.getToken();
+				wxString name = tz.getToken();
 				for (int s = 0; s < skip; s++)
 					name = tz.getToken();
 
@@ -420,7 +420,7 @@ bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 		return true;
 
 	// Get character entry data
-	string text = wxString::FromUTF8((const char*)entry->rawData(), entry->size());
+	wxString text = wxString::FromUTF8((const char*)entry->rawData(), entry->size());
 	// If opening as UTF8 failed for some reason, try again as 8-bit data
 	if (text.length() == 0)
 		text = wxString::From8BitData((const char*)entry->rawData(), entry->size());
@@ -430,7 +430,7 @@ bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 	last_modified_ = App::runTimer();
 
 	// Update line numbers margin width
-	string numlines = S_FMT("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
+	wxString numlines = S_FMT("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
 	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, numlines));
 
 	return true;
@@ -442,7 +442,7 @@ bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 void TextEditorCtrl::getRawText(MemChunk& mc) const
 {
 	mc.clear();
-	string text = GetText();
+	wxString text = GetText();
 	mc.importMem((const uint8_t*)text.ToUTF8().data(), text.ToUTF8().length());
 }
 
@@ -496,7 +496,7 @@ void TextEditorCtrl::showFindReplacePanel(bool show)
 	}
 
 	// Get currently selected text
-	string find = GetSelectedText();
+	wxString find = GetSelectedText();
 
 	// Get the word at the current cursor position if there is no current selection
 	if (find.IsEmpty())
@@ -518,7 +518,7 @@ void TextEditorCtrl::showFindReplacePanel(bool show)
 // Returns false if the [find] was invalid or no match was found, true
 // otherwise
 // -----------------------------------------------------------------------------
-bool TextEditorCtrl::findNext(const string& find, int flags)
+bool TextEditorCtrl::findNext(const wxString& find, int flags)
 {
 	// Check search string
 	if (find.IsEmpty())
@@ -561,7 +561,7 @@ bool TextEditorCtrl::findNext(const string& find, int flags)
 // Returns false if the [find] was invalid or no match was found, true
 // otherwise
 // -----------------------------------------------------------------------------
-bool TextEditorCtrl::findPrev(const string& find, int flags)
+bool TextEditorCtrl::findPrev(const wxString& find, int flags)
 {
 	// Check search string
 	if (find.IsEmpty())
@@ -604,7 +604,7 @@ bool TextEditorCtrl::findPrev(const string& find, int flags)
 // Returns false if [find] is invalid or the current selection does not match
 // it, true otherwise
 // -----------------------------------------------------------------------------
-bool TextEditorCtrl::replaceCurrent(const string& find, const string& replace, int flags)
+bool TextEditorCtrl::replaceCurrent(const wxString& find, const wxString& replace, int flags)
 {
 	// Check search string
 	if (find.IsEmpty())
@@ -635,7 +635,7 @@ bool TextEditorCtrl::replaceCurrent(const string& find, const string& replace, i
 // Replaces all occurrences of [find] in the text with [replace].
 // Returns the number of occurrences replaced
 // -----------------------------------------------------------------------------
-int TextEditorCtrl::replaceAll(const string& find, const string& replace, int flags)
+int TextEditorCtrl::replaceAll(const wxString& find, const wxString& replace, int flags)
 {
 	// Check search string
 	if (find.IsEmpty())
@@ -731,8 +731,8 @@ void TextEditorCtrl::matchWord()
 		return;
 
 	// Get word/text to match
-	string current_word;
-	int    word_start, word_end;
+	wxString current_word;
+	int      word_start, word_end;
 	if (!HasSelection())
 	{
 		// No selection, get word at cursor
@@ -842,7 +842,7 @@ bool TextEditorCtrl::openCalltip(int pos, int arg, bool dwell)
 		return false;
 
 	// Get word before bracket
-	string word = GetTextRange(WordStartPosition(start, true), WordEndPosition(start, true));
+	wxString word = GetTextRange(WordStartPosition(start, true), WordEndPosition(start, true));
 
 	// Get matching language function (if any)
 	auto func = language_->function(word);
@@ -1074,16 +1074,16 @@ void TextEditorCtrl::setupFolding()
 // -----------------------------------------------------------------------------
 void TextEditorCtrl::lineComment()
 {
-	string space = wxString::FromUTF8(" ");
-	string empty = wxString::FromUTF8("");
+	wxString space = wxString::FromUTF8(" ");
+	wxString empty = wxString::FromUTF8("");
 
-	string comment;
+	wxString comment;
 	if (language_)
 		comment = language_->lineComment();
 	else
 		comment = default_line_comment_;
 
-	string comment_space = comment + space;
+	wxString comment_space = comment + space;
 
 	int selection_start, selection_end;
 	GetSelection(&selection_start, &selection_end);
@@ -1101,7 +1101,7 @@ void TextEditorCtrl::lineComment()
 	BeginUndoAction();
 	for (int line = first_line; line <= last_line; ++line)
 	{
-		string line_text = GetTextRange(PositionFromLine(line), GetLineEndPosition(line));
+		wxString line_text = GetTextRange(PositionFromLine(line), GetLineEndPosition(line));
 
 		SetTargetStart(PositionFromLine(line));
 		SetTargetEnd(GetLineEndPosition(line));
@@ -1146,8 +1146,8 @@ void TextEditorCtrl::lineComment()
 // -----------------------------------------------------------------------------
 void TextEditorCtrl::blockComment()
 {
-	string comment_begin, comment_end;
-	string space = wxString::FromUTF8(" ");
+	wxString comment_begin, comment_end;
+	wxString space = wxString::FromUTF8(" ");
 	if (language_)
 	{
 		comment_begin = language_->commentBegin();
@@ -1170,7 +1170,7 @@ void TextEditorCtrl::blockComment()
 
 	SetInsertionPoint(selection_start);
 
-	string text_string = GetRange(selection_start, selection_end);
+	wxString text_string = GetRange(selection_start, selection_end);
 
 	if (!text_string.StartsWith(comment_begin) && !text_string.EndsWith(comment_end))
 	{
@@ -1239,7 +1239,7 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 		else if (name == "ted_autocomplete")
 		{
 			// Get word before cursor
-			string word = GetTextRange(WordStartPosition(GetCurrentPos(), true), GetCurrentPos());
+			wxString word = GetTextRange(WordStartPosition(GetCurrentPos(), true), GetCurrentPos());
 
 			// If a language is loaded, bring up autocompletion list
 			if (language_)
@@ -1453,7 +1453,7 @@ void TextEditorCtrl::onKeyUp(wxKeyEvent& e)
 void TextEditorCtrl::onCharAdded(wxStyledTextEvent& e)
 {
 	// Update line numbers margin width
-	string numlines = S_FMT("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
+	wxString numlines = S_FMT("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
 	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, numlines));
 
 	// Auto indent
@@ -1617,8 +1617,8 @@ void TextEditorCtrl::onMouseDown(wxMouseEvent& e)
 	// Check for ctrl+left (web lookup)
 	if (e.LeftDown() && e.GetModifiers() == wxMOD_CMD)
 	{
-		int    pos  = CharPositionFromPointClose(e.GetX(), e.GetY());
-		string word = GetTextRange(WordStartPosition(pos, true), WordEndPosition(pos, true));
+		int      pos  = CharPositionFromPointClose(e.GetX(), e.GetY());
+		wxString word = GetTextRange(WordStartPosition(pos, true), WordEndPosition(pos, true));
 
 		if (!word.IsEmpty())
 		{
@@ -1648,7 +1648,7 @@ void TextEditorCtrl::onMouseDown(wxMouseEvent& e)
 			// Check for function
 			if (language_->isFunction(word))
 			{
-				string url = language_->functionLink();
+				wxString url = language_->functionLink();
 				if (!url.IsEmpty())
 				{
 					url.Replace("%s", word);
@@ -1733,7 +1733,7 @@ void TextEditorCtrl::onJumpToCalculateComplete(wxThreadEvent& e)
 		long line;
 		if (!split[a].ToLong(&line))
 			line = 0;
-		string name = split[a + 1];
+		wxString name = split[a + 1];
 
 		items.push_back(name);
 		jump_to_lines_.push_back(line);

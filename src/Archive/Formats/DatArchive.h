@@ -27,7 +27,7 @@ public:
 		unsigned         position = 0xFFFFFFFF,
 		ArchiveTreeNode* dir      = nullptr,
 		bool             copy     = false) override;
-	ArchiveEntry* addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy = false) override;
+	ArchiveEntry* addEntry(ArchiveEntry* entry, const wxString& add_namespace, bool copy = false) override;
 	bool          removeEntry(ArchiveEntry* entry) override;
 
 	// Entry moving
@@ -35,14 +35,14 @@ public:
 	bool moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = nullptr) override;
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, const string& name) override;
+	bool renameEntry(ArchiveEntry* entry, const wxString& name) override;
 
 	// Detection
-	string detectNamespace(size_t index, ArchiveTreeNode* dir = nullptr) override;
-	string detectNamespace(ArchiveEntry* entry) override;
+	wxString detectNamespace(size_t index, ArchiveTreeNode* dir = nullptr) override;
+	wxString detectNamespace(ArchiveEntry* entry) override;
 
 	static bool isDatArchive(MemChunk& mc);
-	static bool isDatArchive(const string& filename);
+	static bool isDatArchive(const wxString& filename);
 
 private:
 	int sprites_[2];

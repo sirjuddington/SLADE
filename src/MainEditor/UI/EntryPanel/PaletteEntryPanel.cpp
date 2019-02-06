@@ -57,7 +57,7 @@ CVAR(Float, col_greyscale_b, 0.114, CVar::Flag::Save)
 
 namespace
 {
-string extensions =
+wxString extensions =
 	"Raw Palette (*.pal)|*.pal|"
 	"PNG File (*.png)|*.png|"
 	"CSV Palette (*.csv)|*.csv|"
@@ -640,7 +640,7 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "pal
 	toolbar_->addGroup(group_palette);
 
 	// Current Palette
-	string actions = "ppal_moveup;ppal_movedown;ppal_duplicate;ppal_remove;ppal_removeothers";
+	wxString actions = "ppal_moveup;ppal_movedown;ppal_duplicate;ppal_remove;ppal_removeothers";
 	toolbar_->addActionGroup("Palette Organisation", wxSplit(actions, ';'));
 
 	// Colour Operations
@@ -717,7 +717,7 @@ bool PaletteEntryPanel::saveEntry()
 // -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
 // -----------------------------------------------------------------------------
-string PaletteEntryPanel::statusString()
+wxString PaletteEntryPanel::statusString()
 {
 	// Get current colour
 	ColRGBA col  = pal_canvas_->selectedColour();
@@ -777,7 +777,7 @@ void PaletteEntryPanel::refreshPanel()
 // -----------------------------------------------------------------------------
 // Called when a (EntryPanel) toolbar button is clicked
 // -----------------------------------------------------------------------------
-void PaletteEntryPanel::toolbarButtonClick(const string& action_id)
+void PaletteEntryPanel::toolbarButtonClick(const wxString& action_id)
 {
 	// Prev. palette
 	if (action_id == "pal_prev")
@@ -805,12 +805,12 @@ void PaletteEntryPanel::toolbarButtonClick(const string& action_id)
 bool PaletteEntryPanel::addCustomPalette()
 {
 	// Get name to export as
-	string name = wxGetTextFromUser("Enter name for Palette:", "Add to Palettes");
+	wxString name = wxGetTextFromUser("Enter name for Palette:", "Add to Palettes");
 	if (name.IsEmpty())
 		return false;
 
 	// Write current palette to the user palettes directory
-	string path = App::path(S_FMT("palettes/%s.pal", name), App::Dir::User);
+	wxString path = App::path(S_FMT("palettes/%s.pal", name), App::Dir::User);
 	palettes_[cur_palette_]->saveFile(path);
 
 	// Add to palette manager and main palette chooser
@@ -828,7 +828,7 @@ bool PaletteEntryPanel::addCustomPalette()
 bool PaletteEntryPanel::testPalette()
 {
 	// Get name to export as
-	string name = "Test: " + wxGetTextFromUser("Enter name for Palette:", "Test Palettes");
+	wxString name = "Test: " + wxGetTextFromUser("Enter name for Palette:", "Test Palettes");
 
 	// Add to palette manager and main palette chooser
 	auto pal = std::make_unique<Palette>(*palettes_[cur_palette_]);
@@ -1235,7 +1235,7 @@ bool PaletteEntryPanel::generatePalettes()
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // ----------------------------------------------------------------------------
-bool PaletteEntryPanel::handleEntryPanelAction(const string& id)
+bool PaletteEntryPanel::handleEntryPanelAction(const wxString& id)
 {
 	// Only interested in "ppal_" events
 	if (!id.StartsWith("ppal_"))
@@ -1481,7 +1481,7 @@ void PaletteEntryPanel::analysePalettes()
 	unsigned int greens[256];
 	unsigned int blues[256];
 #endif
-	string report = "\n";
+	wxString report = "\n";
 #ifdef GPALCOMPANALYSIS
 	int i = PALETTECHECK;
 	if (i)

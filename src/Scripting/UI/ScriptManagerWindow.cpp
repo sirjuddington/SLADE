@@ -55,8 +55,8 @@
 // -----------------------------------------------------------------------------
 namespace
 {
-string docs_url       = "http://slade.mancubus.net/docs/scripting";
-int    layout_version = 1;
+wxString docs_url       = "http://slade.mancubus.net/docs/scripting";
+int      layout_version = 1;
 } // namespace
 
 CVAR(Bool, sm_maximized, false, CVar::Flag::Save)
@@ -81,8 +81,8 @@ public:
 		gbsizer->AddGrowableCol(1, 1);
 
 		// Script type
-		string types[] = { "Custom", "Archive", "Entry", "Map Editor" };
-		choice_type_   = new wxChoice(this, -1, { -1, -1 }, { -1, -1 }, 4, types);
+		wxString types[] = { "Custom", "Archive", "Entry", "Map Editor" };
+		choice_type_     = new wxChoice(this, -1, { -1, -1 }, { -1, -1 }, 4, types);
 		choice_type_->SetSelection(0);
 		gbsizer->Add(new wxStaticText(this, -1, "Type:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 		gbsizer->Add(choice_type_, { 0, 1 }, { 1, 1 }, wxEXPAND);
@@ -117,7 +117,7 @@ public:
 		}
 	}
 
-	string selectedName() const { return text_name_->GetValue(); }
+	wxString selectedName() const { return text_name_->GetValue(); }
 
 private:
 	wxChoice*   choice_type_;
@@ -149,10 +149,10 @@ namespace
 // Returns a new or existing wxTreeItemId for [tree], at [path] from
 // [parent_node]. Creates any required nodes along the way.
 // -----------------------------------------------------------------------------
-wxTreeItemId getOrCreateNode(wxTreeCtrl* tree, wxTreeItemId parent_node, const string& path)
+wxTreeItemId getOrCreateNode(wxTreeCtrl* tree, wxTreeItemId parent_node, const wxString& path)
 {
-	string path_rest;
-	string name = path.BeforeFirst('/', &path_rest);
+	wxString path_rest;
+	wxString name = path.BeforeFirst('/', &path_rest);
 
 	// Find child node with name
 	wxTreeItemIdValue cookie;
@@ -229,11 +229,11 @@ void ScriptManagerWindow::loadLayout()
 	// Read component layout
 	if (file.IsOpened())
 	{
-		string text, layout;
+		wxString text, layout;
 		file.ReadAll(&text);
 
 		// Get layout version
-		string version = text.BeforeFirst('\n', &layout);
+		wxString version = text.BeforeFirst('\n', &layout);
 
 		// Check version
 		long val;
@@ -512,7 +512,7 @@ void ScriptManagerWindow::populateEditorScriptsTree(ScriptManager::ScriptType ty
 void ScriptManagerWindow::addEditorScriptsNode(
 	wxTreeItemId              parent_node,
 	ScriptManager::ScriptType type,
-	const string&             name)
+	const wxString&           name)
 {
 	editor_script_nodes_[type] = tree_scripts_->AppendItem(parent_node, name, 1);
 	populateEditorScriptsTree(type);
@@ -586,7 +586,7 @@ void ScriptManagerWindow::closeScriptTab(ScriptManager::Script* script) const
 // Shows the scripting documentation tab or creates it if it isn't currently
 // open. If [url] is specified, navigates to <scripting docs url>/[url]
 // -----------------------------------------------------------------------------
-void ScriptManagerWindow::showDocs(const string& url)
+void ScriptManagerWindow::showDocs(const wxString& url)
 {
 #ifdef USE_WEBVIEW_STARTPAGE
 
@@ -611,8 +611,8 @@ void ScriptManagerWindow::showDocs(const string& url)
 
 		// Bind HTML link click event
 		webview_docs_->Bind(wxEVT_WEBVIEW_NAVIGATING, [&](wxEvent& e) {
-			auto&  ev   = dynamic_cast<wxWebViewEvent&>(e);
-			string href = ev.GetURL();
+			auto&    ev   = dynamic_cast<wxWebViewEvent&>(e);
+			wxString href = ev.GetURL();
 
 			// Open external links externally
 			if (!href.StartsWith(docs_url))
@@ -672,7 +672,7 @@ ScriptManager::Script* ScriptManagerWindow::currentScript() const
 // -----------------------------------------------------------------------------
 // Returns the currently open/focused script text
 // -----------------------------------------------------------------------------
-string ScriptManagerWindow::currentScriptText() const
+wxString ScriptManagerWindow::currentScriptText() const
 {
 	auto page = tabs_scripts_->GetCurrentPage();
 	if (page->GetName() == "script")
@@ -685,7 +685,7 @@ string ScriptManagerWindow::currentScriptText() const
 // Handles the SAction [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ScriptManagerWindow::handleAction(const string& id)
+bool ScriptManagerWindow::handleAction(const wxString& id)
 {
 	using namespace ScriptManager;
 
@@ -742,7 +742,7 @@ bool ScriptManagerWindow::handleAction(const string& id)
 
 		if (script)
 		{
-			string name = wxGetTextFromUser("Enter a new name for the script", "Rename Script", script->name);
+			wxString name = wxGetTextFromUser("Enter a new name for the script", "Rename Script", script->name);
 
 			if (!name.empty())
 			{

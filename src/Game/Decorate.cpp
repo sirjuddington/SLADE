@@ -64,9 +64,9 @@ namespace
 // -----------------------------------------------------------------------------
 void parseStates(Tokenizer& tz, PropertyList& props)
 {
-	vector<string>           states;
-	string                   state_first;
-	std::map<string, string> state_sprites;
+	vector<wxString>             states;
+	wxString                     state_first;
+	std::map<wxString, wxString> state_sprites;
 
 	while (!tz.atEnd())
 	{
@@ -240,9 +240,9 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<ThingType>& parsed)
 {
 	// Get actor name
-	string name       = tz.next().text;
-	string actor_name = name;
-	string parent;
+	wxString name       = tz.next().text;
+	wxString actor_name = name;
+	wxString parent;
 
 	// Check for inheritance
 	// string next = tz.peekToken();
@@ -269,7 +269,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 	bool         filters_present = false;
 	bool         sprite_given    = false;
 	bool         title_given     = false;
-	string       group;
+	wxString     group;
 
 	// Skip "native" keyword if present
 	tz.advIfNextNC("native");
@@ -384,7 +384,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 			// Translation
 			else if (tz.checkNC("translation"))
 			{
-				string translation = "\"";
+				wxString translation = "\"";
 				translation += tz.next().text;
 				while (tz.checkNext(","))
 				{
@@ -425,7 +425,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 	// and actors with a negative or null type
 	if (available || !filters_present)
 	{
-		string group_path = group.empty() ? "Decorate" : "Decorate/" + group;
+		wxString group_path = group.empty() ? "Decorate" : "Decorate/" + group;
 
 		// Find existing definition or create it
 		ThingType* def = nullptr;
@@ -477,7 +477,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 // -----------------------------------------------------------------------------
 void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 {
-	string       name, sprite, group;
+	wxString     name, sprite, group;
 	bool         spritefound = false;
 	char         frame       = 'A';
 	bool         framefound  = false;
@@ -511,7 +511,7 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 		// else if (S_CMPNOCASE(token, "Frames"))
 		else if (tz.checkNC("frames"))
 		{
-			string   frames = tz.next().text;
+			wxString frames = tz.next().text;
 			unsigned pos    = 0;
 			if (frames.length() > 0)
 			{

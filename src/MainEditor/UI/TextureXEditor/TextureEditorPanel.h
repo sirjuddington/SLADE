@@ -27,7 +27,7 @@ public:
 	virtual wxPanel* createPatchControls(wxWindow* parent);
 	virtual void     populatePatchList();
 	virtual void     updatePatchControls();
-	void             updateTextureName(const string& new_name);
+	void             updateTextureName(const wxString& new_name);
 
 	bool openTexture(CTexture* tex, TextureXList* list);
 	void clearTexture();
@@ -45,7 +45,7 @@ public:
 	void         duplicatePatch(int xoff = 8, int yoff = 8);
 
 	// SAction handler
-	bool handleAction(const string& id) override;
+	bool handleAction(const wxString& id) override;
 
 	// Events
 	void onDrawOutsideChanged(wxCommandEvent& e);

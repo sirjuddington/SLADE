@@ -43,18 +43,18 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-const string MapLine::PROP_V1      = "v1";
-const string MapLine::PROP_V2      = "v2";
-const string MapLine::PROP_S1      = "sidefront";
-const string MapLine::PROP_S2      = "sideback";
-const string MapLine::PROP_SPECIAL = "special";
-const string MapLine::PROP_ID      = "id";
-const string MapLine::PROP_FLAGS   = "flags";
-const string MapLine::PROP_ARG0    = "arg0";
-const string MapLine::PROP_ARG1    = "arg1";
-const string MapLine::PROP_ARG2    = "arg2";
-const string MapLine::PROP_ARG3    = "arg3";
-const string MapLine::PROP_ARG4    = "arg4";
+const wxString MapLine::PROP_V1      = "v1";
+const wxString MapLine::PROP_V2      = "v2";
+const wxString MapLine::PROP_S1      = "sidefront";
+const wxString MapLine::PROP_S2      = "sideback";
+const wxString MapLine::PROP_SPECIAL = "special";
+const wxString MapLine::PROP_ID      = "id";
+const wxString MapLine::PROP_FLAGS   = "flags";
+const wxString MapLine::PROP_ARG0    = "arg0";
+const wxString MapLine::PROP_ARG1    = "arg1";
+const wxString MapLine::PROP_ARG2    = "arg2";
+const wxString MapLine::PROP_ARG3    = "arg3";
+const wxString MapLine::PROP_ARG4    = "arg4";
 
 
 // -----------------------------------------------------------------------------
@@ -228,7 +228,7 @@ int MapLine::s2Index() const
 // Can be prefixed with 'side1.' or 'side2.' to get bool properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-bool MapLine::boolProperty(const string& key)
+bool MapLine::boolProperty(const wxString& key)
 {
 	if (key.StartsWith("side1.") && side1_)
 		return side1_->boolProperty(key.Mid(6));
@@ -243,7 +243,7 @@ bool MapLine::boolProperty(const string& key)
 // Can be prefixed with 'side1.' or 'side2.' to get int properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-int MapLine::intProperty(const string& key)
+int MapLine::intProperty(const wxString& key)
 {
 	if (key.StartsWith("side1.") && side1_)
 		return side1_->intProperty(key.Mid(6));
@@ -283,7 +283,7 @@ int MapLine::intProperty(const string& key)
 // Can be prefixed with 'side1.' or 'side2.' to get float properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-double MapLine::floatProperty(const string& key)
+double MapLine::floatProperty(const wxString& key)
 {
 	if (key.StartsWith("side1.") && side1_)
 		return side1_->floatProperty(key.Mid(6));
@@ -298,7 +298,7 @@ double MapLine::floatProperty(const string& key)
 // Can be prefixed with 'side1.' or 'side2.' to get string properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-string MapLine::stringProperty(const string& key)
+wxString MapLine::stringProperty(const wxString& key)
 {
 	if (key.StartsWith("side1.") && side1_)
 		return side1_->stringProperty(key.Mid(6));
@@ -313,7 +313,7 @@ string MapLine::stringProperty(const string& key)
 // Can be prefixed with 'side1.' or 'side2.' to set bool properties on the front
 // and back sides respectively.
 // -----------------------------------------------------------------------------
-void MapLine::setBoolProperty(const string& key, bool value)
+void MapLine::setBoolProperty(const wxString& key, bool value)
 {
 	// Front side property
 	if (key.StartsWith("side1."))
@@ -339,7 +339,7 @@ void MapLine::setBoolProperty(const string& key, bool value)
 // Can be prefixed with 'side1.' or 'side2.' to set int properties on the front
 // and back sides respectively.
 // -----------------------------------------------------------------------------
-void MapLine::setIntProperty(const string& key, int value)
+void MapLine::setIntProperty(const wxString& key, int value)
 {
 	// Front side property
 	if (key.StartsWith("side1."))
@@ -432,7 +432,7 @@ void MapLine::setIntProperty(const string& key, int value)
 // Can be prefixed with 'side1.' or 'side2.' to set float properties on the
 // front and back sides respectively.
 // -----------------------------------------------------------------------------
-void MapLine::setFloatProperty(const string& key, double value)
+void MapLine::setFloatProperty(const wxString& key, double value)
 {
 	// Front side property
 	if (key.StartsWith("side1."))
@@ -458,7 +458,7 @@ void MapLine::setFloatProperty(const string& key, double value)
 // Can be prefixed with 'side1.' or 'side2.' to set string properties on the
 // front and back sides respectively.
 // -----------------------------------------------------------------------------
-void MapLine::setStringProperty(const string& key, const string& value)
+void MapLine::setStringProperty(const wxString& key, const wxString& value)
 {
 	// Front side property
 	if (key.StartsWith("side1."))
@@ -482,7 +482,7 @@ void MapLine::setStringProperty(const string& key, const string& value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapLine::scriptCanModifyProp(const string& key)
+bool MapLine::scriptCanModifyProp(const wxString& key)
 {
 	return !(key == PROP_V1 || key == PROP_V2 || key == PROP_S1 || key == PROP_S2);
 }
@@ -999,7 +999,7 @@ void MapLine::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 // Writes the line as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapLine::writeUDMF(string& def)
+void MapLine::writeUDMF(wxString& def)
 {
 	def = S_FMT("linedef//#%u\n{\n", index_);
 

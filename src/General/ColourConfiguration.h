@@ -4,16 +4,16 @@ namespace ColourConfiguration
 {
 struct Colour
 {
-	bool    exists = false;
-	bool    custom = false;
-	string  name;
-	string  group;
-	ColRGBA colour;
+	bool     exists = false;
+	bool     custom = false;
+	wxString name;
+	wxString group;
+	ColRGBA  colour;
 };
 
-ColRGBA colour(const string& name);
-Colour  colDef(const string& name);
-void    setColour(const string& name, int red = -1, int green = -1, int blue = -1, int alpha = -1, int blend = -1);
+ColRGBA colour(const wxString& name);
+Colour  colDef(const wxString& name);
+void    setColour(const wxString& name, int red = -1, int green = -1, int blue = -1, int alpha = -1, int blend = -1);
 
 double lineHilightWidth();
 double lineSelectionWidth();
@@ -27,8 +27,8 @@ bool writeConfiguration(MemChunk& mc);
 bool init();
 void loadDefaults();
 
-bool readConfiguration(const string& name);
-void putConfigurationNames(vector<string>& names);
+bool readConfiguration(const wxString& name);
+void putConfigurationNames(vector<wxString>& names);
 
-void putColourNames(vector<string>& list);
+void putColourNames(vector<wxString>& list);
 } // namespace ColourConfiguration

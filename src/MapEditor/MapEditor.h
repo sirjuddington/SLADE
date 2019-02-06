@@ -102,7 +102,7 @@ bool chooseMap(Archive* archive = nullptr);
 void setUndoManager(UndoManager* manager);
 
 // UI
-void setStatusText(const string& text, int column);
+void setStatusText(const wxString& text, int column);
 void lockMouse(bool lock);
 void openContextMenu();
 
@@ -117,11 +117,11 @@ void showShapeDrawPanel(bool show = true);
 void showObjectEditPanel(bool show = true, ObjectEditGroup* group = nullptr);
 
 // Browser
-string browseTexture(
-	const string& init_texture,
-	TextureType   tex_type,
-	SLADEMap&     map,
-	const string& title = "Browse Texture");
+wxString browseTexture(
+	const wxString& init_texture,
+	TextureType     tex_type,
+	SLADEMap&       map,
+	const wxString& title = "Browse Texture");
 int browseThingType(int init_type, SLADEMap& map);
 
 // Misc

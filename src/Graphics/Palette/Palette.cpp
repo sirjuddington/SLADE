@@ -244,9 +244,9 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			}
 		}
 		// Now, parse
-		string  s1, s2, s3;
-		ColRGBA col(0, 0, 0, 255, -1);
-		int     c = 0;
+		wxString s1, s2, s3;
+		ColRGBA  col(0, 0, 0, 255, -1);
+		int      c = 0;
 		do
 		{
 			// Get the first token. If it begins with #, it's a comment in GIMP. Ignore.
@@ -302,7 +302,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 // -----------------------------------------------------------------------------
 // Writes colour information to a MemChunk
 // -----------------------------------------------------------------------------
-bool Palette::saveMem(MemChunk& mc, Format format, const string& name)
+bool Palette::saveMem(MemChunk& mc, Format format, const wxString& name)
 {
 	// Clear memchunk
 	mc.clear();
@@ -320,7 +320,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, const string& name)
 	// CSV
 	else if (format == Format::CSV)
 	{
-		string csv;
+		wxString csv;
 		for (unsigned a = 0; a < 256; a++)
 			csv += S_FMT("%d, %d, %d\n", colours_[a].r, colours_[a].g, colours_[a].b);
 		mc.importMem((const uint8_t*)((const char*)csv.ToAscii()), csv.Length());
@@ -329,7 +329,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, const string& name)
 	// JASC palette
 	else if (format == Format::JASC)
 	{
-		string jasc = "JASC-PAL\n0100\n256\n";
+		wxString jasc = "JASC-PAL\n0100\n256\n";
 		for (unsigned a = 0; a < 256; a++)
 			jasc += S_FMT("%d %d %d\n", colours_[a].r, colours_[a].g, colours_[a].b);
 		mc.importMem((const uint8_t*)((const char*)jasc.ToAscii()), jasc.Length());
@@ -338,7 +338,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, const string& name)
 	// GIMP palette
 	else if (format == Format::GIMP)
 	{
-		string gimp = S_FMT("GIMP Palette\nName: %s\n#\n", name);
+		wxString gimp = S_FMT("GIMP Palette\nName: %s\n#\n", name);
 		for (unsigned a = 0; a < 256; a++)
 			gimp += S_FMT("%d\t%d\t%d\tIndex %u\n", colours_[a].r, colours_[a].g, colours_[a].b, a);
 		mc.importMem((const uint8_t*)((const char*)gimp.ToAscii()), gimp.Length());
@@ -386,11 +386,11 @@ bool Palette::saveMem(MemChunk& mc, Format format, const string& name)
 // Writes colour information to a file at [filename].
 // Returns false if the file could not be opened/created, true otherwise
 // -----------------------------------------------------------------------------
-bool Palette::saveFile(const string& filename, Format format)
+bool Palette::saveFile(const wxString& filename, Format format)
 {
 	// Get palette name
 	wxFileName fn(filename);
-	string     name = fn.GetName();
+	wxString   name = fn.GetName();
 
 	// Write data to MemChunk
 	MemChunk mc;
@@ -405,11 +405,11 @@ bool Palette::saveFile(const string& filename, Format format)
 // Reads colour information from a file at [filename].
 // Returns false if the file could not be opened/parsed, true otherwise
 // -----------------------------------------------------------------------------
-bool Palette::loadFile(const string& filename, Format format)
+bool Palette::loadFile(const wxString& filename, Format format)
 {
 	// Get palette name
 	wxFileName fn(filename);
-	string     name = fn.GetName();
+	wxString   name = fn.GetName();
 
 	// Open the file
 	wxFile file(filename);

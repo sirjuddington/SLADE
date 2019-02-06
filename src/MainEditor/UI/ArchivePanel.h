@@ -101,13 +101,13 @@ public:
 	void    focusEntryList() const { entry_list_->SetFocus(); }
 	void    refreshPanel();
 	void    closeCurrentEntry();
-	wxMenu* createEntryOpenMenu(const string& category);
+	wxMenu* createEntryOpenMenu(const wxString& category);
 
 	// SAction handler
-	bool handleAction(const string& id) override;
+	bool handleAction(const wxString& id) override;
 
 	// Listener
-	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
 
 	// Static functions
 	static EntryPanel* createPanelForEntry(ArchiveEntry* entry, wxWindow* parent);
@@ -119,8 +119,8 @@ protected:
 
 	// External edit stuff
 	ExternalEditManager::UPtr ee_manager_;
-	string                    current_external_exe_category_;
-	vector<string>            current_external_exes_;
+	wxString                  current_external_exe_category_;
+	vector<wxString>          current_external_exes_;
 
 	// Controls
 	ArchiveEntryList* entry_list_          = nullptr;
@@ -179,7 +179,7 @@ public:
 
 private:
 	MemChunk data_;
-	string   path_;
+	wxString path_;
 	unsigned index_   = -1;
 	Archive* archive_ = nullptr;
 };

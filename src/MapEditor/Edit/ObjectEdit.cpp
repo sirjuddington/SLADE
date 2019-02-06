@@ -678,9 +678,9 @@ bool ObjectEdit::begin()
 	context_.renderer().renderer2D().forceUpdate();
 
 	// Setup help text
-	string key_accept = KeyBind::bind("map_edit_accept").keysAsString();
-	string key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
-	string key_toggle = KeyBind::bind("me2d_begin_object_edit").keysAsString();
+	auto key_accept = KeyBind::bind("map_edit_accept").keysAsString();
+	auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
+	auto key_toggle = KeyBind::bind("me2d_begin_object_edit").keysAsString();
 	context_.setFeatureHelp({ "Object Edit",
 							  S_FMT("%s = Accept", key_accept),
 							  S_FMT("%s or %s = Cancel", key_cancel, key_toggle),

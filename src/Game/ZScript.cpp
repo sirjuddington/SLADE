@@ -48,19 +48,19 @@ namespace ZScript
 EntryType* etype_zscript = nullptr;
 
 // ZScript keywords (can't be function/variable names)
-vector<string> keywords = { "class",      "default", "private",  "static", "native",   "return",       "if",
-							"else",       "for",     "while",    "do",     "break",    "continue",     "deprecated",
-							"state",      "null",    "readonly", "true",   "false",    "struct",       "extend",
-							"clearscope", "vararg",  "ui",       "play",   "virtual",  "virtualscope", "meta",
-							"Property",   "version", "in",       "out",    "states",   "action",       "override",
-							"super",      "is",      "let",      "const",  "replaces", "protected",    "self" };
+vector<wxString> keywords = { "class",      "default", "private",  "static", "native",   "return",       "if",
+							  "else",       "for",     "while",    "do",     "break",    "continue",     "deprecated",
+							  "state",      "null",    "readonly", "true",   "false",    "struct",       "extend",
+							  "clearscope", "vararg",  "ui",       "play",   "virtual",  "virtualscope", "meta",
+							  "Property",   "version", "in",       "out",    "states",   "action",       "override",
+							  "super",      "is",      "let",      "const",  "replaces", "protected",    "self" };
 
 // For test_parse_zscript console command
 bool dump_parsed_blocks    = false;
 bool dump_parsed_states    = false;
 bool dump_parsed_functions = false;
 
-string db_comment = "//$";
+wxString db_comment = "//$";
 } // namespace ZScript
 
 
@@ -74,9 +74,9 @@ namespace ZScript
 // -----------------------------------------------------------------------------
 // Writes a log [message] of [type] beginning with the location of [statement]
 // -----------------------------------------------------------------------------
-void logParserMessage(ParsedStatement& statement, Log::MessageType type, const string& message)
+void logParserMessage(ParsedStatement& statement, Log::MessageType type, const wxString& message)
 {
-	string location = "<unknown location>";
+	wxString location = "<unknown location>";
 	if (statement.entry)
 		location = statement.entry->path(true);
 
@@ -86,9 +86,9 @@ void logParserMessage(ParsedStatement& statement, Log::MessageType type, const s
 // -----------------------------------------------------------------------------
 // Parses a ZScript type (eg. 'class<Actor>') from [tokens] beginning at [index]
 // -----------------------------------------------------------------------------
-string parseType(const vector<string>& tokens, unsigned& index)
+wxString parseType(const vector<wxString>& tokens, unsigned& index)
 {
-	string type;
+	wxString type;
 
 	// Qualifiers
 	while (index < tokens.size())
@@ -127,9 +127,9 @@ string parseType(const vector<string>& tokens, unsigned& index)
 // -----------------------------------------------------------------------------
 // Parses a ZScript value from [tokens] beginning at [index]
 // -----------------------------------------------------------------------------
-string parseValue(const vector<string>& tokens, unsigned& index)
+wxString parseValue(const vector<wxString>& tokens, unsigned& index)
 {
-	string value;
+	wxString value;
 	while (true)
 	{
 		// Read between ()
@@ -168,7 +168,7 @@ string parseValue(const vector<string>& tokens, unsigned& index)
 // Returns true if there is a keyword+value statement and writes the value to
 // [value]
 // -----------------------------------------------------------------------------
-bool checkKeywordValueStatement(const vector<string>& tokens, unsigned index, const string& word, string& value)
+bool checkKeywordValueStatement(const vector<wxString>& tokens, unsigned index, const wxString& word, wxString& value)
 {
 	if (index + 3 >= tokens.size())
 		return false;
@@ -244,7 +244,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 // -----------------------------------------------------------------------------
 // Returns true if [word] is a ZScript keyword
 // -----------------------------------------------------------------------------
-bool isKeyword(const string& word)
+bool isKeyword(const wxString& word)
 {
 	for (auto& kw : keywords)
 		if (S_CMPNOCASE(word, kw))
@@ -282,7 +282,7 @@ bool Enumerator::parse(ParsedStatement& statement)
 	unsigned count = statement.block[0].tokens.size();
 	while (index < count)
 	{
-		string val_name = statement.block[0].tokens[index];
+		wxString val_name = statement.block[0].tokens[index];
 
 		// TODO: Parse value
 
@@ -310,7 +310,7 @@ bool Enumerator::parse(ParsedStatement& statement)
 // -----------------------------------------------------------------------------
 // Parses a function parameter from [tokens] beginning at [index]
 // -----------------------------------------------------------------------------
-unsigned Function::Parameter::parse(const vector<string>& tokens, unsigned start_index)
+unsigned Function::Parameter::parse(const vector<wxString>& tokens, unsigned start_index)
 {
 	// Type
 	type = parseType(tokens, start_index);
@@ -424,9 +424,9 @@ bool Function::parse(ParsedStatement& statement)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the function
 // -----------------------------------------------------------------------------
-string Function::asString()
+wxString Function::asString()
 {
-	string str;
+	wxString str;
 	if (!deprecated_.empty())
 		str += S_FMT("deprecated v%s ", CHR(deprecated_));
 	if (static_)
@@ -494,7 +494,7 @@ bool Function::isFunction(ParsedStatement& statement)
 // -----------------------------------------------------------------------------
 // Returns the first valid frame sprite (eg. TNT1 A -> TNT1A?)
 // -----------------------------------------------------------------------------
-string State::editorSprite()
+wxString State::editorSprite()
 {
 	if (frames.empty())
 		return "";
@@ -519,7 +519,7 @@ string State::editorSprite()
 // -----------------------------------------------------------------------------
 bool StateTable::parse(ParsedStatement& states)
 {
-	vector<string> current_states;
+	vector<wxString> current_states;
 	for (auto& statement : states.block)
 	{
 		if (statement.tokens.empty())
@@ -543,7 +543,7 @@ bool StateTable::parse(ParsedStatement& states)
 				if (!states_added)
 					current_states.clear();
 
-				string state;
+				wxString state;
 				for (auto b = index; b < a; ++b)
 					state += statement.tokens[b];
 
@@ -614,7 +614,7 @@ bool StateTable::parse(ParsedStatement& states)
 // editor.
 // Uses a state priority: Idle > See > Inactive > Spawn > [first defined]
 // -----------------------------------------------------------------------------
-string StateTable::editorSprite()
+wxString StateTable::editorSprite()
 {
 	if (!states_["idle"].frames.empty())
 		return states_["idle"].editorSprite();
@@ -761,8 +761,8 @@ void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::Thin
 	}
 
 	// Set properties from DB comments
-	string title = name_;
-	string group = "ZScript";
+	wxString title = name_;
+	wxString group = "ZScript";
 	for (auto& prop : db_properties_)
 	{
 		if (S_CMPNOCASE(prop.first, "Title"))
@@ -871,7 +871,7 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 			continue;
 
 		// Name
-		string name = statement.tokens[t];
+		wxString name = statement.tokens[t];
 		if (t + 2 < count && statement.tokens[t + 1] == '.')
 		{
 			name += "." + statement.tokens[t + 2];
@@ -1136,7 +1136,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 void ParsedStatement::dump(int indent)
 {
-	string line = "";
+	wxString line = "";
 	for (int a = 0; a < indent; a++)
 		line += "  ";
 

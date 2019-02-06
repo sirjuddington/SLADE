@@ -487,7 +487,7 @@ void MapEditContext::showItem(int index)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the current edit mode
 // -----------------------------------------------------------------------------
-string MapEditContext::modeString(bool plural) const
+wxString MapEditContext::modeString(bool plural) const
 {
 	switch (edit_mode_)
 	{
@@ -940,7 +940,7 @@ void MapEditContext::endTagEdit(bool accept)
 // -----------------------------------------------------------------------------
 // Returns the current editor message at [index]
 // -----------------------------------------------------------------------------
-string MapEditContext::editorMessage(int index)
+wxString MapEditContext::editorMessage(int index)
 {
 	// Check index
 	if (index < 0 || index >= (int)editor_messages_.size())
@@ -964,7 +964,7 @@ long MapEditContext::editorMessageTime(int index)
 // -----------------------------------------------------------------------------
 // Adds an editor message, removing the oldest if needed
 // -----------------------------------------------------------------------------
-void MapEditContext::addEditorMessage(const string& message)
+void MapEditContext::addEditorMessage(const wxString& message)
 {
 	// Remove oldest message if there are too many active
 	if (editor_messages_.size() >= 4)
@@ -980,7 +980,7 @@ void MapEditContext::addEditorMessage(const string& message)
 // -----------------------------------------------------------------------------
 // Sets the feature help text to display [lines]
 // -----------------------------------------------------------------------------
-void MapEditContext::setFeatureHelp(const vector<string>& lines)
+void MapEditContext::setFeatureHelp(const vector<wxString>& lines)
 {
 	feature_help_lines_.clear();
 	feature_help_lines_ = lines;
@@ -993,7 +993,7 @@ void MapEditContext::setFeatureHelp(const vector<string>& lines)
 // -----------------------------------------------------------------------------
 // Handles the keybind [key]
 // -----------------------------------------------------------------------------
-bool MapEditContext::handleKeyBind(const string& key, Vec2f position)
+bool MapEditContext::handleKeyBind(const wxString& key, Vec2f position)
 {
 	// --- General keybinds ---
 
@@ -1281,7 +1281,7 @@ void MapEditContext::updateDisplay()
 void MapEditContext::updateStatusText() const
 {
 	// Edit mode
-	string mode = "Mode: ";
+	wxString mode = "Mode: ";
 	switch (edit_mode_)
 	{
 	case Mode::Vertices: mode += "Vertices"; break;
@@ -1307,7 +1307,7 @@ void MapEditContext::updateStatusText() const
 	MapEditor::setStatusText(mode, 1);
 
 	// Grid
-	string grid;
+	wxString grid;
 	if (gridSize() < 1)
 		grid = S_FMT("Grid: %1.2fx%1.2f", gridSize(), gridSize());
 	else
@@ -1326,7 +1326,7 @@ void MapEditContext::updateStatusText() const
 // begin will modify object properties, [create/del] are true if it will create
 // or delete objects
 // -----------------------------------------------------------------------------
-void MapEditContext::beginUndoRecord(const string& name, bool mod, bool create, bool del)
+void MapEditContext::beginUndoRecord(const wxString& name, bool mod, bool create, bool del)
 {
 	// Setup
 	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
@@ -1357,7 +1357,7 @@ void MapEditContext::beginUndoRecord(const string& name, bool mod, bool create, 
 // operations like offset changes etc. so that 5 offset changes to the same
 // object only create 1 undo level)
 // -----------------------------------------------------------------------------
-void MapEditContext::beginUndoRecordLocked(const string& name, bool mod, bool create, bool del)
+void MapEditContext::beginUndoRecordLocked(const wxString& name, bool mod, bool create, bool del)
 {
 	if (name != last_undo_level_)
 	{
@@ -1418,9 +1418,9 @@ void MapEditContext::doUndo()
 	selection_.clear();
 
 	// Undo
-	int    time      = App::runTimer() - 1;
-	auto   manager   = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
-	string undo_name = manager->undo();
+	int      time      = App::runTimer() - 1;
+	auto     manager   = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
+	wxString undo_name = manager->undo();
 
 	// Editor message
 	if (!undo_name.empty())
@@ -1452,9 +1452,9 @@ void MapEditContext::doRedo()
 	selection_.clear();
 
 	// Redo
-	int    time      = App::runTimer() - 1;
-	auto   manager   = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
-	string undo_name = manager->redo();
+	int      time      = App::runTimer() - 1;
+	auto     manager   = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
+	wxString undo_name = manager->redo();
 
 	// Editor message
 	if (!undo_name.empty())
@@ -1636,7 +1636,7 @@ void MapEditContext::drawInfoOverlay(const Vec2i& size, float alpha)
 // -----------------------------------------------------------------------------
 // Handles an SAction [id]. Returns true if the action was handled here
 // -----------------------------------------------------------------------------
-bool MapEditContext::handleAction(const string& id)
+bool MapEditContext::handleAction(const wxString& id)
 {
 	using namespace MapEditor;
 
@@ -1902,8 +1902,8 @@ bool MapEditContext::handleAction(const string& id)
 			input_.setMouseState(Input::MouseState::TagSectors);
 
 			// Setup help text
-			string key_accept = KeyBind::bind("map_edit_accept").keysAsString();
-			string key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
+			wxString key_accept = KeyBind::bind("map_edit_accept").keysAsString();
+			wxString key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 			setFeatureHelp({ "Tag Edit",
 							 S_FMT("%s = Accept", key_accept),
 							 S_FMT("%s = Cancel", key_cancel),
@@ -2163,7 +2163,7 @@ void MapArchClipboardItem::addLines(const vector<MapLine*>& lines)
 // -----------------------------------------------------------------------------
 // Returns a string with info on what items are copied
 // -----------------------------------------------------------------------------
-string MapArchClipboardItem::info() const
+wxString MapArchClipboardItem::info() const
 {
 	return S_FMT(
 		"%lu Vertices, %lu Lines, %lu Sides and %lu Sectors",
@@ -2326,7 +2326,7 @@ void MapThingsClipboardItem::addThings(vector<MapThing*>& things)
 // -----------------------------------------------------------------------------
 // Returns a string with info on what items are copied
 // -----------------------------------------------------------------------------
-string MapThingsClipboardItem::info() const
+wxString MapThingsClipboardItem::info() const
 {
 	return S_FMT("%lu Things", things_.size());
 }

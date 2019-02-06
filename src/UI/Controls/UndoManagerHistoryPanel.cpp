@@ -59,7 +59,7 @@ UndoListView::UndoListView(wxWindow* parent, UndoManager* manager) : VirtualList
 // -----------------------------------------------------------------------------
 // Returns the list text for [item] at [column]
 // -----------------------------------------------------------------------------
-string UndoListView::itemText(long item, long column, long index) const
+wxString UndoListView::itemText(long item, long column, long index) const
 {
 	if (!manager_)
 		return "";
@@ -69,7 +69,7 @@ string UndoListView::itemText(long item, long column, long index) const
 	{
 		if (column == 0)
 		{
-			string name = manager_->undoLevel((unsigned)item)->name();
+			wxString name = manager_->undoLevel((unsigned)item)->name();
 			return S_FMT("%lu. %s", item + 1, name);
 		}
 		else
@@ -122,7 +122,7 @@ void UndoListView::setManager(UndoManager* manager)
 // -----------------------------------------------------------------------------
 // Called when an announcement is received from the undo manager
 // -----------------------------------------------------------------------------
-void UndoListView::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void UndoListView::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	if (announcer != manager_)
 		return;

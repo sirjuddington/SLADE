@@ -27,7 +27,7 @@ public:
 	void updateList(bool clear = false) override;
 	int  entriesBegin() const;
 
-	void filterList(const string& filter = "", const string& category = "");
+	void filterList(const wxString& filter = "", const wxString& category = "");
 	void applyFilter() override;
 	bool goUpDir();
 	bool setDir(ArchiveTreeNode* dir);
@@ -45,12 +45,12 @@ public:
 	vector<ArchiveTreeNode*> selectedDirectories();
 
 	// Label editing
-	void labelEdited(int col, int index, const string& new_label) override;
+	void labelEdited(int col, int index, const wxString& new_label) override;
 
-	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
 
 	// SAction handler
-	bool handleAction(const string& id) override;
+	bool handleAction(const wxString& id) override;
 
 	// Events
 	void onColumnHeaderRightClick(wxListEvent& e);
@@ -59,13 +59,13 @@ public:
 
 protected:
 	// Virtual wxListCtrl overrides
-	string itemText(long item, long column, long index) const override;
-	int    itemIcon(long item, long column, long index) const override;
-	void   updateItemAttr(long item, long column, long index) const override;
+	wxString itemText(long item, long column, long index) const override;
+	int      itemIcon(long item, long column, long index) const override;
+	void     updateItemAttr(long item, long column, long index) const override;
 
 private:
 	Archive*           archive_ = nullptr;
-	string             filter_category_;
+	wxString           filter_category_;
 	ArchiveTreeNode*   current_dir_ = nullptr;
 	ArchiveEntry::UPtr entry_dir_back_;
 	bool               show_dir_back_  = false;

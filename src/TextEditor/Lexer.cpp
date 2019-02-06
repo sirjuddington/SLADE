@@ -162,7 +162,7 @@ bool Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 // -----------------------------------------------------------------------------
 // Sets the [style] for [word]
 // -----------------------------------------------------------------------------
-void Lexer::addWord(const string& word, int style)
+void Lexer::addWord(const wxString& word, int style)
 {
 	word_list_[language_->caseSensitive() ? word : word.Lower()].style = (char)style;
 }
@@ -171,7 +171,7 @@ void Lexer::addWord(const string& word, int style)
 // Applies a style to [word] in [editor], depending on if it is in the word
 // list, a number or begins with the preprocessor character
 // -----------------------------------------------------------------------------
-void Lexer::styleWord(LexerState& state, string word)
+void Lexer::styleWord(LexerState& state, wxString word)
 {
 	if (!language_->caseSensitive())
 		word = word.Lower();
@@ -193,7 +193,7 @@ void Lexer::styleWord(LexerState& state, string word)
 // -----------------------------------------------------------------------------
 // Sets the valid word characters to [chars]
 // -----------------------------------------------------------------------------
-void Lexer::setWordChars(const string& chars)
+void Lexer::setWordChars(const wxString& chars)
 {
 	word_chars_.clear();
 	for (auto&& a : chars)
@@ -203,7 +203,7 @@ void Lexer::setWordChars(const string& chars)
 // -----------------------------------------------------------------------------
 // Sets the valid operator characters to [chars]
 // -----------------------------------------------------------------------------
-void Lexer::setOperatorChars(const string& chars)
+void Lexer::setOperatorChars(const wxString& chars)
 {
 	operator_chars_.clear();
 	for (auto&& a : chars)
@@ -216,14 +216,14 @@ void Lexer::setOperatorChars(const string& chars)
 // -----------------------------------------------------------------------------
 bool Lexer::processUnknown(LexerState& state)
 {
-	int            u_length = 0;
-	bool           end      = false;
-	bool           pp       = false;
-	vector<string> comment_begin_l;
-	string         comment_doc;
-	vector<string> comment_line_l;
-	string         block_begin;
-	string         block_end;
+	int              u_length = 0;
+	bool             end      = false;
+	bool             pp       = false;
+	vector<wxString> comment_begin_l;
+	wxString         comment_doc;
+	vector<wxString> comment_line_l;
+	wxString         block_begin;
+	wxString         block_end;
 
 	if (language_)
 	{
@@ -382,8 +382,8 @@ bool Lexer::processUnknown(LexerState& state)
 // -----------------------------------------------------------------------------
 bool Lexer::processComment(LexerState& state)
 {
-	bool   end         = false;
-	string comment_end = "";
+	bool     end         = false;
+	wxString comment_end = "";
 	if (curr_comment_idx_ >= 0)
 		comment_end = language_->commentEndL()[curr_comment_idx_];
 
@@ -456,12 +456,12 @@ bool Lexer::processWord(LexerState& state)
 	}
 
 	// Get word as string
-	string word_string = wxString::FromAscii(&word[0], word.size());
+	wxString word_string = wxString::FromAscii(&word[0], word.size());
 
 	// Check for preprocessor folding word
 	if (fold_preprocessor_ && word_string.StartsWith(preprocessor_char_))
 	{
-		string word_lower = word_string.Lower().After(preprocessor_char_);
+		wxString word_lower = word_string.Lower().After(preprocessor_char_);
 		if (VECTOR_EXISTS(language_->ppBlockBegin(), word_lower))
 			state.fold_increment++;
 		else if (VECTOR_EXISTS(language_->ppBlockEnd(), word_lower))
@@ -469,7 +469,7 @@ bool Lexer::processWord(LexerState& state)
 	}
 	else
 	{
-		string word_lower = word_string.Lower();
+		wxString word_lower = word_string.Lower();
 		if (VECTOR_EXISTS(language_->wordBlockBegin(), word_lower))
 			state.fold_increment++;
 		else if (VECTOR_EXISTS(language_->wordBlockEnd(), word_lower))
@@ -645,7 +645,7 @@ bool Lexer::processWhitespace(LexerState& state)
 // -----------------------------------------------------------------------------
 // Checks if the text in [editor] starting from [pos] matches [token]
 // -----------------------------------------------------------------------------
-bool Lexer::checkToken(LexerState& state, int pos, string& token) const
+bool Lexer::checkToken(LexerState& state, int pos, wxString& token) const
 {
 	if (!token.empty())
 	{
@@ -665,12 +665,12 @@ bool Lexer::checkToken(LexerState& state, int pos, string& token) const
 // Writes the fitst index that matched to [found_index] if a valid pointer
 // is passed. Returns true if there's a match, false if not.
 // -----------------------------------------------------------------------------
-bool Lexer::checkToken(LexerState& state, int pos, vector<string>& tokens, int* found_idx) const
+bool Lexer::checkToken(LexerState& state, int pos, vector<wxString>& tokens, int* found_idx) const
 {
 	if (!tokens.empty())
 	{
 		unsigned idx = 0;
-		string   token;
+		wxString token;
 		while (idx < tokens.size())
 		{
 			token = tokens[idx];
@@ -727,7 +727,7 @@ void Lexer::updateFolding(TextEditorCtrl* editor, int line_start)
 // -----------------------------------------------------------------------------
 bool Lexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos)
 {
-	string word = editor->GetTextRange(start_pos, end_pos);
+	wxString word = editor->GetTextRange(start_pos, end_pos);
 	return word_list_[language_->caseSensitive() ? word : word.MakeLower()].style == (int)Style::Function;
 }
 
@@ -743,7 +743,7 @@ bool Lexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos)
 // Sets the [style] for [word], or adds it to the functions list if [style]
 // is Function
 // -----------------------------------------------------------------------------
-void ZScriptLexer::addWord(const string& word, int style)
+void ZScriptLexer::addWord(const wxString& word, int style)
 {
 	if (style == Style::Function)
 		functions_.push_back(language_->caseSensitive() ? word : word.Lower());
@@ -754,7 +754,7 @@ void ZScriptLexer::addWord(const string& word, int style)
 // -----------------------------------------------------------------------------
 // ZScript version of Lexer::styleWord - functions require a following '('
 // -----------------------------------------------------------------------------
-void ZScriptLexer::styleWord(LexerState& state, string word)
+void ZScriptLexer::styleWord(LexerState& state, wxString word)
 {
 	// Skip whitespace after word
 	auto index = state.position;
@@ -811,6 +811,6 @@ bool ZScriptLexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos
 		return false;
 
 	// Check if word is a function name
-	string word = editor->GetTextRange(start_pos, end_pos);
+	wxString word = editor->GetTextRange(start_pos, end_pos);
 	return VECTOR_EXISTS(functions_, language_->caseSensitive() ? word : word.Lower());
 }

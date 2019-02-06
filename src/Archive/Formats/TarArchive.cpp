@@ -309,7 +309,7 @@ bool TarArchive::open(MemChunk& mc)
 		}
 
 		// Find name
-		string name;
+		wxString name;
 		for (int a = 0; a < 100; ++a)
 		{
 			if (header.name[a] == 0)
@@ -423,7 +423,7 @@ bool TarArchive::write(MemChunk& mc, bool update)
 		tarDefaultHeader(&header);
 
 		// Write entry name
-		string name = entries[a]->path(true);
+		wxString name = entries[a]->path(true);
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 99)
 		{
@@ -523,7 +523,7 @@ bool TarArchive::isTarArchive(MemChunk& mc)
 		// Read tar header
 		TarHeader header;
 		mc.read(&header, 512);
-		if (string(wxString::From8BitData(header.magic, 5)).CmpNoCase(TMAGIC))
+		if (wxString(wxString::From8BitData(header.magic, 5)).CmpNoCase(TMAGIC))
 		{
 			if (tarMakeChecksum(&header) == 0)
 			{
@@ -562,7 +562,7 @@ bool TarArchive::isTarArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Unix tar archive
 // -----------------------------------------------------------------------------
-bool TarArchive::isTarArchive(const string& filename)
+bool TarArchive::isTarArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -577,7 +577,7 @@ bool TarArchive::isTarArchive(const string& filename)
 		// Read tar header
 		TarHeader header;
 		file.Read(&header, 512);
-		if (string(wxString::FromAscii(header.magic, 5)).CmpNoCase(TMAGIC))
+		if (wxString(wxString::FromAscii(header.magic, 5)).CmpNoCase(TMAGIC))
 		{
 			if (tarMakeChecksum(&header) == 0)
 			{

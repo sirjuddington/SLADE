@@ -708,7 +708,7 @@ bool Conversions::bloodToWav(ArchiveEntry* in, MemChunk& out)
 		Global::error = "Invalid SFX";
 		return false;
 	}
-	string name;
+	wxString name;
 	for (size_t i = 20; i < mc.size() - 1; ++i)
 	{
 		// Check that the entry does give a purely alphanumeric ASCII name

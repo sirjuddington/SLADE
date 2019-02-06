@@ -182,7 +182,7 @@ public:
 	void            renderHilight(MapEditor::Item hilight, float alpha = 1.0f);
 
 	// Listener stuff
-	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
 
 private:
 	SLADEMap* map_;
@@ -230,9 +230,9 @@ private:
 		float tx = 0.f, ty = 0.f;
 		float alpha = 1.f;
 	};
-	string  skytex1_ = "SKY1";
-	string  skytex2_;
-	ColRGBA skycol_top_;
-	ColRGBA skycol_bottom_;
-	Vec2f   sky_circle_[32];
+	wxString skytex1_ = "SKY1";
+	wxString skytex2_;
+	ColRGBA  skycol_top_;
+	ColRGBA  skycol_bottom_;
+	Vec2f    sky_circle_[32];
 };

@@ -235,7 +235,7 @@ MultiMapObjectPropertyChangeUS::MultiMapObjectPropertyChangeUS()
 
 	if (Log::verbosity() >= 2)
 	{
-		string msg = "Modified ids: ";
+		wxString msg = "Modified ids: ";
 		for (auto& backup : backups_)
 			msg += S_FMT("%d, ", backup->id);
 		Log::info(msg);

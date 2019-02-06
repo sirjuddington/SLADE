@@ -272,7 +272,7 @@ void TextStylePrefsPanel::updateStyleControls()
 	auto font = fp_font_->GetSelectedFont();
 
 	// Font face
-	string font_face = ts_current_->fontFace();
+	wxString font_face = ts_current_->fontFace();
 	if (font_face.IsEmpty())
 	{
 		font_face = style_default->fontFace();
@@ -466,8 +466,8 @@ void TextStylePrefsPanel::updateBackground() const
 void TextStylePrefsPanel::updatePreview()
 {
 	// Save current font override options
-	string f_override = txed_override_font;
-	int    s_override = txed_override_font_size;
+	wxString f_override = txed_override_font;
+	int      s_override = txed_override_font_size;
 
 	// Apply font override options (temporarily)
 	if (cb_font_override_->GetValue())
@@ -635,7 +635,7 @@ void TextStylePrefsPanel::onBackgroundChanged(wxColourPickerEvent& e)
 void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 {
 	// Get name for set
-	string name = wxGetTextFromUser("Enter Style Set name:", "Save Style Set");
+	wxString name = wxGetTextFromUser("Enter Style Set name:", "Save Style Set");
 	if (name.IsEmpty())
 		return;
 
@@ -647,7 +647,7 @@ void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 	name.Replace(" ", "_");
 
 	// Write set to file
-	string filename = App::path(S_FMT("text_styles/%s.sss", name), App::Dir::User);
+	wxString filename = App::path(S_FMT("text_styles/%s.sss", name), App::Dir::User);
 	ss_temp.writeFile(filename);
 
 	// Add new set to list

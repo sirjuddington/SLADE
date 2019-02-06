@@ -110,9 +110,9 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 		cur_size *= fade;
 
 	// Determine texture name strings
-	string ftex = tex_floor_[0];
-	string ctex = tex_ceil_[0];
-	string ftex2, ctex2;
+	wxString ftex = tex_floor_[0];
+	wxString ctex = tex_ceil_[0];
+	wxString ftex2, ctex2;
 	if (tex_floor_.size() > 1)
 	{
 		ftex  = S_FMT("Multiple (%lu)", tex_floor_.size());
@@ -175,7 +175,8 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 // -----------------------------------------------------------------------------
 // Draws the texture box for [textures]
 // -----------------------------------------------------------------------------
-void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vector<string>& textures, bool hover) const
+void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vector<wxString>& textures, bool hover)
+	const
 {
 	// Get colours
 	auto col_bg  = ColourConfiguration::colour("map_overlay_background");
@@ -236,8 +237,8 @@ void SectorTextureOverlay::openSectors(vector<MapSector*>& list)
 		sectors_.push_back(sector);
 
 		// Get textures
-		string ftex = sector->floor().texture;
-		string ctex = sector->ceiling().texture;
+		wxString ftex = sector->floor().texture;
+		wxString ctex = sector->ceiling().texture;
 
 		// Add floor texture if different
 		bool exists = false;
@@ -331,7 +332,7 @@ void SectorTextureOverlay::mouseLeftClick()
 // -----------------------------------------------------------------------------
 // Called when a key is pressed
 // -----------------------------------------------------------------------------
-void SectorTextureOverlay::keyDown(const string& key)
+void SectorTextureOverlay::keyDown(const wxString& key)
 {
 	// Browse floor texture
 	if (key == "F" || key == "f")
@@ -348,7 +349,7 @@ void SectorTextureOverlay::keyDown(const string& key)
 void SectorTextureOverlay::browseFloorTexture()
 {
 	// Get initial texture
-	string texture;
+	wxString texture;
 	if (tex_floor_.empty())
 		texture = sectors_[0]->floor().texture;
 	else
@@ -373,7 +374,7 @@ void SectorTextureOverlay::browseFloorTexture()
 void SectorTextureOverlay::browseCeilingTexture()
 {
 	// Get initial texture
-	string texture;
+	wxString texture;
 	if (tex_ceil_.empty())
 		texture = sectors_[0]->ceiling().texture;
 	else

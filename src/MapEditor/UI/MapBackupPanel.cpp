@@ -71,11 +71,11 @@ MapBackupPanel::MapBackupPanel(wxWindow* parent) : wxPanel{ parent, -1 }, archiv
 // Opens the map backup file for [map_name] in [archive_name] and populates the
 // list
 // -----------------------------------------------------------------------------
-bool MapBackupPanel::loadBackups(string archive_name, const string& map_name)
+bool MapBackupPanel::loadBackups(wxString archive_name, const wxString& map_name)
 {
 	// Open backup file
 	archive_name.Replace(".", "_");
-	string backup_file = App::path("backups", App::Dir::User) + "/" + archive_name + "_backup.zip";
+	wxString backup_file = App::path("backups", App::Dir::User) + "/" + archive_name + "_backup.zip";
 	if (!archive_backups_->open(backup_file))
 		return false;
 
@@ -92,14 +92,14 @@ bool MapBackupPanel::loadBackups(string archive_name, const string& map_name)
 	int index = 0;
 	for (int a = dir_current_->nChildren() - 1; a >= 0; a--)
 	{
-		string        timestamp = dir_current_->child(a)->name();
+		wxString      timestamp = dir_current_->child(a)->name();
 		wxArrayString cols;
 
 		// Date
 		cols.Add(timestamp.Before('_'));
 
 		// Time
-		string time = timestamp.After('_');
+		wxString time = timestamp.After('_');
 		cols.Add(time.Left(2) + ":" + time.Mid(2, 2) + ":" + time.Right(2));
 
 		// Add to list

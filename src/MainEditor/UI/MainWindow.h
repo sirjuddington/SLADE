@@ -37,7 +37,7 @@ public:
 	SStartPage*              startPage() const { return start_page_; }
 
 #ifdef USE_WEBVIEW_STARTPAGE
-	void openDocs(const string& page_name = "");
+	void openDocs(const wxString& page_name = "");
 #endif
 
 private:
@@ -55,7 +55,7 @@ private:
 #endif
 
 	// Action handling
-	bool handleAction(const string& id) override;
+	bool handleAction(const wxString& id) override;
 
 	// Events
 	void onClose(wxCloseEvent& e);

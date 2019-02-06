@@ -8,10 +8,10 @@ namespace Executables
 {
 struct GameExe
 {
-	string             id;
-	string             name;
-	string             exe_name;
-	string             path;
+	wxString           id;
+	wxString           name;
+	wxString           exe_name;
+	wxString           path;
 	vector<StringPair> configs;
 	bool               custom;
 	vector<bool>       configs_custom;
@@ -19,34 +19,34 @@ struct GameExe
 
 struct ExternalExe
 {
-	string category;
-	string name;
-	string path;
+	wxString category;
+	wxString name;
+	wxString path;
 };
 
-string writePaths();
-string writeExecutables();
-void   init();
-void   parse(Parser* p, bool custom);
+wxString writePaths();
+wxString writeExecutables();
+void     init();
+void     parse(Parser* p, bool custom);
 
 // Game executables
-GameExe* gameExe(const string& id);
+GameExe* gameExe(const wxString& id);
 GameExe* gameExe(unsigned index);
 unsigned nGameExes();
-void     setGameExePath(string id, string path);
+void     setGameExePath(wxString id, wxString path);
 void     parseGameExe(ParseTreeNode* node, bool custom);
-void     addGameExe(string name);
+void     addGameExe(wxString name);
 bool     removeGameExe(unsigned index);
-void     addGameExeConfig(unsigned exe_index, string config_name, string config_params, bool custom = true);
+void     addGameExeConfig(unsigned exe_index, wxString config_name, wxString config_params, bool custom = true);
 bool     removeGameExeConfig(unsigned exe_index, unsigned config_index);
 
 // External executables
-int                 nExternalExes(const string& category = "");
-ExternalExe         externalExe(const string& name, const string& category = "");
-vector<ExternalExe> externalExes(const string& category = "");
+int                 nExternalExes(const wxString& category = "");
+ExternalExe         externalExe(const wxString& name, const wxString& category = "");
+vector<ExternalExe> externalExes(const wxString& category = "");
 void                parseExternalExe(ParseTreeNode* node);
-void                addExternalExe(const string& name, const string& path, const string& category);
-void                setExternalExeName(const string& name_old, const string& name_new, const string& category);
-void                setExternalExePath(const string& name, const string& path, const string& category);
-void                removeExternalExe(const string& name, const string& category);
+void                addExternalExe(const wxString& name, const wxString& path, const wxString& category);
+void                setExternalExeName(const wxString& name_old, const wxString& name_new, const wxString& category);
+void                setExternalExePath(const wxString& name, const wxString& path, const wxString& category);
+void                removeExternalExe(const wxString& name, const wxString& category);
 } // namespace Executables

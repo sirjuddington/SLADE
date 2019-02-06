@@ -78,7 +78,7 @@ SCallTip::SCallTip(wxWindow* parent) : wxPopupWindow(parent), buffer_{ 1000, 100
 // -----------------------------------------------------------------------------
 // Sets the font [face] and [size]
 // -----------------------------------------------------------------------------
-void SCallTip::setFont(const string& face, int size)
+void SCallTip::setFont(const wxString& face, int size)
 {
 	if (face.empty())
 	{
@@ -173,7 +173,7 @@ void SCallTip::updateSize()
 // Using [dc], draw [text] at [left,top], writing the bounds of the drawn text
 // to [bounds]
 // -----------------------------------------------------------------------------
-int SCallTip::drawText(wxDC& dc, const string& text, int left, int top, wxRect* bounds) const
+int SCallTip::drawText(wxDC& dc, const wxString& text, int left, int top, wxRect* bounds) const
 {
 	dc.DrawLabel(text, wxNullBitmap, wxRect(left, top, 900, 900), 0, -1, bounds);
 	return bounds->GetRight() + 1;
@@ -191,7 +191,7 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	// Draw deprecated message
 	if (!context.deprecated_v.empty() || !context.deprecated_f.empty())
 	{
-		string deprecated_msg = "[ Deprecated";
+		wxString deprecated_msg = "[ Deprecated";
 		if (!context.deprecated_v.empty())
 			deprecated_msg = S_FMT("%s v%s", deprecated_msg, CHR(context.deprecated_v));
 		if (!context.deprecated_f.empty())
@@ -215,7 +215,7 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	// Draw function return type
 	if (!context.return_type.empty())
 	{
-		string ftype = S_FMT("%s ", context.return_type);
+		wxString ftype = S_FMT("%s ", context.return_type);
 		dc.SetTextForeground(wxcol_type);
 		left = drawText(dc, ftype, left, top, &rect);
 	}
@@ -228,7 +228,7 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	}
 
 	// Draw function name
-	string fname = function_->name();
+	wxString fname = function_->name();
 	dc.SetTextForeground(WXCOL(col_func_));
 	left = drawText(dc, fname, left, top, &rect);
 
@@ -310,7 +310,7 @@ wxRect SCallTip::drawArgs(
 		// Type
 		if (!arg.type.empty())
 		{
-			string arg_type = arg.type == "void" ? "void" : S_FMT("%s ", arg.type);
+			wxString arg_type = arg.type == "void" ? "void" : S_FMT("%s ", arg.type);
 			if (a != arg_current_)
 				dc.SetTextForeground(wxcol_type);
 			left = drawText(dc, arg_type, left, top, &rect);
@@ -370,7 +370,7 @@ wxRect SCallTip::drawFunctionContext(
 // Draws function description text [desc] at [left,top].
 // Returns a rect of the bounds of the drawn text
 // -----------------------------------------------------------------------------
-wxRect SCallTip::drawFunctionDescription(wxDC& dc, const string& desc, int left, int top) const
+wxRect SCallTip::drawFunctionDescription(wxDC& dc, const wxString& desc, int left, int top) const
 {
 	auto   italic = font_.Italic();
 	wxRect rect(left, top, 0, 0);
@@ -379,9 +379,9 @@ wxRect SCallTip::drawFunctionDescription(wxDC& dc, const string& desc, int left,
 	if (dc.GetTextExtent(desc).x > MAX_WIDTH)
 	{
 		// Description is too long, split into multiple lines
-		vector<string> desc_lines;
-		string         line = desc;
-		wxArrayInt     extents;
+		vector<wxString> desc_lines;
+		wxString         line = desc;
+		wxArrayInt       extents;
 		while (true)
 		{
 			dc.GetPartialTextExtents(line, extents);

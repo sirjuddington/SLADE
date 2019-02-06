@@ -15,7 +15,7 @@ enum SpecialType
 	Crusher
 };
 
-string      parseLineType(int type);
+wxString    parseLineType(int type);
 SpecialType getLineTypeProperties(int type, int* props);
 int         generateSpecial(SpecialType type, const int* props);
 

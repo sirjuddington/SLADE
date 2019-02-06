@@ -52,8 +52,8 @@ namespace
 {
 struct StandardCheckInfo
 {
-	string id;
-	string description;
+	wxString id;
+	wxString description;
 };
 std::map<MapCheck::StandardCheck, StandardCheckInfo> std_checks = {
 	{ MapCheck::MissingTexture, { "missing_tex", "Missing textures" } },
@@ -87,7 +87,7 @@ public:
 
 	void doCheck() override
 	{
-		string sky_flat = Game::configuration().skyFlat();
+		wxString sky_flat = Game::configuration().skyFlat();
 		for (unsigned a = 0; a < map_->nLines(); a++)
 		{
 			// Check what textures the line needs
@@ -158,7 +158,7 @@ public:
 
 	unsigned nProblems() override { return lines_.size(); }
 
-	string texName(int part) const
+	wxString texName(int part) const
 	{
 		switch (part)
 		{
@@ -173,7 +173,7 @@ public:
 		return "";
 	}
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		if (index < lines_.size())
 			return S_FMT("Line %d missing %s", lines_[index]->index(), texName(parts_[index]));
@@ -195,7 +195,7 @@ public:
 				editor->beginUndoRecord("Change Texture", true, false, false);
 
 				// Set texture if one selected
-				string texture = browser.selectedItem()->name();
+				wxString texture = browser.selectedItem()->name();
 				switch (parts_[index])
 				{
 				case MapLine::Part::FrontUpper: lines_[index]->setStringProperty("side1.texturetop", texture); break;
@@ -231,9 +231,9 @@ public:
 		return lines_[index];
 	}
 
-	string progressText() override { return "Checking for missing textures..."; }
+	wxString progressText() override { return "Checking for missing textures..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Browse Texture...";
@@ -304,7 +304,7 @@ public:
 
 	unsigned nProblems() override { return objects_.size(); }
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		if (index >= objects_.size())
 			return "No missing special tags found";
@@ -335,9 +335,9 @@ public:
 		return objects_[index];
 	}
 
-	string progressText() override { return "Checking for missing special tags..."; }
+	wxString progressText() override { return "Checking for missing special tags..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Set Tagged...";
@@ -436,7 +436,7 @@ public:
 
 	unsigned nProblems() override { return objects_.size(); }
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		if (index >= objects_.size())
 			return "No missing tagged objects found";
@@ -465,9 +465,9 @@ public:
 		return objects_[index];
 	}
 
-	string progressText() override { return "Checking for missing tagged objects..."; }
+	wxString progressText() override { return "Checking for missing tagged objects..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "...";
@@ -529,7 +529,7 @@ public:
 
 	unsigned nProblems() override { return intersections_.size(); }
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		if (index >= intersections_.size())
 			return "No intersecting lines found";
@@ -599,9 +599,9 @@ public:
 		return intersections_[index].line1;
 	}
 
-	string progressText() override { return "Checking for intersecting lines..."; }
+	wxString progressText() override { return "Checking for intersecting lines..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Split Lines";
@@ -659,7 +659,7 @@ public:
 
 	unsigned nProblems() override { return overlaps_.size(); }
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		if (index >= overlaps_.size())
 			return "No overlapping lines found";
@@ -710,9 +710,9 @@ public:
 		return overlaps_[index].line1;
 	}
 
-	string progressText() override { return "Checking for overlapping lines..."; }
+	wxString progressText() override { return "Checking for overlapping lines..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Merge Lines";
@@ -782,7 +782,7 @@ public:
 				bool shareflag = false;
 				for (int s = min_skill; s < max_skill; ++s)
 				{
-					string skill = S_FMT("skill%d", s);
+					wxString skill = S_FMT("skill%d", s);
 					if (Game::configuration().thingBasicFlagSet(skill, thing1, map_format)
 						&& Game::configuration().thingBasicFlagSet(skill, thing2, map_format))
 					{
@@ -856,7 +856,7 @@ public:
 					// Case #3: things flagged for single player with different class filters
 					for (int c = 1; c < max_class; ++c)
 					{
-						string pclass = S_FMT("class%d", c);
+						wxString pclass = S_FMT("class%d", c);
 						if (Game::configuration().thingBasicFlagSet(pclass, thing1, map_format)
 							&& Game::configuration().thingBasicFlagSet(pclass, thing2, map_format))
 						{
@@ -894,7 +894,7 @@ public:
 
 	unsigned nProblems() override { return overlaps_.size(); }
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		if (index >= overlaps_.size())
 			return "No overlapping things found";
@@ -946,9 +946,9 @@ public:
 		return overlaps_[index].thing1;
 	}
 
-	string progressText() override { return "Checking for overlapping things..."; }
+	wxString progressText() override { return "Checking for overlapping things..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (index >= overlaps_.size())
 			return "";
@@ -995,9 +995,9 @@ public:
 			if (line->s1())
 			{
 				// Get textures
-				string upper  = line->s1()->texUpper();
-				string middle = line->s1()->texMiddle();
-				string lower  = line->s1()->texLower();
+				wxString upper  = line->s1()->texUpper();
+				wxString middle = line->s1()->texMiddle();
+				wxString lower  = line->s1()->texLower();
 
 				// Upper
 				if (upper != "-" && texman_->texture(upper, mixed).gl_id == OpenGL::Texture::missingTexture())
@@ -1025,9 +1025,9 @@ public:
 			if (line->s2())
 			{
 				// Get textures
-				string upper  = line->s2()->texUpper();
-				string middle = line->s2()->texMiddle();
-				string lower  = line->s2()->texLower();
+				wxString upper  = line->s2()->texUpper();
+				wxString middle = line->s2()->texMiddle();
+				wxString lower  = line->s2()->texLower();
 
 				// Upper
 				if (upper != "-" && texman_->texture(upper, mixed).gl_id == OpenGL::Texture::missingTexture())
@@ -1055,12 +1055,12 @@ public:
 
 	unsigned nProblems() override { return lines_.size(); }
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		if (index >= lines_.size())
 			return "No unknown wall textures found";
 
-		string line = S_FMT("Line %d has unknown ", lines_[index]->index());
+		wxString line = S_FMT("Line %d has unknown ", lines_[index]->index());
 		switch (parts_[index])
 		{
 		case MapLine::Part::FrontUpper:
@@ -1099,7 +1099,7 @@ public:
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
-				string texture = browser.selectedItem()->name();
+				wxString texture = browser.selectedItem()->name();
 				editor->beginUndoRecord("Change Texture", true, false, false);
 				switch (parts_[index])
 				{
@@ -1136,9 +1136,9 @@ public:
 		return lines_[index];
 	}
 
-	string progressText() override { return "Checking for unknown wall textures..."; }
+	wxString progressText() override { return "Checking for unknown wall textures..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Browse Texture...";
@@ -1188,7 +1188,7 @@ public:
 
 	unsigned nProblems() override { return sectors_.size(); }
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		if (index >= sectors_.size())
 			return "No unknown flats found";
@@ -1212,7 +1212,7 @@ public:
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
-				string texture = browser.selectedItem()->name();
+				wxString texture = browser.selectedItem()->name();
 				editor->beginUndoRecord("Change Texture");
 				if (floor_[index])
 					sectors_[index]->setFloorTexture(texture);
@@ -1241,9 +1241,9 @@ public:
 		return sectors_[index];
 	}
 
-	string progressText() override { return "Checking for unknown flats..."; }
+	wxString progressText() override { return "Checking for unknown flats..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Browse Texture...";
@@ -1280,7 +1280,7 @@ public:
 
 	unsigned nProblems() override { return things_.size(); }
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		if (index >= things_.size())
 			return "No unknown thing types found";
@@ -1318,9 +1318,9 @@ public:
 		return things_[index];
 	}
 
-	string progressText() override { return "Checking for unknown thing types..."; }
+	wxString progressText() override { return "Checking for unknown thing types..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Browse Type...";
@@ -1392,7 +1392,7 @@ public:
 
 	unsigned nProblems() override { return things_.size(); }
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		if (index >= things_.size())
 			return "No stuck things found";
@@ -1438,9 +1438,9 @@ public:
 		return things_[index];
 	}
 
-	string progressText() override { return "Checking for things stuck in lines..."; }
+	wxString progressText() override { return "Checking for things stuck in lines..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Move Thing";
@@ -1488,14 +1488,14 @@ public:
 
 	unsigned nProblems() override { return invalid_refs_.size(); }
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		if (index >= invalid_refs_.size())
 			return "No wrong sector references found";
 
-		string side, sector;
-		auto   s1 = invalid_refs_[index].line->frontSector();
-		auto   s2 = invalid_refs_[index].line->backSector();
+		wxString side, sector;
+		auto     s1 = invalid_refs_[index].line->frontSector();
+		auto     s2 = invalid_refs_[index].line->backSector();
 		if (invalid_refs_[index].front)
 		{
 			side   = "front";
@@ -1567,9 +1567,9 @@ public:
 		return nullptr;
 	}
 
-	string progressText() override { return "Checking sector references..."; }
+	wxString progressText() override { return "Checking sector references..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 		{
@@ -1621,7 +1621,7 @@ public:
 
 	unsigned nProblems() override { return lines_.size(); }
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		if (index >= lines_.size())
 			return "No invalid lines found";
@@ -1687,9 +1687,9 @@ public:
 		return nullptr;
 	}
 
-	string progressText() override { return "Checking for invalid lines..."; }
+	wxString progressText() override { return "Checking for invalid lines..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (map_->line(lines_[index])->s2())
 		{
@@ -1739,7 +1739,7 @@ public:
 
 	unsigned nProblems() override { return sectors_.size(); }
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		if (index >= sectors_.size())
 			return "No unknown sector types found";
@@ -1772,9 +1772,9 @@ public:
 		return nullptr;
 	}
 
-	string progressText() override { return "Checking for unknown sector types..."; }
+	wxString progressText() override { return "Checking for unknown sector types..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Reset sector type";
@@ -1826,7 +1826,7 @@ public:
 
 	unsigned nProblems() override { return objects_.size(); }
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		bool special = (map_->currentFormat() == MapFormat::Hexen || map_->currentFormat() == MapFormat::UDMF);
 		if (index >= objects_.size())
@@ -1862,9 +1862,9 @@ public:
 		return nullptr;
 	}
 
-	string progressText() override { return "Checking for unknown specials..."; }
+	wxString progressText() override { return "Checking for unknown specials..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Reset special";
@@ -1902,7 +1902,7 @@ public:
 
 	unsigned nProblems() override { return things_.size(); }
 
-	string problemDesc(unsigned index) override
+	wxString problemDesc(unsigned index) override
 	{
 		bool special = (map_->currentFormat() == MapFormat::Hexen || map_->currentFormat() == MapFormat::UDMF);
 		if (index >= things_.size())
@@ -1936,9 +1936,9 @@ public:
 		return nullptr;
 	}
 
-	string progressText() override { return "Checking for obsolete things..."; }
+	wxString progressText() override { return "Checking for obsolete things..."; }
 
-	string fixText(unsigned fix_type, unsigned index) override
+	wxString fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Delete thing";
@@ -1988,7 +1988,7 @@ MapCheck::UPtr MapCheck::standardCheck(StandardCheck type, SLADEMap* map, MapTex
 // -----------------------------------------------------------------------------
 // Same as above, but taking a string MapCheck type id instead of an enum value
 // -----------------------------------------------------------------------------
-MapCheck::UPtr MapCheck::standardCheck(const string& type_id, SLADEMap* map, MapTextureManager* texman)
+MapCheck::UPtr MapCheck::standardCheck(const wxString& type_id, SLADEMap* map, MapTextureManager* texman)
 {
 	for (auto& check : std_checks)
 		if (check.second.id == type_id)
@@ -2000,7 +2000,7 @@ MapCheck::UPtr MapCheck::standardCheck(const string& type_id, SLADEMap* map, Map
 // -----------------------------------------------------------------------------
 // Returns the description of standard MapCheck [type]
 // -----------------------------------------------------------------------------
-string MapCheck::standardCheckDesc(StandardCheck type)
+wxString MapCheck::standardCheckDesc(StandardCheck type)
 {
 	return std_checks[type].description;
 }
@@ -2008,7 +2008,7 @@ string MapCheck::standardCheckDesc(StandardCheck type)
 // -----------------------------------------------------------------------------
 // Returns the string id of standard MapCheck [type]
 // -----------------------------------------------------------------------------
-string MapCheck::standardCheckId(StandardCheck type)
+wxString MapCheck::standardCheckId(StandardCheck type)
 {
 	return std_checks[type].id;
 }

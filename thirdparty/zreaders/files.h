@@ -27,7 +27,7 @@ public:
 	virtual long Read (void *buffer, long len) = 0;
 
 	int Status;
-	string Message;
+	std::string Message;
 
 	FileReaderBase &operator>> (int8_t &v)
 	{
@@ -89,7 +89,7 @@ public:
 	long GetLength () const { return Length; }
 
 	int Status;
-	string Message;
+	std::string Message;
 
 	// If you use the underlying FILE without going through this class,
 	// you must call ResetFilePtr() before using this class again.

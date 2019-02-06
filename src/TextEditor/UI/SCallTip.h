@@ -20,7 +20,7 @@ public:
 		updateSize();
 	}
 	void enableArgSwitch(bool enable) { switch_contexts_ = enable; }
-	void setFont(const string& face, int size);
+	void setFont(const wxString& face, int size);
 
 	void openFunction(TLFunction* function, int arg = -1);
 	void nextArgSet();
@@ -50,7 +50,7 @@ private:
 	void loadContext(unsigned long index);
 	void updateSize();
 
-	int    drawText(wxDC& dc, const string& text, int left, int top, wxRect* bounds) const;
+	int    drawText(wxDC& dc, const wxString& text, int left, int top, wxRect* bounds) const;
 	wxRect drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, int left, int top) const;
 	wxRect drawArgs(wxDC& dc, const TLFunction::Context& context, int left, int top, wxColour& col_faded, wxFont& bold)
 		const;
@@ -61,7 +61,7 @@ private:
 		int                        top,
 		wxColour&                  col_faded,
 		wxFont&                    bold) const;
-	wxRect drawFunctionDescription(wxDC& dc, const string& desc, int left, int top) const;
+	wxRect drawFunctionDescription(wxDC& dc, const wxString& desc, int left, int top) const;
 	wxSize drawCallTip(wxDC& dc, int xoff = 0, int yoff = 0);
 	void   updateBuffer();
 

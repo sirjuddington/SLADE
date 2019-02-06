@@ -49,7 +49,7 @@ namespace
 // does exist) and then we iterate through all of the directory's files until we
 // find the first one whose name matches.
 // -----------------------------------------------------------------------------
-string findFileCasing(const wxFileName& filename)
+wxString findFileCasing(const wxFileName& filename)
 {
 #ifdef _WIN32
 	return filename.GetFullPath();
@@ -146,15 +146,15 @@ size_t WolfConstant(int name, size_t numlumps)
 // Looks for the string naming the song towards the end of the file.
 // Returns an empty string if nothing is found.
 // -----------------------------------------------------------------------------
-string searchIMFName(MemChunk& mc)
+wxString searchIMFName(MemChunk& mc)
 {
 	char tmp[17];
 	char tmp2[65];
 	tmp[16]  = 0;
 	tmp2[64] = 0;
 
-	string ret      = "";
-	string fullname = "";
+	wxString ret      = "";
+	wxString fullname = "";
 	if (mc.size() >= 88u)
 	{
 		uint16_t nameOffset = mc.readL16(0) + 4u;
@@ -375,7 +375,7 @@ void WolfArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) const
 // Reads a Wolf format file from disk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchive::open(const string& filename)
+bool WolfArchive::open(const wxString& filename)
 {
 	// Find wolf archive type
 	wxFileName fn1(filename);
@@ -510,7 +510,7 @@ bool WolfArchive::open(MemChunk& mc)
 		size = wxINT16_SWAP_ON_BE(size);
 
 		// Wolf chunks have no names, so just give them a number
-		string name;
+		wxString name;
 		if (d < spritestart_)
 			name = S_FMT("WAL%05d", l);
 		else if (d < soundstart_)
@@ -664,7 +664,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 			// Look to see if we have an IMF
 			data.exportMemChunk(edata, offset, size);
 
-			string name = searchIMFName(edata);
+			wxString name = searchIMFName(edata);
 			if (name.empty())
 				break;
 		}
@@ -715,7 +715,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 		}
 
 		// Wolf chunks have no names, so just give them a number
-		string name = "";
+		wxString name = "";
 		if (current_seg == SegmentMusic)
 			name = searchIMFName(edata);
 		if (name.empty())
@@ -788,7 +788,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		if (offset == 0 && d > 0)
 			continue;
 
-		string name = "";
+		wxString name = "";
 		for (size_t i = 0; i < 16; ++i)
 		{
 			name += data[offset + 22 + i];
@@ -911,7 +911,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		}
 
 		// Wolf chunks have no names, so just give them a number
-		string name;
+		wxString name;
 		if (d == 0)
 			name = "INF";
 		else if (d == 1 || d == 2)
@@ -1023,7 +1023,7 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, unsigned position, Arch
 // Since there are no namespaces, just give the hot potato to the other function
 // and call it a day.
 // -----------------------------------------------------------------------------
-ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
+ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, const wxString& add_namespace, bool copy)
 {
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
@@ -1031,7 +1031,7 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, const string& add_names
 // -----------------------------------------------------------------------------
 // Wolf chunks have no names, so renaming is pointless.
 // -----------------------------------------------------------------------------
-bool WolfArchive::renameEntry(ArchiveEntry* entry, const string& name)
+bool WolfArchive::renameEntry(ArchiveEntry* entry, const wxString& name)
 {
 	return false;
 }
@@ -1140,7 +1140,7 @@ bool WolfArchive::isWolfArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Wolfenstein VSWAP archive
 // -----------------------------------------------------------------------------
-bool WolfArchive::isWolfArchive(const string& filename)
+bool WolfArchive::isWolfArchive(const wxString& filename)
 {
 	// Find wolf archive type
 	wxFileName fn1(filename);

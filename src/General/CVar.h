@@ -30,7 +30,7 @@ public:
 
 	uint16_t flags = 0;
 	Type     type  = Type::Integer;
-	string   name;
+	wxString name;
 	CVar*    next = nullptr;
 
 	CVar()          = default;
@@ -45,9 +45,9 @@ public:
 
 	// Static functions
 	static void  saveToFile(wxFile& file);
-	static void  set(const string& cvar_name, const string& value);
-	static CVar* get(const string& cvar_name);
-	static void  putList(vector<string>& list);
+	static void  set(const wxString& cvar_name, const wxString& value);
+	static CVar* get(const wxString& cvar_name);
+	static void  putList(vector<wxString>& list);
 };
 
 class CIntCVar : public CVar
@@ -55,7 +55,7 @@ class CIntCVar : public CVar
 public:
 	int value;
 
-	CIntCVar(const string& NAME, int defval, uint16_t FLAGS);
+	CIntCVar(const wxString& NAME, int defval, uint16_t FLAGS);
 	~CIntCVar() = default;
 
 	// Operators so the cvar name can be used like a normal variable
@@ -81,7 +81,7 @@ class CBoolCVar : public CVar
 public:
 	bool value;
 
-	CBoolCVar(const string& NAME, bool defval, uint16_t FLAGS);
+	CBoolCVar(const wxString& NAME, bool defval, uint16_t FLAGS);
 	~CBoolCVar() {}
 
 		 operator bool() const { return value; }
@@ -106,7 +106,7 @@ class CFloatCVar : public CVar
 public:
 	double value;
 
-	CFloatCVar(const string& NAME, double defval, uint16_t FLAGS);
+	CFloatCVar(const wxString& NAME, double defval, uint16_t FLAGS);
 	~CFloatCVar() {}
 
 		   operator double() const { return value; }
@@ -129,15 +129,15 @@ public:
 class CStringCVar : public CVar
 {
 public:
-	string value;
+	wxString value;
 
-	CStringCVar(const string& NAME, const string& defval, uint16_t FLAGS);
+	CStringCVar(const wxString& NAME, const wxString& defval, uint16_t FLAGS);
 	~CStringCVar() {}
 
-		   operator string() const { return value; }
-	string operator*() const { return value; }
+			 operator wxString() const { return value; }
+	wxString operator*() const { return value; }
 
-	string operator=(string val)
+	wxString operator=(wxString val)
 	{
 		value = val;
 		return val;

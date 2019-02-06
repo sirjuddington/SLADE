@@ -44,7 +44,7 @@
 // -----------------------------------------------------------------------------
 // Reads a UDMF property definition from a parsed tree [node]
 // -----------------------------------------------------------------------------
-void UDMFProperty::parse(ParseTreeNode* node, const string& group)
+void UDMFProperty::parse(ParseTreeNode* node, const wxString& group)
 {
 	// Set group and property name
 	group_    = group;
@@ -170,9 +170,9 @@ void UDMFProperty::parse(ParseTreeNode* node, const string& group)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the UDMF property definition
 // -----------------------------------------------------------------------------
-string UDMFProperty::getStringRep()
+wxString UDMFProperty::getStringRep()
 {
-	string ret = S_FMT(R"(Property "%s": name = "%s", group = "%s")", property_, name_, group_);
+	wxString ret = S_FMT(R"(Property "%s": name = "%s", group = "%s")", property_, name_, group_);
 
 	switch (type_)
 	{

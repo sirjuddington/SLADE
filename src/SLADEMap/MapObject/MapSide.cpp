@@ -41,13 +41,13 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-const string MapSide::TEX_NONE       = "-";
-const string MapSide::PROP_SECTOR    = "sector";
-const string MapSide::PROP_TEXUPPER  = "texturetop";
-const string MapSide::PROP_TEXMIDDLE = "texturemiddle";
-const string MapSide::PROP_TEXLOWER  = "texturebottom";
-const string MapSide::PROP_OFFSETX   = "offsetx";
-const string MapSide::PROP_OFFSETY   = "offsety";
+const wxString MapSide::TEX_NONE       = "-";
+const wxString MapSide::PROP_SECTOR    = "sector";
+const wxString MapSide::PROP_TEXUPPER  = "texturetop";
+const wxString MapSide::PROP_TEXMIDDLE = "texturemiddle";
+const wxString MapSide::PROP_TEXLOWER  = "texturebottom";
+const wxString MapSide::PROP_OFFSETX   = "offsetx";
+const wxString MapSide::PROP_OFFSETY   = "offsety";
 
 
 // -----------------------------------------------------------------------------
@@ -61,11 +61,11 @@ const string MapSide::PROP_OFFSETY   = "offsety";
 // MapSide class constructor
 // -----------------------------------------------------------------------------
 MapSide::MapSide(
-	MapSector*    sector,
-	const string& tex_upper,
-	const string& tex_middle,
-	const string& tex_lower,
-	Vec2i         tex_offset) :
+	MapSector*      sector,
+	const wxString& tex_upper,
+	const wxString& tex_middle,
+	const wxString& tex_lower,
+	Vec2i           tex_offset) :
 	MapObject{ Type::Side },
 	sector_{ sector },
 	tex_upper_{ tex_upper },
@@ -170,7 +170,7 @@ void MapSide::changeLight(int amount)
 // -----------------------------------------------------------------------------
 // Sets the upper texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSide::setTexUpper(const string& tex, bool modify)
+void MapSide::setTexUpper(const wxString& tex, bool modify)
 {
 	if (modify)
 		setModified();
@@ -187,7 +187,7 @@ void MapSide::setTexUpper(const string& tex, bool modify)
 // -----------------------------------------------------------------------------
 // Sets the middle texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSide::setTexMiddle(const string& tex, bool modify)
+void MapSide::setTexMiddle(const wxString& tex, bool modify)
 {
 	if (modify)
 		setModified();
@@ -204,7 +204,7 @@ void MapSide::setTexMiddle(const string& tex, bool modify)
 // -----------------------------------------------------------------------------
 // Sets the lower texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSide::setTexLower(const string& tex, bool modify)
+void MapSide::setTexLower(const wxString& tex, bool modify)
 {
 	if (modify)
 		setModified();
@@ -259,7 +259,7 @@ void MapSide::setSector(MapSector* sector)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapSide::intProperty(const string& key)
+int MapSide::intProperty(const wxString& key)
 {
 	if (key == PROP_SECTOR)
 	{
@@ -279,7 +279,7 @@ int MapSide::intProperty(const string& key)
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSide::setIntProperty(const string& key, int value)
+void MapSide::setIntProperty(const wxString& key, int value)
 {
 	// Update modified time
 	setModified();
@@ -297,7 +297,7 @@ void MapSide::setIntProperty(const string& key, int value)
 // -----------------------------------------------------------------------------
 // Returns the value of the string property matching [key]
 // -----------------------------------------------------------------------------
-string MapSide::stringProperty(const string& key)
+wxString MapSide::stringProperty(const wxString& key)
 {
 	if (key == PROP_TEXUPPER)
 		return tex_upper_;
@@ -312,7 +312,7 @@ string MapSide::stringProperty(const string& key)
 // -----------------------------------------------------------------------------
 // Sets the string value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSide::setStringProperty(const string& key, const string& value)
+void MapSide::setStringProperty(const wxString& key, const wxString& value)
 {
 	// Update modified time
 	setModified();
@@ -330,7 +330,7 @@ void MapSide::setStringProperty(const string& key, const string& value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapSide::scriptCanModifyProp(const string& key)
+bool MapSide::scriptCanModifyProp(const wxString& key)
 {
 	return key != PROP_SECTOR;
 }
@@ -389,7 +389,7 @@ void MapSide::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 // Writes the side as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapSide::writeUDMF(string& def)
+void MapSide::writeUDMF(wxString& def)
 {
 	def = S_FMT("sidedef//#%u\n{\n", index_);
 

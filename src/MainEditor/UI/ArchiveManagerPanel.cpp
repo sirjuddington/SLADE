@@ -115,7 +115,7 @@ void DirArchiveCheck::addChange(DirEntryChange change)
 wxThread::ExitCode DirArchiveCheck::Entry()
 {
 	// Get current directory structure
-	vector<string>      files, dirs;
+	vector<wxString>    files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
 	wxDir               dir(dir_path_);
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
@@ -123,7 +123,7 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 	// Check for deleted files
 	for (auto& info : entry_info_)
 	{
-		string path = info.file_path;
+		wxString path = info.file_path;
 
 		// Ignore if not on disk
 		if (path.IsEmpty())
@@ -429,8 +429,8 @@ void ArchiveManagerPanel::refreshRecentFileList() const
 		if (a < 8)
 		{
 			// Get path and determine icon
-			string fn   = App::archiveManager().recentFile(a);
-			string icon = "archive";
+			wxString fn   = App::archiveManager().recentFile(a);
+			wxString icon = "archive";
 			if (fn.EndsWith(".wad"))
 				icon = "wad";
 			else if (fn.EndsWith(".zip") || fn.EndsWith(".pk3") || fn.EndsWith(".pke"))
@@ -537,7 +537,7 @@ void ArchiveManagerPanel::updateOpenListItem(int index) const
 void ArchiveManagerPanel::updateRecentListItem(int index) const
 {
 	// Get path as wxFileName for processing
-	string     path = App::archiveManager().recentFile(index);
+	wxString   path = App::archiveManager().recentFile(index);
 	wxFileName fn(path);
 
 	// Set item name
@@ -576,7 +576,7 @@ void ArchiveManagerPanel::updateArchiveTabTitle(int index) const
 		auto ap = dynamic_cast<ArchivePanel*>(stc_archives_->GetPage(a));
 		if (ap->archive() == archive)
 		{
-			string title;
+			wxString title;
 			if (archive->isModified())
 				title = S_FMT("%s *", archive->filename(false));
 			else
@@ -805,7 +805,7 @@ void ArchiveManagerPanel::openTab(Archive* archive) const
 		wp = new ArchivePanel(stc_archives_, archive);
 
 		// Determine icon
-		string icon = "archive";
+		wxString icon = "archive";
 		if (archive->formatId() == "wad")
 			icon = "wad";
 		else if (archive->formatId() == "zip")
@@ -1073,7 +1073,7 @@ void ArchiveManagerPanel::closeEntryTabs(Archive* parent) const
 // -----------------------------------------------------------------------------
 // Opens an archive and initialises the UI for it
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::openFile(const string& filename) const
+void ArchiveManagerPanel::openFile(const wxString& filename) const
 {
 	// Show splash screen
 	UI::showSplash("Opening Archive...", true);
@@ -1115,7 +1115,7 @@ void ArchiveManagerPanel::openFiles(wxArrayString& files) const
 // -----------------------------------------------------------------------------
 // Opens a directory as an archive and initialises the UI for it
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::openDirAsArchive(const string& dir) const
+void ArchiveManagerPanel::openDirAsArchive(const wxString& dir) const
 {
 	// Show splash screen
 	UI::showSplash("Opening Directory...", true);
@@ -1248,8 +1248,8 @@ void ArchiveManagerPanel::saveAll() const
 			// If the archive is newly created, do Save As instead
 
 			// Popup file save dialog
-			string formats  = archive->fileExtensionString();
-			string filename = wxFileSelector(
+			wxString formats  = archive->fileExtensionString();
+			wxString filename = wxFileSelector(
 				"Save Archive " + archive->filename(false) + " As",
 				dir_last,
 				"",
@@ -1304,7 +1304,7 @@ void ArchiveManagerPanel::checkDirArchives()
 // -----------------------------------------------------------------------------
 // Creates a new archive of the given type and opens it in a tab
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::createNewArchive(const string& format) const
+void ArchiveManagerPanel::createNewArchive(const wxString& format) const
 {
 	auto new_archive = App::archiveManager().newArchive(format);
 
@@ -1383,8 +1383,8 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive) const
 	saveEntryChanges(archive);
 
 	// Popup file save dialog
-	string formats  = archive->fileExtensionString();
-	string filename = wxFileSelector(
+	wxString formats  = archive->fileExtensionString();
+	wxString filename = wxFileSelector(
 		"Save Archive " + archive->filename(false) + " As",
 		dir_last,
 		"",
@@ -1564,7 +1564,7 @@ vector<int> ArchiveManagerPanel::selectedBookmarks() const
 // -----------------------------------------------------------------------------
 // Called when an announcement is recieved from the Archive Manager
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void ArchiveManagerPanel::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	// Reset event data for reading
 	event_data.seek(0, SEEK_SET);
@@ -1721,7 +1721,7 @@ void ArchiveManagerPanel::openSelection() const
 		return;
 
 	// Get the list of selected archives
-	vector<string> selected_archives;
+	vector<wxString> selected_archives;
 	for (int index : selection)
 		selected_archives.push_back(App::archiveManager().recentFile(index));
 
@@ -1752,7 +1752,7 @@ void ArchiveManagerPanel::removeSelection() const
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveManagerPanel::handleAction(const string& id)
+bool ArchiveManagerPanel::handleAction(const wxString& id)
 {
 	// We're only interested in "aman_" actions
 	if (!id.StartsWith("aman_"))
@@ -1777,7 +1777,7 @@ bool ArchiveManagerPanel::handleAction(const string& id)
 	else if (id == "aman_open")
 	{
 		// Create extensions string
-		string extensions = App::archiveManager().getArchiveExtensionsString();
+		wxString extensions = App::archiveManager().getArchiveExtensionsString();
 
 		// Open a file browser dialog that allows multiple selection
 		// and filters by wad, zip and pk3 file extensions

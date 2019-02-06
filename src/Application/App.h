@@ -19,7 +19,7 @@ ArchiveManager&  archiveManager();
 Clipboard&       clipboard();
 ResourceManager& resources();
 
-bool init(vector<string>& args, double ui_scale = 1.);
+bool init(vector<wxString>& args, double ui_scale = 1.);
 void saveConfigFile();
 void exit(bool save_config);
 
@@ -39,8 +39,8 @@ struct Version
 	{
 	}
 
-	int    cmp(const Version& rhs) const;
-	string toString() const;
+	int      cmp(const Version& rhs) const;
+	wxString toString() const;
 };
 const Version& version();
 
@@ -53,7 +53,7 @@ enum class Dir
 	Resources,
 	Temp
 };
-string path(const string& filename, Dir dir);
+wxString path(const wxString& filename, Dir dir);
 
 // Platform and build options
 enum Platform
@@ -63,10 +63,10 @@ enum Platform
 	MacOS,
 	Unknown
 };
-Platform      platform();
-bool          useWebView();
-bool          useSFMLRenderWindow();
-const string& iconFile();
+Platform        platform();
+bool            useWebView();
+bool            useSFMLRenderWindow();
+const wxString& iconFile();
 
 std::thread::id mainThreadId();
 } // namespace App

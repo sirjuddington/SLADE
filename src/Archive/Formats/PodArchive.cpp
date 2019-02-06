@@ -64,7 +64,7 @@ PodArchive::PodArchive() : Archive("pod")
 // -----------------------------------------------------------------------------
 // Sets the description/id of the pod archive
 // -----------------------------------------------------------------------------
-void PodArchive::setId(const string& id)
+void PodArchive::setId(const wxString& id)
 {
 	memset(id_, 0, 80);
 	memcpy(id_, CHR(id), id.Length());
@@ -108,8 +108,8 @@ bool PodArchive::open(MemChunk& mc)
 		new_entry->setLoaded(false);
 
 		// Add entry and directory to directory tree
-		string path = fn.GetPath(false);
-		auto   ndir = createDir(path);
+		wxString path = fn.GetPath(false);
+		auto     ndir = createDir(path);
 		ndir->addEntry(new_entry);
 
 		new_entry->setState(ArchiveEntry::State::Unmodified);
@@ -205,7 +205,7 @@ bool PodArchive::write(MemChunk& mc, bool update)
 
 		// Name
 		memset(fe.name, 0, 32);
-		string path = entry->path(true);
+		wxString path = entry->path(true);
 		path.Replace("/", "\\");
 		path = path.AfterFirst('\\');
 		// Log::info(2, path);
@@ -321,7 +321,7 @@ bool PodArchive::isPodArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid pod archive
 // -----------------------------------------------------------------------------
-bool PodArchive::isPodArchive(const string& filename)
+bool PodArchive::isPodArchive(const wxString& filename)
 {
 	wxFile file;
 	if (!file.Open(filename))

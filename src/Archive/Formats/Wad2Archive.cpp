@@ -319,7 +319,7 @@ bool Wad2Archive::isWad2Archive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Quake wad2 archive
 // -----------------------------------------------------------------------------
-bool Wad2Archive::isWad2Archive(const string& filename)
+bool Wad2Archive::isWad2Archive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

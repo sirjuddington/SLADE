@@ -62,14 +62,14 @@ void  drawTextureWithin(unsigned id, double x1, double y1, double x2, double y2,
 
 // Text drawing
 void drawText(
-	const string& text,
-	int           x         = 0,
-	int           y         = 0,
-	ColRGBA       colour    = COL_WHITE,
-	Font          font      = Font::Normal,
-	Align         alignment = Align::Left,
-	Rectf*        bounds    = nullptr);
-Vec2f textExtents(const string& text, Font font = Font::Normal);
+	const wxString& text,
+	int             x         = 0,
+	int             y         = 0,
+	ColRGBA         colour    = COL_WHITE,
+	Font            font      = Font::Normal,
+	Align           alignment = Align::Left,
+	Rectf*          bounds    = nullptr);
+Vec2f textExtents(const wxString& text, Font font = Font::Normal);
 void  enableTextStateReset(bool enable = true);
 void  setTextState(bool set = true);
 void  setTextOutline(double thickness, ColRGBA colour = COL_BLACK);
@@ -95,23 +95,23 @@ wxColour darkColour(const wxColour& colour, float percent);
 class TextBox
 {
 public:
-	TextBox(const string& text, Drawing::Font font, int width, int line_height = -1);
+	TextBox(const wxString& text, Drawing::Font font, int width, int line_height = -1);
 	~TextBox() = default;
 
 	int  height() const { return height_; }
 	int  width() const { return width_; }
-	void setText(const string& text);
+	void setText(const wxString& text);
 	void setSize(int width);
 	void setLineHeight(int height) { line_height_ = height; }
 	void draw(int x, int y, ColRGBA colour = COL_WHITE, Drawing::Align alignment = Drawing::Align::Left);
 
 private:
-	string         text_;
-	vector<string> lines_;
-	Drawing::Font  font_        = Drawing::Font::Normal;
-	int            width_       = 0;
-	int            height_      = 0;
-	int            line_height_ = -1;
+	wxString         text_;
+	vector<wxString> lines_;
+	Drawing::Font    font_        = Drawing::Font::Normal;
+	int              width_       = 0;
+	int              height_      = 0;
+	int              line_height_ = -1;
 
-	void split(const string& text);
+	void split(const wxString& text);
 };

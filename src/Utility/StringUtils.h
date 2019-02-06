@@ -5,30 +5,30 @@ class ArchiveEntry;
 namespace StringUtils
 {
 // Static common strings
-static string FULLSTOP             = ".";
-static string COMMA                = ",";
-static string COLON                = ":";
-static string SEMICOLON            = ";";
-static string SLASH_FORWARD        = "/";
-static string SLASH_BACK           = "\\";
-static string QUOTE_SINGLE         = "'";
-static string QUOTE_DOUBLE         = "\"";
-static string CARET                = "^";
-static string ESCAPED_QUOTE_DOUBLE = "\\\"";
-static string ESCAPED_SLASH_BACK   = "\\\\";
-static string CURLYBRACE_OPEN      = "{";
-static string CURLYBRACE_CLOSE     = "}";
+static wxString FULLSTOP             = ".";
+static wxString COMMA                = ",";
+static wxString COLON                = ":";
+static wxString SEMICOLON            = ";";
+static wxString SLASH_FORWARD        = "/";
+static wxString SLASH_BACK           = "\\";
+static wxString QUOTE_SINGLE         = "'";
+static wxString QUOTE_DOUBLE         = "\"";
+static wxString CARET                = "^";
+static wxString ESCAPED_QUOTE_DOUBLE = "\\\"";
+static wxString ESCAPED_SLASH_BACK   = "\\\\";
+static wxString CURLYBRACE_OPEN      = "{";
+static wxString CURLYBRACE_CLOSE     = "}";
 
-string escapedString(const string& str, bool swap_backslash = false);
+wxString escapedString(const wxString& str, bool swap_backslash = false);
 
-void processIncludes(string filename, string& out);
-void processIncludes(ArchiveEntry* entry, string& out, bool use_res = true);
+void processIncludes(wxString filename, wxString& out);
+void processIncludes(ArchiveEntry* entry, wxString& out, bool use_res = true);
 
-bool isInteger(const string& str, bool allow_hex = true);
-bool isHex(const string& str);
-bool isFloat(const string& str);
+bool isInteger(const wxString& str, bool allow_hex = true);
+bool isHex(const wxString& str);
+bool isFloat(const wxString& str);
 
-int    toInt(const string& str);
-float  toFloat(const string& str);
-double toDouble(const string& str);
+int    toInt(const wxString& str);
+float  toFloat(const wxString& str);
+double toDouble(const wxString& str);
 } // namespace StringUtils

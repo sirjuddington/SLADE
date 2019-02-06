@@ -175,7 +175,7 @@ bool MapEntryPanel::createImage()
 			min<int>(map_image_width, map_canvas_->GetSize().x),
 			min<int>(map_image_height, map_canvas_->GetSize().y));
 
-	string     name = S_FMT("%s_%s", entry_->parent()->filename(false), entry_->name());
+	wxString   name = S_FMT("%s_%s", entry_->parent()->filename(false), entry_->name());
 	wxFileName fn(name);
 
 	// Create save file dialog
@@ -208,7 +208,7 @@ bool MapEntryPanel::createImage()
 // -----------------------------------------------------------------------------
 // Called when a (EntryPanel) toolbar button is clicked
 // -----------------------------------------------------------------------------
-void MapEntryPanel::toolbarButtonClick(const string& action_id)
+void MapEntryPanel::toolbarButtonClick(const wxString& action_id)
 {
 	// Save Map Image
 	if (action_id == "save_image")

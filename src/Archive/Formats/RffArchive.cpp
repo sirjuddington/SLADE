@@ -387,7 +387,7 @@ bool RffArchive::isRffArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid DN3D grp archive
 // -----------------------------------------------------------------------------
-bool RffArchive::isRffArchive(const string& filename)
+bool RffArchive::isRffArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

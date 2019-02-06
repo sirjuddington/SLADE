@@ -1377,20 +1377,20 @@ void MapRenderer3D::updateLine(unsigned index)
 	// --- Two-sided line ---
 
 	// Get second side info
-	int    floor2      = line->backSector()->floor().height;
-	int    ceiling2    = line->backSector()->ceiling().height;
-	auto   fp2         = line->backSector()->floor().plane;
-	auto   cp2         = line->backSector()->ceiling().plane;
-	auto   colour2     = line->backSector()->colourAt(0, true);
-	auto   fogcolour2  = line->backSector()->fogColour();
-	int    light2      = line->s2()->light();
-	int    xoff2       = line->s2()->texOffsetX();
-	int    yoff2       = line->s2()->texOffsetY();
-	int    lowceil     = min(ceiling1, ceiling2);
-	int    highfloor   = max(floor1, floor2);
-	string sky_flat    = Game::configuration().skyFlat();
-	string hidden_tex  = map_->currentFormat() == MapFormat::Doom64 ? "?" : "-";
-	bool   show_midtex = (map_->currentFormat() != MapFormat::Doom64) || (line->flagSet(512));
+	int      floor2      = line->backSector()->floor().height;
+	int      ceiling2    = line->backSector()->ceiling().height;
+	auto     fp2         = line->backSector()->floor().plane;
+	auto     cp2         = line->backSector()->ceiling().plane;
+	auto     colour2     = line->backSector()->colourAt(0, true);
+	auto     fogcolour2  = line->backSector()->fogColour();
+	int      light2      = line->s2()->light();
+	int      xoff2       = line->s2()->texOffsetX();
+	int      yoff2       = line->s2()->texOffsetY();
+	int      lowceil     = min(ceiling1, ceiling2);
+	int      highfloor   = max(floor1, floor2);
+	wxString sky_flat    = Game::configuration().skyFlat();
+	wxString hidden_tex  = map_->currentFormat() == MapFormat::Doom64 ? "?" : "-";
+	bool     show_midtex = (map_->currentFormat() != MapFormat::Doom64) || (line->flagSet(512));
 	// Heights at both endpoints, for both planes, on both sides
 	double f1h1 = fp1.heightAt(line->x1(), line->y1());
 	double f1h2 = fp1.heightAt(line->x2(), line->y2());
@@ -1483,9 +1483,9 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Front middle
-	lsx            = 1;
-	lsy            = 1;
-	string midtex1 = line->stringProperty("side1.texturemiddle");
+	lsx              = 1;
+	lsy              = 1;
+	wxString midtex1 = line->stringProperty("side1.texturemiddle");
 	if (!midtex1.IsEmpty() && midtex1 != hidden_tex && show_midtex)
 	{
 		Quad quad;
@@ -1699,9 +1699,9 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Back middle
-	lsx            = 1;
-	lsy            = 1;
-	string midtex2 = line->stringProperty("side2.texturemiddle");
+	lsx              = 1;
+	lsy              = 1;
+	wxString midtex2 = line->stringProperty("side2.texturemiddle");
 	if (!midtex2.IsEmpty() && midtex2 != hidden_tex && show_midtex)
 	{
 		Quad quad;
@@ -2428,7 +2428,7 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 			continue;
 
 		// Get thing
-		auto  thing = item.asThing(*map_);
+		auto thing = item.asThing(*map_);
 		if (!thing)
 			return;
 
@@ -3095,7 +3095,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	if (hilight.type == MapEditor::ItemType::Thing)
 	{
 		// Get thing
-		auto  thing = hilight.asThing(*map_);
+		auto thing = hilight.asThing(*map_);
 		if (!thing)
 			return;
 
@@ -3144,7 +3144,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 // -----------------------------------------------------------------------------
 // Handles any announcements from the palette or resource manager
 // -----------------------------------------------------------------------------
-void MapRenderer3D::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void MapRenderer3D::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	if (announcer != theMainWindow->paletteChooser() && announcer != &App::resources())
 		return;

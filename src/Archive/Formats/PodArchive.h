@@ -8,8 +8,8 @@ public:
 	PodArchive();
 	~PodArchive() = default;
 
-	string getId() const { return wxString(id_); }
-	void   setId(const string& id);
+	wxString getId() const { return wxString(id_); }
+	void     setId(const wxString& id);
 
 	// Opening
 	bool open(MemChunk& mc) override;
@@ -22,7 +22,7 @@ public:
 
 	// Static functions
 	static bool isPodArchive(MemChunk& mc);
-	static bool isPodArchive(const string& filename);
+	static bool isPodArchive(const wxString& filename);
 
 private:
 	char id_[80];

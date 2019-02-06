@@ -100,7 +100,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			info_.push_back(S_FMT("Back Side #%d", side->index()));
 
 		// Relevant flags
-		string flags = "";
+		wxString flags = "";
 		if (Game::configuration().lineBasicFlagSet("dontpegtop", line, map_format))
 			flags += "Upper Unpegged, ";
 		if (Game::configuration().lineBasicFlagSet("dontpegbottom", line, map_format))
@@ -141,7 +141,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 				xoff_part = side->floatProperty("offsetx_top");
 
 			// Add x offset string
-			string xoff_info;
+			wxString xoff_info;
 			if (xoff_part == 0)
 				xoff_info = S_FMT("%d", xoff);
 			else if (xoff_part > 0)
@@ -160,7 +160,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 				yoff_part = side->floatProperty("offsety_top");
 
 			// Add y offset string
-			string yoff_info;
+			wxString yoff_info;
 			if (yoff_part == 0)
 				yoff_info = S_FMT("%d", yoff);
 			else if (yoff_part > 0)
@@ -429,8 +429,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// Position
 		if (MapEditor::editContext().mapDesc().format == MapFormat::Hexen
 			|| MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
-			info_.push_back(S_FMT(
-				"Position: %d, %d, %d", (int)thing->xPos(), (int)thing->yPos(), (int)thing->zPos()));
+			info_.push_back(S_FMT("Position: %d, %d, %d", (int)thing->xPos(), (int)thing->yPos(), (int)thing->zPos()));
 		else
 			info_.push_back(S_FMT("Position: %d, %d", (int)thing->xPos(), (int)thing->yPos()));
 
@@ -448,10 +447,10 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 				&& Game::configuration().getUDMFProperty("arg0", MapObject::Type::Thing)))
 		{
 			// Get thing args
-			string argxstr[2];
-			argxstr[0]    = thing->stringProperty("arg0str");
-			argxstr[1]    = thing->stringProperty("arg1str");
-			string argstr = tt.argSpec().stringDesc(thing->args().data(), argxstr);
+			wxString argxstr[2];
+			argxstr[0]      = thing->stringProperty("arg0str");
+			argxstr[1]      = thing->stringProperty("arg1str");
+			wxString argstr = tt.argSpec().stringDesc(thing->args().data(), argxstr);
 
 			if (argstr.IsEmpty())
 				info2_.emplace_back("No Args");

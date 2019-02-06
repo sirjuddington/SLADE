@@ -123,7 +123,7 @@ public:
 	// -------------------------------------------------------------------------
 	// Returns the entry copy for the patch at [index] in the texture
 	// -------------------------------------------------------------------------
-	ArchiveEntry* patchEntry(const string& patch)
+	ArchiveEntry* patchEntry(const wxString& patch)
 	{
 		// Find copied patch entry with matching name
 		for (auto& entry : patch_entries_)
@@ -167,7 +167,7 @@ TextureXListView::TextureXListView(wxWindow* parent, TextureXList* texturex) :
 // -----------------------------------------------------------------------------
 // Returns the string for [item] at [column]
 // -----------------------------------------------------------------------------
-string TextureXListView::itemText(long item, long column, long index) const
+wxString TextureXListView::itemText(long item, long column, long index) const
 {
 	// Check texture list exists
 	if (!texturex_)
@@ -658,7 +658,7 @@ void TextureXPanel::applyChanges()
 // Creates a new texture called [name] from [patch]. The new texture will be
 // set to the dimensions of the patch, with the patch added at 0,0
 // -----------------------------------------------------------------------------
-CTexture::UPtr TextureXPanel::newTextureFromPatch(const string& name, const string& patch)
+CTexture::UPtr TextureXPanel::newTextureFromPatch(const wxString& name, const wxString& patch)
 {
 	// Create new texture
 	auto tex = std::make_unique<CTexture>();
@@ -698,7 +698,7 @@ CTexture::UPtr TextureXPanel::newTextureFromPatch(const string& name, const stri
 void TextureXPanel::newTexture()
 {
 	// Prompt for new texture name
-	string name = wxGetTextFromUser("Enter a texture name:", "New Texture");
+	wxString name = wxGetTextFromUser("Enter a texture name:", "New Texture");
 
 	// Do nothing if no name entered
 	if (name.IsEmpty())
@@ -757,7 +757,7 @@ void TextureXPanel::newTexture()
 void TextureXPanel::newTextureFromPatch()
 {
 	// Browse for patch
-	string patch;
+	wxString patch;
 	if (TxListIsTextures(texturex_))
 		patch = tx_editor_->browsePatchEntry();
 	else
@@ -766,7 +766,7 @@ void TextureXPanel::newTextureFromPatch()
 	if (!patch.IsEmpty())
 	{
 		// Prompt for new texture name
-		string name = wxGetTextFromUser("Enter a texture name:", "New Texture", patch);
+		wxString name = wxGetTextFromUser("Enter a texture name:", "New Texture", patch);
 
 		// Do nothing if no name entered
 		if (name.IsEmpty())
@@ -813,7 +813,7 @@ void TextureXPanel::newTextureFromFile()
 	auto etypes = EntryType::allTypes();
 
 	// Go through types
-	string ext_filter = "All files (*.*)|*.*|";
+	wxString ext_filter = "All files (*.*)|*.*|";
 	for (auto& etype : etypes)
 	{
 		// If the type is a valid image type, add its extension filter
@@ -863,7 +863,7 @@ void TextureXPanel::newTextureFromFile()
 
 			// Ask for name for texture
 			wxFileName fn(file);
-			string     name = fn.GetName().Upper().Truncate(8);
+			wxString   name = fn.GetName().Upper().Truncate(8);
 			name = wxGetTextFromUser(S_FMT("Enter a texture name for %s:", fn.GetFullName()), "New Texture", name);
 			name = name.Truncate(8);
 
@@ -1046,13 +1046,13 @@ void TextureXPanel::sort()
 		return;
 
 	// Fill a map with <texture name, texture index> pairs
-	vector<size_t>           origindex(texturex_.size());
-	std::map<string, size_t> tmap;
+	vector<size_t>             origindex(texturex_.size());
+	std::map<wxString, size_t> tmap;
 	tmap.clear();
 	for (long index : selection)
 	{
 		// We want to be sure that each key is unique, so we add the position to the name string
-		string name = S_FMT("%-8s%8d", texturex_.texture(index)->name(), index);
+		wxString name = S_FMT("%-8s%8d", texturex_.texture(index)->name(), index);
 		// x keeps the current position, while y keeps the original position
 		tmap[name]       = index;
 		origindex[index] = index;
@@ -1062,7 +1062,7 @@ void TextureXPanel::sort()
 	undo_manager_->beginRecord("Sort Textures");
 
 	// And now, sort the textures based on the map
-	std::map<string, size_t>::iterator itr = tmap.begin();
+	std::map<wxString, size_t>::iterator itr = tmap.begin();
 	for (long index : selection)
 	{
 		// If the texture isn't in its sorted place already
@@ -1075,8 +1075,8 @@ void TextureXPanel::sort()
 			texturex_.swapTextures(index, itr->second);
 			undo_manager_->recordUndoStep(std::make_unique<TextureSwapUS>(texturex_, index, itr->second));
 			// Update the position of the displaced texture in the tmap
-			string name = S_FMT("%-8s%8d", texturex_.texture(itr->second)->name(), tmp);
-			tmap[name]  = itr->second;
+			wxString name = S_FMT("%-8s%8d", texturex_.texture(itr->second)->name(), tmp);
+			tmap[name]    = itr->second;
 		}
 		++itr;
 	}
@@ -1217,7 +1217,7 @@ void TextureXPanel::renameTexture(bool each)
 		for (auto& texture : selection)
 		{
 			// Prompt for a new name
-			string new_name = wxGetTextFromUser("Enter new texture name: (* = unchanged)", "Rename", texture->name());
+			wxString new_name = wxGetTextFromUser("Enter new texture name: (* = unchanged)", "Rename", texture->name());
 			if (wad_force_uppercase)
 				new_name.MakeUpper();
 
@@ -1241,10 +1241,10 @@ void TextureXPanel::renameTexture(bool each)
 			names.push_back(texture->name());
 
 		// Get filter string
-		string filter = Misc::massRenameFilter(names);
+		wxString filter = Misc::massRenameFilter(names);
 
 		// Prompt for a new name
-		string new_name = wxGetTextFromUser("Enter new texture name: (* = unchanged)", "Rename", filter);
+		wxString new_name = wxGetTextFromUser("Enter new texture name: (* = unchanged)", "Rename", filter);
 		if (wad_force_uppercase)
 			new_name.MakeUpper();
 
@@ -1338,7 +1338,7 @@ void TextureXPanel::exportTexture()
 // Converts [texture] to a PNG image (if possible) and saves the PNG data to a
 // file [filename]. Does not alter the texture data itself
 // -----------------------------------------------------------------------------
-bool TextureXPanel::exportAsPNG(CTexture* texture, const string& filename, bool force_rgba) const
+bool TextureXPanel::exportAsPNG(CTexture* texture, const wxString& filename, bool force_rgba) const
 {
 	// Check entry was given
 	if (!texture)
@@ -1388,7 +1388,7 @@ void TextureXPanel::extractTexture()
 	// If we're just exporting one texture
 	if (selection.size() == 1)
 	{
-		string     name = Misc::lumpNameToFileName(selection[0]->name());
+		wxString   name = Misc::lumpNameToFileName(selection[0]->name());
 		wxFileName fn(name);
 
 		// Set extension
@@ -1495,7 +1495,7 @@ bool TextureXPanel::modifyOffsets()
 // -----------------------------------------------------------------------------
 // Called when an action is undone
 // -----------------------------------------------------------------------------
-void TextureXPanel::onUndo(const string& undo_action) const
+void TextureXPanel::onUndo(const wxString& undo_action) const
 {
 	list_textures_->updateList();
 }
@@ -1503,7 +1503,7 @@ void TextureXPanel::onUndo(const string& undo_action) const
 // -----------------------------------------------------------------------------
 // Called when an action is redone
 // -----------------------------------------------------------------------------
-void TextureXPanel::onRedo(const string& undo_action) const
+void TextureXPanel::onRedo(const wxString& undo_action) const
 {
 	list_textures_->updateList();
 }
@@ -1512,7 +1512,7 @@ void TextureXPanel::onRedo(const string& undo_action) const
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureXPanel::handleAction(const string& id)
+bool TextureXPanel::handleAction(const wxString& id)
 {
 	// Skip event if this panel is not the current page
 	auto parent = dynamic_cast<TabControl*>(GetParent());

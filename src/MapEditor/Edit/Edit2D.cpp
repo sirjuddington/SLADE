@@ -322,14 +322,14 @@ void Edit2D::changeSectorHeight(int amount, bool floor, bool ceiling) const
 	context_.endUndoRecord();
 
 	// Add editor message
-	string what;
+	wxString what;
 	if (floor && !ceiling)
 		what = "Floor";
 	else if (!floor && ceiling)
 		what = "Ceiling";
 	else
 		what = "Floor and ceiling";
-	string inc = "increased";
+	wxString inc = "increased";
 	if (amount < 0)
 	{
 		inc    = "decreased";
@@ -401,8 +401,8 @@ void Edit2D::changeSectorTexture() const
 		return;
 
 	// Determine the initial texture
-	string texture, browser_title, undo_name;
-	auto   mode = context_.sectorEditMode();
+	wxString texture, browser_title, undo_name;
+	auto     mode = context_.sectorEditMode();
 	if (mode == SectorMode::Floor)
 	{
 		texture       = selection[0]->floor().texture;
@@ -426,7 +426,7 @@ void Edit2D::changeSectorTexture() const
 	context_.selection().lockHilight();
 
 	// Open texture browser
-	string selected_tex = MapEditor::browseTexture(
+	wxString selected_tex = MapEditor::browseTexture(
 		texture, MapEditor::TextureType::Flat, context_.map(), browser_title);
 	if (!selected_tex.empty())
 	{
@@ -560,7 +560,7 @@ void Edit2D::changeThingType() const
 		context_.endUndoRecord(true);
 
 		// Add editor message
-		string type_name = Game::configuration().thingType(newtype).name();
+		wxString type_name = Game::configuration().thingType(newtype).name();
 		if (selection.size() == 1)
 			context_.addEditorMessage(S_FMT("Changed type to \"%s\"", type_name));
 		else

@@ -86,7 +86,7 @@ void AdvancedPrefsPanel::refreshPropGrid() const
 	pg_cvars_->Clear();
 
 	// Get list of cvars
-	vector<string> cvars;
+	vector<wxString> cvars;
 	CVar::putList(cvars);
 	std::sort(cvars.begin(), cvars.end());
 
@@ -116,7 +116,7 @@ void AdvancedPrefsPanel::refreshPropGrid() const
 void AdvancedPrefsPanel::applyPreferences()
 {
 	// Get list of cvars
-	vector<string> cvars;
+	vector<wxString> cvars;
 	CVar::putList(cvars);
 
 	for (const auto& name : cvars)

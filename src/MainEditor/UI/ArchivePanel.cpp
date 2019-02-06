@@ -130,8 +130,8 @@ public:
 		if (index < 0)
 			index = list_->GetItemCount() - list_->entriesBegin();
 
-		bool   yes_to_all = false;
-		string caption    = (filenames.size() > 1) ? "Overwrite entries" : "Overwrite entry";
+		bool     yes_to_all = false;
+		wxString caption    = (filenames.size() > 1) ? "Overwrite entries" : "Overwrite entry";
 
 		// Import all dragged files, inserting after the item they were dragged onto
 		for (int a = filenames.size() - 1; a >= 0; a--)
@@ -157,7 +157,7 @@ public:
 						// Since there is no standard "Yes/No to all" button or "Don't ask me again" checkbox,
 						// we will instead hack the Cancel button into being a "Yes to all" button. This is
 						// despite the existence of a wxID_YESTOALL return value...
-						string message = S_FMT(
+						wxString message = S_FMT(
 							"Overwrite existing entry %s%s", list_->currentDir()->path(), fn.GetFullName());
 						wxMessageDialog dlg(parent_, message, caption, wxCANCEL | wxYES_NO | wxCENTRE);
 						dlg.SetYesNoCancelLabels(_("Yes"), _("No"), _("Yes to all"));
@@ -259,13 +259,13 @@ public:
 		if (wxTheClipboard->Open())
 		{
 			wxTheClipboard->Clear();
-			auto   file          = new wxFileDataObject();
-			string tmp_directory = App::path("", App::Dir::Temp); // cache temp directory
-			string file_dot      = ".";
+			auto     file          = new wxFileDataObject();
+			wxString tmp_directory = App::path("", App::Dir::Temp); // cache temp directory
+			wxString file_dot      = ".";
 			for (auto& entry : entries)
 			{
 				// Export to file
-				string filename = tmp_directory + entry->name(true) + file_dot + entry->type()->extension();
+				wxString filename = tmp_directory + entry->name(true) + file_dot + entry->type()->extension();
 				entry->exportFile(filename);
 
 				// Add to clipboard
@@ -300,7 +300,7 @@ namespace
 // -----------------------------------------------------------------------------
 // Creates a vector of namespaces in a predefined order
 // -----------------------------------------------------------------------------
-void initNamespaceVector(vector<string>& ns, bool flathack)
+void initNamespaceVector(vector<wxString>& ns, bool flathack)
 {
 	ns.clear();
 	if (flathack)
@@ -343,9 +343,9 @@ int isInMap(size_t index, vector<Archive::MapDesc>& maps)
 // namespace vector. Also hacks around a bit to put less entries in the global
 // namespace and allow sorting a bit by categories.
 // -----------------------------------------------------------------------------
-size_t getNamespaceNumber(ArchiveEntry* entry, size_t index, vector<string>& ns, vector<Archive::MapDesc>& maps)
+size_t getNamespaceNumber(ArchiveEntry* entry, size_t index, vector<wxString>& ns, vector<Archive::MapDesc>& maps)
 {
-	string ens = entry->parent()->detectNamespace(index);
+	wxString ens = entry->parent()->detectNamespace(index);
 	if (S_CMPNOCASE(ens, "global"))
 	{
 		if (!maps.empty() && isInMap(index, maps) >= 0)
@@ -713,7 +713,7 @@ bool ArchivePanel::saveAs()
 bool ArchivePanel::newEntry(NewEntry type)
 {
 	// Prompt for new entry name if needed
-	string name;
+	wxString name;
 	switch (type)
 	{
 	default:
@@ -802,7 +802,7 @@ bool ArchivePanel::newDirectory() const
 	}
 
 	// Prompt for new directory name
-	string name = wxGetTextFromUser("Enter new directory name:", "New Directory");
+	wxString name = wxGetTextFromUser("Enter new directory name:", "New Directory");
 
 	// Check if any name was entered
 	if (name.empty())
@@ -854,7 +854,7 @@ bool ArchivePanel::importFiles()
 				entry_list_->setEntriesAutoUpdate(true);
 
 			// Get filename
-			string name = wxFileName(info.filenames[a]).GetFullName();
+			wxString name = wxFileName(info.filenames[a]).GetFullName();
 
 			// Update splash window
 			UI::setSplashProgress(float(a) / float(info.filenames.size()));
@@ -923,7 +923,7 @@ bool ArchivePanel::buildArchive()
 	SFileDialog::FDInfo info;
 	if (SFileDialog::saveFile(info, "Build archive", zip.fileExtensionString(), this))
 	{
-		UI::showSplash(string("Building ") + info.filenames[0], true);
+		UI::showSplash(wxString("Building ") + info.filenames[0], true);
 		UI::setSplashProgress(0.0f);
 
 		// prevent for "archive in archive" when saving in the current directory
@@ -948,13 +948,13 @@ bool ArchivePanel::buildArchive()
 				return true;
 			}
 
-			string name = files[a];
+			wxString name = files[a];
 			name.Replace(archive_->filename(), "", false); // Remove directory from entry name
 
 			// Split filename into dir+name
 			wxFileName fn(name);
-			string     ename = fn.GetFullName();
-			string     edir  = fn.GetPath();
+			wxString   ename = fn.GetFullName();
+			wxString   edir  = fn.GetPath();
 
 			// Remove beginning \ or / from dir
 			if (edir.StartsWith("\\") || edir.StartsWith("/"))
@@ -1030,7 +1030,7 @@ bool ArchivePanel::renameEntry(bool each) const
 				entry_list_->setEntriesAutoUpdate(true);
 
 			// Prompt for a new name
-			string new_name = wxGetTextFromUser("Enter new entry name:", "Rename", selection[a]->name());
+			wxString new_name = wxGetTextFromUser("Enter new entry name:", "Rename", selection[a]->name());
 
 			// Rename entry (if needed)
 			if (!new_name.IsEmpty() && selection[a]->name() != new_name)
@@ -1051,10 +1051,10 @@ bool ArchivePanel::renameEntry(bool each) const
 			names.push_back(entry->name(true));
 
 		// Get filter string
-		string filter = Misc::massRenameFilter(names);
+		wxString filter = Misc::massRenameFilter(names);
 
 		// Prompt for a new name
-		string new_name = wxGetTextFromUser(
+		wxString new_name = wxGetTextFromUser(
 			"Enter new entry name: (* = unchanged, ^ = alphabet letter, ^^ = lower case\n% = alphabet repeat number, "
 			"& = entry number, %% or && = n-1)",
 			"Rename",
@@ -1119,10 +1119,10 @@ bool ArchivePanel::renameEntry(bool each) const
 			entry_list_->setEntriesAutoUpdate(true);
 
 		// Get the current directory's name
-		string old_name = selected_dirs[a]->name();
+		wxString old_name = selected_dirs[a]->name();
 
 		// Prompt for a new name
-		string new_name = wxGetTextFromUser(
+		wxString new_name = wxGetTextFromUser(
 			"Enter new directory name:", S_FMT("Rename Directory %s", old_name), old_name);
 
 		// Do nothing if no name was entered
@@ -1159,8 +1159,8 @@ bool ArchivePanel::deleteEntry(bool confirm)
 	// Confirmation dialog
 	if (confirm_entry_delete && confirm)
 	{
-		string item;
-		int    num = selected_entries.size() + selected_dirs.size();
+		wxString item;
+		int      num = selected_entries.size() + selected_dirs.size();
 		if (num == 1)
 		{
 			if (selected_entries.size() == 1)
@@ -1401,22 +1401,22 @@ bool ArchivePanel::sort() const
 	if (selection.size() < 2)
 		return false;
 
-	vector<string> nspaces;
+	vector<wxString> nspaces;
 	initNamespaceVector(nspaces, dir->archive()->hasFlatHack());
 	auto maps = dir->archive()->detectMaps();
 
-	string ns  = dir->archive()->detectNamespace(entry_list_->entryAt(selection[0]));
-	size_t nsn = 0, lnsn = 0;
+	wxString ns  = dir->archive()->detectNamespace(entry_list_->entryAt(selection[0]));
+	size_t   nsn = 0, lnsn = 0;
 
 	// Fill a map with <entry name, entry index> pairs
-	std::map<string, size_t> emap;
+	std::map<wxString, size_t> emap;
 	emap.clear();
 	for (size_t i = 0; i < selection.size(); ++i)
 	{
-		bool   ns_changed = false;
-		int    mapindex   = isInMap(selection[i], maps);
-		string mapname;
-		auto   entry = entry_list_->entryAt(selection[i]);
+		bool     ns_changed = false;
+		int      mapindex   = isInMap(selection[i], maps);
+		wxString mapname;
+		auto     entry = entry_list_->entryAt(selection[i]);
 		if (!entry)
 			continue;
 
@@ -1461,7 +1461,7 @@ bool ArchivePanel::sort() const
 		// This is because the global namespace in wads is bloated and we want more
 		// categories than it actually has to offer.
 		lnsn = (nsn == 0 ? getNamespaceNumber(entry, selection[i], nspaces, maps) * 1000 : nsn);
-		string name, ename = entry->name().Upper();
+		wxString name, ename = entry->name().Upper();
 		// Want to get another hack in this stuff? Yeah, of course you do!
 		// This here hack will sort Doom II songs by their associated map.
 		if (ename.StartsWith("D_") && S_CMPNOCASE(entry->type()->icon(), "music"))
@@ -1576,8 +1576,8 @@ bool ArchivePanel::sort() const
 			dir->swapEntries(i, itr->second);
 
 			// Update the position of the displaced texture in the emap
-			string name = entry->exProp("sortkey");
-			emap[name]  = itr->second;
+			wxString name = entry->exProp("sortkey");
+			emap[name]    = itr->second;
 		}
 	}
 	undo_manager_->endRecord(true);
@@ -1629,7 +1629,7 @@ bool ArchivePanel::crc32() const
 	auto selection = entry_list_->selectedEntries();
 
 	// Compute CRC-32 checksums for each
-	string checksums = "\nCRC-32:\n";
+	wxString checksums = "\nCRC-32:\n";
 	for (auto& entry : selection)
 	{
 		uint32_t crc = entry->data().crc();
@@ -1759,7 +1759,7 @@ bool ArchivePanel::exportEntry()
 	// If we're just exporting 1 entry
 	if (selection.size() == 1 && selected_dirs.empty())
 	{
-		string     name = Misc::lumpNameToFileName(selection[0]->name());
+		wxString   name = Misc::lumpNameToFileName(selection[0]->name());
 		wxFileName fn(name);
 
 		// Add appropriate extension if needed
@@ -2198,7 +2198,7 @@ bool ArchivePanel::gfxExportPNG()
 	// If we're just exporting 1 entry
 	if (selection.size() == 1)
 	{
-		string     name = Misc::lumpNameToFileName(selection[0]->name());
+		wxString   name = Misc::lumpNameToFileName(selection[0]->name());
 		wxFileName fn(name);
 
 		// Set extension
@@ -2327,9 +2327,9 @@ bool ArchivePanel::swanConvert() const
 
 	// Create entries
 	MemChunk* mc[2]       = { &mca, &mcs };
-	string    wadnames[2] = { "ANIMATED", "SWITCHES" };
-	string    zipnames[2] = { "animated.lmp", "switches.lmp" };
-	string    etypeids[2] = { "animated", "switches" };
+	wxString  wadnames[2] = { "ANIMATED", "SWITCHES" };
+	wxString  zipnames[2] = { "animated.lmp", "switches.lmp" };
+	wxString  etypeids[2] = { "animated", "switches" };
 	for (int e = 0; e < 2; ++e)
 	{
 		if (mc[e]->size())
@@ -2390,7 +2390,7 @@ bool ArchivePanel::basConvert(bool animdefs)
 	if (output)
 	{
 		// Create the memory buffer
-		string gentext;
+		wxString gentext;
 		if (animdefs)
 		{
 			gentext = "// ANIMDEFS lump generated by SLADE3\n// on " + wxNow() + "\n\n";
@@ -2632,9 +2632,9 @@ bool ArchivePanel::compileACS(bool hexen) const
 bool ArchivePanel::optimizePNG() const
 {
 	// Check if the PNG tools path are set up, at least one of them should be
-	string pngpathc = path_pngcrush;
-	string pngpatho = path_pngout;
-	string pngpathd = path_deflopt;
+	wxString pngpathc = path_pngcrush;
+	wxString pngpatho = path_pngout;
+	wxString pngpathd = path_deflopt;
 	if ((pngpathc.IsEmpty() || !wxFileExists(pngpathc)) && (pngpatho.IsEmpty() || !wxFileExists(pngpatho))
 		&& (pngpathd.IsEmpty() || !wxFileExists(pngpathd)))
 	{
@@ -2774,7 +2774,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 	if (entry->type() == EntryType::folderType())
 	{
 		// Removes starting / from path
-		string name = entry->path(true);
+		wxString name = entry->path(true);
 		if (name.StartsWith("/"))
 			name.Remove(0, 1);
 
@@ -2984,7 +2984,7 @@ void ArchivePanel::refreshPanel()
 // Creates and returns the 'Open In' submenu for the entry context menu, adding
 // any external editors for entries of [category]
 // -----------------------------------------------------------------------------
-wxMenu* ArchivePanel::createEntryOpenMenu(const string& category)
+wxMenu* ArchivePanel::createEntryOpenMenu(const wxString& category)
 {
 	current_external_exe_category_ = category;
 	current_external_exes_.clear();
@@ -3018,7 +3018,7 @@ wxMenu* ArchivePanel::createEntryOpenMenu(const string& category)
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchivePanel::handleAction(const string& id)
+bool ArchivePanel::handleAction(const wxString& id)
 {
 	// Don't handle actions if hidden
 	if (!IsShown())
@@ -3250,11 +3250,11 @@ bool ArchivePanel::handleAction(const string& id)
 		RunDialog dlg(this, archive_);
 		if (dlg.ShowModal() == wxID_OK)
 		{
-			string command = dlg.selectedCommandLine(archive_, "");
+			wxString command = dlg.selectedCommandLine(archive_, "");
 			if (!command.IsEmpty())
 			{
 				// Set working directory
-				string wd = wxGetCwd();
+				wxString wd = wxGetCwd();
 				wxSetWorkingDirectory(dlg.selectedExeDir());
 
 				// Run
@@ -3280,7 +3280,7 @@ bool ArchivePanel::handleAction(const string& id)
 // Called when an announcement is recieved from the archive that this
 // ArchivePanel is managing
 // -----------------------------------------------------------------------------
-void ArchivePanel::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void ArchivePanel::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	// Reset event data for reading
 	event_data.seek(0, SEEK_SET);
@@ -3453,7 +3453,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	bool map_selected      = false;
 	bool swan_selected     = false;
 	//	bool rle_selected = false;
-	string category = "";
+	wxString category = "";
 	for (auto& entry : selection)
 	{
 		// Check for gfx entry
@@ -3535,7 +3535,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 				category = entry->type()->category();
 			else
 			{
-				string ed = entry->type()->category();
+				wxString ed = entry->type()->category();
 				if (category != ed)
 					category = "diff";
 			}
@@ -3925,7 +3925,7 @@ void ArchivePanel::onDEPViewAsHex(wxCommandEvent& e)
 void ArchivePanel::onTextFilterChanged(wxCommandEvent& e)
 {
 	// Get category string to filter by
-	string category = "";
+	wxString category = "";
 	if (choice_category_->GetSelection() > 0)
 		category = choice_category_->GetStringSelection();
 
@@ -3941,7 +3941,7 @@ void ArchivePanel::onTextFilterChanged(wxCommandEvent& e)
 void ArchivePanel::onChoiceCategoryChanged(wxCommandEvent& e)
 {
 	// Get category string to filter by
-	string category = "";
+	wxString category = "";
 	if (choice_category_->GetSelection() > 0)
 		category = choice_category_->GetStringSelection();
 
@@ -3968,7 +3968,7 @@ void ArchivePanel::onDirChanged(wxCommandEvent& e)
 	else
 	{
 		// Setup path string
-		string path = dir->path();
+		wxString path = dir->path();
 		path.Remove(0, 1);
 		path.Prepend("Path: ");
 
@@ -4212,7 +4212,7 @@ CONSOLE_COMMAND(lightspsxtopalette, 0, false)
 }
 
 
-vector<ArchiveEntry*> Console_SearchEntries(string name)
+vector<ArchiveEntry*> Console_SearchEntries(wxString name)
 {
 	vector<ArchiveEntry*> entries;
 	Archive*              archive = MainEditor::currentArchive();
@@ -4236,8 +4236,8 @@ CONSOLE_COMMAND(find, 1, true)
 {
 	vector<ArchiveEntry*> entries = Console_SearchEntries(args[0]);
 
-	string message;
-	size_t count = entries.size();
+	wxString message;
+	size_t   count = entries.size();
 	if (count > 0)
 	{
 		for (size_t i = 0; i < count; ++i)
@@ -4258,7 +4258,7 @@ CONSOLE_COMMAND(ren, 2, true)
 		for (size_t i = 0; i < entries.size(); ++i)
 		{
 			// Rename filter logic
-			string newname = entries[i]->name();
+			wxString newname = entries[i]->name();
 			for (unsigned c = 0; c < args[1].size(); c++)
 			{
 				// Check character

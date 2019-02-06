@@ -18,7 +18,7 @@ public:
 	void init() override;
 	void applyPreferences() override;
 
-	string pageTitle() override { return "Map Editor Display Settings"; }
+	wxString pageTitle() override { return "Map Editor Display Settings"; }
 
 private:
 	TabControl* stc_pages_ = nullptr;

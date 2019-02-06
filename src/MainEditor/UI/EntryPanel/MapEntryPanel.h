@@ -14,7 +14,7 @@ public:
 	bool loadEntry(ArchiveEntry* entry) override;
 	bool saveEntry() override;
 	bool createImage();
-	void toolbarButtonClick(const string& action_id) override;
+	void toolbarButtonClick(const wxString& action_id) override;
 
 private:
 	MapPreviewCanvas* map_canvas_     = nullptr;

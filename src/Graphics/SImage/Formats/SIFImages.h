@@ -2,10 +2,10 @@
 class PNGChunk
 {
 public:
-	PNGChunk(const string& name = "----") { memcpy(name_, CHR(name), 4); }
+	PNGChunk(const wxString& name = "----") { memcpy(name_, CHR(name), 4); }
 	~PNGChunk() = default;
 
-	string    name() const { return wxString::FromAscii(name_, 4); }
+	wxString  name() const { return wxString::FromAscii(name_, 4); }
 	uint32_t  size() const { return size_; }
 	uint32_t  crc() const { return crc_; }
 	MemChunk& data() { return data_; }

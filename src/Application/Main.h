@@ -20,7 +20,6 @@ typedef unsigned __int64 uint64_t;
 #endif
 
 // String stuff
-typedef wxString string;
 #define S_FMT wxString::Format
 #define S_CMP(s1, s2) s1.Cmp(s2) == 0
 #define S_CMPNOCASE(s1, s2) s1.CmpNoCase(s2) == 0
@@ -49,19 +48,20 @@ using std::vector;
 #undef Bool
 
 // Global internal includes
-#include "Utility/Structs.h"
 #include "General/CVar.h"
 #include "General/Log.h"
 #include "Utility/MemChunk.h"
+#include "Utility/Structs.h"
+
 
 // Namespace to hold 'global' variables
 namespace Global
 {
-extern string error;
-extern string sc_rev;
-extern bool   debug;
-extern int    win_version_major;
-extern int    win_version_minor;
+extern wxString error;
+extern wxString sc_rev;
+extern bool     debug;
+extern int      win_version_major;
+extern int      win_version_minor;
 }; // namespace Global
 
 #endif // __MAIN_H__

@@ -34,10 +34,10 @@ static const int8_t BLEND_IGNORE   = -1;
 
 struct Info
 {
-	string vendor;
-	string renderer;
-	string version;
-	string extensions;
+	wxString vendor;
+	wxString renderer;
+	wxString version;
+	wxString extensions;
 
 	Info() { vendor = renderer = version = extensions = "OpenGL not initialised"; }
 };

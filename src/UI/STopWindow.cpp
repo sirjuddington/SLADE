@@ -47,7 +47,7 @@
 // -----------------------------------------------------------------------------
 // STopWindow class constructor
 // -----------------------------------------------------------------------------
-STopWindow::STopWindow(const string& title, const string& id, int x, int y, int width, int height)
+STopWindow::STopWindow(const wxString& title, const wxString& id, int x, int y, int width, int height)
 #ifndef __WXOSX__
 	:
 	wxFrame(nullptr, -1, title, wxPoint(x, y), wxSize(width, height)),
@@ -95,7 +95,7 @@ STopWindow::~STopWindow()
 // -----------------------------------------------------------------------------
 // Adds [menu] to the menu bar after the 'Entry' menu
 // -----------------------------------------------------------------------------
-void STopWindow::addCustomMenu(wxMenu* menu, const string& title)
+void STopWindow::addCustomMenu(wxMenu* menu, const wxString& title)
 {
 	// Check menu doesn't already exist
 	for (unsigned a = 0; a < custom_menus_.size(); a++)
@@ -141,7 +141,7 @@ void STopWindow::removeAllCustomMenus()
 // -----------------------------------------------------------------------------
 // Enables/disables the toolbar group matching [name]
 // -----------------------------------------------------------------------------
-void STopWindow::enableToolBar(const string& name, bool enable) const
+void STopWindow::enableToolBar(const wxString& name, bool enable) const
 {
 	toolbar_->enableGroup(name, enable);
 }
@@ -150,7 +150,7 @@ void STopWindow::enableToolBar(const string& name, bool enable) const
 // Adds a custom toolbar group to the toolbar, with buttons for each action in
 // [actions]
 // -----------------------------------------------------------------------------
-void STopWindow::addCustomToolBar(const string& name, const wxArrayString& actions) const
+void STopWindow::addCustomToolBar(const wxString& name, const wxArrayString& actions) const
 {
 	toolbar_->addActionGroup(name, actions);
 	populateToolbarsMenu();
@@ -159,7 +159,7 @@ void STopWindow::addCustomToolBar(const string& name, const wxArrayString& actio
 // -----------------------------------------------------------------------------
 // Removes the toolbar group matching [name]
 // -----------------------------------------------------------------------------
-void STopWindow::removeCustomToolBar(const string& name) const
+void STopWindow::removeCustomToolBar(const wxString& name) const
 {
 	toolbar_->deleteGroup(name);
 	populateToolbarsMenu();
@@ -186,7 +186,7 @@ void STopWindow::populateToolbarsMenu() const
 	{
 		auto group = toolbar_->groups()[a];
 
-		string name = group->name();
+		wxString name = group->name();
 		name.Replace("_", "");
 
 		action_toolbar_menu_->addToMenu(toolbar_menu_, name, "NO", a + 1);

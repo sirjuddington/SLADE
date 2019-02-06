@@ -392,7 +392,7 @@ bool VirtualListView::lookForSearchEntryFrom(long focus)
 	bool gotmatch = false;
 	while ((!looped && index < GetItemCount()) || (looped && index < focus))
 	{
-		string name = itemText(index, col_search_, items_[index]);
+		auto name = itemText(index, col_search_, items_[index]);
 		if (name.Upper().StartsWith(search_))
 		{
 			// Matches, update selection+focus

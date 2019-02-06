@@ -57,7 +57,7 @@ ActionSpecial ActionSpecial::gen_manual_;
 // -----------------------------------------------------------------------------
 // ActionSpecial class constructor
 // -----------------------------------------------------------------------------
-ActionSpecial::ActionSpecial(const string& name, const string& group) :
+ActionSpecial::ActionSpecial(const wxString& name, const wxString& group) :
 	name_{ name },
 	group_{ group },
 	tagged_{ TagType::None },
@@ -102,9 +102,9 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 	// Go through all child nodes/values
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto   child = node->childPTN(a);
-		string name  = child->name();
-		int    argn  = -1;
+		auto     child = node->childPTN(a);
+		wxString name  = child->name();
+		int      argn  = -1;
 
 		// Name
 		if (S_CMPNOCASE(name, "name"))
@@ -141,10 +141,10 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 // -----------------------------------------------------------------------------
 // Returns the action special info as a string
 // -----------------------------------------------------------------------------
-string ActionSpecial::stringDesc() const
+wxString ActionSpecial::stringDesc() const
 {
 	// Init string
-	string ret = S_FMT(R"("%s" in group "%s")", name_, group_);
+	wxString ret = S_FMT(R"("%s" in group "%s")", name_, group_);
 
 	// Add tagged info
 	if (tagged_ != TagType::None)

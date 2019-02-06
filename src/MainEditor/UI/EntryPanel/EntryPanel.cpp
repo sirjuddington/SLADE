@@ -58,7 +58,7 @@ CVAR(Bool, confirm_entry_revert, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // EntryPanel class constructor
 // -----------------------------------------------------------------------------
-EntryPanel::EntryPanel(wxWindow* parent, const string& id) : wxPanel(parent, -1), id_{ id }
+EntryPanel::EntryPanel(wxWindow* parent, const wxString& id) : wxPanel(parent, -1), id_{ id }
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -242,9 +242,9 @@ void EntryPanel::updateStatus()
 	// Basic info
 	if (entry_)
 	{
-		string name = entry_->name();
-		string type = entry_->typeString();
-		string text = S_FMT(
+		wxString name = entry_->name();
+		wxString type = entry_->typeString();
+		wxString text = S_FMT(
 			"%d: %s, %d bytes, %s", entry_->parentDir()->entryIndex(entry_), name, entry_->size(), type);
 
 		theMainWindow->CallAfter(&MainWindow::SetStatusText, text, 1);
@@ -310,7 +310,7 @@ void EntryPanel::updateToolbar()
 // -----------------------------------------------------------------------------
 void EntryPanel::onToolbarButton(wxCommandEvent& e)
 {
-	string button = e.GetString();
+	wxString button = e.GetString();
 
 	// Save
 	if (button == "save")

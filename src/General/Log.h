@@ -15,11 +15,11 @@ enum class MessageType
 
 struct Message
 {
-	string      message;
+	wxString    message;
 	MessageType type;
 	time_t      timestamp;
 
-	string formattedMessageLine() const;
+	wxString formattedMessageLine() const;
 };
 
 const vector<Message>& history();
@@ -67,10 +67,10 @@ inline void	console(const wxString& text) { message(MessageType::Console, text);
 #include <typeinfo>
 class Debuggable
 {
-	string repr;
+	wxString repr;
 
 public:
-	Debuggable(string v) { repr = v; }
+	Debuggable(wxString v) { repr = v; }
 	Debuggable(const char* v) { repr = v; }
 	Debuggable(bool v) { repr = v ? "true" : "false"; }
 	Debuggable(int v) { repr = S_FMT("%d", v); }
@@ -97,7 +97,7 @@ public:
 		repr << "}";
 	}
 
-	string get() { return this->repr; }
+	wxString get() { return this->repr; }
 };
 
 inline void LOG_DEBUG(
@@ -114,7 +114,7 @@ inline void LOG_DEBUG(
 	Debuggable a11 = "",
 	Debuggable a12 = "")
 {
-	string message;
+	wxString message;
 	message << a1.get() << " ";
 	message << a2.get() << " ";
 	message << a3.get() << " ";

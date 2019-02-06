@@ -68,9 +68,9 @@ namespace
 // Helper function to get the actual path of game executable [exe], with special
 // handling for macOS .apps
 // -----------------------------------------------------------------------------
-string getExecutablePath(const Executables::GameExe* const exe)
+wxString getExecutablePath(const Executables::GameExe* const exe)
 {
-	const string& exe_path = exe->path;
+	const wxString& exe_path = exe->path;
 
 #ifdef __WXOSX_MAC__
 	if (exe_path.EndsWith(".app"))
@@ -119,11 +119,11 @@ class RunConfigDialog : public wxDialog
 {
 public:
 	RunConfigDialog(
-		wxWindow*     parent,
-		const string& title,
-		const string& name,
-		const string& params,
-		bool          custom = true) :
+		wxWindow*       parent,
+		const wxString& title,
+		const wxString& name,
+		const wxString& params,
+		bool            custom = true) :
 		wxDialog(parent, -1, title)
 	{
 		// Setup sizer
@@ -161,8 +161,8 @@ public:
 	}
 	~RunConfigDialog() = default;
 
-	string name() const { return text_name_->GetValue(); }
-	string params() const { return text_params_->GetValue(); }
+	wxString name() const { return text_name_->GetValue(); }
+	wxString params() const { return text_params_->GetValue(); }
 
 private:
 	wxTextCtrl* text_name_;
@@ -336,18 +336,18 @@ void RunDialog::openGameExe(unsigned index) const
 // Returns a command line based on the currently selected run configuration and
 // resources
 // -----------------------------------------------------------------------------
-string RunDialog::selectedCommandLine(Archive* archive, const string& map_name, const string& map_file) const
+wxString RunDialog::selectedCommandLine(Archive* archive, const wxString& map_name, const wxString& map_file) const
 {
 	auto exe = Executables::gameExe(choice_game_exes_->GetSelection());
 	if (exe)
 	{
 		// Get exe path
-		const string exe_path = getExecutablePath(exe);
+		const wxString exe_path = getExecutablePath(exe);
 
 		if (exe_path.IsEmpty())
 			return "";
 
-		string path = S_FMT("\"%s\"", exe_path);
+		wxString path = S_FMT("\"%s\"", exe_path);
 
 		unsigned cfg = choice_config_->GetSelection();
 		if (cfg < exe->configs.size())
@@ -390,10 +390,10 @@ string RunDialog::selectedCommandLine(Archive* archive, const string& map_name, 
 			// Map warp
 			if (path.Contains("%mw"))
 			{
-				string mn = map_name.Lower();
+				wxString mn = map_name.Lower();
 
 				// MAPxx
-				string mapnum;
+				wxString mapnum;
 				if (mn.StartsWith("map", &mapnum))
 					path.Replace("%mw", mapnum);
 
@@ -420,7 +420,7 @@ string RunDialog::selectedCommandLine(Archive* archive, const string& map_name, 
 // -----------------------------------------------------------------------------
 // Returns a space-separated list of selected resource archive filenames
 // -----------------------------------------------------------------------------
-string RunDialog::selectedResourceList() const
+wxString RunDialog::selectedResourceList() const
 {
 	return rac_resources_->selectedResourceList();
 }
@@ -428,7 +428,7 @@ string RunDialog::selectedResourceList() const
 // -----------------------------------------------------------------------------
 // Returns the directory of the currently selected executable
 // -----------------------------------------------------------------------------
-string RunDialog::selectedExeDir() const
+wxString RunDialog::selectedExeDir() const
 {
 	auto exe = Executables::gameExe(choice_game_exes_->GetSelection());
 	if (exe)
@@ -443,7 +443,7 @@ string RunDialog::selectedExeDir() const
 // -----------------------------------------------------------------------------
 // Returns the id of the currently selected game executable
 // -----------------------------------------------------------------------------
-string RunDialog::selectedExeId() const
+wxString RunDialog::selectedExeId() const
 {
 	auto exe = Executables::gameExe(choice_game_exes_->GetSelection());
 	if (exe)
@@ -473,7 +473,7 @@ bool RunDialog::start3dModeChecked() const
 // -----------------------------------------------------------------------------
 void RunDialog::onBtnAddGame(wxCommandEvent& e)
 {
-	string name = wxGetTextFromUser("Enter a name for the game executable");
+	wxString name = wxGetTextFromUser("Enter a name for the game executable");
 	Executables::addGameExe(name);
 	choice_game_exes_->AppendString(name);
 	choice_game_exes_->Select(choice_game_exes_->GetCount() - 1);
@@ -512,15 +512,15 @@ void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 	if (choice_game_exes_->GetSelection() < 0)
 		return;
 
-	auto   exe         = Executables::gameExe(choice_game_exes_->GetSelection());
-	string init_params = "";
+	auto     exe         = Executables::gameExe(choice_game_exes_->GetSelection());
+	wxString init_params = "";
 	if (choice_config_->GetSelection() >= 0)
 		init_params = exe->configs[choice_config_->GetSelection()].second;
 
 	RunConfigDialog dlg(this, S_FMT("Add Run Config for %s", exe->name), "", init_params);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		string name = dlg.name();
+		wxString name = dlg.name();
 
 		if (name.IsEmpty())
 			name = S_FMT("Config %d", choice_config_->GetCount() + 1);
@@ -539,16 +539,16 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
 	if (choice_game_exes_->GetSelection() < 0 || choice_config_->GetSelection() < 0)
 		return;
 
-	auto   exe    = Executables::gameExe(choice_game_exes_->GetSelection());
-	int    index  = choice_config_->GetSelection();
-	string name   = exe->configs[index].first;
-	string params = exe->configs[index].second;
-	bool   custom = exe->configs_custom[index];
+	auto     exe    = Executables::gameExe(choice_game_exes_->GetSelection());
+	int      index  = choice_config_->GetSelection();
+	wxString name   = exe->configs[index].first;
+	wxString params = exe->configs[index].second;
+	bool     custom = exe->configs_custom[index];
 
 	RunConfigDialog dlg(this, "Edit Run Config", name, params, custom);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		string name                = dlg.name().IsEmpty() ? exe->configs[index].first : dlg.name();
+		wxString name              = dlg.name().IsEmpty() ? exe->configs[index].first : dlg.name();
 		exe->configs[index].first  = name;
 		exe->configs[index].second = dlg.params();
 		choice_config_->SetString(index, name);

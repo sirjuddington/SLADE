@@ -239,7 +239,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		///////////////////////////////////
 
 		// Check entry name
-		string name = entry->path(true);
+		wxString name = entry->path(true);
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 128)
 		{
@@ -299,7 +299,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 // Writes the dat archive to a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ADatArchive::write(const string& filename, bool update)
+bool ADatArchive::write(const wxString& filename, bool update)
 {
 	// Write to a MemChunk, then export it to a file
 	MemChunk mc;
@@ -397,7 +397,7 @@ bool ADatArchive::isADatArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Anachronox dat archive
 // -----------------------------------------------------------------------------
-bool ADatArchive::isADatArchive(const string& filename)
+bool ADatArchive::isADatArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

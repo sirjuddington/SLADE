@@ -13,33 +13,33 @@ public:
 	PreferencesDialog(wxWindow* parent);
 	~PreferencesDialog() = default;
 
-	void   showPage(const string& name, const string& subsection = "");
-	string currentPage() const;
-	void   initPages();
-	void   applyPreferences();
+	void     showPage(const wxString& name, const wxString& subsection = "");
+	wxString currentPage() const;
+	void     initPages();
+	void     applyPreferences();
 
 	// Static functions
-	static void openPreferences(wxWindow* parent, string initial_page = "", const string& subsection = "");
+	static void openPreferences(wxWindow* parent, wxString initial_page = "", const wxString& subsection = "");
 
 private:
-	wxTreebook*                       tree_prefs_ = nullptr;
-	std::map<string, PrefsPanelBase*> prefs_pages_;
-	PrefsPanelBase*                   prefs_advanced_ = nullptr;
+	wxTreebook*                         tree_prefs_ = nullptr;
+	std::map<wxString, PrefsPanelBase*> prefs_pages_;
+	PrefsPanelBase*                     prefs_advanced_ = nullptr;
 
 	// Base Resource Archive
 	BaseResourceArchivesPanel* panel_bra_ = nullptr;
 
 	// Static
-	static string last_page_;
-	static int    width_;
-	static int    height_;
+	static wxString last_page_;
+	static int      width_;
+	static int      height_;
 
-	void     addPrefsPage(PrefsPanelBase* page, const string& title, bool sub_page = false, bool select = false);
+	void     addPrefsPage(PrefsPanelBase* page, const wxString& title, bool sub_page = false, bool select = false);
 	wxPanel* setupBaseResourceArchivesPanel();
 	wxPanel* setupAdvancedPanel();
 
 	// Helper template function for addPrefsPage
-	template<class T> void addPrefsPage(const string& title, bool sub_page = false, bool select = false)
+	template<class T> void addPrefsPage(const wxString& title, bool sub_page = false, bool select = false)
 	{
 		addPrefsPage(new T(tree_prefs_), title, sub_page, select);
 	}

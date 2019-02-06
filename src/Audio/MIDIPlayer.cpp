@@ -211,9 +211,9 @@ int MIDIPlayer::length()
 // Marker (FF 06)
 // Cue point (FF 07)
 // -----------------------------------------------------------------------------
-string MIDIPlayer::info()
+wxString MIDIPlayer::info()
 {
-	string   ret           = wxEmptyString;
+	wxString ret           = wxEmptyString;
 	size_t   pos           = 0;
 	size_t   end           = data_.size();
 	size_t   track_counter = 0;
@@ -274,7 +274,7 @@ string MIDIPlayer::info()
 							break;
 					}
 
-					string tmp = wxEmptyString;
+					wxString tmp = wxEmptyString;
 					if (evtype > 0 && evtype < 8 && evsize)
 						tmp.Append((const char*)(&data_[tpos]), evsize);
 
@@ -401,7 +401,7 @@ public:
 		bool retval = false;
 		for (int a = paths.size() - 1; a >= 0; --a)
 		{
-			string path = paths[a];
+			wxString path = paths[a];
 			if (!path.empty())
 			{
 				int fs_id = fluid_synth_sfload(fs_synth_, CHR(path), 1);
@@ -418,7 +418,7 @@ public:
 	// Opens the MIDI file at [filename] for playback.
 	// Returns true if successful, false otherwise
 	// -------------------------------------------------------------------------
-	bool openFile(string filename) override
+	bool openFile(wxString filename) override
 	{
 		file_ = filename;
 		if (!fs_initialised_)
@@ -635,7 +635,7 @@ public:
 	// Opens the MIDI file at [filename] for playback.
 	// Returns true if successful, false otherwise
 	// -------------------------------------------------------------------------
-	bool openFile(string filename) override
+	bool openFile(wxString filename) override
 	{
 		file_ = filename;
 		return true;
@@ -672,7 +672,7 @@ public:
 		stop();
 		timer_.restart();
 
-		string commandline = snd_timidity_path + " " + file_ + " " + snd_timidity_options;
+		wxString commandline = snd_timidity_path + " " + file_ + " " + snd_timidity_options;
 		if (!((program_ = wxProcess::Open(commandline))))
 			return false;
 

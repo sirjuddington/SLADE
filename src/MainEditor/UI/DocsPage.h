@@ -13,7 +13,7 @@ public:
 	~DocsPage() = default;
 
 	void updateNavButtons() const;
-	void openPage(const string& page_name) const;
+	void openPage(const wxString& page_name) const;
 
 private:
 	wxWebView*      wv_browser_ = nullptr;

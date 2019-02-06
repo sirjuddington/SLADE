@@ -238,7 +238,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 			else
 			{
 				// Build property string (offset[x/y]_[top/mid/bottom])
-				string ofs = "offsetx";
+				wxString ofs = "offsetx";
 				if (!x)
 					ofs = "offsety";
 				if (item.type == ItemType::WallBottom)
@@ -303,7 +303,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 	// Editor message
 	if (!items.empty() && changed)
 	{
-		string axis = "X";
+		wxString axis = "X";
 		if (!x)
 			axis = "Y";
 
@@ -428,7 +428,7 @@ void Edit3D::autoAlignX(MapEditor::Item start) const
 		return;
 
 	// Get texture to match
-	string tex;
+	wxString tex;
 	if (start.type == ItemType::WallBottom)
 		tex = side->texLower();
 	else if (start.type == ItemType::WallMiddle)
@@ -571,7 +571,7 @@ void Edit3D::resetOffsets() const
 			if (!sector)
 				continue;
 
-			string plane;
+			wxString plane;
 			if (flat.type == ItemType::Floor)
 				plane = "floor";
 			else
@@ -669,7 +669,7 @@ void Edit3D::toggleUnpegged(bool lower) const
 		return;
 
 	// Begin undo level
-	string undo_type = lower ? "Toggle Lower Unpegged" : "Toggle Upper Unpegged";
+	wxString undo_type = lower ? "Toggle Lower Unpegged" : "Toggle Upper Unpegged";
 	undo_manager_->beginRecord(undo_type);
 
 	// Go through items
@@ -794,7 +794,7 @@ void Edit3D::copy(CopyType type)
 void Edit3D::paste(CopyType type) const
 {
 	// Begin undo step
-	string ptype = "Paste Properties";
+	wxString ptype = "Paste Properties";
 	if (type == CopyType::TexType)
 		ptype = "Paste Texture/Type";
 	undo_manager_->beginRecord(ptype);
@@ -913,7 +913,7 @@ void Edit3D::floodFill(CopyType type) const
 	}
 
 	// Begin undo step
-	string ptype = "Floodfill textures";
+	wxString ptype = "Floodfill textures";
 	undo_manager_->beginRecord(ptype);
 
 	// Go through items
@@ -1067,7 +1067,7 @@ void Edit3D::changeScale(double amount, bool x) const
 			if (auto side = item.asSide(context_.map()))
 			{
 				// Build property string (offset[x/y]_[top/mid/bottom])
-				string ofs = "scalex";
+				wxString ofs = "scalex";
 				if (!x)
 					ofs = "scaley";
 				if (Game::configuration().featureSupported(UDMFFeature::TextureScaling))
@@ -1093,7 +1093,7 @@ void Edit3D::changeScale(double amount, bool x) const
 			if (auto sector = item.asSector(context_.map()))
 			{
 				// Build property string
-				string prop = x ? "xscale" : "yscale";
+				wxString prop = x ? "xscale" : "yscale";
 				prop += (item.type == ItemType::Floor) ? "floor" : "ceiling";
 
 				// Set
@@ -1156,7 +1156,7 @@ void Edit3D::changeHeight(int amount) const
 		// Wall
 		if (auto side = item.asSide(map))
 		{
-			string ofs = "offsety";
+			wxString ofs = "offsety";
 
 			// If offsets are linked, just change the whole side offset
 			if (link_offset_)
@@ -1213,18 +1213,18 @@ void Edit3D::changeTexture() const
 		return;
 
 	// Get initial texture
-	string tex;
-	auto   type  = MapEditor::TextureType::Texture;
-	auto&  first = selection[0];
-	auto&  map   = context_.map();
+	wxString tex;
+	auto     type  = MapEditor::TextureType::Texture;
+	auto&    first = selection[0];
+	auto&    map   = context_.map();
 	if (auto sector = first.asSector(map))
 	{
 		type = MapEditor::TextureType::Flat;
 
 		if (first.type == ItemType::Floor)
-			tex  = sector->floor().texture;
+			tex = sector->floor().texture;
 		else if (first.type == ItemType::Ceiling)
-			tex  = sector->ceiling().texture;
+			tex = sector->ceiling().texture;
 	}
 	else if (auto side = first.asSide(map))
 	{
@@ -1308,7 +1308,7 @@ vector<MapEditor::Item> Edit3D::getAdjacent(MapEditor::Item item) const
 // -----------------------------------------------------------------------------
 // Returns true if the texture [part] of [side] matches [tex]
 // -----------------------------------------------------------------------------
-bool Edit3D::wallMatches(MapSide* side, ItemType part, const string& tex)
+bool Edit3D::wallMatches(MapSide* side, ItemType part, const wxString& tex)
 {
 	// Check for blank texture where it isn't needed
 	if (tex == MapSide::TEX_NONE)
@@ -1371,7 +1371,7 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 		return;
 
 	// Get texture to match
-	string tex;
+	wxString tex;
 	if (item.type == ItemType::WallBottom)
 		tex = side->texLower();
 	else if (item.type == ItemType::WallMiddle)
@@ -1556,7 +1556,12 @@ void Edit3D::getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& lis
 // -----------------------------------------------------------------------------
 // Recursive function to align textures on the x axis
 // -----------------------------------------------------------------------------
-void Edit3D::doAlignX(MapSide* side, int offset, const string& tex, vector<MapEditor::Item>& walls_done, int tex_width)
+void Edit3D::doAlignX(
+	MapSide*                 side,
+	int                      offset,
+	const wxString&          tex,
+	vector<MapEditor::Item>& walls_done,
+	int                      tex_width)
 {
 	// Check if this wall has already been processed
 	for (auto& item : walls_done)

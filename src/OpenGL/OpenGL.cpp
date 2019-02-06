@@ -107,7 +107,7 @@ bool OpenGL::init()
 	info.extensions = wxString::From8BitData((const char*)glGetString(GL_EXTENSIONS));
 
 	// Get OpenGL version
-	string temp = info.version;
+	auto temp = info.version;
 	temp.Truncate(3);
 	temp.ToDouble(&version);
 	Log::info(S_FMT("OpenGL Version: %1.1f", version));

@@ -54,7 +54,7 @@
 // Adds [texture] to the overlay if it doesn't already exist at the target part
 // (front upper, etc)
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::addTexture(TexInfo& inf, string texture) const
+void LineTextureOverlay::addTexture(TexInfo& inf, wxString texture) const
 {
 	// Ignore if texture is blank ("-")
 	if (texture == "-")
@@ -279,7 +279,7 @@ void LineTextureOverlay::draw(int width, int height, float fade)
 // -----------------------------------------------------------------------------
 // Draws the texture box from info in [tex]
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const string& position) const
+void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const wxString& position) const
 {
 	// Get colours
 	ColRGBA col_bg  = ColourConfiguration::colour("map_overlay_background");
@@ -359,7 +359,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const 
 		Drawing::Align::Center);
 
 	// Determine texture name text
-	string str_texture;
+	wxString str_texture;
 	if (tex.textures.size() == 1)
 	{
 		auto& tex_info = OpenGL::Texture::info(tex_first);
@@ -429,7 +429,7 @@ void LineTextureOverlay::mouseRightClick() {}
 // -----------------------------------------------------------------------------
 // Called when a key is pressed
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::keyDown(const string& key)
+void LineTextureOverlay::keyDown(const wxString& key)
 {
 	// 'Select' front side
 	if ((key == "F" || key == "f") && side1_)
@@ -470,10 +470,10 @@ void LineTextureOverlay::keyDown(const string& key)
 // -----------------------------------------------------------------------------
 // Opens the texture browser for [tex]
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::browseTexture(TexInfo& tex, const string& position)
+void LineTextureOverlay::browseTexture(TexInfo& tex, const wxString& position)
 {
 	// Get initial texture
-	string texture;
+	wxString texture;
 	if (!tex.textures.empty())
 		texture = tex.textures[0];
 	else

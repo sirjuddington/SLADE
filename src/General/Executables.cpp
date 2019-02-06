@@ -61,7 +61,7 @@ vector<ExternalExe> external_exes;
 // -----------------------------------------------------------------------------
 // Returns the game executable definition for [id]
 // -----------------------------------------------------------------------------
-Executables::GameExe* Executables::gameExe(const string& id)
+Executables::GameExe* Executables::gameExe(const wxString& id)
 {
 	for (auto& exe : game_exes)
 		if (exe.id == id)
@@ -92,7 +92,7 @@ unsigned Executables::nGameExes()
 // -----------------------------------------------------------------------------
 // Sets the path of game executable [id] to [path]
 // -----------------------------------------------------------------------------
-void Executables::setGameExePath(string id, string path)
+void Executables::setGameExePath(wxString id, wxString path)
 {
 	exe_paths.emplace_back(id, path);
 }
@@ -100,9 +100,9 @@ void Executables::setGameExePath(string id, string path)
 // -----------------------------------------------------------------------------
 // Writes all game executable paths as a string (for slade3.cfg)
 // -----------------------------------------------------------------------------
-string Executables::writePaths()
+wxString Executables::writePaths()
 {
-	string ret;
+	wxString ret;
 
 	for (auto& exe : game_exes)
 		ret += S_FMT("\t%s \"%s\"\n", exe.id, StringUtils::escapedString(exe.path, true));
@@ -113,9 +113,9 @@ string Executables::writePaths()
 // -----------------------------------------------------------------------------
 // Writes all executable definitions as text
 // -----------------------------------------------------------------------------
-string Executables::writeExecutables()
+wxString Executables::writeExecutables()
 {
-	string ret = "executables\n{\n";
+	wxString ret = "executables\n{\n";
 
 	// Write game exes
 	for (auto& exe : game_exes)
@@ -146,7 +146,7 @@ string Executables::writeExecutables()
 		ret += S_FMT("\t\tcategory = \"%s\";\n", exe.category);
 
 		// Path
-		string path = exe.path;
+		wxString path = exe.path;
 		path.Replace("\\", "/");
 		ret += S_FMT("\t\tpath = \"%s\";\n", path);
 
@@ -195,8 +195,8 @@ void Executables::parse(Parser* p, bool custom)
 
 	for (unsigned a = 0; a < n->nChildren(); a++)
 	{
-		auto   exe_node = n->childPTN(a);
-		string type     = exe_node->type();
+		auto     exe_node = n->childPTN(a);
+		wxString type     = exe_node->type();
 
 		// Game Executable (if type is blank it's a game executable in old config format)
 		if (type == "game_exe" || type.IsEmpty())
@@ -227,8 +227,8 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 	exe->id = node->name();
 	for (unsigned b = 0; b < node->nChildren(); b++)
 	{
-		auto   prop      = node->childPTN(b);
-		string prop_name = prop->name().Lower();
+		auto     prop      = node->childPTN(b);
+		wxString prop_name = prop->name().Lower();
 
 		// Config
 		if (prop->type().Lower() == "config")
@@ -270,7 +270,7 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 // -----------------------------------------------------------------------------
 // Adds a new game executable definition for game [name]
 // -----------------------------------------------------------------------------
-void Executables::addGameExe(string name)
+void Executables::addGameExe(wxString name)
 {
 	GameExe game;
 	game.name = name;
@@ -302,7 +302,7 @@ bool Executables::removeGameExe(unsigned index)
 // -----------------------------------------------------------------------------
 // Adds a run configuration for game executable at [exe_index]
 // -----------------------------------------------------------------------------
-void Executables::addGameExeConfig(unsigned exe_index, string config_name, string config_params, bool custom)
+void Executables::addGameExeConfig(unsigned exe_index, wxString config_name, wxString config_params, bool custom)
 {
 	// Check index
 	if (exe_index >= game_exes.size())
@@ -340,7 +340,7 @@ bool Executables::removeGameExeConfig(unsigned exe_index, unsigned config_index)
 // Returns the number of external executables for [category], or all if
 // [category] is not specified
 // -----------------------------------------------------------------------------
-int Executables::nExternalExes(const string& category)
+int Executables::nExternalExes(const wxString& category)
 {
 	int num = 0;
 	for (auto& exe : external_exes)
@@ -354,7 +354,7 @@ int Executables::nExternalExes(const string& category)
 // Returns the external executable matching [name] and [category].
 // If [category] is empty, it is ignored
 // -----------------------------------------------------------------------------
-Executables::ExternalExe Executables::externalExe(const string& name, const string& category)
+Executables::ExternalExe Executables::externalExe(const wxString& name, const wxString& category)
 {
 	for (auto& exe : external_exes)
 		if (category.IsEmpty() || exe.category == category)
@@ -368,7 +368,7 @@ Executables::ExternalExe Executables::externalExe(const string& name, const stri
 // Returns a list of all external executables matching [category].
 // If [category] is empty, it is ignored
 // -----------------------------------------------------------------------------
-vector<Executables::ExternalExe> Executables::externalExes(const string& category)
+vector<Executables::ExternalExe> Executables::externalExes(const wxString& category)
 {
 	vector<ExternalExe> ret;
 	for (auto& exe : external_exes)
@@ -388,8 +388,8 @@ void Executables::parseExternalExe(ParseTreeNode* node)
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto   prop      = node->childPTN(a);
-		string prop_name = prop->name().Lower();
+		auto     prop      = node->childPTN(a);
+		wxString prop_name = prop->name().Lower();
 
 		// Entry category
 		if (prop_name == "category")
@@ -407,7 +407,7 @@ void Executables::parseExternalExe(ParseTreeNode* node)
 // Adds a new external executable, if one matching [name] and [category] doesn't
 // already exist
 // -----------------------------------------------------------------------------
-void Executables::addExternalExe(const string& name, const string& path, const string& category)
+void Executables::addExternalExe(const wxString& name, const wxString& path, const wxString& category)
 {
 	// Check it doesn't already exist
 	for (auto& exe : external_exes)
@@ -425,7 +425,7 @@ void Executables::addExternalExe(const string& name, const string& path, const s
 // Sets the name of the external executable matching [name_old] and [category]
 // to [name_new]
 // -----------------------------------------------------------------------------
-void Executables::setExternalExeName(const string& name_old, const string& name_new, const string& category)
+void Executables::setExternalExeName(const wxString& name_old, const wxString& name_new, const wxString& category)
 {
 	for (auto& exe : external_exes)
 		if (exe.name == name_old && exe.category == category)
@@ -439,7 +439,7 @@ void Executables::setExternalExeName(const string& name_old, const string& name_
 // Sets the path of the external executable matching [name] and [category] to
 // [path]
 // -----------------------------------------------------------------------------
-void Executables::setExternalExePath(const string& name, const string& path, const string& category)
+void Executables::setExternalExePath(const wxString& name, const wxString& path, const wxString& category)
 {
 	for (auto& exe : external_exes)
 		if (exe.name == name && exe.category == category)
@@ -452,7 +452,7 @@ void Executables::setExternalExePath(const string& name, const string& path, con
 // -----------------------------------------------------------------------------
 // Removes the external executable matching [name] and [category]
 // -----------------------------------------------------------------------------
-void Executables::removeExternalExe(const string& name, const string& category)
+void Executables::removeExternalExe(const wxString& name, const wxString& category)
 {
 	for (unsigned a = 0; a < external_exes.size(); a++)
 		if (external_exes[a].name == name && external_exes[a].category == category)

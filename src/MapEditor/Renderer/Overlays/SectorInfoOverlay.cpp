@@ -65,10 +65,10 @@ void SectorInfoOverlay::update(MapSector* sector)
 	if (!sector)
 		return;
 
-	string info_text;
+	wxString info_text;
 
 	// Info (index + type)
-	string type = S_FMT("%s (Type %d)", Game::configuration().sectorTypeName(sector->special()), sector->special());
+	wxString type = S_FMT("%s (Type %d)", Game::configuration().sectorTypeName(sector->special()), sector->special());
 	if (Global::debug)
 		info_text += S_FMT("Sector #%d (%d): %s\n", sector->index(), sector->objId(), type);
 	else
@@ -150,7 +150,7 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
 // -----------------------------------------------------------------------------
 // Draws a texture box with name underneath for [texture]
 // -----------------------------------------------------------------------------
-void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, const string& pos) const
+void SectorInfoOverlay::drawTexture(float alpha, int x, int y, wxString texture, const wxString& pos) const
 {
 	double scale        = (Drawing::fontSize() / 12.0);
 	int    tex_box_size = 80 * scale;

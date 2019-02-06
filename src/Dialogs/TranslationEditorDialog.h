@@ -34,10 +34,10 @@ class TranslationEditorDialog : public wxDialog
 {
 public:
 	TranslationEditorDialog(
-		wxWindow*      parent,
-		const Palette& pal,
-		const string&  title         = "Edit Translation",
-		SImage*        preview_image = nullptr);
+		wxWindow*       parent,
+		const Palette&  pal,
+		const wxString& title         = "Edit Translation",
+		SImage*         preview_image = nullptr);
 	~TranslationEditorDialog() = default;
 
 	Translation& getTranslation() { return translation_; }

@@ -10,8 +10,8 @@ class TextureXEditor;
 class PatchTableListView : public VirtualListView, Listener
 {
 protected:
-	string itemText(long item, long column, long index) const override;
-	void   updateItemAttr(long item, long column, long index) const override;
+	wxString itemText(long item, long column, long index) const override;
+	void     updateItemAttr(long item, long column, long index) const override;
 
 public:
 	PatchTableListView(wxWindow* parent, PatchTable* patch_table);
@@ -20,7 +20,7 @@ public:
 	PatchTable* patchTable() const { return patch_table_; }
 
 	void        updateList(bool clear = false) override;
-	void        onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
+	void        onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
 	static bool usageSort(long left, long right);
 	void        sortItems() override;
 
@@ -58,5 +58,5 @@ private:
 	void onBtnChangePatch(wxCommandEvent& e);
 	void onDisplayChanged(wxCommandEvent& e);
 	void updateDisplay();
-	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
 };

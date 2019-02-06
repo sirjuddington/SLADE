@@ -87,7 +87,7 @@ PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table
 // -----------------------------------------------------------------------------
 // Returns the string for [item] at [column]
 // -----------------------------------------------------------------------------
-string PatchTableListView::itemText(long item, long column, long index) const
+wxString PatchTableListView::itemText(long item, long column, long index) const
 {
 	// Check patch table exists
 	if (!patch_table_)
@@ -159,7 +159,7 @@ void PatchTableListView::updateList(bool clear)
 // -----------------------------------------------------------------------------
 // Handles announcements from the panel's PatchTable
 // -----------------------------------------------------------------------------
-void PatchTableListView::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void PatchTableListView::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	// Just refresh on any event from the patch table
 	if (announcer == patch_table_)
@@ -283,7 +283,7 @@ void PatchTablePanel::setupLayout()
 void PatchTablePanel::onBtnAddPatch(wxCommandEvent& e)
 {
 	// Prompt for new patch name
-	string patch = wxGetTextFromUser("Enter patch entry name:", "Add Patch", wxEmptyString, this);
+	wxString patch = wxGetTextFromUser("Enter patch entry name:", "Add Patch", wxEmptyString, this);
 
 	// Check something was entered
 	if (patch.IsEmpty())
@@ -306,7 +306,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 	auto etypes = EntryType::allTypes();
 
 	// Go through types
-	string ext_filter = "All files (*.*)|*.*|";
+	wxString ext_filter = "All files (*.*)|*.*|";
 	for (auto& etype : etypes)
 	{
 		// If the type is a valid image type, add its extension filter
@@ -356,7 +356,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 
 			// Ask for name for patch
 			wxFileName fn(file);
-			string     name = fn.GetName().Upper().Truncate(8);
+			wxString   name = fn.GetName().Upper().Truncate(8);
 			name = wxGetTextFromUser(S_FMT("Enter a patch name for %s:", fn.GetFullName()), "New Patch", name);
 			name = name.Truncate(8);
 
@@ -443,7 +443,7 @@ void PatchTablePanel::onBtnChangePatch(wxCommandEvent& e)
 		auto& patch = patch_table_->patch(index);
 
 		// Prompt for new patch name
-		string newname = wxGetTextFromUser("Enter new patch entry name:", "Change Patch", patch.name, this);
+		wxString newname = wxGetTextFromUser("Enter new patch entry name:", "Change Patch", patch.name, this);
 
 		// Update the patch if it's not the Cancel button that was clicked
 		if (newname.Length() > 0)
@@ -486,12 +486,12 @@ void PatchTablePanel::updateDisplay()
 	// List which textures use this patch
 	if (!patch.used_in.empty())
 	{
-		string alltextures = "";
-		int    count       = 0;
-		string previous    = "";
+		wxString alltextures = "";
+		int      count       = 0;
+		wxString previous    = "";
 		for (size_t a = 0; a < patch.used_in.size(); ++a)
 		{
-			string current = patch.used_in[a];
+			wxString current = patch.used_in[a];
 
 			// Is the use repeated for the same texture?
 			if (!current.CmpNoCase(previous))
@@ -549,7 +549,7 @@ void PatchTablePanel::onDisplayChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Handles any announcements
 // -----------------------------------------------------------------------------
-void PatchTablePanel::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void PatchTablePanel::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	if (announcer != theMainWindow->paletteChooser())
 		return;

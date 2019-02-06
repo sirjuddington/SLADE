@@ -106,7 +106,7 @@ MapEditorWindow::MapEditorWindow() : STopWindow{ "SLADE", "map" }
 	custom_menus_begin_ = 2;
 
 	// Set icon
-	string icon_filename = App::path(App::iconFile(), App::Dir::Temp);
+	wxString icon_filename = App::path(App::iconFile(), App::Dir::Temp);
 	App::archiveManager().programResourceArchive()->entry(App::iconFile())->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
@@ -139,8 +139,8 @@ void MapEditorWindow::loadLayout()
 	while (true)
 	{
 		// Read component+layout pair
-		string component = tz.getToken();
-		string layout    = tz.getToken();
+		wxString component = tz.getToken();
+		wxString layout    = tz.getToken();
 
 		// Load layout to component
 		if (!component.IsEmpty() && !layout.IsEmpty())
@@ -165,7 +165,7 @@ void MapEditorWindow::saveLayout()
 
 	// Console pane
 	file.Write("\"console\" ");
-	string pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("console"));
+	wxString pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("console"));
 	file.Write(S_FMT("\"%s\"\n", pinf));
 
 	// Item info pane
@@ -721,13 +721,13 @@ void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
 void MapEditorWindow::buildNodes(Archive* wad)
 {
 	// Save wad to disk
-	string filename = App::path("sladetemp.wad", App::Dir::Temp);
+	wxString filename = App::path("sladetemp.wad", App::Dir::Temp);
 	wad->save(filename);
 
 	// Get current nodebuilder
-	auto   builder = NodeBuilders::builder(nodebuilder_id);
-	string command = builder.command;
-	string options = nodebuilder_options;
+	auto     builder = NodeBuilders::builder(nodebuilder_id);
+	wxString command = builder.command;
+	wxString options = nodebuilder_options;
 
 	// Don't build if none selected
 	if (builder.id == "none")
@@ -790,7 +790,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 // -----------------------------------------------------------------------------
 // Writes the current map as [name] to a wad archive and returns it
 // -----------------------------------------------------------------------------
-bool MapEditorWindow::writeMap(WadArchive& wad, const string& name, bool nodes)
+bool MapEditorWindow::writeMap(WadArchive& wad, const wxString& name, bool nodes)
 {
 	auto& mdesc_current = MapEditor::editContext().mapDesc();
 	auto& map           = MapEditor::editContext().map();
@@ -1116,7 +1116,7 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool MapEditorWindow::handleAction(const string& id)
+bool MapEditorWindow::handleAction(const wxString& id)
 {
 	auto& mdesc_current = MapEditor::editContext().mapDesc();
 
@@ -1323,11 +1323,11 @@ bool MapEditorWindow::handleAction(const string& id)
 			if (dlg.start3dModeChecked() || id == "mapw_run_map_here")
 				MapEditor::editContext().resetPlayerStart();
 
-			string command = dlg.selectedCommandLine(archive, mdesc_current.name, wad.filename());
+			wxString command = dlg.selectedCommandLine(archive, mdesc_current.name, wad.filename());
 			if (!command.IsEmpty())
 			{
 				// Set working directory
-				string wd = wxGetCwd();
+				wxString wd = wxGetCwd();
 				wxSetWorkingDirectory(dlg.selectedExeDir());
 
 				// Run

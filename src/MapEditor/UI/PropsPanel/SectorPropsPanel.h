@@ -15,13 +15,13 @@ public:
 	FlatTexCanvas(wxWindow* parent);
 	~FlatTexCanvas() = default;
 
-	string texName() const { return texname_; }
-	void   setTexture(const string& texture);
-	void   draw() override;
+	wxString texName() const { return texname_; }
+	void     setTexture(const wxString& texture);
+	void     draw() override;
 
 private:
 	unsigned texture_ = 0;
-	string   texname_;
+	wxString texname_;
 };
 
 class FlatComboBox : public wxComboBox

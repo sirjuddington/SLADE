@@ -90,7 +90,7 @@ bool GZipArchive::open(MemChunk& mc)
 	}
 
 	// Skip past name, if any
-	string name;
+	wxString name;
 	if (fname)
 	{
 		char c;
@@ -261,7 +261,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 // -----------------------------------------------------------------------------
 // Renames the entry and set the fname flag
 // -----------------------------------------------------------------------------
-bool GZipArchive::renameEntry(ArchiveEntry* entry, const string& name)
+bool GZipArchive::renameEntry(ArchiveEntry* entry, const wxString& name)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -433,8 +433,8 @@ bool GZipArchive::isGZipArchive(MemChunk& mc)
 	// Skip past name, if any
 	if (fname)
 	{
-		string name;
-		char   c;
+		wxString name;
+		char     c;
 		do
 		{
 			mc.read(&c, 1);
@@ -447,8 +447,8 @@ bool GZipArchive::isGZipArchive(MemChunk& mc)
 	// Skip past comment
 	if (fcmnt)
 	{
-		string comment;
-		char   c;
+		wxString comment;
+		char     c;
 		do
 		{
 			mc.read(&c, 1);
@@ -477,7 +477,7 @@ bool GZipArchive::isGZipArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid GZip archive
 // -----------------------------------------------------------------------------
-bool GZipArchive::isGZipArchive(const string& filename)
+bool GZipArchive::isGZipArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -531,8 +531,8 @@ bool GZipArchive::isGZipArchive(const string& filename)
 	// Skip past name
 	if (fname)
 	{
-		string name;
-		char   c;
+		wxString name;
+		char     c;
 		do
 		{
 			file.Read(&c, 1);
@@ -545,8 +545,8 @@ bool GZipArchive::isGZipArchive(const string& filename)
 	// Skip past comment
 	if (fcmnt)
 	{
-		string comment;
-		char   c;
+		wxString comment;
+		char     c;
 		do
 		{
 			file.Read(&c, 1);

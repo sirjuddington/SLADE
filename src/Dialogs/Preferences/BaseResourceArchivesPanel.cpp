@@ -62,7 +62,7 @@ namespace
 // registry key into the reference, and returns true if the value actually
 // exists and isn't an empty string.
 // -----------------------------------------------------------------------------
-bool QueryPathKey(wxRegKey::StdKey hkey, const string& path, const string& variable, string& value)
+bool QueryPathKey(wxRegKey::StdKey hkey, const wxString& path, const wxString& variable, wxString& value)
 {
 	wxRegKey key(hkey, path);
 	key.QueryValue(variable, value);
@@ -148,7 +148,7 @@ void BaseResourceArchivesPanel::autodetect() const
 
 	// Find IWADs from DOOMWADDIR and DOOMWADPATH
 	// See http://doomwiki.org/wiki/Environment_variables
-	string doomwaddir, doomwadpath, envvar;
+	wxString doomwaddir, doomwadpath, envvar;
 	envvar = "DOOMWADDIR";
 	wxGetEnv(envvar, &doomwaddir);
 	envvar = "DOOMWADPATH";
@@ -178,7 +178,7 @@ void BaseResourceArchivesPanel::autodetect() const
 				folder += '/';
 			for (const auto& iwadname : iwadnames)
 			{
-				string iwad = folder + iwadname;
+				wxString iwad = folder + iwadname;
 #ifndef WIN32
 				// Try a couple variants before throwing the towel about a name
 				if (!wxFileExists(iwad))
@@ -202,8 +202,8 @@ void BaseResourceArchivesPanel::autodetect() const
 
 	// Let's take a look at the registry
 	wxArrayString paths;
-	string        path;
-	string        gamepath;
+	wxString      path;
+	wxString      gamepath;
 
 	// Now query GOG.com paths -- Windows only for now
 #ifdef __WXMSW__
@@ -213,7 +213,7 @@ void BaseResourceArchivesPanel::autodetect() const
 	// If a 32-bit ZDoom runs on a 64-bit Windows, this will be transparently and
 	// automatically redirected to the Wow6432Node address instead, so this address
 	// should be safe to use in all cases.
-	string gogregistrypath = "Software\\GOG.com";
+	wxString gogregistrypath = "Software\\GOG.com";
 #endif
 	if (QueryPathKey(wxRegKey::HKLM, gogregistrypath, "DefaultPackPath", path))
 	{
@@ -303,7 +303,7 @@ void BaseResourceArchivesPanel::applyPreferences()
 void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e)
 {
 	// Create extensions string
-	string extensions = App::archiveManager().getArchiveExtensionsString();
+	wxString extensions = App::archiveManager().getArchiveExtensionsString();
 
 	// Open a file browser dialog that allows multiple selection
 	wxFileDialog dialog_open(

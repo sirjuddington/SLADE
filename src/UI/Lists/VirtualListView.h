@@ -36,7 +36,7 @@ public:
 	virtual void updateList(bool clear = false);
 
 	// Label editing
-	virtual void labelEdited(int col, int index, const string& new_label) {}
+	virtual void labelEdited(int col, int index, const wxString& new_label) {}
 
 	// Filtering
 	long         itemIndex(long item) const;
@@ -60,17 +60,17 @@ protected:
 	int          sort_column_   = -1;
 	bool         sort_descend_  = false;
 	int          filter_column_ = -1;
-	string       filter_text_;
+	wxString     filter_text_;
 
 	static VirtualListView* lv_current_;
 
-	virtual string itemText(long item, long column, long index) const { return "UNDEFINED"; }
-	virtual int    itemIcon(long item, long column, long index) const { return -1; }
-	virtual void   updateItemAttr(long item, long column, long index) const {}
+	virtual wxString itemText(long item, long column, long index) const { return "UNDEFINED"; }
+	virtual int      itemIcon(long item, long column, long index) const { return -1; }
+	virtual void     updateItemAttr(long item, long column, long index) const {}
 
 	// Virtual wxListCtrl overrides
-	string OnGetItemText(long item, long column) const override { return itemText(item, column, itemIndex(item)); }
-	int    OnGetItemImage(long item) const override { return itemIcon(item, 0, itemIndex(item)); }
+	wxString OnGetItemText(long item, long column) const override { return itemText(item, column, itemIndex(item)); }
+	int      OnGetItemImage(long item) const override { return itemIcon(item, 0, itemIndex(item)); }
 	int OnGetItemColumnImage(long item, long column) const override { return itemIcon(item, column, itemIndex(item)); }
 
 	wxListItemAttr* OnGetItemAttr(long item) const override
@@ -98,11 +98,11 @@ protected:
 	void onItemSelected(wxListEvent& e);
 
 private:
-	string search_;
-	long   last_focus_         = 0;
-	int    col_search_         = 0;
-	bool   cols_editable_[100] = {}; // Never really going to have more than 100 columns
-	bool   selection_updating_ = false;
+	wxString search_;
+	long     last_focus_         = 0;
+	int      col_search_         = 0;
+	bool     cols_editable_[100] = {}; // Never really going to have more than 100 columns
+	bool     selection_updating_ = false;
 
 	void sendSelectionChangedEvent();
 };

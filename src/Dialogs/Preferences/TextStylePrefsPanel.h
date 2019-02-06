@@ -26,7 +26,7 @@ public:
 	void init() override;
 	void applyPreferences() override;
 
-	string pageTitle() override { return "Text Editor Fonts && Colours"; }
+	wxString pageTitle() override { return "Text Editor Fonts && Colours"; }
 
 private:
 	bool              init_done_        = false;

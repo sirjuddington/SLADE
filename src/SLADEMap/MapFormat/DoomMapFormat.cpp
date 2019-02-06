@@ -252,12 +252,7 @@ bool DoomMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 
 		// Create line
 		auto line = map_data.addLine(std::make_unique<MapLine>(
-			v1,
-			v2,
-			map_data.sides().at(s1_index),
-			map_data.sides().at(s2_index),
-			data.type,
-			data.flags));
+			v1, v2, map_data.sides().at(s1_index), map_data.sides().at(s2_index), data.type, data.flags));
 
 		// Set properties
 		line->setArg(0, data.sector_tag);

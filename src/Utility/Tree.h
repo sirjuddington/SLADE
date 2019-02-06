@@ -14,17 +14,17 @@ public:
 	void allowDup(bool dup) { allow_dup_child_ = dup; }
 	bool allowDup() const { return allow_dup_child_; }
 
-	STreeNode*     parent() const { return parent_; }
-	virtual string name()               = 0;
-	virtual void   setName(string name) = 0;
-	virtual string path();
+	STreeNode*       parent() const { return parent_; }
+	virtual wxString name()                 = 0;
+	virtual void     setName(wxString name) = 0;
+	virtual wxString path();
 
 	unsigned                   nChildren() const { return children_.size(); }
 	STreeNode*                 child(unsigned index);
-	virtual STreeNode*         child(string name);
-	virtual vector<STreeNode*> children(string name);
+	virtual STreeNode*         child(wxString name);
+	virtual vector<STreeNode*> children(wxString name);
 	virtual void               addChild(STreeNode* child);
-	virtual STreeNode*         addChild(string name);
+	virtual STreeNode*         addChild(wxString name);
 	virtual bool               removeChild(STreeNode* child);
 	const vector<STreeNode*>&  allChildren() const { return children_; }
 
@@ -35,5 +35,5 @@ protected:
 	STreeNode*         parent_;
 	bool               allow_dup_child_;
 
-	virtual STreeNode* createChild(string name) = 0;
+	virtual STreeNode* createChild(wxString name) = 0;
 };

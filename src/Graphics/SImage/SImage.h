@@ -52,15 +52,15 @@ public:
 
 	struct Info
 	{
-		int    width;
-		int    height;
-		Type   colformat;
-		string format;
-		int    numimages;
-		int    imgindex;
-		int    offset_x;
-		int    offset_y;
-		bool   has_palette;
+		int      width;
+		int      height;
+		Type     colformat;
+		wxString format;
+		int      numimages;
+		int      imgindex;
+		int      offset_x;
+		int      offset_y;
+		bool     has_palette;
 
 		Info()
 		{
@@ -117,7 +117,7 @@ public:
 	bool   copyImage(SImage* image);
 
 	// Image format reading
-	bool open(MemChunk& data, int index = 0, const string& type_hint = "");
+	bool open(MemChunk& data, int index = 0, const wxString& type_hint = "");
 	bool loadFont0(const uint8_t* gfx_data, int size);
 	bool loadFont1(const uint8_t* gfx_data, int size);
 	bool loadFont2(const uint8_t* gfx_data, int size);
@@ -147,7 +147,7 @@ public:
 	bool resize(int nwidth, int nheight);
 	bool setImageData(const vector<uint8_t>& ndata, int nwidth, int nheight, Type ntype);
 	bool applyTranslation(Translation* tr, Palette* pal = nullptr, bool truecolor = false);
-	bool applyTranslation(const string& tr, Palette* pal = nullptr, bool truecolor = false);
+	bool applyTranslation(const wxString& tr, Palette* pal = nullptr, bool truecolor = false);
 	bool drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Palette* pal);
 	bool drawImage(
 		SImage&    img,

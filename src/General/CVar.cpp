@@ -66,7 +66,7 @@ void addCVarList(CVar* cvar)
 // -----------------------------------------------------------------------------
 // Finds a CVar by name
 // -----------------------------------------------------------------------------
-CVar* CVar::get(const string& name)
+CVar* CVar::get(const wxString& name)
 {
 	for (uint16_t c = 0; c < n_cvars; c++)
 	{
@@ -80,7 +80,7 @@ CVar* CVar::get(const string& name)
 // -----------------------------------------------------------------------------
 // Adds all cvar names to a vector of strings
 // -----------------------------------------------------------------------------
-void CVar::putList(vector<string>& list)
+void CVar::putList(vector<wxString>& list)
 {
 	for (uint16_t c = 0; c < n_cvars; c++)
 	{
@@ -124,7 +124,7 @@ void CVar::saveToFile(wxFile& file)
 
 			if (cvars[c]->type == Type::String)
 			{
-				string value = ((CStringCVar*)cvars[c])->value;
+				wxString value = ((CStringCVar*)cvars[c])->value;
 				value.Replace("\\", "/");
 				value.Replace("\"", "\\\"");
 				file.Write(S_FMT("\"%s\"\n", value), wxConvUTF8);
@@ -139,7 +139,7 @@ void CVar::saveToFile(wxFile& file)
 // Reads [value] into the CVar with matching [name],
 // or does nothing if no CVar [name] exists
 // -----------------------------------------------------------------------------
-void CVar::set(const string& name, const string& value)
+void CVar::set(const wxString& name, const wxString& value)
 {
 	for (uint16_t c = 0; c < n_cvars; c++)
 	{
@@ -171,7 +171,7 @@ void CVar::set(const string& name, const string& value)
 // -----------------------------------------------------------------------------
 // CIntCVar class constructor
 // -----------------------------------------------------------------------------
-CIntCVar::CIntCVar(const string& NAME, int defval, uint16_t FLAGS)
+CIntCVar::CIntCVar(const wxString& NAME, int defval, uint16_t FLAGS)
 {
 	name  = NAME;
 	flags = FLAGS;
@@ -183,7 +183,7 @@ CIntCVar::CIntCVar(const string& NAME, int defval, uint16_t FLAGS)
 // -----------------------------------------------------------------------------
 // CBoolCVar class constructor
 // -----------------------------------------------------------------------------
-CBoolCVar::CBoolCVar(const string& NAME, bool defval, uint16_t FLAGS)
+CBoolCVar::CBoolCVar(const wxString& NAME, bool defval, uint16_t FLAGS)
 {
 	name  = NAME;
 	flags = FLAGS;
@@ -195,7 +195,7 @@ CBoolCVar::CBoolCVar(const string& NAME, bool defval, uint16_t FLAGS)
 // -----------------------------------------------------------------------------
 // CFloatCVar class constructor
 // -----------------------------------------------------------------------------
-CFloatCVar::CFloatCVar(const string& NAME, double defval, uint16_t FLAGS)
+CFloatCVar::CFloatCVar(const wxString& NAME, double defval, uint16_t FLAGS)
 {
 	name  = NAME;
 	flags = FLAGS;
@@ -207,7 +207,7 @@ CFloatCVar::CFloatCVar(const string& NAME, double defval, uint16_t FLAGS)
 // -----------------------------------------------------------------------------
 // CStringCVar class constructor
 // -----------------------------------------------------------------------------
-CStringCVar::CStringCVar(const string& NAME, const string& defval, uint16_t FLAGS)
+CStringCVar::CStringCVar(const wxString& NAME, const wxString& defval, uint16_t FLAGS)
 {
 	name  = NAME;
 	flags = FLAGS;

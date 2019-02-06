@@ -138,8 +138,8 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 		tz.openMem(udmfdata->data(), map.head->name());
 
 		// Get first token
-		string token       = tz.getToken();
-		size_t vertcounter = 0, linecounter = 0, thingcounter = 0;
+		wxString token       = tz.getToken();
+		size_t   vertcounter = 0, linecounter = 0, thingcounter = 0;
 		while (!token.IsEmpty())
 		{
 			if (!token.CmpNoCase("namespace"))

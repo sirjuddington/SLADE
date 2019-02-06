@@ -10,12 +10,12 @@ class PatchTable : public Announcer
 public:
 	struct Patch
 	{
-		string         name;
-		vector<string> used_in;
+		wxString         name;
+		vector<wxString> used_in;
 
-		Patch(const string& name) : name{ name } {}
+		Patch(const wxString& name) : name{ name } {}
 
-		void removeTextureUsage(const string& texture)
+		void removeTextureUsage(const wxString& texture)
 		{
 			for (unsigned a = 0; a < used_in.size(); a++)
 			{
@@ -36,15 +36,15 @@ public:
 	void     setParent(Archive* parent) { this->parent_ = parent; }
 
 	Patch&        patch(size_t index);
-	Patch&        patch(const string& name);
-	string        patchName(size_t index);
+	Patch&        patch(const wxString& name);
+	wxString      patchName(size_t index);
 	ArchiveEntry* patchEntry(size_t index);
-	ArchiveEntry* patchEntry(const string& name);
-	int32_t       patchIndex(const string& name);
+	ArchiveEntry* patchEntry(const wxString& name);
+	int32_t       patchIndex(const wxString& name);
 	int32_t       patchIndex(ArchiveEntry* entry);
 	bool          removePatch(unsigned index);
-	bool          replacePatch(unsigned index, const string& newname);
-	bool          addPatch(const string& name, bool allow_dup = false);
+	bool          replacePatch(unsigned index, const wxString& newname);
+	bool          addPatch(const wxString& name, bool allow_dup = false);
 
 	bool loadPNAMES(ArchiveEntry* pnames, Archive* parent = nullptr);
 	bool writePNAMES(ArchiveEntry* pnames);

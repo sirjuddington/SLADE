@@ -57,7 +57,7 @@ vector<std::unique_ptr<SBrush>> brushes;
 // -----------------------------------------------------------------------------
 // SBrush class constructor
 // -----------------------------------------------------------------------------
-SBrush::SBrush(const string& name) : name_{ name }, icon_{ name.AfterFirst('_') }
+SBrush::SBrush(const wxString& name) : name_{ name }, icon_{ name.AfterFirst('_') }
 {
 	auto res = App::archiveManager().programResourceArchive();
 	if (res == nullptr)
@@ -103,7 +103,7 @@ uint8_t SBrush::pixel(int x, int y) const
 // -----------------------------------------------------------------------------
 // Get a brush from its name
 // -----------------------------------------------------------------------------
-SBrush* SBrush::get(const string& name)
+SBrush* SBrush::get(const wxString& name)
 {
 	for (auto& brush : brushes)
 		if (S_CMPNOCASE(name, brush->name()))

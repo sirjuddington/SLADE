@@ -78,13 +78,13 @@ std::thread::id main_thread_id;
 Version version_num{ 3, 2, 0, 1 };
 
 // Directory paths
-string dir_data = "";
-string dir_user = "";
-string dir_app  = "";
-string dir_res  = "";
-string dir_temp = "";
+wxString dir_data = "";
+wxString dir_user = "";
+wxString dir_app  = "";
+wxString dir_res  = "";
+wxString dir_temp = "";
 #ifdef WIN32
-string dir_separator = "\\";
+wxString dir_separator = "\\";
 #else
 string dir_separator = "/";
 #endif
@@ -143,9 +143,9 @@ int App::Version::cmp(const Version& rhs) const
 // ----------------------------------------------------------------------------
 // Returns a string representation of the version (eg. "3.2.1 beta 4")
 // ----------------------------------------------------------------------------
-string App::Version::toString() const
+wxString App::Version::toString() const
 {
-	string vers = S_FMT("%lu.%lu.%lu", major, minor, revision);
+	wxString vers = S_FMT("%lu.%lu.%lu", major, minor, revision);
 	if (beta > 0)
 		vers += S_FMT(" beta %lu", beta);
 	return vers;
@@ -313,9 +313,9 @@ void readConfigFile()
 // -----------------------------------------------------------------------------
 // Processes command line [args]
 // -----------------------------------------------------------------------------
-vector<string> processCommandLine(vector<string>& args)
+vector<wxString> processCommandLine(vector<wxString>& args)
 {
-	vector<string> to_open;
+	vector<wxString> to_open;
 
 	// Process command line args (except the first as it is normally the executable name)
 	for (auto& arg : args)
@@ -411,7 +411,7 @@ bool App::isExiting()
 // -----------------------------------------------------------------------------
 // Application initialisation
 // -----------------------------------------------------------------------------
-bool App::init(vector<string>& args, double ui_scale)
+bool App::init(vector<wxString>& args, double ui_scale)
 {
 	// Get the id of the current thread (should be the main one)
 	main_thread_id = std::this_thread::get_id();
@@ -428,7 +428,7 @@ bool App::init(vector<string>& args, double ui_scale)
 	Log::init();
 
 	// Process the command line arguments
-	vector<string> paths_to_open = processCommandLine(args);
+	vector<wxString> paths_to_open = processCommandLine(args);
 
 	// Init keybinds
 	KeyBind::initBinds();
@@ -575,7 +575,7 @@ void App::saveConfigFile()
 	file.Write("\nbase_resource_paths\n{\n");
 	for (size_t a = 0; a < archive_manager.numBaseResourcePaths(); a++)
 	{
-		string path = archive_manager.getBaseResourcePath(a);
+		wxString path = archive_manager.getBaseResourcePath(a);
 		path.Replace("\\", "/");
 		file.Write(S_FMT("\t\"%s\"\n", path), wxConvUTF8);
 	}
@@ -585,7 +585,7 @@ void App::saveConfigFile()
 	file.Write("\nrecent_files\n{\n");
 	for (int a = archive_manager.numRecentFiles() - 1; a >= 0; a--)
 	{
-		string path = archive_manager.recentFile(a);
+		wxString path = archive_manager.recentFile(a);
 		path.Replace("\\", "/");
 		file.Write(S_FMT("\t\"%s\"\n", path), wxConvUTF8);
 	}
@@ -659,8 +659,8 @@ void App::exit(bool save_config)
 	// Clear temp folder
 	wxDir temp;
 	temp.Open(App::path("", App::Dir::Temp));
-	string filename = wxEmptyString;
-	bool   files    = temp.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
+	wxString filename = wxEmptyString;
+	bool     files    = temp.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
 	while (files)
 	{
 		if (!wxRemoveFile(App::path(filename, App::Dir::Temp)))
@@ -695,7 +695,7 @@ const App::Version& App::version()
 // App::Dir::Executable: Directory of the SLADE executable
 // App::Dir::Temp: Temporary files directory
 // -----------------------------------------------------------------------------
-string App::path(const string& filename, Dir dir)
+wxString App::path(const wxString& filename, Dir dir)
 {
 	if (dir == Dir::Data)
 		return dir_data + dir_separator + filename;
@@ -742,9 +742,9 @@ bool App::useSFMLRenderWindow()
 #endif
 }
 
-const string& App::iconFile()
+const wxString& App::iconFile()
 {
-	static string icon = "slade.ico";
+	static wxString icon = "slade.ico";
 	return icon;
 }
 

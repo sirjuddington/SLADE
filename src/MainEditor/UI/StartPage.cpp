@@ -175,15 +175,15 @@ void SStartPage::load(bool new_tip)
 	}
 
 	// Get html as string
-	string html = wxString::FromAscii((const char*)(entry_base_html_->rawData()), entry_base_html_->size());
+	wxString html = wxString::FromAscii((const char*)(entry_base_html_->rawData()), entry_base_html_->size());
 
 	// Read css
-	string css;
+	wxString css;
 	if (entry_css_)
 		css = wxString::FromAscii((const char*)(entry_css_->rawData()), entry_css_->size());
 
 	// Generate tip of the day string
-	string tip;
+	wxString tip;
 	if (tips_.size() < 2) // Needs at least two choices or it's kinda pointless.
 		tip = "Did you know? Something is wrong with the tips.txt file in your slade.pk3.";
 	else
@@ -203,7 +203,7 @@ void SStartPage::load(bool new_tip)
 	}
 
 	// Generate recent files string
-	string recent;
+	wxString recent;
 	if (App::archiveManager().numRecentFiles() > 0)
 	{
 		for (unsigned a = 0; a < 12; a++)
@@ -212,8 +212,8 @@ void SStartPage::load(bool new_tip)
 				break; // No more recent files
 
 			// Determine icon
-			string fn   = App::archiveManager().recentFile(a);
-			string icon = "archive";
+			wxString fn   = App::archiveManager().recentFile(a);
+			wxString icon = "archive";
 			if (fn.EndsWith(".wad"))
 				icon = "wad";
 			else if (fn.EndsWith(".zip") || fn.EndsWith(".pk3") || fn.EndsWith(".pke"))
@@ -249,8 +249,8 @@ void SStartPage::load(bool new_tip)
 	// Write html and images to temp folder
 	for (auto& a : entry_export_)
 		a->exportFile(App::path(a->name(), App::Dir::Temp));
-	string html_file = App::path("startpage.htm", App::Dir::Temp);
-	wxFile outfile(html_file, wxFile::write);
+	wxString html_file = App::path("startpage.htm", App::Dir::Temp);
+	wxFile   outfile(html_file, wxFile::write);
 	outfile.Write(html);
 	outfile.Close();
 
@@ -364,7 +364,7 @@ void SStartPage::refresh() const
 // -----------------------------------------------------------------------------
 // Updates the start page to show that an update to [version_name] is available
 // -----------------------------------------------------------------------------
-void SStartPage::updateAvailable(const string& version_name)
+void SStartPage::updateAvailable(const wxString& version_name)
 {
 	update_version_ = version_name;
 	load(false);
@@ -379,8 +379,8 @@ void SStartPage::updateAvailable(const string& version_name)
 // -----------------------------------------------------------------------------
 void SStartPage::onHTMLLinkClicked(wxEvent& e)
 {
-	auto&  ev   = dynamic_cast<wxWebViewEvent&>(e);
-	string href = ev.GetURL();
+	auto&    ev   = dynamic_cast<wxWebViewEvent&>(e);
+	wxString href = ev.GetURL();
 
 #ifdef __WXGTK__
 	if (!href.EndsWith("startpage.htm"))
@@ -398,7 +398,7 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 	else if (href.StartsWith("recent://"))
 	{
 		// Recent file
-		string        rs    = href.Mid(9);
+		wxString      rs    = href.Mid(9);
 		unsigned long index = 0;
 		rs.ToULong(&index);
 		SActionHandler::setWxIdOffset(index);

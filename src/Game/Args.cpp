@@ -49,15 +49,15 @@ namespace
 // Returns a string representation of [value] for a 'custom flags' type
 // arg, given [custom_flags]
 // -----------------------------------------------------------------------------
-string customFlags(int value, const vector<ArgValue>& custom_flags)
+wxString customFlags(int value, const vector<ArgValue>& custom_flags)
 {
 	// This has to go in REVERSE order to correctly handle multi-bit
 	// enums (so we see 3 before 1 and 2)
-	vector<string> flags;
-	size_t         final_length   = 0;
-	int            last_group     = 0;
-	int            original_value = value;
-	bool           has_flag;
+	vector<wxString> flags;
+	size_t           final_length   = 0;
+	int              last_group     = 0;
+	int              original_value = value;
+	bool             has_flag;
 	for (auto it = custom_flags.rbegin(); it != custom_flags.rend(); ++it)
 	{
 		if ((it->value & (it->value - 1)) != 0)
@@ -83,7 +83,7 @@ string customFlags(int value, const vector<ArgValue>& custom_flags)
 		flags.push_back(S_FMT("%d", value));
 
 	// Join 'em, in reverse again, to restore the original order
-	string out;
+	wxString out;
 	out.Alloc(final_length);
 	auto it = flags.rbegin();
 	while (true)
@@ -109,7 +109,7 @@ string customFlags(int value, const vector<ArgValue>& custom_flags)
 // -----------------------------------------------------------------------------
 // Returns a string representation of [value] depending on the arg's type
 // -----------------------------------------------------------------------------
-string Arg::valueString(int value) const
+wxString Arg::valueString(int value) const
 {
 	switch (type)
 	{
@@ -135,7 +135,7 @@ string Arg::valueString(int value) const
 	// Speed
 	case Speed:
 	{
-		string speed_label = speedLabel(value);
+		wxString speed_label = speedLabel(value);
 		if (speed_label.empty())
 			return S_FMT("%d", value);
 		else
@@ -152,7 +152,7 @@ string Arg::valueString(int value) const
 // -----------------------------------------------------------------------------
 // Returns a string representation of speed [value]
 // -----------------------------------------------------------------------------
-string Arg::speedLabel(int value) const
+wxString Arg::speedLabel(int value) const
 {
 	// Speed can optionally have a set of predefined values, most taken
 	// from the Boom generalized values
@@ -183,8 +183,8 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 	// Check for simple definition
 	if (node->isLeaf())
 	{
-		string name = node->stringValue();
-		string shared_arg_name;
+		wxString name = node->stringValue();
+		wxString shared_arg_name;
 
 		// Names beginning with a dollar sign are references to predeclared args
 		if (shared_args && name.StartsWith("$", &shared_arg_name))
@@ -222,7 +222,7 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 
 		// Type
 		val = node->childPTN("type");
-		string atype;
+		wxString atype;
 		if (val)
 			atype = val->stringValue();
 		if (S_CMPNOCASE(atype, "yesno"))
@@ -268,9 +268,9 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 // -----------------------------------------------------------------------------
 // Returns a string representation of [values] depending on the spec arg types
 // -----------------------------------------------------------------------------
-string ArgSpec::stringDesc(const int values[5], string values_str[2]) const
+wxString ArgSpec::stringDesc(const int values[5], wxString values_str[2]) const
 {
-	string ret;
+	wxString ret;
 
 	// Add each arg to the string
 	for (unsigned a = 0; a < 5; a++)

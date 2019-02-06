@@ -724,7 +724,7 @@ public:
 				if ((mc[24] + (mc[25] << 8)) == validity)
 				{
 					// Lastly, check for header text
-					string header(wxString::FromAscii(mc.data(), 19));
+					auto header(wxString::FromAscii(mc.data(), 19));
 					if (header == "Creative Voice File")
 						return MATCH_TRUE;
 				}

@@ -47,7 +47,7 @@ wxDEFINE_EVENT(wxEVT_THREAD_WEBGET_COMPLETED, wxThreadEvent);
 // -----------------------------------------------------------------------------
 // Gets a response via http from [host]/[url] (blocking)
 // -----------------------------------------------------------------------------
-string Web::getHttp(const char* host, const char* uri)
+wxString Web::getHttp(const char* host, const char* uri)
 {
 	// Setup connection & request
 	sf::Http          http(host);

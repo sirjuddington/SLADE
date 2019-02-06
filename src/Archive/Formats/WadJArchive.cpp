@@ -308,14 +308,14 @@ bool WadJArchive::write(MemChunk& mc, bool update)
 // -----------------------------------------------------------------------------
 // Hack to account for Jaguar Doom's silly sprite scheme
 // -----------------------------------------------------------------------------
-string WadJArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
+wxString WadJArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
 {
 	auto nextentry = entryAt(index + 1);
 	if (nextentry && S_CMPNOCASE(nextentry->name(), "."))
 		return "sprites";
 	return WadArchive::detectNamespace(index);
 }
-string WadJArchive::detectNamespace(ArchiveEntry* entry)
+wxString WadJArchive::detectNamespace(ArchiveEntry* entry)
 {
 	size_t index     = entryIndex(entry);
 	auto   nextentry = entryAt(index + 1);
@@ -362,7 +362,7 @@ bool WadJArchive::isWadJArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Jaguar Doom wad archive
 // -----------------------------------------------------------------------------
-bool WadJArchive::isWadJArchive(const string& filename)
+bool WadJArchive::isWadJArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

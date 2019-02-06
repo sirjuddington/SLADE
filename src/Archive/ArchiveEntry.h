@@ -33,25 +33,25 @@ public:
 	typedef std::weak_ptr<ArchiveEntry>   WPtr;
 
 	// Constructor/Destructor
-	ArchiveEntry(const string& name = "", uint32_t size = 0);
+	ArchiveEntry(const wxString& name = "", uint32_t size = 0);
 	ArchiveEntry(ArchiveEntry& copy);
 	~ArchiveEntry() = default;
 
 	// Accessors
-	string              name(bool cut_ext = false) const;
-	string              upperName() const { return upper_name_; }
-	string              upperNameNoExt() const;
+	wxString            name(bool cut_ext = false) const;
+	wxString            upperName() const { return upper_name_; }
+	wxString            upperNameNoExt() const;
 	uint32_t            size() const { return data_loaded_ ? data_.size() : size_; }
 	MemChunk&           data(bool allow_load = true);
 	const uint8_t*      rawData(bool allow_load = true);
 	ArchiveTreeNode*    parentDir() const { return parent_; }
 	Archive*            parent() const;
 	Archive*            topParent() const;
-	string              path(bool name = false) const;
+	wxString            path(bool name = false) const;
 	EntryType*          type() const { return type_; }
 	PropertyList&       exProps() { return ex_props_; }
 	const PropertyList& exProps() const { return ex_props_; }
-	Property&           exProp(const string& key) { return ex_props_[key]; }
+	Property&           exProp(const wxString& key) { return ex_props_[key]; }
 	State               state() const { return state_; }
 	bool                isLocked() const { return locked_; }
 	bool                isLoaded() const { return data_loaded_; }
@@ -61,7 +61,7 @@ public:
 	SPtr                getShared();
 
 	// Modifiers (won't change entry state, except setState of course :P)
-	void setName(const string& name)
+	void setName(const wxString& name)
 	{
 		name_       = name;
 		upper_name_ = name.Upper();
@@ -82,7 +82,7 @@ public:
 	void formatName(const ArchiveFormat& format);
 
 	// Entry modification (will change entry state)
-	bool rename(const string& new_name);
+	bool rename(const wxString& new_name);
 	bool resize(uint32_t new_size, bool preserve_data);
 
 	// Data modification
@@ -91,12 +91,12 @@ public:
 	// Data import
 	bool importMem(const void* data, uint32_t size);
 	bool importMemChunk(MemChunk& mc);
-	bool importFile(const string& filename, uint32_t offset = 0, uint32_t size = 0);
+	bool importFile(const wxString& filename, uint32_t offset = 0, uint32_t size = 0);
 	bool importFileStream(wxFile& file, uint32_t len = 0);
 	bool importEntry(ArchiveEntry* entry);
 
 	// Data export
-	bool exportFile(const string& filename);
+	bool exportFile(const wxString& filename);
 
 	// Data access
 	bool     write(const void* data, uint32_t size);
@@ -105,18 +105,18 @@ public:
 	uint32_t currentPos() { return data_.currentPos(); }
 
 	// Misc
-	string        sizeString() const;
-	string        typeString() const { return type_ ? type_->name() : "Unknown"; }
+	wxString      sizeString() const;
+	wxString      typeString() const { return type_ ? type_->name() : "Unknown"; }
 	void          stateChanged();
 	void          setExtensionByType();
 	int           typeReliability() const { return (type_ ? (type()->reliability() * reliability_ / 255) : 0); }
-	bool          isInNamespace(string ns);
-	ArchiveEntry* relativeEntry(const string& path, bool allow_absolute_path = true) const;
+	bool          isInNamespace(wxString ns);
+	ArchiveEntry* relativeEntry(const wxString& path, bool allow_absolute_path = true) const;
 
 private:
 	// Entry Info
-	string           name_;
-	string           upper_name_;
+	wxString         name_;
+	wxString         upper_name_;
 	uint32_t         size_ = 0;
 	MemChunk         data_;
 	EntryType*       type_   = nullptr;

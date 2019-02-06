@@ -11,16 +11,16 @@ public:
 	TextEntryPanel(wxWindow* parent);
 	~TextEntryPanel() {}
 
-	bool   loadEntry(ArchiveEntry* entry) override;
-	bool   saveEntry() override;
-	void   refreshPanel() override;
-	void   closeEntry() override;
-	string statusString() override;
-	bool   undo() override;
-	bool   redo() override;
+	bool     loadEntry(ArchiveEntry* entry) override;
+	bool     saveEntry() override;
+	void     refreshPanel() override;
+	void     closeEntry() override;
+	wxString statusString() override;
+	bool     undo() override;
+	bool     redo() override;
 
 	// SAction Handler
-	bool handleEntryPanelAction(const string& id) override;
+	bool handleEntryPanelAction(const wxString& id) override;
 
 private:
 	TextEditorCtrl*   text_area_            = nullptr;

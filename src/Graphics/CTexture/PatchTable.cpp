@@ -60,7 +60,7 @@ PatchTable::Patch& PatchTable::patch(size_t index)
 // -----------------------------------------------------------------------------
 // Returns the patch matching [name], or an 'invalid' patch if no match is found
 // -----------------------------------------------------------------------------
-PatchTable::Patch& PatchTable::patch(const string& name)
+PatchTable::Patch& PatchTable::patch(const wxString& name)
 {
 	// Go through list
 	for (auto& patch : patches_)
@@ -76,7 +76,7 @@ PatchTable::Patch& PatchTable::patch(const string& name)
 // Returns the name of the patch at [index], or an empty string if [index] is
 // invalid
 // -----------------------------------------------------------------------------
-string PatchTable::patchName(size_t index)
+wxString PatchTable::patchName(size_t index)
 {
 	// Check index
 	if (index >= patches_.size())
@@ -108,7 +108,7 @@ ArchiveEntry* PatchTable::patchEntry(size_t index)
 // Returns the entry associated with the patch matching [name], or null if no
 // match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* PatchTable::patchEntry(const string& name)
+ArchiveEntry* PatchTable::patchEntry(const wxString& name)
 {
 	// Search for patch by name
 	for (size_t a = 0; a < patches_.size(); a++)
@@ -124,7 +124,7 @@ ArchiveEntry* PatchTable::patchEntry(const string& name)
 // -----------------------------------------------------------------------------
 // Returns the index of the patch matching [name], or -1 if no match found
 // -----------------------------------------------------------------------------
-int32_t PatchTable::patchIndex(const string& name)
+int32_t PatchTable::patchIndex(const wxString& name)
 {
 	// Search for patch by name
 	for (size_t a = 0; a < patches_.size(); a++)
@@ -179,7 +179,7 @@ bool PatchTable::removePatch(unsigned index)
 // resource archives.
 // Returns false if [index] is out of range or no matching entry was found
 // -----------------------------------------------------------------------------
-bool PatchTable::replacePatch(unsigned index, const string& newname)
+bool PatchTable::replacePatch(unsigned index, const wxString& newname)
 {
 	// Check index
 	if (index >= patches_.size())
@@ -197,7 +197,7 @@ bool PatchTable::replacePatch(unsigned index, const string& newname)
 // -----------------------------------------------------------------------------
 // Adds a new patch with [name] to the end of the list
 // -----------------------------------------------------------------------------
-bool PatchTable::addPatch(const string& name, bool allow_dup)
+bool PatchTable::addPatch(const wxString& name, bool allow_dup)
 {
 	// Check patch doesn't already exist
 	if (!allow_dup)

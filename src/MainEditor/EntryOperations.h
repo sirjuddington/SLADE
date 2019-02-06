@@ -10,7 +10,7 @@ namespace EntryOperations
 bool openMapDB2(ArchiveEntry* entry);
 bool gfxConvert(
 	ArchiveEntry*            entry,
-	const string&            target_format,
+	const wxString&          target_format,
 	SIFormat::ConvertOptions opt,
 	SImage::Type             target_colformat = SImage::Type::Unknown);
 bool modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog* dialog);
@@ -25,7 +25,7 @@ bool createTexture(const vector<ArchiveEntry*>& entries);
 bool convertTextures(const vector<ArchiveEntry*>& entries);
 bool findTextureErrors(const vector<ArchiveEntry*>& entries);
 bool compileACS(ArchiveEntry* entry, bool hexen = false, ArchiveEntry* target = nullptr, wxFrame* parent = nullptr);
-bool exportAsPNG(ArchiveEntry* entry, const string& filename);
+bool exportAsPNG(ArchiveEntry* entry, const wxString& filename);
 bool optimizePNG(ArchiveEntry* entry);
 
 // ANIMATED/SWITCHES

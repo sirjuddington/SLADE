@@ -57,7 +57,7 @@ CVAR(Bool, wad_force_uppercase, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // ArchiveEntry class constructor
 // -----------------------------------------------------------------------------
-ArchiveEntry::ArchiveEntry(const string& name, uint32_t size) :
+ArchiveEntry::ArchiveEntry(const wxString& name, uint32_t size) :
 	name_{ name },
 	upper_name_{ name.Upper() },
 	size_{ size },
@@ -103,7 +103,7 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 // Returns the entry name. If [cut_ext] is true and the name has an extension,
 // it will be cut from the returned name
 // -----------------------------------------------------------------------------
-string ArchiveEntry::name(bool cut_ext) const
+wxString ArchiveEntry::name(bool cut_ext) const
 {
 	if (cut_ext && name_.Contains(StringUtils::FULLSTOP))
 		return name_.BeforeLast('.');
@@ -114,7 +114,7 @@ string ArchiveEntry::name(bool cut_ext) const
 // -----------------------------------------------------------------------------
 // Returns the entry name in uppercase with no file extension
 // -----------------------------------------------------------------------------
-string ArchiveEntry::upperNameNoExt() const
+wxString ArchiveEntry::upperNameNoExt() const
 {
 	if (upper_name_.Contains(StringUtils::FULLSTOP))
 		return upper_name_.BeforeLast('.');
@@ -149,10 +149,10 @@ Archive* ArchiveEntry::topParent() const
 // -----------------------------------------------------------------------------
 // Returns the entry path in its parent archive
 // -----------------------------------------------------------------------------
-string ArchiveEntry::path(bool include_name) const
+wxString ArchiveEntry::path(bool include_name) const
 {
 	// Get the entry path
-	string path = parent_->path();
+	wxString path = parent_->path();
 
 	if (include_name)
 		return path + name();
@@ -301,7 +301,7 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 // -----------------------------------------------------------------------------
 // Renames the entry
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::rename(const string& new_name)
+bool ArchiveEntry::rename(const wxString& new_name)
 {
 	// Check if locked
 	if (locked_)
@@ -414,7 +414,7 @@ bool ArchiveEntry::importMemChunk(MemChunk& mc)
 // Returns false if the file does not exist or the given offset/size are out of
 // bounds, otherwise returns true.
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importFile(const string& filename, uint32_t offset, uint32_t size)
+bool ArchiveEntry::importFile(const wxString& filename, uint32_t offset, uint32_t size)
 {
 	// Check if locked
 	if (locked_)
@@ -507,7 +507,7 @@ bool ArchiveEntry::importEntry(ArchiveEntry* entry)
 // Exports entry data to a file.
 // Returns false if file cannot be written, true otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::exportFile(const string& filename)
+bool ArchiveEntry::exportFile(const wxString& filename)
 {
 	// Attempt to open file
 	wxFile file(filename, wxFile::write);
@@ -571,7 +571,7 @@ bool ArchiveEntry::read(void* buf, uint32_t size)
 // -----------------------------------------------------------------------------
 // Returns the entry's size as a string
 // -----------------------------------------------------------------------------
-string ArchiveEntry::sizeString() const
+wxString ArchiveEntry::sizeString() const
 {
 	return Misc::sizeAsString(size());
 }
@@ -615,7 +615,7 @@ void ArchiveEntry::setExtensionByType()
 // Returns true if the entry is in the [ns] namespace within its parent, false
 // otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::isInNamespace(string ns)
+bool ArchiveEntry::isInNamespace(wxString ns)
 {
 	// Can't do this without parent archive
 	if (!parent())
@@ -632,7 +632,7 @@ bool ArchiveEntry::isInNamespace(string ns)
 // Returns the entry at [path] relative to [base], or failing that, the entry
 // at absolute [path] in the archive (if [allow_absolute_path] is true)
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveEntry::relativeEntry(const string& at_path, bool allow_absolute_path) const
+ArchiveEntry* ArchiveEntry::relativeEntry(const wxString& at_path, bool allow_absolute_path) const
 {
 	if (!parent_)
 		return nullptr;

@@ -3,11 +3,11 @@
 class ExtMessageDialog : public wxDialog
 {
 public:
-	ExtMessageDialog(wxWindow* parent, const string& caption);
+	ExtMessageDialog(wxWindow* parent, const wxString& caption);
 	~ExtMessageDialog() = default;
 
-	void setMessage(const string& message) const;
-	void setExt(const string& text) const;
+	void setMessage(const wxString& message) const;
+	void setExt(const wxString& text) const;
 
 private:
 	wxStaticText* label_message_ = nullptr;

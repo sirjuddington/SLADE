@@ -398,7 +398,7 @@ bool ResArchive::isResArchive(MemChunk& mc, size_t& dir_offset, size_t& num_lump
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid A&A res archive
 // -----------------------------------------------------------------------------
-bool ResArchive::isResArchive(const string& filename)
+bool ResArchive::isResArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

@@ -98,11 +98,11 @@ enum SpecialBlend
 // Parses a text definition [def] (in zdoom format, detailed here:
 // http://zdoom.org/wiki/Translation)
 // -----------------------------------------------------------------------------
-void Translation::parse(string def)
+void Translation::parse(wxString def)
 {
 	// Test for ZDoom built-in translation
-	string test = def.Lower();
-	string temp;
+	wxString test = def.Lower();
+	wxString temp;
 	if (test == "inverse")
 	{
 		built_in_name_ = "Inverse";
@@ -168,7 +168,7 @@ void Translation::parse(string def)
 // -----------------------------------------------------------------------------
 // Parses a single translation range
 // -----------------------------------------------------------------------------
-void Translation::parseRange(const string& range)
+void Translation::parseRange(const wxString& range)
 {
 	// Open definition string for processing w/tokenizer
 	Tokenizer tz;
@@ -376,9 +376,9 @@ void Translation::read(const uint8_t* data)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the translation (in zdoom format)
 // -----------------------------------------------------------------------------
-string Translation::asText()
+wxString Translation::asText()
 {
-	string ret;
+	wxString ret;
 
 	if (built_in_name_.IsEmpty())
 	{
@@ -602,9 +602,9 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 		// Special range
 		else if (range->type() == TransRange::Type::Special)
 		{
-			auto    ts   = dynamic_cast<TransRangeSpecial*>(range.get());
-			string  spec = ts->special();
-			uint8_t type = Invalid;
+			auto     ts   = dynamic_cast<TransRangeSpecial*>(range.get());
+			wxString spec = ts->special();
+			uint8_t  type = Invalid;
 			if (S_CMPNOCASE(spec, "ice"))
 				type = SpecialBlend::Ice;
 			else if (S_CMPNOCASE(spec, "inverse"))
@@ -770,7 +770,7 @@ void Translation::swapRanges(int pos1, int pos2)
 // -----------------------------------------------------------------------------
 // Replaces a hardcoded translation name with its transcription
 // -----------------------------------------------------------------------------
-string Translation::getPredefined(string def)
+wxString Translation::getPredefined(wxString def)
 {
 	// Some hardcoded translations from ZDoom, used in config files
 	if (def == "\"doom0\"")

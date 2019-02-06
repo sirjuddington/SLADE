@@ -11,7 +11,7 @@ public:
 	ExternalEditManager() = default;
 	~ExternalEditManager();
 
-	bool openEntryExternal(ArchiveEntry* entry, const string& editor, const string& category);
+	bool openEntryExternal(ArchiveEntry* entry, const wxString& editor, const wxString& category);
 
 	typedef std::unique_ptr<ExternalEditManager> UPtr;
 

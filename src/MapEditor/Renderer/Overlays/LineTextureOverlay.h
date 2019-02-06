@@ -23,7 +23,7 @@ public:
 	void mouseMotion(int x, int y) override;
 	void mouseLeftClick() override;
 	void mouseRightClick() override;
-	void keyDown(const string& key) override;
+	void keyDown(const wxString& key) override;
 
 private:
 	vector<MapLine*> lines_;
@@ -31,10 +31,10 @@ private:
 
 	struct TexInfo
 	{
-		Vec2i          position;
-		bool           hover;
-		vector<string> textures;
-		bool           changed;
+		Vec2i            position;
+		bool             hover;
+		vector<wxString> textures;
+		bool             changed;
 
 		TexInfo()
 		{
@@ -72,7 +72,7 @@ private:
 	int last_height_ = 0;
 
 	// Helper functions
-	void addTexture(TexInfo& inf, string texture) const;
-	void drawTexture(float alpha, int size, TexInfo& tex, const string& position) const;
-	void browseTexture(TexInfo& tex, const string& position);
+	void addTexture(TexInfo& inf, wxString texture) const;
+	void drawTexture(float alpha, int size, TexInfo& tex, const wxString& position) const;
+	void browseTexture(TexInfo& tex, const wxString& position);
 };

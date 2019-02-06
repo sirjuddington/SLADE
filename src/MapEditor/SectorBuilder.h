@@ -22,7 +22,7 @@ public:
 	SectorBuilder()  = default;
 	~SectorBuilder() = default;
 
-	string   error() const { return error_; }
+	wxString error() const { return error_; }
 	unsigned nEdges() const { return sector_edges_.size(); }
 	MapLine* edgeLine(unsigned index);
 	bool     edgeIsFront(unsigned index);
@@ -48,7 +48,7 @@ private:
 	vector<bool> vertex_valid_;
 	SLADEMap*    map_ = nullptr;
 	vector<Edge> sector_edges_;
-	string       error_;
+	wxString     error_;
 
 	// Current outline
 	vector<Edge> o_edges_;

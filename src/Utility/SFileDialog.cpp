@@ -56,12 +56,12 @@ EXTERN_CVAR(String, dir_last)
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
 bool SFileDialog::openFile(
-	FDInfo&       info,
-	const string& caption,
-	const string& extensions,
-	wxWindow*     parent,
-	const string& fn_default,
-	int           ext_default)
+	FDInfo&         info,
+	const wxString& caption,
+	const wxString& extensions,
+	wxWindow*       parent,
+	const wxString& fn_default,
+	int             ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
@@ -93,12 +93,12 @@ bool SFileDialog::openFile(
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
 bool SFileDialog::openFiles(
-	FDInfo&       info,
-	const string& caption,
-	const string& extensions,
-	wxWindow*     parent,
-	const string& fn_default,
-	int           ext_default)
+	FDInfo&         info,
+	const wxString& caption,
+	const wxString& extensions,
+	wxWindow*       parent,
+	const wxString& fn_default,
+	int             ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(
@@ -131,12 +131,12 @@ bool SFileDialog::openFiles(
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
 bool SFileDialog::saveFile(
-	FDInfo&       info,
-	const string& caption,
-	const string& extensions,
-	wxWindow*     parent,
-	const string& fn_default,
-	int           ext_default)
+	FDInfo&         info,
+	const wxString& caption,
+	const wxString& extensions,
+	wxWindow*       parent,
+	const wxString& fn_default,
+	int             ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
@@ -169,11 +169,11 @@ bool SFileDialog::saveFile(
 // This is used to replace wxDirDialog, which sucks
 // -----------------------------------------------------------------------------
 bool SFileDialog::saveFiles(
-	FDInfo&       info,
-	const string& caption,
-	const string& extensions,
-	wxWindow*     parent,
-	int           ext_default)
+	FDInfo&         info,
+	const wxString& caption,
+	const wxString& extensions,
+	wxWindow*       parent,
+	int             ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(parent, caption, dir_last, "ignored", extensions, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
@@ -202,7 +202,7 @@ bool SFileDialog::saveFiles(
 // -----------------------------------------------------------------------------
 // Returns the executable file filter string depending on the current OS
 // -----------------------------------------------------------------------------
-string SFileDialog::executableExtensionString()
+wxString SFileDialog::executableExtensionString()
 {
 	if (App::platform() == App::Platform::Windows)
 		return "Executable Files (*.exe)|*.exe";
@@ -213,7 +213,7 @@ string SFileDialog::executableExtensionString()
 // -----------------------------------------------------------------------------
 // Returns [exe_name] with a .exe extension if in Windows
 // -----------------------------------------------------------------------------
-string SFileDialog::executableFileName(const string& exe_name)
+wxString SFileDialog::executableFileName(const wxString& exe_name)
 {
 	if (App::platform() == App::Platform::Windows)
 		return exe_name + ".exe";

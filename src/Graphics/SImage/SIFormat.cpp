@@ -249,7 +249,7 @@ uint32_t n_valid_flat_sizes = 22;
 class SIFRaw : public SIFormat
 {
 public:
-	SIFRaw(const string& id = "raw") : SIFormat(id, "Raw", "dat") {}
+	SIFRaw(const wxString& id = "raw") : SIFormat(id, "Raw", "dat") {}
 	~SIFRaw() = default;
 
 	bool isThisFormat(MemChunk& mc) override
@@ -483,7 +483,7 @@ protected:
 // -----------------------------------------------------------------------------
 // SIFormat class constructor
 // ----------------------------------------------------------------------------
-SIFormat::SIFormat(const string& id, const string& name, const string& ext, uint8_t reliability) :
+SIFormat::SIFormat(const wxString& id, const wxString& name, const wxString& ext, uint8_t reliability) :
 	id_{ id },
 	name_{ name },
 	extension_{ ext },
@@ -569,7 +569,7 @@ void SIFormat::initFormats()
 // -----------------------------------------------------------------------------
 // Returns the format [id]
 // -----------------------------------------------------------------------------
-SIFormat* SIFormat::getFormat(const string& id)
+SIFormat* SIFormat::getFormat(const wxString& id)
 {
 	// Check for special types
 	if (id == "raw")

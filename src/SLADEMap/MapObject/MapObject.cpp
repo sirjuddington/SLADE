@@ -76,7 +76,7 @@ unsigned MapObject::index() const
 // -----------------------------------------------------------------------------
 // Returns a string representation of the object type
 // -----------------------------------------------------------------------------
-string MapObject::typeName() const
+wxString MapObject::typeName() const
 {
 	switch (type_)
 	{
@@ -133,7 +133,7 @@ void MapObject::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 // Returns true if the object has a property matching [key]
 // -----------------------------------------------------------------------------
-bool MapObject::hasProp(const string& key)
+bool MapObject::hasProp(const wxString& key)
 {
 	if (properties_.propertyExists(key))
 		return properties_[key].hasValue();
@@ -144,7 +144,7 @@ bool MapObject::hasProp(const string& key)
 // -----------------------------------------------------------------------------
 // Returns the value of the boolean property matching [key]
 // -----------------------------------------------------------------------------
-bool MapObject::boolProperty(const string& key)
+bool MapObject::boolProperty(const wxString& key)
 {
 	// If the property exists already, return it
 	if (properties_[key].hasValue())
@@ -164,7 +164,7 @@ bool MapObject::boolProperty(const string& key)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapObject::intProperty(const string& key)
+int MapObject::intProperty(const wxString& key)
 {
 	// If the property exists already, return it
 	if (properties_[key].hasValue())
@@ -184,7 +184,7 @@ int MapObject::intProperty(const string& key)
 // -----------------------------------------------------------------------------
 // Returns the value of the float property matching [key]
 // -----------------------------------------------------------------------------
-double MapObject::floatProperty(const string& key)
+double MapObject::floatProperty(const wxString& key)
 {
 	// If the property exists already, return it
 	if (properties_[key].hasValue())
@@ -204,7 +204,7 @@ double MapObject::floatProperty(const string& key)
 // -----------------------------------------------------------------------------
 // Returns the value of the string property matching [key]
 // -----------------------------------------------------------------------------
-string MapObject::stringProperty(const string& key)
+wxString MapObject::stringProperty(const wxString& key)
 {
 	// If the property exists already, return it
 	if (properties_[key].hasValue())
@@ -224,7 +224,7 @@ string MapObject::stringProperty(const string& key)
 // -----------------------------------------------------------------------------
 // Sets the boolean value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapObject::setBoolProperty(const string& key, bool value)
+void MapObject::setBoolProperty(const wxString& key, bool value)
 {
 	// Update modified time
 	setModified();
@@ -236,7 +236,7 @@ void MapObject::setBoolProperty(const string& key, bool value)
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapObject::setIntProperty(const string& key, int value)
+void MapObject::setIntProperty(const wxString& key, int value)
 {
 	// Update modified time
 	setModified();
@@ -248,7 +248,7 @@ void MapObject::setIntProperty(const string& key, int value)
 // -----------------------------------------------------------------------------
 // Sets the float value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapObject::setFloatProperty(const string& key, double value)
+void MapObject::setFloatProperty(const wxString& key, double value)
 {
 	// Update modified time
 	setModified();
@@ -260,7 +260,7 @@ void MapObject::setFloatProperty(const string& key, double value)
 // -----------------------------------------------------------------------------
 // Sets the string value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapObject::setStringProperty(const string& key, const string& value)
+void MapObject::setStringProperty(const wxString& key, const wxString& value)
 {
 	// Update modified time
 	setModified();
@@ -366,7 +366,7 @@ void MapObject::endPropBackup()
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiBoolProperty(vector<MapObject*>& objects, string prop, bool& value)
+bool MapObject::multiBoolProperty(vector<MapObject*>& objects, wxString prop, bool& value)
 {
 	// Check objects given
 	if (objects.empty())
@@ -391,7 +391,7 @@ bool MapObject::multiBoolProperty(vector<MapObject*>& objects, string prop, bool
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiIntProperty(vector<MapObject*>& objects, string prop, int& value)
+bool MapObject::multiIntProperty(vector<MapObject*>& objects, wxString prop, int& value)
 {
 	// Check objects given
 	if (objects.empty())
@@ -416,7 +416,7 @@ bool MapObject::multiIntProperty(vector<MapObject*>& objects, string prop, int& 
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiFloatProperty(vector<MapObject*>& objects, string prop, double& value)
+bool MapObject::multiFloatProperty(vector<MapObject*>& objects, wxString prop, double& value)
 {
 	// Check objects given
 	if (objects.empty())
@@ -441,14 +441,14 @@ bool MapObject::multiFloatProperty(vector<MapObject*>& objects, string prop, dou
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiStringProperty(vector<MapObject*>& objects, string prop, string& value)
+bool MapObject::multiStringProperty(vector<MapObject*>& objects, wxString prop, wxString& value)
 {
 	// Check objects given
 	if (objects.empty())
 		return false;
 
 	// Check values
-	string first = objects[0]->stringProperty(prop);
+	wxString first = objects[0]->stringProperty(prop);
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
 		// Differing values

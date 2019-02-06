@@ -91,7 +91,7 @@ public:
 		return ok;
 	}
 
-	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override
+	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override
 	{
 		if (announcer != archive_)
 			return;
@@ -117,7 +117,7 @@ protected:
 	ArchiveEntry*        entry_   = nullptr;
 	Archive*             archive_ = nullptr;
 	ExternalEditManager* manager_ = nullptr;
-	string               gfx_format_;
+	wxString             gfx_format_;
 };
 
 
@@ -204,9 +204,9 @@ public:
 	}
 
 private:
-	string  gfx_format_;
-	Vec2i   offsets_;
-	Palette palette_;
+	wxString gfx_format_;
+	Vec2i    offsets_;
+	Palette  palette_;
 };
 
 
@@ -399,7 +399,7 @@ ExternalEditManager::~ExternalEditManager()
 // -----------------------------------------------------------------------------
 // Opens [entry] for external editing with [editor] for [category]
 // -----------------------------------------------------------------------------
-bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, const string& editor, const string& category)
+bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, const wxString& editor, const wxString& category)
 {
 	// Check the entry isn't already opened externally
 	for (auto& file_monitor : file_monitors_)
@@ -433,7 +433,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, const string& e
 	}
 
 	// Get external editor path
-	string exe_path = Executables::externalExe(editor, category).path;
+	wxString exe_path = Executables::externalExe(editor, category).path;
 #ifdef WIN32
 	if (exe_path.IsEmpty() || !wxFileExists(exe_path))
 #else
@@ -446,8 +446,8 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, const string& e
 	}
 
 	// Run external editor
-	string command = S_FMT("\"%s\" \"%s\"", exe_path, monitor->filename());
-	long   success = wxExecute(command, wxEXEC_ASYNC, monitor->process());
+	wxString command = S_FMT("\"%s\" \"%s\"", exe_path, monitor->filename());
+	long     success = wxExecute(command, wxEXEC_ASYNC, monitor->process());
 	if (success == 0)
 	{
 		Global::error = S_FMT("Failed to launch %s", editor);

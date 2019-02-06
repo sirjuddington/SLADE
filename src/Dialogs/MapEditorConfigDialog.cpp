@@ -53,8 +53,8 @@ namespace
 struct MapFormatDef
 {
 	MapFormat format;
-	string    name;
-	string    abbreviation;
+	wxString  name;
+	wxString  abbreviation;
 };
 MapFormatDef map_formats[] = { { MapFormat::Doom, "Doom", "D" },
 							   { MapFormat::Hexen, "Hexen", "H" },
@@ -73,8 +73,8 @@ class NewMapDialog : public wxDialog
 public:
 	NewMapDialog(
 		wxWindow*                 parent,
-		const string&             game,
-		const string&             port,
+		const wxString&           game,
+		const wxString&           port,
 		vector<Archive::MapDesc>& maps,
 		Archive*                  archive) :
 		wxDialog(parent, -1, "New Map")
@@ -109,8 +109,8 @@ public:
 		for (unsigned a = 0; a < Game::configuration().nMapNames(); a++)
 		{
 			// Check if map already exists
-			string mapname = Game::configuration().mapName(a);
-			bool   exists  = false;
+			wxString mapname = Game::configuration().mapName(a);
+			bool     exists  = false;
 			for (auto& map : maps)
 			{
 				if (S_CMPNOCASE(map.name, mapname))
@@ -170,8 +170,8 @@ public:
 		CenterOnParent();
 	}
 
-	string getMapName() const { return cbo_mapname_->GetValue(); }
-	string getMapFormat() const { return choice_mapformat_->GetStringSelection(); }
+	wxString getMapName() const { return cbo_mapname_->GetValue(); }
+	wxString getMapFormat() const { return choice_mapformat_->GetStringSelection(); }
 
 	void onBtnOk(wxCommandEvent& e) { EndModal(wxID_OK); }
 	void onBtnCancel(wxCommandEvent& e) { EndModal(wxID_CANCEL); }
@@ -408,8 +408,8 @@ void MapEditorConfigDialog::populateMapList()
 	maps_ = archive_->detectMaps();
 
 	// Get currently selected game/port
-	string game = games_list_[choice_game_config_->GetSelection()];
-	string port = "";
+	wxString game = games_list_[choice_game_config_->GetSelection()];
+	wxString port = "";
 	if (choice_port_config_->GetSelection() > 0)
 		port = ports_list_[choice_port_config_->GetSelection() - 1];
 
@@ -418,7 +418,7 @@ void MapEditorConfigDialog::populateMapList()
 	for (auto& map : maps_)
 	{
 		// Setup format string
-		string fmt = "?";
+		wxString fmt = "?";
 		for (auto mf : map_formats)
 			if (mf.format == map.format)
 				fmt = mf.abbreviation;
@@ -450,11 +450,11 @@ Archive::MapDesc MapEditorConfigDialog::selectedMap()
 	if (creating_)
 	{
 		// Get selected game/port index
-		int    index    = choice_port_config_->GetSelection() - 1;
-		string sel_port = "";
+		int      index    = choice_port_config_->GetSelection() - 1;
+		wxString sel_port = "";
 		if (index >= 0)
 			sel_port = ports_list_[index];
-		string sel_game = games_list_[choice_game_config_->GetSelection()];
+		wxString sel_game = games_list_[choice_game_config_->GetSelection()];
 
 		// Show new map dialog
 		vector<Archive::MapDesc> temp;
@@ -501,8 +501,8 @@ Archive::MapDesc MapEditorConfigDialog::selectedMap()
 bool MapEditorConfigDialog::configMatchesMap(const Archive::MapDesc& map)
 {
 	// Get currently selected game/port
-	string game = games_list_[choice_game_config_->GetSelection()];
-	string port = "";
+	wxString game = games_list_[choice_game_config_->GetSelection()];
+	wxString port = "";
 	if (choice_port_config_->GetSelection() > 0)
 		port = ports_list_[choice_port_config_->GetSelection() - 1];
 
@@ -512,7 +512,7 @@ bool MapEditorConfigDialog::configMatchesMap(const Archive::MapDesc& map)
 // -----------------------------------------------------------------------------
 // Returns the id of the currently selected game configuration
 // -----------------------------------------------------------------------------
-string MapEditorConfigDialog::selectedGame()
+wxString MapEditorConfigDialog::selectedGame()
 {
 	if (choice_game_config_->GetCount() == 0)
 		return "";
@@ -523,7 +523,7 @@ string MapEditorConfigDialog::selectedGame()
 // -----------------------------------------------------------------------------
 // Returns the id of the currently selected port configuration
 // -----------------------------------------------------------------------------
-string MapEditorConfigDialog::selectedPort()
+wxString MapEditorConfigDialog::selectedPort()
 {
 	if (choice_port_config_->GetSelection() == 0 || choice_port_config_->GetCount() == 0)
 		return "";
@@ -581,11 +581,11 @@ void MapEditorConfigDialog::onMapActivated(wxListEvent& e)
 void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 {
 	// Get selected game/port index
-	int    index    = choice_port_config_->GetSelection() - 1;
-	string sel_port = "";
+	int      index    = choice_port_config_->GetSelection() - 1;
+	wxString sel_port = "";
 	if (index >= 0)
 		sel_port = ports_list_[index];
-	string sel_game = games_list_[choice_game_config_->GetSelection()];
+	wxString sel_game = games_list_[choice_game_config_->GetSelection()];
 
 	// Create new map dialog
 	NewMapDialog dlg(this, sel_game, sel_port, maps_, archive_);
@@ -595,7 +595,7 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 	dlg.CenterOnParent();
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		string mapname = dlg.getMapName();
+		wxString mapname = dlg.getMapName();
 		if (mapname.IsEmpty())
 			return;
 

@@ -22,21 +22,21 @@ class UndoLevel
 public:
 	typedef std::unique_ptr<UndoLevel> UPtr;
 
-	UndoLevel(const string& name);
+	UndoLevel(const wxString& name);
 	~UndoLevel() = default;
 
-	string name() const { return name_; }
-	bool   doUndo();
-	bool   doRedo();
-	void   addStep(UndoStep::UPtr step) { undo_steps_.push_back(std::move(step)); }
-	string timeStamp(bool date, bool time) const;
+	wxString name() const { return name_; }
+	bool     doUndo();
+	bool     doRedo();
+	void     addStep(UndoStep::UPtr step) { undo_steps_.push_back(std::move(step)); }
+	wxString timeStamp(bool date, bool time) const;
 
-	bool writeFile(const string& filename) const;
-	bool readFile(const string& filename) const;
+	bool writeFile(const wxString& filename) const;
+	bool readFile(const wxString& filename) const;
 	void createMerged(vector<UPtr>& levels);
 
 private:
-	string                 name_;
+	wxString               name_;
 	vector<UndoStep::UPtr> undo_steps_;
 	wxDateTime             timestamp_;
 };
@@ -49,22 +49,22 @@ public:
 	~UndoManager() = default;
 
 	SLADEMap*  map() const { return map_; }
-	void       putAllLevels(vector<string>& list);
+	void       putAllLevels(vector<wxString>& list);
 	int        currentIndex() const { return current_level_index_; }
 	unsigned   nUndoLevels() const { return undo_levels_.size(); }
 	UndoLevel* undoLevel(unsigned index) const { return undo_levels_[index].get(); }
 
-	void   beginRecord(const string& name);
-	void   endRecord(bool success);
-	bool   currentlyRecording() const;
-	bool   recordUndoStep(UndoStep::UPtr step) const;
-	string undo();
-	string redo();
-	void   setResetPoint() { reset_point_ = current_level_index_; }
-	void   clearToResetPoint();
+	void     beginRecord(const wxString& name);
+	void     endRecord(bool success);
+	bool     currentlyRecording() const;
+	bool     recordUndoStep(UndoStep::UPtr step) const;
+	wxString undo();
+	wxString redo();
+	void     setResetPoint() { reset_point_ = current_level_index_; }
+	void     clearToResetPoint();
 
 	void clear();
-	bool createMergedLevel(UndoManager* manager, const string& name);
+	bool createMergedLevel(UndoManager* manager, const wxString& name);
 
 	typedef std::unique_ptr<UndoManager> UPtr;
 

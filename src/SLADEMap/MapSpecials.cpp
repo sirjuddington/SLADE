@@ -218,8 +218,8 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line) const
 			tagged.push_back(line);
 
 		// Get args
-		double alpha = (double)args[1] / 255.0;
-		string type  = (args[2] == 0) ? "translucent" : "add";
+		double   alpha = (double)args[1] / 255.0;
+		wxString type  = (args[2] == 0) ? "translucent" : "add";
 
 		// Set transparency
 		for (auto& l : tagged)
@@ -849,7 +849,7 @@ template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 template<SurfaceType T> double MapSpecials::vertexHeight(MapVertex* vertex, MapSector* sector) const
 {
 	// Return vertex height if set via UDMF property
-	string prop = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
+	wxString prop = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
 	if (vertex->hasProp(prop))
 		return vertex->floatProperty(prop);
 

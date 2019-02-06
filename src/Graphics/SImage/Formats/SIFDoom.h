@@ -4,7 +4,7 @@
 class SIFDoomGfx : public SIFormat
 {
 public:
-	SIFDoomGfx(const string& id = "doom", const string& name = "Doom Gfx", int reliability = 230) :
+	SIFDoomGfx(const wxString& id = "doom", const wxString& name = "Doom Gfx", int reliability = 230) :
 		SIFormat(id, name, "lmp", reliability)
 	{
 	}

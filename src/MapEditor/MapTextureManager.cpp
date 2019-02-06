@@ -106,7 +106,7 @@ Palette* MapTextureManager::resourcePalette() const
 // Returns the texture matching [name], loading it from resources if necessary.
 // If [mixed] is true, flats are also searched if no matching texture is found
 // -----------------------------------------------------------------------------
-const MapTextureManager::Texture& MapTextureManager::texture(const string& name, bool mixed)
+const MapTextureManager::Texture& MapTextureManager::texture(const wxString& name, bool mixed)
 {
 	// Get texture matching name
 	auto& mtex = textures_[name.Upper()];
@@ -217,7 +217,7 @@ const MapTextureManager::Texture& MapTextureManager::texture(const string& name,
 // Returns the flat matching [name], loading it from resources if necessary.
 // If [mixed] is true, textures are also searched if no matching flat is found
 // -----------------------------------------------------------------------------
-const MapTextureManager::Texture& MapTextureManager::flat(const string& name, bool mixed)
+const MapTextureManager::Texture& MapTextureManager::flat(const wxString& name, bool mixed)
 {
 	// Get flat matching name
 	auto& mtex = flats_[name.Upper()];
@@ -310,16 +310,16 @@ const MapTextureManager::Texture& MapTextureManager::flat(const string& name, bo
 // Sprite name also supports wildcards (?)
 // -----------------------------------------------------------------------------
 const MapTextureManager::Texture& MapTextureManager::sprite(
-	string        name,
-	const string& translation,
-	const string& palette)
+	wxString        name,
+	const wxString& translation,
+	const wxString& palette)
 {
 	// Don't bother looking for nameless sprites
 	if (name.IsEmpty())
 		return tex_invalid;
 
 	// Get sprite matching name
-	string hashname = name.Upper();
+	wxString hashname = name.Upper();
 	if (!translation.IsEmpty())
 		hashname += translation.Lower();
 	if (!palette.IsEmpty())
@@ -362,12 +362,12 @@ const MapTextureManager::Texture& MapTextureManager::sprite(
 		entry = App::resources().getPatchEntry(name, "", archive_);
 	if (!entry && name.length() == 8)
 	{
-		string newname = name;
-		newname[4]     = name[6];
-		newname[5]     = name[7];
-		newname[6]     = name[4];
-		newname[7]     = name[5];
-		entry          = App::resources().getPatchEntry(newname, "sprites", archive_);
+		wxString newname = name;
+		newname[4]       = name[6];
+		newname[5]       = name[7];
+		newname[6]       = name[4];
+		newname[7]       = name[5];
+		entry            = App::resources().getPatchEntry(newname, "sprites", archive_);
 		if (entry)
 			mirror = true;
 	}
@@ -441,7 +441,7 @@ const MapTextureManager::Texture& MapTextureManager::sprite(
 // If the Y offset is noticeably larger than the sprite height, that means the
 // thing is supposed to be rendered above its real position.
 // -----------------------------------------------------------------------------
-int MapTextureManager::verticalOffset(const string& name) const
+int MapTextureManager::verticalOffset(const wxString& name) const
 {
 	// Don't bother looking for nameless sprites
 	if (name.IsEmpty())
@@ -469,7 +469,7 @@ int MapTextureManager::verticalOffset(const string& name) const
 // -----------------------------------------------------------------------------
 // Loads all editor images (thing icons, etc) from the program resource archive
 // -----------------------------------------------------------------------------
-void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, const string& path) const
+void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, const wxString& path) const
 {
 	SImage image;
 
@@ -482,7 +482,7 @@ void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* 
 		if (image.open(entry->data()))
 		{
 			// Create texture in hashmap
-			string name = path + entry->name(true);
+			wxString name = path + entry->name(true);
 			Log::info(4, S_FMT("Loading editor texture %s", name));
 			auto& mtex = map[name];
 			mtex.gl_id = OpenGL::Texture::createFromImage(image, nullptr, OpenGL::TexFilter::Mipmap);
@@ -500,7 +500,7 @@ void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* 
 // -----------------------------------------------------------------------------
 // Returns the editor image matching [name]
 // -----------------------------------------------------------------------------
-const MapTextureManager::Texture& MapTextureManager::editorImage(const string& name)
+const MapTextureManager::Texture& MapTextureManager::editorImage(const wxString& name)
 {
 	if (!OpenGL::isInitialised())
 		return tex_invalid;
@@ -556,8 +556,8 @@ void MapTextureManager::buildTexInfoList()
 		auto parent = texture->parent;
 
 		// string shortName = tex->getName().Truncate(8);
-		string longName = tex->name();
-		string path     = longName.BeforeLast('/');
+		wxString longName = tex->name();
+		wxString path     = longName.BeforeLast('/');
 
 		if (tex->isExtended())
 		{
@@ -584,9 +584,9 @@ void MapTextureManager::buildTexInfoList()
 			if (patches[a]->isInNamespace("textures") || patches[a]->isInNamespace("hires"))
 			{
 				// Determine texture path if it's in a pk3
-				string longName  = patches[a]->path(true).Remove(0, 1);
-				string shortName = patches[a]->name(true).Upper().Truncate(8);
-				string path      = patches[a]->path(false);
+				wxString longName  = patches[a]->path(true).Remove(0, 1);
+				wxString shortName = patches[a]->name(true).Upper().Truncate(8);
+				wxString path      = patches[a]->path(false);
 
 				tex_info_.emplace_back(shortName, Category::Tx, patches[a]->parent(), path, 0, longName);
 			}
@@ -602,9 +602,9 @@ void MapTextureManager::buildTexInfoList()
 		auto entry = flats[a];
 
 		// Determine flat path if it's in a pk3
-		string longName  = entry->path(true).Remove(0, 1);
-		string shortName = entry->name(true).Upper().Truncate(8);
-		string path      = entry->path(false);
+		wxString longName  = entry->path(true).Remove(0, 1);
+		wxString shortName = entry->name(true).Upper().Truncate(8);
+		wxString path      = entry->path(false);
 
 		flat_info_.emplace_back(shortName, Category::None, flats[a]->parent(), path, 0, longName);
 	}
@@ -622,7 +622,7 @@ void MapTextureManager::setArchive(Archive* archive)
 // -----------------------------------------------------------------------------
 // Handles announcements from any announcers listened to
 // -----------------------------------------------------------------------------
-void MapTextureManager::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void MapTextureManager::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	// Only interested in the resource manager,
 	// archive manager and palette chooser.

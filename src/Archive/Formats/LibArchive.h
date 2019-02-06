@@ -21,5 +21,5 @@ public:
 	unsigned numEntries() override { return rootDir()->numEntries(); }
 
 	static bool isLibArchive(MemChunk& mc);
-	static bool isLibArchive(const string& filename);
+	static bool isLibArchive(const wxString& filename);
 };

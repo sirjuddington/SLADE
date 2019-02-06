@@ -69,7 +69,7 @@ namespace
 // -----------------------------------------------------------------------------
 // Creates a spin control with the given name and values
 // -----------------------------------------------------------------------------
-wxSpinCtrlDouble* createSpin(wxWindow* parent, const string& name, double min, double max, double initial, double inc)
+wxSpinCtrlDouble* createSpin(wxWindow* parent, const wxString& name, double min, double max, double initial, double inc)
 {
 	return new wxSpinCtrlDouble(
 		parent,
@@ -99,40 +99,40 @@ wxSpinCtrlDouble* createSpin(wxWindow* parent, const string& name, double min, d
 ColorimetryPrefsPanel::ColorimetryPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create controls
-	spin_grey_r_         = createSpin(this, "GreyscaleRed", 0.0, 1.0, 0.001, 0.001);
-	spin_grey_g_         = createSpin(this, "GreyscaleGreen", 0.0, 1.0, 0.001, 0.001);
-	spin_grey_b_         = createSpin(this, "GreyscaleBlue", 0.0, 1.0, 0.001, 0.001);
-	string rbgweights[]  = { "Default / Standard", "Carmack's Typo", "Linear RGB" };
-	choice_presets_grey_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, rbgweights);
-	string matchers[]    = { "RGB (integer)", "RGB (double)", "HSL", "CIE 76", "CIE 94", "CIEDE 2000" };
-	choice_colmatch_     = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 6, matchers);
-	spin_factor_r_       = createSpin(this, "RedFactor", 0.0, 10.0, 1.0, 0.1);
-	spin_factor_g_       = createSpin(this, "GreenFactor", 0.0, 10.0, 1.0, 0.1);
-	spin_factor_b_       = createSpin(this, "BlueFactor", 0.0, 10.0, 1.0, 0.1);
-	spin_factor_h_       = createSpin(this, "HueFactor", 0.0, 10.0, 1.0, 0.1);
-	spin_factor_s_       = createSpin(this, "SatFactor", 0.0, 10.0, 1.0, 0.1);
-	spin_factor_l_       = createSpin(this, "LumFactor", 0.0, 10.0, 1.0, 0.1);
-	spin_tristim_x_      = createSpin(this, "TriStimX", 0.0, 200.0, 100.0, 0.1);
-	spin_tristim_z_      = createSpin(this, "TriStimZ", 0.0, 200.0, 100.0, 0.1);
-	string tristimuli[]  = {
-        wxString::FromUTF8("Illuminant A, 2\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant A, 10\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant C, 2\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant C, 10\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant D50, 2\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant D50, 10\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant D60, 2\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant D60, 10\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant D65, 2\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant D65, 10\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant D75, 2\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant D75, 10\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant F2, 2\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant F2, 10\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant TL4, 2\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant TL4, 10\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant UL3000, 2\xc2\xb0 Observer"),
-        wxString::FromUTF8("Illuminant UL3000, 10\xc2\xb0 Observer"),
+	spin_grey_r_          = createSpin(this, "GreyscaleRed", 0.0, 1.0, 0.001, 0.001);
+	spin_grey_g_          = createSpin(this, "GreyscaleGreen", 0.0, 1.0, 0.001, 0.001);
+	spin_grey_b_          = createSpin(this, "GreyscaleBlue", 0.0, 1.0, 0.001, 0.001);
+	wxString rbgweights[] = { "Default / Standard", "Carmack's Typo", "Linear RGB" };
+	choice_presets_grey_  = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, rbgweights);
+	wxString matchers[]   = { "RGB (integer)", "RGB (double)", "HSL", "CIE 76", "CIE 94", "CIEDE 2000" };
+	choice_colmatch_      = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 6, matchers);
+	spin_factor_r_        = createSpin(this, "RedFactor", 0.0, 10.0, 1.0, 0.1);
+	spin_factor_g_        = createSpin(this, "GreenFactor", 0.0, 10.0, 1.0, 0.1);
+	spin_factor_b_        = createSpin(this, "BlueFactor", 0.0, 10.0, 1.0, 0.1);
+	spin_factor_h_        = createSpin(this, "HueFactor", 0.0, 10.0, 1.0, 0.1);
+	spin_factor_s_        = createSpin(this, "SatFactor", 0.0, 10.0, 1.0, 0.1);
+	spin_factor_l_        = createSpin(this, "LumFactor", 0.0, 10.0, 1.0, 0.1);
+	spin_tristim_x_       = createSpin(this, "TriStimX", 0.0, 200.0, 100.0, 0.1);
+	spin_tristim_z_       = createSpin(this, "TriStimZ", 0.0, 200.0, 100.0, 0.1);
+	wxString tristimuli[] = {
+		wxString::FromUTF8("Illuminant A, 2\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant A, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant C, 2\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant C, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant D50, 2\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant D50, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant D60, 2\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant D60, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant D65, 2\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant D65, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant D75, 2\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant D75, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant F2, 2\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant F2, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant TL4, 2\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant TL4, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant UL3000, 2\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant UL3000, 10\xc2\xb0 Observer"),
 	};
 	choice_presets_tristim_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 18, tristimuli);
 	spin_cie_kl_            = createSpin(this, "KL", 0.0, 10.0, 1.0, 0.1);

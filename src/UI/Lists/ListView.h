@@ -21,14 +21,14 @@ public:
 	bool enableSizeUpdate() const { return update_width_; }
 	void enableSizeUpdate(bool update) { update_width_ = update; }
 
-	bool addItem(int index, const string& text);
+	bool addItem(int index, const wxString& text);
 	bool addItem(int index, wxArrayString text);
 
 	bool deleteItems(wxArrayInt items);
 
 	ColRGBA disabledColour() const;
 	bool    setItemStatus(int item, ItemStatus status);
-	bool    setItemText(int item, int column, const string& text);
+	bool    setItemText(int item, int column, const wxString& text);
 
 	void clearSelection();
 	bool selectItem(int item, bool focus = true);

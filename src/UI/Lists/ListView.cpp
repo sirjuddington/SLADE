@@ -78,7 +78,7 @@ ListView::ListView(wxWindow* parent, int id, long style) :
 // -----------------------------------------------------------------------------
 // Adds an item to the list at [index] with [text]
 // -----------------------------------------------------------------------------
-bool ListView::addItem(int index, const string& text)
+bool ListView::addItem(int index, const wxString& text)
 {
 	// Check index
 	if (index < 0)
@@ -197,7 +197,7 @@ bool ListView::setItemStatus(int item, ItemStatus status)
 // -----------------------------------------------------------------------------
 // Sets the text of [item] at [column] to [text]
 // -----------------------------------------------------------------------------
-bool ListView::setItemText(int item, int column, const string& text)
+bool ListView::setItemText(int item, int column, const wxString& text)
 {
 	// Check if column is in range
 	if (column < 0 || column >= GetColumnCount())

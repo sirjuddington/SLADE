@@ -13,7 +13,7 @@ public:
 	void init() override;
 	void applyPreferences() override;
 
-	string pageTitle() override { return "PNG Optimization Tools"; }
+	wxString pageTitle() override { return "PNG Optimization Tools"; }
 
 private:
 	FileLocationPanel* flp_pngout_   = nullptr;

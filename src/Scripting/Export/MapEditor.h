@@ -1,6 +1,6 @@
 
 
-void objectSetBoolProperty(MapObject& self, const string& key, bool value)
+void objectSetBoolProperty(MapObject& self, const wxString& key, bool value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setBoolProperty(key, value);
@@ -8,7 +8,7 @@ void objectSetBoolProperty(MapObject& self, const string& key, bool value)
 		Log::warning(1, S_FMT("%s boolean property \"%s\" can not be modified via script", CHR(self.typeName()), key));
 }
 
-void objectSetIntProperty(MapObject& self, const string& key, int value)
+void objectSetIntProperty(MapObject& self, const wxString& key, int value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setIntProperty(key, value);
@@ -16,7 +16,7 @@ void objectSetIntProperty(MapObject& self, const string& key, int value)
 		Log::warning(1, S_FMT("%s integer property \"%s\" can not be modified via script", CHR(self.typeName()), key));
 }
 
-void objectSetFloatProperty(MapObject& self, const string& key, double value)
+void objectSetFloatProperty(MapObject& self, const wxString& key, double value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setFloatProperty(key, value);
@@ -24,7 +24,7 @@ void objectSetFloatProperty(MapObject& self, const string& key, double value)
 		Log::warning(1, S_FMT("%s float property \"%s\" can not be modified via script", CHR(self.typeName()), key));
 }
 
-void objectSetStringProperty(MapObject& self, const string& key, const string& value)
+void objectSetStringProperty(MapObject& self, const wxString& key, const wxString& value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setStringProperty(key, value);
@@ -205,7 +205,7 @@ sol::table lineVisibleTextures(MapLine& self)
 		(needs_tex & MapLine::Part::BackLower) != 0);
 }
 
-bool lineFlag(MapLine& self, const string& flag)
+bool lineFlag(MapLine& self, const wxString& flag)
 {
 	if (Game::configuration().lineBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
 		return true;
@@ -365,7 +365,7 @@ void registerMapSector(sol::state& lua)
 		&MapSector::containsPoint);
 }
 
-bool thingFlag(MapThing& self, const string& flag)
+bool thingFlag(MapThing& self, const wxString& flag)
 {
 	if (Game::configuration().thingBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
 		return true;

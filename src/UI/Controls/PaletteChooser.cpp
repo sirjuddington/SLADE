@@ -115,7 +115,7 @@ bool PaletteChooser::globalSelected() const
 // Selects the palette matching [name], or the default palette if no match was
 // found
 // -----------------------------------------------------------------------------
-void PaletteChooser::selectPalette(string name)
+void PaletteChooser::selectPalette(wxString name)
 {
 	// Go through palettes list
 	for (unsigned a = 0; a < GetCount(); a++)
@@ -138,7 +138,7 @@ void PaletteChooser::selectPalette(string name)
 // without this function, requires exiting and restarting the app to appear in
 // the list.
 // -----------------------------------------------------------------------------
-void PaletteChooser::addPalette(string name)
+void PaletteChooser::addPalette(wxString name)
 {
 	// We want it to be just before the "Greyscale" choice
 	if (GetCount() > 2)

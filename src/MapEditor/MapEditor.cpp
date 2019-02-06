@@ -249,7 +249,7 @@ void MapEditor::setUndoManager(UndoManager* manager)
 // -----------------------------------------------------------------------------
 // Sets the map editor window status bar [text] at [column]
 // -----------------------------------------------------------------------------
-void ::MapEditor::setStatusText(const string& text, int column)
+void ::MapEditor::setStatusText(const wxString& text, int column)
 {
 	map_window->CallAfter(&MapEditorWindow::SetStatusText, text, column);
 }
@@ -372,7 +372,11 @@ void MapEditor::showObjectEditPanel(bool show, ObjectEditGroup* group)
 // Opens the texture browser for [tex_type] textures, with [init_texture]
 // initially selected. Returns the selected texture
 // -----------------------------------------------------------------------------
-string MapEditor::browseTexture(const string& init_texture, TextureType tex_type, SLADEMap& map, const string& title)
+wxString MapEditor::browseTexture(
+	const wxString& init_texture,
+	TextureType     tex_type,
+	SLADEMap&       map,
+	const wxString& title)
 {
 	// Unlock cursor if locked
 	bool cursor_locked = edit_context->mouseLocked();
@@ -384,7 +388,7 @@ string MapEditor::browseTexture(const string& init_texture, TextureType tex_type
 	browser.SetTitle(title);
 
 	// Get selected texture
-	string tex;
+	wxString tex;
 	if (browser.ShowModal() == wxID_OK)
 		tex = browser.selectedItem()->name();
 
@@ -427,8 +431,8 @@ int MapEditor::browseThingType(int init_type, SLADEMap& map)
 // -----------------------------------------------------------------------------
 bool MapEditor::editObjectProperties(vector<MapObject*>& list)
 {
-	string selsize = "";
-	string type    = edit_context->modeString(false);
+	wxString selsize = "";
+	wxString type    = edit_context->modeString(false);
 	if (list.size() == 1)
 		type += S_FMT(" #%d", list[0]->index());
 	else if (list.size() > 1)

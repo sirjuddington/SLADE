@@ -6,13 +6,13 @@ void logMessage(const char* message)
 }
 
 // Show a message box
-void messageBox(const string& title, const string& message)
+void messageBox(const wxString& title, const wxString& message)
 {
 	wxMessageBox(message, title, 5L, Lua::currentWindow());
 }
 
 // Show an extended message box
-void messageBoxExtended(const string& title, const string& message, const string& extra)
+void messageBoxExtended(const wxString& title, const wxString& message, const wxString& extra)
 {
 	ExtMessageDialog dlg(Lua::currentWindow(), title);
 	dlg.setMessage(message);
@@ -22,25 +22,25 @@ void messageBoxExtended(const string& title, const string& message, const string
 }
 
 // Prompt for a string
-string promptString(const string& title, const string& message, const string& default_value)
+wxString promptString(const wxString& title, const wxString& message, const wxString& default_value)
 {
 	return wxGetTextFromUser(message, title, default_value, Lua::currentWindow());
 }
 
 // Prompt for a number
-int promptNumber(const string& title, const string& message, int default_value, int min, int max)
+int promptNumber(const wxString& title, const wxString& message, int default_value, int min, int max)
 {
 	return (int)wxGetNumberFromUser(message, "", title, default_value, min, max);
 }
 
 // Prompt for a yes/no answer
-bool promptYesNo(const string& title, const string& message)
+bool promptYesNo(const wxString& title, const wxString& message)
 {
 	return (wxMessageBox(message, title, wxYES_NO | wxICON_QUESTION) == wxYES);
 }
 
 // Browse for a single file
-string browseFile(const string& title, const string& extensions, const string& filename)
+wxString browseFile(const wxString& title, const wxString& extensions, const wxString& filename)
 {
 	SFileDialog::FDInfo inf;
 	SFileDialog::openFile(inf, title, extensions, Lua::currentWindow(), filename);
@@ -48,10 +48,10 @@ string browseFile(const string& title, const string& extensions, const string& f
 }
 
 // Browse for multiple files
-vector<string> browseFiles(const string& title, const string& extensions)
+vector<wxString> browseFiles(const wxString& title, const wxString& extensions)
 {
 	SFileDialog::FDInfo inf;
-	vector<string>      filenames;
+	vector<wxString>    filenames;
 	if (SFileDialog::openFiles(inf, title, extensions, Lua::currentWindow()))
 		filenames.assign(inf.filenames.begin(), inf.filenames.end());
 	return filenames;
@@ -144,8 +144,8 @@ void registerSplashWindowNamespace(sol::state& lua)
 	splash.set_function(
 		"show",
 		sol::overload(
-			[](const string& message) { UI::showSplash(message, false, Lua::currentWindow()); },
-			[](const string& message, bool progress) { UI::showSplash(message, progress, Lua::currentWindow()); }));
+			[](const wxString& message) { UI::showSplash(message, false, Lua::currentWindow()); },
+			[](const wxString& message, bool progress) { UI::showSplash(message, progress, Lua::currentWindow()); }));
 	splash.set_function("hide", &UI::hideSplash);
 	splash.set_function("update", &UI::updateSplash);
 	splash.set_function("progress", &UI::getSplashProgress);

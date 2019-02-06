@@ -12,7 +12,7 @@ public:
 
 	void init() override;
 	void applyPreferences() override;
-	void showSubSection(const string& subsection) override;
+	void showSubSection(const wxString& subsection) override;
 
 private:
 	TabControl* stc_tabs_ = nullptr;

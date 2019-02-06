@@ -121,7 +121,7 @@ void NodesPrefsPanel::init()
 // Populates the options CheckListBox with options for the currently selected
 // node builder
 // -----------------------------------------------------------------------------
-void NodesPrefsPanel::populateOptions(const string& options) const
+void NodesPrefsPanel::populateOptions(const wxString& options) const
 {
 	// Get current builder
 	auto& builder = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
@@ -152,7 +152,7 @@ void NodesPrefsPanel::applyPreferences()
 	nodebuilder_id = builder.id;
 
 	// Set options string
-	string opt = " ";
+	wxString opt = " ";
 	for (unsigned a = 0; a < clb_options_->GetCount(); a++)
 	{
 		if (clb_options_->IsChecked(a))
@@ -181,7 +181,7 @@ void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e)
 
 	// Setup extension
 #ifdef __WXMSW__
-	string ext = S_FMT("%s.exe|%s.exe|All Files (*.*)|*.*", builder.exe, builder.exe);
+	wxString ext = S_FMT("%s.exe|%s.exe|All Files (*.*)|*.*", builder.exe, builder.exe);
 #else
 	string ext = S_FMT("%s|%s|All Files (*.*)|*.*", builder.exe, builder.exe);
 #endif

@@ -332,7 +332,7 @@ bool LibArchive::isLibArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Shadowcaster lib archive
 // -----------------------------------------------------------------------------
-bool LibArchive::isLibArchive(const string& filename)
+bool LibArchive::isLibArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

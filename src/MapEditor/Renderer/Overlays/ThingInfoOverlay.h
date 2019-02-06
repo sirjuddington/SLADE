@@ -15,11 +15,11 @@ public:
 	void draw(int bottom, int right, float alpha = 1.0f);
 
 private:
-	string  sprite_;
-	string  translation_;
-	string  palette_;
-	string  icon_;
-	int     zeth_icon_ = -1;
-	TextBox text_box_;
-	int     last_size_ = 100;
+	wxString sprite_;
+	wxString translation_;
+	wxString palette_;
+	wxString icon_;
+	int      zeth_icon_ = -1;
+	TextBox  text_box_;
+	int      last_size_ = 100;
 };

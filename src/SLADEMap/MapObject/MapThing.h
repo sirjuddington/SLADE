@@ -7,19 +7,19 @@ class MapThing : public MapObject
 	friend class SLADEMap;
 
 public:
-	static const string PROP_X;
-	static const string PROP_Y;
-	static const string PROP_Z;
-	static const string PROP_TYPE;
-	static const string PROP_ANGLE;
-	static const string PROP_FLAGS;
-	static const string PROP_ARG0;
-	static const string PROP_ARG1;
-	static const string PROP_ARG2;
-	static const string PROP_ARG3;
-	static const string PROP_ARG4;
-	static const string PROP_ID;
-	static const string PROP_SPECIAL;
+	static const wxString PROP_X;
+	static const wxString PROP_Y;
+	static const wxString PROP_Z;
+	static const wxString PROP_TYPE;
+	static const wxString PROP_ANGLE;
+	static const wxString PROP_FLAGS;
+	static const wxString PROP_ARG0;
+	static const wxString PROP_ARG1;
+	static const wxString PROP_ARG2;
+	static const wxString PROP_ARG3;
+	static const wxString PROP_ARG4;
+	static const wxString PROP_ID;
+	static const wxString PROP_SPECIAL;
 
 	MapThing(
 		const Vec3f&  pos     = { 0., 0., 0. },
@@ -48,10 +48,10 @@ public:
 
 	Vec2f getPoint(Point point) override;
 
-	int    intProperty(const string& key) override;
-	double floatProperty(const string& key) override;
-	void   setIntProperty(const string& key, int value) override;
-	void   setFloatProperty(const string& key, double value) override;
+	int    intProperty(const wxString& key) override;
+	double floatProperty(const wxString& key) override;
+	void   setIntProperty(const wxString& key, int value) override;
+	void   setFloatProperty(const wxString& key, double value) override;
 
 	void copy(MapObject* c) override;
 
@@ -70,7 +70,7 @@ public:
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
 
-	void writeUDMF(string& def) override;
+	void writeUDMF(wxString& def) override;
 
 	operator Debuggable() const
 	{

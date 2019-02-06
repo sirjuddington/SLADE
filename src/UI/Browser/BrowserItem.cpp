@@ -54,7 +54,7 @@ using ItemView = BrowserCanvas::ItemView;
 // -----------------------------------------------------------------------------
 // BrowserItem class constructor
 // -----------------------------------------------------------------------------
-BrowserItem::BrowserItem(const string& name, unsigned index, const string& type) :
+BrowserItem::BrowserItem(const wxString& name, unsigned index, const wxString& type) :
 	type_{ type },
 	name_{ name },
 	index_{ index }
@@ -85,7 +85,7 @@ void BrowserItem::draw(
 	bool          text_shadow)
 {
 	// Determine item name string (for normal viewtype)
-	string draw_name = "";
+	wxString draw_name = "";
 	if (nametype == NameType::Normal)
 		draw_name = name_;
 	else if (nametype == NameType::Index)
@@ -98,8 +98,8 @@ void BrowserItem::draw(
 		// textures/AQDIRT01.png -> t./AQDIRT01.png
 		if (draw_name.Find('/') != wxNOT_FOUND)
 		{
-			int    lastPos       = 0;
-			string new_draw_name = "";
+			int      lastPos       = 0;
+			wxString new_draw_name = "";
 			while (draw_name.Mid(lastPos).Find('/') != wxNOT_FOUND)
 			{
 				new_draw_name += draw_name.Mid(lastPos, 1) + "./";

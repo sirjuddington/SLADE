@@ -195,7 +195,7 @@ void MapCanvas::mouseLook3d()
 // -----------------------------------------------------------------------------
 // Called when the key bind [name] is pressed
 // -----------------------------------------------------------------------------
-void MapCanvas::onKeyBindPress(const string& name)
+void MapCanvas::onKeyBindPress(const wxString& name)
 {
 	// Screenshot
 #ifdef USE_SFML_RENDERWINDOW
@@ -222,9 +222,9 @@ void MapCanvas::onKeyBindPress(const string& name)
 		// Save to file
 		wxDateTime date;
 		date.SetToCurrent();
-		string timestamp = date.FormatISOCombined('-');
+		wxString timestamp = date.FormatISOCombined('-');
 		timestamp.Replace(":", "");
-		string filename = App::path(S_FMT("sladeshot-%s.png", timestamp), App::Dir::User);
+		wxString filename = App::path(S_FMT("sladeshot-%s.png", timestamp), App::Dir::User);
 		if (shot.saveToFile(UTF8(filename)))
 		{
 			// Editor message if the file is actually written, with full path

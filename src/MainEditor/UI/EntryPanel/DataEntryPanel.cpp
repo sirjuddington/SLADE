@@ -67,7 +67,7 @@ int DataEntryTable::GetNumberCols()
 // -----------------------------------------------------------------------------
 // Returns the string value for the cell at [row,col]
 // -----------------------------------------------------------------------------
-string DataEntryTable::GetValue(int row, int col)
+wxString DataEntryTable::GetValue(int row, int col)
 {
 	if (!data_.seek(data_start_ + ((row * row_stride_) + columns_[col].row_offset), 0))
 		return "INVALID";
@@ -187,7 +187,7 @@ string DataEntryTable::GetValue(int row, int col)
 // -----------------------------------------------------------------------------
 // Sets the value for the cell at [row,col] to [value]
 // -----------------------------------------------------------------------------
-void DataEntryTable::SetValue(int row, int col, const string& value)
+void DataEntryTable::SetValue(int row, int col, const wxString& value)
 {
 	// Seek to data position
 	if (!data_.seek(data_start_ + (row * row_stride_) + columns_[col].row_offset, 0))
@@ -281,7 +281,7 @@ void DataEntryTable::SetValue(int row, int col, const string& value)
 // -----------------------------------------------------------------------------
 // Returns the header label text for column [col]
 // -----------------------------------------------------------------------------
-string DataEntryTable::GetColLabelValue(int col)
+wxString DataEntryTable::GetColLabelValue(int col)
 {
 	if ((unsigned)col < columns_.size())
 		return columns_[col].name;
@@ -292,7 +292,7 @@ string DataEntryTable::GetColLabelValue(int col)
 // -----------------------------------------------------------------------------
 // Returns the header label text for [row]
 // -----------------------------------------------------------------------------
-string DataEntryTable::GetRowLabelValue(int row)
+wxString DataEntryTable::GetRowLabelValue(int row)
 {
 	return row_prefix_ + S_FMT("%d", row_first_ + row);
 }
@@ -441,7 +441,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	data_.write(entry->rawData(), entry->size());
 
 	// Setup columns
-	string type = entry->type()->id();
+	wxString type = entry->type()->id();
 
 	// VERTEXES
 	if (type == "map_vertexes")
@@ -924,12 +924,13 @@ bool DataEntryPanel::saveEntry()
 	if (type == "pnames" || type == "notpnames")
 	{
 		// PNAMES
-		if (wxMessageBox("Modifying PNAMES directly can cause TEXTUREx errors if you don't know what you are doing. It "
-						 "is highly recommended that you use the texture editor to modify PNAMES safely.\nAre you sure "
-						 "you want to continue saving?",
-						 "PNAMES Entry Modification Warning",
-						 wxYES_NO | wxICON_WARNING,
-						 this)
+		if (wxMessageBox(
+				"Modifying PNAMES directly can cause TEXTUREx errors if you don't know what you are doing. It "
+				"is highly recommended that you use the texture editor to modify PNAMES safely.\nAre you sure "
+				"you want to continue saving?",
+				"PNAMES Entry Modification Warning",
+				wxYES_NO | wxICON_WARNING,
+				this)
 			== wxYES)
 		{
 			// Write number of entries
@@ -1064,10 +1065,10 @@ void DataEntryPanel::changeValue() const
 	auto selection = this->selection();
 
 	// Determine common value (if any)
-	string initial_val;
+	wxString initial_val;
 	for (auto& a : selection)
 	{
-		string cell_value = grid_data_->GetCellValue(a.x, a.y);
+		wxString cell_value = grid_data_->GetCellValue(a.x, a.y);
 		if (initial_val.empty())
 			initial_val = cell_value;
 		else if (initial_val != cell_value)
@@ -1097,12 +1098,12 @@ void DataEntryPanel::changeValue() const
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		// Get entered value
-		string val = combo->GetValue();
-		long   lval;
+		wxString val = combo->GetValue();
+		long     lval;
 		if (!val.ToLong(&lval))
 		{
 			// Invalid number, check for option value
-			string numpart = val.BeforeFirst(':');
+			wxString numpart = val.BeforeFirst(':');
 			if (!numpart.ToLong(&lval))
 				return;
 		}
@@ -1117,7 +1118,7 @@ void DataEntryPanel::changeValue() const
 // ----------------------------------------------------------------------------
 // Handles any SAction messages (from the panel toolbar)
 // ----------------------------------------------------------------------------
-bool DataEntryPanel::handleEntryPanelAction(const string& action_id)
+bool DataEntryPanel::handleEntryPanelAction(const wxString& action_id)
 {
 	if (action_id == "data_add_row")
 		addRow();

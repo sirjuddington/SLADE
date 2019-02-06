@@ -27,24 +27,24 @@ public:
 		Vec2f    scale         = { 1., 1. };
 		~Texture() { OpenGL::Texture::clear(gl_id); }
 	};
-	typedef std::map<string, Texture> MapTexHashMap;
+	typedef std::map<wxString, Texture> MapTexHashMap;
 
 	struct TexInfo
 	{
-		string   short_name;
+		wxString short_name;
 		Category category;
 		Archive* archive;
-		string   path;
+		wxString path;
 		unsigned index;
-		string   long_name;
+		wxString long_name;
 
 		TexInfo(
-			const string& short_name,
-			Category      category,
-			Archive*      archive,
-			const string& path,
-			unsigned      index     = 0,
-			const string& long_name = "") :
+			const wxString& short_name,
+			Category        category,
+			Archive*        archive,
+			const wxString& path,
+			unsigned        index     = 0,
+			const wxString& long_name = "") :
 			short_name(short_name),
 			category(category),
 			archive(archive),
@@ -64,16 +64,16 @@ public:
 	void buildTexInfoList();
 
 	Palette*       resourcePalette() const;
-	const Texture& texture(const string& name, bool mixed);
-	const Texture& flat(const string& name, bool mixed);
-	const Texture& sprite(string name, const string& translation = "", const string& palette = "");
-	const Texture& editorImage(const string& name);
-	int            verticalOffset(const string& name) const;
+	const Texture& texture(const wxString& name, bool mixed);
+	const Texture& flat(const wxString& name, bool mixed);
+	const Texture& sprite(wxString name, const wxString& translation = "", const wxString& palette = "");
+	const Texture& editorImage(const wxString& name);
+	int            verticalOffset(const wxString& name) const;
 
 	vector<TexInfo>& allTexturesInfo() { return tex_info_; }
 	vector<TexInfo>& allFlatsInfo() { return flat_info_; }
 
-	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
 
 private:
 	Archive*                 archive_ = nullptr;
@@ -86,5 +86,5 @@ private:
 	vector<TexInfo>          tex_info_;
 	vector<TexInfo>          flat_info_;
 
-	void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, const string& path) const;
+	void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, const wxString& path) const;
 };

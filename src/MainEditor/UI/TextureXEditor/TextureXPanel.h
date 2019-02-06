@@ -19,7 +19,7 @@ public:
 	void        updateList(bool clear = false) override;
 	static bool sizeSort(long left, long right);
 	void        sortItems() override;
-	void        setFilter(const string& filter)
+	void        setFilter(const wxString& filter)
 	{
 		filter_text_ = filter;
 		updateList();
@@ -27,8 +27,8 @@ public:
 	void applyFilter() override;
 
 protected:
-	string itemText(long item, long column, long index) const override;
-	void   updateItemAttr(long item, long column, long index) const override;
+	wxString itemText(long item, long column, long index) const override;
+	void     updateItemAttr(long item, long column, long index) const override;
 
 private:
 	TextureXList* texturex_;
@@ -53,14 +53,14 @@ public:
 	void updateTextureList() const { list_textures_->updateList(); }
 
 	// Texture operations
-	CTexture::UPtr newTextureFromPatch(const string& name, const string& patch);
+	CTexture::UPtr newTextureFromPatch(const wxString& name, const wxString& patch);
 	void           newTexture();
 	void           newTextureFromPatch();
 	void           newTextureFromFile();
 	void           removeTexture();
 	void           renameTexture(bool each = false);
 	void           exportTexture();
-	bool           exportAsPNG(CTexture* texture, const string& filename, bool force_rgba) const;
+	bool           exportAsPNG(CTexture* texture, const wxString& filename, bool force_rgba) const;
 	void           extractTexture();
 	bool           modifyOffsets();
 	void           moveUp();
@@ -70,11 +70,11 @@ public:
 	void           paste();
 
 	// Undo/Redo
-	void onUndo(const string& undo_action) const;
-	void onRedo(const string& undo_action) const;
+	void onUndo(const wxString& undo_action) const;
+	void onRedo(const wxString& undo_action) const;
 
 	// SAction handler
-	bool handleAction(const string& id) override;
+	bool handleAction(const wxString& id) override;
 
 private:
 	TextureXList    texturex_;

@@ -60,26 +60,26 @@
 // -----------------------------------------------------------------------------
 namespace Global
 {
-string error = "";
+wxString error = "";
 
 #ifdef GIT_DESCRIPTION
 string sc_rev = GIT_DESCRIPTION;
 #else
-string sc_rev = "";
+wxString sc_rev = "";
 #endif
 
 #ifdef DEBUG
 bool debug = true;
 #else
-bool   debug  = false;
+bool     debug  = false;
 #endif
 
 int win_version_major = 0;
 int win_version_minor = 0;
 } // namespace Global
 
-string current_action           = "";
-bool   update_check_message_box = false;
+wxString current_action           = "";
+bool     update_check_message_box = false;
 CVAR(String, dir_last, "", CVar::Flag::Save)
 CVAR(Bool, update_check, true, CVar::Flag::Save)
 CVAR(Bool, update_check_beta, false, CVar::Flag::Save)
@@ -136,21 +136,21 @@ public:
 	SLADEStackTrace() { stack_trace_ = "Stack Trace:\n"; }
 	~SLADEStackTrace() = default;
 
-	string traceString() const { return stack_trace_; }
-	string topLevel() const { return top_level_; }
+	wxString traceString() const { return stack_trace_; }
+	wxString topLevel() const { return top_level_; }
 
 	void OnStackFrame(const wxStackFrame& frame) override
 	{
-		string location = "[unknown location] ";
+		wxString location = "[unknown location] ";
 		if (frame.HasSourceLocation())
 			location = S_FMT("(%s:%d) ", frame.GetFileName(), frame.GetLine());
 
 		wxUIntPtr address   = wxPtrToUInt(frame.GetAddress());
-		string    func_name = frame.GetName();
+		wxString  func_name = frame.GetName();
 		if (func_name.IsEmpty())
 			func_name = S_FMT("[unknown:%d]", address);
 
-		string line = S_FMT("%s%s", location, func_name);
+		wxString line = S_FMT("%s%s", location, func_name);
 		stack_trace_.Append(S_FMT("%d: %s\n", frame.GetLevel(), line));
 
 		if (frame.GetLevel() == 0)
@@ -158,8 +158,8 @@ public:
 	}
 
 private:
-	string stack_trace_;
-	string top_level_;
+	wxString stack_trace_;
+	wxString top_level_;
 };
 
 
@@ -196,7 +196,7 @@ public:
 
 		// Add general crash message
 #ifndef NOCURL
-		string message =
+		wxString message =
 			"SLADE has crashed unexpectedly. To help fix the problem that caused this crash, "
 			"please (optionally) enter a short description of what you were doing at the time "
 			"of the crash, and click the 'Send Crash Report' button.";
@@ -265,7 +265,7 @@ public:
 
 #ifndef NOCURL
 		// Add small privacy disclaimer
-		string privacy =
+		wxString privacy =
 			"Sending a crash report will only send the information displayed above, "
 			"along with a copy of the logs for this session.";
 		label = new wxStaticText(this, -1, privacy);
@@ -394,8 +394,8 @@ private:
 	wxButton*   btn_copy_trace_;
 	wxButton*   btn_exit_;
 	wxButton*   btn_send_;
-	string      trace_;
-	string      top_level_;
+	wxString    trace_;
+	wxString    top_level_;
 };
 #endif // wxUSE_STACKWALKER
 
@@ -550,7 +550,7 @@ bool SLADEWxApp::OnInit()
 	wxLog::SetActiveTarget(new SLADELog());
 
 	// Get command line arguments
-	vector<string> args;
+	vector<wxString> args;
 	for (int a = 1; a < argc; a++)
 		args.push_back(argv[a]);
 
@@ -685,7 +685,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 
 	// Parse version info
 	App::Version stable, beta;
-	string       bin_stable, installer_stable, bin_beta; // Currently unused but may be useful in the future
+	wxString     bin_stable, installer_stable, bin_beta; // Currently unused but may be useful in the future
 	Parser       parser;
 	if (parser.parseText(e.GetString()))
 	{
@@ -756,7 +756,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	bool new_beta   = App::version().cmp(beta) < 0;
 
 	// Set up for new beta/stable version prompt (if any)
-	string message, caption, version;
+	wxString message, caption, version;
 	if (update_check_beta && new_beta)
 	{
 		// New Beta

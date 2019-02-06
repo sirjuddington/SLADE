@@ -50,7 +50,7 @@
 // -----------------------------------------------------------------------------
 // CTPatch class constructor w/initial values
 // -----------------------------------------------------------------------------
-CTPatch::CTPatch(const string& name, int16_t offset_x, int16_t offset_y) :
+CTPatch::CTPatch(const wxString& name, int16_t offset_x, int16_t offset_y) :
 	name_{ name },
 	offset_x_{ offset_x },
 	offset_y_{ offset_y }
@@ -89,7 +89,7 @@ ArchiveEntry* CTPatch::patchEntry(Archive* parent)
 // -----------------------------------------------------------------------------
 // CTPatchEx class constructor w/basic initial values
 // -----------------------------------------------------------------------------
-CTPatchEx::CTPatchEx(const string& name, int16_t offset_x, int16_t offset_y, Type type) :
+CTPatchEx::CTPatchEx(const wxString& name, int16_t offset_x, int16_t offset_y, Type type) :
 	CTPatch{ name, offset_x, offset_y },
 	type_{ type }
 {
@@ -184,8 +184,8 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 			if (tz.checkNC("Translation"))
 			{
 				// Build translation string
-				string translate;
-				string temp = tz.next().text;
+				wxString translate;
+				wxString temp = tz.next().text;
 				if (temp.Contains("="))
 					temp = S_FMT("\"%s\"", temp);
 				translate += temp;
@@ -210,7 +210,7 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 				blendtype_ = 2;
 
 				// Read first value
-				string first = tz.next().text;
+				wxString first = tz.next().text;
 
 				// If no second value, it's just a colour string
 				if (!tz.checkNext(","))
@@ -271,13 +271,13 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 // -----------------------------------------------------------------------------
 // Returns a text representation of the patch in ZDoom TEXTURES format
 // -----------------------------------------------------------------------------
-string CTPatchEx::asText()
+wxString CTPatchEx::asText()
 {
 	// Init text string
-	string typestring = "Patch";
+	wxString typestring = "Patch";
 	if (type_ == Type::Graphic)
 		typestring = "Graphic";
-	string text = S_FMT("\t%s \"%s\", %d, %d\n", typestring, name_, offset_x_, offset_y_);
+	wxString text = S_FMT("\t%s \"%s\", %d, %d\n", typestring, name_, offset_x_, offset_y_);
 
 	// Check if we need to write any extra properties
 	if (!flip_x_ && !flip_y_ && !use_offsets_ && rotation_ == 0 && blendtype_ == 0 && alpha_ == 1.0f
@@ -444,7 +444,7 @@ void CTexture::clear()
 // Adds a patch to the texture with the given attributes, at [index].
 // If [index] is -1, the patch is added to the end of the list.
 // -----------------------------------------------------------------------------
-bool CTexture::addPatch(const string& patch, int16_t offset_x, int16_t offset_y, int index)
+bool CTexture::addPatch(const wxString& patch, int16_t offset_x, int16_t offset_y, int index)
 {
 	// Create new patch
 	CTPatch::UPtr np;
@@ -494,7 +494,7 @@ bool CTexture::removePatch(size_t index)
 // Removes all instances of [patch] from the texture.
 // Returns true if any were removed, false otherwise
 // -----------------------------------------------------------------------------
-bool CTexture::removePatch(const string& patch)
+bool CTexture::removePatch(const wxString& patch)
 {
 	// Go through patches
 	bool removed = false;
@@ -522,7 +522,7 @@ bool CTexture::removePatch(const string& patch)
 // ArchiveEntry with [newentry].
 // Returns false if [index] is out of bounds, true otherwise
 // -----------------------------------------------------------------------------
-bool CTexture::replacePatch(size_t index, const string& newpatch)
+bool CTexture::replacePatch(size_t index, const wxString& newpatch)
 {
 	// Check index
 	if (index >= patches_.size())
@@ -595,7 +595,7 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 // -----------------------------------------------------------------------------
 // Parses a TEXTURES format texture definition
 // -----------------------------------------------------------------------------
-bool CTexture::parse(Tokenizer& tz, const string& type)
+bool CTexture::parse(Tokenizer& tz, const wxString& type)
 {
 	// Check if optional
 	if (tz.advIfNext("optional"))
@@ -708,7 +708,7 @@ bool CTexture::parseDefine(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the texture, in ZDoom TEXTURES format
 // -----------------------------------------------------------------------------
-string CTexture::asText()
+wxString CTexture::asText()
 {
 	// Can't write non-extended texture as text
 	if (!extended_)
@@ -719,7 +719,7 @@ string CTexture::asText()
 		return S_FMT("define \"%s\" %d %d\n", name_, def_width_, def_height_);
 
 	// Init text string
-	string text;
+	wxString text;
 	if (optional_)
 		text = S_FMT("%s Optional \"%s\", %d, %d\n{\n", type_, name_, width_, height_);
 	else

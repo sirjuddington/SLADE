@@ -45,7 +45,7 @@
 // -----------------------------------------------------------------------------
 // Returns true if a property with the given name exists, false otherwise
 // -----------------------------------------------------------------------------
-bool PropertyList::propertyExists(const string& key)
+bool PropertyList::propertyExists(const wxString& key)
 {
 	// Try to find specified key
 	return !(properties_.empty() || properties_.find(key) == properties_.end());
@@ -55,7 +55,7 @@ bool PropertyList::propertyExists(const string& key)
 // Removes a property value, returns true if [key] was removed or false if key
 // didn't exist
 // -----------------------------------------------------------------------------
-bool PropertyList::removeProperty(const string& key)
+bool PropertyList::removeProperty(const wxString& key)
 {
 	return properties_.erase(key) > 0;
 }
@@ -77,7 +77,7 @@ void PropertyList::copyTo(PropertyList& list)
 // -----------------------------------------------------------------------------
 // Adds a 'flag' property [key]
 // -----------------------------------------------------------------------------
-void PropertyList::addFlag(const string& key)
+void PropertyList::addFlag(const wxString& key)
 {
 	Property flag;
 	properties_[key] = flag;
@@ -86,10 +86,10 @@ void PropertyList::addFlag(const string& key)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the property list
 // -----------------------------------------------------------------------------
-string PropertyList::toString(bool condensed) const
+wxString PropertyList::toString(bool condensed) const
 {
 	// Init return string
-	string ret = wxEmptyString;
+	wxString ret = wxEmptyString;
 
 	// Go through all properties
 	for (auto& i : properties_)
@@ -99,8 +99,8 @@ string PropertyList::toString(bool condensed) const
 			continue;
 
 		// Add "key = value;\n" to the return string
-		string key = i.first;
-		string val = i.second.stringValue();
+		wxString key = i.first;
+		wxString val = i.second.stringValue();
 
 		if (i.second.type() == Property::Type::String)
 			val = "\"" + val + "\"";
@@ -128,7 +128,7 @@ void PropertyList::allProperties(vector<Property>& list, bool ignore_no_value)
 // -----------------------------------------------------------------------------
 // Adds all existing property names to [list]
 // -----------------------------------------------------------------------------
-void PropertyList::allPropertyNames(vector<string>& list, bool ignore_no_value)
+void PropertyList::allPropertyNames(vector<wxString>& list, bool ignore_no_value)
 {
 	// Add all properties to the list
 	for (auto& i : properties_)

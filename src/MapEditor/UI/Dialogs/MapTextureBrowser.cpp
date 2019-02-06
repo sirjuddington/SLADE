@@ -48,8 +48,8 @@ using namespace MapEditor;
 // -----------------------------------------------------------------------------
 CVAR(Int, map_tex_sort, 2, CVar::Flag::Save)
 CVAR(String, map_tex_treespec, "type,archive,category", CVar::Flag::Save)
-const string MapTexBrowserItem::TEXTURE = "texture";
-const string MapTexBrowserItem::FLAT    = "flat";
+const wxString MapTexBrowserItem::TEXTURE = "texture";
+const wxString MapTexBrowserItem::FLAT    = "flat";
 
 
 // -----------------------------------------------------------------------------
@@ -62,7 +62,7 @@ const string MapTexBrowserItem::FLAT    = "flat";
 // -----------------------------------------------------------------------------
 // MapTexBrowserItem class constructor
 // -----------------------------------------------------------------------------
-MapTexBrowserItem::MapTexBrowserItem(const string& name, const string& type, unsigned index) :
+MapTexBrowserItem::MapTexBrowserItem(const wxString& name, const wxString& type, unsigned index) :
 	BrowserItem(name, index, type)
 {
 	// Check for blank texture
@@ -96,9 +96,9 @@ bool MapTexBrowserItem::loadImage()
 // -----------------------------------------------------------------------------
 // Returns a string with extra information about the texture/flat
 // -----------------------------------------------------------------------------
-string MapTexBrowserItem::itemInfo()
+wxString MapTexBrowserItem::itemInfo()
 {
-	string info;
+	wxString info;
 
 	// Check for blank texture
 	if (name_ == "-")
@@ -138,7 +138,7 @@ string MapTexBrowserItem::itemInfo()
 // -----------------------------------------------------------------------------
 // MapTextureBrowser class constructor
 // -----------------------------------------------------------------------------
-MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const string& texture, SLADEMap* map) :
+MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const wxString& texture, SLADEMap* map) :
 	BrowserWindow(parent, true),
 	type_{ type },
 	map_{ map }
@@ -215,7 +215,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const s
 				continue;
 
 			// Determine tree path
-			string path = determineTexturePath(flats[a].archive, flats[a].category, "Flats", flats[a].path);
+			wxString path = determineTexturePath(flats[a].archive, flats[a].category, "Flats", flats[a].path);
 
 			// Add browser item
 			if (flats[a].category == MapTextureManager::Category::ZDTextures)
@@ -266,14 +266,14 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const s
 // -----------------------------------------------------------------------------
 // Builds and returns the tree item path for [info]
 // -----------------------------------------------------------------------------
-string MapTextureBrowser::determineTexturePath(
+wxString MapTextureBrowser::determineTexturePath(
 	Archive*                    archive,
 	MapTextureManager::Category category,
-	const string&               type,
-	const string&               path) const
+	const wxString&             type,
+	const wxString&             path) const
 {
-	auto   tree_spec = wxSplit(map_tex_treespec, ',');
-	string ret;
+	auto     tree_spec = wxSplit(map_tex_treespec, ',');
+	wxString ret;
 	for (const auto& b : tree_spec)
 	{
 		if (b == "archive")

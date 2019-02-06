@@ -82,8 +82,8 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 		sizer->Add(framesizer, 0, wxEXPAND | wxTOP, UI::pad());
 
 		// Damage
-		string damage_types[] = { "None", "5%", "10%", "20%" };
-		choice_damage_        = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, damage_types);
+		wxString damage_types[] = { "None", "5%", "10%", "20%" };
+		choice_damage_          = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, damage_types);
 		choice_damage_->Select(0);
 		framesizer->Add(WxUtils::createLabelHBox(this, "Damage:", choice_damage_), 0, wxEXPAND | wxALL, UI::pad());
 

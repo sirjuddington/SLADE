@@ -446,7 +446,7 @@ bool BSPArchive::isBSPArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Quake BSP archive
 // -----------------------------------------------------------------------------
-bool BSPArchive::isBSPArchive(const string& filename)
+bool BSPArchive::isBSPArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

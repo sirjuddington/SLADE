@@ -9,7 +9,7 @@ class UDMFProperty;
 class MOPGProperty
 {
 public:
-	MOPGProperty(const string& prop_name) : propname_{ prop_name } {}
+	MOPGProperty(const wxString& prop_name) : propname_{ prop_name } {}
 	virtual ~MOPGProperty() = default;
 
 	enum class Type
@@ -30,7 +30,7 @@ public:
 		Id,
 	};
 
-	string       propName() const { return propname_; }
+	wxString     propName() const { return propname_; }
 	void         setParent(MapObjectPropsPanel* parent) { parent_ = parent; }
 	virtual void setUDMFProp(UDMFProperty* prop) { udmf_prop_ = prop; }
 
@@ -44,7 +44,7 @@ protected:
 	MapObjectPropsPanel* parent_    = nullptr;
 	bool                 noupdate_  = false;
 	UDMFProperty*        udmf_prop_ = nullptr;
-	string               propname_;
+	wxString             propname_;
 };
 
 class MOPGBoolProperty : public MOPGProperty, public wxBoolProperty

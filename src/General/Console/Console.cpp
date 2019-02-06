@@ -61,7 +61,7 @@ void Console::addCommand(ConsoleCommand& c)
 // -----------------------------------------------------------------------------
 // Attempts to execute the command line given
 // -----------------------------------------------------------------------------
-void Console::execute(const string& command)
+void Console::execute(const wxString& command)
 {
 	Log::info(S_FMT("> %s", command));
 
@@ -77,10 +77,10 @@ void Console::execute(const string& command)
 	tz.openString(command);
 
 	// Get the command name
-	string cmd_name = tz.current().text;
+	wxString cmd_name = tz.current().text;
 
 	// Get all args
-	vector<string> args;
+	vector<wxString> args;
 	while (!tz.atEnd())
 		args.push_back(tz.next().text);
 
@@ -118,7 +118,7 @@ void Console::execute(const string& command)
 		}
 
 		// Print cvar value
-		string value = "";
+		wxString value = "";
 		if (cvar->type == CVar::Type::Boolean)
 		{
 			if (cvar->getValue().Bool)
@@ -157,10 +157,10 @@ void Console::execute(const string& command)
 // -----------------------------------------------------------------------------
 // Returns the last command sent to the console
 // -----------------------------------------------------------------------------
-string Console::lastCommand()
+wxString Console::lastCommand()
 {
 	// Init blank string
-	string lastCmd = "";
+	wxString lastCmd = "";
 
 	// Get last command if any exist
 	if (!cmd_log_.empty())
@@ -173,7 +173,7 @@ string Console::lastCommand()
 // Returns the previous command at [index] from the last entered
 // (ie, index=0 will be the directly previous command)
 // -----------------------------------------------------------------------------
-string Console::prevCommand(int index)
+wxString Console::prevCommand(int index)
 {
 	// Check index
 	if (index < 0 || (unsigned)index >= cmd_log_.size())
@@ -205,8 +205,8 @@ ConsoleCommand& Console::command(size_t index)
 // ConsoleCommand class constructor
 // -----------------------------------------------------------------------------
 ConsoleCommand::ConsoleCommand(
-	const string& name,
-	void (*command_func)(const vector<string>&),
+	const wxString& name,
+	void (*command_func)(const vector<wxString>&),
 	int  min_args = 0,
 	bool show_in_list)
 {
@@ -223,7 +223,7 @@ ConsoleCommand::ConsoleCommand(
 // -----------------------------------------------------------------------------
 // Executes the console command
 // -----------------------------------------------------------------------------
-void ConsoleCommand::execute(const vector<string>& args) const
+void ConsoleCommand::execute(const vector<wxString>& args) const
 {
 	// Only execute if we have the minimum args specified
 	if (args.size() >= min_args_)
@@ -270,7 +270,7 @@ CONSOLE_COMMAND(cmdlist, 0, true)
 CONSOLE_COMMAND(cvarlist, 0, true)
 {
 	// Get sorted list of cvars
-	vector<string> list;
+	vector<wxString> list;
 	CVar::putList(list);
 	sort(list.begin(), list.end());
 

@@ -79,7 +79,7 @@ SplashWindow::SplashWindow() :
 // -----------------------------------------------------------------------------
 // Changes the splash window message
 // -----------------------------------------------------------------------------
-void SplashWindow::setMessage(const string& message)
+void SplashWindow::setMessage(const wxString& message)
 {
 	message_ = message;
 	forceRedraw();
@@ -88,7 +88,7 @@ void SplashWindow::setMessage(const string& message)
 // -----------------------------------------------------------------------------
 // Changes the progress bar message
 // -----------------------------------------------------------------------------
-void SplashWindow::setProgressMessage(const string& message)
+void SplashWindow::setProgressMessage(const wxString& message)
 {
 	message_progress_ = message;
 	forceRedraw();
@@ -118,8 +118,8 @@ void SplashWindow::init()
 		return;
 
 	// Load logo image
-	string tempfile = App::path("temp.png", App::Dir::Temp);
-	auto   logo     = App::archiveManager().programResourceArchive()->entry("logo.png");
+	wxString tempfile = App::path("temp.png", App::Dir::Temp);
+	auto     logo     = App::archiveManager().programResourceArchive()->entry("logo.png");
 	if (logo)
 	{
 		logo->exportFile(tempfile);
@@ -144,7 +144,7 @@ void SplashWindow::init()
 // Shows the splash window with [message].
 // If [progress] is true, a progress bar will also be shown
 // -----------------------------------------------------------------------------
-void SplashWindow::show(const string& message, bool progress, wxWindow* parent)
+void SplashWindow::show(const wxString& message, bool progress, wxWindow* parent)
 {
 	// Setup progress bar
 	int rheight = img_height;
@@ -224,10 +224,10 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	dc.SetFont(font);
 
 	// Draw version
-	string vers      = "v" + App::version().toString();
-	auto   text_size = dc.GetTextExtent(vers);
-	auto   x         = img_width - text_size.GetWidth() - UI::scalePx(8);
-	auto   y         = UI::scalePx(190) - text_size.GetHeight();
+	wxString vers      = "v" + App::version().toString();
+	auto     text_size = dc.GetTextExtent(vers);
+	auto     x         = img_width - text_size.GetWidth() - UI::scalePx(8);
+	auto     y         = UI::scalePx(190) - text_size.GetHeight();
 	dc.DrawText(vers, x, y);
 
 	// Draw message

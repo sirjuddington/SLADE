@@ -202,7 +202,7 @@ void InputPrefsPanel::init()
 // -----------------------------------------------------------------------------
 // Returns the wxTreeListItem for keybind group [group]
 // -----------------------------------------------------------------------------
-wxTreeListItem InputPrefsPanel::getListGroupItem(const string& group) const
+wxTreeListItem InputPrefsPanel::getListGroupItem(const wxString& group) const
 {
 	// Go through items
 	wxTreeListItem item = list_binds_->GetFirstChild(list_binds_->GetRootItem());

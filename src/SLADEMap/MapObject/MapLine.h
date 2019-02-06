@@ -18,18 +18,18 @@ public:
 		BackLower   = 0x20,
 	};
 
-	static const string PROP_V1;
-	static const string PROP_V2;
-	static const string PROP_S1;
-	static const string PROP_S2;
-	static const string PROP_SPECIAL;
-	static const string PROP_ID;
-	static const string PROP_FLAGS;
-	static const string PROP_ARG0;
-	static const string PROP_ARG1;
-	static const string PROP_ARG2;
-	static const string PROP_ARG3;
-	static const string PROP_ARG4;
+	static const wxString PROP_V1;
+	static const wxString PROP_V2;
+	static const wxString PROP_S1;
+	static const wxString PROP_S2;
+	static const wxString PROP_SPECIAL;
+	static const wxString PROP_ID;
+	static const wxString PROP_FLAGS;
+	static const wxString PROP_ARG0;
+	static const wxString PROP_ARG1;
+	static const wxString PROP_ARG2;
+	static const wxString PROP_ARG3;
+	static const wxString PROP_ARG4;
 
 	MapLine(
 		MapVertex* v1,
@@ -68,15 +68,15 @@ public:
 	int s1Index() const;
 	int s2Index() const;
 
-	bool   boolProperty(const string& key) override;
-	int    intProperty(const string& key) override;
-	double floatProperty(const string& key) override;
-	string stringProperty(const string& key) override;
-	void   setBoolProperty(const string& key, bool value) override;
-	void   setIntProperty(const string& key, int value) override;
-	void   setFloatProperty(const string& key, double value) override;
-	void   setStringProperty(const string& key, const string& value) override;
-	bool   scriptCanModifyProp(const string& key) override;
+	bool     boolProperty(const wxString& key) override;
+	int      intProperty(const wxString& key) override;
+	double   floatProperty(const wxString& key) override;
+	wxString stringProperty(const wxString& key) override;
+	void     setBoolProperty(const wxString& key, bool value) override;
+	void     setIntProperty(const wxString& key, int value) override;
+	void     setFloatProperty(const wxString& key, double value) override;
+	void     setStringProperty(const wxString& key, const wxString& value) override;
+	bool     scriptCanModifyProp(const wxString& key) override;
 
 	void setS1(MapSide* side);
 	void setS2(MapSide* side);
@@ -110,7 +110,7 @@ public:
 	void readBackup(Backup* backup) override;
 	void copy(MapObject*) override;
 
-	void writeUDMF(string& def) override;
+	void writeUDMF(wxString& def) override;
 
 	operator Debuggable() const
 	{

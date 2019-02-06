@@ -21,10 +21,10 @@ public:
 	}
 
 private:
-	vector<string>      info_;
-	vector<string>      info2_;
+	vector<wxString>    info_;
+	vector<wxString>    info2_;
 	MapEditor::ItemType current_type_ = MapEditor::ItemType::WallMiddle;
-	string              texname_;
+	wxString            texname_;
 	unsigned            texture_     = 0;
 	bool                thing_icon_  = false;
 	MapObject*          object_      = nullptr;

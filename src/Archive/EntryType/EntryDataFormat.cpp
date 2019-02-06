@@ -43,9 +43,9 @@
 // -----------------------------------------------------------------------------
 namespace
 {
-std::map<string, EntryDataFormat*> data_formats;
-EntryDataFormat*                   edf_any  = nullptr;
-EntryDataFormat*                   edf_text = nullptr;
+std::map<wxString, EntryDataFormat*> data_formats;
+EntryDataFormat*                     edf_any  = nullptr;
+EntryDataFormat*                     edf_text = nullptr;
 } // namespace
 
 
@@ -59,7 +59,7 @@ EntryDataFormat*                   edf_text = nullptr;
 // -----------------------------------------------------------------------------
 // EntryDataFormat class constructor
 // -----------------------------------------------------------------------------
-EntryDataFormat::EntryDataFormat(const string& id) : id_{ id }
+EntryDataFormat::EntryDataFormat(const wxString& id) : id_{ id }
 {
 	// Add to hash map
 	data_formats[id] = this;
@@ -95,7 +95,7 @@ void EntryDataFormat::copyToFormat(EntryDataFormat& target) const
 // Returns the entry data format matching [id], or the 'any' type if no match
 // found
 // -----------------------------------------------------------------------------
-EntryDataFormat* EntryDataFormat::format(const string& id)
+EntryDataFormat* EntryDataFormat::format(const wxString& id)
 {
 	auto i = data_formats.find(id);
 	return i == data_formats.end() ? edf_any : i->second;

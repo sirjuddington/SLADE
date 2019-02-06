@@ -73,7 +73,7 @@ void ThingInfoOverlay::update(MapThing* thing)
 	if (!thing)
 		return;
 
-	string info_text;
+	wxString info_text;
 	sprite_         = "";
 	translation_    = "";
 	palette_        = "";
@@ -81,8 +81,8 @@ void ThingInfoOverlay::update(MapThing* thing)
 	auto map_format = MapEditor::editContext().mapDesc().format;
 
 	// Index + type
-	auto&  tt   = Game::configuration().thingType(thing->type());
-	string type = S_FMT("%s (Type %d)", tt.name(), thing->type());
+	auto&    tt   = Game::configuration().thingType(thing->type());
+	wxString type = S_FMT("%s (Type %d)", tt.name(), thing->type());
 	if (Global::debug)
 		info_text += S_FMT("Thing #%d (%d): %s\n", thing->index(), thing->objId(), type);
 	else
@@ -90,14 +90,13 @@ void ThingInfoOverlay::update(MapThing* thing)
 
 	// Position
 	if (map_format != MapFormat::Doom)
-		info_text += S_FMT(
-			"Position: %d, %d, %d\n", (int)thing->xPos(), (int)thing->yPos(), (int)(thing->zPos()));
+		info_text += S_FMT("Position: %d, %d, %d\n", (int)thing->xPos(), (int)thing->yPos(), (int)(thing->zPos()));
 	else
 		info_text += S_FMT("Position: %d, %d\n", (int)thing->xPos(), (int)thing->yPos());
 
 	// Direction
-	int    angle = thing->angle();
-	string dir   = S_FMT("%d degrees", angle);
+	int      angle = thing->angle();
+	wxString dir   = S_FMT("%d degrees", angle);
 	if (angle == 0)
 		dir = "East";
 	else if (angle == 45)
@@ -122,10 +121,10 @@ void ThingInfoOverlay::update(MapThing* thing)
 	{
 		int as_id = thing->special();
 		info_text += S_FMT("Special: %d (%s)\n", as_id, Game::configuration().actionSpecialName(as_id));
-		string argxstr[2];
+		wxString argxstr[2];
 		argxstr[0] = thing->stringProperty("arg0str");
 		argxstr[1] = thing->stringProperty("arg1str");
-		string argstr;
+		wxString argstr;
 		if (tt.argSpec().count > 0)
 			argstr = tt.argSpec().stringDesc(thing->args().data(), argxstr);
 		else

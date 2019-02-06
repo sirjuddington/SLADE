@@ -235,8 +235,8 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Check entry name
-		string  name        = entry->name();
-		uint8_t name_length = static_cast<uint8_t>(name.Length());
+		wxString name        = entry->name();
+		uint8_t  name_length = static_cast<uint8_t>(name.Length());
 
 		if (name_length > NAME_SIZE - 1)
 		{
@@ -350,7 +350,7 @@ bool ChasmBinArchive::isChasmBinArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Chasm bin archive
 // -----------------------------------------------------------------------------
-bool ChasmBinArchive::isChasmBinArchive(const string& filename)
+bool ChasmBinArchive::isChasmBinArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

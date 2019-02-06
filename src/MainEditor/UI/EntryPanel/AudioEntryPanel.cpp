@@ -246,13 +246,13 @@ bool AudioEntryPanel::saveEntry()
 // -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
 // -----------------------------------------------------------------------------
-string AudioEntryPanel::statusString()
+wxString AudioEntryPanel::statusString()
 {
 	int hours, minutes, seconds, milliseconds = song_length_ % 1000;
-	seconds    = (song_length_ / 1000) % 60;
-	minutes    = (song_length_ / 60000) % 60;
-	hours      = (song_length_ / 3600000);
-	string ret = wxEmptyString;
+	seconds      = (song_length_ / 1000) % 60;
+	minutes      = (song_length_ / 60000) % 60;
+	hours        = (song_length_ / 3600000);
+	wxString ret = wxEmptyString;
 	if (hours)
 		ret = S_FMT("%d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
 	else if (minutes)
@@ -379,7 +379,7 @@ bool AudioEntryPanel::open()
 // -----------------------------------------------------------------------------
 // Opens an audio file for playback (SFML 2.x+)
 // -----------------------------------------------------------------------------
-bool AudioEntryPanel::openAudio(MemChunk& audio, const string& filename)
+bool AudioEntryPanel::openAudio(MemChunk& audio, const wxString& filename)
 {
 	// Stop if sound currently playing
 	resetStream();
@@ -448,7 +448,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, const string& filename)
 // -----------------------------------------------------------------------------
 // Opens a MIDI file for playback
 // -----------------------------------------------------------------------------
-bool AudioEntryPanel::openMidi(MemChunk& data, const string& filename)
+bool AudioEntryPanel::openMidi(MemChunk& data, const wxString& filename)
 {
 	// Enable volume control
 	slider_volume_->Enable(true);
@@ -508,7 +508,7 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 // -----------------------------------------------------------------------------
 // Opens audio file [filename] in the wxMediaCtrl
 // -----------------------------------------------------------------------------
-bool AudioEntryPanel::openMedia(const string& filename)
+bool AudioEntryPanel::openMedia(const wxString& filename)
 {
 	// Attempt to open with wxMediaCtrl
 	if (media_ctrl_ && media_ctrl_->Load(filename))
@@ -594,8 +594,8 @@ void AudioEntryPanel::resetStream() const
 bool AudioEntryPanel::updateInfo() const
 {
 	txt_info_->Clear();
-	string info = entry_->typeString() + "\n";
-	auto&  mc   = entry_->data();
+	wxString info = entry_->typeString() + "\n";
+	auto&    mc   = entry_->data();
 	switch (audio_type_)
 	{
 	case Sound:

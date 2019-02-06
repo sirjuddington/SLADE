@@ -70,7 +70,7 @@ STreeNode::~STreeNode()
 // Returns the 'path' to this node, ie, the names of all its parent nodes each
 // separated by a / (including the name of this node)
 // -----------------------------------------------------------------------------
-string STreeNode::path()
+wxString STreeNode::path()
 {
 	if (!parent_)
 		return name() + "/";
@@ -95,7 +95,7 @@ STreeNode* STreeNode::child(unsigned index)
 // Can also find deeper child nodes if a path is given in [name].
 // Returns null if no match is found
 // -----------------------------------------------------------------------------
-STreeNode* STreeNode::child(string name)
+STreeNode* STreeNode::child(wxString name)
 {
 	// Check name was given
 	if (name.IsEmpty())
@@ -124,7 +124,7 @@ STreeNode* STreeNode::child(string name)
 	else
 	{
 		// Directories were given, get the first directory
-		string dir = fn.GetDirs()[0];
+		wxString dir = fn.GetDirs()[0];
 
 		// See if it is a child of this node
 		auto c = child(dir);
@@ -143,7 +143,7 @@ STreeNode* STreeNode::child(string name)
 // Returns a list of all the node's children matching [name].
 // Also handles paths as per getChild
 // -----------------------------------------------------------------------------
-vector<STreeNode*> STreeNode::children(string name)
+vector<STreeNode*> STreeNode::children(wxString name)
 {
 	// Init return vector
 	vector<STreeNode*> ret;
@@ -172,7 +172,7 @@ vector<STreeNode*> STreeNode::children(string name)
 	else
 	{
 		// Directories were given, get the first directory
-		string dir = fn.GetDirs()[0];
+		wxString dir = fn.GetDirs()[0];
 
 		// See if it is a child of this node
 		auto c = child(dir);
@@ -200,7 +200,7 @@ void STreeNode::addChild(STreeNode* child)
 // Creates a new child node matching [name] and adds it to the node's children.
 // Also works recursively if a path is given
 // -----------------------------------------------------------------------------
-STreeNode* STreeNode::addChild(string name)
+STreeNode* STreeNode::addChild(wxString name)
 {
 	// Check name was given
 	if (name.IsEmpty())
@@ -235,7 +235,7 @@ STreeNode* STreeNode::addChild(string name)
 	else
 	{
 		// Directories were given, get the first directory
-		string dir = fn.GetDirs()[0];
+		wxString dir = fn.GetDirs()[0];
 
 		// If child name duplication is disallowed,
 		// check if a child with this name exists

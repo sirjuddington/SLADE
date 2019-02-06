@@ -71,12 +71,12 @@ ArchiveManager::~ArchiveManager()
 // (possibly because the user installed SLADE in the same folder as an
 // installation of SLumpEd).
 // -----------------------------------------------------------------------------
-bool ArchiveManager::validResDir(const string& dir) const
+bool ArchiveManager::validResDir(const wxString& dir) const
 {
 	// Assortment of resources that the program expects to find.
 	// If at least one is missing, then probably more are missing
 	// too, so the res folder cannot be used.
-	string paths[] = {
+	wxString paths[] = {
 		"animated.lmp",
 		"config/executables.cfg",
 		"config/nodebuilders.cfg",
@@ -122,7 +122,7 @@ bool ArchiveManager::init()
 #ifdef __WXOSX__
 	string resdir = App::path("../Resources", App::Dir::Executable); // Use Resources dir within bundle on mac
 #else
-	string resdir = App::path("res", App::Dir::Executable);
+	wxString resdir = App::path("res", App::Dir::Executable);
 #endif
 
 	if (wxDirExists(resdir) && validResDir(resdir))
@@ -137,7 +137,7 @@ bool ArchiveManager::init()
 	}
 
 	// Find slade3.pk3 directory
-	string dir_slade_pk3 = App::path("slade.pk3", App::Dir::Resources);
+	wxString dir_slade_pk3 = App::path("slade.pk3", App::Dir::Resources);
 	if (!wxFileExists(dir_slade_pk3))
 		dir_slade_pk3 = App::path("slade.pk3", App::Dir::Data);
 	if (!wxFileExists(dir_slade_pk3))
@@ -238,7 +238,7 @@ Archive* ArchiveManager::getArchive(int index)
 // Returns the archive with the specified filename
 // (nullptr if it doesn't exist)
 // -----------------------------------------------------------------------------
-Archive* ArchiveManager::getArchive(const string& filename)
+Archive* ArchiveManager::getArchive(const wxString& filename)
 {
 	// Go through all open archives
 	for (auto& open_archive : open_archives_)
@@ -256,7 +256,7 @@ Archive* ArchiveManager::getArchive(const string& filename)
 // Opens and adds a archive to the list, returns a pointer to the newly opened
 // and added archive, or nullptr if an error occurred
 // -----------------------------------------------------------------------------
-Archive* ArchiveManager::openArchive(const string& filename, bool manage, bool silent)
+Archive* ArchiveManager::openArchive(const wxString& filename, bool manage, bool silent)
 {
 	// Check for directory
 	if (!wxFile::Exists(filename) && wxDirExists(filename))
@@ -490,7 +490,7 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 // Opens [dir] as a DirArchive and adds it to the list.
 // Returns a pointer to the archive or nullptr if an error occurred.
 // -----------------------------------------------------------------------------
-Archive* ArchiveManager::openDirArchive(const string& dir, bool manage, bool silent)
+Archive* ArchiveManager::openDirArchive(const wxString& dir, bool manage, bool silent)
 {
 	auto new_archive = getArchive(dir);
 
@@ -551,7 +551,7 @@ Archive* ArchiveManager::openDirArchive(const string& dir, bool manage, bool sil
 // archives. Returns the created archive, or nullptr if an invalid archive type
 // was given
 // -----------------------------------------------------------------------------
-Archive* ArchiveManager::newArchive(const string& format)
+Archive* ArchiveManager::newArchive(const wxString& format)
 {
 	// Create a new archive depending on the type specified
 	Archive* new_archive;
@@ -653,7 +653,7 @@ bool ArchiveManager::closeArchive(int index)
 // the list.
 // Returns false if it doesn't exist or can't be removed, true otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveManager::closeArchive(const string& filename)
+bool ArchiveManager::closeArchive(const wxString& filename)
 {
 	// Go through all open archives
 	for (int a = 0; a < (int)open_archives_.size(); a++)
@@ -739,16 +739,16 @@ vector<Archive*> ArchiveManager::getDependentArchives(Archive* archive)
 // Returns a string containing the extensions of all supported archive formats,
 // that can be used for wxWidgets file dialogs
 // -----------------------------------------------------------------------------
-string ArchiveManager::getArchiveExtensionsString() const
+wxString ArchiveManager::getArchiveExtensionsString() const
 {
-	auto           formats = Archive::allFormats();
-	vector<string> ext_strings;
-	string         ext_all = "Any supported file|";
-	for (auto fmt : formats)
+	auto             formats = Archive::allFormats();
+	vector<wxString> ext_strings;
+	wxString         ext_all = "Any supported file|";
+	for (const auto& fmt : formats)
 	{
 		for (auto ext : fmt.extensions)
 		{
-			string ext_case = S_FMT("*.%s;", ext.first.Lower());
+			wxString ext_case = S_FMT("*.%s;", ext.first.Lower());
 			ext_case += S_FMT("*.%s;", ext.first.Upper());
 			ext_case += S_FMT("*.%s", ext.first.Capitalize());
 
@@ -798,7 +798,7 @@ void ArchiveManager::setArchiveResource(Archive* archive, bool resource)
 // -----------------------------------------------------------------------------
 // Adds [path] to the list of base resource paths
 // -----------------------------------------------------------------------------
-bool ArchiveManager::addBaseResourcePath(const string& path)
+bool ArchiveManager::addBaseResourcePath(const wxString& path)
 {
 	// Firstly, check the file exists
 	if (!wxFileExists(path))
@@ -847,7 +847,7 @@ void ArchiveManager::removeBaseResourcePath(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns the base resource path at [index]
 // -----------------------------------------------------------------------------
-string ArchiveManager::getBaseResourcePath(unsigned index)
+wxString ArchiveManager::getBaseResourcePath(unsigned index)
 {
 	// Check index
 	if (index >= base_resource_paths_.size())
@@ -881,7 +881,7 @@ bool ArchiveManager::openBaseResource(int index)
 	}
 
 	// Create archive based on file type
-	string filename = base_resource_paths_[index];
+	wxString filename = base_resource_paths_[index];
 	if (WadArchive::isWadArchive(filename))
 		base_resource_archive_ = std::make_unique<WadArchive>();
 	else if (ZipArchive::isZipArchive(filename))
@@ -909,7 +909,7 @@ bool ArchiveManager::openBaseResource(int index)
 // Returns the first entry matching [name] in the resource archives.
 // Resource archives = open archives -> base resource archives.
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveManager::getResourceEntry(const string& name, Archive* ignore)
+ArchiveEntry* ArchiveManager::getResourceEntry(const wxString& name, Archive* ignore)
 {
 	// Go through all open archives
 	for (auto& open_archive : open_archives_)
@@ -1000,7 +1000,7 @@ vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOpti
 // -----------------------------------------------------------------------------
 // Returns the recent file path at [index]
 // -----------------------------------------------------------------------------
-string ArchiveManager::recentFile(unsigned index)
+wxString ArchiveManager::recentFile(unsigned index)
 {
 	// Check index
 	if (index >= recent_files_.size())
@@ -1012,7 +1012,7 @@ string ArchiveManager::recentFile(unsigned index)
 // -----------------------------------------------------------------------------
 // Adds a recent file to the list, if it doesn't exist already
 // -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFile(string path)
+void ArchiveManager::addRecentFile(wxString path)
 {
 	// Check the path is valid
 	if (!(wxFileName::FileExists(path) || wxDirExists(path)))
@@ -1051,7 +1051,7 @@ void ArchiveManager::addRecentFile(string path)
 // -----------------------------------------------------------------------------
 // Adds a list of recent file paths to the recent file list
 // -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFiles(vector<string> paths)
+void ArchiveManager::addRecentFiles(vector<wxString> paths)
 {
 	// Mute annoucements
 	setMuted(true);
@@ -1071,7 +1071,7 @@ void ArchiveManager::addRecentFiles(vector<string> paths)
 // -----------------------------------------------------------------------------
 // Removes the recent file matching [path]
 // -----------------------------------------------------------------------------
-void ArchiveManager::removeRecentFile(const string& path)
+void ArchiveManager::removeRecentFile(const wxString& path)
 {
 	for (unsigned a = 0; a < recent_files_.size(); a++)
 	{
@@ -1231,7 +1231,7 @@ ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
 // -----------------------------------------------------------------------------
 // Called when an announcement is recieved from one of the archives in the list
 // -----------------------------------------------------------------------------
-void ArchiveManager::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void ArchiveManager::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	// Reset event data for reading
 	event_data.seek(0, SEEK_SET);
@@ -1283,7 +1283,7 @@ CONSOLE_COMMAND(list_archives, 0, true)
 // -----------------------------------------------------------------------------
 // Attempts to open each given argument (filenames)
 // -----------------------------------------------------------------------------
-void c_open(const vector<string>& args)
+void c_open(const vector<wxString>& args)
 {
 	for (const auto& arg : args)
 		App::archiveManager().openArchive(arg);

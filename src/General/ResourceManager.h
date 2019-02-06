@@ -12,13 +12,13 @@ class Resource
 	friend class ResourceManager;
 
 public:
-	Resource(const string& type) : type_{ type } {}
+	Resource(const wxString& type) : type_{ type } {}
 	virtual ~Resource() = default;
 
 	virtual int length() { return 0; }
 
 private:
-	string type_;
+	wxString type_;
 };
 
 class EntryResource : public Resource
@@ -35,7 +35,7 @@ public:
 
 	int length() override { return entries_.size(); }
 
-	ArchiveEntry* getEntry(Archive* priority = nullptr, const string& nspace = "", bool ns_required = false);
+	ArchiveEntry* getEntry(Archive* priority = nullptr, const wxString& nspace = "", bool ns_required = false);
 
 private:
 	vector<std::weak_ptr<ArchiveEntry>> entries_;
@@ -66,8 +66,8 @@ private:
 	vector<std::unique_ptr<Texture>> textures_;
 };
 
-typedef std::map<string, EntryResource>   EntryResourceMap;
-typedef std::map<string, TextureResource> TextureResourceMap;
+typedef std::map<wxString, EntryResource>   EntryResourceMap;
+typedef std::map<wxString, TextureResource> TextureResourceMap;
 
 class ResourceManager : public Listener, public Announcer
 {
@@ -85,24 +85,24 @@ public:
 	void putAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
 
 	void putAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore = nullptr);
-	void putAllTextureNames(vector<string>& list);
+	void putAllTextureNames(vector<wxString>& list);
 
 	void putAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
-	void putAllFlatNames(vector<string>& list);
+	void putAllFlatNames(vector<wxString>& list);
 
-	ArchiveEntry* getPaletteEntry(const string& palette, Archive* priority = nullptr);
-	ArchiveEntry* getPatchEntry(const string& patch, const string& nspace = "patches", Archive* priority = nullptr);
-	ArchiveEntry* getFlatEntry(const string& flat, Archive* priority = nullptr);
+	ArchiveEntry* getPaletteEntry(const wxString& palette, Archive* priority = nullptr);
+	ArchiveEntry* getPatchEntry(const wxString& patch, const wxString& nspace = "patches", Archive* priority = nullptr);
+	ArchiveEntry* getFlatEntry(const wxString& flat, Archive* priority = nullptr);
 	ArchiveEntry* getTextureEntry(
-		const string& texture,
-		const string& nspace   = "textures",
-		Archive*      priority = nullptr);
-	CTexture* getTexture(const string& texture, Archive* priority = nullptr, Archive* ignore = nullptr);
-	uint16_t  getTextureHash(const string& name) const;
+		const wxString& texture,
+		const wxString& nspace   = "textures",
+		Archive*        priority = nullptr);
+	CTexture* getTexture(const wxString& texture, Archive* priority = nullptr, Archive* ignore = nullptr);
+	uint16_t  getTextureHash(const wxString& name) const;
 
-	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
 
-	static string doom64TextureName(uint16_t hash) { return doom64_hash_table_[hash]; }
+	static wxString doom64TextureName(uint16_t hash) { return doom64_hash_table_[hash]; }
 
 private:
 	EntryResourceMap palettes_;
@@ -118,5 +118,5 @@ private:
 	// EntryResourceMap	satextures_fp_only_; // Probably not needed
 	TextureResourceMap textures_; // Composite textures (defined in a TEXTUREx/TEXTURES lump)
 
-	static string doom64_hash_table_[65536];
+	static wxString doom64_hash_table_[65536];
 };

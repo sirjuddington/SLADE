@@ -65,7 +65,7 @@ EXTERN_CVAR(Int, toolbar_size);
 // -----------------------------------------------------------------------------
 // SToolBarButton class constructor
 // -----------------------------------------------------------------------------
-SToolBarButton::SToolBarButton(wxWindow* parent, const string& action, const string& icon, bool show_name) :
+SToolBarButton::SToolBarButton(wxWindow* parent, const wxString& action, const wxString& icon, bool show_name) :
 	wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton"),
 	action_{ SAction::fromId(action) },
 	show_name_{ show_name },
@@ -79,7 +79,7 @@ SToolBarButton::SToolBarButton(wxWindow* parent, const string& action, const str
 	// Determine width of name text if shown
 	if (show_name)
 	{
-		string name = action_->text();
+		wxString name = action_->text();
 		name.Replace("&", "");
 		text_width_ = GetTextExtent(name).GetWidth() + pad_inner_ * 2;
 	}
@@ -98,14 +98,14 @@ SToolBarButton::SToolBarButton(wxWindow* parent, const string& action, const str
 		icon_ = Icons::getIcon(Icons::General, icon, icon_size_ > 16);
 
 	// Add shortcut to help text if it exists
-	string sc = action_->shortcutText();
+	wxString sc = action_->shortcutText();
 	if (!sc.IsEmpty())
 		help_text_ += S_FMT(" (Shortcut: %s)", sc);
 
 	// Set tooltip
 	if (!show_name)
 	{
-		string tip = action_->text();
+		wxString tip = action_->text();
 		tip.Replace("&", "");
 		if (!sc.IsEmpty())
 			tip += S_FMT(" (Shortcut: %s)", sc);
@@ -129,12 +129,12 @@ SToolBarButton::SToolBarButton(wxWindow* parent, const string& action, const str
 // SToolBarButton class constructor
 // -----------------------------------------------------------------------------
 SToolBarButton::SToolBarButton(
-	wxWindow*     parent,
-	const string& action_id,
-	const string& action_name,
-	const string& icon,
-	const string& help_text,
-	bool          show_name) :
+	wxWindow*       parent,
+	const wxString& action_id,
+	const wxString& action_name,
+	const wxString& icon,
+	const wxString& help_text,
+	bool            show_name) :
 	wxControl{ parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton" },
 	show_name_{ show_name },
 	action_id_{ action_id },
@@ -175,7 +175,7 @@ SToolBarButton::SToolBarButton(
 // -----------------------------------------------------------------------------
 // Allows to dynamically change the button's icon
 // -----------------------------------------------------------------------------
-void SToolBarButton::setIcon(const string& icon)
+void SToolBarButton::setIcon(const wxString& icon)
 {
 	if (!icon.IsEmpty())
 		icon_ = Icons::getIcon(Icons::General, icon, icon_size_ > 16);
@@ -230,13 +230,13 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		return;
 
 	// Get width of name text if shown
-	int    name_height = 0;
-	string name        = action_name_;
+	int      name_height = 0;
+	wxString name        = action_name_;
 	if (show_name_)
 	{
 		name.Replace("&", "");
 		auto name_size = GetTextExtent(name);
-		name_height      = name_size.y;
+		name_height    = name_size.y;
 	}
 
 	int  height   = icon_size_ + pad_inner_ * 2;

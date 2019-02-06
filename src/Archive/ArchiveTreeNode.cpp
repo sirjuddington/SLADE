@@ -86,7 +86,7 @@ Archive* ArchiveTreeNode::archive() const
 // -----------------------------------------------------------------------------
 // Returns the node (directory) name
 // -----------------------------------------------------------------------------
-string ArchiveTreeNode::name()
+wxString ArchiveTreeNode::name()
 {
 	// Check dir entry exists
 	if (!dir_entry_)
@@ -196,7 +196,7 @@ ArchiveEntry::SPtr ArchiveTreeNode::sharedEntryAt(unsigned index)
 // Returns the entry matching [name] in this directory, or null if no entries
 // match
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveTreeNode::entry(const string& name, bool cut_ext)
+ArchiveEntry* ArchiveTreeNode::entry(const wxString& name, bool cut_ext)
 {
 	// Check name was given
 	if (name.empty())
@@ -218,7 +218,7 @@ ArchiveEntry* ArchiveTreeNode::entry(const string& name, bool cut_ext)
 // Returns a shared pointer to the entry matching [name] in this directory, or
 // null if no entries match
 // -----------------------------------------------------------------------------
-ArchiveEntry::SPtr ArchiveTreeNode::sharedEntry(const string& name, bool cut_ext)
+ArchiveEntry::SPtr ArchiveTreeNode::sharedEntry(const wxString& name, bool cut_ext)
 {
 	// Check name was given
 	if (name.empty())
@@ -506,7 +506,7 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, ArchiveEnt
 // -----------------------------------------------------------------------------
 // Exports all entries and subdirs to the filesystem at [path]
 // -----------------------------------------------------------------------------
-bool ArchiveTreeNode::exportTo(const string& path)
+bool ArchiveTreeNode::exportTo(const wxString& path)
 {
 	// Create directory if needed
 	if (!wxDirExists(path))
@@ -543,7 +543,7 @@ void ArchiveTreeNode::ensureUniqueName(ArchiveEntry* entry)
 	unsigned   number    = 0;
 	const auto n_entries = entries_.size();
 	wxFileName fn(entry->name());
-	string     name = fn.GetFullName();
+	wxString   name = fn.GetFullName();
 	while (index < n_entries)
 	{
 		if (entries_[index].get() == entry)

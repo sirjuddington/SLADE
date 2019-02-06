@@ -34,18 +34,18 @@ public:
 
 	virtual void       doCheck()                                                             = 0;
 	virtual unsigned   nProblems()                                                           = 0;
-	virtual string     problemDesc(unsigned index)                                           = 0;
+	virtual wxString   problemDesc(unsigned index)                                           = 0;
 	virtual bool       fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) = 0;
 	virtual MapObject* getObject(unsigned index)                                             = 0;
-	virtual string     progressText() { return "Checking..."; }
-	virtual string     fixText(unsigned fix_type, unsigned index) { return ""; }
+	virtual wxString   progressText() { return "Checking..."; }
+	virtual wxString   fixText(unsigned fix_type, unsigned index) { return ""; }
 
 	typedef std::unique_ptr<MapCheck> UPtr;
 
-	static UPtr   standardCheck(StandardCheck type, SLADEMap* map, MapTextureManager* texman = nullptr);
-	static UPtr   standardCheck(const string& type_id, SLADEMap* map, MapTextureManager* texman = nullptr);
-	static string standardCheckDesc(StandardCheck type);
-	static string standardCheckId(StandardCheck type);
+	static UPtr     standardCheck(StandardCheck type, SLADEMap* map, MapTextureManager* texman = nullptr);
+	static UPtr     standardCheck(const wxString& type_id, SLADEMap* map, MapTextureManager* texman = nullptr);
+	static wxString standardCheckDesc(StandardCheck type);
+	static wxString standardCheckId(StandardCheck type);
 
 protected:
 	SLADEMap* map_;

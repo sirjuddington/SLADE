@@ -12,14 +12,14 @@ class CTPatch
 {
 public:
 	CTPatch() = default;
-	CTPatch(const string& name, int16_t offset_x = 0, int16_t offset_y = 0);
+	CTPatch(const wxString& name, int16_t offset_x = 0, int16_t offset_y = 0);
 	virtual ~CTPatch() = default;
 
-	string  name() const { return name_; }
-	int16_t xOffset() const { return offset_x_; }
-	int16_t yOffset() const { return offset_y_; }
+	wxString name() const { return name_; }
+	int16_t  xOffset() const { return offset_x_; }
+	int16_t  yOffset() const { return offset_y_; }
 
-	void setName(const string& name) { name_ = name; }
+	void setName(const wxString& name) { name_ = name; }
 	void setOffsetX(int16_t offset) { offset_x_ = offset; }
 	void setOffsetY(int16_t offset) { offset_y_ = offset; }
 
@@ -28,9 +28,9 @@ public:
 	typedef std::unique_ptr<CTPatch> UPtr;
 
 protected:
-	string  name_;
-	int16_t offset_x_ = 0;
-	int16_t offset_y_ = 0;
+	wxString name_;
+	int16_t  offset_x_ = 0;
+	int16_t  offset_y_ = 0;
 };
 
 // Extended patch (for TEXTURES)
@@ -44,7 +44,7 @@ public:
 	};
 
 	CTPatchEx() = default;
-	CTPatchEx(const string& name, int16_t offset_x = 0, int16_t offset_y = 0, Type type = Type::Patch);
+	CTPatchEx(const wxString& name, int16_t offset_x = 0, int16_t offset_y = 0, Type type = Type::Patch);
 	CTPatchEx(const CTPatch& copy) : CTPatch{ copy } {}
 	CTPatchEx(const CTPatchEx& copy);
 	~CTPatchEx() = default;
@@ -55,7 +55,7 @@ public:
 	int16_t      rotation() const { return rotation_; }
 	ColRGBA      colour() const { return colour_; }
 	float        alpha() const { return alpha_; }
-	string       style() const { return style_; }
+	wxString     style() const { return style_; }
 	uint8_t      blendType() const { return blendtype_; }
 	Translation& translation() { return translation_; }
 
@@ -65,13 +65,13 @@ public:
 	void setRotation(int16_t rot) { rotation_ = rot; }
 	void setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { colour_.set(r, g, b, a); }
 	void setAlpha(float a) { alpha_ = a; }
-	void setStyle(const string& style) { style_ = style; }
+	void setStyle(const wxString& style) { style_ = style; }
 	void setBlendType(uint8_t type) { blendtype_ = type; }
 
 	ArchiveEntry* patchEntry(Archive* parent = nullptr) override;
 
-	bool   parse(Tokenizer& tz, Type type = Type::Patch);
-	string asText();
+	bool     parse(Tokenizer& tz, Type type = Type::Patch);
+	wxString asText();
 
 private:
 	Type        type_        = Type::Patch;
@@ -82,7 +82,7 @@ private:
 	Translation translation_;
 	ColRGBA     colour_;
 	float       alpha_     = 1.f;
-	string      style_     = "Copy";
+	wxString    style_     = "Copy";
 	uint8_t     blendtype_ = 0; // 0=none, 1=translation, 2=blend, 3=tint
 };
 
@@ -106,12 +106,12 @@ public:
 	};
 
 	CTexture(bool extended = false) : extended_{ extended } {}
-	CTexture(const string& name, bool extended = false) : name_{ name }, extended_{ extended } {}
+	CTexture(const wxString& name, bool extended = false) : name_{ name }, extended_{ extended } {}
 	~CTexture() = default;
 
 	void copyTexture(const CTexture& tex, bool keep_type = false);
 
-	string   name() const { return name_; }
+	wxString name() const { return name_; }
 	uint16_t width() const { return width_; }
 	uint16_t height() const { return height_; }
 	double   scaleX() const { return scale_.x; }
@@ -120,7 +120,7 @@ public:
 	int16_t  offsetX() const { return offset_x_; }
 	int16_t  offsetY() const { return offset_y_; }
 	bool     worldPanning() const { return world_panning_; }
-	string   type() const { return type_; }
+	wxString type() const { return type_; }
 	bool     isExtended() const { return extended_; }
 	bool     isOptional() const { return optional_; }
 	bool     noDecals() const { return no_decals_; }
@@ -130,7 +130,7 @@ public:
 	uint8_t  state() const { return state_; }
 	int      index() const;
 
-	void setName(const string& name) { name_ = name; }
+	void setName(const wxString& name) { name_ = name; }
 	void setWidth(uint16_t width) { width_ = width; }
 	void setHeight(uint16_t height) { height_ = height; }
 	void setScaleX(double scale) { scale_.x = scale; }
@@ -139,7 +139,7 @@ public:
 	void setOffsetX(int16_t offset) { offset_x_ = offset; }
 	void setOffsetY(int16_t offset) { offset_y_ = offset; }
 	void setWorldPanning(bool wp) { world_panning_ = wp; }
-	void setType(const string& type) { type_ = type; }
+	void setType(const wxString& type) { type_ = type; }
 	void setExtended(bool ext) { extended_ = ext; }
 	void setOptional(bool opt) { optional_ = opt; }
 	void setNoDecals(bool nd) { no_decals_ = nd; }
@@ -149,16 +149,16 @@ public:
 
 	void clear();
 
-	bool addPatch(const string& patch, int16_t offset_x = 0, int16_t offset_y = 0, int index = -1);
+	bool addPatch(const wxString& patch, int16_t offset_x = 0, int16_t offset_y = 0, int index = -1);
 	bool removePatch(size_t index);
-	bool removePatch(const string& patch);
-	bool replacePatch(size_t index, const string& newpatch);
+	bool removePatch(const wxString& patch);
+	bool replacePatch(size_t index, const wxString& newpatch);
 	bool duplicatePatch(size_t index, int16_t offset_x = 8, int16_t offset_y = 8);
 	bool swapPatches(size_t p1, size_t p2);
 
-	bool   parse(Tokenizer& tz, const string& type);
-	bool   parseDefine(Tokenizer& tz);
-	string asText();
+	bool     parse(Tokenizer& tz, const wxString& type);
+	bool     parseDefine(Tokenizer& tz);
+	wxString asText();
 
 	bool convertExtended();
 	bool convertRegular();
@@ -170,7 +170,7 @@ public:
 
 private:
 	// Basic info
-	string                name_;
+	wxString              name_;
 	uint16_t              width_         = 0;
 	uint16_t              height_        = 0;
 	Vec2f                 scale_         = { 1., 1. };
@@ -179,16 +179,16 @@ private:
 	int                   index_ = -1;
 
 	// Extended (TEXTURES) info
-	string  type_;
-	bool    extended_     = false;
-	bool    defined_      = false;
-	bool    optional_     = false;
-	bool    no_decals_    = false;
-	bool    null_texture_ = false;
-	int16_t offset_x_     = 0;
-	int16_t offset_y_     = 0;
-	int16_t def_width_    = 0;
-	int16_t def_height_   = 0;
+	wxString type_;
+	bool     extended_     = false;
+	bool     defined_      = false;
+	bool     optional_     = false;
+	bool     no_decals_    = false;
+	bool     null_texture_ = false;
+	int16_t  offset_x_     = 0;
+	int16_t  offset_y_     = 0;
+	int16_t  def_width_    = 0;
+	int16_t  def_height_   = 0;
 
 	// Editor info
 	uint8_t       state_   = 0;

@@ -24,11 +24,11 @@ public:
 	PaletteEntryPanel(wxWindow* parent);
 	~PaletteEntryPanel() = default;
 
-	bool   loadEntry(ArchiveEntry* entry) override;
-	bool   saveEntry() override;
-	string statusString() override;
-	void   refreshPanel() override;
-	void   toolbarButtonClick(const string& action_id) override;
+	bool     loadEntry(ArchiveEntry* entry) override;
+	bool     saveEntry() override;
+	wxString statusString() override;
+	void     refreshPanel() override;
+	void     toolbarButtonClick(const wxString& action_id) override;
 
 	bool showPalette(uint32_t index);
 	bool addCustomPalette();
@@ -53,7 +53,7 @@ public:
 	void analysePalettes();
 
 	// SAction handler
-	bool handleEntryPanelAction(const string& id) override;
+	bool handleEntryPanelAction(const wxString& id) override;
 	bool fillCustomMenu(wxMenu* custom) override;
 
 private:

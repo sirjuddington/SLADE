@@ -370,7 +370,7 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	string first = objects[0]->stringProperty(GetName());
+	wxString first = objects[0]->stringProperty(GetName());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
@@ -519,7 +519,7 @@ void MOPGIntWithArgsProperty::applyValue()
 
 		for (int argn = 0; argn < argspec.count; argn++)
 		{
-			string key = S_FMT("arg%d", argn);
+			wxString key = S_FMT("arg%d", argn);
 			if (!object->hasProp(key))
 				object->setIntProperty(key, 0);
 		}
@@ -1033,7 +1033,7 @@ void MOPGTextureProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	string first = objects[0]->stringProperty(GetName());
+	wxString first = objects[0]->stringProperty(GetName());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
@@ -1062,7 +1062,7 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		// Get current texture (if any)
-		string tex_current = "";
+		wxString tex_current = "";
 		if (!IsValueUnspecified())
 			tex_current = GetValueAsString();
 
@@ -1115,8 +1115,8 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	auto   map_format = MapEditor::editContext().mapDesc().format;
-	string first      = Game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[0]), map_format);
+	auto     map_format = MapEditor::editContext().mapDesc().format;
+	wxString first      = Game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[0]), map_format);
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)

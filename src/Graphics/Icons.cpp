@@ -50,16 +50,16 @@ struct Icon
 {
 	wxImage       image;
 	wxImage       image_large;
-	string        name;
+	wxString      name;
 	ArchiveEntry* resource_entry;
 };
 
-vector<Icon>   icons_general;
-vector<Icon>   icons_text_editor;
-vector<Icon>   icons_entry;
-wxBitmap       icon_empty;
-vector<string> iconsets_entry;
-vector<string> iconsets_general;
+vector<Icon>     icons_general;
+vector<Icon>     icons_text_editor;
+vector<Icon>     icons_entry;
+wxBitmap         icon_empty;
+vector<wxString> iconsets_entry;
+vector<wxString> iconsets_general;
 } // namespace Icons
 
 
@@ -104,7 +104,7 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 	}
 
 	// Get icon set dir
-	string icon_set_dir = "Default";
+	wxString icon_set_dir = "Default";
 	if (type == Entry)
 		icon_set_dir = iconset_entry_list;
 	if (type == General)
@@ -112,8 +112,8 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 	if (icon_set_dir != "Default" && dir->child(icon_set_dir))
 		dir = (ArchiveTreeNode*)dir->child(icon_set_dir);
 
-	auto&  icons    = iconList(type);
-	string tempfile = App::path("sladetemp", App::Dir::Temp);
+	auto&    icons    = iconList(type);
+	wxString tempfile = App::path("sladetemp", App::Dir::Temp);
 
 	// Go through each entry in the directory
 	for (size_t a = 0; a < dir->numEntries(false); a++)
@@ -156,8 +156,8 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 			entry->exportFile(tempfile);
 
 			// Create / setup icon
-			bool   found = false;
-			string name  = entry->name(true);
+			bool     found = false;
+			wxString name  = entry->name(true);
 			for (auto& icon : icons)
 			{
 				if (icon.name == name)
@@ -203,7 +203,7 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 // -----------------------------------------------------------------------------
 bool Icons::loadIcons()
 {
-	string tempfile = App::path("sladetemp", App::Dir::Temp);
+	wxString tempfile = App::path("sladetemp", App::Dir::Temp);
 
 	// Get slade.pk3
 	auto res_archive = App::archiveManager().programResourceArchive();
@@ -235,7 +235,7 @@ bool Icons::loadIcons()
 // If [type] is less than 0, try all icon types.
 // If [log_missing] is true, log an error message if the icon was not found
 // -----------------------------------------------------------------------------
-wxBitmap Icons::getIcon(Type type, const string& name, bool large, bool log_missing)
+wxBitmap Icons::getIcon(Type type, const wxString& name, bool large, bool log_missing)
 {
 	// Check all types if [type] is < 0
 	if (type == Any)
@@ -280,7 +280,7 @@ wxBitmap Icons::getIcon(Type type, const string& name, bool large, bool log_miss
 // -----------------------------------------------------------------------------
 // Returns the icon [name] of [type]
 // -----------------------------------------------------------------------------
-wxBitmap Icons::getIcon(Type type, const string& name)
+wxBitmap Icons::getIcon(Type type, const wxString& name)
 {
 	return getIcon(type, name, UI::scaleFactor() > 1.25);
 }
@@ -288,7 +288,7 @@ wxBitmap Icons::getIcon(Type type, const string& name)
 // -----------------------------------------------------------------------------
 // Exports icon [name] of [type] to a png image file at [path]
 // -----------------------------------------------------------------------------
-bool Icons::exportIconPNG(Type type, const string& name, const string& path)
+bool Icons::exportIconPNG(Type type, const wxString& name, const wxString& path)
 {
 	auto& icons = iconList(type);
 
@@ -304,7 +304,7 @@ bool Icons::exportIconPNG(Type type, const string& name, const string& path)
 // -----------------------------------------------------------------------------
 // Returns a list of currently available icon sets for [type]
 // -----------------------------------------------------------------------------
-vector<string> Icons::iconSets(Type type)
+vector<wxString> Icons::iconSets(Type type)
 {
 	if (type == General)
 		return iconsets_general;

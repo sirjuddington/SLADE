@@ -71,8 +71,8 @@ void LineInfoOverlay::update(MapLine* line)
 		return;
 
 	// info.clear();
-	string info_text;
-	auto   map_format = MapEditor::editContext().mapDesc().format;
+	wxString info_text;
+	auto     map_format = MapEditor::editContext().mapDesc().format;
 
 	// General line info
 	if (Global::debug)
@@ -98,10 +98,10 @@ void LineInfoOverlay::update(MapLine* line)
 	// Line args (or sector tag)
 	if (map_format == MapFormat::Hexen || map_format == MapFormat::UDMF)
 	{
-		string argxstr[2];
-		argxstr[0]    = line->stringProperty("arg0str");
-		argxstr[1]    = line->stringProperty("arg1str");
-		string argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(line->args().data(), argxstr);
+		wxString argxstr[2];
+		argxstr[0]      = line->stringProperty("arg0str");
+		argxstr[1]      = line->stringProperty("arg1str");
+		wxString argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(line->args().data(), argxstr);
 		if (!argstr.IsEmpty())
 			info_text += (S_FMT("%s", argstr));
 		else
@@ -273,7 +273,7 @@ void LineInfoOverlay::drawSide(int bottom, int right, float alpha, Side& side, i
 // -----------------------------------------------------------------------------
 // Draws a texture box with name underneath for [texture]
 // -----------------------------------------------------------------------------
-void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, bool needed, const string& pos) const
+void LineInfoOverlay::drawTexture(float alpha, int x, int y, wxString texture, bool needed, const wxString& pos) const
 {
 	bool required     = (needed && texture == "-");
 	int  tex_box_size = 80 * scale_;

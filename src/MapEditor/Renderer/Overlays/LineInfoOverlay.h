@@ -20,19 +20,19 @@ private:
 
 	struct Side
 	{
-		bool   exists;
-		string info;
-		string offsets;
-		string tex_upper;
-		string tex_middle;
-		string tex_lower;
-		bool   needs_upper;
-		bool   needs_middle;
-		bool   needs_lower;
+		bool     exists;
+		wxString info;
+		wxString offsets;
+		wxString tex_upper;
+		wxString tex_middle;
+		wxString tex_lower;
+		bool     needs_upper;
+		bool     needs_middle;
+		bool     needs_lower;
 	};
 	Side side_front_{};
 	Side side_back_{};
 
 	void drawSide(int bottom, int right, float alpha, Side& side, int xstart = 0);
-	void drawTexture(float alpha, int x, int y, string texture, bool needed, const string& pos = "U") const;
+	void drawTexture(float alpha, int x, int y, wxString texture, bool needed, const wxString& pos = "U") const;
 };

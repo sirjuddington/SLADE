@@ -137,7 +137,7 @@ float GfxTintDialog::amount() const
 // -----------------------------------------------------------------------------
 // Sets the colour and tint amount to use
 // -----------------------------------------------------------------------------
-void GfxTintDialog::setValues(const string& col, int val)
+void GfxTintDialog::setValues(const wxString& col, int val)
 {
 	wxColour wxcol(col);
 	cb_colour_->setColour(ColRGBA(COLWX(wxcol)));

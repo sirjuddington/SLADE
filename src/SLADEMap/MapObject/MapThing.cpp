@@ -39,19 +39,19 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-const string MapThing::PROP_X       = "x";
-const string MapThing::PROP_Y       = "y";
-const string MapThing::PROP_Z       = "height";
-const string MapThing::PROP_TYPE    = "type";
-const string MapThing::PROP_ANGLE   = "angle";
-const string MapThing::PROP_FLAGS   = "flags";
-const string MapThing::PROP_ARG0    = "arg0";
-const string MapThing::PROP_ARG1    = "arg1";
-const string MapThing::PROP_ARG2    = "arg2";
-const string MapThing::PROP_ARG3    = "arg3";
-const string MapThing::PROP_ARG4    = "arg4";
-const string MapThing::PROP_ID      = "id";
-const string MapThing::PROP_SPECIAL = "special";
+const wxString MapThing::PROP_X       = "x";
+const wxString MapThing::PROP_Y       = "y";
+const wxString MapThing::PROP_Z       = "height";
+const wxString MapThing::PROP_TYPE    = "type";
+const wxString MapThing::PROP_ANGLE   = "angle";
+const wxString MapThing::PROP_FLAGS   = "flags";
+const wxString MapThing::PROP_ARG0    = "arg0";
+const wxString MapThing::PROP_ARG1    = "arg1";
+const wxString MapThing::PROP_ARG2    = "arg2";
+const wxString MapThing::PROP_ARG3    = "arg3";
+const wxString MapThing::PROP_ARG4    = "arg4";
+const wxString MapThing::PROP_ID      = "id";
+const wxString MapThing::PROP_SPECIAL = "special";
 
 
 // -----------------------------------------------------------------------------
@@ -133,7 +133,7 @@ Vec2f MapThing::getPoint(Point point)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapThing::intProperty(const string& key)
+int MapThing::intProperty(const wxString& key)
 {
 	if (key == PROP_TYPE)
 		return type_;
@@ -168,7 +168,7 @@ int MapThing::intProperty(const string& key)
 // -----------------------------------------------------------------------------
 // Returns the value of the float property matching [key]
 // -----------------------------------------------------------------------------
-double MapThing::floatProperty(const string& key)
+double MapThing::floatProperty(const wxString& key)
 {
 	if (key == PROP_X)
 		return position_.x;
@@ -183,7 +183,7 @@ double MapThing::floatProperty(const string& key)
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapThing::setIntProperty(const string& key, int value)
+void MapThing::setIntProperty(const wxString& key, int value)
 {
 	// Update modified time
 	setModified();
@@ -221,7 +221,7 @@ void MapThing::setIntProperty(const string& key, int value)
 // -----------------------------------------------------------------------------
 // Sets the float value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapThing::setFloatProperty(const string& key, double value)
+void MapThing::setFloatProperty(const wxString& key, double value)
 {
 	// Update modified time
 	setModified();
@@ -438,7 +438,7 @@ void MapThing::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 // Writes the thing as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapThing::writeUDMF(string& def)
+void MapThing::writeUDMF(wxString& def)
 {
 	def = S_FMT("thing//#%u\n{\n", index_);
 

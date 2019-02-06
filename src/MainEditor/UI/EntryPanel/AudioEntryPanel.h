@@ -17,10 +17,10 @@ public:
 	AudioEntryPanel(wxWindow* parent);
 	~AudioEntryPanel();
 
-	bool   loadEntry(ArchiveEntry* entry) override;
-	bool   saveEntry() override;
-	string statusString() override;
-	void   setAudioDuration(int duration);
+	bool     loadEntry(ArchiveEntry* entry) override;
+	bool     saveEntry() override;
+	wxString statusString() override;
+	void     setAudioDuration(int duration);
 
 private:
 	enum AudioType
@@ -35,7 +35,7 @@ private:
 		OPL,
 	};
 
-	string    prevfile_;
+	wxString  prevfile_;
 	AudioType audio_type_  = Invalid;
 	int       num_tracks_  = 1;
 	int       subsong_     = 0;
@@ -61,10 +61,10 @@ private:
 	std::unique_ptr<ModMusic>        mod_;
 
 	bool open();
-	bool openAudio(MemChunk& audio, const string& filename);
-	bool openMidi(MemChunk& data, const string& filename);
+	bool openAudio(MemChunk& audio, const wxString& filename);
+	bool openMidi(MemChunk& data, const wxString& filename);
 	bool openMod(MemChunk& data);
-	bool openMedia(const string& filename);
+	bool openMedia(const wxString& filename);
 	bool updateInfo() const;
 	void startStream();
 	void stopStream() const;

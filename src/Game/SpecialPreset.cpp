@@ -63,8 +63,8 @@ void SpecialPreset::parse(ParseTreeNode* node)
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto   child = node->childPTN(a);
-		string name  = child->name();
+		auto     child = node->childPTN(a);
+		wxString name  = child->name();
 
 		// Group
 		if (S_CMPNOCASE(child->name(), "group"))
@@ -103,7 +103,7 @@ ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
 	node->setName(name);
 
 	// Group
-	string ex_group = group;
+	wxString ex_group = group;
 	if (ex_group.StartsWith("Custom/"))
 		ex_group = ex_group.Remove(0, 7);
 	if (ex_group != "Custom")
@@ -149,7 +149,7 @@ const vector<SpecialPreset>& Game::customSpecialPresets()
 bool Game::loadCustomSpecialPresets()
 {
 	// Check file exists
-	string file = App::path("special_presets.cfg", App::Dir::User);
+	wxString file = App::path("special_presets.cfg", App::Dir::User);
 	if (!wxFileExists(file))
 		return true;
 
@@ -211,7 +211,7 @@ bool Game::saveCustomSpecialPresets()
 		preset.write(&root);
 
 	// Write to file
-	string presets;
+	wxString presets;
 	root.write(presets);
 	if (!file.Write(presets))
 	{
@@ -233,7 +233,7 @@ CONSOLE_COMMAND(test_preset_export, 0, false)
 	for (auto& preset : custom_presets)
 		preset.write(&root);
 
-	string out;
+	wxString out;
 	root.write(out);
 	Log::console(CHR(out));
 }

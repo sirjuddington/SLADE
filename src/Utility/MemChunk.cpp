@@ -143,7 +143,7 @@ bool MemChunk::reSize(uint32_t new_size, bool preserve_data)
 // Loads a file (or part of it) into the MemChunk.
 // Returns false if file couldn't be opened, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::importFile(const string& filename, uint32_t offset, uint32_t len)
+bool MemChunk::importFile(const wxString& filename, uint32_t offset, uint32_t len)
 {
 	// Open the file
 	wxFile file(filename);
@@ -263,7 +263,7 @@ bool MemChunk::importMem(const uint8_t* start, uint32_t len)
 // to [start+size].
 // If [size] is 0, writes from [start] to the end of the data
 // -----------------------------------------------------------------------------
-bool MemChunk::exportFile(const string& filename, uint32_t start, uint32_t size) const
+bool MemChunk::exportFile(const wxString& filename, uint32_t start, uint32_t size) const
 {
 	// Check data exists
 	if (!hasData())

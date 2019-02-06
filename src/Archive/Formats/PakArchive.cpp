@@ -221,7 +221,7 @@ bool PakArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Check entry name
-		string name = entry->path(true);
+		auto name = entry->path(true);
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 56)
 		{
@@ -348,7 +348,7 @@ bool PakArchive::isPakArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Quake pak archive
 // -----------------------------------------------------------------------------
-bool PakArchive::isPakArchive(const string& filename)
+bool PakArchive::isPakArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

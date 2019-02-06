@@ -21,10 +21,10 @@ public:
 	void saveScripts() const;
 	void updateUI() const;
 
-	bool handleAction(const string& name) override;
+	bool handleAction(const wxString& name) override;
 
 private:
-	string                        script_text_;
+	wxString                      script_text_;
 	std::unique_ptr<ArchiveEntry> entry_script_;
 	std::unique_ptr<ArchiveEntry> entry_compiled_;
 

@@ -26,14 +26,14 @@ public:
 	{
 		return nullptr;
 	}
-	ArchiveEntry* addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy = false) override
+	ArchiveEntry* addEntry(ArchiveEntry* entry, const wxString& add_namespace, bool copy = false) override
 	{
 		return nullptr;
 	}
 	bool removeEntry(ArchiveEntry* entry) override { return false; }
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, const string& name) override { return false; }
+	bool renameEntry(ArchiveEntry* entry, const wxString& name) override { return false; }
 
 	// Entry moving
 	bool swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override { return false; }
@@ -49,5 +49,5 @@ public:
 
 	// Static functions
 	static bool isBZip2Archive(MemChunk& mc);
-	static bool isBZip2Archive(const string& filename);
+	static bool isBZip2Archive(const wxString& filename);
 };

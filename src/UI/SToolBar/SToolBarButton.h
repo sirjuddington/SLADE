@@ -5,17 +5,17 @@ class SAction;
 class SToolBarButton : public wxControl
 {
 public:
-	SToolBarButton(wxWindow* parent, const string& action, const string& icon = "", bool show_name = false);
+	SToolBarButton(wxWindow* parent, const wxString& action, const wxString& icon = "", bool show_name = false);
 	SToolBarButton(
-		wxWindow*     parent,
-		const string& action_id,
-		const string& action_name,
-		const string& icon,
-		const string& help_text,
-		bool          show_name = false);
+		wxWindow*       parent,
+		const wxString& action_id,
+		const wxString& action_name,
+		const wxString& icon,
+		const wxString& help_text,
+		bool            show_name = false);
 	~SToolBarButton() = default;
 
-	void setIcon(const string& icon);
+	void setIcon(const wxString& icon);
 
 	static int pixelHeight();
 
@@ -33,9 +33,9 @@ private:
 	bool     show_name_ = false;
 
 	// For non-SAction buttons
-	string action_id_;
-	string action_name_;
-	string help_text_;
+	wxString action_id_;
+	wxString action_name_;
+	wxString help_text_;
 
 	// Layout
 	int pad_outer_  = 3;

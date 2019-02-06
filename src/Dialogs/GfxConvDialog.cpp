@@ -50,8 +50,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-string GfxConvDialog::current_palette_name_ = "";
-string GfxConvDialog::target_palette_name_  = "";
+wxString GfxConvDialog::current_palette_name_ = "";
+wxString GfxConvDialog::target_palette_name_  = "";
 CVAR(Bool, gfx_extraconv, false, CVar::Flag::Save)
 
 
@@ -190,7 +190,7 @@ bool GfxConvDialog::nextItem()
 	current_format_ = conv_formats_[current_index];
 
 	// Setup current format string
-	string fmt_string = "Current Format: ";
+	wxString fmt_string = "Current Format: ";
 	if (items_[current_item_].texture == nullptr)
 	{
 		if (items_[current_item_].image.format())

@@ -34,13 +34,13 @@ private:
 	// It's incredibly retarded that I actually have to do this
 	struct ASTVGroup
 	{
-		string         name;
+		wxString       name;
 		wxDataViewItem item;
-		ASTVGroup(wxDataViewItem i, const string& name) : name{ name }, item{ i } {}
+		ASTVGroup(wxDataViewItem i, const wxString& name) : name{ name }, item{ i } {}
 	};
 	vector<ASTVGroup> groups_;
 
-	wxDataViewItem getGroup(const string& group_name);
+	wxDataViewItem getGroup(const wxString& group_name);
 };
 
 class ArgsPanel : public wxScrolled<wxPanel>
@@ -71,7 +71,7 @@ public:
 	void setArgsPanel(ArgsPanel* panel) { panel_args_ = panel; }
 	void setSpecial(int special);
 	void setTrigger(int index);
-	void setTrigger(const string& trigger);
+	void setTrigger(const wxString& trigger);
 	void clearTrigger();
 	int  selectedSpecial() const;
 	void showGeneralised(bool show = true);
@@ -99,7 +99,7 @@ private:
 	{
 		wxCheckBox* check_box;
 		int         index;
-		string      udmf;
+		wxString    udmf;
 	};
 	vector<FlagHolder> flags_;
 };

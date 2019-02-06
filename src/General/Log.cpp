@@ -54,7 +54,7 @@ CVAR(Int, log_verbosity, 1, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
 {
-	string error = "FreeImage: ";
+	wxString error = "FreeImage: ";
 	if (fif != FIF_UNKNOWN)
 		error += S_FMT("[%s] ", FreeImage_GetFormatFromFIF(fif));
 	error += message;
@@ -74,7 +74,7 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
 // Returns the log entry as a formatted string:
 // HH:MM:SS: <message>
 // -----------------------------------------------------------------------------
-string Log::Message::formattedMessageLine() const
+wxString Log::Message::formattedMessageLine() const
 {
 	return S_FMT("%s: %s", wxDateTime(timestamp).FormatISOTime(), CHR(message));
 }
@@ -97,7 +97,7 @@ void Log::init()
 	sf::err().rdbuf(log_file.rdbuf());
 
 	// Write logfile header
-	string year = wxNow().Right(4);
+	wxString year = wxNow().Right(4);
 	info("SLADE - It's a Doom Editor");
 	info(S_FMT("Version %s", App::version().toString()));
 	if (!Global::sc_rev.empty())

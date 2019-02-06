@@ -40,8 +40,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-const string MapVertex::PROP_X = "x";
-const string MapVertex::PROP_Y = "y";
+const wxString MapVertex::PROP_X = "x";
+const wxString MapVertex::PROP_Y = "y";
 
 
 // -----------------------------------------------------------------------------
@@ -104,7 +104,7 @@ void MapVertex::move(double nx, double ny)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapVertex::intProperty(const string& key)
+int MapVertex::intProperty(const wxString& key)
 {
 	if (key == PROP_X)
 		return (int)position_.x;
@@ -117,7 +117,7 @@ int MapVertex::intProperty(const string& key)
 // -----------------------------------------------------------------------------
 // Returns the value of the float property matching [key]
 // -----------------------------------------------------------------------------
-double MapVertex::floatProperty(const string& key)
+double MapVertex::floatProperty(const wxString& key)
 {
 	if (key == PROP_X)
 		return position_.x;
@@ -130,7 +130,7 @@ double MapVertex::floatProperty(const string& key)
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapVertex::setIntProperty(const string& key, int value)
+void MapVertex::setIntProperty(const wxString& key, int value)
 {
 	// Update modified time
 	setModified();
@@ -154,7 +154,7 @@ void MapVertex::setIntProperty(const string& key, int value)
 // -----------------------------------------------------------------------------
 // Sets the float value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapVertex::setFloatProperty(const string& key, double value)
+void MapVertex::setFloatProperty(const wxString& key, double value)
 {
 	// Update modified time
 	setModified();
@@ -170,7 +170,7 @@ void MapVertex::setFloatProperty(const string& key, double value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapVertex::scriptCanModifyProp(const string& key)
+bool MapVertex::scriptCanModifyProp(const wxString& key)
 {
 	if (key == PROP_X || key == PROP_Y)
 		return false;
@@ -235,7 +235,7 @@ void MapVertex::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 // Writes the vertex as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapVertex::writeUDMF(string& def)
+void MapVertex::writeUDMF(wxString& def)
 {
 	def = S_FMT("vertex//#%u\n{\n", index_);
 

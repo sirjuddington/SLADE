@@ -62,9 +62,9 @@ wxRegEx re_float{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT | wxRE
 // If [swap_backslash] is true, instead of escaping it will swap backslashes to
 // forward slashes
 // -----------------------------------------------------------------------------
-string StringUtils::escapedString(const string& str, bool swap_backslash)
+wxString StringUtils::escapedString(const wxString& str, bool swap_backslash)
 {
-	string escaped = str;
+	wxString escaped = str;
 
 	escaped.Replace(SLASH_BACK, swap_backslash ? SLASH_FORWARD : ESCAPED_SLASH_BACK);
 	escaped.Replace(QUOTE_DOUBLE, ESCAPED_QUOTE_DOUBLE);
@@ -76,7 +76,7 @@ string StringUtils::escapedString(const string& str, bool swap_backslash)
 // Reads the text file at [filename], processing any #include statements in the
 // file recursively. The resulting 'expanded' text is written to [out]
 // -----------------------------------------------------------------------------
-void StringUtils::processIncludes(string filename, string& out)
+void StringUtils::processIncludes(wxString filename, wxString& out)
 {
 	// Open file
 	wxTextFile file;
@@ -85,10 +85,10 @@ void StringUtils::processIncludes(string filename, string& out)
 
 	// Get file path
 	wxFileName fn(filename);
-	string     path = fn.GetPath(true);
+	wxString   path = fn.GetPath(true);
 
 	// Go through line-by-line
-	string    line = file.GetNextLine();
+	wxString  line = file.GetNextLine();
 	Tokenizer tz;
 	tz.setSpecialCharacters("");
 	while (!file.Eof())
@@ -116,14 +116,14 @@ void StringUtils::processIncludes(string filename, string& out)
 // as well as in the parent archive. The resulting 'expanded' text is written
 // to [out]
 // -----------------------------------------------------------------------------
-void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res)
+void StringUtils::processIncludes(ArchiveEntry* entry, wxString& out, bool use_res)
 {
 	// Check entry was given
 	if (!entry)
 		return;
 
 	// Write entry to temp file
-	string filename = App::path(entry->name(), App::Dir::Temp);
+	wxString filename = App::path(entry->name(), App::Dir::Temp);
 	entry->exportFile(filename);
 
 	// Open file
@@ -134,7 +134,7 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 	// Go through line-by-line
 	Tokenizer tz;
 	tz.setSpecialCharacters("");
-	string line = file.GetFirstLine();
+	wxString line = file.GetFirstLine();
 	while (!file.Eof())
 	{
 		// Check for #include
@@ -142,7 +142,7 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 		{
 			// Get name of entry to include
 			tz.openString(line);
-			string name = entry->path() + tz.next().text;
+			wxString name = entry->path() + tz.next().text;
 
 			// Get the entry
 			bool done      = false;
@@ -190,7 +190,7 @@ void StringUtils::processIncludes(ArchiveEntry* entry, string& out, bool use_res
 // Returns true if [str] is a valid integer. If [allow_hex] is true, can also
 // be a valid hex string
 // -----------------------------------------------------------------------------
-bool StringUtils::isInteger(const string& str, bool allow_hex)
+bool StringUtils::isInteger(const wxString& str, bool allow_hex)
 {
 	return (re_int1.Matches(str) || re_int2.Matches(str) || (allow_hex && re_int3.Matches(str)));
 }
@@ -198,7 +198,7 @@ bool StringUtils::isInteger(const string& str, bool allow_hex)
 // -----------------------------------------------------------------------------
 // Returns true if [str] is a valid hex string
 // -----------------------------------------------------------------------------
-bool StringUtils::isHex(const string& str)
+bool StringUtils::isHex(const wxString& str)
 {
 	return re_int3.Matches(str);
 }
@@ -206,7 +206,7 @@ bool StringUtils::isHex(const string& str)
 // -----------------------------------------------------------------------------
 // Returns true if [str] is a valid floating-point number
 // -----------------------------------------------------------------------------
-bool StringUtils::isFloat(const string& str)
+bool StringUtils::isFloat(const wxString& str)
 {
 	return (re_float.Matches(str));
 }
@@ -214,7 +214,7 @@ bool StringUtils::isFloat(const string& str)
 // -----------------------------------------------------------------------------
 // Returns [str] as an integer, or 0 if it can't be converted
 // -----------------------------------------------------------------------------
-int StringUtils::toInt(const string& str)
+int StringUtils::toInt(const wxString& str)
 {
 	long tmp;
 	if (str.ToLong(&tmp))
@@ -227,7 +227,7 @@ int StringUtils::toInt(const string& str)
 // -----------------------------------------------------------------------------
 // Returns [str] as a float, or 0 if it can't be converted
 // -----------------------------------------------------------------------------
-float StringUtils::toFloat(const string& str)
+float StringUtils::toFloat(const wxString& str)
 {
 	double tmp;
 	if (str.ToDouble(&tmp))
@@ -240,7 +240,7 @@ float StringUtils::toFloat(const string& str)
 // -----------------------------------------------------------------------------
 // Returns [str] as a double, or 0 if it can't be converted
 // -----------------------------------------------------------------------------
-double StringUtils::toDouble(const string& str)
+double StringUtils::toDouble(const wxString& str)
 {
 	double tmp;
 	if (str.ToDouble(&tmp))

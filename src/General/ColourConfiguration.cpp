@@ -44,7 +44,7 @@
 // -----------------------------------------------------------------------------
 namespace ColourConfiguration
 {
-typedef std::map<string, Colour> ColourHashMap;
+typedef std::map<wxString, Colour> ColourHashMap;
 
 double        line_hilight_width;
 double        line_selection_width;
@@ -63,7 +63,7 @@ ColourHashMap cc_colours;
 // -----------------------------------------------------------------------------
 // Returns the colour [name]
 // -----------------------------------------------------------------------------
-ColRGBA ColourConfiguration::colour(const string& name)
+ColRGBA ColourConfiguration::colour(const wxString& name)
 {
 	auto& col = cc_colours[name];
 	if (col.exists)
@@ -75,7 +75,7 @@ ColRGBA ColourConfiguration::colour(const string& name)
 // -----------------------------------------------------------------------------
 // Returns the colour definition [name]
 // -----------------------------------------------------------------------------
-ColourConfiguration::Colour ColourConfiguration::colDef(const string& name)
+ColourConfiguration::Colour ColourConfiguration::colDef(const wxString& name)
 {
 	return cc_colours[name];
 }
@@ -83,7 +83,7 @@ ColourConfiguration::Colour ColourConfiguration::colDef(const string& name)
 // -----------------------------------------------------------------------------
 // Sets the colour definition [name]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::setColour(const string& name, int red, int green, int blue, int alpha, int blend)
+void ColourConfiguration::setColour(const wxString& name, int red, int green, int blue, int alpha, int blend)
 {
 	auto& col = cc_colours[name];
 	if (red >= 0)
@@ -234,7 +234,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 // -----------------------------------------------------------------------------
 bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 {
-	string cfgstring = "colours\n{\n";
+	wxString cfgstring = "colours\n{\n";
 
 	// Go through all properties
 	for (const auto& i : cc_colours)
@@ -313,7 +313,7 @@ void ColourConfiguration::loadDefaults()
 // -----------------------------------------------------------------------------
 // Reads saved colour configuration [name]
 // -----------------------------------------------------------------------------
-bool ColourConfiguration::readConfiguration(const string& name)
+bool ColourConfiguration::readConfiguration(const wxString& name)
 {
 	// TODO: search custom folder
 
@@ -332,7 +332,7 @@ bool ColourConfiguration::readConfiguration(const string& name)
 // -----------------------------------------------------------------------------
 // Adds all available colour configuration names to [names]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::putConfigurationNames(vector<string>& names)
+void ColourConfiguration::putConfigurationNames(vector<wxString>& names)
 {
 	// TODO: search custom folder
 
@@ -346,7 +346,7 @@ void ColourConfiguration::putConfigurationNames(vector<string>& names)
 // -----------------------------------------------------------------------------
 // Adds all colour names to [list]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::putColourNames(vector<string>& list)
+void ColourConfiguration::putColourNames(vector<wxString>& list)
 {
 	for (auto& i : cc_colours)
 		list.push_back(i.first);
@@ -365,7 +365,7 @@ CONSOLE_COMMAND(ccfg, 1, false)
 	if (S_CMPNOCASE(args[0], "list"))
 	{
 		// Get (sorted) list of colour names
-		vector<string> list;
+		vector<wxString> list;
 		ColourConfiguration::putColourNames(list);
 		sort(list.begin(), list.end());
 

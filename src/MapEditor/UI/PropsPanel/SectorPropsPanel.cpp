@@ -66,7 +66,7 @@ FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 // -----------------------------------------------------------------------------
 // Sets the texture to display
 // -----------------------------------------------------------------------------
-void FlatTexCanvas::setTexture(const string& tex)
+void FlatTexCanvas::setTexture(const wxString& tex)
 {
 	texname_ = tex;
 	if (tex.empty() || tex == "-")
@@ -165,7 +165,7 @@ FlatComboBox::FlatComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 void FlatComboBox::onDropDown(wxCommandEvent& e)
 {
 	// Get current value
-	string text = GetValue().Upper();
+	wxString text = GetValue().Upper();
 
 	// Populate dropdown with matching flat names
 	auto&         textures = MapEditor::textureManager().allFlatsInfo();
@@ -373,8 +373,8 @@ void SectorPropsPanel::openObjects(vector<MapObject*>& objects)
 	if (objects.empty())
 		return;
 
-	int    ival;
-	string sval;
+	int      ival;
+	wxString sval;
 
 	// Special
 	if (MapObject::multiIntProperty(objects, "special", ival))

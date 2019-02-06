@@ -148,10 +148,12 @@ public:
 // -----------------------------------------------------------------------------
 // SToolBarGroup class constructor
 // -----------------------------------------------------------------------------
-SToolBarGroup::SToolBarGroup(SToolBar* parent, const string& name, bool force_name) : wxPanel(parent, -1), name_{ name }
+SToolBarGroup::SToolBarGroup(SToolBar* parent, const wxString& name, bool force_name) :
+	wxPanel(parent, -1),
+	name_{ name }
 {
 	// Check if hidden
-	string tb_hidden = toolbars_hidden;
+	wxString tb_hidden = toolbars_hidden;
 	if (tb_hidden.Contains(S_FMT("[%s]", name)))
 		hidden_ = true;
 	else
@@ -167,7 +169,7 @@ SToolBarGroup::SToolBarGroup(SToolBar* parent, const string& name, bool force_na
 	// Create group label if necessary
 	if (show_toolbar_names || force_name)
 	{
-		string showname = name;
+		wxString showname = name;
 		if (name.StartsWith("_"))
 			showname.Remove(0, 1);
 
@@ -188,7 +190,7 @@ void SToolBarGroup::hide(bool hide)
 	hidden_ = hide;
 
 	// Update 'hidden toolbars' cvar
-	string tb_hidden = toolbars_hidden;
+	wxString tb_hidden = toolbars_hidden;
 	if (hide)
 		tb_hidden += "[" + name_ + "]";
 	else
@@ -201,7 +203,7 @@ void SToolBarGroup::hide(bool hide)
 // Adds a toolbar button to the group for [action]. If [icon] is empty, the
 // action's icon is used
 // -----------------------------------------------------------------------------
-SToolBarButton* SToolBarGroup::addActionButton(const string& action, const string& icon, bool show_name)
+SToolBarButton* SToolBarGroup::addActionButton(const wxString& action, const wxString& icon, bool show_name)
 {
 	// Get sizer
 	auto sizer = GetSizer();
@@ -221,11 +223,11 @@ SToolBarButton* SToolBarGroup::addActionButton(const string& action, const strin
 // and [help_text] can be defined to override the defaults of the action
 // -----------------------------------------------------------------------------
 SToolBarButton* SToolBarGroup::addActionButton(
-	const string& action_id,
-	const string& action_name,
-	const string& icon,
-	const string& help_text,
-	bool          show_name)
+	const wxString& action_id,
+	const wxString& action_name,
+	const wxString& icon,
+	const wxString& help_text,
+	bool            show_name)
 {
 	// Get sizer
 	auto sizer = GetSizer();
@@ -367,7 +369,7 @@ void SToolBar::addGroup(SToolBarGroup* group)
 // -----------------------------------------------------------------------------
 // Removes the group matching [name] from the toolbar
 // -----------------------------------------------------------------------------
-void SToolBar::deleteGroup(const string& name)
+void SToolBar::deleteGroup(const wxString& name)
 {
 	// Do nothing if no name specified
 	if (name.IsEmpty())
@@ -417,7 +419,7 @@ void SToolBar::deleteCustomGroups()
 // Adds a new group [name] to the toolbar, containing toolbar buttons for each
 // action in [actions]
 // -----------------------------------------------------------------------------
-void SToolBar::addActionGroup(const string& name, wxArrayString actions)
+void SToolBar::addActionGroup(const wxString& name, wxArrayString actions)
 {
 	// Do nothing if no actions were given
 	if (actions.empty())
@@ -535,7 +537,7 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 // -----------------------------------------------------------------------------
 // Enables or disables toolbar group [name]
 // -----------------------------------------------------------------------------
-void SToolBar::enableGroup(const string& name, bool enable)
+void SToolBar::enableGroup(const wxString& name, bool enable)
 {
 	// Go through toolbar groups
 	for (auto& group : groups_)
@@ -566,7 +568,7 @@ void SToolBar::populateGroupsMenu(wxMenu* menu, int start_id)
 {
 	for (unsigned a = 0; a < groups_.size(); a++)
 	{
-		string name = groups_[a]->name();
+		wxString name = groups_[a]->name();
 		name.Replace("_", "");
 		auto item = menu->AppendCheckItem(start_id + a, name);
 		item->Check(!groups_[a]->hidden());
@@ -619,7 +621,7 @@ int SToolBar::calculateNumRows(int width)
 // -----------------------------------------------------------------------------
 // Returns the SToolBarGroup matching [name], or nullptr if not found
 // -----------------------------------------------------------------------------
-SToolBarGroup* SToolBar::group(const string& name)
+SToolBarGroup* SToolBar::group(const wxString& name)
 {
 	for (auto group : groups_)
 		if (S_CMPNOCASE(group->name(), name))

@@ -380,7 +380,7 @@ bool LfdArchive::isLfdArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Dark Forces lfd archive
 // -----------------------------------------------------------------------------
-bool LfdArchive::isLfdArchive(const string& filename)
+bool LfdArchive::isLfdArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

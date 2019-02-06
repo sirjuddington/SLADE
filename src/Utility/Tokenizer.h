@@ -16,7 +16,7 @@ public:
 
 	struct Token
 	{
-		string   text;
+		wxString text;
 		unsigned line_no;
 		bool     quoted_string;
 		unsigned pos_start;
@@ -24,13 +24,13 @@ public:
 		unsigned length;
 		bool     valid;
 
-		explicit operator string() const { return text; }
-		explicit operator const string() const { return text; }
+		explicit operator wxString() const { return text; }
+		explicit operator const wxString() const { return text; }
 		explicit operator const char*() const { return CHR(text); }
-		bool     operator==(const string& cmp) const { return text == cmp; }
+		bool     operator==(const wxString& cmp) const { return text == cmp; }
 		bool     operator==(const char* cmp) const { return text.Cmp(cmp) == 0; }
 		bool     operator==(char cmp) const { return length == 1 && text[0] == cmp; }
-		bool     operator!=(const string& cmp) const { return text != cmp; }
+		bool     operator!=(const wxString& cmp) const { return text != cmp; }
 		bool     operator!=(const char* cmp) const { return text.Cmp(cmp) != 0; }
 		bool     operator!=(char cmp) const { return length != 1 || text[0] != cmp; }
 		char     operator[](unsigned index) const { return text[index]; }
@@ -69,14 +69,14 @@ public:
 	};
 
 	// Constructors
-	Tokenizer(int comments = CommentTypes::Default, const string& special_characters = DEFAULT_SPECIAL_CHARACTERS);
+	Tokenizer(int comments = CommentTypes::Default, const wxString& special_characters = DEFAULT_SPECIAL_CHARACTERS);
 
 	// Accessors
-	const string& source() const { return source_; }
-	bool          decorate() const { return decorate_; }
-	bool          readLowerCase() const { return read_lowercase_; }
-	const Token&  current() const { return token_current_; }
-	const Token&  peek() const;
+	const wxString& source() const { return source_; }
+	bool            decorate() const { return decorate_; }
+	bool            readLowerCase() const { return read_lowercase_; }
+	const Token&    current() const { return token_current_; }
+	const Token&    peek() const;
 
 	// Modifiers
 	void setCommentTypes(int types) { comment_types_ = types; }
@@ -84,7 +84,7 @@ public:
 	{
 		special_characters_.assign(characters, characters + strlen(characters));
 	}
-	void setSource(const string& source) { source_ = source; }
+	void setSource(const wxString& source) { source_ = source; }
 	void setReadLowerCase(bool lower) { read_lowercase_ = lower; }
 	void enableDecorate(bool enable) { decorate_ = enable; }
 	void enableDebug(bool enable) { debug_ = enable; }
@@ -93,12 +93,12 @@ public:
 	const Token&  next();
 	void          adv(size_t inc = 1);
 	bool          advIf(const char* check, size_t inc = 1);
-	bool          advIf(const string& check, size_t inc = 1);
+	bool          advIf(const wxString& check, size_t inc = 1);
 	bool          advIf(char check, size_t inc = 1);
 	bool          advIfNC(const char* check, size_t inc = 1);
-	bool          advIfNC(const string& check, size_t inc = 1);
+	bool          advIfNC(const wxString& check, size_t inc = 1);
 	bool          advIfNext(const char* check, size_t inc = 1);
-	bool          advIfNext(const string& check, size_t inc = 1);
+	bool          advIfNext(const wxString& check, size_t inc = 1);
 	bool          advIfNext(char check, size_t inc = 1);
 	bool          advIfNextNC(const char* check, size_t inc = 1);
 	void          advToNextLine();
@@ -107,7 +107,7 @@ public:
 	vector<Token> getTokensUntil(const char* end);
 	vector<Token> getTokensUntilNC(const char* end);
 	vector<Token> getTokensUntilNextLine(bool from_start = false);
-	string        getLine(bool from_start = false);
+	wxString      getLine(bool from_start = false);
 
 	// Operators
 	void operator++() { adv(); }
@@ -116,23 +116,23 @@ public:
 
 	// Token Checking
 	bool check(const char* check) const { return token_current_ == check; }
-	bool check(const string& check) const { return token_current_ == check; }
+	bool check(const wxString& check) const { return token_current_ == check; }
 	bool check(char check) const { return token_current_ == check; }
 	bool checkOrEnd(const char* check) const;
-	bool checkOrEnd(const string& check) const;
+	bool checkOrEnd(const wxString& check) const;
 	bool checkOrEnd(char check) const;
 	bool checkNC(const char* check) const { return S_CMPNOCASE(token_current_.text, check); }
 	bool checkOrEndNC(const char* check) const;
 	bool checkNext(const char* check) const;
-	bool checkNext(const string& check) const;
+	bool checkNext(const wxString& check) const;
 	bool checkNext(char check) const;
 	bool checkNextNC(const char* check) const;
 
 	// Load Data
-	bool openFile(const string& filename, size_t offset = 0, size_t length = 0);
-	bool openString(const string& text, size_t offset = 0, size_t length = 0, const string& source = "unknown");
-	bool openMem(const char* mem, size_t length, const string& source);
-	bool openMem(const MemChunk& mc, const string& source);
+	bool openFile(const wxString& filename, size_t offset = 0, size_t length = 0);
+	bool openString(const wxString& text, size_t offset = 0, size_t length = 0, const wxString& source = "unknown");
+	bool openMem(const char* mem, size_t length, const wxString& source);
+	bool openMem(const MemChunk& mc, const wxString& source);
 
 	// General
 	bool isSpecialCharacter(char p) const { return VECTOR_EXISTS(special_characters_, p); }
@@ -140,15 +140,15 @@ public:
 	void reset();
 
 	// Old tokenizer interface bridge (don't use)
-	string getToken()
+	wxString getToken()
 	{
 		if (atEnd())
 			return "";
-		string t = token_current_.text;
+		wxString t = token_current_.text;
 		adv();
 		return t;
 	}
-	void getToken(string* str)
+	void getToken(wxString* str)
 	{
 		if (atEnd())
 			*str = "";
@@ -156,7 +156,7 @@ public:
 			*str = token_current_.text;
 		adv();
 	}
-	string peekToken() const
+	wxString peekToken() const
 	{
 		if (atEnd())
 			return "";
@@ -187,7 +187,7 @@ public:
 		return v;
 	}
 	void skipToken() { adv(); }
-	bool checkToken(const string& cmp)
+	bool checkToken(const wxString& cmp)
 	{
 		next();
 		return check(cmp);
@@ -196,8 +196,8 @@ public:
 	unsigned tokenEnd() const { return token_current_.pos_end; }
 
 
-	static const string DEFAULT_SPECIAL_CHARACTERS;
-	static const Token& invalidToken() { return invalid_token_; }
+	static const wxString DEFAULT_SPECIAL_CHARACTERS;
+	static const Token&   invalidToken() { return invalid_token_; }
 
 private:
 	vector<char>  data_;
@@ -208,7 +208,7 @@ private:
 	// Configuration
 	int          comment_types_;          // Types of comments to skip
 	vector<char> special_characters_;     // These will always be read as separate tokens
-	string       source_;                 // What file/entry/chunk is being tokenized
+	wxString     source_;                 // What file/entry/chunk is being tokenized
 	bool         decorate_       = false; // Special handling for //$ comments
 	bool         read_lowercase_ = false; // If true, tokens will all be read in lowercase
 										  // (except for quoted strings, obviously)

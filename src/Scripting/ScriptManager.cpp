@@ -51,7 +51,7 @@ ScriptList scripts_acs;
 ScriptList scripts_decorate;
 ScriptList scripts_zscript;
 
-std::map<ScriptType, string> script_templates;
+std::map<ScriptType, wxString> script_templates;
 } // namespace ScriptManager
 
 
@@ -66,7 +66,7 @@ namespace ScriptManager
 // Adds a new editor script of [type], created from [entry]. [cut_path] will be
 // removed from the start of the script's path property
 // -----------------------------------------------------------------------------
-Script* addEditorScriptFromEntry(ArchiveEntry::SPtr& entry, ScriptType type, const string& cut_path)
+Script* addEditorScriptFromEntry(ArchiveEntry::SPtr& entry, ScriptType type, const wxString& cut_path)
 {
 	auto s  = std::make_unique<Script>();
 	s->type = type;
@@ -85,7 +85,7 @@ Script* addEditorScriptFromEntry(ArchiveEntry::SPtr& entry, ScriptType type, con
 // -----------------------------------------------------------------------------
 // Adds a new editor script of [type], created from the file at [filename]
 // -----------------------------------------------------------------------------
-Script* addEditorScriptFromFile(const string& filename, ScriptType type)
+Script* addEditorScriptFromFile(const wxString& filename, ScriptType type)
 {
 	wxFileName fn(filename);
 
@@ -134,8 +134,8 @@ void loadCustomScripts()
 	res_dir.Open(user_scripts_dir);
 
 	// Go through each file in the directory
-	string filename = wxEmptyString;
-	bool   files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
+	wxString filename = wxEmptyString;
+	bool     files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
 	while (files)
 	{
 		addEditorScriptFromFile(user_scripts_dir + "/" + filename, ScriptType::Custom);
@@ -149,7 +149,7 @@ void loadCustomScripts()
 // Loads all editor scripts of [type] from slade.pk3 and the user dir
 // (in scripts/[dir])
 // -----------------------------------------------------------------------------
-void loadEditorScripts(ScriptType type, const string& dir)
+void loadEditorScripts(ScriptType type, const wxString& dir)
 {
 	// Get 'scripts/(dir)' dir of slade.pk3
 	auto scripts_dir = App::archiveManager().programResourceArchive()->dir(S_FMT("scripts/%s", CHR(dir)));
@@ -177,8 +177,8 @@ void loadEditorScripts(ScriptType type, const string& dir)
 	res_dir.Open(user_scripts_dir);
 
 	// Go through each file in the directory
-	string filename = wxEmptyString;
-	bool   files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
+	wxString filename = wxEmptyString;
+	bool     files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
 	while (files)
 	{
 		auto script = addEditorScriptFromFile(user_scripts_dir + "/" + filename, type);
@@ -191,7 +191,7 @@ void loadEditorScripts(ScriptType type, const string& dir)
 // -----------------------------------------------------------------------------
 // Exports all scripts in [list] to .lua files at [path]
 // -----------------------------------------------------------------------------
-void exportUserScripts(const string& path, ScriptList& list)
+void exportUserScripts(const wxString& path, ScriptList& list)
 {
 	// Check dir exists
 	auto scripts_dir = App::path(path, App::Dir::User);
@@ -200,8 +200,8 @@ void exportUserScripts(const string& path, ScriptList& list)
 		// Exists, clear directory
 		wxDir res_dir;
 		res_dir.Open(scripts_dir);
-		string filename = wxEmptyString;
-		bool   files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
+		wxString filename = wxEmptyString;
+		bool     files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
 		while (files)
 		{
 			wxRemoveFile(S_FMT("%s/%s", CHR(scripts_dir), CHR(filename)));
@@ -229,7 +229,7 @@ void exportUserScripts(const string& path, ScriptList& list)
 // -----------------------------------------------------------------------------
 // Loads text from the entry at [res_path] in slade.pk3 into [target]
 // -----------------------------------------------------------------------------
-void readResourceEntryText(string& target, const string& res_path)
+void readResourceEntryText(wxString& target, const wxString& res_path)
 {
 	auto entry = App::archiveManager().programResourceArchive()->entryAtPath(res_path);
 	if (entry)
@@ -241,7 +241,7 @@ void readResourceEntryText(string& target, const string& res_path)
 // that name exist.
 // If [user_only] is true, read only (internal) scripts will be ignored
 // -----------------------------------------------------------------------------
-Script* getEditorScript(const string& name, ScriptType type, bool user_only = true)
+Script* getEditorScript(const wxString& name, ScriptType type, bool user_only = true)
 {
 	for (auto& script : scripts_editor[type])
 	{
@@ -307,7 +307,7 @@ void ScriptManager::saveUserScripts()
 // Renames [script] to [new_name].
 // Returns false if the script couldn't be renamed
 // -----------------------------------------------------------------------------
-bool ScriptManager::renameScript(Script* script, const string& new_name)
+bool ScriptManager::renameScript(Script* script, const wxString& new_name)
 {
 	if (script->read_only || script->type == ScriptType::NonEditor)
 		return false;
@@ -345,7 +345,7 @@ bool ScriptManager::deleteScript(Script* script)
 // Creates a new script of [type] named [name]. If a script by that name
 // already exists, the existing script will be returned instead
 // -----------------------------------------------------------------------------
-ScriptManager::Script* ScriptManager::createEditorScript(const string& name, ScriptType type)
+ScriptManager::Script* ScriptManager::createEditorScript(const wxString& name, ScriptType type)
 {
 	// Check name
 	auto script = getEditorScript(name, type);
@@ -372,7 +372,7 @@ vector<ScriptManager::Script::UPtr>& ScriptManager::editorScripts(ScriptType typ
 // -----------------------------------------------------------------------------
 // Populates [menu] with all loaded editor scripts of [type]
 // -----------------------------------------------------------------------------
-void ScriptManager::populateEditorScriptMenu(wxMenu* menu, ScriptType type, const string& action_id)
+void ScriptManager::populateEditorScriptMenu(wxMenu* menu, ScriptType type, const wxString& action_id)
 {
 	int index = 0;
 	for (auto& script : scripts_editor[type])

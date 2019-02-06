@@ -5,19 +5,19 @@
 namespace WxUtils
 {
 wxMenuItem* createMenuItem(
-	wxMenu*       menu,
-	int           id,
-	const string& label,
-	const string& help = wxEmptyString,
-	const string& icon = wxEmptyString);
+	wxMenu*         menu,
+	int             id,
+	const wxString& label,
+	const wxString& help = wxEmptyString,
+	const wxString& icon = wxEmptyString);
 wxFont       monospaceFont(wxFont base);
 wxImageList* createSmallImageList();
 wxPanel*     createPadPanel(wxWindow* parent, wxWindow* control, int pad = -1);
 
-wxSizer* createLabelHBox(wxWindow* parent, const string& label, wxWindow* widget);
-wxSizer* createLabelHBox(wxWindow* parent, const string& label, wxSizer* sizer);
-wxSizer* createLabelVBox(wxWindow* parent, const string& label, wxWindow* widget);
-wxSizer* createLabelVBox(wxWindow* parent, const string& label, wxSizer* sizer);
+wxSizer* createLabelHBox(wxWindow* parent, const wxString& label, wxWindow* widget);
+wxSizer* createLabelHBox(wxWindow* parent, const wxString& label, wxSizer* sizer);
+wxSizer* createLabelVBox(wxWindow* parent, const wxString& label, wxWindow* widget);
+wxSizer* createLabelVBox(wxWindow* parent, const wxString& label, wxSizer* sizer);
 
 wxSizer* layoutHorizontally(vector<wxObject*> widgets, int expand_col = -1);
 void     layoutHorizontally(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags = {}, int expand_col = -1);
@@ -25,7 +25,7 @@ void     layoutHorizontally(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFl
 wxSizer* layoutVertically(vector<wxObject*> widgets, int expand_row = -1);
 void     layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags = {}, int expand_row = -1);
 
-wxArrayString arrayString(vector<string> vector);
+wxArrayString arrayString(vector<wxString> vector);
 
 // Scaling
 wxSize  scaledSize(int x, int y);

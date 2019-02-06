@@ -115,7 +115,7 @@ Property::Property(double value)
 // -----------------------------------------------------------------------------
 // Property class constructor (string)
 // -----------------------------------------------------------------------------
-Property::Property(const string& value) : value_{}
+Property::Property(const wxString& value) : value_{}
 {
 	// Init string property
 	type_       = Type::String;
@@ -257,7 +257,7 @@ double Property::floatValue(bool warn_wrong_type) const
 // If [warn_wrong_type] is true, a warning message is written to the log if the
 // property is not of string type
 // -----------------------------------------------------------------------------
-string Property::stringValue(bool warn_wrong_type) const
+wxString Property::stringValue(bool warn_wrong_type) const
 {
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type_ == Type::Flag)
@@ -378,7 +378,7 @@ void Property::setValue(double val)
 // -----------------------------------------------------------------------------
 // Sets the property to [val], and changes its type to string if necessary
 // -----------------------------------------------------------------------------
-void Property::setValue(const string& val)
+void Property::setValue(const wxString& val)
 {
 	// Change type if necessary
 	if (type_ != Type::String)
@@ -437,7 +437,7 @@ void Property::changeType(Type newtype)
 // -----------------------------------------------------------------------------
 // Returns a string representing the property's value type
 // -----------------------------------------------------------------------------
-string Property::typeString() const
+wxString Property::typeString() const
 {
 	switch (type_)
 	{

@@ -113,10 +113,10 @@ void GradientBox::draw()
 // TranslationEditorDialog class constructor
 // -----------------------------------------------------------------------------
 TranslationEditorDialog::TranslationEditorDialog(
-	wxWindow*      parent,
-	const Palette& pal,
-	const string&  title,
-	SImage*        preview_image) :
+	wxWindow*       parent,
+	const Palette&  pal,
+	const wxString& title,
+	SImage*         preview_image) :
 	wxDialog(parent, -1, title),
 	palette_{ pal }
 {
@@ -1223,7 +1223,7 @@ void TranslationEditorDialog::onBtnDown(wxCommandEvent& e)
 void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 {
 	// Get user directory
-	string dir = App::path("translations", App::Dir::User);
+	wxString dir = App::path("translations", App::Dir::User);
 
 	// Create open file dialog
 	wxFileDialog dialog_open(
@@ -1239,11 +1239,11 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 	if (dialog_open.ShowModal() == wxID_OK)
 	{
 		// Get the selected filename
-		string filename = dialog_open.GetPath();
+		wxString filename = dialog_open.GetPath();
 
 		// Load file to string
-		wxFile file;
-		string tstring;
+		wxFile   file;
+		wxString tstring;
 		if (file.Open(dialog_open.GetPath()))
 			file.ReadAll(&tstring);
 
@@ -1265,7 +1265,7 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 void TranslationEditorDialog::onBtnSave(wxCommandEvent& e)
 {
 	// If the directory doesn't exist create it
-	string dir = App::path("translations", App::Dir::User);
+	wxString dir = App::path("translations", App::Dir::User);
 	if (!wxDirExists(dir))
 		wxMkdir(dir);
 
@@ -1283,7 +1283,7 @@ void TranslationEditorDialog::onBtnSave(wxCommandEvent& e)
 	if (dialog_save.ShowModal() == wxID_OK)
 	{
 		// Get translation as text string
-		string str = translation_.asText();
+		wxString str = translation_.asText();
 
 		// Open file for writing
 		wxFile file(dialog_save.GetPath(), wxFile::write);

@@ -71,7 +71,7 @@ int HexTable::GetNumberCols()
 // -----------------------------------------------------------------------------
 // Returns the value of the byte at [row],[col] as a string
 // -----------------------------------------------------------------------------
-string HexTable::GetValue(int row, int col)
+wxString HexTable::GetValue(int row, int col)
 {
 	if (unsigned(row * hex_grid_width + col) >= data_.size())
 		return "";
@@ -99,7 +99,7 @@ string HexTable::GetValue(int row, int col)
 // Sets the value of the byte at [row],[col]
 // (does nothing, only here because it's required)
 // -----------------------------------------------------------------------------
-void HexTable::SetValue(int row, int col, const string& value)
+void HexTable::SetValue(int row, int col, const wxString& value)
 {
 	// Can't set values
 }

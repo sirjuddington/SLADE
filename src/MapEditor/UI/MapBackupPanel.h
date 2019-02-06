@@ -14,7 +14,7 @@ public:
 
 	Archive* selectedMapData() const { return archive_mapdata_.get(); }
 
-	bool loadBackups(string archive_name, const string& map_name);
+	bool loadBackups(wxString archive_name, const wxString& map_name);
 	void updateMapPreview();
 
 private:

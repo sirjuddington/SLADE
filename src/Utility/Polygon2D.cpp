@@ -479,7 +479,7 @@ bool PolygonSplitter::detectUnclosed()
 	else if (verbose_)
 	{
 		// Print invalid vertices info if verbose
-		string info = "Vertices with no outgoing edges: ";
+		wxString info = "Vertices with no outgoing edges: ";
 		for (int end_vert : end_verts)
 		{
 			info += S_FMT("%1.2f", vertices_[end_vert].x);
@@ -645,7 +645,7 @@ bool PolygonSplitter::tracePolyOutline(int edge_start)
 
 	if (verbose_)
 	{
-		string info = "Traced polygon outline: ";
+		wxString info = "Traced polygon outline: ";
 		info += S_FMT("%lu edges, ", poly.edges.size());
 		if (poly.convex)
 			info += "convex, ";
