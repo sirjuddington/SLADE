@@ -34,7 +34,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/All.h"
 #include "Dialogs/ExtMessageDialog.h"
-#include "External/sol/sol.hpp"
+#include "thirdparty/sol/sol.hpp"
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
 #include "General/Console/Console.h"

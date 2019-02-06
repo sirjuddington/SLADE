@@ -5,7 +5,7 @@
 // clang-format off
 #ifdef __WXMSW__
 // Windows GL headers
-#include "External/glew/glew.h" // Use built-in GLEW so we don't need any extra dlls
+#include "thirdparty/glew/glew.h" // Use built-in GLEW so we don't need any extra dlls
 #include <gl/GL.h>
 #include <gl/GLU.h>
 #elif __APPLE__

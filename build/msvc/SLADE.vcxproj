@@ -94,15 +94,15 @@
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">true</GenerateManifest>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">true</GenerateManifest>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">true</GenerateManifest>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(FTGL)\src;$(FREETYPE)\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..;$(ProjectDir)..\..\thirdparty\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..;$(ProjectDir)..\..\thirdparty\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(FTGL)\src;$(FREETYPE)\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..;$(ProjectDir)..\..\thirdparty\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..;$(ProjectDir)..\..\thirdparty\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(FTGL)\msvc\build;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(SFML)\extlibs\libs-msvc\x86;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..;$(ProjectDir)..\..\thirdparty\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(CURL)\lib\static-debug-x86;$(LibraryPath)</LibraryPath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SLADE-dbg</TargetName>
   </PropertyGroup>
@@ -362,7 +362,7 @@
     <ClCompile Include="..\..\src\Dialogs\GfxColouriseDialog.cpp" />
     <ClCompile Include="..\..\src\Dialogs\GfxCropDialog.cpp" />
     <ClCompile Include="..\..\src\Dialogs\GfxTintDialog.cpp" />
-    <ClCompile Include="..\..\src\External\bzip2\blocksort.c">
+    <ClCompile Include="..\..\thirdparty\bzip2\blocksort.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -370,7 +370,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\bzip2\bzlib.c">
+    <ClCompile Include="..\..\thirdparty\bzip2\bzlib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -378,7 +378,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\bzip2\compress.c">
+    <ClCompile Include="..\..\thirdparty\bzip2\compress.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -386,7 +386,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\bzip2\crctable.c">
+    <ClCompile Include="..\..\thirdparty\bzip2\crctable.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -394,7 +394,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\bzip2\decompress.c">
+    <ClCompile Include="..\..\thirdparty\bzip2\decompress.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -402,7 +402,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\bzip2\huffman.c">
+    <ClCompile Include="..\..\thirdparty\bzip2\huffman.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -410,7 +410,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\bzip2\randtable.c">
+    <ClCompile Include="..\..\thirdparty\bzip2\randtable.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -452,7 +452,7 @@
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\SetupWizardDialog.cpp" />
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\TempFolderWizardPage.cpp" />
     <ClCompile Include="..\..\src\Dialogs\TranslationEditorDialog.cpp" />
-    <ClCompile Include="..\..\src\External\dumb\core\atexit.c">
+    <ClCompile Include="..\..\thirdparty\dumb\core\atexit.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -460,7 +460,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\core\duhlen.c">
+    <ClCompile Include="..\..\thirdparty\dumb\core\duhlen.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -468,7 +468,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\core\duhtag.c">
+    <ClCompile Include="..\..\thirdparty\dumb\core\duhtag.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -476,7 +476,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\core\dumbfile.c">
+    <ClCompile Include="..\..\thirdparty\dumb\core\dumbfile.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -484,7 +484,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\core\loadduh.c">
+    <ClCompile Include="..\..\thirdparty\dumb\core\loadduh.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -492,7 +492,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\core\makeduh.c">
+    <ClCompile Include="..\..\thirdparty\dumb\core\makeduh.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -500,7 +500,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\core\rawsig.c">
+    <ClCompile Include="..\..\thirdparty\dumb\core\rawsig.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -508,7 +508,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\core\readduh.c">
+    <ClCompile Include="..\..\thirdparty\dumb\core\readduh.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -516,7 +516,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\core\register.c">
+    <ClCompile Include="..\..\thirdparty\dumb\core\register.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -524,7 +524,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\core\rendduh.c">
+    <ClCompile Include="..\..\thirdparty\dumb\core\rendduh.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -532,7 +532,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\core\rendsig.c">
+    <ClCompile Include="..\..\thirdparty\dumb\core\rendsig.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -540,7 +540,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\core\unload.c">
+    <ClCompile Include="..\..\thirdparty\dumb\core\unload.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -548,7 +548,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\helpers\barray.c">
+    <ClCompile Include="..\..\thirdparty\dumb\helpers\barray.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -556,7 +556,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\helpers\clickrem.c">
+    <ClCompile Include="..\..\thirdparty\dumb\helpers\clickrem.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -564,7 +564,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\helpers\fir_resampler.c">
+    <ClCompile Include="..\..\thirdparty\dumb\helpers\fir_resampler.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -572,7 +572,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\helpers\lpc.c">
+    <ClCompile Include="..\..\thirdparty\dumb\helpers\lpc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -580,7 +580,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\helpers\memfile.c">
+    <ClCompile Include="..\..\thirdparty\dumb\helpers\memfile.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -588,7 +588,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\helpers\resample.c">
+    <ClCompile Include="..\..\thirdparty\dumb\helpers\resample.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -596,7 +596,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\helpers\resampler.c">
+    <ClCompile Include="..\..\thirdparty\dumb\helpers\resampler.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -604,7 +604,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\helpers\riff.c">
+    <ClCompile Include="..\..\thirdparty\dumb\helpers\riff.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -612,7 +612,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\helpers\sampbuf.c">
+    <ClCompile Include="..\..\thirdparty\dumb\helpers\sampbuf.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -620,7 +620,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\helpers\silence.c">
+    <ClCompile Include="..\..\thirdparty\dumb\helpers\silence.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -628,7 +628,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\helpers\stdfile.c">
+    <ClCompile Include="..\..\thirdparty\dumb\helpers\stdfile.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -636,7 +636,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\helpers\tarray.c">
+    <ClCompile Include="..\..\thirdparty\dumb\helpers\tarray.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -644,7 +644,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\itload.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\itload.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -652,7 +652,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\itload2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\itload2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -660,7 +660,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\itmisc.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\itmisc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -668,7 +668,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\itorder.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\itorder.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -676,7 +676,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\itread.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\itread.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -684,7 +684,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\itread2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\itread2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -692,7 +692,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\itrender.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\itrender.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -700,7 +700,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\itunload.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\itunload.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -708,7 +708,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\load669.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\load669.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -716,7 +716,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\load6692.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\load6692.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -724,7 +724,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadamf.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadamf.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -732,7 +732,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadamf2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadamf2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -740,7 +740,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadany.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadany.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -748,7 +748,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadany2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadany2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -756,7 +756,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadasy.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadasy.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -764,7 +764,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadasy2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadasy2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -772,7 +772,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadmod.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadmod.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -780,7 +780,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadmod2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadmod2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -788,7 +788,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadmtm.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadmtm.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -796,7 +796,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadmtm2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadmtm2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -804,7 +804,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadokt.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadokt.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -812,7 +812,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadokt2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadokt2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -820,7 +820,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadoldpsm.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadoldpsm.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -828,7 +828,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadoldpsm2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadoldpsm2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -836,7 +836,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadpsm.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadpsm.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -844,7 +844,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadpsm2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadpsm2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -852,7 +852,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadptm.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadptm.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -860,7 +860,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadptm2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadptm2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -868,7 +868,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadriff.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadriff.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -876,7 +876,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadriff2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadriff2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -884,7 +884,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loads3m.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loads3m.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -892,7 +892,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loads3m2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loads3m2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -900,7 +900,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadstm.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadstm.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -908,7 +908,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadstm2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadstm2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -916,7 +916,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadxm.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadxm.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -924,7 +924,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\loadxm2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\loadxm2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -932,7 +932,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\ptmeffect.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\ptmeffect.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -940,7 +940,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\read669.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\read669.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -948,7 +948,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\read6692.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\read6692.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -956,7 +956,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readam.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readam.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -964,7 +964,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readamf.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readamf.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -972,7 +972,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readamf2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readamf2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -980,7 +980,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readany.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readany.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -988,7 +988,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readany2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readany2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -996,7 +996,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readasy.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readasy.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1004,7 +1004,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readdsmf.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readdsmf.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1012,7 +1012,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readmod.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readmod.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1020,7 +1020,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readmod2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readmod2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1028,7 +1028,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readmtm.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readmtm.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1036,7 +1036,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readokt.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readokt.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1044,7 +1044,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readokt2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readokt2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1052,7 +1052,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readoldpsm.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readoldpsm.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1060,7 +1060,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readpsm.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readpsm.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1068,7 +1068,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readptm.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readptm.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1076,7 +1076,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readriff.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readriff.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1084,7 +1084,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\reads3m.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\reads3m.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1092,7 +1092,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\reads3m2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\reads3m2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1100,7 +1100,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readstm.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readstm.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1108,7 +1108,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readstm2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readstm2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1116,7 +1116,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readxm.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readxm.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1124,7 +1124,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\readxm2.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\readxm2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1132,7 +1132,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\dumb\it\xmeffect.c">
+    <ClCompile Include="..\..\thirdparty\dumb\it\xmeffect.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1140,7 +1140,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\email\wxEmailMessage.cpp">
+    <ClCompile Include="..\..\thirdparty\email\wxEmailMessage.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1148,7 +1148,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\email\wxEmailMessageID.cpp">
+    <ClCompile Include="..\..\thirdparty\email\wxEmailMessageID.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1156,7 +1156,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\email\wxMailer.cpp">
+    <ClCompile Include="..\..\thirdparty\email\wxMailer.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1164,21 +1164,21 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\glew\glew.c">
+    <ClCompile Include="..\..\thirdparty\glew\glew.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lutf8lib.c">
+    <ClCompile Include="..\..\thirdparty\lua\lutf8lib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lzio.c">
+    <ClCompile Include="..\..\thirdparty\lua\lzio.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
@@ -1209,7 +1209,7 @@
     <ClCompile Include="..\..\src\General\UI.cpp" />
     <ClCompile Include="..\..\src\General\UndoRedo.cpp" />
     <ClCompile Include="..\..\src\General\Web.cpp" />
-    <ClCompile Include="..\..\src\External\lua\lapi.c">
+    <ClCompile Include="..\..\thirdparty\lua\lapi.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1219,7 +1219,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lauxlib.c">
+    <ClCompile Include="..\..\thirdparty\lua\lauxlib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1229,7 +1229,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lbaselib.c">
+    <ClCompile Include="..\..\thirdparty\lua\lbaselib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1239,7 +1239,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lbitlib.c">
+    <ClCompile Include="..\..\thirdparty\lua\lbitlib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1249,7 +1249,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lcode.c">
+    <ClCompile Include="..\..\thirdparty\lua\lcode.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1259,7 +1259,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lcorolib.c">
+    <ClCompile Include="..\..\thirdparty\lua\lcorolib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1269,7 +1269,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lctype.c">
+    <ClCompile Include="..\..\thirdparty\lua\lctype.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1279,7 +1279,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\ldblib.c">
+    <ClCompile Include="..\..\thirdparty\lua\ldblib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1289,7 +1289,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\ldebug.c">
+    <ClCompile Include="..\..\thirdparty\lua\ldebug.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1299,7 +1299,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\ldo.c">
+    <ClCompile Include="..\..\thirdparty\lua\ldo.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1309,7 +1309,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\ldump.c">
+    <ClCompile Include="..\..\thirdparty\lua\ldump.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1319,7 +1319,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lfunc.c">
+    <ClCompile Include="..\..\thirdparty\lua\lfunc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1329,7 +1329,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lgc.c">
+    <ClCompile Include="..\..\thirdparty\lua\lgc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1339,7 +1339,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\linit.c">
+    <ClCompile Include="..\..\thirdparty\lua\linit.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1349,7 +1349,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\liolib.c">
+    <ClCompile Include="..\..\thirdparty\lua\liolib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1359,7 +1359,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\llex.c">
+    <ClCompile Include="..\..\thirdparty\lua\llex.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1369,7 +1369,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lmathlib.c">
+    <ClCompile Include="..\..\thirdparty\lua\lmathlib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1379,7 +1379,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lmem.c">
+    <ClCompile Include="..\..\thirdparty\lua\lmem.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1389,7 +1389,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\loadlib.c">
+    <ClCompile Include="..\..\thirdparty\lua\loadlib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1399,7 +1399,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lobject.c">
+    <ClCompile Include="..\..\thirdparty\lua\lobject.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1409,7 +1409,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lopcodes.c">
+    <ClCompile Include="..\..\thirdparty\lua\lopcodes.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1419,7 +1419,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\loslib.c">
+    <ClCompile Include="..\..\thirdparty\lua\loslib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1429,7 +1429,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lparser.c">
+    <ClCompile Include="..\..\thirdparty\lua\lparser.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1439,7 +1439,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lstate.c">
+    <ClCompile Include="..\..\thirdparty\lua\lstate.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1449,7 +1449,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lstring.c">
+    <ClCompile Include="..\..\thirdparty\lua\lstring.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1457,7 +1457,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lstrlib.c">
+    <ClCompile Include="..\..\thirdparty\lua\lstrlib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1465,7 +1465,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\ltable.c">
+    <ClCompile Include="..\..\thirdparty\lua\ltable.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1473,7 +1473,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\ltablib.c">
+    <ClCompile Include="..\..\thirdparty\lua\ltablib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1481,7 +1481,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\ltm.c">
+    <ClCompile Include="..\..\thirdparty\lua\ltm.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1489,7 +1489,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lundump.c">
+    <ClCompile Include="..\..\thirdparty\lua\lundump.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1499,7 +1499,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lua\lvm.c">
+    <ClCompile Include="..\..\thirdparty\lua\lvm.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1509,7 +1509,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\7zAlloc.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\7zAlloc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1517,7 +1517,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\7zBuf.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\7zBuf.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1525,7 +1525,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\7zBuf2.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\7zBuf2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1533,7 +1533,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\7zCrc.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\7zCrc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1541,7 +1541,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\7zCrcOpt.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\7zCrcOpt.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1549,7 +1549,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\7zDec.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\7zDec.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1557,7 +1557,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\7zFile.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\7zFile.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1565,7 +1565,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\7zIn.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\7zIn.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1573,7 +1573,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\7zStream.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\7zStream.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1581,7 +1581,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Alloc.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Alloc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1589,7 +1589,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Bcj2.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Bcj2.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1597,7 +1597,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Bra.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Bra.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1605,7 +1605,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Bra86.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Bra86.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1613,7 +1613,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\BraIA64.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\BraIA64.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1621,7 +1621,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\CpuArch.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\CpuArch.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1629,7 +1629,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Delta.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Delta.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1637,7 +1637,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\LzFind.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\LzFind.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1645,7 +1645,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\LzFindMt.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\LzFindMt.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1653,7 +1653,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Lzma2Dec.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Lzma2Dec.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1661,7 +1661,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Lzma2Enc.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Lzma2Enc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1669,7 +1669,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Lzma86Dec.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Lzma86Dec.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1677,7 +1677,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Lzma86Enc.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Lzma86Enc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1685,7 +1685,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\LzmaDec.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\LzmaDec.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1693,7 +1693,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\LzmaEnc.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\LzmaEnc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1701,7 +1701,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\LzmaLib.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\LzmaLib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1709,7 +1709,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\MtCoder.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\MtCoder.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1717,7 +1717,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Ppmd7.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Ppmd7.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1725,7 +1725,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Ppmd7Dec.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Ppmd7Dec.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1733,7 +1733,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Ppmd7Enc.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Ppmd7Enc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1741,7 +1741,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Sha256.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Sha256.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1749,7 +1749,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Threads.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Threads.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1757,7 +1757,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\Xz.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\Xz.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1765,7 +1765,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\XzCrc64.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\XzCrc64.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1773,7 +1773,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\XzDec.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\XzDec.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1781,7 +1781,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\XzEnc.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\XzEnc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1789,7 +1789,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\lzma\C\XzIn.c">
+    <ClCompile Include="..\..\thirdparty\lzma\C\XzIn.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1841,7 +1841,7 @@
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXEditor.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\ZTextureEditorPanel.cpp" />
-    <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp">
+    <ClCompile Include="..\..\thirdparty\mus2mid\mus2mid.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2000,7 +2000,7 @@
     <ClCompile Include="..\..\src\Utility\StringUtils.cpp" />
     <ClCompile Include="..\..\src\Utility\Tokenizer.cpp" />
     <ClCompile Include="..\..\src\Utility\Tree.cpp" />
-    <ClCompile Include="..\..\src\External\zlib\adler32.c">
+    <ClCompile Include="..\..\thirdparty\zlib\adler32.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2008,7 +2008,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zlib\crc32.c">
+    <ClCompile Include="..\..\thirdparty\zlib\crc32.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2016,7 +2016,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zlib\deflate.c">
+    <ClCompile Include="..\..\thirdparty\zlib\deflate.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2024,7 +2024,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zlib\gzio.c">
+    <ClCompile Include="..\..\thirdparty\zlib\gzio.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2032,7 +2032,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zlib\infback.c">
+    <ClCompile Include="..\..\thirdparty\zlib\infback.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2040,7 +2040,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zlib\inffast.c">
+    <ClCompile Include="..\..\thirdparty\zlib\inffast.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2048,7 +2048,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zlib\inflate.c">
+    <ClCompile Include="..\..\thirdparty\zlib\inflate.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2056,7 +2056,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zlib\inftrees.c">
+    <ClCompile Include="..\..\thirdparty\zlib\inftrees.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2064,7 +2064,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zlib\trees.c">
+    <ClCompile Include="..\..\thirdparty\zlib\trees.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2072,7 +2072,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zlib\uncompr.c">
+    <ClCompile Include="..\..\thirdparty\zlib\uncompr.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2080,7 +2080,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zlib\zutil.c">
+    <ClCompile Include="..\..\thirdparty\zlib\zutil.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2088,7 +2088,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zreaders\files.cpp">
+    <ClCompile Include="..\..\thirdparty\zreaders\files.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2096,7 +2096,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zreaders\i_music.cpp">
+    <ClCompile Include="..\..\thirdparty\zreaders\i_music.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2104,7 +2104,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zreaders\music_hmi_midiout.cpp">
+    <ClCompile Include="..\..\thirdparty\zreaders\music_hmi_midiout.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2112,7 +2112,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zreaders\music_midistream.cpp">
+    <ClCompile Include="..\..\thirdparty\zreaders\music_midistream.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2120,7 +2120,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zreaders\music_mus_midiout.cpp">
+    <ClCompile Include="..\..\thirdparty\zreaders\music_mus_midiout.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2128,7 +2128,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zreaders\music_smf_midiout.cpp">
+    <ClCompile Include="..\..\thirdparty\zreaders\music_smf_midiout.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2136,7 +2136,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zreaders\music_xmi_midiout.cpp">
+    <ClCompile Include="..\..\thirdparty\zreaders\music_xmi_midiout.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2144,7 +2144,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zreaders\m_alloc.cpp">
+    <ClCompile Include="..\..\thirdparty\zreaders\m_alloc.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -2210,8 +2210,8 @@
     <ClInclude Include="..\..\src\Dialogs\GfxColouriseDialog.h" />
     <ClInclude Include="..\..\src\Dialogs\GfxCropDialog.h" />
     <ClInclude Include="..\..\src\Dialogs\GfxTintDialog.h" />
-    <ClInclude Include="..\..\src\External\bzip2\bzlib.h" />
-    <ClInclude Include="..\..\src\External\bzip2\bzlib_private.h" />
+    <ClInclude Include="..\..\thirdparty\bzip2\bzlib.h" />
+    <ClInclude Include="..\..\thirdparty\bzip2\bzlib_private.h" />
     <ClInclude Include="..\..\src\Dialogs\DirArchiveUpdateDialog.h" />
     <ClInclude Include="..\..\src\Dialogs\ExtMessageDialog.h" />
     <ClInclude Include="..\..\src\Dialogs\GfxConvDialog.h" />
@@ -2248,48 +2248,48 @@
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\TempFolderWizardPage.h" />
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\WizardPageBase.h" />
     <ClInclude Include="..\..\src\Dialogs\TranslationEditorDialog.h" />
-    <ClInclude Include="..\..\src\External\dumb\dumb.h" />
-    <ClInclude Include="..\..\src\External\dumb\internal\aldumb.h" />
-    <ClInclude Include="..\..\src\External\dumb\internal\barray.h" />
-    <ClInclude Include="..\..\src\External\dumb\internal\dumb.h" />
-    <ClInclude Include="..\..\src\External\dumb\internal\dumbfile.h" />
-    <ClInclude Include="..\..\src\External\dumb\internal\fir_resampler.h" />
-    <ClInclude Include="..\..\src\External\dumb\internal\it.h" />
-    <ClInclude Include="..\..\src\External\dumb\internal\lpc.h" />
-    <ClInclude Include="..\..\src\External\dumb\internal\resampler.h" />
-    <ClInclude Include="..\..\src\External\dumb\internal\riff.h" />
-    <ClInclude Include="..\..\src\External\dumb\internal\stack_alloc.h" />
-    <ClInclude Include="..\..\src\External\dumb\internal\tarray.h" />
-    <ClInclude Include="..\..\src\External\email\wxEmailMessage.h" />
-    <ClInclude Include="..\..\src\External\email\wxEmailMessageID.h" />
-    <ClInclude Include="..\..\src\External\email\wxMailer.h" />
-    <ClInclude Include="..\..\src\External\lua\lapi.h" />
-    <ClInclude Include="..\..\src\External\lua\lauxlib.h" />
-    <ClInclude Include="..\..\src\External\lua\lcode.h" />
-    <ClInclude Include="..\..\src\External\lua\lctype.h" />
-    <ClInclude Include="..\..\src\External\lua\ldebug.h" />
-    <ClInclude Include="..\..\src\External\lua\ldo.h" />
-    <ClInclude Include="..\..\src\External\lua\lfunc.h" />
-    <ClInclude Include="..\..\src\External\lua\lgc.h" />
-    <ClInclude Include="..\..\src\External\lua\llex.h" />
-    <ClInclude Include="..\..\src\External\lua\llimits.h" />
-    <ClInclude Include="..\..\src\External\lua\lmem.h" />
-    <ClInclude Include="..\..\src\External\lua\lobject.h" />
-    <ClInclude Include="..\..\src\External\lua\lopcodes.h" />
-    <ClInclude Include="..\..\src\External\lua\lparser.h" />
-    <ClInclude Include="..\..\src\External\lua\lprefix.h" />
-    <ClInclude Include="..\..\src\External\lua\lstate.h" />
-    <ClInclude Include="..\..\src\External\lua\lstring.h" />
-    <ClInclude Include="..\..\src\External\lua\ltable.h" />
-    <ClInclude Include="..\..\src\External\lua\ltm.h" />
-    <ClInclude Include="..\..\src\External\lua\lua.h" />
-    <ClInclude Include="..\..\src\External\lua\lua.hpp" />
-    <ClInclude Include="..\..\src\External\lua\luaconf.h" />
-    <ClInclude Include="..\..\src\External\lua\lualib.h" />
-    <ClInclude Include="..\..\src\External\lua\lundump.h" />
-    <ClInclude Include="..\..\src\External\lua\lvm.h" />
-    <ClInclude Include="..\..\src\External\lua\lzio.h" />
-    <ClInclude Include="..\..\src\External\sol\sol.hpp" />
+    <ClInclude Include="..\..\thirdparty\dumb\dumb.h" />
+    <ClInclude Include="..\..\thirdparty\dumb\internal\aldumb.h" />
+    <ClInclude Include="..\..\thirdparty\dumb\internal\barray.h" />
+    <ClInclude Include="..\..\thirdparty\dumb\internal\dumb.h" />
+    <ClInclude Include="..\..\thirdparty\dumb\internal\dumbfile.h" />
+    <ClInclude Include="..\..\thirdparty\dumb\internal\fir_resampler.h" />
+    <ClInclude Include="..\..\thirdparty\dumb\internal\it.h" />
+    <ClInclude Include="..\..\thirdparty\dumb\internal\lpc.h" />
+    <ClInclude Include="..\..\thirdparty\dumb\internal\resampler.h" />
+    <ClInclude Include="..\..\thirdparty\dumb\internal\riff.h" />
+    <ClInclude Include="..\..\thirdparty\dumb\internal\stack_alloc.h" />
+    <ClInclude Include="..\..\thirdparty\dumb\internal\tarray.h" />
+    <ClInclude Include="..\..\thirdparty\email\wxEmailMessage.h" />
+    <ClInclude Include="..\..\thirdparty\email\wxEmailMessageID.h" />
+    <ClInclude Include="..\..\thirdparty\email\wxMailer.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lapi.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lauxlib.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lcode.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lctype.h" />
+    <ClInclude Include="..\..\thirdparty\lua\ldebug.h" />
+    <ClInclude Include="..\..\thirdparty\lua\ldo.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lfunc.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lgc.h" />
+    <ClInclude Include="..\..\thirdparty\lua\llex.h" />
+    <ClInclude Include="..\..\thirdparty\lua\llimits.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lmem.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lobject.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lopcodes.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lparser.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lprefix.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lstate.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lstring.h" />
+    <ClInclude Include="..\..\thirdparty\lua\ltable.h" />
+    <ClInclude Include="..\..\thirdparty\lua\ltm.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lua.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lua.hpp" />
+    <ClInclude Include="..\..\thirdparty\lua\luaconf.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lualib.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lundump.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lvm.h" />
+    <ClInclude Include="..\..\thirdparty\lua\lzio.h" />
+    <ClInclude Include="..\..\thirdparty\sol\sol.hpp" />
     <ClInclude Include="..\..\src\Game\ActionSpecial.h" />
     <ClInclude Include="..\..\src\Game\Args.h" />
     <ClInclude Include="..\..\src\Game\Configuration.h" />
@@ -2305,9 +2305,9 @@
     <ClInclude Include="..\..\src\General\ColourConfiguration.h" />
     <ClInclude Include="..\..\src\General\Console\Console.h" />
     <ClInclude Include="..\..\src\General\Console\ConsoleHelpers.h" />
-    <ClInclude Include="..\..\src\External\glew\glew.h" />
-    <ClInclude Include="..\..\src\External\glew\glxew.h" />
-    <ClInclude Include="..\..\src\External\glew\wglew.h" />
+    <ClInclude Include="..\..\thirdparty\glew\glew.h" />
+    <ClInclude Include="..\..\thirdparty\glew\glxew.h" />
+    <ClInclude Include="..\..\thirdparty\glew\wglew.h" />
     <ClInclude Include="..\..\src\General\CVar.h" />
     <ClInclude Include="..\..\src\General\Defs.h" />
     <ClInclude Include="..\..\src\General\Executables.h" />
@@ -2336,36 +2336,36 @@
     <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFQuake.h" />
     <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFRott.h" />
     <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFZDoom.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\7z.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\7zAlloc.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\7zBuf.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\7zCrc.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\7zFile.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\7zVersion.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\Alloc.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\Bcj2.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\Bra.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\CpuArch.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\Delta.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\LzFind.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\LzFindMt.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\LzHash.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\Lzma2Dec.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\Lzma2Enc.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\Lzma86.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\LzmaDec.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\LzmaEnc.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\LzmaLib.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\MtCoder.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\Ppmd.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\Ppmd7.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\RotateDefs.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\Sha256.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\Threads.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\Types.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\Xz.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\XzCrc64.h" />
-    <ClInclude Include="..\..\src\External\lzma\C\XzEnc.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\7z.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\7zAlloc.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\7zBuf.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\7zCrc.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\7zFile.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\7zVersion.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\Alloc.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\Bcj2.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\Bra.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\CpuArch.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\Delta.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\LzFind.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\LzFindMt.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\LzHash.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\Lzma2Dec.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\Lzma2Enc.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\Lzma86.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\LzmaDec.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\LzmaEnc.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\LzmaLib.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\MtCoder.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\Ppmd.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\Ppmd7.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\RotateDefs.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\Sha256.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\Threads.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\Types.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\Xz.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\XzCrc64.h" />
+    <ClInclude Include="..\..\thirdparty\lzma\C\XzEnc.h" />
     <ClInclude Include="..\..\src\Graphics\SImage\SIFormat.h" />
     <ClInclude Include="..\..\src\Graphics\SImage\SImage.h" />
     <ClInclude Include="..\..\src\Graphics\Translation.h" />
@@ -2445,7 +2445,7 @@
     <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\ThingPropsPanel.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\ScriptEditorPanel.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\ShapeDrawPanel.h" />
-    <ClInclude Include="..\..\src\External\mus2mid\mus2mid.h" />
+    <ClInclude Include="..\..\thirdparty\mus2mid\mus2mid.h" />
     <ClInclude Include="..\..\src\MapEditor\UndoSteps.h" />
     <ClInclude Include="..\..\src\OpenGL\Drawing.h" />
     <ClInclude Include="..\..\src\OpenGL\GLTexture.h" />
@@ -2536,31 +2536,31 @@
     <ClInclude Include="..\..\src\Utility\Tokenizer.h" />
     <ClInclude Include="..\..\src\Utility\Tree.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="..\..\src\External\zlib\crc32.h" />
-    <ClInclude Include="..\..\src\External\zlib\deflate.h" />
-    <ClInclude Include="..\..\src\External\zlib\inffast.h" />
-    <ClInclude Include="..\..\src\External\zlib\inffixed.h" />
-    <ClInclude Include="..\..\src\External\zlib\inflate.h" />
-    <ClInclude Include="..\..\src\External\zlib\inftrees.h" />
-    <ClInclude Include="..\..\src\External\zlib\trees.h" />
-    <ClInclude Include="..\..\src\External\zlib\zconf.h" />
-    <ClInclude Include="..\..\src\External\zlib\zlib.h" />
-    <ClInclude Include="..\..\src\External\zlib\zutil.h" />
-    <ClInclude Include="..\..\src\External\zreaders\files.h" />
-    <ClInclude Include="..\..\src\External\zreaders\i_music.h" />
-    <ClInclude Include="..\..\src\External\zreaders\i_musicinterns.h" />
-    <ClInclude Include="..\..\src\External\zreaders\mus2midi.h" />
-    <ClInclude Include="..\..\src\External\zreaders\m_alloc.h" />
-    <ClInclude Include="..\..\src\External\zreaders\tarray.h" />
-    <ClInclude Include="..\..\src\External\zreaders\templates.h" />
+    <ClInclude Include="..\..\thirdparty\zlib\crc32.h" />
+    <ClInclude Include="..\..\thirdparty\zlib\deflate.h" />
+    <ClInclude Include="..\..\thirdparty\zlib\inffast.h" />
+    <ClInclude Include="..\..\thirdparty\zlib\inffixed.h" />
+    <ClInclude Include="..\..\thirdparty\zlib\inflate.h" />
+    <ClInclude Include="..\..\thirdparty\zlib\inftrees.h" />
+    <ClInclude Include="..\..\thirdparty\zlib\trees.h" />
+    <ClInclude Include="..\..\thirdparty\zlib\zconf.h" />
+    <ClInclude Include="..\..\thirdparty\zlib\zlib.h" />
+    <ClInclude Include="..\..\thirdparty\zlib\zutil.h" />
+    <ClInclude Include="..\..\thirdparty\zreaders\files.h" />
+    <ClInclude Include="..\..\thirdparty\zreaders\i_music.h" />
+    <ClInclude Include="..\..\thirdparty\zreaders\i_musicinterns.h" />
+    <ClInclude Include="..\..\thirdparty\zreaders\mus2midi.h" />
+    <ClInclude Include="..\..\thirdparty\zreaders\m_alloc.h" />
+    <ClInclude Include="..\..\thirdparty\zreaders\tarray.h" />
+    <ClInclude Include="..\..\thirdparty\zreaders\templates.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\dist\makebuild.ps1" />
     <None Include="..\..\dist\res\config\colours\SLADE 2.cfg" />
     <None Include="slade.ico" />
-    <None Include="..\..\src\External\dumb\helpers\resamp2.inc" />
-    <None Include="..\..\src\External\dumb\helpers\resamp3.inc" />
-    <None Include="..\..\src\External\dumb\helpers\resample.inc" />
+    <None Include="..\..\thirdparty\dumb\helpers\resamp2.inc" />
+    <None Include="..\..\thirdparty\dumb\helpers\resamp3.inc" />
+    <None Include="..\..\thirdparty\dumb\helpers\resample.inc" />
     <None Include="..\..\win_installer\SLADE.iss" />
   </ItemGroup>
   <ItemGroup>

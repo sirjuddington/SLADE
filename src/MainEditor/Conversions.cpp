@@ -33,8 +33,8 @@
 #include "Conversions.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
-#include "External/mus2mid/mus2mid.h"
-#include "External/zreaders/i_music.h"
+#include "thirdparty/mus2mid/mus2mid.h"
+#include "thirdparty/zreaders/i_music.h"
 
 
 // -----------------------------------------------------------------------------

@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Compression.h"
-#include "External/zreaders/files.h"
+#include "thirdparty/zreaders/files.h"
 
 
 // -----------------------------------------------------------------------------

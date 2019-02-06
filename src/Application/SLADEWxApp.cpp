@@ -33,7 +33,6 @@
 #include "SLADEWxApp.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "External/email/wxMailer.h"
 #include "General/Console/Console.h"
 #include "General/Web.h"
 #include "MainEditor/MainEditor.h"
@@ -43,6 +42,7 @@
 #include "OpenGL/OpenGL.h"
 #include "Utility/Parser.h"
 #include "Utility/Tokenizer.h"
+#include "thirdparty/email/wxMailer.h"
 #include <wx/statbmp.h>
 
 

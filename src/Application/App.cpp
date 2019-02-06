@@ -34,7 +34,6 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Dialogs/SetupWizard/SetupWizardDialog.h"
-#include "External/dumb/dumb.h"
 #include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
@@ -59,6 +58,7 @@
 #include "TextEditor/TextStyle.h"
 #include "UI/SBrush.h"
 #include "Utility/Tokenizer.h"
+#include "thirdparty/dumb/dumb.h"
 
 
 // -----------------------------------------------------------------------------
