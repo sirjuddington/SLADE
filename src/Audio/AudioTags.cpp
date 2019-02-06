@@ -398,21 +398,21 @@ wxString parseID3v1Tag(MemChunk& mc, size_t start)
 		title += wxString::FromAscii(etag.title, 60);
 		artist += wxString::FromAscii(etag.artist, 60);
 		album += wxString::FromAscii(etag.album, 60);
-		genre += S_FMT(" (%s)", etag.subgenre);
+		genre += wxString::Format(" (%s)", etag.subgenre);
 	}
 	wxString ret = version + '\n';
 	if (title.length())
-		ret += S_FMT("Title: %s\n", title);
+		ret += wxString::Format("Title: %s\n", title);
 	if (album.length())
-		ret += S_FMT("Album: %s\n", album);
+		ret += wxString::Format("Album: %s\n", album);
 	if (track != 0)
-		ret += S_FMT("Track: %d\n", track);
+		ret += wxString::Format("Track: %d\n", track);
 	if (artist.length())
-		ret += S_FMT("Artist: %s\n", artist);
+		ret += wxString::Format("Artist: %s\n", artist);
 	if (year.length())
-		ret += S_FMT("Year: %s\n", year);
+		ret += wxString::Format("Year: %s\n", year);
 	if (genre.length())
-		ret += S_FMT("Genre: %s\n", genre);
+		ret += wxString::Format("Genre: %s\n", genre);
 	ret += "\n";
 	return ret;
 }
@@ -422,7 +422,7 @@ wxString parseID3v2Tag(MemChunk& mc, size_t start)
 	wxString version, title, artist, composer, copyright, album, genre, year, group, subtitle, track, comments;
 	bool     artists = false;
 
-	version  = S_FMT("ID3v2.%d.%d", mc[start + 3], mc[start + 4]);
+	version  = wxString::Format("ID3v2.%d.%d", mc[start + 3], mc[start + 4]);
 	bool v22 = mc[start + 3] < 3;
 
 	// ID3v2.2 frame headers have a size of 6 (3 byte identifier, 3 byte size).
@@ -591,23 +591,23 @@ wxString parseID3v2Tag(MemChunk& mc, size_t start)
 
 	wxString ret = version + '\n';
 	if (group.length())
-		ret += S_FMT("Group: %s\n", group);
+		ret += wxString::Format("Group: %s\n", group);
 	if (title.length())
-		ret += S_FMT("Title: %s\n", title);
+		ret += wxString::Format("Title: %s\n", title);
 	if (album.length())
-		ret += S_FMT("Album: %s\n", album);
+		ret += wxString::Format("Album: %s\n", album);
 	if (track.length())
-		ret += S_FMT("Track: %s\n", track);
+		ret += wxString::Format("Track: %s\n", track);
 	if (artist.length())
-		ret += S_FMT("Artist%s: %s\n", artists ? "s" : "", artist);
+		ret += wxString::Format("Artist%s: %s\n", artists ? "s" : "", artist);
 	if (copyright.length())
-		ret += S_FMT("Copyright \x00A9 %s\n", copyright);
+		ret += wxString::Format("Copyright \x00A9 %s\n", copyright);
 	if (year.length())
-		ret += S_FMT("Year: %s\n", year);
+		ret += wxString::Format("Year: %s\n", year);
 	if (genre.length())
-		ret += S_FMT("Genre: %s\n", genre);
+		ret += wxString::Format("Genre: %s\n", genre);
 	if (comments.length())
-		ret += S_FMT("Comments:\n%s\n", comments);
+		ret += wxString::Format("Comments:\n%s\n", comments);
 	ret += "\n";
 	return ret;
 }
@@ -640,7 +640,7 @@ wxString parseVorbisComment(MemChunk& mc, size_t start)
 		s += 4 + strlen;
 	}
 
-	ret += S_FMT("\nVendor string: %s\n", vendor);
+	ret += wxString::Format("\nVendor string: %s\n", vendor);
 
 	return ret;
 }
@@ -671,15 +671,15 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 			wxString bextstr = "Broadcast extensions:\n";
 			auto     bext    = (const BExtChunk*)(data + offset);
 			if (bext->Description[0])
-				bextstr += S_FMT("Description: %s\n", wxString::From8BitData(bext->Description, 256));
+				bextstr += wxString::Format("Description: %s\n", wxString::From8BitData(bext->Description, 256));
 			if (bext->Originator[0])
-				bextstr += S_FMT("Originator: %s\n", wxString::From8BitData(bext->Originator, 32));
+				bextstr += wxString::Format("Originator: %s\n", wxString::From8BitData(bext->Originator, 32));
 			if (bext->OrigRef[0])
-				bextstr += S_FMT("Reference: %s\n", wxString::From8BitData(bext->OrigRef, 32));
+				bextstr += wxString::Format("Reference: %s\n", wxString::From8BitData(bext->OrigRef, 32));
 			if (bext->OrigDate[0])
-				bextstr += S_FMT("Date: %s\n", wxString::From8BitData(bext->OrigDate, 10));
+				bextstr += wxString::Format("Date: %s\n", wxString::From8BitData(bext->OrigDate, 10));
 			if (bext->OrigTime[0])
-				bextstr += S_FMT("Time: %s\n", wxString::From8BitData(bext->OrigTime, 8));
+				bextstr += wxString::Format("Time: %s\n", wxString::From8BitData(bext->OrigTime, 8));
 			if (bext->TimeReferenceLow | bext->TimeReferenceHigh)
 			{
 				uint64_t timeref = wxUINT32_SWAP_ON_BE(bext->TimeReferenceLow)
@@ -690,25 +690,27 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 				size_t min     = (milsec / 60000) % 60;
 				size_t hor     = (milsec / 3600000) % 24;
 				milsec %= 1000;
-				bextstr += S_FMT("Time Reference: %d:%02d:%02d.%03d\n", hor, min, sec, milsec);
+				bextstr += wxString::Format("Time Reference: %d:%02d:%02d.%03d\n", hor, min, sec, milsec);
 			}
-			bextstr += S_FMT("BWFVersion: %d\n", wxUINT16_SWAP_ON_BE(bext->Version));
+			bextstr += wxString::Format("BWFVersion: %d\n", wxUINT16_SWAP_ON_BE(bext->Version));
 			if (bext->LoudnessValue)
-				bextstr += S_FMT("Integrated Loudness: %d\n", wxUINT16_SWAP_ON_BE(bext->LoudnessValue));
+				bextstr += wxString::Format("Integrated Loudness: %d\n", wxUINT16_SWAP_ON_BE(bext->LoudnessValue));
 			if (bext->LoudnessRange)
-				bextstr += S_FMT("Loudness Range: %d\n", wxUINT16_SWAP_ON_BE(bext->LoudnessRange));
+				bextstr += wxString::Format("Loudness Range: %d\n", wxUINT16_SWAP_ON_BE(bext->LoudnessRange));
 			if (bext->MaxTruePeakLevel)
-				bextstr += S_FMT("Maximum True Peak Level: %d\n", wxUINT16_SWAP_ON_BE(bext->MaxTruePeakLevel));
+				bextstr += wxString::Format(
+					"Maximum True Peak Level: %d\n", wxUINT16_SWAP_ON_BE(bext->MaxTruePeakLevel));
 			if (bext->MaxMomentaryLoudness)
-				bextstr += S_FMT(
+				bextstr += wxString::Format(
 					"Highest Momentary Loudness Level: %d\n", wxUINT16_SWAP_ON_BE(bext->MaxMomentaryLoudness));
 			if (bext->MaxShortTermLoudness)
-				bextstr += S_FMT(
+				bextstr += wxString::Format(
 					"Highest Short-Term Loudness Level: %d\n", wxUINT16_SWAP_ON_BE(bext->MaxShortTermLoudness));
 			if (tempsize > 602 && bext->CodingHistory[0])
-				bextstr += S_FMT("History: %s\n", wxString::From8BitData(bext->CodingHistory, tempsize - 602));
+				bextstr += wxString::Format(
+					"History: %s\n", wxString::From8BitData(bext->CodingHistory, tempsize - 602));
 
-			ret += S_FMT("%s\n", bextstr);
+			ret += wxString::Format("%s\n", bextstr);
 		}
 		// ID3 tag (yes, they may happen in a WAV, Audacity embeds them in an 'id3 ' chunk so they're still valid RIFF
 		// files)
@@ -731,7 +733,7 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 				{
 					auto     chunk   = (const WavChunk*)(data + offset);
 					size_t   chsz    = wxUINT32_SWAP_ON_BE(chunk->size);
-					wxString tagname = S_FMT("%s: ", wxString::From8BitData(chunk->id, 4));
+					wxString tagname = wxString::Format("%s: ", wxString::From8BitData(chunk->id, 4));
 					offset += 8;
 					if (offset + chsz > end)
 						break;
@@ -780,12 +782,12 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 						else if (chunk->id[1] == 'T' && chunk->id[2] == 'C' && chunk->id[3] == 'H')
 							tagname = "Technician: ";
 					}
-					liststr += S_FMT("%s%s\n", tagname, wxString::From8BitData(data + offset, chsz));
+					liststr += wxString::Format("%s%s\n", tagname, wxString::From8BitData(data + offset, chsz));
 					offset += chsz;
 					if (offset % 2)
 						offset++;
 				}
-				ret += S_FMT("%s\n", liststr);
+				ret += wxString::Format("%s\n", liststr);
 			}
 			// LIST adtl chunk
 			else if (mc[offset] == 'a' && mc[offset + 1] == 'd' && mc[offset + 2] == 't' && mc[offset + 3] == 'l')
@@ -800,7 +802,7 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 					memset(alreadylisted, false, numcuepoints * sizeof(bool));
 					if (cuesize >= 4 + numcuepoints * sizeof(WavCue))
 					{
-						wxString liststr   = S_FMT("Associated Data List:\n%d cue points\n", numcuepoints);
+						wxString liststr   = wxString::Format("Associated Data List:\n%d cue points\n", numcuepoints);
 						auto     cuepoints = (const WavCue*)(data + cueofs + 4);
 						size_t   ioffset   = offset + 4;
 						while (ioffset < end)
@@ -820,7 +822,7 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 							}
 							if (cpindex >= 0 && !alreadylisted[cpindex])
 							{
-								liststr += S_FMT(
+								liststr += wxString::Format(
 									"Cue point %d: sample %d from %s, offset %d, block offset %d, chunk %d\n",
 									cuepoint,
 									wxUINT32_SWAP_ON_BE(cuepoints[cpindex].dwPosition),
@@ -834,12 +836,12 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 							{
 								wxString content = wxString::From8BitData(data + ioffset + 4, isize - 4);
 								content.Trim();
-								liststr += S_FMT("Cue point %d label: %s\n", cuepoint, content);
+								liststr += wxString::Format("Cue point %d label: %s\n", cuepoint, content);
 							}
 							else if (
 								note->id[0] == 'l' && note->id[1] == 't' && note->id[2] == 'x' && note->id[3] == 't')
 							{
-								liststr += S_FMT(
+								liststr += wxString::Format(
 									"Cue point %d: sample length %d, purpose %s\n",
 									cuepoint,
 									Memory::readL32(udata, (ioffset + 4)),
@@ -850,12 +852,12 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 							{
 								wxString content = wxString::From8BitData(data + ioffset + 4, isize - 4);
 								content.Trim();
-								liststr += S_FMT("Cue point %d note: %s\n", cuepoint, content);
+								liststr += wxString::Format("Cue point %d note: %s\n", cuepoint, content);
 							}
 
 							ioffset += isize;
 						}
-						ret += S_FMT("%s\n", liststr);
+						ret += wxString::Format("%s\n", liststr);
 					}
 				}
 			}
@@ -899,7 +901,7 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 					if (asciidata[i] == 0)
 						asciidata[i] = '\n';
 
-				ret += S_FMT(
+				ret += wxString::Format(
 					"%s chunk:\n%s\n\n",
 					wxString::From8BitData(temp->id, 4),
 					wxString::From8BitData(asciidata, tempsize));
@@ -1062,7 +1064,7 @@ wxString Audio::getITComments(MemChunk& mc)
 	size_t s    = sizeof(ITHeader);
 
 	// Get song name
-	wxString ret = S_FMT("%s\n", wxString::From8BitData(head->songname, 26));
+	wxString ret = wxString::Format("%s\n", wxString::From8BitData(head->songname, 26));
 
 	// Get song comment, if any
 	if ((wxUINT16_SWAP_ON_BE(head->special) & 1) && (wxUINT16_SWAP_ON_BE(head->msglength) > 0))
@@ -1073,15 +1075,15 @@ wxString Audio::getITComments(MemChunk& mc)
 		wxString comment = wxString::From8BitData(
 			data + wxUINT16_SWAP_ON_BE(head->msgoffset), wxUINT16_SWAP_ON_BE(head->msglength));
 		comment.Trim();
-		comment = S_FMT("%s", comment);
+		comment = wxString::Format("%s", comment);
 		if (comment.length())
-			ret += S_FMT("%s\n", comment);
+			ret += wxString::Format("%s\n", comment);
 	}
 
 	// Get instrument comments
 	size_t offset = s + wxUINT16_SWAP_ON_BE(head->ordnum);
 	if (head->insnum)
-		ret += S_FMT("\n%d instruments:\n", wxUINT16_SWAP_ON_BE(head->insnum));
+		ret += wxString::Format("\n%d instruments:\n", wxUINT16_SWAP_ON_BE(head->insnum));
 	for (size_t i = 0; i < wxUINT16_SWAP_ON_BE(head->insnum); ++i)
 	{
 		size_t ofs = Memory::readL32((const uint8_t*)data, (offset + (i << 2)));
@@ -1090,23 +1092,23 @@ wxString Audio::getITComments(MemChunk& mc)
 		{
 			wxString instrument = wxString::From8BitData(data + ofs + 4, 12);
 			instrument.Trim();
-			instrument       = S_FMT("%s", instrument);
+			instrument       = wxString::Format("%s", instrument);
 			wxString comment = wxString::From8BitData(data + ofs + 32, 26);
 			comment.Trim();
-			comment = S_FMT("%s", comment);
+			comment = wxString::Format("%s", comment);
 			if (instrument.length() && comment.length())
-				ret += S_FMT("%i: %s - %s\n", i, instrument, comment);
+				ret += wxString::Format("%i: %s - %s\n", i, instrument, comment);
 			else if (instrument.length())
-				ret += S_FMT("%i: %s\n", i, instrument);
+				ret += wxString::Format("%i: %s\n", i, instrument);
 			else if (comment.length())
-				ret += S_FMT("%i - %s\n", i, comment);
+				ret += wxString::Format("%i - %s\n", i, comment);
 		}
 	}
 
 	// Get sample comments
 	offset += wxUINT16_SWAP_ON_BE(head->insnum) << 2;
 	if (head->smpnum)
-		ret += S_FMT("\n%d samples:\n", wxUINT16_SWAP_ON_BE(head->smpnum));
+		ret += wxString::Format("\n%d samples:\n", wxUINT16_SWAP_ON_BE(head->smpnum));
 	for (size_t i = 0; i < wxUINT16_SWAP_ON_BE(head->smpnum); ++i)
 	{
 		size_t pos = offset + (i << 2);
@@ -1116,16 +1118,16 @@ wxString Audio::getITComments(MemChunk& mc)
 		{
 			wxString sample = wxString::From8BitData(data + ofs + 4, 12);
 			sample.Trim();
-			sample           = S_FMT("%s", sample);
+			sample           = wxString::Format("%s", sample);
 			wxString comment = wxString::From8BitData(data + ofs + 20, 26);
 			comment.Trim();
-			comment = S_FMT("%s", comment);
+			comment = wxString::Format("%s", comment);
 			if (sample.length() && comment.length())
-				ret += S_FMT("%i: %s - %s\n", i, sample, comment);
+				ret += wxString::Format("%i: %s - %s\n", i, sample, comment);
 			else if (sample.length())
-				ret += S_FMT("%i: %s\n", i, sample);
+				ret += wxString::Format("%i: %s\n", i, sample);
 			else if (comment.length())
-				ret += S_FMT("%i - %s\n", i, comment);
+				ret += wxString::Format("%i - %s\n", i, comment);
 		}
 	}
 
@@ -1138,7 +1140,7 @@ wxString Audio::getModComments(MemChunk& mc)
 	size_t s    = 20;
 
 	// Get song name
-	wxString ret = S_FMT("%s\n", wxString::From8BitData(data, 20));
+	wxString ret = wxString::Format("%s\n", wxString::From8BitData(data, 20));
 
 	// Get instrument/sample comments
 	// We only recognize mods that have their magic identifier at offset 1080 (31 samples),
@@ -1148,9 +1150,9 @@ wxString Audio::getModComments(MemChunk& mc)
 	{
 		wxString comment = wxString::From8BitData(data + s, 22);
 		comment.Trim();
-		comment = S_FMT("%s", comment);
+		comment = wxString::Format("%s", comment);
 		if (comment.length())
-			ret += S_FMT("%i - %s\n", i, comment);
+			ret += wxString::Format("%i - %s\n", i, comment);
 
 		// Move to next offset
 		s += 30;
@@ -1165,11 +1167,11 @@ wxString Audio::getS3MComments(MemChunk& mc)
 	size_t s    = 96;
 
 	// Get song name
-	wxString ret = S_FMT("%s\n", wxString::From8BitData(head->songname, 28));
+	wxString ret = wxString::Format("%s\n", wxString::From8BitData(head->songname, 28));
 
 	// Get instrument/sample comments
 	if (head->insnum)
-		ret += S_FMT("\n%d instruments and samples:\n", wxUINT16_SWAP_ON_BE(head->insnum));
+		ret += wxString::Format("\n%d instruments and samples:\n", wxUINT16_SWAP_ON_BE(head->insnum));
 	s += wxUINT16_SWAP_ON_BE(head->ordnum);
 	for (size_t i = 0; i < wxUINT16_SWAP_ON_BE(head->insnum); ++i)
 	{
@@ -1179,16 +1181,16 @@ wxString Audio::getS3MComments(MemChunk& mc)
 		auto     sample  = (const S3MSample*)(data + t);
 		wxString dosname = wxString::From8BitData(sample->dosname, 12);
 		dosname.Trim();
-		dosname          = S_FMT("%s", dosname);
+		dosname          = wxString::Format("%s", dosname);
 		wxString comment = wxString::From8BitData(sample->comment, 28);
 		comment.Trim();
-		comment = S_FMT("%s", comment);
+		comment = wxString::Format("%s", comment);
 		if (dosname.length() && comment.length())
-			ret += S_FMT("%i: %s - %s\n", i, dosname, comment);
+			ret += wxString::Format("%i: %s - %s\n", i, dosname, comment);
 		else if (dosname.length())
-			ret += S_FMT("%i: %s\n", i, dosname);
+			ret += wxString::Format("%i: %s\n", i, dosname);
 		else if (comment.length())
-			ret += S_FMT("%i - %s\n", i, comment);
+			ret += wxString::Format("%i - %s\n", i, comment);
 	}
 	return ret;
 }
@@ -1200,14 +1202,14 @@ wxString Audio::getXMComments(MemChunk& mc)
 	size_t s    = 60 + wxUINT32_SWAP_ON_BE(head->headersize);
 
 	// Get song name
-	wxString ret = S_FMT("%s\n", wxString::From8BitData(head->songname, 20));
+	wxString ret = wxString::Format("%s\n", wxString::From8BitData(head->songname, 20));
 
 	// Get tracker name
-	ret += S_FMT("Tracked with %s\n", wxString::From8BitData(head->tracker, 20));
+	ret += wxString::Format("Tracked with %s\n", wxString::From8BitData(head->tracker, 20));
 
 	// Skip over patterns
 	if (head->patnum)
-		ret += S_FMT("\n%d patterns\n", wxUINT16_SWAP_ON_BE(head->patnum));
+		ret += wxString::Format("\n%d patterns\n", wxUINT16_SWAP_ON_BE(head->patnum));
 	for (size_t i = 0; i < wxUINT16_SWAP_ON_BE(head->patnum); ++i)
 	{
 		if (s + 9 < mc.size())
@@ -1221,7 +1223,7 @@ wxString Audio::getXMComments(MemChunk& mc)
 
 	// Get instrument comments
 	if (head->insnum)
-		ret += S_FMT("\n%d instruments:\n", wxUINT16_SWAP_ON_BE(head->insnum));
+		ret += wxString::Format("\n%d instruments:\n", wxUINT16_SWAP_ON_BE(head->insnum));
 	for (size_t i = 0; i < wxUINT16_SWAP_ON_BE(head->insnum); ++i)
 	{
 		if (s + 29 < mc.size())
@@ -1234,9 +1236,9 @@ wxString Audio::getXMComments(MemChunk& mc)
 			// report the actual printable length correctly.
 			wxString comment = wxString::From8BitData(data + s + 4, 22);
 			comment.Trim();
-			comment = S_FMT("%s", comment);
+			comment = wxString::Format("%s", comment);
 			if (comment.length())
-				ret += S_FMT("%i: %s\n", i, comment);
+				ret += wxString::Format("%i: %s\n", i, comment);
 			size_t samples = mc.readL16(s + 27);
 
 			if (samples > 0 && s + instsize < mc.size())
@@ -1251,9 +1253,9 @@ wxString Audio::getXMComments(MemChunk& mc)
 					size_t smsz = mc.readL32(s);
 					comment     = wxString::From8BitData(data + s + 18, 22);
 					comment.Trim();
-					comment = S_FMT("%s", comment);
+					comment = wxString::Format("%s", comment);
 					if (comment.length())
-						ret += S_FMT("%i-%i: %s\n", i, j, comment);
+						ret += wxString::Format("%i-%i: %s\n", i, j, comment);
 					s += shsz;
 					samplesize += smsz;
 				}
@@ -1283,25 +1285,25 @@ wxString Audio::getSunInfo(MemChunk& mc)
 	case 2:
 	case 3:
 	case 4:
-	case 5: format += S_FMT("PCM (signed)"); break;
+	case 5: format += wxString::Format("PCM (signed)"); break;
 	case 6:
-	case 7: format += S_FMT("PCM (float)"); break;
-	case 27: format += S_FMT("a-Law"); break;
-	default: format += S_FMT("Unknown (%u)", codec); break;
+	case 7: format += wxString::Format("PCM (float)"); break;
+	case 27: format += wxString::Format("a-Law"); break;
+	default: format += wxString::Format("Unknown (%u)", codec); break;
 	}
 	wxString ret = "Mono";
 	if (channels == 2)
 		ret = "Stereo";
 	else if (channels > 2)
-		ret = S_FMT("%u channels", channels);
+		ret = wxString::Format("%u channels", channels);
 	int bps = 1;
 	if (codec > 1 && codec < 6)
 		bps = codec - 1;
 	else if (codec == 6 || codec == 7)
 		bps = codec - 2;
 	size_t samples = datasize / bps;
-	ret += S_FMT(" %u-bit", bps * 8);
-	ret += S_FMT(" sound with %u samples at %u Hz\n%s\n", samples, samplerate, format);
+	ret += wxString::Format(" %u-bit", bps * 8);
+	ret += wxString::Format(" sound with %u samples at %u Hz\n%s\n", samples, samplerate, format);
 
 	return ret;
 }
@@ -1322,7 +1324,7 @@ wxString Audio::getVocInfo(MemChunk& mc)
 		i += 4;
 		if (i + blocksize > e && blocktype != 0)
 		{
-			return S_FMT("Invalid sound: VOC file cut abruptly in block %i (offset %i)", blockcount, i - 4);
+			return wxString::Format("Invalid sound: VOC file cut abruptly in block %i (offset %i)", blockcount, i - 4);
 		}
 		blockcount++;
 		switch (blocktype)
@@ -1385,25 +1387,25 @@ wxString Audio::getVocInfo(MemChunk& mc)
 	wxString format = "Format: ";
 	switch (codec)
 	{
-	case 0: format += S_FMT("PCM (unsigned)"); break;
-	case 1: format += S_FMT("4-to-8 ADPCM"); break;
-	case 2: format += S_FMT("3-to-8 ADPCM"); break;
-	case 3: format += S_FMT("2-to-8 ADPCM"); break;
-	case 4: format += S_FMT("PCM (signed)"); break;
-	case 6: format += S_FMT("a-Law"); break;
+	case 0: format += wxString::Format("PCM (unsigned)"); break;
+	case 1: format += wxString::Format("4-to-8 ADPCM"); break;
+	case 2: format += wxString::Format("3-to-8 ADPCM"); break;
+	case 3: format += wxString::Format("2-to-8 ADPCM"); break;
+	case 4: format += wxString::Format("PCM (signed)"); break;
+	case 6: format += wxString::Format("a-Law"); break;
 	case 7: format += wxString::FromUTF8("\xCE\xBC-Law"); break;
-	case 0x200: format += S_FMT("4to-16 ADPCM"); break;
-	default: format += S_FMT("Unknown (%u)", codec); break;
+	case 0x200: format += wxString::Format("4to-16 ADPCM"); break;
+	default: format += wxString::Format("Unknown (%u)", codec); break;
 	}
 	wxString ret = "Mono";
 	if (fmtchunk.channels == 2)
 		ret = "Stereo";
 	else if (fmtchunk.channels > 2)
-		ret = S_FMT("%u channels", fmtchunk.channels);
+		ret = wxString::Format("%u channels", fmtchunk.channels);
 	size_t samples = datasize / (codec == 4 ? 2 : 1);
-	ret += S_FMT(" %u-bit", codec == 4 ? 16 : 8);
-	ret += S_FMT(" sound with %u samples at %u Hz\n%s\n", samples, fmtchunk.samplerate, format);
-	ret += S_FMT("%d blocks\n", blockcount);
+	ret += wxString::Format(" %u-bit", codec == 4 ? 16 : 8);
+	ret += wxString::Format(" sound with %u samples at %u Hz\n%s\n", samples, fmtchunk.samplerate, format);
+	ret += wxString::Format("%d blocks\n", blockcount);
 	return ret;
 }
 
@@ -1426,7 +1428,7 @@ wxString Audio::getWavInfo(MemChunk& mc)
 	{
 		temp = (const WavChunk*)(data + s);
 		if (temp->id[0] == 'L' && temp->id[1] == 'I' && temp->id[2] == 'S' && temp->id[3] == 'T')
-			chunksfound += S_FMT(
+			chunksfound += wxString::Format(
 				"%s_%c%c%c%c, ",
 				wxString::From8BitData(temp->id, 4),
 				data[s + 8],
@@ -1434,7 +1436,7 @@ wxString Audio::getWavInfo(MemChunk& mc)
 				data[s + 10],
 				data[s + 11]);
 		else
-			chunksfound += S_FMT("%s, ", wxString::From8BitData(temp->id, 4));
+			chunksfound += wxString::Format("%s, ", wxString::From8BitData(temp->id, 4));
 
 		if (temp->id[0] == 'f' && temp->id[1] == 'm' && temp->id[2] == 't' && temp->id[3] == ' ')
 			fmt = (const WavFmtChunk*)temp;
@@ -1452,7 +1454,7 @@ wxString Audio::getWavInfo(MemChunk& mc)
 	chunksfound.RemoveLast(2);
 
 	if (wdat == nullptr || fmt == nullptr)
-		return S_FMT(
+		return wxString::Format(
 			"Invalid RIFF-WAVE file, %s",
 			(fmt == nullptr) ? (wdat == nullptr) ? "no format or data" : "no format" : "no data");
 
@@ -1466,24 +1468,24 @@ wxString Audio::getWavInfo(MemChunk& mc)
 	}
 	switch (formnum)
 	{
-	case 1: format += S_FMT("PCM"); break;
-	case 2: format += S_FMT("Microsoft ADPCM"); break;
-	case 3: format += S_FMT("IEEE754"); break;
-	case 6: format += S_FMT("ITU G.711 a-Law"); break;
+	case 1: format += wxString::Format("PCM"); break;
+	case 2: format += wxString::Format("Microsoft ADPCM"); break;
+	case 3: format += wxString::Format("IEEE754"); break;
+	case 6: format += wxString::Format("ITU G.711 a-Law"); break;
 	case 7: format += wxString::FromUTF8("ITU G.711 \xCE\xBC-Law"); break;
-	case 17: format += S_FMT("IMA ADPCM"); break;
-	case 20: format += S_FMT("ITU G.723 ADPCM"); break;
-	case 49: format += S_FMT("GSM 6.10"); break;
-	case 64: format += S_FMT("ITU G.721 ADPCM"); break;
-	case 85: format += S_FMT("MPEG Layer 3"); break;
-	default: format += S_FMT("Unknown (%u)", fmt->tag); break;
+	case 17: format += wxString::Format("IMA ADPCM"); break;
+	case 20: format += wxString::Format("ITU G.723 ADPCM"); break;
+	case 49: format += wxString::Format("GSM 6.10"); break;
+	case 64: format += wxString::Format("ITU G.721 ADPCM"); break;
+	case 85: format += wxString::Format("MPEG Layer 3"); break;
+	default: format += wxString::Format("Unknown (%u)", fmt->tag); break;
 	}
 	wxString ret      = "Mono";
 	size_t   channels = wxUINT16_SWAP_ON_BE(fmt->channels);
 	if (channels == 2)
 		ret = "Stereo";
 	else if (channels > 2)
-		ret = S_FMT("%u channels", channels);
+		ret = wxString::Format("%u channels", channels);
 	size_t smplsize = fmt->blocksize;
 	size_t datasize = wdat->size;
 	size_t samples  = datasize / (smplsize > 0 ? smplsize : 1);
@@ -1496,11 +1498,11 @@ wxString Audio::getWavInfo(MemChunk& mc)
 	if (tag == 65534 && bps != 0)
 		bps = wxUINT16_SWAP_ON_BE(fmt->vbps);
 	if (bps == 0)
-		ret += S_FMT(" variable bit rate");
+		ret += wxString::Format(" variable bit rate");
 	else
-		ret += S_FMT(" %u-bit", bps);
+		ret += wxString::Format(" %u-bit", bps);
 	size_t samplerate = wxUINT32_SWAP_ON_BE(fmt->samplerate);
-	ret += S_FMT(" sound with %u samples at %u Hz\n%s\n", samples, samplerate, format);
+	ret += wxString::Format(" sound with %u samples at %u Hz\n%s\n", samples, samplerate, format);
 	if (tag == 65534 && fmt->channelmask > 0)
 	{
 		size_t   channelmask = wxUINT32_SWAP_ON_BE(fmt->channelmask);
@@ -1510,17 +1512,17 @@ wxString Audio::getWavInfo(MemChunk& mc)
 			size_t mask = 1 << i;
 			if (channelmask & mask)
 			{
-				channelstr += S_FMT("%s", speaker_pos[i]);
+				channelstr += wxString::Format("%s", speaker_pos[i]);
 				channelmask &= ~mask;
 				if (channelmask && i < 17)
-					channelstr += S_FMT(", ");
+					channelstr += wxString::Format(", ");
 			}
 		}
-		ret += S_FMT("%s\n", channelstr);
+		ret += wxString::Format("%s\n", channelstr);
 	}
 
 	// Parse metadata chunks
-	ret += S_FMT("\n%s%s\n", parseIFFChunks(mc, 12, samplerate, cue), chunksfound);
+	ret += wxString::Format("\n%s%s\n", parseIFFChunks(mc, 12, samplerate, cue), chunksfound);
 	return ret;
 }
 
@@ -1541,7 +1543,7 @@ wxString Audio::getRmidInfo(MemChunk& mc)
 	{
 		temp = (const WavChunk*)(data + s);
 		if (temp->id[0] == 'L' && temp->id[1] == 'I' && temp->id[2] == 'S' && temp->id[3] == 'T')
-			chunksfound += S_FMT(
+			chunksfound += wxString::Format(
 				"%s_%c%c%c%c, ",
 				wxString::From8BitData(temp->id, 4),
 				data[s + 8],
@@ -1549,7 +1551,7 @@ wxString Audio::getRmidInfo(MemChunk& mc)
 				data[s + 10],
 				data[s + 11]);
 		else
-			chunksfound += S_FMT("%s, ", wxString::From8BitData(temp->id, 4));
+			chunksfound += wxString::Format("%s, ", wxString::From8BitData(temp->id, 4));
 
 		if (temp->id[0] == 'c' && temp->id[1] == 'u' && temp->id[2] == 'e' && temp->id[3] == ' ')
 			cue = temp;
@@ -1561,7 +1563,7 @@ wxString Audio::getRmidInfo(MemChunk& mc)
 	chunksfound.RemoveLast(2);
 
 	// Find data chunks
-	ret += S_FMT("%s%s\n", parseIFFChunks(mc, 12, 1, cue), chunksfound);
+	ret += wxString::Format("%s%s\n", parseIFFChunks(mc, 12, 1, cue), chunksfound);
 	return ret;
 }
 
@@ -1582,7 +1584,7 @@ wxString Audio::getAiffInfo(MemChunk& mc)
 	{
 		temp = (const WavChunk*)(data + s);
 		if (temp->id[0] == 'L' && temp->id[1] == 'I' && temp->id[2] == 'S' && temp->id[3] == 'T')
-			chunksfound += S_FMT(
+			chunksfound += wxString::Format(
 				"%s_%c%c%c%c, ",
 				wxString::From8BitData(temp->id, 4),
 				data[s + 8],
@@ -1590,7 +1592,7 @@ wxString Audio::getAiffInfo(MemChunk& mc)
 				data[s + 10],
 				data[s + 11]);
 		else
-			chunksfound += S_FMT("%s, ", wxString::From8BitData(temp->id, 4));
+			chunksfound += wxString::Format("%s, ", wxString::From8BitData(temp->id, 4));
 
 		if (temp->id[0] == 'C' && temp->id[1] == 'O' && temp->id[2] == 'M' && temp->id[3] == 'M')
 			comm = (const AIFFComm*)temp;
@@ -1604,7 +1606,7 @@ wxString Audio::getAiffInfo(MemChunk& mc)
 	chunksfound.RemoveLast(2);
 
 	if (comm == nullptr)
-		return S_FMT("Invalid AIFF file, no common chunk");
+		return wxString::Format("Invalid AIFF file, no common chunk");
 
 	size_t samplerate = 1;
 	// Frame rate calculations adapted from libsndfile
@@ -1624,7 +1626,7 @@ wxString Audio::getAiffInfo(MemChunk& mc)
 	{
 		const char* pos = ((const char*)comm) + 26;
 		format += wxString::From8BitData(pos + 5, *(pos + 4));
-		format += S_FMT(" (%s)", wxString::From8BitData(pos, 4));
+		format += wxString::Format(" (%s)", wxString::From8BitData(pos, 4));
 	}
 	else
 		format += "PCM (none)";
@@ -1633,19 +1635,20 @@ wxString Audio::getAiffInfo(MemChunk& mc)
 	if (channels == 2)
 		ret = "Stereo";
 	else if (channels > 2)
-		ret = S_FMT("%u channels", channels);
+		ret = wxString::Format("%u channels", channels);
 	size_t frames  = wxUINT32_SWAP_ON_LE(comm->frames);
 	size_t samples = frames * channels;
 	size_t bps     = wxUINT16_SWAP_ON_LE(comm->bitsize);
-	ret += S_FMT(" %u-bit", bps);
+	ret += wxString::Format(" %u-bit", bps);
 	if (channels > 1)
-		ret += S_FMT(" sound with %u samples in %u frames at %u Hz\n%s\n", samples, frames, samplerate, format);
+		ret += wxString::Format(
+			" sound with %u samples in %u frames at %u Hz\n%s\n", samples, frames, samplerate, format);
 	else
-		ret += S_FMT(" sound with %u samples at %u Hz\n%s\n", samples, samplerate, format);
+		ret += wxString::Format(" sound with %u samples at %u Hz\n%s\n", samples, samplerate, format);
 
 
 	// Find data chunks
-	ret += S_FMT("%s%s\n", parseIFFChunks(mc, 12, samplerate, cue, true), chunksfound);
+	ret += wxString::Format("%s%s\n", parseIFFChunks(mc, 12, samplerate, cue, true), chunksfound);
 	return ret;
 }
 

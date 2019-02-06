@@ -402,19 +402,19 @@ void SectorPropsPanel::openObjects(vector<MapObject*>& objects)
 
 	// Floor height
 	if (MapObject::multiIntProperty(objects, "heightfloor", ival))
-		text_height_floor_->SetValue(S_FMT("%d", ival));
+		text_height_floor_->SetValue(wxString::Format("%d", ival));
 
 	// Ceiling height
 	if (MapObject::multiIntProperty(objects, "heightceiling", ival))
-		text_height_ceiling_->SetValue(S_FMT("%d", ival));
+		text_height_ceiling_->SetValue(wxString::Format("%d", ival));
 
 	// Light level
 	if (MapObject::multiIntProperty(objects, "lightlevel", ival))
-		text_light_->SetValue(S_FMT("%d", ival));
+		text_light_->SetValue(wxString::Format("%d", ival));
 
 	// Tag
 	if (MapObject::multiIntProperty(objects, "id", ival))
-		text_tag_->SetValue(S_FMT("%d", ival));
+		text_tag_->SetValue(wxString::Format("%d", ival));
 
 	// Load other properties
 	if (mopp_all_props_)
@@ -533,5 +533,5 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 void SectorPropsPanel::onBtnNewTag(wxCommandEvent& e)
 {
 	int tag = MapEditor::editContext().map().sectors().firstFreeId();
-	text_tag_->SetValue(S_FMT("%d", tag));
+	text_tag_->SetValue(wxString::Format("%d", tag));
 }

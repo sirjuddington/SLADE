@@ -193,14 +193,14 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			for (int b = x; b < (x + (cell > 3 ? cell - 1 : cell)); ++b)
 				for (int c = y; c < (y + (cell > 3 ? cell - 1 : cell)); ++c)
 					if (!col.equals(image.pixelAt(b, c)))
-						Log::warning(S_FMT(
+						Log::warning(wxString::Format(
 							"Image does not seem to be a valid palette, color discrepancy in cell %u at [%u, %u]",
 							a,
 							b,
 							c));
 
 			// Color is validated, so add it
-			Log::info(3, S_FMT("Colour index %d / at %d,%d / rgb %d,%d,%d", a, x, y, col.r, col.g, col.b));
+			Log::info(3, wxString::Format("Colour index %d / at %d,%d / rgb %d,%d,%d", a, x, y, col.r, col.g, col.b));
 			setColour(a, col);
 		}
 
@@ -322,7 +322,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, const wxString& name)
 	{
 		wxString csv;
 		for (unsigned a = 0; a < 256; a++)
-			csv += S_FMT("%d, %d, %d\n", colours_[a].r, colours_[a].g, colours_[a].b);
+			csv += wxString::Format("%d, %d, %d\n", colours_[a].r, colours_[a].g, colours_[a].b);
 		mc.importMem((const uint8_t*)((const char*)csv.ToAscii()), csv.Length());
 	}
 
@@ -331,16 +331,16 @@ bool Palette::saveMem(MemChunk& mc, Format format, const wxString& name)
 	{
 		wxString jasc = "JASC-PAL\n0100\n256\n";
 		for (unsigned a = 0; a < 256; a++)
-			jasc += S_FMT("%d %d %d\n", colours_[a].r, colours_[a].g, colours_[a].b);
+			jasc += wxString::Format("%d %d %d\n", colours_[a].r, colours_[a].g, colours_[a].b);
 		mc.importMem((const uint8_t*)((const char*)jasc.ToAscii()), jasc.Length());
 	}
 
 	// GIMP palette
 	else if (format == Format::GIMP)
 	{
-		wxString gimp = S_FMT("GIMP Palette\nName: %s\n#\n", name);
+		wxString gimp = wxString::Format("GIMP Palette\nName: %s\n#\n", name);
 		for (unsigned a = 0; a < 256; a++)
-			gimp += S_FMT("%d\t%d\t%d\tIndex %u\n", colours_[a].r, colours_[a].g, colours_[a].b, a);
+			gimp += wxString::Format("%d\t%d\t%d\tIndex %u\n", colours_[a].r, colours_[a].g, colours_[a].b, a);
 		mc.importMem((const uint8_t*)((const char*)gimp.ToAscii()), gimp.Length());
 	}
 

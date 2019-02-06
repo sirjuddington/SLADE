@@ -151,7 +151,7 @@ bool Property::boolValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Boolean)
-		Log::warning(S_FMT("Requested Boolean value of a %s Property", typeString()));
+		Log::warning(wxString::Format("Requested Boolean value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::Boolean)
@@ -189,7 +189,7 @@ int Property::intValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Int)
-		Log::warning(S_FMT("Requested Integer value of a %s Property", typeString()));
+		Log::warning(wxString::Format("Requested Integer value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::Int)
@@ -229,7 +229,7 @@ double Property::floatValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Float)
-		Log::warning(S_FMT("Requested Float value of a %s Property", typeString()));
+		Log::warning(wxString::Format("Requested Float value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::Float)
@@ -269,15 +269,15 @@ wxString Property::stringValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::String)
-		Log::warning(S_FMT("Warning: Requested String value of a %s Property", typeString()));
+		Log::warning(wxString::Format("Warning: Requested String value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::String)
 		return val_string_;
 	else if (type_ == Type::Int)
-		return S_FMT("%d", value_.Integer);
+		return wxString::Format("%d", value_.Integer);
 	else if (type_ == Type::UInt)
-		return S_FMT("%u", value_.Unsigned);
+		return wxString::Format("%u", value_.Unsigned);
 	else if (type_ == Type::Boolean)
 	{
 		if (value_.Boolean)
@@ -286,7 +286,7 @@ wxString Property::stringValue(bool warn_wrong_type) const
 			return "false";
 	}
 	else if (type_ == Type::Float)
-		return S_FMT("%f", value_.Floating);
+		return wxString::Format("%f", value_.Floating);
 
 	// Return default string value
 	return wxEmptyString;
@@ -309,7 +309,7 @@ unsigned Property::unsignedValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Int)
-		Log::warning(S_FMT("Requested Integer value of a %s Property", typeString()));
+		Log::warning(wxString::Format("Requested Integer value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::Int)

@@ -271,7 +271,7 @@ void TextureEditorPanel::updateTextureScaleLabel()
 		scaled_y /= tex_current_->scaleY();
 
 	// Update the label
-	label_scaled_size_->SetLabel(S_FMT("Scaled Size: %dx%d", scaled_x, scaled_y));
+	label_scaled_size_->SetLabel(wxString::Format("Scaled Size: %dx%d", scaled_x, scaled_y));
 }
 
 // -----------------------------------------------------------------------------

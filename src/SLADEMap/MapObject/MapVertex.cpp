@@ -237,10 +237,10 @@ void MapVertex::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 void MapVertex::writeUDMF(wxString& def)
 {
-	def = S_FMT("vertex//#%u\n{\n", index_);
+	def = wxString::Format("vertex//#%u\n{\n", index_);
 
 	// Basic properties
-	def += S_FMT("x=%1.3f;\ny=%1.3f;\n", position_.x, position_.y);
+	def += wxString::Format("x=%1.3f;\ny=%1.3f;\n", position_.x, position_.y);
 
 	// Other properties
 	if (!properties_.isEmpty())

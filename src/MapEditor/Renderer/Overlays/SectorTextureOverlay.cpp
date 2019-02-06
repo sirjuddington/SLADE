@@ -115,12 +115,12 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 	wxString ftex2, ctex2;
 	if (tex_floor_.size() > 1)
 	{
-		ftex  = S_FMT("Multiple (%lu)", tex_floor_.size());
+		ftex  = wxString::Format("Multiple (%lu)", tex_floor_.size());
 		ftex2 = tex_floor_[1];
 	}
 	if (tex_ceil_.size() > 1)
 	{
-		ctex  = S_FMT("Multiple (%lu)", tex_ceil_.size());
+		ctex  = wxString::Format("Multiple (%lu)", tex_ceil_.size());
 		ctex2 = tex_ceil_[1];
 	}
 

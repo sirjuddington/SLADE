@@ -107,27 +107,27 @@ void CVar::saveToFile(wxFile& file)
 	{
 		if (cvars[c]->flags & Flag::Save)
 		{
-			file.Write(S_FMT("\t%s ", cvars[c]->name));
+			file.Write(wxString::Format("\t%s ", cvars[c]->name));
 
 			int spaces = max_size - cvars[c]->name.size();
 			for (int a = 0; a < spaces; a++)
 				file.Write(" ");
 
 			if (cvars[c]->type == Type::Integer)
-				file.Write(S_FMT("%d\n", cvars[c]->getValue().Int));
+				file.Write(wxString::Format("%d\n", cvars[c]->getValue().Int));
 
 			if (cvars[c]->type == Type::Boolean)
-				file.Write(S_FMT("%d\n", cvars[c]->getValue().Bool));
+				file.Write(wxString::Format("%d\n", cvars[c]->getValue().Bool));
 
 			if (cvars[c]->type == Type::Float)
-				file.Write(S_FMT("%1.5f\n", cvars[c]->getValue().Float));
+				file.Write(wxString::Format("%1.5f\n", cvars[c]->getValue().Float));
 
 			if (cvars[c]->type == Type::String)
 			{
 				wxString value = ((CStringCVar*)cvars[c])->value;
 				value.Replace("\\", "/");
 				value.Replace("\"", "\\\"");
-				file.Write(S_FMT("\"%s\"\n", value), wxConvUTF8);
+				file.Write(wxString::Format("\"%s\"\n", value), wxConvUTF8);
 			}
 		}
 	}

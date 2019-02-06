@@ -648,7 +648,7 @@ void BrowserWindow::onZoomChanged(wxCommandEvent& e)
 	slider_zoom_->SetValue(item_size);
 
 	// Update zoom label
-	// label_current_zoom->SetLabel(S_FMT("%d%%", zoom_percent));
+	// label_current_zoom->SetLabel(wxString::Format("%d%%", zoom_percent));
 
 	// Update item size and refresh
 	if (item_size != browser_item_size)

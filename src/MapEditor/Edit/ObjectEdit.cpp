@@ -682,8 +682,8 @@ bool ObjectEdit::begin()
 	auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 	auto key_toggle = KeyBind::bind("me2d_begin_object_edit").keysAsString();
 	context_.setFeatureHelp({ "Object Edit",
-							  S_FMT("%s = Accept", key_accept),
-							  S_FMT("%s or %s = Cancel", key_cancel, key_toggle),
+							  wxString::Format("%s = Accept", key_accept),
+							  wxString::Format("%s or %s = Cancel", key_cancel, key_toggle),
 							  "Shift = Disable grid snapping",
 							  "Ctrl = Rotate" });
 
@@ -702,7 +702,7 @@ void ObjectEdit::end(bool accept)
 	if (accept)
 	{
 		// Begin recording undo level
-		context_.beginUndoRecord(S_FMT("Edit %s", context_.modeString()));
+		context_.beginUndoRecord(wxString::Format("Edit %s", context_.modeString()));
 
 		// Apply changes
 		group_.applyEdit();

@@ -193,10 +193,10 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	{
 		wxString deprecated_msg = "[ Deprecated";
 		if (!context.deprecated_v.empty())
-			deprecated_msg = S_FMT("%s v%s", deprecated_msg, CHR(context.deprecated_v));
+			deprecated_msg = wxString::Format("%s v%s", deprecated_msg, CHR(context.deprecated_v));
 		if (!context.deprecated_f.empty())
-			deprecated_msg = S_FMT("%s, use \'%s()\'", deprecated_msg, CHR(context.deprecated_f));
-		deprecated_msg = S_FMT("%s ] ", deprecated_msg);
+			deprecated_msg = wxString::Format("%s, use \'%s()\'", deprecated_msg, CHR(context.deprecated_f));
+		deprecated_msg = wxString::Format("%s ] ", deprecated_msg);
 
 		dc.SetTextForeground(*wxRED);
 		drawText(dc, deprecated_msg, left, top, &rect);
@@ -215,7 +215,7 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	// Draw function return type
 	if (!context.return_type.empty())
 	{
-		wxString ftype = S_FMT("%s ", context.return_type);
+		wxString ftype = wxString::Format("%s ", context.return_type);
 		dc.SetTextForeground(wxcol_type);
 		left = drawText(dc, ftype, left, top, &rect);
 	}
@@ -224,7 +224,7 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	if (!context.context.empty())
 	{
 		dc.SetTextForeground(wxcol_fg);
-		left = drawText(dc, S_FMT("%s.", context.context), left, top, &rect);
+		left = drawText(dc, wxString::Format("%s.", context.context), left, top, &rect);
 	}
 
 	// Draw function name
@@ -310,7 +310,7 @@ wxRect SCallTip::drawArgs(
 		// Type
 		if (!arg.type.empty())
 		{
-			wxString arg_type = arg.type == "void" ? "void" : S_FMT("%s ", arg.type);
+			wxString arg_type = arg.type == "void" ? "void" : wxString::Format("%s ", arg.type);
 			if (a != arg_current_)
 				dc.SetTextForeground(wxcol_type);
 			left = drawText(dc, arg_type, left, top, &rect);
@@ -323,7 +323,7 @@ wxRect SCallTip::drawArgs(
 
 		// Default value
 		if (!arg.default_value.empty())
-			left = drawText(dc, S_FMT(" = %s", CHR(arg.default_value)), left, top, &rect);
+			left = drawText(dc, wxString::Format(" = %s", CHR(arg.default_value)), left, top, &rect);
 
 		// Optional closing bracket
 		if (arg.optional && !txed_calltips_dim_optional)
@@ -487,7 +487,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			int width = dc.GetTextExtent("X/X").x;
 			dc.SetTextForeground(wxcol_fg);
 			dc.DrawLabel(
-				S_FMT("%lu/%lu", context_current_ + 1, function_->contexts().size()),
+				wxString::Format("%lu/%lu", context_current_ + 1, function_->contexts().size()),
 				wxNullBitmap,
 				wxRect(rect_btn_up_.GetRight() + UI::scalePx(4), yoff, width, 900),
 				wxALIGN_CENTER_HORIZONTAL);
@@ -547,7 +547,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 				dc.SetTextForeground(wxcol_faded);
 				drawText(
 					dc,
-					S_FMT("... %lu more", function_->contexts().size() - num),
+					wxString::Format("... %lu more", function_->contexts().size() - num),
 					xoff,
 					bottom + UI::scalePx(11),
 					&rect);

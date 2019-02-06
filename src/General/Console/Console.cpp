@@ -63,7 +63,7 @@ void Console::addCommand(ConsoleCommand& c)
 // -----------------------------------------------------------------------------
 void Console::execute(const wxString& command)
 {
-	Log::info(S_FMT("> %s", command));
+	Log::info(wxString::Format("> %s", command));
 
 	// Don't bother doing anything else with an empty command
 	if (command.empty())
@@ -127,13 +127,13 @@ void Console::execute(const wxString& command)
 				value = "false";
 		}
 		else if (cvar->type == CVar::Type::Integer)
-			value = S_FMT("%d", cvar->getValue().Int);
+			value = wxString::Format("%d", cvar->getValue().Int);
 		else if (cvar->type == CVar::Type::Float)
-			value = S_FMT("%1.4f", cvar->getValue().Float);
+			value = wxString::Format("%1.4f", cvar->getValue().Float);
 		else
 			value = ((CStringCVar*)cvar)->value;
 
-		Log::console(S_FMT(R"("%s" = "%s")", cmd_name, value));
+		Log::console(wxString::Format(R"("%s" = "%s")", cmd_name, value));
 
 		return;
 	}
@@ -151,7 +151,7 @@ void Console::execute(const wxString& command)
 	}
 
 	// Command not found
-	Log::console(S_FMT("Unknown command: \"%s\"", cmd_name));
+	Log::console(wxString::Format("Unknown command: \"%s\"", cmd_name));
 }
 
 // -----------------------------------------------------------------------------
@@ -229,7 +229,7 @@ void ConsoleCommand::execute(const vector<wxString>& args) const
 	if (args.size() >= min_args_)
 		command_func_(args);
 	else
-		Log::console(S_FMT("Missing command arguments, type \"cmdhelp %s\" for more information", name_));
+		Log::console(wxString::Format("Missing command arguments, type \"cmdhelp %s\" for more information", name_));
 }
 
 
@@ -254,13 +254,13 @@ CONSOLE_COMMAND(echo, 1, true)
 // -----------------------------------------------------------------------------
 CONSOLE_COMMAND(cmdlist, 0, true)
 {
-	Log::console(S_FMT("%d Valid Commands:", App::console()->numCommands()));
+	Log::console(wxString::Format("%d Valid Commands:", App::console()->numCommands()));
 
 	for (int a = 0; a < App::console()->numCommands(); a++)
 	{
 		auto& cmd = App::console()->command(a);
 		if (cmd.showInList() || Global::debug)
-			Log::console(S_FMT("\"%s\" (%lu args)", cmd.name(), cmd.minArgs()));
+			Log::console(wxString::Format("\"%s\" (%lu args)", cmd.name(), cmd.minArgs()));
 	}
 }
 
@@ -274,7 +274,7 @@ CONSOLE_COMMAND(cvarlist, 0, true)
 	CVar::putList(list);
 	sort(list.begin(), list.end());
 
-	Log::console(S_FMT("%lu CVars:", list.size()));
+	Log::console(wxString::Format("%lu CVars:", list.size()));
 
 	// Write list to console
 	for (const auto& a : list)
@@ -292,9 +292,9 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 		if (App::console()->command(a).name().Lower() == args[0].Lower())
 		{
 #ifdef USE_WEBVIEW_STARTPAGE
-			MainEditor::openDocs(S_FMT("%s-Console-Command", args[0]));
+			MainEditor::openDocs(wxString::Format("%s-Console-Command", args[0]));
 #else
-			string url = S_FMT("https://github.com/sirjuddington/SLADE/wiki/%s-Console-Command", args[0]);
+			wxString url = wxString::Format("https://github.com/sirjuddington/SLADE/wiki/%s-Console-Command", args[0]);
 			wxLaunchDefaultBrowser(url);
 #endif
 			return;
@@ -302,7 +302,7 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 	}
 
 	// No command found
-	Log::console(S_FMT("No command \"%s\" exists", args[0]));
+	Log::console(wxString::Format("No command \"%s\" exists", args[0]));
 }
 
 

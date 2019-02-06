@@ -331,7 +331,7 @@ bool HogArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("HogArchive::loadEntryData: Failed to open hogfile %s", filename_));
+		Log::error(wxString::Format("HogArchive::loadEntryData: Failed to open hogfile %s", filename_));
 		return false;
 	}
 

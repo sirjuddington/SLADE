@@ -223,8 +223,8 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		// The leading "GAME:\" part of the name means there is only 58 usable characters for path
 		if (name.Len() > 58)
 		{
-			Log::warning(
-				S_FMT("Warning: Entry %s path is too long (> 58 characters), putting it in the root directory", name));
+			Log::warning(wxString::Format(
+				"Warning: Entry %s path is too long (> 58 characters), putting it in the root directory", name));
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 57)
@@ -298,7 +298,7 @@ bool DiskArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("DiskArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error(wxString::Format("DiskArchive::loadEntryData: Unable to open archive file %s", filename_));
 		return false;
 	}
 

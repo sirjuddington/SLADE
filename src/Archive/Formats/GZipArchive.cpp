@@ -125,7 +125,7 @@ bool GZipArchive::open(MemChunk& mc)
 				comment_ += c;
 			++mds;
 		} while (c != 0 && size > mds);
-		Log::info(S_FMT("Archive %s says:\n %s", filename(true), comment_));
+		Log::info(wxString::Format("Archive %s says:\n %s", filename(true), comment_));
 	}
 
 	// Skip past CRC 16 check
@@ -299,7 +299,7 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("GZipArchive::loadEntryData: Failed to open gzip file %s", filename_));
+		Log::error(wxString::Format("GZipArchive::loadEntryData: Failed to open gzip file %s", filename_));
 		return false;
 	}
 

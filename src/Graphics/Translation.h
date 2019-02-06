@@ -24,7 +24,7 @@ public:
 
 		IndexRange(int start, int end) : start{ (uint8_t)start }, end{ (uint8_t)end } {}
 
-		wxString asText() const { return S_FMT("%d:%d", start, end); }
+		wxString asText() const { return wxString::Format("%d:%d", start, end); }
 	};
 
 	typedef std::unique_ptr<TransRange> UPtr;
@@ -72,7 +72,7 @@ public:
 
 	wxString asText() override
 	{
-		return S_FMT("%d:%d=%d:%d", range_.start, range_.end, dest_range_.start, dest_range_.end);
+		return wxString::Format("%d:%d=%d:%d", range_.start, range_.end, dest_range_.start, dest_range_.end);
 	}
 
 private:
@@ -105,7 +105,7 @@ public:
 
 	wxString asText() override
 	{
-		return S_FMT(
+		return wxString::Format(
 			"%d:%d=[%d,%d,%d]:[%d,%d,%d]",
 			range_.start,
 			range_.end,
@@ -152,7 +152,7 @@ public:
 
 	wxString asText() override
 	{
-		return S_FMT(
+		return wxString::Format(
 			"%d:%d=%%[%1.2f,%1.2f,%1.2f]:[%1.2f,%1.2f,%1.2f]",
 			range_.start,
 			range_.end,
@@ -186,7 +186,7 @@ public:
 
 	wxString asText() override
 	{
-		return S_FMT("%d:%d=#[%d,%d,%d]", range_.start, range_.end, colour_.r, colour_.g, colour_.b);
+		return wxString::Format("%d:%d=#[%d,%d,%d]", range_.start, range_.end, colour_.r, colour_.g, colour_.b);
 	}
 
 private:
@@ -218,7 +218,8 @@ public:
 
 	wxString asText() override
 	{
-		return S_FMT("%d:%d=@%d[%d,%d,%d]", range_.start, range_.end, amount_, colour_.r, colour_.g, colour_.b);
+		return wxString::Format(
+			"%d:%d=@%d[%d,%d,%d]", range_.start, range_.end, amount_, colour_.r, colour_.g, colour_.b);
 	}
 
 private:
@@ -245,7 +246,7 @@ public:
 	wxString special() const { return special_; }
 	void     setSpecial(const wxString& sp) { special_ = sp; }
 
-	wxString asText() override { return S_FMT("%d:%d=$%s", range_.start, range_.end, special_); }
+	wxString asText() override { return wxString::Format("%d:%d=$%s", range_.start, range_.end, special_); }
 
 private:
 	wxString special_;

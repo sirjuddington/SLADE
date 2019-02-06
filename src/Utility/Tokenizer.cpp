@@ -523,7 +523,7 @@ bool Tokenizer::openFile(const wxString& filename, size_t offset, size_t length)
 	// Check file opened
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("Tokenizer::openFile: Unable to open file %s", filename));
+		Log::error(wxString::Format("Tokenizer::openFile: Unable to open file %s", filename));
 		return false;
 	}
 
@@ -861,7 +861,7 @@ bool Tokenizer::readNext(Token* target)
 		++state_.position;
 
 	if (debug_)
-		Log::debug(S_FMT("%d: \"%s\"", token_current_.line_no, CHR(token_current_.text)));
+		Log::debug(wxString::Format("%d: \"%s\"", token_current_.line_no, CHR(token_current_.text)));
 
 	return true;
 }
@@ -935,7 +935,7 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 
 	long new_time = App::runTimer() - time;
 
-	Log::info(S_FMT("Tokenize x%d took %dms", num, new_time));
+	Log::info(wxString::Format("Tokenize x%d took %dms", num, new_time));
 
 
 	// Test old tokenizer also
@@ -957,13 +957,14 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 		tzo.reset();
 	}
 	time = App::runTimer() - time;
-	Log::info(S_FMT("Old Tokenize x%d took %dms", num, time));
-	Log::info(S_FMT("%1.3fx time", (float)new_time / (float)time));
+	Log::info(wxString::Format("Old Tokenize x%d took %dms", num, time));
+	Log::info(wxString::Format("%1.3fx time", (float)new_time / (float)time));
 	*/
 
 	if (dump)
 	{
 		for (auto& token : t_new)
-			Log::debug(S_FMT("%d: \"%s\"%s", token.line_no, CHR(token.text), token.quoted_string ? " (quoted)" : ""));
+			Log::debug(wxString::Format(
+				"%d: \"%s\"%s", token.line_no, CHR(token.text), token.quoted_string ? " (quoted)" : ""));
 	}
 }

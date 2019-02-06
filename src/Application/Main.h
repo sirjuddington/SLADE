@@ -20,7 +20,6 @@ typedef unsigned __int64 uint64_t;
 #endif
 
 // String stuff
-#define S_FMT wxString::Format
 #define S_CMP(s1, s2) s1.Cmp(s2) == 0
 #define S_CMPNOCASE(s1, s2) s1.CmpNoCase(s2) == 0
 
@@ -49,9 +48,9 @@ using std::vector;
 
 // Global internal includes
 #include "General/CVar.h"
+#include "Utility/Structs.h"
 #include "General/Log.h"
 #include "Utility/MemChunk.h"
-#include "Utility/Structs.h"
 
 
 // Namespace to hold 'global' variables

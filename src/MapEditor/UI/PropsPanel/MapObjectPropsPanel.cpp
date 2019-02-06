@@ -574,7 +574,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 				{
 					// Add arg property
 					auto prop = dynamic_cast<MOPGIntProperty*>(
-						addIntProperty(g_special, S_FMT("Arg%u", a + 1), S_FMT("arg%u", a)));
+						addIntProperty(g_special, wxString::Format("Arg%u", a + 1), wxString::Format("arg%u", a)));
 
 					// Link to action special
 					args_[a] = prop;
@@ -605,7 +605,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 
 			// Add flags
 			for (unsigned a = 0; a < Game::configuration().nLineFlags(); a++)
-				addLineFlagProperty(g_flags, Game::configuration().lineFlag(a).name, S_FMT("flag%u", a), a);
+				addLineFlagProperty(g_flags, Game::configuration().lineFlag(a).name, wxString::Format("flag%u", a), a);
 		}
 
 		// --- Sides ---
@@ -773,7 +773,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 			for (unsigned a = 0; a < 5; a++)
 			{
 				auto prop = dynamic_cast<MOPGIntProperty*>(
-					addIntProperty(g_args, S_FMT("Arg%u", a + 1), S_FMT("arg%u", a)));
+					addIntProperty(g_args, wxString::Format("Arg%u", a + 1), wxString::Format("arg%u", a)));
 				args_[a] = prop;
 			}
 		}
@@ -785,7 +785,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 
 			// Add flags
 			for (int a = 0; a < Game::configuration().nThingFlags(); a++)
-				addThingFlagProperty(g_flags, Game::configuration().thingFlag(a), S_FMT("flag%u", a), a);
+				addThingFlagProperty(g_flags, Game::configuration().thingFlag(a), wxString::Format("flag%u", a), a);
 		}
 	}
 
@@ -901,7 +901,7 @@ void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
 	// Remember arg properties for passing to type/special properties (or set
 	// to NULL if args don't exist)
 	for (unsigned arg = 0; arg < 5; arg++)
-		args_[arg] = pg_properties_->GetProperty(S_FMT("arg%u", arg));
+		args_[arg] = pg_properties_->GetProperty(wxString::Format("arg%u", arg));
 
 	last_type_ = objtype;
 	udmf_      = true;
@@ -1141,7 +1141,8 @@ void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 		type = "Thing";
 
 	// Apply changes
-	MapEditor::editContext().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
+	MapEditor::editContext().beginUndoRecordLocked(
+		wxString::Format("Modify %s Properties", CHR(type)), true, false, false);
 	applyChanges();
 	MapEditor::editContext().endUndoRecord();
 
@@ -1226,7 +1227,7 @@ void MapObjectPropsPanel::onBtnAdd(wxCommandEvent& e)
 		{
 			if (property->propName() == propname)
 			{
-				wxMessageBox(S_FMT("Property \"%s\" already exists", propname), "Error");
+				wxMessageBox(wxString::Format("Property \"%s\" already exists", propname), "Error");
 				return;
 			}
 		}
@@ -1291,7 +1292,7 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 				type = "Thing";
 
 			MapEditor::editContext().beginUndoRecordLocked(
-				S_FMT("Modify %s Properties", CHR(type)), true, false, false);
+				wxString::Format("Modify %s Properties", CHR(type)), true, false, false);
 			property->applyValue();
 			MapEditor::editContext().endUndoRecord();
 			return;

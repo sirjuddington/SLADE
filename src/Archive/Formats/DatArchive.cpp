@@ -98,7 +98,7 @@ bool DatArchive::open(MemChunk& mc)
 		// the data file is invalid
 		if (offset + size > mc.size())
 		{
-			Log::error(S_FMT("DatArchive::open: Dat archive is invalid or corrupt at entry %i", d));
+			Log::error(wxString::Format("DatArchive::open: Dat archive is invalid or corrupt at entry %i", d));
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -118,7 +118,7 @@ bool DatArchive::open(MemChunk& mc)
 		}
 		else
 		{
-			myname = S_FMT("%s+%d", lastname, ++namecount);
+			myname = wxString::Format("%s+%d", lastname, ++namecount);
 		}
 
 		// Create & setup lump
@@ -546,7 +546,7 @@ bool DatArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("DatArchive::loadEntryData: Failed to open datfile %s", filename_));
+		Log::error(wxString::Format("DatArchive::loadEntryData: Failed to open datfile %s", filename_));
 		return false;
 	}
 

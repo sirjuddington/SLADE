@@ -207,14 +207,14 @@ bool OpenGL::Texture::loadData(unsigned id, const uint8_t* data, unsigned width,
 	// Check given id
 	if (id == 0 || id == tex_missing.id || id == tex_background.id)
 	{
-		Log::warning(S_FMT("Unable to load OpenGL texture with id %d - invalid or built-in texture", id));
+		Log::warning(wxString::Format("Unable to load OpenGL texture with id %d - invalid or built-in texture", id));
 		return false;
 	}
 
 	// Check image dimensions
 	if (!validTexDimension(width) || !validTexDimension(height))
 	{
-		Log::warning(S_FMT("Attempt to create OpenGL texture of invalid size %ldx%ld", width, height));
+		Log::warning(wxString::Format("Attempt to create OpenGL texture of invalid size %ldx%ld", width, height));
 		return false;
 	}
 
@@ -287,7 +287,8 @@ bool OpenGL::Texture::loadImage(unsigned id, const SImage& image, Palette* pal)
 		return loadData(id, rgba.data(), image.width(), image.height());
 	}
 
-	Log::warning(S_FMT("Attempt to create OpenGL texture of invalid size %ldx%ld", image.width(), image.height()));
+	Log::warning(
+		wxString::Format("Attempt to create OpenGL texture of invalid size %ldx%ld", image.width(), image.height()));
 	return false;
 }
 

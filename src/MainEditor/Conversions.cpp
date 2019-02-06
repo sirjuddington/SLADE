@@ -401,7 +401,7 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 	if (wavbps > 1 || wavfmt != WAV_PCM || fmtchunk.channels == 2)
 	{
 		if (!(wxMessageBox(
-				  S_FMT(
+				  wxString::Format(
 					  "Warning: conversion will result in loss of metadata and audio quality. Do you wish to proceed?"),
 				  "Conversion warning",
 				  wxOK | wxCANCEL)
@@ -550,7 +550,7 @@ bool Conversions::vocToWav(MemChunk& in, MemChunk& out)
 		i += 4;
 		if (i + blocksize > e && i < e && blocktype != 0)
 		{
-			Global::error = S_FMT("VOC file cut abruptly in block %i", blockcount);
+			Global::error = wxString::Format("VOC file cut abruptly in block %i", blockcount);
 			return false;
 		}
 		blockcount++;
@@ -640,9 +640,9 @@ bool Conversions::vocToWav(MemChunk& in, MemChunk& out)
 	case 6:     // alaw
 	case 7:     // ulaw
 	case 0x200: // 4 bits to 16 bits Creative ADPCM (only valid in block type 0x09)
-		Global::error = S_FMT("Unsupported codec %i in VOC file", codec);
+		Global::error = wxString::Format("Unsupported codec %i in VOC file", codec);
 		return false;
-	default: Global::error = S_FMT("Unknown codec %i in VOC file", codec); return false;
+	default: Global::error = wxString::Format("Unknown codec %i in VOC file", codec); return false;
 	}
 
 	// --- Write WAV ---
@@ -1096,7 +1096,7 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 	{
 		if (osamples[s] > 127 && !audioT)
 		{
-			Global::error = S_FMT("Invalid PC Speaker counter value: %d > 127", osamples[s]);
+			Global::error = wxString::Format("Invalid PC Speaker counter value: %d > 127", osamples[s]);
 			return false;
 		}
 		if (osamples[s] > 0)
@@ -1194,7 +1194,7 @@ bool Conversions::auSndToWav(MemChunk& in, MemChunk& out)
 	// Only cover integer linear PCM for now
 	if (header.format < 2 || header.format > 5)
 	{
-		Global::error = S_FMT("Unsupported Sun Sound format (%d)", header.format);
+		Global::error = wxString::Format("Unsupported Sun Sound format (%d)", header.format);
 		return false;
 	}
 	uint8_t samplesize = header.format - 1;

@@ -115,7 +115,7 @@ ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
 	// Args
 	for (unsigned a = 0; a < 5; a++)
 		if (args[a] != 0)
-			node->addChildPTN(S_FMT("arg%d", a + 1))->addIntValue(args[a]);
+			node->addChildPTN(wxString::Format("arg%d", a + 1))->addIntValue(args[a]);
 
 	// Flags
 	auto node_flags = node->addChildPTN("flags");
@@ -176,7 +176,7 @@ bool Game::loadCustomSpecialPresets()
 
 				// Add 'Custom' to preset group
 				if (!custom_presets.back().group.empty())
-					custom_presets.back().group = S_FMT("Custom/%s", CHR(custom_presets.back().group));
+					custom_presets.back().group = wxString::Format("Custom/%s", CHR(custom_presets.back().group));
 				else
 					custom_presets.back().group = "Custom";
 			}

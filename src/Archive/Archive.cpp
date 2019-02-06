@@ -340,21 +340,22 @@ wxString Archive::fileExtensionString() const
 	// Multiple extensions
 	if (fmt.extensions.size() > 1)
 	{
-		wxString         ext_all = S_FMT("Any %s File|", CHR(fmt.name));
+		wxString         ext_all = wxString::Format("Any %s File|", CHR(fmt.name));
 		vector<wxString> ext_strings;
 		for (const auto& ext : fmt.extensions)
 		{
-			wxString ext_case = S_FMT("*.%s;", CHR(ext.first.Lower()));
-			ext_case += S_FMT("*.%s;", CHR(ext.first.Upper()));
-			ext_case += S_FMT("*.%s", CHR(ext.first.Capitalize()));
+			wxString ext_case = wxString::Format("*.%s;", CHR(ext.first.Lower()));
+			ext_case += wxString::Format("*.%s;", CHR(ext.first.Upper()));
+			ext_case += wxString::Format("*.%s", CHR(ext.first.Capitalize()));
 
-			ext_all += S_FMT("%s;", CHR(ext_case));
-			ext_strings.push_back(S_FMT("%s File (*.%s)|%s", CHR(ext.second), CHR(ext.first), CHR(ext_case)));
+			ext_all += wxString::Format("%s;", CHR(ext_case));
+			ext_strings.push_back(
+				wxString::Format("%s File (*.%s)|%s", CHR(ext.second), CHR(ext.first), CHR(ext_case)));
 		}
 
 		ext_all.RemoveLast(1);
 		for (const auto& ext : ext_strings)
-			ext_all += S_FMT("|%s", ext);
+			ext_all += wxString::Format("|%s", ext);
 
 		return ext_all;
 	}
@@ -363,11 +364,11 @@ wxString Archive::fileExtensionString() const
 	if (fmt.extensions.size() == 1)
 	{
 		auto&    ext      = fmt.extensions[0];
-		wxString ext_case = S_FMT("*.%s;", CHR(ext.first.Lower()));
-		ext_case += S_FMT("*.%s;", CHR(ext.first.Upper()));
-		ext_case += S_FMT("*.%s", CHR(ext.first.Capitalize()));
+		wxString ext_case = wxString::Format("*.%s;", CHR(ext.first.Lower()));
+		ext_case += wxString::Format("*.%s;", CHR(ext.first.Upper()));
+		ext_case += wxString::Format("*.%s", CHR(ext.first.Capitalize()));
 
-		return S_FMT("%s File (*.%s)|%s", CHR(ext.second), CHR(ext.first), CHR(ext_case));
+		return wxString::Format("%s File (*.%s)|%s", CHR(ext.second), CHR(ext.first), CHR(ext_case));
 	}
 
 	// No extension (probably unknown type)
@@ -422,7 +423,7 @@ bool Archive::open(const wxString& filename)
 	sf::Clock timer;
 	if (open(mc))
 	{
-		Log::info(2, S_FMT("Archive::open took %dms", timer.getElapsedTime().asMilliseconds()));
+		Log::info(2, wxString::Format("Archive::open took %dms", timer.getElapsedTime().asMilliseconds()));
 		on_disk_ = true;
 		return true;
 	}
@@ -630,7 +631,7 @@ bool Archive::save(const wxString& filename)
 			{
 				// Copy current file contents to new backup file
 				wxString bakfile = filename_ + ".bak";
-				Log::info(S_FMT("Creating backup %s", bakfile));
+				Log::info(wxString::Format("Creating backup %s", bakfile));
 				wxCopyFile(filename_, bakfile, true);
 			}
 
@@ -1660,15 +1661,15 @@ bool Archive::loadFormats(MemChunk& mc)
 				fmt.prefer_uppercase = prop->boolValue();
 		}
 
-		Log::info(3, S_FMT("Read archive format %s: \"%s\"", fmt.id, fmt.name));
+		Log::info(3, wxString::Format("Read archive format %s: \"%s\"", fmt.id, fmt.name));
 		if (fmt.supports_dirs)
 			Log::info(3, "  Supports folders");
 		if (fmt.names_extensions)
 			Log::info(3, "  Entry names have extensions");
 		if (fmt.max_name_length >= 0)
-			Log::info(3, S_FMT("  Max entry name length: %d", fmt.max_name_length));
+			Log::info(3, wxString::Format("  Max entry name length: %d", fmt.max_name_length));
 		for (auto ext : fmt.extensions)
-			Log::info(3, S_FMT("  Extension \"%s\" = \"%s\"", ext.first, ext.second));
+			Log::info(3, wxString::Format("  Extension \"%s\" = \"%s\"", ext.first, ext.second));
 
 		formats.push_back(fmt);
 	}

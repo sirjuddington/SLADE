@@ -107,7 +107,7 @@ wxString MapTexBrowserItem::itemInfo()
 	// Add dimensions if known
 	auto& tex_info = OpenGL::Texture::info(image_tex_);
 	if (image_tex_ || loadImage())
-		info += S_FMT("%dx%d", tex_info.size.x, tex_info.size.y);
+		info += wxString::Format("%dx%d", tex_info.size.x, tex_info.size.y);
 	else
 		info += "Unknown size";
 
@@ -122,7 +122,7 @@ wxString MapTexBrowserItem::itemInfo()
 		info += ", Scaled";
 
 	// Add usage count
-	info += S_FMT(", Used %d times", usage_count_);
+	info += wxString::Format(", Used %d times", usage_count_);
 
 	return info;
 }

@@ -81,11 +81,11 @@ wxString HexTable::GetValue(int row, int col)
 
 		// Hex
 		if (view_type_ == 0)
-			return S_FMT("%02X", val);
+			return wxString::Format("%02X", val);
 
 		// Dec
 		else if (view_type_ == 1)
-			return S_FMT("%d", val);
+			return wxString::Format("%d", val);
 
 		// ASCII
 		else if (view_type_ == 2)
@@ -385,7 +385,7 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 		return;
 
 	// Reset labels
-	label_offset_->SetLabel(S_FMT("Offset: %d", offset));
+	label_offset_->SetLabel(wxString::Format("Offset: %d", offset));
 	label_byte_->SetLabel("Signed Byte:");
 	label_ubyte_->SetLabel("Unsigned Byte:");
 	label_ascii_->SetLabel("ASCII:");
@@ -424,10 +424,10 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 		vubyte = table_hex_->uByteValue(offset);
 		vbyte  = table_hex_->byteValue(offset);
 
-		label_byte_->SetLabel(S_FMT("Signed Byte: %d", vbyte));
-		label_ubyte_->SetLabel(S_FMT("Unsigned Byte: %u", vubyte));
+		label_byte_->SetLabel(wxString::Format("Signed Byte: %d", vbyte));
+		label_ubyte_->SetLabel(wxString::Format("Unsigned Byte: %u", vubyte));
 		if (vubyte <= 128)
-			label_ascii_->SetLabel(S_FMT("ASCII: %s", CodePages::fromASCII(vubyte)));
+			label_ascii_->SetLabel(wxString::Format("ASCII: %s", CodePages::fromASCII(vubyte)));
 
 		if (size > 1)
 		{
@@ -435,10 +435,10 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 			vshort  = table_hex_->shortValue(offset);
 			vushort = table_hex_->uShortValue(offset);
 
-			label_short_le_->SetLabel(S_FMT("Signed Short: %d", wxINT16_SWAP_ON_BE(vshort)));
-			label_ushort_le_->SetLabel(S_FMT("Unsigned Short: %u", wxUINT16_SWAP_ON_BE(vushort)));
-			label_short_be_->SetLabel(S_FMT("Signed Short: %d", wxINT16_SWAP_ON_LE(vshort)));
-			label_ushort_be_->SetLabel(S_FMT("Unsigned Short: %u", wxUINT16_SWAP_ON_LE(vushort)));
+			label_short_le_->SetLabel(wxString::Format("Signed Short: %d", wxINT16_SWAP_ON_BE(vshort)));
+			label_ushort_le_->SetLabel(wxString::Format("Unsigned Short: %u", wxUINT16_SWAP_ON_BE(vushort)));
+			label_short_be_->SetLabel(wxString::Format("Signed Short: %d", wxINT16_SWAP_ON_LE(vshort)));
+			label_ushort_be_->SetLabel(wxString::Format("Unsigned Short: %u", wxUINT16_SWAP_ON_LE(vushort)));
 
 			if (size > 3)
 			{
@@ -447,10 +447,10 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 				vuint32 = table_hex_->uInt32Value(offset);
 				vfloat  = table_hex_->floatValue(offset);
 
-				label_int32_le_->SetLabel(S_FMT("Signed Int (32bit): %d", wxINT32_SWAP_ON_BE(vint32)));
-				label_uint32_le_->SetLabel(S_FMT("Unsigned Int (32bit): %u", wxUINT32_SWAP_ON_BE(vuint32)));
-				label_int32_be_->SetLabel(S_FMT("Signed Int (32bit): %d", wxINT32_SWAP_ON_LE(vint32)));
-				label_uint32_be_->SetLabel(S_FMT("Unsigned Int (32bit): %u", wxUINT32_SWAP_ON_LE(vuint32)));
+				label_int32_le_->SetLabel(wxString::Format("Signed Int (32bit): %d", wxINT32_SWAP_ON_BE(vint32)));
+				label_uint32_le_->SetLabel(wxString::Format("Unsigned Int (32bit): %u", wxUINT32_SWAP_ON_BE(vuint32)));
+				label_int32_be_->SetLabel(wxString::Format("Signed Int (32bit): %d", wxINT32_SWAP_ON_LE(vint32)));
+				label_uint32_be_->SetLabel(wxString::Format("Unsigned Int (32bit): %u", wxUINT32_SWAP_ON_LE(vuint32)));
 
 				if (size > 7)
 				{

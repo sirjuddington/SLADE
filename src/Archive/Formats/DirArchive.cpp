@@ -215,7 +215,7 @@ bool DirArchive::save(const wxString& filename)
 	DirArchiveTraverser traverser(files, dirs);
 	wxDir               dir(this->filename_);
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
-	Log::info(2, S_FMT("GetAllFiles took %lums", App::runTimer() - time));
+	Log::info(2, wxString::Format("GetAllFiles took %lums", App::runTimer() - time));
 
 	// Check for any files to remove
 	time = App::runTimer();
@@ -223,7 +223,7 @@ bool DirArchive::save(const wxString& filename)
 	{
 		if (wxFileExists(removed_file))
 		{
-			Log::info(2, S_FMT("Removing file %s", removed_file));
+			Log::info(2, wxString::Format("Removing file %s", removed_file));
 			wxRemoveFile(removed_file);
 		}
 	}
@@ -246,9 +246,9 @@ bool DirArchive::save(const wxString& filename)
 		// (Note that this will fail if there are any untracked files in the
 		// directory)
 		if (!found && wxRmdir(dirs[a]))
-			Log::info(2, S_FMT("Removing directory %s", dirs[a]));
+			Log::info(2, wxString::Format("Removing directory %s", dirs[a]));
 	}
-	Log::info(2, S_FMT("Remove check took %lums", App::runTimer() - time));
+	Log::info(2, wxString::Format("Remove check took %lums", App::runTimer() - time));
 
 	// Go through entries
 	vector<wxString> files_written;
@@ -276,7 +276,7 @@ bool DirArchive::save(const wxString& filename)
 
 		// Write entry to file
 		if (!entries[a]->exportFile(path))
-			Log::error(S_FMT("Unable to save entry %s: %s", entries[a]->name(), Global::error));
+			Log::error(wxString::Format("Unable to save entry %s: %s", entries[a]->name(), Global::error));
 		else
 			files_written.push_back(path);
 
@@ -353,7 +353,7 @@ bool DirArchive::renameDir(ArchiveTreeNode* dir, const wxString& new_name)
 		path.Replace("/", separator_);
 	StringPair rename(path + dir->name(), path + new_name);
 	renamed_dirs_.push_back(rename);
-	Log::info(2, S_FMT("RENAME %s to %s", rename.first, rename.second));
+	Log::info(2, wxString::Format("RENAME %s to %s", rename.first, rename.second));
 
 	return Archive::renameDir(dir, new_name);
 }
@@ -400,7 +400,7 @@ bool DirArchive::renameEntry(ArchiveEntry* entry, const wxString& name)
 	// Check rename won't result in duplicated name
 	if (entry->parentDir()->entry(name))
 	{
-		Global::error = S_FMT("An entry named %s already exists", CHR(name));
+		Global::error = wxString::Format("An entry named %s already exists", CHR(name));
 		return false;
 	}
 

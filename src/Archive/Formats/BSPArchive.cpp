@@ -306,7 +306,7 @@ bool BSPArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("BSPArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error(wxString::Format("BSPArchive::loadEntryData: Unable to open archive file %s", filename_));
 		return false;
 	}
 

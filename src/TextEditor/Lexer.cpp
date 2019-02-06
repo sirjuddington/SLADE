@@ -121,7 +121,7 @@ bool Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 #endif
 
 	if (debug_lexer)
-		Log::debug(S_FMT("START STYLING FROM %d TO %d (LINE %d)", start, end, line + 1));
+		Log::debug(wxString::Format("START STYLING FROM %d TO %d (LINE %d)", start, end, line + 1));
 
 	bool done = false;
 	while (!done)
@@ -146,7 +146,8 @@ bool Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 		lines_[line + 1].comment_idx = curr_comment_idx_;
 		if (debug_lexer)
 		{
-			Log::debug(S_FMT("Line %d is block comment, using idx (%d)", line + 2, lines_[line + 1].comment_idx));
+			Log::debug(
+				wxString::Format("Line %d is block comment, using idx (%d)", line + 2, lines_[line + 1].comment_idx));
 		}
 	}
 	else if (state.state == State::Whitespace)
@@ -295,7 +296,7 @@ bool Lexer::processUnknown(LexerState& state)
 			state.editor->SetStyling(u_length, Style::Default);
 			state.editor->SetStyling(state.end - state.position + 1, Style::CommentDoc);
 			if (debug_lexer)
-				Log::debug(S_FMT("comment_d: %d", state.end - state.position + 1));
+				Log::debug(wxString::Format("comment_d: %d", state.end - state.position + 1));
 			return true;
 		}
 
@@ -306,7 +307,7 @@ bool Lexer::processUnknown(LexerState& state)
 			state.editor->SetStyling(u_length, Style::Default);
 			state.editor->SetStyling(state.end - state.position + 1, Style::Comment);
 			if (debug_lexer)
-				Log::debug(S_FMT("comment_l: %d", state.end - state.position + 1));
+				Log::debug(wxString::Format("comment_l: %d", state.end - state.position + 1));
 			return true;
 		}
 
@@ -363,14 +364,14 @@ bool Lexer::processUnknown(LexerState& state)
 			state.fold_increment--;
 
 		// if (debug_lexer)
-		// 	Log::debug(S_FMT("unknown char '%c' (%d)", c, c));
+		// 	Log::debug(wxString::Format("unknown char '%c' (%d)", c, c));
 		u_length++;
 		state.position++;
 		pp = false;
 	}
 
 	if (debug_lexer && u_length > 0)
-		Log::debug(S_FMT("unknown: %d", u_length));
+		Log::debug(wxString::Format("unknown: %d", u_length));
 	state.editor->SetStyling(u_length, Style::Default);
 
 	return end;
@@ -413,7 +414,7 @@ bool Lexer::processComment(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(S_FMT("comment_b: %lu", state.length));
+		Log::debug(wxString::Format("comment_b: %lu", state.length));
 
 	state.editor->SetStyling(state.length, Style::Comment);
 
@@ -477,7 +478,7 @@ bool Lexer::processWord(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(S_FMT("word: %s", word_string));
+		Log::debug(wxString::Format("word: %s", word_string));
 
 	styleWord(state, word_string);
 
@@ -517,7 +518,7 @@ bool Lexer::processString(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(S_FMT("string: %lu", state.length));
+		Log::debug(wxString::Format("string: %lu", state.length));
 
 	state.editor->SetStyling(state.length, Style::String);
 
@@ -557,7 +558,7 @@ bool Lexer::processChar(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(S_FMT("char: %lu", state.length));
+		Log::debug(wxString::Format("char: %lu", state.length));
 
 	state.editor->SetStyling(state.length, Style::Char);
 
@@ -596,7 +597,7 @@ bool Lexer::processOperator(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(S_FMT("operator: %lu", state.length));
+		Log::debug(wxString::Format("operator: %lu", state.length));
 
 	state.editor->SetStyling(state.length, Style::Operator);
 
@@ -635,7 +636,7 @@ bool Lexer::processWhitespace(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(S_FMT("whitespace: %lu", state.length));
+		Log::debug(wxString::Format("whitespace: %lu", state.length));
 
 	state.editor->SetStyling(state.length, Style::Default);
 

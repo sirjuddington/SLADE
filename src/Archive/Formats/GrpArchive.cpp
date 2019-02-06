@@ -100,7 +100,7 @@ bool GrpArchive::open(MemChunk& mc)
 	// Check the header
 	if (!(S_CMP(wxString::FromAscii(ken_magic), "KenSilverman")))
 	{
-		Log::error(S_FMT("GrpArchive::openFile: File %s has invalid header", filename_));
+		Log::error(wxString::Format("GrpArchive::openFile: File %s has invalid header", filename_));
 		Global::error = "Invalid grp header";
 		return false;
 	}
@@ -265,7 +265,7 @@ bool GrpArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("GrpArchive::loadEntryData: Failed to open grpfile %s", filename_));
+		Log::error(wxString::Format("GrpArchive::loadEntryData: Failed to open grpfile %s", filename_));
 		return false;
 	}
 

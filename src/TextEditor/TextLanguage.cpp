@@ -429,20 +429,20 @@ wxString TextLanguage::autocompletionList(wxString start, bool include_custom)
 	{
 		for (auto& word : word_lists_[type].list)
 			if (word.Lower().StartsWith(start))
-				list.Add(S_FMT("%s?%d", word, type + 1));
+				list.Add(wxString::Format("%s?%d", word, type + 1));
 
 		if (!include_custom)
 			continue;
 
 		for (auto& word : word_lists_custom_[type].list)
 			if (word.Lower().StartsWith(start))
-				list.Add(S_FMT("%s?%d", word, type + 1));
+				list.Add(wxString::Format("%s?%d", word, type + 1));
 	}
 
 	// Add functions
 	for (auto& func : functions_)
 		if (func.name().Lower().StartsWith(start))
-			list.Add(S_FMT("%s%s", func.name(), "?3"));
+			list.Add(wxString::Format("%s%s", func.name(), "?3"));
 
 	// Sort the list
 	list.Sort();
@@ -578,7 +578,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const wxString& source)
 	// Open the given text data
 	if (!tz.openMem(mc, source))
 	{
-		Log::warning(1, S_FMT("Warning: Unable to open %s", source));
+		Log::warning(1, wxString::Format("Warning: Unable to open %s", source));
 		return false;
 	}
 
@@ -604,7 +604,8 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const wxString& source)
 			else
 				Log::warning(
 					1,
-					S_FMT("Warning: Language %s inherits from undefined language %s", node->name(), node->inherit()));
+					wxString::Format(
+						"Warning: Language %s inherits from undefined language %s", node->name(), node->inherit()));
 		}
 
 		// Parse language info

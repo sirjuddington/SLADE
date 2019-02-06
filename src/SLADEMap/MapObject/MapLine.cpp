@@ -1001,21 +1001,21 @@ void MapLine::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 void MapLine::writeUDMF(wxString& def)
 {
-	def = S_FMT("linedef//#%u\n{\n", index_);
+	def = wxString::Format("linedef//#%u\n{\n", index_);
 
 	// Basic properties
-	def += S_FMT("v1=%d;\nv2=%d;\nsidefront=%d;\n", v1Index(), v2Index(), s1Index());
+	def += wxString::Format("v1=%d;\nv2=%d;\nsidefront=%d;\n", v1Index(), v2Index(), s1Index());
 	if (s2())
-		def += S_FMT("sideback=%d;\n", s2Index());
+		def += wxString::Format("sideback=%d;\n", s2Index());
 	if (special_ != 0)
-		def += S_FMT("special=%d;\n", special_);
+		def += wxString::Format("special=%d;\n", special_);
 	if (id_ != 0)
-		def += S_FMT("id=%d;\n", id_);
+		def += wxString::Format("id=%d;\n", id_);
 	if (flags_ != 0)
-		def += S_FMT("flags=%d;\n", flags_);
+		def += wxString::Format("flags=%d;\n", flags_);
 	for (unsigned i = 0; i < 5; ++i)
 		if (args_[i] != 0)
-			def += S_FMT("arg%d=%d;\n", i, args_[i]);
+			def += wxString::Format("arg%d=%d;\n", i, args_[i]);
 
 	// Other properties
 	if (!properties_.isEmpty())

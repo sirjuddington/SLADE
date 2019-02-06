@@ -391,20 +391,20 @@ void MapSide::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 void MapSide::writeUDMF(wxString& def)
 {
-	def = S_FMT("sidedef//#%u\n{\n", index_);
+	def = wxString::Format("sidedef//#%u\n{\n", index_);
 
 	// Basic properties
-	def += S_FMT("sector=%u;\n", sector_->index());
+	def += wxString::Format("sector=%u;\n", sector_->index());
 	if (tex_upper_ != "-")
-		def += S_FMT("texturetop=\"%s\";\n", tex_upper_);
+		def += wxString::Format("texturetop=\"%s\";\n", tex_upper_);
 	if (tex_middle_ != "-")
-		def += S_FMT("texturemiddle=\"%s\";\n", tex_middle_);
+		def += wxString::Format("texturemiddle=\"%s\";\n", tex_middle_);
 	if (tex_lower_ != "-")
-		def += S_FMT("texturebottom=\"%s\";\n", tex_lower_);
+		def += wxString::Format("texturebottom=\"%s\";\n", tex_lower_);
 	if (tex_offset_.x != 0)
-		def += S_FMT("offsetx=%d;\n", tex_offset_.x);
+		def += wxString::Format("offsetx=%d;\n", tex_offset_.x);
 	if (tex_offset_.y != 0)
-		def += S_FMT("offsety=%d;\n", tex_offset_.y);
+		def += wxString::Format("offsety=%d;\n", tex_offset_.y);
 
 	// Other properties
 	if (!properties_.isEmpty())

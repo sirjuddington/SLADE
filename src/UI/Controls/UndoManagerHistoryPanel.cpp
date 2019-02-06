@@ -70,7 +70,7 @@ wxString UndoListView::itemText(long item, long column, long index) const
 		if (column == 0)
 		{
 			wxString name = manager_->undoLevel((unsigned)item)->name();
-			return S_FMT("%lu. %s", item + 1, name);
+			return wxString::Format("%lu. %s", item + 1, name);
 		}
 		else
 		{
@@ -195,7 +195,7 @@ void UndoManagerHistoryPanel::setManager(UndoManager* manager)
 void UndoManagerHistoryPanel::onItemRightClick(wxCommandEvent& e)
 {
 	long index = list_levels_->focusedIndex();
-	// wxMessageBox(S_FMT("Item %d", index));
+	// wxMessageBox(wxString::Format("Item %d", index));
 
 	wxMenu context;
 	if (index == manager_->currentIndex())

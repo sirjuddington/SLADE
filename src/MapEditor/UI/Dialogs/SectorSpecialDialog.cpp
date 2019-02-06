@@ -66,7 +66,7 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	for (auto& type : types)
 	{
 		wxArrayString item;
-		item.Add(S_FMT("%d", type.first));
+		item.Add(wxString::Format("%d", type.first));
 		item.Add(type.second);
 		lv_specials_->addItem(999999, item);
 	}

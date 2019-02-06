@@ -113,7 +113,7 @@ wxString PatchBrowserItem::itemInfo()
 	if (image_tex_)
 	{
 		auto& tex_info = OpenGL::Texture::info(image_tex_);
-		info += S_FMT("%dx%d", tex_info.size.x, tex_info.size.y);
+		info += wxString::Format("%dx%d", tex_info.size.x, tex_info.size.y);
 	}
 	else
 		info += "Unknown size";

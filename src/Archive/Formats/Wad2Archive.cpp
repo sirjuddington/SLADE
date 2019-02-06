@@ -259,7 +259,7 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("Wad2Archive::loadEntryData: Failed to open wadfile %s", filename_));
+		Log::error(wxString::Format("Wad2Archive::loadEntryData: Failed to open wadfile %s", filename_));
 		return false;
 	}
 

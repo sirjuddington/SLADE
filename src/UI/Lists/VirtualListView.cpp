@@ -600,7 +600,7 @@ void VirtualListView::onKeyChar(wxKeyEvent& e)
 		// start a new search from after the current focus.
 		if (!lookForSearchEntryFrom(focus))
 		{
-			search_ = S_FMT("%c", e.GetKeyCode());
+			search_ = wxString::Format("%c", e.GetKeyCode());
 			search_.MakeUpper();
 			lookForSearchEntryFrom(focus + 1);
 		}
@@ -674,7 +674,7 @@ void VirtualListView::onColumnLeftClick(wxListEvent& e)
 
 	if (sort_column_ >= 0)
 	{
-		Log::info(2, S_FMT("Sort column %d (%s)", sort_column_, sort_descend_ ? "descending" : "ascending"));
+		Log::info(2, wxString::Format("Sort column %d (%s)", sort_column_, sort_descend_ ? "descending" : "ascending"));
 	}
 	else
 	{

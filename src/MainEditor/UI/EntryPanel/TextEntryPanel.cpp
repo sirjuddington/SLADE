@@ -253,7 +253,7 @@ wxString TextEntryPanel::statusString()
 	int      line   = text_area_->GetCurrentLine() + 1;
 	int      pos    = text_area_->GetCurrentPos();
 	int      col    = text_area_->GetColumn(pos) + 1;
-	wxString status = S_FMT("Ln %d, Col %d, Pos %d", line, col, pos);
+	wxString status = wxString::Format("Ln %d, Col %d, Pos %d", line, col, pos);
 
 	return status;
 }

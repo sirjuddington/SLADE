@@ -615,7 +615,7 @@ namespace
 							tz.setSpecialCharacters("");
 							string lnstr = tz.getLine();
 							tz.setSpecialCharacters("(),[=|");
-							tl.openString(lnstr, 0, 0, S_FMT("Line %d", line));
+							tl.openString(lnstr, 0, 0, wxString::Format("Line %d", line));
 							tl.setSpecialCharacters("(),[=|");
 #if 1
 							// Create line
@@ -678,7 +678,7 @@ namespace
 								}
 
 								if (val != -666 && xline.args[a].IsEmpty())
-									xline.args[a] = S_FMT("%d", val);
+									xline.args[a] = wxString::Format("%d", val);
 
 								if (S_CMP(tl.peekToken(), ")"))
 									break;
@@ -715,7 +715,7 @@ namespace
 					if (lines[z].game.empty())
 						lines[z].group = configuration().actionSpecial(lines[z].type).group();
 					else
-						lines[z].group = S_FMT("%s/%s", lines[z].game, configuration().actionSpecial(lines[z].type).group());
+						lines[z].group = wxString::Format("%s/%s", lines[z].game, configuration().actionSpecial(lines[z].type).group());
 				}
 			}
 			// Convert special names to numbers
@@ -724,7 +724,7 @@ namespace
 			{
 				for (auto& i : configuration().allActionSpecials())
 					if (i.second.defined() && i.second.name() == l.special)
-						l.special = S_FMT("%d", i.first);
+						l.special = wxString::Format("%d", i.first);
 			}
 		}
 #if 0
@@ -768,13 +768,13 @@ namespace
 		string file;
 		for (size_t l = 0; l < lines.size(); ++l)
 		{
-			string output = S_FMT("preset \"%d: %s\"\n{\n", lines[l].type, lines[l].description);
-			output += S_FMT("\tgroup = \"%s\";\n", lines[l].group);
-			output += S_FMT("\tspecial = %s;\n", lines[l].special);
+			string output = wxString::Format("preset \"%d: %s\"\n{\n", lines[l].type, lines[l].description);
+			output += wxString::Format("\tgroup = \"%s\";\n", lines[l].group);
+			output += wxString::Format("\tspecial = %s;\n", lines[l].special);
 			for (size_t i = 0; i < 5; ++i)
 			{
 				if (lines[l].args[i].size() && lines[l].args[i] != "tag" && lines[l].args[i] != "0")
-					output += S_FMT("\targ%d = %s;\n", i+1, lines[l].args[i]);
+					output += wxString::Format("\targ%d = %s;\n", i+1, lines[l].args[i]);
 			}
 			int spac = 1 << ((lines[l].flags & 15) >> 1);
 			string flags = "";
@@ -785,9 +785,9 @@ namespace
 			if (lines[l].flags & 1)  flags += "repeatspecial, ";
 			if (lines[l].flags & 16) flags += "monsteractivate, ";
 			flags.RemoveLast(2);
-			output += S_FMT("\tflags = %s;\n", flags);
+			output += wxString::Format("\tflags = %s;\n", flags);
 			output += "}\n\n";
-			Log::debug(S_FMT("%s", output));
+			Log::debug(wxString::Format("%s", output));
 			file += output;
 			//		DPrintf("%d = %s : %d, %s (%s, %s, %s, %s, %s)",
 			//			lines[l].type, lines[l].description, lines[l].flags, lines[l].special,

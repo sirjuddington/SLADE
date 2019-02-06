@@ -256,7 +256,7 @@ bool LibArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("LibArchive::loadEntryData: Failed to open libfile %s", filename_));
+		Log::error(wxString::Format("LibArchive::loadEntryData: Failed to open libfile %s", filename_));
 		return false;
 	}
 

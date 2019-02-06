@@ -89,7 +89,7 @@ void BrowserItem::draw(
 	if (nametype == NameType::Normal)
 		draw_name = name_;
 	else if (nametype == NameType::Index)
-		draw_name = S_FMT("%d", index_);
+		draw_name = wxString::Format("%d", index_);
 
 	// Truncate name if needed
 	if (parent_->truncateNames() && draw_name.Length() > 8)
@@ -126,7 +126,7 @@ void BrowserItem::draw(
 		// Create text box if needed
 		if (!text_box_)
 			text_box_ = std::make_unique<TextBox>(
-				S_FMT("%d\n%s", index_, name_), font, UI::scalePx(144), UI::scalePx(16));
+				wxString::Format("%d\n%s", index_, name_), font, UI::scalePx(144), UI::scalePx(16));
 
 		int top = y;
 		top += ((size - text_box_->height()) * 0.5);

@@ -83,7 +83,7 @@ void SZoomSlider::setup()
 	// Slider change event
 	slider_zoom_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
 		// Update zoom label
-		label_zoom_amount_->SetLabel(S_FMT("%d%%", zoomPercent()));
+		label_zoom_amount_->SetLabel(wxString::Format("%d%%", zoomPercent()));
 
 		// Zoom gfx/texture canvas and update
 		if (linked_gfx_canvas_)

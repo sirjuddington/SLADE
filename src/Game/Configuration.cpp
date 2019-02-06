@@ -353,7 +353,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 					map_formats_[MapFormat::UDMF] = true;
 				}
 				else
-					Log::warning(S_FMT("Unknown/unsupported map format \"%s\"", node->stringValue(v)));
+					Log::warning(wxString::Format("Unknown/unsupported map format \"%s\"", node->stringValue(v)));
 			}
 		}
 
@@ -471,7 +471,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 				}
 
 				else
-					Log::warning(S_FMT("Unknown defaults block \"%s\"", block->name()));
+					Log::warning(wxString::Format("Unknown defaults block \"%s\"", block->name()));
 			}
 		}
 
@@ -859,7 +859,7 @@ bool Configuration::readConfiguration(
 
 		// Unknown/unexpected section
 		else
-			Log::warning(S_FMT("Unexpected game configuration section \"%s\", skipping", node->name()));
+			Log::warning(wxString::Format("Unexpected game configuration section \"%s\", skipping", node->name()));
 	}
 
 	return true;
@@ -885,14 +885,14 @@ bool Configuration::openConfig(const wxString& game, const wxString& port, MapFo
 				StringUtils::processIncludes(filename, full_config);
 			else
 			{
-				Log::error(S_FMT("Error: Game configuration file \"%s\" not found", filename));
+				Log::error(wxString::Format("Error: Game configuration file \"%s\" not found", filename));
 				return false;
 			}
 		}
 		else
 		{
 			// Config is in program resource
-			wxString epath   = S_FMT("config/games/%s.cfg", game_config.filename);
+			wxString epath   = wxString::Format("config/games/%s.cfg", game_config.filename);
 			auto     archive = App::archiveManager().programResourceArchive();
 			auto     entry   = archive->entryAtPath(epath);
 			if (entry)
@@ -917,14 +917,14 @@ bool Configuration::openConfig(const wxString& game, const wxString& port, MapFo
 					StringUtils::processIncludes(filename, full_config);
 				else
 				{
-					Log::error(S_FMT("Error: Port configuration file \"%s\" not found", filename));
+					Log::error(wxString::Format("Error: Port configuration file \"%s\" not found", filename));
 					return false;
 				}
 			}
 			else
 			{
 				// Config is in program resource
-				wxString epath   = S_FMT("config/ports/%s.cfg", conf.filename);
+				wxString epath   = wxString::Format("config/ports/%s.cfg", conf.filename);
 				auto     archive = App::archiveManager().programResourceArchive();
 				auto     entry   = archive->entryAtPath(epath);
 				if (entry)
@@ -948,7 +948,7 @@ bool Configuration::openConfig(const wxString& game, const wxString& port, MapFo
 		current_port_      = port;
 		game_configuration = game;
 		port_configuration = port;
-		Log::info(2, S_FMT("Read game configuration \"%s\" + \"%s\"", current_game_, current_port_));
+		Log::info(2, wxString::Format("Read game configuration \"%s\" + \"%s\"", current_game_, current_port_));
 	}
 	else
 	{
@@ -965,7 +965,7 @@ bool Configuration::openConfig(const wxString& game, const wxString& port, MapFo
 		// Log message
 		auto parent = cfg_entry->parent();
 		if (parent)
-			Log::info(S_FMT("Reading SLADECFG in %s", parent->filename()));
+			Log::info(wxString::Format("Reading SLADECFG in %s", parent->filename()));
 
 		// Read embedded config
 		wxString config = wxString::FromAscii(cfg_entry->rawData(), cfg_entry->size());
@@ -1079,7 +1079,7 @@ bool Configuration::thingFlagSet(const wxString& udmf_name, MapThing* thing, Map
 		if (i.udmf == udmf_name)
 			return thing->flagSet(i.flag);
 	}
-	Log::warning(2, S_FMT("Flag %s does not exist in this configuration", udmf_name));
+	Log::warning(2, wxString::Format("Flag %s does not exist in this configuration", udmf_name));
 	return false;
 }
 
@@ -1225,7 +1225,7 @@ void Configuration::setThingFlag(const wxString& udmf_name, MapThing* thing, Map
 
 	if (flag_val == 0)
 	{
-		Log::warning(2, S_FMT("Flag %s does not exist in this configuration", udmf_name));
+		Log::warning(2, wxString::Format("Flag %s does not exist in this configuration", udmf_name));
 		return;
 	}
 
@@ -1397,7 +1397,7 @@ void Configuration::linkDoomEdNums()
 			// Editor number found, copy the definition to thing types map
 			thing_types_[ednum].define(ednum, parsed.name(), parsed.group());
 			thing_types_[ednum].copy(parsed);
-			Log::info(2, S_FMT("Linked parsed class %s to DoomEdNum %d", CHR(parsed.className()), ednum));
+			Log::info(2, wxString::Format("Linked parsed class %s to DoomEdNum %d", CHR(parsed.className()), ednum));
 		}
 	}
 }
@@ -1446,7 +1446,7 @@ bool Configuration::lineFlagSet(const wxString& udmf_name, MapLine* line, MapFor
 		if (i.udmf == udmf_name)
 			return !!(flags & i.flag);
 	}
-	Log::warning(2, S_FMT("Flag %s does not exist in this configuration", udmf_name));
+	Log::warning(2, wxString::Format("Flag %s does not exist in this configuration", udmf_name));
 	return false;
 }
 
@@ -1553,7 +1553,7 @@ void Configuration::setLineFlag(const wxString& udmf_name, MapLine* line, MapFor
 
 	if (flag_val == 0)
 	{
-		Log::warning(2, S_FMT("Flag %s does not exist in this configuration", udmf_name));
+		Log::warning(2, wxString::Format("Flag %s does not exist in this configuration", udmf_name));
 		return;
 	}
 
@@ -1873,7 +1873,7 @@ wxString Configuration::sectorTypeName(int type)
 		// Just return flags in this case
 		wxString name = gen_flags[0];
 		for (unsigned a = 1; a < gen_flags.size(); a++)
-			name += S_FMT(" + %s", gen_flags[a]);
+			name += wxString::Format(" + %s", gen_flags[a]);
 
 		return name;
 	}
@@ -1885,7 +1885,7 @@ wxString Configuration::sectorTypeName(int type)
 
 	// Add generalised flags to type name
 	for (const auto& gen_flag : gen_flags)
-		name += S_FMT(" + %s", gen_flag);
+		name += wxString::Format(" + %s", gen_flag);
 
 	return name;
 }
@@ -2156,7 +2156,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 			object->setFloatProperty(prop_names[a], prop_vals[a].floatValue());
 		else if (prop_vals[a].type() == Property::Type::String)
 			object->setStringProperty(prop_names[a], prop_vals[a].stringValue());
-		Log::info(3, S_FMT("Applied default property %s = %s", prop_names[a], prop_vals[a].stringValue()));
+		Log::info(3, wxString::Format("Applied default property %s = %s", prop_names[a], prop_vals[a].stringValue()));
 	}
 }
 
@@ -2222,7 +2222,7 @@ int Configuration::downLightLevel(int light_level)
 void Configuration::dumpActionSpecials()
 {
 	for (auto& i : action_specials_)
-		Log::info(S_FMT("Action special %d = %s", i.first, i.second.stringDesc()));
+		Log::info(wxString::Format("Action special %d = %s", i.first, i.second.stringDesc()));
 }
 
 // -----------------------------------------------------------------------------
@@ -2232,7 +2232,7 @@ void Configuration::dumpThingTypes()
 {
 	for (auto& i : thing_types_)
 		if (i.second.defined())
-			Log::info(S_FMT("Thing type %d = %s", i.first, i.second.stringDesc()));
+			Log::info(wxString::Format("Thing type %d = %s", i.first, i.second.stringDesc()));
 }
 
 // -----------------------------------------------------------------------------
@@ -2311,5 +2311,5 @@ CONSOLE_COMMAND(dumpthingtypes, 0, false)
 CONSOLE_COMMAND(dumpspecialpresets, 0, false)
 {
 	for (auto& preset : Game::configuration().specialPresets())
-		Log::console(S_FMT("%s/%s", preset.group, preset.name));
+		Log::console(wxString::Format("%s/%s", preset.group, preset.name));
 }

@@ -803,9 +803,11 @@ void MapRenderer2D::renderRoundThing(
 	if (!type.icon().IsEmpty() && !thing_force_dir && !things_angles_)
 	{
 		if (use_zeth_icons && type.zethIcon() >= 0)
-			tex = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", type.zethIcon())).gl_id;
+			tex = MapEditor::textureManager()
+					  .editorImage(wxString::Format("zethicons/zeth%02d", type.zethIcon()))
+					  .gl_id;
 		if (!tex)
-			tex = MapEditor::textureManager().editorImage(S_FMT("thing/%s", type.icon())).gl_id;
+			tex = MapEditor::textureManager().editorImage(wxString::Format("thing/%s", type.icon())).gl_id;
 	}
 
 	if (!tex)
@@ -998,7 +1000,7 @@ bool MapRenderer2D::renderSquareThing(
 
 	// Check for custom thing icon
 	if (!type.icon().IsEmpty() && showicon && !thing_force_dir && !things_angles_ && !framed)
-		tex = MapEditor::textureManager().editorImage(S_FMT("thing/square/%s", type.icon())).gl_id;
+		tex = MapEditor::textureManager().editorImage(wxString::Format("thing/square/%s", type.icon())).gl_id;
 
 	// Otherwise, no icon
 	int tc_start = 0;

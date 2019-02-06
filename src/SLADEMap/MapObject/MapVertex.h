@@ -52,7 +52,7 @@ public:
 		if (!this)
 			return { "<vertex NULL>" };
 
-		return { S_FMT("<vertex %u>", index_) };
+		return { wxString::Format("<vertex %u>", index_) };
 	}
 
 private:

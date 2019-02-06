@@ -2104,13 +2104,15 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 		if (use_zeth_icons && things_[index].type->zethIcon() >= 0)
 		{
 			things_[index].sprite = MapEditor::textureManager()
-										.editorImage(S_FMT("zethicons/zeth%02d", things_[index].type->zethIcon()))
+										.editorImage(
+											wxString::Format("zethicons/zeth%02d", things_[index].type->zethIcon()))
 										.gl_id;
 			things_[index].flags |= ZETH;
 		}
 		if (!things_[index].sprite)
-			things_[index]
-				.sprite = MapEditor::textureManager().editorImage(S_FMT("thing/%s", things_[index].type->icon())).gl_id;
+			things_[index].sprite = MapEditor::textureManager()
+										.editorImage(wxString::Format("thing/%s", things_[index].type->icon()))
+										.gl_id;
 		things_[index].flags |= ICON;
 	}
 	else

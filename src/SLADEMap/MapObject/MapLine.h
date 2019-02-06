@@ -117,7 +117,7 @@ public:
 		if (!this)
 			return "<line NULL>";
 
-		return { S_FMT("<line %u>", index_) };
+		return { wxString::Format("<line %u>", index_) };
 	}
 
 private:

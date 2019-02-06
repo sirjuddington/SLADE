@@ -237,7 +237,7 @@ MultiMapObjectPropertyChangeUS::MultiMapObjectPropertyChangeUS()
 	{
 		wxString msg = "Modified ids: ";
 		for (auto& backup : backups_)
-			msg += S_FMT("%d, ", backup->id);
+			msg += wxString::Format("%d, ", backup->id);
 		Log::info(msg);
 	}
 }

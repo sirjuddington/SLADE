@@ -160,7 +160,7 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry::UPtr>& map_data, wxStrin
 // -----------------------------------------------------------------------------
 Archive* MapBackupManager::openBackup(wxString archive_name, wxString map_name) const
 {
-	SDialog dlg(MapEditor::windowWx(), S_FMT("Restore %s backup", CHR(map_name)), "map_backup", 500, 400);
+	SDialog dlg(MapEditor::windowWx(), wxString::Format("Restore %s backup", CHR(map_name)), "map_backup", 500, 400);
 	auto    sizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(sizer);
 	auto panel_backup = new MapBackupPanel(&dlg);
@@ -176,7 +176,7 @@ Archive* MapBackupManager::openBackup(wxString archive_name, wxString map_name) 
 	}
 	else
 		wxMessageBox(
-			S_FMT("No backups exist for %s of %s", CHR(map_name), CHR(archive_name)),
+			wxString::Format("No backups exist for %s of %s", CHR(map_name), CHR(archive_name)),
 			"Restore Backup",
 			wxICON_INFORMATION,
 			MapEditor::windowWx());

@@ -483,7 +483,7 @@ void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* 
 		{
 			// Create texture in hashmap
 			wxString name = path + entry->name(true);
-			Log::info(4, S_FMT("Loading editor texture %s", name));
+			Log::info(4, wxString::Format("Loading editor texture %s", name));
 			auto& mtex = map[name];
 			mtex.gl_id = OpenGL::Texture::createFromImage(image, nullptr, OpenGL::TexFilter::Mipmap);
 		}

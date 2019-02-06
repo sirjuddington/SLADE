@@ -152,7 +152,8 @@ ParseTreeNode* ParseTreeNode::addChildPTN(const wxString& name, const wxString& 
 // -----------------------------------------------------------------------------
 void ParseTreeNode::logError(const Tokenizer& tz, const wxString& error) const
 {
-	Log::error(S_FMT("Parse Error in %s (Line %d): %s\n", CHR(tz.source()), tz.current().line_no, CHR(error)));
+	Log::error(
+		wxString::Format("Parse Error in %s (Line %d): %s\n", CHR(tz.source()), tz.current().line_no, CHR(error)));
 }
 
 // -----------------------------------------------------------------------------
@@ -160,7 +161,7 @@ void ParseTreeNode::logError(const Tokenizer& tz, const wxString& error) const
 // -----------------------------------------------------------------------------
 bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 {
-	// Log::debug(S_FMT("Preprocessor %s", CHR(tz.current().text)));
+	// Log::debug(wxString::Format("Preprocessor %s", CHR(tz.current().text)));
 
 	// #define
 	if (tz.current() == "#define")
@@ -208,7 +209,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 			if (!inc_entry) // Try absolute path
 				inc_entry = archive->entryAtPath(inc_path);
 
-			// Log::debug(S_FMT("Include %s", CHR(inc_path)));
+			// Log::debug(wxString::Format("Include %s", CHR(inc_path)));
 
 			if (inc_entry)
 			{
@@ -227,7 +228,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 					return false;
 			}
 			else
-				logError(tz, S_FMT("Include entry %s not found", CHR(inc_path)));
+				logError(tz, wxString::Format("Include entry %s not found", CHR(inc_path)));
 		}
 		else
 			tz.adv(); // Skip include path
@@ -241,7 +242,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 
 	// Unrecognised
 	else
-		logError(tz, S_FMT("Unrecognised preprocessor directive \"%s\"", CHR(tz.current().text)));
+		logError(tz, wxString::Format("Unrecognised preprocessor directive \"%s\"", CHR(tz.current().text)));
 
 	return true;
 }
@@ -307,7 +308,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 			tz.adv(); // Skip it
 		else if (tz.peek() != list_end)
 		{
-			logError(tz, S_FMT(R"(Expected "," or "%c", got "%s")", list_end, CHR(tz.peek().text)));
+			logError(tz, wxString::Format(R"(Expected "," or "%c", got "%s")", list_end, CHR(tz.peek().text)));
 			return false;
 		}
 
@@ -347,7 +348,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// If it's a special character (ie not a valid name), parsing fails
 		if (tz.isSpecialCharacter(tz.current().text[0]))
 		{
-			logError(tz, S_FMT("Unexpected special character '%s'", CHR(tz.current().text)));
+			logError(tz, wxString::Format("Unexpected special character '%s'", CHR(tz.current().text)));
 			return false;
 		}
 
@@ -373,7 +374,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			}
 		}
 
-		// Log::debug(S_FMT("%s \"%s\", op %s", CHR(type), CHR(name), CHR(tz.current().text)));
+		// Log::debug(wxString::Format("%s \"%s\", op %s", CHR(type), CHR(name), CHR(tz.current().text)));
 
 		// Assignment
 		if (tz.advIfNext('=', 2))
@@ -428,7 +429,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			}
 			else
 			{
-				logError(tz, S_FMT(R"(Expecting "{" or ";", got "%s")", CHR(tz.next().text)));
+				logError(tz, wxString::Format(R"(Expecting "{" or ";", got "%s")", CHR(tz.next().text)));
 				return false;
 			}
 		}
@@ -436,7 +437,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// Unexpected token
 		else
 		{
-			logError(tz, S_FMT("Unexpected token \"%s\"", CHR(tz.next().text)));
+			logError(tz, wxString::Format("Unexpected token \"%s\"", CHR(tz.next().text)));
 			return false;
 		}
 
@@ -473,9 +474,9 @@ void ParseTreeNode::write(wxString& out, int indent) const
 
 	// Name
 	if (name_.Contains(" ") || name_.empty())
-		out += S_FMT("\"%s\"", CHR(name_));
+		out += wxString::Format("\"%s\"", CHR(name_));
 	else
-		out += S_FMT("%s", CHR(name_));
+		out += wxString::Format("%s", CHR(name_));
 
 	// Inherit
 	if (!inherit_.empty())
@@ -497,10 +498,10 @@ void ParseTreeNode::write(wxString& out, int indent) const
 			{
 			case Property::Type::Boolean:
 			case Property::Type::Flag: out += value.boolValue() ? "true" : "false"; break;
-			case Property::Type::Int: out += S_FMT("%d", value.intValue()); break;
-			case Property::Type::Float: out += S_FMT("%1.3f", value.floatValue()); break;
-			case Property::Type::UInt: out += S_FMT("%u", value.unsignedValue()); break;
-			default: out += S_FMT("\"%s\"", value.stringValue()); break;
+			case Property::Type::Int: out += wxString::Format("%d", value.intValue()); break;
+			case Property::Type::Float: out += wxString::Format("%1.3f", value.floatValue()); break;
+			case Property::Type::UInt: out += wxString::Format("%u", value.unsignedValue()); break;
+			default: out += wxString::Format("\"%s\"", value.stringValue()); break;
 			}
 		}
 

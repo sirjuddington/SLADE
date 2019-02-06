@@ -261,7 +261,7 @@ void ScriptManagerWindow::saveLayout()
 	wxFile file(App::path("scriptmanager.layout", App::Dir::User), wxFile::write);
 
 	// Write component layout
-	file.Write(S_FMT("%d\n", layout_version));
+	file.Write(wxString::Format("%d\n", layout_version));
 	file.Write(wxAuiManager::GetManager(this)->SavePerspective());
 
 	// Close file

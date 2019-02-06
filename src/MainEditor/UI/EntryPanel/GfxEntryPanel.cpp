@@ -260,7 +260,7 @@ bool GfxEntryPanel::saveEntry()
 		if (format == SIFormat::unknownFormat())
 			error = "Image is of unknown format";
 		else if (writable == SIFormat::Writable::No)
-			error = S_FMT("Writing unsupported for format \"%s\"", format->name());
+			error = wxString::Format("Writing unsupported for format \"%s\"", format->name());
 		else
 		{
 			// Convert image if necessary (using default options)
@@ -420,7 +420,7 @@ bool GfxEntryPanel::extractAll() const
 	int pos = 0;
 	for (int i = 0; i < image()->size(); ++i)
 	{
-		wxString newname = S_FMT("%s_%i.png", name, i);
+		wxString newname = wxString::Format("%s_%i.png", name, i);
 		Misc::loadImageFromEntry(image(), entry_, i);
 
 		// Only process images that actually contain some pixels
@@ -499,7 +499,7 @@ void GfxEntryPanel::refresh()
 		menu_custom_->Enable(menu_gfxep_extract, true);
 	else
 		menu_custom_->Enable(menu_gfxep_extract, false);
-	text_curimg_->SetLabel(S_FMT("Image %d/%d", cur_index_ + 1, image()->size()));
+	text_curimg_->SetLabel(wxString::Format("Image %d/%d", cur_index_ + 1, image()->size()));
 
 	// Update status bar in case image dimensions changed
 	updateStatus();
@@ -528,7 +528,7 @@ wxString GfxEntryPanel::statusString()
 {
 	// Setup status string
 	auto     image  = this->image();
-	wxString status = S_FMT("%dx%d", image->width(), image->height());
+	wxString status = wxString::Format("%dx%d", image->width(), image->height());
 
 	// Colour format
 	if (image->type() == SImage::Type::RGBA)
@@ -844,7 +844,7 @@ bool GfxEntryPanel::handleEntryPanelAction(const wxString& id)
 			setModified();
 		}
 		ColRGBA gcdcol = gcd.colour();
-		last_colour    = S_FMT("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
+		last_colour    = wxString::Format("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
 	}
 
 	// Tint
@@ -870,7 +870,7 @@ bool GfxEntryPanel::handleEntryPanelAction(const wxString& id)
 			setModified();
 		}
 		ColRGBA gtdcol   = gtd.colour();
-		last_tint_colour = S_FMT("RGB(%d, %d, %d)", gtdcol.r, gtdcol.g, gtdcol.b);
+		last_tint_colour = wxString::Format("RGB(%d, %d, %d)", gtdcol.r, gtdcol.g, gtdcol.b);
 		last_tint_amount = (int)(gtd.amount() * 100.0);
 	}
 
@@ -1258,14 +1258,14 @@ CONSOLE_COMMAND(rotate, 1, true)
 			val = 270.;
 		else
 		{
-			Log::error(S_FMT("Invalid parameter: %s is not a number.", bluh.mb_str()));
+			Log::error(wxString::Format("Invalid parameter: %s is not a number.", bluh.mb_str()));
 			return;
 		}
 	}
 	int angle = (int)val;
 	if (angle % 90)
 	{
-		Log::error(S_FMT("Invalid parameter: %i is not a multiple of 90.", angle));
+		Log::error(wxString::Format("Invalid parameter: %i is not a multiple of 90.", angle));
 		return;
 	}
 
@@ -1311,7 +1311,7 @@ CONSOLE_COMMAND(mirror, 1, true)
 		vertical = false;
 	else
 	{
-		Log::error(S_FMT("Invalid parameter: %s is not a known value.", bluh.mb_str()));
+		Log::error(wxString::Format("Invalid parameter: %s is not a known value.", bluh.mb_str()));
 		return;
 	}
 	auto foo = CH::getCurrentArchivePanel();

@@ -161,7 +161,7 @@ bool LfdArchive::open(MemChunk& mc)
 	}
 
 	if (num_lumps != numEntries())
-		Log::warning(S_FMT("Computed %i lumps, but actually %i entries", num_lumps, numEntries()));
+		Log::warning(wxString::Format("Computed %i lumps, but actually %i entries", num_lumps, numEntries()));
 
 	// Detect all entry types
 	MemChunk edata;
@@ -310,7 +310,7 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("LfdArchive::loadEntryData: Failed to open lfdfile %s", filename_));
+		Log::error(wxString::Format("LfdArchive::loadEntryData: Failed to open lfdfile %s", filename_));
 		return false;
 	}
 

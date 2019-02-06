@@ -518,7 +518,7 @@ void TranslationEditorDialog::openRange(int index)
 
 		// Set amount
 		slider_tint_->SetValue(ttr->amount());
-		label_tint_->SetLabel(S_FMT("%d%% ", ttr->amount()));
+		label_tint_->SetLabel(wxString::Format("%d%% ", ttr->amount()));
 	}
 }
 
@@ -1055,7 +1055,7 @@ void TranslationEditorDialog::onTintColourChanged(wxEvent& e)
 void TranslationEditorDialog::onTintAmountChanged(wxCommandEvent& e)
 {
 	setTintAmount(slider_tint_->GetValue());
-	label_tint_->SetLabel(S_FMT("%d%% ", slider_tint_->GetValue()));
+	label_tint_->SetLabel(wxString::Format("%d%% ", slider_tint_->GetValue()));
 }
 
 // -----------------------------------------------------------------------------

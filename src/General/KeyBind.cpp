@@ -315,7 +315,7 @@ wxString KeyBind::keyName(int key)
 		return (char)key;
 
 	// Unknown character, just return "key##"
-	return S_FMT("key%d", key);
+	return wxString::Format("key%d", key);
 }
 
 // -----------------------------------------------------------------------------
@@ -330,7 +330,7 @@ wxString KeyBind::mbName(int button)
 	case wxMOUSE_BTN_MIDDLE: return "mouse3";
 	case wxMOUSE_BTN_AUX1: return "mouse4";
 	case wxMOUSE_BTN_AUX2: return "mouse5";
-	default: return S_FMT("mouse%d", button);
+	default: return wxString::Format("mouse%d", button);
 	};
 }
 

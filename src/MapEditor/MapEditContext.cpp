@@ -306,7 +306,7 @@ bool MapEditContext::update(long frametime)
 
 		// Update status bar
 		auto pos = renderer_.renderer3D().camPosition();
-		MapEditor::setStatusText(S_FMT("Position: (%d, %d, %d)", (int)pos.x, (int)pos.y, (int)pos.z), 3);
+		MapEditor::setStatusText(wxString::Format("Position: (%d, %d, %d)", (int)pos.x, (int)pos.y, (int)pos.z), 3);
 
 		// Update hilight
 		MapEditor::Item hl{ -1, MapEditor::ItemType::Any };
@@ -371,7 +371,7 @@ bool MapEditContext::update(long frametime)
 // -----------------------------------------------------------------------------
 bool MapEditContext::openMap(Archive::MapDesc map)
 {
-	Log::info(S_FMT("Opening map %s", map.name));
+	Log::info(wxString::Format("Opening map %s", map.name));
 	if (!map_.readMap(map))
 		return false;
 
@@ -779,7 +779,7 @@ void MapEditContext::incrementGrid()
 	if (grid_size_ > 20)
 		grid_size_ = 20;
 
-	addEditorMessage(S_FMT("Grid Size: %dx%d", (int)gridSize(), (int)gridSize()));
+	addEditorMessage(wxString::Format("Grid Size: %dx%d", (int)gridSize(), (int)gridSize()));
 	updateStatusText();
 }
 
@@ -793,7 +793,7 @@ void MapEditContext::decrementGrid()
 	if (grid_size_ < mingrid)
 		grid_size_ = mingrid;
 
-	addEditorMessage(S_FMT("Grid Size: %dx%d", (int)gridSize(), (int)gridSize()));
+	addEditorMessage(wxString::Format("Grid Size: %dx%d", (int)gridSize(), (int)gridSize()));
 	updateStatusText();
 }
 
@@ -879,14 +879,14 @@ void MapEditContext::tagSectorAt(Vec2f pos)
 			// Un-tag
 			tagged_sectors_[a] = tagged_sectors_.back();
 			tagged_sectors_.pop_back();
-			addEditorMessage(S_FMT("Untagged sector %u", sector->index()));
+			addEditorMessage(wxString::Format("Untagged sector %u", sector->index()));
 			return;
 		}
 	}
 
 	// Tag
 	tagged_sectors_.push_back(sector);
-	addEditorMessage(S_FMT("Tagged sector %u", sector->index()));
+	addEditorMessage(wxString::Format("Tagged sector %u", sector->index()));
 }
 
 // -----------------------------------------------------------------------------
@@ -926,7 +926,7 @@ void MapEditContext::endTagEdit(bool accept)
 		if (tagged_sectors_.empty())
 			addEditorMessage("Cleared tags");
 		else
-			addEditorMessage(S_FMT("Set tag %d", current_tag_));
+			addEditorMessage(wxString::Format("Set tag %d", current_tag_));
 
 		endUndoRecord(true);
 	}
@@ -1302,16 +1302,16 @@ void MapEditContext::updateStatusText() const
 	}
 
 	if (edit_mode_ != Mode::Visual && !selection_.empty())
-		mode += S_FMT(" (%lu selected)", (int)selection_.size());
+		mode += wxString::Format(" (%lu selected)", (int)selection_.size());
 
 	MapEditor::setStatusText(mode, 1);
 
 	// Grid
 	wxString grid;
 	if (gridSize() < 1)
-		grid = S_FMT("Grid: %1.2fx%1.2f", gridSize(), gridSize());
+		grid = wxString::Format("Grid: %1.2fx%1.2f", gridSize(), gridSize());
 	else
-		grid = S_FMT("Grid: %dx%d", (int)gridSize(), (int)gridSize());
+		grid = wxString::Format("Grid: %dx%d", (int)gridSize(), (int)gridSize());
 
 	if (grid_snap_)
 		grid += " (Snapping ON)";
@@ -1425,7 +1425,7 @@ void MapEditContext::doUndo()
 	// Editor message
 	if (!undo_name.empty())
 	{
-		addEditorMessage(S_FMT("Undo: %s", undo_name));
+		addEditorMessage(wxString::Format("Undo: %s", undo_name));
 
 		// Refresh stuff
 		// updateTagged();
@@ -1459,7 +1459,7 @@ void MapEditContext::doRedo()
 	// Editor message
 	if (!undo_name.empty())
 	{
-		addEditorMessage(S_FMT("Redo: %s", undo_name));
+		addEditorMessage(wxString::Format("Redo: %s", undo_name));
 
 		// Refresh stuff
 		// updateTagged();
@@ -1905,8 +1905,8 @@ bool MapEditContext::handleAction(const wxString& id)
 			wxString key_accept = KeyBind::bind("map_edit_accept").keysAsString();
 			wxString key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 			setFeatureHelp({ "Tag Edit",
-							 S_FMT("%s = Accept", key_accept),
-							 S_FMT("%s = Cancel", key_cancel),
+							 wxString::Format("%s = Accept", key_accept),
+							 wxString::Format("%s = Cancel", key_cancel),
 							 "Left Click = Toggle tagged sector" });
 		}
 
@@ -2165,7 +2165,7 @@ void MapArchClipboardItem::addLines(const vector<MapLine*>& lines)
 // -----------------------------------------------------------------------------
 wxString MapArchClipboardItem::info() const
 {
-	return S_FMT(
+	return wxString::Format(
 		"%lu Vertices, %lu Lines, %lu Sides and %lu Sectors",
 		vertices_.size(),
 		lines_.size(),
@@ -2328,7 +2328,7 @@ void MapThingsClipboardItem::addThings(vector<MapThing*>& things)
 // -----------------------------------------------------------------------------
 wxString MapThingsClipboardItem::info() const
 {
-	return S_FMT("%lu Things", things_.size());
+	return wxString::Format("%lu Things", things_.size());
 }
 
 // -----------------------------------------------------------------------------
@@ -2374,7 +2374,7 @@ CONSOLE_COMMAND(m_check, 0, true)
 
 		Log::console("Available map checks:");
 		for (auto a = 0; a < MapCheck::NumStandardChecks; ++a)
-			Log::console(S_FMT(
+			Log::console(wxString::Format(
 				"%s: Check for %s",
 				CHR(MapCheck::standardCheckId(static_cast<MapCheck::StandardCheck>(a))),
 				CHR(MapCheck::standardCheckDesc(static_cast<MapCheck::StandardCheck>(a)))));
@@ -2412,7 +2412,7 @@ CONSOLE_COMMAND(m_check, 0, true)
 			if (check)
 				checks.push_back(std::move(check));
 			else
-				Log::console(S_FMT("Unknown check \"%s\"", CHR(arg)));
+				Log::console(wxString::Format("Unknown check \"%s\"", CHR(arg)));
 		}
 	}
 
@@ -2445,7 +2445,7 @@ CONSOLE_COMMAND(m_test_sector, 0, false)
 	for (unsigned a = 0; a < map.nThings(); a++)
 		map.sectors().atPos(map.thing(a)->position());
 	long ms = clock.getElapsedTime().asMilliseconds();
-	Log::info(S_FMT("Took %ldms", ms));
+	Log::info(wxString::Format("Took %ldms", ms));
 }
 
 CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
@@ -2458,33 +2458,33 @@ CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
 	// Vertices
 	for (unsigned a = 0; a < map.nVertices(); a++)
 		map.vertex(a)->backupTo(backup);
-	Log::info(S_FMT("Vertices: %dms", clock.getElapsedTime().asMilliseconds()));
+	Log::info(wxString::Format("Vertices: %dms", clock.getElapsedTime().asMilliseconds()));
 
 	// Lines
 	clock.restart();
 	for (unsigned a = 0; a < map.nLines(); a++)
 		map.line(a)->backupTo(backup);
-	Log::info(S_FMT("Lines: %dms", clock.getElapsedTime().asMilliseconds()));
+	Log::info(wxString::Format("Lines: %dms", clock.getElapsedTime().asMilliseconds()));
 
 	// Sides
 	clock.restart();
 	for (unsigned a = 0; a < map.nSides(); a++)
 		map.side(a)->backupTo(backup);
-	Log::info(S_FMT("Sides: %dms", clock.getElapsedTime().asMilliseconds()));
+	Log::info(wxString::Format("Sides: %dms", clock.getElapsedTime().asMilliseconds()));
 
 	// Sectors
 	clock.restart();
 	for (unsigned a = 0; a < map.nSectors(); a++)
 		map.sector(a)->backupTo(backup);
-	Log::info(S_FMT("Sectors: %dms", clock.getElapsedTime().asMilliseconds()));
+	Log::info(wxString::Format("Sectors: %dms", clock.getElapsedTime().asMilliseconds()));
 
 	// Things
 	clock.restart();
 	for (unsigned a = 0; a < map.nThings(); a++)
 		map.thing(a)->backupTo(backup);
-	Log::info(S_FMT("Things: %dms", clock.getElapsedTime().asMilliseconds()));
+	Log::info(wxString::Format("Things: %dms", clock.getElapsedTime().asMilliseconds()));
 
-	Log::info(S_FMT("Total: %dms", totalClock.getElapsedTime().asMilliseconds()));
+	Log::info(wxString::Format("Total: %dms", totalClock.getElapsedTime().asMilliseconds()));
 }
 
 CONSOLE_COMMAND(m_vertex_attached, 1, false)
@@ -2494,7 +2494,7 @@ CONSOLE_COMMAND(m_vertex_attached, 1, false)
 	{
 		Log::info(1, "Attached lines:");
 		for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
-			Log::info(S_FMT("Line #%lu", vertex->connectedLine(a)->index()));
+			Log::info(wxString::Format("Line #%lu", vertex->connectedLine(a)->index()));
 	}
 }
 
@@ -2505,7 +2505,7 @@ CONSOLE_COMMAND(m_n_polys, 0, false)
 	for (unsigned a = 0; a < map.nSectors(); a++)
 		npoly += map.sector(a)->polygon()->nSubPolys();
 
-	Log::console(S_FMT("%d polygons total", npoly));
+	Log::console(wxString::Format("%d polygons total", npoly));
 }
 
 CONSOLE_COMMAND(mobj_info, 1, false)
@@ -2520,7 +2520,7 @@ CONSOLE_COMMAND(mobj_info, 1, false)
 	{
 		MapObject::Backup bak;
 		obj->backupTo(&bak);
-		Log::console(S_FMT("Object %d: %s #%lu", id, obj->typeName(), obj->index()));
+		Log::console(wxString::Format("Object %d: %s #%lu", id, obj->typeName(), obj->index()));
 		Log::console("Properties:");
 		Log::console(bak.properties.toString());
 		Log::console("Properties (internal):");

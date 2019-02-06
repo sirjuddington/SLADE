@@ -110,13 +110,13 @@ bool OpenGL::init()
 	auto temp = info.version;
 	temp.Truncate(3);
 	temp.ToDouble(&version);
-	Log::info(S_FMT("OpenGL Version: %1.1f", version));
+	Log::info(wxString::Format("OpenGL Version: %1.1f", version));
 
 	// Get max texture size
 	GLint val = 0;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &val);
 	max_tex_size = val;
-	Log::info(S_FMT("Max Texture Size: %dx%d", max_tex_size, max_tex_size));
+	Log::info(wxString::Format("Max Texture Size: %dx%d", max_tex_size, max_tex_size));
 
 	// Initialise GLEW
 	glewInit();

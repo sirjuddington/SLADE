@@ -440,23 +440,23 @@ void MapThing::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 void MapThing::writeUDMF(wxString& def)
 {
-	def = S_FMT("thing//#%u\n{\n", index_);
+	def = wxString::Format("thing//#%u\n{\n", index_);
 
 	// Basic properties
-	def += S_FMT("x=%1.3f;\ny=%1.3f;\ntype=%d;\n", position_.x, position_.y, type_);
+	def += wxString::Format("x=%1.3f;\ny=%1.3f;\ntype=%d;\n", position_.x, position_.y, type_);
 	if (z_ != 0)
-		def += S_FMT("height=%1.3f;\n", z_);
+		def += wxString::Format("height=%1.3f;\n", z_);
 	if (angle_ != 0)
-		def += S_FMT("angle=%d;\n", angle_);
+		def += wxString::Format("angle=%d;\n", angle_);
 	if (flags_ != 0)
-		def += S_FMT("flags=%d;\n", flags_);
+		def += wxString::Format("flags=%d;\n", flags_);
 	if (id_ != 0)
-		def += S_FMT("id=%d;\n", id_);
+		def += wxString::Format("id=%d;\n", id_);
 	for (unsigned i = 0; i < 5; ++i)
 		if (args_[i] != 0)
-			def += S_FMT("arg%d=%d;\n", i, args_[i]);
+			def += wxString::Format("arg%d=%d;\n", i, args_[i]);
 	if (special_ != 0)
-		def += S_FMT("special=%d;\n", special_);
+		def += wxString::Format("special=%d;\n", special_);
 
 	// Other properties
 	if (!properties_.isEmpty())

@@ -145,9 +145,9 @@ int App::Version::cmp(const Version& rhs) const
 // ----------------------------------------------------------------------------
 wxString App::Version::toString() const
 {
-	wxString vers = S_FMT("%lu.%lu.%lu", major, minor, revision);
+	wxString vers = wxString::Format("%lu.%lu.%lu", major, minor, revision);
 	if (beta > 0)
-		vers += S_FMT(" beta %lu", beta);
+		vers += wxString::Format(" beta %lu", beta);
 	return vers;
 }
 
@@ -196,7 +196,7 @@ bool initDirectories()
 	{
 		if (!wxMkdir(dir_user))
 		{
-			wxMessageBox(S_FMT("Unable to create user directory \"%s\"", dir_user), "Error", wxICON_ERROR);
+			wxMessageBox(wxString::Format("Unable to create user directory \"%s\"", dir_user), "Error", wxICON_ERROR);
 			return false;
 		}
 	}
@@ -207,7 +207,7 @@ bool initDirectories()
 	{
 		if (!wxMkdir(dir_temp))
 		{
-			wxMessageBox(S_FMT("Unable to create temp directory \"%s\"", dir_temp), "Error", wxICON_ERROR);
+			wxMessageBox(wxString::Format("Unable to create temp directory \"%s\"", dir_temp), "Error", wxICON_ERROR);
 			return false;
 		}
 	}
@@ -337,7 +337,7 @@ vector<wxString> processCommandLine(vector<wxString>& args)
 
 		// Unknown parameter
 		else
-			Log::warning(S_FMT("Unknown command line parameter: \"%s\"", CHR(arg)));
+			Log::warning(wxString::Format("Unknown command line parameter: \"%s\"", CHR(arg)));
 	}
 
 	return to_open;
@@ -577,7 +577,7 @@ void App::saveConfigFile()
 	{
 		wxString path = archive_manager.getBaseResourcePath(a);
 		path.Replace("\\", "/");
-		file.Write(S_FMT("\t\"%s\"\n", path), wxConvUTF8);
+		file.Write(wxString::Format("\t\"%s\"\n", path), wxConvUTF8);
 	}
 	file.Write("}\n");
 
@@ -587,7 +587,7 @@ void App::saveConfigFile()
 	{
 		wxString path = archive_manager.recentFile(a);
 		path.Replace("\\", "/");
-		file.Write(S_FMT("\t\"%s\"\n", path), wxConvUTF8);
+		file.Write(wxString::Format("\t\"%s\"\n", path), wxConvUTF8);
 	}
 	file.Write("}\n");
 
@@ -664,7 +664,7 @@ void App::exit(bool save_config)
 	while (files)
 	{
 		if (!wxRemoveFile(App::path(filename, App::Dir::Temp)))
-			Log::warning(S_FMT("Could not clean up temporary file \"%s\"", filename));
+			Log::warning(wxString::Format("Could not clean up temporary file \"%s\"", filename));
 		files = temp.GetNext(&filename);
 	}
 

@@ -152,14 +152,14 @@ void loadCustomScripts()
 void loadEditorScripts(ScriptType type, const wxString& dir)
 {
 	// Get 'scripts/(dir)' dir of slade.pk3
-	auto scripts_dir = App::archiveManager().programResourceArchive()->dir(S_FMT("scripts/%s", CHR(dir)));
+	auto scripts_dir = App::archiveManager().programResourceArchive()->dir(wxString::Format("scripts/%s", CHR(dir)));
 	if (scripts_dir)
 	{
 		for (auto& entry : scripts_dir->allEntries())
 		{
 			if (!entry->name().StartsWith("_"))
 			{
-				auto script       = addEditorScriptFromEntry(entry, type, S_FMT("/scripts/%s/", CHR(dir)));
+				auto script       = addEditorScriptFromEntry(entry, type, wxString::Format("/scripts/%s/", CHR(dir)));
 				script->read_only = true;
 			}
 		}
@@ -168,7 +168,7 @@ void loadEditorScripts(ScriptType type, const wxString& dir)
 	// Load user archive scripts
 
 	// If the directory doesn't exist create it
-	auto user_scripts_dir = App::path(S_FMT("scripts/%s", CHR(dir)), App::Dir::User);
+	auto user_scripts_dir = App::path(wxString::Format("scripts/%s", CHR(dir)), App::Dir::User);
 	if (!wxDirExists(user_scripts_dir))
 		wxMkdir(user_scripts_dir);
 
@@ -204,7 +204,7 @@ void exportUserScripts(const wxString& path, ScriptList& list)
 		bool     files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
 		while (files)
 		{
-			wxRemoveFile(S_FMT("%s/%s", CHR(scripts_dir), CHR(filename)));
+			wxRemoveFile(wxString::Format("%s/%s", CHR(scripts_dir), CHR(filename)));
 			files = res_dir.GetNext(&filename);
 		}
 	}
@@ -220,7 +220,7 @@ void exportUserScripts(const wxString& path, ScriptList& list)
 		if (script->read_only)
 			continue;
 
-		wxFile f(App::path(S_FMT("%s/%s.lua", CHR(path), CHR(script->name)), App::Dir::User), wxFile::write);
+		wxFile f(App::path(wxString::Format("%s/%s.lua", CHR(path), CHR(script->name)), App::Dir::User), wxFile::write);
 		f.Write(script->text);
 		f.Close();
 	}

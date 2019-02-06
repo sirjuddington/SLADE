@@ -322,7 +322,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 	wxString path = entry->path(true).Upper().Mid(1);
 
 	if (log)
-		Log::debug(S_FMT("Adding entry %s to resource manager", path));
+		Log::debug(wxString::Format("Adding entry %s to resource manager", path));
 
 	// Check for palette entry
 	if (type->id() == "palette")
@@ -445,7 +445,7 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full
 	wxString path = entry->path(true).Upper().Mid(1);
 
 	if (log)
-		Log::debug(S_FMT("Removing entry %s from resource manager", path));
+		Log::debug(wxString::Format("Removing entry %s from resource manager", path));
 
 	// Remove from palettes
 	removeEntryFromMap(palettes_, name, entry, full_check);
@@ -496,7 +496,7 @@ void ResourceManager::listAllPatches()
 		if (i.second.length() == 0)
 			continue;
 
-		Log::info(S_FMT("%s (%d)", i.first, i.second.length()));
+		Log::info(wxString::Format("%s (%d)", i.first, i.second.length()));
 	}
 }
 
@@ -799,5 +799,5 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 	}
 
 	float avg = float(times[0] + times[1] + times[2] + times[3] + times[4]) / 5.0f;
-	Log::console(S_FMT("Test took %dms avg", (int)avg));
+	Log::console(wxString::Format("Test took %dms avg", (int)avg));
 }

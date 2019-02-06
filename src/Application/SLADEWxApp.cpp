@@ -143,15 +143,15 @@ public:
 	{
 		wxString location = "[unknown location] ";
 		if (frame.HasSourceLocation())
-			location = S_FMT("(%s:%d) ", frame.GetFileName(), frame.GetLine());
+			location = wxString::Format("(%s:%d) ", frame.GetFileName(), frame.GetLine());
 
 		wxUIntPtr address   = wxPtrToUInt(frame.GetAddress());
 		wxString  func_name = frame.GetName();
 		if (func_name.IsEmpty())
-			func_name = S_FMT("[unknown:%d]", address);
+			func_name = wxString::Format("[unknown:%d]", address);
 
-		wxString line = S_FMT("%s%s", location, func_name);
-		stack_trace_.Append(S_FMT("%d: %s\n", frame.GetLevel(), line));
+		wxString line = wxString::Format("%s%s", location, func_name);
+		stack_trace_.Append(wxString::Format("%d: %s\n", frame.GetLevel(), line));
 
 		if (frame.GetLevel() == 0)
 			top_level_ = line;
@@ -220,13 +220,13 @@ public:
 
 		// SLADE info
 		if (Global::sc_rev.empty())
-			trace_ = S_FMT("Version: %s\n", App::version().toString());
+			trace_ = wxString::Format("Version: %s\n", App::version().toString());
 		else
-			trace_ = S_FMT("Version: %s (%s)\n", App::version().toString(), Global::sc_rev);
+			trace_ = wxString::Format("Version: %s (%s)\n", App::version().toString(), Global::sc_rev);
 		if (current_action.IsEmpty())
 			trace_ += "No current action\n";
 		else
-			trace_ += S_FMT("Current action: %s", current_action);
+			trace_ += wxString::Format("Current action: %s", current_action);
 		trace_ += "\n";
 
 		// System info
@@ -313,7 +313,7 @@ public:
 		msg.SetFrom("SLADE");
 		msg.SetTo("slade.crashes@gmail.com");
 		msg.SetSubject("[" + App::version().toString() + "] @ " + top_level_);
-		msg.SetMessage(S_FMT("Description:\n%s\n\n%s", text_description_->GetValue(), trace_));
+		msg.SetMessage(wxString::Format("Description:\n%s\n\n%s", text_description_->GetValue(), trace_));
 		msg.AddAttachment(App::path("slade3.log", App::Dir::User));
 		msg.Finalize();
 
@@ -543,7 +543,7 @@ bool SLADEWxApp::OnInit()
 	// Get Windows version
 #ifdef __WXMSW__
 	wxGetOsVersion(&Global::win_version_major, &Global::win_version_minor);
-	Log::info(S_FMT("Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor));
+	Log::info(wxString::Format("Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor));
 #endif
 
 	// Reroute wx log messages
@@ -742,14 +742,14 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	if (stable.major == 0 || beta.major == 0)
 	{
 		Log::warning("Version check failed, received invalid version info");
-		Log::debug(S_FMT("Received version text:\n\n%s", e.GetString()));
+		Log::debug(wxString::Format("Received version text:\n\n%s", e.GetString()));
 		if (update_check_message_box)
 			wxMessageBox("Update check failed: received invalid version info.", "Check for Updates");
 		return;
 	}
 
-	Log::info(1, S_FMT("Latest stable release: v%s", stable.toString()));
-	Log::info(1, S_FMT("Latest beta release: v%s", beta.toString()));
+	Log::info(1, wxString::Format("Latest stable release: v%s", stable.toString()));
+	Log::info(1, wxString::Format("Latest beta release: v%s", beta.toString()));
 
 	// Check if new stable version
 	bool new_stable = App::version().cmp(stable) < 0;
@@ -762,7 +762,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 		// New Beta
 		caption = "New Beta Version Available";
 		version = beta.toString();
-		message = S_FMT(
+		message = wxString::Format(
 			"A new beta version of SLADE is available (%s), click OK to visit the SLADE homepage "
 			"and download the update.",
 			CHR(version));
@@ -772,7 +772,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 		// New Stable
 		caption = "New Version Available";
 		version = stable.toString();
-		message = S_FMT(
+		message = wxString::Format(
 			"A new version of SLADE is available (%s), click OK to visit the SLADE homepage and "
 			"download the update.",
 			CHR(version));

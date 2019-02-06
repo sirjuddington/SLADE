@@ -105,7 +105,7 @@ wxString Executables::writePaths()
 	wxString ret;
 
 	for (auto& exe : game_exes)
-		ret += S_FMT("\t%s \"%s\"\n", exe.id, StringUtils::escapedString(exe.path, true));
+		ret += wxString::Format("\t%s \"%s\"\n", exe.id, StringUtils::escapedString(exe.path, true));
 
 	return ret;
 }
@@ -121,17 +121,18 @@ wxString Executables::writeExecutables()
 	for (auto& exe : game_exes)
 	{
 		// ID
-		ret += S_FMT("\tgame_exe %s\n\t{\n", exe.id);
+		ret += wxString::Format("\tgame_exe %s\n\t{\n", exe.id);
 
 		// Name
-		ret += S_FMT("\t\tname = \"%s\";\n", exe.name);
+		ret += wxString::Format("\t\tname = \"%s\";\n", exe.name);
 
 		// Exe name
-		ret += S_FMT("\t\texe_name = \"%s\";\n\n", exe.exe_name);
+		ret += wxString::Format("\t\texe_name = \"%s\";\n\n", exe.exe_name);
 
 		// Configs
 		for (auto& config : exe.configs)
-			ret += S_FMT("\t\tconfig \"%s\" = \"%s\";\n", config.first, StringUtils::escapedString(config.second));
+			ret += wxString::Format(
+				"\t\tconfig \"%s\" = \"%s\";\n", config.first, StringUtils::escapedString(config.second));
 
 		ret += "\t}\n\n";
 	}
@@ -140,15 +141,15 @@ wxString Executables::writeExecutables()
 	for (auto& exe : external_exes)
 	{
 		// Name
-		ret += S_FMT("\texternal_exe \"%s\"\n\t{\n", exe.name);
+		ret += wxString::Format("\texternal_exe \"%s\"\n\t{\n", exe.name);
 
 		// Entry Category
-		ret += S_FMT("\t\tcategory = \"%s\";\n", exe.category);
+		ret += wxString::Format("\t\tcategory = \"%s\";\n", exe.category);
 
 		// Path
 		wxString path = exe.path;
 		path.Replace("\\", "/");
-		ret += S_FMT("\t\tpath = \"%s\";\n", path);
+		ret += wxString::Format("\t\tpath = \"%s\";\n", path);
 
 		ret += "\t}\n\n";
 	}

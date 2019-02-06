@@ -114,7 +114,8 @@ bool PodArchive::open(MemChunk& mc)
 
 		new_entry->setState(ArchiveEntry::State::Unmodified);
 
-		Log::info(5, S_FMT("File size: %d, offset: %d, name: %s", files[a].size, files[a].offset, files[a].name));
+		Log::info(
+			5, wxString::Format("File size: %d, offset: %d, name: %s", files[a].size, files[a].offset, files[a].name));
 	}
 
 	// Detect entry types
@@ -147,7 +148,7 @@ bool PodArchive::open(MemChunk& mc)
 
 		// Set entry to unchanged
 		all_entries[a]->setState(ArchiveEntry::State::Unmodified);
-		Log::info(5, S_FMT("entry %s size %d", CHR(all_entries[a]->name()), all_entries[a]->size()));
+		Log::info(5, wxString::Format("entry %s size %d", CHR(all_entries[a]->name()), all_entries[a]->size()));
 	}
 
 	// Setup variables
@@ -184,15 +185,15 @@ bool PodArchive::write(MemChunk& mc, bool update)
 	// Init MemChunk
 	mc.clear();
 	mc.reSize(4 + 80 + (entries.size() * 40) + data_size, false);
-	Log::info(5, S_FMT("MC size %d", mc.size()));
+	Log::info(5, wxString::Format("MC size %d", mc.size()));
 
 	// Write no. entries
 	uint32_t n_entries = entries.size() - ndirs;
-	Log::info(5, S_FMT("n_entries %d", n_entries));
+	Log::info(5, wxString::Format("n_entries %d", n_entries));
 	mc.write(&n_entries, 4);
 
 	// Write id
-	Log::info(5, S_FMT("id %s", id_));
+	Log::info(5, wxString::Format("id %s", id_));
 	mc.write(id_, 80);
 
 	// Write directory
@@ -220,7 +221,7 @@ bool PodArchive::write(MemChunk& mc, bool update)
 		mc.write(&fe.offset, 4);
 		Log::info(
 			5,
-			S_FMT(
+			wxString::Format(
 				"entry %s: old=%d new=%d size=%d",
 				fe.name,
 				entry->exProp("Offset").intValue(),
@@ -263,7 +264,7 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("PodArchive::loadEntryData: Failed to open file %s", filename_));
+		Log::error(wxString::Format("PodArchive::loadEntryData: Failed to open file %s", filename_));
 		return false;
 	}
 

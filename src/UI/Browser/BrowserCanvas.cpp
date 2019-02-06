@@ -795,7 +795,7 @@ void BrowserCanvas::onKeyChar(wxKeyEvent& e)
 		// start a new search from after the current focus.
 		if (!searchItemFrom(selected))
 		{
-			search_ = S_FMT("%c", e.GetKeyCode());
+			search_ = wxString::Format("%c", e.GetKeyCode());
 			search_.MakeUpper();
 			searchItemFrom(selected + 1);
 		}

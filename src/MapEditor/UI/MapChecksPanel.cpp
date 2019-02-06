@@ -349,7 +349,7 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 
 	if (lb_errors_->GetCount() > 0)
 	{
-		updateStatusText(S_FMT("%d problems found", lb_errors_->GetCount()));
+		updateStatusText(wxString::Format("%d problems found", lb_errors_->GetCount()));
 		btn_export_->Enable(true);
 	}
 	else
@@ -436,7 +436,7 @@ void MapChecksPanel::onBtnExport(wxCommandEvent& e)
 			MapEditor::windowWx(),
 			map_name + "-Problems"))
 	{
-		wxString text = S_FMT("%lu problems found in map %s:\n\n", check_items_.size(), CHR(map_name));
+		wxString text = wxString::Format("%lu problems found in map %s:\n\n", check_items_.size(), CHR(map_name));
 		for (auto& item : check_items_)
 			text += item.check->problemDesc(item.index) + "\n";
 		wxFile file;

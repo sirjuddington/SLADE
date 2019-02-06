@@ -77,7 +77,7 @@ void SpriteTexCanvas::setSprite(const Game::ThingType& type)
 	// Icon
 	if (!texture_)
 	{
-		texture_ = MapEditor::textureManager().editorImage(S_FMT("thing/%s", type.icon())).gl_id;
+		texture_ = MapEditor::textureManager().editorImage(wxString::Format("thing/%s", type.icon())).gl_id;
 		colour_  = type.colour();
 		icon_    = true;
 	}
@@ -734,7 +734,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	{
 		auto& tt = Game::configuration().thingType(type_current_);
 		gfx_sprite_->setSprite(tt);
-		label_type_->SetLabel(S_FMT("%d: %s", type_current_, tt.name()));
+		label_type_->SetLabel(wxString::Format("%d: %s", type_current_, tt.name()));
 		label_type_->Wrap(136);
 	}
 
@@ -764,7 +764,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 		// Load values
 		int args[5] = { -1, -1, -1, -1, -1 };
 		for (unsigned a = 0; a < 5; a++)
-			MapObject::multiIntProperty(objects, S_FMT("arg%d", a), args[a]);
+			MapObject::multiIntProperty(objects, wxString::Format("arg%d", a), args[a]);
 		panel_args_->setValues(args);
 	}
 

@@ -254,11 +254,11 @@ wxString AudioEntryPanel::statusString()
 	hours        = (song_length_ / 3600000);
 	wxString ret = wxEmptyString;
 	if (hours)
-		ret = S_FMT("%d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
+		ret = wxString::Format("%d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
 	else if (minutes)
-		ret = S_FMT("%d:%02d.%03d", minutes, seconds, milliseconds);
+		ret = wxString::Format("%d:%02d.%03d", minutes, seconds, milliseconds);
 	else
-		ret = S_FMT("%d.%03d", seconds, milliseconds);
+		ret = wxString::Format("%d.%03d", seconds, milliseconds);
 
 	return ret;
 }
@@ -362,7 +362,7 @@ bool AudioEntryPanel::open()
 	prevfile_ = path.GetFullPath();
 
 	txt_title_->SetLabel(entry_->path(true));
-	txt_track_->SetLabel(S_FMT("%d/%d", subsong_ + 1, num_tracks_));
+	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
 	updateInfo();
 
 	// Disable prev/next track buttons if only one track is available
@@ -605,17 +605,17 @@ bool AudioEntryPanel::updateInfo() const
 		{
 			size_t samplerate = mc.readL16(2);
 			size_t samples    = mc.readL16(4);
-			info += S_FMT("%lu samples at %lu Hz", (unsigned long)samples, (unsigned long)samplerate);
+			info += wxString::Format("%lu samples at %lu Hz", (unsigned long)samples, (unsigned long)samplerate);
 		}
 		else if (entry_->type() == EntryType::fromId("snd_speaker"))
 		{
 			size_t samples = mc.readL16(2);
-			info += S_FMT("%lu samples", (unsigned long)samples);
+			info += wxString::Format("%lu samples", (unsigned long)samples);
 		}
 		else if (entry_->type() == EntryType::fromId("snd_audiot"))
 		{
 			size_t samples = mc.readL16(0);
-			info += S_FMT("%lu samples", (unsigned long)samples);
+			info += wxString::Format("%lu samples", (unsigned long)samples);
 		}
 		else if (entry_->type() == EntryType::fromId("snd_sun"))
 			info += Audio::getSunInfo(mc);
@@ -654,7 +654,7 @@ bool AudioEntryPanel::updateInfo() const
 		if (entry->getType() == EntryType::getType("opl_audiot"))
 		{
 			size_t samples = READ_L32(mc, 0);
-			info += S_FMT("%zu samples", samples);
+			info += wxString::Format("%zu samples", samples);
 		}
 		info += theOPLPlayer->getInfo();
 		break;*/
@@ -726,7 +726,7 @@ void AudioEntryPanel::onBtnPrev(wxCommandEvent& e)
 	}
 	// else if (entry->getType()->getFormat().StartsWith("gme"))
 	//	theGMEPlayer->play(subsong);
-	txt_track_->SetLabel(S_FMT("%d/%d", subsong_ + 1, num_tracks_));
+	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
 	updateInfo();
 }
 
@@ -748,7 +748,7 @@ void AudioEntryPanel::onBtnNext(wxCommandEvent& e)
 		if (theGMEPlayer->play(newsong))
 			subsong = newsong;
 	}*/
-	txt_track_->SetLabel(S_FMT("%d/%d", subsong_ + 1, num_tracks_));
+	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
 	updateInfo();
 }
 

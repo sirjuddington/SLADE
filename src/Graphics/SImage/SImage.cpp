@@ -1027,7 +1027,7 @@ bool SImage::rotate(int angle)
 		}
 		if (j >= numpixels)
 		{
-			Log::error(S_FMT("Pixel %i remapped to %i, how did this even happen?", i, j));
+			Log::error(wxString::Format("Pixel %i remapped to %i, how did this even happen?", i, j));
 			return false;
 		}
 		for (k = 0; k < numbpp; ++k)
@@ -1082,7 +1082,7 @@ bool SImage::mirror(bool vertical)
 			j = ((i / width_) * width_) + ((width_ - 1) - (i % width_));
 		if (j >= numpixels)
 		{
-			Log::error(S_FMT("Pixel %i remapped to %i, how did this even happen?", i, j));
+			Log::error(wxString::Format("Pixel %i remapped to %i, how did this even happen?", i, j));
 			return false;
 		}
 		for (k = 0; k < numbpp; ++k)

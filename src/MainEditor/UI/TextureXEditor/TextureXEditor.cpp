@@ -555,7 +555,7 @@ bool TextureXEditor::checkTextures()
 					auto fentry = App::resources().getFlatEntry(tex->patch(p)->name());
 					auto ptex   = App::resources().getTexture(tex->patch(p)->name());
 					if (!pentry && !fentry && !ptex)
-						problems += S_FMT(
+						problems += wxString::Format(
 							"Texture %s contains invalid/unknown patch %s\n", tex->name(), tex->patch(p)->name());
 				}
 			}
@@ -565,7 +565,7 @@ bool TextureXEditor::checkTextures()
 				for (unsigned p = 0; p < tex->nPatches(); p++)
 				{
 					if (patch_table_.patchIndex(tex->patch(p)->name()) == -1)
-						problems += S_FMT(
+						problems += wxString::Format(
 							"Texture %s contains invalid/unknown patch %s\n", tex->name(), tex->patch(p)->name());
 				}
 			}
@@ -581,7 +581,7 @@ bool TextureXEditor::checkTextures()
 
 		if (!entry)
 		{
-			problems += S_FMT("Patch %s cannot be found in any open archive\n", patch.name);
+			problems += wxString::Format("Patch %s cannot be found in any open archive\n", patch.name);
 		}
 		else
 		{
@@ -591,7 +591,7 @@ bool TextureXEditor::checkTextures()
 			auto type = entry->type();
 
 			if (!type->extraProps().propertyExists("patch"))
-				problems += S_FMT(
+				problems += wxString::Format(
 					"Patch %s is of type \"%s\", which is not a valid gfx format for patches. "
 					"Convert it to either Doom Gfx or PNG\n",
 					patch.name,

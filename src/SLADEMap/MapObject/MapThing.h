@@ -77,7 +77,7 @@ public:
 		if (!this)
 			return { "<thing NULL>" };
 
-		return { S_FMT("<thing %u>", index_) };
+		return { wxString::Format("<thing %u>", index_) };
 	}
 
 private:

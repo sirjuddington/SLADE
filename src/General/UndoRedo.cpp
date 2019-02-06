@@ -75,7 +75,7 @@ wxString UndoLevel::timeStamp(bool date, bool time) const
 // -----------------------------------------------------------------------------
 bool UndoLevel::doUndo()
 {
-	Log::info(3, S_FMT("Performing undo \"%s\" (%lu steps)", name_, undo_steps_.size()));
+	Log::info(3, wxString::Format("Performing undo \"%s\" (%lu steps)", name_, undo_steps_.size()));
 	bool ok = true;
 	for (int a = (int)undo_steps_.size() - 1; a >= 0; a--)
 	{
@@ -91,7 +91,7 @@ bool UndoLevel::doUndo()
 // -----------------------------------------------------------------------------
 bool UndoLevel::doRedo()
 {
-	Log::info(3, S_FMT("Performing redo \"%s\" (%lu steps)", name_, undo_steps_.size()));
+	Log::info(3, wxString::Format("Performing redo \"%s\" (%lu steps)", name_, undo_steps_.size()));
 	bool ok = true;
 	for (auto& undo_step : undo_steps_)
 	{
@@ -244,7 +244,7 @@ wxString UndoManager::undo()
 	current_undo_manager = this;
 	auto& level          = undo_levels_[current_level_index_];
 	if (!level->doUndo())
-		Log::warning(S_FMT("Undo operation \"%s\" failed", level->name()));
+		Log::warning(wxString::Format("Undo operation \"%s\" failed", level->name()));
 	undo_running_        = false;
 	current_undo_manager = nullptr;
 	current_level_index_--;

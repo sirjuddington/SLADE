@@ -187,14 +187,14 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 				wxString translate;
 				wxString temp = tz.next().text;
 				if (temp.Contains("="))
-					temp = S_FMT("\"%s\"", temp);
+					temp = wxString::Format("\"%s\"", temp);
 				translate += temp;
 				while (tz.checkNext(","))
 				{
 					translate += tz.next().text; // add ','
 					temp = tz.next().text;
 					if (temp.Contains("="))
-						temp = S_FMT("\"%s\"", temp);
+						temp = wxString::Format("\"%s\"", temp);
 					translate += temp;
 				}
 				// Parse whole string
@@ -242,7 +242,8 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 						colour_.b = tz.next().asInt();
 						if (!tz.checkNext(","))
 						{
-							Log::error(S_FMT("Invalid TEXTURES definition, expected ',', got '%s'", tz.peek().text));
+							Log::error(wxString::Format(
+								"Invalid TEXTURES definition, expected ',', got '%s'", tz.peek().text));
 							return false;
 						}
 						tz.adv(); // Skip ,
@@ -277,7 +278,7 @@ wxString CTPatchEx::asText()
 	wxString typestring = "Patch";
 	if (type_ == Type::Graphic)
 		typestring = "Graphic";
-	wxString text = S_FMT("\t%s \"%s\", %d, %d\n", typestring, name_, offset_x_, offset_y_);
+	wxString text = wxString::Format("\t%s \"%s\", %d, %d\n", typestring, name_, offset_x_, offset_y_);
 
 	// Check if we need to write any extra properties
 	if (!flip_x_ && !flip_y_ && !use_offsets_ && rotation_ == 0 && blendtype_ == 0 && alpha_ == 1.0f
@@ -294,7 +295,7 @@ wxString CTPatchEx::asText()
 	if (use_offsets_)
 		text += "\t\tUseOffsets\n";
 	if (rotation_ != 0)
-		text += S_FMT("\t\tRotate %d\n", rotation_);
+		text += wxString::Format("\t\tRotate %d\n", rotation_);
 	if (blendtype_ == 1 && !translation_.isEmpty())
 	{
 		text += "\t\tTranslation ";
@@ -304,17 +305,17 @@ wxString CTPatchEx::asText()
 	if (blendtype_ >= 2)
 	{
 		wxColour col(colour_.r, colour_.g, colour_.b);
-		text += S_FMT("\t\tBlend \"%s\"", col.GetAsString(wxC2S_HTML_SYNTAX));
+		text += wxString::Format("\t\tBlend \"%s\"", col.GetAsString(wxC2S_HTML_SYNTAX));
 
 		if (blendtype_ == 3)
-			text += S_FMT(", %1.1f\n", (double)colour_.a / 255.0);
+			text += wxString::Format(", %1.1f\n", (double)colour_.a / 255.0);
 		else
 			text += "\n";
 	}
 	if (alpha_ < 1.0f)
-		text += S_FMT("\t\tAlpha %1.2f\n", alpha_);
+		text += wxString::Format("\t\tAlpha %1.2f\n", alpha_);
 	if (!(S_CMPNOCASE(style_, "Copy")))
-		text += S_FMT("\t\tStyle %s\n", style_);
+		text += wxString::Format("\t\tStyle %s\n", style_);
 
 	// Write ending
 	text += "\t}\n";
@@ -620,7 +621,7 @@ bool CTexture::parse(Tokenizer& tz, const wxString& type)
 			// Check if end of text is reached (error)
 			if (tz.atEnd())
 			{
-				Log::error(S_FMT("Error parsing texture %s: End of text found, missing } perhaps?", name_));
+				Log::error(wxString::Format("Error parsing texture %s: End of text found, missing } perhaps?", name_));
 				return false;
 			}
 
@@ -716,22 +717,22 @@ wxString CTexture::asText()
 
 	// Define block
 	if (defined_)
-		return S_FMT("define \"%s\" %d %d\n", name_, def_width_, def_height_);
+		return wxString::Format("define \"%s\" %d %d\n", name_, def_width_, def_height_);
 
 	// Init text string
 	wxString text;
 	if (optional_)
-		text = S_FMT("%s Optional \"%s\", %d, %d\n{\n", type_, name_, width_, height_);
+		text = wxString::Format("%s Optional \"%s\", %d, %d\n{\n", type_, name_, width_, height_);
 	else
-		text = S_FMT("%s \"%s\", %d, %d\n{\n", type_, name_, width_, height_);
+		text = wxString::Format("%s \"%s\", %d, %d\n{\n", type_, name_, width_, height_);
 
 	// Write texture properties
 	if (scale_.x != 1.0)
-		text += S_FMT("\tXScale %1.3f\n", scale_.x);
+		text += wxString::Format("\tXScale %1.3f\n", scale_.x);
 	if (scale_.y != 1.0)
-		text += S_FMT("\tYScale %1.3f\n", scale_.y);
+		text += wxString::Format("\tYScale %1.3f\n", scale_.y);
 	if (offset_x_ != 0 || offset_y_ != 0)
-		text += S_FMT("\tOffset %d, %d\n", offset_x_, offset_y_);
+		text += wxString::Format("\tOffset %d, %d\n", offset_x_, offset_y_);
 	if (world_panning_)
 		text += "\tWorldPanning\n";
 	if (no_decals_)

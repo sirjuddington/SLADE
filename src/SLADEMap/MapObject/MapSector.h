@@ -113,7 +113,7 @@ public:
 		if (!this)
 			return { "<sector NULL>" };
 
-		return { S_FMT("<sector %u>", index_) };
+		return { wxString::Format("<sector %u>", index_) };
 	}
 
 private:

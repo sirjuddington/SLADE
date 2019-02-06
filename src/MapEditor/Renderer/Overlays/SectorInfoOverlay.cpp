@@ -68,22 +68,23 @@ void SectorInfoOverlay::update(MapSector* sector)
 	wxString info_text;
 
 	// Info (index + type)
-	wxString type = S_FMT("%s (Type %d)", Game::configuration().sectorTypeName(sector->special()), sector->special());
+	wxString type = wxString::Format(
+		"%s (Type %d)", Game::configuration().sectorTypeName(sector->special()), sector->special());
 	if (Global::debug)
-		info_text += S_FMT("Sector #%d (%d): %s\n", sector->index(), sector->objId(), type);
+		info_text += wxString::Format("Sector #%d (%d): %s\n", sector->index(), sector->objId(), type);
 	else
-		info_text += S_FMT("Sector #%d: %s\n", sector->index(), type);
+		info_text += wxString::Format("Sector #%d: %s\n", sector->index(), type);
 
 	// Height
 	int fh = sector->floor().height;
 	int ch = sector->ceiling().height;
-	info_text += S_FMT("Height: %d to %d (%d total)\n", fh, ch, ch - fh);
+	info_text += wxString::Format("Height: %d to %d (%d total)\n", fh, ch, ch - fh);
 
 	// Brightness
-	info_text += S_FMT("Brightness: %d\n", sector->lightLevel());
+	info_text += wxString::Format("Brightness: %d\n", sector->lightLevel());
 
 	// Tag
-	info_text += S_FMT("Tag: %d", sector->tag());
+	info_text += wxString::Format("Tag: %d", sector->tag());
 
 	// Textures
 	ftex_ = sector->floor().texture;

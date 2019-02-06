@@ -123,7 +123,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 				tx_list->removePatch(p.name);
 
 			// Remove the patch from the patch table
-			Log::info(S_FMT("Removed patch %s", p.name));
+			Log::info(wxString::Format("Removed patch %s", p.name));
 			removed++;
 			ptable.removePatch(a--);
 		}
@@ -132,7 +132,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 	// Remove unused patch entries
 	for (auto& a : to_remove)
 	{
-		Log::info(S_FMT("Removed entry %s", a->name()));
+		Log::info(wxString::Format("Removed entry %s", a->name()));
 		archive->removeEntry(a);
 	}
 
@@ -149,7 +149,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 
 	// Notify user
 	wxMessageBox(
-		S_FMT("Removed %d patches and %lu entries. See console log for details.", removed, to_remove.size()),
+		wxString::Format("Removed %d patches and %lu entries. See console log for details.", removed, to_remove.size()),
 		"Removed Unused Patches",
 		wxOK | wxICON_INFORMATION);
 
@@ -195,7 +195,7 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive)
 			{
 				wxString name = i->first;
 				name.Remove(0, 1);
-				dups += S_FMT("%s appears %d times\n", name, i->second);
+				dups += wxString::Format("%s appears %d times\n", name, i->second);
 			}
 			++i;
 		}
@@ -211,13 +211,13 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive)
 			if (i->second.size() > 1)
 			{
 				wxString name;
-				dups += S_FMT("\n%i entries are named %s\t", i->second.size(), i->first);
+				dups += wxString::Format("\n%i entries are named %s\t", i->second.size(), i->first);
 				auto j = i->second.begin();
 				while (j != i->second.end())
 				{
 					name = (*j)->path(true);
 					name.Remove(0, 1);
-					dups += S_FMT("\t%s", name);
+					dups += wxString::Format("\t%s", name);
 					++j;
 				}
 			}
@@ -283,7 +283,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 		if (other != nullptr && (other->data().crc() == entry->data().crc()))
 		{
 			++count;
-			dups += S_FMT("%s\n", search.match_name);
+			dups += wxString::Format("%s\n", search.match_name);
 			archive->removeEntry(entry);
 			entry = nullptr;
 		}
@@ -297,7 +297,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 		return;
 	}
 
-	wxString message = S_FMT(
+	wxString message = wxString::Format(
 		"The following %d entr%s duplicated from the base resource archive and deleted:",
 		count,
 		(count > 1) ? "ies were" : "y was");
@@ -345,13 +345,13 @@ bool ArchiveOperations::checkDuplicateEntryContent(Archive* archive)
 		{
 			wxString name = i->second[0]->path(true);
 			name.Remove(0, 1);
-			dups += S_FMT("\n%s\t(%8x) duplicated by", name, i->first);
+			dups += wxString::Format("\n%s\t(%8x) duplicated by", name, i->first);
 			auto j = i->second.begin() + 1;
 			while (j != i->second.end())
 			{
 				name = (*j)->path(true);
 				name.Remove(0, 1);
-				dups += S_FMT("\t%s", name);
+				dups += wxString::Format("\t%s", name);
 				++j;
 			}
 		}
@@ -630,7 +630,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 		}
 	}
 
-	wxMessageBox(S_FMT("Removed %d unused textures", n_removed));
+	wxMessageBox(wxString::Format("Removed %d unused textures", n_removed));
 }
 
 void ArchiveOperations::removeUnusedFlats(Archive* archive)
@@ -739,7 +739,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 			if (flatname == flat_anim_start[b])
 			{
 				anim = true;
-				Log::info(S_FMT("%s anim start", flatname));
+				Log::info(wxString::Format("%s anim start", flatname));
 				break;
 			}
 		}
@@ -752,7 +752,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 			{
 				anim    = false;
 				thisend = true;
-				Log::info(S_FMT("%s anim end", flatname));
+				Log::info(wxString::Format("%s anim end", flatname));
 				break;
 			}
 		}
@@ -790,7 +790,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 		}
 	}
 
-	wxMessageBox(S_FMT("Removed %d unused flats", n_removed));
+	wxMessageBox(wxString::Format("Removed %d unused flats", n_removed));
 }
 
 
@@ -989,7 +989,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 				}
 			}
 		}
-		report += S_FMT("%s:\t%i things changed\n", map.head->name(), achanged);
+		report += wxString::Format("%s:\t%i things changed\n", map.head->name(), achanged);
 		changed += achanged;
 	}
 	Log::info(1, report);
@@ -1440,7 +1440,7 @@ size_t ArchiveOperations::replaceSpecials(
 				}
 			}
 		}
-		report += S_FMT("%s:\t%i specials changed\n", map.head->name(), achanged);
+		report += wxString::Format("%s:\t%i specials changed\n", map.head->name(), achanged);
 		changed += achanged;
 	}
 	Log::info(1, report);
@@ -1469,7 +1469,7 @@ CONSOLE_COMMAND(replacespecials, 2, true)
 		case 6: arg1 = args[oldtail--].ToLong(&oldarg1) && args[newtail--].ToLong(&newarg1);
 		case 4: arg0 = args[oldtail--].ToLong(&oldarg0) && args[newtail--].ToLong(&newarg0);
 		case 2: run = args[oldtail--].ToLong(&oldtype) && args[newtail--].ToLong(&newtype); break;
-		default: Log::warning(S_FMT("Invalid number of arguments: %d", fullarg));
+		default: Log::warning(wxString::Format("Invalid number of arguments: %d", fullarg));
 		}
 	}
 
@@ -1834,7 +1834,7 @@ size_t ArchiveOperations::replaceTextures(
 				}
 			}
 		}
-		report += S_FMT("%s:\t%i elements changed\n", map.head->name(), achanged);
+		report += wxString::Format("%s:\t%i elements changed\n", map.head->name(), achanged);
 		changed += achanged;
 	}
 	Log::info(1, report);

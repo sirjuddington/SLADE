@@ -83,23 +83,23 @@ void EntryType::addToList()
 // -----------------------------------------------------------------------------
 void EntryType::dump()
 {
-	Log::info(S_FMT("Type %s \"%s\", format %s, extension %s", id_, name_, format_->id(), extension_));
-	Log::info(S_FMT("Size limit: %d-%d", size_limit_[0], size_limit_[1]));
+	Log::info(wxString::Format("Type %s \"%s\", format %s, extension %s", id_, name_, format_->id(), extension_));
+	Log::info(wxString::Format("Size limit: %d-%d", size_limit_[0], size_limit_[1]));
 
 	for (const auto& a : match_archive_)
-		Log::info(S_FMT("Match Archive: \"%s\"", a));
+		Log::info(wxString::Format("Match Archive: \"%s\"", a));
 
 	for (const auto& a : match_extension_)
-		Log::info(S_FMT("Match Extension: \"%s\"", a));
+		Log::info(wxString::Format("Match Extension: \"%s\"", a));
 
 	for (const auto& a : match_name_)
-		Log::info(S_FMT("Match Name: \"%s\"", a));
+		Log::info(wxString::Format("Match Name: \"%s\"", a));
 
 	for (int a : match_size_)
-		Log::info(S_FMT("Match Size: %d", a));
+		Log::info(wxString::Format("Match Size: %d", a));
 
 	for (int a : size_multiple_)
-		Log::info(S_FMT("Size Multiple: %d", a));
+		Log::info(wxString::Format("Size Multiple: %d", a));
 
 	Log::info("---");
 }
@@ -354,8 +354,8 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const wxString& source)
 			if (parent_type != unknownType())
 				parent_type->copyToType(ntype);
 			else
-				Log::info(
-					S_FMT("Warning: Entry type %s inherits from unknown type %s", ntype->id(), typenode->inherit()));
+				Log::info(wxString::Format(
+					"Warning: Entry type %s inherits from unknown type %s", ntype->id(), typenode->inherit()));
 		}
 
 		// Go through all parsed fields
@@ -384,7 +384,8 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const wxString& source)
 
 				// Warn if undefined format
 				if (ntype->format_ == EntryDataFormat::anyFormat())
-					Log::warning(S_FMT("Entry type %s requires undefined format %s", ntype->id(), format_string));
+					Log::warning(
+						wxString::Format("Entry type %s requires undefined format %s", ntype->id(), format_string));
 			}
 			else if (S_CMPNOCASE(fieldnode->name(), "icon")) // Icon field
 			{
@@ -471,7 +472,8 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const wxString& source)
 				if (fieldnode->nValues() >= 3)
 					ntype->colour_ = ColRGBA(fieldnode->intValue(0), fieldnode->intValue(1), fieldnode->intValue(2));
 				else
-					Log::warning(S_FMT("Not enough colour components defined for entry type %s", ntype->id()));
+					Log::warning(
+						wxString::Format("Not enough colour components defined for entry type %s", ntype->id()));
 			}
 			else
 			{
@@ -774,7 +776,8 @@ CONSOLE_COMMAND(type, 0, true)
 			}
 		if (!match)
 		{
-			Log::info(S_FMT("Type %s does not exist (use \"type\" without parameter for a list)", args[0].mb_str()));
+			Log::info(wxString::Format(
+				"Type %s does not exist (use \"type\" without parameter for a list)", args[0].mb_str()));
 			return;
 		}
 
@@ -793,7 +796,7 @@ CONSOLE_COMMAND(type, 0, true)
 			// Check if format corresponds to entry
 			foo = EntryDataFormat::format(desttype->formatId());
 			if (foo)
-				Log::info(S_FMT("Identifying as %s", desttype->name().mb_str()));
+				Log::info(wxString::Format("Identifying as %s", desttype->name().mb_str()));
 			else
 				Log::info("No data format for this type!");
 		}
@@ -807,16 +810,16 @@ CONSOLE_COMMAND(type, 0, true)
 			{
 				okay = foo->isThisFormat(b->data());
 				if (okay)
-					Log::info(S_FMT("%s: Identification successful (%i/255)", b->name().mb_str(), okay));
+					Log::info(wxString::Format("%s: Identification successful (%i/255)", b->name().mb_str(), okay));
 				else
-					Log::info(S_FMT("%s: Identification failed", b->name().mb_str()));
+					Log::info(wxString::Format("%s: Identification failed", b->name().mb_str()));
 			}
 
 			// Change type
 			if (force || okay)
 			{
 				b->setType(desttype, okay);
-				Log::info(S_FMT("%s: Type changed.", b->name().mb_str()));
+				Log::info(wxString::Format("%s: Type changed.", b->name().mb_str()));
 			}
 		}
 	}
@@ -830,5 +833,5 @@ CONSOLE_COMMAND(size, 0, true)
 		Log::info("No entry selected");
 		return;
 	}
-	Log::info(S_FMT("%s: %i bytes", meep->name().mb_str(), meep->size()));
+	Log::info(wxString::Format("%s: %i bytes", meep->name().mb_str(), meep->size()));
 }

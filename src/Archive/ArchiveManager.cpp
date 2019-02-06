@@ -100,7 +100,7 @@ bool ArchiveManager::validResDir(const wxString& dir) const
 		wxFileName fn(dir + "/" + path);
 		if (!wxFileExists(fn.GetFullPath()))
 		{
-			Log::info(S_FMT(
+			Log::info(wxString::Format(
 				"Resource %s was not found in dir %s!\n"
 				"This resource folder cannot be used. "
 				"(Did you install SLADE 3 in a SLumpEd folder?)",
@@ -264,7 +264,7 @@ Archive* ArchiveManager::openArchive(const wxString& filename, bool manage, bool
 
 	auto new_archive = getArchive(filename);
 
-	Log::info(S_FMT("Opening archive %s", filename));
+	Log::info(wxString::Format("Opening archive %s", filename));
 
 	// If the archive is already open, just return it
 	if (new_archive)
@@ -494,7 +494,7 @@ Archive* ArchiveManager::openDirArchive(const wxString& dir, bool manage, bool s
 {
 	auto new_archive = getArchive(dir);
 
-	Log::info(S_FMT("Opening directory %s as archive", dir));
+	Log::info(wxString::Format("Opening directory %s as archive", dir));
 
 	// If the archive is already open, just return it
 	if (new_archive)
@@ -561,7 +561,7 @@ Archive* ArchiveManager::newArchive(const wxString& format)
 		new_archive = new ZipArchive();
 	else
 	{
-		Global::error = S_FMT("Can not create archive of format: %s", CHR(format));
+		Global::error = wxString::Format("Can not create archive of format: %s", CHR(format));
 		Log::error(Global::error);
 		return nullptr;
 	}
@@ -569,7 +569,7 @@ Archive* ArchiveManager::newArchive(const wxString& format)
 	// If the archive was created, set its filename and add it to the list
 	if (new_archive)
 	{
-		new_archive->setFilename(S_FMT("UNSAVED (%s)", new_archive->formatDesc().name));
+		new_archive->setFilename(wxString::Format("UNSAVED (%s)", new_archive->formatDesc().name));
 		addArchive(new_archive);
 	}
 
@@ -748,18 +748,18 @@ wxString ArchiveManager::getArchiveExtensionsString() const
 	{
 		for (auto ext : fmt.extensions)
 		{
-			wxString ext_case = S_FMT("*.%s;", ext.first.Lower());
-			ext_case += S_FMT("*.%s;", ext.first.Upper());
-			ext_case += S_FMT("*.%s", ext.first.Capitalize());
+			wxString ext_case = wxString::Format("*.%s;", ext.first.Lower());
+			ext_case += wxString::Format("*.%s;", ext.first.Upper());
+			ext_case += wxString::Format("*.%s", ext.first.Capitalize());
 
-			ext_all += S_FMT("%s;", ext_case);
-			ext_strings.push_back(S_FMT("%s files (*.%s)|%s", ext.second, ext.first, ext_case));
+			ext_all += wxString::Format("%s;", ext_case);
+			ext_strings.push_back(wxString::Format("%s files (*.%s)|%s", ext.second, ext.first, ext_case));
 		}
 	}
 
 	ext_all.RemoveLast(1);
 	for (const auto& ext : ext_strings)
-		ext_all += S_FMT("|%s", ext);
+		ext_all += wxString::Format("|%s", ext);
 
 	return ext_all;
 }
@@ -890,7 +890,7 @@ bool ArchiveManager::openBaseResource(int index)
 		return false;
 
 	// Attempt to open the file
-	UI::showSplash(S_FMT("Opening %s...", filename), true);
+	UI::showSplash(wxString::Format("Opening %s...", filename), true);
 	if (base_resource_archive_->open(filename))
 	{
 		base_resource = index;
@@ -1271,12 +1271,12 @@ void ArchiveManager::onAnnouncement(Announcer* announcer, const wxString& event_
 // -----------------------------------------------------------------------------
 CONSOLE_COMMAND(list_archives, 0, true)
 {
-	Log::info(S_FMT("%d Open Archives:", App::archiveManager().numArchives()));
+	Log::info(wxString::Format("%d Open Archives:", App::archiveManager().numArchives()));
 
 	for (int a = 0; a < App::archiveManager().numArchives(); a++)
 	{
 		auto archive = App::archiveManager().getArchive(a);
-		Log::info(S_FMT("%d: \"%s\"", a + 1, archive->filename()));
+		Log::info(wxString::Format("%d: \"%s\"", a + 1, archive->filename()));
 	}
 }
 

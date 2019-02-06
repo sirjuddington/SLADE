@@ -147,7 +147,7 @@ wxString ArchiveEntryList::itemText(long item, long column, long index) const
 				return "INVALID DIRECTORY";
 
 			// Return the number of items in the directory
-			return S_FMT("%d entries", dir->numEntries() + dir->nChildren());
+			return wxString::Format("%d entries", dir->numEntries() + dir->nChildren());
 		}
 		else
 			return entry->sizeString(); // Not a folder, just return the normal size string
@@ -160,7 +160,7 @@ wxString ArchiveEntryList::itemText(long item, long column, long index) const
 		if (entry->type() == EntryType::folderType())
 			return "";
 		else
-			return S_FMT("%d", entry->parentDir()->entryIndex(entry));
+			return wxString::Format("%d", entry->parentDir()->entryIndex(entry));
 	}
 	else
 		return "INVALID COLUMN"; // Invalid column

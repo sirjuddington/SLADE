@@ -172,7 +172,7 @@ void UDMFProperty::parse(ParseTreeNode* node, const wxString& group)
 // -----------------------------------------------------------------------------
 wxString UDMFProperty::getStringRep()
 {
-	wxString ret = S_FMT(R"(Property "%s": name = "%s", group = "%s")", property_, name_, group_);
+	wxString ret = wxString::Format(R"(Property "%s": name = "%s", group = "%s")", property_, name_, group_);
 
 	switch (type_)
 	{
@@ -203,11 +203,11 @@ wxString UDMFProperty::getStringRep()
 		else if (
 			type_ == Type::Int || type_ == Type::ActionSpecial || type_ == Type::SectorSpecial
 			|| type_ == Type::ThingType || type_ == Type::Colour)
-			ret += S_FMT(", default = %d", default_value_.intValue());
+			ret += wxString::Format(", default = %d", default_value_.intValue());
 		else if (type_ == Type::Float)
-			ret += S_FMT(", default = %1.2f", (double)default_value_);
+			ret += wxString::Format(", default = %1.2f", (double)default_value_);
 		else
-			ret += S_FMT(", default = \"%s\"", default_value_.stringValue());
+			ret += wxString::Format(", default = \"%s\"", default_value_.stringValue());
 	}
 	else
 		ret += ", no valid default";

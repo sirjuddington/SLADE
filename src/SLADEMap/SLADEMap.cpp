@@ -547,7 +547,7 @@ MapVertex* SLADEMap::createVertex(Vec2f pos, double split_dist)
 
 			if (line->distanceTo(pos) < split_dist)
 			{
-				Log::debug(S_FMT("Vertex at (%1.2f,%1.2f) splits line %d", pos.x, pos.y, line->index()));
+				Log::debug(wxString::Format("Vertex at (%1.2f,%1.2f) splits line %d", pos.x, pos.y, line->index()));
 				splitLine(line, nv);
 			}
 		}
@@ -689,13 +689,13 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 	}
 
 	// Delete the vertex
-	Log::info(4, S_FMT("Merging vertices %u and %u (removing %u)", vertex1, vertex2, vertex2));
+	Log::info(4, wxString::Format("Merging vertices %u and %u (removing %u)", vertex1, vertex2, vertex2));
 	data_.removeVertex(vertex2);
 
 	// Delete any resulting zero-length lines
 	for (auto& zline : zlines)
 	{
-		Log::info(4, S_FMT("Removing zero-length line %u", zline->index()));
+		Log::info(4, wxString::Format("Removing zero-length line %u", zline->index()));
 		data_.removeLine(zline);
 	}
 
@@ -807,7 +807,10 @@ void SLADEMap::splitLinesAt(MapVertex* vertex, double split_dist)
 
 		if (line->distanceTo(vertex->position()) < split_dist)
 		{
-			Log::info(2, S_FMT("Vertex at (%1.2f,%1.2f) splits line %u", vertex->position_.x, vertex->position_.y, i));
+			Log::info(
+				2,
+				wxString::Format(
+					"Vertex at (%1.2f,%1.2f) splits line %u", vertex->position_.x, vertex->position_.y, i));
 			splitLine(line, vertex);
 		}
 	}
@@ -1108,7 +1111,8 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	// Remove overlapping lines
 	for (auto& remove_line : remove_lines)
 	{
-		Log::info(4, S_FMT("Removing overlapping line %u (#%u)", remove_line->objId(), remove_line->index()));
+		Log::info(
+			4, wxString::Format("Removing overlapping line %u (#%u)", remove_line->objId(), remove_line->index()));
 		data_.removeLine(remove_line);
 	}
 	for (unsigned a = 0; a < connected_lines_.size(); a++)
@@ -1459,7 +1463,7 @@ void SLADEMap::mapOpenChecks()
 	int rsec    = data_.removeDetachedSectors();
 	int risides = data_.removeInvalidSides();
 
-	Log::info(S_FMT(
+	Log::info(wxString::Format(
 		"Removed %d detached vertices, %d detached sides, %d invalid sides and %d detached sectors",
 		rverts,
 		rsides,

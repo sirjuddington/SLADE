@@ -173,14 +173,14 @@ bool SAction::addToMenu(
 	if (!(S_CMP(text_override, "NO")))
 		item_text = text_override;
 	if (!sc.IsEmpty() && (sc_control || show_shortcut))
-		item_text = S_FMT("%s\t%s", item_text, sc);
+		item_text = wxString::Format("%s\t%s", item_text, sc);
 
 	// Append this action to the menu
 	wxString help      = helptext_;
 	int      wid       = wx_id_ + wx_id_offset;
 	wxString real_icon = (icon_override == "NO") ? icon_ : icon_override;
 	if (!sc.IsEmpty())
-		help += S_FMT(" (Shortcut: %s)", sc);
+		help += wxString::Format(" (Shortcut: %s)", sc);
 	if (type_ == Type::Normal)
 		menu->Append(WxUtils::createMenuItem(menu, wid, item_text, help, real_icon));
 	else if (type_ == Type::Check)
@@ -279,7 +279,7 @@ bool SAction::parse(ParseTreeNode* node)
 
 		// Keybind (shortcut)
 		else if (S_CMPNOCASE(prop_name, "keybind"))
-			shortcut_ = S_FMT("kb:%s", prop->stringValue());
+			shortcut_ = wxString::Format("kb:%s", prop->stringValue());
 
 		// Type
 		else if (S_CMPNOCASE(prop_name, "type"))
@@ -498,7 +498,7 @@ bool SActionHandler::doAction(const wxString& id)
 
 	// Warn if nothing handled it
 	if (!handled)
-		Log::warning(S_FMT("Warning: Action \"%s\" not handled", id));
+		Log::warning(wxString::Format("Warning: Action \"%s\" not handled", id));
 
 	// Log action (to log file only)
 	// TODO: this

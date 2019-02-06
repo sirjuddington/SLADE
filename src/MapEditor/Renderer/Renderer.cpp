@@ -650,7 +650,7 @@ void Renderer::drawSelectionNumbers() const
 		tp.x    = view_.screenX(tp.x);
 		tp.y    = view_.screenY(tp.y);
 
-		text    = S_FMT("%d", a + 1);
+		text    = wxString::Format("%d", a + 1);
 		auto ts = Drawing::textExtents(text, Drawing::Font::Bold);
 		tp.x -= ts.x * 0.5;
 		tp.y -= ts.y * 0.5;
@@ -662,7 +662,7 @@ void Renderer::drawSelectionNumbers() const
 		}
 
 		// Draw text
-		Drawing::drawText(S_FMT("%d", a + 1), tp.x, tp.y, col, Drawing::Font::Bold);
+		Drawing::drawText(wxString::Format("%d", a + 1), tp.x, tp.y, col, Drawing::Font::Bold);
 	}
 	Drawing::setTextOutline(0);
 	Drawing::enableTextStateReset();
@@ -715,7 +715,7 @@ void Renderer::drawLineLength(Vec2f p1, Vec2f p2, ColRGBA col) const
 	Vec2f tp(mid.x + (vec.x * tdist), mid.y + (vec.y * tdist));
 
 	// Determine text half-height for vertical alignment
-	wxString length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1, p2)));
+	wxString length = wxString::Format("%d", MathStuff::round(MathStuff::distance(p1, p2)));
 	double   hh     = Drawing::textExtents(length).y * 0.5;
 
 	// Draw text
@@ -943,7 +943,7 @@ void Renderer::drawObjectEdit()
 		int   y      = view_.mapY(mid.y) - 8;
 		view_.setOverlayCoords(true);
 		Drawing::setTextOutline(1.0f, COL_BLACK);
-		Drawing::drawText(S_FMT("%d", length), x, y, COL_WHITE, Drawing::Font::Bold, Drawing::Align::Center);
+		Drawing::drawText(wxString::Format("%d", length), x, y, COL_WHITE, Drawing::Font::Bold, Drawing::Align::Center);
 		Drawing::setTextOutline(0);
 		view_.setOverlayCoords(false);
 		glDisable(GL_TEXTURE_2D);
@@ -1305,7 +1305,7 @@ void Renderer::draw()
 			glEnable(GL_TEXTURE_2D);
 			OpenGL::setColour(col);
 			Drawing::drawText(
-				S_FMT("%d", renderer_3d_.itemDistance()),
+				wxString::Format("%d", renderer_3d_.itemDistance()),
 				midx + 5,
 				midy + 5,
 				ColRGBA(255, 255, 255, 200),
@@ -1327,11 +1327,11 @@ void Renderer::draw()
 		for (unsigned a = 0; a < fps_avg.size(); a++)
 			afps += fps_avg[a];
 		if (fps_avg.size() > 0) afps /= fps_avg.size();
-		Drawing::drawText(S_FMT("FPS: %d", afps));
+		Drawing::drawText(wxString::Format("FPS: %d", afps));
 	}*/
 
 	// test
-	// Drawing::drawText(S_FMT("Render distance: %1.2f", (double)render_max_dist), 0, 100);
+	// Drawing::drawText(wxString::Format("Render distance: %1.2f", (double)render_max_dist), 0, 100);
 
 	// Editor messages
 	drawEditorMessages();

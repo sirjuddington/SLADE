@@ -156,7 +156,7 @@ void StringUtils::processIncludes(ArchiveEntry* entry, wxString& out, bool use_r
 				done = true;
 			}
 			else
-				Log::info(2, S_FMT("Couldn't find entry to #include: %s", name));
+				Log::info(2, wxString::Format("Couldn't find entry to #include: %s", name));
 
 			// Look in resource pack
 			if (use_res && !done && App::archiveManager().programResourceArchive())
@@ -174,7 +174,8 @@ void StringUtils::processIncludes(ArchiveEntry* entry, wxString& out, bool use_r
 			if (!done)
 				Log::info(
 					1,
-					S_FMT("Error: Attempting to #include nonexistant entry \"%s\" from entry %s", name, entry->name()));
+					wxString::Format(
+						"Error: Attempting to #include nonexistant entry \"%s\" from entry %s", name, entry->name()));
 		}
 		else
 			out.Append(line + "\n");
@@ -220,7 +221,7 @@ int StringUtils::toInt(const wxString& str)
 	if (str.ToLong(&tmp))
 		return tmp;
 
-	Log::error(S_FMT("Can't convert \"%s\" to an integer", CHR(str)));
+	Log::error(wxString::Format("Can't convert \"%s\" to an integer", CHR(str)));
 	return 0;
 }
 
@@ -233,7 +234,7 @@ float StringUtils::toFloat(const wxString& str)
 	if (str.ToDouble(&tmp))
 		return tmp;
 
-	Log::error(S_FMT("Can't convert \"%s\" to a float", CHR(str)));
+	Log::error(wxString::Format("Can't convert \"%s\" to a float", CHR(str)));
 	return 0.f;
 }
 
@@ -246,6 +247,6 @@ double StringUtils::toDouble(const wxString& str)
 	if (str.ToDouble(&tmp))
 		return tmp;
 
-	Log::error(S_FMT("Can't convert \"%s\" to a double", CHR(str)));
+	Log::error(wxString::Format("Can't convert \"%s\" to a double", CHR(str)));
 	return 0.;
 }

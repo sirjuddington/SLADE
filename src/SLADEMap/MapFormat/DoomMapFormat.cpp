@@ -157,7 +157,7 @@ bool DoomMapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_d
 		map_data.addVertex(std::make_unique<MapVertex>(Vec2f{ (double)vert_data[a].x, (double)vert_data[a].y }));
 	}
 
-	Log::info(3, S_FMT("Read %lu vertices", map_data.vertices().size()));
+	Log::info(3, wxString::Format("Read %lu vertices", map_data.vertices().size()));
 
 	return true;
 }
@@ -197,7 +197,7 @@ bool DoomMapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 			Vec2i{ side_data[a].x_offset, side_data[a].y_offset }));
 	}
 
-	Log::info(3, S_FMT("Read %lu sides", map_data.sides().size()));
+	Log::info(3, wxString::Format("Read %lu sides", map_data.sides().size()));
 
 	return true;
 }
@@ -234,7 +234,7 @@ bool DoomMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 		auto v2 = map_data.vertices().at(data.vertex2);
 		if (!v1 || !v2)
 		{
-			Log::warning(S_FMT("Line %lu invalid, not added", a));
+			Log::warning(wxString::Format("Line %lu invalid, not added", a));
 			continue;
 		}
 
@@ -259,7 +259,7 @@ bool DoomMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 		line->setId(data.sector_tag);
 	}
 
-	Log::info(3, S_FMT("Read %lu lines", map_data.lines().size()));
+	Log::info(3, wxString::Format("Read %lu lines", map_data.lines().size()));
 
 	return true;
 }
@@ -302,7 +302,7 @@ bool DoomMapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_da
 			data.tag));
 	}
 
-	Log::info(3, S_FMT("Read %lu sectors", map_data.sectors().size()));
+	Log::info(3, wxString::Format("Read %lu sectors", map_data.sectors().size()));
 
 	return true;
 }
@@ -339,7 +339,7 @@ bool DoomMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_dat
 			thng_data[a].flags));
 	}
 
-	Log::info(3, S_FMT("Read %lu things", map_data.things().size()));
+	Log::info(3, wxString::Format("Read %lu things", map_data.things().size()));
 
 	return true;
 }

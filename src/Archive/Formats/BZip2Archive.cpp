@@ -130,7 +130,7 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("BZip2Archive::loadEntryData: Failed to open gzip file %s", filename_));
+		Log::error(wxString::Format("BZip2Archive::loadEntryData: Failed to open gzip file %s", filename_));
 		return false;
 	}
 

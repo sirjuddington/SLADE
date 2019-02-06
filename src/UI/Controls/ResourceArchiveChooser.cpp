@@ -112,7 +112,7 @@ wxString ResourceArchiveChooser::selectedResourceList()
 	vector<Archive*> selected = selectedResourceArchives();
 	wxString         ret;
 	for (unsigned a = 0; a < selected.size(); a++)
-		ret += S_FMT("\"%s\" ", selected[a]->filename());
+		ret += wxString::Format("\"%s\" ", selected[a]->filename());
 	return ret;
 }
 

@@ -172,9 +172,9 @@ void Edit3D::changeSectorLight(int amount) const
 	if (!items.empty())
 	{
 		if (amount > 0)
-			context_.addEditorMessage(S_FMT("Light increased by %d", amount));
+			context_.addEditorMessage(wxString::Format("Light increased by %d", amount));
 		else
-			context_.addEditorMessage(S_FMT("Light decreased by %d", -amount));
+			context_.addEditorMessage(wxString::Format("Light decreased by %d", -amount));
 	}
 }
 
@@ -308,9 +308,9 @@ void Edit3D::changeOffset(int amount, bool x) const
 			axis = "Y";
 
 		if (amount > 0)
-			context_.addEditorMessage(S_FMT("%s offset increased by %d", axis, amount));
+			context_.addEditorMessage(wxString::Format("%s offset increased by %d", axis, amount));
 		else
-			context_.addEditorMessage(S_FMT("%s offset decreased by %d", axis, -amount));
+			context_.addEditorMessage(wxString::Format("%s offset decreased by %d", axis, -amount));
 	}
 }
 
@@ -407,9 +407,9 @@ void Edit3D::changeSectorHeight(int amount) const
 	if (!items.empty())
 	{
 		if (amount > 0)
-			context_.addEditorMessage(S_FMT("Height increased by %d", amount));
+			context_.addEditorMessage(wxString::Format("Height increased by %d", amount));
 		else
-			context_.addEditorMessage(S_FMT("Height decreased by %d", -amount));
+			context_.addEditorMessage(wxString::Format("Height decreased by %d", -amount));
 	}
 }
 
@@ -1195,9 +1195,9 @@ void Edit3D::changeHeight(int amount) const
 	if (!items.empty())
 	{
 		if (amount > 0)
-			context_.addEditorMessage(S_FMT("Height increased by %d", amount));
+			context_.addEditorMessage(wxString::Format("Height increased by %d", amount));
 		else
-			context_.addEditorMessage(S_FMT("Height decreased by %d", -amount));
+			context_.addEditorMessage(wxString::Format("Height decreased by %d", -amount));
 	}
 }
 

@@ -164,7 +164,7 @@ template<class T> bool runEditorScript(const wxString& script, T param)
 	if (!load_result.valid())
 	{
 		processError(load_result);
-		Log::error(S_FMT(
+		Log::error(wxString::Format(
 			"%s Error running Lua script: %d: %s",
 			CHR(script_error.type),
 			script_error.line_no,
@@ -178,7 +178,7 @@ template<class T> bool runEditorScript(const wxString& script, T param)
 	if (!exec_result.valid())
 	{
 		processError(exec_result);
-		Log::error(S_FMT(
+		Log::error(wxString::Format(
 			"%s Error running Lua script: %d: %s",
 			CHR(script_error.type),
 			script_error.line_no,
@@ -240,7 +240,7 @@ void Lua::showErrorDialog(wxWindow* parent, const wxString& title, const wxStrin
 
 	ExtMessageDialog dlg(parent ? parent : current_window, title);
 	dlg.setMessage(message);
-	dlg.setExt(S_FMT(
+	dlg.setExt(wxString::Format(
 		"%s Error\nLine %d: %s\n\nScript Output:\n%s",
 		CHR(Lua::error().type),
 		Lua::error().line_no,
@@ -265,7 +265,7 @@ bool Lua::run(wxString program)
 	if (!result.valid())
 	{
 		processError(result);
-		Log::error(S_FMT(
+		Log::error(wxString::Format(
 			"%s Error running Lua script: %d: %s",
 			CHR(script_error.type),
 			script_error.line_no,
@@ -291,7 +291,7 @@ bool Lua::runFile(wxString filename)
 	if (!result.valid())
 	{
 		processError(result);
-		Log::error(S_FMT(
+		Log::error(wxString::Format(
 			"%s Error running Lua script: %d: %s",
 			CHR(script_error.type),
 			script_error.line_no,
@@ -375,16 +375,16 @@ CONSOLE_COMMAND(script_file, 1, true)
 {
 	if (!wxFile::Exists(args[0]))
 	{
-		Log::error(S_FMT("File \"%s\" does not exist", args[0]));
+		Log::error(wxString::Format("File \"%s\" does not exist", args[0]));
 		return;
 	}
 
 	if (!Lua::runFile(args[0]))
-		Log::error(S_FMT("Error loading lua script file \"%s\"", args[0]));
+		Log::error(wxString::Format("Error loading lua script file \"%s\"", args[0]));
 }
 
 CONSOLE_COMMAND(lua_mem, 0, false)
 {
 	auto mem = Lua::state().memory_used();
-	Log::console(S_FMT("Lua state using %s memory", CHR(Misc::sizeAsString(mem))));
+	Log::console(wxString::Format("Lua state using %s memory", CHR(Misc::sizeAsString(mem))));
 }

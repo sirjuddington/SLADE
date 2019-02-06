@@ -220,7 +220,7 @@ wxString TextStyle::textDefinition(unsigned tabs) const
 	{
 		for (unsigned t = 0; t < tabs; t++)
 			ret += "\t";
-		ret += S_FMT("font = \"%s\";\n", font_);
+		ret += wxString::Format("font = \"%s\";\n", font_);
 	}
 
 	// Write size
@@ -228,7 +228,7 @@ wxString TextStyle::textDefinition(unsigned tabs) const
 	{
 		for (unsigned t = 0; t < tabs; t++)
 			ret += "\t";
-		ret += S_FMT("size = %d;\n", size_);
+		ret += wxString::Format("size = %d;\n", size_);
 	}
 
 	// Write foreground
@@ -236,7 +236,7 @@ wxString TextStyle::textDefinition(unsigned tabs) const
 	{
 		for (unsigned t = 0; t < tabs; t++)
 			ret += "\t";
-		ret += S_FMT("foreground = %d, %d, %d;\n", foreground_.r, foreground_.g, foreground_.b);
+		ret += wxString::Format("foreground = %d, %d, %d;\n", foreground_.r, foreground_.g, foreground_.b);
 	}
 
 	// Write background
@@ -244,7 +244,7 @@ wxString TextStyle::textDefinition(unsigned tabs) const
 	{
 		for (unsigned t = 0; t < tabs; t++)
 			ret += "\t";
-		ret += S_FMT("background = %d, %d, %d;\n", background_.r, background_.g, background_.b);
+		ret += wxString::Format("background = %d, %d, %d;\n", background_.r, background_.g, background_.b);
 	}
 
 	// Write bold
@@ -252,7 +252,7 @@ wxString TextStyle::textDefinition(unsigned tabs) const
 	{
 		for (unsigned t = 0; t < tabs; t++)
 			ret += "\t";
-		ret += S_FMT("bold = %d;\n", bold_);
+		ret += wxString::Format("bold = %d;\n", bold_);
 	}
 
 	// Write italic
@@ -260,7 +260,7 @@ wxString TextStyle::textDefinition(unsigned tabs) const
 	{
 		for (unsigned t = 0; t < tabs; t++)
 			ret += "\t";
-		ret += S_FMT("italic = %d;\n", italic_);
+		ret += wxString::Format("italic = %d;\n", italic_);
 	}
 
 	// Write underlined
@@ -268,7 +268,7 @@ wxString TextStyle::textDefinition(unsigned tabs) const
 	{
 		for (unsigned t = 0; t < tabs; t++)
 			ret += "\t";
-		ret += S_FMT("underlined = %d;\n", underlined_);
+		ret += wxString::Format("underlined = %d;\n", underlined_);
 	}
 
 	return ret;
@@ -521,7 +521,7 @@ bool StyleSet::writeFile(const wxString& filename)
 	file.Write("styleset {\n");
 
 	// Name
-	file.Write(S_FMT("\tname = \"%s\";\n\n", name_));
+	file.Write(wxString::Format("\tname = \"%s\";\n\n", name_));
 
 	// Default style
 	file.Write("\tdefault {\n");
@@ -536,7 +536,7 @@ bool StyleSet::writeFile(const wxString& filename)
 	// Other styles
 	for (auto& style : styles_)
 	{
-		file.Write(S_FMT("\t%s {\n", style.name_));
+		file.Write(wxString::Format("\t%s {\n", style.name_));
 		file.Write(style.textDefinition(2));
 		file.Write("\t}\n\n");
 	}

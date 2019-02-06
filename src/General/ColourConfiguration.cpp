@@ -198,7 +198,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 				}
 
 				else
-					Log::warning(S_FMT("Unknown colour definition property \"%s\"", prop->name()));
+					Log::warning(wxString::Format("Unknown colour definition property \"%s\"", prop->name()));
 			}
 		}
 	}
@@ -222,7 +222,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 				flat_alpha = prop->floatValue();
 
 			else
-				Log::warning(S_FMT("Unknown theme property \"%s\"", prop->name()));
+				Log::warning(wxString::Format("Unknown theme property \"%s\"", prop->name()));
 		}
 	}
 
@@ -245,20 +245,20 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 			continue;
 
 		// Colour definition name
-		cfgstring += S_FMT("\t%s\n\t{\n", i.first);
+		cfgstring += wxString::Format("\t%s\n\t{\n", i.first);
 
 		// Full name
-		cfgstring += S_FMT("\t\tname = \"%s\";\n", cc.name);
+		cfgstring += wxString::Format("\t\tname = \"%s\";\n", cc.name);
 
 		// Group
-		cfgstring += S_FMT("\t\tgroup = \"%s\";\n", cc.group);
+		cfgstring += wxString::Format("\t\tgroup = \"%s\";\n", cc.group);
 
 		// Colour values
-		cfgstring += S_FMT("\t\trgb = %d, %d, %d;\n", cc.colour.r, cc.colour.g, cc.colour.b);
+		cfgstring += wxString::Format("\t\trgb = %d, %d, %d;\n", cc.colour.r, cc.colour.g, cc.colour.b);
 
 		// Alpha
 		if (cc.colour.a < 255)
-			cfgstring += S_FMT("\t\talpha = %d;\n", cc.colour.a);
+			cfgstring += wxString::Format("\t\talpha = %d;\n", cc.colour.a);
 
 		// Additive
 		if (cc.colour.blend == 1)
@@ -269,9 +269,9 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 
 	cfgstring += "}\n\ntheme\n{\n";
 
-	cfgstring += S_FMT("\tline_hilight_width = %1.3f;\n", line_hilight_width);
-	cfgstring += S_FMT("\tline_selection_width = %1.3f;\n", line_selection_width);
-	cfgstring += S_FMT("\tflat_alpha = %1.3f;\n", flat_alpha);
+	cfgstring += wxString::Format("\tline_hilight_width = %1.3f;\n", line_hilight_width);
+	cfgstring += wxString::Format("\tline_selection_width = %1.3f;\n", line_selection_width);
+	cfgstring += wxString::Format("\tflat_alpha = %1.3f;\n", flat_alpha);
 	cfgstring += "}\n";
 
 	mc.write(cfgstring.ToAscii(), cfgstring.size());
@@ -370,7 +370,7 @@ CONSOLE_COMMAND(ccfg, 1, false)
 		sort(list.begin(), list.end());
 
 		// Dump list to console
-		Log::console(S_FMT("%lu Colours:", list.size()));
+		Log::console(wxString::Format("%lu Colours:", list.size()));
 		for (const auto& a : list)
 			Log::console(a);
 	}
@@ -401,7 +401,8 @@ CONSOLE_COMMAND(ccfg, 1, false)
 
 		// Print colour
 		ColRGBA col = ColourConfiguration::colour(args[0]);
-		Log::console(S_FMT("Colour \"%s\" = %d %d %d %d %d", args[0], col.r, col.g, col.b, col.a, col.blend));
+		Log::console(
+			wxString::Format("Colour \"%s\" = %d %d %d %d %d", args[0], col.r, col.g, col.b, col.a, col.blend));
 	}
 }
 

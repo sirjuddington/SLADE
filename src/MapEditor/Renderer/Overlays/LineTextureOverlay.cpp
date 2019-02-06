@@ -363,10 +363,10 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const 
 	if (tex.textures.size() == 1)
 	{
 		auto& tex_info = OpenGL::Texture::info(tex_first);
-		str_texture    = S_FMT("%s (%dx%d)", tex.textures[0], tex_info.size.x, tex_info.size.y);
+		str_texture    = wxString::Format("%s (%dx%d)", tex.textures[0], tex_info.size.x, tex_info.size.y);
 	}
 	else if (tex.textures.size() > 1)
-		str_texture = S_FMT("Multiple (%lu)", tex.textures.size());
+		str_texture = wxString::Format("Multiple (%lu)", tex.textures.size());
 	else
 		str_texture = "- (None)";
 
@@ -482,7 +482,7 @@ void LineTextureOverlay::browseTexture(TexInfo& tex, const wxString& position)
 	// Open texture browser
 	MapTextureBrowser browser(
 		MapEditor::windowWx(), MapEditor::TextureType::Texture, texture, &(MapEditor::editContext().map()));
-	browser.SetTitle(S_FMT("Browse %s Texture", position));
+	browser.SetTitle(wxString::Format("Browse %s Texture", position));
 	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 	{
 		// Set texture

@@ -255,7 +255,7 @@ bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent)
 		// Try to read pname
 		if (!pnames->read(&pname, 8))
 		{
-			Log::error(S_FMT("PNAMES entry %i is corrupt", a));
+			Log::error(wxString::Format("PNAMES entry %i is corrupt", a));
 			return false;
 		}
 

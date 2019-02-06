@@ -80,7 +80,7 @@ wxString customFlags(int value, const vector<ArgValue>& custom_flags)
 	}
 
 	if (value || flags.empty())
-		flags.push_back(S_FMT("%d", value));
+		flags.push_back(wxString::Format("%d", value));
 
 	// Join 'em, in reverse again, to restore the original order
 	wxString out;
@@ -130,23 +130,23 @@ wxString Arg::valueString(int value) const
 
 	// Angle
 	case Angle:
-		return S_FMT("%d Degrees", value); // TODO: E/S/W/N/etc
+		return wxString::Format("%d Degrees", value); // TODO: E/S/W/N/etc
 
 	// Speed
 	case Speed:
 	{
 		wxString speed_label = speedLabel(value);
 		if (speed_label.empty())
-			return S_FMT("%d", value);
+			return wxString::Format("%d", value);
 		else
-			return S_FMT("%d (%s)", value, speed_label);
+			return wxString::Format("%d (%s)", value, speed_label);
 	}
 
 	default: break;
 	}
 
 	// Any other type
-	return S_FMT("%d", value);
+	return wxString::Format("%d", value);
 }
 
 // -----------------------------------------------------------------------------
@@ -161,15 +161,15 @@ wxString Arg::speedLabel(int value) const
 	if (value == 0)
 		return "broken";
 	if (value < custom_values.front().value)
-		return S_FMT("< %s", custom_values.front().name);
+		return wxString::Format("< %s", custom_values.front().name);
 	if (value > custom_values.back().value)
-		return S_FMT("> %s", custom_values.back().name);
+		return wxString::Format("> %s", custom_values.back().name);
 	for (unsigned a = 0; a < custom_values.size(); a++)
 	{
 		if (value == custom_values[a].value)
 			return custom_values[a].name;
 		if (a > 0 && value < custom_values[a].value)
-			return S_FMT("%s ~ %s", custom_values[a - 1].name, custom_values[a].name);
+			return wxString::Format("%s ~ %s", custom_values[a - 1].name, custom_values[a].name);
 	}
 	return "";
 }

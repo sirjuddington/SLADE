@@ -126,13 +126,13 @@ wxThread::ExitCode JumpToCalculator::Entry()
 
 				// Numbered block, add block name
 				if (name.IsNumber())
-					name = S_FMT("%s %s", block, name);
+					name = wxString::Format("%s %s", block, name);
 				// Unnamed block, use block name
 				if (name == "{" || name == ";")
 					name = block;
 
 				// Add jump point
-				jump_points += S_FMT("%d,%s,", tz.lineNo() - 1, CHR(name));
+				jump_points += wxString::Format("%d,%s,", tz.lineNo() - 1, CHR(name));
 			}
 		}
 
@@ -430,7 +430,7 @@ bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 	last_modified_ = App::runTimer();
 
 	// Update line numbers margin width
-	wxString numlines = S_FMT("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
+	wxString numlines = wxString::Format("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
 	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, numlines));
 
 	return true;
@@ -1013,7 +1013,7 @@ void TextEditorCtrl::jumpToLine()
 	// Prompt for line number
 	long line = wxGetNumberFromUser(
 		"Enter a line number to jump to",
-		S_FMT("Line number (1-%d):", numlines),
+		wxString::Format("Line number (1-%d):", numlines),
 		"Jump To Line",
 		GetCurrentLine() + 1,
 		1,
@@ -1453,7 +1453,7 @@ void TextEditorCtrl::onKeyUp(wxKeyEvent& e)
 void TextEditorCtrl::onCharAdded(wxStyledTextEvent& e)
 {
 	// Update line numbers margin width
-	wxString numlines = S_FMT("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
+	wxString numlines = wxString::Format("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
 	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, numlines));
 
 	// Auto indent

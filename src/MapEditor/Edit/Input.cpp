@@ -104,9 +104,9 @@ bool Input::mouseMove(int new_x, int new_y)
 	double   my = context_.snapToGrid(mouse_pos_map_.y, false);
 	wxString status_text;
 	if (context_.mapDesc().format == MapFormat::UDMF)
-		status_text = S_FMT("Position: (%1.3f, %1.3f)", mx, my);
+		status_text = wxString::Format("Position: (%1.3f, %1.3f)", mx, my);
 	else
-		status_text = S_FMT("Position: (%d, %d)", (int)mx, (int)my);
+		status_text = wxString::Format("Position: (%d, %d)", (int)mx, (int)my);
 	MapEditor::setStatusText(status_text, 3);
 
 	// Object edit
@@ -932,8 +932,8 @@ void Input::handleKeyBind2d(const wxString& name)
 					wxString key_accept = KeyBind::bind("map_edit_accept").keysAsString();
 					wxString key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 					context_.setFeatureHelp({ "Tag Edit",
-											  S_FMT("%s = Accept", key_accept),
-											  S_FMT("%s = Cancel", key_cancel),
+											  wxString::Format("%s = Accept", key_accept),
+											  wxString::Format("%s = Cancel", key_cancel),
 											  "Left Click = Toggle tagged sector" });
 				}
 			}
@@ -1010,7 +1010,7 @@ void Input::handleKeyBind3d(const wxString& name) const
 		{
 			render_3d_brightness = 1.0;
 		}
-		context_.addEditorMessage(S_FMT("Brightness set to %1.1f", (double)render_3d_brightness));
+		context_.addEditorMessage(wxString::Format("Brightness set to %1.1f", (double)render_3d_brightness));
 	}
 
 	// Toggle gravity
@@ -1176,6 +1176,6 @@ wxString Input::mouseButtonKBName(MouseButton button)
 	case Middle: return "mouse3";
 	case Mouse4: return "mouse4";
 	case Mouse5: return "mouse5";
-	default: return S_FMT("mouse%d", button);
+	default: return wxString::Format("mouse%d", button);
 	}
 }

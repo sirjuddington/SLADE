@@ -263,6 +263,6 @@ CONSOLE_COMMAND(splash, 0, false)
 		UI::showSplash(args[0], true);
 		float prog = StringUtils::toFloat(args[1]);
 		UI::setSplashProgress(prog);
-		UI::setSplashProgressMessage(S_FMT("Progress %s", args[1]));
+		UI::setSplashProgressMessage(wxString::Format("Progress %s", args[1]));
 	}
 }

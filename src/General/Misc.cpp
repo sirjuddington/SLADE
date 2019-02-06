@@ -223,7 +223,7 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 	{
 		int endscreen = lump - PaletteHack::SOD_END;
 		endscreen += 154;
-		wxString palname = S_FMT("PAL%05d", endscreen);
+		wxString palname = wxString::Format("PAL%05d", endscreen);
 		playpal          = archive->entry(palname, true);
 		sixbit           = true;
 	}
@@ -291,17 +291,17 @@ wxString Misc::sizeAsString(uint32_t size)
 {
 	if (size < 1024 || !size_as_string)
 	{
-		return S_FMT("%d", size);
+		return wxString::Format("%d", size);
 	}
 	else if (size < 1024 * 1024)
 	{
 		double kb = (double)size / 1024;
-		return S_FMT("%1.2fkb", kb);
+		return wxString::Format("%1.2fkb", kb);
 	}
 	else
 	{
 		double mb = (double)size / (1024 * 1024);
-		return S_FMT("%1.2fmb", mb);
+		return wxString::Format("%1.2fmb", mb);
 	}
 }
 
@@ -323,10 +323,10 @@ wxString Misc::lumpNameToFileName(wxString lump)
 			if ((chr < 'a' || chr > 'z') && (chr < 'A' || chr > 'Z') && (chr < '0' || chr > '9') && chr != '-'
 				&& chr != '.' && chr != '_' && chr != '~')
 			{
-				file += S_FMT("%%%02X", chr);
+				file += wxString::Format("%%%02X", chr);
 			}
 			else
-				file += S_FMT("%c", chr);
+				file += wxString::Format("%c", chr);
 		}
 		return file;
 	}
@@ -355,11 +355,11 @@ wxString Misc::fileNameToLumpName(wxString file)
 				unsigned long percent;
 				if (!code.ToULong(&percent, 16))
 					percent = 0;
-				lump += S_FMT("%c", percent);
+				lump += wxString::Format("%c", percent);
 				a += 2;
 			}
 			else
-				lump += S_FMT("%c", file[a]);
+				lump += wxString::Format("%c", file[a]);
 		}
 		return lump;
 	}
@@ -813,5 +813,5 @@ void Misc::readWindowInfo(Tokenizer& tz)
 void Misc::writeWindowInfo(wxFile& file)
 {
 	for (auto& a : window_info)
-		file.Write(S_FMT("\t%s %d %d %d %d\n", a.id, a.width, a.height, a.left, a.top));
+		file.Write(wxString::Format("\t%s %d %d %d %d\n", a.id, a.width, a.height, a.left, a.top));
 }

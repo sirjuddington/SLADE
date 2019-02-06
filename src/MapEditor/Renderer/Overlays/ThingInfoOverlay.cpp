@@ -82,21 +82,22 @@ void ThingInfoOverlay::update(MapThing* thing)
 
 	// Index + type
 	auto&    tt   = Game::configuration().thingType(thing->type());
-	wxString type = S_FMT("%s (Type %d)", tt.name(), thing->type());
+	wxString type = wxString::Format("%s (Type %d)", tt.name(), thing->type());
 	if (Global::debug)
-		info_text += S_FMT("Thing #%d (%d): %s\n", thing->index(), thing->objId(), type);
+		info_text += wxString::Format("Thing #%d (%d): %s\n", thing->index(), thing->objId(), type);
 	else
-		info_text += S_FMT("Thing #%d: %s\n", thing->index(), type);
+		info_text += wxString::Format("Thing #%d: %s\n", thing->index(), type);
 
 	// Position
 	if (map_format != MapFormat::Doom)
-		info_text += S_FMT("Position: %d, %d, %d\n", (int)thing->xPos(), (int)thing->yPos(), (int)(thing->zPos()));
+		info_text += wxString::Format(
+			"Position: %d, %d, %d\n", (int)thing->xPos(), (int)thing->yPos(), (int)(thing->zPos()));
 	else
-		info_text += S_FMT("Position: %d, %d\n", (int)thing->xPos(), (int)thing->yPos());
+		info_text += wxString::Format("Position: %d, %d\n", (int)thing->xPos(), (int)thing->yPos());
 
 	// Direction
 	int      angle = thing->angle();
-	wxString dir   = S_FMT("%d degrees", angle);
+	wxString dir   = wxString::Format("%d degrees", angle);
 	if (angle == 0)
 		dir = "East";
 	else if (angle == 45)
@@ -113,14 +114,14 @@ void ThingInfoOverlay::update(MapThing* thing)
 		dir = "South";
 	else if (angle == 315)
 		dir = "Southeast";
-	info_text += S_FMT("Direction: %s\n", dir);
+	info_text += wxString::Format("Direction: %s\n", dir);
 
 	// Special and Args (if in hexen format or udmf with thing args)
 	if (map_format == MapFormat::Hexen
 		|| (map_format == MapFormat::UDMF && Game::configuration().getUDMFProperty("arg0", MapObject::Type::Thing)))
 	{
 		int as_id = thing->special();
-		info_text += S_FMT("Special: %d (%s)\n", as_id, Game::configuration().actionSpecialName(as_id));
+		info_text += wxString::Format("Special: %d (%s)\n", as_id, Game::configuration().actionSpecialName(as_id));
 		wxString argxstr[2];
 		argxstr[0] = thing->stringProperty("arg0str");
 		argxstr[1] = thing->stringProperty("arg1str");
@@ -131,18 +132,18 @@ void ThingInfoOverlay::update(MapThing* thing)
 			argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(thing->args().data(), argxstr);
 
 		if (!argstr.IsEmpty())
-			info_text += S_FMT("%s\n", argstr);
+			info_text += wxString::Format("%s\n", argstr);
 		else
 			info_text += "No Args\n";
 	}
 
 	// Flags
 	if (map_format != MapFormat::UDMF)
-		info_text += S_FMT("Flags: %s\n", Game::configuration().thingFlagsString(thing->flags()));
+		info_text += wxString::Format("Flags: %s\n", Game::configuration().thingFlagsString(thing->flags()));
 
 	// TID (if in doom64/hexen/udmf format)
 	if (map_format != MapFormat::Doom)
-		info_text += S_FMT("TID: %i", thing->id());
+		info_text += wxString::Format("TID: %i", thing->id());
 
 	if (info_text.EndsWith("\n"))
 		info_text.RemoveLast(1);
@@ -204,9 +205,9 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 	if (!tex)
 	{
 		if (use_zeth_icons && zeth_icon_ >= 0)
-			tex = MapEditor::textureManager().editorImage(S_FMT("zethicons/zeth%02d", zeth_icon_)).gl_id;
+			tex = MapEditor::textureManager().editorImage(wxString::Format("zethicons/zeth%02d", zeth_icon_)).gl_id;
 		if (!tex)
-			tex = MapEditor::textureManager().editorImage(S_FMT("thing/%s", icon_)).gl_id;
+			tex = MapEditor::textureManager().editorImage(wxString::Format("thing/%s", icon_)).gl_id;
 		isicon = true;
 	}
 	glEnable(GL_TEXTURE_2D);

@@ -166,27 +166,27 @@ void MapEditorWindow::saveLayout()
 	// Console pane
 	file.Write("\"console\" ");
 	wxString pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("console"));
-	file.Write(S_FMT("\"%s\"\n", pinf));
+	file.Write(wxString::Format("\"%s\"\n", pinf));
 
 	// Item info pane
 	file.Write("\"item_props\" ");
 	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("item_props"));
-	file.Write(S_FMT("\"%s\"\n", pinf));
+	file.Write(wxString::Format("\"%s\"\n", pinf));
 
 	// Script editor pane
 	file.Write("\"script_editor\" ");
 	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("script_editor"));
-	file.Write(S_FMT("\"%s\"\n", pinf));
+	file.Write(wxString::Format("\"%s\"\n", pinf));
 
 	// Map checks pane
 	file.Write("\"map_checks\" ");
 	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("map_checks"));
-	file.Write(S_FMT("\"%s\"\n", pinf));
+	file.Write(wxString::Format("\"%s\"\n", pinf));
 
 	// Undo history pane
 	file.Write("\"undo_history\" ");
 	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("undo_history"));
-	file.Write(S_FMT("\"%s\"\n", pinf));
+	file.Write(wxString::Format("\"%s\"\n", pinf));
 
 	// Close file
 	file.Close();
@@ -538,7 +538,8 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 		if (!openMap(md))
 		{
 			Hide();
-			wxMessageBox(S_FMT("Unable to open md %s: %s", md.name, Global::error), "Invalid md error", wxICON_ERROR);
+			wxMessageBox(
+				wxString::Format("Unable to open md %s: %s", md.name, Global::error), "Invalid md error", wxICON_ERROR);
 			return false;
 		}
 		else
@@ -556,7 +557,7 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 	if (MapEditor::editContext().map().isModified())
 	{
 		wxMessageDialog md{ this,
-							S_FMT("Save changes to map %s?", MapEditor::editContext().mapDesc().name),
+							wxString::Format("Save changes to map %s?", MapEditor::editContext().mapDesc().name),
 							"Unsaved Changes",
 							wxYES_NO | wxCANCEL };
 
@@ -638,9 +639,9 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 
 		// Set window title
 		if (archive)
-			SetTitle(S_FMT("SLADE - %s of %s", map.name, archive->filename(false)));
+			SetTitle(wxString::Format("SLADE - %s of %s", map.name, archive->filename(false)));
 		else
-			SetTitle(S_FMT("SLADE - %s (UNSAVED)", map.name));
+			SetTitle(wxString::Format("SLADE - %s (UNSAVED)", map.name));
 
 		// Create backup
 		if (map.head
@@ -761,17 +762,17 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	}
 
 	// Build command line
-	command.Replace("$f", S_FMT("\"%s\"", filename));
+	command.Replace("$f", wxString::Format("\"%s\"", filename));
 	command.Replace("$o", wxString(options));
 
 	// Run nodebuilder
 	if (wxFileExists(builder.path))
 	{
 		wxArrayString out;
-		Log::info(S_FMT("execute \"%s %s\"", builder.path, command));
+		Log::info(wxString::Format("execute \"%s %s\"", builder.path, command));
 		wxGetApp().SetTopWindow(this);
 		auto focus = wxWindow::FindFocus();
-		wxExecute(S_FMT("\"%s\" %s", builder.path, command), out, wxEXEC_HIDE_CONSOLE);
+		wxExecute(wxString::Format("\"%s\" %s", builder.path, command), out, wxEXEC_HIDE_CONSOLE);
 		wxGetApp().SetTopWindow(MainEditor::windowWx());
 		if (focus)
 			focus->SetFocusFromKbd();
@@ -966,7 +967,7 @@ bool MapEditorWindow::saveMapAs()
 	}
 
 	// Set window title
-	SetTitle(S_FMT("SLADE - %s of %s", mdesc_current.name, wad.filename(false)));
+	SetTitle(wxString::Format("SLADE - %s of %s", mdesc_current.name, wad.filename(false)));
 
 	return true;
 }
@@ -1017,7 +1018,7 @@ bool MapEditorWindow::tryClose()
 	if (MapEditor::editContext().map().isModified())
 	{
 		wxMessageDialog md{ this,
-							S_FMT("Save changes to map %s?", MapEditor::editContext().mapDesc().name),
+							wxString::Format("Save changes to map %s?", MapEditor::editContext().mapDesc().name),
 							"Unsaved Changes",
 							wxYES_NO | wxCANCEL };
 		int             answer = md.ShowModal();

@@ -90,8 +90,9 @@ void SStartPage::init()
 #ifdef USE_WEBVIEW_STARTPAGE
 	html_startpage_->Bind(wxEVT_WEBVIEW_NAVIGATING, &SStartPage::onHTMLLinkClicked, this);
 
-	html_startpage_->Bind(
-		wxEVT_WEBVIEW_ERROR, [&](wxWebViewEvent& e) { Log::error(S_FMT("wxWebView Error: %s", CHR(e.GetString()))); });
+	html_startpage_->Bind(wxEVT_WEBVIEW_ERROR, [&](wxWebViewEvent& e) {
+		Log::error(wxString::Format("wxWebView Error: %s", CHR(e.GetString())));
+	});
 
 	if (App::platform() == App::Platform::Windows)
 	{
@@ -222,7 +223,7 @@ void SStartPage::load(bool new_tip)
 				icon = "folder";
 
 			// Add recent file row
-			recent += S_FMT(
+			recent += wxString::Format(
 				"<div class=\"link\">"
 				"<img src=\"%s.png\" class=\"link\" />"
 				"<a class=\"link\" href=\"recent://%d\">%s</a>"
@@ -311,7 +312,7 @@ void SStartPage::load(bool new_tip)
 
 		last_tip_index_ = tipindex;
 		tip = tips_[tipindex];
-		Log::debug(S_FMT("Tip index %d/%lu", last_tip_index_, (int)tips_.size()));
+		Log::debug(wxString::Format("Tip index %d/%lu", last_tip_index_, (int)tips_.size()));
 	}
 
 	// Generate recent files string
@@ -326,7 +327,7 @@ void SStartPage::load(bool new_tip)
 			recent += "<br/>\n";
 
 		// Add recent file link
-		recent += S_FMT("<a href=\"recent://%d\">%s</a>", a, App::archiveManager().recentFile(a));
+		recent += wxString::Format("<a href=\"recent://%d\">%s</a>", a, App::archiveManager().recentFile(a));
 	}
 
 	// Insert tip and recent files into html

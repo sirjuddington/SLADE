@@ -347,7 +347,7 @@ wxString RunDialog::selectedCommandLine(Archive* archive, const wxString& map_na
 		if (exe_path.IsEmpty())
 			return "";
 
-		wxString path = S_FMT("\"%s\"", exe_path);
+		wxString path = wxString::Format("\"%s\"", exe_path);
 
 		unsigned cfg = choice_config_->GetSelection();
 		if (cfg < exe->configs.size())
@@ -358,20 +358,20 @@ wxString RunDialog::selectedCommandLine(Archive* archive, const wxString& map_na
 
 		// IWAD
 		auto bra = App::archiveManager().baseResourceArchive();
-		path.Replace("%i", S_FMT("\"%s\"", bra ? bra->filename() : ""));
+		path.Replace("%i", wxString::Format("\"%s\"", bra ? bra->filename() : ""));
 
 		// Resources
 		path.Replace("%r", selectedResourceList());
 
 		// Archive (+ temp map if specified)
 		if (map_file.IsEmpty() && archive)
-			path.Replace("%a", S_FMT("\"%s\"", archive->filename()));
+			path.Replace("%a", wxString::Format("\"%s\"", archive->filename()));
 		else
 		{
 			if (archive)
-				path.Replace("%a", S_FMT("\"%s\" \"%s\"", archive->filename(), map_file));
+				path.Replace("%a", wxString::Format("\"%s\" \"%s\"", archive->filename(), map_file));
 			else
-				path.Replace("%a", S_FMT("\"%s\"", map_file));
+				path.Replace("%a", wxString::Format("\"%s\"", map_file));
 		}
 
 		// Running an archive yields no map name, so don't try to warp
@@ -399,7 +399,7 @@ wxString RunDialog::selectedCommandLine(Archive* archive, const wxString& map_na
 
 				// ExMx
 				else if (map_name.length() == 4 && mn[0] == 'e' && mn[2] == 'm')
-					path.Replace("%mw", S_FMT("%c %c", mn[1], mn[3]));
+					path.Replace("%mw", wxString::Format("%c %c", mn[1], mn[3]));
 			}
 		}
 
@@ -410,7 +410,7 @@ wxString RunDialog::selectedCommandLine(Archive* archive, const wxString& map_na
 			path += text_extra_params_->GetValue();
 		}
 
-		Log::info(2, S_FMT("Run command: %s", path));
+		Log::info(2, wxString::Format("Run command: %s", path));
 		return path;
 	}
 
@@ -517,13 +517,13 @@ void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 	if (choice_config_->GetSelection() >= 0)
 		init_params = exe->configs[choice_config_->GetSelection()].second;
 
-	RunConfigDialog dlg(this, S_FMT("Add Run Config for %s", exe->name), "", init_params);
+	RunConfigDialog dlg(this, wxString::Format("Add Run Config for %s", exe->name), "", init_params);
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		wxString name = dlg.name();
 
 		if (name.IsEmpty())
-			name = S_FMT("Config %d", choice_config_->GetCount() + 1);
+			name = wxString::Format("Config %d", choice_config_->GetCount() + 1);
 
 		Executables::addGameExeConfig(choice_game_exes_->GetSelection(), name, dlg.params());
 		choice_config_->AppendString(name);

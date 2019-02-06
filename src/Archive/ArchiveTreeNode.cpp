@@ -554,7 +554,7 @@ void ArchiveTreeNode::ensureUniqueName(ArchiveEntry* entry)
 
 		if (S_CMPNOCASE(entries_[index]->name(false), name))
 		{
-			fn.SetName(S_FMT("%s%d", CHR(entry->name(true)), ++number));
+			fn.SetName(wxString::Format("%s%d", CHR(entry->name(true)), ++number));
 			name  = fn.GetFullName();
 			index = 0;
 			continue;

@@ -128,7 +128,7 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 	if (!state_sprites[state_first].empty())
 		props["sprite"] = state_sprites[state_first] + "?";
 
-	Log::debug(2, S_FMT("Parsed states, got sprite %s", CHR(props["sprite"].stringValue())));
+	Log::debug(2, wxString::Format("Parsed states, got sprite %s", CHR(props["sprite"].stringValue())));
 
 
 
@@ -416,10 +416,10 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 			tz.adv();
 		}
 
-		Log::info(3, S_FMT("Parsed actor %s: %d", name, ednum));
+		Log::info(3, wxString::Format("Parsed actor %s: %d", name, ednum));
 	}
 	else
-		Log::warning(S_FMT("Warning: Invalid actor definition for %s", name));
+		Log::warning(wxString::Format("Warning: Invalid actor definition for %s", name));
 
 	// Ignore actors filtered for other games,
 	// and actors with a negative or null type
@@ -541,7 +541,7 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 		else if (tz.checkNC("scale"))
 			found_props["scale"] = tz.next().asFloat();
 		else if (tz.checkNC("translation1"))
-			found_props["translation"] = S_FMT("doom%d", tz.next().asInt());
+			found_props["translation"] = wxString::Format("doom%d", tz.next().asInt());
 	} while (!tz.check("}") && !tz.atEnd());
 
 	// Add only if a DoomEdNum is present
@@ -557,10 +557,11 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 		// Set parsed properties
 		types[type].loadProps(found_props);
 
-		Log::info(3, S_FMT("Parsed %s %s: %d", group.length() ? group : "decoration", name, type));
+		Log::info(3, wxString::Format("Parsed %s %s: %d", group.length() ? group : "decoration", name, type));
 	}
 	else
-		Log::info(3, S_FMT("Not adding %s %s, no editor number", group.length() ? group : "decoration", name));
+		Log::info(
+			3, wxString::Format("Not adding %s %s, no editor number", group.length() ? group : "decoration", name));
 }
 
 // -----------------------------------------------------------------------------
@@ -585,7 +586,7 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 			// Check #include path could be resolved
 			if (!inc_entry)
 			{
-				Log::warning(S_FMT(
+				Log::warning(wxString::Format(
 					"Warning parsing DECORATE entry %s: "
 					"Unable to find #included entry \"%s\" at line %d, skipping",
 					CHR(entry->name()),
@@ -638,7 +639,7 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, v
 	if (decorate_entries.empty())
 		return false;
 
-	Log::info(2, S_FMT("Parsing DECORATE entries found in archive %s", archive->filename()));
+	Log::info(2, wxString::Format("Parsing DECORATE entries found in archive %s", archive->filename()));
 
 	// Get DECORATE entry type (all parsed DECORATE entries will be set to this)
 	etype_decorate = EntryType::fromId("decorate");
@@ -683,11 +684,11 @@ CONSOLE_COMMAND(test_decorate, 0, false)
 	}
 
 	for (auto& i : types)
-		Log::console(S_FMT("%d: %s", i.first, CHR(i.second.stringDesc())));
+		Log::console(wxString::Format("%d: %s", i.first, CHR(i.second.stringDesc())));
 	if (!parsed.empty())
 	{
 		Log::console("Parsed types with no DoomEdNum:");
 		for (auto& i : parsed)
-			Log::console(S_FMT("%s: %s", CHR(i.className()), CHR(i.stringDesc())));
+			Log::console(wxString::Format("%s: %s", CHR(i.className()), CHR(i.stringDesc())));
 	}
 }

@@ -244,7 +244,7 @@ void EntryPanel::updateStatus()
 	{
 		wxString name = entry_->name();
 		wxString type = entry_->typeString();
-		wxString text = S_FMT(
+		wxString text = wxString::Format(
 			"%d: %s, %d bytes, %s", entry_->parentDir()->entryIndex(entry_), name, entry_->size(), type);
 
 		theMainWindow->CallAfter(&MainWindow::SetStatusText, text, 1);

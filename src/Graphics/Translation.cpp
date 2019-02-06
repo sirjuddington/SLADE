@@ -370,7 +370,7 @@ void Translation::read(const uint8_t* data)
 		}
 		val = data[i];
 	}
-	Log::info(3, S_FMT("Translation table analyzed as " + asText()));
+	Log::info(3, wxString::Format("Translation table analyzed as " + asText()));
 }
 
 // -----------------------------------------------------------------------------
@@ -384,7 +384,7 @@ wxString Translation::asText()
 	{
 		// Go through translation ranges
 		for (auto& translation : translations_)
-			ret += S_FMT("\"%s\", ", translation->asText()); // Add range to string
+			ret += wxString::Format("\"%s\", ", translation->asText()); // Add range to string
 
 		// If any translations were defined, remove last ", "
 		if (!ret.IsEmpty())
@@ -395,7 +395,7 @@ wxString Translation::asText()
 		// ZDoom built-in translation
 		ret = built_in_name_;
 		if (built_in_name_ == "Desaturate")
-			ret += S_FMT(", %d", desat_amount_);
+			ret += wxString::Format(", %d", desat_amount_);
 	}
 
 	return ret;

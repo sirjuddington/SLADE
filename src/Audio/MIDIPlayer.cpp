@@ -233,14 +233,15 @@ wxString MIDIPlayer::info()
 			num_tracks        = data_.readB16(pos + 2);
 			uint16_t time_div = data_.readB16(pos + 4);
 			if (format == 0)
-				ret += S_FMT("MIDI format 0 with time division %u\n", time_div);
+				ret += wxString::Format("MIDI format 0 with time division %u\n", time_div);
 			else
-				ret += S_FMT("MIDI format %u with %u tracks and time division %u\n", format, num_tracks, time_div);
+				ret += wxString::Format(
+					"MIDI format %u with %u tracks and time division %u\n", format, num_tracks, time_div);
 		}
 		else if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('r' << 8) | 'k')) // MTrk
 		{
 			if (format == 2)
-				ret += S_FMT("\nTrack %u/%u\n", ++track_counter, num_tracks);
+				ret += wxString::Format("\nTrack %u/%u\n", ++track_counter, num_tracks);
 			size_t tpos = pos;
 			while (tpos + 4 < chunk_end)
 			{
@@ -280,13 +281,13 @@ wxString MIDIPlayer::info()
 
 					switch (evtype)
 					{
-					case 1: ret += S_FMT("Text: %s\n", tmp); break;
-					case 2: ret += S_FMT("Copyright: %s\n", tmp); break;
-					case 3: ret += S_FMT("Title: %s\n", tmp); break;
-					case 4: ret += S_FMT("Instrument: %s\n", tmp); break;
-					case 5: ret += S_FMT("Lyrics: %s\n", tmp); break;
-					case 6: ret += S_FMT("Marker: %s\n", tmp); break;
-					case 7: ret += S_FMT("Cue point: %s\n", tmp); break;
+					case 1: ret += wxString::Format("Text: %s\n", tmp); break;
+					case 2: ret += wxString::Format("Copyright: %s\n", tmp); break;
+					case 3: ret += wxString::Format("Title: %s\n", tmp); break;
+					case 4: ret += wxString::Format("Instrument: %s\n", tmp); break;
+					case 5: ret += wxString::Format("Lyrics: %s\n", tmp); break;
+					case 6: ret += wxString::Format("Marker: %s\n", tmp); break;
+					case 7: ret += wxString::Format("Cue point: %s\n", tmp); break;
 					default: break;
 					}
 					tpos += evsize;

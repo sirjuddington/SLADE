@@ -913,20 +913,20 @@ void MapSector::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 void MapSector::writeUDMF(wxString& def)
 {
-	def = S_FMT("sector//#%u\n{\n", index_);
+	def = wxString::Format("sector//#%u\n{\n", index_);
 
 	// Basic properties
-	def += S_FMT("texturefloor=\"%s\";\ntextureceiling=\"%s\";\n", floor_.texture, ceiling_.texture);
+	def += wxString::Format("texturefloor=\"%s\";\ntextureceiling=\"%s\";\n", floor_.texture, ceiling_.texture);
 	if (floor_.height != 0)
-		def += S_FMT("heightfloor=%d;\n", floor_.height);
+		def += wxString::Format("heightfloor=%d;\n", floor_.height);
 	if (ceiling_.height != 0)
-		def += S_FMT("heightceiling=%d;\n", ceiling_.height);
+		def += wxString::Format("heightceiling=%d;\n", ceiling_.height);
 	if (light_ != 160)
-		def += S_FMT("lightlevel=%d;\n", light_);
+		def += wxString::Format("lightlevel=%d;\n", light_);
 	if (special_ != 0)
-		def += S_FMT("special=%d;\n", special_);
+		def += wxString::Format("special=%d;\n", special_);
 	if (id_ != 0)
-		def += S_FMT("id=%d;\n", id_);
+		def += wxString::Format("id=%d;\n", id_);
 
 	// Other properties
 	if (!properties_.isEmpty())

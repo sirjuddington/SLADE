@@ -515,7 +515,7 @@ bool ArchiveEntry::exportFile(const wxString& filename)
 	// Check it opened ok
 	if (!file.IsOpened())
 	{
-		Global::error = S_FMT("Unable to open file %s for writing", filename);
+		Global::error = wxString::Format("Unable to open file %s for writing", filename);
 		return false;
 	}
 

@@ -578,7 +578,7 @@ void ArchiveManagerPanel::updateArchiveTabTitle(int index) const
 		{
 			wxString title;
 			if (archive->isModified())
-				title = S_FMT("%s *", archive->filename(false));
+				title = wxString::Format("%s *", archive->filename(false));
 			else
 				title = archive->filename(false);
 			stc_archives_->SetPageText(a, title);
@@ -874,7 +874,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 			return;
 		}
 
-		stc_archives_->AddPage(txed, S_FMT("Texture Editor (%s)", archive->filename(false)), true);
+		stc_archives_->AddPage(txed, wxString::Format("Texture Editor (%s)", archive->filename(false)), true);
 		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, Icons::getIcon(Icons::Entry, "texturex"));
 		txed->SetName("texture");
 		txed->setSelection(entry);
@@ -999,7 +999,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 	}
 
 	// Create new tab for the EntryPanel
-	stc_archives_->AddPage(ep, S_FMT("%s/%s", entry->parent()->filename(false), entry->name()), true);
+	stc_archives_->AddPage(ep, wxString::Format("%s/%s", entry->parent()->filename(false), entry->name()), true);
 	stc_archives_->SetPageBitmap(
 		stc_archives_->GetPageCount() - 1, Icons::getIcon(Icons::Entry, entry->type()->icon()));
 	ep->SetName("entry");
@@ -1086,7 +1086,7 @@ void ArchiveManagerPanel::openFile(const wxString& filename) const
 	auto new_archive = App::archiveManager().openArchive(filename);
 
 	sw.Pause();
-	Log::info(S_FMT("Opening took %d ms", (int)sw.Time()));
+	Log::info(wxString::Format("Opening took %d ms", (int)sw.Time()));
 
 	// Hide splash screen
 	UI::hideSplash();
@@ -1095,7 +1095,7 @@ void ArchiveManagerPanel::openFile(const wxString& filename) const
 	if (!new_archive)
 	{
 		// If archive didn't open ok, show error message
-		wxMessageBox(S_FMT("Error opening %s:\n%s", filename, Global::error), "Error", wxICON_ERROR);
+		wxMessageBox(wxString::Format("Error opening %s:\n%s", filename, Global::error), "Error", wxICON_ERROR);
 	}
 }
 
@@ -1128,7 +1128,7 @@ void ArchiveManagerPanel::openDirAsArchive(const wxString& dir) const
 	auto new_archive = App::archiveManager().openDirArchive(dir);
 
 	sw.Pause();
-	Log::info(S_FMT("Opening took %d ms", (int)sw.Time()));
+	Log::info(wxString::Format("Opening took %d ms", (int)sw.Time()));
 
 	// Hide splash screen
 	UI::hideSplash();
@@ -1137,7 +1137,7 @@ void ArchiveManagerPanel::openDirAsArchive(const wxString& dir) const
 	if (!new_archive)
 	{
 		// If archive didn't open ok, show error message
-		wxMessageBox(S_FMT("Error opening directory %s:\n%s", dir, Global::error), "Error", wxICON_ERROR);
+		wxMessageBox(wxString::Format("Error opening directory %s:\n%s", dir, Global::error), "Error", wxICON_ERROR);
 	}
 }
 
@@ -1240,7 +1240,7 @@ void ArchiveManagerPanel::saveAll() const
 			if (!archive->save())
 			{
 				// If there was an error pop up a message box
-				wxMessageBox(S_FMT("Error: %s", Global::error), "Error", wxICON_ERROR);
+				wxMessageBox(wxString::Format("Error: %s", Global::error), "Error", wxICON_ERROR);
 			}
 		}
 		else
@@ -1264,7 +1264,7 @@ void ArchiveManagerPanel::saveAll() const
 				if (!archive->save(filename))
 				{
 					// If there was an error pop up a message box
-					wxMessageBox(S_FMT("Error: %s", Global::error), "Error", wxICON_ERROR);
+					wxMessageBox(wxString::Format("Error: %s", Global::error), "Error", wxICON_ERROR);
 				}
 
 				// Save 'dir_last'
@@ -1293,7 +1293,7 @@ void ArchiveManagerPanel::checkDirArchives()
 		if (VECTOR_EXISTS(checking_archives_, archive))
 			continue;
 
-		Log::info(2, S_FMT("Checking %s for external changes...", CHR(archive->filename())));
+		Log::info(2, wxString::Format("Checking %s for external changes...", CHR(archive->filename())));
 		checking_archives_.push_back(archive);
 		auto check = new DirArchiveCheck(this, (DirArchive*)archive);
 		check->Create();
@@ -1355,7 +1355,7 @@ bool ArchiveManagerPanel::saveArchive(Archive* archive) const
 		if (!archive->save())
 		{
 			// If there was an error pop up a message box
-			wxMessageBox(S_FMT("Error: %s", Global::error), "Error", wxICON_ERROR);
+			wxMessageBox(wxString::Format("Error: %s", Global::error), "Error", wxICON_ERROR);
 			return false;
 		}
 
@@ -1399,7 +1399,7 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive) const
 		if (!archive->save(filename))
 		{
 			// If there was an error pop up a message box
-			wxMessageBox(S_FMT("Error: %s", Global::error), "Error", wxICON_ERROR);
+			wxMessageBox(wxString::Format("Error: %s", Global::error), "Error", wxICON_ERROR);
 			return false;
 		}
 
@@ -1453,7 +1453,7 @@ bool ArchiveManagerPanel::beforeCloseArchive(Archive* archive)
 		asked_save_unchanged_ = true;
 		wxMessageDialog md(
 			this,
-			S_FMT("Save changes to archive %s?", archive->filename(false)),
+			wxString::Format("Save changes to archive %s?", archive->filename(false)),
 			"Unsaved Changes",
 			wxYES_NO | wxCANCEL);
 		int result = md.ShowModal();
@@ -2173,7 +2173,7 @@ void ArchiveManagerPanel::onArchiveTabClose(wxAuiNotebookEvent& e)
 			if (autosave_entry_changes > 1)
 			{
 				int result = wxMessageBox(
-					S_FMT("Save changes to entry \"%s\"?", ep->entry()->name()),
+					wxString::Format("Save changes to entry \"%s\"?", ep->entry()->name()),
 					"Unsaved Changes",
 					wxYES_NO | wxCANCEL | wxICON_QUESTION);
 
@@ -2234,7 +2234,8 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 	// Check the archive is still open
 	if (App::archiveManager().archiveIndex(change_list.archive) >= 0)
 	{
-		Log::info(2, S_FMT("Finished checking %s for external changes", CHR(change_list.archive->filename())));
+		Log::info(
+			2, wxString::Format("Finished checking %s for external changes", CHR(change_list.archive->filename())));
 
 		if (!change_list.changes.empty())
 		{

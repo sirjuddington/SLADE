@@ -304,7 +304,7 @@ bool TarArchive::open(MemChunk& mc)
 
 		if (!tarChecksum(&header))
 		{
-			Log::warning(S_FMT("Invalid checksum for block at 0x%x", mc.currentPos() - 512));
+			Log::warning(wxString::Format("Invalid checksum for block at 0x%x", mc.currentPos() - 512));
 			continue;
 		}
 
@@ -427,7 +427,8 @@ bool TarArchive::write(MemChunk& mc, bool update)
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 99)
 		{
-			Log::warning(S_FMT("Entry %s path is too long (> 99 characters), putting it in the root directory", name));
+			Log::warning(wxString::Format(
+				"Entry %s path is too long (> 99 characters), putting it in the root directory", name));
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 99)
@@ -489,7 +490,7 @@ bool TarArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("TarArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error(wxString::Format("TarArchive::loadEntryData: Unable to open archive file %s", filename_));
 		return false;
 	}
 
