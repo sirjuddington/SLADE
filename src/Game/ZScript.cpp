@@ -80,7 +80,7 @@ void logParserMessage(ParsedStatement& statement, Log::MessageType type, const w
 	if (statement.entry)
 		location = statement.entry->path(true);
 
-	Log::message(type, wxString::Format("%s:%u: %s", CHR(location), statement.line, CHR(message)));
+	Log::message(type, wxString::Format("%s:%u: %s", CHR(location), statement.line, CHR(message)).ToStdString());
 }
 
 // -----------------------------------------------------------------------------

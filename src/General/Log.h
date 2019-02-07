@@ -15,49 +15,117 @@ enum class MessageType
 
 struct Message
 {
-	wxString    message;
+	std::string message;
 	MessageType type;
-	time_t      timestamp;
+	std::tm     timestamp;
 
-	wxString formattedMessageLine() const;
+	Message(std::string_view message, MessageType type, std::tm timestamp) :
+		message{ message.data(), message.size() },
+		type{ type },
+		timestamp{ timestamp }
+	{
+	}
+
+	std::string formattedMessageLine() const;
 };
 
 const vector<Message>& history();
 int                    verbosity();
 void                   setVerbosity(int verbosity);
 void                   init();
+void                   message(MessageType type, int level, std::string_view text);
+void                   message(MessageType type, std::string_view text);
+void                   message(MessageType type, int level, std::string_view text, fmt::format_args args);
+void                   message(MessageType type, std::string_view text, fmt::format_args args);
 vector<Message*>       since(time_t time, MessageType type = MessageType::Any);
 
-void message(MessageType type, int level, const char* text);
-void message(MessageType type, int level, const wxString& text);
-void message(MessageType type, const char* text);
-void message(MessageType type, const wxString& text);
 
-// clang-format off
-inline void	info(int level, const char* text) { message(MessageType::Info, level, text); }
-inline void	info(int level, const wxString& text) { message(MessageType::Info, level, text); }
-inline void	info(const char* text) { message(MessageType::Info, text); }
-inline void	info(const wxString& text) { message(MessageType::Info, text); }
+// Message shortcuts by type
+// -----------------------------------------------------------------------------
 
-inline void	warning(int level, const char* text) { message(MessageType::Warning, level, text); }
-inline void	warning(int level, const wxString& text) { message(MessageType::Warning, level, text); }
-inline void	warning(const char* text) { message(MessageType::Warning, text); }
-inline void	warning(const wxString& text) { message(MessageType::Warning, text); }
+inline void info(int level, const wxString& text)
+{
+	message(MessageType::Info, level, text.ToStdString());
+}
+inline void info(const wxString& text)
+{
+	message(MessageType::Info, text.ToStdString());
+}
 
-inline void	error(int level, const char* text) { message(MessageType::Error, level, text); }
-inline void	error(int level, const wxString& text) { message(MessageType::Error, level, text); }
-inline void	error(const char* text) { message(MessageType::Error, text); }
-inline void	error(const wxString& text) { message(MessageType::Error, text); }
+inline void warning(int level, const wxString& text)
+{
+	message(MessageType::Warning, level, text.ToStdString());
+}
+inline void warning(const wxString& text)
+{
+	message(MessageType::Warning, text.ToStdString());
+}
 
-void debug(int level, const char* text);
+inline void error(int level, const wxString& text)
+{
+	message(MessageType::Error, level, text.ToStdString());
+}
+inline void error(const wxString& text)
+{
+	message(MessageType::Error, text.ToStdString());
+}
+
+// These can't be inline, need access to Global::debug
 void debug(int level, const wxString& text);
-void debug(const char* text);
 void debug(const wxString& text);
+void debug(int level, std::string_view text, fmt::format_args args);
+void debug(std::string_view text, fmt::format_args args);
 
-inline void	console(const char* text) { message(MessageType::Console, text); }
-inline void	console(const wxString& text) { message(MessageType::Console, text); }
-// clang-format on
+inline void console(const wxString& text)
+{
+	message(MessageType::Console, text.ToStdString());
+}
+
+
+// Message shortcuts by type with args for fmt::format
+// -----------------------------------------------------------------------------
+
+template<typename... Args> void info(int level, std::string_view text, const Args&... args)
+{
+	message(MessageType::Info, level, text, fmt::make_format_args(args...));
+}
+template<typename... Args> void info(std::string_view text, const Args&... args)
+{
+	message(MessageType::Info, text, fmt::make_format_args(args...));
+}
+
+template<typename... Args> void warning(int level, std::string_view text, const Args&... args)
+{
+	message(MessageType::Warning, level, text, fmt::make_format_args(args...));
+}
+template<typename... Args> void warning(std::string_view text, const Args&... args)
+{
+	message(MessageType::Warning, text, fmt::make_format_args(args...));
+}
+
+template<typename... Args> void error(int level, std::string_view text, const Args&... args)
+{
+	message(MessageType::Error, level, text, fmt::make_format_args(args...));
+}
+template<typename... Args> void error(std::string_view text, const Args&... args)
+{
+	message(MessageType::Error, text, fmt::make_format_args(args...));
+}
+
+template<typename... Args> void debug(int level, std::string_view text, const Args&... args)
+{
+	if (Global::debug)
+		message(MessageType::Debug, level, text, fmt::make_format_args(args...));
+}
+template<typename... Args> void debug(std::string_view text, const Args&... args)
+{
+	if (Global::debug)
+		message(MessageType::Debug, text, fmt::make_format_args(args...));
+}
+
+
 } // namespace Log
+
 
 // Debug helper type
 // Note: NDEBUG is a standard C macro indicating that assert()s should be
