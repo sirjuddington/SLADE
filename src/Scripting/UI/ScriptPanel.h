@@ -15,13 +15,13 @@ public:
 
 	TextEditorCtrl*        editor() const { return text_editor_; }
 	ScriptManager::Script* script() const { return script_; }
-	string                 currentText() const;
+	wxString               currentText() const;
 	bool                   modified() const;
 
 	bool close();
 	bool save();
 
-	bool handleAction(const string& id);
+	bool handleAction(const wxString& id);
 
 private:
 	ScriptManager::Script* script_             = nullptr;

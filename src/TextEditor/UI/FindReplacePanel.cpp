@@ -140,7 +140,7 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 // -----------------------------------------------------------------------------
 // Sets the 'Find' text to [find], selects all and focuses the text box
 // -----------------------------------------------------------------------------
-void FindReplacePanel::setFindText(const string& find) const
+void FindReplacePanel::setFindText(const wxString& find) const
 {
 	text_find_->SetFocus();
 	text_find_->SetValue(find);
@@ -150,9 +150,9 @@ void FindReplacePanel::setFindText(const string& find) const
 // -----------------------------------------------------------------------------
 // Returns the current 'Find' text
 // -----------------------------------------------------------------------------
-string FindReplacePanel::findText() const
+wxString FindReplacePanel::findText() const
 {
-	string find = text_find_->GetValue();
+	wxString find = text_find_->GetValue();
 
 	if (cb_allow_escape_->GetValue())
 	{
@@ -185,9 +185,9 @@ int FindReplacePanel::findFlags() const
 // -----------------------------------------------------------------------------
 // Returns the current 'Replace' text
 // -----------------------------------------------------------------------------
-string FindReplacePanel::replaceText() const
+wxString FindReplacePanel::replaceText() const
 {
-	string replace = text_replace_->GetValue();
+	wxString replace = text_replace_->GetValue();
 
 	if (cb_allow_escape_->GetValue())
 	{

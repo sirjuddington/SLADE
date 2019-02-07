@@ -34,7 +34,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/All.h"
 #include "Dialogs/ExtMessageDialog.h"
-#include "External/sol/sol.hpp"
+#include "thirdparty/sol/sol.hpp"
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
 #include "General/Console/Console.h"
@@ -153,7 +153,7 @@ void processError(sol::protected_function_result& result)
 // Loads [script] and runs the 'execute' function in the script, passing
 // [param] to the function
 // -----------------------------------------------------------------------------
-template<class T> bool runEditorScript(const string& script, T param)
+template<class T> bool runEditorScript(const wxString& script, T param)
 {
 	resetError();
 	script_start_time = wxDateTime::Now().GetTicks();
@@ -164,7 +164,7 @@ template<class T> bool runEditorScript(const string& script, T param)
 	if (!load_result.valid())
 	{
 		processError(load_result);
-		Log::error(S_FMT(
+		Log::error(wxString::Format(
 			"%s Error running Lua script: %d: %s",
 			CHR(script_error.type),
 			script_error.line_no,
@@ -178,7 +178,7 @@ template<class T> bool runEditorScript(const string& script, T param)
 	if (!exec_result.valid())
 	{
 		processError(exec_result);
-		Log::error(S_FMT(
+		Log::error(wxString::Format(
 			"%s Error running Lua script: %d: %s",
 			CHR(script_error.type),
 			script_error.line_no,
@@ -230,17 +230,17 @@ Lua::Error& Lua::error()
 // Shows an extended message dialog with details of the last script error that
 // occurred
 // -----------------------------------------------------------------------------
-void Lua::showErrorDialog(wxWindow* parent, const string& title, const string& message)
+void Lua::showErrorDialog(wxWindow* parent, const wxString& title, const wxString& message)
 {
 	// Get script log messages since the last script was started
-	auto   log = Log::since(script_start_time, Log::MessageType::Script);
-	string output;
+	auto     log = Log::since(script_start_time, Log::MessageType::Script);
+	wxString output;
 	for (auto msg : log)
 		output += msg->formattedMessageLine() + "\n";
 
 	ExtMessageDialog dlg(parent ? parent : current_window, title);
 	dlg.setMessage(message);
-	dlg.setExt(S_FMT(
+	dlg.setExt(wxString::Format(
 		"%s Error\nLine %d: %s\n\nScript Output:\n%s",
 		CHR(Lua::error().type),
 		Lua::error().line_no,
@@ -253,7 +253,7 @@ void Lua::showErrorDialog(wxWindow* parent, const string& title, const string& m
 // -----------------------------------------------------------------------------
 // Runs a lua script [program]
 // -----------------------------------------------------------------------------
-bool Lua::run(string program)
+bool Lua::run(wxString program)
 {
 	resetError();
 	script_start_time = wxDateTime::Now().GetTicks();
@@ -265,7 +265,7 @@ bool Lua::run(string program)
 	if (!result.valid())
 	{
 		processError(result);
-		Log::error(S_FMT(
+		Log::error(wxString::Format(
 			"%s Error running Lua script: %d: %s",
 			CHR(script_error.type),
 			script_error.line_no,
@@ -279,7 +279,7 @@ bool Lua::run(string program)
 // -----------------------------------------------------------------------------
 // Runs a lua script from a text file [filename]
 // -----------------------------------------------------------------------------
-bool Lua::runFile(string filename)
+bool Lua::runFile(wxString filename)
 {
 	resetError();
 	script_start_time = wxDateTime::Now().GetTicks();
@@ -291,7 +291,7 @@ bool Lua::runFile(string filename)
 	if (!result.valid())
 	{
 		processError(result);
-		Log::error(S_FMT(
+		Log::error(wxString::Format(
 			"%s Error running Lua script: %d: %s",
 			CHR(script_error.type),
 			script_error.line_no,
@@ -306,7 +306,7 @@ bool Lua::runFile(string filename)
 // Runs the 'execute(archive)' function in the given [script], passing [archive]
 // as the parameter
 // -----------------------------------------------------------------------------
-bool Lua::runArchiveScript(const string& script, Archive* archive)
+bool Lua::runArchiveScript(const wxString& script, Archive* archive)
 {
 	return runEditorScript<Archive*>(script, archive);
 }
@@ -315,7 +315,7 @@ bool Lua::runArchiveScript(const string& script, Archive* archive)
 // Runs the 'execute(entries)' function in the given [script], passing [entries]
 // as the parameter
 // -----------------------------------------------------------------------------
-bool Lua::runEntryScript(const string& script, vector<ArchiveEntry*> entries)
+bool Lua::runEntryScript(const wxString& script, vector<ArchiveEntry*> entries)
 {
 	return runEditorScript<vector<ArchiveEntry*>>(script, entries);
 }
@@ -324,7 +324,7 @@ bool Lua::runEntryScript(const string& script, vector<ArchiveEntry*> entries)
 // Runs the 'execute(map)' function in the given [script], passing [map] as the
 // parameter
 // -----------------------------------------------------------------------------
-bool Lua::runMapScript(const string& script, SLADEMap* map)
+bool Lua::runMapScript(const wxString& script, SLADEMap* map)
 {
 	return runEditorScript<SLADEMap*>(script, map);
 }
@@ -364,7 +364,7 @@ void Lua::setCurrentWindow(wxWindow* window)
 
 CONSOLE_COMMAND(script, 1, true)
 {
-	string script = args[0];
+	wxString script = args[0];
 	for (unsigned a = 1; a < args.size(); a++)
 		script += " " + args[a];
 
@@ -375,16 +375,16 @@ CONSOLE_COMMAND(script_file, 1, true)
 {
 	if (!wxFile::Exists(args[0]))
 	{
-		Log::error(S_FMT("File \"%s\" does not exist", args[0]));
+		Log::error(wxString::Format("File \"%s\" does not exist", args[0]));
 		return;
 	}
 
 	if (!Lua::runFile(args[0]))
-		Log::error(S_FMT("Error loading lua script file \"%s\"", args[0]));
+		Log::error(wxString::Format("Error loading lua script file \"%s\"", args[0]));
 }
 
 CONSOLE_COMMAND(lua_mem, 0, false)
 {
 	auto mem = Lua::state().memory_used();
-	Log::console(S_FMT("Lua state using %s memory", CHR(Misc::sizeAsString(mem))));
+	Log::console(wxString::Format("Lua state using %s memory", CHR(Misc::sizeAsString(mem))));
 }

@@ -63,7 +63,7 @@ SideTexCanvas::SideTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 // -----------------------------------------------------------------------------
 // Sets the texture to display
 // -----------------------------------------------------------------------------
-void SideTexCanvas::setTexture(const string& tex)
+void SideTexCanvas::setTexture(const wxString& tex)
 {
 	texname_ = tex;
 	if (tex.empty() || tex == "-")
@@ -163,7 +163,7 @@ TextureComboBox::TextureComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 void TextureComboBox::onDropDown(wxCommandEvent& e)
 {
 	// Get current value
-	string text = GetValue().Upper();
+	wxString text = GetValue().Upper();
 	if (text == "-")
 		text = "";
 
@@ -295,7 +295,7 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 	// --- Textures ---
 
 	// Upper
-	string tex_upper = sides[0]->texUpper();
+	wxString tex_upper = sides[0]->texUpper();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
 		if (sides[a]->texUpper() != tex_upper)
@@ -308,7 +308,7 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 	tcb_upper_->SetValue(tex_upper);
 
 	// Middle
-	string tex_middle = sides[0]->texMiddle();
+	wxString tex_middle = sides[0]->texMiddle();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
 		if (sides[a]->texMiddle() != tex_middle)
@@ -321,7 +321,7 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 	tcb_middle_->SetValue(tex_middle);
 
 	// Lower
-	string tex_lower = sides[0]->texLower();
+	wxString tex_lower = sides[0]->texLower();
 	for (unsigned a = 1; a < sides.size(); a++)
 	{
 		if (sides[a]->texLower() != tex_lower)
@@ -348,7 +348,7 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 		}
 	}
 	if (!multi)
-		text_offsetx_->SetValue(S_FMT("%d", ofs));
+		text_offsetx_->SetValue(wxString::Format("%d", ofs));
 
 	// Y
 	multi = false;
@@ -362,7 +362,7 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 		}
 	}
 	if (!multi)
-		text_offsety_->SetValue(S_FMT("%d", ofs));
+		text_offsety_->SetValue(wxString::Format("%d", ofs));
 }
 
 // -----------------------------------------------------------------------------
@@ -371,9 +371,9 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 void SidePropsPanel::applyTo(vector<MapSide*>& sides) const
 {
 	// Get values
-	string tex_upper  = tcb_upper_->GetValue();
-	string tex_middle = tcb_middle_->GetValue();
-	string tex_lower  = tcb_lower_->GetValue();
+	wxString tex_upper  = tcb_upper_->GetValue();
+	wxString tex_middle = tcb_middle_->GetValue();
+	wxString tex_lower  = tcb_lower_->GetValue();
 
 	for (auto& side : sides)
 	{

@@ -105,15 +105,15 @@ bool PatchBrowserItem::loadImage()
 // -----------------------------------------------------------------------------
 // Returns a string with extra information about the patch
 // -----------------------------------------------------------------------------
-string PatchBrowserItem::itemInfo()
+wxString PatchBrowserItem::itemInfo()
 {
-	string info;
+	wxString info;
 
 	// Add dimensions if known
 	if (image_tex_)
 	{
 		auto& tex_info = OpenGL::Texture::info(image_tex_);
-		info += S_FMT("%dx%d", tex_info.size.x, tex_info.size.y);
+		info += wxString::Format("%dx%d", tex_info.size.x, tex_info.size.y);
 	}
 	else
 		info += "Unknown size";
@@ -191,7 +191,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 		auto& patch = table->patch(a);
 
 		// Init position to add
-		string whereis = "Unknown";
+		wxString whereis = "Unknown";
 
 		// Get patch entry
 		auto entry = App::resources().getPatchEntry(patch.name);
@@ -274,7 +274,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 			if (entry->parent()->isTreeless())
 				continue;
 
-			string ns = entry->parent()->detectNamespace(entry);
+			wxString ns = entry->parent()->detectNamespace(entry);
 			if (ns == "patches")
 			{
 				if (bPatches)
@@ -316,7 +316,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 		}
 	}
 
-	vector<string> usednames;
+	vector<wxString> usednames;
 
 	// Go through the list
 	for (auto entry : patches)
@@ -326,8 +326,8 @@ bool PatchBrowser::openArchive(Archive* archive)
 			continue;
 
 		// Check entry namespace
-		string ns = entry->parent()->detectNamespace(entry);
-		string nspace;
+		wxString ns = entry->parent()->detectNamespace(entry);
+		wxString nspace;
 		if (ns == "patches")
 			nspace = "Patches";
 		else if (ns == "flats")
@@ -340,7 +340,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 			nspace = "Graphics";
 
 		// Check entry parent archive
-		string arch = "Unknown";
+		wxString arch = "Unknown";
 		if (entry->parent())
 			arch = entry->parent()->filename(false);
 
@@ -349,12 +349,12 @@ bool PatchBrowser::openArchive(Archive* archive)
 		// Add it
 		if (full_path_ && !entry->parent()->isTreeless())
 		{
-			item           = new PatchBrowserItem(entry->path(true).Mid(1), archive, PatchBrowserItem::Type::Patch, ns);
-			string fnspace = nspace + " (Full Path)";
+			item = new PatchBrowserItem(entry->path(true).Mid(1), archive, PatchBrowserItem::Type::Patch, ns);
+			wxString fnspace = nspace + " (Full Path)";
 			addItem(item, fnspace + "/" + arch);
 		}
 
-		string name = entry->name(true).Truncate(8).Upper();
+		wxString name = entry->name(true).Truncate(8).Upper();
 
 		bool duplicate = false;
 		for (auto& usedname : usednames)
@@ -417,7 +417,7 @@ bool PatchBrowser::openTextureXList(TextureXList* texturex, Archive* parent)
 		auto item = new PatchBrowserItem(texturex->texture(a)->name(), parent, PatchBrowserItem::Type::CTexture);
 
 		// Set archive name
-		string arch = "Unknown";
+		wxString arch = "Unknown";
 		if (parent)
 			arch = parent->filename(false);
 
@@ -462,7 +462,7 @@ void PatchBrowser::selectPatch(int pt_index)
 // -----------------------------------------------------------------------------
 // Selects the patch matching [name]
 // -----------------------------------------------------------------------------
-void PatchBrowser::selectPatch(const string& name)
+void PatchBrowser::selectPatch(const wxString& name)
 {
 	selectItem(name);
 }
@@ -470,7 +470,7 @@ void PatchBrowser::selectPatch(const string& name)
 // -----------------------------------------------------------------------------
 // Handles any announcements
 // -----------------------------------------------------------------------------
-void PatchBrowser::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void PatchBrowser::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	if (announcer != theMainWindow->paletteChooser())
 		return;

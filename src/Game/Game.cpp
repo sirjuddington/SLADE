@@ -51,14 +51,14 @@ using namespace Game;
 // -----------------------------------------------------------------------------
 namespace Game
 {
-Configuration             config_current;
-std::map<string, GameDef> game_defs;
-GameDef                   game_def_unknown;
-std::map<string, PortDef> port_defs;
-PortDef                   port_def_unknown;
-ZScript::Definitions      zscript_base;
-ZScript::Definitions      zscript_custom;
-std::unique_ptr<Listener> listener;
+Configuration               config_current;
+std::map<wxString, GameDef> game_defs;
+GameDef                     game_def_unknown;
+std::map<wxString, PortDef> port_defs;
+PortDef                     port_def_unknown;
+ZScript::Definitions        zscript_base;
+ZScript::Definitions        zscript_custom;
+std::unique_ptr<Listener>   listener;
 } // namespace Game
 CVAR(String, game_configuration, "", CVar::Flag::Save)
 CVAR(String, port_configuration, "", CVar::Flag::Save)
@@ -82,7 +82,7 @@ public:
 		listenTo(&App::archiveManager());
 	}
 
-	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override
+	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override
 	{
 		if (announcer == &App::archiveManager())
 		{
@@ -162,7 +162,7 @@ bool GameDef::parse(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if this game supports [filter]
 // -----------------------------------------------------------------------------
-bool GameDef::supportsFilter(const string& filter) const
+bool GameDef::supportsFilter(const wxString& filter) const
 {
 	for (auto& f : filters)
 		if (S_CMPNOCASE(f, filter))
@@ -311,7 +311,7 @@ void Game::updateCustomDefinitions()
 // -----------------------------------------------------------------------------
 TagType Game::parseTagged(ParseTreeNode* tagged)
 {
-	static std::map<string, TagType> tag_type_map{
+	static std::map<wxString, TagType> tag_type_map{
 		{ "no", TagType::None },
 		{ "sector", TagType::Sector },
 		{ "line", TagType::Line },
@@ -480,7 +480,7 @@ void Game::init()
 // -----------------------------------------------------------------------------
 // Returns a vector of all basic game definitions
 // -----------------------------------------------------------------------------
-const std::map<string, GameDef>& Game::gameDefs()
+const std::map<wxString, GameDef>& Game::gameDefs()
 {
 	return game_defs;
 }
@@ -488,7 +488,7 @@ const std::map<string, GameDef>& Game::gameDefs()
 // -----------------------------------------------------------------------------
 // Returns the basic game configuration matching [id]
 // -----------------------------------------------------------------------------
-const GameDef& Game::gameDef(const string& id)
+const GameDef& Game::gameDef(const wxString& id)
 {
 	return game_defs.empty() ? game_def_unknown : game_defs[id];
 }
@@ -496,7 +496,7 @@ const GameDef& Game::gameDef(const string& id)
 // -----------------------------------------------------------------------------
 // Returns a vector of all basic port definitions
 // -----------------------------------------------------------------------------
-const std::map<string, PortDef>& Game::portDefs()
+const std::map<wxString, PortDef>& Game::portDefs()
 {
 	return port_defs;
 }
@@ -504,7 +504,7 @@ const std::map<string, PortDef>& Game::portDefs()
 // -----------------------------------------------------------------------------
 // Returns the basic port configuration matching [id]
 // -----------------------------------------------------------------------------
-const PortDef& Game::portDef(const string& id)
+const PortDef& Game::portDef(const wxString& id)
 {
 	return port_defs.empty() ? port_def_unknown : port_defs[id];
 }
@@ -512,7 +512,7 @@ const PortDef& Game::portDef(const string& id)
 // -----------------------------------------------------------------------------
 // Checks if the combination of [game] and [port] supports the map [format]
 // -----------------------------------------------------------------------------
-bool Game::mapFormatSupported(MapFormat format, const string& game, const string& port)
+bool Game::mapFormatSupported(MapFormat format, const wxString& game, const wxString& port)
 {
 	if (format == MapFormat::Unknown)
 		return false;
@@ -615,7 +615,7 @@ namespace
 							tz.setSpecialCharacters("");
 							string lnstr = tz.getLine();
 							tz.setSpecialCharacters("(),[=|");
-							tl.openString(lnstr, 0, 0, S_FMT("Line %d", line));
+							tl.openString(lnstr, 0, 0, wxString::Format("Line %d", line));
 							tl.setSpecialCharacters("(),[=|");
 #if 1
 							// Create line
@@ -678,7 +678,7 @@ namespace
 								}
 
 								if (val != -666 && xline.args[a].IsEmpty())
-									xline.args[a] = S_FMT("%d", val);
+									xline.args[a] = wxString::Format("%d", val);
 
 								if (S_CMP(tl.peekToken(), ")"))
 									break;
@@ -715,7 +715,7 @@ namespace
 					if (lines[z].game.empty())
 						lines[z].group = configuration().actionSpecial(lines[z].type).group();
 					else
-						lines[z].group = S_FMT("%s/%s", lines[z].game, configuration().actionSpecial(lines[z].type).group());
+						lines[z].group = wxString::Format("%s/%s", lines[z].game, configuration().actionSpecial(lines[z].type).group());
 				}
 			}
 			// Convert special names to numbers
@@ -724,7 +724,7 @@ namespace
 			{
 				for (auto& i : configuration().allActionSpecials())
 					if (i.second.defined() && i.second.name() == l.special)
-						l.special = S_FMT("%d", i.first);
+						l.special = wxString::Format("%d", i.first);
 			}
 		}
 #if 0
@@ -768,13 +768,13 @@ namespace
 		string file;
 		for (size_t l = 0; l < lines.size(); ++l)
 		{
-			string output = S_FMT("preset \"%d: %s\"\n{\n", lines[l].type, lines[l].description);
-			output += S_FMT("\tgroup = \"%s\";\n", lines[l].group);
-			output += S_FMT("\tspecial = %s;\n", lines[l].special);
+			string output = wxString::Format("preset \"%d: %s\"\n{\n", lines[l].type, lines[l].description);
+			output += wxString::Format("\tgroup = \"%s\";\n", lines[l].group);
+			output += wxString::Format("\tspecial = %s;\n", lines[l].special);
 			for (size_t i = 0; i < 5; ++i)
 			{
 				if (lines[l].args[i].size() && lines[l].args[i] != "tag" && lines[l].args[i] != "0")
-					output += S_FMT("\targ%d = %s;\n", i+1, lines[l].args[i]);
+					output += wxString::Format("\targ%d = %s;\n", i+1, lines[l].args[i]);
 			}
 			int spac = 1 << ((lines[l].flags & 15) >> 1);
 			string flags = "";
@@ -785,9 +785,9 @@ namespace
 			if (lines[l].flags & 1)  flags += "repeatspecial, ";
 			if (lines[l].flags & 16) flags += "monsteractivate, ";
 			flags.RemoveLast(2);
-			output += S_FMT("\tflags = %s;\n", flags);
+			output += wxString::Format("\tflags = %s;\n", flags);
 			output += "}\n\n";
-			Log::debug(S_FMT("%s", output));
+			Log::debug(wxString::Format("%s", output));
 			file += output;
 			//		DPrintf("%d = %s : %d, %s (%s, %s, %s, %s, %s)",
 			//			lines[l].type, lines[l].description, lines[l].flags, lines[l].special,

@@ -64,7 +64,7 @@ NumberTextCtrl::NumberTextCtrl(wxWindow* parent, bool allow_decimal) :
 // -----------------------------------------------------------------------------
 int NumberTextCtrl::number(int base) const
 {
-	string val = GetValue();
+	wxString val = GetValue();
 
 	// Get integer value
 	long lval;
@@ -100,7 +100,7 @@ double NumberTextCtrl::decNumber(double base) const
 	if (!allow_decimal_)
 		return number(base);
 
-	string val = GetValue();
+	wxString val = GetValue();
 
 	// Get double value
 	double dval;
@@ -158,7 +158,7 @@ bool NumberTextCtrl::isDivisor() const
 // -----------------------------------------------------------------------------
 void NumberTextCtrl::setNumber(int num)
 {
-	ChangeValue(S_FMT("%d", num));
+	ChangeValue(wxString::Format("%d", num));
 }
 
 // -----------------------------------------------------------------------------
@@ -166,7 +166,7 @@ void NumberTextCtrl::setNumber(int num)
 // -----------------------------------------------------------------------------
 void NumberTextCtrl::setDecNumber(double num)
 {
-	ChangeValue(S_FMT("%1.3f", num));
+	ChangeValue(wxString::Format("%1.3f", num));
 }
 
 
@@ -208,7 +208,7 @@ void NumberTextCtrl::onChar(wxKeyEvent& e)
 // -----------------------------------------------------------------------------
 void NumberTextCtrl::onChanged(wxCommandEvent& e)
 {
-	string new_value = GetValue();
+	wxString new_value = GetValue();
 
 	// Check if valid
 	// Can begin with '+', '++', '-' or '--', rest has to be numeric

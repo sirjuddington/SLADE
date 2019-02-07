@@ -18,15 +18,15 @@ public:
 	ArchiveEntry*                     dirEntry() const { return dir_entry_.get(); }
 
 	// STreeNode
-	string name() override;
-	void   addChild(STreeNode* child) override;
-	void   setName(string name) override { dir_entry_->name_ = name; }
+	wxString name() override;
+	void     addChild(STreeNode* child) override;
+	void     setName(wxString name) override { dir_entry_->name_ = name; }
 
 	// Entry Access
 	ArchiveEntry*      entryAt(unsigned index);
 	ArchiveEntry::SPtr sharedEntryAt(unsigned index);
-	ArchiveEntry*      entry(const string& name, bool cut_ext = false);
-	ArchiveEntry::SPtr sharedEntry(const string& name, bool cut_ext = false);
+	ArchiveEntry*      entry(const wxString& name, bool cut_ext = false);
+	ArchiveEntry::SPtr sharedEntry(const wxString& name, bool cut_ext = false);
 	ArchiveEntry::SPtr sharedEntry(ArchiveEntry* entry);
 	unsigned           numEntries(bool inc_subdirs = false);
 	int                entryIndex(ArchiveEntry* entry, size_t startfrom = 0);
@@ -47,13 +47,13 @@ public:
 		ArchiveTreeNode*    node,
 		unsigned            position = 0xFFFFFFFF,
 		ArchiveEntry::State state    = ArchiveEntry::State::New);
-	bool exportTo(const string& path);
+	bool exportTo(const wxString& path);
 	void allowDuplicateNames(bool allow) { allow_duplicate_names_ = allow; }
 
 	typedef std::unique_ptr<ArchiveTreeNode> UPtr;
 
 protected:
-	STreeNode* createChild(string name) override
+	STreeNode* createChild(wxString name) override
 	{
 		auto node                    = new ArchiveTreeNode();
 		node->dir_entry_->name_      = name;

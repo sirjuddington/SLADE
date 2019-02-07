@@ -106,7 +106,7 @@ bool DiskArchive::open(MemChunk& mc)
 		}
 
 		// Parse name
-		string name = wxString::FromAscii(dent.name, 64);
+		wxString name = wxString::FromAscii(dent.name, 64);
 		name.Replace("\\", "/");
 		name.Replace("GAME:/", "");
 		wxFileName fn(name);
@@ -218,13 +218,13 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Check entry name
-		string name = entry->path(true);
+		wxString name = entry->path(true);
 		name.Replace("/", "\\");
 		// The leading "GAME:\" part of the name means there is only 58 usable characters for path
 		if (name.Len() > 58)
 		{
-			Log::warning(
-				S_FMT("Warning: Entry %s path is too long (> 58 characters), putting it in the root directory", name));
+			Log::warning(wxString::Format(
+				"Warning: Entry %s path is too long (> 58 characters), putting it in the root directory", name));
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 57)
@@ -298,7 +298,7 @@ bool DiskArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("DiskArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error(wxString::Format("DiskArchive::loadEntryData: Unable to open archive file %s", filename_));
 		return false;
 	}
 
@@ -372,7 +372,7 @@ bool DiskArchive::isDiskArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Quake disk archive
 // -----------------------------------------------------------------------------
-bool DiskArchive::isDiskArchive(const string& filename)
+bool DiskArchive::isDiskArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Compression.h"
-#include "External/zreaders/files.h"
+#include "thirdparty/zreaders/files.h"
 
 
 // -----------------------------------------------------------------------------
@@ -88,7 +88,7 @@ bool Compression::genericDeflate(MemChunk& in, MemChunk& out, int level, int win
 		ret = deflateInit2(&strm, level, Z_DEFLATED, windowbits, 9, Z_DEFAULT_STRATEGY);
 	if (ret != Z_OK)
 	{
-		Log::error(S_FMT("%s init error %i: %s", function, ret, strm.msg));
+		Log::error(wxString::Format("%s init error %i: %s", function, ret, strm.msg));
 		return false;
 	}
 
@@ -140,7 +140,7 @@ bool Compression::zipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 	bool ret = Compression::genericInflate(in, out, -MAX_WBITS, "ZipInflate");
 
 	if (maxsize && out.size() != maxsize)
-		Log::warning(S_FMT("Zip stream inflated to %d, expected %d", out.size(), maxsize));
+		Log::warning(wxString::Format("Zip stream inflated to %d, expected %d", out.size(), maxsize));
 
 	return ret;
 }
@@ -165,7 +165,7 @@ bool Compression::gzipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 	bool ret = Compression::genericInflate(in, out, 16 + MAX_WBITS, "GZipInflate");
 
 	if (maxsize && out.size() != maxsize)
-		Log::warning(S_FMT("Zip stream inflated to %d, expected %d", out.size(), maxsize));
+		Log::warning(wxString::Format("Zip stream inflated to %d, expected %d", out.size(), maxsize));
 
 	return ret;
 }
@@ -191,7 +191,7 @@ bool Compression::zlibInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 	bool ret = Compression::genericInflate(in, out, 0, "ZlibInflate");
 
 	if (maxsize && out.size() != maxsize)
-		Log::warning(S_FMT("Zlib stream inflated to %d, expected %d", out.size(), maxsize));
+		Log::warning(wxString::Format("Zlib stream inflated to %d, expected %d", out.size(), maxsize));
 
 	return ret;
 }
@@ -224,7 +224,7 @@ bool Compression::bzip2Decompress(MemChunk& in, MemChunk& out, size_t maxsize)
 	} while (gotten == 4096 && stream.Status == BZ_OK);
 
 	if (maxsize && out.size() != maxsize)
-		Log::warning(S_FMT("bzip2 stream inflated to %d, expected %d", out.size(), maxsize));
+		Log::warning(wxString::Format("bzip2 stream inflated to %d, expected %d", out.size(), maxsize));
 
 	return (stream.Status == BZ_OK || stream.Status == BZ_STREAM_END);
 }

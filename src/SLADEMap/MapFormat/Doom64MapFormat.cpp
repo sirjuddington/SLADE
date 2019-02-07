@@ -146,7 +146,7 @@ bool Doom64MapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map
 			std::make_unique<MapVertex>(Vec2d{ (double)vert_data[a].x / 65536, (double)vert_data[a].y / 65536 }));
 	}
 
-	Log::info(3, S_FMT("Read %lu vertices", map_data.vertices().size()));
+	Log::info(3, wxString::Format("Read %lu vertices", map_data.vertices().size()));
 
 	return true;
 }
@@ -186,7 +186,7 @@ bool Doom64MapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 			Vec2i{ side_data[a].x_offset, side_data[a].y_offset }));
 	}
 
-	Log::info(3, S_FMT("Read %lu sides", map_data.sides().size()));
+	Log::info(3, wxString::Format("Read %lu sides", map_data.sides().size()));
 
 	return true;
 }
@@ -223,7 +223,7 @@ bool Doom64MapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 		auto v2 = map_data.vertices().at(data.vertex2);
 		if (!v1 || !v2)
 		{
-			Log::warning(S_FMT("Line %lu invalid, not added", a));
+			Log::warning(wxString::Format("Line %lu invalid, not added", a));
 			continue;
 		}
 
@@ -253,7 +253,7 @@ bool Doom64MapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 		line->setIntProperty("extraflags", data.type >> 9);
 	}
 
-	Log::info(3, S_FMT("Read %lu lines", map_data.lines().size()));
+	Log::info(3, wxString::Format("Read %lu lines", map_data.lines().size()));
 
 	return true;
 }
@@ -304,7 +304,7 @@ bool Doom64MapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_
 		sector->setIntProperty("color_lower", data.color[4]);
 	}
 
-	Log::info(3, S_FMT("Read %lu sectors", map_data.sectors().size()));
+	Log::info(3, wxString::Format("Read %lu sectors", map_data.sectors().size()));
 
 	return true;
 }
@@ -347,7 +347,7 @@ bool Doom64MapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_d
 			data.tid));
 	}
 
-	Log::info(3, S_FMT("Read %lu things", map_data.things().size()));
+	Log::info(3, wxString::Format("Read %lu things", map_data.things().size()));
 
 	return true;
 }

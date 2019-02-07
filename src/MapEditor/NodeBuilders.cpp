@@ -43,11 +43,11 @@
 // -----------------------------------------------------------------------------
 namespace NodeBuilders
 {
-vector<Builder> builders;
-Builder         invalid;
-Builder         none;
-string          custom;
-vector<string>  builder_paths;
+vector<Builder>  builders;
+Builder          invalid;
+Builder          none;
+wxString         custom;
+vector<wxString> builder_paths;
 } // namespace NodeBuilders
 
 
@@ -126,7 +126,7 @@ void NodeBuilders::init()
 // -----------------------------------------------------------------------------
 // Adds [path] for [builder]
 // -----------------------------------------------------------------------------
-void NodeBuilders::addBuilderPath(string builder, string path)
+void NodeBuilders::addBuilderPath(wxString builder, wxString path)
 {
 	builder_paths.push_back(builder);
 	builder_paths.push_back(path);
@@ -140,9 +140,9 @@ void NodeBuilders::saveBuilderPaths(wxFile& file)
 	file.Write("nodebuilder_paths\n{\n");
 	for (unsigned a = 0; a < builders.size(); a++)
 	{
-		string path = builders[a].path;
+		wxString path = builders[a].path;
 		path.Replace("\\", "/");
-		file.Write(S_FMT("\t%s \"%s\"\n", builders[a].id, path));
+		file.Write(wxString::Format("\t%s \"%s\"\n", builders[a].id, path));
 	}
 	file.Write("}\n");
 }
@@ -158,7 +158,7 @@ unsigned NodeBuilders::nNodeBuilders()
 // -----------------------------------------------------------------------------
 // Returns the node builder definition matching [id]
 // -----------------------------------------------------------------------------
-NodeBuilders::Builder& NodeBuilders::builder(string id)
+NodeBuilders::Builder& NodeBuilders::builder(wxString id)
 {
 	for (unsigned a = 0; a < builders.size(); a++)
 	{

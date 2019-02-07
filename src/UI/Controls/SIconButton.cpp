@@ -45,7 +45,7 @@
 // -----------------------------------------------------------------------------
 // SIconButton class constructor
 // -----------------------------------------------------------------------------
-SIconButton::SIconButton(wxWindow* parent, Icons::Type icon_type, const string& icon, const string& tooltip) :
+SIconButton::SIconButton(wxWindow* parent, Icons::Type icon_type, const wxString& icon, const wxString& tooltip) :
 	wxBitmapButton{ parent, -1, wxNullBitmap }
 {
 	// Create icon

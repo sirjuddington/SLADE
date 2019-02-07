@@ -20,7 +20,11 @@ wxDECLARE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
 class JumpToCalculator : public wxThread
 {
 public:
-	JumpToCalculator(wxEvtHandler* handler, const string& text, vector<string> block_names, vector<string> ignore) :
+	JumpToCalculator(
+		wxEvtHandler*    handler,
+		const wxString&  text,
+		vector<wxString> block_names,
+		vector<wxString> ignore) :
 		handler_(handler),
 		text_(text),
 		block_names_(std::move(block_names)),
@@ -32,10 +36,10 @@ public:
 	ExitCode Entry() override;
 
 private:
-	wxEvtHandler*  handler_;
-	string         text_;
-	vector<string> block_names_;
-	vector<string> ignore_;
+	wxEvtHandler*    handler_;
+	wxString         text_;
+	vector<wxString> block_names_;
+	vector<wxString> ignore_;
 };
 
 class TextEditorCtrl : public wxStyledTextCtrl
@@ -61,10 +65,10 @@ public:
 	// Find/Replace
 	void setFindReplacePanel(FindReplacePanel* panel) { panel_fr_ = panel; }
 	void showFindReplacePanel(bool show = true);
-	bool findNext(const string& find, int flags);
-	bool findPrev(const string& find, int flags);
-	bool replaceCurrent(const string& find, const string& replace, int flags);
-	int  replaceAll(const string& find, const string& replace, int flags);
+	bool findNext(const wxString& find, int flags);
+	bool findPrev(const wxString& find, int flags);
+	bool replaceCurrent(const wxString& find, const wxString& replace, int flags);
+	int  replaceAll(const wxString& find, const wxString& replace, int flags);
 
 	// Hilight/matching
 	void checkBraceMatch();
@@ -98,8 +102,8 @@ private:
 	wxChoice*              choice_jump_to_     = nullptr;
 	JumpToCalculator*      jump_to_calculator_ = nullptr;
 	std::unique_ptr<Lexer> lexer_;
-	string                 prev_word_match_;
-	string                 autocomp_list_;
+	wxString               prev_word_match_;
+	wxString               autocomp_list_;
 	vector<int>            jump_to_lines_;
 	long                   last_modified_ = 0;
 
@@ -121,9 +125,9 @@ private:
 	bool        ct_dwell_    = false;
 
 	// Default comment strings
-	const string default_line_comment_  = "//";
-	const string default_begin_comment_ = "/*";
-	const string default_end_comment_   = "*/";
+	const wxString default_line_comment_  = "//";
+	const wxString default_begin_comment_ = "/*";
+	const wxString default_end_comment_   = "*/";
 
 	// Events
 	void onKeyDown(wxKeyEvent& e);

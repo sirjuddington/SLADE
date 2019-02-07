@@ -145,8 +145,8 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	gb_sizer->Add(cb_syntax_hilight_, { ++row, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Hilight current line
-	string hl_line_choices[] = { "Off", "Background", "Background+Underline" };
-	choice_line_hilight_     = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, hl_line_choices);
+	wxString hl_line_choices[] = { "Off", "Background", "Background+Underline" };
+	choice_line_hilight_       = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, hl_line_choices);
 	gb_sizer->Add(new wxStaticText(this, -1, "Current Line Hilight: "), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_line_hilight_, { row, 3 }, { 1, 1 }, wxEXPAND);
 
@@ -175,8 +175,8 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	gb_sizer->Add(cb_match_cursor_word_, { ++row, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Show whitespace
-	string show_ws_choices[] = { "Off", "After Indentation Only", "Always" };
-	choice_show_whitespace_  = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, show_ws_choices);
+	wxString show_ws_choices[] = { "Off", "After Indentation Only", "Always" };
+	choice_show_whitespace_    = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, show_ws_choices);
 	gb_sizer->Add(new wxStaticText(this, -1, "Show Whitespace: "), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_show_whitespace_, { row, 3 }, { 1, 1 }, wxEXPAND);
 

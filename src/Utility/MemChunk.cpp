@@ -143,7 +143,7 @@ bool MemChunk::reSize(uint32_t new_size, bool preserve_data)
 // Loads a file (or part of it) into the MemChunk.
 // Returns false if file couldn't be opened, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::importFile(const string& filename, uint32_t offset, uint32_t len)
+bool MemChunk::importFile(const wxString& filename, uint32_t offset, uint32_t len)
 {
 	// Open the file
 	wxFile file(filename);
@@ -151,8 +151,8 @@ bool MemChunk::importFile(const string& filename, uint32_t offset, uint32_t len)
 	// Return false if file open failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("MemChunk::importFile: Unable to open file %s", filename));
-		Global::error = S_FMT("Unable to open file %s", filename);
+		Log::error(wxString::Format("MemChunk::importFile: Unable to open file %s", filename));
+		Global::error = wxString::Format("Unable to open file %s", filename);
 		return false;
 	}
 
@@ -178,9 +178,9 @@ bool MemChunk::importFile(const string& filename, uint32_t offset, uint32_t len)
 			size_t count = file.Read(data_, size_);
 			if (count != size_)
 			{
-				Log::error(S_FMT(
+				Log::error(wxString::Format(
 					"MemChunk::importFile: Unable to read full file %s, read %u out of %u", filename, count, size_));
-				Global::error = S_FMT("Unable to read file %s", filename);
+				Global::error = wxString::Format("Unable to read file %s", filename);
 				clear();
 				file.Close();
 				return false;
@@ -263,7 +263,7 @@ bool MemChunk::importMem(const uint8_t* start, uint32_t len)
 // to [start+size].
 // If [size] is 0, writes from [start] to the end of the data
 // -----------------------------------------------------------------------------
-bool MemChunk::exportFile(const string& filename, uint32_t start, uint32_t size) const
+bool MemChunk::exportFile(const wxString& filename, uint32_t start, uint32_t size) const
 {
 	// Check data exists
 	if (!hasData())
@@ -281,7 +281,7 @@ bool MemChunk::exportFile(const string& filename, uint32_t start, uint32_t size)
 	wxFile file(filename, wxFile::write);
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("Unable to write to file %s", filename));
+		Log::error(wxString::Format("Unable to write to file %s", filename));
 		Global::error = "Unable to open file for writing";
 		return false;
 	}
@@ -478,7 +478,7 @@ uint8_t* MemChunk::allocData(uint32_t size, bool set_data)
 	}
 	catch (std::bad_alloc& ba)
 	{
-		Log::error(S_FMT("MemChunk: Allocation of %d bytes failed: %s", size, ba.what()));
+		Log::error(wxString::Format("MemChunk: Allocation of %d bytes failed: %s", size, ba.what()));
 
 		if (set_data)
 		{

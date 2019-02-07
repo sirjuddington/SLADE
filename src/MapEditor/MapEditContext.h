@@ -33,8 +33,8 @@ class MapEditContext : public SActionHandler
 public:
 	struct EditorMessage
 	{
-		string message;
-		long   act_time;
+		wxString message;
+		long     act_time;
 	};
 
 	MapEditContext();
@@ -99,17 +99,17 @@ public:
 
 	// Editor messages
 	unsigned numEditorMessages() const { return editor_messages_.size(); }
-	string   editorMessage(int index);
+	wxString editorMessage(int index);
 	long     editorMessageTime(int index);
-	void     addEditorMessage(const string& message);
+	void     addEditorMessage(const wxString& message);
 
 	// Feature help text
-	const vector<string>& featureHelpLines() const { return feature_help_lines_; }
-	void                  setFeatureHelp(const vector<string>& lines);
+	const vector<wxString>& featureHelpLines() const { return feature_help_lines_; }
+	void                    setFeatureHelp(const vector<wxString>& lines);
 
 	// Undo/Redo
-	void beginUndoRecord(const string& name, bool mod = true, bool create = true, bool del = true);
-	void beginUndoRecordLocked(const string& name, bool mod = true, bool create = true, bool del = true);
+	void beginUndoRecord(const wxString& name, bool mod = true, bool create = true, bool del = true);
+	void beginUndoRecordLocked(const wxString& name, bool mod = true, bool create = true, bool del = true);
 	void endUndoRecord(bool success = true);
 	void recordPropertyChangeUndoStep(MapObject* object) const;
 	void doUndo();
@@ -133,17 +133,17 @@ public:
 	void resetPlayerStart() const;
 
 	// Misc
-	string modeString(bool plural = true) const;
-	bool   handleKeyBind(const string& key, Vec2d position);
-	void   updateDisplay();
-	void   updateStatusText() const;
-	void   updateThingLists();
-	void   setCursor(UI::MouseCursor cursor) const;
-	void   forceRefreshRenderer();
+	wxString modeString(bool plural = true) const;
+	bool     handleKeyBind(const wxString& key, Vec2d position);
+	void     updateDisplay();
+	void     updateStatusText() const;
+	void     updateThingLists();
+	void     setCursor(UI::MouseCursor cursor) const;
+	void     forceRefreshRenderer();
 
 
 	// SAction handler
-	bool handleAction(const string& id) override;
+	bool handleAction(const wxString& id) override;
 
 private:
 	SLADEMap         map_;
@@ -166,10 +166,10 @@ private:
 	bool                  mouse_locked_   = false;
 
 	// Undo/Redo
-	bool   undo_modified_ = false;
-	bool   undo_created_  = false;
-	bool   undo_deleted_  = false;
-	string last_undo_level_;
+	bool     undo_modified_ = false;
+	bool     undo_created_  = false;
+	bool     undo_deleted_  = false;
+	wxString last_undo_level_;
 
 	// Tagged items
 	vector<MapSector*> tagged_sectors_;
@@ -201,7 +201,7 @@ private:
 	vector<EditorMessage> editor_messages_;
 
 	// Feature help text
-	vector<string> feature_help_lines_;
+	vector<wxString> feature_help_lines_;
 
 	// Player start swap
 	Vec2d player_start_pos_;
@@ -232,7 +232,7 @@ public:
 	~MapArchClipboardItem() = default;
 
 	void               addLines(const vector<MapLine*>& lines);
-	string             info() const;
+	wxString           info() const;
 	vector<MapVertex*> pasteToMap(SLADEMap* map, Vec2d position);
 	void               putLines(vector<MapLine*>& list);
 	Vec2d              midpoint() const { return midpoint_; }
@@ -251,11 +251,11 @@ public:
 	MapThingsClipboardItem() : ClipboardItem(Type::MapThings) {}
 	~MapThingsClipboardItem() = default;
 
-	void   addThings(vector<MapThing*>& things);
-	string info() const;
-	void   pasteToMap(SLADEMap* map, Vec2d position);
-	void   putThings(vector<MapThing*>& list);
-	Vec2d  midpoint() const { return midpoint_; }
+	void     addThings(vector<MapThing*>& things);
+	wxString info() const;
+	void     pasteToMap(SLADEMap* map, Vec2d position);
+	void     putThings(vector<MapThing*>& list);
+	Vec2d    midpoint() const { return midpoint_; }
 
 private:
 	vector<std::unique_ptr<MapThing>> things_;

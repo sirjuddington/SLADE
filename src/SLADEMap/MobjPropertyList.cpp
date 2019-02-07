@@ -45,7 +45,7 @@
 // -----------------------------------------------------------------------------
 // Returns true if a property with the given name exists, false otherwise
 // -----------------------------------------------------------------------------
-bool MobjPropertyList::propertyExists(const string& key)
+bool MobjPropertyList::propertyExists(const wxString& key)
 {
 	for (unsigned a = 0; a < properties_.size(); ++a)
 	{
@@ -60,7 +60,7 @@ bool MobjPropertyList::propertyExists(const string& key)
 // Removes a property value, returns true if [key] was removed or false if key
 // didn't exist
 // -----------------------------------------------------------------------------
-bool MobjPropertyList::removeProperty(string key)
+bool MobjPropertyList::removeProperty(wxString key)
 {
 	// return properties.erase(key) > 0;
 	for (unsigned a = 0; a < properties_.size(); ++a)
@@ -91,7 +91,7 @@ void MobjPropertyList::copyTo(MobjPropertyList& list)
 // -----------------------------------------------------------------------------
 // Adds a 'flag' property [key]
 // -----------------------------------------------------------------------------
-void MobjPropertyList::addFlag(string key)
+void MobjPropertyList::addFlag(wxString key)
 {
 	Property flag;
 	properties_.push_back(Prop(key, flag));
@@ -100,10 +100,10 @@ void MobjPropertyList::addFlag(string key)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the property list
 // -----------------------------------------------------------------------------
-string MobjPropertyList::toString(bool condensed)
+wxString MobjPropertyList::toString(bool condensed)
 {
 	// Init return string
-	string ret = wxEmptyString;
+	wxString ret = wxEmptyString;
 
 	for (unsigned a = 0; a < properties_.size(); ++a)
 	{
@@ -112,12 +112,12 @@ string MobjPropertyList::toString(bool condensed)
 			continue;
 
 		// Add "key = value;\n" to the return string
-		string key = properties_[a].name;
-		string val = properties_[a].value.stringValue();
+		wxString key = properties_[a].name;
+		wxString val = properties_[a].value.stringValue();
 
 		if (properties_[a].value.type() == Property::Type::String)
 		{
-			val = StringUtils::escapedString(val);
+			val = wxStringUtils::escapedString(val);
 			val = "\"" + val + "\"";
 		}
 

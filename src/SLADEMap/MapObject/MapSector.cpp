@@ -43,13 +43,13 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-const string MapSector::PROP_TEXFLOOR      = "texturefloor";
-const string MapSector::PROP_TEXCEILING    = "textureceiling";
-const string MapSector::PROP_HEIGHTFLOOR   = "heightfloor";
-const string MapSector::PROP_HEIGHTCEILING = "heightceiling";
-const string MapSector::PROP_LIGHTLEVEL    = "lightlevel";
-const string MapSector::PROP_SPECIAL       = "special";
-const string MapSector::PROP_ID            = "id";
+const wxString MapSector::PROP_TEXFLOOR      = "texturefloor";
+const wxString MapSector::PROP_TEXCEILING    = "textureceiling";
+const wxString MapSector::PROP_HEIGHTFLOOR   = "heightfloor";
+const wxString MapSector::PROP_HEIGHTCEILING = "heightceiling";
+const wxString MapSector::PROP_LIGHTLEVEL    = "lightlevel";
+const wxString MapSector::PROP_SPECIAL       = "special";
+const wxString MapSector::PROP_ID            = "id";
 
 
 // -----------------------------------------------------------------------------
@@ -63,13 +63,13 @@ const string MapSector::PROP_ID            = "id";
 // MapSector class constructor
 // -----------------------------------------------------------------------------
 MapSector::MapSector(
-	int           f_height,
-	const string& f_tex,
-	int           c_height,
-	const string& c_tex,
-	short         light,
-	short         special,
-	short         id) :
+	int             f_height,
+	const wxString& f_tex,
+	int             c_height,
+	const wxString& c_tex,
+	short           light,
+	short           special,
+	short           id) :
 	MapObject(Type::Sector),
 	floor_{ f_tex, f_height, Plane::flat(f_height) },
 	ceiling_{ c_tex, c_height, Plane::flat(c_height) },
@@ -83,7 +83,7 @@ MapSector::MapSector(
 // -----------------------------------------------------------------------------
 // MapSector class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapSector::MapSector(const string& f_tex, const string& c_tex, ParseTreeNode* udmf_def) :
+MapSector::MapSector(const wxString& f_tex, const wxString& c_tex, ParseTreeNode* udmf_def) :
 	MapObject(Type::Sector),
 	floor_{ f_tex },
 	ceiling_{ c_tex }
@@ -168,7 +168,7 @@ void MapSector::setGeometryUpdated()
 // -----------------------------------------------------------------------------
 // Returns the value of the string property matching [key]
 // -----------------------------------------------------------------------------
-string MapSector::stringProperty(const string& key)
+wxString MapSector::stringProperty(const wxString& key)
 {
 	if (key == PROP_TEXFLOOR)
 		return floor_.texture;
@@ -181,7 +181,7 @@ string MapSector::stringProperty(const string& key)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapSector::intProperty(const string& key)
+int MapSector::intProperty(const wxString& key)
 {
 	if (key == PROP_HEIGHTFLOOR)
 		return floor_.height;
@@ -200,7 +200,7 @@ int MapSector::intProperty(const string& key)
 // -----------------------------------------------------------------------------
 // Sets the string value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSector::setStringProperty(const string& key, const string& value)
+void MapSector::setStringProperty(const wxString& key, const wxString& value)
 {
 	if (key == PROP_TEXFLOOR)
 		setFloorTexture(value);
@@ -213,7 +213,7 @@ void MapSector::setStringProperty(const string& key, const string& value)
 // -----------------------------------------------------------------------------
 // Sets the float value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSector::setFloatProperty(const string& key, double value)
+void MapSector::setFloatProperty(const wxString& key, double value)
 {
 	using Game::UDMFFeature;
 
@@ -235,7 +235,7 @@ void MapSector::setFloatProperty(const string& key, double value)
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSector::setIntProperty(const string& key, int value)
+void MapSector::setIntProperty(const wxString& key, int value)
 {
 	// Update modified time
 	setModified();
@@ -257,7 +257,7 @@ void MapSector::setIntProperty(const string& key, int value)
 // -----------------------------------------------------------------------------
 // Sets the floor texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSector::setFloorTexture(const string& tex)
+void MapSector::setFloorTexture(const wxString& tex)
 {
 	setModified();
 	if (parent_map_)
@@ -270,7 +270,7 @@ void MapSector::setFloorTexture(const string& tex)
 // -----------------------------------------------------------------------------
 // Sets the ceiling texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSector::setCeilingTexture(const string& tex)
+void MapSector::setCeilingTexture(const wxString& tex)
 {
 	setModified();
 	if (parent_map_)
@@ -911,22 +911,22 @@ void MapSector::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 // Writes the sector as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapSector::writeUDMF(string& def)
+void MapSector::writeUDMF(wxString& def)
 {
-	def = S_FMT("sector//#%u\n{\n", index_);
+	def = wxString::Format("sector//#%u\n{\n", index_);
 
 	// Basic properties
-	def += S_FMT("texturefloor=\"%s\";\ntextureceiling=\"%s\";\n", floor_.texture, ceiling_.texture);
+	def += wxString::Format("texturefloor=\"%s\";\ntextureceiling=\"%s\";\n", floor_.texture, ceiling_.texture);
 	if (floor_.height != 0)
-		def += S_FMT("heightfloor=%d;\n", floor_.height);
+		def += wxString::Format("heightfloor=%d;\n", floor_.height);
 	if (ceiling_.height != 0)
-		def += S_FMT("heightceiling=%d;\n", ceiling_.height);
+		def += wxString::Format("heightceiling=%d;\n", ceiling_.height);
 	if (light_ != 160)
-		def += S_FMT("lightlevel=%d;\n", light_);
+		def += wxString::Format("lightlevel=%d;\n", light_);
 	if (special_ != 0)
-		def += S_FMT("special=%d;\n", special_);
+		def += wxString::Format("special=%d;\n", special_);
 	if (id_ != 0)
-		def += S_FMT("id=%d;\n", id_);
+		def += wxString::Format("id=%d;\n", id_);
 
 	// Other properties
 	if (!properties_.isEmpty())

@@ -83,12 +83,12 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 	}
 
 	// Get image format hint from type, if any
-	string format_hint = "";
+	wxString format_hint = "";
 	if (entry->type()->extraProps().propertyExists("image_format"))
 		format_hint = entry->type()->extraProps()["image_format"].stringValue();
 
 	// Font formats are still manually loaded for now
-	string format = entry->type()->formatId();
+	wxString format = entry->type()->formatId();
 	if (S_CMPNOCASE(format, "font_doom_alpha"))
 		return image->loadFont0(entry->rawData(), entry->size());
 	else if (S_CMPNOCASE(format, "font_zd_console"))
@@ -223,9 +223,9 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 	{
 		int endscreen = lump - PaletteHack::SOD_END;
 		endscreen += 154;
-		string palname = S_FMT("PAL%05d", endscreen);
-		playpal        = archive->entry(palname, true);
-		sixbit         = true;
+		wxString palname = wxString::Format("PAL%05d", endscreen);
+		playpal          = archive->entry(palname, true);
+		sixbit           = true;
 	}
 	if (!playpal || playpal->size() < 768)
 	{
@@ -287,21 +287,21 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 // Converts [size] to a string representing it as a 'bytes' size, ie "1.24kb",
 // "4.00mb". Sizes under 1kb aren't given an appendage
 // -----------------------------------------------------------------------------
-string Misc::sizeAsString(uint32_t size)
+wxString Misc::sizeAsString(uint32_t size)
 {
 	if (size < 1024 || !size_as_string)
 	{
-		return S_FMT("%d", size);
+		return wxString::Format("%d", size);
 	}
 	else if (size < 1024 * 1024)
 	{
 		double kb = (double)size / 1024;
-		return S_FMT("%1.2fkb", kb);
+		return wxString::Format("%1.2fkb", kb);
 	}
 	else
 	{
 		double mb = (double)size / (1024 * 1024);
-		return S_FMT("%1.2fmb", mb);
+		return wxString::Format("%1.2fmb", mb);
 	}
 }
 
@@ -310,31 +310,31 @@ string Misc::sizeAsString(uint32_t size)
 // ZDoom merely substitutes \ to ^, but Doomsday requires percent encoding of
 // every non-alphanumeric character.
 // -----------------------------------------------------------------------------
-string Misc::lumpNameToFileName(string lump)
+wxString Misc::lumpNameToFileName(wxString lump)
 {
 	if (percent_encoding)
 	{
 		// Doomsday: everything but [a-zA-Z0-9._ ~-]
-		string file;
-		int    chr;
+		wxString file;
+		int      chr;
 		for (size_t a = 0; a < lump.Len(); ++a)
 		{
 			chr = lump[a];
 			if ((chr < 'a' || chr > 'z') && (chr < 'A' || chr > 'Z') && (chr < '0' || chr > '9') && chr != '-'
 				&& chr != '.' && chr != '_' && chr != '~')
 			{
-				file += S_FMT("%%%02X", chr);
+				file += wxString::Format("%%%02X", chr);
 			}
 			else
-				file += S_FMT("%c", chr);
+				file += wxString::Format("%c", chr);
 		}
 		return file;
 	}
 	else
 	{
 		// ZDoom
-		lump.Replace(StringUtils::SLASH_BACK, StringUtils::CARET);
-		lump.Replace(StringUtils::SLASH_FORWARD, StringUtils::CARET);
+		lump.Replace(wxStringUtils::SLASH_BACK, wxStringUtils::CARET);
+		lump.Replace(wxStringUtils::SLASH_FORWARD, wxStringUtils::CARET);
 	}
 	return lump;
 }
@@ -342,31 +342,31 @@ string Misc::lumpNameToFileName(string lump)
 // -----------------------------------------------------------------------------
 // Turns a file name into a lump name
 // -----------------------------------------------------------------------------
-string Misc::fileNameToLumpName(string file)
+wxString Misc::fileNameToLumpName(wxString file)
 {
 	if (percent_encoding)
 	{
-		string lump;
+		wxString lump;
 		for (size_t a = 0; a < file.Len(); ++a)
 		{
 			if (file[a] == '%' && file.Len() > a + 2)
 			{
-				string        code = file.Mid(a + 1, 2);
+				wxString      code = file.Mid(a + 1, 2);
 				unsigned long percent;
 				if (!code.ToULong(&percent, 16))
 					percent = 0;
-				lump += S_FMT("%c", percent);
+				lump += wxString::Format("%c", percent);
 				a += 2;
 			}
 			else
-				lump += S_FMT("%c", file[a]);
+				lump += wxString::Format("%c", file[a]);
 		}
 		return lump;
 	}
 	else
 	{
 		// ZDoom
-		file.Replace(StringUtils::CARET, StringUtils::SLASH_BACK);
+		file.Replace(wxStringUtils::CARET, wxStringUtils::SLASH_BACK);
 	}
 	return file;
 }
@@ -374,14 +374,14 @@ string Misc::fileNameToLumpName(string file)
 // -----------------------------------------------------------------------------
 // Creates a mass rename filter string from [names]
 // -----------------------------------------------------------------------------
-string Misc::massRenameFilter(wxArrayString& names)
+wxString Misc::massRenameFilter(wxArrayString& names)
 {
 	// Check any names were given
 	if (names.empty())
 		return "";
 
 	// Init filter string
-	string filter = names[0];
+	wxString filter = names[0];
 
 	// Go through names
 	for (unsigned a = 1; a < names.size(); a++)
@@ -410,7 +410,7 @@ string Misc::massRenameFilter(wxArrayString& names)
 // Performs a mass rename on [names] using the filter [name_filter].
 // Any * in the filter means that character should not be changed
 // -----------------------------------------------------------------------------
-void Misc::doMassRename(wxArrayString& names, string name_filter)
+void Misc::doMassRename(wxArrayString& names, wxString name_filter)
 {
 	// Go through names
 	for (auto& name : names)
@@ -509,7 +509,7 @@ uint32_t Misc::crc(const uint8_t* buf, uint32_t len)
 // the dimensions.
 // In case the texture is not found, the dimensions returned are null
 // -----------------------------------------------------------------------------
-Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, const string& name)
+Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, const wxString& name)
 {
 	Vec2i dimensions;
 	dimensions.x = 0;
@@ -553,7 +553,7 @@ Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, const string& name)
 // -----------------------------------------------------------------------------
 // Gets the saved window info for [id]
 // -----------------------------------------------------------------------------
-Misc::WindowInfo Misc::getWindowInfo(const string& id)
+Misc::WindowInfo Misc::getWindowInfo(const wxString& id)
 {
 	for (auto& a : window_info)
 	{
@@ -567,7 +567,7 @@ Misc::WindowInfo Misc::getWindowInfo(const string& id)
 // -----------------------------------------------------------------------------
 // Sets the saved window info for [id]
 // -----------------------------------------------------------------------------
-void Misc::setWindowInfo(const string& id, int width, int height, int left, int top)
+void Misc::setWindowInfo(const wxString& id, int width, int height, int left, int top)
 {
 	if (id.IsEmpty())
 		return;
@@ -600,11 +600,11 @@ void Misc::readWindowInfo(Tokenizer& tz)
 	tz.advIf("{");
 	while (!tz.check("}") && !tz.atEnd())
 	{
-		string id     = tz.current().text;
-		int    width  = tz.next().asInt();
-		int    height = tz.next().asInt();
-		int    left   = tz.next().asInt();
-		int    top    = tz.next().asInt();
+		wxString id     = tz.current().text;
+		int      width  = tz.next().asInt();
+		int      height = tz.next().asInt();
+		int      left   = tz.next().asInt();
+		int      top    = tz.next().asInt();
 		setWindowInfo(id, width, height, left, top);
 		tz.adv();
 	}
@@ -616,5 +616,5 @@ void Misc::readWindowInfo(Tokenizer& tz)
 void Misc::writeWindowInfo(wxFile& file)
 {
 	for (auto& a : window_info)
-		file.Write(S_FMT("\t%s %d %d %d %d\n", a.id, a.width, a.height, a.left, a.top));
+		file.Write(wxString::Format("\t%s %d %d %d %d\n", a.id, a.width, a.height, a.left, a.top));
 }

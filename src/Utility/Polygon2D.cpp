@@ -479,21 +479,21 @@ bool PolygonSplitter::detectUnclosed()
 	else if (verbose_)
 	{
 		// Print invalid vertices info if verbose
-		string info = "Vertices with no outgoing edges: ";
+		wxString info = "Vertices with no outgoing edges: ";
 		for (int end_vert : end_verts)
 		{
-			info += S_FMT("%1.2f", vertices_[end_vert].x);
+			info += wxString::Format("%1.2f", vertices_[end_vert].x);
 			info += ",";
-			info += S_FMT("%1.2f", vertices_[end_vert].y);
+			info += wxString::Format("%1.2f", vertices_[end_vert].y);
 			info += " ";
 		}
 		Log::info(info);
 		info = "Vertices with no incoming edges: ";
 		for (int start_vert : start_verts)
 		{
-			info += S_FMT("%1.2f", vertices_[start_vert].x);
+			info += wxString::Format("%1.2f", vertices_[start_vert].x);
 			info += ",";
-			info += S_FMT("%1.2f", vertices_[start_vert].y);
+			info += wxString::Format("%1.2f", vertices_[start_vert].y);
 			info += " ";
 		}
 		Log::info(info);
@@ -645,8 +645,8 @@ bool PolygonSplitter::tracePolyOutline(int edge_start)
 
 	if (verbose_)
 	{
-		string info = "Traced polygon outline: ";
-		info += S_FMT("%lu edges, ", poly.edges.size());
+		wxString info = "Traced polygon outline: ";
+		info += wxString::Format("%lu edges, ", poly.edges.size());
 		if (poly.convex)
 			info += "convex, ";
 		else
@@ -892,7 +892,7 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		tracePolyOutline(a);
 	}
 	if (verbose_)
-		Log::info(S_FMT("%lu Polygon outlines detected", polygon_outlines_.size()));
+		Log::info(wxString::Format("%lu Polygon outlines detected", polygon_outlines_.size()));
 
 	// Check if any edges are not part of a polygon outline
 	for (auto& edge : edges_)

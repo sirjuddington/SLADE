@@ -21,5 +21,5 @@ public:
 
 	// Static functions
 	static bool isLfdArchive(MemChunk& mc);
-	static bool isLfdArchive(const string& filename);
+	static bool isLfdArchive(const wxString& filename);
 };

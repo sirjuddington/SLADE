@@ -63,9 +63,9 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel{ parent, -1 }
 	SetSizer(sizer);
 
 	// Shape
-	string shapes[] = { "Rectangle", "Ellipse" };
-	choice_shape_   = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 2, shapes);
-	sizer_main_     = new wxBoxSizer(wxHORIZONTAL);
+	wxString shapes[] = { "Rectangle", "Ellipse" };
+	choice_shape_     = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 2, shapes);
+	sizer_main_       = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(sizer_main_, 0, wxEXPAND | wxALL, UI::pad());
 	sizer_main_->Add(WxUtils::createLabelHBox(this, "Shape:", choice_shape_), 0, wxEXPAND | wxRIGHT, UI::padLarge());
 

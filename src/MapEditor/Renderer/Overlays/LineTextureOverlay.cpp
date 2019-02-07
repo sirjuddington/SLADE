@@ -54,7 +54,7 @@
 // Adds [texture] to the overlay if it doesn't already exist at the target part
 // (front upper, etc)
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::addTexture(TexInfo& inf, string texture) const
+void LineTextureOverlay::addTexture(TexInfo& inf, wxString texture) const
 {
 	// Ignore if texture is blank ("-")
 	if (texture == "-")
@@ -273,7 +273,7 @@ void LineTextureOverlay::draw(int width, int height, float fade)
 // -----------------------------------------------------------------------------
 // Draws the texture box from info in [tex]
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const string& position) const
+void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const wxString& position) const
 {
 	// Get colours
 	ColRGBA col_bg  = ColourConfiguration::colour("map_overlay_background");
@@ -353,14 +353,14 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const 
 		Drawing::Align::Center);
 
 	// Determine texture name text
-	string str_texture;
+	wxString str_texture;
 	if (tex.textures.size() == 1)
 	{
 		auto& tex_info = OpenGL::Texture::info(tex_first);
-		str_texture    = S_FMT("%s (%dx%d)", tex.textures[0], tex_info.size.x, tex_info.size.y);
+		str_texture    = wxString::Format("%s (%dx%d)", tex.textures[0], tex_info.size.x, tex_info.size.y);
 	}
 	else if (tex.textures.size() > 1)
-		str_texture = S_FMT("Multiple (%lu)", tex.textures.size());
+		str_texture = wxString::Format("Multiple (%lu)", tex.textures.size());
 	else
 		str_texture = "- (None)";
 
@@ -423,7 +423,7 @@ void LineTextureOverlay::mouseRightClick() {}
 // -----------------------------------------------------------------------------
 // Called when a key is pressed
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::keyDown(const string& key)
+void LineTextureOverlay::keyDown(const wxString& key)
 {
 	// 'Select' front side
 	if ((key == "F" || key == "f") && side1_)
@@ -464,10 +464,10 @@ void LineTextureOverlay::keyDown(const string& key)
 // -----------------------------------------------------------------------------
 // Opens the texture browser for [tex]
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::browseTexture(TexInfo& tex, const string& position)
+void LineTextureOverlay::browseTexture(TexInfo& tex, const wxString& position)
 {
 	// Get initial texture
-	string texture;
+	wxString texture;
 	if (!tex.textures.empty())
 		texture = tex.textures[0];
 	else
@@ -476,7 +476,7 @@ void LineTextureOverlay::browseTexture(TexInfo& tex, const string& position)
 	// Open texture browser
 	MapTextureBrowser browser(
 		MapEditor::windowWx(), MapEditor::TextureType::Texture, texture, &(MapEditor::editContext().map()));
-	browser.SetTitle(S_FMT("Browse %s Texture", position));
+	browser.SetTitle(wxString::Format("Browse %s Texture", position));
 	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 	{
 		// Set texture

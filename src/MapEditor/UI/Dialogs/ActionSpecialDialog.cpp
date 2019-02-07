@@ -69,7 +69,7 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 		if (!i.second.defined())
 			continue;
 
-		string label = S_FMT("%d: %s", i.second.number(), i.second.name());
+		wxString label = wxString::Format("%d: %s", i.second.number(), i.second.name());
 		AppendItem(getGroup(i.second.group()), label);
 		textsize.IncTo(dc.GetTextExtent(label));
 	}
@@ -93,8 +93,8 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 // -----------------------------------------------------------------------------
 int ActionSpecialTreeView::specialNumber(wxDataViewItem item) const
 {
-	string num = GetItemText(item).BeforeFirst(':');
-	long   s;
+	wxString num = GetItemText(item).BeforeFirst(':');
+	long     s;
 	if (!num.ToLong(&s))
 		s = -1;
 
@@ -151,7 +151,7 @@ int ActionSpecialTreeView::selectedSpecial() const
 // -----------------------------------------------------------------------------
 // Returns the parent wxDataViewItem representing action special group [group]
 // -----------------------------------------------------------------------------
-wxDataViewItem ActionSpecialTreeView::getGroup(const string& group_name)
+wxDataViewItem ActionSpecialTreeView::getGroup(const wxString& group_name)
 {
 	// Check if group was already made
 	for (auto& group : groups_)
@@ -164,8 +164,8 @@ wxDataViewItem ActionSpecialTreeView::getGroup(const string& group_name)
 	auto path = wxSplit(group_name, '/');
 
 	// Create group needed
-	auto   current  = root_;
-	string fullpath = "";
+	auto     current  = root_;
+	wxString fullpath = "";
 	for (unsigned p = 0; p < path.size(); p++)
 	{
 		if (p > 0)
@@ -256,7 +256,7 @@ public:
 		if (val < 0)
 			text_control_->ChangeValue("");
 		else
-			text_control_->ChangeValue(S_FMT("%ld", val));
+			text_control_->ChangeValue(wxString::Format("%ld", val));
 	}
 
 protected:
@@ -305,7 +305,7 @@ public:
 		choice_control_->SetValidator(ComboBoxAwareIntegerValidator<unsigned char>());
 
 		for (const auto& custom_value : arg.custom_values)
-			choice_control_->Append(S_FMT("%d: %s", custom_value.value, custom_value.name));
+			choice_control_->Append(wxString::Format("%d: %s", custom_value.value, custom_value.name));
 
 		GetSizer()->Add(choice_control_, wxSizerFlags().Expand());
 		wxWindowBase::Fit();
@@ -317,7 +317,7 @@ public:
 		if (selected == wxNOT_FOUND)
 		{
 			// No match.  User must have entered a value themselves
-			string val = choice_control_->GetValue();
+			wxString val = choice_control_->GetValue();
 
 			// Empty string means ignore it
 			if (val.empty())
@@ -350,7 +350,7 @@ public:
 				return;
 			}
 		}
-		choice_control_->ChangeValue(S_FMT("%ld", val));
+		choice_control_->ChangeValue(wxString::Format("%ld", val));
 	}
 
 protected:
@@ -426,7 +426,7 @@ public:
 					new wxRadioButton(
 						this,
 						-1,
-						S_FMT("%d: %s", arg.custom_flags[i].value, arg.custom_flags[i].name),
+						wxString::Format("%d: %s", arg.custom_flags[i].value, arg.custom_flags[i].name),
 						wxDefaultPosition,
 						wxDefaultSize,
 						wxRB_GROUP),
@@ -441,7 +441,9 @@ public:
 					{
 						addControl(
 							new wxRadioButton(
-								this, -1, S_FMT("%d: %s", arg.custom_flags[ii].value, arg.custom_flags[ii].name)),
+								this,
+								-1,
+								wxString::Format("%d: %s", arg.custom_flags[ii].value, arg.custom_flags[ii].name)),
 							ii,
 							group);
 						flag_done[ii] = 1;
@@ -451,7 +453,7 @@ public:
 			else // not in a group
 			{
 				wxControl* control = new wxCheckBox(
-					this, -1, S_FMT("%d: %s", arg.custom_flags[i].value, arg.custom_flags[i].name));
+					this, -1, wxString::Format("%d: %s", arg.custom_flags[i].value, arg.custom_flags[i].name));
 				addControl(control, i, 0);
 			}
 		}
@@ -610,7 +612,7 @@ protected:
 		else
 		{
 			slider_control_->SetValue(value);
-			speed_label_->SetLabel(S_FMT(
+			speed_label_->SetLabel(wxString::Format(
 				"%s (%.1f units per tic, %.1f units per sec)",
 				arg_.speedLabel(value),
 				value / 8.0,
@@ -676,7 +678,7 @@ void ArgsPanel::setup(const Game::ArgSpec& args, bool udmf)
 			old_values[a] = -1;
 
 		control_args_[a] = nullptr;
-		label_args_[a]->SetLabelText(S_FMT("Arg %d:", a + 1));
+		label_args_[a]->SetLabelText(wxString::Format("Arg %d:", a + 1));
 		label_args_desc_[a]->Show(false);
 	}
 
@@ -706,7 +708,7 @@ void ArgsPanel::setup(const Game::ArgSpec& args, bool udmf)
 		}
 
 		// Arg name
-		label_args_[a]->SetLabelText(S_FMT("%s:", arg.name));
+		label_args_[a]->SetLabelText(wxString::Format("%s:", arg.name));
 		fg_sizer_->Add(label_args_[a], wxSizerFlags().Align(wxALIGN_TOP | wxALIGN_RIGHT).Border(wxALL, 4));
 
 		// Arg value
@@ -885,14 +887,14 @@ void ActionSpecialPanel::setupSpecialPanel()
 			auto& props = Game::configuration().allUDMFProperties(MapObject::Type::Line);
 
 			// Get all UDMF trigger properties
-			std::map<string, wxFlexGridSizer*> named_flexgrids;
+			std::map<wxString, wxFlexGridSizer*> named_flexgrids;
 			for (auto& i : props)
 			{
 				if (!i.second.isTrigger())
 					continue;
 
-				string group       = i.second.group();
-				auto   frame_sizer = named_flexgrids[group];
+				wxString group       = i.second.group();
+				auto     frame_sizer = named_flexgrids[group];
 				if (!frame_sizer)
 				{
 					auto frame_triggers = new wxStaticBox(panel_action_special_, -1, group);
@@ -978,7 +980,7 @@ void ActionSpecialPanel::setSpecial(int special)
 	// Regular action special
 	showGeneralised(false);
 	tree_specials_->showSpecial(special, false);
-	text_special_->SetValue(S_FMT("%d", special));
+	text_special_->SetValue(wxString::Format("%d", special));
 
 	// Setup args if any
 	if (panel_args_)
@@ -1008,7 +1010,7 @@ void ActionSpecialPanel::setTrigger(int index)
 // -----------------------------------------------------------------------------
 // Sets the action special trigger from a udmf trigger name (hexen or udmf)
 // -----------------------------------------------------------------------------
-void ActionSpecialPanel::setTrigger(const string& trigger)
+void ActionSpecialPanel::setTrigger(const wxString& trigger)
 {
 	if (!show_trigger_)
 		return;
@@ -1263,7 +1265,7 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 	}
 
 	// Set special # text box
-	text_special_->SetValue(S_FMT("%d", selectedSpecial()));
+	text_special_->SetValue(wxString::Format("%d", selectedSpecial()));
 
 	if (panel_args_)
 	{

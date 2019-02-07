@@ -253,7 +253,7 @@ FTFont* getFont(Font font)
 // Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
 // the rendered text string are written to it.
 // -----------------------------------------------------------------------------
-void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
+void Drawing::drawText(const wxString& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
 {
 	// Get desired font
 	auto ftgl_font = getFont(font);
@@ -310,7 +310,7 @@ void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font fo
 // -----------------------------------------------------------------------------
 // Returns the width and height of [text] when drawn with [font]
 // -----------------------------------------------------------------------------
-Vec2f Drawing::textExtents(const string& text, Font font)
+Vec2f Drawing::textExtents(const wxString& text, Font font)
 {
 	// Get desired font
 	auto ftgl_font = getFont(font);

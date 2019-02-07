@@ -2,7 +2,7 @@
 class SIFRottGfx : public SIFormat
 {
 public:
-	SIFRottGfx(const string& id = "rott", const string& name = "ROTT Gfx", int reliability = 121) :
+	SIFRottGfx(const wxString& id = "rott", const wxString& name = "ROTT Gfx", int reliability = 121) :
 		SIFormat(id, name, "dat", reliability)
 	{
 	}

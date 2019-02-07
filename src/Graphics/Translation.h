@@ -25,7 +25,7 @@ public:
 
 		IndexRange(int start, int end) : start{ (uint8_t)start }, end{ (uint8_t)end } {}
 
-		string asText() const { return S_FMT("%d:%d", start, end); }
+		wxString asText() const { return wxString::Format("%d:%d", start, end); }
 	};
 
 	typedef std::unique_ptr<TransRange> UPtr;
@@ -42,7 +42,7 @@ public:
 	void setStart(uint8_t val) { range_.start = val; }
 	void setEnd(uint8_t val) { range_.end = val; }
 
-	virtual string asText() { return ""; }
+	virtual wxString asText() { return ""; }
 
 protected:
 	Type       type_;
@@ -71,9 +71,9 @@ public:
 	void setDStart(uint8_t val) { dest_range_.start = val; }
 	void setDEnd(uint8_t val) { dest_range_.end = val; }
 
-	string asText() override
+	wxString asText() override
 	{
-		return S_FMT("%d:%d=%d:%d", range_.start, range_.end, dest_range_.start, dest_range_.end);
+		return wxString::Format("%d:%d=%d:%d", range_.start, range_.end, dest_range_.start, dest_range_.end);
 	}
 
 private:
@@ -107,9 +107,9 @@ public:
 	void setStartColour(const ColRGBA& col) { col_start_.set(col); }
 	void setEndColour(const ColRGBA& col) { col_end_.set(col); }
 
-	string asText() override
+	wxString asText() override
 	{
-		return S_FMT(
+		return wxString::Format(
 			"%d:%d=[%d,%d,%d]:[%d,%d,%d]",
 			range_.start,
 			range_.end,
@@ -154,9 +154,9 @@ public:
 	void setDStart(float r, float g, float b) { rgb_start_ = { r, g, b }; }
 	void setDEnd(float r, float g, float b) { rgb_end_ = { r, g, b }; }
 
-	string asText() override
+	wxString asText() override
 	{
-		return S_FMT(
+		return wxString::Format(
 			"%d:%d=%%[%1.2f,%1.2f,%1.2f]:[%1.2f,%1.2f,%1.2f]",
 			range_.start,
 			range_.end,
@@ -188,9 +188,9 @@ public:
 	const ColRGBA& colour() const { return colour_; }
 	void           setColour(const ColRGBA& c) { colour_ = c; }
 
-	string asText() override
+	wxString asText() override
 	{
-		return S_FMT("%d:%d=#[%d,%d,%d]", range_.start, range_.end, colour_.r, colour_.g, colour_.b);
+		return wxString::Format("%d:%d=#[%d,%d,%d]", range_.start, range_.end, colour_.r, colour_.g, colour_.b);
 	}
 
 private:
@@ -220,9 +220,10 @@ public:
 	void    setColour(const ColRGBA& c) { colour_ = c; }
 	void    setAmount(uint8_t a) { amount_ = a; }
 
-	string asText() override
+	wxString asText() override
 	{
-		return S_FMT("%d:%d=@%d[%d,%d,%d]", range_.start, range_.end, amount_, colour_.r, colour_.g, colour_.b);
+		return wxString::Format(
+			"%d:%d=@%d[%d,%d,%d]", range_.start, range_.end, amount_, colour_.r, colour_.g, colour_.b);
 	}
 
 private:
@@ -235,7 +236,7 @@ class TransRangeSpecial : public TransRange
 	friend class Translation;
 
 public:
-	TransRangeSpecial(IndexRange range, const string& special = "") :
+	TransRangeSpecial(IndexRange range, const wxString& special = "") :
 		TransRange{ Type::Special, range },
 		special_{ special }
 	{
@@ -246,13 +247,13 @@ public:
 	{
 	}
 
-	string special() const { return special_; }
-	void   setSpecial(const string& sp) { special_ = sp; }
+	wxString special() const { return special_; }
+	void     setSpecial(const wxString& sp) { special_ = sp; }
 
-	string asText() override { return S_FMT("%d:%d=$%s", range_.start, range_.end, special_); }
+	wxString asText() override { return wxString::Format("%d:%d=$%s", range_.start, range_.end, special_); }
 
 private:
-	string special_;
+	wxString special_;
 };
 
 class Palette;
@@ -262,17 +263,17 @@ public:
 	Translation()  = default;
 	~Translation() = default;
 
-	void   parse(string def);
-	void   parseRange(const string& range);
-	void   read(const uint8_t* data);
-	string asText();
-	void   clear();
-	void   copy(const Translation& copy);
-	bool   isEmpty() const { return built_in_name_.IsEmpty() && translations_.empty(); }
+	void     parse(wxString def);
+	void     parseRange(const wxString& range);
+	void     read(const uint8_t* data);
+	wxString asText();
+	void     clear();
+	void     copy(const Translation& copy);
+	bool     isEmpty() const { return built_in_name_.IsEmpty() && translations_.empty(); }
 
 	unsigned    nRanges() const { return translations_.size(); }
 	TransRange* range(unsigned index);
-	string      builtInName() const { return built_in_name_; }
+	wxString    builtInName() const { return built_in_name_; }
 	void        setDesaturationAmount(uint8_t amount) { desat_amount_ = amount; }
 
 	ColRGBA translate(ColRGBA col, Palette* pal = nullptr);
@@ -282,10 +283,10 @@ public:
 	void removeRange(int pos);
 	void swapRanges(int pos1, int pos2);
 
-	static string getPredefined(string def);
+	static wxString getPredefined(wxString def);
 
 private:
 	vector<TransRange::UPtr> translations_;
-	string                   built_in_name_;
+	wxString                 built_in_name_;
 	uint8_t                  desat_amount_ = 0;
 };

@@ -47,7 +47,11 @@
 // -----------------------------------------------------------------------------
 // ParseTreeNode class constructor
 // -----------------------------------------------------------------------------
-ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveTreeNode* archive_dir, const string& type) :
+ParseTreeNode::ParseTreeNode(
+	ParseTreeNode*   parent,
+	Parser*          parser,
+	ArchiveTreeNode* archive_dir,
+	const wxString&  type) :
 	STreeNode{ parent },
 	type_{ type },
 	parser_{ parser },
@@ -73,7 +77,7 @@ Property ParseTreeNode::value(unsigned index)
 // Returns the node's value at [index] as a string.
 // If [index] is out of range, returns an empty string
 // -----------------------------------------------------------------------------
-string ParseTreeNode::stringValue(unsigned index)
+wxString ParseTreeNode::stringValue(unsigned index)
 {
 	// Check index
 	if (index >= values_.size())
@@ -85,9 +89,9 @@ string ParseTreeNode::stringValue(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns the node's values as a string vector.
 // -----------------------------------------------------------------------------
-vector<string> ParseTreeNode::stringValues()
+vector<wxString> ParseTreeNode::stringValues()
 {
-	vector<string> string_values;
+	vector<wxString> string_values;
 	for (auto& value : values_)
 		string_values.push_back(value.stringValue());
 	return string_values;
@@ -135,7 +139,7 @@ double ParseTreeNode::floatValue(unsigned index)
 // -----------------------------------------------------------------------------
 // Adds a child ParseTreeNode of [name] and [type]
 // -----------------------------------------------------------------------------
-ParseTreeNode* ParseTreeNode::addChildPTN(const string& name, const string& type)
+ParseTreeNode* ParseTreeNode::addChildPTN(const wxString& name, const wxString& type)
 {
 	auto node   = dynamic_cast<ParseTreeNode*>(addChild(name));
 	node->type_ = type;
@@ -146,9 +150,10 @@ ParseTreeNode* ParseTreeNode::addChildPTN(const string& name, const string& type
 // Writes an error log message [error], showing the source and current line
 // from tokenizer [tz]
 // -----------------------------------------------------------------------------
-void ParseTreeNode::logError(const Tokenizer& tz, const string& error) const
+void ParseTreeNode::logError(const Tokenizer& tz, const wxString& error) const
 {
-	Log::error(S_FMT("Parse Error in %s (Line %d): %s\n", CHR(tz.source()), tz.current().line_no, CHR(error)));
+	Log::error(
+		wxString::Format("Parse Error in %s (Line %d): %s\n", CHR(tz.source()), tz.current().line_no, CHR(error)));
 }
 
 // -----------------------------------------------------------------------------
@@ -156,7 +161,7 @@ void ParseTreeNode::logError(const Tokenizer& tz, const string& error) const
 // -----------------------------------------------------------------------------
 bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 {
-	// Log::debug(S_FMT("Preprocessor %s", CHR(tz.current().text)));
+	// Log::debug(wxString::Format("Preprocessor %s", CHR(tz.current().text)));
 
 	// #define
 	if (tz.current() == "#define")
@@ -169,7 +174,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 		bool test = true;
 		if (tz.current() == "#ifndef")
 			test = false;
-		string define = tz.next().text;
+		wxString define = tz.next().text;
 		if (parser_->defined(define) == test)
 			return true;
 
@@ -204,7 +209,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 			if (!inc_entry) // Try absolute path
 				inc_entry = archive->entryAtPath(inc_path);
 
-			// Log::debug(S_FMT("Include %s", CHR(inc_path)));
+			// Log::debug(wxString::Format("Include %s", CHR(inc_path)));
 
 			if (inc_entry)
 			{
@@ -223,7 +228,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 					return false;
 			}
 			else
-				logError(tz, S_FMT("Include entry %s not found", CHR(inc_path)));
+				logError(tz, wxString::Format("Include entry %s not found", CHR(inc_path)));
 		}
 		else
 			tz.adv(); // Skip include path
@@ -237,7 +242,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 
 	// Unrecognised
 	else
-		logError(tz, S_FMT("Unrecognised preprocessor directive \"%s\"", CHR(tz.current().text)));
+		logError(tz, wxString::Format("Unrecognised preprocessor directive \"%s\"", CHR(tz.current().text)));
 
 	return true;
 }
@@ -303,7 +308,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 			tz.adv(); // Skip it
 		else if (tz.peek() != list_end)
 		{
-			logError(tz, S_FMT(R"(Expected "," or "%c", got "%s")", list_end, CHR(tz.peek().text)));
+			logError(tz, wxString::Format(R"(Expected "," or "%c", got "%s")", list_end, CHR(tz.peek().text)));
 			return false;
 		}
 
@@ -327,7 +332,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 bool ParseTreeNode::parse(Tokenizer& tz)
 {
 	// Keep parsing until final } is reached (or end of file)
-	string name, type;
+	wxString name, type;
 	while (!tz.atEnd() && tz.current() != '}')
 	{
 		// Check for preprocessor stuff
@@ -343,7 +348,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// If it's a special character (ie not a valid name), parsing fails
 		if (tz.isSpecialCharacter(tz.current().text[0]))
 		{
-			logError(tz, S_FMT("Unexpected special character '%s'", CHR(tz.current().text)));
+			logError(tz, wxString::Format("Unexpected special character '%s'", CHR(tz.current().text)));
 			return false;
 		}
 
@@ -369,7 +374,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			}
 		}
 
-		// Log::debug(S_FMT("%s \"%s\", op %s", CHR(type), CHR(name), CHR(tz.current().text)));
+		// Log::debug(wxString::Format("%s \"%s\", op %s", CHR(type), CHR(name), CHR(tz.current().text)));
 
 		// Assignment
 		if (tz.advIfNext('=', 2))
@@ -424,7 +429,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			}
 			else
 			{
-				logError(tz, S_FMT(R"(Expecting "{" or ";", got "%s")", CHR(tz.next().text)));
+				logError(tz, wxString::Format(R"(Expecting "{" or ";", got "%s")", CHR(tz.next().text)));
 				return false;
 			}
 		}
@@ -432,7 +437,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// Unexpected token
 		else
 		{
-			logError(tz, S_FMT("Unexpected token \"%s\"", CHR(tz.next().text)));
+			logError(tz, wxString::Format("Unexpected token \"%s\"", CHR(tz.next().text)));
 			return false;
 		}
 
@@ -455,10 +460,10 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 // Node types:     never
 // Node 'inherit': never
 // -----------------------------------------------------------------------------
-void ParseTreeNode::write(string& out, int indent) const
+void ParseTreeNode::write(wxString& out, int indent) const
 {
 	// Indentation
-	string tabs;
+	wxString tabs;
 	for (int a = 0; a < indent; a++)
 		tabs += "\t";
 
@@ -469,9 +474,9 @@ void ParseTreeNode::write(string& out, int indent) const
 
 	// Name
 	if (name_.Contains(" ") || name_.empty())
-		out += S_FMT("\"%s\"", CHR(name_));
+		out += wxString::Format("\"%s\"", CHR(name_));
 	else
-		out += S_FMT("%s", CHR(name_));
+		out += wxString::Format("%s", CHR(name_));
 
 	// Inherit
 	if (!inherit_.empty())
@@ -493,10 +498,10 @@ void ParseTreeNode::write(string& out, int indent) const
 			{
 			case Property::Type::Boolean:
 			case Property::Type::Flag: out += value.boolValue() ? "true" : "false"; break;
-			case Property::Type::Int: out += S_FMT("%d", value.intValue()); break;
-			case Property::Type::Float: out += S_FMT("%1.3f", value.floatValue()); break;
-			case Property::Type::UInt: out += S_FMT("%u", value.unsignedValue()); break;
-			default: out += S_FMT("\"%s\"", value.stringValue()); break;
+			case Property::Type::Int: out += wxString::Format("%d", value.intValue()); break;
+			case Property::Type::Float: out += wxString::Format("%1.3f", value.floatValue()); break;
+			case Property::Type::UInt: out += wxString::Format("%u", value.unsignedValue()); break;
+			default: out += wxString::Format("\"%s\"", value.stringValue()); break;
 			}
 		}
 
@@ -568,7 +573,7 @@ Parser::Parser(ArchiveTreeNode* dir_root) : archive_dir_root_{ dir_root }
 // 		</base>
 // 	</root>
 // -----------------------------------------------------------------------------
-bool Parser::parseText(MemChunk& mc, const string& source) const
+bool Parser::parseText(MemChunk& mc, const wxString& source) const
 {
 	Tokenizer tz;
 
@@ -583,7 +588,7 @@ bool Parser::parseText(MemChunk& mc, const string& source) const
 	// Do parsing
 	return pt_root_->parse(tz);
 }
-bool Parser::parseText(const string& text, const string& source) const
+bool Parser::parseText(const wxString& text, const wxString& source) const
 {
 	Tokenizer tz;
 

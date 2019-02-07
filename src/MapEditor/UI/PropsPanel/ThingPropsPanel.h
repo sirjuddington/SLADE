@@ -19,13 +19,13 @@ public:
 	SpriteTexCanvas(wxWindow* parent);
 	~SpriteTexCanvas() = default;
 
-	string texName() const { return texname_; }
-	void   setSprite(const Game::ThingType& type);
-	void   draw() override;
+	wxString texName() const { return texname_; }
+	void     setSprite(const Game::ThingType& type);
+	void     draw() override;
 
 private:
 	unsigned texture_ = 0;
-	string   texname_;
+	wxString texname_;
 	ColRGBA  colour_ = ColRGBA::WHITE;
 	bool     icon_   = false;
 };
@@ -95,9 +95,9 @@ private:
 	NumberTextCtrl*      text_id_       = nullptr;
 	NumberTextCtrl*      text_height_   = nullptr;
 
-	vector<string> udmf_flags_;
-	vector<string> udmf_flags_extra_;
-	int            type_current_ = 0;
+	vector<wxString> udmf_flags_;
+	vector<wxString> udmf_flags_extra_;
+	int              type_current_ = 0;
 
 	wxPanel* setupGeneralTab();
 	wxPanel* setupExtraFlagsTab();

@@ -10,10 +10,10 @@ public:
 	~NodesPrefsPanel() = default;
 
 	void init() override;
-	void populateOptions(const string& options) const;
+	void populateOptions(const wxString& options) const;
 	void applyPreferences() override;
 
-	string pageTitle() override { return "Node Builders"; }
+	wxString pageTitle() override { return "Node Builders"; }
 
 private:
 	wxChoice*       choice_nodebuilder_ = nullptr;

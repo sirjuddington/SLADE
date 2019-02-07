@@ -19,8 +19,8 @@ public:
 	bool open(MemChunk& mc) override;
 
 	// Writing/Saving
-	bool write(MemChunk& mc, bool update = true) override;           // Write to MemChunk
-	bool write(const string& filename, bool update = true) override; // Write to File
+	bool write(MemChunk& mc, bool update = true) override;             // Write to MemChunk
+	bool write(const wxString& filename, bool update = true) override; // Write to File
 
 	// Misc
 	bool loadEntryData(ArchiveEntry* entry) override;
@@ -31,11 +31,11 @@ public:
 		unsigned         position = 0xFFFFFFFF,
 		ArchiveTreeNode* dir      = nullptr,
 		bool             copy     = false) override;
-	ArchiveEntry* addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy = false) override;
+	ArchiveEntry* addEntry(ArchiveEntry* entry, const wxString& add_namespace, bool copy = false) override;
 	bool          removeEntry(ArchiveEntry* entry) override;
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, const string& name) override;
+	bool renameEntry(ArchiveEntry* entry, const wxString& name) override;
 
 	// Entry moving
 	bool swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override;
@@ -44,8 +44,8 @@ public:
 	// Detection
 	MapDesc         mapDesc(ArchiveEntry* maphead) override;
 	vector<MapDesc> detectMaps() override;
-	string          detectNamespace(ArchiveEntry* entry) override;
-	string          detectNamespace(size_t index, ArchiveTreeNode* dir = nullptr) override;
+	wxString        detectNamespace(ArchiveEntry* entry) override;
+	wxString        detectNamespace(size_t index, ArchiveTreeNode* dir = nullptr) override;
 	void            detectIncludes();
 	bool            hasFlatHack() override;
 
@@ -56,9 +56,9 @@ public:
 
 	// Static functions
 	static bool isWadArchive(MemChunk& mc);
-	static bool isWadArchive(const string& filename);
+	static bool isWadArchive(const wxString& filename);
 
-	static bool exportEntriesAsWad(const string& filename, vector<ArchiveEntry*> entries)
+	static bool exportEntriesAsWad(const wxString& filename, vector<ArchiveEntry*> entries)
 	{
 		WadArchive wad;
 
@@ -82,7 +82,7 @@ private:
 		size_t        start_index;
 		ArchiveEntry* end; // eg. P_END
 		size_t        end_index;
-		string        name; // eg. "P" (since P or PP is a special case will be set to "patches")
+		wxString      name; // eg. "P" (since P or PP is a special case will be set to "patches")
 
 		NSPair(ArchiveEntry* start, ArchiveEntry* end) : start{ start }, start_index{ 0 }, end{ end }, end_index{ 0 } {}
 	};

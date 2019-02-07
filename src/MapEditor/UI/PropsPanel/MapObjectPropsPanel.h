@@ -26,9 +26,9 @@ public:
 	void clearGrid();
 	void hideFlags(bool hide) { hide_flags_ = hide; }
 	void hideTriggers(bool hide) { hide_triggers_ = hide; }
-	void hideProperty(string property) { hide_props_.push_back(property); }
+	void hideProperty(wxString property) { hide_props_.push_back(property); }
 	void clearHiddenProperties() { hide_props_.clear(); }
-	bool propHidden(string property) { return VECTOR_EXISTS(hide_props_, property); }
+	bool propHidden(wxString property) { return VECTOR_EXISTS(hide_props_, property); }
 
 private:
 	TabControl*           stc_sections_   = nullptr;
@@ -36,7 +36,7 @@ private:
 	wxPropertyGrid*       pg_props_side1_ = nullptr;
 	wxPropertyGrid*       pg_props_side2_ = nullptr;
 	MapObject::Type       last_type_      = MapObject::Type::Object;
-	string                last_config_;
+	wxString              last_config_;
 	wxStaticText*         label_item_ = nullptr;
 	vector<MOPGProperty*> properties_;
 	wxPGProperty*         args_[5]      = {};
@@ -49,58 +49,58 @@ private:
 	bool                  udmf_         = false;
 
 	// Hide properties
-	bool           hide_flags_    = false;
-	bool           hide_triggers_ = false;
-	vector<string> hide_props_;
+	bool             hide_flags_    = false;
+	bool             hide_triggers_ = false;
+	vector<wxString> hide_props_;
 
 	MOPGProperty* addBoolProperty(
 		wxPGProperty*   group,
-		const string&   label,
-		const string&   propname,
+		const wxString& label,
+		const wxString& propname,
 		bool            readonly  = false,
 		wxPropertyGrid* grid      = nullptr,
 		UDMFProperty*   udmf_prop = nullptr);
 	MOPGProperty* addIntProperty(
 		wxPGProperty*   group,
-		const string&   label,
-		const string&   propname,
+		const wxString& label,
+		const wxString& propname,
 		bool            readonly  = false,
 		wxPropertyGrid* grid      = nullptr,
 		UDMFProperty*   udmf_prop = nullptr);
 	MOPGProperty* addFloatProperty(
 		wxPGProperty*   group,
-		const string&   label,
-		const string&   propname,
+		const wxString& label,
+		const wxString& propname,
 		bool            readonly  = false,
 		wxPropertyGrid* grid      = nullptr,
 		UDMFProperty*   udmf_prop = nullptr);
 	MOPGProperty* addStringProperty(
 		wxPGProperty*   group,
-		const string&   label,
-		const string&   propname,
+		const wxString& label,
+		const wxString& propname,
 		bool            readonly  = false,
 		wxPropertyGrid* grid      = nullptr,
 		UDMFProperty*   udmf_prop = nullptr);
 	MOPGProperty* addLineFlagProperty(
 		wxPGProperty*   group,
-		const string&   label,
-		const string&   propname,
+		const wxString& label,
+		const wxString& propname,
 		int             index,
 		bool            readonly  = false,
 		wxPropertyGrid* grid      = nullptr,
 		UDMFProperty*   udmf_prop = nullptr);
 	MOPGProperty* addThingFlagProperty(
 		wxPGProperty*   group,
-		const string&   label,
-		const string&   propname,
+		const wxString& label,
+		const wxString& propname,
 		int             index,
 		bool            readonly  = false,
 		wxPropertyGrid* grid      = nullptr,
 		UDMFProperty*   udmf_prop = nullptr);
 	MOPGProperty* addTextureProperty(
 		wxPGProperty*          group,
-		const string&          label,
-		const string&          propname,
+		const wxString&        label,
+		const wxString&        propname,
 		MapEditor::TextureType textype,
 		bool                   readonly  = false,
 		wxPropertyGrid*        grid      = nullptr,
@@ -108,7 +108,7 @@ private:
 	void addUDMFProperty(
 		UDMFProperty&   prop,
 		MapObject::Type objtype,
-		const string&   basegroup = "",
+		const wxString& basegroup = "",
 		wxPropertyGrid* grid      = nullptr);
 
 	bool setBoolProperty(wxPGProperty* prop, bool value, bool force_set = false) const;

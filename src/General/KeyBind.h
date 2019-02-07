@@ -8,16 +8,20 @@ class Tokenizer;
 
 struct Keypress
 {
-	string key;
-	bool   alt;
-	bool   ctrl;
-	bool   shift;
+	wxString key;
+	bool     alt;
+	bool     ctrl;
+	bool     shift;
 
-	Keypress(const string& key, bool alt, bool ctrl, bool shift) : key{ key }, alt{ alt }, ctrl{ ctrl }, shift{ shift }
+	Keypress(const wxString& key, bool alt, bool ctrl, bool shift) :
+		key{ key },
+		alt{ alt },
+		ctrl{ ctrl },
+		shift{ shift }
 	{
 	}
 
-	Keypress(const string& key = "", int modifiers = 0)
+	Keypress(const wxString& key = "", int modifiers = 0)
 	{
 		this->key = key;
 		ctrl = alt = shift = false;
@@ -29,12 +33,12 @@ struct Keypress
 			shift = true;
 	}
 
-	string asString() const
+	wxString asString() const
 	{
 		if (key.IsEmpty())
 			return "";
 
-		string ret = "";
+		wxString ret = "";
 		if (ctrl)
 			ret += "Ctrl+";
 		if (alt)
@@ -42,7 +46,7 @@ struct Keypress
 		if (shift)
 			ret += "Shift+";
 
-		string keyname = key;
+		wxString keyname = key;
 		keyname.Replace("_", " ");
 		keyname = keyname.Capitalize();
 		ret += keyname;
@@ -54,7 +58,7 @@ struct Keypress
 class KeyBind
 {
 public:
-	KeyBind(const string& name) : name_{ name } {}
+	KeyBind(const wxString& name) : name_{ name } {}
 	~KeyBind() = default;
 
 	// Operators
@@ -74,12 +78,12 @@ public:
 			return priority_ > r.priority_;
 	}
 
-	void   clear() { keys_.clear(); }
-	void   addKey(const string& key, bool alt = false, bool ctrl = false, bool shift = false);
-	string name() const { return name_; }
-	string group() const { return group_; }
-	string description() const { return description_; }
-	string keysAsString();
+	void     clear() { keys_.clear(); }
+	void     addKey(const wxString& key, bool alt = false, bool ctrl = false, bool shift = false);
+	wxString name() const { return name_; }
+	wxString group() const { return group_; }
+	wxString description() const { return description_; }
+	wxString keysAsString();
 
 	int      nKeys() const { return keys_.size(); }
 	Keypress key(unsigned index)
@@ -93,37 +97,37 @@ public:
 	Keypress defaultKey(unsigned index) { return defaults_[index]; }
 
 	// Static functions
-	static KeyBind&      bind(const string& name);
+	static KeyBind&      bind(const wxString& name);
 	static wxArrayString bindsForKey(Keypress key);
-	static bool          isPressed(const string& name);
+	static bool          isPressed(const wxString& name);
 	static bool          addBind(
-				 const string&   name,
+				 const wxString& name,
 				 const Keypress& key,
-				 const string&   desc         = "",
-				 const string&   group        = "",
+				 const wxString& desc         = "",
+				 const wxString& group        = "",
 				 bool            ignore_shift = false,
 				 int             priority     = -1);
-	static string   keyName(int key);
-	static string   mbName(int button);
+	static wxString keyName(int key);
+	static wxString mbName(int button);
 	static bool     keyPressed(Keypress key);
-	static bool     keyReleased(const string& key);
+	static bool     keyReleased(const wxString& key);
 	static Keypress asKeyPress(int keycode, int modifiers);
 	static void     allKeyBinds(vector<KeyBind*>& list);
 	static void     releaseAll();
-	static void     pressBind(const string& name);
+	static void     pressBind(const wxString& name);
 
-	static void   initBinds();
-	static string writeBinds();
-	static bool   readBinds(Tokenizer& tz);
-	static void   updateSortedBindsList();
+	static void     initBinds();
+	static wxString writeBinds();
+	static bool     readBinds(Tokenizer& tz);
+	static void     updateSortedBindsList();
 
 private:
-	string           name_;
+	wxString         name_;
 	vector<Keypress> keys_;
 	vector<Keypress> defaults_;
 	bool             pressed_ = false;
-	string           description_;
-	string           group_;
+	wxString         description_;
+	wxString         group_;
 	bool             ignore_shift_ = false;
 	int              priority_     = 0;
 };
@@ -135,6 +139,6 @@ public:
 	KeyBindHandler();
 	virtual ~KeyBindHandler();
 
-	virtual void onKeyBindPress(const string& name) {}
-	virtual void onKeyBindRelease(const string& name) {}
+	virtual void onKeyBindPress(const wxString& name) {}
+	virtual void onKeyBindRelease(const wxString& name) {}
 };

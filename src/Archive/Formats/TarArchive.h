@@ -17,5 +17,5 @@ public:
 
 	// Static functions
 	static bool isTarArchive(MemChunk& mc);
-	static bool isTarArchive(const string& filename);
+	static bool isTarArchive(const wxString& filename);
 };

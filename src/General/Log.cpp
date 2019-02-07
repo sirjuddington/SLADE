@@ -54,9 +54,9 @@ CVAR(Int, log_verbosity, 1, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
 {
-	string error = "FreeImage: ";
+	wxString error = "FreeImage: ";
 	if (fif != FIF_UNKNOWN)
-		error += S_FMT("[%s] ", FreeImage_GetFormatFromFIF(fif));
+		error += wxString::Format("[%s] ", FreeImage_GetFormatFromFIF(fif));
 	error += message;
 
 	Log::error(error);
@@ -74,9 +74,9 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
 // Returns the log entry as a formatted string:
 // HH:MM:SS: <message>
 // -----------------------------------------------------------------------------
-string Log::Message::formattedMessageLine() const
+wxString Log::Message::formattedMessageLine() const
 {
-	return S_FMT("%s: %s", wxDateTime(timestamp).FormatISOTime(), CHR(message));
+	return wxString::Format("%s: %s", wxDateTime(timestamp).FormatISOTime(), CHR(message));
 }
 
 
@@ -97,14 +97,14 @@ void Log::init()
 	sf::err().rdbuf(log_file.rdbuf());
 
 	// Write logfile header
-	string year = wxNow().Right(4);
+	wxString year = wxNow().Right(4);
 	info("SLADE - It's a Doom Editor");
-	info(S_FMT("Version %s", App::version().toString()));
+	info(wxString::Format("Version %s", App::version().toString()));
 	if (!Global::sc_rev.empty())
-		info(S_FMT("Git Revision %s", Global::sc_rev));
-	info(S_FMT("Written by Simon Judd, 2008-%s", year));
+		info(wxString::Format("Git Revision %s", Global::sc_rev));
+	info(wxString::Format("Written by Simon Judd, 2008-%s", year));
 #ifdef SFML_VERSION_MAJOR
-	info(S_FMT(
+	info(wxString::Format(
 		"Compiled with wxWidgets %i.%i.%i and SFML %i.%i.%i",
 		wxMAJOR_VERSION,
 		wxMINOR_VERSION,
@@ -113,7 +113,7 @@ void Log::init()
 		SFML_VERSION_MINOR,
 		SFML_VERSION_PATCH));
 #else
-	info(S_FMT("Compiled with wxWidgets %i.%i.%i", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER));
+	info(wxString::Format("Compiled with wxWidgets %i.%i.%i", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER));
 #endif
 	info("--------------------------------");
 

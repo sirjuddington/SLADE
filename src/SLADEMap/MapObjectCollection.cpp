@@ -325,7 +325,8 @@ bool MapObjectCollection::removeLine(unsigned index)
 	if (index >= lines_.size())
 		return false;
 
-	Log::info(4, S_FMT("id %u  index %u  objindex %u", lines_[index]->obj_id_, index, lines_[index]->index_));
+	Log::info(
+		4, wxString::Format("id %u  index %u  objindex %u", lines_[index]->obj_id_, index, lines_[index]->index_));
 
 	// Init
 	auto line = lines_[index];

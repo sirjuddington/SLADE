@@ -31,7 +31,7 @@ public:
 	bool chooseMap(Archive* archive = nullptr);
 	bool openMap(Archive::MapDesc map);
 	void loadMapScripts(Archive::MapDesc map);
-	bool writeMap(WadArchive& wad, const string& name = "MAP01", bool nodes = true);
+	bool writeMap(WadArchive& wad, const wxString& name = "MAP01", bool nodes = true);
 	bool saveMap();
 	bool saveMapAs();
 	void closeMap() const;
@@ -49,7 +49,7 @@ public:
 	void showShapeDrawPanel(bool show = true);
 
 	// SAction handler
-	bool handleAction(const string& id) override;
+	bool handleAction(const wxString& id) override;
 
 private:
 	MapCanvas*                 map_canvas_          = nullptr;

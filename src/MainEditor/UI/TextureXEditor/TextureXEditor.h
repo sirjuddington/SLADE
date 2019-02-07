@@ -32,10 +32,10 @@ public:
 	void redo();
 
 	// Editing
-	void   setFullPath(bool enabled = false) const { patch_browser_->setFullPath(enabled); }
-	bool   removePatch(unsigned index, bool delete_entry = false);
-	int    browsePatchTable(const string& first = "") const;
-	string browsePatchEntry(const string& first = "");
+	void     setFullPath(bool enabled = false) const { patch_browser_->setFullPath(enabled); }
+	bool     removePatch(unsigned index, bool delete_entry = false);
+	int      browsePatchTable(const wxString& first = "") const;
+	wxString browsePatchEntry(const wxString& first = "");
 
 	// Checks
 	bool checkTextures();
@@ -59,6 +59,6 @@ private:
 	bool pnames_modified_ = false;
 
 	// Events
-	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
 	void onShow(wxShowEvent& e);
 };

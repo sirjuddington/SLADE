@@ -221,12 +221,12 @@ bool PakArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Check entry name
-		string name = entry->path(true);
+		auto name = entry->path(true);
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 56)
 		{
-			Log::warning(
-				S_FMT("Warning: Entry %s path is too long (> 56 characters), putting it in the root directory", name));
+			Log::warning(wxString::Format(
+				"Warning: Entry %s path is too long (> 56 characters), putting it in the root directory", name));
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 56)
@@ -289,7 +289,7 @@ bool PakArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("PakArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error(wxString::Format("PakArchive::loadEntryData: Unable to open archive file %s", filename_));
 		return false;
 	}
 
@@ -348,7 +348,7 @@ bool PakArchive::isPakArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Quake pak archive
 // -----------------------------------------------------------------------------
-bool PakArchive::isPakArchive(const string& filename)
+bool PakArchive::isPakArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

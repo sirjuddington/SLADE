@@ -33,7 +33,6 @@
 #include "SLADEWxApp.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "External/email/wxMailer.h"
 #include "General/Console/Console.h"
 #include "General/Web.h"
 #include "MainEditor/MainEditor.h"
@@ -43,6 +42,7 @@
 #include "OpenGL/OpenGL.h"
 #include "Utility/Parser.h"
 #include "Utility/Tokenizer.h"
+#include "thirdparty/email/wxMailer.h"
 #include <wx/statbmp.h>
 
 
@@ -60,26 +60,26 @@
 // -----------------------------------------------------------------------------
 namespace Global
 {
-string error = "";
+wxString error = "";
 
 #ifdef GIT_DESCRIPTION
 string sc_rev = GIT_DESCRIPTION;
 #else
-string sc_rev = "";
+wxString sc_rev = "";
 #endif
 
 #ifdef DEBUG
 bool debug = true;
 #else
-bool   debug  = false;
+bool     debug  = false;
 #endif
 
 int win_version_major = 0;
 int win_version_minor = 0;
 } // namespace Global
 
-string current_action           = "";
-bool   update_check_message_box = false;
+wxString current_action           = "";
+bool     update_check_message_box = false;
 CVAR(String, dir_last, "", CVar::Flag::Save)
 CVAR(Bool, update_check, true, CVar::Flag::Save)
 CVAR(Bool, update_check_beta, false, CVar::Flag::Save)
@@ -136,30 +136,30 @@ public:
 	SLADEStackTrace() { stack_trace_ = "Stack Trace:\n"; }
 	~SLADEStackTrace() = default;
 
-	string traceString() const { return stack_trace_; }
-	string topLevel() const { return top_level_; }
+	wxString traceString() const { return stack_trace_; }
+	wxString topLevel() const { return top_level_; }
 
 	void OnStackFrame(const wxStackFrame& frame) override
 	{
-		string location = "[unknown location] ";
+		wxString location = "[unknown location] ";
 		if (frame.HasSourceLocation())
-			location = S_FMT("(%s:%d) ", frame.GetFileName(), frame.GetLine());
+			location = wxString::Format("(%s:%d) ", frame.GetFileName(), frame.GetLine());
 
 		wxUIntPtr address   = wxPtrToUInt(frame.GetAddress());
-		string    func_name = frame.GetName();
+		wxString  func_name = frame.GetName();
 		if (func_name.IsEmpty())
-			func_name = S_FMT("[unknown:%d]", address);
+			func_name = wxString::Format("[unknown:%d]", address);
 
-		string line = S_FMT("%s%s", location, func_name);
-		stack_trace_.Append(S_FMT("%d: %s\n", frame.GetLevel(), line));
+		wxString line = wxString::Format("%s%s", location, func_name);
+		stack_trace_.Append(wxString::Format("%d: %s\n", frame.GetLevel(), line));
 
 		if (frame.GetLevel() == 0)
 			top_level_ = line;
 	}
 
 private:
-	string stack_trace_;
-	string top_level_;
+	wxString stack_trace_;
+	wxString top_level_;
 };
 
 
@@ -196,7 +196,7 @@ public:
 
 		// Add general crash message
 #ifndef NOCURL
-		string message =
+		wxString message =
 			"SLADE has crashed unexpectedly. To help fix the problem that caused this crash, "
 			"please (optionally) enter a short description of what you were doing at the time "
 			"of the crash, and click the 'Send Crash Report' button.";
@@ -220,13 +220,13 @@ public:
 
 		// SLADE info
 		if (Global::sc_rev.empty())
-			trace_ = S_FMT("Version: %s\n", App::version().toString());
+			trace_ = wxString::Format("Version: %s\n", App::version().toString());
 		else
-			trace_ = S_FMT("Version: %s (%s)\n", App::version().toString(), Global::sc_rev);
+			trace_ = wxString::Format("Version: %s (%s)\n", App::version().toString(), Global::sc_rev);
 		if (current_action.IsEmpty())
 			trace_ += "No current action\n";
 		else
-			trace_ += S_FMT("Current action: %s", current_action);
+			trace_ += wxString::Format("Current action: %s", current_action);
 		trace_ += "\n";
 
 		// System info
@@ -265,7 +265,7 @@ public:
 
 #ifndef NOCURL
 		// Add small privacy disclaimer
-		string privacy =
+		wxString privacy =
 			"Sending a crash report will only send the information displayed above, "
 			"along with a copy of the logs for this session.";
 		label = new wxStaticText(this, -1, privacy);
@@ -313,7 +313,7 @@ public:
 		msg.SetFrom("SLADE");
 		msg.SetTo("slade.crashes@gmail.com");
 		msg.SetSubject("[" + App::version().toString() + "] @ " + top_level_);
-		msg.SetMessage(S_FMT("Description:\n%s\n\n%s", text_description_->GetValue(), trace_));
+		msg.SetMessage(wxString::Format("Description:\n%s\n\n%s", text_description_->GetValue(), trace_));
 		msg.AddAttachment(App::path("slade3.log", App::Dir::User));
 		msg.Finalize();
 
@@ -394,8 +394,8 @@ private:
 	wxButton*   btn_copy_trace_;
 	wxButton*   btn_exit_;
 	wxButton*   btn_send_;
-	string      trace_;
-	string      top_level_;
+	wxString    trace_;
+	wxString    top_level_;
 };
 #endif // wxUSE_STACKWALKER
 
@@ -543,14 +543,14 @@ bool SLADEWxApp::OnInit()
 	// Get Windows version
 #ifdef __WXMSW__
 	wxGetOsVersion(&Global::win_version_major, &Global::win_version_minor);
-	Log::info(S_FMT("Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor));
+	Log::info(wxString::Format("Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor));
 #endif
 
 	// Reroute wx log messages
 	wxLog::SetActiveTarget(new SLADELog());
 
 	// Get command line arguments
-	vector<string> args;
+	vector<wxString> args;
 	for (int a = 1; a < argc; a++)
 		args.push_back(argv[a]);
 
@@ -685,7 +685,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 
 	// Parse version info
 	App::Version stable, beta;
-	string       bin_stable, installer_stable, bin_beta; // Currently unused but may be useful in the future
+	wxString     bin_stable, installer_stable, bin_beta; // Currently unused but may be useful in the future
 	Parser       parser;
 	if (parser.parseText(e.GetString()))
 	{
@@ -742,27 +742,27 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	if (stable.major == 0 || beta.major == 0)
 	{
 		Log::warning("Version check failed, received invalid version info");
-		Log::debug(S_FMT("Received version text:\n\n%s", e.GetString()));
+		Log::debug(wxString::Format("Received version text:\n\n%s", e.GetString()));
 		if (update_check_message_box)
 			wxMessageBox("Update check failed: received invalid version info.", "Check for Updates");
 		return;
 	}
 
-	Log::info(1, S_FMT("Latest stable release: v%s", stable.toString()));
-	Log::info(1, S_FMT("Latest beta release: v%s", beta.toString()));
+	Log::info(1, wxString::Format("Latest stable release: v%s", stable.toString()));
+	Log::info(1, wxString::Format("Latest beta release: v%s", beta.toString()));
 
 	// Check if new stable version
 	bool new_stable = App::version().cmp(stable) < 0;
 	bool new_beta   = App::version().cmp(beta) < 0;
 
 	// Set up for new beta/stable version prompt (if any)
-	string message, caption, version;
+	wxString message, caption, version;
 	if (update_check_beta && new_beta)
 	{
 		// New Beta
 		caption = "New Beta Version Available";
 		version = beta.toString();
-		message = S_FMT(
+		message = wxString::Format(
 			"A new beta version of SLADE is available (%s), click OK to visit the SLADE homepage "
 			"and download the update.",
 			CHR(version));
@@ -772,7 +772,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 		// New Stable
 		caption = "New Version Available";
 		version = stable.toString();
-		message = S_FMT(
+		message = wxString::Format(
 			"A new version of SLADE is available (%s), click OK to visit the SLADE homepage and "
 			"download the update.",
 			CHR(version));

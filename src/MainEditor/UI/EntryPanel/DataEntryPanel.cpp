@@ -67,7 +67,7 @@ int DataEntryTable::GetNumberCols()
 // -----------------------------------------------------------------------------
 // Returns the string value for the cell at [row,col]
 // -----------------------------------------------------------------------------
-string DataEntryTable::GetValue(int row, int col)
+wxString DataEntryTable::GetValue(int row, int col)
 {
 	if (!data_.seek(data_start_ + ((row * row_stride_) + columns_[col].row_offset), 0))
 		return "INVALID";
@@ -79,25 +79,25 @@ string DataEntryTable::GetValue(int row, int col)
 		{
 			int8_t val;
 			data_.read(&val, 1);
-			return S_FMT("%d", val);
+			return wxString::Format("%d", val);
 		}
 		else if (columns_[col].size == 2)
 		{
 			int16_t val;
 			data_.read(&val, 2);
-			return S_FMT("%d", val);
+			return wxString::Format("%d", val);
 		}
 		else if (columns_[col].size == 4)
 		{
 			int32_t val;
 			data_.read(&val, 4);
-			return S_FMT("%d", val);
+			return wxString::Format("%d", val);
 		}
 		else if (columns_[col].size == 8)
 		{
 			int64_t val;
 			data_.read(&val, 8);
-			return S_FMT("%d", val);
+			return wxString::Format("%d", val);
 		}
 		return "INVALID SIZE";
 	}
@@ -109,25 +109,25 @@ string DataEntryTable::GetValue(int row, int col)
 		{
 			uint8_t val;
 			data_.read(&val, 1);
-			return S_FMT("%d", val);
+			return wxString::Format("%d", val);
 		}
 		else if (columns_[col].size == 2)
 		{
 			uint16_t val;
 			data_.read(&val, 2);
-			return S_FMT("%d", val);
+			return wxString::Format("%d", val);
 		}
 		else if (columns_[col].size == 4)
 		{
 			uint32_t val;
 			data_.read(&val, 4);
-			return S_FMT("%d", val);
+			return wxString::Format("%d", val);
 		}
 		else if (columns_[col].size == 8)
 		{
 			uint64_t val;
 			data_.read(&val, 8);
-			return S_FMT("%d", val);
+			return wxString::Format("%d", val);
 		}
 		return "INVALID SIZE";
 	}
@@ -139,7 +139,7 @@ string DataEntryTable::GetValue(int row, int col)
 		{
 			int32_t val;
 			data_.read(&val, 4);
-			return S_FMT("%1.3f", (double)val / 65536.0);
+			return wxString::Format("%1.3f", (double)val / 65536.0);
 		}
 		return "INVALID SIZE";
 	}
@@ -178,7 +178,7 @@ string DataEntryTable::GetValue(int row, int col)
 			data_.read(&val, 8);
 			value = val;
 		}
-		return S_FMT("%d: %s", value, columns_[col].customValue(value));
+		return wxString::Format("%d: %s", value, columns_[col].customValue(value));
 	}
 
 	return "UNKNOWN TYPE";
@@ -187,7 +187,7 @@ string DataEntryTable::GetValue(int row, int col)
 // -----------------------------------------------------------------------------
 // Sets the value for the cell at [row,col] to [value]
 // -----------------------------------------------------------------------------
-void DataEntryTable::SetValue(int row, int col, const string& value)
+void DataEntryTable::SetValue(int row, int col, const wxString& value)
 {
 	// Seek to data position
 	if (!data_.seek(data_start_ + (row * row_stride_) + columns_[col].row_offset, 0))
@@ -281,20 +281,20 @@ void DataEntryTable::SetValue(int row, int col, const string& value)
 // -----------------------------------------------------------------------------
 // Returns the header label text for column [col]
 // -----------------------------------------------------------------------------
-string DataEntryTable::GetColLabelValue(int col)
+wxString DataEntryTable::GetColLabelValue(int col)
 {
 	if ((unsigned)col < columns_.size())
 		return columns_[col].name;
 
-	return S_FMT("Column%d", col);
+	return wxString::Format("Column%d", col);
 }
 
 // -----------------------------------------------------------------------------
 // Returns the header label text for [row]
 // -----------------------------------------------------------------------------
-string DataEntryTable::GetRowLabelValue(int row)
+wxString DataEntryTable::GetRowLabelValue(int row)
 {
-	return row_prefix_ + S_FMT("%d", row_first_ + row);
+	return row_prefix_ + wxString::Format("%d", row_first_ + row);
 }
 
 // -----------------------------------------------------------------------------
@@ -441,7 +441,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	data_.write(entry->rawData(), entry->size());
 
 	// Setup columns
-	string type = entry->type()->id();
+	wxString type = entry->type()->id();
 
 	// VERTEXES
 	if (type == "map_vertexes")
@@ -738,18 +738,18 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		// Responses
 		for (unsigned a = 1; a <= 5; a++)
 		{
-			columns_.emplace_back(S_FMT("Response %d: Give Type", a), ColType::IntSigned, 4, offset);
-			columns_.emplace_back(S_FMT("Response %d: Item 1", a), ColType::IntSigned, 4, offset + 4);
-			columns_.emplace_back(S_FMT("Response %d: Item 2", a), ColType::IntSigned, 4, offset + 8);
-			columns_.emplace_back(S_FMT("Response %d: Item 3", a), ColType::IntSigned, 4, offset + 12);
-			columns_.emplace_back(S_FMT("Response %d: Count 1", a), ColType::IntSigned, 4, offset + 16);
-			columns_.emplace_back(S_FMT("Response %d: Count 2", a), ColType::IntSigned, 4, offset + 20);
-			columns_.emplace_back(S_FMT("Response %d: Count 3", a), ColType::IntSigned, 4, offset + 24);
-			columns_.emplace_back(S_FMT("Response %d: Choice Text", a), ColType::String, 32, offset + 28);
-			columns_.emplace_back(S_FMT("Response %d: Success Text", a), ColType::String, 80, offset + 60);
-			columns_.emplace_back(S_FMT("Response %d: Link", a), ColType::IntSigned, 4, offset + 140);
-			columns_.emplace_back(S_FMT("Response %d: Log", a), ColType::IntUnsigned, 4, offset + 144);
-			columns_.emplace_back(S_FMT("Response %d: Fail Text", a), ColType::String, 80, offset + 148);
+			columns_.emplace_back(wxString::Format("Response %d: Give Type", a), ColType::IntSigned, 4, offset);
+			columns_.emplace_back(wxString::Format("Response %d: Item 1", a), ColType::IntSigned, 4, offset + 4);
+			columns_.emplace_back(wxString::Format("Response %d: Item 2", a), ColType::IntSigned, 4, offset + 8);
+			columns_.emplace_back(wxString::Format("Response %d: Item 3", a), ColType::IntSigned, 4, offset + 12);
+			columns_.emplace_back(wxString::Format("Response %d: Count 1", a), ColType::IntSigned, 4, offset + 16);
+			columns_.emplace_back(wxString::Format("Response %d: Count 2", a), ColType::IntSigned, 4, offset + 20);
+			columns_.emplace_back(wxString::Format("Response %d: Count 3", a), ColType::IntSigned, 4, offset + 24);
+			columns_.emplace_back(wxString::Format("Response %d: Choice Text", a), ColType::String, 32, offset + 28);
+			columns_.emplace_back(wxString::Format("Response %d: Success Text", a), ColType::String, 80, offset + 60);
+			columns_.emplace_back(wxString::Format("Response %d: Link", a), ColType::IntSigned, 4, offset + 140);
+			columns_.emplace_back(wxString::Format("Response %d: Log", a), ColType::IntUnsigned, 4, offset + 144);
+			columns_.emplace_back(wxString::Format("Response %d: Fail Text", a), ColType::String, 80, offset + 148);
 			offset += 228;
 		}
 	}
@@ -765,20 +765,20 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		unsigned offset = 4;
 		for (size_t i = 1; i < 3; ++i)
 		{
-			columns_.emplace_back(S_FMT("V%d: Mod Multi", i), ColType::IntUnsigned, 1, offset + 0);
-			columns_.emplace_back(S_FMT("V%d: Mod Attack", i), ColType::IntUnsigned, 1, offset + 1);
-			columns_.emplace_back(S_FMT("V%d: Mod Sustain", i), ColType::IntUnsigned, 1, offset + 2);
-			columns_.emplace_back(S_FMT("V%d: Mod Waveform", i), ColType::IntUnsigned, 1, offset + 3);
-			columns_.emplace_back(S_FMT("V%d: Mod Key Scale", i), ColType::IntUnsigned, 1, offset + 4);
-			columns_.emplace_back(S_FMT("V%d: Mod Output", i), ColType::IntUnsigned, 1, offset + 5);
-			columns_.emplace_back(S_FMT("V%d: Feedback", i), ColType::IntUnsigned, 1, offset + 6);
-			columns_.emplace_back(S_FMT("V%d: Car Multi", i), ColType::IntUnsigned, 1, offset + 7);
-			columns_.emplace_back(S_FMT("V%d: Car Attack", i), ColType::IntUnsigned, 1, offset + 8);
-			columns_.emplace_back(S_FMT("V%d: Car Sustain", i), ColType::IntUnsigned, 1, offset + 9);
-			columns_.emplace_back(S_FMT("V%d: Car Waveform", i), ColType::IntUnsigned, 1, offset + 10);
-			columns_.emplace_back(S_FMT("V%d: Car Key Scale", i), ColType::IntUnsigned, 1, offset + 11);
-			columns_.emplace_back(S_FMT("V%d: Car Output", i), ColType::IntUnsigned, 1, offset + 12);
-			columns_.emplace_back(S_FMT("V%d: Note Offset", i), ColType::IntSigned, 2, offset + 14);
+			columns_.emplace_back(wxString::Format("V%d: Mod Multi", i), ColType::IntUnsigned, 1, offset + 0);
+			columns_.emplace_back(wxString::Format("V%d: Mod Attack", i), ColType::IntUnsigned, 1, offset + 1);
+			columns_.emplace_back(wxString::Format("V%d: Mod Sustain", i), ColType::IntUnsigned, 1, offset + 2);
+			columns_.emplace_back(wxString::Format("V%d: Mod Waveform", i), ColType::IntUnsigned, 1, offset + 3);
+			columns_.emplace_back(wxString::Format("V%d: Mod Key Scale", i), ColType::IntUnsigned, 1, offset + 4);
+			columns_.emplace_back(wxString::Format("V%d: Mod Output", i), ColType::IntUnsigned, 1, offset + 5);
+			columns_.emplace_back(wxString::Format("V%d: Feedback", i), ColType::IntUnsigned, 1, offset + 6);
+			columns_.emplace_back(wxString::Format("V%d: Car Multi", i), ColType::IntUnsigned, 1, offset + 7);
+			columns_.emplace_back(wxString::Format("V%d: Car Attack", i), ColType::IntUnsigned, 1, offset + 8);
+			columns_.emplace_back(wxString::Format("V%d: Car Sustain", i), ColType::IntUnsigned, 1, offset + 9);
+			columns_.emplace_back(wxString::Format("V%d: Car Waveform", i), ColType::IntUnsigned, 1, offset + 10);
+			columns_.emplace_back(wxString::Format("V%d: Car Key Scale", i), ColType::IntUnsigned, 1, offset + 11);
+			columns_.emplace_back(wxString::Format("V%d: Car Output", i), ColType::IntUnsigned, 1, offset + 12);
+			columns_.emplace_back(wxString::Format("V%d: Note Offset", i), ColType::IntSigned, 2, offset + 14);
 			offset += 16;
 		}
 		row_stride_ = 36;
@@ -1065,10 +1065,10 @@ void DataEntryPanel::changeValue() const
 	auto selection = this->selection();
 
 	// Determine common value (if any)
-	string initial_val;
+	wxString initial_val;
 	for (auto& a : selection)
 	{
-		string cell_value = grid_data_->GetCellValue(a.x, a.y);
+		wxString cell_value = grid_data_->GetCellValue(a.x, a.y);
 		if (initial_val.empty())
 			initial_val = cell_value;
 		else if (initial_val != cell_value)
@@ -1084,7 +1084,7 @@ void DataEntryPanel::changeValue() const
 	auto          ci = table_data_->columnInfo(selection[0].y);
 	wxArrayString choices;
 	for (auto& custom_value : ci.custom_values)
-		choices.Add(S_FMT("%d: %s", custom_value.first, custom_value.second));
+		choices.Add(wxString::Format("%d: %s", custom_value.first, custom_value.second));
 	auto combo = new wxComboBox(&dlg, -1, initial_val, wxDefaultPosition, wxDefaultSize, choices);
 
 	auto vbox = new wxBoxSizer(wxVERTICAL);
@@ -1098,19 +1098,19 @@ void DataEntryPanel::changeValue() const
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		// Get entered value
-		string val = combo->GetValue();
-		long   lval;
+		wxString val = combo->GetValue();
+		long     lval;
 		if (!val.ToLong(&lval))
 		{
 			// Invalid number, check for option value
-			string numpart = val.BeforeFirst(':');
+			wxString numpart = val.BeforeFirst(':');
 			if (!numpart.ToLong(&lval))
 				return;
 		}
 
 		// Apply value to selected cells
 		for (auto& cell : selection)
-			grid_data_->SetCellValue(cell.x, cell.y, S_FMT("%d", lval));
+			grid_data_->SetCellValue(cell.x, cell.y, wxString::Format("%d", lval));
 		grid_data_->ForceRefresh();
 	}
 }
@@ -1118,7 +1118,7 @@ void DataEntryPanel::changeValue() const
 // ----------------------------------------------------------------------------
 // Handles any SAction messages (from the panel toolbar)
 // ----------------------------------------------------------------------------
-bool DataEntryPanel::handleEntryPanelAction(const string& action_id)
+bool DataEntryPanel::handleEntryPanelAction(const wxString& action_id)
 {
 	if (action_id == "data_add_row")
 		addRow();
@@ -1218,7 +1218,7 @@ void DataEntryPanel::onGridRightClick(wxGridEvent& e)
 {
 	// Check if only one column is selected
 	int col = getColWithSelection();
-	Log::info(2, S_FMT("Column %d", col));
+	Log::info(2, wxString::Format("Column %d", col));
 
 	wxMenu menu;
 	SAction::fromId("data_add_row")->addToMenu(&menu);
@@ -1243,7 +1243,7 @@ void DataEntryPanel::onGridCursorChanged(wxGridEvent& e)
 	combo_cell_value_->Clear();
 	auto col = table_data_->columnInfo(e.GetCol());
 	for (auto& custom_value : col.custom_values)
-		combo_cell_value_->AppendString(S_FMT("%d: %s", custom_value.first, custom_value.second));
+		combo_cell_value_->AppendString(wxString::Format("%d: %s", custom_value.first, custom_value.second));
 
 	combo_cell_value_->SetValue(grid_data_->GetCellValue(e.GetRow(), e.GetCol()));
 }

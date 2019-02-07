@@ -64,7 +64,7 @@
 // -----------------------------------------------------------------------------
 namespace
 {
-string main_window_layout = "";
+wxString main_window_layout = "";
 }
 CVAR(Bool, show_start_page, true, CVar::Flag::Save);
 CVAR(String, global_palette, "", CVar::Flag::Save);
@@ -145,8 +145,8 @@ void MainWindow::loadLayout() const
 	while (true)
 	{
 		// Read component+layout pair
-		string component = tz.getToken();
-		string layout    = tz.getToken();
+		wxString component = tz.getToken();
+		wxString layout    = tz.getToken();
 
 		// Load layout to component
 		if (!component.IsEmpty() && !layout.IsEmpty())
@@ -170,18 +170,18 @@ void MainWindow::saveLayout() const
 
 	// Console pane
 	file.Write("\"console\" ");
-	string pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("console"));
-	file.Write(S_FMT("\"%s\"\n", pinf));
+	wxString pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("console"));
+	file.Write(wxString::Format("\"%s\"\n", pinf));
 
 	// Archive Manager pane
 	file.Write("\"archive_manager\" ");
 	pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("archive_manager"));
-	file.Write(S_FMT("\"%s\"\n", pinf));
+	file.Write(wxString::Format("\"%s\"\n", pinf));
 
 	// Undo History pane
 	file.Write("\"undo_history\" ");
 	pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("undo_history"));
-	file.Write(S_FMT("\"%s\"\n", pinf));
+	file.Write(wxString::Format("\"%s\"\n", pinf));
 
 	// Close file
 	file.Close();
@@ -198,7 +198,7 @@ void MainWindow::setupLayout()
 	wxAuiPaneInfo p_inf;
 
 	// Set icon
-	string icon_filename = App::path(App::iconFile(), App::Dir::Temp);
+	wxString icon_filename = App::path(App::iconFile(), App::Dir::Temp);
 	App::archiveManager().programResourceArchive()->entry(App::iconFile())->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
@@ -516,7 +516,7 @@ void MainWindow::openStartPageTab()
 // Opens [entry] in its own tab
 // -----------------------------------------------------------------------------
 #ifdef USE_WEBVIEW_STARTPAGE
-void MainWindow::openDocs(const string& page_name)
+void MainWindow::openDocs(const wxString& page_name)
 {
 	// Check if docs tab is already open
 	bool found = false;
@@ -556,7 +556,7 @@ void MainWindow::openDocs(const string& page_name)
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool MainWindow::handleAction(const string& id)
+bool MainWindow::handleAction(const wxString& id)
 {
 	// We're only interested in "main_" actions
 	if (!id.StartsWith("main_"))
@@ -646,7 +646,7 @@ bool MainWindow::handleAction(const string& id)
 	{
 		wxAboutDialogInfo info;
 		info.SetName("SLADE");
-		string version = "v" + App::version().toString();
+		wxString version = "v" + App::version().toString();
 		if (!Global::sc_rev.empty())
 			version = version + " (Git Rev " + Global::sc_rev + ")";
 		info.SetVersion(version);
@@ -654,13 +654,13 @@ bool MainWindow::handleAction(const string& id)
 		info.SetDescription("It's a Doom Editor");
 
 		// Set icon
-		string icon_filename = App::path(App::iconFile(), App::Dir::Temp);
+		wxString icon_filename = App::path(App::iconFile(), App::Dir::Temp);
 		App::archiveManager().programResourceArchive()->entry(App::iconFile())->exportFile(icon_filename);
 		info.SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 		wxRemoveFile(icon_filename);
 
-		string year = wxNow().Right(4);
-		info.SetCopyright(S_FMT("(C) 2008-%s Simon Judd <sirjuddington@gmail.com>", year));
+		wxString year = wxNow().Right(4);
+		info.SetCopyright(wxString::Format("(C) 2008-%s Simon Judd <sirjuddington@gmail.com>", year));
 
 		wxAboutBox(info);
 

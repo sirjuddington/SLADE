@@ -111,8 +111,8 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(label_scaled_size_, { 3, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL);
 
 	// Type
-	string types[] = { "Texture", "Sprite", "Graphic", "WallTexture", "Flat" };
-	choice_type_   = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 5, types);
+	wxString types[] = { "Texture", "Sprite", "Graphic", "WallTexture", "Flat" };
+	choice_type_     = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 5, types);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Type:"), { 0, 3 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_type_, { 0, 4 }, { 1, 2 }, wxEXPAND);
 
@@ -284,8 +284,8 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	gb_sizer->Add(cb_flipy_, { 3, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	// Rotation
-	string rotval[]  = { "0", "90", "180", "270" };
-	choice_rotation_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 4, rotval);
+	wxString rotval[] = { "0", "90", "180", "270" };
+	choice_rotation_  = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 4, rotval);
 	choice_rotation_->SetSelection(0);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Rotation:"), { 4, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_rotation_, { 4, 1 }, { 1, 1 }, wxEXPAND);
@@ -296,9 +296,9 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	gb_sizer->Add(spin_alpha_, { 5, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Alpha Style
-	string styles[] = { "Copy",     "Translucent", "Add",          "Subtract", "ReverseSubtract",
-						"Modulate", "CopyAlpha",   "CopyNewAlpha", "Overlay" };
-	choice_style_   = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 9, styles);
+	wxString styles[] = { "Copy",     "Translucent", "Add",          "Subtract", "ReverseSubtract",
+						  "Modulate", "CopyAlpha",   "CopyNewAlpha", "Overlay" };
+	choice_style_     = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 9, styles);
 	choice_style_->SetSelection(0);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Alpha Style:"), { 6, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_style_, { 6, 1 }, { 1, 2 }, wxEXPAND);
@@ -499,7 +499,7 @@ void ZTextureEditorPanel::addPatch()
 
 	// Browse for patch
 	tx_editor_->setFullPath(true);
-	string patch = tx_editor_->browsePatchEntry();
+	wxString patch = tx_editor_->browsePatchEntry();
 	if (!patch.IsEmpty())
 	{
 		// Add new patch
@@ -528,7 +528,7 @@ void ZTextureEditorPanel::replacePatch()
 
 	// Browse for patch
 	tx_editor_->setFullPath(true);
-	string patch = tx_editor_->browsePatchEntry();
+	wxString patch = tx_editor_->browsePatchEntry();
 	if (!patch.IsEmpty())
 	{
 		// Go through selection and replace each patch
@@ -1072,7 +1072,7 @@ void ZTextureEditorPanel::onTextTranslationEnter(wxCommandEvent& e)
 	tz.openString(text_translation_->GetValue());
 	Translation trans;
 
-	string token = tz.getToken();
+	wxString token = tz.getToken();
 	while (!token.IsEmpty())
 	{
 		// Parse the translation component

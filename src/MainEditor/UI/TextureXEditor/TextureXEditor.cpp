@@ -465,8 +465,8 @@ void TextureXEditor::showTextureMenu(bool show) const
 bool TextureXEditor::removePatch(unsigned index, bool delete_entry)
 {
 	// Get patch we're removing
-	auto&  p    = patch_table_.patch(index);
-	string name = p.name;
+	auto&    p    = patch_table_.patch(index);
+	wxString name = p.name;
 
 	// Update TEXTUREx lists
 	for (auto& texture_editor : texture_editors_)
@@ -487,7 +487,7 @@ bool TextureXEditor::removePatch(unsigned index, bool delete_entry)
 // Opens the patch table in the patch browser.
 // Returns the selected patch index, or -1 if no patch was selected
 // -----------------------------------------------------------------------------
-int TextureXEditor::browsePatchTable(const string& first) const
+int TextureXEditor::browsePatchTable(const wxString& first) const
 {
 	// Select initial patch if specified
 	if (!first.IsEmpty())
@@ -503,7 +503,7 @@ int TextureXEditor::browsePatchTable(const string& first) const
 // Opens resource patch entries in the patch browser.
 // Returns the selected patch name, or "" if no patch was selected
 // -----------------------------------------------------------------------------
-string TextureXEditor::browsePatchEntry(const string& first)
+wxString TextureXEditor::browsePatchEntry(const wxString& first)
 {
 	// Update patch browser if necessary
 	if (pb_update_)
@@ -534,7 +534,7 @@ string TextureXEditor::browsePatchEntry(const string& first)
 // -----------------------------------------------------------------------------
 bool TextureXEditor::checkTextures()
 {
-	string problems = wxEmptyString;
+	wxString problems = wxEmptyString;
 
 	// Go through all texturex lists
 	for (auto& texture_editor : texture_editors_)
@@ -555,7 +555,7 @@ bool TextureXEditor::checkTextures()
 					auto fentry = App::resources().getFlatEntry(tex->patch(p)->name());
 					auto ptex   = App::resources().getTexture(tex->patch(p)->name());
 					if (!pentry && !fentry && !ptex)
-						problems += S_FMT(
+						problems += wxString::Format(
 							"Texture %s contains invalid/unknown patch %s\n", tex->name(), tex->patch(p)->name());
 				}
 			}
@@ -565,7 +565,7 @@ bool TextureXEditor::checkTextures()
 				for (unsigned p = 0; p < tex->nPatches(); p++)
 				{
 					if (patch_table_.patchIndex(tex->patch(p)->name()) == -1)
-						problems += S_FMT(
+						problems += wxString::Format(
 							"Texture %s contains invalid/unknown patch %s\n", tex->name(), tex->patch(p)->name());
 				}
 			}
@@ -581,7 +581,7 @@ bool TextureXEditor::checkTextures()
 
 		if (!entry)
 		{
-			problems += S_FMT("Patch %s cannot be found in any open archive\n", patch.name);
+			problems += wxString::Format("Patch %s cannot be found in any open archive\n", patch.name);
 		}
 		else
 		{
@@ -591,7 +591,7 @@ bool TextureXEditor::checkTextures()
 			auto type = entry->type();
 
 			if (!type->extraProps().propertyExists("patch"))
-				problems += S_FMT(
+				problems += wxString::Format(
 					"Patch %s is of type \"%s\", which is not a valid gfx format for patches. "
 					"Convert it to either Doom Gfx or PNG\n",
 					patch.name,
@@ -673,7 +673,7 @@ void TextureXEditor::updateMenuStatus()
 // -----------------------------------------------------------------------------
 void TextureXEditor::undo()
 {
-	string action = undo_manager_->undo();
+	wxString action = undo_manager_->undo();
 	if (!action.empty())
 	{
 		for (auto& texture_editor : texture_editors_)
@@ -686,7 +686,7 @@ void TextureXEditor::undo()
 // -----------------------------------------------------------------------------
 void TextureXEditor::redo()
 {
-	string action = undo_manager_->redo();
+	wxString action = undo_manager_->redo();
 	if (!action.empty())
 	{
 		for (auto& texture_editor : texture_editors_)
@@ -697,7 +697,7 @@ void TextureXEditor::redo()
 // -----------------------------------------------------------------------------
 // Handles any announcements from the current texture
 // -----------------------------------------------------------------------------
-void TextureXEditor::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void TextureXEditor::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	if (announcer == theMainWindow->paletteChooser() && event_name == "main_palette_changed")
 	{

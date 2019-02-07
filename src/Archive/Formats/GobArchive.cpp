@@ -281,7 +281,7 @@ bool GobArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("GobArchive::loadEntryData: Failed to open gobfile %s", filename_));
+		Log::error(wxString::Format("GobArchive::loadEntryData: Failed to open gobfile %s", filename_));
 		return false;
 	}
 
@@ -336,7 +336,7 @@ bool GobArchive::isGobArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Dark Forces gob archive
 // -----------------------------------------------------------------------------
-bool GobArchive::isGobArchive(const string& filename)
+bool GobArchive::isGobArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

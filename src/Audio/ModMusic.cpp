@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ModMusic.h"
-#include "External/dumb/dumb.h"
+#include "thirdparty/dumb/dumb.h"
 
 
 // -----------------------------------------------------------------------------
@@ -79,7 +79,7 @@ bool ModMusic::openFromFile(const std::string& filename)
 	}
 	else
 	{
-		Log::error(S_FMT("Failed to load module music file \"%s\"", filename.c_str()));
+		Log::error(wxString::Format("Failed to load module music file \"%s\"", filename.c_str()));
 		return false;
 	}
 }

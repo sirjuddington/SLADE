@@ -632,7 +632,7 @@ void Renderer::drawSelectionNumbers() const
 	auto col = ColourConfiguration::colour("map_editor_message");
 
 	// Go through selection
-	string text;
+	wxString text;
 	Drawing::enableTextStateReset(false);
 	Drawing::setTextState(true);
 	view_.setOverlayCoords(true);
@@ -653,7 +653,7 @@ void Renderer::drawSelectionNumbers() const
 		tp.x    = view_.screenX(tp.x);
 		tp.y    = view_.screenY(tp.y);
 
-		text    = S_FMT("%d", a + 1);
+		text    = wxString::Format("%d", a + 1);
 		auto ts = Drawing::textExtents(text, Drawing::Font::Bold);
 		tp.x -= ts.x * 0.5;
 		tp.y -= ts.y * 0.5;
@@ -665,7 +665,7 @@ void Renderer::drawSelectionNumbers() const
 		}
 
 		// Draw text
-		Drawing::drawText(S_FMT("%d", a + 1), tp.x, tp.y, col, Drawing::Font::Bold);
+		Drawing::drawText(wxString::Format("%d", a + 1), tp.x, tp.y, col, Drawing::Font::Bold);
 	}
 	Drawing::setTextOutline(0);
 	Drawing::enableTextStateReset();
@@ -718,8 +718,8 @@ void Renderer::drawLineLength(Vec2d p1, Vec2d p2, ColRGBA col) const
 	Vec2d tp(mid.x + (vec.x * tdist), mid.y + (vec.y * tdist));
 
 	// Determine text half-height for vertical alignment
-	string length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1, p2)));
-	double hh     = Drawing::textExtents(length).y * 0.5;
+	wxString length = wxString::Format("%d", MathStuff::round(MathStuff::distance(p1, p2)));
+	double   hh     = Drawing::textExtents(length).y * 0.5;
 
 	// Draw text
 	Drawing::drawText(
@@ -946,7 +946,7 @@ void Renderer::drawObjectEdit()
 		int   y      = view_.mapY(mid.y) - 8;
 		view_.setOverlayCoords(true);
 		Drawing::setTextOutline(1.0f, ColRGBA::BLACK);
-		Drawing::drawText(S_FMT("%d", length), x, y, ColRGBA::WHITE, Drawing::Font::Bold, Drawing::Align::Center);
+		Drawing::drawText(wxString::Format("%d", length), x, y, ColRGBA::WHITE, Drawing::Font::Bold, Drawing::Align::Center);
 		Drawing::setTextOutline(0);
 		view_.setOverlayCoords(false);
 		glDisable(GL_TEXTURE_2D);
@@ -1309,7 +1309,7 @@ void Renderer::draw()
 			glEnable(GL_TEXTURE_2D);
 			OpenGL::setColour(col);
 			Drawing::drawText(
-				S_FMT("%d", renderer_3d_.itemDistance()),
+				wxString::Format("%d", renderer_3d_.itemDistance()),
 				midx + 5,
 				midy + 5,
 				ColRGBA(255, 255, 255, 200),
@@ -1331,11 +1331,11 @@ void Renderer::draw()
 		for (unsigned a = 0; a < fps_avg.size(); a++)
 			afps += fps_avg[a];
 		if (fps_avg.size() > 0) afps /= fps_avg.size();
-		Drawing::drawText(S_FMT("FPS: %d", afps));
+		Drawing::drawText(wxString::Format("FPS: %d", afps));
 	}*/
 
 	// test
-	// Drawing::drawText(S_FMT("Render distance: %1.2f", (double)render_max_dist), 0, 100);
+	// Drawing::drawText(wxString::Format("Render distance: %1.2f", (double)render_max_dist), 0, 100);
 
 	// Editor messages
 	drawEditorMessages();
@@ -1643,7 +1643,7 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 	else if (item.type == ItemType::Thing)
 	{
 		// Get thing
-		auto t = context_.map().thing(item.index);
+		auto t = item.asThing(context_.map());
 		if (!t)
 			return;
 
@@ -1662,19 +1662,21 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 	else if (item.type == ItemType::Line)
 	{
 		// Get line
-		vector<MapLine*> vec;
-		vec.push_back(context_.map().line(item.index));
+		auto line = item.asLine(context_.map());
+		if (!line)
+			return;
 
 		// Start animation
-		animations_.push_back(std::make_unique<MCALineSelection>(App::runTimer(), vec, selected));
+		animations_.push_back(std::make_unique<MCALineSelection>(App::runTimer(), vector<MapLine*>{ line }, selected));
 	}
 
 	// 2d mode vertex
 	else if (item.type == ItemType::Vertex)
 	{
 		// Get vertex
-		vector<MapVertex*> verts;
-		verts.push_back(context_.map().vertex(item.index));
+		auto vertex = item.asVertex(context_.map());
+		if (!vertex)
+			return;
 
 		// Determine current vertex size
 		float vs = vertex_size;
@@ -1684,18 +1686,21 @@ void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected
 			vs = 2.0;
 
 		// Start animation
-		animations_.push_back(std::make_unique<MCAVertexSelection>(App::runTimer(), verts, vs, selected));
+		animations_.push_back(
+			std::make_unique<MCAVertexSelection>(App::runTimer(), vector<MapVertex*>{ vertex }, vs, selected));
 	}
 
 	// 2d mode sector
 	else if (item.type == ItemType::Sector)
 	{
 		// Get sector polygon
-		vector<Polygon2D*> polys;
-		polys.push_back(context_.map().sector(item.index)->polygon());
+		auto sector = item.asSector(context_.map());
+		if (!sector)
+			return;
 
 		// Start animation
-		animations_.push_back(std::make_unique<MCASectorSelection>(App::runTimer(), polys, selected));
+		animations_.push_back(
+			std::make_unique<MCASectorSelection>(App::runTimer(), vector<Polygon2D*>{ sector->polygon() }, selected));
 	}
 }
 

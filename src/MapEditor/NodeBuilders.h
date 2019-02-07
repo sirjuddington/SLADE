@@ -4,19 +4,19 @@ namespace NodeBuilders
 {
 struct Builder
 {
-	string         id;
-	string         name;
-	string         path;
-	string         command;
-	string         exe;
-	vector<string> options;
-	vector<string> option_desc;
+	wxString         id;
+	wxString         name;
+	wxString         path;
+	wxString         command;
+	wxString         exe;
+	vector<wxString> options;
+	vector<wxString> option_desc;
 };
 
 void     init();
-void     addBuilderPath(string builder, string path);
+void     addBuilderPath(wxString builder, wxString path);
 void     saveBuilderPaths(wxFile& file);
 unsigned nNodeBuilders();
-Builder& builder(string id);
+Builder& builder(wxString id);
 Builder& builder(unsigned index);
 } // namespace NodeBuilders

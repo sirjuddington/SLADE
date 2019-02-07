@@ -65,7 +65,7 @@ ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show It
 	sizer->Add(gb_sizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::padLarge());
 
 	// Object type
-	string types[] = { "Vertex", "Line", "Side", "Sector", "Thing" };
+	wxString types[] = { "Vertex", "Line", "Side", "Sector", "Thing" };
 	gb_sizer->Add(new wxStaticText(this, -1, "Type:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	choice_type_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 5, types);
 	gb_sizer->Add(choice_type_, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);

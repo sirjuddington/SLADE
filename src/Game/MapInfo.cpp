@@ -61,7 +61,7 @@ void MapInfo::clear(bool maps, bool editor_nums)
 // -----------------------------------------------------------------------------
 // Returns the map info definition for map [name]
 // -----------------------------------------------------------------------------
-MapInfo::Map& MapInfo::getMap(const string& name)
+MapInfo::Map& MapInfo::getMap(const wxString& name)
 {
 	for (auto& map : maps_)
 		if (map.entry_name == name)
@@ -89,7 +89,7 @@ bool MapInfo::addOrUpdateMap(Map& map)
 // -----------------------------------------------------------------------------
 // Returns the DoomEdNum for the ZScript/DECORATE class [actor_class]
 // -----------------------------------------------------------------------------
-int MapInfo::doomEdNumForClass(const string& actor_class)
+int MapInfo::doomEdNumForClass(const wxString& actor_class)
 {
 	// Find DoomEdNum def with matching class
 	for (auto& i : editor_nums_)
@@ -137,11 +137,11 @@ bool MapInfo::readMapInfo(Archive* archive)
 // -----------------------------------------------------------------------------
 // Returns true if the next token in [tz] is '='. If not, logs an error message
 // -----------------------------------------------------------------------------
-bool MapInfo::checkEqualsToken(Tokenizer& tz, const string& parsing) const
+bool MapInfo::checkEqualsToken(Tokenizer& tz, const wxString& parsing) const
 {
 	if (tz.next() != "=")
 	{
-		Log::error(S_FMT(
+		Log::error(wxString::Format(
 			"Error Parsing %s: Expected \"=\", got \"%s\" at line %d",
 			CHR(parsing),
 			CHR(tz.current().text),
@@ -156,7 +156,7 @@ bool MapInfo::checkEqualsToken(Tokenizer& tz, const string& parsing) const
 // Converts a text colour definition [str] to a colour struct [col].
 // Returns false if the given definition was invalid
 // -----------------------------------------------------------------------------
-bool MapInfo::strToCol(const string& str, ColRGBA& col) const
+bool MapInfo::strToCol(const wxString& str, ColRGBA& col) const
 {
 	wxColor wxcol;
 	if (!wxcol.Set(str))
@@ -205,7 +205,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 
 			if (!include_entry)
 			{
-				Log::warning(S_FMT(
+				Log::warning(wxString::Format(
 					"Warning - Parsing ZMapInfo \"%s\": Unable to include \"%s\" at line %d",
 					CHR(entry->name()),
 					CHR(tz.current().text),
@@ -232,7 +232,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		// Unknown block (skip it)
 		else if (tz.check("{"))
 		{
-			Log::warning(2, S_FMT("Warning - Parsing ZMapInfo \"%s\": Skipping {} block", entry->name()));
+			Log::warning(2, wxString::Format("Warning - Parsing ZMapInfo \"%s\": Skipping {} block", entry->name()));
 
 			tz.adv();
 			tz.skipSection("{", "}");
@@ -244,7 +244,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		{
 			Log::warning(
 				2,
-				S_FMT(
+				wxString::Format(
 					"Warning - Parsing ZMapInfo \"%s\": Unknown token \"%s\"",
 					CHR(entry->name()),
 					CHR(tz.current().text)));
@@ -253,7 +253,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		tz.adv();
 	}
 
-	Log::info(2, S_FMT("Parsed ZMapInfo entry %s successfully", entry->name()));
+	Log::info(2, wxString::Format("Parsed ZMapInfo entry %s successfully", entry->name()));
 
 	return true;
 }
@@ -262,7 +262,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 // Parses a ZMAPINFO map definition of [type] beginning at the current token in
 // tokenizer [tz]
 // -----------------------------------------------------------------------------
-bool MapInfo::parseZMap(Tokenizer& tz, const string& type)
+bool MapInfo::parseZMap(Tokenizer& tz, const wxString& type)
 {
 	// TODO: Handle adddefaultmap
 	auto map = default_map_;
@@ -292,7 +292,7 @@ bool MapInfo::parseZMap(Tokenizer& tz, const string& type)
 
 	if (!tz.advIf("{"))
 	{
-		Log::error(S_FMT(
+		Log::error(wxString::Format(
 			"Error Parsing ZMapInfo: Expecting \"{\", got \"%s\" at line %d", CHR(tz.current().text), tz.lineNo()));
 		return false;
 	}
@@ -423,7 +423,7 @@ bool MapInfo::parseZMap(Tokenizer& tz, const string& type)
 
 	if (type == "map")
 	{
-		Log::info(2, S_FMT("Parsed ZMapInfo Map %s (%s) successfully", map.entry_name, map.name));
+		Log::info(2, wxString::Format("Parsed ZMapInfo Map %s (%s) successfully", map.entry_name, map.name));
 
 		// Update existing map
 		bool updated = false;
@@ -453,8 +453,8 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 	// Opening brace
 	if (!tz.advIfNext("{", 2))
 	{
-		Log::error(
-			S_FMT("Error Parsing ZMapInfo: Expecting \"{\", got \"%s\" at line %d", CHR(tz.peek().text), tz.lineNo()));
+		Log::error(wxString::Format(
+			"Error Parsing ZMapInfo: Expecting \"{\", got \"%s\" at line %d", CHR(tz.peek().text), tz.lineNo()));
 		return false;
 	}
 
@@ -463,7 +463,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 		// Editor number
 		if (!tz.current().isInteger())
 		{
-			Log::error(S_FMT(
+			Log::error(wxString::Format(
 				"Error Parsing ZMapInfo DoomEdNums: Expecting editor number, got \"%s\" at line %d",
 				CHR(tz.current().text),
 				tz.lineNo()));
@@ -479,7 +479,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 		// =
 		if (!tz.advIfNext("="))
 		{
-			Log::error(S_FMT(
+			Log::error(wxString::Format(
 				"Error Parsing ZMapInfo DoomEdNums: Expecting \"=\", got \"%s\" at line %d",
 				CHR(tz.current().text),
 				tz.lineNo()));
@@ -505,7 +505,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 			{
 				if (!tz.current().isInteger() && !tz.check("+"))
 				{
-					Log::error(S_FMT(
+					Log::error(wxString::Format(
 						"Error Parsing ZMapInfo DoomEdNums: Expecting arg value, got \"%s\" at line %d",
 						CHR(tz.current().text),
 						tz.current().line_no));
@@ -534,7 +534,7 @@ MapInfo::Format MapInfo::detectMapInfoType(ArchiveEntry* entry) const
 	tz.openMem(entry->data(), entry->name());
 	tz.setSpecialCharacters("={}[]+,|");
 
-	string prev;
+	wxString prev;
 
 	while (!tz.atEnd())
 	{
@@ -575,7 +575,7 @@ void MapInfo::dumpDoomEdNums()
 		if (num.second.actor_class.empty())
 			continue;
 
-		Log::info(S_FMT(
+		Log::info(wxString::Format(
 			"DoomEdNum %d: Class \"%s\", Special \"%s\", Args %d,%d,%d,%d,%d",
 			num.first,
 			num.second.actor_class,

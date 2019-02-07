@@ -15,7 +15,7 @@ public:
 
 	void                   openScriptTab(ScriptManager::Script* script) const;
 	ScriptManager::Script* currentScript() const;
-	string                 currentScriptText() const;
+	wxString               currentScriptText() const;
 
 private:
 	ScriptManager::Script  script_scratchbox_;
@@ -44,12 +44,12 @@ private:
 	void         bindEvents();
 	wxPanel*     setupScriptTreePanel();
 	void         populateEditorScriptsTree(ScriptManager::ScriptType type);
-	void         addEditorScriptsNode(wxTreeItemId parent_node, ScriptManager::ScriptType type, const string& name);
+	void         addEditorScriptsNode(wxTreeItemId parent_node, ScriptManager::ScriptType type, const wxString& name);
 	void         populateScriptsTree();
 	ScriptPanel* currentPage() const;
 	void         closeScriptTab(ScriptManager::Script* script) const;
-	void         showDocs(const string& url = "");
+	void         showDocs(const wxString& url = "");
 
 	// SActionHandler
-	bool handleAction(const string& id) override;
+	bool handleAction(const wxString& id) override;
 };

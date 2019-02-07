@@ -25,12 +25,16 @@ public:
 		SImage::Type col_format      = SImage::Type::Unknown;
 	};
 
-	SIFormat(const string& id, const string& name = "Unknown", const string& ext = "dat", uint8_t reliability = 255);
+	SIFormat(
+		const wxString& id,
+		const wxString& name        = "Unknown",
+		const wxString& ext         = "dat",
+		uint8_t         reliability = 255);
 	virtual ~SIFormat() = default;
 
-	string id() const { return id_; }
-	string name() const { return name_; }
-	string extension() const { return extension_; }
+	wxString id() const { return id_; }
+	wxString name() const { return name_; }
+	wxString extension() const { return extension_; }
 
 	virtual bool isThisFormat(MemChunk& mc) = 0;
 
@@ -86,7 +90,7 @@ public:
 	}
 
 	static void      initFormats();
-	static SIFormat* getFormat(const string& name);
+	static SIFormat* getFormat(const wxString& name);
 	static SIFormat* determineFormat(MemChunk& mc);
 	static SIFormat* unknownFormat();
 	static SIFormat* rawFormat();
@@ -95,10 +99,10 @@ public:
 	static void      putAllFormats(vector<SIFormat*>& list);
 
 protected:
-	string  id_;
-	string  name_        = "Unknown";
-	string  extension_   = "dat";
-	uint8_t reliability_ = 255;
+	wxString id_;
+	wxString name_        = "Unknown";
+	wxString extension_   = "dat";
+	uint8_t  reliability_ = 255;
 
 	// Stuff to access protected image data
 	uint8_t* imageData(SImage& image) const { return image.data_.data(); }

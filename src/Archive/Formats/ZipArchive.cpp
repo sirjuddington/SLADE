@@ -81,7 +81,7 @@ namespace
 // -----------------------------------------------------------------------------
 // Helper function to check a file exists
 // -----------------------------------------------------------------------------
-bool fileExists(const string& filename)
+bool fileExists(const wxString& filename)
 {
 	std::ifstream file(CHR(filename));
 	return file.good();
@@ -109,7 +109,7 @@ ZipArchive::~ZipArchive()
 // Reads zip data from a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ZipArchive::open(const string& filename)
+bool ZipArchive::open(const wxString& filename)
 {
 	// Check the file exists
 	if (!fileExists(filename))
@@ -193,7 +193,7 @@ bool ZipArchive::open(const string& filename)
 			}
 			else
 			{
-				Global::error = S_FMT(
+				Global::error = wxString::Format(
 					"Entry too large: %s is %u mb", zip_entry->GetName(wxPATH_UNIX), ze_size / (1 << 20));
 				setMuted(false);
 				return false;
@@ -239,7 +239,7 @@ bool ZipArchive::open(const string& filename)
 bool ZipArchive::open(MemChunk& mc)
 {
 	// Write the MemChunk to a temp file
-	string tempfile = App::path("slade-temp-open.zip", App::Dir::Temp);
+	wxString tempfile = App::path("slade-temp-open.zip", App::Dir::Temp);
 	mc.exportFile(tempfile);
 
 	// Load the file
@@ -260,7 +260,7 @@ bool ZipArchive::write(MemChunk& mc, bool update)
 	bool success = false;
 
 	// Write to a temporary file
-	string tempfile = App::path("slade-temp-write.zip", App::Dir::Temp);
+	wxString tempfile = App::path("slade-temp-write.zip", App::Dir::Temp);
 	if (write(tempfile, true))
 	{
 		// Load file into MemChunk
@@ -277,7 +277,7 @@ bool ZipArchive::write(MemChunk& mc, bool update)
 // Writes the zip archive to a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ZipArchive::write(const string& filename, bool update)
+bool ZipArchive::write(const wxString& filename, bool update)
 {
 	// Open the file
 	wxFFileOutputStream out(filename);
@@ -390,8 +390,8 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Check that the entry belongs to this archive
 	if (entry->parent() != this)
 	{
-		Log::error(
-			S_FMT("ZipArchive::loadEntryData: Entry %s attempting to load data from wrong parent!", entry->name()));
+		Log::error(wxString::Format(
+			"ZipArchive::loadEntryData: Entry %s attempting to load data from wrong parent!", entry->name()));
 		return false;
 	}
 
@@ -409,7 +409,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 		zip_index = entry->exProp("ZipIndex");
 	else
 	{
-		Log::error(S_FMT("ZipArchive::loadEntryData: Entry %s has no zip entry index!", entry->name()));
+		Log::error(wxString::Format("ZipArchive::loadEntryData: Entry %s has no zip entry index!", entry->name()));
 		return false;
 	}
 
@@ -417,7 +417,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	wxFFileInputStream in(filename_);
 	if (!in.IsOk())
 	{
-		Log::error(S_FMT("ZipArchive::loadEntryData: Unable to open zip file \"%s\"!", filename_));
+		Log::error(wxString::Format("ZipArchive::loadEntryData: Unable to open zip file \"%s\"!", filename_));
 		return false;
 	}
 
@@ -425,7 +425,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	wxZipInputStream zip(in);
 	if (!zip.IsOk())
 	{
-		Log::error(S_FMT("ZipArchive::loadEntryData: Invalid zip file \"%s\"!", filename_));
+		Log::error(wxString::Format("ZipArchive::loadEntryData: Invalid zip file \"%s\"!", filename_));
 		return false;
 	}
 
@@ -443,7 +443,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Abort if entry doesn't exist in zip (some kind of error)
 	if (!zentry)
 	{
-		Log::error(S_FMT("Error: ZipEntry for entry \"%s\" does not exist in zip", entry->name()));
+		Log::error(wxString::Format("Error: ZipEntry for entry \"%s\" does not exist in zip", entry->name()));
 		return false;
 	}
 
@@ -470,7 +470,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 // In a zip archive, a namespace is simply a first-level directory, ie
 // <root>/<namespace>
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
+ArchiveEntry* ZipArchive::addEntry(ArchiveEntry* entry, const wxString& add_namespace, bool copy)
 {
 	// Check namespace
 	if (add_namespace.IsEmpty() || add_namespace == "global")
@@ -661,7 +661,7 @@ vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 // Generates the temp file path to use, from [filename].
 // The temp file will be in the configured temp folder
 // -----------------------------------------------------------------------------
-void ZipArchive::generateTempFileName(const string& filename)
+void ZipArchive::generateTempFileName(const wxString& filename)
 {
 	wxFileName tfn(filename);
 	temp_file_ = App::path(tfn.GetFullName(), App::Dir::Temp);
@@ -672,7 +672,7 @@ void ZipArchive::generateTempFileName(const string& filename)
 		int n = 1;
 		while (true)
 		{
-			temp_file_ = App::path(S_FMT("%s.%d", CHR(tfn.GetFullName()), n), App::Dir::Temp);
+			temp_file_ = App::path(wxString::Format("%s.%d", CHR(tfn.GetFullName()), n), App::Dir::Temp);
 			if (!wxFileExists(temp_file_))
 				break;
 
@@ -714,7 +714,7 @@ bool ZipArchive::isZipArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid zip archive
 // -----------------------------------------------------------------------------
-bool ZipArchive::isZipArchive(const string& filename)
+bool ZipArchive::isZipArchive(const wxString& filename)
 {
 	// Open the file for reading
 	wxFile file(filename);

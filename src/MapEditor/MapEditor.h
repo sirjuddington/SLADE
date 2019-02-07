@@ -5,6 +5,11 @@ class MapBackupManager;
 class MapEditContext;
 class MapEditorWindow;
 class MapObject;
+class MapVertex;
+class MapLine;
+class MapSide;
+class MapSector;
+class MapThing;
 class MapTextureManager;
 class ObjectEditGroup;
 class SLADEMap;
@@ -76,6 +81,13 @@ struct Item
 
 	// Conversion operators
 	explicit operator int() const { return index; }
+
+	MapVertex* asVertex(const SLADEMap& map) const;
+	MapLine*   asLine(const SLADEMap& map) const;
+	MapSide*   asSide(const SLADEMap& map) const;
+	MapSector* asSector(const SLADEMap& map) const;
+	MapThing*  asThing(const SLADEMap& map) const;
+	MapObject* asObject(const SLADEMap& map) const;
 };
 
 MapEditContext&    editContext();
@@ -90,7 +102,7 @@ bool chooseMap(Archive* archive = nullptr);
 void setUndoManager(UndoManager* manager);
 
 // UI
-void setStatusText(const string& text, int column);
+void setStatusText(const wxString& text, int column);
 void lockMouse(bool lock);
 void openContextMenu();
 
@@ -105,11 +117,11 @@ void showShapeDrawPanel(bool show = true);
 void showObjectEditPanel(bool show = true, ObjectEditGroup* group = nullptr);
 
 // Browser
-string browseTexture(
-	const string& init_texture,
-	TextureType   tex_type,
-	SLADEMap&     map,
-	const string& title = "Browse Texture");
+wxString browseTexture(
+	const wxString& init_texture,
+	TextureType     tex_type,
+	SLADEMap&       map,
+	const wxString& title = "Browse Texture");
 int browseThingType(int init_type, SLADEMap& map);
 
 // Misc

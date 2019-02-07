@@ -795,7 +795,7 @@ bool CTextureCanvas::swapPatches(size_t p1, size_t p2)
 // Called when the texture canvas recieves an announcement from the texture
 // being displayed
 // -----------------------------------------------------------------------------
-void CTextureCanvas::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void CTextureCanvas::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	// If the announcer isn't this canvas' texture, ignore it
 	if (announcer != texture_)

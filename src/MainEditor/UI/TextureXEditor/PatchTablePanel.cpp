@@ -87,7 +87,7 @@ PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table
 // -----------------------------------------------------------------------------
 // Returns the string for [item] at [column]
 // -----------------------------------------------------------------------------
-string PatchTableListView::itemText(long item, long column, long index) const
+wxString PatchTableListView::itemText(long item, long column, long index) const
 {
 	// Check patch table exists
 	if (!patch_table_)
@@ -101,11 +101,11 @@ string PatchTableListView::itemText(long item, long column, long index) const
 	auto& patch = patch_table_->patch(index);
 
 	if (column == 0) // Index column
-		return S_FMT("%04ld", index);
+		return wxString::Format("%04ld", index);
 	else if (column == 1) // Name column
 		return patch.name;
 	else if (column == 2) // Usage count column
-		return S_FMT("%lu", patch.used_in.size());
+		return wxString::Format("%lu", patch.used_in.size());
 	else if (column == 3) // Archive column
 	{
 		// Get patch entry
@@ -159,7 +159,7 @@ void PatchTableListView::updateList(bool clear)
 // -----------------------------------------------------------------------------
 // Handles announcements from the panel's PatchTable
 // -----------------------------------------------------------------------------
-void PatchTableListView::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void PatchTableListView::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	// Just refresh on any event from the patch table
 	if (announcer == patch_table_)
@@ -283,7 +283,7 @@ void PatchTablePanel::setupLayout()
 void PatchTablePanel::onBtnAddPatch(wxCommandEvent& e)
 {
 	// Prompt for new patch name
-	string patch = wxGetTextFromUser("Enter patch entry name:", "Add Patch", wxEmptyString, this);
+	wxString patch = wxGetTextFromUser("Enter patch entry name:", "Add Patch", wxEmptyString, this);
 
 	// Check something was entered
 	if (patch.IsEmpty())
@@ -306,7 +306,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 	auto etypes = EntryType::allTypes();
 
 	// Go through types
-	string ext_filter = "All files (*.*)|*.*|";
+	wxString ext_filter = "All files (*.*)|*.*|";
 	for (auto& etype : etypes)
 	{
 		// If the type is a valid image type, add its extension filter
@@ -350,14 +350,15 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 			// If it's not a valid image type, ignore this file
 			if (!entry->type()->extraProps().propertyExists("image"))
 			{
-				Log::warning(S_FMT("%s is not a valid image file", file));
+				Log::warning(wxString::Format("%s is not a valid image file", file));
 				continue;
 			}
 
 			// Ask for name for patch
 			wxFileName fn(file);
-			string     name = fn.GetName().Upper().Truncate(8);
-			name = wxGetTextFromUser(S_FMT("Enter a patch name for %s:", fn.GetFullName()), "New Patch", name);
+			wxString   name = fn.GetName().Upper().Truncate(8);
+			name            = wxGetTextFromUser(
+                wxString::Format("Enter a patch name for %s:", fn.GetFullName()), "New Patch", name);
 			name = name.Truncate(8);
 
 			// Add patch to archive
@@ -396,7 +397,7 @@ void PatchTablePanel::onBtnRemovePatch(wxCommandEvent& e)
 		{
 			// In use, ask if it's ok to remove the patch
 			int answer = wxMessageBox(
-				S_FMT(
+				wxString::Format(
 					"The patch \"%s\" is currently used by %lu texture(s), are you sure you wish to remove it?",
 					patch.name,
 					patch.used_in.size()),
@@ -443,7 +444,7 @@ void PatchTablePanel::onBtnChangePatch(wxCommandEvent& e)
 		auto& patch = patch_table_->patch(index);
 
 		// Prompt for new patch name
-		string newname = wxGetTextFromUser("Enter new patch entry name:", "Change Patch", patch.name, this);
+		wxString newname = wxGetTextFromUser("Enter new patch entry name:", "Change Patch", patch.name, this);
 
 		// Update the patch if it's not the Cancel button that was clicked
 		if (newname.Length() > 0)
@@ -474,7 +475,7 @@ void PatchTablePanel::updateDisplay()
 		theMainWindow->paletteChooser()->setGlobalFromArchive(entry->parent());
 		patch_canvas_->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 		label_dimensions_->SetLabel(
-			S_FMT("Size: %d x %d", patch_canvas_->image().width(), patch_canvas_->image().height()));
+			wxString::Format("Size: %d x %d", patch_canvas_->image().width(), patch_canvas_->image().height()));
 	}
 	else
 	{
@@ -486,12 +487,12 @@ void PatchTablePanel::updateDisplay()
 	// List which textures use this patch
 	if (!patch.used_in.empty())
 	{
-		string alltextures = "";
-		int    count       = 0;
-		string previous    = "";
+		wxString alltextures = "";
+		int      count       = 0;
+		wxString previous    = "";
 		for (size_t a = 0; a < patch.used_in.size(); ++a)
 		{
-			string current = patch.used_in[a];
+			wxString current = patch.used_in[a];
 
 			// Is the use repeated for the same texture?
 			if (!current.CmpNoCase(previous))
@@ -504,7 +505,7 @@ void PatchTablePanel::updateDisplay()
 				// First add the count to the previous texture if needed
 				if (count)
 				{
-					alltextures += S_FMT(" (%i)", count + 1);
+					alltextures += wxString::Format(" (%i)", count + 1);
 					count = 0;
 				}
 
@@ -513,7 +514,7 @@ void PatchTablePanel::updateDisplay()
 					alltextures += ';';
 
 				// Then print the new texture's name
-				alltextures += S_FMT(" %s", patch.used_in[a].mb_str());
+				alltextures += wxString::Format(" %s", patch.used_in[a].mb_str());
 
 				// And set it for comparison with the next one
 				previous = current;
@@ -521,10 +522,10 @@ void PatchTablePanel::updateDisplay()
 		}
 		// If count is still non-zero, it's because the patch was repeated in the last texture
 		if (count)
-			alltextures += S_FMT(" (%i)", count + 1);
+			alltextures += wxString::Format(" (%i)", count + 1);
 
 		// Finally display the listing
-		label_textures_->SetLabel(S_FMT("In Textures:%s", alltextures.mb_str()));
+		label_textures_->SetLabel(wxString::Format("In Textures:%s", alltextures.mb_str()));
 	}
 	else
 		label_textures_->SetLabel("In Textures: -");
@@ -549,7 +550,7 @@ void PatchTablePanel::onDisplayChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Handles any announcements
 // -----------------------------------------------------------------------------
-void PatchTablePanel::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void PatchTablePanel::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	if (announcer != theMainWindow->paletteChooser())
 		return;

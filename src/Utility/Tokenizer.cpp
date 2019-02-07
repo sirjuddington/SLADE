@@ -39,7 +39,7 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-const string     Tokenizer::DEFAULT_SPECIAL_CHARACTERS = ";,:|={}/";
+const wxString   Tokenizer::DEFAULT_SPECIAL_CHARACTERS = ";,:|={}/";
 Tokenizer::Token Tokenizer::invalid_token_{ "", 0, false, 0, 0, 0, false };
 
 
@@ -72,7 +72,7 @@ bool isWhitespace(char p)
 // -----------------------------------------------------------------------------
 bool Tokenizer::Token::isInteger(bool allow_hex) const
 {
-	return StringUtils::isInteger(text, allow_hex);
+	return wxStringUtils::isInteger(text, allow_hex);
 }
 
 // -----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ bool Tokenizer::Token::isInteger(bool allow_hex) const
 // -----------------------------------------------------------------------------
 bool Tokenizer::Token::isHex() const
 {
-	return StringUtils::isHex(text);
+	return wxStringUtils::isHex(text);
 }
 
 // -----------------------------------------------------------------------------
@@ -88,7 +88,7 @@ bool Tokenizer::Token::isHex() const
 // -----------------------------------------------------------------------------
 bool Tokenizer::Token::isFloat() const
 {
-	return StringUtils::isFloat(text);
+	return wxStringUtils::isFloat(text);
 }
 
 // -----------------------------------------------------------------------------
@@ -120,7 +120,7 @@ void Tokenizer::Token::toBool(bool& val) const
 // -----------------------------------------------------------------------------
 // Tokenizer class constructor
 // -----------------------------------------------------------------------------
-Tokenizer::Tokenizer(int comments, const string& special_characters) :
+Tokenizer::Tokenizer(int comments, const wxString& special_characters) :
 	comment_types_{ comments },
 	special_characters_{ special_characters.begin(), special_characters.end() }
 {
@@ -178,7 +178,7 @@ bool Tokenizer::advIf(const char* check, size_t inc)
 
 	return false;
 }
-bool Tokenizer::advIf(const string& check, size_t inc)
+bool Tokenizer::advIf(const wxString& check, size_t inc)
 {
 	if (token_current_ == check)
 	{
@@ -212,7 +212,7 @@ bool Tokenizer::advIfNC(const char* check, size_t inc)
 
 	return false;
 }
-bool Tokenizer::advIfNC(const string& check, size_t inc)
+bool Tokenizer::advIfNC(const wxString& check, size_t inc)
 {
 	if (S_CMPNOCASE(token_current_.text, check))
 	{
@@ -239,7 +239,7 @@ bool Tokenizer::advIfNext(const char* check, size_t inc)
 
 	return false;
 }
-bool Tokenizer::advIfNext(const string& check, size_t inc)
+bool Tokenizer::advIfNext(const wxString& check, size_t inc)
 {
 	if (!token_next_.valid)
 		return false;
@@ -421,7 +421,7 @@ vector<Tokenizer::Token> Tokenizer::getTokensUntilNextLine(bool from_start)
 	return tokens;
 }
 
-string Tokenizer::getLine(bool from_start)
+wxString Tokenizer::getLine(bool from_start)
 {
 	// Reset to start of line if needed
 	if (from_start)
@@ -434,7 +434,7 @@ string Tokenizer::getLine(bool from_start)
 		state_.current_line = token_next_.line_no;
 	}
 
-	string line;
+	wxString line;
 	while (data_[state_.position] != '\n' && data_[state_.position] != '\r')
 		line += data_[state_.position++];
 
@@ -452,7 +452,7 @@ bool Tokenizer::checkOrEnd(const char* check) const
 
 	return token_current_ == check;
 }
-bool Tokenizer::checkOrEnd(const string& check) const
+bool Tokenizer::checkOrEnd(const wxString& check) const
 {
 	// At end, return true
 	if (!token_next_.valid)
@@ -488,7 +488,7 @@ bool Tokenizer::checkNext(const char* check) const
 
 	return token_next_ == check;
 }
-bool Tokenizer::checkNext(const string& check) const
+bool Tokenizer::checkNext(const wxString& check) const
 {
 	if (!token_next_.valid)
 		return false;
@@ -515,7 +515,7 @@ bool Tokenizer::checkNextNC(const char* check) const
 // Opens text from a file [filename], reading [length] bytes from [offset].
 // If [length] is 0, read to the end of the file
 // -----------------------------------------------------------------------------
-bool Tokenizer::openFile(const string& filename, size_t offset, size_t length)
+bool Tokenizer::openFile(const wxString& filename, size_t offset, size_t length)
 {
 	// Open the file
 	wxFile file(filename);
@@ -523,7 +523,7 @@ bool Tokenizer::openFile(const string& filename, size_t offset, size_t length)
 	// Check file opened
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("Tokenizer::openFile: Unable to open file %s", filename));
+		Log::error(wxString::Format("Tokenizer::openFile: Unable to open file %s", filename));
 		return false;
 	}
 
@@ -549,7 +549,7 @@ bool Tokenizer::openFile(const string& filename, size_t offset, size_t length)
 // Opens text from a string [text], reading [length] bytes from [offset].
 // If [length] is 0, read to the end of the string
 // -----------------------------------------------------------------------------
-bool Tokenizer::openString(const string& text, size_t offset, size_t length, const string& source)
+bool Tokenizer::openString(const wxString& text, size_t offset, size_t length, const wxString& source)
 {
 	source_ = source;
 
@@ -570,7 +570,7 @@ bool Tokenizer::openString(const string& text, size_t offset, size_t length, con
 // -----------------------------------------------------------------------------
 // Opens text from memory [mem], reading [length] bytes
 // -----------------------------------------------------------------------------
-bool Tokenizer::openMem(const char* mem, size_t length, const string& source)
+bool Tokenizer::openMem(const char* mem, size_t length, const wxString& source)
 {
 	source_ = source;
 	data_.assign(mem, mem + length);
@@ -583,7 +583,7 @@ bool Tokenizer::openMem(const char* mem, size_t length, const string& source)
 // -----------------------------------------------------------------------------
 // Opens text from a MemChunk [mc]
 // -----------------------------------------------------------------------------
-bool Tokenizer::openMem(const MemChunk& mc, const string& source)
+bool Tokenizer::openMem(const MemChunk& mc, const wxString& source)
 {
 	source_ = source;
 	data_.assign(mc.data(), mc.data() + mc.size());
@@ -861,7 +861,7 @@ bool Tokenizer::readNext(Token* target)
 		++state_.position;
 
 	if (debug_)
-		Log::debug(S_FMT("%d: \"%s\"", token_current_.line_no, CHR(token_current_.text)));
+		Log::debug(wxString::Format("%d: \"%s\"", token_current_.line_no, CHR(token_current_.text)));
 
 	return true;
 }
@@ -910,7 +910,7 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 
 	struct TestToken
 	{
-		string   text;
+		wxString text;
 		bool     quoted_string;
 		unsigned line_no;
 	};
@@ -935,7 +935,7 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 
 	long new_time = App::runTimer() - time;
 
-	Log::info(S_FMT("Tokenize x%d took %dms", num, new_time));
+	Log::info(wxString::Format("Tokenize x%d took %dms", num, new_time));
 
 
 	// Test old tokenizer also
@@ -957,13 +957,14 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 		tzo.reset();
 	}
 	time = App::runTimer() - time;
-	Log::info(S_FMT("Old Tokenize x%d took %dms", num, time));
-	Log::info(S_FMT("%1.3fx time", (float)new_time / (float)time));
+	Log::info(wxString::Format("Old Tokenize x%d took %dms", num, time));
+	Log::info(wxString::Format("%1.3fx time", (float)new_time / (float)time));
 	*/
 
 	if (dump)
 	{
 		for (auto& token : t_new)
-			Log::debug(S_FMT("%d: \"%s\"%s", token.line_no, CHR(token.text), token.quoted_string ? " (quoted)" : ""));
+			Log::debug(wxString::Format(
+				"%d: \"%s\"%s", token.line_no, CHR(token.text), token.quoted_string ? " (quoted)" : ""));
 	}
 }

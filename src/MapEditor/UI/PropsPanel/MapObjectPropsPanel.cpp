@@ -157,8 +157,8 @@ bool MapObjectPropsPanel::showAll() const
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addBoolProperty(
 	wxPGProperty*   group,
-	const string&   label,
-	const string&   propname,
+	const wxString& label,
+	const wxString& propname,
 	bool            readonly,
 	wxPropertyGrid* grid,
 	UDMFProperty*   udmf_prop)
@@ -188,8 +188,8 @@ MOPGProperty* MapObjectPropsPanel::addBoolProperty(
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addIntProperty(
 	wxPGProperty*   group,
-	const string&   label,
-	const string&   propname,
+	const wxString& label,
+	const wxString& propname,
 	bool            readonly,
 	wxPropertyGrid* grid,
 	UDMFProperty*   udmf_prop)
@@ -219,8 +219,8 @@ MOPGProperty* MapObjectPropsPanel::addIntProperty(
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addFloatProperty(
 	wxPGProperty*   group,
-	const string&   label,
-	const string&   propname,
+	const wxString& label,
+	const wxString& propname,
 	bool            readonly,
 	wxPropertyGrid* grid,
 	UDMFProperty*   udmf_prop)
@@ -250,8 +250,8 @@ MOPGProperty* MapObjectPropsPanel::addFloatProperty(
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addStringProperty(
 	wxPGProperty*   group,
-	const string&   label,
-	const string&   propname,
+	const wxString& label,
+	const wxString& propname,
 	bool            readonly,
 	wxPropertyGrid* grid,
 	UDMFProperty*   udmf_prop)
@@ -281,8 +281,8 @@ MOPGProperty* MapObjectPropsPanel::addStringProperty(
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addLineFlagProperty(
 	wxPGProperty*   group,
-	const string&   label,
-	const string&   propname,
+	const wxString& label,
+	const wxString& propname,
 	int             index,
 	bool            readonly,
 	wxPropertyGrid* grid,
@@ -313,8 +313,8 @@ MOPGProperty* MapObjectPropsPanel::addLineFlagProperty(
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addThingFlagProperty(
 	wxPGProperty*   group,
-	const string&   label,
-	const string&   propname,
+	const wxString& label,
+	const wxString& propname,
 	int             index,
 	bool            readonly,
 	wxPropertyGrid* grid,
@@ -345,8 +345,8 @@ MOPGProperty* MapObjectPropsPanel::addThingFlagProperty(
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addTextureProperty(
 	wxPGProperty*          group,
-	const string&          label,
-	const string&          propname,
+	const wxString&        label,
+	const wxString&        propname,
 	MapEditor::TextureType textype,
 	bool                   readonly,
 	wxPropertyGrid*        grid,
@@ -404,7 +404,7 @@ bool MapObjectPropsPanel::setBoolProperty(wxPGProperty* prop, bool value, bool f
 void MapObjectPropsPanel::addUDMFProperty(
 	UDMFProperty&   prop,
 	MapObject::Type objtype,
-	const string&   basegroup,
+	const wxString& basegroup,
 	wxPropertyGrid* grid)
 {
 	// Set grid to add to (main one if grid is NULL)
@@ -412,7 +412,7 @@ void MapObjectPropsPanel::addUDMFProperty(
 		grid = pg_properties_;
 
 	// Determine group name
-	string groupname;
+	wxString groupname;
 	if (!basegroup.IsEmpty())
 		groupname = basegroup + ".";
 	groupname += prop.group();
@@ -423,7 +423,7 @@ void MapObjectPropsPanel::addUDMFProperty(
 		group = grid->Append(new wxPropertyCategory(prop.group(), groupname));
 
 	// Determine property name
-	string propname;
+	wxString propname;
 	if (!basegroup.IsEmpty())
 		propname = basegroup + ".";
 	propname += prop.propName();
@@ -574,7 +574,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 				{
 					// Add arg property
 					auto prop = dynamic_cast<MOPGIntProperty*>(
-						addIntProperty(g_special, S_FMT("Arg%u", a + 1), S_FMT("arg%u", a)));
+						addIntProperty(g_special, wxString::Format("Arg%u", a + 1), wxString::Format("arg%u", a)));
 
 					// Link to action special
 					args_[a] = prop;
@@ -605,7 +605,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 
 			// Add flags
 			for (unsigned a = 0; a < Game::configuration().nLineFlags(); a++)
-				addLineFlagProperty(g_flags, Game::configuration().lineFlag(a).name, S_FMT("flag%u", a), a);
+				addLineFlagProperty(g_flags, Game::configuration().lineFlag(a).name, wxString::Format("flag%u", a), a);
 		}
 
 		// --- Sides ---
@@ -773,7 +773,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 			for (unsigned a = 0; a < 5; a++)
 			{
 				auto prop = dynamic_cast<MOPGIntProperty*>(
-					addIntProperty(g_args, S_FMT("Arg%u", a + 1), S_FMT("arg%u", a)));
+					addIntProperty(g_args, wxString::Format("Arg%u", a + 1), wxString::Format("arg%u", a)));
 				args_[a] = prop;
 			}
 		}
@@ -785,7 +785,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 
 			// Add flags
 			for (int a = 0; a < Game::configuration().nThingFlags(); a++)
-				addThingFlagProperty(g_flags, Game::configuration().thingFlag(a), S_FMT("flag%u", a), a);
+				addThingFlagProperty(g_flags, Game::configuration().thingFlag(a), wxString::Format("flag%u", a), a);
 		}
 	}
 
@@ -901,7 +901,7 @@ void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
 	// Remember arg properties for passing to type/special properties (or set
 	// to NULL if args don't exist)
 	for (unsigned arg = 0; arg < 5; arg++)
-		args_[arg] = pg_properties_->GetProperty(S_FMT("arg%u", arg));
+		args_[arg] = pg_properties_->GetProperty(wxString::Format("arg%u", arg));
 
 	last_type_ = objtype;
 	udmf_      = true;
@@ -1130,7 +1130,7 @@ void MapObjectPropsPanel::clearGrid()
 // -----------------------------------------------------------------------------
 void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 {
-	string type;
+	wxString type;
 	if (last_type_ == MapObject::Type::Vertex)
 		type = "Vertex";
 	else if (last_type_ == MapObject::Type::Line)
@@ -1141,7 +1141,8 @@ void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 		type = "Thing";
 
 	// Apply changes
-	MapEditor::editContext().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
+	MapEditor::editContext().beginUndoRecordLocked(
+		wxString::Format("Modify %s Properties", CHR(type)), true, false, false);
 	applyChanges();
 	MapEditor::editContext().endUndoRecord();
 
@@ -1192,8 +1193,10 @@ void MapObjectPropsPanel::onBtnAdd(wxCommandEvent& e)
 	sizer->Add(text_name, { 0, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Type
-	string types[] = { "Boolean", "String", "Integer", "Float", "Angle", "Texture (Wall)", "Texture (Flat)", "Colour" };
-	auto   choice_type = new wxChoice(&dlg, -1, wxDefaultPosition, wxDefaultSize, 7, types);
+	wxString types[] = {
+		"Boolean", "String", "Integer", "Float", "Angle", "Texture (Wall)", "Texture (Flat)", "Colour"
+	};
+	auto choice_type = new wxChoice(&dlg, -1, wxDefaultPosition, wxDefaultSize, 7, types);
 	choice_type->SetSelection(0);
 	sizer->Add(new wxStaticText(&dlg, -1, "Type:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(choice_type, { 1, 1 }, { 1, 1 }, wxEXPAND);
@@ -1212,7 +1215,7 @@ void MapObjectPropsPanel::onBtnAdd(wxCommandEvent& e)
 			group_custom_ = pg_properties_->Append(new wxPropertyCategory("Custom"));
 
 		// Get name entered
-		string propname = text_name->GetValue().Lower();
+		wxString propname = text_name->GetValue().Lower();
 		if (propname.empty() || propname.Contains(" ")) // TODO: Proper regex check
 		{
 			wxMessageBox("Invalid property name", "Error");
@@ -1224,7 +1227,7 @@ void MapObjectPropsPanel::onBtnAdd(wxCommandEvent& e)
 		{
 			if (property->propName() == propname)
 			{
-				wxMessageBox(S_FMT("Property \"%s\" already exists", propname), "Error");
+				wxMessageBox(wxString::Format("Property \"%s\" already exists", propname), "Error");
 				return;
 			}
 		}
@@ -1272,13 +1275,13 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 	}
 
 	// Find property
-	string name = e.GetPropertyName();
+	wxString name = e.GetPropertyName();
 	for (auto& property : properties_)
 	{
 		if (property->propName() == name)
 		{
 			// Found, apply value
-			string type;
+			wxString type;
 			if (last_type_ == MapObject::Type::Vertex)
 				type = "Vertex";
 			else if (last_type_ == MapObject::Type::Line)
@@ -1289,7 +1292,7 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 				type = "Thing";
 
 			MapEditor::editContext().beginUndoRecordLocked(
-				S_FMT("Modify %s Properties", CHR(type)), true, false, false);
+				wxString::Format("Modify %s Properties", CHR(type)), true, false, false);
 			property->applyValue();
 			MapEditor::editContext().endUndoRecord();
 			return;

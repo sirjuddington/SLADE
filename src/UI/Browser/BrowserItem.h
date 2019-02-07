@@ -10,10 +10,10 @@ class BrowserItem
 	friend class BrowserWindow;
 
 public:
-	BrowserItem(const string& name, unsigned index = 0, const string& type = "item");
+	BrowserItem(const wxString& name, unsigned index = 0, const wxString& type = "item");
 	virtual ~BrowserItem() = default;
 
-	string   name() const { return name_; }
+	wxString name() const { return name_; }
 	unsigned index() const { return index_; }
 
 	virtual bool loadImage();
@@ -26,14 +26,14 @@ public:
 				BrowserCanvas::ItemView viewtype    = BrowserCanvas::ItemView::Normal,
 				ColRGBA                 colour      = ColRGBA::WHITE,
 				bool                    text_shadow = true);
-	virtual void   clearImage() {}
-	virtual string itemInfo() { return ""; }
+	virtual void     clearImage() {}
+	virtual wxString itemInfo() { return ""; }
 
 	typedef std::unique_ptr<BrowserItem> UPtr;
 
 protected:
-	string                   type_;
-	string                   name_;
+	wxString                 type_;
+	wxString                 name_;
 	unsigned                 index_     = 0;
 	unsigned                 image_tex_ = 0;
 	BrowserWindow*           parent_    = nullptr;

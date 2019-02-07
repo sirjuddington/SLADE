@@ -14,9 +14,9 @@ vector<Archive*> allArchives(bool resources_only)
 	return list;
 }
 
-string formattedEntryName(ArchiveEntry& self, bool include_path, bool include_extension, bool name_uppercase)
+wxString formattedEntryName(ArchiveEntry& self, bool include_path, bool include_extension, bool name_uppercase)
 {
-	string name;
+	wxString name;
 	if (include_path)
 		name = self.path();
 	if (name_uppercase)
@@ -33,13 +33,13 @@ vector<ArchiveEntry*> archiveAllEntries(Archive& self)
 	return list;
 }
 
-ArchiveEntry* archiveCreateEntry(Archive& self, const string& full_path, int position)
+ArchiveEntry* archiveCreateEntry(Archive& self, const wxString& full_path, int position)
 {
 	auto dir = self.dir(full_path.BeforeLast('/'));
 	return self.addNewEntry(full_path.AfterLast('/'), position, dir);
 }
 
-ArchiveEntry* archiveCreateEntryInNamespace(Archive& self, const string& name, const string& ns)
+ArchiveEntry* archiveCreateEntryInNamespace(Archive& self, const wxString& name, const wxString& ns)
 {
 	return self.addNewEntry(name, ns);
 }
@@ -125,7 +125,7 @@ void registerArchive(sol::state& lua)
 		&Archive::entryAtPath,
 
 		"dirAtPath",
-		[](Archive& self, const string& path) { return self.dir(path); },
+		[](Archive& self, const wxString& path) { return self.dir(path); },
 
 		"createEntry",
 		&archiveCreateEntry,
@@ -142,7 +142,7 @@ void registerArchive(sol::state& lua)
 		"save",
 		sol::overload(
 			[](Archive& self) { return self.save(); },
-			[](Archive& self, const string& filename) { return self.save(filename); }));
+			[](Archive& self, const wxString& filename) { return self.save(filename); }));
 
 // Register all subclasses
 // (perhaps it'd be a good idea to make Archive not abstract and handle
@@ -233,7 +233,7 @@ void registerArchiveEntry(sol::state& lua)
 		&ArchiveEntry::sizeString,
 
 		"importFile",
-		[](ArchiveEntry& self, const string& filename) { return self.importFile(filename); },
+		[](ArchiveEntry& self, const wxString& filename) { return self.importFile(filename); },
 
 		"importEntry",
 		&ArchiveEntry::importEntry,

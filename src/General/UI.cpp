@@ -102,7 +102,7 @@ void UI::enableSplash(bool enable)
 // Shows the splash window with [message].
 // If [progress] is true, the progress bar is displayed
 // -----------------------------------------------------------------------------
-void UI::showSplash(const string& message, bool progress, wxWindow* parent)
+void UI::showSplash(const wxString& message, bool progress, wxWindow* parent)
 {
 	if (!splash_enabled || !isMainThread())
 		return;
@@ -148,7 +148,7 @@ float UI::getSplashProgress()
 // -----------------------------------------------------------------------------
 // Sets the splash window [message]
 // -----------------------------------------------------------------------------
-void UI::setSplashMessage(const string& message)
+void UI::setSplashMessage(const wxString& message)
 {
 	if (splash_window && isMainThread())
 		splash_window->setMessage(message);
@@ -157,7 +157,7 @@ void UI::setSplashMessage(const string& message)
 // -----------------------------------------------------------------------------
 // Sets the splash window progress bar [message]
 // -----------------------------------------------------------------------------
-void UI::setSplashProgressMessage(const string& message)
+void UI::setSplashProgressMessage(const wxString& message)
 {
 	if (splash_window && isMainThread())
 		splash_window->setProgressMessage(message);
@@ -261,8 +261,8 @@ CONSOLE_COMMAND(splash, 0, false)
 	else
 	{
 		UI::showSplash(args[0], true);
-		float prog = StringUtils::toFloat(args[1]);
+		float prog = wxStringUtils::toFloat(args[1]);
 		UI::setSplashProgress(prog);
-		UI::setSplashProgressMessage(S_FMT("Progress %s", args[1]));
+		UI::setSplashProgressMessage(wxString::Format("Progress %s", args[1]));
 	}
 }

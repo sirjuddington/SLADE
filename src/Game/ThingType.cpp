@@ -55,7 +55,7 @@ ThingType ThingType::unknown_;
 // -----------------------------------------------------------------------------
 // ThingType class constructor
 // -----------------------------------------------------------------------------
-ThingType::ThingType(const string& name, const string& group, const string& class_name) :
+ThingType::ThingType(const wxString& name, const wxString& group, const wxString& class_name) :
 	name_{ name },
 	group_{ group },
 	tagged_{ TagType::None },
@@ -95,7 +95,7 @@ void ThingType::copy(const ThingType& copy)
 // -----------------------------------------------------------------------------
 // Defines this thing type's [number], [name] and [group]
 // -----------------------------------------------------------------------------
-void ThingType::define(int number, const string& name, const string& group)
+void ThingType::define(int number, const wxString& name, const wxString& group)
 {
 	number_ = number;
 	name_   = name;
@@ -134,7 +134,7 @@ void ThingType::reset()
 	args_.count = 0;
 	for (unsigned a = 0; a < 5; a++)
 	{
-		args_[a].name = S_FMT("Arg%d", a + 1);
+		args_[a].name = wxString::Format("Arg%d", a + 1);
 		args_[a].type = Arg::Type::Number;
 		args_[a].custom_flags.clear();
 		args_[a].custom_values.clear();
@@ -149,9 +149,9 @@ void ThingType::parse(ParseTreeNode* node)
 	// Go through all child nodes/values
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto   child = node->childPTN(a);
-		string name  = child->name();
-		int    arg   = -1;
+		auto     child = node->childPTN(a);
+		wxString name  = child->name();
+		int      arg   = -1;
 
 		// Name
 		if (S_CMPNOCASE(name, "name"))
@@ -311,7 +311,7 @@ void ThingType::parse(ParseTreeNode* node)
 
 				// Type
 				val = child->childPTN("type");
-				string atype;
+				wxString atype;
 				if (val)
 					atype = val->stringValue();
 				if (S_CMPNOCASE(atype, "yesno"))
@@ -330,15 +330,15 @@ void ThingType::parse(ParseTreeNode* node)
 // -----------------------------------------------------------------------------
 // Returns the thing type info as a string
 // -----------------------------------------------------------------------------
-string ThingType::stringDesc() const
+wxString ThingType::stringDesc() const
 {
 	// Init return string
-	string ret = S_FMT(
+	wxString ret = wxString::Format(
 		R"("%s" in group "%s", colour %d,%d,%d, radius %d)", name_, group_, colour_.r, colour_.g, colour_.b, radius_);
 
 	// Add any extra info
 	if (!sprite_.IsEmpty())
-		ret += S_FMT(", sprite \"%s\"", sprite_);
+		ret += wxString::Format(", sprite \"%s\"", sprite_);
 	if (!angled_)
 		ret += ", angle hidden";
 	if (hanging_)

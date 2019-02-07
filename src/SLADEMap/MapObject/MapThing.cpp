@@ -39,19 +39,19 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-const string MapThing::PROP_X       = "x";
-const string MapThing::PROP_Y       = "y";
-const string MapThing::PROP_Z       = "height";
-const string MapThing::PROP_TYPE    = "type";
-const string MapThing::PROP_ANGLE   = "angle";
-const string MapThing::PROP_FLAGS   = "flags";
-const string MapThing::PROP_ARG0    = "arg0";
-const string MapThing::PROP_ARG1    = "arg1";
-const string MapThing::PROP_ARG2    = "arg2";
-const string MapThing::PROP_ARG3    = "arg3";
-const string MapThing::PROP_ARG4    = "arg4";
-const string MapThing::PROP_ID      = "id";
-const string MapThing::PROP_SPECIAL = "special";
+const wxString MapThing::PROP_X       = "x";
+const wxString MapThing::PROP_Y       = "y";
+const wxString MapThing::PROP_Z       = "height";
+const wxString MapThing::PROP_TYPE    = "type";
+const wxString MapThing::PROP_ANGLE   = "angle";
+const wxString MapThing::PROP_FLAGS   = "flags";
+const wxString MapThing::PROP_ARG0    = "arg0";
+const wxString MapThing::PROP_ARG1    = "arg1";
+const wxString MapThing::PROP_ARG2    = "arg2";
+const wxString MapThing::PROP_ARG3    = "arg3";
+const wxString MapThing::PROP_ARG4    = "arg4";
+const wxString MapThing::PROP_ID      = "id";
+const wxString MapThing::PROP_SPECIAL = "special";
 
 
 // -----------------------------------------------------------------------------
@@ -133,7 +133,7 @@ Vec2d MapThing::getPoint(Point point)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapThing::intProperty(const string& key)
+int MapThing::intProperty(const wxString& key)
 {
 	if (key == PROP_TYPE)
 		return type_;
@@ -168,7 +168,7 @@ int MapThing::intProperty(const string& key)
 // -----------------------------------------------------------------------------
 // Returns the value of the float property matching [key]
 // -----------------------------------------------------------------------------
-double MapThing::floatProperty(const string& key)
+double MapThing::floatProperty(const wxString& key)
 {
 	if (key == PROP_X)
 		return position_.x;
@@ -183,7 +183,7 @@ double MapThing::floatProperty(const string& key)
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapThing::setIntProperty(const string& key, int value)
+void MapThing::setIntProperty(const wxString& key, int value)
 {
 	// Update modified time
 	setModified();
@@ -221,7 +221,7 @@ void MapThing::setIntProperty(const string& key, int value)
 // -----------------------------------------------------------------------------
 // Sets the float value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapThing::setFloatProperty(const string& key, double value)
+void MapThing::setFloatProperty(const wxString& key, double value)
 {
 	// Update modified time
 	setModified();
@@ -438,25 +438,25 @@ void MapThing::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 // Writes the thing as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapThing::writeUDMF(string& def)
+void MapThing::writeUDMF(wxString& def)
 {
-	def = S_FMT("thing//#%u\n{\n", index_);
+	def = wxString::Format("thing//#%u\n{\n", index_);
 
 	// Basic properties
-	def += S_FMT("x=%1.3f;\ny=%1.3f;\ntype=%d;\n", position_.x, position_.y, type_);
+	def += wxString::Format("x=%1.3f;\ny=%1.3f;\ntype=%d;\n", position_.x, position_.y, type_);
 	if (z_ != 0)
-		def += S_FMT("height=%1.3f;\n", z_);
+		def += wxString::Format("height=%1.3f;\n", z_);
 	if (angle_ != 0)
-		def += S_FMT("angle=%d;\n", angle_);
+		def += wxString::Format("angle=%d;\n", angle_);
 	if (flags_ != 0)
-		def += S_FMT("flags=%d;\n", flags_);
+		def += wxString::Format("flags=%d;\n", flags_);
 	if (id_ != 0)
-		def += S_FMT("id=%d;\n", id_);
+		def += wxString::Format("id=%d;\n", id_);
 	for (unsigned i = 0; i < 5; ++i)
 		if (args_[i] != 0)
-			def += S_FMT("arg%d=%d;\n", i, args_[i]);
+			def += wxString::Format("arg%d=%d;\n", i, args_[i]);
 	if (special_ != 0)
-		def += S_FMT("special=%d;\n", special_);
+		def += wxString::Format("special=%d;\n", special_);
 
 	// Other properties
 	if (!properties_.isEmpty())

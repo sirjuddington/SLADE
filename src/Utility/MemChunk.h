@@ -20,13 +20,13 @@ public:
 	bool reSize(uint32_t new_size, bool preserve_data = true);
 
 	// Data import
-	bool importFile(const string& filename, uint32_t offset = 0, uint32_t len = 0);
+	bool importFile(const wxString& filename, uint32_t offset = 0, uint32_t len = 0);
 	bool importFileStream(wxFile& file, uint32_t len = 0);
 	bool importMem(const uint8_t* start, uint32_t len);
 	bool importMem(const MemChunk& other) { return importMem(other.data_, other.size_); }
 
 	// Data export
-	bool exportFile(const string& filename, uint32_t start = 0, uint32_t size = 0) const;
+	bool exportFile(const wxString& filename, uint32_t start = 0, uint32_t size = 0) const;
 	bool exportMemChunk(MemChunk& mc, uint32_t start = 0, uint32_t size = 0) const;
 
 	// C-style reading/writing

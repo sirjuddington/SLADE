@@ -31,12 +31,12 @@ public:
 	virtual void loadLanguage(TextLanguage* language);
 
 	virtual bool doStyling(TextEditorCtrl* editor, int start, int end);
-	virtual void addWord(const string& word, int style);
+	virtual void addWord(const wxString& word, int style);
 	virtual void clearWords() { word_list_.clear(); }
 	virtual void resetLineInfo() { lines_.clear(); }
 
-	void setWordChars(const string& chars);
-	void setOperatorChars(const string& chars);
+	void setWordChars(const wxString& chars);
+	void setOperatorChars(const wxString& chars);
 
 	void updateFolding(TextEditorCtrl* editor, int line_start);
 	void foldComments(bool fold) { fold_comments_ = fold; }
@@ -75,7 +75,7 @@ protected:
 		char style;
 		WLIndex() : style(0) {}
 	};
-	std::map<string, WLIndex> word_list_;
+	std::map<wxString, WLIndex> word_list_;
 
 	struct LineInfo
 	{
@@ -105,9 +105,9 @@ protected:
 	bool processOperator(LexerState& state);
 	bool processWhitespace(LexerState& state);
 
-	virtual void styleWord(LexerState& state, string word);
-	bool         checkToken(LexerState& state, int pos, string& token) const;
-	bool         checkToken(LexerState& state, int pos, vector<string>& tokens, int* found_idx = nullptr) const;
+	virtual void styleWord(LexerState& state, wxString word);
+	bool         checkToken(LexerState& state, int pos, wxString& token) const;
+	bool         checkToken(LexerState& state, int pos, vector<wxString>& tokens, int* found_idx = nullptr) const;
 };
 
 class ZScriptLexer : public Lexer
@@ -117,11 +117,11 @@ public:
 	virtual ~ZScriptLexer() = default;
 
 protected:
-	void addWord(const string& word, int style) override;
-	void styleWord(LexerState& state, string word) override;
+	void addWord(const wxString& word, int style) override;
+	void styleWord(LexerState& state, wxString word) override;
 	void clearWords() override;
 	bool isFunction(TextEditorCtrl* editor, int start_pos, int end_pos) override;
 
 private:
-	vector<string> functions_;
+	vector<wxString> functions_;
 };

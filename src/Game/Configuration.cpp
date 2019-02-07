@@ -96,7 +96,7 @@ void Configuration::setDefaults()
 // -----------------------------------------------------------------------------
 // Returns the UDMF namespace for the game configuration
 // -----------------------------------------------------------------------------
-string Configuration::udmfNamespace() const
+wxString Configuration::udmfNamespace() const
 {
 	return udmf_namespace_.Lower();
 }
@@ -115,7 +115,7 @@ int Configuration::lightLevelInterval()
 // -----------------------------------------------------------------------------
 // Returns the map name at [index] for the game configuration
 // -----------------------------------------------------------------------------
-string Configuration::mapName(unsigned index)
+wxString Configuration::mapName(unsigned index)
 {
 	// Check index
 	if (index > maps_.size())
@@ -127,7 +127,7 @@ string Configuration::mapName(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns map info for the map matching [name]
 // -----------------------------------------------------------------------------
-Configuration::MapConf Configuration::mapInfo(const string& mapname)
+Configuration::MapConf Configuration::mapInfo(const wxString& mapname)
 {
 	for (auto& map : maps_)
 	{
@@ -152,8 +152,8 @@ void Configuration::readActionSpecials(ParseTreeNode* node, Arg::SpecialMap& sha
 		action_specials_.clear();
 
 	// Determine current 'group'
-	auto   group     = node;
-	string groupname = "";
+	auto     group     = node;
+	wxString groupname = "";
 	while (true)
 	{
 		if (!group || group->name() == "action_specials")
@@ -219,8 +219,8 @@ void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_d
 		thing_types_.clear();
 
 	// --- Determine current 'group' ---
-	auto   group     = node;
-	string groupname = "";
+	auto     group     = node;
+	wxString groupname = "";
 	while (true)
 	{
 		if (!group || group->name() == "thing_types")
@@ -292,7 +292,7 @@ void Configuration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist)
 		// Group definition
 		if (S_CMPNOCASE(group->type(), "group"))
 		{
-			string groupname = group->name();
+			wxString groupname = group->name();
 
 			// Go through the group
 			for (unsigned b = 0; b < group->nChildren(); b++)
@@ -353,7 +353,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 					map_formats_[MapFormat::UDMF] = true;
 				}
 				else
-					Log::warning(S_FMT("Unknown/unsupported map format \"%s\"", node->stringValue(v)));
+					Log::warning(wxString::Format("Unknown/unsupported map format \"%s\"", node->stringValue(v)));
 			}
 		}
 
@@ -471,7 +471,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 				}
 
 				else
-					Log::warning(S_FMT("Unknown defaults block \"%s\"", block->name()));
+					Log::warning(wxString::Format("Unknown defaults block \"%s\"", block->name()));
 			}
 		}
 
@@ -517,7 +517,12 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 // -----------------------------------------------------------------------------
 // Reads a full game configuration from [cfg]
 // -----------------------------------------------------------------------------
-bool Configuration::readConfiguration(string& cfg, const string& source, MapFormat format, bool ignore_game, bool clear)
+bool Configuration::readConfiguration(
+	wxString&       cfg,
+	const wxString& source,
+	MapFormat       format,
+	bool            ignore_game,
+	bool            clear)
 {
 	// Clear current configuration
 	if (clear)
@@ -624,7 +629,7 @@ bool Configuration::readConfiguration(string& cfg, const string& source, MapForm
 					continue;
 
 				unsigned long flag_val;
-				string        flag_name, flag_udmf;
+				wxString      flag_name, flag_udmf;
 				bool          activation = false;
 
 				if (value->nValues() == 0)
@@ -684,8 +689,8 @@ bool Configuration::readConfiguration(string& cfg, const string& source, MapForm
 				if (!(S_CMPNOCASE(value->type(), "trigger")))
 					continue;
 
-				long   flag_val;
-				string flag_name, flag_udmf;
+				long     flag_val;
+				wxString flag_name, flag_udmf;
 
 				if (value->nValues() == 0)
 				{
@@ -742,8 +747,8 @@ bool Configuration::readConfiguration(string& cfg, const string& source, MapForm
 				if (!(S_CMPNOCASE(value->type(), "flag")))
 					continue;
 
-				long   flag_val;
-				string flag_name, flag_udmf;
+				long     flag_val;
+				wxString flag_name, flag_udmf;
 
 				if (value->nValues() == 0)
 				{
@@ -854,7 +859,7 @@ bool Configuration::readConfiguration(string& cfg, const string& source, MapForm
 
 		// Unknown/unexpected section
 		else
-			Log::warning(S_FMT("Unexpected game configuration section \"%s\", skipping", node->name()));
+			Log::warning(wxString::Format("Unexpected game configuration section \"%s\", skipping", node->name()));
 	}
 
 	return true;
@@ -864,9 +869,9 @@ bool Configuration::readConfiguration(string& cfg, const string& source, MapForm
 // Opens the full game configuration [game]+[port], either from the user dir or
 // program resource
 // -----------------------------------------------------------------------------
-bool Configuration::openConfig(const string& game, const string& port, MapFormat format)
+bool Configuration::openConfig(const wxString& game, const wxString& port, MapFormat format)
 {
-	string full_config;
+	wxString full_config;
 
 	// Get game configuration as string
 	auto& game_config = gameDef(game);
@@ -875,23 +880,23 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 		if (game_config.user)
 		{
 			// Config is in user dir
-			string filename = App::path("games/", App::Dir::User) + game_config.filename + ".cfg";
+			wxString filename = App::path("games/", App::Dir::User) + game_config.filename + ".cfg";
 			if (wxFileExists(filename))
-				StringUtils::processIncludes(filename, full_config);
+				wxStringUtils::processIncludes(filename, full_config);
 			else
 			{
-				Log::error(S_FMT("Error: Game configuration file \"%s\" not found", filename));
+				Log::error(wxString::Format("Error: Game configuration file \"%s\" not found", filename));
 				return false;
 			}
 		}
 		else
 		{
 			// Config is in program resource
-			string epath   = S_FMT("config/games/%s.cfg", game_config.filename);
-			auto   archive = App::archiveManager().programResourceArchive();
-			auto   entry   = archive->entryAtPath(epath);
+			wxString epath   = wxString::Format("config/games/%s.cfg", game_config.filename);
+			auto     archive = App::archiveManager().programResourceArchive();
+			auto     entry   = archive->entryAtPath(epath);
 			if (entry)
-				StringUtils::processIncludes(entry, full_config);
+				wxStringUtils::processIncludes(entry, full_config);
 		}
 	}
 
@@ -907,23 +912,23 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 			if (conf.user)
 			{
 				// Config is in user dir
-				string filename = App::path("games/", App::Dir::User) + conf.filename + ".cfg";
+				wxString filename = App::path("games/", App::Dir::User) + conf.filename + ".cfg";
 				if (wxFileExists(filename))
-					StringUtils::processIncludes(filename, full_config);
+					wxStringUtils::processIncludes(filename, full_config);
 				else
 				{
-					Log::error(S_FMT("Error: Port configuration file \"%s\" not found", filename));
+					Log::error(wxString::Format("Error: Port configuration file \"%s\" not found", filename));
 					return false;
 				}
 			}
 			else
 			{
 				// Config is in program resource
-				string epath   = S_FMT("config/ports/%s.cfg", conf.filename);
-				auto   archive = App::archiveManager().programResourceArchive();
-				auto   entry   = archive->entryAtPath(epath);
+				wxString epath   = wxString::Format("config/ports/%s.cfg", conf.filename);
+				auto     archive = App::archiveManager().programResourceArchive();
+				auto     entry   = archive->entryAtPath(epath);
 				if (entry)
-					StringUtils::processIncludes(entry, full_config);
+					wxStringUtils::processIncludes(entry, full_config);
 			}
 		}
 	}
@@ -943,7 +948,7 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 		current_port_      = port;
 		game_configuration = game;
 		port_configuration = port;
-		Log::info(2, S_FMT("Read game configuration \"%s\" + \"%s\"", current_game_, current_port_));
+		Log::info(2, wxString::Format("Read game configuration \"%s\" + \"%s\"", current_game_, current_port_));
 	}
 	else
 	{
@@ -960,10 +965,10 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 		// Log message
 		auto parent = cfg_entry->parent();
 		if (parent)
-			Log::info(S_FMT("Reading SLADECFG in %s", parent->filename()));
+			Log::info(wxString::Format("Reading SLADECFG in %s", parent->filename()));
 
 		// Read embedded config
-		string config = wxString::FromAscii(cfg_entry->rawData(), cfg_entry->size());
+		wxString config = wxString::FromAscii(cfg_entry->rawData(), cfg_entry->size());
 		if (!readConfiguration(config, cfg_entry->name(), format, true, false))
 			Log::info(1, "Error reading embedded game configuration, not loaded");
 	}
@@ -998,7 +1003,7 @@ const ActionSpecial& Configuration::actionSpecial(unsigned id)
 // -----------------------------------------------------------------------------
 // Returns the action special name for [special], if any
 // -----------------------------------------------------------------------------
-string Configuration::actionSpecialName(int special)
+wxString Configuration::actionSpecialName(int special)
 {
 	// Check special id is valid
 	if (special < 0)
@@ -1029,7 +1034,7 @@ const ThingType& Configuration::thingType(unsigned type)
 // -----------------------------------------------------------------------------
 // Returns the default ThingType properties for [group]
 // -----------------------------------------------------------------------------
-const ThingType& Configuration::thingTypeGroupDefaults(const string& group)
+const ThingType& Configuration::thingTypeGroupDefaults(const wxString& group)
 {
 	return tt_group_defaults_[group];
 }
@@ -1037,7 +1042,7 @@ const ThingType& Configuration::thingTypeGroupDefaults(const string& group)
 // -----------------------------------------------------------------------------
 // Returns the name of the thing flag at [index]
 // -----------------------------------------------------------------------------
-string Configuration::thingFlag(unsigned flag_index)
+wxString Configuration::thingFlag(unsigned flag_index)
 {
 	// Check index
 	if (flag_index >= flags_thing_.size())
@@ -1062,7 +1067,7 @@ bool Configuration::thingFlagSet(unsigned flag_index, MapThing* thing)
 // -----------------------------------------------------------------------------
 // Returns true if the flag matching [flag] is set for [thing]
 // -----------------------------------------------------------------------------
-bool Configuration::thingFlagSet(const string& udmf_name, MapThing* thing, MapFormat map_format)
+bool Configuration::thingFlagSet(const wxString& udmf_name, MapThing* thing, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1074,14 +1079,14 @@ bool Configuration::thingFlagSet(const string& udmf_name, MapThing* thing, MapFo
 		if (i.udmf == udmf_name)
 			return thing->flagSet(i.flag);
 	}
-	Log::warning(2, S_FMT("Flag %s does not exist in this configuration", udmf_name));
+	Log::warning(2, wxString::Format("Flag %s does not exist in this configuration", udmf_name));
 	return false;
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if the basic flag matching [flag] is set for [thing]
 // -----------------------------------------------------------------------------
-bool Configuration::thingBasicFlagSet(const string& flag, MapThing* thing, MapFormat map_format)
+bool Configuration::thingBasicFlagSet(const wxString& flag, MapThing* thing, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1156,10 +1161,10 @@ bool Configuration::thingBasicFlagSet(const string& flag, MapThing* thing, MapFo
 // -----------------------------------------------------------------------------
 // Returns a string of all thing flags set in [flags]
 // -----------------------------------------------------------------------------
-string Configuration::thingFlagsString(int flags)
+wxString Configuration::thingFlagsString(int flags)
 {
 	// Check against all flags
-	string ret = "";
+	wxString ret = "";
 	for (auto& a : flags_thing_)
 	{
 		if (flags & a.flag)
@@ -1198,7 +1203,7 @@ void Configuration::setThingFlag(unsigned flag_index, MapThing* thing, bool set)
 // Sets thing flag matching [flag] (UDMF name) for [thing].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setThingFlag(const string& udmf_name, MapThing* thing, MapFormat map_format, bool set)
+void Configuration::setThingFlag(const wxString& udmf_name, MapThing* thing, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1220,7 +1225,7 @@ void Configuration::setThingFlag(const string& udmf_name, MapThing* thing, MapFo
 
 	if (flag_val == 0)
 	{
-		Log::warning(2, S_FMT("Flag %s does not exist in this configuration", udmf_name));
+		Log::warning(2, wxString::Format("Flag %s does not exist in this configuration", udmf_name));
 		return;
 	}
 
@@ -1235,7 +1240,7 @@ void Configuration::setThingFlag(const string& udmf_name, MapThing* thing, MapFo
 // Sets thing basic flag matching [flag] for [thing].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setThingBasicFlag(const string& flag, MapThing* thing, MapFormat map_format, bool set)
+void Configuration::setThingBasicFlag(const wxString& flag, MapThing* thing, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1392,7 +1397,7 @@ void Configuration::linkDoomEdNums()
 			// Editor number found, copy the definition to thing types map
 			thing_types_[ednum].define(ednum, parsed.name(), parsed.group());
 			thing_types_[ednum].copy(parsed);
-			Log::info(2, S_FMT("Linked parsed class %s to DoomEdNum %d", CHR(parsed.className()), ednum));
+			Log::info(2, wxString::Format("Linked parsed class %s to DoomEdNum %d", CHR(parsed.className()), ednum));
 		}
 	}
 }
@@ -1426,7 +1431,7 @@ bool Configuration::lineFlagSet(unsigned flag_index, MapLine* line)
 // -----------------------------------------------------------------------------
 // Returns true if the flag matching [flag] (UDMF name) is set for [line]
 // -----------------------------------------------------------------------------
-bool Configuration::lineFlagSet(const string& udmf_name, MapLine* line, MapFormat map_format)
+bool Configuration::lineFlagSet(const wxString& udmf_name, MapLine* line, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1441,7 +1446,7 @@ bool Configuration::lineFlagSet(const string& udmf_name, MapLine* line, MapForma
 		if (i.udmf == udmf_name)
 			return !!(flags & i.flag);
 	}
-	Log::warning(2, S_FMT("Flag %s does not exist in this configuration", udmf_name));
+	Log::warning(2, wxString::Format("Flag %s does not exist in this configuration", udmf_name));
 	return false;
 }
 
@@ -1450,7 +1455,7 @@ bool Configuration::lineFlagSet(const string& udmf_name, MapLine* line, MapForma
 // 'Basic' flags are flags that are available in some way or another in all
 // game configurations
 // -----------------------------------------------------------------------------
-bool Configuration::lineBasicFlagSet(const string& flag, MapLine* line, MapFormat map_format)
+bool Configuration::lineBasicFlagSet(const wxString& flag, MapLine* line, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1479,7 +1484,7 @@ bool Configuration::lineBasicFlagSet(const string& flag, MapLine* line, MapForma
 // -----------------------------------------------------------------------------
 // Returns a string containing all flags set on [line]
 // -----------------------------------------------------------------------------
-string Configuration::lineFlagsString(MapLine* line)
+wxString Configuration::lineFlagsString(MapLine* line)
 {
 	if (!line)
 		return "None";
@@ -1487,7 +1492,7 @@ string Configuration::lineFlagsString(MapLine* line)
 	// TODO: UDMF flags
 
 	// Check against all flags
-	string ret = "";
+	wxString ret = "";
 	for (auto& flag : flags_line_)
 	{
 		if (line->flagSet(flag.flag))
@@ -1526,7 +1531,7 @@ void Configuration::setLineFlag(unsigned flag_index, MapLine* line, bool set)
 // Sets line flag matching [flag] (UDMF name) for [line].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setLineFlag(const string& udmf_name, MapLine* line, MapFormat map_format, bool set)
+void Configuration::setLineFlag(const wxString& udmf_name, MapLine* line, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1548,7 +1553,7 @@ void Configuration::setLineFlag(const string& udmf_name, MapLine* line, MapForma
 
 	if (flag_val == 0)
 	{
-		Log::warning(2, S_FMT("Flag %s does not exist in this configuration", udmf_name));
+		Log::warning(2, wxString::Format("Flag %s does not exist in this configuration", udmf_name));
 		return;
 	}
 
@@ -1563,7 +1568,7 @@ void Configuration::setLineFlag(const string& udmf_name, MapLine* line, MapForma
 // Sets line basic flag [flag] (UDMF name) for [line].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setLineBasicFlag(const string& flag, MapLine* line, MapFormat map_format, bool set)
+void Configuration::setLineBasicFlag(const wxString& flag, MapLine* line, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1606,7 +1611,7 @@ void Configuration::setLineBasicFlag(const string& flag, MapLine* line, MapForma
 // -----------------------------------------------------------------------------
 // Returns the hexen SPAC trigger for [line] as a string
 // -----------------------------------------------------------------------------
-string Configuration::spacTriggerString(MapLine* line, MapFormat map_format)
+wxString Configuration::spacTriggerString(MapLine* line, MapFormat map_format)
 {
 	if (!line)
 		return "None";
@@ -1632,8 +1637,8 @@ string Configuration::spacTriggerString(MapLine* line, MapFormat map_format)
 	else if (map_format == MapFormat::UDMF)
 	{
 		// Go through all line UDMF properties
-		string trigger = "";
-		auto&  props   = allUDMFProperties(MapObject::Type::Line);
+		wxString trigger = "";
+		auto&    props   = allUDMFProperties(MapObject::Type::Line);
 		for (auto& prop : props)
 		{
 			// Check for trigger property
@@ -1722,7 +1727,7 @@ void Configuration::setLineSpacTrigger(unsigned trigger_index, MapLine* line)
 // -----------------------------------------------------------------------------
 // Returns the UDMF name for the SPAC trigger at [index]
 // -----------------------------------------------------------------------------
-string Configuration::spacTriggerUDMFName(unsigned trigger_index)
+wxString Configuration::spacTriggerUDMFName(unsigned trigger_index)
 {
 	// Check index
 	if (trigger_index >= triggers_line_.size())
@@ -1734,7 +1739,7 @@ string Configuration::spacTriggerUDMFName(unsigned trigger_index)
 // -----------------------------------------------------------------------------
 // Returns the UDMF property definition matching [name] for MapObject [type]
 // -----------------------------------------------------------------------------
-UDMFProperty* Configuration::getUDMFProperty(const string& name, MapObject::Type type)
+UDMFProperty* Configuration::getUDMFProperty(const wxString& name, MapObject::Type type)
 {
 	using Type = MapObject::Type;
 
@@ -1827,14 +1832,14 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 // Returns the name for sector type value [type], taking generalised types into
 // account
 // -----------------------------------------------------------------------------
-string Configuration::sectorTypeName(int type)
+wxString Configuration::sectorTypeName(int type)
 {
 	// Check for zero type
 	if (type == 0)
 		return "Normal";
 
 	// Deal with generalised flags
-	vector<string> gen_flags;
+	vector<wxString> gen_flags;
 	if (supportsSectorFlags() && type >= boom_sector_flag_start_)
 	{
 		// Damage flags
@@ -1866,21 +1871,21 @@ string Configuration::sectorTypeName(int type)
 	if (type == 0 && !gen_flags.empty())
 	{
 		// Just return flags in this case
-		string name = gen_flags[0];
+		wxString name = gen_flags[0];
 		for (unsigned a = 1; a < gen_flags.size(); a++)
-			name += S_FMT(" + %s", gen_flags[a]);
+			name += wxString::Format(" + %s", gen_flags[a]);
 
 		return name;
 	}
 
 	// Get base type name
-	string name = sector_types_[type];
+	wxString name = sector_types_[type];
 	if (name.empty())
 		name = "Unknown";
 
 	// Add generalised flags to type name
 	for (const auto& gen_flag : gen_flags)
-		name += S_FMT(" + %s", gen_flag);
+		name += wxString::Format(" + %s", gen_flag);
 
 	return name;
 }
@@ -1888,7 +1893,7 @@ string Configuration::sectorTypeName(int type)
 // -----------------------------------------------------------------------------
 // Returns the sector type value matching [name]
 // -----------------------------------------------------------------------------
-int Configuration::sectorTypeByName(const string& name)
+int Configuration::sectorTypeByName(const wxString& name)
 {
 	for (auto& i : sector_types_)
 		if (i.second == name)
@@ -2026,7 +2031,7 @@ int Configuration::boomSectorType(int base, int damage, bool secret, bool fricti
 // -----------------------------------------------------------------------------
 // Returns the default string value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-string Configuration::defaultString(MapObject::Type type, const string& property)
+wxString Configuration::defaultString(MapObject::Type type, const wxString& property)
 {
 	switch (type)
 	{
@@ -2041,7 +2046,7 @@ string Configuration::defaultString(MapObject::Type type, const string& property
 // -----------------------------------------------------------------------------
 // Returns the default int value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-int Configuration::defaultInt(MapObject::Type type, const string& property)
+int Configuration::defaultInt(MapObject::Type type, const wxString& property)
 {
 	switch (type)
 	{
@@ -2056,7 +2061,7 @@ int Configuration::defaultInt(MapObject::Type type, const string& property)
 // -----------------------------------------------------------------------------
 // Returns the default float value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-double Configuration::defaultFloat(MapObject::Type type, const string& property)
+double Configuration::defaultFloat(MapObject::Type type, const wxString& property)
 {
 	switch (type)
 	{
@@ -2071,7 +2076,7 @@ double Configuration::defaultFloat(MapObject::Type type, const string& property)
 // -----------------------------------------------------------------------------
 // Returns the default boolean value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-bool Configuration::defaultBool(MapObject::Type type, const string& property)
+bool Configuration::defaultBool(MapObject::Type type, const wxString& property)
 {
 	switch (type)
 	{
@@ -2089,7 +2094,7 @@ bool Configuration::defaultBool(MapObject::Type type, const string& property)
 void Configuration::applyDefaults(MapObject* object, bool udmf)
 {
 	// Get all defaults for the object type
-	vector<string>   prop_names;
+	vector<wxString> prop_names;
 	vector<Property> prop_vals;
 
 	// Line defaults
@@ -2151,7 +2156,7 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 			object->setFloatProperty(prop_names[a], prop_vals[a].floatValue());
 		else if (prop_vals[a].type() == Property::Type::String)
 			object->setStringProperty(prop_names[a], prop_vals[a].stringValue());
-		Log::info(3, S_FMT("Applied default property %s = %s", prop_names[a], prop_vals[a].stringValue()));
+		Log::info(3, wxString::Format("Applied default property %s = %s", prop_names[a], prop_vals[a].stringValue()));
 	}
 }
 
@@ -2217,7 +2222,7 @@ int Configuration::downLightLevel(int light_level)
 void Configuration::dumpActionSpecials()
 {
 	for (auto& i : action_specials_)
-		Log::info(S_FMT("Action special %d = %s", i.first, i.second.stringDesc()));
+		Log::info(wxString::Format("Action special %d = %s", i.first, i.second.stringDesc()));
 }
 
 // -----------------------------------------------------------------------------
@@ -2227,7 +2232,7 @@ void Configuration::dumpThingTypes()
 {
 	for (auto& i : thing_types_)
 		if (i.second.defined())
-			Log::info(S_FMT("Thing type %d = %s", i.first, i.second.stringDesc()));
+			Log::info(wxString::Format("Thing type %d = %s", i.first, i.second.stringDesc()));
 }
 
 // -----------------------------------------------------------------------------
@@ -2280,7 +2285,7 @@ void Configuration::dumpUDMFProperties()
 
 CONSOLE_COMMAND(testgc, 0, false)
 {
-	string game = "doomu";
+	wxString game = "doomu";
 
 	if (!args.empty())
 		game = args[0];
@@ -2306,5 +2311,5 @@ CONSOLE_COMMAND(dumpthingtypes, 0, false)
 CONSOLE_COMMAND(dumpspecialpresets, 0, false)
 {
 	for (auto& preset : Game::configuration().specialPresets())
-		Log::console(S_FMT("%s/%s", preset.group, preset.name));
+		Log::console(wxString::Format("%s/%s", preset.group, preset.name));
 }

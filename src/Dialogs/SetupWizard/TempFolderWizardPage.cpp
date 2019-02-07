@@ -97,12 +97,12 @@ TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(pa
 bool TempFolderWizardPage::canGoNext()
 {
 #ifdef WIN32
-	string sep = "\\";
+	wxString sep = "\\";
 #else
-	string sep = "/";
+	wxString sep = "/";
 #endif
 
-	string testfilename;
+	wxString testfilename;
 	if (rb_use_system_->GetValue())
 		testfilename = wxStandardPaths::Get().GetTempDir().Append(sep).Append("SLADE3").Append(sep).Append("test.txt");
 	else if (rb_use_slade_dir_->GetValue())
@@ -144,7 +144,7 @@ void TempFolderWizardPage::applyChanges()
 // -----------------------------------------------------------------------------
 // Returns the description for the wizard page
 // -----------------------------------------------------------------------------
-string TempFolderWizardPage::description()
+wxString TempFolderWizardPage::description()
 {
 	return "Select the temp folder for SLADE to use during various operations. "
 		   "Usually the system temp folder will be fine to use, however sometimes "

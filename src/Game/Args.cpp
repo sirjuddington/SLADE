@@ -49,15 +49,15 @@ namespace
 // Returns a string representation of [value] for a 'custom flags' type
 // arg, given [custom_flags]
 // -----------------------------------------------------------------------------
-string customFlags(int value, const vector<ArgValue>& custom_flags)
+wxString customFlags(int value, const vector<ArgValue>& custom_flags)
 {
 	// This has to go in REVERSE order to correctly handle multi-bit
 	// enums (so we see 3 before 1 and 2)
-	vector<string> flags;
-	size_t         final_length   = 0;
-	int            last_group     = 0;
-	int            original_value = value;
-	bool           has_flag;
+	vector<wxString> flags;
+	size_t           final_length   = 0;
+	int              last_group     = 0;
+	int              original_value = value;
+	bool             has_flag;
 	for (auto it = custom_flags.rbegin(); it != custom_flags.rend(); ++it)
 	{
 		if ((it->value & (it->value - 1)) != 0)
@@ -80,10 +80,10 @@ string customFlags(int value, const vector<ArgValue>& custom_flags)
 	}
 
 	if (value || flags.empty())
-		flags.push_back(S_FMT("%d", value));
+		flags.push_back(wxString::Format("%d", value));
 
 	// Join 'em, in reverse again, to restore the original order
-	string out;
+	wxString out;
 	out.Alloc(final_length);
 	auto it = flags.rbegin();
 	while (true)
@@ -109,7 +109,7 @@ string customFlags(int value, const vector<ArgValue>& custom_flags)
 // -----------------------------------------------------------------------------
 // Returns a string representation of [value] depending on the arg's type
 // -----------------------------------------------------------------------------
-string Arg::valueString(int value) const
+wxString Arg::valueString(int value) const
 {
 	switch (type)
 	{
@@ -130,29 +130,29 @@ string Arg::valueString(int value) const
 
 	// Angle
 	case Angle:
-		return S_FMT("%d Degrees", value); // TODO: E/S/W/N/etc
+		return wxString::Format("%d Degrees", value); // TODO: E/S/W/N/etc
 
 	// Speed
 	case Speed:
 	{
-		string speed_label = speedLabel(value);
+		wxString speed_label = speedLabel(value);
 		if (speed_label.empty())
-			return S_FMT("%d", value);
+			return wxString::Format("%d", value);
 		else
-			return S_FMT("%d (%s)", value, speed_label);
+			return wxString::Format("%d (%s)", value, speed_label);
 	}
 
 	default: break;
 	}
 
 	// Any other type
-	return S_FMT("%d", value);
+	return wxString::Format("%d", value);
 }
 
 // -----------------------------------------------------------------------------
 // Returns a string representation of speed [value]
 // -----------------------------------------------------------------------------
-string Arg::speedLabel(int value) const
+wxString Arg::speedLabel(int value) const
 {
 	// Speed can optionally have a set of predefined values, most taken
 	// from the Boom generalized values
@@ -161,15 +161,15 @@ string Arg::speedLabel(int value) const
 	if (value == 0)
 		return "broken";
 	if (value < custom_values.front().value)
-		return S_FMT("< %s", custom_values.front().name);
+		return wxString::Format("< %s", custom_values.front().name);
 	if (value > custom_values.back().value)
-		return S_FMT("> %s", custom_values.back().name);
+		return wxString::Format("> %s", custom_values.back().name);
 	for (unsigned a = 0; a < custom_values.size(); a++)
 	{
 		if (value == custom_values[a].value)
 			return custom_values[a].name;
 		if (a > 0 && value < custom_values[a].value)
-			return S_FMT("%s ~ %s", custom_values[a - 1].name, custom_values[a].name);
+			return wxString::Format("%s ~ %s", custom_values[a - 1].name, custom_values[a].name);
 	}
 	return "";
 }
@@ -183,8 +183,8 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 	// Check for simple definition
 	if (node->isLeaf())
 	{
-		string name = node->stringValue();
-		string shared_arg_name;
+		wxString name = node->stringValue();
+		wxString shared_arg_name;
 
 		// Names beginning with a dollar sign are references to predeclared args
 		if (shared_args && name.StartsWith("$", &shared_arg_name))
@@ -222,7 +222,7 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 
 		// Type
 		val = node->childPTN("type");
-		string atype;
+		wxString atype;
 		if (val)
 			atype = val->stringValue();
 		if (S_CMPNOCASE(atype, "yesno"))
@@ -245,14 +245,14 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 		if (val)
 		{
 			for (auto cv : val->allChildren())
-				custom_values.push_back({ Parser::node(cv)->stringValue(), StringUtils::toInt(cv->name()) });
+				custom_values.push_back({ Parser::node(cv)->stringValue(), wxStringUtils::toInt(cv->name()) });
 		}
 
 		val = node->childPTN("custom_flags");
 		if (val)
 		{
 			for (auto cf : val->allChildren())
-				custom_flags.push_back({ Parser::node(cf)->stringValue(), StringUtils::toInt(cf->name()) });
+				custom_flags.push_back({ Parser::node(cf)->stringValue(), wxStringUtils::toInt(cf->name()) });
 		}
 	}
 }
@@ -268,9 +268,9 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 // -----------------------------------------------------------------------------
 // Returns a string representation of [values] depending on the spec arg types
 // -----------------------------------------------------------------------------
-string ArgSpec::stringDesc(const int values[5], string values_str[2]) const
+wxString ArgSpec::stringDesc(const int values[5], wxString values_str[2]) const
 {
-	string ret;
+	wxString ret;
 
 	// Add each arg to the string
 	for (unsigned a = 0; a < 5; a++)

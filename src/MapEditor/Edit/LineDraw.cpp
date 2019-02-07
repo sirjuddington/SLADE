@@ -259,13 +259,13 @@ void LineDraw::begin(bool shape)
 	context_.input().setMouseState(Input::MouseState::LineDraw);
 
 	// Setup help text
-	string key_accept = KeyBind::bind("map_edit_accept").keysAsString();
-	string key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
+	wxString key_accept = KeyBind::bind("map_edit_accept").keysAsString();
+	wxString key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 	if (shape)
 	{
 		context_.setFeatureHelp({ "Shape Drawing",
-								  S_FMT("%s = Accept", key_accept),
-								  S_FMT("%s = Cancel", key_cancel),
+								  wxString::Format("%s = Accept", key_accept),
+								  wxString::Format("%s = Cancel", key_cancel),
 								  "Left Click = Draw point",
 								  "Right Click = Undo previous point" });
 		MapEditor::showShapeDrawPanel(true);
@@ -273,8 +273,8 @@ void LineDraw::begin(bool shape)
 	else
 	{
 		context_.setFeatureHelp({ "Line Drawing",
-								  S_FMT("%s = Accept", key_accept),
-								  S_FMT("%s = Cancel", key_cancel),
+								  wxString::Format("%s = Accept", key_accept),
+								  wxString::Format("%s = Cancel", key_cancel),
 								  "Left Click = Draw point",
 								  "Right Click = Undo previous point",
 								  "Shift = Snap to nearest vertex" });
@@ -324,7 +324,7 @@ void LineDraw::end(bool apply)
 		// Check for intersections
 		Seg2d line_seg{ draw_points_[a], draw_points_[a + 1] };
 		auto  intersect = map.lines().cutPoints(line_seg);
-		Log::info(2, S_FMT("%lu intersect points", intersect.size()));
+		Log::info(2, wxString::Format("%lu intersect points", intersect.size()));
 
 		// Create line normally if no intersections
 		if (intersect.empty())

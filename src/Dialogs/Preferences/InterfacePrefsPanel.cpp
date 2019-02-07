@@ -159,7 +159,7 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	cb_file_browser_        = new wxCheckBox(panel, -1, "Show File Browser tab in the Archive Manager panel *");
 	cb_list_monospace_      = new wxCheckBox(panel, -1, "Use monospaced font for lists");
 	cb_condensed_tabs_      = new wxCheckBox(panel, -1, "Condensed tabs *");
-	string sizes[]          = { "Normal", "Large", "Extra Large" };
+	wxString sizes[]        = { "Normal", "Large", "Extra Large" };
 	choice_toolbar_size_    = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, sizes);
 	auto sets               = Icons::iconSets(Icons::General);
 	choice_iconset_general_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets.size(), &sets[0]);

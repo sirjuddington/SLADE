@@ -155,7 +155,7 @@ bool ADatArchive::open(MemChunk& mc)
 				entry->importMemChunk(xdata);
 			else
 			{
-				Log::warning(S_FMT("Entry %s couldn't be inflated", entry->name()));
+				Log::warning(wxString::Format("Entry %s couldn't be inflated", entry->name()));
 				entry->importMemChunk(edata);
 			}
 		}
@@ -223,7 +223,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		else
 		{
 			data = &(entry->data());
-			Log::warning(S_FMT("Entry %s couldn't be deflated", entry->name()));
+			Log::warning(wxString::Format("Entry %s couldn't be deflated", entry->name()));
 		}
 
 		// Update entry
@@ -239,11 +239,12 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		///////////////////////////////////
 
 		// Check entry name
-		string name = entry->path(true);
+		wxString name = entry->path(true);
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 128)
 		{
-			Log::warning(S_FMT("Entry %s path is too long (> 128 characters), putting it in the root directory", name));
+			Log::warning(wxString::Format(
+				"Entry %s path is too long (> 128 characters), putting it in the root directory", name));
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 128)
@@ -299,7 +300,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 // Writes the dat archive to a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ADatArchive::write(const string& filename, bool update)
+bool ADatArchive::write(const wxString& filename, bool update)
 {
 	// Write to a MemChunk, then export it to a file
 	MemChunk mc;
@@ -333,7 +334,7 @@ bool ADatArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("ADatArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error(wxString::Format("ADatArchive::loadEntryData: Unable to open archive file %s", filename_));
 		return false;
 	}
 
@@ -397,7 +398,7 @@ bool ADatArchive::isADatArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Anachronox dat archive
 // -----------------------------------------------------------------------------
-bool ADatArchive::isADatArchive(const string& filename)
+bool ADatArchive::isADatArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

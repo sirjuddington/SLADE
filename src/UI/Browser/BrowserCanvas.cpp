@@ -436,7 +436,7 @@ void BrowserCanvas::selectItem(int index)
 // -----------------------------------------------------------------------------
 // Filters the visible items by [filter], by name
 // -----------------------------------------------------------------------------
-void BrowserCanvas::filterItems(string filter)
+void BrowserCanvas::filterItems(wxString filter)
 {
 	// Find the currently-viewed item before we change the item list
 	int viewed_index = getViewedIndex();
@@ -529,7 +529,7 @@ bool BrowserCanvas::searchItemFrom(int from)
 	bool looped = false;
 	while ((!looped && index < (int)items_filter_.size()) || (looped && index < from))
 	{
-		string name = items_[items_filter_[index]]->name();
+		wxString name = items_[items_filter_[index]]->name();
 		if (name.Upper().StartsWith(search_))
 		{
 			// Matches, update selection
@@ -795,7 +795,7 @@ void BrowserCanvas::onKeyChar(wxKeyEvent& e)
 		// start a new search from after the current focus.
 		if (!searchItemFrom(selected))
 		{
-			search_ = S_FMT("%c", e.GetKeyCode());
+			search_ = wxString::Format("%c", e.GetKeyCode());
 			search_.MakeUpper();
 			searchItemFrom(selected + 1);
 		}

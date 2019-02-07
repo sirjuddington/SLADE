@@ -370,7 +370,7 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	string first = objects[0]->stringProperty(GetName());
+	wxString first = objects[0]->stringProperty(GetName());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
@@ -478,7 +478,7 @@ void MOPGIntWithArgsProperty::updateArgs(wxPGProperty* args[5])
 
 		if (IsValueUnspecified())
 		{
-			args[a]->SetLabel(S_FMT("Arg%d", a + 1));
+			args[a]->SetLabel(wxString::Format("Arg%d", a + 1));
 			args[a]->SetHelpString("");
 		}
 		else
@@ -519,7 +519,7 @@ void MOPGIntWithArgsProperty::applyValue()
 
 		for (int argn = 0; argn < argspec.count; argn++)
 		{
-			string key = S_FMT("arg%d", argn);
+			wxString key = wxString::Format("arg%d", argn);
 			if (!object->hasProp(key))
 				object->setIntProperty(key, 0);
 		}
@@ -566,7 +566,7 @@ wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, int argFlags
 	if (special == 0)
 		return "0: None";
 	else
-		return S_FMT("%d: %s", special, Game::configuration().actionSpecial(special).name());
+		return wxString::Format("%d: %s", special, Game::configuration().actionSpecial(special).name());
 }
 
 // -----------------------------------------------------------------------------
@@ -618,7 +618,7 @@ wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) co
 		return "0: None";
 
 	auto& tt = Game::configuration().thingType(type);
-	return S_FMT("%d: %s", type, tt.name());
+	return wxString::Format("%d: %s", type, tt.name());
 }
 
 // -----------------------------------------------------------------------------
@@ -910,7 +910,7 @@ wxString MOPGAngleProperty::ValueToString(wxVariant& value, int arg_flags) const
 	case 225: return "225: Southwest";
 	case 270: return "270: South";
 	case 315: return "315: Southeast";
-	default: return S_FMT("%d", angle);
+	default: return wxString::Format("%d", angle);
 	}
 }
 
@@ -1033,7 +1033,7 @@ void MOPGTextureProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	string first = objects[0]->stringProperty(GetName());
+	wxString first = objects[0]->stringProperty(GetName());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
@@ -1062,7 +1062,7 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		// Get current texture (if any)
-		string tex_current = "";
+		wxString tex_current = "";
 		if (!IsValueUnspecified())
 			tex_current = GetValueAsString();
 
@@ -1115,8 +1115,8 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	auto   map_format = MapEditor::editContext().mapDesc().format;
-	string first      = Game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[0]), map_format);
+	auto     map_format = MapEditor::editContext().mapDesc().format;
+	wxString first      = Game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[0]), map_format);
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
@@ -1310,7 +1310,7 @@ wxString MOPGSectorSpecialProperty::ValueToString(wxVariant& value, int argFlags
 {
 	int type = value.GetInteger();
 
-	return S_FMT("%d: %s", type, Game::configuration().sectorTypeName(type));
+	return wxString::Format("%d: %s", type, Game::configuration().sectorTypeName(type));
 }
 
 // -----------------------------------------------------------------------------

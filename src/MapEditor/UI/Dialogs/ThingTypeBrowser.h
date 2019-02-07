@@ -10,7 +10,7 @@ class ThingType;
 class ThingBrowserItem : public BrowserItem
 {
 public:
-	ThingBrowserItem(const string& name, const Game::ThingType& type, unsigned index) :
+	ThingBrowserItem(const wxString& name, const Game::ThingType& type, unsigned index) :
 		BrowserItem{ name, index },
 		type_{ type }
 	{

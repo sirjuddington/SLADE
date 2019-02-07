@@ -6,9 +6,9 @@ public:
 	PrefsPanelBase(wxWindow* parent) : wxPanel(parent, -1) {}
 	~PrefsPanelBase() {}
 
-	virtual void   init() {}
-	virtual void   applyPreferences() {}
-	virtual void   showSubSection(const string& subsection) {}
-	virtual string pageTitle() { return ""; }
-	virtual string pageDescription() { return ""; }
+	virtual void     init() {}
+	virtual void     applyPreferences() {}
+	virtual void     showSubSection(const wxString& subsection) {}
+	virtual wxString pageTitle() { return ""; }
+	virtual wxString pageDescription() { return ""; }
 };

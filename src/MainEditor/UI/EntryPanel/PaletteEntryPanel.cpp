@@ -57,7 +57,7 @@ CVAR(Float, col_greyscale_b, 0.114, CVar::Flag::Save)
 
 namespace
 {
-string extensions =
+wxString extensions =
 	"Raw Palette (*.pal)|*.pal|"
 	"PNG File (*.png)|*.png|"
 	"CSV Palette (*.csv)|*.csv|"
@@ -213,7 +213,7 @@ public:
 		cp_colour_->Bind(wxEVT_COLOURPICKER_CHANGED, [&](wxColourPickerEvent&) { redraw(); });
 		slider_amount_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
 			redraw();
-			label_amount_->SetLabel(S_FMT("%d%% ", slider_amount_->GetValue()));
+			label_amount_->SetLabel(wxString::Format("%d%% ", slider_amount_->GetValue()));
 		});
 		pal_preview_->Bind(wxEVT_LEFT_UP, [&](wxMouseEvent&) { redraw(); });
 
@@ -336,15 +336,15 @@ public:
 		// Bind events
 		slider_hue_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
 			redraw();
-			label_hue_->SetLabel(S_FMT("%1.3f", hue()));
+			label_hue_->SetLabel(wxString::Format("%1.3f", hue()));
 		});
 		slider_sat_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
 			redraw();
-			label_sat_->SetLabel(S_FMT("%d%%", slider_sat_->GetValue()));
+			label_sat_->SetLabel(wxString::Format("%d%%", slider_sat_->GetValue()));
 		});
 		slider_lum_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
 			redraw();
-			label_lum_->SetLabel(S_FMT("%d%%", slider_lum_->GetValue()));
+			label_lum_->SetLabel(wxString::Format("%d%%", slider_lum_->GetValue()));
 		});
 		pal_preview_->Bind(wxEVT_LEFT_UP, [&](wxMouseEvent&) { redraw(); });
 
@@ -640,7 +640,7 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "pal
 	toolbar_->addGroup(group_palette);
 
 	// Current Palette
-	string actions = "ppal_moveup;ppal_movedown;ppal_duplicate;ppal_remove;ppal_removeothers";
+	wxString actions = "ppal_moveup;ppal_movedown;ppal_duplicate;ppal_remove;ppal_removeothers";
 	toolbar_->addActionGroup("Palette Organisation", wxSplit(actions, ';'));
 
 	// Colour Operations
@@ -717,13 +717,13 @@ bool PaletteEntryPanel::saveEntry()
 // -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
 // -----------------------------------------------------------------------------
-string PaletteEntryPanel::statusString()
+wxString PaletteEntryPanel::statusString()
 {
 	// Get current colour
 	ColRGBA col  = pal_canvas_->selectedColour();
 	ColHSL  col2 = col.asHSL();
 
-	return S_FMT(
+	return wxString::Format(
 		"Index %i\tR %d, G %d, B %d\tH %1.3f, S %1.3f, L %1.3f",
 		pal_canvas_->selectionStart(),
 		col.r,
@@ -748,7 +748,7 @@ bool PaletteEntryPanel::showPalette(uint32_t index)
 	pal_canvas_->palette().copyPalette(palettes_[index].get());
 
 	// Set current palette text
-	text_curpal_->SetLabel(S_FMT("%u/%lu", index + 1, palettes_.size()));
+	text_curpal_->SetLabel(wxString::Format("%u/%lu", index + 1, palettes_.size()));
 
 	// Refresh
 	Layout();
@@ -777,7 +777,7 @@ void PaletteEntryPanel::refreshPanel()
 // -----------------------------------------------------------------------------
 // Called when a (EntryPanel) toolbar button is clicked
 // -----------------------------------------------------------------------------
-void PaletteEntryPanel::toolbarButtonClick(const string& action_id)
+void PaletteEntryPanel::toolbarButtonClick(const wxString& action_id)
 {
 	// Prev. palette
 	if (action_id == "pal_prev")
@@ -805,12 +805,12 @@ void PaletteEntryPanel::toolbarButtonClick(const string& action_id)
 bool PaletteEntryPanel::addCustomPalette()
 {
 	// Get name to export as
-	string name = wxGetTextFromUser("Enter name for Palette:", "Add to Palettes");
+	wxString name = wxGetTextFromUser("Enter name for Palette:", "Add to Palettes");
 	if (name.IsEmpty())
 		return false;
 
 	// Write current palette to the user palettes directory
-	string path = App::path(S_FMT("palettes/%s.pal", name), App::Dir::User);
+	wxString path = App::path(wxString::Format("palettes/%s.pal", name), App::Dir::User);
 	palettes_[cur_palette_]->saveFile(path);
 
 	// Add to palette manager and main palette chooser
@@ -828,7 +828,7 @@ bool PaletteEntryPanel::addCustomPalette()
 bool PaletteEntryPanel::testPalette()
 {
 	// Get name to export as
-	string name = "Test: " + wxGetTextFromUser("Enter name for Palette:", "Test Palettes");
+	wxString name = "Test: " + wxGetTextFromUser("Enter name for Palette:", "Test Palettes");
 
 	// Add to palette manager and main palette chooser
 	auto pal = std::make_unique<Palette>(*palettes_[cur_palette_]);
@@ -1235,7 +1235,7 @@ bool PaletteEntryPanel::generatePalettes()
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // ----------------------------------------------------------------------------
-bool PaletteEntryPanel::handleEntryPanelAction(const string& id)
+bool PaletteEntryPanel::handleEntryPanelAction(const wxString& id)
 {
 	// Only interested in "ppal_" events
 	if (!id.StartsWith("ppal_"))
@@ -1481,24 +1481,24 @@ void PaletteEntryPanel::analysePalettes()
 	unsigned int greens[256];
 	unsigned int blues[256];
 #endif
-	string report = "\n";
+	wxString report = "\n";
 #ifdef GPALCOMPANALYSIS
 	int i = PALETTECHECK;
 	if (i)
 	{
-		report += S_FMT("Deviation between palettes 0 and %i:\n\n", i);
+		report += wxString::Format("Deviation between palettes 0 and %i:\n\n", i);
 		devR = devG = devB = 0;
 		maxR = maxG = maxB = -1;
 		minR = minG = minB = 256;
 		wrongcount         = 0;
 #else
-	report += S_FMT("Changes between %lu palettes compared to the first:\n\n", palettes.size());
+	report += wxString::Format("Changes between %lu palettes compared to the first:\n\n", palettes.size());
 	for (size_t i = 1; i < palettes.size(); ++i)
 	{
 		for (int j = 0; j < 256; ++j)
 			reds[j] = blues[j] = greens[j] = 999;
 #endif
-		report += S_FMT("\n==============\n= Palette %02u =\n==============\n", i);
+		report += wxString::Format("\n==============\n= Palette %02u =\n==============\n", i);
 		for (size_t c = 0; c < 256; ++c)
 		{
 			ColRGBA ref1 = palettes_[0]->colour(c);
@@ -1532,7 +1532,7 @@ void PaletteEntryPanel::analysePalettes()
 			if (r | g | b)
 			{
 				++wrongcount;
-				report += S_FMT(
+				report += wxString::Format(
 					"Index %003u: [%003i %003i %003i | %1.3f %1.3f %1.3f]->[%003i %003i %003i | %1.3f %1.3f "
 					"%1.3f]\t\tR %+003i\tG %+003i\tB %+003i\t\t\tH %+1.3f\tS %+1.3f\tL %+1.3f\n",
 					c,
@@ -1583,8 +1583,9 @@ void PaletteEntryPanel::analysePalettes()
 #endif
 		}
 #ifdef GPALCOMPANALYSIS
-		report += S_FMT("Deviation sigma: R %+003i G %+003i B %+003i\t%s\n", devR, devG, devB, entry_->name(true));
-		report += S_FMT(
+		report += wxString::Format(
+			"Deviation sigma: R %+003i G %+003i B %+003i\t%s\n", devR, devG, devB, entry_->name(true));
+		report += wxString::Format(
 			"Min R %+003i Min G %+003i Min B %+003i Max R %+003i Max G %+003i Max B %+003i \nError count: %i\n",
 			minR,
 			minG,
@@ -1598,7 +1599,7 @@ void PaletteEntryPanel::analysePalettes()
 		for (size_t i = 0; i < 256; ++i)
 		{
 			if (reds[i] < 999 || greens[i] < 999 || blues[i] < 999)
-				report += S_FMT("| %003d | %003d | %003d | %003d |\n", i, reds[i], greens[i], blues[i]);
+				report += wxString::Format("| %003d | %003d | %003d | %003d |\n", i, reds[i], greens[i], blues[i]);
 		}
 		report.Replace("999", "   ");
 #endif

@@ -137,12 +137,12 @@ float GfxTintDialog::amount() const
 // -----------------------------------------------------------------------------
 // Sets the colour and tint amount to use
 // -----------------------------------------------------------------------------
-void GfxTintDialog::setValues(const string& col, int val)
+void GfxTintDialog::setValues(const wxString& col, int val)
 {
 	wxColour wxcol(col);
 	cb_colour_->setColour(ColRGBA(COLWX(wxcol)));
 	slider_amount_->SetValue(val);
-	label_amount_->SetLabel(S_FMT("%d%% ", slider_amount_->GetValue()));
+	label_amount_->SetLabel(wxString::Format("%d%% ", slider_amount_->GetValue()));
 	gfx_preview_->image().tint(colour(), amount(), &palette_);
 	gfx_preview_->updateImageTexture();
 	gfx_preview_->Refresh();
@@ -176,7 +176,7 @@ void GfxTintDialog::onAmountChanged(wxCommandEvent& e)
 	gfx_preview_->image().tint(colour(), amount(), &palette_);
 	gfx_preview_->updateImageTexture();
 	gfx_preview_->Refresh();
-	label_amount_->SetLabel(S_FMT("%d%% ", slider_amount_->GetValue()));
+	label_amount_->SetLabel(wxString::Format("%d%% ", slider_amount_->GetValue()));
 }
 
 // -----------------------------------------------------------------------------

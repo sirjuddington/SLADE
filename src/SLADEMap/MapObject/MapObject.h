@@ -64,23 +64,23 @@ public:
 	bool      isFiltered() const { return filtered_; }
 	long      modifiedTime() const { return modified_time_; }
 	unsigned  objId() const { return obj_id_; }
-	string    typeName() const;
+	wxString  typeName() const;
 	void      setModified();
 	void      setIndex(unsigned index) { index_ = index; }
 
 	MobjPropertyList& props() { return properties_; }
-	bool              hasProp(const string& key);
+	bool              hasProp(const wxString& key);
 
 	// Generic property modification
-	virtual bool   boolProperty(const string& key);
-	virtual int    intProperty(const string& key);
-	virtual double floatProperty(const string& key);
-	virtual string stringProperty(const string& key);
-	virtual void   setBoolProperty(const string& key, bool value);
-	virtual void   setIntProperty(const string& key, int value);
-	virtual void   setFloatProperty(const string& key, double value);
-	virtual void   setStringProperty(const string& key, const string& value);
-	virtual bool   scriptCanModifyProp(const string& key) { return true; }
+	virtual bool     boolProperty(const wxString& key);
+	virtual int      intProperty(const wxString& key);
+	virtual double   floatProperty(const wxString& key);
+	virtual wxString stringProperty(const wxString& key);
+	virtual void     setBoolProperty(const wxString& key, bool value);
+	virtual void     setIntProperty(const wxString& key, int value);
+	virtual void     setFloatProperty(const wxString& key, double value);
+	virtual void     setStringProperty(const wxString& key, const wxString& value);
+	virtual bool     scriptCanModifyProp(const wxString& key) { return true; }
 
 	virtual Vec2d getPoint(Point point) { return { 0, 0 }; }
 
@@ -95,16 +95,16 @@ public:
 	virtual void writeBackup(Backup* backup) = 0;
 	virtual void readBackup(Backup* backup)  = 0;
 
-	virtual void writeUDMF(string& def) {}
+	virtual void writeUDMF(wxString& def) {}
 
 	static long propBackupTime();
 	static void beginPropBackup(long current_time);
 	static void endPropBackup();
 
-	static bool multiBoolProperty(vector<MapObject*>& objects, string prop, bool& value);
-	static bool multiIntProperty(vector<MapObject*>& objects, string prop, int& value);
-	static bool multiFloatProperty(vector<MapObject*>& objects, string prop, double& value);
-	static bool multiStringProperty(vector<MapObject*>& objects, string prop, string& value);
+	static bool multiBoolProperty(vector<MapObject*>& objects, wxString prop, bool& value);
+	static bool multiIntProperty(vector<MapObject*>& objects, wxString prop, int& value);
+	static bool multiFloatProperty(vector<MapObject*>& objects, wxString prop, double& value);
+	static bool multiStringProperty(vector<MapObject*>& objects, wxString prop, wxString& value);
 
 protected:
 	unsigned                index_      = 0;

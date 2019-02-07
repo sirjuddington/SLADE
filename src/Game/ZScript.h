@@ -14,7 +14,7 @@ struct ParsedStatement
 	ArchiveEntry* entry = nullptr;
 	unsigned      line;
 
-	vector<string>          tokens;
+	vector<wxString>        tokens;
 	vector<ParsedStatement> block;
 
 	bool parse(Tokenizer& tz);
@@ -24,81 +24,81 @@ struct ParsedStatement
 class Enumerator
 {
 public:
-	Enumerator(const string& name = "") : name_{ name } {}
+	Enumerator(const wxString& name = "") : name_{ name } {}
 
 	struct Value
 	{
-		string name;
-		int    value;
+		wxString name;
+		int      value;
 	};
 
 	bool parse(ParsedStatement& statement);
 
 private:
-	string        name_;
+	wxString      name_;
 	vector<Value> values_;
 };
 
 class Identifier // rename this
 {
 public:
-	Identifier(const string& name = "") : name_{ name } {}
+	Identifier(const wxString& name = "") : name_{ name } {}
 	virtual ~Identifier() = default;
 
-	string name() const { return name_; }
-	bool   native() const { return native_; }
-	string deprecated() const { return deprecated_; }
-	string version() const { return version_; }
+	wxString name() const { return name_; }
+	bool     native() const { return native_; }
+	wxString deprecated() const { return deprecated_; }
+	wxString version() const { return version_; }
 
 protected:
-	string name_;
-	bool   native_ = false;
-	string deprecated_;
-	string version_;
+	wxString name_;
+	bool     native_ = false;
+	wxString deprecated_;
+	wxString version_;
 };
 
 class Variable : public Identifier
 {
 public:
-	Variable(const string& name = "") : Identifier(name), type_{ "<unknown>" } {}
+	Variable(const wxString& name = "") : Identifier(name), type_{ "<unknown>" } {}
 	virtual ~Variable() = default;
 
 private:
-	string type_;
+	wxString type_;
 };
 
 class Function : public Identifier
 {
 public:
-	Function(const string& name = "") : Identifier(name), return_type_{ "void" } {}
+	Function(const wxString& name = "") : Identifier(name), return_type_{ "void" } {}
 
 	virtual ~Function() = default;
 
 	struct Parameter
 	{
-		string name;
-		string type;
-		string default_value;
+		wxString name;
+		wxString type;
+		wxString default_value;
 		Parameter() : name{ "<unknown>" }, type{ "<unknown>" }, default_value{ "" } {}
 
-		unsigned parse(const vector<string>& tokens, unsigned start_index);
+		unsigned parse(const vector<wxString>& tokens, unsigned start_index);
 	};
 
-	const string&            returnType() const { return return_type_; }
+	const wxString&          returnType() const { return return_type_; }
 	const vector<Parameter>& parameters() const { return parameters_; }
 	bool                     isVirtual() const { return virtual_; }
 	bool                     isStatic() const { return static_; }
 	bool                     isAction() const { return action_; }
 	bool                     isOverride() const { return override_; }
 
-	bool   parse(ParsedStatement& statement);
-	string asString();
+	bool     parse(ParsedStatement& statement);
+	wxString asString();
 
 	static bool isFunction(ParsedStatement& statement);
 
 private:
 	vector<Parameter> parameters_;
-	string            return_type_;
+	wxString          return_type_;
 	bool              virtual_  = false;
 	bool              static_   = false;
 	bool              action_   = false;
@@ -109,12 +109,12 @@ struct State
 {
 	struct Frame
 	{
-		string sprite_base;
-		string sprite_frame;
-		int    duration;
+		wxString sprite_base;
+		wxString sprite_frame;
+		int      duration;
 	};
 
-	string editorSprite();
+	wxString editorSprite();
 
 	vector<Frame> frames;
 };
@@ -124,14 +124,14 @@ class StateTable
 public:
 	StateTable() = default;
 
-	const string& firstState() const { return state_first_; }
+	const wxString& firstState() const { return state_first_; }
 
-	bool   parse(ParsedStatement& states);
-	string editorSprite();
+	bool     parse(ParsedStatement& states);
+	wxString editorSprite();
 
 private:
-	std::map<string, State> states_;
-	string                  state_first_;
+	std::map<wxString, State> states_;
+	wxString                  state_first_;
 };
 
 class Class : public Identifier
@@ -143,7 +143,7 @@ public:
 		Struct
 	};
 
-	Class(Type type, const string& name = "") : Identifier{ name }, type_{ type } {}
+	Class(Type type, const wxString& name = "") : Identifier{ name }, type_{ type } {}
 	virtual ~Class() = default;
 
 	const vector<Function>& functions() const { return functions_; }
@@ -154,14 +154,14 @@ public:
 
 private:
 	Type               type_;
-	string             inherits_class_;
+	wxString           inherits_class_;
 	vector<Variable>   variables_;
 	vector<Function>   functions_;
 	vector<Enumerator> enumerators_;
 	PropertyList       default_properties_;
 	StateTable         states_;
 
-	vector<std::pair<string, string>> db_properties_;
+	vector<std::pair<wxString, wxString>> db_properties_;
 
 	bool parseClassBlock(vector<ParsedStatement>& block);
 	bool parseDefaults(vector<ParsedStatement>& defaults);

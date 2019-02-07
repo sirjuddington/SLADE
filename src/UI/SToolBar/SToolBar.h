@@ -6,28 +6,28 @@ class SToolBar;
 class SToolBarGroup : public wxPanel
 {
 public:
-	SToolBarGroup(SToolBar* parent, const string& name, bool force_name = false);
+	SToolBarGroup(SToolBar* parent, const wxString& name, bool force_name = false);
 	~SToolBarGroup() = default;
 
-	string name() const { return name_; }
-	bool   hidden() const { return hidden_; }
-	void   hide(bool hide = true);
-	void   redraw();
+	wxString name() const { return name_; }
+	bool     hidden() const { return hidden_; }
+	void     hide(bool hide = true);
+	void     redraw();
 
-	SToolBarButton* addActionButton(const string& action, const string& icon = "", bool show_name = false);
+	SToolBarButton* addActionButton(const wxString& action, const wxString& icon = "", bool show_name = false);
 	SToolBarButton* addActionButton(
-		const string& action_id,
-		const string& action_name,
-		const string& icon,
-		const string& help_text,
-		bool          show_name = false);
+		const wxString& action_id,
+		const wxString& action_name,
+		const wxString& icon,
+		const wxString& help_text,
+		bool            show_name = false);
 	void addCustomControl(wxWindow* control);
 
 	void onButtonClicked(wxCommandEvent& e);
 
 private:
-	string name_;
-	bool   hidden_;
+	wxString name_;
+	bool     hidden_;
 };
 
 class SToolBar : public wxPanel
@@ -40,12 +40,12 @@ public:
 	int                           minHeight() const { return min_height_; }
 	bool                          mainToolbar() const { return main_toolbar_; }
 
-	SToolBarGroup* group(const string& name);
+	SToolBarGroup* group(const wxString& name);
 	void           addGroup(SToolBarGroup* group);
-	void           deleteGroup(const string& name);
+	void           deleteGroup(const wxString& name);
 	void           deleteCustomGroups();
-	void           addActionGroup(const string& name, wxArrayString actions);
-	void           enableGroup(const string& name, bool enable = true);
+	void           addActionGroup(const wxString& name, wxArrayString actions);
+	void           enableGroup(const wxString& name, bool enable = true);
 	void           populateGroupsMenu(wxMenu* menu, int start_id = 0);
 	void           enableContextMenu(bool enable = true) { enable_context_menu_ = enable; }
 

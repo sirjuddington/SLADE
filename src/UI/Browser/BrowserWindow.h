@@ -20,9 +20,9 @@ public:
 	BrowserTreeNode(BrowserTreeNode* parent = nullptr) : STreeNode(parent) {}
 	~BrowserTreeNode() { clearItems(); }
 
-	string         name() override { return name_; }
+	wxString       name() override { return name_; }
 	wxTreeListItem treeId() const { return tree_id_; }
-	void           setName(string name) override { this->name_ = name; }
+	void           setName(wxString name) override { this->name_ = name; }
 	void           setTreeId(wxTreeListItem id) { this->tree_id_ = id; }
 
 	void         clearItems();
@@ -31,11 +31,11 @@ public:
 	void         addItem(BrowserItem* item, unsigned index = 0xFFFFFFFF);
 
 private:
-	string                    name_;
+	wxString                  name_;
 	vector<BrowserItem::UPtr> items_;
 	wxTreeListItem            tree_id_;
 
-	STreeNode* createChild(string name) override
+	STreeNode* createChild(wxString name) override
 	{
 		auto node   = new BrowserTreeNode();
 		node->name_ = name;
@@ -54,14 +54,14 @@ public:
 	Palette* palette() { return &palette_; }
 	void     setPalette(Palette* pal) { palette_.copyPalette(pal); }
 
-	bool         addItem(BrowserItem* item, const string& where = "");
+	bool         addItem(BrowserItem* item, const wxString& where = "");
 	void         addGlobalItem(BrowserItem* item);
 	void         clearItems(BrowserTreeNode* node = nullptr) const;
 	void         reloadItems(BrowserTreeNode* node = nullptr) const;
 	BrowserItem* selectedItem() const;
-	bool         selectItem(const string& name, BrowserTreeNode* node = nullptr);
+	bool         selectItem(const wxString& name, BrowserTreeNode* node = nullptr);
 
-	unsigned     addSortType(const string& name) const;
+	unsigned     addSortType(const wxString& name) const;
 	virtual void doSort(unsigned sort_type = 0);
 	void         setSortType(int type);
 

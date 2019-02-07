@@ -70,7 +70,7 @@ TLFunction::Context TLFunction::context(unsigned long index) const
 // -----------------------------------------------------------------------------
 // Parses a function parameter from a list of tokens
 // -----------------------------------------------------------------------------
-void TLFunction::Parameter::parse(vector<string>& tokens)
+void TLFunction::Parameter::parse(vector<wxString>& tokens)
 {
 	// Optional
 	if (tokens[0] == "[")
@@ -99,11 +99,11 @@ void TLFunction::Parameter::parse(vector<string>& tokens)
 // Adds a [context] of the function
 // -----------------------------------------------------------------------------
 void TLFunction::addContext(
-	const string& context,
-	const string& args,
-	const string& return_type,
-	const string& description,
-	const string& deprecated_f)
+	const wxString& context,
+	const wxString& args,
+	const wxString& return_type,
+	const wxString& description,
+	const wxString& deprecated_f)
 {
 	contexts_.push_back(Context{ context, {}, return_type, description, "", "", "", false });
 	auto& ctx = contexts_.back();
@@ -113,7 +113,7 @@ void TLFunction::addContext(
 	tz.setSpecialCharacters("[],");
 	tz.openString(args);
 
-	vector<string> arg_tokens;
+	vector<wxString> arg_tokens;
 	while (true)
 	{
 		while (!tz.check(","))
@@ -171,11 +171,11 @@ void TLFunction::addContext(
 // Adds a [context] of the function from a parsed ZScript function [func]
 // -----------------------------------------------------------------------------
 void TLFunction::addContext(
-	const string&            context,
+	const wxString&          context,
 	const ZScript::Function& func,
 	bool                     custom,
-	const string&            desc,
-	const string&            dep_f)
+	const wxString&          desc,
+	const wxString&          dep_f)
 {
 	contexts_.push_back(Context{ context, {}, func.returnType(), desc, "", func.deprecated(), dep_f, custom });
 	auto& ctx = contexts_.back();
@@ -207,7 +207,7 @@ void TLFunction::clearCustomContexts()
 // -----------------------------------------------------------------------------
 // Returns true if the function has a context matching [name]
 // -----------------------------------------------------------------------------
-bool TLFunction::hasContext(const string& name)
+bool TLFunction::hasContext(const wxString& name)
 {
 	for (auto& c : contexts_)
 		if (S_CMPNOCASE(c.context, name))
@@ -227,7 +227,7 @@ bool TLFunction::hasContext(const string& name)
 // -----------------------------------------------------------------------------
 // TextLanguage class constructor
 // -----------------------------------------------------------------------------
-TextLanguage::TextLanguage(const string& id) : id_{ id }
+TextLanguage::TextLanguage(const wxString& id) : id_{ id }
 {
 	// Add to languages list
 	text_languages.push_back(this);
@@ -281,10 +281,10 @@ void TextLanguage::copyTo(TextLanguage* copy)
 // -----------------------------------------------------------------------------
 // Adds a new word of [type] to the language, if it doesn't exist already
 // -----------------------------------------------------------------------------
-void TextLanguage::addWord(WordType type, const string& keyword, bool custom)
+void TextLanguage::addWord(WordType type, const wxString& keyword, bool custom)
 {
 	// Add only if it doesn't already exist
-	vector<string>& list = custom ? word_lists_custom_[type].list : word_lists_[type].list;
+	vector<wxString>& list = custom ? word_lists_custom_[type].list : word_lists_[type].list;
 	if (std::find(list.begin(), list.end(), keyword) == list.end())
 		list.push_back(keyword);
 }
@@ -295,18 +295,18 @@ void TextLanguage::addWord(WordType type, const string& keyword, bool custom)
 // be added
 // -----------------------------------------------------------------------------
 void TextLanguage::addFunction(
-	string        name,
-	const string& args,
-	const string& desc,
-	const string& deprecated,
-	bool          replace,
-	const string& return_type)
+	wxString        name,
+	const wxString& args,
+	const wxString& desc,
+	const wxString& deprecated,
+	bool            replace,
+	const wxString& return_type)
 {
 	// Split out context from name
-	string context;
+	wxString context;
 	if (name.Contains("."))
 	{
-		string fname;
+		wxString fname;
 		context = name.BeforeFirst('.', &fname);
 		name    = fname;
 	}
@@ -381,10 +381,10 @@ void TextLanguage::loadZScript(ZScript::Definitions& defs, bool custom)
 // Returns a string of all words of [type] in the language, separated by
 // spaces, which can be sent directly to scintilla for syntax hilighting
 // -----------------------------------------------------------------------------
-string TextLanguage::wordList(WordType type, bool include_custom)
+wxString TextLanguage::wordList(WordType type, bool include_custom)
 {
 	// Init return string
-	string ret = "";
+	wxString ret = "";
 
 	// Add each word to return string (separated by spaces)
 	for (auto& word : word_lists_[type].list)
@@ -402,10 +402,10 @@ string TextLanguage::wordList(WordType type, bool include_custom)
 // Returns a string of all functions in the language, separated by spaces,
 // which can be sent directly to scintilla for syntax hilighting
 // -----------------------------------------------------------------------------
-string TextLanguage::functionsList()
+wxString TextLanguage::functionsList()
 {
 	// Init return string
-	string ret = "";
+	wxString ret = "";
 
 	// Add each function name to return string (separated by spaces)
 	for (auto& func : functions_)
@@ -418,7 +418,7 @@ string TextLanguage::functionsList()
 // Returns a string containing all words and functions that can be used
 // directly in scintilla for an autocompletion list
 // -----------------------------------------------------------------------------
-string TextLanguage::autocompletionList(string start, bool include_custom)
+wxString TextLanguage::autocompletionList(wxString start, bool include_custom)
 {
 	// Firstly, add all functions and word lists to a wxArrayString
 	wxArrayString list;
@@ -429,26 +429,26 @@ string TextLanguage::autocompletionList(string start, bool include_custom)
 	{
 		for (auto& word : word_lists_[type].list)
 			if (word.Lower().StartsWith(start))
-				list.Add(S_FMT("%s?%d", word, type + 1));
+				list.Add(wxString::Format("%s?%d", word, type + 1));
 
 		if (!include_custom)
 			continue;
 
 		for (auto& word : word_lists_custom_[type].list)
 			if (word.Lower().StartsWith(start))
-				list.Add(S_FMT("%s?%d", word, type + 1));
+				list.Add(wxString::Format("%s?%d", word, type + 1));
 	}
 
 	// Add functions
 	for (auto& func : functions_)
 		if (func.name().Lower().StartsWith(start))
-			list.Add(S_FMT("%s%s", func.name(), "?3"));
+			list.Add(wxString::Format("%s%s", func.name(), "?3"));
 
 	// Sort the list
 	list.Sort();
 
 	// Now build a string of the list items separated by spaces
-	string ret;
+	wxString ret;
 	for (const auto& a : list)
 		ret += a + " ";
 
@@ -494,7 +494,7 @@ wxArrayString TextLanguage::functionsSorted()
 // -----------------------------------------------------------------------------
 // Returns true if [word] is a [type] word in this language, false otherwise
 // -----------------------------------------------------------------------------
-bool TextLanguage::isWord(WordType type, const string& word)
+bool TextLanguage::isWord(WordType type, const wxString& word)
 {
 	for (auto& w : word_lists_[type].list)
 		if (w == word)
@@ -506,7 +506,7 @@ bool TextLanguage::isWord(WordType type, const string& word)
 // -----------------------------------------------------------------------------
 // Returns true if [word] is a function in this language, false otherwise
 // -----------------------------------------------------------------------------
-bool TextLanguage::isFunction(const string& word)
+bool TextLanguage::isFunction(const wxString& word)
 {
 	for (auto& func : functions_)
 		if (func.name() == word)
@@ -519,7 +519,7 @@ bool TextLanguage::isFunction(const string& word)
 // Returns the function definition matching [name], or NULL if no matching
 // function exists
 // -----------------------------------------------------------------------------
-TLFunction* TextLanguage::function(const string& name)
+TLFunction* TextLanguage::function(const wxString& name)
 {
 	// Find function matching [name]
 	if (case_sensitive_)
@@ -571,14 +571,14 @@ void TextLanguage::clearCustomDefs()
 // Reads in a text definition of a language. See slade.pk3 for
 // formatting examples
 // -----------------------------------------------------------------------------
-bool TextLanguage::readLanguageDefinition(MemChunk& mc, const string& source)
+bool TextLanguage::readLanguageDefinition(MemChunk& mc, const wxString& source)
 {
 	Tokenizer tz;
 
 	// Open the given text data
 	if (!tz.openMem(mc, source))
 	{
-		Log::warning(1, S_FMT("Warning: Unable to open %s", source));
+		Log::warning(1, wxString::Format("Warning: Unable to open %s", source));
 		return false;
 	}
 
@@ -604,7 +604,8 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const string& source)
 			else
 				Log::warning(
 					1,
-					S_FMT("Warning: Language %s inherits from undefined language %s", node->name(), node->inherit()));
+					wxString::Format(
+						"Warning: Language %s inherits from undefined language %s", node->name(), node->inherit()));
 		}
 
 		// Parse language info
@@ -712,7 +713,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const string& source)
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
 				{
-					string val = child->stringValue(v);
+					wxString val = child->stringValue(v);
 
 					// Check for '$override'
 					if (S_CMPNOCASE(val, "$override"))
@@ -733,7 +734,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const string& source)
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
 				{
-					string val = child->stringValue(v);
+					wxString val = child->stringValue(v);
 
 					// Check for '$override'
 					if (S_CMPNOCASE(val, "$override"))
@@ -754,7 +755,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const string& source)
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
 				{
-					string val = child->stringValue(v);
+					wxString val = child->stringValue(v);
 
 					// Check for '$override'
 					if (S_CMPNOCASE(val, "$override"))
@@ -775,7 +776,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const string& source)
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
 				{
-					string val = child->stringValue(v);
+					wxString val = child->stringValue(v);
 
 					// Check for '$override'
 					if (S_CMPNOCASE(val, "$override"))
@@ -799,8 +800,8 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const string& source)
 					// Go through children (functions)
 					for (unsigned f = 0; f < child->nChildren(); f++)
 					{
-						auto   child_func = child->childPTN(f);
-						string params;
+						auto     child_func = child->childPTN(f);
+						wxString params;
 
 						// Simple definition
 						if (child_func->nChildren() == 0)
@@ -834,10 +835,10 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const string& source)
 						// Full definition
 						else
 						{
-							string         name = child_func->name();
-							vector<string> args;
-							string         desc       = "";
-							string         deprecated = "";
+							wxString         name = child_func->name();
+							vector<wxString> args;
+							wxString         desc       = "";
+							wxString         deprecated = "";
 							for (unsigned p = 0; p < child_func->nChildren(); p++)
 							{
 								auto child_prop = child_func->childPTN(p);
@@ -916,7 +917,7 @@ bool TextLanguage::loadLanguages()
 // -----------------------------------------------------------------------------
 // Returns the language definition matching [id], or NULL if no match found
 // -----------------------------------------------------------------------------
-TextLanguage* TextLanguage::fromId(const string& id)
+TextLanguage* TextLanguage::fromId(const wxString& id)
 {
 	// Find text language matching [id]
 	for (auto& text_language : text_languages)
@@ -945,7 +946,7 @@ TextLanguage* TextLanguage::fromIndex(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns the language definition matching [name], or NULL if no match found
 // -----------------------------------------------------------------------------
-TextLanguage* TextLanguage::fromName(const string& name)
+TextLanguage* TextLanguage::fromName(const wxString& name)
 {
 	// Find text language matching [name]
 	for (auto& text_language : text_languages)

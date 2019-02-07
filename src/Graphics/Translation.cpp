@@ -98,11 +98,11 @@ enum SpecialBlend
 // Parses a text definition [def] (in zdoom format, detailed here:
 // http://zdoom.org/wiki/Translation)
 // -----------------------------------------------------------------------------
-void Translation::parse(string def)
+void Translation::parse(wxString def)
 {
 	// Test for ZDoom built-in translation
-	string test = def.Lower();
-	string temp;
+	wxString test = def.Lower();
+	wxString temp;
 	if (test == "inverse")
 	{
 		built_in_name_ = "Inverse";
@@ -136,7 +136,7 @@ void Translation::parse(string def)
 	else if (test.StartsWith("desaturate,", &temp))
 	{
 		built_in_name_ = "Desaturate";
-		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(StringUtils::toInt(temp), 31), 1);
+		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(wxStringUtils::toInt(temp), 31), 1);
 		return;
 	}
 
@@ -168,7 +168,7 @@ void Translation::parse(string def)
 // -----------------------------------------------------------------------------
 // Parses a single translation range
 // -----------------------------------------------------------------------------
-void Translation::parseRange(const string& range)
+void Translation::parseRange(const wxString& range)
 {
 	// Open definition string for processing w/tokenizer
 	Tokenizer tz;
@@ -370,21 +370,21 @@ void Translation::read(const uint8_t* data)
 		}
 		val = data[i];
 	}
-	Log::info(3, S_FMT("Translation table analyzed as " + asText()));
+	Log::info(3, wxString::Format("Translation table analyzed as " + asText()));
 }
 
 // -----------------------------------------------------------------------------
 // Returns a string representation of the translation (in zdoom format)
 // -----------------------------------------------------------------------------
-string Translation::asText()
+wxString Translation::asText()
 {
-	string ret;
+	wxString ret;
 
 	if (built_in_name_.IsEmpty())
 	{
 		// Go through translation ranges
 		for (auto& translation : translations_)
-			ret += S_FMT("\"%s\", ", translation->asText()); // Add range to string
+			ret += wxString::Format("\"%s\", ", translation->asText()); // Add range to string
 
 		// If any translations were defined, remove last ", "
 		if (!ret.IsEmpty())
@@ -395,7 +395,7 @@ string Translation::asText()
 		// ZDoom built-in translation
 		ret = built_in_name_;
 		if (built_in_name_ == "Desaturate")
-			ret += S_FMT(", %d", desat_amount_);
+			ret += wxString::Format(", %d", desat_amount_);
 	}
 
 	return ret;
@@ -601,9 +601,9 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 		// Special range
 		else if (range->type() == TransRange::Type::Special)
 		{
-			auto    ts   = dynamic_cast<TransRangeSpecial*>(range.get());
-			string  spec = ts->special();
-			uint8_t type = Invalid;
+			auto     ts   = dynamic_cast<TransRangeSpecial*>(range.get());
+			wxString spec = ts->special();
+			uint8_t  type = Invalid;
 			if (S_CMPNOCASE(spec, "ice"))
 				type = SpecialBlend::Ice;
 			else if (S_CMPNOCASE(spec, "inverse"))
@@ -769,7 +769,7 @@ void Translation::swapRanges(int pos1, int pos2)
 // -----------------------------------------------------------------------------
 // Replaces a hardcoded translation name with its transcription
 // -----------------------------------------------------------------------------
-string Translation::getPredefined(string def)
+wxString Translation::getPredefined(wxString def)
 {
 	// Some hardcoded translations from ZDoom, used in config files
 	if (def == "\"doom0\"")

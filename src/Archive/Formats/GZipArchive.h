@@ -26,14 +26,14 @@ public:
 	{
 		return nullptr;
 	}
-	ArchiveEntry* addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy = false) override
+	ArchiveEntry* addEntry(ArchiveEntry* entry, const wxString& add_namespace, bool copy = false) override
 	{
 		return nullptr;
 	}
 	bool removeEntry(ArchiveEntry* entry) override { return false; }
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, const string& name) override;
+	bool renameEntry(ArchiveEntry* entry, const wxString& name) override;
 
 	// Entry moving
 	bool swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override { return false; }
@@ -49,10 +49,10 @@ public:
 
 	// Static functions
 	static bool isGZipArchive(MemChunk& mc);
-	static bool isGZipArchive(const string& filename);
+	static bool isGZipArchive(const wxString& filename);
 
 private:
-	string   comment_;
+	wxString comment_;
 	MemChunk xtra_;
 	uint8_t  flags_;
 	uint32_t mtime_;

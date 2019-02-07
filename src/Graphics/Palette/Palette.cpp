@@ -190,14 +190,14 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			for (int b = x; b < (x + (cell > 3 ? cell - 1 : cell)); ++b)
 				for (int c = y; c < (y + (cell > 3 ? cell - 1 : cell)); ++c)
 					if (!col.equals(image.pixelAt(b, c)))
-						Log::warning(S_FMT(
+						Log::warning(wxString::Format(
 							"Image does not seem to be a valid palette, color discrepancy in cell %u at [%u, %u]",
 							a,
 							b,
 							c));
 
 			// Color is validated, so add it
-			Log::info(3, S_FMT("Colour index %d / at %d,%d / rgb %d,%d,%d", a, x, y, col.r, col.g, col.b));
+			Log::info(3, wxString::Format("Colour index %d / at %d,%d / rgb %d,%d,%d", a, x, y, col.r, col.g, col.b));
 			setColour(a, col);
 		}
 
@@ -241,7 +241,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			}
 		}
 		// Now, parse
-		string  s1, s2, s3;
+		wxString  s1, s2, s3;
 		ColRGBA col(0, 0, 0, 255);
 		int     c = 0;
 		do
@@ -277,9 +277,9 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 				tz.advToEndOfLine();
 
 			// If we haven't skipped this part from a continue, then we have a colour triplet.
-			col.r     = StringUtils::toInt(s1);
-			col.g     = StringUtils::toInt(s2);
-			col.b     = StringUtils::toInt(s3);
+			col.r     = wxStringUtils::toInt(s1);
+			col.g     = wxStringUtils::toInt(s2);
+			col.b     = wxStringUtils::toInt(s3);
 			col.index = c;
 			setColour(c++, col);
 		} while (c < 256 && !tz.peekToken().IsEmpty());
@@ -299,7 +299,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 // -----------------------------------------------------------------------------
 // Writes colour information to a MemChunk
 // -----------------------------------------------------------------------------
-bool Palette::saveMem(MemChunk& mc, Format format, const string& name)
+bool Palette::saveMem(MemChunk& mc, Format format, const wxString& name)
 {
 	// Clear memchunk
 	mc.clear();
@@ -317,27 +317,27 @@ bool Palette::saveMem(MemChunk& mc, Format format, const string& name)
 	// CSV
 	else if (format == Format::CSV)
 	{
-		string csv;
+		wxString csv;
 		for (unsigned a = 0; a < 256; a++)
-			csv += S_FMT("%d, %d, %d\n", colours_[a].r, colours_[a].g, colours_[a].b);
+			csv += wxString::Format("%d, %d, %d\n", colours_[a].r, colours_[a].g, colours_[a].b);
 		mc.importMem((const uint8_t*)((const char*)csv.ToAscii()), csv.Length());
 	}
 
 	// JASC palette
 	else if (format == Format::JASC)
 	{
-		string jasc = "JASC-PAL\n0100\n256\n";
+		wxString jasc = "JASC-PAL\n0100\n256\n";
 		for (unsigned a = 0; a < 256; a++)
-			jasc += S_FMT("%d %d %d\n", colours_[a].r, colours_[a].g, colours_[a].b);
+			jasc += wxString::Format("%d %d %d\n", colours_[a].r, colours_[a].g, colours_[a].b);
 		mc.importMem((const uint8_t*)((const char*)jasc.ToAscii()), jasc.Length());
 	}
 
 	// GIMP palette
 	else if (format == Format::GIMP)
 	{
-		string gimp = S_FMT("GIMP Palette\nName: %s\n#\n", name);
+		wxString gimp = wxString::Format("GIMP Palette\nName: %s\n#\n", name);
 		for (unsigned a = 0; a < 256; a++)
-			gimp += S_FMT("%d\t%d\t%d\tIndex %u\n", colours_[a].r, colours_[a].g, colours_[a].b, a);
+			gimp += wxString::Format("%d\t%d\t%d\tIndex %u\n", colours_[a].r, colours_[a].g, colours_[a].b, a);
 		mc.importMem((const uint8_t*)((const char*)gimp.ToAscii()), gimp.Length());
 	}
 
@@ -383,11 +383,11 @@ bool Palette::saveMem(MemChunk& mc, Format format, const string& name)
 // Writes colour information to a file at [filename].
 // Returns false if the file could not be opened/created, true otherwise
 // -----------------------------------------------------------------------------
-bool Palette::saveFile(const string& filename, Format format)
+bool Palette::saveFile(const wxString& filename, Format format)
 {
 	// Get palette name
 	wxFileName fn(filename);
-	string     name = fn.GetName();
+	wxString   name = fn.GetName();
 
 	// Write data to MemChunk
 	MemChunk mc;
@@ -402,11 +402,11 @@ bool Palette::saveFile(const string& filename, Format format)
 // Reads colour information from a file at [filename].
 // Returns false if the file could not be opened/parsed, true otherwise
 // -----------------------------------------------------------------------------
-bool Palette::loadFile(const string& filename, Format format)
+bool Palette::loadFile(const wxString& filename, Format format)
 {
 	// Get palette name
 	wxFileName fn(filename);
-	string     name = fn.GetName();
+	wxString   name = fn.GetName();
 
 	// Open the file
 	wxFile file(filename);

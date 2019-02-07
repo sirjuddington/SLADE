@@ -76,29 +76,23 @@ bool MoveObjects::begin(Vec2d mouse_pos)
 	vector<MapVertex*> move_verts;
 	if (context_.editMode() != Mode::Things)
 	{
-		// Vertices mode
-		if (context_.editMode() == Mode::Vertices)
+		for (auto& item : items_)
 		{
-			for (auto& item : items_)
-				move_verts.push_back(context_.map().vertex(item.index));
-		}
+			// Vertex
+			if (auto vertex = item.asVertex(context_.map()))
+				move_verts.push_back(vertex);
 
-		// Lines mode
-		else if (context_.editMode() == Mode::Lines)
-		{
-			for (auto& item : items_)
+			// Line
+			else if (auto line = item.asLine(context_.map()))
 			{
 				// Duplicate vertices shouldn't matter here
-				move_verts.push_back(context_.map().line(item.index)->v1());
-				move_verts.push_back(context_.map().line(item.index)->v2());
+				move_verts.push_back(line->v1());
+				move_verts.push_back(line->v2());
 			}
-		}
 
-		// Sectors mode
-		else if (context_.editMode() == Mode::Sectors)
-		{
-			for (auto& item : items_)
-				context_.map().sector(item.index)->putVertices(move_verts);
+			// Sector
+			else if (auto sector = item.asSector(context_.map()))
+				sector->putVertices(move_verts);
 		}
 	}
 
@@ -107,7 +101,8 @@ bool MoveObjects::begin(Vec2d mouse_pos)
 	{
 		// Filter moving things
 		for (auto& item : items_)
-			context_.map().thing(item.index)->filter(true);
+			if (auto thing = item.asThing(context_.map()))
+				thing->filter(true);
 	}
 	else
 	{
@@ -133,17 +128,13 @@ void MoveObjects::update(Vec2d mouse_pos)
 	if (items_.size() == 1 && (context_.editMode() == Mode::Vertices || context_.editMode() == Mode::Things))
 	{
 		// Get new position
-		double nx = context_.snapToGrid(mouse_pos.x, false);
-		double ny = context_.snapToGrid(mouse_pos.y, false);
+		Vec2d np{ context_.snapToGrid(mouse_pos.x, false), context_.snapToGrid(mouse_pos.y, false) };
 
 		// Update move vector
-		if (context_.editMode() == Mode::Vertices)
-			offset_.set(
-				nx - context_.map().vertex(items_[0].index)->xPos(),
-				ny - context_.map().vertex(items_[0].index)->yPos());
-		else if (context_.editMode() == Mode::Things)
-			offset_.set(
-				nx - context_.map().thing(items_[0].index)->xPos(), ny - context_.map().thing(items_[0].index)->yPos());
+		if (auto vertex = items_[0].asVertex(context_.map()))
+			offset_.set(np - vertex->position());
+		else if (auto thing = items_[0].asThing(context_.map()))
+			offset_.set(np - thing->position());
 
 		return;
 	}
@@ -161,10 +152,10 @@ void MoveObjects::end(bool accept)
 	using MapEditor::Mode;
 
 	// Un-filter objects
-	for (unsigned a = 0; a < context_.map().nLines(); a++)
-		context_.map().line(a)->filter(false);
-	for (unsigned a = 0; a < context_.map().nThings(); a++)
-		context_.map().thing(a)->filter(false);
+	for (const auto& line : context_.map().lines())
+		line->filter(false);
+	for (const auto& thing : context_.map().things())
+		thing->filter(false);
 
 	// Move depending on edit mode
 	if (context_.editMode() == Mode::Things && accept)
@@ -173,16 +164,18 @@ void MoveObjects::end(bool accept)
 		context_.beginUndoRecord("Move Things", true, false, false);
 		for (auto& item : items_)
 		{
-			auto thing = context_.map().thing(item.index);
-			context_.undoManager()->recordUndoStep(std::make_unique<MapEditor::PropertyChangeUS>(thing));
-			thing->move(thing->position() + offset_);
+			if (auto thing = item.asThing(context_.map()))
+			{
+				context_.undoManager()->recordUndoStep(std::make_unique<MapEditor::PropertyChangeUS>(thing));
+				thing->move(thing->position() + offset_);
+			}
 		}
 		context_.endUndoRecord(true);
 	}
 	else if (accept)
 	{
 		// Any other edit mode we're technically moving vertices
-		context_.beginUndoRecord(S_FMT("Move %s", context_.modeString()));
+		context_.beginUndoRecord(wxString::Format("Move %s", context_.modeString()));
 
 		// Get list of vertices being moved
 		vector<uint8_t> move_verts(context_.map().nVertices());
@@ -197,18 +190,21 @@ void MoveObjects::end(bool accept)
 		{
 			for (auto& item : items_)
 			{
-				auto line = context_.map().line(item.index);
-				if (line->v1())
-					move_verts[line->v1()->index()] = 1;
-				if (line->v2())
-					move_verts[line->v2()->index()] = 1;
+				if (auto line = item.asLine(context_.map()))
+				{
+					if (line->v1())
+						move_verts[line->v1()->index()] = 1;
+					if (line->v2())
+						move_verts[line->v2()->index()] = 1;
+				}
 			}
 		}
 		else if (context_.editMode() == Mode::Sectors)
 		{
 			vector<MapVertex*> sv;
 			for (auto& item : items_)
-				context_.map().sector(item.index)->putVertices(sv);
+				if (auto sector = item.asSector(context_.map()))
+					sector->putVertices(sv);
 
 			for (auto vertex : sv)
 				move_verts[vertex->index()] = 1;

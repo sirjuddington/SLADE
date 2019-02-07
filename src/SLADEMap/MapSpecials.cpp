@@ -218,8 +218,8 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line) const
 			tagged.push_back(line);
 
 		// Get args
-		double alpha = (double)args[1] / 255.0;
-		string type  = (args[2] == 0) ? "translucent" : "add";
+		double   alpha = (double)args[1] / 255.0;
+		wxString type  = (args[2] == 0) ? "translucent" : "add";
 
 		// Set transparency
 		for (auto& l : tagged)
@@ -227,7 +227,8 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line) const
 			l->setFloatProperty("alpha", alpha);
 			l->setStringProperty("renderstyle", type);
 
-			Log::info(3, S_FMT("Line %d translucent: (%d) %1.2f, %s", l->index(), args[1], alpha, CHR(type)));
+			Log::info(
+				3, wxString::Format("Line %d translucent: (%d) %1.2f, %s", l->index(), args[1], alpha, CHR(type)));
 		}
 	}
 }
@@ -304,7 +305,7 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 							SectorColour sc;
 							sc.tag = tag;
 							sc.colour.set(r, g, b, 255);
-							Log::info(3, S_FMT("Sector tag %d, colour %d,%d,%d", tag, r, g, b));
+							Log::info(3, wxString::Format("Sector tag %d, colour %d,%d,%d", tag, r, g, b));
 							sector_colours_.push_back(sc);
 						}
 					}
@@ -345,7 +346,7 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 							SectorColour sc;
 							sc.tag = tag;
 							sc.colour.set(r, g, b, 0);
-							Log::info(3, S_FMT("Sector tag %d, fade colour %d,%d,%d", tag, r, g, b));
+							Log::info(3, wxString::Format("Sector tag %d, fade colour %d,%d,%d", tag, r, g, b));
 							sector_fadecolours_.push_back(sc);
 						}
 					}
@@ -392,13 +393,13 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 		auto sector2 = line->backSector();
 		if (!sector1 || !sector2)
 		{
-			Log::warning(S_FMT("Ignoring Plane_Align on one-sided line %d", line->index()));
+			Log::warning(wxString::Format("Ignoring Plane_Align on one-sided line %d", line->index()));
 			continue;
 		}
 		if (sector1 == sector2)
 		{
-			Log::warning(
-				S_FMT("Ignoring Plane_Align on line %d, which has the same sector on both sides", line->index()));
+			Log::warning(wxString::Format(
+				"Ignoring Plane_Align on line %d, which has the same sector on both sides", line->index()));
 			continue;
 		}
 
@@ -453,14 +454,15 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 			int tag = thing->arg(0);
 			if (!tag)
 			{
-				Log::warning(S_FMT("Ignoring slope copy thing in sector %d with no argument", target->index()));
+				Log::warning(
+					wxString::Format("Ignoring slope copy thing in sector %d with no argument", target->index()));
 				continue;
 			}
 
 			auto tagged_sector = map->sectors().firstWithId(tag);
 			if (!tagged_sector)
 			{
-				Log::warning(S_FMT(
+				Log::warning(wxString::Format(
 					"Ignoring slope copy thing in sector %d; no sectors have target tag %d", target->index(), tag));
 				continue;
 			}
@@ -591,13 +593,13 @@ void MapSpecials::processEternitySlopes(SLADEMap* map) const
 		auto sector2 = line->backSector();
 		if (!sector1 || !sector2)
 		{
-			Log::warning(S_FMT("Ignoring Plane_Align on one-sided line %d", line->index()));
+			Log::warning(wxString::Format("Ignoring Plane_Align on one-sided line %d", line->index()));
 			continue;
 		}
 		if (sector1 == sector2)
 		{
-			Log::warning(
-				S_FMT("Ignoring Plane_Align on line %d, which has the same sector on both sides", line->index()));
+			Log::warning(wxString::Format(
+				"Ignoring Plane_Align on line %d, which has the same sector on both sides", line->index()));
 			continue;
 		}
 
@@ -693,7 +695,7 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 
 	if (!furthest_vertex || furthest_dist < 0.01)
 	{
-		Log::warning(S_FMT(
+		Log::warning(wxString::Format(
 			"Ignoring Plane_Align on line %d; sector %d has no appropriate reference vertex",
 			line->index(),
 			target->index()));
@@ -718,7 +720,7 @@ template<SurfaceType T> void MapSpecials::applyLineSlopeThing(SLADEMap* map, Map
 	int lineid = thing->arg(0);
 	if (!lineid)
 	{
-		Log::warning(S_FMT("Ignoring line slope thing %d with no lineid argument", thing->index()));
+		Log::warning(wxString::Format("Ignoring line slope thing %d with no lineid argument", thing->index()));
 		return;
 	}
 
@@ -827,7 +829,7 @@ template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 		// the thing's height as absolute
 		if (MathStuff::distanceToLineFast(thing->position(), lines[a]->seg()) == 0)
 		{
-			Log::warning(S_FMT("Vavoom thing %d lies directly on its target line %d", thing->index(), a));
+			Log::warning(wxString::Format("Vavoom thing %d lies directly on its target line %d", thing->index(), a));
 			return;
 		}
 
@@ -840,7 +842,7 @@ template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 		return;
 	}
 
-	Log::warning(S_FMT("Vavoom thing %d has no matching line with first arg %d", thing->index(), tid));
+	Log::warning(wxString::Format("Vavoom thing %d has no matching line with first arg %d", thing->index(), tid));
 }
 
 // -----------------------------------------------------------------------------
@@ -849,7 +851,7 @@ template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 template<SurfaceType T> double MapSpecials::vertexHeight(MapVertex* vertex, MapSector* sector) const
 {
 	// Return vertex height if set via UDMF property
-	string prop = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
+	wxString prop = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
 	if (vertex->hasProp(prop))
 		return vertex->floatProperty(prop);
 

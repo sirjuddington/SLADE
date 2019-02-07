@@ -47,7 +47,7 @@
 // -----------------------------------------------------------------------------
 // FileMonitor class constructor
 // -----------------------------------------------------------------------------
-FileMonitor::FileMonitor(const string& filename, bool start) : filename_{ filename }
+FileMonitor::FileMonitor(const wxString& filename, bool start) : filename_{ filename }
 {
 	// Create process
 	process_ = std::make_unique<wxProcess>(this);
@@ -113,7 +113,7 @@ void FileMonitor::onEndProcess(wxProcessEvent& e)
 // -----------------------------------------------------------------------------
 // DB2MapFileMonitor class constructor
 // -----------------------------------------------------------------------------
-DB2MapFileMonitor::DB2MapFileMonitor(const string& filename, Archive* archive, const string& map_name) :
+DB2MapFileMonitor::DB2MapFileMonitor(const wxString& filename, Archive* archive, const wxString& map_name) :
 	FileMonitor(filename),
 	archive_{ archive },
 	map_name_{ map_name }

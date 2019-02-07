@@ -81,7 +81,7 @@ namespace Drawing
 // -----------------------------------------------------------------------------
 // Returns an SFML font created from the resource archive entry [res_path]
 // -----------------------------------------------------------------------------
-FontPtr createFont(const string& res_path, int& counter)
+FontPtr createFont(const wxString& res_path, int& counter)
 {
 	auto entry = App::archiveManager().programResourceArchive()->entryAtPath(res_path);
 	if (!entry)
@@ -146,7 +146,7 @@ void Drawing::cleanupFonts()
 // Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
 // the rendered text string are written to it.
 // -----------------------------------------------------------------------------
-void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
+void Drawing::drawText(const wxString& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
 {
 	// Setup SFML string
 	sf::Text sf_str;
@@ -204,7 +204,7 @@ void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font fo
 // -----------------------------------------------------------------------------
 // Returns the width and height of [text] when drawn with [font]
 // -----------------------------------------------------------------------------
-Vec2d Drawing::textExtents(const string& text, Font font)
+Vec2d Drawing::textExtents(const wxString& text, Font font)
 {
 	// Setup SFML string
 	sf::Text sf_str;

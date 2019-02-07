@@ -126,7 +126,7 @@ struct ChunkSize
 // -----------------------------------------------------------------------------
 bool EntryOperations::gfxConvert(
 	ArchiveEntry*            entry,
-	const string&            target_format,
+	const wxString&          target_format,
 	SIFormat::ConvertOptions opt,
 	SImage::Type             target_colformat)
 {
@@ -142,9 +142,9 @@ bool EntryOperations::gfxConvert(
 	if (target_colformat != SImage::Type::Unknown && !fmt->canWriteType(target_colformat))
 	{
 		if (target_colformat == SImage::Type::RGBA)
-			Log::error(S_FMT("Format \"%s\" cannot be written as RGBA data", fmt->name()));
+			Log::error(wxString::Format("Format \"%s\" cannot be written as RGBA data", fmt->name()));
 		else if (target_colformat == SImage::Type::PalMask)
-			Log::error(S_FMT("Format \"%s\" cannot be written as paletted data", fmt->name()));
+			Log::error(wxString::Format("Format \"%s\" cannot be written as paletted data", fmt->name()));
 
 		return false;
 	}
@@ -156,7 +156,8 @@ bool EntryOperations::gfxConvert(
 	auto writable = fmt->canWrite(image);
 	if (writable == SIFormat::Writable::No)
 	{
-		Log::error(S_FMT("Entry \"%s\" could not be converted to target format \"%s\"", entry->name(), fmt->name()));
+		Log::error(wxString::Format(
+			"Entry \"%s\" could not be converted to target format \"%s\"", entry->name(), fmt->name()));
 		return false;
 	}
 	else if (writable == SIFormat::Writable::Convert)
@@ -185,12 +186,12 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog*
 		return false;
 
 	// Check entry type
-	auto   type        = entry->type();
-	string entryformat = type->formatId();
+	auto     type        = entry->type();
+	wxString entryformat = type->formatId();
 	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" || entryformat == "img_doom_alpha"
 		  || entryformat == "img_doom_beta" || entryformat == "img_png"))
 	{
-		Log::error(S_FMT(
+		Log::error(wxString::Format(
 			"Entry \"%s\" is of type \"%s\" which does not support offsets", entry->name(), entry->type()->name()));
 		return false;
 	}
@@ -335,12 +336,12 @@ bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
 		return false;
 
 	// Check entry type
-	auto   type        = entry->type();
-	string entryformat = type->formatId();
+	auto     type        = entry->type();
+	wxString entryformat = type->formatId();
 	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" || entryformat == "img_doom_alpha"
 		  || entryformat == "img_doom_beta" || entryformat == "img_png"))
 	{
-		Log::error(S_FMT(
+		Log::error(wxString::Format(
 			"Entry \"%s\" is of type \"%s\" which does not support offsets", entry->name(), entry->type()->name()));
 		return false;
 	}
@@ -463,7 +464,7 @@ bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
 bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 {
 #ifdef __WXMSW__ // Windows only
-	string path = path_db2;
+	wxString path = path_db2;
 
 	if (path.IsEmpty())
 	{
@@ -490,7 +491,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 		return false;
 
 	// Export the map to a temp .wad file
-	string filename = App::path(entry->parent()->filename(false) + "-" + entry->name(true) + ".wad", App::Dir::Temp);
+	wxString filename = App::path(entry->parent()->filename(false) + "-" + entry->name(true) + ".wad", App::Dir::Temp);
 	filename.Replace("/", "-");
 	if (map.archive)
 	{
@@ -521,16 +522,16 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	}
 
 	// Generate Doom Builder command line
-	string cmd = S_FMT("%s \"%s\" -map %s", path, filename, entry->name());
+	wxString cmd = wxString::Format("%s \"%s\" -map %s", path, filename, entry->name());
 
 	// Add base resource archive to command line
 	auto base = App::archiveManager().baseResourceArchive();
 	if (base)
 	{
 		if (base->formatId() == "wad")
-			cmd += S_FMT(" -resource wad \"%s\"", base->filename());
+			cmd += wxString::Format(" -resource wad \"%s\"", base->filename());
 		else if (base->formatId() == "zip")
-			cmd += S_FMT(" -resource pk3 \"%s\"", base->filename());
+			cmd += wxString::Format(" -resource pk3 \"%s\"", base->filename());
 	}
 
 	// Add resource archives to command line
@@ -540,9 +541,9 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 
 		// Check archive type (only wad and zip supported by db2)
 		if (archive->formatId() == "wad")
-			cmd += S_FMT(" -resource wad \"%s\"", archive->filename());
+			cmd += wxString::Format(" -resource wad \"%s\"", archive->filename());
 		else if (archive->formatId() == "zip")
-			cmd += S_FMT(" -resource pk3 \"%s\"", archive->filename());
+			cmd += wxString::Format(" -resource pk3 \"%s\"", archive->filename());
 	}
 
 	// Run DB2
@@ -570,7 +571,8 @@ bool EntryOperations::modifyalPhChunk(ArchiveEntry* entry, bool value)
 	// Check entry type
 	if (!(entry->type()->formatId() == "img_png"))
 	{
-		Log::error(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->type()->name()));
+		Log::error(
+			wxString::Format("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->type()->name()));
 		return false;
 	}
 
@@ -677,7 +679,8 @@ bool EntryOperations::modifytRNSChunk(ArchiveEntry* entry, bool value)
 	// Check entry type
 	if (!(entry->type()->formatId() == "img_png"))
 	{
-		Log::error(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString()));
+		Log::error(
+			wxString::Format("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString()));
 		return false;
 	}
 
@@ -791,7 +794,8 @@ bool EntryOperations::getalPhChunk(ArchiveEntry* entry)
 	// Check entry type
 	if (entry->type()->formatId() != "img_png")
 	{
-		Log::error(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString()));
+		Log::error(
+			wxString::Format("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString()));
 		return false;
 	}
 
@@ -823,7 +827,8 @@ bool EntryOperations::gettRNSChunk(ArchiveEntry* entry)
 	// Check entry type
 	if (entry->type()->formatId() != "img_png")
 	{
-		Log::error(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString()));
+		Log::error(
+			wxString::Format("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString()));
 		return false;
 	}
 
@@ -857,7 +862,8 @@ bool EntryOperations::readgrAbChunk(ArchiveEntry* entry, Vec2i& offsets)
 	// Check entry type
 	if (entry->type()->formatId() != "img_png")
 	{
-		Log::error(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString()));
+		Log::error(
+			wxString::Format("Entry \"%s\" is of type \"%s\" rather than PNG", entry->name(), entry->typeString()));
 		return false;
 	}
 
@@ -946,14 +952,14 @@ bool EntryOperations::addToPatchTable(const vector<ArchiveEntry*>& entries)
 		// Check entry type
 		if (!(entry->type()->extraProps().propertyExists("image")))
 		{
-			Log::error(S_FMT("Entry %s is not a valid image", entry->name()));
+			Log::error(wxString::Format("Entry %s is not a valid image", entry->name()));
 			continue;
 		}
 
 		// Check entry name
 		if (entry->name(true).Length() > 8)
 		{
-			Log::error(S_FMT(
+			Log::error(wxString::Format(
 				"Entry %s has too long a name to add to the patch table (name must be 8 characters max)",
 				entry->name()));
 			continue;
@@ -1051,15 +1057,15 @@ bool EntryOperations::createTexture(const vector<ArchiveEntry*>& entries)
 		// Check entry type
 		if (!(entry->type()->extraProps().propertyExists("image")))
 		{
-			Log::error(S_FMT("Entry %s is not a valid image", entry->name()));
+			Log::error(wxString::Format("Entry %s is not a valid image", entry->name()));
 			continue;
 		}
 
 		// Check entry name
-		string name = entry->name(true);
+		wxString name = entry->name(true);
 		if (name.Length() > 8)
 		{
-			Log::error(S_FMT(
+			Log::error(wxString::Format(
 				"Entry %s has too long a name to add to the patch table (name must be 8 characters max)",
 				entry->name()));
 			continue;
@@ -1221,7 +1227,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	}
 
 	// Check if the ACC path is set up
-	string accpath = path_acc;
+	wxString accpath = path_acc;
 	if (accpath.IsEmpty() || !wxFileExists(accpath))
 	{
 		wxMessageBox(
@@ -1233,18 +1239,18 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	}
 
 	// Setup some path strings
-	string srcfile       = App::path(entry->name(true) + ".acs", App::Dir::Temp);
-	string ofile         = App::path(entry->name(true) + ".o", App::Dir::Temp);
-	auto   include_paths = wxSplit(path_acc_libs, ';');
+	wxString srcfile       = App::path(entry->name(true) + ".acs", App::Dir::Temp);
+	wxString ofile         = App::path(entry->name(true) + ".o", App::Dir::Temp);
+	auto     include_paths = wxSplit(path_acc_libs, ';');
 
 	// Setup command options
-	string opt;
+	wxString opt;
 	if (hexen)
 		opt += " -h";
 	if (!include_paths.IsEmpty())
 	{
 		for (const auto& include_path : include_paths)
-			opt += S_FMT(" -i \"%s\"", include_path);
+			opt += wxString::Format(" -i \"%s\"", include_path);
 	}
 
 	// Find/export any resource libraries
@@ -1263,17 +1269,17 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		if (entry->parent() && (entry->parent()->filename(true) != res_entry->parent()->filename(true)))
 			continue;
 
-		string path = App::path(res_entry->name(true) + ".acs", App::Dir::Temp);
+		wxString path = App::path(res_entry->name(true) + ".acs", App::Dir::Temp);
 		res_entry->exportFile(path);
 		lib_paths.Add(path);
-		Log::info(2, S_FMT("Exporting ACS library %s", res_entry->name()));
+		Log::info(2, wxString::Format("Exporting ACS library %s", res_entry->name()));
 	}
 
 	// Export script to file
 	entry->exportFile(srcfile);
 
 	// Execute acc
-	string        command = "\"" + path_acc + "\"" + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
+	wxString      command = "\"" + path_acc + "\"" + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
 	wxArrayString output;
 	wxArrayString errout;
 	wxGetApp().SetTopWindow(parent);
@@ -1282,7 +1288,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 
 	// Log output
 	Log::console("ACS compiler output:");
-	string output_log;
+	wxString output_log;
 	if (!output.IsEmpty())
 	{
 		const char* title1 = "=== Log: ===\n";
@@ -1366,7 +1372,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 
 	if (!success || acc_always_show_output)
 	{
-		string errors;
+		wxString errors;
 		if (wxFileExists(App::path("acs.err", App::Dir::Temp)))
 		{
 			// Read acs.err to string
@@ -1398,7 +1404,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 // Converts [entry] to a PNG image (if possible) and saves the PNG data to a
 // file [filename]. Does not alter the entry data itself
 // -----------------------------------------------------------------------------
-bool EntryOperations::exportAsPNG(ArchiveEntry* entry, const string& filename)
+bool EntryOperations::exportAsPNG(ArchiveEntry* entry, const wxString& filename)
 {
 	// Check entry was given
 	if (!entry)
@@ -1408,7 +1414,7 @@ bool EntryOperations::exportAsPNG(ArchiveEntry* entry, const string& filename)
 	SImage image;
 	if (!Misc::loadImageFromEntry(&image, entry))
 	{
-		Log::error(S_FMT("Error converting %s: %s", entry->name(), Global::error));
+		Log::error(wxString::Format("Error converting %s: %s", entry->name(), Global::error));
 		return false;
 	}
 
@@ -1417,7 +1423,7 @@ bool EntryOperations::exportAsPNG(ArchiveEntry* entry, const string& filename)
 	auto     fmt_png = SIFormat::getFormat("png");
 	if (!fmt_png->saveImage(image, png, MainEditor::currentPalette(entry)))
 	{
-		Log::error(S_FMT("Error converting %s", entry->name()));
+		Log::error(wxString::Format("Error converting %s", entry->name()));
 		return false;
 	}
 
@@ -1446,9 +1452,9 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 	}
 
 	// Check if the PNG tools path are set up, at least one of them should be
-	string pngpathc = path_pngcrush;
-	string pngpatho = path_pngout;
-	string pngpathd = path_deflopt;
+	wxString pngpathc = path_pngcrush;
+	wxString pngpatho = path_pngout;
+	wxString pngpathd = path_deflopt;
 	if ((pngpathc.IsEmpty() || !wxFileExists(pngpathc)) && (pngpatho.IsEmpty() || !wxFileExists(pngpatho))
 		&& (pngpathd.IsEmpty() || !wxFileExists(pngpathd)))
 	{
@@ -1460,7 +1466,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 	Vec2i         offsets;
 	bool          alphchunk     = getalPhChunk(entry);
 	bool          grabchunk     = readgrAbChunk(entry, offsets);
-	string        errormessages = "";
+	wxString      errormessages = "";
 	wxArrayString output;
 	wxArrayString errors;
 	size_t        oldsize   = entry->size();
@@ -1472,12 +1478,12 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 	{
 		wxFileName fn(pngpathc);
 		fn.SetExt("opt");
-		string pngfile = fn.GetFullPath();
+		wxString pngfile = fn.GetFullPath();
 		fn.SetExt("png");
-		string optfile = fn.GetFullPath();
+		wxString optfile = fn.GetFullPath();
 		entry->exportFile(pngfile);
 
-		string command = path_pngcrush + " -brute \"" + pngfile + "\" \"" + optfile + "\"";
+		wxString command = path_pngcrush + " -brute \"" + pngfile + "\" \"" + optfile + "\"";
 		output.Empty();
 		errors.Empty();
 		wxExecute(command, output, errors, wxEXEC_SYNC);
@@ -1501,7 +1507,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 		// send app output to console if wanted
 		if (false)
 		{
-			string crushlog = "";
+			wxString crushlog = "";
 			if (errors.GetCount())
 			{
 				crushlog += "PNGCrush error messages:\n";
@@ -1524,12 +1530,12 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 	{
 		wxFileName fn(pngpatho);
 		fn.SetExt("opt");
-		string pngfile = fn.GetFullPath();
+		wxString pngfile = fn.GetFullPath();
 		fn.SetExt("png");
-		string optfile = fn.GetFullPath();
+		wxString optfile = fn.GetFullPath();
 		entry->exportFile(pngfile);
 
-		string command = path_pngout + " /y \"" + pngfile + "\" \"" + optfile + "\"";
+		wxString command = path_pngout + " /y \"" + pngfile + "\" \"" + optfile + "\"";
 		output.Empty();
 		errors.Empty();
 		wxExecute(command, output, errors, wxEXEC_SYNC);
@@ -1554,7 +1560,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 		// send app output to console if wanted
 		if (false)
 		{
-			string pngoutlog = "";
+			wxString pngoutlog = "";
 			if (errors.GetCount())
 			{
 				pngoutlog += "PNGOut error messages:\n";
@@ -1577,10 +1583,10 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 	{
 		wxFileName fn(pngpathd);
 		fn.SetExt("png");
-		string pngfile = fn.GetFullPath();
+		wxString pngfile = fn.GetFullPath();
 		entry->exportFile(pngfile);
 
-		string command = path_deflopt + " /sf \"" + pngfile + "\"";
+		wxString command = path_deflopt + " /sf \"" + pngfile + "\"";
 		output.Empty();
 		errors.Empty();
 		wxExecute(command, output, errors, wxEXEC_SYNC);
@@ -1592,7 +1598,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 		// send app output to console if wanted
 		if (false)
 		{
-			string defloptlog = "";
+			wxString defloptlog = "";
 			if (errors.GetCount())
 			{
 				defloptlog += "DeflOpt error messages:\n";
@@ -1618,7 +1624,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 	if (grabchunk)
 		setGfxOffsets(entry, offsets.x, offsets.y);
 
-	Log::info(S_FMT(
+	Log::info(wxString::Format(
 		"PNG %s size %i =PNGCrush=> %i =PNGout=> %i =DeflOpt=> %i =+grAb/alPh=> %i",
 		entry->name(),
 		oldsize,
@@ -1649,7 +1655,7 @@ bool EntryOperations::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, b
 	auto                 cursor = entry->rawData(true);
 	auto                 eodata = cursor + entry->size();
 	const AnimatedEntry* animation;
-	string               conversion;
+	wxString             conversion;
 	int                  lasttype = -1;
 
 	while (cursor < eodata && *cursor != AnimTypes::STOP)
@@ -1666,7 +1672,7 @@ bool EntryOperations::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, b
 		// Create animation string
 		if (animdefs)
 		{
-			conversion = S_FMT(
+			conversion = wxString::Format(
 				"%s\tOptional\t%-8s\tRange\t%-8s\tTics %i%s",
 				(animation->type ? "Texture" : "Flat"),
 				animation->first,
@@ -1678,7 +1684,7 @@ bool EntryOperations::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, b
 		{
 			if ((animation->type > 1 ? 1 : animation->type) != lasttype)
 			{
-				conversion = S_FMT(
+				conversion = wxString::Format(
 					"#animated %s, spd is number of frames between changes\n"
 					"[%s]\n#spd    last        first\n",
 					animation->type ? "textures" : "flats",
@@ -1689,7 +1695,7 @@ bool EntryOperations::convertAnimated(ArchiveEntry* entry, MemChunk* animdata, b
 				animdata->reSize(animdata->size() + conversion.length(), true);
 				animdata->write(conversion.data(), conversion.length());
 			}
-			conversion = S_FMT("%-8d%-12s%-12s\n", animation->speed, animation->last, animation->first);
+			conversion = wxString::Format("%-8d%-12s%-12s\n", animation->speed, animation->last, animation->first);
 		}
 
 		// Write string to animdata
@@ -1707,7 +1713,7 @@ bool EntryOperations::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, b
 	auto                 cursor = entry->rawData(true);
 	auto                 eodata = cursor + entry->size();
 	const SwitchesEntry* switches;
-	string               conversion;
+	wxString             conversion;
 
 	if (!animdefs)
 	{
@@ -1732,12 +1738,12 @@ bool EntryOperations::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, b
 		// Create animation string
 		if (animdefs)
 		{
-			conversion = S_FMT(
+			conversion = wxString::Format(
 				"Switch\tDoom %d\t\t%-8s\tOn Pic\t%-8s\tTics 0\n", switches->type, switches->off, switches->on);
 		}
 		else
 		{
-			conversion = S_FMT("%-8d%-12s%-12s\n", switches->type, switches->off, switches->on);
+			conversion = wxString::Format("%-8d%-12s%-12s\n", switches->type, switches->off, switches->on);
 		}
 
 		// Write string to animdata
@@ -1755,8 +1761,8 @@ bool EntryOperations::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata, b
 	Tokenizer tz(Tokenizer::Hash);
 	tz.openMem(entry->data(), entry->name());
 
-	string token;
-	char   buffer[23];
+	wxString token;
+	char     buffer[23];
 	while ((token = tz.getToken()).length())
 	{
 		// Animated flats or textures
@@ -1765,19 +1771,19 @@ bool EntryOperations::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata, b
 			bool texture = token == "[TEXTURES]";
 			do
 			{
-				int    speed = tz.getInteger();
-				string last  = tz.getToken();
-				string first = tz.getToken();
+				int      speed = tz.getInteger();
+				wxString last  = tz.getToken();
+				wxString first = tz.getToken();
 				if (last.length() > 8)
 				{
-					Log::error(
-						S_FMT("String %s is too long for an animated %s name!", last, (texture ? "texture" : "flat")));
+					Log::error(wxString::Format(
+						"String %s is too long for an animated %s name!", last, (texture ? "texture" : "flat")));
 					return false;
 				}
 				if (first.length() > 8)
 				{
-					Log::error(
-						S_FMT("String %s is too long for an animated %s name!", first, (texture ? "texture" : "flat")));
+					Log::error(wxString::Format(
+						"String %s is too long for an animated %s name!", first, (texture ? "texture" : "flat")));
 					return false;
 				}
 
@@ -1820,17 +1826,17 @@ bool EntryOperations::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata, b
 		{
 			do
 			{
-				int    type = tz.getInteger();
-				string off  = tz.getToken();
-				string on   = tz.getToken();
+				int      type = tz.getInteger();
+				wxString off  = tz.getToken();
+				wxString on   = tz.getToken();
 				if (off.length() > 8)
 				{
-					Log::error(S_FMT("String %s is too long for a switch name!", off));
+					Log::error(wxString::Format("String %s is too long for a switch name!", off));
 					return false;
 				}
 				if (on.length() > 8)
 				{
-					Log::error(S_FMT("String %s is too long for a switch name!", on));
+					Log::error(wxString::Format("String %s is too long for a switch name!", on));
 					return false;
 				}
 
@@ -1889,19 +1895,19 @@ void fixpngsrc(ArchiveEntry* entry)
 	{
 		if (pointer + 12 > entry->size())
 		{
-			Log::error(S_FMT("Entry %s cannot be repaired.", entry->name()));
+			Log::error(wxString::Format("Entry %s cannot be repaired.", entry->name()));
 			return;
 		}
 		uint32_t chsz = Memory::readB32(data.data(), pointer);
 		if (pointer + 12 + chsz > entry->size())
 		{
-			Log::error(S_FMT("Entry %s cannot be repaired.", entry->name()));
+			Log::error(wxString::Format("Entry %s cannot be repaired.", entry->name()));
 			return;
 		}
 		uint32_t crc = Misc::crc(data.data() + pointer + 4, 4 + chsz);
 		if (crc != Memory::readB32(data.data(), pointer + 8 + chsz))
 		{
-			Log::error(S_FMT(
+			Log::error(wxString::Format(
 				"Chunk %c%c%c%c has bad CRC",
 				data[pointer + 4],
 				data[pointer + 5],

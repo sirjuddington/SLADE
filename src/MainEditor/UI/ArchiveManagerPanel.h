@@ -32,16 +32,16 @@ public:
 private:
 	struct EntryInfo
 	{
-		string entry_path;
-		string file_path;
-		bool   is_dir;
-		time_t file_modified;
+		wxString entry_path;
+		wxString file_path;
+		bool     is_dir;
+		time_t   file_modified;
 
 		EntryInfo(
-			const string& entry_path    = "",
-			const string& file_path     = "",
-			bool          is_dir        = false,
-			time_t        file_modified = 0) :
+			const wxString& entry_path    = "",
+			const wxString& file_path     = "",
+			bool            is_dir        = false,
+			time_t          file_modified = 0) :
 			entry_path{ entry_path },
 			file_path{ file_path },
 			is_dir{ is_dir },
@@ -51,9 +51,9 @@ private:
 	};
 
 	wxEvtHandler*        handler_;
-	string               dir_path_;
+	wxString             dir_path_;
 	vector<EntryInfo>    entry_info_;
-	vector<string>       removed_files_;
+	vector<wxString>     removed_files_;
 	DirArchiveChangeList change_list_;
 
 	void addChange(DirEntryChange change);
@@ -115,9 +115,9 @@ public:
 	void            openEntryTab(ArchiveEntry* entry) const;
 	void            closeEntryTab(ArchiveEntry* entry) const;
 	void            closeEntryTabs(Archive* parent) const;
-	void            openFile(const string& filename) const;
+	void            openFile(const wxString& filename) const;
 	void            openFiles(wxArrayString& files) const;
-	void            openDirAsArchive(const string& dir) const;
+	void            openDirAsArchive(const wxString& dir) const;
 	bool            redirectToTab(ArchiveEntry* entry) const;
 	bool            entryIsOpenInTab(ArchiveEntry* entry) const;
 
@@ -132,7 +132,7 @@ public:
 	bool beforeCloseArchive(Archive* archive);
 	bool closeArchive(Archive* archive);
 
-	void createNewArchive(const string& format) const;
+	void createNewArchive(const wxString& format) const;
 	bool closeAll();
 	void saveAll() const;
 	void checkDirArchives();
@@ -149,13 +149,13 @@ public:
 	void goToBookmark(long index = -1) const;
 
 	// SAction handler
-	bool handleAction(const string& id) override;
+	bool handleAction(const wxString& id) override;
 
 	vector<int> selectedArchives() const;
 	vector<int> selectedBookmarks() const;
 	vector<int> selectedFiles() const;
 
-	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
 
 	// Event handlers
 	void onListArchivesChanged(wxListEvent& e);

@@ -25,7 +25,7 @@ public:
 	InputPrefsPanel(wxWindow* parent);
 	~InputPrefsPanel() = default;
 
-	wxTreeListItem getListGroupItem(const string& group) const;
+	wxTreeListItem getListGroupItem(const wxString& group) const;
 	void           initBindsList() const;
 	void           updateBindsList() const;
 	void           changeKey(wxTreeListItem item);
@@ -35,7 +35,7 @@ public:
 	void init() override;
 	void applyPreferences() override;
 
-	string pageTitle() override { return "Keyboard Shortcuts"; }
+	wxString pageTitle() override { return "Keyboard Shortcuts"; }
 
 private:
 	wxTreeListCtrl* list_binds_   = nullptr;

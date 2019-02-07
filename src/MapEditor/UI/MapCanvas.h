@@ -19,7 +19,7 @@ public:
 	void mouseLook3d();
 
 	// Keybind handling
-	void onKeyBindPress(const string& name) override;
+	void onKeyBindPress(const wxString& name) override;
 
 private:
 	MapEditContext* context_    = nullptr;

@@ -210,7 +210,7 @@ MapRenderer3D::Quad* MapRenderer3D::getQuad(MapEditor::Item item)
 		return nullptr;
 
 	// Get side
-	auto side = map_->side(item.index);
+	auto side = item.asSide(*map_);
 	if (!side)
 		return nullptr;
 
@@ -1107,7 +1107,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 	glEnable(GL_CULL_FACE);
 
 	// Setup colour
-	auto& def = ColourConfiguration::colDef("map_3d_selection");
+	auto& def  = ColourConfiguration::colDef("map_3d_selection");
 	auto  col1 = def.colour;
 	col1.a *= alpha;
 	OpenGL::setColour(col1, def.blendMode());
@@ -1122,7 +1122,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 			continue;
 
 		// Get sector
-		auto sector = map_->sector(item.index);
+		auto sector = item.asSector(*map_);
 		if (!sector)
 			return;
 
@@ -1378,20 +1378,20 @@ void MapRenderer3D::updateLine(unsigned index)
 	// --- Two-sided line ---
 
 	// Get second side info
-	int    floor2      = line->backSector()->floor().height;
-	int    ceiling2    = line->backSector()->ceiling().height;
-	auto   fp2         = line->backSector()->floor().plane;
-	auto   cp2         = line->backSector()->ceiling().plane;
-	auto   colour2     = line->backSector()->colourAt(0, true);
-	auto   fogcolour2  = line->backSector()->fogColour();
-	int    light2      = line->s2()->light();
-	int    xoff2       = line->s2()->texOffsetX();
-	int    yoff2       = line->s2()->texOffsetY();
-	int    lowceil     = min(ceiling1, ceiling2);
-	int    highfloor   = max(floor1, floor2);
-	string sky_flat    = Game::configuration().skyFlat();
-	string hidden_tex  = map_->currentFormat() == MapFormat::Doom64 ? "?" : "-";
-	bool   show_midtex = (map_->currentFormat() != MapFormat::Doom64) || (line->flagSet(512));
+	int      floor2      = line->backSector()->floor().height;
+	int      ceiling2    = line->backSector()->ceiling().height;
+	auto     fp2         = line->backSector()->floor().plane;
+	auto     cp2         = line->backSector()->ceiling().plane;
+	auto     colour2     = line->backSector()->colourAt(0, true);
+	auto     fogcolour2  = line->backSector()->fogColour();
+	int      light2      = line->s2()->light();
+	int      xoff2       = line->s2()->texOffsetX();
+	int      yoff2       = line->s2()->texOffsetY();
+	int      lowceil     = min(ceiling1, ceiling2);
+	int      highfloor   = max(floor1, floor2);
+	wxString sky_flat    = Game::configuration().skyFlat();
+	wxString hidden_tex  = map_->currentFormat() == MapFormat::Doom64 ? "?" : "-";
+	bool     show_midtex = (map_->currentFormat() != MapFormat::Doom64) || (line->flagSet(512));
 	// Heights at both endpoints, for both planes, on both sides
 	double f1h1 = fp1.heightAt(line->x1(), line->y1());
 	double f1h2 = fp1.heightAt(line->x2(), line->y2());
@@ -1484,9 +1484,9 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Front middle
-	lsx            = 1;
-	lsy            = 1;
-	string midtex1 = line->stringProperty("side1.texturemiddle");
+	lsx              = 1;
+	lsy              = 1;
+	wxString midtex1 = line->stringProperty("side1.texturemiddle");
 	if (!midtex1.IsEmpty() && midtex1 != hidden_tex && show_midtex)
 	{
 		Quad quad;
@@ -1700,9 +1700,9 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Back middle
-	lsx            = 1;
-	lsy            = 1;
-	string midtex2 = line->stringProperty("side2.texturemiddle");
+	lsx              = 1;
+	lsy              = 1;
+	wxString midtex2 = line->stringProperty("side2.texturemiddle");
 	if (!midtex2.IsEmpty() && midtex2 != hidden_tex && show_midtex)
 	{
 		Quad quad;
@@ -2019,12 +2019,12 @@ void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float al
 			continue;
 
 		// Get side
-		auto side = map_->side(item.index);
+		auto side = item.asSide(*map_);
 		if (!side)
 			continue;
 
 		// Get parent line index
-		int line = map_->side(item.index)->parentLine()->index();
+		int line = side->parentLine()->index();
 
 		// Get appropriate quad
 		Quad* quad = nullptr;
@@ -2106,13 +2106,15 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 		if (use_zeth_icons && things_[index].type->zethIcon() >= 0)
 		{
 			things_[index].sprite = MapEditor::textureManager()
-										.editorImage(S_FMT("zethicons/zeth%02d", things_[index].type->zethIcon()))
+										.editorImage(
+											wxString::Format("zethicons/zeth%02d", things_[index].type->zethIcon()))
 										.gl_id;
 			things_[index].flags |= ZETH;
 		}
 		if (!things_[index].sprite)
-			things_[index]
-				.sprite = MapEditor::textureManager().editorImage(S_FMT("thing/%s", things_[index].type->icon())).gl_id;
+			things_[index].sprite = MapEditor::textureManager()
+										.editorImage(wxString::Format("thing/%s", things_[index].type->icon()))
+										.gl_id;
 		things_[index].flags |= ICON;
 	}
 	else
@@ -2430,8 +2432,7 @@ void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float a
 			continue;
 
 		// Get thing
-		Vec2d strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
-		auto  thing = map_->thing(item.index);
+		auto thing = item.asThing(*map_);
 		if (!thing)
 			return;
 
@@ -2984,7 +2985,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	glDisable(GL_FOG);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_LINE_SMOOTH);
-	auto& def = ColourConfiguration::colDef("map_3d_hilight");
+	auto& def         = ColourConfiguration::colDef("map_3d_hilight");
 	auto  col_hilight = def.colour;
 	col_hilight.a *= alpha;
 	OpenGL::setColour(col_hilight);
@@ -2994,12 +2995,12 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 		|| hilight.type == MapEditor::ItemType::WallTop)
 	{
 		// Get side
-		auto side = map_->side(hilight.index);
+		auto side = hilight.asSide(*map_);
 		if (!side)
 			return;
 
 		// Get parent line index
-		int line = map_->side(hilight.index)->parentLine()->index();
+		int line = side->parentLine()->index();
 
 		// Get appropriate quad
 		Quad* quad = nullptr;
@@ -3059,7 +3060,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	if (hilight.type == MapEditor::ItemType::Floor || hilight.type == MapEditor::ItemType::Ceiling)
 	{
 		// Get sector
-		auto sector = map_->sector(hilight.index);
+		auto sector = hilight.asSector(*map_);
 		if (!sector)
 			return;
 
@@ -3099,8 +3100,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 	if (hilight.type == MapEditor::ItemType::Thing)
 	{
 		// Get thing
-		Vec2d strafe(cam_position_.x + cam_strafe_.x, cam_position_.y + cam_strafe_.y);
-		auto  thing = map_->thing(hilight.index);
+		auto thing = hilight.asThing(*map_);
 		if (!thing)
 			return;
 
@@ -3149,7 +3149,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 // -----------------------------------------------------------------------------
 // Handles any announcements from the palette or resource manager
 // -----------------------------------------------------------------------------
-void MapRenderer3D::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void MapRenderer3D::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	if (announcer != theMainWindow->paletteChooser() && announcer != &App::resources())
 		return;

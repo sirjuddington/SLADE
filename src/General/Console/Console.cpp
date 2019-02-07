@@ -61,9 +61,9 @@ void Console::addCommand(ConsoleCommand& c)
 // -----------------------------------------------------------------------------
 // Attempts to execute the command line given
 // -----------------------------------------------------------------------------
-void Console::execute(const string& command)
+void Console::execute(const wxString& command)
 {
-	Log::info(S_FMT("> %s", command));
+	Log::info(wxString::Format("> %s", command));
 
 	// Don't bother doing anything else with an empty command
 	if (command.empty())
@@ -77,10 +77,10 @@ void Console::execute(const string& command)
 	tz.openString(command);
 
 	// Get the command name
-	string cmd_name = tz.current().text;
+	wxString cmd_name = tz.current().text;
 
 	// Get all args
-	vector<string> args;
+	vector<wxString> args;
 	while (!tz.atEnd())
 		args.push_back(tz.next().text);
 
@@ -110,15 +110,15 @@ void Console::execute(const string& command)
 					*((CBoolCVar*)cvar) = true;
 			}
 			else if (cvar->type == CVar::Type::Integer)
-				*((CIntCVar*)cvar) = StringUtils::toInt(args[0]);
+				*((CIntCVar*)cvar) = wxStringUtils::toInt(args[0]);
 			else if (cvar->type == CVar::Type::Float)
-				*((CFloatCVar*)cvar) = StringUtils::toFloat(args[0]);
+				*((CFloatCVar*)cvar) = wxStringUtils::toFloat(args[0]);
 			else if (cvar->type == CVar::Type::String)
 				*((CStringCVar*)cvar) = args[0];
 		}
 
 		// Print cvar value
-		string value = "";
+		wxString value = "";
 		if (cvar->type == CVar::Type::Boolean)
 		{
 			if (cvar->getValue().Bool)
@@ -127,13 +127,13 @@ void Console::execute(const string& command)
 				value = "false";
 		}
 		else if (cvar->type == CVar::Type::Integer)
-			value = S_FMT("%d", cvar->getValue().Int);
+			value = wxString::Format("%d", cvar->getValue().Int);
 		else if (cvar->type == CVar::Type::Float)
-			value = S_FMT("%1.4f", cvar->getValue().Float);
+			value = wxString::Format("%1.4f", cvar->getValue().Float);
 		else
 			value = ((CStringCVar*)cvar)->value;
 
-		Log::console(S_FMT(R"("%s" = "%s")", cmd_name, value));
+		Log::console(wxString::Format(R"("%s" = "%s")", cmd_name, value));
 
 		return;
 	}
@@ -151,16 +151,16 @@ void Console::execute(const string& command)
 	}
 
 	// Command not found
-	Log::console(S_FMT("Unknown command: \"%s\"", cmd_name));
+	Log::console(wxString::Format("Unknown command: \"%s\"", cmd_name));
 }
 
 // -----------------------------------------------------------------------------
 // Returns the last command sent to the console
 // -----------------------------------------------------------------------------
-string Console::lastCommand()
+wxString Console::lastCommand()
 {
 	// Init blank string
-	string lastCmd = "";
+	wxString lastCmd = "";
 
 	// Get last command if any exist
 	if (!cmd_log_.empty())
@@ -173,7 +173,7 @@ string Console::lastCommand()
 // Returns the previous command at [index] from the last entered
 // (ie, index=0 will be the directly previous command)
 // -----------------------------------------------------------------------------
-string Console::prevCommand(int index)
+wxString Console::prevCommand(int index)
 {
 	// Check index
 	if (index < 0 || (unsigned)index >= cmd_log_.size())
@@ -205,8 +205,8 @@ ConsoleCommand& Console::command(size_t index)
 // ConsoleCommand class constructor
 // -----------------------------------------------------------------------------
 ConsoleCommand::ConsoleCommand(
-	const string& name,
-	void (*command_func)(const vector<string>&),
+	const wxString& name,
+	void (*command_func)(const vector<wxString>&),
 	int  min_args = 0,
 	bool show_in_list)
 {
@@ -223,13 +223,13 @@ ConsoleCommand::ConsoleCommand(
 // -----------------------------------------------------------------------------
 // Executes the console command
 // -----------------------------------------------------------------------------
-void ConsoleCommand::execute(const vector<string>& args) const
+void ConsoleCommand::execute(const vector<wxString>& args) const
 {
 	// Only execute if we have the minimum args specified
 	if (args.size() >= min_args_)
 		command_func_(args);
 	else
-		Log::console(S_FMT("Missing command arguments, type \"cmdhelp %s\" for more information", name_));
+		Log::console(wxString::Format("Missing command arguments, type \"cmdhelp %s\" for more information", name_));
 }
 
 
@@ -254,13 +254,13 @@ CONSOLE_COMMAND(echo, 1, true)
 // -----------------------------------------------------------------------------
 CONSOLE_COMMAND(cmdlist, 0, true)
 {
-	Log::console(S_FMT("%d Valid Commands:", App::console()->numCommands()));
+	Log::console(wxString::Format("%d Valid Commands:", App::console()->numCommands()));
 
 	for (int a = 0; a < App::console()->numCommands(); a++)
 	{
 		auto& cmd = App::console()->command(a);
 		if (cmd.showInList() || Global::debug)
-			Log::console(S_FMT("\"%s\" (%lu args)", cmd.name(), cmd.minArgs()));
+			Log::console(wxString::Format("\"%s\" (%lu args)", cmd.name(), cmd.minArgs()));
 	}
 }
 
@@ -270,11 +270,11 @@ CONSOLE_COMMAND(cmdlist, 0, true)
 CONSOLE_COMMAND(cvarlist, 0, true)
 {
 	// Get sorted list of cvars
-	vector<string> list;
+	vector<wxString> list;
 	CVar::putList(list);
 	sort(list.begin(), list.end());
 
-	Log::console(S_FMT("%lu CVars:", list.size()));
+	Log::console(wxString::Format("%lu CVars:", list.size()));
 
 	// Write list to console
 	for (const auto& a : list)
@@ -292,9 +292,9 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 		if (App::console()->command(a).name().Lower() == args[0].Lower())
 		{
 #ifdef USE_WEBVIEW_STARTPAGE
-			MainEditor::openDocs(S_FMT("%s-Console-Command", args[0]));
+			MainEditor::openDocs(wxString::Format("%s-Console-Command", args[0]));
 #else
-			string url = S_FMT("https://github.com/sirjuddington/SLADE/wiki/%s-Console-Command", args[0]);
+			wxString url = wxString::Format("https://github.com/sirjuddington/SLADE/wiki/%s-Console-Command", args[0]);
 			wxLaunchDefaultBrowser(url);
 #endif
 			return;
@@ -302,7 +302,7 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 	}
 
 	// No command found
-	Log::console(S_FMT("No command \"%s\" exists", args[0]));
+	Log::console(wxString::Format("No command \"%s\" exists", args[0]));
 }
 
 

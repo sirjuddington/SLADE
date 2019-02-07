@@ -52,9 +52,9 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-typedef std::map<string, int>                   StrIntMap;
-typedef std::map<string, vector<ArchiveEntry*>> PathMap;
-typedef std::map<int, vector<ArchiveEntry*>>    CRCMap;
+typedef std::map<wxString, int>                   StrIntMap;
+typedef std::map<wxString, vector<ArchiveEntry*>> PathMap;
+typedef std::map<int, vector<ArchiveEntry*>>      CRCMap;
 
 
 // -----------------------------------------------------------------------------
@@ -123,7 +123,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 				tx_list->removePatch(p.name);
 
 			// Remove the patch from the patch table
-			Log::info(S_FMT("Removed patch %s", p.name));
+			Log::info(wxString::Format("Removed patch %s", p.name));
 			removed++;
 			ptable.removePatch(a--);
 		}
@@ -132,7 +132,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 	// Remove unused patch entries
 	for (auto& a : to_remove)
 	{
-		Log::info(S_FMT("Removed entry %s", a->name()));
+		Log::info(wxString::Format("Removed entry %s", a->name()));
 		archive->removeEntry(a);
 	}
 
@@ -149,7 +149,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 
 	// Notify user
 	wxMessageBox(
-		S_FMT("Removed %d patches and %lu entries. See console log for details.", removed, to_remove.size()),
+		wxString::Format("Removed %d patches and %lu entries. See console log for details.", removed, to_remove.size()),
 		"Removed Unused Patches",
 		wxOK | wxICON_INFORMATION);
 
@@ -184,7 +184,7 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive)
 	}
 
 	// Generate string of duplicate entry names
-	string dups;
+	wxString dups;
 	// Treeless archives such as WADs can just include a simple list of duplicated names and how often they appear
 	if (archive->isTreeless())
 	{
@@ -193,9 +193,9 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive)
 		{
 			if (i->second > 1)
 			{
-				string name = i->first;
+				wxString name = i->first;
 				name.Remove(0, 1);
-				dups += S_FMT("%s appears %d times\n", name, i->second);
+				dups += wxString::Format("%s appears %d times\n", name, i->second);
 			}
 			++i;
 		}
@@ -210,14 +210,14 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive)
 		{
 			if (i->second.size() > 1)
 			{
-				string name;
-				dups += S_FMT("\n%i entries are named %s\t", i->second.size(), i->first);
+				wxString name;
+				dups += wxString::Format("\n%i entries are named %s\t", i->second.size(), i->first);
 				auto j = i->second.begin();
 				while (j != i->second.end())
 				{
 					name = (*j)->path(true);
 					name.Remove(0, 1);
-					dups += S_FMT("\t%s", name);
+					dups += wxString::Format("\t%s", name);
 					++j;
 				}
 			}
@@ -260,7 +260,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 	// Init search options
 	Archive::SearchOptions search;
 	ArchiveEntry*          other = nullptr;
-	string                 dups  = "";
+	wxString               dups  = "";
 	size_t                 count = 0;
 
 	// Go through list
@@ -283,7 +283,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 		if (other != nullptr && (other->data().crc() == entry->data().crc()))
 		{
 			++count;
-			dups += S_FMT("%s\n", search.match_name);
+			dups += wxString::Format("%s\n", search.match_name);
 			archive->removeEntry(entry);
 			entry = nullptr;
 		}
@@ -297,7 +297,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 		return;
 	}
 
-	string message = S_FMT(
+	wxString message = wxString::Format(
 		"The following %d entr%s duplicated from the base resource archive and deleted:",
 		count,
 		(count > 1) ? "ies were" : "y was");
@@ -320,7 +320,7 @@ bool ArchiveOperations::checkDuplicateEntryContent(Archive* archive)
 	// Get list of all entries in archive
 	vector<ArchiveEntry*> entries;
 	archive->putEntryTreeAsList(entries);
-	string dups = "";
+	wxString dups = "";
 
 	// Go through list
 	for (auto& entry : entries)
@@ -343,15 +343,15 @@ bool ArchiveOperations::checkDuplicateEntryContent(Archive* archive)
 	{
 		if (i->second.size() > 1)
 		{
-			string name = i->second[0]->path(true);
+			wxString name = i->second[0]->path(true);
 			name.Remove(0, 1);
-			dups += S_FMT("\n%s\t(%8x) duplicated by", name, i->first);
+			dups += wxString::Format("\n%s\t(%8x) duplicated by", name, i->first);
 			auto j = i->second.begin() + 1;
 			while (j != i->second.end())
 			{
 				name = (*j)->path(true);
 				name.Remove(0, 1);
-				dups += S_FMT("\t%s", name);
+				dups += wxString::Format("\t%s", name);
 				++j;
 			}
 		}
@@ -377,21 +377,21 @@ bool ArchiveOperations::checkDuplicateEntryContent(Archive* archive)
 
 
 // Hardcoded doom defaults for now
-int    n_tex_anim       = 13;
-string tex_anim_start[] = {
+int      n_tex_anim       = 13;
+wxString tex_anim_start[] = {
 	"BLODGR1",  "SLADRIP1", "BLODRIP1", "FIREWALA", "GSTFONT1", "FIRELAV3", "FIREMAG1",
 	"FIREBLU1", "ROCKRED1", "BFALL1",   "SFALL1",   "WFALL1",   "DBRAIN1",
 };
-string tex_anim_end[] = {
+wxString tex_anim_end[] = {
 	"BLODGR4",  "SLADRIP3", "BLODRIP4", "FIREWALL", "GSTFONT3", "FIRELAVA", "FIREMAG3",
 	"FIREBLU2", "ROCKRED3", "BFALL4",   "SFALL4",   "WFALL4",   "DBRAIN4",
 };
 
-int    n_flat_anim       = 9;
-string flat_anim_start[] = {
+int      n_flat_anim       = 9;
+wxString flat_anim_start[] = {
 	"NUKAGE1", "FWATER1", "SWATER1", "LAVA1", "BLOOD1", "RROCK05", "SLIME01", "SLIME05", "SLIME09",
 };
-string flat_anim_end[] = {
+wxString flat_anim_end[] = {
 	"NUKAGE3", "FWATER4", "SWATER4", "LAVA4", "BLOOD3", "RROCK08", "SLIME04", "SLIME08", "SLIME12",
 };
 
@@ -419,7 +419,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 
 	// Go through and add used textures to list
 	DoomMapFormat::SideDef sdef;
-	string                 tex_lower, tex_middle, tex_upper;
+	wxString               tex_lower, tex_middle, tex_upper;
 	for (auto& sidedef : sidedefs)
 	{
 		int nsides = sidedef->size() / 30;
@@ -456,7 +456,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 		tz.openMem(udmfmap->data(), "UDMF TEXTMAP");
 
 		// Go through text tokens
-		string token = tz.getToken();
+		wxString token = tz.getToken();
 		while (!token.IsEmpty())
 		{
 			// Check for sidedef definition
@@ -504,7 +504,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 		bool anim = false;
 		for (unsigned t = 1; t < txlist.size(); t++)
 		{
-			string texname = txlist.texture(t)->name();
+			wxString texname = txlist.texture(t)->name();
 
 			// Check for animation start
 			for (int b = 0; b < n_tex_anim; b++)
@@ -550,7 +550,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 	TextureXList tx;
 	for (auto& texturex : base_tx_entries)
 		tx.readTEXTUREXData(texturex, pt_temp, true);
-	vector<string> base_resource_textures;
+	vector<wxString> base_resource_textures;
 	for (unsigned a = 0; a < tx.size(); a++)
 		base_resource_textures.push_back(tx.texture(a)->name());
 
@@ -564,7 +564,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 		if (unused_tex[a].StartsWith("SW1"))
 		{
 			// Get counterpart switch name
-			string swname = unused_tex[a];
+			wxString swname = unused_tex[a];
 			swname.Replace("SW1", "SW2", false);
 
 			// Check if its counterpart is used
@@ -574,7 +574,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 		else if (unused_tex[a].StartsWith("SW2"))
 		{
 			// Get counterpart switch name
-			string swname = unused_tex[a];
+			wxString swname = unused_tex[a];
 			swname.Replace("SW2", "SW1", false);
 
 			// Check if its counterpart is used
@@ -630,7 +630,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 		}
 	}
 
-	wxMessageBox(S_FMT("Removed %d unused textures", n_removed));
+	wxMessageBox(wxString::Format("Removed %d unused textures", n_removed));
 }
 
 void ArchiveOperations::removeUnusedFlats(Archive* archive)
@@ -651,7 +651,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 
 	// Go through and add used flats to list
 	DoomMapFormat::Sector sec;
-	string                tex_floor, tex_ceil;
+	wxString              tex_floor, tex_ceil;
 	for (auto& sector : sectors)
 	{
 		int nsec = sector->size() / 26;
@@ -686,7 +686,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 		tz.openMem(udmfmap->data(), "UDMF TEXTMAP");
 
 		// Go through text tokens
-		string token = tz.getToken();
+		wxString token = tz.getToken();
 		while (!token.IsEmpty())
 		{
 			// Check for sector definition
@@ -733,13 +733,13 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 			continue;
 
 		// Check for animation start
-		string flatname = flat->name(true);
+		wxString flatname = flat->name(true);
 		for (int b = 0; b < n_flat_anim; b++)
 		{
 			if (flatname == flat_anim_start[b])
 			{
 				anim = true;
-				Log::info(S_FMT("%s anim start", flatname));
+				Log::info(wxString::Format("%s anim start", flatname));
 				break;
 			}
 		}
@@ -752,7 +752,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 			{
 				anim    = false;
 				thisend = true;
-				Log::info(S_FMT("%s anim end", flatname));
+				Log::info(wxString::Format("%s anim end", flatname));
 				break;
 			}
 		}
@@ -790,7 +790,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 		}
 	}
 
-	wxMessageBox(S_FMT("Removed %d unused flats", n_removed));
+	wxMessageBox(wxString::Format("Removed %d unused flats", n_removed));
 }
 
 
@@ -914,8 +914,8 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 		return changed;
 
 	// Get all maps
-	auto   maps   = archive->detectMaps();
-	string report = "";
+	auto     maps   = archive->detectMaps();
+	wxString report = "";
 
 	for (auto& map : maps)
 	{
@@ -989,7 +989,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 				}
 			}
 		}
-		report += S_FMT("%s:\t%i things changed\n", map.head->name(), achanged);
+		report += wxString::Format("%s:\t%i things changed\n", map.head->name(), achanged);
 		changed += achanged;
 	}
 	Log::info(1, report);
@@ -1286,8 +1286,8 @@ size_t ArchiveOperations::replaceSpecials(
 		return changed;
 
 	// Get all maps
-	auto   maps   = archive->detectMaps();
-	string report = "";
+	auto     maps   = archive->detectMaps();
+	wxString report = "";
 
 	for (auto& map : maps)
 	{
@@ -1440,7 +1440,7 @@ size_t ArchiveOperations::replaceSpecials(
 				}
 			}
 		}
-		report += S_FMT("%s:\t%i specials changed\n", map.head->name(), achanged);
+		report += wxString::Format("%s:\t%i specials changed\n", map.head->name(), achanged);
 		changed += achanged;
 	}
 	Log::info(1, report);
@@ -1469,7 +1469,7 @@ CONSOLE_COMMAND(replacespecials, 2, true)
 		case 6: arg1 = args[oldtail--].ToLong(&oldarg1) && args[newtail--].ToLong(&newarg1);
 		case 4: arg0 = args[oldtail--].ToLong(&oldarg0) && args[newtail--].ToLong(&newarg0);
 		case 2: run = args[oldtail--].ToLong(&oldtype) && args[newtail--].ToLong(&newtype); break;
-		default: Log::warning(S_FMT("Invalid number of arguments: %d", fullarg));
+		default: Log::warning(wxString::Format("Invalid number of arguments: %d", fullarg));
 		}
 	}
 
@@ -1499,7 +1499,7 @@ CONSOLE_COMMAND(replacespecials, 2, true)
 	}
 }
 
-bool replaceTextureString(char* str, string oldtex, string newtex)
+bool replaceTextureString(char* str, wxString oldtex, wxString newtex)
 {
 	bool go = true;
 	for (unsigned c = 0; c < oldtex.Length(); ++c)
@@ -1530,7 +1530,12 @@ bool replaceTextureString(char* str, string oldtex, string newtex)
 	}
 	return go;
 }
-size_t replaceFlatsDoomHexen(ArchiveEntry* entry, const string& oldtex, const string& newtex, bool floor, bool ceiling)
+size_t replaceFlatsDoomHexen(
+	ArchiveEntry*   entry,
+	const wxString& oldtex,
+	const wxString& newtex,
+	bool            floor,
+	bool            ceiling)
 {
 	if (entry == nullptr)
 		return 0;
@@ -1562,12 +1567,12 @@ size_t replaceFlatsDoomHexen(ArchiveEntry* entry, const string& oldtex, const st
 	return changed;
 }
 size_t replaceWallsDoomHexen(
-	ArchiveEntry* entry,
-	const string& oldtex,
-	const string& newtex,
-	bool          lower,
-	bool          middle,
-	bool          upper)
+	ArchiveEntry*   entry,
+	const wxString& oldtex,
+	const wxString& newtex,
+	bool            lower,
+	bool            middle,
+	bool            upper)
 {
 	if (entry == nullptr)
 		return 0;
@@ -1602,7 +1607,7 @@ size_t replaceWallsDoomHexen(
 
 	return changed;
 }
-size_t replaceFlatsDoom64(ArchiveEntry* entry, const string& oldtex, const string& newtex, bool floor, bool ceiling)
+size_t replaceFlatsDoom64(ArchiveEntry* entry, const wxString& oldtex, const wxString& newtex, bool floor, bool ceiling)
 {
 	if (entry == nullptr)
 		return 0;
@@ -1643,12 +1648,12 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, const string& oldtex, const strin
 	return changed;
 }
 size_t replaceWallsDoom64(
-	ArchiveEntry* entry,
-	const string& oldtex,
-	const string& newtex,
-	bool          lower,
-	bool          middle,
-	bool          upper)
+	ArchiveEntry*   entry,
+	const wxString& oldtex,
+	const wxString& newtex,
+	bool            lower,
+	bool            middle,
+	bool            upper)
 {
 	if (entry == nullptr)
 		return 0;
@@ -1694,14 +1699,14 @@ size_t replaceWallsDoom64(
 	return changed;
 }
 size_t replaceTexturesUDMF(
-	ArchiveEntry* entry,
-	const string& oldtex,
-	const string& newtex,
-	bool          floor,
-	bool          ceiling,
-	bool          lower,
-	bool          middle,
-	bool          upper)
+	ArchiveEntry*   entry,
+	const wxString& oldtex,
+	const wxString& newtex,
+	bool            floor,
+	bool            ceiling,
+	bool            lower,
+	bool            middle,
+	bool            upper)
 {
 	if (entry == nullptr)
 		return 0;
@@ -1716,14 +1721,14 @@ size_t replaceTexturesUDMF(
 	return changed;
 }
 size_t ArchiveOperations::replaceTextures(
-	Archive*      archive,
-	const string& oldtex,
-	const string& newtex,
-	bool          floor,
-	bool          ceiling,
-	bool          lower,
-	bool          middle,
-	bool          upper)
+	Archive*        archive,
+	const wxString& oldtex,
+	const wxString& newtex,
+	bool            floor,
+	bool            ceiling,
+	bool            lower,
+	bool            middle,
+	bool            upper)
 {
 	size_t changed = 0;
 	// Check archive was given
@@ -1731,8 +1736,8 @@ size_t ArchiveOperations::replaceTextures(
 		return changed;
 
 	// Get all maps
-	auto   maps   = archive->detectMaps();
-	string report = "";
+	auto     maps   = archive->detectMaps();
+	wxString report = "";
 
 	for (auto& map : maps)
 	{
@@ -1829,7 +1834,7 @@ size_t ArchiveOperations::replaceTextures(
 				}
 			}
 		}
-		report += S_FMT("%s:\t%i elements changed\n", map.head->name(), achanged);
+		report += wxString::Format("%s:\t%i elements changed\n", map.head->name(), achanged);
 		changed += achanged;
 	}
 	Log::info(1, report);

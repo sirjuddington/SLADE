@@ -8,8 +8,8 @@ public:
 	virtual bool isSoundfontLoaded() = 0;
 	virtual bool reloadSoundfont() { return true; }
 
-	virtual bool openFile(string filename) = 0;
-	virtual bool openData(MemChunk& mc)    = 0;
+	virtual bool openFile(wxString filename) = 0;
+	virtual bool openData(MemChunk& mc)      = 0;
 
 	virtual bool isReady() = 0;
 
@@ -23,11 +23,11 @@ public:
 	virtual bool setPosition(int pos)  = 0;
 	virtual bool setVolume(int volume) = 0;
 
-	virtual int    length();
-	virtual string info();
+	virtual int      length();
+	virtual wxString info();
 
 protected:
-	string    file_;
+	wxString  file_;
 	MemChunk  data_;
 	sf::Clock timer_;
 };
@@ -36,7 +36,7 @@ class NullMIDIPlayer : public MIDIPlayer
 {
 public:
 	bool isSoundfontLoaded() override { return false; }
-	bool openFile(string filename) override { return false; }
+	bool openFile(wxString filename) override { return false; }
 	bool openData(MemChunk& mc) override { return false; }
 	bool play() override { return false; }
 	bool pause() override { return false; }

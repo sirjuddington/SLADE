@@ -204,7 +204,8 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 
 	if (num_entries > MAX_ENTRY_COUNT)
 	{
-		Log::error(S_FMT("ChasmBinArchive::write: Bin archive can contain no more than %u entries", MAX_ENTRY_COUNT));
+		Log::error(wxString::Format(
+			"ChasmBinArchive::write: Bin archive can contain no more than %u entries", MAX_ENTRY_COUNT));
 		Global::error = "Maximum number of entries exceeded for Chasm: The Rift bin archive";
 		return false;
 	}
@@ -235,12 +236,12 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Check entry name
-		string  name        = entry->name();
-		uint8_t name_length = static_cast<uint8_t>(name.Length());
+		wxString name        = entry->name();
+		uint8_t  name_length = static_cast<uint8_t>(name.Length());
 
 		if (name_length > NAME_SIZE - 1)
 		{
-			Log::warning(S_FMT("Entry %s name is too long, it will be truncated", name));
+			Log::warning(wxString::Format("Entry %s name is too long, it will be truncated", name));
 			name.Truncate(NAME_SIZE - 1);
 			name_length = static_cast<uint8_t>(NAME_SIZE - 1);
 		}
@@ -299,7 +300,7 @@ bool ChasmBinArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("ChasmBinArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error(wxString::Format("ChasmBinArchive::loadEntryData: Unable to open archive file %s", filename_));
 		return false;
 	}
 
@@ -350,7 +351,7 @@ bool ChasmBinArchive::isChasmBinArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Chasm bin archive
 // -----------------------------------------------------------------------------
-bool ChasmBinArchive::isChasmBinArchive(const string& filename)
+bool ChasmBinArchive::isChasmBinArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

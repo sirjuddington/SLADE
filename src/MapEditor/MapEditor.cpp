@@ -64,6 +64,96 @@ MapBackupManager                backup_manager;
 
 // -----------------------------------------------------------------------------
 //
+// MapEditor::Item Struct Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Returns the vertex in [map] matching this item, or null if the item isn't a
+// vertex
+// -----------------------------------------------------------------------------
+MapVertex* MapEditor::Item::asVertex(const SLADEMap& map) const
+{
+	if (type == ItemType::Vertex)
+		return map.vertex(index);
+
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the line in [map] matching this item, or null if the item isn't a
+// line
+// -----------------------------------------------------------------------------
+MapLine* MapEditor::Item::asLine(const SLADEMap& map) const
+{
+	if (type == ItemType::Line)
+		return map.line(index);
+
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the side in [map] matching this item, or null if the item isn't a
+// side
+// -----------------------------------------------------------------------------
+MapSide* MapEditor::Item::asSide(const SLADEMap& map) const
+{
+	if (type == ItemType::Side || type == ItemType::WallBottom || type == ItemType::WallMiddle
+		|| type == ItemType::WallTop)
+		return map.side(index);
+
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the sector in [map] matching this item, or null if the item isn't a
+// sector
+// -----------------------------------------------------------------------------
+MapSector* MapEditor::Item::asSector(const SLADEMap& map) const
+{
+	if (type == ItemType::Sector || type == ItemType::Ceiling || type == ItemType::Floor)
+		return map.sector(index);
+
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the thing in [map] matching this item, or null if the item isn't a
+// thing
+// -----------------------------------------------------------------------------
+MapThing* MapEditor::Item::asThing(const SLADEMap& map) const
+{
+	if (type == ItemType::Thing)
+		return map.thing(index);
+
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the object in [map] matching this item
+// -----------------------------------------------------------------------------
+MapObject* MapEditor::Item::asObject(const SLADEMap& map) const
+{
+	switch (type)
+	{
+	case ItemType::Vertex: return map.vertex(index);
+	case ItemType::Side:
+	case ItemType::WallTop:
+	case ItemType::WallMiddle:
+	case ItemType::WallBottom:
+	case ItemType::Line: return map.line(index);
+	case ItemType::Floor:
+	case ItemType::Ceiling:
+	case ItemType::Sector: return map.sector(index);
+	case ItemType::Thing: return map.thing(index);
+	default: return nullptr;
+	}
+}
+
+
+// -----------------------------------------------------------------------------
+//
 // MapEditor Namespace Functions
 //
 // -----------------------------------------------------------------------------
@@ -159,7 +249,7 @@ void MapEditor::setUndoManager(UndoManager* manager)
 // -----------------------------------------------------------------------------
 // Sets the map editor window status bar [text] at [column]
 // -----------------------------------------------------------------------------
-void ::MapEditor::setStatusText(const string& text, int column)
+void ::MapEditor::setStatusText(const wxString& text, int column)
 {
 	map_window->CallAfter(&MapEditorWindow::SetStatusText, text, column);
 }
@@ -282,7 +372,11 @@ void MapEditor::showObjectEditPanel(bool show, ObjectEditGroup* group)
 // Opens the texture browser for [tex_type] textures, with [init_texture]
 // initially selected. Returns the selected texture
 // -----------------------------------------------------------------------------
-string MapEditor::browseTexture(const string& init_texture, TextureType tex_type, SLADEMap& map, const string& title)
+wxString MapEditor::browseTexture(
+	const wxString& init_texture,
+	TextureType     tex_type,
+	SLADEMap&       map,
+	const wxString& title)
 {
 	// Unlock cursor if locked
 	bool cursor_locked = edit_context->mouseLocked();
@@ -294,7 +388,7 @@ string MapEditor::browseTexture(const string& init_texture, TextureType tex_type
 	browser.SetTitle(title);
 
 	// Get selected texture
-	string tex;
+	wxString tex;
 	if (browser.ShowModal() == wxID_OK)
 		tex = browser.selectedItem()->name();
 
@@ -337,18 +431,18 @@ int MapEditor::browseThingType(int init_type, SLADEMap& map)
 // -----------------------------------------------------------------------------
 bool MapEditor::editObjectProperties(vector<MapObject*>& list)
 {
-	string selsize = "";
-	string type    = edit_context->modeString(false);
+	wxString selsize = "";
+	wxString type    = edit_context->modeString(false);
 	if (list.size() == 1)
-		type += S_FMT(" #%d", list[0]->index());
+		type += wxString::Format(" #%d", list[0]->index());
 	else if (list.size() > 1)
-		selsize = S_FMT("(%lu selected)", list.size());
+		selsize = wxString::Format("(%lu selected)", list.size());
 
 	// Create dialog for properties panel
 	SDialog dlg(
 		MapEditor::window(),
-		S_FMT("%s Properties %s", type, selsize),
-		S_FMT("mobjprops_%s", CHR(edit_context->modeString(false))),
+		wxString::Format("%s Properties %s", type, selsize),
+		wxString::Format("mobjprops_%s", CHR(edit_context->modeString(false))),
 		-1,
 		-1);
 	auto sizer = new wxBoxSizer(wxVERTICAL);

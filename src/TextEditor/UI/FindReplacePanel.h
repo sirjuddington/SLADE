@@ -8,10 +8,10 @@ public:
 	FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor);
 	~FindReplacePanel() = default;
 
-	void   setFindText(const string& find) const;
-	string findText() const;
-	int    findFlags() const;
-	string replaceText() const;
+	void     setFindText(const wxString& find) const;
+	wxString findText() const;
+	int      findFlags() const;
+	wxString replaceText() const;
 
 private:
 	TextEditorCtrl& text_editor_;

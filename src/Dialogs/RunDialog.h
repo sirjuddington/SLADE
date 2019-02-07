@@ -10,12 +10,12 @@ public:
 	RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb = false);
 	~RunDialog();
 
-	void   openGameExe(unsigned index) const;
-	string selectedCommandLine(Archive* archive, const string& map_name, const string& map_file = "") const;
-	string selectedResourceList() const;
-	string selectedExeDir() const;
-	string selectedExeId() const;
-	bool   start3dModeChecked() const;
+	void     openGameExe(unsigned index) const;
+	wxString selectedCommandLine(Archive* archive, const wxString& map_name, const wxString& map_file = "") const;
+	wxString selectedResourceList() const;
+	wxString selectedExeDir() const;
+	wxString selectedExeId() const;
+	bool     start3dModeChecked() const;
 
 private:
 	wxChoice*               choice_game_exes_  = nullptr;

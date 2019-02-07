@@ -115,7 +115,7 @@ ColRGBA GfxColouriseDialog::colour() const
 // -----------------------------------------------------------------------------
 // Sets the colour to use
 // -----------------------------------------------------------------------------
-void GfxColouriseDialog::setColour(const string& col)
+void GfxColouriseDialog::setColour(const wxString& col)
 {
 	wxColour colour(col);
 	ColRGBA  rgba = ColRGBA(COLWX(colour));

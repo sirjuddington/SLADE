@@ -256,7 +256,7 @@ bool LibArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("LibArchive::loadEntryData: Failed to open libfile %s", filename_));
+		Log::error(wxString::Format("LibArchive::loadEntryData: Failed to open libfile %s", filename_));
 		return false;
 	}
 
@@ -332,7 +332,7 @@ bool LibArchive::isLibArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Shadowcaster lib archive
 // -----------------------------------------------------------------------------
-bool LibArchive::isLibArchive(const string& filename)
+bool LibArchive::isLibArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

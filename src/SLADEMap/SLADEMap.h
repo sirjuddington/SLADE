@@ -27,8 +27,8 @@ public:
 	SLADEMap(const SLADEMap& copy) = delete;
 	~SLADEMap();
 
-	string                     mapName() const { return name_; }
-	string                     udmfNamespace() const { return udmf_namespace_; }
+	wxString                   mapName() const { return name_; }
+	wxString                   udmfNamespace() const { return udmf_namespace_; }
 	MapFormat                  currentFormat() const { return current_format_; }
 	long                       geometryUpdated() const { return geometry_updated_; }
 	long                       thingsUpdated() const { return things_updated_; }
@@ -97,7 +97,7 @@ public:
 	void putDragonTargets(MapThing* first, vector<MapThing*>& list);
 
 	// Info
-	string     adjacentLineTexture(MapVertex* vertex, int tex_part = 255) const;
+	wxString   adjacentLineTexture(MapVertex* vertex, int tex_part = 255) const;
 	MapSector* lineSideSector(MapLine* line, bool front = true);
 	bool       isModified() const;
 	void       setOpenedTime();
@@ -136,10 +136,10 @@ public:
 
 private:
 	MapObjectCollection data_;
-	string              udmf_namespace_;
+	wxString            udmf_namespace_;
 	PropertyList        udmf_props_;
 	bool                position_frac_ = false;
-	string              name_;
+	wxString            name_;
 	MapFormat           current_format_;
 	long                opened_time_ = 0;
 	MapSpecials         map_specials_;

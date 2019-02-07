@@ -67,7 +67,7 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 	opt_auto_ = new wxRadioButton(this, -1, "Automatic Offsets", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 	hbox->Add(opt_auto_, 1, wxEXPAND | wxRIGHT, UI::pad());
 
-	string offtypes[] = {
+	wxString offtypes[] = {
 		"Monster",           "Monster (GL-friendly)", "Projectile",         "Hud/Weapon",
 		"Hud/Weapon (Doom)", "Hud/Weapon (Heretic)",  "Hud/Weapon (Hexen)",
 	};

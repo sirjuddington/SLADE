@@ -49,8 +49,8 @@ using MapEditor::Mode;
 using MapEditor::SectorMode;
 
 // -----------------------------------------------------------------------------
-// Returns either the highlighted item if anything is highlighted, or the
-// currently selected items if not
+// Returns the currently selected items, or the currently hilighted item if
+// nothing is selected
 // -----------------------------------------------------------------------------
 vector<MapEditor::Item> ItemSelection::selectionOrHilight()
 {
@@ -62,6 +62,20 @@ vector<MapEditor::Item> ItemSelection::selectionOrHilight()
 		list.push_back(hilight_);
 
 	return list;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the first selected item, or the currently hilighted item if nothing
+// is selected
+// -----------------------------------------------------------------------------
+MapEditor::Item ItemSelection::firstSelectedOrHilight()
+{
+	if (!selection_.empty())
+		return selection_[0];
+	else if (hilight_.index >= 0)
+		return hilight_;
+
+	return {};
 }
 
 // -----------------------------------------------------------------------------
@@ -252,7 +266,7 @@ void ItemSelection::selectAll()
 			selectItem({ (int)a, ItemType::Thing });
 	}
 
-	context_->addEditorMessage(S_FMT("Selected all %lu %s", selection_.size(), context_->modeString()));
+	context_->addEditorMessage(wxString::Format("Selected all %lu %s", selection_.size(), context_->modeString()));
 	context_->selectionUpdated();
 }
 

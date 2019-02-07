@@ -145,15 +145,15 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	// From entry language hint
 	if (entry->exProps().propertyExists("TextLanguage"))
 	{
-		string lang_id = entry->exProp("TextLanguage");
-		tl             = TextLanguage::fromId(lang_id);
+		wxString lang_id = entry->exProp("TextLanguage");
+		tl               = TextLanguage::fromId(lang_id);
 	}
 
 	// Or, from entry type
 	if (!tl && entry->type()->extraProps().propertyExists("text_language"))
 	{
-		string lang_id = entry->type()->extraProps()["text_language"];
-		tl             = TextLanguage::fromId(lang_id);
+		wxString lang_id = entry->type()->extraProps()["text_language"];
+		tl               = TextLanguage::fromId(lang_id);
 	}
 
 	// Load language
@@ -247,13 +247,13 @@ void TextEntryPanel::closeEntry()
 // -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
 // -----------------------------------------------------------------------------
-string TextEntryPanel::statusString()
+wxString TextEntryPanel::statusString()
 {
 	// Setup status string
-	int    line   = text_area_->GetCurrentLine() + 1;
-	int    pos    = text_area_->GetCurrentPos();
-	int    col    = text_area_->GetColumn(pos) + 1;
-	string status = S_FMT("Ln %d, Col %d, Pos %d", line, col, pos);
+	int      line   = text_area_->GetCurrentLine() + 1;
+	int      pos    = text_area_->GetCurrentPos();
+	int      col    = text_area_->GetColumn(pos) + 1;
+	wxString status = wxString::Format("Ln %d, Col %d, Pos %d", line, col, pos);
 
 	return status;
 }
@@ -291,7 +291,7 @@ bool TextEntryPanel::redo()
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // ----------------------------------------------------------------------------
-bool TextEntryPanel::handleEntryPanelAction(const string& id)
+bool TextEntryPanel::handleEntryPanelAction(const wxString& id)
 {
 	// Don't handle actions if hidden
 	if (!isActivePanel())

@@ -15,9 +15,9 @@ public:
 	void     setGlobalFromArchive(Archive* archive, int lump = 0);
 	Palette* selectedPalette(ArchiveEntry* entry = nullptr);
 	bool     globalSelected() const;
-	void     selectPalette(string name);
+	void     selectPalette(wxString name);
 	void     onPaletteChanged(wxCommandEvent& e);
-	void     addPalette(string name);
+	void     addPalette(wxString name);
 
 private:
 	Palette pal_global_;

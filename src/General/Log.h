@@ -15,11 +15,11 @@ enum class MessageType
 
 struct Message
 {
-	string      message;
+	wxString    message;
 	MessageType type;
 	time_t      timestamp;
 
-	string formattedMessageLine() const;
+	wxString formattedMessageLine() const;
 };
 
 const vector<Message>& history();
@@ -67,21 +67,21 @@ inline void	console(const wxString& text) { message(MessageType::Console, text);
 #include <typeinfo>
 class Debuggable
 {
-	string repr;
+	wxString repr;
 
 public:
-	Debuggable(string v) { repr = v; }
+	Debuggable(wxString v) { repr = v; }
 	Debuggable(const char* v) { repr = v; }
 	Debuggable(bool v) { repr = v ? "true" : "false"; }
-	Debuggable(int v) { repr = S_FMT("%d", v); }
-	Debuggable(unsigned int v) { repr = S_FMT("%u", v); }
-	Debuggable(long v) { repr = S_FMT("%ld", v); }
-	Debuggable(unsigned long v) { repr = S_FMT("%lu", v); }
-	Debuggable(double v) { repr = S_FMT("%g", v); }
+	Debuggable(int v) { repr = wxString::Format("%d", v); }
+	Debuggable(unsigned int v) { repr = wxString::Format("%u", v); }
+	Debuggable(long v) { repr = wxString::Format("%ld", v); }
+	Debuggable(unsigned long v) { repr = wxString::Format("%lu", v); }
+	Debuggable(double v) { repr = wxString::Format("%g", v); }
 
-	Debuggable(Vec2d v) { repr = S_FMT("(%0.6f, %0.6f)", v.x, v.y); }
-	Debuggable(Vec3f v) { repr = S_FMT("(%0.6f, %0.6f, %0.6f)", v.x, v.y, v.z); }
-	Debuggable(Rectf v) { repr = S_FMT("(%0.6f, %0.6f to %0.6f, %0.6f)", v.x1(), v.y1(), v.x2(), v.y2()); }
+	Debuggable(Vec2d v) { repr = wxString::Format("(%0.6f, %0.6f)", v.x, v.y); }
+	Debuggable(Vec3f v) { repr = wxString::Format("(%0.6f, %0.6f, %0.6f)", v.x, v.y, v.z); }
+	Debuggable(Rectf v) { repr = wxString::Format("(%0.6f, %0.6f to %0.6f, %0.6f)", v.x1(), v.y1(), v.x2(), v.y2()); }
 
 	template<typename T> Debuggable(T* v) { repr = Debuggable(*v).repr; }
 
@@ -97,7 +97,7 @@ public:
 		repr << "}";
 	}
 
-	string get() { return this->repr; }
+	wxString get() { return this->repr; }
 };
 
 inline void LOG_DEBUG(
@@ -114,7 +114,7 @@ inline void LOG_DEBUG(
 	Debuggable a11 = "",
 	Debuggable a12 = "")
 {
-	string message;
+	wxString message;
 	message << a1.get() << " ";
 	message << a2.get() << " ";
 	message << a3.get() << " ";
@@ -128,7 +128,7 @@ inline void LOG_DEBUG(
 	message << a11.get() << " ";
 	message << a12.get();
 	message.Trim();
-	Log::debug(0, S_FMT("%s", message));
+	Log::debug(0, wxString::Format("%s", message));
 }
 
 #define LOG_DEBUG_VAR(name) LOG_DEBUG(#name ": ", name)

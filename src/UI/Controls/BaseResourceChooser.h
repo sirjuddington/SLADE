@@ -9,7 +9,7 @@ public:
 	~BaseResourceChooser() = default;
 
 	void populateChoices();
-	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
 
 private:
 	bool load_change_;

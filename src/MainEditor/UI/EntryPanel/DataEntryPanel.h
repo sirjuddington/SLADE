@@ -21,14 +21,14 @@ public:
 
 	struct Column
 	{
-		string   name;
+		wxString name;
 		ColType  type;
 		uint16_t size;
 		uint32_t row_offset;
 
-		vector<std::pair<int, string>> custom_values;
+		vector<std::pair<int, wxString>> custom_values;
 
-		Column(const string& name, ColType type, uint16_t size, uint32_t row_offset) :
+		Column(const wxString& name, ColType type, uint16_t size, uint32_t row_offset) :
 			name{ name },
 			type{ type },
 			size{ size },
@@ -36,9 +36,9 @@ public:
 		{
 		}
 
-		void addCustomValue(int key, string value) { custom_values.emplace_back(key, value); }
+		void addCustomValue(int key, wxString value) { custom_values.emplace_back(key, value); }
 
-		string customValue(int key)
+		wxString customValue(int key)
 		{
 			for (auto& custom_value : custom_values)
 			{
@@ -55,10 +55,10 @@ public:
 	// wxGridTableBase overrides
 	int             GetNumberRows() override;
 	int             GetNumberCols() override;
-	string          GetValue(int row, int col) override;
-	void            SetValue(int row, int col, const string& value) override;
-	string          GetColLabelValue(int col) override;
-	string          GetRowLabelValue(int row) override;
+	wxString        GetValue(int row, int col) override;
+	void            SetValue(int row, int col, const wxString& value) override;
+	wxString        GetColLabelValue(int col) override;
+	wxString        GetRowLabelValue(int row) override;
 	bool            DeleteRows(size_t pos, size_t num) override;
 	bool            InsertRows(size_t pos, size_t num) override;
 	wxGridCellAttr* GetAttr(int row, int col, wxGridCellAttr::wxAttrKind kind) override;
@@ -76,7 +76,7 @@ private:
 	unsigned        data_start_ = 0;
 	unsigned        data_stop_  = 0;
 	int             row_first_  = 0;
-	string          row_prefix_;
+	wxString        row_prefix_;
 	DataEntryPanel* parent_ = nullptr;
 	MemChunk        data_clipboard_;
 	vector<Vec2i>   cells_modified_;
@@ -98,7 +98,7 @@ public:
 	void copyRow(bool cut);
 	void pasteRow();
 	void changeValue() const;
-	bool handleEntryPanelAction(const string& id) override;
+	bool handleEntryPanelAction(const wxString& id) override;
 	int  getColWithSelection() const;
 
 	vector<Vec2i> selection() const;

@@ -18,11 +18,11 @@ public:
 
 	struct Surface
 	{
-		string texture;
-		int    height = 0;
-		Plane  plane  = { 0., 0., 1., 0. };
+		wxString texture;
+		int      height = 0;
+		Plane    plane  = { 0., 0., 1., 0. };
 
-		Surface(const string& texture = "", int height = 0, const Plane& plane = { 0., 0., 1., 0. }) :
+		Surface(const wxString& texture = "", int height = 0, const Plane& plane = { 0., 0., 1., 0. }) :
 			texture{ texture },
 			height{ height },
 			plane{ plane }
@@ -31,23 +31,23 @@ public:
 	};
 
 	// UDMF properties
-	static const string PROP_TEXFLOOR;
-	static const string PROP_TEXCEILING;
-	static const string PROP_HEIGHTFLOOR;
-	static const string PROP_HEIGHTCEILING;
-	static const string PROP_LIGHTLEVEL;
-	static const string PROP_SPECIAL;
-	static const string PROP_ID;
+	static const wxString PROP_TEXFLOOR;
+	static const wxString PROP_TEXCEILING;
+	static const wxString PROP_HEIGHTFLOOR;
+	static const wxString PROP_HEIGHTCEILING;
+	static const wxString PROP_LIGHTLEVEL;
+	static const wxString PROP_SPECIAL;
+	static const wxString PROP_ID;
 
 	MapSector(
-		int           f_height = 0,
-		const string& f_tex    = "",
-		int           c_height = 0,
-		const string& c_tex    = "",
-		short         light    = 0,
-		short         special  = 0,
-		short         id       = 0);
-	MapSector(const string& f_tex, const string& c_tex, ParseTreeNode* udmf_def);
+		int             f_height = 0,
+		const wxString& f_tex    = "",
+		int             c_height = 0,
+		const wxString& c_tex    = "",
+		short           light    = 0,
+		short           special  = 0,
+		short           id       = 0);
+	MapSector(const wxString& f_tex, const wxString& c_tex, ParseTreeNode* udmf_def);
 	~MapSector() = default;
 
 	void copy(MapObject* obj) override;
@@ -59,15 +59,15 @@ public:
 	short          tag() const { return id_; }
 	short          id() const { return id_; }
 
-	string stringProperty(const string& key) override;
-	int    intProperty(const string& key) override;
+	wxString stringProperty(const wxString& key) override;
+	int      intProperty(const wxString& key) override;
 
-	void setStringProperty(const string& key, const string& value) override;
-	void setFloatProperty(const string& key, double value) override;
-	void setIntProperty(const string& key, int value) override;
+	void setStringProperty(const wxString& key, const wxString& value) override;
+	void setFloatProperty(const wxString& key, double value) override;
+	void setIntProperty(const wxString& key, int value) override;
 
-	void setFloorTexture(const string& tex);
-	void setCeilingTexture(const string& tex);
+	void setFloorTexture(const wxString& tex);
+	void setCeilingTexture(const wxString& tex);
 	void setFloorHeight(short height);
 	void setCeilingHeight(short height);
 	void setFloorPlane(const Plane& p);
@@ -107,14 +107,14 @@ public:
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
 
-	void writeUDMF(string& def) override;
+	void writeUDMF(wxString& def) override;
 
 	operator Debuggable() const
 	{
 		if (!this)
 			return { "<sector NULL>" };
 
-		return { S_FMT("<sector %u>", index_) };
+		return { wxString::Format("<sector %u>", index_) };
 	}
 
 private:

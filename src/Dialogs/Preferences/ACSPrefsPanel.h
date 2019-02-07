@@ -14,7 +14,7 @@ public:
 	void init() override;
 	void applyPreferences() override;
 
-	string pageTitle() override { return "ACS Compiler Settings"; }
+	wxString pageTitle() override { return "ACS Compiler Settings"; }
 
 private:
 	FileLocationPanel* flp_acc_path_          = nullptr;

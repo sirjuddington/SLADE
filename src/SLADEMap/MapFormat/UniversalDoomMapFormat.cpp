@@ -124,7 +124,7 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 		auto vertex = createVertex(defs_vertices[a]);
 		if (!vertex)
 		{
-			Log::warning(S_FMT("Invalid UDMF vertex definition %d, not added", a));
+			Log::warning(wxString::Format("Invalid UDMF vertex definition %d, not added", a));
 			continue;
 		}
 
@@ -140,7 +140,7 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 		auto sector = createSector(defs_sectors[a]);
 		if (!sector)
 		{
-			Log::warning(S_FMT("Invalid UDMF sector definition %d, not added", a));
+			Log::warning(wxString::Format("Invalid UDMF sector definition %d, not added", a));
 			continue;
 		}
 
@@ -156,7 +156,7 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 		auto side = createSide(defs_sides[a], map_data);
 		if (!side)
 		{
-			Log::warning(S_FMT("Invalid UDMF side definition %d, not added", a));
+			Log::warning(wxString::Format("Invalid UDMF side definition %d, not added", a));
 			continue;
 		}
 
@@ -172,7 +172,7 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 		auto line = createLine(defs_lines[a], map_data);
 		if (!line)
 		{
-			Log::warning(S_FMT("Invalid UDMF line definition %d, not added", a));
+			Log::warning(wxString::Format("Invalid UDMF line definition %d, not added", a));
 			continue;
 		}
 
@@ -188,7 +188,7 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 		auto thing = createThing(defs_things[a]);
 		if (!thing)
 		{
-			Log::warning(S_FMT("Invalid UDMF thing definition %d, not added", a));
+			Log::warning(wxString::Format("Invalid UDMF thing definition %d, not added", a));
 			continue;
 		}
 
@@ -225,7 +225,7 @@ vector<ArchiveEntry::UPtr> UniversalDoomMapFormat::writeMap(
 
 	// Write map namespace
 	tempfile.Write("// Written by SLADE3\n");
-	tempfile.Write(S_FMT("namespace=\"%s\";\n", udmf_namespace_));
+	tempfile.Write(wxString::Format("namespace=\"%s\";\n", udmf_namespace_));
 
 	// Write map-scope props
 	tempfile.Write(map_extra_props.toString(true));
@@ -237,7 +237,7 @@ vector<ArchiveEntry::UPtr> UniversalDoomMapFormat::writeMap(
 	setlocale(LC_NUMERIC, "C");
 
 	// Write things
-	string object_def;
+	wxString object_def;
 	for (const auto& thing : map_data.things())
 	{
 		// Cleanup properties

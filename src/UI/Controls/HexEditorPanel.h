@@ -9,10 +9,10 @@ public:
 	MemChunk& getData() { return data_; }
 
 	// Overrides
-	int    GetNumberRows() override;
-	int    GetNumberCols() override;
-	string GetValue(int row, int col) override;
-	void   SetValue(int row, int col, const string& value) override;
+	int      GetNumberRows() override;
+	int      GetNumberCols() override;
+	wxString GetValue(int row, int col) override;
+	void     SetValue(int row, int col, const wxString& value) override;
 
 	bool     loadData(MemChunk& mc);
 	uint32_t offset(int row, int col) const;

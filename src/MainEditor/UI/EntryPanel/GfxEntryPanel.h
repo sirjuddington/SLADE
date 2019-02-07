@@ -25,14 +25,14 @@ public:
 	void            applyViewType() const;
 	void            refresh();
 	void            refreshPanel() override;
-	string          statusString() override;
+	wxString        statusString() override;
 	bool            extractAll() const;
 
 	// SAction handler
-	bool handleEntryPanelAction(const string& id) override;
+	bool handleEntryPanelAction(const wxString& id) override;
 	bool fillCustomMenu(wxMenu* custom) override;
 
-	void onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
 
 	SImage* image() const
 	{

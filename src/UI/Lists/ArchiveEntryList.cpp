@@ -113,7 +113,7 @@ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 // -----------------------------------------------------------------------------
 // Called when the widget requests the text for [item] at [column]
 // -----------------------------------------------------------------------------
-string ArchiveEntryList::itemText(long item, long column, long index) const
+wxString ArchiveEntryList::itemText(long item, long column, long index) const
 {
 	// Get entry
 	auto entry = entryAt(index, false);
@@ -147,7 +147,7 @@ string ArchiveEntryList::itemText(long item, long column, long index) const
 				return "INVALID DIRECTORY";
 
 			// Return the number of items in the directory
-			return S_FMT("%d entries", dir->numEntries() + dir->nChildren());
+			return wxString::Format("%d entries", dir->numEntries() + dir->nChildren());
 		}
 		else
 			return entry->sizeString(); // Not a folder, just return the normal size string
@@ -160,7 +160,7 @@ string ArchiveEntryList::itemText(long item, long column, long index) const
 		if (entry->type() == EntryType::folderType())
 			return "";
 		else
-			return S_FMT("%d", entry->parentDir()->entryIndex(entry));
+			return wxString::Format("%d", entry->parentDir()->entryIndex(entry));
 	}
 	else
 		return "INVALID COLUMN"; // Invalid column
@@ -362,7 +362,7 @@ void ArchiveEntryList::updateList(bool clear)
 // Filters the list to only entries and directories with names matching
 // [filter], and with type categories matching [category].
 // -----------------------------------------------------------------------------
-void ArchiveEntryList::filterList(const string& filter, const string& category)
+void ArchiveEntryList::filterList(const wxString& filter, const wxString& category)
 {
 	// Update variables
 	filter_text_     = filter;
@@ -759,7 +759,7 @@ vector<ArchiveTreeNode*> ArchiveEntryList::selectedDirectories()
 // -----------------------------------------------------------------------------
 // Called when a label has been edited
 // -----------------------------------------------------------------------------
-void ArchiveEntryList::labelEdited(int col, int index, const string& new_label)
+void ArchiveEntryList::labelEdited(int col, int index, const wxString& new_label)
 {
 	if (undo_manager_)
 		undo_manager_->beginRecord("Rename Entry");
@@ -778,7 +778,7 @@ void ArchiveEntryList::labelEdited(int col, int index, const string& new_label)
 // -----------------------------------------------------------------------------
 // Called when an announcement is recieved from the archive being managed
 // -----------------------------------------------------------------------------
-void ArchiveEntryList::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void ArchiveEntryList::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	if (entries_update_ && announcer == archive_ && event_name != "closed")
 	{
@@ -791,7 +791,7 @@ void ArchiveEntryList::onAnnouncement(Announcer* announcer, const string& event_
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntryList::handleAction(const string& id)
+bool ArchiveEntryList::handleAction(const wxString& id)
 {
 	// Don't handle action if hidden
 	if (!IsShown())

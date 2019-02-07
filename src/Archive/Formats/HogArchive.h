@@ -25,12 +25,12 @@ public:
 		unsigned         position = 0xFFFFFFFF,
 		ArchiveTreeNode* dir      = nullptr,
 		bool             copy     = false) override;
-	ArchiveEntry* addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy = false) override;
+	ArchiveEntry* addEntry(ArchiveEntry* entry, const wxString& add_namespace, bool copy = false) override;
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, const string& name) override;
+	bool renameEntry(ArchiveEntry* entry, const wxString& name) override;
 
 	// Static functions
 	static bool isHogArchive(MemChunk& mc);
-	static bool isHogArchive(const string& filename);
+	static bool isHogArchive(const wxString& filename);
 };

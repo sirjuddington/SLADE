@@ -56,7 +56,7 @@ DirArchiveUpdateDialog::DirArchiveUpdateDialog(wxWindow* parent, DirArchive* arc
 	SetSizer(sizer);
 
 	// Message
-	string message = S_FMT(
+	wxString message = wxString::Format(
 		"Contents of the directory \"%s\" have been modified outside of SLADE,\n", archive->filename());
 	message += "please tick the changes below that you wish to apply.";
 	sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxALL, UI::padLarge());

@@ -12,8 +12,8 @@ class MapVertex : public MapObject
 public:
 	typedef std::unique_ptr<MapVertex> UPtr;
 
-	static const string PROP_X;
-	static const string PROP_Y;
+	static const wxString PROP_X;
+	static const wxString PROP_Y;
 
 	MapVertex(const Vec2d& pos);
 	MapVertex(const Vec2d& pos, ParseTreeNode* udmf_def);
@@ -27,11 +27,11 @@ public:
 
 	void move(double nx, double ny);
 
-	int    intProperty(const string& key) override;
-	double floatProperty(const string& key) override;
-	void   setIntProperty(const string& key, int value) override;
-	void   setFloatProperty(const string& key, double value) override;
-	bool   scriptCanModifyProp(const string& key) override;
+	int    intProperty(const wxString& key) override;
+	double floatProperty(const wxString& key) override;
+	void   setIntProperty(const wxString& key, int value) override;
+	void   setFloatProperty(const wxString& key, double value) override;
+	bool   scriptCanModifyProp(const wxString& key) override;
 
 	void     connectLine(MapLine* line);
 	void     disconnectLine(MapLine* line);
@@ -45,14 +45,14 @@ public:
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
 
-	void writeUDMF(string& def) override;
+	void writeUDMF(wxString& def) override;
 
 	operator Debuggable() const
 	{
 		if (!this)
 			return { "<vertex NULL>" };
 
-		return { S_FMT("<vertex %u>", index_) };
+		return { wxString::Format("<vertex %u>", index_) };
 	}
 
 private:

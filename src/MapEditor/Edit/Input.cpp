@@ -100,13 +100,13 @@ bool Input::mouseMove(int new_x, int new_y)
 	mouse_pos_map_ = context_.renderer().view().mapPos(mouse_pos_);
 
 	// Update coordinates on status bar
-	double mx = context_.snapToGrid(mouse_pos_map_.x, false);
-	double my = context_.snapToGrid(mouse_pos_map_.y, false);
-	string status_text;
+	double   mx = context_.snapToGrid(mouse_pos_map_.x, false);
+	double   my = context_.snapToGrid(mouse_pos_map_.y, false);
+	wxString status_text;
 	if (context_.mapDesc().format == MapFormat::UDMF)
-		status_text = S_FMT("Position: (%1.3f, %1.3f)", mx, my);
+		status_text = wxString::Format("Position: (%1.3f, %1.3f)", mx, my);
 	else
-		status_text = S_FMT("Position: (%d, %d)", (int)mx, (int)my);
+		status_text = wxString::Format("Position: (%d, %d)", (int)mx, (int)my);
 	MapEditor::setStatusText(status_text, 3);
 
 	// Object edit
@@ -486,7 +486,7 @@ void Input::updateKeyModifiersWx(int modifiers)
 // -----------------------------------------------------------------------------
 // Handles [key] being pressed in the map editor
 // -----------------------------------------------------------------------------
-bool Input::keyDown(const string& key) const
+bool Input::keyDown(const wxString& key) const
 {
 	// Send to overlay if active
 	if (context_.overlayActive())
@@ -499,7 +499,7 @@ bool Input::keyDown(const string& key) const
 // -----------------------------------------------------------------------------
 // Handles [key] being released in the map editor
 // -----------------------------------------------------------------------------
-bool Input::keyUp(const string& key) const
+bool Input::keyUp(const wxString& key) const
 {
 	// Let keybind system handle it
 	return KeyBind::keyReleased(key);
@@ -508,7 +508,7 @@ bool Input::keyUp(const string& key) const
 // -----------------------------------------------------------------------------
 // Called when the key bind [name] is pressed
 // -----------------------------------------------------------------------------
-void Input::onKeyBindPress(const string& name)
+void Input::onKeyBindPress(const wxString& name)
 {
 	// Check if an overlay is active
 	if (context_.overlayActive())
@@ -562,7 +562,7 @@ void Input::onKeyBindPress(const string& name)
 // -----------------------------------------------------------------------------
 // Called when the key bind [name] is released
 // -----------------------------------------------------------------------------
-void Input::onKeyBindRelease(const string& name)
+void Input::onKeyBindRelease(const wxString& name)
 {
 	if (name == "me2d_pan_view" && panning_)
 	{
@@ -584,7 +584,7 @@ void Input::onKeyBindRelease(const string& name)
 // Handles 2d mode view-related keybinds
 // (can generally be used no matter the current editor state)
 // -----------------------------------------------------------------------------
-void Input::handleKeyBind2dView(const string& name)
+void Input::handleKeyBind2dView(const wxString& name)
 {
 	// Pan left
 	if (name == "me2d_left")
@@ -648,7 +648,7 @@ void Input::handleKeyBind2dView(const string& name)
 // -----------------------------------------------------------------------------
 // Handles 2d mode key binds
 // -----------------------------------------------------------------------------
-void Input::handleKeyBind2d(const string& name)
+void Input::handleKeyBind2d(const wxString& name)
 {
 	// --- Line Drawing ---
 	if (mouse_state_ == MouseState::LineDraw)
@@ -929,11 +929,11 @@ void Input::handleKeyBind2d(const string& name)
 					mouse_state_ = MouseState::TagSectors;
 
 					// Setup help text
-					string key_accept = KeyBind::bind("map_edit_accept").keysAsString();
-					string key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
+					wxString key_accept = KeyBind::bind("map_edit_accept").keysAsString();
+					wxString key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 					context_.setFeatureHelp({ "Tag Edit",
-											  S_FMT("%s = Accept", key_accept),
-											  S_FMT("%s = Cancel", key_cancel),
+											  wxString::Format("%s = Accept", key_accept),
+											  wxString::Format("%s = Cancel", key_cancel),
 											  "Left Click = Toggle tagged sector" });
 				}
 			}
@@ -974,7 +974,7 @@ void Input::handleKeyBind2d(const string& name)
 // -----------------------------------------------------------------------------
 // Handles 3d mode key binds
 // -----------------------------------------------------------------------------
-void Input::handleKeyBind3d(const string& name) const
+void Input::handleKeyBind3d(const wxString& name) const
 {
 	// Escape from 3D mode
 	if (name == "map_edit_cancel")
@@ -1010,7 +1010,7 @@ void Input::handleKeyBind3d(const string& name) const
 		{
 			render_3d_brightness = 1.0;
 		}
-		context_.addEditorMessage(S_FMT("Brightness set to %1.1f", (double)render_3d_brightness));
+		context_.addEditorMessage(wxString::Format("Brightness set to %1.1f", (double)render_3d_brightness));
 	}
 
 	// Toggle gravity
@@ -1167,7 +1167,7 @@ bool Input::updateCamera3d(double mult) const
 // -----------------------------------------------------------------------------
 // Returns the KeyBind name for the given mouse [button]
 // -----------------------------------------------------------------------------
-string Input::mouseButtonKBName(MouseButton button)
+wxString Input::mouseButtonKBName(MouseButton button)
 {
 	switch (button)
 	{
@@ -1176,6 +1176,6 @@ string Input::mouseButtonKBName(MouseButton button)
 	case Middle: return "mouse3";
 	case Mouse4: return "mouse4";
 	case Mouse5: return "mouse5";
-	default: return S_FMT("mouse%d", button);
+	default: return wxString::Format("mouse%d", button);
 	}
 }

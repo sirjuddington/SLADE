@@ -271,7 +271,7 @@ void TextureEditorPanel::updateTextureScaleLabel()
 		scaled_y /= tex_current_->scaleY();
 
 	// Update the label
-	label_scaled_size_->SetLabel(S_FMT("Scaled Size: %dx%d", scaled_x, scaled_y));
+	label_scaled_size_->SetLabel(wxString::Format("Scaled Size: %dx%d", scaled_x, scaled_y));
 }
 
 // -----------------------------------------------------------------------------
@@ -421,7 +421,7 @@ void TextureEditorPanel::updatePatchControls()
 // ----------------------------------------------------------------------------
 // Updates the texture name textbox with [new_name]
 // ----------------------------------------------------------------------------
-void TextureEditorPanel::updateTextureName(const string& new_name)
+void TextureEditorPanel::updateTextureName(const wxString& new_name)
 {
 	text_tex_name_->SetValue(new_name);
 }
@@ -648,7 +648,7 @@ void TextureEditorPanel::replacePatch()
 		return;
 
 	// Get first selected patch name (for browser)
-	string pname = tex_canvas_->texture()->patch(selection[0])->name();
+	wxString pname = tex_canvas_->texture()->patch(selection[0])->name();
 
 	// Browse for patch
 	tx_editor_->setFullPath(false);
@@ -714,7 +714,7 @@ void TextureEditorPanel::duplicatePatch(int xoff, int yoff)
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureEditorPanel::handleAction(const string& id)
+bool TextureEditorPanel::handleAction(const wxString& id)
 {
 	// Don't handle actions if hidden
 	if (!IsShown())

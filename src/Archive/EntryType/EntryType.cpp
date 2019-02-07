@@ -47,7 +47,7 @@
 namespace
 {
 vector<EntryType*> entry_types;      // The big list of all entry types
-vector<string>     entry_categories; // All entry type categories
+vector<wxString>   entry_categories; // All entry type categories
 
 // Special entry types
 EntryType etype_unknown; // The default, 'unknown' entry type
@@ -67,7 +67,7 @@ EntryType etype_map;     // Map marker type
 // -----------------------------------------------------------------------------
 // EntryType class constructor
 // -----------------------------------------------------------------------------
-EntryType::EntryType(const string& id) : id_{ id }, format_{ EntryDataFormat::anyFormat() } {}
+EntryType::EntryType(const wxString& id) : id_{ id }, format_{ EntryDataFormat::anyFormat() } {}
 
 // -----------------------------------------------------------------------------
 // Adds the type to the list of entry types
@@ -83,23 +83,23 @@ void EntryType::addToList()
 // -----------------------------------------------------------------------------
 void EntryType::dump()
 {
-	Log::info(S_FMT("Type %s \"%s\", format %s, extension %s", id_, name_, format_->id(), extension_));
-	Log::info(S_FMT("Size limit: %d-%d", size_limit_[0], size_limit_[1]));
+	Log::info(wxString::Format("Type %s \"%s\", format %s, extension %s", id_, name_, format_->id(), extension_));
+	Log::info(wxString::Format("Size limit: %d-%d", size_limit_[0], size_limit_[1]));
 
 	for (const auto& a : match_archive_)
-		Log::info(S_FMT("Match Archive: \"%s\"", a));
+		Log::info(wxString::Format("Match Archive: \"%s\"", a));
 
 	for (const auto& a : match_extension_)
-		Log::info(S_FMT("Match Extension: \"%s\"", a));
+		Log::info(wxString::Format("Match Extension: \"%s\"", a));
 
 	for (const auto& a : match_name_)
-		Log::info(S_FMT("Match Name: \"%s\"", a));
+		Log::info(wxString::Format("Match Name: \"%s\"", a));
 
 	for (int a : match_size_)
-		Log::info(S_FMT("Match Size: %d", a));
+		Log::info(wxString::Format("Match Size: %d", a));
 
 	for (int a : size_multiple_)
-		Log::info(S_FMT("Size Multiple: %d", a));
+		Log::info(wxString::Format("Size Multiple: %d", a));
 
 	Log::info("---");
 }
@@ -137,9 +137,9 @@ void EntryType::copyToType(EntryType* target)
 // Returns a file filter string for this type:
 // "<type name> files (*.<type extension)|*.<type extension>"
 // -----------------------------------------------------------------------------
-string EntryType::fileFilterString() const
+wxString EntryType::fileFilterString() const
 {
-	string ret = name_ + " files (*.";
+	wxString ret = name_ + " files (*.";
 	ret += extension_;
 	ret += ")|*.";
 	ret += extension_;
@@ -251,13 +251,13 @@ int EntryType::isThisType(ArchiveEntry* entry)
 	if (!match_name_.empty() || !match_extension_.empty())
 	{
 		// Get entry name (lowercase), find extension separator
-		string fn      = entry->upperName();
-		size_t ext_sep = fn.find_first_of('.', 0);
+		wxString fn      = entry->upperName();
+		size_t   ext_sep = fn.find_first_of('.', 0);
 
 		// Check for name match if needed
 		if (!match_name_.empty())
 		{
-			string name = fn;
+			wxString name = fn;
 			if (ext_sep != wxString::npos)
 				name = fn.Left(ext_sep);
 
@@ -284,8 +284,8 @@ int EntryType::isThisType(ArchiveEntry* entry)
 			bool match = false;
 			if (ext_sep != wxString::npos)
 			{
-				string ext                  = fn.Mid(ext_sep + 1);
-				size_t match_extension_size = match_extension_.size();
+				wxString ext                  = fn.Mid(ext_sep + 1);
+				size_t   match_extension_size = match_extension_.size();
 				for (size_t a = 0; a < match_extension_size; a++)
 				{
 					if (ext == match_extension_[a])
@@ -308,7 +308,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		if (!entry->parent())
 			return EntryDataFormat::MATCH_FALSE;
 
-		string e_section = entry->parent()->detectNamespace(entry);
+		wxString e_section = entry->parent()->detectNamespace(entry);
 
 		r = EntryDataFormat::MATCH_FALSE;
 		for (const auto& ns : section_)
@@ -324,7 +324,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 // Reads in a block of entry type definitions. Returns false if there was a
 // parsing error, true otherwise
 // -----------------------------------------------------------------------------
-bool EntryType::readEntryTypeDefinition(MemChunk& mc, const string& source)
+bool EntryType::readEntryTypeDefinition(MemChunk& mc, const wxString& source)
 {
 	// Parse the definition
 	Parser p;
@@ -354,8 +354,8 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const string& source)
 			if (parent_type != unknownType())
 				parent_type->copyToType(ntype);
 			else
-				Log::info(
-					S_FMT("Warning: Entry type %s inherits from unknown type %s", ntype->id(), typenode->inherit()));
+				Log::info(wxString::Format(
+					"Warning: Entry type %s inherits from unknown type %s", ntype->id(), typenode->inherit()));
 		}
 
 		// Go through all parsed fields
@@ -379,12 +379,13 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const string& source)
 			}
 			else if (S_CMPNOCASE(fieldnode->name(), "format")) // Format field
 			{
-				string format_string = fieldnode->stringValue();
-				ntype->format_       = EntryDataFormat::format(format_string);
+				wxString format_string = fieldnode->stringValue();
+				ntype->format_         = EntryDataFormat::format(format_string);
 
 				// Warn if undefined format
 				if (ntype->format_ == EntryDataFormat::anyFormat())
-					Log::warning(S_FMT("Entry type %s requires undefined format %s", ntype->id(), format_string));
+					Log::warning(
+						wxString::Format("Entry type %s requires undefined format %s", ntype->id(), format_string));
 			}
 			else if (S_CMPNOCASE(fieldnode->name(), "icon")) // Icon field
 			{
@@ -471,7 +472,8 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const string& source)
 				if (fieldnode->nValues() >= 3)
 					ntype->colour_ = ColRGBA(fieldnode->intValue(0), fieldnode->intValue(1), fieldnode->intValue(2));
 				else
-					Log::warning(S_FMT("Not enough colour components defined for entry type %s", ntype->id()));
+					Log::warning(
+						wxString::Format("Not enough colour components defined for entry type %s", ntype->id()));
 			}
 			else
 			{
@@ -571,8 +573,8 @@ bool EntryType::loadEntryTypes()
 	res_dir.Open(App::path("entry_types", App::Dir::User));
 
 	// Go through each file in the directory
-	string filename = wxEmptyString;
-	bool   files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
+	wxString filename = wxEmptyString;
+	bool     files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
 	while (files)
 	{
 		// Load file data
@@ -640,7 +642,7 @@ bool EntryType::detectEntryType(ArchiveEntry* entry)
 // Returns the entry type with the given id, or etype_unknown if no id match is
 // found
 // -----------------------------------------------------------------------------
-EntryType* EntryType::fromId(const string& id)
+EntryType* EntryType::fromId(const wxString& id)
 {
 	for (auto type : entry_types)
 		if (type->id_ == id)
@@ -713,7 +715,7 @@ vector<EntryType*> EntryType::allTypes()
 // -----------------------------------------------------------------------------
 // Returns a list of all entry type categories
 // -----------------------------------------------------------------------------
-vector<string> EntryType::allCategories()
+vector<wxString> EntryType::allCategories()
 {
 	return entry_categories;
 }
@@ -736,10 +738,10 @@ CONSOLE_COMMAND(type, 0, true)
 	if (args.empty())
 	{
 		// List existing types and their IDs
-		string listing   = "List of entry types:\n\t";
-		string separator = "]\n\t";
-		string colon     = ": ";
-		string paren     = " [";
+		wxString listing   = "List of entry types:\n\t";
+		wxString separator = "]\n\t";
+		wxString colon     = ": ";
+		wxString paren     = " [";
 		for (size_t a = 3; a < all_types.size(); a++)
 		{
 			listing += all_types[a]->name();
@@ -774,7 +776,8 @@ CONSOLE_COMMAND(type, 0, true)
 			}
 		if (!match)
 		{
-			Log::info(S_FMT("Type %s does not exist (use \"type\" without parameter for a list)", args[0].mb_str()));
+			Log::info(wxString::Format(
+				"Type %s does not exist (use \"type\" without parameter for a list)", args[0].mb_str()));
 			return;
 		}
 
@@ -793,7 +796,7 @@ CONSOLE_COMMAND(type, 0, true)
 			// Check if format corresponds to entry
 			foo = EntryDataFormat::format(desttype->formatId());
 			if (foo)
-				Log::info(S_FMT("Identifying as %s", desttype->name().mb_str()));
+				Log::info(wxString::Format("Identifying as %s", desttype->name().mb_str()));
 			else
 				Log::info("No data format for this type!");
 		}
@@ -807,16 +810,16 @@ CONSOLE_COMMAND(type, 0, true)
 			{
 				okay = foo->isThisFormat(b->data());
 				if (okay)
-					Log::info(S_FMT("%s: Identification successful (%i/255)", b->name().mb_str(), okay));
+					Log::info(wxString::Format("%s: Identification successful (%i/255)", b->name().mb_str(), okay));
 				else
-					Log::info(S_FMT("%s: Identification failed", b->name().mb_str()));
+					Log::info(wxString::Format("%s: Identification failed", b->name().mb_str()));
 			}
 
 			// Change type
 			if (force || okay)
 			{
 				b->setType(desttype, okay);
-				Log::info(S_FMT("%s: Type changed.", b->name().mb_str()));
+				Log::info(wxString::Format("%s: Type changed.", b->name().mb_str()));
 			}
 		}
 	}
@@ -830,5 +833,5 @@ CONSOLE_COMMAND(size, 0, true)
 		Log::info("No entry selected");
 		return;
 	}
-	Log::info(S_FMT("%s: %i bytes", meep->name().mb_str(), meep->size()));
+	Log::info(wxString::Format("%s: %i bytes", meep->name().mb_str(), meep->size()));
 }

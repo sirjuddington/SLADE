@@ -74,16 +74,16 @@ enum MapLumpNames
 	LUMP_ZNODES,
 	NUMMAPLUMPS
 };
-string map_lumps[] = { "THINGS",   "VERTEXES", "LINEDEFS", "SIDEDEFS", "SECTORS", "SEGS",    "SSECTORS", "NODES",
-					   "BLOCKMAP", "REJECT",   "SCRIPTS",  "BEHAVIOR", "LEAFS",   "LIGHTS",  "MACROS",   "GL_MAP01",
-					   "GL_VERT",  "GL_SEGS",  "GL_SSECT", "GL_NODES", "GL_PVS",  "TEXTMAP", "ZNODES" };
+wxString map_lumps[] = { "THINGS",   "VERTEXES", "LINEDEFS", "SIDEDEFS", "SECTORS", "SEGS",    "SSECTORS", "NODES",
+						 "BLOCKMAP", "REJECT",   "SCRIPTS",  "BEHAVIOR", "LEAFS",   "LIGHTS",  "MACROS",   "GL_MAP01",
+						 "GL_VERT",  "GL_SEGS",  "GL_SSECT", "GL_NODES", "GL_PVS",  "TEXTMAP", "ZNODES" };
 
 // Special namespaces (at the moment these are just mapping to zdoom's "zip as wad" namespace folders)
 // http://zdoom.org/wiki/Using_ZIPs_as_WAD_replacement#How_to
 struct SpecialNS
 {
-	string name;
-	string letter;
+	wxString name;
+	wxString letter;
 };
 vector<SpecialNS> special_namespaces = {
 	{ "patches", "p" },   { "sprites", "s" },   { "flats", "f" },
@@ -114,8 +114,8 @@ namespace
 // -----------------------------------------------------------------------------
 bool isNamespaceEntry(ArchiveEntry* entry)
 {
-	static string start = "_START";
-	static string end   = "_END";
+	static wxString start = "_START";
+	static wxString end   = "_END";
 
 	auto uname = entry->upperName();
 	return uname.EndsWith(start) || uname.EndsWith(end);
@@ -180,8 +180,8 @@ void WadArchive::updateNamespaces()
 		if (entry->name().Matches("*_START"))
 		{
 			// Create new namespace
-			NSPair ns(entry, nullptr);
-			string name    = entry->name();
+			NSPair   ns(entry, nullptr);
+			wxString name  = entry->name();
 			ns.name        = name.Left(name.Length() - 6).Lower();
 			ns.start_index = entryIndex(ns.start);
 
@@ -202,8 +202,8 @@ void WadArchive::updateNamespaces()
 		else if (entry->name().Matches("?_END") || entry->name().Matches("??_END"))
 		{
 			// Get namespace 'name'
-			int    len     = entry->name().Length() - 4;
-			string ns_name = entry->name().Left(len).Lower();
+			int      len     = entry->name().Length() - 4;
+			wxString ns_name = entry->name().Left(len).Lower();
 
 			// Convert some special cases (because technically P_START->PP_END is a valid namespace)
 			if (ns_name == "pp")
@@ -330,7 +330,7 @@ bool WadArchive::open(MemChunk& mc)
 	// Check the header
 	if (wad_type[1] != 'W' || wad_type[2] != 'A' || wad_type[3] != 'D')
 	{
-		Log::error(S_FMT("WadArchive::openFile: File %s has invalid header", filename_));
+		Log::error(wxString::Format("WadArchive::openFile: File %s has invalid header", filename_));
 		Global::error = "Invalid wad header";
 		return false;
 	}
@@ -376,7 +376,7 @@ bool WadArchive::open(MemChunk& mc)
 			}
 			if (VECTOR_EXISTS(offsets, offset))
 			{
-				Log::warning(S_FMT("Ignoring entry %d: %s, is a clone of a previous entry", d, name));
+				Log::warning(wxString::Format("Ignoring entry %d: %s, is a clone of a previous entry", d, name));
 				continue;
 			}
 			offsets.push_back(offset);
@@ -429,7 +429,7 @@ bool WadArchive::open(MemChunk& mc)
 		if (offset + actualsize > mc.size())
 		{
 			Log::error("WadArchive::open: Wad archive is invalid or corrupt");
-			Global::error = S_FMT(
+			Global::error = wxString::Format(
 				"Archive is invalid and/or corrupt (lump %d: %s data goes past end of file)", d, name);
 			setMuted(false);
 			return false;
@@ -477,7 +477,7 @@ bool WadArchive::open(MemChunk& mc)
 					&& (unsigned)(int)(entry->exProp("FullSize")) > entry->size())
 					edata.reSize((int)(entry->exProp("FullSize")), true);
 				if (!WadJArchive::jaguarDecode(edata))
-					Log::warning(S_FMT(
+					Log::warning(wxString::Format(
 						"%i: %s (following %s), did not decode properly",
 						a,
 						entry->name(),
@@ -593,7 +593,7 @@ bool WadArchive::write(MemChunk& mc, bool update)
 // Writes the wad archive to a file at [filename]
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WadArchive::write(const string& filename, bool update)
+bool WadArchive::write(const wxString& filename, bool update)
 {
 	// Don't write if iwad
 	if (iwad_ && iwad_lock)
@@ -693,7 +693,7 @@ bool WadArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("WadArchive::loadEntryData: Failed to open wadfile %s", filename_));
+		Log::error(wxString::Format("WadArchive::loadEntryData: Failed to open wadfile %s", filename_));
 		return false;
 	}
 
@@ -742,7 +742,7 @@ ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // If [copy] is true a copy of the entry is added.
 // Returns the added entry or NULL if the entry is invalid
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
+ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, const wxString& add_namespace, bool copy)
 {
 	// Find requested namespace
 	for (auto& ns : namespaces_)
@@ -779,7 +779,7 @@ bool WadArchive::removeEntry(ArchiveEntry* entry)
 		return false;
 
 	// Get entry name (for later)
-	string name = entry->upperName();
+	wxString name = entry->upperName();
 
 	// Do default remove
 	if (Archive::removeEntry(entry))
@@ -799,14 +799,14 @@ bool WadArchive::removeEntry(ArchiveEntry* entry)
 // the entry if necessary to be wad-friendly (8 characters max and no file
 // extension)
 // -----------------------------------------------------------------------------
-bool WadArchive::renameEntry(ArchiveEntry* entry, const string& name)
+bool WadArchive::renameEntry(ArchiveEntry* entry, const wxString& name)
 {
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
 
 	// Get current name (for later)
-	string name_prev = entry->upperName();
+	wxString name_prev = entry->upperName();
 
 	// Do default rename
 	if (Archive::renameEntry(entry, name))
@@ -946,7 +946,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 			}
 			else if (a == LUMP_GL_HEADER)
 			{
-				string name = maphead->name(true);
+				wxString name = maphead->name(true);
 				name.Prepend("GL_");
 				if (S_CMPNOCASE(entry->name(), name))
 				{
@@ -1151,7 +1151,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 	// Update entry map format hints
 	for (auto& map : maps)
 	{
-		string format;
+		wxString format;
 		if (map.format == MapFormat::Doom)
 			format = "doom";
 		else if (map.format == MapFormat::Doom64)
@@ -1175,7 +1175,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string WadArchive::detectNamespace(ArchiveEntry* entry)
+wxString WadArchive::detectNamespace(ArchiveEntry* entry)
 {
 	return detectNamespace(entryIndex(entry));
 }
@@ -1183,7 +1183,7 @@ string WadArchive::detectNamespace(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-string WadArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
+wxString WadArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
 {
 	// Go through namespaces
 	for (auto& ns : namespaces_)
@@ -1239,7 +1239,7 @@ void WadArchive::detectIncludes()
 					{
 						if (i >= 3) // skip '=' or '('
 							tz.adv();
-						string name = tz.next().text;
+						wxString name = tz.next().text;
 						if (i == 5) // skip ')'
 							tz.adv();
 						opt.match_name = name;
@@ -1535,7 +1535,7 @@ bool WadArchive::isWadArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Doom wad archive
 // -----------------------------------------------------------------------------
-bool WadArchive::isWadArchive(const string& filename)
+bool WadArchive::isWadArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

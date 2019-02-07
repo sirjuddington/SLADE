@@ -14,21 +14,21 @@ void close();
 
 struct Error
 {
-	string type;
-	string message;
-	int    line_no;
+	wxString type;
+	wxString message;
+	int      line_no;
 };
 Error& error();
 void   showErrorDialog(
-	  wxWindow*     parent  = nullptr,
-	  const string& title   = "Script Error",
-	  const string& message = "An error occurred running the script, see details below");
+	  wxWindow*       parent  = nullptr,
+	  const wxString& title   = "Script Error",
+	  const wxString& message = "An error occurred running the script, see details below");
 
-bool run(string program);
-bool runFile(string filename);
-bool runArchiveScript(const string& script, Archive* archive);
-bool runEntryScript(const string& script, vector<ArchiveEntry*> entries);
-bool runMapScript(const string& script, SLADEMap* map);
+bool run(wxString program);
+bool runFile(wxString filename);
+bool runArchiveScript(const wxString& script, Archive* archive);
+bool runEntryScript(const wxString& script, vector<ArchiveEntry*> entries);
+bool runMapScript(const wxString& script, SLADEMap* map);
 
 sol::state& state();
 

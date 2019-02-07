@@ -44,7 +44,7 @@
 // -----------------------------------------------------------------------------
 namespace ColourConfiguration
 {
-typedef std::map<string, Colour> ColourHashMap;
+typedef std::map<wxString, Colour> ColourHashMap;
 
 double        line_hilight_width;
 double        line_selection_width;
@@ -63,7 +63,7 @@ ColourHashMap cc_colours;
 // -----------------------------------------------------------------------------
 // Returns the colour [name]
 // -----------------------------------------------------------------------------
-ColRGBA ColourConfiguration::colour(const string& name)
+ColRGBA ColourConfiguration::colour(const wxString& name)
 {
 	auto& col = cc_colours[name];
 	if (col.exists)
@@ -75,7 +75,7 @@ ColRGBA ColourConfiguration::colour(const string& name)
 // -----------------------------------------------------------------------------
 // Returns the colour definition [name]
 // -----------------------------------------------------------------------------
-const ColourConfiguration::Colour& ColourConfiguration::colDef(const string& name)
+const ColourConfiguration::Colour& ColourConfiguration::colDef(const wxString& name)
 {
 	return cc_colours[name];
 }
@@ -83,7 +83,7 @@ const ColourConfiguration::Colour& ColourConfiguration::colDef(const string& nam
 // -----------------------------------------------------------------------------
 // Sets the colour definition [name]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::setColour(const string& name, int red, int green, int blue, int alpha, bool blend_additive)
+void ColourConfiguration::setColour(const wxString& name, int red, int green, int blue, int alpha, bool blend_additive)
 {
 	auto& col = cc_colours[name];
 	if (red >= 0)
@@ -102,7 +102,7 @@ void ColourConfiguration::setColour(const string& name, int red, int green, int 
 // -----------------------------------------------------------------------------
 // Sets the current OpenGL colour and blend mode to match definition [name]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::setGLColour(const string& name, float alpha_mult)
+void ColourConfiguration::setGLColour(const wxString& name, float alpha_mult)
 {
 	auto& col = cc_colours[name];
 	OpenGL::setColour(col.colour.r, col.colour.g, col.colour.b, col.colour.a * alpha_mult, col.blendMode());
@@ -202,7 +202,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 					col.blend_additive = prop->boolValue();
 
 				else
-					Log::warning(S_FMT("Unknown colour definition property \"%s\"", prop->name()));
+					Log::warning(wxString::Format("Unknown colour definition property \"%s\"", prop->name()));
 			}
 		}
 	}
@@ -226,7 +226,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 				flat_alpha = prop->floatValue();
 
 			else
-				Log::warning(S_FMT("Unknown theme property \"%s\"", prop->name()));
+				Log::warning(wxString::Format("Unknown theme property \"%s\"", prop->name()));
 		}
 	}
 
@@ -238,7 +238,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 // -----------------------------------------------------------------------------
 bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 {
-	string cfgstring = "colours\n{\n";
+	wxString cfgstring = "colours\n{\n";
 
 	// Go through all properties
 	for (const auto& i : cc_colours)
@@ -249,20 +249,20 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 			continue;
 
 		// Colour definition name
-		cfgstring += S_FMT("\t%s\n\t{\n", i.first);
+		cfgstring += wxString::Format("\t%s\n\t{\n", i.first);
 
 		// Full name
-		cfgstring += S_FMT("\t\tname = \"%s\";\n", cc.name);
+		cfgstring += wxString::Format("\t\tname = \"%s\";\n", cc.name);
 
 		// Group
-		cfgstring += S_FMT("\t\tgroup = \"%s\";\n", cc.group);
+		cfgstring += wxString::Format("\t\tgroup = \"%s\";\n", cc.group);
 
 		// Colour values
-		cfgstring += S_FMT("\t\trgb = %d, %d, %d;\n", cc.colour.r, cc.colour.g, cc.colour.b);
+		cfgstring += wxString::Format("\t\trgb = %d, %d, %d;\n", cc.colour.r, cc.colour.g, cc.colour.b);
 
 		// Alpha
 		if (cc.colour.a < 255)
-			cfgstring += S_FMT("\t\talpha = %d;\n", cc.colour.a);
+			cfgstring += wxString::Format("\t\talpha = %d;\n", cc.colour.a);
 
 		// Additive
 		if (cc.blend_additive)
@@ -273,9 +273,9 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 
 	cfgstring += "}\n\ntheme\n{\n";
 
-	cfgstring += S_FMT("\tline_hilight_width = %1.3f;\n", line_hilight_width);
-	cfgstring += S_FMT("\tline_selection_width = %1.3f;\n", line_selection_width);
-	cfgstring += S_FMT("\tflat_alpha = %1.3f;\n", flat_alpha);
+	cfgstring += wxString::Format("\tline_hilight_width = %1.3f;\n", line_hilight_width);
+	cfgstring += wxString::Format("\tline_selection_width = %1.3f;\n", line_selection_width);
+	cfgstring += wxString::Format("\tflat_alpha = %1.3f;\n", flat_alpha);
 	cfgstring += "}\n";
 
 	mc.write(cfgstring.ToAscii(), cfgstring.size());
@@ -317,7 +317,7 @@ void ColourConfiguration::loadDefaults()
 // -----------------------------------------------------------------------------
 // Reads saved colour configuration [name]
 // -----------------------------------------------------------------------------
-bool ColourConfiguration::readConfiguration(const string& name)
+bool ColourConfiguration::readConfiguration(const wxString& name)
 {
 	// TODO: search custom folder
 
@@ -336,7 +336,7 @@ bool ColourConfiguration::readConfiguration(const string& name)
 // -----------------------------------------------------------------------------
 // Adds all available colour configuration names to [names]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::putConfigurationNames(vector<string>& names)
+void ColourConfiguration::putConfigurationNames(vector<wxString>& names)
 {
 	// TODO: search custom folder
 
@@ -350,7 +350,7 @@ void ColourConfiguration::putConfigurationNames(vector<string>& names)
 // -----------------------------------------------------------------------------
 // Adds all colour names to [list]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::putColourNames(vector<string>& list)
+void ColourConfiguration::putColourNames(vector<wxString>& list)
 {
 	for (auto& i : cc_colours)
 		list.push_back(i.first);
@@ -369,12 +369,12 @@ CONSOLE_COMMAND(ccfg, 1, false)
 	if (S_CMPNOCASE(args[0], "list"))
 	{
 		// Get (sorted) list of colour names
-		vector<string> list;
+		vector<wxString> list;
 		ColourConfiguration::putColourNames(list);
 		sort(list.begin(), list.end());
 
 		// Dump list to console
-		Log::console(S_FMT("%lu Colours:", list.size()));
+		Log::console(wxString::Format("%lu Colours:", list.size()));
 		for (const auto& a : list)
 			Log::console(a);
 	}
@@ -405,7 +405,7 @@ CONSOLE_COMMAND(ccfg, 1, false)
 
 		// Print colour
 		auto def = ColourConfiguration::colDef(args[0]);
-		Log::console(S_FMT(
+		Log::console(wxString::Format(
 			"Colour \"%s\" = %d %d %d %d %d", args[0], def.colour.r, def.colour.g, def.colour.b, def.blend_additive));
 	}
 }

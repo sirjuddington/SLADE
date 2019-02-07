@@ -15,9 +15,9 @@ public:
 	int  selectedPathIndex() const;
 	void autodetect() const;
 
-	void   init() override;
-	void   applyPreferences() override;
-	string pageTitle() override { return "Base Resource Archive"; }
+	void     init() override;
+	void     applyPreferences() override;
+	wxString pageTitle() override { return "Base Resource Archive"; }
 
 private:
 	wxListBox*         list_base_archive_paths_ = nullptr;

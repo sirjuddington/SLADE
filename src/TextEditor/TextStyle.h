@@ -9,21 +9,21 @@ class TextStyle
 	friend class StyleSet;
 
 public:
-	TextStyle(const string& name, const string& description, int style_id = -1);
+	TextStyle(const wxString& name, const wxString& description, int style_id = -1);
 	~TextStyle() = default;
 
 	void addWxStyleId(int style);
 
-	string description() const { return description_; }
-	string fontFace() const { return font_; }
-	int    fontSize() const { return size_; }
-	bool   hasForeground() const { return fg_defined_; }
-	bool   hasBackground() const { return bg_defined_; }
-	int    bold() const { return bold_; }
-	int    italic() const { return italic_; }
-	int    underlined() const { return underlined_; }
+	wxString description() const { return description_; }
+	wxString fontFace() const { return font_; }
+	int      fontSize() const { return size_; }
+	bool     hasForeground() const { return fg_defined_; }
+	bool     hasBackground() const { return bg_defined_; }
+	int      bold() const { return bold_; }
+	int      italic() const { return italic_; }
+	int      underlined() const { return underlined_; }
 
-	void setFontFace(const string& font) { font_ = font; }
+	void setFontFace(const wxString& font) { font_ = font; }
 	void setFontSize(int size) { size_ = size; }
 	void setBold(int bold) { bold_ = bold; }
 	void setItalic(int italic) { italic_ = italic; }
@@ -44,57 +44,57 @@ public:
 	ColRGBA foreground() const { return foreground_; }
 	ColRGBA background() const { return background_; }
 
-	bool   parse(ParseTreeNode* node);
-	void   applyTo(wxStyledTextCtrl* stc);
-	bool   copyStyle(TextStyle* copy);
-	string textDefinition(unsigned tabs = 0) const;
+	bool     parse(ParseTreeNode* node);
+	void     applyTo(wxStyledTextCtrl* stc);
+	bool     copyStyle(TextStyle* copy);
+	wxString textDefinition(unsigned tabs = 0) const;
 
 private:
-	string      name_;
-	string      description_;
+	wxString    name_;
+	wxString    description_;
 	vector<int> wx_styles_;
 
-	string  font_;
-	int     size_ = -1;
-	ColRGBA foreground_;
-	bool    fg_defined_ = false;
-	ColRGBA background_;
-	bool    bg_defined_ = false;
-	int     bold_       = -1;
-	int     italic_     = -1;
-	int     underlined_ = -1;
+	wxString font_;
+	int      size_ = -1;
+	ColRGBA  foreground_;
+	bool     fg_defined_ = false;
+	ColRGBA  background_;
+	bool     bg_defined_ = false;
+	int      bold_       = -1;
+	int      italic_     = -1;
+	int      underlined_ = -1;
 };
 
 class StyleSet
 {
 public:
-	StyleSet(const string& name = "Unnamed Style");
+	StyleSet(const wxString& name = "Unnamed Style");
 	~StyleSet() = default;
 
-	string   getName() const { return name_; }
+	wxString getName() const { return name_; }
 	unsigned nStyles() const { return styles_.size(); }
 
 	bool       parseSet(ParseTreeNode* root);
 	void       applyTo(TextEditorCtrl* stc);
 	void       applyToWx(wxStyledTextCtrl* stc);
 	bool       copySet(StyleSet* copy);
-	TextStyle* style(const string& name);
+	TextStyle* style(const wxString& name);
 	TextStyle* style(unsigned index);
-	bool       writeFile(const string& filename);
+	bool       writeFile(const wxString& filename);
 
-	ColRGBA styleForeground(const string& style_name);
-	ColRGBA styleBackground(const string& style_name);
-	string  defaultFontFace();
-	int     defaultFontSize();
+	ColRGBA  styleForeground(const wxString& style_name);
+	ColRGBA  styleBackground(const wxString& style_name);
+	wxString defaultFontFace();
+	int      defaultFontSize();
 
 	// Static functions for styleset management
 	static void      initCurrent();
 	static void      saveCurrent();
 	static StyleSet* currentSet();
-	static bool      loadSet(const string& name);
+	static bool      loadSet(const wxString& name);
 	static bool      loadSet(unsigned index);
 	static void      applyCurrent(TextEditorCtrl* stc);
-	static string    styleName(unsigned index);
+	static wxString  styleName(unsigned index);
 	static unsigned  numSets();
 	static StyleSet* set(unsigned index);
 	static void      addEditor(TextEditorCtrl* stc);
@@ -106,7 +106,7 @@ public:
 	static bool loadCustomStyles();
 
 private:
-	string            name_;
+	wxString          name_;
 	TextStyle         ts_default_;
 	TextStyle         ts_selection_;
 	bool              built_in_ = false;

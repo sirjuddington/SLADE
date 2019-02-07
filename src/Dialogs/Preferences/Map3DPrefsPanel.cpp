@@ -178,7 +178,7 @@ void Map3DPrefsPanel::updateDistanceControls() const
 	}
 	else
 	{
-		label_render_dist_->SetLabel(S_FMT("%d", slider_max_render_dist_->GetValue() * 500));
+		label_render_dist_->SetLabel(wxString::Format("%d", slider_max_render_dist_->GetValue() * 500));
 		slider_max_render_dist_->Enable();
 	}
 
@@ -191,7 +191,7 @@ void Map3DPrefsPanel::updateDistanceControls() const
 	}
 	else
 	{
-		label_thing_dist_->SetLabel(S_FMT("%d", slider_max_thing_dist_->GetValue() * 500));
+		label_thing_dist_->SetLabel(wxString::Format("%d", slider_max_thing_dist_->GetValue() * 500));
 		slider_max_thing_dist_->Enable();
 	}
 }

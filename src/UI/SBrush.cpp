@@ -57,21 +57,21 @@ vector<std::unique_ptr<SBrush>> brushes;
 // -----------------------------------------------------------------------------
 // SBrush class constructor
 // -----------------------------------------------------------------------------
-SBrush::SBrush(const string& name) : name_{ name }, icon_{ name.AfterFirst('_') }
+SBrush::SBrush(const wxString& name) : name_{ name }, icon_{ name.AfterFirst('_') }
 {
 	auto res = App::archiveManager().programResourceArchive();
 	if (res == nullptr)
 		return;
-	auto file = res->entryAtPath(S_FMT("icons/general/%s.png", icon_));
+	auto file = res->entryAtPath(wxString::Format("icons/general/%s.png", icon_));
 	if (file == nullptr || file->size() == 0)
 	{
-		Log::error(2, S_FMT("error, no file at icons/general/%s.png", icon_));
+		Log::error(2, wxString::Format("error, no file at icons/general/%s.png", icon_));
 		return;
 	}
 	image_ = std::make_unique<SImage>();
 	if (!image_->open(file->data(), 0, "png"))
 	{
-		Log::error(2, S_FMT("couldn't load image data for icons/general/%s.png", icon_));
+		Log::error(2, wxString::Format("couldn't load image data for icons/general/%s.png", icon_));
 		return;
 	}
 	image_->convertAlphaMap(SImage::AlphaSource::Alpha);
@@ -103,7 +103,7 @@ uint8_t SBrush::pixel(int x, int y) const
 // -----------------------------------------------------------------------------
 // Get a brush from its name
 // -----------------------------------------------------------------------------
-SBrush* SBrush::get(const string& name)
+SBrush* SBrush::get(const wxString& name)
 {
 	for (auto& brush : brushes)
 		if (S_CMPNOCASE(name, brush->name()))

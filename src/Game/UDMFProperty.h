@@ -26,9 +26,9 @@ public:
 	UDMFProperty()  = default;
 	~UDMFProperty() = default;
 
-	const string&           propName() const { return property_; }
-	const string&           name() const { return name_; }
-	const string&           group() const { return group_; }
+	const wxString&         propName() const { return property_; }
+	const wxString&         name() const { return name_; }
+	const wxString&         group() const { return group_; }
 	Type                    type() const { return type_; }
 	const Property&         defaultValue() const { return default_value_; }
 	bool                    hasDefaultValue() const { return has_default_; }
@@ -39,14 +39,14 @@ public:
 	bool                    showAlways() const { return show_always_; }
 	bool                    internalOnly() const { return internal_only_; }
 
-	void parse(ParseTreeNode* node, const string& group);
+	void parse(ParseTreeNode* node, const wxString& group);
 
-	string getStringRep();
+	wxString getStringRep();
 
 private:
-	string           property_;
-	string           name_;
-	string           group_;
+	wxString         property_;
+	wxString         name_;
+	wxString         group_;
 	Type             type_        = Type::Unknown;
 	bool             flag_        = false;
 	bool             trigger_     = false;

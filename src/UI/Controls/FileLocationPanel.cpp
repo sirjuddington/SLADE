@@ -48,12 +48,12 @@ wxDEFINE_EVENT(wxEVT_COMMAND_FLP_LOCATION_CHANGED, wxCommandEvent);
 // FileLocationPanel class constructor
 // -----------------------------------------------------------------------------
 FileLocationPanel::FileLocationPanel(
-	wxWindow*     parent,
-	const string& path,
-	bool          editable,
-	const string& browse_caption,
-	const string& browse_extensions,
-	const string& browse_default_filename) :
+	wxWindow*       parent,
+	const wxString& path,
+	bool            editable,
+	const wxString& browse_caption,
+	const wxString& browse_extensions,
+	const wxString& browse_default_filename) :
 	wxPanel(parent, -1),
 	browse_caption_{ browse_caption },
 	browse_extensions_{ browse_extensions },
@@ -89,7 +89,7 @@ FileLocationPanel::FileLocationPanel(
 // -----------------------------------------------------------------------------
 // Returns the currently selected file path
 // -----------------------------------------------------------------------------
-string FileLocationPanel::location() const
+wxString FileLocationPanel::location() const
 {
 	return text_path_->GetValue();
 }
@@ -97,7 +97,7 @@ string FileLocationPanel::location() const
 // -----------------------------------------------------------------------------
 // Sets the selected file [path]
 // -----------------------------------------------------------------------------
-void FileLocationPanel::setLocation(const string& path) const
+void FileLocationPanel::setLocation(const wxString& path) const
 {
 	text_path_->SetValue(path);
 }

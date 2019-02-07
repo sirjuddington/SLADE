@@ -50,7 +50,7 @@
 // -----------------------------------------------------------------------------
 // CTPatch class constructor w/initial values
 // -----------------------------------------------------------------------------
-CTPatch::CTPatch(const string& name, int16_t offset_x, int16_t offset_y) : name_{ name }, offset_{ offset_x, offset_y }
+CTPatch::CTPatch(const wxString& name, int16_t offset_x, int16_t offset_y) : name_{ name }, offset_{ offset_x, offset_y }
 {
 }
 
@@ -86,7 +86,7 @@ ArchiveEntry* CTPatch::patchEntry(Archive* parent)
 // -----------------------------------------------------------------------------
 // CTPatchEx class constructor w/basic initial values
 // -----------------------------------------------------------------------------
-CTPatchEx::CTPatchEx(const string& name, int16_t offset_x, int16_t offset_y, Type type) :
+CTPatchEx::CTPatchEx(const wxString& name, int16_t offset_x, int16_t offset_y, Type type) :
 	CTPatch{ name, offset_x, offset_y },
 	type_{ type }
 {
@@ -181,17 +181,17 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 			if (tz.checkNC("Translation"))
 			{
 				// Build translation string
-				string translate;
-				string temp = tz.next().text;
+				wxString translate;
+				wxString temp = tz.next().text;
 				if (temp.Contains("="))
-					temp = S_FMT("\"%s\"", temp);
+					temp = wxString::Format("\"%s\"", temp);
 				translate += temp;
 				while (tz.checkNext(","))
 				{
 					translate += tz.next().text; // add ','
 					temp = tz.next().text;
 					if (temp.Contains("="))
-						temp = S_FMT("\"%s\"", temp);
+						temp = wxString::Format("\"%s\"", temp);
 					translate += temp;
 				}
 				// Parse whole string
@@ -207,7 +207,7 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 				blendtype_ = 2;
 
 				// Read first value
-				string first = tz.next().text;
+				wxString first = tz.next().text;
 
 				// If no second value, it's just a colour string
 				if (!tz.checkNext(","))
@@ -239,7 +239,8 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 						colour_.b = tz.next().asInt();
 						if (!tz.checkNext(","))
 						{
-							Log::error(S_FMT("Invalid TEXTURES definition, expected ',', got '%s'", tz.peek().text));
+							Log::error(wxString::Format(
+								"Invalid TEXTURES definition, expected ',', got '%s'", tz.peek().text));
 							return false;
 						}
 						tz.adv(); // Skip ,
@@ -268,13 +269,13 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 // -----------------------------------------------------------------------------
 // Returns a text representation of the patch in ZDoom TEXTURES format
 // -----------------------------------------------------------------------------
-string CTPatchEx::asText()
+wxString CTPatchEx::asText()
 {
 	// Init text string
-	string typestring = "Patch";
+	wxString typestring = "Patch";
 	if (type_ == Type::Graphic)
 		typestring = "Graphic";
-	string text = S_FMT("\t%s \"%s\", %d, %d\n", typestring, name_, offset_.x, offset_.y);
+	wxString text = wxString::Format("\t%s \"%s\", %d, %d\n", typestring, name_, offset_.x, offset_.y);
 
 	// Check if we need to write any extra properties
 	if (!flip_x_ && !flip_y_ && !use_offsets_ && rotation_ == 0 && blendtype_ == 0 && alpha_ == 1.0f
@@ -291,7 +292,7 @@ string CTPatchEx::asText()
 	if (use_offsets_)
 		text += "\t\tUseOffsets\n";
 	if (rotation_ != 0)
-		text += S_FMT("\t\tRotate %d\n", rotation_);
+		text += wxString::Format("\t\tRotate %d\n", rotation_);
 	if (blendtype_ == 1 && !translation_.isEmpty())
 	{
 		text += "\t\tTranslation ";
@@ -301,17 +302,17 @@ string CTPatchEx::asText()
 	if (blendtype_ >= 2)
 	{
 		wxColour col(colour_.r, colour_.g, colour_.b);
-		text += S_FMT("\t\tBlend \"%s\"", col.GetAsString(wxC2S_HTML_SYNTAX));
+		text += wxString::Format("\t\tBlend \"%s\"", col.GetAsString(wxC2S_HTML_SYNTAX));
 
 		if (blendtype_ == 3)
-			text += S_FMT(", %1.1f\n", (double)colour_.a / 255.0);
+			text += wxString::Format(", %1.1f\n", (double)colour_.a / 255.0);
 		else
 			text += "\n";
 	}
 	if (alpha_ < 1.0f)
-		text += S_FMT("\t\tAlpha %1.2f\n", alpha_);
+		text += wxString::Format("\t\tAlpha %1.2f\n", alpha_);
 	if (!(S_CMPNOCASE(style_, "Copy")))
-		text += S_FMT("\t\tStyle %s\n", style_);
+		text += wxString::Format("\t\tStyle %s\n", style_);
 
 	// Write ending
 	text += "\t}\n";
@@ -435,7 +436,7 @@ void CTexture::clear()
 // Adds a patch to the texture with the given attributes, at [index].
 // If [index] is -1, the patch is added to the end of the list.
 // -----------------------------------------------------------------------------
-bool CTexture::addPatch(const string& patch, int16_t offset_x, int16_t offset_y, int index)
+bool CTexture::addPatch(const wxString& patch, int16_t offset_x, int16_t offset_y, int index)
 {
 	// Create new patch
 	CTPatch::UPtr np;
@@ -485,7 +486,7 @@ bool CTexture::removePatch(size_t index)
 // Removes all instances of [patch] from the texture.
 // Returns true if any were removed, false otherwise
 // -----------------------------------------------------------------------------
-bool CTexture::removePatch(const string& patch)
+bool CTexture::removePatch(const wxString& patch)
 {
 	// Go through patches
 	bool removed = false;
@@ -513,7 +514,7 @@ bool CTexture::removePatch(const string& patch)
 // ArchiveEntry with [newentry].
 // Returns false if [index] is out of bounds, true otherwise
 // -----------------------------------------------------------------------------
-bool CTexture::replacePatch(size_t index, const string& newpatch)
+bool CTexture::replacePatch(size_t index, const wxString& newpatch)
 {
 	// Check index
 	if (index >= patches_.size())
@@ -586,7 +587,7 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 // -----------------------------------------------------------------------------
 // Parses a TEXTURES format texture definition
 // -----------------------------------------------------------------------------
-bool CTexture::parse(Tokenizer& tz, const string& type)
+bool CTexture::parse(Tokenizer& tz, const wxString& type)
 {
 	// Check if optional
 	if (tz.advIfNext("optional"))
@@ -611,7 +612,7 @@ bool CTexture::parse(Tokenizer& tz, const string& type)
 			// Check if end of text is reached (error)
 			if (tz.atEnd())
 			{
-				Log::error(S_FMT("Error parsing texture %s: End of text found, missing } perhaps?", name_));
+				Log::error(wxString::Format("Error parsing texture %s: End of text found, missing } perhaps?", name_));
 				return false;
 			}
 
@@ -698,7 +699,7 @@ bool CTexture::parseDefine(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the texture, in ZDoom TEXTURES format
 // -----------------------------------------------------------------------------
-string CTexture::asText()
+wxString CTexture::asText()
 {
 	// Can't write non-extended texture as text
 	if (!extended_)
@@ -706,22 +707,22 @@ string CTexture::asText()
 
 	// Define block
 	if (defined_)
-		return S_FMT("define \"%s\" %d %d\n", name_, def_size_.x, def_size_.y);
+		return wxString::Format("define \"%s\" %d %d\n", name_, def_size_.x, def_size_.y);
 
 	// Init text string
-	string text;
+	wxString text;
 	if (optional_)
-		text = S_FMT("%s Optional \"%s\", %d, %d\n{\n", type_, name_, size_.x, size_.y);
+		text = wxString::Format("%s Optional \"%s\", %d, %d\n{\n", type_, name_, size_.x, size_.y);
 	else
-		text = S_FMT("%s \"%s\", %d, %d\n{\n", type_, name_, size_.x, size_.y);
+		text = wxString::Format("%s \"%s\", %d, %d\n{\n", type_, name_, size_.x, size_.y);
 
 	// Write texture properties
 	if (scale_.x != 1.0)
-		text += S_FMT("\tXScale %1.3f\n", scale_.x);
+		text += wxString::Format("\tXScale %1.3f\n", scale_.x);
 	if (scale_.y != 1.0)
-		text += S_FMT("\tYScale %1.3f\n", scale_.y);
+		text += wxString::Format("\tYScale %1.3f\n", scale_.y);
 	if (offset_.x != 0 || offset_.y != 0)
-		text += S_FMT("\tOffset %d, %d\n", offset_.x, offset_.y);
+		text += wxString::Format("\tOffset %d, %d\n", offset_.x, offset_.y);
 	if (world_panning_)
 		text += "\tWorldPanning\n";
 	if (no_decals_)

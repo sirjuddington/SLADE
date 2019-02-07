@@ -64,7 +64,7 @@ bool PaletteManager::init()
 // Adds the palette [pal] to the list of managed palettes, identified by [name].
 // Returns false if the palette doesn't exist or the name is invalid
 // -----------------------------------------------------------------------------
-bool PaletteManager::addPalette(Palette::UPtr pal, const string& name)
+bool PaletteManager::addPalette(Palette::UPtr pal, const wxString& name)
 {
 	// Check palette and name were given
 	if (!pal || name.IsEmpty())
@@ -109,7 +109,7 @@ Palette* PaletteManager::palette(int index)
 // Returns the palette matching the given name, or the default palette
 // (greyscale) if no matching palette found
 // -----------------------------------------------------------------------------
-Palette* PaletteManager::palette(const string& name)
+Palette* PaletteManager::palette(const wxString& name)
 {
 	for (uint32_t a = 0; a < pal_names_.size(); a++)
 	{
@@ -124,7 +124,7 @@ Palette* PaletteManager::palette(const string& name)
 // Returns the name of the palette at [index], or an empty string if index is
 // out of bounds
 // -----------------------------------------------------------------------------
-string PaletteManager::palName(int index)
+wxString PaletteManager::palName(int index)
 {
 	if (index < 0 || index >= numPalettes())
 		return "";
@@ -136,7 +136,7 @@ string PaletteManager::palName(int index)
 // Returns the name of the given palette, or an empty string if the palette
 // isn't managed by the PaletteManager
 // -----------------------------------------------------------------------------
-string PaletteManager::palName(Palette* pal)
+wxString PaletteManager::palName(Palette* pal)
 {
 	for (uint32_t a = 0; a < palettes_.size(); a++)
 	{
@@ -191,8 +191,8 @@ bool PaletteManager::loadCustomPalettes()
 	res_dir.Open(App::path("palettes", App::Dir::User));
 
 	// Go through each file in the directory
-	string filename = wxEmptyString;
-	bool   files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
+	wxString filename = wxEmptyString;
+	bool     files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
 	while (files)
 	{
 		// Load palette data

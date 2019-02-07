@@ -117,8 +117,8 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
 	sizer_bottom_->Add(spin_yoffset_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
 
 	// Gfx (offset) type
-	string offset_types[] = { "Auto", "Graphic", "Sprite", "HUD" };
-	choice_offset_type_   = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, offset_types);
+	wxString offset_types[] = { "Auto", "Graphic", "Sprite", "HUD" };
+	choice_offset_type_     = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, offset_types);
 	choice_offset_type_->SetSelection(0);
 	sizer_bottom_->Add(choice_offset_type_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
 
@@ -254,13 +254,13 @@ bool GfxEntryPanel::saveEntry()
 	{
 		auto format = image->format();
 
-		string error  = "";
-		ok            = false;
-		auto writable = format ? format->canWrite(*image) : SIFormat::Writable::No;
+		wxString error = "";
+		ok             = false;
+		auto writable  = format ? format->canWrite(*image) : SIFormat::Writable::No;
 		if (format == SIFormat::unknownFormat())
 			error = "Image is of unknown format";
 		else if (writable == SIFormat::Writable::No)
-			error = S_FMT("Writing unsupported for format \"%s\"", format->name());
+			error = wxString::Format("Writing unsupported for format \"%s\"", format->name());
 		else
 		{
 			// Convert image if necessary (using default options)
@@ -413,14 +413,14 @@ bool GfxEntryPanel::extractAll() const
 	if (parent == nullptr)
 		return false;
 
-	int    index = parent->entryIndex(entry_, entry_->parentDir());
-	string name  = wxFileName(entry_->name()).GetName();
+	int      index = parent->entryIndex(entry_, entry_->parentDir());
+	wxString name  = wxFileName(entry_->name()).GetName();
 
 	// Loop through subimages and get things done
 	int pos = 0;
 	for (int i = 0; i < image()->size(); ++i)
 	{
-		string newname = S_FMT("%s_%i.png", name, i);
+		wxString newname = wxString::Format("%s_%i.png", name, i);
 		Misc::loadImageFromEntry(image(), entry_, i);
 
 		// Only process images that actually contain some pixels
@@ -499,7 +499,7 @@ void GfxEntryPanel::refresh()
 		menu_custom_->Enable(menu_gfxep_extract, true);
 	else
 		menu_custom_->Enable(menu_gfxep_extract, false);
-	text_curimg_->SetLabel(S_FMT("Image %d/%d", cur_index_ + 1, image()->size()));
+	text_curimg_->SetLabel(wxString::Format("Image %d/%d", cur_index_ + 1, image()->size()));
 
 	// Update status bar in case image dimensions changed
 	updateStatus();
@@ -524,11 +524,11 @@ void GfxEntryPanel::refresh()
 // -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
 // -----------------------------------------------------------------------------
-string GfxEntryPanel::statusString()
+wxString GfxEntryPanel::statusString()
 {
 	// Setup status string
-	auto   image  = this->image();
-	string status = S_FMT("%dx%d", image->width(), image->height());
+	auto     image  = this->image();
+	wxString status = wxString::Format("%dx%d", image->width(), image->height());
 
 	// Colour format
 	if (image->type() == SImage::Type::RGBA)
@@ -669,7 +669,7 @@ void GfxEntryPanel::applyViewType() const
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // ----------------------------------------------------------------------------
-bool GfxEntryPanel::handleEntryPanelAction(const string& id)
+bool GfxEntryPanel::handleEntryPanelAction(const wxString& id)
 {
 	// We're only interested in "pgfx_" actions
 	if (!id.StartsWith("pgfx_"))
@@ -772,8 +772,8 @@ bool GfxEntryPanel::handleEntryPanelAction(const string& id)
 	else if (id == "pgfx_rotate")
 	{
 		// Prompt for rotation angle
-		string angles[] = { "90", "180", "270" };
-		int    choice   = wxGetSingleChoiceIndex("Select rotation angle", "Rotate", 3, angles, 0);
+		wxString angles[] = { "90", "180", "270" };
+		int      choice   = wxGetSingleChoiceIndex("Select rotation angle", "Rotate", 3, angles, 0);
 
 		// Rotate image
 		switch (choice)
@@ -844,7 +844,7 @@ bool GfxEntryPanel::handleEntryPanelAction(const string& id)
 			setModified();
 		}
 		ColRGBA gcdcol = gcd.colour();
-		last_colour    = S_FMT("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
+		last_colour    = wxString::Format("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
 	}
 
 	// Tint
@@ -870,7 +870,7 @@ bool GfxEntryPanel::handleEntryPanelAction(const string& id)
 			setModified();
 		}
 		ColRGBA gtdcol   = gtd.colour();
-		last_tint_colour = S_FMT("RGB(%d, %d, %d)", gtdcol.r, gtdcol.g, gtdcol.b);
+		last_tint_colour = wxString::Format("RGB(%d, %d, %d)", gtdcol.r, gtdcol.g, gtdcol.b);
 		last_tint_amount = (int)(gtd.amount() * 100.0);
 	}
 
@@ -1139,7 +1139,7 @@ void GfxEntryPanel::onGfxPixelsChanged(wxEvent& e)
 // -----------------------------------------------------------------------------
 // Handles any announcements
 // -----------------------------------------------------------------------------
-void GfxEntryPanel::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void GfxEntryPanel::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	if (announcer != theMainWindow->paletteChooser())
 		return;
@@ -1246,8 +1246,8 @@ GfxEntryPanel* CH::getCurrentGfxPanel()
 
 CONSOLE_COMMAND(rotate, 1, true)
 {
-	double val;
-	string bluh = args[0];
+	double   val;
+	wxString bluh = args[0];
 	if (!bluh.ToDouble(&val))
 	{
 		if (!bluh.CmpNoCase("l") || !bluh.CmpNoCase("left"))
@@ -1258,14 +1258,14 @@ CONSOLE_COMMAND(rotate, 1, true)
 			val = 270.;
 		else
 		{
-			Log::error(S_FMT("Invalid parameter: %s is not a number.", bluh.mb_str()));
+			Log::error(wxString::Format("Invalid parameter: %s is not a number.", bluh.mb_str()));
 			return;
 		}
 	}
 	int angle = (int)val;
 	if (angle % 90)
 	{
-		Log::error(S_FMT("Invalid parameter: %i is not a multiple of 90.", angle));
+		Log::error(wxString::Format("Invalid parameter: %i is not a multiple of 90.", angle));
 		return;
 	}
 
@@ -1303,15 +1303,15 @@ CONSOLE_COMMAND(rotate, 1, true)
 
 CONSOLE_COMMAND(mirror, 1, true)
 {
-	bool   vertical;
-	string bluh = args[0];
+	bool     vertical;
+	wxString bluh = args[0];
 	if (!bluh.CmpNoCase("y") || !bluh.CmpNoCase("v") || !bluh.CmpNoCase("vert") || !bluh.CmpNoCase("vertical"))
 		vertical = true;
 	else if (!bluh.CmpNoCase("x") || !bluh.CmpNoCase("h") || !bluh.CmpNoCase("horz") || !bluh.CmpNoCase("horizontal"))
 		vertical = false;
 	else
 	{
-		Log::error(S_FMT("Invalid parameter: %s is not a known value.", bluh.mb_str()));
+		Log::error(wxString::Format("Invalid parameter: %s is not a known value.", bluh.mb_str()));
 		return;
 	}
 	auto foo = CH::getCurrentArchivePanel();

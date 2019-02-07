@@ -27,6 +27,7 @@ file(GLOB_RECURSE EXTERNAL_SOURCES
 	dumb/*.c
 	lua/*.c
 	lzma/C/LzmaDec.c
+	fmt/*.cc
 	${SLADE_HEADERS}
 	)
 

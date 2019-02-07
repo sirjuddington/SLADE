@@ -66,9 +66,9 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-string PreferencesDialog::last_page_ = "";
-int    PreferencesDialog::width_     = 0;
-int    PreferencesDialog::height_    = 0;
+wxString PreferencesDialog::last_page_ = "";
+int      PreferencesDialog::width_     = 0;
+int      PreferencesDialog::height_    = 0;
 
 
 // -----------------------------------------------------------------------------
@@ -82,7 +82,7 @@ namespace
 // Creates a sizer with a settings page title, (optional) description and
 // separator line
 // -----------------------------------------------------------------------------
-wxSizer* createTitleSizer(wxWindow* parent, const string& title, const string& description)
+wxSizer* createTitleSizer(wxWindow* parent, const wxString& title, const wxString& description)
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -186,7 +186,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 // [sub_page] is true the page is added as a subpage of the previously added
 // (non-sub) page
 // -----------------------------------------------------------------------------
-void PreferencesDialog::addPrefsPage(PrefsPanelBase* page, const string& title, bool sub_page, bool select)
+void PreferencesDialog::addPrefsPage(PrefsPanelBase* page, const wxString& title, bool sub_page, bool select)
 {
 	// Create a panel to put the preferences page in
 	// (since we want some extra padding between the tree and the page)
@@ -268,7 +268,7 @@ wxPanel* PreferencesDialog::setupAdvancedPanel()
 // -----------------------------------------------------------------------------
 // Shows the preferences page matching [name]
 // -----------------------------------------------------------------------------
-void PreferencesDialog::showPage(const string& name, const string& subsection)
+void PreferencesDialog::showPage(const wxString& name, const wxString& subsection)
 {
 	// Go through all pages
 	for (unsigned a = 0; a < tree_prefs_->GetPageCount(); a++)
@@ -286,7 +286,7 @@ void PreferencesDialog::showPage(const string& name, const string& subsection)
 // -----------------------------------------------------------------------------
 // Returns the name of the currently selected page
 // -----------------------------------------------------------------------------
-string PreferencesDialog::currentPage() const
+wxString PreferencesDialog::currentPage() const
 {
 	int sel = tree_prefs_->GetSelection();
 
@@ -353,7 +353,7 @@ void PreferencesDialog::onButtonClicked(wxCommandEvent& e)
 // Opens a preferences dialog on top of [parent], showing either the last viewed
 // page or [initial_page] if it is specified
 // -----------------------------------------------------------------------------
-void PreferencesDialog::openPreferences(wxWindow* parent, string initial_page, const string& subsection)
+void PreferencesDialog::openPreferences(wxWindow* parent, wxString initial_page, const wxString& subsection)
 {
 	// Setup dialog
 	PreferencesDialog dlg(parent);

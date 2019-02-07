@@ -12,7 +12,7 @@ public:
 	QuickTextureOverlay3d(MapEditContext* editor);
 	~QuickTextureOverlay3d() = default;
 
-	void setTexture(const string& name);
+	void setTexture(const wxString& name);
 	void applyTexture();
 
 	void update(long frametime) override;
@@ -24,7 +24,7 @@ public:
 	void close(bool cancel = false) override;
 
 	void doSearch();
-	void keyDown(const string& key) override;
+	void keyDown(const wxString& key) override;
 
 	static bool ok(const ItemSelection& sel);
 
@@ -32,13 +32,13 @@ private:
 	struct QTTex
 	{
 		unsigned texture;
-		string   name;
-		QTTex(string name) : texture{ 0 }, name{ name } {}
+		wxString name;
+		QTTex(wxString name) : texture{ 0 }, name{ name } {}
 	};
 
 	vector<QTTex>   textures_;
 	unsigned        current_index_ = 0;
-	string          search_;
+	wxString        search_;
 	double          anim_offset_ = 0.;
 	MapEditContext* editor_      = nullptr;
 	bool            sel_flats_   = true;

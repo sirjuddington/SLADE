@@ -115,7 +115,7 @@ Property::Property(double value)
 // -----------------------------------------------------------------------------
 // Property class constructor (string)
 // -----------------------------------------------------------------------------
-Property::Property(const string& value) : value_{}
+Property::Property(const wxString& value) : value_{}
 {
 	// Init string property
 	type_       = Type::String;
@@ -151,7 +151,7 @@ bool Property::boolValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Boolean)
-		Log::warning(S_FMT("Requested Boolean value of a %s Property", typeString()));
+		Log::warning(wxString::Format("Requested Boolean value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::Boolean)
@@ -189,7 +189,7 @@ int Property::intValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Int)
-		Log::warning(S_FMT("Requested Integer value of a %s Property", typeString()));
+		Log::warning(wxString::Format("Requested Integer value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::Int)
@@ -229,7 +229,7 @@ double Property::floatValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Float)
-		Log::warning(S_FMT("Requested Float value of a %s Property", typeString()));
+		Log::warning(wxString::Format("Requested Float value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::Float)
@@ -257,7 +257,7 @@ double Property::floatValue(bool warn_wrong_type) const
 // If [warn_wrong_type] is true, a warning message is written to the log if the
 // property is not of string type
 // -----------------------------------------------------------------------------
-string Property::stringValue(bool warn_wrong_type) const
+wxString Property::stringValue(bool warn_wrong_type) const
 {
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type_ == Type::Flag)
@@ -269,15 +269,15 @@ string Property::stringValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::String)
-		Log::warning(S_FMT("Warning: Requested String value of a %s Property", typeString()));
+		Log::warning(wxString::Format("Warning: Requested String value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::String)
 		return val_string_;
 	else if (type_ == Type::Int)
-		return S_FMT("%d", value_.Integer);
+		return wxString::Format("%d", value_.Integer);
 	else if (type_ == Type::UInt)
-		return S_FMT("%u", value_.Unsigned);
+		return wxString::Format("%u", value_.Unsigned);
 	else if (type_ == Type::Boolean)
 	{
 		if (value_.Boolean)
@@ -286,7 +286,7 @@ string Property::stringValue(bool warn_wrong_type) const
 			return "false";
 	}
 	else if (type_ == Type::Float)
-		return S_FMT("%f", value_.Floating);
+		return wxString::Format("%f", value_.Floating);
 
 	// Return default string value
 	return wxEmptyString;
@@ -309,7 +309,7 @@ unsigned Property::unsignedValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Int)
-		Log::warning(S_FMT("Requested Integer value of a %s Property", typeString()));
+		Log::warning(wxString::Format("Requested Integer value of a %s Property", typeString()));
 
 	// Return value (convert if needed)
 	if (type_ == Type::Int)
@@ -378,7 +378,7 @@ void Property::setValue(double val)
 // -----------------------------------------------------------------------------
 // Sets the property to [val], and changes its type to string if necessary
 // -----------------------------------------------------------------------------
-void Property::setValue(const string& val)
+void Property::setValue(const wxString& val)
 {
 	// Change type if necessary
 	if (type_ != Type::String)
@@ -437,7 +437,7 @@ void Property::changeType(Type newtype)
 // -----------------------------------------------------------------------------
 // Returns a string representing the property's value type
 // -----------------------------------------------------------------------------
-string Property::typeString() const
+wxString Property::typeString() const
 {
 	switch (type_)
 	{

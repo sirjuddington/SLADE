@@ -99,8 +99,8 @@ void ACSPrefsPanel::applyPreferences()
 	path_acc = flp_acc_path_->location();
 
 	// Build include paths string
-	string paths_string;
-	auto   lib_paths = list_inc_paths_->GetStrings();
+	wxString paths_string;
+	auto     lib_paths = list_inc_paths_->GetStrings();
 	for (const auto& lib_path : lib_paths)
 		paths_string += lib_path + ";";
 	if (paths_string.EndsWith(";"))

@@ -194,7 +194,7 @@ public:
 			temp[17] = 0;
 			if (temp[9] == 'M')
 				temp[9] = 'm';
-			if (!S_FMT("%s", temp).Cmp("Extended module: "))
+			if (!wxString::Format("%s", temp).Cmp("Extended module: "))
 			{
 				if (mc[37] == 0x1a)
 				{
@@ -724,7 +724,7 @@ public:
 				if ((mc[24] + (mc[25] << 8)) == validity)
 				{
 					// Lastly, check for header text
-					string header(wxString::FromAscii(mc.data(), 19));
+					auto header(wxString::FromAscii(mc.data(), 19));
 					if (header == "Creative Voice File")
 						return MATCH_TRUE;
 				}
@@ -884,11 +884,11 @@ public:
 			{
 				size_t size = mc.readB32(4) + 8;
 				if (debugaiff)
-					Log::info(S_FMT("size %d", size));
+					Log::info(wxString::Format("size %d", size));
 				if (size > mc.size())
 				{
 					if (debugaiff)
-						Log::info(S_FMT("%d <= %d fails", size, mc.size()));
+						Log::info(wxString::Format("%d <= %d fails", size, mc.size()));
 					return MATCH_FALSE;
 				}
 				size_t s          = 12;
@@ -897,7 +897,7 @@ public:
 				while (s < size && !(comm_found && ssnd_found))
 				{
 					if (debugaiff)
-						Log::info(S_FMT("%d/%d", s, size));
+						Log::info(wxString::Format("%d/%d", s, size));
 					if (mc[s + 0] == 'C' && mc[s + 1] == 'O' && mc[s + 2] == 'M' && mc[s + 3] == 'M')
 						comm_found = true;
 					else if (mc[s + 0] == 'S' && mc[s + 1] == 'S' && mc[s + 2] == 'N' && mc[s + 3] == 'D')
@@ -906,12 +906,12 @@ public:
 					if (s % 2)
 						++s;
 					if (debugaiff)
-						Log::info(S_FMT("looking now at offset %d", s));
+						Log::info(wxString::Format("looking now at offset %d", s));
 				}
 				if (comm_found && ssnd_found)
 					return MATCH_TRUE;
 				if (debugaiff)
-					Log::info(S_FMT(
+					Log::info(wxString::Format(
 						"COMM was %sfound and SSND was %sfound", comm_found ? "" : "not ", ssnd_found ? "" : "not "));
 			}
 		}

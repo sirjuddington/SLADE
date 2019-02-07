@@ -131,7 +131,7 @@ CTexture* TextureXList::texture(size_t index)
 // Returns the texture matching [name], or the 'invalid' texture if no match is
 // found
 // -----------------------------------------------------------------------------
-CTexture* TextureXList::texture(const string& name)
+CTexture* TextureXList::texture(const wxString& name)
 {
 	// Search for texture by name
 	for (auto& texture : textures_)
@@ -147,7 +147,7 @@ CTexture* TextureXList::texture(const string& name)
 // -----------------------------------------------------------------------------
 // Returns the index of the texture matching [name], or -1 if no match was found
 // -----------------------------------------------------------------------------
-int TextureXList::textureIndex(const string& name)
+int TextureXList::textureIndex(const wxString& name)
 {
 	// Search for texture by name
 	for (unsigned a = 0; a < textures_.size(); a++)
@@ -244,7 +244,7 @@ void TextureXList::clear(bool clear_patches)
 // -----------------------------------------------------------------------------
 // Updates all textures in the list to 'remove' [patch]
 // -----------------------------------------------------------------------------
-void TextureXList::removePatch(const string& patch)
+void TextureXList::removePatch(const wxString& patch)
 {
 	// Go through all textures
 	for (auto& texture : textures_)
@@ -377,7 +377,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 			// Read texture info
 			if (!texturex->read(&nameless, 8))
 			{
-				Log::error(S_FMT("TEXTUREx entry is corrupt (can't read nameless definition #%d)", a));
+				Log::error(wxString::Format("TEXTUREx entry is corrupt (can't read nameless definition #%d)", a));
 				return false;
 			}
 
@@ -390,7 +390,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		}
 		else if (!texturex->read(&tdef, 16))
 		{
-			Log::error(S_FMT("TEXTUREx entry is corrupt, (can't read texture definition #%d)", a));
+			Log::error(wxString::Format("TEXTUREx entry is corrupt, (can't read texture definition #%d)", a));
 			return false;
 		}
 
@@ -399,7 +399,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		{
 			if (!texturex->seek(4, SEEK_CUR))
 			{
-				Log::error(S_FMT("TEXTUREx entry is corrupt (can't skip dummy data past #%d)", a));
+				Log::error(wxString::Format("TEXTUREx entry is corrupt (can't skip dummy data past #%d)", a));
 				return false;
 			}
 		}
@@ -421,7 +421,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		int16_t n_patches = 0;
 		if (!texturex->read(&n_patches, 2))
 		{
-			Log::error(S_FMT("TEXTUREx entry is corrupt (can't read patchcount #%d)", a));
+			Log::error(wxString::Format("TEXTUREx entry is corrupt (can't read patchcount #%d)", a));
 			return false;
 		}
 
@@ -433,8 +433,8 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 			Patch pdef;
 			if (!texturex->read(&pdef, 6))
 			{
-				Log::error(S_FMT("TEXTUREx entry is corrupt (can't read patch definition #%d:%d)", a, p));
-				Log::error(S_FMT("Lump size %d, offset %d", texturex->size(), texturex->currentPos()));
+				Log::error(wxString::Format("TEXTUREx entry is corrupt (can't read patch definition #%d:%d)", a, p));
+				Log::error(wxString::Format("Lump size %d, offset %d", texturex->size(), texturex->currentPos()));
 				return false;
 			}
 
@@ -443,14 +443,14 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 			{
 				if (!texturex->seek(4, SEEK_CUR))
 				{
-					Log::error(S_FMT("TEXTUREx entry is corrupt (can't skip dummy data past #%d:%d)", a, p));
+					Log::error(wxString::Format("TEXTUREx entry is corrupt (can't skip dummy data past #%d:%d)", a, p));
 					return false;
 				}
 			}
 
 
 			// Add it to the texture
-			string patch;
+			wxString patch;
 			if (txformat_ == Format::Jaguar)
 			{
 				patch = tex->name_.Upper();
@@ -463,7 +463,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 			{
 				// Log::info(1, "Warning: Texture %s contains patch %d which is invalid - may be incorrect PNAMES
 				// entry", tex->getName(), pdef.patch);
-				patch = S_FMT("INVPATCH%04d", pdef.patch);
+				patch = wxString::Format("INVPATCH%04d", pdef.patch);
 			}
 
 			tex->addPatch(patch, pdef.left, pdef.top);
@@ -512,7 +512,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_t
 	{
 		numpatchrefs += textures_[i]->nPatches();
 	}
-	Log::info(S_FMT("%i patch references in %i textures", numpatchrefs, numtextures));
+	Log::info(wxString::Format("%i patch references in %i textures", numpatchrefs, numtextures));
 
 	size_t datasize   = 0;
 	size_t headersize = 4 + (4 * numtextures);
@@ -632,7 +632,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_t
 			if (patch->name().StartsWith("INVPATCH"))
 			{
 				// Get raw patch index from name
-				string number = patch->name();
+				wxString number = patch->name();
 				number.Replace("INVPATCH", "");
 				long index;
 				number.ToLong(&index);
@@ -762,12 +762,12 @@ bool TextureXList::writeTEXTURESData(ArchiveEntry* textures)
 	Log::info("Writing ZDoom text format TEXTURES entry");
 
 	// Generate a big string :P
-	string textures_data = "// Texture definitions generated by SLADE3\n// on " + wxNow() + "\n\n";
+	wxString textures_data = "// Texture definitions generated by SLADE3\n// on " + wxNow() + "\n\n";
 	for (auto& texture : textures_)
 		textures_data += texture->asText();
 	textures_data += "// End of texture definitions\n";
 
-	Log::info(S_FMT(
+	Log::info(wxString::Format(
 		"%u texture%s written on %u bytes", textures_.size(), textures_.size() < 2 ? "" : "s", textures_data.length()));
 
 	// Write it to the entry
@@ -777,7 +777,7 @@ bool TextureXList::writeTEXTURESData(ArchiveEntry* textures)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the texture list format
 // -----------------------------------------------------------------------------
-string TextureXList::textureXFormatString() const
+wxString TextureXList::textureXFormatString() const
 {
 	switch (txformat_)
 	{
@@ -831,7 +831,7 @@ bool TextureXList::findErrors()
 		if (textures_[a]->nPatches() == 0)
 		{
 			ret = true;
-			Log::warning(S_FMT("Texture %u: %s does not have any patch", a, textures_[a]->name()));
+			Log::warning(wxString::Format("Texture %u: %s does not have any patch", a, textures_[a]->name()));
 		}
 		else
 		{
@@ -843,7 +843,7 @@ bool TextureXList::findErrors()
 				if (patch == nullptr)
 				{
 					ret = true;
-					Log::warning(S_FMT(
+					Log::warning(wxString::Format(
 						"Texture %u: %s: patch %s cannot be found in any open archive",
 						a,
 						textures_[a]->name(),
@@ -866,7 +866,8 @@ bool TextureXList::findErrors()
 				if (columns[c] == 0)
 				{
 					ret = true;
-					Log::warning(S_FMT("Texture %u: %s: column %d without a patch", a, textures_[a]->name(), c));
+					Log::warning(
+						wxString::Format("Texture %u: %s: column %d without a patch", a, textures_[a]->name(), c));
 					break;
 				}
 			}

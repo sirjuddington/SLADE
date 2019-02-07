@@ -492,5 +492,5 @@ CONSOLE_COMMAND(angle2d, 6, false)
 	}
 
 	double ang = MathStuff::angle2DRad(Vec2d(vals[0], vals[1]), Vec2d(vals[2], vals[3]), Vec2d(vals[4], vals[5]));
-	Log::info(S_FMT("Angle = %1.4f", ang));
+	Log::info(wxString::Format("Angle = %1.4f", ang));
 }

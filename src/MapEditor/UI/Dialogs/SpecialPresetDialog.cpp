@@ -118,13 +118,13 @@ private:
 
 	struct Group
 	{
-		string         name;
+		wxString       name;
 		wxDataViewItem item;
-		Group(wxDataViewItem item, const string& name) : name{ name }, item{ item } {}
+		Group(wxDataViewItem item, const wxString& name) : name{ name }, item{ item } {}
 	};
 	vector<Group> groups_;
 
-	wxDataViewItem getGroup(const string& group)
+	wxDataViewItem getGroup(const wxString& group)
 	{
 		// Check if group was already made
 		for (auto& g : groups_)
@@ -137,8 +137,8 @@ private:
 		auto path = wxSplit(group, '/');
 
 		// Create group needed
-		auto   current  = root_;
-		string fullpath = "";
+		auto     current  = root_;
+		wxString fullpath = "";
 		for (unsigned p = 0; p < path.size(); p++)
 		{
 			if (p > 0)

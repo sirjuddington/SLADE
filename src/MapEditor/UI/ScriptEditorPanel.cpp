@@ -105,7 +105,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 	vbox->Add(text_editor_, 1, wxEXPAND | wxALL, UI::pad());
 
 	// Set language
-	string lang = Game::configuration().scriptLanguage();
+	wxString lang = Game::configuration().scriptLanguage();
 	if (S_CMPNOCASE(lang, "acs_hexen"))
 	{
 		text_editor_->setLanguage(TextLanguage::fromId("acs"));
@@ -153,7 +153,7 @@ bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled
 		entry_compiled_->importEntry(compiled);
 
 	// Process ACS open scripts
-	string lang = Game::configuration().scriptLanguage();
+	wxString lang = Game::configuration().scriptLanguage();
 	if (entry_script_->size() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
 		auto& map = MapEditor::editContext().map();
@@ -213,7 +213,7 @@ void ScriptEditorPanel::saveScripts() const
 	entry_script_->importMem(buf, buf.length());
 
 	// Process ACS open scripts
-	string lang = Game::configuration().scriptLanguage();
+	wxString lang = Game::configuration().scriptLanguage();
 	if (entry_script_->size() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
 		auto map = &(MapEditor::editContext().map());
@@ -234,7 +234,7 @@ void ScriptEditorPanel::updateUI() const
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ScriptEditorPanel::handleAction(const string& name)
+bool ScriptEditorPanel::handleAction(const wxString& name)
 {
 	// Compile Script
 	if (name == "mapw_script_compile")
@@ -243,7 +243,7 @@ bool ScriptEditorPanel::handleAction(const string& name)
 		saveScripts();
 
 		// Compile depending on language
-		string lang = Game::configuration().scriptLanguage();
+		wxString lang = Game::configuration().scriptLanguage();
 		if (lang == "acs_hexen")
 			EntryOperations::compileACS(
 				entry_script_.get(), true, entry_compiled_.get(), dynamic_cast<wxFrame*>(MapEditor::windowWx()));
@@ -285,8 +285,8 @@ bool ScriptEditorPanel::handleAction(const string& name)
 void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e)
 {
 	// Get word
-	auto   item = list_words_->GetSelection();
-	string word = list_words_->GetItemText(item);
+	auto     item = list_words_->GetSelection();
+	wxString word = list_words_->GetItemText(item);
 
 	// Get language
 	auto language = text_editor_->language();

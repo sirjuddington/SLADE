@@ -222,11 +222,12 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Check entry name
-		string name = entry->path(true);
+		auto name = entry->path(true);
 		name.Remove(0, 1); // Remove leading /
 		if (name.Len() > 120)
 		{
-			Log::warning(S_FMT("Entry %s path is too long (> 120 characters), putting it in the root directory", name));
+			Log::warning(wxString::Format(
+				"Entry %s path is too long (> 120 characters), putting it in the root directory", name));
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 120)
@@ -289,7 +290,7 @@ bool SiNArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("SiNArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error(wxString::Format("SiNArchive::loadEntryData: Unable to open archive file %s", filename_));
 		return false;
 	}
 
@@ -348,7 +349,7 @@ bool SiNArchive::isSiNArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Ritual SiN archive
 // -----------------------------------------------------------------------------
-bool SiNArchive::isSiNArchive(const string& filename)
+bool SiNArchive::isSiNArchive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

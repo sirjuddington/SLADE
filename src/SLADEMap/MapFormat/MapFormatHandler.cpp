@@ -57,7 +57,7 @@ public:
 		return {};
 	}
 
-	string udmfNamespace() override { return ""; }
+	wxString udmfNamespace() override { return ""; }
 };
 
 

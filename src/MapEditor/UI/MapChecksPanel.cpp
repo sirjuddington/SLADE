@@ -48,7 +48,7 @@
 // -----------------------------------------------------------------------------
 namespace
 {
-vector<std::pair<MapCheck::StandardCheck, string>> std_checks = {
+vector<std::pair<MapCheck::StandardCheck, wxString>> std_checks = {
 	{ MapCheck::MissingTexture, "Check for missing textures" },
 	{ MapCheck::SpecialTag, "Check for missing tags" },
 	{ MapCheck::IntersectingLine, "Check for intersecting lines" },
@@ -120,7 +120,7 @@ MapChecksPanel::~MapChecksPanel() {}
 // -----------------------------------------------------------------------------
 // Updates the check status label text
 // -----------------------------------------------------------------------------
-void MapChecksPanel::updateStatusText(const string& text)
+void MapChecksPanel::updateStatusText(const wxString& text)
 {
 	label_status_->SetLabel(text);
 	Update();
@@ -151,7 +151,7 @@ void MapChecksPanel::showCheckItem(unsigned index)
 		// Update UI
 		btn_edit_object_->Enable(true);
 
-		string fix1 = check_items_[index].check->fixText(0, check_items_[index].index);
+		wxString fix1 = check_items_[index].check->fixText(0, check_items_[index].index);
 		if (!fix1.empty())
 		{
 			// Show first fix button
@@ -161,7 +161,7 @@ void MapChecksPanel::showCheckItem(unsigned index)
 		else
 			btn_fix1_->Show(false);
 
-		string fix2 = check_items_[index].check->fixText(1, check_items_[index].index);
+		wxString fix2 = check_items_[index].check->fixText(1, check_items_[index].index);
 		if (!fix2.empty())
 		{
 			// Show second fix button
@@ -349,7 +349,7 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 
 	if (lb_errors_->GetCount() > 0)
 	{
-		updateStatusText(S_FMT("%d problems found", lb_errors_->GetCount()));
+		updateStatusText(wxString::Format("%d problems found", lb_errors_->GetCount()));
 		btn_export_->Enable(true);
 	}
 	else
@@ -427,7 +427,7 @@ void MapChecksPanel::onBtnEditObject(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void MapChecksPanel::onBtnExport(wxCommandEvent& e)
 {
-	string              map_name = MapEditor::editContext().mapDesc().name;
+	wxString            map_name = MapEditor::editContext().mapDesc().name;
 	SFileDialog::FDInfo info;
 	if (SFileDialog::saveFile(
 			info,
@@ -436,7 +436,7 @@ void MapChecksPanel::onBtnExport(wxCommandEvent& e)
 			MapEditor::windowWx(),
 			map_name + "-Problems"))
 	{
-		string text = S_FMT("%lu problems found in map %s:\n\n", check_items_.size(), CHR(map_name));
+		wxString text = wxString::Format("%lu problems found in map %s:\n\n", check_items_.size(), CHR(map_name));
 		for (auto& item : check_items_)
 			text += item.check->problemDesc(item.index) + "\n";
 		wxFile file;

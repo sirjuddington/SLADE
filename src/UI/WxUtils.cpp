@@ -55,7 +55,12 @@ CVAR(Int, tab_style, 1, CVar::Flag::Save)
 // Creates a wxMenuItem from the given parameters, including giving it an icon
 // from slade.pk3 if specified
 // -----------------------------------------------------------------------------
-wxMenuItem* WxUtils::createMenuItem(wxMenu* menu, int id, const string& label, const string& help, const string& icon)
+wxMenuItem* WxUtils::createMenuItem(
+	wxMenu*         menu,
+	int             id,
+	const wxString& label,
+	const wxString& help,
+	const wxString& icon)
 {
 	auto item = new wxMenuItem(menu, id, label, help);
 
@@ -114,7 +119,7 @@ wxPanel* WxUtils::createPadPanel(wxWindow* parent, wxWindow* control, int pad)
 // Creates a simple horizontal box sizer with a [label] on the left and
 // [widget] on the right
 // -----------------------------------------------------------------------------
-wxSizer* WxUtils::createLabelHBox(wxWindow* parent, const string& label, wxWindow* widget)
+wxSizer* WxUtils::createLabelHBox(wxWindow* parent, const wxString& label, wxWindow* widget)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	hbox->Add(new wxStaticText(parent, -1, label), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
@@ -122,7 +127,7 @@ wxSizer* WxUtils::createLabelHBox(wxWindow* parent, const string& label, wxWindo
 	return hbox;
 }
 
-wxSizer* WxUtils::createLabelHBox(wxWindow* parent, const string& label, wxSizer* sizer)
+wxSizer* WxUtils::createLabelHBox(wxWindow* parent, const wxString& label, wxSizer* sizer)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	hbox->Add(new wxStaticText(parent, -1, label), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
@@ -134,7 +139,7 @@ wxSizer* WxUtils::createLabelHBox(wxWindow* parent, const string& label, wxSizer
 // Creates a simple vertical box sizer with a [label] on the top and [widget]
 // on the bottom
 // -----------------------------------------------------------------------------
-wxSizer* ::WxUtils::createLabelVBox(wxWindow* parent, const string& label, wxWindow* widget)
+wxSizer* ::WxUtils::createLabelVBox(wxWindow* parent, const wxString& label, wxWindow* widget)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, UI::px(UI::Size::PadMinimum));
@@ -142,7 +147,7 @@ wxSizer* ::WxUtils::createLabelVBox(wxWindow* parent, const string& label, wxWin
 	return vbox;
 }
 
-wxSizer* WxUtils::createLabelVBox(wxWindow* parent, const string& label, wxSizer* sizer)
+wxSizer* WxUtils::createLabelVBox(wxWindow* parent, const wxString& label, wxSizer* sizer)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	vbox->Add(new wxStaticText(parent, -1, label), 0, wxBOTTOM, UI::px(UI::Size::PadMinimum));
@@ -245,7 +250,7 @@ void WxUtils::layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSize
 // -----------------------------------------------------------------------------
 // Returns a wxArrayString containing the strings in [vector]
 // -----------------------------------------------------------------------------
-wxArrayString WxUtils::arrayString(vector<string> vector)
+wxArrayString WxUtils::arrayString(vector<wxString> vector)
 {
 	return wxArrayString{ vector.size(), vector.data() };
 }

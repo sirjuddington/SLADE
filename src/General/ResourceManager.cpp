@@ -43,7 +43,7 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-string ResourceManager::doom64_hash_table_[65536];
+wxString ResourceManager::doom64_hash_table_[65536];
 
 
 // -----------------------------------------------------------------------------
@@ -67,7 +67,7 @@ void removeArchiveFromMap(EntryResourceMap& map, Archive* archive)
 // If [full_check] is true, all resources in the map are checked for the entry,
 // otherwise only the resource [name] is checked
 // ----------------------------------------------------------------------------
-void removeEntryFromMap(EntryResourceMap& map, const string& name, ArchiveEntry::SPtr& entry, bool full_check)
+void removeEntryFromMap(EntryResourceMap& map, const wxString& name, ArchiveEntry::SPtr& entry, bool full_check)
 {
 	if (full_check)
 		for (auto& i : map)
@@ -133,7 +133,7 @@ void EntryResource::removeArchive(Archive* archive)
 // within that namespace, or if [ns_required] is true, ignore anything not in
 // [nspace]
 // -----------------------------------------------------------------------------
-ArchiveEntry* EntryResource::getEntry(Archive* priority, const string& nspace, bool ns_required)
+ArchiveEntry* EntryResource::getEntry(Archive* priority, const wxString& nspace, bool ns_required)
 {
 	// Check resoure has any entries
 	if (entries_.empty())
@@ -287,7 +287,7 @@ void ResourceManager::removeArchive(Archive* archive)
 // Returns the Doom64 hash of a given texture name, computed using the same
 // hash algorithm as Doom64 EX itself
 // -----------------------------------------------------------------------------
-uint16_t ResourceManager::getTextureHash(const string& name) const
+uint16_t ResourceManager::getTextureHash(const wxString& name) const
 {
 	char str[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	for (size_t c = 0; c < name.length() && c < 8; c++)
@@ -316,13 +316,13 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 	auto type = entry->type();
 
 	// Get resource name (extension cut, uppercase)
-	string lname = entry->upperNameNoExt();
-	string name  = entry->upperNameNoExt().Truncate(8);
+	wxString lname = entry->upperNameNoExt();
+	wxString name  = entry->upperNameNoExt().Truncate(8);
 	// Talon1024 - Get resource path (uppercase, without leading slash)
-	string path = entry->path(true).Upper().Mid(1);
+	wxString path = entry->path(true).Upper().Mid(1);
 
 	if (log)
-		Log::debug(S_FMT("Adding entry %s to resource manager", path));
+		Log::debug(wxString::Format("Adding entry %s to resource manager", path));
 
 	// Check for palette entry
 	if (type->id() == "palette")
@@ -441,11 +441,11 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full
 		return;
 
 	// Get resource name (extension cut, uppercase)
-	string name = entry->upperNameNoExt().Truncate(8);
-	string path = entry->path(true).Upper().Mid(1);
+	wxString name = entry->upperNameNoExt().Truncate(8);
+	wxString path = entry->path(true).Upper().Mid(1);
 
 	if (log)
-		Log::debug(S_FMT("Removing entry %s from resource manager", path));
+		Log::debug(wxString::Format("Removing entry %s from resource manager", path));
 
 	// Remove from palettes
 	removeEntryFromMap(palettes_, name, entry, full_check);
@@ -496,7 +496,7 @@ void ResourceManager::listAllPatches()
 		if (i.second.length() == 0)
 			continue;
 
-		Log::info(S_FMT("%s (%d)", i.first, i.second.length()));
+		Log::info(wxString::Format("%s (%d)", i.first, i.second.length()));
 	}
 }
 
@@ -564,7 +564,7 @@ void ResourceManager::putAllTextures(vector<TextureResource::Texture*>& list, Ar
 // -----------------------------------------------------------------------------
 // Adds all current texture names to [list]
 // -----------------------------------------------------------------------------
-void ResourceManager::putAllTextureNames(vector<string>& list)
+void ResourceManager::putAllTextureNames(vector<wxString>& list)
 {
 	// Add all primary textures to the list
 	for (auto& i : textures_)
@@ -598,7 +598,7 @@ void ResourceManager::putAllFlatEntries(vector<ArchiveEntry*>& list, Archive* pr
 // -----------------------------------------------------------------------------
 // Adds all current flat names to [list]
 // -----------------------------------------------------------------------------
-void ResourceManager::putAllFlatNames(vector<string>& list)
+void ResourceManager::putAllFlatNames(vector<wxString>& list)
 {
 	// Add all primary flats to the list
 	for (auto& i : flats_)
@@ -610,7 +610,7 @@ void ResourceManager::putAllFlatNames(vector<string>& list)
 // Returns the most appropriate managed resource entry for [palette], or
 // nullptr if no match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getPaletteEntry(const string& palette, Archive* priority)
+ArchiveEntry* ResourceManager::getPaletteEntry(const wxString& palette, Archive* priority)
 {
 	return palettes_[palette.Upper()].getEntry(priority);
 }
@@ -619,7 +619,7 @@ ArchiveEntry* ResourceManager::getPaletteEntry(const string& palette, Archive* p
 // Returns the most appropriate managed resource entry for [patch],
 // or nullptr if no match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getPatchEntry(const string& patch, const string& nspace, Archive* priority)
+ArchiveEntry* ResourceManager::getPatchEntry(const wxString& patch, const wxString& nspace, Archive* priority)
 {
 	// Are we wanting to use a flat as a patch?
 	if (!nspace.CmpNoCase("flats"))
@@ -644,7 +644,7 @@ ArchiveEntry* ResourceManager::getPatchEntry(const string& patch, const string& 
 // Returns the most appropriate managed resource entry for [flat], or nullptr
 // if no match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getFlatEntry(const string& flat, Archive* priority)
+ArchiveEntry* ResourceManager::getFlatEntry(const wxString& flat, Archive* priority)
 {
 	// Check resource with matching name exists
 	auto& res = flats_[flat.Upper()];
@@ -665,7 +665,7 @@ ArchiveEntry* ResourceManager::getFlatEntry(const string& flat, Archive* priorit
 // Returns the most appropriate managed resource entry for [texture], or
 // nullptr if no match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getTextureEntry(const string& texture, const string& nspace, Archive* priority)
+ArchiveEntry* ResourceManager::getTextureEntry(const wxString& texture, const wxString& nspace, Archive* priority)
 {
 	auto entry = satextures_[texture.Upper()].getEntry(priority, nspace, true);
 	if (entry)
@@ -682,7 +682,7 @@ ArchiveEntry* ResourceManager::getTextureEntry(const string& texture, const stri
 // Returns the most appropriate managed texture for [texture], or nullptr if no
 // match found
 // -----------------------------------------------------------------------------
-CTexture* ResourceManager::getTexture(const string& texture, Archive* priority, Archive* ignore)
+CTexture* ResourceManager::getTexture(const wxString& texture, Archive* priority, Archive* ignore)
 {
 	// Check texture resource with matching name exists
 	auto& res = textures_[texture.Upper()];
@@ -720,7 +720,7 @@ CTexture* ResourceManager::getTexture(const string& texture, Archive* priority, 
 // -----------------------------------------------------------------------------
 // Called when an announcement is recieved from any managed archive
 // -----------------------------------------------------------------------------
-void ResourceManager::onAnnouncement(Announcer* announcer, const string& event_name, MemChunk& event_data)
+void ResourceManager::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
 {
 	event_data.seek(0, SEEK_SET);
 
@@ -799,5 +799,5 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 	}
 
 	float avg = float(times[0] + times[1] + times[2] + times[3] + times[4]) / 5.0f;
-	Log::console(S_FMT("Test took %dms avg", (int)avg));
+	Log::console(wxString::Format("Test took %dms avg", (int)avg));
 }

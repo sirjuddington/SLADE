@@ -49,7 +49,7 @@ namespace
 // does exist) and then we iterate through all of the directory's files until we
 // find the first one whose name matches.
 // -----------------------------------------------------------------------------
-string findFileCasing(const wxFileName& filename)
+wxString findFileCasing(const wxFileName& filename)
 {
 #ifdef _WIN32
 	return filename.GetFullPath();
@@ -146,15 +146,15 @@ size_t WolfConstant(int name, size_t numlumps)
 // Looks for the string naming the song towards the end of the file.
 // Returns an empty string if nothing is found.
 // -----------------------------------------------------------------------------
-string searchIMFName(MemChunk& mc)
+wxString searchIMFName(MemChunk& mc)
 {
 	char tmp[17];
 	char tmp2[65];
 	tmp[16]  = 0;
 	tmp2[64] = 0;
 
-	string ret      = "";
-	string fullname = "";
+	wxString ret      = "";
+	wxString fullname = "";
 	if (mc.size() >= 88u)
 	{
 		uint16_t nameOffset = mc.readL16(0) + 4u;
@@ -295,7 +295,7 @@ void expandWolfGraphLump(ArchiveEntry* entry, size_t lumpnum, size_t numlumps, H
 
 	if (expanded == 0 || expanded > 65000)
 	{
-		Log::error(S_FMT("ExpandWolfGraphLump: invalid expanded size in entry %d", lumpnum));
+		Log::error(wxString::Format("ExpandWolfGraphLump: invalid expanded size in entry %d", lumpnum));
 		return;
 	}
 
@@ -338,7 +338,8 @@ void expandWolfGraphLump(ArchiveEntry* entry, size_t lumpnum, size_t numlumps, H
 			huffptr = hufftable + (nodeval - 256);
 		}
 		else
-			Log::warning(S_FMT("ExpandWolfGraphLump: nodeval is out of control (%d) in entry %d", nodeval, lumpnum));
+			Log::warning(
+				wxString::Format("ExpandWolfGraphLump: nodeval is out of control (%d) in entry %d", nodeval, lumpnum));
 	}
 
 	entry->importMem(start, expanded);
@@ -375,7 +376,7 @@ void WolfArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) const
 // Reads a Wolf format file from disk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchive::open(const string& filename)
+bool WolfArchive::open(const wxString& filename)
 {
 	// Find wolf archive type
 	wxFileName fn1(filename);
@@ -510,13 +511,13 @@ bool WolfArchive::open(MemChunk& mc)
 		size = wxINT16_SWAP_ON_BE(size);
 
 		// Wolf chunks have no names, so just give them a number
-		string name;
+		wxString name;
 		if (d < spritestart_)
-			name = S_FMT("WAL%05d", l);
+			name = wxString::Format("WAL%05d", l);
 		else if (d < soundstart_)
-			name = S_FMT("SPR%05d", l - spritestart_);
+			name = wxString::Format("SPR%05d", l - spritestart_);
 		else
-			name = S_FMT("SND%05d", l - soundstart_);
+			name = wxString::Format("SND%05d", l - soundstart_);
 
 		++l;
 
@@ -664,7 +665,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 			// Look to see if we have an IMF
 			data.exportMemChunk(edata, offset, size);
 
-			string name = searchIMFName(edata);
+			wxString name = searchIMFName(edata);
 			if (name.empty())
 				break;
 		}
@@ -690,7 +691,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 		if (offset + size > data.size())
 		{
 			Log::error("WolfArchive::openAudio: Wolf archive is invalid or corrupt");
-			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
+			Global::error = wxString::Format("Archive is invalid and/or corrupt in entry %d", d);
 			setMuted(false);
 			return false;
 		}
@@ -715,11 +716,11 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 		}
 
 		// Wolf chunks have no names, so just give them a number
-		string name = "";
+		wxString name = "";
 		if (current_seg == SegmentMusic)
 			name = searchIMFName(edata);
 		if (name.empty())
-			name = S_FMT("%s%05d", SEG_PREFIX[current_seg], d - d_ofs);
+			name = wxString::Format("%s%05d", SEG_PREFIX[current_seg], d - d_ofs);
 
 		// Create & setup lump
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
@@ -780,7 +781,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		if (offset + size > data.size())
 		{
 			Log::error("WolfArchive::openMaps: Wolf archive is invalid or corrupt");
-			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
+			Global::error = wxString::Format("Archive is invalid and/or corrupt in entry %d", d);
 			setMuted(false);
 			return false;
 		}
@@ -788,7 +789,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		if (offset == 0 && d > 0)
 			continue;
 
-		string name = "";
+		wxString name = "";
 		for (size_t i = 0; i < 16; ++i)
 		{
 			name += data[offset + 22 + i];
@@ -815,7 +816,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		planelen[2] = data.readL16(offset + 16);
 		for (int i = 0; i < 3; ++i)
 		{
-			name        = S_FMT("PLANE%d", i);
+			name        = wxString::Format("PLANE%d", i);
 			auto nlump2 = std::make_shared<ArchiveEntry>(name, planelen[i]);
 			nlump2->setLoaded(false);
 			nlump2->exProp("Offset") = (int)planeofs[i];
@@ -873,7 +874,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 
 	if (dict.size() != 1024)
 	{
-		Global::error = S_FMT(
+		Global::error = wxString::Format(
 			"WolfArchive::openGraph: VGADICT is improperly sized (%d bytes instead of 1024)", dict.size());
 		return false;
 	}
@@ -905,13 +906,13 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		if (offset + size > data.size())
 		{
 			Log::error("WolfArchive::openGraph: Wolf archive is invalid or corrupt");
-			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
+			Global::error = wxString::Format("Archive is invalid and/or corrupt in entry %d", d);
 			setMuted(false);
 			return false;
 		}
 
 		// Wolf chunks have no names, so just give them a number
-		string name;
+		wxString name;
 		if (d == 0)
 			name = "INF";
 		else if (d == 1 || d == 2)
@@ -935,7 +936,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		}
 		else
 			name = "LMP";
-		name += S_FMT("%05d", d);
+		name += wxString::Format("%05d", d);
 
 
 		// Create & setup lump
@@ -1023,7 +1024,7 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, unsigned position, Arch
 // Since there are no namespaces, just give the hot potato to the other function
 // and call it a day.
 // -----------------------------------------------------------------------------
-ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, const string& add_namespace, bool copy)
+ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, const wxString& add_namespace, bool copy)
 {
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
@@ -1031,7 +1032,7 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, const string& add_names
 // -----------------------------------------------------------------------------
 // Wolf chunks have no names, so renaming is pointless.
 // -----------------------------------------------------------------------------
-bool WolfArchive::renameEntry(ArchiveEntry* entry, const string& name)
+bool WolfArchive::renameEntry(ArchiveEntry* entry, const wxString& name)
 {
 	return false;
 }
@@ -1069,7 +1070,7 @@ bool WolfArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("WolfArchive::loadEntryData: Failed to open datfile %s", filename_));
+		Log::error(wxString::Format("WolfArchive::loadEntryData: Failed to open datfile %s", filename_));
 		return false;
 	}
 
@@ -1140,7 +1141,7 @@ bool WolfArchive::isWolfArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Wolfenstein VSWAP archive
 // -----------------------------------------------------------------------------
-bool WolfArchive::isWolfArchive(const string& filename)
+bool WolfArchive::isWolfArchive(const wxString& filename)
 {
 	// Find wolf archive type
 	wxFileName fn1(filename);

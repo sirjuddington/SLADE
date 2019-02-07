@@ -54,10 +54,10 @@ EXTERN_CVAR(Bool, web_dark_theme)
 // -----------------------------------------------------------------------------
 namespace
 {
-string docsUrl()
+wxString docsUrl()
 {
-	static const string docs_url      = "http://slade.mancubus.net/embedwiki.php";
-	static const string docs_url_dark = "http://slade.mancubus.net/embedwiki-dark.php";
+	static const wxString docs_url      = "http://slade.mancubus.net/embedwiki.php";
+	static const wxString docs_url_dark = "http://slade.mancubus.net/embedwiki-dark.php";
 
 	return web_dark_theme ? docs_url_dark : docs_url;
 }
@@ -128,7 +128,7 @@ void DocsPage::updateNavButtons() const
 // -----------------------------------------------------------------------------
 // Loads the wiki page [page_name]
 // -----------------------------------------------------------------------------
-void DocsPage::openPage(const string& page_name) const
+void DocsPage::openPage(const wxString& page_name) const
 {
 	wv_browser_->LoadURL(docsUrl() + "?page=" + page_name);
 }
@@ -138,7 +138,7 @@ void DocsPage::openPage(const string& page_name) const
 // -----------------------------------------------------------------------------
 void DocsPage::onToolbarButton(wxCommandEvent& e)
 {
-	string button = e.GetString();
+	wxString button = e.GetString();
 
 	// Back
 	if (button == "back" && wv_browser_->CanGoBack())
@@ -164,7 +164,7 @@ void DocsPage::onToolbarButton(wxCommandEvent& e)
 	else if (button == "edit")
 	{
 		// Stuff
-		string page = wv_browser_->GetCurrentURL().AfterLast('=');
+		wxString page = wv_browser_->GetCurrentURL().AfterLast('=');
 		wxLaunchDefaultBrowser("https://github.com/sirjuddington/SLADE/wiki/" + page + "/_edit");
 	}
 
@@ -180,8 +180,8 @@ void DocsPage::onToolbarButton(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void DocsPage::onHTMLLinkClicked(wxEvent& e)
 {
-	auto&  ev   = dynamic_cast<wxWebViewEvent&>(e);
-	string href = ev.GetURL();
+	auto&    ev   = dynamic_cast<wxWebViewEvent&>(e);
+	wxString href = ev.GetURL();
 
 	// Open external links externally
 	if (!href.StartsWith(docsUrl()))

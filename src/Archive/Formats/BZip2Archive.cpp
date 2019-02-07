@@ -60,7 +60,7 @@ bool BZip2Archive::open(MemChunk& mc)
 		return false;
 
 	// Build name from filename
-	string     name = filename(false);
+	wxString   name = filename(false);
 	wxFileName fn(name);
 	if (!fn.GetExt().CmpNoCase("tbz") || !fn.GetExt().CmpNoCase("tb2") || !fn.GetExt().CmpNoCase("tbz2"))
 		fn.SetExt("tar");
@@ -130,7 +130,7 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("BZip2Archive::loadEntryData: Failed to open gzip file %s", filename_));
+		Log::error(wxString::Format("BZip2Archive::loadEntryData: Failed to open gzip file %s", filename_));
 		return false;
 	}
 
@@ -237,7 +237,7 @@ bool BZip2Archive::isBZip2Archive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid BZip2 archive
 // -----------------------------------------------------------------------------
-bool BZip2Archive::isBZip2Archive(const string& filename)
+bool BZip2Archive::isBZip2Archive(const wxString& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

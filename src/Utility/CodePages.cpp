@@ -42,7 +42,7 @@
 namespace
 {
 // clang-format off
-string asciitable[128] =
+wxString asciitable[128] =
 {
 	"NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL", "BS", "TAB", "LF", "VT", "FF", "CR", "SO", "SI",
 	"DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB", "CAN", "EM", "SUB", "ESC", "FS", "GS", "RS", "US",
@@ -154,7 +154,7 @@ uint8_t ansicolors[16][3] =
 //
 // -----------------------------------------------------------------------------
 
-string CodePages::fromASCII(uint8_t val)
+wxString CodePages::fromASCII(uint8_t val)
 {
 	if (val < 128)
 		return asciitable[val];
@@ -162,7 +162,7 @@ string CodePages::fromASCII(uint8_t val)
 		return "";
 }
 
-string CodePages::fromCP437(uint8_t val)
+wxString CodePages::fromCP437(uint8_t val)
 {
 	return wxString::FromUTF8((const char*)cp437table[val], cp437len[val]);
 }

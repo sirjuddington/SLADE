@@ -33,3 +33,9 @@ All supported graphic formats can be converted to PNG/DoomGfx/DoomFlat and more,
 
 **Texture editing**  
 Edit Doom composite textures (TEXTUREx) with the easy-to-use SLADE3 texture editor. Also fully supports ZDoom's enhanced composite texture format (TEXTURES).
+
+### Supporting SLADE
+
+If you wish to help support SLADE development, feel free to make a small [donation](https://www.paypal.me/sirjuddington), though by no means is this a requirement for continued development. I work on SLADE in my free time as a hobby project and generally enjoy it, which is enough for me.
+
+Additionally, any help on the coding side of things is greatly appreciated - take a look at the list of [issues](https://github.com/sirjuddington/SLADE/issues), and feel free to submit a [pull request](https://github.com/sirjuddington/SLADE/pulls).

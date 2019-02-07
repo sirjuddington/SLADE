@@ -18,9 +18,9 @@ public:
 	void allowDecimal(bool allow) { allow_decimal_ = allow; }
 
 private:
-	string last_value_;
-	int    last_point_    = 0;
-	bool   allow_decimal_ = false;
+	wxString last_value_;
+	int      last_point_    = 0;
+	bool     allow_decimal_ = false;
 
 	// Events
 	void onChar(wxKeyEvent& e);

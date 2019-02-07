@@ -211,9 +211,9 @@ int MIDIPlayer::length()
 // Marker (FF 06)
 // Cue point (FF 07)
 // -----------------------------------------------------------------------------
-string MIDIPlayer::info()
+wxString MIDIPlayer::info()
 {
-	string   ret           = wxEmptyString;
+	wxString ret           = wxEmptyString;
 	size_t   pos           = 0;
 	size_t   end           = data_.size();
 	size_t   track_counter = 0;
@@ -233,14 +233,15 @@ string MIDIPlayer::info()
 			num_tracks        = data_.readB16(pos + 2);
 			uint16_t time_div = data_.readB16(pos + 4);
 			if (format == 0)
-				ret += S_FMT("MIDI format 0 with time division %u\n", time_div);
+				ret += wxString::Format("MIDI format 0 with time division %u\n", time_div);
 			else
-				ret += S_FMT("MIDI format %u with %u tracks and time division %u\n", format, num_tracks, time_div);
+				ret += wxString::Format(
+					"MIDI format %u with %u tracks and time division %u\n", format, num_tracks, time_div);
 		}
 		else if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('r' << 8) | 'k')) // MTrk
 		{
 			if (format == 2)
-				ret += S_FMT("\nTrack %u/%u\n", ++track_counter, num_tracks);
+				ret += wxString::Format("\nTrack %u/%u\n", ++track_counter, num_tracks);
 			size_t tpos = pos;
 			while (tpos + 4 < chunk_end)
 			{
@@ -274,19 +275,19 @@ string MIDIPlayer::info()
 							break;
 					}
 
-					string tmp = wxEmptyString;
+					wxString tmp = wxEmptyString;
 					if (evtype > 0 && evtype < 8 && evsize)
 						tmp.Append((const char*)(&data_[tpos]), evsize);
 
 					switch (evtype)
 					{
-					case 1: ret += S_FMT("Text: %s\n", tmp); break;
-					case 2: ret += S_FMT("Copyright: %s\n", tmp); break;
-					case 3: ret += S_FMT("Title: %s\n", tmp); break;
-					case 4: ret += S_FMT("Instrument: %s\n", tmp); break;
-					case 5: ret += S_FMT("Lyrics: %s\n", tmp); break;
-					case 6: ret += S_FMT("Marker: %s\n", tmp); break;
-					case 7: ret += S_FMT("Cue point: %s\n", tmp); break;
+					case 1: ret += wxString::Format("Text: %s\n", tmp); break;
+					case 2: ret += wxString::Format("Copyright: %s\n", tmp); break;
+					case 3: ret += wxString::Format("Title: %s\n", tmp); break;
+					case 4: ret += wxString::Format("Instrument: %s\n", tmp); break;
+					case 5: ret += wxString::Format("Lyrics: %s\n", tmp); break;
+					case 6: ret += wxString::Format("Marker: %s\n", tmp); break;
+					case 7: ret += wxString::Format("Cue point: %s\n", tmp); break;
 					default: break;
 					}
 					tpos += evsize;
@@ -401,7 +402,7 @@ public:
 		bool retval = false;
 		for (int a = paths.size() - 1; a >= 0; --a)
 		{
-			string path = paths[a];
+			wxString path = paths[a];
 			if (!path.empty())
 			{
 				int fs_id = fluid_synth_sfload(fs_synth_, CHR(path), 1);
@@ -418,7 +419,7 @@ public:
 	// Opens the MIDI file at [filename] for playback.
 	// Returns true if successful, false otherwise
 	// -------------------------------------------------------------------------
-	bool openFile(string filename) override
+	bool openFile(wxString filename) override
 	{
 		file_ = filename;
 		if (!fs_initialised_)
@@ -635,7 +636,7 @@ public:
 	// Opens the MIDI file at [filename] for playback.
 	// Returns true if successful, false otherwise
 	// -------------------------------------------------------------------------
-	bool openFile(string filename) override
+	bool openFile(wxString filename) override
 	{
 		file_ = filename;
 		return true;
@@ -672,7 +673,7 @@ public:
 		stop();
 		timer_.restart();
 
-		string commandline = snd_timidity_path + " " + file_ + " " + snd_timidity_options;
+		wxString commandline = snd_timidity_path + " " + file_ + " " + snd_timidity_options;
 		if (!((program_ = wxProcess::Open(commandline))))
 			return false;
 

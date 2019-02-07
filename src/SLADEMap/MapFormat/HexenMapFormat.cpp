@@ -78,7 +78,7 @@ bool HexenMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_
 		auto v2 = map_data.vertices().at(data.vertex2);
 		if (!v1 || !v2)
 		{
-			Log::warning(S_FMT("Line %lu invalid, not added", a));
+			Log::warning(wxString::Format("Line %lu invalid, not added", a));
 			continue;
 		}
 
@@ -122,7 +122,7 @@ bool HexenMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_
 		}
 	}
 
-	Log::info(3, S_FMT("Read %lu lines", map_data.lines().size()));
+	Log::info(3, wxString::Format("Read %lu lines", map_data.lines().size()));
 
 	return true;
 }
@@ -170,7 +170,7 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 			data.special));
 	}
 
-	Log::info(3, S_FMT("Read %lu things", map_data.things().size()));
+	Log::info(3, wxString::Format("Read %lu things", map_data.things().size()));
 
 	return true;
 }
