@@ -146,13 +146,13 @@ void CVar::set(const wxString& name, const wxString& value)
 		if (name == cvars[c]->name)
 		{
 			if (cvars[c]->type == Type::Integer)
-				*((CIntCVar*)cvars[c]) = StringUtils::toInt(value);
+				*((CIntCVar*)cvars[c]) = wxStringUtils::toInt(value);
 
 			if (cvars[c]->type == Type::Boolean)
-				*((CBoolCVar*)cvars[c]) = !!(StringUtils::toInt(value));
+				*((CBoolCVar*)cvars[c]) = !!(wxStringUtils::toInt(value));
 
 			if (cvars[c]->type == Type::Float)
-				*((CFloatCVar*)cvars[c]) = StringUtils::toFloat(value);
+				*((CFloatCVar*)cvars[c]) = wxStringUtils::toFloat(value);
 
 			if (cvars[c]->type == Type::String)
 				*((CStringCVar*)cvars[c]) = wxString::FromUTF8(CHR(value));

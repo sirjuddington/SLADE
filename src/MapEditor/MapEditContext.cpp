@@ -2362,7 +2362,7 @@ void MapThingsClipboardItem::putThings(vector<MapThing*>& list)
 
 CONSOLE_COMMAND(m_show_item, 1, true)
 {
-	int index = StringUtils::toInt(args[0]);
+	int index = wxStringUtils::toInt(args[0]);
 	MapEditor::editContext().showItem(index);
 }
 

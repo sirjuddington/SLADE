@@ -136,7 +136,7 @@ void Translation::parse(wxString def)
 	else if (test.StartsWith("desaturate,", &temp))
 	{
 		built_in_name_ = "Desaturate";
-		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(StringUtils::toInt(temp), 31), 1);
+		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(wxStringUtils::toInt(temp), 31), 1);
 		return;
 	}
 

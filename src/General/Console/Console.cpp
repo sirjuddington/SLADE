@@ -110,9 +110,9 @@ void Console::execute(const wxString& command)
 					*((CBoolCVar*)cvar) = true;
 			}
 			else if (cvar->type == CVar::Type::Integer)
-				*((CIntCVar*)cvar) = StringUtils::toInt(args[0]);
+				*((CIntCVar*)cvar) = wxStringUtils::toInt(args[0]);
 			else if (cvar->type == CVar::Type::Float)
-				*((CFloatCVar*)cvar) = StringUtils::toFloat(args[0]);
+				*((CFloatCVar*)cvar) = wxStringUtils::toFloat(args[0]);
 			else if (cvar->type == CVar::Type::String)
 				*((CStringCVar*)cvar) = args[0];
 		}

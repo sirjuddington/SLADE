@@ -117,7 +117,7 @@ wxString MobjPropertyList::toString(bool condensed)
 
 		if (properties_[a].value.type() == Property::Type::String)
 		{
-			val = StringUtils::escapedString(val);
+			val = wxStringUtils::escapedString(val);
 			val = "\"" + val + "\"";
 		}
 

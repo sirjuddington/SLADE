@@ -280,9 +280,9 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 				tz.advToEndOfLine();
 
 			// If we haven't skipped this part from a continue, then we have a colour triplet.
-			col.r     = StringUtils::toInt(s1);
-			col.g     = StringUtils::toInt(s2);
-			col.b     = StringUtils::toInt(s3);
+			col.r     = wxStringUtils::toInt(s1);
+			col.g     = wxStringUtils::toInt(s2);
+			col.b     = wxStringUtils::toInt(s3);
 			col.index = c;
 			setColour(c++, col);
 		} while (c < 256 && !tz.peekToken().IsEmpty());

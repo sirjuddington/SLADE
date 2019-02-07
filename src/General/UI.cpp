@@ -261,7 +261,7 @@ CONSOLE_COMMAND(splash, 0, false)
 	else
 	{
 		UI::showSplash(args[0], true);
-		float prog = StringUtils::toFloat(args[1]);
+		float prog = wxStringUtils::toFloat(args[1]);
 		UI::setSplashProgress(prog);
 		UI::setSplashProgressMessage(wxString::Format("Progress %s", args[1]));
 	}

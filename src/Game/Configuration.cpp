@@ -882,7 +882,7 @@ bool Configuration::openConfig(const wxString& game, const wxString& port, MapFo
 			// Config is in user dir
 			wxString filename = App::path("games/", App::Dir::User) + game_config.filename + ".cfg";
 			if (wxFileExists(filename))
-				StringUtils::processIncludes(filename, full_config);
+				wxStringUtils::processIncludes(filename, full_config);
 			else
 			{
 				Log::error(wxString::Format("Error: Game configuration file \"%s\" not found", filename));
@@ -896,7 +896,7 @@ bool Configuration::openConfig(const wxString& game, const wxString& port, MapFo
 			auto     archive = App::archiveManager().programResourceArchive();
 			auto     entry   = archive->entryAtPath(epath);
 			if (entry)
-				StringUtils::processIncludes(entry, full_config);
+				wxStringUtils::processIncludes(entry, full_config);
 		}
 	}
 
@@ -914,7 +914,7 @@ bool Configuration::openConfig(const wxString& game, const wxString& port, MapFo
 				// Config is in user dir
 				wxString filename = App::path("games/", App::Dir::User) + conf.filename + ".cfg";
 				if (wxFileExists(filename))
-					StringUtils::processIncludes(filename, full_config);
+					wxStringUtils::processIncludes(filename, full_config);
 				else
 				{
 					Log::error(wxString::Format("Error: Port configuration file \"%s\" not found", filename));
@@ -928,7 +928,7 @@ bool Configuration::openConfig(const wxString& game, const wxString& port, MapFo
 				auto     archive = App::archiveManager().programResourceArchive();
 				auto     entry   = archive->entryAtPath(epath);
 				if (entry)
-					StringUtils::processIncludes(entry, full_config);
+					wxStringUtils::processIncludes(entry, full_config);
 			}
 		}
 	}

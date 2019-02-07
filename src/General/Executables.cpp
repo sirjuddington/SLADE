@@ -105,7 +105,7 @@ wxString Executables::writePaths()
 	wxString ret;
 
 	for (auto& exe : game_exes)
-		ret += wxString::Format("\t%s \"%s\"\n", exe.id, StringUtils::escapedString(exe.path, true));
+		ret += wxString::Format("\t%s \"%s\"\n", exe.id, wxStringUtils::escapedString(exe.path, true));
 
 	return ret;
 }
@@ -132,7 +132,7 @@ wxString Executables::writeExecutables()
 		// Configs
 		for (auto& config : exe.configs)
 			ret += wxString::Format(
-				"\t\tconfig \"%s\" = \"%s\";\n", config.first, StringUtils::escapedString(config.second));
+				"\t\tconfig \"%s\" = \"%s\";\n", config.first, wxStringUtils::escapedString(config.second));
 
 		ret += "\t}\n\n";
 	}

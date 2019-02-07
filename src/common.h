@@ -138,6 +138,9 @@
 // Freeimage
 #include <FreeImage.h>
 
+// fmt
+#include "thirdparty/fmt/fmt/format.h"
+
 // C++
 #include <map>
 #include <vector>

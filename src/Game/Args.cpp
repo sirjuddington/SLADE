@@ -245,14 +245,14 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 		if (val)
 		{
 			for (auto cv : val->allChildren())
-				custom_values.push_back({ Parser::node(cv)->stringValue(), StringUtils::toInt(cv->name()) });
+				custom_values.push_back({ Parser::node(cv)->stringValue(), wxStringUtils::toInt(cv->name()) });
 		}
 
 		val = node->childPTN("custom_flags");
 		if (val)
 		{
 			for (auto cf : val->allChildren())
-				custom_flags.push_back({ Parser::node(cf)->stringValue(), StringUtils::toInt(cf->name()) });
+				custom_flags.push_back({ Parser::node(cf)->stringValue(), wxStringUtils::toInt(cf->name()) });
 		}
 	}
 }

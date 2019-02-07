@@ -333,8 +333,8 @@ wxString Misc::lumpNameToFileName(wxString lump)
 	else
 	{
 		// ZDoom
-		lump.Replace(StringUtils::SLASH_BACK, StringUtils::CARET);
-		lump.Replace(StringUtils::SLASH_FORWARD, StringUtils::CARET);
+		lump.Replace(wxStringUtils::SLASH_BACK, wxStringUtils::CARET);
+		lump.Replace(wxStringUtils::SLASH_FORWARD, wxStringUtils::CARET);
 	}
 	return lump;
 }
@@ -366,7 +366,7 @@ wxString Misc::fileNameToLumpName(wxString file)
 	else
 	{
 		// ZDoom
-		file.Replace(StringUtils::CARET, StringUtils::SLASH_BACK);
+		file.Replace(wxStringUtils::CARET, wxStringUtils::SLASH_BACK);
 	}
 	return file;
 }

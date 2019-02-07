@@ -72,7 +72,7 @@ bool isWhitespace(char p)
 // -----------------------------------------------------------------------------
 bool Tokenizer::Token::isInteger(bool allow_hex) const
 {
-	return StringUtils::isInteger(text, allow_hex);
+	return wxStringUtils::isInteger(text, allow_hex);
 }
 
 // -----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ bool Tokenizer::Token::isInteger(bool allow_hex) const
 // -----------------------------------------------------------------------------
 bool Tokenizer::Token::isHex() const
 {
-	return StringUtils::isHex(text);
+	return wxStringUtils::isHex(text);
 }
 
 // -----------------------------------------------------------------------------
@@ -88,7 +88,7 @@ bool Tokenizer::Token::isHex() const
 // -----------------------------------------------------------------------------
 bool Tokenizer::Token::isFloat() const
 {
-	return StringUtils::isFloat(text);
+	return wxStringUtils::isFloat(text);
 }
 
 // -----------------------------------------------------------------------------

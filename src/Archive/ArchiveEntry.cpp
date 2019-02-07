@@ -105,7 +105,7 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 // -----------------------------------------------------------------------------
 wxString ArchiveEntry::name(bool cut_ext) const
 {
-	if (cut_ext && name_.Contains(StringUtils::FULLSTOP))
+	if (cut_ext && name_.Contains(wxStringUtils::FULLSTOP))
 		return name_.BeforeLast('.');
 
 	return name_;
@@ -116,7 +116,7 @@ wxString ArchiveEntry::name(bool cut_ext) const
 // -----------------------------------------------------------------------------
 wxString ArchiveEntry::upperNameNoExt() const
 {
-	if (upper_name_.Contains(StringUtils::FULLSTOP))
+	if (upper_name_.Contains(wxStringUtils::FULLSTOP))
 		return upper_name_.BeforeLast('.');
 	else
 		return upper_name_;
@@ -283,14 +283,14 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 		name_.MakeUpper();
 
 	// Remove \ or / if the format supports folders
-	if (format.supports_dirs && name_.Contains(StringUtils::SLASH_FORWARD) || name_.Contains(StringUtils::SLASH_BACK))
+	if (format.supports_dirs && name_.Contains(wxStringUtils::SLASH_FORWARD) || name_.Contains(wxStringUtils::SLASH_BACK))
 	{
 		Misc::lumpNameToFileName(name_);
 		changed = true;
 	}
 
 	// Remove extension if the format doesn't have them
-	if (!format.names_extensions && name_.Contains(StringUtils::FULLSTOP))
+	if (!format.names_extensions && name_.Contains(wxStringUtils::FULLSTOP))
 		name_.Truncate(name_.Find('.'));
 
 	// Update upper name
