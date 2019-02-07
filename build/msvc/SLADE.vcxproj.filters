@@ -196,6 +196,9 @@
     <Filter Include="SLADEMap\MapObject">
       <UniqueIdentifier>{b0590a65-315e-4e14-88c6-6abbee8593b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ThirdParty\Fmt">
+      <UniqueIdentifier>{a702b279-106e-4595-954a-c8e0ab9d9dd3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\thirdparty\mus2mid\mus2mid.cpp">
@@ -1551,6 +1554,12 @@
     <ClCompile Include="..\..\src\MainEditor\ExternalEditManager.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\thirdparty\fmt\format.cc">
+      <Filter>ThirdParty\Fmt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\fmt\posix.cc">
+      <Filter>ThirdParty\Fmt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2722,6 +2731,39 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\ExternalEditManager.h">
       <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\chrono.h">
+      <Filter>ThirdParty\Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\color.h">
+      <Filter>ThirdParty\Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\core.h">
+      <Filter>ThirdParty\Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\format.h">
+      <Filter>ThirdParty\Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\format-inl.h">
+      <Filter>ThirdParty\Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\locale.h">
+      <Filter>ThirdParty\Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\ostream.h">
+      <Filter>ThirdParty\Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\posix.h">
+      <Filter>ThirdParty\Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\printf.h">
+      <Filter>ThirdParty\Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\ranges.h">
+      <Filter>ThirdParty\Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\time.h">
+      <Filter>ThirdParty\Fmt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

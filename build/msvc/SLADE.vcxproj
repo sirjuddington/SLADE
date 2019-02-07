@@ -1168,6 +1168,20 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\thirdparty\fmt\format.cc">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\thirdparty\fmt\posix.cc">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\thirdparty\glew\glew.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">NotUsing</PrecompiledHeader>
@@ -2267,6 +2281,17 @@
     <ClInclude Include="..\..\thirdparty\email\wxEmailMessage.h" />
     <ClInclude Include="..\..\thirdparty\email\wxEmailMessageID.h" />
     <ClInclude Include="..\..\thirdparty\email\wxMailer.h" />
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\chrono.h" />
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\color.h" />
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\core.h" />
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\format-inl.h" />
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\format.h" />
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\locale.h" />
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\ostream.h" />
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\posix.h" />
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\printf.h" />
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\ranges.h" />
+    <ClInclude Include="..\..\thirdparty\fmt\fmt\time.h" />
     <ClInclude Include="..\..\thirdparty\lua\lapi.h" />
     <ClInclude Include="..\..\thirdparty\lua\lauxlib.h" />
     <ClInclude Include="..\..\thirdparty\lua\lcode.h" />
