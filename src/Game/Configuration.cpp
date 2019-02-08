@@ -946,8 +946,8 @@ bool Configuration::openConfig(const wxString& game, const wxString& port, MapFo
 	{
 		current_game_      = game;
 		current_port_      = port;
-		game_configuration = game;
-		port_configuration = port;
+		game_configuration = CHR(game);
+		port_configuration = CHR(port);
 		Log::info(2, wxString::Format("Read game configuration \"%s\" + \"%s\"", current_game_, current_port_));
 	}
 	else

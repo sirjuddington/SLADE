@@ -139,6 +139,16 @@ struct ColRGBA
 	ColHSL asHSL() const;
 	ColLAB asLAB() const;
 
+	// String conversion
+	enum class StringFormat
+	{
+		RGB,  // RGB(r, g, b)
+		RGBA, // RGBA(r, g, b, a)
+		CSS,  // #rrggbb
+		ZDoom // "rr gg bb"
+	};
+	std::string toString(StringFormat format = StringFormat::CSS) const;
+
 	// Some basic colours
 	static const ColRGBA WHITE;
 	static const ColRGBA BLACK;

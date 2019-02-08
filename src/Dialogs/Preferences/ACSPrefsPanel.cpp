@@ -96,7 +96,7 @@ void ACSPrefsPanel::init()
 // -----------------------------------------------------------------------------
 void ACSPrefsPanel::applyPreferences()
 {
-	path_acc = flp_acc_path_->location();
+	path_acc = WxUtils::strToView(flp_acc_path_->location());
 
 	// Build include paths string
 	wxString paths_string;
@@ -106,7 +106,7 @@ void ACSPrefsPanel::applyPreferences()
 	if (paths_string.EndsWith(";"))
 		paths_string.RemoveLast(1);
 
-	path_acc_libs          = paths_string;
+	path_acc_libs          = WxUtils::strToView(paths_string);
 	acc_always_show_output = cb_always_show_output_->GetValue();
 }
 

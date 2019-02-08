@@ -36,6 +36,7 @@
 #include "OpenGL/Drawing.h"
 #include "SToolBarButton.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -190,11 +191,12 @@ void SToolBarGroup::hide(bool hide)
 	hidden_ = hide;
 
 	// Update 'hidden toolbars' cvar
-	wxString tb_hidden = toolbars_hidden;
+	std::string tb_hidden = toolbars_hidden;
+	auto        name      = fmt::format("[{}]", name_);
 	if (hide)
-		tb_hidden += "[" + name_ + "]";
+		tb_hidden += name;
 	else
-		tb_hidden.Replace(wxString::Format("[%s]", name_), "");
+		StrUtil::replaceIP(tb_hidden, name, {});
 
 	toolbars_hidden = tb_hidden;
 }

@@ -33,6 +33,7 @@
 #include "TempFolderWizardPage.h"
 #include "App.h"
 #include "General/UI.h"
+#include "UI/WxUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -137,7 +138,7 @@ void TempFolderWizardPage::applyChanges()
 	else
 	{
 		temp_location        = 2;
-		temp_location_custom = text_custom_dir_->GetValue();
+		temp_location_custom = WxUtils::strToView(text_custom_dir_->GetValue());
 	}
 }
 

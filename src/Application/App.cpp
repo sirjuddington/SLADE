@@ -242,7 +242,7 @@ void readConfigFile()
 			// Keep reading name/value pairs until we hit the ending '}'
 			while (!tz.checkOrEnd("}"))
 			{
-				CVar::set(tz.current().text, tz.peek().text);
+				CVar::set(tz.current().text.ToStdString(), tz.peek().text.ToStdString());
 				tz.adv(2);
 			}
 
@@ -569,7 +569,7 @@ void App::saveConfigFile()
 	file.Write(" *****************************************************/\n\n");
 
 	// Write cvars
-	CVar::saveToFile(file);
+	file.Write(CVar::writeAll());
 
 	// Write base resource archive paths
 	file.Write("\nbase_resource_paths\n{\n");

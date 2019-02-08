@@ -286,7 +286,7 @@ void BaseResourceArchivesPanel::init()
 void BaseResourceArchivesPanel::applyPreferences()
 {
 	App::archiveManager().openBaseResource(selectedPathIndex());
-	zdoom_pk3_path = flp_zdoom_pk3_->location();
+	zdoom_pk3_path = WxUtils::strToView(flp_zdoom_pk3_->location());
 }
 
 
@@ -330,7 +330,7 @@ void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e)
 		}
 
 		// Save 'dir_last'
-		dir_last = dialog_open.GetDirectory();
+		dir_last = WxUtils::strToView(dialog_open.GetDirectory());
 	}
 }
 

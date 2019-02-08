@@ -843,8 +843,7 @@ bool GfxEntryPanel::handleEntryPanelAction(const wxString& id)
 			Refresh();
 			setModified();
 		}
-		ColRGBA gcdcol = gcd.colour();
-		last_colour    = wxString::Format("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
+		last_colour = gcd.colour().toString(ColRGBA::StringFormat::RGB);
 	}
 
 	// Tint
@@ -869,8 +868,7 @@ bool GfxEntryPanel::handleEntryPanelAction(const wxString& id)
 			Refresh();
 			setModified();
 		}
-		ColRGBA gtdcol   = gtd.colour();
-		last_tint_colour = wxString::Format("RGB(%d, %d, %d)", gtdcol.r, gtdcol.g, gtdcol.b);
+		last_tint_colour = gtd.colour().toString(ColRGBA::StringFormat::RGB);
 		last_tint_amount = (int)(gtd.amount() * 100.0);
 	}
 

@@ -38,6 +38,7 @@
 #include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "UI/Controls/ResourceArchiveChooser.h"
+#include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
 #ifdef __WXOSX_MAC__
@@ -572,9 +573,9 @@ void RunDialog::onBtnRun(wxCommandEvent& e)
 	}
 
 	// Update cvars
-	run_last_extra  = text_extra_params_->GetValue();
+	run_last_extra  = WxUtils::strToView(text_extra_params_->GetValue());
 	run_last_config = choice_config_->GetSelection();
-	run_last_exe    = selectedExeId();
+	run_last_exe    = WxUtils::strToView(selectedExeId());
 
 	EndModal(wxID_OK);
 }
@@ -585,9 +586,9 @@ void RunDialog::onBtnRun(wxCommandEvent& e)
 void RunDialog::onBtnCancel(wxCommandEvent& e)
 {
 	// Update cvars
-	run_last_extra  = text_extra_params_->GetValue();
+	run_last_extra  = WxUtils::strToView(text_extra_params_->GetValue());
 	run_last_config = choice_config_->GetSelection();
-	run_last_exe    = selectedExeId();
+	run_last_exe    = WxUtils::strToView(selectedExeId());
 
 	EndModal(wxID_CANCEL);
 }
@@ -598,7 +599,7 @@ void RunDialog::onBtnCancel(wxCommandEvent& e)
 void RunDialog::onChoiceGameExe(wxCommandEvent& e)
 {
 	openGameExe(e.GetSelection());
-	run_last_exe = selectedExeId();
+	run_last_exe = WxUtils::strToView(selectedExeId());
 }
 
 // -----------------------------------------------------------------------------

@@ -141,8 +141,8 @@ void InterfacePrefsPanel::applyPreferences()
 	else
 		toolbar_size = 32;
 
-	iconset_general    = choice_iconset_general_->GetString(choice_iconset_general_->GetSelection());
-	iconset_entry_list = choice_iconset_entry_->GetString(choice_iconset_entry_->GetSelection());
+	iconset_general = WxUtils::strToView(choice_iconset_general_->GetString(choice_iconset_general_->GetSelection()));
+	iconset_entry_list = WxUtils::strToView(choice_iconset_entry_->GetString(choice_iconset_entry_->GetSelection()));
 }
 
 // -----------------------------------------------------------------------------

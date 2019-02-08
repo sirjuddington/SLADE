@@ -77,7 +77,7 @@ void Console::execute(const wxString& command)
 	tz.openString(command);
 
 	// Get the command name
-	wxString cmd_name = tz.current().text;
+	std::string cmd_name = CHR(tz.current().text);
 
 	// Get all args
 	vector<wxString> args;
@@ -105,16 +105,16 @@ void Console::execute(const wxString& command)
 			if (cvar->type == CVar::Type::Boolean)
 			{
 				if (args[0] == "0" || args[0] == "false")
-					*((CBoolCVar*)cvar) = false;
+					*dynamic_cast<CBoolCVar*>(cvar) = false;
 				else
-					*((CBoolCVar*)cvar) = true;
+					*dynamic_cast<CBoolCVar*>(cvar) = true;
 			}
 			else if (cvar->type == CVar::Type::Integer)
-				*((CIntCVar*)cvar) = wxStringUtils::toInt(args[0]);
+				*dynamic_cast<CIntCVar*>(cvar) = wxStringUtils::toInt(args[0]);
 			else if (cvar->type == CVar::Type::Float)
-				*((CFloatCVar*)cvar) = wxStringUtils::toFloat(args[0]);
+				*dynamic_cast<CFloatCVar*>(cvar) = wxStringUtils::toFloat(args[0]);
 			else if (cvar->type == CVar::Type::String)
-				*((CStringCVar*)cvar) = args[0];
+				*dynamic_cast<CStringCVar*>(cvar) = CHR(args[0]);
 		}
 
 		// Print cvar value
@@ -270,7 +270,7 @@ CONSOLE_COMMAND(cmdlist, 0, true)
 CONSOLE_COMMAND(cvarlist, 0, true)
 {
 	// Get sorted list of cvars
-	vector<wxString> list;
+	vector<std::string> list;
 	CVar::putList(list);
 	sort(list.begin(), list.end());
 

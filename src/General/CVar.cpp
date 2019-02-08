@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Utility/StringUtils.h"
+#include "thirdparty/fmt/fmt/format.h"
 
 
 // -----------------------------------------------------------------------------
@@ -41,124 +42,8 @@
 // -----------------------------------------------------------------------------
 namespace
 {
-CVar**   cvars;
-uint16_t n_cvars;
+vector<CVar*> all_cvars;
 } // namespace
-
-
-// -----------------------------------------------------------------------------
-//
-// Functions
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Adds a CVar to the CVar list
-// -----------------------------------------------------------------------------
-void addCVarList(CVar* cvar)
-{
-	cvars          = (CVar**)realloc(cvars, (n_cvars + 1) * sizeof(CVar*));
-	cvars[n_cvars] = cvar;
-	n_cvars++;
-}
-
-// -----------------------------------------------------------------------------
-// Finds a CVar by name
-// -----------------------------------------------------------------------------
-CVar* CVar::get(const wxString& name)
-{
-	for (uint16_t c = 0; c < n_cvars; c++)
-	{
-		if (cvars[c]->name == name)
-			return cvars[c];
-	}
-
-	return nullptr;
-}
-
-// -----------------------------------------------------------------------------
-// Adds all cvar names to a vector of strings
-// -----------------------------------------------------------------------------
-void CVar::putList(vector<wxString>& list)
-{
-	for (uint16_t c = 0; c < n_cvars; c++)
-	{
-		if (!(cvars[c]->flags & Flag::Secret))
-			list.push_back(cvars[c]->name);
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Saves cvars to a config file
-// -----------------------------------------------------------------------------
-void CVar::saveToFile(wxFile& file)
-{
-	uint32_t max_size = 0;
-	for (uint32_t c = 0; c < n_cvars; c++)
-	{
-		if (cvars[c]->name.size() > max_size)
-			max_size = cvars[c]->name.size();
-	}
-
-	file.Write("cvars\n{\n");
-
-	for (uint32_t c = 0; c < n_cvars; c++)
-	{
-		if (cvars[c]->flags & Flag::Save)
-		{
-			file.Write(wxString::Format("\t%s ", cvars[c]->name));
-
-			int spaces = max_size - cvars[c]->name.size();
-			for (int a = 0; a < spaces; a++)
-				file.Write(" ");
-
-			if (cvars[c]->type == Type::Integer)
-				file.Write(wxString::Format("%d\n", cvars[c]->getValue().Int));
-
-			if (cvars[c]->type == Type::Boolean)
-				file.Write(wxString::Format("%d\n", cvars[c]->getValue().Bool));
-
-			if (cvars[c]->type == Type::Float)
-				file.Write(wxString::Format("%1.5f\n", cvars[c]->getValue().Float));
-
-			if (cvars[c]->type == Type::String)
-			{
-				wxString value = ((CStringCVar*)cvars[c])->value;
-				value.Replace("\\", "/");
-				value.Replace("\"", "\\\"");
-				file.Write(wxString::Format("\"%s\"\n", value), wxConvUTF8);
-			}
-		}
-	}
-
-	file.Write("}\n\n");
-}
-
-// -----------------------------------------------------------------------------
-// Reads [value] into the CVar with matching [name],
-// or does nothing if no CVar [name] exists
-// -----------------------------------------------------------------------------
-void CVar::set(const wxString& name, const wxString& value)
-{
-	for (uint16_t c = 0; c < n_cvars; c++)
-	{
-		if (name == cvars[c]->name)
-		{
-			if (cvars[c]->type == Type::Integer)
-				*((CIntCVar*)cvars[c]) = wxStringUtils::toInt(value);
-
-			if (cvars[c]->type == Type::Boolean)
-				*((CBoolCVar*)cvars[c]) = !!(wxStringUtils::toInt(value));
-
-			if (cvars[c]->type == Type::Float)
-				*((CFloatCVar*)cvars[c]) = wxStringUtils::toFloat(value);
-
-			if (cvars[c]->type == Type::String)
-				*((CStringCVar*)cvars[c]) = wxString::FromUTF8(CHR(value));
-		}
-	}
-}
 
 
 // -----------------------------------------------------------------------------
@@ -171,47 +56,153 @@ void CVar::set(const wxString& name, const wxString& value)
 // -----------------------------------------------------------------------------
 // CIntCVar class constructor
 // -----------------------------------------------------------------------------
-CIntCVar::CIntCVar(const wxString& NAME, int defval, uint16_t FLAGS)
+CIntCVar::CIntCVar(const std::string& NAME, int defval, uint16_t FLAGS)
 {
 	name  = NAME;
 	flags = FLAGS;
 	value = defval;
 	type  = Type::Integer;
-	addCVarList(this);
+	all_cvars.push_back(this);
 }
 
 // -----------------------------------------------------------------------------
 // CBoolCVar class constructor
 // -----------------------------------------------------------------------------
-CBoolCVar::CBoolCVar(const wxString& NAME, bool defval, uint16_t FLAGS)
+CBoolCVar::CBoolCVar(const std::string& NAME, bool defval, uint16_t FLAGS)
 {
 	name  = NAME;
 	flags = FLAGS;
 	value = defval;
 	type  = Type::Boolean;
-	addCVarList(this);
+	all_cvars.push_back(this);
 }
 
 // -----------------------------------------------------------------------------
 // CFloatCVar class constructor
 // -----------------------------------------------------------------------------
-CFloatCVar::CFloatCVar(const wxString& NAME, double defval, uint16_t FLAGS)
+CFloatCVar::CFloatCVar(const std::string& NAME, double defval, uint16_t FLAGS)
 {
 	name  = NAME;
 	flags = FLAGS;
 	value = defval;
 	type  = Type::Float;
-	addCVarList(this);
+	all_cvars.push_back(this);
 }
 
 // -----------------------------------------------------------------------------
 // CStringCVar class constructor
 // -----------------------------------------------------------------------------
-CStringCVar::CStringCVar(const wxString& NAME, const wxString& defval, uint16_t FLAGS)
+CStringCVar::CStringCVar(const std::string& NAME, const std::string& defval, uint16_t FLAGS)
 {
 	name  = NAME;
 	flags = FLAGS;
 	value = defval;
 	type  = Type::String;
-	addCVarList(this);
+	all_cvars.push_back(this);
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// CVar Class Static Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Finds a CVar by name
+// -----------------------------------------------------------------------------
+CVar* CVar::get(const std::string& name)
+{
+	for (auto cvar : all_cvars)
+	{
+		if (cvar->name == name)
+			return cvar;
+	}
+
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Adds all cvar names to a vector of strings
+// -----------------------------------------------------------------------------
+void CVar::putList(vector<std::string>& list)
+{
+	for (auto cvar : all_cvars)
+	{
+		if (!(cvar->flags & Flag::Secret))
+			list.push_back(cvar->name);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Saves cvars to a config file
+// -----------------------------------------------------------------------------
+std::string CVar::writeAll()
+{
+	uint32_t max_size = 0;
+	for (auto cvar : all_cvars)
+	{
+		if (cvar->name.size() > max_size)
+			max_size = cvar->name.size();
+	}
+
+	fmt::memory_buffer buf;
+	format_to(buf, "cvars\n{{\n");
+
+	for (auto cvar : all_cvars)
+	{
+		if (cvar->flags & Flag::Save)
+		{
+			format_to(buf, "\t{} ", cvar->name);
+
+			int spaces = max_size - cvar->name.size();
+			for (int a = 0; a < spaces; a++)
+				buf.push_back(' ');
+
+			if (cvar->type == Type::Integer)
+				format_to(buf, "{}\n", cvar->getValue().Int);
+
+			if (cvar->type == Type::Boolean)
+				format_to(buf, "{}\n", cvar->getValue().Bool);
+
+			if (cvar->type == Type::Float)
+				format_to(buf, "{:1.5f}\n", cvar->getValue().Float);
+
+			if (cvar->type == Type::String)
+			{
+				auto value = StrUtil::escapedString(dynamic_cast<CStringCVar*>(cvar)->value, true);
+				format_to(buf, "\"{}\"\n", value);
+			}
+		}
+	}
+
+	format_to(buf, "}}\n\n");
+
+	return to_string(buf);
+}
+
+// -----------------------------------------------------------------------------
+// Reads [value] into the CVar with matching [name],
+// or does nothing if no CVar [name] exists
+// -----------------------------------------------------------------------------
+void CVar::set(const std::string& name, const std::string& value)
+{
+	for (auto cvar : all_cvars)
+	{
+		if (name == cvar->name)
+		{
+			if (cvar->type == Type::Integer)
+				*dynamic_cast<CIntCVar*>(cvar) = StrUtil::toInt(value);
+
+			if (cvar->type == Type::Boolean)
+				*dynamic_cast<CBoolCVar*>(cvar) = StrUtil::toBoolean(value);
+
+			if (cvar->type == Type::Float)
+				*dynamic_cast<CFloatCVar*>(cvar) = StrUtil::toFloat(value);
+
+			if (cvar->type == Type::String)
+				*dynamic_cast<CStringCVar*>(cvar) = value;
+		}
+	}
 }

@@ -34,6 +34,7 @@
 #include "Main.h"
 #include "SFileDialog.h"
 #include "App.h"
+#include "UI/WxUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -80,7 +81,7 @@ bool SFileDialog::openFile(
 		info.path      = fn.GetPath(true);
 
 		// Set last dir
-		dir_last = info.path;
+		dir_last = WxUtils::strToView(info.path);
 
 		return true;
 	}
@@ -118,7 +119,7 @@ bool SFileDialog::openFiles(
 		info.path      = fn.GetPath(true);
 
 		// Set last dir
-		dir_last = info.path;
+		dir_last = WxUtils::strToView(info.path);
 
 		return true;
 	}
@@ -155,7 +156,7 @@ bool SFileDialog::saveFile(
 		info.path      = fn.GetPath(true);
 
 		// Set last dir
-		dir_last = info.path;
+		dir_last = WxUtils::strToView(info.path);
 
 		return true;
 	}
@@ -191,7 +192,7 @@ bool SFileDialog::saveFiles(
 		info.path      = fd.GetDirectory();
 
 		// Set last dir
-		dir_last = info.path;
+		dir_last = WxUtils::strToView(info.path);
 
 		return true;
 	}

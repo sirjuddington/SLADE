@@ -842,7 +842,7 @@ void TextureXPanel::newTextureFromFile()
 		dialog_open.GetPaths(files);
 
 		// Save 'dir_last'
-		dir_last = dialog_open.GetDirectory();
+		dir_last = WxUtils::strToView(dialog_open.GetDirectory());
 
 		// Go through file selection
 		for (const auto& file : files)

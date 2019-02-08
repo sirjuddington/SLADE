@@ -86,7 +86,7 @@ void AdvancedPrefsPanel::refreshPropGrid() const
 	pg_cvars_->Clear();
 
 	// Get list of cvars
-	vector<wxString> cvars;
+	vector<std::string> cvars;
 	CVar::putList(cvars);
 	std::sort(cvars.begin(), cvars.end());
 
@@ -116,7 +116,7 @@ void AdvancedPrefsPanel::refreshPropGrid() const
 void AdvancedPrefsPanel::applyPreferences()
 {
 	// Get list of cvars
-	vector<wxString> cvars;
+	vector<std::string> cvars;
 	CVar::putList(cvars);
 
 	for (const auto& name : cvars)
@@ -129,19 +129,19 @@ void AdvancedPrefsPanel::applyPreferences()
 		{
 			// If unmodified, it might still have been changed in another panel, so refresh it
 			if (cvar->type == CVar::Type::Boolean)
-				pg_cvars_->SetPropertyValue(name, cvar->getValue().Bool);
+				pg_cvars_->SetPropertyValue(wxString(name), cvar->getValue().Bool);
 			else if (cvar->type == CVar::Type::Integer)
-				pg_cvars_->SetPropertyValue(name, cvar->getValue().Int);
+				pg_cvars_->SetPropertyValue(wxString(name), cvar->getValue().Int);
 			else if (cvar->type == CVar::Type::Float)
-				pg_cvars_->SetPropertyValue(name, cvar->getValue().Float);
+				pg_cvars_->SetPropertyValue(wxString(name), cvar->getValue().Float);
 			else if (cvar->type == CVar::Type::String)
-				pg_cvars_->SetPropertyValue(name, wxString::Format("%s", ((CStringCVar*)cvar)->value));
+				pg_cvars_->SetPropertyValue(wxString(name), wxString::Format("%s", ((CStringCVar*)cvar)->value));
 
 			continue;
 		}
 
 		// Read value from grid depending on type
-		auto value = pg_cvars_->GetPropertyValue(name);
+		auto value = pg_cvars_->GetPropertyValue(wxString(name));
 		if (cvar->type == CVar::Type::Integer)
 			*((CIntCVar*)cvar) = value.GetInteger();
 		else if (cvar->type == CVar::Type::Boolean)
@@ -149,7 +149,7 @@ void AdvancedPrefsPanel::applyPreferences()
 		else if (cvar->type == CVar::Type::Float)
 			*((CFloatCVar*)cvar) = value.GetDouble();
 		else if (cvar->type == CVar::Type::String)
-			*((CStringCVar*)cvar) = value.GetString();
+			*((CStringCVar*)cvar) = WxUtils::strToView(value.GetString());
 
 		pg_cvars_->GetProperty(name)->SetModifiedStatus(false);
 		pg_cvars_->Refresh();

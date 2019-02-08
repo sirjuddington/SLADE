@@ -34,6 +34,7 @@
 #include "MapEntryPanel.h"
 #include "Archive/Archive.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
+#include "UI/WxUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -195,7 +196,7 @@ bool MapEntryPanel::createImage()
 		bool ret = temp.exportFile(dialog_save.GetPath());
 
 		// Save 'dir_last'
-		dir_last = dialog_save.GetDirectory();
+		dir_last = WxUtils::strToView(dialog_save.GetDirectory());
 
 		// Open the saved image
 		wxLaunchDefaultApplication(dialog_save.GetPath());

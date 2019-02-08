@@ -148,6 +148,22 @@ ColLAB ColRGBA::asLAB() const
 #undef NORMALIZERGB
 #undef NORMALIZEXYZ
 
+// -----------------------------------------------------------------------------
+// Returns a string representation of the colour, in the requested [format]
+// -----------------------------------------------------------------------------
+std::string ColRGBA::toString(StringFormat format) const
+{
+	switch (format)
+	{
+	case StringFormat::RGB: return fmt::format("RGB({}, {}, {})", r, g, b);
+	case StringFormat::RGBA: return fmt::format("RGBA({}, {}, {}, {})", r, g, b, a);
+	case StringFormat::CSS: return {}; // TODO #RRGGBB
+	case StringFormat::ZDoom: return {}; // TODO "RR GG BB"
+	default: return {};
+	}
+}
+
+
 
 // -----------------------------------------------------------------------------
 //

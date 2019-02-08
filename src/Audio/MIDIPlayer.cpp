@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "MIDIPlayer.h"
 #include "App.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -211,14 +212,14 @@ int MIDIPlayer::length()
 // Marker (FF 06)
 // Cue point (FF 07)
 // -----------------------------------------------------------------------------
-wxString MIDIPlayer::info()
+std::string MIDIPlayer::info()
 {
-	wxString ret           = wxEmptyString;
-	size_t   pos           = 0;
-	size_t   end           = data_.size();
-	size_t   track_counter = 0;
-	uint16_t num_tracks    = 0;
-	uint16_t format        = 0;
+	std::string ret;
+	size_t      pos           = 0;
+	size_t      end           = data_.size();
+	size_t      track_counter = 0;
+	uint16_t    num_tracks    = 0;
+	uint16_t    format        = 0;
 
 	while (pos + 8 < end)
 	{
@@ -233,15 +234,15 @@ wxString MIDIPlayer::info()
 			num_tracks        = data_.readB16(pos + 2);
 			uint16_t time_div = data_.readB16(pos + 4);
 			if (format == 0)
-				ret += wxString::Format("MIDI format 0 with time division %u\n", time_div);
+				ret += fmt::format("MIDI format 0 with time division {}\n", time_div);
 			else
-				ret += wxString::Format(
-					"MIDI format %u with %u tracks and time division %u\n", format, num_tracks, time_div);
+				ret += fmt::format(
+					"MIDI format {} with {} tracks and time division {}\n", format, num_tracks, time_div);
 		}
 		else if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('r' << 8) | 'k')) // MTrk
 		{
 			if (format == 2)
-				ret += wxString::Format("\nTrack %u/%u\n", ++track_counter, num_tracks);
+				ret += fmt::format("\nTrack {}/{}\n", ++track_counter, num_tracks);
 			size_t tpos = pos;
 			while (tpos + 4 < chunk_end)
 			{
@@ -275,19 +276,19 @@ wxString MIDIPlayer::info()
 							break;
 					}
 
-					wxString tmp = wxEmptyString;
+					std::string tmp;
 					if (evtype > 0 && evtype < 8 && evsize)
-						tmp.Append((const char*)(&data_[tpos]), evsize);
+						tmp.append((const char*)(&data_[tpos]), evsize);
 
 					switch (evtype)
 					{
-					case 1: ret += wxString::Format("Text: %s\n", tmp); break;
-					case 2: ret += wxString::Format("Copyright: %s\n", tmp); break;
-					case 3: ret += wxString::Format("Title: %s\n", tmp); break;
-					case 4: ret += wxString::Format("Instrument: %s\n", tmp); break;
-					case 5: ret += wxString::Format("Lyrics: %s\n", tmp); break;
-					case 6: ret += wxString::Format("Marker: %s\n", tmp); break;
-					case 7: ret += wxString::Format("Cue point: %s\n", tmp); break;
+					case 1: ret += fmt::format("Text: {}\n", tmp); break;
+					case 2: ret += fmt::format("Copyright: {}\n", tmp); break;
+					case 3: ret += fmt::format("Title: {}\n", tmp); break;
+					case 4: ret += fmt::format("Instrument: {}\n", tmp); break;
+					case 5: ret += fmt::format("Lyrics: {}\n", tmp); break;
+					case 6: ret += fmt::format("Marker: {}\n", tmp); break;
+					case 7: ret += fmt::format("Cue point: {}\n", tmp); break;
 					default: break;
 					}
 					tpos += evsize;
@@ -398,14 +399,14 @@ public:
 		}
 
 		// Load soundfonts
-		auto paths  = wxSplit(fs_soundfont_path, separator);
+		auto paths  = StrUtil::split(fs_soundfont_path, separator);
 		bool retval = false;
 		for (int a = paths.size() - 1; a >= 0; --a)
 		{
-			wxString path = paths[a];
+			auto path = paths[a];
 			if (!path.empty())
 			{
-				int fs_id = fluid_synth_sfload(fs_synth_, CHR(path), 1);
+				int fs_id = fluid_synth_sfload(fs_synth_, path.c_str(), 1);
 				fs_soundfont_ids_.push_back(fs_id);
 				if (fs_id != FLUID_FAILED)
 					retval = true;
@@ -419,7 +420,7 @@ public:
 	// Opens the MIDI file at [filename] for playback.
 	// Returns true if successful, false otherwise
 	// -------------------------------------------------------------------------
-	bool openFile(wxString filename) override
+	bool openFile(const std::string& filename) override
 	{
 		file_ = filename;
 		if (!fs_initialised_)
@@ -433,7 +434,7 @@ public:
 		// Open midi
 		if (fs_player_)
 		{
-			fluid_player_add(fs_player_, CHR(filename));
+			fluid_player_add(fs_player_, filename.c_str());
 			return true;
 		}
 
@@ -584,8 +585,9 @@ private:
 
 		// Init fluidsynth settings
 		fs_settings_ = new_fluid_settings();
-		if (!fs_driver.value.empty())
-			fluid_settings_setstr(fs_settings_, "audio.driver", wxString(fs_driver).ToAscii());
+		std::string fs_driver_str = fs_driver;
+		if (!fs_driver_str.empty())
+			fluid_settings_setstr(fs_settings_, "audio.driver", fs_driver_str.c_str());
 
 		// Create fluidsynth objects
 		fs_synth_   = new_fluid_synth(fs_settings_);
@@ -636,7 +638,7 @@ public:
 	// Opens the MIDI file at [filename] for playback.
 	// Returns true if successful, false otherwise
 	// -------------------------------------------------------------------------
-	bool openFile(wxString filename) override
+	bool openFile(const std::string& filename) override
 	{
 		file_ = filename;
 		return true;
@@ -652,8 +654,7 @@ public:
 		mc.seek(0, SEEK_SET);
 		data_.importMem(mc.data(), mc.size());
 
-		wxFileName path(App::path("slade-timidity.mid", App::Dir::Temp));
-		file_ = path.GetFullPath();
+		file_ = App::path("slade-timidity.mid", App::Dir::Temp);
 		mc.exportFile(file_);
 
 		return true;
@@ -662,7 +663,7 @@ public:
 	// -------------------------------------------------------------------------
 	// Returns true if the MIDIPlayer is ready to play some MIDI
 	// -------------------------------------------------------------------------
-	bool isReady() override { return !snd_timidity_path.value.IsEmpty(); }
+	bool isReady() override { return !snd_timidity_path.empty(); }
 
 	// -------------------------------------------------------------------------
 	// Begins playback of the currently loaded MIDI stream.
@@ -673,7 +674,7 @@ public:
 		stop();
 		timer_.restart();
 
-		wxString commandline = snd_timidity_path + " " + file_ + " " + snd_timidity_options;
+		auto commandline = fmt::format("{} {} {}", snd_timidity_path, file_, snd_timidity_options);
 		if (!((program_ = wxProcess::Open(commandline))))
 			return false;
 
@@ -776,12 +777,12 @@ MIDIPlayer& player()
 	if (!midi_player)
 	{
 #ifndef NO_FLUIDSYNTH
-		if (S_CMPNOCASE(snd_midi_player.value, "fluidsynth"))
+		if (StrUtil::equalCI(snd_midi_player, "fluidsynth"))
 			midi_player = std::make_unique<FluidSynthMIDIPlayer>();
-		else if (S_CMPNOCASE(snd_midi_player.value, "timidity"))
+		else if (StrUtil::equalCI(snd_midi_player, "timidity"))
 			midi_player = std::make_unique<TimidityMIDIPlayer>();
 #else
-		if (S_CMPNOCASE(snd_midi_player.value, "timidity"))
+		if (StrUtil::equalCI(snd_midi_player, "timidity"))
 			midi_player = std::make_unique<TimidityMIDIPlayer>();
 #endif
 

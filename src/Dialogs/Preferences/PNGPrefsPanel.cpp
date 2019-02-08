@@ -112,7 +112,7 @@ void PNGPrefsPanel::init()
 // -----------------------------------------------------------------------------
 void PNGPrefsPanel::applyPreferences()
 {
-	path_pngout   = flp_pngout_->location();
-	path_pngcrush = flp_pngcrush_->location();
-	path_deflopt  = flp_deflopt_->location();
+	path_pngout   = WxUtils::strToView(flp_pngout_->location());
+	path_pngcrush = WxUtils::strToView(flp_pngcrush_->location());
+	path_deflopt  = WxUtils::strToView(flp_deflopt_->location());
 }

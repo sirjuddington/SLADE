@@ -28,10 +28,10 @@ public:
 		Locked = 4, // set if cvar cannot be changed by the user during runtime
 	};
 
-	uint16_t flags = 0;
-	Type     type  = Type::Integer;
-	wxString name;
-	CVar*    next = nullptr;
+	uint16_t    flags = 0;
+	Type        type  = Type::Integer;
+	std::string name;
+	CVar*       next = nullptr;
 
 	CVar()          = default;
 	virtual ~CVar() = default;
@@ -44,10 +44,10 @@ public:
 	}
 
 	// Static functions
-	static void  saveToFile(wxFile& file);
-	static void  set(const wxString& cvar_name, const wxString& value);
-	static CVar* get(const wxString& cvar_name);
-	static void  putList(vector<wxString>& list);
+	static std::string writeAll();
+	static void        set(const std::string& cvar_name, const std::string& value);
+	static CVar*       get(const std::string& cvar_name);
+	static void        putList(vector<std::string>& list);
 };
 
 class CIntCVar : public CVar
@@ -55,7 +55,7 @@ class CIntCVar : public CVar
 public:
 	int value;
 
-	CIntCVar(const wxString& NAME, int defval, uint16_t FLAGS);
+	CIntCVar(const std::string& NAME, int defval, uint16_t FLAGS);
 	~CIntCVar() = default;
 
 	// Operators so the cvar name can be used like a normal variable
@@ -81,8 +81,8 @@ class CBoolCVar : public CVar
 public:
 	bool value;
 
-	CBoolCVar(const wxString& NAME, bool defval, uint16_t FLAGS);
-	~CBoolCVar() {}
+	CBoolCVar(const std::string& NAME, bool defval, uint16_t FLAGS);
+	~CBoolCVar() = default;
 
 		 operator bool() const { return value; }
 	bool operator*() const { return value; }
@@ -106,8 +106,8 @@ class CFloatCVar : public CVar
 public:
 	double value;
 
-	CFloatCVar(const wxString& NAME, double defval, uint16_t FLAGS);
-	~CFloatCVar() {}
+	CFloatCVar(const std::string& NAME, double defval, uint16_t FLAGS);
+	~CFloatCVar() = default;
 
 		   operator double() const { return value; }
 	double operator*() const { return value; }
@@ -129,18 +129,22 @@ public:
 class CStringCVar : public CVar
 {
 public:
-	wxString value;
+	std::string value;
 
-	CStringCVar(const wxString& NAME, const wxString& defval, uint16_t FLAGS);
-	~CStringCVar() {}
+	CStringCVar(const std::string& NAME, const std::string& defval, uint16_t FLAGS);
+	~CStringCVar() = default;
 
-			 operator wxString() const { return value; }
-	wxString operator*() const { return value; }
+	bool empty() const { return value.empty(); }
 
-	wxString operator=(wxString val)
+				operator std::string() const { return value; }
+	std::string operator*() const { return value; }
+				operator std::string_view() const { return value; }
+				operator wxString() const { return value; }
+
+	CStringCVar& operator=(std::string_view val)
 	{
 		value = val;
-		return val;
+		return *this;
 	}
 };
 

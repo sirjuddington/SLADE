@@ -1269,7 +1269,7 @@ void ArchiveManagerPanel::saveAll() const
 
 				// Save 'dir_last'
 				wxFileName fn(filename);
-				dir_last = fn.GetPath(true);
+				dir_last = WxUtils::strToView(fn.GetPath(true));
 			}
 		}
 	}
@@ -1405,7 +1405,7 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive) const
 
 		// Save 'dir_last'
 		wxFileName fn(filename);
-		dir_last = fn.GetPath(true);
+		dir_last = WxUtils::strToView(fn.GetPath(true));
 
 		// Add recent file
 		App::archiveManager().addRecentFile(filename);
@@ -1805,7 +1805,7 @@ bool ArchiveManagerPanel::handleAction(const wxString& id)
 			wxEndBusyCursor();
 
 			// Save 'dir_last'
-			dir_last = dialog_open.GetDirectory();
+			dir_last = WxUtils::strToView(dialog_open.GetDirectory());
 		}
 	}
 
@@ -1827,7 +1827,7 @@ bool ArchiveManagerPanel::handleAction(const wxString& id)
 			wxEndBusyCursor();
 
 			// Save 'dir_last'
-			dir_last = dialog_open.GetPath();
+			dir_last = WxUtils::strToView(dialog_open.GetPath());
 		}
 	}
 

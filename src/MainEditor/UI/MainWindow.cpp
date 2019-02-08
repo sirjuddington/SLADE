@@ -467,7 +467,7 @@ bool MainWindow::exitProgram()
 		Misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 
 	// Save selected palette
-	global_palette = palette_chooser_->GetStringSelection();
+	global_palette = WxUtils::strToView(palette_chooser_->GetStringSelection());
 
 	// Exit application
 	App::exit(true);

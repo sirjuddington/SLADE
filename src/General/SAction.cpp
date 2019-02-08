@@ -253,13 +253,13 @@ bool SAction::addToToolbar(wxToolBar* toolbar, const wxString& icon_override, in
 // -----------------------------------------------------------------------------
 bool SAction::parse(ParseTreeNode* node)
 {
-	wxString linked_cvar;
-	int      custom_wxid = 0;
+	std::string linked_cvar;
+	int         custom_wxid = 0;
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto     prop      = node->childPTN(a);
-		wxString prop_name = prop->name();
+		auto prop      = node->childPTN(a);
+		auto prop_name = prop->name();
 
 		// Text
 		if (S_CMPNOCASE(prop_name, "text"))
@@ -314,13 +314,13 @@ bool SAction::parse(ParseTreeNode* node)
 		wx_id_ = custom_wxid;
 
 	// Setup linked cvar
-	if (type_ == Type::Check && !linked_cvar.IsEmpty())
+	if (type_ == Type::Check && !linked_cvar.empty())
 	{
 		auto cvar = CVar::get(linked_cvar);
 		if (cvar && cvar->type == CVar::Type::Boolean)
 		{
-			this->linked_cvar_ = (CBoolCVar*)cvar;
-			checked_           = cvar->getValue().Bool;
+			linked_cvar_ = dynamic_cast<CBoolCVar*>(cvar);
+			checked_     = cvar->getValue().Bool;
 		}
 	}
 

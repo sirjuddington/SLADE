@@ -34,6 +34,7 @@
 #include "Audio/MIDIPlayer.h"
 #include "General/UI.h"
 #include "UI/Controls/FileLocationPanel.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -98,7 +99,7 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 // -----------------------------------------------------------------------------
 void AudioPrefsPanel::init()
 {
-	bool midi_fsynth = S_CMPNOCASE(snd_midi_player.value, "fluidsynth");
+	bool midi_fsynth = StrUtil::equalCI(snd_midi_player, "fluidsynth");
 
 	cb_snd_autoplay_->SetValue(snd_autoplay);
 	cb_dmx_padding_->SetValue(dmx_padding);
@@ -118,9 +119,9 @@ void AudioPrefsPanel::applyPreferences()
 	snd_autoplay         = cb_snd_autoplay_->GetValue();
 	dmx_padding          = cb_dmx_padding_->GetValue();
 	snd_midi_player      = rb_timidity_->GetValue() ? "timidity" : "fluidsynth";
-	fs_soundfont_path    = flp_soundfont_->location();
-	snd_timidity_path    = flp_timidity_->location();
-	snd_timidity_options = text_timidity_options_->GetValue();
+	fs_soundfont_path    = WxUtils::strToView(flp_soundfont_->location());
+	snd_timidity_path    = WxUtils::strToView(flp_timidity_->location());
+	snd_timidity_options = WxUtils::strToView(text_timidity_options_->GetValue());
 
 	MIDI::resetPlayer();
 	MIDI::player().setVolume(snd_volume);

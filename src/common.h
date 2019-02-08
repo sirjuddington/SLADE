@@ -139,7 +139,7 @@
 #include <FreeImage.h>
 
 // fmt
-#include "thirdparty/fmt/fmt/format.h"
+#include "thirdparty/fmt/fmt/core.h"
 
 // C++
 #include <map>

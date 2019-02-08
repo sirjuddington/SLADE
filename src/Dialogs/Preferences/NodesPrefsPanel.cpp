@@ -149,10 +149,10 @@ void NodesPrefsPanel::applyPreferences()
 {
 	// Set nodebuilder
 	auto& builder  = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
-	nodebuilder_id = builder.id;
+	nodebuilder_id = CHR(builder.id);
 
 	// Set options string
-	wxString opt = " ";
+	std::string opt = " ";
 	for (unsigned a = 0; a < clb_options_->GetCount(); a++)
 	{
 		if (clb_options_->IsChecked(a))

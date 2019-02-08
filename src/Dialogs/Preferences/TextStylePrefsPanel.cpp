@@ -466,13 +466,13 @@ void TextStylePrefsPanel::updateBackground() const
 void TextStylePrefsPanel::updatePreview()
 {
 	// Save current font override options
-	wxString f_override = txed_override_font;
-	int      s_override = txed_override_font_size;
+	std::string f_override = txed_override_font;
+	int         s_override = txed_override_font_size;
 
 	// Apply font override options (temporarily)
 	if (cb_font_override_->GetValue())
 	{
-		txed_override_font      = fp_font_override_->GetSelectedFont().GetFaceName();
+		txed_override_font      = WxUtils::strToView(fp_font_override_->GetSelectedFont().GetFaceName());
 		txed_override_font_size = fp_font_override_->GetSelectedFont().GetPointSize();
 	}
 	else
@@ -496,7 +496,7 @@ void TextStylePrefsPanel::applyPreferences()
 {
 	if (cb_font_override_->GetValue())
 	{
-		txed_override_font      = fp_font_override_->GetSelectedFont().GetFaceName();
+		txed_override_font      = WxUtils::strToView(fp_font_override_->GetSelectedFont().GetFaceName());
 		txed_override_font_size = fp_font_override_->GetSelectedFont().GetPointSize();
 	}
 	else

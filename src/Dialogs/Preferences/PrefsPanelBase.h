@@ -1,5 +1,7 @@
 #pragma once
 
+#include "UI/WxUtils.h" // Will be needed for most prefs panels
+
 class PrefsPanelBase : public wxPanel
 {
 public:
