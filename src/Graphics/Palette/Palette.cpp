@@ -282,7 +282,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			col.b     = wxStringUtils::toInt(s3);
 			col.index = c;
 			setColour(c++, col);
-		} while (c < 256 && !tz.peekToken().IsEmpty());
+		} while (c < 256 && !tz.peekToken().empty());
 
 		return true;
 	}

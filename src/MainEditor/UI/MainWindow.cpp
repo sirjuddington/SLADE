@@ -138,7 +138,7 @@ void MainWindow::loadLayout() const
 {
 	// Open layout file
 	Tokenizer tz;
-	if (!tz.openFile(App::path("mainwindow.layout", App::Dir::User)))
+	if (!tz.openFile(App::path("mainwindow.layout", App::Dir::User).ToStdString()))
 		return;
 
 	// Parse layout
@@ -153,7 +153,7 @@ void MainWindow::loadLayout() const
 			aui_mgr_->LoadPaneInfo(layout, aui_mgr_->GetPane(component));
 
 		// Check if we're done
-		if (tz.peekToken().IsEmpty())
+		if (tz.peekToken().empty())
 			break;
 	}
 }

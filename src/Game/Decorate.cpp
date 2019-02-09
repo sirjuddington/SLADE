@@ -78,9 +78,9 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 		if (tz.checkNext(":"))
 		{
 			// Add to list of current states
-			states.push_back(tz.current().text.Lower());
+			states.emplace_back(StrUtil::lower(tz.current().text));
 			if (state_first.empty())
-				state_first = tz.current().text.Lower();
+				state_first = StrUtil::lower(tz.current().text);
 
 			tz.adv();
 		}
@@ -97,7 +97,7 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 			}
 
 			// Set sprite for current states (if it is defined)
-			if (!(tz.current().text.Contains("#") || tz.current().text.Contains("-")))
+			if (!(StrUtil::contains(tz.current().text, '#') || StrUtil::contains(tz.current().text, '-')))
 				for (auto& state : states)
 					state_sprites[state] = tz.current().text + tz.peek().text[0];
 
@@ -400,7 +400,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 				found_props["solid"] = true;
 
 			// Unrecognised DB comment prop
-			else if (tz.current().text.StartsWith("//$"))
+			else if (StrUtil::startsWith(tz.current().text, "//$"))
 			{
 				tz.advToNextLine();
 				continue;
@@ -573,7 +573,7 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 	Tokenizer tz;
 	tz.setSpecialCharacters(":,{}");
 	tz.enableDecorate(true);
-	tz.openMem(entry->data(), entry->name());
+	tz.openMem(entry->data(), entry->name().ToStdString());
 
 	// --- Parse ---
 	while (!tz.atEnd())
@@ -586,12 +586,12 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 			// Check #include path could be resolved
 			if (!inc_entry)
 			{
-				Log::warning(wxString::Format(
-					"Warning parsing DECORATE entry %s: "
-					"Unable to find #included entry \"%s\" at line %d, skipping",
+				Log::warning(
+					"Warning parsing DECORATE entry {}: "
+					"Unable to find #included entry \"{}\" at line {}, skipping",
 					CHR(entry->name()),
-					CHR(tz.current().text),
-					tz.current().line_no));
+					tz.current().text,
+					tz.current().line_no);
 			}
 			else
 				parseDecorateEntry(inc_entry, types, parsed);

@@ -159,7 +159,7 @@ void Translation::parse(wxString def)
 	// Now we're guaranteed to have normal translation strings to parse
 	Tokenizer tz;
 	tz.setSpecialCharacters(",");
-	tz.openString(def);
+	tz.openString(def.ToStdString());
 	parseRange(tz.current().text);
 	while (tz.advIfNext(','))
 		parseRange(tz.next().text);
@@ -173,7 +173,7 @@ void Translation::parseRange(const wxString& range)
 	// Open definition string for processing w/tokenizer
 	Tokenizer tz;
 	tz.setSpecialCharacters("[]:%,=#@$");
-	tz.openString(range);
+	tz.openString(range.ToStdString());
 	Log::debug("Processing range " + range);
 
 	// Read original range

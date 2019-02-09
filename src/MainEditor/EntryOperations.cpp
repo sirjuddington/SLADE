@@ -1759,7 +1759,7 @@ bool EntryOperations::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, b
 bool EntryOperations::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata, bool switches)
 {
 	Tokenizer tz(Tokenizer::Hash);
-	tz.openMem(entry->data(), entry->name());
+	tz.openMem(entry->data(), entry->name().ToStdString());
 
 	wxString token;
 	char     buffer[23];

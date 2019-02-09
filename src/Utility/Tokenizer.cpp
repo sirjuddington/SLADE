@@ -39,8 +39,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-const wxString   Tokenizer::DEFAULT_SPECIAL_CHARACTERS = ";,:|={}/";
-Tokenizer::Token Tokenizer::invalid_token_{ "", 0, false, 0, 0, 0, false };
+const std::string Tokenizer::DEFAULT_SPECIAL_CHARACTERS = ";,:|={}/";
+Tokenizer::Token  Tokenizer::invalid_token_{ "", 0, false, 0, 0, 0, false };
 
 
 // -----------------------------------------------------------------------------
@@ -63,6 +63,8 @@ bool isWhitespace(char p)
 
 // -----------------------------------------------------------------------------
 //
+// Tokenizer::Token Struct Functions
+//
 // -----------------------------------------------------------------------------
 
 
@@ -72,7 +74,7 @@ bool isWhitespace(char p)
 // -----------------------------------------------------------------------------
 bool Tokenizer::Token::isInteger(bool allow_hex) const
 {
-	return wxStringUtils::isInteger(text, allow_hex);
+	return StrUtil::isInteger(text, allow_hex);
 }
 
 // -----------------------------------------------------------------------------
@@ -80,7 +82,7 @@ bool Tokenizer::Token::isInteger(bool allow_hex) const
 // -----------------------------------------------------------------------------
 bool Tokenizer::Token::isHex() const
 {
-	return wxStringUtils::isHex(text);
+	return StrUtil::isHex(text);
 }
 
 // -----------------------------------------------------------------------------
@@ -88,7 +90,15 @@ bool Tokenizer::Token::isHex() const
 // -----------------------------------------------------------------------------
 bool Tokenizer::Token::isFloat() const
 {
-	return wxStringUtils::isFloat(text);
+	return StrUtil::isFloat(text);
+}
+
+// ----------------------------------------------------------------------------
+// Returns the token as an integer value
+// ----------------------------------------------------------------------------
+int Tokenizer::Token::asInt() const
+{
+	return StrUtil::toInt(text);
 }
 
 // -----------------------------------------------------------------------------
@@ -97,7 +107,24 @@ bool Tokenizer::Token::isFloat() const
 // -----------------------------------------------------------------------------
 bool Tokenizer::Token::asBool() const
 {
-	return !(S_CMPNOCASE(text, "false") || S_CMPNOCASE(text, "no") || S_CMPNOCASE(text, "0"));
+	return !(
+		text.empty() || StrUtil::equalCI(text, "false") || StrUtil::equalCI(text, "no") || StrUtil::equalCI(text, "0"));
+}
+
+// ----------------------------------------------------------------------------
+// Returns the token as a floating point value
+// ----------------------------------------------------------------------------
+double Tokenizer::Token::asFloat() const
+{
+	return StrUtil::toDouble(text);
+}
+
+// ----------------------------------------------------------------------------
+// Sets [val] to the integer value of the token
+// ----------------------------------------------------------------------------
+void Tokenizer::Token::toInt(int& val) const
+{
+	val = StrUtil::toInt(text);
 }
 
 // -----------------------------------------------------------------------------
@@ -106,7 +133,24 @@ bool Tokenizer::Token::asBool() const
 // -----------------------------------------------------------------------------
 void Tokenizer::Token::toBool(bool& val) const
 {
-	val = !(S_CMPNOCASE(text, "false") || S_CMPNOCASE(text, "no") || S_CMPNOCASE(text, "0"));
+	val = !(
+		text.empty() || StrUtil::equalCI(text, "false") || StrUtil::equalCI(text, "no") || StrUtil::equalCI(text, "0"));
+}
+
+// ----------------------------------------------------------------------------
+// Sets [val] to the floating point (double) value of the token
+// ----------------------------------------------------------------------------
+void Tokenizer::Token::toFloat(double& val) const
+{
+	val = StrUtil::toDouble(text);
+}
+
+// ----------------------------------------------------------------------------
+// Sets [val] to the floating point (float) value of the token
+// ----------------------------------------------------------------------------
+void Tokenizer::Token::toFloat(float& val) const
+{
+	val = StrUtil::toFloat(text);
 }
 
 
@@ -120,7 +164,7 @@ void Tokenizer::Token::toBool(bool& val) const
 // -----------------------------------------------------------------------------
 // Tokenizer class constructor
 // -----------------------------------------------------------------------------
-Tokenizer::Tokenizer(int comments, const wxString& special_characters) :
+Tokenizer::Tokenizer(int comments, const std::string& special_characters) :
 	comment_types_{ comments },
 	special_characters_{ special_characters.begin(), special_characters.end() }
 {
@@ -178,7 +222,7 @@ bool Tokenizer::advIf(const char* check, size_t inc)
 
 	return false;
 }
-bool Tokenizer::advIf(const wxString& check, size_t inc)
+bool Tokenizer::advIf(const std::string& check, size_t inc)
 {
 	if (token_current_ == check)
 	{
@@ -204,7 +248,7 @@ bool Tokenizer::advIf(char check, size_t inc)
 // -----------------------------------------------------------------------------
 bool Tokenizer::advIfNC(const char* check, size_t inc)
 {
-	if (S_CMPNOCASE(token_current_.text, check))
+	if (StrUtil::equalCI(token_current_.text, check))
 	{
 		adv(inc);
 		return true;
@@ -212,9 +256,9 @@ bool Tokenizer::advIfNC(const char* check, size_t inc)
 
 	return false;
 }
-bool Tokenizer::advIfNC(const wxString& check, size_t inc)
+bool Tokenizer::advIfNC(const std::string& check, size_t inc)
 {
-	if (S_CMPNOCASE(token_current_.text, check))
+	if (StrUtil::equalCI(token_current_.text, check))
 	{
 		adv(inc);
 		return true;
@@ -239,7 +283,7 @@ bool Tokenizer::advIfNext(const char* check, size_t inc)
 
 	return false;
 }
-bool Tokenizer::advIfNext(const wxString& check, size_t inc)
+bool Tokenizer::advIfNext(const std::string& check, size_t inc)
 {
 	if (!token_next_.valid)
 		return false;
@@ -274,7 +318,7 @@ bool Tokenizer::advIfNextNC(const char* check, size_t inc)
 	if (!token_next_.valid)
 		return false;
 
-	if (S_CMPNOCASE(token_next_.text, check))
+	if (StrUtil::equalCI(token_next_.text, check))
 	{
 		adv(inc);
 		return true;
@@ -421,7 +465,7 @@ vector<Tokenizer::Token> Tokenizer::getTokensUntilNextLine(bool from_start)
 	return tokens;
 }
 
-wxString Tokenizer::getLine(bool from_start)
+std::string Tokenizer::getLine(bool from_start)
 {
 	// Reset to start of line if needed
 	if (from_start)
@@ -434,7 +478,7 @@ wxString Tokenizer::getLine(bool from_start)
 		state_.current_line = token_next_.line_no;
 	}
 
-	wxString line;
+	std::string line;
 	while (data_[state_.position] != '\n' && data_[state_.position] != '\r')
 		line += data_[state_.position++];
 
@@ -452,7 +496,7 @@ bool Tokenizer::checkOrEnd(const char* check) const
 
 	return token_current_ == check;
 }
-bool Tokenizer::checkOrEnd(const wxString& check) const
+bool Tokenizer::checkOrEnd(const std::string& check) const
 {
 	// At end, return true
 	if (!token_next_.valid)
@@ -469,13 +513,18 @@ bool Tokenizer::checkOrEnd(char check) const
 	return token_current_ == check;
 }
 
+bool Tokenizer::checkNC(const char* check) const
+{
+	return StrUtil::equalCI(token_current_.text, check);
+}
+
 bool Tokenizer::checkOrEndNC(const char* check) const
 {
 	// At end, return true
 	if (!token_next_.valid)
 		return true;
 
-	return S_CMPNOCASE(token_current_.text, check);
+	return StrUtil::equalCI(token_current_.text, check);
 }
 
 // -----------------------------------------------------------------------------
@@ -488,7 +537,7 @@ bool Tokenizer::checkNext(const char* check) const
 
 	return token_next_ == check;
 }
-bool Tokenizer::checkNext(const wxString& check) const
+bool Tokenizer::checkNext(const std::string& check) const
 {
 	if (!token_next_.valid)
 		return false;
@@ -508,14 +557,14 @@ bool Tokenizer::checkNextNC(const char* check) const
 	if (!token_next_.valid)
 		return false;
 
-	return S_CMPNOCASE(token_next_.text, check);
+	return StrUtil::equalCI(token_next_.text, check);
 }
 
 // -----------------------------------------------------------------------------
 // Opens text from a file [filename], reading [length] bytes from [offset].
 // If [length] is 0, read to the end of the file
 // -----------------------------------------------------------------------------
-bool Tokenizer::openFile(const wxString& filename, size_t offset, size_t length)
+bool Tokenizer::openFile(const std::string& filename, size_t offset, size_t length)
 {
 	// Open the file
 	wxFile file(filename);
@@ -523,7 +572,7 @@ bool Tokenizer::openFile(const wxString& filename, size_t offset, size_t length)
 	// Check file opened
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("Tokenizer::openFile: Unable to open file %s", filename));
+		Log::error("Tokenizer::openFile: Unable to open file {}", filename);
 		return false;
 	}
 
@@ -549,18 +598,17 @@ bool Tokenizer::openFile(const wxString& filename, size_t offset, size_t length)
 // Opens text from a string [text], reading [length] bytes from [offset].
 // If [length] is 0, read to the end of the string
 // -----------------------------------------------------------------------------
-bool Tokenizer::openString(const wxString& text, size_t offset, size_t length, const wxString& source)
+bool Tokenizer::openString(const std::string& text, size_t offset, size_t length, const std::string& source)
 {
 	source_ = source;
 
 	// If length isn't specified or exceeds the string's length,
 	// only copy to the end of the string
-	auto ascii = text.ToAscii();
-	if (offset + length > ascii.length() || length == 0)
-		length = ascii.length() - offset;
+	if (offset + length > text.length() || length == 0)
+		length = text.length() - offset;
 
 	// Copy the string portion
-	data_.assign(ascii.data() + offset, ascii.data() + offset + length);
+	data_.assign(text.data() + offset, text.data() + offset + length);
 
 	reset();
 
@@ -570,7 +618,7 @@ bool Tokenizer::openString(const wxString& text, size_t offset, size_t length, c
 // -----------------------------------------------------------------------------
 // Opens text from memory [mem], reading [length] bytes
 // -----------------------------------------------------------------------------
-bool Tokenizer::openMem(const char* mem, size_t length, const wxString& source)
+bool Tokenizer::openMem(const char* mem, size_t length, const std::string& source)
 {
 	source_ = source;
 	data_.assign(mem, mem + length);
@@ -583,7 +631,7 @@ bool Tokenizer::openMem(const char* mem, size_t length, const wxString& source)
 // -----------------------------------------------------------------------------
 // Opens text from a MemChunk [mc]
 // -----------------------------------------------------------------------------
-bool Tokenizer::openMem(const MemChunk& mc, const wxString& source)
+bool Tokenizer::openMem(const MemChunk& mc, const std::string& source)
 {
 	source_ = source;
 	data_.assign(mc.data(), mc.data() + mc.size());
@@ -829,13 +877,7 @@ bool Tokenizer::readNext(Token* target)
 	// Write to target token (if specified)
 	if (target)
 	{
-		// How is this slower than using += in a loop as below? Just wxString things >_>
-		// target->text.assign(
-		//	data_.data() + state_.current_token.pos_start,
-		//	state_.position - state_.current_token.pos_start
-		//);
-
-		target->text.Empty();
+		target->text.clear();
 		for (unsigned a = state_.current_token.pos_start; a < state_.position; ++a)
 		{
 			if (state_.current_token.quoted_string && data_[a] == '\\')
@@ -853,7 +895,7 @@ bool Tokenizer::readNext(Token* target)
 
 		// Convert to lowercase if configured to and it isn't a quoted string
 		if (read_lowercase_ && !target->quoted_string)
-			target->text.LowerCase();
+			StrUtil::lowerIP(target->text);
 	}
 
 	// Skip closing " if it was a quoted string
@@ -861,7 +903,7 @@ bool Tokenizer::readNext(Token* target)
 		++state_.position;
 
 	if (debug_)
-		Log::debug(wxString::Format("%d: \"%s\"", token_current_.line_no, CHR(token_current_.text)));
+		Log::debug("{}: \"{}\"", token_current_.line_no, token_current_.text);
 
 	return true;
 }
@@ -910,9 +952,9 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 
 	struct TestToken
 	{
-		wxString text;
-		bool     quoted_string;
-		unsigned line_no;
+		std::string text;
+		bool        quoted_string;
+		unsigned    line_no;
 	};
 
 	// Tokenize it
@@ -920,7 +962,7 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 	vector<TestToken> t_new;
 	tz.setReadLowerCase(lower);
 	long time = App::runTimer();
-	tz.openMem(entry->data(), entry->name());
+	tz.openMem(entry->data(), entry->name().ToStdString());
 	for (long a = 0; a < num; a++)
 	{
 		while (!tz.atEnd())
@@ -935,7 +977,7 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 
 	long new_time = App::runTimer() - time;
 
-	Log::info(wxString::Format("Tokenize x%d took %dms", num, new_time));
+	Log::info("Tokenize x{} took {}ms", num, new_time);
 
 
 	// Test old tokenizer also
@@ -957,14 +999,13 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 		tzo.reset();
 	}
 	time = App::runTimer() - time;
-	Log::info(wxString::Format("Old Tokenize x%d took %dms", num, time));
-	Log::info(wxString::Format("%1.3fx time", (float)new_time / (float)time));
+	Log::info(std::string::Format("Old Tokenize x%d took %dms", num, time));
+	Log::info(std::string::Format("%1.3fx time", (float)new_time / (float)time));
 	*/
 
 	if (dump)
 	{
 		for (auto& token : t_new)
-			Log::debug(wxString::Format(
-				"%d: \"%s\"%s", token.line_no, CHR(token.text), token.quoted_string ? " (quoted)" : ""));
+			Log::debug("{}: \"{}\"{}", token.line_no, token.text, token.quoted_string ? " (quoted)" : "");
 	}
 }

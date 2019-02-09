@@ -1069,7 +1069,7 @@ void ZTextureEditorPanel::onTextTranslationEnter(wxCommandEvent& e)
 {
 	// Parse translation text line
 	Tokenizer tz;
-	tz.openString(text_translation_->GetValue());
+	tz.openString(text_translation_->GetValue().ToStdString());
 	Translation trans;
 
 	wxString token = tz.getToken();
