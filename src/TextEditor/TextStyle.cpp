@@ -613,7 +613,7 @@ void StyleSet::initCurrent()
 	{
 		// Read it in
 		Tokenizer tz;
-		tz.openFile(path);
+		tz.openFile(path.ToStdString());
 
 		// Parse it
 		ParseTreeNode root;
@@ -806,7 +806,7 @@ bool StyleSet::loadResourceStyles()
 	{
 		// Read entry data into tokenizer
 		Tokenizer tz;
-		tz.openMem(default_style->data(), default_style->name());
+		tz.openMem(default_style->data(), default_style->name().ToStdString());
 
 		// Parse it
 		ParseTreeNode root;
@@ -835,7 +835,7 @@ bool StyleSet::loadResourceStyles()
 
 		// Read entry data into tokenizer
 		Tokenizer tz;
-		tz.openMem(entry->data(), entry->name());
+		tz.openMem(entry->data(), entry->name().ToStdString());
 
 		// Parse it
 		ParseTreeNode root;
@@ -876,7 +876,7 @@ bool StyleSet::loadCustomStyles()
 	{
 		// Read file into tokenizer
 		Tokenizer tz;
-		tz.openFile(res_dir.GetName() + "/" + filename);
+		tz.openFile(res_dir.GetName().ToStdString() + "/" + filename.ToStdString());
 
 		// Parse it
 		ParseTreeNode root;

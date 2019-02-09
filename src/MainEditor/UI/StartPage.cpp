@@ -144,7 +144,7 @@ void SStartPage::init()
 		if (entry_tips)
 		{
 			Tokenizer tz;
-			tz.openMem((const char*)entry_tips->rawData(), entry_tips->size(), entry_tips->name());
+			tz.openMem((const char*)entry_tips->rawData(), entry_tips->size(), entry_tips->name().ToStdString());
 			while (!tz.atEnd() && !tz.peekToken().empty())
 				tips_.push_back(tz.getToken());
 		}

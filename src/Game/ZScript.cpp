@@ -34,6 +34,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
 #include "Utility/Tokenizer.h"
+#include "Utility/StringUtils.h"
 
 using namespace ZScript;
 
@@ -60,7 +61,7 @@ bool dump_parsed_blocks    = false;
 bool dump_parsed_states    = false;
 bool dump_parsed_functions = false;
 
-wxString db_comment = "//$";
+std::string db_comment = "//$";
 } // namespace ZScript
 
 
@@ -188,7 +189,7 @@ bool checkKeywordValueStatement(const vector<wxString>& tokens, unsigned index, 
 void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 {
 	Tokenizer tz;
-	tz.setSpecialCharacters(CHR(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?."));
+	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?.");
 	tz.enableDecorate(true);
 	tz.setCommentTypes(Tokenizer::CommentTypes::CPPStyle | Tokenizer::CommentTypes::CStyle);
 	tz.openMem(entry->data(), "ZScript");
@@ -198,7 +199,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 	while (!tz.atEnd())
 	{
 		// Preprocessor
-		if (tz.current().text.StartsWith("#"))
+		if (StrUtil::startsWith(tz.current().text, '#'))
 		{
 			if (tz.checkNC("#include"))
 			{
@@ -207,12 +208,12 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 				// Check #include path could be resolved
 				if (!inc_entry)
 				{
-					Log::warning(wxString::Format(
-						"Warning parsing ZScript entry %s: "
-						"Unable to find #included entry \"%s\" at line %u, skipping",
+					Log::warning(
+						"Warning parsing ZScript entry {}: "
+						"Unable to find #included entry \"{}\" at line {}, skipping",
 						CHR(entry->name()),
-						CHR(tz.current().text),
-						tz.current().line_no));
+						tz.current().text,
+						tz.current().line_no);
 				}
 				else
 					parseBlocks(inc_entry, parsed);
@@ -1066,10 +1067,10 @@ bool ParsedStatement::parse(Tokenizer& tz)
 			return true;
 
 		// DB comment
-		if (tz.current().text.StartsWith(db_comment))
+		if (StrUtil::startsWith(tz.current().text, db_comment))
 		{
-			tokens.push_back(tz.current().text);
-			tokens.push_back(tz.getLine());
+			tokens.emplace_back(tz.current().text);
+			tokens.emplace_back(tz.getLine());
 			return true;
 		}
 
@@ -1099,7 +1100,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 			break;
 
 		// Array initializer: ... = { ... }
-		if (tz.current().text.Cmp("=") == 0 && tz.peek() == '{')
+		if (tz.current() == '=' && tz.peek() == '{')
 		{
 			tokens.emplace_back("=");
 			tokens.emplace_back("{");
@@ -1108,7 +1109,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 			continue;
 		}
 
-		tokens.push_back(tz.current().text);
+		tokens.emplace_back(tz.current().text);
 		tz.adv();
 	}
 

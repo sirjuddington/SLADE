@@ -233,7 +233,7 @@ void readConfigFile()
 {
 	// Open SLADE.cfg
 	Tokenizer tz;
-	if (!tz.openFile(App::path("slade3.cfg", App::Dir::User)))
+	if (!tz.openFile(App::path("slade3.cfg", App::Dir::User).ToStdString()))
 		return;
 
 	// Go through the file with the tokenizer
@@ -245,7 +245,7 @@ void readConfigFile()
 			// Keep reading name/value pairs until we hit the ending '}'
 			while (!tz.checkOrEnd("}"))
 			{
-				CVar::set(tz.current().text.ToStdString(), tz.peek().text.ToStdString());
+				CVar::set(tz.current().text, tz.peek().text);
 				tz.adv(2);
 			}
 
