@@ -647,7 +647,7 @@ void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 	name.Replace(" ", "_");
 
 	// Write set to file
-	wxString filename = App::path(wxString::Format("text_styles/%s.sss", name), App::Dir::User);
+	auto filename = App::path(fmt::format("text_styles/%s.sss", CHR(name)), App::Dir::User);
 	ss_temp.writeFile(filename);
 
 	// Add new set to list

@@ -57,8 +57,11 @@
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/TextStyle.h"
 #include "UI/SBrush.h"
+#include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include "thirdparty/dumb/dumb.h"
+#include <filesystem>
 
 
 // -----------------------------------------------------------------------------
@@ -78,15 +81,15 @@ std::thread::id main_thread_id;
 Version version_num{ 3, 2, 0, 1 };
 
 // Directory paths
-wxString dir_data = "";
-wxString dir_user = "";
-wxString dir_app  = "";
-wxString dir_res  = "";
-wxString dir_temp = "";
+std::string dir_data = "";
+std::string dir_user = "";
+std::string dir_app  = "";
+std::string dir_res  = "";
+std::string dir_temp = "";
 #ifdef WIN32
-wxString dir_separator = "\\";
+std::string dir_separator = "\\";
 #else
-string dir_separator = "/";
+std::string dir_separator = "/";
 #endif
 
 // App objects (managers, etc.)
@@ -143,11 +146,11 @@ int App::Version::cmp(const Version& rhs) const
 // ----------------------------------------------------------------------------
 // Returns a string representation of the version (eg. "3.2.1 beta 4")
 // ----------------------------------------------------------------------------
-wxString App::Version::toString() const
+std::string App::Version::toString() const
 {
-	wxString vers = wxString::Format("%lu.%lu.%lu", major, minor, revision);
+	auto vers = fmt::format("{}.{}.{}", major, minor, revision);
 	if (beta > 0)
-		vers += wxString::Format(" beta %lu", beta);
+		vers += fmt::format(" beta {}", beta);
 	return vers;
 }
 
@@ -173,7 +176,7 @@ bool initDirectories()
 #endif // defined(__UNIX__) && defined(INSTALL_PREFIX)
 
 	// Setup app dir
-	dir_app = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
+	dir_app = StrUtil::Path::pathOf(wxStandardPaths::Get().GetExecutablePath().ToStdString(), false);
 
 	// Check for portable install
 	if (wxFileExists(path("portable", Dir::Executable)))
@@ -230,7 +233,7 @@ void readConfigFile()
 {
 	// Open SLADE.cfg
 	Tokenizer tz;
-	if (!tz.openFile(App::path("slade3.cfg", App::Dir::User).ToStdString()))
+	if (!tz.openFile(App::path("slade3.cfg", App::Dir::User)))
 		return;
 
 	// Go through the file with the tokenizer
@@ -242,7 +245,7 @@ void readConfigFile()
 			// Keep reading name/value pairs until we hit the ending '}'
 			while (!tz.checkOrEnd("}"))
 			{
-				CVar::set(tz.current().text, tz.peek().text);
+				CVar::set(tz.current().text.ToStdString(), tz.peek().text.ToStdString());
 				tz.adv(2);
 			}
 
@@ -313,7 +316,7 @@ void readConfigFile()
 // -----------------------------------------------------------------------------
 // Processes command line [args]
 // -----------------------------------------------------------------------------
-vector<wxString> processCommandLine(vector<wxString>& args)
+vector<wxString> processCommandLine(vector<std::string>& args)
 {
 	vector<wxString> to_open;
 
@@ -321,23 +324,23 @@ vector<wxString> processCommandLine(vector<wxString>& args)
 	for (auto& arg : args)
 	{
 		// -nosplash: Disable splash window
-		if (S_CMPNOCASE(arg, "-nosplash"))
+		if (StrUtil::equalCI(arg, "-nosplash"))
 			UI::enableSplash(false);
 
 		// -debug: Enable debug mode
-		else if (S_CMPNOCASE(arg, "-debug"))
+		else if (StrUtil::equalCI(arg, "-debug"))
 		{
 			Global::debug = true;
 			Log::info("Debugging stuff enabled");
 		}
 
 		// Other (no dash), open as archive
-		else if (!arg.StartsWith("-"))
+		else if (!StrUtil::startsWith(arg, '-'))
 			to_open.push_back(arg);
 
 		// Unknown parameter
 		else
-			Log::warning(wxString::Format("Unknown command line parameter: \"%s\"", CHR(arg)));
+			Log::warning("Unknown command line parameter: \"{}\"", arg);
 	}
 
 	return to_open;
@@ -411,7 +414,7 @@ bool App::isExiting()
 // -----------------------------------------------------------------------------
 // Application initialisation
 // -----------------------------------------------------------------------------
-bool App::init(vector<wxString>& args, double ui_scale)
+bool App::init(vector<std::string>& args, double ui_scale)
 {
 	// Get the id of the current thread (should be the main one)
 	main_thread_id = std::this_thread::get_id();
@@ -428,7 +431,7 @@ bool App::init(vector<wxString>& args, double ui_scale)
 	Log::init();
 
 	// Process the command line arguments
-	vector<wxString> paths_to_open = processCommandLine(args);
+	auto paths_to_open = processCommandLine(args);
 
 	// Init keybinds
 	KeyBind::initBinds();
@@ -575,7 +578,7 @@ void App::saveConfigFile()
 	file.Write("\nbase_resource_paths\n{\n");
 	for (size_t a = 0; a < archive_manager.numBaseResourcePaths(); a++)
 	{
-		wxString path = archive_manager.getBaseResourcePath(a);
+		auto path = archive_manager.getBaseResourcePath(a);
 		path.Replace("\\", "/");
 		file.Write(wxString::Format("\t\"%s\"\n", path), wxConvUTF8);
 	}
@@ -585,7 +588,7 @@ void App::saveConfigFile()
 	file.Write("\nrecent_files\n{\n");
 	for (int a = archive_manager.numRecentFiles() - 1; a >= 0; a--)
 	{
-		wxString path = archive_manager.recentFile(a);
+		auto path = archive_manager.recentFile(a);
 		path.Replace("\\", "/");
 		file.Write(wxString::Format("\t\"%s\"\n", path), wxConvUTF8);
 	}
@@ -657,15 +660,14 @@ void App::exit(bool save_config)
 	OpenGL::Texture::clearAll();
 
 	// Clear temp folder
-	wxDir temp;
-	temp.Open(App::path("", App::Dir::Temp));
-	wxString filename = wxEmptyString;
-	bool     files    = temp.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
-	while (files)
+	std::error_code error;
+	for (auto& item : std::filesystem::directory_iterator{ App::path("", App::Dir::Temp) })
 	{
-		if (!wxRemoveFile(App::path(filename, App::Dir::Temp)))
-			Log::warning(wxString::Format("Could not clean up temporary file \"%s\"", filename));
-		files = temp.GetNext(&filename);
+		if (!item.is_regular_file())
+			continue;
+
+		if (!std::filesystem::remove(item, error))
+			Log::warning("Could not clean up temporary file \"{}\": {}", item.path().string(), error.message());
 	}
 
 	// Close lua
@@ -695,20 +697,17 @@ const App::Version& App::version()
 // App::Dir::Executable: Directory of the SLADE executable
 // App::Dir::Temp: Temporary files directory
 // -----------------------------------------------------------------------------
-wxString App::path(const wxString& filename, Dir dir)
+std::string App::path(std::string_view filename, Dir dir)
 {
-	if (dir == Dir::Data)
-		return dir_data + dir_separator + filename;
-	if (dir == Dir::User)
-		return dir_user + dir_separator + filename;
-	if (dir == Dir::Executable)
-		return dir_app + dir_separator + filename;
-	if (dir == Dir::Resources)
-		return dir_res + dir_separator + filename;
-	if (dir == Dir::Temp)
-		return dir_temp + dir_separator + filename;
-
-	return filename;
+	switch (dir)
+	{
+	case Dir::User: return fmt::format("{}{}{}", dir_user, dir_separator, filename);
+	case Dir::Data: return fmt::format("{}{}{}", dir_data, dir_separator, filename);
+	case Dir::Executable: return fmt::format("{}{}{}", dir_app, dir_separator, filename);
+	case Dir::Resources: return fmt::format("{}{}{}", dir_res, dir_separator, filename);
+	case Dir::Temp: return fmt::format("{}{}{}", dir_temp, dir_separator, filename);
+	default: return std::string{ filename };
+	}
 }
 
 App::Platform App::platform()
@@ -742,9 +741,9 @@ bool App::useSFMLRenderWindow()
 #endif
 }
 
-const wxString& App::iconFile()
+const std::string& App::iconFile()
 {
-	static wxString icon = "slade.ico";
+	static std::string icon = "slade.ico";
 	return icon;
 }
 

@@ -152,7 +152,8 @@ ParseTreeNode* ParseTreeNode::addChildPTN(const wxString& name, const wxString& 
 // -----------------------------------------------------------------------------
 void ParseTreeNode::logError(const Tokenizer& tz, const wxString& error) const
 {
-	Log::error("Parse Error in {} (Line {}): {}\n", tz.source(), tz.current().line_no, CHR(error));
+	Log::error(
+		wxString::Format("Parse Error in %s (Line %d): %s\n", CHR(tz.source()), tz.current().line_no, CHR(error)));
 }
 
 // -----------------------------------------------------------------------------
@@ -218,7 +219,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 
 				// Parse text in the entry
 				Tokenizer inc_tz;
-				inc_tz.openMem(inc_entry->data(), inc_entry->name().ToStdString());
+				inc_tz.openMem(inc_entry->data(), inc_entry->name());
 				bool ok = parse(inc_tz);
 
 				// Reset dir and abort if parsing failed
@@ -227,7 +228,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 					return false;
 			}
 			else
-				logError(tz, fmt::format("Include entry {} not found", inc_path));
+				logError(tz, wxString::Format("Include entry %s not found", CHR(inc_path)));
 		}
 		else
 			tz.adv(); // Skip include path
@@ -241,7 +242,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 
 	// Unrecognised
 	else
-		logError(tz, fmt::format("Unrecognised preprocessor directive \"{}\"", tz.current().text));
+		logError(tz, wxString::Format("Unrecognised preprocessor directive \"%s\"", CHR(tz.current().text)));
 
 	return true;
 }
@@ -279,11 +280,23 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 		else if (token == "false") // Boolean (false)
 			value = false;
 		else if (token.isInteger()) // Integer
-			value = token.asInt();
+		{
+			long val;
+			token.text.ToLong(&val);
+			value = (int)val;
+		}
 		else if (token.isHex()) // Hex (0xXXXXXX)
-			value = token.asInt();
+		{
+			long val;
+			token.text.ToLong(&val, 0);
+			value = (int)val;
+		}
 		else if (token.isFloat()) // Floating point
-			value = token.asFloat();
+		{
+			double val;
+			token.text.ToDouble(&val);
+			value = val;
+		}
 		else // Unknown, just treat as string
 			value = token.text;
 
@@ -295,7 +308,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 			tz.adv(); // Skip it
 		else if (tz.peek() != list_end)
 		{
-			logError(tz, fmt::format(R"(Expected "," or "{}", got "{}")", list_end, tz.peek().text));
+			logError(tz, wxString::Format(R"(Expected "," or "%c", got "%s")", list_end, CHR(tz.peek().text)));
 			return false;
 		}
 
@@ -335,7 +348,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// If it's a special character (ie not a valid name), parsing fails
 		if (tz.isSpecialCharacter(tz.current().text[0]))
 		{
-			logError(tz, fmt::format("Unexpected special character '{}'", tz.current().text));
+			logError(tz, wxString::Format("Unexpected special character '%s'", CHR(tz.current().text)));
 			return false;
 		}
 
@@ -416,7 +429,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			}
 			else
 			{
-				logError(tz, fmt::format(R"(Expecting "{{" or ";", got "{}")", tz.next().text));
+				logError(tz, wxString::Format(R"(Expecting "{" or ";", got "%s")", CHR(tz.next().text)));
 				return false;
 			}
 		}
@@ -424,7 +437,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// Unexpected token
 		else
 		{
-			logError(tz, fmt::format("Unexpected token \"{}\"", tz.next().text));
+			logError(tz, wxString::Format("Unexpected token \"%s\"", CHR(tz.next().text)));
 			return false;
 		}
 
@@ -566,7 +579,7 @@ bool Parser::parseText(MemChunk& mc, const wxString& source) const
 
 	// Open the given text data
 	tz.setReadLowerCase(!case_sensitive_);
-	if (!tz.openMem(mc, source.ToStdString()))
+	if (!tz.openMem(mc, source))
 	{
 		Log::error("Unable to open text data for parsing");
 		return false;
@@ -581,7 +594,7 @@ bool Parser::parseText(const wxString& text, const wxString& source) const
 
 	// Open the given text data
 	tz.setReadLowerCase(!case_sensitive_);
-	if (!tz.openString(text.ToStdString(), 0, 0, source.ToStdString()))
+	if (!tz.openString(text, 0, 0, source))
 	{
 		Log::error("Unable to open text data for parsing");
 		return false;

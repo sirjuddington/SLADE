@@ -301,7 +301,7 @@ bool AudioEntryPanel::open()
 	auto& mcdata = entry_->data();
 
 	// Setup temp filename
-	wxFileName path(App::path(entry_->name(), App::Dir::Temp));
+	wxFileName path(App::path(entry_->name().ToStdString(), App::Dir::Temp));
 	// Add extension if missing
 	if (path.GetExt().IsEmpty())
 		path.SetExt(entry_->type()->extension());

@@ -275,22 +275,24 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						auto parameters = tz.getTokensUntil(")");
 
 						// Parse parameters
-						int val;
+						long val;
 						int  tag = -1;
 						int  r   = -1;
 						int  g   = -1;
 						int  b   = -1;
 						for (auto& parameter : parameters)
 						{
-							parameter.toInt(val);
-							if (tag < 0)
-								tag = val;
-							else if (r < 0)
-								r = val;
-							else if (g < 0)
-								g = val;
-							else if (b < 0)
-								b = val;
+							if (parameter.text.ToLong(&val))
+							{
+								if (tag < 0)
+									tag = val;
+								else if (r < 0)
+									r = val;
+								else if (g < 0)
+									g = val;
+								else if (b < 0)
+									b = val;
+							}
 						}
 
 						// Check everything is set
@@ -314,22 +316,24 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						auto parameters = tz.getTokensUntil(")");
 
 						// Parse parameters
-						int val;
+						long val;
 						int  tag = -1;
 						int  r   = -1;
 						int  g   = -1;
 						int  b   = -1;
 						for (auto& parameter : parameters)
 						{
-							parameter.toInt(val);
-							if (tag < 0)
-								tag = val;
-							else if (r < 0)
-								r = val;
-							else if (g < 0)
-								g = val;
-							else if (b < 0)
-								b = val;
+							if (parameter.text.ToLong(&val))
+							{
+								if (tag < 0)
+									tag = val;
+								else if (r < 0)
+									r = val;
+								else if (g < 0)
+									g = val;
+								else if (b < 0)
+									b = val;
+							}
 						}
 
 						// Check everything is set

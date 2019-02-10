@@ -738,7 +738,7 @@ void StrUtil::processIncludes(const std::string& filename, std::string& out)
 			tz.adv(); // Skip #include
 
 			// Process the file
-			processIncludes(fmt::format("{}{}", path, tz.next().text), out);
+			processIncludes(fmt::format("{}{}", path, CHR(tz.next().text)), out);
 		}
 		else
 			out.append(line + "\n");
@@ -762,7 +762,7 @@ void StrUtil::processIncludes(ArchiveEntry* entry, std::string& out, bool use_re
 		return;
 
 	// Write entry to temp file
-	auto filename = App::path(entry->name(), App::Dir::Temp);
+	auto filename = App::path(entry->name().ToStdString(), App::Dir::Temp);
 	entry->exportFile(filename);
 
 	// Open file
@@ -926,7 +926,7 @@ void wxStringUtils::processIncludes(const wxString& filename, wxString& out)
 		if (line.Lower().Trim().StartsWith("#include"))
 		{
 			// Get filename to include
-			tz.openString(line.ToStdString());
+			tz.openString(line);
 			tz.adv(); // Skip #include
 
 			// Process the file
@@ -952,7 +952,7 @@ void wxStringUtils::processIncludes(ArchiveEntry* entry, wxString& out, bool use
 		return;
 
 	// Write entry to temp file
-	wxString filename = App::path(entry->name(), App::Dir::Temp);
+	auto filename = App::path(entry->name().ToStdString(), App::Dir::Temp);
 	entry->exportFile(filename);
 
 	// Open file
@@ -970,7 +970,7 @@ void wxStringUtils::processIncludes(ArchiveEntry* entry, wxString& out, bool use
 		if (line.Lower().Trim().StartsWith("#include"))
 		{
 			// Get name of entry to include
-			tz.openString(line.ToStdString());
+			tz.openString(line);
 			wxString name = entry->path() + tz.next().text;
 
 			// Get the entry

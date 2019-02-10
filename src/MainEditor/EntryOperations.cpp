@@ -491,7 +491,8 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 		return false;
 
 	// Export the map to a temp .wad file
-	wxString filename = App::path(entry->parent()->filename(false) + "-" + entry->name(true) + ".wad", App::Dir::Temp);
+	wxString filename = App::path(
+		CHR(entry->parent()->filename(false) + "-" + entry->name(true) + ".wad"), App::Dir::Temp);
 	filename.Replace("/", "-");
 	if (map.archive)
 	{
@@ -1239,8 +1240,8 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	}
 
 	// Setup some path strings
-	wxString srcfile       = App::path(entry->name(true) + ".acs", App::Dir::Temp);
-	wxString ofile         = App::path(entry->name(true) + ".o", App::Dir::Temp);
+	wxString srcfile       = App::path(CHR(entry->name(true) + ".acs"), App::Dir::Temp);
+	wxString ofile         = App::path(CHR(entry->name(true) + ".o"), App::Dir::Temp);
 	auto     include_paths = wxSplit(path_acc_libs, ';');
 
 	// Setup command options
@@ -1269,7 +1270,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		if (entry->parent() && (entry->parent()->filename(true) != res_entry->parent()->filename(true)))
 			continue;
 
-		wxString path = App::path(res_entry->name(true) + ".acs", App::Dir::Temp);
+		wxString path = App::path(CHR(res_entry->name(true) + ".acs"), App::Dir::Temp);
 		res_entry->exportFile(path);
 		lib_paths.Add(path);
 		Log::info(2, wxString::Format("Exporting ACS library %s", res_entry->name()));
@@ -1759,7 +1760,7 @@ bool EntryOperations::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, b
 bool EntryOperations::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata, bool switches)
 {
 	Tokenizer tz(Tokenizer::Hash);
-	tz.openMem(entry->data(), entry->name().ToStdString());
+	tz.openMem(entry->data(), entry->name());
 
 	wxString token;
 	char     buffer[23];

@@ -74,15 +74,15 @@ void Console::execute(const wxString& command)
 
 	// Tokenize the command string
 	Tokenizer tz;
-	tz.openString(command.ToStdString());
+	tz.openString(command);
 
 	// Get the command name
-	auto cmd_name = tz.current().text;
+	std::string cmd_name = CHR(tz.current().text);
 
 	// Get all args
 	vector<wxString> args;
 	while (!tz.atEnd())
-		args.emplace_back(tz.next().text);
+		args.push_back(tz.next().text);
 
 	// Check that it is a valid command
 	for (auto& cmd : commands_)

@@ -491,7 +491,7 @@ protected:
 		FreeImage_FlipVertical(bm);
 
 		// Write the image to a temp file
-		FreeImage_Save(FIF_PNG, bm, CHR(App::path("temp.png", App::Dir::Temp)));
+		FreeImage_Save(FIF_PNG, bm, App::path("temp.png", App::Dir::Temp).c_str());
 
 		// Load it into a memchunk
 		MemChunk png;

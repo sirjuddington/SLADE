@@ -95,6 +95,7 @@ MapTextureManager& textureManager();
 MapEditorWindow*   window();
 wxWindow*          windowWx();
 MapBackupManager&  backupManager();
+bool               windowCreated();
 
 void init();
 void forceRefresh(bool renderer = false);

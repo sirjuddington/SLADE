@@ -168,7 +168,7 @@ void loadEditorScripts(ScriptType type, const wxString& dir)
 	// Load user archive scripts
 
 	// If the directory doesn't exist create it
-	auto user_scripts_dir = App::path(wxString::Format("scripts/%s", CHR(dir)), App::Dir::User);
+	auto user_scripts_dir = App::path(fmt::format("scripts/{}", CHR(dir)), App::Dir::User);
 	if (!wxDirExists(user_scripts_dir))
 		wxMkdir(user_scripts_dir);
 
@@ -194,7 +194,7 @@ void loadEditorScripts(ScriptType type, const wxString& dir)
 void exportUserScripts(const wxString& path, ScriptList& list)
 {
 	// Check dir exists
-	auto scripts_dir = App::path(path, App::Dir::User);
+	auto scripts_dir = App::path(path.ToStdString(), App::Dir::User);
 	if (wxDirExists(scripts_dir))
 	{
 		// Exists, clear directory
@@ -204,7 +204,7 @@ void exportUserScripts(const wxString& path, ScriptList& list)
 		bool     files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
 		while (files)
 		{
-			wxRemoveFile(wxString::Format("%s/%s", CHR(scripts_dir), CHR(filename)));
+			wxRemoveFile(fmt::format("{}/{}", scripts_dir, CHR(filename)));
 			files = res_dir.GetNext(&filename);
 		}
 	}
@@ -220,7 +220,7 @@ void exportUserScripts(const wxString& path, ScriptList& list)
 		if (script->read_only)
 			continue;
 
-		wxFile f(App::path(wxString::Format("%s/%s.lua", CHR(path), CHR(script->name)), App::Dir::User), wxFile::write);
+		wxFile f(App::path(fmt::format("{}/{}.lua", CHR(path), CHR(script->name)), App::Dir::User), wxFile::write);
 		f.Write(script->text);
 		f.Close();
 	}

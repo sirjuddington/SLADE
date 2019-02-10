@@ -664,7 +664,7 @@ vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 void ZipArchive::generateTempFileName(const wxString& filename)
 {
 	wxFileName tfn(filename);
-	temp_file_ = App::path(tfn.GetFullName(), App::Dir::Temp);
+	temp_file_ = App::path(CHR(tfn.GetFullName()), App::Dir::Temp);
 	if (wxFileExists(temp_file_))
 	{
 		// Make sure we don't overwrite an existing temp file
@@ -672,7 +672,7 @@ void ZipArchive::generateTempFileName(const wxString& filename)
 		int n = 1;
 		while (true)
 		{
-			temp_file_ = App::path(wxString::Format("%s.%d", CHR(tfn.GetFullName()), n), App::Dir::Temp);
+			temp_file_ = App::path(fmt::format("{}.{}", CHR(tfn.GetFullName()), n), App::Dir::Temp);
 			if (!wxFileExists(temp_file_))
 				break;
 

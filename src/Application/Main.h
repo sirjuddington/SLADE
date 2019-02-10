@@ -56,11 +56,11 @@ using std::vector;
 // Namespace to hold 'global' variables
 namespace Global
 {
-extern wxString error;
-extern wxString sc_rev;
-extern bool     debug;
-extern int      win_version_major;
-extern int      win_version_minor;
+extern std::string error;
+extern std::string sc_rev;
+extern bool        debug;
+extern int         win_version_major;
+extern int         win_version_minor;
 }; // namespace Global
 
 #endif // __MAIN_H__

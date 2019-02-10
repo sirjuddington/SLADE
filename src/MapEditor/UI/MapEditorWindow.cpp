@@ -131,7 +131,7 @@ void MapEditorWindow::loadLayout()
 {
 	// Open layout file
 	Tokenizer tz;
-	if (!tz.openFile(App::path("mapwindow.layout", App::Dir::User).ToStdString()))
+	if (!tz.openFile(App::path("mapwindow.layout", App::Dir::User)))
 		return;
 
 	// Parse layout
@@ -147,7 +147,7 @@ void MapEditorWindow::loadLayout()
 			m_mgr->LoadPaneInfo(layout, m_mgr->GetPane(component));
 
 		// Check if we're done
-		if (tz.peekToken().empty())
+		if (tz.peekToken().IsEmpty())
 			break;
 	}
 }

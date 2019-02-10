@@ -111,7 +111,7 @@ void TLFunction::addContext(
 	// Parse args
 	Tokenizer tz;
 	tz.setSpecialCharacters("[],");
-	tz.openString(args.ToStdString());
+	tz.openString(args);
 
 	vector<wxString> arg_tokens;
 	while (true)
@@ -137,7 +137,7 @@ void TLFunction::addContext(
 	if (!deprecated_f.empty())
 	{
 		// Parse deprecated string
-		tz.openString(deprecated_f.ToStdString());
+		tz.openString(deprecated_f);
 
 		for (unsigned t = 0; t < 2; t++)
 		{
@@ -576,7 +576,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const wxString& source)
 	Tokenizer tz;
 
 	// Open the given text data
-	if (!tz.openMem(mc, source.ToStdString()))
+	if (!tz.openMem(mc, source))
 	{
 		Log::warning(1, wxString::Format("Warning: Unable to open %s", source));
 		return false;

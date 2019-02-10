@@ -208,6 +208,11 @@ MapBackupManager& MapEditor::backupManager()
 	return backup_manager;
 }
 
+bool MapEditor::windowCreated()
+{
+	return map_window != nullptr;
+}
+
 // -----------------------------------------------------------------------------
 // Initialises the map editor
 // -----------------------------------------------------------------------------

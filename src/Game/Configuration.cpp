@@ -135,7 +135,7 @@ Configuration::MapConf Configuration::mapInfo(const wxString& mapname)
 			return map;
 	}
 
-	if (maps_.empty())
+	if (!maps_.empty())
 		return maps_[0];
 	else
 		return {};

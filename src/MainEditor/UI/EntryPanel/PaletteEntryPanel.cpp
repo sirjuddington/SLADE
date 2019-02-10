@@ -810,7 +810,7 @@ bool PaletteEntryPanel::addCustomPalette()
 		return false;
 
 	// Write current palette to the user palettes directory
-	wxString path = App::path(wxString::Format("palettes/%s.pal", name), App::Dir::User);
+	wxString path = App::path(fmt::format("palettes/{}.pal", CHR(name)), App::Dir::User);
 	palettes_[cur_palette_]->saveFile(path);
 
 	// Add to palette manager and main palette chooser

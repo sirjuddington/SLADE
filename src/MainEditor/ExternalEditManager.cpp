@@ -74,7 +74,7 @@ public:
 	virtual bool exportEntry()
 	{
 		// Determine export filename/path
-		wxFileName fn(App::path(entry_->name(), App::Dir::Temp));
+		wxFileName fn(App::path(CHR(entry_->name()), App::Dir::Temp));
 		fn.SetExt(entry_->type()->extension());
 
 		// Export entry and start monitoring
@@ -165,7 +165,7 @@ public:
 
 	bool exportEntry() override
 	{
-		wxFileName fn(App::path(entry_->name(), App::Dir::Temp));
+		wxFileName fn(App::path(CHR(entry_->name()), App::Dir::Temp));
 
 		fn.SetExt("png");
 
@@ -231,7 +231,7 @@ public:
 
 	bool exportEntry() override
 	{
-		wxFileName fn(App::path(entry_->name(), App::Dir::Temp));
+		wxFileName fn(App::path(CHR(entry_->name()), App::Dir::Temp));
 		fn.SetExt("mid");
 
 		// Convert to MIDI data
@@ -315,7 +315,7 @@ public:
 
 	bool exportEntry() override
 	{
-		wxFileName fn(App::path(entry_->name(), App::Dir::Temp));
+		wxFileName fn(App::path(CHR(entry_->name()), App::Dir::Temp));
 		fn.SetExt("mid");
 
 		// Convert to WAV data

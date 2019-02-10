@@ -1038,7 +1038,7 @@ bool ArchivePanel::renameEntry(bool each) const
 				if (!archive_->renameEntry(selection[a], new_name))
 					wxMessageBox(
 						wxString::Format(
-							"Unable to rename entry %s: %s", CHR(selection[a]->name()), CHR(Global::error)),
+							"Unable to rename entry %s: %s", CHR(selection[a]->name()), Global::error),
 						"Rename Entry",
 						wxICON_EXCLAMATION | wxOK);
 			}
@@ -1101,7 +1101,7 @@ bool ArchivePanel::renameEntry(bool each) const
 					if (!archive_->renameEntry(entry, fn.GetFullName()))
 						wxMessageBox(
 							wxString::Format(
-								"Unable to rename entry %s: %s", CHR(selection[a]->name()), CHR(Global::error)),
+								"Unable to rename entry %s: %s", CHR(selection[a]->name()), Global::error),
 							"Rename Entry",
 							wxICON_EXCLAMATION | wxOK);
 				}

@@ -141,8 +141,11 @@ bool MapInfo::checkEqualsToken(Tokenizer& tz, const wxString& parsing) const
 {
 	if (tz.next() != "=")
 	{
-		Log::error(
-			"Error Parsing {}: Expected \"=\", got \"{}\" at line {}", CHR(parsing), tz.current().text, tz.lineNo());
+		Log::error(wxString::Format(
+			"Error Parsing %s: Expected \"=\", got \"%s\" at line %d",
+			CHR(parsing),
+			CHR(tz.current().text),
+			tz.lineNo()));
 		return false;
 	}
 
@@ -190,7 +193,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 {
 	Tokenizer tz;
 	tz.setReadLowerCase(true);
-	tz.openMem(entry->data(), entry->name().ToStdString());
+	tz.openMem(entry->data(), entry->name());
 
 	while (!tz.atEnd())
 	{
@@ -202,11 +205,11 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 
 			if (!include_entry)
 			{
-				Log::warning(
-					"Warning - Parsing ZMapInfo \"{}\": Unable to include \"{}\" at line {}",
+				Log::warning(wxString::Format(
+					"Warning - Parsing ZMapInfo \"%s\": Unable to include \"%s\" at line %d",
 					CHR(entry->name()),
-					tz.current().text,
-					tz.lineNo());
+					CHR(tz.current().text),
+					tz.lineNo()));
 			}
 			else if (!parseZMapInfo(include_entry))
 				return false;
@@ -240,7 +243,11 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		else
 		{
 			Log::warning(
-				2, R"(Warning - Parsing ZMapInfo "{}": Unknown token "{}")", CHR(entry->name()), tz.current().text);
+				2,
+				wxString::Format(
+					"Warning - Parsing ZMapInfo \"%s\": Unknown token \"%s\"",
+					CHR(entry->name()),
+					CHR(tz.current().text)));
 		}
 
 		tz.adv();
@@ -285,7 +292,8 @@ bool MapInfo::parseZMap(Tokenizer& tz, const wxString& type)
 
 	if (!tz.advIf("{"))
 	{
-		Log::error("Error Parsing ZMapInfo: Expecting \"{\", got \"{}\" at line {}", tz.current().text, tz.lineNo());
+		Log::error(wxString::Format(
+			"Error Parsing ZMapInfo: Expecting \"{\", got \"%s\" at line %d", CHR(tz.current().text), tz.lineNo()));
 		return false;
 	}
 
@@ -445,7 +453,8 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 	// Opening brace
 	if (!tz.advIfNext("{", 2))
 	{
-		Log::error("Error Parsing ZMapInfo: Expecting \"{\", got \"{}\" at line {}", tz.peek().text, tz.lineNo());
+		Log::error(wxString::Format(
+			"Error Parsing ZMapInfo: Expecting \"{\", got \"%s\" at line %d", CHR(tz.peek().text), tz.lineNo()));
 		return false;
 	}
 
@@ -454,10 +463,10 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 		// Editor number
 		if (!tz.current().isInteger())
 		{
-			Log::error(
-				"Error Parsing ZMapInfo DoomEdNums: Expecting editor number, got \"{}\" at line {}",
-				tz.current().text,
-				tz.lineNo());
+			Log::error(wxString::Format(
+				"Error Parsing ZMapInfo DoomEdNums: Expecting editor number, got \"%s\" at line %d",
+				CHR(tz.current().text),
+				tz.lineNo()));
 			return false;
 		}
 
@@ -470,10 +479,10 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 		// =
 		if (!tz.advIfNext("="))
 		{
-			Log::error(
-				"Error Parsing ZMapInfo DoomEdNums: Expecting \"=\", got \"{}\" at line {}",
-				tz.current().text,
-				tz.lineNo());
+			Log::error(wxString::Format(
+				"Error Parsing ZMapInfo DoomEdNums: Expecting \"=\", got \"%s\" at line %d",
+				CHR(tz.current().text),
+				tz.lineNo()));
 			return false;
 		}
 
@@ -497,8 +506,8 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 				if (!tz.current().isInteger() && !tz.check("+"))
 				{
 					Log::error(wxString::Format(
-						"Error Parsing ZMapInfo DoomEdNums: Expecting arg value, got \"{}\" at line {}",
-						tz.current().text,
+						"Error Parsing ZMapInfo DoomEdNums: Expecting arg value, got \"%s\" at line %d",
+						CHR(tz.current().text),
 						tz.current().line_no));
 					return false;
 				}
@@ -522,7 +531,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 MapInfo::Format MapInfo::detectMapInfoType(ArchiveEntry* entry) const
 {
 	Tokenizer tz;
-	tz.openMem(entry->data(), entry->name().ToStdString());
+	tz.openMem(entry->data(), entry->name());
 	tz.setSpecialCharacters("={}[]+,|");
 
 	wxString prev;

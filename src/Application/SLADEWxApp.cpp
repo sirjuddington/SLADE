@@ -40,8 +40,8 @@
 #include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/StartPage.h"
 #include "OpenGL/OpenGL.h"
+#include "UI/WxUtils.h"
 #include "Utility/Parser.h"
-#include "Utility/Tokenizer.h"
 #include "thirdparty/email/wxMailer.h"
 #include <wx/statbmp.h>
 
@@ -60,26 +60,26 @@
 // -----------------------------------------------------------------------------
 namespace Global
 {
-wxString error = "";
+std::string error = error;
 
 #ifdef GIT_DESCRIPTION
 string sc_rev = GIT_DESCRIPTION;
 #else
-wxString sc_rev = "";
+std::string sc_rev = sc_rev;
 #endif
 
 #ifdef DEBUG
 bool debug = true;
 #else
-bool     debug  = false;
+bool        debug  = false;
 #endif
 
 int win_version_major = 0;
 int win_version_minor = 0;
 } // namespace Global
 
-wxString current_action           = "";
-bool     update_check_message_box = false;
+std::string current_action           = current_action;
+bool        update_check_message_box = false;
 CVAR(String, dir_last, "", CVar::Flag::Save)
 CVAR(Bool, update_check, true, CVar::Flag::Save)
 CVAR(Bool, update_check_beta, false, CVar::Flag::Save)
@@ -223,7 +223,7 @@ public:
 			trace_ = wxString::Format("Version: %s\n", App::version().toString());
 		else
 			trace_ = wxString::Format("Version: %s (%s)\n", App::version().toString(), Global::sc_rev);
-		if (current_action.IsEmpty())
+		if (current_action.empty())
 			trace_ += "No current action\n";
 		else
 			trace_ += wxString::Format("Current action: %s", current_action);
@@ -321,7 +321,7 @@ public:
 		bool sent = mailer.Send(msg);
 
 		// Send event
-		wxThreadEvent* evt = new wxThreadEvent();
+		auto evt = new wxThreadEvent();
 		evt->SetInt(sent ? 1 : 0);
 		wxQueueEvent(GetEventHandler(), evt);
 
@@ -501,9 +501,6 @@ bool SLADEWxApp::OnInit()
 		return false;
 	}
 
-	// Init global variables
-	Global::error = "";
-
 	// Init wxSocket stuff (for WebGet)
 	wxSocketBase::Initialize();
 
@@ -543,16 +540,16 @@ bool SLADEWxApp::OnInit()
 	// Get Windows version
 #ifdef __WXMSW__
 	wxGetOsVersion(&Global::win_version_major, &Global::win_version_minor);
-	Log::info(wxString::Format("Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor));
+	Log::info("Windows Version: {}.{}", Global::win_version_major, Global::win_version_minor);
 #endif
 
 	// Reroute wx log messages
 	wxLog::SetActiveTarget(new SLADELog());
 
 	// Get command line arguments
-	vector<wxString> args;
+	vector<std::string> args;
 	for (int a = 1; a < argc; a++)
-		args.push_back(argv[a]);
+		args.push_back(argv[a].ToStdString());
 
 	// Init application
 	if (!App::init(args, ui_scale))
@@ -685,7 +682,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 
 	// Parse version info
 	App::Version stable, beta;
-	wxString     bin_stable, installer_stable, bin_beta; // Currently unused but may be useful in the future
+	std::string  bin_stable, installer_stable, bin_beta; // Currently unused but may be useful in the future
 	Parser       parser;
 	if (parser.parseText(e.GetString()))
 	{
@@ -742,14 +739,14 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	if (stable.major == 0 || beta.major == 0)
 	{
 		Log::warning("Version check failed, received invalid version info");
-		Log::debug(wxString::Format("Received version text:\n\n%s", e.GetString()));
+		Log::debug("Received version text:\n\n%s", WxUtils::strToView(e.GetString()));
 		if (update_check_message_box)
 			wxMessageBox("Update check failed: received invalid version info.", "Check for Updates");
 		return;
 	}
 
-	Log::info(1, wxString::Format("Latest stable release: v%s", stable.toString()));
-	Log::info(1, wxString::Format("Latest beta release: v%s", beta.toString()));
+	Log::info("Latest stable release: v{}", stable.toString());
+	Log::info("Latest beta release: v{}", beta.toString());
 
 	// Check if new stable version
 	bool new_stable = App::version().cmp(stable) < 0;

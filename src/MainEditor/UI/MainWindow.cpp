@@ -138,7 +138,7 @@ void MainWindow::loadLayout() const
 {
 	// Open layout file
 	Tokenizer tz;
-	if (!tz.openFile(App::path("mainwindow.layout", App::Dir::User).ToStdString()))
+	if (!tz.openFile(App::path("mainwindow.layout", App::Dir::User)))
 		return;
 
 	// Parse layout
@@ -153,7 +153,7 @@ void MainWindow::loadLayout() const
 			aui_mgr_->LoadPaneInfo(layout, aui_mgr_->GetPane(component));
 
 		// Check if we're done
-		if (tz.peekToken().empty())
+		if (tz.peekToken().IsEmpty())
 			break;
 	}
 }
@@ -451,7 +451,7 @@ bool MainWindow::exitProgram()
 	}
 
 	// Check if we can close the map editor
-	if (MapEditor::windowWx()->IsShown())
+	if (MapEditor::windowCreated() && MapEditor::windowWx()->IsShown())
 		if (!MapEditor::windowWx()->Close())
 			return false;
 

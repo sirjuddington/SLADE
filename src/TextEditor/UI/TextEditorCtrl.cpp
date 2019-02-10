@@ -91,7 +91,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 
 	Tokenizer tz;
 	tz.setSpecialCharacters(";,:|={}/()");
-	tz.openString(text_.ToStdString());
+	tz.openString(text_);
 
 	wxString token = tz.getToken();
 	while (!tz.atEnd())

@@ -38,7 +38,6 @@
 #include "Graphics/SImage/SImage.h"
 #include "TextureXList.h"
 #include "Utility/Tokenizer.h"
-#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -150,7 +149,7 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 {
 	// Read basic info
 	type_ = type;
-	name_ = StrUtil::upper(tz.next().text);
+	name_ = tz.next().text.Upper();
 	tz.adv(); // Skip ,
 	offset_.x = tz.next().asInt();
 	tz.adv(); // Skip ,
@@ -598,7 +597,7 @@ bool CTexture::parse(Tokenizer& tz, const wxString& type)
 	type_     = type;
 	extended_ = true;
 	defined_  = false;
-	name_     = StrUtil::upper(tz.next().text);
+	name_     = tz.next().text.Upper();
 	tz.adv(); // Skip ,
 	size_.x = tz.next().asInt();
 	tz.adv(); // Skip ,
@@ -677,7 +676,7 @@ bool CTexture::parseDefine(Tokenizer& tz)
 	type_       = "Define";
 	extended_   = true;
 	defined_    = true;
-	name_       = StrUtil::upper(tz.next().text);
+	name_       = tz.next().text.Upper();
 	def_size_.x = tz.next().asInt();
 	def_size_.y = tz.next().asInt();
 	size_       = def_size_;

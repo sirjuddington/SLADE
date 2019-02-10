@@ -224,7 +224,7 @@ void MapCanvas::onKeyBindPress(const wxString& name)
 		date.SetToCurrent();
 		wxString timestamp = date.FormatISOCombined('-');
 		timestamp.Replace(":", "");
-		wxString filename = App::path(wxString::Format("sladeshot-%s.png", timestamp), App::Dir::User);
+		wxString filename = App::path(fmt::format("sladeshot-{}.png", CHR(timestamp)), App::Dir::User);
 		if (shot.saveToFile(UTF8(filename)))
 		{
 			// Editor message if the file is actually written, with full path
