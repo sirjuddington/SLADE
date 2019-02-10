@@ -42,7 +42,27 @@
 // -----------------------------------------------------------------------------
 namespace
 {
-vector<CVar*> all_cvars;
+CVar**   cvars;
+uint16_t n_cvars;
+} // namespace
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Adds a CVar to the CVar list
+// -----------------------------------------------------------------------------
+void addCVarList(CVar* cvar)
+{
+	cvars          = (CVar**)realloc(cvars, (n_cvars + 1) * sizeof(CVar*));
+	cvars[n_cvars] = cvar;
+	n_cvars++;
+}
 } // namespace
 
 
@@ -62,7 +82,7 @@ CIntCVar::CIntCVar(const std::string& NAME, int defval, uint16_t FLAGS)
 	flags = FLAGS;
 	value = defval;
 	type  = Type::Integer;
-	all_cvars.push_back(this);
+	addCVarList(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -74,7 +94,7 @@ CBoolCVar::CBoolCVar(const std::string& NAME, bool defval, uint16_t FLAGS)
 	flags = FLAGS;
 	value = defval;
 	type  = Type::Boolean;
-	all_cvars.push_back(this);
+	addCVarList(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -86,7 +106,7 @@ CFloatCVar::CFloatCVar(const std::string& NAME, double defval, uint16_t FLAGS)
 	flags = FLAGS;
 	value = defval;
 	type  = Type::Float;
-	all_cvars.push_back(this);
+	addCVarList(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -98,7 +118,7 @@ CStringCVar::CStringCVar(const std::string& NAME, const std::string& defval, uin
 	flags = FLAGS;
 	value = defval;
 	type  = Type::String;
-	all_cvars.push_back(this);
+	addCVarList(this);
 }
 
 
@@ -114,10 +134,10 @@ CStringCVar::CStringCVar(const std::string& NAME, const std::string& defval, uin
 // -----------------------------------------------------------------------------
 CVar* CVar::get(const std::string& name)
 {
-	for (auto cvar : all_cvars)
+	for (unsigned i = 0; i < n_cvars; ++i)
 	{
-		if (cvar->name == name)
-			return cvar;
+		if (cvars[i]->name == name)
+			return cvars[i];
 	}
 
 	return nullptr;
@@ -128,10 +148,10 @@ CVar* CVar::get(const std::string& name)
 // -----------------------------------------------------------------------------
 void CVar::putList(vector<std::string>& list)
 {
-	for (auto cvar : all_cvars)
+	for (unsigned i = 0; i < n_cvars; ++i)
 	{
-		if (!(cvar->flags & Flag::Secret))
-			list.push_back(cvar->name);
+		if (!(cvars[i]->flags & Flag::Secret))
+			list.push_back(cvars[i]->name);
 	}
 }
 
@@ -141,17 +161,18 @@ void CVar::putList(vector<std::string>& list)
 std::string CVar::writeAll()
 {
 	uint32_t max_size = 0;
-	for (auto cvar : all_cvars)
+	for (unsigned i = 0; i < n_cvars; ++i)
 	{
-		if (cvar->name.size() > max_size)
-			max_size = cvar->name.size();
+		if (cvars[i]->name.size() > max_size)
+			max_size = cvars[i]->name.size();
 	}
 
 	fmt::memory_buffer buf;
 	format_to(buf, "cvars\n{{\n");
 
-	for (auto cvar : all_cvars)
+	for (unsigned i = 0; i < n_cvars; ++i)
 	{
+		auto cvar = cvars[i];
 		if (cvar->flags & Flag::Save)
 		{
 			format_to(buf, "\t{} ", cvar->name);
@@ -188,8 +209,9 @@ std::string CVar::writeAll()
 // -----------------------------------------------------------------------------
 void CVar::set(const std::string& name, const std::string& value)
 {
-	for (auto cvar : all_cvars)
+	for (unsigned i = 0; i < n_cvars; ++i)
 	{
+		auto cvar = cvars[i];
 		if (name == cvar->name)
 		{
 			if (cvar->type == Type::Integer)
