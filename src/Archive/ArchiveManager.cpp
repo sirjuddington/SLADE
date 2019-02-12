@@ -38,6 +38,7 @@
 #include "General/Console/Console.h"
 #include "General/ResourceManager.h"
 #include "General/UI.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -437,7 +438,7 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 		new_archive = new TarArchive();
 	else if (DiskArchive::isDiskArchive(entry->data()))
 		new_archive = new DiskArchive();
-	else if (entry->name().Lower().EndsWith(".pod") && PodArchive::isPodArchive(entry->data()))
+	else if (StrUtil::endsWithCI(entry->name(), ".pod") && PodArchive::isPodArchive(entry->data()))
 		new_archive = new PodArchive();
 	else if (ChasmBinArchive::isChasmBinArchive(entry->data()))
 		new_archive = new ChasmBinArchive();

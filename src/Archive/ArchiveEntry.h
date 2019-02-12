@@ -33,21 +33,22 @@ public:
 	typedef std::weak_ptr<ArchiveEntry>   WPtr;
 
 	// Constructor/Destructor
-	ArchiveEntry(const wxString& name = "", uint32_t size = 0);
+	ArchiveEntry(std::string_view name = "", uint32_t size = 0);
 	ArchiveEntry(ArchiveEntry& copy);
 	~ArchiveEntry() = default;
 
 	// Accessors
-	wxString            name(bool cut_ext = false) const;
-	wxString            upperName() const { return upper_name_; }
-	wxString            upperNameNoExt() const;
+	const std::string&  name() const { return name_; }
+	std::string_view    nameNoExt() const;
+	const std::string&  upperName() const { return upper_name_; }
+	std::string_view    upperNameNoExt() const;
 	uint32_t            size() const { return data_loaded_ ? data_.size() : size_; }
 	MemChunk&           data(bool allow_load = true);
 	const uint8_t*      rawData(bool allow_load = true);
 	ArchiveTreeNode*    parentDir() const { return parent_; }
 	Archive*            parent() const;
 	Archive*            topParent() const;
-	wxString            path(bool name = false) const;
+	std::string         path(bool name = false) const;
 	EntryType*          type() const { return type_; }
 	PropertyList&       exProps() { return ex_props_; }
 	const PropertyList& exProps() const { return ex_props_; }
@@ -61,11 +62,7 @@ public:
 	SPtr                getShared();
 
 	// Modifiers (won't change entry state, except setState of course :P)
-	void setName(const wxString& name)
-	{
-		name_       = name;
-		upper_name_ = name.Upper();
-	}
+	void setName(std::string_view name);
 	void setLoaded(bool loaded = true) { data_loaded_ = loaded; }
 	void setType(EntryType* type, int r = 0)
 	{
@@ -82,7 +79,7 @@ public:
 	void formatName(const ArchiveFormat& format);
 
 	// Entry modification (will change entry state)
-	bool rename(const wxString& new_name);
+	bool rename(std::string_view new_name);
 	bool resize(uint32_t new_size, bool preserve_data);
 
 	// Data modification
@@ -91,32 +88,32 @@ public:
 	// Data import
 	bool importMem(const void* data, uint32_t size);
 	bool importMemChunk(MemChunk& mc);
-	bool importFile(const wxString& filename, uint32_t offset = 0, uint32_t size = 0);
+	bool importFile(std::string_view filename, uint32_t offset = 0, uint32_t size = 0);
 	bool importFileStream(wxFile& file, uint32_t len = 0);
 	bool importEntry(ArchiveEntry* entry);
 
 	// Data export
-	bool exportFile(const wxString& filename);
+	bool exportFile(std::string_view filename);
 
 	// Data access
 	bool     write(const void* data, uint32_t size);
 	bool     read(void* buf, uint32_t size);
 	bool     seek(uint32_t offset, uint32_t start) { return data_.seek(offset, start); }
-	uint32_t currentPos() { return data_.currentPos(); }
+	uint32_t currentPos() const { return data_.currentPos(); }
 
 	// Misc
-	wxString      sizeString() const;
-	wxString      typeString() const { return type_ ? type_->name() : "Unknown"; }
+	std::string   sizeString() const;
+	std::string   typeString() const { return type_ ? type_->name().ToStdString() : "Unknown"; }
 	void          stateChanged();
 	void          setExtensionByType();
 	int           typeReliability() const { return (type_ ? (type()->reliability() * reliability_ / 255) : 0); }
-	bool          isInNamespace(wxString ns);
+	bool          isInNamespace(std::string_view ns);
 	ArchiveEntry* relativeEntry(const wxString& path, bool allow_absolute_path = true) const;
 
 private:
 	// Entry Info
-	wxString         name_;
-	wxString         upper_name_;
+	std::string      name_;
+	std::string      upper_name_;
 	uint32_t         size_ = 0;
 	MemChunk         data_;
 	EntryType*       type_   = nullptr;

@@ -796,7 +796,7 @@ CONSOLE_COMMAND(type, 0, true)
 			// Check if format corresponds to entry
 			foo = EntryDataFormat::format(desttype->formatId());
 			if (foo)
-				Log::info(wxString::Format("Identifying as %s", desttype->name().mb_str()));
+				Log::info("Identifying as {}", CHR(desttype->name()));
 			else
 				Log::info("No data format for this type!");
 		}
@@ -810,16 +810,16 @@ CONSOLE_COMMAND(type, 0, true)
 			{
 				okay = foo->isThisFormat(b->data());
 				if (okay)
-					Log::info(wxString::Format("%s: Identification successful (%i/255)", b->name().mb_str(), okay));
+					Log::info("{}: Identification successful ({}/255)", b->name(), okay);
 				else
-					Log::info(wxString::Format("%s: Identification failed", b->name().mb_str()));
+					Log::info("{}: Identification failed", b->name());
 			}
 
 			// Change type
 			if (force || okay)
 			{
 				b->setType(desttype, okay);
-				Log::info(wxString::Format("%s: Type changed.", b->name().mb_str()));
+				Log::info("{}: Type changed.", b->name());
 			}
 		}
 	}
@@ -833,5 +833,5 @@ CONSOLE_COMMAND(size, 0, true)
 		Log::info("No entry selected");
 		return;
 	}
-	Log::info(wxString::Format("%s: %i bytes", meep->name().mb_str(), meep->size()));
+	Log::info("{}: {} bytes", meep->name(), meep->size());
 }

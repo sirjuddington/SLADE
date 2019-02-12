@@ -342,7 +342,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 		{
 			// Load the file into a temporary ArchiveEntry
 			auto entry = new ArchiveEntry();
-			entry->importFile(file);
+			entry->importFile(file.ToStdString());
 
 			// Determine type
 			EntryType::detectEntryType(entry);
@@ -362,7 +362,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 			name = name.Truncate(8);
 
 			// Add patch to archive
-			entry->setName(name);
+			entry->setName(name.ToStdString());
 			entry->setExtensionByType();
 			parent_->archive()->addEntry(entry, "patches");
 

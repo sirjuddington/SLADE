@@ -170,7 +170,7 @@ bool PaletteManager::loadResourcePalettes()
 		pal->loadMem(mc);
 
 		// Add the palette
-		addPalette(std::move(pal), dir_palettes->entryAt(a)->name(true));
+		addPalette(std::move(pal), std::string{ dir_palettes->entryAt(a)->nameNoExt() });
 	}
 
 	return true;

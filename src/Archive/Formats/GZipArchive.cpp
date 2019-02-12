@@ -33,6 +33,7 @@
 #include "GZipArchive.h"
 #include "General/Misc.h"
 #include "Utility/Compression.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -90,7 +91,7 @@ bool GZipArchive::open(MemChunk& mc)
 	}
 
 	// Skip past name, if any
-	wxString name;
+	std::string name;
 	if (fname)
 	{
 		char c;
@@ -106,12 +107,12 @@ bool GZipArchive::open(MemChunk& mc)
 	{
 		// Build name from filename
 		name = filename(false);
-		wxFileName fn(name);
-		if (!fn.GetExt().CmpNoCase("tgz"))
-			fn.SetExt("tar");
-		else if (!fn.GetExt().CmpNoCase("gz"))
-			fn.ClearExt();
-		name = fn.GetFullName();
+		StrUtil::Path fn(name);
+		if (StrUtil::equalCI(fn.extension(), "tgz"))
+			fn.setExtension("tar");
+		else if (StrUtil::equalCI(fn.extension(), "gz"))
+			fn.setExtension("");
+		name = fn.fileName();
 	}
 
 	// Skip past comment
@@ -227,7 +228,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 			// File name, if not extrapolated from archive name
 			if (flags_ & FLG_FNAME)
 			{
-				mc.write(CHR(entryAt(0)->name()), entryAt(0)->name().length());
+				mc.write(entryAt(0)->name().data(), entryAt(0)->name().length());
 				uint8_t zero = 0;
 				mc.write(&zero, 1); // Terminate string
 			}
@@ -320,7 +321,7 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
 ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	options.match_name = options.match_name.Lower();
+	options.match_name = options.match_name.Upper();
 	auto entry         = entryAt(0);
 	if (entry == nullptr)
 		return entry;
@@ -344,7 +345,7 @@ ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 	// Check name
 	if (!options.match_name.IsEmpty())
 	{
-		if (!options.match_name.Matches(entry->name().Lower()))
+		if (!options.match_name.Matches(entry->upperName()))
 		{
 			return nullptr;
 		}

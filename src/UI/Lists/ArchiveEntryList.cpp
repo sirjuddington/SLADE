@@ -36,6 +36,7 @@
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -437,17 +438,20 @@ void ArchiveEntryList::applyFilter()
 	if (!filter_text_.IsEmpty())
 	{
 		// Split filter by ,
-		auto terms = wxSplit(filter_text_, ',');
+		auto terms = StrUtil::split(filter_text_.ToStdString(), ',');
 
 		// Process filter strings
 		for (auto& term : terms)
 		{
 			// Remove spaces
-			term.Replace(" ", "");
+			StrUtil::replaceIP(term, " ", "");
 
-			// Set to lowercase and add * to the end
-			if (!term.IsEmpty())
-				term = term.Lower() + "*";
+			// Set to uppercase and add * to the end
+			if (!term.empty())
+			{
+				StrUtil::upperIP(term);
+				term += "*";
+			}
 		}
 
 		// Go through filtered list
@@ -463,7 +467,7 @@ void ArchiveEntryList::applyFilter()
 			bool match = false;
 			for (const auto& term : terms)
 			{
-				if (entry == entry_dir_back_.get() || entry->name().Lower().Matches(term))
+				if (entry == entry_dir_back_.get() || StrUtil::matches(entry->upperName(), term))
 				{
 					match = true;
 					continue;
@@ -769,7 +773,7 @@ void ArchiveEntryList::labelEdited(int col, int index, const wxString& new_label
 	if (entry->parent())
 		entry->parent()->renameEntry(entry, new_label);
 	else
-		entry->rename(new_label);
+		entry->rename(new_label.ToStdString());
 
 	if (undo_manager_)
 		undo_manager_->endRecord(true);

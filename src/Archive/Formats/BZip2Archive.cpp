@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "BZip2Archive.h"
 #include "Utility/Compression.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -60,17 +61,16 @@ bool BZip2Archive::open(MemChunk& mc)
 		return false;
 
 	// Build name from filename
-	wxString   name = filename(false);
-	wxFileName fn(name);
-	if (!fn.GetExt().CmpNoCase("tbz") || !fn.GetExt().CmpNoCase("tb2") || !fn.GetExt().CmpNoCase("tbz2"))
-		fn.SetExt("tar");
-	else if (!fn.GetExt().CmpNoCase("bz2"))
-		fn.ClearExt();
-	name = fn.GetFullName();
+	StrUtil::Path fn(filename(false).ToStdString());
+	auto          ext = fn.extension();
+	if (StrUtil::equalCI(ext, "tbz") || StrUtil::equalCI(ext, "tb2") || StrUtil::equalCI(ext, "tbz2"))
+		fn.setExtension("tar");
+	else if (StrUtil::equalCI(ext, "bz2"))
+		fn.setExtension({});
 
 	// Let's create the entry
 	setMuted(true);
-	auto     entry = std::make_shared<ArchiveEntry>(name, size);
+	auto     entry = std::make_shared<ArchiveEntry>(fn.fileName(), size);
 	MemChunk xdata;
 	if (Compression::bzip2Decompress(mc, xdata))
 	{
@@ -151,7 +151,7 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	options.match_name = options.match_name.Lower();
+	options.match_name = options.match_name.Upper();
 	auto entry         = entryAt(0);
 	if (entry == nullptr)
 		return entry;
@@ -175,7 +175,7 @@ ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 	// Check name
 	if (!options.match_name.IsEmpty())
 	{
-		if (!options.match_name.Matches(entry->name().Lower()))
+		if (!options.match_name.Matches(entry->upperName()))
 		{
 			return nullptr;
 		}

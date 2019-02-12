@@ -966,7 +966,7 @@ ArchiveEntry* Archive::addNewEntry(const wxString& name, unsigned position, Arch
 		return nullptr;
 
 	// Create the new entry
-	auto entry = new ArchiveEntry(name);
+	auto entry = new ArchiveEntry(name.ToStdString());
 
 	// Add it to the archive
 	addEntry(entry, position, dir);
@@ -985,7 +985,7 @@ ArchiveEntry* Archive::addNewEntry(const wxString& name, const wxString& add_nam
 		return nullptr;
 
 	// Create the new entry
-	auto entry = new ArchiveEntry(name);
+	auto entry = new ArchiveEntry(name.ToStdString());
 
 	// Add it to the archive
 	addEntry(entry, add_namespace);
@@ -1221,7 +1221,7 @@ bool Archive::renameEntry(ArchiveEntry* entry, const wxString& name)
 		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntryRenameUS>(entry, name));
 
 	// Rename the entry
-	entry->setName(name);
+	entry->setName(name.ToStdString());
 	entry->formatName(formatDesc());
 	entry->setState(ArchiveEntry::State::Modified, true);
 
@@ -1261,7 +1261,7 @@ bool Archive::importDir(const wxString& directory)
 		auto entry = addNewEntry(ename, dir->numEntries() + 1, dir);
 
 		// Load data
-		entry->importFile(file);
+		entry->importFile(file.ToStdString());
 
 		// Set unmodified
 		entry->setState(ArchiveEntry::State::Unmodified);

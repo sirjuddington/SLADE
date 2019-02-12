@@ -113,7 +113,7 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 		if (parent == nullptr)
 			return false;
 		ArchiveEntry* data = parent->entryAt(parent->entryIndex(entry) + 1);
-		if (data && S_CMPNOCASE(data->name(), "."))
+		if (data && StrUtil::equalCI(data->name(), "."))
 			return image->loadJaguarSprite(entry->rawData(), entry->size(), data->rawData(), data->size());
 		else
 			return false;
@@ -126,7 +126,7 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 		ArchiveEntry* texture1 = parent->entry("TEXTURE1");
 		if (texture1 == nullptr)
 			return false;
-		Vec2i dimensions = findJaguarTextureDimensions(texture1, entry->name(true));
+		Vec2i dimensions = findJaguarTextureDimensions(texture1, std::string{ entry->nameNoExt() });
 		return image->loadJaguarTexture(entry->rawData(), entry->size(), dimensions.x, dimensions.y);
 	}
 
@@ -173,14 +173,16 @@ int Misc::detectPaletteHack(ArchiveEntry* entry)
 		(entry->type()->formatId() == "img_rott" && entry->name() == "AP_TITL")
 		|| (entry->type()->formatId() == "img_rottraw" && entry->name() == "AP_WRLD"))
 		return PaletteHack::ROTT_A; // Rise of the Triad
-	else if (entry->type()->formatId() == "img_wolfpic" && entry->name().Matches("IDG*"))
+	else if (entry->type()->formatId() == "img_wolfpic" && StrUtil::startsWith(entry->upperName(), "IDG*"))
 		return PaletteHack::SOD_ID; // Spear of Destiny team screens
-	else if (entry->type()->formatId() == "img_wolfpic" && entry->name().Matches("TIT*"))
+	else if (entry->type()->formatId() == "img_wolfpic" && StrUtil::startsWith(entry->upperName(), "TIT*"))
 		return PaletteHack::SOD_TITLE; // Spear of Destiny title screens
-	else if (entry->type()->formatId() == "img_wolfpic" && entry->name().Matches("END*"))
+	else if (entry->type()->formatId() == "img_wolfpic" && StrUtil::startsWith(entry->upperName(), "END*"))
 	{
-		long endscreen; // Spear of Destiny ending screens (extra-hacky!)
-		if (entry->name().Right(3).ToLong(&endscreen))
+		// Spear of Destiny ending screens (extra-hacky!)
+		// TODO: Check if endscreen 0 is valid, will need to change if it is
+		auto endscreen = StrUtil::toInt(entry->name().substr(entry->name().size() - 3));
+		if (endscreen > 0)
 			return PaletteHack::SOD_END + endscreen - 81;
 	}
 

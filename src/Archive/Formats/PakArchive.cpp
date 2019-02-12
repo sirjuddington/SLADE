@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "PakArchive.h"
 #include "General/UI.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -109,14 +110,11 @@ bool PakArchive::open(MemChunk& mc)
 			return false;
 		}
 
-		// Parse name
-		wxFileName fn(wxString::FromAscii(name, 56));
-
 		// Create directory if needed
-		auto dir = createDir(fn.GetPath(true, wxPATH_UNIX));
+		auto dir = createDir(std::string{ StrUtil::Path::pathOf(name) });
 
 		// Create entry
-		auto entry              = std::make_shared<ArchiveEntry>(fn.GetFullName(), size);
+		auto entry              = std::make_shared<ArchiveEntry>(StrUtil::Path::fileNameOf(name), size);
 		entry->exProp("Offset") = (int)offset;
 		entry->setLoaded(false);
 		entry->setState(ArchiveEntry::State::Unmodified);
@@ -222,21 +220,20 @@ bool PakArchive::write(MemChunk& mc, bool update)
 
 		// Check entry name
 		auto name = entry->path(true);
-		name.Remove(0, 1); // Remove leading /
-		if (name.Len() > 56)
+		name.erase(name.begin()); // Remove leading /
+		if (name.size() > 56)
 		{
-			Log::warning(wxString::Format(
-				"Warning: Entry %s path is too long (> 56 characters), putting it in the root directory", name));
-			wxFileName fn(name);
-			name = fn.GetFullName();
-			if (name.Len() > 56)
-				name.Truncate(56);
+			Log::warning(
+				"Warning: Entry {} path is too long (> 56 characters), putting it in the root directory", name);
+			name = StrUtil::Path::fileNameOf(name);
+			if (name.size() > 56)
+				StrUtil::truncateIP(name, 56);
 		}
 
 		// Write entry name
 		char name_data[56];
 		memset(name_data, 0, 56);
-		memcpy(name_data, CHR(name), name.Length());
+		memcpy(name_data, name.data(), name.size());
 		mc.write(name_data, 56);
 
 		// Write entry offset

@@ -190,7 +190,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 {
 	Tokenizer tz;
 	tz.setReadLowerCase(true);
-	tz.openMem(entry->data(), entry->name().ToStdString());
+	tz.openMem(entry->data(), entry->name());
 
 	while (!tz.atEnd())
 	{
@@ -204,7 +204,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 			{
 				Log::warning(
 					"Warning - Parsing ZMapInfo \"{}\": Unable to include \"{}\" at line {}",
-					CHR(entry->name()),
+					entry->name(),
 					tz.current().text,
 					tz.lineNo());
 			}
@@ -240,7 +240,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		else
 		{
 			Log::warning(
-				2, R"(Warning - Parsing ZMapInfo "{}": Unknown token "{}")", CHR(entry->name()), tz.current().text);
+				2, R"(Warning - Parsing ZMapInfo "{}": Unknown token "{}")", entry->name(), tz.current().text);
 		}
 
 		tz.adv();
@@ -522,7 +522,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 MapInfo::Format MapInfo::detectMapInfoType(ArchiveEntry* entry) const
 {
 	Tokenizer tz;
-	tz.openMem(entry->data(), entry->name().ToStdString());
+	tz.openMem(entry->data(), entry->name());
 	tz.setSpecialCharacters("={}[]+,|");
 
 	wxString prev;

@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "SiNArchive.h"
 #include "General/UI.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -110,14 +111,11 @@ bool SiNArchive::open(MemChunk& mc)
 			return false;
 		}
 
-		// Parse name
-		wxFileName fn(wxString::FromAscii(name, 120));
-
 		// Create directory if needed
-		auto dir = createDir(fn.GetPath(true, wxPATH_UNIX));
+		auto dir = createDir(std::string{ StrUtil::Path::pathOf(name) });
 
 		// Create entry
-		auto entry              = std::make_shared<ArchiveEntry>(fn.GetFullName(), size);
+		auto entry              = std::make_shared<ArchiveEntry>(StrUtil::Path::fileNameOf(name), size);
 		entry->exProp("Offset") = (int)offset;
 		entry->setLoaded(false);
 		entry->setState(ArchiveEntry::State::Unmodified);
@@ -223,21 +221,20 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 
 		// Check entry name
 		auto name = entry->path(true);
-		name.Remove(0, 1); // Remove leading /
-		if (name.Len() > 120)
+		name.erase(name.begin()); // Remove leading /
+		if (name.size() > 120)
 		{
-			Log::warning(wxString::Format(
-				"Entry %s path is too long (> 120 characters), putting it in the root directory", name));
-			wxFileName fn(name);
-			name = fn.GetFullName();
-			if (name.Len() > 120)
-				name.Truncate(120);
+			Log::warning(
+				"Entry {} path is too long (> 120 characters), putting it in the root directory", name);
+			name = StrUtil::Path::fileNameOf(name);
+			if (name.size() > 120)
+				StrUtil::truncateIP(name, 120);
 		}
 
 		// Write entry name
 		char name_data[120];
 		memset(name_data, 0, 120);
-		memcpy(name_data, CHR(name), name.Length());
+		memcpy(name_data, name.data(), name.size());
 		mc.write(name_data, 120);
 
 		// Write entry offset

@@ -1584,7 +1584,7 @@ void PaletteEntryPanel::analysePalettes()
 		}
 #ifdef GPALCOMPANALYSIS
 		report += wxString::Format(
-			"Deviation sigma: R %+003i G %+003i B %+003i\t%s\n", devR, devG, devB, entry_->name(true));
+			"Deviation sigma: R %+003i G %+003i B %+003i\t%s\n", devR, devG, devB, entry_->name());
 		report += wxString::Format(
 			"Min R %+003i Min G %+003i Min B %+003i Max R %+003i Max G %+003i Max B %+003i \nError count: %i\n",
 			minR,

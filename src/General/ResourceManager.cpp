@@ -36,6 +36,7 @@
 #include "General/Console/Console.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/TextureXList.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -158,7 +159,7 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, const wxString& nspace,
 
 		// Check namespace if required
 		if (ns_required && !nspace.IsEmpty())
-			if (!entry->isInNamespace(nspace))
+			if (!entry->isInNamespace(nspace.ToStdString()))
 				continue;
 
 		// Check if in priority archive (or its parent)
@@ -169,7 +170,8 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, const wxString& nspace,
 		}
 
 		// Check namespace
-		if (!ns_required && !nspace.IsEmpty() && !best->isInNamespace(nspace) && entry->isInNamespace(nspace))
+		if (!ns_required && !nspace.IsEmpty() && !best->isInNamespace(nspace.ToStdString())
+			&& entry->isInNamespace(nspace.ToStdString()))
 		{
 			best = entry;
 			continue;
@@ -316,13 +318,15 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 	auto type = entry->type();
 
 	// Get resource name (extension cut, uppercase)
-	wxString lname = entry->upperNameNoExt();
-	wxString name  = entry->upperNameNoExt().Truncate(8);
+	auto lname = entry->upperNameNoExt();
+	auto name  = StrUtil::truncate(lname, 8);
 	// Talon1024 - Get resource path (uppercase, without leading slash)
-	wxString path = entry->path(true).Upper().Mid(1);
+	auto path  = entry->path(true);
+	StrUtil::upperIP(path);
+	path.erase(0, 1);
 
 	if (log)
-		Log::debug(wxString::Format("Adding entry %s to resource manager", path));
+		Log::debug("Adding entry {} to resource manager", path);
 
 	// Check for palette entry
 	if (type->id() == "palette")
@@ -356,7 +360,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 			if (!entry->parent()->isTreeless())
 			{
 				patches_fp_[path].add(entry);
-				if ((lname.Len() > 8 || patches_[name].length() > 0) && addToFpOnly)
+				if ((lname.size() > 8 || patches_[name].length() > 0) && addToFpOnly)
 				{
 					patches_fp_only_[path].add(entry);
 				}
@@ -376,7 +380,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 			if (!entry->parent()->isTreeless())
 			{
 				flats_fp_[path].add(entry);
-				if ((lname.Len() > 8 || flats_[name].length() > 0) && addToFpOnly)
+				if ((lname.size() > 8 || flats_[name].length() > 0) && addToFpOnly)
 				{
 					flats_fp_only_[path].add(entry);
 				}
@@ -441,11 +445,13 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full
 		return;
 
 	// Get resource name (extension cut, uppercase)
-	wxString name = entry->upperNameNoExt().Truncate(8);
-	wxString path = entry->path(true).Upper().Mid(1);
+	auto name = StrUtil::truncate(entry->upperNameNoExt(), 8);
+	auto path = entry->path(true);
+	StrUtil::upperIP(path);
+	path.erase(0, 1);
 
 	if (log)
-		Log::debug(wxString::Format("Removing entry %s from resource manager", path));
+		Log::debug("Removing entry {} from resource manager", path);
 
 	// Remove from palettes
 	removeEntryFromMap(palettes_, name, entry, full_check);

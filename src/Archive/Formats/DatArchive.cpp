@@ -32,6 +32,24 @@
 #include "Main.h"
 #include "DatArchive.h"
 #include "General/UI.h"
+#include "Utility/StringUtils.h"
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Returns true if [entry] is a namespace marker
+// -----------------------------------------------------------------------------
+bool isNamespaceEntry(ArchiveEntry* entry)
+{
+	return StrUtil::startsWith(entry->upperName(), "START") || StrUtil::startsWith(entry->upperName(), "END");
+}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -60,11 +78,11 @@ bool DatArchive::open(MemChunk& mc)
 	mc.read(&num_lumps, 2);  // Size
 	mc.read(&dir_offset, 4); // Directory offset
 	mc.read(&unknown, 4);    // Unknown value
-	num_lumps  = wxINT16_SWAP_ON_BE(num_lumps);
-	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
-	unknown    = wxINT32_SWAP_ON_BE(unknown);
-	wxString lastname(wxString::FromAscii("-noname-"));
-	size_t   namecount = 0;
+	num_lumps             = wxINT16_SWAP_ON_BE(num_lumps);
+	dir_offset            = wxINT32_SWAP_ON_BE(dir_offset);
+	unknown               = wxINT32_SWAP_ON_BE(unknown);
+	std::string lastname  = "-noname-";
+	size_t      namecount = 0;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
@@ -104,7 +122,7 @@ bool DatArchive::open(MemChunk& mc)
 			return false;
 		}
 
-		wxString myname;
+		std::string myname;
 		if (nameofs != 0)
 		{
 			size_t len   = 1;
@@ -113,12 +131,13 @@ bool DatArchive::open(MemChunk& mc)
 			{
 				++len;
 			}
-			lastname = myname = wxString::FromAscii(mcdata + start, len);
-			namecount         = 0;
+			myname.assign((const char*)mcdata + start, len);
+			lastname  = myname;
+			namecount = 0;
 		}
 		else
 		{
-			myname = wxString::Format("%s+%d", lastname, ++namecount);
+			myname = fmt::format("{}+{}", lastname, ++namecount);
 		}
 
 		// Create & setup lump
@@ -131,17 +150,17 @@ bool DatArchive::open(MemChunk& mc)
 			nlump->setEncryption(ArchiveEntry::Encryption::SCRLE0);
 
 		// Check for markers
-		if (!nlump->name().Cmp("startflats"))
+		if (nlump->name() == "startflats")
 			flats_[0] = d;
-		if (!nlump->name().Cmp("endflats"))
+		if (nlump->name() == "endflats")
 			flats_[1] = d;
-		if (!nlump->name().Cmp("startsprites"))
+		if (nlump->name() == "startsprites")
 			sprites_[0] = d;
-		if (!nlump->name().Cmp("endmonsters"))
+		if (nlump->name() == "endmonsters")
 			sprites_[1] = d;
-		if (!nlump->name().Cmp("startwalls"))
+		if (nlump->name() == "startwalls")
 			walls_[0] = d;
-		if (!nlump->name().Cmp("endwalls"))
+		if (nlump->name() == "endwalls")
 			walls_[1] = d;
 
 		// Add to entry list
@@ -230,17 +249,17 @@ void DatArchive::updateNamespaces()
 		auto entry = rootDir()->entryAt(a);
 
 		// Check for markers
-		if (!entry->name().Cmp("startflats"))
+		if (entry->name() == "startflats")
 			flats_[0] = a;
-		if (!entry->name().Cmp("endflats"))
+		if (entry->name() == "endflats")
 			flats_[1] = a;
-		if (!entry->name().Cmp("startsprites"))
+		if (entry->name() == "startsprites")
 			sprites_[0] = a;
-		if (!entry->name().Cmp("endmonsters"))
+		if (entry->name() == "endmonsters")
 			sprites_[1] = a;
-		if (!entry->name().Cmp("startwalls"))
+		if (entry->name() == "startwalls")
 			walls_[0] = a;
-		if (!entry->name().Cmp("endwalls"))
+		if (entry->name() == "endwalls")
 			walls_[1] = a;
 	}
 }
@@ -264,10 +283,10 @@ ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 		entry = new ArchiveEntry(*entry);
 
 	// Do default entry addition (to root directory)
-	Archive::addEntry(entry, position);
+	TreelessArchive::addEntry(entry, position);
 
 	// Update namespaces if necessary
-	if (entry->name().Upper().Matches("START*") || entry->name().Upper().Matches("END*"))
+	if (isNamespaceEntry(entry))
 		updateNamespaces();
 
 	return entry;
@@ -360,7 +379,7 @@ bool DatArchive::renameEntry(ArchiveEntry* entry, const wxString& name)
 	if (ok)
 	{
 		// Update namespaces if necessary
-		if (entry->name().Upper().Matches("START*") || entry->name().Upper().Matches("END*"))
+		if (isNamespaceEntry(entry))
 			updateNamespaces();
 
 		return true;
@@ -384,8 +403,7 @@ bool DatArchive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 	if (ok)
 	{
 		// Update namespaces if needed
-		if (entry1->name().Upper().Matches("START*") || entry1->name().Upper().Matches("END*")
-			|| entry2->name().Upper().Matches("START*") || entry2->name().Upper().Matches("END*"))
+		if (isNamespaceEntry(entry1) || isNamespaceEntry(entry2))
 			updateNamespaces();
 
 		return true;
@@ -409,7 +427,7 @@ bool DatArchive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNo
 	if (ok)
 	{
 		// Update namespaces if necessary
-		if (entry->name().Upper().Matches("START*") || entry->name().Upper().Matches("END*"))
+		if (isNamespaceEntry(entry))
 			updateNamespaces();
 
 		return true;
@@ -510,7 +528,7 @@ bool DatArchive::write(MemChunk& mc, bool update)
 		entry        = entryAt(l);
 		if (nameoffsets[l])
 		{
-			mc.write(CHR(entry->name()), entry->name().length());
+			mc.write(entry->name().data(), entry->name().length());
 			mc.write(&zero, 1);
 		}
 	}

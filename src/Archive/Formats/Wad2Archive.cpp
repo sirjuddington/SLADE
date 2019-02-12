@@ -115,7 +115,7 @@ bool Wad2Archive::open(MemChunk& mc)
 		}
 
 		// Create & setup lump
-		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(info.name, 16), info.dsize);
+		auto nlump = std::make_shared<ArchiveEntry>(info.name, info.dsize);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)info.offset;
 		nlump->exProp("W2Type") = info.type;
@@ -218,7 +218,7 @@ bool Wad2Archive::write(MemChunk& mc, bool update)
 		// Setup directory entry
 		Wad2Entry info;
 		memset(info.name, 0, 16);
-		memcpy(info.name, CHR(entry->name()), entry->name().Len());
+		memcpy(info.name, entry->name().data(), entry->name().size());
 		info.cmprs  = (bool)entry->exProp("W2Comp");
 		info.dsize  = entry->size();
 		info.size   = entry->size();

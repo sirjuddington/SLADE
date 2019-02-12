@@ -44,6 +44,7 @@
 #include "MapEditor.h"
 #include "OpenGL/OpenGL.h"
 #include "UI/Controls/PaletteChooser.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -482,7 +483,7 @@ void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* 
 		if (image.open(entry->data()))
 		{
 			// Create texture in hashmap
-			wxString name = path + entry->name(true);
+			wxString name = path + std::string{ entry->nameNoExt() };
 			Log::info(4, wxString::Format("Loading editor texture %s", name));
 			auto& mtex = map[name];
 			mtex.gl_id = OpenGL::Texture::createFromImage(image, nullptr, OpenGL::TexFilter::Mipmap);
@@ -584,8 +585,8 @@ void MapTextureManager::buildTexInfoList()
 			if (patches[a]->isInNamespace("textures") || patches[a]->isInNamespace("hires"))
 			{
 				// Determine texture path if it's in a pk3
-				wxString longName  = patches[a]->path(true).Remove(0, 1);
-				wxString shortName = patches[a]->name(true).Upper().Truncate(8);
+				wxString longName  = patches[a]->path(true).erase(0, 1);
+				wxString shortName = StrUtil::truncate(patches[a]->upperNameNoExt(), 8);
 				wxString path      = patches[a]->path(false);
 
 				tex_info_.emplace_back(shortName, Category::Tx, patches[a]->parent(), path, 0, longName);
@@ -602,8 +603,8 @@ void MapTextureManager::buildTexInfoList()
 		auto entry = flats[a];
 
 		// Determine flat path if it's in a pk3
-		wxString longName  = entry->path(true).Remove(0, 1);
-		wxString shortName = entry->name(true).Upper().Truncate(8);
+		wxString longName  = entry->path(true).erase(0, 1);
+		wxString shortName = StrUtil::truncate(entry->upperNameNoExt(), 8);
 		wxString path      = entry->path(false);
 
 		flat_info_.emplace_back(shortName, Category::None, flats[a]->parent(), path, 0, longName);

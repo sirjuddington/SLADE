@@ -135,7 +135,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 
 		// Start parsing
 		Tokenizer tz;
-		tz.openMem(udmfdata->data(), map.head->name().ToStdString());
+		tz.openMem(udmfdata->data(), map.head->name());
 
 		// Get first token
 		wxString token       = tz.getToken();

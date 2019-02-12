@@ -33,6 +33,7 @@
 #include "WadArchive.h"
 #include "General/Misc.h"
 #include "General/UI.h"
+#include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include "WadJArchive.h"
 
@@ -114,11 +115,7 @@ namespace
 // -----------------------------------------------------------------------------
 bool isNamespaceEntry(ArchiveEntry* entry)
 {
-	static wxString start = "_START";
-	static wxString end   = "_END";
-
-	auto uname = entry->upperName();
-	return uname.EndsWith(start) || uname.EndsWith(end);
+	return StrUtil::endsWith(entry->upperName(), "_START") || StrUtil::endsWith(entry->upperName(), "_END");
 }
 } // namespace
 
@@ -177,7 +174,7 @@ void WadArchive::updateNamespaces()
 		auto entry = rootDir()->entryAt(a);
 
 		// Check for namespace begin
-		if (entry->name().Matches("*_START"))
+		if (StrUtil::endsWith(entry->upperName(), "_START"))
 		{
 			// Create new namespace
 			NSPair   ns(entry, nullptr);
@@ -199,11 +196,11 @@ void WadArchive::updateNamespaces()
 			namespaces_.push_back(ns);
 		}
 		// Check for namespace end
-		else if (entry->name().Matches("?_END") || entry->name().Matches("??_END"))
+		else if (StrUtil::matches(entry->upperName(), "?_END") || StrUtil::matches(entry->upperName(), "??_END"))
 		{
 			// Get namespace 'name'
-			int      len     = entry->name().Length() - 4;
-			wxString ns_name = entry->name().Left(len).Lower();
+			int  len     = entry->name().size() - 4;
+			auto ns_name = StrUtil::lower(entry->name().substr(0, len));
 
 			// Convert some special cases (because technically P_START->PP_END is a valid namespace)
 			if (ns_name == "pp")
@@ -228,7 +225,7 @@ void WadArchive::updateNamespaces()
 				// Can't close an already-closed namespace
 				if (ns.end != nullptr)
 					continue;
-				if (S_CMP(ns_name, ns.name))
+				if (ns.name == ns_name)
 				{
 					found        = true;
 					ns.end       = entry;
@@ -251,8 +248,8 @@ void WadArchive::updateNamespaces()
 	// ROTT stuff. The first lump in the archive is always WALLSTRT, the last lump is either
 	// LICENSE (darkwar.wad) or VENDOR (huntbgin.wad), with TABLES just before in both cases.
 	// The shareware version has 2091 lumps, the complete version has about 50% more.
-	if (numEntries() > 2090 && rootDir()->entryAt(0)->name().Matches("WALLSTRT")
-		&& rootDir()->entryAt(numEntries() - 2)->name().Matches("TABLES"))
+	if (numEntries() > 2090 && rootDir()->entryAt(0)->upperName() == "WALLSTRT"
+		&& rootDir()->entryAt(numEntries() - 2)->upperName() == "TABLES")
 	{
 		NSPair ns(rootDir()->entryAt(0), rootDir()->entryAt(numEntries() - 1));
 		ns.name        = "rott";
@@ -436,7 +433,7 @@ bool WadArchive::open(MemChunk& mc)
 		}
 
 		// Create & setup lump
-		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), size);
+		auto nlump = std::make_shared<ArchiveEntry>(name, size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(ArchiveEntry::State::Unmodified);
@@ -887,7 +884,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 	}
 
 	// Check for UDMF format map
-	if (S_CMPNOCASE(maphead->nextEntry()->name(), "TEXTMAP"))
+	if (maphead->nextEntry()->upperName() == "TEXTMAP")
 	{
 		// Get map info
 		map.head   = maphead;
@@ -898,14 +895,14 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 		auto entry = maphead->nextEntry();
 		while (true)
 		{
-			if (!entry || S_CMPNOCASE(entry->name(), "ENDMAP"))
+			if (!entry || entry->upperName() == "ENDMAP")
 				break;
 
 			// Check for unknown map lumps
 			bool known = false;
 			for (unsigned a = 0; a < NUMMAPLUMPS; a++)
 			{
-				if (S_CMPNOCASE(entry->name(), map_lumps[a]))
+				if (entry->upperName() == map_lumps[a])
 				{
 					known = true;
 					a     = NUMMAPLUMPS;
@@ -938,7 +935,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 		bool mapentry = false;
 		for (unsigned a = 0; a < NUMMAPLUMPS; a++)
 		{
-			if (S_CMPNOCASE(entry->name(), map_lumps[a]))
+			if (entry->upperName() == map_lumps[a])
 			{
 				mapentry              = true;
 				existing_map_lumps[a] = 1;
@@ -946,9 +943,9 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 			}
 			else if (a == LUMP_GL_HEADER)
 			{
-				wxString name = maphead->name(true);
-				name.Prepend("GL_");
-				if (S_CMPNOCASE(entry->name(), name))
+				std::string name{ maphead->upperNameNoExt() };
+				StrUtil::prependIP(name, "GL_");
+				if (entry->upperName() == name)
 				{
 					mapentry              = true;
 					existing_map_lumps[a] = 1;
@@ -1042,7 +1039,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 		for (int a = 0; a < 5; a++)
 		{
 			// Compare with all base map lump names
-			if (S_CMP(entry->name(), map_lumps[a]))
+			if (entry->upperName() == map_lumps[a])
 			{
 				maplump_found         = true;
 				existing_map_lumps[a] = 1;
@@ -1067,7 +1064,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 				for (int a = 0; a < NUMMAPLUMPS; a++)
 				{
 					// Compare with all base map lump names
-					if (S_CMP(entry->name(), map_lumps[a]))
+					if (entry->upperName() == map_lumps[a])
 					{
 						existing_map_lumps[a] = 1;
 						done                  = false;
@@ -1132,7 +1129,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 				md.head    = entry;
 				md.end     = entry;
 				md.archive = true;
-				md.name    = entry->name(true).Upper();
+				md.name    = std::string{ entry->upperNameNoExt() };
 				md.format  = emaps[0].format;
 				maps.push_back(md);
 			}
@@ -1265,7 +1262,7 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 	// Init search variables
 	auto          start = entryAt(0);
 	ArchiveEntry* end   = nullptr;
-	options.match_name  = options.match_name.Lower();
+	options.match_name  = options.match_name.Upper();
 
 	// "graphics" namespace is the global namespace in a wad
 	if (options.match_namespace == "graphics")
@@ -1317,7 +1314,7 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 		// Check name
 		if (!options.match_name.IsEmpty())
 		{
-			if (!options.match_name.Matches(entry->name().Lower()))
+			if (!StrUtil::matches(options.match_name.ToStdString(), entry->upperName()))
 			{
 				entry = entry->nextEntry();
 				continue;
@@ -1341,7 +1338,7 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 	// Init search variables
 	auto          start = entryAt(numEntries() - 1);
 	ArchiveEntry* end   = nullptr;
-	options.match_name  = options.match_name.Lower();
+	options.match_name  = options.match_name.Upper();
 
 	// "graphics" namespace is the global namespace in a wad
 	if (options.match_namespace == "graphics")
@@ -1397,7 +1394,7 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 		// Check name
 		if (!options.match_name.IsEmpty())
 		{
-			if (!options.match_name.Matches(entry->name().Lower()))
+			if (!options.match_name.Matches(entry->upperName()))
 			{
 				entry = entry->prevEntry();
 				continue;

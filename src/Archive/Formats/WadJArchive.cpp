@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "WadJArchive.h"
 #include "General/UI.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -160,7 +161,7 @@ bool WadJArchive::open(MemChunk& mc)
 		}
 
 		// Create & setup lump
-		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), actualsize);
+		auto nlump = std::make_shared<ArchiveEntry>(name, actualsize);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(ArchiveEntry::State::Unmodified);
@@ -311,7 +312,7 @@ bool WadJArchive::write(MemChunk& mc, bool update)
 wxString WadJArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
 {
 	auto nextentry = entryAt(index + 1);
-	if (nextentry && S_CMPNOCASE(nextentry->name(), "."))
+	if (nextentry && StrUtil::equalCI(nextentry->name(), "."))
 		return "sprites";
 	return WadArchive::detectNamespace(index);
 }
@@ -319,7 +320,7 @@ wxString WadJArchive::detectNamespace(ArchiveEntry* entry)
 {
 	size_t index     = entryIndex(entry);
 	auto   nextentry = entryAt(index + 1);
-	if (nextentry && S_CMPNOCASE(nextentry->name(), "."))
+	if (nextentry && StrUtil::equalCI(nextentry->name(), "."))
 		return "sprites";
 	return WadArchive::detectNamespace(index);
 }

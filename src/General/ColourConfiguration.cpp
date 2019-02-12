@@ -35,6 +35,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Console/Console.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -326,7 +327,7 @@ bool ColourConfiguration::readConfiguration(const wxString& name)
 	auto dir = res->dir("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		if (S_CMPNOCASE(dir->entryAt(a)->name(true), name))
+		if (StrUtil::equalCI(dir->entryAt(a)->nameNoExt(), name.ToStdString()))
 			return readConfiguration(dir->entryAt(a)->data());
 	}
 
@@ -344,7 +345,7 @@ void ColourConfiguration::putConfigurationNames(vector<wxString>& names)
 	auto res = App::archiveManager().programResourceArchive();
 	auto dir = res->dir("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
-		names.push_back(dir->entryAt(a)->name(true));
+		names.push_back(std::string{ dir->entryAt(a)->nameNoExt() });
 }
 
 // -----------------------------------------------------------------------------

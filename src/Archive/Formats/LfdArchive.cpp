@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "LfdArchive.h"
 #include "General/UI.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -145,9 +146,9 @@ bool LfdArchive::open(MemChunk& mc)
 		}
 
 		// Create & setup lump
-		wxFileName fn(name);
-		fn.SetExt(type);
-		auto nlump = std::make_shared<ArchiveEntry>(fn.GetFullName(), length);
+		StrUtil::Path fn(name);
+		fn.setExtension(type);
+		auto nlump = std::make_shared<ArchiveEntry>(fn.fileName(), length);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(ArchiveEntry::State::Unmodified);

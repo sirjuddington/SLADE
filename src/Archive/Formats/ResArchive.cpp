@@ -146,7 +146,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 		}
 
 		// Create & setup lump
-		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), size);
+		auto nlump = std::make_shared<ArchiveEntry>(name, size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(ArchiveEntry::State::Unmodified);

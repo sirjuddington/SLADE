@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "TarArchive.h"
 #include "General/UI.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -309,7 +310,7 @@ bool TarArchive::open(MemChunk& mc)
 		}
 
 		// Find name
-		wxString name;
+		std::string name;
 		for (int a = 0; a < 100; ++a)
 		{
 			if (header.name[a] == 0)
@@ -322,14 +323,11 @@ bool TarArchive::open(MemChunk& mc)
 
 		if ((int)header.typeflag == AREGTYPE || (int)header.typeflag == REGTYPE)
 		{
-			// Normal entry
-			wxFileName fn(name);
-
 			// Create directory if needed
-			auto dir = createDir(fn.GetPath(true, wxPATH_UNIX));
+			auto dir = createDir(std::string{ StrUtil::Path::pathOf(name)});
 
 			// Create entry
-			auto entry              = std::make_shared<ArchiveEntry>(fn.GetFullName(), size);
+			auto entry              = std::make_shared<ArchiveEntry>(StrUtil::Path::fileNameOf(name), size);
 			entry->exProp("Offset") = (int)mc.currentPos();
 			entry->setLoaded(false);
 			entry->setState(ArchiveEntry::State::Unmodified);

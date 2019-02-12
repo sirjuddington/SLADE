@@ -35,6 +35,7 @@
 #include "DirArchive.h"
 #include "App.h"
 #include "General/UI.h"
+#include "Utility/StringUtils.h"
 #include "WadArchive.h"
 
 
@@ -90,28 +91,28 @@ bool DirArchive::open(const wxString& filename)
 		UI::setSplashProgress((float)a / (float)files.size());
 
 		// Cut off directory to get entry name + relative path
-		wxString name = files[a];
-		name.Remove(0, filename.Length());
-		if (name.StartsWith(separator_))
-			name.Remove(0, 1);
+		auto name = files[a].ToStdString();
+		name.erase(0, filename.Length());
+		if (StrUtil::startsWith(name, separator_[0]))
+			name.erase(0, 1);
 
 		// Log::info(3, fn.GetPath(true, wxPATH_UNIX));
 
 		// Create entry
-		wxFileName fn(name);
-		auto       new_entry = std::make_shared<ArchiveEntry>(fn.GetFullName());
+		auto fn        = StrUtil::Path{ name };
+		auto new_entry = std::make_shared<ArchiveEntry>(fn.fileName());
 
 		// Setup entry info
 		new_entry->setLoaded(false);
 		new_entry->exProp("filePath") = files[a];
 
 		// Add entry and directory to directory tree
-		auto ndir = createDir(fn.GetPath(true, wxPATH_UNIX));
+		auto ndir = createDir(std::string{ fn.path() });
 		ndir->addEntry(new_entry);
-		ndir->dirEntry()->exProp("filePath") = filename + fn.GetPath(true, wxPATH_UNIX);
+		ndir->dirEntry()->exProp("filePath") = filename + std::string{ fn.path() };
 
 		// Read entry data
-		new_entry->importFile(files[a]);
+		new_entry->importFile(files[a].ToStdString());
 		new_entry->setLoaded(true);
 
 		file_modification_times_[new_entry.get()] = wxFileModificationTime(files[a]);
@@ -275,7 +276,7 @@ bool DirArchive::save(const wxString& filename)
 			continue;
 
 		// Write entry to file
-		if (!entries[a]->exportFile(path))
+		if (!entries[a]->exportFile(path.ToStdString()))
 			Log::error(wxString::Format("Unable to save entry %s: %s", entries[a]->name(), Global::error));
 		else
 			files_written.push_back(path);
@@ -297,7 +298,7 @@ bool DirArchive::save(const wxString& filename)
 // -----------------------------------------------------------------------------
 bool DirArchive::loadEntryData(ArchiveEntry* entry)
 {
-	if (entry->importFile(entry->exProp("filePath").stringValue()))
+	if (entry->importFile(entry->exProp("filePath").stringValue().ToStdString()))
 	{
 		file_modification_times_[entry] = wxFileModificationTime(entry->exProp("filePath").stringValue());
 		return true;
@@ -435,7 +436,7 @@ Archive::MapDesc DirArchive::mapDesc(ArchiveEntry* entry)
 	map.archive = true;
 	map.head    = entry;
 	map.end     = entry;
-	map.name    = entry->name(true).Upper();
+	map.name    = std::string{ entry->upperNameNoExt() };
 
 	return map;
 }
@@ -475,7 +476,7 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 		md.head    = entry;
 		md.end     = entry;
 		md.archive = true;
-		md.name    = entry->name(true).Upper();
+		md.name    = std::string{ entry->upperNameNoExt() };
 		md.format  = format;
 		ret.push_back(md);
 	}
@@ -609,7 +610,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 		if (change.action == DirEntryChange::Action::Updated)
 		{
 			auto entry = entryAtPath(change.entry_path);
-			entry->importFile(change.file_path);
+			entry->importFile(change.file_path.ToStdString());
 			EntryType::detectEntryType(entry);
 			file_modification_times_[entry] = wxFileModificationTime(change.file_path);
 		}
@@ -644,26 +645,26 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 		// New Entry
 		else if (change.action == DirEntryChange::Action::AddedFile)
 		{
-			wxString name = change.file_path;
-			name.Remove(0, filename_.Length());
-			if (name.StartsWith(separator_))
-				name.Remove(0, 1);
-			name.Replace("\\", "/");
+			auto name = change.file_path.ToStdString();
+			name.erase(0, filename_.Length());
+			if (StrUtil::startsWith(name, separator_[0]))
+				name.erase(0, 1);
+			std::replace(name.begin(), name.end(), '\\', '/');
 
 			// Create entry
-			wxFileName fn(name);
-			auto       new_entry = new ArchiveEntry(fn.GetFullName());
+			StrUtil::Path fn(name);
+			auto          new_entry = new ArchiveEntry(fn.fileName());
 
 			// Setup entry info
 			new_entry->setLoaded(false);
 			new_entry->exProp("filePath") = change.file_path;
 
 			// Add entry and directory to directory tree
-			auto ndir = createDir(fn.GetPath(true, wxPATH_UNIX));
+			auto ndir = createDir(std::string{ fn.path() });
 			ndir->addEntry(new_entry);
 
 			// Read entry data
-			new_entry->importFile(change.file_path);
+			new_entry->importFile(change.file_path.ToStdString());
 			new_entry->setLoaded(true);
 
 			time_t modtime                      = wxFileModificationTime(change.file_path);

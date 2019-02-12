@@ -491,9 +491,9 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 		return false;
 
 	// Export the map to a temp .wad file
-	wxString filename = App::path(
-		CHR(entry->parent()->filename(false) + "-" + entry->name(true) + ".wad"), App::Dir::Temp);
-	filename.Replace("/", "-");
+	auto filename = App::path(
+		fmt::format("{}-{}.wad", CHR(entry->parent()->filename(false)), entry->nameNoExt()), App::Dir::Temp);
+	std::replace(filename.begin(), filename.end(), '/', '-');
 	if (map.archive)
 	{
 		entry->exportFile(filename);
@@ -548,7 +548,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	}
 
 	// Run DB2
-	FileMonitor* fm = new DB2MapFileMonitor(filename, entry->parent(), entry->name(true));
+	FileMonitor* fm = new DB2MapFileMonitor(filename, entry->parent(), std::string{ entry->nameNoExt() });
 	wxExecute(cmd, wxEXEC_ASYNC, fm->process());
 
 	return true;
@@ -953,20 +953,20 @@ bool EntryOperations::addToPatchTable(const vector<ArchiveEntry*>& entries)
 		// Check entry type
 		if (!(entry->type()->extraProps().propertyExists("image")))
 		{
-			Log::error(wxString::Format("Entry %s is not a valid image", entry->name()));
+			Log::error("Entry {} is not a valid image", entry->name());
 			continue;
 		}
 
 		// Check entry name
-		if (entry->name(true).Length() > 8)
+		if (entry->nameNoExt().size() > 8)
 		{
-			Log::error(wxString::Format(
-				"Entry %s has too long a name to add to the patch table (name must be 8 characters max)",
-				entry->name()));
+			Log::error(
+				"Entry {} has too long a name to add to the patch table (name must be 8 characters max)",
+				entry->name());
 			continue;
 		}
 
-		ptable.addPatch(entry->name(true));
+		ptable.addPatch(std::string{ entry->nameNoExt() });
 	}
 
 	// Write patch table data back to pnames entry
@@ -1063,12 +1063,12 @@ bool EntryOperations::createTexture(const vector<ArchiveEntry*>& entries)
 		}
 
 		// Check entry name
-		wxString name = entry->name(true);
-		if (name.Length() > 8)
+		std::string name{ entry->nameNoExt() };
+		if (name.size() > 8)
 		{
-			Log::error(wxString::Format(
-				"Entry %s has too long a name to add to the patch table (name must be 8 characters max)",
-				entry->name()));
+			Log::error(
+				"Entry {} has too long a name to add to the patch table (name must be 8 characters max)",
+				entry->name());
 			continue;
 		}
 
@@ -1240,9 +1240,9 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	}
 
 	// Setup some path strings
-	wxString srcfile       = App::path(CHR(entry->name(true) + ".acs"), App::Dir::Temp);
-	wxString ofile         = App::path(CHR(entry->name(true) + ".o"), App::Dir::Temp);
-	auto     include_paths = wxSplit(path_acc_libs, ';');
+	auto srcfile       = App::path(fmt::format("{}.acs", entry->nameNoExt()), App::Dir::Temp);
+	auto ofile         = App::path(fmt::format("{}.o", entry->nameNoExt()), App::Dir::Temp);
+	auto include_paths = wxSplit(path_acc_libs, ';');
 
 	// Setup command options
 	wxString opt;
@@ -1263,17 +1263,17 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	for (auto& res_entry : entries)
 	{
 		// Ignore SCRIPTS
-		if (S_CMPNOCASE(res_entry->name(true), "SCRIPTS"))
+		if (res_entry->upperNameNoExt() == "SCRIPTS")
 			continue;
 
 		// Ignore entries from other archives
 		if (entry->parent() && (entry->parent()->filename(true) != res_entry->parent()->filename(true)))
 			continue;
 
-		wxString path = App::path(CHR(res_entry->name(true) + ".acs"), App::Dir::Temp);
+		auto path = App::path(fmt::format("{}.acs", res_entry->nameNoExt()), App::Dir::Temp);
 		res_entry->exportFile(path);
 		lib_paths.Add(path);
-		Log::info(2, wxString::Format("Exporting ACS library %s", res_entry->name()));
+		Log::info(2, "Exporting ACS library {}", res_entry->name());
 	}
 
 	// Export script to file
@@ -1329,13 +1329,13 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		if (!target)
 		{
 			// Check if the script is a map script (BEHAVIOR)
-			if (S_CMPNOCASE(entry->name(), "SCRIPTS"))
+			if (entry->upperName() == "SCRIPTS")
 			{
 				// Get entry before SCRIPTS
 				auto prev = entry->prevEntry();
 
 				// Create a new entry there if it isn't BEHAVIOR
-				if (!prev || !(S_CMPNOCASE(prev->name(), "BEHAVIOR")))
+				if (!prev || prev->upperName() != "BEHAVIOR")
 					prev = entry->parent()->addNewEntry("BEHAVIOR", entry->parent()->entryIndex(entry));
 
 				// Import compiled script
@@ -1348,7 +1348,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 				// See if the compiled library already exists as an entry
 				Archive::SearchOptions opt;
 				opt.match_namespace = "acs";
-				opt.match_name      = entry->name(true);
+				opt.match_name      = std::string{ entry->nameNoExt() };
 				if (entry->parent()->formatDesc().names_extensions)
 				{
 					opt.match_name += ".o";
@@ -1358,7 +1358,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 
 				// If it doesn't exist, create it
 				if (!lib)
-					lib = entry->parent()->addEntry(new ArchiveEntry(entry->name(true) + ".o"), "acs");
+					lib = entry->parent()->addEntry(new ArchiveEntry(fmt::format("{}.o", entry->nameNoExt())), "acs");
 
 				// Import compiled script
 				lib->importFile(ofile);
@@ -1482,7 +1482,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 		wxString pngfile = fn.GetFullPath();
 		fn.SetExt("png");
 		wxString optfile = fn.GetFullPath();
-		entry->exportFile(pngfile);
+		entry->exportFile(pngfile.ToStdString());
 
 		wxString command = path_pngcrush + " -brute \"" + pngfile + "\" \"" + optfile + "\"";
 		output.Empty();
@@ -1493,7 +1493,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 		{
 			if (optfile.size() < oldsize)
 			{
-				entry->importFile(optfile);
+				entry->importFile(optfile.ToStdString());
 				wxRemoveFile(optfile);
 				wxRemoveFile(pngfile);
 			}
@@ -1534,7 +1534,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 		wxString pngfile = fn.GetFullPath();
 		fn.SetExt("png");
 		wxString optfile = fn.GetFullPath();
-		entry->exportFile(pngfile);
+		entry->exportFile(pngfile.ToStdString());
 
 		wxString command = path_pngout + " /y \"" + pngfile + "\" \"" + optfile + "\"";
 		output.Empty();
@@ -1545,7 +1545,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 		{
 			if (optfile.size() < oldsize)
 			{
-				entry->importFile(optfile);
+				entry->importFile(optfile.ToStdString());
 				wxRemoveFile(optfile);
 				wxRemoveFile(pngfile);
 			}
@@ -1585,14 +1585,14 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 		wxFileName fn(pngpathd);
 		fn.SetExt("png");
 		wxString pngfile = fn.GetFullPath();
-		entry->exportFile(pngfile);
+		entry->exportFile(pngfile.ToStdString());
 
 		wxString command = path_deflopt + " /sf \"" + pngfile + "\"";
 		output.Empty();
 		errors.Empty();
 		wxExecute(command, output, errors, wxEXEC_SYNC);
 
-		entry->importFile(pngfile);
+		entry->importFile(pngfile.ToStdString());
 		wxRemoveFile(pngfile);
 		deflsize = entry->size();
 
@@ -1760,7 +1760,7 @@ bool EntryOperations::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, b
 bool EntryOperations::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata, bool switches)
 {
 	Tokenizer tz(Tokenizer::Hash);
-	tz.openMem(entry->data(), entry->name().ToStdString());
+	tz.openMem(entry->data(), entry->name());
 
 	wxString token;
 	char     buffer[23];

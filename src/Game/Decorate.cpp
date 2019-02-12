@@ -573,7 +573,7 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 	Tokenizer tz;
 	tz.setSpecialCharacters(":,{}");
 	tz.enableDecorate(true);
-	tz.openMem(entry->data(), entry->name().ToStdString());
+	tz.openMem(entry->data(), entry->name());
 
 	// --- Parse ---
 	while (!tz.atEnd())
@@ -589,7 +589,7 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 				Log::warning(
 					"Warning parsing DECORATE entry {}: "
 					"Unable to find #included entry \"{}\" at line {}, skipping",
-					CHR(entry->name()),
+					entry->name(),
 					tz.current().text,
 					tz.current().line_no);
 			}

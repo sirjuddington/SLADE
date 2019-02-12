@@ -511,13 +511,13 @@ bool WolfArchive::open(MemChunk& mc)
 		size = wxINT16_SWAP_ON_BE(size);
 
 		// Wolf chunks have no names, so just give them a number
-		wxString name;
+		std::string name;
 		if (d < spritestart_)
-			name = wxString::Format("WAL%05d", l);
+			name = fmt::format("WAL{:05d}", l);
 		else if (d < soundstart_)
-			name = wxString::Format("SPR%05d", l - spritestart_);
+			name = fmt::format("SPR{:05d}", l - spritestart_);
 		else
-			name = wxString::Format("SND%05d", l - soundstart_);
+			name = fmt::format("SND{:05d}", l - soundstart_);
 
 		++l;
 
@@ -716,11 +716,11 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 		}
 
 		// Wolf chunks have no names, so just give them a number
-		wxString name = "";
+		std::string name;
 		if (current_seg == SegmentMusic)
 			name = searchIMFName(edata);
 		if (name.empty())
-			name = wxString::Format("%s%05d", SEG_PREFIX[current_seg], d - d_ofs);
+			name = fmt::format("{}{:05d}", SEG_PREFIX[current_seg], d - d_ofs);
 
 		// Create & setup lump
 		auto nlump = std::make_shared<ArchiveEntry>(name, size);
@@ -789,7 +789,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		if (offset == 0 && d > 0)
 			continue;
 
-		wxString name = "";
+		std::string name;
 		for (size_t i = 0; i < 16; ++i)
 		{
 			name += data[offset + 22 + i];
@@ -912,7 +912,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		}
 
 		// Wolf chunks have no names, so just give them a number
-		wxString name;
+		std::string name;
 		if (d == 0)
 			name = "INF";
 		else if (d == 1 || d == 2)
@@ -936,7 +936,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		}
 		else
 			name = "LMP";
-		name += wxString::Format("%05d", d);
+		name += fmt::format("{:05d}", d);
 
 
 		// Create & setup lump

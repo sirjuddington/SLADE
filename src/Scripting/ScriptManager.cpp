@@ -35,6 +35,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Lua.h"
 #include "UI/ScriptManagerWindow.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -70,7 +71,7 @@ Script* addEditorScriptFromEntry(ArchiveEntry::SPtr& entry, ScriptType type, con
 {
 	auto s  = std::make_unique<Script>();
 	s->type = type;
-	s->name = entry->name(true);
+	s->name = std::string{ entry->nameNoExt() };
 	s->path = entry->path();
 	s->path.Replace(cut_path, "");
 	s->source = entry;
@@ -157,7 +158,7 @@ void loadEditorScripts(ScriptType type, const wxString& dir)
 	{
 		for (auto& entry : scripts_dir->allEntries())
 		{
-			if (!entry->name().StartsWith("_"))
+			if (!StrUtil::startsWith(entry->name(), '_'))
 			{
 				auto script       = addEditorScriptFromEntry(entry, type, wxString::Format("/scripts/%s/", CHR(dir)));
 				script->read_only = true;

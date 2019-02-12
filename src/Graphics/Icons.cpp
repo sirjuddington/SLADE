@@ -34,6 +34,7 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/UI.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -50,7 +51,7 @@ struct Icon
 {
 	wxImage       image;
 	wxImage       image_large;
-	wxString      name;
+	std::string   name;
 	ArchiveEntry* resource_entry;
 };
 
@@ -112,8 +113,8 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 	if (icon_set_dir != "Default" && dir->child(icon_set_dir))
 		dir = (ArchiveTreeNode*)dir->child(icon_set_dir);
 
-	auto&    icons    = iconList(type);
-	wxString tempfile = App::path("sladetemp", App::Dir::Temp);
+	auto& icons    = iconList(type);
+	auto  tempfile = App::path("sladetemp", App::Dir::Temp);
 
 	// Go through each entry in the directory
 	for (size_t a = 0; a < dir->numEntries(false); a++)
@@ -121,7 +122,7 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 		auto entry = dir->entryAt(a);
 
 		// Ignore anything not png format
-		if (!entry->name().EndsWith("png"))
+		if (!StrUtil::endsWith(entry->upperName(), ".PNG"))
 			continue;
 
 		// Export entry data to a temporary file
@@ -129,8 +130,8 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 
 		// Create / setup icon
 		Icon n_icon;
-		n_icon.image.LoadFile(tempfile);           // Load image from temp file
-		n_icon.name           = entry->name(true); // Set icon name
+		n_icon.image.LoadFile(tempfile);            // Load image from temp file
+		n_icon.name           = entry->nameNoExt(); // Set icon name
 		n_icon.resource_entry = entry;
 
 		// Add the icon
@@ -149,15 +150,15 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 			auto entry = dir_large->entryAt(a);
 
 			// Ignore anything not png format
-			if (!entry->name().EndsWith("png"))
+			if (!StrUtil::endsWith(entry->upperName(), ".PNG"))
 				continue;
 
 			// Export entry data to a temporary file
 			entry->exportFile(tempfile);
 
 			// Create / setup icon
-			bool     found = false;
-			wxString name  = entry->name(true);
+			bool found = false;
+			auto name  = entry->nameNoExt();
 			for (auto& icon : icons)
 			{
 				if (icon.name == name)
@@ -171,8 +172,8 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 			if (!found)
 			{
 				Icon n_icon;
-				n_icon.image_large.LoadFile(tempfile);     // Load image from temp file
-				n_icon.name           = entry->name(true); // Set icon name
+				n_icon.image_large.LoadFile(tempfile);      // Load image from temp file
+				n_icon.name           = entry->nameNoExt(); // Set icon name
 				n_icon.resource_entry = entry;
 
 				// Add the icon
@@ -257,7 +258,7 @@ wxBitmap Icons::getIcon(Type type, const wxString& name, bool large, bool log_mi
 	size_t icons_size = icons.size();
 	for (size_t a = 0; a < icons_size; a++)
 	{
-		if (icons[a].name.Cmp(name) == 0)
+		if (icons[a].name == name)
 		{
 			if (large)
 			{
@@ -294,8 +295,8 @@ bool Icons::exportIconPNG(Type type, const wxString& name, const wxString& path)
 
 	for (auto& icon : icons)
 	{
-		if (icon.name.Cmp(name) == 0)
-			return icon.resource_entry->exportFile(path);
+		if (icon.name == name)
+			return icon.resource_entry->exportFile(path.ToStdString());
 	}
 
 	return false;

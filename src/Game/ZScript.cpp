@@ -211,7 +211,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 					Log::warning(
 						"Warning parsing ZScript entry {}: "
 						"Unable to find #included entry \"{}\" at line {}, skipping",
-						CHR(entry->name()),
+						entry->name(),
 						tz.current().text,
 						tz.current().line_no);
 				}

@@ -45,7 +45,7 @@
 #include "MainEditor/UI/MainWindow.h"
 #include "OpenGL/GLTexture.h"
 #include "UI/Controls/PaletteChooser.h"
-
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -349,12 +349,12 @@ bool PatchBrowser::openArchive(Archive* archive)
 		// Add it
 		if (full_path_ && !entry->parent()->isTreeless())
 		{
-			item = new PatchBrowserItem(entry->path(true).Mid(1), archive, PatchBrowserItem::Type::Patch, ns);
+			item = new PatchBrowserItem(entry->path(true).substr(1), archive, PatchBrowserItem::Type::Patch, ns);
 			wxString fnspace = nspace + " (Full Path)";
 			addItem(item, fnspace + "/" + arch);
 		}
 
-		wxString name = entry->name(true).Truncate(8).Upper();
+		wxString name = StrUtil::truncate(entry->upperNameNoExt(), 8);
 
 		bool duplicate = false;
 		for (auto& usedname : usednames)

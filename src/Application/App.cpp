@@ -233,7 +233,7 @@ void readConfigFile()
 {
 	// Open SLADE.cfg
 	Tokenizer tz;
-	if (!tz.openFile(App::path("slade3.cfg", App::Dir::User).ToStdString()))
+	if (!tz.openFile(App::path("slade3.cfg", App::Dir::User)))
 		return;
 
 	// Go through the file with the tokenizer

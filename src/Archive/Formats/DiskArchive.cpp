@@ -35,6 +35,7 @@
 #include "Main.h"
 #include "DiskArchive.h"
 #include "General/UI.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -106,16 +107,16 @@ bool DiskArchive::open(MemChunk& mc)
 		}
 
 		// Parse name
-		wxString name = wxString::FromAscii(dent.name, 64);
-		name.Replace("\\", "/");
-		name.Replace("GAME:/", "");
-		wxFileName fn(name);
+		std::string name = dent.name;
+		std::replace(name.begin(), name.end(), '\\', '/');
+		StrUtil::replaceIP(name, "GAME:/", "");
+		StrUtil::Path fn(name);
 
 		// Create directory if needed
-		auto dir = createDir(fn.GetPath(true, wxPATH_UNIX));
+		auto dir = createDir(std::string{ fn.path() });
 
 		// Create entry
-		auto entry              = std::make_shared<ArchiveEntry>(fn.GetFullName(), dent.length);
+		auto entry              = std::make_shared<ArchiveEntry>(fn.fileName(), dent.length);
 		entry->exProp("Offset") = (int)dent.offset;
 		entry->setLoaded(false);
 		entry->setState(ArchiveEntry::State::Unmodified);

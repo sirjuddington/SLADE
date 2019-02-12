@@ -806,7 +806,7 @@ bool StyleSet::loadResourceStyles()
 	{
 		// Read entry data into tokenizer
 		Tokenizer tz;
-		tz.openMem(default_style->data(), default_style->name().ToStdString());
+		tz.openMem(default_style->data(), default_style->name());
 
 		// Parse it
 		ParseTreeNode root;
@@ -830,12 +830,12 @@ bool StyleSet::loadResourceStyles()
 		auto entry = dir->entryAt(a);
 
 		// Skip default
-		if (entry->name(true) == "default")
+		if (entry->nameNoExt() == "default")
 			continue;
 
 		// Read entry data into tokenizer
 		Tokenizer tz;
-		tz.openMem(entry->data(), entry->name().ToStdString());
+		tz.openMem(entry->data(), entry->name());
 
 		// Parse it
 		ParseTreeNode root;

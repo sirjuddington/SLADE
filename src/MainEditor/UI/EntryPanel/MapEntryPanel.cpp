@@ -193,7 +193,7 @@ bool MapEntryPanel::createImage()
 	if (dialog_save.ShowModal() == wxID_OK)
 	{
 		// If a filename was selected, export it
-		bool ret = temp.exportFile(dialog_save.GetPath());
+		bool ret = temp.exportFile(dialog_save.GetPath().ToStdString());
 
 		// Save 'dir_last'
 		dir_last = WxUtils::strToView(dialog_save.GetDirectory());

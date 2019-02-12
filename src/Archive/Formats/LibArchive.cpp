@@ -119,7 +119,7 @@ bool LibArchive::open(MemChunk& mc)
 		}
 
 		// Create & setup lump
-		auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(myname), size);
+		auto nlump = std::make_shared<ArchiveEntry>(myname, size);
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(ArchiveEntry::State::Unmodified);

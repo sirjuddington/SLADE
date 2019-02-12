@@ -242,7 +242,7 @@ std::string StrUtil::escapedString(std::string_view str, bool swap_backslash)
 	return escaped;
 }
 
-void StrUtil::replaceIP(std::string& str, std::string_view from, std::string_view to)
+std::string& StrUtil::replaceIP(std::string& str, std::string_view from, std::string_view to)
 {
 	size_t start_pos = 0;
 	while ((start_pos = str.find(from.data(), start_pos)) != std::string::npos)
@@ -250,6 +250,7 @@ void StrUtil::replaceIP(std::string& str, std::string_view from, std::string_vie
 		str.replace(start_pos, from.length(), to.data(), to.size());
 		start_pos += to.length();
 	}
+	return str;
 }
 
 std::string StrUtil::replace(std::string_view str, std::string_view from, std::string_view to)
@@ -259,11 +260,12 @@ std::string StrUtil::replace(std::string_view str, std::string_view from, std::s
 	return s;
 }
 
-void StrUtil::replaceFirstIP(std::string& str, std::string_view from, std::string_view to)
+std::string& StrUtil::replaceFirstIP(std::string& str, std::string_view from, std::string_view to)
 {
 	auto pos = str.find(from.data(), 0);
 	if (pos != std::string::npos)
 		str.replace(pos, from.length(), to.data(), to.size());
+	return str;
 }
 
 std::string StrUtil::replaceFirst(std::string_view str, std::string_view from, std::string_view to)
@@ -273,14 +275,16 @@ std::string StrUtil::replaceFirst(std::string_view str, std::string_view from, s
 	return s;
 }
 
-void StrUtil::lowerIP(std::string& str)
+std::string& StrUtil::lowerIP(std::string& str)
 {
 	transform(str.begin(), str.end(), str.begin(), ::tolower);
+	return str;
 }
 
-void StrUtil::upperIP(std::string& str)
+std::string& StrUtil::upperIP(std::string& str)
 {
 	transform(str.begin(), str.end(), str.begin(), ::toupper);
+	return str;
 }
 
 std::string StrUtil::lower(std::string_view str)
@@ -297,20 +301,23 @@ std::string StrUtil::upper(std::string_view str)
 	return s;
 }
 
-void StrUtil::ltrimIP(std::string& str)
+std::string& StrUtil::ltrimIP(std::string& str)
 {
 	str.erase(0, str.find_first_not_of(WHITESPACE_CHARACTERS));
+	return str;
 }
 
-void StrUtil::rtrimIP(std::string& str)
+std::string& StrUtil::rtrimIP(std::string& str)
 {
 	str.erase(0, str.find_last_not_of(WHITESPACE_CHARACTERS) + 1);
+	return str;
 }
 
-void StrUtil::trimIP(std::string& str)
+std::string& StrUtil::trimIP(std::string& str)
 {
 	str.erase(0, str.find_first_not_of(WHITESPACE_CHARACTERS));    // left
 	str.erase(0, str.find_last_not_of(WHITESPACE_CHARACTERS) + 1); // right
+	return str;
 }
 
 std::string StrUtil::ltrim(std::string_view str)
@@ -335,13 +342,15 @@ std::string StrUtil::trim(std::string_view str)
 	return s;
 }
 
-void StrUtil::capitalizeIP(std::string& str)
+std::string& StrUtil::capitalizeIP(std::string& str)
 {
 	if (str.empty())
-		return;
+		return str;
 
 	transform(str.begin(), str.end(), str.begin(), ::tolower);
 	str[0] = ::toupper(str[0]);
+
+	return str;
 }
 
 std::string StrUtil::capitalize(std::string_view str)
@@ -381,9 +390,10 @@ std::string StrUtil::prepend(std::string_view str, std::string_view prefix)
 	return s;
 }
 
-void StrUtil::prependIP(std::string& str, std::string_view prefix)
+std::string& StrUtil::prependIP(std::string& str, std::string_view prefix)
 {
 	str.insert(str.begin(), prefix.begin(), prefix.end());
+	return str;
 }
 
 std::string StrUtil::transform(const std::string_view str, int options)
@@ -487,10 +497,11 @@ std::string StrUtil::truncate(std::string_view str, unsigned length)
 		return { str.data(), str.size() };
 }
 
-void StrUtil::truncateIP(std::string& str, unsigned length)
+std::string& StrUtil::truncateIP(std::string& str, unsigned length)
 {
 	if (str.size() > length)
 		str.resize(length);
+	return str;
 }
 
 std::string StrUtil::removeLast(std::string_view str, unsigned n)
@@ -501,10 +512,11 @@ std::string StrUtil::removeLast(std::string_view str, unsigned n)
 	return { str.data(), str.size() - n };
 }
 
-void StrUtil::removeLastIP(std::string& str, unsigned n)
+std::string& StrUtil::removeLastIP(std::string& str, unsigned n)
 {
 	if (str.size() < n)
 		str.resize(str.size() - n);
+	return str;
 }
 
 std::string StrUtil::removePrefix(std::string_view str, char prefix)
@@ -514,10 +526,11 @@ std::string StrUtil::removePrefix(std::string_view str, char prefix)
 	return { str.data(), str.size() };
 }
 
-void StrUtil::removePrefixIP(std::string& str, char prefix)
+std::string& StrUtil::removePrefixIP(std::string& str, char prefix)
 {
 	if (!str.empty() && str[0] == prefix)
 		str.erase(0, 1);
+	return str;
 }
 
 std::string StrUtil::removeSuffix(std::string_view str, char suffix)
@@ -527,10 +540,11 @@ std::string StrUtil::removeSuffix(std::string_view str, char suffix)
 	return { str.data(), str.size() };
 }
 
-void StrUtil::removeSuffixIP(std::string& str, char suffix)
+std::string& StrUtil::removeSuffixIP(std::string& str, char suffix)
 {
 	if (!str.empty() && str.back() == suffix)
 		str.pop_back();
+	return str;
 }
 
 StrUtil::Path::Path(std::string_view full_path) : full_path_{ full_path.data(), full_path.size() }
@@ -762,7 +776,7 @@ void StrUtil::processIncludes(ArchiveEntry* entry, std::string& out, bool use_re
 		return;
 
 	// Write entry to temp file
-	auto filename = App::path(entry->name().ToStdString(), App::Dir::Temp);
+	auto filename = App::path(entry->name(), App::Dir::Temp);
 	entry->exportFile(filename);
 
 	// Open file
@@ -795,7 +809,7 @@ void StrUtil::processIncludes(ArchiveEntry* entry, std::string& out, bool use_re
 				done = true;
 			}
 			else
-				Log::warning(2, fmt::format("Couldn't find entry to #include: {}", CHR(name)));
+				Log::warning(2, fmt::format("Couldn't find entry to #include: {}", name));
 
 			// Look in resource pack
 			if (use_res && !done && App::archiveManager().programResourceArchive())
@@ -812,7 +826,7 @@ void StrUtil::processIncludes(ArchiveEntry* entry, std::string& out, bool use_re
 			// Okay, we've exhausted all possibilities
 			if (!done)
 				Log::error(fmt::format(
-					"Attempting to #include nonexistant entry \"{}\" from entry {}", CHR(name), CHR(entry->name())));
+					"Attempting to #include nonexistant entry \"{}\" from entry {}", name, entry->name()));
 		}
 		else
 			out.append(line + "\n");
@@ -952,7 +966,7 @@ void wxStringUtils::processIncludes(ArchiveEntry* entry, wxString& out, bool use
 		return;
 
 	// Write entry to temp file
-	auto filename = App::path(entry->name().ToStdString(), App::Dir::Temp);
+	auto filename = App::path(entry->name(), App::Dir::Temp);
 	entry->exportFile(filename);
 
 	// Open file

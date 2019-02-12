@@ -33,6 +33,7 @@
 #include "ADatArchive.h"
 #include "General/UI.h"
 #include "Utility/Compression.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -115,14 +116,11 @@ bool ADatArchive::open(MemChunk& mc)
 			return false;
 		}
 
-		// Parse name
-		wxFileName fn(wxString::FromAscii(name, 128));
-
 		// Create directory if needed
-		auto dir = createDir(fn.GetPath(true, wxPATH_UNIX));
+		auto dir = createDir(std::string{ StrUtil::Path::pathOf(name) });
 
 		// Create entry
-		auto entry                = std::make_shared<ArchiveEntry>(fn.GetFullName(), compsize);
+		auto entry                = std::make_shared<ArchiveEntry>(StrUtil::Path::fileNameOf(name), compsize);
 		entry->exProp("Offset")   = (int)offset;
 		entry->exProp("FullSize") = (int)decsize;
 		entry->setLoaded(false);

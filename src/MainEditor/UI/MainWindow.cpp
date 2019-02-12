@@ -138,7 +138,7 @@ void MainWindow::loadLayout() const
 {
 	// Open layout file
 	Tokenizer tz;
-	if (!tz.openFile(App::path("mainwindow.layout", App::Dir::User).ToStdString()))
+	if (!tz.openFile(App::path("mainwindow.layout", App::Dir::User)))
 		return;
 
 	// Parse layout
@@ -198,7 +198,7 @@ void MainWindow::setupLayout()
 	wxAuiPaneInfo p_inf;
 
 	// Set icon
-	wxString icon_filename = App::path(App::iconFile(), App::Dir::Temp);
+	auto icon_filename = App::path(App::iconFile(), App::Dir::Temp);
 	App::archiveManager().programResourceArchive()->entry(App::iconFile())->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
@@ -654,7 +654,7 @@ bool MainWindow::handleAction(const wxString& id)
 		info.SetDescription("It's a Doom Editor");
 
 		// Set icon
-		wxString icon_filename = App::path(App::iconFile(), App::Dir::Temp);
+		auto icon_filename = App::path(App::iconFile(), App::Dir::Temp);
 		App::archiveManager().programResourceArchive()->entry(App::iconFile())->exportFile(icon_filename);
 		info.SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 		wxRemoveFile(icon_filename);

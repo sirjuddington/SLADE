@@ -118,8 +118,8 @@ void SplashWindow::init()
 		return;
 
 	// Load logo image
-	wxString tempfile = App::path("temp.png", App::Dir::Temp);
-	auto     logo     = App::archiveManager().programResourceArchive()->entry("logo.png");
+	auto tempfile = App::path("temp.png", App::Dir::Temp);
+	auto logo     = App::archiveManager().programResourceArchive()->entry("logo.png");
 	if (logo)
 	{
 		logo->exportFile(tempfile);

@@ -218,7 +218,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 
 				// Parse text in the entry
 				Tokenizer inc_tz;
-				inc_tz.openMem(inc_entry->data(), inc_entry->name().ToStdString());
+				inc_tz.openMem(inc_entry->data(), inc_entry->name());
 				bool ok = parse(inc_tz);
 
 				// Reset dir and abort if parsing failed

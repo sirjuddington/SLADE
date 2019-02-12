@@ -177,7 +177,7 @@ public:
 					entry = parent_->archive()->addNewEntry(fn.GetFullName(), index, list_->currentDir());
 
 				// Import the file to it
-				entry->importFile(filenames[a]);
+				entry->importFile(filenames[a].ToStdString());
 				EntryType::detectEntryType(entry);
 			}
 		}
@@ -259,13 +259,13 @@ public:
 		if (wxTheClipboard->Open())
 		{
 			wxTheClipboard->Clear();
-			auto     file          = new wxFileDataObject();
-			wxString tmp_directory = App::path("", App::Dir::Temp); // cache temp directory
-			wxString file_dot      = ".";
+			auto file          = new wxFileDataObject();
+			auto tmp_directory = App::path("", App::Dir::Temp); // cache temp directory
 			for (auto& entry : entries)
 			{
 				// Export to file
-				wxString filename = tmp_directory + entry->name(true) + file_dot + entry->type()->extension();
+				auto filename = fmt::format(
+					"{}{}.{}", tmp_directory, entry->nameNoExt(), CHR(entry->type()->extension()));
 				entry->exportFile(filename);
 
 				// Add to clipboard
@@ -866,7 +866,7 @@ bool ArchivePanel::importFiles()
 			// If the entry was created ok, load the file into it
 			if (new_entry)
 			{
-				new_entry->importFile(info.filenames[a]); // Import file to entry
+				new_entry->importFile(info.filenames[a].ToStdString()); // Import file to entry
 				EntryType::detectEntryType(new_entry);    // Detect entry type
 				ok = true;
 			}
@@ -973,7 +973,7 @@ bool ArchivePanel::buildArchive()
 			UI::setSplashProgress((float)a / files.size());
 
 			// Load data
-			entry->importFile(files[a]);
+			entry->importFile(files[a].ToStdString());
 
 			// Set unmodified
 			entry->setState(ArchiveEntry::State::Unmodified);
@@ -1037,8 +1037,7 @@ bool ArchivePanel::renameEntry(bool each) const
 			{
 				if (!archive_->renameEntry(selection[a], new_name))
 					wxMessageBox(
-						wxString::Format(
-							"Unable to rename entry %s: %s", CHR(selection[a]->name()), Global::error),
+						wxString::Format("Unable to rename entry %s: %s", selection[a]->name(), Global::error),
 						"Rename Entry",
 						wxICON_EXCLAMATION | wxOK);
 			}
@@ -1049,7 +1048,7 @@ bool ArchivePanel::renameEntry(bool each) const
 		// Get a list of entry names
 		wxArrayString names;
 		for (auto& entry : selection)
-			names.push_back(entry->name(true));
+			names.push_back(std::string{ entry->nameNoExt() });
 
 		// Get filter string
 		wxString filter = Misc::massRenameFilter(names);
@@ -1100,8 +1099,7 @@ bool ArchivePanel::renameEntry(bool each) const
 					// Rename in archive
 					if (!archive_->renameEntry(entry, fn.GetFullName()))
 						wxMessageBox(
-							wxString::Format(
-								"Unable to rename entry %s: %s", CHR(selection[a]->name()), Global::error),
+							wxString::Format("Unable to rename entry %s: %s", selection[a]->name(), Global::error),
 							"Rename Entry",
 							wxICON_EXCLAMATION | wxOK);
 				}
@@ -1465,7 +1463,7 @@ bool ArchivePanel::sort() const
 		// This is because the global namespace in wads is bloated and we want more
 		// categories than it actually has to offer.
 		lnsn = (nsn == 0 ? getNamespaceNumber(entry, selection[i], nspaces, maps) * 1000 : nsn);
-		wxString name, ename = entry->name().Upper();
+		wxString name, ename = entry->upperName();
 		// Want to get another hack in this stuff? Yeah, of course you do!
 		// This here hack will sort Doom II songs by their associated map.
 		if (ename.StartsWith("D_") && S_CMPNOCASE(entry->type()->icon(), "music"))
@@ -1688,7 +1686,7 @@ bool ArchivePanel::importEntry()
 			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
 
 			// If a file was selected, import it
-			entry->importFile(info.filenames[0]);
+			entry->importFile(info.filenames[0].ToStdString());
 
 			// Re-detect entry type
 			EntryType::detectEntryType(entry);
@@ -1774,7 +1772,7 @@ bool ArchivePanel::exportEntry()
 		SFileDialog::FDInfo info;
 		if (SFileDialog::saveFile(
 				info, "Export Entry \"" + selection[0]->name() + "\"", "Any File (*.*)|*.*", this, fn.GetFullName()))
-			selection[0]->exportFile(info.filenames[0]); // Export entry if ok was clicked
+			selection[0]->exportFile(info.filenames[0].ToStdString()); // Export entry if ok was clicked
 	}
 	else
 	{
@@ -1794,7 +1792,7 @@ bool ArchivePanel::exportEntry()
 					fn.SetExt(entry->type()->extension());
 
 				// Do export
-				entry->exportFile(fn.GetFullPath());
+				entry->exportFile(fn.GetFullPath().ToStdString());
 			}
 
 			// Go through selected dirs
@@ -2662,7 +2660,7 @@ bool ArchivePanel::optimizePNG() const
 		if (a == selection.size() - 1)
 			entry_list_->setEntriesAutoUpdate(true);
 
-		UI::setSplashProgressMessage(selection[a]->name(true));
+		UI::setSplashProgressMessage(std::string{ selection[a]->nameNoExt() });
 		UI::setSplashProgress(float(a) / float(selection.size()));
 		if (selection[a]->type()->formatId() == "img_png")
 		{

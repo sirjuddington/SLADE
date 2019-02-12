@@ -962,7 +962,7 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 	vector<TestToken> t_new;
 	tz.setReadLowerCase(lower);
 	long time = App::runTimer();
-	tz.openMem(entry->data(), entry->name().ToStdString());
+	tz.openMem(entry->data(), entry->name());
 	for (long a = 0; a < num; a++)
 	{
 		while (!tz.atEnd())

@@ -34,7 +34,7 @@
 #include "ArchiveTreeNode.h"
 #include "App.h"
 #include "General/Misc.h"
-
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -206,7 +206,7 @@ ArchiveEntry* ArchiveTreeNode::entry(const wxString& name, bool cut_ext)
 	for (auto& entry : entries_)
 	{
 		// Check for (non-case-sensitive) name match
-		if (S_CMPNOCASE(entry->name(cut_ext), name))
+		if (StrUtil::equalCI(cut_ext ? entry->nameNoExt() : entry->name(), name.ToStdString()))
 			return entry.get();
 	}
 
@@ -228,7 +228,7 @@ ArchiveEntry::SPtr ArchiveTreeNode::sharedEntry(const wxString& name, bool cut_e
 	for (auto& entry : entries_)
 	{
 		// Check for (non-case-sensitive) name match
-		if (S_CMPNOCASE(entry->name(cut_ext), name))
+		if (StrUtil::equalCI(cut_ext ? entry->nameNoExt() : entry->name(), name.ToStdString()))
 			return entry;
 	}
 
@@ -524,7 +524,7 @@ bool ArchiveTreeNode::exportTo(const wxString& path)
 			fn.SetExt(entry->type()->extension());
 
 		// Do export
-		entry->exportFile(fn.GetFullPath());
+		entry->exportFile(fn.GetFullPath().ToStdString());
 	}
 
 	// Export subdirectories
@@ -539,11 +539,11 @@ bool ArchiveTreeNode::exportTo(const wxString& path)
 // -----------------------------------------------------------------------------
 void ArchiveTreeNode::ensureUniqueName(ArchiveEntry* entry)
 {
-	unsigned   index     = 0;
-	unsigned   number    = 0;
-	const auto n_entries = entries_.size();
-	wxFileName fn(entry->name());
-	wxString   name = fn.GetFullName();
+	unsigned      index     = 0;
+	unsigned      number    = 0;
+	const auto    n_entries = entries_.size();
+	StrUtil::Path fn(entry->name());
+	auto          name = fn.fileName();
 	while (index < n_entries)
 	{
 		if (entries_[index].get() == entry)
@@ -552,10 +552,10 @@ void ArchiveTreeNode::ensureUniqueName(ArchiveEntry* entry)
 			continue;
 		}
 
-		if (S_CMPNOCASE(entries_[index]->name(false), name))
+		if (StrUtil::equalCI(entries_[index]->name(), name))
 		{
-			fn.SetName(wxString::Format("%s%d", CHR(entry->name(true)), ++number));
-			name  = fn.GetFullName();
+			fn.setFileName(fmt::format("{}{}", entry->nameNoExt(), ++number));
+			name  = fn.fileName();
 			index = 0;
 			continue;
 		}

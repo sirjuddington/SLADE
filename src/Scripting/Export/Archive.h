@@ -20,9 +20,9 @@ wxString formattedEntryName(ArchiveEntry& self, bool include_path, bool include_
 	if (include_path)
 		name = self.path();
 	if (name_uppercase)
-		name += include_extension ? self.upperName() : self.upperNameNoExt();
+		name += std::string{ include_extension ? self.upperName() : self.upperNameNoExt() };
 	else
-		name += self.name(!include_extension);
+		name += std::string{ include_extension ? self.name() : self.nameNoExt() };
 	return name;
 }
 
@@ -233,7 +233,7 @@ void registerArchiveEntry(sol::state& lua)
 		&ArchiveEntry::sizeString,
 
 		"importFile",
-		[](ArchiveEntry& self, const wxString& filename) { return self.importFile(filename); },
+		[](ArchiveEntry& self, const std::string& filename) { return self.importFile(filename); },
 
 		"importEntry",
 		&ArchiveEntry::importEntry,

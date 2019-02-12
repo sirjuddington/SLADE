@@ -142,7 +142,7 @@ void DB2MapFileMonitor::fileModified()
 			if (map.archive)
 			{
 				map.head->unlock();
-				map.head->importFile(filename_);
+				map.head->importFile(filename_.ToStdString());
 				map.head->lock();
 				break;
 			}

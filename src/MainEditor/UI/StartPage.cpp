@@ -144,7 +144,7 @@ void SStartPage::init()
 		if (entry_tips)
 		{
 			Tokenizer tz;
-			tz.openMem((const char*)entry_tips->rawData(), entry_tips->size(), entry_tips->name().ToStdString());
+			tz.openMem((const char*)entry_tips->rawData(), entry_tips->size(), entry_tips->name());
 			while (!tz.atEnd() && !tz.peekToken().empty())
 				tips_.push_back(tz.getToken());
 		}
@@ -249,7 +249,7 @@ void SStartPage::load(bool new_tip)
 
 	// Write html and images to temp folder
 	for (auto& a : entry_export_)
-		a->exportFile(App::path(a->name().ToStdString(), App::Dir::Temp));
+		a->exportFile(App::path(a->name(), App::Dir::Temp));
 	wxString html_file = App::path("startpage.htm", App::Dir::Temp);
 	wxFile   outfile(html_file, wxFile::write);
 	outfile.Write(html);

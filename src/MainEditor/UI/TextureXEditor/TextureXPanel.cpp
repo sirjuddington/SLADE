@@ -49,6 +49,7 @@
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "ZTextureEditorPanel.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -128,7 +129,7 @@ public:
 		// Find copied patch entry with matching name
 		for (auto& entry : patch_entries_)
 		{
-			if (S_CMPNOCASE(entry->name(true).Truncate(8), patch))
+			if (StrUtil::equalCI(StrUtil::truncate(entry->nameNoExt(), 8), patch.ToStdString()))
 				return entry.get();
 		}
 
@@ -849,7 +850,7 @@ void TextureXPanel::newTextureFromFile()
 		{
 			// Load the file into a temporary ArchiveEntry
 			auto entry = new ArchiveEntry();
-			entry->importFile(file);
+			entry->importFile(file.ToStdString());
 
 			// Determine type
 			EntryType::detectEntryType(entry);
@@ -869,7 +870,7 @@ void TextureXPanel::newTextureFromFile()
 			name = name.Truncate(8);
 
 			// Add patch to archive
-			entry->setName(name);
+			entry->setName(name.ToStdString());
 			entry->setExtensionByType();
 			tx_entry_->parent()->addEntry(entry, "patches");
 
@@ -1325,7 +1326,7 @@ void TextureXPanel::exportTexture()
 		format->saveImage(*image, mc, force_rgba ? nullptr : gcd.itemPalette(a));
 		auto lump = new ArchiveEntry;
 		lump->importMemChunk(mc);
-		lump->rename(selection[a]->name());
+		lump->rename(selection[a]->name().ToStdString());
 		archive->addEntry(lump, "textures");
 		EntryType::detectEntryType(lump);
 		lump->setExtensionByType();

@@ -57,12 +57,13 @@ CVAR(Bool, wad_force_uppercase, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // ArchiveEntry class constructor
 // -----------------------------------------------------------------------------
-ArchiveEntry::ArchiveEntry(const wxString& name, uint32_t size) :
+ArchiveEntry::ArchiveEntry(std::string_view name, uint32_t size) :
 	name_{ name },
-	upper_name_{ name.Upper() },
+	upper_name_{ name },
 	size_{ size },
 	type_{ EntryType::unknownType() }
 {
+	StrUtil::upperIP(upper_name_);
 }
 
 // -----------------------------------------------------------------------------
@@ -100,13 +101,13 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 }
 
 // -----------------------------------------------------------------------------
-// Returns the entry name. If [cut_ext] is true and the name has an extension,
-// it will be cut from the returned name
+// Returns the entry name with no file extension
 // -----------------------------------------------------------------------------
-wxString ArchiveEntry::name(bool cut_ext) const
+std::string_view ArchiveEntry::nameNoExt() const
 {
-	if (cut_ext && name_.Contains(wxStringUtils::FULLSTOP))
-		return name_.BeforeLast('.');
+	auto ext_pos = name_.find('.');
+	if (ext_pos != std::string::npos)
+		return { name_.data(), ext_pos };
 
 	return name_;
 }
@@ -114,12 +115,13 @@ wxString ArchiveEntry::name(bool cut_ext) const
 // -----------------------------------------------------------------------------
 // Returns the entry name in uppercase with no file extension
 // -----------------------------------------------------------------------------
-wxString ArchiveEntry::upperNameNoExt() const
+std::string_view ArchiveEntry::upperNameNoExt() const
 {
-	if (upper_name_.Contains(wxStringUtils::FULLSTOP))
-		return upper_name_.BeforeLast('.');
-	else
-		return upper_name_;
+	auto ext_pos = upper_name_.find('.');
+	if (ext_pos != std::string::npos)
+		return { upper_name_.data(), ext_pos };
+
+	return upper_name_;
 }
 
 // -----------------------------------------------------------------------------
@@ -149,15 +151,10 @@ Archive* ArchiveEntry::topParent() const
 // -----------------------------------------------------------------------------
 // Returns the entry path in its parent archive
 // -----------------------------------------------------------------------------
-wxString ArchiveEntry::path(bool include_name) const
+std::string ArchiveEntry::path(bool include_name) const
 {
-	// Get the entry path
-	wxString path = parent_->path();
-
-	if (include_name)
-		return path + name();
-	else
-		return path;
+	auto path = parent_->path().ToStdString();
+	return include_name ? path + name() : path;
 }
 
 // -----------------------------------------------------------------------------
@@ -196,6 +193,15 @@ MemChunk& ArchiveEntry::data(bool allow_load)
 ArchiveEntry::SPtr ArchiveEntry::getShared()
 {
 	return parent_ ? parent_->sharedEntry(this) : nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the entry's name (but doesn't change state to modified)
+// -----------------------------------------------------------------------------
+void ArchiveEntry::setName(std::string_view name)
+{
+	name_       = name;
+	upper_name_ = StrUtil::upper(name);
 }
 
 // -----------------------------------------------------------------------------
@@ -274,34 +280,35 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 	// Max length
 	if (format.max_name_length > 0 && (int)name_.size() > format.max_name_length)
 	{
-		name_.Truncate(format.max_name_length);
+		StrUtil::truncateIP(name_, format.max_name_length);
 		changed = true;
 	}
 
 	// Uppercase
 	if (format.prefer_uppercase && wad_force_uppercase)
-		name_.MakeUpper();
+		StrUtil::upperIP(name_);
 
 	// Remove \ or / if the format supports folders
-	if (format.supports_dirs && name_.Contains(wxStringUtils::SLASH_FORWARD) || name_.Contains(wxStringUtils::SLASH_BACK))
+	if (format.supports_dirs && name_.find('/') != std::string::npos || name_.find('\\') != std::string::npos)
 	{
-		Misc::lumpNameToFileName(name_);
+		name_   = Misc::lumpNameToFileName(name_).ToStdString();
 		changed = true;
 	}
 
 	// Remove extension if the format doesn't have them
-	if (!format.names_extensions && name_.Contains(wxStringUtils::FULLSTOP))
-		name_.Truncate(name_.Find('.'));
+	if (!format.names_extensions)
+		if (auto pos = name_.find('.'); pos != std::string::npos)
+			StrUtil::truncateIP(name_, pos);
 
 	// Update upper name
 	if (changed)
-		upper_name_ = name_.Upper();
+		upper_name_ = StrUtil::upper(name_);
 }
 
 // -----------------------------------------------------------------------------
 // Renames the entry
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::rename(const wxString& new_name)
+bool ArchiveEntry::rename(std::string_view new_name)
 {
 	// Check if locked
 	if (locked_)
@@ -311,8 +318,7 @@ bool ArchiveEntry::rename(const wxString& new_name)
 	}
 
 	// Update attributes
-	name_       = new_name;
-	upper_name_ = name_.Upper();
+	setName(new_name);
 	setState(State::Modified);
 
 	return true;
@@ -414,7 +420,7 @@ bool ArchiveEntry::importMemChunk(MemChunk& mc)
 // Returns false if the file does not exist or the given offset/size are out of
 // bounds, otherwise returns true.
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importFile(const wxString& filename, uint32_t offset, uint32_t size)
+bool ArchiveEntry::importFile(std::string_view filename, uint32_t offset, uint32_t size)
 {
 	// Check if locked
 	if (locked_)
@@ -424,7 +430,7 @@ bool ArchiveEntry::importFile(const wxString& filename, uint32_t offset, uint32_
 	}
 
 	// Open the file
-	wxFile file(filename);
+	wxFile file({ filename.data(), filename.size() });
 
 	// Check that it opened ok
 	if (!file.IsOpened())
@@ -507,15 +513,15 @@ bool ArchiveEntry::importEntry(ArchiveEntry* entry)
 // Exports entry data to a file.
 // Returns false if file cannot be written, true otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::exportFile(const wxString& filename)
+bool ArchiveEntry::exportFile(std::string_view filename)
 {
 	// Attempt to open file
-	wxFile file(filename, wxFile::write);
+	wxFile file({ filename.data(), filename.size() }, wxFile::write);
 
 	// Check it opened ok
 	if (!file.IsOpened())
 	{
-		Global::error = wxString::Format("Unable to open file %s for writing", filename);
+		Global::error = fmt::format("Unable to open file {} for writing", filename);
 		return false;
 	}
 
@@ -571,9 +577,9 @@ bool ArchiveEntry::read(void* buf, uint32_t size)
 // -----------------------------------------------------------------------------
 // Returns the entry's size as a string
 // -----------------------------------------------------------------------------
-wxString ArchiveEntry::sizeString() const
+std::string ArchiveEntry::sizeString() const
 {
-	return Misc::sizeAsString(size());
+	return Misc::sizeAsString(size()).ToStdString();
 }
 
 // -----------------------------------------------------------------------------
@@ -598,24 +604,25 @@ void ArchiveEntry::setExtensionByType()
 		return;
 
 	// Convert name to wxFileName for processing
-	wxFileName fn(name_);
+	StrUtil::Path fn(name_);
 
 	// Set new extension
-	fn.SetExt(type_->extension());
+	fn.setExtension(type_->extension().ToStdString());
 
 	// Rename
 	auto parent_archive = parent();
+	auto filename       = fn.fileName();
 	if (parent_archive)
-		parent_archive->renameEntry(this, fn.GetFullName());
+		parent_archive->renameEntry(this, { filename.data(), filename.size() });
 	else
-		rename(fn.GetFullName());
+		rename(filename);
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if the entry is in the [ns] namespace within its parent, false
 // otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::isInNamespace(wxString ns)
+bool ArchiveEntry::isInNamespace(std::string_view ns)
 {
 	// Can't do this without parent archive
 	if (!parent())
@@ -625,7 +632,7 @@ bool ArchiveEntry::isInNamespace(wxString ns)
 	if (ns == "graphics" && parent()->formatId() == "wad")
 		ns = "global"; // Graphics namespace doesn't exist in wad files, use global instead
 
-	return parent()->detectNamespace(this) == ns;
+	return parent()->detectNamespace(this).ToStdString() == ns;
 }
 
 // -----------------------------------------------------------------------------

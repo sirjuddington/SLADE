@@ -44,6 +44,7 @@
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor.h"
 #include "Utility/FileMonitor.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -69,19 +70,19 @@ public:
 	ArchiveEntry* getEntry() const { return entry_; }
 	void          fileModified() override { updateEntry(); }
 
-	virtual void updateEntry() { entry_->importFile(filename_); }
+	virtual void updateEntry() { entry_->importFile(CHR(filename_)); }
 
 	virtual bool exportEntry()
 	{
 		// Determine export filename/path
-		wxFileName fn(App::path(CHR(entry_->name()), App::Dir::Temp));
-		fn.SetExt(entry_->type()->extension());
+		StrUtil::Path fn(App::path(entry_->name(), App::Dir::Temp));
+		fn.setExtension(entry_->type()->extension().ToStdString());
 
 		// Export entry and start monitoring
-		bool ok = entry_->exportFile(fn.GetFullPath());
+		bool ok = entry_->exportFile(fn.fullPath());
 		if (ok)
 		{
-			filename_      = fn.GetFullPath();
+			filename_      = fn.fullPath();
 			file_modified_ = wxFileModificationTime(filename_);
 			Start(1000);
 		}
@@ -165,9 +166,9 @@ public:
 
 	bool exportEntry() override
 	{
-		wxFileName fn(App::path(CHR(entry_->name()), App::Dir::Temp));
+		StrUtil::Path fn(App::path(entry_->name(), App::Dir::Temp));
 
-		fn.SetExt("png");
+		fn.setExtension("png");
 
 		// Create image from entry
 		SImage image;
@@ -192,7 +193,7 @@ public:
 		}
 
 		// Export file and start monitoring if successful
-		filename_ = fn.GetFullPath();
+		filename_ = fn.fullPath();
 		if (png.exportFile(filename_))
 		{
 			file_modified_ = wxFileModificationTime(filename_);
@@ -226,13 +227,13 @@ public:
 	void updateEntry() override
 	{
 		// Can't convert back, just import the MIDI
-		entry_->importFile(filename_);
+		entry_->importFile(filename_.ToStdString());
 	}
 
 	bool exportEntry() override
 	{
-		wxFileName fn(App::path(CHR(entry_->name()), App::Dir::Temp));
-		fn.SetExt("mid");
+		StrUtil::Path fn(App::path(entry_->name(), App::Dir::Temp));
+		fn.setExtension("mid");
 
 		// Convert to MIDI data
 		MemChunk convdata;
@@ -258,7 +259,7 @@ public:
 		}
 
 		// Export file and start monitoring if successful
-		filename_ = fn.GetFullPath();
+		filename_ = fn.fullPath();
 		if (convdata.exportFile(filename_))
 		{
 			file_modified_ = wxFileModificationTime(filename_);
@@ -310,13 +311,13 @@ public:
 
 		// Just import wav to entry if conversion to doom sound
 		// failed or the entry was not a convertable type
-		entry_->importFile(filename_);
+		entry_->importFile(filename_.ToStdString());
 	}
 
 	bool exportEntry() override
 	{
-		wxFileName fn(App::path(CHR(entry_->name()), App::Dir::Temp));
-		fn.SetExt("mid");
+		StrUtil::Path fn(App::path(entry_->name(), App::Dir::Temp));
+		fn.setExtension("mid");
 
 		// Convert to WAV data
 		MemChunk convdata;
@@ -356,7 +357,7 @@ public:
 		}
 
 		// Export file and start monitoring if successful
-		filename_ = fn.GetFullPath();
+		filename_ = fn.fullPath();
 		if (convdata.exportFile(filename_))
 		{
 			file_modified_ = wxFileModificationTime(filename_);

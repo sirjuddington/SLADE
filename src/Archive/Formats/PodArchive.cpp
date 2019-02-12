@@ -35,6 +35,7 @@
 #include "General/Console/Console.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -99,23 +100,18 @@ bool PodArchive::open(MemChunk& mc)
 	UI::setSplashProgressMessage("Reading pod archive data");
 	for (unsigned a = 0; a < num_files; a++)
 	{
-		// Get the entry name as a wxFileName (so we can break it up)
-		wxFileName fn(files[a].name);
-
 		// Create entry
-		auto new_entry              = std::make_shared<ArchiveEntry>(fn.GetFullName(), files[a].size);
+		auto new_entry = std::make_shared<ArchiveEntry>(StrUtil::Path::fileNameOf(files[a].name), files[a].size);
 		new_entry->exProp("Offset") = files[a].offset;
 		new_entry->setLoaded(false);
 
 		// Add entry and directory to directory tree
-		wxString path = fn.GetPath(false);
-		auto     ndir = createDir(path);
+		auto ndir = createDir(std::string{ StrUtil::Path::pathOf(files[a].name, false) });
 		ndir->addEntry(new_entry);
 
 		new_entry->setState(ArchiveEntry::State::Unmodified);
 
-		Log::info(
-			5, wxString::Format("File size: %d, offset: %d, name: %s", files[a].size, files[a].offset, files[a].name));
+		Log::info(5, "File size: {}, offset: {}, name: {}", files[a].size, files[a].offset, files[a].name);
 	}
 
 	// Detect entry types
@@ -148,7 +144,7 @@ bool PodArchive::open(MemChunk& mc)
 
 		// Set entry to unchanged
 		all_entries[a]->setState(ArchiveEntry::State::Unmodified);
-		Log::info(5, wxString::Format("entry %s size %d", CHR(all_entries[a]->name()), all_entries[a]->size()));
+		Log::info(5, "entry {} size {}", all_entries[a]->name(), all_entries[a]->size());
 	}
 
 	// Setup variables

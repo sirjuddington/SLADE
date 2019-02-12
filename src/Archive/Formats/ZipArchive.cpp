@@ -162,7 +162,7 @@ bool ZipArchive::open(const wxString& filename)
 
 			// Create entry
 			auto new_entry = std::make_shared<ArchiveEntry>(
-				Misc::fileNameToLumpName(fn.GetFullName()), zip_entry->GetSize());
+				Misc::fileNameToLumpName(fn.GetFullName()).ToStdString(), zip_entry->GetSize());
 
 			// Setup entry info
 			new_entry->setLoaded(false);
@@ -507,7 +507,7 @@ Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* entry)
 	map.archive = true;
 	map.head    = entry;
 	map.end     = entry;
-	map.name    = entry->name(true).Upper();
+	map.name    = std::string{ entry->upperNameNoExt() };
 
 	return map;
 }
@@ -547,7 +547,7 @@ vector<Archive::MapDesc> ZipArchive::detectMaps()
 		md.head    = entry;
 		md.end     = entry;
 		md.archive = true;
-		md.name    = entry->name(true).Upper();
+		md.name    = std::string{ entry->upperNameNoExt() };
 		md.format  = format;
 		ret.push_back(md);
 	}

@@ -219,7 +219,7 @@ bool BSPArchive::open(MemChunk& mc)
 
 
 			// Create & setup lump
-			auto nlump = std::make_shared<ArchiveEntry>(wxString::FromAscii(name), lumpsize);
+			auto nlump = std::make_shared<ArchiveEntry>(name, lumpsize);
 			nlump->setLoaded(false);
 			nlump->exProp("Offset") = (int)(offset + texoffset);
 			nlump->setState(ArchiveEntry::State::Unmodified);

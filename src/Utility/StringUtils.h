@@ -60,27 +60,27 @@ enum TransformOptions
 	UpperCase = 4,
 	LowerCase = 8
 };
-std::string escapedString(std::string_view str, bool swap_backslash = false);
-void        replaceIP(std::string& str, std::string_view from, std::string_view to);
-std::string replace(std::string_view str, std::string_view from, std::string_view to);
-void        replaceFirstIP(std::string& str, std::string_view from, std::string_view to);
-std::string replaceFirst(std::string_view str, std::string_view from, std::string_view to);
-void        lowerIP(std::string& str);
-void        upperIP(std::string& str);
-std::string lower(std::string_view str);
-std::string upper(std::string_view str);
-void        ltrimIP(std::string& str);
-void        rtrimIP(std::string& str);
-void        trimIP(std::string& str);
-std::string ltrim(std::string_view str);
-std::string rtrim(std::string_view str);
-std::string trim(std::string_view str);
-void        capitalizeIP(std::string& str);
-std::string capitalize(std::string_view str);
-std::string wildcardToRegex(std::string_view str);
-std::string prepend(std::string_view str, std::string_view prefix);
-void        prependIP(std::string& str, std::string_view prefix);
-std::string transform(std::string_view str, int options);
+std::string  escapedString(std::string_view str, bool swap_backslash = false);
+std::string& replaceIP(std::string& str, std::string_view from, std::string_view to);
+std::string  replace(std::string_view str, std::string_view from, std::string_view to);
+std::string& replaceFirstIP(std::string& str, std::string_view from, std::string_view to);
+std::string  replaceFirst(std::string_view str, std::string_view from, std::string_view to);
+std::string& lowerIP(std::string& str);
+std::string& upperIP(std::string& str);
+std::string  lower(std::string_view str);
+std::string  upper(std::string_view str);
+std::string& ltrimIP(std::string& str);
+std::string& rtrimIP(std::string& str);
+std::string& trimIP(std::string& str);
+std::string  ltrim(std::string_view str);
+std::string  rtrim(std::string_view str);
+std::string  trim(std::string_view str);
+std::string& capitalizeIP(std::string& str);
+std::string  capitalize(std::string_view str);
+std::string  wildcardToRegex(std::string_view str);
+std::string  prepend(std::string_view str, std::string_view prefix);
+std::string& prependIP(std::string& str, std::string_view prefix);
+std::string  transform(std::string_view str, int options);
 
 // Substrings
 std::string              afterLast(std::string_view str, char chr);
@@ -90,13 +90,13 @@ std::string              beforeFirst(std::string_view str, char chr);
 vector<std::string>      split(std::string_view str, char separator);
 vector<std::string_view> splitToViews(std::string_view str, char separator);
 std::string              truncate(std::string_view str, unsigned length);
-void                     truncateIP(std::string& str, unsigned length);
+std::string&             truncateIP(std::string& str, unsigned length);
 std::string              removeLast(std::string_view str, unsigned n);
-void                     removeLastIP(std::string& str, unsigned n);
+std::string&             removeLastIP(std::string& str, unsigned n);
 std::string              removePrefix(std::string_view str, char prefix); // TODO: string_view prefix
-void                     removePrefixIP(std::string& str, char prefix);
+std::string&             removePrefixIP(std::string& str, char prefix);
 std::string              removeSuffix(std::string_view str, char suffix); // TODO: string_view suffix
-void                     removeSuffixIP(std::string& str, char suffix);
+std::string&             removeSuffixIP(std::string& str, char suffix);
 
 // Misc
 void processIncludes(const std::string& filename, std::string& out);

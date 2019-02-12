@@ -106,7 +106,7 @@ MapEditorWindow::MapEditorWindow() : STopWindow{ "SLADE", "map" }
 	custom_menus_begin_ = 2;
 
 	// Set icon
-	wxString icon_filename = App::path(App::iconFile(), App::Dir::Temp);
+	auto icon_filename = App::path(App::iconFile(), App::Dir::Temp);
 	App::archiveManager().programResourceArchive()->entry(App::iconFile())->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
@@ -131,7 +131,7 @@ void MapEditorWindow::loadLayout()
 {
 	// Open layout file
 	Tokenizer tz;
-	if (!tz.openFile(App::path("mapwindow.layout", App::Dir::User).ToStdString()))
+	if (!tz.openFile(App::path("mapwindow.layout", App::Dir::User)))
 		return;
 
 	// Parse layout
@@ -646,7 +646,7 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 		// Create backup
 		if (map.head
 			&& !MapEditor::backupManager().writeBackup(
-				   map_data_, map.head->topParent()->filename(false), map.head->name(true)))
+				   map_data_, map.head->topParent()->filename(false), std::string{ map.head->nameNoExt() }))
 			Log::warning("Failed to backup map data");
 	}
 
@@ -702,9 +702,9 @@ void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
 		if (Game::configuration().scriptLanguage() == "acs_hexen"
 			|| Game::configuration().scriptLanguage() == "acs_zdoom")
 		{
-			if (S_CMPNOCASE(entry->name(), "SCRIPTS"))
+			if (entry->upperName() == "SCRIPTS")
 				scripts = entry;
-			if (S_CMPNOCASE(entry->name(), "BEHAVIOR"))
+			if (entry->upperName() == "BEHAVIOR")
 				compiled = entry;
 		}
 
@@ -896,7 +896,7 @@ bool MapEditorWindow::saveMap()
 
 	// Create backup
 	if (!MapEditor::backupManager().writeBackup(
-			map_data_, map.head->topParent()->filename(false), map.head->name(true)))
+			map_data_, map.head->topParent()->filename(false), std::string{ map.head->nameNoExt() }))
 		Log::warning(1, "Warning: Failed to backup map data");
 
 	// Add new map entries
