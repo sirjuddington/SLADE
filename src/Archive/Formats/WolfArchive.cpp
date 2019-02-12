@@ -397,8 +397,8 @@ bool WolfArchive::open(const wxString& filename)
 			fn1.SetName("MAPHEAD");
 		}
 		MemChunk data, head;
-		head.importFile(findFileCasing(fn1));
-		data.importFile(findFileCasing(fn2));
+		head.importFile(findFileCasing(fn1).ToStdString());
+		data.importFile(findFileCasing(fn2).ToStdString());
 		opened = openMaps(head, data);
 	}
 	else if (fn1.GetName().MakeUpper() == "AUDIOHED" || fn1.GetName().MakeUpper() == "AUDIOT")
@@ -407,8 +407,8 @@ bool WolfArchive::open(const wxString& filename)
 		fn1.SetName("AUDIOHED");
 		fn2.SetName("AUDIOT");
 		MemChunk data, head;
-		head.importFile(findFileCasing(fn1));
-		data.importFile(findFileCasing(fn2));
+		head.importFile(findFileCasing(fn1).ToStdString());
+		data.importFile(findFileCasing(fn2).ToStdString());
 		opened = openAudio(head, data);
 	}
 	else if (
@@ -421,16 +421,16 @@ bool WolfArchive::open(const wxString& filename)
 		fn2.SetName("VGAGRAPH");
 		fn3.SetName("VGADICT");
 		MemChunk data, head, dict;
-		head.importFile(findFileCasing(fn1));
-		data.importFile(findFileCasing(fn2));
-		dict.importFile(findFileCasing(fn3));
+		head.importFile(findFileCasing(fn1).ToStdString());
+		data.importFile(findFileCasing(fn2).ToStdString());
+		dict.importFile(findFileCasing(fn3).ToStdString());
 		opened = openGraph(head, data, dict);
 	}
 	else
 	{
 		// Read the file into a MemChunk
 		MemChunk mc;
-		if (!mc.importFile(filename))
+		if (!mc.importFile(filename.ToStdString()))
 		{
 			Global::error = "Unable to open file. Make sure it isn't in use by another program.";
 			return false;

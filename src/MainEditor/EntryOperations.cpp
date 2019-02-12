@@ -1429,7 +1429,7 @@ bool EntryOperations::exportAsPNG(ArchiveEntry* entry, const wxString& filename)
 	}
 
 	// Export file
-	return png.exportFile(filename);
+	return png.exportFile(filename.ToStdString());
 }
 
 // -----------------------------------------------------------------------------

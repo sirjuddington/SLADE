@@ -409,7 +409,7 @@ bool Archive::open(const wxString& filename)
 {
 	// Read the file into a MemChunk
 	MemChunk mc;
-	if (!mc.importFile(filename))
+	if (!mc.importFile(filename.ToStdString()))
 	{
 		Global::error = "Unable to open file. Make sure it isn't in use by another program.";
 		return false;
@@ -579,7 +579,7 @@ bool Archive::write(const wxString& filename, bool update)
 	// Write to a MemChunk, then export it to a file
 	MemChunk mc;
 	if (write(mc, true))
-		return mc.exportFile(filename);
+		return mc.exportFile(filename.ToStdString());
 	else
 		return false;
 }

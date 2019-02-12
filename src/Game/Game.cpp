@@ -361,7 +361,7 @@ void Game::init()
 	{
 		// Read config info
 		MemChunk mc;
-		mc.importFile(filename);
+		mc.importFile(filename.ToStdString());
 
 		// Add to list if valid
 		GameDef gdef;
@@ -380,7 +380,7 @@ void Game::init()
 	{
 		// Read config info
 		MemChunk mc;
-		mc.importFile(filename);
+		mc.importFile(filename.ToStdString());
 
 		// Add to list if valid
 		PortDef pdef;

@@ -240,7 +240,7 @@ bool ZipArchive::open(MemChunk& mc)
 {
 	// Write the MemChunk to a temp file
 	wxString tempfile = App::path("slade-temp-open.zip", App::Dir::Temp);
-	mc.exportFile(tempfile);
+	mc.exportFile(tempfile.ToStdString());
 
 	// Load the file
 	bool success = open(tempfile);
@@ -260,7 +260,7 @@ bool ZipArchive::write(MemChunk& mc, bool update)
 	bool success = false;
 
 	// Write to a temporary file
-	wxString tempfile = App::path("slade-temp-write.zip", App::Dir::Temp);
+	auto tempfile = App::path("slade-temp-write.zip", App::Dir::Temp);
 	if (write(tempfile, true))
 	{
 		// Load file into MemChunk

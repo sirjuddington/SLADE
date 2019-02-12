@@ -149,7 +149,7 @@ const vector<SpecialPreset>& Game::customSpecialPresets()
 bool Game::loadCustomSpecialPresets()
 {
 	// Check file exists
-	wxString file = App::path("special_presets.cfg", App::Dir::User);
+	auto file = App::path("special_presets.cfg", App::Dir::User);
 	if (!wxFileExists(file))
 		return true;
 

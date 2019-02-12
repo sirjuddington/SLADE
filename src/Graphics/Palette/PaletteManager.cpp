@@ -198,7 +198,7 @@ bool PaletteManager::loadCustomPalettes()
 		// Load palette data
 		auto     pal = std::make_unique<Palette>();
 		MemChunk mc;
-		mc.importFile(res_dir.GetName() + "/" + filename);
+		mc.importFile((res_dir.GetName() + "/" + filename).ToStdString());
 		pal->loadMem(mc);
 
 		// Add the palette

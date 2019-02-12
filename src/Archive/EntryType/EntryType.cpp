@@ -579,7 +579,7 @@ bool EntryType::loadEntryTypes()
 	{
 		// Load file data
 		MemChunk mc;
-		mc.importFile(res_dir.GetName() + "/" + filename);
+		mc.importFile((res_dir.GetName() + "/" + filename).ToStdString());
 
 		// Parse file
 		readEntryTypeDefinition(mc, filename);

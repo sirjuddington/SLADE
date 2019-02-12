@@ -303,7 +303,7 @@ bool ADatArchive::write(const wxString& filename, bool update)
 	// Write to a MemChunk, then export it to a file
 	MemChunk mc;
 	if (write(mc, true))
-		return mc.exportFile(filename);
+		return mc.exportFile(filename.ToStdString());
 	else
 		return false;
 }

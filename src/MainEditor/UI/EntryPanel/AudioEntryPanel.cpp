@@ -430,7 +430,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, const wxString& filename)
 		Log::info(3, "opened as media");
 
 		// Dump audio to temp file
-		audio.exportFile(filename);
+		audio.exportFile(filename.ToStdString());
 
 		if (openMedia(filename))
 			return true;

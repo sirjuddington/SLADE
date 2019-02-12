@@ -1364,7 +1364,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, const wxString& filename, boo
 	}
 
 	// Export file
-	return png.exportFile(filename);
+	return png.exportFile(filename.ToStdString());
 }
 
 // -----------------------------------------------------------------------------

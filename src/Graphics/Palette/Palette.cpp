@@ -395,7 +395,7 @@ bool Palette::saveFile(const wxString& filename, Format format)
 		return false;
 
 	// Write MemChunk to file
-	return mc.exportFile(filename);
+	return mc.exportFile(filename.ToStdString());
 }
 
 // -----------------------------------------------------------------------------
@@ -421,7 +421,7 @@ bool Palette::loadFile(const wxString& filename, Format format)
 
 	// Write data to MemChunk
 	MemChunk mc;
-	mc.importFile(filename, 0, file.Length());
+	mc.importFile(filename.ToStdString(), 0, file.Length());
 
 	// Now load it
 	return loadMem(mc, format);

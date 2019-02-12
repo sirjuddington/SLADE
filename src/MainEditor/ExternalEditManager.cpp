@@ -139,7 +139,7 @@ public:
 	{
 		// Read file
 		MemChunk data;
-		data.importFile(filename_);
+		data.importFile(filename_.ToStdString());
 
 		// Read image
 		SImage image;
@@ -194,7 +194,7 @@ public:
 
 		// Export file and start monitoring if successful
 		filename_ = fn.fullPath();
-		if (png.exportFile(filename_))
+		if (png.exportFile(filename_.ToStdString()))
 		{
 			file_modified_ = wxFileModificationTime(filename_);
 			Start(1000);
@@ -260,7 +260,7 @@ public:
 
 		// Export file and start monitoring if successful
 		filename_ = fn.fullPath();
-		if (convdata.exportFile(filename_))
+		if (convdata.exportFile(filename_.ToStdString()))
 		{
 			file_modified_ = wxFileModificationTime(filename_);
 			Start(1000);
@@ -300,7 +300,7 @@ public:
 		if (doom_sound_)
 		{
 			MemChunk in, out;
-			in.importFile(filename_);
+			in.importFile(filename_.ToStdString());
 			if (Conversions::wavToDoomSnd(in, out))
 			{
 				// Import converted data to entry if successful
@@ -358,7 +358,7 @@ public:
 
 		// Export file and start monitoring if successful
 		filename_ = fn.fullPath();
-		if (convdata.exportFile(filename_))
+		if (convdata.exportFile(filename_.ToStdString()))
 		{
 			file_modified_ = wxFileModificationTime(filename_);
 			Start(1000);
