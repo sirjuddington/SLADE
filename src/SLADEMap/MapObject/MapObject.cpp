@@ -266,7 +266,7 @@ void MapObject::setStringProperty(const wxString& key, const wxString& value)
 	setModified();
 
 	// Set property
-	properties_[key] = value;
+	properties_[key] = value.ToStdString();
 }
 
 // -----------------------------------------------------------------------------

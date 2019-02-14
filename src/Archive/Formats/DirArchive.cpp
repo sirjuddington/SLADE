@@ -299,7 +299,7 @@ bool DirArchive::save(std::string_view filename)
 // -----------------------------------------------------------------------------
 bool DirArchive::loadEntryData(ArchiveEntry* entry)
 {
-	if (entry->importFile(entry->exProp("filePath").stringValue().ToStdString()))
+	if (entry->importFile(entry->exProp("filePath").stringValue()))
 	{
 		file_modification_times_[entry] = wxFileModificationTime(entry->exProp("filePath").stringValue());
 		return true;
@@ -337,7 +337,7 @@ bool DirArchive::removeDir(std::string_view path, ArchiveTreeNode* base)
 	for (auto& entry : entries)
 	{
 		Log::info(2, entry->exProp("filePath").stringValue());
-		removed_files_.push_back(entry->exProp("filePath").stringValue().ToStdString());
+		removed_files_.push_back(entry->exProp("filePath").stringValue());
 	}
 
 	// Do normal dir remove
@@ -387,7 +387,7 @@ ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, std::string_view add_nam
 // -----------------------------------------------------------------------------
 bool DirArchive::removeEntry(ArchiveEntry* entry)
 {
-	auto old_name = entry->exProp("filePath").stringValue().ToStdString();
+	auto old_name = entry->exProp("filePath").stringValue();
 	bool success  = Archive::removeEntry(entry);
 	if (success)
 		removed_files_.push_back(old_name);
@@ -406,7 +406,7 @@ bool DirArchive::renameEntry(ArchiveEntry* entry, std::string_view name)
 		return false;
 	}
 
-	auto old_name = entry->exProp("filePath").stringValue().ToStdString();
+	auto old_name = entry->exProp("filePath").stringValue();
 	bool success  = Archive::renameEntry(entry, name);
 	if (success)
 		removed_files_.push_back(old_name);

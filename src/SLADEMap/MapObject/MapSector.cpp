@@ -856,8 +856,8 @@ void MapSector::disconnectSide(MapSide* side)
 // -----------------------------------------------------------------------------
 void MapSector::writeBackup(Backup* backup)
 {
-	backup->props_internal[PROP_TEXFLOOR]      = floor_.texture;
-	backup->props_internal[PROP_TEXCEILING]    = ceiling_.texture;
+	backup->props_internal[PROP_TEXFLOOR]      = floor_.texture.ToStdString();
+	backup->props_internal[PROP_TEXCEILING]    = ceiling_.texture.ToStdString();
 	backup->props_internal[PROP_HEIGHTFLOOR]   = floor_.height;
 	backup->props_internal[PROP_HEIGHTCEILING] = ceiling_.height;
 	backup->props_internal[PROP_LIGHTLEVEL]    = light_;

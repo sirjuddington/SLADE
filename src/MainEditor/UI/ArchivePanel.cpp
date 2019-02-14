@@ -1466,10 +1466,10 @@ bool ArchivePanel::sort() const
 		// This is because the global namespace in wads is bloated and we want more
 		// categories than it actually has to offer.
 		lnsn = (nsn == 0 ? getNamespaceNumber(entry, selection[i], nspaces, maps) * 1000 : nsn);
-		wxString name, ename = entry->upperName();
+		std::string name, ename = entry->upperName();
 		// Want to get another hack in this stuff? Yeah, of course you do!
 		// This here hack will sort Doom II songs by their associated map.
-		if (ename.StartsWith("D_") && S_CMPNOCASE(entry->type()->icon(), "music"))
+		if (StrUtil::startsWith(ename, "D_") && S_CMPNOCASE(entry->type()->icon(), "music"))
 		{
 			if (ename == "D_RUNNIN")
 				ename = "D_MAP01";
@@ -1581,7 +1581,7 @@ bool ArchivePanel::sort() const
 			dir->swapEntries(i, itr->second);
 
 			// Update the position of the displaced texture in the emap
-			wxString name = entry->exProp("sortkey");
+			auto name = entry->exProp("sortkey").stringValue();
 			emap[name]    = itr->second;
 		}
 	}

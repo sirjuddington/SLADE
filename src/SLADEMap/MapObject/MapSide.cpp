@@ -333,9 +333,9 @@ void MapSide::writeBackup(Backup* backup)
 		backup->props_internal[PROP_SECTOR] = 0;
 
 	// Textures
-	backup->props_internal[PROP_TEXUPPER]  = tex_upper_;
-	backup->props_internal[PROP_TEXMIDDLE] = tex_middle_;
-	backup->props_internal[PROP_TEXLOWER]  = tex_lower_;
+	backup->props_internal[PROP_TEXUPPER]  = tex_upper_.ToStdString();
+	backup->props_internal[PROP_TEXMIDDLE] = tex_middle_.ToStdString();
+	backup->props_internal[PROP_TEXLOWER]  = tex_lower_.ToStdString();
 
 	// Offsets
 	backup->props_internal[PROP_OFFSETX] = tex_offset_.x;

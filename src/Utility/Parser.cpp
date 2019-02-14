@@ -92,7 +92,7 @@ std::string ParseTreeNode::stringValue(unsigned index)
 	if (index >= values_.size())
 		return {};
 
-	return values_[index].stringValue().ToStdString();
+	return values_[index].stringValue();
 }
 
 // -----------------------------------------------------------------------------
@@ -102,7 +102,7 @@ vector<std::string> ParseTreeNode::stringValues()
 {
 	vector<std::string> string_values;
 	for (auto& value : values_)
-		string_values.push_back(value.stringValue().ToStdString());
+		string_values.push_back(value.stringValue());
 	return string_values;
 }
 
@@ -497,7 +497,7 @@ void ParseTreeNode::write(std::string& out, int indent) const
 			case Property::Type::Int: out += fmt::format("{}", value.intValue()); break;
 			case Property::Type::Float: out += fmt::format("{:1.3f}", value.floatValue()); break;
 			case Property::Type::UInt: out += fmt::format("{}", value.unsignedValue()); break;
-			default: out += fmt::format("\"{}\"", value.stringValue().ToStdString()); break;
+			default: out += fmt::format("\"{}\"", value.stringValue()); break;
 			}
 		}
 

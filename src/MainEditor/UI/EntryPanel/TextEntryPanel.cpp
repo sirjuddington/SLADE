@@ -144,17 +144,11 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 
 	// From entry language hint
 	if (entry->exProps().propertyExists("TextLanguage"))
-	{
-		wxString lang_id = entry->exProp("TextLanguage");
-		tl               = TextLanguage::fromId(lang_id);
-	}
+		tl = TextLanguage::fromId(entry->exProp("TextLanguage").stringValue());
 
 	// Or, from entry type
 	if (!tl && entry->type()->extraProps().propertyExists("text_language"))
-	{
-		wxString lang_id = entry->type()->extraProps()["text_language"];
-		tl               = TextLanguage::fromId(lang_id);
-	}
+		tl = TextLanguage::fromId(entry->type()->extraProps()["text_language"].stringValue());
 
 	// Load language
 	text_area_->setLanguage(tl);
@@ -370,7 +364,7 @@ void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 
 	// Set entry language hint
 	if (tl)
-		entry_->exProp("TextLanguage") = tl->id();
+		entry_->exProp("TextLanguage") = tl->id().ToStdString();
 	else
 		entry_->exProps().removeProperty("TextLanguage");
 }

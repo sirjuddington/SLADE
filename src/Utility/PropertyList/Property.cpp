@@ -8,7 +8,7 @@
 // Filename:    Property.cpp
 // Description: The Property class. Basically acts as a 'dynamic' variable type,
 //              for use in the PropertyList class. Can contain a boolean,
-//              integer, floating point (double) or string (wxString) value.
+//              integer, floating point (double) or string (std::string) value.
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Property.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -47,21 +48,15 @@
 // -----------------------------------------------------------------------------
 Property::Property(Type type) : type_{ type }
 {
-	// Set default value depending on type
-	if (type == Type::Boolean)
-		value_.Boolean = false;
-	else if (type == Type::Int)
-		value_.Integer = 0;
-	else if (type == Type::Float)
-		value_.Floating = 0.0f;
-	else if (type == Type::String)
-		val_string_ = wxEmptyString;
-	else if (type == Type::Flag)
-		value_.Boolean = true;
-	else if (type == Type::UInt)
-		value_.Unsigned = 0;
-	else
+	switch (type)
 	{
+	case Type::Boolean: value_.Boolean = false; break;
+	case Type::Int: value_.Integer = 0; break;
+	case Type::Float: value_.Floating = 0.0f; break;
+	case Type::String: break;
+	case Type::Flag: value_.Boolean = true; break;
+	case Type::UInt: value_.Unsigned = 0; break;
+	default:
 		// Invalid type given, default to boolean
 		type_          = Type::Boolean;
 		value_.Boolean = true;
@@ -71,67 +66,53 @@ Property::Property(Type type) : type_{ type }
 // -----------------------------------------------------------------------------
 // Property class constructor (boolean)
 // -----------------------------------------------------------------------------
-Property::Property(bool value)
+Property::Property(bool value) : type_{ Type::Boolean }, has_value_{ true }
 {
 	// Init boolean property
-	type_          = Type::Boolean;
 	value_.Boolean = value;
-	has_value_     = true;
 }
 
 // -----------------------------------------------------------------------------
 // Property class constructor (integer)
 // -----------------------------------------------------------------------------
-Property::Property(int value)
+Property::Property(int value) : type_{ Type::Int }, has_value_{ true }
 {
 	// Init integer property
-	type_          = Type::Int;
 	value_.Integer = value;
-	has_value_     = true;
 }
 
 // -----------------------------------------------------------------------------
 // Property class constructor (floating point)
 // -----------------------------------------------------------------------------
-Property::Property(float value)
+Property::Property(float value) : type_{ Type::Float }, has_value_{ true }
 {
 	// Init float property
-	type_           = Type::Float;
 	value_.Floating = value;
-	has_value_      = true;
 }
 
 // -----------------------------------------------------------------------------
 // Property class constructor (floating point)
 // -----------------------------------------------------------------------------
-Property::Property(double value)
+Property::Property(double value) : type_{ Type::Float }, has_value_{ true }
 {
 	// Init float property
-	type_           = Type::Float;
 	value_.Floating = value;
-	has_value_      = true;
 }
 
 // -----------------------------------------------------------------------------
 // Property class constructor (string)
 // -----------------------------------------------------------------------------
-Property::Property(const wxString& value) : value_{}
+Property::Property(std::string_view value) : type_{ Type::String }, value_{}, val_string_{ value }, has_value_{ true }
 {
-	// Init string property
-	type_       = Type::String;
-	val_string_ = value;
-	has_value_  = true;
 }
 
 // -----------------------------------------------------------------------------
 // Property class constructor (unsigned)
 // -----------------------------------------------------------------------------
-Property::Property(unsigned value)
+Property::Property(unsigned value) : type_{ Type::UInt }, has_value_{ true }
 {
 	// Init string property
-	type_           = Type::UInt;
 	value_.Unsigned = value;
-	has_value_      = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -151,7 +132,7 @@ bool Property::boolValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Boolean)
-		Log::warning(wxString::Format("Requested Boolean value of a %s Property", typeString()));
+		Log::warning("Requested Boolean value of a {} Property", typeString());
 
 	// Return value (convert if needed)
 	if (type_ == Type::Boolean)
@@ -165,7 +146,7 @@ bool Property::boolValue(bool warn_wrong_type) const
 	else if (type_ == Type::String)
 	{
 		// Anything except "0", "no" or "false" is considered true
-		return !(!val_string_.Cmp("0") || !val_string_.CmpNoCase("no") || !val_string_.CmpNoCase("false"));
+		return !(val_string_ == '0' || StrUtil::equalCI(val_string_, "no") || StrUtil::equalCI(val_string_, "false"));
 	}
 
 	// Return default boolean value
@@ -189,7 +170,7 @@ int Property::intValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Int)
-		Log::warning(wxString::Format("Requested Integer value of a %s Property", typeString()));
+		Log::warning("Requested Integer value of a {} Property", typeString());
 
 	// Return value (convert if needed)
 	if (type_ == Type::Int)
@@ -201,12 +182,7 @@ int Property::intValue(bool warn_wrong_type) const
 	else if (type_ == Type::Float)
 		return (int)value_.Floating;
 	else if (type_ == Type::String)
-	{
-		long tmp;
-		if (val_string_.ToLong(&tmp))
-			return tmp;
-		return 0;
-	}
+		return StrUtil::toInt(val_string_);
 
 	// Return default integer value
 	return 0;
@@ -229,7 +205,7 @@ double Property::floatValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Float)
-		Log::warning(wxString::Format("Requested Float value of a %s Property", typeString()));
+		Log::warning("Requested Float value of a {} Property", typeString());
 
 	// Return value (convert if needed)
 	if (type_ == Type::Float)
@@ -241,12 +217,7 @@ double Property::floatValue(bool warn_wrong_type) const
 	else if (type_ == Type::UInt)
 		return (double)value_.Unsigned;
 	else if (type_ == Type::String)
-	{
-		double tmp;
-		if (val_string_.ToDouble(&tmp))
-			return tmp;
-		return 0.;
-	}
+		return StrUtil::toDouble(val_string_);
 
 	// Return default float value
 	return 0.0f;
@@ -257,7 +228,7 @@ double Property::floatValue(bool warn_wrong_type) const
 // If [warn_wrong_type] is true, a warning message is written to the log if the
 // property is not of string type
 // -----------------------------------------------------------------------------
-wxString Property::stringValue(bool warn_wrong_type) const
+std::string Property::stringValue(bool warn_wrong_type) const
 {
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type_ == Type::Flag)
@@ -269,15 +240,15 @@ wxString Property::stringValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::String)
-		Log::warning(wxString::Format("Warning: Requested String value of a %s Property", typeString()));
+		Log::warning("Warning: Requested String value of a {} Property", typeString());
 
 	// Return value (convert if needed)
 	if (type_ == Type::String)
 		return val_string_;
 	else if (type_ == Type::Int)
-		return wxString::Format("%d", value_.Integer);
+		return fmt::format("{}", value_.Integer);
 	else if (type_ == Type::UInt)
-		return wxString::Format("%u", value_.Unsigned);
+		return fmt::format("{}", value_.Unsigned);
 	else if (type_ == Type::Boolean)
 	{
 		if (value_.Boolean)
@@ -286,10 +257,10 @@ wxString Property::stringValue(bool warn_wrong_type) const
 			return "false";
 	}
 	else if (type_ == Type::Float)
-		return wxString::Format("%f", value_.Floating);
+		return fmt::format("{}", value_.Floating);
 
 	// Return default string value
-	return wxEmptyString;
+	return {};
 }
 
 // -----------------------------------------------------------------------------
@@ -309,7 +280,7 @@ unsigned Property::unsignedValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Int)
-		Log::warning(wxString::Format("Requested Integer value of a %s Property", typeString()));
+		Log::warning("Requested Integer value of a {} Property", typeString());
 
 	// Return value (convert if needed)
 	if (type_ == Type::Int)
@@ -319,12 +290,7 @@ unsigned Property::unsignedValue(bool warn_wrong_type) const
 	else if (type_ == Type::Float)
 		return (int)value_.Floating;
 	else if (type_ == Type::String)
-	{
-		unsigned long tmp;
-		if (val_string_.ToULong(&tmp))
-			return tmp;
-		return 0;
-	}
+		return StrUtil::toUInt(val_string_);
 	else if (type_ == Type::UInt)
 		return value_.Unsigned;
 
@@ -378,7 +344,7 @@ void Property::setValue(double val)
 // -----------------------------------------------------------------------------
 // Sets the property to [val], and changes its type to string if necessary
 // -----------------------------------------------------------------------------
-void Property::setValue(const wxString& val)
+void Property::setValue(std::string_view val)
 {
 	// Change type if necessary
 	if (type_ != Type::String)
@@ -414,7 +380,7 @@ void Property::changeType(Type newtype)
 
 	// Clear string data if changing from string
 	if (type_ == Type::String)
-		val_string_.Clear();
+		val_string_.clear();
 
 	// Update type
 	type_ = newtype;
@@ -426,8 +392,8 @@ void Property::changeType(Type newtype)
 		value_.Integer = 0;
 	else if (type_ == Type::Float)
 		value_.Floating = 0.0f;
-	else if (type_ == Type::String)
-		val_string_ = wxEmptyString;
+	//else if (type_ == Type::String)
+	//	val_string_ = "";
 	else if (type_ == Type::Flag)
 		value_.Boolean = true;
 	else if (type_ == Type::UInt)
@@ -437,7 +403,7 @@ void Property::changeType(Type newtype)
 // -----------------------------------------------------------------------------
 // Returns a string representing the property's value type
 // -----------------------------------------------------------------------------
-wxString Property::typeString() const
+std::string Property::typeString() const
 {
 	switch (type_)
 	{

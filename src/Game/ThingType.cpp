@@ -33,6 +33,7 @@
 #include "ThingType.h"
 #include "Game/Configuration.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 using namespace Game;
 
@@ -366,7 +367,7 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 	// Sprite
 	if (props["sprite"].hasValue())
 	{
-		if (S_CMPNOCASE(props["sprite"].stringValue(), "tnt1a?"))
+		if (StrUtil::equalCI(props["sprite"].stringValue(), "tnt1a?"))
 		{
 			if ((!(props["icon"].hasValue())) && icon_.IsEmpty())
 				icon_ = "tnt1a0";

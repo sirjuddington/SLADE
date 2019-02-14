@@ -64,9 +64,9 @@ namespace
 // -----------------------------------------------------------------------------
 void parseStates(Tokenizer& tz, PropertyList& props)
 {
-	vector<wxString>             states;
-	wxString                     state_first;
-	std::map<wxString, wxString> state_sprites;
+	vector<std::string>                states;
+	std::string                        state_first;
+	std::map<std::string, std::string> state_sprites;
 
 	while (!tz.atEnd())
 	{
@@ -128,7 +128,7 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 	if (!state_sprites[state_first].empty())
 		props["sprite"] = state_sprites[state_first] + "?";
 
-	Log::debug(2, wxString::Format("Parsed states, got sprite %s", CHR(props["sprite"].stringValue())));
+	Log::debug(2, "Parsed states, got sprite {}", props["sprite"].stringValue());
 
 
 
@@ -384,7 +384,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 			// Translation
 			else if (tz.checkNC("translation"))
 			{
-				wxString translation = "\"";
+				std::string translation = "\"";
 				translation += tz.next().text;
 				while (tz.checkNext(","))
 				{
@@ -477,7 +477,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 // -----------------------------------------------------------------------------
 void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 {
-	wxString     name, sprite, group;
+	std::string  name, sprite, group;
 	bool         spritefound = false;
 	char         frame       = 'A';
 	bool         framefound  = false;
@@ -541,7 +541,7 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 		else if (tz.checkNC("scale"))
 			found_props["scale"] = tz.next().asFloat();
 		else if (tz.checkNC("translation1"))
-			found_props["translation"] = wxString::Format("doom%d", tz.next().asInt());
+			found_props["translation"] = fmt::format("doom{}", tz.next().asInt());
 	} while (!tz.check("}") && !tz.atEnd());
 
 	// Add only if a DoomEdNum is present

@@ -678,14 +678,14 @@ bool Class::parse(ParsedStatement& class_statement)
 	}
 
 	// Set editor sprite from parsed states
-	default_properties_["sprite"] = states_.editorSprite();
+	default_properties_["sprite"] = states_.editorSprite().ToStdString();
 
 	// Add DB comment props to default properties
 	for (auto& i : db_properties_)
 	{
 		// Sprite
 		if (S_CMPNOCASE(i.first, "EditorSprite") || S_CMPNOCASE(i.first, "Sprite"))
-			default_properties_["sprite"] = i.second;
+			default_properties_["sprite"] = i.second.ToStdString();
 
 		// Angled
 		else if (S_CMPNOCASE(i.first, "Angled"))
@@ -699,16 +699,16 @@ bool Class::parse(ParsedStatement& class_statement)
 
 		// Icon
 		else if (S_CMPNOCASE(i.first, "Icon"))
-			default_properties_["icon"] = i.second;
+			default_properties_["icon"] = i.second.ToStdString();
 
 		// DB2 Color
 		else if (S_CMPNOCASE(i.first, "Color"))
-			default_properties_["color"] = i.second;
+			default_properties_["color"] = i.second.ToStdString();
 
 		// SLADE 3 Colour (overrides DB2 color)
 		// Good thing US spelling differs from ABC (Aussie/Brit/Canuck) spelling! :p
 		else if (S_CMPNOCASE(i.first, "Colour"))
-			default_properties_["colour"] = i.second;
+			default_properties_["colour"] = i.second.ToStdString();
 
 		// Obsolete thing
 		else if (S_CMPNOCASE(i.first, "Obsolete"))
@@ -884,7 +884,7 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 		// so stuff like arithmetic expressions or comma separated lists won't
 		// really work properly yet
 		if (t + 1 < count)
-			default_properties_[name] = statement.tokens[t + 1];
+			default_properties_[name] = statement.tokens[t + 1].ToStdString();
 
 		// Name only (no value), set as boolean true
 		else if (t < count)
