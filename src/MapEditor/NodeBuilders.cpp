@@ -34,6 +34,7 @@
 #include "NodeBuilders.h"
 #include "Archive/ArchiveManager.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -97,22 +98,22 @@ void NodeBuilders::init()
 			auto node = n_builder->childPTN(b);
 
 			// Option
-			if (S_CMPNOCASE(node->type(), "option"))
+			if (StrUtil::equalCI(node->type(), "option"))
 			{
 				builder.options.push_back(node->name());
 				builder.option_desc.push_back(node->stringValue());
 			}
 
 			// Builder name
-			else if (S_CMPNOCASE(node->name(), "name"))
+			else if (StrUtil::equalCI(node->name(), "name"))
 				builder.name = node->stringValue();
 
 			// Builder command
-			else if (S_CMPNOCASE(node->name(), "command"))
+			else if (StrUtil::equalCI(node->name(), "command"))
 				builder.command = node->stringValue();
 
 			// Builder executable
-			else if (S_CMPNOCASE(node->name(), "executable"))
+			else if (StrUtil::equalCI(node->name(), "executable"))
 				builder.exe = node->stringValue();
 		}
 		builders.push_back(builder);

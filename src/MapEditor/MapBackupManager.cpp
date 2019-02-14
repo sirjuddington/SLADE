@@ -144,7 +144,7 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry::UPtr>& map_data, wxStrin
 	// Check for max backups & remove old ones if over
 	map_dir = backup.dir(map_name.ToStdString());
 	while ((int)map_dir->nChildren() > max_map_backups)
-		backup.removeDir(map_dir->child(0)->name().ToStdString(), map_dir);
+		backup.removeDir(map_dir->child(0)->name(), map_dir);
 
 	// Save backup file
 	Archive::save_backup = false;

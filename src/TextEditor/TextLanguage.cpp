@@ -38,6 +38,7 @@
 #include "Game/ZScript.h"
 #include "Utility/Parser.h"
 #include "Utility/Tokenizer.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -596,119 +597,118 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const wxString& source)
 		auto lang = new TextLanguage(node->name());
 
 		// Check for inheritance
-		if (!node->inherit().IsEmpty())
+		if (!node->inherit().empty())
 		{
 			auto inherit = fromId(node->inherit());
 			if (inherit)
 				inherit->copyTo(lang);
 			else
 				Log::warning(
-					1,
-					wxString::Format(
-						"Warning: Language %s inherits from undefined language %s", node->name(), node->inherit()));
+					1, "Warning: Language {} inherits from undefined language {}", node->name(), node->inherit());
 		}
 
 		// Parse language info
 		for (unsigned c = 0; c < node->nChildren(); c++)
 		{
 			auto child = node->childPTN(c);
+			auto pn_lower = StrUtil::lower(child->name());
 
 			// Language name
-			if (S_CMPNOCASE(child->name(), "name"))
+			if (pn_lower == "name")
 				lang->setName(child->stringValue());
 
 			// Comment begin
-			else if (S_CMPNOCASE(child->name(), "comment_begin"))
+			else if (pn_lower == "comment_begin")
 			{
 				lang->setCommentBeginList(child->stringValues());
 			}
 
 			// Comment end
-			else if (S_CMPNOCASE(child->name(), "comment_end"))
+			else if (pn_lower == "comment_end")
 			{
 				lang->setCommentEndList(child->stringValues());
 			}
 
 			// Line comment
-			else if (S_CMPNOCASE(child->name(), "comment_line"))
+			else if (pn_lower == "comment_line")
 			{
 				lang->setLineCommentList(child->stringValues());
 			}
 
 			// Preprocessor
-			else if (S_CMPNOCASE(child->name(), "preprocessor"))
+			else if (pn_lower == "preprocessor")
 				lang->setPreprocessor(child->stringValue());
 
 			// Case sensitive
-			else if (S_CMPNOCASE(child->name(), "case_sensitive"))
+			else if (pn_lower == "case_sensitive")
 				lang->setCaseSensitive(child->boolValue());
 
 			// Doc comment
-			else if (S_CMPNOCASE(child->name(), "comment_doc"))
+			else if (pn_lower == "comment_doc")
 				lang->setDocComment(child->stringValue());
 
 			// Keyword lookup link
-			else if (S_CMPNOCASE(child->name(), "keyword_link"))
+			else if (pn_lower == "keyword_link")
 				lang->word_lists_[WordType::Keyword].lookup_url = child->stringValue();
 
 			// Constant lookup link
-			else if (S_CMPNOCASE(child->name(), "constant_link"))
+			else if (pn_lower == "constant_link")
 				lang->word_lists_[WordType::Constant].lookup_url = child->stringValue();
 
 			// Function lookup link
-			else if (S_CMPNOCASE(child->name(), "function_link"))
+			else if (pn_lower == "function_link")
 				lang->f_lookup_url_ = child->stringValue();
 
 			// Jump blocks
-			else if (S_CMPNOCASE(child->name(), "blocks"))
+			else if (pn_lower == "blocks")
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->jump_blocks_.push_back(child->stringValue(v));
 			}
-			else if (S_CMPNOCASE(child->name(), "blocks_ignore"))
+			else if (pn_lower == "blocks_ignore")
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->jb_ignore_.push_back(child->stringValue(v));
 			}
 
 			// Block begin
-			else if (S_CMPNOCASE(child->name(), "block_begin"))
+			else if (pn_lower == "block_begin")
 				lang->block_begin_ = child->stringValue();
 
 			// Block end
-			else if (S_CMPNOCASE(child->name(), "block_end"))
+			else if (pn_lower == "block_end")
 				lang->block_end_ = child->stringValue();
 
 			// Preprocessor block begin
-			else if (S_CMPNOCASE(child->name(), "pp_block_begin"))
+			else if (pn_lower == "pp_block_begin")
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->pp_block_begin_.push_back(child->stringValue(v));
 			}
 
 			// Preprocessor block end
-			else if (S_CMPNOCASE(child->name(), "pp_block_end"))
+			else if (pn_lower == "pp_block_end")
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->pp_block_end_.push_back(child->stringValue(v));
 			}
 
 			// Word block begin
-			else if (S_CMPNOCASE(child->name(), "word_block_begin"))
+			else if (pn_lower == "word_block_begin")
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->word_block_begin_.push_back(child->stringValue(v));
 			}
 
 			// Word block end
-			else if (S_CMPNOCASE(child->name(), "word_block_end"))
+			else if (pn_lower == "word_block_end")
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->word_block_end_.push_back(child->stringValue(v));
 			}
 
 			// Keywords
-			else if (S_CMPNOCASE(child->name(), "keywords"))
+			else if (pn_lower == "keywords")
 			{
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
@@ -729,7 +729,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const wxString& source)
 			}
 
 			// Constants
-			else if (S_CMPNOCASE(child->name(), "constants"))
+			else if (pn_lower == "constants")
 			{
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
@@ -750,7 +750,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const wxString& source)
 			}
 
 			// Types
-			else if (S_CMPNOCASE(child->name(), "types"))
+			else if (pn_lower == "types")
 			{
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
@@ -771,7 +771,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const wxString& source)
 			}
 
 			// Properties
-			else if (S_CMPNOCASE(child->name(), "properties"))
+			else if (pn_lower == "properties")
 			{
 				// Go through values
 				for (unsigned v = 0; v < child->nValues(); v++)
@@ -792,7 +792,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const wxString& source)
 			}
 
 			// Functions
-			else if (S_CMPNOCASE(child->name(), "functions"))
+			else if (pn_lower == "functions")
 			{
 				bool lang_has_void = lang->isWord(Keyword, "void") || lang->isWord(Type, "void");
 				if (lang->id_ != "zscript")
@@ -824,7 +824,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, const wxString& source)
 								params,
 								"",
 								"",
-								!child_func->name().Contains("."),
+								!StrUtil::contains(child_func->name(), '.'),
 								child_func->type());
 
 							// Add args

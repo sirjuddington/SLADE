@@ -34,6 +34,7 @@
 #include "Archive/Formats/All.h"
 #include "MainEditor/BinaryControlLump.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -140,7 +141,7 @@ bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
 		auto formatnode = pt_formats->childPTN(a);
 
 		// Create+add new data format
-		new EntryDataFormat(formatnode->name().Lower());
+		new EntryDataFormat(StrUtil::lower(formatnode->name()));
 	}
 
 	return true;

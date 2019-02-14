@@ -217,14 +217,14 @@ void Lexer::setOperatorChars(const wxString& chars)
 // -----------------------------------------------------------------------------
 bool Lexer::processUnknown(LexerState& state)
 {
-	int              u_length = 0;
-	bool             end      = false;
-	bool             pp       = false;
-	vector<wxString> comment_begin_l;
-	wxString         comment_doc;
-	vector<wxString> comment_line_l;
-	wxString         block_begin;
-	wxString         block_end;
+	int                 u_length = 0;
+	bool                end      = false;
+	bool                pp       = false;
+	vector<std::string> comment_begin_l;
+	wxString            comment_doc;
+	vector<std::string> comment_line_l;
+	wxString            block_begin;
+	wxString            block_end;
 
 	if (language_)
 	{
@@ -666,7 +666,7 @@ bool Lexer::checkToken(LexerState& state, int pos, wxString& token) const
 // Writes the fitst index that matched to [found_index] if a valid pointer
 // is passed. Returns true if there's a match, false if not.
 // -----------------------------------------------------------------------------
-bool Lexer::checkToken(LexerState& state, int pos, vector<wxString>& tokens, int* found_idx) const
+bool Lexer::checkToken(LexerState& state, int pos, vector<std::string>& tokens, int* found_idx) const
 {
 	if (!tokens.empty())
 	{

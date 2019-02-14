@@ -81,20 +81,20 @@ public:
 	TextLanguage(const wxString& id);
 	~TextLanguage();
 
-	const wxString&         id() const { return id_; }
-	const wxString&         name() const { return name_; }
-	const wxString&         lineComment() const { return line_comment_l_[preferred_comments_]; }
-	const wxString&         commentBegin() const { return comment_begin_l_[preferred_comments_]; }
-	const wxString&         commentEnd() const { return comment_end_l_[preferred_comments_]; }
-	const vector<wxString>& lineCommentL() const { return line_comment_l_; }
-	const vector<wxString>& commentBeginL() const { return comment_begin_l_; }
-	const vector<wxString>& commentEndL() const { return comment_end_l_; }
-	unsigned                preferedComments() const { return preferred_comments_; }
-	const wxString&         preprocessor() const { return preprocessor_; }
-	const wxString&         docComment() const { return doc_comment_; }
-	bool                    caseSensitive() const { return case_sensitive_; }
-	const wxString&         blockBegin() const { return block_begin_; }
-	const wxString&         blockEnd() const { return block_end_; }
+	const wxString&            id() const { return id_; }
+	const wxString&            name() const { return name_; }
+	const wxString&            lineComment() const { return line_comment_l_[preferred_comments_]; }
+	const wxString&            commentBegin() const { return comment_begin_l_[preferred_comments_]; }
+	const wxString&            commentEnd() const { return comment_end_l_[preferred_comments_]; }
+	const vector<std::string>& lineCommentL() const { return line_comment_l_; }
+	const vector<std::string>& commentBeginL() const { return comment_begin_l_; }
+	const vector<std::string>& commentEndL() const { return comment_end_l_; }
+	unsigned                   preferedComments() const { return preferred_comments_; }
+	const wxString&            preprocessor() const { return preprocessor_; }
+	const wxString&            docComment() const { return doc_comment_; }
+	bool                       caseSensitive() const { return case_sensitive_; }
+	const wxString&            blockBegin() const { return block_begin_; }
+	const wxString&            blockEnd() const { return block_end_; }
 
 	const vector<wxString>& ppBlockBegin() const { return pp_block_begin_; }
 	const vector<wxString>& ppBlockEnd() const { return pp_block_end_; }
@@ -107,9 +107,9 @@ public:
 
 	void setName(const wxString& name) { this->name_ = name; }
 	void setPreferedComments(unsigned index) { preferred_comments_ = index; }
-	void setLineCommentList(vector<wxString> token) { line_comment_l_ = std::move(token); };
-	void setCommentBeginList(vector<wxString> token) { comment_begin_l_ = std::move(token); };
-	void setCommentEndList(vector<wxString> token) { comment_end_l_ = std::move(token); };
+	void setLineCommentList(vector<std::string> token) { line_comment_l_ = std::move(token); };
+	void setCommentBeginList(vector<std::string> token) { comment_begin_l_ = std::move(token); };
+	void setCommentEndList(vector<std::string> token) { comment_end_l_ = std::move(token); };
 	void setPreprocessor(const wxString& token) { preprocessor_ = token; }
 	void setDocComment(const wxString& token) { doc_comment_ = token; }
 	void setCaseSensitive(bool cs) { case_sensitive_ = cs; }
@@ -151,23 +151,23 @@ public:
 	static wxArrayString languageNames();
 
 private:
-	wxString         id_;                            // Used internally
-	wxString         name_;                          // The language 'name' (will show up in the language dropdown, etc)
-	unsigned         preferred_comments_ = 0;        // The preferred comment style index
-	vector<wxString> line_comment_l_     = { "//" }; // A list of supported line comments
-	vector<wxString> comment_begin_l_    = { "/*" }; // A list of supported block comment begin
-	vector<wxString> comment_end_l_      = { "*/" }; // A list of supported block comment end
-	wxString         preprocessor_       = "#";      // The beginning token for a preprocessor directive
-	wxString         doc_comment_;                   // The beginning token for a 'doc' comment (eg. /// in c/c++)
-	bool             case_sensitive_ = false;        // Whether words are case-sensitive
-	vector<wxString> jump_blocks_;       // The keywords to search for when creating jump to list (eg. 'script')
-	vector<wxString> jb_ignore_;         // The keywords to ignore when creating jump to list (eg. 'optional')
-	wxString         block_begin_ = "{"; // The beginning of a block (eg. '{' in c/c++)
-	wxString         block_end_   = "}"; // The end of a block (eg. '}' in c/c++)
-	vector<wxString> pp_block_begin_;    // Preprocessor words to start a folding block (eg. 'ifdef')
-	vector<wxString> pp_block_end_;      // Preprocessor words to end a folding block (eg. 'endif')
-	vector<wxString> word_block_begin_;  // Words to start a folding block (eg. 'do' in lua)
-	vector<wxString> word_block_end_;    // Words to end a folding block (eg. 'end' in lua)
+	wxString            id_;                     // Used internally
+	wxString            name_;                   // The language 'name' (will show up in the language dropdown, etc)
+	unsigned            preferred_comments_ = 0; // The preferred comment style index
+	vector<std::string> line_comment_l_     = { "//" }; // A list of supported line comments
+	vector<std::string> comment_begin_l_    = { "/*" }; // A list of supported block comment begin
+	vector<std::string> comment_end_l_      = { "*/" }; // A list of supported block comment end
+	wxString            preprocessor_       = "#";      // The beginning token for a preprocessor directive
+	wxString            doc_comment_;                   // The beginning token for a 'doc' comment (eg. /// in c/c++)
+	bool                case_sensitive_ = false;        // Whether words are case-sensitive
+	vector<wxString>    jump_blocks_;       // The keywords to search for when creating jump to list (eg. 'script')
+	vector<wxString>    jb_ignore_;         // The keywords to ignore when creating jump to list (eg. 'optional')
+	wxString            block_begin_ = "{"; // The beginning of a block (eg. '{' in c/c++)
+	wxString            block_end_   = "}"; // The end of a block (eg. '}' in c/c++)
+	vector<wxString>    pp_block_begin_;    // Preprocessor words to start a folding block (eg. 'ifdef')
+	vector<wxString>    pp_block_end_;      // Preprocessor words to end a folding block (eg. 'endif')
+	vector<wxString>    word_block_begin_;  // Words to start a folding block (eg. 'do' in lua)
+	vector<wxString>    word_block_end_;    // Words to end a folding block (eg. 'end' in lua)
 
 	// Word lists
 	struct WordList

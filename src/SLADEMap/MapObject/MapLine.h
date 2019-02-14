@@ -18,18 +18,18 @@ public:
 		BackLower   = 0x20,
 	};
 
-	static const wxString PROP_V1;
-	static const wxString PROP_V2;
-	static const wxString PROP_S1;
-	static const wxString PROP_S2;
-	static const wxString PROP_SPECIAL;
-	static const wxString PROP_ID;
-	static const wxString PROP_FLAGS;
-	static const wxString PROP_ARG0;
-	static const wxString PROP_ARG1;
-	static const wxString PROP_ARG2;
-	static const wxString PROP_ARG3;
-	static const wxString PROP_ARG4;
+	inline static const std::string PROP_V1      = "v1";
+	inline static const std::string PROP_V2      = "v2";
+	inline static const std::string PROP_S1      = "sidefront";
+	inline static const std::string PROP_S2      = "sideback";
+	inline static const std::string PROP_SPECIAL = "special";
+	inline static const std::string PROP_ID      = "id";
+	inline static const std::string PROP_FLAGS   = "flags";
+	inline static const std::string PROP_ARG0    = "arg0";
+	inline static const std::string PROP_ARG1    = "arg1";
+	inline static const std::string PROP_ARG2    = "arg2";
+	inline static const std::string PROP_ARG3    = "arg3";
+	inline static const std::string PROP_ARG4    = "arg4";
 
 	MapLine(
 		MapVertex* v1,

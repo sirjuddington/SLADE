@@ -103,10 +103,11 @@ void processIncludes(const std::string& filename, std::string& out);
 void processIncludes(ArchiveEntry* entry, std::string& out, bool use_res = true);
 
 // Conversion
-int    toInt(const std::string& str);
-float  toFloat(const std::string& str);
-double toDouble(const std::string& str);
-bool   toBoolean(const std::string& str);
+int      toInt(const std::string& str);
+unsigned toUInt(const std::string& str);
+float    toFloat(const std::string& str);
+double   toDouble(const std::string& str);
+bool     toBoolean(const std::string& str);
 
 // Joins all given args into a single string
 template<typename... Args> std::string join(const Args&... args)

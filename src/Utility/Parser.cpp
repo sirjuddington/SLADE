@@ -35,6 +35,7 @@
 #include "Parser.h"
 #include "Archive/Archive.h"
 #include "Utility/Tokenizer.h"
+#include "StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -51,13 +52,21 @@ ParseTreeNode::ParseTreeNode(
 	ParseTreeNode*   parent,
 	Parser*          parser,
 	ArchiveTreeNode* archive_dir,
-	const wxString&  type) :
+	std::string_view type) :
 	STreeNode{ parent },
 	type_{ type },
 	parser_{ parser },
 	archive_dir_{ archive_dir }
 {
 	allowDup(true);
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the node's name matches [name] (case-insensitive)
+// -----------------------------------------------------------------------------
+bool ParseTreeNode::nameIsCI(std::string_view name) const
+{
+	return StrUtil::equalCI(name_, name);
 }
 
 // -----------------------------------------------------------------------------
@@ -77,23 +86,23 @@ Property ParseTreeNode::value(unsigned index)
 // Returns the node's value at [index] as a string.
 // If [index] is out of range, returns an empty string
 // -----------------------------------------------------------------------------
-wxString ParseTreeNode::stringValue(unsigned index)
+std::string ParseTreeNode::stringValue(unsigned index)
 {
 	// Check index
 	if (index >= values_.size())
-		return wxEmptyString;
+		return {};
 
-	return values_[index].stringValue();
+	return values_[index].stringValue().ToStdString();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the node's values as a string vector.
 // -----------------------------------------------------------------------------
-vector<wxString> ParseTreeNode::stringValues()
+vector<std::string> ParseTreeNode::stringValues()
 {
-	vector<wxString> string_values;
+	vector<std::string> string_values;
 	for (auto& value : values_)
-		string_values.push_back(value.stringValue());
+		string_values.push_back(value.stringValue().ToStdString());
 	return string_values;
 }
 
@@ -139,7 +148,7 @@ double ParseTreeNode::floatValue(unsigned index)
 // -----------------------------------------------------------------------------
 // Adds a child ParseTreeNode of [name] and [type]
 // -----------------------------------------------------------------------------
-ParseTreeNode* ParseTreeNode::addChildPTN(const wxString& name, const wxString& type)
+ParseTreeNode* ParseTreeNode::addChildPTN(std::string_view name, std::string_view type)
 {
 	auto node   = dynamic_cast<ParseTreeNode*>(addChild(name));
 	node->type_ = type;
@@ -150,9 +159,9 @@ ParseTreeNode* ParseTreeNode::addChildPTN(const wxString& name, const wxString& 
 // Writes an error log message [error], showing the source and current line
 // from tokenizer [tz]
 // -----------------------------------------------------------------------------
-void ParseTreeNode::logError(const Tokenizer& tz, const wxString& error) const
+void ParseTreeNode::logError(const Tokenizer& tz, std::string_view error) const
 {
-	Log::error("Parse Error in {} (Line {}): {}\n", tz.source(), tz.current().line_no, CHR(error));
+	Log::error("Parse Error in {} (Line {}): {}\n", tz.source(), tz.current().line_no, error);
 }
 
 // -----------------------------------------------------------------------------
@@ -173,7 +182,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 		bool test = true;
 		if (tz.current() == "#ifndef")
 			test = false;
-		wxString define = tz.next().text;
+		auto define = tz.next().text;
 		if (parser_->defined(define) == test)
 			return true;
 
@@ -204,7 +213,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 			// Get entry to include
 			auto inc_path  = tz.next().text;
 			auto archive   = archive_dir_->archive();
-			auto inc_entry = archive->entryAtPath(archive_dir_->path().ToStdString() + inc_path);
+			auto inc_entry = archive->entryAtPath(archive_dir_->path() + inc_path);
 			if (!inc_entry) // Try absolute path
 				inc_entry = archive->entryAtPath(inc_path);
 
@@ -319,7 +328,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 bool ParseTreeNode::parse(Tokenizer& tz)
 {
 	// Keep parsing until final } is reached (or end of file)
-	wxString name, type;
+	std::string name, type;
 	while (!tz.atEnd() && tz.current() != '}')
 	{
 		// Check for preprocessor stuff
@@ -341,7 +350,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 
 		// So we have either a node or property name
 		name = tz.current().text;
-		type.Empty();
+		type.clear();
 		if (name.empty())
 		{
 			logError(tz, "Unexpected empty string");
@@ -447,10 +456,10 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 // Node types:     never
 // Node 'inherit': never
 // -----------------------------------------------------------------------------
-void ParseTreeNode::write(wxString& out, int indent) const
+void ParseTreeNode::write(std::string& out, int indent) const
 {
 	// Indentation
-	wxString tabs;
+	std::string tabs;
 	for (int a = 0; a < indent; a++)
 		tabs += "\t";
 
@@ -460,10 +469,10 @@ void ParseTreeNode::write(wxString& out, int indent) const
 		out += type_ + " ";
 
 	// Name
-	if (name_.Contains(" ") || name_.empty())
-		out += wxString::Format("\"%s\"", CHR(name_));
+	if (StrUtil::contains(name_, ' ') || name_.empty())
+		out += fmt::format("\"{}\"", name_);
 	else
-		out += wxString::Format("%s", CHR(name_));
+		out += fmt::format("{}", name_);
 
 	// Inherit
 	if (!inherit_.empty())
@@ -485,10 +494,10 @@ void ParseTreeNode::write(wxString& out, int indent) const
 			{
 			case Property::Type::Boolean:
 			case Property::Type::Flag: out += value.boolValue() ? "true" : "false"; break;
-			case Property::Type::Int: out += wxString::Format("%d", value.intValue()); break;
-			case Property::Type::Float: out += wxString::Format("%1.3f", value.floatValue()); break;
-			case Property::Type::UInt: out += wxString::Format("%u", value.unsignedValue()); break;
-			default: out += wxString::Format("\"%s\"", value.stringValue()); break;
+			case Property::Type::Int: out += fmt::format("{}", value.intValue()); break;
+			case Property::Type::Float: out += fmt::format("{:1.3f}", value.floatValue()); break;
+			case Property::Type::UInt: out += fmt::format("{}", value.unsignedValue()); break;
+			default: out += fmt::format("\"{}\"", value.stringValue().ToStdString()); break;
 			}
 		}
 
@@ -560,13 +569,13 @@ Parser::Parser(ArchiveTreeNode* dir_root) : archive_dir_root_{ dir_root }
 // 		</base>
 // 	</root>
 // -----------------------------------------------------------------------------
-bool Parser::parseText(MemChunk& mc, const wxString& source) const
+bool Parser::parseText(MemChunk& mc, const std::string& source) const
 {
 	Tokenizer tz;
 
 	// Open the given text data
 	tz.setReadLowerCase(!case_sensitive_);
-	if (!tz.openMem(mc, source.ToStdString()))
+	if (!tz.openMem(mc, source))
 	{
 		Log::error("Unable to open text data for parsing");
 		return false;
@@ -575,13 +584,13 @@ bool Parser::parseText(MemChunk& mc, const wxString& source) const
 	// Do parsing
 	return pt_root_->parse(tz);
 }
-bool Parser::parseText(const wxString& text, const wxString& source) const
+bool Parser::parseText(const std::string& text, const std::string& source) const
 {
 	Tokenizer tz;
 
 	// Open the given text data
 	tz.setReadLowerCase(!case_sensitive_);
-	if (!tz.openString(text.ToStdString(), 0, 0, source.ToStdString()))
+	if (!tz.openString(text, 0, 0, source))
 	{
 		Log::error("Unable to open text data for parsing");
 		return false;
@@ -589,4 +598,24 @@ bool Parser::parseText(const wxString& text, const wxString& source) const
 
 	// Do parsing
 	return pt_root_->parse(tz);
+}
+
+// -----------------------------------------------------------------------------
+// Adds [def] to the #defines list
+// -----------------------------------------------------------------------------
+void Parser::define(std::string_view def)
+{
+	defines_.emplace_back(def);
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if [def] has been previously #defined (case-insensitive)
+// -----------------------------------------------------------------------------
+bool Parser::defined(std::string_view def)
+{
+	for (const auto& defined_str : defines_)
+		if (StrUtil::equalCI(defined_str, def))
+			return true;
+
+	return false;
 }

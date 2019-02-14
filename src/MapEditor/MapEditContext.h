@@ -7,6 +7,7 @@
 #include "Edit/LineDraw.h"
 #include "Edit/MoveObjects.h"
 #include "Edit/ObjectEdit.h"
+#include "General/Clipboard.h"
 #include "General/SAction.h"
 #include "General/UI.h"
 #include "General/UndoRedo.h"

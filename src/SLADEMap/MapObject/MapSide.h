@@ -9,15 +9,15 @@ class MapSide : public MapObject
 	friend class SideList;
 
 public:
-	static const wxString TEX_NONE;
+	inline static const std::string TEX_NONE = "-";
 
 	// UDMF property names
-	static const wxString PROP_SECTOR;
-	static const wxString PROP_TEXUPPER;
-	static const wxString PROP_TEXMIDDLE;
-	static const wxString PROP_TEXLOWER;
-	static const wxString PROP_OFFSETX;
-	static const wxString PROP_OFFSETY;
+	inline static const std::string PROP_SECTOR    = "sector";
+	inline static const std::string PROP_TEXUPPER  = "texturetop";
+	inline static const std::string PROP_TEXMIDDLE = "texturemiddle";
+	inline static const std::string PROP_TEXLOWER  = "texturebottom";
+	inline static const std::string PROP_OFFSETX   = "offsetx";
+	inline static const std::string PROP_OFFSETY   = "offsety";
 
 	MapSide(
 		MapSector*      sector     = nullptr,

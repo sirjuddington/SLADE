@@ -36,26 +36,6 @@
 
 // -----------------------------------------------------------------------------
 //
-// Variables
-//
-// -----------------------------------------------------------------------------
-const wxString MapThing::PROP_X       = "x";
-const wxString MapThing::PROP_Y       = "y";
-const wxString MapThing::PROP_Z       = "height";
-const wxString MapThing::PROP_TYPE    = "type";
-const wxString MapThing::PROP_ANGLE   = "angle";
-const wxString MapThing::PROP_FLAGS   = "flags";
-const wxString MapThing::PROP_ARG0    = "arg0";
-const wxString MapThing::PROP_ARG1    = "arg1";
-const wxString MapThing::PROP_ARG2    = "arg2";
-const wxString MapThing::PROP_ARG3    = "arg3";
-const wxString MapThing::PROP_ARG4    = "arg4";
-const wxString MapThing::PROP_ID      = "id";
-const wxString MapThing::PROP_SPECIAL = "special";
-
-
-// -----------------------------------------------------------------------------
-//
 // MapThing Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -90,34 +70,33 @@ MapThing::MapThing(const Vec3d& pos, short type, ParseTreeNode* def) :
 	ParseTreeNode* prop;
 	for (unsigned a = 0; a < def->nChildren(); a++)
 	{
-		prop           = def->childPTN(a);
-		auto& propName = prop->nameRef();
+		prop = def->childPTN(a);
 
 		// Skip required properties
-		if (propName == PROP_X || propName == PROP_Y || propName == PROP_Z || propName == PROP_TYPE)
+		if (prop->name() == PROP_X || prop->name() == PROP_Y || prop->name() == PROP_Z || prop->name() == PROP_TYPE)
 			continue;
 
 		// Builtin properties
-		if (propName == PROP_ANGLE)
+		if (prop->name() == PROP_ANGLE)
 			angle_ = prop->intValue();
-		else if (propName == PROP_FLAGS)
+		else if (prop->name() == PROP_FLAGS)
 			flags_ = prop->intValue();
-		else if (propName == PROP_ARG0)
+		else if (prop->name() == PROP_ARG0)
 			args_[0] = prop->intValue();
-		else if (propName == PROP_ARG1)
+		else if (prop->name() == PROP_ARG1)
 			args_[1] = prop->intValue();
-		else if (propName == PROP_ARG2)
+		else if (prop->name() == PROP_ARG2)
 			args_[2] = prop->intValue();
-		else if (propName == PROP_ARG3)
+		else if (prop->name() == PROP_ARG3)
 			args_[3] = prop->intValue();
-		else if (propName == PROP_ARG4)
+		else if (prop->name() == PROP_ARG4)
 			args_[4] = prop->intValue();
-		else if (propName == PROP_ID)
+		else if (prop->name() == PROP_ID)
 			id_ = prop->intValue();
-		else if (propName == PROP_SPECIAL)
+		else if (prop->name() == PROP_SPECIAL)
 			special_ = prop->intValue();
 		else
-			properties_[prop->nameRef()] = prop->value();
+			properties_[prop->name()] = prop->value();
 	}
 }
 

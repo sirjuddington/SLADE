@@ -215,7 +215,7 @@ void Executables::parse(Parser* p, bool custom)
 void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 {
 	// Get GameExe being parsed
-	auto exe = gameExe(node->name().Lower());
+	auto exe = gameExe(StrUtil::lower(node->name()));
 	if (!exe)
 	{
 		// Create if new
@@ -228,11 +228,10 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 	exe->id = node->name();
 	for (unsigned b = 0; b < node->nChildren(); b++)
 	{
-		auto     prop      = node->childPTN(b);
-		wxString prop_name = prop->name().Lower();
+		auto prop = node->childPTN(b);
 
 		// Config
-		if (prop->type().Lower() == "config")
+		if (StrUtil::equalCI(prop->type(), "config"))
 		{
 			// Update if exists
 			bool found = false;
@@ -254,11 +253,11 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 		}
 
 		// Name
-		else if (prop_name == "name")
+		else if (prop->nameIsCI("name"))
 			exe->name = prop->stringValue();
 
 		// Executable name
-		else if (prop_name == "exe_name")
+		else if (prop->nameIsCI("exe_name"))
 			exe->exe_name = prop->stringValue();
 	}
 
@@ -389,15 +388,14 @@ void Executables::parseExternalExe(ParseTreeNode* node)
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto     prop      = node->childPTN(a);
-		wxString prop_name = prop->name().Lower();
+		auto prop = node->childPTN(a);
 
 		// Entry category
-		if (prop_name == "category")
+		if (prop->nameIsCI("category"))
 			exe.category = prop->stringValue();
 
 		// Path
-		else if (prop_name == "path")
+		else if (prop->nameIsCI("path"))
 			exe.path = prop->stringValue();
 	}
 

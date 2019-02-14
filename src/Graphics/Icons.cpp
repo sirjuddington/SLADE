@@ -110,8 +110,8 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 		icon_set_dir = iconset_entry_list;
 	if (type == General)
 		icon_set_dir = iconset_general;
-	if (icon_set_dir != "Default" && dir->child(icon_set_dir))
-		dir = (ArchiveTreeNode*)dir->child(icon_set_dir);
+	if (icon_set_dir != "Default" && dir->child(icon_set_dir.ToStdString()))
+		dir = (ArchiveTreeNode*)dir->child(icon_set_dir.ToStdString());
 
 	auto& icons    = iconList(type);
 	auto  tempfile = App::path("sladetemp", App::Dir::Temp);

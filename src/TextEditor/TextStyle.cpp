@@ -349,7 +349,7 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 	ts_selection_.parse(root->childPTN("selection")); // Selection style
 	for (auto& style : styles_)                       // Other styles
 	{
-		if (auto style_node = root->childPTN(style.name_))
+		if (auto style_node = root->childPTN(style.name_.ToStdString()))
 			style.parse(style_node);
 		else
 		{

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ArchiveEntry.h"
-#include "General/Clipboard.h"
 #include "Utility/Tree.h"
 
 class ArchiveTreeNode : public STreeNode
@@ -18,9 +17,9 @@ public:
 	ArchiveEntry*                     dirEntry() const { return dir_entry_.get(); }
 
 	// STreeNode
-	wxString name() override;
-	void     addChild(STreeNode* child) override;
-	void     setName(wxString name) override { dir_entry_->name_ = name; }
+	const std::string& name() const override;
+	void               addChild(STreeNode* child) override;
+	void               setName(std::string_view name) override { dir_entry_->setName(name); }
 
 	// Entry Access
 	ArchiveEntry*      entryAt(unsigned index);
@@ -53,12 +52,12 @@ public:
 	typedef std::unique_ptr<ArchiveTreeNode> UPtr;
 
 protected:
-	STreeNode* createChild(wxString name) override
+	STreeNode* createChild(std::string_view name) override
 	{
 		auto node                    = new ArchiveTreeNode();
-		node->dir_entry_->name_      = name;
 		node->archive_               = archive_;
 		node->allow_duplicate_names_ = allow_duplicate_names_;
+		node->dir_entry_->setName(name);
 		return node;
 	}
 

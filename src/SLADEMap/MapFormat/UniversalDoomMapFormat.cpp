@@ -40,6 +40,7 @@
 #include "SLADEMap/MapObjectCollection.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -85,27 +86,27 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 		auto node = root->childPTN(a);
 
 		// Vertex definition
-		if (S_CMPNOCASE(node->name(), "vertex"))
+		if (StrUtil::equalCI(node->name(), "vertex"))
 			defs_vertices.push_back(node);
 
 		// Line definition
-		else if (S_CMPNOCASE(node->name(), "linedef"))
+		else if (StrUtil::equalCI(node->name(), "linedef"))
 			defs_lines.push_back(node);
 
 		// Side definition
-		else if (S_CMPNOCASE(node->name(), "sidedef"))
+		else if (StrUtil::equalCI(node->name(), "sidedef"))
 			defs_sides.push_back(node);
 
 		// Sector definition
-		else if (S_CMPNOCASE(node->name(), "sector"))
+		else if (StrUtil::equalCI(node->name(), "sector"))
 			defs_sectors.push_back(node);
 
 		// Thing definition
-		else if (S_CMPNOCASE(node->name(), "thing"))
+		else if (StrUtil::equalCI(node->name(), "thing"))
 			defs_things.push_back(node);
 
 		// Namespace
-		else if (S_CMPNOCASE(node->name(), "namespace"))
+		else if (StrUtil::equalCI(node->name(), "namespace"))
 			udmf_namespace_ = node->stringValue();
 
 		// Unknown

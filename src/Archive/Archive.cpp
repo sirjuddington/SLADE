@@ -107,7 +107,7 @@ class DirRenameUS : public UndoStep
 public:
 	DirRenameUS(ArchiveTreeNode* dir, std::string_view new_name) :
 		archive_{ dir->archive() },
-		path_{ dir->parent()->path().ToStdString().append(new_name) },
+		path_{ dir->parent()->path().append(new_name) },
 		old_name_{ dir->name() },
 		new_name_{ new_name },
 		prev_state_{ dir->dirEntry()->state() }
@@ -882,7 +882,7 @@ bool Archive::renameDir(ArchiveTreeNode* dir, std::string_view new_name)
 		return false;
 
 	// Rename the directory if needed
-	if (dir->name().ToStdString() == new_name)
+	if (dir->name() == new_name)
 	{
 		if (UndoRedo::currentlyRecording())
 			UndoRedo::currentManager()->recordUndoStep(std::make_unique<DirRenameUS>(dir, new_name));
@@ -1333,7 +1333,7 @@ std::string Archive::detectNamespace(ArchiveEntry* entry)
 
 	// Namespace is the directory's name (in lowercase)
 	if (dir)
-		return StrUtil::lower(dir->name().ToStdString());
+		return StrUtil::lower(dir->name());
 	else
 		return "global"; // Error, just return global
 }
@@ -1605,34 +1605,34 @@ bool Archive::loadFormats(MemChunk& mc)
 	for (unsigned a = 0; a < formats_node->nChildren(); a++)
 	{
 		auto          fmt_desc = (ParseTreeNode*)formats_node->child(a);
-		ArchiveFormat fmt{ fmt_desc->name().ToStdString() };
+		ArchiveFormat fmt{ fmt_desc->name() };
 
 		for (unsigned p = 0; p < fmt_desc->nChildren(); p++)
 		{
 			auto prop = (ParseTreeNode*)fmt_desc->child(p);
 
 			// Format name
-			if (S_CMPNOCASE(prop->name(), "name"))
+			if (StrUtil::equalCI(prop->name(), "name"))
 				fmt.name = prop->stringValue();
 
 			// Supports dirs
-			else if (S_CMPNOCASE(prop->name(), "supports_dirs"))
+			else if (StrUtil::equalCI(prop->name(), "supports_dirs"))
 				fmt.supports_dirs = prop->boolValue();
 
 			// Entry names have extensions
-			else if (S_CMPNOCASE(prop->name(), "names_extensions"))
+			else if (StrUtil::equalCI(prop->name(), "names_extensions"))
 				fmt.names_extensions = prop->boolValue();
 
 			// Max entry name length
-			else if (S_CMPNOCASE(prop->name(), "max_name_length"))
+			else if (StrUtil::equalCI(prop->name(), "max_name_length"))
 				fmt.max_name_length = prop->intValue();
 
 			// Entry format (id)
-			else if (S_CMPNOCASE(prop->name(), "entry_format"))
+			else if (StrUtil::equalCI(prop->name(), "entry_format"))
 				fmt.entry_format = prop->stringValue();
 
 			// Extensions
-			else if (S_CMPNOCASE(prop->name(), "extensions"))
+			else if (StrUtil::equalCI(prop->name(), "extensions"))
 			{
 				for (unsigned e = 0; e < prop->nChildren(); e++)
 				{
@@ -1642,7 +1642,7 @@ bool Archive::loadFormats(MemChunk& mc)
 			}
 
 			// Prefer uppercase entry names
-			else if (S_CMPNOCASE(prop->name(), "prefer_uppercase"))
+			else if (StrUtil::equalCI(prop->name(), "prefer_uppercase"))
 				fmt.prefer_uppercase = prop->boolValue();
 		}
 

@@ -38,6 +38,7 @@
 #include "Graphics/Icons.h"
 #include "UI/WxUtils.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -259,32 +260,32 @@ bool SAction::parse(ParseTreeNode* node)
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
 		auto prop      = node->childPTN(a);
-		auto prop_name = prop->name();
+		auto prop_name = StrUtil::lower(prop->name());
 
 		// Text
-		if (S_CMPNOCASE(prop_name, "text"))
+		if (prop_name == "text")
 			text_ = prop->stringValue();
 
 		// Icon
-		else if (S_CMPNOCASE(prop_name, "icon"))
+		else if (prop_name == "icon")
 			icon_ = prop->stringValue();
 
 		// Help Text
-		else if (S_CMPNOCASE(prop_name, "help_text"))
+		else if (prop_name == "help_text")
 			helptext_ = prop->stringValue();
 
 		// Shortcut
-		else if (S_CMPNOCASE(prop_name, "shortcut"))
+		else if (prop_name == "shortcut")
 			shortcut_ = prop->stringValue();
 
 		// Keybind (shortcut)
-		else if (S_CMPNOCASE(prop_name, "keybind"))
+		else if (prop_name == "keybind")
 			shortcut_ = wxString::Format("kb:%s", prop->stringValue());
 
 		// Type
-		else if (S_CMPNOCASE(prop_name, "type"))
+		else if (prop_name == "type")
 		{
-			wxString lc_type = prop->stringValue().Lower();
+			auto lc_type = StrUtil::lower(prop->stringValue());
 			if (lc_type == "check")
 				type_ = Type::Check;
 			else if (lc_type == "radio")
@@ -292,15 +293,15 @@ bool SAction::parse(ParseTreeNode* node)
 		}
 
 		// Linked CVar
-		else if (S_CMPNOCASE(prop_name, "linked_cvar"))
+		else if (prop_name == "linked_cvar")
 			linked_cvar = prop->stringValue();
 
 		// Custom wx id
-		else if (S_CMPNOCASE(prop_name, "custom_wx_id"))
+		else if (prop_name == "custom_wx_id")
 			custom_wxid = prop->intValue();
 
 		// Reserve ids
-		else if (S_CMPNOCASE(prop_name, "reserve_ids"))
+		else if (prop_name == "reserve_ids")
 			reserved_ids_ = prop->intValue();
 	}
 
@@ -355,7 +356,7 @@ bool SAction::initActions()
 			auto node = root->childPTN(a);
 
 			// Single action
-			if (S_CMPNOCASE(node->type(), "action"))
+			if (StrUtil::equalCI(node->type(), "action"))
 			{
 				auto action = new SAction(node->name(), node->name());
 				if (action->parse(node))
@@ -365,14 +366,14 @@ bool SAction::initActions()
 			}
 
 			// Group of actions
-			else if (S_CMPNOCASE(node->name(), "group"))
+			else if (StrUtil::equalCI(node->name(), "group"))
 			{
 				int group = newGroup();
 
 				for (unsigned b = 0; b < node->nChildren(); b++)
 				{
 					auto group_node = node->childPTN(b);
-					if (S_CMPNOCASE(group_node->type(), "action"))
+					if (StrUtil::equalCI(group_node->type(), "action"))
 					{
 						auto action = new SAction(group_node->name(), group_node->name());
 						if (action->parse(group_node))

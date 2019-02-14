@@ -855,6 +855,19 @@ int StrUtil::toInt(const std::string& str)
 	}
 }
 
+unsigned StrUtil::toUInt(const std::string& str)
+{
+	try
+	{
+		return std::stoul(str);
+	}
+	catch (const std::exception& ex)
+	{
+		Log::error(fmt::format("Can't convert \"{}\" to an unsigned integer: {}", str, ex.what()));
+		return 0;
+	}
+}
+
 float StrUtil::toFloat(const std::string& str)
 {
 	try

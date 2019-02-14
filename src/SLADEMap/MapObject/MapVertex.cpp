@@ -37,15 +37,6 @@
 
 // -----------------------------------------------------------------------------
 //
-// Variables
-//
-// -----------------------------------------------------------------------------
-const wxString MapVertex::PROP_X = "x";
-const wxString MapVertex::PROP_Y = "y";
-
-
-// -----------------------------------------------------------------------------
-//
 // MapVertex Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -68,10 +59,10 @@ MapVertex::MapVertex(const Vec2d& pos, ParseTreeNode* udmf_def) : MapObject(Type
 		prop = udmf_def->childPTN(a);
 
 		// Skip required properties
-		if (prop->nameRef() == PROP_X || prop->nameRef() == PROP_Y)
+		if (prop->name() == PROP_X || prop->name() == PROP_Y)
 			continue;
 
-		properties_[prop->nameRef()] = prop->value();
+		properties_[prop->name()] = prop->value();
 	}
 }
 

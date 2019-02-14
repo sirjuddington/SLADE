@@ -33,6 +33,7 @@
 #include "SpecialPreset.h"
 #include "App.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 using namespace Game;
 
@@ -63,32 +64,31 @@ void SpecialPreset::parse(ParseTreeNode* node)
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto     child = node->childPTN(a);
-		wxString name  = child->name();
+		auto child = node->childPTN(a);
 
 		// Group
-		if (S_CMPNOCASE(child->name(), "group"))
+		if (StrUtil::equalCI(child->name(), "group"))
 			group = child->stringValue();
 
 		// Special
-		else if (S_CMPNOCASE(child->name(), "special"))
+		else if (StrUtil::equalCI(child->name(), "special"))
 			special = child->intValue();
 
 		// Flags
-		else if (S_CMPNOCASE(child->name(), "flags"))
+		else if (StrUtil::equalCI(child->name(), "flags"))
 			for (auto& flag : child->values())
 				flags.push_back(flag.stringValue());
 
 		// Args
-		else if (S_CMPNOCASE(child->name(), "arg1"))
+		else if (StrUtil::equalCI(child->name(), "arg1"))
 			args[0] = child->intValue();
-		else if (S_CMPNOCASE(child->name(), "arg2"))
+		else if (StrUtil::equalCI(child->name(), "arg2"))
 			args[1] = child->intValue();
-		else if (S_CMPNOCASE(child->name(), "arg3"))
+		else if (StrUtil::equalCI(child->name(), "arg3"))
 			args[2] = child->intValue();
-		else if (S_CMPNOCASE(child->name(), "arg4"))
+		else if (StrUtil::equalCI(child->name(), "arg4"))
 			args[3] = child->intValue();
-		else if (S_CMPNOCASE(child->name(), "arg5"))
+		else if (StrUtil::equalCI(child->name(), "arg5"))
 			args[4] = child->intValue();
 	}
 }
@@ -100,14 +100,14 @@ void SpecialPreset::parse(ParseTreeNode* node)
 ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
 {
 	auto node = new ParseTreeNode(parent, nullptr, nullptr, "preset");
-	node->setName(name);
+	node->setName(name.ToStdString());
 
 	// Group
-	wxString ex_group = group;
+	auto ex_group = group;
 	if (ex_group.StartsWith("Custom/"))
 		ex_group = ex_group.Remove(0, 7);
 	if (ex_group != "Custom")
-		node->addChildPTN("group")->addStringValue(ex_group);
+		node->addChildPTN("group")->addStringValue(ex_group.ToStdString());
 
 	// Special
 	node->addChildPTN("special")->addIntValue(special);
@@ -115,12 +115,12 @@ ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
 	// Args
 	for (unsigned a = 0; a < 5; a++)
 		if (args[a] != 0)
-			node->addChildPTN(wxString::Format("arg%d", a + 1))->addIntValue(args[a]);
+			node->addChildPTN(fmt::format("arg{}", a + 1))->addIntValue(args[a]);
 
 	// Flags
 	auto node_flags = node->addChildPTN("flags");
 	for (auto& flag : flags)
-		node_flags->addStringValue(flag);
+		node_flags->addStringValue(flag.ToStdString());
 
 	return node;
 }
@@ -169,7 +169,7 @@ bool Game::loadCustomSpecialPresets()
 		for (unsigned a = 0; a < node->nChildren(); a++)
 		{
 			auto child = node->childPTN(a);
-			if (S_CMPNOCASE(child->type(), "preset"))
+			if (StrUtil::equalCI(child->type(), "preset"))
 			{
 				custom_presets.push_back({});
 				custom_presets.back().parse(child);
@@ -211,7 +211,7 @@ bool Game::saveCustomSpecialPresets()
 		preset.write(&root);
 
 	// Write to file
-	wxString presets;
+	std::string presets;
 	root.write(presets);
 	if (!file.Write(presets))
 	{
@@ -233,7 +233,7 @@ CONSOLE_COMMAND(test_preset_export, 0, false)
 	for (auto& preset : custom_presets)
 		preset.write(&root);
 
-	wxString out;
+	std::string out;
 	root.write(out);
-	Log::console(CHR(out));
+	Log::console(out);
 }

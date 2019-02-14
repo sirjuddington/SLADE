@@ -31,13 +31,13 @@ public:
 	};
 
 	// UDMF properties
-	static const wxString PROP_TEXFLOOR;
-	static const wxString PROP_TEXCEILING;
-	static const wxString PROP_HEIGHTFLOOR;
-	static const wxString PROP_HEIGHTCEILING;
-	static const wxString PROP_LIGHTLEVEL;
-	static const wxString PROP_SPECIAL;
-	static const wxString PROP_ID;
+	inline static const std::string PROP_TEXFLOOR      = "texturefloor";
+	inline static const std::string PROP_TEXCEILING    = "textureceiling";
+	inline static const std::string PROP_HEIGHTFLOOR   = "heightfloor";
+	inline static const std::string PROP_HEIGHTCEILING = "heightceiling";
+	inline static const std::string PROP_LIGHTLEVEL    = "lightlevel";
+	inline static const std::string PROP_SPECIAL       = "special";
+	inline static const std::string PROP_ID            = "id";
 
 	MapSector(
 		int             f_height = 0,

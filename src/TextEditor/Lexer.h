@@ -107,7 +107,7 @@ protected:
 
 	virtual void styleWord(LexerState& state, wxString word);
 	bool         checkToken(LexerState& state, int pos, wxString& token) const;
-	bool         checkToken(LexerState& state, int pos, vector<wxString>& tokens, int* found_idx = nullptr) const;
+	bool         checkToken(LexerState& state, int pos, vector<std::string>& tokens, int* found_idx = nullptr) const;
 };
 
 class ZScriptLexer : public Lexer

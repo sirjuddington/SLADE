@@ -153,7 +153,7 @@ Archive* ArchiveEntry::topParent() const
 // -----------------------------------------------------------------------------
 std::string ArchiveEntry::path(bool include_name) const
 {
-	auto path = parent_->path().ToStdString();
+	auto path = parent_->path();
 	return include_name ? path + name() : path;
 }
 

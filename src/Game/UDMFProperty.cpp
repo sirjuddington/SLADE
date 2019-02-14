@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "UDMFProperty.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -61,42 +62,45 @@ void UDMFProperty::parse(ParseTreeNode* node, const wxString& group)
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
 		auto prop = node->childPTN(a);
+		auto pn_lower = StrUtil::lower(prop->name());
 
 		// Property type
-		if (S_CMPNOCASE(prop->name(), "type"))
+		if (pn_lower == "type")
 		{
-			if (S_CMPNOCASE(prop->stringValue(), "bool"))
+			auto val_lower = StrUtil::lower(prop->stringValue());
+
+			if (val_lower == "bool")
 				type_ = Type::Boolean;
-			else if (S_CMPNOCASE(prop->stringValue(), "int"))
+			else if (val_lower == "int")
 				type_ = Type::Int;
-			else if (S_CMPNOCASE(prop->stringValue(), "float"))
+			else if (val_lower == "float")
 				type_ = Type::Float;
-			else if (S_CMPNOCASE(prop->stringValue(), "string"))
+			else if (val_lower == "string")
 				type_ = Type::String;
-			else if (S_CMPNOCASE(prop->stringValue(), "colour"))
+			else if (val_lower == "colour")
 				type_ = Type::Colour;
-			else if (S_CMPNOCASE(prop->stringValue(), "actionspecial"))
+			else if (val_lower == "actionspecial")
 				type_ = Type::ActionSpecial;
-			else if (S_CMPNOCASE(prop->stringValue(), "sectorspecial"))
+			else if (val_lower == "sectorspecial")
 				type_ = Type::SectorSpecial;
-			else if (S_CMPNOCASE(prop->stringValue(), "thingtype"))
+			else if (val_lower == "thingtype")
 				type_ = Type::ThingType;
-			else if (S_CMPNOCASE(prop->stringValue(), "angle"))
+			else if (val_lower == "angle")
 				type_ = Type::Angle;
-			else if (S_CMPNOCASE(prop->stringValue(), "texture_wall"))
+			else if (val_lower == "texture_wall")
 				type_ = Type::TextureWall;
-			else if (S_CMPNOCASE(prop->stringValue(), "texture_flat"))
+			else if (val_lower == "texture_flat")
 				type_ = Type::TextureFlat;
-			else if (S_CMPNOCASE(prop->stringValue(), "id"))
+			else if (val_lower == "id")
 				type_ = Type::ID;
 		}
 
 		// Property name
-		else if (S_CMPNOCASE(prop->name(), "name"))
+		else if (pn_lower == "name")
 			name_ = prop->stringValue();
 
 		// Default value
-		else if (S_CMPNOCASE(prop->name(), "default"))
+		else if (pn_lower == "default")
 		{
 			switch (type_)
 			{
@@ -117,25 +121,21 @@ void UDMFProperty::parse(ParseTreeNode* node, const wxString& group)
 			// Not sure why I have to do this here, but for whatever reason prop->getIntValue() doesn't work
 			// if the value parsed was hex (or it could be to do with the colour type? who knows)
 			if (type_ == Type::Colour)
-			{
-				long val;
-				prop->stringValue().ToLong(&val, 0);
-				default_value_ = (int)val;
-			}
+				default_value_ = StrUtil::toInt(prop->stringValue());
 
 			has_default_ = true;
 		}
 
 		// Property is a flag
-		else if (S_CMPNOCASE(prop->name(), "flag"))
+		else if (pn_lower == "flag")
 			flag_ = true;
 
 		// Property is a SPAC trigger
-		else if (S_CMPNOCASE(prop->name(), "trigger"))
+		else if (pn_lower == "trigger")
 			trigger_ = true;
 
 		// Possible values
-		else if (S_CMPNOCASE(prop->name(), "values"))
+		else if (pn_lower == "values")
 		{
 			switch (type_)
 			{
@@ -162,7 +162,7 @@ void UDMFProperty::parse(ParseTreeNode* node, const wxString& group)
 		}
 
 		// Show always
-		else if (S_CMPNOCASE(prop->name(), "show_always"))
+		else if (pn_lower == "show_always")
 			show_always_ = prop->boolValue();
 	}
 }

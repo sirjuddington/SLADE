@@ -152,7 +152,7 @@ public:
 				if (auto_entry_replace)
 				{
 					entry = parent_->archive()->entryAtPath(
-						list_->currentDir()->path().ToStdString().append(fn.fileName()));
+						list_->currentDir()->path().append(fn.fileName()));
 					// An entry with that name is already present, so ask about replacing it
 					if (entry && !yes_to_all)
 					{
@@ -160,7 +160,7 @@ public:
 						// we will instead hack the Cancel button into being a "Yes to all" button. This is
 						// despite the existence of a wxID_YESTOALL return value...
 						auto message = fmt::format(
-							"Overwrite existing entry {}{}", list_->currentDir()->path().ToStdString(), fn.fileName());
+							"Overwrite existing entry {}{}", list_->currentDir()->path(), fn.fileName());
 						wxMessageDialog dlg(parent_, message, caption, wxCANCEL | wxYES_NO | wxCENTRE);
 						dlg.SetYesNoCancelLabels(_("Yes"), _("No"), _("Yes to all"));
 						int result = dlg.ShowModal();
@@ -1122,7 +1122,7 @@ bool ArchivePanel::renameEntry(bool each) const
 			entry_list_->setEntriesAutoUpdate(true);
 
 		// Get the current directory's name
-		auto old_name = selected_dirs[a]->name().ToStdString();
+		auto old_name = selected_dirs[a]->name();
 
 		// Prompt for a new name
 		auto new_name = wxGetTextFromUser(
@@ -1221,7 +1221,7 @@ bool ArchivePanel::deleteEntry(bool confirm)
 			MainEditor::window()->archiveManagerPanel()->closeEntryTab(entry.get());
 
 		// Remove the selected directory from the archive
-		archive_->removeDir(selected_dirs[a]->name().ToStdString(), entry_list_->currentDir());
+		archive_->removeDir(selected_dirs[a]->name(), entry_list_->currentDir());
 	}
 	entry_list_->setEntriesAutoUpdate(true);
 

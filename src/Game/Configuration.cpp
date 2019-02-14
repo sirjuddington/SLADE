@@ -180,19 +180,18 @@ void Configuration::readActionSpecials(ParseTreeNode* node, Arg::SpecialMap& sha
 		auto child = node->childPTN(a);
 
 		// Check for 'group'
-		if (S_CMPNOCASE(child->type(), "group"))
+		if (StrUtil::equalCI(child->type(), "group"))
 			readActionSpecials(child, shared_args, &as_defaults);
 
 		// Predeclared argument, for action specials that share the same complex argument
-		else if (S_CMPNOCASE(child->type(), "arg"))
+		else if (StrUtil::equalCI(child->type(), "arg"))
 			shared_args[child->name()].parse(child, &shared_args);
 
 		// Action special
-		else if (S_CMPNOCASE(child->type(), "special"))
+		else if (StrUtil::equalCI(child->type(), "special"))
 		{
 			// Get special id as integer
-			long special;
-			child->name().ToLong(&special);
+			auto special = StrUtil::toInt(child->name());
 
 			// Reset the action special (in case it's being redefined for whatever reason)
 			// action_specials_[special].reset();
@@ -250,15 +249,14 @@ void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_d
 		child = node->childPTN(a);
 
 		// Check for 'group'
-		if (S_CMPNOCASE(child->type(), "group"))
+		if (StrUtil::equalCI(child->type(), "group"))
 			readThingTypes(child, cur_group_defaults);
 
 		// Thing type
-		else if (S_CMPNOCASE(child->type(), "thing"))
+		else if (StrUtil::equalCI(child->type(), "thing"))
 		{
 			// Get thing type as integer
-			long type;
-			child->name().ToLong(&type);
+			auto type = StrUtil::toInt(child->name());
 
 			// Reset the thing type (in case it's being redefined for whatever reason)
 			thing_types_[type].reset();
@@ -290,7 +288,7 @@ void Configuration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist)
 		auto group = block->childPTN(a);
 
 		// Group definition
-		if (S_CMPNOCASE(group->type(), "group"))
+		if (StrUtil::equalCI(group->type(), "group"))
 		{
 			wxString groupname = group->name();
 
@@ -299,7 +297,7 @@ void Configuration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist)
 			{
 				auto def = group->childPTN(b);
 
-				if (S_CMPNOCASE(def->type(), "property"))
+				if (StrUtil::equalCI(def->type(), "property"))
 				{
 					// Parse group defaults
 					plist[def->name()].parse(group, groupname);
@@ -316,7 +314,7 @@ void Configuration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist)
 // Reads a game or port definition from a parsed tree [node]. If [port_section]
 // is true it is a port definition
 // -----------------------------------------------------------------------------
-#define READ_BOOL(obj, field) else if (S_CMPNOCASE(node->name(), #field))(obj) = node->boolValue()
+#define READ_BOOL(obj, field) else if (StrUtil::equalCI(node->name(), #field))(obj) = node->boolValue()
 void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 {
 	for (unsigned a = 0; a < node_game->nChildren(); a++)
@@ -324,11 +322,11 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 		auto node = node_game->childPTN(a);
 
 		// Allow any map name
-		if (S_CMPNOCASE(node->name(), "map_name_any"))
+		if (StrUtil::equalCI(node->name(), "map_name_any"))
 			supported_features_[Feature::AnyMapName] = node->boolValue();
 
 		// Map formats
-		else if (S_CMPNOCASE(node->name(), "map_formats"))
+		else if (StrUtil::equalCI(node->name(), "map_formats"))
 		{
 			// Reset supported formats
 			map_formats_.clear();
@@ -336,19 +334,19 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 			// Go through values
 			for (unsigned v = 0; v < node->nValues(); v++)
 			{
-				if (S_CMPNOCASE(node->stringValue(v), "doom"))
+				if (StrUtil::equalCI(node->stringValue(v), "doom"))
 				{
 					map_formats_[MapFormat::Doom] = true;
 				}
-				else if (S_CMPNOCASE(node->stringValue(v), "hexen"))
+				else if (StrUtil::equalCI(node->stringValue(v), "hexen"))
 				{
 					map_formats_[MapFormat::Hexen] = true;
 				}
-				else if (S_CMPNOCASE(node->stringValue(v), "doom64"))
+				else if (StrUtil::equalCI(node->stringValue(v), "doom64"))
 				{
 					map_formats_[MapFormat::Doom64] = true;
 				}
-				else if (S_CMPNOCASE(node->stringValue(v), "udmf"))
+				else if (StrUtil::equalCI(node->stringValue(v), "udmf"))
 				{
 					map_formats_[MapFormat::UDMF] = true;
 				}
@@ -358,37 +356,37 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 		}
 
 		// Boom extensions
-		else if (S_CMPNOCASE(node->name(), "boom"))
+		else if (StrUtil::equalCI(node->name(), "boom"))
 			supported_features_[Feature::Boom] = node->boolValue();
-		else if (S_CMPNOCASE(node->name(), "boom_sector_flag_start"))
+		else if (StrUtil::equalCI(node->name(), "boom_sector_flag_start"))
 			boom_sector_flag_start_ = node->intValue();
 
 		// UDMF namespace
-		else if (S_CMPNOCASE(node->name(), "udmf_namespace"))
+		else if (StrUtil::equalCI(node->name(), "udmf_namespace"))
 			udmf_namespace_ = node->stringValue();
 
 		// Mixed Textures and Flats
-		else if (S_CMPNOCASE(node->name(), "mix_tex_flats"))
+		else if (StrUtil::equalCI(node->name(), "mix_tex_flats"))
 			supported_features_[Feature::MixTexFlats] = node->boolValue();
 
 		// TX_/'textures' namespace enabled
-		else if (S_CMPNOCASE(node->name(), "tx_textures"))
+		else if (StrUtil::equalCI(node->name(), "tx_textures"))
 			supported_features_[Feature::TxTextures] = node->boolValue();
 
 		// Sky flat
-		else if (S_CMPNOCASE(node->name(), "sky_flat"))
+		else if (StrUtil::equalCI(node->name(), "sky_flat"))
 			sky_flat_ = node->stringValue();
 
 		// Scripting language
-		else if (S_CMPNOCASE(node->name(), "script_language"))
-			script_language_ = node->stringValue().Lower();
+		else if (StrUtil::equalCI(node->name(), "script_language"))
+			script_language_ = StrUtil::lower(node->stringValue());
 
 		// Light levels interval
-		else if (S_CMPNOCASE(node->name(), "light_level_interval"))
+		else if (StrUtil::equalCI(node->name(), "light_level_interval"))
 			setLightLevelInterval(node->intValue());
 
 		// Long names
-		else if (S_CMPNOCASE(node->name(), "long_names"))
+		else if (StrUtil::equalCI(node->name(), "long_names"))
 			supported_features_[Feature::LongNames] = node->boolValue();
 
 		READ_BOOL(udmf_features_[UDMFFeature::Slopes], udmf_slopes);                      // UDMF slopes
@@ -411,7 +409,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 			udmf_features_[UDMFFeature::ThingRotation], udmf_thing_rotation); // UDMF per-thing pitch and yaw rotation
 
 		// Defaults section
-		else if (S_CMPNOCASE(node->name(), "defaults"))
+		else if (StrUtil::equalCI(node->name(), "defaults"))
 		{
 			// Go through defaults blocks
 			for (unsigned b = 0; b < node->nChildren(); b++)
@@ -419,12 +417,12 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 				auto block = node->childPTN(b);
 
 				// Linedef defaults
-				if (S_CMPNOCASE(block->name(), "linedef"))
+				if (StrUtil::equalCI(block->name(), "linedef"))
 				{
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
 						auto def = block->childPTN(c);
-						if (S_CMPNOCASE(def->type(), "udmf"))
+						if (StrUtil::equalCI(def->type(), "udmf"))
 							defaults_line_udmf_[def->name()] = def->value();
 						else
 							defaults_line_[def->name()] = def->value();
@@ -432,12 +430,12 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 				}
 
 				// Sidedef defaults
-				else if (S_CMPNOCASE(block->name(), "sidedef"))
+				else if (StrUtil::equalCI(block->name(), "sidedef"))
 				{
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
 						auto def = block->childPTN(c);
-						if (S_CMPNOCASE(def->type(), "udmf"))
+						if (StrUtil::equalCI(def->type(), "udmf"))
 							defaults_side_udmf_[def->name()] = def->value();
 						else
 							defaults_side_[def->name()] = def->value();
@@ -445,12 +443,12 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 				}
 
 				// Sector defaults
-				else if (S_CMPNOCASE(block->name(), "sector"))
+				else if (StrUtil::equalCI(block->name(), "sector"))
 				{
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
 						auto def = block->childPTN(c);
-						if (S_CMPNOCASE(def->type(), "udmf"))
+						if (StrUtil::equalCI(def->type(), "udmf"))
 							defaults_sector_udmf_[def->name()] = def->value();
 						else
 							defaults_sector_[def->name()] = def->value();
@@ -458,12 +456,12 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 				}
 
 				// Thing defaults
-				else if (S_CMPNOCASE(block->name(), "thing"))
+				else if (StrUtil::equalCI(block->name(), "thing"))
 				{
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
 						auto def = block->childPTN(c);
-						if (S_CMPNOCASE(def->type(), "udmf"))
+						if (StrUtil::equalCI(def->type(), "udmf"))
 							defaults_thing_udmf_[def->name()] = def->value();
 						else
 							defaults_thing_[def->name()] = def->value();
@@ -476,7 +474,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 		}
 
 		// Maps section (game section only)
-		else if (S_CMPNOCASE(node->name(), "maps") && !port_section)
+		else if (StrUtil::equalCI(node->name(), "maps") && !port_section)
 		{
 			// Go through map blocks
 			for (unsigned b = 0; b < node->nChildren(); b++)
@@ -484,7 +482,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 				auto block = node->childPTN(b);
 
 				// Map definition
-				if (S_CMPNOCASE(block->type(), "map"))
+				if (StrUtil::equalCI(block->type(), "map"))
 				{
 					MapConf map;
 					map.mapname = block->name();
@@ -495,7 +493,7 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 						auto prop = block->childPTN(c);
 
 						// Sky texture
-						if (S_CMPNOCASE(prop->name(), "sky"))
+						if (StrUtil::equalCI(prop->name(), "sky"))
 						{
 							// Primary sky texture
 							map.sky1 = prop->stringValue();
@@ -551,7 +549,7 @@ bool Configuration::readConfiguration(
 	case MapFormat::UDMF: parser.define("MAP_UDMF"); break;
 	default: parser.define("MAP_UNKNOWN"); break;
 	}
-	parser.parseText(cfg, source);
+	parser.parseText(cfg.ToStdString(), source.ToStdString());
 
 	// Process parsed data
 	auto base = parser.parseTreeRoot();
@@ -603,29 +601,29 @@ bool Configuration::readConfiguration(
 			continue;
 
 		// A TC configuration may override the base game
-		if (S_CMPNOCASE(node->name(), "game"))
+		if (StrUtil::equalCI(node->name(), "game"))
 			readGameSection(node, false);
 
 		// Action specials section
-		else if (S_CMPNOCASE(node->name(), "action_specials"))
+		else if (StrUtil::equalCI(node->name(), "action_specials"))
 		{
 			Arg::SpecialMap sm;
 			readActionSpecials(node, sm);
 		}
 
 		// Thing types section
-		else if (S_CMPNOCASE(node->name(), "thing_types"))
+		else if (StrUtil::equalCI(node->name(), "thing_types"))
 			readThingTypes(node);
 
 		// Line flags section
-		else if (S_CMPNOCASE(node->name(), "line_flags"))
+		else if (StrUtil::equalCI(node->name(), "line_flags"))
 		{
 			for (unsigned c = 0; c < node->nChildren(); c++)
 			{
 				auto value = node->childPTN(c);
 
 				// Check for 'flag' type
-				if (!(S_CMPNOCASE(value->type(), "flag")))
+				if (!(StrUtil::equalCI(value->type(), "flag")))
 					continue;
 
 				unsigned long flag_val;
@@ -641,22 +639,22 @@ bool Configuration::readConfiguration(
 					{
 						auto prop = value->childPTN(v);
 
-						if (S_CMPNOCASE(prop->name(), "value"))
+						if (StrUtil::equalCI(prop->name(), "value"))
 							flag_val = prop->intValue();
-						else if (S_CMPNOCASE(prop->name(), "udmf"))
+						else if (StrUtil::equalCI(prop->name(), "udmf"))
 						{
 							for (unsigned u = 0; u < prop->nValues(); u++)
 								flag_udmf += prop->stringValue(u) + " ";
 							flag_udmf.RemoveLast(1);
 						}
-						else if (S_CMPNOCASE(prop->name(), "activation"))
+						else if (StrUtil::equalCI(prop->name(), "activation"))
 							activation = prop->boolValue();
 					}
 				}
 				else
 				{
 					// Short definition
-					value->name().ToULong(&flag_val);
+					flag_val = StrUtil::toUInt(value->name());
 					flag_name = value->stringValue();
 				}
 
@@ -679,14 +677,14 @@ bool Configuration::readConfiguration(
 		}
 
 		// Line triggers section
-		else if (S_CMPNOCASE(node->name(), "line_triggers"))
+		else if (StrUtil::equalCI(node->name(), "line_triggers"))
 		{
 			for (unsigned c = 0; c < node->nChildren(); c++)
 			{
 				auto value = node->childPTN(c);
 
 				// Check for 'trigger' type
-				if (!(S_CMPNOCASE(value->type(), "trigger")))
+				if (!(StrUtil::equalCI(value->type(), "trigger")))
 					continue;
 
 				long     flag_val;
@@ -701,9 +699,9 @@ bool Configuration::readConfiguration(
 					{
 						auto prop = value->childPTN(v);
 
-						if (S_CMPNOCASE(prop->name(), "value"))
+						if (StrUtil::equalCI(prop->name(), "value"))
 							flag_val = prop->intValue();
-						else if (S_CMPNOCASE(prop->name(), "udmf"))
+						else if (StrUtil::equalCI(prop->name(), "udmf"))
 						{
 							for (unsigned u = 0; u < prop->nValues(); u++)
 								flag_udmf += prop->stringValue(u) + " ";
@@ -714,7 +712,7 @@ bool Configuration::readConfiguration(
 				else
 				{
 					// Short definition
-					value->name().ToLong(&flag_val);
+					flag_val  = StrUtil::toInt(value->name());
 					flag_name = value->stringValue();
 				}
 
@@ -737,14 +735,14 @@ bool Configuration::readConfiguration(
 		}
 
 		// Thing flags section
-		else if (S_CMPNOCASE(node->name(), "thing_flags"))
+		else if (StrUtil::equalCI(node->name(), "thing_flags"))
 		{
 			for (unsigned c = 0; c < node->nChildren(); c++)
 			{
 				auto value = node->childPTN(c);
 
 				// Check for 'flag' type
-				if (!(S_CMPNOCASE(value->type(), "flag")))
+				if (!(StrUtil::equalCI(value->type(), "flag")))
 					continue;
 
 				long     flag_val;
@@ -759,9 +757,9 @@ bool Configuration::readConfiguration(
 					{
 						auto prop = value->childPTN(v);
 
-						if (S_CMPNOCASE(prop->name(), "value"))
+						if (StrUtil::equalCI(prop->name(), "value"))
 							flag_val = prop->intValue();
-						else if (S_CMPNOCASE(prop->name(), "udmf"))
+						else if (StrUtil::equalCI(prop->name(), "udmf"))
 						{
 							for (unsigned u = 0; u < prop->nValues(); u++)
 								flag_udmf += prop->stringValue(u) + " ";
@@ -772,7 +770,7 @@ bool Configuration::readConfiguration(
 				else
 				{
 					// Short definition
-					value->name().ToLong(&flag_val);
+					flag_val  = StrUtil::toInt(value->name());
 					flag_name = value->stringValue();
 				}
 
@@ -795,19 +793,18 @@ bool Configuration::readConfiguration(
 		}
 
 		// Sector types section
-		else if (S_CMPNOCASE(node->name(), "sector_types"))
+		else if (StrUtil::equalCI(node->name(), "sector_types"))
 		{
 			for (unsigned c = 0; c < node->nChildren(); c++)
 			{
 				auto value = node->childPTN(c);
 
 				// Check for 'type'
-				if (!(S_CMPNOCASE(value->type(), "type")))
+				if (!(StrUtil::equalCI(value->type(), "type")))
 					continue;
 
 				// Parse type value
-				long type_val;
-				value->name().ToLong(&type_val);
+				int type_val = StrUtil::toInt(value->name());
 
 				// Set type name
 				sector_types_[type_val] = value->stringValue();
@@ -815,7 +812,7 @@ bool Configuration::readConfiguration(
 		}
 
 		// UDMF properties section
-		else if (S_CMPNOCASE(node->name(), "udmf_properties"))
+		else if (StrUtil::equalCI(node->name(), "udmf_properties"))
 		{
 			// Parse vertex block properties (if any)
 			auto block = node->childPTN("vertex");
@@ -844,12 +841,12 @@ bool Configuration::readConfiguration(
 		}
 
 		// Special Presets section
-		else if (S_CMPNOCASE(node->name(), "special_presets"))
+		else if (StrUtil::equalCI(node->name(), "special_presets"))
 		{
 			for (unsigned c = 0; c < node->nChildren(); c++)
 			{
 				auto preset = node->childPTN(c);
-				if (S_CMPNOCASE(preset->type(), "preset"))
+				if (StrUtil::equalCI(preset->type(), "preset"))
 				{
 					special_presets_.push_back({});
 					special_presets_.back().parse(preset);

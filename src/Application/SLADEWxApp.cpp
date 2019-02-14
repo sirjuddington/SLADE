@@ -684,7 +684,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	App::Version stable, beta;
 	std::string  bin_stable, installer_stable, bin_beta; // Currently unused but may be useful in the future
 	Parser       parser;
-	if (parser.parseText(e.GetString()))
+	if (parser.parseText(e.GetString().ToStdString()))
 	{
 		// Stable
 		auto node_stable = parser.parseTreeRoot()->childPTN("stable");

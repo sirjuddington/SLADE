@@ -38,20 +38,6 @@
 
 // -----------------------------------------------------------------------------
 //
-// Variables
-//
-// -----------------------------------------------------------------------------
-const wxString MapSide::TEX_NONE       = "-";
-const wxString MapSide::PROP_SECTOR    = "sector";
-const wxString MapSide::PROP_TEXUPPER  = "texturetop";
-const wxString MapSide::PROP_TEXMIDDLE = "texturemiddle";
-const wxString MapSide::PROP_TEXLOWER  = "texturebottom";
-const wxString MapSide::PROP_OFFSETX   = "offsetx";
-const wxString MapSide::PROP_OFFSETY   = "offsety";
-
-
-// -----------------------------------------------------------------------------
-//
 // MapSide Class Functions
 //
 // -----------------------------------------------------------------------------

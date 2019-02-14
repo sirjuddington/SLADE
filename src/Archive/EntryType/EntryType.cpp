@@ -37,6 +37,7 @@
 #include "General/Console/Console.h"
 #include "MainEditor/MainEditor.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -328,7 +329,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const wxString& source)
 {
 	// Parse the definition
 	Parser p;
-	p.parseText(mc, source);
+	p.parseText(mc, source.ToStdString());
 
 	// Get entry_types tree
 	auto pt_etypes = p.parseTreeRoot()->childPTN("entry_types");
@@ -344,12 +345,12 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const wxString& source)
 		auto typenode = pt_etypes->childPTN(a);
 
 		// Create new entry type
-		auto ntype = new EntryType{ typenode->name().Lower() };
+		auto ntype = new EntryType{ StrUtil::lower(typenode->name()) };
 
 		// Copy from existing type if inherited
-		if (!typenode->inherit().IsEmpty())
+		if (!typenode->inherit().empty())
 		{
-			auto parent_type = fromId(typenode->inherit().Lower());
+			auto parent_type = fromId(StrUtil::lower(typenode->inherit()));
 
 			if (parent_type != unknownType())
 				parent_type->copyToType(ntype);
@@ -363,21 +364,22 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const wxString& source)
 		{
 			// Get child as ParseTreeNode
 			auto fieldnode = typenode->childPTN(b);
+			auto fn_name   = StrUtil::lower(fieldnode->name());
 
 			// Process it
-			if (S_CMPNOCASE(fieldnode->name(), "name")) // Name field
+			if (fn_name == "name") // Name field
 			{
 				ntype->name_ = fieldnode->stringValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "detectable")) // Detectable field
+			else if (fn_name == "detectable") // Detectable field
 			{
 				ntype->detectable_ = fieldnode->boolValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "export_ext")) // Export Extension field
+			else if (fn_name == "export_ext") // Export Extension field
 			{
 				ntype->extension_ = fieldnode->stringValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "format")) // Format field
+			else if (fn_name == "format") // Format field
 			{
 				wxString format_string = fieldnode->stringValue();
 				ntype->format_         = EntryDataFormat::format(format_string);
@@ -387,68 +389,68 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const wxString& source)
 					Log::warning(
 						wxString::Format("Entry type %s requires undefined format %s", ntype->id(), format_string));
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "icon")) // Icon field
+			else if (fn_name == "icon") // Icon field
 			{
 				ntype->icon_ = fieldnode->stringValue();
 				if (ntype->icon_.StartsWith("e_"))
 					ntype->icon_ = ntype->icon_.Mid(2);
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "editor")) // Editor field (to be removed)
+			else if (fn_name == "editor") // Editor field (to be removed)
 			{
 				ntype->editor_ = fieldnode->stringValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "section")) // Section field
+			else if (fn_name == "section") // Section field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->section_.push_back(fieldnode->stringValue(v).Lower());
+					ntype->section_.emplace_back(StrUtil::lower(fieldnode->stringValue(v)));
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "match_ext")) // Match Extension field
+			else if (fn_name == "match_ext") // Match Extension field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_extension_.push_back(fieldnode->stringValue(v).Upper());
+					ntype->match_extension_.emplace_back(StrUtil::upper(fieldnode->stringValue(v)));
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "match_name")) // Match Name field
+			else if (fn_name == "match_name") // Match Name field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_name_.push_back(fieldnode->stringValue(v).Upper());
+					ntype->match_name_.emplace_back(StrUtil::upper(fieldnode->stringValue(v)));
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "match_extorname")) // Match name or extension
+			else if (fn_name == "match_extorname") // Match name or extension
 			{
 				ntype->match_ext_or_name_ = fieldnode->boolValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "size")) // Size field
+			else if (fn_name == "size") // Size field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->match_size_.push_back(fieldnode->intValue(v));
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "min_size")) // Min Size field
+			else if (fn_name == "min_size") // Min Size field
 			{
 				ntype->size_limit_[0] = fieldnode->intValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "max_size")) // Max Size field
+			else if (fn_name == "max_size") // Max Size field
 			{
 				ntype->size_limit_[1] = fieldnode->intValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "size_multiple")) // Size Multiple field
+			else if (fn_name == "size_multiple") // Size Multiple field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->size_multiple_.push_back(fieldnode->intValue(v));
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "reliability")) // Reliability field
+			else if (fn_name == "reliability") // Reliability field
 			{
 				ntype->reliability_ = fieldnode->intValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "match_archive")) // Archive field
+			else if (fn_name == "match_archive") // Archive field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_archive_.push_back(fieldnode->stringValue(v).Lower());
+					ntype->match_archive_.emplace_back(StrUtil::lower(fieldnode->stringValue(v)));
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "extra")) // Extra properties
+			else if (fn_name == "extra") // Extra properties
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->extra_.addFlag(fieldnode->stringValue(v));
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "category")) // Type category
+			else if (fn_name == "category") // Type category
 			{
 				ntype->category_ = fieldnode->stringValue();
 
@@ -465,15 +467,14 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const wxString& source)
 				if (!exists)
 					entry_categories.push_back(ntype->category_);
 			}
-			else if (S_CMPNOCASE(fieldnode->name(), "image_format")) // Image format hint
+			else if (fn_name == "image_format") // Image format hint
 				ntype->extra_["image_format"] = fieldnode->stringValue(0);
-			else if (S_CMPNOCASE(fieldnode->name(), "colour")) // Colour
+			else if (fn_name == "colour") // Colour
 			{
 				if (fieldnode->nValues() >= 3)
 					ntype->colour_ = ColRGBA(fieldnode->intValue(0), fieldnode->intValue(1), fieldnode->intValue(2));
 				else
-					Log::warning(
-						wxString::Format("Not enough colour components defined for entry type %s", ntype->id()));
+					Log::warning("Not enough colour components defined for entry type {}", ntype->id());
 			}
 			else
 			{

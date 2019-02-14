@@ -7,19 +7,20 @@ class MapThing : public MapObject
 	friend class SLADEMap;
 
 public:
-	static const wxString PROP_X;
-	static const wxString PROP_Y;
-	static const wxString PROP_Z;
-	static const wxString PROP_TYPE;
-	static const wxString PROP_ANGLE;
-	static const wxString PROP_FLAGS;
-	static const wxString PROP_ARG0;
-	static const wxString PROP_ARG1;
-	static const wxString PROP_ARG2;
-	static const wxString PROP_ARG3;
-	static const wxString PROP_ARG4;
-	static const wxString PROP_ID;
-	static const wxString PROP_SPECIAL;
+	// UDMF property names
+	inline static const std::string PROP_X       = "x";
+	inline static const std::string PROP_Y       = "y";
+	inline static const std::string PROP_Z       = "height";
+	inline static const std::string PROP_TYPE    = "type";
+	inline static const std::string PROP_ANGLE   = "angle";
+	inline static const std::string PROP_FLAGS   = "flags";
+	inline static const std::string PROP_ARG0    = "arg0";
+	inline static const std::string PROP_ARG1    = "arg1";
+	inline static const std::string PROP_ARG2    = "arg2";
+	inline static const std::string PROP_ARG3    = "arg3";
+	inline static const std::string PROP_ARG4    = "arg4";
+	inline static const std::string PROP_ID      = "id";
+	inline static const std::string PROP_SPECIAL = "special";
 
 	MapThing(
 		const Vec3d&  pos     = { 0., 0., 0. },

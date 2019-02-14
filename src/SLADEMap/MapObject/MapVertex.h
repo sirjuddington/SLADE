@@ -12,8 +12,8 @@ class MapVertex : public MapObject
 public:
 	typedef std::unique_ptr<MapVertex> UPtr;
 
-	static const wxString PROP_X;
-	static const wxString PROP_Y;
+	inline static const std::string PROP_X = "x";
+	inline static const std::string PROP_Y = "y";
 
 	MapVertex(const Vec2d& pos);
 	MapVertex(const Vec2d& pos, ParseTreeNode* udmf_def);

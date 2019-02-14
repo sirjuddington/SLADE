@@ -40,20 +40,6 @@
 
 // -----------------------------------------------------------------------------
 //
-// Variables
-//
-// -----------------------------------------------------------------------------
-const wxString MapSector::PROP_TEXFLOOR      = "texturefloor";
-const wxString MapSector::PROP_TEXCEILING    = "textureceiling";
-const wxString MapSector::PROP_HEIGHTFLOOR   = "heightfloor";
-const wxString MapSector::PROP_HEIGHTCEILING = "heightceiling";
-const wxString MapSector::PROP_LIGHTLEVEL    = "lightlevel";
-const wxString MapSector::PROP_SPECIAL       = "special";
-const wxString MapSector::PROP_ID            = "id";
-
-
-// -----------------------------------------------------------------------------
-//
 // MapSector Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -112,7 +98,7 @@ MapSector::MapSector(const wxString& f_tex, const wxString& c_tex, ParseTreeNode
 		else if (prop->nameIsCI(PROP_ID))
 			id_ = prop->intValue();
 		else
-			properties_[prop->nameRef()] = prop->value();
+			properties_[prop->name()] = prop->value();
 	}
 }
 

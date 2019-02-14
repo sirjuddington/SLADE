@@ -350,10 +350,10 @@ bool DirArchive::removeDir(std::string_view path, ArchiveTreeNode* base)
 // -----------------------------------------------------------------------------
 bool DirArchive::renameDir(ArchiveTreeNode* dir, std::string_view new_name)
 {
-	auto path = dir->parent()->path().ToStdString();
+	auto path = dir->parent()->path();
 	if (separator_ != '/')
 		std::replace(path.begin(), path.end(), '/', separator_);
-	StringPair rename(path + dir->name().ToStdString(), fmt::format("{}{}", path, new_name));
+	StringPair rename(path + dir->name(), fmt::format("{}{}", path, new_name));
 	renamed_dirs_.push_back(rename);
 	Log::info(2, "RENAME {} to {}", rename.first, rename.second);
 

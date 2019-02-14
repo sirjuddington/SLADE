@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Tree.h"
+#include "StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -70,12 +71,9 @@ STreeNode::~STreeNode()
 // Returns the 'path' to this node, ie, the names of all its parent nodes each
 // separated by a / (including the name of this node)
 // -----------------------------------------------------------------------------
-wxString STreeNode::path()
+std::string STreeNode::path()
 {
-	if (!parent_)
-		return name() + "/";
-	else
-		return parent_->path() + name() + "/";
+	return !parent_ ? name() + '/' : parent_->path() + name() + '/';
 }
 
 // -----------------------------------------------------------------------------
@@ -95,92 +93,86 @@ STreeNode* STreeNode::child(unsigned index)
 // Can also find deeper child nodes if a path is given in [name].
 // Returns null if no match is found
 // -----------------------------------------------------------------------------
-STreeNode* STreeNode::child(wxString name)
+STreeNode* STreeNode::child(std::string_view name)
 {
 	// Check name was given
-	if (name.IsEmpty())
+	if (name.empty())
 		return nullptr;
 
 	// If name ends with /, remove it
-	if (name.EndsWith("/"))
-		name.RemoveLast(1);
-
-	// Convert name to path for processing
-	wxFileName fn(name);
+	if (StrUtil::endsWith(name, '/') || StrUtil::endsWith(name, '\\'))
+		name.remove_suffix(1);
 
 	// If no directories were given
-	if (fn.GetDirCount() == 0)
+	auto first_sep = name.find_first_of("/\\");
+	if (first_sep == std::string_view::npos)
 	{
 		// Find child of this node
 		for (auto& child : children_)
 		{
-			if (S_CMPNOCASE(name, child->name()))
+			if (StrUtil::equalCI(name, child->name()))
 				return child;
 		}
 
 		// Child not found
 		return nullptr;
 	}
-	else
-	{
-		// Directories were given, get the first directory
-		wxString dir = fn.GetDirs()[0];
 
-		// See if it is a child of this node
-		auto c = child(dir);
-		if (c)
-		{
-			// It is, remove the first directory and continue searching that child
-			fn.RemoveDir(0);
-			return c->child(fn.GetFullPath(wxPATH_UNIX));
-		}
-		else
-			return nullptr; // Child doesn't exist
+	// Directories were given, get the first directory
+	auto dir = name.substr(0, first_sep);
+
+	// See if it is a child of this node
+	auto cnode = child(dir);
+	if (cnode)
+	{
+		// It is, remove the first directory and continue searching that child
+		name.remove_prefix(first_sep + 1);
+		return cnode->child(name);
 	}
+
+	return nullptr; // Child doesn't exist
 }
 
 // -----------------------------------------------------------------------------
 // Returns a list of all the node's children matching [name].
 // Also handles paths as per getChild
 // -----------------------------------------------------------------------------
-vector<STreeNode*> STreeNode::children(wxString name)
+vector<STreeNode*> STreeNode::children(std::string_view name)
 {
 	// Init return vector
 	vector<STreeNode*> ret;
 
 	// Check name was given
-	if (name.IsEmpty())
+	if (name.empty())
 		return ret;
 
 	// If name ends with /, remove it
-	if (name.EndsWith("/"))
-		name.RemoveLast(1);
-
-	// Convert name to path for processing
-	wxFileName fn(name);
+	if (StrUtil::endsWith(name, '/') || StrUtil::endsWith(name, '\\'))
+		name.remove_suffix(1);
 
 	// If no directories were given
-	if (fn.GetDirCount() == 0)
+	auto first_sep = name.find_first_of("/\\");
+	if (first_sep == std::string_view::npos)
 	{
 		// Find child of this node
-		for (auto& child : children_)
+		for (auto child : children_)
 		{
-			if (S_CMPNOCASE(name, child->name()))
+			if (StrUtil::equalCI(name, child->name()))
 				ret.push_back(child);
 		}
 	}
 	else
 	{
 		// Directories were given, get the first directory
-		wxString dir = fn.GetDirs()[0];
+		auto dir = name.substr(0, first_sep);
 
 		// See if it is a child of this node
-		auto c = child(dir);
-		if (c)
+		auto cnode = child({ dir.data(), dir.size() });
+		if (cnode)
 		{
 			// It is, remove the first directory and continue searching that child
-			fn.RemoveDir(0);
-			return c->children(fn.GetFullPath(wxPATH_UNIX));
+			name.remove_prefix(first_sep + 1);
+			return cnode->children(name);
 		}
 	}
 
@@ -200,59 +192,57 @@ void STreeNode::addChild(STreeNode* child)
 // Creates a new child node matching [name] and adds it to the node's children.
 // Also works recursively if a path is given
 // -----------------------------------------------------------------------------
-STreeNode* STreeNode::addChild(wxString name)
+STreeNode* STreeNode::addChild(std::string_view name)
 {
 	// Check name was given
-	if (name.IsEmpty())
+	if (name.empty())
 		return nullptr;
 
 	// If name ends with /, remove it
-	if (name.EndsWith("/"))
-		name.RemoveLast(1);
-
-	// Convert name to path for processing
-	wxFileName fn(name);
+	if (StrUtil::endsWith(name, '/') || StrUtil::endsWith(name, '\\'))
+		name.remove_suffix(1);
 
 	// If no directories were given
-	if (fn.GetDirCount() == 0)
+	auto first_sep = name.find_first_of("/\\");
+	if (first_sep == std::string_view::npos)
 	{
 		// If child name duplication is disallowed,
 		// check if a child with this name exists
-		STreeNode* c = nullptr;
+		STreeNode* cnode = nullptr;
 		if (!allow_dup_child_)
-			c = child(name);
+			cnode = child(name);
 
 		// If it doesn't exist, create it
-		if (!c)
+		if (!cnode)
 		{
-			c = createChild(name);
-			addChild(c);
+			cnode = createChild(name);
+			addChild(cnode);
 		}
 
 		// Return the created child
-		return c;
+		return cnode;
 	}
 	else
 	{
 		// Directories were given, get the first directory
-		wxString dir = fn.GetDirs()[0];
+		auto dir = name.substr(0, first_sep);
 
 		// If child name duplication is disallowed,
 		// check if a child with this name exists
-		STreeNode* c = nullptr;
+		STreeNode* cnode = nullptr;
 		if (!allow_dup_child_)
-			c = child(dir);
+			cnode = child(dir);
 
 		// If it doesn't exist, create it
-		if (!c)
+		if (!cnode)
 		{
-			c = createChild(dir);
-			addChild(c);
+			cnode = createChild(dir);
+			addChild(cnode);
 		}
 
 		// Continue adding child nodes
-		fn.RemoveDir(0);
-		return c->addChild(fn.GetFullPath(wxPATH_UNIX));
+		name.remove_prefix(first_sep + 1);
+		return cnode->addChild(name);
 	}
 }
 

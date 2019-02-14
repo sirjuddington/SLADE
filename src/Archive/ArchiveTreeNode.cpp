@@ -87,11 +87,13 @@ Archive* ArchiveTreeNode::archive() const
 // -----------------------------------------------------------------------------
 // Returns the node (directory) name
 // -----------------------------------------------------------------------------
-wxString ArchiveTreeNode::name()
+const std::string& ArchiveTreeNode::name() const
 {
+	static std::string no_name = "ERROR";
+
 	// Check dir entry exists
 	if (!dir_entry_)
-		return "ERROR";
+		return no_name;
 
 	return dir_entry_->name();
 }
@@ -530,7 +532,7 @@ bool ArchiveTreeNode::exportTo(std::string_view path)
 
 	// Export subdirectories
 	for (auto& subdir : children_)
-		((ArchiveTreeNode*)subdir)->exportTo(fmt::format("{}/{}", path, subdir->name().ToStdString()));
+		dynamic_cast<ArchiveTreeNode*>(subdir)->exportTo(fmt::format("{}/{}", path, subdir->name()));
 
 	return true;
 }

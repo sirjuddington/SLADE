@@ -40,25 +40,6 @@
 
 // -----------------------------------------------------------------------------
 //
-// Variables
-//
-// -----------------------------------------------------------------------------
-const wxString MapLine::PROP_V1      = "v1";
-const wxString MapLine::PROP_V2      = "v2";
-const wxString MapLine::PROP_S1      = "sidefront";
-const wxString MapLine::PROP_S2      = "sideback";
-const wxString MapLine::PROP_SPECIAL = "special";
-const wxString MapLine::PROP_ID      = "id";
-const wxString MapLine::PROP_FLAGS   = "flags";
-const wxString MapLine::PROP_ARG0    = "arg0";
-const wxString MapLine::PROP_ARG1    = "arg1";
-const wxString MapLine::PROP_ARG2    = "arg2";
-const wxString MapLine::PROP_ARG3    = "arg3";
-const wxString MapLine::PROP_ARG4    = "arg4";
-
-
-// -----------------------------------------------------------------------------
-//
 // MapLine Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -139,7 +120,7 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, ParseTr
 		else if (prop->nameIsCI(PROP_ARG4))
 			args_[4] = prop->intValue();
 		else
-			properties_[prop->nameRef()] = prop->value();
+			properties_[prop->name()] = prop->value();
 	}
 }
 

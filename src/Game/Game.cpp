@@ -40,6 +40,7 @@
 #include "Utility/Parser.h"
 #include "ZScript.h"
 #include <thread>
+#include "Utility/StringUtils.h"
 
 using namespace Game;
 
@@ -135,15 +136,15 @@ bool GameDef::parse(MemChunk& mc)
 		auto node_maps = node_game->childPTN("map_formats");
 		if (node_maps)
 		{
-			for (unsigned a = 0; a < node_maps->nValues(); a++)
+			for (const auto& str_val : node_maps->stringValues())
 			{
-				if (S_CMPNOCASE(node_maps->stringValue(a), "doom"))
+				if (StrUtil::equalCI(str_val, "doom"))
 					supported_formats[MapFormat::Doom] = true;
-				else if (S_CMPNOCASE(node_maps->stringValue(a), "hexen"))
+				else if (StrUtil::equalCI(str_val, "hexen"))
 					supported_formats[MapFormat::Hexen] = true;
-				else if (S_CMPNOCASE(node_maps->stringValue(a), "doom64"))
+				else if (StrUtil::equalCI(str_val, "doom64"))
 					supported_formats[MapFormat::Doom64] = true;
-				else if (S_CMPNOCASE(node_maps->stringValue(a), "udmf"))
+				else if (StrUtil::equalCI(str_val, "udmf"))
 					supported_formats[MapFormat::UDMF] = true;
 			}
 		}
@@ -152,7 +153,7 @@ bool GameDef::parse(MemChunk& mc)
 		if (node_filters)
 		{
 			for (unsigned a = 0; a < node_filters->nValues(); a++)
-				filters.push_back(node_filters->stringValue(a).Lower());
+				filters.push_back(StrUtil::lower(node_filters->stringValue(a)));
 		}
 	}
 
@@ -214,22 +215,22 @@ bool PortDef::parse(MemChunk& mc)
 		if (node_games)
 		{
 			for (unsigned a = 0; a < node_games->nValues(); a++)
-				supported_games.push_back(node_games->stringValue(a));
+				supported_games.emplace_back(node_games->stringValue(a));
 		}
 
 		// Supported map formats
 		auto node_maps = node_port->childPTN("map_formats");
 		if (node_maps)
 		{
-			for (unsigned a = 0; a < node_maps->nValues(); a++)
+			for (const auto& str_val : node_maps->stringValues())
 			{
-				if (S_CMPNOCASE(node_maps->stringValue(a), "doom"))
+				if (StrUtil::equalCI(str_val, "doom"))
 					supported_formats[MapFormat::Doom] = true;
-				else if (S_CMPNOCASE(node_maps->stringValue(a), "hexen"))
+				else if (StrUtil::equalCI(str_val, "hexen"))
 					supported_formats[MapFormat::Hexen] = true;
-				else if (S_CMPNOCASE(node_maps->stringValue(a), "doom64"))
+				else if (StrUtil::equalCI(str_val, "doom64"))
 					supported_formats[MapFormat::Doom64] = true;
-				else if (S_CMPNOCASE(node_maps->stringValue(a), "udmf"))
+				else if (StrUtil::equalCI(str_val, "udmf"))
 					supported_formats[MapFormat::UDMF] = true;
 			}
 		}
@@ -340,7 +341,7 @@ TagType Game::parseTagged(ParseTreeNode* tagged)
 		{ "interpolation", TagType::Interpolation }
 	};
 
-	return tag_type_map[tagged->stringValue().MakeLower()];
+	return tag_type_map[StrUtil::lower(tagged->stringValue())];
 }
 
 // -----------------------------------------------------------------------------

@@ -283,7 +283,7 @@ BrowserWindow::~BrowserWindow()
 bool BrowserWindow::addItem(BrowserItem* item, const wxString& where)
 {
 	item->parent_ = this;
-	auto target   = dynamic_cast<BrowserTreeNode*>(items_root_->addChild(where));
+	auto target   = dynamic_cast<BrowserTreeNode*>(items_root_->addChild(where.ToStdString()));
 	if (target)
 	{
 		target->addItem(item);
