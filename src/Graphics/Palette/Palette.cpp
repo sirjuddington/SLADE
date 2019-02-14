@@ -90,21 +90,21 @@ bool Palette::loadMem(MemChunk& mc)
 	// Read in colours
 	mc.seek(0, SEEK_SET);
 	int c = 0;
-	for (size_t a = 0; a < mc.size(); a += 3)
+	while (mc.currentPos() < mc.size())
 	{
 		uint8_t rgb[3] = { 0, 0, 0 };
 
 		// Read RGB value
-		if (mc.read(rgb, 3))
-		{
-			// Set colour in palette
-			colours_[c].set(rgb[0], rgb[1], rgb[2], 255, -1, c);
-			colours_lab_[c] = colours_[c].asLAB();
-			colours_hsl_[c] = colours_[c].asHSL();
-		}
+		if (!mc.read(rgb, 3))
+			break;
+
+		// Set colour in palette
+		colours_[c].set(rgb[0], rgb[1], rgb[2], 255, -1, c);
+		colours_lab_[c] = colours_[c].asLAB();
+		colours_hsl_[c] = colours_[c].asHSL();
 
 		// If we have read 256 colours, finish
-		if (c == 256)
+		if (++c == 256)
 			break;
 	}
 	mc.seek(0, SEEK_SET);
