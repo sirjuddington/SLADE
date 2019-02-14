@@ -35,6 +35,7 @@
 #include "FileMonitor.h"
 #include "Archive/Archive.h"
 #include "Archive/Formats/WadArchive.h"
+#include "StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -131,12 +132,12 @@ void DB2MapFileMonitor::fileModified()
 
 	// Load file into temp archive
 	Archive::UPtr wad = std::make_unique<WadArchive>();
-	wad->open(filename_);
+	wad->open(filename_.ToStdString());
 
 	// Get map info for target archive
 	for (auto& map : archive_->detectMaps())
 	{
-		if (S_CMPNOCASE(map.name, map_name_))
+		if (StrUtil::equalCI(map.name, map_name_.ToStdString()))
 		{
 			// Check for simple case (map is in zip archive)
 			if (map.archive)
@@ -183,7 +184,7 @@ void DB2MapFileMonitor::processTerminated()
 	// Get map info for target archive
 	for (auto& map : archive_->detectMaps())
 	{
-		if (S_CMPNOCASE(map.name, map_name_))
+		if (StrUtil::equalCI(map.name, map_name_.ToStdString()))
 		{
 			// Unlock map entries
 			auto entry = map.head;

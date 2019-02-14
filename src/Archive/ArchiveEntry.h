@@ -108,7 +108,7 @@ public:
 	void          setExtensionByType();
 	int           typeReliability() const { return (type_ ? (type()->reliability() * reliability_ / 255) : 0); }
 	bool          isInNamespace(std::string_view ns);
-	ArchiveEntry* relativeEntry(const wxString& path, bool allow_absolute_path = true) const;
+	ArchiveEntry* relativeEntry(std::string_view path, bool allow_absolute_path = true) const;
 
 private:
 	// Entry Info

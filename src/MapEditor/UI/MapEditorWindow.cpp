@@ -516,7 +516,7 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 	{
 		auto md = dlg.selectedMap();
 
-		if (md.name.IsEmpty() || (archive && !md.head))
+		if (md.name.empty() || (archive && !md.head))
 			return false;
 
 		// Attempt to load selected game configuration
@@ -722,7 +722,7 @@ void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
 void MapEditorWindow::buildNodes(Archive* wad)
 {
 	// Save wad to disk
-	wxString filename = App::path("sladetemp.wad", App::Dir::Temp);
+	auto filename = App::path("sladetemp.wad", App::Dir::Temp);
 	wad->save(filename);
 
 	// Get current nodebuilder
@@ -815,11 +815,11 @@ bool MapEditorWindow::writeMap(WadArchive& wad, const wxString& name, bool nodes
 		dialogue = true;
 
 	// Add map data to temporary wad
-	wad.addNewEntry(name);
+	wad.addNewEntry(name.ToStdString());
 	// Handle fragglescript and similar content in the map header
 	if (mdesc_current.head && mdesc_current.head->size() && !mdesc_current.archive)
 	{
-		wad.entry(name)->importMemChunk(mdesc_current.head->data());
+		wad.entry(name.ToStdString())->importMemChunk(mdesc_current.head->data());
 	}
 	for (auto& entry : new_map_data)
 		wad.addEntry(entry);
@@ -953,7 +953,7 @@ bool MapEditorWindow::saveMapAs()
 	saveMap();
 
 	// Write wad to file
-	wad.save(info.filenames[0]);
+	wad.save(info.filenames[0].ToStdString());
 	auto archive = App::archiveManager().openArchive(info.filenames[0], true, true);
 	App::archiveManager().addRecentFile(info.filenames[0]);
 

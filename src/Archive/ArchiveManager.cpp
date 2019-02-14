@@ -121,9 +121,9 @@ bool ArchiveManager::init()
 	program_resource_archive_ = std::make_unique<ZipArchive>();
 
 #ifdef __WXOSX__
-	string resdir = App::path("../Resources", App::Dir::Executable); // Use Resources dir within bundle on mac
+	auto resdir = App::path("../Resources", App::Dir::Executable); // Use Resources dir within bundle on mac
 #else
-	wxString resdir = App::path("res", App::Dir::Executable);
+	auto resdir = App::path("res", App::Dir::Executable);
 #endif
 
 	if (wxDirExists(resdir) && validResDir(resdir))
@@ -149,7 +149,7 @@ bool ArchiveManager::init()
 		dir_slade_pk3 = "slade.pk3";
 
 	// Open slade.pk3
-	if (!program_resource_archive_->open(dir_slade_pk3))
+	if (!program_resource_archive_->open(dir_slade_pk3.ToStdString()))
 	{
 		Log::error("Unable to find slade.pk3!");
 		res_archive_open_ = false;
@@ -283,51 +283,52 @@ Archive* ArchiveManager::openArchive(const wxString& filename, bool manage, bool
 	}
 
 	// Determine file format
-	if (WadArchive::isWadArchive(filename))
+	auto std_fn = filename.ToStdString();
+	if (WadArchive::isWadArchive(std_fn))
 		new_archive = new WadArchive();
-	else if (ZipArchive::isZipArchive(filename))
+	else if (ZipArchive::isZipArchive(std_fn))
 		new_archive = new ZipArchive();
-	else if (ResArchive::isResArchive(filename))
+	else if (ResArchive::isResArchive(std_fn))
 		new_archive = new ResArchive();
-	else if (DatArchive::isDatArchive(filename))
+	else if (DatArchive::isDatArchive(std_fn))
 		new_archive = new DatArchive();
-	else if (LibArchive::isLibArchive(filename))
+	else if (LibArchive::isLibArchive(std_fn))
 		new_archive = new LibArchive();
-	else if (PakArchive::isPakArchive(filename))
+	else if (PakArchive::isPakArchive(std_fn))
 		new_archive = new PakArchive();
-	else if (BSPArchive::isBSPArchive(filename))
+	else if (BSPArchive::isBSPArchive(std_fn))
 		new_archive = new BSPArchive();
-	else if (GrpArchive::isGrpArchive(filename))
+	else if (GrpArchive::isGrpArchive(std_fn))
 		new_archive = new GrpArchive();
-	else if (RffArchive::isRffArchive(filename))
+	else if (RffArchive::isRffArchive(std_fn))
 		new_archive = new RffArchive();
-	else if (GobArchive::isGobArchive(filename))
+	else if (GobArchive::isGobArchive(std_fn))
 		new_archive = new GobArchive();
-	else if (LfdArchive::isLfdArchive(filename))
+	else if (LfdArchive::isLfdArchive(std_fn))
 		new_archive = new LfdArchive();
-	else if (HogArchive::isHogArchive(filename))
+	else if (HogArchive::isHogArchive(std_fn))
 		new_archive = new HogArchive();
-	else if (ADatArchive::isADatArchive(filename))
+	else if (ADatArchive::isADatArchive(std_fn))
 		new_archive = new ADatArchive();
-	else if (Wad2Archive::isWad2Archive(filename))
+	else if (Wad2Archive::isWad2Archive(std_fn))
 		new_archive = new Wad2Archive();
-	else if (WadJArchive::isWadJArchive(filename))
+	else if (WadJArchive::isWadJArchive(std_fn))
 		new_archive = new WadJArchive();
-	else if (WolfArchive::isWolfArchive(filename))
+	else if (WolfArchive::isWolfArchive(std_fn))
 		new_archive = new WolfArchive();
-	else if (GZipArchive::isGZipArchive(filename))
+	else if (GZipArchive::isGZipArchive(std_fn))
 		new_archive = new GZipArchive();
-	else if (BZip2Archive::isBZip2Archive(filename))
+	else if (BZip2Archive::isBZip2Archive(std_fn))
 		new_archive = new BZip2Archive();
-	else if (TarArchive::isTarArchive(filename))
+	else if (TarArchive::isTarArchive(std_fn))
 		new_archive = new TarArchive();
-	else if (DiskArchive::isDiskArchive(filename))
+	else if (DiskArchive::isDiskArchive(std_fn))
 		new_archive = new DiskArchive();
-	else if (PodArchive::isPodArchive(filename))
+	else if (PodArchive::isPodArchive(std_fn))
 		new_archive = new PodArchive();
-	else if (ChasmBinArchive::isChasmBinArchive(filename))
+	else if (ChasmBinArchive::isChasmBinArchive(std_fn))
 		new_archive = new ChasmBinArchive();
-	else if (SiNArchive::isSiNArchive(filename))
+	else if (SiNArchive::isSiNArchive(std_fn))
 		new_archive = new SiNArchive();
 	else
 	{
@@ -338,7 +339,7 @@ Archive* ArchiveManager::openArchive(const wxString& filename, bool manage, bool
 
 	// If it opened successfully, add it to the list if needed & return it,
 	// Otherwise, delete it and return nullptr
-	if (new_archive->open(filename))
+	if (new_archive->open(std_fn))
 	{
 		if (manage)
 		{
@@ -516,7 +517,7 @@ Archive* ArchiveManager::openDirArchive(const wxString& dir, bool manage, bool s
 
 	// If it opened successfully, add it to the list if needed & return it,
 	// Otherwise, delete it and return nullptr
-	if (new_archive->open(dir))
+	if (new_archive->open(dir.ToStdString()))
 	{
 		if (manage)
 		{
@@ -570,7 +571,7 @@ Archive* ArchiveManager::newArchive(const wxString& format)
 	// If the archive was created, set its filename and add it to the list
 	if (new_archive)
 	{
-		new_archive->setFilename(wxString::Format("UNSAVED (%s)", new_archive->formatDesc().name));
+		new_archive->setFilename(fmt::format("UNSAVED ({})", new_archive->formatDesc().name));
 		addArchive(new_archive);
 	}
 
@@ -747,11 +748,11 @@ wxString ArchiveManager::getArchiveExtensionsString() const
 	wxString         ext_all = "Any supported file|";
 	for (const auto& fmt : formats)
 	{
-		for (auto ext : fmt.extensions)
+		for (const auto& ext : fmt.extensions)
 		{
-			wxString ext_case = wxString::Format("*.%s;", ext.first.Lower());
-			ext_case += wxString::Format("*.%s;", ext.first.Upper());
-			ext_case += wxString::Format("*.%s", ext.first.Capitalize());
+			wxString ext_case = wxString::Format("*.%s;", StrUtil::lower(ext.first));
+			ext_case += wxString::Format("*.%s;", StrUtil::upper(ext.first));
+			ext_case += wxString::Format("*.%s", StrUtil::capitalize(ext.first));
 
 			ext_all += wxString::Format("%s;", ext_case);
 			ext_strings.push_back(wxString::Format("%s files (*.%s)|%s", ext.second, ext.first, ext_case));
@@ -882,17 +883,17 @@ bool ArchiveManager::openBaseResource(int index)
 	}
 
 	// Create archive based on file type
-	wxString filename = base_resource_paths_[index];
-	if (WadArchive::isWadArchive(filename))
+	auto filename = base_resource_paths_[index];
+	if (WadArchive::isWadArchive(filename.ToStdString()))
 		base_resource_archive_ = std::make_unique<WadArchive>();
-	else if (ZipArchive::isZipArchive(filename))
+	else if (ZipArchive::isZipArchive(filename.ToStdString()))
 		base_resource_archive_ = std::make_unique<ZipArchive>();
 	else
 		return false;
 
 	// Attempt to open the file
 	UI::showSplash(wxString::Format("Opening %s...", filename), true);
-	if (base_resource_archive_->open(filename))
+	if (base_resource_archive_->open(filename.ToStdString()))
 	{
 		base_resource = index;
 		UI::hideSplash();
@@ -924,14 +925,14 @@ ArchiveEntry* ArchiveManager::getResourceEntry(const wxString& name, Archive* ig
 			continue;
 
 		// Try to find the entry in the archive
-		auto entry = open_archive.archive->entry(name);
+		auto entry = open_archive.archive->entry(name.ToStdString());
 		if (entry)
 			return entry;
 	}
 
 	// If entry isn't found yet, search the base resource archive
 	if (base_resource_archive_)
-		return base_resource_archive_->entry(name);
+		return base_resource_archive_->entry(name.ToStdString());
 
 	return nullptr;
 }

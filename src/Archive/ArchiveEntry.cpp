@@ -632,20 +632,20 @@ bool ArchiveEntry::isInNamespace(std::string_view ns)
 	if (ns == "graphics" && parent()->formatId() == "wad")
 		ns = "global"; // Graphics namespace doesn't exist in wad files, use global instead
 
-	return parent()->detectNamespace(this).ToStdString() == ns;
+	return parent()->detectNamespace(this) == ns;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the entry at [path] relative to [base], or failing that, the entry
 // at absolute [path] in the archive (if [allow_absolute_path] is true)
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveEntry::relativeEntry(const wxString& at_path, bool allow_absolute_path) const
+ArchiveEntry* ArchiveEntry::relativeEntry(std::string_view at_path, bool allow_absolute_path) const
 {
 	if (!parent_)
 		return nullptr;
 
 	// Try relative to this entry
-	auto include = parent_->archive()->entryAtPath(path() + at_path);
+	auto include = parent_->archive()->entryAtPath(path().append(at_path));
 
 	// Try absolute path
 	if (!include && allow_absolute_path)

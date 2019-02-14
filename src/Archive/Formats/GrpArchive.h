@@ -21,5 +21,5 @@ public:
 
 	// Static functions
 	static bool isGrpArchive(MemChunk& mc);
-	static bool isGrpArchive(const wxString& filename);
+	static bool isGrpArchive(const std::string& filename);
 };

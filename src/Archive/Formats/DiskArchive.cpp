@@ -219,21 +219,19 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Check entry name
-		wxString name = entry->path(true);
-		name.Replace("/", "\\");
+		auto name = entry->path(true);
+		std::replace(name.begin(), name.end(), '/', '\\');
 		// The leading "GAME:\" part of the name means there is only 58 usable characters for path
-		if (name.Len() > 58)
+		if (name.size() > 58)
 		{
-			Log::warning(wxString::Format(
-				"Warning: Entry %s path is too long (> 58 characters), putting it in the root directory", name));
-			wxFileName fn(name);
-			name = fn.GetFullName();
-			if (name.Len() > 57)
-				name.Truncate(57);
-			// Add leading "\"
-			name = "\\" + name;
+			Log::warning(
+				"Warning: Entry {} path is too long (> 58 characters), putting it in the root directory", name);
+
+			auto fname = StrUtil::Path::fileNameOf(name);
+			name       = (fname.size() > 57) ? fname.substr(0, 57) : fname;
+			name.insert(name.begin(), '\\'); // Add leading "\"
 		}
-		name = "GAME:" + name;
+		StrUtil::prependIP(name, "GAME:");
 
 		DiskEntry dent;
 
@@ -241,8 +239,8 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		// The names field are padded with FD for doom.disk, FE for doom2.disk. No idea whether
 		// a non-null padding is actually required, though. It probably should work with anything.
 		memset(dent.name, 0xFE, 64);
-		memcpy(dent.name, CHR(name), name.Length());
-		dent.name[name.Length()] = 0;
+		memcpy(dent.name, name.data(), name.size());
+		dent.name[name.size()] = 0;
 
 		// Write entry offset
 		dent.offset = wxUINT32_SWAP_ON_LE(offset - start_offset);
@@ -299,7 +297,7 @@ bool DiskArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("DiskArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error("DiskArchive::loadEntryData: Unable to open archive file {}", filename_);
 		return false;
 	}
 
@@ -373,7 +371,7 @@ bool DiskArchive::isDiskArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Quake disk archive
 // -----------------------------------------------------------------------------
-bool DiskArchive::isDiskArchive(const wxString& filename)
+bool DiskArchive::isDiskArchive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

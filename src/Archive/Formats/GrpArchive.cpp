@@ -98,9 +98,9 @@ bool GrpArchive::open(MemChunk& mc)
 	ken_magic[12] = 0;
 
 	// Check the header
-	if (!(S_CMP(wxString::FromAscii(ken_magic), "KenSilverman")))
+	if (std::string_view{ ken_magic } != "KenSilverman")
 	{
-		Log::error(wxString::Format("GrpArchive::openFile: File %s has invalid header", filename_));
+		Log::error("GrpArchive::openFile: File {} has invalid header", filename_);
 		Global::error = "Invalid grp header";
 		return false;
 	}
@@ -265,7 +265,7 @@ bool GrpArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("GrpArchive::loadEntryData: Failed to open grpfile %s", filename_));
+		Log::error("GrpArchive::loadEntryData: Failed to open grpfile {}", filename_);
 		return false;
 	}
 
@@ -302,7 +302,7 @@ bool GrpArchive::isGrpArchive(MemChunk& mc)
 	ken_magic[12] = 0;
 
 	// Check the header
-	if (!(S_CMP(wxString::From8BitData(ken_magic), "KenSilverman")))
+	if (std::string_view{ ken_magic } != "KenSilverman")
 		return false;
 
 	// Compute total size
@@ -326,7 +326,7 @@ bool GrpArchive::isGrpArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid DN3D grp archive
 // -----------------------------------------------------------------------------
-bool GrpArchive::isGrpArchive(const wxString& filename)
+bool GrpArchive::isGrpArchive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -353,7 +353,7 @@ bool GrpArchive::isGrpArchive(const wxString& filename)
 	ken_magic[12] = 0;
 
 	// Check the header
-	if (!(S_CMP(wxString::From8BitData(ken_magic), "KenSilverman")))
+	if (std::string_view{ ken_magic } != "KenSilverman")
 		return false;
 
 	// Compute total size

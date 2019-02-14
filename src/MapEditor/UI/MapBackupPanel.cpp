@@ -75,12 +75,12 @@ bool MapBackupPanel::loadBackups(wxString archive_name, const wxString& map_name
 {
 	// Open backup file
 	archive_name.Replace(".", "_");
-	wxString backup_file = App::path("backups", App::Dir::User) + "/" + archive_name + "_backup.zip";
+	auto backup_file = App::path("backups", App::Dir::User) + "/" + archive_name.ToStdString() + "_backup.zip";
 	if (!archive_backups_->open(backup_file))
 		return false;
 
 	// Get backup dir for map
-	dir_current_ = archive_backups_->dir(map_name);
+	dir_current_ = archive_backups_->dir(map_name.ToStdString());
 	if (dir_current_ == archive_backups_->rootDir() || !dir_current_)
 		return false;
 

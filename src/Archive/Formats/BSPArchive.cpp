@@ -306,7 +306,7 @@ bool BSPArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("BSPArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error("BSPArchive::loadEntryData: Unable to open archive file {}", filename_);
 		return false;
 	}
 
@@ -446,7 +446,7 @@ bool BSPArchive::isBSPArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Quake BSP archive
 // -----------------------------------------------------------------------------
-bool BSPArchive::isBSPArchive(const wxString& filename)
+bool BSPArchive::isBSPArchive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

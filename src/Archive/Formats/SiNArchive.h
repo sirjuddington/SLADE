@@ -17,5 +17,5 @@ public:
 
 	// Static functions
 	static bool isSiNArchive(MemChunk& mc);
-	static bool isSiNArchive(const wxString& filename);
+	static bool isSiNArchive(const std::string& filename);
 };

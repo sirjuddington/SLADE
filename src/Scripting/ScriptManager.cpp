@@ -153,7 +153,7 @@ void loadCustomScripts()
 void loadEditorScripts(ScriptType type, const wxString& dir)
 {
 	// Get 'scripts/(dir)' dir of slade.pk3
-	auto scripts_dir = App::archiveManager().programResourceArchive()->dir(wxString::Format("scripts/%s", CHR(dir)));
+	auto scripts_dir = App::archiveManager().programResourceArchive()->dir(fmt::format("scripts/%s", CHR(dir)));
 	if (scripts_dir)
 	{
 		for (auto& entry : scripts_dir->allEntries())
@@ -232,7 +232,7 @@ void exportUserScripts(const wxString& path, ScriptList& list)
 // -----------------------------------------------------------------------------
 void readResourceEntryText(wxString& target, const wxString& res_path)
 {
-	auto entry = App::archiveManager().programResourceArchive()->entryAtPath(res_path);
+	auto entry = App::archiveManager().programResourceArchive()->entryAtPath(res_path.ToStdString());
 	if (entry)
 		target = wxString::FromAscii(entry->rawData(), entry->size());
 }

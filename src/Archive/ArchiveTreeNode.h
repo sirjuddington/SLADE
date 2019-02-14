@@ -25,8 +25,8 @@ public:
 	// Entry Access
 	ArchiveEntry*      entryAt(unsigned index);
 	ArchiveEntry::SPtr sharedEntryAt(unsigned index);
-	ArchiveEntry*      entry(const wxString& name, bool cut_ext = false);
-	ArchiveEntry::SPtr sharedEntry(const wxString& name, bool cut_ext = false);
+	ArchiveEntry*      entry(std::string_view name, bool cut_ext = false);
+	ArchiveEntry::SPtr sharedEntry(std::string_view name, bool cut_ext = false);
 	ArchiveEntry::SPtr sharedEntry(ArchiveEntry* entry);
 	unsigned           numEntries(bool inc_subdirs = false);
 	int                entryIndex(ArchiveEntry* entry, size_t startfrom = 0);
@@ -47,7 +47,7 @@ public:
 		ArchiveTreeNode*    node,
 		unsigned            position = 0xFFFFFFFF,
 		ArchiveEntry::State state    = ArchiveEntry::State::New);
-	bool exportTo(const wxString& path);
+	bool exportTo(std::string_view path);
 	void allowDuplicateNames(bool allow) { allow_duplicate_names_ = allow; }
 
 	typedef std::unique_ptr<ArchiveTreeNode> UPtr;

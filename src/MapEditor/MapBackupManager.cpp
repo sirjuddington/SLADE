@@ -67,14 +67,14 @@ wxString mb_ignore_entries[] = { "NODES",    "SSECTORS", "ZNODES",  "SEGS",     
 bool MapBackupManager::writeBackup(vector<ArchiveEntry::UPtr>& map_data, wxString archive_name, wxString map_name) const
 {
 	// Create backup directory if needed
-	wxString backup_dir = App::path("backups", App::Dir::User);
+	auto backup_dir = App::path("backups", App::Dir::User);
 	if (!wxDirExists(backup_dir))
 		wxMkdir(backup_dir);
 
 	// Open or create backup zip
 	ZipArchive backup;
 	archive_name.Replace(".", "_");
-	wxString backup_file = backup_dir + "/" + archive_name + "_backup.zip";
+	auto backup_file = backup_dir + "/" + archive_name.ToStdString() + "_backup.zip";
 	if (!backup.open(backup_file))
 		backup.setFilename(backup_file);
 
@@ -98,7 +98,7 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry::UPtr>& map_data, wxStrin
 	}
 
 	// Compare with last backup (if any)
-	auto map_dir = backup.dir(map_name);
+	auto map_dir = backup.dir(map_name.ToStdString());
 	if (map_dir && map_dir->nChildren() > 0)
 	{
 		auto last_backup = dynamic_cast<ArchiveTreeNode*>(map_dir->child(map_dir->nChildren() - 1));
@@ -139,12 +139,12 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry::UPtr>& map_data, wxStrin
 	timestamp.Replace(":", "");
 	wxString dir = map_name + "/" + timestamp;
 	for (unsigned a = 0; a < backup_entries.size(); a++)
-		backup.addEntry(backup_entries[a], dir, true);
+		backup.addEntry(backup_entries[a], dir.ToStdString(), true);
 
 	// Check for max backups & remove old ones if over
-	map_dir = backup.dir(map_name);
+	map_dir = backup.dir(map_name.ToStdString());
 	while ((int)map_dir->nChildren() > max_map_backups)
-		backup.removeDir(map_dir->child(0)->name(), map_dir);
+		backup.removeDir(map_dir->child(0)->name().ToStdString(), map_dir);
 
 	// Save backup file
 	Archive::save_backup = false;

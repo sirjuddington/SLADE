@@ -894,7 +894,7 @@ bool Configuration::openConfig(const wxString& game, const wxString& port, MapFo
 			// Config is in program resource
 			wxString epath   = wxString::Format("config/games/%s.cfg", game_config.filename);
 			auto     archive = App::archiveManager().programResourceArchive();
-			auto     entry   = archive->entryAtPath(epath);
+			auto     entry   = archive->entryAtPath(epath.ToStdString());
 			if (entry)
 				wxStringUtils::processIncludes(entry, full_config);
 		}
@@ -926,7 +926,7 @@ bool Configuration::openConfig(const wxString& game, const wxString& port, MapFo
 				// Config is in program resource
 				wxString epath   = wxString::Format("config/ports/%s.cfg", conf.filename);
 				auto     archive = App::archiveManager().programResourceArchive();
-				auto     entry   = archive->entryAtPath(epath);
+				auto     entry   = archive->entryAtPath(epath.ToStdString());
 				if (entry)
 					wxStringUtils::processIncludes(entry, full_config);
 			}

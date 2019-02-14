@@ -115,7 +115,7 @@ void DirArchiveCheck::addChange(DirEntryChange change)
 wxThread::ExitCode DirArchiveCheck::Entry()
 {
 	// Get current directory structure
-	vector<wxString>    files, dirs;
+	vector<std::string> files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
 	wxDir               dir(dir_path_);
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
@@ -123,21 +123,21 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 	// Check for deleted files
 	for (auto& info : entry_info_)
 	{
-		wxString path = info.file_path;
+		auto path = info.file_path.ToStdString();
 
 		// Ignore if not on disk
-		if (path.IsEmpty())
+		if (path.empty())
 			continue;
 
 		if (info.is_dir)
 		{
 			if (!wxDirExists(path))
-				addChange(DirEntryChange(DirEntryChange::Action::DeletedDir, path, info.entry_path));
+				addChange(DirEntryChange(DirEntryChange::Action::DeletedDir, path, info.entry_path.ToStdString()));
 		}
 		else
 		{
 			if (!wxFileExists(path))
-				addChange(DirEntryChange(DirEntryChange::Action::DeletedFile, path, info.entry_path));
+				addChange(DirEntryChange(DirEntryChange::Action::DeletedFile, path, info.entry_path.ToStdString()));
 		}
 	}
 
@@ -168,7 +168,7 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 			addChange(DirEntryChange(DirEntryChange::Action::AddedFile, file, "", mod));
 		// Matched, check modification time
 		else if (mod > inf.file_modified)
-			addChange(DirEntryChange(DirEntryChange::Action::Updated, file, inf.entry_path, mod));
+			addChange(DirEntryChange(DirEntryChange::Action::Updated, file, inf.entry_path.ToStdString(), mod));
 	}
 
 	// Check for new dirs
@@ -1261,7 +1261,7 @@ void ArchiveManagerPanel::saveAll() const
 			if (!filename.empty())
 			{
 				// Save the archive
-				if (!archive->save(filename))
+				if (!archive->save(filename.ToStdString()))
 				{
 					// If there was an error pop up a message box
 					wxMessageBox(wxString::Format("Error: %s", Global::error), "Error", wxICON_ERROR);
@@ -1396,7 +1396,7 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive) const
 	if (!filename.empty())
 	{
 		// Save the archive
-		if (!archive->save(filename))
+		if (!archive->save(filename.ToStdString()))
 		{
 			// If there was an error pop up a message box
 			wxMessageBox(wxString::Format("Error: %s", Global::error), "Error", wxICON_ERROR);

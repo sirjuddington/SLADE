@@ -23,7 +23,7 @@ public:
 	// Static functions
 	static bool isResArchive(MemChunk& mc);
 	static bool isResArchive(MemChunk& mc, size_t& d_o, size_t& n_l);
-	static bool isResArchive(const wxString& filename);
+	static bool isResArchive(const std::string& filename);
 
 private:
 	static const int RESDIRENTRYSIZE = 39; // The size of a res entry in the res directory

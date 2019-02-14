@@ -366,6 +366,7 @@
     <ClCompile Include="..\..\src\Dialogs\GfxColouriseDialog.cpp" />
     <ClCompile Include="..\..\src\Dialogs\GfxCropDialog.cpp" />
     <ClCompile Include="..\..\src\Dialogs\GfxTintDialog.cpp" />
+    <ClCompile Include="..\..\src\Utility\FileUtils.cpp" />
     <ClCompile Include="..\..\thirdparty\bzip2\blocksort.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
@@ -2229,6 +2230,7 @@
     <ClInclude Include="..\..\src\Dialogs\GfxColouriseDialog.h" />
     <ClInclude Include="..\..\src\Dialogs\GfxCropDialog.h" />
     <ClInclude Include="..\..\src\Dialogs\GfxTintDialog.h" />
+    <ClInclude Include="..\..\src\Utility\FileUtils.h" />
     <ClInclude Include="..\..\thirdparty\bzip2\bzlib.h" />
     <ClInclude Include="..\..\thirdparty\bzip2\bzlib_private.h" />
     <ClInclude Include="..\..\src\Dialogs\DirArchiveUpdateDialog.h" />

@@ -33,6 +33,8 @@
 #include "Archive.h"
 #include "General/UndoRedo.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
+#include <filesystem>
 
 
 // -----------------------------------------------------------------------------
@@ -55,7 +57,7 @@ vector<ArchiveFormat> Archive::formats;
 class EntryRenameUS : public UndoStep
 {
 public:
-	EntryRenameUS(ArchiveEntry* entry, const wxString& new_name) :
+	EntryRenameUS(ArchiveEntry* entry, std::string_view new_name) :
 		archive_{ entry->parent() },
 		entry_path_{ entry->path() },
 		entry_index_{ entry->parentDir()->entryIndex(entry) },
@@ -93,19 +95,19 @@ public:
 	}
 
 private:
-	Archive* archive_;
-	wxString entry_path_;
-	int      entry_index_;
-	wxString old_name_;
-	wxString new_name_;
+	Archive*    archive_;
+	std::string entry_path_;
+	int         entry_index_;
+	std::string old_name_;
+	std::string new_name_;
 };
 
 class DirRenameUS : public UndoStep
 {
 public:
-	DirRenameUS(ArchiveTreeNode* dir, const wxString& new_name) :
+	DirRenameUS(ArchiveTreeNode* dir, std::string_view new_name) :
 		archive_{ dir->archive() },
-		path_{ dir->parent()->path() + new_name },
+		path_{ dir->parent()->path().ToStdString().append(new_name) },
 		old_name_{ dir->name() },
 		new_name_{ new_name },
 		prev_state_{ dir->dirEntry()->state() }
@@ -136,9 +138,9 @@ public:
 
 private:
 	Archive*            archive_;
-	wxString            path_;
-	wxString            old_name_;
-	wxString            new_name_;
+	std::string         path_;
+	std::string         old_name_;
+	std::string         new_name_;
 	ArchiveEntry::State prev_state_;
 };
 
@@ -166,10 +168,10 @@ public:
 	bool doRedo() override { return doSwap(); }
 
 private:
-	Archive* archive_;
-	wxString path_;
-	unsigned index1_;
-	unsigned index2_;
+	Archive*    archive_;
+	std::string path_;
+	unsigned    index1_;
+	unsigned    index2_;
 };
 
 class EntryCreateDeleteUS : public UndoStep
@@ -212,7 +214,7 @@ private:
 	bool               created_;
 	Archive*           archive_;
 	ArchiveEntry::UPtr entry_copy_;
-	wxString           path_;
+	std::string        path_;
 	unsigned           index_;
 };
 
@@ -225,8 +227,7 @@ public:
 		archive_{ dir->archive() },
 		path_{ dir->path() }
 	{
-		if (path_.StartsWith("/"))
-			path_.Remove(0, 1);
+		StrUtil::removePrefixIP(path_, '/');
 
 		// Backup child entries and subdirs if deleting
 		if (!created)
@@ -284,7 +285,7 @@ public:
 private:
 	bool                             created_;
 	Archive*                         archive_;
-	wxString                         path_;
+	std::string                      path_;
 	std::unique_ptr<ArchiveTreeNode> tree_;
 };
 
@@ -299,7 +300,7 @@ private:
 // -----------------------------------------------------------------------------
 // Archive class constructor
 // -----------------------------------------------------------------------------
-Archive::Archive(const wxString& format) :
+Archive::Archive(std::string_view format) :
 	format_{ format },
 	parent_{ nullptr },
 	on_disk_{ false },
@@ -333,29 +334,28 @@ ArchiveFormat Archive::formatDesc() const
 // -----------------------------------------------------------------------------
 // Gets the wxWidgets file dialog filter string for the archive type
 // -----------------------------------------------------------------------------
-wxString Archive::fileExtensionString() const
+std::string Archive::fileExtensionString() const
 {
 	auto fmt = formatDesc();
 
 	// Multiple extensions
 	if (fmt.extensions.size() > 1)
 	{
-		wxString         ext_all = wxString::Format("Any %s File|", CHR(fmt.name));
-		vector<wxString> ext_strings;
+		auto                ext_all = fmt::format("Any {} File|", fmt.name);
+		vector<std::string> ext_strings;
 		for (const auto& ext : fmt.extensions)
 		{
-			wxString ext_case = wxString::Format("*.%s;", CHR(ext.first.Lower()));
-			ext_case += wxString::Format("*.%s;", CHR(ext.first.Upper()));
-			ext_case += wxString::Format("*.%s", CHR(ext.first.Capitalize()));
+			auto ext_case = fmt::format("*.{};", StrUtil::lower(ext.first));
+			ext_case += fmt::format("*.{};", StrUtil::upper(ext.first));
+			ext_case += fmt::format("*.{}", StrUtil::capitalize(ext.first));
 
-			ext_all += wxString::Format("%s;", CHR(ext_case));
-			ext_strings.push_back(
-				wxString::Format("%s File (*.%s)|%s", CHR(ext.second), CHR(ext.first), CHR(ext_case)));
+			ext_all += fmt::format("{};", ext_case);
+			ext_strings.push_back(fmt::format("{} File (*.{})|{}", ext.second, ext.first, ext_case));
 		}
 
-		ext_all.RemoveLast(1);
+		ext_all.pop_back();
 		for (const auto& ext : ext_strings)
-			ext_all += wxString::Format("|%s", ext);
+			ext_all += fmt::format("|{}", ext);
 
 		return ext_all;
 	}
@@ -363,12 +363,12 @@ wxString Archive::fileExtensionString() const
 	// Single extension
 	if (fmt.extensions.size() == 1)
 	{
-		auto&    ext      = fmt.extensions[0];
-		wxString ext_case = wxString::Format("*.%s;", CHR(ext.first.Lower()));
-		ext_case += wxString::Format("*.%s;", CHR(ext.first.Upper()));
-		ext_case += wxString::Format("*.%s", CHR(ext.first.Capitalize()));
+		auto& ext      = fmt.extensions[0];
+		auto  ext_case = fmt::format("*.{};", StrUtil::lower(ext.first));
+		ext_case += fmt::format("*.{};", StrUtil::upper(ext.first));
+		ext_case += fmt::format("*.{}", StrUtil::capitalize(ext.first));
 
-		return wxString::Format("%s File (*.%s)|%s", CHR(ext.second), CHR(ext.first), CHR(ext_case));
+		return fmt::format("{} File (*.{})|{}", ext.second, ext.first, ext_case);
 	}
 
 	// No extension (probably unknown type)
@@ -405,25 +405,25 @@ wxString Archive::filename(bool full) const
 // Reads an archive from disk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Archive::open(const wxString& filename)
+bool Archive::open(std::string_view filename)
 {
 	// Read the file into a MemChunk
 	MemChunk mc;
-	if (!mc.importFile(filename.ToStdString()))
+	if (!mc.importFile(filename))
 	{
 		Global::error = "Unable to open file. Make sure it isn't in use by another program.";
 		return false;
 	}
 
 	// Update filename before opening
-	wxString backupname = filename_;
-	filename_           = filename;
+	auto backupname = filename_;
+	filename_       = filename;
 
 	// Load from MemChunk
 	sf::Clock timer;
 	if (open(mc))
 	{
-		Log::info(2, wxString::Format("Archive::open took %dms", timer.getElapsedTime().asMilliseconds()));
+		Log::info(2, "Archive::open took {}ms", timer.getElapsedTime().asMilliseconds());
 		on_disk_ = true;
 		return true;
 	}
@@ -485,7 +485,7 @@ bool Archive::checkEntry(ArchiveEntry* entry)
 // Returns the entry matching [name] within [dir].
 // If no dir is given the root dir is used
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::entry(const wxString& name, bool cut_ext, ArchiveTreeNode* dir)
+ArchiveEntry* Archive::entry(std::string_view name, bool cut_ext, ArchiveTreeNode* dir)
 {
 	// Check if dir was given
 	if (!dir)
@@ -526,60 +526,60 @@ int Archive::entryIndex(ArchiveEntry* entry, ArchiveTreeNode* dir)
 // Returns the entry at the given path in the archive, or null if it doesn't
 // exist
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::entryAtPath(const wxString& path)
+ArchiveEntry* Archive::entryAtPath(std::string_view path)
 {
 	// Get path as wxFileName for processing
-	wxFileName fn(path.StartsWith("/") ? path.Mid(1) : path);
+	StrUtil::Path fn(StrUtil::startsWith(path, '/') ? path.substr(1) : path);
 
 	// Get directory from path
 	ArchiveTreeNode* dir;
-	if (fn.GetPath(false, wxPATH_UNIX).IsEmpty())
+	if (fn.path(false).empty())
 		dir = &dir_root_;
 	else
-		dir = this->dir(fn.GetPath(true, wxPATH_UNIX));
+		dir = this->dir(std::string{ fn.path(true) });
 
 	// If dir doesn't exist, return nullptr
 	if (!dir)
 		return nullptr;
 
 	// Return entry
-	return dir->entry(fn.GetFullName());
+	return dir->entry(fn.fileName());
 }
 
 // -----------------------------------------------------------------------------
 // Returns the entry at the given path in the archive, or null if it doesn't
 // exist
 // -----------------------------------------------------------------------------
-ArchiveEntry::SPtr Archive::entryAtPathShared(const wxString& path)
+ArchiveEntry::SPtr Archive::entryAtPathShared(std::string_view path)
 {
 	// Get path as wxFileName for processing
-	wxFileName fn(path.StartsWith("/") ? path.Mid(1) : path);
+	StrUtil::Path fn(StrUtil::startsWith(path, '/') ? path.substr(1) : path);
 
 	// Get directory from path
 	ArchiveTreeNode* dir;
-	if (fn.GetPath(false, wxPATH_UNIX).IsEmpty())
+	if (fn.path(false).empty())
 		dir = &dir_root_;
 	else
-		dir = this->dir(fn.GetPath(true, wxPATH_UNIX));
+		dir = this->dir(std::string{ fn.path(true) });
 
 	// If dir doesn't exist, return nullptr
 	if (!dir)
 		return nullptr;
 
 	// Return entry
-	return dir->sharedEntry(fn.GetFullName());
+	return dir->sharedEntry(fn.fileName());
 }
 
 // -----------------------------------------------------------------------------
 // Writes the archive to a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Archive::write(const wxString& filename, bool update)
+bool Archive::write(std::string_view filename, bool update)
 {
 	// Write to a MemChunk, then export it to a file
 	MemChunk mc;
 	if (write(mc, true))
-		return mc.exportFile(filename.ToStdString());
+		return mc.exportFile(filename);
 	else
 		return false;
 }
@@ -592,7 +592,7 @@ bool Archive::write(const wxString& filename, bool update)
 // within another.
 // Returns false if saving was unsuccessful, true otherwise
 // -----------------------------------------------------------------------------
-bool Archive::save(const wxString& filename)
+bool Archive::save(std::string_view filename)
 {
 	bool success = false;
 
@@ -612,7 +612,7 @@ bool Archive::save(const wxString& filename)
 	else
 	{
 		// Otherwise, file stuff
-		if (!filename.IsEmpty())
+		if (!filename.empty())
 		{
 			// New filename is given (ie 'save as'), write to new file and change archive filename accordingly
 			success = write(filename);
@@ -622,7 +622,7 @@ bool Archive::save(const wxString& filename)
 			// Update variables
 			on_disk_ = true;
 		}
-		else if (!filename_.IsEmpty())
+		else if (!filename_.empty())
 		{
 			// No filename is given, but the archive has a filename, so overwrite it (and make a backup)
 
@@ -778,7 +778,7 @@ bool Archive::paste(ArchiveTreeNode* tree, unsigned position, ArchiveTreeNode* b
 // If [base] is null, the root directory is used.
 // Returns null if the requested directory does not exist
 // -----------------------------------------------------------------------------
-ArchiveTreeNode* Archive::dir(const wxString& path, ArchiveTreeNode* base)
+ArchiveTreeNode* Archive::dir(std::string_view path, ArchiveTreeNode* base)
 {
 	// Check if base dir was given
 	if (!base)
@@ -791,7 +791,7 @@ ArchiveTreeNode* Archive::dir(const wxString& path, ArchiveTreeNode* base)
 			return &dir_root_;
 	}
 
-	return (ArchiveTreeNode*)base->child(path.StartsWith("/") ? path.Mid(1) : path);
+	return (ArchiveTreeNode*)base->child(std::string{ StrUtil::startsWith(path, '/') ? path.substr(1) : path });
 }
 
 // -----------------------------------------------------------------------------
@@ -800,7 +800,7 @@ ArchiveTreeNode* Archive::dir(const wxString& path, ArchiveTreeNode* base)
 // Returns the created directory, or if the directory requested to be created
 // already exists, it will be returned
 // -----------------------------------------------------------------------------
-ArchiveTreeNode* Archive::createDir(const wxString& path, ArchiveTreeNode* base)
+ArchiveTreeNode* Archive::createDir(std::string_view path, ArchiveTreeNode* base)
 {
 	// Abort if read only
 	if (read_only_)
@@ -810,11 +810,11 @@ ArchiveTreeNode* Archive::createDir(const wxString& path, ArchiveTreeNode* base)
 	if (!base)
 		base = &dir_root_;
 
-	if (path.IsEmpty())
+	if (path.empty())
 		return base;
 
 	// Create the directory
-	auto dir = (ArchiveTreeNode*)((STreeNode*)base)->addChild(path);
+	auto dir = (ArchiveTreeNode*)((STreeNode*)base)->addChild(std::string{ path });
 
 	// Record undo step
 	if (UndoRedo::currentlyRecording())
@@ -837,7 +837,7 @@ ArchiveTreeNode* Archive::createDir(const wxString& path, ArchiveTreeNode* base)
 // If [base] is null, the root directory is used.
 // Returns false if the directory does not exist, true otherwise
 // -----------------------------------------------------------------------------
-bool Archive::removeDir(const wxString& path, ArchiveTreeNode* base)
+bool Archive::removeDir(std::string_view path, ArchiveTreeNode* base)
 {
 	// Abort if read only
 	if (read_only_)
@@ -871,7 +871,7 @@ bool Archive::removeDir(const wxString& path, ArchiveTreeNode* base)
 // Renames [dir] to [new_name].
 // Returns false if [dir] isn't part of the archive, true otherwise
 // -----------------------------------------------------------------------------
-bool Archive::renameDir(ArchiveTreeNode* dir, const wxString& new_name)
+bool Archive::renameDir(ArchiveTreeNode* dir, std::string_view new_name)
 {
 	// Abort if read only
 	if (read_only_)
@@ -882,12 +882,12 @@ bool Archive::renameDir(ArchiveTreeNode* dir, const wxString& new_name)
 		return false;
 
 	// Rename the directory if needed
-	if (!(S_CMP(dir->name(), new_name)))
+	if (dir->name().ToStdString() == new_name)
 	{
 		if (UndoRedo::currentlyRecording())
 			UndoRedo::currentManager()->recordUndoStep(std::make_unique<DirRenameUS>(dir, new_name));
 
-		dir->setName(new_name);
+		dir->setName(std::string{ new_name });
 		dir->dirEntry()->setState(ArchiveEntry::State::Modified);
 	}
 	else
@@ -959,14 +959,14 @@ ArchiveEntry* Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveT
 // If [position] is out of bounds, it is added tothe end of the dir.
 // Return false if the entry is invalid, true otherwise
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::addNewEntry(const wxString& name, unsigned position, ArchiveTreeNode* dir)
+ArchiveEntry* Archive::addNewEntry(std::string_view name, unsigned position, ArchiveTreeNode* dir)
 {
 	// Abort if read only
 	if (read_only_)
 		return nullptr;
 
 	// Create the new entry
-	auto entry = new ArchiveEntry(name.ToStdString());
+	auto entry = new ArchiveEntry(name);
 
 	// Add it to the archive
 	addEntry(entry, position, dir);
@@ -978,14 +978,14 @@ ArchiveEntry* Archive::addNewEntry(const wxString& name, unsigned position, Arch
 // -----------------------------------------------------------------------------
 // Creates a new entry with [name] and adds it to [namespace] within the archive
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::addNewEntry(const wxString& name, const wxString& add_namespace)
+ArchiveEntry* Archive::addNewEntry(std::string_view name, std::string_view add_namespace)
 {
 	// Abort if read only
 	if (read_only_)
 		return nullptr;
 
 	// Create the new entry
-	auto entry = new ArchiveEntry(name.ToStdString());
+	auto entry = new ArchiveEntry(name);
 
 	// Add it to the archive
 	addEntry(entry, add_namespace);
@@ -1190,7 +1190,7 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode*
 // Renames [entry] with [name].
 // Returns false if the entry was invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool Archive::renameEntry(ArchiveEntry* entry, const wxString& name)
+bool Archive::renameEntry(ArchiveEntry* entry, std::string_view name)
 {
 	// Abort if read only
 	if (read_only_)
@@ -1221,7 +1221,7 @@ bool Archive::renameEntry(ArchiveEntry* entry, const wxString& name)
 		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntryRenameUS>(entry, name));
 
 	// Rename the entry
-	entry->setName(name.ToStdString());
+	entry->setName(name);
 	entry->formatName(formatDesc());
 	entry->setState(ArchiveEntry::State::Modified, true);
 
@@ -1235,33 +1235,33 @@ bool Archive::renameEntry(ArchiveEntry* entry, const wxString& name)
 // Imports all files (including subdirectories) from [directory] into the
 // archive
 // -----------------------------------------------------------------------------
-bool Archive::importDir(const wxString& directory)
+bool Archive::importDir(std::string_view directory)
 {
 	// Get a list of all files in the directory
-	wxArrayString files;
-	wxDir::GetAllFiles(directory, &files);
+	vector<std::string> files;
+	for (const auto& item : std::filesystem::recursive_directory_iterator{ directory })
+		if (item.is_regular_file())
+			files.push_back(item.path().string());
 
 	// Go through files
 	for (const auto& file : files)
 	{
-		wxString name = file;
-		name.Replace(directory, "", false); // Remove directory from entry name
+		StrUtil::Path fn{ StrUtil::replace(file, directory, "") }; // Remove directory from entry name
 
 		// Split filename into dir+name
-		wxFileName fn(name);
-		wxString   ename = fn.GetFullName();
-		wxString   edir  = fn.GetPath();
+		auto ename = fn.fileName();
+		auto edir  = fn.path();
 
 		// Remove beginning \ or / from dir
-		if (edir.StartsWith("\\") || edir.StartsWith("/"))
-			edir.Remove(0, 1);
+		if (StrUtil::startsWith(edir, '\\') || StrUtil::startsWith(edir, '/'))
+			edir.remove_prefix(1);
 
 		// Add the entry
 		auto dir   = createDir(edir);
 		auto entry = addNewEntry(ename, dir->numEntries() + 1, dir);
 
 		// Load data
-		entry->importFile(file.ToStdString());
+		entry->importFile(file);
 
 		// Set unmodified
 		entry->setState(ArchiveEntry::State::Unmodified);
@@ -1305,7 +1305,7 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace of the entry at [index] within [dir]
 // -----------------------------------------------------------------------------
-wxString Archive::detectNamespace(size_t index, ArchiveTreeNode* dir)
+std::string Archive::detectNamespace(size_t index, ArchiveTreeNode* dir)
 {
 	if (dir && index < dir->numEntries())
 		return detectNamespace(dir->entryAt(index));
@@ -1316,7 +1316,7 @@ wxString Archive::detectNamespace(size_t index, ArchiveTreeNode* dir)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-wxString Archive::detectNamespace(ArchiveEntry* entry)
+std::string Archive::detectNamespace(ArchiveEntry* entry)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -1333,7 +1333,7 @@ wxString Archive::detectNamespace(ArchiveEntry* entry)
 
 	// Namespace is the directory's name (in lowercase)
 	if (dir)
-		return dir->name().Lower();
+		return StrUtil::lower(dir->name().ToStdString());
 	else
 		return "global"; // Error, just return global
 }
@@ -1348,7 +1348,7 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 	auto dir = options.dir;
 	if (!dir)
 		dir = &dir_root_;
-	options.match_name.MakeLower(); // Force case-insensitive
+	StrUtil::upperIP(options.match_name); // Force case-insensitive
 
 	// Begin search
 
@@ -1370,23 +1370,18 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 		}
 
 		// Check name
-		if (!options.match_name.IsEmpty())
+		if (!options.match_name.empty())
 		{
 			// Cut extension if ignoring
-			wxFileName fn(entry->name());
-			if (options.ignore_ext)
-			{
-				if (!options.match_name.Matches(fn.GetName().MakeLower()))
-					continue;
-			}
-			else if (!options.match_name.Matches(fn.GetFullName().MakeLower()))
+			auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
+			if (!StrUtil::matches(check_name, options.match_name))
 				continue;
 		}
 
 		// Check namespace
-		if (!options.match_namespace.IsEmpty())
+		if (!options.match_namespace.empty())
 		{
-			if (!(S_CMPNOCASE(detectNamespace(entry), options.match_namespace)))
+			if (!StrUtil::equalCI(detectNamespace(entry), options.match_namespace))
 				continue;
 		}
 
@@ -1423,7 +1418,7 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 	auto dir = options.dir;
 	if (!dir)
 		dir = &dir_root_;
-	options.match_name.MakeLower(); // Force case-insensitive
+	StrUtil::upperIP(options.match_name); // Force case-insensitive
 
 	// Begin search
 
@@ -1460,23 +1455,18 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 		}
 
 		// Check name
-		if (!options.match_name.IsEmpty())
+		if (!options.match_name.empty())
 		{
 			// Cut extension if ignoring
-			wxFileName fn(entry->name());
-			if (options.ignore_ext)
-			{
-				if (!options.match_name.Matches(fn.GetName().MakeLower()))
-					continue;
-			}
-			else if (!options.match_name.Matches(fn.GetFullName().MakeLower()))
+			auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
+			if (!StrUtil::matches(check_name, options.match_name))
 				continue;
 		}
 
 		// Check namespace
-		if (!options.match_namespace.IsEmpty())
+		if (!options.match_namespace.empty())
 		{
-			if (!(S_CMPNOCASE(detectNamespace(entry), options.match_namespace)))
+			if (!StrUtil::equalCI(detectNamespace(entry), options.match_namespace))
 				continue;
 		}
 
@@ -1498,7 +1488,7 @@ vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
 	if (!dir)
 		dir = &dir_root_;
 	vector<ArchiveEntry*> ret;
-	options.match_name.MakeLower(); // Force case-insensitive
+	StrUtil::upperIP(options.match_name); // Force case-insensitive
 
 	// Begin search
 
@@ -1520,23 +1510,18 @@ vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
 		}
 
 		// Check name
-		if (!options.match_name.IsEmpty())
+		if (!options.match_name.empty())
 		{
 			// Cut extension if ignoring
-			wxFileName fn(entry->name());
-			if (options.ignore_ext)
-			{
-				if (!fn.GetName().MakeLower().Matches(options.match_name))
-					continue;
-			}
-			else if (!fn.GetFullName().MakeLower().Matches(options.match_name))
+			auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
+			if (!StrUtil::matches(check_name, options.match_name))
 				continue;
 		}
 
 		// Check namespace
-		if (!options.match_namespace.IsEmpty())
+		if (!options.match_namespace.empty())
 		{
-			if (!(S_CMPNOCASE(detectNamespace(entry), options.match_namespace)))
+			if (!StrUtil::equalCI(detectNamespace(entry), options.match_namespace))
 				continue;
 		}
 
@@ -1620,7 +1605,7 @@ bool Archive::loadFormats(MemChunk& mc)
 	for (unsigned a = 0; a < formats_node->nChildren(); a++)
 	{
 		auto          fmt_desc = (ParseTreeNode*)formats_node->child(a);
-		ArchiveFormat fmt{ fmt_desc->name() };
+		ArchiveFormat fmt{ fmt_desc->name().ToStdString() };
 
 		for (unsigned p = 0; p < fmt_desc->nChildren(); p++)
 		{

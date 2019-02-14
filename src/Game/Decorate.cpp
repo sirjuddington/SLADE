@@ -676,7 +676,7 @@ CONSOLE_COMMAND(test_decorate, 0, false)
 		Game::readDecorateDefs(archive, types, parsed);
 	else
 	{
-		auto entry = archive->entryAtPath(args[0]);
+		auto entry = archive->entryAtPath(args[0].ToStdString());
 		if (entry)
 			parseDecorateEntry(entry, types, parsed);
 		else

@@ -74,6 +74,7 @@
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
 #include "Utility/SFileDialog.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -144,21 +145,22 @@ public:
 			}
 			else
 			{
-				wxFileName    fn(filenames[a]);
+				StrUtil::Path fn(filenames[a].ToStdString());
 				ArchiveEntry* entry = nullptr;
 
 				// Find entry to replace if needed
 				if (auto_entry_replace)
 				{
-					entry = parent_->archive()->entryAtPath(list_->currentDir()->path() + fn.GetFullName());
+					entry = parent_->archive()->entryAtPath(
+						list_->currentDir()->path().ToStdString().append(fn.fileName()));
 					// An entry with that name is already present, so ask about replacing it
 					if (entry && !yes_to_all)
 					{
 						// Since there is no standard "Yes/No to all" button or "Don't ask me again" checkbox,
 						// we will instead hack the Cancel button into being a "Yes to all" button. This is
 						// despite the existence of a wxID_YESTOALL return value...
-						wxString message = wxString::Format(
-							"Overwrite existing entry %s%s", list_->currentDir()->path(), fn.GetFullName());
+						auto message = fmt::format(
+							"Overwrite existing entry {}{}", list_->currentDir()->path().ToStdString(), fn.fileName());
 						wxMessageDialog dlg(parent_, message, caption, wxCANCEL | wxYES_NO | wxCENTRE);
 						dlg.SetYesNoCancelLabels(_("Yes"), _("No"), _("Yes to all"));
 						int result = dlg.ShowModal();
@@ -174,7 +176,7 @@ public:
 
 				// Create new entry if needed
 				if (entry == nullptr)
-					entry = parent_->archive()->addNewEntry(fn.GetFullName(), index, list_->currentDir());
+					entry = parent_->archive()->addNewEntry(fn.fileName(), index, list_->currentDir());
 
 				// Import the file to it
 				entry->importFile(filenames[a].ToStdString());
@@ -687,7 +689,7 @@ bool ArchivePanel::saveAs()
 			info, "Save Archive " + archive_->filename(false) + " As", archive_->fileExtensionString(), this))
 	{
 		// Save the archive
-		if (!archive_->save(info.filenames[0]))
+		if (!archive_->save(info.filenames[0].ToStdString()))
 		{
 			// If there was an error pop up a message box
 			wxMessageBox(wxString::Format("Error:\n%s", Global::error), "Error", wxICON_ERROR);
@@ -738,7 +740,7 @@ bool ArchivePanel::newEntry(NewEntry type)
 
 	// Add the entry to the archive
 	undo_manager_->beginRecord("Add Entry");
-	auto new_entry = archive_->addNewEntry(name, index, entry_list_->currentDir());
+	auto new_entry = archive_->addNewEntry(name.ToStdString(), index, entry_list_->currentDir());
 	undo_manager_->endRecord(true);
 
 	// Deal with specific entry type that we may want created
@@ -814,7 +816,7 @@ bool ArchivePanel::newDirectory() const
 
 	// Add the directory to the archive
 	undo_manager_->beginRecord("Create Directory");
-	auto dir = archive_->createDir(name, entry_list_->currentDir());
+	auto dir = archive_->createDir(name.ToStdString(), entry_list_->currentDir());
 	undo_manager_->endRecord(!!dir);
 
 	// Return whether the directory was created ok
@@ -861,13 +863,13 @@ bool ArchivePanel::importFiles()
 			UI::setSplashProgressMessage(name);
 
 			// Add the entry to the archive
-			auto new_entry = archive_->addNewEntry(name, index, entry_list_->currentDir());
+			auto new_entry = archive_->addNewEntry(name.ToStdString(), index, entry_list_->currentDir());
 
 			// If the entry was created ok, load the file into it
 			if (new_entry)
 			{
 				new_entry->importFile(info.filenames[a].ToStdString()); // Import file to entry
-				EntryType::detectEntryType(new_entry);    // Detect entry type
+				EntryType::detectEntryType(new_entry);                  // Detect entry type
 				ok = true;
 			}
 
@@ -952,13 +954,13 @@ bool ArchivePanel::buildArchive()
 			name.Replace(archive_->filename(), "", false); // Remove directory from entry name
 
 			// Split filename into dir+name
-			wxFileName fn(name);
-			wxString   ename = fn.GetFullName();
-			wxString   edir  = fn.GetPath();
+			StrUtil::Path fn(name.ToStdString());
+			auto          ename = fn.fileName();
+			auto          edir  = fn.path();
 
 			// Remove beginning \ or / from dir
-			if (edir.StartsWith("\\") || edir.StartsWith("/"))
-				edir.Remove(0, 1);
+			if (StrUtil::startsWith(edir, '\\') || StrUtil::startsWith(edir, '/'))
+				edir.remove_prefix(1);
 
 			// Skip hidden files
 			if (archive_build_skip_hidden && (edir[0] == '.' || ename[0] == '.'))
@@ -969,7 +971,7 @@ bool ArchivePanel::buildArchive()
 			auto entry = zip.addNewEntry(ename, dir->numEntries() + 1, dir);
 
 			// Log
-			UI::setSplashProgressMessage(ename);
+			UI::setSplashProgressMessage(std::string{ ename });
 			UI::setSplashProgress((float)a / files.size());
 
 			// Load data
@@ -985,7 +987,7 @@ bool ArchivePanel::buildArchive()
 		UI::setSplashProgressMessage("");
 
 		// Save the archive
-		if (!zip.save(info.filenames[0]))
+		if (!zip.save(info.filenames[0].ToStdString()))
 		{
 			UI::hideSplash();
 
@@ -1017,7 +1019,8 @@ bool ArchivePanel::renameEntry(bool each) const
 	undo_manager_->beginRecord("Rename Entry");
 
 	/* Define alphabet */
-	const wxString alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	static const std::string alphabet       = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	static const std::string alphabet_lower = "abcdefghijklmnopqrstuvwxyz";
 
 	// Check any are selected
 	if (each || selection.size() == 1)
@@ -1035,7 +1038,7 @@ bool ArchivePanel::renameEntry(bool each) const
 			// Rename entry (if needed)
 			if (!new_name.IsEmpty() && selection[a]->name() != new_name)
 			{
-				if (!archive_->renameEntry(selection[a], new_name))
+				if (!archive_->renameEntry(selection[a], new_name.ToStdString()))
 					wxMessageBox(
 						wxString::Format("Unable to rename entry %s: %s", selection[a]->name(), Global::error),
 						"Rename Entry",
@@ -1079,25 +1082,25 @@ bool ArchivePanel::renameEntry(bool each) const
 					continue;
 
 				// Get current name as wxFileName for processing
-				wxFileName fn(entry->name());
+				StrUtil::Path fn(entry->name());
 
 				// Rename the entry (if needed)
-				if (fn.GetName() != names[a])
+				if (fn.fileName(false) != names[a].ToStdString())
 				{
-					wxString filename = names[a];
+					auto filename = names[a].ToStdString();
 					/* file renaming syntax */
 					int num = a / alphabet.size();
 					int cn  = a - (num * alphabet.size());
-					filename.Replace("^^", alphabet.Lower()[cn]);
-					filename.Replace("^", alphabet[cn]);
-					filename.Replace("%%", wxString::FromDouble(num, 0));
-					filename.Replace("%", wxString::FromDouble(num + 1, 0));
-					filename.Replace("&&", wxString::FromDouble(a, 0));
-					filename.Replace("&", wxString::FromDouble(a + 1, 0));
-					fn.SetName(filename); // Change name
+					StrUtil::replaceIP(filename, "^^", { alphabet_lower.data() + cn, 1 });
+					StrUtil::replaceIP(filename, "^", { alphabet.data() + cn, 1 });
+					StrUtil::replaceIP(filename, "%%", fmt::format("{}", num));
+					StrUtil::replaceIP(filename, "%", fmt::format("{}", num + 1));
+					StrUtil::replaceIP(filename, "&&", fmt::format("{}", a));
+					StrUtil::replaceIP(filename, "&", fmt::format("{}", a + 1));
+					fn.setFileName(filename); // Change name
 
 					// Rename in archive
-					if (!archive_->renameEntry(entry, fn.GetFullName()))
+					if (!archive_->renameEntry(entry, fn.fileName()))
 						wxMessageBox(
 							wxString::Format("Unable to rename entry %s: %s", selection[a]->name(), Global::error),
 							"Rename Entry",
@@ -1119,19 +1122,19 @@ bool ArchivePanel::renameEntry(bool each) const
 			entry_list_->setEntriesAutoUpdate(true);
 
 		// Get the current directory's name
-		wxString old_name = selected_dirs[a]->name();
+		auto old_name = selected_dirs[a]->name().ToStdString();
 
 		// Prompt for a new name
-		wxString new_name = wxGetTextFromUser(
-			"Enter new directory name:", wxString::Format("Rename Directory %s", old_name), old_name);
+		auto new_name = wxGetTextFromUser(
+							"Enter new directory name:", wxString::Format("Rename Directory %s", old_name), old_name)
+							.ToStdString();
 
 		// Do nothing if no name was entered
-		if (new_name.IsEmpty())
+		if (new_name.empty())
 			continue;
 
 		// Discard any given path (for now)
-		wxFileName fn(new_name);
-		new_name = fn.GetFullName();
+		new_name = StrUtil::Path::fileNameOf(new_name);
 
 		// Rename the directory if the new entered name is different from the original
 		if (new_name != old_name)
@@ -1218,7 +1221,7 @@ bool ArchivePanel::deleteEntry(bool confirm)
 			MainEditor::window()->archiveManagerPanel()->closeEntryTab(entry.get());
 
 		// Remove the selected directory from the archive
-		archive_->removeDir(selected_dirs[a]->name(), entry_list_->currentDir());
+		archive_->removeDir(selected_dirs[a]->name().ToStdString(), entry_list_->currentDir());
 	}
 	entry_list_->setEntriesAutoUpdate(true);
 
@@ -1797,7 +1800,7 @@ bool ArchivePanel::exportEntry()
 
 			// Go through selected dirs
 			for (auto& dir : selected_dirs)
-				dir->exportTo(info.path + "/" + dir->name());
+				dir->exportTo(std::string{ info.path + "/" + dir->name() });
 		}
 	}
 
@@ -2338,7 +2341,9 @@ bool ArchivePanel::swanConvert() const
 			undo_manager_->beginRecord(wxString::Format("Creating %s", wadnames[e]));
 
 			auto output = archive_->addNewEntry(
-				(archive_->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, entry_list_->currentDir());
+				(archive_->formatId() == "wad" ? wadnames[e] : zipnames[e]).ToStdString(),
+				index,
+				entry_list_->currentDir());
 			if (output)
 			{
 				error |= !output->importMemChunk(*mc[e]);
@@ -2779,7 +2784,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 			name.Remove(0, 1);
 
 		// Get directory to open
-		auto dir = archive_->dir(name, nullptr);
+		auto dir = archive_->dir(name.ToStdString(), nullptr);
 
 		// Check it exists (really should)
 		if (!dir)
@@ -4011,7 +4016,7 @@ bool EntryDataUS::swapData()
 	// Log::info(1, "Entry data swap...");
 
 	// Get parent dir
-	auto dir = archive_->dir(path_);
+	auto dir = archive_->dir(path_.ToStdString());
 	if (dir)
 	{
 		// Get entry
@@ -4280,7 +4285,7 @@ CONSOLE_COMMAND(ren, 2, true)
 				}
 			}
 
-			if (archive->renameEntry(entries[i], newname))
+			if (archive->renameEntry(entries[i], newname.ToStdString()))
 				++count;
 		}
 		Log::info(wxString::Format("Renamed %i entr%s", count, count == 1 ? "y" : "ies"));
@@ -4295,7 +4300,7 @@ CONSOLE_COMMAND(cd, 1, true)
 	if (current && panel)
 	{
 		ArchiveTreeNode* dir    = panel->currentDir();
-		ArchiveTreeNode* newdir = current->dir(args[0], dir);
+		ArchiveTreeNode* newdir = current->dir(args[0].ToStdString(), dir);
 		if (newdir == nullptr)
 		{
 			if (args[0].Matches(".."))

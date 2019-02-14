@@ -259,7 +259,7 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("Wad2Archive::loadEntryData: Failed to open wadfile %s", filename_));
+		Log::error("Wad2Archive::loadEntryData: Failed to open wadfile {}", filename_);
 		return false;
 	}
 
@@ -319,7 +319,7 @@ bool Wad2Archive::isWad2Archive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Quake wad2 archive
 // -----------------------------------------------------------------------------
-bool Wad2Archive::isWad2Archive(const wxString& filename)
+bool Wad2Archive::isWad2Archive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

@@ -13,11 +13,11 @@ public:
 	bool open(MemChunk& mc) override;                      // Open from MemChunk
 	bool write(MemChunk& mc, bool update = true) override; // Write to MemChunk
 
-	wxString detectNamespace(ArchiveEntry* entry) override;
-	wxString detectNamespace(size_t index, ArchiveTreeNode* dir = nullptr) override;
+	std::string detectNamespace(ArchiveEntry* entry) override;
+	std::string detectNamespace(size_t index, ArchiveTreeNode* dir = nullptr) override;
 
 	static bool isWadJArchive(MemChunk& mc);
-	static bool isWadJArchive(const wxString& filename);
+	static bool isWadJArchive(const std::string& filename);
 
 	static bool jaguarDecode(MemChunk& mc);
 

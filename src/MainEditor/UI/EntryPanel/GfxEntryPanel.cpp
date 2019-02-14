@@ -426,7 +426,7 @@ bool GfxEntryPanel::extractAll() const
 		// Only process images that actually contain some pixels
 		if (image()->width() && image()->height())
 		{
-			auto newimg = parent->addNewEntry(newname, index + pos + 1, entry_->parentDir());
+			auto newimg = parent->addNewEntry(newname.ToStdString(), index + pos + 1, entry_->parentDir());
 			if (newimg == nullptr)
 				return false;
 			SIFormat::getFormat("png")->saveImage(*image(), newimg->data(), &gfx_canvas_->palette());

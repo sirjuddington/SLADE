@@ -1563,6 +1563,9 @@
     <ClCompile Include="..\..\thirdparty\fmt\posix.cc">
       <Filter>ThirdParty\Fmt</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utility\FileUtils.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2770,6 +2773,9 @@
     </ClInclude>
     <ClInclude Include="..\..\thirdparty\fmt\fmt\time.h">
       <Filter>ThirdParty\Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\FileUtils.h">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

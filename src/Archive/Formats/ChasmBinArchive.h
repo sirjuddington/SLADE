@@ -16,7 +16,7 @@ public:
 
 	// Static functions
 	static bool isChasmBinArchive(MemChunk& mc);
-	static bool isChasmBinArchive(const wxString& filename);
+	static bool isChasmBinArchive(const std::string& filename);
 
 private:
 	static const uint32_t HEADER_SIZE     = 4 + 2;             // magic + number of entries

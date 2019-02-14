@@ -8,8 +8,8 @@ public:
 	PodArchive();
 	~PodArchive() = default;
 
-	wxString getId() const { return wxString(id_); }
-	void     setId(const wxString& id);
+	std::string_view getId() const { return id_; }
+	void             setId(std::string_view id);
 
 	// Opening
 	bool open(MemChunk& mc) override;
@@ -22,7 +22,7 @@ public:
 
 	// Static functions
 	static bool isPodArchive(MemChunk& mc);
-	static bool isPodArchive(const wxString& filename);
+	static bool isPodArchive(const std::string& filename);
 
 private:
 	char id_[80];

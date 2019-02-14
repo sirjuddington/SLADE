@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "ChasmBinArchive.h"
 #include "General/UI.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -204,8 +205,8 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 
 	if (num_entries > MAX_ENTRY_COUNT)
 	{
-		Log::error(wxString::Format(
-			"ChasmBinArchive::write: Bin archive can contain no more than %u entries", MAX_ENTRY_COUNT));
+		Log::error(
+			"ChasmBinArchive::write: Bin archive can contain no more than {} entries", MAX_ENTRY_COUNT);
 		Global::error = "Maximum number of entries exceeded for Chasm: The Rift bin archive";
 		return false;
 	}
@@ -236,20 +237,20 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Check entry name
-		wxString name        = entry->name();
-		uint8_t  name_length = static_cast<uint8_t>(name.Length());
+		auto name        = entry->name();
+		uint8_t  name_length = static_cast<uint8_t>(name.size());
 
 		if (name_length > NAME_SIZE - 1)
 		{
-			Log::warning(wxString::Format("Entry %s name is too long, it will be truncated", name));
-			name.Truncate(NAME_SIZE - 1);
+			Log::warning("Entry {} name is too long, it will be truncated", name);
+			StrUtil::truncateIP(name, NAME_SIZE - 1);
 			name_length = static_cast<uint8_t>(NAME_SIZE - 1);
 		}
 
 		// Write entry name
 		char name_data[NAME_SIZE] = {};
 		memcpy(name_data, &name_length, 1);
-		memcpy(name_data + 1, CHR(name), name_length);
+		memcpy(name_data + 1, name.data(), name_length);
 		mc.write(name_data, NAME_SIZE);
 
 		// Write entry size
@@ -300,7 +301,7 @@ bool ChasmBinArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("ChasmBinArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error("ChasmBinArchive::loadEntryData: Unable to open archive file {}", filename_);
 		return false;
 	}
 
@@ -351,7 +352,7 @@ bool ChasmBinArchive::isChasmBinArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Chasm bin archive
 // -----------------------------------------------------------------------------
-bool ChasmBinArchive::isChasmBinArchive(const wxString& filename)
+bool ChasmBinArchive::isChasmBinArchive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

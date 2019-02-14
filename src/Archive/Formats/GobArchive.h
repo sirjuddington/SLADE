@@ -21,5 +21,5 @@ public:
 
 	// Static functions
 	static bool isGobArchive(MemChunk& mc);
-	static bool isGobArchive(const wxString& filename);
+	static bool isGobArchive(const std::string& filename);
 };

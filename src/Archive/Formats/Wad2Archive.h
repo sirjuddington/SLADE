@@ -29,7 +29,7 @@ public:
 
 	// Static functions
 	static bool isWad2Archive(MemChunk& mc);
-	static bool isWad2Archive(const wxString& filename);
+	static bool isWad2Archive(const std::string& filename);
 
 private:
 	bool wad3_ = false;

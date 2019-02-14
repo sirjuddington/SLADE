@@ -126,7 +126,7 @@ bool GZipArchive::open(MemChunk& mc)
 				comment_ += c;
 			++mds;
 		} while (c != 0 && size > mds);
-		Log::info(wxString::Format("Archive %s says:\n %s", filename(true), comment_));
+		Log::info("Archive {} says:\n {}", filename(true), comment_);
 	}
 
 	// Skip past CRC 16 check
@@ -228,7 +228,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 			// File name, if not extrapolated from archive name
 			if (flags_ & FLG_FNAME)
 			{
-				mc.write(entryAt(0)->name().data(), entryAt(0)->name().length());
+				mc.write(entryAt(0)->name().data(), entryAt(0)->name().size());
 				uint8_t zero = 0;
 				mc.write(&zero, 1); // Terminate string
 			}
@@ -236,7 +236,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 			// Comment, if there were actually one
 			if (flags_ & FLG_FCMNT)
 			{
-				mc.write(CHR(comment_), comment_.length());
+				mc.write(comment_.data(), comment_.size());
 				uint8_t zero = 0;
 				mc.write(&zero, 1); // Terminate string
 			}
@@ -262,7 +262,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 // -----------------------------------------------------------------------------
 // Renames the entry and set the fname flag
 // -----------------------------------------------------------------------------
-bool GZipArchive::renameEntry(ArchiveEntry* entry, const wxString& name)
+bool GZipArchive::renameEntry(ArchiveEntry* entry, std::string_view name)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -300,7 +300,7 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("GZipArchive::loadEntryData: Failed to open gzip file %s", filename_));
+		Log::error("GZipArchive::loadEntryData: Failed to open gzip file {}", filename_);
 		return false;
 	}
 
@@ -321,7 +321,7 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
 ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	options.match_name = options.match_name.Upper();
+	StrUtil::upperIP(options.match_name);
 	auto entry         = entryAt(0);
 	if (entry == nullptr)
 		return entry;
@@ -343,9 +343,9 @@ ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 	}
 
 	// Check name
-	if (!options.match_name.IsEmpty())
+	if (!options.match_name.empty())
 	{
-		if (!options.match_name.Matches(entry->upperName()))
+		if (!StrUtil::matches(entry->upperName(), options.match_name))
 		{
 			return nullptr;
 		}
@@ -370,7 +370,6 @@ ArchiveEntry* GZipArchive::findLast(SearchOptions& options)
 vector<ArchiveEntry*> GZipArchive::findAll(SearchOptions& options)
 {
 	// Init search variables
-	options.match_name = options.match_name.Lower();
 	vector<ArchiveEntry*> ret;
 	if (findFirst(options))
 		ret.push_back(entryAt(0));
@@ -434,7 +433,7 @@ bool GZipArchive::isGZipArchive(MemChunk& mc)
 	// Skip past name, if any
 	if (fname)
 	{
-		wxString name;
+		std::string name;
 		char     c;
 		do
 		{
@@ -448,7 +447,7 @@ bool GZipArchive::isGZipArchive(MemChunk& mc)
 	// Skip past comment
 	if (fcmnt)
 	{
-		wxString comment;
+		std::string comment;
 		char     c;
 		do
 		{
@@ -478,7 +477,7 @@ bool GZipArchive::isGZipArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid GZip archive
 // -----------------------------------------------------------------------------
-bool GZipArchive::isGZipArchive(const wxString& filename)
+bool GZipArchive::isGZipArchive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -532,7 +531,7 @@ bool GZipArchive::isGZipArchive(const wxString& filename)
 	// Skip past name
 	if (fname)
 	{
-		wxString name;
+		std::string name;
 		char     c;
 		do
 		{
@@ -546,7 +545,7 @@ bool GZipArchive::isGZipArchive(const wxString& filename)
 	// Skip past comment
 	if (fcmnt)
 	{
-		wxString comment;
+		std::string comment;
 		char     c;
 		do
 		{

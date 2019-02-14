@@ -590,7 +590,7 @@ CONSOLE_COMMAND(test_parse_zmapinfo, 1, false)
 	auto archive = MainEditor::currentArchive();
 	if (archive)
 	{
-		auto entry = archive->entryAtPath(args[0]);
+		auto entry = archive->entryAtPath(args[0].ToStdString());
 		if (!entry)
 			Log::console("Invalid entry path");
 		else

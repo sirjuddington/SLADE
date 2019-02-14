@@ -65,10 +65,10 @@ PodArchive::PodArchive() : Archive("pod")
 // -----------------------------------------------------------------------------
 // Sets the description/id of the pod archive
 // -----------------------------------------------------------------------------
-void PodArchive::setId(const wxString& id)
+void PodArchive::setId(std::string_view id)
 {
 	memset(id_, 0, 80);
-	memcpy(id_, CHR(id), id.Length());
+	memcpy(id_, id.data(), id.size());
 }
 
 // -----------------------------------------------------------------------------
@@ -181,15 +181,15 @@ bool PodArchive::write(MemChunk& mc, bool update)
 	// Init MemChunk
 	mc.clear();
 	mc.reSize(4 + 80 + (entries.size() * 40) + data_size, false);
-	Log::info(5, wxString::Format("MC size %d", mc.size()));
+	Log::info(5, "MC size {}", mc.size());
 
 	// Write no. entries
 	uint32_t n_entries = entries.size() - ndirs;
-	Log::info(5, wxString::Format("n_entries %d", n_entries));
+	Log::info(5, "n_entries {}", n_entries);
 	mc.write(&n_entries, 4);
 
 	// Write id
-	Log::info(5, wxString::Format("id %s", id_));
+	Log::info(5, "id {}", id_);
 	mc.write(id_, 80);
 
 	// Write directory
@@ -202,11 +202,11 @@ bool PodArchive::write(MemChunk& mc, bool update)
 
 		// Name
 		memset(fe.name, 0, 32);
-		wxString path = entry->path(true);
-		path.Replace("/", "\\");
-		path = path.AfterFirst('\\');
+		auto path = entry->path(true);
+		std::replace(path.begin(), path.end(), '/', '\\');
+		path = StrUtil::afterFirst(path, '\\');
 		// Log::info(2, path);
-		memcpy(fe.name, CHR(path), path.Len());
+		memcpy(fe.name, path.data(), path.size());
 
 		// Size
 		fe.size = entry->size();
@@ -217,12 +217,11 @@ bool PodArchive::write(MemChunk& mc, bool update)
 		mc.write(&fe.offset, 4);
 		Log::info(
 			5,
-			wxString::Format(
-				"entry %s: old=%d new=%d size=%d",
-				fe.name,
-				entry->exProp("Offset").intValue(),
-				fe.offset,
-				entry->size()));
+			"entry {}: old={} new={} size={}",
+			fe.name,
+			entry->exProp("Offset").intValue(),
+			fe.offset,
+			entry->size());
 
 		// Next offset
 		fe.offset += fe.size;
@@ -260,7 +259,7 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("PodArchive::loadEntryData: Failed to open file %s", filename_));
+		Log::error("PodArchive::loadEntryData: Failed to open file {}", filename_);
 		return false;
 	}
 
@@ -318,7 +317,7 @@ bool PodArchive::isPodArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid pod archive
 // -----------------------------------------------------------------------------
-bool PodArchive::isPodArchive(const wxString& filename)
+bool PodArchive::isPodArchive(const std::string& filename)
 {
 	wxFile file;
 	if (!file.Open(filename))
@@ -372,7 +371,7 @@ CONSOLE_COMMAND(pod_get_id, 0, 1)
 {
 	auto archive = MainEditor::currentArchive();
 	if (archive && archive->formatId() == "pod")
-		Log::console(((PodArchive*)archive)->getId());
+		Log::console(std::string{ ((PodArchive*)archive)->getId() });
 	else
 		Log::console("Current tab is not a POD archive");
 }
@@ -382,8 +381,8 @@ CONSOLE_COMMAND(pod_set_id, 1, true)
 	auto archive = MainEditor::currentArchive();
 	if (archive && archive->formatId() == "pod")
 	{
-		auto id = args[0];
-		((PodArchive*)archive)->setId(id.Truncate(80));
+		auto id = args[0].ToStdString();
+		((PodArchive*)archive)->setId(StrUtil::truncate(id, 80));
 	}
 	else
 		Log::console("Current tab is not a POD archive");

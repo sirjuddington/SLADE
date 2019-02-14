@@ -13,14 +13,14 @@ public:
 
 	// Writing/Saving
 	bool write(MemChunk& mc, bool update = true) override;             // Write to MemChunk
-	bool write(const wxString& filename, bool update = true) override; // Write to File
+	bool write(std::string_view filename, bool update = true) override; // Write to File
 
 	// Misc
 	bool loadEntryData(ArchiveEntry* entry) override;
 
 	// Static functions
 	static bool isADatArchive(MemChunk& mc);
-	static bool isADatArchive(const wxString& filename);
+	static bool isADatArchive(const std::string& filename);
 
 private:
 	static const int DIRENTRY = 144;

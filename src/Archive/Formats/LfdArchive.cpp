@@ -162,7 +162,7 @@ bool LfdArchive::open(MemChunk& mc)
 	}
 
 	if (num_lumps != numEntries())
-		Log::warning(wxString::Format("Computed %i lumps, but actually %i entries", num_lumps, numEntries()));
+		Log::warning("Computed {} lumps, but actually {} entries", num_lumps, numEntries());
 
 	// Detect all entry types
 	MemChunk edata;
@@ -311,7 +311,7 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("LfdArchive::loadEntryData: Failed to open lfdfile %s", filename_));
+		Log::error("LfdArchive::loadEntryData: Failed to open lfdfile {}", filename_);
 		return false;
 	}
 
@@ -381,7 +381,7 @@ bool LfdArchive::isLfdArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Dark Forces lfd archive
 // -----------------------------------------------------------------------------
-bool LfdArchive::isLfdArchive(const wxString& filename)
+bool LfdArchive::isLfdArchive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

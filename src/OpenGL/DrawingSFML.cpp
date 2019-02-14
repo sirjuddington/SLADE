@@ -83,7 +83,7 @@ namespace Drawing
 // -----------------------------------------------------------------------------
 FontPtr createFont(const wxString& res_path, int& counter)
 {
-	auto entry = App::archiveManager().programResourceArchive()->entryAtPath(res_path);
+	auto entry = App::archiveManager().programResourceArchive()->entryAtPath(res_path.ToStdString());
 	if (!entry)
 		return nullptr;
 

@@ -32,6 +32,8 @@
 #include "Main.h"
 #include "WolfArchive.h"
 #include "General/UI.h"
+#include "Utility/FileUtils.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -49,25 +51,25 @@ namespace
 // does exist) and then we iterate through all of the directory's files until we
 // find the first one whose name matches.
 // -----------------------------------------------------------------------------
-wxString findFileCasing(const wxFileName& filename)
+std::string findFileCasing(const StrUtil::Path& filename)
 {
 #ifdef _WIN32
-	return filename.GetFullPath();
+	return std::string{ filename.fileName() };
 #else
-	string path = filename.GetPath();
-	wxDir  dir(path);
+	std::string path = filename.path();
+	wxDir       dir(path);
 	if (!dir.IsOpened())
 	{
-		Log::error("No directory at path. This shouldn't happen.");
+		Log::error(1, "No directory at path %s. This shouldn't happen.");
 		return "";
 	}
 
-	string found;
-	bool   cont = dir.GetFirst(&found);
+	wxString found;
+	bool     cont = dir.GetFirst(&found);
 	while (cont)
 	{
-		if (S_CMPNOCASE(found, filename.GetFullName()))
-			return (dir.GetNameWithSep() + found);
+		if (StrUtil::equalCI(WxUtils::stringToView(found), filename.fileName()))
+			return (dir.GetNameWithSep() + found).ToStdString();
 		cont = dir.GetNext(&found);
 	}
 
@@ -146,15 +148,15 @@ size_t WolfConstant(int name, size_t numlumps)
 // Looks for the string naming the song towards the end of the file.
 // Returns an empty string if nothing is found.
 // -----------------------------------------------------------------------------
-wxString searchIMFName(MemChunk& mc)
+std::string searchIMFName(MemChunk& mc)
 {
 	char tmp[17];
 	char tmp2[65];
 	tmp[16]  = 0;
 	tmp2[64] = 0;
 
-	wxString ret      = "";
-	wxString fullname = "";
+	std::string ret      = "";
+	std::string fullname = "";
 	if (mc.size() >= 88u)
 	{
 		uint16_t nameOffset = mc.readL16(0) + 4u;
@@ -176,7 +178,7 @@ wxString searchIMFName(MemChunk& mc)
 			fullname = tmp2;
 		}
 
-		if (ret.IsEmpty() || ret.length() > 12 || !fullname.EndsWith("IMF"))
+		if (ret.empty() || ret.length() > 12 || !StrUtil::endsWith(fullname, "IMF"))
 			return "";
 	}
 	return ret;
@@ -295,7 +297,7 @@ void expandWolfGraphLump(ArchiveEntry* entry, size_t lumpnum, size_t numlumps, H
 
 	if (expanded == 0 || expanded > 65000)
 	{
-		Log::error(wxString::Format("ExpandWolfGraphLump: invalid expanded size in entry %d", lumpnum));
+		Log::error("ExpandWolfGraphLump: invalid expanded size in entry {}", lumpnum);
 		return;
 	}
 
@@ -338,8 +340,7 @@ void expandWolfGraphLump(ArchiveEntry* entry, size_t lumpnum, size_t numlumps, H
 			huffptr = hufftable + (nodeval - 256);
 		}
 		else
-			Log::warning(
-				wxString::Format("ExpandWolfGraphLump: nodeval is out of control (%d) in entry %d", nodeval, lumpnum));
+			Log::warning("ExpandWolfGraphLump: nodeval is out of control ({}) in entry {}", nodeval, lumpnum);
 	}
 
 	entry->importMem(start, expanded);
@@ -376,61 +377,59 @@ void WolfArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) const
 // Reads a Wolf format file from disk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchive::open(const wxString& filename)
+bool WolfArchive::open(std::string_view filename)
 {
 	// Find wolf archive type
-	wxFileName fn1(filename);
-	bool       opened;
-	if (fn1.GetName().MakeUpper() == "MAPHEAD" || fn1.GetName().MakeUpper() == "GAMEMAPS"
-		|| fn1.GetName().MakeUpper() == "MAPTEMP")
+	StrUtil::Path fn1(filename);
+	std::string   fn1_name = StrUtil::upper(fn1.fileName(false));
+	bool          opened;
+	if (fn1_name == "MAPHEAD" || fn1_name == "GAMEMAPS" || fn1_name == "MAPTEMP")
 	{
 		// MAPHEAD can be paried with either a GAMEMAPS (Carmack,RLEW) or MAPTEMP (RLEW)
-		wxFileName fn2(fn1);
-		if (fn1.GetName().MakeUpper() == "MAPHEAD")
+		StrUtil::Path fn2(fn1);
+		if (fn1_name == "MAPHEAD")
 		{
-			fn2.SetName("GAMEMAPS");
-			if (!wxFile::Exists(fn2.GetFullPath()))
-				fn2.SetName("MAPTEMP");
+			fn2.setFileName("GAMEMAPS");
+			if (!FileUtil::fileExists(fn2.fullPath()))
+				fn2.setFileName("MAPTEMP");
 		}
 		else
 		{
-			fn1.SetName("MAPHEAD");
+			fn1.setFileName("MAPHEAD");
 		}
 		MemChunk data, head;
-		head.importFile(findFileCasing(fn1).ToStdString());
-		data.importFile(findFileCasing(fn2).ToStdString());
+		head.importFile(findFileCasing(fn1));
+		data.importFile(findFileCasing(fn2));
 		opened = openMaps(head, data);
 	}
-	else if (fn1.GetName().MakeUpper() == "AUDIOHED" || fn1.GetName().MakeUpper() == "AUDIOT")
+	else if (fn1_name == "AUDIOHED" || fn1_name == "AUDIOT")
 	{
-		wxFileName fn2(fn1);
-		fn1.SetName("AUDIOHED");
-		fn2.SetName("AUDIOT");
+		StrUtil::Path fn2(fn1);
+		fn1.setFileName("AUDIOHED");
+		fn2.setFileName("AUDIOT");
 		MemChunk data, head;
-		head.importFile(findFileCasing(fn1).ToStdString());
-		data.importFile(findFileCasing(fn2).ToStdString());
+		head.importFile(findFileCasing(fn1));
+		data.importFile(findFileCasing(fn2));
 		opened = openAudio(head, data);
 	}
-	else if (
-		fn1.GetName().MakeUpper() == "VGAHEAD" || fn1.GetName().MakeUpper() == "VGAGRAPH"
-		|| fn1.GetName().MakeUpper() == "VGADICT")
+	else if (fn1_name == "VGAHEAD" || fn1_name == "VGAGRAPH" || fn1_name == "VGADICT")
 	{
-		wxFileName fn2(fn1);
-		wxFileName fn3(fn1);
-		fn1.SetName("VGAHEAD");
-		fn2.SetName("VGAGRAPH");
-		fn3.SetName("VGADICT");
+		StrUtil::Path fn2(fn1);
+		StrUtil::Path fn3(fn1);
+		fn1.setFileName("VGAHEAD");
+		fn2.setFileName("VGAGRAPH");
+		fn3.setFileName("VGADICT");
 		MemChunk data, head, dict;
-		head.importFile(findFileCasing(fn1).ToStdString());
-		data.importFile(findFileCasing(fn2).ToStdString());
-		dict.importFile(findFileCasing(fn3).ToStdString());
+		head.importFile(findFileCasing(fn1));
+		data.importFile(findFileCasing(fn2));
+		dict.importFile(findFileCasing(fn3));
 		opened = openGraph(head, data, dict);
 	}
 	else
 	{
 		// Read the file into a MemChunk
 		MemChunk mc;
-		if (!mc.importFile(filename.ToStdString()))
+		if (!mc.importFile(filename))
 		{
 			Global::error = "Unable to open file. Make sure it isn't in use by another program.";
 			return false;
@@ -442,8 +441,8 @@ bool WolfArchive::open(const wxString& filename)
 	if (opened)
 	{
 		// Update variables
-		this->filename_ = filename;
-		this->on_disk_  = true;
+		this->filename_.assign(filename.data(), filename.size());
+		this->on_disk_ = true;
 
 		return true;
 	}
@@ -665,7 +664,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 			// Look to see if we have an IMF
 			data.exportMemChunk(edata, offset, size);
 
-			wxString name = searchIMFName(edata);
+			auto name = searchIMFName(edata);
 			if (name.empty())
 				break;
 		}
@@ -691,7 +690,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 		if (offset + size > data.size())
 		{
 			Log::error("WolfArchive::openAudio: Wolf archive is invalid or corrupt");
-			Global::error = wxString::Format("Archive is invalid and/or corrupt in entry %d", d);
+			Global::error = fmt::format("Archive is invalid and/or corrupt in entry {}", d);
 			setMuted(false);
 			return false;
 		}
@@ -781,7 +780,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		if (offset + size > data.size())
 		{
 			Log::error("WolfArchive::openMaps: Wolf archive is invalid or corrupt");
-			Global::error = wxString::Format("Archive is invalid and/or corrupt in entry %d", d);
+			Global::error = fmt::format("Archive is invalid and/or corrupt in entry {}", d);
 			setMuted(false);
 			return false;
 		}
@@ -816,7 +815,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		planelen[2] = data.readL16(offset + 16);
 		for (int i = 0; i < 3; ++i)
 		{
-			name        = wxString::Format("PLANE%d", i);
+			name        = fmt::format("PLANE{}", i);
 			auto nlump2 = std::make_shared<ArchiveEntry>(name, planelen[i]);
 			nlump2->setLoaded(false);
 			nlump2->exProp("Offset") = (int)planeofs[i];
@@ -874,8 +873,8 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 
 	if (dict.size() != 1024)
 	{
-		Global::error = wxString::Format(
-			"WolfArchive::openGraph: VGADICT is improperly sized (%d bytes instead of 1024)", dict.size());
+		Global::error = fmt::format(
+			"WolfArchive::openGraph: VGADICT is improperly sized ({} bytes instead of 1024)", dict.size());
 		return false;
 	}
 	HuffNode nodes[256];
@@ -906,7 +905,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		if (offset + size > data.size())
 		{
 			Log::error("WolfArchive::openGraph: Wolf archive is invalid or corrupt");
-			Global::error = wxString::Format("Archive is invalid and/or corrupt in entry %d", d);
+			Global::error = fmt::format("Archive is invalid and/or corrupt in entry {}", d);
 			setMuted(false);
 			return false;
 		}
@@ -1024,7 +1023,7 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, unsigned position, Arch
 // Since there are no namespaces, just give the hot potato to the other function
 // and call it a day.
 // -----------------------------------------------------------------------------
-ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, const wxString& add_namespace, bool copy)
+ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, std::string_view add_namespace, bool copy)
 {
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
@@ -1032,7 +1031,7 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, const wxString& add_nam
 // -----------------------------------------------------------------------------
 // Wolf chunks have no names, so renaming is pointless.
 // -----------------------------------------------------------------------------
-bool WolfArchive::renameEntry(ArchiveEntry* entry, const wxString& name)
+bool WolfArchive::renameEntry(ArchiveEntry* entry, std::string_view name)
 {
 	return false;
 }
@@ -1070,7 +1069,7 @@ bool WolfArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("WolfArchive::loadEntryData: Failed to open datfile %s", filename_));
+		Log::error("WolfArchive::loadEntryData: Failed to open datfile {}", filename_);
 		return false;
 	}
 
@@ -1141,42 +1140,40 @@ bool WolfArchive::isWolfArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Wolfenstein VSWAP archive
 // -----------------------------------------------------------------------------
-bool WolfArchive::isWolfArchive(const wxString& filename)
+bool WolfArchive::isWolfArchive(const std::string& filename)
 {
 	// Find wolf archive type
-	wxFileName fn1(filename);
-	if (fn1.GetName().MakeUpper() == "MAPHEAD" || fn1.GetName().MakeUpper() == "GAMEMAPS"
-		|| fn1.GetName().MakeUpper() == "MAPTEMP")
+	StrUtil::Path fn1(filename);
+	std::string   fn1_name = StrUtil::upper(fn1.fileName(false));
+	if (fn1_name == "MAPHEAD" || fn1_name == "GAMEMAPS" || fn1_name == "MAPTEMP")
 	{
-		wxFileName fn2(fn1);
-		fn1.SetName("MAPHEAD");
-		fn2.SetName("GAMEMAPS");
-		if (!(wxFile::Exists(findFileCasing(fn1)) && wxFile::Exists(findFileCasing(fn2))))
+		StrUtil::Path fn2(fn1);
+		fn1.setFileName("MAPHEAD");
+		fn2.setFileName("GAMEMAPS");
+		if (!(FileUtil::fileExists(findFileCasing(fn1)) && FileUtil::fileExists(findFileCasing(fn2))))
 		{
-			fn2.SetName("MAPTEMP");
-			return (wxFile::Exists(findFileCasing(fn1)) && wxFile::Exists(findFileCasing(fn2)));
+			fn2.setFileName("MAPTEMP");
+			return (FileUtil::fileExists(findFileCasing(fn1)) && FileUtil::fileExists(findFileCasing(fn2)));
 		}
 		return true;
 	}
-	else if (fn1.GetName().MakeUpper() == "AUDIOHED" || fn1.GetName().MakeUpper() == "AUDIOT")
+	else if (fn1_name == "AUDIOHED" || fn1_name == "AUDIOT")
 	{
-		wxFileName fn2(fn1);
-		fn1.SetName("AUDIOHED");
-		fn2.SetName("AUDIOT");
-		return (wxFile::Exists(findFileCasing(fn1)) && wxFile::Exists(findFileCasing(fn2)));
+		StrUtil::Path fn2(fn1);
+		fn1.setFileName("AUDIOHED");
+		fn2.setFileName("AUDIOT");
+		return (FileUtil::fileExists(findFileCasing(fn1)) && FileUtil::fileExists(findFileCasing(fn2)));
 	}
-	else if (
-		fn1.GetName().MakeUpper() == "VGAHEAD" || fn1.GetName().MakeUpper() == "VGAGRAPH"
-		|| fn1.GetName().MakeUpper() == "VGADICT")
+	else if (fn1_name == "VGAHEAD" || fn1_name == "VGAGRAPH" || fn1_name == "VGADICT")
 	{
-		wxFileName fn2(fn1);
-		wxFileName fn3(fn1);
-		fn1.SetName("VGAHEAD");
-		fn2.SetName("VGAGRAPH");
-		fn3.SetName("VGADICT");
+		StrUtil::Path fn2(fn1);
+		StrUtil::Path fn3(fn1);
+		fn1.setFileName("VGAHEAD");
+		fn2.setFileName("VGAGRAPH");
+		fn3.setFileName("VGADICT");
 		return (
-			wxFile::Exists(findFileCasing(fn1)) && wxFile::Exists(findFileCasing(fn2))
-			&& wxFile::Exists(findFileCasing(fn3)));
+			FileUtil::fileExists(findFileCasing(fn1)) && FileUtil::fileExists(findFileCasing(fn2))
+			&& FileUtil::fileExists(findFileCasing(fn3)));
 	}
 
 	// else we have to deal with a VSWAP archive, which is the only self-contained type

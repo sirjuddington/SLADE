@@ -286,7 +286,7 @@ bool PakArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("PakArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error("PakArchive::loadEntryData: Unable to open archive file {}", filename_);
 		return false;
 	}
 
@@ -345,7 +345,7 @@ bool PakArchive::isPakArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Quake pak archive
 // -----------------------------------------------------------------------------
-bool PakArchive::isPakArchive(const wxString& filename)
+bool PakArchive::isPakArchive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

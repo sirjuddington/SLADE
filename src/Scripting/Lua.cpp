@@ -45,6 +45,7 @@
 #include "MapEditor/MapEditContext.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/SFileDialog.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------

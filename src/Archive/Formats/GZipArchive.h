@@ -26,14 +26,14 @@ public:
 	{
 		return nullptr;
 	}
-	ArchiveEntry* addEntry(ArchiveEntry* entry, const wxString& add_namespace, bool copy = false) override
+	ArchiveEntry* addEntry(ArchiveEntry* entry, std::string_view add_namespace, bool copy = false) override
 	{
 		return nullptr;
 	}
 	bool removeEntry(ArchiveEntry* entry) override { return false; }
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, const wxString& name) override;
+	bool renameEntry(ArchiveEntry* entry, std::string_view name) override;
 
 	// Entry moving
 	bool swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override { return false; }
@@ -49,15 +49,15 @@ public:
 
 	// Static functions
 	static bool isGZipArchive(MemChunk& mc);
-	static bool isGZipArchive(const wxString& filename);
+	static bool isGZipArchive(const std::string& filename);
 
 private:
-	wxString comment_;
-	MemChunk xtra_;
-	uint8_t  flags_;
-	uint32_t mtime_;
-	uint8_t  xfl_;
-	uint8_t  os_;
+	std::string comment_;
+	MemChunk    xtra_;
+	uint8_t     flags_;
+	uint32_t    mtime_;
+	uint8_t     xfl_;
+	uint8_t     os_;
 
 	static const int ID1       = 0x1F;
 	static const int ID2       = 0x8B;

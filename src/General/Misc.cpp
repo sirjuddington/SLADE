@@ -225,9 +225,9 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 	{
 		int endscreen = lump - PaletteHack::SOD_END;
 		endscreen += 154;
-		wxString palname = wxString::Format("PAL%05d", endscreen);
-		playpal          = archive->entry(palname, true);
-		sixbit           = true;
+		auto palname = fmt::format("PAL{:05d}", endscreen);
+		playpal      = archive->entry(palname, true);
+		sixbit       = true;
 	}
 	if (!playpal || playpal->size() < 768)
 	{

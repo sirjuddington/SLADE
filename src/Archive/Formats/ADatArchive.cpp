@@ -153,7 +153,7 @@ bool ADatArchive::open(MemChunk& mc)
 				entry->importMemChunk(xdata);
 			else
 			{
-				Log::warning(wxString::Format("Entry %s couldn't be inflated", entry->name()));
+				Log::warning("Entry {} couldn't be inflated", entry->name());
 				entry->importMemChunk(edata);
 			}
 		}
@@ -221,7 +221,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		else
 		{
 			data = &(entry->data());
-			Log::warning(wxString::Format("Entry %s couldn't be deflated", entry->name()));
+			Log::warning("Entry {} couldn't be deflated", entry->name());
 		}
 
 		// Update entry
@@ -237,22 +237,19 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		///////////////////////////////////
 
 		// Check entry name
-		wxString name = entry->path(true);
-		name.Remove(0, 1); // Remove leading /
-		if (name.Len() > 128)
+		auto name = entry->path(true);
+		name.erase(0, 1); // Remove leading /
+		if (name.size() > 128)
 		{
-			Log::warning(wxString::Format(
-				"Entry %s path is too long (> 128 characters), putting it in the root directory", name));
-			wxFileName fn(name);
-			name = fn.GetFullName();
-			if (name.Len() > 128)
-				name.Truncate(128);
+			Log::warning("Entry {} path is too long (> 128 characters), putting it in the root directory", name);
+			auto fname = StrUtil::Path::fileNameOf(name);
+			name       = (fname.size() > 128) ? fname.substr(0, 128) : fname;
 		}
 
 		// Write entry name
 		char name_data[128];
 		memset(name_data, 0, 128);
-		memcpy(name_data, CHR(name), name.Length());
+		memcpy(name_data, name.data(), name.size());
 		directory.write(name_data, 128);
 
 		// Write entry offset
@@ -298,12 +295,12 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 // Writes the dat archive to a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ADatArchive::write(const wxString& filename, bool update)
+bool ADatArchive::write(std::string_view filename, bool update)
 {
 	// Write to a MemChunk, then export it to a file
 	MemChunk mc;
 	if (write(mc, true))
-		return mc.exportFile(filename.ToStdString());
+		return mc.exportFile(filename);
 	else
 		return false;
 }
@@ -332,7 +329,7 @@ bool ADatArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("ADatArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error("ADatArchive::loadEntryData: Unable to open archive file {}", filename_);
 		return false;
 	}
 
@@ -396,7 +393,7 @@ bool ADatArchive::isADatArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Anachronox dat archive
 // -----------------------------------------------------------------------------
-bool ADatArchive::isADatArchive(const wxString& filename)
+bool ADatArchive::isADatArchive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

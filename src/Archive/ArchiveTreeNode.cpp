@@ -35,6 +35,7 @@
 #include "App.h"
 #include "General/Misc.h"
 #include "Utility/StringUtils.h"
+#include <filesystem>
 
 
 // -----------------------------------------------------------------------------
@@ -196,7 +197,7 @@ ArchiveEntry::SPtr ArchiveTreeNode::sharedEntryAt(unsigned index)
 // Returns the entry matching [name] in this directory, or null if no entries
 // match
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveTreeNode::entry(const wxString& name, bool cut_ext)
+ArchiveEntry* ArchiveTreeNode::entry(std::string_view name, bool cut_ext)
 {
 	// Check name was given
 	if (name.empty())
@@ -206,7 +207,7 @@ ArchiveEntry* ArchiveTreeNode::entry(const wxString& name, bool cut_ext)
 	for (auto& entry : entries_)
 	{
 		// Check for (non-case-sensitive) name match
-		if (StrUtil::equalCI(cut_ext ? entry->nameNoExt() : entry->name(), name.ToStdString()))
+		if (StrUtil::equalCI(cut_ext ? entry->nameNoExt() : entry->name(), name))
 			return entry.get();
 	}
 
@@ -218,7 +219,7 @@ ArchiveEntry* ArchiveTreeNode::entry(const wxString& name, bool cut_ext)
 // Returns a shared pointer to the entry matching [name] in this directory, or
 // null if no entries match
 // -----------------------------------------------------------------------------
-ArchiveEntry::SPtr ArchiveTreeNode::sharedEntry(const wxString& name, bool cut_ext)
+ArchiveEntry::SPtr ArchiveTreeNode::sharedEntry(std::string_view name, bool cut_ext)
 {
 	// Check name was given
 	if (name.empty())
@@ -228,7 +229,7 @@ ArchiveEntry::SPtr ArchiveTreeNode::sharedEntry(const wxString& name, bool cut_e
 	for (auto& entry : entries_)
 	{
 		// Check for (non-case-sensitive) name match
-		if (StrUtil::equalCI(cut_ext ? entry->nameNoExt() : entry->name(), name.ToStdString()))
+		if (StrUtil::equalCI(cut_ext ? entry->nameNoExt() : entry->name(), name))
 			return entry;
 	}
 
@@ -506,30 +507,30 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, ArchiveEnt
 // -----------------------------------------------------------------------------
 // Exports all entries and subdirs to the filesystem at [path]
 // -----------------------------------------------------------------------------
-bool ArchiveTreeNode::exportTo(const wxString& path)
+bool ArchiveTreeNode::exportTo(std::string_view path)
 {
 	// Create directory if needed
-	if (!wxDirExists(path))
-		wxMkdir(path);
+	if (!std::filesystem::exists(path))
+		std::filesystem::create_directory(path);
 
 	// Export entries as files
 	for (auto& entry : entries_)
 	{
 		// Setup entry filename
-		wxFileName fn(entry->name());
-		fn.SetPath(path);
+		StrUtil::Path fn(entry->name());
+		fn.setPath(path);
 
 		// Add file extension if it doesn't exist
-		if (!fn.HasExt())
-			fn.SetExt(entry->type()->extension());
+		if (!fn.hasExtension())
+			fn.setExtension(entry->type()->extension().ToStdString());
 
 		// Do export
-		entry->exportFile(fn.GetFullPath().ToStdString());
+		entry->exportFile(fn.fullPath());
 	}
 
 	// Export subdirectories
 	for (auto& subdir : children_)
-		((ArchiveTreeNode*)subdir)->exportTo(path + "/" + subdir->name());
+		((ArchiveTreeNode*)subdir)->exportTo(fmt::format("{}/{}", path, subdir->name().ToStdString()));
 
 	return true;
 }

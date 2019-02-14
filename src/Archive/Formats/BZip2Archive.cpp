@@ -130,7 +130,7 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("BZip2Archive::loadEntryData: Failed to open gzip file %s", filename_));
+		Log::error("BZip2Archive::loadEntryData: Failed to open gzip file {}", filename_);
 		return false;
 	}
 
@@ -151,7 +151,7 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	options.match_name = options.match_name.Upper();
+	StrUtil::upperIP(options.match_name);
 	auto entry         = entryAt(0);
 	if (entry == nullptr)
 		return entry;
@@ -173,9 +173,9 @@ ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 	}
 
 	// Check name
-	if (!options.match_name.IsEmpty())
+	if (!options.match_name.empty())
 	{
-		if (!options.match_name.Matches(entry->upperName()))
+		if (!StrUtil::matches(entry->upperName(), options.match_name))
 		{
 			return nullptr;
 		}
@@ -199,7 +199,6 @@ ArchiveEntry* BZip2Archive::findLast(SearchOptions& options)
 vector<ArchiveEntry*> BZip2Archive::findAll(SearchOptions& options)
 {
 	// Init search variables
-	options.match_name = options.match_name.Lower();
 	vector<ArchiveEntry*> ret;
 	if (findFirst(options))
 		ret.push_back(entryAt(0));
@@ -237,7 +236,7 @@ bool BZip2Archive::isBZip2Archive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid BZip2 archive
 // -----------------------------------------------------------------------------
-bool BZip2Archive::isBZip2Archive(const wxString& filename)
+bool BZip2Archive::isBZip2Archive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

@@ -53,7 +53,7 @@ private:
 	wxEvtHandler*        handler_;
 	wxString             dir_path_;
 	vector<EntryInfo>    entry_info_;
-	vector<wxString>     removed_files_;
+	vector<std::string>  removed_files_;
 	DirArchiveChangeList change_list_;
 
 	void addChange(DirEntryChange change);

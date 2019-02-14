@@ -506,7 +506,7 @@ std::string& StrUtil::truncateIP(std::string& str, unsigned length)
 
 std::string StrUtil::removeLast(std::string_view str, unsigned n)
 {
-	if (str.size() >= n)
+	if (str.size() <= n)
 		return {};
 
 	return { str.data(), str.size() - n };
@@ -514,8 +514,11 @@ std::string StrUtil::removeLast(std::string_view str, unsigned n)
 
 std::string& StrUtil::removeLastIP(std::string& str, unsigned n)
 {
-	if (str.size() < n)
+	if (str.size() <= n)
+		str.clear();
+	else
 		str.resize(str.size() - n);
+
 	return str;
 }
 
@@ -989,7 +992,7 @@ void wxStringUtils::processIncludes(ArchiveEntry* entry, wxString& out, bool use
 
 			// Get the entry
 			bool done      = false;
-			auto entry_inc = entry->parent()->entryAtPath(name);
+			auto entry_inc = entry->parent()->entryAtPath(name.ToStdString());
 			// DECORATE paths start from the root, not from the #including entry's directory
 			if (!entry_inc)
 				entry_inc = entry->parent()->entryAtPath(tz.current().text);
@@ -1005,7 +1008,7 @@ void wxStringUtils::processIncludes(ArchiveEntry* entry, wxString& out, bool use
 			if (use_res && !done && App::archiveManager().programResourceArchive())
 			{
 				name      = "config/games/" + tz.current().text;
-				entry_inc = App::archiveManager().programResourceArchive()->entryAtPath(name);
+				entry_inc = App::archiveManager().programResourceArchive()->entryAtPath(name.ToStdString());
 				if (entry_inc)
 				{
 					processIncludes(entry_inc, out);

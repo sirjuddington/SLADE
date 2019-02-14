@@ -1177,7 +1177,7 @@ CONSOLE_COMMAND(test_parse_zscript, 0, false)
 		else if (S_CMPNOCASE(arg, "func"))
 			dump_parsed_functions = true;
 		else if (!entry)
-			entry = MainEditor::currentArchive()->entryAtPath(arg);
+			entry = MainEditor::currentArchive()->entryAtPath(arg.ToStdString());
 	}
 
 	if (!entry)

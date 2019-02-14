@@ -35,6 +35,7 @@
 #include "DirArchive.h"
 #include "App.h"
 #include "General/UI.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include "WadArchive.h"
 
@@ -61,9 +62,9 @@ DirArchive::DirArchive() : Archive("folder")
 {
 	// Setup separator character
 #ifdef WIN32
-	separator_ = "\\";
+	separator_ = '\\';
 #else
-	separator_ = "/";
+	separator_ = '/';
 #endif
 
 	rootDir()->allowDuplicateNames(false);
@@ -73,13 +74,13 @@ DirArchive::DirArchive() : Archive("folder")
 // Reads files from the directory [filename] into the archive
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool DirArchive::open(const wxString& filename)
+bool DirArchive::open(std::string_view filename)
 {
 	UI::setSplashProgressMessage("Reading directory structure");
 	UI::setSplashProgress(0);
-	vector<wxString>    files, dirs;
+	vector<std::string> files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
-	wxDir               dir(filename);
+	wxDir               dir(std::string{ filename });
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
@@ -91,9 +92,9 @@ bool DirArchive::open(const wxString& filename)
 		UI::setSplashProgress((float)a / (float)files.size());
 
 		// Cut off directory to get entry name + relative path
-		auto name = files[a].ToStdString();
-		name.erase(0, filename.Length());
-		if (StrUtil::startsWith(name, separator_[0]))
+		auto name = files[a];
+		name.erase(0, filename.size());
+		if (StrUtil::startsWith(name, separator_))
 			name.erase(0, 1);
 
 		// Log::info(3, fn.GetPath(true, wxPATH_UNIX));
@@ -109,10 +110,10 @@ bool DirArchive::open(const wxString& filename)
 		// Add entry and directory to directory tree
 		auto ndir = createDir(std::string{ fn.path() });
 		ndir->addEntry(new_entry);
-		ndir->dirEntry()->exProp("filePath") = filename + std::string{ fn.path() };
+		ndir->dirEntry()->exProp("filePath") = fmt::format("{}{}", filename, fn.path());
 
 		// Read entry data
-		new_entry->importFile(files[a].ToStdString());
+		new_entry->importFile(files[a]);
 		new_entry->setLoaded(true);
 
 		file_modification_times_[new_entry.get()] = wxFileModificationTime(files[a]);
@@ -128,11 +129,10 @@ bool DirArchive::open(const wxString& filename)
 	// Add empty directories
 	for (const auto& subdir : dirs)
 	{
-		wxString name = subdir;
-		name.Remove(0, filename.Length());
-		if (name.StartsWith(separator_))
-			name.Remove(0, 1);
-		name.Replace("\\", "/");
+		auto name = subdir;
+		name.erase(0, filename.size());
+		StrUtil::removePrefixIP(name, separator_);
+		std::replace(name.begin(), name.end(), '\\', '/');
 
 		auto ndir                            = createDir(name);
 		ndir->dirEntry()->exProp("filePath") = subdir;
@@ -148,7 +148,7 @@ bool DirArchive::open(const wxString& filename)
 	setMuted(false);
 
 	// Setup variables
-	this->filename_ = filename;
+	filename_ = filename;
 	setModified(false);
 	on_disk_ = true;
 
@@ -187,7 +187,7 @@ bool DirArchive::write(MemChunk& mc, bool update)
 // -----------------------------------------------------------------------------
 // Writes the archive to a file (not implemented)
 // -----------------------------------------------------------------------------
-bool DirArchive::write(const wxString& filename, bool update)
+bool DirArchive::write(std::string_view filename, bool update)
 {
 	return true;
 }
@@ -195,37 +195,38 @@ bool DirArchive::write(const wxString& filename, bool update)
 // -----------------------------------------------------------------------------
 // Saves any changes to the directory to the file system
 // -----------------------------------------------------------------------------
-bool DirArchive::save(const wxString& filename)
+bool DirArchive::save(std::string_view filename)
 {
 	// Get flat entry list
 	vector<ArchiveEntry*> entries;
 	putEntryTreeAsList(entries);
 
 	// Get entry path list
-	vector<wxString> entry_paths;
+	vector<std::string> entry_paths;
 	for (auto& entry : entries)
 	{
-		entry_paths.push_back(this->filename_ + entry->path(true));
-		if (separator_ != "/")
-			entry_paths.back().Replace("/", separator_);
+		entry_paths.push_back(filename_ + entry->path(true));
+		if (separator_ != '/')
+			std::replace(entry_paths.back().begin(), entry_paths.back().end(), '/', separator_);
 	}
 
 	// Get current directory structure
 	long                time = App::runTimer();
-	vector<wxString>    files, dirs;
+	vector<std::string> files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
 	wxDir               dir(this->filename_);
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
-	Log::info(2, wxString::Format("GetAllFiles took %lums", App::runTimer() - time));
+	Log::info(2, "GetAllFiles took {}ms", App::runTimer() - time);
 
 	// Check for any files to remove
 	time = App::runTimer();
+	std::error_code ec;
 	for (const auto& removed_file : removed_files_)
 	{
-		if (wxFileExists(removed_file))
+		if (FileUtil::fileExists(removed_file))
 		{
-			Log::info(2, wxString::Format("Removing file %s", removed_file));
-			wxRemoveFile(removed_file);
+			Log::info(2, "Removing file {}", removed_file);
+			FileUtil::removeFile(removed_file);
 		}
 	}
 
@@ -247,16 +248,16 @@ bool DirArchive::save(const wxString& filename)
 		// (Note that this will fail if there are any untracked files in the
 		// directory)
 		if (!found && wxRmdir(dirs[a]))
-			Log::info(2, wxString::Format("Removing directory %s", dirs[a]));
+			Log::info(2, "Removing directory {}", dirs[a]);
 	}
-	Log::info(2, wxString::Format("Remove check took %lums", App::runTimer() - time));
+	Log::info(2, "Remove check took {}ms", App::runTimer() - time);
 
 	// Go through entries
-	vector<wxString> files_written;
+	vector<std::string> files_written;
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Check for folder
-		wxString path = entry_paths[a];
+		auto path = entry_paths[a];
 		if (entries[a]->type() == EntryType::folderType())
 		{
 			// Create if needed
@@ -276,8 +277,8 @@ bool DirArchive::save(const wxString& filename)
 			continue;
 
 		// Write entry to file
-		if (!entries[a]->exportFile(path.ToStdString()))
-			Log::error(wxString::Format("Unable to save entry %s: %s", entries[a]->name(), Global::error));
+		if (!entries[a]->exportFile(path))
+			Log::error("Unable to save entry {}: {}", entries[a]->name(), Global::error);
 		else
 			files_written.push_back(path);
 
@@ -315,7 +316,7 @@ bool DirArchive::loadEntryData(ArchiveEntry* entry)
 // For DirArchive also adds all subdirs and entries to the removed files list,
 // so they are ignored when checking for changes on disk
 // -----------------------------------------------------------------------------
-bool DirArchive::removeDir(const wxString& path, ArchiveTreeNode* base)
+bool DirArchive::removeDir(std::string_view path, ArchiveTreeNode* base)
 {
 	// Abort if read only
 	if (read_only_)
@@ -336,7 +337,7 @@ bool DirArchive::removeDir(const wxString& path, ArchiveTreeNode* base)
 	for (auto& entry : entries)
 	{
 		Log::info(2, entry->exProp("filePath").stringValue());
-		removed_files_.push_back(entry->exProp("filePath").stringValue());
+		removed_files_.push_back(entry->exProp("filePath").stringValue().ToStdString());
 	}
 
 	// Do normal dir remove
@@ -347,14 +348,14 @@ bool DirArchive::removeDir(const wxString& path, ArchiveTreeNode* base)
 // Renames [dir] to [new_name].
 // Returns false if [dir] isn't part of the archive, true otherwise
 // -----------------------------------------------------------------------------
-bool DirArchive::renameDir(ArchiveTreeNode* dir, const wxString& new_name)
+bool DirArchive::renameDir(ArchiveTreeNode* dir, std::string_view new_name)
 {
-	wxString path = dir->parent()->path();
-	if (separator_ != "/")
-		path.Replace("/", separator_);
-	StringPair rename(path + dir->name(), path + new_name);
+	auto path = dir->parent()->path().ToStdString();
+	if (separator_ != '/')
+		std::replace(path.begin(), path.end(), '/', separator_);
+	StringPair rename(path + dir->name().ToStdString(), fmt::format("{}{}", path, new_name));
 	renamed_dirs_.push_back(rename);
-	Log::info(2, wxString::Format("RENAME %s to %s", rename.first, rename.second));
+	Log::info(2, "RENAME {} to {}", rename.first, rename.second);
 
 	return Archive::renameDir(dir, new_name);
 }
@@ -366,14 +367,14 @@ bool DirArchive::renameDir(ArchiveTreeNode* dir, const wxString& new_name)
 //
 // Namespaces in a folder are treated the same way as a zip archive
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, const wxString& add_namespace, bool copy)
+ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, std::string_view add_namespace, bool copy)
 {
 	// Check namespace
-	if (add_namespace.IsEmpty() || add_namespace == "global")
+	if (add_namespace.empty() || add_namespace == "global")
 		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 
 	// Get/Create namespace dir
-	auto dir = createDir(add_namespace.Lower());
+	auto dir = createDir(StrUtil::lower(add_namespace));
 
 	// Add the entry to the dir
 	return Archive::addEntry(entry, 0xFFFFFFFF, dir, copy);
@@ -386,8 +387,8 @@ ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, const wxString& add_name
 // -----------------------------------------------------------------------------
 bool DirArchive::removeEntry(ArchiveEntry* entry)
 {
-	wxString old_name = entry->exProp("filePath").stringValue();
-	bool     success  = Archive::removeEntry(entry);
+	auto old_name = entry->exProp("filePath").stringValue().ToStdString();
+	bool success  = Archive::removeEntry(entry);
 	if (success)
 		removed_files_.push_back(old_name);
 	return success;
@@ -396,17 +397,17 @@ bool DirArchive::removeEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Renames [entry].  Returns true if the rename succeeded
 // -----------------------------------------------------------------------------
-bool DirArchive::renameEntry(ArchiveEntry* entry, const wxString& name)
+bool DirArchive::renameEntry(ArchiveEntry* entry, std::string_view name)
 {
 	// Check rename won't result in duplicated name
 	if (entry->parentDir()->entry(name))
 	{
-		Global::error = wxString::Format("An entry named %s already exists", CHR(name));
+		Global::error = fmt::format("An entry named {} already exists", name);
 		return false;
 	}
 
-	wxString old_name = entry->exProp("filePath").stringValue();
-	bool     success  = Archive::renameEntry(entry, name);
+	auto old_name = entry->exProp("filePath").stringValue().ToStdString();
+	bool success  = Archive::renameEntry(entry, name);
 	if (success)
 		removed_files_.push_back(old_name);
 	return success;
@@ -491,8 +492,7 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	auto dir           = rootDir();
-	options.match_name = options.match_name.Lower();
+	auto dir = rootDir();
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -500,7 +500,7 @@ ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 		dir = options.dir;
 	}
 	// Check for namespace
-	else if (!options.match_namespace.IsEmpty())
+	else if (!options.match_namespace.empty())
 	{
 		dir = this->dir(options.match_namespace);
 
@@ -525,8 +525,7 @@ ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 {
 	// Init search variables
-	auto dir           = rootDir();
-	options.match_name = options.match_name.Lower();
+	auto dir = rootDir();
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -534,7 +533,7 @@ ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 		dir = options.dir;
 	}
 	// Check for namespace
-	else if (!options.match_namespace.IsEmpty())
+	else if (!options.match_namespace.empty())
 	{
 		dir = this->dir(options.match_namespace);
 
@@ -558,9 +557,7 @@ ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options)
 {
 	// Init search variables
-	auto dir           = rootDir();
-	options.match_name = options.match_name.Lower();
-	vector<ArchiveEntry*> ret;
+	auto dir = rootDir();
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -568,13 +565,13 @@ vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options)
 		dir = options.dir;
 	}
 	// Check for namespace
-	else if (!options.match_namespace.IsEmpty())
+	else if (!options.match_namespace.empty())
 	{
 		dir = this->dir(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
-			return ret;
+			return {};
 		else
 			options.search_subdirs = true; // Namespace search always includes namespace subdirs
 	}
@@ -610,7 +607,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 		if (change.action == DirEntryChange::Action::Updated)
 		{
 			auto entry = entryAtPath(change.entry_path);
-			entry->importFile(change.file_path.ToStdString());
+			entry->importFile(change.file_path);
 			EntryType::detectEntryType(entry);
 			file_modification_times_[entry] = wxFileModificationTime(change.file_path);
 		}
@@ -631,11 +628,10 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 		// New Directory
 		else if (change.action == DirEntryChange::Action::AddedDir)
 		{
-			wxString name = change.file_path;
-			name.Remove(0, filename_.Length());
-			if (name.StartsWith(separator_))
-				name.Remove(0, 1);
-			name.Replace("\\", "/");
+			auto name = change.file_path;
+			name.erase(0, filename_.size());
+			StrUtil::removePrefixIP(name, separator_);
+			std::replace(name.begin(), name.end(), '\\', '/');
 
 			auto ndir = createDir(name);
 			ndir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
@@ -645,9 +641,9 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 		// New Entry
 		else if (change.action == DirEntryChange::Action::AddedFile)
 		{
-			auto name = change.file_path.ToStdString();
-			name.erase(0, filename_.Length());
-			if (StrUtil::startsWith(name, separator_[0]))
+			auto name = change.file_path;
+			name.erase(0, filename_.size());
+			if (StrUtil::startsWith(name, separator_))
 				name.erase(0, 1);
 			std::replace(name.begin(), name.end(), '\\', '/');
 
@@ -664,7 +660,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 			ndir->addEntry(new_entry);
 
 			// Read entry data
-			new_entry->importFile(change.file_path.ToStdString());
+			new_entry->importFile(change.file_path);
 			new_entry->setLoaded(true);
 
 			time_t modtime                      = wxFileModificationTime(change.file_path);

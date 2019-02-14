@@ -771,7 +771,7 @@ void ArchiveEntryList::labelEdited(int col, int index, const wxString& new_label
 	// Rename the entry
 	auto entry = entryAt(index);
 	if (entry->parent())
-		entry->parent()->renameEntry(entry, new_label);
+		entry->parent()->renameEntry(entry, new_label.ToStdString());
 	else
 		entry->rename(new_label.ToStdString());
 

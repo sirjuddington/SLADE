@@ -116,7 +116,7 @@ bool DatArchive::open(MemChunk& mc)
 		// the data file is invalid
 		if (offset + size > mc.size())
 		{
-			Log::error(wxString::Format("DatArchive::open: Dat archive is invalid or corrupt at entry %i", d));
+			Log::error("DatArchive::open: Dat archive is invalid or corrupt at entry {}", d);
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -210,7 +210,7 @@ bool DatArchive::open(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-wxString DatArchive::detectNamespace(ArchiveEntry* entry)
+std::string DatArchive::detectNamespace(ArchiveEntry* entry)
 {
 	return detectNamespace(entryIndex(entry));
 }
@@ -218,7 +218,7 @@ wxString DatArchive::detectNamespace(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-wxString DatArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
+std::string DatArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
 {
 	// Textures
 	if (index > (unsigned)walls_[0] && index < (unsigned)walls_[1])
@@ -297,10 +297,10 @@ ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // is true a copy of the entry is added.
 // Returns the added entry or NULL if the entry is invalid
 // -----------------------------------------------------------------------------
-ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, const wxString& add_namespace, bool copy)
+ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, std::string_view add_namespace, bool copy)
 {
 	// Find requested namespace, only three non-global namespaces are valid in this format
-	if (S_CMPNOCASE(add_namespace, "textures"))
+	if (StrUtil::equalCI(add_namespace, "textures"))
 	{
 		if (walls_[1] >= 0)
 			return addEntry(entry, walls_[1], nullptr, copy);
@@ -311,7 +311,7 @@ ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, const wxString& add_name
 			return addEntry(entry, add_namespace, copy);
 		}
 	}
-	else if (S_CMPNOCASE(add_namespace, "flats"))
+	else if (StrUtil::equalCI(add_namespace, "flats"))
 	{
 		if (flats_[1] >= 0)
 			return addEntry(entry, flats_[1], nullptr, copy);
@@ -322,7 +322,7 @@ ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, const wxString& add_name
 			return addEntry(entry, add_namespace, copy);
 		}
 	}
-	else if (S_CMPNOCASE(add_namespace, "sprites"))
+	else if (StrUtil::equalCI(add_namespace, "sprites"))
 	{
 		if (sprites_[1] >= 0)
 			return addEntry(entry, sprites_[1], nullptr, copy);
@@ -347,7 +347,7 @@ bool DatArchive::removeEntry(ArchiveEntry* entry)
 		return false;
 
 	// Get entry name (for later)
-	wxString name = entry->name();
+	auto name = entry->upperName();
 
 	// Do default remove
 	bool ok = Archive::removeEntry(entry);
@@ -355,7 +355,7 @@ bool DatArchive::removeEntry(ArchiveEntry* entry)
 	if (ok)
 	{
 		// Update namespaces if necessary
-		if (name.Upper().Matches("START*") || name.Upper().Matches("END*"))
+		if (StrUtil::startsWith(name, "START") || StrUtil::startsWith(name, "END"))
 			updateNamespaces();
 
 		return true;
@@ -367,7 +367,7 @@ bool DatArchive::removeEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Override of Archive::renameEntry to update namespaces if needed
 // -----------------------------------------------------------------------------
-bool DatArchive::renameEntry(ArchiveEntry* entry, const wxString& name)
+bool DatArchive::renameEntry(ArchiveEntry* entry, std::string_view name)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -451,7 +451,7 @@ bool DatArchive::write(MemChunk& mc, bool update)
 	uint32_t      dir_offset   = 10;
 	uint16_t      name_offset  = numEntries() * 12;
 	uint32_t      name_size    = 0;
-	wxString      previousname = "";
+	std::string   previousname = "";
 	uint16_t*     nameoffsets  = new uint16_t[numEntries()];
 	ArchiveEntry* entry;
 	for (uint16_t l = 0; l < numEntries(); l++)
@@ -461,7 +461,7 @@ bool DatArchive::write(MemChunk& mc, bool update)
 		dir_offset += entry->size();
 
 		// Does the entry has a name?
-		wxString name = entry->name();
+		auto name = entry->name();
 		if (l > 0 && previousname.length() > 0 && name.length() > previousname.length()
 			&& !previousname.compare(0, previousname.length(), name, 0, previousname.length())
 			&& name.at(previousname.length()) == '+')
@@ -564,7 +564,7 @@ bool DatArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("DatArchive::loadEntryData: Failed to open datfile %s", filename_));
+		Log::error("DatArchive::loadEntryData: Failed to open datfile {}", filename_);
 		return false;
 	}
 
@@ -651,7 +651,7 @@ bool DatArchive::isDatArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Shadowcaster dat archive
 // -----------------------------------------------------------------------------
-bool DatArchive::isDatArchive(const wxString& filename)
+bool DatArchive::isDatArchive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -700,7 +700,6 @@ bool DatArchive::isDatArchive(const wxString& filename)
 		return false;
 	}
 
-	wxString name;
 	size_t   len   = 1;
 	size_t   start = nameofs + dir_offset;
 	// Sanity checks again. Make sure there is actually a name.

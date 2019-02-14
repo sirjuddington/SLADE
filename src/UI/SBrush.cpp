@@ -62,7 +62,7 @@ SBrush::SBrush(const wxString& name) : name_{ name }, icon_{ name.AfterFirst('_'
 	auto res = App::archiveManager().programResourceArchive();
 	if (res == nullptr)
 		return;
-	auto file = res->entryAtPath(wxString::Format("icons/general/%s.png", icon_));
+	auto file = res->entryAtPath(fmt::format("icons/general/{}.png", icon_.ToStdString()));
 	if (file == nullptr || file->size() == 0)
 	{
 		Log::error(2, wxString::Format("error, no file at icons/general/%s.png", icon_));

@@ -287,7 +287,7 @@ bool SiNArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("SiNArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error("SiNArchive::loadEntryData: Unable to open archive file {}", filename_);
 		return false;
 	}
 
@@ -346,7 +346,7 @@ bool SiNArchive::isSiNArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Ritual SiN archive
 // -----------------------------------------------------------------------------
-bool SiNArchive::isSiNArchive(const wxString& filename)
+bool SiNArchive::isSiNArchive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

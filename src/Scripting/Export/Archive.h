@@ -35,13 +35,13 @@ vector<ArchiveEntry*> archiveAllEntries(Archive& self)
 
 ArchiveEntry* archiveCreateEntry(Archive& self, const wxString& full_path, int position)
 {
-	auto dir = self.dir(full_path.BeforeLast('/'));
-	return self.addNewEntry(full_path.AfterLast('/'), position, dir);
+	auto dir = self.dir(StrUtil::beforeLast(full_path.ToStdString(), '/'));
+	return self.addNewEntry(StrUtil::afterLast(full_path.ToStdString(), '/'), position, dir);
 }
 
 ArchiveEntry* archiveCreateEntryInNamespace(Archive& self, const wxString& name, const wxString& ns)
 {
-	return self.addNewEntry(name, ns);
+	return self.addNewEntry(name.ToStdString(), ns.ToStdString());
 }
 
 vector<ArchiveEntry*> archiveDirEntries(ArchiveTreeNode& self)
@@ -125,7 +125,7 @@ void registerArchive(sol::state& lua)
 		&Archive::entryAtPath,
 
 		"dirAtPath",
-		[](Archive& self, const wxString& path) { return self.dir(path); },
+		[](Archive& self, const wxString& path) { return self.dir(path.ToStdString()); },
 
 		"createEntry",
 		&archiveCreateEntry,
@@ -142,7 +142,7 @@ void registerArchive(sol::state& lua)
 		"save",
 		sol::overload(
 			[](Archive& self) { return self.save(); },
-			[](Archive& self, const wxString& filename) { return self.save(filename); }));
+			[](Archive& self, const wxString& filename) { return self.save(filename.ToStdString()); }));
 
 // Register all subclasses
 // (perhaps it'd be a good idea to make Archive not abstract and handle

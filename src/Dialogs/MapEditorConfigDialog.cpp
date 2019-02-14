@@ -41,6 +41,7 @@
 #include "UI/Controls/BaseResourceChooser.h"
 #include "UI/Controls/ResourceArchiveChooser.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -113,7 +114,7 @@ public:
 			bool     exists  = false;
 			for (auto& map : maps)
 			{
-				if (S_CMPNOCASE(map.name, mapname))
+				if (StrUtil::equalCI(map.name, mapname.ToStdString()))
 				{
 					exists = true;
 					break;
@@ -602,7 +603,7 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 		// Check the map name isn't already taken
 		for (auto& map : maps_)
 		{
-			if (S_CMPNOCASE(map.name, mapname))
+			if (StrUtil::equalCI(map.name, mapname.ToStdString()))
 			{
 				wxMessageBox("Map " + mapname + " already exists", "Error");
 				return;
@@ -622,7 +623,7 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 		if (archive_->formatId() == "wad")
 		{
 			// Create new (empty) map at the end of the wad
-			ArchiveEntry* head = archive_->addNewEntry(mapname);
+			ArchiveEntry* head = archive_->addNewEntry(mapname.ToStdString());
 			ArchiveEntry* end  = nullptr;
 
 			if (map_format == MapFormat::UDMF)
@@ -663,7 +664,7 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			Archive* wad = new WadArchive();
 
 			// Create new (empty) map at the end of the wad
-			ArchiveEntry* head = wad->addNewEntry(mapname);
+			ArchiveEntry* head = wad->addNewEntry(mapname.ToStdString());
 			ArchiveEntry* end  = nullptr;
 
 			if (map_format == MapFormat::UDMF)
@@ -693,7 +694,7 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			}
 
 			// Add new map entry to the maps dir
-			ArchiveEntry* mapentry = archive_->addNewEntry(mapname + ".wad", "maps");
+			ArchiveEntry* mapentry = archive_->addNewEntry(mapname.ToStdString() + ".wad", "maps");
 			MemChunk      mc;
 			wad->write(mc);
 			mapentry->importMemChunk(mc);

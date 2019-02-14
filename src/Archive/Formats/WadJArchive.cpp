@@ -85,7 +85,7 @@ bool WadJArchive::open(MemChunk& mc)
 	// Check the header
 	if (wad_type_[1] != 'W' || wad_type_[2] != 'A' || wad_type_[3] != 'D')
 	{
-		Log::error(wxString::Format("WadJArchive::openFile: File %s has invalid header", filename_));
+		Log::error("WadJArchive::openFile: File {} has invalid header", filename_);
 		Global::error = "Invalid wad header";
 		return false;
 	}
@@ -154,8 +154,8 @@ bool WadJArchive::open(MemChunk& mc)
 		if (offset + actualsize > mc.size())
 		{
 			Log::error("WadJArchive::open: Wad archive is invalid or corrupt");
-			Global::error = wxString::Format(
-				"Archive is invalid and/or corrupt (lump %d: %s data goes past end of file)", d, name);
+			Global::error = fmt::format(
+				"Archive is invalid and/or corrupt (lump {}: {} data goes past end of file)", d, name);
 			setMuted(false);
 			return false;
 		}
@@ -203,11 +203,11 @@ bool WadJArchive::open(MemChunk& mc)
 					&& (unsigned)(int)(entry->exProp("FullSize")) > entry->size())
 					edata.reSize((int)(entry->exProp("FullSize")), true);
 				if (!jaguarDecode(edata))
-					Log::warning(wxString::Format(
-						"%i: %s (following %s), did not decode properly",
+					Log::warning(
+						"{}: {} (following {}), did not decode properly",
 						a,
 						entry->name(),
-						a > 0 ? entryAt(a - 1)->name() : "nothing"));
+						a > 0 ? entryAt(a - 1)->name() : "nothing");
 			}
 			entry->importMemChunk(edata);
 		}
@@ -309,14 +309,14 @@ bool WadJArchive::write(MemChunk& mc, bool update)
 // -----------------------------------------------------------------------------
 // Hack to account for Jaguar Doom's silly sprite scheme
 // -----------------------------------------------------------------------------
-wxString WadJArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
+std::string WadJArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
 {
 	auto nextentry = entryAt(index + 1);
 	if (nextentry && StrUtil::equalCI(nextentry->name(), "."))
 		return "sprites";
 	return WadArchive::detectNamespace(index);
 }
-wxString WadJArchive::detectNamespace(ArchiveEntry* entry)
+std::string WadJArchive::detectNamespace(ArchiveEntry* entry)
 {
 	size_t index     = entryIndex(entry);
 	auto   nextentry = entryAt(index + 1);
@@ -363,7 +363,7 @@ bool WadJArchive::isWadJArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Jaguar Doom wad archive
 // -----------------------------------------------------------------------------
-bool WadJArchive::isWadJArchive(const wxString& filename)
+bool WadJArchive::isWadJArchive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

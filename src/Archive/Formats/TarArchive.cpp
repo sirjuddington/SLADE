@@ -287,7 +287,7 @@ bool TarArchive::open(MemChunk& mc)
 		// Read tar header
 		TarHeader header;
 		mc.read(&header, 512);
-		if (wxString::FromAscii(header.magic, 5).CmpNoCase(TMAGIC))
+		if (!StrUtil::equalCI(header.magic, TMAGIC))
 		{
 			if (tarMakeChecksum(&header) == 0)
 			{
@@ -305,7 +305,7 @@ bool TarArchive::open(MemChunk& mc)
 
 		if (!tarChecksum(&header))
 		{
-			Log::warning(wxString::Format("Invalid checksum for block at 0x%x", mc.currentPos() - 512));
+			Log::warning("Invalid checksum for block at 0x{:x}", mc.currentPos() - 512);
 			continue;
 		}
 
@@ -324,7 +324,7 @@ bool TarArchive::open(MemChunk& mc)
 		if ((int)header.typeflag == AREGTYPE || (int)header.typeflag == REGTYPE)
 		{
 			// Create directory if needed
-			auto dir = createDir(std::string{ StrUtil::Path::pathOf(name)});
+			auto dir = createDir(std::string{ StrUtil::Path::pathOf(name) });
 
 			// Create entry
 			auto entry              = std::make_shared<ArchiveEntry>(StrUtil::Path::fileNameOf(name), size);
@@ -421,18 +421,15 @@ bool TarArchive::write(MemChunk& mc, bool update)
 		tarDefaultHeader(&header);
 
 		// Write entry name
-		wxString name = entries[a]->path(true);
-		name.Remove(0, 1); // Remove leading /
-		if (name.Len() > 99)
+		auto name = entries[a]->path(true);
+		name.erase(0, 1); // Remove leading /
+		if (name.size() > 99)
 		{
-			Log::warning(wxString::Format(
-				"Entry %s path is too long (> 99 characters), putting it in the root directory", name));
-			wxFileName fn(name);
-			name = fn.GetFullName();
-			if (name.Len() > 99)
-				name.Truncate(99);
+			Log::warning("Entry %s path is too long (> 99 characters), putting it in the root directory", name);
+			auto fname = StrUtil::Path::fileNameOf(name);
+			name       = fname.size() > 99 ? fname.substr(0, 99) : fname;
 		}
-		memcpy(header.name, CHR(name), name.Length());
+		memcpy(header.name, name.data(), name.size());
 
 		// Address folders
 		if (entries[a]->type() == EntryType::folderType())
@@ -488,7 +485,7 @@ bool TarArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("TarArchive::loadEntryData: Unable to open archive file %s", filename_));
+		Log::error("TarArchive::loadEntryData: Unable to open archive file {}", filename_);
 		return false;
 	}
 
@@ -522,7 +519,7 @@ bool TarArchive::isTarArchive(MemChunk& mc)
 		// Read tar header
 		TarHeader header;
 		mc.read(&header, 512);
-		if (wxString(wxString::From8BitData(header.magic, 5)).CmpNoCase(TMAGIC))
+		if (!StrUtil::equalCI(header.magic, TMAGIC))
 		{
 			if (tarMakeChecksum(&header) == 0)
 			{
@@ -561,7 +558,7 @@ bool TarArchive::isTarArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Unix tar archive
 // -----------------------------------------------------------------------------
-bool TarArchive::isTarArchive(const wxString& filename)
+bool TarArchive::isTarArchive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -576,7 +573,7 @@ bool TarArchive::isTarArchive(const wxString& filename)
 		// Read tar header
 		TarHeader header;
 		file.Read(&header, 512);
-		if (wxString(wxString::FromAscii(header.magic, 5)).CmpNoCase(TMAGIC))
+		if (!StrUtil::equalCI(header.magic, TMAGIC))
 		{
 			if (tarMakeChecksum(&header) == 0)
 			{

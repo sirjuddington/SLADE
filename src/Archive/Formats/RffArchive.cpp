@@ -173,7 +173,7 @@ bool RffArchive::open(MemChunk& mc)
 	// Check the header
 	if (magic[0] != 'R' || magic[1] != 'F' || magic[2] != 'F' || magic[3] != 0x1A || version != 0x301)
 	{
-		Log::error(wxString::Format("RffArchive::openFile: File %s has invalid header", filename_));
+		Log::error("RffArchive::openFile: File {} has invalid header", filename_);
 		Global::error = "Invalid rff header";
 		return false;
 	}
@@ -320,7 +320,7 @@ bool RffArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error(wxString::Format("RffArchive::loadEntryData: Failed to open rfffile %s", filename_));
+		Log::error("RffArchive::loadEntryData: Failed to open rff file {}", filename_);
 		return false;
 	}
 
@@ -387,7 +387,7 @@ bool RffArchive::isRffArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid DN3D grp archive
 // -----------------------------------------------------------------------------
-bool RffArchive::isRffArchive(const wxString& filename)
+bool RffArchive::isRffArchive(const std::string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
