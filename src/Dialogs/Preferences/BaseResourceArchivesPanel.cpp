@@ -192,7 +192,7 @@ void BaseResourceArchivesPanel::autodetect() const
 					// Verify existence before adding it to the list
 					if (list_base_archive_paths_->FindString(iwad) == wxNOT_FOUND)
 					{
-						App::archiveManager().addBaseResourcePath(iwad);
+						App::archiveManager().addBaseResourcePath(iwad.ToStdString());
 						list_base_archive_paths_->Append(iwad);
 					}
 				}
@@ -256,7 +256,7 @@ void BaseResourceArchivesPanel::autodetect() const
 			// Verify existence before adding it to the list
 			if (list_base_archive_paths_->FindString(iwad) == wxNOT_FOUND)
 			{
-				App::archiveManager().addBaseResourcePath(iwad);
+				App::archiveManager().addBaseResourcePath(iwad.ToStdString());
 				list_base_archive_paths_->Append(iwad);
 			}
 		}
@@ -325,7 +325,7 @@ void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e)
 		// Add each to the paths list
 		for (const auto& file : files)
 		{
-			if (App::archiveManager().addBaseResourcePath(file))
+			if (App::archiveManager().addBaseResourcePath(file.ToStdString()))
 				list_base_archive_paths_->Append(file);
 		}
 

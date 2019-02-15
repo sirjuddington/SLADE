@@ -80,6 +80,8 @@ public:
 		return *this;
 	}
 
+	bool operator==(std::string_view cmp) const { return val_string_ == cmp; }
+
 	bool        boolValue(bool warn_wrong_type = false) const;
 	int         intValue(bool warn_wrong_type = false) const;
 	double      floatValue(bool warn_wrong_type = false) const;

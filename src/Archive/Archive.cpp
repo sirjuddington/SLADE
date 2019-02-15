@@ -378,27 +378,19 @@ std::string Archive::fileExtensionString() const
 // -----------------------------------------------------------------------------
 // Returns the archive's filename, including the path if specified
 // -----------------------------------------------------------------------------
-wxString Archive::filename(bool full) const
+std::string Archive::filename(bool full) const
 {
 	// If the archive is within another archive, return "<parent archive>/<entry name>"
 	if (parent_)
 	{
-		wxString parent_archive = "";
+		std::string parent_archive;
 		if (parentArchive())
 			parent_archive = parentArchive()->filename(false) + "/";
 
-		wxFileName fn(parent_->name());
-		return parent_archive + fn.GetName();
+		return parent_archive.append(StrUtil::Path::fileNameOf(parent_->name(), false));
 	}
 
-	if (full)
-		return filename_;
-	else
-	{
-		// Get the filename without the path
-		wxFileName fn(filename_);
-		return fn.GetFullName();
-	}
+	return full ? filename_ : std::string{ StrUtil::Path::fileNameOf(filename_) };
 }
 
 // -----------------------------------------------------------------------------

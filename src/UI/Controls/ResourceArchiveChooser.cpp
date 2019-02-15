@@ -133,7 +133,7 @@ void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 	if (SFileDialog::openFile(info, "Open Resource Archive", App::archiveManager().getArchiveExtensionsString(), this))
 	{
 		UI::showSplash("Opening Resource Archive", true);
-		auto na = App::archiveManager().openArchive(info.filenames[0], true, true);
+		auto na = App::archiveManager().openArchive(info.filenames[0].ToStdString(), true, true);
 		UI::hideSplash();
 		if (na)
 		{

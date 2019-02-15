@@ -94,7 +94,7 @@ public:
 	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) override
 	{
 		for (const auto& filename : filenames)
-			App::archiveManager().openArchive(filename);
+			App::archiveManager().openArchive(filename.ToStdString());
 
 		return true;
 	}

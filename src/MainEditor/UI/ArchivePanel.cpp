@@ -699,7 +699,7 @@ bool ArchivePanel::saveAs()
 	entry_list_->updateList();
 
 	// Add as recent file
-	App::archiveManager().addRecentFile(info.filenames[0]);
+	App::archiveManager().addRecentFile(info.filenames[0].ToStdString());
 
 	return true;
 }

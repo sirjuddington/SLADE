@@ -1083,7 +1083,7 @@ void ArchiveManagerPanel::openFile(const wxString& filename) const
 	sw.Start();
 
 	// Open the file in the archive manager
-	auto new_archive = App::archiveManager().openArchive(filename);
+	auto new_archive = App::archiveManager().openArchive(filename.ToStdString());
 
 	sw.Pause();
 	Log::info(wxString::Format("Opening took %d ms", (int)sw.Time()));
@@ -1125,7 +1125,7 @@ void ArchiveManagerPanel::openDirAsArchive(const wxString& dir) const
 	sw.Start();
 
 	// Open the file in the archive manager
-	auto new_archive = App::archiveManager().openDirArchive(dir);
+	auto new_archive = App::archiveManager().openDirArchive(dir.ToStdString());
 
 	sw.Pause();
 	Log::info(wxString::Format("Opening took %d ms", (int)sw.Time()));
@@ -1293,7 +1293,7 @@ void ArchiveManagerPanel::checkDirArchives()
 		if (VECTOR_EXISTS(checking_archives_, archive))
 			continue;
 
-		Log::info(2, wxString::Format("Checking %s for external changes...", CHR(archive->filename())));
+		Log::info(2, "Checking {} for external changes...", archive->filename());
 		checking_archives_.push_back(archive);
 		auto check = new DirArchiveCheck(this, (DirArchive*)archive);
 		check->Create();
@@ -1306,7 +1306,7 @@ void ArchiveManagerPanel::checkDirArchives()
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::createNewArchive(const wxString& format) const
 {
-	auto new_archive = App::archiveManager().newArchive(format);
+	auto new_archive = App::archiveManager().newArchive(format.ToStdString());
 
 	if (new_archive)
 		openTab(App::archiveManager().archiveIndex(new_archive));
@@ -1408,7 +1408,7 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive) const
 		dir_last = WxUtils::strToView(fn.GetPath(true));
 
 		// Add recent file
-		App::archiveManager().addRecentFile(filename);
+		App::archiveManager().addRecentFile(filename.ToStdString());
 	}
 	else
 		return false;
@@ -1727,7 +1727,7 @@ void ArchiveManagerPanel::openSelection() const
 
 	// Open all selected archives
 	for (const auto& selected_archive : selected_archives)
-		App::archiveManager().openArchive(selected_archive);
+		App::archiveManager().openArchive(selected_archive.ToStdString());
 }
 
 // -----------------------------------------------------------------------------
@@ -2235,7 +2235,7 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 	if (App::archiveManager().archiveIndex(change_list.archive) >= 0)
 	{
 		Log::info(
-			2, wxString::Format("Finished checking %s for external changes", CHR(change_list.archive->filename())));
+			2, wxString::Format("Finished checking %s for external changes", change_list.archive->filename()));
 
 		if (!change_list.changes.empty())
 		{

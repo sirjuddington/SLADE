@@ -441,7 +441,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	data_.write(entry->rawData(), entry->size());
 
 	// Setup columns
-	wxString type = entry->type()->id();
+	auto type = entry->type()->id();
 
 	// VERTEXES
 	if (type == "map_vertexes")

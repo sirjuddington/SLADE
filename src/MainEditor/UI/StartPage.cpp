@@ -444,14 +444,14 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 		// Navigating to file, open it
 		if (!href.EndsWith("startpage.htm"))
 		{
-			App::archiveManager().openArchive(href);
+			App::archiveManager().openArchive(href.ToStdString());
 			ev.Veto();
 		}
 	}
 	else if (wxDirExists(href))
 	{
 		// Navigating to folder, open it
-		App::archiveManager().openDirArchive(href);
+		App::archiveManager().openDirArchive(href.ToStdString());
 		ev.Veto();
 	}
 }

@@ -492,7 +492,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 
 	// Export the map to a temp .wad file
 	auto filename = App::path(
-		fmt::format("{}-{}.wad", CHR(entry->parent()->filename(false)), entry->nameNoExt()), App::Dir::Temp);
+		fmt::format("{}-{}.wad", entry->parent()->filename(false), entry->nameNoExt()), App::Dir::Temp);
 	std::replace(filename.begin(), filename.end(), '/', '-');
 	if (map.archive)
 	{

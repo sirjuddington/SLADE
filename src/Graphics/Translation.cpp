@@ -144,7 +144,7 @@ void Translation::parse(wxString def)
 	else if (test.StartsWith("\"$@", &temp))
 	{
 		temp.RemoveLast(1); // remove the closing '\"'
-		auto trantbl = App::archiveManager().getResourceEntry(temp);
+		auto trantbl = App::archiveManager().getResourceEntry(temp.ToStdString());
 
 		if (trantbl && trantbl->size() == 256)
 		{

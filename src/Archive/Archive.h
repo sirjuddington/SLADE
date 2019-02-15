@@ -47,8 +47,8 @@ public:
 	Archive(std::string_view format = "");
 	virtual ~Archive();
 
-	wxString         formatId() const { return format_; }
-	wxString         filename(bool full = true) const;
+	std::string      formatId() const { return format_; }
+	std::string      filename(bool full = true) const;
 	ArchiveEntry*    parentEntry() const { return parent_; }
 	Archive*         parentArchive() const { return (parent_ ? parent_->parent() : nullptr); }
 	ArchiveTreeNode* rootDir() { return &dir_root_; }
@@ -70,16 +70,16 @@ public:
 
 	// Archive type info
 	ArchiveFormat formatDesc() const;
-	std::string      fileExtensionString() const;
+	std::string   fileExtensionString() const;
 	virtual bool  isTreeless() { return false; }
 
 	// Opening
 	virtual bool open(std::string_view filename); // Open from File
-	virtual bool open(ArchiveEntry* entry);      // Open from ArchiveEntry
-	virtual bool open(MemChunk& mc) = 0;         // Open from MemChunk
+	virtual bool open(ArchiveEntry* entry);       // Open from ArchiveEntry
+	virtual bool open(MemChunk& mc) = 0;          // Open from MemChunk
 
 	// Writing/Saving
-	virtual bool write(MemChunk& mc, bool update = true) = 0;         // Write to MemChunk
+	virtual bool write(MemChunk& mc, bool update = true) = 0;          // Write to MemChunk
 	virtual bool write(std::string_view filename, bool update = true); // Write to File
 	virtual bool save(std::string_view filename = "");                 // Save archive
 
@@ -112,7 +112,7 @@ public:
 		return addEntry(entry, 0xFFFFFFFF, nullptr, false);
 	} // By default, add to the 'global' namespace (ie root dir)
 	virtual ArchiveEntry* addNewEntry(
-		std::string_view  name     = "",
+		std::string_view name     = "",
 		unsigned         position = 0xFFFFFFFF,
 		ArchiveTreeNode* dir      = nullptr);
 	virtual ArchiveEntry* addNewEntry(std::string_view name, std::string_view add_namespace);
@@ -130,15 +130,15 @@ public:
 	// Detection
 	virtual MapDesc         mapDesc(ArchiveEntry* maphead) { return MapDesc(); }
 	virtual vector<MapDesc> detectMaps() { return {}; }
-	virtual std::string        detectNamespace(ArchiveEntry* entry);
-	virtual std::string        detectNamespace(size_t index, ArchiveTreeNode* dir = nullptr);
+	virtual std::string     detectNamespace(ArchiveEntry* entry);
+	virtual std::string     detectNamespace(size_t index, ArchiveTreeNode* dir = nullptr);
 
 	// Search
 	struct SearchOptions
 	{
-		std::string         match_name;      // Ignore if empty
+		std::string      match_name;      // Ignore if empty
 		EntryType*       match_type;      // Ignore if NULL
-		std::string         match_namespace; // Ignore if empty
+		std::string      match_namespace; // Ignore if empty
 		ArchiveTreeNode* dir;             // Root if NULL
 		bool             ignore_ext;      // Defaults true
 		bool             search_subdirs;  // Defaults false
@@ -221,8 +221,10 @@ public:
 	{
 		return Archive::addEntry(entry, position, nullptr, copy);
 	}
-	ArchiveEntry* addNewEntry(std::string_view name = "", unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = nullptr)
-		override
+	ArchiveEntry* addNewEntry(
+		std::string_view name     = "",
+		unsigned         position = 0xFFFFFFFF,
+		ArchiveTreeNode* dir      = nullptr) override
 	{
 		return Archive::addNewEntry(name, position, nullptr);
 	}

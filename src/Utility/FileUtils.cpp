@@ -7,7 +7,14 @@ namespace fs = std::filesystem;
 
 bool FileUtil::fileExists(std::string_view path)
 {
-	return fs::exists(path);
+	auto fs_path = fs::path{ path };
+	return fs::exists(fs_path) && fs::is_regular_file(fs_path);
+}
+
+bool FileUtil::dirExists(std::string_view path)
+{
+	auto fs_path = fs::path{ path };
+	return fs::exists(fs_path) && fs::is_directory(fs_path);
 }
 
 bool FileUtil::removeFile(std::string_view path)

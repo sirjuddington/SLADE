@@ -52,7 +52,7 @@ public:
 	EntryType*          type() const { return type_; }
 	PropertyList&       exProps() { return ex_props_; }
 	const PropertyList& exProps() const { return ex_props_; }
-	Property&           exProp(const wxString& key) { return ex_props_[key]; }
+	Property&           exProp(const std::string& key) { return ex_props_[key]; }
 	State               state() const { return state_; }
 	bool                isLocked() const { return locked_; }
 	bool                isLoaded() const { return data_loaded_; }

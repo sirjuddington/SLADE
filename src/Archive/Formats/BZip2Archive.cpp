@@ -61,7 +61,7 @@ bool BZip2Archive::open(MemChunk& mc)
 		return false;
 
 	// Build name from filename
-	StrUtil::Path fn(filename(false).ToStdString());
+	StrUtil::Path fn(filename(false));
 	auto          ext = fn.extension();
 	if (StrUtil::equalCI(ext, "tbz") || StrUtil::equalCI(ext, "tb2") || StrUtil::equalCI(ext, "tbz2"))
 		fn.setExtension("tar");

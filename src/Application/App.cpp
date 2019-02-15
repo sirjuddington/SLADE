@@ -257,7 +257,7 @@ void readConfigFile()
 		{
 			while (!tz.checkOrEnd("}"))
 			{
-				archive_manager.addBaseResourcePath(wxString::FromUTF8(UTF8(tz.current().text)));
+				archive_manager.addBaseResourcePath(tz.current().text);
 				tz.adv();
 			}
 
@@ -269,7 +269,7 @@ void readConfigFile()
 		{
 			while (!tz.checkOrEnd("}"))
 			{
-				archive_manager.addRecentFile(wxString::FromUTF8(UTF8(tz.current().text)));
+				archive_manager.addRecentFile(tz.current().text);
 				tz.adv();
 			}
 
@@ -316,9 +316,9 @@ void readConfigFile()
 // -----------------------------------------------------------------------------
 // Processes command line [args]
 // -----------------------------------------------------------------------------
-vector<wxString> processCommandLine(vector<std::string>& args)
+vector<std::string> processCommandLine(vector<std::string>& args)
 {
-	vector<wxString> to_open;
+	vector<std::string> to_open;
 
 	// Process command line args (except the first as it is normally the executable name)
 	for (auto& arg : args)
@@ -579,7 +579,7 @@ void App::saveConfigFile()
 	for (size_t a = 0; a < archive_manager.numBaseResourcePaths(); a++)
 	{
 		auto path = archive_manager.getBaseResourcePath(a);
-		path.Replace("\\", "/");
+		std::replace(path.begin(), path.end(), '\\', '/');
 		file.Write(wxString::Format("\t\"%s\"\n", path), wxConvUTF8);
 	}
 	file.Write("}\n");
@@ -589,7 +589,7 @@ void App::saveConfigFile()
 	for (int a = archive_manager.numRecentFiles() - 1; a >= 0; a--)
 	{
 		auto path = archive_manager.recentFile(a);
-		path.Replace("\\", "/");
+		std::replace(path.begin(), path.end(), '\\', '/');
 		file.Write(wxString::Format("\t\"%s\"\n", path), wxConvUTF8);
 	}
 	file.Write("}\n");

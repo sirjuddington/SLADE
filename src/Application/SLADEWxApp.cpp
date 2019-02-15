@@ -421,7 +421,7 @@ public:
 
 	bool OnPoke(const wxString& topic, const wxString& item, const void* data, size_t size, wxIPCFormat format) override
 	{
-		App::archiveManager().openArchive(item);
+		App::archiveManager().openArchive(item.ToStdString());
 		return true;
 	}
 };
