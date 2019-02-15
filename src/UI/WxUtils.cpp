@@ -248,11 +248,22 @@ void WxUtils::layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSize
 }
 
 // -----------------------------------------------------------------------------
-// Returns a wxArrayString containing the strings in [vector]
+// Returns a wxArrayString containing the (wx) strings in [vector]
 // -----------------------------------------------------------------------------
 wxArrayString WxUtils::arrayString(vector<wxString> vector)
 {
 	return wxArrayString{ vector.size(), vector.data() };
+}
+
+// -----------------------------------------------------------------------------
+// Returns a wxArrayString containing the (std) strings in [vector]
+// -----------------------------------------------------------------------------
+wxArrayString WxUtils::arrayStringStd(vector<std::string> vector)
+{
+	wxArrayString list;
+	for (const auto& str : vector)
+		list.Add(str);
+	return list;
 }
 
 // -----------------------------------------------------------------------------

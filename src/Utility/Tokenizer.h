@@ -129,14 +129,10 @@ public:
 	bool checkNextNC(const char* check) const;
 
 	// Load Data
-	bool openFile(const std::string& filename, size_t offset = 0, size_t length = 0);
-	bool openString(
-		const std::string& text,
-		size_t             offset = 0,
-		size_t             length = 0,
-		const std::string& source = "unknown");
-	bool openMem(const char* mem, size_t length, const std::string& source);
-	bool openMem(const MemChunk& mc, const std::string& source);
+	bool openFile(std::string_view filename, size_t offset = 0, size_t length = 0);
+	bool openString(std::string_view text, size_t offset = 0, size_t length = 0, std::string_view source = "unknown");
+	bool openMem(const char* mem, size_t length, std::string_view source);
+	bool openMem(const MemChunk& mc, std::string_view source);
 
 	// General
 	bool isSpecialCharacter(char p) const { return VECTOR_EXISTS(special_characters_, p); }

@@ -34,7 +34,8 @@ inline wxString strFromView(std::string_view view)
 {
 	return { view.data(), view.size() };
 }
-wxArrayString   arrayString(vector<wxString> vector);
+wxArrayString arrayString(vector<wxString> vector);
+wxArrayString arrayStringStd(vector<std::string> vector);
 
 // Scaling
 wxSize  scaledSize(int x, int y);

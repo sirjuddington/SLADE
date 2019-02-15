@@ -38,6 +38,7 @@
 #include "MainEditor/MainEditor.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
+#include <filesystem>
 
 
 // -----------------------------------------------------------------------------
@@ -47,8 +48,8 @@
 // -----------------------------------------------------------------------------
 namespace
 {
-vector<EntryType*> entry_types;      // The big list of all entry types
-vector<wxString>   entry_categories; // All entry type categories
+vector<EntryType*>  entry_types;      // The big list of all entry types
+vector<std::string> entry_categories; // All entry type categories
 
 // Special entry types
 EntryType etype_unknown; // The default, 'unknown' entry type
@@ -68,7 +69,7 @@ EntryType etype_map;     // Map marker type
 // -----------------------------------------------------------------------------
 // EntryType class constructor
 // -----------------------------------------------------------------------------
-EntryType::EntryType(const wxString& id) : id_{ id }, format_{ EntryDataFormat::anyFormat() } {}
+EntryType::EntryType(std::string_view id) : id_{ id }, format_{ EntryDataFormat::anyFormat() } {}
 
 // -----------------------------------------------------------------------------
 // Adds the type to the list of entry types
@@ -84,23 +85,23 @@ void EntryType::addToList()
 // -----------------------------------------------------------------------------
 void EntryType::dump()
 {
-	Log::info(wxString::Format("Type %s \"%s\", format %s, extension %s", id_, name_, format_->id(), extension_));
-	Log::info(wxString::Format("Size limit: %d-%d", size_limit_[0], size_limit_[1]));
+	Log::info("Type {} \"{}\", format {}, extension {}", id_, name_, format_->id(), extension_);
+	Log::info("Size limit: {}-{}", size_limit_[0], size_limit_[1]);
 
 	for (const auto& a : match_archive_)
-		Log::info(wxString::Format("Match Archive: \"%s\"", a));
+		Log::info("Match Archive: \"{}\"", a);
 
 	for (const auto& a : match_extension_)
-		Log::info(wxString::Format("Match Extension: \"%s\"", a));
+		Log::info("Match Extension: \"{}\"", a);
 
 	for (const auto& a : match_name_)
-		Log::info(wxString::Format("Match Name: \"%s\"", a));
+		Log::info("Match Name: \"{}\"", a);
 
 	for (int a : match_size_)
-		Log::info(wxString::Format("Match Size: %d", a));
+		Log::info("Match Size: {}", a);
 
 	for (int a : size_multiple_)
-		Log::info(wxString::Format("Size Multiple: %d", a));
+		Log::info("Size Multiple: {}", a);
 
 	Log::info("---");
 }
@@ -138,14 +139,9 @@ void EntryType::copyToType(EntryType* target)
 // Returns a file filter string for this type:
 // "<type name> files (*.<type extension)|*.<type extension>"
 // -----------------------------------------------------------------------------
-wxString EntryType::fileFilterString() const
+std::string EntryType::fileFilterString() const
 {
-	wxString ret = name_ + " files (*.";
-	ret += extension_;
-	ret += ")|*.";
-	ret += extension_;
-
-	return ret;
+	return fmt::format("{0} files (*.{1})|*.{1}", name_, extension_);
 }
 
 // -----------------------------------------------------------------------------
@@ -252,21 +248,20 @@ int EntryType::isThisType(ArchiveEntry* entry)
 	if (!match_name_.empty() || !match_extension_.empty())
 	{
 		// Get entry name (lowercase), find extension separator
-		wxString fn      = entry->upperName();
-		size_t   ext_sep = fn.find_first_of('.', 0);
+		std::string_view fn      = entry->upperName();
+		size_t           ext_sep = fn.find_first_of('.', 0);
 
 		// Check for name match if needed
 		if (!match_name_.empty())
 		{
-			wxString name = fn;
-			if (ext_sep != wxString::npos)
-				name = fn.Left(ext_sep);
+			auto name = fn;
+			if (ext_sep != std::string::npos)
+				name = fn.substr(0, ext_sep);
 
-			bool   match           = false;
-			size_t match_name_size = match_name_.size();
-			for (size_t a = 0; a < match_name_size; a++)
+			bool match = false;
+			for (const auto& match_name : match_name_)
 			{
-				if (name.Matches(match_name_[a]))
+				if (StrUtil::matches(name, match_name))
 				{
 					match = true;
 					break;
@@ -283,13 +278,12 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		if (!match_extension_.empty())
 		{
 			bool match = false;
-			if (ext_sep != wxString::npos)
+			if (ext_sep != std::string::npos)
 			{
-				wxString ext                  = fn.Mid(ext_sep + 1);
-				size_t   match_extension_size = match_extension_.size();
-				for (size_t a = 0; a < match_extension_size; a++)
+				auto ext = fn.substr(ext_sep + 1);
+				for (const auto& match_ext : match_extension_)
 				{
-					if (ext == match_extension_[a])
+					if (ext == match_ext)
 					{
 						match = true;
 						break;
@@ -309,11 +303,11 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		if (!entry->parent())
 			return EntryDataFormat::MATCH_FALSE;
 
-		wxString e_section = entry->parent()->detectNamespace(entry);
+		auto e_section = entry->parent()->detectNamespace(entry);
 
 		r = EntryDataFormat::MATCH_FALSE;
 		for (const auto& ns : section_)
-			if (S_CMPNOCASE(ns, e_section))
+			if (StrUtil::equalCI(ns, e_section))
 				r = EntryDataFormat::MATCH_TRUE;
 	}
 
@@ -325,11 +319,11 @@ int EntryType::isThisType(ArchiveEntry* entry)
 // Reads in a block of entry type definitions. Returns false if there was a
 // parsing error, true otherwise
 // -----------------------------------------------------------------------------
-bool EntryType::readEntryTypeDefinition(MemChunk& mc, const wxString& source)
+bool EntryType::readEntryTypeDefinition(MemChunk& mc, std::string_view source)
 {
 	// Parse the definition
 	Parser p;
-	p.parseText(mc, source.ToStdString());
+	p.parseText(mc, source);
 
 	// Get entry_types tree
 	auto pt_etypes = p.parseTreeRoot()->childPTN("entry_types");
@@ -355,8 +349,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const wxString& source)
 			if (parent_type != unknownType())
 				parent_type->copyToType(ntype);
 			else
-				Log::info(wxString::Format(
-					"Warning: Entry type %s inherits from unknown type %s", ntype->id(), typenode->inherit()));
+				Log::info("Warning: Entry type {} inherits from unknown type {}", ntype->id(), typenode->inherit());
 		}
 
 		// Go through all parsed fields
@@ -381,19 +374,18 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const wxString& source)
 			}
 			else if (fn_name == "format") // Format field
 			{
-				wxString format_string = fieldnode->stringValue();
-				ntype->format_         = EntryDataFormat::format(format_string);
+				auto format_string = fieldnode->stringValue();
+				ntype->format_     = EntryDataFormat::format(format_string);
 
 				// Warn if undefined format
 				if (ntype->format_ == EntryDataFormat::anyFormat())
-					Log::warning(
-						wxString::Format("Entry type %s requires undefined format %s", ntype->id(), format_string));
+					Log::warning("Entry type {} requires undefined format {}", ntype->id(), format_string);
 			}
 			else if (fn_name == "icon") // Icon field
 			{
 				ntype->icon_ = fieldnode->stringValue();
-				if (ntype->icon_.StartsWith("e_"))
-					ntype->icon_ = ntype->icon_.Mid(2);
+				if (StrUtil::startsWith(ntype->icon_, "e_"))
+					ntype->icon_ = ntype->icon_.substr(2);
 			}
 			else if (fn_name == "editor") // Editor field (to be removed)
 			{
@@ -458,7 +450,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, const wxString& source)
 				bool exists = false;
 				for (auto& category : entry_categories)
 				{
-					if (S_CMPNOCASE(category, ntype->category_))
+					if (StrUtil::equalCI(category, ntype->category_))
 					{
 						exists = true;
 						break;
@@ -566,27 +558,23 @@ bool EntryType::loadEntryTypes()
 	// -------- READ CUSTOM TYPES ---------
 
 	// If the directory doesn't exist create it
-	if (!wxDirExists(App::path("entry_types", App::Dir::User)))
-		wxMkdir(App::path("entry_types", App::Dir::User));
+	namespace fs = std::filesystem;
+	if (!fs::exists(App::path("entry_types", App::Dir::User)))
+		fs::create_directory(App::path("entry_types", App::Dir::User));
 
-	// Open the custom palettes directory
-	wxDir res_dir;
-	res_dir.Open(App::path("entry_types", App::Dir::User));
-
-	// Go through each file in the directory
-	wxString filename = wxEmptyString;
-	bool     files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
-	while (files)
+	// Go through each file in the custom types directory
+	for (const auto& item : fs::directory_iterator{ App::path("entry_types", App::Dir::User) })
 	{
+		if (!item.is_regular_file())
+			continue;
+
 		// Load file data
 		MemChunk mc;
-		mc.importFile((res_dir.GetName() + "/" + filename).ToStdString());
+		auto     path = item.path().string();
+		mc.importFile(path);
 
 		// Parse file
-		readEntryTypeDefinition(mc, filename);
-
-		// Next file
-		files = res_dir.GetNext(&filename);
+		readEntryTypeDefinition(mc, path);
 	}
 
 	return true;
@@ -643,7 +631,7 @@ bool EntryType::detectEntryType(ArchiveEntry* entry)
 // Returns the entry type with the given id, or etype_unknown if no id match is
 // found
 // -----------------------------------------------------------------------------
-EntryType* EntryType::fromId(const wxString& id)
+EntryType* EntryType::fromId(std::string_view id)
 {
 	for (auto type : entry_types)
 		if (type->id_ == id)
@@ -679,12 +667,12 @@ EntryType* EntryType::mapMarkerType()
 // -----------------------------------------------------------------------------
 // Returns a list of icons for all entry types, organised by type index
 // -----------------------------------------------------------------------------
-wxArrayString EntryType::iconList()
+vector<std::string> EntryType::iconList()
 {
-	wxArrayString list;
+	vector<std::string> list;
 
 	for (auto& entry_type : entry_types)
-		list.Add(entry_type->icon());
+		list.push_back(entry_type->icon());
 
 	return list;
 }
@@ -716,7 +704,7 @@ vector<EntryType*> EntryType::allTypes()
 // -----------------------------------------------------------------------------
 // Returns a list of all entry type categories
 // -----------------------------------------------------------------------------
-vector<wxString> EntryType::allCategories()
+vector<std::string> EntryType::allCategories()
 {
 	return entry_categories;
 }
@@ -739,10 +727,10 @@ CONSOLE_COMMAND(type, 0, true)
 	if (args.empty())
 	{
 		// List existing types and their IDs
-		wxString listing   = "List of entry types:\n\t";
-		wxString separator = "]\n\t";
-		wxString colon     = ": ";
-		wxString paren     = " [";
+		std::string listing   = "List of entry types:\n\t";
+		std::string separator = "]\n\t";
+		std::string colon     = ": ";
+		std::string paren     = " [";
 		for (size_t a = 3; a < all_types.size(); a++)
 		{
 			listing += all_types[a]->name();
@@ -777,8 +765,8 @@ CONSOLE_COMMAND(type, 0, true)
 			}
 		if (!match)
 		{
-			Log::info(wxString::Format(
-				"Type %s does not exist (use \"type\" without parameter for a list)", args[0].mb_str()));
+			Log::info(
+				"Type {} does not exist (use \"type\" without parameter for a list)", args[0].ToStdString());
 			return;
 		}
 
@@ -797,7 +785,7 @@ CONSOLE_COMMAND(type, 0, true)
 			// Check if format corresponds to entry
 			foo = EntryDataFormat::format(desttype->formatId());
 			if (foo)
-				Log::info("Identifying as {}", CHR(desttype->name()));
+				Log::info("Identifying as {}", desttype->name());
 			else
 				Log::info("No data format for this type!");
 		}

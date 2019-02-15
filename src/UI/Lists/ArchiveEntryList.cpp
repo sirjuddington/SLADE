@@ -427,7 +427,7 @@ void ArchiveEntryList::applyFilter()
 		else
 		{
 			// Check for category match
-			if (S_CMPNOCASE(entry->type()->category(), filter_category_))
+			if (StrUtil::equalCI(entry->type()->category(), filter_category_.ToStdString()))
 				items_.push_back(index);
 		}
 

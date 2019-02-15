@@ -524,7 +524,7 @@ bool ArchiveTreeNode::exportTo(std::string_view path)
 
 		// Add file extension if it doesn't exist
 		if (!fn.hasExtension())
-			fn.setExtension(entry->type()->extension().ToStdString());
+			fn.setExtension(entry->type()->extension());
 
 		// Do export
 		entry->exportFile(fn.fullPath());

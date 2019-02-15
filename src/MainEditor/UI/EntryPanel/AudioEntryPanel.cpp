@@ -38,6 +38,7 @@
 #include "MainEditor/Conversions.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 #undef Status
 
@@ -344,14 +345,14 @@ bool AudioEntryPanel::open()
 		convdata.importMem(mcdata.data(), mcdata.size());
 
 	// MIDI format
-	if (entry_->type()->formatId().StartsWith("midi_"))
+	if (StrUtil::startsWith(entry_->type()->formatId(), "midi_"))
 	{
 		audio_type_ = MIDI;
 		openMidi(convdata, path.GetFullPath());
 	}
 
 	// MOD format
-	else if (entry_->type()->formatId().StartsWith("mod_"))
+	else if (StrUtil::startsWith(entry_->type()->formatId(), "mod_"))
 		openMod(convdata);
 
 	// Other format

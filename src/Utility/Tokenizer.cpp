@@ -564,10 +564,10 @@ bool Tokenizer::checkNextNC(const char* check) const
 // Opens text from a file [filename], reading [length] bytes from [offset].
 // If [length] is 0, read to the end of the file
 // -----------------------------------------------------------------------------
-bool Tokenizer::openFile(const std::string& filename, size_t offset, size_t length)
+bool Tokenizer::openFile(std::string_view filename, size_t offset, size_t length)
 {
 	// Open the file
-	wxFile file(filename);
+	wxFile file(std::string{ filename });
 
 	// Check file opened
 	if (!file.IsOpened())
@@ -598,7 +598,7 @@ bool Tokenizer::openFile(const std::string& filename, size_t offset, size_t leng
 // Opens text from a string [text], reading [length] bytes from [offset].
 // If [length] is 0, read to the end of the string
 // -----------------------------------------------------------------------------
-bool Tokenizer::openString(const std::string& text, size_t offset, size_t length, const std::string& source)
+bool Tokenizer::openString(std::string_view text, size_t offset, size_t length, std::string_view source)
 {
 	source_ = source;
 
@@ -618,7 +618,7 @@ bool Tokenizer::openString(const std::string& text, size_t offset, size_t length
 // -----------------------------------------------------------------------------
 // Opens text from memory [mem], reading [length] bytes
 // -----------------------------------------------------------------------------
-bool Tokenizer::openMem(const char* mem, size_t length, const std::string& source)
+bool Tokenizer::openMem(const char* mem, size_t length, std::string_view source)
 {
 	source_ = source;
 	data_.assign(mem, mem + length);
@@ -631,7 +631,7 @@ bool Tokenizer::openMem(const char* mem, size_t length, const std::string& sourc
 // -----------------------------------------------------------------------------
 // Opens text from a MemChunk [mc]
 // -----------------------------------------------------------------------------
-bool Tokenizer::openMem(const MemChunk& mc, const std::string& source)
+bool Tokenizer::openMem(const MemChunk& mc, std::string_view source)
 {
 	source_ = source;
 	data_.assign(mc.data(), mc.data() + mc.size());

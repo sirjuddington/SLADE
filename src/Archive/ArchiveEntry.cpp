@@ -607,7 +607,7 @@ void ArchiveEntry::setExtensionByType()
 	StrUtil::Path fn(name_);
 
 	// Set new extension
-	fn.setExtension(type_->extension().ToStdString());
+	fn.setExtension(type_->extension());
 
 	// Rename
 	auto parent_archive = parent();

@@ -10,22 +10,22 @@ public:
 	static const int MATCH_PROBABLY = 192;
 	static const int MATCH_TRUE     = 255;
 
-	EntryDataFormat(const wxString& id);
+	EntryDataFormat(std::string_view id);
 	virtual ~EntryDataFormat() = default;
 
-	const wxString& id() const { return id_; }
+	const std::string& id() const { return id_; }
 
 	virtual int isThisFormat(MemChunk& mc);
 	void        copyToFormat(EntryDataFormat& target) const;
 
 	static void             initBuiltinFormats();
 	static bool             readDataFormatDefinition(MemChunk& mc);
-	static EntryDataFormat* format(const wxString& id);
+	static EntryDataFormat* format(std::string_view id);
 	static EntryDataFormat* anyFormat();
 	static EntryDataFormat* textFormat();
 
 private:
-	wxString id_;
+	std::string id_;
 
 	// Struct to specify an inclusive range for a byte (min <= valid <= max)
 	// If max == min, only 1 valid value

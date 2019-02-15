@@ -151,8 +151,7 @@ public:
 				// Find entry to replace if needed
 				if (auto_entry_replace)
 				{
-					entry = parent_->archive()->entryAtPath(
-						list_->currentDir()->path().append(fn.fileName()));
+					entry = parent_->archive()->entryAtPath(list_->currentDir()->path().append(fn.fileName()));
 					// An entry with that name is already present, so ask about replacing it
 					if (entry && !yes_to_all)
 					{
@@ -266,8 +265,7 @@ public:
 			for (auto& entry : entries)
 			{
 				// Export to file
-				auto filename = fmt::format(
-					"{}{}.{}", tmp_directory, entry->nameNoExt(), CHR(entry->type()->extension()));
+				auto filename = fmt::format("{}{}.{}", tmp_directory, entry->nameNoExt(), entry->type()->extension());
 				entry->exportFile(filename);
 
 				// Add to clipboard
@@ -347,16 +345,16 @@ int isInMap(size_t index, vector<Archive::MapDesc>& maps)
 // -----------------------------------------------------------------------------
 size_t getNamespaceNumber(ArchiveEntry* entry, size_t index, vector<wxString>& ns, vector<Archive::MapDesc>& maps)
 {
-	wxString ens = entry->parent()->detectNamespace(index);
-	if (S_CMPNOCASE(ens, "global"))
+	auto ens = entry->parent()->detectNamespace(index);
+	if (StrUtil::equalCI(ens, "global"))
 	{
 		if (!maps.empty() && isInMap(index, maps) >= 0)
 			ens = "maps";
-		else if (S_CMPNOCASE(entry->type()->category(), "Graphics"))
+		else if (StrUtil::equalCI(entry->type()->category(), "Graphics"))
 			ens = "graphics";
-		else if (S_CMPNOCASE(entry->type()->category(), "Audio"))
+		else if (StrUtil::equalCI(entry->type()->category(), "Audio"))
 		{
-			if (S_CMPNOCASE(entry->type()->icon(), "music"))
+			if (StrUtil::equalCI(entry->type()->icon(), "music"))
 				ens = "music";
 			else
 				ens = "sounds";
@@ -1469,7 +1467,7 @@ bool ArchivePanel::sort() const
 		std::string name, ename = entry->upperName();
 		// Want to get another hack in this stuff? Yeah, of course you do!
 		// This here hack will sort Doom II songs by their associated map.
-		if (StrUtil::startsWith(ename, "D_") && S_CMPNOCASE(entry->type()->icon(), "music"))
+		if (StrUtil::startsWith(ename, "D_") && StrUtil::equalCI(entry->type()->icon(), "music"))
 		{
 			if (ename == "D_RUNNIN")
 				ename = "D_MAP01";
@@ -1581,8 +1579,8 @@ bool ArchivePanel::sort() const
 			dir->swapEntries(i, itr->second);
 
 			// Update the position of the displaced texture in the emap
-			auto name = entry->exProp("sortkey").stringValue();
-			emap[name]    = itr->second;
+			auto name  = entry->exProp("sortkey").stringValue();
+			emap[name] = itr->second;
 		}
 	}
 	undo_manager_->endRecord(true);
@@ -1677,7 +1675,7 @@ bool ArchivePanel::importEntry()
 		{
 			// Preserve gfx offset if needed
 			Vec2i offset;
-			if (!entry->type()->editor().Cmp("gfx"))
+			if (entry->type()->editor() == "gfx")
 			{
 				// We have an image
 				SImage si;
@@ -1695,7 +1693,7 @@ bool ArchivePanel::importEntry()
 			EntryType::detectEntryType(entry);
 
 			// Restore offsets if needed
-			if (!entry->type()->editor().Cmp("gfx"))
+			if (entry->type()->editor() == "gfx")
 			{
 				SImage si;
 				si.open(entry->data());
@@ -2329,21 +2327,19 @@ bool ArchivePanel::swanConvert() const
 	}
 
 	// Create entries
-	MemChunk* mc[2]       = { &mca, &mcs };
-	wxString  wadnames[2] = { "ANIMATED", "SWITCHES" };
-	wxString  zipnames[2] = { "animated.lmp", "switches.lmp" };
-	wxString  etypeids[2] = { "animated", "switches" };
+	MemChunk*   mc[2]       = { &mca, &mcs };
+	std::string wadnames[2] = { "ANIMATED", "SWITCHES" };
+	std::string zipnames[2] = { "animated.lmp", "switches.lmp" };
+	std::string etypeids[2] = { "animated", "switches" };
 	for (int e = 0; e < 2; ++e)
 	{
 		if (mc[e]->size())
 		{
 			// Begin recording undo level
-			undo_manager_->beginRecord(wxString::Format("Creating %s", wadnames[e]));
+			undo_manager_->beginRecord(fmt::format("Create {}", wadnames[e]));
 
 			auto output = archive_->addNewEntry(
-				(archive_->formatId() == "wad" ? wadnames[e] : zipnames[e]).ToStdString(),
-				index,
-				entry_list_->currentDir());
+				(archive_->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, entry_list_->currentDir());
 			if (output)
 			{
 				error |= !output->importMemChunk(*mc[e]);
@@ -2586,13 +2582,14 @@ bool ArchivePanel::musMidiConvert() const
 			entry_list_->setEntriesAutoUpdate(true);
 
 		// Convert MUS -> MIDI if the entry is a MIDI-like format
-		if (selection[a]->type()->formatId().StartsWith("midi_") && selection[a]->type()->formatId() != "midi_smf")
+		const auto& format_id = selection[a]->type()->formatId();
+		if (StrUtil::startsWith(format_id, "midi_") && format_id != "midi_smf")
 		{
 			MemChunk midi;
 			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a])); // Create undo step
-			if (selection[a]->type()->formatId() == "midi_mus")
+			if (format_id == "midi_mus")
 				Conversions::musToMidi(selection[a]->data(), midi); // Convert
-			else if (selection[a]->type()->formatId() == "midi_gmid")
+			else if (format_id == "midi_gmid")
 				Conversions::gmidToMidi(selection[a]->data(), midi); // Convert
 			else
 				Conversions::zmusToMidi(selection[a]->data(), midi); // Convert
@@ -2808,19 +2805,19 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 			new_area = default_area_;
 		else if (entry->type() == EntryType::mapMarkerType())
 			new_area = map_area_;
-		else if (!entry->type()->editor().Cmp("gfx"))
+		else if (entry->type()->editor() == "gfx")
 			new_area = gfx_area_;
-		else if (!entry->type()->editor().Cmp("palette"))
+		else if (entry->type()->editor() == "palette")
 			new_area = pal_area_;
-		else if (!entry->type()->editor().Cmp("ansi"))
+		else if (entry->type()->editor() == "ansi")
 			new_area = ansi_area_;
-		else if (!entry->type()->editor().Cmp("text"))
+		else if (entry->type()->editor() == "text")
 			new_area = text_area_;
-		else if (!entry->type()->editor().Cmp("audio"))
+		else if (entry->type()->editor() == "audio")
 			new_area = audio_area_;
-		else if (!entry->type()->editor().Cmp("data"))
+		else if (entry->type()->editor() == "data")
 			new_area = data_area_;
-		else if (!entry->type()->editor().Cmp("default"))
+		else if (entry->type()->editor() == "default")
 			new_area = default_area_;
 		else
 			Log::warning(
@@ -3348,17 +3345,17 @@ EntryPanel* ArchivePanel::createPanelForEntry(ArchiveEntry* entry, wxWindow* par
 
 	if (entry->type() == EntryType::mapMarkerType())
 		entry_panel = new MapEntryPanel(parent);
-	else if (!entry->type()->editor().Cmp("gfx"))
+	else if (entry->type()->editor() == "gfx")
 		entry_panel = new GfxEntryPanel(parent);
-	else if (!entry->type()->editor().Cmp("palette"))
+	else if (entry->type()->editor() == "palette")
 		entry_panel = new PaletteEntryPanel(parent);
-	else if (!entry->type()->editor().Cmp("ansi"))
+	else if (entry->type()->editor() == "ansi")
 		entry_panel = new ANSIEntryPanel(parent);
-	else if (!entry->type()->editor().Cmp("text"))
+	else if (entry->type()->editor() == "text")
 		entry_panel = new TextEntryPanel(parent);
-	else if (!entry->type()->editor().Cmp("audio"))
+	else if (entry->type()->editor() == "audio")
 		entry_panel = new AudioEntryPanel(parent);
-	else if (!entry->type()->editor().Cmp("data"))
+	else if (entry->type()->editor() == "data")
 		entry_panel = new DataEntryPanel(parent);
 	else
 		entry_panel = new DefaultEntryPanel(parent);
@@ -3498,7 +3495,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		}
 		if (!mus_selected)
 		{
-			if (entry->type()->formatId().StartsWith("midi_") && entry->type()->formatId() != "midi_smf")
+			if (StrUtil::startsWith(entry->type()->formatId(), "midi_") && entry->type()->formatId() != "midi_smf")
 				mus_selected = true;
 		}
 		if (!text_selected)

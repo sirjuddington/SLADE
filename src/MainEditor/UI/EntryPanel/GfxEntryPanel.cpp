@@ -49,7 +49,7 @@
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/SZoomSlider.h"
 #include "UI/SBrush.h"
-
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -227,10 +227,8 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 	}
 
 	// Hack for colormaps to be 256-wide
-	if (S_CMPNOCASE(entry->type()->name(), "colormap"))
-	{
+	if (StrUtil::equalCI(entry->type()->name(), "colormap"))
 		image()->setWidth(256);
-	}
 
 	// Refresh everything
 	refresh();

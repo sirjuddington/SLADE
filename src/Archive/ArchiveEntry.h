@@ -103,7 +103,7 @@ public:
 
 	// Misc
 	std::string   sizeString() const;
-	std::string   typeString() const { return type_ ? type_->name().ToStdString() : "Unknown"; }
+	std::string   typeString() const { return type_ ? type_->name() : "Unknown"; }
 	void          stateChanged();
 	void          setExtensionByType();
 	int           typeReliability() const { return (type_ ? (type()->reliability() * reliability_ / 255) : 0); }

@@ -569,7 +569,7 @@ Parser::Parser(ArchiveTreeNode* dir_root) : archive_dir_root_{ dir_root }
 // 		</base>
 // 	</root>
 // -----------------------------------------------------------------------------
-bool Parser::parseText(MemChunk& mc, const std::string& source) const
+bool Parser::parseText(MemChunk& mc, std::string_view source) const
 {
 	Tokenizer tz;
 
@@ -584,7 +584,7 @@ bool Parser::parseText(MemChunk& mc, const std::string& source) const
 	// Do parsing
 	return pt_root_->parse(tz);
 }
-bool Parser::parseText(const std::string& text, const std::string& source) const
+bool Parser::parseText(std::string_view text, std::string_view source) const
 {
 	Tokenizer tz;
 

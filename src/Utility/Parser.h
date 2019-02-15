@@ -82,8 +82,8 @@ public:
 
 	void setCaseSensitive(bool cs) { case_sensitive_ = cs; }
 
-	bool parseText(MemChunk& mc, const std::string& source = "memory chunk") const;
-	bool parseText(const std::string& text, const std::string& source = "string") const;
+	bool parseText(MemChunk& mc, std::string_view source = "memory chunk") const;
+	bool parseText(std::string_view text, std::string_view source = "string") const;
 	void define(std::string_view def);
 	bool defined(std::string_view def);
 

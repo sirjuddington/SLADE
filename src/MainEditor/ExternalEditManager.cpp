@@ -76,7 +76,7 @@ public:
 	{
 		// Determine export filename/path
 		StrUtil::Path fn(App::path(entry_->name(), App::Dir::Temp));
-		fn.setExtension(entry_->type()->extension().ToStdString());
+		fn.setExtension(entry_->type()->extension());
 
 		// Export entry and start monitoring
 		bool ok = entry_->exportFile(fn.fullPath());
@@ -254,7 +254,7 @@ public:
 
 		else
 		{
-			Global::error = wxString::Format("Type %s can not be converted to MIDI", CHR(entry_->type()->name()));
+			Global::error = wxString::Format("Type %s can not be converted to MIDI", entry_->type()->name());
 			return false;
 		}
 
@@ -352,7 +352,7 @@ public:
 
 		else
 		{
-			Global::error = wxString::Format("Type %s can not be converted to WAV", CHR(entry_->type()->name()));
+			Global::error = wxString::Format("Type %s can not be converted to WAV", entry_->type()->name());
 			return false;
 		}
 

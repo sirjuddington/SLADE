@@ -264,8 +264,8 @@ wxPanel* EditingPrefsPanel::setupExternalTab()
 	auto panel = new wxPanel(stc_tabs_, -1);
 
 	// Create controls
-	auto categories  = EntryType::allCategories();
-	choice_category_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, categories.size(), &categories[0]);
+	auto categories  = WxUtils::arrayStringStd(EntryType::allCategories());
+	choice_category_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, categories);
 	lv_ext_editors_  = new ExternalEditorList(panel);
 	btn_add_exe_     = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::General, "plus"));
 	btn_add_exe_->SetToolTip("Add External Editor");
