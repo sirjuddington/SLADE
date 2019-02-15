@@ -2393,7 +2393,7 @@ CONSOLE_COMMAND(m_check, 0, true)
 	// Check for 'all'
 	bool all = false;
 	for (auto& arg : args)
-		if (S_CMPNOCASE(arg, "all"))
+		if (StrUtil::equalCI(arg, "all"))
 		{
 			all = true;
 			break;
@@ -2408,11 +2408,11 @@ CONSOLE_COMMAND(m_check, 0, true)
 	{
 		for (auto& arg : args)
 		{
-			auto check = MapCheck::standardCheck(arg.Lower(), map, texman);
+			auto check = MapCheck::standardCheck(StrUtil::lower(arg), map, texman);
 			if (check)
 				checks.push_back(std::move(check));
 			else
-				Log::console(wxString::Format("Unknown check \"%s\"", CHR(arg)));
+				Log::console(wxString::Format("Unknown check \"%s\"", arg));
 		}
 	}
 
@@ -2489,7 +2489,7 @@ CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
 
 CONSOLE_COMMAND(m_vertex_attached, 1, false)
 {
-	MapVertex* vertex = MapEditor::editContext().map().vertex(atoi(CHR(args[0])));
+	MapVertex* vertex = MapEditor::editContext().map().vertex(atoi(args[0].c_str()));
 	if (vertex)
 	{
 		Log::info(1, "Attached lines:");
@@ -2510,8 +2510,7 @@ CONSOLE_COMMAND(m_n_polys, 0, false)
 
 CONSOLE_COMMAND(mobj_info, 1, false)
 {
-	long id;
-	args[0].ToLong(&id);
+	int id = StrUtil::toInt(args[0]);
 
 	auto obj = MapEditor::editContext().map().mapData().getObjectById(id);
 	if (!obj)

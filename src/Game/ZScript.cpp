@@ -1170,14 +1170,14 @@ CONSOLE_COMMAND(test_parse_zscript, 0, false)
 
 	for (auto& arg : args)
 	{
-		if (S_CMPNOCASE(arg, "dump"))
+		if (StrUtil::equalCI(arg, "dump"))
 			dump_parsed_blocks = true;
-		else if (S_CMPNOCASE(arg, "states"))
+		else if (StrUtil::equalCI(arg, "states"))
 			dump_parsed_states = true;
-		else if (S_CMPNOCASE(arg, "func"))
+		else if (StrUtil::equalCI(arg, "func"))
 			dump_parsed_functions = true;
 		else if (!entry)
-			entry = MainEditor::currentArchive()->entryAtPath(arg.ToStdString());
+			entry = MainEditor::currentArchive()->entryAtPath(arg);
 	}
 
 	if (!entry)
@@ -1202,9 +1202,7 @@ CONSOLE_COMMAND(test_parse_zscript, 0, false)
 
 CONSOLE_COMMAND(test_parseblocks, 1, false)
 {
-	long num = 1;
-	args[0].ToLong(&num);
-
+	int num = StrUtil::toInt(args[0]);
 	auto entry = MainEditor::currentEntry();
 	if (!entry)
 		return;

@@ -367,7 +367,7 @@ void ColourConfiguration::putColourNames(vector<wxString>& list)
 CONSOLE_COMMAND(ccfg, 1, false)
 {
 	// Check for 'list'
-	if (S_CMPNOCASE(args[0], "list"))
+	if (StrUtil::equalCI(args[0], "list"))
 	{
 		// Get (sorted) list of colour names
 		vector<wxString> list;
@@ -385,20 +385,19 @@ CONSOLE_COMMAND(ccfg, 1, false)
 		if (args.size() >= 4)
 		{
 			// Read RGB
-			long red, green, blue;
-			args[1].ToLong(&red);
-			args[2].ToLong(&green);
-			args[3].ToLong(&blue);
+			int red   = StrUtil::toInt(args[1]);
+			int green = StrUtil::toInt(args[2]);
+			int blue  = StrUtil::toInt(args[3]);
 
 			// Read alpha (if specified)
-			long alpha = -1;
+			int alpha = -1;
 			if (args.size() >= 5)
-				args[4].ToLong(&alpha);
+				alpha = StrUtil::toInt(args[4]);
 
 			// Read blend (if specified)
-			long blend = -1;
+			int blend = -1;
 			if (args.size() >= 6)
-				args[5].ToLong(&blend);
+				blend = StrUtil::toInt(args[5]);
 
 			// Set colour
 			ColourConfiguration::setColour(args[0], red, green, blue, alpha, blend);

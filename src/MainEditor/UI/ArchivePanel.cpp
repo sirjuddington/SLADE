@@ -4297,12 +4297,12 @@ CONSOLE_COMMAND(cd, 1, true)
 	if (current && panel)
 	{
 		ArchiveTreeNode* dir    = panel->currentDir();
-		ArchiveTreeNode* newdir = current->dir(args[0].ToStdString(), dir);
+		ArchiveTreeNode* newdir = current->dir(args[0], dir);
 		if (newdir == nullptr)
 		{
-			if (args[0].Matches(".."))
+			if (args[0] == "..")
 				newdir = (ArchiveTreeNode*)dir->parent();
-			else if (args[0].Matches("/") || args[0].Matches("\\"))
+			else if (args[0] == "/" || args[0] == "\\")
 				newdir = current->rootDir();
 		}
 

@@ -371,7 +371,7 @@ CONSOLE_COMMAND(pod_get_id, 0, 1)
 {
 	auto archive = MainEditor::currentArchive();
 	if (archive && archive->formatId() == "pod")
-		Log::console(std::string{ ((PodArchive*)archive)->getId() });
+		Log::console(std::string{ dynamic_cast<PodArchive*>(archive)->getId() });
 	else
 		Log::console("Current tab is not a POD archive");
 }
@@ -380,10 +380,7 @@ CONSOLE_COMMAND(pod_set_id, 1, true)
 {
 	auto archive = MainEditor::currentArchive();
 	if (archive && archive->formatId() == "pod")
-	{
-		auto id = args[0].ToStdString();
-		((PodArchive*)archive)->setId(StrUtil::truncate(id, 80));
-	}
+		dynamic_cast<PodArchive*>(archive)->setId(StrUtil::truncate(args[0], 80));
 	else
 		Log::console("Current tab is not a POD archive");
 }

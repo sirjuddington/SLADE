@@ -47,8 +47,8 @@ bool contains(std::string_view str, char check);
 bool containsCI(std::string_view str, char check);
 bool contains(std::string_view str, std::string_view check);
 bool containsCI(std::string_view str, std::string_view check);
-bool matches(std::string_view str, std::string_view check);
-bool matchesCI(std::string_view str, std::string_view check);
+bool matches(std::string_view str, std::string_view match);
+bool matchesCI(std::string_view str, std::string_view match);
 
 // String transformations
 // IP = In-Place
@@ -103,11 +103,15 @@ void processIncludes(const std::string& filename, std::string& out);
 void processIncludes(ArchiveEntry* entry, std::string& out, bool use_res = true);
 
 // Conversion
-int      toInt(const std::string& str);
-unsigned toUInt(const std::string& str);
-float    toFloat(const std::string& str);
-double   toDouble(const std::string& str);
-bool     toBoolean(const std::string& str);
+int      toInt(std::string_view str);
+unsigned toUInt(std::string_view str);
+float    toFloat(std::string_view str);
+double   toDouble(std::string_view str);
+bool     toBoolean(std::string_view str);
+bool     toInt(std::string_view str, int& target);
+bool     toUInt(std::string_view str, unsigned& target);
+bool     toFloat(std::string_view str, float& target);
+bool     toDouble(std::string_view str, double& target);
 
 // Joins all given args into a single string
 template<typename... Args> std::string join(const Args&... args)

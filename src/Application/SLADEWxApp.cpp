@@ -44,6 +44,7 @@
 #include "Utility/Parser.h"
 #include "thirdparty/email/wxMailer.h"
 #include <wx/statbmp.h>
+#include "Utility/StringUtils.h"
 
 
 #undef BOOL
@@ -843,7 +844,7 @@ CONSOLE_COMMAND(quit, 0, true)
 	bool save_config = true;
 	for (auto& arg : args)
 	{
-		if (arg.Lower() == "nosave")
+		if (StrUtil::equalCI(arg, "nosave"))
 			save_config = false;
 	}
 

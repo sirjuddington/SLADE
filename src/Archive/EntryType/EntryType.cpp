@@ -749,14 +749,16 @@ CONSOLE_COMMAND(type, 0, true)
 		bool match    = false;
 
 		// Use true unknown type rather than map marker...
-		if (!args[0].CmpNoCase("unknown") || !args[0].CmpNoCase("none") || !args[0].CmpNoCase("any"))
+		if (StrUtil::equalCI(args[0], "unknown") || StrUtil::equalCI(args[0], "none")
+			|| StrUtil::equalCI(args[0], "any"))
 			match = true;
 
 		// Find actual format
 		else
 			for (size_t a = 3; a < all_types.size(); a++)
 			{
-				if (!args[0].CmpNoCase(all_types[a]->formatId()) || !args[0].CmpNoCase(all_types[a]->id()))
+				if (StrUtil::equalCI(args[0], all_types[a]->formatId())
+					|| StrUtil::equalCI(args[0], all_types[a]->id()))
 				{
 					desttype = all_types[a];
 					match    = true;
@@ -765,13 +767,12 @@ CONSOLE_COMMAND(type, 0, true)
 			}
 		if (!match)
 		{
-			Log::info(
-				"Type {} does not exist (use \"type\" without parameter for a list)", args[0].ToStdString());
+			Log::info("Type {} does not exist (use \"type\" without parameter for a list)", args[0]);
 			return;
 		}
 
 		// Allow to force type change even if format checks fails (use at own risk!)
-		int  force = !(args.size() < 2 || args[1].CmpNoCase("force"));
+		int  force = !(args.size() < 2 || StrUtil::equalCI(args[1], "force"));
 		auto meep  = MainEditor::currentEntrySelection();
 		if (meep.empty())
 		{

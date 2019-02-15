@@ -943,9 +943,9 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 	if (!entry)
 		return;
 
-	long num = 1;
+	int num = 1;
 	if (!args.empty())
-		args[0].ToLong(&num);
+		num = StrUtil::toInt(args[0]);
 
 	bool lower = (VECTOR_EXISTS(args, "lower"));
 	bool dump  = (VECTOR_EXISTS(args, "dump"));

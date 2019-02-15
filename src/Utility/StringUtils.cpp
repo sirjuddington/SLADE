@@ -34,6 +34,7 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Tokenizer.h"
+#include <charconv>
 #include <regex>
 
 
@@ -214,15 +215,124 @@ bool StrUtil::containsCI(std::string_view str, std::string_view check)
 	return lower(str).find(lower(check)) != std::string::npos;
 }
 
-bool StrUtil::matches(std::string_view str, std::string_view check)
+bool StrUtil::matches(std::string_view str, std::string_view match)
 {
-	// TODO: Should just implement this myself, regex is a bit slow
-	return std::regex_search(str.data(), std::regex(wildcardToRegex(check)));
+	// See: https://www.codeproject.com/Articles/1088/Wildcard-string-compare-globbing?msg=4593232#xx4593232xx
+	// Adapted for string_view and cleaned up a bit
+
+	char        stopstring    = '\0';
+	const char* str_current   = str.data();
+	const char* str_end       = str.data() + str.size();
+	const char* match_current = match.data();
+	const char* match_end     = match.data() + match.size();
+
+	while (str_current != str_end)
+	{
+		if (*match_current == '*')
+		{
+			// Skip multiple * in a row
+			do
+			{
+				match_current++;
+			} while (*match_current == '*');
+
+			// If * was the last char, the strings are equal
+			if (match_current == match_end) 
+				return true;
+
+			// The next char to check after the *
+			stopstring = *match_current;
+		}
+
+		if (stopstring != '\0')
+		{
+			if (stopstring == *str_current || stopstring == '?')
+			{
+				match_current++;
+				stopstring = '\0';
+			}
+			str_current++;
+		}
+		else if (*match_current == *str_current || *match_current == '?')
+		{
+			match_current++;
+			str_current++;
+		}
+		else
+			return false;
+
+		if (str_current == str_end && match_current != match_end)
+		{
+			// [str] seems to be too short. Check if [match] has any more chars except '*'
+			while (*match_current == '*') // Ignore following '*'
+				match_current++;
+
+			// If [match] ended after '*', strings are equal
+			return match_current == match_end;
+		}
+	}
+
+	return match_current == match_end;
 }
 
-bool StrUtil::matchesCI(std::string_view str, std::string_view check)
+bool StrUtil::matchesCI(std::string_view str, std::string_view match)
 {
-	return std::regex_search(str.data(), std::regex(wildcardToRegex(check)));
+	// See: https://www.codeproject.com/Articles/1088/Wildcard-string-compare-globbing?msg=4593232#xx4593232xx
+	// Adapted slightly for string_view and case-insensitivity
+
+	char        stopstring    = '\0';
+	const char* str_current   = str.data();
+	const char* str_end       = str.data() + str.size();
+	const char* match_current = match.data();
+	const char* match_end     = match.data() + match.size();
+
+	while (str_current != str_end)
+	{
+		if (*match_current == '*')
+		{
+			// Skip multiple * in a row
+			do
+			{
+				match_current++;
+			} while (*match_current == '*');
+
+			// If * was the last char, the strings are equal
+			if (match_current == match_end)
+				return true;
+
+			// The next char to check after the *
+			stopstring = tolower(*match_current);
+		}
+
+		if (stopstring != '\0')
+		{
+			if (stopstring == tolower(*str_current) || stopstring == '?')
+			{
+				match_current++;
+				stopstring = '\0';
+			}
+			str_current++;
+		}
+		else if (tolower(*match_current) == tolower(*str_current) || *match_current == '?')
+		{
+			match_current++;
+			str_current++;
+		}
+		else
+			return false;
+
+		if (str_current == str_end && match_current != match_end)
+		{
+			// [str] seems to be too short. Check if [match] has any more chars except '*'
+			while (*match_current == '*') // Ignore following '*'
+				match_current++;
+
+			// If [match] ended after '*', strings are equal
+			return match_current == match_end;
+		}
+	}
+
+	return match_current == match_end;
 }
 
 // -----------------------------------------------------------------------------
@@ -828,8 +938,8 @@ void StrUtil::processIncludes(ArchiveEntry* entry, std::string& out, bool use_re
 
 			// Okay, we've exhausted all possibilities
 			if (!done)
-				Log::error(fmt::format(
-					"Attempting to #include nonexistant entry \"{}\" from entry {}", name, entry->name()));
+				Log::error(
+					fmt::format("Attempting to #include nonexistant entry \"{}\" from entry {}", name, entry->name()));
 		}
 		else
 			out.append(line + "\n");
@@ -842,71 +952,131 @@ void StrUtil::processIncludes(ArchiveEntry* entry, std::string& out, bool use_re
 	wxRemoveFile(filename);
 }
 
-int StrUtil::toInt(const std::string& str)
+int StrUtil::toInt(std::string_view str)
 {
-	try
-	{
-		return std::stoi(str);
-	}
-	catch (const std::exception& ex)
-	{
-		Log::error(fmt::format("Can't convert \"{}\" to an integer: {}", str, ex.what()));
-		return 0;
-	}
+	int  val    = 0;
+	auto result = std::from_chars(str.data(), str.data() + str.size(), val);
+	if (result.ec == std::errc::invalid_argument)
+		Log::error(fmt::format("Can't convert \"{}\" to an integer (invalid)", str));
+	else if (result.ec == std::errc::result_out_of_range)
+		Log::error(fmt::format("Can't convert \"{}\" to an integer (out of range)", str));
+
+	return val;
 }
 
-unsigned StrUtil::toUInt(const std::string& str)
+unsigned StrUtil::toUInt(std::string_view str)
 {
-	try
-	{
-		return std::stoul(str);
-	}
-	catch (const std::exception& ex)
-	{
-		Log::error(fmt::format("Can't convert \"{}\" to an unsigned integer: {}", str, ex.what()));
-		return 0;
-	}
+	unsigned val    = 0;
+	auto     result = std::from_chars(str.data(), str.data() + str.size(), val);
+	if (result.ec == std::errc::invalid_argument)
+		Log::error(fmt::format("Can't convert \"{}\" to an unsigned integer (invalid)", str));
+	else if (result.ec == std::errc::result_out_of_range)
+		Log::error(fmt::format("Can't convert \"{}\" to an unsigned integer (out of range)", str));
+
+	return val;
 }
 
-float StrUtil::toFloat(const std::string& str)
+float StrUtil::toFloat(std::string_view str)
 {
-	try
-	{
-		return std::stof(str);
-	}
-	catch (const std::exception& ex)
-	{
-		Log::error(fmt::format("Can't convert \"{}\" to a float: {}", str, ex.what()));
-		return 0.f;
-	}
+	float val    = 0;
+	auto  result = std::from_chars(str.data(), str.data() + str.size(), val);
+	if (result.ec == std::errc::invalid_argument)
+		Log::error(fmt::format("Can't convert \"{}\" to a float (invalid)", str));
+	else if (result.ec == std::errc::result_out_of_range)
+		Log::error(fmt::format("Can't convert \"{}\" to a float (out of range)", str));
+
+	return val;
 }
 
-double StrUtil::toDouble(const std::string& str)
+double StrUtil::toDouble(std::string_view str)
 {
-	try
-	{
-		return std::stod(str);
-	}
-	catch (const std::exception& ex)
-	{
-		Log::error(fmt::format("Can't convert \"{}\" to a double: {}", str, ex.what()));
-		return 0.;
-	}
+	double val    = 0;
+	auto   result = std::from_chars(str.data(), str.data() + str.size(), val);
+	if (result.ec == std::errc::invalid_argument)
+		Log::error(fmt::format("Can't convert \"{}\" to a float (invalid)", str));
+	else if (result.ec == std::errc::result_out_of_range)
+		Log::error(fmt::format("Can't convert \"{}\" to a float (out of range)", str));
+
+	return val;
 }
 
-bool StrUtil::toBoolean(const std::string& str)
+bool StrUtil::toBoolean(std::string_view str)
 {
 	// Empty, 0 or "false" are false, everything else true
 	return !(str.empty() || str == "0" || equalCI(str, "false"));
 }
 
+bool StrUtil::toInt(std::string_view str, int& target)
+{
+	auto result = std::from_chars(str.data(), str.data() + str.size(), target);
 
+	if (result.ec == std::errc::invalid_argument)
+	{
+		Log::error(fmt::format("Can't convert \"{}\" to an integer (invalid)", str));
+		return false;
+	}
+	if (result.ec == std::errc::result_out_of_range)
+	{
+		Log::error(fmt::format("Can't convert \"{}\" to an integer (out of range)", str));
+		return false;
+	}
 
+	return true;
+}
 
+bool StrUtil::toUInt(std::string_view str, unsigned& target)
+{
+	auto result = std::from_chars(str.data(), str.data() + str.size(), target);
 
+	if (result.ec == std::errc::invalid_argument)
+	{
+		Log::error(fmt::format("Can't convert \"{}\" to an unsigned integer (invalid)", str));
+		return false;
+	}
+	if (result.ec == std::errc::result_out_of_range)
+	{
+		Log::error(fmt::format("Can't convert \"{}\" to an unsigned integer (out of range)", str));
+		return false;
+	}
 
+	return true;
+}
 
+bool StrUtil::toFloat(std::string_view str, float& target)
+{
+	auto result = std::from_chars(str.data(), str.data() + str.size(), target);
 
+	if (result.ec == std::errc::invalid_argument)
+	{
+		Log::error(fmt::format("Can't convert \"{}\" to a float (invalid)", str));
+		return false;
+	}
+	if (result.ec == std::errc::result_out_of_range)
+	{
+		Log::error(fmt::format("Can't convert \"{}\" to a float (out of range)", str));
+		return false;
+	}
+
+	return true;
+}
+
+bool StrUtil::toDouble(std::string_view str, double& target)
+{
+	auto result = std::from_chars(str.data(), str.data() + str.size(), target);
+
+	if (result.ec == std::errc::invalid_argument)
+	{
+		Log::error(fmt::format("Can't convert \"{}\" to a double (invalid)", str));
+		return false;
+	}
+	if (result.ec == std::errc::result_out_of_range)
+	{
+		Log::error(fmt::format("Can't convert \"{}\" to a double (out of range)", str));
+		return false;
+	}
+
+	return true;
+}
 
 
 // -----------------------------------------------------------------------------

@@ -1340,8 +1340,9 @@ CONSOLE_COMMAND(mirror, 1, true)
 
 CONSOLE_COMMAND(crop, 4, true)
 {
-	long x1, y1, x2, y2;
-	if (args[0].ToLong(&x1) && args[1].ToLong(&y1) && args[2].ToLong(&x2) && args[3].ToLong(&y2))
+	int x1, y1, x2, y2;
+	if (StrUtil::toInt(args[0], x1) && StrUtil::toInt(args[1], y1) && StrUtil::toInt(args[2], x2)
+		&& StrUtil::toInt(args[3], y2))
 	{
 		auto foo = CH::getCurrentArchivePanel();
 		if (!foo)

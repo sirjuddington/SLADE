@@ -44,6 +44,7 @@
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapThing.h"
+#include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
 
@@ -999,9 +1000,9 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 CONSOLE_COMMAND(replacethings, 2, true)
 {
 	auto current = MainEditor::currentArchive();
-	long oldtype, newtype;
+	int  oldtype, newtype;
 
-	if (current && args[0].ToLong(&oldtype) && args[1].ToLong(&newtype))
+	if (current && StrUtil::toInt(args[0], oldtype) && StrUtil::toInt(args[1], newtype))
 	{
 		ArchiveOperations::replaceThings(current, oldtype, newtype);
 	}
@@ -1450,10 +1451,10 @@ size_t ArchiveOperations::replaceSpecials(
 CONSOLE_COMMAND(replacespecials, 2, true)
 {
 	Archive* current = MainEditor::currentArchive();
-	long     oldtype, newtype;
+	int      oldtype, newtype;
 	bool     arg0 = false, arg1 = false, arg2 = false, arg3 = false, arg4 = false;
-	long     oldarg0, oldarg1, oldarg2, oldarg3, oldarg4;
-	long     newarg0, newarg1, newarg2, newarg3, newarg4;
+	int      oldarg0, oldarg1, oldarg2, oldarg3, oldarg4;
+	int      newarg0, newarg1, newarg2, newarg3, newarg4;
 	size_t   fullarg = args.size();
 	size_t   oldtail = (fullarg / 2) - 1;
 	size_t   newtail = fullarg - 1;
@@ -1463,12 +1464,12 @@ CONSOLE_COMMAND(replacespecials, 2, true)
 	{
 		switch (fullarg)
 		{
-		case 12: arg4 = args[oldtail--].ToLong(&oldarg4) && args[newtail--].ToLong(&newarg4);
-		case 10: arg3 = args[oldtail--].ToLong(&oldarg3) && args[newtail--].ToLong(&newarg3);
-		case 8: arg2 = args[oldtail--].ToLong(&oldarg2) && args[newtail--].ToLong(&newarg2);
-		case 6: arg1 = args[oldtail--].ToLong(&oldarg1) && args[newtail--].ToLong(&newarg1);
-		case 4: arg0 = args[oldtail--].ToLong(&oldarg0) && args[newtail--].ToLong(&newarg0);
-		case 2: run = args[oldtail--].ToLong(&oldtype) && args[newtail--].ToLong(&newtype); break;
+		case 12: arg4 = StrUtil::toInt(args[oldtail--], oldarg4) && StrUtil::toInt(args[newtail--], newarg4);
+		case 10: arg3 = StrUtil::toInt(args[oldtail--], oldarg3) && StrUtil::toInt(args[newtail--], newarg3);
+		case 8: arg2 = StrUtil::toInt(args[oldtail--], oldarg2) && StrUtil::toInt(args[newtail--], newarg2);
+		case 6: arg1 = StrUtil::toInt(args[oldtail--], oldarg1) && StrUtil::toInt(args[newtail--], newarg1);
+		case 4: arg0 = StrUtil::toInt(args[oldtail--], oldarg0) && StrUtil::toInt(args[newtail--], newarg0);
+		case 2: run = StrUtil::toInt(args[oldtail--], oldtype) && StrUtil::toInt(args[newtail--], newtype); break;
 		default: Log::warning(wxString::Format("Invalid number of arguments: %d", fullarg));
 		}
 	}

@@ -61,28 +61,28 @@ void Console::addCommand(ConsoleCommand& c)
 // -----------------------------------------------------------------------------
 // Attempts to execute the command line given
 // -----------------------------------------------------------------------------
-void Console::execute(const wxString& command)
+void Console::execute(std::string_view command)
 {
-	Log::info(wxString::Format("> %s", command));
+	Log::info("> {}", command);
 
 	// Don't bother doing anything else with an empty command
 	if (command.empty())
 		return;
 
 	// Add the command to the log
-	cmd_log_.insert(cmd_log_.begin(), command);
+	cmd_log_.emplace(cmd_log_.begin(), command);
 
 	// Tokenize the command string
 	Tokenizer tz;
-	tz.openString(command.ToStdString());
+	tz.openString(command);
 
 	// Get the command name
 	auto cmd_name = tz.current().text;
 
 	// Get all args
-	vector<wxString> args;
+	vector<std::string> args;
 	while (!tz.atEnd())
-		args.emplace_back(tz.next().text);
+		args.push_back(tz.next().text);
 
 	// Check that it is a valid command
 	for (auto& cmd : commands_)
@@ -110,15 +110,15 @@ void Console::execute(const wxString& command)
 					*dynamic_cast<CBoolCVar*>(cvar) = true;
 			}
 			else if (cvar->type == CVar::Type::Integer)
-				*dynamic_cast<CIntCVar*>(cvar) = wxStringUtils::toInt(args[0]);
+				*dynamic_cast<CIntCVar*>(cvar) = StrUtil::toInt(args[0]);
 			else if (cvar->type == CVar::Type::Float)
-				*dynamic_cast<CFloatCVar*>(cvar) = wxStringUtils::toFloat(args[0]);
+				*dynamic_cast<CFloatCVar*>(cvar) = StrUtil::toFloat(args[0]);
 			else if (cvar->type == CVar::Type::String)
-				*dynamic_cast<CStringCVar*>(cvar) = CHR(args[0]);
+				*dynamic_cast<CStringCVar*>(cvar) = args[0];
 		}
 
 		// Print cvar value
-		wxString value = "";
+		std::string value;
 		if (cvar->type == CVar::Type::Boolean)
 		{
 			if (cvar->getValue().Bool)
@@ -127,13 +127,13 @@ void Console::execute(const wxString& command)
 				value = "false";
 		}
 		else if (cvar->type == CVar::Type::Integer)
-			value = wxString::Format("%d", cvar->getValue().Int);
+			value = fmt::format("{}", cvar->getValue().Int);
 		else if (cvar->type == CVar::Type::Float)
-			value = wxString::Format("%1.4f", cvar->getValue().Float);
+			value = fmt::format("{:1.4f}", cvar->getValue().Float);
 		else
 			value = ((CStringCVar*)cvar)->value;
 
-		Log::console(wxString::Format(R"("%s" = "%s")", cmd_name, value));
+		Log::console(fmt::format(R"("{}" = "{}")", cmd_name, value));
 
 		return;
 	}
@@ -151,29 +151,22 @@ void Console::execute(const wxString& command)
 	}
 
 	// Command not found
-	Log::console(wxString::Format("Unknown command: \"%s\"", cmd_name));
+	Log::console(fmt::format("Unknown command: \"{}\"", cmd_name));
 }
 
 // -----------------------------------------------------------------------------
 // Returns the last command sent to the console
 // -----------------------------------------------------------------------------
-wxString Console::lastCommand()
+std::string Console::lastCommand()
 {
-	// Init blank string
-	wxString lastCmd = "";
-
-	// Get last command if any exist
-	if (!cmd_log_.empty())
-		lastCmd = cmd_log_.back();
-
-	return lastCmd;
+	return !cmd_log_.empty() ? cmd_log_.back() : "";
 }
 
 // -----------------------------------------------------------------------------
 // Returns the previous command at [index] from the last entered
 // (ie, index=0 will be the directly previous command)
 // -----------------------------------------------------------------------------
-wxString Console::prevCommand(int index)
+std::string Console::prevCommand(int index)
 {
 	// Check index
 	if (index < 0 || (unsigned)index >= cmd_log_.size())
@@ -205,8 +198,8 @@ ConsoleCommand& Console::command(size_t index)
 // ConsoleCommand class constructor
 // -----------------------------------------------------------------------------
 ConsoleCommand::ConsoleCommand(
-	const wxString& name,
-	void (*command_func)(const vector<wxString>&),
+	std::string_view name,
+	void (*command_func)(const vector<std::string>&),
 	int  min_args = 0,
 	bool show_in_list)
 {
@@ -223,13 +216,13 @@ ConsoleCommand::ConsoleCommand(
 // -----------------------------------------------------------------------------
 // Executes the console command
 // -----------------------------------------------------------------------------
-void ConsoleCommand::execute(const vector<wxString>& args) const
+void ConsoleCommand::execute(const vector<std::string>& args) const
 {
 	// Only execute if we have the minimum args specified
 	if (args.size() >= min_args_)
 		command_func_(args);
 	else
-		Log::console(wxString::Format("Missing command arguments, type \"cmdhelp %s\" for more information", name_));
+		Log::console(fmt::format("Missing command arguments, type \"cmdhelp {}\" for more information", name_));
 }
 
 
@@ -254,13 +247,13 @@ CONSOLE_COMMAND(echo, 1, true)
 // -----------------------------------------------------------------------------
 CONSOLE_COMMAND(cmdlist, 0, true)
 {
-	Log::console(wxString::Format("%d Valid Commands:", App::console()->numCommands()));
+	Log::console(fmt::format("{} Valid Commands:", App::console()->numCommands()));
 
 	for (int a = 0; a < App::console()->numCommands(); a++)
 	{
 		auto& cmd = App::console()->command(a);
 		if (cmd.showInList() || Global::debug)
-			Log::console(wxString::Format("\"%s\" (%lu args)", cmd.name(), cmd.minArgs()));
+			Log::console(fmt::format("\"{}\" ({} args)", cmd.name(), cmd.minArgs()));
 	}
 }
 
@@ -274,7 +267,7 @@ CONSOLE_COMMAND(cvarlist, 0, true)
 	CVar::putList(list);
 	sort(list.begin(), list.end());
 
-	Log::console(wxString::Format("%lu CVars:", list.size()));
+	Log::console(fmt::format("{} CVars:", list.size()));
 
 	// Write list to console
 	for (const auto& a : list)
@@ -289,10 +282,10 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 	// Check command exists
 	for (int a = 0; a < App::console()->numCommands(); a++)
 	{
-		if (App::console()->command(a).name().Lower() == args[0].Lower())
+		if (StrUtil::equalCI(App::console()->command(a).name(), args[0]))
 		{
 #ifdef USE_WEBVIEW_STARTPAGE
-			MainEditor::openDocs(wxString::Format("%s-Console-Command", args[0]));
+			MainEditor::openDocs(fmt::format("{}-Console-Command", args[0]));
 #else
 			wxString url = wxString::Format("https://github.com/sirjuddington/SLADE/wiki/%s-Console-Command", args[0]);
 			wxLaunchDefaultBrowser(url);
@@ -302,16 +295,25 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 	}
 
 	// No command found
-	Log::console(wxString::Format("No command \"%s\" exists", args[0]));
+	Log::console(fmt::format("No command \"{}\" exists", args[0]));
 }
 
 
 
 
 
-CONSOLE_COMMAND(testmatch, 0, false)
+CONSOLE_COMMAND(testmatch, 2, false)
 {
-	bool match = args[0].Matches(args[1]);
+	bool match = StrUtil::matches(args[1], args[0]);
+	if (match)
+		Log::console("Match");
+	else
+		Log::console("No Match");
+}
+
+CONSOLE_COMMAND(testmatchci, 2, false)
+{
+	bool match = StrUtil::matchesCI(args[1], args[0]);
 	if (match)
 		Log::console("Match");
 	else

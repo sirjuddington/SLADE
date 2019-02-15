@@ -177,7 +177,7 @@ void ConsolePanel::update()
 // -----------------------------------------------------------------------------
 void ConsolePanel::onCommandEnter(wxCommandEvent& e)
 {
-	App::console()->execute(e.GetString());
+	App::console()->execute(WxUtils::strToView(e.GetString()));
 	update();
 	text_command_->Clear();
 	cmd_log_index_ = 0;

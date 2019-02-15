@@ -1289,9 +1289,9 @@ CONSOLE_COMMAND(list_archives, 0, true)
 // -----------------------------------------------------------------------------
 // Attempts to open each given argument (filenames)
 // -----------------------------------------------------------------------------
-void c_open(const vector<wxString>& args)
+void c_open(const vector<std::string>& args)
 {
 	for (const auto& arg : args)
-		App::archiveManager().openArchive(arg.ToStdString());
+		App::archiveManager().openArchive(arg);
 }
 ConsoleCommand am_open("open", &c_open, 1, true); // Can't use the macro with this name
