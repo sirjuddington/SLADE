@@ -83,9 +83,9 @@ public:
 
 	const wxString&            id() const { return id_; }
 	const wxString&            name() const { return name_; }
-	const wxString&            lineComment() const { return line_comment_l_[preferred_comments_]; }
-	const wxString&            commentBegin() const { return comment_begin_l_[preferred_comments_]; }
-	const wxString&            commentEnd() const { return comment_end_l_[preferred_comments_]; }
+	const std::string&         lineComment() const { return line_comment_l_[preferred_comments_]; }
+	const std::string&         commentBegin() const { return comment_begin_l_[preferred_comments_]; }
+	const std::string&         commentEnd() const { return comment_end_l_[preferred_comments_]; }
 	const vector<std::string>& lineCommentL() const { return line_comment_l_; }
 	const vector<std::string>& commentBeginL() const { return comment_begin_l_; }
 	const vector<std::string>& commentEndL() const { return comment_end_l_; }

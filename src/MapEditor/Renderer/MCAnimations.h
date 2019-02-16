@@ -64,7 +64,7 @@ private:
 class MCALineSelection : public MCAnimation
 {
 public:
-	MCALineSelection(long start, vector<MapLine*>& lines, bool select = true);
+	MCALineSelection(long start, const vector<MapLine*>& lines, bool select = true);
 	~MCALineSelection() = default;
 
 	bool update(long time) override;
@@ -81,7 +81,7 @@ private:
 class MCAVertexSelection : public MCAnimation
 {
 public:
-	MCAVertexSelection(long start, vector<MapVertex*>& verts, double size, bool select = true);
+	MCAVertexSelection(long start, const vector<MapVertex*>& verts, double size, bool select = true);
 	~MCAVertexSelection() = default;
 
 	bool update(long time) override;
@@ -98,7 +98,7 @@ private:
 class MCASectorSelection : public MCAnimation
 {
 public:
-	MCASectorSelection(long start, vector<Polygon2D*>& polys, bool select = true);
+	MCASectorSelection(long start, const vector<Polygon2D*>& polys, bool select = true);
 	~MCASectorSelection() = default;
 
 	bool update(long time) override;

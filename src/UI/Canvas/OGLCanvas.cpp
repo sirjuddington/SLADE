@@ -92,7 +92,7 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 	Bind(wxEVT_PAINT, &OGLCanvas::onPaint, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::onEraseBackground, this);
 
-	GLTexture::resetBgTex();
+	OpenGL::Texture::resetBackgroundTexture();
 }
 #endif
 

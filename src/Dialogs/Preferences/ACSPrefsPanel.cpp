@@ -62,7 +62,7 @@ ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	// Create controls
 	flp_acc_path_ = new FileLocationPanel(
 		this,
-		wxString(path_acc),
+		path_acc,
 		true,
 		"Browse For ACC Executable",
 		SFileDialog::executableExtensionString(),
@@ -84,7 +84,7 @@ ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 // -----------------------------------------------------------------------------
 void ACSPrefsPanel::init()
 {
-	flp_acc_path_->setLocation(wxString(path_acc));
+	flp_acc_path_->setLocation(path_acc);
 	cb_always_show_output_->SetValue(acc_always_show_output);
 
 	// Populate include paths list

@@ -46,13 +46,6 @@ using std::vector;
 
 #undef Bool
 
-// Global internal includes
-#include "General/CVar.h"
-#include "Utility/Structs.h"
-#include "General/Log.h"
-#include "Utility/MemChunk.h"
-
-
 // Namespace to hold 'global' variables
 namespace Global
 {
@@ -62,5 +55,11 @@ extern bool        debug;
 extern int         win_version_major;
 extern int         win_version_minor;
 }; // namespace Global
+
+// Global internal includes
+#include "General/CVar.h"
+#include "Utility/Structs.h"
+#include "General/Log.h"
+#include "Utility/MemChunk.h"
 
 #endif // __MAIN_H__

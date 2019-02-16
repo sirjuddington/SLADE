@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sstream>
+
 class ArchiveEntry;
 
 namespace StrUtil

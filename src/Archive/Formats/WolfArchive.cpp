@@ -34,6 +34,7 @@
 #include "General/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
+#include "UI/WxUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -56,7 +57,7 @@ std::string findFileCasing(const StrUtil::Path& filename)
 #ifdef _WIN32
 	return std::string{ filename.fileName() };
 #else
-	std::string path = filename.path();
+	std::string path{ filename.path() };
 	wxDir       dir(path);
 	if (!dir.IsOpened())
 	{
@@ -68,7 +69,7 @@ std::string findFileCasing(const StrUtil::Path& filename)
 	bool     cont = dir.GetFirst(&found);
 	while (cont)
 	{
-		if (StrUtil::equalCI(WxUtils::stringToView(found), filename.fileName()))
+		if (StrUtil::equalCI(WxUtils::strToView(found), filename.fileName()))
 			return (dir.GetNameWithSep() + found).ToStdString();
 		cont = dir.GetNext(&found);
 	}

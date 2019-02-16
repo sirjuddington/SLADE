@@ -201,7 +201,7 @@ void MCAThingSelection::draw()
 // -----------------------------------------------------------------------------
 // MCALineSelection class constructor
 // -----------------------------------------------------------------------------
-MCALineSelection::MCALineSelection(long start, vector<MapLine*>& lines, bool select) :
+MCALineSelection::MCALineSelection(long start, const vector<MapLine*>& lines, bool select) :
 	MCAnimation(start),
 	select_{ select }
 {
@@ -269,7 +269,7 @@ void MCALineSelection::draw()
 // -----------------------------------------------------------------------------
 // MCAVertexSelection class constructor
 // -----------------------------------------------------------------------------
-MCAVertexSelection::MCAVertexSelection(long start, vector<MapVertex*>& verts, double size, bool select) :
+MCAVertexSelection::MCAVertexSelection(long start, const vector<MapVertex*>& verts, double size, bool select) :
 	MCAnimation(start),
 	size_{ size },
 	select_{ select }
@@ -381,7 +381,7 @@ void MCAVertexSelection::draw()
 // -----------------------------------------------------------------------------
 // MCASectorSelection class constructor
 // -----------------------------------------------------------------------------
-MCASectorSelection::MCASectorSelection(long start, vector<Polygon2D*>& polys, bool select) :
+MCASectorSelection::MCASectorSelection(long start, const vector<Polygon2D*>& polys, bool select) :
 	MCAnimation(start),
 	select_{ select }
 {

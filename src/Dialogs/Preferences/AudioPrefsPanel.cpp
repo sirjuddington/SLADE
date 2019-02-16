@@ -106,7 +106,7 @@ void AudioPrefsPanel::init()
 	rb_fluidsynth_->SetValue(midi_fsynth);
 	flp_soundfont_->setLocation(fs_soundfont_path);
 	flp_timidity_->setLocation(snd_timidity_path);
-	text_timidity_options_->SetValue(wxString(snd_timidity_options));
+	text_timidity_options_->SetValue(snd_timidity_options);
 
 	updateControls();
 }

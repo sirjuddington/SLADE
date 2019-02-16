@@ -113,6 +113,7 @@ include_directories(
 	${GLEW_INCLUDE_PATH}
 	${CURL_INCLUDE_DIR}
 	.
+	..
 	../thirdparty/dumb
 	./Application
 	)
@@ -163,7 +164,7 @@ endif(APPLE)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
 
 # External libraries are compiled separately to enable unity builds
-add_subdirectory(../thirdparty)
+add_subdirectory(../thirdparty external)
 
 add_executable(slade WIN32 MACOSX_BUNDLE
 	${SLADE_SOURCES}

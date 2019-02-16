@@ -310,7 +310,7 @@ void Drawing::drawText(const wxString& text, int x, int y, ColRGBA colour, Font 
 // -----------------------------------------------------------------------------
 // Returns the width and height of [text] when drawn with [font]
 // -----------------------------------------------------------------------------
-Vec2f Drawing::textExtents(const wxString& text, Font font)
+Vec2d Drawing::textExtents(const wxString& text, Font font)
 {
 	// Get desired font
 	auto ftgl_font = getFont(font);
@@ -321,7 +321,7 @@ Vec2f Drawing::textExtents(const wxString& text, Font font)
 
 	// Return width and height of text
 	auto bbox = ftgl_font->BBox(CHR(text), -1);
-	return Vec2f(bbox.Upper().X() - bbox.Lower().X(), ftgl_font->LineHeight());
+	return Vec2d(bbox.Upper().X() - bbox.Lower().X(), ftgl_font->LineHeight());
 }
 
 // -----------------------------------------------------------------------------

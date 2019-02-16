@@ -237,7 +237,7 @@ bool StrUtil::matches(std::string_view str, std::string_view match)
 			} while (*match_current == '*');
 
 			// If * was the last char, the strings are equal
-			if (match_current == match_end) 
+			if (match_current == match_end)
 				return true;
 
 			// The next char to check after the *
@@ -957,9 +957,9 @@ int StrUtil::toInt(std::string_view str)
 	int  val    = 0;
 	auto result = std::from_chars(str.data(), str.data() + str.size(), val);
 	if (result.ec == std::errc::invalid_argument)
-		Log::error(fmt::format("Can't convert \"{}\" to an integer (invalid)", str));
+		Log::error("Can't convert \"{}\" to an integer (invalid)", str);
 	else if (result.ec == std::errc::result_out_of_range)
-		Log::error(fmt::format("Can't convert \"{}\" to an integer (out of range)", str));
+		Log::error("Can't convert \"{}\" to an integer (out of range)", str);
 
 	return val;
 }
@@ -969,21 +969,35 @@ unsigned StrUtil::toUInt(std::string_view str)
 	unsigned val    = 0;
 	auto     result = std::from_chars(str.data(), str.data() + str.size(), val);
 	if (result.ec == std::errc::invalid_argument)
-		Log::error(fmt::format("Can't convert \"{}\" to an unsigned integer (invalid)", str));
+		Log::error("Can't convert \"{}\" to an unsigned integer (invalid)", str);
 	else if (result.ec == std::errc::result_out_of_range)
-		Log::error(fmt::format("Can't convert \"{}\" to an unsigned integer (out of range)", str));
+		Log::error("Can't convert \"{}\" to an unsigned integer (out of range)", str);
 
 	return val;
 }
 
 float StrUtil::toFloat(std::string_view str)
 {
-	float val    = 0;
-	auto  result = std::from_chars(str.data(), str.data() + str.size(), val);
+	float val = 0;
+
+#ifdef _MSC_VER
+	auto result = std::from_chars(str.data(), str.data() + str.size(), val);
 	if (result.ec == std::errc::invalid_argument)
-		Log::error(fmt::format("Can't convert \"{}\" to a float (invalid)", str));
+		Log::error("Can't convert \"{}\" to a float (invalid)", str);
 	else if (result.ec == std::errc::result_out_of_range)
-		Log::error(fmt::format("Can't convert \"{}\" to a float (out of range)", str));
+		Log::error("Can't convert \"{}\" to a float (out of range)", str);
+#else
+	// TODO: Remove this once non-MSVC compilers support std::from_chars with float
+	try
+	{
+		val = std::stof(std::string{ str });
+	}
+	catch (const std::exception& ex)
+	{
+		Log::error("Can't convert \"{}\" to a float ({})", str, ex.what());
+		return 0.f;
+	}
+#endif
 
 	return val;
 }
@@ -991,11 +1005,25 @@ float StrUtil::toFloat(std::string_view str)
 double StrUtil::toDouble(std::string_view str)
 {
 	double val    = 0;
+
+#ifdef _MSC_VER
 	auto   result = std::from_chars(str.data(), str.data() + str.size(), val);
 	if (result.ec == std::errc::invalid_argument)
-		Log::error(fmt::format("Can't convert \"{}\" to a float (invalid)", str));
+		Log::error("Can't convert \"{}\" to a double (invalid)", str);
 	else if (result.ec == std::errc::result_out_of_range)
-		Log::error(fmt::format("Can't convert \"{}\" to a float (out of range)", str));
+		Log::error("Can't convert \"{}\" to a double (out of range)", str);
+#else
+	// TODO: Remove this once non-MSVC compilers support std::from_chars with double
+	try
+	{
+		val = std::stod(std::string{ str });
+	}
+	catch (const std::exception& ex)
+	{
+		Log::error("Can't convert \"{}\" to a double ({})", str, ex.what());
+		return 0.;
+	}
+#endif
 
 	return val;
 }
@@ -1012,12 +1040,12 @@ bool StrUtil::toInt(std::string_view str, int& target)
 
 	if (result.ec == std::errc::invalid_argument)
 	{
-		Log::error(fmt::format("Can't convert \"{}\" to an integer (invalid)", str));
+		Log::error("Can't convert \"{}\" to an integer (invalid)", str);
 		return false;
 	}
 	if (result.ec == std::errc::result_out_of_range)
 	{
-		Log::error(fmt::format("Can't convert \"{}\" to an integer (out of range)", str));
+		Log::error("Can't convert \"{}\" to an integer (out of range)", str);
 		return false;
 	}
 
@@ -1030,12 +1058,12 @@ bool StrUtil::toUInt(std::string_view str, unsigned& target)
 
 	if (result.ec == std::errc::invalid_argument)
 	{
-		Log::error(fmt::format("Can't convert \"{}\" to an unsigned integer (invalid)", str));
+		Log::error("Can't convert \"{}\" to an unsigned integer (invalid)", str);
 		return false;
 	}
 	if (result.ec == std::errc::result_out_of_range)
 	{
-		Log::error(fmt::format("Can't convert \"{}\" to an unsigned integer (out of range)", str));
+		Log::error("Can't convert \"{}\" to an unsigned integer (out of range)", str);
 		return false;
 	}
 
@@ -1044,36 +1072,62 @@ bool StrUtil::toUInt(std::string_view str, unsigned& target)
 
 bool StrUtil::toFloat(std::string_view str, float& target)
 {
+#ifdef _MSC_VER
 	auto result = std::from_chars(str.data(), str.data() + str.size(), target);
 
 	if (result.ec == std::errc::invalid_argument)
 	{
-		Log::error(fmt::format("Can't convert \"{}\" to a float (invalid)", str));
+		Log::error("Can't convert \"{}\" to a float (invalid)", str);
 		return false;
 	}
 	if (result.ec == std::errc::result_out_of_range)
 	{
-		Log::error(fmt::format("Can't convert \"{}\" to a float (out of range)", str));
+		Log::error("Can't convert \"{}\" to a float (out of range)", str);
 		return false;
 	}
+#else
+	// TODO: Remove this once non-MSVC compilers support std::from_chars with float
+	try
+	{
+		target = std::stof(std::string{ str });
+	}
+	catch (const std::exception& ex)
+	{
+		Log::error("Can't convert \"{}\" to a float ({})", str, ex.what());
+		return false;
+	}
+#endif
 
 	return true;
 }
 
 bool StrUtil::toDouble(std::string_view str, double& target)
 {
+#ifdef _MSC_VER
 	auto result = std::from_chars(str.data(), str.data() + str.size(), target);
 
 	if (result.ec == std::errc::invalid_argument)
 	{
-		Log::error(fmt::format("Can't convert \"{}\" to a double (invalid)", str));
+		Log::error("Can't convert \"{}\" to a double (invalid)", str);
 		return false;
 	}
 	if (result.ec == std::errc::result_out_of_range)
 	{
-		Log::error(fmt::format("Can't convert \"{}\" to a double (out of range)", str));
+		Log::error("Can't convert \"{}\" to a double (out of range)", str);
 		return false;
 	}
+#else
+	// TODO: Remove this once non-MSVC compilers support std::from_chars with double
+	try
+	{
+		target = std::stod(std::string{ str });
+	}
+	catch (const std::exception& ex)
+	{
+		Log::error("Can't convert \"{}\" to a double ({})", str, ex.what());
+		return false;
+	}
+#endif
 
 	return true;
 }

@@ -69,7 +69,7 @@ PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 							   "Location of PNGout:",
 							   flp_pngout_ = new FileLocationPanel(
 								   this,
-								   wxString(path_pngout),
+								   path_pngout,
 								   true,
 								   "Browse for PNGout Executable",
 								   SFileDialog::executableExtensionString(),
@@ -79,7 +79,7 @@ PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 							   "Location of PNGCrush:",
 							   flp_pngcrush_ = new FileLocationPanel(
 								   this,
-								   wxString(path_pngcrush),
+								   path_pngcrush,
 								   true,
 								   "Browse for PNGCrush Executable",
 								   SFileDialog::executableExtensionString(),
@@ -89,7 +89,7 @@ PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 							   "Location of DeflOpt:",
 							   flp_deflopt_ = new FileLocationPanel(
 								   this,
-								   wxString(path_deflopt),
+								   path_deflopt,
 								   true,
 								   "Browse for DeflOpt Executable",
 								   SFileDialog::executableExtensionString(),
@@ -102,9 +102,9 @@ PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 // -----------------------------------------------------------------------------
 void PNGPrefsPanel::init()
 {
-	flp_pngout_->setLocation(wxString(path_pngout));
-	flp_pngcrush_->setLocation(wxString(path_pngcrush));
-	flp_deflopt_->setLocation(wxString(path_deflopt));
+	flp_pngout_->setLocation(path_pngout);
+	flp_pngcrush_->setLocation(path_pngcrush);
+	flp_deflopt_->setLocation(path_deflopt);
 }
 
 // -----------------------------------------------------------------------------
