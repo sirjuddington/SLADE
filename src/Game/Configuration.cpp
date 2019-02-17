@@ -1805,22 +1805,22 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 		if (i.second.defaultValue().type() == Property::Type::Boolean)
 		{
 			if (i.second.defaultValue().boolValue() == object->boolProperty(i.first))
-				object->props().removeProperty(i.first);
+				object->props().removeProperty(i.first.ToStdString());
 		}
 		else if (i.second.defaultValue().type() == Property::Type::Int)
 		{
 			if (i.second.defaultValue().intValue() == object->intProperty(i.first))
-				object->props().removeProperty(i.first);
+				object->props().removeProperty(i.first.ToStdString());
 		}
 		else if (i.second.defaultValue().type() == Property::Type::Float)
 		{
 			if (i.second.defaultValue().floatValue() == object->floatProperty(i.first))
-				object->props().removeProperty(i.first);
+				object->props().removeProperty(i.first.ToStdString());
 		}
 		else if (i.second.defaultValue().type() == Property::Type::String)
 		{
 			if (i.second.defaultValue().stringValue() == object->stringProperty(i.first))
-				object->props().removeProperty(i.first);
+				object->props().removeProperty(i.first.ToStdString());
 		}
 	}
 }

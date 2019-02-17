@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "MobjPropertyList.h"
 #include "Utility/StringUtils.h"
+#include "thirdparty/fmt/fmt/color.h"
 
 
 // -----------------------------------------------------------------------------
@@ -45,13 +46,11 @@
 // -----------------------------------------------------------------------------
 // Returns true if a property with the given name exists, false otherwise
 // -----------------------------------------------------------------------------
-bool MobjPropertyList::propertyExists(const wxString& key)
+bool MobjPropertyList::propertyExists(std::string_view key)
 {
-	for (unsigned a = 0; a < properties_.size(); ++a)
-	{
-		if (properties_[a].name == key)
+	for (const auto& prop : properties_)
+		if (prop.name == key)
 			return true;
-	}
 
 	return false;
 }
@@ -60,14 +59,13 @@ bool MobjPropertyList::propertyExists(const wxString& key)
 // Removes a property value, returns true if [key] was removed or false if key
 // didn't exist
 // -----------------------------------------------------------------------------
-bool MobjPropertyList::removeProperty(wxString key)
+bool MobjPropertyList::removeProperty(std::string_view key)
 {
-	// return properties.erase(key) > 0;
-	for (unsigned a = 0; a < properties_.size(); ++a)
+	for (auto& prop : properties_)
 	{
-		if (properties_[a].name == key)
+		if (prop.name == key)
 		{
-			properties_[a] = properties_.back();
+			prop = properties_.back();
 			properties_.pop_back();
 			return true;
 		}
@@ -84,48 +82,47 @@ void MobjPropertyList::copyTo(MobjPropertyList& list)
 	// Clear given list
 	list.clear();
 
-	for (unsigned a = 0; a < properties_.size(); ++a)
-		list.properties_.push_back(Prop(properties_[a].name, properties_[a].value));
+	for (auto& prop : properties_)
+		list.properties_.emplace_back(prop.name, prop.value);
 }
 
 // -----------------------------------------------------------------------------
 // Adds a 'flag' property [key]
 // -----------------------------------------------------------------------------
-void MobjPropertyList::addFlag(wxString key)
+void MobjPropertyList::addFlag(std::string_view key)
 {
 	Property flag;
-	properties_.push_back(Prop(key, flag));
+	properties_.emplace_back(key, flag);
 }
 
 // -----------------------------------------------------------------------------
 // Returns a string representation of the property list
 // -----------------------------------------------------------------------------
-wxString MobjPropertyList::toString(bool condensed)
+std::string MobjPropertyList::toString(bool condensed)
 {
-	// Init return string
-	wxString ret = wxEmptyString;
+	static std::string format_normal           = "{} = {};\n";
+	static std::string format_normal_string    = "{} = \"{}\"\n";
+	static std::string format_condensed        = "{}={};\n";
+	static std::string format_condensed_string = "{}=\"{}\"\n";
 
-	for (unsigned a = 0; a < properties_.size(); ++a)
+	// Get formatter strings to use
+	const auto& format        = condensed ? format_condensed : format_normal;
+	const auto& format_string = condensed ? format_condensed_string : format_normal_string;
+
+	// Write properties to string buffer
+	fmt::memory_buffer buffer;
+	for (const auto& prop : properties_)
 	{
 		// Skip if no value
-		if (!properties_[a].value.hasValue())
+		if (!prop.value.hasValue())
 			continue;
 
-		// Add "key = value;\n" to the return string
-		wxString key = properties_[a].name;
-		wxString val = properties_[a].value.stringValue();
-
-		if (properties_[a].value.type() == Property::Type::String)
-		{
-			val = wxStringUtils::escapedString(val);
-			val = "\"" + val + "\"";
-		}
-
-		if (condensed)
-			ret += key + "=" + val + ";\n";
+		// Add "key = value;\n" to the buffer
+		if (prop.value.type() == Property::Type::String)
+			fmt::format_to(buffer, format_string, prop.name, StrUtil::escapedString(prop.value.stringValue()));
 		else
-			ret += key + " = " + val + ";\n";
+			fmt::format_to(buffer, format, prop.name, prop.value.stringValue());
 	}
 
-	return ret;
+	return fmt::to_string(buffer);
 }

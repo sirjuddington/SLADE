@@ -135,8 +135,8 @@ void MapObject::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 bool MapObject::hasProp(const wxString& key)
 {
-	if (properties_.propertyExists(key))
-		return properties_[key].hasValue();
+	if (properties_.propertyExists(key.ToStdString()))
+		return properties_[key.ToStdString()].hasValue();
 
 	return false;
 }
@@ -147,8 +147,8 @@ bool MapObject::hasProp(const wxString& key)
 bool MapObject::boolProperty(const wxString& key)
 {
 	// If the property exists already, return it
-	if (properties_[key].hasValue())
-		return properties_[key].boolValue();
+	if (properties_[key.ToStdString()].hasValue())
+		return properties_[key.ToStdString()].boolValue();
 
 	// Otherwise check the game configuration for a default value
 	else
@@ -167,8 +167,8 @@ bool MapObject::boolProperty(const wxString& key)
 int MapObject::intProperty(const wxString& key)
 {
 	// If the property exists already, return it
-	if (properties_[key].hasValue())
-		return properties_[key].intValue();
+	if (properties_[key.ToStdString()].hasValue())
+		return properties_[key.ToStdString()].intValue();
 
 	// Otherwise check the game configuration for a default value
 	else
@@ -187,8 +187,8 @@ int MapObject::intProperty(const wxString& key)
 double MapObject::floatProperty(const wxString& key)
 {
 	// If the property exists already, return it
-	if (properties_[key].hasValue())
-		return properties_[key].floatValue();
+	if (properties_[key.ToStdString()].hasValue())
+		return properties_[key.ToStdString()].floatValue();
 
 	// Otherwise check the game configuration for a default value
 	else
@@ -207,8 +207,8 @@ double MapObject::floatProperty(const wxString& key)
 wxString MapObject::stringProperty(const wxString& key)
 {
 	// If the property exists already, return it
-	if (properties_[key].hasValue())
-		return properties_[key].stringValue();
+	if (properties_[key.ToStdString()].hasValue())
+		return properties_[key.ToStdString()].stringValue();
 
 	// Otherwise check the game configuration for a default value
 	else
@@ -230,7 +230,7 @@ void MapObject::setBoolProperty(const wxString& key, bool value)
 	setModified();
 
 	// Set property
-	properties_[key] = value;
+	properties_[key.ToStdString()] = value;
 }
 
 // -----------------------------------------------------------------------------
@@ -242,7 +242,7 @@ void MapObject::setIntProperty(const wxString& key, int value)
 	setModified();
 
 	// Set property
-	properties_[key] = value;
+	properties_[key.ToStdString()] = value;
 }
 
 // -----------------------------------------------------------------------------
@@ -254,7 +254,7 @@ void MapObject::setFloatProperty(const wxString& key, double value)
 	setModified();
 
 	// Set property
-	properties_[key] = value;
+	properties_[key.ToStdString()] = value;
 }
 
 // -----------------------------------------------------------------------------
@@ -266,7 +266,7 @@ void MapObject::setStringProperty(const wxString& key, const wxString& value)
 	setModified();
 
 	// Set property
-	properties_[key] = value.ToStdString();
+	properties_[key.ToStdString()] = value.ToStdString();
 }
 
 // -----------------------------------------------------------------------------

@@ -39,6 +39,7 @@
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -965,7 +966,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 					continue;
 
 				// Ignore side property
-				if (prop.name.StartsWith("side1.") || prop.name.StartsWith("side2."))
+				if (StrUtil::startsWith(prop.name, "side1.") || StrUtil::startsWith(prop.name, "side2."))
 					continue;
 
 				// Check if hidden
