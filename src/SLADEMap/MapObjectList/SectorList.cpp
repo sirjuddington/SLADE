@@ -34,6 +34,7 @@
 #include "Main.h"
 #include "SectorList.h"
 #include "General/UI.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -58,8 +59,8 @@ void SectorList::clear()
 void SectorList::add(MapSector* sector)
 {
 	// Update texture counts
-	usage_tex_[sector->floor().texture.Upper()] += 1;
-	usage_tex_[sector->ceiling().texture.Upper()] += 1;
+	usage_tex_[StrUtil::upper(sector->floor().texture)] += 1;
+	usage_tex_[StrUtil::upper(sector->ceiling().texture)] += 1;
 
 	MapObjectList::add(sector);
 }
@@ -73,8 +74,8 @@ void SectorList::remove(unsigned index)
 		return;
 
 	// Update texture counts
-	usage_tex_[objects_[index]->floor().texture.Upper()] -= 1;
-	usage_tex_[objects_[index]->ceiling().texture.Upper()] -= 1;
+	usage_tex_[StrUtil::upper(objects_[index]->floor().texture)] -= 1;
+	usage_tex_[StrUtil::upper(objects_[index]->ceiling().texture)] -= 1;
 
 	MapObjectList::remove(index);
 }

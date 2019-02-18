@@ -141,28 +141,28 @@ void LineTextureOverlay::close(bool cancel)
 		{
 			// Front Upper
 			if (textures_[FrontUpper].changed && !textures_[FrontUpper].textures.empty() && line->s1())
-				line->s1()->setTexUpper(textures_[FrontUpper].textures[0]);
+				line->s1()->setTexUpper(textures_[FrontUpper].textures[0].ToStdString());
 
 			// Front Middle
 			if (textures_[FrontMiddle].changed && !textures_[FrontMiddle].textures.empty() && line->s1())
-				line->s1()->setTexMiddle(textures_[FrontMiddle].textures[0]);
+				line->s1()->setTexMiddle(textures_[FrontMiddle].textures[0].ToStdString());
 
 			// Front Lower
 			if (textures_[FrontLower].changed && !textures_[FrontLower].textures.empty() && line->s1())
-				line->s1()->setTexLower(textures_[FrontLower].textures[0]);
+				line->s1()->setTexLower(textures_[FrontLower].textures[0].ToStdString());
 
 
 			// Back Upper
 			if (textures_[BackUpper].changed && !textures_[BackUpper].textures.empty() && line->s2())
-				line->s2()->setTexUpper(textures_[BackUpper].textures[0]);
+				line->s2()->setTexUpper(textures_[BackUpper].textures[0].ToStdString());
 
 			// Back Middle
 			if (textures_[BackMiddle].changed && !textures_[BackMiddle].textures.empty() && line->s2())
-				line->s2()->setTexMiddle(textures_[BackMiddle].textures[0]);
+				line->s2()->setTexMiddle(textures_[BackMiddle].textures[0].ToStdString());
 
 			// Back Lower
 			if (textures_[BackLower].changed && !textures_[BackLower].textures.empty() && line->s2())
-				line->s2()->setTexLower(textures_[BackLower].textures[0]);
+				line->s2()->setTexLower(textures_[BackLower].textures[0].ToStdString());
 		}
 
 		MapEditor::editContext().endUndoRecord();

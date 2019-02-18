@@ -238,7 +238,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 			else
 			{
 				// Build property string (offset[x/y]_[top/mid/bottom])
-				wxString ofs = "offsetx";
+				std::string ofs = "offsetx";
 				if (!x)
 					ofs = "offsety";
 				if (item.type == ItemType::WallBottom)
@@ -571,7 +571,7 @@ void Edit3D::resetOffsets() const
 			if (!sector)
 				continue;
 
-			wxString plane;
+			std::string plane;
 			if (flat.type == ItemType::Floor)
 				plane = "floor";
 			else
@@ -813,7 +813,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setTexUpper(copy_texture_);
+					side->setTexUpper(copy_texture_.ToStdString());
 			}
 
 			// Middle wall
@@ -821,7 +821,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setTexMiddle(copy_texture_);
+					side->setTexMiddle(copy_texture_.ToStdString());
 			}
 
 			// Lower wall
@@ -829,7 +829,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setTexLower(copy_texture_);
+					side->setTexLower(copy_texture_.ToStdString());
 			}
 		}
 
@@ -843,7 +843,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					sector->setFloorTexture(copy_texture_);
+					sector->setFloorTexture(copy_texture_.ToStdString());
 			}
 
 			// Ceiling
@@ -851,7 +851,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					sector->setCeilingTexture(copy_texture_);
+					sector->setCeilingTexture(copy_texture_.ToStdString());
 			}
 		}
 
@@ -929,7 +929,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setTexUpper(copy_texture_);
+					side->setTexUpper(copy_texture_.ToStdString());
 			}
 
 			// Middle wall
@@ -937,7 +937,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setTexMiddle(copy_texture_);
+					side->setTexMiddle(copy_texture_.ToStdString());
 			}
 
 			// Lower wall
@@ -945,7 +945,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setTexLower(copy_texture_);
+					side->setTexLower(copy_texture_.ToStdString());
 			}
 		}
 
@@ -959,7 +959,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					sector->setFloorTexture(copy_texture_);
+					sector->setFloorTexture(copy_texture_.ToStdString());
 			}
 
 			// Ceiling
@@ -967,7 +967,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					sector->setCeilingTexture(copy_texture_);
+					sector->setCeilingTexture(copy_texture_.ToStdString());
 			}
 		}
 	}
@@ -1067,7 +1067,7 @@ void Edit3D::changeScale(double amount, bool x) const
 			if (auto side = item.asSide(context_.map()))
 			{
 				// Build property string (offset[x/y]_[top/mid/bottom])
-				wxString ofs = "scalex";
+				std::string ofs = "scalex";
 				if (!x)
 					ofs = "scaley";
 				if (Game::configuration().featureSupported(UDMFFeature::TextureScaling))
@@ -1093,7 +1093,7 @@ void Edit3D::changeScale(double amount, bool x) const
 			if (auto sector = item.asSector(context_.map()))
 			{
 				// Build property string
-				wxString prop = x ? "xscale" : "yscale";
+				std::string prop = x ? "xscale" : "yscale";
 				prop += (item.type == ItemType::Floor) ? "floor" : "ceiling";
 
 				// Set
@@ -1156,7 +1156,7 @@ void Edit3D::changeHeight(int amount) const
 		// Wall
 		if (auto side = item.asSide(map))
 		{
-			wxString ofs = "offsety";
+			std::string ofs = "offsety";
 
 			// If offsets are linked, just change the whole side offset
 			if (link_offset_)
@@ -1253,9 +1253,9 @@ void Edit3D::changeTexture() const
 				if (auto sector = item.asSector(map))
 				{
 					if (item.type == ItemType::Floor)
-						sector->setFloorTexture(tex);
+						sector->setFloorTexture(tex.ToStdString());
 					else if (item.type == ItemType::Ceiling)
-						sector->setCeilingTexture(tex);
+						sector->setCeilingTexture(tex.ToStdString());
 				}
 			}
 		}
@@ -1268,11 +1268,11 @@ void Edit3D::changeTexture() const
 				if (auto side = item.asSide(map))
 				{
 					if (item.type == ItemType::WallBottom)
-						side->setTexLower(tex);
+						side->setTexLower(tex.ToStdString());
 					else if (item.type == ItemType::WallMiddle)
-						side->setTexMiddle(tex);
+						side->setTexMiddle(tex.ToStdString());
 					else if (item.type == ItemType::WallTop)
-						side->setTexUpper(tex);
+						side->setTexUpper(tex.ToStdString());
 				}
 			}
 		}

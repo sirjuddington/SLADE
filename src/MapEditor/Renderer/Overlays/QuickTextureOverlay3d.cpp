@@ -206,14 +206,14 @@ void QuickTextureOverlay3d::applyTexture()
 			if (item.type == MapEditor::ItemType::Floor && sel_flats_)
 			{
 				if (auto sector = item.asSector(editor_->map()))
-					sector->setFloorTexture(textures_[current_index_].name);
+					sector->setFloorTexture(textures_[current_index_].name.ToStdString());
 			}
 
 			// Ceiling
 			else if (item.type == MapEditor::ItemType::Ceiling && sel_flats_)
 			{
 				if (auto sector = item.asSector(editor_->map()))
-					sector->setCeilingTexture(textures_[current_index_].name);
+					sector->setCeilingTexture(textures_[current_index_].name.ToStdString());
 			}
 
 			// Wall
@@ -223,13 +223,13 @@ void QuickTextureOverlay3d::applyTexture()
 				{
 					// Upper
 					if (item.type == MapEditor::ItemType::WallTop)
-						side->setTexUpper(textures_[current_index_].name);
+						side->setTexUpper(textures_[current_index_].name.ToStdString());
 					// Middle
 					else if (item.type == MapEditor::ItemType::WallMiddle)
-						side->setTexMiddle(textures_[current_index_].name);
+						side->setTexMiddle(textures_[current_index_].name.ToStdString());
 					// Lower
 					else if (item.type == MapEditor::ItemType::WallBottom)
-						side->setTexLower(textures_[current_index_].name);
+						side->setTexLower(textures_[current_index_].name.ToStdString());
 				}
 			}
 		}

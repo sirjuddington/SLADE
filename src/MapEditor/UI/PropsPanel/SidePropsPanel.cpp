@@ -371,22 +371,22 @@ void SidePropsPanel::openSides(vector<MapSide*>& sides) const
 void SidePropsPanel::applyTo(vector<MapSide*>& sides) const
 {
 	// Get values
-	wxString tex_upper  = tcb_upper_->GetValue();
-	wxString tex_middle = tcb_middle_->GetValue();
-	wxString tex_lower  = tcb_lower_->GetValue();
+	auto tex_upper  = tcb_upper_->GetValue().ToStdString();
+	auto tex_middle = tcb_middle_->GetValue().ToStdString();
+	auto tex_lower  = tcb_lower_->GetValue().ToStdString();
 
 	for (auto& side : sides)
 	{
 		// Upper Texture
-		if (!tex_upper.IsEmpty())
+		if (!tex_upper.empty())
 			side->setTexUpper(tex_upper);
 
 		// Middle Texture
-		if (!tex_middle.IsEmpty())
+		if (!tex_middle.empty())
 			side->setTexMiddle(tex_middle);
 
 		// Lower Texture
-		if (!tex_lower.IsEmpty())
+		if (!tex_lower.empty())
 			side->setTexLower(tex_lower);
 
 		// X Offset

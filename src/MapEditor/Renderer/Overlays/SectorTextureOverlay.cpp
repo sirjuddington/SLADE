@@ -280,9 +280,9 @@ void SectorTextureOverlay::close(bool cancel)
 		for (auto& sector : sectors_)
 		{
 			if (tex_floor_.size() == 1)
-				sector->setFloorTexture(tex_floor_[0]);
+				sector->setFloorTexture(tex_floor_[0].ToStdString());
 			if (tex_ceil_.size() == 1)
-				sector->setCeilingTexture(tex_ceil_[0]);
+				sector->setCeilingTexture(tex_ceil_[0].ToStdString());
 		}
 		MapEditor::editContext().endUndoRecord();
 	}

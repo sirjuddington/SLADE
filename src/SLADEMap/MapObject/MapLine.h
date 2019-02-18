@@ -68,15 +68,15 @@ public:
 	int s1Index() const;
 	int s2Index() const;
 
-	bool     boolProperty(const wxString& key) override;
-	int      intProperty(const wxString& key) override;
-	double   floatProperty(const wxString& key) override;
-	wxString stringProperty(const wxString& key) override;
-	void     setBoolProperty(const wxString& key, bool value) override;
-	void     setIntProperty(const wxString& key, int value) override;
-	void     setFloatProperty(const wxString& key, double value) override;
-	void     setStringProperty(const wxString& key, const wxString& value) override;
-	bool     scriptCanModifyProp(const wxString& key) override;
+	bool        boolProperty(std::string_view key) override;
+	int         intProperty(std::string_view key) override;
+	double      floatProperty(std::string_view key) override;
+	std::string stringProperty(std::string_view key) override;
+	void        setBoolProperty(std::string_view key, bool value) override;
+	void        setIntProperty(std::string_view key, int value) override;
+	void        setFloatProperty(std::string_view key, double value) override;
+	void        setStringProperty(std::string_view key, std::string_view value) override;
+	bool        scriptCanModifyProp(std::string_view key) override;
 
 	void setS1(MapSide* side);
 	void setS2(MapSide* side);
@@ -110,14 +110,14 @@ public:
 	void readBackup(Backup* backup) override;
 	void copy(MapObject*) override;
 
-	void writeUDMF(wxString& def) override;
+	void writeUDMF(std::string& def) override;
 
 	operator Debuggable() const
 	{
 		if (!this)
 			return "<line NULL>";
 
-		return { wxString::Format("<line %u>", index_) };
+		return { fmt::format("<line {}>", index_) };
 	}
 
 private:

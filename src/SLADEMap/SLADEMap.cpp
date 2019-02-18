@@ -311,7 +311,7 @@ void SLADEMap::putDragonTargets(MapThing* first, vector<MapThing*>& list)
 	unsigned i = 0;
 	while (i < list.size())
 	{
-		wxString prop = "arg_";
+		std::string prop = "arg_";
 		for (int a = 0; a < 5; ++a)
 		{
 			prop[3] = ('0' + a);
@@ -1409,7 +1409,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 	for (unsigned a = ns_start; a < sectors().size(); a++)
 	{
 		// Skip if sector already has properties
-		if (!sector(a)->ceiling_.texture.IsEmpty())
+		if (!sector(a)->ceiling_.texture.empty())
 			continue;
 
 		// Copy from adjacent sector if any
@@ -1436,7 +1436,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		{
 			// Log::info(1, "midtex");
 			// Find adjacent texture (any)
-			wxString tex = adjacentLineTexture(line->v1());
+			auto tex = adjacentLineTexture(line->v1()).ToStdString();
 			if (tex == MapSide::TEX_NONE)
 				tex = adjacentLineTexture(line->v2());
 

@@ -36,6 +36,7 @@
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -209,12 +210,12 @@ int MapLine::s2Index() const
 // Can be prefixed with 'side1.' or 'side2.' to get bool properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-bool MapLine::boolProperty(const wxString& key)
+bool MapLine::boolProperty(std::string_view key)
 {
-	if (key.StartsWith("side1.") && side1_)
-		return side1_->boolProperty(key.Mid(6));
-	else if (key.StartsWith("side2.") && side2_)
-		return side2_->boolProperty(key.Mid(6));
+	if (StrUtil::startsWith(key, "side1.") && side1_)
+		return side1_->boolProperty(key.substr(6));
+	else if (StrUtil::startsWith(key, "side2.") && side2_)
+		return side2_->boolProperty(key.substr(6));
 	else
 		return MapObject::boolProperty(key);
 }
@@ -224,12 +225,12 @@ bool MapLine::boolProperty(const wxString& key)
 // Can be prefixed with 'side1.' or 'side2.' to get int properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-int MapLine::intProperty(const wxString& key)
+int MapLine::intProperty(std::string_view key)
 {
-	if (key.StartsWith("side1.") && side1_)
-		return side1_->intProperty(key.Mid(6));
-	if (key.StartsWith("side2.") && side2_)
-		return side2_->intProperty(key.Mid(6));
+	if (StrUtil::startsWith(key, "side1.") && side1_)
+		return side1_->intProperty(key.substr(6));
+	if (StrUtil::startsWith(key, "side2.") && side2_)
+		return side2_->intProperty(key.substr(6));
 
 	if (key == PROP_V1)
 		return v1Index();
@@ -264,12 +265,12 @@ int MapLine::intProperty(const wxString& key)
 // Can be prefixed with 'side1.' or 'side2.' to get float properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-double MapLine::floatProperty(const wxString& key)
+double MapLine::floatProperty(std::string_view key)
 {
-	if (key.StartsWith("side1.") && side1_)
-		return side1_->floatProperty(key.Mid(6));
-	else if (key.StartsWith("side2.") && side2_)
-		return side2_->floatProperty(key.Mid(6));
+	if (StrUtil::startsWith(key, "side1.") && side1_)
+		return side1_->floatProperty(key.substr(6));
+	else if (StrUtil::startsWith(key, "side2.") && side2_)
+		return side2_->floatProperty(key.substr(6));
 	else
 		return MapObject::floatProperty(key);
 }
@@ -279,12 +280,12 @@ double MapLine::floatProperty(const wxString& key)
 // Can be prefixed with 'side1.' or 'side2.' to get string properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-wxString MapLine::stringProperty(const wxString& key)
+std::string MapLine::stringProperty(std::string_view key)
 {
-	if (key.StartsWith("side1.") && side1_)
-		return side1_->stringProperty(key.Mid(6));
-	else if (key.StartsWith("side2.") && side2_)
-		return side2_->stringProperty(key.Mid(6));
+	if (StrUtil::startsWith(key, "side1.") && side1_)
+		return side1_->stringProperty(key.substr(6));
+	else if (StrUtil::startsWith(key, "side2.") && side2_)
+		return side2_->stringProperty(key.substr(6));
 	else
 		return MapObject::stringProperty(key);
 }
@@ -294,20 +295,20 @@ wxString MapLine::stringProperty(const wxString& key)
 // Can be prefixed with 'side1.' or 'side2.' to set bool properties on the front
 // and back sides respectively.
 // -----------------------------------------------------------------------------
-void MapLine::setBoolProperty(const wxString& key, bool value)
+void MapLine::setBoolProperty(std::string_view key, bool value)
 {
 	// Front side property
-	if (key.StartsWith("side1."))
+	if (StrUtil::startsWith(key, "side1."))
 	{
 		if (side1_)
-			return side1_->setBoolProperty(key.Mid(6), value);
+			return side1_->setBoolProperty(key.substr(6), value);
 	}
 
 	// Back side property
-	else if (key.StartsWith("side2."))
+	else if (StrUtil::startsWith(key, "side2."))
 	{
 		if (side2_)
-			return side2_->setBoolProperty(key.Mid(6), value);
+			return side2_->setBoolProperty(key.substr(6), value);
 	}
 
 	// Line property
@@ -320,21 +321,21 @@ void MapLine::setBoolProperty(const wxString& key, bool value)
 // Can be prefixed with 'side1.' or 'side2.' to set int properties on the front
 // and back sides respectively.
 // -----------------------------------------------------------------------------
-void MapLine::setIntProperty(const wxString& key, int value)
+void MapLine::setIntProperty(std::string_view key, int value)
 {
 	// Front side property
-	if (key.StartsWith("side1."))
+	if (StrUtil::startsWith(key, "side1."))
 	{
 		if (side1_)
-			side1_->setIntProperty(key.Mid(6), value);
+			side1_->setIntProperty(key.substr(6), value);
 		return;
 	}
 
 	// Back side property
-	else if (key.StartsWith("side2."))
+	else if (StrUtil::startsWith(key, "side2."))
 	{
 		if (side2_)
-			side2_->setIntProperty(key.Mid(6), value);
+			side2_->setIntProperty(key.substr(6), value);
 		return;
 	}
 
@@ -413,20 +414,20 @@ void MapLine::setIntProperty(const wxString& key, int value)
 // Can be prefixed with 'side1.' or 'side2.' to set float properties on the
 // front and back sides respectively.
 // -----------------------------------------------------------------------------
-void MapLine::setFloatProperty(const wxString& key, double value)
+void MapLine::setFloatProperty(std::string_view key, double value)
 {
 	// Front side property
-	if (key.StartsWith("side1."))
+	if (StrUtil::startsWith(key, "side1."))
 	{
 		if (side1_)
-			return side1_->setFloatProperty(key.Mid(6), value);
+			return side1_->setFloatProperty(key.substr(6), value);
 	}
 
 	// Back side property
-	else if (key.StartsWith("side2."))
+	else if (StrUtil::startsWith(key, "side2."))
 	{
 		if (side2_)
-			return side2_->setFloatProperty(key.Mid(6), value);
+			return side2_->setFloatProperty(key.substr(6), value);
 	}
 
 	// Line property
@@ -439,20 +440,20 @@ void MapLine::setFloatProperty(const wxString& key, double value)
 // Can be prefixed with 'side1.' or 'side2.' to set string properties on the
 // front and back sides respectively.
 // -----------------------------------------------------------------------------
-void MapLine::setStringProperty(const wxString& key, const wxString& value)
+void MapLine::setStringProperty(std::string_view key, std::string_view value)
 {
 	// Front side property
-	if (key.StartsWith("side1."))
+	if (StrUtil::startsWith(key, "side1."))
 	{
 		if (side1_)
-			return side1_->setStringProperty(key.Mid(6), value);
+			return side1_->setStringProperty(key.substr(6), value);
 	}
 
 	// Back side property
-	else if (key.StartsWith("side2."))
+	else if (StrUtil::startsWith(key, "side2."))
 	{
 		if (side2_)
-			return side2_->setStringProperty(key.Mid(6), value);
+			return side2_->setStringProperty(key.substr(6), value);
 	}
 
 	// Line property
@@ -463,7 +464,7 @@ void MapLine::setStringProperty(const wxString& key, const wxString& value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapLine::scriptCanModifyProp(const wxString& key)
+bool MapLine::scriptCanModifyProp(std::string_view key)
 {
 	return !(key == PROP_V1 || key == PROP_V2 || key == PROP_S1 || key == PROP_S2);
 }
@@ -980,23 +981,23 @@ void MapLine::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 // Writes the line as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapLine::writeUDMF(wxString& def)
+void MapLine::writeUDMF(std::string& def)
 {
-	def = wxString::Format("linedef//#%u\n{\n", index_);
+	def = fmt::format("linedef//#{}\n{\n", index_);
 
 	// Basic properties
-	def += wxString::Format("v1=%d;\nv2=%d;\nsidefront=%d;\n", v1Index(), v2Index(), s1Index());
+	def += fmt::format("v1={};\nv2={};\nsidefront={};\n", v1Index(), v2Index(), s1Index());
 	if (s2())
-		def += wxString::Format("sideback=%d;\n", s2Index());
+		def += fmt::format("sideback={};\n", s2Index());
 	if (special_ != 0)
-		def += wxString::Format("special=%d;\n", special_);
+		def += fmt::format("special={};\n", special_);
 	if (id_ != 0)
-		def += wxString::Format("id=%d;\n", id_);
+		def += fmt::format("id={};\n", id_);
 	if (flags_ != 0)
-		def += wxString::Format("flags=%d;\n", flags_);
+		def += fmt::format("flags={};\n", flags_);
 	for (unsigned i = 0; i < 5; ++i)
 		if (args_[i] != 0)
-			def += wxString::Format("arg%d=%d;\n", i, args_[i]);
+			def += fmt::format("arg{}={};\n", i, args_[i]);
 
 	// Other properties
 	if (!properties_.isEmpty())

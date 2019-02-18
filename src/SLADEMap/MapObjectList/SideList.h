@@ -12,7 +12,7 @@ public:
 	void remove(unsigned index) override;
 
 	void clearTexUsage() const { usage_tex_.clear(); }
-	void updateTexUsage(const wxString& tex, int adjust) const { usage_tex_[tex.Upper()] += adjust; }
+	void updateTexUsage(std::string_view tex, int adjust) const;
 	int  texUsageCount(const wxString& tex) const { return usage_tex_[tex.Upper()]; }
 
 private:

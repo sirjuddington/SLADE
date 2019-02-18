@@ -426,8 +426,8 @@ void Edit2D::changeSectorTexture() const
 	context_.selection().lockHilight();
 
 	// Open texture browser
-	wxString selected_tex = MapEditor::browseTexture(
-		texture, MapEditor::TextureType::Flat, context_.map(), browser_title);
+	auto selected_tex = MapEditor::browseTexture(texture, MapEditor::TextureType::Flat, context_.map(), browser_title)
+							.ToStdString();
 	if (!selected_tex.empty())
 	{
 		// Set texture depending on edit mode
@@ -937,7 +937,7 @@ void Edit2D::createSector(Vec2d pos) const
 	if (!sector_copy && ok)
 	{
 		auto new_sector = map.sector(map.nSectors() - 1);
-		if (new_sector->ceiling().texture.IsEmpty())
+		if (new_sector->ceiling().texture.empty())
 			Game::configuration().applyDefaults(new_sector, map.currentFormat() == MapFormat::UDMF);
 	}
 

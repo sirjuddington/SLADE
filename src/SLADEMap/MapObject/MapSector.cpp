@@ -50,9 +50,9 @@
 // -----------------------------------------------------------------------------
 MapSector::MapSector(
 	int             f_height,
-	const wxString& f_tex,
+	std::string_view f_tex,
 	int             c_height,
-	const wxString& c_tex,
+	std::string_view c_tex,
 	short           light,
 	short           special,
 	short           id) :
@@ -69,7 +69,7 @@ MapSector::MapSector(
 // -----------------------------------------------------------------------------
 // MapSector class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapSector::MapSector(const wxString& f_tex, const wxString& c_tex, ParseTreeNode* udmf_def) :
+MapSector::MapSector(std::string_view f_tex, std::string_view c_tex, ParseTreeNode* udmf_def) :
 	MapObject(Type::Sector),
 	floor_{ f_tex },
 	ceiling_{ c_tex }
@@ -154,7 +154,7 @@ void MapSector::setGeometryUpdated()
 // -----------------------------------------------------------------------------
 // Returns the value of the string property matching [key]
 // -----------------------------------------------------------------------------
-wxString MapSector::stringProperty(const wxString& key)
+std::string MapSector::stringProperty(std::string_view key)
 {
 	if (key == PROP_TEXFLOOR)
 		return floor_.texture;
@@ -167,7 +167,7 @@ wxString MapSector::stringProperty(const wxString& key)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapSector::intProperty(const wxString& key)
+int MapSector::intProperty(std::string_view key)
 {
 	if (key == PROP_HEIGHTFLOOR)
 		return floor_.height;
@@ -186,7 +186,7 @@ int MapSector::intProperty(const wxString& key)
 // -----------------------------------------------------------------------------
 // Sets the string value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSector::setStringProperty(const wxString& key, const wxString& value)
+void MapSector::setStringProperty(std::string_view key, std::string_view value)
 {
 	if (key == PROP_TEXFLOOR)
 		setFloorTexture(value);
@@ -199,7 +199,7 @@ void MapSector::setStringProperty(const wxString& key, const wxString& value)
 // -----------------------------------------------------------------------------
 // Sets the float value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSector::setFloatProperty(const wxString& key, double value)
+void MapSector::setFloatProperty(std::string_view key, double value)
 {
 	using Game::UDMFFeature;
 
@@ -221,7 +221,7 @@ void MapSector::setFloatProperty(const wxString& key, double value)
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSector::setIntProperty(const wxString& key, int value)
+void MapSector::setIntProperty(std::string_view key, int value)
 {
 	// Update modified time
 	setModified();
@@ -243,7 +243,7 @@ void MapSector::setIntProperty(const wxString& key, int value)
 // -----------------------------------------------------------------------------
 // Sets the floor texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSector::setFloorTexture(const wxString& tex)
+void MapSector::setFloorTexture(std::string_view tex)
 {
 	setModified();
 	if (parent_map_)
@@ -256,7 +256,7 @@ void MapSector::setFloorTexture(const wxString& tex)
 // -----------------------------------------------------------------------------
 // Sets the ceiling texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSector::setCeilingTexture(const wxString& tex)
+void MapSector::setCeilingTexture(std::string_view tex)
 {
 	setModified();
 	if (parent_map_)
@@ -856,8 +856,8 @@ void MapSector::disconnectSide(MapSide* side)
 // -----------------------------------------------------------------------------
 void MapSector::writeBackup(Backup* backup)
 {
-	backup->props_internal[PROP_TEXFLOOR]      = floor_.texture.ToStdString();
-	backup->props_internal[PROP_TEXCEILING]    = ceiling_.texture.ToStdString();
+	backup->props_internal[PROP_TEXFLOOR]      = floor_.texture;
+	backup->props_internal[PROP_TEXCEILING]    = ceiling_.texture;
 	backup->props_internal[PROP_HEIGHTFLOOR]   = floor_.height;
 	backup->props_internal[PROP_HEIGHTCEILING] = ceiling_.height;
 	backup->props_internal[PROP_LIGHTLEVEL]    = light_;
@@ -897,22 +897,22 @@ void MapSector::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 // Writes the sector as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapSector::writeUDMF(wxString& def)
+void MapSector::writeUDMF(std::string& def)
 {
-	def = wxString::Format("sector//#%u\n{\n", index_);
+	def = fmt::format("sector//#{}\n{\n", index_);
 
 	// Basic properties
-	def += wxString::Format("texturefloor=\"%s\";\ntextureceiling=\"%s\";\n", floor_.texture, ceiling_.texture);
+	def += fmt::format("texturefloor=\"{}\";\ntextureceiling=\"{}\";\n", floor_.texture, ceiling_.texture);
 	if (floor_.height != 0)
-		def += wxString::Format("heightfloor=%d;\n", floor_.height);
+		def += fmt::format("heightfloor={};\n", floor_.height);
 	if (ceiling_.height != 0)
-		def += wxString::Format("heightceiling=%d;\n", ceiling_.height);
+		def += fmt::format("heightceiling={};\n", ceiling_.height);
 	if (light_ != 160)
-		def += wxString::Format("lightlevel=%d;\n", light_);
+		def += fmt::format("lightlevel={};\n", light_);
 	if (special_ != 0)
-		def += wxString::Format("special=%d;\n", special_);
+		def += fmt::format("special={};\n", special_);
 	if (id_ != 0)
-		def += wxString::Format("id=%d;\n", id_);
+		def += fmt::format("id={};\n", id_);
 
 	// Other properties
 	if (!properties_.isEmpty())

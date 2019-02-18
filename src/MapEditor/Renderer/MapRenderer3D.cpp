@@ -44,6 +44,7 @@
 #include "SLADEMap/SLADEMap.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "Utility/MathStuff.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -915,7 +916,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	floors_[index].light     = sector->lightAt(1);
 	floors_[index].flags     = 0;
 	floors_[index].plane     = sector->floor().plane;
-	if (S_CMPNOCASE(sector->floor().texture, Game::configuration().skyFlat()))
+	if (StrUtil::equalCI(sector->floor().texture, Game::configuration().skyFlat().ToStdString()))
 		floors_[index].flags |= SKY;
 
 	// Update floor VBO
@@ -938,7 +939,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	ceilings_[index].light     = sector->lightAt(2);
 	ceilings_[index].flags     = CEIL;
 	ceilings_[index].plane     = sector->ceiling().plane;
-	if (S_CMPNOCASE(sector->ceiling().texture, Game::configuration().skyFlat()))
+	if (StrUtil::equalCI(sector->ceiling().texture, Game::configuration().skyFlat().ToStdString()))
 		ceilings_[index].flags |= SKY;
 
 	// Update ceiling VBO

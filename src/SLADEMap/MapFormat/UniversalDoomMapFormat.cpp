@@ -238,7 +238,7 @@ vector<ArchiveEntry::UPtr> UniversalDoomMapFormat::writeMap(
 	setlocale(LC_NUMERIC, "C");
 
 	// Write things
-	wxString object_def;
+	std::string object_def;
 	for (const auto& thing : map_data.things())
 	{
 		// Cleanup properties

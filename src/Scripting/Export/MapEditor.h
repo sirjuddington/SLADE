@@ -1,41 +1,35 @@
 
 
-void objectSetBoolProperty(MapObject& self, const wxString& key, bool value)
+void objectSetBoolProperty(MapObject& self, std::string_view key, bool value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setBoolProperty(key, value);
 	else
-		Log::warning(
-			1,
-			wxString::Format("%s boolean property \"%s\" can not be modified via script", CHR(self.typeName()), key));
+		Log::warning("{} boolean property \"{}\" can not be modified via script", self.typeName(), key);
 }
 
-void objectSetIntProperty(MapObject& self, const wxString& key, int value)
+void objectSetIntProperty(MapObject& self, std::string_view key, int value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setIntProperty(key, value);
 	else
-		Log::warning(
-			1,
-			wxString::Format("%s integer property \"%s\" can not be modified via script", CHR(self.typeName()), key));
+		Log::warning("{} integer property \"{}\" can not be modified via script", self.typeName(), key);
 }
 
-void objectSetFloatProperty(MapObject& self, const wxString& key, double value)
+void objectSetFloatProperty(MapObject& self, std::string_view key, double value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setFloatProperty(key, value);
 	else
-		Log::warning(
-			1, wxString::Format("%s float property \"%s\" can not be modified via script", CHR(self.typeName()), key));
+		Log::warning("{} float property \"{}\" can not be modified via script", self.typeName(), key);
 }
 
-void objectSetStringProperty(MapObject& self, const wxString& key, const wxString& value)
+void objectSetStringProperty(MapObject& self, std::string_view key, std::string_view value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setStringProperty(key, value);
 	else
-		Log::warning(
-			1, wxString::Format("%s string property \"%s\" can not be modified via script", CHR(self.typeName()), key));
+		Log::warning("{} string property \"{}\" can not be modified via script", self.typeName(), key);
 }
 
 void registerSLADEMap(sol::state& lua)

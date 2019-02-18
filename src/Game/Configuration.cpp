@@ -1068,7 +1068,7 @@ bool Configuration::thingFlagSet(const wxString& udmf_name, MapThing* thing, Map
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
-		return thing->boolProperty(udmf_name);
+		return thing->boolProperty(udmf_name.ToStdString());
 
 	// Iterate through flags
 	for (auto& i : flags_thing_)
@@ -1087,7 +1087,7 @@ bool Configuration::thingBasicFlagSet(const wxString& flag, MapThing* thing, Map
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
-		return thing->boolProperty(flag);
+		return thing->boolProperty(flag.ToStdString());
 
 	// Hexen-style flags in Hexen-format maps
 	bool hexen = map_format == MapFormat::Hexen;
@@ -1205,7 +1205,7 @@ void Configuration::setThingFlag(const wxString& udmf_name, MapThing* thing, Map
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
 	{
-		thing->setBoolProperty(udmf_name, set);
+		thing->setBoolProperty(udmf_name.ToStdString(), set);
 		return;
 	}
 
@@ -1242,7 +1242,7 @@ void Configuration::setThingBasicFlag(const wxString& flag, MapThing* thing, Map
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
 	{
-		thing->setBoolProperty(flag, set);
+		thing->setBoolProperty(flag.ToStdString(), set);
 		return;
 	}
 
@@ -1432,7 +1432,7 @@ bool Configuration::lineFlagSet(const wxString& udmf_name, MapLine* line, MapFor
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
-		return line->boolProperty(udmf_name);
+		return line->boolProperty(udmf_name.ToStdString());
 
 	// Get current flags
 	unsigned long flags = line->flags();
@@ -1456,7 +1456,7 @@ bool Configuration::lineBasicFlagSet(const wxString& flag, MapLine* line, MapFor
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
-		return line->boolProperty(flag);
+		return line->boolProperty(flag.ToStdString());
 
 	// Impassable
 	if (flag == "blocking")
@@ -1533,7 +1533,7 @@ void Configuration::setLineFlag(const wxString& udmf_name, MapLine* line, MapFor
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
 	{
-		line->setBoolProperty(udmf_name, set);
+		line->setBoolProperty(udmf_name.ToStdString(), set);
 		return;
 	}
 
@@ -1570,7 +1570,7 @@ void Configuration::setLineBasicFlag(const wxString& flag, MapLine* line, MapFor
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
 	{
-		line->setBoolProperty(flag, set);
+		line->setBoolProperty(flag.ToStdString(), set);
 		return;
 	}
 
@@ -1642,7 +1642,7 @@ wxString Configuration::spacTriggerString(MapLine* line, MapFormat map_format)
 			if (prop.second.isTrigger())
 			{
 				// Check if the line has this property
-				if (line->boolProperty(prop.second.propName()))
+				if (line->boolProperty(prop.second.propName().ToStdString()))
 				{
 					// Add to trigger line
 					if (!trigger.IsEmpty())
@@ -1798,28 +1798,28 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 	for (auto& i : *map)
 	{
 		// Check if the object even has this property
-		if (!object->hasProp(i.first))
+		if (!object->hasProp(i.first.ToStdString()))
 			continue;
 
 		// Remove the property from the object if it is the default value
 		if (i.second.defaultValue().type() == Property::Type::Boolean)
 		{
-			if (i.second.defaultValue().boolValue() == object->boolProperty(i.first))
+			if (i.second.defaultValue().boolValue() == object->boolProperty(i.first.ToStdString()))
 				object->props().removeProperty(i.first.ToStdString());
 		}
 		else if (i.second.defaultValue().type() == Property::Type::Int)
 		{
-			if (i.second.defaultValue().intValue() == object->intProperty(i.first))
+			if (i.second.defaultValue().intValue() == object->intProperty(i.first.ToStdString()))
 				object->props().removeProperty(i.first.ToStdString());
 		}
 		else if (i.second.defaultValue().type() == Property::Type::Float)
 		{
-			if (i.second.defaultValue().floatValue() == object->floatProperty(i.first))
+			if (i.second.defaultValue().floatValue() == object->floatProperty(i.first.ToStdString()))
 				object->props().removeProperty(i.first.ToStdString());
 		}
 		else if (i.second.defaultValue().type() == Property::Type::String)
 		{
-			if (i.second.defaultValue().stringValue() == object->stringProperty(i.first))
+			if (i.second.defaultValue().stringValue() == object->stringProperty(i.first.ToStdString()))
 				object->props().removeProperty(i.first.ToStdString());
 		}
 	}
@@ -2146,13 +2146,13 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	for (unsigned a = 0; a < prop_names.size(); a++)
 	{
 		if (prop_vals[a].type() == Property::Type::Boolean)
-			object->setBoolProperty(prop_names[a], prop_vals[a].boolValue());
+			object->setBoolProperty(prop_names[a].ToStdString(), prop_vals[a].boolValue());
 		else if (prop_vals[a].type() == Property::Type::Int)
-			object->setIntProperty(prop_names[a], prop_vals[a].intValue());
+			object->setIntProperty(prop_names[a].ToStdString(), prop_vals[a].intValue());
 		else if (prop_vals[a].type() == Property::Type::Float)
-			object->setFloatProperty(prop_names[a], prop_vals[a].floatValue());
+			object->setFloatProperty(prop_names[a].ToStdString(), prop_vals[a].floatValue());
 		else if (prop_vals[a].type() == Property::Type::String)
-			object->setStringProperty(prop_names[a], prop_vals[a].stringValue());
+			object->setStringProperty(prop_names[a].ToStdString(), prop_vals[a].stringValue());
 		Log::info(3, wxString::Format("Applied default property %s = %s", prop_names[a], prop_vals[a].stringValue()));
 	}
 }

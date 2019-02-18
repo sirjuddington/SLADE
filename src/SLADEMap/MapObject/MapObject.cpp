@@ -76,7 +76,7 @@ unsigned MapObject::index() const
 // -----------------------------------------------------------------------------
 // Returns a string representation of the object type
 // -----------------------------------------------------------------------------
-wxString MapObject::typeName() const
+std::string MapObject::typeName() const
 {
 	switch (type_)
 	{
@@ -133,10 +133,10 @@ void MapObject::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 // Returns true if the object has a property matching [key]
 // -----------------------------------------------------------------------------
-bool MapObject::hasProp(const wxString& key)
+bool MapObject::hasProp(std::string_view key)
 {
-	if (properties_.propertyExists(key.ToStdString()))
-		return properties_[key.ToStdString()].hasValue();
+	if (properties_.propertyExists(key))
+		return properties_[key].hasValue();
 
 	return false;
 }
@@ -144,16 +144,16 @@ bool MapObject::hasProp(const wxString& key)
 // -----------------------------------------------------------------------------
 // Returns the value of the boolean property matching [key]
 // -----------------------------------------------------------------------------
-bool MapObject::boolProperty(const wxString& key)
+bool MapObject::boolProperty(std::string_view key)
 {
 	// If the property exists already, return it
-	if (properties_[key.ToStdString()].hasValue())
-		return properties_[key.ToStdString()].boolValue();
+	if (properties_[key].hasValue())
+		return properties_[key].boolValue();
 
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(key, type_);
+		auto prop = Game::configuration().getUDMFProperty(wxString{ key.data(), key.size() }, type_);
 		if (prop)
 			return prop->defaultValue().boolValue();
 		else
@@ -164,16 +164,16 @@ bool MapObject::boolProperty(const wxString& key)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapObject::intProperty(const wxString& key)
+int MapObject::intProperty(std::string_view key)
 {
 	// If the property exists already, return it
-	if (properties_[key.ToStdString()].hasValue())
-		return properties_[key.ToStdString()].intValue();
+	if (properties_[key].hasValue())
+		return properties_[key].intValue();
 
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(key, type_);
+		auto prop = Game::configuration().getUDMFProperty(wxString{ key.data(), key.size() }, type_);
 		if (prop)
 			return prop->defaultValue().intValue();
 		else
@@ -184,16 +184,16 @@ int MapObject::intProperty(const wxString& key)
 // -----------------------------------------------------------------------------
 // Returns the value of the float property matching [key]
 // -----------------------------------------------------------------------------
-double MapObject::floatProperty(const wxString& key)
+double MapObject::floatProperty(std::string_view key)
 {
 	// If the property exists already, return it
-	if (properties_[key.ToStdString()].hasValue())
-		return properties_[key.ToStdString()].floatValue();
+	if (properties_[key].hasValue())
+		return properties_[key].floatValue();
 
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(key, type_);
+		auto prop = Game::configuration().getUDMFProperty(wxString{ key.data(), key.size() }, type_);
 		if (prop)
 			return prop->defaultValue().floatValue();
 		else
@@ -204,16 +204,16 @@ double MapObject::floatProperty(const wxString& key)
 // -----------------------------------------------------------------------------
 // Returns the value of the string property matching [key]
 // -----------------------------------------------------------------------------
-wxString MapObject::stringProperty(const wxString& key)
+std::string MapObject::stringProperty(std::string_view key)
 {
 	// If the property exists already, return it
-	if (properties_[key.ToStdString()].hasValue())
-		return properties_[key.ToStdString()].stringValue();
+	if (properties_[key].hasValue())
+		return properties_[key].stringValue();
 
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(key, type_);
+		auto prop = Game::configuration().getUDMFProperty(wxString{ key.data(), key.size() }, type_);
 		if (prop)
 			return prop->defaultValue().stringValue();
 		else
@@ -224,49 +224,49 @@ wxString MapObject::stringProperty(const wxString& key)
 // -----------------------------------------------------------------------------
 // Sets the boolean value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapObject::setBoolProperty(const wxString& key, bool value)
+void MapObject::setBoolProperty(std::string_view key, bool value)
 {
 	// Update modified time
 	setModified();
 
 	// Set property
-	properties_[key.ToStdString()] = value;
+	properties_[key] = value;
 }
 
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapObject::setIntProperty(const wxString& key, int value)
+void MapObject::setIntProperty(std::string_view key, int value)
 {
 	// Update modified time
 	setModified();
 
 	// Set property
-	properties_[key.ToStdString()] = value;
+	properties_[key] = value;
 }
 
 // -----------------------------------------------------------------------------
 // Sets the float value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapObject::setFloatProperty(const wxString& key, double value)
+void MapObject::setFloatProperty(std::string_view key, double value)
 {
 	// Update modified time
 	setModified();
 
 	// Set property
-	properties_[key.ToStdString()] = value;
+	properties_[key] = value;
 }
 
 // -----------------------------------------------------------------------------
 // Sets the string value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapObject::setStringProperty(const wxString& key, const wxString& value)
+void MapObject::setStringProperty(std::string_view key, std::string_view value)
 {
 	// Update modified time
 	setModified();
 
 	// Set property
-	properties_[key.ToStdString()] = value.ToStdString();
+	properties_[key] = value;
 }
 
 // -----------------------------------------------------------------------------
@@ -293,13 +293,14 @@ void MapObject::loadFromBackup(Backup* backup)
 	// Check type match
 	if (backup->type != type_)
 	{
-		Log::error(wxString::Format("loadFromBackup: Mobj type mismatch, %d != %d", type_, backup->type));
+		Log::error(
+			"loadFromBackup: Mobj type mismatch, {} != {}", static_cast<int>(type_), static_cast<int>(backup->type));
 		return;
 	}
 	// Check id match
 	if (backup->id != obj_id_)
 	{
-		Log::error(wxString::Format("loadFromBackup: Mobj id mismatch, %d != %d", obj_id_, backup->id));
+		Log::error("loadFromBackup: Mobj id mismatch, {} != {}", obj_id_, backup->id);
 		return;
 	}
 
@@ -366,7 +367,7 @@ void MapObject::endPropBackup()
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiBoolProperty(vector<MapObject*>& objects, wxString prop, bool& value)
+bool MapObject::multiBoolProperty(vector<MapObject*>& objects, std::string_view prop, bool& value)
 {
 	// Check objects given
 	if (objects.empty())
@@ -391,7 +392,7 @@ bool MapObject::multiBoolProperty(vector<MapObject*>& objects, wxString prop, bo
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiIntProperty(vector<MapObject*>& objects, wxString prop, int& value)
+bool MapObject::multiIntProperty(vector<MapObject*>& objects, std::string_view prop, int& value)
 {
 	// Check objects given
 	if (objects.empty())
@@ -416,7 +417,7 @@ bool MapObject::multiIntProperty(vector<MapObject*>& objects, wxString prop, int
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiFloatProperty(vector<MapObject*>& objects, wxString prop, double& value)
+bool MapObject::multiFloatProperty(vector<MapObject*>& objects, std::string_view prop, double& value)
 {
 	// Check objects given
 	if (objects.empty())
@@ -441,14 +442,14 @@ bool MapObject::multiFloatProperty(vector<MapObject*>& objects, wxString prop, d
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiStringProperty(vector<MapObject*>& objects, wxString prop, wxString& value)
+bool MapObject::multiStringProperty(vector<MapObject*>& objects, std::string_view prop, std::string& value)
 {
 	// Check objects given
 	if (objects.empty())
 		return false;
 
 	// Check values
-	wxString first = objects[0]->stringProperty(prop);
+	auto first = objects[0]->stringProperty(prop);
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
 		// Differing values

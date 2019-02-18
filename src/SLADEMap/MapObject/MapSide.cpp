@@ -48,9 +48,9 @@
 // -----------------------------------------------------------------------------
 MapSide::MapSide(
 	MapSector*      sector,
-	const wxString& tex_upper,
-	const wxString& tex_middle,
-	const wxString& tex_lower,
+	std::string_view tex_upper,
+	std::string_view tex_middle,
+	std::string_view tex_lower,
 	Vec2i           tex_offset) :
 	MapObject{ Type::Side },
 	sector_{ sector },
@@ -156,7 +156,7 @@ void MapSide::changeLight(int amount)
 // -----------------------------------------------------------------------------
 // Sets the upper texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSide::setTexUpper(const wxString& tex, bool modify)
+void MapSide::setTexUpper(std::string_view tex, bool modify)
 {
 	if (modify)
 		setModified();
@@ -173,7 +173,7 @@ void MapSide::setTexUpper(const wxString& tex, bool modify)
 // -----------------------------------------------------------------------------
 // Sets the middle texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSide::setTexMiddle(const wxString& tex, bool modify)
+void MapSide::setTexMiddle(std::string_view tex, bool modify)
 {
 	if (modify)
 		setModified();
@@ -190,7 +190,7 @@ void MapSide::setTexMiddle(const wxString& tex, bool modify)
 // -----------------------------------------------------------------------------
 // Sets the lower texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSide::setTexLower(const wxString& tex, bool modify)
+void MapSide::setTexLower(std::string_view tex, bool modify)
 {
 	if (modify)
 		setModified();
@@ -245,7 +245,7 @@ void MapSide::setSector(MapSector* sector)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapSide::intProperty(const wxString& key)
+int MapSide::intProperty(std::string_view key)
 {
 	if (key == PROP_SECTOR)
 	{
@@ -265,7 +265,7 @@ int MapSide::intProperty(const wxString& key)
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSide::setIntProperty(const wxString& key, int value)
+void MapSide::setIntProperty(std::string_view key, int value)
 {
 	// Update modified time
 	setModified();
@@ -283,7 +283,7 @@ void MapSide::setIntProperty(const wxString& key, int value)
 // -----------------------------------------------------------------------------
 // Returns the value of the string property matching [key]
 // -----------------------------------------------------------------------------
-wxString MapSide::stringProperty(const wxString& key)
+std::string MapSide::stringProperty(std::string_view key)
 {
 	if (key == PROP_TEXUPPER)
 		return tex_upper_;
@@ -298,7 +298,7 @@ wxString MapSide::stringProperty(const wxString& key)
 // -----------------------------------------------------------------------------
 // Sets the string value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSide::setStringProperty(const wxString& key, const wxString& value)
+void MapSide::setStringProperty(std::string_view key, std::string_view value)
 {
 	// Update modified time
 	setModified();
@@ -316,7 +316,7 @@ void MapSide::setStringProperty(const wxString& key, const wxString& value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapSide::scriptCanModifyProp(const wxString& key)
+bool MapSide::scriptCanModifyProp(std::string_view key)
 {
 	return key != PROP_SECTOR;
 }
@@ -333,9 +333,9 @@ void MapSide::writeBackup(Backup* backup)
 		backup->props_internal[PROP_SECTOR] = 0;
 
 	// Textures
-	backup->props_internal[PROP_TEXUPPER]  = tex_upper_.ToStdString();
-	backup->props_internal[PROP_TEXMIDDLE] = tex_middle_.ToStdString();
-	backup->props_internal[PROP_TEXLOWER]  = tex_lower_.ToStdString();
+	backup->props_internal[PROP_TEXUPPER]  = tex_upper_;
+	backup->props_internal[PROP_TEXMIDDLE] = tex_middle_;
+	backup->props_internal[PROP_TEXLOWER]  = tex_lower_;
 
 	// Offsets
 	backup->props_internal[PROP_OFFSETX] = tex_offset_.x;
@@ -375,22 +375,22 @@ void MapSide::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 // Writes the side as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapSide::writeUDMF(wxString& def)
+void MapSide::writeUDMF(std::string& def)
 {
-	def = wxString::Format("sidedef//#%u\n{\n", index_);
+	def = fmt::format("sidedef//#{}\n{\n", index_);
 
 	// Basic properties
-	def += wxString::Format("sector=%u;\n", sector_->index());
+	def += fmt::format("sector={};\n", sector_->index());
 	if (tex_upper_ != "-")
-		def += wxString::Format("texturetop=\"%s\";\n", tex_upper_);
+		def += fmt::format("texturetop=\"{}\";\n", tex_upper_);
 	if (tex_middle_ != "-")
-		def += wxString::Format("texturemiddle=\"%s\";\n", tex_middle_);
+		def += fmt::format("texturemiddle=\"{}\";\n", tex_middle_);
 	if (tex_lower_ != "-")
-		def += wxString::Format("texturebottom=\"%s\";\n", tex_lower_);
+		def += fmt::format("texturebottom=\"{}\";\n", tex_lower_);
 	if (tex_offset_.x != 0)
-		def += wxString::Format("offsetx=%d;\n", tex_offset_.x);
+		def += fmt::format("offsetx={};\n", tex_offset_.x);
 	if (tex_offset_.y != 0)
-		def += wxString::Format("offsety=%d;\n", tex_offset_.y);
+		def += fmt::format("offsety={};\n", tex_offset_.y);
 
 	// Other properties
 	if (!properties_.isEmpty())

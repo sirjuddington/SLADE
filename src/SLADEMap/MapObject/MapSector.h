@@ -18,11 +18,11 @@ public:
 
 	struct Surface
 	{
-		wxString texture;
-		int      height = 0;
-		Plane    plane  = { 0., 0., 1., 0. };
+		std::string texture;
+		int         height = 0;
+		Plane       plane  = { 0., 0., 1., 0. };
 
-		Surface(const wxString& texture = "", int height = 0, const Plane& plane = { 0., 0., 1., 0. }) :
+		Surface(std::string_view texture = "", int height = 0, const Plane& plane = { 0., 0., 1., 0. }) :
 			texture{ texture },
 			height{ height },
 			plane{ plane }
@@ -40,14 +40,14 @@ public:
 	inline static const std::string PROP_ID            = "id";
 
 	MapSector(
-		int             f_height = 0,
-		const wxString& f_tex    = "",
-		int             c_height = 0,
-		const wxString& c_tex    = "",
-		short           light    = 0,
-		short           special  = 0,
-		short           id       = 0);
-	MapSector(const wxString& f_tex, const wxString& c_tex, ParseTreeNode* udmf_def);
+		int              f_height = 0,
+		std::string_view f_tex    = "",
+		int              c_height = 0,
+		std::string_view c_tex    = "",
+		short            light    = 0,
+		short            special  = 0,
+		short            id       = 0);
+	MapSector(std::string_view f_tex, std::string_view c_tex, ParseTreeNode* udmf_def);
 	~MapSector() = default;
 
 	void copy(MapObject* obj) override;
@@ -59,15 +59,15 @@ public:
 	short          tag() const { return id_; }
 	short          id() const { return id_; }
 
-	wxString stringProperty(const wxString& key) override;
-	int      intProperty(const wxString& key) override;
+	std::string stringProperty(std::string_view key) override;
+	int         intProperty(std::string_view key) override;
 
-	void setStringProperty(const wxString& key, const wxString& value) override;
-	void setFloatProperty(const wxString& key, double value) override;
-	void setIntProperty(const wxString& key, int value) override;
+	void setStringProperty(std::string_view key, std::string_view value) override;
+	void setFloatProperty(std::string_view key, double value) override;
+	void setIntProperty(std::string_view key, int value) override;
 
-	void setFloorTexture(const wxString& tex);
-	void setCeilingTexture(const wxString& tex);
+	void setFloorTexture(std::string_view tex);
+	void setCeilingTexture(std::string_view tex);
 	void setFloorHeight(short height);
 	void setCeilingHeight(short height);
 	void setFloorPlane(const Plane& p);
@@ -107,14 +107,14 @@ public:
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
 
-	void writeUDMF(wxString& def) override;
+	void writeUDMF(std::string& def) override;
 
 	operator Debuggable() const
 	{
 		if (!this)
 			return { "<sector NULL>" };
 
-		return { wxString::Format("<sector %u>", index_) };
+		return { fmt::format("<sector {}>", index_) };
 	}
 
 private:

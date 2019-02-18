@@ -218,8 +218,8 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line) const
 			tagged.push_back(line);
 
 		// Get args
-		double   alpha = (double)args[1] / 255.0;
-		wxString type  = (args[2] == 0) ? "translucent" : "add";
+		double      alpha = (double)args[1] / 255.0;
+		std::string type  = (args[2] == 0) ? "translucent" : "add";
 
 		// Set transparency
 		for (auto& l : tagged)
@@ -227,8 +227,7 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line) const
 			l->setFloatProperty("alpha", alpha);
 			l->setStringProperty("renderstyle", type);
 
-			Log::info(
-				3, wxString::Format("Line %d translucent: (%d) %1.2f, %s", l->index(), args[1], alpha, CHR(type)));
+			Log::info(3, "Line {} translucent: ({}) {:1.2f}, {}", l->index(), args[1], alpha, type);
 		}
 	}
 }
@@ -276,10 +275,10 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 
 						// Parse parameters
 						int val;
-						int  tag = -1;
-						int  r   = -1;
-						int  g   = -1;
-						int  b   = -1;
+						int tag = -1;
+						int r   = -1;
+						int g   = -1;
+						int b   = -1;
 						for (auto& parameter : parameters)
 						{
 							parameter.toInt(val);
@@ -315,10 +314,10 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 
 						// Parse parameters
 						int val;
-						int  tag = -1;
-						int  r   = -1;
-						int  g   = -1;
-						int  b   = -1;
+						int tag = -1;
+						int r   = -1;
+						int g   = -1;
+						int b   = -1;
 						for (auto& parameter : parameters)
 						{
 							parameter.toInt(val);
@@ -847,7 +846,7 @@ template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 template<SurfaceType T> double MapSpecials::vertexHeight(MapVertex* vertex, MapSector* sector) const
 {
 	// Return vertex height if set via UDMF property
-	wxString prop = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
+	std::string prop = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
 	if (vertex->hasProp(prop))
 		return vertex->floatProperty(prop);
 

@@ -180,9 +180,9 @@ bool Doom64MapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 		// Add side
 		map_data.addSide(std::make_unique<MapSide>(
 			map_data.sectors().at(side_data[a].sector),
-			ResourceManager::doom64TextureName(side_data[a].tex_upper),
-			ResourceManager::doom64TextureName(side_data[a].tex_middle),
-			ResourceManager::doom64TextureName(side_data[a].tex_lower),
+			ResourceManager::doom64TextureName(side_data[a].tex_upper).ToStdString(),
+			ResourceManager::doom64TextureName(side_data[a].tex_middle).ToStdString(),
+			ResourceManager::doom64TextureName(side_data[a].tex_lower).ToStdString(),
 			Vec2i{ side_data[a].x_offset, side_data[a].y_offset }));
 	}
 
@@ -288,9 +288,9 @@ bool Doom64MapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_
 		// Add sector
 		auto sector = map_data.addSector(std::make_unique<MapSector>(
 			data.f_height,
-			ResourceManager::doom64TextureName(data.f_tex),
+			ResourceManager::doom64TextureName(data.f_tex).ToStdString(),
 			data.c_height,
-			ResourceManager::doom64TextureName(data.c_tex),
+			ResourceManager::doom64TextureName(data.c_tex).ToStdString(),
 			255,
 			data.special,
 			data.tag));

@@ -701,7 +701,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 		bool val = false;
 		for (unsigned a = 0; a < udmf_flags_.size(); a++)
 		{
-			if (MapObject::multiBoolProperty(objects, udmf_flags_[a], val))
+			if (MapObject::multiBoolProperty(objects, udmf_flags_[a].ToStdString(), val))
 				cb_flags_[a]->SetValue(val);
 			else
 				cb_flags_[a]->Set3StateValue(wxCHK_UNDETERMINED);
@@ -764,7 +764,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 		// Load values
 		int args[5] = { -1, -1, -1, -1, -1 };
 		for (unsigned a = 0; a < 5; a++)
-			MapObject::multiIntProperty(objects, wxString::Format("arg%d", a), args[a]);
+			MapObject::multiIntProperty(objects, fmt::format("arg{}", a), args[a]);
 		panel_args_->setValues(args);
 	}
 
@@ -821,7 +821,7 @@ void ThingPropsPanel::applyChanges()
 			for (unsigned f = 0; f < udmf_flags_.size(); f++)
 			{
 				if (cb_flags_[f]->Get3StateValue() != wxCHK_UNDETERMINED)
-					object->setBoolProperty(udmf_flags_[f], cb_flags_[f]->GetValue());
+					object->setBoolProperty(udmf_flags_[f].ToStdString(), cb_flags_[f]->GetValue());
 			}
 		}
 
@@ -831,7 +831,7 @@ void ThingPropsPanel::applyChanges()
 			for (unsigned f = 0; f < udmf_flags_extra_.size(); f++)
 			{
 				if (cb_flags_extra_[f]->Get3StateValue() != wxCHK_UNDETERMINED)
-					object->setBoolProperty(udmf_flags_extra_[f], cb_flags_extra_[f]->GetValue());
+					object->setBoolProperty(udmf_flags_extra_[f].ToStdString(), cb_flags_extra_[f]->GetValue());
 			}
 		}
 

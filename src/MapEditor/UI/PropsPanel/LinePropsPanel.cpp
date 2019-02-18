@@ -277,7 +277,7 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 		bool val = false;
 		for (auto& flag : flags_)
 		{
-			if (MapObject::multiBoolProperty(lines, flag.udmf, val))
+			if (MapObject::multiBoolProperty(lines, flag.udmf.ToStdString(), val))
 				flag.check_box->SetValue(val);
 			else
 				flag.check_box->Set3StateValue(wxCHK_UNDETERMINED);
@@ -399,7 +399,7 @@ void LinePropsPanel::applyChanges()
 			// UDMF
 			for (auto& flag : flags_)
 				if (flag.check_box->Get3StateValue() != wxCHK_UNDETERMINED)
-					object->setBoolProperty(flag.udmf, flag.check_box->GetValue());
+					object->setBoolProperty(flag.udmf.ToStdString(), flag.check_box->GetValue());
 		}
 		else
 		{

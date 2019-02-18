@@ -373,8 +373,8 @@ void SectorPropsPanel::openObjects(vector<MapObject*>& objects)
 	if (objects.empty())
 		return;
 
-	int      ival;
-	wxString sval;
+	int         ival;
+	std::string sval;
 
 	// Special
 	if (MapObject::multiIntProperty(objects, "special", ival))
@@ -445,11 +445,11 @@ void SectorPropsPanel::applyChanges()
 
 		// Floor texture
 		if (!fcb_floor_->GetValue().IsEmpty())
-			sector->setFloorTexture(fcb_floor_->GetValue());
+			sector->setFloorTexture(fcb_floor_->GetValue().ToStdString());
 
 		// Ceiling texture
 		if (!fcb_ceiling_->GetValue().IsEmpty())
-			sector->setCeilingTexture(fcb_ceiling_->GetValue());
+			sector->setCeilingTexture(fcb_ceiling_->GetValue().ToStdString());
 
 		// Floor height
 		if (!text_height_floor_->GetValue().IsEmpty())

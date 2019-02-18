@@ -112,7 +112,7 @@ Vec2d MapThing::getPoint(Point point)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapThing::intProperty(const wxString& key)
+int MapThing::intProperty(std::string_view key)
 {
 	if (key == PROP_TYPE)
 		return type_;
@@ -147,7 +147,7 @@ int MapThing::intProperty(const wxString& key)
 // -----------------------------------------------------------------------------
 // Returns the value of the float property matching [key]
 // -----------------------------------------------------------------------------
-double MapThing::floatProperty(const wxString& key)
+double MapThing::floatProperty(std::string_view key)
 {
 	if (key == PROP_X)
 		return position_.x;
@@ -162,7 +162,7 @@ double MapThing::floatProperty(const wxString& key)
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapThing::setIntProperty(const wxString& key, int value)
+void MapThing::setIntProperty(std::string_view key, int value)
 {
 	// Update modified time
 	setModified();
@@ -200,7 +200,7 @@ void MapThing::setIntProperty(const wxString& key, int value)
 // -----------------------------------------------------------------------------
 // Sets the float value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapThing::setFloatProperty(const wxString& key, double value)
+void MapThing::setFloatProperty(std::string_view key, double value)
 {
 	// Update modified time
 	setModified();
@@ -417,25 +417,25 @@ void MapThing::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 // Writes the thing as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapThing::writeUDMF(wxString& def)
+void MapThing::writeUDMF(std::string& def)
 {
-	def = wxString::Format("thing//#%u\n{\n", index_);
+	def = fmt::format("thing//#{}\n{\n", index_);
 
 	// Basic properties
-	def += wxString::Format("x=%1.3f;\ny=%1.3f;\ntype=%d;\n", position_.x, position_.y, type_);
+	def += fmt::format("x={:1.3f};\ny={:1.3f};\ntype={};\n", position_.x, position_.y, type_);
 	if (z_ != 0)
-		def += wxString::Format("height=%1.3f;\n", z_);
+		def += fmt::format("height={:1.3f};\n", z_);
 	if (angle_ != 0)
-		def += wxString::Format("angle=%d;\n", angle_);
+		def += fmt::format("angle={};\n", angle_);
 	if (flags_ != 0)
-		def += wxString::Format("flags=%d;\n", flags_);
+		def += fmt::format("flags={};\n", flags_);
 	if (id_ != 0)
-		def += wxString::Format("id=%d;\n", id_);
+		def += fmt::format("id={};\n", id_);
 	for (unsigned i = 0; i < 5; ++i)
 		if (args_[i] != 0)
-			def += wxString::Format("arg%d=%d;\n", i, args_[i]);
+			def += fmt::format("arg{}={};\n", i, args_[i]);
 	if (special_ != 0)
-		def += wxString::Format("special=%d;\n", special_);
+		def += fmt::format("special={};\n", special_);
 
 	// Other properties
 	if (!properties_.isEmpty())

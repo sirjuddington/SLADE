@@ -27,11 +27,11 @@ public:
 
 	void move(double nx, double ny);
 
-	int    intProperty(const wxString& key) override;
-	double floatProperty(const wxString& key) override;
-	void   setIntProperty(const wxString& key, int value) override;
-	void   setFloatProperty(const wxString& key, double value) override;
-	bool   scriptCanModifyProp(const wxString& key) override;
+	int    intProperty(std::string_view key) override;
+	double floatProperty(std::string_view key) override;
+	void   setIntProperty(std::string_view key, int value) override;
+	void   setFloatProperty(std::string_view key, double value) override;
+	bool   scriptCanModifyProp(std::string_view key) override;
 
 	void     connectLine(MapLine* line);
 	void     disconnectLine(MapLine* line);
@@ -45,14 +45,14 @@ public:
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
 
-	void writeUDMF(wxString& def) override;
+	void writeUDMF(std::string& def) override;
 
 	operator Debuggable() const
 	{
 		if (!this)
 			return { "<vertex NULL>" };
 
-		return { wxString::Format("<vertex %u>", index_) };
+		return { fmt::format("<vertex {}>", index_) };
 	}
 
 private:

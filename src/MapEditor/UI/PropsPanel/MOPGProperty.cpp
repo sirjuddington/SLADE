@@ -99,12 +99,12 @@ void MOPGBoolProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	bool first = objects[0]->boolProperty(GetName());
+	bool first = objects[0]->boolProperty(GetName().ToStdString());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->boolProperty(GetName()) != first)
+		if (objects[a]->boolProperty(GetName().ToStdString()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -148,7 +148,7 @@ void MOPGBoolProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		object->setBoolProperty(GetName(), m_value.GetBool());
+		object->setBoolProperty(GetName().ToStdString(), m_value.GetBool());
 }
 
 
@@ -182,12 +182,12 @@ void MOPGIntProperty::openObjects(vector<MapObject*>& objects)
 		return;
 
 	// Get property of first object
-	int first = objects[0]->intProperty(GetName());
+	int first = objects[0]->intProperty(GetName().ToStdString());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->intProperty(GetName()) != first)
+		if (objects[a]->intProperty(GetName().ToStdString()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -231,7 +231,7 @@ void MOPGIntProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		object->setIntProperty(GetName(), m_value.GetInteger());
+		object->setIntProperty(GetName().ToStdString(), m_value.GetInteger());
 }
 
 
@@ -265,12 +265,12 @@ void MOPGFloatProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	double first = objects[0]->floatProperty(GetName());
+	double first = objects[0]->floatProperty(GetName().ToStdString());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->floatProperty(GetName()) != first)
+		if (objects[a]->floatProperty(GetName().ToStdString()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -314,7 +314,7 @@ void MOPGFloatProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		object->setFloatProperty(GetName(), m_value.GetDouble());
+		object->setFloatProperty(GetName().ToStdString(), m_value.GetDouble());
 }
 
 
@@ -370,12 +370,12 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	wxString first = objects[0]->stringProperty(GetName());
+	wxString first = objects[0]->stringProperty(GetName().ToStdString());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->stringProperty(GetName()) != first)
+		if (objects[a]->stringProperty(GetName().ToStdString()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -419,7 +419,7 @@ void MOPGStringProperty::applyValue()
 	// Go through objects and set this value
 	vector<MapObject*>& objects = parent_->objects();
 	for (auto& object : objects)
-		object->setStringProperty(GetName(), m_value.GetString());
+		object->setStringProperty(GetName().ToStdString(), m_value.GetString().ToStdString());
 }
 
 
@@ -515,11 +515,11 @@ void MOPGIntWithArgsProperty::applyValue()
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
 	{
-		object->setIntProperty(GetName(), m_value.GetInteger());
+		object->setIntProperty(GetName().ToStdString(), m_value.GetInteger());
 
 		for (int argn = 0; argn < argspec.count; argn++)
 		{
-			wxString key = wxString::Format("arg%d", argn);
+			auto key = fmt::format("arg{}", argn);
 			if (!object->hasProp(key))
 				object->setIntProperty(key, 0);
 		}
@@ -841,12 +841,12 @@ void MOPGAngleProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	int first = objects[0]->intProperty(GetName());
+	int first = objects[0]->intProperty(GetName().ToStdString());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->intProperty(GetName()) != first)
+		if (objects[a]->intProperty(GetName().ToStdString()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -890,7 +890,7 @@ void MOPGAngleProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		object->setIntProperty(GetName(), m_value.GetInteger());
+		object->setIntProperty(GetName().ToStdString(), m_value.GetInteger());
 }
 
 // -----------------------------------------------------------------------------
@@ -945,12 +945,12 @@ void MOPGColourProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	int first = objects[0]->intProperty(GetName());
+	int first = objects[0]->intProperty(GetName().ToStdString());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->intProperty(GetName()) != first)
+		if (objects[a]->intProperty(GetName().ToStdString()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -997,7 +997,7 @@ void MOPGColourProperty::applyValue()
 	col << m_value;
 	col.Set(col.Blue(), col.Green(), col.Red());
 	for (auto& object : objects)
-		object->setIntProperty(GetName(), col.GetRGB());
+		object->setIntProperty(GetName().ToStdString(), col.GetRGB());
 }
 
 
@@ -1033,12 +1033,12 @@ void MOPGTextureProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	wxString first = objects[0]->stringProperty(GetName());
+	wxString first = objects[0]->stringProperty(GetName().ToStdString());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->stringProperty(GetName()) != first)
+		if (objects[a]->stringProperty(GetName().ToStdString()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -1202,12 +1202,12 @@ void MOPGTagProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	int first = objects[0]->intProperty(GetName());
+	int first = objects[0]->intProperty(GetName().ToStdString());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->intProperty(GetName()) != first)
+		if (objects[a]->intProperty(GetName().ToStdString()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -1283,12 +1283,12 @@ void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	int first = objects[0]->intProperty(GetName());
+	int first = objects[0]->intProperty(GetName().ToStdString());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->intProperty(GetName()) != first)
+		if (objects[a]->intProperty(GetName().ToStdString()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();

@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SideList.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -57,9 +58,9 @@ void SideList::clear()
 void SideList::add(MapSide* side)
 {
 	// Update texture counts
-	usage_tex_[side->tex_upper_.Upper()] += 1;
-	usage_tex_[side->tex_middle_.Upper()] += 1;
-	usage_tex_[side->tex_lower_.Upper()] += 1;
+	usage_tex_[StrUtil::upper(side->tex_upper_)] += 1;
+	usage_tex_[StrUtil::upper(side->tex_middle_)] += 1;
+	usage_tex_[StrUtil::upper(side->tex_lower_)] += 1;
 
 	MapObjectList::add(side);
 }
@@ -73,9 +74,14 @@ void SideList::remove(unsigned index)
 		return;
 
 	// Update texture counts
-	usage_tex_[objects_[index]->tex_upper_.Upper()] -= 1;
-	usage_tex_[objects_[index]->tex_middle_.Upper()] -= 1;
-	usage_tex_[objects_[index]->tex_lower_.Upper()] -= 1;
+	usage_tex_[StrUtil::upper(objects_[index]->tex_upper_)] -= 1;
+	usage_tex_[StrUtil::upper(objects_[index]->tex_middle_)] -= 1;
+	usage_tex_[StrUtil::upper(objects_[index]->tex_lower_)] -= 1;
 
 	MapObjectList::remove(index);
+}
+
+void SideList::updateTexUsage(std::string_view tex, int adjust) const
+{
+	usage_tex_[StrUtil::upper(tex)] += adjust;
 }

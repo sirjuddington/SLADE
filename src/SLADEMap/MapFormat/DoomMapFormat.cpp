@@ -191,9 +191,9 @@ bool DoomMapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 		// Add side
 		map_data.addSide(std::make_unique<MapSide>(
 			map_data.sectors().at(side_data[a].sector),
-			wxString::FromAscii(side_data[a].tex_upper, 8),
-			wxString::FromAscii(side_data[a].tex_middle, 8),
-			wxString::FromAscii(side_data[a].tex_lower, 8),
+			side_data[a].tex_upper,
+			side_data[a].tex_middle,
+			side_data[a].tex_lower,
 			Vec2i{ side_data[a].x_offset, side_data[a].y_offset }));
 	}
 
@@ -293,13 +293,7 @@ bool DoomMapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_da
 
 		// Add sector
 		map_data.addSector(std::make_unique<MapSector>(
-			data.f_height,
-			wxString::FromAscii(data.f_tex, 8),
-			data.c_height,
-			wxString::FromAscii(data.c_tex, 8),
-			data.light,
-			data.special,
-			data.tag));
+			data.f_height, data.f_tex, data.c_height, data.c_tex, data.light, data.special, data.tag));
 	}
 
 	Log::info(3, wxString::Format("Read %lu sectors", map_data.sectors().size()));
@@ -397,9 +391,9 @@ ArchiveEntry::UPtr DoomMapFormat::writeSIDEDEFS(const SideList& sides) const
 			data.sector = side->sector()->index();
 
 		// Textures
-		memcpy(data.tex_middle, CHR(side->texMiddle()), side->texMiddle().Length());
-		memcpy(data.tex_upper, CHR(side->texUpper()), side->texUpper().Length());
-		memcpy(data.tex_lower, CHR(side->texLower()), side->texLower().Length());
+		memcpy(data.tex_middle, side->texMiddle().data(), side->texMiddle().size());
+		memcpy(data.tex_upper, side->texUpper().data(), side->texUpper().size());
+		memcpy(data.tex_lower, side->texLower().data(), side->texLower().size());
 
 		entry->write(&data, 30);
 	}
@@ -464,8 +458,8 @@ ArchiveEntry::UPtr DoomMapFormat::writeSECTORS(const SectorList& sectors) const
 		data.c_height = sector->ceiling().height;
 
 		// Textures
-		memcpy(data.f_tex, CHR(sector->floor().texture), sector->floor().texture.Length());
-		memcpy(data.c_tex, CHR(sector->ceiling().texture), sector->ceiling().texture.Length());
+		memcpy(data.f_tex, sector->floor().texture.data(), sector->floor().texture.size());
+		memcpy(data.c_tex, sector->ceiling().texture.data(), sector->ceiling().texture.size());
 
 		// Properties
 		data.light   = sector->lightLevel();

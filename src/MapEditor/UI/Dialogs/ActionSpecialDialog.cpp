@@ -1150,7 +1150,7 @@ void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
 				if (choice_trigger_)
 					Game::configuration().setLineFlag(flag.index, (MapLine*)line, flag.check_box->GetValue());
 				else
-					line->setBoolProperty(flag.udmf, flag.check_box->GetValue());
+					line->setBoolProperty(flag.udmf.ToStdString(), flag.check_box->GetValue());
 			}
 		}
 	}
@@ -1226,7 +1226,7 @@ void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
 			for (auto& flag : flags_)
 			{
 				bool set;
-				if (MapObject::multiBoolProperty(lines, flag.udmf, set))
+				if (MapObject::multiBoolProperty(lines, flag.udmf.ToStdString(), set))
 					flag.check_box->SetValue(set);
 				else
 					flag.check_box->Set3StateValue(wxCHK_UNDETERMINED);
