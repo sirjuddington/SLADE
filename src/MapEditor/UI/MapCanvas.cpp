@@ -265,7 +265,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 {
 	// Send to editor
 	context_->input().updateKeyModifiersWx(e.GetModifiers());
-	context_->input().keyDown(KeyBind::keyName(e.GetKeyCode()));
+	context_->input().keyDown(KeyBind::keyName(e.GetKeyCode()).ToStdString());
 
 	// Testing
 	if (Global::debug)
@@ -349,7 +349,7 @@ void MapCanvas::onKeyUp(wxKeyEvent& e)
 {
 	// Send to editor
 	context_->input().updateKeyModifiersWx(e.GetModifiers());
-	context_->input().keyUp(KeyBind::keyName(e.GetKeyCode()));
+	context_->input().keyUp(KeyBind::keyName(e.GetKeyCode()).ToStdString());
 
 	e.Skip();
 }

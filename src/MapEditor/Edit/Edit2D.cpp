@@ -177,7 +177,7 @@ void Edit2D::editObjectProperties()
 		return;
 
 	// Begin recording undo level
-	context_.beginUndoRecord(wxString::Format("Property Edit (%s)", context_.modeString(false)));
+	context_.beginUndoRecord(fmt::format("Property Edit ({})", context_.modeString(false)));
 	for (auto item : selection)
 		context_.recordPropertyChangeUndoStep(item);
 
@@ -322,20 +322,20 @@ void Edit2D::changeSectorHeight(int amount, bool floor, bool ceiling) const
 	context_.endUndoRecord();
 
 	// Add editor message
-	wxString what;
+	std::string what;
 	if (floor && !ceiling)
 		what = "Floor";
 	else if (!floor && ceiling)
 		what = "Ceiling";
 	else
 		what = "Floor and ceiling";
-	wxString inc = "increased";
+	std::string inc = "increased";
 	if (amount < 0)
 	{
 		inc    = "decreased";
 		amount = -amount;
 	}
-	context_.addEditorMessage(wxString::Format("%s height %s by %d", what, inc, amount));
+	context_.addEditorMessage(fmt::format("{} height {} by {}", what, inc, amount));
 
 	// Update display
 	context_.updateDisplay();
@@ -380,7 +380,7 @@ void Edit2D::changeSectorLight(bool up, bool fine) const
 
 	// Add editor message
 	int amount = fine ? 1 : Game::configuration().lightLevelInterval();
-	context_.addEditorMessage(wxString::Format("Light level %s by %d", up ? "increased" : "decreased", amount));
+	context_.addEditorMessage(fmt::format("Light level {} by {}", up ? "increased" : "decreased", amount));
 
 	// Update display
 	context_.updateDisplay();
@@ -401,7 +401,7 @@ void Edit2D::changeSectorTexture() const
 		return;
 
 	// Determine the initial texture
-	wxString texture, browser_title, undo_name;
+	std::string texture, browser_title, undo_name;
 	auto     mode = context_.sectorEditMode();
 	if (mode == SectorMode::Floor)
 	{
@@ -532,9 +532,9 @@ void Edit2D::joinSectors(bool remove_lines) const
 
 	// Editor message
 	if (nlines == 0)
-		context_.addEditorMessage(wxString::Format("Joined %lu Sectors", sectors.size()));
+		context_.addEditorMessage(fmt::format("Joined {} Sectors", sectors.size()));
 	else
-		context_.addEditorMessage(wxString::Format("Joined %lu Sectors (removed %d Lines)", sectors.size(), nlines));
+		context_.addEditorMessage(fmt::format("Joined {} Sectors (removed {} Lines)", sectors.size(), nlines));
 }
 
 // -----------------------------------------------------------------------------
@@ -560,12 +560,12 @@ void Edit2D::changeThingType() const
 		context_.endUndoRecord(true);
 
 		// Add editor message
-		wxString type_name = Game::configuration().thingType(newtype).name();
+		auto type_name = Game::configuration().thingType(newtype).name().ToStdString();
 		if (selection.size() == 1)
-			context_.addEditorMessage(wxString::Format("Changed type to \"%s\"", type_name));
+			context_.addEditorMessage(fmt::format("Changed type to \"{}\"", type_name));
 		else
 			context_.addEditorMessage(
-				wxString::Format("Changed %lu things to type \"%s\"", selection.size(), type_name));
+				fmt::format("Changed {} things to type \"{}\"", selection.size(), type_name));
 
 		// Update display
 		context_.updateDisplay();
@@ -623,7 +623,7 @@ void Edit2D::copy() const
 		App::clipboard().add(std::move(c));
 
 		// Editor message
-		context_.addEditorMessage(wxString::Format("Copied %s", info));
+		context_.addEditorMessage(fmt::format("Copied {}", info));
 	}
 
 	// Copy things
@@ -639,7 +639,7 @@ void Edit2D::copy() const
 		App::clipboard().add(std::move(c));
 
 		// Editor message
-		context_.addEditorMessage(wxString::Format("Copied %s", info));
+		context_.addEditorMessage(fmt::format("Copied {}", info));
 	}
 }
 
@@ -660,7 +660,7 @@ void Edit2D::paste(Vec2d mouse_pos) const
 			auto pos       = context_.relativeSnapToGrid(clip->midpoint(), mouse_pos);
 			auto new_verts = clip->pasteToMap(&context_.map(), pos);
 			context_.map().mergeArch(new_verts);
-			context_.addEditorMessage(wxString::Format("Pasted %s", clip->info()));
+			context_.addEditorMessage(fmt::format("Pasted {}", clip->info()));
 			context_.endUndoRecord(true);
 		}
 
@@ -672,7 +672,7 @@ void Edit2D::paste(Vec2d mouse_pos) const
 			// Snap the geometry in such a way that it stays in the same position relative to the grid
 			auto pos = context_.relativeSnapToGrid(clip->midpoint(), mouse_pos);
 			clip->pasteToMap(&context_.map(), pos);
-			context_.addEditorMessage(wxString::Format("Pasted %s", clip->info()));
+			context_.addEditorMessage(fmt::format("Pasted {}", clip->info()));
 			context_.endUndoRecord(true);
 		}
 	}
@@ -694,7 +694,7 @@ void Edit2D::copyProperties()
 		copy_sector_.copy(copy_object);
 		sector_copied_ = true;
 
-		context_.addEditorMessage(wxString::Format("Copied sector #%d properties", copy_object->index()));
+		context_.addEditorMessage(fmt::format("Copied sector #{} properties", copy_object->index()));
 	}
 
 	// Things mode
@@ -703,7 +703,7 @@ void Edit2D::copyProperties()
 		copy_thing_.copy(copy_object);
 		thing_copied_ = true;
 
-		context_.addEditorMessage(wxString::Format("Copied thing #%d properties", copy_object->index()));
+		context_.addEditorMessage(fmt::format("Copied thing #{} properties", copy_object->index()));
 	}
 
 	// Lines mode
@@ -712,7 +712,7 @@ void Edit2D::copyProperties()
 		copy_line_.copy(copy_object);
 		line_copied_ = true;
 
-		context_.addEditorMessage(wxString::Format("Copied line #%d properties", copy_object->index()));
+		context_.addEditorMessage(fmt::format("Copied line #{} properties", copy_object->index()));
 	}
 }
 
@@ -810,7 +810,7 @@ void Edit2D::createObject(Vec2d pos) const
 			context_.endUndoRecord(true);
 
 			// Editor message
-			context_.addEditorMessage(wxString::Format("Created %lu line(s)", context_.selection().size() - 1));
+			context_.addEditorMessage(fmt::format("Created {} line(s)", context_.selection().size() - 1));
 
 			// Clear selection
 			context_.selection().clear();
@@ -855,7 +855,7 @@ void Edit2D::createVertex(Vec2d pos) const
 	// Editor message
 	if (vertex)
 		context_.addEditorMessage(
-			wxString::Format("Created vertex at (%d, %d)", (int)vertex->xPos(), (int)vertex->yPos()));
+			fmt::format("Created vertex at ({}, {})", (int)vertex->xPos(), (int)vertex->yPos()));
 }
 
 // -----------------------------------------------------------------------------
@@ -888,7 +888,7 @@ void Edit2D::createThing(Vec2d pos) const
 	// Editor message
 	if (thing)
 		context_.addEditorMessage(
-			wxString::Format("Created thing at (%d, %d)", (int)thing->xPos(), (int)thing->yPos()));
+			fmt::format("Created thing at ({}, {})", (int)thing->xPos(), (int)thing->yPos()));
 }
 
 // -----------------------------------------------------------------------------
@@ -944,7 +944,7 @@ void Edit2D::createSector(Vec2d pos) const
 	// Editor message
 	if (ok)
 	{
-		context_.addEditorMessage(wxString::Format("Created sector #%lu", map.nSectors() - 1));
+		context_.addEditorMessage(fmt::format("Created sector #{}", map.nSectors() - 1));
 		context_.endUndoRecord(true);
 	}
 	else
@@ -998,9 +998,9 @@ void Edit2D::deleteVertex() const
 
 	// Editor message
 	if (verts.size() == 1)
-		context_.addEditorMessage(wxString::Format("Deleted vertex #%d", index));
+		context_.addEditorMessage(fmt::format("Deleted vertex #{}", index));
 	else if (verts.size() > 1)
-		context_.addEditorMessage(wxString::Format("Deleted %lu vertices", verts.size()));
+		context_.addEditorMessage(fmt::format("Deleted {} vertices", verts.size()));
 }
 
 // -----------------------------------------------------------------------------
@@ -1030,9 +1030,9 @@ void Edit2D::deleteLine() const
 
 	// Editor message
 	if (lines.size() == 1)
-		context_.addEditorMessage(wxString::Format("Deleted line #%d", index));
+		context_.addEditorMessage(fmt::format("Deleted line #{}", index));
 	else if (lines.size() > 1)
-		context_.addEditorMessage(wxString::Format("Deleted %lu lines", lines.size()));
+		context_.addEditorMessage(fmt::format("Deleted {} lines", lines.size()));
 }
 
 // -----------------------------------------------------------------------------
@@ -1059,9 +1059,9 @@ void Edit2D::deleteThing() const
 
 	// Editor message
 	if (things.size() == 1)
-		context_.addEditorMessage(wxString::Format("Deleted thing #%d", index));
+		context_.addEditorMessage(fmt::format("Deleted thing #{}", index));
 	else if (things.size() > 1)
-		context_.addEditorMessage(wxString::Format("Deleted %lu things", things.size()));
+		context_.addEditorMessage(fmt::format("Deleted {} things", things.size()));
 }
 
 // -----------------------------------------------------------------------------
@@ -1140,9 +1140,9 @@ void Edit2D::deleteSector() const
 
 	// Editor message
 	if (sectors.size() == 1)
-		context_.addEditorMessage(wxString::Format("Deleted sector #%d", index));
+		context_.addEditorMessage(fmt::format("Deleted sector #{}", index));
 	else if (sectors.size() > 1)
-		context_.addEditorMessage(wxString::Format("Deleted %lu sector", sectors.size()));
+		context_.addEditorMessage(fmt::format("Deleted {} sector", sectors.size()));
 
 	// Remove detached vertices
 	context_.map().removeDetachedVertices();

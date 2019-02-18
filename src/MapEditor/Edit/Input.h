@@ -69,18 +69,18 @@ public:
 		alt_down_   = alt;
 	}
 	void updateKeyModifiersWx(int modifiers);
-	bool keyDown(const wxString& key) const;
-	bool keyUp(const wxString& key) const;
+	bool keyDown(std::string_view key) const;
+	bool keyUp(std::string_view key) const;
 
 	// Keybind handling
 	void onKeyBindPress(const wxString& name) override;
 	void onKeyBindRelease(const wxString& name) override;
-	void handleKeyBind2dView(const wxString& name);
-	void handleKeyBind2d(const wxString& name);
-	void handleKeyBind3d(const wxString& name) const;
+	void handleKeyBind2dView(std::string_view name);
+	void handleKeyBind2d(std::string_view name);
+	void handleKeyBind3d(std::string_view name) const;
 	bool updateCamera3d(double mult) const;
 
-	static wxString mouseButtonKBName(MouseButton button);
+	static std::string mouseButtonKBName(MouseButton button);
 
 private:
 	MapEditContext& context_;

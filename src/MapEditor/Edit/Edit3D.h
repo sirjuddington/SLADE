@@ -60,13 +60,13 @@ private:
 	std::unique_ptr<UndoManager> undo_manager_;
 	bool                         link_light_;
 	bool                         link_offset_;
-	wxString                     copy_texture_;
+	std::string                  copy_texture_;
 	MapThing                     copy_thing_;
 
 	vector<MapEditor::Item> getAdjacent(MapEditor::Item item) const;
 
 	// Helper for selectAdjacent
-	static bool wallMatches(MapSide* side, MapEditor::ItemType part, const wxString& tex);
+	static bool wallMatches(MapSide* side, MapEditor::ItemType part, std::string_view tex);
 	void        getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& list) const;
 	void        getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& list) const;
 
@@ -74,7 +74,7 @@ private:
 	static void doAlignX(
 		MapSide*                 side,
 		int                      offset,
-		const wxString&          tex,
+		std::string_view         tex,
 		vector<MapEditor::Item>& walls_done,
 		int                      tex_width);
 };

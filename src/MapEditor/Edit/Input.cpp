@@ -102,11 +102,11 @@ bool Input::mouseMove(int new_x, int new_y)
 	// Update coordinates on status bar
 	double   mx = context_.snapToGrid(mouse_pos_map_.x, false);
 	double   my = context_.snapToGrid(mouse_pos_map_.y, false);
-	wxString status_text;
+	std::string status_text;
 	if (context_.mapDesc().format == MapFormat::UDMF)
-		status_text = wxString::Format("Position: (%1.3f, %1.3f)", mx, my);
+		status_text = fmt::format("Position: ({:1.3f}, {:1.3f})", mx, my);
 	else
-		status_text = wxString::Format("Position: (%d, %d)", (int)mx, (int)my);
+		status_text = fmt::format("Position: ({}, {})", (int)mx, (int)my);
 	MapEditor::setStatusText(status_text, 3);
 
 	// Object edit
@@ -486,23 +486,25 @@ void Input::updateKeyModifiersWx(int modifiers)
 // -----------------------------------------------------------------------------
 // Handles [key] being pressed in the map editor
 // -----------------------------------------------------------------------------
-bool Input::keyDown(const wxString& key) const
+bool Input::keyDown(std::string_view key) const
 {
+	wxString wx_key{ key.data(), key.size() };
+
 	// Send to overlay if active
 	if (context_.overlayActive())
-		context_.currentOverlay()->keyDown(key);
+		context_.currentOverlay()->keyDown(wx_key);
 
 	// Let keybind system handle it
-	return KeyBind::keyPressed({ key, alt_down_, ctrl_down_, shift_down_ });
+	return KeyBind::keyPressed({ wx_key, alt_down_, ctrl_down_, shift_down_ });
 }
 
 // -----------------------------------------------------------------------------
 // Handles [key] being released in the map editor
 // -----------------------------------------------------------------------------
-bool Input::keyUp(const wxString& key) const
+bool Input::keyUp(std::string_view key) const
 {
 	// Let keybind system handle it
-	return KeyBind::keyReleased(key);
+	return KeyBind::keyReleased(wxString{ key.data(), key.size() });
 }
 
 // -----------------------------------------------------------------------------
@@ -551,11 +553,11 @@ void Input::onKeyBindPress(const wxString& name)
 
 	// Handle keybinds depending on mode
 	if (context_.editMode() == Mode::Visual)
-		handleKeyBind3d(name);
+		handleKeyBind3d(name.ToStdString());
 	else
 	{
-		handleKeyBind2dView(name);
-		handleKeyBind2d(name);
+		handleKeyBind2dView(name.ToStdString());
+		handleKeyBind2d(name.ToStdString());
 	}
 }
 
@@ -584,7 +586,7 @@ void Input::onKeyBindRelease(const wxString& name)
 // Handles 2d mode view-related keybinds
 // (can generally be used no matter the current editor state)
 // -----------------------------------------------------------------------------
-void Input::handleKeyBind2dView(const wxString& name)
+void Input::handleKeyBind2dView(std::string_view name)
 {
 	// Pan left
 	if (name == "me2d_left")
@@ -648,7 +650,7 @@ void Input::handleKeyBind2dView(const wxString& name)
 // -----------------------------------------------------------------------------
 // Handles 2d mode key binds
 // -----------------------------------------------------------------------------
-void Input::handleKeyBind2d(const wxString& name)
+void Input::handleKeyBind2d(std::string_view name)
 {
 	// --- Line Drawing ---
 	if (mouse_state_ == MouseState::LineDraw)
@@ -929,11 +931,11 @@ void Input::handleKeyBind2d(const wxString& name)
 					mouse_state_ = MouseState::TagSectors;
 
 					// Setup help text
-					wxString key_accept = KeyBind::bind("map_edit_accept").keysAsString();
-					wxString key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
+					auto key_accept = KeyBind::bind("map_edit_accept").keysAsString().ToStdString();
+					auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString().ToStdString();
 					context_.setFeatureHelp({ "Tag Edit",
-											  wxString::Format("%s = Accept", key_accept),
-											  wxString::Format("%s = Cancel", key_cancel),
+											  fmt::format("{} = Accept", key_accept),
+											  fmt::format("{} = Cancel", key_cancel),
 											  "Left Click = Toggle tagged sector" });
 				}
 			}
@@ -974,7 +976,7 @@ void Input::handleKeyBind2d(const wxString& name)
 // -----------------------------------------------------------------------------
 // Handles 3d mode key binds
 // -----------------------------------------------------------------------------
-void Input::handleKeyBind3d(const wxString& name) const
+void Input::handleKeyBind3d(std::string_view name) const
 {
 	// Escape from 3D mode
 	if (name == "map_edit_cancel")
@@ -1010,7 +1012,7 @@ void Input::handleKeyBind3d(const wxString& name) const
 		{
 			render_3d_brightness = 1.0;
 		}
-		context_.addEditorMessage(wxString::Format("Brightness set to %1.1f", (double)render_3d_brightness));
+		context_.addEditorMessage(fmt::format("Brightness set to {:1.1f}", (double)render_3d_brightness));
 	}
 
 	// Toggle gravity
@@ -1088,7 +1090,7 @@ void Input::handleKeyBind3d(const wxString& name) const
 
 	// Send to map editor
 	else
-		context_.handleKeyBind(name, mouse_pos_map_);
+		context_.handleKeyBind(wxString{ name.data(), name.size() }, mouse_pos_map_);
 }
 
 // -----------------------------------------------------------------------------
@@ -1167,7 +1169,7 @@ bool Input::updateCamera3d(double mult) const
 // -----------------------------------------------------------------------------
 // Returns the KeyBind name for the given mouse [button]
 // -----------------------------------------------------------------------------
-wxString Input::mouseButtonKBName(MouseButton button)
+std::string Input::mouseButtonKBName(MouseButton button)
 {
 	switch (button)
 	{
@@ -1176,6 +1178,6 @@ wxString Input::mouseButtonKBName(MouseButton button)
 	case Middle: return "mouse3";
 	case Mouse4: return "mouse4";
 	case Mouse5: return "mouse5";
-	default: return wxString::Format("mouse%d", button);
+	default: return fmt::format("mouse{}", button);
 	}
 }

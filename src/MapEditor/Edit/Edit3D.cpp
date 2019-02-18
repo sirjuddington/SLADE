@@ -172,9 +172,9 @@ void Edit3D::changeSectorLight(int amount) const
 	if (!items.empty())
 	{
 		if (amount > 0)
-			context_.addEditorMessage(wxString::Format("Light increased by %d", amount));
+			context_.addEditorMessage(fmt::format("Light increased by {}", amount));
 		else
-			context_.addEditorMessage(wxString::Format("Light decreased by %d", -amount));
+			context_.addEditorMessage(fmt::format("Light decreased by {}", -amount));
 	}
 }
 
@@ -303,14 +303,14 @@ void Edit3D::changeOffset(int amount, bool x) const
 	// Editor message
 	if (!items.empty() && changed)
 	{
-		wxString axis = "X";
+		char axis = 'X';
 		if (!x)
-			axis = "Y";
+			axis = 'Y';
 
 		if (amount > 0)
-			context_.addEditorMessage(wxString::Format("%s offset increased by %d", axis, amount));
+			context_.addEditorMessage(fmt::format("{} offset increased by {}", axis, amount));
 		else
-			context_.addEditorMessage(wxString::Format("%s offset decreased by %d", axis, -amount));
+			context_.addEditorMessage(fmt::format("{} offset decreased by {}", axis, -amount));
 	}
 }
 
@@ -407,9 +407,9 @@ void Edit3D::changeSectorHeight(int amount) const
 	if (!items.empty())
 	{
 		if (amount > 0)
-			context_.addEditorMessage(wxString::Format("Height increased by %d", amount));
+			context_.addEditorMessage(fmt::format("Height increased by {}", amount));
 		else
-			context_.addEditorMessage(wxString::Format("Height decreased by %d", -amount));
+			context_.addEditorMessage(fmt::format("Height decreased by {}", -amount));
 	}
 }
 
@@ -428,7 +428,7 @@ void Edit3D::autoAlignX(MapEditor::Item start) const
 		return;
 
 	// Get texture to match
-	wxString tex;
+	std::string tex;
 	if (start.type == ItemType::WallBottom)
 		tex = side->texLower();
 	else if (start.type == ItemType::WallMiddle)
@@ -669,7 +669,7 @@ void Edit3D::toggleUnpegged(bool lower) const
 		return;
 
 	// Begin undo level
-	wxString undo_type = lower ? "Toggle Lower Unpegged" : "Toggle Upper Unpegged";
+	std::string undo_type = lower ? "Toggle Lower Unpegged" : "Toggle Upper Unpegged";
 	undo_manager_->beginRecord(undo_type);
 
 	// Go through items
@@ -794,7 +794,7 @@ void Edit3D::copy(CopyType type)
 void Edit3D::paste(CopyType type) const
 {
 	// Begin undo step
-	wxString ptype = "Paste Properties";
+	std::string ptype = "Paste Properties";
 	if (type == CopyType::TexType)
 		ptype = "Paste Texture/Type";
 	undo_manager_->beginRecord(ptype);
@@ -813,7 +813,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setTexUpper(copy_texture_.ToStdString());
+					side->setTexUpper(copy_texture_);
 			}
 
 			// Middle wall
@@ -821,7 +821,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setTexMiddle(copy_texture_.ToStdString());
+					side->setTexMiddle(copy_texture_);
 			}
 
 			// Lower wall
@@ -829,7 +829,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setTexLower(copy_texture_.ToStdString());
+					side->setTexLower(copy_texture_);
 			}
 		}
 
@@ -843,7 +843,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					sector->setFloorTexture(copy_texture_.ToStdString());
+					sector->setFloorTexture(copy_texture_);
 			}
 
 			// Ceiling
@@ -851,7 +851,7 @@ void Edit3D::paste(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					sector->setCeilingTexture(copy_texture_.ToStdString());
+					sector->setCeilingTexture(copy_texture_);
 			}
 		}
 
@@ -913,7 +913,7 @@ void Edit3D::floodFill(CopyType type) const
 	}
 
 	// Begin undo step
-	wxString ptype = "Floodfill textures";
+	std::string ptype = "Floodfill textures";
 	undo_manager_->beginRecord(ptype);
 
 	// Go through items
@@ -929,7 +929,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setTexUpper(copy_texture_.ToStdString());
+					side->setTexUpper(copy_texture_);
 			}
 
 			// Middle wall
@@ -937,7 +937,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setTexMiddle(copy_texture_.ToStdString());
+					side->setTexMiddle(copy_texture_);
 			}
 
 			// Lower wall
@@ -945,7 +945,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					side->setTexLower(copy_texture_.ToStdString());
+					side->setTexLower(copy_texture_);
 			}
 		}
 
@@ -959,7 +959,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					sector->setFloorTexture(copy_texture_.ToStdString());
+					sector->setFloorTexture(copy_texture_);
 			}
 
 			// Ceiling
@@ -967,7 +967,7 @@ void Edit3D::floodFill(CopyType type) const
 			{
 				// Texture
 				if (type == CopyType::TexType)
-					sector->setCeilingTexture(copy_texture_.ToStdString());
+					sector->setCeilingTexture(copy_texture_);
 			}
 		}
 	}
@@ -1195,9 +1195,9 @@ void Edit3D::changeHeight(int amount) const
 	if (!items.empty())
 	{
 		if (amount > 0)
-			context_.addEditorMessage(wxString::Format("Height increased by %d", amount));
+			context_.addEditorMessage(fmt::format("Height increased by {}", amount));
 		else
-			context_.addEditorMessage(wxString::Format("Height decreased by %d", -amount));
+			context_.addEditorMessage(fmt::format("Height decreased by {}", -amount));
 	}
 }
 
@@ -1213,7 +1213,7 @@ void Edit3D::changeTexture() const
 		return;
 
 	// Get initial texture
-	wxString tex;
+	std::string tex;
 	auto     type  = MapEditor::TextureType::Texture;
 	auto&    first = selection[0];
 	auto&    map   = context_.map();
@@ -1253,9 +1253,9 @@ void Edit3D::changeTexture() const
 				if (auto sector = item.asSector(map))
 				{
 					if (item.type == ItemType::Floor)
-						sector->setFloorTexture(tex.ToStdString());
+						sector->setFloorTexture(tex);
 					else if (item.type == ItemType::Ceiling)
-						sector->setCeilingTexture(tex.ToStdString());
+						sector->setCeilingTexture(tex);
 				}
 			}
 		}
@@ -1268,11 +1268,11 @@ void Edit3D::changeTexture() const
 				if (auto side = item.asSide(map))
 				{
 					if (item.type == ItemType::WallBottom)
-						side->setTexLower(tex.ToStdString());
+						side->setTexLower(tex);
 					else if (item.type == ItemType::WallMiddle)
-						side->setTexMiddle(tex.ToStdString());
+						side->setTexMiddle(tex);
 					else if (item.type == ItemType::WallTop)
-						side->setTexUpper(tex.ToStdString());
+						side->setTexUpper(tex);
 				}
 			}
 		}
@@ -1308,7 +1308,7 @@ vector<MapEditor::Item> Edit3D::getAdjacent(MapEditor::Item item) const
 // -----------------------------------------------------------------------------
 // Returns true if the texture [part] of [side] matches [tex]
 // -----------------------------------------------------------------------------
-bool Edit3D::wallMatches(MapSide* side, ItemType part, const wxString& tex)
+bool Edit3D::wallMatches(MapSide* side, ItemType part, std::string_view tex)
 {
 	// Check for blank texture where it isn't needed
 	if (tex == MapSide::TEX_NONE)
@@ -1371,7 +1371,7 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 		return;
 
 	// Get texture to match
-	wxString tex;
+	std::string tex;
 	if (item.type == ItemType::WallBottom)
 		tex = side->texLower();
 	else if (item.type == ItemType::WallMiddle)
@@ -1559,7 +1559,7 @@ void Edit3D::getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& lis
 void Edit3D::doAlignX(
 	MapSide*                 side,
 	int                      offset,
-	const wxString&          tex,
+	std::string_view         tex,
 	vector<MapEditor::Item>& walls_done,
 	int                      tex_width)
 {
