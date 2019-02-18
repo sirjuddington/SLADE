@@ -57,7 +57,7 @@ public:
 		return {};
 	}
 
-	wxString udmfNamespace() override { return ""; }
+	std::string udmfNamespace() override { return ""; }
 };
 
 

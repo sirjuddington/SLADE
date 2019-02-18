@@ -17,10 +17,10 @@ public:
 	vector<ArchiveEntry::UPtr> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
 		override;
 
-	wxString udmfNamespace() override { return udmf_namespace_; }
+	std::string udmfNamespace() override { return udmf_namespace_; }
 
 private:
-	wxString udmf_namespace_;
+	std::string udmf_namespace_;
 
 	std::unique_ptr<MapVertex> createVertex(ParseTreeNode* def) const;
 	std::unique_ptr<MapSector> createSector(ParseTreeNode* def) const;

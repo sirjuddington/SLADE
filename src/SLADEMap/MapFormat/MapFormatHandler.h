@@ -16,7 +16,7 @@ public:
 		const MapObjectCollection& map_data,
 		const PropertyList&        map_extra_props) = 0;
 
-	virtual wxString udmfNamespace() = 0;
+	virtual std::string udmfNamespace() = 0;
 
 	static UPtr get(MapFormat format);
 };

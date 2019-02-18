@@ -60,7 +60,7 @@ public:
 	vector<ArchiveEntry::UPtr> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
 		override;
 
-	wxString udmfNamespace() override { return ""; }
+	std::string udmfNamespace() override { return ""; }
 
 private:
 	virtual bool readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_data) const;
