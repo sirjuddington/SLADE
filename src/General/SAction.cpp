@@ -95,7 +95,7 @@ wxString SAction::shortcutText() const
 {
 	if (shortcut_.StartsWith("kb:"))
 	{
-		auto kp = KeyBind::bind(shortcut_.Mid(3)).key(0);
+		auto kp = KeyBind::bind(shortcut_.Mid(3).ToStdString()).key(0);
 		if (!kp.key.empty())
 			return kp.asString();
 
@@ -161,7 +161,7 @@ bool SAction::addToMenu(
 	bool     sc_control = shortcut_.Contains("Ctrl") || shortcut_.Contains("Alt");
 	if (shortcut_.StartsWith("kb:"))
 	{
-		auto kp = KeyBind::bind(shortcut_.Mid(3)).key(0);
+		auto kp = KeyBind::bind(shortcut_.Mid(3).ToStdString()).key(0);
 		if (!kp.key.empty())
 			sc = kp.asString();
 		else

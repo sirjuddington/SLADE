@@ -259,8 +259,8 @@ void LineDraw::begin(bool shape)
 	context_.input().setMouseState(Input::MouseState::LineDraw);
 
 	// Setup help text
-	auto key_accept = KeyBind::bind("map_edit_accept").keysAsString().ToStdString();
-	auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString().ToStdString();
+	auto key_accept = KeyBind::bind("map_edit_accept").keysAsString();
+	auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 	if (shape)
 	{
 		context_.setFeatureHelp({ "Shape Drawing",

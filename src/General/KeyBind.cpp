@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "KeyBind.h"
+#include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
 
@@ -50,6 +51,38 @@ vector<KeyBindHandler*> kb_handlers;
 
 // -----------------------------------------------------------------------------
 //
+// Keypress Struct Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Returns a string representation of the keypress
+// -----------------------------------------------------------------------------
+std::string Keypress::asString() const
+{
+	if (key.empty())
+		return "";
+
+	std::string ret = "";
+	if (ctrl)
+		ret += "Ctrl+";
+	if (alt)
+		ret += "Alt+";
+	if (shift)
+		ret += "Shift+";
+
+	std::string keyname = key;
+	std::replace(keyname.begin(), keyname.end(), '_', ' ');
+	StrUtil::capitalizeIP(keyname);
+	ret += keyname;
+
+	return ret;
+}
+
+
+// -----------------------------------------------------------------------------
+//
 // KeyBind Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -58,7 +91,7 @@ vector<KeyBindHandler*> kb_handlers;
 // -----------------------------------------------------------------------------
 // Adds a key combination to the keybind
 // -----------------------------------------------------------------------------
-void KeyBind::addKey(const wxString& key, bool alt, bool ctrl, bool shift)
+void KeyBind::addKey(std::string_view key, bool alt, bool ctrl, bool shift)
 {
 	keys_.emplace_back(key, alt, ctrl, shift);
 }
@@ -66,9 +99,9 @@ void KeyBind::addKey(const wxString& key, bool alt, bool ctrl, bool shift)
 // -----------------------------------------------------------------------------
 // Returns a string representation of all the keys bound to this keybind
 // -----------------------------------------------------------------------------
-wxString KeyBind::keysAsString()
+std::string KeyBind::keysAsString()
 {
-	wxString ret = "";
+	std::string ret;
 
 	for (unsigned a = 0; a < keys_.size(); a++)
 	{
@@ -79,16 +112,16 @@ wxString KeyBind::keysAsString()
 		if (keys_[a].shift)
 			ret += "Shift+";
 
-		wxString keyname = keys_[a].key;
-		keyname.Replace("_", " ");
-		keyname = keyname.Capitalize();
+		auto keyname = keys_[a].key;
+		std::replace(keyname.begin(), keyname.end(), '_', ' ');
+		StrUtil::capitalizeIP(keyname);
 		ret += keyname;
 
 		if (a < keys_.size() - 1)
 			ret += ", ";
 	}
 
-	if (ret.IsEmpty())
+	if (ret.empty())
 		return "None";
 	else
 		return ret;
@@ -105,7 +138,7 @@ wxString KeyBind::keysAsString()
 // -----------------------------------------------------------------------------
 // Returns the keybind [name]
 // -----------------------------------------------------------------------------
-KeyBind& KeyBind::bind(const wxString& name)
+KeyBind& KeyBind::bind(std::string_view name)
 {
 	for (auto& keybind : keybinds)
 	{
@@ -119,12 +152,11 @@ KeyBind& KeyBind::bind(const wxString& name)
 // -----------------------------------------------------------------------------
 // Returns a list of all keybind names bound to [key]
 // -----------------------------------------------------------------------------
-wxArrayString KeyBind::bindsForKey(Keypress key)
+vector<std::string> KeyBind::bindsForKey(Keypress key)
 {
-	wxArrayString matches;
+	vector<std::string> matches;
 
 	// Go through all keybinds
-	bool pressed = false;
 	for (auto& kb : keybinds)
 	{
 		// Go through all keys bound to this keybind
@@ -134,7 +166,7 @@ wxArrayString KeyBind::bindsForKey(Keypress key)
 
 			// Check for match with keypress
 			if (kp.shift == key.shift && kp.alt == key.alt && kp.ctrl == key.ctrl && kp.key == key.key)
-				matches.Add(kb.name_);
+				matches.push_back(kb.name_);
 		}
 	}
 
@@ -144,7 +176,7 @@ wxArrayString KeyBind::bindsForKey(Keypress key)
 // -----------------------------------------------------------------------------
 // Returns true if keybind [name] is currently pressed
 // -----------------------------------------------------------------------------
-bool KeyBind::isPressed(const wxString& name)
+bool KeyBind::isPressed(std::string_view name)
 {
 	return bind(name).pressed_;
 }
@@ -153,12 +185,12 @@ bool KeyBind::isPressed(const wxString& name)
 // Adds a new keybind
 // -----------------------------------------------------------------------------
 bool KeyBind::addBind(
-	const wxString& name,
-	const Keypress& key,
-	const wxString& desc,
-	const wxString& group,
-	bool            ignore_shift,
-	int             priority)
+	std::string_view name,
+	const Keypress&  key,
+	std::string_view desc,
+	std::string_view group,
+	bool             ignore_shift,
+	int              priority)
 {
 	// Find keybind
 	KeyBind* bind = nullptr;
@@ -180,7 +212,7 @@ bool KeyBind::addBind(
 	}
 
 	// Set keybind description/group
-	if (!desc.IsEmpty())
+	if (!desc.empty())
 	{
 		bind->description_ = desc;
 		bind->group_       = group;
@@ -211,7 +243,7 @@ bool KeyBind::addBind(
 // -----------------------------------------------------------------------------
 // Returns a string representation of [key]
 // -----------------------------------------------------------------------------
-wxString KeyBind::keyName(int key)
+std::string KeyBind::keyName(int key)
 {
 	// Return string representation of key id
 	switch (key)
@@ -312,16 +344,16 @@ wxString KeyBind::keyName(int key)
 
 	// Check for ascii character
 	if (key > 32 && key < 128)
-		return (char)key;
+		return { (char)key };
 
 	// Unknown character, just return "key##"
-	return wxString::Format("key%d", key);
+	return fmt::format("key{}", key);
 }
 
 // -----------------------------------------------------------------------------
 // Returns a string representation of mouse [button]
 // -----------------------------------------------------------------------------
-wxString KeyBind::mbName(int button)
+std::string KeyBind::mbName(int button)
 {
 	switch (button)
 	{
@@ -330,7 +362,7 @@ wxString KeyBind::mbName(int button)
 	case wxMOUSE_BTN_MIDDLE: return "mouse3";
 	case wxMOUSE_BTN_AUX1: return "mouse4";
 	case wxMOUSE_BTN_AUX2: return "mouse5";
-	default: return wxString::Format("mouse%d", button);
+	default: return fmt::format("mouse{}", button);
 	};
 }
 
@@ -376,7 +408,7 @@ bool KeyBind::keyPressed(Keypress key)
 // -----------------------------------------------------------------------------
 // 'Releases' all keybinds bound to [key]
 // -----------------------------------------------------------------------------
-bool KeyBind::keyReleased(const wxString& key)
+bool KeyBind::keyReleased(std::string_view key)
 {
 	// Ignore raw modifier keys
 	if (key == "control" || key == "shift" || key == "alt" || key == "command")
@@ -411,7 +443,7 @@ bool KeyBind::keyReleased(const wxString& key)
 // -----------------------------------------------------------------------------
 // 'Presses' the keybind [name]
 // -----------------------------------------------------------------------------
-void KeyBind::pressBind(const wxString& name)
+void KeyBind::pressBind(std::string_view name)
 {
 	for (auto& keybind : keybinds)
 	{
@@ -462,7 +494,7 @@ void KeyBind::releaseAll()
 void KeyBind::initBinds()
 {
 	// General
-	wxString group = "General";
+	std::string group = "General";
 	addBind("copy", Keypress("C", KPM_CTRL), "Copy", group);
 	addBind("cut", Keypress("X", KPM_CTRL), "Cut", group);
 	addBind("paste", Keypress("V", KPM_CTRL), "Paste", group);
@@ -717,10 +749,10 @@ void KeyBind::initBinds()
 // -----------------------------------------------------------------------------
 // Writes all keybind definitions as a string
 // -----------------------------------------------------------------------------
-wxString KeyBind::writeBinds()
+std::string KeyBind::writeBinds()
 {
 	// Init string
-	wxString ret = "";
+	std::string ret = "";
 
 	// Go through all keybinds
 	for (auto& kb : keybinds)
@@ -773,30 +805,36 @@ bool KeyBind::readBinds(Tokenizer& tz)
 	while (!tz.checkOrEnd("}"))
 	{
 		// Clear any current binds for the key
-		wxString name = tz.current().text;
+		auto name = tz.current().text;
 		bind(name).keys_.clear();
 
 		// Read keys
 		while (true)
 		{
-			wxString keystr = tz.next().text;
+			auto keystr = tz.next().text;
 
 			// Finish if no keys are bound
 			if (keystr == "unbound")
 				break;
 
 			// Parse key string
-			wxString key, mods;
-			if (keystr.Find("|") >= 0)
+			std::string key, mods;
+			if (keystr.find('|') != std::string::npos)
 			{
-				mods = keystr.BeforeFirst('|');
-				key  = keystr.AfterFirst('|');
+				mods = StrUtil::beforeFirst(keystr, '|');
+				key  = StrUtil::afterFirst(keystr, '|');
 			}
 			else
 				key = keystr;
 
 			// Add the key
-			addBind(name, Keypress(key, mods.Find('a') >= 0, mods.Find('c') >= 0, mods.Find('s') >= 0));
+			addBind(
+				name,
+				Keypress(
+					key,
+					mods.find('a') != std::string::npos,
+					mods.find('c') != std::string::npos,
+					mods.find('s') != std::string::npos));
 
 			// Check for more keys
 			if (!tz.advIfNext(","))

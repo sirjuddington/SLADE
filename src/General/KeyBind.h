@@ -8,12 +8,12 @@ class Tokenizer;
 
 struct Keypress
 {
-	wxString key;
-	bool     alt;
-	bool     ctrl;
-	bool     shift;
+	std::string key;
+	bool        alt;
+	bool        ctrl;
+	bool        shift;
 
-	Keypress(const wxString& key, bool alt, bool ctrl, bool shift) :
+	Keypress(std::string_view key, bool alt, bool ctrl, bool shift) :
 		key{ key },
 		alt{ alt },
 		ctrl{ ctrl },
@@ -21,7 +21,7 @@ struct Keypress
 	{
 	}
 
-	Keypress(const wxString& key = "", int modifiers = 0)
+	Keypress(std::string_view key = "", int modifiers = 0)
 	{
 		this->key = key;
 		ctrl = alt = shift = false;
@@ -33,32 +33,13 @@ struct Keypress
 			shift = true;
 	}
 
-	wxString asString() const
-	{
-		if (key.IsEmpty())
-			return "";
-
-		wxString ret = "";
-		if (ctrl)
-			ret += "Ctrl+";
-		if (alt)
-			ret += "Alt+";
-		if (shift)
-			ret += "Shift+";
-
-		wxString keyname = key;
-		keyname.Replace("_", " ");
-		keyname = keyname.Capitalize();
-		ret += keyname;
-
-		return ret;
-	}
+	std::string asString() const;
 };
 
 class KeyBind
 {
 public:
-	KeyBind(const wxString& name) : name_{ name } {}
+	KeyBind(std::string_view name) : name_{ name } {}
 	~KeyBind() = default;
 
 	// Operators
@@ -78,12 +59,12 @@ public:
 			return priority_ > r.priority_;
 	}
 
-	void     clear() { keys_.clear(); }
-	void     addKey(const wxString& key, bool alt = false, bool ctrl = false, bool shift = false);
-	wxString name() const { return name_; }
-	wxString group() const { return group_; }
-	wxString description() const { return description_; }
-	wxString keysAsString();
+	void        clear() { keys_.clear(); }
+	void        addKey(std::string_view key, bool alt = false, bool ctrl = false, bool shift = false);
+	std::string name() const { return name_; }
+	std::string group() const { return group_; }
+	std::string description() const { return description_; }
+	std::string keysAsString();
 
 	int      nKeys() const { return keys_.size(); }
 	Keypress key(unsigned index)
@@ -97,37 +78,37 @@ public:
 	Keypress defaultKey(unsigned index) { return defaults_[index]; }
 
 	// Static functions
-	static KeyBind&      bind(const wxString& name);
-	static wxArrayString bindsForKey(Keypress key);
-	static bool          isPressed(const wxString& name);
-	static bool          addBind(
-				 const wxString& name,
-				 const Keypress& key,
-				 const wxString& desc         = "",
-				 const wxString& group        = "",
-				 bool            ignore_shift = false,
-				 int             priority     = -1);
-	static wxString keyName(int key);
-	static wxString mbName(int button);
-	static bool     keyPressed(Keypress key);
-	static bool     keyReleased(const wxString& key);
-	static Keypress asKeyPress(int keycode, int modifiers);
-	static void     allKeyBinds(vector<KeyBind*>& list);
-	static void     releaseAll();
-	static void     pressBind(const wxString& name);
+	static KeyBind&            bind(std::string_view name);
+	static vector<std::string> bindsForKey(Keypress key);
+	static bool                isPressed(std::string_view name);
+	static bool                addBind(
+					   std::string_view name,
+					   const Keypress&  key,
+					   std::string_view desc         = "",
+					   std::string_view group        = "",
+					   bool             ignore_shift = false,
+					   int              priority     = -1);
+	static std::string keyName(int key);
+	static std::string mbName(int button);
+	static bool        keyPressed(Keypress key);
+	static bool        keyReleased(std::string_view key);
+	static Keypress    asKeyPress(int keycode, int modifiers);
+	static void        allKeyBinds(vector<KeyBind*>& list);
+	static void        releaseAll();
+	static void        pressBind(std::string_view name);
 
-	static void     initBinds();
-	static wxString writeBinds();
-	static bool     readBinds(Tokenizer& tz);
-	static void     updateSortedBindsList();
+	static void        initBinds();
+	static std::string writeBinds();
+	static bool        readBinds(Tokenizer& tz);
+	static void        updateSortedBindsList();
 
 private:
-	wxString         name_;
+	std::string      name_;
 	vector<Keypress> keys_;
 	vector<Keypress> defaults_;
 	bool             pressed_ = false;
-	wxString         description_;
-	wxString         group_;
+	std::string      description_;
+	std::string      group_;
 	bool             ignore_shift_ = false;
 	int              priority_     = 0;
 };
@@ -139,6 +120,6 @@ public:
 	KeyBindHandler();
 	virtual ~KeyBindHandler();
 
-	virtual void onKeyBindPress(const wxString& name) {}
-	virtual void onKeyBindRelease(const wxString& name) {}
+	virtual void onKeyBindPress(std::string_view name) {}
+	virtual void onKeyBindRelease(std::string_view name) {}
 };

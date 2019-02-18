@@ -495,7 +495,7 @@ bool Input::keyDown(std::string_view key) const
 		context_.currentOverlay()->keyDown(wx_key);
 
 	// Let keybind system handle it
-	return KeyBind::keyPressed({ wx_key, alt_down_, ctrl_down_, shift_down_ });
+	return KeyBind::keyPressed({ key, alt_down_, ctrl_down_, shift_down_ });
 }
 
 // -----------------------------------------------------------------------------
@@ -504,13 +504,13 @@ bool Input::keyDown(std::string_view key) const
 bool Input::keyUp(std::string_view key) const
 {
 	// Let keybind system handle it
-	return KeyBind::keyReleased(wxString{ key.data(), key.size() });
+	return KeyBind::keyReleased(key);
 }
 
 // -----------------------------------------------------------------------------
 // Called when the key bind [name] is pressed
 // -----------------------------------------------------------------------------
-void Input::onKeyBindPress(const wxString& name)
+void Input::onKeyBindPress(std::string_view name)
 {
 	// Check if an overlay is active
 	if (context_.overlayActive())
@@ -547,24 +547,24 @@ void Input::onKeyBindPress(const wxString& name)
 	// Send to edit context first
 	if (mouse_state_ == MouseState::Normal)
 	{
-		if (context_.handleKeyBind(name, mouse_pos_map_))
+		if (context_.handleKeyBind(wxString{ name.data(), name.size() }, mouse_pos_map_))
 			return;
 	}
 
 	// Handle keybinds depending on mode
 	if (context_.editMode() == Mode::Visual)
-		handleKeyBind3d(name.ToStdString());
+		handleKeyBind3d(name);
 	else
 	{
-		handleKeyBind2dView(name.ToStdString());
-		handleKeyBind2d(name.ToStdString());
+		handleKeyBind2dView(name);
+		handleKeyBind2d(name);
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Called when the key bind [name] is released
 // -----------------------------------------------------------------------------
-void Input::onKeyBindRelease(const wxString& name)
+void Input::onKeyBindRelease(std::string_view name)
 {
 	if (name == "me2d_pan_view" && panning_)
 	{
@@ -931,8 +931,8 @@ void Input::handleKeyBind2d(std::string_view name)
 					mouse_state_ = MouseState::TagSectors;
 
 					// Setup help text
-					auto key_accept = KeyBind::bind("map_edit_accept").keysAsString().ToStdString();
-					auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString().ToStdString();
+					auto key_accept = KeyBind::bind("map_edit_accept").keysAsString();
+					auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 					context_.setFeatureHelp({ "Tag Edit",
 											  fmt::format("{} = Accept", key_accept),
 											  fmt::format("{} = Cancel", key_cancel),

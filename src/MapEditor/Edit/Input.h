@@ -73,8 +73,8 @@ public:
 	bool keyUp(std::string_view key) const;
 
 	// Keybind handling
-	void onKeyBindPress(const wxString& name) override;
-	void onKeyBindRelease(const wxString& name) override;
+	void onKeyBindPress(std::string_view name) override;
+	void onKeyBindRelease(std::string_view name) override;
 	void handleKeyBind2dView(std::string_view name);
 	void handleKeyBind2d(std::string_view name);
 	void handleKeyBind3d(std::string_view name) const;

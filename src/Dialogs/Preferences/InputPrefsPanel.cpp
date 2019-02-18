@@ -236,7 +236,7 @@ void InputPrefsPanel::initBindsList() const
 	for (auto& bind : binds)
 	{
 		// Skip if not in a group
-		if (bind->group().IsEmpty())
+		if (bind->group().empty())
 			continue;
 
 		// Add to list
@@ -342,7 +342,7 @@ void InputPrefsPanel::addKey()
 
 	// Delete item if no key was chosen (or dialog cancelled)
 	bind = ((BindListItemData*)list_binds_->GetItemData(n));
-	if (bind->key.key.IsEmpty())
+	if (bind->key.key.empty())
 		list_binds_->DeleteItem(n);
 	else
 	{
@@ -411,7 +411,7 @@ void InputPrefsPanel::applyPreferences()
 			kbind->clear();
 
 			// Set primary key if any
-			if (!bind->key.key.IsEmpty())
+			if (!bind->key.key.empty())
 				kbind->addKey(bind->key.key, bind->key.alt, bind->key.ctrl, bind->key.shift);
 
 			// Add any secondary keys
