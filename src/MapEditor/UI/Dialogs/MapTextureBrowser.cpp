@@ -345,8 +345,8 @@ void MapTextureBrowser::updateUsage() const
 	{
 		auto item = dynamic_cast<MapTexBrowserItem*>(i);
 		if (type_ == TextureType::Texture)
-			item->setUsage(map_->sides().texUsageCount(item->name()));
+			item->setUsage(map_->sides().texUsageCount(item->name().ToStdString()));
 		else
-			item->setUsage(map_->sectors().texUsageCount(item->name()));
+			item->setUsage(map_->sectors().texUsageCount(item->name().ToStdString()));
 	}
 }

@@ -105,15 +105,17 @@ void processIncludes(const std::string& filename, std::string& out);
 void processIncludes(ArchiveEntry* entry, std::string& out, bool use_res = true);
 
 // Conversion
-int      toInt(std::string_view str);
-unsigned toUInt(std::string_view str);
-float    toFloat(std::string_view str);
-double   toDouble(std::string_view str);
-bool     toBoolean(std::string_view str);
-bool     toInt(std::string_view str, int& target);
-bool     toUInt(std::string_view str, unsigned& target);
-bool     toFloat(std::string_view str, float& target);
-bool     toDouble(std::string_view str, double& target);
+int              toInt(std::string_view str);
+unsigned         toUInt(std::string_view str);
+float            toFloat(std::string_view str);
+double           toDouble(std::string_view str);
+bool             toBoolean(std::string_view str);
+bool             toInt(std::string_view str, int& target);
+bool             toUInt(std::string_view str, unsigned& target);
+bool             toFloat(std::string_view str, float& target);
+bool             toDouble(std::string_view str, double& target);
+std::string      toString(std::string_view str);
+std::string_view viewFromChars(const char* chars, unsigned max_length);
 
 // Joins all given args into a single string
 template<typename... Args> std::string join(const Args&... args)

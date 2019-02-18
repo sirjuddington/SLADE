@@ -147,7 +147,7 @@ bool SLADEMap::readMap(Archive::MapDesc map)
 		geometry_updated_ = App::runTimer();
 
 		// When creating a new map, retrieve UDMF namespace information from the configuration
-		if (map.format == MapFormat::UDMF && udmf_namespace_.IsEmpty())
+		if (map.format == MapFormat::UDMF && udmf_namespace_.empty())
 			udmf_namespace_ = Game::configuration().udmfNamespace();
 	}
 
@@ -329,10 +329,10 @@ void SLADEMap::putDragonTargets(MapThing* first, vector<MapThing*>& list)
 // -----------------------------------------------------------------------------
 // Returns the first texture at [tex_part] found on lines connected to [vertex]
 // -----------------------------------------------------------------------------
-wxString SLADEMap::adjacentLineTexture(MapVertex* vertex, int tex_part) const
+std::string SLADEMap::adjacentLineTexture(MapVertex* vertex, int tex_part) const
 {
 	// Go through adjacent lines
-	wxString tex = MapSide::TEX_NONE;
+	auto tex = MapSide::TEX_NONE;
 	for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
 	{
 		auto l = vertex->connectedLine(a);
@@ -547,7 +547,7 @@ MapVertex* SLADEMap::createVertex(Vec2d pos, double split_dist)
 
 			if (line->distanceTo(pos) < split_dist)
 			{
-				Log::debug(wxString::Format("Vertex at (%1.2f,%1.2f) splits line %d", pos.x, pos.y, line->index()));
+				Log::debug("Vertex at ({:1.2f},{:1.2f}) splits line {}", pos.x, pos.y, line->index());
 				splitLine(line, nv);
 			}
 		}
@@ -689,13 +689,13 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 	}
 
 	// Delete the vertex
-	Log::info(4, wxString::Format("Merging vertices %u and %u (removing %u)", vertex1, vertex2, vertex2));
+	Log::info(4, "Merging vertices {} and {} (removing {})", vertex1, vertex2, vertex2);
 	data_.removeVertex(vertex2);
 
 	// Delete any resulting zero-length lines
 	for (auto& zline : zlines)
 	{
-		Log::info(4, wxString::Format("Removing zero-length line %u", zline->index()));
+		Log::info(4, "Removing zero-length line {}", zline->index());
 		data_.removeLine(zline);
 	}
 
@@ -807,10 +807,7 @@ void SLADEMap::splitLinesAt(MapVertex* vertex, double split_dist)
 
 		if (line->distanceTo(vertex->position()) < split_dist)
 		{
-			Log::info(
-				2,
-				wxString::Format(
-					"Vertex at (%1.2f,%1.2f) splits line %u", vertex->position_.x, vertex->position_.y, i));
+			Log::info(2, "Vertex at ({:1.2f},{:1.2f}) splits line {}", vertex->position_.x, vertex->position_.y, i);
 			splitLine(line, vertex);
 		}
 	}
@@ -1111,8 +1108,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	// Remove overlapping lines
 	for (auto& remove_line : remove_lines)
 	{
-		Log::info(
-			4, wxString::Format("Removing overlapping line %u (#%u)", remove_line->objId(), remove_line->index()));
+		Log::info(4, "Removing overlapping line {} (#{})", remove_line->objId(), remove_line->index());
 		data_.removeLine(remove_line);
 	}
 	for (unsigned a = 0; a < connected_lines_.size(); a++)
@@ -1436,7 +1432,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		{
 			// Log::info(1, "midtex");
 			// Find adjacent texture (any)
-			auto tex = adjacentLineTexture(line->v1()).ToStdString();
+			auto tex = adjacentLineTexture(line->v1());
 			if (tex == MapSide::TEX_NONE)
 				tex = adjacentLineTexture(line->v2());
 
@@ -1463,12 +1459,12 @@ void SLADEMap::mapOpenChecks()
 	int rsec    = data_.removeDetachedSectors();
 	int risides = data_.removeInvalidSides();
 
-	Log::info(wxString::Format(
-		"Removed %d detached vertices, %d detached sides, %d invalid sides and %d detached sectors",
+	Log::info(
+		"Removed {} detached vertices, {} detached sides, {} invalid sides and {} detached sectors",
 		rverts,
 		rsides,
 		risides,
-		rsec));
+		rsec);
 }
 
 // -----------------------------------------------------------------------------

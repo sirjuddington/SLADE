@@ -1132,6 +1132,35 @@ bool StrUtil::toDouble(std::string_view str, double& target)
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Converts a string_view [str] to a string, where [str] can be null-terminated.
+// If not null-terminated, the size of the string_view is used instead.
+// -----------------------------------------------------------------------------
+std::string StrUtil::toString(std::string_view str)
+{
+	auto end = str.find('\0');
+	return std::string{ str.data(), end == std::string_view::npos ? str.size() : end };
+}
+
+// -----------------------------------------------------------------------------
+// Creates and returns a string_view from the given [chars].
+// The size of the string_view is either the position of the first found null in
+// [chars], or [max_length], whatever comes first.
+// -----------------------------------------------------------------------------
+std::string_view StrUtil::viewFromChars(const char* chars, unsigned max_length)
+{
+	std::string_view::size_type size = 0;
+	while (size < max_length)
+	{
+		if (chars[size] == '\0')
+			break;
+		
+		++size;
+	}
+
+	return { chars, size };
+}
+
 
 // -----------------------------------------------------------------------------
 //

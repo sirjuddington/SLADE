@@ -13,8 +13,8 @@ public:
 
 	void clearTexUsage() const { usage_tex_.clear(); }
 	void updateTexUsage(std::string_view tex, int adjust) const;
-	int  texUsageCount(const wxString& tex) const { return usage_tex_[tex.Upper()]; }
+	int  texUsageCount(std::string_view tex) const;
 
 private:
-	mutable std::map<wxString, int> usage_tex_;
+	mutable std::map<std::string, int> usage_tex_;
 };

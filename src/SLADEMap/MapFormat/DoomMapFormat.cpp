@@ -36,6 +36,7 @@
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectCollection.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -191,9 +192,9 @@ bool DoomMapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 		// Add side
 		map_data.addSide(std::make_unique<MapSide>(
 			map_data.sectors().at(side_data[a].sector),
-			side_data[a].tex_upper,
-			side_data[a].tex_middle,
-			side_data[a].tex_lower,
+			StrUtil::viewFromChars(side_data[a].tex_upper, 8),
+			StrUtil::viewFromChars(side_data[a].tex_middle, 8),
+			StrUtil::viewFromChars(side_data[a].tex_lower, 8),
 			Vec2i{ side_data[a].x_offset, side_data[a].y_offset }));
 	}
 
@@ -293,7 +294,13 @@ bool DoomMapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_da
 
 		// Add sector
 		map_data.addSector(std::make_unique<MapSector>(
-			data.f_height, data.f_tex, data.c_height, data.c_tex, data.light, data.special, data.tag));
+			data.f_height,
+			StrUtil::viewFromChars(data.f_tex, 8),
+			data.c_height,
+			StrUtil::viewFromChars(data.c_tex, 8),
+			data.light,
+			data.special,
+			data.tag));
 	}
 
 	Log::info(3, "Read {} sectors", map_data.sectors().size());

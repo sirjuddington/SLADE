@@ -34,6 +34,7 @@
 #include "Game/Configuration.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
