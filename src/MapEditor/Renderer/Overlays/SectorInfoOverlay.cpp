@@ -65,26 +65,26 @@ void SectorInfoOverlay::update(MapSector* sector)
 	if (!sector)
 		return;
 
-	wxString info_text;
+	std::string info_text;
 
 	// Info (index + type)
-	wxString type = wxString::Format(
-		"%s (Type %d)", Game::configuration().sectorTypeName(sector->special()), sector->special());
+	auto type = fmt::format(
+		"{} (Type {})", Game::configuration().sectorTypeName(sector->special()), sector->special());
 	if (Global::debug)
-		info_text += wxString::Format("Sector #%d (%d): %s\n", sector->index(), sector->objId(), type);
+		info_text += fmt::format("Sector #{} ({}): {}\n", sector->index(), sector->objId(), type);
 	else
-		info_text += wxString::Format("Sector #%d: %s\n", sector->index(), type);
+		info_text += fmt::format("Sector #{}: {}\n", sector->index(), type);
 
 	// Height
 	int fh = sector->floor().height;
 	int ch = sector->ceiling().height;
-	info_text += wxString::Format("Height: %d to %d (%d total)\n", fh, ch, ch - fh);
+	info_text += fmt::format("Height: {} to {} ({} total)\n", fh, ch, ch - fh);
 
 	// Brightness
-	info_text += wxString::Format("Brightness: %d\n", sector->lightLevel());
+	info_text += fmt::format("Brightness: {}\n", sector->lightLevel());
 
 	// Tag
-	info_text += wxString::Format("Tag: %d", sector->tag());
+	info_text += fmt::format("Tag: {}", sector->tag());
 
 	// Textures
 	ftex_ = sector->floor().texture;
@@ -151,7 +151,7 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
 // -----------------------------------------------------------------------------
 // Draws a texture box with name underneath for [texture]
 // -----------------------------------------------------------------------------
-void SectorInfoOverlay::drawTexture(float alpha, int x, int y, wxString texture, const wxString& pos) const
+void SectorInfoOverlay::drawTexture(float alpha, int x, int y, std::string_view texture, std::string_view pos) const
 {
 	double scale        = (Drawing::fontSize() / 12.0);
 	int    tex_box_size = 80 * scale;
@@ -204,10 +204,7 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, wxString texture,
 	}
 
 	// Draw texture name
-	if (texture.Length() > 8)
-		texture = texture.Truncate(8) + "...";
-	texture.Prepend(":");
-	texture.Prepend(pos);
+	auto tex_name = fmt::format("{}:{}", pos, texture.size() > 8 ? texture.substr(0, 8) : texture);
 	Drawing::drawText(
-		texture, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::Font::Condensed, Drawing::Align::Center);
+		tex_name, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::Font::Condensed, Drawing::Align::Center);
 }

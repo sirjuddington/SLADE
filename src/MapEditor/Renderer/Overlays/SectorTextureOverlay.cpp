@@ -107,17 +107,17 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 		cur_size *= fade;
 
 	// Determine texture name strings
-	wxString ftex = tex_floor_[0];
-	wxString ctex = tex_ceil_[0];
-	wxString ftex2, ctex2;
+	auto ftex = tex_floor_[0];
+	auto ctex = tex_ceil_[0];
+	std::string ftex2, ctex2;
 	if (tex_floor_.size() > 1)
 	{
-		ftex  = wxString::Format("Multiple (%lu)", tex_floor_.size());
+		ftex  = fmt::format("Multiple ({})", tex_floor_.size());
 		ftex2 = tex_floor_[1];
 	}
 	if (tex_ceil_.size() > 1)
 	{
-		ctex  = wxString::Format("Multiple (%lu)", tex_ceil_.size());
+		ctex  = fmt::format("Multiple ({})", tex_ceil_.size());
 		ctex2 = tex_ceil_[1];
 	}
 
@@ -172,7 +172,7 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 // -----------------------------------------------------------------------------
 // Draws the texture box for [textures]
 // -----------------------------------------------------------------------------
-void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vector<wxString>& textures, bool hover)
+void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vector<std::string>& textures, bool hover)
 	const
 {
 	// Get colours
@@ -234,8 +234,8 @@ void SectorTextureOverlay::openSectors(vector<MapSector*>& list)
 		sectors_.push_back(sector);
 
 		// Get textures
-		wxString ftex = sector->floor().texture;
-		wxString ctex = sector->ceiling().texture;
+		auto ftex = sector->floor().texture;
+		auto ctex = sector->ceiling().texture;
 
 		// Add floor texture if different
 		bool exists = false;
@@ -280,9 +280,9 @@ void SectorTextureOverlay::close(bool cancel)
 		for (auto& sector : sectors_)
 		{
 			if (tex_floor_.size() == 1)
-				sector->setFloorTexture(tex_floor_[0].ToStdString());
+				sector->setFloorTexture(tex_floor_[0]);
 			if (tex_ceil_.size() == 1)
-				sector->setCeilingTexture(tex_ceil_[0].ToStdString());
+				sector->setCeilingTexture(tex_ceil_[0]);
 		}
 		MapEditor::editContext().endUndoRecord();
 	}
@@ -329,7 +329,7 @@ void SectorTextureOverlay::mouseLeftClick()
 // -----------------------------------------------------------------------------
 // Called when a key is pressed
 // -----------------------------------------------------------------------------
-void SectorTextureOverlay::keyDown(const wxString& key)
+void SectorTextureOverlay::keyDown(std::string_view key)
 {
 	// Browse floor texture
 	if (key == "F" || key == "f")
@@ -346,7 +346,7 @@ void SectorTextureOverlay::keyDown(const wxString& key)
 void SectorTextureOverlay::browseFloorTexture()
 {
 	// Get initial texture
-	wxString texture;
+	std::string texture;
 	if (tex_floor_.empty())
 		texture = sectors_[0]->floor().texture;
 	else
@@ -360,7 +360,7 @@ void SectorTextureOverlay::browseFloorTexture()
 	{
 		// Set texture
 		tex_floor_.clear();
-		tex_floor_.push_back(browser.selectedItem()->name());
+		tex_floor_.push_back(browser.selectedItem()->name().ToStdString());
 		close(false);
 	}
 }
@@ -371,7 +371,7 @@ void SectorTextureOverlay::browseFloorTexture()
 void SectorTextureOverlay::browseCeilingTexture()
 {
 	// Get initial texture
-	wxString texture;
+	std::string texture;
 	if (tex_ceil_.empty())
 		texture = sectors_[0]->ceiling().texture;
 	else
@@ -385,7 +385,7 @@ void SectorTextureOverlay::browseCeilingTexture()
 	{
 		// Set texture
 		tex_ceil_.clear();
-		tex_ceil_.push_back(browser.selectedItem()->name());
+		tex_ceil_.push_back(browser.selectedItem()->name().ToStdString());
 		close(false);
 	}
 }

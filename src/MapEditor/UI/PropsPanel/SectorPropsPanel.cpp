@@ -43,6 +43,7 @@
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -73,7 +74,7 @@ void FlatTexCanvas::setTexture(const wxString& tex)
 		texture_ = 0;
 	else
 		texture_ = MapEditor::textureManager()
-					   .flat(tex, Game::configuration().featureSupported(Game::Feature::MixTexFlats))
+					   .flat(tex.ToStdString(), Game::configuration().featureSupported(Game::Feature::MixTexFlats))
 					   .gl_id;
 
 	Refresh();
@@ -173,13 +174,13 @@ void FlatComboBox::onDropDown(wxCommandEvent& e)
 	list.Add("-");
 	for (auto& texture : textures)
 	{
-		if (texture.short_name.StartsWith(text))
+		if (StrUtil::startsWith(texture.short_name, text.ToStdString()))
 		{
 			list.Add(texture.short_name);
 		}
 		if (Game::configuration().featureSupported(Game::Feature::LongNames))
 		{
-			if (texture.long_name.StartsWith(text))
+			if (StrUtil::startsWith(texture.long_name, text.ToStdString()))
 			{
 				list.Add(texture.long_name);
 			}

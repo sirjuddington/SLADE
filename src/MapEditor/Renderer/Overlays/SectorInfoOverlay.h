@@ -14,9 +14,9 @@ public:
 
 private:
 	std::unique_ptr<TextBox> text_box_;
-	wxString                 ftex_;
-	wxString                 ctex_;
+	std::string                 ftex_;
+	std::string                 ctex_;
 	int                      last_size_ = 100;
 
-	void drawTexture(float alpha, int x, int y, wxString texture, const wxString& pos = "Upper") const;
+	void drawTexture(float alpha, int x, int y, std::string_view texture, std::string_view pos = "Upper") const;
 };

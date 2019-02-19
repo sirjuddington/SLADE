@@ -41,6 +41,7 @@
 #include "SLADEMap/SLADEMap.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -70,7 +71,7 @@ void SideTexCanvas::setTexture(const wxString& tex)
 		texture_ = 0;
 	else
 		texture_ = MapEditor::textureManager()
-					   .texture(tex, Game::configuration().featureSupported(Game::Feature::MixTexFlats))
+					   .texture(tex.ToStdString(), Game::configuration().featureSupported(Game::Feature::MixTexFlats))
 					   .gl_id;
 
 	Refresh();
@@ -173,13 +174,13 @@ void TextureComboBox::onDropDown(wxCommandEvent& e)
 	list.Add("-");
 	for (auto& texture : textures)
 	{
-		if (texture.short_name.StartsWith(text))
+		if (StrUtil::startsWith(texture.short_name, text.ToStdString()))
 		{
 			list.Add(texture.short_name);
 		}
 		if (Game::configuration().featureSupported(Game::Feature::LongNames))
 		{
-			if (texture.long_name.StartsWith(text))
+			if (StrUtil::startsWith(texture.long_name, text.ToStdString()))
 			{
 				list.Add(texture.long_name);
 			}

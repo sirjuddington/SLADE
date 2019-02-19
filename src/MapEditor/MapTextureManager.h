@@ -27,24 +27,24 @@ public:
 		Vec2d    scale         = { 1., 1. };
 		~Texture() { OpenGL::Texture::clear(gl_id); }
 	};
-	typedef std::map<wxString, Texture> MapTexHashMap;
+	typedef std::map<std::string, Texture> MapTexHashMap;
 
 	struct TexInfo
 	{
-		wxString short_name;
-		Category category;
-		Archive* archive;
-		wxString path;
-		unsigned index;
-		wxString long_name;
+		std::string short_name;
+		Category    category;
+		Archive*    archive;
+		std::string path;
+		unsigned    index;
+		std::string long_name;
 
 		TexInfo(
-			const wxString& short_name,
-			Category        category,
-			Archive*        archive,
-			const wxString& path,
-			unsigned        index     = 0,
-			const wxString& long_name = "") :
+			std::string_view short_name,
+			Category         category,
+			Archive*         archive,
+			std::string_view path,
+			unsigned         index     = 0,
+			std::string_view long_name = "") :
 			short_name(short_name),
 			category(category),
 			archive(archive),
@@ -64,11 +64,11 @@ public:
 	void buildTexInfoList();
 
 	Palette*       resourcePalette() const;
-	const Texture& texture(const wxString& name, bool mixed);
-	const Texture& flat(const wxString& name, bool mixed);
-	const Texture& sprite(wxString name, const wxString& translation = "", const wxString& palette = "");
-	const Texture& editorImage(const wxString& name);
-	int            verticalOffset(const wxString& name) const;
+	const Texture& texture(std::string_view name, bool mixed);
+	const Texture& flat(std::string_view name, bool mixed);
+	const Texture& sprite(std::string_view name, std::string_view translation = "", std::string_view palette = "");
+	const Texture& editorImage(std::string_view name);
+	int            verticalOffset(std::string_view name) const;
 
 	vector<TexInfo>& allTexturesInfo() { return tex_info_; }
 	vector<TexInfo>& allFlatsInfo() { return flat_info_; }
@@ -86,5 +86,5 @@ private:
 	vector<TexInfo>          tex_info_;
 	vector<TexInfo>          flat_info_;
 
-	void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, const wxString& path) const;
+	void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, std::string_view path) const;
 };

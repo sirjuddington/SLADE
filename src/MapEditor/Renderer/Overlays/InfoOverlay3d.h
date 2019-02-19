@@ -13,7 +13,7 @@ public:
 
 	void update(int item_index, MapEditor::ItemType item_type, SLADEMap* map);
 	void draw(int bottom, int right, int middle, float alpha = 1.0f);
-	void drawTexture(float alpha, int x, int y);
+	void drawTexture(float alpha, int x, int y) const;
 	void reset()
 	{
 		texture_ = 0;
@@ -21,10 +21,10 @@ public:
 	}
 
 private:
-	vector<wxString>    info_;
-	vector<wxString>    info2_;
+	vector<std::string> info_;
+	vector<std::string> info2_;
 	MapEditor::ItemType current_type_ = MapEditor::ItemType::WallMiddle;
-	wxString            texname_;
+	std::string         texname_;
 	unsigned            texture_     = 0;
 	bool                thing_icon_  = false;
 	MapObject*          object_      = nullptr;

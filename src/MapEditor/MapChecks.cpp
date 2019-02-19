@@ -995,9 +995,9 @@ public:
 			if (line->s1())
 			{
 				// Get textures
-				wxString upper  = line->s1()->texUpper();
-				wxString middle = line->s1()->texMiddle();
-				wxString lower  = line->s1()->texLower();
+				auto upper  = line->s1()->texUpper();
+				auto middle = line->s1()->texMiddle();
+				auto lower  = line->s1()->texLower();
 
 				// Upper
 				if (upper != "-" && texman_->texture(upper, mixed).gl_id == OpenGL::Texture::missingTexture())
@@ -1025,9 +1025,9 @@ public:
 			if (line->s2())
 			{
 				// Get textures
-				wxString upper  = line->s2()->texUpper();
-				wxString middle = line->s2()->texMiddle();
-				wxString lower  = line->s2()->texLower();
+				auto upper  = line->s2()->texUpper();
+				auto middle = line->s2()->texMiddle();
+				auto lower  = line->s2()->texLower();
 
 				// Upper
 				if (upper != "-" && texman_->texture(upper, mixed).gl_id == OpenGL::Texture::missingTexture())

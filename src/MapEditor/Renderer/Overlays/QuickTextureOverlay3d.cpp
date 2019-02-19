@@ -42,6 +42,7 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -84,7 +85,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 		}
 
 		// Get initial texture
-		wxString tex_init;
+		std::string tex_init;
 		if (sel[initial].type == MapEditor::ItemType::Ceiling)
 			tex_init = editor->map().sector(sel[initial].index)->ceiling().texture;
 		else if (sel[initial].type == MapEditor::ItemType::Floor)
@@ -99,7 +100,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 		auto map_format = editor->map().currentFormat();
 
 		// Get all available texture names (sorted alphabetically)
-		vector<wxString> tex_names;
+		vector<std::string> tex_names;
 
 		if (sel_walls_)
 		{
@@ -108,7 +109,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 				bool skip = false;
 				for (auto& texname : tex_names)
 				{
-					if (texname.Cmp(tex_info.short_name) == 0)
+					if (texname == tex_info.short_name)
 					{
 						skip = true;
 						break;
@@ -116,13 +117,13 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 				}
 
 				if (map_format == MapFormat::UDMF && Game::configuration().featureSupported(Game::Feature::LongNames)
-					&& tex_info.short_name.CmpNoCase(tex_info.long_name) != 0)
+					&& !StrUtil::equalCI(tex_info.short_name, tex_info.long_name))
 					tex_names.push_back(tex_info.long_name);
 
 				if (skip)
 					continue;
 
-				if (map_format == MapFormat::UDMF || tex_info.short_name.Len() <= 8)
+				if (map_format == MapFormat::UDMF || tex_info.short_name.size() <= 8)
 					tex_names.push_back(tex_info.short_name);
 			}
 		}
@@ -133,7 +134,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 				bool skip = false;
 				for (auto& texname : tex_names)
 				{
-					if (texname.Cmp(tex_info.short_name) == 0)
+					if (texname == tex_info.short_name)
 					{
 						skip = true;
 						break;
@@ -141,13 +142,13 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 				}
 
 				if (map_format == MapFormat::UDMF && Game::configuration().featureSupported(Game::Feature::LongNames)
-					&& tex_info.short_name.CmpNoCase(tex_info.long_name) != 0)
+					&& !StrUtil::equalCI(tex_info.short_name, tex_info.long_name))
 					tex_names.push_back(tex_info.long_name);
 
 				if (skip)
 					continue;
 
-				if (map_format == MapFormat::UDMF || tex_info.short_name.Len() <= 8)
+				if (map_format == MapFormat::UDMF || tex_info.short_name.size() <= 8)
 					tex_names.push_back(tex_info.short_name);
 			}
 		}
@@ -168,11 +169,11 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 // -----------------------------------------------------------------------------
 // Sets the currentl texture to [name], if it exists
 // -----------------------------------------------------------------------------
-void QuickTextureOverlay3d::setTexture(const wxString& name)
+void QuickTextureOverlay3d::setTexture(std::string_view name)
 {
 	for (unsigned a = 0; a < textures_.size(); a++)
 	{
-		if (S_CMPNOCASE(textures_[a].name, name))
+		if (StrUtil::equalCI(textures_[a].name, name))
 		{
 			current_index_ = a;
 			anim_offset_   = a;
@@ -206,14 +207,14 @@ void QuickTextureOverlay3d::applyTexture()
 			if (item.type == MapEditor::ItemType::Floor && sel_flats_)
 			{
 				if (auto sector = item.asSector(editor_->map()))
-					sector->setFloorTexture(textures_[current_index_].name.ToStdString());
+					sector->setFloorTexture(textures_[current_index_].name);
 			}
 
 			// Ceiling
 			else if (item.type == MapEditor::ItemType::Ceiling && sel_flats_)
 			{
 				if (auto sector = item.asSector(editor_->map()))
-					sector->setCeilingTexture(textures_[current_index_].name.ToStdString());
+					sector->setCeilingTexture(textures_[current_index_].name);
 			}
 
 			// Wall
@@ -223,13 +224,13 @@ void QuickTextureOverlay3d::applyTexture()
 				{
 					// Upper
 					if (item.type == MapEditor::ItemType::WallTop)
-						side->setTexUpper(textures_[current_index_].name.ToStdString());
+						side->setTexUpper(textures_[current_index_].name);
 					// Middle
 					else if (item.type == MapEditor::ItemType::WallMiddle)
-						side->setTexMiddle(textures_[current_index_].name.ToStdString());
+						side->setTexMiddle(textures_[current_index_].name);
 					// Lower
 					else if (item.type == MapEditor::ItemType::WallBottom)
-						side->setTexLower(textures_[current_index_].name.ToStdString());
+						side->setTexLower(textures_[current_index_].name);
 				}
 			}
 		}
@@ -373,7 +374,7 @@ void QuickTextureOverlay3d::doSearch()
 	{
 		for (unsigned a = 0; a < textures_.size(); a++)
 		{
-			if (textures_[a].name.Lower().StartsWith(search_.Lower()))
+			if (StrUtil::startsWithCI(textures_[a].name, search_))
 			{
 				current_index_ = a;
 				applyTexture();
@@ -386,7 +387,7 @@ void QuickTextureOverlay3d::doSearch()
 // -----------------------------------------------------------------------------
 // Called when a key is pressed
 // -----------------------------------------------------------------------------
-void QuickTextureOverlay3d::keyDown(const wxString& key)
+void QuickTextureOverlay3d::keyDown(std::string_view key)
 {
 	// Up texture
 	if ((key == "right" || key == "mwheeldown") && current_index_ < textures_.size() - 1)

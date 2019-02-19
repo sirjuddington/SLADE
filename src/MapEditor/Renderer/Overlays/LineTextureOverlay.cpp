@@ -54,10 +54,10 @@
 // Adds [texture] to the overlay if it doesn't already exist at the target part
 // (front upper, etc)
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::addTexture(TexInfo& inf, wxString texture) const
+void LineTextureOverlay::addTexture(TexInfo& inf, std::string_view texture) const
 {
 	// Ignore if texture is blank ("-")
-	if (texture == "-")
+	if (texture == MapSide::TEX_NONE)
 		return;
 
 	// Add texture if it doesn't exist already
@@ -71,7 +71,7 @@ void LineTextureOverlay::addTexture(TexInfo& inf, wxString texture) const
 		}
 	}
 	if (!exists)
-		inf.textures.push_back(texture);
+		inf.textures.emplace_back(texture);
 }
 
 // -----------------------------------------------------------------------------
@@ -141,28 +141,28 @@ void LineTextureOverlay::close(bool cancel)
 		{
 			// Front Upper
 			if (textures_[FrontUpper].changed && !textures_[FrontUpper].textures.empty() && line->s1())
-				line->s1()->setTexUpper(textures_[FrontUpper].textures[0].ToStdString());
+				line->s1()->setTexUpper(textures_[FrontUpper].textures[0]);
 
 			// Front Middle
 			if (textures_[FrontMiddle].changed && !textures_[FrontMiddle].textures.empty() && line->s1())
-				line->s1()->setTexMiddle(textures_[FrontMiddle].textures[0].ToStdString());
+				line->s1()->setTexMiddle(textures_[FrontMiddle].textures[0]);
 
 			// Front Lower
 			if (textures_[FrontLower].changed && !textures_[FrontLower].textures.empty() && line->s1())
-				line->s1()->setTexLower(textures_[FrontLower].textures[0].ToStdString());
+				line->s1()->setTexLower(textures_[FrontLower].textures[0]);
 
 
 			// Back Upper
 			if (textures_[BackUpper].changed && !textures_[BackUpper].textures.empty() && line->s2())
-				line->s2()->setTexUpper(textures_[BackUpper].textures[0].ToStdString());
+				line->s2()->setTexUpper(textures_[BackUpper].textures[0]);
 
 			// Back Middle
 			if (textures_[BackMiddle].changed && !textures_[BackMiddle].textures.empty() && line->s2())
-				line->s2()->setTexMiddle(textures_[BackMiddle].textures[0].ToStdString());
+				line->s2()->setTexMiddle(textures_[BackMiddle].textures[0]);
 
 			// Back Lower
 			if (textures_[BackLower].changed && !textures_[BackLower].textures.empty() && line->s2())
-				line->s2()->setTexLower(textures_[BackLower].textures[0].ToStdString());
+				line->s2()->setTexLower(textures_[BackLower].textures[0]);
 		}
 
 		MapEditor::editContext().endUndoRecord();
@@ -273,7 +273,7 @@ void LineTextureOverlay::draw(int width, int height, float fade)
 // -----------------------------------------------------------------------------
 // Draws the texture box from info in [tex]
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const wxString& position) const
+void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, std::string_view position) const
 {
 	// Get colours
 	ColRGBA col_bg  = ColourConfiguration::colour("map_overlay_background");
@@ -345,7 +345,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const 
 
 	// Draw position text
 	Drawing::drawText(
-		position + ":",
+		fmt::format("{}:", position),
 		tex.position.x,
 		tex.position.y - halfsize - 18,
 		col_fg,
@@ -353,14 +353,14 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, const 
 		Drawing::Align::Center);
 
 	// Determine texture name text
-	wxString str_texture;
+	std::string str_texture;
 	if (tex.textures.size() == 1)
 	{
 		auto& tex_info = OpenGL::Texture::info(tex_first);
-		str_texture    = wxString::Format("%s (%dx%d)", tex.textures[0], tex_info.size.x, tex_info.size.y);
+		str_texture    = fmt::format("{} ({}x{})", tex.textures[0], tex_info.size.x, tex_info.size.y);
 	}
 	else if (tex.textures.size() > 1)
-		str_texture = wxString::Format("Multiple (%lu)", tex.textures.size());
+		str_texture = fmt::format("Multiple ({})", tex.textures.size());
 	else
 		str_texture = "- (None)";
 
@@ -423,7 +423,7 @@ void LineTextureOverlay::mouseRightClick() {}
 // -----------------------------------------------------------------------------
 // Called when a key is pressed
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::keyDown(const wxString& key)
+void LineTextureOverlay::keyDown(std::string_view key)
 {
 	// 'Select' front side
 	if ((key == "F" || key == "f") && side1_)
@@ -464,24 +464,20 @@ void LineTextureOverlay::keyDown(const wxString& key)
 // -----------------------------------------------------------------------------
 // Opens the texture browser for [tex]
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::browseTexture(TexInfo& tex, const wxString& position)
+void LineTextureOverlay::browseTexture(TexInfo& tex, std::string_view position)
 {
 	// Get initial texture
-	wxString texture;
-	if (!tex.textures.empty())
-		texture = tex.textures[0];
-	else
-		texture = "-";
+	auto texture = tex.textures.empty() ? MapSide::TEX_NONE : tex.textures[0];
 
 	// Open texture browser
 	MapTextureBrowser browser(
 		MapEditor::windowWx(), MapEditor::TextureType::Texture, texture, &(MapEditor::editContext().map()));
-	browser.SetTitle(wxString::Format("Browse %s Texture", position));
+	browser.SetTitle(fmt::format("Browse {} Texture", position));
 	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 	{
 		// Set texture
 		tex.textures.clear();
-		tex.textures.push_back(browser.selectedItem()->name());
+		tex.textures.emplace_back(browser.selectedItem()->name());
 		tex.changed = true;
 		close(false);
 	}

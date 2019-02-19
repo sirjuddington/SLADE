@@ -18,7 +18,7 @@ public:
 	virtual void mouseMotion(int x, int y) {}
 	virtual void mouseLeftClick() {}
 	virtual void mouseRightClick() {}
-	virtual void keyDown(const wxString& key) {}
+	virtual void keyDown(std::string_view key) {}
 
 protected:
 	bool active_         = true;

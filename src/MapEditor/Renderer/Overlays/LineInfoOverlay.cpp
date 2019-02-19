@@ -44,6 +44,7 @@
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSide.h"
 #include "Utility/MathStuff.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -275,9 +276,15 @@ void LineInfoOverlay::drawSide(int bottom, int right, float alpha, Side& side, i
 // -----------------------------------------------------------------------------
 // Draws a texture box with name underneath for [texture]
 // -----------------------------------------------------------------------------
-void LineInfoOverlay::drawTexture(float alpha, int x, int y, wxString texture, bool needed, const wxString& pos) const
+void LineInfoOverlay::drawTexture(
+	float            alpha,
+	int              x,
+	int              y,
+	std::string_view texture,
+	bool             needed,
+	std::string_view pos) const
 {
-	bool required     = (needed && texture == "-");
+	bool required     = (needed && texture == MapSide::TEX_NONE);
 	int  tex_box_size = 80 * scale_;
 	int  line_height  = 16 * scale_;
 
@@ -291,7 +298,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, wxString texture, b
 				   .gl_id;
 
 	// Valid texture
-	if (texture != "-" && tex != OpenGL::Texture::missingTexture())
+	if (texture != MapSide::TEX_NONE && tex != OpenGL::Texture::missingTexture())
 	{
 		// Draw background
 		glEnable(GL_TEXTURE_2D);
@@ -314,7 +321,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, wxString texture, b
 	}
 
 	// Unknown texture
-	else if (tex == OpenGL::Texture::missingTexture() && texture != "-")
+	else if (tex == OpenGL::Texture::missingTexture() && texture != MapSide::TEX_NONE)
 	{
 		// Draw unknown icon
 		auto icon = MapEditor::textureManager().editorImage("thing/unknown").gl_id;
@@ -340,12 +347,14 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, wxString texture, b
 	}
 
 	// Draw texture name (even if texture is blank)
+	std::string tex_str;
 	if (required)
-		texture = "MISSING";
-	else if (texture.Length() > 8)
-		texture = texture.Truncate(8) + "...";
-	texture.Prepend(":");
-	texture.Prepend(pos);
+		tex_str = fmt::format("{}:MISSING", pos);
+	else if (texture.size() > 8)
+		tex_str = fmt::format("{}:{}...", pos, texture.substr(0, 8));
+	else
+		tex_str = fmt::format("{}:{}", pos, texture);
+
 	Drawing::drawText(
-		texture, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::Font::Condensed, Drawing::Align::Center);
+		tex_str, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::Font::Condensed, Drawing::Align::Center);
 }

@@ -43,6 +43,7 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -93,25 +94,25 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		object_ = side;
 
 		// --- Line/side info ---
-		info_.push_back(wxString::Format("Line #%d", line->index()));
+		info_.push_back(fmt::format("Line #{}", line->index()));
 		if (side == line->s1())
-			info_.push_back(wxString::Format("Front Side #%d", side->index()));
+			info_.push_back(fmt::format("Front Side #{}", side->index()));
 		else
-			info_.push_back(wxString::Format("Back Side #%d", side->index()));
+			info_.push_back(fmt::format("Back Side #{}", side->index()));
 
 		// Relevant flags
-		wxString flags = "";
+		std::string flags;
 		if (Game::configuration().lineBasicFlagSet("dontpegtop", line, map_format))
 			flags += "Upper Unpegged, ";
 		if (Game::configuration().lineBasicFlagSet("dontpegbottom", line, map_format))
 			flags += "Lower Unpegged, ";
 		if (Game::configuration().lineBasicFlagSet("blocking", line, map_format))
 			flags += "Blocking, ";
-		if (!flags.IsEmpty())
-			flags.RemoveLast(2);
+		if (!flags.empty())
+			StrUtil::removeLast(flags, 2);
 		info_.push_back(flags);
 
-		info_.push_back(wxString::Format("Length: %d", (int)line->length()));
+		info_.push_back(fmt::format("Length: {}", (int)line->length()));
 
 		// Other potential info: special, sector#
 
@@ -141,13 +142,13 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 				xoff_part = side->floatProperty("offsetx_top");
 
 			// Add x offset string
-			wxString xoff_info;
+			std::string xoff_info;
 			if (xoff_part == 0)
-				xoff_info = wxString::Format("%d", xoff);
+				xoff_info = fmt::format("{}", xoff);
 			else if (xoff_part > 0)
-				xoff_info = wxString::Format("%1.2f (%d+%1.2f)", (double)xoff + xoff_part, xoff, xoff_part);
+				xoff_info = fmt::format("{:1.2f} ({}+{:1.2f})", (double)xoff + xoff_part, xoff, xoff_part);
 			else
-				xoff_info = wxString::Format("%1.2f (%d-%1.2f)", (double)xoff + xoff_part, xoff, -xoff_part);
+				xoff_info = fmt::format("{:1.2f} ({}-{:1.2f})", (double)xoff + xoff_part, xoff, -xoff_part);
 
 			// Get y offset info
 			int    yoff      = side->texOffsetY();
@@ -160,20 +161,20 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 				yoff_part = side->floatProperty("offsety_top");
 
 			// Add y offset string
-			wxString yoff_info;
+			std::string yoff_info;
 			if (yoff_part == 0)
-				yoff_info = wxString::Format("%d", yoff);
+				yoff_info = fmt::format("{}", yoff);
 			else if (yoff_part > 0)
-				yoff_info = wxString::Format("%1.2f (%d+%1.2f)", (double)yoff + yoff_part, yoff, yoff_part);
+				yoff_info = fmt::format("{:1.2f} ({}+{:1.2f})", (double)yoff + yoff_part, yoff, yoff_part);
 			else
-				yoff_info = wxString::Format("%1.2f (%d-%1.2f)", (double)yoff + yoff_part, yoff, -yoff_part);
+				yoff_info = fmt::format("{:1.2f} ({}-{:1.2f})", (double)yoff + yoff_part, yoff, -yoff_part);
 
-			info2_.push_back(wxString::Format("Offsets: %s, %s", xoff_info, yoff_info));
+			info2_.push_back(fmt::format("Offsets: {}, {}", xoff_info, yoff_info));
 		}
 		else
 		{
 			// Basic offsets
-			info2_.push_back(wxString::Format("Offsets: %d, %d", side->texOffsetX(), side->texOffsetY()));
+			info2_.push_back(fmt::format("Offsets: {}, {}", side->texOffsetX(), side->texOffsetY()));
 		}
 
 		// UDMF extras
@@ -197,7 +198,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 				xscale = side->floatProperty("scalex_top");
 				yscale = side->floatProperty("scaley_top");
 			}
-			info2_.push_back(wxString::Format("Scale: %1.2fx, %1.2fx", xscale, yscale));
+			info2_.push_back(fmt::format("Scale: {:1.2f}x, {:1.2f}x", xscale, yscale));
 		}
 		else
 		{
@@ -270,9 +271,9 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			right_height = top_plane.heightAt(right_point) - bottom_plane.heightAt(right_point);
 		}
 		if (fabs(left_height - right_height) < 0.001)
-			info2_.push_back(wxString::Format("Height: %d", (int)left_height));
+			info2_.push_back(fmt::format("Height: {}", (int)left_height));
 		else
-			info2_.push_back(wxString::Format("Height: %d ~ %d", (int)left_height, (int)right_height));
+			info2_.push_back(fmt::format("Height: {} ~ {}", (int)left_height, (int)right_height));
 
 		// Texture
 		if (item_type == MapEditor::ItemType::WallBottom)
@@ -303,17 +304,17 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// --- Sector info ---
 
 		// Sector index
-		info_.push_back(wxString::Format("Sector #%d", item_index));
+		info_.push_back(fmt::format("Sector #{}", item_index));
 
 		// Sector height
-		info_.push_back(wxString::Format("Total Height: %d", cheight - fheight));
+		info_.push_back(fmt::format("Total Height: {}", cheight - fheight));
 
 		// ZDoom UDMF extras
 		/*
 		if (Game::configuration().udmfNamespace() == "zdoom") {
 			// Sector colour
 			ColRGBA col = sector->getColour(0, true);
-			info.push_back(wxString::Format("Colour: R%d, G%d, B%d", col.r, col.g, col.b));
+			info.push_back(fmt::format("Colour: R{}, G{}, B{}", col.r, col.g, col.b));
 		}
 		*/
 
@@ -322,9 +323,9 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 		// Height
 		if (item_type == MapEditor::ItemType::Floor)
-			info2_.push_back(wxString::Format("Floor Height: %d", fheight));
+			info2_.push_back(fmt::format("Floor Height: {}", fheight));
 		else
-			info2_.push_back(wxString::Format("Ceiling Height: %d", cheight));
+			info2_.push_back(fmt::format("Ceiling Height: {}", cheight));
 
 		// Light
 		int light = sector->lightLevel();
@@ -353,14 +354,14 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 			// Add info string
 			if (fl == 0)
-				info2_.push_back(wxString::Format("Light: %d", light));
+				info2_.push_back(fmt::format("Light: {}", light));
 			else if (fl > 0)
-				info2_.push_back(wxString::Format("Light: %d (%d+%d)", light + fl, light, fl));
+				info2_.push_back(fmt::format("Light: {} ({}+{})", light + fl, light, fl));
 			else
-				info2_.push_back(wxString::Format("Light: %d (%d-%d)", light + fl, light, -fl));
+				info2_.push_back(fmt::format("Light: {} ({}-{})", light + fl, light, -fl));
 		}
 		else
-			info2_.push_back(wxString::Format("Light: %d", light));
+			info2_.push_back(fmt::format("Light: {}", light));
 
 		// UDMF extras
 		if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
@@ -381,7 +382,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 					yoff = sector->floatProperty("ypanningceiling");
 				}
 			}
-			info2_.push_back(wxString::Format("Offsets: %1.2f, %1.2f", xoff, yoff));
+			info2_.push_back(fmt::format("Offsets: {:1.2f}, {:1.2f}", xoff, yoff));
 
 			// Scaling
 			double xscale, yscale;
@@ -399,7 +400,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 					yscale = sector->floatProperty("yscaleceiling");
 				}
 			}
-			info2_.push_back(wxString::Format("Scale: %1.2fx, %1.2fx", xscale, yscale));
+			info2_.push_back(fmt::format("Scale: {:1.2f}x, {:1.2f}x", xscale, yscale));
 		}
 
 		// Texture
@@ -424,23 +425,23 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		object_ = thing;
 
 		// Index
-		info_.push_back(wxString::Format("Thing #%d", item_index));
+		info_.push_back(fmt::format("Thing #{}", item_index));
 
 		// Position
 		if (MapEditor::editContext().mapDesc().format == MapFormat::Hexen
 			|| MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
 			info_.push_back(
-				wxString::Format("Position: %d, %d, %d", (int)thing->xPos(), (int)thing->yPos(), (int)thing->zPos()));
+				fmt::format("Position: {}, {}, {}", (int)thing->xPos(), (int)thing->yPos(), (int)thing->zPos()));
 		else
-			info_.push_back(wxString::Format("Position: %d, %d", (int)thing->xPos(), (int)thing->yPos()));
+			info_.push_back(fmt::format("Position: {}, {}", (int)thing->xPos(), (int)thing->yPos()));
 
 
 		// Type
 		auto& tt = Game::configuration().thingType(thing->type());
 		if (!tt.defined())
-			info2_.push_back(wxString::Format("Type: %d", thing->type()));
+			info2_.push_back(fmt::format("Type: {}", thing->type()));
 		else
-			info2_.push_back(wxString::Format("Type: %s", tt.name()));
+			info2_.push_back(fmt::format("Type: {}", tt.name()));
 
 		// Args
 		if (MapEditor::editContext().mapDesc().format == MapFormat::Hexen
@@ -449,9 +450,9 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		{
 			// Get thing args
 			wxString argxstr[2];
-			argxstr[0]      = thing->stringProperty("arg0str");
-			argxstr[1]      = thing->stringProperty("arg1str");
-			wxString argstr = tt.argSpec().stringDesc(thing->args().data(), argxstr);
+			argxstr[0]  = thing->stringProperty("arg0str");
+			argxstr[1]  = thing->stringProperty("arg1str");
+			auto argstr = tt.argSpec().stringDesc(thing->args().data(), argxstr);
 
 			if (argstr.IsEmpty())
 				info2_.emplace_back("No Args");
@@ -462,21 +463,23 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// Sector
 		auto sector = map->sectors().atPos(thing->position());
 		if (sector)
-			info2_.emplace_back(wxString::Format("In Sector #%d", sector->index()));
+			info2_.emplace_back(fmt::format("In Sector #{}", sector->index()));
 		else
 			info2_.emplace_back("No Sector");
 
 
 		// Texture
-		texture_ = MapEditor::textureManager().sprite(tt.sprite(), tt.translation(), tt.palette()).gl_id;
+		texture_ = MapEditor::textureManager()
+					   .sprite(tt.sprite().ToStdString(), tt.translation().ToStdString(), tt.palette().ToStdString())
+					   .gl_id;
 		if (!texture_)
 		{
 			if (use_zeth_icons && tt.zethIcon() >= 0)
 				texture_ = MapEditor::textureManager()
-							   .editorImage(wxString::Format("zethicons/zeth%02d", tt.zethIcon()))
+							   .editorImage(fmt::format("zethicons/zeth{:02d}", tt.zethIcon()))
 							   .gl_id;
 			if (!texture_)
-				texture_ = MapEditor::textureManager().editorImage(wxString::Format("thing/%s", tt.icon())).gl_id;
+				texture_ = MapEditor::textureManager().editorImage(fmt::format("thing/{}", tt.icon())).gl_id;
 			thing_icon_ = true;
 		}
 		texname_ = "";
@@ -561,7 +564,7 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 // -----------------------------------------------------------------------------
 // Draws the item texture/graphic box (if any)
 // -----------------------------------------------------------------------------
-void InfoOverlay3D::drawTexture(float alpha, int x, int y)
+void InfoOverlay3D::drawTexture(float alpha, int x, int y) const
 {
 	double scale        = (Drawing::fontSize() / 12.0);
 	int    tex_box_size = 80 * scale;
@@ -619,8 +622,17 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 	}
 
 	// Draw texture name (even if texture is blank)
-	if (texname_.Length() > 8)
-		texname_ = texname_.Truncate(8) + "...";
+	auto tn_truncated = texname_;
+	if (tn_truncated.size() > 8)
+	{
+		StrUtil::truncateIP(tn_truncated, 8);
+		tn_truncated.append("...");
+	}
 	Drawing::drawText(
-		texname_, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::Font::Condensed, Drawing::Align::Center);
+		tn_truncated,
+		x + (tex_box_size * 0.5),
+		y - line_height,
+		col_fg,
+		Drawing::Font::Condensed,
+		Drawing::Align::Center);
 }

@@ -488,11 +488,9 @@ void Input::updateKeyModifiersWx(int modifiers)
 // -----------------------------------------------------------------------------
 bool Input::keyDown(std::string_view key) const
 {
-	wxString wx_key{ key.data(), key.size() };
-
 	// Send to overlay if active
 	if (context_.overlayActive())
-		context_.currentOverlay()->keyDown(wx_key);
+		context_.currentOverlay()->keyDown(key);
 
 	// Let keybind system handle it
 	return KeyBind::keyPressed({ key, alt_down_, ctrl_down_, shift_down_ });

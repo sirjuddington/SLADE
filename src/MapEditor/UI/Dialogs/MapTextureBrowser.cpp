@@ -79,9 +79,9 @@ bool MapTexBrowserItem::loadImage()
 
 	// Get texture or flat depending on type
 	if (type_ == "texture")
-		tex = &MapEditor::textureManager().texture(name_, false);
+		tex = &MapEditor::textureManager().texture(name_.ToStdString(), false);
 	else if (type_ == "flat")
-		tex = &MapEditor::textureManager().flat(name_, false);
+		tex = &MapEditor::textureManager().flat(name_.ToStdString(), false);
 
 	if (tex)
 	{
@@ -161,7 +161,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const w
 		for (unsigned a = 0; a < textures.size(); a++)
 		{
 			if ((map_format != MapFormat::UDMF || !Game::configuration().featureSupported(Game::Feature::LongNames))
-				&& textures[a].short_name.Len() > 8)
+				&& textures[a].short_name.size() > 8)
 			{
 				// Only UDMF supports texture/flat names longer than 8 characters
 				continue;
@@ -171,7 +171,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const w
 			bool dont_add = false;
 			for (unsigned b = 0; b < textures.size(); b++)
 			{
-				if (textures[b].short_name.Cmp(textures[a].short_name) == 0 && b > a)
+				if (textures[b].short_name == textures[a].short_name && b > a)
 				{
 					dont_add = true;
 					break;
@@ -194,7 +194,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const w
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
 			if ((map_format != MapFormat::UDMF || !Game::configuration().featureSupported(Game::Feature::LongNames))
-				&& flats[a].short_name.Len() > 8)
+				&& flats[a].short_name.size() > 8)
 			{
 				// Only UDMF supports texture/flat names longer than 8 characters
 				continue;
@@ -204,7 +204,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const w
 			bool dont_add = false;
 			for (unsigned b = 0; b < flats.size(); b++)
 			{
-				if (flats[b].short_name.Cmp(flats[a].short_name) == 0 && b > a)
+				if (flats[b].short_name == flats[a].short_name && b > a)
 				{
 					dont_add = true;
 					break;
@@ -233,7 +233,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const w
 		for (auto& tex : fp_textures)
 		{
 			if (tex.category != MapTextureManager::Category::ZDTextures
-				&& tex.category != MapTextureManager::Category::HiRes && !tex.path.IsEmpty() && tex.path.Cmp("/") != 0)
+				&& tex.category != MapTextureManager::Category::HiRes && !tex.path.empty() && tex.path != "/")
 			{
 				// Add browser item
 				addItem(
@@ -246,7 +246,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const w
 		auto& fp_flats = MapEditor::textureManager().allFlatsInfo();
 		for (auto& flat : fp_flats)
 		{
-			if (!flat.path.IsEmpty() && flat.path.Cmp("/") != 0)
+			if (!flat.path.empty() && flat.path != "/")
 			{
 				// Add browser item
 				// fpName.Remove(0, 1); // Remove leading slash

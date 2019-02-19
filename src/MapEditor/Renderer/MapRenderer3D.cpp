@@ -733,9 +733,9 @@ void MapRenderer3D::renderSky()
 	// Get sky texture
 	unsigned sky;
 	if (!skytex2_.IsEmpty())
-		sky = MapEditor::textureManager().texture(skytex2_, false).gl_id;
+		sky = MapEditor::textureManager().texture(skytex2_.ToStdString(), false).gl_id;
 	else
-		sky = MapEditor::textureManager().texture(skytex1_, false).gl_id;
+		sky = MapEditor::textureManager().texture(skytex1_.ToStdString(), false).gl_id;
 	if (sky)
 	{
 		// Bind texture
@@ -1379,20 +1379,20 @@ void MapRenderer3D::updateLine(unsigned index)
 	// --- Two-sided line ---
 
 	// Get second side info
-	int      floor2      = line->backSector()->floor().height;
-	int      ceiling2    = line->backSector()->ceiling().height;
-	auto     fp2         = line->backSector()->floor().plane;
-	auto     cp2         = line->backSector()->ceiling().plane;
-	auto     colour2     = line->backSector()->colourAt(0, true);
-	auto     fogcolour2  = line->backSector()->fogColour();
-	int      light2      = line->s2()->light();
-	int      xoff2       = line->s2()->texOffsetX();
-	int      yoff2       = line->s2()->texOffsetY();
-	int      lowceil     = min(ceiling1, ceiling2);
-	int      highfloor   = max(floor1, floor2);
-	wxString sky_flat    = Game::configuration().skyFlat();
-	wxString hidden_tex  = map_->currentFormat() == MapFormat::Doom64 ? "?" : "-";
-	bool     show_midtex = (map_->currentFormat() != MapFormat::Doom64) || (line->flagSet(512));
+	int         floor2      = line->backSector()->floor().height;
+	int         ceiling2    = line->backSector()->ceiling().height;
+	auto        fp2         = line->backSector()->floor().plane;
+	auto        cp2         = line->backSector()->ceiling().plane;
+	auto        colour2     = line->backSector()->colourAt(0, true);
+	auto        fogcolour2  = line->backSector()->fogColour();
+	int         light2      = line->s2()->light();
+	int         xoff2       = line->s2()->texOffsetX();
+	int         yoff2       = line->s2()->texOffsetY();
+	int         lowceil     = min(ceiling1, ceiling2);
+	int         highfloor   = max(floor1, floor2);
+	std::string sky_flat    = Game::configuration().skyFlat().ToStdString();
+	std::string hidden_tex  = map_->currentFormat() == MapFormat::Doom64 ? "?" : "-";
+	bool        show_midtex = (map_->currentFormat() != MapFormat::Doom64) || (line->flagSet(512));
 	// Heights at both endpoints, for both planes, on both sides
 	double f1h1 = fp1.heightAt(line->x1(), line->y1());
 	double f1h2 = fp1.heightAt(line->x2(), line->y2());
@@ -1487,8 +1487,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	// Front middle
 	lsx              = 1;
 	lsy              = 1;
-	wxString midtex1 = line->stringProperty("side1.texturemiddle");
-	if (!midtex1.IsEmpty() && midtex1 != hidden_tex && show_midtex)
+	auto midtex1 = line->stringProperty("side1.texturemiddle");
+	if (!midtex1.empty() && midtex1 != hidden_tex && show_midtex)
 	{
 		Quad quad;
 
@@ -1630,8 +1630,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.light     = light1;
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling1, ceiling2, !upeg, sx, sy);
 		// Sky hack only applies if both sectors have a sky ceiling
-		if (S_CMPNOCASE(sky_flat, line->frontSector()->ceiling().texture)
-			&& S_CMPNOCASE(sky_flat, line->backSector()->ceiling().texture))
+		if (StrUtil::equalCI(sky_flat, line->frontSector()->ceiling().texture)
+			&& StrUtil::equalCI(sky_flat, line->backSector()->ceiling().texture))
 			quad.flags |= SKY;
 		quad.flags |= UPPER;
 
@@ -1691,7 +1691,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.fogcolour = fogcolour2;
 		quad.light     = light2;
 		setupQuadTexCoords(&quad, length, xoff, yoff, floor1, floor2, false, sx, sy);
-		if (S_CMPNOCASE(sky_flat, line->frontSector()->floor().texture))
+		if (StrUtil::equalCI(sky_flat, line->frontSector()->floor().texture))
 			quad.flags |= SKY;
 		quad.flags |= BACK;
 		quad.flags |= LOWER;
@@ -1703,8 +1703,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	// Back middle
 	lsx              = 1;
 	lsy              = 1;
-	wxString midtex2 = line->stringProperty("side2.texturemiddle");
-	if (!midtex2.IsEmpty() && midtex2 != hidden_tex && show_midtex)
+	auto midtex2 = line->stringProperty("side2.texturemiddle");
+	if (!midtex2.empty() && midtex2 != hidden_tex && show_midtex)
 	{
 		Quad quad;
 
@@ -1846,7 +1846,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.fogcolour = fogcolour2;
 		quad.light     = light2;
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling2, ceiling1, !upeg, sx, sy);
-		if (S_CMPNOCASE(sky_flat, line->frontSector()->ceiling().texture))
+		if (StrUtil::equalCI(sky_flat, line->frontSector()->ceiling().texture))
 			quad.flags |= SKY;
 		quad.flags |= BACK;
 		quad.flags |= UPPER;
@@ -2097,9 +2097,9 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 	uint32_t theight      = render_thing_icon_size;
 	things_[index].sprite = MapEditor::textureManager()
 								.sprite(
-									things_[index].type->sprite(),
-									things_[index].type->translation(),
-									things_[index].type->palette())
+									things_[index].type->sprite().ToStdString(),
+									things_[index].type->translation().ToStdString(),
+									things_[index].type->palette().ToStdString())
 								.gl_id;
 	if (!things_[index].sprite)
 	{
@@ -2108,13 +2108,13 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 		{
 			things_[index].sprite = MapEditor::textureManager()
 										.editorImage(
-											wxString::Format("zethicons/zeth%02d", things_[index].type->zethIcon()))
+											fmt::format("zethicons/zeth{:02d}", things_[index].type->zethIcon()))
 										.gl_id;
 			things_[index].flags |= ZETH;
 		}
 		if (!things_[index].sprite)
 			things_[index].sprite = MapEditor::textureManager()
-										.editorImage(wxString::Format("thing/%s", things_[index].type->icon()))
+										.editorImage(fmt::format("thing/{}", things_[index].type->icon()))
 										.gl_id;
 		things_[index].flags |= ICON;
 	}
@@ -2153,7 +2153,7 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 	}
 
 	// Adjust height by sprite Y offset if needed
-	things_[index].z += MapEditor::textureManager().verticalOffset(things_[index].type->sprite());
+	things_[index].z += MapEditor::textureManager().verticalOffset(things_[index].type->sprite().ToStdString());
 
 	things_[index].updated_time = App::runTimer();
 }

@@ -72,12 +72,14 @@ void SpriteTexCanvas::setSprite(const Game::ThingType& type)
 	colour_  = ColRGBA::WHITE;
 
 	// Sprite
-	texture_ = MapEditor::textureManager().sprite(texname_, type.translation(), type.palette()).gl_id;
+	texture_ = MapEditor::textureManager()
+				   .sprite(texname_.ToStdString(), type.translation().ToStdString(), type.palette().ToStdString())
+				   .gl_id;
 
 	// Icon
 	if (!texture_)
 	{
-		texture_ = MapEditor::textureManager().editorImage(wxString::Format("thing/%s", type.icon())).gl_id;
+		texture_ = MapEditor::textureManager().editorImage(fmt::format("thing/{}", type.icon().ToStdString())).gl_id;
 		colour_  = type.colour();
 		icon_    = true;
 	}
