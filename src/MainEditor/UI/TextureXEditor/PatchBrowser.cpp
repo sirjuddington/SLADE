@@ -74,7 +74,7 @@ bool PatchBrowserItem::loadImage()
 	if (type_ == Type::Patch)
 	{
 		// Find patch entry
-		auto entry = App::resources().getPatchEntry(name_, nspace_, archive_);
+		auto entry = App::resources().getPatchEntry(name_.ToStdString(), nspace_.ToStdString(), archive_);
 
 		// Load entry to image, if it exists
 		if (entry)
@@ -87,7 +87,7 @@ bool PatchBrowserItem::loadImage()
 	if (type_ == Type::CTexture)
 	{
 		// Find texture
-		auto tex = App::resources().getTexture(name_, archive_);
+		auto tex = App::resources().getTexture(name_.ToStdString(), archive_);
 
 		// Load texture to image, if it exists
 		if (tex)
@@ -194,7 +194,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 		wxString whereis = "Unknown";
 
 		// Get patch entry
-		auto entry = App::resources().getPatchEntry(patch.name);
+		auto entry = App::resources().getPatchEntry(patch.name.ToStdString());
 
 		// Check its parent archive
 		Archive* parent_archive = nullptr;

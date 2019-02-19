@@ -115,7 +115,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 			// Unused
 
 			// If its entry is in the archive, flag it to be removed
-			auto entry = App::resources().getPatchEntry(p.name, "patches", archive);
+			auto entry = App::resources().getPatchEntry(p.name.ToStdString(), "patches", archive);
 			if (entry && entry->parent() == archive)
 				to_remove.push_back(entry);
 
@@ -1618,8 +1618,8 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, const wxString& oldtex, const wxS
 	bool   fchanged, cchanged;
 	size_t changed = 0;
 
-	uint16_t oldhash = App::resources().getTextureHash(oldtex);
-	uint16_t newhash = App::resources().getTextureHash(newtex);
+	uint16_t oldhash = App::resources().getTextureHash(oldtex.ToStdString());
+	uint16_t newhash = App::resources().getTextureHash(newtex.ToStdString());
 
 	auto sectors = new Doom64MapFormat::Sector[numsectors];
 	memcpy(sectors, entry->rawData(), size);
@@ -1664,8 +1664,8 @@ size_t replaceWallsDoom64(
 	bool   lchanged, mchanged, uchanged;
 	size_t changed = 0;
 
-	uint16_t oldhash = App::resources().getTextureHash(oldtex);
-	uint16_t newhash = App::resources().getTextureHash(newtex);
+	uint16_t oldhash = App::resources().getTextureHash(oldtex.ToStdString());
+	uint16_t newhash = App::resources().getTextureHash(newtex.ToStdString());
 
 	auto sides = new Doom64MapFormat::SideDef[numsides];
 	memcpy(sides, entry->rawData(), size);

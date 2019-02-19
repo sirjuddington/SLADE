@@ -97,9 +97,9 @@ ArchiveEntry* PatchTable::patchEntry(size_t index)
 		return nullptr;
 
 	// Patches namespace > graphics
-	auto entry = App::resources().getPatchEntry(patches_[index].name, "patches", parent_);
+	auto entry = App::resources().getPatchEntry(patches_[index].name.ToStdString(), "patches", parent_);
 	if (!entry)
-		entry = App::resources().getPatchEntry(patches_[index].name, "graphics", parent_);
+		entry = App::resources().getPatchEntry(patches_[index].name.ToStdString(), "graphics", parent_);
 
 	return entry;
 }
@@ -146,7 +146,7 @@ int32_t PatchTable::patchIndex(ArchiveEntry* entry)
 	// Search for patch by entry
 	for (size_t a = 0; a < patches_.size(); a++)
 	{
-		if (App::resources().getPatchEntry(patches_[a].name, "patches", parent_) == entry)
+		if (App::resources().getPatchEntry(patches_[a].name.ToStdString(), "patches", parent_) == entry)
 			return a;
 	}
 

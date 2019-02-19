@@ -63,15 +63,15 @@ CTPatch::CTPatch(const wxString& name, int16_t offset_x, int16_t offset_y) : nam
 ArchiveEntry* CTPatch::patchEntry(Archive* parent)
 {
 	// Default patches should be in patches namespace
-	auto entry = App::resources().getPatchEntry(name_, "patches", parent);
+	auto entry = App::resources().getPatchEntry(name_.ToStdString(), "patches", parent);
 
 	// Not found in patches, check in graphics namespace
 	if (!entry)
-		entry = App::resources().getPatchEntry(name_, "graphics", parent);
+		entry = App::resources().getPatchEntry(name_.ToStdString(), "graphics", parent);
 
 	// Not found in patches, check in stand-alone texture namespace
 	if (!entry)
-		entry = App::resources().getPatchEntry(name_, "textures", parent);
+		entry = App::resources().getPatchEntry(name_.ToStdString(), "textures", parent);
 
 	return entry;
 }
@@ -121,22 +121,22 @@ ArchiveEntry* CTPatchEx::patchEntry(Archive* parent)
 	// 'Patch' type: patches > graphics
 	if (type_ == Type::Patch)
 	{
-		auto entry = App::resources().getPatchEntry(name_, "patches", parent);
+		auto entry = App::resources().getPatchEntry(name_.ToStdString(), "patches", parent);
 		if (!entry)
-			entry = App::resources().getFlatEntry(name_, parent);
+			entry = App::resources().getFlatEntry(name_.ToStdString(), parent);
 		if (!entry)
-			entry = App::resources().getPatchEntry(name_, "graphics", parent);
+			entry = App::resources().getPatchEntry(name_.ToStdString(), "graphics", parent);
 		return entry;
 	}
 
 	// 'Graphic' type: graphics > patches
 	if (type_ == Type::Graphic)
 	{
-		auto entry = App::resources().getPatchEntry(name_, "graphics", parent);
+		auto entry = App::resources().getPatchEntry(name_.ToStdString(), "graphics", parent);
 		if (!entry)
-			entry = App::resources().getPatchEntry(name_, "patches", parent);
+			entry = App::resources().getPatchEntry(name_.ToStdString(), "patches", parent);
 		if (!entry)
-			entry = App::resources().getFlatEntry(name_, parent);
+			entry = App::resources().getFlatEntry(name_.ToStdString(), parent);
 		return entry;
 	}
 	// Silence warnings
@@ -681,7 +681,7 @@ bool CTexture::parseDefine(Tokenizer& tz)
 	def_size_.x = tz.next().asInt();
 	def_size_.y = tz.next().asInt();
 	size_       = def_size_;
-	auto entry  = App::resources().getPatchEntry(name_);
+	auto entry  = App::resources().getPatchEntry(name_.ToStdString());
 	if (entry)
 	{
 		SImage image;
@@ -962,7 +962,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 
 		// Otherwise, try the resource manager
 		// TODO: Something has to be ignored here. The entire archive or just the current list?
-		auto tex = App::resources().getTexture(patch->name(), parent);
+		auto tex = App::resources().getTexture(patch->name().ToStdString(), parent);
 		if (tex)
 			return tex->toImage(image, parent, pal);
 	}
@@ -975,7 +975,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 		return Misc::loadImageFromEntry(&image, entry);
 
 	// Maybe it's a texture?
-	entry = App::resources().getTextureEntry(patch->name(), "", parent);
+	entry = App::resources().getTextureEntry(patch->name().ToStdString(), "", parent);
 
 	if (entry)
 		return Misc::loadImageFromEntry(&image, entry);

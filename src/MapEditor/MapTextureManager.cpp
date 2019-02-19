@@ -141,11 +141,11 @@ const MapTextureManager::Texture& MapTextureManager::texture(const wxString& nam
 	// Texture not found or unloaded, look for it
 
 	// Look for stand-alone textures first
-	auto etex         = App::resources().getTextureEntry(name, "hires", archive_);
+	auto etex         = App::resources().getTextureEntry(name.ToStdString(), "hires", archive_);
 	auto textypefound = CTexture::Type::HiRes;
 	if (etex == nullptr)
 	{
-		etex         = App::resources().getTextureEntry(name, "textures", archive_);
+		etex         = App::resources().getTextureEntry(name.ToStdString(), "textures", archive_);
 		textypefound = CTexture::Type::Texture;
 	}
 	if (etex)
@@ -159,7 +159,7 @@ const MapTextureManager::Texture& MapTextureManager::texture(const wxString& nam
 			// Handle hires texture scale
 			if (textypefound == CTexture::Type::HiRes)
 			{
-				auto ref = App::resources().getTextureEntry(name, "textures", archive_);
+				auto ref = App::resources().getTextureEntry(name.ToStdString(), "textures", archive_);
 				if (ref)
 				{
 					SImage imgref;
@@ -179,7 +179,7 @@ const MapTextureManager::Texture& MapTextureManager::texture(const wxString& nam
 	}
 
 	// Try composite textures then
-	auto ctex = App::resources().getTexture(name, archive_);
+	auto ctex = App::resources().getTexture(name.ToStdString(), archive_);
 	if (ctex) // Composite textures take precedence over the textures directory
 	{
 		textypefound = CTexture::Type::WallTexture;
@@ -251,7 +251,7 @@ const MapTextureManager::Texture& MapTextureManager::flat(const wxString& name, 
 
 	if (mixed)
 	{
-		auto ctex = App::resources().getTexture(name, archive_);
+		auto ctex = App::resources().getTexture(name.ToStdString(), archive_);
 		if (ctex && ctex->isExtended() && ctex->type() != "WallTexture")
 		{
 			SImage image;
@@ -278,11 +278,11 @@ const MapTextureManager::Texture& MapTextureManager::flat(const wxString& name, 
 	// Palette8bit* pal = getResourcePalette();
 	if (!mtex.gl_id)
 	{
-		auto entry = App::resources().getTextureEntry(name, "hires", archive_);
+		auto entry = App::resources().getTextureEntry(name.ToStdString(), "hires", archive_);
 		if (entry == nullptr)
-			entry = App::resources().getTextureEntry(name, "flats", archive_);
+			entry = App::resources().getTextureEntry(name.ToStdString(), "flats", archive_);
 		if (entry == nullptr)
-			entry = App::resources().getFlatEntry(name, archive_);
+			entry = App::resources().getFlatEntry(name.ToStdString(), archive_);
 		if (entry)
 		{
 			SImage image;
@@ -358,17 +358,17 @@ const MapTextureManager::Texture& MapTextureManager::sprite(
 	bool   mirror = false;
 	SImage image;
 	// Palette8bit* pal = getResourcePalette();
-	auto entry = App::resources().getPatchEntry(name, "sprites", archive_);
+	auto entry = App::resources().getPatchEntry(name.ToStdString(), "sprites", archive_);
 	if (!entry)
-		entry = App::resources().getPatchEntry(name, "", archive_);
+		entry = App::resources().getPatchEntry(name.ToStdString(), "", archive_);
 	if (!entry && name.length() == 8)
 	{
-		wxString newname = name;
+		auto newname = name;
 		newname[4]       = name[6];
 		newname[5]       = name[7];
 		newname[6]       = name[4];
 		newname[7]       = name[5];
-		entry            = App::resources().getPatchEntry(newname, "sprites", archive_);
+		entry            = App::resources().getPatchEntry(newname.ToStdString(), "sprites", archive_);
 		if (entry)
 			mirror = true;
 	}
@@ -379,7 +379,7 @@ const MapTextureManager::Texture& MapTextureManager::sprite(
 	}
 	else // Try composite textures then
 	{
-		auto ctex = App::resources().getTexture(name, archive_);
+		auto ctex = App::resources().getTexture(name.ToStdString(), archive_);
 		if (ctex && ctex->toImage(image, archive_, palette_.get(), true))
 			found = true;
 	}
@@ -396,7 +396,7 @@ const MapTextureManager::Texture& MapTextureManager::sprite(
 		// Apply palette override
 		if (!palette.IsEmpty())
 		{
-			auto newpal = App::resources().getPaletteEntry(palette, archive_);
+			auto newpal = App::resources().getPaletteEntry(palette.ToStdString(), archive_);
 			if (newpal && newpal->size() == 768)
 			{
 				pal = image.palette();
@@ -449,9 +449,9 @@ int MapTextureManager::verticalOffset(const wxString& name) const
 		return 0;
 
 	// Get sprite matching name
-	auto entry = App::resources().getPatchEntry(name, "sprites", archive_);
+	auto entry = App::resources().getPatchEntry(name.ToStdString(), "sprites", archive_);
 	if (!entry)
-		entry = App::resources().getPatchEntry(name, "", archive_);
+		entry = App::resources().getPatchEntry(name.ToStdString(), "", archive_);
 	if (entry)
 	{
 		SImage image;

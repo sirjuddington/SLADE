@@ -44,7 +44,7 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-wxString ResourceManager::doom64_hash_table_[65536];
+std::string ResourceManager::doom64_hash_table_[65536];
 
 
 // -----------------------------------------------------------------------------
@@ -68,7 +68,7 @@ void removeArchiveFromMap(EntryResourceMap& map, Archive* archive)
 // If [full_check] is true, all resources in the map are checked for the entry,
 // otherwise only the resource [name] is checked
 // ----------------------------------------------------------------------------
-void removeEntryFromMap(EntryResourceMap& map, const wxString& name, ArchiveEntry::SPtr& entry, bool full_check)
+void removeEntryFromMap(EntryResourceMap& map, const std::string& name, ArchiveEntry::SPtr& entry, bool full_check)
 {
 	if (full_check)
 		for (auto& i : map)
@@ -134,7 +134,7 @@ void EntryResource::removeArchive(Archive* archive)
 // within that namespace, or if [ns_required] is true, ignore anything not in
 // [nspace]
 // -----------------------------------------------------------------------------
-ArchiveEntry* EntryResource::getEntry(Archive* priority, const wxString& nspace, bool ns_required)
+ArchiveEntry* EntryResource::getEntry(Archive* priority, std::string_view nspace, bool ns_required)
 {
 	// Check resoure has any entries
 	if (entries_.empty())
@@ -158,8 +158,8 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, const wxString& nspace,
 			best = entry;
 
 		// Check namespace if required
-		if (ns_required && !nspace.IsEmpty())
-			if (!entry->isInNamespace(nspace.ToStdString()))
+		if (ns_required && !nspace.empty())
+			if (!entry->isInNamespace(nspace))
 				continue;
 
 		// Check if in priority archive (or its parent)
@@ -170,8 +170,7 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, const wxString& nspace,
 		}
 
 		// Check namespace
-		if (!ns_required && !nspace.IsEmpty() && !best->isInNamespace(nspace.ToStdString())
-			&& entry->isInNamespace(nspace.ToStdString()))
+		if (!ns_required && !nspace.empty() && !best->isInNamespace(nspace) && entry->isInNamespace(nspace))
 		{
 			best = entry;
 			continue;
@@ -289,7 +288,7 @@ void ResourceManager::removeArchive(Archive* archive)
 // Returns the Doom64 hash of a given texture name, computed using the same
 // hash algorithm as Doom64 EX itself
 // -----------------------------------------------------------------------------
-uint16_t ResourceManager::getTextureHash(const wxString& name) const
+uint16_t ResourceManager::getTextureHash(std::string_view name) const
 {
 	char str[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	for (size_t c = 0; c < name.length() && c < 8; c++)
@@ -321,7 +320,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 	auto lname = entry->upperNameNoExt();
 	auto name  = StrUtil::truncate(lname, 8);
 	// Talon1024 - Get resource path (uppercase, without leading slash)
-	auto path  = entry->path(true);
+	auto path = entry->path(true);
 	StrUtil::upperIP(path);
 	path.erase(0, 1);
 
@@ -431,7 +430,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 		for (unsigned a = 0; a < tx.size(); a++)
 		{
 			tex = tx.texture(a);
-			textures_[tex->name()].add(tex, entry->parent());
+			textures_[tex->name().ToStdString()].add(tex, entry->parent());
 		}
 	}
 }
@@ -488,7 +487,7 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full
 
 		// Remove all texture resources
 		for (unsigned a = 0; a < tx.size(); a++)
-			textures_[tx.texture(a)->name()].remove(entry->parent());
+			textures_[tx.texture(a)->name().ToStdString()].remove(entry->parent());
 	}
 }
 
@@ -502,7 +501,7 @@ void ResourceManager::listAllPatches()
 		if (i.second.length() == 0)
 			continue;
 
-		Log::info(wxString::Format("%s (%d)", i.first, i.second.length()));
+		Log::info("{} ({})", i.first, i.second.length());
 	}
 }
 
@@ -570,7 +569,7 @@ void ResourceManager::putAllTextures(vector<TextureResource::Texture*>& list, Ar
 // -----------------------------------------------------------------------------
 // Adds all current texture names to [list]
 // -----------------------------------------------------------------------------
-void ResourceManager::putAllTextureNames(vector<wxString>& list)
+void ResourceManager::putAllTextureNames(vector<std::string>& list)
 {
 	// Add all primary textures to the list
 	for (auto& i : textures_)
@@ -604,7 +603,7 @@ void ResourceManager::putAllFlatEntries(vector<ArchiveEntry*>& list, Archive* pr
 // -----------------------------------------------------------------------------
 // Adds all current flat names to [list]
 // -----------------------------------------------------------------------------
-void ResourceManager::putAllFlatNames(vector<wxString>& list)
+void ResourceManager::putAllFlatNames(vector<std::string>& list)
 {
 	// Add all primary flats to the list
 	for (auto& i : flats_)
@@ -616,30 +615,31 @@ void ResourceManager::putAllFlatNames(vector<wxString>& list)
 // Returns the most appropriate managed resource entry for [palette], or
 // nullptr if no match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getPaletteEntry(const wxString& palette, Archive* priority)
+ArchiveEntry* ResourceManager::getPaletteEntry(std::string_view palette, Archive* priority)
 {
-	return palettes_[palette.Upper()].getEntry(priority);
+	return palettes_[StrUtil::upper(palette)].getEntry(priority);
 }
 
 // -----------------------------------------------------------------------------
 // Returns the most appropriate managed resource entry for [patch],
 // or nullptr if no match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getPatchEntry(const wxString& patch, const wxString& nspace, Archive* priority)
+ArchiveEntry* ResourceManager::getPatchEntry(std::string_view patch, std::string_view nspace, Archive* priority)
 {
 	// Are we wanting to use a flat as a patch?
-	if (!nspace.CmpNoCase("flats"))
+	if (StrUtil::equalCI(nspace, "flats"))
 		return getFlatEntry(patch, priority);
 
 	// Are we wanting to use a stand-alone texture as a patch?
-	if (!nspace.CmpNoCase("textures"))
+	if (StrUtil::equalCI(nspace, "textures"))
 		return getTextureEntry(patch, "textures", priority);
 
-	auto entry = patches_[patch.Upper()].getEntry(priority, nspace, true);
+	auto patch_upper = StrUtil::upper(patch);
+	auto entry       = patches_[patch_upper].getEntry(priority, nspace, true);
 	if (entry)
 		return entry;
 
-	entry = patches_fp_[patch.Upper()].getEntry(priority, nspace, true);
+	entry = patches_fp_[patch_upper].getEntry(priority, nspace, true);
 	if (entry)
 		return entry;
 
@@ -650,17 +650,18 @@ ArchiveEntry* ResourceManager::getPatchEntry(const wxString& patch, const wxStri
 // Returns the most appropriate managed resource entry for [flat], or nullptr
 // if no match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getFlatEntry(const wxString& flat, Archive* priority)
+ArchiveEntry* ResourceManager::getFlatEntry(std::string_view flat, Archive* priority)
 {
 	// Check resource with matching name exists
-	auto& res = flats_[flat.Upper()];
+	auto  flat_upper = StrUtil::upper(flat);
+	auto& res        = flats_[flat_upper];
 
 	// Return most relevant entry
 	auto entry = res.getEntry(priority);
 	if (entry)
 		return entry;
 
-	entry = flats_fp_[flat.Upper()].getEntry(priority, "flats", true);
+	entry = flats_fp_[flat_upper].getEntry(priority, "flats", true);
 	if (entry)
 		return entry;
 
@@ -671,13 +672,14 @@ ArchiveEntry* ResourceManager::getFlatEntry(const wxString& flat, Archive* prior
 // Returns the most appropriate managed resource entry for [texture], or
 // nullptr if no match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getTextureEntry(const wxString& texture, const wxString& nspace, Archive* priority)
+ArchiveEntry* ResourceManager::getTextureEntry(std::string_view texture, std::string_view nspace, Archive* priority)
 {
-	auto entry = satextures_[texture.Upper()].getEntry(priority, nspace, true);
+	auto tex_upper = StrUtil::upper(texture);
+	auto entry     = satextures_[tex_upper].getEntry(priority, nspace, true);
 	if (entry)
 		return entry;
 
-	entry = satextures_fp_[texture.Upper()].getEntry(priority, nspace, true);
+	entry = satextures_fp_[tex_upper].getEntry(priority, nspace, true);
 	if (entry)
 		return entry;
 
@@ -688,10 +690,10 @@ ArchiveEntry* ResourceManager::getTextureEntry(const wxString& texture, const wx
 // Returns the most appropriate managed texture for [texture], or nullptr if no
 // match found
 // -----------------------------------------------------------------------------
-CTexture* ResourceManager::getTexture(const wxString& texture, Archive* priority, Archive* ignore)
+CTexture* ResourceManager::getTexture(std::string_view texture, Archive* priority, Archive* ignore)
 {
 	// Check texture resource with matching name exists
-	auto& res = textures_[texture.Upper()];
+	auto& res = textures_[StrUtil::upper(texture)];
 	if (res.textures_.empty())
 		return nullptr;
 
@@ -805,5 +807,5 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 	}
 
 	float avg = float(times[0] + times[1] + times[2] + times[3] + times[4]) / 5.0f;
-	Log::console(wxString::Format("Test took %dms avg", (int)avg));
+	Log::console(fmt::format("Test took {}ms avg", (int)avg));
 }
