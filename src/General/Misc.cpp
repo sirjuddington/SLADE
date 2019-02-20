@@ -181,7 +181,7 @@ int Misc::detectPaletteHack(ArchiveEntry* entry)
 	{
 		// Spear of Destiny ending screens (extra-hacky!)
 		// TODO: Check if endscreen 0 is valid, will need to change if it is
-		auto endscreen = StrUtil::toInt(entry->name().substr(entry->name().size() - 3));
+		auto endscreen = StrUtil::asInt(entry->name().substr(entry->name().size() - 3));
 		if (endscreen > 0)
 			return PaletteHack::SOD_END + endscreen - 81;
 	}

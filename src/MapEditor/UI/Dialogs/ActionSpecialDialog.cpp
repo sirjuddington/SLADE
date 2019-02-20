@@ -691,7 +691,7 @@ void ArgsPanel::setup(const Game::ArgSpec& args, bool udmf)
 
 		if ((int)a < args.count)
 		{
-			has_desc = !arg.desc.IsEmpty();
+			has_desc = !arg.desc.empty();
 
 			if (arg.type == Arg::Type::Choice)
 				control_args_[a] = new ArgsChoiceControl(this, arg);
@@ -751,7 +751,7 @@ void ArgsPanel::setup(const Game::ArgSpec& args, bool udmf)
 	{
 		auto& arg = args[a];
 
-		if (!arg.desc.IsEmpty())
+		if (!arg.desc.empty())
 		{
 			label_args_desc_[a]->Show(true);
 			label_args_desc_[a]->SetLabelText(arg.desc);
@@ -926,8 +926,9 @@ void ActionSpecialPanel::setupSpecialPanel()
 			sizer->Add(sizer_trigger, 0, wxEXPAND | wxALL, UI::pad());
 
 			// Add triggers dropdown
+			auto spac_triggers = WxUtils::arrayStringStd(Game::configuration().allSpacTriggers());
 			choice_trigger_ = new wxChoice(
-				panel_action_special_, -1, wxDefaultPosition, wxDefaultSize, Game::configuration().allSpacTriggers());
+				panel_action_special_, -1, wxDefaultPosition, wxDefaultSize, spac_triggers);
 			sizer_trigger->Add(choice_trigger_, 0, wxEXPAND | wxALL, UI::pad());
 
 			// Add activation-related flags

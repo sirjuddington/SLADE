@@ -105,13 +105,13 @@ void processIncludes(const std::string& filename, std::string& out);
 void processIncludes(ArchiveEntry* entry, std::string& out, bool use_res = true);
 
 // Conversion
-int              toInt(std::string_view str);
-unsigned         toUInt(std::string_view str);
-float            toFloat(std::string_view str);
-double           toDouble(std::string_view str);
-bool             toBoolean(std::string_view str);
-bool             toInt(std::string_view str, int& target);
-bool             toUInt(std::string_view str, unsigned& target);
+int              asInt(std::string_view str, int base = 10);
+unsigned         asUInt(std::string_view str, int base = 10);
+float            asFloat(std::string_view str);
+double           asDouble(std::string_view str);
+bool             asBoolean(std::string_view str);
+bool             toInt(std::string_view str, int& target, int base = 10);
+bool             toUInt(std::string_view str, unsigned& target, int base = 10);
 bool             toFloat(std::string_view str, float& target);
 bool             toDouble(std::string_view str, double& target);
 std::string      toString(std::string_view str);

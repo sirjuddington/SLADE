@@ -230,9 +230,9 @@ private:
 		float tx = 0.f, ty = 0.f;
 		float alpha = 1.f;
 	};
-	wxString skytex1_ = "SKY1";
-	wxString skytex2_;
-	ColRGBA  skycol_top_;
-	ColRGBA  skycol_bottom_;
-	Vec2d    sky_circle_[32];
+	std::string skytex1_ = "SKY1";
+	std::string skytex2_;
+	ColRGBA     skycol_top_;
+	ColRGBA     skycol_bottom_;
+	Vec2d       sky_circle_[32];
 };

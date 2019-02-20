@@ -24,77 +24,77 @@ public:
 		Obsolete  = 1 << 6, // Thing is flagged as obsolete
 	};
 
-	ThingType(const wxString& name = "Unknown", const wxString& group = "", const wxString& class_name = "");
+	ThingType(std::string_view name = "Unknown", std::string_view group = "", std::string_view class_name = "");
 	~ThingType() = default;
 
 	void copy(const ThingType& copy);
 
-	const wxString& name() const { return name_; }
-	const wxString& group() const { return group_; }
-	ColRGBA         colour() const { return colour_; }
-	int             radius() const { return radius_; }
-	int             height() const { return height_; }
-	float           scaleX() const { return scale_.x; }
-	float           scaleY() const { return scale_.y; }
-	bool            angled() const { return angled_; }
-	bool            hanging() const { return hanging_; }
-	bool            fullbright() const { return fullbright_; }
-	bool            shrinkOnZoom() const { return shrink_; }
-	bool            decoration() const { return decoration_; }
-	bool            solid() const { return solid_; }
-	int             zethIcon() const { return zeth_icon_; }
-	int             flags() const { return flags_; }
-	int             nextType() const { return next_type_; }
-	int             nextArgs() const { return next_args_; }
-	TagType         needsTag() const { return tagged_; }
-	const wxString& sprite() const { return sprite_; }
-	const wxString& icon() const { return icon_; }
-	const wxString& translation() const { return translation_; }
-	const wxString& palette() const { return palette_; }
-	const ArgSpec&  argSpec() const { return args_; }
-	int             number() const { return number_; }
-	bool            decorate() const { return decorate_; }
-	const wxString& className() const { return class_name_; }
+	const std::string& name() const { return name_; }
+	const std::string& group() const { return group_; }
+	ColRGBA            colour() const { return colour_; }
+	int                radius() const { return radius_; }
+	int                height() const { return height_; }
+	float              scaleX() const { return scale_.x; }
+	float              scaleY() const { return scale_.y; }
+	bool               angled() const { return angled_; }
+	bool               hanging() const { return hanging_; }
+	bool               fullbright() const { return fullbright_; }
+	bool               shrinkOnZoom() const { return shrink_; }
+	bool               decoration() const { return decoration_; }
+	bool               solid() const { return solid_; }
+	int                zethIcon() const { return zeth_icon_; }
+	int                flags() const { return flags_; }
+	int                nextType() const { return next_type_; }
+	int                nextArgs() const { return next_args_; }
+	TagType            needsTag() const { return tagged_; }
+	const std::string& sprite() const { return sprite_; }
+	const std::string& icon() const { return icon_; }
+	const std::string& translation() const { return translation_; }
+	const std::string& palette() const { return palette_; }
+	const ArgSpec&     argSpec() const { return args_; }
+	int                number() const { return number_; }
+	bool               decorate() const { return decorate_; }
+	const std::string& className() const { return class_name_; }
 
-	void setSprite(const wxString& sprite) { sprite_ = sprite; }
+	void setSprite(std::string_view sprite) { sprite_ = sprite; }
 
 	bool defined() const { return number_ >= 0; }
-	void define(int number, const wxString& name, const wxString& group);
+	void define(int number, std::string_view name, std::string_view group);
 
-	void     reset();
-	void     parse(ParseTreeNode* node);
-	wxString stringDesc() const;
-	void     loadProps(PropertyList& props, bool decorate = true, bool zscript = false);
+	void        reset();
+	void        parse(ParseTreeNode* node);
+	std::string stringDesc() const;
+	void        loadProps(PropertyList& props, bool decorate = true, bool zscript = false);
 
 	static const ThingType& unknown() { return unknown_; }
 	static void             initGlobal();
 
 private:
-	wxString name_;
-	wxString group_;
-	ColRGBA  colour_     = { 170, 170, 180, 255 };
-	int      radius_     = 20;
-	int      height_     = -1;
-	Vec2f    scale_      = { 1., 1. };
-	bool     angled_     = true;
-	bool     hanging_    = false;
-	bool     shrink_     = false;
-	bool     fullbright_ = false;
-	bool     decoration_ = false;
-	int      zeth_icon_  = -1;
-	wxString sprite_;
-	wxString icon_;
-	wxString translation_;
-	wxString palette_;
-	ArgSpec  args_;
-	bool     decorate_  = false;
-	bool     solid_     = false;
-	int      next_type_ = 0;
-	int      next_args_ = 0;
-	int      flags_     = 0;
-	TagType  tagged_;
-	int      number_ = -1;
-	wxString class_name_;
+	std::string name_;
+	std::string group_;
+	ColRGBA     colour_     = { 170, 170, 180, 255 };
+	int         radius_     = 20;
+	int         height_     = -1;
+	Vec2f       scale_      = { 1., 1. };
+	bool        angled_     = true;
+	bool        hanging_    = false;
+	bool        shrink_     = false;
+	bool        fullbright_ = false;
+	bool        decoration_ = false;
+	int         zeth_icon_  = -1;
+	std::string sprite_;
+	std::string icon_;
+	std::string translation_;
+	std::string palette_;
+	ArgSpec     args_;
+	bool        decorate_  = false;
+	bool        solid_     = false;
+	int         next_type_ = 0;
+	int         next_args_ = 0;
+	int         flags_     = 0;
+	TagType     tagged_;
+	int         number_ = -1;
+	std::string class_name_;
 
 	static ThingType unknown_;
 };

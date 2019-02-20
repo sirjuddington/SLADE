@@ -98,7 +98,7 @@ bool Tokenizer::Token::isFloat() const
 // ----------------------------------------------------------------------------
 int Tokenizer::Token::asInt() const
 {
-	return StrUtil::toInt(text);
+	return StrUtil::asInt(text);
 }
 
 // -----------------------------------------------------------------------------
@@ -116,7 +116,7 @@ bool Tokenizer::Token::asBool() const
 // ----------------------------------------------------------------------------
 double Tokenizer::Token::asFloat() const
 {
-	return StrUtil::toDouble(text);
+	return StrUtil::asDouble(text);
 }
 
 // ----------------------------------------------------------------------------
@@ -124,7 +124,7 @@ double Tokenizer::Token::asFloat() const
 // ----------------------------------------------------------------------------
 void Tokenizer::Token::toInt(int& val) const
 {
-	val = StrUtil::toInt(text);
+	val = StrUtil::asInt(text);
 }
 
 // -----------------------------------------------------------------------------
@@ -142,7 +142,7 @@ void Tokenizer::Token::toBool(bool& val) const
 // ----------------------------------------------------------------------------
 void Tokenizer::Token::toFloat(double& val) const
 {
-	val = StrUtil::toDouble(text);
+	val = StrUtil::asDouble(text);
 }
 
 // ----------------------------------------------------------------------------
@@ -150,7 +150,7 @@ void Tokenizer::Token::toFloat(double& val) const
 // ----------------------------------------------------------------------------
 void Tokenizer::Token::toFloat(float& val) const
 {
-	val = StrUtil::toFloat(text);
+	val = StrUtil::asFloat(text);
 }
 
 
@@ -945,7 +945,7 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 
 	int num = 1;
 	if (!args.empty())
-		num = StrUtil::toInt(args[0]);
+		num = StrUtil::asInt(args[0]);
 
 	bool lower = (VECTOR_EXISTS(args, "lower"));
 	bool dump  = (VECTOR_EXISTS(args, "dump"));

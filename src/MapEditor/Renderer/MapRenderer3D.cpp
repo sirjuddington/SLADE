@@ -732,10 +732,10 @@ void MapRenderer3D::renderSky()
 
 	// Get sky texture
 	unsigned sky;
-	if (!skytex2_.IsEmpty())
-		sky = MapEditor::textureManager().texture(skytex2_.ToStdString(), false).gl_id;
+	if (!skytex2_.empty())
+		sky = MapEditor::textureManager().texture(skytex2_, false).gl_id;
 	else
-		sky = MapEditor::textureManager().texture(skytex1_.ToStdString(), false).gl_id;
+		sky = MapEditor::textureManager().texture(skytex1_, false).gl_id;
 	if (sky)
 	{
 		// Bind texture
@@ -916,7 +916,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	floors_[index].light     = sector->lightAt(1);
 	floors_[index].flags     = 0;
 	floors_[index].plane     = sector->floor().plane;
-	if (StrUtil::equalCI(sector->floor().texture, Game::configuration().skyFlat().ToStdString()))
+	if (StrUtil::equalCI(sector->floor().texture, Game::configuration().skyFlat()))
 		floors_[index].flags |= SKY;
 
 	// Update floor VBO
@@ -939,7 +939,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	ceilings_[index].light     = sector->lightAt(2);
 	ceilings_[index].flags     = CEIL;
 	ceilings_[index].plane     = sector->ceiling().plane;
-	if (StrUtil::equalCI(sector->ceiling().texture, Game::configuration().skyFlat().ToStdString()))
+	if (StrUtil::equalCI(sector->ceiling().texture, Game::configuration().skyFlat()))
 		ceilings_[index].flags |= SKY;
 
 	// Update ceiling VBO
@@ -1390,7 +1390,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	int         yoff2       = line->s2()->texOffsetY();
 	int         lowceil     = min(ceiling1, ceiling2);
 	int         highfloor   = max(floor1, floor2);
-	std::string sky_flat    = Game::configuration().skyFlat().ToStdString();
+	std::string sky_flat    = Game::configuration().skyFlat();
 	std::string hidden_tex  = map_->currentFormat() == MapFormat::Doom64 ? "?" : "-";
 	bool        show_midtex = (map_->currentFormat() != MapFormat::Doom64) || (line->flagSet(512));
 	// Heights at both endpoints, for both planes, on both sides
@@ -1485,8 +1485,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Front middle
-	lsx              = 1;
-	lsy              = 1;
+	lsx          = 1;
+	lsy          = 1;
 	auto midtex1 = line->stringProperty("side1.texturemiddle");
 	if (!midtex1.empty() && midtex1 != hidden_tex && show_midtex)
 	{
@@ -1573,7 +1573,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.light     = light1;
 		setupQuadTexCoords(&quad, length, xoff, ytex, top, bottom, false, sx, sy);
 		quad.flags |= MIDTEX;
-		if (line->hasProp("renderstyle") && !wxStrcmp(line->stringProperty("renderstyle"), "add"))
+		if (line->hasProp("renderstyle") && line->stringProperty("renderstyle") == "add")
 			quad.flags |= TRANSADD;
 
 		// Add quad
@@ -1701,8 +1701,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Back middle
-	lsx              = 1;
-	lsy              = 1;
+	lsx          = 1;
+	lsy          = 1;
 	auto midtex2 = line->stringProperty("side2.texturemiddle");
 	if (!midtex2.empty() && midtex2 != hidden_tex && show_midtex)
 	{
@@ -1790,7 +1790,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		setupQuadTexCoords(&quad, length, xoff, ytex, top, bottom, false, sx, sy);
 		quad.flags |= BACK;
 		quad.flags |= MIDTEX;
-		if (line->hasProp("renderstyle") && !wxStrcmp(line->stringProperty("renderstyle"), "add"))
+		if (line->hasProp("renderstyle") && line->stringProperty("renderstyle") == "add")
 			quad.flags |= TRANSADD;
 
 		// Add quad
@@ -2097,9 +2097,9 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 	uint32_t theight      = render_thing_icon_size;
 	things_[index].sprite = MapEditor::textureManager()
 								.sprite(
-									things_[index].type->sprite().ToStdString(),
-									things_[index].type->translation().ToStdString(),
-									things_[index].type->palette().ToStdString())
+									things_[index].type->sprite(),
+									things_[index].type->translation(),
+									things_[index].type->palette())
 								.gl_id;
 	if (!things_[index].sprite)
 	{
@@ -2153,7 +2153,7 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 	}
 
 	// Adjust height by sprite Y offset if needed
-	things_[index].z += MapEditor::textureManager().verticalOffset(things_[index].type->sprite().ToStdString());
+	things_[index].z += MapEditor::textureManager().verticalOffset(things_[index].type->sprite());
 
 	things_[index].updated_time = App::runTimer();
 }

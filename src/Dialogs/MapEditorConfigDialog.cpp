@@ -87,7 +87,7 @@ public:
 		msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
 
 		// Open selected game configuration if no map names are currently loaded
-		Game::configuration().openConfig(game, port);
+		Game::configuration().openConfig(game.ToStdString(), port.ToStdString());
 
 		// Check if the game configuration allows any map name
 		int flags = 0;
@@ -141,7 +141,7 @@ public:
 			default_format = maps[0].format;
 		for (auto mf : map_formats)
 		{
-			if (Game::mapFormatSupported(mf.format, game, port))
+			if (Game::mapFormatSupported(mf.format, game.ToStdString(), port.ToStdString()))
 			{
 				choice_mapformat_->Append(mf.name);
 				if (mf.format == default_format)
@@ -363,7 +363,7 @@ void MapEditorConfigDialog::populatePortList()
 	ports_list_.clear();
 
 	// Get currently selected game
-	auto& game = Game::gameDef(games_list_[choice_game_config_->GetSelection()]);
+	auto& game = Game::gameDef(games_list_[choice_game_config_->GetSelection()].ToStdString());
 
 	// Populate list
 	int selection = 0;
@@ -409,10 +409,10 @@ void MapEditorConfigDialog::populateMapList()
 	maps_ = archive_->detectMaps();
 
 	// Get currently selected game/port
-	wxString game = games_list_[choice_game_config_->GetSelection()];
-	wxString port = "";
+	std::string game = games_list_[choice_game_config_->GetSelection()].ToStdString();
+	std::string port;
 	if (choice_port_config_->GetSelection() > 0)
-		port = ports_list_[choice_port_config_->GetSelection() - 1];
+		port = ports_list_[choice_port_config_->GetSelection() - 1].ToStdString();
 
 	// Add maps matching the current game configuration
 	int index = 0;
@@ -502,10 +502,10 @@ Archive::MapDesc MapEditorConfigDialog::selectedMap()
 bool MapEditorConfigDialog::configMatchesMap(const Archive::MapDesc& map)
 {
 	// Get currently selected game/port
-	wxString game = games_list_[choice_game_config_->GetSelection()];
-	wxString port = "";
+	std::string game = games_list_[choice_game_config_->GetSelection()].ToStdString();
+	std::string port = "";
 	if (choice_port_config_->GetSelection() > 0)
-		port = ports_list_[choice_port_config_->GetSelection() - 1];
+		port = ports_list_[choice_port_config_->GetSelection() - 1].ToStdString();
 
 	return Game::mapFormatSupported(map.format, game, port);
 }

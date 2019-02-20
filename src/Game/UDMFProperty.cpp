@@ -45,7 +45,7 @@
 // -----------------------------------------------------------------------------
 // Reads a UDMF property definition from a parsed tree [node]
 // -----------------------------------------------------------------------------
-void UDMFProperty::parse(ParseTreeNode* node, const wxString& group)
+void UDMFProperty::parse(ParseTreeNode* node, std::string_view group)
 {
 	// Set group and property name
 	group_    = group;
@@ -61,7 +61,7 @@ void UDMFProperty::parse(ParseTreeNode* node, const wxString& group)
 	// Otherwise, read node data
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto prop = node->childPTN(a);
+		auto prop     = node->childPTN(a);
 		auto pn_lower = StrUtil::lower(prop->name());
 
 		// Property type
@@ -121,7 +121,7 @@ void UDMFProperty::parse(ParseTreeNode* node, const wxString& group)
 			// Not sure why I have to do this here, but for whatever reason prop->getIntValue() doesn't work
 			// if the value parsed was hex (or it could be to do with the colour type? who knows)
 			if (type_ == Type::Colour)
-				default_value_ = StrUtil::toInt(prop->stringValue());
+				default_value_ = StrUtil::asInt(prop->stringValue());
 
 			has_default_ = true;
 		}
@@ -170,9 +170,9 @@ void UDMFProperty::parse(ParseTreeNode* node, const wxString& group)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the UDMF property definition
 // -----------------------------------------------------------------------------
-wxString UDMFProperty::getStringRep()
+std::string UDMFProperty::getStringRep()
 {
-	wxString ret = wxString::Format(R"(Property "%s": name = "%s", group = "%s")", property_, name_, group_);
+	auto ret = fmt::format(R"(Property "{}": name = "{}", group = "{}")", property_, name_, group_);
 
 	switch (type_)
 	{
@@ -203,11 +203,11 @@ wxString UDMFProperty::getStringRep()
 		else if (
 			type_ == Type::Int || type_ == Type::ActionSpecial || type_ == Type::SectorSpecial
 			|| type_ == Type::ThingType || type_ == Type::Colour)
-			ret += wxString::Format(", default = %d", default_value_.intValue());
+			ret += fmt::format(", default = {}", default_value_.intValue());
 		else if (type_ == Type::Float)
-			ret += wxString::Format(", default = %1.2f", (double)default_value_);
+			ret += fmt::format(", default = {:1.2f}", (double)default_value_);
 		else
-			ret += wxString::Format(", default = \"%s\"", default_value_.stringValue());
+			ret += fmt::format(", default = \"{}\"", default_value_.stringValue());
 	}
 	else
 		ret += ", no valid default";

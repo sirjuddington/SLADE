@@ -215,13 +215,13 @@ void CVar::set(const std::string& name, const std::string& value)
 		if (name == cvar->name)
 		{
 			if (cvar->type == Type::Integer)
-				*dynamic_cast<CIntCVar*>(cvar) = StrUtil::toInt(value);
+				*dynamic_cast<CIntCVar*>(cvar) = StrUtil::asInt(value);
 
 			if (cvar->type == Type::Boolean)
-				*dynamic_cast<CBoolCVar*>(cvar) = StrUtil::toBoolean(value);
+				*dynamic_cast<CBoolCVar*>(cvar) = StrUtil::asBoolean(value);
 
 			if (cvar->type == Type::Float)
-				*dynamic_cast<CFloatCVar*>(cvar) = StrUtil::toFloat(value);
+				*dynamic_cast<CFloatCVar*>(cvar) = StrUtil::asFloat(value);
 
 			if (cvar->type == Type::String)
 				*dynamic_cast<CStringCVar*>(cvar) = value;

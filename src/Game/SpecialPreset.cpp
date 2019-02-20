@@ -100,14 +100,14 @@ void SpecialPreset::parse(ParseTreeNode* node)
 ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
 {
 	auto node = new ParseTreeNode(parent, nullptr, nullptr, "preset");
-	node->setName(name.ToStdString());
+	node->setName(name);
 
 	// Group
-	auto ex_group = group;
-	if (ex_group.StartsWith("Custom/"))
-		ex_group = ex_group.Remove(0, 7);
+	std::string_view ex_group = group;
+	if (StrUtil::startsWith(ex_group, "Custom/"))
+		ex_group.remove_prefix(7);
 	if (ex_group != "Custom")
-		node->addChildPTN("group")->addStringValue(ex_group.ToStdString());
+		node->addChildPTN("group")->addStringValue(ex_group);
 
 	// Special
 	node->addChildPTN("special")->addIntValue(special);
@@ -120,7 +120,7 @@ ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
 	// Flags
 	auto node_flags = node->addChildPTN("flags");
 	for (auto& flag : flags)
-		node_flags->addStringValue(flag.ToStdString());
+		node_flags->addStringValue(flag);
 
 	return node;
 }
@@ -176,7 +176,7 @@ bool Game::loadCustomSpecialPresets()
 
 				// Add 'Custom' to preset group
 				if (!custom_presets.back().group.empty())
-					custom_presets.back().group = wxString::Format("Custom/%s", CHR(custom_presets.back().group));
+					custom_presets.back().group = fmt::format("Custom/{}", custom_presets.back().group);
 				else
 					custom_presets.back().group = "Custom";
 			}

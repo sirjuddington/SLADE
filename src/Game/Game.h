@@ -10,37 +10,37 @@ class Configuration;
 // Structs
 struct GameDef
 {
-	wxString                  name;
-	wxString                  title;
-	wxString                  filename;
+	std::string               name;
+	std::string               title;
+	std::string               filename;
 	std::map<MapFormat, bool> supported_formats;
 	bool                      user;
-	vector<wxString>          filters;
+	vector<std::string>       filters;
 
-	GameDef(const wxString& def_name = "Unknown") : name{ def_name }, user{ true } {}
+	GameDef(std::string_view def_name = "Unknown") : name{ def_name }, user{ true } {}
 
 	bool operator>(const GameDef& right) const { return title > right.title; }
 	bool operator<(const GameDef& right) const { return title < right.title; }
 
 	bool parse(MemChunk& mc);
-	bool supportsFilter(const wxString& filter) const;
+	bool supportsFilter(std::string_view filter) const;
 };
 struct PortDef
 {
-	wxString                  name;
-	wxString                  title;
-	wxString                  filename;
+	std::string               name;
+	std::string               title;
+	std::string               filename;
 	std::map<MapFormat, bool> supported_formats;
-	vector<wxString>          supported_games;
+	vector<std::string>       supported_games;
 	bool                      user;
 
-	PortDef(const wxString& def_name = "Unknown") : name{ def_name }, user{ true } {}
+	PortDef(std::string_view def_name = "Unknown") : name{ def_name }, user{ true } {}
 
 	bool operator>(const PortDef& right) const { return title > right.title; }
 	bool operator<(const PortDef& right) const { return title < right.title; }
 
 	bool parse(MemChunk& mc);
-	bool supportsGame(const wxString& game) const { return VECTOR_EXISTS(supported_games, game); }
+	bool supportsGame(std::string_view game) const { return VECTOR_EXISTS(supported_games, game); }
 };
 
 // Enums
@@ -83,12 +83,12 @@ enum class TagType
 void init();
 
 // Basic Game/Port Definitions
-const std::map<wxString, GameDef>& gameDefs();
-const GameDef&                     gameDef(const wxString& id);
-const std::map<wxString, PortDef>& portDefs();
-const PortDef&                     portDef(const wxString& id);
+const std::map<std::string, GameDef>& gameDefs();
+const GameDef&                        gameDef(const std::string& id);
+const std::map<std::string, PortDef>& portDefs();
+const PortDef&                        portDef(const std::string& id);
 
-bool mapFormatSupported(MapFormat format, const wxString& game, const wxString& port = "");
+bool mapFormatSupported(MapFormat format, const std::string& game, const std::string& port = "");
 
 // Full Game Configuration
 Configuration& configuration();

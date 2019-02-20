@@ -1002,7 +1002,7 @@ CONSOLE_COMMAND(replacethings, 2, true)
 	auto current = MainEditor::currentArchive();
 	int  oldtype, newtype;
 
-	if (current && StrUtil::toInt(args[0], oldtype) && StrUtil::toInt(args[1], newtype))
+	if (current && StrUtil::asInt(args[0], oldtype) && StrUtil::asInt(args[1], newtype))
 	{
 		ArchiveOperations::replaceThings(current, oldtype, newtype);
 	}
@@ -1464,12 +1464,12 @@ CONSOLE_COMMAND(replacespecials, 2, true)
 	{
 		switch (fullarg)
 		{
-		case 12: arg4 = StrUtil::toInt(args[oldtail--], oldarg4) && StrUtil::toInt(args[newtail--], newarg4);
-		case 10: arg3 = StrUtil::toInt(args[oldtail--], oldarg3) && StrUtil::toInt(args[newtail--], newarg3);
-		case 8: arg2 = StrUtil::toInt(args[oldtail--], oldarg2) && StrUtil::toInt(args[newtail--], newarg2);
-		case 6: arg1 = StrUtil::toInt(args[oldtail--], oldarg1) && StrUtil::toInt(args[newtail--], newarg1);
-		case 4: arg0 = StrUtil::toInt(args[oldtail--], oldarg0) && StrUtil::toInt(args[newtail--], newarg0);
-		case 2: run = StrUtil::toInt(args[oldtail--], oldtype) && StrUtil::toInt(args[newtail--], newtype); break;
+		case 12: arg4 = StrUtil::asInt(args[oldtail--], oldarg4) && StrUtil::asInt(args[newtail--], newarg4);
+		case 10: arg3 = StrUtil::asInt(args[oldtail--], oldarg3) && StrUtil::asInt(args[newtail--], newarg3);
+		case 8: arg2 = StrUtil::asInt(args[oldtail--], oldarg2) && StrUtil::asInt(args[newtail--], newarg2);
+		case 6: arg1 = StrUtil::asInt(args[oldtail--], oldarg1) && StrUtil::asInt(args[newtail--], newarg1);
+		case 4: arg0 = StrUtil::asInt(args[oldtail--], oldarg0) && StrUtil::asInt(args[newtail--], newarg0);
+		case 2: run = StrUtil::asInt(args[oldtail--], oldtype) && StrUtil::asInt(args[newtail--], newtype); break;
 		default: Log::warning(wxString::Format("Invalid number of arguments: %d", fullarg));
 		}
 	}

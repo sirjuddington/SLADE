@@ -49,15 +49,15 @@ namespace
 // Returns a string representation of [value] for a 'custom flags' type
 // arg, given [custom_flags]
 // -----------------------------------------------------------------------------
-wxString customFlags(int value, const vector<ArgValue>& custom_flags)
+std::string customFlags(int value, const vector<ArgValue>& custom_flags)
 {
 	// This has to go in REVERSE order to correctly handle multi-bit
 	// enums (so we see 3 before 1 and 2)
-	vector<wxString> flags;
-	size_t           final_length   = 0;
-	int              last_group     = 0;
-	int              original_value = value;
-	bool             has_flag;
+	vector<std::string> flags;
+	size_t              final_length   = 0;
+	int                 last_group     = 0;
+	int                 original_value = value;
+	bool                has_flag;
 	for (auto it = custom_flags.rbegin(); it != custom_flags.rend(); ++it)
 	{
 		if ((it->value & (it->value - 1)) != 0)
@@ -80,11 +80,11 @@ wxString customFlags(int value, const vector<ArgValue>& custom_flags)
 	}
 
 	if (value || flags.empty())
-		flags.push_back(wxString::Format("%d", value));
+		flags.push_back(fmt::format("{}", value));
 
 	// Join 'em, in reverse again, to restore the original order
-	wxString out;
-	out.Alloc(final_length);
+	std::string out;
+	out.reserve(final_length);
 	auto it = flags.rbegin();
 	while (true)
 	{
@@ -109,7 +109,7 @@ wxString customFlags(int value, const vector<ArgValue>& custom_flags)
 // -----------------------------------------------------------------------------
 // Returns a string representation of [value] depending on the arg's type
 // -----------------------------------------------------------------------------
-wxString Arg::valueString(int value) const
+std::string Arg::valueString(int value) const
 {
 	switch (type)
 	{
@@ -130,29 +130,29 @@ wxString Arg::valueString(int value) const
 
 	// Angle
 	case Angle:
-		return wxString::Format("%d Degrees", value); // TODO: E/S/W/N/etc
+		return fmt::format("{} Degrees", value); // TODO: E/S/W/N/etc
 
 	// Speed
 	case Speed:
 	{
-		wxString speed_label = speedLabel(value);
+		auto speed_label = speedLabel(value);
 		if (speed_label.empty())
-			return wxString::Format("%d", value);
+			return fmt::format("{}", value);
 		else
-			return wxString::Format("%d (%s)", value, speed_label);
+			return fmt::format("{} ({})", value, speed_label);
 	}
 
 	default: break;
 	}
 
 	// Any other type
-	return wxString::Format("%d", value);
+	return fmt::format("{}", value);
 }
 
 // -----------------------------------------------------------------------------
 // Returns a string representation of speed [value]
 // -----------------------------------------------------------------------------
-wxString Arg::speedLabel(int value) const
+std::string Arg::speedLabel(int value) const
 {
 	// Speed can optionally have a set of predefined values, most taken
 	// from the Boom generalized values
@@ -161,15 +161,15 @@ wxString Arg::speedLabel(int value) const
 	if (value == 0)
 		return "broken";
 	if (value < custom_values.front().value)
-		return wxString::Format("< %s", custom_values.front().name);
+		return fmt::format("< {}", custom_values.front().name);
 	if (value > custom_values.back().value)
-		return wxString::Format("> %s", custom_values.back().name);
+		return fmt::format("> {}", custom_values.back().name);
 	for (unsigned a = 0; a < custom_values.size(); a++)
 	{
 		if (value == custom_values[a].value)
 			return custom_values[a].name;
 		if (a > 0 && value < custom_values[a].value)
-			return wxString::Format("%s ~ %s", custom_values[a - 1].name, custom_values[a].name);
+			return fmt::format("{} ~ {}", custom_values[a - 1].name, custom_values[a].name);
 	}
 	return "";
 }
@@ -183,13 +183,12 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 	// Check for simple definition
 	if (node->isLeaf())
 	{
-		wxString name = node->stringValue();
-		wxString shared_arg_name;
+		auto name = node->stringValue();
 
 		// Names beginning with a dollar sign are references to predeclared args
-		if (shared_args && name.StartsWith("$", &shared_arg_name))
+		if (shared_args && StrUtil::startsWith(name, '$'))
 		{
-			auto it = shared_args->find(shared_arg_name);
+			auto it = shared_args->find(name.substr(1));
 			if (it == shared_args->end())
 				// Totally bogus reference; silently ignore this arg
 				return;
@@ -222,20 +221,20 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 
 		// Type
 		val = node->childPTN("type");
-		wxString atype;
+		std::string atype;
 		if (val)
 			atype = val->stringValue();
-		if (S_CMPNOCASE(atype, "yesno"))
+		if (StrUtil::equalCI(atype, "yesno"))
 			type = YesNo;
-		else if (S_CMPNOCASE(atype, "noyes"))
+		else if (StrUtil::equalCI(atype, "noyes"))
 			type = NoYes;
-		else if (S_CMPNOCASE(atype, "angle"))
+		else if (StrUtil::equalCI(atype, "angle"))
 			type = Angle;
-		else if (S_CMPNOCASE(atype, "choice"))
+		else if (StrUtil::equalCI(atype, "choice"))
 			type = Choice;
-		else if (S_CMPNOCASE(atype, "flags"))
+		else if (StrUtil::equalCI(atype, "flags"))
 			type = Flags;
-		else if (S_CMPNOCASE(atype, "speed"))
+		else if (StrUtil::equalCI(atype, "speed"))
 			type = Speed;
 		else
 			type = Number;
@@ -245,14 +244,14 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 		if (val)
 		{
 			for (auto cv : val->allChildren())
-				custom_values.push_back({ Parser::node(cv)->stringValue(), wxStringUtils::toInt(cv->name()) });
+				custom_values.push_back({ Parser::node(cv)->stringValue(), StrUtil::asInt(cv->name()) });
 		}
 
 		val = node->childPTN("custom_flags");
 		if (val)
 		{
 			for (auto cf : val->allChildren())
-				custom_flags.push_back({ Parser::node(cf)->stringValue(), wxStringUtils::toInt(cf->name()) });
+				custom_flags.push_back({ Parser::node(cf)->stringValue(), StrUtil::asInt(cf->name()) });
 		}
 	}
 }
@@ -268,20 +267,20 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 // -----------------------------------------------------------------------------
 // Returns a string representation of [values] depending on the spec arg types
 // -----------------------------------------------------------------------------
-wxString ArgSpec::stringDesc(const int values[5], wxString values_str[2]) const
+std::string ArgSpec::stringDesc(const int values[5], std::string values_str[2]) const
 {
-	wxString ret;
+	std::string ret;
 
 	// Add each arg to the string
 	for (unsigned a = 0; a < 5; a++)
 	{
 		// Skip if the arg name is undefined and the arg value is 0
-		if (values[a] == 0 && args[a].name.StartsWith("Arg"))
+		if (values[a] == 0 && StrUtil::startsWith(args[a].name, "Arg"))
 			continue;
 
 		ret += args[a].name;
 		ret += ": ";
-		if (a < 2 && values[a] == 0 && !values_str[a].IsEmpty())
+		if (a < 2 && values[a] == 0 && !values_str[a].empty())
 			ret += values_str[a];
 		else
 			ret += args[a].valueString(values[a]);
@@ -289,8 +288,8 @@ wxString ArgSpec::stringDesc(const int values[5], wxString values_str[2]) const
 	}
 
 	// Cut ending ", "
-	if (!ret.IsEmpty())
-		ret.RemoveLast(2);
+	if (!ret.empty())
+		StrUtil::removeLastIP(ret, 2);
 
 	return ret;
 }

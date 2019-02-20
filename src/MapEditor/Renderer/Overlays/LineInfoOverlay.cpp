@@ -72,48 +72,49 @@ void LineInfoOverlay::update(MapLine* line)
 		return;
 
 	// info.clear();
-	wxString info_text;
-	auto     map_format = MapEditor::editContext().mapDesc().format;
+	std::string info_text;
+	auto        map_format = MapEditor::editContext().mapDesc().format;
 
 	// General line info
 	if (Global::debug)
-		info_text += (wxString::Format("Line #%d (%d)\n", line->index(), line->objId()));
+		info_text += (fmt::format("Line #{} ({})\n", line->index(), line->objId()));
 	else
-		info_text += (wxString::Format("Line #%d\n", line->index()));
-	info_text += (wxString::Format("Length: %d\n", MathStuff::round(line->length())));
+		info_text += (fmt::format("Line #{}\n", line->index()));
+	info_text += (fmt::format("Length: {}\n", MathStuff::round(line->length())));
 
 	// Line special
 	int as_id = line->special();
 	if (line->props().propertyExists("macro"))
 	{
 		int macro = line->intProperty("macro");
-		info_text += (wxString::Format("Macro: #%d\n", macro));
+		info_text += (fmt::format("Macro: #{}\n", macro));
 	}
 	else
-		info_text += (wxString::Format("Special: %d (%s)\n", as_id, Game::configuration().actionSpecialName(as_id)));
+		info_text += (fmt::format("Special: {} ({})\n", as_id, Game::configuration().actionSpecialName(as_id)));
 
 	// Line trigger
 	if (map_format == MapFormat::Hexen || map_format == MapFormat::UDMF)
-		info_text += (wxString::Format("Trigger: %s\n", Game::configuration().spacTriggerString(line, map_format)));
+		info_text += (fmt::format("Trigger: {}\n", Game::configuration().spacTriggerString(line, map_format)));
 
 	// Line args (or sector tag)
 	if (map_format == MapFormat::Hexen || map_format == MapFormat::UDMF)
 	{
-		wxString argxstr[2];
-		argxstr[0]      = line->stringProperty("arg0str");
-		argxstr[1]      = line->stringProperty("arg1str");
-		wxString argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(line->args().data(), argxstr);
-		if (!argstr.IsEmpty())
-			info_text += (wxString::Format("%s", argstr));
+		std::string argxstr[2];
+		argxstr[0]         = line->stringProperty("arg0str");
+		argxstr[1]         = line->stringProperty("arg1str");
+		std::string argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(
+			line->args().data(), argxstr);
+		if (!argstr.empty())
+			info_text += (fmt::format("{}", argstr));
 		else
 			info_text += ("No Args");
 	}
 	else
-		info_text += (wxString::Format("Sector Tag: %d", line->arg(0)));
+		info_text += (fmt::format("Sector Tag: {}", line->arg(0)));
 
 	// Line flags
 	if (map_format != MapFormat::UDMF)
-		info_text += (wxString::Format("\nFlags: %s", Game::configuration().lineFlagsString(line)));
+		info_text += (fmt::format("\nFlags: {}", Game::configuration().lineFlagsString(line)));
 
 	// Setup text box
 	text_box_.setText(info_text);
@@ -127,11 +128,11 @@ void LineInfoOverlay::update(MapLine* line)
 	{
 		side_front_.exists = true;
 		if (Global::debug)
-			side_front_.info = wxString::Format(
-				"Front Side #%d (%d) (Sector %d)", s->index(), s->objId(), s->sector()->index());
+			side_front_.info = fmt::format(
+				"Front Side #{} ({}) (Sector {})", s->index(), s->objId(), s->sector()->index());
 		else
-			side_front_.info = wxString::Format("Front Side #%d (Sector %d)", s->index(), s->sector()->index());
-		side_front_.offsets      = wxString::Format("Offsets: (%d, %d)", s->texOffsetX(), s->texOffsetY());
+			side_front_.info = fmt::format("Front Side #{} (Sector {})", s->index(), s->sector()->index());
+		side_front_.offsets      = fmt::format("Offsets: ({}, {})", s->texOffsetX(), s->texOffsetY());
 		side_front_.tex_upper    = s->texUpper();
 		side_front_.tex_middle   = s->texMiddle();
 		side_front_.tex_lower    = s->texLower();
@@ -148,11 +149,11 @@ void LineInfoOverlay::update(MapLine* line)
 	{
 		side_back_.exists = true;
 		if (Global::debug)
-			side_back_.info = wxString::Format(
-				"Back Side #%d (%d) (Sector %d)", s->index(), s->objId(), s->sector()->index());
+			side_back_.info = fmt::format(
+				"Back Side #{} ({}) (Sector {})", s->index(), s->objId(), s->sector()->index());
 		else
-			side_back_.info = wxString::Format("Back Side #%d (Sector %d)", s->index(), s->sector()->index());
-		side_back_.offsets      = wxString::Format("Offsets: (%d, %d)", s->texOffsetX(), s->texOffsetY());
+			side_back_.info = fmt::format("Back Side #{} (Sector {})", s->index(), s->sector()->index());
+		side_back_.offsets      = fmt::format("Offsets: ({}, {})", s->texOffsetX(), s->texOffsetY());
 		side_back_.tex_upper    = s->texUpper();
 		side_back_.tex_middle   = s->texMiddle();
 		side_back_.tex_lower    = s->texLower();

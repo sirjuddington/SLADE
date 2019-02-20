@@ -122,17 +122,17 @@ void ThingInfoOverlay::update(MapThing* thing)
 	{
 		int as_id = thing->special();
 		info_text += fmt::format("Special: {} ({})\n", as_id, Game::configuration().actionSpecialName(as_id));
-		wxString argxstr[2];
+		std::string argxstr[2];
 		argxstr[0] = thing->stringProperty("arg0str");
 		argxstr[1] = thing->stringProperty("arg1str");
-		wxString argstr;
+		std::string argstr;
 		if (tt.argSpec().count > 0)
 			argstr = tt.argSpec().stringDesc(thing->args().data(), argxstr);
 		else
 			argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(thing->args().data(), argxstr);
 
-		if (!argstr.IsEmpty())
-			info_text += wxString::Format("%s\n", argstr);
+		if (!argstr.empty())
+			info_text += fmt::format("{}\n", argstr);
 		else
 			info_text += "No Args\n";
 	}

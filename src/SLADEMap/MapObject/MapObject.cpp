@@ -153,7 +153,7 @@ bool MapObject::boolProperty(std::string_view key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(wxString{ key.data(), key.size() }, type_);
+		auto prop = Game::configuration().getUDMFProperty(std::string{ key }, type_);
 		if (prop)
 			return prop->defaultValue().boolValue();
 		else
@@ -173,7 +173,7 @@ int MapObject::intProperty(std::string_view key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(wxString{ key.data(), key.size() }, type_);
+		auto prop = Game::configuration().getUDMFProperty(std::string{ key }, type_);
 		if (prop)
 			return prop->defaultValue().intValue();
 		else
@@ -193,7 +193,7 @@ double MapObject::floatProperty(std::string_view key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(wxString{ key.data(), key.size() }, type_);
+		auto prop = Game::configuration().getUDMFProperty(std::string{ key }, type_);
 		if (prop)
 			return prop->defaultValue().floatValue();
 		else
@@ -213,7 +213,7 @@ std::string MapObject::stringProperty(std::string_view key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(wxString{ key.data(), key.size() }, type_);
+		auto prop = Game::configuration().getUDMFProperty(std::string{ key }, type_);
 		if (prop)
 			return prop->defaultValue().stringValue();
 		else

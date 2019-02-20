@@ -205,7 +205,7 @@ sol::table lineVisibleTextures(MapLine& self)
 		(needs_tex & MapLine::Part::BackLower) != 0);
 }
 
-bool lineFlag(MapLine& self, const wxString& flag)
+bool lineFlag(MapLine& self, const std::string& flag)
 {
 	if (Game::configuration().lineBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
 		return true;
@@ -365,7 +365,7 @@ void registerMapSector(sol::state& lua)
 		&MapSector::containsPoint);
 }
 
-bool thingFlag(MapThing& self, const wxString& flag)
+bool thingFlag(MapThing& self, const std::string& flag)
 {
 	if (Game::configuration().thingBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
 		return true;

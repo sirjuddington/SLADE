@@ -240,9 +240,9 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<ThingType>& parsed)
 {
 	// Get actor name
-	wxString name       = tz.next().text;
-	wxString actor_name = name;
-	wxString parent;
+	auto        name       = tz.next().text;
+	auto        actor_name = name;
+	std::string parent;
 
 	// Check for inheritance
 	// string next = tz.peekToken();
@@ -269,7 +269,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 	bool         filters_present = false;
 	bool         sprite_given    = false;
 	bool         title_given     = false;
-	wxString     group;
+	std::string  group;
 
 	// Skip "native" keyword if present
 	tz.advIfNextNC("native");
@@ -416,23 +416,23 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 			tz.adv();
 		}
 
-		Log::info(3, wxString::Format("Parsed actor %s: %d", name, ednum));
+		Log::info(3, "Parsed actor {}: {}", name, ednum);
 	}
 	else
-		Log::warning(wxString::Format("Warning: Invalid actor definition for %s", name));
+		Log::warning("Warning: Invalid actor definition for {}", name);
 
 	// Ignore actors filtered for other games,
 	// and actors with a negative or null type
 	if (available || !filters_present)
 	{
-		wxString group_path = group.empty() ? "Decorate" : "Decorate/" + group;
+		auto group_path = group.empty() ? "Decorate" : "Decorate/" + group;
 
 		// Find existing definition or create it
 		ThingType* def = nullptr;
 		if (ednum <= 0)
 		{
 			for (auto& ptype : parsed)
-				if (S_CMPNOCASE(ptype.className(), actor_name))
+				if (StrUtil::equalCI(ptype.className(), actor_name))
 				{
 					def = &ptype;
 					break;
@@ -461,7 +461,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 		// Inherit from parent
 		if (!parent.empty())
 			for (auto& ptype : parsed)
-				if (S_CMPNOCASE(ptype.className(), parent))
+				if (StrUtil::equalCI(ptype.className(), parent))
 				{
 					def->copy(ptype);
 					break;
@@ -511,7 +511,7 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 		// else if (S_CMPNOCASE(token, "Frames"))
 		else if (tz.checkNC("frames"))
 		{
-			wxString frames = tz.next().text;
+			auto     frames = tz.next().text;
 			unsigned pos    = 0;
 			if (frames.length() > 0)
 			{
@@ -557,11 +557,10 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 		// Set parsed properties
 		types[type].loadProps(found_props);
 
-		Log::info(3, wxString::Format("Parsed %s %s: %d", group.length() ? group : "decoration", name, type));
+		Log::info(3, "Parsed {} {}: {}", group.length() ? group : "decoration", name, type);
 	}
 	else
-		Log::info(
-			3, wxString::Format("Not adding %s %s, no editor number", group.length() ? group : "decoration", name));
+		Log::info(3, "Not adding {} {}, no editor number", group.length() ? group : "decoration", name);
 }
 
 // -----------------------------------------------------------------------------
@@ -639,7 +638,7 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, v
 	if (decorate_entries.empty())
 		return false;
 
-	Log::info(2, wxString::Format("Parsing DECORATE entries found in archive %s", archive->filename()));
+	Log::info(2, "Parsing DECORATE entries found in archive {}", archive->filename());
 
 	// Get DECORATE entry type (all parsed DECORATE entries will be set to this)
 	etype_decorate = EntryType::fromId("decorate");
@@ -684,11 +683,11 @@ CONSOLE_COMMAND(test_decorate, 0, false)
 	}
 
 	for (auto& i : types)
-		Log::console(wxString::Format("%d: %s", i.first, CHR(i.second.stringDesc())));
+		Log::console(fmt::format("{}: {}", i.first, i.second.stringDesc()));
 	if (!parsed.empty())
 	{
 		Log::console("Parsed types with no DoomEdNum:");
 		for (auto& i : parsed)
-			Log::console(wxString::Format("%s: %s", CHR(i.className()), CHR(i.stringDesc())));
+			Log::console(fmt::format("{}: {}", i.className(), i.stringDesc()));
 	}
 }

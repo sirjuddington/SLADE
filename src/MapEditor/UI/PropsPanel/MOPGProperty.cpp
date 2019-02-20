@@ -43,6 +43,7 @@
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Dialogs/Preferences/EditingPrefsPanel.h"
 
 using namespace MapEditor;
 
@@ -1097,7 +1098,7 @@ MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wx
 	SetEditor(wxPGEditor_ComboBox);
 
 	// Setup combo box choices
-	auto labels = Game::configuration().allSpacTriggers();
+	auto labels = WxUtils::arrayStringStd(Game::configuration().allSpacTriggers());
 	SetChoices(wxPGChoices(labels));
 }
 

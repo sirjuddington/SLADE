@@ -56,7 +56,7 @@ ThingType ThingType::unknown_;
 // -----------------------------------------------------------------------------
 // ThingType class constructor
 // -----------------------------------------------------------------------------
-ThingType::ThingType(const wxString& name, const wxString& group, const wxString& class_name) :
+ThingType::ThingType(std::string_view name, std::string_view group, std::string_view class_name) :
 	name_{ name },
 	group_{ group },
 	tagged_{ TagType::None },
@@ -96,7 +96,7 @@ void ThingType::copy(const ThingType& copy)
 // -----------------------------------------------------------------------------
 // Defines this thing type's [number], [name] and [group]
 // -----------------------------------------------------------------------------
-void ThingType::define(int number, const wxString& name, const wxString& group)
+void ThingType::define(int number, std::string_view name, std::string_view group)
 {
 	number_ = number;
 	name_   = name;
@@ -135,7 +135,7 @@ void ThingType::reset()
 	args_.count = 0;
 	for (unsigned a = 0; a < 5; a++)
 	{
-		args_[a].name = wxString::Format("Arg%d", a + 1);
+		args_[a].name = fmt::format("Arg{}", a + 1);
 		args_[a].type = Arg::Type::Number;
 		args_[a].custom_flags.clear();
 		args_[a].custom_values.clear();
@@ -150,87 +150,87 @@ void ThingType::parse(ParseTreeNode* node)
 	// Go through all child nodes/values
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto     child = node->childPTN(a);
-		wxString name  = child->name();
-		int      arg   = -1;
+		auto child = node->childPTN(a);
+		auto name  = StrUtil::lower(child->name());
+		int  arg   = -1;
 
 		// Name
-		if (S_CMPNOCASE(name, "name"))
+		if (name == "name")
 			name_ = child->stringValue();
 
 		// Args
-		else if (S_CMPNOCASE(name, "arg1"))
+		else if (name == "arg1")
 			arg = 0;
-		else if (S_CMPNOCASE(name, "arg2"))
+		else if (name == "arg2")
 			arg = 1;
-		else if (S_CMPNOCASE(name, "arg3"))
+		else if (name == "arg3")
 			arg = 2;
-		else if (S_CMPNOCASE(name, "arg4"))
+		else if (name == "arg4")
 			arg = 3;
-		else if (S_CMPNOCASE(name, "arg5"))
+		else if (name == "arg5")
 			arg = 4;
 
 		// Sprite
-		else if (S_CMPNOCASE(name, "sprite"))
+		else if (name == "sprite")
 			sprite_ = child->stringValue();
 
 		// Icon
-		else if (S_CMPNOCASE(name, "icon"))
+		else if (name == "icon")
 			icon_ = child->stringValue();
 
 		// Radius
-		else if (S_CMPNOCASE(name, "radius"))
+		else if (name == "radius")
 			radius_ = child->intValue();
 
 		// Height
-		else if (S_CMPNOCASE(name, "height"))
+		else if (name == "height")
 			height_ = child->intValue();
 
 		// Scale
-		else if (S_CMPNOCASE(name, "scale"))
+		else if (name == "scale")
 		{
 			float s = child->floatValue();
 			scale_  = { s, s };
 		}
 
 		// ScaleX
-		else if (S_CMPNOCASE(name, "scalex"))
+		else if (name == "scalex")
 			scale_.x = child->floatValue();
 
 		// ScaleY
-		else if (S_CMPNOCASE(name, "scaley"))
+		else if (name == "scaley")
 			scale_.y = child->floatValue();
 
 		// Colour
-		else if (S_CMPNOCASE(name, "colour"))
+		else if (name == "colour")
 			colour_.set(child->intValue(0), child->intValue(1), child->intValue(2));
 
 		// Show angle
-		else if (S_CMPNOCASE(name, "angle"))
+		else if (name == "angle")
 			angled_ = child->boolValue();
 
 		// Hanging object
-		else if (S_CMPNOCASE(name, "hanging"))
+		else if (name == "hanging")
 			hanging_ = child->boolValue();
 
 		// Shrink on zoom
-		else if (S_CMPNOCASE(name, "shrink"))
+		else if (name == "shrink")
 			shrink_ = child->boolValue();
 
 		// Fullbright
-		else if (S_CMPNOCASE(name, "fullbright"))
+		else if (name == "fullbright")
 			fullbright_ = child->boolValue();
 
 		// Decoration
-		else if (S_CMPNOCASE(name, "decoration"))
+		else if (name == "decoration")
 			decoration_ = child->boolValue();
 
 		// Solid
-		else if (S_CMPNOCASE(name, "solid"))
+		else if (name == "solid")
 			solid_ = child->boolValue();
 
 		// Translation
-		else if (S_CMPNOCASE(name, "translation"))
+		else if (name == "translation")
 		{
 			translation_ += "\"";
 			size_t v = 0;
@@ -242,41 +242,41 @@ void ThingType::parse(ParseTreeNode* node)
 		}
 
 		// Palette override
-		else if (S_CMPNOCASE(name, "palette"))
+		else if (name == "palette")
 			palette_ = child->stringValue();
 
 		// Zeth icon
-		else if (S_CMPNOCASE(name, "zeth"))
+		else if (name == "zeth")
 			zeth_icon_ = child->intValue();
 
 		// Pathed things stuff
-		else if (S_CMPNOCASE(name, "nexttype"))
+		else if (name == "nexttype")
 		{
 			next_type_ = child->intValue();
 			flags_ |= Pathed;
 		}
-		else if (S_CMPNOCASE(name, "nextargs"))
+		else if (name == "nextargs")
 		{
 			next_args_ = child->intValue();
 			flags_ |= Pathed;
 		}
 
 		// Handle player starts
-		else if (S_CMPNOCASE(name, "player_coop"))
+		else if (name == "player_coop")
 			flags_ |= CoOpStart;
-		else if (S_CMPNOCASE(name, "player_dm"))
+		else if (name == "player_dm")
 			flags_ |= DMStart;
-		else if (S_CMPNOCASE(name, "player_team"))
+		else if (name == "player_team")
 			flags_ |= TeamStart;
 
 		// Hexen's critters are weird
-		else if (S_CMPNOCASE(name, "dragon"))
+		else if (name == "dragon")
 			flags_ |= Dragon;
-		else if (S_CMPNOCASE(name, "script"))
+		else if (name == "script")
 			flags_ |= Script;
 
 		// Some things tag other things directly
-		else if (S_CMPNOCASE(name, "tagged"))
+		else if (name == "tagged")
 			tagged_ = Game::parseTagged(child);
 
 		// Parse arg definition if it was one
@@ -312,14 +312,14 @@ void ThingType::parse(ParseTreeNode* node)
 
 				// Type
 				val = child->childPTN("type");
-				wxString atype;
+				std::string atype;
 				if (val)
 					atype = val->stringValue();
-				if (S_CMPNOCASE(atype, "yesno"))
+				if (StrUtil::equalCI(atype, "yesno"))
 					args_[arg].type = Arg::Type::YesNo;
-				else if (S_CMPNOCASE(atype, "noyes"))
+				else if (StrUtil::equalCI(atype, "noyes"))
 					args_[arg].type = Arg::Type::NoYes;
-				else if (S_CMPNOCASE(atype, "angle"))
+				else if (StrUtil::equalCI(atype, "angle"))
 					args_[arg].type = Arg::Type::Angle;
 				else
 					args_[arg].type = Arg::Type::Number;
@@ -331,15 +331,15 @@ void ThingType::parse(ParseTreeNode* node)
 // -----------------------------------------------------------------------------
 // Returns the thing type info as a string
 // -----------------------------------------------------------------------------
-wxString ThingType::stringDesc() const
+std::string ThingType::stringDesc() const
 {
 	// Init return string
-	wxString ret = wxString::Format(
-		R"("%s" in group "%s", colour %d,%d,%d, radius %d)", name_, group_, colour_.r, colour_.g, colour_.b, radius_);
+	auto ret = fmt::format(
+		R"("{}" in group "{}", colour {},{},{}, radius {})", name_, group_, colour_.r, colour_.g, colour_.b, radius_);
 
 	// Add any extra info
-	if (!sprite_.IsEmpty())
-		ret += wxString::Format(", sprite \"%s\"", sprite_);
+	if (!sprite_.empty())
+		ret += fmt::format(", sprite \"{}\"", sprite_);
 	if (!angled_)
 		ret += ", angle hidden";
 	if (hanging_)
@@ -369,7 +369,7 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 	{
 		if (StrUtil::equalCI(props["sprite"].stringValue(), "tnt1a?"))
 		{
-			if ((!(props["icon"].hasValue())) && icon_.IsEmpty())
+			if ((!(props["icon"].hasValue())) && icon_.empty())
 				icon_ = "tnt1a0";
 		}
 		else

@@ -31,7 +31,6 @@ private:
 	wxDataViewItem item_none_;
 	wxDialog*      parent_dialog_ = nullptr;
 
-	// It's incredibly retarded that I actually have to do this
 	struct ASTVGroup
 	{
 		wxString       name;

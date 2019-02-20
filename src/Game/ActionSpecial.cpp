@@ -33,6 +33,7 @@
 #include "ActionSpecial.h"
 #include "Configuration.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 using namespace Game;
 
@@ -57,7 +58,7 @@ ActionSpecial ActionSpecial::gen_manual_;
 // -----------------------------------------------------------------------------
 // ActionSpecial class constructor
 // -----------------------------------------------------------------------------
-ActionSpecial::ActionSpecial(const wxString& name, const wxString& group) :
+ActionSpecial::ActionSpecial(std::string_view name, std::string_view group) :
 	name_{ name },
 	group_{ group },
 	tagged_{ TagType::None },
@@ -79,8 +80,8 @@ void ActionSpecial::reset()
 	// Reset args
 	for (unsigned a = 0; a < 5; a++)
 	{
-		args_[a].name = wxString::Format("Arg%d", a + 1);
-		args_[a].desc = wxEmptyString;
+		args_[a].name = fmt::format("Arg{}", a + 1);
+		args_[a].desc.clear();
 		args_[a].type = Arg::Number;
 		args_[a].custom_flags.clear();
 		args_[a].custom_values.clear();
@@ -102,28 +103,28 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 	// Go through all child nodes/values
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto     child = node->childPTN(a);
-		wxString name  = child->name();
-		int      argn  = -1;
+		auto child = node->childPTN(a);
+		auto name  = child->name();
+		int  argn  = -1;
 
 		// Name
-		if (S_CMPNOCASE(name, "name"))
+		if (StrUtil::equalCI(name, "name"))
 			name_ = child->stringValue();
 
 		// Args
-		else if (S_CMPNOCASE(name, "arg1"))
+		else if (StrUtil::equalCI(name, "arg1"))
 			argn = 0;
-		else if (S_CMPNOCASE(name, "arg2"))
+		else if (StrUtil::equalCI(name, "arg2"))
 			argn = 1;
-		else if (S_CMPNOCASE(name, "arg3"))
+		else if (StrUtil::equalCI(name, "arg3"))
 			argn = 2;
-		else if (S_CMPNOCASE(name, "arg4"))
+		else if (StrUtil::equalCI(name, "arg4"))
 			argn = 3;
-		else if (S_CMPNOCASE(name, "arg5"))
+		else if (StrUtil::equalCI(name, "arg5"))
 			argn = 4;
 
 		// Tagged
-		else if (S_CMPNOCASE(name, "tagged"))
+		else if (StrUtil::equalCI(name, "tagged"))
 			this->tagged_ = Game::parseTagged(child);
 
 		// Parse arg definition if it was one
@@ -141,10 +142,10 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 // -----------------------------------------------------------------------------
 // Returns the action special info as a string
 // -----------------------------------------------------------------------------
-wxString ActionSpecial::stringDesc() const
+std::string ActionSpecial::stringDesc() const
 {
 	// Init string
-	wxString ret = wxString::Format(R"("%s" in group "%s")", name_, group_);
+	auto ret = fmt::format(R"("{}" in group "{}")", name_, group_);
 
 	// Add tagged info
 	if (tagged_ != TagType::None)

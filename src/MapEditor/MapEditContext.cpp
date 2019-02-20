@@ -2510,7 +2510,7 @@ CONSOLE_COMMAND(m_n_polys, 0, false)
 
 CONSOLE_COMMAND(mobj_info, 1, false)
 {
-	int id = StrUtil::toInt(args[0]);
+	int id = StrUtil::asInt(args[0]);
 
 	auto obj = MapEditor::editContext().map().mapData().getObjectById(id);
 	if (!obj)

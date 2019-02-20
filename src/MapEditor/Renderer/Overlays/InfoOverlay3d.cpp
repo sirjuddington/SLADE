@@ -449,12 +449,12 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 				&& Game::configuration().getUDMFProperty("arg0", MapObject::Type::Thing)))
 		{
 			// Get thing args
-			wxString argxstr[2];
+			std::string argxstr[2];
 			argxstr[0]  = thing->stringProperty("arg0str");
 			argxstr[1]  = thing->stringProperty("arg1str");
 			auto argstr = tt.argSpec().stringDesc(thing->args().data(), argxstr);
 
-			if (argstr.IsEmpty())
+			if (argstr.empty())
 				info2_.emplace_back("No Args");
 			else
 				info2_.emplace_back(argstr);
@@ -469,9 +469,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 
 		// Texture
-		texture_ = MapEditor::textureManager()
-					   .sprite(tt.sprite().ToStdString(), tt.translation().ToStdString(), tt.palette().ToStdString())
-					   .gl_id;
+		texture_ = MapEditor::textureManager().sprite(tt.sprite(), tt.translation(), tt.palette()).gl_id;
 		if (!texture_)
 		{
 			if (use_zeth_icons && tt.zethIcon() >= 0)

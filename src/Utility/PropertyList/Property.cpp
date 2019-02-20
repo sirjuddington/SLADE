@@ -182,7 +182,7 @@ int Property::intValue(bool warn_wrong_type) const
 	else if (type_ == Type::Float)
 		return (int)value_.Floating;
 	else if (type_ == Type::String)
-		return StrUtil::toInt(val_string_);
+		return StrUtil::asInt(val_string_);
 
 	// Return default integer value
 	return 0;
@@ -217,7 +217,7 @@ double Property::floatValue(bool warn_wrong_type) const
 	else if (type_ == Type::UInt)
 		return (double)value_.Unsigned;
 	else if (type_ == Type::String)
-		return StrUtil::toDouble(val_string_);
+		return StrUtil::asDouble(val_string_);
 
 	// Return default float value
 	return 0.0f;
@@ -290,7 +290,7 @@ unsigned Property::unsignedValue(bool warn_wrong_type) const
 	else if (type_ == Type::Float)
 		return (int)value_.Floating;
 	else if (type_ == Type::String)
-		return StrUtil::toUInt(val_string_);
+		return StrUtil::asUInt(val_string_);
 	else if (type_ == Type::UInt)
 		return value_.Unsigned;
 

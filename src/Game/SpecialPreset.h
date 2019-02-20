@@ -6,11 +6,11 @@ namespace Game
 {
 struct SpecialPreset
 {
-	wxString         name;
-	wxString         group;
-	int              special = -1;
-	int              args[5] = { 0, 0, 0, 0, 0 };
-	vector<wxString> flags;
+	std::string         name;
+	std::string         group;
+	int                 special = -1;
+	int                 args[5] = { 0, 0, 0, 0, 0 };
+	vector<std::string> flags;
 
 	void           parse(ParseTreeNode* node);
 	ParseTreeNode* write(ParseTreeNode* parent);

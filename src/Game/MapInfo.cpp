@@ -32,6 +32,8 @@
 #include "Main.h"
 #include "MapInfo.h"
 #include "Archive/Archive.h"
+#include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 using namespace Game;
 
@@ -61,7 +63,7 @@ void MapInfo::clear(bool maps, bool editor_nums)
 // -----------------------------------------------------------------------------
 // Returns the map info definition for map [name]
 // -----------------------------------------------------------------------------
-MapInfo::Map& MapInfo::getMap(const wxString& name)
+MapInfo::Map& MapInfo::getMap(std::string_view name)
 {
 	for (auto& map : maps_)
 		if (map.entry_name == name)
@@ -89,11 +91,11 @@ bool MapInfo::addOrUpdateMap(Map& map)
 // -----------------------------------------------------------------------------
 // Returns the DoomEdNum for the ZScript/DECORATE class [actor_class]
 // -----------------------------------------------------------------------------
-int MapInfo::doomEdNumForClass(const wxString& actor_class)
+int MapInfo::doomEdNumForClass(std::string_view actor_class)
 {
 	// Find DoomEdNum def with matching class
 	for (auto& i : editor_nums_)
-		if (S_CMPNOCASE(i.second.actor_class, actor_class))
+		if (StrUtil::equalCI(i.second.actor_class, actor_class))
 			return i.first;
 
 	// Invalid
@@ -137,12 +139,11 @@ bool MapInfo::readMapInfo(Archive* archive)
 // -----------------------------------------------------------------------------
 // Returns true if the next token in [tz] is '='. If not, logs an error message
 // -----------------------------------------------------------------------------
-bool MapInfo::checkEqualsToken(Tokenizer& tz, const wxString& parsing) const
+bool MapInfo::checkEqualsToken(Tokenizer& tz, std::string_view parsing) const
 {
 	if (tz.next() != "=")
 	{
-		Log::error(
-			"Error Parsing {}: Expected \"=\", got \"{}\" at line {}", CHR(parsing), tz.current().text, tz.lineNo());
+		Log::error("Error Parsing {}: Expected \"=\", got \"{}\" at line {}", parsing, tz.current().text, tz.lineNo());
 		return false;
 	}
 
@@ -153,22 +154,18 @@ bool MapInfo::checkEqualsToken(Tokenizer& tz, const wxString& parsing) const
 // Converts a text colour definition [str] to a colour struct [col].
 // Returns false if the given definition was invalid
 // -----------------------------------------------------------------------------
-bool MapInfo::strToCol(const wxString& str, ColRGBA& col) const
+bool MapInfo::strToCol(const std::string& str, ColRGBA& col) const
 {
-	wxColor wxcol;
+	wxColour wxcol;
 	if (!wxcol.Set(str))
 	{
 		// Parse RR GG BB string
-		auto components = wxSplit(str, ' ');
+		auto components = StrUtil::splitToViews(str, ' ');
 		if (components.size() >= 3)
 		{
-			long tmp;
-			components[0].ToLong(&tmp, 16);
-			col.r = tmp;
-			components[1].ToLong(&tmp, 16);
-			col.g = tmp;
-			components[2].ToLong(&tmp, 16);
-			col.b = tmp;
+			col.r = StrUtil::asInt(components[0], 16);
+			col.g = StrUtil::asInt(components[1], 16);
+			col.b = StrUtil::asInt(components[2], 16);
 			return true;
 		}
 	}
@@ -229,7 +226,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		// Unknown block (skip it)
 		else if (tz.check("{"))
 		{
-			Log::warning(2, wxString::Format("Warning - Parsing ZMapInfo \"%s\": Skipping {} block", entry->name()));
+			Log::warning(2, "Warning - Parsing ZMapInfo \"{}\": Skipping {{}} block", entry->name());
 
 			tz.adv();
 			tz.skipSection("{", "}");
@@ -239,14 +236,13 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		// Unknown
 		else
 		{
-			Log::warning(
-				2, R"(Warning - Parsing ZMapInfo "{}": Unknown token "{}")", entry->name(), tz.current().text);
+			Log::warning(2, R"(Warning - Parsing ZMapInfo "{}": Unknown token "{}")", entry->name(), tz.current().text);
 		}
 
 		tz.adv();
 	}
 
-	Log::info(2, wxString::Format("Parsed ZMapInfo entry %s successfully", entry->name()));
+	Log::info(2, "Parsed ZMapInfo entry {} successfully", entry->name());
 
 	return true;
 }
@@ -255,7 +251,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 // Parses a ZMAPINFO map definition of [type] beginning at the current token in
 // tokenizer [tz]
 // -----------------------------------------------------------------------------
-bool MapInfo::parseZMap(Tokenizer& tz, const wxString& type)
+bool MapInfo::parseZMap(Tokenizer& tz, std::string_view type)
 {
 	// TODO: Handle adddefaultmap
 	auto map = default_map_;
@@ -285,7 +281,7 @@ bool MapInfo::parseZMap(Tokenizer& tz, const wxString& type)
 
 	if (!tz.advIf("{"))
 	{
-		Log::error("Error Parsing ZMapInfo: Expecting \"{\", got \"{}\" at line {}", tz.current().text, tz.lineNo());
+		Log::error(R"(Error Parsing ZMapInfo: Expecting "{{", got "{}" at line {})", tz.current().text, tz.lineNo());
 		return false;
 	}
 
@@ -415,7 +411,7 @@ bool MapInfo::parseZMap(Tokenizer& tz, const wxString& type)
 
 	if (type == "map")
 	{
-		Log::info(2, wxString::Format("Parsed ZMapInfo Map %s (%s) successfully", map.entry_name, map.name));
+		Log::info(2, "Parsed ZMapInfo Map {} ({}) successfully", map.entry_name, map.name);
 
 		// Update existing map
 		bool updated = false;
@@ -445,7 +441,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 	// Opening brace
 	if (!tz.advIfNext("{", 2))
 	{
-		Log::error("Error Parsing ZMapInfo: Expecting \"{\", got \"{}\" at line {}", tz.peek().text, tz.lineNo());
+		Log::error(R"(Error Parsing ZMapInfo: Expecting "{{", got "{}" at line {})", tz.peek().text, tz.lineNo());
 		return false;
 	}
 
@@ -471,7 +467,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 		if (!tz.advIfNext("="))
 		{
 			Log::error(
-				"Error Parsing ZMapInfo DoomEdNums: Expecting \"=\", got \"{}\" at line {}",
+				R"(Error Parsing ZMapInfo DoomEdNums: Expecting "=", got "{}" at line {})",
 				tz.current().text,
 				tz.lineNo());
 			return false;
@@ -496,10 +492,10 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 			{
 				if (!tz.current().isInteger() && !tz.check("+"))
 				{
-					Log::error(wxString::Format(
+					Log::error(
 						"Error Parsing ZMapInfo DoomEdNums: Expecting arg value, got \"{}\" at line {}",
 						tz.current().text,
-						tz.current().line_no));
+						tz.current().line_no);
 					return false;
 				}
 
@@ -525,7 +521,7 @@ MapInfo::Format MapInfo::detectMapInfoType(ArchiveEntry* entry) const
 	tz.openMem(entry->data(), entry->name());
 	tz.setSpecialCharacters("={}[]+,|");
 
-	wxString prev;
+	std::string prev;
 
 	while (!tz.atEnd())
 	{
@@ -566,8 +562,8 @@ void MapInfo::dumpDoomEdNums()
 		if (num.second.actor_class.empty())
 			continue;
 
-		Log::info(wxString::Format(
-			"DoomEdNum %d: Class \"%s\", Special \"%s\", Args %d,%d,%d,%d,%d",
+		Log::info(
+			R"(DoomEdNum {}: Class "{}", Special "{}", Args {},{},{},{},{})",
 			num.first,
 			num.second.actor_class,
 			num.second.special,
@@ -575,7 +571,7 @@ void MapInfo::dumpDoomEdNums()
 			num.second.args[1],
 			num.second.args[2],
 			num.second.args[3],
-			num.second.args[4]));
+			num.second.args[4]);
 	}
 }
 

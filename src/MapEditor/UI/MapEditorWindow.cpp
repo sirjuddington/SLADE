@@ -520,7 +520,8 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 			return false;
 
 		// Attempt to load selected game configuration
-		if (!Game::configuration().openConfig(dlg.selectedGame(), dlg.selectedPort(), md.format))
+		if (!Game::configuration().openConfig(
+				dlg.selectedGame().ToStdString(), dlg.selectedPort().ToStdString(), md.format))
 		{
 			wxMessageBox(
 				"An error occurred loading the game configuration, see the console log for details",
@@ -659,7 +660,7 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
 {
 	// Don't bother if no scripting language specified
-	if (Game::configuration().scriptLanguage().IsEmpty())
+	if (Game::configuration().scriptLanguage().empty())
 	{
 		// Hide script editor
 		auto  m_mgr = wxAuiManager::GetManager(this);
@@ -1251,7 +1252,7 @@ bool MapEditorWindow::handleAction(const wxString& id)
 			p_inf.Show(false);
 			map_canvas_->SetFocus();
 		}
-		else if (!Game::configuration().scriptLanguage().IsEmpty())
+		else if (!Game::configuration().scriptLanguage().empty())
 		{
 			p_inf.Show(true);
 			p_inf.window->SetFocus();

@@ -14,7 +14,7 @@ struct ParsedStatement
 	ArchiveEntry* entry = nullptr;
 	unsigned      line;
 
-	vector<wxString>        tokens;
+	vector<std::string>     tokens;
 	vector<ParsedStatement> block;
 
 	bool parse(Tokenizer& tz);
@@ -24,67 +24,67 @@ struct ParsedStatement
 class Enumerator
 {
 public:
-	Enumerator(const wxString& name = "") : name_{ name } {}
+	Enumerator(std::string_view name = "") : name_{ name } {}
 
 	struct Value
 	{
-		wxString name;
+		std::string name;
 		int      value;
 	};
 
 	bool parse(ParsedStatement& statement);
 
 private:
-	wxString      name_;
+	std::string   name_;
 	vector<Value> values_;
 };
 
 class Identifier // rename this
 {
 public:
-	Identifier(const wxString& name = "") : name_{ name } {}
+	Identifier(std::string_view name = "") : name_{ name } {}
 	virtual ~Identifier() = default;
 
-	wxString name() const { return name_; }
+	const std::string& name() const { return name_; }
 	bool     native() const { return native_; }
-	wxString deprecated() const { return deprecated_; }
-	wxString version() const { return version_; }
+	const std::string& deprecated() const { return deprecated_; }
+	const std::string& version() const { return version_; }
 
 protected:
-	wxString name_;
+	std::string name_;
 	bool     native_ = false;
-	wxString deprecated_;
-	wxString version_;
+	std::string deprecated_;
+	std::string version_;
 };
 
 class Variable : public Identifier
 {
 public:
-	Variable(const wxString& name = "") : Identifier(name), type_{ "<unknown>" } {}
+	Variable(std::string_view name = "") : Identifier(name), type_{ "<unknown>" } {}
 	virtual ~Variable() = default;
 
 private:
-	wxString type_;
+	std::string type_;
 };
 
 class Function : public Identifier
 {
 public:
-	Function(const wxString& name = "") : Identifier(name), return_type_{ "void" } {}
+	Function(std::string_view name = "") : Identifier(name), return_type_{ "void" } {}
 
 	virtual ~Function() = default;
 
 	struct Parameter
 	{
-		wxString name;
-		wxString type;
-		wxString default_value;
+		std::string name;
+		std::string type;
+		std::string default_value;
 		Parameter() : name{ "<unknown>" }, type{ "<unknown>" }, default_value{ "" } {}
 
-		unsigned parse(const vector<wxString>& tokens, unsigned start_index);
+		unsigned parse(const vector<std::string>& tokens, unsigned start_index);
 	};
 
-	const wxString&          returnType() const { return return_type_; }
+	const std::string&       returnType() const { return return_type_; }
 	const vector<Parameter>& parameters() const { return parameters_; }
 	bool                     isVirtual() const { return virtual_; }
 	bool                     isStatic() const { return static_; }
@@ -92,13 +92,13 @@ public:
 	bool                     isOverride() const { return override_; }
 
 	bool     parse(ParsedStatement& statement);
-	wxString asString();
+	std::string asString();
 
 	static bool isFunction(ParsedStatement& statement);
 
 private:
 	vector<Parameter> parameters_;
-	wxString          return_type_;
+	std::string       return_type_;
 	bool              virtual_  = false;
 	bool              static_   = false;
 	bool              action_   = false;
@@ -109,12 +109,12 @@ struct State
 {
 	struct Frame
 	{
-		wxString sprite_base;
-		wxString sprite_frame;
+		std::string sprite_base;
+		std::string sprite_frame;
 		int      duration;
 	};
 
-	wxString editorSprite();
+	std::string editorSprite();
 
 	vector<Frame> frames;
 };
@@ -124,14 +124,14 @@ class StateTable
 public:
 	StateTable() = default;
 
-	const wxString& firstState() const { return state_first_; }
+	const std::string& firstState() const { return state_first_; }
 
 	bool     parse(ParsedStatement& states);
-	wxString editorSprite();
+	std::string editorSprite();
 
 private:
-	std::map<wxString, State> states_;
-	wxString                  state_first_;
+	std::map<std::string, State> states_;
+	std::string                  state_first_;
 };
 
 class Class : public Identifier
@@ -143,7 +143,7 @@ public:
 		Struct
 	};
 
-	Class(Type type, const wxString& name = "") : Identifier{ name }, type_{ type } {}
+	Class(Type type, std::string_view name = "") : Identifier{ name }, type_{ type } {}
 	virtual ~Class() = default;
 
 	const vector<Function>& functions() const { return functions_; }
@@ -154,14 +154,14 @@ public:
 
 private:
 	Type               type_;
-	wxString           inherits_class_;
+	std::string        inherits_class_;
 	vector<Variable>   variables_;
 	vector<Function>   functions_;
 	vector<Enumerator> enumerators_;
 	PropertyList       default_properties_;
 	StateTable         states_;
 
-	vector<std::pair<wxString, wxString>> db_properties_;
+	vector<std::pair<std::string, std::string>> db_properties_;
 
 	bool parseClassBlock(vector<ParsedStatement>& block);
 	bool parseDefaults(vector<ParsedStatement>& defaults);

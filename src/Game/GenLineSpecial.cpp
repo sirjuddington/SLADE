@@ -238,9 +238,9 @@ static const char* Steps[] = {
 // ------------------------------------------------------------------------
 // Returns a string representation of the generalised line value [type]
 // ------------------------------------------------------------------------
-wxString parseLineType(int type)
+std::string parseLineType(int type)
 {
-	wxString type_string;
+	std::string type_string;
 
 	// Floor type
 	if (type >= 0x6000)
@@ -260,11 +260,11 @@ wxString parseLineType(int type)
 		type_string += " Floor ";
 
 		// Direction, target, speed
-		type_string += wxString::Format("%s %s %s", Directions[direction], FloorTargets[target], Speeds[speed]);
+		type_string += fmt::format("{} {} {}", Directions[direction], FloorTargets[target], Speeds[speed]);
 
 		// Change
 		if (type & FloorChange)
-			type_string += wxString::Format(" %s (%s)", Changers[change], Models[model]);
+			type_string += fmt::format(" {} ({})", Changers[change], Models[model]);
 
 		// Crush
 		if (type & FloorCrush)
@@ -289,11 +289,11 @@ wxString parseLineType(int type)
 		type_string += " Ceiling ";
 
 		// Direction, target, speed
-		type_string += wxString::Format("%s %s %s", Directions[direction], CeilingTargets[target], Speeds[speed]);
+		type_string += fmt::format("{} {} {}", Directions[direction], CeilingTargets[target], Speeds[speed]);
 
 		// Change
 		if (type & CeilingChange)
-			type_string += wxString::Format(" %s (%s)", Changers[change], Models[model]);
+			type_string += fmt::format(" {} ({})", Changers[change], Models[model]);
 
 		// Crush
 		if (type & CeilingCrush)
@@ -318,15 +318,15 @@ wxString parseLineType(int type)
 		// Door kind
 		switch (kind)
 		{
-		case 0: type_string += wxString::Format("Open Wait %s Close", Delays[delay]); break;
+		case 0: type_string += fmt::format("Open Wait {} Close", Delays[delay]); break;
 		case 1: type_string += "Open Stay"; break;
-		case 2: type_string += wxString::Format("Close Wait %s Open", Delays[delay]); break;
+		case 2: type_string += fmt::format("Close Wait {} Open", Delays[delay]); break;
 		case 3: type_string += "Close Stay"; break;
 		default: break;
 		}
 
 		// Door speed
-		type_string += wxString::Format(" %s", Speeds[speed]);
+		type_string += fmt::format(" {}", Speeds[speed]);
 	}
 
 	// Locked Door type
@@ -344,7 +344,7 @@ wxString parseLineType(int type)
 		type_string += " Door ";
 
 		// Lock
-		type_string += wxString::Format("%s ", Locks[num * 8 + key]);
+		type_string += fmt::format("{} ", Locks[num * 8 + key]);
 
 		// Door kind
 		switch (kind)
@@ -357,7 +357,7 @@ wxString parseLineType(int type)
 		}
 
 		// Door speed
-		type_string += wxString::Format(" %s", Speeds[speed]);
+		type_string += fmt::format(" {}", Speeds[speed]);
 	}
 
 	// Lift type
@@ -379,7 +379,7 @@ wxString parseLineType(int type)
 		type_string += LiftTargets[target];
 
 		// Delay
-		type_string += wxString::Format(" Delay %s ", LiftDelays[delay]);
+		type_string += fmt::format(" Delay {} ", LiftDelays[delay]);
 
 		// Speed
 		type_string += Speeds[speed];
@@ -399,7 +399,7 @@ wxString parseLineType(int type)
 			type_string += "M";
 
 		// Direction, step height, speed
-		type_string += wxString::Format(" Stairs %s %s %s", Directions[direction], Steps[step], Speeds[speed]);
+		type_string += fmt::format(" Stairs {} {} {}", Directions[direction], Steps[step], Speeds[speed]);
 
 		// Ignore
 		if (type & StairIgnore)
@@ -418,7 +418,7 @@ wxString parseLineType(int type)
 			type_string += "M";
 
 		// Speed
-		type_string += wxString::Format(" Crusher %s", Speeds[speed]);
+		type_string += fmt::format(" Crusher {}", Speeds[speed]);
 
 		// Silent
 		if (type & CrusherSilent)

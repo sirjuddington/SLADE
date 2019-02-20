@@ -41,6 +41,7 @@
 #include "UI/Dialogs/MapTextureBrowser.h"
 #include "UI/Dialogs/ThingTypeBrowser.h"
 #include "Utility/MathStuff.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -760,9 +761,9 @@ public:
 			// Go through uncompared things
 			auto map_format = map_->currentFormat();
 			bool udmf_zdoom =
-				(map_format == MapFormat::UDMF && S_CMPNOCASE(Game::configuration().udmfNamespace(), "zdoom"));
+				(map_format == MapFormat::UDMF && StrUtil::equalCI(Game::configuration().udmfNamespace(), "zdoom"));
 			bool udmf_eternity =
-				(map_format == MapFormat::UDMF && S_CMPNOCASE(Game::configuration().udmfNamespace(), "eternity"));
+				(map_format == MapFormat::UDMF && StrUtil::equalCI(Game::configuration().udmfNamespace(), "eternity"));
 			int min_skill = udmf_zdoom || udmf_eternity ? 1 : 2;
 			int max_skill = udmf_zdoom ? 17 : 5;
 			int max_class = udmf_zdoom ? 17 : 4;
@@ -782,7 +783,7 @@ public:
 				bool shareflag = false;
 				for (int s = min_skill; s < max_skill; ++s)
 				{
-					wxString skill = wxString::Format("skill%d", s);
+					auto skill = fmt::format("skill{}", s);
 					if (Game::configuration().thingBasicFlagSet(skill, thing1, map_format)
 						&& Game::configuration().thingBasicFlagSet(skill, thing2, map_format))
 					{
@@ -856,7 +857,7 @@ public:
 					// Case #3: things flagged for single player with different class filters
 					for (int c = 1; c < max_class; ++c)
 					{
-						wxString pclass = wxString::Format("class%d", c);
+						auto pclass = fmt::format("class{}", c);
 						if (Game::configuration().thingBasicFlagSet(pclass, thing1, map_format)
 							&& Game::configuration().thingBasicFlagSet(pclass, thing2, map_format))
 						{
@@ -1735,7 +1736,7 @@ public:
 		{
 			int special = map_->sector(a)->special();
 			int base    = Game::configuration().baseSectorType(special);
-			if (S_CMP(Game::configuration().sectorTypeName(special), "Unknown"))
+			if (Game::configuration().sectorTypeName(special) == "Unknown")
 				sectors_.push_back(a);
 		}
 	}
@@ -1807,7 +1808,7 @@ public:
 		for (unsigned a = 0; a < map_->nLines(); ++a)
 		{
 			int special = map_->line(a)->special();
-			if (S_CMP(Game::configuration().actionSpecialName(special), "Unknown"))
+			if (Game::configuration().actionSpecialName(special) == "Unknown")
 				objects_.push_back(map_->line(a));
 		}
 		// In Hexen or UDMF, go through map things too since they too can have specials
@@ -1821,7 +1822,7 @@ public:
 					continue;
 
 				// Otherwise, check special
-				if (S_CMP(Game::configuration().actionSpecialName(map_->thing(a)->special()), "Unknown"))
+				if (Game::configuration().actionSpecialName(map_->thing(a)->special()) == "Unknown")
 					objects_.push_back(map_->thing(a));
 			}
 		}

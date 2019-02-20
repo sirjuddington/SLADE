@@ -33,8 +33,8 @@
 #include "ZScript.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
-#include "Utility/Tokenizer.h"
 #include "Utility/StringUtils.h"
+#include "Utility/Tokenizer.h"
 
 using namespace ZScript;
 
@@ -49,12 +49,13 @@ namespace ZScript
 EntryType* etype_zscript = nullptr;
 
 // ZScript keywords (can't be function/variable names)
-vector<wxString> keywords = { "class",      "default", "private",  "static", "native",   "return",       "if",
-							  "else",       "for",     "while",    "do",     "break",    "continue",     "deprecated",
-							  "state",      "null",    "readonly", "true",   "false",    "struct",       "extend",
-							  "clearscope", "vararg",  "ui",       "play",   "virtual",  "virtualscope", "meta",
-							  "Property",   "version", "in",       "out",    "states",   "action",       "override",
-							  "super",      "is",      "let",      "const",  "replaces", "protected",    "self" };
+vector<std::string> keywords = { "class",    "default",    "private",      "static",     "native",    "return",
+								 "if",       "else",       "for",          "while",      "do",        "break",
+								 "continue", "deprecated", "state",        "null",       "readonly",  "true",
+								 "false",    "struct",     "extend",       "clearscope", "vararg",    "ui",
+								 "play",     "virtual",    "virtualscope", "meta",       "Property",  "version",
+								 "in",       "out",        "states",       "action",     "override",  "super",
+								 "is",       "let",        "const",        "replaces",   "protected", "self" };
 
 // For test_parse_zscript console command
 bool dump_parsed_blocks    = false;
@@ -75,27 +76,27 @@ namespace ZScript
 // -----------------------------------------------------------------------------
 // Writes a log [message] of [type] beginning with the location of [statement]
 // -----------------------------------------------------------------------------
-void logParserMessage(ParsedStatement& statement, Log::MessageType type, const wxString& message)
+void logParserMessage(ParsedStatement& statement, Log::MessageType type, std::string_view message)
 {
-	wxString location = "<unknown location>";
+	std::string location = "<unknown location>";
 	if (statement.entry)
 		location = statement.entry->path(true);
 
-	Log::message(type, wxString::Format("%s:%u: %s", CHR(location), statement.line, CHR(message)).ToStdString());
+	Log::message(type, fmt::format("{}:{}: {}", location, statement.line, message));
 }
 
 // -----------------------------------------------------------------------------
 // Parses a ZScript type (eg. 'class<Actor>') from [tokens] beginning at [index]
 // -----------------------------------------------------------------------------
-wxString parseType(const vector<wxString>& tokens, unsigned& index)
+std::string parseType(const vector<std::string>& tokens, unsigned& index)
 {
-	wxString type;
+	std::string type;
 
 	// Qualifiers
 	while (index < tokens.size())
 	{
-		if (S_CMPNOCASE(tokens[index], "in") || S_CMPNOCASE(tokens[index], "out"))
-			type += tokens[index++] + " ";
+		if (StrUtil::equalCI(tokens[index], "in") || StrUtil::equalCI(tokens[index], "out"))
+			type.append(tokens[index++]).append(" ");
 		else
 			break;
 	}
@@ -110,13 +111,13 @@ wxString parseType(const vector<wxString>& tokens, unsigned& index)
 	}
 
 	// Check for <>
-	if (tokens[index + 1] == "<")
+	if (tokens[index + 1] == '<')
 	{
-		type += "<";
+		type += '<';
 		index += 2;
-		while (index < tokens.size() && tokens[index] != ">")
+		while (index < tokens.size() && tokens[index] != '>')
 			type += tokens[index++];
-		type += ">";
+		type += '>';
 		++index;
 	}
 
@@ -128,9 +129,9 @@ wxString parseType(const vector<wxString>& tokens, unsigned& index)
 // -----------------------------------------------------------------------------
 // Parses a ZScript value from [tokens] beginning at [index]
 // -----------------------------------------------------------------------------
-wxString parseValue(const vector<wxString>& tokens, unsigned& index)
+std::string parseValue(const vector<std::string>& tokens, unsigned& index)
 {
-	wxString value;
+	std::string value;
 	while (true)
 	{
 		// Read between ()
@@ -169,12 +170,16 @@ wxString parseValue(const vector<wxString>& tokens, unsigned& index)
 // Returns true if there is a keyword+value statement and writes the value to
 // [value]
 // -----------------------------------------------------------------------------
-bool checkKeywordValueStatement(const vector<wxString>& tokens, unsigned index, const wxString& word, wxString& value)
+bool checkKeywordValueStatement(
+	const vector<std::string>& tokens,
+	unsigned                   index,
+	std::string_view           word,
+	std::string&               value)
 {
 	if (index + 3 >= tokens.size())
 		return false;
 
-	if (S_CMPNOCASE(tokens[index], word) && tokens[index + 1] == '(' && tokens[index + 3] == ')')
+	if (StrUtil::equalCI(tokens[index], word) && tokens[index + 1] == '(' && tokens[index + 3] == ')')
 	{
 		value = tokens[index + 2];
 		return true;
@@ -193,8 +198,6 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 	tz.enableDecorate(true);
 	tz.setCommentTypes(Tokenizer::CommentTypes::CPPStyle | Tokenizer::CommentTypes::CStyle);
 	tz.openMem(entry->data(), "ZScript");
-
-	// Log::info(2, wxString::Format("Parsing ZScript entry \"%s\"", entry->getPath(true)));
 
 	while (!tz.atEnd())
 	{
@@ -245,10 +248,10 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 // -----------------------------------------------------------------------------
 // Returns true if [word] is a ZScript keyword
 // -----------------------------------------------------------------------------
-bool isKeyword(const wxString& word)
+bool isKeyword(std::string_view word)
 {
 	for (auto& kw : keywords)
-		if (S_CMPNOCASE(word, kw))
+		if (StrUtil::equalCI(word, kw))
 			return true;
 
 	return false;
@@ -283,7 +286,7 @@ bool Enumerator::parse(ParsedStatement& statement)
 	unsigned count = statement.block[0].tokens.size();
 	while (index < count)
 	{
-		wxString val_name = statement.block[0].tokens[index];
+		auto val_name = statement.block[0].tokens[index];
 
 		// TODO: Parse value
 
@@ -311,7 +314,7 @@ bool Enumerator::parse(ParsedStatement& statement)
 // -----------------------------------------------------------------------------
 // Parses a function parameter from [tokens] beginning at [index]
 // -----------------------------------------------------------------------------
-unsigned Function::Parameter::parse(const vector<wxString>& tokens, unsigned start_index)
+unsigned Function::Parameter::parse(const vector<std::string>& tokens, unsigned start_index)
 {
 	// Type
 	type = parseType(tokens, start_index);
@@ -348,27 +351,27 @@ bool Function::parse(ParsedStatement& statement)
 	int      last_qualifier = -1;
 	for (index = 0; index < statement.tokens.size(); index++)
 	{
-		if (S_CMPNOCASE(statement.tokens[index], "virtual"))
+		if (StrUtil::equalCI(statement.tokens[index], "virtual"))
 		{
 			virtual_       = true;
 			last_qualifier = index;
 		}
-		else if (S_CMPNOCASE(statement.tokens[index], "static"))
+		else if (StrUtil::equalCI(statement.tokens[index], "static"))
 		{
 			static_        = true;
 			last_qualifier = index;
 		}
-		else if (S_CMPNOCASE(statement.tokens[index], "native"))
+		else if (StrUtil::equalCI(statement.tokens[index], "native"))
 		{
 			native_        = true;
 			last_qualifier = index;
 		}
-		else if (S_CMPNOCASE(statement.tokens[index], "action"))
+		else if (StrUtil::equalCI(statement.tokens[index], "action"))
 		{
 			action_        = true;
 			last_qualifier = index;
 		}
-		else if (S_CMPNOCASE(statement.tokens[index], "override"))
+		else if (StrUtil::equalCI(statement.tokens[index], "override"))
 		{
 			override_      = true;
 			last_qualifier = index;
@@ -425,11 +428,11 @@ bool Function::parse(ParsedStatement& statement)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the function
 // -----------------------------------------------------------------------------
-wxString Function::asString()
+std::string Function::asString()
 {
-	wxString str;
+	std::string str;
 	if (!deprecated_.empty())
-		str += wxString::Format("deprecated v%s ", CHR(deprecated_));
+		str += fmt::format("deprecated v{} ", deprecated_);
 	if (static_)
 		str += "static ";
 	if (native_)
@@ -439,13 +442,13 @@ wxString Function::asString()
 	if (action_)
 		str += "action ";
 
-	str += wxString::Format("%s %s(", CHR(return_type_), CHR(name_));
+	str += fmt::format("{} {}(", return_type_, name_);
 
 	for (auto& p : parameters_)
 	{
-		str += wxString::Format("%s %s", CHR(p.type), CHR(p.name));
+		str += fmt::format("{} {}", p.type, p.name);
 		if (!p.default_value.empty())
-			str += " = " + p.default_value;
+			str.append(" = ").append(p.default_value);
 
 		if (&p != &parameters_.back())
 			str += ", ";
@@ -474,7 +477,7 @@ bool Function::isFunction(ParsedStatement& statement)
 		if (!special_func && token == '(')
 			return true;
 
-		if (S_CMPNOCASE(token, "deprecated") || S_CMPNOCASE(token, "version"))
+		if (StrUtil::equalCI(token, "deprecated") || StrUtil::equalCI(token, "version"))
 			special_func = true;
 		else if (special_func && token == ')')
 			special_func = false;
@@ -495,14 +498,14 @@ bool Function::isFunction(ParsedStatement& statement)
 // -----------------------------------------------------------------------------
 // Returns the first valid frame sprite (eg. TNT1 A -> TNT1A?)
 // -----------------------------------------------------------------------------
-wxString State::editorSprite()
+std::string State::editorSprite()
 {
 	if (frames.empty())
 		return "";
 
 	for (auto& f : frames)
 		if (!f.sprite_frame.empty())
-			return f.sprite_base + f.sprite_frame[0] + "?";
+			return fmt::format("{}{}?", f.sprite_base, f.sprite_frame[0]);
 
 	return "";
 }
@@ -520,7 +523,7 @@ wxString State::editorSprite()
 // -----------------------------------------------------------------------------
 bool StateTable::parse(ParsedStatement& states)
 {
-	vector<wxString> current_states;
+	vector<std::string> current_states;
 	for (auto& statement : states.block)
 	{
 		if (statement.tokens.empty())
@@ -544,11 +547,12 @@ bool StateTable::parse(ParsedStatement& states)
 				if (!states_added)
 					current_states.clear();
 
-				wxString state;
+				std::string state;
 				for (auto b = index; b < a; ++b)
 					state += statement.tokens[b];
 
-				current_states.push_back(state.Lower());
+				StrUtil::lowerIP(state);
+				current_states.push_back(state);
 				if (state_first_.empty())
 					state_first_ = state;
 				states_added = true;
@@ -562,48 +566,44 @@ bool StateTable::parse(ParsedStatement& states)
 			logParserMessage(
 				statement,
 				Log::MessageType::Warning,
-				wxString::Format("Failed to parse states block beginning on line %u", states.line));
+				fmt::format("Failed to parse states block beginning on line {}", states.line));
 			continue;
 		}
 
 		// Ignore state commands
-		if (S_CMPNOCASE(statement.tokens[index], "stop") || S_CMPNOCASE(statement.tokens[index], "goto")
-			|| S_CMPNOCASE(statement.tokens[index], "loop") || S_CMPNOCASE(statement.tokens[index], "wait")
-			|| S_CMPNOCASE(statement.tokens[index], "fail"))
+		if (StrUtil::equalCI(statement.tokens[index], "stop") || StrUtil::equalCI(statement.tokens[index], "goto")
+			|| StrUtil::equalCI(statement.tokens[index], "loop") || StrUtil::equalCI(statement.tokens[index], "wait")
+			|| StrUtil::equalCI(statement.tokens[index], "fail"))
 			continue;
 
 		if (index + 2 < statement.tokens.size())
 		{
 			// Parse duration
-			long duration = 0;
-			if (statement.tokens[index + 2] == "-" && index + 3 < statement.tokens.size())
+			int duration = 0;
+			if (statement.tokens[index + 2] == '-' && index + 3 < statement.tokens.size())
 			{
 				// Negative number
-				statement.tokens[index + 3].ToLong(&duration);
+				StrUtil::toInt(statement.tokens[index + 3], duration);
 				duration = -duration;
 			}
 			else
-				statement.tokens[index + 2].ToLong(&duration);
+				StrUtil::toInt(statement.tokens[index + 2], duration);
 
 			for (auto& state : current_states)
-				states_[state].frames.push_back(
-					{ statement.tokens[index], statement.tokens[index + 1], (int)duration });
+				states_[state].frames.push_back({ statement.tokens[index], statement.tokens[index + 1], duration });
 		}
 	}
 
-	states_.erase("");
+	states_.erase(StrUtil::EMPTY);
 
 	if (dump_parsed_states)
 	{
 		for (auto& state : states_)
 		{
-			Log::debug(wxString::Format("State %s:", CHR(state.first)));
+			Log::debug("State {}:", state.first);
 			for (auto& frame : state.second.frames)
-				Log::debug(wxString::Format(
-					"Sprite: %s, Frames: %s, Duration: %d",
-					CHR(frame.sprite_base),
-					CHR(frame.sprite_frame),
-					frame.duration));
+				Log::debug(
+					"Sprite: {}, Frames: {}, Duration: {}", frame.sprite_base, frame.sprite_frame, frame.duration);
 		}
 	}
 
@@ -615,7 +615,7 @@ bool StateTable::parse(ParsedStatement& states)
 // editor.
 // Uses a state priority: Idle > See > Inactive > Spawn > [first defined]
 // -----------------------------------------------------------------------------
-wxString StateTable::editorSprite()
+std::string StateTable::editorSprite()
 {
 	if (!states_["idle"].frames.empty())
 		return states_["idle"].editorSprite();
@@ -659,7 +659,7 @@ bool Class::parse(ParsedStatement& class_statement)
 			inherits_class_ = class_statement.tokens[a + 1];
 
 		// Native
-		else if (S_CMPNOCASE(class_statement.tokens[a], "native"))
+		else if (StrUtil::equalCI(class_statement.tokens[a], "native"))
 			native_ = true;
 
 		// Deprecated
@@ -678,40 +678,40 @@ bool Class::parse(ParsedStatement& class_statement)
 	}
 
 	// Set editor sprite from parsed states
-	default_properties_["sprite"] = states_.editorSprite().ToStdString();
+	default_properties_["sprite"] = states_.editorSprite();
 
 	// Add DB comment props to default properties
 	for (auto& i : db_properties_)
 	{
 		// Sprite
-		if (S_CMPNOCASE(i.first, "EditorSprite") || S_CMPNOCASE(i.first, "Sprite"))
-			default_properties_["sprite"] = i.second.ToStdString();
+		if (StrUtil::equalCI(i.first, "EditorSprite") || StrUtil::equalCI(i.first, "Sprite"))
+			default_properties_["sprite"] = i.second;
 
 		// Angled
-		else if (S_CMPNOCASE(i.first, "Angled"))
+		else if (StrUtil::equalCI(i.first, "Angled"))
 			default_properties_["angled"] = true;
-		else if (S_CMPNOCASE(i.first, "NotAngled"))
+		else if (StrUtil::equalCI(i.first, "NotAngled"))
 			default_properties_["angled"] = false;
 
 		// Is Decoration
-		else if (S_CMPNOCASE(i.first, "IsDecoration"))
+		else if (StrUtil::equalCI(i.first, "IsDecoration"))
 			default_properties_["decoration"] = true;
 
 		// Icon
-		else if (S_CMPNOCASE(i.first, "Icon"))
-			default_properties_["icon"] = i.second.ToStdString();
+		else if (StrUtil::equalCI(i.first, "Icon"))
+			default_properties_["icon"] = i.second;
 
 		// DB2 Color
-		else if (S_CMPNOCASE(i.first, "Color"))
-			default_properties_["color"] = i.second.ToStdString();
+		else if (StrUtil::equalCI(i.first, "Color"))
+			default_properties_["color"] = i.second;
 
 		// SLADE 3 Colour (overrides DB2 color)
 		// Good thing US spelling differs from ABC (Aussie/Brit/Canuck) spelling! :p
-		else if (S_CMPNOCASE(i.first, "Colour"))
-			default_properties_["colour"] = i.second.ToStdString();
+		else if (StrUtil::equalCI(i.first, "Colour"))
+			default_properties_["colour"] = i.second;
 
 		// Obsolete thing
-		else if (S_CMPNOCASE(i.first, "Obsolete"))
+		else if (StrUtil::equalCI(i.first, "Obsolete"))
 			default_properties_["obsolete"] = true;
 	}
 
@@ -738,7 +738,7 @@ void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::Thin
 
 	// Check types with ednums first
 	for (auto& type : types)
-		if (S_CMPNOCASE(name_, type.second.className()))
+		if (StrUtil::equalCI(name_, type.second.className()))
 		{
 			def = &type.second;
 			break;
@@ -747,7 +747,7 @@ void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::Thin
 	{
 		// Check all parsed types
 		for (auto& type : parsed)
-			if (S_CMPNOCASE(name_, type.className()))
+			if (StrUtil::equalCI(name_, type.className()))
 			{
 				def = &type;
 				break;
@@ -762,13 +762,13 @@ void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::Thin
 	}
 
 	// Set properties from DB comments
-	wxString title = name_;
-	wxString group = "ZScript";
+	auto        title = name_;
+	std::string group = "ZScript";
 	for (auto& prop : db_properties_)
 	{
-		if (S_CMPNOCASE(prop.first, "Title"))
+		if (StrUtil::equalCI(prop.first, "Title"))
 			title = prop.second;
-		else if (S_CMPNOCASE(prop.first, "Group") || S_CMPNOCASE(prop.first, "Category"))
+		else if (StrUtil::equalCI(prop.first, "Group") || StrUtil::equalCI(prop.first, "Category"))
 			group = "ZScript/" + prop.second;
 	}
 	def->define(def->number(), title, group);
@@ -788,14 +788,15 @@ bool Class::parseClassBlock(vector<ParsedStatement>& block)
 			continue;
 
 		// Default block
-		if (S_CMPNOCASE(statement.tokens[0], "default"))
+		std::string_view first_token = statement.tokens[0];
+		if (StrUtil::equalCI(first_token, "default"))
 		{
 			if (!parseDefaults(statement.block))
 				return false;
 		}
 
 		// Enum
-		else if (S_CMPNOCASE(statement.tokens[0], "enum"))
+		else if (StrUtil::equalCI(first_token, "enum"))
 		{
 			Enumerator e;
 			if (!e.parse(statement))
@@ -805,16 +806,16 @@ bool Class::parseClassBlock(vector<ParsedStatement>& block)
 		}
 
 		// States
-		else if (S_CMPNOCASE(statement.tokens[0], "states"))
+		else if (StrUtil::equalCI(first_token, "states"))
 			states_.parse(statement);
 
 		// DB property comment
-		else if (statement.tokens[0].StartsWith(db_comment))
+		else if (StrUtil::startsWith(first_token, db_comment))
 		{
 			if (statement.tokens.size() > 1)
-				db_properties_.emplace_back(statement.tokens[0].substr(3), statement.tokens[1]);
+				db_properties_.emplace_back(first_token.substr(3), statement.tokens[1]);
 			else
-				db_properties_.emplace_back(statement.tokens[0].substr(3), "true");
+				db_properties_.emplace_back(first_token.substr(3), "true");
 		}
 
 		// Function
@@ -844,12 +845,14 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 			continue;
 
 		// DB property comment
-		if (statement.tokens[0].StartsWith(db_comment))
+		if (StrUtil::startsWith(statement.tokens[0], db_comment))
 		{
+			std::string_view prop = statement.tokens[0];
+			prop.remove_prefix(3);
 			if (statement.tokens.size() > 1)
-				db_properties_.emplace_back(statement.tokens[0].substr(3), statement.tokens[1]);
+				db_properties_.emplace_back(prop, statement.tokens[1]);
 			else
-				db_properties_.emplace_back(statement.tokens[0].substr(3), "true");
+				db_properties_.emplace_back(prop, "true");
 			continue;
 		}
 
@@ -872,10 +875,10 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 			continue;
 
 		// Name
-		wxString name = statement.tokens[t];
+		auto name = statement.tokens[t];
 		if (t + 2 < count && statement.tokens[t + 1] == '.')
 		{
-			name += "." + statement.tokens[t + 2];
+			name.append(".").append(statement.tokens[t + 2]);
 			t += 2;
 		}
 
@@ -884,7 +887,7 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 		// so stuff like arithmetic expressions or comma separated lists won't
 		// really work properly yet
 		if (t + 1 < count)
-			default_properties_[name] = statement.tokens[t + 1].ToStdString();
+			default_properties_[name] = statement.tokens[t + 1];
 
 		// Name only (no value), set as boolean true
 		else if (t < count)
@@ -922,7 +925,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 	auto                    start = App::runTimer();
 	vector<ParsedStatement> parsed;
 	parseBlocks(entry, parsed);
-	Log::debug(2, wxString::Format("parseBlocks: %ldms", App::runTimer() - start));
+	Log::debug(2, "parseBlocks: {}ms", App::runTimer() - start);
 	start = App::runTimer();
 
 	for (auto& block : parsed)
@@ -934,7 +937,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 			block.dump();
 
 		// Class
-		if (S_CMPNOCASE(block.tokens[0], "class"))
+		if (StrUtil::equalCI(block.tokens[0], "class"))
 		{
 			Class nc(Class::Type::Class);
 
@@ -945,7 +948,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 		}
 
 		// Struct
-		else if (S_CMPNOCASE(block.tokens[0], "struct"))
+		else if (StrUtil::equalCI(block.tokens[0], "struct"))
 		{
 			Class nc(Class::Type::Struct);
 
@@ -957,10 +960,11 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 
 		// Extend Class
 		else if (
-			block.tokens.size() > 2 && S_CMPNOCASE(block.tokens[0], "extend") && S_CMPNOCASE(block.tokens[1], "class"))
+			block.tokens.size() > 2 && StrUtil::equalCI(block.tokens[0], "extend")
+			&& StrUtil::equalCI(block.tokens[1], "class"))
 		{
 			for (auto& c : classes_)
-				if (S_CMPNOCASE(c.name(), block.tokens[2]))
+				if (StrUtil::equalCI(c.name(), block.tokens[2]))
 				{
 					c.extend(block);
 					break;
@@ -968,7 +972,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 		}
 
 		// Enum
-		else if (S_CMPNOCASE(block.tokens[0], "enum"))
+		else if (StrUtil::equalCI(block.tokens[0], "enum"))
 		{
 			Enumerator e;
 
@@ -979,7 +983,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 		}
 	}
 
-	Log::debug(2, wxString::Format("ZScript: %ldms", App::runTimer() - start));
+	Log::debug(2, "ZScript: {}ms", App::runTimer() - start);
 
 	return true;
 }
@@ -997,7 +1001,7 @@ bool Definitions::parseZScript(Archive* archive)
 	if (zscript_enries.empty())
 		return false;
 
-	Log::info(2, wxString::Format("Parsing ZScript entries found in archive %s", archive->filename()));
+	Log::info(2, "Parsing ZScript entries found in archive {}", archive->filename());
 
 	// Get ZScript entry type (all parsed ZScript entries will be set to this)
 	etype_zscript = EntryType::fromId("zscript");
@@ -1091,7 +1095,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 
 		if (tz.atEnd())
 		{
-			Log::debug(wxString::Format("Failed parsing zscript statement/block beginning line %u", line));
+			Log::debug("Failed parsing zscript statement/block beginning line {}", line);
 			return false;
 		}
 
@@ -1121,7 +1125,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 
 		if (tz.atEnd())
 		{
-			Log::debug(wxString::Format("Failed parsing zscript statement/block beginning line %u", line));
+			Log::debug("Failed parsing zscript statement/block beginning line {}", line);
 			return false;
 		}
 
@@ -1137,7 +1141,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 void ParsedStatement::dump(int indent)
 {
-	wxString line = "";
+	std::string line;
 	for (int a = 0; a < indent; a++)
 		line += "  ";
 
@@ -1202,7 +1206,7 @@ CONSOLE_COMMAND(test_parse_zscript, 0, false)
 
 CONSOLE_COMMAND(test_parseblocks, 1, false)
 {
-	int num = StrUtil::toInt(args[0]);
+	int  num   = StrUtil::asInt(args[0]);
 	auto entry = MainEditor::currentEntry();
 	if (!entry)
 		return;
@@ -1214,5 +1218,5 @@ CONSOLE_COMMAND(test_parseblocks, 1, false)
 		parseBlocks(entry, parsed);
 		parsed.clear();
 	}
-	Log::console(wxString::Format("Took %ldms", App::runTimer() - start));
+	Log::console(fmt::format("Took {}ms", App::runTimer() - start));
 }

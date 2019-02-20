@@ -110,9 +110,9 @@ void Console::execute(std::string_view command)
 					*dynamic_cast<CBoolCVar*>(cvar) = true;
 			}
 			else if (cvar->type == CVar::Type::Integer)
-				*dynamic_cast<CIntCVar*>(cvar) = StrUtil::toInt(args[0]);
+				*dynamic_cast<CIntCVar*>(cvar) = StrUtil::asInt(args[0]);
 			else if (cvar->type == CVar::Type::Float)
-				*dynamic_cast<CFloatCVar*>(cvar) = StrUtil::toFloat(args[0]);
+				*dynamic_cast<CFloatCVar*>(cvar) = StrUtil::asFloat(args[0]);
 			else if (cvar->type == CVar::Type::String)
 				*dynamic_cast<CStringCVar*>(cvar) = args[0];
 		}

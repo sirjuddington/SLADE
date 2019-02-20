@@ -9,19 +9,19 @@ public:
 	~PropertyList() = default;
 
 	// Operator for direct access to hash map
-	Property& operator[](const wxString& key) { return properties_[key]; }
+	Property& operator[](const std::string& key) { return properties_[key]; }
 
 	void clear() { properties_.clear(); }
-	bool propertyExists(const wxString& key);
-	bool removeProperty(const wxString& key);
+	bool propertyExists(const std::string& key);
+	bool removeProperty(const std::string& key);
 	void copyTo(PropertyList& list);
-	void addFlag(const wxString& key);
+	void addFlag(const std::string& key);
 	void allProperties(vector<Property>& list, bool ignore_no_value = false);
-	void allPropertyNames(vector<wxString>& list, bool ignore_no_value = false);
+	void allPropertyNames(vector<std::string>& list, bool ignore_no_value = false);
 	bool empty() const { return properties_.empty(); }
 
-	wxString toString(bool condensed = false) const;
+	std::string toString(bool condensed = false) const;
 
 private:
-	std::map<wxString, Property> properties_;
+	std::map<std::string, Property> properties_;
 };

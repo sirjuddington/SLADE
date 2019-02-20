@@ -3859,7 +3859,8 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 			else
 			{
 				// Load game configuration
-				Game::configuration().openConfig(dlg.selectedGame(), dlg.selectedPort(), info.format);
+				Game::configuration().openConfig(
+					dlg.selectedGame().ToStdString(), dlg.selectedPort().ToStdString(), info.format);
 
 				// Attempt to open map
 				if (MapEditor::window()->openMap(info))

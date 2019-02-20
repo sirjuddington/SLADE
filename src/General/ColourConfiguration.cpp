@@ -385,19 +385,19 @@ CONSOLE_COMMAND(ccfg, 1, false)
 		if (args.size() >= 4)
 		{
 			// Read RGB
-			int red   = StrUtil::toInt(args[1]);
-			int green = StrUtil::toInt(args[2]);
-			int blue  = StrUtil::toInt(args[3]);
+			int red   = StrUtil::asInt(args[1]);
+			int green = StrUtil::asInt(args[2]);
+			int blue  = StrUtil::asInt(args[3]);
 
 			// Read alpha (if specified)
 			int alpha = -1;
 			if (args.size() >= 5)
-				alpha = StrUtil::toInt(args[4]);
+				alpha = StrUtil::asInt(args[4]);
 
 			// Read blend (if specified)
 			int blend = -1;
 			if (args.size() >= 6)
-				blend = StrUtil::toInt(args[5]);
+				blend = StrUtil::asInt(args[5]);
 
 			// Set colour
 			ColourConfiguration::setColour(args[0], red, green, blue, alpha, blend);

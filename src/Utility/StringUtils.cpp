@@ -952,10 +952,10 @@ void StrUtil::processIncludes(ArchiveEntry* entry, std::string& out, bool use_re
 	wxRemoveFile(filename);
 }
 
-int StrUtil::toInt(std::string_view str)
+int StrUtil::asInt(std::string_view str, int base)
 {
 	int  val    = 0;
-	auto result = std::from_chars(str.data(), str.data() + str.size(), val);
+	auto result = std::from_chars(str.data(), str.data() + str.size(), val, base);
 	if (result.ec == std::errc::invalid_argument)
 		Log::error("Can't convert \"{}\" to an integer (invalid)", str);
 	else if (result.ec == std::errc::result_out_of_range)
@@ -964,10 +964,10 @@ int StrUtil::toInt(std::string_view str)
 	return val;
 }
 
-unsigned StrUtil::toUInt(std::string_view str)
+unsigned StrUtil::asUInt(std::string_view str, int base)
 {
 	unsigned val    = 0;
-	auto     result = std::from_chars(str.data(), str.data() + str.size(), val);
+	auto     result = std::from_chars(str.data(), str.data() + str.size(), val, base);
 	if (result.ec == std::errc::invalid_argument)
 		Log::error("Can't convert \"{}\" to an unsigned integer (invalid)", str);
 	else if (result.ec == std::errc::result_out_of_range)
@@ -976,7 +976,7 @@ unsigned StrUtil::toUInt(std::string_view str)
 	return val;
 }
 
-float StrUtil::toFloat(std::string_view str)
+float StrUtil::asFloat(std::string_view str)
 {
 	float val = 0;
 
@@ -1002,7 +1002,7 @@ float StrUtil::toFloat(std::string_view str)
 	return val;
 }
 
-double StrUtil::toDouble(std::string_view str)
+double StrUtil::asDouble(std::string_view str)
 {
 	double val    = 0;
 
@@ -1028,15 +1028,15 @@ double StrUtil::toDouble(std::string_view str)
 	return val;
 }
 
-bool StrUtil::toBoolean(std::string_view str)
+bool StrUtil::asBoolean(std::string_view str)
 {
 	// Empty, 0 or "false" are false, everything else true
 	return !(str.empty() || str == "0" || equalCI(str, "false"));
 }
 
-bool StrUtil::toInt(std::string_view str, int& target)
+bool StrUtil::toInt(std::string_view str, int& target, int base)
 {
-	auto result = std::from_chars(str.data(), str.data() + str.size(), target);
+	auto result = std::from_chars(str.data(), str.data() + str.size(), target, base);
 
 	if (result.ec == std::errc::invalid_argument)
 	{
@@ -1052,9 +1052,9 @@ bool StrUtil::toInt(std::string_view str, int& target)
 	return true;
 }
 
-bool StrUtil::toUInt(std::string_view str, unsigned& target)
+bool StrUtil::toUInt(std::string_view str, unsigned& target, int base)
 {
-	auto result = std::from_chars(str.data(), str.data() + str.size(), target);
+	auto result = std::from_chars(str.data(), str.data() + str.size(), target, base);
 
 	if (result.ec == std::errc::invalid_argument)
 	{
