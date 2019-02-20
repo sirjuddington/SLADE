@@ -20,9 +20,9 @@ enum class ScriptType
 struct Script
 {
 	ScriptType         type = ScriptType::Editor;
-	wxString           text;
-	wxString           name;
-	wxString           path;
+	std::string        text;
+	std::string        name;
+	std::string        path;
 	bool               read_only = false;
 	ArchiveEntry::WPtr source;
 
@@ -37,11 +37,11 @@ void init();
 void open();
 void saveUserScripts();
 
-bool renameScript(Script* script, const wxString& new_name);
+bool renameScript(Script* script, std::string_view new_name);
 bool deleteScript(Script* script);
 
-Script* createEditorScript(const wxString& name, ScriptType type);
-void    populateEditorScriptMenu(wxMenu* menu, ScriptType type, const wxString& action_id);
+Script* createEditorScript(std::string_view name, ScriptType type);
+void    populateEditorScriptMenu(wxMenu* menu, ScriptType type, std::string_view action_id);
 
 void runArchiveScript(Archive* archive, int index, wxWindow* parent = nullptr);
 void runEntryScript(vector<ArchiveEntry*> entries, int index, wxWindow* parent = nullptr);

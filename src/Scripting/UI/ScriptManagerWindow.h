@@ -15,7 +15,7 @@ public:
 
 	void                   openScriptTab(ScriptManager::Script* script) const;
 	ScriptManager::Script* currentScript() const;
-	wxString               currentScriptText() const;
+	std::string               currentScriptText() const;
 
 private:
 	ScriptManager::Script  script_scratchbox_;

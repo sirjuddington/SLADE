@@ -14,15 +14,15 @@ vector<Archive*> allArchives(bool resources_only)
 	return list;
 }
 
-wxString formattedEntryName(ArchiveEntry& self, bool include_path, bool include_extension, bool name_uppercase)
+std::string formattedEntryName(ArchiveEntry& self, bool include_path, bool include_extension, bool name_uppercase)
 {
-	wxString name;
+	std::string name;
 	if (include_path)
 		name = self.path();
 	if (name_uppercase)
-		name += std::string{ include_extension ? self.upperName() : self.upperNameNoExt() };
+		name.append(include_extension ? self.upperName() : self.upperNameNoExt());
 	else
-		name += std::string{ include_extension ? self.name() : self.nameNoExt() };
+		name.append(include_extension ? self.name() : self.nameNoExt());
 	return name;
 }
 
@@ -33,15 +33,15 @@ vector<ArchiveEntry*> archiveAllEntries(Archive& self)
 	return list;
 }
 
-ArchiveEntry* archiveCreateEntry(Archive& self, const wxString& full_path, int position)
+ArchiveEntry* archiveCreateEntry(Archive& self, std::string_view full_path, int position)
 {
-	auto dir = self.dir(StrUtil::beforeLast(full_path.ToStdString(), '/'));
-	return self.addNewEntry(StrUtil::afterLast(full_path.ToStdString(), '/'), position, dir);
+	auto dir = self.dir(StrUtil::beforeLast(full_path, '/'));
+	return self.addNewEntry(StrUtil::afterLast(full_path, '/'), position, dir);
 }
 
-ArchiveEntry* archiveCreateEntryInNamespace(Archive& self, const wxString& name, const wxString& ns)
+ArchiveEntry* archiveCreateEntryInNamespace(Archive& self, std::string_view name, std::string_view ns)
 {
-	return self.addNewEntry(name.ToStdString(), ns.ToStdString());
+	return self.addNewEntry(name, ns);
 }
 
 vector<ArchiveEntry*> archiveDirEntries(ArchiveTreeNode& self)
@@ -125,7 +125,7 @@ void registerArchive(sol::state& lua)
 		&Archive::entryAtPath,
 
 		"dirAtPath",
-		[](Archive& self, const wxString& path) { return self.dir(path.ToStdString()); },
+		[](Archive& self, std::string_view path) { return self.dir(path); },
 
 		"createEntry",
 		&archiveCreateEntry,
@@ -142,7 +142,7 @@ void registerArchive(sol::state& lua)
 		"save",
 		sol::overload(
 			[](Archive& self) { return self.save(); },
-			[](Archive& self, const wxString& filename) { return self.save(filename.ToStdString()); }));
+			[](Archive& self, std::string_view filename) { return self.save(filename); }));
 
 // Register all subclasses
 // (perhaps it'd be a good idea to make Archive not abstract and handle
@@ -233,7 +233,7 @@ void registerArchiveEntry(sol::state& lua)
 		&ArchiveEntry::sizeString,
 
 		"importFile",
-		[](ArchiveEntry& self, const std::string& filename) { return self.importFile(filename); },
+		[](ArchiveEntry& self, std::string_view filename) { return self.importFile(filename); },
 
 		"importEntry",
 		&ArchiveEntry::importEntry,

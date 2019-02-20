@@ -15,7 +15,7 @@ public:
 
 	TextEditorCtrl*        editor() const { return text_editor_; }
 	ScriptManager::Script* script() const { return script_; }
-	wxString               currentText() const;
+	std::string            currentText() const;
 	bool                   modified() const;
 
 	bool close();

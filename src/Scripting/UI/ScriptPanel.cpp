@@ -83,9 +83,9 @@ ScriptPanel::ScriptPanel(wxWindow* parent, ScriptManager::Script* script) : wxPa
 // -----------------------------------------------------------------------------
 // Returns the current text content in the editor
 // -----------------------------------------------------------------------------
-wxString ScriptPanel::currentText() const
+std::string ScriptPanel::currentText() const
 {
-	return text_editor_->GetText();
+	return text_editor_->GetText().ToStdString();
 }
 
 // -----------------------------------------------------------------------------

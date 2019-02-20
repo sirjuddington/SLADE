@@ -6,13 +6,13 @@ void logMessage(const char* message)
 }
 
 // Show a message box
-void messageBox(const wxString& title, const wxString& message)
+void messageBox(const std::string& title, const std::string& message)
 {
 	wxMessageBox(message, title, 5L, Lua::currentWindow());
 }
 
 // Show an extended message box
-void messageBoxExtended(const wxString& title, const wxString& message, const wxString& extra)
+void messageBoxExtended(const std::string& title, const std::string& message, const std::string& extra)
 {
 	ExtMessageDialog dlg(Lua::currentWindow(), title);
 	dlg.setMessage(message);
@@ -22,38 +22,39 @@ void messageBoxExtended(const wxString& title, const wxString& message, const wx
 }
 
 // Prompt for a string
-wxString promptString(const wxString& title, const wxString& message, const wxString& default_value)
+std::string promptString(const std::string& title, const std::string& message, const std::string& default_value)
 {
-	return wxGetTextFromUser(message, title, default_value, Lua::currentWindow());
+	return wxGetTextFromUser(message, title, default_value, Lua::currentWindow()).ToStdString();
 }
 
 // Prompt for a number
-int promptNumber(const wxString& title, const wxString& message, int default_value, int min, int max)
+int promptNumber(const std::string& title, const std::string& message, int default_value, int min, int max)
 {
 	return (int)wxGetNumberFromUser(message, "", title, default_value, min, max);
 }
 
 // Prompt for a yes/no answer
-bool promptYesNo(const wxString& title, const wxString& message)
+bool promptYesNo(const std::string& title, const std::string& message)
 {
 	return (wxMessageBox(message, title, wxYES_NO | wxICON_QUESTION) == wxYES);
 }
 
 // Browse for a single file
-wxString browseFile(const wxString& title, const wxString& extensions, const wxString& filename)
+std::string browseFile(const std::string& title, const std::string& extensions, const std::string& filename)
 {
 	SFileDialog::FDInfo inf;
 	SFileDialog::openFile(inf, title, extensions, Lua::currentWindow(), filename);
-	return inf.filenames.empty() ? "" : inf.filenames[0];
+	return inf.filenames.empty() ? "" : inf.filenames[0].ToStdString();
 }
 
 // Browse for multiple files
-vector<wxString> browseFiles(const wxString& title, const wxString& extensions)
+vector<std::string> browseFiles(const std::string& title, const std::string& extensions)
 {
 	SFileDialog::FDInfo inf;
-	vector<wxString>    filenames;
+	vector<std::string> filenames;
 	if (SFileDialog::openFiles(inf, title, extensions, Lua::currentWindow()))
-		filenames.assign(inf.filenames.begin(), inf.filenames.end());
+		for (const auto& file : inf.filenames)
+			filenames.push_back(file.ToStdString());
 	return filenames;
 }
 
@@ -144,8 +145,10 @@ void registerSplashWindowNamespace(sol::state& lua)
 	splash.set_function(
 		"show",
 		sol::overload(
-			[](const wxString& message) { UI::showSplash(message, false, Lua::currentWindow()); },
-			[](const wxString& message, bool progress) { UI::showSplash(message, progress, Lua::currentWindow()); }));
+			[](const std::string& message) { UI::showSplash(message, false, Lua::currentWindow()); },
+			[](const std::string& message, bool progress) {
+				UI::showSplash(message, progress, Lua::currentWindow());
+			}));
 	splash.set_function("hide", &UI::hideSplash);
 	splash.set_function("update", &UI::updateSplash);
 	splash.set_function("progress", &UI::getSplashProgress);

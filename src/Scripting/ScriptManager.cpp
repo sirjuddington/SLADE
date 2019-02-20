@@ -35,7 +35,10 @@
 #include "Archive/ArchiveManager.h"
 #include "Lua.h"
 #include "UI/ScriptManagerWindow.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
+#include <filesystem>
+#include <fstream>
 
 
 // -----------------------------------------------------------------------------
@@ -52,7 +55,7 @@ ScriptList scripts_acs;
 ScriptList scripts_decorate;
 ScriptList scripts_zscript;
 
-std::map<ScriptType, wxString> script_templates;
+std::map<ScriptType, std::string> script_templates;
 } // namespace ScriptManager
 
 
@@ -67,18 +70,18 @@ namespace ScriptManager
 // Adds a new editor script of [type], created from [entry]. [cut_path] will be
 // removed from the start of the script's path property
 // -----------------------------------------------------------------------------
-Script* addEditorScriptFromEntry(ArchiveEntry::SPtr& entry, ScriptType type, const wxString& cut_path)
+Script* addEditorScriptFromEntry(ArchiveEntry::SPtr& entry, ScriptType type, std::string_view cut_path)
 {
-	auto s  = std::make_unique<Script>();
-	s->type = type;
-	s->name = std::string{ entry->nameNoExt() };
-	s->path = entry->path();
-	s->path.Replace(cut_path, "");
+	auto s    = std::make_unique<Script>();
+	s->type   = type;
+	s->name   = entry->nameNoExt();
+	s->path   = entry->path();
 	s->source = entry;
+	StrUtil::replaceIP(s->path, cut_path, {});
 
 	auto& list = scripts_editor[type];
 	list.push_back(std::move(s));
-	list.back()->text = wxString::FromAscii((const char*)entry->rawData(), entry->size());
+	list.back()->text = std::string((const char*)entry->rawData(), entry->size());
 
 	return list.back().get();
 }
@@ -86,21 +89,19 @@ Script* addEditorScriptFromEntry(ArchiveEntry::SPtr& entry, ScriptType type, con
 // -----------------------------------------------------------------------------
 // Adds a new editor script of [type], created from the file at [filename]
 // -----------------------------------------------------------------------------
-Script* addEditorScriptFromFile(const wxString& filename, ScriptType type)
+Script* addEditorScriptFromFile(std::string_view filename, ScriptType type)
 {
-	wxFileName fn(filename);
+	StrUtil::Path fn(filename);
 
 	auto s  = std::make_unique<Script>();
 	s->type = type;
-	s->name = fn.GetName();
-	s->path = fn.GetPath(true, wxPATH_UNIX);
+	s->name = fn.fileName(false);
+	s->path = fn.path(true);
 
 	auto& list = scripts_editor[type];
 	list.push_back(std::move(s));
 
-	wxFile file(filename);
-	file.ReadAll(&list.back()->text);
-	file.Close();
+	FileUtil::readFileToString(fn.fullPath(), list.back()->text);
 
 	return list.back().get();
 }
@@ -127,40 +128,30 @@ void loadCustomScripts()
 {
 	// If the directory doesn't exist create it
 	auto user_scripts_dir = App::path("scripts/custom", App::Dir::User);
-	if (!wxDirExists(user_scripts_dir))
-		wxMkdir(user_scripts_dir);
+	if (!FileUtil::dirExists(user_scripts_dir))
+		FileUtil::createDir(user_scripts_dir);
 
-	// Open the custom custom_scripts directory
-	wxDir res_dir;
-	res_dir.Open(user_scripts_dir);
-
-	// Go through each file in the directory
-	wxString filename = wxEmptyString;
-	bool     files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
-	while (files)
-	{
-		addEditorScriptFromFile(user_scripts_dir + "/" + filename, ScriptType::Custom);
-
-		// Next file
-		files = res_dir.GetNext(&filename);
-	}
+	// Go through each file in the custom_scripts directory
+	auto files = FileUtil::allFilesInDir(user_scripts_dir);
+	for (const auto& filename : files)
+		addEditorScriptFromFile(filename, ScriptType::Custom);
 }
 
 // -----------------------------------------------------------------------------
 // Loads all editor scripts of [type] from slade.pk3 and the user dir
 // (in scripts/[dir])
 // -----------------------------------------------------------------------------
-void loadEditorScripts(ScriptType type, const wxString& dir)
+void loadEditorScripts(ScriptType type, std::string_view dir)
 {
 	// Get 'scripts/(dir)' dir of slade.pk3
-	auto scripts_dir = App::archiveManager().programResourceArchive()->dir(fmt::format("scripts/%s", CHR(dir)));
+	auto scripts_dir = App::archiveManager().programResourceArchive()->dir(fmt::format("scripts/{}", dir));
 	if (scripts_dir)
 	{
 		for (auto& entry : scripts_dir->allEntries())
 		{
 			if (!StrUtil::startsWith(entry->name(), '_'))
 			{
-				auto script       = addEditorScriptFromEntry(entry, type, wxString::Format("/scripts/%s/", CHR(dir)));
+				auto script       = addEditorScriptFromEntry(entry, type, fmt::format("/scripts/{}/", dir));
 				script->read_only = true;
 			}
 		}
@@ -169,50 +160,34 @@ void loadEditorScripts(ScriptType type, const wxString& dir)
 	// Load user archive scripts
 
 	// If the directory doesn't exist create it
-	auto user_scripts_dir = App::path(fmt::format("scripts/{}", CHR(dir)), App::Dir::User);
-	if (!wxDirExists(user_scripts_dir))
-		wxMkdir(user_scripts_dir);
+	auto user_scripts_dir = App::path(fmt::format("scripts/{}", dir), App::Dir::User);
+	if (!FileUtil::dirExists(user_scripts_dir))
+		FileUtil::createDir(user_scripts_dir);
 
-	// Open the custom custom_scripts directory
-	wxDir res_dir;
-	res_dir.Open(user_scripts_dir);
-
-	// Go through each file in the directory
-	wxString filename = wxEmptyString;
-	bool     files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
-	while (files)
-	{
-		auto script = addEditorScriptFromFile(user_scripts_dir + "/" + filename, type);
-
-		// Next file
-		files = res_dir.GetNext(&filename);
-	}
+	// Go through each file in the custom_scripts directory
+	auto files = FileUtil::allFilesInDir(user_scripts_dir);
+	for (const auto& filename : files)
+		addEditorScriptFromFile(filename, type);
 }
 
 // -----------------------------------------------------------------------------
 // Exports all scripts in [list] to .lua files at [path]
 // -----------------------------------------------------------------------------
-void exportUserScripts(const wxString& path, ScriptList& list)
+void exportUserScripts(std::string_view path, ScriptList& list)
 {
 	// Check dir exists
-	auto scripts_dir = App::path(path.ToStdString(), App::Dir::User);
-	if (wxDirExists(scripts_dir))
+	auto scripts_dir = App::path(path, App::Dir::User);
+	if (FileUtil::dirExists(scripts_dir))
 	{
-		// Exists, clear directory
-		wxDir res_dir;
-		res_dir.Open(scripts_dir);
-		wxString filename = wxEmptyString;
-		bool     files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
-		while (files)
-		{
-			wxRemoveFile(fmt::format("{}/{}", scripts_dir, CHR(filename)));
-			files = res_dir.GetNext(&filename);
-		}
+		// Exists, clear lua files in directory
+		for (const auto& item : std::filesystem::directory_iterator{ scripts_dir })
+			if (item.is_regular_file() && item.path().extension() == "lua")
+				std::filesystem::remove(item);
 	}
 	else
 	{
 		// Doesn't exist, create directory
-		wxMkdir(scripts_dir);
+		FileUtil::createDir(scripts_dir);
 	}
 
 	// Write scripts to directory
@@ -221,20 +196,19 @@ void exportUserScripts(const wxString& path, ScriptList& list)
 		if (script->read_only)
 			continue;
 
-		wxFile f(App::path(fmt::format("{}/{}.lua", CHR(path), CHR(script->name)), App::Dir::User), wxFile::write);
-		f.Write(script->text);
-		f.Close();
+		FileUtil::writeStringToFile(
+			script->text, App::path(fmt::format("{}/{}.lua", path, script->name), App::Dir::User));
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Loads text from the entry at [res_path] in slade.pk3 into [target]
 // -----------------------------------------------------------------------------
-void readResourceEntryText(wxString& target, const wxString& res_path)
+void readResourceEntryText(std::string& target, std::string_view res_path)
 {
-	auto entry = App::archiveManager().programResourceArchive()->entryAtPath(res_path.ToStdString());
+	auto entry = App::archiveManager().programResourceArchive()->entryAtPath(res_path);
 	if (entry)
-		target = wxString::FromAscii(entry->rawData(), entry->size());
+		target.assign((const char*)entry->rawData(), entry->size());
 }
 
 // -----------------------------------------------------------------------------
@@ -242,14 +216,14 @@ void readResourceEntryText(wxString& target, const wxString& res_path)
 // that name exist.
 // If [user_only] is true, read only (internal) scripts will be ignored
 // -----------------------------------------------------------------------------
-Script* getEditorScript(const wxString& name, ScriptType type, bool user_only = true)
+Script* getEditorScript(std::string_view name, ScriptType type, bool user_only = true)
 {
 	for (auto& script : scripts_editor[type])
 	{
 		if (user_only && script->read_only)
 			continue;
 
-		if (S_CMPNOCASE(script->name, name))
+		if (StrUtil::equalCI(script->name, name))
 			return script.get();
 	}
 
@@ -308,7 +282,7 @@ void ScriptManager::saveUserScripts()
 // Renames [script] to [new_name].
 // Returns false if the script couldn't be renamed
 // -----------------------------------------------------------------------------
-bool ScriptManager::renameScript(Script* script, const wxString& new_name)
+bool ScriptManager::renameScript(Script* script, std::string_view new_name)
 {
 	if (script->read_only || script->type == ScriptType::NonEditor)
 		return false;
@@ -346,7 +320,7 @@ bool ScriptManager::deleteScript(Script* script)
 // Creates a new script of [type] named [name]. If a script by that name
 // already exists, the existing script will be returned instead
 // -----------------------------------------------------------------------------
-ScriptManager::Script* ScriptManager::createEditorScript(const wxString& name, ScriptType type)
+ScriptManager::Script* ScriptManager::createEditorScript(std::string_view name, ScriptType type)
 {
 	// Check name
 	auto script = getEditorScript(name, type);
@@ -373,11 +347,11 @@ vector<ScriptManager::Script::UPtr>& ScriptManager::editorScripts(ScriptType typ
 // -----------------------------------------------------------------------------
 // Populates [menu] with all loaded editor scripts of [type]
 // -----------------------------------------------------------------------------
-void ScriptManager::populateEditorScriptMenu(wxMenu* menu, ScriptType type, const wxString& action_id)
+void ScriptManager::populateEditorScriptMenu(wxMenu* menu, ScriptType type, std::string_view action_id)
 {
 	int index = 0;
 	for (auto& script : scripts_editor[type])
-		menu->Append(SAction::fromId(action_id)->wxId() + index++, script->name);
+		menu->Append(SAction::fromId(std::string{ action_id })->wxId() + index++, script->name);
 }
 
 // -----------------------------------------------------------------------------

@@ -672,13 +672,13 @@ ScriptManager::Script* ScriptManagerWindow::currentScript() const
 // -----------------------------------------------------------------------------
 // Returns the currently open/focused script text
 // -----------------------------------------------------------------------------
-wxString ScriptManagerWindow::currentScriptText() const
+std::string ScriptManagerWindow::currentScriptText() const
 {
 	auto page = tabs_scripts_->GetCurrentPage();
 	if (page->GetName() == "script")
 		return dynamic_cast<ScriptPanel*>(page)->currentText();
 
-	return wxEmptyString;
+	return {};
 }
 
 // -----------------------------------------------------------------------------
@@ -710,7 +710,7 @@ bool ScriptManagerWindow::handleAction(const wxString& id)
 
 			if (!name.empty())
 			{
-				auto script = ScriptManager::createEditorScript(name, type);
+				auto script = ScriptManager::createEditorScript(WxUtils::strToView(name), type);
 				populateEditorScriptsTree(type);
 				openScriptTab(script);
 
@@ -742,11 +742,11 @@ bool ScriptManagerWindow::handleAction(const wxString& id)
 
 		if (script)
 		{
-			wxString name = wxGetTextFromUser("Enter a new name for the script", "Rename Script", script->name);
+			auto name = wxGetTextFromUser("Enter a new name for the script", "Rename Script", script->name);
 
 			if (!name.empty())
 			{
-				ScriptManager::renameScript(script, name);
+				ScriptManager::renameScript(script, WxUtils::strToView(name));
 				populateEditorScriptsTree(script->type);
 			}
 		}
