@@ -1341,8 +1341,8 @@ CONSOLE_COMMAND(mirror, 1, true)
 CONSOLE_COMMAND(crop, 4, true)
 {
 	int x1, y1, x2, y2;
-	if (StrUtil::asInt(args[0], x1) && StrUtil::asInt(args[1], y1) && StrUtil::asInt(args[2], x2)
-		&& StrUtil::asInt(args[3], y2))
+	if (StrUtil::toInt(args[0], x1) && StrUtil::toInt(args[1], y1) && StrUtil::toInt(args[2], x2)
+		&& StrUtil::toInt(args[3], y2))
 	{
 		auto foo = CH::getCurrentArchivePanel();
 		if (!foo)

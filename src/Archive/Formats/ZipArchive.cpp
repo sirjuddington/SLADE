@@ -295,7 +295,7 @@ bool ZipArchive::write(std::string_view filename, bool update)
 		{
 			// Get a list of all entries in the old zip
 			c_entries.resize(inzip->GetTotalEntries());
-			for (int a = 0; a < c_entries.size(); a++)
+			for (unsigned a = 0; a < c_entries.size(); a++)
 				c_entries[a] = inzip->GetNextEntry();
 		}
 		else
