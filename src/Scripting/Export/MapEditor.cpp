@@ -105,12 +105,11 @@ void registerSLADEMap(sol::state& lua)
 	// -------------------------------------------------------------------------
 	lua_map["name"]          = sol::property(&SLADEMap::mapName);
 	lua_map["udmfNamespace"] = sol::property(&SLADEMap::udmfNamespace);
-	// TODO: Export MapObjectList classes
-	// lua_map["vertices"]      = sol::property(&SLADEMap::vertices);
-	// lua_map["linedefs"]      = sol::property(&SLADEMap::lines);
-	// lua_map["sidedefs"]      = sol::property(&SLADEMap::sides);
-	// lua_map["sectors"]       = sol::property(&SLADEMap::sectors);
-	// lua_map["things"]        = sol::property(&SLADEMap::things);
+	lua_map["vertices"] = sol::property([](SLADEMap& self) { return self.vertices().all(); });
+	lua_map["linedefs"] = sol::property([](SLADEMap& self) { return self.lines().all(); });
+	lua_map["sidedefs"] = sol::property([](SLADEMap& self) { return self.sides().all(); });
+	lua_map["sectors"]  = sol::property([](SLADEMap& self) { return self.sectors().all(); });
+	lua_map["things"]   = sol::property([](SLADEMap& self) { return self.things().all(); });
 }
 
 // -----------------------------------------------------------------------------
