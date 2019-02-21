@@ -61,7 +61,7 @@ vector<ExternalExe> external_exes;
 // -----------------------------------------------------------------------------
 // Returns the game executable definition for [id]
 // -----------------------------------------------------------------------------
-Executables::GameExe* Executables::gameExe(const wxString& id)
+Executables::GameExe* Executables::gameExe(std::string_view id)
 {
 	for (auto& exe : game_exes)
 		if (exe.id == id)
@@ -92,7 +92,7 @@ unsigned Executables::nGameExes()
 // -----------------------------------------------------------------------------
 // Sets the path of game executable [id] to [path]
 // -----------------------------------------------------------------------------
-void Executables::setGameExePath(wxString id, wxString path)
+void Executables::setGameExePath(std::string_view id, std::string_view path)
 {
 	exe_paths.emplace_back(id, path);
 }
@@ -100,12 +100,12 @@ void Executables::setGameExePath(wxString id, wxString path)
 // -----------------------------------------------------------------------------
 // Writes all game executable paths as a string (for slade3.cfg)
 // -----------------------------------------------------------------------------
-wxString Executables::writePaths()
+std::string Executables::writePaths()
 {
-	wxString ret;
+	std::string ret;
 
 	for (auto& exe : game_exes)
-		ret += wxString::Format("\t%s \"%s\"\n", exe.id, wxStringUtils::escapedString(exe.path, true));
+		ret += fmt::format("\t{} \"{}\"\n", exe.id, StrUtil::escapedString(exe.path, true));
 
 	return ret;
 }
@@ -113,26 +113,25 @@ wxString Executables::writePaths()
 // -----------------------------------------------------------------------------
 // Writes all executable definitions as text
 // -----------------------------------------------------------------------------
-wxString Executables::writeExecutables()
+std::string Executables::writeExecutables()
 {
-	wxString ret = "executables\n{\n";
+	std::string ret = "executables\n{\n";
 
 	// Write game exes
 	for (auto& exe : game_exes)
 	{
 		// ID
-		ret += wxString::Format("\tgame_exe %s\n\t{\n", exe.id);
+		ret += fmt::format("\tgame_exe {}\n\t{\n", exe.id);
 
 		// Name
-		ret += wxString::Format("\t\tname = \"%s\";\n", exe.name);
+		ret += fmt::format("\t\tname = \"{}\";\n", exe.name);
 
 		// Exe name
-		ret += wxString::Format("\t\texe_name = \"%s\";\n\n", exe.exe_name);
+		ret += fmt::format("\t\texe_name = \"{}\";\n\n", exe.exe_name);
 
 		// Configs
 		for (auto& config : exe.configs)
-			ret += wxString::Format(
-				"\t\tconfig \"%s\" = \"%s\";\n", config.first, wxStringUtils::escapedString(config.second));
+			ret += fmt::format("\t\tconfig \"{}\" = \"{}\";\n", config.first, StrUtil::escapedString(config.second));
 
 		ret += "\t}\n\n";
 	}
@@ -141,15 +140,15 @@ wxString Executables::writeExecutables()
 	for (auto& exe : external_exes)
 	{
 		// Name
-		ret += wxString::Format("\texternal_exe \"%s\"\n\t{\n", exe.name);
+		ret += fmt::format("\texternal_exe \"{}\"\n\t{\n", exe.name);
 
 		// Entry Category
-		ret += wxString::Format("\t\tcategory = \"%s\";\n", exe.category);
+		ret += fmt::format("\t\tcategory = \"{}\";\n", exe.category);
 
 		// Path
-		wxString path = exe.path;
-		path.Replace("\\", "/");
-		ret += wxString::Format("\t\tpath = \"%s\";\n", path);
+		auto path = exe.path;
+		std::replace(path.begin(), path.end(), '\\', '/');
+		ret += fmt::format("\t\tpath = \"{}\";\n", path);
 
 		ret += "\t}\n\n";
 	}
@@ -196,11 +195,11 @@ void Executables::parse(Parser* p, bool custom)
 
 	for (unsigned a = 0; a < n->nChildren(); a++)
 	{
-		auto     exe_node = n->childPTN(a);
-		wxString type     = exe_node->type();
+		auto exe_node = n->childPTN(a);
+		auto type     = exe_node->type();
 
 		// Game Executable (if type is blank it's a game executable in old config format)
-		if (type == "game_exe" || type.IsEmpty())
+		if (type == "game_exe" || type.empty())
 			parseGameExe(exe_node, custom);
 
 		// External Executable
@@ -270,14 +269,13 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 // -----------------------------------------------------------------------------
 // Adds a new game executable definition for game [name]
 // -----------------------------------------------------------------------------
-void Executables::addGameExe(wxString name)
+void Executables::addGameExe(std::string_view name)
 {
 	GameExe game;
 	game.name = name;
 
-	name.Replace(" ", "_");
-	name.MakeLower();
-	game.id = name;
+	game.id = StrUtil::lower(name);
+	std::replace(game.id.begin(), game.id.end(), ' ', '_');	
 
 	game_exes.push_back(game);
 }
@@ -302,7 +300,11 @@ bool Executables::removeGameExe(unsigned index)
 // -----------------------------------------------------------------------------
 // Adds a run configuration for game executable at [exe_index]
 // -----------------------------------------------------------------------------
-void Executables::addGameExeConfig(unsigned exe_index, wxString config_name, wxString config_params, bool custom)
+void Executables::addGameExeConfig(
+	unsigned         exe_index,
+	std::string_view config_name,
+	std::string_view config_params,
+	bool             custom)
 {
 	// Check index
 	if (exe_index >= game_exes.size())
@@ -340,11 +342,11 @@ bool Executables::removeGameExeConfig(unsigned exe_index, unsigned config_index)
 // Returns the number of external executables for [category], or all if
 // [category] is not specified
 // -----------------------------------------------------------------------------
-int Executables::nExternalExes(const wxString& category)
+int Executables::nExternalExes(std::string_view category)
 {
 	int num = 0;
 	for (auto& exe : external_exes)
-		if (category.IsEmpty() || exe.category == category)
+		if (category.empty() || exe.category == category)
 			num++;
 
 	return num;
@@ -354,10 +356,10 @@ int Executables::nExternalExes(const wxString& category)
 // Returns the external executable matching [name] and [category].
 // If [category] is empty, it is ignored
 // -----------------------------------------------------------------------------
-Executables::ExternalExe Executables::externalExe(const wxString& name, const wxString& category)
+Executables::ExternalExe Executables::externalExe(std::string_view name, std::string_view category)
 {
 	for (auto& exe : external_exes)
-		if (category.IsEmpty() || exe.category == category)
+		if (category.empty() || exe.category == category)
 			if (exe.name == name)
 				return exe;
 
@@ -368,11 +370,11 @@ Executables::ExternalExe Executables::externalExe(const wxString& name, const wx
 // Returns a list of all external executables matching [category].
 // If [category] is empty, it is ignored
 // -----------------------------------------------------------------------------
-vector<Executables::ExternalExe> Executables::externalExes(const wxString& category)
+vector<Executables::ExternalExe> Executables::externalExes(std::string_view category)
 {
 	vector<ExternalExe> ret;
 	for (auto& exe : external_exes)
-		if (category.IsEmpty() || exe.category == category)
+		if (category.empty() || exe.category == category)
 			ret.push_back(exe);
 
 	return ret;
@@ -406,7 +408,7 @@ void Executables::parseExternalExe(ParseTreeNode* node)
 // Adds a new external executable, if one matching [name] and [category] doesn't
 // already exist
 // -----------------------------------------------------------------------------
-void Executables::addExternalExe(const wxString& name, const wxString& path, const wxString& category)
+void Executables::addExternalExe(std::string_view name, std::string_view path, std::string_view category)
 {
 	// Check it doesn't already exist
 	for (auto& exe : external_exes)
@@ -424,7 +426,7 @@ void Executables::addExternalExe(const wxString& name, const wxString& path, con
 // Sets the name of the external executable matching [name_old] and [category]
 // to [name_new]
 // -----------------------------------------------------------------------------
-void Executables::setExternalExeName(const wxString& name_old, const wxString& name_new, const wxString& category)
+void Executables::setExternalExeName(std::string_view name_old, std::string_view name_new, std::string_view category)
 {
 	for (auto& exe : external_exes)
 		if (exe.name == name_old && exe.category == category)
@@ -438,7 +440,7 @@ void Executables::setExternalExeName(const wxString& name_old, const wxString& n
 // Sets the path of the external executable matching [name] and [category] to
 // [path]
 // -----------------------------------------------------------------------------
-void Executables::setExternalExePath(const wxString& name, const wxString& path, const wxString& category)
+void Executables::setExternalExePath(std::string_view name, std::string_view path, std::string_view category)
 {
 	for (auto& exe : external_exes)
 		if (exe.name == name && exe.category == category)
@@ -451,7 +453,7 @@ void Executables::setExternalExePath(const wxString& name, const wxString& path,
 // -----------------------------------------------------------------------------
 // Removes the external executable matching [name] and [category]
 // -----------------------------------------------------------------------------
-void Executables::removeExternalExe(const wxString& name, const wxString& category)
+void Executables::removeExternalExe(std::string_view name, std::string_view category)
 {
 	for (unsigned a = 0; a < external_exes.size(); a++)
 		if (external_exes[a].name == name && external_exes[a].category == category)

@@ -71,7 +71,7 @@ public:
 
 	~ExternalEditorList() = default;
 
-	void setCategory(const wxString& category)
+	void setCategory(std::string_view category)
 	{
 		exes_ = Executables::externalExes(category);
 		SetItemCount(exes_.size());
@@ -210,7 +210,7 @@ EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 
 	// Bind events
 	choice_category_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&) {
-		((ExternalEditorList*)lv_ext_editors_)->setCategory(choice_category_->GetStringSelection());
+		((ExternalEditorList*)lv_ext_editors_)->setCategory(WxUtils::strToView(choice_category_->GetStringSelection()));
 	});
 	btn_add_exe_->Bind(wxEVT_BUTTON, &EditingPrefsPanel::onBtnAddClicked, this);
 	btn_remove_exe_->Bind(wxEVT_BUTTON, &EditingPrefsPanel::onBtnRemoveClicked, this);
@@ -304,7 +304,7 @@ void EditingPrefsPanel::init()
 	choice_dir_mod_->SetSelection(dir_archive_change_action);
 
 	choice_category_->SetSelection(0);
-	((ExternalEditorList*)lv_ext_editors_)->setCategory(choice_category_->GetStringSelection());
+	((ExternalEditorList*)lv_ext_editors_)->setCategory(WxUtils::strToView(choice_category_->GetStringSelection()));
 }
 
 // -----------------------------------------------------------------------------
@@ -359,8 +359,8 @@ void EditingPrefsPanel::onBtnAddClicked(wxCommandEvent& e)
 		else
 		{
 			// Add executable
-			wxString category = choice_category_->GetStringSelection();
-			Executables::addExternalExe(dlg.getName(), dlg.getPath(), category);
+			auto category = choice_category_->GetStringSelection().ToStdString();
+			Executables::addExternalExe(dlg.getName().ToStdString(), dlg.getPath().ToStdString(), category);
 
 			// Refresh list
 			((ExternalEditorList*)lv_ext_editors_)->setCategory(category);
@@ -375,14 +375,14 @@ void EditingPrefsPanel::onBtnAddClicked(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void EditingPrefsPanel::onBtnRemoveClicked(wxCommandEvent& e)
 {
-	auto     selection = lv_ext_editors_->selection();
-	wxString category  = choice_category_->GetStringSelection();
+	auto selection = lv_ext_editors_->selection();
+	auto category  = choice_category_->GetStringSelection().ToStdString();
 
 	// Remove selected editors
 	for (long item : selection)
 	{
 		wxString name = lv_ext_editors_->GetItemText(item);
-		Executables::removeExternalExe(name, category);
+		Executables::removeExternalExe(WxUtils::strToView(name), category);
 	}
 
 	// Refresh list
@@ -394,9 +394,9 @@ void EditingPrefsPanel::onBtnRemoveClicked(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void EditingPrefsPanel::onExternalExeActivated(wxListEvent& e)
 {
-	wxString name     = lv_ext_editors_->GetItemText(e.GetIndex());
-	wxString category = choice_category_->GetStringSelection();
-	auto     exe      = Executables::externalExe(name, category);
+	auto name     = lv_ext_editors_->GetItemText(e.GetIndex()).ToStdString();
+	auto category = choice_category_->GetStringSelection().ToStdString();
+	auto exe      = Executables::externalExe(name, category);
 
 	ExternalEditorDialog dlg(this, false, name, exe.path);
 	while (dlg.ShowModal() == wxID_OK)
@@ -408,8 +408,8 @@ void EditingPrefsPanel::onExternalExeActivated(wxListEvent& e)
 		else
 		{
 			// Update executable
-			Executables::setExternalExeName(name, dlg.getName(), category);
-			Executables::setExternalExePath(dlg.getName(), dlg.getPath(), category);
+			Executables::setExternalExeName(name, dlg.getName().ToStdString(), category);
+			Executables::setExternalExePath(dlg.getName().ToStdString(), dlg.getPath().ToStdString(), category);
 
 			// Refresh list
 			((ExternalEditorList*)lv_ext_editors_)->setCategory(category);

@@ -102,7 +102,7 @@ void UI::enableSplash(bool enable)
 // Shows the splash window with [message].
 // If [progress] is true, the progress bar is displayed
 // -----------------------------------------------------------------------------
-void UI::showSplash(const wxString& message, bool progress, wxWindow* parent)
+void UI::showSplash(std::string_view message, bool progress, wxWindow* parent)
 {
 	if (!splash_enabled || !isMainThread())
 		return;
@@ -113,7 +113,7 @@ void UI::showSplash(const wxString& message, bool progress, wxWindow* parent)
 		splash_window = std::make_unique<SplashWindow>();
 	}
 
-	splash_window->show(message, progress, parent);
+	splash_window->show(std::string{ message }, progress, parent);
 }
 
 // -----------------------------------------------------------------------------
@@ -148,19 +148,19 @@ float UI::getSplashProgress()
 // -----------------------------------------------------------------------------
 // Sets the splash window [message]
 // -----------------------------------------------------------------------------
-void UI::setSplashMessage(const wxString& message)
+void UI::setSplashMessage(std::string_view message)
 {
 	if (splash_window && isMainThread())
-		splash_window->setMessage(message);
+		splash_window->setMessage(std::string{ message });
 }
 
 // -----------------------------------------------------------------------------
 // Sets the splash window progress bar [message]
 // -----------------------------------------------------------------------------
-void UI::setSplashProgressMessage(const wxString& message)
+void UI::setSplashProgressMessage(std::string_view message)
 {
 	if (splash_window && isMainThread())
-		splash_window->setProgressMessage(message);
+		splash_window->setProgressMessage(std::string{ message });
 }
 
 // -----------------------------------------------------------------------------
@@ -263,6 +263,6 @@ CONSOLE_COMMAND(splash, 0, false)
 		UI::showSplash(args[0], true);
 		float prog = wxStringUtils::toFloat(args[1]);
 		UI::setSplashProgress(prog);
-		UI::setSplashProgressMessage(wxString::Format("Progress %s", args[1]));
+		UI::setSplashProgressMessage(fmt::format("Progress {}", args[1]));
 	}
 }

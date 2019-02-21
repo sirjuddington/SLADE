@@ -44,6 +44,7 @@
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor.h"
 #include "Utility/FileMonitor.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
 
@@ -434,11 +435,11 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, const wxString&
 	}
 
 	// Get external editor path
-	wxString exe_path = Executables::externalExe(editor, category).path;
+	auto exe_path = Executables::externalExe(editor.ToStdString(), category.ToStdString()).path;
 #ifdef WIN32
-	if (exe_path.IsEmpty() || !wxFileExists(exe_path))
+	if (exe_path.empty() || !FileUtil::fileExists(exe_path))
 #else
-	if (exe_path.IsEmpty())
+	if (exe_path.empty())
 #endif
 	{
 		Global::error = wxString::Format("External editor %s has invalid path", editor);

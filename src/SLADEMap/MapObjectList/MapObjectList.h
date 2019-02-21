@@ -29,8 +29,9 @@ public:
 	bool empty() const { return count_ == 0; }
 
 	// Access
-	T* first() const { return objects_.empty() ? nullptr : objects_[0]; }
-	T* last() const { return objects_.empty() ? nullptr : objects_.back(); }
+	const vector<T*>& all() const { return objects_; }
+	T*                first() const { return objects_.empty() ? nullptr : objects_[0]; }
+	T*                last() const { return objects_.empty() ? nullptr : objects_.back(); }
 
 	// Modification
 	virtual void add(T* object)

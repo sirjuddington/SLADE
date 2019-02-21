@@ -475,7 +475,7 @@ bool RunDialog::start3dModeChecked() const
 void RunDialog::onBtnAddGame(wxCommandEvent& e)
 {
 	wxString name = wxGetTextFromUser("Enter a name for the game executable");
-	Executables::addGameExe(name);
+	Executables::addGameExe(WxUtils::strToView(name));
 	choice_game_exes_->AppendString(name);
 	choice_game_exes_->Select(choice_game_exes_->GetCount() - 1);
 	openGameExe(Executables::nGameExes() - 1);
@@ -521,12 +521,12 @@ void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 	RunConfigDialog dlg(this, wxString::Format("Add Run Config for %s", exe->name), "", init_params);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		wxString name = dlg.name();
+		auto name = dlg.name().ToStdString();
 
-		if (name.IsEmpty())
-			name = wxString::Format("Config %d", choice_config_->GetCount() + 1);
+		if (name.empty())
+			name = fmt::format("Config {}", choice_config_->GetCount() + 1);
 
-		Executables::addGameExeConfig(choice_game_exes_->GetSelection(), name, dlg.params());
+		Executables::addGameExeConfig(choice_game_exes_->GetSelection(), name, dlg.params().ToStdString());
 		choice_config_->AppendString(name);
 		choice_config_->Select(choice_config_->GetCount() - 1);
 	}

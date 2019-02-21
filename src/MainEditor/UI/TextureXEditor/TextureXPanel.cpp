@@ -1310,7 +1310,7 @@ void TextureXPanel::exportTexture()
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Update splash window
-		UI::setSplashProgressMessage(selection[a]->name());
+		UI::setSplashProgressMessage(selection[a]->name().ToStdString());
 		UI::setSplashProgress((float)a / (float)selection.size());
 
 		// Skip if the image wasn't converted
@@ -1429,7 +1429,7 @@ void TextureXPanel::extractTexture()
 			for (size_t a = 0; a < selection.size(); a++)
 			{
 				// Update splash window
-				UI::setSplashProgressMessage(selection[a]->name());
+				UI::setSplashProgressMessage(selection[a]->name().ToStdString());
 				UI::setSplashProgress((float)a / (float)selection.size());
 
 				// Setup entry filename

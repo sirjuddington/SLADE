@@ -858,7 +858,7 @@ bool ArchivePanel::importFiles()
 
 			// Update splash window
 			UI::setSplashProgress(float(a) / float(info.filenames.size()));
-			UI::setSplashProgressMessage(name);
+			UI::setSplashProgressMessage(name.ToStdString());
 
 			// Add the entry to the archive
 			auto new_entry = archive_->addNewEntry(name.ToStdString(), index, entry_list_->currentDir());
@@ -923,7 +923,7 @@ bool ArchivePanel::buildArchive()
 	SFileDialog::FDInfo info;
 	if (SFileDialog::saveFile(info, "Build archive", zip.fileExtensionString(), this))
 	{
-		UI::showSplash(wxString("Building ") + info.filenames[0], true);
+		UI::showSplash("Building " + info.filenames[0].ToStdString(), true);
 		UI::setSplashProgress(0.0f);
 
 		// prevent for "archive in archive" when saving in the current directory
@@ -2998,7 +2998,7 @@ wxMenu* ArchivePanel::createEntryOpenMenu(const wxString& category)
 	menu_open->AppendSeparator();
 
 	// External editors
-	auto     external   = Executables::externalExes(category);
+	auto     external   = Executables::externalExes(category.ToStdString());
 	auto     a_open_ext = SAction::fromId("arch_entry_openext");
 	unsigned num        = std::min<unsigned>(external.size(), 20);
 	for (unsigned a = 0; a < num; a++)
