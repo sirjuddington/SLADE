@@ -366,6 +366,10 @@
     <ClCompile Include="..\..\src\Dialogs\GfxColouriseDialog.cpp" />
     <ClCompile Include="..\..\src\Dialogs\GfxCropDialog.cpp" />
     <ClCompile Include="..\..\src\Dialogs\GfxTintDialog.cpp" />
+    <ClCompile Include="..\..\src\Scripting\Export\Archive.cpp" />
+    <ClCompile Include="..\..\src\Scripting\Export\Game.cpp" />
+    <ClCompile Include="..\..\src\Scripting\Export\General.cpp" />
+    <ClCompile Include="..\..\src\Scripting\Export\MapEditor.cpp" />
     <ClCompile Include="..\..\src\Utility\FileUtils.cpp" />
     <ClCompile Include="..\..\thirdparty\bzip2\blocksort.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -2230,6 +2234,7 @@
     <ClInclude Include="..\..\src\Dialogs\GfxColouriseDialog.h" />
     <ClInclude Include="..\..\src\Dialogs\GfxCropDialog.h" />
     <ClInclude Include="..\..\src\Dialogs\GfxTintDialog.h" />
+    <ClInclude Include="..\..\src\Scripting\Export\Export.h" />
     <ClInclude Include="..\..\src\Utility\FileUtils.h" />
     <ClInclude Include="..\..\thirdparty\bzip2\bzlib.h" />
     <ClInclude Include="..\..\thirdparty\bzip2\bzlib_private.h" />
@@ -2482,10 +2487,6 @@
     <ClInclude Include="..\..\src\OpenGL\Drawing.h" />
     <ClInclude Include="..\..\src\OpenGL\GLTexture.h" />
     <ClInclude Include="..\..\src\OpenGL\OpenGL.h" />
-    <ClInclude Include="..\..\src\Scripting\Export\Archive.h" />
-    <ClInclude Include="..\..\src\Scripting\Export\Game.h" />
-    <ClInclude Include="..\..\src\Scripting\Export\General.h" />
-    <ClInclude Include="..\..\src\Scripting\Export\MapEditor.h" />
     <ClInclude Include="..\..\src\Scripting\Lua.h" />
     <ClInclude Include="..\..\src\Scripting\ScriptManager.h" />
     <ClInclude Include="..\..\src\Scripting\UI\ScriptManagerWindow.h" />

@@ -31,22 +31,15 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #define SOL_CHECK_ARGUMENTS 1
-#include "Archive/ArchiveManager.h"
-#include "Archive/Formats/All.h"
 #include "Dialogs/ExtMessageDialog.h"
-#include "thirdparty/sol/sol.hpp"
-#include "Game/Configuration.h"
-#include "Game/ThingType.h"
+#include "Export/Export.h"
 #include "General/Console/Console.h"
 #include "General/Misc.h"
-#include "General/UI.h"
 #include "Lua.h"
-#include "MainEditor/MainEditor.h"
-#include "MapEditor/MapEditContext.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/SFileDialog.h"
-#include "Utility/StringUtils.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
+#include "thirdparty/sol/sol.hpp"
 
 
 // -----------------------------------------------------------------------------
@@ -70,11 +63,6 @@ time_t     script_start_time;
 // -----------------------------------------------------------------------------
 namespace Lua
 {
-#include "Export/Archive.h"
-#include "Export/Game.h"
-#include "Export/General.h"
-#include "Export/MapEditor.h"
-
 // -----------------------------------------------------------------------------
 // Resets error information
 // -----------------------------------------------------------------------------
@@ -88,23 +76,31 @@ void resetError()
 // -----------------------------------------------------------------------------
 // Processes error information from [result]
 // -----------------------------------------------------------------------------
-void processError(sol::protected_function_result& result)
+void processError(const sol::protected_function_result& result)
 {
 	// Error Type
 	script_error.type = sol::to_string(result.status());
 	StrUtil::capitalizeIP(script_error.type);
 
 	// Error Message
-	sol::error error     = result;
+	sol::error       error     = result;
 	std::string_view error_msg = error.what();
 
 	// Line No.
-	auto pos = error_msg.find("]:");
-	auto pos_ln_end = error_msg.find(':', pos + 2);
+	auto pos             = error_msg.find("]:");
+	auto pos_ln_end      = error_msg.find(':', pos + 2);
 	script_error.line_no = StrUtil::asInt(error_msg.substr(pos + 2, pos_ln_end - pos + 2));
 
 	// Actual error message
 	script_error.message = error_msg.substr(pos_ln_end + 2);
+}
+
+sol::protected_function_result handleError(lua_State* L, sol::protected_function_result pfr)
+{
+	processError(pfr);
+	Log::error("{} Error running Lua script: {}: {}", script_error.type, script_error.line_no, script_error.message);
+
+	return pfr;
 }
 
 // -----------------------------------------------------------------------------
@@ -119,29 +115,26 @@ template<class T> bool runEditorScript(const std::string& script, T param)
 
 	// Load script
 	sol::environment sandbox(lua, sol::create, lua.globals());
-	auto             load_result = lua.script(script, sandbox, sol::simple_on_error);
+	auto             load_result = lua.script(script, sandbox, handleError);
 	if (!load_result.valid())
 	{
 		processError(load_result);
 		Log::error(
-			"{} Error running Lua script: {}: {}",
-			script_error.type,
-			script_error.line_no,
-			script_error.message);
+			"{} Error running Lua script: {}: {}", script_error.type, script_error.line_no, script_error.message);
 		return false;
 	}
 
 	// Run script execute function
-	sol::protected_function func        = sandbox["execute"];
-	auto                    exec_result = func(param);
+	// sol::protected_function func        = sandbox["execute"];
+	// auto                    exec_result = func(param);
+	sol::protected_function        func(sandbox["execute"]);
+	sol::protected_function_result exec_result = func(param);
 	if (!exec_result.valid())
 	{
+		sol::error error = exec_result;
 		processError(exec_result);
 		Log::error(
-			"{} Error running Lua script: {}: {}",
-			script_error.type,
-			script_error.line_no,
-			script_error.message);
+			"{} Error running Lua script: {}: {}", script_error.type, script_error.line_no, script_error.message);
 		return false;
 	}
 
@@ -192,7 +185,7 @@ Lua::Error& Lua::error()
 void Lua::showErrorDialog(wxWindow* parent, std::string_view title, std::string_view message)
 {
 	// Get script log messages since the last script was started
-	auto     log = Log::since(script_start_time, Log::MessageType::Script);
+	auto        log = Log::since(script_start_time, Log::MessageType::Script);
 	std::string output;
 	for (auto msg : log)
 		output += msg->formattedMessageLine() + "\n";
@@ -218,17 +211,14 @@ bool Lua::run(const std::string& program)
 	script_start_time = wxDateTime::Now().GetTicks();
 
 	sol::environment sandbox(lua, sol::create, lua.globals());
-	auto             result = lua.script(program, sandbox, sol::simple_on_error);
+	auto             result = lua.script(program, sandbox, handleError);
 	lua.collect_garbage();
 
 	if (!result.valid())
 	{
 		processError(result);
 		Log::error(
-			"{} Error running Lua script: {}: {}",
-			script_error.type,
-			script_error.line_no,
-			script_error.message);
+			"{} Error running Lua script: {}: {}", script_error.type, script_error.line_no, script_error.message);
 		return false;
 	}
 
@@ -244,17 +234,14 @@ bool Lua::runFile(const std::string& filename)
 	script_start_time = wxDateTime::Now().GetTicks();
 
 	sol::environment sandbox(lua, sol::create, lua.globals());
-	auto             result = lua.script_file(filename, sandbox, sol::simple_on_error);
+	auto             result = lua.script_file(filename, sandbox, handleError);
 	lua.collect_garbage();
 
 	if (!result.valid())
 	{
 		processError(result);
 		Log::error(
-			"{} Error running Lua script: {}: {}",
-			script_error.type,
-			script_error.line_no,
-			script_error.message);
+			"{} Error running Lua script: {}: {}", script_error.type, script_error.line_no, script_error.message);
 		return false;
 	}
 

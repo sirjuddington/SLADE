@@ -1,11 +1,9 @@
 #pragma once
 
+#include "thirdparty/sol/forward.hpp"
+
 class SLADEMap;
 class wxWindow;
-namespace sol
-{
-class state;
-}
 
 namespace Lua
 {

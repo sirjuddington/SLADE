@@ -667,7 +667,7 @@ StrUtil::Path::Path(std::string_view full_path) : full_path_{ full_path.data(), 
 
 	auto last_sep_pos = full_path_.find_last_of('/');
 	filename_start_   = last_sep_pos == std::string::npos ? 0 : last_sep_pos + 1;
-	auto ext_pos      = full_path_.find('.');
+	auto ext_pos      = full_path_.find('.', last_sep_pos);
 	filename_end_     = ext_pos == std::string::npos ? full_path_.size() : ext_pos;
 }
 
