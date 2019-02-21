@@ -527,9 +527,9 @@ void GfxCanvas::generateBrushShadow()
 // Called when an announcement is recieved from the image that this GfxCanvas is
 // displaying
 // -----------------------------------------------------------------------------
-void GfxCanvas::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
+void GfxCanvas::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
 {
-	if (announcer == &image_ && event_name.Cmp("image_changed") == 0)
+	if (announcer == &image_ && event_name == "image_changed")
 		update_texture_ = true;
 }
 

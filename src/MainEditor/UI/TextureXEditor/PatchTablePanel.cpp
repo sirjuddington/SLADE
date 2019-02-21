@@ -159,7 +159,7 @@ void PatchTableListView::updateList(bool clear)
 // -----------------------------------------------------------------------------
 // Handles announcements from the panel's PatchTable
 // -----------------------------------------------------------------------------
-void PatchTableListView::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
+void PatchTableListView::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
 {
 	// Just refresh on any event from the patch table
 	if (announcer == patch_table_)
@@ -550,7 +550,7 @@ void PatchTablePanel::onDisplayChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Handles any announcements
 // -----------------------------------------------------------------------------
-void PatchTablePanel::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
+void PatchTablePanel::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
 {
 	if (announcer != theMainWindow->paletteChooser())
 		return;

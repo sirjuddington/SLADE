@@ -65,7 +65,7 @@ public:
 	bool  onImage(int x, int y);
 	Vec2i imageCoords(int x, int y) const;
 
-	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;
 
 private:
 	SImage       image_;

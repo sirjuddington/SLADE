@@ -47,7 +47,7 @@ public:
 	// Label editing
 	void labelEdited(int col, int index, const wxString& new_label) override;
 
-	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;
 
 	// SAction handler
 	bool handleAction(const wxString& id) override;

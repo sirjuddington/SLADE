@@ -3283,7 +3283,7 @@ bool ArchivePanel::handleAction(const wxString& id)
 // Called when an announcement is recieved from the archive that this
 // ArchivePanel is managing
 // -----------------------------------------------------------------------------
-void ArchivePanel::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
+void ArchivePanel::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
 {
 	// Reset event data for reading
 	event_data.seek(0, SEEK_SET);

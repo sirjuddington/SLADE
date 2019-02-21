@@ -782,7 +782,7 @@ void ArchiveEntryList::labelEdited(int col, int index, const wxString& new_label
 // -----------------------------------------------------------------------------
 // Called when an announcement is recieved from the archive being managed
 // -----------------------------------------------------------------------------
-void ArchiveEntryList::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
+void ArchiveEntryList::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
 {
 	if (entries_update_ && announcer == archive_ && event_name != "closed")
 	{

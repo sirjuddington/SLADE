@@ -73,7 +73,7 @@ public:
 	vector<TexInfo>& allTexturesInfo() { return tex_info_; }
 	vector<TexInfo>& allFlatsInfo() { return flat_info_; }
 
-	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;
 
 private:
 	Archive*                 archive_ = nullptr;

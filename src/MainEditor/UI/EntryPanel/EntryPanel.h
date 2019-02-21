@@ -57,7 +57,7 @@ protected:
 
 	void setModified(bool c = true);
 
-	void         onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override {}
+	void         onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override {}
 	virtual bool handleEntryPanelAction(const wxString& id) { return false; }
 	void         onToolbarButton(wxCommandEvent& e);
 

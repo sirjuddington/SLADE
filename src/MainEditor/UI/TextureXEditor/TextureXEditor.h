@@ -59,6 +59,6 @@ private:
 	bool pnames_modified_ = false;
 
 	// Events
-	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;
 	void onShow(wxShowEvent& e);
 };

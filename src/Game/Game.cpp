@@ -83,7 +83,7 @@ public:
 		listenTo(&App::archiveManager());
 	}
 
-	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override
+	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override
 	{
 		if (announcer == &App::archiveManager())
 		{

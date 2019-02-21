@@ -93,7 +93,7 @@ public:
 		return ok;
 	}
 
-	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override
+	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override
 	{
 		if (announcer != archive_)
 			return;

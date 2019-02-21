@@ -623,7 +623,7 @@ void MapTextureManager::setArchive(Archive* archive)
 // -----------------------------------------------------------------------------
 // Handles announcements from any announcers listened to
 // -----------------------------------------------------------------------------
-void MapTextureManager::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
+void MapTextureManager::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
 {
 	// Only interested in the resource manager,
 	// archive manager and palette chooser.

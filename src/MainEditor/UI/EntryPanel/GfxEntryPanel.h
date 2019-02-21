@@ -32,7 +32,7 @@ public:
 	bool handleEntryPanelAction(const wxString& id) override;
 	bool fillCustomMenu(wxMenu* custom) override;
 
-	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;
 
 	SImage* image() const
 	{

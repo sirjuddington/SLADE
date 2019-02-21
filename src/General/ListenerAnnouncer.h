@@ -11,7 +11,7 @@ public:
 	void         listenTo(Announcer* a);
 	void         stopListening(Announcer* a);
 	void         clearAnnouncers() { announcers_.clear(); }
-	virtual void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data);
+	virtual void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data);
 
 	bool isDeaf() const { return deaf_; }
 	void setDeaf(bool d) { deaf_ = d; }
@@ -29,8 +29,8 @@ public:
 
 	void addListener(Listener* l);
 	void removeListener(Listener* l);
-	void announce(const wxString& event_name, MemChunk& event_data);
-	void announce(const wxString& event_name);
+	void announce(std::string_view event_name, MemChunk& event_data);
+	void announce(std::string_view event_name);
 
 	bool isMuted() const { return muted_; }
 	void setMuted(bool m) { muted_ = m; }

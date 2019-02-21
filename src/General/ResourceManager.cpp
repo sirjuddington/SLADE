@@ -728,7 +728,7 @@ CTexture* ResourceManager::getTexture(std::string_view texture, Archive* priorit
 // -----------------------------------------------------------------------------
 // Called when an announcement is recieved from any managed archive
 // -----------------------------------------------------------------------------
-void ResourceManager::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
+void ResourceManager::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
 {
 	event_data.seek(0, SEEK_SET);
 

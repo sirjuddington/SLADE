@@ -697,7 +697,7 @@ void TextureXEditor::redo()
 // -----------------------------------------------------------------------------
 // Handles any announcements from the current texture
 // -----------------------------------------------------------------------------
-void TextureXEditor::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data)
+void TextureXEditor::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
 {
 	if (announcer == theMainWindow->paletteChooser() && event_name == "main_palette_changed")
 	{

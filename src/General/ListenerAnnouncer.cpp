@@ -80,7 +80,7 @@ void Listener::stopListening(Announcer* a)
 // event. Does nothing by default, is to be overridden by whatever class
 // inherits from Listener
 // -----------------------------------------------------------------------------
-void Listener::onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) {}
+void Listener::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) {}
 
 
 // -----------------------------------------------------------------------------
@@ -126,7 +126,7 @@ void Announcer::removeListener(Listener* l)
 // 'Announces' an event to all listeners currently in the listeners list,
 // ie all Listeners that are 'listening' to this announcer.
 // -----------------------------------------------------------------------------
-void Announcer::announce(const wxString& event_name, MemChunk& event_data)
+void Announcer::announce(std::string_view event_name, MemChunk& event_data)
 {
 	if (isMuted())
 		return;
@@ -144,7 +144,7 @@ void Announcer::announce(const wxString& event_name, MemChunk& event_data)
 // ie all Listeners that are 'listening' to this announcer.
 // For announcements that don't require any extra data
 // -----------------------------------------------------------------------------
-void Announcer::announce(const wxString& event_name)
+void Announcer::announce(std::string_view event_name)
 {
 	MemChunk mc;
 	announce(event_name, mc);

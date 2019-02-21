@@ -100,7 +100,7 @@ public:
 	CTexture* getTexture(std::string_view texture, Archive* priority = nullptr, Archive* ignore = nullptr);
 	uint16_t  getTextureHash(std::string_view name) const;
 
-	void onAnnouncement(Announcer* announcer, const wxString& event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;
 
 	static std::string doom64TextureName(uint16_t hash) { return doom64_hash_table_[hash]; }
 
