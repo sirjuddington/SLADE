@@ -83,31 +83,31 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 	}
 
 	// Get image format hint from type, if any
-	wxString format_hint = "";
+	std::string format_hint = "";
 	if (entry->type()->extraProps().propertyExists("image_format"))
 		format_hint = entry->type()->extraProps()["image_format"].stringValue();
 
 	// Font formats are still manually loaded for now
-	wxString format = entry->type()->formatId();
-	if (S_CMPNOCASE(format, "font_doom_alpha"))
+	auto format = entry->type()->formatId();
+	if (format == "font_doom_alpha")
 		return image->loadFont0(entry->rawData(), entry->size());
-	else if (S_CMPNOCASE(format, "font_zd_console"))
+	else if (format == "font_zd_console")
 		return image->loadFont1(entry->rawData(), entry->size());
-	else if (S_CMPNOCASE(format, "font_zd_big"))
+	else if (format == "font_zd_big")
 		return image->loadFont2(entry->rawData(), entry->size());
-	else if (S_CMPNOCASE(format, "font_bmf"))
+	else if (format == "font_bmf")
 		return image->loadBMF(entry->rawData(), entry->size());
-	else if (S_CMPNOCASE(format, "font_mono"))
+	else if (format == "font_mono")
 		return image->loadFontM(entry->rawData(), entry->size());
-	else if (S_CMPNOCASE(format, "font_wolf"))
+	else if (format == "font_wolf")
 		return image->loadWolfFont(entry->rawData(), entry->size());
-	else if (S_CMPNOCASE(format, "font_jedi_fnt"))
+	else if (format == "font_jedi_fnt")
 		return image->loadJediFNT(entry->rawData(), entry->size());
-	else if (S_CMPNOCASE(format, "font_jedi_font"))
+	else if (format == "font_jedi_font")
 		return image->loadJediFONT(entry->rawData(), entry->size());
 	// Jaguar Doom sprite and texture formats are a bit complicated, so
 	// they need manual loading as well rather than the SIFormat system
-	else if (S_CMPNOCASE(format, "img_jaguar_sprite"))
+	else if (format == "img_jaguar_sprite")
 	{
 		Archive* parent = entry->parent();
 		if (parent == nullptr)
@@ -118,7 +118,7 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 		else
 			return false;
 	}
-	else if (S_CMPNOCASE(format, "img_jaguar_texture"))
+	else if (format == "img_jaguar_texture")
 	{
 		Archive* parent = entry->parent();
 		if (parent == nullptr)

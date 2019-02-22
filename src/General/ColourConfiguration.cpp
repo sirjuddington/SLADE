@@ -203,7 +203,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 					col.blend_additive = prop->boolValue();
 
 				else
-					Log::warning(wxString::Format("Unknown colour definition property \"%s\"", prop->name()));
+					Log::warning(fmt::format("Unknown colour definition property \"{}\"", prop->name()));
 			}
 		}
 	}
@@ -227,7 +227,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 				flat_alpha = prop->floatValue();
 
 			else
-				Log::warning(wxString::Format("Unknown theme property \"%s\"", prop->name()));
+				Log::warning(fmt::format("Unknown theme property \"{}\"", prop->name()));
 		}
 	}
 
@@ -239,7 +239,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 // -----------------------------------------------------------------------------
 bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 {
-	wxString cfgstring = "colours\n{\n";
+	std::string cfgstring = "colours\n{\n";
 
 	// Go through all properties
 	for (const auto& i : cc_colours)
@@ -250,20 +250,20 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 			continue;
 
 		// Colour definition name
-		cfgstring += wxString::Format("\t%s\n\t{\n", i.first);
+		cfgstring += fmt::format("\t{}\n\t{{\n", i.first);
 
 		// Full name
-		cfgstring += wxString::Format("\t\tname = \"%s\";\n", cc.name);
+		cfgstring += fmt::format("\t\tname = \"{}\";\n", cc.name);
 
 		// Group
-		cfgstring += wxString::Format("\t\tgroup = \"%s\";\n", cc.group);
+		cfgstring += fmt::format("\t\tgroup = \"{}\";\n", cc.group);
 
 		// Colour values
-		cfgstring += wxString::Format("\t\trgb = %d, %d, %d;\n", cc.colour.r, cc.colour.g, cc.colour.b);
+		cfgstring += fmt::format("\t\trgb = {}, {}, {};\n", cc.colour.r, cc.colour.g, cc.colour.b);
 
 		// Alpha
 		if (cc.colour.a < 255)
-			cfgstring += wxString::Format("\t\talpha = %d;\n", cc.colour.a);
+			cfgstring += fmt::format("\t\talpha = {};\n", cc.colour.a);
 
 		// Additive
 		if (cc.blend_additive)
@@ -274,12 +274,12 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 
 	cfgstring += "}\n\ntheme\n{\n";
 
-	cfgstring += wxString::Format("\tline_hilight_width = %1.3f;\n", line_hilight_width);
-	cfgstring += wxString::Format("\tline_selection_width = %1.3f;\n", line_selection_width);
-	cfgstring += wxString::Format("\tflat_alpha = %1.3f;\n", flat_alpha);
+	cfgstring += fmt::format("\tline_hilight_width = {:1.3f};\n", line_hilight_width);
+	cfgstring += fmt::format("\tline_selection_width = {:1.3f};\n", line_selection_width);
+	cfgstring += fmt::format("\tflat_alpha = {:1.3f};\n", flat_alpha);
 	cfgstring += "}\n";
 
-	mc.write(cfgstring.ToAscii(), cfgstring.size());
+	mc.write(cfgstring.data(), cfgstring.size());
 
 	return true;
 }
