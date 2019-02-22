@@ -44,6 +44,7 @@
 #include "UI/Canvas/PaletteCanvas.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "Utility/SFileDialog.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -1235,10 +1236,10 @@ bool PaletteEntryPanel::generatePalettes()
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // ----------------------------------------------------------------------------
-bool PaletteEntryPanel::handleEntryPanelAction(const wxString& id)
+bool PaletteEntryPanel::handleEntryPanelAction(std::string_view id)
 {
 	// Only interested in "ppal_" events
-	if (!id.StartsWith("ppal_"))
+	if (!StrUtil::startsWith(id, "ppal_"))
 		return false;
 
 	// Add to custom palettes

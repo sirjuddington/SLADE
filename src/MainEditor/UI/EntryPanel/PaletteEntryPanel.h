@@ -53,7 +53,7 @@ public:
 	void analysePalettes();
 
 	// SAction handler
-	bool handleEntryPanelAction(const wxString& id) override;
+	bool handleEntryPanelAction(std::string_view id) override;
 	bool fillCustomMenu(wxMenu* custom) override;
 
 private:

@@ -667,17 +667,17 @@ void GfxEntryPanel::applyViewType() const
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // ----------------------------------------------------------------------------
-bool GfxEntryPanel::handleEntryPanelAction(const wxString& id)
+bool GfxEntryPanel::handleEntryPanelAction(std::string_view id)
 {
 	// We're only interested in "pgfx_" actions
-	if (!id.StartsWith("pgfx_"))
+	if (!StrUtil::startsWith(id, "pgfx_"))
 		return false;
 
 	// For pgfx_brush actions, the string after pgfx is a brush name
-	if (id.StartsWith("pgfx_brush"))
+	if (StrUtil::startsWith(id, "pgfx_brush"))
 	{
-		gfx_canvas_->setBrush(SBrush::get(id));
-		button_brush_->setIcon(id.AfterFirst('_'));
+		gfx_canvas_->setBrush(SBrush::get(std::string{ id }));
+		button_brush_->setIcon(StrUtil::afterFirst(id, '_'));
 	}
 
 	// Editing - drag mode

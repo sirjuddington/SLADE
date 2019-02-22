@@ -795,14 +795,14 @@ void ArchiveEntryList::onAnnouncement(Announcer* announcer, std::string_view eve
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntryList::handleAction(const wxString& id)
+bool ArchiveEntryList::handleAction(std::string_view id)
 {
 	// Don't handle action if hidden
 	if (!IsShown())
 		return false;
 
 	// Only interested in actions beginning with aelt_
-	if (!id.StartsWith("aelt_"))
+	if (!StrUtil::startsWith(id, "aelt_"))
 		return false;
 
 	if (id == "aelt_sizecol")

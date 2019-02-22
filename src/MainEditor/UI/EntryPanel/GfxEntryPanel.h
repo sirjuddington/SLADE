@@ -29,7 +29,7 @@ public:
 	bool            extractAll() const;
 
 	// SAction handler
-	bool handleEntryPanelAction(const wxString& id) override;
+	bool handleEntryPanelAction(std::string_view id) override;
 	bool fillCustomMenu(wxMenu* custom) override;
 
 	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;

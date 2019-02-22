@@ -46,6 +46,7 @@
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -685,12 +686,12 @@ std::string ScriptManagerWindow::currentScriptText() const
 // Handles the SAction [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ScriptManagerWindow::handleAction(const wxString& id)
+bool ScriptManagerWindow::handleAction(std::string_view id)
 {
 	using namespace ScriptManager;
 
 	// We're only interested in "scrm_" actions
-	if (!id.StartsWith("scrm_"))
+	if (!StrUtil::startsWith(id, "scrm_"))
 		return false;
 
 	// Send to current ScriptPanel first

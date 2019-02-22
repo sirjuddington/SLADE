@@ -21,7 +21,7 @@ public:
 	void saveScripts() const;
 	void updateUI() const;
 
-	bool handleAction(const wxString& name) override;
+	bool handleAction(std::string_view name) override;
 
 private:
 	wxString                      script_text_;

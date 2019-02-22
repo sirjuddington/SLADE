@@ -67,7 +67,7 @@ EXTERN_CVAR(Int, toolbar_size);
 // -----------------------------------------------------------------------------
 SToolBarButton::SToolBarButton(wxWindow* parent, const wxString& action, const wxString& icon, bool show_name) :
 	wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton"),
-	action_{ SAction::fromId(action) },
+	action_{ SAction::fromId(action.ToStdString()) },
 	show_name_{ show_name },
 	action_id_{ action_->id() },
 	action_name_{ action_->text() },

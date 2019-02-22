@@ -51,5 +51,5 @@ private:
 	void         showDocs(const wxString& url = "");
 
 	// SActionHandler
-	bool handleAction(const wxString& id) override;
+	bool handleAction(std::string_view id) override;
 };

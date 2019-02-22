@@ -45,7 +45,7 @@ public:
 	void         duplicatePatch(int xoff = 8, int yoff = 8);
 
 	// SAction handler
-	bool handleAction(const wxString& id) override;
+	bool handleAction(std::string_view id) override;
 
 	// Events
 	void onDrawOutsideChanged(wxCommandEvent& e);

@@ -134,7 +134,7 @@ bool ScriptPanel::save()
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ScriptPanel::handleAction(const wxString& id)
+bool ScriptPanel::handleAction(std::string_view id)
 {
 	// Script->Save
 	if (id == "scrm_save")

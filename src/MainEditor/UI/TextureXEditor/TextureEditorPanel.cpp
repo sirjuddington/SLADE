@@ -39,6 +39,7 @@
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/SZoomSlider.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -714,14 +715,14 @@ void TextureEditorPanel::duplicatePatch(int xoff, int yoff)
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureEditorPanel::handleAction(const wxString& id)
+bool TextureEditorPanel::handleAction(std::string_view id)
 {
 	// Don't handle actions if hidden
 	if (!IsShown())
 		return false;
 
 	// Only interested in actions beginning with txed_
-	if (!id.StartsWith("txed_"))
+	if (!StrUtil::startsWith(id, "txed_"))
 		return false;
 
 	// Add Patch

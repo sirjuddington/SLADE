@@ -50,7 +50,7 @@ public:
 	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;
 
 	// SAction handler
-	bool handleAction(const wxString& id) override;
+	bool handleAction(std::string_view id) override;
 
 	// Events
 	void onColumnHeaderRightClick(wxListEvent& e);

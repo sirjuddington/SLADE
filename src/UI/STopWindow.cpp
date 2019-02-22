@@ -35,6 +35,7 @@
 #include "General/Misc.h"
 #include "General/SAction.h"
 #include "SToolBar/SToolBar.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -76,7 +77,7 @@ STopWindow::STopWindow(const wxString& title, const wxString& id, int x, int y, 
 
 	// Init toolbar menu action(s)
 	action_toolbar_menu_ = new SAction(
-		wxString::Format("%s_toolbar_menu", CHR(id)), "Toolbars", "", "", "", SAction::Type::Check, -1, 10);
+		fmt::format("{}_toolbar_menu", CHR(id)), "Toolbars", "", "", "", SAction::Type::Check, -1, 10);
 	SAction::add(action_toolbar_menu_);
 
 	// Bind events
@@ -186,8 +187,8 @@ void STopWindow::populateToolbarsMenu() const
 	{
 		auto group = toolbar_->groups()[a];
 
-		wxString name = group->name();
-		name.Replace("_", "");
+		auto name = group->name().ToStdString();
+		StrUtil::replaceIP(name, "_", "");
 
 		action_toolbar_menu_->addToMenu(toolbar_menu_, name, "NO", a + 1);
 		toolbar_menu_->GetMenuItems()[toolbar_menu_->GetMenuItemCount() - 1]->Check(!group->hidden());

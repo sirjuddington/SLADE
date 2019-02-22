@@ -51,6 +51,7 @@
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #ifdef USE_WEBVIEW_STARTPAGE
 #include "DocsPage.h"
@@ -556,10 +557,10 @@ void MainWindow::openDocs(const wxString& page_name)
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool MainWindow::handleAction(const wxString& id)
+bool MainWindow::handleAction(std::string_view id)
 {
 	// We're only interested in "main_" actions
-	if (!id.StartsWith("main_"))
+	if (!StrUtil::startsWith(id, "main_"))
 		return false;
 
 	// File->Exit

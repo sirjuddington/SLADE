@@ -1514,7 +1514,7 @@ void TextureXPanel::onRedo(const wxString& undo_action) const
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureXPanel::handleAction(const wxString& id)
+bool TextureXPanel::handleAction(std::string_view id)
 {
 	// Skip event if this panel is not the current page
 	auto parent = dynamic_cast<TabControl*>(GetParent());
@@ -1525,7 +1525,7 @@ bool TextureXPanel::handleAction(const wxString& id)
 		return false;
 
 	// Only interested in "txed_" events
-	if (!id.StartsWith("txed_"))
+	if (!StrUtil::startsWith(id, "txed_"))
 		return false;
 
 	// Handle action

@@ -149,7 +149,7 @@ public:
 	void goToBookmark(long index = -1) const;
 
 	// SAction handler
-	bool handleAction(const wxString& id) override;
+	bool handleAction(std::string_view id) override;
 
 	vector<int> selectedArchives() const;
 	vector<int> selectedBookmarks() const;

@@ -98,7 +98,7 @@ public:
 	void copyRow(bool cut);
 	void pasteRow();
 	void changeValue() const;
-	bool handleEntryPanelAction(const wxString& id) override;
+	bool handleEntryPanelAction(std::string_view id) override;
 	int  getColWithSelection() const;
 
 	vector<Vec2i> selection() const;

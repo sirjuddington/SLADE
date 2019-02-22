@@ -21,7 +21,7 @@ public:
 	bool close();
 	bool save();
 
-	bool handleAction(const wxString& id);
+	bool handleAction(std::string_view id);
 
 private:
 	ScriptManager::Script* script_             = nullptr;

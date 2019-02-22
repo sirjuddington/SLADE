@@ -144,7 +144,7 @@ public:
 
 
 	// SAction handler
-	bool handleAction(const wxString& id) override;
+	bool handleAction(std::string_view id) override;
 
 private:
 	SLADEMap         map_;

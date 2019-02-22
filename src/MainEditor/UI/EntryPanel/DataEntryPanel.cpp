@@ -1118,7 +1118,7 @@ void DataEntryPanel::changeValue() const
 // ----------------------------------------------------------------------------
 // Handles any SAction messages (from the panel toolbar)
 // ----------------------------------------------------------------------------
-bool DataEntryPanel::handleEntryPanelAction(const wxString& action_id)
+bool DataEntryPanel::handleEntryPanelAction(std::string_view action_id)
 {
 	if (action_id == "data_add_row")
 		addRow();

@@ -1636,7 +1636,7 @@ void MapEditContext::drawInfoOverlay(const Vec2i& size, float alpha)
 // -----------------------------------------------------------------------------
 // Handles an SAction [id]. Returns true if the action was handled here
 // -----------------------------------------------------------------------------
-bool MapEditContext::handleAction(const wxString& id)
+bool MapEditContext::handleAction(std::string_view id)
 {
 	using namespace MapEditor;
 

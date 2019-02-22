@@ -74,7 +74,7 @@ public:
 	void onRedo(const wxString& undo_action) const;
 
 	// SAction handler
-	bool handleAction(const wxString& id) override;
+	bool handleAction(std::string_view id) override;
 
 private:
 	TextureXList    texturex_;

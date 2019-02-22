@@ -47,6 +47,7 @@
 #include "TextureXEditor/TextureXEditor.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -429,11 +430,11 @@ void ArchiveManagerPanel::refreshRecentFileList() const
 		if (a < 8)
 		{
 			// Get path and determine icon
-			wxString fn   = App::archiveManager().recentFile(a);
-			wxString icon = "archive";
-			if (fn.EndsWith(".wad"))
+			auto        fn   = App::archiveManager().recentFile(a);
+			std::string icon = "archive";
+			if (StrUtil::endsWith(fn, ".wad"))
 				icon = "wad";
-			else if (fn.EndsWith(".zip") || fn.EndsWith(".pk3") || fn.EndsWith(".pke"))
+			else if (StrUtil::endsWith(fn, ".zip") || StrUtil::endsWith(fn, ".pk3") || StrUtil::endsWith(fn, ".pke"))
 				icon = "zip";
 			else if (wxDirExists(fn))
 				icon = "folder";
@@ -1752,10 +1753,10 @@ void ArchiveManagerPanel::removeSelection() const
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveManagerPanel::handleAction(const wxString& id)
+bool ArchiveManagerPanel::handleAction(std::string_view id)
 {
 	// We're only interested in "aman_" actions
-	if (!id.StartsWith("aman_"))
+	if (!StrUtil::startsWith(id, "aman_"))
 		return false;
 
 	// File->New Wad
@@ -2234,8 +2235,7 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 	// Check the archive is still open
 	if (App::archiveManager().archiveIndex(change_list.archive) >= 0)
 	{
-		Log::info(
-			2, wxString::Format("Finished checking %s for external changes", change_list.archive->filename()));
+		Log::info(2, wxString::Format("Finished checking %s for external changes", change_list.archive->filename()));
 
 		if (!change_list.changes.empty())
 		{

@@ -3021,14 +3021,14 @@ wxMenu* ArchivePanel::createEntryOpenMenu(const wxString& category)
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchivePanel::handleAction(const wxString& id)
+bool ArchivePanel::handleAction(std::string_view id)
 {
 	// Don't handle actions if hidden
 	if (!IsShown())
 		return false;
 
 	// We're only interested in "arch_" actions (and some others)
-	if (!id.StartsWith("arch_") && !id.StartsWith("pmap_"))
+	if (!StrUtil::startsWith(id, "arch_") && !StrUtil::startsWith(id, "pmap_"))
 		return false;
 
 

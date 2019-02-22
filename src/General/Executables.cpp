@@ -115,13 +115,13 @@ std::string Executables::writePaths()
 // -----------------------------------------------------------------------------
 std::string Executables::writeExecutables()
 {
-	std::string ret = "executables\n{\n";
+	std::string ret = "executables\n{{\n";
 
 	// Write game exes
 	for (auto& exe : game_exes)
 	{
 		// ID
-		ret += fmt::format("\tgame_exe {}\n\t{\n", exe.id);
+		ret += fmt::format("\tgame_exe {}\n\t{{\n", exe.id);
 
 		// Name
 		ret += fmt::format("\t\tname = \"{}\";\n", exe.name);
@@ -133,14 +133,14 @@ std::string Executables::writeExecutables()
 		for (auto& config : exe.configs)
 			ret += fmt::format("\t\tconfig \"{}\" = \"{}\";\n", config.first, StrUtil::escapedString(config.second));
 
-		ret += "\t}\n\n";
+		ret += "\t}}\n\n";
 	}
 
 	// Write external exes
 	for (auto& exe : external_exes)
 	{
 		// Name
-		ret += fmt::format("\texternal_exe \"{}\"\n\t{\n", exe.name);
+		ret += fmt::format("\texternal_exe \"{}\"\n\t{{\n", exe.name);
 
 		// Entry Category
 		ret += fmt::format("\t\tcategory = \"{}\";\n", exe.category);
@@ -150,10 +150,10 @@ std::string Executables::writeExecutables()
 		std::replace(path.begin(), path.end(), '\\', '/');
 		ret += fmt::format("\t\tpath = \"{}\";\n", path);
 
-		ret += "\t}\n\n";
+		ret += "\t}}\n\n";
 	}
 
-	ret += "}\n";
+	ret += "}}\n";
 
 	return ret;
 }

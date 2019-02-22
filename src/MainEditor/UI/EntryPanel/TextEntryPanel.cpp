@@ -285,7 +285,7 @@ bool TextEntryPanel::redo()
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // ----------------------------------------------------------------------------
-bool TextEntryPanel::handleEntryPanelAction(const wxString& id)
+bool TextEntryPanel::handleEntryPanelAction(std::string_view id)
 {
 	// Don't handle actions if hidden
 	if (!isActivePanel())
