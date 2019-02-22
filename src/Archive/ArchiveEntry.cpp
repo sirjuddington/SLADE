@@ -291,7 +291,7 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 	// Remove \ or / if the format supports folders
 	if (format.supports_dirs && name_.find('/') != std::string::npos || name_.find('\\') != std::string::npos)
 	{
-		name_   = Misc::lumpNameToFileName(name_).ToStdString();
+		name_   = Misc::lumpNameToFileName(name_);
 		changed = true;
 	}
 
@@ -579,7 +579,7 @@ bool ArchiveEntry::read(void* buf, uint32_t size)
 // -----------------------------------------------------------------------------
 std::string ArchiveEntry::sizeString() const
 {
-	return Misc::sizeAsString(size()).ToStdString();
+	return Misc::sizeAsString(size());
 }
 
 // -----------------------------------------------------------------------------

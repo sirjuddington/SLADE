@@ -147,7 +147,7 @@ bool ZipArchive::open(std::string_view filename)
 
 			// Create entry
 			auto new_entry = std::make_shared<ArchiveEntry>(
-				Misc::fileNameToLumpName(WxUtils::strFromView(fn.fileName())).ToStdString(), zip_entry->GetSize());
+				Misc::fileNameToLumpName(fn.fileName()), zip_entry->GetSize());
 
 			// Setup entry info
 			new_entry->setLoaded(false);

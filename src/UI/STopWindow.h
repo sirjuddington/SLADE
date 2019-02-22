@@ -35,7 +35,7 @@ protected:
 	vector<wxMenu*> custom_menus_;
 	int             custom_menus_begin_ = 0;
 	SToolBar*       toolbar_            = nullptr;
-	wxString        id_;
+	std::string     id_;
 	wxMenu*         toolbar_menu_        = nullptr;
 	int             toolbar_menu_wx_id_  = -1;
 	SAction*        action_toolbar_menu_ = nullptr;

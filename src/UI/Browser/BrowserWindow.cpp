@@ -171,7 +171,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 {
 	// Init size/pos
 	auto info = Misc::getWindowInfo("browser");
-	if (!info.id.IsEmpty())
+	if (!info.id.empty())
 	{
 		SetClientSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));

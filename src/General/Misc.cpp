@@ -289,21 +289,21 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 // Converts [size] to a string representing it as a 'bytes' size, ie "1.24kb",
 // "4.00mb". Sizes under 1kb aren't given an appendage
 // -----------------------------------------------------------------------------
-wxString Misc::sizeAsString(uint32_t size)
+std::string Misc::sizeAsString(uint32_t size)
 {
 	if (size < 1024 || !size_as_string)
 	{
-		return wxString::Format("%d", size);
+		return fmt::format("{}", size);
 	}
 	else if (size < 1024 * 1024)
 	{
 		double kb = (double)size / 1024;
-		return wxString::Format("%1.2fkb", kb);
+		return fmt::format("{:1.2f}kb", kb);
 	}
 	else
 	{
 		double mb = (double)size / (1024 * 1024);
-		return wxString::Format("%1.2fmb", mb);
+		return fmt::format("{:1.2f}mb", mb);
 	}
 }
 
@@ -312,78 +312,76 @@ wxString Misc::sizeAsString(uint32_t size)
 // ZDoom merely substitutes \ to ^, but Doomsday requires percent encoding of
 // every non-alphanumeric character.
 // -----------------------------------------------------------------------------
-wxString Misc::lumpNameToFileName(wxString lump)
+std::string Misc::lumpNameToFileName(std::string_view lump)
 {
 	if (percent_encoding)
 	{
 		// Doomsday: everything but [a-zA-Z0-9._ ~-]
-		wxString file;
-		int      chr;
-		for (size_t a = 0; a < lump.Len(); ++a)
+		std::string file;
+		for (char chr : lump)
 		{
-			chr = lump[a];
 			if ((chr < 'a' || chr > 'z') && (chr < 'A' || chr > 'Z') && (chr < '0' || chr > '9') && chr != '-'
 				&& chr != '.' && chr != '_' && chr != '~')
 			{
 				file += wxString::Format("%%%02X", chr);
 			}
 			else
-				file += wxString::Format("%c", chr);
+				file += fmt::format("{}", chr);
 		}
+
 		return file;
 	}
-	else
-	{
-		// ZDoom
-		lump.Replace(wxStringUtils::SLASH_BACK, wxStringUtils::CARET);
-		lump.Replace(wxStringUtils::SLASH_FORWARD, wxStringUtils::CARET);
-	}
-	return lump;
+
+	// ZDoom
+	std::string fname{ lump };
+	std::replace(fname.begin(), fname.end(), '\\', '^');
+	std::replace(fname.begin(), fname.end(), '/', '^');
+	return fname;
 }
 
 // -----------------------------------------------------------------------------
 // Turns a file name into a lump name
 // -----------------------------------------------------------------------------
-wxString Misc::fileNameToLumpName(wxString file)
+std::string Misc::fileNameToLumpName(std::string_view file)
 {
 	if (percent_encoding)
 	{
-		wxString lump;
-		for (size_t a = 0; a < file.Len(); ++a)
+		std::string lump;
+		for (size_t a = 0; a < file.size(); ++a)
 		{
-			if (file[a] == '%' && file.Len() > a + 2)
+			if (file[a] == '%' && file.size() > a + 2)
 			{
-				wxString      code = file.Mid(a + 1, 2);
-				unsigned long percent;
-				if (!code.ToULong(&percent, 16))
+				auto     code = file.substr(a + 1, 2);
+				unsigned percent;
+				if (!StrUtil::toUInt(code, percent, 16))
 					percent = 0;
-				lump += wxString::Format("%c", percent);
+				lump += fmt::format("{:c}", percent);
 				a += 2;
 			}
 			else
-				lump += wxString::Format("%c", file[a]);
+				lump += fmt::format("{}", file[a]);
 		}
+
 		return lump;
 	}
-	else
-	{
-		// ZDoom
-		file.Replace(wxStringUtils::CARET, wxStringUtils::SLASH_BACK);
-	}
-	return file;
+
+	// ZDoom
+	std::string lump{ file };
+	std::replace(lump.begin(), lump.end(), '^', '\\');
+	return lump;
 }
 
 // -----------------------------------------------------------------------------
 // Creates a mass rename filter string from [names]
 // -----------------------------------------------------------------------------
-wxString Misc::massRenameFilter(wxArrayString& names)
+std::string Misc::massRenameFilter(vector<std::string>& names)
 {
 	// Check any names were given
 	if (names.empty())
 		return "";
 
 	// Init filter string
-	wxString filter = names[0];
+	auto filter = names[0];
 
 	// Go through names
 	for (unsigned a = 1; a < names.size(); a++)
@@ -412,7 +410,7 @@ wxString Misc::massRenameFilter(wxArrayString& names)
 // Performs a mass rename on [names] using the filter [name_filter].
 // Any * in the filter means that character should not be changed
 // -----------------------------------------------------------------------------
-void Misc::doMassRename(wxArrayString& names, wxString name_filter)
+void Misc::doMassRename(vector<std::string>& names, std::string_view name_filter)
 {
 	// Go through names
 	for (auto& name : names)
@@ -423,7 +421,7 @@ void Misc::doMassRename(wxArrayString& names, wxString name_filter)
 
 		// If the filter string is shorter than the name, just truncate the name
 		if (name_filter.size() < name.size())
-			name.Truncate(name_filter.size());
+			StrUtil::truncateIP(name, name_filter.size());
 
 		// Go through filter characters
 		for (unsigned c = 0; c < name_filter.size(); c++)
@@ -511,7 +509,7 @@ uint32_t Misc::crc(const uint8_t* buf, uint32_t len)
 // the dimensions.
 // In case the texture is not found, the dimensions returned are null
 // -----------------------------------------------------------------------------
-Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, const wxString& name)
+Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, std::string_view name)
 {
 	Vec2i dimensions;
 	dimensions.x = 0;
@@ -540,7 +538,7 @@ Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, const wxString& nam
 	for (size_t t = 0; t < numtex; ++t, offset += 32)
 	{
 		memcpy(texture, data.data() + offset, 8);
-		if (S_CMPNOCASE(name, texture))
+		if (StrUtil::equalCI(name, texture))
 		{
 			// We have our texture! Let's get the width and heigth and get out of here
 			dimensions.x = data.readL16(offset + 12);
@@ -555,7 +553,7 @@ Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, const wxString& nam
 // -----------------------------------------------------------------------------
 // Gets the saved window info for [id]
 // -----------------------------------------------------------------------------
-Misc::WindowInfo Misc::getWindowInfo(const wxString& id)
+Misc::WindowInfo Misc::getWindowInfo(std::string_view id)
 {
 	for (auto& a : window_info)
 	{
@@ -569,9 +567,9 @@ Misc::WindowInfo Misc::getWindowInfo(const wxString& id)
 // -----------------------------------------------------------------------------
 // Sets the saved window info for [id]
 // -----------------------------------------------------------------------------
-void Misc::setWindowInfo(const wxString& id, int width, int height, int left, int top)
+void Misc::setWindowInfo(std::string_view id, int width, int height, int left, int top)
 {
-	if (id.IsEmpty())
+	if (id.empty())
 		return;
 
 	for (auto& a : window_info)
@@ -602,11 +600,11 @@ void Misc::readWindowInfo(Tokenizer& tz)
 	tz.advIf("{");
 	while (!tz.check("}") && !tz.atEnd())
 	{
-		wxString id     = tz.current().text;
-		int      width  = tz.next().asInt();
-		int      height = tz.next().asInt();
-		int      left   = tz.next().asInt();
-		int      top    = tz.next().asInt();
+		auto id     = tz.current().text;
+		int  width  = tz.next().asInt();
+		int  height = tz.next().asInt();
+		int  left   = tz.next().asInt();
+		int  top    = tz.next().asInt();
 		setWindowInfo(id, width, height, left, top);
 		tz.adv();
 	}

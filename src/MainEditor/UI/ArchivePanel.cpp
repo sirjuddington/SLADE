@@ -1047,22 +1047,22 @@ bool ArchivePanel::renameEntry(bool each) const
 	else if (selection.size() > 1)
 	{
 		// Get a list of entry names
-		wxArrayString names;
+		vector<std::string> names;
 		for (auto& entry : selection)
-			names.push_back(std::string{ entry->nameNoExt() });
+			names.emplace_back(entry->nameNoExt());
 
 		// Get filter string
-		wxString filter = Misc::massRenameFilter(names);
+		auto filter = Misc::massRenameFilter(names);
 
 		// Prompt for a new name
-		wxString new_name = wxGetTextFromUser(
+		auto new_name = wxGetTextFromUser(
 			"Enter new entry name: (* = unchanged, ^ = alphabet letter, ^^ = lower case\n% = alphabet repeat number, "
 			"& = entry number, %% or && = n-1)",
 			"Rename",
-			filter);
+			filter).ToStdString();
 
 		// Apply mass rename to list of names
-		if (!new_name.IsEmpty())
+		if (!new_name.empty())
 		{
 			Misc::doMassRename(names, new_name);
 
@@ -1083,9 +1083,9 @@ bool ArchivePanel::renameEntry(bool each) const
 				StrUtil::Path fn(entry->name());
 
 				// Rename the entry (if needed)
-				if (fn.fileName(false) != names[a].ToStdString())
+				if (fn.fileName(false) != names[a])
 				{
-					auto filename = names[a].ToStdString();
+					auto filename = names[a];
 					/* file renaming syntax */
 					int num = a / alphabet.size();
 					int cn  = a - (num * alphabet.size());

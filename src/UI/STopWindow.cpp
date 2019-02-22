@@ -64,14 +64,14 @@ STopWindow::STopWindow(const wxString& title, const wxString& id, int x, int y, 
 
 #ifndef __WXOSX__
 	// Init size/pos
-	auto info = Misc::getWindowInfo(id);
-	if (!info.id.IsEmpty())
+	auto info = Misc::getWindowInfo(id_);
+	if (!info.id.empty())
 	{
 		SetSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
-		Misc::setWindowInfo(id, width, height, x, y);
+		Misc::setWindowInfo(id_, width, height, x, y);
 #endif
 
 	// Init toolbar menu action(s)

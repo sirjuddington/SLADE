@@ -48,8 +48,8 @@
 #include "UI/Controls/SIconButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
-#include "ZTextureEditorPanel.h"
 #include "Utility/StringUtils.h"
+#include "ZTextureEditorPanel.h"
 
 
 // -----------------------------------------------------------------------------
@@ -1238,20 +1238,20 @@ void TextureXPanel::renameTexture(bool each)
 	else if (selection.size() > 1)
 	{
 		// Get a list of entry names
-		wxArrayString names;
+		vector<std::string> names;
 		for (auto& texture : selection)
-			names.push_back(texture->name());
+			names.push_back(texture->name().ToStdString());
 
 		// Get filter string
-		wxString filter = Misc::massRenameFilter(names);
+		auto filter = Misc::massRenameFilter(names);
 
 		// Prompt for a new name
-		wxString new_name = wxGetTextFromUser("Enter new texture name: (* = unchanged)", "Rename", filter);
+		auto new_name = wxGetTextFromUser("Enter new texture name: (* = unchanged)", "Rename", filter).ToStdString();
 		if (wad_force_uppercase)
-			new_name.MakeUpper();
+			StrUtil::upperIP(new_name);
 
 		// Apply mass rename to list of names
-		if (!new_name.IsEmpty())
+		if (!new_name.empty())
 		{
 			Misc::doMassRename(names, new_name);
 
@@ -1390,7 +1390,7 @@ void TextureXPanel::extractTexture()
 	// If we're just exporting one texture
 	if (selection.size() == 1)
 	{
-		wxString   name = Misc::lumpNameToFileName(selection[0]->name());
+		auto       name = Misc::lumpNameToFileName(selection[0]->name().ToStdString());
 		wxFileName fn(name);
 
 		// Set extension
