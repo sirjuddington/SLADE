@@ -283,14 +283,14 @@ void PatchTablePanel::setupLayout()
 void PatchTablePanel::onBtnAddPatch(wxCommandEvent& e)
 {
 	// Prompt for new patch name
-	wxString patch = wxGetTextFromUser("Enter patch entry name:", "Add Patch", wxEmptyString, this);
+	auto patch = wxGetTextFromUser("Enter patch entry name:", "Add Patch", wxEmptyString, this);
 
 	// Check something was entered
 	if (patch.IsEmpty())
 		return;
 
 	// Add to patch table
-	patch_table_->addPatch(patch);
+	patch_table_->addPatch(WxUtils::strToView(patch));
 
 	// Update list
 	list_patches_->updateList();
@@ -367,7 +367,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 			parent_->archive()->addEntry(entry, "patches");
 
 			// Add patch to patch table
-			patch_table_->addPatch(name);
+			patch_table_->addPatch(WxUtils::strToView(name));
 		}
 
 		// Refresh patch list
@@ -448,7 +448,7 @@ void PatchTablePanel::onBtnChangePatch(wxCommandEvent& e)
 
 		// Update the patch if it's not the Cancel button that was clicked
 		if (newname.Length() > 0)
-			patch_table_->replacePatch(index, newname);
+			patch_table_->replacePatch(index, WxUtils::strToView(newname));
 
 		// Update the list
 		list_patches_->updateList();
@@ -514,7 +514,7 @@ void PatchTablePanel::updateDisplay()
 					alltextures += ';';
 
 				// Then print the new texture's name
-				alltextures += wxString::Format(" %s", patch.used_in[a].mb_str());
+				alltextures += wxString::Format(" %s", patch.used_in[a]);
 
 				// And set it for comparison with the next one
 				previous = current;
@@ -525,7 +525,7 @@ void PatchTablePanel::updateDisplay()
 			alltextures += wxString::Format(" (%i)", count + 1);
 
 		// Finally display the listing
-		label_textures_->SetLabel(wxString::Format("In Textures:%s", alltextures.mb_str()));
+		label_textures_->SetLabel(wxString::Format("In Textures:%s", alltextures));
 	}
 	else
 		label_textures_->SetLabel("In Textures: -");

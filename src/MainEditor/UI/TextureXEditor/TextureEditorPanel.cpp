@@ -1055,7 +1055,7 @@ void TextureEditorPanel::onTexNameChanged(wxCommandEvent& e)
 {
 	// Change texture name
 	if (tex_current_)
-		tex_current_->setName(text_tex_name_->GetValue());
+		tex_current_->setName(WxUtils::strToView(text_tex_name_->GetValue()));
 
 	tex_modified_ = true;
 }

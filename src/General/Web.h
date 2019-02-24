@@ -4,6 +4,6 @@ wxDECLARE_EVENT(wxEVT_THREAD_WEBGET_COMPLETED, wxThreadEvent);
 
 namespace Web
 {
-wxString getHttp(const char* host, const char* uri);
-void     getHttpAsync(const char* host, const char* uri, wxEvtHandler* event_handler);
+std::string getHttp(const std::string& host, const std::string& uri);
+void        getHttpAsync(const std::string& host, const std::string& uri, wxEvtHandler* event_handler);
 } // namespace Web

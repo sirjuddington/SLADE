@@ -1337,7 +1337,7 @@ void MapEditContext::beginUndoRecord(const wxString& name, bool mod, bool create
 	undo_created_  = create;
 
 	// Begin recording
-	manager->beginRecord(name);
+	manager->beginRecord(name.ToStdString());
 
 	// Init map/objects for recording
 	if (undo_modified_)

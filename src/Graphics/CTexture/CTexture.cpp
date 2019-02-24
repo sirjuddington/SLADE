@@ -51,7 +51,7 @@
 // -----------------------------------------------------------------------------
 // CTPatch class constructor w/initial values
 // -----------------------------------------------------------------------------
-CTPatch::CTPatch(const wxString& name, int16_t offset_x, int16_t offset_y) : name_{ name }, offset_{ offset_x, offset_y }
+CTPatch::CTPatch(std::string_view name, int16_t offset_x, int16_t offset_y) : name_{ name }, offset_{ offset_x, offset_y }
 {
 }
 
@@ -63,15 +63,15 @@ CTPatch::CTPatch(const wxString& name, int16_t offset_x, int16_t offset_y) : nam
 ArchiveEntry* CTPatch::patchEntry(Archive* parent)
 {
 	// Default patches should be in patches namespace
-	auto entry = App::resources().getPatchEntry(name_.ToStdString(), "patches", parent);
+	auto entry = App::resources().getPatchEntry(name_, "patches", parent);
 
 	// Not found in patches, check in graphics namespace
 	if (!entry)
-		entry = App::resources().getPatchEntry(name_.ToStdString(), "graphics", parent);
+		entry = App::resources().getPatchEntry(name_, "graphics", parent);
 
 	// Not found in patches, check in stand-alone texture namespace
 	if (!entry)
-		entry = App::resources().getPatchEntry(name_.ToStdString(), "textures", parent);
+		entry = App::resources().getPatchEntry(name_, "textures", parent);
 
 	return entry;
 }
@@ -87,7 +87,7 @@ ArchiveEntry* CTPatch::patchEntry(Archive* parent)
 // -----------------------------------------------------------------------------
 // CTPatchEx class constructor w/basic initial values
 // -----------------------------------------------------------------------------
-CTPatchEx::CTPatchEx(const wxString& name, int16_t offset_x, int16_t offset_y, Type type) :
+CTPatchEx::CTPatchEx(std::string_view name, int16_t offset_x, int16_t offset_y, Type type) :
 	CTPatch{ name, offset_x, offset_y },
 	type_{ type }
 {
@@ -121,22 +121,22 @@ ArchiveEntry* CTPatchEx::patchEntry(Archive* parent)
 	// 'Patch' type: patches > graphics
 	if (type_ == Type::Patch)
 	{
-		auto entry = App::resources().getPatchEntry(name_.ToStdString(), "patches", parent);
+		auto entry = App::resources().getPatchEntry(name_, "patches", parent);
 		if (!entry)
-			entry = App::resources().getFlatEntry(name_.ToStdString(), parent);
+			entry = App::resources().getFlatEntry(name_, parent);
 		if (!entry)
-			entry = App::resources().getPatchEntry(name_.ToStdString(), "graphics", parent);
+			entry = App::resources().getPatchEntry(name_, "graphics", parent);
 		return entry;
 	}
 
 	// 'Graphic' type: graphics > patches
 	if (type_ == Type::Graphic)
 	{
-		auto entry = App::resources().getPatchEntry(name_.ToStdString(), "graphics", parent);
+		auto entry = App::resources().getPatchEntry(name_, "graphics", parent);
 		if (!entry)
-			entry = App::resources().getPatchEntry(name_.ToStdString(), "patches", parent);
+			entry = App::resources().getPatchEntry(name_, "patches", parent);
 		if (!entry)
-			entry = App::resources().getFlatEntry(name_.ToStdString(), parent);
+			entry = App::resources().getFlatEntry(name_, parent);
 		return entry;
 	}
 	// Silence warnings
@@ -182,17 +182,17 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 			if (tz.checkNC("Translation"))
 			{
 				// Build translation string
-				wxString translate;
-				wxString temp = tz.next().text;
-				if (temp.Contains("="))
-					temp = wxString::Format("\"%s\"", temp);
+				std::string translate;
+				std::string temp = tz.next().text;
+				if (StrUtil::contains(temp, '='))
+					temp = fmt::format("\"{}\"", temp);
 				translate += temp;
 				while (tz.checkNext(","))
 				{
 					translate += tz.next().text; // add ','
 					temp = tz.next().text;
-					if (temp.Contains("="))
-						temp = wxString::Format("\"%s\"", temp);
+					if (StrUtil::contains(temp, '='))
+						temp = fmt::format("\"{}\"", temp);
 					translate += temp;
 				}
 				// Parse whole string
@@ -206,9 +206,9 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 				double   val;
 				wxColour col;
 				blendtype_ = 2;
-
+				
 				// Read first value
-				wxString first = tz.next().text;
+				auto first = tz.next().text;
 
 				// If no second value, it's just a colour string
 				if (!tz.checkNext(","))
@@ -234,14 +234,14 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 						// Third value exists, must be R,G,B,A format
 						// RGB are ints in the 0-255 range; A is float in the 0.0-1.0 range
 						tz.adv(); // Skip ,
-						first.ToDouble(&val);
+						StrUtil::toDouble(first, val);
 						colour_.r = val;
 						colour_.g = second;
 						colour_.b = tz.next().asInt();
 						if (!tz.checkNext(","))
 						{
-							Log::error(wxString::Format(
-								"Invalid TEXTURES definition, expected ',', got '%s'", tz.peek().text));
+							Log::error(
+								"Invalid TEXTURES definition, expected ',', got '{}'", tz.peek().text);
 							return false;
 						}
 						tz.adv(); // Skip ,
@@ -270,17 +270,17 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 // -----------------------------------------------------------------------------
 // Returns a text representation of the patch in ZDoom TEXTURES format
 // -----------------------------------------------------------------------------
-wxString CTPatchEx::asText()
+std::string CTPatchEx::asText()
 {
 	// Init text string
-	wxString typestring = "Patch";
+	std::string typestring = "Patch";
 	if (type_ == Type::Graphic)
 		typestring = "Graphic";
-	wxString text = wxString::Format("\t%s \"%s\", %d, %d\n", typestring, name_, offset_.x, offset_.y);
+	auto text = fmt::format("\t{} \"{}\", {}, {}\n", typestring, name_, offset_.x, offset_.y);
 
 	// Check if we need to write any extra properties
 	if (!flip_x_ && !flip_y_ && !use_offsets_ && rotation_ == 0 && blendtype_ == 0 && alpha_ == 1.0f
-		&& S_CMPNOCASE(style_, "Copy"))
+		&& StrUtil::equalCI(style_, "Copy"))
 		return text;
 	else
 		text += "\t{\n";
@@ -293,7 +293,7 @@ wxString CTPatchEx::asText()
 	if (use_offsets_)
 		text += "\t\tUseOffsets\n";
 	if (rotation_ != 0)
-		text += wxString::Format("\t\tRotate %d\n", rotation_);
+		text += fmt::format("\t\tRotate {}\n", rotation_);
 	if (blendtype_ == 1 && !translation_.isEmpty())
 	{
 		text += "\t\tTranslation ";
@@ -303,17 +303,17 @@ wxString CTPatchEx::asText()
 	if (blendtype_ >= 2)
 	{
 		wxColour col(colour_.r, colour_.g, colour_.b);
-		text += wxString::Format("\t\tBlend \"%s\"", col.GetAsString(wxC2S_HTML_SYNTAX));
+		text += fmt::format("\t\tBlend \"{}\"", col.GetAsString(wxC2S_HTML_SYNTAX).ToStdString());
 
 		if (blendtype_ == 3)
-			text += wxString::Format(", %1.1f\n", (double)colour_.a / 255.0);
+			text += fmt::format(", {:1.1f}\n", (double)colour_.a / 255.0);
 		else
 			text += "\n";
 	}
 	if (alpha_ < 1.0f)
-		text += wxString::Format("\t\tAlpha %1.2f\n", alpha_);
-	if (!(S_CMPNOCASE(style_, "Copy")))
-		text += wxString::Format("\t\tStyle %s\n", style_);
+		text += fmt::format("\t\tAlpha {:1.2f}\n", alpha_);
+	if (!(StrUtil::equalCI(style_, "Copy")))
+		text += fmt::format("\t\tStyle {}\n", style_);
 
 	// Write ending
 	text += "\t}\n";
@@ -437,7 +437,7 @@ void CTexture::clear()
 // Adds a patch to the texture with the given attributes, at [index].
 // If [index] is -1, the patch is added to the end of the list.
 // -----------------------------------------------------------------------------
-bool CTexture::addPatch(const wxString& patch, int16_t offset_x, int16_t offset_y, int index)
+bool CTexture::addPatch(std::string_view patch, int16_t offset_x, int16_t offset_y, int index)
 {
 	// Create new patch
 	CTPatch::UPtr np;
@@ -487,13 +487,13 @@ bool CTexture::removePatch(size_t index)
 // Removes all instances of [patch] from the texture.
 // Returns true if any were removed, false otherwise
 // -----------------------------------------------------------------------------
-bool CTexture::removePatch(const wxString& patch)
+bool CTexture::removePatch(std::string_view patch)
 {
 	// Go through patches
 	bool removed = false;
 	for (unsigned a = 0; a < patches_.size(); a++)
 	{
-		if (S_CMP(patches_[a]->name(), patch))
+		if (patches_[a]->name() == patch)
 		{
 			patches_.erase(patches_.begin() + a);
 			removed = true;
@@ -515,7 +515,7 @@ bool CTexture::removePatch(const wxString& patch)
 // ArchiveEntry with [newentry].
 // Returns false if [index] is out of bounds, true otherwise
 // -----------------------------------------------------------------------------
-bool CTexture::replacePatch(size_t index, const wxString& newpatch)
+bool CTexture::replacePatch(size_t index, std::string_view newpatch)
 {
 	// Check index
 	if (index >= patches_.size())
@@ -588,7 +588,7 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 // -----------------------------------------------------------------------------
 // Parses a TEXTURES format texture definition
 // -----------------------------------------------------------------------------
-bool CTexture::parse(Tokenizer& tz, const wxString& type)
+bool CTexture::parse(Tokenizer& tz, std::string_view type)
 {
 	// Check if optional
 	if (tz.advIfNext("optional"))
@@ -613,7 +613,7 @@ bool CTexture::parse(Tokenizer& tz, const wxString& type)
 			// Check if end of text is reached (error)
 			if (tz.atEnd())
 			{
-				Log::error(wxString::Format("Error parsing texture %s: End of text found, missing } perhaps?", name_));
+				Log::error("Error parsing texture {}: End of text found, missing }} perhaps?", name_);
 				return false;
 			}
 
@@ -681,7 +681,7 @@ bool CTexture::parseDefine(Tokenizer& tz)
 	def_size_.x = tz.next().asInt();
 	def_size_.y = tz.next().asInt();
 	size_       = def_size_;
-	auto entry  = App::resources().getPatchEntry(name_.ToStdString());
+	auto entry  = App::resources().getPatchEntry(name_);
 	if (entry)
 	{
 		SImage image;
@@ -700,7 +700,7 @@ bool CTexture::parseDefine(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the texture, in ZDoom TEXTURES format
 // -----------------------------------------------------------------------------
-wxString CTexture::asText()
+std::string CTexture::asText()
 {
 	// Can't write non-extended texture as text
 	if (!extended_)
@@ -708,22 +708,22 @@ wxString CTexture::asText()
 
 	// Define block
 	if (defined_)
-		return wxString::Format("define \"%s\" %d %d\n", name_, def_size_.x, def_size_.y);
+		return fmt::format("define \"{}\" {} {}\n", name_, def_size_.x, def_size_.y);
 
 	// Init text string
-	wxString text;
+	std::string text;
 	if (optional_)
-		text = wxString::Format("%s Optional \"%s\", %d, %d\n{\n", type_, name_, size_.x, size_.y);
+		text = fmt::format("{} Optional \"{}\", {}, {}\n{\n", type_, name_, size_.x, size_.y);
 	else
-		text = wxString::Format("%s \"%s\", %d, %d\n{\n", type_, name_, size_.x, size_.y);
+		text = fmt::format("{} \"{}\", {}, {}\n{\n", type_, name_, size_.x, size_.y);
 
 	// Write texture properties
 	if (scale_.x != 1.0)
-		text += wxString::Format("\tXScale %1.3f\n", scale_.x);
+		text += fmt::format("\tXScale {:1.3f}\n", scale_.x);
 	if (scale_.y != 1.0)
-		text += wxString::Format("\tYScale %1.3f\n", scale_.y);
+		text += fmt::format("\tYScale {:1.3f}\n", scale_.y);
 	if (offset_.x != 0 || offset_.y != 0)
-		text += wxString::Format("\tOffset %d, %d\n", offset_.x, offset_.y);
+		text += fmt::format("\tOffset {}, {}\n", offset_.x, offset_.y);
 	if (world_panning_)
 		text += "\tWorldPanning\n";
 	if (no_decals_)
@@ -938,7 +938,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 
 	// If the texture is extended, search for textures-as-patches first
 	// (as long as the patch name is different from this texture's name)
-	if (extended_ && !(S_CMPNOCASE(patch->name(), name_)))
+	if (extended_ && !(StrUtil::equalCI(patch->name(), name_)))
 	{
 		// Search the texture list we're in first
 		if (in_list_)
@@ -952,7 +952,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 					break;
 
 				// Check for name match
-				if (S_CMPNOCASE(tex->name(), patch->name()))
+				if (StrUtil::equalCI(tex->name(), patch->name()))
 				{
 					// Load texture to image
 					return tex->toImage(image, parent, pal);
@@ -962,7 +962,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 
 		// Otherwise, try the resource manager
 		// TODO: Something has to be ignored here. The entire archive or just the current list?
-		auto tex = App::resources().getTexture(patch->name().ToStdString(), parent);
+		auto tex = App::resources().getTexture(patch->name(), parent);
 		if (tex)
 			return tex->toImage(image, parent, pal);
 	}
@@ -975,7 +975,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 		return Misc::loadImageFromEntry(&image, entry);
 
 	// Maybe it's a texture?
-	entry = App::resources().getTextureEntry(patch->name().ToStdString(), "", parent);
+	entry = App::resources().getTextureEntry(patch->name(), "", parent);
 
 	if (entry)
 		return Misc::loadImageFromEntry(&image, entry);

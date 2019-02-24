@@ -473,7 +473,7 @@ bool TextureXEditor::removePatch(unsigned index, bool delete_entry)
 		texture_editor->txList().removePatch(name);
 
 	// Delete patch entry if it's part of this archive (and delete_entry is true)
-	auto entry = App::resources().getPatchEntry(name.ToStdString(), "patches", archive_);
+	auto entry = App::resources().getPatchEntry(name, "patches", archive_);
 	if (delete_entry && entry && entry->parent() == archive_)
 		archive_->removeEntry(entry);
 
@@ -551,9 +551,9 @@ bool TextureXEditor::checkTextures()
 				// Extended texture, check if each patch exists in any open archive (or as a composite texture)
 				for (unsigned p = 0; p < tex->nPatches(); p++)
 				{
-					auto pentry = App::resources().getPatchEntry(tex->patch(p)->name().ToStdString());
-					auto fentry = App::resources().getFlatEntry(tex->patch(p)->name().ToStdString());
-					auto ptex   = App::resources().getTexture(tex->patch(p)->name().ToStdString());
+					auto pentry = App::resources().getPatchEntry(tex->patch(p)->name());
+					auto fentry = App::resources().getFlatEntry(tex->patch(p)->name());
+					auto ptex   = App::resources().getTexture(tex->patch(p)->name());
 					if (!pentry && !fentry && !ptex)
 						problems += wxString::Format(
 							"Texture %s contains invalid/unknown patch %s\n", tex->name(), tex->patch(p)->name());
@@ -577,7 +577,7 @@ bool TextureXEditor::checkTextures()
 	{
 		// Check patch entry is valid
 		auto& patch = patch_table_.patch(a);
-		auto  entry = App::resources().getPatchEntry(patch.name.ToStdString(), "patches", archive_);
+		auto  entry = App::resources().getPatchEntry(patch.name, "patches", archive_);
 
 		if (!entry)
 		{

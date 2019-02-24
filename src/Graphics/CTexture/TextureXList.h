@@ -35,11 +35,11 @@ public:
 
 	uint32_t size() const { return textures_.size(); }
 
-	CTexture* texture(size_t index);
-	CTexture* texture(const wxString& name);
-	Format    format() const { return txformat_; }
-	wxString  textureXFormatString() const;
-	int       textureIndex(const wxString& name);
+	CTexture*   texture(size_t index);
+	CTexture*   texture(std::string_view name);
+	Format      format() const { return txformat_; }
+	std::string textureXFormatString() const;
+	int         textureIndex(std::string_view name);
 
 	void setFormat(Format format) { txformat_ = format; }
 
@@ -49,7 +49,7 @@ public:
 	CTexture::UPtr replaceTexture(unsigned index, CTexture::UPtr replacement);
 
 	void clear(bool clear_patches = false);
-	void removePatch(const wxString& patch);
+	void removePatch(std::string_view patch);
 
 	bool readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_table, bool add = false);
 	bool writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_table);

@@ -54,20 +54,20 @@ UndoManager* current_undo_manager = nullptr;
 // -----------------------------------------------------------------------------
 // UndoLevel class constructor
 // -----------------------------------------------------------------------------
-UndoLevel::UndoLevel(const wxString& name) : name_{ name }, timestamp_{ wxDateTime::Now() } {}
+UndoLevel::UndoLevel(std::string_view name) : name_{ name }, timestamp_{ wxDateTime::Now() } {}
 
 // -----------------------------------------------------------------------------
 // Returns a string representation of the time at which the undo level was
 // recorded
 // -----------------------------------------------------------------------------
-wxString UndoLevel::timeStamp(bool date, bool time) const
+std::string UndoLevel::timeStamp(bool date, bool time) const
 {
 	if (date && !time)
-		return timestamp_.FormatISODate();
+		return timestamp_.FormatISODate().ToStdString();
 	else if (!date && time)
-		return timestamp_.FormatISOTime();
+		return timestamp_.FormatISOTime().ToStdString();
 	else
-		return timestamp_.FormatISOCombined();
+		return timestamp_.FormatISOCombined().ToStdString();
 }
 
 // -----------------------------------------------------------------------------
@@ -75,7 +75,7 @@ wxString UndoLevel::timeStamp(bool date, bool time) const
 // -----------------------------------------------------------------------------
 bool UndoLevel::doUndo()
 {
-	Log::info(3, wxString::Format("Performing undo \"%s\" (%lu steps)", name_, undo_steps_.size()));
+	Log::info(3, "Performing undo \"{}\" ({} steps)", name_, undo_steps_.size());
 	bool ok = true;
 	for (int a = (int)undo_steps_.size() - 1; a >= 0; a--)
 	{
@@ -91,7 +91,7 @@ bool UndoLevel::doUndo()
 // -----------------------------------------------------------------------------
 bool UndoLevel::doRedo()
 {
-	Log::info(3, wxString::Format("Performing redo \"%s\" (%lu steps)", name_, undo_steps_.size()));
+	Log::info(3, "Performing redo \"{}\" ({} steps)", name_, undo_steps_.size());
 	bool ok = true;
 	for (auto& undo_step : undo_steps_)
 	{
@@ -105,7 +105,7 @@ bool UndoLevel::doRedo()
 // -----------------------------------------------------------------------------
 // Reads the undo level from a file
 // -----------------------------------------------------------------------------
-bool UndoLevel::readFile(const wxString& filename) const
+bool UndoLevel::readFile(std::string_view filename) const
 {
 	return true;
 }
@@ -113,7 +113,7 @@ bool UndoLevel::readFile(const wxString& filename) const
 // -----------------------------------------------------------------------------
 // Writes the undo level to a file
 // -----------------------------------------------------------------------------
-bool UndoLevel::writeFile(const wxString& filename) const
+bool UndoLevel::writeFile(std::string_view filename) const
 {
 	return true;
 }
@@ -145,7 +145,7 @@ void UndoLevel::createMerged(vector<UPtr>& levels)
 // -----------------------------------------------------------------------------
 // Begins 'recording' a new undo level
 // -----------------------------------------------------------------------------
-void UndoManager::beginRecord(const wxString& name)
+void UndoManager::beginRecord(std::string_view name)
 {
 	// Can't if currently in an undo/redo operation
 	if (undo_running_)
@@ -229,7 +229,7 @@ bool UndoManager::recordUndoStep(UndoStep::UPtr step) const
 // -----------------------------------------------------------------------------
 // Performs an undo operation
 // -----------------------------------------------------------------------------
-wxString UndoManager::undo()
+std::string UndoManager::undo()
 {
 	// Can't while currently recording
 	if (current_level_)
@@ -244,7 +244,7 @@ wxString UndoManager::undo()
 	current_undo_manager = this;
 	auto& level          = undo_levels_[current_level_index_];
 	if (!level->doUndo())
-		Log::warning(wxString::Format("Undo operation \"%s\" failed", level->name()));
+		Log::warning("Undo operation \"{}\" failed", level->name());
 	undo_running_        = false;
 	current_undo_manager = nullptr;
 	current_level_index_--;
@@ -257,7 +257,7 @@ wxString UndoManager::undo()
 // -----------------------------------------------------------------------------
 // Performs a redo operation
 // -----------------------------------------------------------------------------
-wxString UndoManager::redo()
+std::string UndoManager::redo()
 {
 	// Can't while currently recording
 	if (current_level_)
@@ -284,7 +284,7 @@ wxString UndoManager::redo()
 // -----------------------------------------------------------------------------
 // Adds all undo level names to [list]
 // -----------------------------------------------------------------------------
-void UndoManager::putAllLevels(vector<wxString>& list)
+void UndoManager::putAllLevels(vector<std::string>& list)
 {
 	for (auto& undo_level : undo_levels_)
 		list.push_back(undo_level->name());
@@ -320,7 +320,7 @@ void UndoManager::clear()
 // -----------------------------------------------------------------------------
 // Creates an undo level from all levels in [manager], called [name]
 // -----------------------------------------------------------------------------
-bool UndoManager::createMergedLevel(UndoManager* manager, const wxString& name)
+bool UndoManager::createMergedLevel(UndoManager* manager, std::string_view name)
 {
 	// Do nothing if no levels to merge
 	if (manager->undo_levels_.empty())
