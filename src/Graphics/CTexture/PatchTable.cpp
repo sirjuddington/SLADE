@@ -35,6 +35,7 @@
 #include "App.h"
 #include "CTexture.h"
 #include "General/ResourceManager.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -60,12 +61,12 @@ PatchTable::Patch& PatchTable::patch(size_t index)
 // -----------------------------------------------------------------------------
 // Returns the patch matching [name], or an 'invalid' patch if no match is found
 // -----------------------------------------------------------------------------
-PatchTable::Patch& PatchTable::patch(const wxString& name)
+PatchTable::Patch& PatchTable::patch(std::string_view name)
 {
 	// Go through list
 	for (auto& patch : patches_)
 	{
-		if (S_CMP(patch.name, name))
+		if (patch.name == name)
 			return patch;
 	}
 
@@ -76,11 +77,11 @@ PatchTable::Patch& PatchTable::patch(const wxString& name)
 // Returns the name of the patch at [index], or an empty string if [index] is
 // invalid
 // -----------------------------------------------------------------------------
-wxString PatchTable::patchName(size_t index)
+const std::string& PatchTable::patchName(size_t index)
 {
 	// Check index
 	if (index >= patches_.size())
-		return wxEmptyString;
+		return StrUtil::EMPTY;
 
 	// Return name at index
 	return patches_[index].name;
@@ -97,9 +98,9 @@ ArchiveEntry* PatchTable::patchEntry(size_t index)
 		return nullptr;
 
 	// Patches namespace > graphics
-	auto entry = App::resources().getPatchEntry(patches_[index].name.ToStdString(), "patches", parent_);
+	auto entry = App::resources().getPatchEntry(patches_[index].name, "patches", parent_);
 	if (!entry)
-		entry = App::resources().getPatchEntry(patches_[index].name.ToStdString(), "graphics", parent_);
+		entry = App::resources().getPatchEntry(patches_[index].name, "graphics", parent_);
 
 	return entry;
 }
@@ -108,12 +109,12 @@ ArchiveEntry* PatchTable::patchEntry(size_t index)
 // Returns the entry associated with the patch matching [name], or null if no
 // match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* PatchTable::patchEntry(const wxString& name)
+ArchiveEntry* PatchTable::patchEntry(std::string_view name)
 {
 	// Search for patch by name
 	for (size_t a = 0; a < patches_.size(); a++)
 	{
-		if (!patches_[a].name.CmpNoCase(name))
+		if (StrUtil::equalCI(patches_[a].name, name))
 			return patchEntry(a);
 	}
 
@@ -124,12 +125,12 @@ ArchiveEntry* PatchTable::patchEntry(const wxString& name)
 // -----------------------------------------------------------------------------
 // Returns the index of the patch matching [name], or -1 if no match found
 // -----------------------------------------------------------------------------
-int32_t PatchTable::patchIndex(const wxString& name)
+int32_t PatchTable::patchIndex(std::string_view name)
 {
 	// Search for patch by name
 	for (size_t a = 0; a < patches_.size(); a++)
 	{
-		if (!patches_[a].name.CmpNoCase(name))
+		if (StrUtil::equalCI(patches_[a].name, name))
 			return a;
 	}
 
@@ -146,7 +147,7 @@ int32_t PatchTable::patchIndex(ArchiveEntry* entry)
 	// Search for patch by entry
 	for (size_t a = 0; a < patches_.size(); a++)
 	{
-		if (App::resources().getPatchEntry(patches_[a].name.ToStdString(), "patches", parent_) == entry)
+		if (App::resources().getPatchEntry(patches_[a].name, "patches", parent_) == entry)
 			return a;
 	}
 
@@ -179,7 +180,7 @@ bool PatchTable::removePatch(unsigned index)
 // resource archives.
 // Returns false if [index] is out of range or no matching entry was found
 // -----------------------------------------------------------------------------
-bool PatchTable::replacePatch(unsigned index, const wxString& newname)
+bool PatchTable::replacePatch(unsigned index, std::string_view newname)
 {
 	// Check index
 	if (index >= patches_.size())
@@ -197,14 +198,14 @@ bool PatchTable::replacePatch(unsigned index, const wxString& newname)
 // -----------------------------------------------------------------------------
 // Adds a new patch with [name] to the end of the list
 // -----------------------------------------------------------------------------
-bool PatchTable::addPatch(const wxString& name, bool allow_dup)
+bool PatchTable::addPatch(std::string_view name, bool allow_dup)
 {
 	// Check patch doesn't already exist
 	if (!allow_dup)
 	{
 		for (auto& patch : patches_)
 		{
-			if (S_CMP(name, patch.name))
+			if (name == patch.name)
 				return false;
 		}
 	}
@@ -255,12 +256,12 @@ bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent)
 		// Try to read pname
 		if (!pnames->read(&pname, 8))
 		{
-			Log::error(wxString::Format("PNAMES entry %i is corrupt", a));
+			Log::error("PNAMES entry {} is corrupt", a);
 			return false;
 		}
 
 		// Add new patch
-		addPatch(wxString(pname).Upper(), true);
+		addPatch(StrUtil::upper(pname), true);
 	}
 
 	// Update variables
@@ -297,7 +298,7 @@ bool PatchTable::writePNAMES(ArchiveEntry* pnames)
 	for (auto& patch : patches_)
 	{
 		char name[8] = { 0, 0, 0, 0, 0, 0, 0, 0 }; // Init name to all zeros for XWE compatibility
-		strncpy(name, CHR(patch.name), patch.name.Len());
+		strncpy(name, patch.name.data(), patch.name.size());
 
 		pndata.write(name, 8);
 	}

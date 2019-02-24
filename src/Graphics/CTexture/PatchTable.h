@@ -10,16 +10,16 @@ class PatchTable : public Announcer
 public:
 	struct Patch
 	{
-		wxString         name;
-		vector<wxString> used_in;
+		std::string         name;
+		vector<std::string> used_in;
 
-		Patch(const wxString& name) : name{ name } {}
+		Patch(std::string_view name) : name{ name } {}
 
-		void removeTextureUsage(const wxString& texture)
+		void removeTextureUsage(std::string_view texture)
 		{
 			for (unsigned a = 0; a < used_in.size(); a++)
 			{
-				if (S_CMP(texture, used_in[a]))
+				if (texture == used_in[a])
 				{
 					used_in.erase(used_in.begin() + a);
 					a--;
@@ -35,16 +35,16 @@ public:
 	Archive* parent() const { return parent_; }
 	void     setParent(Archive* parent) { this->parent_ = parent; }
 
-	Patch&        patch(size_t index);
-	Patch&        patch(const wxString& name);
-	wxString      patchName(size_t index);
-	ArchiveEntry* patchEntry(size_t index);
-	ArchiveEntry* patchEntry(const wxString& name);
-	int32_t       patchIndex(const wxString& name);
-	int32_t       patchIndex(ArchiveEntry* entry);
-	bool          removePatch(unsigned index);
-	bool          replacePatch(unsigned index, const wxString& newname);
-	bool          addPatch(const wxString& name, bool allow_dup = false);
+	Patch&             patch(size_t index);
+	Patch&             patch(std::string_view name);
+	const std::string& patchName(size_t index);
+	ArchiveEntry*      patchEntry(size_t index);
+	ArchiveEntry*      patchEntry(std::string_view name);
+	int32_t            patchIndex(std::string_view name);
+	int32_t            patchIndex(ArchiveEntry* entry);
+	bool               removePatch(unsigned index);
+	bool               replacePatch(unsigned index, std::string_view newname);
+	bool               addPatch(std::string_view name, bool allow_dup = false);
 
 	bool loadPNAMES(ArchiveEntry* pnames, Archive* parent = nullptr);
 	bool writePNAMES(ArchiveEntry* pnames);

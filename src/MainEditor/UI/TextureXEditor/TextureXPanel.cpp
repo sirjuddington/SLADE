@@ -310,7 +310,7 @@ void TextureXListView::applyFilter()
 		bool match = false;
 		for (auto& term : terms)
 		{
-			if (tex->name().Lower().Matches(term))
+			if (StrUtil::matchesCI(tex->name(), WxUtils::strToView(term)))
 			{
 				match = true;
 				break;
@@ -663,7 +663,7 @@ CTexture::UPtr TextureXPanel::newTextureFromPatch(const wxString& name, const wx
 {
 	// Create new texture
 	auto tex = std::make_unique<CTexture>();
-	tex->setName(name);
+	tex->setName(name.ToStdString());
 	tex->setState(2);
 
 	// Setup texture scale
@@ -676,7 +676,7 @@ CTexture::UPtr TextureXPanel::newTextureFromPatch(const wxString& name, const wx
 		tex->setScale({ 0., 0. });
 
 	// Add patch
-	tex->addPatch(patch, 0, 0);
+	tex->addPatch(patch.ToStdString(), 0, 0);
 
 	// Load patch image (to determine dimensions)
 	SImage image;
@@ -713,7 +713,7 @@ void TextureXPanel::newTexture()
 
 	// Create new texture
 	auto tex = std::make_unique<CTexture>();
-	tex->setName(name);
+	tex->setName(WxUtils::strToView(name));
 	tex->setState(2);
 
 	// Default size = 64x128
@@ -876,7 +876,7 @@ void TextureXPanel::newTextureFromFile()
 
 			// Add patch to patch table if needed
 			if (!TxListIsTextures(texturex_))
-				tx_editor_->patchTable().addPatch(name);
+				tx_editor_->patchTable().addPatch(WxUtils::strToView(name));
 
 
 			// Create new texture from patch
@@ -1226,7 +1226,7 @@ void TextureXPanel::renameTexture(bool each)
 			// Rename entry (if needed)
 			if (!new_name.IsEmpty() && texture->name() != new_name)
 			{
-				texture->setName(new_name);
+				texture->setName(WxUtils::strToView(new_name));
 				texture->setState(1);
 				if (texture == tex_current_)
 					texture_editor_->updateTextureName(new_name);
@@ -1240,7 +1240,7 @@ void TextureXPanel::renameTexture(bool each)
 		// Get a list of entry names
 		vector<std::string> names;
 		for (auto& texture : selection)
-			names.push_back(texture->name().ToStdString());
+			names.push_back(texture->name());
 
 		// Get filter string
 		auto filter = Misc::massRenameFilter(names);
@@ -1310,7 +1310,7 @@ void TextureXPanel::exportTexture()
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Update splash window
-		UI::setSplashProgressMessage(selection[a]->name().ToStdString());
+		UI::setSplashProgressMessage(selection[a]->name());
 		UI::setSplashProgress((float)a / (float)selection.size());
 
 		// Skip if the image wasn't converted
@@ -1326,7 +1326,7 @@ void TextureXPanel::exportTexture()
 		format->saveImage(*image, mc, force_rgba ? nullptr : gcd.itemPalette(a));
 		auto lump = new ArchiveEntry;
 		lump->importMemChunk(mc);
-		lump->rename(selection[a]->name().ToStdString());
+		lump->rename(selection[a]->name());
 		archive->addEntry(lump, "textures");
 		EntryType::detectEntryType(lump);
 		lump->setExtensionByType();
@@ -1390,7 +1390,7 @@ void TextureXPanel::extractTexture()
 	// If we're just exporting one texture
 	if (selection.size() == 1)
 	{
-		auto       name = Misc::lumpNameToFileName(selection[0]->name().ToStdString());
+		auto       name = Misc::lumpNameToFileName(selection[0]->name());
 		wxFileName fn(name);
 
 		// Set extension
@@ -1429,7 +1429,7 @@ void TextureXPanel::extractTexture()
 			for (size_t a = 0; a < selection.size(); a++)
 			{
 				// Update splash window
-				UI::setSplashProgressMessage(selection[a]->name().ToStdString());
+				UI::setSplashProgressMessage(selection[a]->name());
 				UI::setSplashProgress((float)a / (float)selection.size());
 
 				// Setup entry filename

@@ -499,8 +499,8 @@ void ZTextureEditorPanel::addPatch()
 
 	// Browse for patch
 	tx_editor_->setFullPath(true);
-	wxString patch = tx_editor_->browsePatchEntry();
-	if (!patch.IsEmpty())
+	auto patch = tx_editor_->browsePatchEntry().ToStdString();
+	if (!patch.empty())
 	{
 		// Add new patch
 		tex_current_->addPatch(patch, 0, 0);
@@ -528,8 +528,8 @@ void ZTextureEditorPanel::replacePatch()
 
 	// Browse for patch
 	tx_editor_->setFullPath(true);
-	wxString patch = tx_editor_->browsePatchEntry();
-	if (!patch.IsEmpty())
+	auto patch = tx_editor_->browsePatchEntry().ToStdString();
+	if (!patch.empty())
 	{
 		// Go through selection and replace each patch
 		for (int index : selection)
@@ -668,7 +668,7 @@ void ZTextureEditorPanel::onTexTypeChanged(wxCommandEvent& e)
 {
 	// Set texture's type
 	if (tex_current_)
-		tex_current_->setType(choice_type_->GetStringSelection());
+		tex_current_->setType(WxUtils::strToView(choice_type_->GetStringSelection()));
 
 	tex_modified_ = true;
 }
@@ -856,7 +856,7 @@ void ZTextureEditorPanel::onPatchAlphaStyleChanged(wxCommandEvent& e)
 	{
 		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->setStyle(choice_style_->GetStringSelection());
+			patch->setStyle(WxUtils::strToView(choice_style_->GetStringSelection()));
 	}
 
 	// Update UI

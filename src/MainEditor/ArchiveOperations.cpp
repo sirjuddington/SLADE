@@ -46,6 +46,7 @@
 #include "SLADEMap/MapObject/MapThing.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
+#include "UI/WxUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -115,7 +116,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 			// Unused
 
 			// If its entry is in the archive, flag it to be removed
-			auto entry = App::resources().getPatchEntry(p.name.ToStdString(), "patches", archive);
+			auto entry = App::resources().getPatchEntry(p.name, "patches", archive);
 			if (entry && entry->parent() == archive)
 				to_remove.push_back(entry);
 
@@ -616,7 +617,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 			for (int i : selection)
 			{
 				// Get texture index
-				int index = txlist.textureIndex(unused_tex[i]);
+				int index = txlist.textureIndex(WxUtils::strToView(unused_tex[i]));
 
 				// Delete it from the list (if found)
 				if (index >= 0)

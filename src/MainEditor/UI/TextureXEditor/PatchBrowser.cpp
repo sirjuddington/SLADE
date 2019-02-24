@@ -194,7 +194,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 		wxString whereis = "Unknown";
 
 		// Get patch entry
-		auto entry = App::resources().getPatchEntry(patch.name.ToStdString());
+		auto entry = App::resources().getPatchEntry(patch.name);
 
 		// Check its parent archive
 		Archive* parent_archive = nullptr;
@@ -381,7 +381,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 	// Go through the list
 	for (auto res : textures)
 	{
-		if (full_path_ || res->tex.name().Len() <= 8)
+		if (full_path_ || res->tex.name().size() <= 8)
 		{
 			// Create browser item
 			auto item = new PatchBrowserItem(res->tex.name(), res->parent, PatchBrowserItem::Type::CTexture);

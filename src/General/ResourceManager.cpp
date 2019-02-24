@@ -430,7 +430,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 		for (unsigned a = 0; a < tx.size(); a++)
 		{
 			tex = tx.texture(a);
-			textures_[tex->name().ToStdString()].add(tex, entry->parent());
+			textures_[tex->name()].add(tex, entry->parent());
 		}
 	}
 }
@@ -487,7 +487,7 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full
 
 		// Remove all texture resources
 		for (unsigned a = 0; a < tx.size(); a++)
-			textures_[tx.texture(a)->name().ToStdString()].remove(entry->parent());
+			textures_[tx.texture(a)->name()].remove(entry->parent());
 	}
 }
 

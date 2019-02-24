@@ -558,17 +558,16 @@ void MapTextureManager::buildTexInfoList()
 		auto tex    = &texture->tex;
 		auto parent = texture->parent;
 
-		// string shortName = tex->getName().Truncate(8);
-		auto long_name = tex->name().ToStdString();
+		auto long_name = tex->name();
 		auto path      = StrUtil::beforeLast(long_name, '/');
 
 		if (tex->isExtended())
 		{
-			if (S_CMPNOCASE(tex->type(), "texture") || S_CMPNOCASE(tex->type(), "walltexture"))
+			if (StrUtil::equalCI(tex->type(), "texture") || StrUtil::equalCI(tex->type(), "walltexture"))
 				tex_info_.emplace_back(long_name, Category::ZDTextures, parent, path, tex->index(), long_name);
-			else if (S_CMPNOCASE(tex->type(), "define"))
+			else if (StrUtil::equalCI(tex->type(), "define"))
 				tex_info_.emplace_back(long_name, Category::HiRes, parent, path, tex->index(), long_name);
-			else if (S_CMPNOCASE(tex->type(), "flat"))
+			else if (StrUtil::equalCI(tex->type(), "flat"))
 				flat_info_.emplace_back(long_name, Category::ZDTextures, parent, path, tex->index(), long_name);
 			// Ignore graphics, patches and sprites
 		}
