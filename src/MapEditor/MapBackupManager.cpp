@@ -37,6 +37,8 @@
 #include "MapEditor.h"
 #include "UI/MapBackupPanel.h"
 #include "UI/SDialog.h"
+#include "Utility/StringUtils.h"
+#include "UI/WxUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -48,8 +50,8 @@ CVAR(Int, max_map_backups, 25, CVar::Flag::Save)
 namespace
 {
 // List of entry names to be ignored for backups
-wxString mb_ignore_entries[] = { "NODES",    "SSECTORS", "ZNODES",  "SEGS",     "REJECT",
-								 "BLOCKMAP", "GL_VERT",  "GL_SEGS", "GL_SSECT", "GL_NODES" };
+std::string mb_ignore_entries[] = { "NODES",    "SSECTORS", "ZNODES",  "SEGS",     "REJECT",
+									"BLOCKMAP", "GL_VERT",  "GL_SEGS", "GL_SSECT", "GL_NODES" };
 } // namespace
 
 
@@ -64,7 +66,10 @@ wxString mb_ignore_entries[] = { "NODES",    "SSECTORS", "ZNODES",  "SEGS",     
 // Writes a backup for [map_name] in [archive_name], with the map data entries
 // in [map_data]
 // -----------------------------------------------------------------------------
-bool MapBackupManager::writeBackup(vector<ArchiveEntry::UPtr>& map_data, wxString archive_name, wxString map_name) const
+bool MapBackupManager::writeBackup(
+	vector<ArchiveEntry::UPtr>& map_data,
+	std::string_view            archive_name,
+	std::string_view            map_name) const
 {
 	// Create backup directory if needed
 	auto backup_dir = App::path("backups", App::Dir::User);
@@ -73,20 +78,21 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry::UPtr>& map_data, wxStrin
 
 	// Open or create backup zip
 	ZipArchive backup;
-	archive_name.Replace(".", "_");
-	auto backup_file = backup_dir + "/" + archive_name.ToStdString() + "_backup.zip";
+	std::string fname{ archive_name };
+	std::replace(fname.begin(), fname.end(), '.', '_');
+	auto backup_file = fmt::format("{}/{}_backup.zip", backup_dir, fname);
 	if (!backup.open(backup_file))
 		backup.setFilename(backup_file);
 
 	// Filter ignored entries
 	vector<ArchiveEntry*> backup_entries;
-	for (unsigned a = 0; a < map_data.size(); a++)
+	for (auto& entry : map_data)
 	{
 		// Check for ignored entry
 		bool ignored = false;
-		for (unsigned b = 0; b < 10; b++)
+		for (auto& ignore_entry : mb_ignore_entries)
 		{
-			if (S_CMPNOCASE(mb_ignore_entries[b], map_data[a]->name()))
+			if (StrUtil::equalCI(ignore_entry, entry->name()))
 			{
 				ignored = true;
 				break;
@@ -94,11 +100,11 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry::UPtr>& map_data, wxStrin
 		}
 
 		if (!ignored)
-			backup_entries.push_back(map_data[a].get());
+			backup_entries.push_back(entry.get());
 	}
 
 	// Compare with last backup (if any)
-	auto map_dir = backup.dir(map_name.ToStdString());
+	auto map_dir = backup.dir(map_name);
 	if (map_dir && map_dir->nChildren() > 0)
 	{
 		auto last_backup = dynamic_cast<ArchiveTreeNode*>(map_dir->child(map_dir->nChildren() - 1));
@@ -135,14 +141,14 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry::UPtr>& map_data, wxStrin
 	}
 
 	// Add map data to backup
-	wxString timestamp = wxDateTime::Now().FormatISOCombined('_');
-	timestamp.Replace(":", "");
-	wxString dir = map_name + "/" + timestamp;
-	for (unsigned a = 0; a < backup_entries.size(); a++)
-		backup.addEntry(backup_entries[a], dir.ToStdString(), true);
+	auto timestamp = wxDateTime::Now().FormatISOCombined('_').ToStdString();
+	StrUtil::replaceIP(timestamp, ":", "");
+	auto dir = fmt::format("{}/{}", map_name, timestamp);
+	for (auto& entry : backup_entries)
+		backup.addEntry(entry, dir, true);
 
 	// Check for max backups & remove old ones if over
-	map_dir = backup.dir(map_name.ToStdString());
+	map_dir = backup.dir(map_name);
 	while ((int)map_dir->nChildren() > max_map_backups)
 		backup.removeDir(map_dir->child(0)->name(), map_dir);
 
@@ -158,9 +164,9 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry::UPtr>& map_data, wxStrin
 // Shows the map backups for [map_name] in [archive_name], returns the selected
 // map backup data in a WadArchive
 // -----------------------------------------------------------------------------
-Archive* MapBackupManager::openBackup(wxString archive_name, wxString map_name) const
+Archive* MapBackupManager::openBackup(std::string_view archive_name, std::string_view map_name) const
 {
-	SDialog dlg(MapEditor::windowWx(), wxString::Format("Restore %s backup", CHR(map_name)), "map_backup", 500, 400);
+	SDialog dlg(MapEditor::windowWx(), fmt::format("Restore {} backup", map_name), "map_backup", 500, 400);
 	auto    sizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(sizer);
 	auto panel_backup = new MapBackupPanel(&dlg);
@@ -169,14 +175,14 @@ Archive* MapBackupManager::openBackup(wxString archive_name, wxString map_name) 
 	sizer->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT, 6);
 	sizer->AddSpacer(10);
 
-	if (panel_backup->loadBackups(archive_name, map_name))
+	if (panel_backup->loadBackups(WxUtils::strFromView(archive_name), WxUtils::strFromView(map_name)))
 	{
 		if (dlg.ShowModal() == wxID_OK)
 			return panel_backup->selectedMapData();
 	}
 	else
 		wxMessageBox(
-			wxString::Format("No backups exist for %s of %s", CHR(map_name), CHR(archive_name)),
+			fmt::format("No backups exist for {} of {}", map_name, archive_name),
 			"Restore Backup",
 			wxICON_INFORMATION,
 			MapEditor::windowWx());
