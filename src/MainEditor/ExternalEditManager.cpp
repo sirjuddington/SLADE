@@ -148,7 +148,7 @@ public:
 		image.convertPaletted(&palette_);
 
 		// Convert image to entry gfx format
-		auto format = SIFormat::getFormat(gfx_format_);
+		auto format = SIFormat::getFormat(gfx_format_.ToStdString());
 		if (format)
 		{
 			MemChunk conv_data;

@@ -4,7 +4,7 @@
 class SIFDoomGfx : public SIFormat
 {
 public:
-	SIFDoomGfx(const wxString& id = "doom", const wxString& name = "Doom Gfx", int reliability = 230) :
+	SIFDoomGfx(std::string_view id = "doom", std::string_view name = "Doom Gfx", int reliability = 230) :
 		SIFormat(id, name, "lmp", reliability)
 	{
 	}

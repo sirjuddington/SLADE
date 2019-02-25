@@ -393,7 +393,7 @@ const MapTextureManager::Texture& MapTextureManager::sprite(
 
 		// Apply translation
 		if (!translation.empty())
-			image.applyTranslation(wxString{ translation.data(), translation.size() }, pal, true);
+			image.applyTranslation(translation, pal, true);
 
 		// Apply palette override
 		if (!palette.empty())

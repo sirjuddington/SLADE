@@ -573,10 +573,10 @@ bool SImage::copyImage(SImage* image)
 // Detects the format of [data] and, if it's a valid image format, loads it into
 // this image
 // -----------------------------------------------------------------------------
-bool SImage::open(MemChunk& data, int index, const wxString& type_hint)
+bool SImage::open(MemChunk& data, int index, std::string_view type_hint)
 {
 	// Check with type hint format first
-	if (!type_hint.IsEmpty())
+	if (!type_hint.empty())
 	{
 		auto format = SIFormat::getFormat(type_hint);
 		if (format != SIFormat::unknownFormat() && format->isThisFormat(data))
@@ -1027,7 +1027,7 @@ bool SImage::rotate(int angle)
 		}
 		if (j >= numpixels)
 		{
-			Log::error(wxString::Format("Pixel %i remapped to %i, how did this even happen?", i, j));
+			Log::error("Pixel {} remapped to {}, how did this even happen?", i, j);
 			return false;
 		}
 		for (k = 0; k < numbpp; ++k)
@@ -1082,7 +1082,7 @@ bool SImage::mirror(bool vertical)
 			j = ((i / width_) * width_) + ((width_ - 1) - (i % width_));
 		if (j >= numpixels)
 		{
-			Log::error(wxString::Format("Pixel %i remapped to %i, how did this even happen?", i, j));
+			Log::error("Pixel {} remapped to {}, how did this even happen?", i, j);
 			return false;
 		}
 		for (k = 0; k < numbpp; ++k)
@@ -1335,11 +1335,11 @@ bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 // -----------------------------------------------------------------------------
 // Applies a palette translation to the image
 // -----------------------------------------------------------------------------
-bool SImage::applyTranslation(const wxString& tr, Palette* pal, bool truecolor)
+bool SImage::applyTranslation(std::string_view tr, Palette* pal, bool truecolor)
 {
 	Translation trans;
 	trans.clear();
-	trans.parse(tr);
+	trans.parse(wxString{ tr.data(), tr.size() });
 	return applyTranslation(&trans, pal, truecolor);
 }
 

@@ -2,7 +2,7 @@
 class SIFRottGfx : public SIFormat
 {
 public:
-	SIFRottGfx(const wxString& id = "rott", const wxString& name = "ROTT Gfx", int reliability = 121) :
+	SIFRottGfx(std::string_view id = "rott", std::string_view name = "ROTT Gfx", int reliability = 121) :
 		SIFormat(id, name, "dat", reliability)
 	{
 	}

@@ -134,7 +134,7 @@ bool EntryOperations::gfxConvert(
 	SImage image;
 
 	// Get target image format
-	auto fmt = SIFormat::getFormat(target_format);
+	auto fmt = SIFormat::getFormat(target_format.ToStdString());
 	if (fmt == SIFormat::unknownFormat())
 		return false;
 

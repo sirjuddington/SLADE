@@ -872,8 +872,8 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
 	// Read column offsets
 	if (hdr_size < (8 + (width_ * 6)))
 	{
-		Global::error = wxString::Format(
-			"Invalid Jaguar sprite: header too small (%d) for column offsets (%d)", hdr_size, (8 + (width_ * 6)));
+		Global::error = fmt::format(
+			"Invalid Jaguar sprite: header too small ({}) for column offsets ({})", hdr_size, (8 + (width_ * 6)));
 		return false;
 	}
 	vector<uint16_t> col_offsets(width_);
@@ -883,8 +883,8 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
 	}
 	if (hdr_size < (4 + col_offsets[width_ - 1]))
 	{
-		Global::error = wxString::Format(
-			"Invalid Jaguar sprite: header too small (%d) for post offsets (%d)",
+		Global::error = fmt::format(
+			"Invalid Jaguar sprite: header too small ({}) for post offsets ({})",
 			hdr_size,
 			4 + col_offsets[width_ - 1]);
 		return false;
@@ -902,8 +902,8 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
 			int pixel_p = Memory::readB16(header, post_p + 2);
 			if (pixel_p + len > size)
 			{
-				Global::error = wxString::Format(
-					"Invalid Jaguar sprite: body too small (%d) for pixel data (%d)", size, pixel_p + len);
+				Global::error = fmt::format(
+					"Invalid Jaguar sprite: body too small ({}) for pixel data ({})", size, pixel_p + len);
 				return false;
 			}
 			// Copy pixels
@@ -932,7 +932,7 @@ bool SImage::loadJaguarTexture(const uint8_t* gfx_data, int size, int i_width, i
 	// Check data
 	if (i_width * i_height == 0 || size < i_width * i_height + 320)
 	{
-		Global::error = wxString::Format("Size is %d, expected %d", size, i_width * i_height + 320);
+		Global::error = fmt::format("Size is {}, expected {}", size, i_width * i_height + 320);
 		return false;
 	}
 

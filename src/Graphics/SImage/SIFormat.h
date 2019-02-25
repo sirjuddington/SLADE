@@ -26,15 +26,15 @@ public:
 	};
 
 	SIFormat(
-		const wxString& id,
-		const wxString& name        = "Unknown",
-		const wxString& ext         = "dat",
-		uint8_t         reliability = 255);
+		std::string_view id,
+		std::string_view name        = "Unknown",
+		std::string_view ext         = "dat",
+		uint8_t          reliability = 255);
 	virtual ~SIFormat() = default;
 
-	wxString id() const { return id_; }
-	wxString name() const { return name_; }
-	wxString extension() const { return extension_; }
+	const std::string& id() const { return id_; }
+	const std::string& name() const { return name_; }
+	const std::string& extension() const { return extension_; }
 
 	virtual bool isThisFormat(MemChunk& mc) = 0;
 
@@ -90,7 +90,7 @@ public:
 	}
 
 	static void      initFormats();
-	static SIFormat* getFormat(const wxString& name);
+	static SIFormat* getFormat(std::string_view name);
 	static SIFormat* determineFormat(MemChunk& mc);
 	static SIFormat* unknownFormat();
 	static SIFormat* rawFormat();
@@ -99,10 +99,10 @@ public:
 	static void      putAllFormats(vector<SIFormat*>& list);
 
 protected:
-	wxString id_;
-	wxString name_        = "Unknown";
-	wxString extension_   = "dat";
-	uint8_t  reliability_ = 255;
+	std::string id_;
+	std::string name_        = "Unknown";
+	std::string extension_   = "dat";
+	uint8_t     reliability_ = 255;
 
 	// Stuff to access protected image data
 	uint8_t* imageData(SImage& image) const { return image.data_.data(); }
