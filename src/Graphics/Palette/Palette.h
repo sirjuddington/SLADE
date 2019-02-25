@@ -36,9 +36,9 @@ public:
 	bool loadMem(MemChunk& mc);
 	bool loadMem(const uint8_t* data, uint32_t size);
 	bool loadMem(MemChunk& mc, Format format);
-	bool loadFile(const wxString& filename, Format format = Format::Raw);
-	bool saveMem(MemChunk& mc, Format format = Format::Raw, const wxString& name = "");
-	bool saveFile(const wxString& filename, Format format = Format::Raw);
+	bool loadFile(std::string_view filename, Format format = Format::Raw);
+	bool saveMem(MemChunk& mc, Format format = Format::Raw, std::string_view name = "");
+	bool saveFile(std::string_view filename, Format format = Format::Raw);
 
 	void setColour(uint8_t index, const ColRGBA& col);
 	void setColourR(uint8_t index, uint8_t val);

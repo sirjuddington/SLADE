@@ -190,14 +190,14 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			for (int b = x; b < (x + (cell > 3 ? cell - 1 : cell)); ++b)
 				for (int c = y; c < (y + (cell > 3 ? cell - 1 : cell)); ++c)
 					if (!col.equals(image.pixelAt(b, c)))
-						Log::warning(wxString::Format(
-							"Image does not seem to be a valid palette, color discrepancy in cell %u at [%u, %u]",
+						Log::warning(
+							"Image does not seem to be a valid palette, color discrepancy in cell {} at [{}, {}]",
 							a,
 							b,
-							c));
+							c);
 
 			// Color is validated, so add it
-			Log::info(3, wxString::Format("Colour index %d / at %d,%d / rgb %d,%d,%d", a, x, y, col.r, col.g, col.b));
+			Log::info(3, "Colour index {} / at {},{} / rgb {},{},{}", a, x, y, col.r, col.g, col.b);
 			setColour(a, col);
 		}
 
@@ -241,9 +241,9 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			}
 		}
 		// Now, parse
-		wxString  s1, s2, s3;
-		ColRGBA col(0, 0, 0, 255);
-		int     c = 0;
+		std::string s1, s2, s3;
+		ColRGBA  col(0, 0, 0, 255);
+		int      c = 0;
 		do
 		{
 			// Get the first token. If it begins with #, it's a comment in GIMP. Ignore.
@@ -251,7 +251,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			s1 = tz.getToken();
 			if (format == Format::CSV)
 				tz.checkToken(",");
-			else if (format == Format::GIMP && !s1.Cmp("#"))
+			else if (format == Format::GIMP && s1 == "#")
 			{
 				tz.advToEndOfLine();
 				continue;
@@ -262,7 +262,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			s2 = tz.getToken();
 			if (format == Format::CSV)
 				tz.checkToken(",");
-			else if (format == Format::GIMP && !s2.Cmp(":"))
+			else if (format == Format::GIMP && s2 == ":")
 			{
 				tz.advToEndOfLine();
 				continue;
@@ -277,9 +277,9 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 				tz.advToEndOfLine();
 
 			// If we haven't skipped this part from a continue, then we have a colour triplet.
-			col.r     = wxStringUtils::toInt(s1);
-			col.g     = wxStringUtils::toInt(s2);
-			col.b     = wxStringUtils::toInt(s3);
+			col.r     = StrUtil::asInt(s1);
+			col.g     = StrUtil::asInt(s2);
+			col.b     = StrUtil::asInt(s3);
 			col.index = c;
 			setColour(c++, col);
 		} while (c < 256 && !tz.peekToken().empty());
@@ -299,7 +299,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 // -----------------------------------------------------------------------------
 // Writes colour information to a MemChunk
 // -----------------------------------------------------------------------------
-bool Palette::saveMem(MemChunk& mc, Format format, const wxString& name)
+bool Palette::saveMem(MemChunk& mc, Format format, std::string_view name)
 {
 	// Clear memchunk
 	mc.clear();
@@ -317,28 +317,28 @@ bool Palette::saveMem(MemChunk& mc, Format format, const wxString& name)
 	// CSV
 	else if (format == Format::CSV)
 	{
-		wxString csv;
+		std::string csv;
 		for (unsigned a = 0; a < 256; a++)
-			csv += wxString::Format("%d, %d, %d\n", colours_[a].r, colours_[a].g, colours_[a].b);
-		mc.importMem((const uint8_t*)((const char*)csv.ToAscii()), csv.Length());
+			csv += fmt::format("{}, {}, {}\n", colours_[a].r, colours_[a].g, colours_[a].b);
+		mc.importMem((const uint8_t*)((const char*)csv.data()), csv.size());
 	}
 
 	// JASC palette
 	else if (format == Format::JASC)
 	{
-		wxString jasc = "JASC-PAL\n0100\n256\n";
+		std::string jasc = "JASC-PAL\n0100\n256\n";
 		for (unsigned a = 0; a < 256; a++)
-			jasc += wxString::Format("%d %d %d\n", colours_[a].r, colours_[a].g, colours_[a].b);
-		mc.importMem((const uint8_t*)((const char*)jasc.ToAscii()), jasc.Length());
+			jasc += fmt::format("{} {} {}\n", colours_[a].r, colours_[a].g, colours_[a].b);
+		mc.importMem((const uint8_t*)((const char*)jasc.data()), jasc.size());
 	}
 
 	// GIMP palette
 	else if (format == Format::GIMP)
 	{
-		wxString gimp = wxString::Format("GIMP Palette\nName: %s\n#\n", name);
+		std::string gimp = fmt::format("GIMP Palette\nName: {}\n#\n", name);
 		for (unsigned a = 0; a < 256; a++)
-			gimp += wxString::Format("%d\t%d\t%d\tIndex %u\n", colours_[a].r, colours_[a].g, colours_[a].b, a);
-		mc.importMem((const uint8_t*)((const char*)gimp.ToAscii()), gimp.Length());
+			gimp += fmt::format("{}\t{}\t{}\tIndex {}\n", colours_[a].r, colours_[a].g, colours_[a].b, a);
+		mc.importMem((const uint8_t*)((const char*)gimp.data()), gimp.size());
 	}
 
 	// Image
@@ -383,33 +383,25 @@ bool Palette::saveMem(MemChunk& mc, Format format, const wxString& name)
 // Writes colour information to a file at [filename].
 // Returns false if the file could not be opened/created, true otherwise
 // -----------------------------------------------------------------------------
-bool Palette::saveFile(const wxString& filename, Format format)
+bool Palette::saveFile(std::string_view filename, Format format)
 {
-	// Get palette name
-	wxFileName fn(filename);
-	wxString   name = fn.GetName();
-
 	// Write data to MemChunk
 	MemChunk mc;
-	if (!saveMem(mc, format, name))
+	if (!saveMem(mc, format, StrUtil::Path::fileNameOf(filename, false)))
 		return false;
 
 	// Write MemChunk to file
-	return mc.exportFile(filename.ToStdString());
+	return mc.exportFile(filename);
 }
 
 // -----------------------------------------------------------------------------
 // Reads colour information from a file at [filename].
 // Returns false if the file could not be opened/parsed, true otherwise
 // -----------------------------------------------------------------------------
-bool Palette::loadFile(const wxString& filename, Format format)
+bool Palette::loadFile(std::string_view filename, Format format)
 {
-	// Get palette name
-	wxFileName fn(filename);
-	wxString   name = fn.GetName();
-
 	// Open the file
-	wxFile file(filename);
+	wxFile file(std::string{ filename });
 
 	// Check that it opened ok
 	if (!file.IsOpened())
@@ -421,7 +413,7 @@ bool Palette::loadFile(const wxString& filename, Format format)
 
 	// Write data to MemChunk
 	MemChunk mc;
-	mc.importFile(filename.ToStdString(), 0, file.Length());
+	mc.importFile(filename, 0, file.Length());
 
 	// Now load it
 	return loadMem(mc, format);

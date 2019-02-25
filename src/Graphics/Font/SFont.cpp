@@ -198,7 +198,7 @@ void SFont::drawCharacter(char c, ColRGBA colour)
 // -----------------------------------------------------------------------------
 // Draws the string [str] with the font, in [colour] with [align]ment
 // -----------------------------------------------------------------------------
-void SFont::drawString(const wxString& str, ColRGBA colour, SFont::Align align)
+void SFont::drawString(std::string_view str, ColRGBA colour, SFont::Align align)
 {
 	// Check texture is loaded
 	if (!OpenGL::Texture::isLoaded(texture_))
@@ -215,7 +215,7 @@ void SFont::drawString(const wxString& str, ColRGBA colour, SFont::Align align)
 	for (unsigned a = 0; a < str.size(); a++)
 	{
 		// Get character
-		auto& ch = characters_[(uint8_t)CHR(str)[a]];
+		auto& ch = characters_[(uint8_t)str[a]];
 
 		// Increment total width
 		if (ch.width_ > 0 || ch.height_ > 0)
@@ -236,7 +236,7 @@ void SFont::drawString(const wxString& str, ColRGBA colour, SFont::Align align)
 	for (unsigned a = 0; a < str.size(); a++)
 	{
 		// Get character
-		auto& ch = characters_[(uint8_t)CHR(str)[a]];
+		auto& ch = characters_[(uint8_t)str[a]];
 		if (ch.width_ == 0 && ch.height_ == 0)
 		{
 			xoff += spacing_;

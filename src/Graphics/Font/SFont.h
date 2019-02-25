@@ -41,7 +41,7 @@ public:
 
 	// Rendering
 	void drawCharacter(char c, ColRGBA colour = ColRGBA::WHITE);
-	void drawString(const wxString& str, ColRGBA colour = ColRGBA::WHITE, Align align = Align::Left);
+	void drawString(std::string_view str, ColRGBA colour = ColRGBA::WHITE, Align align = Align::Left);
 
 	// Static
 	static SFont& vgaFont();

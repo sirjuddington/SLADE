@@ -36,6 +36,9 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "General/Misc.h"
+#include "Utility/FileUtils.h"
+#include <filesystem>
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -64,15 +67,15 @@ bool PaletteManager::init()
 // Adds the palette [pal] to the list of managed palettes, identified by [name].
 // Returns false if the palette doesn't exist or the name is invalid
 // -----------------------------------------------------------------------------
-bool PaletteManager::addPalette(Palette::UPtr pal, const wxString& name)
+bool PaletteManager::addPalette(Palette::UPtr pal, std::string_view name)
 {
 	// Check palette and name were given
-	if (!pal || name.IsEmpty())
+	if (!pal || name.empty())
 		return false;
 
 	// Add palette+name
 	palettes_.push_back(std::move(pal));
-	pal_names_.push_back(name);
+	pal_names_.emplace_back(name);
 
 	return true;
 }
@@ -109,11 +112,11 @@ Palette* PaletteManager::palette(int index)
 // Returns the palette matching the given name, or the default palette
 // (greyscale) if no matching palette found
 // -----------------------------------------------------------------------------
-Palette* PaletteManager::palette(const wxString& name)
+Palette* PaletteManager::palette(std::string_view name)
 {
 	for (uint32_t a = 0; a < pal_names_.size(); a++)
 	{
-		if (pal_names_[a].Cmp(name) == 0)
+		if (pal_names_[a] == name)
 			return palettes_[a].get();
 	}
 
@@ -124,7 +127,7 @@ Palette* PaletteManager::palette(const wxString& name)
 // Returns the name of the palette at [index], or an empty string if index is
 // out of bounds
 // -----------------------------------------------------------------------------
-wxString PaletteManager::palName(int index)
+std::string PaletteManager::palName(int index)
 {
 	if (index < 0 || index >= numPalettes())
 		return "";
@@ -136,7 +139,7 @@ wxString PaletteManager::palName(int index)
 // Returns the name of the given palette, or an empty string if the palette
 // isn't managed by the PaletteManager
 // -----------------------------------------------------------------------------
-wxString PaletteManager::palName(Palette* pal)
+std::string PaletteManager::palName(Palette* pal)
 {
 	for (uint32_t a = 0; a < palettes_.size(); a++)
 	{
@@ -183,30 +186,24 @@ bool PaletteManager::loadResourcePalettes()
 bool PaletteManager::loadCustomPalettes()
 {
 	// If the directory doesn't exist create it
-	if (!wxDirExists(App::path("palettes", App::Dir::User)))
-		wxMkdir(App::path("palettes", App::Dir::User));
+	auto custom_path = App::path("palettes", App::Dir::User);
+	if (!FileUtil::dirExists(custom_path))
+		FileUtil::createDir(custom_path);
 
-	// Open the custom palettes directory
-	wxDir res_dir;
-	res_dir.Open(App::path("palettes", App::Dir::User));
-
-	// Go through each file in the directory
-	wxString filename = wxEmptyString;
-	bool     files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
-	while (files)
+	for (const auto& item : std::filesystem::directory_iterator{ custom_path })
 	{
+		if (!item.is_regular_file())
+			continue;
+
 		// Load palette data
 		auto     pal = std::make_unique<Palette>();
+		auto     file_path = item.path().string();
 		MemChunk mc;
-		mc.importFile((res_dir.GetName() + "/" + filename).ToStdString());
+		mc.importFile(file_path);
 		pal->loadMem(mc);
 
 		// Add the palette
-		wxFileName fn(filename);
-		addPalette(std::move(pal), fn.GetName());
-
-		// Next file
-		files = res_dir.GetNext(&filename);
+		addPalette(std::move(pal), StrUtil::Path::fileNameOf(file_path, false));
 	}
 
 	return true;

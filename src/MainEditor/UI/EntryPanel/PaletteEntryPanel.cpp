@@ -806,12 +806,12 @@ void PaletteEntryPanel::toolbarButtonClick(const wxString& action_id)
 bool PaletteEntryPanel::addCustomPalette()
 {
 	// Get name to export as
-	wxString name = wxGetTextFromUser("Enter name for Palette:", "Add to Palettes");
-	if (name.IsEmpty())
+	auto name = wxGetTextFromUser("Enter name for Palette:", "Add to Palettes").ToStdString();
+	if (name.empty())
 		return false;
 
 	// Write current palette to the user palettes directory
-	wxString path = App::path(fmt::format("palettes/{}.pal", CHR(name)), App::Dir::User);
+	auto path = App::path(fmt::format("palettes/{}.pal", name), App::Dir::User);
 	palettes_[cur_palette_]->saveFile(path);
 
 	// Add to palette manager and main palette chooser
@@ -833,7 +833,7 @@ bool PaletteEntryPanel::testPalette()
 
 	// Add to palette manager and main palette chooser
 	auto pal = std::make_unique<Palette>(*palettes_[cur_palette_]);
-	App::paletteManager()->addPalette(std::move(pal), name);
+	App::paletteManager()->addPalette(std::move(pal), name.ToStdString());
 	theMainWindow->paletteChooser()->addPalette(name);
 	theMainWindow->paletteChooser()->selectPalette(name);
 
@@ -848,7 +848,7 @@ bool PaletteEntryPanel::exportAs()
 	// Run save file dialog
 	SFileDialog::FDInfo info;
 	if (SFileDialog::saveFile(info, "Export Palette As", extensions, this))
-		return palettes_[cur_palette_]->saveFile(info.filenames[0], pal_formats[info.ext_index]);
+		return palettes_[cur_palette_]->saveFile(info.filenames[0].ToStdString(), pal_formats[info.ext_index]);
 
 	return false;
 }
@@ -865,7 +865,7 @@ bool PaletteEntryPanel::importFrom()
 	if (SFileDialog::openFile(info, "Import Palette As", extensions, this))
 	{
 		// Load palette
-		ret = palettes_[cur_palette_]->loadFile(info.filenames[0], pal_formats[info.ext_index]);
+		ret = palettes_[cur_palette_]->loadFile(info.filenames[0].ToStdString(), pal_formats[info.ext_index]);
 		if (ret)
 		{
 			setModified();
