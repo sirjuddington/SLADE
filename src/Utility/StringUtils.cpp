@@ -525,6 +525,32 @@ std::string StrUtil::transform(const std::string_view str, int options)
 	return s;
 }
 
+std::string StrUtil::left(std::string_view str, unsigned n)
+{
+	return std::string { str.substr(0, n) };
+}
+
+std::string_view StrUtil::leftV(std::string_view str, unsigned n)
+{
+	return str.substr(0, n);
+}
+
+std::string StrUtil::right(std::string_view str, unsigned n)
+{
+	if (str.size() <= n)
+		return std::string{ str };
+
+	return std::string{ str.substr(str.size() - n, n) };
+}
+
+std::string_view StrUtil::rightV(std::string_view str, unsigned n)
+{
+	if (str.size() <= n)
+		return str;
+
+	return str.substr(str.size() - n, n);
+}
+
 std::string StrUtil::afterLast(std::string_view str, char chr)
 {
 	for (int i = str.size() - 1; i >= 0; --i)
@@ -532,6 +558,15 @@ std::string StrUtil::afterLast(std::string_view str, char chr)
 			return std::string{ str.substr(i + 1) };
 
 	return std::string{ str };
+}
+
+std::string_view StrUtil::afterLastV(std::string_view str, char chr)
+{
+	for (int i = str.size() - 1; i >= 0; --i)
+		if (str[i] == chr)
+			return str.substr(i + 1);
+
+	return str;
 }
 
 std::string StrUtil::afterFirst(std::string_view str, char chr)
@@ -543,6 +578,15 @@ std::string StrUtil::afterFirst(std::string_view str, char chr)
 	return std::string{ str };
 }
 
+std::string_view StrUtil::afterFirstV(std::string_view str, char chr)
+{
+	for (unsigned i = 0; i < str.size(); i++)
+		if (str[i] == chr)
+			return str.substr(i + 1);
+
+	return str;
+}
+
 std::string StrUtil::beforeLast(std::string_view str, char chr)
 {
 	for (int i = str.size() - 1; i >= 0; --i)
@@ -552,6 +596,15 @@ std::string StrUtil::beforeLast(std::string_view str, char chr)
 	return std::string{ str };
 }
 
+std::string_view StrUtil::beforeLastV(std::string_view str, char chr)
+{
+	for (int i = str.size() - 1; i >= 0; --i)
+		if (str[i] == chr)
+			return str.substr(0, i);
+
+	return str;
+}
+
 std::string StrUtil::beforeFirst(std::string_view str, char chr)
 {
 	for (unsigned i = 0; i < str.size(); i++)
@@ -559,6 +612,15 @@ std::string StrUtil::beforeFirst(std::string_view str, char chr)
 			return std::string{ str.substr(0, i) };
 
 	return std::string{ str };
+}
+
+std::string_view StrUtil::beforeFirstV(std::string_view str, char chr)
+{
+	for (unsigned i = 0; i < str.size(); i++)
+		if (str[i] == chr)
+			return str.substr(0, i);
+
+	return str;
 }
 
 vector<std::string> StrUtil::split(std::string_view str, char separator)
@@ -580,7 +642,7 @@ vector<std::string> StrUtil::split(std::string_view str, char separator)
 	return split;
 }
 
-vector<std::string_view> StrUtil::splitToViews(std::string_view str, char separator)
+vector<std::string_view> StrUtil::splitV(std::string_view str, char separator)
 {
 	unsigned                 start = 0;
 	auto                     size  = str.size();
@@ -702,7 +764,7 @@ vector<std::string_view> StrUtil::Path::pathParts() const
 	if (filename_start_ == 0 || filename_start_ == std::string::npos)
 		return {};
 
-	return splitToViews({ full_path_.data(), filename_start_ - 1 }, '/');
+	return splitV({ full_path_.data(), filename_start_ - 1 }, '/');
 }
 
 bool StrUtil::Path::hasExtension() const

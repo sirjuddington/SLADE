@@ -85,12 +85,20 @@ std::string& prependIP(std::string& str, std::string_view prefix);
 std::string  transform(std::string_view str, int options);
 
 // Substrings
+std::string              left(std::string_view str, unsigned n);
+std::string_view         leftV(std::string_view str, unsigned n);
+std::string              right(std::string_view str, unsigned n);
+std::string_view         rightV(std::string_view str, unsigned n);
 std::string              afterLast(std::string_view str, char chr);
+std::string_view         afterLastV(std::string_view str, char chr);
 std::string              afterFirst(std::string_view str, char chr);
+std::string_view         afterFirstV(std::string_view str, char chr);
 std::string              beforeLast(std::string_view str, char chr);
+std::string_view         beforeLastV(std::string_view str, char chr);
 std::string              beforeFirst(std::string_view str, char chr);
+std::string_view         beforeFirstV(std::string_view str, char chr);
 vector<std::string>      split(std::string_view str, char separator);
-vector<std::string_view> splitToViews(std::string_view str, char separator);
+vector<std::string_view> splitV(std::string_view str, char separator);
 std::string              truncate(std::string_view str, unsigned length);
 std::string&             truncateIP(std::string& str, unsigned length);
 std::string              removeLast(std::string_view str, unsigned n);

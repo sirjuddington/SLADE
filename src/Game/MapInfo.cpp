@@ -160,7 +160,7 @@ bool MapInfo::strToCol(const std::string& str, ColRGBA& col) const
 	if (!wxcol.Set(str))
 	{
 		// Parse RR GG BB string
-		auto components = StrUtil::splitToViews(str, ' ');
+		auto components = StrUtil::splitV(str, ' ');
 		if (components.size() >= 3)
 		{
 			col.r = StrUtil::asInt(components[0], 16);
