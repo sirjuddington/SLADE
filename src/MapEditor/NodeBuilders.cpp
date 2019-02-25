@@ -44,11 +44,11 @@
 // -----------------------------------------------------------------------------
 namespace NodeBuilders
 {
-vector<Builder>  builders;
-Builder          invalid;
-Builder          none;
-wxString         custom;
-vector<wxString> builder_paths;
+vector<Builder>     builders;
+Builder             invalid;
+Builder             none;
+std::string         custom;
+vector<std::string> builder_paths;
 } // namespace NodeBuilders
 
 
@@ -127,10 +127,10 @@ void NodeBuilders::init()
 // -----------------------------------------------------------------------------
 // Adds [path] for [builder]
 // -----------------------------------------------------------------------------
-void NodeBuilders::addBuilderPath(wxString builder, wxString path)
+void NodeBuilders::addBuilderPath(std::string_view builder, std::string_view path)
 {
-	builder_paths.push_back(builder);
-	builder_paths.push_back(path);
+	builder_paths.emplace_back(builder);
+	builder_paths.emplace_back(path);
 }
 
 // -----------------------------------------------------------------------------
@@ -159,7 +159,7 @@ unsigned NodeBuilders::nNodeBuilders()
 // -----------------------------------------------------------------------------
 // Returns the node builder definition matching [id]
 // -----------------------------------------------------------------------------
-NodeBuilders::Builder& NodeBuilders::builder(wxString id)
+NodeBuilders::Builder& NodeBuilders::builder(std::string_view id)
 {
 	for (unsigned a = 0; a < builders.size(); a++)
 	{
