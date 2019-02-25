@@ -1072,8 +1072,8 @@ void ZTextureEditorPanel::onTextTranslationEnter(wxCommandEvent& e)
 	tz.openString(text_translation_->GetValue().ToStdString());
 	Translation trans;
 
-	wxString token = tz.getToken();
-	while (!token.IsEmpty())
+	auto token = tz.getToken();
+	while (!token.empty())
 	{
 		// Parse the translation component
 		trans.parse(token);

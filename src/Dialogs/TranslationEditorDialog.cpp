@@ -1249,7 +1249,7 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 
 		// Parse as a translation
 		Translation trans;
-		trans.parse(tstring);
+		trans.parse(tstring.ToStdString());
 
 		// Open it if parsed ok
 		if (trans.nRanges() > 0)

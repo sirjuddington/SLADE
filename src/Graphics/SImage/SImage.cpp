@@ -1339,7 +1339,7 @@ bool SImage::applyTranslation(std::string_view tr, Palette* pal, bool truecolor)
 {
 	Translation trans;
 	trans.clear();
-	trans.parse(wxString{ tr.data(), tr.size() });
+	trans.parse(tr);
 	return applyTranslation(&trans, pal, truecolor);
 }
 

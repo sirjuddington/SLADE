@@ -98,11 +98,11 @@ enum SpecialBlend
 // Parses a text definition [def] (in zdoom format, detailed here:
 // http://zdoom.org/wiki/Translation)
 // -----------------------------------------------------------------------------
-void Translation::parse(wxString def)
+void Translation::parse(std::string_view def)
 {
 	// Test for ZDoom built-in translation
-	wxString test = def.Lower();
-	wxString temp;
+	std::string def_str{ def };
+	auto test = StrUtil::lower(def);
 	if (test == "inverse")
 	{
 		built_in_name_ = "Inverse";
@@ -133,18 +133,18 @@ void Translation::parse(wxString def)
 		built_in_name_ = "Ice";
 		return;
 	}
-	else if (test.StartsWith("desaturate,", &temp))
+	else if (StrUtil::startsWith(test, "desaturate,"))
 	{
 		built_in_name_ = "Desaturate";
-		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(wxStringUtils::toInt(temp), 31), 1);
+		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(StrUtil::asInt(def.substr(11)), 31), 1);
 		return;
 	}
 
 	// Get Hexen tables
-	else if (test.StartsWith("\"$@", &temp))
+	else if (StrUtil::startsWith(test, "\"$@"))
 	{
-		temp.RemoveLast(1); // remove the closing '\"'
-		auto trantbl = App::archiveManager().getResourceEntry(temp.ToStdString());
+		def.remove_suffix(1); // remove the closing '\"'
+		auto trantbl = App::archiveManager().getResourceEntry(def.substr(3));
 
 		if (trantbl && trantbl->size() == 256)
 		{
@@ -154,12 +154,12 @@ void Translation::parse(wxString def)
 	}
 	// Test for hardcoded predefined translations
 	else
-		def = getPredefined(def);
+		def_str = getPredefined(def);
 
 	// Now we're guaranteed to have normal translation strings to parse
 	Tokenizer tz;
 	tz.setSpecialCharacters(",");
-	tz.openString(def.ToStdString());
+	tz.openString(def_str);
 	parseRange(tz.current().text);
 	while (tz.advIfNext(','))
 		parseRange(tz.next().text);
@@ -168,13 +168,13 @@ void Translation::parse(wxString def)
 // -----------------------------------------------------------------------------
 // Parses a single translation range
 // -----------------------------------------------------------------------------
-void Translation::parseRange(const wxString& range)
+void Translation::parseRange(std::string_view range)
 {
 	// Open definition string for processing w/tokenizer
 	Tokenizer tz;
 	tz.setSpecialCharacters("[]:%,=#@$");
-	tz.openString(range.ToStdString());
-	Log::debug("Processing range " + range);
+	tz.openString(range);
+	Log::debug("Processing range {}", range);
 
 	// Read original range
 	int o_start, o_end;
@@ -370,32 +370,32 @@ void Translation::read(const uint8_t* data)
 		}
 		val = data[i];
 	}
-	Log::info(3, wxString::Format("Translation table analyzed as " + asText()));
+	Log::info(3, "Translation table analyzed as " + asText());
 }
 
 // -----------------------------------------------------------------------------
 // Returns a string representation of the translation (in zdoom format)
 // -----------------------------------------------------------------------------
-wxString Translation::asText()
+std::string Translation::asText()
 {
-	wxString ret;
+	std::string ret;
 
-	if (built_in_name_.IsEmpty())
+	if (built_in_name_.empty())
 	{
 		// Go through translation ranges
 		for (auto& translation : translations_)
-			ret += wxString::Format("\"%s\", ", translation->asText()); // Add range to string
+			ret += fmt::format("\"{}\", ", translation->asText()); // Add range to string
 
 		// If any translations were defined, remove last ", "
-		if (!ret.IsEmpty())
-			ret.RemoveLast(2);
+		if (!ret.empty())
+			StrUtil::removeLastIP(ret, 2);
 	}
 	else
 	{
 		// ZDoom built-in translation
 		ret = built_in_name_;
 		if (built_in_name_ == "Desaturate")
-			ret += wxString::Format(", %d", desat_amount_);
+			ret += fmt::format(", {}", desat_amount_);
 	}
 
 	return ret;
@@ -466,19 +466,19 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 	if (!built_in_name_.empty())
 	{
 		int type = SpecialBlend::Invalid;
-		if (S_CMPNOCASE(built_in_name_, "ice"))
+		if (StrUtil::equalCI(built_in_name_, "ice"))
 			type = SpecialBlend::Ice;
-		else if (S_CMPNOCASE(built_in_name_, "inverse"))
+		else if (StrUtil::equalCI(built_in_name_, "inverse"))
 			type = SpecialBlend::Inverse;
-		else if (S_CMPNOCASE(built_in_name_, "red"))
+		else if (StrUtil::equalCI(built_in_name_, "red"))
 			type = SpecialBlend::Red;
-		else if (S_CMPNOCASE(built_in_name_, "green"))
+		else if (StrUtil::equalCI(built_in_name_, "green"))
 			type = SpecialBlend::Green;
-		else if (S_CMPNOCASE(built_in_name_, "blue"))
+		else if (StrUtil::equalCI(built_in_name_, "blue"))
 			type = SpecialBlend::Blue;
-		else if (S_CMPNOCASE(built_in_name_, "gold"))
+		else if (StrUtil::equalCI(built_in_name_, "gold"))
 			type = SpecialBlend::Gold;
-		else if (S_CMPNOCASE(built_in_name_, "desaturate"))
+		else if (StrUtil::equalCI(built_in_name_, "desaturate"))
 			type = desat_amount_; // min 1, max 31 required
 
 		return specialBlend(col, type, pal);
@@ -602,25 +602,25 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 		else if (range->type() == TransRange::Type::Special)
 		{
 			auto     ts   = dynamic_cast<TransRangeSpecial*>(range.get());
-			wxString spec = ts->special();
+			const auto& spec = ts->special();
 			uint8_t  type = Invalid;
-			if (S_CMPNOCASE(spec, "ice"))
+			if (StrUtil::equalCI(spec, "ice"))
 				type = SpecialBlend::Ice;
-			else if (S_CMPNOCASE(spec, "inverse"))
+			else if (StrUtil::equalCI(spec, "inverse"))
 				type = SpecialBlend::Inverse;
-			else if (S_CMPNOCASE(spec, "red"))
+			else if (StrUtil::equalCI(spec, "red"))
 				type = SpecialBlend::Red;
-			else if (S_CMPNOCASE(spec, "green"))
+			else if (StrUtil::equalCI(spec, "green"))
 				type = SpecialBlend::Green;
-			else if (S_CMPNOCASE(spec, "blue"))
+			else if (StrUtil::equalCI(spec, "blue"))
 				type = SpecialBlend::Blue;
-			else if (S_CMPNOCASE(spec, "gold"))
+			else if (StrUtil::equalCI(spec, "gold"))
 				type = SpecialBlend::Gold;
-			else if (spec.Lower().StartsWith("desat"))
+			else if (StrUtil::startsWithCI(spec, "desat"))
 			{
 				// This relies on SpecialBlend::1 to ::31 being occupied with desat
-				long temp;
-				if (spec.Right(2).ToLong(&temp) && temp < 32 && temp > 0)
+				int temp;
+				if (StrUtil::toInt(StrUtil::rightV(spec, 2), temp) && temp < 32 && temp > 0)
 					type = temp;
 			}
 			return specialBlend(col, type, pal);
@@ -769,7 +769,7 @@ void Translation::swapRanges(int pos1, int pos2)
 // -----------------------------------------------------------------------------
 // Replaces a hardcoded translation name with its transcription
 // -----------------------------------------------------------------------------
-wxString Translation::getPredefined(wxString def)
+std::string Translation::getPredefined(std::string_view def)
 {
 	// Some hardcoded translations from ZDoom, used in config files
 	if (def == "\"doom0\"")
@@ -865,5 +865,5 @@ wxString Translation::getPredefined(wxString def)
 	else if (def == "\"stealth\"")
 		def = "\"0:255=%[0.00,0.00,0.00]:[1.31,0.84,0.84]\"";
 
-	return def;
+	return std::string{ def };
 }

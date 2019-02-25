@@ -25,7 +25,7 @@ public:
 
 		IndexRange(int start, int end) : start{ (uint8_t)start }, end{ (uint8_t)end } {}
 
-		wxString asText() const { return wxString::Format("%d:%d", start, end); }
+		std::string asText() const { return fmt::format("{}:{}", start, end); }
 	};
 
 	typedef std::unique_ptr<TransRange> UPtr;
@@ -42,7 +42,7 @@ public:
 	void setStart(uint8_t val) { range_.start = val; }
 	void setEnd(uint8_t val) { range_.end = val; }
 
-	virtual wxString asText() { return ""; }
+	virtual std::string asText() { return ""; }
 
 protected:
 	Type       type_;
@@ -71,9 +71,9 @@ public:
 	void setDStart(uint8_t val) { dest_range_.start = val; }
 	void setDEnd(uint8_t val) { dest_range_.end = val; }
 
-	wxString asText() override
+	std::string asText() override
 	{
-		return wxString::Format("%d:%d=%d:%d", range_.start, range_.end, dest_range_.start, dest_range_.end);
+		return fmt::format("{}:{}={}:{}", range_.start, range_.end, dest_range_.start, dest_range_.end);
 	}
 
 private:
@@ -107,10 +107,10 @@ public:
 	void setStartColour(const ColRGBA& col) { col_start_.set(col); }
 	void setEndColour(const ColRGBA& col) { col_end_.set(col); }
 
-	wxString asText() override
+	std::string asText() override
 	{
-		return wxString::Format(
-			"%d:%d=[%d,%d,%d]:[%d,%d,%d]",
+		return fmt::format(
+			"{}:{}=[{},{},{}]:[{},{},{}]",
 			range_.start,
 			range_.end,
 			col_start_.r,
@@ -154,10 +154,10 @@ public:
 	void setDStart(float r, float g, float b) { rgb_start_ = { r, g, b }; }
 	void setDEnd(float r, float g, float b) { rgb_end_ = { r, g, b }; }
 
-	wxString asText() override
+	std::string asText() override
 	{
-		return wxString::Format(
-			"%d:%d=%%[%1.2f,%1.2f,%1.2f]:[%1.2f,%1.2f,%1.2f]",
+		return fmt::format(
+			"{}:{}=%[{:1.2f},{:1.2f},{:1.2f}]:[{:1.2f},{:1.2f},{:1.2f}]",
 			range_.start,
 			range_.end,
 			rgb_start_.r,
@@ -188,9 +188,9 @@ public:
 	const ColRGBA& colour() const { return colour_; }
 	void           setColour(const ColRGBA& c) { colour_ = c; }
 
-	wxString asText() override
+	std::string asText() override
 	{
-		return wxString::Format("%d:%d=#[%d,%d,%d]", range_.start, range_.end, colour_.r, colour_.g, colour_.b);
+		return fmt::format("{}:{}=#[{},{},{}]", range_.start, range_.end, colour_.r, colour_.g, colour_.b);
 	}
 
 private:
@@ -220,10 +220,9 @@ public:
 	void    setColour(const ColRGBA& c) { colour_ = c; }
 	void    setAmount(uint8_t a) { amount_ = a; }
 
-	wxString asText() override
+	std::string asText() override
 	{
-		return wxString::Format(
-			"%d:%d=@%d[%d,%d,%d]", range_.start, range_.end, amount_, colour_.r, colour_.g, colour_.b);
+		return fmt::format("{}:{}=@{}[{},{},{}]", range_.start, range_.end, amount_, colour_.r, colour_.g, colour_.b);
 	}
 
 private:
@@ -236,7 +235,7 @@ class TransRangeSpecial : public TransRange
 	friend class Translation;
 
 public:
-	TransRangeSpecial(IndexRange range, const wxString& special = "") :
+	TransRangeSpecial(IndexRange range, std::string_view special = "") :
 		TransRange{ Type::Special, range },
 		special_{ special }
 	{
@@ -247,13 +246,13 @@ public:
 	{
 	}
 
-	wxString special() const { return special_; }
-	void     setSpecial(const wxString& sp) { special_ = sp; }
+	const std::string& special() const { return special_; }
+	void               setSpecial(std::string_view sp) { special_ = sp; }
 
-	wxString asText() override { return wxString::Format("%d:%d=$%s", range_.start, range_.end, special_); }
+	std::string asText() override { return fmt::format("{}:{}=${}", range_.start, range_.end, special_); }
 
 private:
-	wxString special_;
+	std::string special_;
 };
 
 class Palette;
@@ -263,18 +262,18 @@ public:
 	Translation()  = default;
 	~Translation() = default;
 
-	void     parse(wxString def);
-	void     parseRange(const wxString& range);
-	void     read(const uint8_t* data);
-	wxString asText();
-	void     clear();
-	void     copy(const Translation& copy);
-	bool     isEmpty() const { return built_in_name_.IsEmpty() && translations_.empty(); }
+	void        parse(std::string_view def);
+	void        parseRange(std::string_view range);
+	void        read(const uint8_t* data);
+	std::string asText();
+	void        clear();
+	void        copy(const Translation& copy);
+	bool        isEmpty() const { return built_in_name_.empty() && translations_.empty(); }
 
-	unsigned    nRanges() const { return translations_.size(); }
-	TransRange* range(unsigned index);
-	wxString    builtInName() const { return built_in_name_; }
-	void        setDesaturationAmount(uint8_t amount) { desat_amount_ = amount; }
+	unsigned           nRanges() const { return translations_.size(); }
+	TransRange*        range(unsigned index);
+	const std::string& builtInName() const { return built_in_name_; }
+	void               setDesaturationAmount(uint8_t amount) { desat_amount_ = amount; }
 
 	ColRGBA translate(ColRGBA col, Palette* pal = nullptr);
 	ColRGBA specialBlend(ColRGBA col, uint8_t type, Palette* pal = nullptr) const;
@@ -283,10 +282,10 @@ public:
 	void removeRange(int pos);
 	void swapRanges(int pos1, int pos2);
 
-	static wxString getPredefined(wxString def);
+	static std::string getPredefined(std::string_view def);
 
 private:
 	vector<TransRange::UPtr> translations_;
-	wxString                 built_in_name_;
+	std::string              built_in_name_;
 	uint8_t                  desat_amount_ = 0;
 };
