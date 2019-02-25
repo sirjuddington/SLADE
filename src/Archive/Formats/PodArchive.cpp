@@ -106,7 +106,7 @@ bool PodArchive::open(MemChunk& mc)
 		new_entry->setLoaded(false);
 
 		// Add entry and directory to directory tree
-		auto ndir = createDir(std::string{ StrUtil::Path::pathOf(files[a].name, false) });
+		auto ndir = createDir(StrUtil::Path::pathOf(files[a].name, false));
 		ndir->addEntry(new_entry);
 
 		new_entry->setState(ArchiveEntry::State::Unmodified);

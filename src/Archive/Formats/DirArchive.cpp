@@ -108,7 +108,7 @@ bool DirArchive::open(std::string_view filename)
 		new_entry->exProp("filePath") = files[a];
 
 		// Add entry and directory to directory tree
-		auto ndir = createDir(std::string{ fn.path() });
+		auto ndir = createDir(fn.path());
 		ndir->addEntry(new_entry);
 		ndir->dirEntry()->exProp("filePath") = fmt::format("{}{}", filename, fn.path());
 
@@ -437,7 +437,7 @@ Archive::MapDesc DirArchive::mapDesc(ArchiveEntry* entry)
 	map.archive = true;
 	map.head    = entry;
 	map.end     = entry;
-	map.name    = std::string{ entry->upperNameNoExt() };
+	map.name    = entry->upperNameNoExt();
 
 	return map;
 }
@@ -477,7 +477,7 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 		md.head    = entry;
 		md.end     = entry;
 		md.archive = true;
-		md.name    = std::string{ entry->upperNameNoExt() };
+		md.name    = entry->upperNameNoExt();
 		md.format  = format;
 		ret.push_back(md);
 	}
@@ -656,7 +656,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 			new_entry->exProp("filePath") = change.file_path;
 
 			// Add entry and directory to directory tree
-			auto ndir = createDir(std::string{ fn.path() });
+			auto ndir = createDir(fn.path());
 			ndir->addEntry(new_entry);
 
 			// Read entry data

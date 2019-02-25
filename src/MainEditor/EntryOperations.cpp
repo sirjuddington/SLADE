@@ -966,7 +966,7 @@ bool EntryOperations::addToPatchTable(const vector<ArchiveEntry*>& entries)
 			continue;
 		}
 
-		ptable.addPatch(std::string{ entry->nameNoExt() });
+		ptable.addPatch(entry->nameNoExt());
 	}
 
 	// Write patch table data back to pnames entry
@@ -1348,7 +1348,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 				// See if the compiled library already exists as an entry
 				Archive::SearchOptions opt;
 				opt.match_namespace = "acs";
-				opt.match_name      = std::string{ entry->nameNoExt() };
+				opt.match_name      = entry->nameNoExt();
 				if (entry->parent()->formatDesc().names_extensions)
 				{
 					opt.match_name += ".o";

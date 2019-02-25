@@ -612,7 +612,7 @@ bool WadArchive::write(std::string_view filename, bool update)
 
 	// Open file for writing
 	wxFile file;
-	file.Open(std::string{ filename }, wxFile::write);
+	file.Open(wxString{ filename.data(), filename.size() }, wxFile::write);
 	if (!file.IsOpened())
 	{
 		Global::error = "Unable to open file for writing";
@@ -1140,7 +1140,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 				md.head    = entry;
 				md.end     = entry;
 				md.archive = true;
-				md.name    = std::string{ entry->upperNameNoExt() };
+				md.name    = entry->upperNameNoExt();
 				md.format  = emaps[0].format;
 				maps.push_back(md);
 			}

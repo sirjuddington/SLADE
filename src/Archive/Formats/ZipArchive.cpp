@@ -491,7 +491,7 @@ Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* entry)
 	map.archive = true;
 	map.head    = entry;
 	map.end     = entry;
-	map.name    = std::string{ entry->upperNameNoExt() };
+	map.name    = entry->upperNameNoExt();
 
 	return map;
 }
@@ -531,7 +531,7 @@ vector<Archive::MapDesc> ZipArchive::detectMaps()
 		md.head    = entry;
 		md.end     = entry;
 		md.archive = true;
-		md.name    = std::string{ entry->upperNameNoExt() };
+		md.name    = entry->upperNameNoExt();
 		md.format  = format;
 		ret.push_back(md);
 	}

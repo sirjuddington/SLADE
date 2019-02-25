@@ -113,7 +113,7 @@ bool DiskArchive::open(MemChunk& mc)
 		StrUtil::Path fn(name);
 
 		// Create directory if needed
-		auto dir = createDir(std::string{ fn.path() });
+		auto dir = createDir(fn.path());
 
 		// Create entry
 		auto entry              = std::make_shared<ArchiveEntry>(fn.fileName(), dent.length);

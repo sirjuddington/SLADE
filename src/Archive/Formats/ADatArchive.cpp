@@ -117,7 +117,7 @@ bool ADatArchive::open(MemChunk& mc)
 		}
 
 		// Create directory if needed
-		auto dir = createDir(std::string{ StrUtil::Path::pathOf(name) });
+		auto dir = createDir(StrUtil::Path::pathOf(name));
 
 		// Create entry
 		auto entry                = std::make_shared<ArchiveEntry>(StrUtil::Path::fileNameOf(name), compsize);

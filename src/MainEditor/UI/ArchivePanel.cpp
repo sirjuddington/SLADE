@@ -969,7 +969,7 @@ bool ArchivePanel::buildArchive()
 			auto entry = zip.addNewEntry(ename, dir->numEntries() + 1, dir);
 
 			// Log
-			UI::setSplashProgressMessage(std::string{ ename });
+			UI::setSplashProgressMessage(ename);
 			UI::setSplashProgress((float)a / files.size());
 
 			// Load data
@@ -2662,7 +2662,7 @@ bool ArchivePanel::optimizePNG() const
 		if (a == selection.size() - 1)
 			entry_list_->setEntriesAutoUpdate(true);
 
-		UI::setSplashProgressMessage(std::string{ selection[a]->nameNoExt() });
+		UI::setSplashProgressMessage(selection[a]->nameNoExt());
 		UI::setSplashProgress(float(a) / float(selection.size()));
 		if (selection[a]->type()->formatId() == "img_png")
 		{

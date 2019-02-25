@@ -407,7 +407,7 @@ void Game::init()
 			// Add to list if it doesn't already exist
 			if (game_defs.find(conf.name) == game_defs.end())
 			{
-				conf.filename        = std::string{ entry->nameNoExt() };
+				conf.filename        = entry->nameNoExt();
 				conf.user            = false;
 				game_defs[conf.name] = conf;
 			}
@@ -428,7 +428,7 @@ void Game::init()
 			// Add to list if it doesn't already exist
 			if (port_defs.find(conf.name) == port_defs.end())
 			{
-				conf.filename        = std::string{ entry->nameNoExt() };
+				conf.filename        = entry->nameNoExt();
 				conf.user            = false;
 				port_defs[conf.name] = conf;
 			}

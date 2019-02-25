@@ -528,7 +528,7 @@ ArchiveEntry* Archive::entryAtPath(std::string_view path)
 	if (fn.path(false).empty())
 		dir = &dir_root_;
 	else
-		dir = this->dir(std::string{ fn.path(true) });
+		dir = this->dir(fn.path(true));
 
 	// If dir doesn't exist, return nullptr
 	if (!dir)
@@ -552,7 +552,7 @@ ArchiveEntry::SPtr Archive::entryAtPathShared(std::string_view path)
 	if (fn.path(false).empty())
 		dir = &dir_root_;
 	else
-		dir = this->dir(std::string{ fn.path(true) });
+		dir = this->dir(fn.path(true));
 
 	// If dir doesn't exist, return nullptr
 	if (!dir)
@@ -783,7 +783,7 @@ ArchiveTreeNode* Archive::dir(std::string_view path, ArchiveTreeNode* base)
 			return &dir_root_;
 	}
 
-	return (ArchiveTreeNode*)base->child(std::string{ StrUtil::startsWith(path, '/') ? path.substr(1) : path });
+	return (ArchiveTreeNode*)base->child(StrUtil::startsWith(path, '/') ? path.substr(1) : path);
 }
 
 // -----------------------------------------------------------------------------
@@ -806,7 +806,7 @@ ArchiveTreeNode* Archive::createDir(std::string_view path, ArchiveTreeNode* base
 		return base;
 
 	// Create the directory
-	auto dir = (ArchiveTreeNode*)((STreeNode*)base)->addChild(std::string{ path });
+	auto dir = (ArchiveTreeNode*)((STreeNode*)base)->addChild(path);
 
 	// Record undo step
 	if (UndoRedo::currentlyRecording())
@@ -879,7 +879,7 @@ bool Archive::renameDir(ArchiveTreeNode* dir, std::string_view new_name)
 		if (UndoRedo::currentlyRecording())
 			UndoRedo::currentManager()->recordUndoStep(std::make_unique<DirRenameUS>(dir, new_name));
 
-		dir->setName(std::string{ new_name });
+		dir->setName(new_name);
 		dir->dirEntry()->setState(ArchiveEntry::State::Modified);
 	}
 	else

@@ -647,7 +647,7 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 		// Create backup
 		if (map.head
 			&& !MapEditor::backupManager().writeBackup(
-				   map_data_, map.head->topParent()->filename(false), std::string{ map.head->nameNoExt() }))
+				   map_data_, map.head->topParent()->filename(false), map.head->nameNoExt()))
 			Log::warning("Failed to backup map data");
 	}
 
@@ -897,7 +897,7 @@ bool MapEditorWindow::saveMap()
 
 	// Create backup
 	if (!MapEditor::backupManager().writeBackup(
-			map_data_, map.head->topParent()->filename(false), std::string{ map.head->nameNoExt() }))
+			map_data_, map.head->topParent()->filename(false), map.head->nameNoExt()))
 		Log::warning(1, "Warning: Failed to backup map data");
 
 	// Add new map entries

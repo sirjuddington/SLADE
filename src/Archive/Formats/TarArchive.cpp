@@ -324,7 +324,7 @@ bool TarArchive::open(MemChunk& mc)
 		if ((int)header.typeflag == AREGTYPE || (int)header.typeflag == REGTYPE)
 		{
 			// Create directory if needed
-			auto dir = createDir(std::string{ StrUtil::Path::pathOf(name) });
+			auto dir = createDir(StrUtil::Path::pathOf(name));
 
 			// Create entry
 			auto entry              = std::make_shared<ArchiveEntry>(StrUtil::Path::fileNameOf(name), size);

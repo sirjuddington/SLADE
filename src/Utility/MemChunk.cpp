@@ -146,7 +146,7 @@ bool MemChunk::reSize(uint32_t new_size, bool preserve_data)
 bool MemChunk::importFile(std::string_view filename, uint32_t offset, uint32_t len)
 {
 	// Open the file
-	wxFile file(std::string{ filename });
+	wxFile file(wxString{ filename.data(), filename.size() });
 
 	// Return false if file open failed
 	if (!file.IsOpened())
@@ -278,7 +278,7 @@ bool MemChunk::exportFile(std::string_view filename, uint32_t start, uint32_t si
 		size = this->size_ - start;
 
 	// Open file for writing
-	wxFile file(std::string{ filename }, wxFile::write);
+	wxFile file(wxString{ filename.data(), filename.size() }, wxFile::write);
 	if (!file.IsOpened())
 	{
 		Log::error("Unable to write to file {}", filename);

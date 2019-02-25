@@ -506,25 +506,6 @@ std::string& StrUtil::prependIP(std::string& str, std::string_view prefix)
 	return str;
 }
 
-std::string StrUtil::transform(const std::string_view str, int options)
-{
-	auto s = std::string{ str };
-
-	// Trim
-	if (options & TrimLeft)
-		s.erase(0, s.find_first_not_of(WHITESPACE_CHARACTERS));
-	if (options & TrimRight)
-		s.erase(0, s.find_last_not_of(WHITESPACE_CHARACTERS) + 1);
-
-	// Case change
-	if (options & LowerCase)
-		transform(s.begin(), s.end(), s.begin(), ::tolower);
-	else if (options & UpperCase)
-		transform(s.begin(), s.end(), s.begin(), ::toupper);
-
-	return s;
-}
-
 std::string StrUtil::left(std::string_view str, unsigned n)
 {
 	return std::string { str.substr(0, n) };
@@ -1010,7 +991,6 @@ void StrUtil::processIncludes(ArchiveEntry* entry, std::string& out, bool use_re
 	}
 
 	// Delete temp file
-	// FileUtil::removeFile(filename);
 	wxRemoveFile(filename);
 }
 

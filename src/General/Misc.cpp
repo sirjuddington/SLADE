@@ -126,7 +126,7 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 		ArchiveEntry* texture1 = parent->entry("TEXTURE1");
 		if (texture1 == nullptr)
 			return false;
-		Vec2i dimensions = findJaguarTextureDimensions(texture1, std::string{ entry->nameNoExt() });
+		Vec2i dimensions = findJaguarTextureDimensions(texture1, entry->nameNoExt());
 		return image->loadJaguarTexture(entry->rawData(), entry->size(), dimensions.x, dimensions.y);
 	}
 

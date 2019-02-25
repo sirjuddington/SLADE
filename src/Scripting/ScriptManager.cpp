@@ -351,7 +351,7 @@ void ScriptManager::populateEditorScriptMenu(wxMenu* menu, ScriptType type, std:
 {
 	int index = 0;
 	for (auto& script : scripts_editor[type])
-		menu->Append(SAction::fromId(std::string{ action_id })->wxId() + index++, script->name);
+		menu->Append(SAction::fromId(action_id)->wxId() + index++, script->name);
 }
 
 // -----------------------------------------------------------------------------

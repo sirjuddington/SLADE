@@ -40,7 +40,7 @@ public:
 	ParseTreeNode* childPTN(unsigned index) { return dynamic_cast<ParseTreeNode*>(child(index)); }
 
 	ParseTreeNode* addChildPTN(std::string_view name, std::string_view type = "");
-	void           addStringValue(std::string_view value) { values_.emplace_back(std::string{ value }); }
+	void           addStringValue(std::string_view value) { values_.emplace_back(value); }
 	void           addIntValue(int value) { values_.emplace_back(value); }
 	void           addBoolValue(bool value) { values_.emplace_back(value); }
 	void           addFloatValue(double value) { values_.emplace_back(value); }

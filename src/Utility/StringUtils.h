@@ -54,14 +54,6 @@ bool matchesCI(std::string_view str, std::string_view match);
 
 // String transformations
 // IP = In-Place
-enum TransformOptions
-{
-	TrimLeft  = 1,
-	TrimRight = 2,
-	Trim      = 3,
-	UpperCase = 4,
-	LowerCase = 8
-};
 std::string  escapedString(std::string_view str, bool swap_backslash = false);
 std::string& replaceIP(std::string& str, std::string_view from, std::string_view to);
 std::string  replace(std::string_view str, std::string_view from, std::string_view to);
@@ -82,7 +74,6 @@ std::string  capitalize(std::string_view str);
 std::string  wildcardToRegex(std::string_view str);
 std::string  prepend(std::string_view str, std::string_view prefix);
 std::string& prependIP(std::string& str, std::string_view prefix);
-std::string  transform(std::string_view str, int options);
 
 // Substrings
 std::string              left(std::string_view str, unsigned n);
@@ -165,6 +156,48 @@ private:
 	std::string            full_path_;
 	std::string::size_type filename_start_ = std::string::npos;
 	std::string::size_type filename_end_   = std::string::npos;
+};
+
+struct Transformer
+{
+	std::string string;
+
+	Transformer(std::string_view init) : string{ init } {}
+	Transformer(const wxString& init) : string{ init.data(), init.size() } {}
+
+	// Case
+	Transformer& upper()
+	{
+		upperIP(string);
+		return *this;
+	}
+	Transformer& lower()
+	{
+		lowerIP(string);
+		return *this;
+	}
+	Transformer& capitalize()
+	{
+		capitalizeIP(string);
+		return *this;
+	}
+
+	// Trim
+	Transformer& ltrim()
+	{
+		ltrimIP(string);
+		return *this;
+	}
+	Transformer& rtrim()
+	{
+		rtrimIP(string);
+		return *this;
+	}
+	Transformer& trim()
+	{
+		trimIP(string);
+		return *this;
+	}
 };
 
 } // namespace StrUtil
