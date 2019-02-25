@@ -806,7 +806,7 @@ void ArchiveManagerPanel::openTab(Archive* archive) const
 		wp = new ArchivePanel(stc_archives_, archive);
 
 		// Determine icon
-		wxString icon = "archive";
+		std::string icon = "archive";
 		if (archive->formatId() == "wad")
 			icon = "wad";
 		else if (archive->formatId() == "zip")

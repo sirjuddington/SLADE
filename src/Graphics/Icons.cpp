@@ -55,12 +55,12 @@ struct Icon
 	ArchiveEntry* resource_entry;
 };
 
-vector<Icon>     icons_general;
-vector<Icon>     icons_text_editor;
-vector<Icon>     icons_entry;
-wxBitmap         icon_empty;
-vector<wxString> iconsets_entry;
-vector<wxString> iconsets_general;
+vector<Icon>        icons_general;
+vector<Icon>        icons_text_editor;
+vector<Icon>        icons_entry;
+wxBitmap            icon_empty;
+vector<std::string> iconsets_entry;
+vector<std::string> iconsets_general;
 } // namespace Icons
 
 
@@ -105,13 +105,13 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 	}
 
 	// Get icon set dir
-	wxString icon_set_dir = "Default";
+	std::string icon_set_dir = "Default";
 	if (type == Entry)
 		icon_set_dir = iconset_entry_list;
 	if (type == General)
 		icon_set_dir = iconset_general;
-	if (icon_set_dir != "Default" && dir->child(icon_set_dir.ToStdString()))
-		dir = (ArchiveTreeNode*)dir->child(icon_set_dir.ToStdString());
+	if (icon_set_dir != "Default" && dir->child(icon_set_dir))
+		dir = (ArchiveTreeNode*)dir->child(icon_set_dir);
 
 	auto& icons    = iconList(type);
 	auto  tempfile = App::path("sladetemp", App::Dir::Temp);
@@ -204,7 +204,7 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 // -----------------------------------------------------------------------------
 bool Icons::loadIcons()
 {
-	wxString tempfile = App::path("sladetemp", App::Dir::Temp);
+	auto tempfile = App::path("sladetemp", App::Dir::Temp);
 
 	// Get slade.pk3
 	auto res_archive = App::archiveManager().programResourceArchive();
@@ -236,7 +236,7 @@ bool Icons::loadIcons()
 // If [type] is less than 0, try all icon types.
 // If [log_missing] is true, log an error message if the icon was not found
 // -----------------------------------------------------------------------------
-wxBitmap Icons::getIcon(Type type, const wxString& name, bool large, bool log_missing)
+wxBitmap Icons::getIcon(Type type, std::string_view name, bool large, bool log_missing)
 {
 	// Check all types if [type] is < 0
 	if (type == Any)
@@ -248,7 +248,7 @@ wxBitmap Icons::getIcon(Type type, const wxString& name, bool large, bool log_mi
 			icon = getIcon(TextEditor, name, large, false);
 
 		if (!icon.IsOk() && log_missing)
-			Log::warning(2, wxString::Format("Icon \"%s\" does not exist", name));
+			Log::warning(2, "Icon \"{}\" does not exist", name);
 
 		return icon;
 	}
@@ -273,7 +273,7 @@ wxBitmap Icons::getIcon(Type type, const wxString& name, bool large, bool log_mi
 	}
 
 	if (log_missing)
-		Log::warning(2, wxString::Format("Icon \"%s\" does not exist", name));
+		Log::warning(2, "Icon \"{}\" does not exist", name);
 
 	return wxNullBitmap;
 }
@@ -281,7 +281,7 @@ wxBitmap Icons::getIcon(Type type, const wxString& name, bool large, bool log_mi
 // -----------------------------------------------------------------------------
 // Returns the icon [name] of [type]
 // -----------------------------------------------------------------------------
-wxBitmap Icons::getIcon(Type type, const wxString& name)
+wxBitmap Icons::getIcon(Type type, std::string_view name)
 {
 	return getIcon(type, name, UI::scaleFactor() > 1.25);
 }
@@ -289,14 +289,14 @@ wxBitmap Icons::getIcon(Type type, const wxString& name)
 // -----------------------------------------------------------------------------
 // Exports icon [name] of [type] to a png image file at [path]
 // -----------------------------------------------------------------------------
-bool Icons::exportIconPNG(Type type, const wxString& name, const wxString& path)
+bool Icons::exportIconPNG(Type type, std::string_view name, std::string_view path)
 {
 	auto& icons = iconList(type);
 
 	for (auto& icon : icons)
 	{
 		if (icon.name == name)
-			return icon.resource_entry->exportFile(path.ToStdString());
+			return icon.resource_entry->exportFile(path);
 	}
 
 	return false;
@@ -305,7 +305,7 @@ bool Icons::exportIconPNG(Type type, const wxString& name, const wxString& path)
 // -----------------------------------------------------------------------------
 // Returns a list of currently available icon sets for [type]
 // -----------------------------------------------------------------------------
-vector<wxString> Icons::iconSets(Type type)
+vector<std::string> Icons::iconSets(Type type)
 {
 	if (type == General)
 		return iconsets_general;

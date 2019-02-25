@@ -49,7 +49,7 @@ SIconButton::SIconButton(wxWindow* parent, Icons::Type icon_type, const wxString
 	wxBitmapButton{ parent, -1, wxNullBitmap }
 {
 	// Create icon
-	auto bmp = Icons::getIcon(icon_type, icon, UI::scaleFactor() > 1.);
+	auto bmp = Icons::getIcon(icon_type, icon.ToStdString(), UI::scaleFactor() > 1.);
 
 	// Scale icon if required
 	auto size = UI::scalePx(16);

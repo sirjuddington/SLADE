@@ -161,8 +161,8 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	cb_condensed_tabs_      = new wxCheckBox(panel, -1, "Condensed tabs *");
 	wxString sizes[]        = { "Normal", "Large", "Extra Large" };
 	choice_toolbar_size_    = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, sizes);
-	auto sets               = Icons::iconSets(Icons::General);
-	choice_iconset_general_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets.size(), &sets[0]);
+	auto sets               = WxUtils::arrayStringStd(Icons::iconSets(Icons::General));
+	choice_iconset_general_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets);
 
 	// Layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -201,8 +201,8 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	cb_filter_dirs_       = new wxCheckBox(panel, -1, "Ignore directories when filtering by name");
 	cb_elist_bgcol_       = new wxCheckBox(panel, -1, "Colour entry list item background by entry type");
 	cb_context_submenus_  = new wxCheckBox(panel, -1, "Group related entry context menu items into submenus");
-	auto sets             = Icons::iconSets(Icons::Entry);
-	choice_iconset_entry_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets.size(), &sets[0]);
+	auto sets             = WxUtils::arrayStringStd(Icons::iconSets(Icons::Entry));
+	choice_iconset_entry_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets);
 
 	// Layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
