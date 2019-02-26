@@ -1131,7 +1131,7 @@ void MapObjectPropsPanel::clearGrid()
 // -----------------------------------------------------------------------------
 void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 {
-	wxString type;
+	std::string type;
 	if (last_type_ == MapObject::Type::Vertex)
 		type = "Vertex";
 	else if (last_type_ == MapObject::Type::Line)
@@ -1142,8 +1142,7 @@ void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 		type = "Thing";
 
 	// Apply changes
-	MapEditor::editContext().beginUndoRecordLocked(
-		wxString::Format("Modify %s Properties", CHR(type)), true, false, false);
+	MapEditor::editContext().beginUndoRecordLocked(fmt::format("Modify {} Properties", type), true, false, false);
 	applyChanges();
 	MapEditor::editContext().endUndoRecord();
 
@@ -1282,7 +1281,7 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 		if (property->propName() == name)
 		{
 			// Found, apply value
-			wxString type;
+			std::string type;
 			if (last_type_ == MapObject::Type::Vertex)
 				type = "Vertex";
 			else if (last_type_ == MapObject::Type::Line)
@@ -1293,7 +1292,7 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 				type = "Thing";
 
 			MapEditor::editContext().beginUndoRecordLocked(
-				wxString::Format("Modify %s Properties", CHR(type)), true, false, false);
+				fmt::format("Modify {} Properties", type), true, false, false);
 			property->applyValue();
 			MapEditor::editContext().endUndoRecord();
 			return;

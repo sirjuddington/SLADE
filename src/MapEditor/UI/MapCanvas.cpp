@@ -37,6 +37,7 @@
 #include "MapEditor/SectorBuilder.h"
 #include "OpenGL/Drawing.h"
 #include "Utility/MathStuff.h"
+#include "UI/WxUtils.h"
 
 using MapEditor::Mode;
 
@@ -222,18 +223,18 @@ void MapCanvas::onKeyBindPress(std::string_view name)
 		// Save to file
 		wxDateTime date;
 		date.SetToCurrent();
-		wxString timestamp = date.FormatISOCombined('-');
+		auto timestamp = date.FormatISOCombined('-');
 		timestamp.Replace(":", "");
-		wxString filename = App::path(fmt::format("sladeshot-{}.png", CHR(timestamp)), App::Dir::User);
+		auto filename = App::path(fmt::format("sladeshot-{}.png", WxUtils::strToView(timestamp)), App::Dir::User);
 		if (shot.saveToFile(UTF8(filename)))
 		{
 			// Editor message if the file is actually written, with full path
-			context_->addEditorMessage(wxString::Format("Screenshot taken (%s)", filename));
+			context_->addEditorMessage(fmt::format("Screenshot taken ({})", filename));
 		}
 		else
 		{
 			// Editor message also if the file couldn't be written
-			context_->addEditorMessage(wxString::Format("Screenshot failed (%s)", filename));
+			context_->addEditorMessage(fmt::format("Screenshot failed ({})", filename));
 		}
 	}
 #endif
@@ -316,7 +317,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 			if (sec2)
 				i2 = sec2->index();
 
-			context_->addEditorMessage(wxString::Format("Front %d Back %d", i1, i2));
+			context_->addEditorMessage(fmt::format("Front {} Back {}", i1, i2));
 		}
 		if (e.GetKeyCode() == WXK_F5 && context_->editMode() == Mode::Sectors)
 		{

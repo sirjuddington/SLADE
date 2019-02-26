@@ -447,7 +447,7 @@ bool MapEditor::editObjectProperties(vector<MapObject*>& list)
 	SDialog dlg(
 		MapEditor::window(),
 		wxString::Format("%s Properties %s", type, selsize),
-		wxString::Format("mobjprops_%s", CHR(edit_context->modeString(false))),
+		wxString::Format("mobjprops_%s", edit_context->modeString(false)),
 		-1,
 		-1);
 	auto sizer = new wxBoxSizer(wxVERTICAL);

@@ -266,7 +266,7 @@ void ItemSelection::selectAll()
 			selectItem({ (int)a, ItemType::Thing });
 	}
 
-	context_->addEditorMessage(wxString::Format("Selected all %lu %s", selection_.size(), context_->modeString()));
+	context_->addEditorMessage(fmt::format("Selected all {} {}", selection_.size(), context_->modeString()));
 	context_->selectionUpdated();
 }
 

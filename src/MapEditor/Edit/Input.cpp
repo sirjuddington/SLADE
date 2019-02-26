@@ -545,7 +545,7 @@ void Input::onKeyBindPress(std::string_view name)
 	// Send to edit context first
 	if (mouse_state_ == MouseState::Normal)
 	{
-		if (context_.handleKeyBind(wxString{ name.data(), name.size() }, mouse_pos_map_))
+		if (context_.handleKeyBind(name, mouse_pos_map_))
 			return;
 	}
 
@@ -1088,7 +1088,7 @@ void Input::handleKeyBind3d(std::string_view name) const
 
 	// Send to map editor
 	else
-		context_.handleKeyBind(wxString{ name.data(), name.size() }, mouse_pos_map_);
+		context_.handleKeyBind(name, mouse_pos_map_);
 }
 
 // -----------------------------------------------------------------------------

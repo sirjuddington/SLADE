@@ -948,7 +948,7 @@ void Edit2D::createSector(Vec2d pos) const
 		context_.endUndoRecord(true);
 	}
 	else
-		context_.addEditorMessage("Sector creation failed: " + builder.error());
+		context_.addEditorMessage("Sector creation failed: " + builder.error().ToStdString());
 }
 
 // -----------------------------------------------------------------------------

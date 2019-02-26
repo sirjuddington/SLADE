@@ -374,7 +374,7 @@ void MapChecksPanel::onBtnFix1(wxCommandEvent& e)
 	int selected = lb_errors_->GetSelection();
 	if (selected >= 0 && selected < (int)check_items_.size())
 	{
-		MapEditor::editContext().beginUndoRecord(btn_fix1_->GetLabel());
+		MapEditor::editContext().beginUndoRecord(WxUtils::strToView(btn_fix1_->GetLabel()));
 		MapEditor::editContext().selection().clear();
 		bool fixed = check_items_[selected].check->fixProblem(
 			check_items_[selected].index, 0, &MapEditor::editContext());
@@ -395,7 +395,7 @@ void MapChecksPanel::onBtnFix2(wxCommandEvent& e)
 	int selected = lb_errors_->GetSelection();
 	if (selected >= 0 && selected < (int)check_items_.size())
 	{
-		MapEditor::editContext().beginUndoRecord(btn_fix2_->GetLabel());
+		MapEditor::editContext().beginUndoRecord(WxUtils::strToView(btn_fix2_->GetLabel()));
 		MapEditor::editContext().selection().clear();
 		bool fixed = check_items_[selected].check->fixProblem(
 			check_items_[selected].index, 1, &MapEditor::editContext());

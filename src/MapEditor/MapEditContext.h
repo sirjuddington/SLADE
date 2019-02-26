@@ -34,12 +34,14 @@ class MapEditContext : public SActionHandler
 public:
 	struct EditorMessage
 	{
-		wxString message;
-		long     act_time;
+		std::string message;
+		long        act_time;
+
+		EditorMessage(std::string_view message, long act_time) : message{ message }, act_time{ act_time } {}
 	};
 
 	MapEditContext();
-	~MapEditContext();
+	~MapEditContext() = default;
 
 	SLADEMap&             map() { return map_; }
 	MapEditor::Mode       editMode() const { return edit_mode_; }
@@ -99,18 +101,18 @@ public:
 	Edit2D&      edit2D() { return edit_2d_; }
 
 	// Editor messages
-	unsigned numEditorMessages() const { return editor_messages_.size(); }
-	wxString editorMessage(int index);
-	long     editorMessageTime(int index);
-	void     addEditorMessage(const wxString& message);
+	unsigned           numEditorMessages() const { return editor_messages_.size(); }
+	const std::string& editorMessage(int index);
+	long               editorMessageTime(int index);
+	void               addEditorMessage(std::string_view message);
 
 	// Feature help text
-	const vector<wxString>& featureHelpLines() const { return feature_help_lines_; }
-	void                    setFeatureHelp(const vector<wxString>& lines);
+	const vector<std::string>& featureHelpLines() const { return feature_help_lines_; }
+	void                       setFeatureHelp(const vector<std::string>& lines);
 
 	// Undo/Redo
-	void beginUndoRecord(const wxString& name, bool mod = true, bool create = true, bool del = true);
-	void beginUndoRecordLocked(const wxString& name, bool mod = true, bool create = true, bool del = true);
+	void beginUndoRecord(std::string_view name, bool mod = true, bool create = true, bool del = true);
+	void beginUndoRecordLocked(std::string_view name, bool mod = true, bool create = true, bool del = true);
 	void endUndoRecord(bool success = true);
 	void recordPropertyChangeUndoStep(MapObject* object) const;
 	void doUndo();
@@ -134,13 +136,13 @@ public:
 	void resetPlayerStart() const;
 
 	// Misc
-	wxString modeString(bool plural = true) const;
-	bool     handleKeyBind(const wxString& key, Vec2d position);
-	void     updateDisplay();
-	void     updateStatusText() const;
-	void     updateThingLists();
-	void     setCursor(UI::MouseCursor cursor) const;
-	void     forceRefreshRenderer();
+	std::string modeString(bool plural = true) const;
+	bool        handleKeyBind(std::string_view key, Vec2d position);
+	void        updateDisplay();
+	void        updateStatusText() const;
+	void        updateThingLists();
+	void        setCursor(UI::MouseCursor cursor) const;
+	void        forceRefreshRenderer();
 
 
 	// SAction handler
@@ -167,10 +169,10 @@ private:
 	bool                  mouse_locked_   = false;
 
 	// Undo/Redo
-	bool     undo_modified_ = false;
-	bool     undo_created_  = false;
-	bool     undo_deleted_  = false;
-	wxString last_undo_level_;
+	bool        undo_modified_ = false;
+	bool        undo_created_  = false;
+	bool        undo_deleted_  = false;
+	std::string last_undo_level_;
 
 	// Tagged items
 	vector<MapSector*> tagged_sectors_;
@@ -202,7 +204,7 @@ private:
 	vector<EditorMessage> editor_messages_;
 
 	// Feature help text
-	vector<wxString> feature_help_lines_;
+	vector<std::string> feature_help_lines_;
 
 	// Player start swap
 	Vec2d player_start_pos_;
@@ -233,7 +235,7 @@ public:
 	~MapArchClipboardItem() = default;
 
 	void               addLines(const vector<MapLine*>& lines);
-	wxString           info() const;
+	std::string        info() const;
 	vector<MapVertex*> pasteToMap(SLADEMap* map, Vec2d position);
 	void               putLines(vector<MapLine*>& list);
 	Vec2d              midpoint() const { return midpoint_; }
@@ -252,11 +254,11 @@ public:
 	MapThingsClipboardItem() : ClipboardItem(Type::MapThings) {}
 	~MapThingsClipboardItem() = default;
 
-	void     addThings(vector<MapThing*>& things);
-	wxString info() const;
-	void     pasteToMap(SLADEMap* map, Vec2d position);
-	void     putThings(vector<MapThing*>& list);
-	Vec2d    midpoint() const { return midpoint_; }
+	void        addThings(vector<MapThing*>& things);
+	std::string info() const;
+	void        pasteToMap(SLADEMap* map, Vec2d position);
+	void        putThings(vector<MapThing*>& list);
+	Vec2d       midpoint() const { return midpoint_; }
 
 private:
 	vector<std::unique_ptr<MapThing>> things_;

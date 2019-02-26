@@ -132,8 +132,6 @@ MapEditContext::MapEditContext()
 	undo_manager_ = std::make_unique<UndoManager>(&map_);
 }
 
-MapEditContext::~MapEditContext() {}
-
 // -----------------------------------------------------------------------------
 // Changes the current edit mode to [mode]
 // -----------------------------------------------------------------------------
@@ -306,7 +304,7 @@ bool MapEditContext::update(long frametime)
 
 		// Update status bar
 		auto pos = renderer_.renderer3D().camPosition();
-		MapEditor::setStatusText(wxString::Format("Position: (%d, %d, %d)", (int)pos.x, (int)pos.y, (int)pos.z), 3);
+		MapEditor::setStatusText(fmt::format("Position: ({}, {}, {})", (int)pos.x, (int)pos.y, (int)pos.z), 3);
 
 		// Update hilight
 		MapEditor::Item hl{ -1, MapEditor::ItemType::Any };
@@ -371,7 +369,7 @@ bool MapEditContext::update(long frametime)
 // -----------------------------------------------------------------------------
 bool MapEditContext::openMap(Archive::MapDesc map)
 {
-	Log::info(wxString::Format("Opening map %s", map.name));
+	Log::info("Opening map {}", map.name);
 	if (!map_.readMap(map))
 		return false;
 
@@ -487,7 +485,7 @@ void MapEditContext::showItem(int index)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the current edit mode
 // -----------------------------------------------------------------------------
-wxString MapEditContext::modeString(bool plural) const
+std::string MapEditContext::modeString(bool plural) const
 {
 	switch (edit_mode_)
 	{
@@ -779,7 +777,7 @@ void MapEditContext::incrementGrid()
 	if (grid_size_ > 20)
 		grid_size_ = 20;
 
-	addEditorMessage(wxString::Format("Grid Size: %dx%d", (int)gridSize(), (int)gridSize()));
+	addEditorMessage(fmt::format("Grid Size: {}x{}", (int)gridSize(), (int)gridSize()));
 	updateStatusText();
 }
 
@@ -793,7 +791,7 @@ void MapEditContext::decrementGrid()
 	if (grid_size_ < mingrid)
 		grid_size_ = mingrid;
 
-	addEditorMessage(wxString::Format("Grid Size: %dx%d", (int)gridSize(), (int)gridSize()));
+	addEditorMessage(fmt::format("Grid Size: {}x{}", (int)gridSize(), (int)gridSize()));
 	updateStatusText();
 }
 
@@ -879,14 +877,14 @@ void MapEditContext::tagSectorAt(Vec2d pos)
 			// Un-tag
 			tagged_sectors_[a] = tagged_sectors_.back();
 			tagged_sectors_.pop_back();
-			addEditorMessage(wxString::Format("Untagged sector %u", sector->index()));
+			addEditorMessage(fmt::format("Untagged sector {}", sector->index()));
 			return;
 		}
 	}
 
 	// Tag
 	tagged_sectors_.push_back(sector);
-	addEditorMessage(wxString::Format("Tagged sector %u", sector->index()));
+	addEditorMessage(fmt::format("Tagged sector {}", sector->index()));
 }
 
 // -----------------------------------------------------------------------------
@@ -926,7 +924,7 @@ void MapEditContext::endTagEdit(bool accept)
 		if (tagged_sectors_.empty())
 			addEditorMessage("Cleared tags");
 		else
-			addEditorMessage(wxString::Format("Set tag %d", current_tag_));
+			addEditorMessage(fmt::format("Set tag {}", current_tag_));
 
 		endUndoRecord(true);
 	}
@@ -940,11 +938,11 @@ void MapEditContext::endTagEdit(bool accept)
 // -----------------------------------------------------------------------------
 // Returns the current editor message at [index]
 // -----------------------------------------------------------------------------
-wxString MapEditContext::editorMessage(int index)
+const std::string& MapEditContext::editorMessage(int index)
 {
 	// Check index
 	if (index < 0 || index >= (int)editor_messages_.size())
-		return "";
+		return StrUtil::EMPTY;
 
 	return editor_messages_[index].message;
 }
@@ -964,23 +962,20 @@ long MapEditContext::editorMessageTime(int index)
 // -----------------------------------------------------------------------------
 // Adds an editor message, removing the oldest if needed
 // -----------------------------------------------------------------------------
-void MapEditContext::addEditorMessage(const wxString& message)
+void MapEditContext::addEditorMessage(std::string_view message)
 {
 	// Remove oldest message if there are too many active
-	if (editor_messages_.size() >= 4)
+	if (editor_messages_.size() >= 10)
 		editor_messages_.erase(editor_messages_.begin());
 
 	// Add message to list
-	EditorMessage msg;
-	msg.message  = message;
-	msg.act_time = App::runTimer();
-	editor_messages_.push_back(msg);
+	editor_messages_.emplace_back(message, App::runTimer());
 }
 
 // -----------------------------------------------------------------------------
 // Sets the feature help text to display [lines]
 // -----------------------------------------------------------------------------
-void MapEditContext::setFeatureHelp(const vector<wxString>& lines)
+void MapEditContext::setFeatureHelp(const vector<std::string>& lines)
 {
 	feature_help_lines_.clear();
 	feature_help_lines_ = lines;
@@ -993,7 +988,7 @@ void MapEditContext::setFeatureHelp(const vector<wxString>& lines)
 // -----------------------------------------------------------------------------
 // Handles the keybind [key]
 // -----------------------------------------------------------------------------
-bool MapEditContext::handleKeyBind(const wxString& key, Vec2d position)
+bool MapEditContext::handleKeyBind(std::string_view key, Vec2d position)
 {
 	// --- General keybinds ---
 
@@ -1055,7 +1050,7 @@ bool MapEditContext::handleKeyBind(const wxString& key, Vec2d position)
 	}
 
 	// --- Sector mode keybinds ---
-	if (key.StartsWith("me2d_sector") && edit_mode_ == Mode::Sectors)
+	if (StrUtil::startsWith(key, "me2d_sector") && edit_mode_ == Mode::Sectors)
 	{
 		// Height changes
 		if (key == "me2d_sector_floor_up8")
@@ -1104,7 +1099,7 @@ bool MapEditContext::handleKeyBind(const wxString& key, Vec2d position)
 	}
 
 	// --- 3d mode keybinds ---
-	else if (key.StartsWith("me3d_") && edit_mode_ == Mode::Visual)
+	else if (StrUtil::startsWith(key, "me3d_") && edit_mode_ == Mode::Visual)
 	{
 		// Check is UDMF
 		bool is_udmf = map_.currentFormat() == MapFormat::UDMF;
@@ -1281,7 +1276,7 @@ void MapEditContext::updateDisplay()
 void MapEditContext::updateStatusText() const
 {
 	// Edit mode
-	wxString mode = "Mode: ";
+	std::string mode = "Mode: ";
 	switch (edit_mode_)
 	{
 	case Mode::Vertices: mode += "Vertices"; break;
@@ -1302,16 +1297,16 @@ void MapEditContext::updateStatusText() const
 	}
 
 	if (edit_mode_ != Mode::Visual && !selection_.empty())
-		mode += wxString::Format(" (%lu selected)", (int)selection_.size());
+		mode += fmt::format(" ({} selected)", (int)selection_.size());
 
 	MapEditor::setStatusText(mode, 1);
 
 	// Grid
-	wxString grid;
+	std::string grid;
 	if (gridSize() < 1)
-		grid = wxString::Format("Grid: %1.2fx%1.2f", gridSize(), gridSize());
+		grid = fmt::format("Grid: {:1.2f}x{:1.2f}", gridSize(), gridSize());
 	else
-		grid = wxString::Format("Grid: %dx%d", (int)gridSize(), (int)gridSize());
+		grid = fmt::format("Grid: {}x{}", (int)gridSize(), (int)gridSize());
 
 	if (grid_snap_)
 		grid += " (Snapping ON)";
@@ -1326,7 +1321,7 @@ void MapEditContext::updateStatusText() const
 // begin will modify object properties, [create/del] are true if it will create
 // or delete objects
 // -----------------------------------------------------------------------------
-void MapEditContext::beginUndoRecord(const wxString& name, bool mod, bool create, bool del)
+void MapEditContext::beginUndoRecord(std::string_view name, bool mod, bool create, bool del)
 {
 	// Setup
 	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
@@ -1337,7 +1332,7 @@ void MapEditContext::beginUndoRecord(const wxString& name, bool mod, bool create
 	undo_created_  = create;
 
 	// Begin recording
-	manager->beginRecord(name.ToStdString());
+	manager->beginRecord(name);
 
 	// Init map/objects for recording
 	if (undo_modified_)
@@ -1357,7 +1352,7 @@ void MapEditContext::beginUndoRecord(const wxString& name, bool mod, bool create
 // operations like offset changes etc. so that 5 offset changes to the same
 // object only create 1 undo level)
 // -----------------------------------------------------------------------------
-void MapEditContext::beginUndoRecordLocked(const wxString& name, bool mod, bool create, bool del)
+void MapEditContext::beginUndoRecordLocked(std::string_view name, bool mod, bool create, bool del)
 {
 	if (name != last_undo_level_)
 	{
@@ -1418,14 +1413,14 @@ void MapEditContext::doUndo()
 	selection_.clear();
 
 	// Undo
-	int      time      = App::runTimer() - 1;
-	auto     manager   = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
-	wxString undo_name = manager->undo();
+	int  time      = App::runTimer() - 1;
+	auto manager   = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
+	auto undo_name = manager->undo();
 
 	// Editor message
 	if (!undo_name.empty())
 	{
-		addEditorMessage(wxString::Format("Undo: %s", undo_name));
+		addEditorMessage(fmt::format("Undo: {}", undo_name));
 
 		// Refresh stuff
 		// updateTagged();
@@ -1454,12 +1449,12 @@ void MapEditContext::doRedo()
 	// Redo
 	int      time      = App::runTimer() - 1;
 	auto     manager   = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
-	wxString undo_name = manager->redo();
+	auto undo_name = manager->redo();
 
 	// Editor message
 	if (!undo_name.empty())
 	{
-		addEditorMessage(wxString::Format("Redo: %s", undo_name));
+		addEditorMessage(fmt::format("Redo: {}", undo_name));
 
 		// Refresh stuff
 		// updateTagged();
@@ -1902,11 +1897,11 @@ bool MapEditContext::handleAction(std::string_view id)
 			input_.setMouseState(Input::MouseState::TagSectors);
 
 			// Setup help text
-			wxString key_accept = KeyBind::bind("map_edit_accept").keysAsString();
-			wxString key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
+			auto key_accept = KeyBind::bind("map_edit_accept").keysAsString();
+			auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 			setFeatureHelp({ "Tag Edit",
-							 wxString::Format("%s = Accept", key_accept),
-							 wxString::Format("%s = Cancel", key_cancel),
+							 fmt::format("{} = Accept", key_accept),
+							 fmt::format("{} = Cancel", key_cancel),
 							 "Left Click = Toggle tagged sector" });
 		}
 
@@ -2163,10 +2158,10 @@ void MapArchClipboardItem::addLines(const vector<MapLine*>& lines)
 // -----------------------------------------------------------------------------
 // Returns a string with info on what items are copied
 // -----------------------------------------------------------------------------
-wxString MapArchClipboardItem::info() const
+std::string MapArchClipboardItem::info() const
 {
-	return wxString::Format(
-		"%lu Vertices, %lu Lines, %lu Sides and %lu Sectors",
+	return fmt::format(
+		"{} Vertices, {} Lines, {} Sides and {} Sectors",
 		vertices_.size(),
 		lines_.size(),
 		sides_.size(),
@@ -2326,9 +2321,9 @@ void MapThingsClipboardItem::addThings(vector<MapThing*>& things)
 // -----------------------------------------------------------------------------
 // Returns a string with info on what items are copied
 // -----------------------------------------------------------------------------
-wxString MapThingsClipboardItem::info() const
+std::string MapThingsClipboardItem::info() const
 {
-	return wxString::Format("%lu Things", things_.size());
+	return fmt::format("{} Things", things_.size());
 }
 
 // -----------------------------------------------------------------------------
@@ -2362,7 +2357,7 @@ void MapThingsClipboardItem::putThings(vector<MapThing*>& list)
 
 CONSOLE_COMMAND(m_show_item, 1, true)
 {
-	int index = wxStringUtils::toInt(args[0]);
+	int index = StrUtil::asInt(args[0]);
 	MapEditor::editContext().showItem(index);
 }
 
@@ -2412,7 +2407,7 @@ CONSOLE_COMMAND(m_check, 0, true)
 			if (check)
 				checks.push_back(std::move(check));
 			else
-				Log::console(wxString::Format("Unknown check \"%s\"", arg));
+				Log::console(fmt::format("Unknown check \"{}\"", arg));
 		}
 	}
 
@@ -2445,7 +2440,7 @@ CONSOLE_COMMAND(m_test_sector, 0, false)
 	for (unsigned a = 0; a < map.nThings(); a++)
 		map.sectors().atPos(map.thing(a)->position());
 	long ms = clock.getElapsedTime().asMilliseconds();
-	Log::info(wxString::Format("Took %ldms", ms));
+	Log::info("Took {}ms", ms);
 }
 
 CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
@@ -2458,33 +2453,33 @@ CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
 	// Vertices
 	for (unsigned a = 0; a < map.nVertices(); a++)
 		map.vertex(a)->backupTo(backup);
-	Log::info(wxString::Format("Vertices: %dms", clock.getElapsedTime().asMilliseconds()));
+	Log::info("Vertices: {}ms", clock.getElapsedTime().asMilliseconds());
 
 	// Lines
 	clock.restart();
 	for (unsigned a = 0; a < map.nLines(); a++)
 		map.line(a)->backupTo(backup);
-	Log::info(wxString::Format("Lines: %dms", clock.getElapsedTime().asMilliseconds()));
+	Log::info("Lines: {}ms", clock.getElapsedTime().asMilliseconds());
 
 	// Sides
 	clock.restart();
 	for (unsigned a = 0; a < map.nSides(); a++)
 		map.side(a)->backupTo(backup);
-	Log::info(wxString::Format("Sides: %dms", clock.getElapsedTime().asMilliseconds()));
+	Log::info("Sides: {}ms", clock.getElapsedTime().asMilliseconds());
 
 	// Sectors
 	clock.restart();
 	for (unsigned a = 0; a < map.nSectors(); a++)
 		map.sector(a)->backupTo(backup);
-	Log::info(wxString::Format("Sectors: %dms", clock.getElapsedTime().asMilliseconds()));
+	Log::info("Sectors: {}ms", clock.getElapsedTime().asMilliseconds());
 
 	// Things
 	clock.restart();
 	for (unsigned a = 0; a < map.nThings(); a++)
 		map.thing(a)->backupTo(backup);
-	Log::info(wxString::Format("Things: %dms", clock.getElapsedTime().asMilliseconds()));
+	Log::info("Things: {}ms", clock.getElapsedTime().asMilliseconds());
 
-	Log::info(wxString::Format("Total: %dms", totalClock.getElapsedTime().asMilliseconds()));
+	Log::info("Total: {}ms", totalClock.getElapsedTime().asMilliseconds());
 }
 
 CONSOLE_COMMAND(m_vertex_attached, 1, false)
@@ -2494,7 +2489,7 @@ CONSOLE_COMMAND(m_vertex_attached, 1, false)
 	{
 		Log::info(1, "Attached lines:");
 		for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
-			Log::info(wxString::Format("Line #%lu", vertex->connectedLine(a)->index()));
+			Log::info("Line #{}", vertex->connectedLine(a)->index());
 	}
 }
 
@@ -2505,7 +2500,7 @@ CONSOLE_COMMAND(m_n_polys, 0, false)
 	for (unsigned a = 0; a < map.nSectors(); a++)
 		npoly += map.sector(a)->polygon()->nSubPolys();
 
-	Log::console(wxString::Format("%d polygons total", npoly));
+	Log::console(fmt::format("{} polygons total", npoly));
 }
 
 CONSOLE_COMMAND(mobj_info, 1, false)
@@ -2519,21 +2514,10 @@ CONSOLE_COMMAND(mobj_info, 1, false)
 	{
 		MapObject::Backup bak;
 		obj->backupTo(&bak);
-		Log::console(wxString::Format("Object %d: %s #%lu", id, obj->typeName(), obj->index()));
+		Log::console(fmt::format("Object {}: {} #{}", id, obj->typeName(), obj->index()));
 		Log::console("Properties:");
 		Log::console(bak.properties.toString());
 		Log::console("Properties (internal):");
 		Log::console(bak.props_internal.toString());
 	}
 }
-
-// CONSOLE_COMMAND(m_test_save, 1, false) {
-//	vector<ArchiveEntry*> entries;
-//	theMapEditor->MapEditContext().getMap().writeDoomMap(entries);
-//	WadArchive temp;
-//	temp.addNewEntry("MAP01");
-//	for (unsigned a = 0; a < entries.size(); a++)
-//		temp.addEntry(entries[a]);
-//	temp.save(args[0]);
-//	temp.close();
-//}
