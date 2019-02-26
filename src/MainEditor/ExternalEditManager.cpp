@@ -71,7 +71,7 @@ public:
 	ArchiveEntry* getEntry() const { return entry_; }
 	void          fileModified() override { updateEntry(); }
 
-	virtual void updateEntry() { entry_->importFile(CHR(filename_)); }
+	virtual void updateEntry() { entry_->importFile(filename_.ToStdString()); }
 
 	virtual bool exportEntry()
 	{

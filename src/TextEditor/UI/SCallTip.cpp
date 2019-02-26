@@ -193,9 +193,9 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	{
 		wxString deprecated_msg = "[ Deprecated";
 		if (!context.deprecated_v.empty())
-			deprecated_msg = wxString::Format("%s v%s", deprecated_msg, CHR(context.deprecated_v));
+			deprecated_msg = wxString::Format("%s v%s", deprecated_msg, context.deprecated_v);
 		if (!context.deprecated_f.empty())
-			deprecated_msg = wxString::Format("%s, use \'%s()\'", deprecated_msg, CHR(context.deprecated_f));
+			deprecated_msg = wxString::Format("%s, use \'%s()\'", deprecated_msg, context.deprecated_f);
 		deprecated_msg = wxString::Format("%s ] ", deprecated_msg);
 
 		dc.SetTextForeground(*wxRED);
@@ -323,7 +323,7 @@ wxRect SCallTip::drawArgs(
 
 		// Default value
 		if (!arg.default_value.empty())
-			left = drawText(dc, wxString::Format(" = %s", CHR(arg.default_value)), left, top, &rect);
+			left = drawText(dc, wxString::Format(" = %s", arg.default_value), left, top, &rect);
 
 		// Optional closing bracket
 		if (arg.optional && !txed_calltips_dim_optional)

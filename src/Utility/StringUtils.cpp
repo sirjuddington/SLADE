@@ -1375,7 +1375,7 @@ int wxStringUtils::toInt(const wxString& str)
 	if (str.ToLong(&tmp))
 		return tmp;
 
-	Log::error(wxString::Format("Can't convert \"%s\" to an integer", CHR(str)));
+	Log::error(wxString::Format("Can't convert \"%s\" to an integer", str));
 	return 0;
 }
 
@@ -1388,7 +1388,7 @@ float wxStringUtils::toFloat(const wxString& str)
 	if (str.ToDouble(&tmp))
 		return tmp;
 
-	Log::error(wxString::Format("Can't convert \"%s\" to a float", CHR(str)));
+	Log::error(wxString::Format("Can't convert \"%s\" to a float", str));
 	return 0.f;
 }
 
@@ -1401,6 +1401,6 @@ double wxStringUtils::toDouble(const wxString& str)
 	if (str.ToDouble(&tmp))
 		return tmp;
 
-	Log::error(wxString::Format("Can't convert \"%s\" to a double", CHR(str)));
+	Log::error(wxString::Format("Can't convert \"%s\" to a double", str));
 	return 0.;
 }

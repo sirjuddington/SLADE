@@ -635,8 +635,8 @@ void TextStylePrefsPanel::onBackgroundChanged(wxColourPickerEvent& e)
 void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 {
 	// Get name for set
-	wxString name = wxGetTextFromUser("Enter Style Set name:", "Save Style Set");
-	if (name.IsEmpty())
+	auto name = wxGetTextFromUser("Enter Style Set name:", "Save Style Set").ToStdString();
+	if (name.empty())
 		return;
 
 	// Create temp styleset
@@ -644,10 +644,10 @@ void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 	ss_temp.copySet(&ss_current_);
 
 	// Remove spaces from name (for filename)
-	name.Replace(" ", "_");
+	std::replace(name.begin(), name.end(), ' ', '_');
 
 	// Write set to file
-	auto filename = App::path(fmt::format("text_styles/%s.sss", CHR(name)), App::Dir::User);
+	auto filename = App::path(fmt::format("text_styles/{}.sss", name), App::Dir::User);
 	ss_temp.writeFile(filename);
 
 	// Add new set to list

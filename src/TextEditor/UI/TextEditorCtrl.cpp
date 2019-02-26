@@ -132,7 +132,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 					name = block;
 
 				// Add jump point
-				jump_points += wxString::Format("%d,%s,", tz.lineNo() - 1, CHR(name));
+				jump_points += wxString::Format("%d,%s,", tz.lineNo() - 1, name);
 			}
 		}
 

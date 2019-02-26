@@ -763,7 +763,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 		message = wxString::Format(
 			"A new beta version of SLADE is available (%s), click OK to visit the SLADE homepage "
 			"and download the update.",
-			CHR(version));
+			version);
 	}
 	else if (new_stable)
 	{
@@ -773,7 +773,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 		message = wxString::Format(
 			"A new version of SLADE is available (%s), click OK to visit the SLADE homepage and "
 			"download the update.",
-			CHR(version));
+			version);
 	}
 	else
 	{

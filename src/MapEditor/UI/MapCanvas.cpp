@@ -226,7 +226,7 @@ void MapCanvas::onKeyBindPress(std::string_view name)
 		auto timestamp = date.FormatISOCombined('-');
 		timestamp.Replace(":", "");
 		auto filename = App::path(fmt::format("sladeshot-{}.png", WxUtils::strToView(timestamp)), App::Dir::User);
-		if (shot.saveToFile(UTF8(filename)))
+		if (shot.saveToFile(filename))
 		{
 			// Editor message if the file is actually written, with full path
 			context_->addEditorMessage(fmt::format("Screenshot taken ({})", filename));

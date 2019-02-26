@@ -427,7 +427,7 @@ void MapChecksPanel::onBtnEditObject(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void MapChecksPanel::onBtnExport(wxCommandEvent& e)
 {
-	wxString            map_name = MapEditor::editContext().mapDesc().name;
+	auto            map_name = MapEditor::editContext().mapDesc().name;
 	SFileDialog::FDInfo info;
 	if (SFileDialog::saveFile(
 			info,
@@ -436,7 +436,7 @@ void MapChecksPanel::onBtnExport(wxCommandEvent& e)
 			MapEditor::windowWx(),
 			map_name + "-Problems"))
 	{
-		wxString text = wxString::Format("%lu problems found in map %s:\n\n", check_items_.size(), CHR(map_name));
+		auto text = fmt::format("{} problems found in map {}:\n\n", check_items_.size(), map_name);
 		for (auto& item : check_items_)
 			text += item.check->problemDesc(item.index) + "\n";
 		wxFile file;

@@ -91,7 +91,7 @@ void SStartPage::init()
 	html_startpage_->Bind(wxEVT_WEBVIEW_NAVIGATING, &SStartPage::onHTMLLinkClicked, this);
 
 	html_startpage_->Bind(wxEVT_WEBVIEW_ERROR, [&](wxWebViewEvent& e) {
-		Log::error(wxString::Format("wxWebView Error: %s", CHR(e.GetString())));
+		Log::error(wxString::Format("wxWebView Error: %s", e.GetString()));
 	});
 
 	if (App::platform() == App::Platform::Windows)

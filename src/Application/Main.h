@@ -23,10 +23,6 @@ typedef unsigned __int64 uint64_t;
 #define S_CMP(s1, s2) s1.Cmp(s2) == 0
 #define S_CMPNOCASE(s1, s2) s1.CmpNoCase(s2) == 0
 
-// Macro to convert a wxString to a c string
-#define CHR(s) (static_cast<const char*>((s).ToAscii()))
-#define UTF8(s) (static_cast<const char*>((s).c_str()))
-
 // Vectors
 using std::vector;
 
