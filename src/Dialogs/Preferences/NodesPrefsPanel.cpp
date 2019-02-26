@@ -149,7 +149,7 @@ void NodesPrefsPanel::applyPreferences()
 {
 	// Set nodebuilder
 	auto& builder  = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
-	nodebuilder_id = CHR(builder.id);
+	nodebuilder_id = builder.id;
 
 	// Set options string
 	std::string opt = " ";

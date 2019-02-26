@@ -2374,10 +2374,10 @@ CONSOLE_COMMAND(m_check, 0, true)
 
 		Log::console("Available map checks:");
 		for (auto a = 0; a < MapCheck::NumStandardChecks; ++a)
-			Log::console(wxString::Format(
-				"%s: Check for %s",
-				CHR(MapCheck::standardCheckId(static_cast<MapCheck::StandardCheck>(a))),
-				CHR(MapCheck::standardCheckDesc(static_cast<MapCheck::StandardCheck>(a)))));
+			Log::console(fmt::format(
+				"{}: Check for {}",
+				MapCheck::standardCheckId(static_cast<MapCheck::StandardCheck>(a)),
+				MapCheck::standardCheckDesc(static_cast<MapCheck::StandardCheck>(a))));
 
 		Log::console("all: Run all checks");
 

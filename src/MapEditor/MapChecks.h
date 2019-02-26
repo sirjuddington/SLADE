@@ -32,20 +32,20 @@ public:
 	MapCheck(SLADEMap* map) : map_{ map } {}
 	virtual ~MapCheck() = default;
 
-	virtual void       doCheck()                                                             = 0;
-	virtual unsigned   nProblems()                                                           = 0;
-	virtual wxString   problemDesc(unsigned index)                                           = 0;
-	virtual bool       fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) = 0;
-	virtual MapObject* getObject(unsigned index)                                             = 0;
-	virtual wxString   progressText() { return "Checking..."; }
-	virtual wxString   fixText(unsigned fix_type, unsigned index) { return ""; }
+	virtual void        doCheck()                                                             = 0;
+	virtual unsigned    nProblems()                                                           = 0;
+	virtual std::string problemDesc(unsigned index)                                           = 0;
+	virtual bool        fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) = 0;
+	virtual MapObject*  getObject(unsigned index)                                             = 0;
+	virtual std::string progressText() { return "Checking..."; }
+	virtual std::string fixText(unsigned fix_type, unsigned index) { return ""; }
 
 	typedef std::unique_ptr<MapCheck> UPtr;
 
-	static UPtr     standardCheck(StandardCheck type, SLADEMap* map, MapTextureManager* texman = nullptr);
-	static UPtr     standardCheck(const wxString& type_id, SLADEMap* map, MapTextureManager* texman = nullptr);
-	static wxString standardCheckDesc(StandardCheck type);
-	static wxString standardCheckId(StandardCheck type);
+	static UPtr        standardCheck(StandardCheck type, SLADEMap* map, MapTextureManager* texman = nullptr);
+	static UPtr        standardCheck(std::string_view type_id, SLADEMap* map, MapTextureManager* texman = nullptr);
+	static std::string standardCheckDesc(StandardCheck type);
+	static std::string standardCheckId(StandardCheck type);
 
 protected:
 	SLADEMap* map_;
