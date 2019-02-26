@@ -402,7 +402,7 @@ void Edit2D::changeSectorTexture() const
 
 	// Determine the initial texture
 	std::string texture, browser_title, undo_name;
-	auto     mode = context_.sectorEditMode();
+	auto        mode = context_.sectorEditMode();
 	if (mode == SectorMode::Floor)
 	{
 		texture       = selection[0]->floor().texture;
@@ -426,8 +426,7 @@ void Edit2D::changeSectorTexture() const
 	context_.selection().lockHilight();
 
 	// Open texture browser
-	auto selected_tex = MapEditor::browseTexture(texture, MapEditor::TextureType::Flat, context_.map(), browser_title)
-							.ToStdString();
+	auto selected_tex = MapEditor::browseTexture(texture, MapEditor::TextureType::Flat, context_.map(), browser_title);
 	if (!selected_tex.empty())
 	{
 		// Set texture depending on edit mode
@@ -564,8 +563,7 @@ void Edit2D::changeThingType() const
 		if (selection.size() == 1)
 			context_.addEditorMessage(fmt::format("Changed type to \"{}\"", type_name));
 		else
-			context_.addEditorMessage(
-				fmt::format("Changed {} things to type \"{}\"", selection.size(), type_name));
+			context_.addEditorMessage(fmt::format("Changed {} things to type \"{}\"", selection.size(), type_name));
 
 		// Update display
 		context_.updateDisplay();
@@ -854,8 +852,7 @@ void Edit2D::createVertex(Vec2d pos) const
 
 	// Editor message
 	if (vertex)
-		context_.addEditorMessage(
-			fmt::format("Created vertex at ({}, {})", (int)vertex->xPos(), (int)vertex->yPos()));
+		context_.addEditorMessage(fmt::format("Created vertex at ({}, {})", (int)vertex->xPos(), (int)vertex->yPos()));
 }
 
 // -----------------------------------------------------------------------------
@@ -887,8 +884,7 @@ void Edit2D::createThing(Vec2d pos) const
 
 	// Editor message
 	if (thing)
-		context_.addEditorMessage(
-			fmt::format("Created thing at ({}, {})", (int)thing->xPos(), (int)thing->yPos()));
+		context_.addEditorMessage(fmt::format("Created thing at ({}, {})", (int)thing->xPos(), (int)thing->yPos()));
 }
 
 // -----------------------------------------------------------------------------
@@ -948,7 +944,7 @@ void Edit2D::createSector(Vec2d pos) const
 		context_.endUndoRecord(true);
 	}
 	else
-		context_.addEditorMessage("Sector creation failed: " + builder.error().ToStdString());
+		context_.addEditorMessage("Sector creation failed: " + builder.error());
 }
 
 // -----------------------------------------------------------------------------
