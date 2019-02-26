@@ -37,6 +37,7 @@
 #include "General/UI.h"
 #include "OpenGL.h"
 #include "Utility/MathStuff.h"
+#include "Utility/StringUtils.h"
 
 #ifdef __WXGTK3__
 #include <gtk-3.0/gtk/gtk.h>
@@ -238,7 +239,7 @@ void Drawing::drawFilledRect(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 // Draws a filled rectangle with a border from [x1,y1] to [x2,y2]
 // -----------------------------------------------------------------------------
-void Drawing::drawBorderedRect(Vec2d tl, Vec2d br, ColRGBA colour, ColRGBA border_colour)
+void Drawing::drawBorderedRect(Vec2d tl, Vec2d br, const ColRGBA& colour, const ColRGBA& border_colour)
 {
 	drawBorderedRect(tl.x, tl.y, br.x, br.y, colour, border_colour);
 }
@@ -246,7 +247,13 @@ void Drawing::drawBorderedRect(Vec2d tl, Vec2d br, ColRGBA colour, ColRGBA borde
 // -----------------------------------------------------------------------------
 // Draws a filled rectangle with a border from [x1,y1] to [x2,y2]
 // -----------------------------------------------------------------------------
-void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, ColRGBA colour, ColRGBA border_colour)
+void Drawing::drawBorderedRect(
+	double         x1,
+	double         y1,
+	double         x2,
+	double         y2,
+	const ColRGBA& colour,
+	const ColRGBA& border_colour)
 {
 	// Rect
 	OpenGL::setColour(colour);
@@ -270,7 +277,7 @@ void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, ColRG
 // -----------------------------------------------------------------------------
 // Draws an ellipse at [mid]
 // -----------------------------------------------------------------------------
-void Drawing::drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides, ColRGBA colour)
+void Drawing::drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides, const ColRGBA& colour)
 {
 	// Set colour
 	OpenGL::setColour(colour);
@@ -289,7 +296,7 @@ void Drawing::drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides
 // -----------------------------------------------------------------------------
 // Draws a filled ellipse at [mid]
 // -----------------------------------------------------------------------------
-void Drawing::drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int sides, ColRGBA colour)
+void Drawing::drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int sides, const ColRGBA& colour)
 {
 	// Set colour
 	OpenGL::setColour(colour);
@@ -480,7 +487,7 @@ void Drawing::drawTextureWithin(
 // -----------------------------------------------------------------------------
 // Sets the [thickness] and [colour] of the outline to use when drawing text
 // -----------------------------------------------------------------------------
-void Drawing::setTextOutline(double thickness, ColRGBA colour)
+void Drawing::setTextOutline(double thickness, const ColRGBA& colour)
 {
 	text_outline_width = thickness;
 	outline_colour     = colour;
@@ -624,7 +631,7 @@ wxColour Drawing::darkColour(const wxColour& colour, float percent)
 // -----------------------------------------------------------------------------
 // TextBox class constructor
 // -----------------------------------------------------------------------------
-TextBox::TextBox(const wxString& text, Drawing::Font font, int width, int line_height) :
+TextBox::TextBox(std::string_view text, Drawing::Font font, int width, int line_height) :
 	font_{ font },
 	width_{ width },
 	line_height_{ line_height }
@@ -636,19 +643,19 @@ TextBox::TextBox(const wxString& text, Drawing::Font font, int width, int line_h
 // Splits [text] into separate lines (split by newlines), also performs further
 // splitting to word wrap the text within the box
 // -----------------------------------------------------------------------------
-void TextBox::split(const wxString& text)
+void TextBox::split(std::string_view text)
 {
 	// Clear current text lines
 	lines_.clear();
 
 	// Do nothing for empty string
-	if (text.IsEmpty())
+	if (text.empty())
 		return;
 
 	// Split at newlines
-	auto split = wxSplit(text, '\n');
-	for (unsigned a = 0; a < split.Count(); a++)
-		lines_.push_back(split[a]);
+	auto split = StrUtil::splitV(text, '\n');
+	for (auto& line : split)
+		lines_.emplace_back(line);
 
 	// Don't bother wrapping if width is really small
 	if (width_ < 32)
@@ -683,14 +690,14 @@ void TextBox::split(const wxString& text)
 				break;
 
 			c *= 0.5;
-			width = Drawing::textExtents(lines_[line].Mid(0, c), font_).x;
+			width = Drawing::textExtents(lines_[line].substr(0, c), font_).x;
 		}
 
 		// Increment length until it doesn't fit
 		while (width < width_)
 		{
 			c++;
-			width = Drawing::textExtents(lines_[line].Mid(0, c), font_).x;
+			width = Drawing::textExtents(lines_[line].substr(0, c), font_).x;
 		}
 		c--;
 
@@ -708,8 +715,8 @@ void TextBox::split(const wxString& text)
 			sc++;
 
 		// Split line
-		wxString nl  = lines_[line].Mid(sc);
-		lines_[line] = lines_[line].Mid(0, sc);
+		auto nl      = lines_[line].substr(sc);
+		lines_[line] = lines_[line].substr(0, sc);
 		lines_.insert(lines_.begin() + line + 1, nl);
 		line++;
 	}
@@ -724,7 +731,7 @@ void TextBox::split(const wxString& text)
 // -----------------------------------------------------------------------------
 // Sets the text box text
 // -----------------------------------------------------------------------------
-void TextBox::setText(const wxString& text)
+void TextBox::setText(std::string_view text)
 {
 	text_ = text;
 	split(text);
@@ -742,7 +749,7 @@ void TextBox::setSize(int width)
 // -----------------------------------------------------------------------------
 // Draws the text box
 // -----------------------------------------------------------------------------
-void TextBox::draw(int x, int y, ColRGBA colour, Drawing::Align alignment)
+void TextBox::draw(int x, int y, const ColRGBA& colour, Drawing::Align alignment)
 {
 	Rectd b;
 	Drawing::enableTextStateReset(false);

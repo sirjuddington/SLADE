@@ -50,10 +50,10 @@ void drawRect(Vec2d tl, Vec2d br);
 void drawRect(double x1, double y1, double x2, double y2);
 void drawFilledRect(Vec2d tl, Vec2d br);
 void drawFilledRect(double x1, double y1, double x2, double y2);
-void drawBorderedRect(Vec2d tl, Vec2d br, ColRGBA colour, ColRGBA border_colour);
-void drawBorderedRect(double x1, double y1, double x2, double y2, ColRGBA colour, ColRGBA border_colour);
-void drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides, ColRGBA colour);
-void drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int sides, ColRGBA colour);
+void drawBorderedRect(Vec2d tl, Vec2d br, const ColRGBA& colour, const ColRGBA& border_colour);
+void drawBorderedRect(double x1, double y1, double x2, double y2, const ColRGBA& colour, const ColRGBA& border_colour);
+void drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides, const ColRGBA& colour);
+void drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int sides, const ColRGBA& colour);
 
 // Texture drawing
 void  drawTexture(unsigned id, double x = 0, double y = 0, bool flipx = false, bool flipy = false);
@@ -63,17 +63,17 @@ void  drawTextureWithin(unsigned id, double x1, double y1, double x2, double y2,
 
 // Text drawing
 void drawText(
-	const wxString& text,
-	int           x         = 0,
-	int           y         = 0,
-	ColRGBA       colour    = ColRGBA::WHITE,
-	Font          font      = Font::Normal,
-	Align         alignment = Align::Left,
-	Rectd*        bounds    = nullptr);
-Vec2d textExtents(const wxString& text, Font font = Font::Normal);
+	const std::string& text,
+	int                x         = 0,
+	int                y         = 0,
+	ColRGBA            colour    = ColRGBA::WHITE,
+	Font               font      = Font::Normal,
+	Align              alignment = Align::Left,
+	Rectd*             bounds    = nullptr);
+Vec2d textExtents(const std::string& text, Font font = Font::Normal);
 void  enableTextStateReset(bool enable = true);
 void  setTextState(bool set = true);
-void  setTextOutline(double thickness, ColRGBA colour = ColRGBA::BLACK);
+void  setTextOutline(double thickness, const ColRGBA& colour = ColRGBA::BLACK);
 
 // Specific
 void drawHud();
@@ -96,23 +96,23 @@ wxColour darkColour(const wxColour& colour, float percent);
 class TextBox
 {
 public:
-	TextBox(const wxString& text, Drawing::Font font, int width, int line_height = -1);
+	TextBox(std::string_view text, Drawing::Font font, int width, int line_height = -1);
 	~TextBox() = default;
 
 	int  height() const { return height_; }
 	int  width() const { return width_; }
-	void setText(const wxString& text);
+	void setText(std::string_view text);
 	void setSize(int width);
 	void setLineHeight(int height) { line_height_ = height; }
-	void draw(int x, int y, ColRGBA colour = ColRGBA::WHITE, Drawing::Align alignment = Drawing::Align::Left);
+	void draw(int x, int y, const ColRGBA& colour = ColRGBA::WHITE, Drawing::Align alignment = Drawing::Align::Left);
 
 private:
-	wxString         text_;
-	vector<wxString> lines_;
-	Drawing::Font    font_        = Drawing::Font::Normal;
-	int              width_       = 0;
-	int              height_      = 0;
-	int              line_height_ = -1;
+	std::string         text_;
+	vector<std::string> lines_;
+	Drawing::Font       font_        = Drawing::Font::Normal;
+	int                 width_       = 0;
+	int                 height_      = 0;
+	int                 line_height_ = -1;
 
-	void split(const wxString& text);
+	void split(std::string_view text);
 };

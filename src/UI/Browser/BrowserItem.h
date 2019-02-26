@@ -24,7 +24,7 @@ public:
 				Drawing::Font           font,
 				BrowserCanvas::NameType nametype    = BrowserCanvas::NameType::Normal,
 				BrowserCanvas::ItemView viewtype    = BrowserCanvas::ItemView::Normal,
-				ColRGBA                 colour      = ColRGBA::WHITE,
+				const ColRGBA& colour      = ColRGBA::WHITE,
 				bool                    text_shadow = true);
 	virtual void     clearImage() {}
 	virtual wxString itemInfo() { return ""; }

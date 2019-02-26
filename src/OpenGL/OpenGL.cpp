@@ -33,6 +33,7 @@
 #include "OpenGL.h"
 #include "Utility/Colour.h"
 #include "General/ColourConfiguration.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -103,22 +104,21 @@ bool OpenGL::init()
 	Log::info(1, "Initialising OpenGL...");
 
 	// Get OpenGL info
-	info.vendor     = wxString::From8BitData((const char*)glGetString(GL_VENDOR));
-	info.renderer   = wxString::From8BitData((const char*)glGetString(GL_RENDERER));
-	info.version    = wxString::From8BitData((const char*)glGetString(GL_VERSION));
-	info.extensions = wxString::From8BitData((const char*)glGetString(GL_EXTENSIONS));
+	info.vendor     = (const char*)glGetString(GL_VENDOR);
+	info.renderer   = (const char*)glGetString(GL_RENDERER);
+	info.version    = (const char*)glGetString(GL_VERSION);
+	info.extensions = (const char*)glGetString(GL_EXTENSIONS);
 
 	// Get OpenGL version
-	auto temp = info.version;
-	temp.Truncate(3);
-	temp.ToDouble(&version);
-	Log::info(wxString::Format("OpenGL Version: %1.1f", version));
+	std::string_view temp{ info.version.data(), 3 };
+	StrUtil::toDouble(temp, version);
+	Log::info("OpenGL Version: {:1.1f}", version);
 
 	// Get max texture size
 	GLint val = 0;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &val);
 	max_tex_size = val;
-	Log::info(wxString::Format("Max Texture Size: %dx%d", max_tex_size, max_tex_size));
+	Log::info("Max Texture Size: {}x{}", max_tex_size, max_tex_size);
 
 	// Initialise GLEW
 	glewInit();

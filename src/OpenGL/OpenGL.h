@@ -41,10 +41,10 @@ enum class Blend
 
 struct Info
 {
-	wxString vendor;
-	wxString renderer;
-	wxString version;
-	wxString extensions;
+	std::string vendor;
+	std::string renderer;
+	std::string version;
+	std::string extensions;
 
 	Info() { vendor = renderer = version = extensions = "OpenGL not initialised"; }
 };

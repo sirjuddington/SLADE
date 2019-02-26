@@ -38,6 +38,7 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "Utility/StringUtils.h"
 
 
 using NameType = BrowserCanvas::NameType;
@@ -75,43 +76,41 @@ bool BrowserItem::loadImage()
 // it's image
 // -----------------------------------------------------------------------------
 void BrowserItem::draw(
-	int           size,
-	int           x,
-	int           y,
-	Drawing::Font font,
-	NameType      nametype,
-	ItemView      viewtype,
-	ColRGBA       colour,
-	bool          text_shadow)
+	int            size,
+	int            x,
+	int            y,
+	Drawing::Font  font,
+	NameType       nametype,
+	ItemView       viewtype,
+	const ColRGBA& colour,
+	bool           text_shadow)
 {
 	// Determine item name string (for normal viewtype)
-	wxString draw_name = "";
+	std::string draw_name;
 	if (nametype == NameType::Normal)
 		draw_name = name_;
 	else if (nametype == NameType::Index)
-		draw_name = wxString::Format("%d", index_);
+		draw_name = fmt::format("{}", index_);
 
 	// Truncate name if needed
-	if (parent_->truncateNames() && draw_name.Length() > 8)
+	if (parent_->truncateNames() && draw_name.size() > 8)
 	{
 		// textures/aquatex/AQCONC13.png -> t./a./AQCONC13.png
 		// textures/AQDIRT01.png -> t./AQDIRT01.png
-		if (draw_name.Find('/') != wxNOT_FOUND)
+		std::string_view draw_name_v{ draw_name };
+		if (StrUtil::contains(draw_name, '/'))
 		{
-			int      lastPos       = 0;
-			wxString new_draw_name = "";
-			while (draw_name.Mid(lastPos).Find('/') != wxNOT_FOUND)
+			int         last_pos = 0;
+			std::string new_draw_name;
+			while (StrUtil::contains(draw_name_v.substr(last_pos), '/'))
 			{
-				new_draw_name += draw_name.Mid(lastPos, 1) + "./";
-				lastPos += draw_name.Mid(lastPos).Find('/') + 1;
+				new_draw_name.append(draw_name_v.substr(last_pos, 1)).append("./");
+				last_pos += draw_name_v.substr(last_pos).find('/') + 1;
 			}
-			draw_name = new_draw_name + draw_name.AfterLast('/');
+			draw_name = new_draw_name + StrUtil::afterLast(draw_name, '/');
 		}
 		else
-		{
-			draw_name.Truncate(8);
-			draw_name += "...";
-		}
+			draw_name = fmt::format("{}...", std::string_view{ draw_name.data(), 8 });
 	}
 
 	// Item name
@@ -127,7 +126,7 @@ void BrowserItem::draw(
 		// Create text box if needed
 		if (!text_box_)
 			text_box_ = std::make_unique<TextBox>(
-				wxString::Format("%d\n%s", index_, name_), font, UI::scalePx(144), UI::scalePx(16));
+				fmt::format("{}\n{}", index_, name_), font, UI::scalePx(144), UI::scalePx(16));
 
 		int top = y;
 		top += ((size - text_box_->height()) * 0.5);

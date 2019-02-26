@@ -253,7 +253,7 @@ FTFont* getFont(Font font)
 // Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
 // the rendered text string are written to it.
 // -----------------------------------------------------------------------------
-void Drawing::drawText(const wxString& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
+void Drawing::drawText(const std::string& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
 {
 	// Get desired font
 	auto ftgl_font = getFont(font);
@@ -263,7 +263,7 @@ void Drawing::drawText(const wxString& text, int x, int y, ColRGBA colour, Font 
 		return;
 
 	// Setup alignment
-	auto  bbox   = ftgl_font->BBox(CHR(text), -1);
+	auto  bbox   = ftgl_font->BBox(text, -1);
 	int   xpos   = x;
 	int   ypos   = y;
 	float width  = bbox.Upper().X() - bbox.Lower().X();
@@ -279,7 +279,7 @@ void Drawing::drawText(const wxString& text, int x, int y, ColRGBA colour, Font 
 	// Set bounds rect
 	if (bounds)
 	{
-		bbox = ftgl_font->BBox(CHR(text), -1, FTPoint(xpos, ypos));
+		bbox = ftgl_font->BBox(text, -1, FTPoint(xpos, ypos));
 		bounds->set(bbox.Lower().X(), bbox.Lower().Y(), bbox.Upper().X(), bbox.Lower().Y() + height);
 	}
 
@@ -293,24 +293,24 @@ void Drawing::drawText(const wxString& text, int x, int y, ColRGBA colour, Font 
 		// Draw outline if set
 		OpenGL::setColour(text_outline_colour);
 		glTranslatef(-2.0f, -1.0f, 0.0f);
-		ftgl_font->Render(CHR(text), -1);
+		ftgl_font->Render(text, -1);
 		glTranslatef(0.0f, 2.0f, 0.0f);
-		ftgl_font->Render(CHR(text), -1);
+		ftgl_font->Render(text, -1);
 		glTranslatef(4.0f, 0.0f, 0.0f);
-		ftgl_font->Render(CHR(text), -1);
+		ftgl_font->Render(text, -1);
 		glTranslatef(0.0f, -2.0f, 0.0f);
-		ftgl_font->Render(CHR(text), -1);
+		ftgl_font->Render(text, -1);
 		glTranslatef(-2.0f, 1.0f, 0.0f);
 	}
 	OpenGL::setColour(colour);
-	ftgl_font->Render(CHR(text), -1);
+	ftgl_font->Render(text, -1);
 	glPopMatrix();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the width and height of [text] when drawn with [font]
 // -----------------------------------------------------------------------------
-Vec2d Drawing::textExtents(const wxString& text, Font font)
+Vec2d Drawing::textExtents(const std::string& text, Font font)
 {
 	// Get desired font
 	auto ftgl_font = getFont(font);
@@ -320,7 +320,7 @@ Vec2d Drawing::textExtents(const wxString& text, Font font)
 		return { 0, 0 };
 
 	// Return width and height of text
-	auto bbox = ftgl_font->BBox(CHR(text), -1);
+	auto bbox = ftgl_font->BBox(text, -1);
 	return Vec2d(bbox.Upper().X() - bbox.Lower().X(), ftgl_font->LineHeight());
 }
 

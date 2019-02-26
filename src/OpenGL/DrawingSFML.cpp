@@ -146,11 +146,11 @@ void Drawing::cleanupFonts()
 // Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
 // the rendered text string are written to it.
 // -----------------------------------------------------------------------------
-void Drawing::drawText(const wxString& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
+void Drawing::drawText(const std::string& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
 {
 	// Setup SFML string
 	sf::Text sf_str;
-	sf_str.setString(UTF8(text));
+	sf_str.setString(text);
 	sf_str.setFillColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
 
 	// Set font
@@ -204,11 +204,11 @@ void Drawing::drawText(const wxString& text, int x, int y, ColRGBA colour, Font 
 // -----------------------------------------------------------------------------
 // Returns the width and height of [text] when drawn with [font]
 // -----------------------------------------------------------------------------
-Vec2d Drawing::textExtents(const wxString& text, Font font)
+Vec2d Drawing::textExtents(const std::string& text, Font font)
 {
 	// Setup SFML string
 	sf::Text sf_str;
-	sf_str.setString(CHR(text));
+	sf_str.setString(text);
 
 	// Set font
 	auto f = getFont(font);
