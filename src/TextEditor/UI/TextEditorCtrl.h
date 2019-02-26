@@ -22,9 +22,9 @@ class JumpToCalculator : public wxThread
 public:
 	JumpToCalculator(
 		wxEvtHandler*    handler,
-		const wxString&  text,
-		vector<wxString> block_names,
-		vector<wxString> ignore) :
+		std::string_view  text,
+		vector<std::string> block_names,
+		vector<std::string> ignore) :
 		handler_(handler),
 		text_(text),
 		block_names_(std::move(block_names)),
@@ -37,9 +37,9 @@ public:
 
 private:
 	wxEvtHandler*    handler_;
-	wxString         text_;
-	vector<wxString> block_names_;
-	vector<wxString> ignore_;
+	std::string         text_;
+	vector<std::string> block_names_;
+	vector<std::string> ignore_;
 };
 
 class TextEditorCtrl : public wxStyledTextCtrl

@@ -285,8 +285,8 @@ bool ScriptEditorPanel::handleAction(std::string_view name)
 void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e)
 {
 	// Get word
-	auto     item = list_words_->GetSelection();
-	wxString word = list_words_->GetItemText(item);
+	auto item = list_words_->GetSelection();
+	auto word = list_words_->GetItemText(item).ToStdString();
 
 	// Get language
 	auto language = text_editor_->language();

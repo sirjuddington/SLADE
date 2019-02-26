@@ -39,7 +39,9 @@
 #include "Graphics/Icons.h"
 #include "SCallTip.h"
 #include "SLADEWxApp.h"
+#include "UI/WxUtils.h"
 #include "Utility/Tokenizer.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -91,7 +93,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 
 	Tokenizer tz;
 	tz.setSpecialCharacters(";,:|={}/()");
-	tz.openString(text_.ToStdString());
+	tz.openString(text_);
 
 	wxString token = tz.getToken();
 	while (!tz.atEnd())
@@ -107,7 +109,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 		{
 			// Get jump block keyword
 			long skip = 0;
-			if (block.Contains(":"))
+			if (StrUtil::contains(block, ':'))
 			{
 				auto sp = wxSplit(block, ':');
 				sp.back().ToLong(&skip);
@@ -842,7 +844,7 @@ bool TextEditorCtrl::openCalltip(int pos, int arg, bool dwell)
 		return false;
 
 	// Get word before bracket
-	wxString word = GetTextRange(WordStartPosition(start, true), WordEndPosition(start, true));
+	auto word = GetTextRange(WordStartPosition(start, true), WordEndPosition(start, true)).ToStdString();
 
 	// Get matching language function (if any)
 	auto func = language_->function(word);
@@ -998,7 +1000,7 @@ void TextEditorCtrl::updateJumpToList()
 	// Begin jump to calculation thread
 	choice_jump_to_->Enable(false);
 	jump_to_calculator_ = new JumpToCalculator(
-		this, GetText(), language_->jumpBlocks(), language_->jumpBlocksIgnored());
+		this, WxUtils::strToView(GetText()), language_->jumpBlocks(), language_->jumpBlocksIgnored());
 	jump_to_calculator_->Run();
 }
 
@@ -1238,12 +1240,12 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 		// Autocomplete
 		else if (name == "ted_autocomplete")
 		{
-			// Get word before cursor
-			wxString word = GetTextRange(WordStartPosition(GetCurrentPos(), true), GetCurrentPos());
-
 			// If a language is loaded, bring up autocompletion list
 			if (language_)
 			{
+				// Get word before cursor
+				auto word = GetTextRange(WordStartPosition(GetCurrentPos(), true), GetCurrentPos()).ToStdString();
+
 				autocomp_list_ = language_->autocompletionList(word);
 				AutoCompShow((int)word.size(), autocomp_list_);
 			}
@@ -1618,9 +1620,9 @@ void TextEditorCtrl::onMouseDown(wxMouseEvent& e)
 	if (e.LeftDown() && e.GetModifiers() == wxMOD_CMD)
 	{
 		int      pos  = CharPositionFromPointClose(e.GetX(), e.GetY());
-		wxString word = GetTextRange(WordStartPosition(pos, true), WordEndPosition(pos, true));
+		auto word = GetTextRange(WordStartPosition(pos, true), WordEndPosition(pos, true)).ToStdString();
 
-		if (!word.IsEmpty())
+		if (!word.empty())
 		{
 			// TODO: Reimplement for word lists
 			//// Check for keyword

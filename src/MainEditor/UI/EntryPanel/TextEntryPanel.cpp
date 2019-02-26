@@ -31,11 +31,13 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextEntryPanel.h"
+#include "Dialogs/Preferences/EditingPrefsPanel.h"
 #include "Game/Configuration.h"
 #include "General/UI.h"
 #include "MainEditor/EntryOperations.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -71,7 +73,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 
 	// Add 'Text Language' choice to toolbar
 	auto group_language = new SToolBarGroup(toolbar_, "Text Language", true);
-	auto languages      = TextLanguage::languageNames();
+	auto languages      = WxUtils::arrayStringStd(TextLanguage::languageNames());
 	languages.Sort();
 	languages.Insert("None", 0, 1);
 	choice_text_language_ = new wxChoice(group_language, -1, wxDefaultPosition, wxDefaultSize, languages);
@@ -158,7 +160,7 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	{
 		for (auto a = 0u; a < choice_text_language_->GetCount(); ++a)
 		{
-			if (S_CMPNOCASE(tl->name(), choice_text_language_->GetString(a)))
+			if (StrUtil::equalCI(tl->name(), WxUtils::strToView(choice_text_language_->GetString(a))))
 			{
 				choice_text_language_->Select(a);
 				break;
@@ -357,14 +359,14 @@ void TextEntryPanel::onTextModified(wxCommandEvent& e)
 void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 {
 	// Get selected language
-	auto tl = TextLanguage::fromName(choice_text_language_->GetStringSelection());
+	auto tl = TextLanguage::fromName(WxUtils::strToView(choice_text_language_->GetStringSelection()));
 
 	// Set text editor language
 	text_area_->setLanguage(tl);
 
 	// Set entry language hint
 	if (tl)
-		entry_->exProp("TextLanguage") = tl->id().ToStdString();
+		entry_->exProp("TextLanguage") = tl->id();
 	else
 		entry_->exProps().removeProperty("TextLanguage");
 }

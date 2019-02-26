@@ -9,21 +9,21 @@ class TextStyle
 	friend class StyleSet;
 
 public:
-	TextStyle(const wxString& name, const wxString& description, int style_id = -1);
+	TextStyle(std::string_view name, std::string_view description, int style_id = -1);
 	~TextStyle() = default;
 
 	void addWxStyleId(int style);
 
-	wxString description() const { return description_; }
-	wxString fontFace() const { return font_; }
-	int      fontSize() const { return size_; }
-	bool     hasForeground() const { return fg_defined_; }
-	bool     hasBackground() const { return bg_defined_; }
-	int      bold() const { return bold_; }
-	int      italic() const { return italic_; }
-	int      underlined() const { return underlined_; }
+	const std::string& description() const { return description_; }
+	const std::string& fontFace() const { return font_; }
+	int                fontSize() const { return size_; }
+	bool               hasForeground() const { return fg_defined_; }
+	bool               hasBackground() const { return bg_defined_; }
+	int                bold() const { return bold_; }
+	int                italic() const { return italic_; }
+	int                underlined() const { return underlined_; }
 
-	void setFontFace(const wxString& font) { font_ = font; }
+	void setFontFace(std::string_view font) { font_ = font; }
 	void setFontSize(int size) { size_ = size; }
 	void setBold(int bold) { bold_ = bold; }
 	void setItalic(int italic) { italic_ = italic; }
@@ -44,31 +44,31 @@ public:
 	ColRGBA foreground() const { return foreground_; }
 	ColRGBA background() const { return background_; }
 
-	bool     parse(ParseTreeNode* node);
-	void     applyTo(wxStyledTextCtrl* stc);
-	bool     copyStyle(TextStyle* copy);
-	wxString textDefinition(unsigned tabs = 0) const;
+	bool        parse(ParseTreeNode* node);
+	void        applyTo(wxStyledTextCtrl* stc);
+	bool        copyStyle(TextStyle* copy);
+	std::string textDefinition(unsigned tabs = 0) const;
 
 private:
-	wxString    name_;
-	wxString    description_;
+	std::string name_;
+	std::string description_;
 	vector<int> wx_styles_;
 
-	wxString font_;
-	int      size_ = -1;
-	ColRGBA  foreground_;
-	bool     fg_defined_ = false;
-	ColRGBA  background_;
-	bool     bg_defined_ = false;
-	int      bold_       = -1;
-	int      italic_     = -1;
-	int      underlined_ = -1;
+	std::string font_;
+	int         size_ = -1;
+	ColRGBA     foreground_;
+	bool        fg_defined_ = false;
+	ColRGBA     background_;
+	bool        bg_defined_ = false;
+	int         bold_       = -1;
+	int         italic_     = -1;
+	int         underlined_ = -1;
 };
 
 class StyleSet
 {
 public:
-	StyleSet(const wxString& name = "Unnamed Style");
+	StyleSet(std::string_view name = "Unnamed Style");
 	~StyleSet() = default;
 
 	wxString getName() const { return name_; }
@@ -78,35 +78,35 @@ public:
 	void       applyTo(TextEditorCtrl* stc);
 	void       applyToWx(wxStyledTextCtrl* stc);
 	bool       copySet(StyleSet* copy);
-	TextStyle* style(const wxString& name);
+	TextStyle* style(std::string_view name);
 	TextStyle* style(unsigned index);
-	bool       writeFile(const wxString& filename);
+	bool       writeFile(std::string_view filename);
 
-	ColRGBA  styleForeground(const wxString& style_name);
-	ColRGBA  styleBackground(const wxString& style_name);
-	wxString defaultFontFace();
-	int      defaultFontSize();
+	ColRGBA     styleForeground(std::string_view style_name);
+	ColRGBA     styleBackground(std::string_view style_name);
+	std::string defaultFontFace();
+	int         defaultFontSize();
 
 	// Static functions for styleset management
-	static void      initCurrent();
-	static void      saveCurrent();
-	static StyleSet* currentSet();
-	static bool      loadSet(const wxString& name);
-	static bool      loadSet(unsigned index);
-	static void      applyCurrent(TextEditorCtrl* stc);
-	static wxString  styleName(unsigned index);
-	static unsigned  numSets();
-	static StyleSet* set(unsigned index);
-	static void      addEditor(TextEditorCtrl* stc);
-	static void      removeEditor(TextEditorCtrl* stc);
-	static void      applyCurrentToAll();
-	static void      addSet(StyleSet* set);
+	static void        initCurrent();
+	static void        saveCurrent();
+	static StyleSet*   currentSet();
+	static bool        loadSet(std::string_view name);
+	static bool        loadSet(unsigned index);
+	static void        applyCurrent(TextEditorCtrl* stc);
+	static std::string styleName(unsigned index);
+	static unsigned    numSets();
+	static StyleSet*   set(unsigned index);
+	static void        addEditor(TextEditorCtrl* stc);
+	static void        removeEditor(TextEditorCtrl* stc);
+	static void        applyCurrentToAll();
+	static void        addSet(StyleSet* set);
 
 	static bool loadResourceStyles();
 	static bool loadCustomStyles();
 
 private:
-	wxString          name_;
+	std::string       name_;
 	TextStyle         ts_default_;
 	TextStyle         ts_selection_;
 	bool              built_in_ = false;

@@ -361,7 +361,7 @@ void TextStylePrefsPanel::updateFontFace() const
 {
 	// Update current style
 	if (cb_override_font_face_->GetValue())
-		ts_current_->setFontFace(fp_font_->GetSelectedFont().GetFaceName());
+		ts_current_->setFontFace(fp_font_->GetSelectedFont().GetFaceName().ToStdString());
 	else
 		ts_current_->setFontFace("");
 }

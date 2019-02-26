@@ -11,46 +11,71 @@ class TLFunction
 public:
 	struct Parameter
 	{
-		wxString type;
-		wxString name;
-		wxString default_value;
-		bool     optional;
+		std::string type;
+		std::string name;
+		std::string default_value;
+		bool        optional;
 
-		void parse(vector<wxString>& tokens);
+		void parse(vector<std::string>& tokens);
 	};
 
 	struct Context
 	{
-		wxString          context;
+		std::string       context;
 		vector<Parameter> params;
-		wxString          return_type;
-		wxString          description;
-		wxString          qualifiers;
-		wxString          deprecated_v;
-		wxString          deprecated_f;
-		bool              custom;
+		std::string       return_type;
+		std::string       description;
+		std::string       qualifiers;
+		std::string       deprecated_v;
+		std::string       deprecated_f;
+		bool              custom = false;
+
+		Context() = default;
+
+		Context(std::string_view context, std::string_view return_type, std::string_view description) :
+			context{ context },
+			return_type{ return_type },
+			description{ description }
+		{
+		}
+
+		Context(
+			std::string_view context,
+			std::string_view return_type,
+			std::string_view description,
+			std::string_view deprecated_v,
+			std::string_view deprecated_f,
+			bool             custom) :
+			context{ context },
+			return_type{ return_type },
+			description{ description },
+			deprecated_v{ deprecated_v },
+			deprecated_f{ deprecated_f },
+			custom{ custom }
+		{
+		}
 	};
 
-	TLFunction(const wxString& name = "") : name_{ name } {}
+	TLFunction(std::string_view name = "") : name_{ name } {}
 	~TLFunction() = default;
 
-	const wxString&        name() const { return name_; }
+	const std::string&     name() const { return name_; }
 	const vector<Context>& contexts() const { return contexts_; }
-	Context                context(unsigned long index) const;
+	const Context&         context(unsigned long index) const;
 
-	void setName(const wxString& name) { this->name_ = name; }
+	void setName(std::string_view name) { this->name_ = name; }
 	void addContext(
-		const wxString& context,
-		const wxString& args,
-		const wxString& return_type,
-		const wxString& description,
-		const wxString& deprecated_f);
+		std::string_view context,
+		std::string_view args,
+		std::string_view return_type,
+		std::string_view description,
+		std::string_view deprecated_f);
 	void addContext(
-		const wxString&          context,
+		std::string_view         context,
 		const ZScript::Function& func,
 		bool                     custom,
-		const wxString&          desc,
-		const wxString&          dep_f);
+		std::string_view         desc,
+		std::string_view         dep_f);
 
 	void clear()
 	{
@@ -60,10 +85,10 @@ public:
 	void clearContexts() { contexts_.clear(); }
 	void clearCustomContexts();
 
-	bool hasContext(const wxString& name);
+	bool hasContext(std::string_view name);
 
 private:
-	wxString        name_;
+	std::string     name_;
 	vector<Context> contexts_;
 };
 
@@ -78,11 +103,11 @@ public:
 		Property = 3,
 	};
 
-	TextLanguage(const wxString& id);
+	TextLanguage(std::string_view id);
 	~TextLanguage();
 
-	const wxString&            id() const { return id_; }
-	const wxString&            name() const { return name_; }
+	const std::string&         id() const { return id_; }
+	const std::string&         name() const { return name_; }
 	const std::string&         lineComment() const { return line_comment_l_[preferred_comments_]; }
 	const std::string&         commentBegin() const { return comment_begin_l_[preferred_comments_]; }
 	const std::string&         commentEnd() const { return comment_end_l_[preferred_comments_]; }
@@ -90,106 +115,106 @@ public:
 	const vector<std::string>& commentBeginL() const { return comment_begin_l_; }
 	const vector<std::string>& commentEndL() const { return comment_end_l_; }
 	unsigned                   preferedComments() const { return preferred_comments_; }
-	const wxString&            preprocessor() const { return preprocessor_; }
-	const wxString&            docComment() const { return doc_comment_; }
+	const std::string&         preprocessor() const { return preprocessor_; }
+	const std::string&         docComment() const { return doc_comment_; }
 	bool                       caseSensitive() const { return case_sensitive_; }
-	const wxString&            blockBegin() const { return block_begin_; }
-	const wxString&            blockEnd() const { return block_end_; }
+	const std::string&         blockBegin() const { return block_begin_; }
+	const std::string&         blockEnd() const { return block_end_; }
 
-	const vector<wxString>& ppBlockBegin() const { return pp_block_begin_; }
-	const vector<wxString>& ppBlockEnd() const { return pp_block_end_; }
-	const vector<wxString>& wordBlockBegin() const { return word_block_begin_; }
-	const vector<wxString>& wordBlockEnd() const { return word_block_end_; }
-	const vector<wxString>& jumpBlocks() const { return jump_blocks_; }
-	const vector<wxString>& jumpBlocksIgnored() const { return jb_ignore_; }
+	const vector<std::string>& ppBlockBegin() const { return pp_block_begin_; }
+	const vector<std::string>& ppBlockEnd() const { return pp_block_end_; }
+	const vector<std::string>& wordBlockBegin() const { return word_block_begin_; }
+	const vector<std::string>& wordBlockEnd() const { return word_block_end_; }
+	const vector<std::string>& jumpBlocks() const { return jump_blocks_; }
+	const vector<std::string>& jumpBlocksIgnored() const { return jb_ignore_; }
 
 	void copyTo(TextLanguage* copy);
 
-	void setName(const wxString& name) { this->name_ = name; }
+	void setName(std::string_view name) { this->name_ = name; }
 	void setPreferedComments(unsigned index) { preferred_comments_ = index; }
 	void setLineCommentList(vector<std::string> token) { line_comment_l_ = std::move(token); };
 	void setCommentBeginList(vector<std::string> token) { comment_begin_l_ = std::move(token); };
 	void setCommentEndList(vector<std::string> token) { comment_end_l_ = std::move(token); };
-	void setPreprocessor(const wxString& token) { preprocessor_ = token; }
-	void setDocComment(const wxString& token) { doc_comment_ = token; }
+	void setPreprocessor(std::string_view token) { preprocessor_ = token; }
+	void setDocComment(std::string_view token) { doc_comment_ = token; }
 	void setCaseSensitive(bool cs) { case_sensitive_ = cs; }
-	void addWord(WordType type, const wxString& word, bool custom = false);
+	void addWord(WordType type, std::string_view word, bool custom = false);
 	void addFunction(
-		wxString        name,
-		const wxString& args,
-		const wxString& desc        = "",
-		const wxString& deprecated  = "",
-		bool            replace     = false,
-		const wxString& return_type = "");
+		std::string_view name,
+		std::string_view args,
+		std::string_view desc        = "",
+		std::string_view deprecated  = "",
+		bool             replace     = false,
+		std::string_view return_type = "");
 	void loadZScript(ZScript::Definitions& defs, bool custom = false);
 
-	wxString wordList(WordType type, bool include_custom = true);
-	wxString functionsList();
-	wxString autocompletionList(wxString start = "", bool include_custom = true);
+	std::string wordList(WordType type, bool include_custom = true);
+	std::string functionsList();
+	std::string autocompletionList(std::string_view start = "", bool include_custom = true);
 
-	wxArrayString wordListSorted(WordType type, bool include_custom = true);
-	wxArrayString functionsSorted();
+	vector<std::string> wordListSorted(WordType type, bool include_custom = true);
+	vector<std::string> functionsSorted();
 
-	wxString wordLink(WordType type) const { return word_lists_[type].lookup_url; }
-	wxString functionLink() const { return f_lookup_url_; }
+	std::string        wordLink(WordType type) const { return word_lists_[type].lookup_url; }
+	const std::string& functionLink() const { return f_lookup_url_; }
 
-	bool isWord(WordType type, const wxString& word);
-	bool isFunction(const wxString& word);
+	bool isWord(WordType type, std::string_view word);
+	bool isFunction(std::string_view word);
 
-	TLFunction* function(const wxString& name);
+	TLFunction* function(std::string_view name);
 
 	void clearWordList(WordType type) { word_lists_[type].list.clear(); }
 	void clearFunctions() { functions_.clear(); }
 	void clearCustomDefs();
 
 	// Static functions
-	static bool          readLanguageDefinition(MemChunk& mc, const wxString& source);
-	static bool          loadLanguages();
-	static TextLanguage* fromId(const wxString& id);
-	static TextLanguage* fromIndex(unsigned index);
-	static TextLanguage* fromName(const wxString& name);
-	static wxArrayString languageNames();
+	static bool                readLanguageDefinition(MemChunk& mc, std::string_view source);
+	static bool                loadLanguages();
+	static TextLanguage*       fromId(std::string_view id);
+	static TextLanguage*       fromIndex(unsigned index);
+	static TextLanguage*       fromName(std::string_view name);
+	static vector<std::string> languageNames();
 
 private:
-	wxString            id_;                     // Used internally
-	wxString            name_;                   // The language 'name' (will show up in the language dropdown, etc)
+	std::string         id_;                     // Used internally
+	std::string         name_;                   // The language 'name' (will show up in the language dropdown, etc)
 	unsigned            preferred_comments_ = 0; // The preferred comment style index
 	vector<std::string> line_comment_l_     = { "//" }; // A list of supported line comments
 	vector<std::string> comment_begin_l_    = { "/*" }; // A list of supported block comment begin
 	vector<std::string> comment_end_l_      = { "*/" }; // A list of supported block comment end
-	wxString            preprocessor_       = "#";      // The beginning token for a preprocessor directive
-	wxString            doc_comment_;                   // The beginning token for a 'doc' comment (eg. /// in c/c++)
+	std::string         preprocessor_       = "#";      // The beginning token for a preprocessor directive
+	std::string         doc_comment_;                   // The beginning token for a 'doc' comment (eg. /// in c/c++)
 	bool                case_sensitive_ = false;        // Whether words are case-sensitive
-	vector<wxString>    jump_blocks_;       // The keywords to search for when creating jump to list (eg. 'script')
-	vector<wxString>    jb_ignore_;         // The keywords to ignore when creating jump to list (eg. 'optional')
-	wxString            block_begin_ = "{"; // The beginning of a block (eg. '{' in c/c++)
-	wxString            block_end_   = "}"; // The end of a block (eg. '}' in c/c++)
-	vector<wxString>    pp_block_begin_;    // Preprocessor words to start a folding block (eg. 'ifdef')
-	vector<wxString>    pp_block_end_;      // Preprocessor words to end a folding block (eg. 'endif')
-	vector<wxString>    word_block_begin_;  // Words to start a folding block (eg. 'do' in lua)
-	vector<wxString>    word_block_end_;    // Words to end a folding block (eg. 'end' in lua)
+	vector<std::string> jump_blocks_;       // The keywords to search for when creating jump to list (eg. 'script')
+	vector<std::string> jb_ignore_;         // The keywords to ignore when creating jump to list (eg. 'optional')
+	std::string         block_begin_ = "{"; // The beginning of a block (eg. '{' in c/c++)
+	std::string         block_end_   = "}"; // The end of a block (eg. '}' in c/c++)
+	vector<std::string> pp_block_begin_;    // Preprocessor words to start a folding block (eg. 'ifdef')
+	vector<std::string> pp_block_end_;      // Preprocessor words to end a folding block (eg. 'endif')
+	vector<std::string> word_block_begin_;  // Words to start a folding block (eg. 'do' in lua)
+	vector<std::string> word_block_end_;    // Words to end a folding block (eg. 'end' in lua)
 
 	// Word lists
 	struct WordList
 	{
-		vector<wxString> list;
-		bool             upper;
-		bool             lower;
-		bool             caps;
-		wxString         lookup_url;
+		vector<std::string> list;
+		bool                upper;
+		bool                lower;
+		bool                caps;
+		std::string         lookup_url;
 	};
 	WordList word_lists_[4];
 	WordList word_lists_custom_[4];
 
 	// Functions
 	vector<TLFunction> functions_;
-	wxString           f_lookup_url_;
+	std::string        f_lookup_url_;
 
 	// Zscript function properties which cannot be parsed from (g)zdoom.pk3
 	struct ZFuncExProp
 	{
-		wxString description;
-		wxString deprecated_f;
+		std::string description;
+		std::string deprecated_f;
 	};
-	std::map<wxString, ZFuncExProp> zfuncs_ex_props_;
+	std::map<std::string, ZFuncExProp> zfuncs_ex_props_;
 };

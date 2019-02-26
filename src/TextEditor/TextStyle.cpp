@@ -41,6 +41,8 @@
 #include "UI/TextEditorCtrl.h"
 #include "Utility/Parser.h"
 #include "Utility/Tokenizer.h"
+#include "thirdparty/fmt/fmt/color.h"
+#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -68,7 +70,7 @@ StyleSet*                         ss_current = nullptr;
 // -----------------------------------------------------------------------------
 // TextStyle class constructor
 // -----------------------------------------------------------------------------
-TextStyle::TextStyle(const wxString& name, const wxString& description, int style_id) :
+TextStyle::TextStyle(std::string_view name, std::string_view description, int style_id) :
 	name_{ name },
 	description_{ description }
 {
@@ -149,7 +151,7 @@ void TextStyle::applyTo(wxStyledTextCtrl* stc)
 		// Set font face
 		if (!txed_override_font.value.empty())
 			stc->StyleSetFaceName(wx_style, txed_override_font);
-		else if (!font_.IsEmpty())
+		else if (!font_.empty())
 			stc->StyleSetFaceName(wx_style, font_);
 
 		// Set font size
@@ -211,67 +213,40 @@ bool TextStyle::copyStyle(TextStyle* copy)
 // -----------------------------------------------------------------------------
 // Returns a formatted string defining this style
 // -----------------------------------------------------------------------------
-wxString TextStyle::textDefinition(unsigned tabs) const
+std::string TextStyle::textDefinition(unsigned tabs) const
 {
-	wxString ret = "";
+	fmt::memory_buffer buf;
+	std::string        indent(tabs, '\t');
 
 	// Write font
-	if (!font_.IsEmpty())
-	{
-		for (unsigned t = 0; t < tabs; t++)
-			ret += "\t";
-		ret += wxString::Format("font = \"%s\";\n", font_);
-	}
+	if (!font_.empty())
+		fmt::format_to(buf, "{}font = \"{}\";\n", indent, font_);
 
 	// Write size
 	if (size_ >= 0)
-	{
-		for (unsigned t = 0; t < tabs; t++)
-			ret += "\t";
-		ret += wxString::Format("size = %d;\n", size_);
-	}
+		fmt::format_to(buf, "{}size = {};\n", indent, size_);
 
 	// Write foreground
 	if (fg_defined_)
-	{
-		for (unsigned t = 0; t < tabs; t++)
-			ret += "\t";
-		ret += wxString::Format("foreground = %d, %d, %d;\n", foreground_.r, foreground_.g, foreground_.b);
-	}
+		fmt::format_to(buf, "{}foreground = {}, {}, {};\n", indent, foreground_.r, foreground_.g, foreground_.b);
 
 	// Write background
 	if (bg_defined_)
-	{
-		for (unsigned t = 0; t < tabs; t++)
-			ret += "\t";
-		ret += wxString::Format("background = %d, %d, %d;\n", background_.r, background_.g, background_.b);
-	}
+		fmt::format_to(buf, "{}background = {}, {}, {};\n", indent, background_.r, background_.g, background_.b);
 
 	// Write bold
 	if (bold_ >= 0)
-	{
-		for (unsigned t = 0; t < tabs; t++)
-			ret += "\t";
-		ret += wxString::Format("bold = %d;\n", bold_);
-	}
+		fmt::format_to(buf, "{}bold = {};\n", indent, bold_);
 
 	// Write italic
 	if (italic_ >= 0)
-	{
-		for (unsigned t = 0; t < tabs; t++)
-			ret += "\t";
-		ret += wxString::Format("italic = %d;\n", italic_);
-	}
+		fmt::format_to(buf, "{}italic = {};\n", indent, italic_);
 
 	// Write underlined
 	if (underlined_ >= 0)
-	{
-		for (unsigned t = 0; t < tabs; t++)
-			ret += "\t";
-		ret += wxString::Format("underlined = %d;\n", underlined_);
-	}
+		fmt::format_to(buf, "{}underlined = {};\n", indent, underlined_);
 
-	return ret;
+	return fmt::to_string(buf);
 }
 
 
@@ -285,7 +260,7 @@ wxString TextStyle::textDefinition(unsigned tabs) const
 // -----------------------------------------------------------------------------
 // StyleSet class constructor
 // -----------------------------------------------------------------------------
-StyleSet::StyleSet(const wxString& name) :
+StyleSet::StyleSet(std::string_view name) :
 	ts_default_("default", "Default", wxSTC_STYLE_DEFAULT),
 	ts_selection_("selection", "Selected Text")
 {
@@ -349,7 +324,7 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 	ts_selection_.parse(root->childPTN("selection")); // Selection style
 	for (auto& style : styles_)                       // Other styles
 	{
-		if (auto style_node = root->childPTN(style.name_.ToStdString()))
+		if (auto style_node = root->childPTN(style.name_))
 			style.parse(style_node);
 		else
 		{
@@ -475,12 +450,12 @@ bool StyleSet::copySet(StyleSet* copy)
 // Returns the text style associated with [name] (these are hard coded), or
 // nullptr if [name] was invalid
 // -----------------------------------------------------------------------------
-TextStyle* StyleSet::style(const wxString& name)
+TextStyle* StyleSet::style(std::string_view name)
 {
 	// Return style matching name given
-	if (S_CMPNOCASE(name, "default"))
+	if (StrUtil::equalCI(name, "default"))
 		return &ts_default_;
-	else if (S_CMPNOCASE(name, "selection"))
+	else if (StrUtil::equalCI(name, "selection"))
 		return &ts_selection_;
 	else
 	{
@@ -509,10 +484,10 @@ TextStyle* StyleSet::style(unsigned index)
 // -----------------------------------------------------------------------------
 // Writes this style set as a text definition to a file [filename]
 // -----------------------------------------------------------------------------
-bool StyleSet::writeFile(const wxString& filename)
+bool StyleSet::writeFile(std::string_view filename)
 {
 	// Open file for writing
-	wxFile file(filename, wxFile::write);
+	wxFile file(wxString{ filename.data(), filename.size() }, wxFile::write);
 
 	if (!file.IsOpened())
 		return false;
@@ -554,7 +529,7 @@ bool StyleSet::writeFile(const wxString& filename)
 // Returns the foreground colour of [style], or the default style's foreground
 // colour if it is not set
 // -----------------------------------------------------------------------------
-ColRGBA StyleSet::styleForeground(const wxString& style_name)
+ColRGBA StyleSet::styleForeground(std::string_view style_name)
 {
 	auto s = style(style_name);
 	return s && s->hasForeground() ? s->foreground() : ts_default_.foreground();
@@ -564,7 +539,7 @@ ColRGBA StyleSet::styleForeground(const wxString& style_name)
 // Returns the background colour of [style], or the default style's background
 // colour if it is not set
 // -----------------------------------------------------------------------------
-ColRGBA StyleSet::styleBackground(const wxString& style_name)
+ColRGBA StyleSet::styleBackground(std::string_view style_name)
 {
 	auto s = style(style_name);
 	return s && s->hasBackground() ? s->background() : ts_default_.background();
@@ -573,7 +548,7 @@ ColRGBA StyleSet::styleBackground(const wxString& style_name)
 // -----------------------------------------------------------------------------
 // Returns the default style font face
 // -----------------------------------------------------------------------------
-wxString StyleSet::defaultFontFace()
+std::string StyleSet::defaultFontFace()
 {
 	return !txed_override_font.value.empty() ? txed_override_font : style("default")->fontFace();
 }
@@ -661,12 +636,12 @@ StyleSet* StyleSet::currentSet()
 // Loads the style set matching [name] to the current style set.
 // Returns false if no match was found, true otherwise
 // -----------------------------------------------------------------------------
-bool StyleSet::loadSet(const wxString& name)
+bool StyleSet::loadSet(std::string_view name)
 {
 	// Search for set matching name
 	for (auto& style_set : style_sets)
 	{
-		if (S_CMPNOCASE(style_set->name_, name))
+		if (StrUtil::equalCI(style_set->name_, name))
 		{
 			ss_current->copySet(style_set.get());
 			return true;
@@ -703,7 +678,7 @@ void StyleSet::applyCurrent(TextEditorCtrl* stc)
 // Returns the name of the style set at [index], or an empty string if [index]
 // is out of bounds
 // -----------------------------------------------------------------------------
-wxString StyleSet::styleName(unsigned index)
+std::string StyleSet::styleName(unsigned index)
 {
 	// Check index
 	if (index >= style_sets.size())
