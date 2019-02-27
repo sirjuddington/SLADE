@@ -4,43 +4,43 @@ namespace SFileDialog
 {
 struct FDInfo
 {
-	wxArrayString filenames;
-	wxString      extension;
-	int           ext_index;
-	wxString      path;
+	vector<std::string> filenames;
+	std::string         extension;
+	int                 ext_index;
+	std::string         path;
 };
 
 bool openFile(
-	FDInfo&         info,
-	const wxString& caption,
-	const wxString& extensions,
-	wxWindow*       parent      = nullptr,
-	const wxString& fn_default  = "",
-	int             ext_default = 0);
+	FDInfo&          info,
+	std::string_view caption,
+	std::string_view extensions,
+	wxWindow*        parent      = nullptr,
+	std::string_view fn_default  = "",
+	int              ext_default = 0);
 
 bool openFiles(
-	FDInfo&         info,
-	const wxString& caption,
-	const wxString& extensions,
-	wxWindow*       parent      = nullptr,
-	const wxString& fn_default  = "",
-	int             ext_default = 0);
+	FDInfo&          info,
+	std::string_view caption,
+	std::string_view extensions,
+	wxWindow*        parent      = nullptr,
+	std::string_view fn_default  = "",
+	int              ext_default = 0);
 
 bool saveFile(
-	FDInfo&         info,
-	const wxString& caption,
-	const wxString& extensions,
-	wxWindow*       parent      = nullptr,
-	const wxString& fn_default  = "",
-	int             ext_default = 0);
+	FDInfo&          info,
+	std::string_view caption,
+	std::string_view extensions,
+	wxWindow*        parent      = nullptr,
+	std::string_view fn_default  = "",
+	int              ext_default = 0);
 
 bool saveFiles(
-	FDInfo&         info,
-	const wxString& caption,
-	const wxString& extensions,
-	wxWindow*       parent      = nullptr,
-	int             ext_default = 0);
+	FDInfo&          info,
+	std::string_view caption,
+	std::string_view extensions,
+	wxWindow*        parent      = nullptr,
+	int              ext_default = 0);
 
-wxString executableExtensionString();
-wxString executableFileName(const wxString& exe_name);
+std::string executableExtensionString();
+std::string executableFileName(std::string_view exe_name);
 } // namespace SFileDialog

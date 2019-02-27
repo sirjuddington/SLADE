@@ -1390,11 +1390,11 @@ void TextureXPanel::extractTexture()
 	// If we're just exporting one texture
 	if (selection.size() == 1)
 	{
-		auto       name = Misc::lumpNameToFileName(selection[0]->name());
-		wxFileName fn(name);
+		auto          name = Misc::lumpNameToFileName(selection[0]->name());
+		StrUtil::Path fn(name);
 
 		// Set extension
-		fn.SetExt("png");
+		fn.setExtension("png");
 
 		// Run save file dialog
 		SFileDialog::FDInfo info;
@@ -1403,7 +1403,7 @@ void TextureXPanel::extractTexture()
 				"Export Texture \"" + selection[0]->name() + "\" as PNG",
 				"PNG Files (*.png)|*.png",
 				this,
-				fn.GetFullName()))
+				fn.fileName()))
 		{
 			// If a filename was selected, export it
 			if (!exportAsPNG(selection[0], info.filenames[0], force_rgba))

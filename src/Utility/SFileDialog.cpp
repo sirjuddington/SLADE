@@ -34,6 +34,7 @@
 #include "Main.h"
 #include "SFileDialog.h"
 #include "App.h"
+#include "StringUtils.h"
 #include "UI/WxUtils.h"
 
 
@@ -57,15 +58,21 @@ EXTERN_CVAR(String, dir_last)
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
 bool SFileDialog::openFile(
-	FDInfo&         info,
-	const wxString& caption,
-	const wxString& extensions,
-	wxWindow*       parent,
-	const wxString& fn_default,
-	int             ext_default)
+	FDInfo&          info,
+	std::string_view caption,
+	std::string_view extensions,
+	wxWindow*        parent,
+	std::string_view fn_default,
+	int              ext_default)
 {
 	// Create file dialog
-	wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	wxFileDialog fd(
+		parent,
+		WxUtils::strFromView(caption),
+		dir_last,
+		WxUtils::strFromView(fn_default),
+		WxUtils::strFromView(extensions),
+		wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	// Select default extension
 	fd.SetFilterIndex(ext_default);
@@ -74,19 +81,19 @@ bool SFileDialog::openFile(
 	if (fd.ShowModal() == wxID_OK)
 	{
 		// Set file dialog info
-		wxFileName fn(fd.GetPath());
-		info.filenames.Add(fn.GetFullPath());
-		info.extension = fn.GetExt();
+		StrUtil::Path fn(fd.GetPath().ToStdString());
+		info.filenames.push_back(fn.fullPath());
+		info.extension = fn.extension();
 		info.ext_index = fd.GetFilterIndex();
-		info.path      = fn.GetPath(true);
+		info.path      = fn.path(true);
 
 		// Set last dir
-		dir_last = WxUtils::strToView(info.path);
+		dir_last = info.path;
 
 		return true;
 	}
-	else
-		return false;
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -94,16 +101,21 @@ bool SFileDialog::openFile(
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
 bool SFileDialog::openFiles(
-	FDInfo&         info,
-	const wxString& caption,
-	const wxString& extensions,
-	wxWindow*       parent,
-	const wxString& fn_default,
-	int             ext_default)
+	FDInfo&          info,
+	std::string_view caption,
+	std::string_view extensions,
+	wxWindow*        parent,
+	std::string_view fn_default,
+	int              ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(
-		parent, caption, dir_last, fn_default, extensions, wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
+		parent,
+		WxUtils::strFromView(caption),
+		dir_last,
+		WxUtils::strFromView(fn_default),
+		WxUtils::strFromView(extensions),
+		wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
 
 	// Select default extension
 	fd.SetFilterIndex(ext_default);
@@ -111,15 +123,19 @@ bool SFileDialog::openFiles(
 	// Run the dialog
 	if (fd.ShowModal() == wxID_OK)
 	{
+		wxArrayString paths;
+		fd.GetPaths(paths);
+
 		// Set file dialog info
-		fd.GetPaths(info.filenames);
-		wxFileName fn(info.filenames[0]);
-		info.extension = fn.GetExt();
+		for (const auto& path : paths)
+			info.filenames.emplace_back(path);
+		StrUtil::Path fn(info.filenames[0]);
+		info.extension = fn.extension();
 		info.ext_index = fd.GetFilterIndex();
-		info.path      = fn.GetPath(true);
+		info.path      = fn.path(true);
 
 		// Set last dir
-		dir_last = WxUtils::strToView(info.path);
+		dir_last = info.path;
 
 		return true;
 	}
@@ -132,15 +148,21 @@ bool SFileDialog::openFiles(
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
 bool SFileDialog::saveFile(
-	FDInfo&         info,
-	const wxString& caption,
-	const wxString& extensions,
-	wxWindow*       parent,
-	const wxString& fn_default,
-	int             ext_default)
+	FDInfo&          info,
+	std::string_view caption,
+	std::string_view extensions,
+	wxWindow*        parent,
+	std::string_view fn_default,
+	int              ext_default)
 {
 	// Create file dialog
-	wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	wxFileDialog fd(
+		parent,
+		WxUtils::strFromView(caption),
+		dir_last,
+		WxUtils::strFromView(fn_default),
+		WxUtils::strFromView(extensions),
+		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	// Select default extension
 	fd.SetFilterIndex(ext_default);
@@ -149,14 +171,14 @@ bool SFileDialog::saveFile(
 	if (fd.ShowModal() == wxID_OK)
 	{
 		// Set file dialog info
-		wxFileName fn(fd.GetPath());
-		info.filenames.Add(fn.GetFullPath());
-		info.extension = fn.GetExt();
+		StrUtil::Path fn(fd.GetPath().ToStdString());
+		info.filenames.push_back(fn.fullPath());
+		info.extension = fn.extension();
 		info.ext_index = fd.GetFilterIndex();
-		info.path      = fn.GetPath(true);
+		info.path      = fn.path(true);
 
 		// Set last dir
-		dir_last = WxUtils::strToView(info.path);
+		dir_last = info.path;
 
 		return true;
 	}
@@ -170,14 +192,20 @@ bool SFileDialog::saveFile(
 // This is used to replace wxDirDialog, which sucks
 // -----------------------------------------------------------------------------
 bool SFileDialog::saveFiles(
-	FDInfo&         info,
-	const wxString& caption,
-	const wxString& extensions,
-	wxWindow*       parent,
-	int             ext_default)
+	FDInfo&          info,
+	std::string_view caption,
+	std::string_view extensions,
+	wxWindow*        parent,
+	int              ext_default)
 {
 	// Create file dialog
-	wxFileDialog fd(parent, caption, dir_last, "ignored", extensions, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	wxFileDialog fd(
+		parent,
+		WxUtils::strFromView(caption),
+		dir_last,
+		"ignored",
+		WxUtils::strFromView(extensions),
+		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	// Select default extension
 	fd.SetFilterIndex(ext_default);
@@ -186,13 +214,13 @@ bool SFileDialog::saveFiles(
 	if (fd.ShowModal() == wxID_OK)
 	{
 		// Set file dialog info
-		info.filenames.Clear();
+		info.filenames.clear();
 		info.extension = fd.GetWildcard().AfterLast('.');
 		info.ext_index = fd.GetFilterIndex();
 		info.path      = fd.GetDirectory();
 
 		// Set last dir
-		dir_last = WxUtils::strToView(info.path);
+		dir_last = info.path;
 
 		return true;
 	}
@@ -203,7 +231,7 @@ bool SFileDialog::saveFiles(
 // -----------------------------------------------------------------------------
 // Returns the executable file filter string depending on the current OS
 // -----------------------------------------------------------------------------
-wxString SFileDialog::executableExtensionString()
+std::string SFileDialog::executableExtensionString()
 {
 	if (App::platform() == App::Platform::Windows)
 		return "Executable Files (*.exe)|*.exe";
@@ -214,10 +242,10 @@ wxString SFileDialog::executableExtensionString()
 // -----------------------------------------------------------------------------
 // Returns [exe_name] with a .exe extension if in Windows
 // -----------------------------------------------------------------------------
-wxString SFileDialog::executableFileName(const wxString& exe_name)
+std::string SFileDialog::executableFileName(std::string_view exe_name)
 {
 	if (App::platform() == App::Platform::Windows)
-		return exe_name + ".exe";
+		return std::string{ exe_name } + ".exe";
 	else
-		return exe_name;
+		return std::string{ exe_name };
 }

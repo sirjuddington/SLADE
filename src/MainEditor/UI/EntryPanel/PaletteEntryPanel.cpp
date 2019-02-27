@@ -58,7 +58,7 @@ CVAR(Float, col_greyscale_b, 0.114, CVar::Flag::Save)
 
 namespace
 {
-wxString extensions =
+std::string extensions =
 	"Raw Palette (*.pal)|*.pal|"
 	"PNG File (*.png)|*.png|"
 	"CSV Palette (*.csv)|*.csv|"
@@ -848,7 +848,7 @@ bool PaletteEntryPanel::exportAs()
 	// Run save file dialog
 	SFileDialog::FDInfo info;
 	if (SFileDialog::saveFile(info, "Export Palette As", extensions, this))
-		return palettes_[cur_palette_]->saveFile(info.filenames[0].ToStdString(), pal_formats[info.ext_index]);
+		return palettes_[cur_palette_]->saveFile(info.filenames[0], pal_formats[info.ext_index]);
 
 	return false;
 }
@@ -865,7 +865,7 @@ bool PaletteEntryPanel::importFrom()
 	if (SFileDialog::openFile(info, "Import Palette As", extensions, this))
 	{
 		// Load palette
-		ret = palettes_[cur_palette_]->loadFile(info.filenames[0].ToStdString(), pal_formats[info.ext_index]);
+		ret = palettes_[cur_palette_]->loadFile(info.filenames[0], pal_formats[info.ext_index]);
 		if (ret)
 		{
 			setModified();

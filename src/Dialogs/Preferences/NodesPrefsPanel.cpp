@@ -181,9 +181,9 @@ void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e)
 
 	// Setup extension
 #ifdef __WXMSW__
-	auto ext = wxString::Format("%s.exe|%s.exe|All Files (*.*)|*.*", builder.exe, builder.exe);
+	auto ext = fmt::format("{}.exe|{}.exe|All Files (*.*)|*.*", builder.exe, builder.exe);
 #else
-	auto ext = wxString::Format("%s|%s|All Files (*.*)|*.*", builder.exe, builder.exe);
+	auto ext = fmt::format("{}|{}|All Files (*.*)|*.*", builder.exe, builder.exe);
 #endif
 
 	// Browse for exe

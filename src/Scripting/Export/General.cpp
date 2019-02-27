@@ -107,7 +107,7 @@ std::string browseFile(const std::string& title, const std::string& extensions, 
 {
 	SFileDialog::FDInfo inf;
 	SFileDialog::openFile(inf, title, extensions, currentWindow(), filename);
-	return inf.filenames.empty() ? "" : inf.filenames[0].ToStdString();
+	return inf.filenames.empty() ? "" : inf.filenames[0];
 }
 
 // -----------------------------------------------------------------------------
@@ -119,7 +119,7 @@ vector<std::string> browseFiles(const std::string& title, const std::string& ext
 	vector<std::string> filenames;
 	if (SFileDialog::openFiles(inf, title, extensions, currentWindow()))
 		for (const auto& file : inf.filenames)
-			filenames.push_back(file.ToStdString());
+			filenames.push_back(file);
 	return filenames;
 }
 

@@ -69,7 +69,12 @@ FileLocationPanel::FileLocationPanel(
 
 	btn_browse_->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) {
 		SFileDialog::FDInfo inf;
-		if (SFileDialog::openFile(inf, browse_caption_, browse_extensions_, this, browse_default_filename_))
+		if (SFileDialog::openFile(
+				inf,
+				WxUtils::strToView(browse_caption_),
+				WxUtils::strToView(browse_extensions_),
+				this,
+				WxUtils::strToView(browse_default_filename_)))
 		{
 			text_path_->SetValue(inf.filenames[0]);
 			wxCommandEvent event(wxEVT_COMMAND_FLP_LOCATION_CHANGED, GetId());

@@ -687,7 +687,7 @@ bool ArchivePanel::saveAs()
 			info, "Save Archive " + archive_->filename(false) + " As", archive_->fileExtensionString(), this))
 	{
 		// Save the archive
-		if (!archive_->save(info.filenames[0].ToStdString()))
+		if (!archive_->save(info.filenames[0]))
 		{
 			// If there was an error pop up a message box
 			wxMessageBox(wxString::Format("Error:\n%s", Global::error), "Error", wxICON_ERROR);
@@ -699,7 +699,7 @@ bool ArchivePanel::saveAs()
 	entry_list_->updateList();
 
 	// Add as recent file
-	App::archiveManager().addRecentFile(info.filenames[0].ToStdString());
+	App::archiveManager().addRecentFile(info.filenames[0]);
 
 	return true;
 }
@@ -866,8 +866,8 @@ bool ArchivePanel::importFiles()
 			// If the entry was created ok, load the file into it
 			if (new_entry)
 			{
-				new_entry->importFile(info.filenames[a].ToStdString()); // Import file to entry
-				EntryType::detectEntryType(new_entry);                  // Detect entry type
+				new_entry->importFile(info.filenames[a]); // Import file to entry
+				EntryType::detectEntryType(new_entry);    // Detect entry type
 				ok = true;
 			}
 
@@ -923,7 +923,7 @@ bool ArchivePanel::buildArchive()
 	SFileDialog::FDInfo info;
 	if (SFileDialog::saveFile(info, "Build archive", zip.fileExtensionString(), this))
 	{
-		UI::showSplash("Building " + info.filenames[0].ToStdString(), true);
+		UI::showSplash("Building " + info.filenames[0], true);
 		UI::setSplashProgress(0.0f);
 
 		// prevent for "archive in archive" when saving in the current directory
@@ -985,7 +985,7 @@ bool ArchivePanel::buildArchive()
 		UI::setSplashProgressMessage("");
 
 		// Save the archive
-		if (!zip.save(info.filenames[0].ToStdString()))
+		if (!zip.save(info.filenames[0]))
 		{
 			UI::hideSplash();
 
@@ -1056,10 +1056,12 @@ bool ArchivePanel::renameEntry(bool each) const
 
 		// Prompt for a new name
 		auto new_name = wxGetTextFromUser(
-			"Enter new entry name: (* = unchanged, ^ = alphabet letter, ^^ = lower case\n% = alphabet repeat number, "
-			"& = entry number, %% or && = n-1)",
-			"Rename",
-			filter).ToStdString();
+							"Enter new entry name: (* = unchanged, ^ = alphabet letter, ^^ = lower case\n% = alphabet "
+							"repeat number, "
+							"& = entry number, %% or && = n-1)",
+							"Rename",
+							filter)
+							.ToStdString();
 
 		// Apply mass rename to list of names
 		if (!new_name.empty())
@@ -1687,7 +1689,7 @@ bool ArchivePanel::importEntry()
 			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
 
 			// If a file was selected, import it
-			entry->importFile(info.filenames[0].ToStdString());
+			entry->importFile(info.filenames[0]);
 
 			// Re-detect entry type
 			EntryType::detectEntryType(entry);
@@ -1772,8 +1774,12 @@ bool ArchivePanel::exportEntry()
 		// Run save file dialog
 		SFileDialog::FDInfo info;
 		if (SFileDialog::saveFile(
-				info, "Export Entry \"" + selection[0]->name() + "\"", "Any File (*.*)|*.*", this, fn.GetFullName()))
-			selection[0]->exportFile(info.filenames[0].ToStdString()); // Export entry if ok was clicked
+				info,
+				"Export Entry \"" + selection[0]->name() + "\"",
+				"Any File (*.*)|*.*",
+				this,
+				fn.GetFullName().ToStdString()))
+			selection[0]->exportFile(info.filenames[0]); // Export entry if ok was clicked
 	}
 	else
 	{
@@ -2212,7 +2218,7 @@ bool ArchivePanel::gfxExportPNG()
 				"Export Entry \"" + selection[0]->name() + "\" as PNG",
 				"PNG Files (*.png)|*.png",
 				this,
-				fn.GetFullName()))
+				fn.GetFullName().ToStdString()))
 		{
 			// If a filename was selected, export it
 			if (!EntryOperations::exportAsPNG(selection[0], info.filenames[0]))
