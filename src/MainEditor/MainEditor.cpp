@@ -37,6 +37,7 @@
 #include "UI/ArchiveManagerPanel.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/MainWindow.h"
+#include "UI/WxUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -167,8 +168,8 @@ EntryPanel* MainEditor::currentEntryPanel()
 // Opens the documentation tab to [page_name] (if enabled)
 // -----------------------------------------------------------------------------
 #ifdef USE_WEBVIEW_STARTPAGE
-void MainEditor::openDocs(const wxString& page_name)
+void MainEditor::openDocs(std::string_view page_name)
 {
-	main_window->openDocs(page_name);
+	main_window->openDocs(WxUtils::strFromView(page_name));
 }
 #endif

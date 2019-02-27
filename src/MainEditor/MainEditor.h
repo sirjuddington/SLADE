@@ -28,7 +28,7 @@ void openEntry(ArchiveEntry* entry);
 void setGlobalPaletteFromArchive(Archive* archive);
 
 #ifdef USE_WEBVIEW_STARTPAGE
-void openDocs(const wxString& page_name = "");
+void openDocs(std::string_view page_name = "");
 #endif
 }; // namespace MainEditor
 
