@@ -71,7 +71,7 @@ public:
 	ArchiveEntry* getEntry() const { return entry_; }
 	void          fileModified() override { updateEntry(); }
 
-	virtual void updateEntry() { entry_->importFile(filename_.ToStdString()); }
+	virtual void updateEntry() { entry_->importFile(filename_); }
 
 	virtual bool exportEntry()
 	{
@@ -84,7 +84,7 @@ public:
 		if (ok)
 		{
 			filename_      = fn.fullPath();
-			file_modified_ = wxFileModificationTime(filename_);
+			file_modified_ = FileUtil::fileModifiedTime(filename_);
 			Start(1000);
 		}
 		else
@@ -140,7 +140,7 @@ public:
 	{
 		// Read file
 		MemChunk data;
-		data.importFile(filename_.ToStdString());
+		data.importFile(filename_);
 
 		// Read image
 		SImage image;
@@ -195,9 +195,9 @@ public:
 
 		// Export file and start monitoring if successful
 		filename_ = fn.fullPath();
-		if (png.exportFile(filename_.ToStdString()))
+		if (png.exportFile(filename_))
 		{
-			file_modified_ = wxFileModificationTime(filename_);
+			file_modified_ = FileUtil::fileModifiedTime(filename_);
 			Start(1000);
 			return true;
 		}
@@ -228,7 +228,7 @@ public:
 	void updateEntry() override
 	{
 		// Can't convert back, just import the MIDI
-		entry_->importFile(filename_.ToStdString());
+		entry_->importFile(filename_);
 	}
 
 	bool exportEntry() override
@@ -261,9 +261,9 @@ public:
 
 		// Export file and start monitoring if successful
 		filename_ = fn.fullPath();
-		if (convdata.exportFile(filename_.ToStdString()))
+		if (convdata.exportFile(filename_))
 		{
-			file_modified_ = wxFileModificationTime(filename_);
+			file_modified_ = FileUtil::fileModifiedTime(filename_);
 			Start(1000);
 			return true;
 		}
@@ -301,7 +301,7 @@ public:
 		if (doom_sound_)
 		{
 			MemChunk in, out;
-			in.importFile(filename_.ToStdString());
+			in.importFile(filename_);
 			if (Conversions::wavToDoomSnd(in, out))
 			{
 				// Import converted data to entry if successful
@@ -312,7 +312,7 @@ public:
 
 		// Just import wav to entry if conversion to doom sound
 		// failed or the entry was not a convertable type
-		entry_->importFile(filename_.ToStdString());
+		entry_->importFile(filename_);
 	}
 
 	bool exportEntry() override
@@ -359,9 +359,9 @@ public:
 
 		// Export file and start monitoring if successful
 		filename_ = fn.fullPath();
-		if (convdata.exportFile(filename_.ToStdString()))
+		if (convdata.exportFile(filename_))
 		{
-			file_modified_ = wxFileModificationTime(filename_);
+			file_modified_ = FileUtil::fileModifiedTime(filename_);
 			Start(1000);
 			return true;
 		}

@@ -119,8 +119,8 @@ protected:
 
 	// External edit stuff
 	ExternalEditManager::UPtr ee_manager_;
-	wxString                  current_external_exe_category_;
-	vector<wxString>          current_external_exes_;
+	std::string               current_external_exe_category_;
+	vector<std::string>       current_external_exes_;
 
 	// Controls
 	ArchiveEntryList* entry_list_          = nullptr;

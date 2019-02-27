@@ -99,3 +99,8 @@ vector<std::string> FileUtil::allFilesInDir(std::string_view path, bool include_
 
 	return paths;
 }
+
+time_t FileUtil::fileModifiedTime(std::string_view path)
+{
+	return static_cast<time_t>(fs::last_write_time(path).time_since_epoch().count());
+}

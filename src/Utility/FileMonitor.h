@@ -5,11 +5,11 @@ class Archive;
 class FileMonitor : public wxTimer
 {
 public:
-	FileMonitor(const wxString& filename, bool start = true);
+	FileMonitor(std::string_view filename, bool start = true);
 	virtual ~FileMonitor() = default;
 
-	wxProcess* process() const { return process_.get(); }
-	wxString   filename() const { return filename_; }
+	wxProcess*         process() const { return process_.get(); }
+	const std::string& filename() const { return filename_; }
 
 	virtual void fileModified() {}
 	virtual void processTerminated() {}
@@ -18,8 +18,8 @@ public:
 	void onEndProcess(wxProcessEvent& e);
 
 protected:
-	wxString filename_;
-	time_t   file_modified_;
+	std::string filename_;
+	time_t      file_modified_;
 
 private:
 	std::unique_ptr<wxProcess> process_;
@@ -28,13 +28,13 @@ private:
 class DB2MapFileMonitor : public FileMonitor
 {
 public:
-	DB2MapFileMonitor(const wxString& filename, Archive* archive, const wxString& map_name);
+	DB2MapFileMonitor(std::string_view filename, Archive* archive, std::string_view map_name);
 	~DB2MapFileMonitor() = default;
 
 	void fileModified() override;
 	void processTerminated() override;
 
 private:
-	Archive* archive_ = nullptr;
-	wxString map_name_;
+	Archive*    archive_ = nullptr;
+	std::string map_name_;
 };

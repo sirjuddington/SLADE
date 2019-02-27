@@ -36,6 +36,8 @@
 #include "Archive/Archive.h"
 #include "Archive/Formats/WadArchive.h"
 #include "StringUtils.h"
+#include <filesystem>
+#include "FileUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -48,7 +50,7 @@
 // -----------------------------------------------------------------------------
 // FileMonitor class constructor
 // -----------------------------------------------------------------------------
-FileMonitor::FileMonitor(const wxString& filename, bool start) : filename_{ filename }
+FileMonitor::FileMonitor(std::string_view filename, bool start) : filename_{ filename }
 {
 	// Create process
 	process_ = std::make_unique<wxProcess>(this);
@@ -56,7 +58,7 @@ FileMonitor::FileMonitor(const wxString& filename, bool start) : filename_{ file
 	// Start timer (updates every 1 sec)
 	if (start)
 	{
-		file_modified_ = wxFileModificationTime(filename);
+		file_modified_ = FileUtil::fileModifiedTime(filename);
 		wxTimer::Start(1000);
 	}
 
@@ -70,7 +72,7 @@ FileMonitor::FileMonitor(const wxString& filename, bool start) : filename_{ file
 void FileMonitor::Notify()
 {
 	// Check if the file has been modified since last update
-	auto modified = wxFileModificationTime(filename_);
+	auto modified = FileUtil::fileModifiedTime(filename_);
 	if (modified > file_modified_)
 	{
 		// Modified, update modification time and run any custom code
@@ -88,7 +90,7 @@ void FileMonitor::onEndProcess(wxProcessEvent& e)
 	processTerminated();
 
 	// Check if the file has been modified since last update
-	auto modified = wxFileModificationTime(filename_);
+	auto modified = FileUtil::fileModifiedTime(filename_);
 	if (modified > file_modified_)
 	{
 		// Modified, update modification time and run any custom code
@@ -114,7 +116,7 @@ void FileMonitor::onEndProcess(wxProcessEvent& e)
 // -----------------------------------------------------------------------------
 // DB2MapFileMonitor class constructor
 // -----------------------------------------------------------------------------
-DB2MapFileMonitor::DB2MapFileMonitor(const wxString& filename, Archive* archive, const wxString& map_name) :
+DB2MapFileMonitor::DB2MapFileMonitor(std::string_view filename, Archive* archive, std::string_view map_name) :
 	FileMonitor(filename),
 	archive_{ archive },
 	map_name_{ map_name }
@@ -132,18 +134,18 @@ void DB2MapFileMonitor::fileModified()
 
 	// Load file into temp archive
 	Archive::UPtr wad = std::make_unique<WadArchive>();
-	wad->open(filename_.ToStdString());
+	wad->open(filename_);
 
 	// Get map info for target archive
 	for (auto& map : archive_->detectMaps())
 	{
-		if (StrUtil::equalCI(map.name, map_name_.ToStdString()))
+		if (StrUtil::equalCI(map.name, map_name_))
 		{
 			// Check for simple case (map is in zip archive)
 			if (map.archive)
 			{
 				map.head->unlock();
-				map.head->importFile(filename_.ToStdString());
+				map.head->importFile(filename_);
 				map.head->lock();
 				break;
 			}
@@ -184,7 +186,7 @@ void DB2MapFileMonitor::processTerminated()
 	// Get map info for target archive
 	for (auto& map : archive_->detectMaps())
 	{
-		if (StrUtil::equalCI(map.name, map_name_.ToStdString()))
+		if (StrUtil::equalCI(map.name, map_name_))
 		{
 			// Unlock map entries
 			auto entry = map.head;
