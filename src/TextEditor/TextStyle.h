@@ -71,8 +71,8 @@ public:
 	StyleSet(std::string_view name = "Unnamed Style");
 	~StyleSet() = default;
 
-	wxString getName() const { return name_; }
-	unsigned nStyles() const { return styles_.size(); }
+	const std::string& getName() const { return name_; }
+	unsigned           nStyles() const { return styles_.size(); }
 
 	bool       parseSet(ParseTreeNode* root);
 	void       applyTo(TextEditorCtrl* stc);

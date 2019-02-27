@@ -139,11 +139,11 @@ void NodeBuilders::addBuilderPath(std::string_view builder, std::string_view pat
 void NodeBuilders::saveBuilderPaths(wxFile& file)
 {
 	file.Write("nodebuilder_paths\n{\n");
-	for (unsigned a = 0; a < builders.size(); a++)
+	for (auto& builder : builders)
 	{
-		wxString path = builders[a].path;
-		path.Replace("\\", "/");
-		file.Write(wxString::Format("\t%s \"%s\"\n", builders[a].id, path));
+		auto path = builder.path;
+		std::replace(path.begin(), path.end(), '\\', '/');
+		file.Write(wxString::Format("\t%s \"%s\"\n", builder.id, path));
 	}
 	file.Write("}\n");
 }

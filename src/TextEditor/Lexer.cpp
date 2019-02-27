@@ -816,6 +816,8 @@ bool ZScriptLexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos
 		return false;
 
 	// Check if word is a function name
-	wxString word = editor->GetTextRange(start_pos, end_pos);
-	return VECTOR_EXISTS(functions_, language_->caseSensitive() ? word : word.Lower());
+	auto word = editor->GetTextRange(start_pos, end_pos).ToStdString();
+	if (!language_->caseSensitive())
+		StrUtil::lowerIP(word);
+	return VECTOR_EXISTS(functions_, word);
 }

@@ -61,7 +61,7 @@ std::string findFileCasing(const StrUtil::Path& filename)
 	wxDir       dir(path);
 	if (!dir.IsOpened())
 	{
-		Log::error(1, "No directory at path %s. This shouldn't happen.");
+		Log::error("No directory at path {}. This shouldn't happen.", path);
 		return "";
 	}
 

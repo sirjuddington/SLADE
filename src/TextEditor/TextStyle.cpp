@@ -39,10 +39,11 @@
 #include "Archive/ArchiveManager.h"
 #include "Lexer.h"
 #include "UI/TextEditorCtrl.h"
+#include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include "thirdparty/fmt/fmt/color.h"
-#include "Utility/StringUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -100,41 +101,41 @@ bool TextStyle::parse(ParseTreeNode* node)
 	// Go through info nodes
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto     child = node->childPTN(a);
-		wxString name  = child->name();
+		auto child = node->childPTN(a);
+		auto name  = child->name();
 
 		// Font name
-		if (S_CMPNOCASE(name, "font"))
+		if (StrUtil::equalCI(name, "font"))
 			font_ = child->stringValue();
 
 		// Font size
-		if (S_CMPNOCASE(name, "size"))
+		else if (StrUtil::equalCI(name, "size"))
 			size_ = child->intValue();
 
 		// Foreground colour
-		if (S_CMPNOCASE(name, "foreground"))
+		else if (StrUtil::equalCI(name, "foreground"))
 		{
 			foreground_.set(child->intValue(0), child->intValue(1), child->intValue(2), 255);
 			fg_defined_ = true;
 		}
 
 		// Background colour
-		if (S_CMPNOCASE(name, "background"))
+		else if (StrUtil::equalCI(name, "background"))
 		{
 			background_.set(child->intValue(0), child->intValue(1), child->intValue(2), 255);
 			bg_defined_ = true;
 		}
 
 		// Bold
-		if (S_CMPNOCASE(name, "bold"))
+		else if (StrUtil::equalCI(name, "bold"))
 			bold_ = (int)child->boolValue();
 
 		// Italic
-		if (S_CMPNOCASE(name, "italic"))
+		else if (StrUtil::equalCI(name, "italic"))
 			italic_ = (int)child->boolValue();
 
 		// Underlined
-		if (S_CMPNOCASE(name, "underlined"))
+		else if (StrUtil::equalCI(name, "underlined"))
 			underlined_ = (int)child->boolValue();
 	}
 
@@ -583,12 +584,12 @@ void StyleSet::initCurrent()
 	ss_current->name_ = "<current styleset>";
 
 	// First up, check if "<userdir>/current.sss" exists
-	wxString path = App::path("current.sss", App::Dir::User);
-	if (wxFileExists(path))
+	auto path = App::path("current.sss", App::Dir::User);
+	if (FileUtil::fileExists(path))
 	{
 		// Read it in
 		Tokenizer tz;
-		tz.openFile(path.ToStdString());
+		tz.openFile(path);
 
 		// Parse it
 		ParseTreeNode root;
@@ -837,21 +838,15 @@ bool StyleSet::loadResourceStyles()
 bool StyleSet::loadCustomStyles()
 {
 	// If the custom stylesets directory doesn't exist, create it
-	if (!wxDirExists(App::path("text_styles", App::Dir::User)))
-		wxMkdir(App::path("text_styles", App::Dir::User));
-
-	// Open the custom stylesets directory
-	wxDir res_dir;
-	res_dir.Open(App::path("text_styles", App::Dir::User));
+	auto custom_dir = App::path("text_styles", App::Dir::User);
+	FileUtil::createDir(custom_dir);
 
 	// Go through each file in the directory
-	wxString filename = wxEmptyString;
-	bool     files    = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
-	while (files)
+	for (const auto& path : FileUtil::allFilesInDir(custom_dir))
 	{
 		// Read file into tokenizer
 		Tokenizer tz;
-		tz.openFile(res_dir.GetName().ToStdString() + "/" + filename.ToStdString());
+		tz.openFile(path);
 
 		// Parse it
 		ParseTreeNode root;
@@ -866,9 +861,6 @@ bool StyleSet::loadCustomStyles()
 			if (newset->parseSet(dynamic_cast<ParseTreeNode*>(node)))
 				style_sets.push_back(std::move(newset));
 		}
-
-		// Next file
-		files = res_dir.GetNext(&filename);
 	}
 
 	return true;

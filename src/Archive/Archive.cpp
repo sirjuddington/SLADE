@@ -622,8 +622,8 @@ bool Archive::save(std::string_view filename)
 			if (backup_archives && wxFileName::FileExists(filename_) && save_backup)
 			{
 				// Copy current file contents to new backup file
-				wxString bakfile = filename_ + ".bak";
-				Log::info(wxString::Format("Creating backup %s", bakfile));
+				auto bakfile = filename_ + ".bak";
+				Log::info("Creating backup {}", bakfile);
 				wxCopyFile(filename_, bakfile, true);
 			}
 
