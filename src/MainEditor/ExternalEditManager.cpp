@@ -119,7 +119,7 @@ protected:
 	ArchiveEntry*        entry_   = nullptr;
 	Archive*             archive_ = nullptr;
 	ExternalEditManager* manager_ = nullptr;
-	wxString             gfx_format_;
+	std::string          gfx_format_;
 };
 
 
@@ -148,7 +148,7 @@ public:
 		image.convertPaletted(&palette_);
 
 		// Convert image to entry gfx format
-		auto format = SIFormat::getFormat(gfx_format_.ToStdString());
+		auto format = SIFormat::getFormat(gfx_format_);
 		if (format)
 		{
 			MemChunk conv_data;
@@ -160,7 +160,7 @@ public:
 			}
 			else
 			{
-				Log::error(wxString::Format("Unable to convert external png to %s", format->name()));
+				Log::error("Unable to convert external png to {}", format->name());
 			}
 		}
 	}
@@ -206,9 +206,9 @@ public:
 	}
 
 private:
-	wxString gfx_format_;
-	Vec2i    offsets_;
-	Palette  palette_;
+	std::string gfx_format_;
+	Vec2i       offsets_;
+	Palette     palette_;
 };
 
 
@@ -255,7 +255,7 @@ public:
 
 		else
 		{
-			Global::error = wxString::Format("Type %s can not be converted to MIDI", entry_->type()->name());
+			Global::error = fmt::format("Type {} can not be converted to MIDI", entry_->type()->name());
 			return false;
 		}
 
@@ -353,7 +353,7 @@ public:
 
 		else
 		{
-			Global::error = wxString::Format("Type %s can not be converted to WAV", entry_->type()->name());
+			Global::error = fmt::format("Type {} can not be converted to WAV", entry_->type()->name());
 			return false;
 		}
 
@@ -401,13 +401,13 @@ ExternalEditManager::~ExternalEditManager()
 // -----------------------------------------------------------------------------
 // Opens [entry] for external editing with [editor] for [category]
 // -----------------------------------------------------------------------------
-bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, const wxString& editor, const wxString& category)
+bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, std::string_view editor, std::string_view category)
 {
 	// Check the entry isn't already opened externally
 	for (auto& file_monitor : file_monitors_)
 		if (file_monitor->getEntry() == entry)
 		{
-			Log::warning(wxString::Format("Entry %s is already open in an external editor", entry->name()));
+			Log::warning("Entry {} is already open in an external editor", entry->name());
 			return true;
 		}
 
@@ -435,24 +435,24 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, const wxString&
 	}
 
 	// Get external editor path
-	auto exe_path = Executables::externalExe(editor.ToStdString(), category.ToStdString()).path;
+	auto exe_path = Executables::externalExe(editor, category).path;
 #ifdef WIN32
 	if (exe_path.empty() || !FileUtil::fileExists(exe_path))
 #else
 	if (exe_path.empty())
 #endif
 	{
-		Global::error = wxString::Format("External editor %s has invalid path", editor);
+		Global::error = fmt::format("External editor {} has invalid path", editor);
 		delete monitor;
 		return false;
 	}
 
 	// Run external editor
-	wxString command = wxString::Format("\"%s\" \"%s\"", exe_path, monitor->filename());
-	long     success = wxExecute(command, wxEXEC_ASYNC, monitor->process());
+	auto command = fmt::format("\"{}\" \"{}\"", exe_path, monitor->filename());
+	long success = wxExecute(command, wxEXEC_ASYNC, monitor->process());
 	if (success == 0)
 	{
-		Global::error = wxString::Format("Failed to launch %s", editor);
+		Global::error = fmt::format("Failed to launch {}", editor);
 		delete monitor;
 		return false;
 	}
