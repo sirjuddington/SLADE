@@ -154,6 +154,22 @@ void registerArchiveFormat(sol::state& lua)
 }
 
 // -----------------------------------------------------------------------------
+// Registers the ArchiveSearchOptions type with lua
+// -----------------------------------------------------------------------------
+void registerArchiveSearchOptions(sol::state& lua)
+{
+	auto lua_search_opt = lua.new_usertype<Archive::SearchOptions>(
+		"ArchiveSearchOptions", "new", sol::constructors<Archive::SearchOptions()>());
+
+	lua_search_opt["matchName"]      = sol::property(&Archive::SearchOptions::match_name);
+	lua_search_opt["matchType"]      = sol::property(&Archive::SearchOptions::match_type);
+	lua_search_opt["matchNamespace"] = sol::property(&Archive::SearchOptions::match_namespace);
+	lua_search_opt["dir"]            = sol::property(&Archive::SearchOptions::dir);
+	lua_search_opt["ignoreExt"]      = sol::property(&Archive::SearchOptions::ignore_ext);
+	lua_search_opt["searchSubdirs"]  = sol::property(&Archive::SearchOptions::search_subdirs);
+}
+
+// -----------------------------------------------------------------------------
 // Registers the Archive type with lua
 // -----------------------------------------------------------------------------
 void registerArchive(sol::state& lua)
@@ -180,12 +196,14 @@ void registerArchive(sol::state& lua)
 	lua_archive["save"]                   = sol::overload(
         [](Archive& self) { return self.save(); },
         [](Archive& self, const std::string& filename) { return self.save(filename); });
+	lua_archive["findFirst"] = &Archive::findFirst;
+	lua_archive["findLast"]  = &Archive::findLast;
+	lua_archive["findAll"]   = &Archive::findAll;
 
 // Register all subclasses
 // (perhaps it'd be a good idea to make Archive not abstract and handle
 //  the format-specific stuff somewhere else, rather than in subclasses)
 #define REGISTER_ARCHIVE(type) lua.new_usertype<type>(#type, sol::base_classes, sol::bases<Archive>())
-	REGISTER_ARCHIVE(WadArchive);
 	REGISTER_ARCHIVE(WadArchive);
 	REGISTER_ARCHIVE(ZipArchive);
 	REGISTER_ARCHIVE(LibArchive);
@@ -298,6 +316,10 @@ void registerEntryType(sol::state& lua)
 	lua_etype["formatId"]  = sol::property(&EntryType::formatId);
 	lua_etype["editor"]    = sol::property(&EntryType::editor);
 	lua_etype["category"]  = sol::property(&EntryType::category);
+
+	// Functions
+	// -------------------------------------------------------------------------
+	lua_etype["fromId"] = &EntryType::fromId;
 }
 
 // -----------------------------------------------------------------------------
@@ -331,6 +353,7 @@ void registerArchivesNamespace(sol::state& lua)
 void registerArchiveTypes(sol::state& lua)
 {
 	registerArchiveFormat(lua);
+	registerArchiveSearchOptions(lua);
 	registerArchive(lua);
 	registerArchiveEntry(lua);
 	registerEntryType(lua);

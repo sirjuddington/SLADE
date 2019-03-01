@@ -1414,21 +1414,6 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 
 	// Begin search
 
-	// Search subdirectories (if needed) (bottom-up)
-	if (options.search_subdirs)
-	{
-		for (int a = dir->nChildren() - 1; a >= 0; a--)
-		{
-			auto opt   = options;
-			opt.dir    = (ArchiveTreeNode*)dir->child(a);
-			auto match = findLast(opt);
-
-			// If a match was found in this subdir, return it
-			if (match)
-				return match;
-		}
-	}
-
 	// Search entries (bottom-up)
 	for (int a = dir->numEntries() - 1; a >= 0; a--)
 	{
@@ -1464,6 +1449,21 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 
 		// Entry passed all checks so far, so we found a match
 		return entry;
+	}
+
+	// Search subdirectories (if needed) (bottom-up)
+	if (options.search_subdirs)
+	{
+		for (int a = dir->nChildren() - 1; a >= 0; a--)
+		{
+			auto opt   = options;
+			opt.dir    = (ArchiveTreeNode*)dir->child(a);
+			auto match = findLast(opt);
+
+			// If a match was found in this subdir, return it
+			if (match)
+				return match;
+		}
 	}
 
 	// No matches found

@@ -14,4 +14,26 @@ The **EntryType** type contains information about an entry's type/format.
 ## Constructors
 
 !!! attention "No Constructors"
-    This type can not be created directly in scripts.
+    This type can not be created directly in scripts. Retrieve one by using the `fromId` function below.
+
+## Functions
+
+### `fromId` (static)
+
+<listhead>Parameters</listhead>
+
+* <type>string</type> <arg>id</arg>: The id of the `EntryType` to get
+
+**Returns** <type>EntryType</type>
+
+Returns the `EntryType` with the given <arg>id</arg>, or `nil` if no type has that id.
+
+*Note that this is a 'static' function, and does not need to be called from an `EntryType` object (see the example below)*
+
+**Example**
+
+```lua
+-- Will write 'Wad Archive' to the log
+local type = EntryType.fromId('wad')
+App.logMessage(type.name)
+```

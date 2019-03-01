@@ -37,6 +37,7 @@ pages:
     - ArchiveDir: 'md/Types/ArchiveDir.md'
     - ArchiveEntry: 'md/Types/ArchiveEntry.md'
     - ArchiveFormat: 'md/Types/ArchiveFormat.md'
+    - ArchiveSearchOptions: 'md/Types/ArchiveSearchOptions.md'
     - EntryType: 'md/Types/EntryType.md'
   - Game:
     - ThingType: 'md/Types/ThingType.md'

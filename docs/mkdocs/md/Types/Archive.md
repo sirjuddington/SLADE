@@ -16,8 +16,8 @@ The **Archive** type represents an archive (wad/pk3/etc) in SLADE.
 
 <listhead>See:</listhead>
 
-* <code>[archives.create](../Namespaces/Archives.md#create)</code>
-* <code>[archives.openFile](../Namespaces/Archives.md#openfile)</code>
+* <code>[Archives.create](../Namespaces/Archives.md#create)</code>
+* <code>[Archives.openFile](../Namespaces/Archives.md#openfile)</code>
 
 ## Functions - General
 
@@ -152,3 +152,39 @@ Removes the given entry from the archive (but does not delete it). Returns `fals
 **Returns** <type>boolean</type>
 
 Renames the given entry. Returns `false` if the entry was not found in the archive.
+
+## Functions - Entry Search
+
+### `findFirst`
+
+<listhead>Parameters</listhead>
+
+* <type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type> <arg>options</arg>: The search criteria
+
+**Returns** <type>[ArchiveEntry](ArchiveEntry.md)</type>
+
+Returns the **first** entry found in the archive matching the given <arg>options</arg>. Will return `nil` if no match is found.
+
+If <prop>searchSubdirs</prop> is true in the <arg>options</arg>, subdirectories will be searched *after* the entries in the specified <prop>dir</prop>.
+
+### `findLast`
+
+<listhead>Parameters</listhead>
+
+* <type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type> <arg>options</arg>: The search criteria
+
+**Returns** <type>[ArchiveEntry](ArchiveEntry.md)</type>
+
+Returns the **last** entry found in the archive matching the given <arg>options</arg>. Will return `nil` if no match is found.
+
+If <prop>searchSubdirs</prop> is true in the <arg>options</arg>, subdirectories will be searched *after* the entries in the specified <prop>dir</prop>.
+
+### `findAll`
+
+<listhead>Parameters</listhead>
+
+* <type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type> <arg>options</arg>: The search criteria
+
+**Returns** <type>[ArchiveEntry](ArchiveEntry.md)\[\]</type>
+
+Returns all entries found in the archive matching the given <arg>options</arg>. Will return an empty array if no match is found.
