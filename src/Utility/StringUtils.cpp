@@ -217,122 +217,98 @@ bool StrUtil::containsCI(std::string_view str, std::string_view check)
 
 bool StrUtil::matches(std::string_view str, std::string_view match)
 {
-	// See: https://www.codeproject.com/Articles/1088/Wildcard-string-compare-globbing?msg=4593232#xx4593232xx
-	// Adapted for string_view and cleaned up a bit
+	// Empty [match] only matches empty [str]
+	if (match.empty())
+		return str.empty();
 
-	char        stopstring    = '\0';
-	const char* str_current   = str.data();
-	const char* str_end       = str.data() + str.size();
-	const char* match_current = match.data();
-	const char* match_end     = match.data() + match.size();
+	unsigned m_pos = 0;
+	unsigned m_start;
+	unsigned t_pos = 0;
+	unsigned i;
 
-	while (str_current != str_end)
+	while (true)
 	{
-		if (*match_current == '*')
+		if (m_pos == match.size())
+			return t_pos == str.size();
+
+		if (match[m_pos] == '*')
 		{
-			// Skip multiple * in a row
-			do
+			while (match[m_pos] == '*')
 			{
-				match_current++;
-			} while (*match_current == '*');
-
-			// If * was the last char, the strings are equal
-			if (match_current == match_end)
-				return true;
-
-			// The next char to check after the *
-			stopstring = *match_current;
-		}
-
-		if (stopstring != '\0')
-		{
-			if (stopstring == *str_current || stopstring == '?')
-			{
-				match_current++;
-				stopstring = '\0';
+				++m_pos;
+				if (m_pos == match.size())
+					return true; // [match] ends with *, rest of [str] doesn't matter
 			}
-			str_current++;
 		}
-		else if (*match_current == *str_current || *match_current == '?')
-		{
-			match_current++;
-			str_current++;
-		}
-		else
-			return false;
 
-		if (str_current == str_end && match_current != match_end)
-		{
-			// [str] seems to be too short. Check if [match] has any more chars except '*'
-			while (*match_current == '*') // Ignore following '*'
-				match_current++;
+		// Get part of [match] to check
+		m_start = m_pos;
+		while (m_pos < match.size() && match[m_pos] != '*')
+			++m_pos;
 
-			// If [match] ended after '*', strings are equal
-			return match_current == match_end;
+		// Find above part of [match] in [str], beginning at t_pos
+		i = 0;
+		while (i < m_pos - m_start)
+		{
+			if (t_pos == str.size())
+				return false; // Not found, no match
+
+			if (match[m_start + i] == '?' || str[t_pos] == match[m_start + i])
+				++i;
+			else
+				i = 0;
+
+			++t_pos;
 		}
 	}
-
-	return match_current == match_end;
 }
 
 bool StrUtil::matchesCI(std::string_view str, std::string_view match)
 {
-	// See: https://www.codeproject.com/Articles/1088/Wildcard-string-compare-globbing?msg=4593232#xx4593232xx
-	// Adapted slightly for string_view and case-insensitivity
+	// Empty [match] only matches empty [str]
+	if (match.empty())
+		return str.empty();
 
-	char        stopstring    = '\0';
-	const char* str_current   = str.data();
-	const char* str_end       = str.data() + str.size();
-	const char* match_current = match.data();
-	const char* match_end     = match.data() + match.size();
+	unsigned m_pos = 0;
+	unsigned m_start;
+	unsigned t_pos = 0;
+	unsigned i;
 
-	while (str_current != str_end)
+	while (true)
 	{
-		if (*match_current == '*')
+		if (m_pos == match.size())
+			return t_pos == str.size();
+
+		if (match[m_pos] == '*')
 		{
-			// Skip multiple * in a row
-			do
+			while (match[m_pos] == '*')
 			{
-				match_current++;
-			} while (*match_current == '*');
-
-			// If * was the last char, the strings are equal
-			if (match_current == match_end)
-				return true;
-
-			// The next char to check after the *
-			stopstring = tolower(*match_current);
-		}
-
-		if (stopstring != '\0')
-		{
-			if (stopstring == tolower(*str_current) || stopstring == '?')
-			{
-				match_current++;
-				stopstring = '\0';
+				++m_pos;
+				if (m_pos == match.size())
+					return true; // [match] ends with *, rest of [str] doesn't matter
 			}
-			str_current++;
 		}
-		else if (tolower(*match_current) == tolower(*str_current) || *match_current == '?')
-		{
-			match_current++;
-			str_current++;
-		}
-		else
-			return false;
 
-		if (str_current == str_end && match_current != match_end)
-		{
-			// [str] seems to be too short. Check if [match] has any more chars except '*'
-			while (*match_current == '*') // Ignore following '*'
-				match_current++;
+		// Get part of [match] to check
+		m_start = m_pos;
+		while (m_pos < match.size() && match[m_pos] != '*')
+			++m_pos;
 
-			// If [match] ended after '*', strings are equal
-			return match_current == match_end;
+		// Find above part of [match] in [str], beginning at t_pos
+		i = 0;
+		while (i < m_pos - m_start)
+		{
+			if (t_pos == str.size())
+				return false; // Not found, no match
+
+			if (match[m_start + i] == '?' || tolower(str[t_pos]) == tolower(match[m_start + i]))
+				++i;
+			else
+				i = 0;
+
+			++t_pos;
 		}
 	}
-
-	return match_current == match_end;
 }
 
 // -----------------------------------------------------------------------------
