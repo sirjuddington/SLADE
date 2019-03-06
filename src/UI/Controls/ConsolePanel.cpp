@@ -134,6 +134,7 @@ void ConsolePanel::update()
 
 	// Add new log messages to log text area
 	text_log_->SetEditable(true);
+	int line_no = next_message_index_ + 1;
 	for (auto a = next_message_index_; a < log.size(); ++a)
 	{
 		if (a > 0)
@@ -141,19 +142,21 @@ void ConsolePanel::update()
 
 		// Add message line + timestamp margin
 		text_log_->AppendText(log[a].message);
-		text_log_->MarginSetText(a, wxDateTime(log[a].timestamp).FormatISOTime());
-		text_log_->MarginSetStyle(a, wxSTC_STYLE_LINENUMBER);
+		text_log_->MarginSetText(line_no, wxDateTime(log[a].timestamp).FormatISOTime());
+		text_log_->MarginSetStyle(line_no, wxSTC_STYLE_LINENUMBER);
 
 		// Set line colour depending on message type
-		text_log_->StartStyling(text_log_->GetLineEndPosition(a) - text_log_->GetLineLength(a), 0);
+		text_log_->StartStyling(text_log_->GetLineEndPosition(line_no) - text_log_->GetLineLength(line_no), 0);
 		switch (log[a].type)
 		{
-		case Log::MessageType::Error: text_log_->SetStyling(text_log_->GetLineLength(a), 200); break;
-		case Log::MessageType::Warning: text_log_->SetStyling(text_log_->GetLineLength(a), 201); break;
-		case Log::MessageType::Script: text_log_->SetStyling(text_log_->GetLineLength(a), 202); break;
-		case Log::MessageType::Debug: text_log_->SetStyling(text_log_->GetLineLength(a), 203); break;
+		case Log::MessageType::Error: text_log_->SetStyling(text_log_->GetLineLength(line_no), 200); break;
+		case Log::MessageType::Warning: text_log_->SetStyling(text_log_->GetLineLength(line_no), 201); break;
+		case Log::MessageType::Script: text_log_->SetStyling(text_log_->GetLineLength(line_no), 202); break;
+		case Log::MessageType::Debug: text_log_->SetStyling(text_log_->GetLineLength(line_no), 203); break;
 		default: break;
 		}
+
+		++line_no;
 	}
 	text_log_->SetEditable(false);
 
