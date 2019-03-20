@@ -1,6 +1,6 @@
 The **MapObject** type is a base type for all map editor objects.
 
-#### Regarding MapObject `*Property` and `set*Property` functions
+#### Regarding MapObject `*Property` and `Set*Property` functions
 
 MapObject properties in SLADE generally mirror the properties defined in the [UDMF](https://doomwiki.org/wiki/UDMF) specification. As an example, setting the `texturetop` string property on a <type>[MapSide](MapSide.md)</type> MapObject will set its upper texture. Note that not all basic UDMF properties are supported for non-UDMF maps.
 
@@ -19,7 +19,19 @@ The following types inherit all MapObject properties and functions:
 | Property | Type | Description |
 |:---------|:-----|:------------|
 <prop class="ro">index</prop>     | <type>number</type> | The object's index in the map
+<prop class="ro">type</prop>      | <type>number</type> | The object's type (see `TYPE_` constants)
 <prop class="ro">typeName</prop>  | <type>string</type> | The object type name (eg. `Vertex`)
+
+## Constants
+
+| Name | Value |
+|:-----|:-----:|
+`TYPE_OBJECT` | 0
+`TYPE_VERTEX` | 1
+`TYPE_LINE` | 2
+`TYPE_SIDE` | 3
+`TYPE_SECTOR` | 4
+`TYPE_THING` | 5
 
 ## Constructors
 
@@ -28,7 +40,7 @@ The following types inherit all MapObject properties and functions:
 
 ## Functions
 
-### `hasProperty`
+### `HasProperty`
 
 <listhead>Parameters</listhead>
 
@@ -39,7 +51,7 @@ The following types inherit all MapObject properties and functions:
 Returns `true` if the object has a property matching the given <arg>name</arg>
 
 ---
-### `boolProperty`
+### `BoolProperty`
 
 <listhead>Parameters</listhead>
 
@@ -50,7 +62,7 @@ Returns `true` if the object has a property matching the given <arg>name</arg>
 Returns the <type>boolean</type> value of the property matching the given <arg>name</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns `false`.
 
 ---
-### `intProperty`
+### `IntProperty`
 
 <listhead>Parameters</listhead>
 
@@ -61,7 +73,7 @@ Returns the <type>boolean</type> value of the property matching the given <arg>n
 Returns the integer <type>number</type> value of the property matching the given <arg>name</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns 0.
 
 ---
-### `floatProperty`
+### `FloatProperty`
 
 <listhead>Parameters</listhead>
 
@@ -72,7 +84,7 @@ Returns the integer <type>number</type> value of the property matching the given
 Returns the floating point <type>number</type> value of the property matching the given <arg>name</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns 0.
 
 ---
-### `stringProperty`
+### `StringProperty`
 
 <listhead>Parameters</listhead>
 
@@ -83,7 +95,7 @@ Returns the floating point <type>number</type> value of the property matching th
 Returns the <type>string</type> value of the property matching the given <arg>name</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns an empty string.
 
 ---
-### `setBoolProperty`
+### `SetBoolProperty`
 
 <listhead>Parameters</listhead>
 
@@ -93,7 +105,7 @@ Returns the <type>string</type> value of the property matching the given <arg>na
 Sets the property <arg>name</arg> to <arg>value</arg>. The property is created if it doesn't already exist.
 
 ---
-### `setIntProperty`
+### `SetIntProperty`
 
 <listhead>Parameters</listhead>
 
@@ -103,7 +115,7 @@ Sets the property <arg>name</arg> to <arg>value</arg>. The property is created i
 Sets the property <arg>name</arg> to <arg>value</arg>. The property is created if it doesn't already exist.
 
 ---
-### `setFloatProperty`
+### `SetFloatProperty`
 
 <listhead>Parameters</listhead>
 
@@ -113,7 +125,7 @@ Sets the property <arg>name</arg> to <arg>value</arg>. The property is created i
 Sets the property <arg>name</arg> to <arg>value</arg>. The property is created if it doesn't already exist.
 
 ---
-### `setStringProperty`
+### `SetStringProperty`
 
 <listhead>Parameters</listhead>
 

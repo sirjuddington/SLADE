@@ -105,11 +105,11 @@ void registerSLADEMap(sol::state& lua)
 	// -------------------------------------------------------------------------
 	lua_map["name"]          = sol::property(&SLADEMap::mapName);
 	lua_map["udmfNamespace"] = sol::property(&SLADEMap::udmfNamespace);
-	lua_map["vertices"] = sol::property([](SLADEMap& self) { return self.vertices().all(); });
-	lua_map["linedefs"] = sol::property([](SLADEMap& self) { return self.lines().all(); });
-	lua_map["sidedefs"] = sol::property([](SLADEMap& self) { return self.sides().all(); });
-	lua_map["sectors"]  = sol::property([](SLADEMap& self) { return self.sectors().all(); });
-	lua_map["things"]   = sol::property([](SLADEMap& self) { return self.things().all(); });
+	lua_map["vertices"]      = sol::property([](SLADEMap& self) { return self.vertices().all(); });
+	lua_map["linedefs"]      = sol::property([](SLADEMap& self) { return self.lines().all(); });
+	lua_map["sidedefs"]      = sol::property([](SLADEMap& self) { return self.sides().all(); });
+	lua_map["sectors"]       = sol::property([](SLADEMap& self) { return self.sectors().all(); });
+	lua_map["things"]        = sol::property([](SLADEMap& self) { return self.things().all(); });
 }
 
 // -----------------------------------------------------------------------------
@@ -149,51 +149,39 @@ void registerMapEditor(sol::state& lua)
 	lua_mapeditor["gridSize"]       = sol::property(&MapEditContext::gridSize);
 	lua_mapeditor["map"]            = sol::property(&MapEditContext::map);
 
+	// Constants
+	// -------------------------------------------------------------------------
+	lua_mapeditor["MODE_VERTICES"]      = sol::property([]() { return MapEditor::Mode::Vertices; });
+	lua_mapeditor["MODE_LINES"]         = sol::property([]() { return MapEditor::Mode::Lines; });
+	lua_mapeditor["MODE_SECTORS"]       = sol::property([]() { return MapEditor::Mode::Sectors; });
+	lua_mapeditor["MODE_THINGS"]        = sol::property([]() { return MapEditor::Mode::Things; });
+	lua_mapeditor["MODE_VISUAL"]        = sol::property([]() { return MapEditor::Mode::Visual; });
+	lua_mapeditor["SECTORMODE_BOTH"]    = sol::property([]() { return MapEditor::SectorMode::Both; });
+	lua_mapeditor["SECTORMODE_FLOOR"]   = sol::property([]() { return MapEditor::SectorMode::Floor; });
+	lua_mapeditor["SECTORMODE_CEILING"] = sol::property([]() { return MapEditor::SectorMode::Ceiling; });
+
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_mapeditor["selectedVertices"] = sol::overload(
+	lua_mapeditor["SelectedVertices"] = sol::overload(
 		[](MapEditContext& self, bool try_hilight) { return self.selection().selectedVertices(try_hilight); },
 		[](MapEditContext& self) { return self.selection().selectedVertices(false); });
-	lua_mapeditor["selectedLines"] = sol::overload(
+	lua_mapeditor["SelectedLines"] = sol::overload(
 		[](MapEditContext& self, bool try_hilight) { return self.selection().selectedLines(try_hilight); },
 		[](MapEditContext& self) { return self.selection().selectedLines(false); });
-	lua_mapeditor["selectedSectors"] = sol::overload(
+	lua_mapeditor["SelectedSectors"] = sol::overload(
 		[](MapEditContext& self, bool try_hilight) { return self.selection().selectedSectors(try_hilight); },
 		[](MapEditContext& self) { return self.selection().selectedSectors(false); });
-	lua_mapeditor["selectedThings"] = sol::overload(
+	lua_mapeditor["SelectedThings"] = sol::overload(
 		[](MapEditContext& self, bool try_hilight) { return self.selection().selectedThings(try_hilight); },
 		[](MapEditContext& self) { return self.selection().selectedThings(false); });
-	lua_mapeditor["clearSelection"] = [](MapEditContext& self) { self.selection().clear(); };
-	lua_mapeditor["select"]         = sol::overload(
+	lua_mapeditor["ClearSelection"] = [](MapEditContext& self) { self.selection().clear(); };
+	lua_mapeditor["Select"]         = sol::overload(
         &selectMapObject, [](MapEditContext& self, MapObject* object) { selectMapObject(self, object, true); });
-	lua_mapeditor["setEditMode"] = sol::overload(
+	lua_mapeditor["SetEditMode"] = sol::overload(
 		[](MapEditContext& self, MapEditor::Mode mode) { setEditMode(self, mode); },
 		[](MapEditContext& self, MapEditor::Mode mode, MapEditor::SectorMode sector_mode) {
 			setEditMode(self, mode, sector_mode);
 		});
-
-	// MapEditor enums
-	sol::table tbl = lua["MapEditor"];
-	tbl.new_enum(
-		"Mode",
-		"Vertices",
-		MapEditor::Mode::Vertices,
-		"Lines",
-		MapEditor::Mode::Lines,
-		"Sectors",
-		MapEditor::Mode::Sectors,
-		"Things",
-		MapEditor::Mode::Things,
-		"Visual",
-		MapEditor::Mode::Visual);
-	tbl.new_enum(
-		"SectorMode",
-		"Both",
-		MapEditor::SectorMode::Both,
-		"Floor",
-		MapEditor::SectorMode::Floor,
-		"Ceiling",
-		MapEditor::SectorMode::Ceiling);
 }
 
 // -----------------------------------------------------------------------------
@@ -269,8 +257,8 @@ void registerMapLine(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_line["flag"] = &lineFlag;
-	lua_line["flip"] = sol::overload(&MapLine::flip, [](MapLine& self) { self.flip(true); });
+	lua_line["Flag"] = &lineFlag;
+	lua_line["Flip"] = sol::overload(&MapLine::flip, [](MapLine& self) { self.flip(true); });
 }
 
 // -----------------------------------------------------------------------------
@@ -320,7 +308,7 @@ void registerMapSector(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_sector["containsPoint"] = &MapSector::containsPoint;
+	lua_sector["ContainsPoint"] = &MapSector::containsPoint;
 }
 
 // -----------------------------------------------------------------------------
@@ -351,8 +339,8 @@ void registerMapThing(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_thing["flag"]          = &thingFlag;
-	lua_thing["setAnglePoint"] = &MapThing::setAnglePoint;
+	lua_thing["Flag"]          = &thingFlag;
+	lua_thing["SetAnglePoint"] = &MapThing::setAnglePoint;
 }
 
 // -----------------------------------------------------------------------------
@@ -365,20 +353,32 @@ void registerMapObject(sol::state& lua)
 	// Properties
 	// -------------------------------------------------------------------------
 	lua_mapobject["index"]    = sol::property(&MapObject::index);
+	lua_mapobject["type"]     = sol::property(&MapObject::objType);
 	lua_mapobject["typeName"] = sol::property(&MapObject::typeName);
 	// lua_mapobject["properties"] = sol::property(&MapObject::props); // TODO: Need to export MobjPropertyList first
 
+
+	// Constants
+	// -------------------------------------------------------------------------
+	lua_mapobject["TYPE_OBJECT"] = sol::property([]() { return MapObject::Type::Object; });
+	lua_mapobject["TYPE_VERTEX"] = sol::property([]() { return MapObject::Type::Vertex; });
+	lua_mapobject["TYPE_LINE"]   = sol::property([]() { return MapObject::Type::Line; });
+	lua_mapobject["TYPE_SIDE"]   = sol::property([]() { return MapObject::Type::Side; });
+	lua_mapobject["TYPE_SECTOR"] = sol::property([]() { return MapObject::Type::Sector; });
+	lua_mapobject["TYPE_THING"]  = sol::property([]() { return MapObject::Type::Thing; });
+
+
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_mapobject["hasProperty"]       = &MapObject::hasProp;
-	lua_mapobject["boolProperty"]      = &MapObject::boolProperty;
-	lua_mapobject["intProperty"]       = &MapObject::intProperty;
-	lua_mapobject["floatProperty"]     = &MapObject::floatProperty;
-	lua_mapobject["stringProperty"]    = &MapObject::stringProperty;
-	lua_mapobject["setBoolProperty"]   = &objectSetBoolProperty;
-	lua_mapobject["setIntProperty"]    = &objectSetIntProperty;
-	lua_mapobject["setFloatProperty"]  = &objectSetFloatProperty;
-	lua_mapobject["setStringProperty"] = &objectSetStringProperty;
+	lua_mapobject["HasProperty"]       = &MapObject::hasProp;
+	lua_mapobject["BoolProperty"]      = &MapObject::boolProperty;
+	lua_mapobject["IntProperty"]       = &MapObject::intProperty;
+	lua_mapobject["FloatProperty"]     = &MapObject::floatProperty;
+	lua_mapobject["StringProperty"]    = &MapObject::stringProperty;
+	lua_mapobject["SetBoolProperty"]   = &objectSetBoolProperty;
+	lua_mapobject["SetIntProperty"]    = &objectSetIntProperty;
+	lua_mapobject["SetFloatProperty"]  = &objectSetFloatProperty;
+	lua_mapobject["SetStringProperty"] = &objectSetStringProperty;
 }
 
 // -----------------------------------------------------------------------------

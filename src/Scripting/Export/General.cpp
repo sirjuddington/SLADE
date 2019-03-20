@@ -162,7 +162,7 @@ void registerMiscTypes(sol::state& lua)
 	lua_plane["b"]        = &Plane::b;
 	lua_plane["c"]        = &Plane::c;
 	lua_plane["d"]        = &Plane::d;
-	lua_plane["heightAt"] = sol::resolve<double(Vec2d) const>(&Plane::heightAt);
+	lua_plane["HeightAt"] = sol::resolve<double(Vec2d) const>(&Plane::heightAt);
 }
 
 // -----------------------------------------------------------------------------
@@ -172,21 +172,20 @@ void registerAppNamespace(sol::state& lua)
 {
 	auto app = lua.create_named_table("App");
 
-	app["logMessage"]            = &logMessage;
-	app["globalError"]           = []() { return Global::error; };
-	app["messageBox"]            = &messageBox;
-	app["messageBoxExt"]         = &messageBoxExtended;
-	app["promptString"]          = &promptString;
-	app["promptNumber"]          = &promptNumber;
-	app["promptYesNo"]           = &promptYesNo;
-	app["browseFile"]            = &browseFile;
-	app["browseFiles"]           = &browseFiles;
-	app["currentArchive"]        = &MainEditor::currentArchive;
-	app["currentEntry"]          = &MainEditor::currentEntry;
-	app["currentEntrySelection"] = &MainEditor::currentEntrySelection;
-	app["showArchive"]           = &showArchive;
-	app["showEntry"]             = &MainEditor::openEntry;
-	app["mapEditor"]             = &MapEditor::editContext;
+	app["LogMessage"]            = &logMessage;
+	app["MessageBox"]            = &messageBox;
+	app["MessageBoxExt"]         = &messageBoxExtended;
+	app["PromptString"]          = &promptString;
+	app["PromptNumber"]          = &promptNumber;
+	app["PromptYesNo"]           = &promptYesNo;
+	app["BrowseFile"]            = &browseFile;
+	app["BrowseFiles"]           = &browseFiles;
+	app["CurrentArchive"]        = &MainEditor::currentArchive;
+	app["CurrentEntry"]          = &MainEditor::currentEntry;
+	app["CurrentEntrySelection"] = &MainEditor::currentEntrySelection;
+	app["ShowArchive"]           = &showArchive;
+	app["ShowEntry"]             = &MainEditor::openEntry;
+	app["MapEditor"]             = &MapEditor::editContext;
 }
 
 // -----------------------------------------------------------------------------
@@ -196,15 +195,15 @@ void registerSplashWindowNamespace(sol::state& lua)
 {
 	auto splash = lua.create_named_table("SplashWindow");
 
-	splash["show"] = sol::overload(
+	splash["Show"] = sol::overload(
 		[](const std::string& message) { UI::showSplash(message, false, currentWindow()); },
 		[](const std::string& message, bool progress) { UI::showSplash(message, progress, currentWindow()); });
-	splash["hide"]               = &UI::hideSplash;
-	splash["update"]             = &UI::updateSplash;
-	splash["progress"]           = &UI::getSplashProgress;
-	splash["setMessage"]         = &UI::setSplashMessage;
-	splash["setProgressMessage"] = &UI::setSplashProgressMessage;
-	splash["setProgress"]        = &UI::setSplashProgress;
+	splash["Hide"]               = &UI::hideSplash;
+	splash["Update"]             = &UI::updateSplash;
+	splash["Progress"]           = &UI::getSplashProgress;
+	splash["SetMessage"]         = &UI::setSplashMessage;
+	splash["SetProgressMessage"] = &UI::setSplashProgressMessage;
+	splash["SetProgress"]        = &UI::setSplashProgress;
 }
 
 } // namespace Lua

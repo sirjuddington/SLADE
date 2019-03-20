@@ -19,7 +19,7 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 
 ## Functions
 
-### `flag`
+### `Flag`
 
 <listhead>Parameters</listhead>
 
@@ -29,7 +29,7 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 
 Returns `true` if the given flag is set.
 
-If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly the same as <code>[MapObject:boolProperty](MapObject.md#boolproperty)</code>. Otherwise, <arg>flag_name</arg> needs to be one of the following:
+If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly the same as <code>[MapObject:BoolProperty](MapObject.md#boolproperty)</code>. Otherwise, <arg>flag_name</arg> needs to be one of the following:
 
 * `skill1`
 * `skill2`
@@ -44,7 +44,7 @@ If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly 
 * `class3`
 
 ---
-### `setAnglePoint`
+### `SetAnglePoint`
 
 <listhead>Parameters</listhead>
 

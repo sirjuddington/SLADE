@@ -1,4 +1,4 @@
-The **Archive** type represents an archive (wad/pk3/etc) in SLADE.
+The `Archive` type represents an archive (wad/pk3/etc) in SLADE.
 
 ## Properties
 
@@ -16,12 +16,12 @@ The **Archive** type represents an archive (wad/pk3/etc) in SLADE.
 
 <listhead>See:</listhead>
 
-* <code>[Archives.create](../Namespaces/Archives.md#create)</code>
-* <code>[Archives.openFile](../Namespaces/Archives.md#openfile)</code>
+* <code>[Archives.Create](../Namespaces/Archives.md#create)</code>
+* <code>[Archives.OpenFile](../Namespaces/Archives.md#openfile)</code>
 
 ## Functions - General
 
-### `dirAtPath`
+### `DirAtPath`
 
 <listhead>Parameters</listhead>
 
@@ -32,7 +32,7 @@ The **Archive** type represents an archive (wad/pk3/etc) in SLADE.
 Returns the directory in the archive at <arg>path</arg>, or `nil` if the path does not exist. If the archive does not support directories (eg. Doom Wad format) the 'root' directory is always returned, regardless of <arg>path</arg>.
 
 ---
-### `entryAtPath`
+### `EntryAtPath`
 
 <listhead>Parameters</listhead>
 
@@ -43,14 +43,14 @@ Returns the directory in the archive at <arg>path</arg>, or `nil` if the path do
 Returns the entry in the archive at <arg>path</arg>, or `nil` if no entry at the given path exists. If multiple entries exist with the same <arg>path</arg>, the first match is returned.
 
 ---
-### `filenameNoPath`
+### `FilenameNoPath`
 
 **Returns** <type>string</type>
 
 Returns the archive's <prop>filename</prop> without the full path, eg. if <prop>filename</prop> is `C:/games/doom/archive.wad`, this will return `archive.wad`.
 
 ---
-### `save`
+### `Save`
 
 <listhead>Parameters</listhead>
 
@@ -66,27 +66,27 @@ If <arg>path</arg> is given, this will work like 'Save As' - the archive will be
 
 ```lua
 -- Open an archive
-local archive = Archives.openFile('c:/filename.wad')
-App.logMessage(archive.filename) -- 'c:/filename.wad'
+local archive = Archives.OpenFile('c:/filename.wad')
+App.LogMessage(archive.filename) -- 'c:/filename.wad'
 
 -- Save as new file
-archive:save('c:/newfile.wad')
+archive:Save('c:/newfile.wad')
 
-App.logMessage(archive.filename) -- 'c:/newfile.wad'
+App.LogMessage(archive.filename) -- 'c:/newfile.wad'
 ```
 
 ## Functions - Entry Manipulation
 
-### `createEntry`
+### `CreateEntry`
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>full_path</arg>: The full path and name of the entry to create
+* <type>string</type> <arg>fullPath</arg>: The full path and name of the entry to create
 * <type>number</type> <arg>position</arg>: The position to insert the entry
 
 **Returns** <type>[ArchiveEntry](ArchiveEntry.md)</type>
 
-Creates a new entry named <arg>full_path</arg> in the Archive. If the Archive is a format that supports directories, <arg>full_path</arg> can optionally contain a path eg. `Scripts/NewScript.txt`.
+Creates a new entry named <arg>fullPath</arg> in the Archive. If the Archive is a format that supports directories, <arg>fullPath</arg> can optionally contain a path eg. `Scripts/NewScript.txt`.
 
 The new entry will be inserted at <arg>position</arg> in the directory it is added to (always the root for Archives that don't support directories). If <arg>position</arg> is negative or larger than the number of entries in the destination directory, the new entry will be added at the end.
 
@@ -94,17 +94,17 @@ The new entry will be inserted at <arg>position</arg> in the directory it is add
 
 ```lua
 -- Create entry in the root directory of a zip, after all other entries
-newEntry = zip:createEntry('InRoot.txt', -1)
+newEntry = zip:CreateEntry('InRoot.txt', -1)
 
 -- Create entry in a subdirectory of a zip, before all other entries in the subdirectory
-newEntry = zip:createEntry('Path/To/NewEntry.txt', 0)
+newEntry = zip:CreateEntry('Path/To/NewEntry.txt', 0)
 
 -- Create entry in the middle of a wad somewhere
-newEntry = wad:createEntry('NEWENTRY', 12)
+newEntry = wad:CreateEntry('NEWENTRY', 12)
 ```
 
 ---
-### `createEntryInNamespace`
+### `CreateEntryInNamespace`
 
 <listhead>Parameters</listhead>
 
@@ -131,7 +131,7 @@ See below for a list of supported namespaces:
 `sounds` | `DS_START` / `DS_END` | `sounds`
 
 ---
-### `removeEntry`
+### `RemoveEntry`
 
 <listhead>Parameters</listhead>
 
@@ -142,7 +142,7 @@ See below for a list of supported namespaces:
 Removes the given entry from the archive (but does not delete it). Returns `false` if the entry was not found in the archive.
 
 ---
-### `renameEntry`
+### `RenameEntry`
 
 <listhead>Parameters</listhead>
 
@@ -155,7 +155,7 @@ Renames the given entry. Returns `false` if the entry was not found in the archi
 
 ## Functions - Entry Search
 
-### `findFirst`
+### `FindFirst`
 
 <listhead>Parameters</listhead>
 
@@ -167,7 +167,7 @@ Returns the **first** entry found in the archive matching the given <arg>options
 
 If <prop>searchSubdirs</prop> is true in the <arg>options</arg>, subdirectories will be searched *after* the entries in the specified <prop>dir</prop>.
 
-### `findLast`
+### `FindLast`
 
 <listhead>Parameters</listhead>
 
@@ -179,7 +179,7 @@ Returns the **last** entry found in the archive matching the given <arg>options<
 
 If <prop>searchSubdirs</prop> is true in the <arg>options</arg>, subdirectories will be searched *after* the entries in the specified <prop>dir</prop>.
 
-### `findAll`
+### `FindAll`
 
 <listhead>Parameters</listhead>
 

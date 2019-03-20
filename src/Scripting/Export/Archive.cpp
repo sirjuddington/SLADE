@@ -161,6 +161,8 @@ void registerArchiveSearchOptions(sol::state& lua)
 	auto lua_search_opt = lua.new_usertype<Archive::SearchOptions>(
 		"ArchiveSearchOptions", "new", sol::constructors<Archive::SearchOptions()>());
 
+	// Properties
+	// -------------------------------------------------------------------------
 	lua_search_opt["matchName"]      = sol::property(&Archive::SearchOptions::match_name);
 	lua_search_opt["matchType"]      = sol::property(&Archive::SearchOptions::match_type);
 	lua_search_opt["matchNamespace"] = sol::property(&Archive::SearchOptions::match_namespace);
@@ -186,19 +188,19 @@ void registerArchive(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_archive["filenameNoPath"]         = [](Archive& self) { return self.filename(false); };
-	lua_archive["entryAtPath"]            = &Archive::entryAtPath;
-	lua_archive["dirAtPath"]              = [](Archive& self, const std::string& path) { return self.dir(path); };
-	lua_archive["createEntry"]            = &archiveCreateEntry;
-	lua_archive["createEntryInNamespace"] = &archiveCreateEntryInNamespace;
-	lua_archive["removeEntry"]            = &Archive::removeEntry;
-	lua_archive["renameEntry"]            = &Archive::renameEntry;
-	lua_archive["save"]                   = sol::overload(
+	lua_archive["FilenameNoPath"]         = [](Archive& self) { return self.filename(false); };
+	lua_archive["EntryAtPath"]            = &Archive::entryAtPath;
+	lua_archive["DirAtPath"]              = [](Archive& self, const std::string& path) { return self.dir(path); };
+	lua_archive["CreateEntry"]            = &archiveCreateEntry;
+	lua_archive["CreateEntryInNamespace"] = &archiveCreateEntryInNamespace;
+	lua_archive["RemoveEntry"]            = &Archive::removeEntry;
+	lua_archive["RenameEntry"]            = &Archive::renameEntry;
+	lua_archive["Save"]                   = sol::overload(
         [](Archive& self) { return self.save(); },
         [](Archive& self, const std::string& filename) { return self.save(filename); });
-	lua_archive["findFirst"] = &Archive::findFirst;
-	lua_archive["findLast"]  = &Archive::findLast;
-	lua_archive["findAll"]   = &Archive::findAll;
+	lua_archive["FindFirst"] = &Archive::findFirst;
+	lua_archive["FindLast"]  = &Archive::findLast;
+	lua_archive["FindAll"]   = &Archive::findAll;
 
 // Register all subclasses
 // (perhaps it'd be a good idea to make Archive not abstract and handle
@@ -242,9 +244,9 @@ std::string entryData(ArchiveEntry& self)
 // -----------------------------------------------------------------------------
 // Imports data from [string] into entry [self]
 // -----------------------------------------------------------------------------
-bool entryImportString(ArchiveEntry& self, const std::string& string)
+std::tuple<bool, std::string> entryImportString(ArchiveEntry& self, const std::string& string)
 {
-	return self.importMem(string.data(), string.size());
+	return std::make_tuple(self.importMem(string.data(), string.size()), Global::error);
 }
 
 // -----------------------------------------------------------------------------
@@ -267,18 +269,24 @@ void registerArchiveEntry(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_entry["formattedName"] = sol::overload(
+	lua_entry["FormattedName"] = sol::overload(
 		[](ArchiveEntry& self) { return formattedEntryName(self, true, true, false); },
 		[](ArchiveEntry& self, bool include_path) { return formattedEntryName(self, include_path, true, false); },
 		[](ArchiveEntry& self, bool include_path, bool include_extension) {
 			return formattedEntryName(self, include_path, include_extension, false);
 		},
 		&formattedEntryName);
-	lua_entry["formattedSize"] = &ArchiveEntry::sizeString;
-	lua_entry["importFile"] = [](ArchiveEntry& self, const std::string& filename) { return self.importFile(filename); };
-	lua_entry["importEntry"] = &ArchiveEntry::importEntry;
-	lua_entry["importData"]  = &entryImportString;
-	lua_entry["exportFile"]  = &ArchiveEntry::exportFile;
+	lua_entry["FormattedSize"] = &ArchiveEntry::sizeString;
+	lua_entry["ImportFile"]    = [](ArchiveEntry& self, std::string_view filename) {
+        return std::make_tuple(self.importFile(filename), Global::error);
+	};
+	lua_entry["ImportEntry"] = [](ArchiveEntry& self, ArchiveEntry* entry) {
+		return std::make_tuple(self.importEntry(entry), Global::error);
+	};
+	lua_entry["ImportData"] = &entryImportString;
+	lua_entry["ExportFile"] = [](ArchiveEntry& self, std::string_view filename) {
+		return std::make_tuple(self.exportFile(filename), Global::error);
+	};
 }
 
 // -----------------------------------------------------------------------------
@@ -316,10 +324,6 @@ void registerEntryType(sol::state& lua)
 	lua_etype["formatId"]  = sol::property(&EntryType::formatId);
 	lua_etype["editor"]    = sol::property(&EntryType::editor);
 	lua_etype["category"]  = sol::property(&EntryType::category);
-
-	// Functions
-	// -------------------------------------------------------------------------
-	lua_etype["fromId"] = &EntryType::fromId;
 }
 
 // -----------------------------------------------------------------------------
@@ -329,22 +333,27 @@ void registerArchivesNamespace(sol::state& lua)
 {
 	auto archives = lua.create_table("Archives");
 
-	archives["all"]      = sol::overload(&allArchives, []() { return allArchives(false); });
-	archives["create"]   = [](const char* format) { return App::archiveManager().newArchive(format); };
-	archives["openFile"] = [](const char* filename) { return App::archiveManager().openArchive(filename); };
-	archives["close"]    = sol::overload(
-        [](Archive* archive) { return App::archiveManager().closeArchive(archive); },
-        [](int index) { return App::archiveManager().closeArchive(index); });
-	archives["closeAll"]             = []() { App::archiveManager().closeAll(); };
-	archives["fileExtensionsString"] = []() { return App::archiveManager().getArchiveExtensionsString(); };
-	archives["baseResource"]         = []() { return App::archiveManager().baseResourceArchive(); };
-	archives["baseResourcePaths"]    = []() { return App::archiveManager().baseResourcePaths(); };
-	archives["openBaseResource"]     = [](int index) { return App::archiveManager().openBaseResource(index - 1); };
-	archives["programResource"]      = []() { return App::archiveManager().programResourceArchive(); };
-	archives["recentFiles"]          = []() { return App::archiveManager().recentFiles(); };
-	archives["bookmarks"]            = []() { return App::archiveManager().bookmarks(); };
-	archives["addBookmark"]          = [](ArchiveEntry* entry) { App::archiveManager().addBookmark(entry); };
-	archives["removeBookmark"]       = [](ArchiveEntry* entry) { App::archiveManager().deleteBookmark(entry); };
+	archives["All"]    = sol::overload(&allArchives, []() { return allArchives(false); });
+	archives["Create"] = [](std::string_view format) {
+		return std::make_tuple(App::archiveManager().newArchive(format), Global::error);
+	};
+	archives["OpenFile"] = [](std::string_view filename) {
+		return std::make_tuple(App::archiveManager().openArchive(filename), Global::error);
+	};
+	archives["Close"] = sol::overload(
+		[](Archive* archive) { return App::archiveManager().closeArchive(archive); },
+		[](int index) { return App::archiveManager().closeArchive(index); });
+	archives["CloseAll"]             = []() { App::archiveManager().closeAll(); };
+	archives["FileExtensionsString"] = []() { return App::archiveManager().getArchiveExtensionsString(); };
+	archives["BaseResource"]         = []() { return App::archiveManager().baseResourceArchive(); };
+	archives["BaseResourcePaths"]    = []() { return App::archiveManager().baseResourcePaths(); };
+	archives["OpenBaseResource"]     = [](int index) { return App::archiveManager().openBaseResource(index - 1); };
+	archives["ProgramResource"]      = []() { return App::archiveManager().programResourceArchive(); };
+	archives["RecentFiles"]          = []() { return App::archiveManager().recentFiles(); };
+	archives["Bookmarks"]            = []() { return App::archiveManager().bookmarks(); };
+	archives["AddBookmark"]          = [](ArchiveEntry* entry) { App::archiveManager().addBookmark(entry); };
+	archives["RemoveBookmark"]       = [](ArchiveEntry* entry) { App::archiveManager().deleteBookmark(entry); };
+	archives["EntryType"]            = &EntryType::fromId;
 }
 
 // -----------------------------------------------------------------------------

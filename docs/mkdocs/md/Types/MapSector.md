@@ -27,7 +27,7 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 
 ## Functions
 
-### `containsPoint`
+### `ContainsPoint`
 
 <listhead>Parameters</listhead>
 

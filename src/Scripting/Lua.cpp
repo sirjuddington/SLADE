@@ -105,7 +105,7 @@ sol::protected_function_result handleError(lua_State* L, sol::protected_function
 
 // -----------------------------------------------------------------------------
 // Template function for Lua::run*Script functions.
-// Loads [script] and runs the 'execute' function in the script, passing
+// Loads [script] and runs the 'Execute' function in the script, passing
 // [param] to the function
 // -----------------------------------------------------------------------------
 template<class T> bool runEditorScript(const std::string& script, T param)
@@ -127,7 +127,7 @@ template<class T> bool runEditorScript(const std::string& script, T param)
 	// Run script execute function
 	// sol::protected_function func        = sandbox["execute"];
 	// auto                    exec_result = func(param);
-	sol::protected_function        func(sandbox["execute"]);
+	sol::protected_function        func(sandbox["Execute"]);
 	sol::protected_function_result exec_result = func(param);
 	if (!exec_result.valid())
 	{
@@ -249,7 +249,7 @@ bool Lua::runFile(const std::string& filename)
 }
 
 // -----------------------------------------------------------------------------
-// Runs the 'execute(archive)' function in the given [script], passing [archive]
+// Runs the 'Execute(archive)' function in the given [script], passing [archive]
 // as the parameter
 // -----------------------------------------------------------------------------
 bool Lua::runArchiveScript(const std::string& script, Archive* archive)
@@ -258,7 +258,7 @@ bool Lua::runArchiveScript(const std::string& script, Archive* archive)
 }
 
 // -----------------------------------------------------------------------------
-// Runs the 'execute(entries)' function in the given [script], passing [entries]
+// Runs the 'Execute(entries)' function in the given [script], passing [entries]
 // as the parameter
 // -----------------------------------------------------------------------------
 bool Lua::runEntryScript(const std::string& script, vector<ArchiveEntry*>& entries)
@@ -267,7 +267,7 @@ bool Lua::runEntryScript(const std::string& script, vector<ArchiveEntry*>& entri
 }
 
 // -----------------------------------------------------------------------------
-// Runs the 'execute(map)' function in the given [script], passing [map] as the
+// Runs the 'Execute(map)' function in the given [script], passing [map] as the
 // parameter
 // -----------------------------------------------------------------------------
 bool Lua::runMapScript(const std::string& script, SLADEMap* map)

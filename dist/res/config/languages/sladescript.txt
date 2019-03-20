@@ -21,98 +21,99 @@ sladescript : lua
 	functions
 	{
 		// App namespace
-						App.logMessage = "string message";
-		string			App.globalError;
-						App.messageBox = "string title, string message";
-						App.messageBoxExt = "string title, string message, string detail";
-		string			App.promptString = "string title, string message, string default_value";
-		number			App.promptNumber = "string title, string message, number default_value, number min, number max";
-		boolean			App.promptYesNo = "string title, string message";
-		string			App.browseFile = "string title, string extensions, string filename";
-		string[]		App.browseFiles = "string title, string extensions";
-		Archive			App.currentArchive;
-		ArchiveEntry	App.currentEntry;
-		ArchiveEntry[]	App.currentEntrySelection;
-						App.showArchive = "Archive archive";
-						App.showEntry = "ArchiveEntry entry";
-		MapEditor		App.mapEditor;
+						App.LogMessage = "string message";
+		string			App.GlobalError;
+						App.MessageBox = "string title, string message";
+						App.MessageBoxExt = "string title, string message, string detail";
+		string			App.PromptString = "string title, string message, string default_value";
+		number			App.PromptNumber = "string title, string message, number default_value, number min, number max";
+		boolean			App.PromptYesNo = "string title, string message";
+		string			App.BrowseFile = "string title, string extensions, string filename";
+		string[]		App.BrowseFiles = "string title, string extensions";
+		Archive			App.CurrentArchive;
+		ArchiveEntry	App.CurrentEntry;
+		ArchiveEntry[]	App.CurrentEntrySelection;
+						App.ShowArchive = "Archive archive";
+						App.ShowEntry = "ArchiveEntry entry";
+		MapEditor		App.MapEditor;
 
 		// Archives namespace
-		Archive[]		Archives.all;
-		Archive			Archives.create = "string format_id";
-		Archive			Archives.openFile = "string path";
-		boolean			Archives.close = "Archive archive", "number index";
-						Archives.closeAll;
-		string			Archives.fileExtensionsString;
-		Archive			Archives.baseResource;
-		string[]		Archives.baseResourcePaths;
-		boolean			Archives.openBaseResource = "number index";
-		Archive			Archives.programResource;
-		string[]		Archives.recentFiles;
-		ArchiveEntry[]	Archives.bookmarks;
-						Archives.addBookmark = "ArchiveEntry entry";
-		boolean			Archives.removeBookmark = "ArchiveEntry entry";
+		Archive[]		Archives.All;
+		Archive			Archives.Create = "string format_id";
+		Archive			Archives.OpenFile = "string path";
+		boolean			Archives.Close = "Archive archive", "number index";
+						Archives.CloseAll;
+		string			Archives.FileExtensionsString;
+		Archive			Archives.BaseResource;
+		string[]		Archives.BaseResourcePaths;
+		boolean			Archives.OpenBaseResource = "number index";
+		Archive			Archives.ProgramResource;
+		string[]		Archives.RecentFiles;
+		ArchiveEntry[]	Archives.Bookmarks;
+						Archives.AddBookmark = "ArchiveEntry entry";
+		boolean			Archives.RemoveBookmark = "ArchiveEntry entry";
+		EntryType		Archives.EntryType = "string id";
 
 		// Game namespace
-		ThingType	Game.thingType = "number type";
+		ThingType	Game.ThingType = "number type";
 
 		// SplashWindow namespace
-				SplashWindow.show = "string message, [boolean progress]";
-				SplashWindow.hide;
-				SplashWindow.update;
-		number	SplashWindow.progress;
-				SplashWindow.setMessage = "string message";
-				SplashWindow.setProgressMessage = "string message";
-				SplashWindow.setProgress = "number progress";
+				SplashWindow.Show = "string message, [boolean progress]";
+				SplashWindow.Hide;
+				SplashWindow.Update;
+		number	SplashWindow.Progress;
+				SplashWindow.SetMessage = "string message";
+				SplashWindow.SetProgressMessage = "string message";
+				SplashWindow.SetProgress = "number progress";
 
 		// Archive type
-		ArchiveDir		Archive.getDir = "string path";
-		ArchiveEntry	Archive.createEntry = "string full_path, number position";
-		ArchiveEntry	Archive.createEntryInNamespace = "string name, string namespace";
-		boolean			Archive.removeEntry = "ArchiveEntry entry";
-		boolean			Archive.renameEntry = "ArchiveEntry entry, string name";
-		boolean			Archive.save = "[string path]";
+		ArchiveDir		Archive.GetDir = "string path";
+		ArchiveEntry	Archive.CreateEntry = "string full_path, number position";
+		ArchiveEntry	Archive.CreateEntryInNamespace = "string name, string namespace";
+		boolean			Archive.RemoveEntry = "ArchiveEntry entry";
+		boolean			Archive.RenameEntry = "ArchiveEntry entry, string name";
+		boolean			Archive.Save = "[string path]";
 
 		// ArchiveEntry type
-		string	ArchiveEntry.formattedName = "[boolean include_path], [boolean include_extension], [boolean upper_case]";
-		string	ArchiveEntry.formattedSize;
-		boolean	ArchiveEntry.importFile = "string path";
-		boolean	ArchiveEntry.importEntry = "ArchiveEntry entry";
-		boolean ArchiveEntry.importData = "string data";
-		boolean ArchiveEntry.exportFile = "string path";
+		string	ArchiveEntry.FormattedName = "[boolean include_path], [boolean include_extension], [boolean upper_case]";
+		string	ArchiveEntry.FormattedSize;
+		boolean	ArchiveEntry.ImportFile = "string path";
+		boolean	ArchiveEntry.ImportEntry = "ArchiveEntry entry";
+		boolean ArchiveEntry.ImportData = "string data";
+		boolean ArchiveEntry.ExportFile = "string path";
 
 		// MapEditor type
-		MapVertex[]	MapEditor.selectedVertices = "[boolean try_highlight]";
-		MapLine[]	MapEditor.selectedLines = "[boolean try_highlight]";
-		MapSector[]	MapEditor.selectedSectors = "[boolean try_highlight]";
-		MapThing[]	MapEditor.selectedThings = "[boolean try_highlight]";
-					MapEditor.clearSelection;
-					MapEditor.select = "MapObject object, [boolean select]";
-					MapEditor.setEditMode = "number mode, number sector_mode";
+		MapVertex[]	MapEditor.SelectedVertices = "[boolean try_highlight]";
+		MapLine[]	MapEditor.SelectedLines = "[boolean try_highlight]";
+		MapSector[]	MapEditor.SelectedSectors = "[boolean try_highlight]";
+		MapThing[]	MapEditor.SelectedThings = "[boolean try_highlight]";
+					MapEditor.ClearSelection;
+					MapEditor.Select = "MapObject object, [boolean select]";
+					MapEditor.SetEditMode = "number mode, number sector_mode";
 		
 		// MapLine type
-		boolean	MapLine.flag = "string flag_name";
-				MapLine.flip = "[boolean swap_sides]";
+		boolean	MapLine.Flag = "string flag_name";
+				MapLine.Flip = "[boolean swap_sides]";
 		
 		// MapObject type
-		boolean	MapObject.hasProperty = "string name";
-		boolean	MapObject.boolProperty = "string name";
-		number	MapObject.intProperty = "string name";
-		number	MapObject.floatProperty = "string name";
-		string	MapObject.stringProperty = "string name";
-				MapObject.setBoolProperty = "string name, boolean value";
-				MapObject.setIntProperty = "string name, number value";
-				MapObject.setFloatProperty = "string name, number value";
-				MapObject.setStringProperty = "string name, string value";
+		boolean	MapObject.HasProperty = "string name";
+		boolean	MapObject.BoolProperty = "string name";
+		number	MapObject.IntProperty = "string name";
+		number	MapObject.FloatProperty = "string name";
+		string	MapObject.StringProperty = "string name";
+				MapObject.SetBoolProperty = "string name, boolean value";
+				MapObject.SetIntProperty = "string name, number value";
+				MapObject.SetFloatProperty = "string name, number value";
+				MapObject.SetStringProperty = "string name, string value";
 		
 		// MapSector type
-		boolean	MapSector.containsPoint = "Point position";
+		boolean	MapSector.ContainsPoint = "Point position";
 
 		// MapThing type
-		boolean	MapThing.flag = "string flag_name";
-				MapThing.setAnglePoint = "Point position";
+		boolean	MapThing.Flag = "string flag_name";
+				MapThing.SetAnglePoint = "Point position";
 		
 		// Plane type
-		number	Plane.heightAt = "Point position";
+		number	Plane.HeightAt = "Point position";
 	}
 }

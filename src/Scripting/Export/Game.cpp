@@ -31,9 +31,9 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "thirdparty/sol/sol.hpp"
-#include "Game/ThingType.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
+#include "thirdparty/sol/sol.hpp"
 
 
 // -----------------------------------------------------------------------------
@@ -78,7 +78,7 @@ void registerThingType(sol::state& lua)
 void registerGameNamespace(sol::state& lua)
 {
 	auto game         = lua.create_table("Game");
-	game["thingType"] = [](int type) { return Game::configuration().thingType(type); };
+	game["ThingType"] = [](int type) { return Game::configuration().thingType(type); };
 }
 
 // -----------------------------------------------------------------------------

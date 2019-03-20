@@ -2,7 +2,7 @@ The `App` scripting namespace contains a set of functions for general interactio
 
 ## Functions
 
-### `logMessage`
+### `LogMessage`
 
 <listhead>Parameters</listhead>
 
@@ -13,18 +13,11 @@ Writes a message to the SLADE log.
 **Example**
 
 ```lua
-App.logMessage('This is a log message')
+App.LogMessage('This is a log message')
 ```
 
 ---
-### `globalError`
-
-**Returns** <type>string</type>
-
-Returns the most recently generated error message
-
----
-### `messageBox`
+### `MessageBox`
 
 <listhead>Parameters</listhead>
 
@@ -34,7 +27,7 @@ Returns the most recently generated error message
 Shows a simple message dialog
 
 ---
-### `messageBoxExt`
+### `MessageBoxExt`
 
 <listhead>Parameters</listhead>
 
@@ -45,26 +38,26 @@ Shows a simple message dialog
 Shows an extended message box with an extra scrollable text box displaying <arg>detail</arg>
 
 ---
-### `promptString`
+### `PromptString`
 
 <listhead>Parameters</listhead>
 
   * <type>string</type> <arg>title</arg>: The dialog caption
   * <type>string</type> <arg>message</arg>: The message to display
-  * <type>string</type> <arg>default_value</arg>: The initial default value
+  * <type>string</type> <arg>defaultValue</arg>: The initial default value
 
 **Returns** <type>string</type>
 
 Shows a dialog prompt for the user to enter a string value
 
 ---
-### `promptNumber`
+### `PromptNumber`
 
 <listhead>Parameters</listhead>
 
   * <type>string</type> <arg>title</arg>: The dialog caption
   * <type>string</type> <arg>message</arg>: The message to display
-  * <type>number</type> <arg>default_value</arg>: The initial default value
+  * <type>number</type> <arg>defaultValue</arg>: The initial default value
   * <type>number</type> <arg>min</arg>: The minimum value allowed
   * <type>number</type> <arg>max</arg>: The maximum value allowed
 
@@ -73,7 +66,7 @@ Shows a dialog prompt for the user to enter a string value
 Shows a dialog prompt for the user to enter a numeric value
 
 ---
-### `promptYesNo`
+### `PromptYesNo`
 
 <listhead>Parameters</listhead>
 
@@ -85,7 +78,7 @@ Shows a dialog prompt for the user to enter a numeric value
 Shows a dialog prompt with 'Yes' and 'No' buttons, returning `true` for yes or `false` for no
 
 ---
-### `browseFile`
+### `BrowseFile`
 
 <listhead>Parameters</listhead>
 
@@ -106,12 +99,12 @@ Where `Type Name X` is the name to display in the type selection dropdown, and `
 **Example**
 
 ```lua
-local path = App.browseFile('Select a File', 'Wad Files (*.wad)|*.wad|All Files|*.*', '')
-App.logMessage('Selected file ' .. path)
+local path = App.BrowseFile('Select a File', 'Wad Files (*.wad)|*.wad|All Files|*.*', '')
+App.LogMessage('Selected file ' .. path)
 ```
 
 ---
-### `browseFiles`
+### `BrowseFiles`
 
 <listhead>Parameters</listhead>
 
@@ -120,31 +113,31 @@ App.logMessage('Selected file ' .. path)
 
 **Returns** <type>string[]</type>
 
-Shows a file browser dialog allowing the user to select multiple files and returns an array of full paths to the selected files. If no file was selected it will return an empty array. See **browseFile** above for the formatting of the <arg>extensions</arg> parameter.
+Shows a file browser dialog allowing the user to select multiple files and returns an array of full paths to the selected files. If no file was selected it will return an empty array. See `BrowseFile` above for the formatting of the <arg>extensions</arg> parameter.
 
 ---
-### `currentArchive`
+### `CurrentArchive`
 
 **Returns** <type>[Archive](../Types/Archive.md)</type>
 
 Returns the archive for the currently open tab in the main SLADE window.
 
 ---
-### `currentEntry`
+### `CurrentEntry`
 
 **Returns** <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type>
 
 Returns the currently open entry in the main SLADE window.
 
 ---
-### `currentEntrySelection`
+### `CurrentEntrySelection`
 
 **Returns** <type>[ArchiveEntry](../Types/ArchiveEntry.md)\[\]</type>
 
 Returns an array of the currently selected entries in the main SLADE window.
 
 ---
-### `showArchive`
+### `ShowArchive`
 
 <listhead>Parameters</listhead>
 
@@ -153,7 +146,7 @@ Returns an array of the currently selected entries in the main SLADE window.
 Shows the tab for the given archive in the main SLADE window.
 
 ---
-### `showEntry`
+### `ShowEntry`
 
 <listhead>Parameters</listhead>
 
@@ -162,7 +155,7 @@ Shows the tab for the given archive in the main SLADE window.
 Shows the given entry in a tab in the main SLADE window.
 
 ---
-### `mapEditor`
+### `MapEditor`
 
 **Returns** <type>[MapEditor](../Types/MapEditor.md)</type>
 

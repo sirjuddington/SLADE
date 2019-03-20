@@ -19,7 +19,7 @@ Creates a new plane with the given <arg>a</arg>, <arg>b</arg>, <arg>c</arg> and 
 
 ## Functions
 
-### `heightAt`
+### `HeightAt`
 
 <listhead>Parameters</listhead>
 

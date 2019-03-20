@@ -3,39 +3,39 @@ This example script changes all wall textures in a map to `AASHITTY` and all flo
 
 ```lua
 -- Set textures to use
-local walltex = 'AASHITTY'
-local flattex = 'SLIME09'
+local wallTex = 'AASHITTY'
+local flatTex = 'SLIME09'
 
 -- Get map sidedefs
-local sides = App.mapEditor().map.sidedefs
+local sides = App.MapEditor().map.sidedefs
 
 -- Loop through all sidedefs
-for i,side in ipairs(sides) do
+for _,side in ipairs(sides) do
     -- Replace the middle texture if it is not blank (-)
     if side.textureMiddle ~= '-' then
-		side:setStringProperty('texturemiddle', walltex)
+		side:SetStringProperty('texturemiddle', wallTex)
     end
 
     -- Replace the upper texture if it is not blank (-)
     if side.textureTop ~= '-' then
-		side:setStringProperty('texturetop', walltex)
+		side:SetStringProperty('texturetop', wallTex)
     end
 
     -- Replace the lower texture if it is not blank (-)
     if side.textureBottom ~= '-' then
-		side:setStringProperty('texturebottom', walltex)
+		side:SetStringProperty('texturebottom', wallTex)
     end
 end
 
 -- Get map sectors
-local sectors = App.mapEditor().map.sectors
+local sectors = App.MapEditor().map.sectors
 
 -- Loop through all sectors
-for i,sector in ipairs(sectors) do
+for _,sector in ipairs(sectors) do
     -- Set ceiling texture
-    sector:setStringProperty('textureceiling', flattex)
+    sector:SetStringProperty('textureceiling', flatTex)
 
     -- Set floor texture
-    sector:setStringProperty('texturefloor', flattex)
+    sector:SetStringProperty('texturefloor', flatTex)
 end
 ```

@@ -2,7 +2,7 @@ The `Game` scripting namespace contains functions related to the currently loade
 
 ## Functions
 
-### `thingType`
+### `ThingType`
 
 <listhead>Parameters</listhead>
 
