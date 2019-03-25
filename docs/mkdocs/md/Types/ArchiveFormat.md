@@ -1,3 +1,5 @@
+<article-head>ArchiveFormat</article-head>
+
 The `ArchiveFormat` type contains information about an archive's format.
 
 ## Properties

@@ -7,12 +7,12 @@ sladescript : lua
 	properties =
 	{
 		// Namespaces
-		App, Archives, Game, SplashWindow
+		App, Archives, Game, UI
 	}
 
 	types =
 	{
-		Archive, ArchiveDir, ArchiveEntry, ArchiveFormat, EntryType,
+		Archive, ArchiveDir, ArchiveEntry, ArchiveFormat, ArchiveSearchOptions, EntryType,
 		ThingType,
 		Map, MapEditor, MapLine, MapObject, MapSector, MapSide, MapThing, MapVertex,
 		Colour, Plane, Point
@@ -22,14 +22,6 @@ sladescript : lua
 	{
 		// App namespace
 						App.LogMessage = "string message";
-		string			App.GlobalError;
-						App.MessageBox = "string title, string message";
-						App.MessageBoxExt = "string title, string message, string detail";
-		string			App.PromptString = "string title, string message, string default_value";
-		number			App.PromptNumber = "string title, string message, number default_value, number min, number max";
-		boolean			App.PromptYesNo = "string title, string message";
-		string			App.BrowseFile = "string title, string extensions, string filename";
-		string[]		App.BrowseFiles = "string title, string extensions";
 		Archive			App.CurrentArchive;
 		ArchiveEntry	App.CurrentEntry;
 		ArchiveEntry[]	App.CurrentEntrySelection;
@@ -57,14 +49,21 @@ sladescript : lua
 		// Game namespace
 		ThingType	Game.ThingType = "number type";
 
-		// SplashWindow namespace
-				SplashWindow.Show = "string message, [boolean progress]";
-				SplashWindow.Hide;
-				SplashWindow.Update;
-		number	SplashWindow.Progress;
-				SplashWindow.SetMessage = "string message";
-				SplashWindow.SetProgressMessage = "string message";
-				SplashWindow.SetProgress = "number progress";
+		// UI namespace
+					UI.MessageBox = "string title, string message";
+					UI.MessageBoxExt = "string title, string message, string detail";
+		string		UI.PromptString = "string title, string message, string default_value";
+		number		UI.PromptNumber = "string title, string message, number default_value, number min, number max";
+		boolean		UI.PromptYesNo = "string title, string message";
+		string		UI.BrowseFile = "string title, string extensions, string filename";
+		string[]	UI.BrowseFiles = "string title, string extensions";
+					UI.ShowSplash = "string message, [boolean progress]";
+					UI.HideSplash;
+					UI.UpdateSplash;
+		number		UI.SplashProgress;
+					UI.SetSplashMessage = "string message";
+					UI.SetSplashProgressMessage = "string message";
+					UI.SetSplashProgress = "number progress";
 
 		// Archive type
 		ArchiveDir		Archive.GetDir = "string path";

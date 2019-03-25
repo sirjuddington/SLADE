@@ -1,4 +1,6 @@
-The **ArchiveDir** type represents a 'directory' of entries in SLADE, such as in zip/pk3 archives.
+<article-head>ArchiveDir</article-head>
+
+The `ArchiveDir` type represents a 'directory' of entries in SLADE, such as in zip/pk3 archives.
 
 ## Properties
 

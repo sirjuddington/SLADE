@@ -1,3 +1,4 @@
+<article-head>MapEditor</article-head>
 
 Map editing context for the currently open map editor in SLADE.
 
@@ -28,35 +29,51 @@ Map editing context for the currently open map editor in SLADE.
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
+<listhead>See:</listhead>
+
+* [App.MapEditor](../Namespaces/App.md#mapeditor)
+
 ## Functions - General
 
-### `SetEditMode`
+### SetEditMode
+
+```lua
+function MapEditor.SetEditMode(self, mode, sectorMode)
+```
+
+Sets the edit mode to the given <arg>mode</arg>. If the mode is being set to `MODE_SECTORS`, the <arg>sectorMode</arg> parameter can be given to specify the sector edit mode.
 
 <listhead>Parameters</listhead>
 
 * <type>number</type> <arg>mode</arg>: The edit mode to switch to (see `MODE_` constants)
-* `[`<type>number</type> <arg>sectorMode</arg> : `SECTORMODE_BOTH]`: The sector edit mode to switch to (see `SECTORMODE_` constants)
-
-Sets the edit mode to the given <arg>mode</arg>. If the mode is being set to `MODE_SECTORS`, the <arg>sectorMode</arg> parameter can be given to specify the sector edit mode.
+* `[`<type>number</type> <arg>sectorMode</arg>`|SECTORMODE_BOTH]`: The sector edit mode to switch to (see `SECTORMODE_` constants). Defaults to `SECTORMODE_BOTH` if not given
 
 ## Functions - Selection
 
-### `ClearSelection`
+### ClearSelection
+
+```lua
+function MapEditor.ClearSelection(self)
+```
 
 Deselects all currently selected items
 
 ---
-### `Select`
+### Select
+
+```lua
+function MapEditor.Select(self, object, select)
+```
+
+Selects or deselects the given <type>[MapObject](MapObject.md)</type> (or derived type), depending on <arg>select</arg>.
 
 <listhead>Parameters</listhead>
 
 * <type>[MapObject](MapObject.md)</type> <arg>object</arg>: The <type>[MapObject](MapObject.md)</type> to (de)select
-* `[`<type>boolean</type> <arg>select</arg> : `true]`: Whether to select or deselect the object
-
-Selects or deselects the given <type>[MapObject](MapObject.md)</type> (or derived type), depending on <arg>select</arg>.
+* `[`<type>boolean</type> <arg>select</arg>`:true]`: Whether to select or deselect the object. Defaults to `true` if not given
 
 ---
-### `SelectedLines`
+### SelectedLines
 
 <listhead>Parameters</listhead>
 
@@ -67,7 +84,7 @@ Selects or deselects the given <type>[MapObject](MapObject.md)</type> (or derive
 Returns an array of all currently selected lines. If nothing is selected and <arg>tryHighlight</arg> is `true`, the currently highlighted line is returned in the array.
 
 ---
-### `SelectedSectors`
+### SelectedSectors
 
 <listhead>Parameters</listhead>
 
@@ -78,7 +95,7 @@ Returns an array of all currently selected lines. If nothing is selected and <ar
 Returns an array of all currently selected sectors. If nothing is selected and <arg>tryHighlight</arg> is `true`, the currently highlighted sector is returned in the array.
 
 ---
-### `SelectedThings`
+### SelectedThings
 
 <listhead>Parameters</listhead>
 
@@ -89,7 +106,7 @@ Returns an array of all currently selected sectors. If nothing is selected and <
 Returns an array of all currently selected things. If nothing is selected and <arg>tryHighlight</arg> is `true`, the currently highlighted thing is returned in the array.
 
 ---
-### `SelectedVertices`
+### SelectedVertices
 
 <listhead>Parameters</listhead>
 

@@ -1,3 +1,5 @@
+<article-head>EntryType</article-head>
+
 The `EntryType` type contains information about an entry's type/format.
 
 ## Properties
@@ -14,4 +16,8 @@ The `EntryType` type contains information about an entry's type/format.
 ## Constructors
 
 !!! attention "No Constructors"
-    This type can not be created directly in scripts. Use [Archives.EntryType](../Namespaces/Archives.md#entrytype) to retrieve one.
+    This type can not be created directly in scripts.
+
+<listhead>See:</listhead>
+
+* [Archives.EntryType](../Namespaces/Archives.md#entrytype)

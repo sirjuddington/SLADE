@@ -1,8 +1,9 @@
+<article-head>MapObject</article-head>
+
 The **MapObject** type is a base type for all map editor objects.
 
-#### Regarding MapObject `*Property` and `Set*Property` functions
-
-MapObject properties in SLADE generally mirror the properties defined in the [UDMF](https://doomwiki.org/wiki/UDMF) specification. As an example, setting the `texturetop` string property on a <type>[MapSide](MapSide.md)</type> MapObject will set its upper texture. Note that not all basic UDMF properties are supported for non-UDMF maps.
+!!! note "Regarding MapObject `*Property` and `Set*Property` functions"
+    MapObject properties in SLADE generally mirror the properties defined in the [UDMF](https://doomwiki.org/wiki/UDMF) specification. As an example, setting the `texturetop` string property on a <type>[MapSide](MapSide.md)</type> MapObject will set its upper texture. Note that not all basic UDMF properties are supported for non-UDMF maps.
 
 ### Derived Types
 
@@ -25,7 +26,7 @@ The following types inherit all MapObject properties and functions:
 ## Constants
 
 | Name | Value |
-|:-----|:-----:|
+|:-----|:------|
 `TYPE_OBJECT` | 0
 `TYPE_VERTEX` | 1
 `TYPE_LINE` | 2
@@ -40,96 +41,164 @@ The following types inherit all MapObject properties and functions:
 
 ## Functions
 
-### `HasProperty`
+### HasProperty
+
+```lua
+function MapObject.HasProperty(self, name)
+```
 
 <listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to check
 
-**Returns** <type>boolean</type>
+<listhead>Returns</listhead>
 
-Returns `true` if the object has a property matching the given <arg>name</arg>
+* <type>boolean</type>: `true` if the object has a property matching the given <arg>name</arg>
 
 ---
-### `BoolProperty`
+### BoolProperty
+
+```lua
+function MapObject.BoolProperty(self, name)
+```
 
 <listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to get
 
-**Returns** <type>boolean</type>
+<listhead>Returns</listhead>
 
-Returns the <type>boolean</type> value of the property matching the given <arg>name</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns `false`.
+* <type>boolean</type>: The value of the property, or `false` if no applicable value was found
+
+**Notes**
+
+If the property doesn't exist in the object, the game configuration is checked for a default value.
 
 ---
-### `IntProperty`
+### IntProperty
+
+```lua
+function MapObject.IntProperty(self, name)
+```
 
 <listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to get
 
-**Returns** <type>number</type>
+<listhead>Returns</listhead>
 
-Returns the integer <type>number</type> value of the property matching the given <arg>name</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns 0.
+* <type>number</type>: The value of the property, or `0` if no applicable value was found
+
+**Notes**
+
+If the property doesn't exist in the object, the game configuration is checked for a default value.
 
 ---
-### `FloatProperty`
+### FloatProperty
+
+```lua
+function MapObject.FloatProperty(self, name)
+```
 
 <listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to get
 
-**Returns** <type>number</type>
+<listhead>Returns</listhead>
 
-Returns the floating point <type>number</type> value of the property matching the given <arg>name</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns 0.
+* <type>number</type>: The value of the property, or `0` if no applicable value was found
+
+**Notes**
+
+If the property doesn't exist in the object, the game configuration is checked for a default value.
 
 ---
-### `StringProperty`
+### StringProperty
+
+```lua
+function MapObject.StringProperty(self, name)
+```
 
 <listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to get
 
-**Returns** <type>string</type>
+<listhead>Returns</listhead>
 
-Returns the <type>string</type> value of the property matching the given <arg>name</arg>. If the property doesn't exist, the game configuration is checked for a default value. Otherwise, returns an empty string.
+* <type>string</type>: The value of the property, or an empty string if no applicable value was found
+
+**Notes**
+
+If the property doesn't exist in the object, the game configuration is checked for a default value.
 
 ---
-### `SetBoolProperty`
+### SetBoolProperty (<arg>name</arg>, <arg>value</arg>)
+
+```lua
+function MapObject.SetBoolProperty(self, name, value)
+```
+
+Sets the property <arg>name</arg> to <arg>value</arg>.
 
 <listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to set
 * <type>boolean</type> <arg>value</arg>: The value to apply
 
-Sets the property <arg>name</arg> to <arg>value</arg>. The property is created if it doesn't already exist.
+**Notes**
+
+The property is created if it doesn't already exist.
 
 ---
-### `SetIntProperty`
+### SetIntProperty
+
+```lua
+function MapObject.SetIntProperty(self, name, value)
+```
+
+Sets the property <arg>name</arg> to <arg>value</arg>.
 
 <listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to set
 * <type>number</type> <arg>value</arg>: The value to apply
 
-Sets the property <arg>name</arg> to <arg>value</arg>. The property is created if it doesn't already exist.
+**Notes**
+
+The property is created if it doesn't already exist.
 
 ---
-### `SetFloatProperty`
+### SetFloatProperty
+
+```lua
+function MapObject.SetFloatProperty(self, name, value)
+```
+
+Sets the property <arg>name</arg> to <arg>value</arg>.
 
 <listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to set
 * <type>number</type> <arg>value</arg>: The value to apply
 
-Sets the property <arg>name</arg> to <arg>value</arg>. The property is created if it doesn't already exist.
+**Notes**
+
+The property is created if it doesn't already exist.
 
 ---
-### `SetStringProperty`
+### SetStringProperty
+
+```lua
+function MapObject.SetStringProperty(self, name, value)
+```
+
+Sets the property <arg>name</arg> to <arg>value</arg>.
 
 <listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the property to set
 * <type>string</type> <arg>value</arg>: The value to apply
 
-Sets the property <arg>name</arg> to <arg>value</arg>. The property is created if it doesn't already exist.
+**Notes**
+
+The property is created if it doesn't already exist.

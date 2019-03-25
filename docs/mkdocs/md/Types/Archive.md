@@ -1,3 +1,5 @@
+<article-head>Archive</article-head>
+
 The `Archive` type represents an archive (wad/pk3/etc) in SLADE.
 
 ## Properties
@@ -21,44 +23,77 @@ The `Archive` type represents an archive (wad/pk3/etc) in SLADE.
 
 ## Functions - General
 
-### `DirAtPath`
+### DirAtPath
+
+```lua
+function Archive.DirAtPath(self, path)
+```
 
 <listhead>Parameters</listhead>
 
 * <type>string</type> <arg>path</arg>: The path of the directory to get
 
-**Returns** <type>[ArchiveDir](ArchiveDir.md)</type>
+<listhead>Returns</listhead>
 
-Returns the directory in the archive at <arg>path</arg>, or `nil` if the path does not exist. If the archive does not support directories (eg. Doom Wad format) the 'root' directory is always returned, regardless of <arg>path</arg>.
+* <type>[ArchiveDir](ArchiveDir.md)</type>: The directory in the archive at <arg>path</arg>, or `nil` if the path does not exist
+
+**Notes**
+
+If the archive does not support directories (eg. Doom Wad format) the 'root' directory is always returned, regardless of <arg>path</arg>.
 
 ---
-### `EntryAtPath`
+### EntryAtPath
+
+```lua
+function Archive.EntryAtPath(self, path)
+```
 
 <listhead>Parameters</listhead>
 
 * <type>string</type> <arg>path</arg>: The path of the entry to get
 
-**Returns** <type>[ArchiveEntry](ArchiveEntry.md)</type>
+<listhead>Returns</listhead>
 
-Returns the entry in the archive at <arg>path</arg>, or `nil` if no entry at the given path exists. If multiple entries exist with the same <arg>path</arg>, the first match is returned.
+* <type>[ArchiveEntry](ArchiveEntry.md)</type>: The entry in the archive at <arg>path</arg>, or `nil` if no entry at the given path exists
 
----
-### `FilenameNoPath`
+**Notes**
 
-**Returns** <type>string</type>
-
-Returns the archive's <prop>filename</prop> without the full path, eg. if <prop>filename</prop> is `C:/games/doom/archive.wad`, this will return `archive.wad`.
+If multiple entries exist with the same <arg>path</arg>, the first match is returned.
 
 ---
-### `Save`
+### FilenameNoPath
+
+```lua
+function Archive.FilenameNoPath(self)
+```
+
+<listhead>Returns</listhead>
+
+* <type>string</type>: The archive's <prop>filename</prop> without the full path
+
+**Example**
+
+As an example, if <prop>filename</prop> is `C:/games/doom/archive.wad`, this will return `archive.wad`.
+
+---
+### Save
+
+```lua
+function Archive.Save(self, path)
+```
+
+Saves the archive to disk.
 
 <listhead>Parameters</listhead>
 
-* `[`<type>string</type> <arg>path</arg>`]`: The full path to the file to save as
+* `[`<type>string</type> <arg>path</arg>`]`: The full path to the file to save as. Defaults to the archive's <prop>filename</prop> property if not given
 
-**Returns** <type>boolean</type>
+<listhead>Returns</listhead>
 
-Saves the archive to disk. If no <arg>path</arg> path is given, the archive's current <prop>filename</prop> is used.
+* <type>boolean</type>: `true` if saving succeeded
+* <type>string</type>: An error message if saving failed
+
+**Notes**
 
 If <arg>path</arg> is given, this will work like 'Save As' - the archive will be saved to a new file at the given path, overwriting the file if it already exists. This will also update the <prop>filename</prop> property.
 
@@ -69,24 +104,43 @@ If <arg>path</arg> is given, this will work like 'Save As' - the archive will be
 local archive = Archives.OpenFile('c:/filename.wad')
 App.LogMessage(archive.filename) -- 'c:/filename.wad'
 
+-- Save to existing file (c:/filename.wad)
+local ok, err = archive:save()
+if not ok then
+    App.LogMessage('Failed to save: ' .. err)
+end
+
 -- Save as new file
-archive:Save('c:/newfile.wad')
+ok, err = archive:Save('c:/newfile.wad')
+if not ok then
+    App.LogMessage('Failed to save as new file: ' .. err)
+end
 
 App.LogMessage(archive.filename) -- 'c:/newfile.wad'
 ```
 
 ## Functions - Entry Manipulation
 
-### `CreateEntry`
+### CreateEntry
+
+```lua
+function Archive.CreateEntry(self, fullPath, position)
+```
+
+Creates a new entry named <arg>fullPath</arg> in the archive at <arg>position</arg> within the target directory.
 
 <listhead>Parameters</listhead>
 
 * <type>string</type> <arg>fullPath</arg>: The full path and name of the entry to create
 * <type>number</type> <arg>position</arg>: The position to insert the entry
 
-**Returns** <type>[ArchiveEntry](ArchiveEntry.md)</type>
+<listhead>Returns</listhead>
 
-Creates a new entry named <arg>fullPath</arg> in the Archive. If the Archive is a format that supports directories, <arg>fullPath</arg> can optionally contain a path eg. `Scripts/NewScript.txt`.
+* <type>[ArchiveEntry](ArchiveEntry.md)</type>: The created entry
+
+**Notes**
+
+If the Archive is a format that supports directories, <arg>fullPath</arg> can optionally contain a path eg. `Scripts/NewScript.txt`.
 
 The new entry will be inserted at <arg>position</arg> in the directory it is added to (always the root for Archives that don't support directories). If <arg>position</arg> is negative or larger than the number of entries in the destination directory, the new entry will be added at the end.
 
@@ -104,16 +158,26 @@ newEntry = wad:CreateEntry('NEWENTRY', 12)
 ```
 
 ---
-### `CreateEntryInNamespace`
+### CreateEntryInNamespace
+
+```lua
+function Archive.CreateEntryInNamespace(self, name, namespace)
+```
+
+Creates a new entry named <arg>name</arg> in the Archive, at the end of <arg>namespace</arg>.
 
 <listhead>Parameters</listhead>
 
 * <type>string</type> <arg>name</arg>: The name of the entry
 * <type>string</type> <arg>namespace</arg>: The namespace to add the entry to
 
-**Returns** <type>[ArchiveEntry](ArchiveEntry.md)</type>
+<listhead>Returns</listhead>
 
-Creates a new entry named <arg>name</arg> in the Archive, at the end of <arg>namespace</arg>. If the Archive supports directories, <arg>namespace</arg> can be a path.
+* <type>[ArchiveEntry](ArchiveEntry.md)</type>: The created entry
+
+**Notes**
+
+If the Archive supports directories, <arg>namespace</arg> can be a path.
 
 See below for a list of supported namespaces:
 
@@ -131,60 +195,90 @@ See below for a list of supported namespaces:
 `sounds` | `DS_START` / `DS_END` | `sounds`
 
 ---
-### `RemoveEntry`
+### RemoveEntry
+
+```lua
+function Archive.RemoveEntry(self, entry)
+```
+
+Removes the given <arg>entry</arg> from the archive (but does not delete it).
 
 <listhead>Parameters</listhead>
 
 * <type>[ArchiveEntry](ArchiveEntry.md)</type> <arg>entry</arg>: The entry to remove
 
-**Returns** <type>boolean</type>
+<listhead>Returns</listhead>
 
-Removes the given entry from the archive (but does not delete it). Returns `false` if the entry was not found in the archive.
+* <type>boolean</type>: `false` if the entry was not found in the archive
 
 ---
-### `RenameEntry`
+### RenameEntry
+
+```lua
+function Archive.RenameEntry(self, entry, name)
+```
+
+Renames the given entry.
 
 <listhead>Parameters</listhead>
 
 * <type>[ArchiveEntry](ArchiveEntry.md)</type> <arg>entry</arg>: The entry to rename
 * <type>string</type> <arg>name</arg>: The new name for the entry
 
-**Returns** <type>boolean</type>
+<listhead>Parameters</listhead>
 
-Renames the given entry. Returns `false` if the entry was not found in the archive.
+* <type>boolean</type>: `false` if the entry was not found in the archive
 
 ## Functions - Entry Search
 
-### `FindFirst`
+### FindFirst
+
+```lua
+function Archive.FindFirst(self, options)
+```
 
 <listhead>Parameters</listhead>
 
 * <type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type> <arg>options</arg>: The search criteria
 
-**Returns** <type>[ArchiveEntry](ArchiveEntry.md)</type>
+<listhead>Returns</listhead>
 
-Returns the **first** entry found in the archive matching the given <arg>options</arg>. Will return `nil` if no match is found.
+* <type>[ArchiveEntry](ArchiveEntry.md)</type>: The **first** entry found in the archive matching the given <arg>options</arg>, or `nil` if no match was found
+
+**Notes**
 
 If <prop>searchSubdirs</prop> is true in the <arg>options</arg>, subdirectories will be searched *after* the entries in the specified <prop>dir</prop>.
 
-### `FindLast`
+---
+### FindLast
+
+```lua
+function Archive.FindLast(self, options)
+```
 
 <listhead>Parameters</listhead>
 
 * <type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type> <arg>options</arg>: The search criteria
 
-**Returns** <type>[ArchiveEntry](ArchiveEntry.md)</type>
+<listhead>Returns</listhead>
 
-Returns the **last** entry found in the archive matching the given <arg>options</arg>. Will return `nil` if no match is found.
+* <type>[ArchiveEntry](ArchiveEntry.md)</type>: The **last** entry found in the archive matching the given <arg>options</arg>, or `nil` if no match was found
+
+**Notes**
 
 If <prop>searchSubdirs</prop> is true in the <arg>options</arg>, subdirectories will be searched *after* the entries in the specified <prop>dir</prop>.
 
-### `FindAll`
+---
+### FindAll
+
+```lua
+function Archive.FindAll(self, options)
+```
 
 <listhead>Parameters</listhead>
 
 * <type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type> <arg>options</arg>: The search criteria
 
-**Returns** <type>[ArchiveEntry](ArchiveEntry.md)\[\]</type>
+<listhead>Returns</listhead>
 
-Returns all entries found in the archive matching the given <arg>options</arg>. Will return an empty array if no match is found.
+* <type>[ArchiveEntry](ArchiveEntry.md)\[\]</type>: All entries found in the archive matching the given <arg>options</arg>, or an empty array if no match is found

@@ -58,5 +58,5 @@ function Execute(archive)
 	end
 
 	-- Display info output in message box
-    App.MessageBoxExt('Archive Info', 'Information about ' .. archive.filename .. ':', output)
+    UI.MessageBoxExt('Archive Info', 'Information about ' .. archive.filename .. ':', output)
 end

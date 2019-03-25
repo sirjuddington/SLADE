@@ -32,11 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive/Archive.h"
-#include "Dialogs/ExtMessageDialog.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditContext.h"
-#include "Scripting/Lua.h"
-#include "Utility/SFileDialog.h"
 #include "thirdparty/sol/sol.hpp"
 
 
@@ -53,74 +50,6 @@ namespace Lua
 void logMessage(const char* message)
 {
 	Log::message(Log::MessageType::Script, message);
-}
-
-// -----------------------------------------------------------------------------
-// Shows a message box with a [title] and [message]
-// -----------------------------------------------------------------------------
-void messageBox(const std::string& title, const std::string& message)
-{
-	wxMessageBox(message, title, 5L, currentWindow());
-}
-
-// -----------------------------------------------------------------------------
-// Shows an extended message box with a [title], [message] and [extra] in a
-// scrollable text view
-// -----------------------------------------------------------------------------
-void messageBoxExtended(const std::string& title, const std::string& message, const std::string& extra)
-{
-	ExtMessageDialog dlg(currentWindow(), title);
-	dlg.setMessage(message);
-	dlg.setExt(extra);
-	dlg.CenterOnParent();
-	dlg.ShowModal();
-}
-
-// -----------------------------------------------------------------------------
-// Prompts for a string and returns what was entered
-// -----------------------------------------------------------------------------
-std::string promptString(const std::string& title, const std::string& message, const std::string& default_value)
-{
-	return wxGetTextFromUser(message, title, default_value, currentWindow()).ToStdString();
-}
-
-// -----------------------------------------------------------------------------
-// Prompt for a number (int) and returns what was entered
-// -----------------------------------------------------------------------------
-int promptNumber(const std::string& title, const std::string& message, int default_value, int min, int max)
-{
-	return (int)wxGetNumberFromUser(message, "", title, default_value, min, max);
-}
-
-// -----------------------------------------------------------------------------
-// Prompts for a yes/no answer and returns true if yes
-// -----------------------------------------------------------------------------
-bool promptYesNo(const std::string& title, const std::string& message)
-{
-	return (wxMessageBox(message, title, wxYES_NO | wxICON_QUESTION) == wxYES);
-}
-
-// -----------------------------------------------------------------------------
-// Opens the file browser to select a single file
-// -----------------------------------------------------------------------------
-std::string browseFile(const std::string& title, const std::string& extensions, const std::string& filename)
-{
-	SFileDialog::FDInfo inf;
-	SFileDialog::openFile(inf, title, extensions, currentWindow(), filename);
-	return inf.filenames.empty() ? "" : inf.filenames[0];
-}
-
-// -----------------------------------------------------------------------------
-// Opens the file browser to select multiple files
-// -----------------------------------------------------------------------------
-vector<std::string> browseFiles(const std::string& title, const std::string& extensions)
-{
-	SFileDialog::FDInfo inf;
-	vector<std::string> filenames;
-	if (SFileDialog::openFiles(inf, title, extensions, currentWindow()))
-		for (const auto& file : inf.filenames)
-			filenames.push_back(file);
-	return filenames;
 }
 
 // -----------------------------------------------------------------------------
@@ -172,38 +101,15 @@ void registerAppNamespace(sol::state& lua)
 {
 	auto app = lua.create_named_table("App");
 
-	app["LogMessage"]            = &logMessage;
-	app["MessageBox"]            = &messageBox;
-	app["MessageBoxExt"]         = &messageBoxExtended;
-	app["PromptString"]          = &promptString;
-	app["PromptNumber"]          = &promptNumber;
-	app["PromptYesNo"]           = &promptYesNo;
-	app["BrowseFile"]            = &browseFile;
-	app["BrowseFiles"]           = &browseFiles;
+	// Functions
+	// -------------------------------------------------------------------------
+	app["LogMessage"] = &logMessage;
 	app["CurrentArchive"]        = &MainEditor::currentArchive;
 	app["CurrentEntry"]          = &MainEditor::currentEntry;
 	app["CurrentEntrySelection"] = &MainEditor::currentEntrySelection;
 	app["ShowArchive"]           = &showArchive;
 	app["ShowEntry"]             = &MainEditor::openEntry;
 	app["MapEditor"]             = &MapEditor::editContext;
-}
-
-// -----------------------------------------------------------------------------
-// Registers the SplashWindow namespace with lua
-// -----------------------------------------------------------------------------
-void registerSplashWindowNamespace(sol::state& lua)
-{
-	auto splash = lua.create_named_table("SplashWindow");
-
-	splash["Show"] = sol::overload(
-		[](const std::string& message) { UI::showSplash(message, false, currentWindow()); },
-		[](const std::string& message, bool progress) { UI::showSplash(message, progress, currentWindow()); });
-	splash["Hide"]               = &UI::hideSplash;
-	splash["Update"]             = &UI::updateSplash;
-	splash["Progress"]           = &UI::getSplashProgress;
-	splash["SetMessage"]         = &UI::setSplashMessage;
-	splash["SetProgressMessage"] = &UI::setSplashProgressMessage;
-	splash["SetProgress"]        = &UI::setSplashProgress;
 }
 
 } // namespace Lua

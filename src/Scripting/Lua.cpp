@@ -148,11 +148,11 @@ template<class T> bool runEditorScript(const std::string& script, T param)
 // -----------------------------------------------------------------------------
 bool Lua::init()
 {
-	lua.open_libraries(sol::lib::base, sol::lib::string);
+	lua.open_libraries(sol::lib::base, sol::lib::string, sol::lib::math, sol::lib::table);
 
 	// Register namespaces
 	registerAppNamespace(lua);
-	registerSplashWindowNamespace(lua);
+	registerUINamespace(lua);
 	registerGameNamespace(lua);
 	registerArchivesNamespace(lua);
 

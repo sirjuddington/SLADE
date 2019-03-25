@@ -21,7 +21,7 @@ function FindTerm(entry, term)
 end
 
 -- Prompt for search term
-local search = App.PromptString('Find Text In Entries', 'Enter text to find in all entries', '')
+local search = UI.PromptString('Find Text In Entries', 'Enter text to find in all entries', '')
 
 -- Go through all entries in the currently selected archive
 for _,entry in ipairs(App.CurrentArchive().entries) do

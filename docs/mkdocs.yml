@@ -9,9 +9,10 @@ site_dir: 'build'
 use_directory_urls: false
 
 # Theme
-theme: material
+theme: windmill
 extra_css:
-- 'css/slade-material.css'
+- 'css/windmill-slade.css'
+- 'css/codehilite-slade-dark.css'
 
 # Extensions
 markdown_extensions:
@@ -19,7 +20,7 @@ markdown_extensions:
   - codehilite
 
 # Documentation Pages
-pages:
+nav:
 - Home: index.md
 - Examples:
   - Archvile Madness: 'md/Examples/ArchvileMadness.md'
@@ -30,7 +31,7 @@ pages:
   - App: 'md/Namespaces/App.md'
   - Archives: 'md/Namespaces/Archives.md'
   - Game: 'md/Namespaces/Game.md'
-  - SplashWindow: 'md/Namespaces/SplashWindow.md'
+  - UI: 'md/Namespaces/UI.md'
 - Types:
   - Archive:
     - Archive: 'md/Types/Archive.md'

@@ -6,9 +6,9 @@ namespace Lua
 {
 // Namespaces
 void registerAppNamespace(sol::state& lua);
-void registerSplashWindowNamespace(sol::state& lua);
 void registerGameNamespace(sol::state& lua);
 void registerArchivesNamespace(sol::state& lua);
+void registerUINamespace(sol::state& lua);
 
 // Types
 void registerMiscTypes(sol::state& lua);

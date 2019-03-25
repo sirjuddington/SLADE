@@ -1,0 +1,50 @@
+.codehilite pre {
+	font-family: 'Fira Mono', 'Consolas', monospace !important;
+	background: none repeat scroll 0 0 rgb(37, 37, 37) !important;
+	border: 1px solid hsl(220, 20%, 34%);
+	line-height: 1.5em !important;
+	font-size: 0.8em;
+}
+
+.codehilite pre .n,
+.codehilite pre .p {
+	color: rgb(215, 215, 215);
+}
+
+.codehilite pre .kr,
+.codehilite pre .kd {
+	color: rgb(94, 142, 232);
+}
+
+.codehilite pre .c1 {
+	color: rgb(102, 124, 97);
+	font-style: italic;
+}
+
+.codehilite pre .nf,
+.codehilite pre .nb {
+	color: rgb(239, 222, 154);
+}
+
+.codehilite pre .o,
+.codehilite pre .ow {
+	color: rgb(175, 205, 198);
+}
+
+.codehilite pre .mi,
+.codehilite pre .mf {
+	color: rgb(188, 174, 225);
+}
+
+.codehilite pre .s1,
+.codehilite pre .se {
+	color: rgb(216, 101, 84);
+}
+
+.codehilite pre .kc {
+	color: rgb(188, 117, 198);
+}
+
+.codehilite pre .nc {
+	color: hsl(130, 36%, 65%);
+}

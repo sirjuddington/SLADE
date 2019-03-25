@@ -1,6 +1,6 @@
 
 -- Browse for archive file to open
-local path = App.BrowseFile('Open Archive', Archives.FileExtensionsString(), '')
+local path = UI.BrowseFile('Open Archive', Archives.FileExtensionsString(), '')
 if path == '' then
     App.LogMessage('No archive selected')
 else
@@ -19,8 +19,9 @@ else
         end
 
         -- Prompt to close
-        if (App.PromptYesNo('Close Archive', 'Do you want to close the archive now?')) then
+        if (UI.PromptYesNo('Close Archive', 'Do you want to close the archive now?')) then
             Archives.Close(archive)
+            archive = nil
         end
     end
 end

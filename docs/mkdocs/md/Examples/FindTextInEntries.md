@@ -1,3 +1,4 @@
+<article-head>Example: Find Text in Entries</article-head>
 
 This example script will prompt for a search term, then search all text entries in the currently selected archive for the term. Matches are logged to the console.
 
@@ -25,7 +26,7 @@ function FindTerm(entry, term)
 end
 
 -- Prompt for search term
-local search = App.PromptString('Find Text In Entries', 'Enter text to find in all entries', '')
+local search = UI.PromptString('Find Text In Entries', 'Enter text to find in all entries', '')
 
 -- Go through all entries in the currently selected archive
 for _,entry in ipairs(App.CurrentArchive().entries) do

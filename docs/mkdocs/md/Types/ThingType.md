@@ -1,3 +1,4 @@
+<article-head>ThingType</article-head>
 
 Represents a thing type definition from the current game configuration (or parsed from DECORATE/ZScript etc.)
 
@@ -25,3 +26,7 @@ Represents a thing type definition from the current game configuration (or parse
 
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
+
+<listhead>See:</listhead>
+
+* [Game.ThingType](../Namespaces/Game.md#thingtype)

@@ -370,6 +370,7 @@
     <ClCompile Include="..\..\src\Scripting\Export\Game.cpp" />
     <ClCompile Include="..\..\src\Scripting\Export\General.cpp" />
     <ClCompile Include="..\..\src\Scripting\Export\MapEditor.cpp" />
+    <ClCompile Include="..\..\src\Scripting\Export\UI.cpp" />
     <ClCompile Include="..\..\src\Utility\FileUtils.cpp" />
     <ClCompile Include="..\..\thirdparty\bzip2\blocksort.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>

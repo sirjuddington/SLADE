@@ -1,3 +1,5 @@
+<article-head>ArchiveSearchOptions</article-head>
+
 The `ArchiveSearchOptions` type contains options for searching for entries in an <type>[Archive](Archive.md)</type>.
 
 <listhead>See:</listhead>
@@ -19,7 +21,10 @@ The `ArchiveSearchOptions` type contains options for searching for entries in an
 
 ## Constructors
 
-`new` `(` `)`  
+```lua
+function ArchiveSearchOptions.new()
+```
+
 Creates a new `ArchiveSearchOptions` with the following default values:
 
 * <prop>matchName</prop>, <prop>matchNamespace</prop> as empty strings

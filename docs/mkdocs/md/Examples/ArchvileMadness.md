@@ -1,3 +1,4 @@
+<article-head>Example: Archvile Madness</article-head>
 
 This example script changes all monsters in a map to Archviles.
 
