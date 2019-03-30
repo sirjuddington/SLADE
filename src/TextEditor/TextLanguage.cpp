@@ -440,7 +440,7 @@ std::string TextLanguage::autocompletionList(std::string_view start, bool includ
 	// Add functions
 	for (auto& func : functions_)
 		if (StrUtil::startsWithCI(func.name(), start))
-			list.push_back(fmt::format("{}{}", func.name(), "?3"));
+			list.push_back(fmt::format("{}{}", func.name(), "?5"));
 
 	// Sort the list
 	std::sort(list.begin(), list.end());

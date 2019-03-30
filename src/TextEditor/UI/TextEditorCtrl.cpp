@@ -184,7 +184,9 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 	// Register icons for autocompletion list
 	RegisterImage(1, Icons::getIcon(Icons::TextEditor, "key"));
 	RegisterImage(2, Icons::getIcon(Icons::TextEditor, "const"));
-	RegisterImage(3, Icons::getIcon(Icons::TextEditor, "func"));
+	RegisterImage(3, Icons::getIcon(Icons::TextEditor, "func")); // TODO: Icon (type)
+	RegisterImage(4, Icons::getIcon(Icons::TextEditor, "func")); // TODO: Icon (property)
+	RegisterImage(5, Icons::getIcon(Icons::TextEditor, "func"));
 
 	// Init w/no language
 	setLanguage(nullptr);
