@@ -24,7 +24,8 @@ struct Script
 	std::string        name;
 	std::string        path;
 	bool               read_only = false;
-	ArchiveEntry::WPtr source;
+	ArchiveEntry::WPtr source_entry;
+	std::string        source_file;
 
 	typedef std::unique_ptr<Script> UPtr;
 };

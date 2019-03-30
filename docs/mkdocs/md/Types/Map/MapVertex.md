@@ -1,3 +1,5 @@
+<article-head>MapVertex</article-head>
+
 Represents a map vertex.
 
 ### Inherits <type>[MapObject](MapObject.md)</type>  

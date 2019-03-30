@@ -369,6 +369,7 @@
     <ClCompile Include="..\..\src\Scripting\Export\Archive.cpp" />
     <ClCompile Include="..\..\src\Scripting\Export\Game.cpp" />
     <ClCompile Include="..\..\src\Scripting\Export\General.cpp" />
+    <ClCompile Include="..\..\src\Scripting\Export\Graphics.cpp" />
     <ClCompile Include="..\..\src\Scripting\Export\MapEditor.cpp" />
     <ClCompile Include="..\..\src\Scripting\Export\UI.cpp" />
     <ClCompile Include="..\..\src\Utility\FileUtils.cpp" />

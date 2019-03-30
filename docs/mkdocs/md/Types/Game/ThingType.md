@@ -29,4 +29,4 @@ Represents a thing type definition from the current game configuration (or parse
 
 <listhead>See:</listhead>
 
-* [Game.ThingType](../Namespaces/Game.md#thingtype)
+* <code>[Game.ThingType](../../Namespaces/Game.md#thingtype)</code>

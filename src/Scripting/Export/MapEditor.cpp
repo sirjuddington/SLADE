@@ -253,12 +253,12 @@ void registerMapLine(sol::state& lua)
 	lua_line["side2"]           = sol::property(&MapLine::s2);
 	lua_line["special"]         = sol::property(&MapLine::special);
 	lua_line["length"]          = sol::property(&MapLine::length);
-	lua_line["visibleTextures"] = sol::property(&lineVisibleTextures);
 
 	// Functions
 	// -------------------------------------------------------------------------
 	lua_line["Flag"] = &lineFlag;
 	lua_line["Flip"] = sol::overload(&MapLine::flip, [](MapLine& self) { self.flip(true); });
+	lua_line["VisibleTextures"] = &lineVisibleTextures;
 }
 
 // -----------------------------------------------------------------------------

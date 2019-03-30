@@ -13,35 +13,29 @@ Represents an RGBA colour. Note that colour each component is an 8-bit integer (
 
 ## Constructors
 
-```lua
-function Colour.new()
-```
+<fdef>function <type>Colour</type>.<func>new</func>()</fdef>
 
 Creates a new colour with all components set to `0`.
 
 ---
-```lua
-function Colour.new(r, g, b)
-```
+<fdef>function <type>Colour</type>.<func>new</func>(<arg>r</arg>, <arg>g</arg>, <arg>b</arg>)</fdef>
 
 Creates a new colour with the given <arg>r</arg>, <arg>g</arg> and <arg>b</arg> components. The <prop>a</prop> component is set to `255`.
 
 <listhead>Parameters</listhead>
 
-* <type>number</type> <arg>r</arg>: Red component (`0`-`255`)
-* <type>number</type> <arg>g</arg>: Green component (`0`-`255`)
-* <type>number</type> <arg>b</arg>: Blue component (`0`-`255`)
+* <arg>r</arg> (<type>number</type>): Red component (`0` - `255`)
+* <arg>g</arg> (<type>number</type>): Green component (`0` - `255`)
+* <arg>b</arg> (<type>number</type>): Blue component (`0` - `255`)
 
 ---
-```lua
-function Colour.new(r, g, b, a)
-```
+<fdef>function <type>Colour</type>.<func>new</func>(<arg>r</arg>, <arg>g</arg>, <arg>b</arg>, <arg>a</arg>)</fdef>
 
 Creates a new colour with the given <arg>r</arg>, <arg>g</arg>, <arg>b</arg> and <arg>a</arg> components.
 
 <listhead>Parameters</listhead>
 
-* <type>number</type> <arg>r</arg>: Red component (`0`-`255`)
-* <type>number</type> <arg>g</arg>: Green component (`0`-`255`)
-* <type>number</type> <arg>b</arg>: Blue component (`0`-`255`)
-* <type>number</type> <arg>a</arg>: Alpha component (`0`-`255`)
+* <arg>r</arg> (<type>number</type>): Red component (`0` - `255`)
+* <arg>g</arg> (<type>number</type>): Green component (`0` - `255`)
+* <arg>b</arg> (<type>number</type>): Blue component (`0` - `255`)
+* <arg>a</arg> (<type>number</type>): Alpha component (`0` - `255`)

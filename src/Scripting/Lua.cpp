@@ -161,6 +161,7 @@ bool Lua::init()
 	registerArchiveTypes(lua);
 	registerMapEditorTypes(lua);
 	registerGameTypes(lua);
+	registerGraphicsTypes(lua);
 
 	return true;
 }

@@ -1,12 +1,12 @@
 <article-head>ArchiveSearchOptions</article-head>
 
-The `ArchiveSearchOptions` type contains options for searching for entries in an <type>[Archive](Archive.md)</type>.
+The <type>ArchiveSearchOptions</type> type contains options for searching for entries in an <type>[Archive](Archive.md)</type>.
 
 <listhead>See:</listhead>
 
-* <code>[Archive.findFirst](Archive.md#findfirst)</code>
-* <code>[Archive.findLast](Archive.md#findlast)</code>
-* <code>[Archive.findAll](Archive.md#findall)</code>
+* <code>[Archive.FindFirst](Archive.md#findfirst)</code>
+* <code>[Archive.FindLast](Archive.md#findlast)</code>
+* <code>[Archive.FindAll](Archive.md#findall)</code>
 
 ## Properties
 
@@ -21,11 +21,9 @@ The `ArchiveSearchOptions` type contains options for searching for entries in an
 
 ## Constructors
 
-```lua
-function ArchiveSearchOptions.new()
-```
+<fdef>function <type>ArchiveSearchOptions</type>.<func>new</func>()</fdef>
 
-Creates a new `ArchiveSearchOptions` with the following default values:
+Creates a new <type>ArchiveSearchOptions</type> with the following default values:
 
 * <prop>matchName</prop>, <prop>matchNamespace</prop> as empty strings
 * <prop>matchType</prop>, <prop>dir</prop> as `nil`

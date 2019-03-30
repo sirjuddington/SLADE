@@ -1,6 +1,6 @@
 <article-head>EntryType</article-head>
 
-The `EntryType` type contains information about an entry's type/format.
+The <type>EntryType</type> type contains information about an entry's type/format.
 
 ## Properties
 
@@ -20,4 +20,4 @@ The `EntryType` type contains information about an entry's type/format.
 
 <listhead>See:</listhead>
 
-* [Archives.EntryType](../Namespaces/Archives.md#entrytype)
+* <code>[Archives.EntryType](../../Namespaces/Archives.md#entrytype)</code>

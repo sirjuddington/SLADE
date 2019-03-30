@@ -37,8 +37,8 @@
 #include "General/ResourceManager.h"
 #include "Graphics/SImage/SImage.h"
 #include "TextureXList.h"
-#include "Utility/Tokenizer.h"
 #include "Utility/StringUtils.h"
+#include "Utility/Tokenizer.h"
 
 
 // -----------------------------------------------------------------------------
@@ -51,7 +51,9 @@
 // -----------------------------------------------------------------------------
 // CTPatch class constructor w/initial values
 // -----------------------------------------------------------------------------
-CTPatch::CTPatch(std::string_view name, int16_t offset_x, int16_t offset_y) : name_{ name }, offset_{ offset_x, offset_y }
+CTPatch::CTPatch(std::string_view name, int16_t offset_x, int16_t offset_y) :
+	name_{ name },
+	offset_{ offset_x, offset_y }
 {
 }
 
@@ -197,7 +199,7 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 				}
 				// Parse whole string
 				translation_.parse(translate);
-				blendtype_ = 1;
+				blendtype_ = BlendType::Translation;
 			}
 
 			// Blend
@@ -205,8 +207,8 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 			{
 				double   val;
 				wxColour col;
-				blendtype_ = 2;
-				
+				blendtype_ = BlendType::Blend;
+
 				// Read first value
 				auto first = tz.next().text;
 
@@ -227,7 +229,7 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 					{
 						col.Set(first);
 						colour_.set(COLWX(col), second * 255);
-						blendtype_ = 3;
+						blendtype_ = BlendType::Tint;
 					}
 					else
 					{
@@ -240,13 +242,12 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 						colour_.b = tz.next().asInt();
 						if (!tz.checkNext(","))
 						{
-							Log::error(
-								"Invalid TEXTURES definition, expected ',', got '{}'", tz.peek().text);
+							Log::error("Invalid TEXTURES definition, expected ',', got '{}'", tz.peek().text);
 							return false;
 						}
 						tz.adv(); // Skip ,
 						colour_.a  = tz.next().asFloat() * 255;
-						blendtype_ = 3;
+						blendtype_ = BlendType::Tint;
 					}
 				}
 			}
@@ -279,7 +280,7 @@ std::string CTPatchEx::asText()
 	auto text = fmt::format("\t{} \"{}\", {}, {}\n", typestring, name_, offset_.x, offset_.y);
 
 	// Check if we need to write any extra properties
-	if (!flip_x_ && !flip_y_ && !use_offsets_ && rotation_ == 0 && blendtype_ == 0 && alpha_ == 1.0f
+	if (!flip_x_ && !flip_y_ && !use_offsets_ && rotation_ == 0 && blendtype_ == BlendType::None && alpha_ == 1.0f
 		&& StrUtil::equalCI(style_, "Copy"))
 		return text;
 	else
@@ -294,18 +295,18 @@ std::string CTPatchEx::asText()
 		text += "\t\tUseOffsets\n";
 	if (rotation_ != 0)
 		text += fmt::format("\t\tRotate {}\n", rotation_);
-	if (blendtype_ == 1 && !translation_.isEmpty())
+	if (blendtype_ == BlendType::Translation && !translation_.isEmpty())
 	{
 		text += "\t\tTranslation ";
 		text += translation_.asText();
 		text += "\n";
 	}
-	if (blendtype_ >= 2)
+	if (blendtype_ == BlendType::Blend || blendtype_ == BlendType::Tint)
 	{
 		wxColour col(colour_.r, colour_.g, colour_.b);
 		text += fmt::format("\t\tBlend \"{}\"", col.GetAsString(wxC2S_HTML_SYNTAX).ToStdString());
 
-		if (blendtype_ == 3)
+		if (blendtype_ == BlendType::Tint)
 			text += fmt::format(", {:1.1f}\n", (double)colour_.a / 255.0);
 		else
 			text += "\n";
@@ -824,7 +825,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 	{
 		if (!loadPatchImage(0, p_img, parent, pal))
 			return false;
-		size_.x  = p_img.width();
+		size_.x = p_img.width();
 		size_.y = p_img.height();
 		image.resize(size_.x, size_.y);
 		scale_.x = (double)size_.x / (double)def_size_.x;
@@ -854,7 +855,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 			}
 
 			// Apply translation before anything in case we're forcing rgba (can't translate rgba images)
-			if (patch->blendType() == 1)
+			if (patch->blendType() == CTPatchEx::BlendType::Translation)
 				p_img.applyTranslation(&(patch->translation()), pal, force_rgba);
 
 			// Convert to RGBA if forced
@@ -899,9 +900,9 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 			}
 
 			// Setup patch colour
-			if (patch->blendType() == 2)
+			if (patch->blendType() == CTPatchEx::BlendType::Blend)
 				p_img.colourise(patch->colour(), pal);
-			else if (patch->blendType() == 3)
+			else if (patch->blendType() == CTPatchEx::BlendType::Tint)
 				p_img.tint(patch->colour(), patch->colour().fa(), pal);
 
 

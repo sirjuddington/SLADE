@@ -72,11 +72,11 @@ namespace ScriptManager
 // -----------------------------------------------------------------------------
 Script* addEditorScriptFromEntry(ArchiveEntry::SPtr& entry, ScriptType type, std::string_view cut_path)
 {
-	auto s    = std::make_unique<Script>();
-	s->type   = type;
-	s->name   = entry->nameNoExt();
-	s->path   = entry->path();
-	s->source = entry;
+	auto s          = std::make_unique<Script>();
+	s->type         = type;
+	s->name         = entry->nameNoExt();
+	s->path         = entry->path();
+	s->source_entry = entry;
 	StrUtil::replaceIP(s->path, cut_path, {});
 
 	auto& list = scripts_editor[type];
@@ -93,10 +93,11 @@ Script* addEditorScriptFromFile(std::string_view filename, ScriptType type)
 {
 	StrUtil::Path fn(filename);
 
-	auto s  = std::make_unique<Script>();
-	s->type = type;
-	s->name = fn.fileName(false);
-	s->path = fn.path(true);
+	auto s         = std::make_unique<Script>();
+	s->type        = type;
+	s->name        = fn.fileName(false);
+	s->path        = fn.path(true);
+	s->source_file = filename;
 
 	auto& list = scripts_editor[type];
 	list.push_back(std::move(s));
@@ -239,8 +240,8 @@ void ScriptManager::init()
 {
 	// Create user scripts directory if it doesn't exist
 	auto user_scripts_dir = App::path("scripts", App::Dir::User);
-	if (!wxDirExists(user_scripts_dir))
-		wxMkdir(user_scripts_dir);
+	if (!FileUtil::dirExists(user_scripts_dir))
+		FileUtil::createDir(user_scripts_dir);
 
 	// Init script templates
 	readResourceEntryText(script_templates[ScriptType::Archive], "scripts/archive/_template.lua");
@@ -367,7 +368,7 @@ void ScriptManager::runArchiveScript(Archive* archive, int index, wxWindow* pare
 }
 
 // -----------------------------------------------------------------------------
-// Runs the entry script at [index] on [archive]
+// Runs the entry script at [index] on [entries]
 // -----------------------------------------------------------------------------
 void ScriptManager::runEntryScript(vector<ArchiveEntry*> entries, int index, wxWindow* parent)
 {

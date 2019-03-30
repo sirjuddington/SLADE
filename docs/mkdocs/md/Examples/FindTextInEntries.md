@@ -21,7 +21,8 @@ function FindTerm(entry, term)
     while true do
         i, wordEnd = text:find(term, wordEnd)
         if i == nil then break end
-        App.LogMessage('Text "' .. term .. '" found in ' .. entry:FormattedName() .. ' on line ' .. LineNum(text, i))
+        App.LogMessage(
+            'Text "'..term..'" found in '..entry:FormattedName()..' on line '..LineNum(text, i))
     end
 end
 

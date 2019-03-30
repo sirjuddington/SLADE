@@ -77,7 +77,7 @@ PatchTable::Patch& PatchTable::patch(std::string_view name)
 // Returns the name of the patch at [index], or an empty string if [index] is
 // invalid
 // -----------------------------------------------------------------------------
-const std::string& PatchTable::patchName(size_t index)
+const std::string& PatchTable::patchName(size_t index) const
 {
 	// Check index
 	if (index >= patches_.size())
@@ -125,7 +125,7 @@ ArchiveEntry* PatchTable::patchEntry(std::string_view name)
 // -----------------------------------------------------------------------------
 // Returns the index of the patch matching [name], or -1 if no match found
 // -----------------------------------------------------------------------------
-int32_t PatchTable::patchIndex(std::string_view name)
+int32_t PatchTable::patchIndex(std::string_view name) const
 {
 	// Search for patch by name
 	for (size_t a = 0; a < patches_.size(); a++)
@@ -142,7 +142,7 @@ int32_t PatchTable::patchIndex(std::string_view name)
 // Returns the index of the patch associated with [entry], or null if no match
 // found
 // -----------------------------------------------------------------------------
-int32_t PatchTable::patchIndex(ArchiveEntry* entry)
+int32_t PatchTable::patchIndex(ArchiveEntry* entry) const
 {
 	// Search for patch by entry
 	for (size_t a = 0; a < patches_.size(); a++)

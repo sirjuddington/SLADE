@@ -70,9 +70,9 @@ bool showArchive(Archive* archive)
 void registerMiscTypes(sol::state& lua)
 {
 	// Point type
-	auto lua_vec2f = lua.new_usertype<Vec2f>("Point", sol::constructors<Vec2f(), Vec2f(double, double)>());
-	lua_vec2f["x"] = &Vec2f::x;
-	lua_vec2f["y"] = &Vec2f::y;
+	auto lua_vec2f = lua.new_usertype<Vec2d>("Point", sol::constructors<Vec2d(), Vec2d(double, double)>());
+	lua_vec2f["x"] = &Vec2d::x;
+	lua_vec2f["y"] = &Vec2d::y;
 
 	// Colour type
 	auto lua_colour = lua.new_usertype<ColRGBA>(

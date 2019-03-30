@@ -1,6 +1,6 @@
 <article-head>ArchiveEntry</article-head>
 
-The `ArchiveEntry` type represents an entry in SLADE.
+The <type>ArchiveEntry</type> type represents an entry in SLADE.
 
 ## Properties
 
@@ -11,6 +11,7 @@ The `ArchiveEntry` type represents an entry in SLADE.
 <prop class="ro">type</prop> | <type>[EntryType](EntryType.md)</type> | The entry's type information
 <prop class="ro">size</prop> | <type>number</type> | The size of the entry in bytes
 <prop class="ro">data</prop> | <type>string</type> | The entry's data
+<prop class="ro">index</prop> | <type>number</type> | The index of the entry within its containing archive or directory
 <prop class="ro">crc32</prop> | <type>number</type> | The 32-bit [crc](https://en.wikipedia.org/wiki/Cyclic_redundancy_check) value calculated from the entry's data
 
 ## Constructors
@@ -20,22 +21,20 @@ The `ArchiveEntry` type represents an entry in SLADE.
 
 <listhead>See:</listhead>
 
-* <code>[Archive:CreateEntry](Archive.md#createentry)</code>
-* <code>[Archive:CreateEntryInNamespace](Archive.md#createentryinnamespace)</code>
+* <code>[Archive.CreateEntry](Archive.md#createentry)</code>
+* <code>[Archive.CreateEntryInNamespace](Archive.md#createentryinnamespace)</code>
 
 ## Functions - General
 
 ### FormattedName
 
-```lua
-function ArchiveEntry.FormattedName(self, includePath, includeExtension, upperCase)
-```
+<fdef>function <type>ArchiveEntry</type>.<func>FormattedName</func>(<arg>*self*</arg>, <arg>includePath</arg>, <arg>includeExtension</arg>, <arg>upperCase</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-* `[`<type>boolean</type> <arg>includePath</arg>`]`: Whether to include the entry path. Defaults to `true` if not given
-* `[`<type>boolean</type> <arg>includeExtension</arg>`]`: Whether to include the entry extension. Defaults to `true` if not given
-* `[`<type>boolean</type> <arg>upperCase</arg>`]`: Whether to convert the entry name to uppercase. Defaults to `false` if not given
+* <arg>[includePath]</arg> (<type>boolean</type>, default `true`): Whether to include the entry path
+* <arg>[includeExtension]</arg> (<type>boolean</type>, default `true`): Whether to include the entry extension
+* <arg>[upperCase]</arg> (<type>boolean</type>, default `false`): Whether to convert the entry name to uppercase
 
 <listhead>Returns</listhead>
 
@@ -48,9 +47,7 @@ Note that <arg>upperCase</arg> will not affect the path.
 ---
 ### FormattedSize
 
-```lua
-function ArchiveEntry.FormattedSize(self)
-```
+<fdef>function <type>ArchiveEntry</type>.<func>FormattedSize</func>(<arg>*self*</arg>)</fdef>
 
 <listhead>Returns</listhead>
 
@@ -60,15 +57,13 @@ function ArchiveEntry.FormattedSize(self)
 
 ### ExportFile
 
-```lua
-function ArchiveEntry.ExportFile(self, path)
-```
+<fdef>function <type>ArchiveEntry</type>.<func>ExportFile</func>(<arg>*self*</arg>, <arg>path</arg>)</fdef>
 
 Exports the entry data to a file at <arg>path</arg>.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>path</arg>: The full path to the file to export
+* <arg>path</arg> (<type>string</type>): The full path to the file to export
 
 <listhead>Returns</listhead>
 
@@ -82,15 +77,13 @@ If a file already exists at <arg>path</arg>, it will be overwritten.
 ---
 ### ImportData
 
-```lua
-function ArchiveEntry.ImportData(self, data)
-```
+<fdef>function <type>ArchiveEntry</type>.<func>ImportData</func>(<arg>*self*</arg>, <arg>data</arg>)</fdef>
 
 Imports <arg>data</arg> into the entry.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>data</arg>: The data to import
+* <arg>data</arg> (<type>string</type>): The data to import
 
 <listhead>Returns</listhead>
 
@@ -100,15 +93,13 @@ Imports <arg>data</arg> into the entry.
 ---
 ### ImportEntry
 
-```lua
-function ArchiveEntry.ImportEntry(self, entry)
-```
+<fdef>function <type>ArchiveEntry</type>.<func>ImportEntry</func>(<arg>*self*</arg>, <arg>entry</arg>)</fdef>
 
 Imports (copies) the data from <arg>entry</arg>.
 
 <listhead>Parameters</listhead>
 
-* <type>ArchiveEntry</type> <arg>entry</arg>: The entry to import data from
+* <arg>entry</arg> (<type>ArchiveEntry</type>): The entry to import data from
 
 <listhead>Returns</listhead>
 
@@ -118,15 +109,13 @@ Imports (copies) the data from <arg>entry</arg>.
 ---
 ### ImportFile
 
-```lua
-function ArchiveEntry.ImportFile(self, path)
-```
+<fdef>function <type>ArchiveEntry</type>.<func>ImportFile</func>(<arg>*self*</arg>, <arg>path</arg>)</fdef>
 
 Imports the file at the given <arg>path</arg> into the entry.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>path</arg>: The full path to the file to import
+* <arg>path</arg> (<type>string</type>): The full path to the file to import
 
 <listhead>Returns</listhead>
 

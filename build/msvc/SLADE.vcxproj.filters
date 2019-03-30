@@ -1581,6 +1581,9 @@
     <ClCompile Include="..\..\src\Scripting\Export\UI.cpp">
       <Filter>Scripting\Export</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Scripting\Export\Graphics.cpp">
+      <Filter>Scripting\Export</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />

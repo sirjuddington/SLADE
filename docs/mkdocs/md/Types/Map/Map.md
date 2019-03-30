@@ -21,4 +21,4 @@ Contains information and structures representing a Doom map.
 
 <listhead>See:</listhead>
 
-* <type>[MapEditor](MapEditor.md)</type>`.`<prop>map</prop> property
+* <code>[MapEditor.map](MapEditor.md#properties)</code>

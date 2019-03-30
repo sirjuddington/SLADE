@@ -1,6 +1,6 @@
 <article-head>Archive</article-head>
 
-The `Archive` type represents an archive (wad/pk3/etc) in SLADE.
+The <type>Archive</type> type represents an archive (wad/pk3/etc) in SLADE.
 
 ## Properties
 
@@ -18,20 +18,18 @@ The `Archive` type represents an archive (wad/pk3/etc) in SLADE.
 
 <listhead>See:</listhead>
 
-* <code>[Archives.Create](../Namespaces/Archives.md#create)</code>
-* <code>[Archives.OpenFile](../Namespaces/Archives.md#openfile)</code>
+* <code>[Archives.Create](../../Namespaces/Archives.md#create)</code>
+* <code>[Archives.OpenFile](../../Namespaces/Archives.md#openfile)</code>
 
 ## Functions - General
 
 ### DirAtPath
 
-```lua
-function Archive.DirAtPath(self, path)
-```
+<fdef>function <type>Archive</type>.<func>DirAtPath</func>(<arg>*self*</arg>, <arg>path</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>path</arg>: The path of the directory to get
+* <arg>path</arg> (<type>string</type>): The path of the directory to get
 
 <listhead>Returns</listhead>
 
@@ -44,13 +42,11 @@ If the archive does not support directories (eg. Doom Wad format) the 'root' dir
 ---
 ### EntryAtPath
 
-```lua
-function Archive.EntryAtPath(self, path)
-```
+<fdef>function <type>Archive</type>.<func>EntryAtPath</func>(<arg>*self*</arg>, <arg>path</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>path</arg>: The path of the entry to get
+* <arg>path</arg> (<type>string</type>): The path of the entry to get
 
 <listhead>Returns</listhead>
 
@@ -63,9 +59,7 @@ If multiple entries exist with the same <arg>path</arg>, the first match is retu
 ---
 ### FilenameNoPath
 
-```lua
-function Archive.FilenameNoPath(self)
-```
+<fdef>function <type>Archive</type>.<func>FilenameNoPath</func>(<arg>*self*</arg>)</fdef>
 
 <listhead>Returns</listhead>
 
@@ -73,20 +67,21 @@ function Archive.FilenameNoPath(self)
 
 **Example**
 
-As an example, if <prop>filename</prop> is `C:/games/doom/archive.wad`, this will return `archive.wad`.
+```lua
+local archive = Archives.OpenFile('C:/games/doom/archive.wad')
+App.LogMessage(archive:FilenameNoPath) -- 'archive.wad'
+```
 
 ---
 ### Save
 
-```lua
-function Archive.Save(self, path)
-```
+<fdef>function <type>Archive</type>.<func>Save</func>(<arg>*self*</arg>, <arg>path</arg>)</fdef>
 
 Saves the archive to disk.
 
 <listhead>Parameters</listhead>
 
-* `[`<type>string</type> <arg>path</arg>`]`: The full path to the file to save as. Defaults to the archive's <prop>filename</prop> property if not given
+* <arg>[path]</arg> (<type>string</type>, defaults to <prop>filename</prop>): The full path to the file to save as
 
 <listhead>Returns</listhead>
 
@@ -123,16 +118,14 @@ App.LogMessage(archive.filename) -- 'c:/newfile.wad'
 
 ### CreateEntry
 
-```lua
-function Archive.CreateEntry(self, fullPath, position)
-```
+<fdef>function <type>Archive</type>.<func>CreateEntry</func>(<arg>*self*</arg>, <arg>fullPath</arg>, <arg>index</arg>)</fdef>
 
-Creates a new entry named <arg>fullPath</arg> in the archive at <arg>position</arg> within the target directory.
+Creates a new entry named <arg>fullPath</arg> in the archive at <arg>index</arg> within the target directory.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>fullPath</arg>: The full path and name of the entry to create
-* <type>number</type> <arg>position</arg>: The position to insert the entry
+* <arg>fullPath</arg> (<type>string</type>): The full path and name of the entry to create
+* <arg>index</arg> (<type>number</type>): The index to insert the entry
 
 <listhead>Returns</listhead>
 
@@ -142,16 +135,16 @@ Creates a new entry named <arg>fullPath</arg> in the archive at <arg>position</a
 
 If the Archive is a format that supports directories, <arg>fullPath</arg> can optionally contain a path eg. `Scripts/NewScript.txt`.
 
-The new entry will be inserted at <arg>position</arg> in the directory it is added to (always the root for Archives that don't support directories). If <arg>position</arg> is negative or larger than the number of entries in the destination directory, the new entry will be added at the end.
+The new entry will be inserted at <arg>index</arg> in the directory it is added to (always the root for Archives that don't support directories). If <arg>index</arg> is `0` or larger than the number of entries in the destination directory, the new entry will be added at the end.
 
 **Example**
 
 ```lua
 -- Create entry in the root directory of a zip, after all other entries
-newEntry = zip:CreateEntry('InRoot.txt', -1)
+newEntry = zip:CreateEntry('InRoot.txt', 0)
 
 -- Create entry in a subdirectory of a zip, before all other entries in the subdirectory
-newEntry = zip:CreateEntry('Path/To/NewEntry.txt', 0)
+newEntry = zip:CreateEntry('Path/To/NewEntry.txt', 1)
 
 -- Create entry in the middle of a wad somewhere
 newEntry = wad:CreateEntry('NEWENTRY', 12)
@@ -160,16 +153,14 @@ newEntry = wad:CreateEntry('NEWENTRY', 12)
 ---
 ### CreateEntryInNamespace
 
-```lua
-function Archive.CreateEntryInNamespace(self, name, namespace)
-```
+<fdef>function <type>Archive</type>.<func>CreateEntryInNamespace</func>(<arg>*self*</arg>, <arg>name</arg>, <arg>namespace</arg>)</fdef>
 
 Creates a new entry named <arg>name</arg> in the Archive, at the end of <arg>namespace</arg>.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>name</arg>: The name of the entry
-* <type>string</type> <arg>namespace</arg>: The namespace to add the entry to
+* <arg>name</arg> (<type>string</type>): The name of the entry
+* <arg>namespace</arg> (<type>string</type>): The namespace to add the entry to
 
 <listhead>Returns</listhead>
 
@@ -197,15 +188,13 @@ See below for a list of supported namespaces:
 ---
 ### RemoveEntry
 
-```lua
-function Archive.RemoveEntry(self, entry)
-```
+<fdef>function <type>Archive</type>.<func>RemoveEntry</func>(<arg>*self*</arg>, <arg>entry</arg>)</fdef>
 
 Removes the given <arg>entry</arg> from the archive (but does not delete it).
 
 <listhead>Parameters</listhead>
 
-* <type>[ArchiveEntry](ArchiveEntry.md)</type> <arg>entry</arg>: The entry to remove
+* <arg>entry</arg> (<type>[ArchiveEntry](ArchiveEntry.md)</type>): The entry to remove
 
 <listhead>Returns</listhead>
 
@@ -214,16 +203,14 @@ Removes the given <arg>entry</arg> from the archive (but does not delete it).
 ---
 ### RenameEntry
 
-```lua
-function Archive.RenameEntry(self, entry, name)
-```
+<fdef>function <type>Archive</type>.<func>RenameEntry</func>(<arg>*self*</arg>, <arg>entry</arg>, <arg>name</arg>)</fdef>
 
 Renames the given entry.
 
 <listhead>Parameters</listhead>
 
-* <type>[ArchiveEntry](ArchiveEntry.md)</type> <arg>entry</arg>: The entry to rename
-* <type>string</type> <arg>name</arg>: The new name for the entry
+* <arg>entry</arg> (<type>[ArchiveEntry](ArchiveEntry.md)</type>): The entry to rename
+* <arg>name</arg> (<type>string</type>): The new name for the entry
 
 <listhead>Parameters</listhead>
 
@@ -233,13 +220,11 @@ Renames the given entry.
 
 ### FindFirst
 
-```lua
-function Archive.FindFirst(self, options)
-```
+<fdef>function <type>Archive</type>.<func>FindFirst</func>(<arg>*self*</arg>, <arg>options</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-* <type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type> <arg>options</arg>: The search criteria
+* <arg>options</arg> (<type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type>): The search criteria
 
 <listhead>Returns</listhead>
 
@@ -252,13 +237,11 @@ If <prop>searchSubdirs</prop> is true in the <arg>options</arg>, subdirectories 
 ---
 ### FindLast
 
-```lua
-function Archive.FindLast(self, options)
-```
+<fdef>function <type>Archive</type>.<func>FindLast</func>(<arg>*self*</arg>, <arg>options</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-* <type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type> <arg>options</arg>: The search criteria
+* <arg>options</arg> (<type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type>): The search criteria
 
 <listhead>Returns</listhead>
 
@@ -271,13 +254,11 @@ If <prop>searchSubdirs</prop> is true in the <arg>options</arg>, subdirectories 
 ---
 ### FindAll
 
-```lua
-function Archive.FindAll(self, options)
-```
+<fdef>function <type>Archive</type>.<func>FindAll</func>(<arg>*self*</arg>, <arg>options</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-* <type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type> <arg>options</arg>: The search criteria
+* <arg>options</arg> (<type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type>): The search criteria
 
 <listhead>Returns</listhead>
 

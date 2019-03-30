@@ -256,7 +256,7 @@ void TextureXList::removePatch(std::string_view patch)
 // Reads in a doom-format TEXTUREx entry.
 // Returns true on success, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_table, bool add)
+bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table, bool add)
 {
 	// Check entries were actually given
 	if (!texturex)
@@ -486,7 +486,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 // for patch information.
 // Returns true on success, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_table)
+bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table)
 {
 	// Check entry was given
 	if (!texturex)

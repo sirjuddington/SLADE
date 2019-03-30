@@ -31,9 +31,11 @@ public:
 	};
 
 	TextureXList()  = default;
+	TextureXList(Format format) : txformat_{ format } {}
 	~TextureXList() = default;
 
-	uint32_t size() const { return textures_.size(); }
+	const vector<CTexture::UPtr>& textures() const { return textures_; }
+	uint32_t                      size() const { return textures_.size(); }
 
 	CTexture*   texture(size_t index);
 	CTexture*   texture(std::string_view name);
@@ -51,8 +53,8 @@ public:
 	void clear(bool clear_patches = false);
 	void removePatch(std::string_view patch);
 
-	bool readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_table, bool add = false);
-	bool writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_table);
+	bool readTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table, bool add = false);
+	bool writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table);
 
 	bool readTEXTURESData(ArchiveEntry* textures);
 	bool writeTEXTURESData(ArchiveEntry* textures);

@@ -1,13 +1,13 @@
 <article-head>MapObject</article-head>
 
-The **MapObject** type is a base type for all map editor objects.
+The <type>MapObject</type> type is a base type for all map editor objects.
 
 !!! note "Regarding MapObject `*Property` and `Set*Property` functions"
     MapObject properties in SLADE generally mirror the properties defined in the [UDMF](https://doomwiki.org/wiki/UDMF) specification. As an example, setting the `texturetop` string property on a <type>[MapSide](MapSide.md)</type> MapObject will set its upper texture. Note that not all basic UDMF properties are supported for non-UDMF maps.
 
 ### Derived Types
 
-The following types inherit all MapObject properties and functions:
+The following types inherit all `MapObject` properties and functions:
 
 * <type>[MapVertex](MapVertex.md)</type>
 * <type>[MapLine](MapLine.md)</type>
@@ -43,13 +43,11 @@ The following types inherit all MapObject properties and functions:
 
 ### HasProperty
 
-```lua
-function MapObject.HasProperty(self, name)
-```
+<fdef>function <type>MapObject</type>.<func>HasProperty</func>(<arg>*self*</arg>, <arg>name</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>name</arg>: The name of the property to check
+* <arg>name</arg> (<type>string</type>): The name of the property to check
 
 <listhead>Returns</listhead>
 
@@ -58,13 +56,11 @@ function MapObject.HasProperty(self, name)
 ---
 ### BoolProperty
 
-```lua
-function MapObject.BoolProperty(self, name)
-```
+<fdef>function <type>MapObject</type>.<func>BoolProperty</func>(<arg>*self*</arg>, <arg>name</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>name</arg>: The name of the property to get
+* <arg>name</arg> (<type>string</type>): The name of the property to get
 
 <listhead>Returns</listhead>
 
@@ -77,13 +73,11 @@ If the property doesn't exist in the object, the game configuration is checked f
 ---
 ### IntProperty
 
-```lua
-function MapObject.IntProperty(self, name)
-```
+<fdef>function <type>MapObject</type>.<func>IntProperty</func>(<arg>*self*</arg>, <arg>name</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>name</arg>: The name of the property to get
+* <arg>name</arg> (<type>string</type>): The name of the property to get
 
 <listhead>Returns</listhead>
 
@@ -96,13 +90,11 @@ If the property doesn't exist in the object, the game configuration is checked f
 ---
 ### FloatProperty
 
-```lua
-function MapObject.FloatProperty(self, name)
-```
+<fdef>function <type>MapObject</type>.<func>FloatProperty</func>(<arg>*self*</arg>, <arg>name</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>name</arg>: The name of the property to get
+* <arg>name</arg> (<type>string</type>): The name of the property to get
 
 <listhead>Returns</listhead>
 
@@ -115,13 +107,11 @@ If the property doesn't exist in the object, the game configuration is checked f
 ---
 ### StringProperty
 
-```lua
-function MapObject.StringProperty(self, name)
-```
+<fdef>function <type>MapObject</type>.<func>StringProperty</func>(<arg>*self*</arg>, <arg>name</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>name</arg>: The name of the property to get
+* <arg>name</arg> (<type>string</type>): The name of the property to get
 
 <listhead>Returns</listhead>
 
@@ -132,18 +122,16 @@ function MapObject.StringProperty(self, name)
 If the property doesn't exist in the object, the game configuration is checked for a default value.
 
 ---
-### SetBoolProperty (<arg>name</arg>, <arg>value</arg>)
+### SetBoolProperty
 
-```lua
-function MapObject.SetBoolProperty(self, name, value)
-```
+<fdef>function <type>MapObject</type>.<func>SetBoolProperty</func>(<arg>*self*</arg>, <arg>name</arg>, <arg>value</arg>)</fdef>
 
 Sets the property <arg>name</arg> to <arg>value</arg>.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>name</arg>: The name of the property to set
-* <type>boolean</type> <arg>value</arg>: The value to apply
+* <arg>name</arg> (<type>string</type>): The name of the property to set
+* <arg>value</arg> (<type>boolean</type>): The value to apply
 
 **Notes**
 
@@ -152,16 +140,14 @@ The property is created if it doesn't already exist.
 ---
 ### SetIntProperty
 
-```lua
-function MapObject.SetIntProperty(self, name, value)
-```
+<fdef>function <type>MapObject</type>.<func>SetIntProperty</func>(<arg>*self*</arg>, <arg>name</arg>, <arg>value</arg>)</fdef>
 
 Sets the property <arg>name</arg> to <arg>value</arg>.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>name</arg>: The name of the property to set
-* <type>number</type> <arg>value</arg>: The value to apply
+* <arg>name</arg> (<type>string</type>): The name of the property to set
+* <arg>value</arg> (<type>number</type>): The value to apply
 
 **Notes**
 
@@ -170,16 +156,14 @@ The property is created if it doesn't already exist.
 ---
 ### SetFloatProperty
 
-```lua
-function MapObject.SetFloatProperty(self, name, value)
-```
+<fdef>function <type>MapObject</type>.<func>SetFloatProperty</func>(<arg>*self*</arg>, <arg>name</arg>, <arg>value</arg>)</fdef>
 
 Sets the property <arg>name</arg> to <arg>value</arg>.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>name</arg>: The name of the property to set
-* <type>number</type> <arg>value</arg>: The value to apply
+* <arg>name</arg> (<type>string</type>): The name of the property to set
+* <arg>value</arg> (<type>number</type>): The value to apply
 
 **Notes**
 
@@ -188,16 +172,14 @@ The property is created if it doesn't already exist.
 ---
 ### SetStringProperty
 
-```lua
-function MapObject.SetStringProperty(self, name, value)
-```
+<fdef>function <type>MapObject</type>.<func>SetStringProperty</func>(<arg>*self*</arg>, <arg>name</arg>, <arg>value</arg>)</fdef>
 
 Sets the property <arg>name</arg> to <arg>value</arg>.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>name</arg>: The name of the property to set
-* <type>string</type> <arg>value</arg>: The value to apply
+* <arg>name</arg> (<type>string</type>): The name of the property to set
+* <arg>value</arg> (<type>string</type>): The value to apply
 
 **Notes**
 

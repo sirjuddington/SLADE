@@ -571,7 +571,7 @@ void TranslationEditorDialog::setStartColour(ColRGBA col)
 		float sb = MathStuff::clamp(col.b / 127.0f, 0, 2);
 
 		// Set destination start colour
-		tdr->setDStart(sr, sg, sb);
+		tdr->setRGBStart(sr, sg, sb);
 	}
 
 	// Set gradient box end colour
@@ -611,7 +611,7 @@ void TranslationEditorDialog::setEndColour(ColRGBA col)
 		float eb = MathStuff::clamp(col.b / 127.0f, 0, 2);
 
 		// Set destination end colour
-		tdr->setDEnd(er, eg, eb);
+		tdr->setRGBEnd(er, eg, eb);
 	}
 
 	// Set gradient box end colour
@@ -945,11 +945,11 @@ void TranslationEditorDialog::onRBDesaturateSelected(wxCommandEvent& e)
 		// Target colour gradient
 		auto sc = cb_range_begin_->colour();
 		auto ec = cb_range_end_->colour();
-		tr->setDStart(
+		tr->setRGBStart(
 			MathStuff::clamp((double)sc.r / 127.0f, 0, 2),
 			MathStuff::clamp((double)sc.g / 127.0f, 0, 2),
 			MathStuff::clamp((double)sc.b / 127.0f, 0, 2));
-		tr->setDEnd(
+		tr->setRGBEnd(
 			MathStuff::clamp((double)ec.r / 127.0f, 0, 2),
 			MathStuff::clamp((double)ec.g / 127.0f, 0, 2),
 			MathStuff::clamp((double)ec.b / 127.0f, 0, 2));

@@ -2,6 +2,8 @@
 
 #include "thirdparty/sol/forward.hpp"
 
+class Archive;
+class ArchiveEntry;
 class SLADEMap;
 class wxWindow;
 

@@ -6,30 +6,26 @@ The `Archives` scripting namespace contains functions for managing archives.
 
 ### All
 
-```lua
-function Archives.All()
-```
+<fdef>function Archives.<func>All</func>()</fdef>
 
 <listhead>Returns</listhead>
 
-* <type>[Archive](../Types/Archive.md)\[\]</type>: An array of all currently open archives
+* <type>[Archive](../Types/Archive/Archive.md)\[\]</type>: An array of all currently open archives
 
 ---
 ### Create
 
-```lua
-function Archives.Create(formatId)
-```
+<fdef>function Archives.<func>Create</func>(<arg>formatId</arg>)</fdef>
 
 Creates a new archive of the format specified in <arg>formatId</arg>.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>formatId</arg>: The <type>[ArchiveFormat](../Types/ArchiveFormat.md)</type> id to create
+* <arg>formatId</arg> (<type>string</type>): The <type>[ArchiveFormat](../Types/Archive/ArchiveFormat.md)</type> id to create
 
 <listhead>Returns</listhead>
 
-* <type>[Archive](../Types/Archive.md)</type>: The created archive, or `nil` if creation failed
+* <type>[Archive](../Types/Archive/Archive.md)</type>: The created archive, or `nil` if creation failed
 * <type>string</type>: An error message if creation failed
 
 **Notes**
@@ -48,33 +44,29 @@ end
 ---
 ### OpenFile
 
-```lua
-function Archives.OpenFile(path)
-```
+<fdef>function Archives.<func>OpenFile</func>(<arg>path</arg>)</fdef>
 
 Attempts to open the archive file at <arg>path</arg> on disk.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>path</arg>: The full path (on disk) of the archive file to open
+* <arg>path</arg> (<type>string</type>): The full path (on disk) of the archive file to open
 
 <listhead>Returns</listhead>
 
-* <type>[Archive](../Types/Archive.md)</type>: The opened archive, or `nil` if opening failed
+* <type>[Archive](../Types/Archive/Archive.md)</type>: The opened archive, or `nil` if opening failed
 * <type>string</type>: An error message if opening failed
 
 ---
 ### Close <sup>(1)</sup>
 
-```lua
-function Archives.Close(archive)
-```
+<fdef>function Archives.<func>Close</func>(<arg>archive</arg>)</fdef>
 
 Closes the given <arg>archive</arg>.
 
 <listhead>Parameters</listhead>
 
-* <type>[Archive](../Types/Archive.md)</type> <arg>archive</arg>: The archive to close
+* <arg>archive</arg> (<type>[Archive](../Types/Archive/Archive.md)</type>): The archive to close
 
 <listhead>Returns</listhead>
 
@@ -88,15 +80,13 @@ Closes the given <arg>archive</arg>.
 ---
 ### Close <sup>(2)</sup>
 
-```lua
-function Archives.Close(index)
-```
+<fdef>function Archives.<func>Close</func>(<arg>index</arg>)</fdef>
 
 Closes the archive at <arg>index</arg> in the list of currently open archives (see <code>[All](#All)</code>).
 
 <listhead>Parameters</listhead>
 
-* <type>number</type> <arg>index</arg>: The index of the archive to close
+* <arg>index</arg> (<type>number</type>): The index of the archive to close
 
 <listhead>Returns</listhead>
 
@@ -105,9 +95,7 @@ Closes the archive at <arg>index</arg> in the list of currently open archives (s
 ---
 ### CloseAll
 
-```lua
-function Archives.CloseAll()
-```
+<fdef>function Archives.<func>CloseAll</func>()</fdef>
 
 Closes all currently open archives.
 
@@ -115,20 +103,16 @@ Closes all currently open archives.
 
 ### BaseResource
 
-```lua
-function Archives.BaseResource()
-```
+<fdef>function Archives.<func>BaseResource</func>()</fdef>
 
 <listhead>Returns</listhead>
 
-* <type>[Archive](../Types/Archive.md)</type>: The currently loaded base resource archive
+* <type>[Archive](../Types/Archive/Archive.md)</type>: The currently loaded base resource archive
 
 ---
 ### BaseResourcePaths
 
-```lua
-function Archives.BaseResourcePaths()
-```
+<fdef>function Archives.<func>BaseResourcePaths</func>()</fdef>
 
 <listhead>Returns</listhead>
 
@@ -141,15 +125,13 @@ This is the list of base resource archive paths as seen in the base resource con
 ---
 ### OpenBaseResource
 
-```lua
-function Archives.OpenBaseResource(index)
-```
+<fdef>function Archives.<func>OpenBaseResource</func>(<rg>a)</fde>
 
 Opens the base resource archive at <arg>index</arg> in the list of base resource archive file paths (see <code>[BaseResourcePaths](#baseresourcepaths)</code>).
 
 <listhead>Parameters</listhead>
 
-* <type>number</type> <arg>index</arg>: The base resource path index to open
+* <arg>index</arg> (<type>number</type>): The base resource path index to open
 
 <listhead>Returns</listhead>
 
@@ -158,51 +140,43 @@ Opens the base resource archive at <arg>index</arg> in the list of base resource
 ---
 ### ProgramResource
 
-```lua
-function Archives.ProgramResource()
-```
+<fdef>function Archives.<func>ProgramResource</func>()</fdef>
 
 <listhead>Returns</listhead>
 
-* <type>[Archive](../Types/Archive.md)</type>: the program resource archive (either `slade.pk3` or the `res` folder if you are running a dev build)
+* <type>[Archive](../Types/Archive/Archive.md)</type>: the program resource archive (either `slade.pk3` or the `res` folder if you are running a dev build)
 
 ## Functions - Bookmarks
 
 ### Bookmarks
 
-```lua
-function Archives.Bookmarks()
-```
+<fdef>function Archives.<func>Bookmarks</func>()</fdef>
 
 <listhead>Returns</listhead>
 
-* <type>[ArchiveEntry](../Types/ArchiveEntry.md)`[`]</type>: An array of all currently bookmarked entries
+* <type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)`[`]</type>: An array of all currently bookmarked entries
 
 ---
 ### AddBookmark
 
-```lua
-function Archives.AddBookmark(entry)
-```
+<fdef>function Archives.<func>AddBookmark</func>(<arg>entry</arg>)</fdef>
 
 Adds <arg>entry</arg> as a bookmark.
 
 <listhead>Parameters</listhead>
 
-* <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type> <arg>entry</arg>: The entry to bookmark
+* <arg>entry</arg> (<type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)</type>): The entry to bookmark
 
 ---
 ### RemoveBookmark
 
-```lua
-function Archives.RemoveBookmark(entry)
-```
+<fdef>function Archives.<func>RemoveBookmark</func>(<arg>entry</arg>)</fdef>
 
 Removes <arg>entry</arg> from the bookmarked entries list.
 
 <listhead>Parameters</listhead>
 
-* <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type> <arg>entry</arg>: The entry to un-bookmark
+* <arg>entry</arg> (<type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)</type>): The entry to un-bookmark
 
 <listhead>Returns</listhead>
 
@@ -212,9 +186,7 @@ Removes <arg>entry</arg> from the bookmarked entries list.
 
 ### FileExtensionsString
 
-```lua
-function Archives.FileExtensionsString()
-```
+<fdef>function Archives.<func>FileExtensionsString</func>()</fdef>
 
 <listhead>Returns</listhead>
 
@@ -227,9 +199,7 @@ See <code>[App.BrowseFile](App.md#browsefile)</code> and the [Open Archive](../E
 ---
 ### RecentFiles
 
-```lua
-function Archives.RecentFiles()
-```
+<fdef>function Archives.<func>RecentFiles</func>()</fdef>
 
 <listhead>Returns</listhead>
 
@@ -238,17 +208,15 @@ function Archives.RecentFiles()
 ---
 ### EntryType
 
-```lua
-function Archives.EntryType(type)
-```
+<fdef>function Archives.<func>EntryType</func>(<arg>type</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>id</arg>: The id of the <type>[EntryType](../Types/EntryType.md)</type> to get
+* <arg>id</arg> (<type>string</type>): The id of the <type>[EntryType](../Types/Archive/EntryType.md)</type> to get
 
 <listhead>Returns</listhead>
 
-* <type>[EntryType](../Types/EntryType.md)</type>: The entry type with the given <arg>id</arg>, or `nil` if no type has that id
+* <type>[EntryType](../Types/Archive/EntryType.md)</type>: The entry type with the given <arg>id</arg>, or `nil` if no type has that id
 
 **Example**
 

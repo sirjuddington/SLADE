@@ -1,3 +1,5 @@
+<article-head>MapSide</article-head>
+
 Represents a map sidedef.
 
 ### Inherits <type>[MapObject](MapObject.md)</type>  

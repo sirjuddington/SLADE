@@ -1,9 +1,6 @@
 .codehilite pre {
-	font-family: 'Fira Mono', 'Consolas', monospace !important;
 	background: none repeat scroll 0 0 rgb(37, 37, 37) !important;
-	border: 1px solid hsl(220, 20%, 34%);
-	line-height: 1.5em !important;
-	font-size: 0.8em;
+	border: 1px solid hsl(220, 15%, 32%);
 }
 
 .codehilite pre .n,
@@ -23,7 +20,7 @@
 
 .codehilite pre .nf,
 .codehilite pre .nb {
-	color: rgb(239, 222, 154);
+	color: hsl(48, 73%, 77%);
 }
 
 .codehilite pre .o,

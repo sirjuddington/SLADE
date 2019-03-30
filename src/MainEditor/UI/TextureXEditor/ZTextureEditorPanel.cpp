@@ -456,17 +456,17 @@ void ZTextureEditorPanel::updatePatchControls()
 			// Update patch colour controls
 			switch (patch->blendType())
 			{
-			case 1:
+			case CTPatchEx::BlendType::Translation:
 				rb_pc_translation_->SetValue(true);
 				enableTranslationControls(true);
 				enableBlendControls(false);
 				break;
-			case 2:
+			case CTPatchEx::BlendType::Blend:
 				rb_pc_blend_->SetValue(true);
 				enableBlendControls(true);
 				enableTranslationControls(false);
 				break;
-			case 3:
+			case CTPatchEx::BlendType::Tint:
 				rb_pc_tint_->SetValue(true);
 				enableBlendControls(true, true);
 				enableTranslationControls(false);
@@ -731,7 +731,7 @@ void ZTextureEditorPanel::onPatchFlipXChanged(wxCommandEvent& e)
 	{
 		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->flipX(cb_flipx_->GetValue());
+			patch->setFlipX(cb_flipx_->GetValue());
 	}
 
 	// Update UI
@@ -754,7 +754,7 @@ void ZTextureEditorPanel::onPatchFlipYChanged(wxCommandEvent& e)
 	{
 		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->flipY(cb_flipy_->GetValue());
+			patch->setFlipY(cb_flipy_->GetValue());
 	}
 
 	// Update UI
@@ -777,7 +777,7 @@ void ZTextureEditorPanel::onPatchUseOfsChanged(wxCommandEvent& e)
 	{
 		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->useOffsets(cb_useofs_->GetValue());
+			patch->setUseOffsets(cb_useofs_->GetValue());
 	}
 
 	// Update UI
@@ -879,7 +879,7 @@ void ZTextureEditorPanel::onPCNormalSelected(wxCommandEvent& e)
 	{
 		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->setBlendType(0);
+			patch->setBlendType(CTPatchEx::BlendType::None);
 	}
 
 	// Update UI
@@ -904,7 +904,7 @@ void ZTextureEditorPanel::onPCBlendSelected(wxCommandEvent& e)
 	{
 		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->setBlendType(2);
+			patch->setBlendType(CTPatchEx::BlendType::Blend);
 	}
 
 	// Update UI
@@ -929,7 +929,7 @@ void ZTextureEditorPanel::onPCTintSelected(wxCommandEvent& e)
 	{
 		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->setBlendType(3);
+			patch->setBlendType(CTPatchEx::BlendType::Tint);
 	}
 
 	// Update UI
@@ -954,7 +954,7 @@ void ZTextureEditorPanel::onPCTranslationSelected(wxCommandEvent& e)
 	{
 		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->setBlendType(1);
+			patch->setBlendType(CTPatchEx::BlendType::Translation);
 	}
 
 	// Update UI

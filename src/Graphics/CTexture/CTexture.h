@@ -44,6 +44,14 @@ public:
 		Graphic
 	};
 
+	enum class BlendType
+	{
+		None = 0,
+		Translation,
+		Blend,
+		Tint
+	};
+
 	CTPatchEx() = default;
 	CTPatchEx(std::string_view name, int16_t offset_x = 0, int16_t offset_y = 0, Type type = Type::Patch);
 	CTPatchEx(const CTPatch& copy) : CTPatch{ copy } {}
@@ -57,17 +65,17 @@ public:
 	ColRGBA      colour() const { return colour_; }
 	float        alpha() const { return alpha_; }
 	std::string  style() const { return style_; }
-	uint8_t      blendType() const { return blendtype_; }
+	BlendType    blendType() const { return blendtype_; }
 	Translation& translation() { return translation_; }
 
-	void flipX(bool flip) { flip_x_ = flip; }
-	void flipY(bool flip) { flip_y_ = flip; }
-	void useOffsets(bool use) { use_offsets_ = use; }
+	void setFlipX(bool flip) { flip_x_ = flip; }
+	void setFlipY(bool flip) { flip_y_ = flip; }
+	void setUseOffsets(bool use) { use_offsets_ = use; }
 	void setRotation(int16_t rot) { rotation_ = rot; }
 	void setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { colour_.set(r, g, b, a); }
 	void setAlpha(float a) { alpha_ = a; }
 	void setStyle(std::string_view style) { style_ = style; }
-	void setBlendType(uint8_t type) { blendtype_ = type; }
+	void setBlendType(BlendType type) { blendtype_ = type; }
 
 	ArchiveEntry* patchEntry(Archive* parent = nullptr) override;
 
@@ -84,7 +92,7 @@ private:
 	ColRGBA     colour_;
 	float       alpha_     = 1.f;
 	std::string style_     = "Copy";
-	uint8_t     blendtype_ = 0; // 0=none, 1=translation, 2=blend, 3=tint
+	BlendType   blendtype_ = BlendType::None; // 0=none, 1=translation, 2=blend, 3=tint
 };
 
 class TextureXList;
@@ -111,6 +119,8 @@ public:
 	~CTexture() = default;
 
 	void copyTexture(const CTexture& tex, bool keep_type = false);
+
+	const vector<CTPatch::UPtr>& patches() const { return patches_; }
 
 	const std::string& name() const { return name_; }
 	Vec2<uint16_t>     size() const { return size_; }

@@ -13,11 +13,13 @@ theme: windmill
 extra_css:
 - 'css/windmill-slade.css'
 - 'css/codehilite-slade-dark.css'
+- 'css/windmill-slade-dark.css'
 
 # Extensions
 markdown_extensions:
   - admonition
-  - codehilite
+  - codehilite:
+      linenums: false
 
 # Documentation Pages
 nav:
@@ -34,23 +36,40 @@ nav:
   - UI: 'md/Namespaces/UI.md'
 - Types:
   - Archive:
-    - Archive: 'md/Types/Archive.md'
-    - ArchiveDir: 'md/Types/ArchiveDir.md'
-    - ArchiveEntry: 'md/Types/ArchiveEntry.md'
-    - ArchiveFormat: 'md/Types/ArchiveFormat.md'
-    - ArchiveSearchOptions: 'md/Types/ArchiveSearchOptions.md'
-    - EntryType: 'md/Types/EntryType.md'
+    - Archive: 'md/Types/Archive/Archive.md'
+    - ArchiveDir: 'md/Types/Archive/ArchiveDir.md'
+    - ArchiveEntry: 'md/Types/Archive/ArchiveEntry.md'
+    - ArchiveFormat: 'md/Types/Archive/ArchiveFormat.md'
+    - ArchiveSearchOptions: 'md/Types/Archive/ArchiveSearchOptions.md'
+    - EntryType: 'md/Types/Archive/EntryType.md'
+  - Colour Translation:
+    - Translation: 'md/Types/Translation/Translation.md'
+    - TransRange: 'md/Types/Translation/TransRange.md'
+    - TransRangePalette: 'md/Types/Translation/TransRangePalette.md'
+    - TransRangeColour: 'md/Types/Translation/TransRangeColour.md'
+    - TransRangeDesat: 'md/Types/Translation/TransRangeDesat.md'
+    - TransRangeBlend: 'md/Types/Translation/TransRangeBlend.md'
+    - TransRangeTint: 'md/Types/Translation/TransRangeTint.md'
+    - TransRangeSpecial: 'md/Types/Translation/TransRangeSpecial.md'
+  - Composite Textures:
+    - CTexture: 'md/Types/CTexture/CTexture.md'
+    - CTPatch: 'md/Types/CTexture/CTPatch.md'
+    - CTPatchEx: 'md/Types/CTexture/CTPatchEx.md'
+    - PatchTable: 'md/Types/CTexture/PatchTable.md'
+    - TextureXList: 'md/Types/CTexture/TextureXList.md'
   - Game:
-    - ThingType: 'md/Types/ThingType.md'
+    - ThingType: 'md/Types/Game/ThingType.md'
+  - Graphics:
+    - Palette: 'md/Types/Graphics/Palette.md'
   - Map Editor:
-    - Map: 'md/Types/Map.md'
-    - MapEditor: 'md/Types/MapEditor.md'
-    - MapLine: 'md/Types/MapLine.md'
-    - MapObject: 'md/Types/MapObject.md'
-    - MapSector: 'md/Types/MapSector.md'
-    - MapSide: 'md/Types/MapSide.md'
-    - MapThing: 'md/Types/MapThing.md'
-    - MapVertex: 'md/Types/MapVertex.md'
+    - Map: 'md/Types/Map/Map.md'
+    - MapEditor: 'md/Types/Map/MapEditor.md'
+    - MapLine: 'md/Types/Map/MapLine.md'
+    - MapObject: 'md/Types/Map/MapObject.md'
+    - MapSector: 'md/Types/Map/MapSector.md'
+    - MapSide: 'md/Types/Map/MapSide.md'
+    - MapThing: 'md/Types/Map/MapThing.md'
+    - MapVertex: 'md/Types/Map/MapVertex.md'
   - General:
     - Colour: 'md/Types/Colour.md'
     - Plane: 'md/Types/Plane.md'

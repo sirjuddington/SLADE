@@ -1,3 +1,5 @@
+<article-head>Plane</article-head>
+
 A geometrical [Plane](https://en.wikipedia.org/wiki/Plane_(geometry)), represented in general form (<prop>a</prop>`x+`<prop>b</prop>`y+`<prop>c</prop>`z+`<prop>d </prop>`= 0`).
 
 ## Properties
@@ -11,20 +13,33 @@ A geometrical [Plane](https://en.wikipedia.org/wiki/Plane_(geometry)), represent
 
 ## Constructors
 
-`new` `(` `)`  
+<fdef>function <type>Plane</type>.<func>new</func>()</fdef>
+
 Creates a new plane with all components set to `0`.
 
-`new` `(` <type>number</type> <arg>a</arg>, <type>number</type> <arg>b</arg>, <type>number</type> <arg>c</arg>, <type>number</type> <arg>d</arg> `)`  
+---
+
+<fdef>function <type>Plane</type>.<func>new</func>(<arg>a</arg>, <arg>b</arg>, <arg>c</arg>, <arg>d</arg>)</fdef>
+
 Creates a new plane with the given <arg>a</arg>, <arg>b</arg>, <arg>c</arg> and <arg>d</arg> components.
-
-## Functions
-
-### `HeightAt`
 
 <listhead>Parameters</listhead>
 
-* <type>[Point](Point.md)</type> <arg>position</arg>: The 2D position to find the plane height at
+* <arg>a</arg> (<type>number</type>): The <prop>a</prop> component (normal X)
+* <arg>b</arg> (<type>number</type>): The <prop>b</prop> component (normal Y)
+* <arg>c</arg> (<type>number</type>): The <prop>c</prop> component (normal Z)
+* <arg>d</arg> (<type>number</type>): The <prop>d</prop> component (distance)
 
-**Returns** <type>number</type>
+## Functions
 
-Returns the height (`z`) on the plane at <arg>position</arg>
+### HeightAt
+
+<fdef>function <type>Plane</type>.<func>HeightAt</func>(<arg>*self*</arg>, <arg>position</arg>)</fdef>
+
+<listhead>Parameters</listhead>
+
+* <arg>position</arg> (<type>[Point](Point.md)</type>): The 2D position to find the plane height at
+
+<listhead>Returns</listhead>
+
+* <type>number</type>: The height (`z`) on the plane at <arg>position</arg>

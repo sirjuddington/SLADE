@@ -31,17 +31,18 @@ public:
 	PatchTable(Archive* parent = nullptr) : parent_{ parent } {}
 	~PatchTable() = default;
 
-	size_t   nPatches() const { return patches_.size(); }
-	Archive* parent() const { return parent_; }
-	void     setParent(Archive* parent) { this->parent_ = parent; }
+	size_t               nPatches() const { return patches_.size(); }
+	Archive*             parent() const { return parent_; }
+	void                 setParent(Archive* parent) { parent_ = parent; }
+	const vector<Patch>& patches() const { return patches_; }
 
 	Patch&             patch(size_t index);
 	Patch&             patch(std::string_view name);
-	const std::string& patchName(size_t index);
+	const std::string& patchName(size_t index) const;
 	ArchiveEntry*      patchEntry(size_t index);
 	ArchiveEntry*      patchEntry(std::string_view name);
-	int32_t            patchIndex(std::string_view name);
-	int32_t            patchIndex(ArchiveEntry* entry);
+	int32_t            patchIndex(std::string_view name) const;
+	int32_t            patchIndex(ArchiveEntry* entry) const;
 	bool               removePatch(unsigned index);
 	bool               replacePatch(unsigned index, std::string_view newname);
 	bool               addPatch(std::string_view name, bool allow_dup = false);

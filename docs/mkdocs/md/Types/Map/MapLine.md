@@ -1,3 +1,5 @@
+<article-head>MapLine</article-head>
+
 Represents a map linedef.
 
 ### Inherits <type>[MapObject](MapObject.md)</type>  
@@ -17,7 +19,6 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 <prop class="ro">side2</prop> | <type>[MapSide](MapSide.md)</type> | The line's second (back) side
 <prop class="ro">special</prop> | <type>number</type> | The line's action special
 <prop class="ro">length</prop> | <type>number</type> | The length of the line in map units
-<prop class="ro">visibleTextures</prop> | <type>table</type> | The textures of the line that are visible.<br/>The <type>table</type> consists of the following <type>boolean</type> values: `frontUpper`, `frontMiddle`, `frontLower`, `backUpper`, `backMiddle`, `backLower`.
 
 ## Constructors
 
@@ -26,17 +27,21 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 
 ## Functions
 
-### `Flag`
+### Flag
+
+<fdef>function <type>MapLine</type>.<func>Flag</func>(<arg>*self*</arg>, <arg>flagName</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>flagName</arg>: The name of the flag to check
+* <arg>flagName</arg> (<type>string</type>): The name of the flag to check
 
-**Returns** <type>boolean</type>
+<listhead>Returns</listhead>
 
-Returns `true` if the given flag is set.
+* <type>boolean</type>: `true` if the given flag is set
 
-If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly the same as <code>[MapObject:BoolProperty](MapObject.md#boolproperty)</code>. Otherwise, <arg>flagName</arg> needs to be one of the following:
+**Notes**
+
+If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly the same as <code>[MapObject.BoolProperty](MapObject.md#boolproperty)</code>. Otherwise, <arg>flagName</arg> needs to be one of the following:
 
 * `blocking`
 * `twosided`
@@ -44,29 +49,43 @@ If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly 
 * `dontpegbottom`
 
 ---
-### `Flip`
+### Flip
+
+<fdef>function <type>MapLine</type>.<func>Flip</func>(<arg>*self*</arg>, <arg>swapSides</arg>)</fdef>
+
+Flips the line so that it faces the opposite direction. If <arg>swapSides</arg> is `true`, <prop>side1</prop> and <prop>side2</prop> will also be swapped so that they stay on the same spatial "side" of the line.
 
 <listhead>Parameters</listhead>
 
-* `[`<type>boolean</type> <arg>swapSides</arg> : `true]`: Whether to swap the sides
+* <arg>[swapSides]</arg> (<type>boolean</type>, default `true`): Whether to swap the sides
 
-Flips the line so that it faces the opposite direction. If <arg>swapSides</arg> is `true`, the line's <type>[MapSide](MapSide.md)</type>s will also be swapped so that they stay on the same spatial "side" of the line.
+---
+### VisibleTextures
 
-## Examples
+<fdef>function <type>MapLine</type>.<func>VisibleTextures</func>(<arg>*self*</arg>)</fdef>
 
-### The <prop>visibleTextures</prop> Property
+Determines what textures (parts) of the line are showing.
 
-The <prop>visibleTextures</prop> property can be used to determine what textures (parts) of the line are showing. Below is an example that checks if a line's front upper texture is missing:
+<listhead>Returns</listhead>
+
+* <type>table</type>: A table containing the following <type>boolean</type> values:
+    * `frontUpper`
+    * `frontMiddle`
+    * `frontLower`
+    * `backUpper`
+    * `backMiddle`
+    * `backLower`
+
+**Example**
 
 ```lua
+local visible = line:VisibleTextures()
+
 -- Check if front upper texture is visible
-if line.visibleTextures.frontUpper == true then
+if visible.frontUpper == true then
     -- Check if texture is missing
     if line.side1.textureTop == '-' then
         App.LogMessage('Line front upper texture is missing')
     end
 end
 ```
-
-!!! Tip
-    The <prop>visibleTextures</prop> property is re-calculated each time it is accessed, so for performance reasons it is best to store it in a variable if it needs to be accessed multiple times.

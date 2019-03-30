@@ -151,8 +151,8 @@ public:
 	const RGB& rgbStart() const { return rgb_start_; }
 	const RGB& rgbEnd() const { return rgb_end_; }
 
-	void setDStart(float r, float g, float b) { rgb_start_ = { r, g, b }; }
-	void setDEnd(float r, float g, float b) { rgb_end_ = { r, g, b }; }
+	void setRGBStart(float r, float g, float b) { rgb_start_ = { r, g, b }; }
+	void setRGBEnd(float r, float g, float b) { rgb_end_ = { r, g, b }; }
 
 	std::string asText() override
 	{
@@ -262,8 +262,10 @@ public:
 	Translation()  = default;
 	~Translation() = default;
 
+	const vector<TransRange::UPtr>& ranges() const { return translations_; }
+
 	void        parse(std::string_view def);
-	void        parseRange(std::string_view range);
+	TransRange* parseRange(std::string_view range);
 	void        read(const uint8_t* data);
 	std::string asText();
 	void        clear();
@@ -273,15 +275,18 @@ public:
 	unsigned           nRanges() const { return translations_.size(); }
 	TransRange*        range(unsigned index);
 	const std::string& builtInName() const { return built_in_name_; }
-	void               setDesaturationAmount(uint8_t amount) { desat_amount_ = amount; }
+	uint8_t            desaturationAmount() const { return desat_amount_; }
+
+	void setBuiltInName(std::string_view name) { built_in_name_ = name; }
+	void setDesaturationAmount(uint8_t amount) { desat_amount_ = amount; }
 
 	ColRGBA translate(ColRGBA col, Palette* pal = nullptr);
-	ColRGBA specialBlend(ColRGBA col, uint8_t type, Palette* pal = nullptr) const;
 
-	void addRange(TransRange::Type type, int pos);
-	void removeRange(int pos);
-	void swapRanges(int pos1, int pos2);
+	TransRange* addRange(TransRange::Type type, int pos = -1, int range_start = 0, int range_end = 0);
+	void        removeRange(int pos);
+	void        swapRanges(int pos1, int pos2);
 
+	static ColRGBA     specialBlend(ColRGBA col, uint8_t type, Palette* pal = nullptr);
 	static std::string getPredefined(std::string_view def);
 
 private:

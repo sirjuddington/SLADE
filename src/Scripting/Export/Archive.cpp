@@ -94,13 +94,13 @@ vector<ArchiveEntry*> archiveAllEntries(Archive& self)
 }
 
 // -----------------------------------------------------------------------------
-// Creates a new entry in archive [self] at [full_path],[position].
+// Creates a new entry in archive [self] at [full_path],[position-1].
 // Returns the created entry
 // -----------------------------------------------------------------------------
 ArchiveEntry* archiveCreateEntry(Archive& self, std::string_view full_path, int position)
 {
 	auto dir = self.dir(StrUtil::beforeLast(full_path, '/'));
-	return self.addNewEntry(StrUtil::afterLast(full_path, '/'), position, dir);
+	return self.addNewEntry(StrUtil::afterLast(full_path, '/'), position - 1, dir);
 }
 
 // -----------------------------------------------------------------------------
@@ -263,7 +263,7 @@ void registerArchiveEntry(sol::state& lua)
 	lua_entry["path"]  = sol::property([](ArchiveEntry& self) { return self.path(); });
 	lua_entry["type"]  = sol::property(&ArchiveEntry::type);
 	lua_entry["size"]  = sol::property(&ArchiveEntry::size);
-	lua_entry["index"] = sol::property([](ArchiveEntry& self) { return self.parentDir()->entryIndex(&self); });
+	lua_entry["index"] = sol::property([](ArchiveEntry& self) { return self.parentDir()->entryIndex(&self) + 1; });
 	lua_entry["crc32"] = sol::property([](ArchiveEntry& self) { return Misc::crc(self.rawData(), self.size()); });
 	lua_entry["data"]  = sol::property(&entryData);
 

@@ -102,7 +102,7 @@ void Translation::parse(std::string_view def)
 {
 	// Test for ZDoom built-in translation
 	std::string def_str{ def };
-	auto test = StrUtil::lower(def);
+	auto        test = StrUtil::lower(def);
 	if (test == "inverse")
 	{
 		built_in_name_ = "Inverse";
@@ -168,7 +168,7 @@ void Translation::parse(std::string_view def)
 // -----------------------------------------------------------------------------
 // Parses a single translation range
 // -----------------------------------------------------------------------------
-void Translation::parseRange(std::string_view range)
+TransRange* Translation::parseRange(std::string_view range)
 {
 	// Open definition string for processing w/tokenizer
 	Tokenizer tz;
@@ -186,7 +186,7 @@ void Translation::parseRange(std::string_view range)
 
 	// Check for =
 	if (!tz.advIfNext('='))
-		return;
+		return nullptr;
 
 	// Check for reverse origin range
 	const bool reverse = (o_start > o_end);
@@ -200,31 +200,31 @@ void Translation::parseRange(std::string_view range)
 		// Read start colour
 		tz.next().toInt(sr);
 		if (!tz.advIfNext(','))
-			return;
+			return nullptr;
 		tz.next().toInt(sg);
 		if (!tz.advIfNext(','))
-			return;
+			return nullptr;
 		tz.next().toInt(sb);
 
 		// Syntax check
 		if (!tz.advIfNext(']'))
-			return;
+			return nullptr;
 		if (!tz.advIfNext(':'))
-			return;
+			return nullptr;
 		if (!tz.advIfNext('['))
-			return;
+			return nullptr;
 
 		// Read end colour
 		tz.next().toInt(er);
 		if (!tz.advIfNext(','))
-			return;
+			return nullptr;
 		tz.next().toInt(eg);
 		if (!tz.advIfNext(','))
-			return;
+			return nullptr;
 		tz.next().toInt(eb);
 
 		if (!tz.advIfNext(']'))
-			return;
+			return nullptr;
 
 		// Add translation
 		ColRGBA col_start{ (uint8_t)sr, (uint8_t)sg, (uint8_t)sb };
@@ -240,36 +240,36 @@ void Translation::parseRange(std::string_view range)
 		float sr, sg, sb, er, eg, eb;
 
 		if (!tz.advIfNext('['))
-			return;
+			return nullptr;
 
 		// Read start colour
 		tz.next().toFloat(sr);
 		if (!tz.advIfNext(','))
-			return;
+			return nullptr;
 		tz.next().toFloat(sg);
 		if (!tz.advIfNext(','))
-			return;
+			return nullptr;
 		tz.next().toFloat(sb);
 
 		// Syntax check
 		if (!tz.advIfNext(']'))
-			return;
+			return nullptr;
 		if (!tz.advIfNext(':'))
-			return;
+			return nullptr;
 		if (!tz.advIfNext('['))
-			return;
+			return nullptr;
 
 		// Read end colour
 		tz.next().toFloat(er);
 		if (!tz.advIfNext(','))
-			return;
+			return nullptr;
 		tz.next().toFloat(eg);
 		if (!tz.advIfNext(','))
-			return;
+			return nullptr;
 		tz.next().toFloat(eb);
 
 		if (!tz.advIfNext(']'))
-			return;
+			return nullptr;
 
 		// Add translation
 		if (reverse)
@@ -282,16 +282,16 @@ void Translation::parseRange(std::string_view range)
 		// Colourise translation
 		int r, g, b;
 		if (!tz.advIfNext('['))
-			return;
+			return nullptr;
 		tz.next().toInt(r);
 		if (!tz.advIfNext(','))
-			return;
+			return nullptr;
 		tz.next().toInt(g);
 		if (!tz.advIfNext(','))
-			return;
+			return nullptr;
 		tz.next().toInt(b);
 		if (!tz.advIfNext(']'))
-			return;
+			return nullptr;
 
 		translations_.emplace_back(new TransRangeBlend{ { o_start, o_end }, { (uint8_t)r, (uint8_t)g, (uint8_t)b } });
 	}
@@ -302,16 +302,16 @@ void Translation::parseRange(std::string_view range)
 
 		tz.next().toInt(amount);
 		if (!tz.advIfNext('['))
-			return;
+			return nullptr;
 		tz.next().toInt(r);
 		if (!tz.advIfNext(','))
-			return;
+			return nullptr;
 		tz.next().toInt(g);
 		if (!tz.advIfNext(','))
-			return;
+			return nullptr;
 		tz.next().toInt(b);
 		if (!tz.advIfNext(']'))
-			return;
+			return nullptr;
 
 		translations_.emplace_back(
 			new TransRangeTint{ { o_start, o_end }, { (uint8_t)r, (uint8_t)g, (uint8_t)b }, (uint8_t)amount });
@@ -338,6 +338,8 @@ void Translation::parseRange(std::string_view range)
 		else
 			translations_.emplace_back(new TransRangePalette{ { o_start, o_end }, { d_start, d_end } });
 	}
+
+	return translations_.back().get();
 }
 
 // -----------------------------------------------------------------------------
@@ -601,9 +603,9 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 		// Special range
 		else if (range->type() == TransRange::Type::Special)
 		{
-			auto     ts   = dynamic_cast<TransRangeSpecial*>(range.get());
+			auto        ts   = dynamic_cast<TransRangeSpecial*>(range.get());
 			const auto& spec = ts->special();
-			uint8_t  type = Invalid;
+			uint8_t     type = Invalid;
 			if (StrUtil::equalCI(spec, "ice"))
 				type = SpecialBlend::Ice;
 			else if (StrUtil::equalCI(spec, "inverse"))
@@ -630,10 +632,65 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 }
 
 // -----------------------------------------------------------------------------
+// Adds a new translation range of [type] at [pos] in the list, with the range
+// spanning from [range_start] to [range_end]
+// -----------------------------------------------------------------------------
+TransRange* Translation::addRange(TransRange::Type type, int pos, int range_start, int range_end)
+{
+	// Create range
+	TransRange::UPtr       tr;
+	TransRange::IndexRange range{ range_start, range_end };
+	switch (type)
+	{
+	case TransRange::Type::Colour: tr = std::make_unique<TransRangeColour>(range); break;
+	case TransRange::Type::Desat: tr = std::make_unique<TransRangeDesat>(range); break;
+	case TransRange::Type::Blend: tr = std::make_unique<TransRangeBlend>(range); break;
+	case TransRange::Type::Tint: tr = std::make_unique<TransRangeTint>(range); break;
+	case TransRange::Type::Special: tr = std::make_unique<TransRangeSpecial>(range); break;
+	default: tr = std::make_unique<TransRangePalette>(range, range); break;
+	}
+
+	// Add to list
+	auto ptr = tr.get();
+	if (pos < 0 || pos >= (int)translations_.size())
+		translations_.push_back(std::move(tr));
+	else
+		translations_.insert(translations_.begin() + pos, std::move(tr));
+
+	return ptr;
+}
+
+// -----------------------------------------------------------------------------
+// Removes the translation range at [pos]
+// -----------------------------------------------------------------------------
+void Translation::removeRange(int pos)
+{
+	// Check position
+	if (pos < 0 || pos >= (int)translations_.size())
+		return;
+
+	// Remove it
+	translations_.erase(translations_.begin() + pos);
+}
+
+// -----------------------------------------------------------------------------
+// Swaps the translation range at [pos1] with the one at [pos2]
+// -----------------------------------------------------------------------------
+void Translation::swapRanges(int pos1, int pos2)
+{
+	// Check positions
+	if (pos1 < 0 || pos2 < 0 || pos1 >= (int)translations_.size() || pos2 >= (int)translations_.size())
+		return;
+
+	// Swap them
+	translations_[pos1].swap(translations_[pos2]);
+}
+
+// -----------------------------------------------------------------------------
 // Apply one of the special colour blending modes from ZDoom:
 // Desaturate, Ice, Inverse, Blue, Gold, Green, Red.
 // -----------------------------------------------------------------------------
-ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal) const
+ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal)
 {
 	// Abort just in case
 	if (type == SpecialBlend::Invalid)
@@ -711,59 +768,6 @@ ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal) const
 		colour.index = pal->nearestColour(colour);
 	}
 	return colour;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a new translation range of [type] at [pos] in the list
-// -----------------------------------------------------------------------------
-void Translation::addRange(TransRange::Type type, int pos)
-{
-	// Create range
-	TransRange::UPtr       tr;
-	TransRange::IndexRange range{ 0, 0 };
-	switch (type)
-	{
-	case TransRange::Type::Colour: tr = std::make_unique<TransRangeColour>(range); break;
-	case TransRange::Type::Desat: tr = std::make_unique<TransRangeDesat>(range); break;
-	case TransRange::Type::Blend: tr = std::make_unique<TransRangeBlend>(range); break;
-	case TransRange::Type::Tint: tr = std::make_unique<TransRangeTint>(range); break;
-	case TransRange::Type::Special: tr = std::make_unique<TransRangeSpecial>(range); break;
-	default: tr = std::make_unique<TransRangePalette>(range, range); break;
-	}
-
-	// Add to list
-	if (pos < 0 || pos >= (int)translations_.size())
-		translations_.push_back(std::move(tr));
-	else
-		translations_.insert(translations_.begin() + pos, std::move(tr));
-}
-
-// -----------------------------------------------------------------------------
-// Translation::removeRange
-//
-// Removes the translation range at [pos]
-// -----------------------------------------------------------------------------
-void Translation::removeRange(int pos)
-{
-	// Check position
-	if (pos < 0 || pos >= (int)translations_.size())
-		return;
-
-	// Remove it
-	translations_.erase(translations_.begin() + pos);
-}
-
-// -----------------------------------------------------------------------------
-// Swaps the translation range at [pos1] with the one at [pos2]
-// -----------------------------------------------------------------------------
-void Translation::swapRanges(int pos1, int pos2)
-{
-	// Check positions
-	if (pos1 < 0 || pos2 < 0 || pos1 >= (int)translations_.size() || pos2 >= (int)translations_.size())
-		return;
-
-	// Swap them
-	translations_[pos1].swap(translations_[pos2]);
 }
 
 // -----------------------------------------------------------------------------

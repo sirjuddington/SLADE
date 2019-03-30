@@ -6,14 +6,12 @@ The `Game` scripting namespace contains functions related to the currently loade
 
 ### ThingType
 
-```lua
-function Game.ThingType(type)
-```
+<fdef>function Game.<func>ThingType</func>(<arg>type</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-  * <type>number</type> <arg>type</arg>: The editor number (DoomEdNum) of the type
+* <arg>type</arg> (<type>number</type>): The editor number (DoomEdNum) of the type
 
 <listhead>Returns</listhead>
 
-* <type>[ThingType](../Types/ThingType.md)</type>: Thing type info for the given editor number
+* <type>[ThingType](../Types/Game/ThingType.md)</type>: Thing type info for the given editor number

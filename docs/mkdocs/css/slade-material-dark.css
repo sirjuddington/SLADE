@@ -1,0 +1,249 @@
+
+@import url('https://fonts.googleapis.com/css?family=Fira+Sans:400,400i,500,700,700i,800');
+@import url('https://fonts.googleapis.com/css?family=Fira+Mono:500,600');
+/*@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');*/
+
+li,
+p {
+	font-size: 0.97em;
+	line-height: 1.5em;
+}
+
+body,
+.md-nav {
+	/* background-color: hsla(220, 20%, 15%, 1); */
+	background-color: hsl(220, 10%, 16%);
+}
+
+html .md-nav--primary .md-nav__title ~ .md-nav__list {
+	background: inherit;
+	/* background-color: hsla(220, 35%, 30%, 1); */
+}
+
+html .md-nav--primary .md-nav__title {
+	/* background-color: hsla(220, 35%, 40%, 1); */
+	color: hsl(220, 10%, 85%);
+}
+
+body, h1, h2, h3, h4, h5, h6 {
+	font-family: 'Fira Sans', 'Segoe UI', sans-serif;
+	color: hsl(220, 10%, 85%);
+}
+
+article a {
+    font-weight: 500;
+    font-size: 0.99em;
+}
+
+strong,
+b {
+	font-size: 0.98em;
+}
+
+
+article A:link,
+article A:visited,
+article code A:link,
+article code A:visited {
+	/* color: hsl(220, 90%, 40%); */
+	color: hsl(40, 100%, 70%);
+}
+
+article A:hover,
+article A:active,
+article code A:hover,
+article code A:active,
+.md-typeset a:active,
+.md-typeset a:hover {
+	color: hsl(40, 100%, 95%);
+}
+
+.md-nav__link[data-md-state="blur"] {
+	color: hsla(220, 25%, 40%, 1);
+}
+
+.md-header {
+	background-color: hsla(220, 35%, 40%, 1);
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h3 code,
+.md-typeset h4,
+.md-typeset h5 {
+	color: hsl(220, 48%, 73%) !important;
+	font-weight: 600 !important;
+}
+
+.md-typeset h2,
+.md-typeset h1 {
+	border-bottom: 0.1em solid hsl(220, 15%, 30%);
+    padding-bottom: 0.2em;
+}
+
+.md-typeset hr {
+	border-top: 0.1em solid hsl(220, 15%, 30%);
+	border-bottom: none;
+}
+
+type,
+arg,
+prop,
+prop.ro,
+prop.rw,
+code,
+function,
+.admonition code,
+.md-typeset code {
+    font-family: 'Fira Mono', 'Consolas', monospace !important;
+    font-size: 0.9em;
+    background-color: inherit;
+    box-shadow: none;
+}
+
+code,
+.md-typeset code,
+.admonition code {
+	color: hsl(220, 68%, 83%);
+	border: none;
+	background-color: inherit;
+	padding: 0;
+	margin: 0;
+}
+
+code a {
+	font-weight: 600;
+}
+
+type,
+type a {
+	/*color: hsl(40, 98%, 33%) !important;*/
+	color: hsl(80, 48%, 63%) !important;
+}
+
+type a {
+	font-weight: 500;
+	text-decoration: underline;
+}
+
+type a:hover {
+	/*color: hsl(40, 100%, 45%) !important;*/
+	color: hsl(80, 58%, 83%) !important;
+}
+
+arg,
+prop,
+prop.ro,
+prop.rw {
+	font-weight: 600;
+	color: hsl(270, 58%, 63%);
+}
+
+prop,
+prop.ro,
+prop.rw {
+	color: hsl(170, 68%, 43%);
+}
+
+prop.ro::before {
+	content: "\25CB";
+	color: hsl(10, 88%, 53%);
+	margin-right: 0.4em;
+	font-size: 1.1em;
+}
+
+prop.rw::before {
+	content: "\25CF";
+	color: hsl(140, 68%, 33%);
+	margin-right: 0.4em;
+	font-size: 1.1em;
+}
+
+pre code,
+.codehilite pre {
+	font-family: 'Fira Mono', 'Consolas', monospace !important;
+	background: none repeat scroll 0 0 rgb(37, 37, 37) !important;
+	border: 1px solid hsl(220, 20%, 34%);
+	line-height: 1.5em !important;
+	font-size: 0.8em;
+}
+
+.codehilite pre .n,
+.codehilite pre .p {
+	color: rgb(215, 215, 215);
+}
+
+.codehilite pre .kr,
+.codehilite pre .kd {
+	color: rgb(94, 142, 232);
+}
+
+.codehilite pre .c1 {
+	color: rgb(102, 124, 97);
+	font-style: italic;
+}
+
+.codehilite pre .nf,
+.codehilite pre .nb {
+	color: rgb(239, 222, 154);
+}
+
+.codehilite pre .o {
+	color: rgb(175, 205, 198);
+}
+
+.codehilite pre .mi {
+	color: rgb(188, 174, 225);
+}
+
+.codehilite pre .s1,
+.codehilite pre .se {
+	color: rgb(216, 101, 84);
+}
+
+.codehilite pre .kc {
+	color: rgb(188, 117, 198);
+}
+
+table thead {
+	background-color: hsla(220, 35%, 40%, 1);
+	color: hsl(222, 100%, 98%);
+	border-color: #64789F;
+	font-size: 1.1em;
+}
+
+table tbody {
+	background-color: hsla(220, 70%, 100%, 5%);
+}
+
+.md-typeset th {
+	background-color: inherit !important;
+	font-weight: 600;
+}
+
+.md-typeset table:not([class]) td {
+	padding: 1.0rem 1.6rem;
+}
+
+.md-typeset table:not([class]) {
+	font-size: 0.9em;
+}
+
+params,
+listhead {
+	font-weight: 700;
+	font-size: 0.98em;
+	display: block;
+	margin-bottom: -0.9em;
+}
+
+.admonition {
+	font-size: 0.97em;
+}
+
+.md-typeset blockquote {
+	padding-left: 1.2rem;
+	border-left: .4rem solid hsla(220, 35%, 40%, 1);
+	color: hsl(220, 10%, 75%);
+}

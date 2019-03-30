@@ -6,15 +6,13 @@ The `App` scripting namespace contains a set of functions for general interactio
 
 ### LogMessage
 
-```lua
-function App.LogMessage(message)
-```
+<fdef>function App.<func>LogMessage</func>(<arg>message</arg>)</fdef>
 
 Writes a message to the SLADE log.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>message</arg>: The message to print to the log
+* <arg>message</arg> (<type>string</type>): The message to print to the log
 
 **Example**
 
@@ -25,69 +23,57 @@ App.LogMessage('This is a log message')
 ---
 ### CurrentArchive
 
-```lua
-function App.CurrentArchive()
-```
+<fdef>function App.<func>CurrentArchive</func>()</fdef>
 
 <listhead>Returns</listhead>
 
-* <type>[Archive](../Types/Archive.md)</type>: The archive for the currently open tab in the main SLADE window
+* <type>[Archive](../Types/Archive/Archive.md)</type>: The archive for the currently open tab in the main SLADE window
 
 ---
 ### CurrentEntry
 
-```lua
-function App.CurrentEntry()
-```
+<fdef>function App.<func>CurrentEntry</func>()</fdef>
 
 <listhead>Returns</listhead>
 
-* <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type>: The currently open entry in the main SLADE window
+* <type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)</type>: The currently open entry in the main SLADE window
 
 ---
 ### CurrentEntrySelection
 
-```lua
-function App.CurrentEntrySelection()
-```
+<fdef>function App.<func>CurrentEntrySelection</func>()</fdef>
 
 <listhead>Returns</listhead>
 
-* <type>[ArchiveEntry](../Types/ArchiveEntry.md)\[\]</type>: An array of the currently selected entries in the main SLADE window
+* <type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)\[\]</type>: An array of the currently selected entries in the main SLADE window
 
 ---
 ### ShowArchive
 
-```lua
-function App.ShowArchive(archive)
-```
+<fdef>function App.<func>ShowArchive</func>(<arg>archive</arg>)</fdef>
 
 Shows the tab for the given <arg>archive</arg> in the main SLADE window.
 
 <listhead>Parameters</listhead>
 
-  * <type>[Archive](../Types/Archive.md)</type> <arg>archive</arg>: The archive to show
+  * <arg>archive</arg> (<type>[Archive](../Types/Archive/Archive.md)</type>): The archive to show
 
 ---
 ### ShowEntry
 
-```lua
-function App.ShowEntry(entry)
-```
+<fdef>function App.<func>ShowEntry</func>(<arg>entry</arg>)</fdef>
 
 Shows the given <arg>entry</arg> in a tab in the main SLADE window.
 
 <listhead>Parameters</listhead>
 
-  * <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type> <arg>entry</arg>: The entry to show
+  * <arg>entry</arg> (<type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)</type>): The entry to show
 
 ---
 ### MapEditor
 
-```lua
-function App.MapEditor()
-```
+<fdef>function App.<func>MapEditor</func>()</fdef>
 
 <listhead>Returns</listhead>
 
-* <type>[MapEditor](../Types/MapEditor.md)</type>: The currently open map editor
+* <type>[MapEditor](../Types/Map/MapEditor.md)</type>: The currently open map editor

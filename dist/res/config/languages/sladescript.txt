@@ -13,8 +13,11 @@ sladescript : lua
 	types =
 	{
 		Archive, ArchiveDir, ArchiveEntry, ArchiveFormat, ArchiveSearchOptions, EntryType,
+		CTexture, CTPatch, CTPatchEx, PatchTable, TextureXList,
 		ThingType,
+		Palette,
 		Map, MapEditor, MapLine, MapObject, MapSector, MapSide, MapThing, MapVertex,
+		Translation, TransRange, TransRangeBlend, TransRangeColour, TransRangeDesat, TransRangePalette, TransRangeSpecial, TransRangeTint,
 		Colour, Plane, Point
 	}
 
@@ -72,6 +75,9 @@ sladescript : lua
 		boolean			Archive.RemoveEntry = "ArchiveEntry entry";
 		boolean			Archive.RenameEntry = "ArchiveEntry entry, string name";
 		boolean			Archive.Save = "[string path]";
+		ArchiveEntry	Archive.FindFirst = "ArchiveSearchOptions options";
+		ArchiveEntry	Archive.FindLast = "ArchiveSearchOptions options";
+		ArchiveEntry[]	Archive.FindAll = "ArchiveSearchOptions options";
 
 		// ArchiveEntry type
 		string	ArchiveEntry.FormattedName = "[boolean include_path], [boolean include_extension], [boolean upper_case]";
@@ -114,5 +120,103 @@ sladescript : lua
 		
 		// Plane type
 		number	Plane.HeightAt = "Point position";
+
+		// CTexture type
+		string	CTexture.AsText;
+				CTexture.Clear;
+				CTexture.ConvertExtended;
+				CTexture.ConvertRegular;
+				CTexture.CopyTexture = "CTexture other, [boolean keepFormat]";
+				CTexture.AddPatch = "string patch, [number x], [number y], [number index]";
+				CTexture.DuplicatePatch = "number index, [number offsetX], [number offsetY]";
+		boolean	CTexture.RemovePatch = "number index";
+		boolean CTexture.ReplacePatch = "number index, string newPatch";
+		boolean CTexture.SwapPatches = "number index1, number index2";
+
+		// CTPatch type
+		ArchiveEntry	CTPatch.PatchEntry = "Archive parent";
+		CTPatchEx		CTPatch.AsExtended;
+
+		// CTPatchEx type
+		string	CTPatchEx.AsText;
+
+		// PatchTable type
+		string			PatchTable.Patch = "number index";
+		ArchiveEntry	PatchTable.PatchEntry = "number index", "string name";
+		boolean			PatchTable.RemovePatch = "number index";
+		boolean			PatchTable.ReplacePatch = "number index, string name";
+		boolean			PatchTable.AddPatch = "string name, boolean allowDuplicate";
+		boolean			PatchTable.LoadPNAMES = "ArchiveEntry pnames";
+		boolean			PatchTable.WritePNAMES = "ArchiveEntry pnames";
+
+		// TextureXList type
+		CTexture	TextureXList.Texture = "string name";
+		number		TextureXList.TextureIndex = "string name";
+		boolean		TextureXList.ConvertToTEXTURES;
+		boolean		TextureXList.FindErrors;
+		CTexture	TextureXList.AddTexture = "string name, [boolean extended], [number index]";
+					TextureXList.RemoveTexture = "number index";
+					TextureXList.SwapTextures = "number index1, number index2";
+					TextureXList.Clear;
+					TextureXList.RemovePatch = "string patch";
+		boolean		TextureXList.ReadTEXTUREXData = "ArchiveEntry entry, PatchTable patchTable, boolean additive";
+		boolean		TextureXList.WriteTEXTUREXData = "ArchiveEntry entry, PatchTable patchTable";
+		boolean		TextureXList.ReadTEXTURESData = "ArchiveEntry entry";
+		boolean		TextureXList.WriteTEXTURESData = "ArchiveEntry entry";
+
+		// Palette type
+		Colour	Palette.Colour = "number index";
+				Palette.CopyColours = "Palette other";
+		number	Palette.CountUniqueColours;
+		number	Palette.FindColour = "Colour colour";
+		number	Palette.NearestColour = "Colour colour, number matchMode";
+		boolean	Palette.LoadData = "string data, [number format]";
+		boolean Palette.LoadFile = "string path, [number format]";
+		boolean Palette.SaveFile = "string path, [number format]";
+				Palette.SetColour = "number index, Colour colour";
+				Palette.SetColourR = "number index, number r";
+				Palette.SetColourG = "number index, number g";
+				Palette.SetColourB = "number index, number b";
+				Palette.SetColourA = "number index, number a";
+				Palette.ApplyTranslation = "Translation translation";
+				Palette.Colourise = "Colour colour, number firstIndex, number lastIndex";
+				Palette.Tint = "Colour colour, number amount, number firstIndex, number lastIndex";
+				Palette.Saturate = "number amount, number firstIndex, number lastIndex";
+				Palette.Illuminate = "number amount, number firstIndex, number lastIndex";
+				Palette.Shift = "number amount, number firstIndex, number lastIndex";
+				Palette.Invert = "number firstIndex, number lastIndex";
+				Palette.Gradient = "Colour startColour, Colour endColour, number firstIndex, number lastIndex";
+		
+		// Translation type
+		string				Translation.AsText;
+							Translation.Clear;
+							Translation.Copy = "Translation other";
+		boolean				Translation.IsEmpty;
+							Translation.Parse = "string definition";
+		Colour				Translation.Translate = "Colour colour, [Palette palette]";
+		TransRange			Translation.Range = "number index";
+		TransRange			Translation.AddRange = "string definition";
+		TransRangePalette	Translation.AddPaletteRange = "number rangeStart, number rangeEnd";
+		TransRangeColour	Translation.AddColourRange = "number rangeStart, number rangeEnd";
+		TransRangeDesat		Translation.AddDesatRange = "number rangeStart, number rangeEnd";
+		TransRangeBlend		Translation.AddBlendRange = "number rangeStart, number rangeEnd";
+		TransRangeTint		Translation.AddTintRange = "number rangeStart, number rangeEnd";
+		TransRangeSpecial	Translation.AddSpecialRange = "number rangeStart, number rangeEnd";
+							Translation.ReadTable = "string data";
+							Translation.RemoveRange = "number index";
+							Translation.SwapRanges = "number index1, number index2";
+		
+		// TransRange type
+		string				TransRange.AsText;
+		TransRangePalette	TransRange.AsPaletteRange;
+		TransRangeColour	TransRange.AsColourRange;
+		TransRangeDesat		TransRange.AsDesatRange;
+		TransRangeBlend		TransRange.AsBlendRange;
+		TransRangeTint		TransRange.AsTintRange;
+		TransRangeSpecial	TransRange.AsSpecialRange;
+
+		// TransRangeDesat type
+		TransRangeDesat.SetStartRGB = "number r, number g, number b";
+		TransRangeDesat.SetEndRGB = "number r, number g, number b";
 	}
 }
