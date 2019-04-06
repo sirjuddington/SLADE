@@ -123,16 +123,37 @@ srb2lua {
 		TR_TRANS70,
 		TR_TRANS80,
 		TR_TRANS90,
-		NUMTRANSMAPS
+		NUMTRANSMAPS,
 
+		// kick reasons
+		KR_KICK,
+		KR_BAN,
+		KR_LEAVE,
+		KR_TIMEOUT,
+		KR_SYNCH,
+		KR_PINGLIMIT,
+
+		// slope flags
+		SL_NOPHYSICS,
+		SL_NODYNAMIC,
+		SL_ANCHORVERTEX,
+		SL_VERTEXSLOPE,
+
+		// save override
+		SAVE_NEVER,
+		SAVE_DEFAULT,
+		SAVE_ALWAYS
 	}
 
 	functions {
 		print = "string output, [string output2], [...]";
+		chatprint = "string output, [boolean sound]";
+		chatprintf = "player_t player, string output, [boolean sound]";
 		freeslot = "string resource, [string resource2], [...]";
 		super = "mobj_t actor, int var1, int var2";
 		addHook = "string hook, function(?) fn, [int extra]";
 		EvalMath = "string word";
+		IsPlayerAdmin = "player_t player";
 
 		// math
 		abs = "int a";
@@ -206,6 +227,9 @@ srb2lua {
 		P_CheckSolidLava = "mobj_t mobj, ffloor_t rover";
 		P_CanRunOnWater = "player_t player, ffloor_t rover";
 
+		// p_slopes
+		P_GetZAt = "pslope_t slope, fixed x, fixed y";
+
 		// p_user
 		P_GetPlayerHeight = "player_t player";
 		P_GetPlayerSpinHeight = "player_t player";
@@ -237,6 +261,10 @@ srb2lua {
 		P_InSpaceSector = "mobj_t mobj";
 		P_DoJumpShield = "player_t player";
 		P_IsObjectInGoop = "mobj_t mobj";
+
+		// r_data
+		R_TextureNumForName = "string name";
+		R_CheckTextureNumForName = "string name";
 
 		// p_map
 		P_CheckPosition = "mobj_t mobj, fixed x, fixed y, fixed z";
@@ -312,7 +340,8 @@ srb2lua {
 		// g_game
 		G_BuildMapName = "int map";
 		G_DoReborn = "int playernum";
-		G_ExitLevel;
+		G_ExitLevel = "[int nextmap], [boolean skipstats]";
+		G_SetCustomExitVars = "[int nextmap], [boolean skipstats]";
 		G_IsSpecialStage = "int map";
 		G_GametypeUsesLives;
 		G_GametypeHasTeams;
@@ -332,6 +361,9 @@ srb2lua {
 		COM_BufInsertText = "player_t player, string text";
 		CV_RegisterVar = "table{string name/string defaultvalue/int flags/PossibleValue pv/function() fn}, [...]";
 		CONS_Printf = "player_t player, string text";
+
+		// blockmap search
+		searchBlockmap = "string searchtype, function fn, mobj_t refmobj, [fixed x1], [fixed x2], [fixed y1], [fixed y2]";
 
 		// iterators
 		players.iterate;
