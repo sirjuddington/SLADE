@@ -258,6 +258,18 @@ std::tuple<bool, std::string> entryImportMC(ArchiveEntry& self, MemChunk& mc)
 }
 
 // -----------------------------------------------------------------------------
+// Renames entry [self] to [new_name], using the parent archive's naming rules
+// if it has one
+// -----------------------------------------------------------------------------
+bool entryRename(ArchiveEntry& self, std::string_view new_name)
+{
+	if (self.parent())
+		return self.parent()->renameEntry(&self, new_name);
+	else
+		return self.rename(new_name);
+}
+
+// -----------------------------------------------------------------------------
 // Registers the ArchiveEntry type with lua
 // -----------------------------------------------------------------------------
 void registerArchiveEntry(sol::state& lua)
@@ -295,6 +307,7 @@ void registerArchiveEntry(sol::state& lua)
 	lua_entry["ExportFile"] = [](ArchiveEntry& self, std::string_view filename) {
 		return std::make_tuple(self.exportFile(filename), Global::error);
 	};
+	lua_entry["Rename"] = &entryRename;
 }
 
 // -----------------------------------------------------------------------------

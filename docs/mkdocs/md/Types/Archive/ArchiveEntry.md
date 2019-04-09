@@ -53,6 +53,22 @@ Note that <arg>upperCase</arg> will not affect the path.
 
 * <type>string</type>: The size of the entry in a formatted string, eg. `1.3kb`
 
+---
+### Rename
+
+<fdef>function <type>ArchiveEntry</type>.<func>Rename</func>(<arg>*self*</arg>, <arg>newName</arg>)</fdef>
+
+Renames the entry.
+
+<listhead>Parameters</listhead>
+
+* <arg>newName</arg> (<type>string</type>): The new name for the entry
+
+#### Notes
+
+If the entry has a <prop>parent</prop> <type>[Archive](Archive.md)</type>, the archive's naming rules will be applied to the new name (see [ArchiveFormat](ArchiveFormat.md)).
+
+
 ## Functions - Data Import/Export
 
 ### ExportFile
