@@ -14,7 +14,7 @@ Writes a message to the SLADE log.
 
 * <arg>message</arg> (<type>string</type>): The message to print to the log
 
-**Example**
+#### Example
 
 ```lua
 App.LogMessage('This is a log message')

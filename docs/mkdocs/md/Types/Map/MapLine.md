@@ -39,7 +39,7 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 
 * <type>boolean</type>: `true` if the given flag is set
 
-**Notes**
+#### Notes
 
 If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly the same as <code>[MapObject.BoolProperty](MapObject.md#boolproperty)</code>. Otherwise, <arg>flagName</arg> needs to be one of the following:
 
@@ -76,7 +76,7 @@ Determines what textures (parts) of the line are showing.
     * `backMiddle`
     * `backLower`
 
-**Example**
+#### Example
 
 ```lua
 local visible = line:VisibleTextures()

@@ -4,7 +4,7 @@ A single patch in a composite texture. See [TEXTURE1 and TEXTURE2](https://doomw
 
 ### Derived Types
 
-The following types inherit all `CTPatch` properties and functions:
+The following types inherit all <type>CTPatch</type> properties and functions:
 
 * <type>[CTPatchEx](CTPatchEx.md)</type>
 
@@ -23,7 +23,7 @@ The following types inherit all `CTPatch` properties and functions:
 
 <listhead>See:</listhead>
 
-* [CTexture.AddPatch](CTexture.md#addpatch)
+* <code>[CTexture.AddPatch](CTexture.md#addpatch)</code>
 
 ## Functions
 
@@ -39,7 +39,7 @@ The following types inherit all `CTPatch` properties and functions:
 
 * <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type>: The associated <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type> for the patch, or `nil` if none found
 
-**Notes**
+#### Notes
 
 Entries in the given <arg>parent</arg> archive will be prioritised when searching if it is not `nil`.
 

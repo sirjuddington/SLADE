@@ -37,7 +37,7 @@ All properties and functions of <type>[CTPatch](CTPatch.md)</type> can be used i
 
 <listhead>See:</listhead>
 
-* [CTexture.AddPatch](CTexture.md#addpatch)
+* <code>[CTexture.AddPatch](CTexture.md#addpatch)</code>
 
 ## Functions
 

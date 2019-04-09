@@ -3,7 +3,8 @@
 class MemChunk
 {
 public:
-	MemChunk(uint32_t size = 0);
+	MemChunk() = default;
+	MemChunk(uint32_t size);
 	MemChunk(const uint8_t* data, uint32_t size);
 	~MemChunk();
 
@@ -28,6 +29,10 @@ public:
 	// Data export
 	bool exportFile(std::string_view filename, uint32_t start = 0, uint32_t size = 0) const;
 	bool exportMemChunk(MemChunk& mc, uint32_t start = 0, uint32_t size = 0) const;
+
+	// General reading/writing
+	bool write(unsigned offset, const void* data, unsigned size, bool expand);
+	bool read(unsigned offset, void* buf, unsigned size) const;
 
 	// C-style reading/writing
 	bool     write(const void* data, uint32_t size);

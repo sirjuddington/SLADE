@@ -11,6 +11,7 @@ use_directory_urls: false
 # Theme
 theme: windmill
 extra_css:
+- 'css/hack-font.css'
 - 'css/windmill-slade.css'
 - 'css/codehilite-slade-dark.css'
 - 'css/windmill-slade-dark.css'
@@ -33,6 +34,7 @@ nav:
   - App: 'md/Namespaces/App.md'
   - Archives: 'md/Namespaces/Archives.md'
   - Game: 'md/Namespaces/Game.md'
+  - Graphics: 'md/Namespaces/Graphics.md'
   - UI: 'md/Namespaces/UI.md'
 - Types:
   - Archive:
@@ -60,6 +62,10 @@ nav:
   - Game:
     - ThingType: 'md/Types/Game/ThingType.md'
   - Graphics:
+    - Image: 'md/Types/Graphics/Image.md'
+    - ImageConvertOptions: 'md/Types/Graphics/ImageConvertOptions.md'
+    - ImageDrawOptions: 'md/Types/Graphics/ImageDrawOptions.md'
+    - ImageFormat: 'md/Types/Graphics/ImageFormat.md'
     - Palette: 'md/Types/Graphics/Palette.md'
   - Map Editor:
     - Map: 'md/Types/Map/Map.md'
@@ -72,5 +78,6 @@ nav:
     - MapVertex: 'md/Types/Map/MapVertex.md'
   - General:
     - Colour: 'md/Types/Colour.md'
+    - DataBlock: 'md/Types/DataBlock.md'
     - Plane: 'md/Types/Plane.md'
     - Point: 'md/Types/Point.md'

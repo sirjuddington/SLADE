@@ -16,7 +16,7 @@ end
 
 -- Function to find [term] in text [entry]
 function FindTerm(entry, term)
-    local text = entry.data
+    local text = entry.data:AsString()
     local wordEnd = 1
     while true do
         i, wordEnd = text:find(term, wordEnd)

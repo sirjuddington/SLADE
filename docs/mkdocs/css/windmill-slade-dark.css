@@ -16,7 +16,7 @@ body {
 .wm-page-content {
 	color: hsl(220, 10%, 85%);
 	/* background-color: hsl(220, 10%, 23%); */
-	background-color: hsl(220, 10%, 18%);
+	background-color: hsl(220, 10%, 15%);
 	box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
@@ -117,11 +117,16 @@ type a {
 }
 
 type a:hover {
-	color: hsl(130, 66%, 75%) !important;
+	color: hsl(130, 86%, 85%) !important;
 }
 
 arg {
-	color: hsl(293, 42%, 72%);
+	color: hsl(293, 56%, 77%);
+}
+
+arg.opt,
+arg > em {
+	color: hsla(293, 56%, 77%, 65%);
 }
 
 prop,

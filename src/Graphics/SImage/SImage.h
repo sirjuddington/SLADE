@@ -71,7 +71,8 @@ public:
 		}
 	};
 
-	SImage(Type type = Type::RGBA) : type_{ type } {}
+	SImage() = default;
+	SImage(Type type) : type_{ type } {}
 	virtual ~SImage() = default;
 
 	bool isValid() const { return (width_ > 0 && height_ > 0 && data_.data()); }
@@ -111,7 +112,6 @@ public:
 	void   create(Info info, Palette* pal = nullptr);
 	void   fillAlpha(uint8_t alpha = 0);
 	short  findUnusedColour() const;
-	bool   validFlatSize();
 	size_t countColours() const;
 	void   shrinkPalette(Palette* pal = nullptr);
 	bool   copyImage(SImage* image);
@@ -166,7 +166,7 @@ private:
 	int       height_ = 0;
 	MemChunk  data_;
 	MemChunk  mask_;
-	Type      type_;
+	Type      type_ = Type::RGBA;
 	Palette   palette_;
 	bool      has_palette_ = false;
 	int       offset_x_    = 0;

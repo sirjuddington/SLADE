@@ -69,7 +69,7 @@ Copies all colours from another palette.
 
 * <arg>other</arg> (<type>Palette</type>): The palette to copy from
 
-**Notes**
+#### Notes
 
 This will not change the <prop>colourCount</prop> of the palette. If the <arg>other</arg> palette has less colours than this, some colours in this palette will be left the same.
 
@@ -107,7 +107,7 @@ Finds the index of the colour in the palette that most closely matches the given
 <listhead>Parameters</listhead>
 
 * <arg>colour</arg> (<type>[Colour](../Colour.md)</type>): The colour to find in the palette
-* <arg>matchMode</arg> (<type>number</type>, default `MATCH_DEFAULT`): The colour matching algorithm to use (see `MATCH_` constants). If this is `MATCH_DEFAULT`, the colour matching algorithm currently selected in the SLADE preferences will be used
+* <arg>[matchMode]</arg> (<type>number</type>, default `MATCH_DEFAULT`): The colour matching algorithm to use (see `MATCH_` constants). If this is `MATCH_DEFAULT`, the colour matching algorithm currently selected in the SLADE preferences will be used
 
 <listhead>Returns</listhead>
 

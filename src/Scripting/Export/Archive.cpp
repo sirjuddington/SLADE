@@ -250,6 +250,14 @@ std::tuple<bool, std::string> entryImportString(ArchiveEntry& self, const std::s
 }
 
 // -----------------------------------------------------------------------------
+// Imports data from [mc] into entry [self]
+// -----------------------------------------------------------------------------
+std::tuple<bool, std::string> entryImportMC(ArchiveEntry& self, MemChunk& mc)
+{
+	return std::make_tuple(self.importMemChunk(mc), Global::error);
+}
+
+// -----------------------------------------------------------------------------
 // Registers the ArchiveEntry type with lua
 // -----------------------------------------------------------------------------
 void registerArchiveEntry(sol::state& lua)
@@ -265,7 +273,7 @@ void registerArchiveEntry(sol::state& lua)
 	lua_entry["size"]  = sol::property(&ArchiveEntry::size);
 	lua_entry["index"] = sol::property([](ArchiveEntry& self) { return self.parentDir()->entryIndex(&self) + 1; });
 	lua_entry["crc32"] = sol::property([](ArchiveEntry& self) { return Misc::crc(self.rawData(), self.size()); });
-	lua_entry["data"]  = sol::property(&entryData);
+	lua_entry["data"]  = sol::property([](ArchiveEntry& self) { return &self.data(); });
 
 	// Functions
 	// -------------------------------------------------------------------------
@@ -283,7 +291,7 @@ void registerArchiveEntry(sol::state& lua)
 	lua_entry["ImportEntry"] = [](ArchiveEntry& self, ArchiveEntry* entry) {
 		return std::make_tuple(self.importEntry(entry), Global::error);
 	};
-	lua_entry["ImportData"] = &entryImportString;
+	lua_entry["ImportData"] = sol::overload(&entryImportString, &entryImportMC);
 	lua_entry["ExportFile"] = [](ArchiveEntry& self, std::string_view filename) {
 		return std::make_tuple(self.exportFile(filename), Global::error);
 	};

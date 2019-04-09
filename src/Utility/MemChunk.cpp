@@ -270,12 +270,12 @@ bool MemChunk::exportFile(std::string_view filename, uint32_t start, uint32_t si
 		return false;
 
 	// Check parameters
-	if (start >= this->size_ || start + size >= this->size_)
+	if (start >= size_ || start + size >= size_)
 		return false;
 
 	// Check size
 	if (size == 0)
-		size = this->size_ - start;
+		size = size_ - start;
 
 	// Open file for writing
 	wxFile file(wxString{ filename.data(), filename.size() }, wxFile::write);
@@ -304,16 +304,65 @@ bool MemChunk::exportMemChunk(MemChunk& mc, uint32_t start, uint32_t size) const
 		return false;
 
 	// Check parameters
-	if (start >= this->size_ || start + size > this->size_)
+	if (start >= size_ || start + size > size_)
 		return false;
 
 	// Check size
 	if (size == 0)
-		size = this->size_ - start;
+		size = size_ - start;
 
 	// Write data to MemChunk
 	mc.reSize(size, false);
 	return mc.importMem(data_ + start, size);
+}
+
+// -----------------------------------------------------------------------------
+// Writes the given data at [offset].
+// If [expand] is true, expands the memory chunk if necessary
+// -----------------------------------------------------------------------------
+bool MemChunk::write(unsigned offset, const void* data, unsigned size, bool expand)
+{
+	// Check pointers
+	if (!data)
+		return false;
+
+	// If we're trying to write past the end of the memory chunk,
+	// resize it so we can write at this point
+	// (or return false if expanding is disallowed)
+	if (offset + size > size_)
+	{
+		if (expand)
+			reSize(offset + size, true);
+		else
+			return false;
+	}
+
+	// Write the data
+	memcpy(data_ + offset, data, size);
+
+	// Success
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Reads data from [offset] to [offset]+[size] into [buf].
+// Returns false if attempting to read data outside of the chunk, true otherwise
+// -----------------------------------------------------------------------------
+bool MemChunk::read(unsigned offset, void* buf, unsigned size) const
+{
+	// Check pointers
+	if (!data_ || !buf)
+		return false;
+
+	// If we're trying to read past the end
+	// of the memory chunk, return failure
+	if (offset + size > size_)
+		return false;
+
+	// Read the data and move to the byte after what was read
+	memcpy(buf, data_ + offset, size);
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -328,11 +377,11 @@ bool MemChunk::write(const void* data, uint32_t size)
 
 	// If we're trying to write past the end of the memory chunk,
 	// resize it so we can write at this point
-	if (cur_ptr_ + size > this->size_)
+	if (cur_ptr_ + size > size_)
 		reSize(cur_ptr_ + size, true);
 
 	// Write the data and move to the byte after what was written
-	memcpy(this->data_ + cur_ptr_, data, size);
+	memcpy(data_ + cur_ptr_, data, size);
 	cur_ptr_ += size;
 
 	// Success
@@ -356,16 +405,16 @@ bool MemChunk::write(const void* data, uint32_t size, uint32_t start)
 bool MemChunk::read(void* buf, uint32_t size)
 {
 	// Check pointers
-	if (!this->data_ || !buf)
+	if (!data_ || !buf)
 		return false;
 
 	// If we're trying to read past the end
 	// of the memory chunk, return failure
-	if (cur_ptr_ + size > this->size_)
+	if (cur_ptr_ + size > size_)
 		return false;
 
 	// Read the data and move to the byte after what was read
-	memcpy(buf, this->data_ + cur_ptr_, size);
+	memcpy(buf, data_ + cur_ptr_, size);
 	cur_ptr_ += size;
 
 	return true;
@@ -378,7 +427,7 @@ bool MemChunk::read(void* buf, uint32_t size)
 bool MemChunk::read(void* buf, uint32_t size, uint32_t start)
 {
 	// Check options
-	if (start + size > this->size_)
+	if (start + size > size_)
 		return false;
 
 	// Do read
@@ -424,7 +473,7 @@ bool MemChunk::seek(uint32_t offset, uint32_t start)
 // -----------------------------------------------------------------------------
 bool MemChunk::readMC(MemChunk& mc, uint32_t size)
 {
-	if (cur_ptr_ + size >= this->size_)
+	if (cur_ptr_ + size >= size_)
 		return false;
 
 	if (mc.write(data_ + cur_ptr_, size))

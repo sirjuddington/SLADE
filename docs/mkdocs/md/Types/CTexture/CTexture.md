@@ -13,19 +13,19 @@ For more information, see:
 | Property | Type | Description |
 |:---------|:-----|:------------|
 <prop class="ro">patches</prop> | <type>[CTPatch](CTPatch.md)\[\]</type> | The patches that make up the texture
-<prop class="rw">name</prop> | <type><type>string</type> | The texture name
-<prop class="rw">width</prop> | <type><type>number</type> | Width of the texture
-<prop class="rw">height</prop> | <type><type>number</type> | Height of the texture
-<prop class="rw">worldPanning</prop> | <type><type>boolean</type> | If `true`, use world units instead of pixels for offsets (in map)
-<prop class="rw">extended</prop> | <type><type>boolean</type> | If `true`, this is a ZDoom `TEXTURES` format texture, and contains <type>[CTPatchEx](CTPatchEx.md)</type> patches
-<prop class="rw">type</prop> | <type><type>string</type> | The type of the texture: `texture`, `sprite`, `graphic`, `walltexture` or `flat`
-<prop class="rw">scaleX</prop> | <type><type>number</type> | Horizontal scale of the texture (multiplier, eg. `0.5` is half size)
-<prop class="rw">scaleY</prop> | <type><type>number</type> | Vertical scale of the texture (multiplier, eg. `0.5` is half size)
-<prop class="rw">offsetX</prop> | <type><type>number</type> | X offset of the texture
-<prop class="rw">offsetY</prop> | <type><type>number</type> | Y offset of the texture
-<prop class="rw">optional</prop> | <type><type>boolean</type> | If `true`, texture is optional
-<prop class="rw">noDecals</prop> | <type><type>boolean</type> | If `true`, no decals will show on this texture
-<prop class="rw">nullTexture</prop> | <type><type>boolean</type> | If `true`, this texture is never drawn ingame (like `AASHITTY`)
+<prop class="rw">name</prop> | <type>string</type> | The texture name
+<prop class="rw">width</prop> | <type>number</type> | Width of the texture
+<prop class="rw">height</prop> | <type>number</type> | Height of the texture
+<prop class="rw">worldPanning</prop> | <type>boolean</type> | If `true`, use world units instead of pixels for offsets (in map)
+<prop class="rw">extended</prop> | <type>boolean</type> | If `true`, this is a ZDoom `TEXTURES` format texture, and contains <type>[CTPatchEx](CTPatchEx.md)</type> patches
+<prop class="rw">type</prop> | <type>string</type> | The type of the texture: `texture`, `sprite`, `graphic`, `walltexture` or `flat`
+<prop class="rw">scaleX</prop> | <type>number</type> | Horizontal scale of the texture (multiplier, eg. `0.5` is half size)
+<prop class="rw">scaleY</prop> | <type>number</type> | Vertical scale of the texture (multiplier, eg. `0.5` is half size)
+<prop class="rw">offsetX</prop> | <type>number</type> | X offset of the texture
+<prop class="rw">offsetY</prop> | <type>number</type> | Y offset of the texture
+<prop class="rw">optional</prop> | <type>boolean</type> | If `true`, texture is optional
+<prop class="rw">noDecals</prop> | <type>boolean</type> | If `true`, no decals will show on this texture
+<prop class="rw">nullTexture</prop> | <type>boolean</type> | If `true`, this texture is never drawn ingame (like `AASHITTY`)
 
 
 ## Constructors
@@ -35,7 +35,7 @@ For more information, see:
 
 <listhead>See:</listhead>
 
-* [TextureXList.AddTexture](TextureXList.md#addtexture)
+* <code>[TextureXList.AddTexture](TextureXList.md#addtexture)</code>
 
 
 ## Functions - General
@@ -101,7 +101,7 @@ Adds a new patch to the texture.
 * <arg>[y]</arg> (<type>number</type>, default `0`): The y position of the patch within the texture
 * <arg>[index]</arg> (<type>number</type>, default `0`): Where to add the patch in the <prop>patches</prop> array. Patches later in the array are drawn over the top of previous ones. If `0`, the patch is added to the end of the array
 
-**Notes**
+#### Notes
 
 The type of patch created depends on this texture's <prop>extended</prop> property:
 
@@ -121,7 +121,7 @@ Duplicates the patch at <arg>index</arg> in the texture.
 * <arg>[offsetX]</arg> (<type>number</type>, default `8`): The amount to add to the X offset of the duplicated patch
 * <arg>[offsetY]</arg> (<type>number</type>, default `8`): The amount to add to the Y offset of the duplicated patch
 
-**Example**
+#### Example
 
 ```lua
 -- Add Patch

@@ -28,11 +28,11 @@ Creates a new archive of the format specified in <arg>formatId</arg>.
 * <type>[Archive](../Types/Archive/Archive.md)</type>: The created archive, or `nil` if creation failed
 * <type>string</type>: An error message if creation failed
 
-**Notes**
+#### Notes
 
 Currently only `wad` and `zip` formats are supported for creation.
 
-**Example**
+#### Example
 
 ```lua
 local archive, err = Archives.Create('wad')
@@ -72,7 +72,7 @@ Closes the given <arg>archive</arg>.
 
 * <type>boolean</type>: `false` if <arg>archive</arg> is invalid or not currently open
 
-**Notes**
+#### Notes
 
 !!! warning
     Please be careful when using the `Close*` functions - attempting to access a closed archive from a script will currently cause a crash.
@@ -118,7 +118,7 @@ Closes all currently open archives.
 
 * <type>string[]</type>: An array of configured base resource archive file paths
 
-**Notes**
+#### Notes
 
 This is the list of base resource archive paths as seen in the base resource configuration dialog.
 
@@ -192,7 +192,7 @@ Removes <arg>entry</arg> from the bookmarked entries list.
 
 * <type>string</type>: The extension filter string for all supported archive file types
 
-**Notes**
+#### Notes
 
 See <code>[App.BrowseFile](App.md#browsefile)</code> and the [Open Archive](../Examples/OpenArchive.md) example for more information.
 
@@ -218,7 +218,7 @@ See <code>[App.BrowseFile](App.md#browsefile)</code> and the [Open Archive](../E
 
 * <type>[EntryType](../Types/Archive/EntryType.md)</type>: The entry type with the given <arg>id</arg>, or `nil` if no type has that id
 
-**Example**
+#### Example
 
 ```lua
 -- Will write 'Wad Archive' to the log

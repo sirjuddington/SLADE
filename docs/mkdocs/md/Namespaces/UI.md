@@ -108,7 +108,7 @@ Shows a file browser dialog allowing the user to select a file.
 
 * <type>string</type>: The full path to the selected file, or an empty string if none selected
 
-**Notes**
+#### Notes
 
 The <arg>extensions</arg> parameter must be in the following format:
 
@@ -116,7 +116,7 @@ The <arg>extensions</arg> parameter must be in the following format:
 
 Where `Type Name X` is the name to display in the type selection dropdown, and `Extension` is the wildcard file extension for that type. For an example see below.
 
-**Example**
+#### Example
 
 ```lua
 local path = UI.BrowseFile('Select a File', 'Wad Files (*.wad)|*.wad|All Files|*.*', '')
@@ -139,7 +139,7 @@ Shows a file browser dialog allowing the user to select multiple files.
 
 * <type>string[]</type>: An array of full paths to the selected files
 
-**Notes**
+#### Notes
 
 See <code>[BrowseFile](#browsefile)</code> above for the formatting of the <arg>extensions</arg> parameter.
 
@@ -156,7 +156,7 @@ Shows the splash window with <arg>message</arg>.
 * <arg>message</arg> (<type>string</type>): The message to show
 * <arg>[showProgress]</arg> (<type>boolean</type>, default `false`): If `true`, a progress bar will be shown on the splash window (see <code>[SplashProgress](#splashprogress)</code>, <code>[SetSplashProgressMessage](#setsplashprogressmessage)</code>, <code>[SetSplashProgress](#setsplashprogress)</code> below)
 
-**Example**
+#### Example
 
 ```lua
 -- Show with no progress bar

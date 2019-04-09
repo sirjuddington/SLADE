@@ -75,7 +75,7 @@ Converts all textures in the list to extended format.
 
 * <type>boolean</type>: `true` on success, `false` if the list was already in `TEXTURES` format
 
-**Notes**
+#### Notes
 
 This will set <prop>format</prop> to `FORMAT_TEXTURES`.
 
@@ -178,7 +178,7 @@ Reads a Doom-format `TEXTUREx` entry.
 
 * <type>boolean</type>: `true` on success
 
-**Notes**
+#### Notes
 
 This will set <prop>format</prop> to the type of list that was loaded.
 

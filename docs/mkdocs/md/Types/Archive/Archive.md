@@ -35,7 +35,7 @@ The <type>Archive</type> type represents an archive (wad/pk3/etc) in SLADE.
 
 * <type>[ArchiveDir](ArchiveDir.md)</type>: The directory in the archive at <arg>path</arg>, or `nil` if the path does not exist
 
-**Notes**
+#### Notes
 
 If the archive does not support directories (eg. Doom Wad format) the 'root' directory is always returned, regardless of <arg>path</arg>.
 
@@ -52,7 +52,7 @@ If the archive does not support directories (eg. Doom Wad format) the 'root' dir
 
 * <type>[ArchiveEntry](ArchiveEntry.md)</type>: The entry in the archive at <arg>path</arg>, or `nil` if no entry at the given path exists
 
-**Notes**
+#### Notes
 
 If multiple entries exist with the same <arg>path</arg>, the first match is returned.
 
@@ -65,7 +65,7 @@ If multiple entries exist with the same <arg>path</arg>, the first match is retu
 
 * <type>string</type>: The archive's <prop>filename</prop> without the full path
 
-**Example**
+#### Example
 
 ```lua
 local archive = Archives.OpenFile('C:/games/doom/archive.wad')
@@ -88,11 +88,11 @@ Saves the archive to disk.
 * <type>boolean</type>: `true` if saving succeeded
 * <type>string</type>: An error message if saving failed
 
-**Notes**
+#### Notes
 
 If <arg>path</arg> is given, this will work like 'Save As' - the archive will be saved to a new file at the given path, overwriting the file if it already exists. This will also update the <prop>filename</prop> property.
 
-**Example**
+#### Example
 
 ```lua
 -- Open an archive
@@ -131,13 +131,13 @@ Creates a new entry named <arg>fullPath</arg> in the archive at <arg>index</arg>
 
 * <type>[ArchiveEntry](ArchiveEntry.md)</type>: The created entry
 
-**Notes**
+#### Notes
 
 If the Archive is a format that supports directories, <arg>fullPath</arg> can optionally contain a path eg. `Scripts/NewScript.txt`.
 
 The new entry will be inserted at <arg>index</arg> in the directory it is added to (always the root for Archives that don't support directories). If <arg>index</arg> is `0` or larger than the number of entries in the destination directory, the new entry will be added at the end.
 
-**Example**
+#### Example
 
 ```lua
 -- Create entry in the root directory of a zip, after all other entries
@@ -166,7 +166,7 @@ Creates a new entry named <arg>name</arg> in the Archive, at the end of <arg>nam
 
 * <type>[ArchiveEntry](ArchiveEntry.md)</type>: The created entry
 
-**Notes**
+#### Notes
 
 If the Archive supports directories, <arg>namespace</arg> can be a path.
 
@@ -230,7 +230,7 @@ Renames the given entry.
 
 * <type>[ArchiveEntry](ArchiveEntry.md)</type>: The **first** entry found in the archive matching the given <arg>options</arg>, or `nil` if no match was found
 
-**Notes**
+#### Notes
 
 If <prop>searchSubdirs</prop> is true in the <arg>options</arg>, subdirectories will be searched *after* the entries in the specified <prop>dir</prop>.
 
@@ -247,7 +247,7 @@ If <prop>searchSubdirs</prop> is true in the <arg>options</arg>, subdirectories 
 
 * <type>[ArchiveEntry](ArchiveEntry.md)</type>: The **last** entry found in the archive matching the given <arg>options</arg>, or `nil` if no match was found
 
-**Notes**
+#### Notes
 
 If <prop>searchSubdirs</prop> is true in the <arg>options</arg>, subdirectories will be searched *after* the entries in the specified <prop>dir</prop>.
 

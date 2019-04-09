@@ -79,7 +79,7 @@ Selects or deselects the given <type>[MapObject](MapObject.md)</type> (or derive
 
 * <type>[MapLine](MapLine.md)\[\]</type>: An array of all currently selected lines
 
-**Notes**
+#### Notes
 
 If nothing is selected and <arg>tryHighlight</arg> is `true`, the currently highlighted line is returned in the array.
 
@@ -96,7 +96,7 @@ If nothing is selected and <arg>tryHighlight</arg> is `true`, the currently high
 
 * <type>[MapSector](MapSector.md)\[\]</type>: An array of all currently selected sectors
 
-**Notes**
+#### Notes
 
 If nothing is selected and <arg>tryHighlight</arg> is `true`, the currently highlighted sector is returned in the array.
 
@@ -113,7 +113,7 @@ If nothing is selected and <arg>tryHighlight</arg> is `true`, the currently high
 
 * <type>[MapThing](MapThing.md)\[\]</type>: An array of all currently selected things
 
-**Notes**
+#### Notes
 
 If nothing is selected and <arg>tryHighlight</arg> is `true`, the currently highlighted thing is returned in the array.
 
@@ -130,6 +130,6 @@ If nothing is selected and <arg>tryHighlight</arg> is `true`, the currently high
 
 * <type>[MapVertex](MapVertex.md)\[\]</type>: An array of all currently selected vertices
 
-**Notes**
+#### Notes
 
 If nothing is selected and <arg>tryHighlight</arg> is `true`, the currently highlighted vertex is returned in the array.

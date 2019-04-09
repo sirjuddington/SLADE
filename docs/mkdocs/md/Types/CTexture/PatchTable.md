@@ -42,7 +42,7 @@ Creates a new, empty patch table.
 
 * <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type>: The associated <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type> for the patch at <arg>index</arg>, or `nil` if no entry was found or the given index was out of bounds
 
-**Notes**
+#### Notes
 
 When searching for the patch entry, the <prop>parent</prop> archive of the table will be prioritised.
 
@@ -59,7 +59,7 @@ When searching for the patch entry, the <prop>parent</prop> archive of the table
 
 * <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type> The associated <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type> for the patch with the given <arg>name</arg>, or `nil` if no entry was found or the given name was not in the patch table
 
-**Notes**
+#### Notes
 
 When searching for the patch entry, the <prop>parent</prop> archive of the table will be prioritised.
 
@@ -125,7 +125,7 @@ Clears any existing patches in the table and loads in PNAMES data from the given
 
 * <type>boolean</type>: `true` on success
 
-**Notes**
+#### Notes
 
 This will set the table's <prop>parent</prop> property to the parent archive of the given <arg>pnames</arg> entry.
 

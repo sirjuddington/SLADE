@@ -32,7 +32,7 @@ Creates a new, empty translation.
 
 * <type>string</type>: A text representation of the translation (in ZDoom format)
 
-**Example**
+#### Example
 
 ```lua
 local translation = Translation.new()
@@ -150,7 +150,7 @@ Adds a new custom translation range of type <type>[TransRangePalette](TransRange
 
 * <type>[TransRangePalette](TransRangePalette.md)</type>: The new range that was added
 
-**Example**
+#### Example
 
 ```lua
 local translation = Translation.new()

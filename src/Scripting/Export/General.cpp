@@ -34,6 +34,7 @@
 #include "Archive/Archive.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditContext.h"
+#include "Scripting/Lua.h"
 #include "thirdparty/sol/sol.hpp"
 
 
@@ -65,6 +66,109 @@ bool showArchive(Archive* archive)
 }
 
 // -----------------------------------------------------------------------------
+// Returns a string_view of a MemChunk's data
+// -----------------------------------------------------------------------------
+std::string_view memChunkData(MemChunk& mc)
+{
+	return std::string_view{ (char*)mc.data(), mc.size() };
+}
+
+template<typename T> sol::object memChunkRead(MemChunk& self, unsigned offset)
+{
+	// Need to check how slow sol::make_object is, if it's really slow it might be best
+	// just to return 0 if the read fails, rather than nil
+	T val;
+	if (!self.read(offset, &val, sizeof(T)))
+		return sol::make_object(Lua::state().lua_state(), sol::nil);
+	return sol::make_object(Lua::state().lua_state(), val);
+}
+
+std::string memChunkReadString(MemChunk& self, unsigned offset, unsigned length, bool null_terminated)
+{
+	if (null_terminated)
+	{
+		for (unsigned p = offset; p < self.size(); ++p)
+		{
+			if (p == offset + length)
+				break;
+
+			if (self[p] == 0)
+			{
+				length = p - offset;
+				break;
+			}
+		}
+	}
+
+	std::string str;
+	str.resize(length, 0);
+	return self.read(offset, str.data(), length) ? str : std::string{};
+}
+
+template<typename T> bool memChunkWrite(MemChunk& self, unsigned offset, T value, bool expand)
+{
+	return self.write(offset, &value, sizeof(T), expand);
+}
+
+// -----------------------------------------------------------------------------
+// Registers the DataBlock (MemChunk) type with lua
+// -----------------------------------------------------------------------------
+void registerMemChunkType(sol::state& lua)
+{
+	auto lua_mc = lua.new_usertype<MemChunk>("DataBlock", sol::constructors<MemChunk(), MemChunk(uint32_t)>());
+
+	// Properties
+	// -------------------------------------------------------------------------
+	lua_mc["size"] = sol::property(&MemChunk::size);
+	lua_mc["crc"]  = sol::property(&MemChunk::crc);
+
+	// Functions
+	// -------------------------------------------------------------------------
+	lua_mc["AsString"] = &memChunkData;
+	lua_mc["SetData"]  = [](MemChunk& self, std::string_view data) {
+        self.importMem((const uint8_t*)data.data(), data.size());
+	};
+	lua_mc["Clear"]  = &MemChunk::clear;
+	lua_mc["Resize"] = &MemChunk::reSize;
+	lua_mc["Copy"]   = sol::resolve<bool(const MemChunk&)>(&MemChunk::importMem);
+	lua_mc["CopyTo"] = sol::overload(
+		&MemChunk::exportMemChunk,
+		[](MemChunk& self, MemChunk& mc) { return self.exportMemChunk(mc); },
+		[](MemChunk& self, MemChunk& mc, int offset) { return self.exportMemChunk(mc, offset); });
+	lua_mc["ImportFile"] = sol::overload(
+		&MemChunk::importFile,
+		[](MemChunk& self, std::string_view fn) { self.importFile(fn); },
+		[](MemChunk& self, std::string_view fn, int offset) { self.importFile(fn, offset); });
+	lua_mc["ExportFile"] = sol::overload(
+		&MemChunk::exportFile,
+		[](MemChunk& self, std::string_view fn) { self.exportFile(fn); },
+		[](MemChunk& self, std::string_view fn, int offset) { self.exportFile(fn, offset); });
+	lua_mc["FillData"]    = &MemChunk::fillData;
+	lua_mc["WriteInt8"]   = &memChunkWrite<int8_t>;
+	lua_mc["WriteUInt8"]  = &memChunkWrite<uint8_t>;
+	lua_mc["WriteInt16"]  = &memChunkWrite<int16_t>;
+	lua_mc["WriteUInt16"] = &memChunkWrite<uint16_t>;
+	lua_mc["WriteInt32"]  = &memChunkWrite<int32_t>;
+	lua_mc["WriteUInt32"] = &memChunkWrite<uint32_t>;
+	lua_mc["WriteInt64"]  = &memChunkWrite<int64_t>;
+	lua_mc["WriteUInt64"] = &memChunkWrite<uint64_t>;
+	lua_mc["WriteString"] = [](MemChunk& self, int offset, std::string_view value, bool expand) {
+		self.write(offset, value.data(), value.size(), expand);
+	};
+	lua_mc["ReadInt8"]   = &memChunkRead<int8_t>;
+	lua_mc["ReadUInt8"]  = &memChunkRead<uint8_t>;
+	lua_mc["ReadInt16"]  = &memChunkRead<int16_t>;
+	lua_mc["ReadUInt16"] = &memChunkRead<uint16_t>;
+	lua_mc["ReadInt32"]  = &memChunkRead<int32_t>;
+	lua_mc["ReadUInt32"] = &memChunkRead<uint32_t>;
+	lua_mc["ReadInt64"]  = &memChunkRead<int64_t>;
+	lua_mc["ReadUInt64"] = &memChunkRead<uint64_t>;
+	lua_mc["ReadString"] = sol::overload(&memChunkReadString, [](MemChunk& self, unsigned offset, unsigned length) {
+		return memChunkReadString(self, offset, length, false);
+	});
+}
+
+// -----------------------------------------------------------------------------
 // Registers some misc. types with lua
 // -----------------------------------------------------------------------------
 void registerMiscTypes(sol::state& lua)
@@ -92,6 +196,9 @@ void registerMiscTypes(sol::state& lua)
 	lua_plane["c"]        = &Plane::c;
 	lua_plane["d"]        = &Plane::d;
 	lua_plane["HeightAt"] = sol::resolve<double(Vec2d) const>(&Plane::heightAt);
+
+	// MemChunk type
+	registerMemChunkType(lua);
 }
 
 // -----------------------------------------------------------------------------
@@ -103,7 +210,7 @@ void registerAppNamespace(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	app["LogMessage"] = &logMessage;
+	app["LogMessage"]            = &logMessage;
 	app["CurrentArchive"]        = &MainEditor::currentArchive;
 	app["CurrentEntry"]          = &MainEditor::currentEntry;
 	app["CurrentEntrySelection"] = &MainEditor::currentEntrySelection;
