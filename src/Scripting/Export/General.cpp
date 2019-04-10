@@ -168,6 +168,18 @@ void registerMemChunkType(sol::state& lua)
 	});
 }
 
+std::tuple<double, double, double> colourAsHSL(ColRGBA& self)
+{
+	auto hsl = self.asHSL();
+	return std::make_tuple(hsl.h, hsl.s, hsl.l);
+}
+
+std::tuple<double, double, double> colourAsLAB(ColRGBA& self)
+{
+	auto lab = self.asLAB();
+	return std::make_tuple(lab.l, lab.a, lab.b);
+}
+
 // -----------------------------------------------------------------------------
 // Registers some misc. types with lua
 // -----------------------------------------------------------------------------
@@ -183,10 +195,13 @@ void registerMiscTypes(sol::state& lua)
 		"Colour",
 		sol::
 			constructors<ColRGBA(), ColRGBA(uint8_t, uint8_t, uint8_t), ColRGBA(uint8_t, uint8_t, uint8_t, uint8_t)>());
-	lua_colour["r"] = &ColRGBA::r;
-	lua_colour["g"] = &ColRGBA::g;
-	lua_colour["b"] = &ColRGBA::b;
-	lua_colour["a"] = &ColRGBA::a;
+	lua_colour["r"]       = &ColRGBA::r;
+	lua_colour["g"]       = &ColRGBA::g;
+	lua_colour["b"]       = &ColRGBA::b;
+	lua_colour["a"]       = &ColRGBA::a;
+	lua_colour["AsHSL"]   = &colourAsHSL;
+	lua_colour["AsLAB"]   = &colourAsLAB;
+	lua_colour["FromHSL"] = sol::resolve<void(double, double, double)>(&ColRGBA::fromHSL);
 
 	// Plane type
 	auto lua_plane = lua.new_usertype<Plane>(

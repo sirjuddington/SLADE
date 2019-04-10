@@ -60,70 +60,57 @@ EXTERN_CVAR(Float, col_cie_tristim_z)
 
 // -----------------------------------------------------------------------------
 //
-// ColRGBA Struct Functions
+// Functions
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Converts the colour from RGB to HSL colourspace
-// -----------------------------------------------------------------------------
-ColHSL ColRGBA::asHSL() const
+namespace
 {
-	auto red   = dr();
-	auto green = dg();
-	auto blue  = db();
-
-	ColHSL ret;
-	ret.alpha    = a;
+// -----------------------------------------------------------------------------
+// Converts an RGB colour [red,green,blue] to HSL colourspace [h,s,l]
+// -----------------------------------------------------------------------------
+void rgbToHsl(double red, double green, double blue, double& h, double& s, double& l)
+{
 	double v_min = std::min(red, std::min(green, blue));
 	double v_max = std::max(red, std::max(green, blue));
 	double delta = v_max - v_min;
 
 	// Determine V
-	ret.l = (v_max + v_min) * 0.5;
+	l = (v_max + v_min) * 0.5;
 
 	if (delta == 0)
-		ret.h = ret.s = 0; // Grey (r==g==b)
+		h = s = 0; // Grey (r==g==b)
 	else
 	{
 		// Determine S
-		if (ret.l < 0.5)
-			ret.s = delta / (v_max + v_min);
+		if (l < 0.5)
+			s = delta / (v_max + v_min);
 		else
-			ret.s = delta / (2.0 - v_max - v_min);
+			s = delta / (2.0 - v_max - v_min);
 
 		// Determine H
 		if (red == v_max)
-			ret.h = (green - blue) / delta;
+			h = (green - blue) / delta;
 		else if (green == v_max)
-			ret.h = 2.0 + (blue - red) / delta;
+			h = 2.0 + (blue - red) / delta;
 		else if (blue == v_max)
-			ret.h = 4.0 + (red - green) / delta;
+			h = 4.0 + (red - green) / delta;
 
-		ret.h /= 6.0;
+		h /= 6.0;
 
-		if (ret.h < 0)
-			ret.h += 1.0;
+		if (h < 0)
+			h += 1.0;
 	}
-
-	return ret;
 }
 
 // -----------------------------------------------------------------------------
-// Converts the colour from RGB to CIE-L*a*b colourspace
+// Converts an RGB colour [red,green,blue] to CIE-L*a*b colourspace
 // Conversion formulas lazily taken from easyrgb.com.
 // -----------------------------------------------------------------------------
 #define NORMALIZERGB(a) a = 100 * ((a > 0.04045) ? (pow(((a + 0.055) / 1.055), 2.4)) : (a / 12.92))
 #define NORMALIZEXYZ(a) a = ((a > 0.008856) ? (pow(a, (1.0 / 3.0))) : ((7.787 * a) + (16.0 / 116.0)))
-ColLAB ColRGBA::asLAB() const
+void rgbToLab(double red, double green, double blue, double& l, double& a, double& b)
 {
-	auto   red   = dr();
-	auto   green = dg();
-	auto   blue  = db();
 	double x, y, z;
-	ColLAB ret;
-	ret.alpha = a;
 
 	// Step #1: convert RGB to CIE-XYZ
 	NORMALIZERGB(red);
@@ -139,14 +126,164 @@ ColLAB ColRGBA::asLAB() const
 	NORMALIZEXYZ(y);
 	NORMALIZEXYZ(z);
 
-	ret.l = (116.0 * y) - 16;
-	ret.a = 500.0 * (x - y);
-	ret.b = 200.0 * (y - z);
-
-	return ret;
+	l = (116.0 * y) - 16;
+	a = 500.0 * (x - y);
+	b = 200.0 * (y - z);
 }
 #undef NORMALIZERGB
 #undef NORMALIZEXYZ
+
+void hslToRgb(double h, double s, double l, double& r, double& g, double& b)
+{
+	// No saturation means grey
+	if (s == 0.)
+	{
+		r = g = b = (uint8_t)(255. * l);
+		return;
+	}
+
+	// Find the rough values at given H with mid L and max S.
+	double  hue    = (6. * h);
+	uint8_t sector = (uint8_t)hue;
+	double  factor = hue - sector;
+	switch (sector)
+	{
+		// RGB 0xFF0000 to 0xFFFF00, increasingly green
+	case 0:
+		r = 1.;
+		g = factor;
+		b = 0.;
+		break;
+		// RGB 0xFFFF00 to 0x00FF00, decreasingly red
+	case 1:
+		r = 1. - factor;
+		g = 1.;
+		b = 0.;
+		break;
+		// RGB 0x00FF00 to 0x00FFFF, increasingly blue
+	case 2:
+		r = 0.;
+		g = 1.;
+		b = factor;
+		break;
+		// RGB 0x00FFFF to 0x0000FF, decreasingly green
+	case 3:
+		r = 0.;
+		g = 1. - factor;
+		b = 1.;
+		break;
+		// RGB 0x0000FF to 0xFF00FF, increasingly red
+	case 4:
+		r = factor;
+		g = 0.;
+		b = 1.;
+		break;
+		// RGB 0xFF00FF to 0xFF0000, decreasingly blue
+	case 5:
+		r = 1.;
+		g = 0.;
+		b = 1. - factor;
+		break;
+	}
+
+	// Now apply desaturation
+	double ds = (1. - s) * 0.5;
+	r        = ds + (r * s);
+	g        = ds + (g * s);
+	b        = ds + (b * s);
+
+	// Finally apply luminosity
+	double dl = l * 2.;
+	double sr, sg, sb, sl;
+	if (dl > 1.)
+	{
+		// Make brighter
+		sl = dl - 1.;
+		sr = sl * (1. - r);
+		r += sr;
+		sg = sl * (1. - g);
+		g += sg;
+		sb = sl * (1. - b);
+		b += sb;
+	}
+	else if (dl < 1.)
+	{
+		// Make darker
+		sl = 1. - dl;
+		sr = sl * r;
+		r -= sr;
+		sg = sl * g;
+		g -= sg;
+		sb = sl * b;
+		b -= sb;
+	}
+
+	// Clamping (shouldn't actually be needed)
+	if (r > 1.)
+		r = 1.;
+	if (r < 0.)
+		r = 0.;
+	if (g > 1.)
+		g = 1.;
+	if (g < 0.)
+		g = 0.;
+	if (b > 1.)
+		b = 1.;
+	if (b < 0.)
+		b = 0.;
+}
+} // namespace
+
+// -----------------------------------------------------------------------------
+//
+// ColRGBA Struct Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Converts the colour from RGB to HSL colourspace
+// -----------------------------------------------------------------------------
+ColHSL ColRGBA::asHSL() const
+{
+	ColHSL ret;
+	ret.alpha = a;
+	rgbToHsl(dr(), dg(), db(), ret.h, ret.s, ret.l);
+	return ret;
+}
+
+// -----------------------------------------------------------------------------
+// Converts the colour from RGB to CIE-L*a*b colourspace
+// -----------------------------------------------------------------------------
+ColLAB ColRGBA::asLAB() const
+{
+	ColLAB ret;
+	rgbToLab(dr(), dg(), db(), ret.l, ret.a, ret.b);
+	ret.alpha = a;
+	return ret;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the colour from [h][s][l] values
+// -----------------------------------------------------------------------------
+void ColRGBA::fromHSL(double h, double s, double l)
+{
+	double dr, dg, db;
+	hslToRgb(h, s, l, dr, dg, db);
+
+	// Now convert from 0f--1f to 0i--255i, rounding up
+	r = (uint8_t)(dr * 255. + 0.499999999);
+	g = (uint8_t)(dg * 255. + 0.499999999);
+	b = (uint8_t)(db * 255. + 0.499999999);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the colour from another HSL colour
+// -----------------------------------------------------------------------------
+void ColRGBA::fromHSL(const ColHSL& hsl)
+{
+	fromHSL(hsl.h, hsl.s, hsl.l);
+}
 
 // -----------------------------------------------------------------------------
 // Returns a string representation of the colour, in the requested [format]
@@ -157,7 +294,7 @@ std::string ColRGBA::toString(StringFormat format) const
 	{
 	case StringFormat::RGB: return fmt::format("RGB({}, {}, {})", r, g, b);
 	case StringFormat::RGBA: return fmt::format("RGBA({}, {}, {}, {})", r, g, b, a);
-	case StringFormat::CSS: return {}; // TODO #RRGGBB
+	case StringFormat::CSS: return {};   // TODO #RRGGBB
 	case StringFormat::ZDoom: return {}; // TODO "RR GG BB"
 	default: return {};
 	}
@@ -179,108 +316,13 @@ ColRGBA ColHSL::asRGB() const
 {
 	ColRGBA ret(0, 0, 0, uint8_t(alpha * 255.), -1);
 
-	// No saturation means grey
-	if (s == 0.)
-	{
-		ret.r = ret.g = ret.b = (uint8_t)(255. * l);
-		return ret;
-	}
-
-	// Find the rough values at given H with mid L and max S.
-	double  hue    = (6. * h);
-	uint8_t sector = (uint8_t)hue;
-	double  factor = hue - sector;
-	double  dr, dg, db;
-	switch (sector)
-	{
-		// RGB 0xFF0000 to 0xFFFF00, increasingly green
-	case 0:
-		dr = 1.;
-		dg = factor;
-		db = 0.;
-		break;
-		// RGB 0xFFFF00 to 0x00FF00, decreasingly red
-	case 1:
-		dr = 1. - factor;
-		dg = 1.;
-		db = 0.;
-		break;
-		// RGB 0x00FF00 to 0x00FFFF, increasingly blue
-	case 2:
-		dr = 0.;
-		dg = 1.;
-		db = factor;
-		break;
-		// RGB 0x00FFFF to 0x0000FF, decreasingly green
-	case 3:
-		dr = 0.;
-		dg = 1. - factor;
-		db = 1.;
-		break;
-		// RGB 0x0000FF to 0xFF00FF, increasingly red
-	case 4:
-		dr = factor;
-		dg = 0.;
-		db = 1.;
-		break;
-		// RGB 0xFF00FF to 0xFF0000, decreasingly blue
-	case 5:
-		dr = 1.;
-		dg = 0.;
-		db = 1. - factor;
-		break;
-	}
-
-	// Now apply desaturation
-	double ds = (1. - s) * 0.5;
-	dr        = ds + (dr * s);
-	dg        = ds + (dg * s);
-	db        = ds + (db * s);
-
-	// Finally apply luminosity
-	double dl = l * 2.;
-	double sr, sg, sb, sl;
-	if (dl > 1.)
-	{
-		// Make brighter
-		sl = dl - 1.;
-		sr = sl * (1. - dr);
-		dr += sr;
-		sg = sl * (1. - dg);
-		dg += sg;
-		sb = sl * (1. - db);
-		db += sb;
-	}
-	else if (dl < 1.)
-	{
-		// Make darker
-		sl = 1. - dl;
-		sr = sl * dr;
-		dr -= sr;
-		sg = sl * dg;
-		dg -= sg;
-		sb = sl * db;
-		db -= sb;
-	}
-
-	// Clamping (shouldn't actually be needed)
-	if (dr > 1.)
-		dr = 1.;
-	if (dr < 0.)
-		dr = 0.;
-	if (dg > 1.)
-		dg = 1.;
-	if (dg < 0.)
-		dg = 0.;
-	if (db > 1.)
-		db = 1.;
-	if (db < 0.)
-		db = 0.;
+	double r, g, b;
+	hslToRgb(h, s, l, r, g, b);
 
 	// Now convert from 0f--1f to 0i--255i, rounding up
-	ret.r = (uint8_t)(dr * 255. + 0.499999999);
-	ret.g = (uint8_t)(dg * 255. + 0.499999999);
-	ret.b = (uint8_t)(db * 255. + 0.499999999);
+	ret.r = (uint8_t)(r * 255. + 0.499999999);
+	ret.g = (uint8_t)(g * 255. + 0.499999999);
+	ret.b = (uint8_t)(b * 255. + 0.499999999);
 
 	return ret;
 }

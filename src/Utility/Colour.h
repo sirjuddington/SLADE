@@ -138,6 +138,8 @@ struct ColRGBA
 
 	ColHSL asHSL() const;
 	ColLAB asLAB() const;
+	void   fromHSL(double h, double s, double l);
+	void   fromHSL(const ColHSL& hsl);
 
 	// String conversion
 	enum class StringFormat

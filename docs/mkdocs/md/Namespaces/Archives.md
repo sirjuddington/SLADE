@@ -125,7 +125,7 @@ This is the list of base resource archive paths as seen in the base resource con
 ---
 ### OpenBaseResource
 
-<fdef>function Archives.<func>OpenBaseResource</func>(<rg>a)</fde>
+<fdef>function Archives.<func>OpenBaseResource</func>(<arg>index</arg>)</fde>
 
 Opens the base resource archive at <arg>index</arg> in the list of base resource archive file paths (see <code>[BaseResourcePaths](#baseresourcepaths)</code>).
 
