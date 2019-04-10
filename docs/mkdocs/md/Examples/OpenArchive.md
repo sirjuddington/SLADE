@@ -9,7 +9,7 @@ This example script does the following:
 
 ```lua
 -- Browse for archive file to open
-local path = UI.BrowseFile('Open Archive', Archives.FileExtensionsString(), '')
+local path = UI.PromptOpenFile('Open Archive', Archives.FileExtensionsString(), '')
 if path == '' then
    App.LogMessage('No archive selected')
 else

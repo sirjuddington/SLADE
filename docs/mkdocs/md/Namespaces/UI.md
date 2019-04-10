@@ -90,13 +90,13 @@ Shows a dialog prompt with 'Yes' and 'No' buttons.
 
 * <type>boolean</type>: `true` if the user clicked 'Yes'
 
-## Functions - File Browsing
+## Functions - File Dialogs
 
-### BrowseFile
+### PromptOpenFile
 
-<fdef>function UI.<func>BrowseFile</func>(<arg>title</arg>, <arg>extensions</arg>, <arg>filename</arg>)</fdef>
+<fdef>function UI.<func>PromptOpenFile</func>(<arg>title</arg>, <arg>extensions</arg>, <arg>filename</arg>)</fdef>
 
-Shows a file browser dialog allowing the user to select a file.
+Shows a file browser dialog allowing the user to select a file to open.
 
 <listhead>Parameters</listhead>
 
@@ -119,16 +119,16 @@ Where `Type Name X` is the name to display in the type selection dropdown, and `
 #### Example
 
 ```lua
-local path = UI.BrowseFile('Select a File', 'Wad Files (*.wad)|*.wad|All Files|*.*', '')
+local path = UI.PromptOpenFile('Select a File', 'Wad Files (*.wad)|*.wad|All Files|*.*', '')
 App.LogMessage('Selected file ' .. path)
 ```
 
 ---
-### BrowseFiles
+### PromptOpenFiles
 
-<fdef>function UI.<func>BrowseFiles</func>(<arg>title</arg>, <arg>extensions</arg>)</fdef>
+<fdef>function UI.<func>PromptOpenFiles</func>(<arg>title</arg>, <arg>extensions</arg>)</fdef>
 
-Shows a file browser dialog allowing the user to select multiple files.
+Shows a file browser dialog allowing the user to select multiple files to open.
 
 <listhead>Parameters</listhead>
 
@@ -141,7 +141,50 @@ Shows a file browser dialog allowing the user to select multiple files.
 
 #### Notes
 
-See <code>[BrowseFile](#browsefile)</code> above for the formatting of the <arg>extensions</arg> parameter.
+See <code>[PromptOpenFile](#promptopenfile)</code> above for the formatting of the <arg>extensions</arg> parameter.
+
+---
+### PromptSaveFile
+
+<fdef>function UI.<func>PromptSaveFile</func>(<arg>title</arg>, <arg>extensions</arg>, <arg>defaultFilename</arg>)</fdef>
+
+Shows a file browser dialog allowing the user to select a path+filename to save a single file to.
+
+<listhead>Parameters</listhead>
+
+* <arg>title</arg> (<type>string</type>): The dialog caption
+* <arg>extensions</arg> (<type>string</type>): A formatted list of selectable file extensions
+* <arg>[defaultFilename]</arg> (<type>string</type>, default `""`): The default name to put in the browser dialog 'file name' text box
+
+<listhead>Returns</listhead>
+
+* <type>string</type>: The full selected path, or an empty string if the dialog was cancelled
+
+#### Notes
+
+See <code>[PromptOpenFile](#promptopenfile)</code> above for the formatting of the <arg>extensions</arg> parameter.
+
+---
+### PromptSaveFiles
+
+<fdef>function UI.<func>PromptSaveFiles</func>(<arg>title</arg>, <arg>extensions</arg>)</fdef>
+
+Shows a file browser dialog allowing the user to select a path to save multiple files to.
+
+<listhead>Parameters</listhead>
+
+* <arg>title</arg> (<type>string</type>): The dialog caption
+* <arg>extensions</arg> (<type>string</type>): A formatted list of selectable file extensions
+
+<listheac>Returns</listheac>
+
+* <type>string</type>: The directory path to save the files to
+* <type>string</type>: The file extension that was selected (not the full wildcard, just the extension - eg. `wad` or `*`)
+
+#### Notes
+
+See <code>[PromptOpenFile](#promptopenfile)</code> above for the formatting of the <arg>extensions</arg> parameter.
+
 
 ## Functions - Splash Window
 

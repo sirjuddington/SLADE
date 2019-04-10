@@ -46,11 +46,11 @@
 namespace Lua
 {
 // -----------------------------------------------------------------------------
-// Writes a log [message]
+// Writes a log [message] of [type]
 // -----------------------------------------------------------------------------
-void logMessage(const char* message)
+void logMessage(std::string_view message, Log::MessageType type = Log::MessageType::Script)
 {
-	Log::message(Log::MessageType::Script, message);
+	Log::message(type, message);
 }
 
 // -----------------------------------------------------------------------------
@@ -210,13 +210,16 @@ void registerAppNamespace(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	app["LogMessage"]            = &logMessage;
+	app["LogMessage"]            = [](std::string_view message) { logMessage(message, Log::MessageType::Script); };
+	app["LogWarning"]            = [](std::string_view message) { logMessage(message, Log::MessageType::Warning); };
+	app["LogError"]              = [](std::string_view message) { logMessage(message, Log::MessageType::Error); };
 	app["CurrentArchive"]        = &MainEditor::currentArchive;
 	app["CurrentEntry"]          = &MainEditor::currentEntry;
 	app["CurrentEntrySelection"] = &MainEditor::currentEntrySelection;
-	app["ShowArchive"]           = &showArchive;
-	app["ShowEntry"]             = &MainEditor::openEntry;
-	app["MapEditor"]             = &MapEditor::editContext;
+	app["CurrentPalette"] = sol::overload(&MainEditor::currentPalette, []() { return MainEditor::currentPalette(); });
+	app["ShowArchive"]    = &showArchive;
+	app["ShowEntry"]      = &MainEditor::openEntry;
+	app["MapEditor"]      = &MapEditor::editContext;
 }
 
 } // namespace Lua

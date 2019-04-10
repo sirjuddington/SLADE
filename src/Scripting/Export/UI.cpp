@@ -89,7 +89,7 @@ bool promptYesNo(const std::string& title, const std::string& message)
 // -----------------------------------------------------------------------------
 // Opens the file browser to select a single file
 // -----------------------------------------------------------------------------
-std::string browseFile(const std::string& title, const std::string& extensions, const std::string& filename)
+std::string browseFile(std::string_view title, std::string_view extensions, std::string_view filename)
 {
 	SFileDialog::FDInfo inf;
 	SFileDialog::openFile(inf, title, extensions, currentWindow(), filename);
@@ -99,7 +99,7 @@ std::string browseFile(const std::string& title, const std::string& extensions, 
 // -----------------------------------------------------------------------------
 // Opens the file browser to select multiple files
 // -----------------------------------------------------------------------------
-vector<std::string> browseFiles(const std::string& title, const std::string& extensions)
+vector<std::string> browseFiles(std::string_view title, std::string_view extensions)
 {
 	SFileDialog::FDInfo inf;
 	vector<std::string> filenames;
@@ -107,6 +107,30 @@ vector<std::string> browseFiles(const std::string& title, const std::string& ext
 		for (const auto& file : inf.filenames)
 			filenames.push_back(file);
 	return filenames;
+}
+
+// -----------------------------------------------------------------------------
+// Opens the file browser to save a single file
+// -----------------------------------------------------------------------------
+std::string saveFile(std::string_view title, std::string_view extensions, std::string_view fn_default = {})
+{
+	SFileDialog::FDInfo inf;
+	if (SFileDialog::saveFile(inf, title, extensions, currentWindow(), fn_default))
+		return inf.filenames[0];
+
+	return {};
+}
+
+// -----------------------------------------------------------------------------
+// Opens the file browser to save multiple files
+// -----------------------------------------------------------------------------
+std::tuple<std::string, std::string> saveFiles(std::string_view title, std::string_view extensions)
+{
+	SFileDialog::FDInfo inf;
+	if (SFileDialog::saveFiles(inf, title, extensions, currentWindow()))
+		return std::make_tuple(inf.path, inf.extension);
+
+	return { {}, {} };
 }
 
 // -----------------------------------------------------------------------------
@@ -120,13 +144,16 @@ void registerUINamespace(sol::state& lua)
 	// -------------------------------------------------------------------------
 	ui["MessageBox"] = sol::overload(
 		&messageBox, [](const std::string& title, const std::string& message) { messageBox(title, message); });
-	ui["MessageBoxExt"] = &messageBoxExtended;
-	ui["PromptString"]  = &promptString;
-	ui["PromptNumber"]  = &promptNumber;
-	ui["PromptYesNo"]   = &promptYesNo;
-	ui["BrowseFile"]    = &browseFile;
-	ui["BrowseFiles"]   = &browseFiles;
-	ui["ShowSplash"]    = sol::overload(
+	ui["MessageBoxExt"]   = &messageBoxExtended;
+	ui["PromptString"]    = &promptString;
+	ui["PromptNumber"]    = &promptNumber;
+	ui["PromptYesNo"]     = &promptYesNo;
+	ui["PromptOpenFile"]  = &browseFile;
+	ui["PromptOpenFiles"] = &browseFiles;
+	ui["PromptSaveFile"]  = sol::overload(
+        &saveFile, [](std::string_view title, std::string_view extensions) { return saveFile(title, extensions); });
+	ui["PromptSaveFiles"] = &saveFiles;
+	ui["ShowSplash"]      = sol::overload(
         [](const std::string& message) { UI::showSplash(message, false, currentWindow()); },
         [](const std::string& message, bool progress) { UI::showSplash(message, progress, currentWindow()); });
 	ui["HideSplash"]               = &UI::hideSplash;

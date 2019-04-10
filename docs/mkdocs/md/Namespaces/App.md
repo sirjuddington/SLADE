@@ -21,6 +21,28 @@ App.LogMessage('This is a log message')
 ```
 
 ---
+### LogWarning
+
+<fdef>function App.<func>LogWarning</func>(<arg>message</arg>)</fdef>
+
+Writes a warning message to the SLADE log. Warning messages are displayed in a yellow colour in the console log window.
+
+<listhead>Parameters</listhead>
+
+* <arg>message</arg> (<type>string</type>): The message to print to the log
+
+---
+### LogError
+
+<fdef>function App.<func>LogError</func>(<arg>message</arg>)</fdef>
+
+Writes an error message to the SLADE log. Error messages are displayed in a red colour in the console log window.
+
+<listhead>Parameters</listhead>
+
+* <arg>message</arg> (<type>string</type>): The message to print to the log
+
+---
 ### CurrentArchive
 
 <fdef>function App.<func>CurrentArchive</func>()</fdef>
@@ -46,6 +68,23 @@ App.LogMessage('This is a log message')
 <listhead>Returns</listhead>
 
 * <type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)\[\]</type>: An array of the currently selected entries in the main SLADE window
+
+---
+### CurrentPalette
+
+<fdef>function App.<func>CurrentPalette</func>(<arg>entryFor</arg>)</fdef>
+
+<listhead>Parameters</listhead>
+
+* <arg>[entryFor]</arg> (<type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)</type>, default `nil`): If given, the appropriate palette for this entry will be found (if 'Existing/Global' is selected)
+
+<listhead>Returns</listhead>
+
+* <type>[Palette](../Types/Graphics/Palette.md)</type>: The currently selected palette
+
+#### Notes
+
+If 'Existing/Global' is selected in the main window palette dropdown, this will return the palette from the currently selected base resource archive. Additionally, if <arg>entryFor</arg> was given, this will check for certain cases where an entry does not use `PLAYPAL` as its palette, and return the appropriate palette instead.
 
 ---
 ### ShowArchive
