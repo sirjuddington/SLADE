@@ -1,4 +1,35 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2019 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Graphics.cpp
+// Description: Functions to export graphics-related types and namespaces to lua
+//              using sol3
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive/Archive.h"
 #include "Graphics/CTexture/CTexture.h"
@@ -10,8 +41,17 @@
 #include "thirdparty/sol/sol.hpp"
 #include "General/Misc.h"
 
+
+// -----------------------------------------------------------------------------
+//
+// Lua Namespace Functions
+//
+// -----------------------------------------------------------------------------
 namespace Lua
 {
+// -----------------------------------------------------------------------------
+// Registers the ImageConvertOptions (SIFormat::ConvertOptions) type with lua
+// -----------------------------------------------------------------------------
 void registerImageConvertOptionsType(sol::state& lua)
 {
 	auto lua_copt = lua.new_usertype<SIFormat::ConvertOptions>(
@@ -35,6 +75,9 @@ void registerImageConvertOptionsType(sol::state& lua)
 	lua_copt["pixelFormat"]    = &SIFormat::ConvertOptions::col_format;
 }
 
+// -----------------------------------------------------------------------------
+// Registers the ImageFormat (SIFormat) type with lua
+// -----------------------------------------------------------------------------
 void registerImageFormatType(sol::state& lua)
 {
 	auto lua_iformat = lua.new_usertype<SIFormat>("ImageFormat", "new", sol::no_constructor);
@@ -65,6 +108,9 @@ void registerImageFormatType(sol::state& lua)
 		[](SIFormat& self, SImage& image, MemChunk& out, Palette* pal) { self.saveImage(image, out, pal); });
 }
 
+// -----------------------------------------------------------------------------
+// Registers the ImageDrawOptions (SImage::DrawProps) type with lua
+// -----------------------------------------------------------------------------
 void registerImageDrawOptionsType(sol::state& lua)
 {
 	auto lua_idopt = lua.new_usertype<SImage::DrawProps>("ImageDrawOptions", sol::constructors<SImage::DrawProps()>());
@@ -76,21 +122,37 @@ void registerImageDrawOptionsType(sol::state& lua)
 	lua_idopt["keepSourceAlpha"] = &SImage::DrawProps::src_alpha;
 }
 
+// -----------------------------------------------------------------------------
+// Disambiguates the SImage::SetPixel function (colour version) for exporting to
+// lua (as Image.SetPixelColour)
+// -----------------------------------------------------------------------------
 bool imageSetPixelCol(SImage& self, int x, int y, const ColRGBA& colour, Palette* pal)
 {
 	return self.setPixel(x, y, colour, pal);
 }
 
+// -----------------------------------------------------------------------------
+// Disambiguates the SImage::SetPixel function (index version) for exporting to
+// lua (as Image.SetPixelIndex)
+// -----------------------------------------------------------------------------
 bool imageSetPixelIndex(SImage& self, int x, int y, int index, int alpha)
 {
 	return self.setPixel(x, y, index, alpha);
 }
 
+// -----------------------------------------------------------------------------
+// Disambiguates the SImage::ApplyTranslation function (Translation version) for
+// exporting to lua (as Image.ApplyTranslation)
+// -----------------------------------------------------------------------------
 bool imageApplyTranslation(SImage& self, Translation* trans, Palette* pal, bool truecolour)
 {
 	return self.applyTranslation(trans, pal, truecolour);
 }
 
+// -----------------------------------------------------------------------------
+// Rearranges the parameters of SImage::drawImage so that the coordinates are
+// first in the script version (makes it consistent with DrawPixel)
+// -----------------------------------------------------------------------------
 bool imageDrawImage(
 	SImage&            self,
 	int                x,
@@ -103,12 +165,18 @@ bool imageDrawImage(
 	return self.drawImage(img, x, y, props, pal_src, pal_dest);
 }
 
+// -----------------------------------------------------------------------------
+// Loads data from [entry] into image [self]
+// -----------------------------------------------------------------------------
 std::tuple<bool, std::string> imageLoadEntry(SImage& self, ArchiveEntry* entry, int index)
 {
 	bool ok = Misc::loadImageFromEntry(&self, entry, index);
 	return std::make_tuple(ok, Global::error);
 }
 
+// -----------------------------------------------------------------------------
+// Registers the Image (SImage) type with lua
+// -----------------------------------------------------------------------------
 void registerImageType(sol::state& lua)
 {
 	auto lua_image = lua.new_usertype<SImage>("Image", "new", sol::constructors<SImage(), SImage(SImage::Type)>());
@@ -202,17 +270,26 @@ void registerImageType(sol::state& lua)
 	lua_image["Trim"] = &SImage::adjust;
 }
 
+// -----------------------------------------------------------------------------
+// Loads raw rgb triplet [data] into palette [self]
+// -----------------------------------------------------------------------------
 bool paletteLoadData(Palette& self, std::string_view data)
 {
 	return self.loadMem((const uint8_t*)data.data(), data.size());
 }
 
+// -----------------------------------------------------------------------------
+// Loads [data] in [format] to palette [self]
+// -----------------------------------------------------------------------------
 bool paletteLoadDataFormatted(Palette& self, std::string_view data, Palette::Format format)
 {
 	MemChunk mc{ (const uint8_t*)data.data(), data.size() };
 	return self.loadMem(mc, format);
 }
 
+// -----------------------------------------------------------------------------
+// Registers the Palette type with lua
+// -----------------------------------------------------------------------------
 void registerPaletteType(sol::state& lua)
 {
 	auto lua_palette = lua.new_usertype<Palette>("Palette", "new", sol::constructors<Palette(), Palette(unsigned)>());
@@ -266,6 +343,9 @@ void registerPaletteType(sol::state& lua)
 	};
 }
 
+// -----------------------------------------------------------------------------
+// Registers the TransRange type (and TransRange* sub-types) with lua
+// -----------------------------------------------------------------------------
 void registerTranslationRangeTypes(sol::state& lua)
 {
 	// -------------------------------------------------------------------------
@@ -381,11 +461,19 @@ void registerTranslationRangeTypes(sol::state& lua)
 	lua_trange_special["special"] = sol::property(&TransRangeSpecial::special, &TransRangeSpecial::setSpecial);
 }
 
+// -----------------------------------------------------------------------------
+// Adds a new translation range of [type] to the translation [self], with its
+// initial range being from [range_start] to [range_end].
+// Returns the TransRange that was added (cast to type T)
+// -----------------------------------------------------------------------------
 template<typename T> T* addTranslationRange(Translation& self, TransRange::Type type, int range_start, int range_end)
 {
 	return dynamic_cast<T*>(self.addRange(type, -1, range_start, range_end));
 }
 
+// -----------------------------------------------------------------------------
+// Registers the Translation type with lua
+// -----------------------------------------------------------------------------
 void registerTranslationType(sol::state& lua)
 {
 	auto lua_translation = lua.new_usertype<Translation>("Translation", "new", sol::constructors<Translation()>());
@@ -443,6 +531,9 @@ void registerTranslationType(sol::state& lua)
 	registerTranslationRangeTypes(lua);
 }
 
+// -----------------------------------------------------------------------------
+// Registers the CTPatch and CTPatchEx types with lua
+// -----------------------------------------------------------------------------
 void registerCTexturePatchTypes(sol::state& lua)
 {
 	// -------------------------------------------------------------------------
@@ -501,16 +592,25 @@ void registerCTexturePatchTypes(sol::state& lua)
 	// parse?
 }
 
-void CTextureAddPatch(CTexture& self, std::string_view patch, int x, int y, int index)
+// -----------------------------------------------------------------------------
+// Wrapper for CTexture::addPatch that changes the index to be 1-based
+// -----------------------------------------------------------------------------
+void cTextureAddPatch(CTexture& self, std::string_view patch, int x, int y, int index)
 {
 	self.addPatch(patch, x, y, index - 1);
 }
 
-bool CTextureDuplicatePatch(CTexture& self, int index, int offset_x, int offset_y)
+// -----------------------------------------------------------------------------
+// Wrapper for CTexture::duplicatePatch that changes the index to be 1-based
+// -----------------------------------------------------------------------------
+bool cTextureDuplicatePatch(CTexture& self, int index, int offset_x, int offset_y)
 {
 	return self.duplicatePatch(index - 1, offset_x, offset_y);
 }
 
+// -----------------------------------------------------------------------------
+// Registers the CTexture type with lua
+// -----------------------------------------------------------------------------
 void registerCTextureType(sol::state& lua)
 {
 	auto lua_ctexture = lua.new_usertype<CTexture>("CTexture", "new", sol::no_constructor);
@@ -538,21 +638,24 @@ void registerCTextureType(sol::state& lua)
 		&CTexture::copyTexture, [](CTexture& self, const CTexture& tex) { return self.copyTexture(tex, false); });
 	lua_ctexture["Clear"]    = &CTexture::clear;
 	lua_ctexture["AddPatch"] = sol::overload(
-		&CTextureAddPatch,
-		[](CTexture& self, std::string_view patch) { return CTextureAddPatch(self, patch, 0, 0, 0); },
-		[](CTexture& self, std::string_view patch, int x, int y) { return CTextureAddPatch(self, patch, x, y, 0); });
+		&cTextureAddPatch,
+		[](CTexture& self, std::string_view patch) { return cTextureAddPatch(self, patch, 0, 0, 0); },
+		[](CTexture& self, std::string_view patch, int x, int y) { return cTextureAddPatch(self, patch, x, y, 0); });
 	lua_ctexture["RemovePatch"]  = [](CTexture& self, int index) { return self.removePatch(index - 1); };
 	lua_ctexture["ReplacePatch"] = [](CTexture& self, int index, std::string_view patch) {
 		return self.replacePatch(index - 1, patch);
 	};
 	lua_ctexture["DuplicatePatch"] = sol::overload(
-		&CTextureDuplicatePatch, [](CTexture& self, int index) { CTextureDuplicatePatch(self, index, 8, 8); });
+		&cTextureDuplicatePatch, [](CTexture& self, int index) { cTextureDuplicatePatch(self, index, 8, 8); });
 	lua_ctexture["SwapPatches"]     = [](CTexture& self, int p1, int p2) { return self.swapPatches(p1 - 1, p2 - 1); };
 	lua_ctexture["AsText"]          = &CTexture::asText;
 	lua_ctexture["ConvertExtended"] = &CTexture::convertExtended;
 	lua_ctexture["ConvertRegular"]  = &CTexture::convertRegular;
 }
 
+// -----------------------------------------------------------------------------
+// Returns all the patches in PatchTable [self] as a vector of strings
+// -----------------------------------------------------------------------------
 vector<std::string> patchTablePatches(PatchTable& self)
 {
 	vector<std::string> patches;
@@ -561,6 +664,9 @@ vector<std::string> patchTablePatches(PatchTable& self)
 	return patches;
 }
 
+// -----------------------------------------------------------------------------
+// Registers the PatchTable type with lua
+// -----------------------------------------------------------------------------
 void registerPatchTableType(sol::state& lua)
 {
 	auto lua_ptable = lua.new_usertype<PatchTable>("PatchTable", "new", sol::constructors<PatchTable()>());
@@ -585,6 +691,10 @@ void registerPatchTableType(sol::state& lua)
 	lua_ptable["WritePNAMES"] = &PatchTable::writePNAMES;
 }
 
+// -----------------------------------------------------------------------------
+// Wrapper for TextureXList::addTexture that changes the index to be 1-based and
+// returns a pointer to the added texture
+// -----------------------------------------------------------------------------
 CTexture* addTexture(TextureXList& self, std::string_view name, bool extended, int position)
 {
 	auto tex     = std::make_unique<CTexture>(name, extended);
@@ -593,6 +703,9 @@ CTexture* addTexture(TextureXList& self, std::string_view name, bool extended, i
 	return tex_ptr;
 }
 
+// -----------------------------------------------------------------------------
+// Registers the TextureXList type with lua
+// -----------------------------------------------------------------------------
 void registerTextureXListType(sol::state& lua)
 {
 	auto lua_txlist = lua.new_usertype<TextureXList>(
@@ -632,6 +745,9 @@ void registerTextureXListType(sol::state& lua)
 	lua_txlist["FindErrors"]        = &TextureXList::findErrors;
 }
 
+// -----------------------------------------------------------------------------
+// Registers all graphics-related types with lua
+// -----------------------------------------------------------------------------
 void registerGraphicsTypes(sol::state& lua)
 {
 	registerImageConvertOptionsType(lua);
@@ -644,6 +760,9 @@ void registerGraphicsTypes(sol::state& lua)
 	registerTextureXListType(lua);
 }
 
+// -----------------------------------------------------------------------------
+// Registers the Graphics function namespace with lua
+// -----------------------------------------------------------------------------
 void registerGraphicsNamespace(sol::state& lua)
 {
 	auto gfx = lua.create_named_table("Graphics");
