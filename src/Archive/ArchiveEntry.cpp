@@ -471,7 +471,7 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 	}
 
 	// Import data from the file stream
-	if (data_.importFileStream(file, len))
+	if (data_.importFileStreamWx(file, len))
 	{
 		// Update attributes
 		size_ = data_.size();

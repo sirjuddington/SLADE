@@ -1,6 +1,10 @@
 #pragma once
 
-class MemChunk
+#include "SeekableData.h"
+
+class SFile;
+
+class MemChunk : public SeekableData
 {
 public:
 	MemChunk() = default;
@@ -13,7 +17,15 @@ public:
 	// Accessors
 	const uint8_t* data() const { return data_; }
 	uint8_t*       data() { return data_; }
-	uint32_t       size() const { return size_; }
+
+	// SeekableData
+	unsigned size() const override { return size_; }
+	unsigned currentPos() const override { return cur_ptr_; }
+	bool     seek(unsigned offset) override { return seek(offset, SEEK_CUR); }
+	bool     seekFromStart(unsigned offset) override { return seek(offset, SEEK_SET); }
+	bool     seekFromEnd(unsigned offset) override { return seek(offset, SEEK_END); }
+	bool     read(void* buffer, unsigned count) override;
+	bool     write(const void* buffer, unsigned count) override;
 
 	bool hasData() const;
 
@@ -22,7 +34,8 @@ public:
 
 	// Data import
 	bool importFile(std::string_view filename, uint32_t offset = 0, uint32_t len = 0);
-	bool importFileStream(wxFile& file, uint32_t len = 0);
+	bool importFileStreamWx(wxFile& file, uint32_t len = 0);
+	bool importFileStream(SFile& file, unsigned len = 0);
 	bool importMem(const uint8_t* start, uint32_t len);
 	bool importMem(const MemChunk& other) { return importMem(other.data_, other.size_); }
 
@@ -35,12 +48,9 @@ public:
 	bool read(unsigned offset, void* buf, unsigned size) const;
 
 	// C-style reading/writing
-	bool     write(const void* data, uint32_t size);
-	bool     write(const void* data, uint32_t size, uint32_t start);
-	bool     read(void* buf, uint32_t size);
-	bool     read(void* buf, uint32_t size, uint32_t start);
-	bool     seek(uint32_t offset, uint32_t start);
-	uint32_t currentPos() const { return cur_ptr_; }
+	bool write(const void* data, uint32_t size, uint32_t start);
+	bool read(void* buf, uint32_t size, uint32_t start);
+	bool seek(uint32_t offset, uint32_t start);
 
 	// Extended C-style reading/writing
 	bool readMC(MemChunk& mc, uint32_t size);

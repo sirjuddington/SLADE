@@ -2244,6 +2244,7 @@
     <ClInclude Include="..\..\src\Dialogs\GfxTintDialog.h" />
     <ClInclude Include="..\..\src\Scripting\Export\Export.h" />
     <ClInclude Include="..\..\src\Utility\FileUtils.h" />
+    <ClInclude Include="..\..\src\Utility\SeekableData.h" />
     <ClInclude Include="..\..\thirdparty\bzip2\bzlib.h" />
     <ClInclude Include="..\..\thirdparty\bzip2\bzlib_private.h" />
     <ClInclude Include="..\..\src\Dialogs\DirArchiveUpdateDialog.h" />

@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive/Archive.h"
+#include "Graphics/Palette/Palette.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditContext.h"
 #include "Scripting/Lua.h"

@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "MemChunk.h"
 #include "General/Misc.h"
+#include "FileUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -197,7 +198,7 @@ bool MemChunk::importFile(std::string_view filename, uint32_t offset, uint32_t l
 // Loads a file (or part of it) from a currently open file stream into memory.
 // Returns false if file couldn't be opened, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::importFileStream(wxFile& file, uint32_t len)
+bool MemChunk::importFileStreamWx(wxFile& file, uint32_t len)
 {
 	// Check file
 	if (!file.IsOpened())
@@ -223,6 +224,38 @@ bool MemChunk::importFileStream(wxFile& file, uint32_t len)
 		// data = new uint8_t[size];
 		if (allocData(size_))
 			file.Read(data_, size_);
+		else
+			return false;
+	}
+
+	return true;
+}
+
+bool MemChunk::importFileStream(SFile& file, unsigned len)
+{
+	// Check file
+	if (!file.isOpen())
+		return false;
+
+	// Clear current data if it exists
+	clear();
+
+	// Get current file position
+	uint32_t offset = file.currentPos();
+
+	// If length isn't specified or exceeds the file length,
+	// only read to the end of the file
+	if (offset + len > file.size() || len == 0)
+		len = file.size() - offset;
+
+	// Setup variables
+	size_ = len;
+
+	// Read the file
+	if (size_ > 0)
+	{
+		if (allocData(size_))
+			file.read(data_, size_);
 		else
 			return false;
 	}
@@ -366,23 +399,23 @@ bool MemChunk::read(unsigned offset, void* buf, unsigned size) const
 }
 
 // -----------------------------------------------------------------------------
-// Writes the given data at the current position.
+// Writes [count] bytes from the given data [buffer] at the current position.
 // Expands the memory chunk if necessary
 // -----------------------------------------------------------------------------
-bool MemChunk::write(const void* data, uint32_t size)
+bool MemChunk::write(const void* buffer, uint32_t count)
 {
 	// Check pointers
-	if (!data)
+	if (!buffer)
 		return false;
 
 	// If we're trying to write past the end of the memory chunk,
 	// resize it so we can write at this point
-	if (cur_ptr_ + size > size_)
-		reSize(cur_ptr_ + size, true);
+	if (cur_ptr_ + count > size_)
+		reSize(cur_ptr_ + count, true);
 
 	// Write the data and move to the byte after what was written
-	memcpy(data_ + cur_ptr_, data, size);
-	cur_ptr_ += size;
+	memcpy(data_ + cur_ptr_, buffer, count);
+	cur_ptr_ += count;
 
 	// Success
 	return true;
@@ -399,23 +432,23 @@ bool MemChunk::write(const void* data, uint32_t size, uint32_t start)
 }
 
 // -----------------------------------------------------------------------------
-// Reads data from the current position into [buf].
+// Reads [count] bytes of data from the current position into [buffer].
 // Returns false if attempting to read data outside of the chunk, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::read(void* buf, uint32_t size)
+bool MemChunk::read(void* buffer, unsigned count)
 {
 	// Check pointers
-	if (!data_ || !buf)
+	if (!data_ || !buffer)
 		return false;
 
 	// If we're trying to read past the end
 	// of the memory chunk, return failure
-	if (cur_ptr_ + size > size_)
+	if (cur_ptr_ + count > size_)
 		return false;
 
 	// Read the data and move to the byte after what was read
-	memcpy(buf, data_ + cur_ptr_, size);
-	cur_ptr_ += size;
+	memcpy(buffer, data_ + cur_ptr_, count);
+	cur_ptr_ += count;
 
 	return true;
 }
