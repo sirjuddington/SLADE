@@ -74,6 +74,10 @@ std::string_view memChunkData(MemChunk& mc)
 	return std::string_view{ (char*)mc.data(), mc.size() };
 }
 
+// -----------------------------------------------------------------------------
+// Reads data at [offset] in [self] as the type T.
+// Returns a sol::object of either the value read or sol::nil if reading failed
+// -----------------------------------------------------------------------------
 template<typename T> sol::object memChunkRead(MemChunk& self, unsigned offset)
 {
 	// Need to check how slow sol::make_object is, if it's really slow it might be best
@@ -84,6 +88,11 @@ template<typename T> sol::object memChunkRead(MemChunk& self, unsigned offset)
 	return sol::make_object(Lua::state().lua_state(), val);
 }
 
+// -----------------------------------------------------------------------------
+// Reads a string in [self] beginning at [offset] up to [length] characters.
+// If [null_terminated] is true, the read string will terminate at the first
+// null (\0) character found after [offset] (but before [offset]+[length])
+// -----------------------------------------------------------------------------
 std::string memChunkReadString(MemChunk& self, unsigned offset, unsigned length, bool null_terminated)
 {
 	if (null_terminated)
@@ -106,6 +115,11 @@ std::string memChunkReadString(MemChunk& self, unsigned offset, unsigned length,
 	return self.read(offset, str.data(), length) ? str : std::string{};
 }
 
+// -----------------------------------------------------------------------------
+// Writes data of the type T at [offset] in [self].
+// If [expand] is true, the MemChunk will be expanded if the written data goes
+// past the end of the chunk
+// -----------------------------------------------------------------------------
 template<typename T> bool memChunkWrite(MemChunk& self, unsigned offset, T value, bool expand)
 {
 	return self.write(offset, &value, sizeof(T), expand);
@@ -169,12 +183,18 @@ void registerMemChunkType(sol::state& lua)
 	});
 }
 
+// -----------------------------------------------------------------------------
+// Returns the HSL components of the colour [self]
+// -----------------------------------------------------------------------------
 std::tuple<double, double, double> colourAsHSL(ColRGBA& self)
 {
 	auto hsl = self.asHSL();
 	return std::make_tuple(hsl.h, hsl.s, hsl.l);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the LAB components of the colour [self]
+// -----------------------------------------------------------------------------
 std::tuple<double, double, double> colourAsLAB(ColRGBA& self)
 {
 	auto lab = self.asLAB();
