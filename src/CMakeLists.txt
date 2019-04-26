@@ -142,10 +142,11 @@ file(GLOB_RECURSE SLADE_SOURCES
 	MainEditor/*.cpp
 	MapEditor/*.cpp
 	OpenGL/*.cpp
+	Scripting/*.cpp
+	SLADEMap/*.cpp
+	TextEditor/*.cpp
 	UI/*.cpp
 	Utility/*.cpp
-	Scripting/*.cpp
-	TextEditor/*.cpp
 	)
 set(SLADE_HEADERS
 )
@@ -183,6 +184,7 @@ target_link_libraries(slade
 	${FREETYPE_LIBRARIES}
 	${GLEW_LIBRARY}
 	${CURL_LIBRARIES}
+	-lstdc++fs
 )
 
 if (WX_GTK3)

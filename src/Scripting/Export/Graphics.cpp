@@ -283,7 +283,7 @@ bool paletteLoadData(Palette& self, std::string_view data)
 // -----------------------------------------------------------------------------
 bool paletteLoadDataFormatted(Palette& self, std::string_view data, Palette::Format format)
 {
-	MemChunk mc{ (const uint8_t*)data.data(), data.size() };
+	MemChunk mc{ (const uint8_t*)data.data(), (uint32_t)data.size() };
 	return self.loadMem(mc, format);
 }
 
