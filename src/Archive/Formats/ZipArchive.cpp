@@ -51,7 +51,7 @@ namespace
 // Helper function to check a file exists
 bool fileExists(const string& filename)
 {
-	std::ifstream file(CHR(filename));
+	std::ifstream file(filename.c_str().AsChar());
 	return file.good();
 }
 } // namespace
