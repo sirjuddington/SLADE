@@ -450,10 +450,6 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 	btn_updir_->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnUpDir, this);
 	btn_clear_filter_->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnClearFilter, this);
 
-	// Do a quick check to see if we need the path display
-	if (archive->rootDir()->nChildren() == 0)
-		sizer_path_controls_->Show(false);
-
 	// Update size+layout
 	entry_list_->updateWidth();
 	wxPanel::Layout();
@@ -3378,19 +3374,6 @@ void ArchivePanel::onAnnouncement(Announcer* announcer, string event_name, MemCh
 		// Update this tab's name in the parent notebook (if filename was changed)
 		wxAuiNotebook* parent = (wxAuiNotebook*)GetParent();
 		parent->SetPageText(parent->GetPageIndex(this), archive_->filename(false));
-	}
-
-	// If a directory was added
-	if (announcer == archive_ && event_name == "directory_added")
-	{
-		// Show path controls (if they aren't already)
-		wxSizer* sizer = GetSizer();
-		wxSizerItem* item = sizer->GetItem(sizer_path_controls_, true);
-		if (!item->IsShown())
-		{
-			item->Show(true);
-			sizer->Layout();
-		}
 	}
 
 	// If an entry was removed
