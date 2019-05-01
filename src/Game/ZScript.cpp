@@ -14,7 +14,7 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
@@ -32,8 +32,8 @@
 #include "Main.h"
 #include "ZScript.h"
 #include "Archive/Archive.h"
-#include "Utility/Tokenizer.h"
 #include "Archive/ArchiveManager.h"
+#include "Utility/Tokenizer.h"
 
 using namespace ZScript;
 
@@ -45,24 +45,22 @@ using namespace ZScript;
 // ----------------------------------------------------------------------------
 namespace ZScript
 {
-	EntryType*	etype_zscript = nullptr;
+EntryType* etype_zscript = nullptr;
+string     db_comment    = "//$";
 
-	// ZScript keywords (can't be function/variable names)
-	vector<string> keywords =
-	{
-		"class", "default", "private", "static", "native", "return", "if", "else", "for", "while", "do", "break",
-		"continue", "deprecated", "state", "null", "readonly", "true", "false", "struct", "extend", "clearscope",
-		"vararg", "ui", "play", "virtual", "virtualscope", "meta", "Property", "version", "in", "out", "states",
-		"action", "override", "super", "is", "let", "const", "replaces", "protected", "self"
-	};
+// ZScript keywords (can't be function/variable names)
+vector<string> keywords = { "class",      "default", "private",  "static", "native",   "return",       "if",
+							"else",       "for",     "while",    "do",     "break",    "continue",     "deprecated",
+							"state",      "null",    "readonly", "true",   "false",    "struct",       "extend",
+							"clearscope", "vararg",  "ui",       "play",   "virtual",  "virtualscope", "meta",
+							"Property",   "version", "in",       "out",    "states",   "action",       "override",
+							"super",      "is",      "let",      "const",  "replaces", "protected",    "self" };
 
-	// For test_parse_zscript console command
-	bool	dump_parsed_blocks = false;
-	bool	dump_parsed_states = false;
-	bool	dump_parsed_functions = false;
-
-	string db_comment = "//$";
-}
+// For test_parse_zscript console command
+bool dump_parsed_blocks    = false;
+bool dump_parsed_states    = false;
+bool dump_parsed_functions = false;
+} // namespace ZScript
 
 
 // ----------------------------------------------------------------------------
@@ -72,7 +70,6 @@ namespace ZScript
 // ----------------------------------------------------------------------------
 namespace ZScript
 {
-
 // ----------------------------------------------------------------------------
 // logParserMessage
 //
@@ -100,8 +97,7 @@ string parseType(const vector<string>& tokens, unsigned& index)
 	// Qualifiers
 	while (index < tokens.size())
 	{
-		if (S_CMPNOCASE(tokens[index], "in") ||
-			S_CMPNOCASE(tokens[index], "out"))
+		if (S_CMPNOCASE(tokens[index], "in") || S_CMPNOCASE(tokens[index], "out"))
 			type += tokens[index++] + " ";
 		else
 			break;
@@ -115,7 +111,7 @@ string parseType(const vector<string>& tokens, unsigned& index)
 		type = "...";
 		index += 2;
 	}
-	
+
 	// Check for <>
 	if (tokens[index + 1] == "<")
 	{
@@ -185,9 +181,7 @@ bool checkKeywordValueStatement(const vector<string>& tokens, unsigned index, co
 	if (index + 3 >= tokens.size())
 		return false;
 
-	if (S_CMPNOCASE(tokens[index], word) &&
-		tokens[index + 1] == '(' &&
-		tokens[index + 3] == ')')
+	if (S_CMPNOCASE(tokens[index], word) && tokens[index + 1] == '(' && tokens[index + 3] == ')')
 	{
 		value = tokens[index + 2];
 		return true;
@@ -201,7 +195,7 @@ bool checkKeywordValueStatement(const vector<string>& tokens, unsigned index, co
 //
 // Parses all statements/blocks in [entry], adding them to [parsed]
 // ----------------------------------------------------------------------------
-void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
+void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<ArchiveEntry*>& entry_stack)
 {
 	Tokenizer tz;
 	tz.setSpecialCharacters(CHR(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?."));
@@ -209,7 +203,9 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 	tz.setCommentTypes(Tokenizer::CommentTypes::CPPStyle | Tokenizer::CommentTypes::CStyle);
 	tz.openMem(entry->getMCData(), "ZScript");
 
-	//Log::info(2, S_FMT("Parsing ZScript entry \"%s\"", entry->getPath(true)));
+	entry_stack.push_back(entry);
+
+	// Log::info(2, S_FMT("Parsing ZScript entry \"%s\"", entry->getPath(true)));
 
 	while (!tz.atEnd())
 	{
@@ -224,16 +220,23 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 				if (!inc_entry)
 				{
 					Log::warning(
-						S_FMT(
-							"Warning parsing ZScript entry %s: "
-							"Unable to find #included entry \"%s\" at line %u, skipping",
-							CHR(entry->getName()),
-							CHR(tz.current().text),
-							tz.current().line_no
-						));
+						S_FMT("Warning parsing ZScript entry %s: "
+							  "Unable to find #included entry \"%s\" at line %u, skipping",
+							  CHR(entry->getName()),
+							  CHR(tz.current().text),
+							  tz.current().line_no));
+				}
+				else if (VECTOR_EXISTS(entry_stack, inc_entry))
+				{
+					Log::warning(
+						S_FMT("Warning parsing ZScript entry %s: "
+							  "Detected circular #include \"%s\" on line %u, skipping",
+							  CHR(entry->getName()),
+							  CHR(tz.current().text),
+							  tz.current().line_no));
 				}
 				else
-					parseBlocks(inc_entry, parsed);
+					parseBlocks(inc_entry, parsed, entry_stack);
 			}
 
 			tz.advToNextLine();
@@ -257,6 +260,8 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 	// Set entry type
 	if (etype_zscript && entry->getType() != etype_zscript)
 		entry->setType(etype_zscript);
+
+	entry_stack.pop_back();
 }
 
 bool isKeyword(const string& word)
@@ -332,7 +337,7 @@ unsigned Function::Parameter::parse(const vector<string>& tokens, unsigned index
 {
 	// Type
 	type = parseType(tokens, index);
-	
+
 	// Special case - '...'
 	if (type == "...")
 	{
@@ -364,37 +369,37 @@ unsigned Function::Parameter::parse(const vector<string>& tokens, unsigned index
 bool Function::parse(ParsedStatement& statement)
 {
 	unsigned index;
-	int last_qualifier = -1;
+	int      last_qualifier = -1;
 	for (index = 0; index < statement.tokens.size(); index++)
 	{
 		if (S_CMPNOCASE(statement.tokens[index], "virtual"))
 		{
-			virtual_ = true;
+			virtual_       = true;
 			last_qualifier = index;
 		}
 		else if (S_CMPNOCASE(statement.tokens[index], "static"))
 		{
-			static_ = true;
+			static_        = true;
 			last_qualifier = index;
 		}
 		else if (S_CMPNOCASE(statement.tokens[index], "native"))
 		{
-			native_ = true;
+			native_        = true;
 			last_qualifier = index;
 		}
 		else if (S_CMPNOCASE(statement.tokens[index], "action"))
 		{
-			action_ = true;
+			action_        = true;
 			last_qualifier = index;
 		}
 		else if (S_CMPNOCASE(statement.tokens[index], "override"))
 		{
-			override_ = true;
+			override_      = true;
 			last_qualifier = index;
 		}
 		else if ((int)index > last_qualifier + 2 && statement.tokens[index] == '(')
 		{
-			name_ = statement.tokens[index - 1];
+			name_        = statement.tokens[index - 1];
 			return_type_ = statement.tokens[index - 2];
 			break;
 		}
@@ -497,8 +502,7 @@ bool Function::isFunction(ParsedStatement& statement)
 		if (!special_func && token == '(')
 			return true;
 
-		if (S_CMPNOCASE(token, "deprecated") ||
-			S_CMPNOCASE(token, "version"))
+		if (S_CMPNOCASE(token, "deprecated") || S_CMPNOCASE(token, "version"))
 			special_func = true;
 		else if (special_func && token == ')')
 			special_func = false;
@@ -555,7 +559,7 @@ bool StateTable::parse(ParsedStatement& states)
 			continue;
 
 		auto states_added = false;
-		auto index = 0u;
+		auto index        = 0u;
 
 		// Check for state labels
 		for (auto a = 0u; a < statement.tokens.size(); ++a)
@@ -587,20 +591,16 @@ bool StateTable::parse(ParsedStatement& states)
 
 		if (index >= statement.tokens.size())
 		{
-			logParserMessage(
-				statement,
-				Log::MessageType::Warning,
-				S_FMT("Failed to parse states block beginning on line %u", states.line)
-			);
+			logParserMessage(statement,
+							 Log::MessageType::Warning,
+							 S_FMT("Failed to parse states block beginning on line %u", states.line));
 			continue;
 		}
 
 		// Ignore state commands
-		if (S_CMPNOCASE(statement.tokens[index], "stop") ||
-			S_CMPNOCASE(statement.tokens[index], "goto") ||
-			S_CMPNOCASE(statement.tokens[index], "loop") ||
-			S_CMPNOCASE(statement.tokens[index], "wait") ||
-			S_CMPNOCASE(statement.tokens[index], "fail"))
+		if (S_CMPNOCASE(statement.tokens[index], "stop") || S_CMPNOCASE(statement.tokens[index], "goto")
+			|| S_CMPNOCASE(statement.tokens[index], "loop") || S_CMPNOCASE(statement.tokens[index], "wait")
+			|| S_CMPNOCASE(statement.tokens[index], "fail"))
 			continue;
 
 		if (index + 2 < statement.tokens.size())
@@ -617,7 +617,8 @@ bool StateTable::parse(ParsedStatement& states)
 				statement.tokens[index + 2].ToLong(&duration);
 
 			for (auto& state : current_states)
-				states_[state].frames.push_back({ statement.tokens[index], statement.tokens[index + 1], (int)duration });
+				states_[state].frames.push_back(
+					{ statement.tokens[index], statement.tokens[index + 1], (int)duration });
 		}
 	}
 
@@ -629,12 +630,10 @@ bool StateTable::parse(ParsedStatement& states)
 		{
 			Log::debug(S_FMT("State %s:", CHR(state.first)));
 			for (auto& frame : state.second.frames)
-				Log::debug(S_FMT(
-					"Sprite: %s, Frames: %s, Duration: %d",
-					CHR(frame.sprite_base),
-					CHR(frame.sprite_frame),
-					frame.duration
-				));
+				Log::debug(S_FMT("Sprite: %s, Frames: %s, Duration: %d",
+								 CHR(frame.sprite_base),
+								 CHR(frame.sprite_frame),
+								 frame.duration));
 		}
 	}
 
@@ -853,7 +852,7 @@ bool Class::parseClassBlock(vector<ParsedStatement>& block)
 		else if (statement.tokens[0].StartsWith(db_comment))
 		{
 			if (statement.tokens.size() > 1)
-				db_properties_.emplace_back(statement.tokens[0].substr(3),  statement.tokens[1]);
+				db_properties_.emplace_back(statement.tokens[0].substr(3), statement.tokens[1]);
 			else
 				db_properties_.emplace_back(statement.tokens[0].substr(3), "true");
 		}
@@ -890,14 +889,14 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 		if (statement.tokens[0].StartsWith(db_comment))
 		{
 			if (statement.tokens.size() > 1)
-				db_properties_.emplace_back(statement.tokens[0].substr(3),  statement.tokens[1]);
+				db_properties_.emplace_back(statement.tokens[0].substr(3), statement.tokens[1]);
 			else
 				db_properties_.emplace_back(statement.tokens[0].substr(3), "true");
 			continue;
 		}
 
 		// Flags
-		unsigned t = 0;
+		unsigned t     = 0;
 		unsigned count = statement.tokens.size();
 		while (t < count)
 		{
@@ -966,9 +965,10 @@ void Definitions::clear()
 bool Definitions::parseZScript(ArchiveEntry* entry)
 {
 	// Parse into tree of expressions and blocks
-	auto start = App::runTimer();
+	auto                    start = App::runTimer();
 	vector<ParsedStatement> parsed;
-	parseBlocks(entry, parsed);
+	vector<ArchiveEntry*>   entry_stack;
+	parseBlocks(entry, parsed, entry_stack);
 	Log::debug(2, S_FMT("parseBlocks: %ldms", App::runTimer() - start));
 	start = App::runTimer();
 
@@ -1003,9 +1003,8 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 		}
 
 		// Extend Class
-		else if (block.tokens.size() > 2 &&
-				S_CMPNOCASE(block.tokens[0], "extend") &&
-				S_CMPNOCASE(block.tokens[1], "class"))
+		else if (block.tokens.size() > 2 && S_CMPNOCASE(block.tokens[0], "extend")
+				 && S_CMPNOCASE(block.tokens[1], "class"))
 		{
 			for (auto& c : classes_)
 				if (S_CMPNOCASE(c.name(), block.tokens[2]))
@@ -1041,8 +1040,8 @@ bool Definitions::parseZScript(Archive* archive)
 {
 	// Get base ZScript file
 	Archive::SearchOptions opt;
-	opt.match_name = "zscript";
-	opt.ignore_ext = true;
+	opt.match_name                       = "zscript";
+	opt.ignore_ext                       = true;
 	vector<ArchiveEntry*> zscript_enries = archive->findAll(opt);
 	if (zscript_enries.empty())
 		return false;
@@ -1162,7 +1161,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 			in_initializer = true;
 			continue;
 		}
-		
+
 		tokens.push_back(tz.current().text);
 		tz.adv();
 	}
@@ -1214,15 +1213,15 @@ void ParsedStatement::dump(int indent)
 
 
 // TESTING CONSOLE COMMANDS
-#include "MainEditor/MainEditor.h"
 #include "General/Console/Console.h"
+#include "MainEditor/MainEditor.h"
 
 CONSOLE_COMMAND(test_parse_zscript, 0, false)
 {
-	dump_parsed_blocks = false;
-	dump_parsed_states = false;
+	dump_parsed_blocks    = false;
+	dump_parsed_states    = false;
 	dump_parsed_functions = false;
-	ArchiveEntry* entry = nullptr;
+	ArchiveEntry* entry   = nullptr;
 
 	for (auto& arg : args)
 	{
@@ -1250,8 +1249,8 @@ CONSOLE_COMMAND(test_parse_zscript, 0, false)
 	else
 		Log::console("Select an entry or enter a valid entry name/path");
 
-	dump_parsed_blocks = false;
-	dump_parsed_states = false;
+	dump_parsed_blocks    = false;
+	dump_parsed_states    = false;
 	dump_parsed_functions = false;
 }
 
@@ -1265,11 +1264,12 @@ CONSOLE_COMMAND(test_parseblocks, 1, false)
 	if (!entry)
 		return;
 
-	auto start = App::runTimer();
+	auto                    start = App::runTimer();
 	vector<ParsedStatement> parsed;
+	vector<ArchiveEntry*>   entry_stack;
 	for (auto a = 0; a < num; ++a)
 	{
-		parseBlocks(entry, parsed);
+		parseBlocks(entry, parsed, entry_stack);
 		parsed.clear();
 	}
 	Log::console(S_FMT("Took %ldms", App::runTimer() - start));
