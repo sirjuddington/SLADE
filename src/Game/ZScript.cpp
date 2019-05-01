@@ -191,13 +191,15 @@ bool checkKeywordValueStatement(
 // -----------------------------------------------------------------------------
 // Parses all statements/blocks in [entry], adding them to [parsed]
 // -----------------------------------------------------------------------------
-void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
+void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<ArchiveEntry*>& entry_stack)
 {
 	Tokenizer tz;
 	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?.");
 	tz.enableDecorate(true);
 	tz.setCommentTypes(Tokenizer::CommentTypes::CPPStyle | Tokenizer::CommentTypes::CStyle);
 	tz.openMem(entry->data(), "ZScript");
+
+	entry_stack.push_back(entry);
 
 	while (!tz.atEnd())
 	{
@@ -218,8 +220,17 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 						tz.current().text,
 						tz.current().line_no);
 				}
+				else if (VECTOR_EXISTS(entry_stack, inc_entry))
+				{
+					Log::warning(
+						"Warning parsing ZScript entry {}: "
+						"Detected circular #include \"{}\" on line {}, skipping",
+						entry->name(),
+						tz.current().text,
+						tz.current().line_no);
+				}
 				else
-					parseBlocks(inc_entry, parsed);
+					parseBlocks(inc_entry, parsed, entry_stack);
 			}
 
 			tz.advToNextLine();
@@ -243,6 +254,8 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed)
 	// Set entry type
 	if (etype_zscript && entry->type() != etype_zscript)
 		entry->setType(etype_zscript);
+
+	entry_stack.pop_back();
 }
 
 // -----------------------------------------------------------------------------
@@ -924,7 +937,8 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 	// Parse into tree of expressions and blocks
 	auto                    start = App::runTimer();
 	vector<ParsedStatement> parsed;
-	parseBlocks(entry, parsed);
+	vector<ArchiveEntry*>   entry_stack;
+	parseBlocks(entry, parsed, entry_stack);
 	Log::debug(2, "parseBlocks: {}ms", App::runTimer() - start);
 	start = App::runTimer();
 
@@ -1213,9 +1227,10 @@ CONSOLE_COMMAND(test_parseblocks, 1, false)
 
 	auto                    start = App::runTimer();
 	vector<ParsedStatement> parsed;
+	vector<ArchiveEntry*>   entry_stack;
 	for (auto a = 0; a < num; ++a)
 	{
-		parseBlocks(entry, parsed);
+		parseBlocks(entry, parsed, entry_stack);
 		parsed.clear();
 	}
 	Log::console(fmt::format("Took {}ms", App::runTimer() - start));
