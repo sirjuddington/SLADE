@@ -62,7 +62,7 @@ FTFont* font_small         = nullptr;
 namespace Drawing
 {
 extern double  text_outline_width;
-extern ColRGBA text_outline_colour;
+extern ColRGBA outline_colour;
 } // namespace Drawing
 EXTERN_CVAR(Int, gl_font_size)
 
@@ -263,7 +263,7 @@ void Drawing::drawText(const std::string& text, int x, int y, ColRGBA colour, Fo
 		return;
 
 	// Setup alignment
-	auto  bbox   = ftgl_font->BBox(text, -1);
+	auto  bbox   = ftgl_font->BBox(text.c_str(), -1);
 	int   xpos   = x;
 	int   ypos   = y;
 	float width  = bbox.Upper().X() - bbox.Lower().X();
@@ -279,7 +279,7 @@ void Drawing::drawText(const std::string& text, int x, int y, ColRGBA colour, Fo
 	// Set bounds rect
 	if (bounds)
 	{
-		bbox = ftgl_font->BBox(text, -1, FTPoint(xpos, ypos));
+		bbox = ftgl_font->BBox(text.c_str(), -1, FTPoint(xpos, ypos));
 		bounds->set(bbox.Lower().X(), bbox.Lower().Y(), bbox.Upper().X(), bbox.Lower().Y() + height);
 	}
 
@@ -291,19 +291,19 @@ void Drawing::drawText(const std::string& text, int x, int y, ColRGBA colour, Fo
 	if (text_outline_width > 0)
 	{
 		// Draw outline if set
-		OpenGL::setColour(text_outline_colour);
+		OpenGL::setColour(outline_colour);
 		glTranslatef(-2.0f, -1.0f, 0.0f);
-		ftgl_font->Render(text, -1);
+		ftgl_font->Render(text.c_str(), -1);
 		glTranslatef(0.0f, 2.0f, 0.0f);
-		ftgl_font->Render(text, -1);
+		ftgl_font->Render(text.c_str(), -1);
 		glTranslatef(4.0f, 0.0f, 0.0f);
-		ftgl_font->Render(text, -1);
+		ftgl_font->Render(text.c_str(), -1);
 		glTranslatef(0.0f, -2.0f, 0.0f);
-		ftgl_font->Render(text, -1);
+		ftgl_font->Render(text.c_str(), -1);
 		glTranslatef(-2.0f, 1.0f, 0.0f);
 	}
 	OpenGL::setColour(colour);
-	ftgl_font->Render(text, -1);
+	ftgl_font->Render(text.c_str(), -1);
 	glPopMatrix();
 }
 
@@ -320,7 +320,7 @@ Vec2d Drawing::textExtents(const std::string& text, Font font)
 		return { 0, 0 };
 
 	// Return width and height of text
-	auto bbox = ftgl_font->BBox(text, -1);
+	auto bbox = ftgl_font->BBox(text.c_str(), -1);
 	return Vec2d(bbox.Upper().X() - bbox.Lower().X(), ftgl_font->LineHeight());
 }
 
