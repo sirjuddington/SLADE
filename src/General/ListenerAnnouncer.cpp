@@ -104,6 +104,9 @@ Announcer::~Announcer()
 // -----------------------------------------------------------------------------
 void Announcer::addListener(Listener* l)
 {
+	if (VECTOR_EXISTS(listeners_, l))
+		return;
+
 	listeners_.push_back(l);
 }
 

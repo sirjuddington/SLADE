@@ -870,7 +870,7 @@ bool Archive::renameDir(ArchiveTreeNode* dir, std::string_view new_name)
 		return false;
 
 	// Check the directory is part of this archive
-	if (dir->archive() != this)
+	if (!dir || dir->archive() != this)
 		return false;
 
 	// Rename the directory if needed

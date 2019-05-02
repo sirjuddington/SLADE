@@ -393,8 +393,8 @@ std::string MapEditor::browseTexture(
 	browser.SetTitle(WxUtils::strFromView(title));
 
 	// Get selected texture
-	std::string tex;
-	if (browser.ShowModal() == wxID_OK)
+	std::string tex{ init_texture };
+	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 		tex = browser.selectedItem()->name();
 
 	// Re-lock cursor if needed

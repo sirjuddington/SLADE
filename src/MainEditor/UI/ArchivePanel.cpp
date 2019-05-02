@@ -1564,6 +1564,9 @@ bool ArchivePanel::sort() const
 	auto itr = emap.begin();
 	for (size_t i = start; i < stop; ++i, ++itr)
 	{
+		if (itr == emap.end())
+			break;
+
 		auto entry = entry_list_->entryAt(i);
 
 		// Ignore subdirectories

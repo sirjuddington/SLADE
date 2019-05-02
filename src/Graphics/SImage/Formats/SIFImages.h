@@ -391,6 +391,11 @@ protected:
 		{
 			// Init 32bpp FIBITMAP
 			bm = FreeImage_Allocate(width, height, 32, 0x0000FF00, 0x00FF0000, 0x000000FF);
+			if (!bm)
+			{
+				Log::error("FreeImage_Allocate failed for 32bit image");
+				return false;
+			}
 
 			// Write image data
 			uint8_t* bits = FreeImage_GetBits(bm);
@@ -407,6 +412,11 @@ protected:
 		{
 			// Init 8bpp FIBITMAP
 			bm = FreeImage_Allocate(width, height, 8);
+			if (!bm)
+			{
+				Log::error("FreeImage_Allocate failed for 8bit image");
+				return false;
+			}
 
 			// Get palette to use
 			Palette usepal;
@@ -467,6 +477,11 @@ protected:
 		{
 			// Init 8bpp FIBITMAP
 			bm = FreeImage_Allocate(width, height, 8);
+			if (!bm)
+			{
+				Log::error("FreeImage_Allocate failed for 8bit image");
+				return false;
+			}
 
 			// Set palette (greyscale)
 			auto bm_pal = FreeImage_GetPalette(bm);

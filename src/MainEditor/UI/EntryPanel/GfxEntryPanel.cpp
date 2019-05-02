@@ -255,7 +255,7 @@ bool GfxEntryPanel::saveEntry()
 		wxString error = "";
 		ok             = false;
 		auto writable  = format ? format->canWrite(*image) : SIFormat::Writable::No;
-		if (format == SIFormat::unknownFormat())
+		if (!format || format == SIFormat::unknownFormat())
 			error = "Image is of unknown format";
 		else if (writable == SIFormat::Writable::No)
 			error = wxString::Format("Writing unsupported for format \"%s\"", format->name());
