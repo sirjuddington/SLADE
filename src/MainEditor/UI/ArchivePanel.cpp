@@ -1544,6 +1544,9 @@ bool ArchivePanel::sort()
 	std::map<string, size_t>::iterator itr = emap.begin();
 	for (size_t i = start; i < stop; ++i, ++itr)
 	{
+		if (itr == emap.end())
+			break;
+
 		ArchiveEntry * entry = entry_list_->getEntry(i);
 
 		// Ignore subdirectories

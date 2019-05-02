@@ -2476,10 +2476,14 @@ void MapRenderer2D::renderMovingSectors(const vector<MapEditor::Item>& sectors, 
 	// Determine what lines are being moved
 	uint8_t* lines_moved = new uint8_t[map->nLines()];
 	memset(lines_moved, 0, map->nLines());
+	MapSector* sector;
 	for (unsigned a = 0; a < sectors.size(); a++)
 	{
+		if (!((sector = map->getSector(sectors[a].index))))
+			continue;
+
 		// Go through connected sides
-		vector<MapSide*>& sides = map->getSector(sectors[a].index)->connectedSides();
+		auto& sides = sector->connectedSides();
 		for (unsigned s = 0; s < sides.size(); s++)
 			lines_moved[sides[s]->getParentLine()->getIndex()] = 1;	// Mark parent line as moved
 	}

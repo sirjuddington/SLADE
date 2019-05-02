@@ -140,25 +140,23 @@ void EntryPanel::setModified(bool c)
 // ----------------------------------------------------------------------------
 bool EntryPanel::openEntry(ArchiveEntry* entry)
 {
+	entry_data_.clear();
+	entry_ = nullptr;
+
 	// Check entry was given
 	if (!entry)
-	{
-		entry_data_.clear();
-		this->entry_ = nullptr;
 		return false;
-	}
 
 	// Set unmodified
 	setModified(false);
 
 	// Copy current entry content
-	entry_data_.clear();
 	entry_data_.importMem(entry->getData(true), entry->getSize());
 
 	// Load the entry
 	if (loadEntry(entry))
 	{
-		this->entry_ = entry;
+		entry_ = entry;
 		updateStatus();
 		toolbar_->updateLayout(true);
 		Layout();
