@@ -213,7 +213,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		bool match = false;
 		for (size_t a = 0; a < match_archive_.size(); a++)
 		{
-			if (entry->getParent() && entry->getParent()->formatId() == match_archive_[a])
+			if (entry->getParent() && entry->getParent()->formatDesc().entry_format == match_archive_[a])
 			{
 				match = true;
 				break;
