@@ -201,6 +201,7 @@ entry_types
 		export_ext = "pod";
 		icon = "e_archive";
 		category = "Archives";
+		reliability = 100;
 	}
 
 	chasm_bin

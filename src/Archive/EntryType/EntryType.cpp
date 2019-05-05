@@ -171,7 +171,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		bool match = false;
 		for (const auto& a : match_archive_)
 		{
-			if (entry->parent() && entry->parent()->formatId() == a)
+			if (entry->parent() && entry->parent()->formatDesc().entry_format == a)
 			{
 				match = true;
 				break;

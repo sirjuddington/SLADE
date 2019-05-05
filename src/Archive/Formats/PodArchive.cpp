@@ -294,13 +294,16 @@ bool PodArchive::isPodArchive(MemChunk& mc)
 	mc.seek(0, 0);
 	uint32_t num_files;
 	mc.read(&num_files, 4);
+	if (num_files == 0)
+		return false; // 0 files, unlikely to be a valid archive
 
 	// Read id
 	char id[80];
 	mc.read(id, 80);
 
 	// Check size for directory
-	if (mc.size() < 84 + (num_files * 40))
+	auto dir_end = 84 + (num_files * 40);
+	if (mc.size() < dir_end)
 		return false;
 
 	// Read directory and check offsets
@@ -308,7 +311,8 @@ bool PodArchive::isPodArchive(MemChunk& mc)
 	for (unsigned a = 0; a < num_files; a++)
 	{
 		mc.read(&entry, 40);
-		if (entry.offset + entry.size > mc.size())
+		auto end = entry.offset + entry.size;
+		if (end > mc.size() || end < dir_end)
 			return false;
 	}
 	return true;
@@ -337,13 +341,16 @@ bool PodArchive::isPodArchive(const std::string& filename)
 	file.Seek(0);
 	uint32_t num_files;
 	file.Read(&num_files, 4);
+	if (num_files == 0)
+		return false; // 0 files, unlikely to be a valid archive
 
 	// Read id
 	char id[80];
 	file.Read(id, 80);
 
 	// Check size for directory
-	if (file_size < 84 + (num_files * 40))
+	auto dir_end = 84 + (num_files * 40);
+	if (file_size < dir_end)
 	{
 		file.Close();
 		return false;
@@ -354,7 +361,8 @@ bool PodArchive::isPodArchive(const std::string& filename)
 	for (unsigned a = 0; a < num_files; a++)
 	{
 		file.Read(&entry, 40);
-		if (entry.offset + entry.size > file_size)
+		auto end = entry.offset + entry.size;
+		if (end > file_size || end < dir_end)
 			return false;
 	}
 	return true;
