@@ -901,9 +901,9 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 		while (t < count)
 		{
 			if (statement.tokens[t] == '+')
-				default_properties_[statement.tokens[++t]] = true;
+				default_properties_[statement.tokens[++t].Lower()] = true;
 			else if (statement.tokens[t] == '-')
-				default_properties_[statement.tokens[++t]] = false;
+				default_properties_[statement.tokens[++t].Lower()] = false;
 			else
 				break;
 
@@ -926,11 +926,11 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 		// so stuff like arithmetic expressions or comma separated lists won't
 		// really work properly yet
 		if (t + 1 < count)
-			default_properties_[name] = statement.tokens[t + 1];
+			default_properties_[name.Lower()] = statement.tokens[t + 1];
 
 		// Name only (no value), set as boolean true
 		else if (t < count)
-			default_properties_[name] = true;
+			default_properties_[name.Lower()] = true;
 	}
 
 	return true;
