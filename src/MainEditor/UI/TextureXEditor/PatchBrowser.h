@@ -60,5 +60,5 @@ private:
 	bool        full_path_   = false; // Texture definition format supports full path texture and/or patch names
 
 	// Events
-	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
 };

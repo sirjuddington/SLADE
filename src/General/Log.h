@@ -15,28 +15,28 @@ enum class MessageType
 
 struct Message
 {
-	std::string message;
+	string      message;
 	MessageType type;
 	std::tm     timestamp;
 
-	Message(std::string_view message, MessageType type, std::tm timestamp) :
+	Message(string_view message, MessageType type, std::tm timestamp) :
 		message{ message.data(), message.size() },
 		type{ type },
 		timestamp{ timestamp }
 	{
 	}
 
-	std::string formattedMessageLine() const;
+	string formattedMessageLine() const;
 };
 
 const vector<Message>& history();
 int                    verbosity();
 void                   setVerbosity(int verbosity);
 void                   init();
-void                   message(MessageType type, int level, std::string_view text);
-void                   message(MessageType type, std::string_view text);
-void                   message(MessageType type, int level, std::string_view text, fmt::format_args args);
-void                   message(MessageType type, std::string_view text, fmt::format_args args);
+void                   message(MessageType type, int level, string_view text);
+void                   message(MessageType type, string_view text);
+void                   message(MessageType type, int level, string_view text, fmt::format_args args);
+void                   message(MessageType type, string_view text, fmt::format_args args);
 vector<Message*>       since(time_t time, MessageType type = MessageType::Any);
 
 
@@ -73,8 +73,8 @@ inline void error(const wxString& text)
 // These can't be inline, need access to Global::debug
 void debug(int level, const wxString& text);
 void debug(const wxString& text);
-void debug(int level, std::string_view text, fmt::format_args args);
-void debug(std::string_view text, fmt::format_args args);
+void debug(int level, string_view text, fmt::format_args args);
+void debug(string_view text, fmt::format_args args);
 
 inline void console(const wxString& text)
 {
@@ -85,39 +85,39 @@ inline void console(const wxString& text)
 // Message shortcuts by type with args for fmt::format
 // -----------------------------------------------------------------------------
 
-template<typename... Args> void info(int level, std::string_view text, const Args&... args)
+template<typename... Args> void info(int level, string_view text, const Args&... args)
 {
 	message(MessageType::Info, level, text, fmt::make_format_args(args...));
 }
-template<typename... Args> void info(std::string_view text, const Args&... args)
+template<typename... Args> void info(string_view text, const Args&... args)
 {
 	message(MessageType::Info, text, fmt::make_format_args(args...));
 }
 
-template<typename... Args> void warning(int level, std::string_view text, const Args&... args)
+template<typename... Args> void warning(int level, string_view text, const Args&... args)
 {
 	message(MessageType::Warning, level, text, fmt::make_format_args(args...));
 }
-template<typename... Args> void warning(std::string_view text, const Args&... args)
+template<typename... Args> void warning(string_view text, const Args&... args)
 {
 	message(MessageType::Warning, text, fmt::make_format_args(args...));
 }
 
-template<typename... Args> void error(int level, std::string_view text, const Args&... args)
+template<typename... Args> void error(int level, string_view text, const Args&... args)
 {
 	message(MessageType::Error, level, text, fmt::make_format_args(args...));
 }
-template<typename... Args> void error(std::string_view text, const Args&... args)
+template<typename... Args> void error(string_view text, const Args&... args)
 {
 	message(MessageType::Error, text, fmt::make_format_args(args...));
 }
 
-template<typename... Args> void debug(int level, std::string_view text, const Args&... args)
+template<typename... Args> void debug(int level, string_view text, const Args&... args)
 {
 	if (Global::debug)
 		message(MessageType::Debug, level, text, fmt::make_format_args(args...));
 }
-template<typename... Args> void debug(std::string_view text, const Args&... args)
+template<typename... Args> void debug(string_view text, const Args&... args)
 {
 	if (Global::debug)
 		message(MessageType::Debug, text, fmt::make_format_args(args...));

@@ -8,19 +8,19 @@ class MapThing : public MapObject
 
 public:
 	// UDMF property names
-	inline static const std::string PROP_X       = "x";
-	inline static const std::string PROP_Y       = "y";
-	inline static const std::string PROP_Z       = "height";
-	inline static const std::string PROP_TYPE    = "type";
-	inline static const std::string PROP_ANGLE   = "angle";
-	inline static const std::string PROP_FLAGS   = "flags";
-	inline static const std::string PROP_ARG0    = "arg0";
-	inline static const std::string PROP_ARG1    = "arg1";
-	inline static const std::string PROP_ARG2    = "arg2";
-	inline static const std::string PROP_ARG3    = "arg3";
-	inline static const std::string PROP_ARG4    = "arg4";
-	inline static const std::string PROP_ID      = "id";
-	inline static const std::string PROP_SPECIAL = "special";
+	inline static const string PROP_X       = "x";
+	inline static const string PROP_Y       = "y";
+	inline static const string PROP_Z       = "height";
+	inline static const string PROP_TYPE    = "type";
+	inline static const string PROP_ANGLE   = "angle";
+	inline static const string PROP_FLAGS   = "flags";
+	inline static const string PROP_ARG0    = "arg0";
+	inline static const string PROP_ARG1    = "arg1";
+	inline static const string PROP_ARG2    = "arg2";
+	inline static const string PROP_ARG3    = "arg3";
+	inline static const string PROP_ARG4    = "arg4";
+	inline static const string PROP_ID      = "id";
+	inline static const string PROP_SPECIAL = "special";
 
 	MapThing(
 		const Vec3d&  pos     = { 0., 0., 0. },
@@ -49,10 +49,10 @@ public:
 
 	Vec2d getPoint(Point point) override;
 
-	int    intProperty(std::string_view key) override;
-	double floatProperty(std::string_view key) override;
-	void   setIntProperty(std::string_view key, int value) override;
-	void   setFloatProperty(std::string_view key, double value) override;
+	int    intProperty(string_view key) override;
+	double floatProperty(string_view key) override;
+	void   setIntProperty(string_view key, int value) override;
+	void   setFloatProperty(string_view key, double value) override;
 
 	void copy(MapObject* c) override;
 
@@ -71,7 +71,7 @@ public:
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
 
-	void writeUDMF(std::string& def) override;
+	void writeUDMF(string& def) override;
 
 	operator Debuggable() const
 	{

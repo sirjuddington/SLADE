@@ -37,9 +37,9 @@ public:
 	bool loadMem(MemChunk& mc);
 	bool loadMem(const uint8_t* data, uint32_t size);
 	bool loadMem(MemChunk& mc, Format format);
-	bool loadFile(std::string_view filename, Format format = Format::Raw);
-	bool saveMem(MemChunk& mc, Format format = Format::Raw, std::string_view name = "");
-	bool saveFile(std::string_view filename, Format format = Format::Raw);
+	bool loadFile(string_view filename, Format format = Format::Raw);
+	bool saveMem(MemChunk& mc, Format format = Format::Raw, string_view name = "");
+	bool saveFile(string_view filename, Format format = Format::Raw);
 
 	void setColour(uint8_t index, const ColRGBA& col);
 	void setColourR(uint8_t index, uint8_t val);
@@ -65,8 +65,6 @@ public:
 
 	// For automated palette generation
 	void idtint(int r, int g, int b, int shift, int steps);
-
-	typedef std::unique_ptr<Palette> UPtr;
 
 private:
 	vector<ColRGBA> colours_;

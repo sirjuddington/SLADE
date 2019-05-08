@@ -49,13 +49,13 @@
 // MapSector class constructor
 // -----------------------------------------------------------------------------
 MapSector::MapSector(
-	int             f_height,
-	std::string_view f_tex,
-	int             c_height,
-	std::string_view c_tex,
-	short           light,
-	short           special,
-	short           id) :
+	int         f_height,
+	string_view f_tex,
+	int         c_height,
+	string_view c_tex,
+	short       light,
+	short       special,
+	short       id) :
 	MapObject(Type::Sector),
 	floor_{ f_tex, f_height, Plane::flat(f_height) },
 	ceiling_{ c_tex, c_height, Plane::flat(c_height) },
@@ -69,7 +69,7 @@ MapSector::MapSector(
 // -----------------------------------------------------------------------------
 // MapSector class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapSector::MapSector(std::string_view f_tex, std::string_view c_tex, ParseTreeNode* udmf_def) :
+MapSector::MapSector(string_view f_tex, string_view c_tex, ParseTreeNode* udmf_def) :
 	MapObject(Type::Sector),
 	floor_{ f_tex },
 	ceiling_{ c_tex }
@@ -154,7 +154,7 @@ void MapSector::setGeometryUpdated()
 // -----------------------------------------------------------------------------
 // Returns the value of the string property matching [key]
 // -----------------------------------------------------------------------------
-std::string MapSector::stringProperty(std::string_view key)
+string MapSector::stringProperty(string_view key)
 {
 	if (key == PROP_TEXFLOOR)
 		return floor_.texture;
@@ -167,7 +167,7 @@ std::string MapSector::stringProperty(std::string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapSector::intProperty(std::string_view key)
+int MapSector::intProperty(string_view key)
 {
 	if (key == PROP_HEIGHTFLOOR)
 		return floor_.height;
@@ -186,7 +186,7 @@ int MapSector::intProperty(std::string_view key)
 // -----------------------------------------------------------------------------
 // Sets the string value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSector::setStringProperty(std::string_view key, std::string_view value)
+void MapSector::setStringProperty(string_view key, string_view value)
 {
 	if (key == PROP_TEXFLOOR)
 		setFloorTexture(value);
@@ -199,7 +199,7 @@ void MapSector::setStringProperty(std::string_view key, std::string_view value)
 // -----------------------------------------------------------------------------
 // Sets the float value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSector::setFloatProperty(std::string_view key, double value)
+void MapSector::setFloatProperty(string_view key, double value)
 {
 	using Game::UDMFFeature;
 
@@ -221,7 +221,7 @@ void MapSector::setFloatProperty(std::string_view key, double value)
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSector::setIntProperty(std::string_view key, int value)
+void MapSector::setIntProperty(string_view key, int value)
 {
 	// Update modified time
 	setModified();
@@ -243,7 +243,7 @@ void MapSector::setIntProperty(std::string_view key, int value)
 // -----------------------------------------------------------------------------
 // Sets the floor texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSector::setFloorTexture(std::string_view tex)
+void MapSector::setFloorTexture(string_view tex)
 {
 	setModified();
 	if (parent_map_)
@@ -256,7 +256,7 @@ void MapSector::setFloorTexture(std::string_view tex)
 // -----------------------------------------------------------------------------
 // Sets the ceiling texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSector::setCeilingTexture(std::string_view tex)
+void MapSector::setCeilingTexture(string_view tex)
 {
 	setModified();
 	if (parent_map_)
@@ -897,7 +897,7 @@ void MapSector::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 // Writes the sector as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapSector::writeUDMF(std::string& def)
+void MapSector::writeUDMF(string& def)
 {
 	def = fmt::format("sector//#{}\n{\n", index_);
 

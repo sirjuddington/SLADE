@@ -108,8 +108,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 		// Check the identifier
 		if (magic[0] != 'R' || magic[1] != 'e' || magic[2] != 'S' || magic[3] != 0)
 		{
-			Log::error(
-				"ResArchive::readDir: Entry {} ({}@0x{:x}) has invalid directory entry", name, size, offset);
+			Log::error("ResArchive::readDir: Entry {} ({}@0x{:x}) has invalid directory entry", name, size, offset);
 			Global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
@@ -398,7 +397,7 @@ bool ResArchive::isResArchive(MemChunk& mc, size_t& dir_offset, size_t& num_lump
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid A&A res archive
 // -----------------------------------------------------------------------------
-bool ResArchive::isResArchive(const std::string& filename)
+bool ResArchive::isResArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

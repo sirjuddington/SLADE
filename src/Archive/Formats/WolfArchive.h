@@ -13,8 +13,8 @@ public:
 	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset) const;
 
 	// Opening
-	bool open(std::string_view filename) override; // Open from File
-	bool open(MemChunk& mc) override;             // Open from MemChunk
+	bool open(string_view filename) override; // Open from File
+	bool open(MemChunk& mc) override;         // Open from MemChunk
 
 	bool openAudio(MemChunk& head, MemChunk& data);
 	bool openGraph(MemChunk& head, MemChunk& data, MemChunk& dict);
@@ -33,13 +33,13 @@ public:
 		unsigned         position = 0xFFFFFFFF,
 		ArchiveTreeNode* dir      = nullptr,
 		bool             copy     = false) override;
-	ArchiveEntry* addEntry(ArchiveEntry* entry, std::string_view add_namespace, bool copy = false) override;
+	ArchiveEntry* addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy = false) override;
 
 	// Entry modification
-	bool renameEntry(ArchiveEntry* entry, std::string_view name) override;
+	bool renameEntry(ArchiveEntry* entry, string_view name) override;
 
 	static bool isWolfArchive(MemChunk& mc);
-	static bool isWolfArchive(const std::string& filename);
+	static bool isWolfArchive(const string& filename);
 
 private:
 	struct WolfHandle

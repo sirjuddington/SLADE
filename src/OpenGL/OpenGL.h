@@ -41,10 +41,10 @@ enum class Blend
 
 struct Info
 {
-	std::string vendor;
-	std::string renderer;
-	std::string version;
-	std::string extensions;
+	string vendor;
+	string renderer;
+	string version;
+	string extensions;
 
 	Info() { vendor = renderer = version = extensions = "OpenGL not initialised"; }
 };

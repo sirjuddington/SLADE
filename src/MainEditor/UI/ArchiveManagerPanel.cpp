@@ -116,7 +116,7 @@ void DirArchiveCheck::addChange(DirEntryChange change)
 wxThread::ExitCode DirArchiveCheck::Entry()
 {
 	// Get current directory structure
-	vector<std::string> files, dirs;
+	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
 	wxDir               dir(dir_path_);
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
@@ -430,8 +430,8 @@ void ArchiveManagerPanel::refreshRecentFileList() const
 		if (a < 8)
 		{
 			// Get path and determine icon
-			auto        fn   = App::archiveManager().recentFile(a);
-			std::string icon = "archive";
+			auto   fn   = App::archiveManager().recentFile(a);
+			string icon = "archive";
 			if (StrUtil::endsWith(fn, ".wad"))
 				icon = "wad";
 			else if (StrUtil::endsWith(fn, ".zip") || StrUtil::endsWith(fn, ".pk3") || StrUtil::endsWith(fn, ".pke"))
@@ -806,7 +806,7 @@ void ArchiveManagerPanel::openTab(Archive* archive) const
 		wp = new ArchivePanel(stc_archives_, archive);
 
 		// Determine icon
-		std::string icon = "archive";
+		string icon = "archive";
 		if (archive->formatId() == "wad")
 			icon = "wad";
 		else if (archive->formatId() == "zip")
@@ -1565,7 +1565,7 @@ vector<int> ArchiveManagerPanel::selectedBookmarks() const
 // -----------------------------------------------------------------------------
 // Called when an announcement is recieved from the Archive Manager
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
+void ArchiveManagerPanel::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
 {
 	// Reset event data for reading
 	event_data.seek(0, SEEK_SET);
@@ -1753,7 +1753,7 @@ void ArchiveManagerPanel::removeSelection() const
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveManagerPanel::handleAction(std::string_view id)
+bool ArchiveManagerPanel::handleAction(string_view id)
 {
 	// We're only interested in "aman_" actions
 	if (!StrUtil::startsWith(id, "aman_"))

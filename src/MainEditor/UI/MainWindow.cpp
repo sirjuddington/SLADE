@@ -557,7 +557,7 @@ void MainWindow::openDocs(const wxString& page_name)
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool MainWindow::handleAction(std::string_view id)
+bool MainWindow::handleAction(string_view id)
 {
 	// We're only interested in "main_" actions
 	if (!StrUtil::startsWith(id, "main_"))

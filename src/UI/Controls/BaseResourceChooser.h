@@ -9,7 +9,7 @@ public:
 	~BaseResourceChooser() = default;
 
 	void populateChoices();
-	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
 
 private:
 	bool load_change_;

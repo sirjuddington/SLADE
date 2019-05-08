@@ -14,17 +14,17 @@ class UniversalDoomMapFormat : public MapFormatHandler
 public:
 	bool readMap(Archive::MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props) override;
 
-	vector<ArchiveEntry::UPtr> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
+	vector<unique_ptr<ArchiveEntry>> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
 		override;
 
-	std::string udmfNamespace() override { return udmf_namespace_; }
+	string udmfNamespace() override { return udmf_namespace_; }
 
 private:
-	std::string udmf_namespace_;
+	string udmf_namespace_;
 
-	std::unique_ptr<MapVertex> createVertex(ParseTreeNode* def) const;
-	std::unique_ptr<MapSector> createSector(ParseTreeNode* def) const;
-	std::unique_ptr<MapSide>   createSide(ParseTreeNode* def, const MapObjectCollection& map_data) const;
-	std::unique_ptr<MapLine>   createLine(ParseTreeNode* def, const MapObjectCollection& map_data) const;
-	std::unique_ptr<MapThing>  createThing(ParseTreeNode* def) const;
+	unique_ptr<MapVertex> createVertex(ParseTreeNode* def) const;
+	unique_ptr<MapSector> createSector(ParseTreeNode* def) const;
+	unique_ptr<MapSide>   createSide(ParseTreeNode* def, const MapObjectCollection& map_data) const;
+	unique_ptr<MapLine>   createLine(ParseTreeNode* def, const MapObjectCollection& map_data) const;
+	unique_ptr<MapThing>  createThing(ParseTreeNode* def) const;
 };

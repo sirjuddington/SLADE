@@ -10,37 +10,37 @@ class Configuration;
 // Structs
 struct GameDef
 {
-	std::string               name;
-	std::string               title;
-	std::string               filename;
+	string                    name;
+	string                    title;
+	string                    filename;
 	std::map<MapFormat, bool> supported_formats;
 	bool                      user;
-	vector<std::string>       filters;
+	vector<string>            filters;
 
-	GameDef(std::string_view def_name = "Unknown") : name{ def_name }, user{ true } {}
+	GameDef(string_view def_name = "Unknown") : name{ def_name }, user{ true } {}
 
 	bool operator>(const GameDef& right) const { return title > right.title; }
 	bool operator<(const GameDef& right) const { return title < right.title; }
 
 	bool parse(MemChunk& mc);
-	bool supportsFilter(std::string_view filter) const;
+	bool supportsFilter(string_view filter) const;
 };
 struct PortDef
 {
-	std::string               name;
-	std::string               title;
-	std::string               filename;
+	string                    name;
+	string                    title;
+	string                    filename;
 	std::map<MapFormat, bool> supported_formats;
-	vector<std::string>       supported_games;
+	vector<string>            supported_games;
 	bool                      user;
 
-	PortDef(std::string_view def_name = "Unknown") : name{ def_name }, user{ true } {}
+	PortDef(string_view def_name = "Unknown") : name{ def_name }, user{ true } {}
 
 	bool operator>(const PortDef& right) const { return title > right.title; }
 	bool operator<(const PortDef& right) const { return title < right.title; }
 
 	bool parse(MemChunk& mc);
-	bool supportsGame(std::string_view game) const { return VECTOR_EXISTS(supported_games, game); }
+	bool supportsGame(string_view game) const { return VECTOR_EXISTS(supported_games, game); }
 };
 
 // Enums
@@ -83,12 +83,12 @@ enum class TagType
 void init();
 
 // Basic Game/Port Definitions
-const std::map<std::string, GameDef>& gameDefs();
-const GameDef&                        gameDef(const std::string& id);
-const std::map<std::string, PortDef>& portDefs();
-const PortDef&                        portDef(const std::string& id);
+const std::map<string, GameDef>& gameDefs();
+const GameDef&                   gameDef(const string& id);
+const std::map<string, PortDef>& portDefs();
+const PortDef&                   portDef(const string& id);
 
-bool mapFormatSupported(MapFormat format, const std::string& game, const std::string& port = "");
+bool mapFormatSupported(MapFormat format, const string& game, const string& port = "");
 
 // Full Game Configuration
 Configuration& configuration();

@@ -83,7 +83,7 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 	}
 
 	// Get image format hint from type, if any
-	std::string format_hint = "";
+	string format_hint = "";
 	if (entry->type()->extraProps().propertyExists("image_format"))
 		format_hint = entry->type()->extraProps()["image_format"].stringValue();
 
@@ -289,7 +289,7 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 // Converts [size] to a string representing it as a 'bytes' size, ie "1.24kb",
 // "4.00mb". Sizes under 1kb aren't given an appendage
 // -----------------------------------------------------------------------------
-std::string Misc::sizeAsString(uint32_t size)
+string Misc::sizeAsString(uint32_t size)
 {
 	if (size < 1024 || !size_as_string)
 	{
@@ -312,12 +312,12 @@ std::string Misc::sizeAsString(uint32_t size)
 // ZDoom merely substitutes \ to ^, but Doomsday requires percent encoding of
 // every non-alphanumeric character.
 // -----------------------------------------------------------------------------
-std::string Misc::lumpNameToFileName(std::string_view lump)
+string Misc::lumpNameToFileName(string_view lump)
 {
 	if (percent_encoding)
 	{
 		// Doomsday: everything but [a-zA-Z0-9._ ~-]
-		std::string file;
+		string file;
 		for (char chr : lump)
 		{
 			if ((chr < 'a' || chr > 'z') && (chr < 'A' || chr > 'Z') && (chr < '0' || chr > '9') && chr != '-'
@@ -333,7 +333,7 @@ std::string Misc::lumpNameToFileName(std::string_view lump)
 	}
 
 	// ZDoom
-	std::string fname{ lump };
+	string fname{ lump };
 	std::replace(fname.begin(), fname.end(), '\\', '^');
 	std::replace(fname.begin(), fname.end(), '/', '^');
 	return fname;
@@ -342,11 +342,11 @@ std::string Misc::lumpNameToFileName(std::string_view lump)
 // -----------------------------------------------------------------------------
 // Turns a file name into a lump name
 // -----------------------------------------------------------------------------
-std::string Misc::fileNameToLumpName(std::string_view file)
+string Misc::fileNameToLumpName(string_view file)
 {
 	if (percent_encoding)
 	{
-		std::string lump;
+		string lump;
 		for (size_t a = 0; a < file.size(); ++a)
 		{
 			if (file[a] == '%' && file.size() > a + 2)
@@ -366,7 +366,7 @@ std::string Misc::fileNameToLumpName(std::string_view file)
 	}
 
 	// ZDoom
-	std::string lump{ file };
+	string lump{ file };
 	std::replace(lump.begin(), lump.end(), '^', '\\');
 	return lump;
 }
@@ -374,7 +374,7 @@ std::string Misc::fileNameToLumpName(std::string_view file)
 // -----------------------------------------------------------------------------
 // Creates a mass rename filter string from [names]
 // -----------------------------------------------------------------------------
-std::string Misc::massRenameFilter(vector<std::string>& names)
+string Misc::massRenameFilter(vector<string>& names)
 {
 	// Check any names were given
 	if (names.empty())
@@ -410,7 +410,7 @@ std::string Misc::massRenameFilter(vector<std::string>& names)
 // Performs a mass rename on [names] using the filter [name_filter].
 // Any * in the filter means that character should not be changed
 // -----------------------------------------------------------------------------
-void Misc::doMassRename(vector<std::string>& names, std::string_view name_filter)
+void Misc::doMassRename(vector<string>& names, string_view name_filter)
 {
 	// Go through names
 	for (auto& name : names)
@@ -509,7 +509,7 @@ uint32_t Misc::crc(const uint8_t* buf, uint32_t len)
 // the dimensions.
 // In case the texture is not found, the dimensions returned are null
 // -----------------------------------------------------------------------------
-Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, std::string_view name)
+Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string_view name)
 {
 	Vec2i dimensions;
 	dimensions.x = 0;
@@ -553,7 +553,7 @@ Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, std::string_view na
 // -----------------------------------------------------------------------------
 // Gets the saved window info for [id]
 // -----------------------------------------------------------------------------
-Misc::WindowInfo Misc::getWindowInfo(std::string_view id)
+Misc::WindowInfo Misc::getWindowInfo(string_view id)
 {
 	for (auto& a : window_info)
 	{
@@ -567,7 +567,7 @@ Misc::WindowInfo Misc::getWindowInfo(std::string_view id)
 // -----------------------------------------------------------------------------
 // Sets the saved window info for [id]
 // -----------------------------------------------------------------------------
-void Misc::setWindowInfo(std::string_view id, int width, int height, int left, int top)
+void Misc::setWindowInfo(string_view id, int width, int height, int left, int top)
 {
 	if (id.empty())
 		return;

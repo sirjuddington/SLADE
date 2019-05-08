@@ -76,7 +76,7 @@ void addCVarList(CVar* cvar)
 // -----------------------------------------------------------------------------
 // CIntCVar class constructor
 // -----------------------------------------------------------------------------
-CIntCVar::CIntCVar(const std::string& NAME, int defval, uint16_t FLAGS)
+CIntCVar::CIntCVar(const string& NAME, int defval, uint16_t FLAGS)
 {
 	name  = NAME;
 	flags = FLAGS;
@@ -88,7 +88,7 @@ CIntCVar::CIntCVar(const std::string& NAME, int defval, uint16_t FLAGS)
 // -----------------------------------------------------------------------------
 // CBoolCVar class constructor
 // -----------------------------------------------------------------------------
-CBoolCVar::CBoolCVar(const std::string& NAME, bool defval, uint16_t FLAGS)
+CBoolCVar::CBoolCVar(const string& NAME, bool defval, uint16_t FLAGS)
 {
 	name  = NAME;
 	flags = FLAGS;
@@ -100,7 +100,7 @@ CBoolCVar::CBoolCVar(const std::string& NAME, bool defval, uint16_t FLAGS)
 // -----------------------------------------------------------------------------
 // CFloatCVar class constructor
 // -----------------------------------------------------------------------------
-CFloatCVar::CFloatCVar(const std::string& NAME, double defval, uint16_t FLAGS)
+CFloatCVar::CFloatCVar(const string& NAME, double defval, uint16_t FLAGS)
 {
 	name  = NAME;
 	flags = FLAGS;
@@ -112,7 +112,7 @@ CFloatCVar::CFloatCVar(const std::string& NAME, double defval, uint16_t FLAGS)
 // -----------------------------------------------------------------------------
 // CStringCVar class constructor
 // -----------------------------------------------------------------------------
-CStringCVar::CStringCVar(const std::string& NAME, const std::string& defval, uint16_t FLAGS)
+CStringCVar::CStringCVar(const string& NAME, const string& defval, uint16_t FLAGS)
 {
 	name  = NAME;
 	flags = FLAGS;
@@ -132,7 +132,7 @@ CStringCVar::CStringCVar(const std::string& NAME, const std::string& defval, uin
 // -----------------------------------------------------------------------------
 // Finds a CVar by name
 // -----------------------------------------------------------------------------
-CVar* CVar::get(const std::string& name)
+CVar* CVar::get(const string& name)
 {
 	for (unsigned i = 0; i < n_cvars; ++i)
 	{
@@ -146,7 +146,7 @@ CVar* CVar::get(const std::string& name)
 // -----------------------------------------------------------------------------
 // Adds all cvar names to a vector of strings
 // -----------------------------------------------------------------------------
-void CVar::putList(vector<std::string>& list)
+void CVar::putList(vector<string>& list)
 {
 	for (unsigned i = 0; i < n_cvars; ++i)
 	{
@@ -158,7 +158,7 @@ void CVar::putList(vector<std::string>& list)
 // -----------------------------------------------------------------------------
 // Saves cvars to a config file
 // -----------------------------------------------------------------------------
-std::string CVar::writeAll()
+string CVar::writeAll()
 {
 	uint32_t max_size = 0;
 	for (unsigned i = 0; i < n_cvars; ++i)
@@ -207,7 +207,7 @@ std::string CVar::writeAll()
 // Reads [value] into the CVar with matching [name],
 // or does nothing if no CVar [name] exists
 // -----------------------------------------------------------------------------
-void CVar::set(const std::string& name, const std::string& value)
+void CVar::set(const string& name, const string& value)
 {
 	for (unsigned i = 0; i < n_cvars; ++i)
 	{

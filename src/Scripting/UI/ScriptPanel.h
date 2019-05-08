@@ -15,13 +15,13 @@ public:
 
 	TextEditorCtrl*        editor() const { return text_editor_; }
 	ScriptManager::Script* script() const { return script_; }
-	std::string            currentText() const;
+	string                 currentText() const;
 	bool                   modified() const;
 
 	bool close();
 	bool save();
 
-	bool handleAction(std::string_view id);
+	bool handleAction(string_view id);
 
 private:
 	ScriptManager::Script* script_             = nullptr;

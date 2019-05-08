@@ -76,7 +76,7 @@ unsigned MapObject::index() const
 // -----------------------------------------------------------------------------
 // Returns a string representation of the object type
 // -----------------------------------------------------------------------------
-std::string MapObject::typeName() const
+string MapObject::typeName() const
 {
 	switch (type_)
 	{
@@ -133,7 +133,7 @@ void MapObject::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 // Returns true if the object has a property matching [key]
 // -----------------------------------------------------------------------------
-bool MapObject::hasProp(std::string_view key)
+bool MapObject::hasProp(string_view key)
 {
 	if (properties_.propertyExists(key))
 		return properties_[key].hasValue();
@@ -144,7 +144,7 @@ bool MapObject::hasProp(std::string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the boolean property matching [key]
 // -----------------------------------------------------------------------------
-bool MapObject::boolProperty(std::string_view key)
+bool MapObject::boolProperty(string_view key)
 {
 	// If the property exists already, return it
 	if (properties_[key].hasValue())
@@ -153,7 +153,7 @@ bool MapObject::boolProperty(std::string_view key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(std::string{ key }, type_);
+		auto prop = Game::configuration().getUDMFProperty(string{ key }, type_);
 		if (prop)
 			return prop->defaultValue().boolValue();
 		else
@@ -164,7 +164,7 @@ bool MapObject::boolProperty(std::string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapObject::intProperty(std::string_view key)
+int MapObject::intProperty(string_view key)
 {
 	// If the property exists already, return it
 	if (properties_[key].hasValue())
@@ -173,7 +173,7 @@ int MapObject::intProperty(std::string_view key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(std::string{ key }, type_);
+		auto prop = Game::configuration().getUDMFProperty(string{ key }, type_);
 		if (prop)
 			return prop->defaultValue().intValue();
 		else
@@ -184,7 +184,7 @@ int MapObject::intProperty(std::string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the float property matching [key]
 // -----------------------------------------------------------------------------
-double MapObject::floatProperty(std::string_view key)
+double MapObject::floatProperty(string_view key)
 {
 	// If the property exists already, return it
 	if (properties_[key].hasValue())
@@ -193,7 +193,7 @@ double MapObject::floatProperty(std::string_view key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(std::string{ key }, type_);
+		auto prop = Game::configuration().getUDMFProperty(string{ key }, type_);
 		if (prop)
 			return prop->defaultValue().floatValue();
 		else
@@ -204,7 +204,7 @@ double MapObject::floatProperty(std::string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the string property matching [key]
 // -----------------------------------------------------------------------------
-std::string MapObject::stringProperty(std::string_view key)
+string MapObject::stringProperty(string_view key)
 {
 	// If the property exists already, return it
 	if (properties_[key].hasValue())
@@ -213,7 +213,7 @@ std::string MapObject::stringProperty(std::string_view key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(std::string{ key }, type_);
+		auto prop = Game::configuration().getUDMFProperty(string{ key }, type_);
 		if (prop)
 			return prop->defaultValue().stringValue();
 		else
@@ -224,7 +224,7 @@ std::string MapObject::stringProperty(std::string_view key)
 // -----------------------------------------------------------------------------
 // Sets the boolean value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapObject::setBoolProperty(std::string_view key, bool value)
+void MapObject::setBoolProperty(string_view key, bool value)
 {
 	// Update modified time
 	setModified();
@@ -236,7 +236,7 @@ void MapObject::setBoolProperty(std::string_view key, bool value)
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapObject::setIntProperty(std::string_view key, int value)
+void MapObject::setIntProperty(string_view key, int value)
 {
 	// Update modified time
 	setModified();
@@ -248,7 +248,7 @@ void MapObject::setIntProperty(std::string_view key, int value)
 // -----------------------------------------------------------------------------
 // Sets the float value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapObject::setFloatProperty(std::string_view key, double value)
+void MapObject::setFloatProperty(string_view key, double value)
 {
 	// Update modified time
 	setModified();
@@ -260,7 +260,7 @@ void MapObject::setFloatProperty(std::string_view key, double value)
 // -----------------------------------------------------------------------------
 // Sets the string value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapObject::setStringProperty(std::string_view key, std::string_view value)
+void MapObject::setStringProperty(string_view key, string_view value)
 {
 	// Update modified time
 	setModified();
@@ -367,7 +367,7 @@ void MapObject::endPropBackup()
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiBoolProperty(vector<MapObject*>& objects, std::string_view prop, bool& value)
+bool MapObject::multiBoolProperty(vector<MapObject*>& objects, string_view prop, bool& value)
 {
 	// Check objects given
 	if (objects.empty())
@@ -392,7 +392,7 @@ bool MapObject::multiBoolProperty(vector<MapObject*>& objects, std::string_view 
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiIntProperty(vector<MapObject*>& objects, std::string_view prop, int& value)
+bool MapObject::multiIntProperty(vector<MapObject*>& objects, string_view prop, int& value)
 {
 	// Check objects given
 	if (objects.empty())
@@ -417,7 +417,7 @@ bool MapObject::multiIntProperty(vector<MapObject*>& objects, std::string_view p
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiFloatProperty(vector<MapObject*>& objects, std::string_view prop, double& value)
+bool MapObject::multiFloatProperty(vector<MapObject*>& objects, string_view prop, double& value)
 {
 	// Check objects given
 	if (objects.empty())
@@ -442,7 +442,7 @@ bool MapObject::multiFloatProperty(vector<MapObject*>& objects, std::string_view
 // If all values are the same, [value] is set and returns true, otherwise
 // just returns false
 // -----------------------------------------------------------------------------
-bool MapObject::multiStringProperty(vector<MapObject*>& objects, std::string_view prop, std::string& value)
+bool MapObject::multiStringProperty(vector<MapObject*>& objects, string_view prop, string& value)
 {
 	// Check objects given
 	if (objects.empty())

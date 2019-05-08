@@ -51,16 +51,16 @@ struct Icon
 {
 	wxImage       image;
 	wxImage       image_large;
-	std::string   name;
+	string        name;
 	ArchiveEntry* resource_entry;
 };
 
-vector<Icon>        icons_general;
-vector<Icon>        icons_text_editor;
-vector<Icon>        icons_entry;
-wxBitmap            icon_empty;
-vector<std::string> iconsets_entry;
-vector<std::string> iconsets_general;
+vector<Icon>   icons_general;
+vector<Icon>   icons_text_editor;
+vector<Icon>   icons_entry;
+wxBitmap       icon_empty;
+vector<string> iconsets_entry;
+vector<string> iconsets_general;
 } // namespace Icons
 
 
@@ -105,7 +105,7 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 	}
 
 	// Get icon set dir
-	std::string icon_set_dir = "Default";
+	string icon_set_dir = "Default";
 	if (type == Entry)
 		icon_set_dir = iconset_entry_list;
 	if (type == General)
@@ -236,7 +236,7 @@ bool Icons::loadIcons()
 // If [type] is less than 0, try all icon types.
 // If [log_missing] is true, log an error message if the icon was not found
 // -----------------------------------------------------------------------------
-wxBitmap Icons::getIcon(Type type, std::string_view name, bool large, bool log_missing)
+wxBitmap Icons::getIcon(Type type, string_view name, bool large, bool log_missing)
 {
 	// Check all types if [type] is < 0
 	if (type == Any)
@@ -281,7 +281,7 @@ wxBitmap Icons::getIcon(Type type, std::string_view name, bool large, bool log_m
 // -----------------------------------------------------------------------------
 // Returns the icon [name] of [type]
 // -----------------------------------------------------------------------------
-wxBitmap Icons::getIcon(Type type, std::string_view name)
+wxBitmap Icons::getIcon(Type type, string_view name)
 {
 	return getIcon(type, name, UI::scaleFactor() > 1.25);
 }
@@ -289,7 +289,7 @@ wxBitmap Icons::getIcon(Type type, std::string_view name)
 // -----------------------------------------------------------------------------
 // Exports icon [name] of [type] to a png image file at [path]
 // -----------------------------------------------------------------------------
-bool Icons::exportIconPNG(Type type, std::string_view name, std::string_view path)
+bool Icons::exportIconPNG(Type type, string_view name, string_view path)
 {
 	auto& icons = iconList(type);
 
@@ -305,7 +305,7 @@ bool Icons::exportIconPNG(Type type, std::string_view name, std::string_view pat
 // -----------------------------------------------------------------------------
 // Returns a list of currently available icon sets for [type]
 // -----------------------------------------------------------------------------
-vector<std::string> Icons::iconSets(Type type)
+vector<string> Icons::iconSets(Type type)
 {
 	if (type == General)
 		return iconsets_general;

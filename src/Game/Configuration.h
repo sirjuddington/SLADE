@@ -50,46 +50,46 @@ enum class UDMFFeature
 	ThingRotation,      // Per-thing pitch and yaw rotation
 };
 
-typedef std::map<std::string, UDMFProperty> UDMFPropMap;
+typedef std::map<string, UDMFProperty> UDMFPropMap;
 
 class Configuration
 {
 public:
 	struct Flag
 	{
-		int         flag;
-		std::string name;
-		std::string udmf;
-		bool        activation;
+		int    flag;
+		string name;
+		string udmf;
+		bool   activation;
 	};
 
 	struct MapConf
 	{
-		std::string mapname;
-		std::string sky1;
-		std::string sky2;
+		string mapname;
+		string sky1;
+		string sky2;
 	};
 
 	Configuration();
 	~Configuration() = default;
 
-	void               setDefaults();
-	const std::string& currentGame() const { return current_game_; }
-	const std::string& currentPort() const { return current_port_; }
-	bool               supportsSectorFlags() const { return boom_sector_flag_start_ > 0; }
-	std::string        udmfNamespace() const;
-	const std::string& skyFlat() const { return sky_flat_; }
-	const std::string& scriptLanguage() const { return script_language_; }
-	int                lightLevelInterval();
+	void          setDefaults();
+	const string& currentGame() const { return current_game_; }
+	const string& currentPort() const { return current_port_; }
+	bool          supportsSectorFlags() const { return boom_sector_flag_start_ > 0; }
+	string        udmfNamespace() const;
+	const string& skyFlat() const { return sky_flat_; }
+	const string& scriptLanguage() const { return script_language_; }
+	int           lightLevelInterval();
 
-	unsigned           nMapNames() const { return maps_.size(); }
-	const std::string& mapName(unsigned index);
-	MapConf            mapInfo(std::string_view mapname);
+	unsigned      nMapNames() const { return maps_.size(); }
+	const string& mapName(unsigned index);
+	MapConf       mapInfo(string_view mapname);
 
 	// General Accessors
 	const std::map<int, ActionSpecial>& allActionSpecials() const { return action_specials_; }
 	const std::map<int, ThingType>&     allThingTypes() const { return thing_types_; }
-	const std::map<int, std::string>&   allSectorTypes() const { return sector_types_; }
+	const std::map<int, string>&        allSectorTypes() const { return sector_types_; }
 
 	// Feature Support
 	bool featureSupported(Feature feature) { return supported_features_[feature]; }
@@ -101,31 +101,31 @@ public:
 	void readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist) const;
 	void readGameSection(ParseTreeNode* node_game, bool port_section = false);
 	bool readConfiguration(
-		std::string_view cfg,
-		std::string_view source      = "",
-		MapFormat        format      = MapFormat::Unknown,
-		bool             ignore_game = false,
-		bool             clear       = true);
-	bool openConfig(const std::string& game, const std::string& port = "", MapFormat format = MapFormat::Unknown);
+		string_view cfg,
+		string_view source      = "",
+		MapFormat   format      = MapFormat::Unknown,
+		bool        ignore_game = false,
+		bool        clear       = true);
+	bool openConfig(const string& game, const string& port = "", MapFormat format = MapFormat::Unknown);
 
 	// Action specials
 	const ActionSpecial& actionSpecial(unsigned id);
-	std::string          actionSpecialName(int special);
+	string               actionSpecialName(int special);
 
 	// Thing types
 	const ThingType& thingType(unsigned type);
-	const ThingType& thingTypeGroupDefaults(const std::string& group);
+	const ThingType& thingTypeGroupDefaults(const string& group);
 
 	// Thing flags
-	int         nThingFlags() const { return flags_thing_.size(); }
-	std::string thingFlag(unsigned flag_index);
-	bool        thingFlagSet(unsigned flag_index, MapThing* thing);
-	bool        thingFlagSet(std::string_view udmf_name, MapThing* thing, MapFormat map_format);
-	bool        thingBasicFlagSet(std::string_view flag, MapThing* thing, MapFormat map_format);
-	std::string thingFlagsString(int flags);
-	void        setThingFlag(unsigned flag_index, MapThing* thing, bool set = true);
-	void        setThingFlag(std::string_view udmf_name, MapThing* thing, MapFormat map_format, bool set = true);
-	void        setThingBasicFlag(std::string_view flag, MapThing* thing, MapFormat map_format, bool set = true);
+	int    nThingFlags() const { return flags_thing_.size(); }
+	string thingFlag(unsigned flag_index);
+	bool   thingFlagSet(unsigned flag_index, MapThing* thing);
+	bool   thingFlagSet(string_view udmf_name, MapThing* thing, MapFormat map_format);
+	bool   thingBasicFlagSet(string_view flag, MapThing* thing, MapFormat map_format);
+	string thingFlagsString(int flags);
+	void   setThingFlag(unsigned flag_index, MapThing* thing, bool set = true);
+	void   setThingFlag(string_view udmf_name, MapThing* thing, MapFormat map_format, bool set = true);
+	void   setThingBasicFlag(string_view flag, MapThing* thing, MapFormat map_format, bool set = true);
 
 	// DECORATE
 	bool parseDecorateDefs(Archive* archive);
@@ -143,41 +143,41 @@ public:
 	unsigned    nLineFlags() const { return flags_line_.size(); }
 	const Flag& lineFlag(unsigned flag_index);
 	bool        lineFlagSet(unsigned flag_index, MapLine* line);
-	bool        lineFlagSet(std::string_view udmf_name, MapLine* line, MapFormat map_format);
-	bool        lineBasicFlagSet(std::string_view flag, MapLine* line, MapFormat map_format);
-	std::string lineFlagsString(MapLine* line);
+	bool        lineFlagSet(string_view udmf_name, MapLine* line, MapFormat map_format);
+	bool        lineBasicFlagSet(string_view flag, MapLine* line, MapFormat map_format);
+	string      lineFlagsString(MapLine* line);
 	void        setLineFlag(unsigned flag_index, MapLine* line, bool set = true);
-	void        setLineFlag(std::string_view udmf_name, MapLine* line, MapFormat map_format, bool set = true);
-	void        setLineBasicFlag(std::string_view flag, MapLine* line, MapFormat map_format, bool set = true);
+	void        setLineFlag(string_view udmf_name, MapLine* line, MapFormat map_format, bool set = true);
+	void        setLineBasicFlag(string_view flag, MapLine* line, MapFormat map_format, bool set = true);
 
 	// Line action (SPAC) triggers
-	std::string         spacTriggerString(MapLine* line, MapFormat map_format);
-	int                 spacTriggerIndexHexen(MapLine* line);
-	vector<std::string> allSpacTriggers();
-	void                setLineSpacTrigger(unsigned trigger_index, MapLine* line);
-	const std::string&  spacTriggerUDMFName(unsigned trigger_index);
+	string         spacTriggerString(MapLine* line, MapFormat map_format);
+	int            spacTriggerIndexHexen(MapLine* line);
+	vector<string> allSpacTriggers();
+	void           setLineSpacTrigger(unsigned trigger_index, MapLine* line);
+	const string&  spacTriggerUDMFName(unsigned trigger_index);
 
 	// UDMF properties
-	UDMFProperty* getUDMFProperty(const std::string& name, MapObject::Type type);
+	UDMFProperty* getUDMFProperty(const string& name, MapObject::Type type);
 	UDMFPropMap&  allUDMFProperties(MapObject::Type type);
 	void          cleanObjectUDMFProps(MapObject* object);
 
 	// Sector types
-	std::string sectorTypeName(int type);
-	int         sectorTypeByName(std::string_view name);
-	int         baseSectorType(int type) const;
-	int         sectorBoomDamage(int type) const;
-	bool        sectorBoomSecret(int type) const;
-	bool        sectorBoomFriction(int type) const;
-	bool        sectorBoomPushPull(int type) const;
-	int         boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull) const;
+	string sectorTypeName(int type);
+	int    sectorTypeByName(string_view name);
+	int    baseSectorType(int type) const;
+	int    sectorBoomDamage(int type) const;
+	bool   sectorBoomSecret(int type) const;
+	bool   sectorBoomFriction(int type) const;
+	bool   sectorBoomPushPull(int type) const;
+	int    boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull) const;
 
 	// Defaults
-	std::string defaultString(MapObject::Type type, const std::string& property);
-	int         defaultInt(MapObject::Type type, const std::string& property);
-	double      defaultFloat(MapObject::Type type, const std::string& property);
-	bool        defaultBool(MapObject::Type type, const std::string& property);
-	void        applyDefaults(MapObject* object, bool udmf = false);
+	string defaultString(MapObject::Type type, const string& property);
+	int    defaultInt(MapObject::Type type, const string& property);
+	double defaultFloat(MapObject::Type type, const string& property);
+	bool   defaultBool(MapObject::Type type, const string& property);
+	void   applyDefaults(MapObject* object, bool udmf = false);
 
 	// Special Presets
 	const vector<SpecialPreset>& specialPresets() const { return special_presets_; }
@@ -194,22 +194,22 @@ public:
 	void dumpUDMFProperties();
 
 private:
-	std::string               current_game_;           // Current game name
-	std::string               current_port_;           // Current port name (empty if none)
+	string                    current_game_;           // Current game name
+	string                    current_port_;           // Current port name (empty if none)
 	std::map<MapFormat, bool> map_formats_;            // Supported map formats
-	std::string               udmf_namespace_;         // Namespace to use for UDMF
+	string                    udmf_namespace_;         // Namespace to use for UDMF
 	int                       boom_sector_flag_start_; // Beginning of Boom sector flags
-	std::string               sky_flat_;               // Sky flat for 3d mode
-	std::string               script_language_;        // Scripting language (should be extended to allow multiple)
+	string                    sky_flat_;               // Sky flat for 3d mode
+	string                    script_language_;        // Scripting language (should be extended to allow multiple)
 	vector<int>               light_levels_;           // Light levels for up/down light in editor
 
 	// Action specials
 	std::map<int, ActionSpecial> action_specials_;
 
 	// Thing types
-	std::map<int, ThingType>         thing_types_;
-	std::map<std::string, ThingType> tt_group_defaults_;
-	vector<ThingType>                parsed_types_;
+	std::map<int, ThingType>    thing_types_;
+	std::map<string, ThingType> tt_group_defaults_;
+	vector<ThingType>           parsed_types_;
 	// std::map<string, ThingType> parsed_types_;		// ThingTypes parsed from definitions
 	// (DECORATE, ZScript etc.)
 
@@ -219,7 +219,7 @@ private:
 	vector<Flag> triggers_line_;
 
 	// Sector types
-	std::map<int, std::string> sector_types_;
+	std::map<int, string> sector_types_;
 
 	// Map info
 	vector<MapConf> maps_;

@@ -238,9 +238,9 @@ static const char* Steps[] = {
 // ------------------------------------------------------------------------
 // Returns a string representation of the generalised line value [type]
 // ------------------------------------------------------------------------
-std::string parseLineType(int type)
+string parseLineType(int type)
 {
-	std::string type_string;
+	string type_string;
 
 	// Floor type
 	if (type >= 0x6000)

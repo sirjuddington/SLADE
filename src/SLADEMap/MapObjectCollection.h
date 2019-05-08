@@ -28,7 +28,7 @@ public:
 	void setParentMap(SLADEMap* map) { parent_map_ = map; }
 
 	// MapObject id stuff (used for undo/redo)
-	void       addMapObject(std::unique_ptr<MapObject> object);
+	void       addMapObject(unique_ptr<MapObject> object);
 	void       removeMapObject(MapObject* object);
 	MapObject* getObjectById(unsigned id) const { return objects_[id].object.get(); }
 	void       putObjectIdList(MapObject::Type type, vector<unsigned>& list) const;
@@ -38,11 +38,11 @@ public:
 	void clear();
 
 	// Object add
-	MapVertex* addVertex(std::unique_ptr<MapVertex> vertex);
-	MapSide*   addSide(std::unique_ptr<MapSide> side);
-	MapLine*   addLine(std::unique_ptr<MapLine> line);
-	MapSector* addSector(std::unique_ptr<MapSector> sector);
-	MapThing*  addThing(std::unique_ptr<MapThing> thing);
+	MapVertex* addVertex(unique_ptr<MapVertex> vertex);
+	MapSide*   addSide(unique_ptr<MapSide> side);
+	MapLine*   addLine(unique_ptr<MapLine> line);
+	MapSector* addSector(unique_ptr<MapSector> sector);
+	MapThing*  addThing(unique_ptr<MapThing> thing);
 
 	// Object duplicate
 	MapSide* duplicateSide(MapSide* side);
@@ -79,12 +79,10 @@ public:
 private:
 	struct MapObjectHolder
 	{
-		std::unique_ptr<MapObject> object;
-		bool                       in_map;
+		unique_ptr<MapObject> object;
+		bool                  in_map;
 
-		MapObjectHolder(std::unique_ptr<MapObject> object, bool in_map) : object{ std::move(object) }, in_map{ in_map }
-		{
-		}
+		MapObjectHolder(unique_ptr<MapObject> object, bool in_map) : object{ std::move(object) }, in_map{ in_map } {}
 	};
 
 	SLADEMap* parent_map_     = nullptr;

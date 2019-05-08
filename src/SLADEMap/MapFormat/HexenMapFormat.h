@@ -33,6 +33,6 @@ protected:
 	bool readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_data) const override;
 	bool readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_data) const override;
 
-	ArchiveEntry::UPtr writeLINEDEFS(const LineList& lines) const override;
-	ArchiveEntry::UPtr writeTHINGS(const ThingList& things) const override;
+	unique_ptr<ArchiveEntry> writeLINEDEFS(const LineList& lines) const override;
+	unique_ptr<ArchiveEntry> writeTHINGS(const ThingList& things) const override;
 };

@@ -28,10 +28,10 @@ public:
 		Locked = 4, // set if cvar cannot be changed by the user during runtime
 	};
 
-	uint16_t    flags = 0;
-	Type        type  = Type::Integer;
-	std::string name;
-	CVar*       next = nullptr;
+	uint16_t flags = 0;
+	Type     type  = Type::Integer;
+	string   name;
+	CVar*    next = nullptr;
 
 	CVar()          = default;
 	virtual ~CVar() = default;
@@ -44,10 +44,10 @@ public:
 	}
 
 	// Static functions
-	static std::string writeAll();
-	static void        set(const std::string& cvar_name, const std::string& value);
-	static CVar*       get(const std::string& cvar_name);
-	static void        putList(vector<std::string>& list);
+	static string writeAll();
+	static void   set(const string& cvar_name, const string& value);
+	static CVar*  get(const string& cvar_name);
+	static void   putList(vector<string>& list);
 };
 
 class CIntCVar : public CVar
@@ -55,7 +55,7 @@ class CIntCVar : public CVar
 public:
 	int value;
 
-	CIntCVar(const std::string& NAME, int defval, uint16_t FLAGS);
+	CIntCVar(const string& NAME, int defval, uint16_t FLAGS);
 	~CIntCVar() = default;
 
 	// Operators so the cvar name can be used like a normal variable
@@ -81,7 +81,7 @@ class CBoolCVar : public CVar
 public:
 	bool value;
 
-	CBoolCVar(const std::string& NAME, bool defval, uint16_t FLAGS);
+	CBoolCVar(const string& NAME, bool defval, uint16_t FLAGS);
 	~CBoolCVar() = default;
 
 		 operator bool() const { return value; }
@@ -106,7 +106,7 @@ class CFloatCVar : public CVar
 public:
 	double value;
 
-	CFloatCVar(const std::string& NAME, double defval, uint16_t FLAGS);
+	CFloatCVar(const string& NAME, double defval, uint16_t FLAGS);
 	~CFloatCVar() = default;
 
 		   operator double() const { return value; }
@@ -129,19 +129,19 @@ public:
 class CStringCVar : public CVar
 {
 public:
-	std::string value;
+	string value;
 
-	CStringCVar(const std::string& NAME, const std::string& defval, uint16_t FLAGS);
+	CStringCVar(const string& NAME, const string& defval, uint16_t FLAGS);
 	~CStringCVar() = default;
 
 	bool empty() const { return value.empty(); }
 
-				operator std::string() const { return value; }
-	std::string operator*() const { return value; }
-				operator std::string_view() const { return value; }
-				operator wxString() const { return value; }
+		   operator string() const { return value; }
+	string operator*() const { return value; }
+		   operator string_view() const { return value; }
+		   operator wxString() const { return value; }
 
-	CStringCVar& operator=(std::string_view val)
+	CStringCVar& operator=(string_view val)
 	{
 		value = val;
 		return *this;

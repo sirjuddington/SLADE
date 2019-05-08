@@ -44,8 +44,8 @@
 // -----------------------------------------------------------------------------
 namespace UI
 {
-std::unique_ptr<SplashWindow> splash_window;
-bool                          splash_enabled = true;
+unique_ptr<SplashWindow> splash_window;
+bool                     splash_enabled = true;
 
 // Pixel sizes/scale
 double scale = 1.;
@@ -102,7 +102,7 @@ void UI::enableSplash(bool enable)
 // Shows the splash window with [message].
 // If [progress] is true, the progress bar is displayed
 // -----------------------------------------------------------------------------
-void UI::showSplash(std::string_view message, bool progress, wxWindow* parent)
+void UI::showSplash(string_view message, bool progress, wxWindow* parent)
 {
 	if (!splash_enabled || !isMainThread())
 		return;
@@ -148,7 +148,7 @@ float UI::getSplashProgress()
 // -----------------------------------------------------------------------------
 // Sets the splash window [message]
 // -----------------------------------------------------------------------------
-void UI::setSplashMessage(std::string_view message)
+void UI::setSplashMessage(string_view message)
 {
 	if (splash_window && isMainThread())
 		splash_window->setMessage(wxString{ message.data(), message.size() });
@@ -157,7 +157,7 @@ void UI::setSplashMessage(std::string_view message)
 // -----------------------------------------------------------------------------
 // Sets the splash window progress bar [message]
 // -----------------------------------------------------------------------------
-void UI::setSplashProgressMessage(std::string_view message)
+void UI::setSplashProgressMessage(string_view message)
 {
 	if (splash_window && isMainThread())
 		splash_window->setProgressMessage(wxString{ message.data(), message.size() });

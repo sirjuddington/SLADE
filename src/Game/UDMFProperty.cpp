@@ -45,7 +45,7 @@
 // -----------------------------------------------------------------------------
 // Reads a UDMF property definition from a parsed tree [node]
 // -----------------------------------------------------------------------------
-void UDMFProperty::parse(ParseTreeNode* node, std::string_view group)
+void UDMFProperty::parse(ParseTreeNode* node, string_view group)
 {
 	// Set group and property name
 	group_    = group;
@@ -170,7 +170,7 @@ void UDMFProperty::parse(ParseTreeNode* node, std::string_view group)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the UDMF property definition
 // -----------------------------------------------------------------------------
-std::string UDMFProperty::getStringRep()
+string UDMFProperty::getStringRep()
 {
 	auto ret = fmt::format(R"(Property "{}": name = "{}", group = "{}")", property_, name_, group_);
 

@@ -336,7 +336,7 @@ bool GobArchive::isGobArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Dark Forces gob archive
 // -----------------------------------------------------------------------------
-bool GobArchive::isGobArchive(const std::string& filename)
+bool GobArchive::isGobArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

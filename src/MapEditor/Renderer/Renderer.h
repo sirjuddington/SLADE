@@ -46,7 +46,7 @@ public:
 	void animateSelectionChange(const MapEditor::Item& item, bool selected = true);
 	void animateSelectionChange(const ItemSelection& selection);
 	void animateHilightChange(const MapEditor::Item& old_item, MapObject* old_object = nullptr);
-	void addAnimation(std::unique_ptr<MCAnimation> animation);
+	void addAnimation(unique_ptr<MCAnimation> animation);
 
 private:
 	MapEditContext& context_;
@@ -55,7 +55,7 @@ private:
 	RenderView      view_;
 
 	// MCAnimations
-	vector<std::unique_ptr<MCAnimation>> animations_;
+	vector<unique_ptr<MCAnimation>> animations_;
 
 	// Animation
 	bool   animations_active_    = false;

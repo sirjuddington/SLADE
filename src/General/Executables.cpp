@@ -61,7 +61,7 @@ vector<ExternalExe> external_exes;
 // -----------------------------------------------------------------------------
 // Returns the game executable definition for [id]
 // -----------------------------------------------------------------------------
-Executables::GameExe* Executables::gameExe(std::string_view id)
+Executables::GameExe* Executables::gameExe(string_view id)
 {
 	for (auto& exe : game_exes)
 		if (exe.id == id)
@@ -92,7 +92,7 @@ unsigned Executables::nGameExes()
 // -----------------------------------------------------------------------------
 // Sets the path of game executable [id] to [path]
 // -----------------------------------------------------------------------------
-void Executables::setGameExePath(std::string_view id, std::string_view path)
+void Executables::setGameExePath(string_view id, string_view path)
 {
 	exe_paths.emplace_back(id, path);
 }
@@ -100,9 +100,9 @@ void Executables::setGameExePath(std::string_view id, std::string_view path)
 // -----------------------------------------------------------------------------
 // Writes all game executable paths as a string (for slade3.cfg)
 // -----------------------------------------------------------------------------
-std::string Executables::writePaths()
+string Executables::writePaths()
 {
-	std::string ret;
+	string ret;
 
 	for (auto& exe : game_exes)
 		ret += fmt::format("\t{} \"{}\"\n", exe.id, StrUtil::escapedString(exe.path, true));
@@ -113,9 +113,9 @@ std::string Executables::writePaths()
 // -----------------------------------------------------------------------------
 // Writes all executable definitions as text
 // -----------------------------------------------------------------------------
-std::string Executables::writeExecutables()
+string Executables::writeExecutables()
 {
-	std::string ret = "executables\n{{\n";
+	string ret = "executables\n{{\n";
 
 	// Write game exes
 	for (auto& exe : game_exes)
@@ -269,13 +269,13 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 // -----------------------------------------------------------------------------
 // Adds a new game executable definition for game [name]
 // -----------------------------------------------------------------------------
-void Executables::addGameExe(std::string_view name)
+void Executables::addGameExe(string_view name)
 {
 	GameExe game;
 	game.name = name;
 
 	game.id = StrUtil::lower(name);
-	std::replace(game.id.begin(), game.id.end(), ' ', '_');	
+	std::replace(game.id.begin(), game.id.end(), ' ', '_');
 
 	game_exes.push_back(game);
 }
@@ -300,11 +300,7 @@ bool Executables::removeGameExe(unsigned index)
 // -----------------------------------------------------------------------------
 // Adds a run configuration for game executable at [exe_index]
 // -----------------------------------------------------------------------------
-void Executables::addGameExeConfig(
-	unsigned         exe_index,
-	std::string_view config_name,
-	std::string_view config_params,
-	bool             custom)
+void Executables::addGameExeConfig(unsigned exe_index, string_view config_name, string_view config_params, bool custom)
 {
 	// Check index
 	if (exe_index >= game_exes.size())
@@ -342,7 +338,7 @@ bool Executables::removeGameExeConfig(unsigned exe_index, unsigned config_index)
 // Returns the number of external executables for [category], or all if
 // [category] is not specified
 // -----------------------------------------------------------------------------
-int Executables::nExternalExes(std::string_view category)
+int Executables::nExternalExes(string_view category)
 {
 	int num = 0;
 	for (auto& exe : external_exes)
@@ -356,7 +352,7 @@ int Executables::nExternalExes(std::string_view category)
 // Returns the external executable matching [name] and [category].
 // If [category] is empty, it is ignored
 // -----------------------------------------------------------------------------
-Executables::ExternalExe Executables::externalExe(std::string_view name, std::string_view category)
+Executables::ExternalExe Executables::externalExe(string_view name, string_view category)
 {
 	for (auto& exe : external_exes)
 		if (category.empty() || exe.category == category)
@@ -370,7 +366,7 @@ Executables::ExternalExe Executables::externalExe(std::string_view name, std::st
 // Returns a list of all external executables matching [category].
 // If [category] is empty, it is ignored
 // -----------------------------------------------------------------------------
-vector<Executables::ExternalExe> Executables::externalExes(std::string_view category)
+vector<Executables::ExternalExe> Executables::externalExes(string_view category)
 {
 	vector<ExternalExe> ret;
 	for (auto& exe : external_exes)
@@ -408,7 +404,7 @@ void Executables::parseExternalExe(ParseTreeNode* node)
 // Adds a new external executable, if one matching [name] and [category] doesn't
 // already exist
 // -----------------------------------------------------------------------------
-void Executables::addExternalExe(std::string_view name, std::string_view path, std::string_view category)
+void Executables::addExternalExe(string_view name, string_view path, string_view category)
 {
 	// Check it doesn't already exist
 	for (auto& exe : external_exes)
@@ -426,7 +422,7 @@ void Executables::addExternalExe(std::string_view name, std::string_view path, s
 // Sets the name of the external executable matching [name_old] and [category]
 // to [name_new]
 // -----------------------------------------------------------------------------
-void Executables::setExternalExeName(std::string_view name_old, std::string_view name_new, std::string_view category)
+void Executables::setExternalExeName(string_view name_old, string_view name_new, string_view category)
 {
 	for (auto& exe : external_exes)
 		if (exe.name == name_old && exe.category == category)
@@ -440,7 +436,7 @@ void Executables::setExternalExeName(std::string_view name_old, std::string_view
 // Sets the path of the external executable matching [name] and [category] to
 // [path]
 // -----------------------------------------------------------------------------
-void Executables::setExternalExePath(std::string_view name, std::string_view path, std::string_view category)
+void Executables::setExternalExePath(string_view name, string_view path, string_view category)
 {
 	for (auto& exe : external_exes)
 		if (exe.name == name && exe.category == category)
@@ -453,7 +449,7 @@ void Executables::setExternalExePath(std::string_view name, std::string_view pat
 // -----------------------------------------------------------------------------
 // Removes the external executable matching [name] and [category]
 // -----------------------------------------------------------------------------
-void Executables::removeExternalExe(std::string_view name, std::string_view category)
+void Executables::removeExternalExe(string_view name, string_view category)
 {
 	for (unsigned a = 0; a < external_exes.size(); a++)
 		if (external_exes[a].name == name && external_exes[a].category == category)

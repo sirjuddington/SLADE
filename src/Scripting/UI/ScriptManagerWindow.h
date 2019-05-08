@@ -15,7 +15,7 @@ public:
 
 	void                   openScriptTab(ScriptManager::Script* script) const;
 	ScriptManager::Script* currentScript() const;
-	std::string               currentScriptText() const;
+	string                 currentScriptText() const;
 
 private:
 	ScriptManager::Script  script_scratchbox_;
@@ -51,5 +51,5 @@ private:
 	void         showDocs(const wxString& url = "");
 
 	// SActionHandler
-	bool handleAction(std::string_view id) override;
+	bool handleAction(string_view id) override;
 };

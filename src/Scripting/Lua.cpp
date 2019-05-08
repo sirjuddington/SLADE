@@ -83,8 +83,8 @@ void processError(const sol::protected_function_result& result)
 	StrUtil::capitalizeIP(script_error.type);
 
 	// Error Message
-	sol::error       error     = result;
-	std::string_view error_msg = error.what();
+	sol::error  error     = result;
+	string_view error_msg = error.what();
 
 	// Line No.
 	auto pos             = error_msg.find("]:");
@@ -108,7 +108,7 @@ sol::protected_function_result handleError(lua_State* L, sol::protected_function
 // Loads [script] and runs the 'Execute' function in the script, passing
 // [param] to the function
 // -----------------------------------------------------------------------------
-template<class T> bool runEditorScript(const std::string& script, T param)
+template<class T> bool runEditorScript(const string& script, T param)
 {
 	resetError();
 	script_start_time = wxDateTime::Now().GetTicks();
@@ -183,11 +183,11 @@ Lua::Error& Lua::error()
 // Shows an extended message dialog with details of the last script error that
 // occurred
 // -----------------------------------------------------------------------------
-void Lua::showErrorDialog(wxWindow* parent, std::string_view title, std::string_view message)
+void Lua::showErrorDialog(wxWindow* parent, string_view title, string_view message)
 {
 	// Get script log messages since the last script was started
-	auto        log = Log::since(script_start_time, Log::MessageType::Script);
-	std::string output;
+	auto   log = Log::since(script_start_time, Log::MessageType::Script);
+	string output;
 	for (auto msg : log)
 		output += msg->formattedMessageLine() + "\n";
 
@@ -206,7 +206,7 @@ void Lua::showErrorDialog(wxWindow* parent, std::string_view title, std::string_
 // -----------------------------------------------------------------------------
 // Runs a lua script [program]
 // -----------------------------------------------------------------------------
-bool Lua::run(const std::string& program)
+bool Lua::run(const string& program)
 {
 	resetError();
 	script_start_time = wxDateTime::Now().GetTicks();
@@ -229,7 +229,7 @@ bool Lua::run(const std::string& program)
 // -----------------------------------------------------------------------------
 // Runs a lua script from a text file [filename]
 // -----------------------------------------------------------------------------
-bool Lua::runFile(const std::string& filename)
+bool Lua::runFile(const string& filename)
 {
 	resetError();
 	script_start_time = wxDateTime::Now().GetTicks();
@@ -253,7 +253,7 @@ bool Lua::runFile(const std::string& filename)
 // Runs the 'Execute(archive)' function in the given [script], passing [archive]
 // as the parameter
 // -----------------------------------------------------------------------------
-bool Lua::runArchiveScript(const std::string& script, Archive* archive)
+bool Lua::runArchiveScript(const string& script, Archive* archive)
 {
 	return runEditorScript<Archive*>(script, archive);
 }
@@ -262,7 +262,7 @@ bool Lua::runArchiveScript(const std::string& script, Archive* archive)
 // Runs the 'Execute(entries)' function in the given [script], passing [entries]
 // as the parameter
 // -----------------------------------------------------------------------------
-bool Lua::runEntryScript(const std::string& script, vector<ArchiveEntry*>& entries)
+bool Lua::runEntryScript(const string& script, vector<ArchiveEntry*>& entries)
 {
 	return runEditorScript<vector<ArchiveEntry*>&>(script, entries);
 }
@@ -271,7 +271,7 @@ bool Lua::runEntryScript(const std::string& script, vector<ArchiveEntry*>& entri
 // Runs the 'Execute(map)' function in the given [script], passing [map] as the
 // parameter
 // -----------------------------------------------------------------------------
-bool Lua::runMapScript(const std::string& script, SLADEMap* map)
+bool Lua::runMapScript(const string& script, SLADEMap* map)
 {
 	return runEditorScript<SLADEMap*>(script, map);
 }

@@ -2,10 +2,10 @@
 class PNGChunk
 {
 public:
-	PNGChunk(std::string_view name = "----") { memcpy(name_, name.data(), 4); }
+	PNGChunk(string_view name = "----") { memcpy(name_, name.data(), 4); }
 	~PNGChunk() = default;
 
-	std::string  name() const { return std::string(name_, 4); }
+	string    name() const { return string(name_, 4); }
 	uint32_t  size() const { return size_; }
 	uint32_t  crc() const { return crc_; }
 	MemChunk& data() { return data_; }

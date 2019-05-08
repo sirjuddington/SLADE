@@ -448,4 +448,4 @@ struct BBox
 };
 
 // Formerly key_value_t
-typedef std::pair<std::string, std::string> StringPair;
+typedef std::pair<string, string> StringPair;

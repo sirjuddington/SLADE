@@ -56,7 +56,7 @@ ThingType ThingType::unknown_;
 // -----------------------------------------------------------------------------
 // ThingType class constructor
 // -----------------------------------------------------------------------------
-ThingType::ThingType(std::string_view name, std::string_view group, std::string_view class_name) :
+ThingType::ThingType(string_view name, string_view group, string_view class_name) :
 	name_{ name },
 	group_{ group },
 	tagged_{ TagType::None },
@@ -96,7 +96,7 @@ void ThingType::copy(const ThingType& copy)
 // -----------------------------------------------------------------------------
 // Defines this thing type's [number], [name] and [group]
 // -----------------------------------------------------------------------------
-void ThingType::define(int number, std::string_view name, std::string_view group)
+void ThingType::define(int number, string_view name, string_view group)
 {
 	number_ = number;
 	name_   = name;
@@ -312,7 +312,7 @@ void ThingType::parse(ParseTreeNode* node)
 
 				// Type
 				val = child->childPTN("type");
-				std::string atype;
+				string atype;
 				if (val)
 					atype = val->stringValue();
 				if (StrUtil::equalCI(atype, "yesno"))
@@ -331,7 +331,7 @@ void ThingType::parse(ParseTreeNode* node)
 // -----------------------------------------------------------------------------
 // Returns the thing type info as a string
 // -----------------------------------------------------------------------------
-std::string ThingType::stringDesc() const
+string ThingType::stringDesc() const
 {
 	// Init return string
 	auto ret = fmt::format(

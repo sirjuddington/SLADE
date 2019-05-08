@@ -107,9 +107,9 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 		cur_size *= fade;
 
 	// Determine texture name strings
-	auto ftex = tex_floor_[0];
-	auto ctex = tex_ceil_[0];
-	std::string ftex2, ctex2;
+	auto   ftex = tex_floor_[0];
+	auto   ctex = tex_ceil_[0];
+	string ftex2, ctex2;
 	if (tex_floor_.size() > 1)
 	{
 		ftex  = fmt::format("Multiple ({})", tex_floor_.size());
@@ -172,8 +172,7 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 // -----------------------------------------------------------------------------
 // Draws the texture box for [textures]
 // -----------------------------------------------------------------------------
-void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vector<std::string>& textures, bool hover)
-	const
+void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vector<string>& textures, bool hover) const
 {
 	// Get colours
 	auto col_bg  = ColourConfiguration::colour("map_overlay_background");
@@ -329,7 +328,7 @@ void SectorTextureOverlay::mouseLeftClick()
 // -----------------------------------------------------------------------------
 // Called when a key is pressed
 // -----------------------------------------------------------------------------
-void SectorTextureOverlay::keyDown(std::string_view key)
+void SectorTextureOverlay::keyDown(string_view key)
 {
 	// Browse floor texture
 	if (key == "F" || key == "f")
@@ -346,7 +345,7 @@ void SectorTextureOverlay::keyDown(std::string_view key)
 void SectorTextureOverlay::browseFloorTexture()
 {
 	// Get initial texture
-	std::string texture;
+	string texture;
 	if (tex_floor_.empty())
 		texture = sectors_[0]->floor().texture;
 	else
@@ -371,7 +370,7 @@ void SectorTextureOverlay::browseFloorTexture()
 void SectorTextureOverlay::browseCeilingTexture()
 {
 	// Get initial texture
-	std::string texture;
+	string texture;
 	if (tex_ceil_.empty())
 		texture = sectors_[0]->ceiling().texture;
 	else

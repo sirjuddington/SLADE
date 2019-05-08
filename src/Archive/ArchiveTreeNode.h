@@ -12,29 +12,29 @@ public:
 	~ArchiveTreeNode() = default;
 
 	// Accessors
-	Archive*                          archive() const;
-	const vector<ArchiveEntry::SPtr>& entries() const { return entries_; }
-	ArchiveEntry*                     dirEntry() const { return dir_entry_.get(); }
+	Archive*                                archive() const;
+	const vector<shared_ptr<ArchiveEntry>>& entries() const { return entries_; }
+	ArchiveEntry*                           dirEntry() const { return dir_entry_.get(); }
 
 	// STreeNode
-	const std::string& name() const override;
-	void               addChild(STreeNode* child) override;
-	void               setName(std::string_view name) override { dir_entry_->setName(name); }
+	const string& name() const override;
+	void          addChild(STreeNode* child) override;
+	void          setName(string_view name) override { dir_entry_->setName(name); }
 
 	// Entry Access
-	ArchiveEntry*      entryAt(unsigned index);
-	ArchiveEntry::SPtr sharedEntryAt(unsigned index);
-	ArchiveEntry*      entry(std::string_view name, bool cut_ext = false);
-	ArchiveEntry::SPtr sharedEntry(std::string_view name, bool cut_ext = false);
-	ArchiveEntry::SPtr sharedEntry(ArchiveEntry* entry);
-	unsigned           numEntries(bool inc_subdirs = false);
-	int                entryIndex(ArchiveEntry* entry, size_t startfrom = 0);
+	ArchiveEntry*            entryAt(unsigned index);
+	shared_ptr<ArchiveEntry> sharedEntryAt(unsigned index);
+	ArchiveEntry*            entry(string_view name, bool cut_ext = false);
+	shared_ptr<ArchiveEntry> sharedEntry(string_view name, bool cut_ext = false);
+	shared_ptr<ArchiveEntry> sharedEntry(ArchiveEntry* entry);
+	unsigned                 numEntries(bool inc_subdirs = false);
+	int                      entryIndex(ArchiveEntry* entry, size_t startfrom = 0);
 
-	vector<ArchiveEntry::SPtr> allEntries();
+	vector<shared_ptr<ArchiveEntry>> allEntries();
 
 	// Entry Operations
 	bool addEntry(ArchiveEntry* entry, unsigned index = 0xFFFFFFFF);
-	bool addEntry(ArchiveEntry::SPtr& entry, unsigned index = 0xFFFFFFFF);
+	bool addEntry(shared_ptr<ArchiveEntry>& entry, unsigned index = 0xFFFFFFFF);
 	bool removeEntry(unsigned index);
 	bool swapEntries(unsigned index1, unsigned index2);
 
@@ -46,13 +46,11 @@ public:
 		ArchiveTreeNode*    node,
 		unsigned            position = 0xFFFFFFFF,
 		ArchiveEntry::State state    = ArchiveEntry::State::New);
-	bool exportTo(std::string_view path);
+	bool exportTo(string_view path);
 	void allowDuplicateNames(bool allow) { allow_duplicate_names_ = allow; }
 
-	typedef std::unique_ptr<ArchiveTreeNode> UPtr;
-
 protected:
-	STreeNode* createChild(std::string_view name) override
+	STreeNode* createChild(string_view name) override
 	{
 		auto node                    = new ArchiveTreeNode();
 		node->archive_               = archive_;
@@ -62,10 +60,10 @@ protected:
 	}
 
 private:
-	Archive*                   archive_;
-	ArchiveEntry::SPtr         dir_entry_;
-	vector<ArchiveEntry::SPtr> entries_;
-	bool                       allow_duplicate_names_ = true;
+	Archive*                         archive_;
+	shared_ptr<ArchiveEntry>         dir_entry_;
+	vector<shared_ptr<ArchiveEntry>> entries_;
+	bool                             allow_duplicate_names_ = true;
 
 	void        ensureUniqueName(ArchiveEntry* entry);
 	static void linkEntries(ArchiveEntry* first, ArchiveEntry* second);

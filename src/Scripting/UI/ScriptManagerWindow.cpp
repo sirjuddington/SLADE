@@ -673,7 +673,7 @@ ScriptManager::Script* ScriptManagerWindow::currentScript() const
 // -----------------------------------------------------------------------------
 // Returns the currently open/focused script text
 // -----------------------------------------------------------------------------
-std::string ScriptManagerWindow::currentScriptText() const
+string ScriptManagerWindow::currentScriptText() const
 {
 	auto page = tabs_scripts_->GetCurrentPage();
 	if (page->GetName() == "script")
@@ -686,7 +686,7 @@ std::string ScriptManagerWindow::currentScriptText() const
 // Handles the SAction [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ScriptManagerWindow::handleAction(std::string_view id)
+bool ScriptManagerWindow::handleAction(string_view id)
 {
 	using namespace ScriptManager;
 

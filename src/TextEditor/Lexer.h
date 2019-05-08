@@ -31,12 +31,12 @@ public:
 	virtual void loadLanguage(TextLanguage* language);
 
 	virtual bool doStyling(TextEditorCtrl* editor, int start, int end);
-	virtual void addWord(std::string_view word, int style);
+	virtual void addWord(string_view word, int style);
 	virtual void clearWords() { word_list_.clear(); }
 	virtual void resetLineInfo() { lines_.clear(); }
 
-	void setWordChars(std::string_view chars);
-	void setOperatorChars(std::string_view chars);
+	void setWordChars(string_view chars);
+	void setOperatorChars(string_view chars);
 
 	void updateFolding(TextEditorCtrl* editor, int line_start);
 	void foldComments(bool fold) { fold_comments_ = fold; }
@@ -75,7 +75,7 @@ protected:
 		char style;
 		WLIndex() : style(0) {}
 	};
-	std::map<std::string, WLIndex> word_list_;
+	std::map<string, WLIndex> word_list_;
 
 	struct LineInfo
 	{
@@ -105,9 +105,9 @@ protected:
 	bool processOperator(LexerState& state);
 	bool processWhitespace(LexerState& state);
 
-	virtual void styleWord(LexerState& state, std::string_view word);
-	bool         checkToken(LexerState& state, int pos, std::string_view token) const;
-	bool         checkToken(LexerState& state, int pos, vector<std::string>& tokens, int* found_idx = nullptr) const;
+	virtual void styleWord(LexerState& state, string_view word);
+	bool         checkToken(LexerState& state, int pos, string_view token) const;
+	bool         checkToken(LexerState& state, int pos, vector<string>& tokens, int* found_idx = nullptr) const;
 };
 
 class ZScriptLexer : public Lexer
@@ -117,11 +117,11 @@ public:
 	virtual ~ZScriptLexer() = default;
 
 protected:
-	void addWord(std::string_view word, int style) override;
-	void styleWord(LexerState& state, std::string_view word) override;
+	void addWord(string_view word, int style) override;
+	void styleWord(LexerState& state, string_view word) override;
 	void clearWords() override;
 	bool isFunction(TextEditorCtrl* editor, int start_pos, int end_pos) override;
 
 private:
-	vector<std::string> functions_;
+	vector<string> functions_;
 };

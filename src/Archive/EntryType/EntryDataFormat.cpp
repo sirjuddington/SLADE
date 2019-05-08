@@ -60,7 +60,7 @@ EntryDataFormat*         edf_text = nullptr;
 // -----------------------------------------------------------------------------
 // EntryDataFormat class constructor
 // -----------------------------------------------------------------------------
-EntryDataFormat::EntryDataFormat(std::string_view id) : id_{ id }
+EntryDataFormat::EntryDataFormat(string_view id) : id_{ id }
 {
 	// Add to hash map
 	data_formats.push_back(this);
@@ -96,7 +96,7 @@ void EntryDataFormat::copyToFormat(EntryDataFormat& target) const
 // Returns the entry data format matching [id], or the 'any' type if no match
 // found
 // -----------------------------------------------------------------------------
-EntryDataFormat* EntryDataFormat::format(std::string_view id)
+EntryDataFormat* EntryDataFormat::format(string_view id)
 {
 	for (auto format : data_formats)
 		if (format->id_ == id)

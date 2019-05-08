@@ -15,7 +15,7 @@ enum SpecialType
 	Crusher
 };
 
-std::string parseLineType(int type);
+string      parseLineType(int type);
 SpecialType getLineTypeProperties(int type, int* props);
 int         generateSpecial(SpecialType type, const int* props);
 

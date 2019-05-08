@@ -205,8 +205,7 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 
 	if (num_entries > MAX_ENTRY_COUNT)
 	{
-		Log::error(
-			"ChasmBinArchive::write: Bin archive can contain no more than {} entries", MAX_ENTRY_COUNT);
+		Log::error("ChasmBinArchive::write: Bin archive can contain no more than {} entries", MAX_ENTRY_COUNT);
 		Global::error = "Maximum number of entries exceeded for Chasm: The Rift bin archive";
 		return false;
 	}
@@ -237,8 +236,8 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 		}
 
 		// Check entry name
-		auto name        = entry->name();
-		uint8_t  name_length = static_cast<uint8_t>(name.size());
+		auto    name        = entry->name();
+		uint8_t name_length = static_cast<uint8_t>(name.size());
 
 		if (name_length > NAME_SIZE - 1)
 		{
@@ -352,7 +351,7 @@ bool ChasmBinArchive::isChasmBinArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Chasm bin archive
 // -----------------------------------------------------------------------------
-bool ChasmBinArchive::isChasmBinArchive(const std::string& filename)
+bool ChasmBinArchive::isChasmBinArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

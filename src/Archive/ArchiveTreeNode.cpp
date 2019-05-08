@@ -87,9 +87,9 @@ Archive* ArchiveTreeNode::archive() const
 // -----------------------------------------------------------------------------
 // Returns the node (directory) name
 // -----------------------------------------------------------------------------
-const std::string& ArchiveTreeNode::name() const
+const string& ArchiveTreeNode::name() const
 {
-	static std::string no_name = "ERROR";
+	static string no_name = "ERROR";
 
 	// Check dir entry exists
 	if (!dir_entry_)
@@ -149,13 +149,13 @@ int ArchiveTreeNode::entryIndex(ArchiveEntry* entry, size_t startfrom)
 // Returns a flat list of all entries in this directory, including entries in
 // subdirectories (recursively)
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry::SPtr> ArchiveTreeNode::allEntries()
+vector<shared_ptr<ArchiveEntry>> ArchiveTreeNode::allEntries()
 {
-	vector<ArchiveEntry::SPtr> entries;
+	vector<shared_ptr<ArchiveEntry>> entries;
 
 	// Recursive lambda function to build entry list
-	std::function<void(vector<ArchiveEntry::SPtr>&, ArchiveTreeNode*)> build_list =
-		[&](vector<ArchiveEntry::SPtr>& list, ArchiveTreeNode* dir) {
+	std::function<void(vector<shared_ptr<ArchiveEntry>>&, ArchiveTreeNode*)> build_list =
+		[&](vector<shared_ptr<ArchiveEntry>>& list, ArchiveTreeNode* dir) {
 			const auto n_subdirs = dir->nChildren();
 			for (unsigned a = 0; a < n_subdirs; a++)
 				build_list(list, (ArchiveTreeNode*)dir->child(a));
@@ -186,7 +186,7 @@ ArchiveEntry* ArchiveTreeNode::entryAt(unsigned index)
 // Returns a shared pointer to the entry at [index] in this directory, or null
 // if [index] is out of bounds
 // -----------------------------------------------------------------------------
-ArchiveEntry::SPtr ArchiveTreeNode::sharedEntryAt(unsigned index)
+shared_ptr<ArchiveEntry> ArchiveTreeNode::sharedEntryAt(unsigned index)
 {
 	// Check index
 	if (index >= entries_.size())
@@ -199,7 +199,7 @@ ArchiveEntry::SPtr ArchiveTreeNode::sharedEntryAt(unsigned index)
 // Returns the entry matching [name] in this directory, or null if no entries
 // match
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveTreeNode::entry(std::string_view name, bool cut_ext)
+ArchiveEntry* ArchiveTreeNode::entry(string_view name, bool cut_ext)
 {
 	// Check name was given
 	if (name.empty())
@@ -221,7 +221,7 @@ ArchiveEntry* ArchiveTreeNode::entry(std::string_view name, bool cut_ext)
 // Returns a shared pointer to the entry matching [name] in this directory, or
 // null if no entries match
 // -----------------------------------------------------------------------------
-ArchiveEntry::SPtr ArchiveTreeNode::sharedEntry(std::string_view name, bool cut_ext)
+shared_ptr<ArchiveEntry> ArchiveTreeNode::sharedEntry(string_view name, bool cut_ext)
 {
 	// Check name was given
 	if (name.empty())
@@ -243,7 +243,7 @@ ArchiveEntry::SPtr ArchiveTreeNode::sharedEntry(std::string_view name, bool cut_
 // Returns a shared pointer to [entry] in this directory, or null if no entries
 // match
 // -----------------------------------------------------------------------------
-ArchiveEntry::SPtr ArchiveTreeNode::sharedEntry(ArchiveEntry* entry)
+shared_ptr<ArchiveEntry> ArchiveTreeNode::sharedEntry(ArchiveEntry* entry)
 {
 	// Find entry
 	for (auto& e : entries_)
@@ -306,7 +306,7 @@ bool ArchiveTreeNode::addEntry(ArchiveEntry* entry, unsigned index)
 		entry->next_ = nullptr;
 
 		// Add it to end
-		entries_.push_back(ArchiveEntry::SPtr(entry));
+		entries_.push_back(shared_ptr<ArchiveEntry>(entry));
 	}
 	else
 	{
@@ -320,7 +320,7 @@ bool ArchiveTreeNode::addEntry(ArchiveEntry* entry, unsigned index)
 		entry->next_           = entries_[index].get();
 
 		// Add it at index
-		entries_.insert(entries_.begin() + index, ArchiveEntry::SPtr(entry));
+		entries_.insert(entries_.begin() + index, shared_ptr<ArchiveEntry>(entry));
 	}
 
 	// Set entry's parent to this node
@@ -337,7 +337,7 @@ bool ArchiveTreeNode::addEntry(ArchiveEntry* entry, unsigned index)
 // Adds [entry] to this directory at [index], or at the end if [index] is out
 // of bounds
 // -----------------------------------------------------------------------------
-bool ArchiveTreeNode::addEntry(ArchiveEntry::SPtr& entry, unsigned index)
+bool ArchiveTreeNode::addEntry(shared_ptr<ArchiveEntry>& entry, unsigned index)
 {
 	// Check entry
 	if (!entry)
@@ -357,7 +357,7 @@ bool ArchiveTreeNode::addEntry(ArchiveEntry::SPtr& entry, unsigned index)
 		entry->next_ = nullptr;
 
 		// Add it to end
-		entries_.push_back(ArchiveEntry::SPtr(entry));
+		entries_.push_back(shared_ptr<ArchiveEntry>(entry));
 	}
 	else
 	{
@@ -371,7 +371,7 @@ bool ArchiveTreeNode::addEntry(ArchiveEntry::SPtr& entry, unsigned index)
 		entry->next_           = entries_[index].get();
 
 		// Add it at index
-		entries_.insert(entries_.begin() + index, ArchiveEntry::SPtr(entry));
+		entries_.insert(entries_.begin() + index, shared_ptr<ArchiveEntry>(entry));
 	}
 
 	// Set entry's parent to this node
@@ -509,7 +509,7 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, ArchiveEnt
 // -----------------------------------------------------------------------------
 // Exports all entries and subdirs to the filesystem at [path]
 // -----------------------------------------------------------------------------
-bool ArchiveTreeNode::exportTo(std::string_view path)
+bool ArchiveTreeNode::exportTo(string_view path)
 {
 	// Create directory if needed
 	if (!std::filesystem::exists(path))

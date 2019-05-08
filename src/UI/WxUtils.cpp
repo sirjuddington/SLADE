@@ -258,7 +258,7 @@ wxArrayString WxUtils::arrayString(vector<wxString> vector)
 // -----------------------------------------------------------------------------
 // Returns a wxArrayString containing the (std) strings in [vector]
 // -----------------------------------------------------------------------------
-wxArrayString WxUtils::arrayStringStd(vector<std::string> vector)
+wxArrayString WxUtils::arrayStringStd(vector<string> vector)
 {
 	wxArrayString list;
 	for (const auto& str : vector)

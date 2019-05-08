@@ -103,7 +103,7 @@ uint8_t* encodeTxb(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Determines by filename being *.txb or *.ctb if we should encode.
 // -----------------------------------------------------------------------------
-bool shouldEncodeTxb(std::string_view name)
+bool shouldEncodeTxb(string_view name)
 {
 	return StrUtil::endsWithCI(name, ".txb") || StrUtil::endsWithCI(name, ".ctb");
 }
@@ -376,7 +376,7 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // -----------------------------------------------------------------------------
 // Since hog files have no namespaces, just call the other function.
 // -----------------------------------------------------------------------------
-ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, std::string_view add_namespace, bool copy)
+ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy)
 {
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
@@ -384,7 +384,7 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, std::string_view add_nam
 // -----------------------------------------------------------------------------
 // Override of Archive::renameEntry to update entry encryption info
 // -----------------------------------------------------------------------------
-bool HogArchive::renameEntry(ArchiveEntry* entry, std::string_view name)
+bool HogArchive::renameEntry(ArchiveEntry* entry, string_view name)
 {
 	// Do default rename
 	if (Archive::renameEntry(entry, name))
@@ -433,7 +433,7 @@ bool HogArchive::isHogArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Descent hog archive
 // -----------------------------------------------------------------------------
-bool HogArchive::isHogArchive(const std::string& filename)
+bool HogArchive::isHogArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

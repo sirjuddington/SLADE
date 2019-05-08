@@ -28,27 +28,25 @@ namespace PaletteHack
 int  detectPaletteHack(ArchiveEntry* entry);
 bool loadPaletteFromArchive(Palette* pal, Archive* archive, int lump = PaletteHack::NONE);
 
-std::string sizeAsString(uint32_t size);
-std::string lumpNameToFileName(std::string_view lump);
-std::string fileNameToLumpName(std::string_view file);
-uint32_t    crc(const uint8_t* buf, uint32_t len);
-Vec2i       findJaguarTextureDimensions(ArchiveEntry* entry, std::string_view name);
+string   sizeAsString(uint32_t size);
+string   lumpNameToFileName(string_view lump);
+string   fileNameToLumpName(string_view file);
+uint32_t crc(const uint8_t* buf, uint32_t len);
+Vec2i    findJaguarTextureDimensions(ArchiveEntry* entry, string_view name);
 
 // Mass Rename
-std::string massRenameFilter(vector<std::string>& names);
-void        doMassRename(vector<std::string>& names, std::string_view name_filter);
+string massRenameFilter(vector<string>& names);
+void   doMassRename(vector<string>& names, string_view name_filter);
 
 // Dialog/Window sizes
 struct WindowInfo
 {
-	std::string id;
-	int         width, height, left, top;
-	WindowInfo(std::string_view id, int w, int h, int l, int t) : id{ id }, width{ w }, height{ h }, left{ l }, top{ t }
-	{
-	}
+	string id;
+	int    width, height, left, top;
+	WindowInfo(string_view id, int w, int h, int l, int t) : id{ id }, width{ w }, height{ h }, left{ l }, top{ t } {}
 };
-WindowInfo getWindowInfo(std::string_view id);
-void       setWindowInfo(std::string_view id, int width, int height, int left, int top);
+WindowInfo getWindowInfo(string_view id);
+void       setWindowInfo(string_view id, int width, int height, int left, int top);
 void       readWindowInfo(Tokenizer& tz);
 void       writeWindowInfo(wxFile& file);
 } // namespace Misc

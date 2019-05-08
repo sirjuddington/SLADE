@@ -15,11 +15,11 @@ public:
 	void draw(int bottom, int right, float alpha = 1.0f);
 
 private:
-	std::string sprite_;
-	std::string translation_;
-	std::string palette_;
-	std::string icon_;
-	int         zeth_icon_ = -1;
-	TextBox     text_box_;
-	int         last_size_ = 100;
+	string  sprite_;
+	string  translation_;
+	string  palette_;
+	string  icon_;
+	int     zeth_icon_ = -1;
+	TextBox text_box_;
+	int     last_size_ = 100;
 };

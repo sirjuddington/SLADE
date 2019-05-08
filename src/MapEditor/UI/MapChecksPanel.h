@@ -23,8 +23,8 @@ public:
 	void layoutHorizontal() override;
 
 private:
-	SLADEMap*                         map_ = nullptr;
-	vector<std::unique_ptr<MapCheck>> active_checks_;
+	SLADEMap*                    map_ = nullptr;
+	vector<unique_ptr<MapCheck>> active_checks_;
 
 	wxCheckListBox* clb_active_checks_ = nullptr;
 	wxListBox*      lb_errors_         = nullptr;

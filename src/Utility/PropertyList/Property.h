@@ -26,7 +26,7 @@ public:
 	Property(int value);
 	Property(float value);
 	Property(double value);
-	Property(std::string_view value);
+	Property(string_view value);
 	Property(unsigned value);
 	~Property() = default;
 
@@ -41,7 +41,7 @@ public:
 	operator int() const { return intValue(); }
 	operator float() const { return (float)floatValue(); }
 	operator double() const { return floatValue(); }
-	operator std::string() const { return stringValue(); }
+	operator string() const { return stringValue(); }
 	operator unsigned() const { return unsignedValue(); }
 
 	Property& operator=(bool val)
@@ -68,7 +68,7 @@ public:
 		return *this;
 	}
 
-	Property& operator=(std::string_view val)
+	Property& operator=(string_view val)
 	{
 		setValue(val);
 		return *this;
@@ -80,25 +80,25 @@ public:
 		return *this;
 	}
 
-	bool operator==(std::string_view cmp) const { return val_string_ == cmp; }
+	bool operator==(string_view cmp) const { return val_string_ == cmp; }
 
-	bool        boolValue(bool warn_wrong_type = false) const;
-	int         intValue(bool warn_wrong_type = false) const;
-	double      floatValue(bool warn_wrong_type = false) const;
-	std::string stringValue(bool warn_wrong_type = false) const;
-	unsigned    unsignedValue(bool warn_wrong_type = false) const;
+	bool     boolValue(bool warn_wrong_type = false) const;
+	int      intValue(bool warn_wrong_type = false) const;
+	double   floatValue(bool warn_wrong_type = false) const;
+	string   stringValue(bool warn_wrong_type = false) const;
+	unsigned unsignedValue(bool warn_wrong_type = false) const;
 
 	void setValue(bool val);
 	void setValue(int val);
 	void setValue(double val);
-	void setValue(std::string_view val);
+	void setValue(string_view val);
 	void setValue(unsigned val);
 
-	std::string typeString() const;
+	string typeString() const;
 
 private:
-	Type        type_ = Type::Boolean;
-	Value       value_;
-	std::string val_string_; // I *would* put this in the union but i'm not sure about using const char* there
-	bool        has_value_ = false;
+	Type   type_ = Type::Boolean;
+	Value  value_;
+	string val_string_; // I *would* put this in the union but i'm not sure about using const char* there
+	bool   has_value_ = false;
 };

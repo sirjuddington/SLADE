@@ -164,18 +164,18 @@ bool Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 // -----------------------------------------------------------------------------
 // Sets the [style] for [word]
 // -----------------------------------------------------------------------------
-void Lexer::addWord(std::string_view word, int style)
+void Lexer::addWord(string_view word, int style)
 {
-	word_list_[language_->caseSensitive() ? std::string{ word } : StrUtil::lower(word)].style = (char)style;
+	word_list_[language_->caseSensitive() ? string{ word } : StrUtil::lower(word)].style = (char)style;
 }
 
 // -----------------------------------------------------------------------------
 // Applies a style to [word] in [editor], depending on if it is in the word
 // list, a number or begins with the preprocessor character
 // -----------------------------------------------------------------------------
-void Lexer::styleWord(LexerState& state, std::string_view word)
+void Lexer::styleWord(LexerState& state, string_view word)
 {
-	std::string word_str{ word };
+	string word_str{ word };
 	if (!language_->caseSensitive())
 		StrUtil::lowerIP(word_str);
 
@@ -196,7 +196,7 @@ void Lexer::styleWord(LexerState& state, std::string_view word)
 // -----------------------------------------------------------------------------
 // Sets the valid word characters to [chars]
 // -----------------------------------------------------------------------------
-void Lexer::setWordChars(std::string_view chars)
+void Lexer::setWordChars(string_view chars)
 {
 	word_chars_.clear();
 	for (auto&& a : chars)
@@ -206,7 +206,7 @@ void Lexer::setWordChars(std::string_view chars)
 // -----------------------------------------------------------------------------
 // Sets the valid operator characters to [chars]
 // -----------------------------------------------------------------------------
-void Lexer::setOperatorChars(std::string_view chars)
+void Lexer::setOperatorChars(string_view chars)
 {
 	operator_chars_.clear();
 	for (auto&& a : chars)
@@ -219,14 +219,14 @@ void Lexer::setOperatorChars(std::string_view chars)
 // -----------------------------------------------------------------------------
 bool Lexer::processUnknown(LexerState& state)
 {
-	int                 u_length = 0;
-	bool                end      = false;
-	bool                pp       = false;
-	vector<std::string> comment_begin_l;
-	std::string         comment_doc;
-	vector<std::string> comment_line_l;
-	std::string         block_begin;
-	std::string         block_end;
+	int            u_length = 0;
+	bool           end      = false;
+	bool           pp       = false;
+	vector<string> comment_begin_l;
+	string         comment_doc;
+	vector<string> comment_line_l;
+	string         block_begin;
+	string         block_end;
 
 	if (language_)
 	{
@@ -385,8 +385,8 @@ bool Lexer::processUnknown(LexerState& state)
 // -----------------------------------------------------------------------------
 bool Lexer::processComment(LexerState& state)
 {
-	bool        end = false;
-	std::string comment_end;
+	bool   end = false;
+	string comment_end;
 	if (curr_comment_idx_ >= 0)
 		comment_end = language_->commentEndL()[curr_comment_idx_];
 
@@ -459,8 +459,8 @@ bool Lexer::processWord(LexerState& state)
 	}
 
 	// Get word as string
-	std::string word_string{ &word[0], word.size() };
-	auto        word_lower = StrUtil::lower(word_string);
+	string word_string{ &word[0], word.size() };
+	auto   word_lower = StrUtil::lower(word_string);
 
 	// Check for preprocessor folding word
 	if (fold_preprocessor_ && word[0] == preprocessor_char_)
@@ -647,7 +647,7 @@ bool Lexer::processWhitespace(LexerState& state)
 // -----------------------------------------------------------------------------
 // Checks if the text in [editor] starting from [pos] matches [token]
 // -----------------------------------------------------------------------------
-bool Lexer::checkToken(LexerState& state, int pos, std::string_view token) const
+bool Lexer::checkToken(LexerState& state, int pos, string_view token) const
 {
 	if (!token.empty())
 	{
@@ -667,12 +667,12 @@ bool Lexer::checkToken(LexerState& state, int pos, std::string_view token) const
 // Writes the fitst index that matched to [found_index] if a valid pointer
 // is passed. Returns true if there's a match, false if not.
 // -----------------------------------------------------------------------------
-bool Lexer::checkToken(LexerState& state, int pos, vector<std::string>& tokens, int* found_idx) const
+bool Lexer::checkToken(LexerState& state, int pos, vector<string>& tokens, int* found_idx) const
 {
 	if (!tokens.empty())
 	{
 		unsigned idx = 0;
-		std::string token;
+		string   token;
 		while (idx < tokens.size())
 		{
 			token = tokens[idx];
@@ -747,10 +747,10 @@ bool Lexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos)
 // Sets the [style] for [word], or adds it to the functions list if [style]
 // is Function
 // -----------------------------------------------------------------------------
-void ZScriptLexer::addWord(std::string_view word, int style)
+void ZScriptLexer::addWord(string_view word, int style)
 {
 	if (style == Style::Function)
-		functions_.push_back(language_->caseSensitive() ? std::string{ word } : StrUtil::lower(word));
+		functions_.push_back(language_->caseSensitive() ? string{ word } : StrUtil::lower(word));
 	else
 		Lexer::addWord(word, style);
 }
@@ -758,7 +758,7 @@ void ZScriptLexer::addWord(std::string_view word, int style)
 // -----------------------------------------------------------------------------
 // ZScript version of Lexer::styleWord - functions require a following '('
 // -----------------------------------------------------------------------------
-void ZScriptLexer::styleWord(LexerState& state, std::string_view word)
+void ZScriptLexer::styleWord(LexerState& state, string_view word)
 {
 	// Skip whitespace after word
 	auto index = state.position;
@@ -772,7 +772,7 @@ void ZScriptLexer::styleWord(LexerState& state, std::string_view word)
 	// Check for '(' (possible function)
 	if (state.editor->GetCharAt(index) == '(')
 	{
-		std::string word_str{ word };
+		string word_str{ word };
 		if (!language_->caseSensitive())
 			StrUtil::lowerIP(word_str);
 

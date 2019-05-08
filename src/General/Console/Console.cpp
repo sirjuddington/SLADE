@@ -61,7 +61,7 @@ void Console::addCommand(ConsoleCommand& c)
 // -----------------------------------------------------------------------------
 // Attempts to execute the command line given
 // -----------------------------------------------------------------------------
-void Console::execute(std::string_view command)
+void Console::execute(string_view command)
 {
 	Log::info("> {}", command);
 
@@ -80,7 +80,7 @@ void Console::execute(std::string_view command)
 	auto cmd_name = tz.current().text;
 
 	// Get all args
-	vector<std::string> args;
+	vector<string> args;
 	while (!tz.atEnd())
 		args.push_back(tz.next().text);
 
@@ -118,7 +118,7 @@ void Console::execute(std::string_view command)
 		}
 
 		// Print cvar value
-		std::string value;
+		string value;
 		if (cvar->type == CVar::Type::Boolean)
 		{
 			if (cvar->getValue().Bool)
@@ -157,7 +157,7 @@ void Console::execute(std::string_view command)
 // -----------------------------------------------------------------------------
 // Returns the last command sent to the console
 // -----------------------------------------------------------------------------
-std::string Console::lastCommand()
+string Console::lastCommand()
 {
 	return !cmd_log_.empty() ? cmd_log_.back() : "";
 }
@@ -166,7 +166,7 @@ std::string Console::lastCommand()
 // Returns the previous command at [index] from the last entered
 // (ie, index=0 will be the directly previous command)
 // -----------------------------------------------------------------------------
-std::string Console::prevCommand(int index)
+string Console::prevCommand(int index)
 {
 	// Check index
 	if (index < 0 || (unsigned)index >= cmd_log_.size())
@@ -198,8 +198,8 @@ ConsoleCommand& Console::command(size_t index)
 // ConsoleCommand class constructor
 // -----------------------------------------------------------------------------
 ConsoleCommand::ConsoleCommand(
-	std::string_view name,
-	void (*command_func)(const vector<std::string>&),
+	string_view name,
+	void (*command_func)(const vector<string>&),
 	int  min_args = 0,
 	bool show_in_list)
 {
@@ -216,7 +216,7 @@ ConsoleCommand::ConsoleCommand(
 // -----------------------------------------------------------------------------
 // Executes the console command
 // -----------------------------------------------------------------------------
-void ConsoleCommand::execute(const vector<std::string>& args) const
+void ConsoleCommand::execute(const vector<string>& args) const
 {
 	// Only execute if we have the minimum args specified
 	if (args.size() >= min_args_)
@@ -263,7 +263,7 @@ CONSOLE_COMMAND(cmdlist, 0, true)
 CONSOLE_COMMAND(cvarlist, 0, true)
 {
 	// Get sorted list of cvars
-	vector<std::string> list;
+	vector<string> list;
 	CVar::putList(list);
 	sort(list.begin(), list.end());
 

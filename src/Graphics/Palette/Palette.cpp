@@ -241,9 +241,9 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			}
 		}
 		// Now, parse
-		std::string s1, s2, s3;
-		ColRGBA  col(0, 0, 0, 255);
-		int      c = 0;
+		string  s1, s2, s3;
+		ColRGBA col(0, 0, 0, 255);
+		int     c = 0;
 		do
 		{
 			// Get the first token. If it begins with #, it's a comment in GIMP. Ignore.
@@ -299,7 +299,7 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 // -----------------------------------------------------------------------------
 // Writes colour information to a MemChunk
 // -----------------------------------------------------------------------------
-bool Palette::saveMem(MemChunk& mc, Format format, std::string_view name)
+bool Palette::saveMem(MemChunk& mc, Format format, string_view name)
 {
 	// Clear memchunk
 	mc.clear();
@@ -317,7 +317,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, std::string_view name)
 	// CSV
 	else if (format == Format::CSV)
 	{
-		std::string csv;
+		string csv;
 		for (unsigned a = 0; a < 256; a++)
 			csv += fmt::format("{}, {}, {}\n", colours_[a].r, colours_[a].g, colours_[a].b);
 		mc.importMem((const uint8_t*)((const char*)csv.data()), csv.size());
@@ -326,7 +326,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, std::string_view name)
 	// JASC palette
 	else if (format == Format::JASC)
 	{
-		std::string jasc = "JASC-PAL\n0100\n256\n";
+		string jasc = "JASC-PAL\n0100\n256\n";
 		for (unsigned a = 0; a < 256; a++)
 			jasc += fmt::format("{} {} {}\n", colours_[a].r, colours_[a].g, colours_[a].b);
 		mc.importMem((const uint8_t*)((const char*)jasc.data()), jasc.size());
@@ -335,7 +335,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, std::string_view name)
 	// GIMP palette
 	else if (format == Format::GIMP)
 	{
-		std::string gimp = fmt::format("GIMP Palette\nName: {}\n#\n", name);
+		string gimp = fmt::format("GIMP Palette\nName: {}\n#\n", name);
 		for (unsigned a = 0; a < 256; a++)
 			gimp += fmt::format("{}\t{}\t{}\tIndex {}\n", colours_[a].r, colours_[a].g, colours_[a].b, a);
 		mc.importMem((const uint8_t*)((const char*)gimp.data()), gimp.size());
@@ -383,7 +383,7 @@ bool Palette::saveMem(MemChunk& mc, Format format, std::string_view name)
 // Writes colour information to a file at [filename].
 // Returns false if the file could not be opened/created, true otherwise
 // -----------------------------------------------------------------------------
-bool Palette::saveFile(std::string_view filename, Format format)
+bool Palette::saveFile(string_view filename, Format format)
 {
 	// Write data to MemChunk
 	MemChunk mc;
@@ -398,10 +398,10 @@ bool Palette::saveFile(std::string_view filename, Format format)
 // Reads colour information from a file at [filename].
 // Returns false if the file could not be opened/parsed, true otherwise
 // -----------------------------------------------------------------------------
-bool Palette::loadFile(std::string_view filename, Format format)
+bool Palette::loadFile(string_view filename, Format format)
 {
 	// Open the file
-	wxFile file(std::string{ filename });
+	wxFile file(string{ filename });
 
 	// Check that it opened ok
 	if (!file.IsOpened())

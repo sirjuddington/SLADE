@@ -52,14 +52,14 @@ using namespace Game;
 // -----------------------------------------------------------------------------
 namespace Game
 {
-Configuration                  config_current;
-std::map<std::string, GameDef> game_defs;
-GameDef                        game_def_unknown;
-std::map<std::string, PortDef> port_defs;
-PortDef                        port_def_unknown;
-ZScript::Definitions           zscript_base;
-ZScript::Definitions           zscript_custom;
-std::unique_ptr<Listener>      listener;
+Configuration             config_current;
+std::map<string, GameDef> game_defs;
+GameDef                   game_def_unknown;
+std::map<string, PortDef> port_defs;
+PortDef                   port_def_unknown;
+ZScript::Definitions      zscript_base;
+ZScript::Definitions      zscript_custom;
+unique_ptr<Listener>      listener;
 } // namespace Game
 CVAR(String, game_configuration, "", CVar::Flag::Save)
 CVAR(String, port_configuration, "", CVar::Flag::Save)
@@ -83,7 +83,7 @@ public:
 		listenTo(&App::archiveManager());
 	}
 
-	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override
+	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override
 	{
 		if (announcer == &App::archiveManager())
 		{
@@ -163,7 +163,7 @@ bool GameDef::parse(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if this game supports [filter]
 // -----------------------------------------------------------------------------
-bool GameDef::supportsFilter(std::string_view filter) const
+bool GameDef::supportsFilter(string_view filter) const
 {
 	for (auto& f : filters)
 		if (StrUtil::equalCI(f, filter))
@@ -312,7 +312,7 @@ void Game::updateCustomDefinitions()
 // -----------------------------------------------------------------------------
 TagType Game::parseTagged(ParseTreeNode* tagged)
 {
-	static std::map<std::string, TagType> tag_type_map{
+	static std::map<string, TagType> tag_type_map{
 		{ "no", TagType::None },
 		{ "sector", TagType::Sector },
 		{ "line", TagType::Line },
@@ -481,7 +481,7 @@ void Game::init()
 // -----------------------------------------------------------------------------
 // Returns a vector of all basic game definitions
 // -----------------------------------------------------------------------------
-const std::map<std::string, GameDef>& Game::gameDefs()
+const std::map<string, GameDef>& Game::gameDefs()
 {
 	return game_defs;
 }
@@ -489,7 +489,7 @@ const std::map<std::string, GameDef>& Game::gameDefs()
 // -----------------------------------------------------------------------------
 // Returns the basic game configuration matching [id]
 // -----------------------------------------------------------------------------
-const GameDef& Game::gameDef(const std::string& id)
+const GameDef& Game::gameDef(const string& id)
 {
 	return game_defs.empty() ? game_def_unknown : game_defs[id];
 }
@@ -497,7 +497,7 @@ const GameDef& Game::gameDef(const std::string& id)
 // -----------------------------------------------------------------------------
 // Returns a vector of all basic port definitions
 // -----------------------------------------------------------------------------
-const std::map<std::string, PortDef>& Game::portDefs()
+const std::map<string, PortDef>& Game::portDefs()
 {
 	return port_defs;
 }
@@ -505,7 +505,7 @@ const std::map<std::string, PortDef>& Game::portDefs()
 // -----------------------------------------------------------------------------
 // Returns the basic port configuration matching [id]
 // -----------------------------------------------------------------------------
-const PortDef& Game::portDef(const std::string& id)
+const PortDef& Game::portDef(const string& id)
 {
 	return port_defs.empty() ? port_def_unknown : port_defs[id];
 }
@@ -513,7 +513,7 @@ const PortDef& Game::portDef(const std::string& id)
 // -----------------------------------------------------------------------------
 // Checks if the combination of [game] and [port] supports the map [format]
 // -----------------------------------------------------------------------------
-bool Game::mapFormatSupported(MapFormat format, const std::string& game, const std::string& port)
+bool Game::mapFormatSupported(MapFormat format, const string& game, const string& port)
 {
 	if (format == MapFormat::Unknown)
 		return false;

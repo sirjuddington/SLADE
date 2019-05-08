@@ -178,7 +178,7 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 // -----------------------------------------------------------------------------
 // Creates and returns a Hexen-format LINEDEFS entry from [lines]
 // -----------------------------------------------------------------------------
-ArchiveEntry::UPtr HexenMapFormat::writeLINEDEFS(const LineList& lines) const
+unique_ptr<ArchiveEntry> HexenMapFormat::writeLINEDEFS(const LineList& lines) const
 {
 	auto entry = std::make_unique<ArchiveEntry>("LINEDEFS");
 
@@ -213,7 +213,7 @@ ArchiveEntry::UPtr HexenMapFormat::writeLINEDEFS(const LineList& lines) const
 // -----------------------------------------------------------------------------
 // Creates and returns a Hexen-format THINGS entry from [things]
 // -----------------------------------------------------------------------------
-ArchiveEntry::UPtr HexenMapFormat::writeTHINGS(const ThingList& things) const
+unique_ptr<ArchiveEntry> HexenMapFormat::writeTHINGS(const ThingList& things) const
 {
 	auto entry = std::make_unique<ArchiveEntry>("THINGS");
 

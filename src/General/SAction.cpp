@@ -65,14 +65,14 @@ int                     SActionHandler::wx_id_offset_ = 0;
 // SAction class constructor
 // -----------------------------------------------------------------------------
 SAction::SAction(
-	std::string_view id,
-	std::string_view text,
-	std::string_view icon,
-	std::string_view helptext,
-	std::string_view shortcut,
-	Type             type,
-	int              radio_group,
-	int              reserve_ids) :
+	string_view id,
+	string_view text,
+	string_view icon,
+	string_view helptext,
+	string_view shortcut,
+	Type        type,
+	int         radio_group,
+	int         reserve_ids) :
 	id_{ id },
 	wx_id_{ 0 },
 	reserved_ids_{ reserve_ids },
@@ -91,7 +91,7 @@ SAction::SAction(
 // Returns the shortcut key for this action as a string, taking into account if
 // the shortcut is a keybind
 // -----------------------------------------------------------------------------
-std::string SAction::shortcutText() const
+string SAction::shortcutText() const
 {
 	if (StrUtil::startsWith(shortcut_, "kb:"))
 	{
@@ -141,16 +141,16 @@ void SAction::setChecked(bool toggle)
 // Adds this action to [menu]. If [text_override] is not "NO", it will be used
 // instead of the action's text as the menu item label
 // -----------------------------------------------------------------------------
-bool SAction::addToMenu(wxMenu* menu, std::string_view text_override, std::string_view icon_override, int wx_id_offset)
+bool SAction::addToMenu(wxMenu* menu, string_view text_override, string_view icon_override, int wx_id_offset)
 {
 	return addToMenu(menu, false, text_override, icon_override, wx_id_offset);
 }
 bool SAction::addToMenu(
-	wxMenu*          menu,
-	bool             show_shortcut,
-	std::string_view text_override,
-	std::string_view icon_override,
-	int              wx_id_offset)
+	wxMenu*     menu,
+	bool        show_shortcut,
+	string_view text_override,
+	string_view icon_override,
+	int         wx_id_offset)
 {
 	// Can't add to nonexistant menu
 	if (!menu)
@@ -199,7 +199,7 @@ bool SAction::addToMenu(
 // Adds this action to [toolbar]. If [icon_override] is not "NO", it will be
 // used instead of the action's icon as the tool icon
 // -----------------------------------------------------------------------------
-bool SAction::addToToolbar(wxAuiToolBar* toolbar, std::string_view icon_override, int wx_id_offset) const
+bool SAction::addToToolbar(wxAuiToolBar* toolbar, string_view icon_override, int wx_id_offset) const
 {
 	// Can't add to nonexistant toolbar
 	if (!toolbar)
@@ -226,7 +226,7 @@ bool SAction::addToToolbar(wxAuiToolBar* toolbar, std::string_view icon_override
 // Adds this action to [toolbar]. If [icon_override] is not "NO", it will be
 // used instead of the action's icon as the tool icon
 // -----------------------------------------------------------------------------
-bool SAction::addToToolbar(wxToolBar* toolbar, std::string_view icon_override, int wx_id_offset) const
+bool SAction::addToToolbar(wxToolBar* toolbar, string_view icon_override, int wx_id_offset) const
 {
 	// Can't add to nonexistant toolbar
 	if (!toolbar)
@@ -254,8 +254,8 @@ bool SAction::addToToolbar(wxToolBar* toolbar, std::string_view icon_override, i
 // -----------------------------------------------------------------------------
 bool SAction::parse(ParseTreeNode* node)
 {
-	std::string linked_cvar;
-	int         custom_wxid = 0;
+	string linked_cvar;
+	int    custom_wxid = 0;
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
@@ -403,7 +403,7 @@ int SAction::newGroup()
 // -----------------------------------------------------------------------------
 // Returns the SAction with id matching [id]
 // -----------------------------------------------------------------------------
-SAction* SAction::fromId(std::string_view id)
+SAction* SAction::fromId(string_view id)
 {
 	// Find action with id
 	for (auto& action : actions_)
@@ -481,7 +481,7 @@ SActionHandler::~SActionHandler()
 // Handles the SAction [id], returns true if an SActionHandler handled the
 // action, false otherwise
 // -----------------------------------------------------------------------------
-bool SActionHandler::doAction(std::string_view id)
+bool SActionHandler::doAction(string_view id)
 {
 	// Toggle action if necessary
 	SAction::fromId(id)->toggle();

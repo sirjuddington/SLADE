@@ -74,13 +74,13 @@ DirArchive::DirArchive() : Archive("folder")
 // Reads files from the directory [filename] into the archive
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool DirArchive::open(std::string_view filename)
+bool DirArchive::open(string_view filename)
 {
 	UI::setSplashProgressMessage("Reading directory structure");
 	UI::setSplashProgress(0);
-	vector<std::string> files, dirs;
+	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
-	wxDir               dir(std::string{ filename });
+	wxDir               dir(string{ filename });
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
@@ -187,7 +187,7 @@ bool DirArchive::write(MemChunk& mc, bool update)
 // -----------------------------------------------------------------------------
 // Writes the archive to a file (not implemented)
 // -----------------------------------------------------------------------------
-bool DirArchive::write(std::string_view filename, bool update)
+bool DirArchive::write(string_view filename, bool update)
 {
 	return true;
 }
@@ -195,14 +195,14 @@ bool DirArchive::write(std::string_view filename, bool update)
 // -----------------------------------------------------------------------------
 // Saves any changes to the directory to the file system
 // -----------------------------------------------------------------------------
-bool DirArchive::save(std::string_view filename)
+bool DirArchive::save(string_view filename)
 {
 	// Get flat entry list
 	vector<ArchiveEntry*> entries;
 	putEntryTreeAsList(entries);
 
 	// Get entry path list
-	vector<std::string> entry_paths;
+	vector<string> entry_paths;
 	for (auto& entry : entries)
 	{
 		entry_paths.push_back(filename_ + entry->path(true));
@@ -212,7 +212,7 @@ bool DirArchive::save(std::string_view filename)
 
 	// Get current directory structure
 	long                time = App::runTimer();
-	vector<std::string> files, dirs;
+	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
 	wxDir               dir(this->filename_);
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
@@ -253,7 +253,7 @@ bool DirArchive::save(std::string_view filename)
 	Log::info(2, "Remove check took {}ms", App::runTimer() - time);
 
 	// Go through entries
-	vector<std::string> files_written;
+	vector<string> files_written;
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Check for folder
@@ -316,7 +316,7 @@ bool DirArchive::loadEntryData(ArchiveEntry* entry)
 // For DirArchive also adds all subdirs and entries to the removed files list,
 // so they are ignored when checking for changes on disk
 // -----------------------------------------------------------------------------
-bool DirArchive::removeDir(std::string_view path, ArchiveTreeNode* base)
+bool DirArchive::removeDir(string_view path, ArchiveTreeNode* base)
 {
 	// Abort if read only
 	if (read_only_)
@@ -348,7 +348,7 @@ bool DirArchive::removeDir(std::string_view path, ArchiveTreeNode* base)
 // Renames [dir] to [new_name].
 // Returns false if [dir] isn't part of the archive, true otherwise
 // -----------------------------------------------------------------------------
-bool DirArchive::renameDir(ArchiveTreeNode* dir, std::string_view new_name)
+bool DirArchive::renameDir(ArchiveTreeNode* dir, string_view new_name)
 {
 	auto path = dir->parent()->path();
 	if (separator_ != '/')
@@ -367,7 +367,7 @@ bool DirArchive::renameDir(ArchiveTreeNode* dir, std::string_view new_name)
 //
 // Namespaces in a folder are treated the same way as a zip archive
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, std::string_view add_namespace, bool copy)
+ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy)
 {
 	// Check namespace
 	if (add_namespace.empty() || add_namespace == "global")
@@ -397,7 +397,7 @@ bool DirArchive::removeEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Renames [entry].  Returns true if the rename succeeded
 // -----------------------------------------------------------------------------
-bool DirArchive::renameEntry(ArchiveEntry* entry, std::string_view name)
+bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name)
 {
 	// Check rename won't result in duplicated name
 	if (entry->parentDir()->entry(name))

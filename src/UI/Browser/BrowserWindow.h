@@ -20,10 +20,10 @@ public:
 	BrowserTreeNode(BrowserTreeNode* parent = nullptr) : STreeNode(parent) {}
 	~BrowserTreeNode() { clearItems(); }
 
-	const std::string& name() const override { return name_; }
-	wxTreeListItem     treeId() const { return tree_id_; }
-	void               setName(std::string_view name) override { this->name_ = name; }
-	void               setTreeId(wxTreeListItem id) { this->tree_id_ = id; }
+	const string&  name() const override { return name_; }
+	wxTreeListItem treeId() const { return tree_id_; }
+	void           setName(string_view name) override { this->name_ = name; }
+	void           setTreeId(wxTreeListItem id) { this->tree_id_ = id; }
 
 	void         clearItems();
 	unsigned     nItems() const { return items_.size(); }
@@ -31,11 +31,11 @@ public:
 	void         addItem(BrowserItem* item, unsigned index = 0xFFFFFFFF);
 
 private:
-	std::string               name_;
-	vector<BrowserItem::UPtr> items_;
-	wxTreeListItem            tree_id_;
+	string                          name_;
+	vector<unique_ptr<BrowserItem>> items_;
+	wxTreeListItem                  tree_id_;
 
-	STreeNode* createChild(std::string_view name) override
+	STreeNode* createChild(string_view name) override
 	{
 		auto node   = new BrowserTreeNode();
 		node->name_ = name;

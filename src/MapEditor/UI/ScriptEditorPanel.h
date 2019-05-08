@@ -21,12 +21,12 @@ public:
 	void saveScripts() const;
 	void updateUI() const;
 
-	bool handleAction(std::string_view name) override;
+	bool handleAction(string_view name) override;
 
 private:
-	wxString                      script_text_;
-	std::unique_ptr<ArchiveEntry> entry_script_;
-	std::unique_ptr<ArchiveEntry> entry_compiled_;
+	wxString                 script_text_;
+	unique_ptr<ArchiveEntry> entry_script_;
+	unique_ptr<ArchiveEntry> entry_compiled_;
 
 	TextEditorCtrl*   text_editor_;
 	wxTreeListCtrl*   list_words_;

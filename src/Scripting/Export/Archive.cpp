@@ -71,9 +71,9 @@ vector<Archive*> allArchives(bool resources_only)
 // [include_extension] - if true, include the extension
 // [name_uppercase] - if true, return the name in uppercase (except the path)
 // -----------------------------------------------------------------------------
-std::string formattedEntryName(ArchiveEntry& self, bool include_path, bool include_extension, bool name_uppercase)
+string formattedEntryName(ArchiveEntry& self, bool include_path, bool include_extension, bool name_uppercase)
 {
-	std::string name;
+	string name;
 	if (include_path)
 		name = self.path();
 	if (name_uppercase)
@@ -97,7 +97,7 @@ vector<ArchiveEntry*> archiveAllEntries(Archive& self)
 // Creates a new entry in archive [self] at [full_path],[position-1].
 // Returns the created entry
 // -----------------------------------------------------------------------------
-ArchiveEntry* archiveCreateEntry(Archive& self, std::string_view full_path, int position)
+ArchiveEntry* archiveCreateEntry(Archive& self, string_view full_path, int position)
 {
 	auto dir = self.dir(StrUtil::beforeLast(full_path, '/'));
 	return self.addNewEntry(StrUtil::afterLast(full_path, '/'), position - 1, dir);
@@ -107,7 +107,7 @@ ArchiveEntry* archiveCreateEntry(Archive& self, std::string_view full_path, int 
 // Creates a new entry in archive [self] with [name] in namespace [ns].
 // Returns the created entry
 // -----------------------------------------------------------------------------
-ArchiveEntry* archiveCreateEntryInNamespace(Archive& self, std::string_view name, std::string_view ns)
+ArchiveEntry* archiveCreateEntryInNamespace(Archive& self, string_view name, string_view ns)
 {
 	return self.addNewEntry(name, ns);
 }
@@ -190,14 +190,14 @@ void registerArchive(sol::state& lua)
 	// -------------------------------------------------------------------------
 	lua_archive["FilenameNoPath"]         = [](Archive& self) { return self.filename(false); };
 	lua_archive["EntryAtPath"]            = &Archive::entryAtPath;
-	lua_archive["DirAtPath"]              = [](Archive& self, const std::string& path) { return self.dir(path); };
+	lua_archive["DirAtPath"]              = [](Archive& self, const string& path) { return self.dir(path); };
 	lua_archive["CreateEntry"]            = &archiveCreateEntry;
 	lua_archive["CreateEntryInNamespace"] = &archiveCreateEntryInNamespace;
 	lua_archive["RemoveEntry"]            = &Archive::removeEntry;
 	lua_archive["RenameEntry"]            = &Archive::renameEntry;
 	lua_archive["Save"]                   = sol::overload(
         [](Archive& self) { return std::make_tuple(self.save(), Global::error); },
-        [](Archive& self, const std::string& filename) { return std::make_tuple(self.save(filename), Global::error); });
+        [](Archive& self, const string& filename) { return std::make_tuple(self.save(filename), Global::error); });
 	lua_archive["FindFirst"] = &Archive::findFirst;
 	lua_archive["FindLast"]  = &Archive::findLast;
 	lua_archive["FindAll"]   = &Archive::findAll;
@@ -236,15 +236,15 @@ void registerArchive(sol::state& lua)
 // Lua doesn't really have a dedicated binary array type so strings are
 // generally used for that kind of thing
 // -----------------------------------------------------------------------------
-std::string entryData(ArchiveEntry& self)
+string entryData(ArchiveEntry& self)
 {
-	return std::string((const char*)self.rawData(), self.size());
+	return string((const char*)self.rawData(), self.size());
 }
 
 // -----------------------------------------------------------------------------
 // Imports data from [string] into entry [self]
 // -----------------------------------------------------------------------------
-std::tuple<bool, std::string> entryImportString(ArchiveEntry& self, const std::string& string)
+std::tuple<bool, string> entryImportString(ArchiveEntry& self, const string& string)
 {
 	return std::make_tuple(self.importMem(string.data(), string.size()), Global::error);
 }
@@ -252,7 +252,7 @@ std::tuple<bool, std::string> entryImportString(ArchiveEntry& self, const std::s
 // -----------------------------------------------------------------------------
 // Imports data from [mc] into entry [self]
 // -----------------------------------------------------------------------------
-std::tuple<bool, std::string> entryImportMC(ArchiveEntry& self, MemChunk& mc)
+std::tuple<bool, string> entryImportMC(ArchiveEntry& self, MemChunk& mc)
 {
 	return std::make_tuple(self.importMemChunk(mc), Global::error);
 }
@@ -261,7 +261,7 @@ std::tuple<bool, std::string> entryImportMC(ArchiveEntry& self, MemChunk& mc)
 // Renames entry [self] to [new_name], using the parent archive's naming rules
 // if it has one
 // -----------------------------------------------------------------------------
-bool entryRename(ArchiveEntry& self, std::string_view new_name)
+bool entryRename(ArchiveEntry& self, string_view new_name)
 {
 	if (self.parent())
 		return self.parent()->renameEntry(&self, new_name);
@@ -297,14 +297,14 @@ void registerArchiveEntry(sol::state& lua)
 		},
 		&formattedEntryName);
 	lua_entry["FormattedSize"] = &ArchiveEntry::sizeString;
-	lua_entry["ImportFile"]    = [](ArchiveEntry& self, std::string_view filename) {
+	lua_entry["ImportFile"]    = [](ArchiveEntry& self, string_view filename) {
         return std::make_tuple(self.importFile(filename), Global::error);
 	};
 	lua_entry["ImportEntry"] = [](ArchiveEntry& self, ArchiveEntry* entry) {
 		return std::make_tuple(self.importEntry(entry), Global::error);
 	};
 	lua_entry["ImportData"] = sol::overload(&entryImportString, &entryImportMC);
-	lua_entry["ExportFile"] = [](ArchiveEntry& self, std::string_view filename) {
+	lua_entry["ExportFile"] = [](ArchiveEntry& self, string_view filename) {
 		return std::make_tuple(self.exportFile(filename), Global::error);
 	};
 	lua_entry["Rename"] = &entryRename;
@@ -355,10 +355,10 @@ void registerArchivesNamespace(sol::state& lua)
 	auto archives = lua.create_table("Archives");
 
 	archives["All"]    = sol::overload(&allArchives, []() { return allArchives(false); });
-	archives["Create"] = [](std::string_view format) {
+	archives["Create"] = [](string_view format) {
 		return std::make_tuple(App::archiveManager().newArchive(format), Global::error);
 	};
-	archives["OpenFile"] = [](std::string_view filename) {
+	archives["OpenFile"] = [](string_view filename) {
 		return std::make_tuple(App::archiveManager().openArchive(filename), Global::error);
 	};
 	archives["Close"] = sol::overload(

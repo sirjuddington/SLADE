@@ -22,11 +22,11 @@ public:
 	SectorBuilder()  = default;
 	~SectorBuilder() = default;
 
-	const std::string& error() const { return error_; }
-	unsigned           nEdges() const { return sector_edges_.size(); }
-	MapLine*           edgeLine(unsigned index);
-	bool               edgeIsFront(unsigned index);
-	bool               edgeSideCreated(unsigned index);
+	const string& error() const { return error_; }
+	unsigned      nEdges() const { return sector_edges_.size(); }
+	MapLine*      edgeLine(unsigned index);
+	bool          edgeIsFront(unsigned index);
+	bool          edgeSideCreated(unsigned index);
 
 	bool       traceOutline(MapLine* line, bool front = true);
 	int        nearestEdge(double x, double y);
@@ -48,7 +48,7 @@ private:
 	vector<bool> vertex_valid_;
 	SLADEMap*    map_ = nullptr;
 	vector<Edge> sector_edges_;
-	std::string  error_;
+	string       error_;
 
 	// Current outline
 	vector<Edge> o_edges_;

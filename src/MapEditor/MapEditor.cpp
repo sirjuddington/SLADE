@@ -54,11 +54,11 @@
 // -----------------------------------------------------------------------------
 namespace MapEditor
 {
-std::unique_ptr<MapEditContext> edit_context;
-MapTextureManager               texture_manager;
-Archive::MapDesc                current_map_desc;
-MapEditorWindow*                map_window;
-MapBackupManager                backup_manager;
+unique_ptr<MapEditContext> edit_context;
+MapTextureManager          texture_manager;
+Archive::MapDesc           current_map_desc;
+MapEditorWindow*           map_window;
+MapBackupManager           backup_manager;
 } // namespace MapEditor
 
 
@@ -254,7 +254,7 @@ void MapEditor::setUndoManager(UndoManager* manager)
 // -----------------------------------------------------------------------------
 // Sets the map editor window status bar [text] at [column]
 // -----------------------------------------------------------------------------
-void ::MapEditor::setStatusText(std::string_view text, int column)
+void ::MapEditor::setStatusText(string_view text, int column)
 {
 	map_window->CallAfter(&MapEditorWindow::SetStatusText, WxUtils::strFromView(text), column);
 }
@@ -377,11 +377,7 @@ void MapEditor::showObjectEditPanel(bool show, ObjectEditGroup* group)
 // Opens the texture browser for [tex_type] textures, with [init_texture]
 // initially selected. Returns the selected texture
 // -----------------------------------------------------------------------------
-std::string MapEditor::browseTexture(
-	std::string_view init_texture,
-	TextureType      tex_type,
-	SLADEMap&        map,
-	std::string_view title)
+string MapEditor::browseTexture(string_view init_texture, TextureType tex_type, SLADEMap& map, string_view title)
 {
 	// Unlock cursor if locked
 	bool cursor_locked = edit_context->mouseLocked();
@@ -393,7 +389,7 @@ std::string MapEditor::browseTexture(
 	browser.SetTitle(WxUtils::strFromView(title));
 
 	// Get selected texture
-	std::string tex{ init_texture };
+	string tex{ init_texture };
 	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 		tex = browser.selectedItem()->name();
 

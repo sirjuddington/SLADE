@@ -73,7 +73,7 @@ void ThingInfoOverlay::update(MapThing* thing)
 	if (!thing)
 		return;
 
-	std::string info_text;
+	string info_text;
 	sprite_         = "";
 	translation_    = "";
 	palette_        = "";
@@ -81,8 +81,8 @@ void ThingInfoOverlay::update(MapThing* thing)
 	auto map_format = MapEditor::editContext().mapDesc().format;
 
 	// Index + type
-	auto&    tt   = Game::configuration().thingType(thing->type());
-	auto type = fmt::format("{} (Type {})", tt.name(), thing->type());
+	auto& tt   = Game::configuration().thingType(thing->type());
+	auto  type = fmt::format("{} (Type {})", tt.name(), thing->type());
 	if (Global::debug)
 		info_text += fmt::format("Thing #{} ({}): {}\n", thing->index(), thing->objId(), type);
 	else
@@ -96,7 +96,7 @@ void ThingInfoOverlay::update(MapThing* thing)
 		info_text += fmt::format("Position: {}, {}\n", (int)thing->xPos(), (int)thing->yPos());
 
 	// Direction
-	int      angle = thing->angle();
+	int  angle = thing->angle();
 	auto dir   = fmt::format("{} degrees", angle);
 	if (angle == 0)
 		dir = "East";
@@ -122,10 +122,10 @@ void ThingInfoOverlay::update(MapThing* thing)
 	{
 		int as_id = thing->special();
 		info_text += fmt::format("Special: {} ({})\n", as_id, Game::configuration().actionSpecialName(as_id));
-		std::string argxstr[2];
+		string argxstr[2];
 		argxstr[0] = thing->stringProperty("arg0str");
 		argxstr[1] = thing->stringProperty("arg1str");
-		std::string argstr;
+		string argstr;
 		if (tt.argSpec().count > 0)
 			argstr = tt.argSpec().stringDesc(thing->args().data(), argxstr);
 		else

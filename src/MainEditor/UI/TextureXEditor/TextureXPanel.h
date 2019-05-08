@@ -53,28 +53,28 @@ public:
 	void updateTextureList() const { list_textures_->updateList(); }
 
 	// Texture operations
-	CTexture::UPtr newTextureFromPatch(const wxString& name, const wxString& patch);
-	void           newTexture();
-	void           newTextureFromPatch();
-	void           newTextureFromFile();
-	void           removeTexture();
-	void           renameTexture(bool each = false);
-	void           exportTexture();
-	bool           exportAsPNG(CTexture* texture, const wxString& filename, bool force_rgba) const;
-	void           extractTexture();
-	bool           modifyOffsets();
-	void           moveUp();
-	void           moveDown();
-	void           sort();
-	void           copy();
-	void           paste();
+	unique_ptr<CTexture> newTextureFromPatch(const wxString& name, const wxString& patch);
+	void                 newTexture();
+	void                 newTextureFromPatch();
+	void                 newTextureFromFile();
+	void                 removeTexture();
+	void                 renameTexture(bool each = false);
+	void                 exportTexture();
+	bool                 exportAsPNG(CTexture* texture, const wxString& filename, bool force_rgba) const;
+	void                 extractTexture();
+	bool                 modifyOffsets();
+	void                 moveUp();
+	void                 moveDown();
+	void                 sort();
+	void                 copy();
+	void                 paste();
 
 	// Undo/Redo
 	void onUndo(const wxString& undo_action) const;
 	void onRedo(const wxString& undo_action) const;
 
 	// SAction handler
-	bool handleAction(std::string_view id) override;
+	bool handleAction(string_view id) override;
 
 private:
 	TextureXList    texturex_;

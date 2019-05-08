@@ -409,8 +409,8 @@ void MapEditorConfigDialog::populateMapList()
 	maps_ = archive_->detectMaps();
 
 	// Get currently selected game/port
-	std::string game = games_list_[choice_game_config_->GetSelection()].ToStdString();
-	std::string port;
+	string game = games_list_[choice_game_config_->GetSelection()].ToStdString();
+	string port;
 	if (choice_port_config_->GetSelection() > 0)
 		port = ports_list_[choice_port_config_->GetSelection() - 1].ToStdString();
 
@@ -502,8 +502,8 @@ Archive::MapDesc MapEditorConfigDialog::selectedMap()
 bool MapEditorConfigDialog::configMatchesMap(const Archive::MapDesc& map)
 {
 	// Get currently selected game/port
-	std::string game = games_list_[choice_game_config_->GetSelection()].ToStdString();
-	std::string port = "";
+	string game = games_list_[choice_game_config_->GetSelection()].ToStdString();
+	string port = "";
 	if (choice_port_config_->GetSelection() > 0)
 		port = ports_list_[choice_port_config_->GetSelection() - 1].ToStdString();
 

@@ -39,8 +39,8 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-const std::string Tokenizer::DEFAULT_SPECIAL_CHARACTERS = ";,:|={}/";
-Tokenizer::Token  Tokenizer::invalid_token_{ "", 0, false, 0, 0, 0, false };
+const string     Tokenizer::DEFAULT_SPECIAL_CHARACTERS = ";,:|={}/";
+Tokenizer::Token Tokenizer::invalid_token_{ "", 0, false, 0, 0, 0, false };
 
 
 // -----------------------------------------------------------------------------
@@ -164,7 +164,7 @@ void Tokenizer::Token::toFloat(float& val) const
 // -----------------------------------------------------------------------------
 // Tokenizer class constructor
 // -----------------------------------------------------------------------------
-Tokenizer::Tokenizer(int comments, const std::string& special_characters) :
+Tokenizer::Tokenizer(int comments, const string& special_characters) :
 	comment_types_{ comments },
 	special_characters_{ special_characters.begin(), special_characters.end() }
 {
@@ -222,7 +222,7 @@ bool Tokenizer::advIf(const char* check, size_t inc)
 
 	return false;
 }
-bool Tokenizer::advIf(const std::string& check, size_t inc)
+bool Tokenizer::advIf(const string& check, size_t inc)
 {
 	if (token_current_ == check)
 	{
@@ -256,7 +256,7 @@ bool Tokenizer::advIfNC(const char* check, size_t inc)
 
 	return false;
 }
-bool Tokenizer::advIfNC(const std::string& check, size_t inc)
+bool Tokenizer::advIfNC(const string& check, size_t inc)
 {
 	if (StrUtil::equalCI(token_current_.text, check))
 	{
@@ -283,7 +283,7 @@ bool Tokenizer::advIfNext(const char* check, size_t inc)
 
 	return false;
 }
-bool Tokenizer::advIfNext(const std::string& check, size_t inc)
+bool Tokenizer::advIfNext(const string& check, size_t inc)
 {
 	if (!token_next_.valid)
 		return false;
@@ -465,7 +465,7 @@ vector<Tokenizer::Token> Tokenizer::getTokensUntilNextLine(bool from_start)
 	return tokens;
 }
 
-std::string Tokenizer::getLine(bool from_start)
+string Tokenizer::getLine(bool from_start)
 {
 	// Reset to start of line if needed
 	if (from_start)
@@ -478,7 +478,7 @@ std::string Tokenizer::getLine(bool from_start)
 		state_.current_line = token_next_.line_no;
 	}
 
-	std::string line;
+	string line;
 	while (data_[state_.position] != '\n' && data_[state_.position] != '\r')
 		line += data_[state_.position++];
 
@@ -496,7 +496,7 @@ bool Tokenizer::checkOrEnd(const char* check) const
 
 	return token_current_ == check;
 }
-bool Tokenizer::checkOrEnd(const std::string& check) const
+bool Tokenizer::checkOrEnd(const string& check) const
 {
 	// At end, return true
 	if (!token_next_.valid)
@@ -537,7 +537,7 @@ bool Tokenizer::checkNext(const char* check) const
 
 	return token_next_ == check;
 }
-bool Tokenizer::checkNext(const std::string& check) const
+bool Tokenizer::checkNext(const string& check) const
 {
 	if (!token_next_.valid)
 		return false;
@@ -564,10 +564,10 @@ bool Tokenizer::checkNextNC(const char* check) const
 // Opens text from a file [filename], reading [length] bytes from [offset].
 // If [length] is 0, read to the end of the file
 // -----------------------------------------------------------------------------
-bool Tokenizer::openFile(std::string_view filename, size_t offset, size_t length)
+bool Tokenizer::openFile(string_view filename, size_t offset, size_t length)
 {
 	// Open the file
-	wxFile file(std::string{ filename });
+	wxFile file(string{ filename });
 
 	// Check file opened
 	if (!file.IsOpened())
@@ -598,7 +598,7 @@ bool Tokenizer::openFile(std::string_view filename, size_t offset, size_t length
 // Opens text from a string [text], reading [length] bytes from [offset].
 // If [length] is 0, read to the end of the string
 // -----------------------------------------------------------------------------
-bool Tokenizer::openString(std::string_view text, size_t offset, size_t length, std::string_view source)
+bool Tokenizer::openString(string_view text, size_t offset, size_t length, string_view source)
 {
 	source_ = source;
 
@@ -618,7 +618,7 @@ bool Tokenizer::openString(std::string_view text, size_t offset, size_t length, 
 // -----------------------------------------------------------------------------
 // Opens text from memory [mem], reading [length] bytes
 // -----------------------------------------------------------------------------
-bool Tokenizer::openMem(const char* mem, size_t length, std::string_view source)
+bool Tokenizer::openMem(const char* mem, size_t length, string_view source)
 {
 	source_ = source;
 	data_.assign(mem, mem + length);
@@ -631,7 +631,7 @@ bool Tokenizer::openMem(const char* mem, size_t length, std::string_view source)
 // -----------------------------------------------------------------------------
 // Opens text from a MemChunk [mc]
 // -----------------------------------------------------------------------------
-bool Tokenizer::openMem(const MemChunk& mc, std::string_view source)
+bool Tokenizer::openMem(const MemChunk& mc, string_view source)
 {
 	source_ = source;
 	data_.assign(mc.data(), mc.data() + mc.size());
@@ -952,9 +952,9 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 
 	struct TestToken
 	{
-		std::string text;
-		bool        quoted_string;
-		unsigned    line_no;
+		string   text;
+		bool     quoted_string;
+		unsigned line_no;
 	};
 
 	// Tokenize it
@@ -999,8 +999,8 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 		tzo.reset();
 	}
 	time = App::runTimer() - time;
-	Log::info(std::string::Format("Old Tokenize x%d took %dms", num, time));
-	Log::info(std::string::Format("%1.3fx time", (float)new_time / (float)time));
+	Log::info(string::Format("Old Tokenize x%d took %dms", num, time));
+	Log::info(string::Format("%1.3fx time", (float)new_time / (float)time));
 	*/
 
 	if (dump)

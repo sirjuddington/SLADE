@@ -18,5 +18,5 @@ public:
 
 	// Static functions
 	static bool isBSPArchive(MemChunk& mc);
-	static bool isBSPArchive(const std::string& filename);
+	static bool isBSPArchive(const string& filename);
 };

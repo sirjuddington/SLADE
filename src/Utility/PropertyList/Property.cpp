@@ -8,7 +8,7 @@
 // Filename:    Property.cpp
 // Description: The Property class. Basically acts as a 'dynamic' variable type,
 //              for use in the PropertyList class. Can contain a boolean,
-//              integer, floating point (double) or string (std::string) value.
+//              integer, floating point (double) or string (string) value.
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -102,9 +102,7 @@ Property::Property(double value) : type_{ Type::Float }, has_value_{ true }
 // -----------------------------------------------------------------------------
 // Property class constructor (string)
 // -----------------------------------------------------------------------------
-Property::Property(std::string_view value) : type_{ Type::String }, value_{}, val_string_{ value }, has_value_{ true }
-{
-}
+Property::Property(string_view value) : type_{ Type::String }, value_{}, val_string_{ value }, has_value_{ true } {}
 
 // -----------------------------------------------------------------------------
 // Property class constructor (unsigned)
@@ -228,7 +226,7 @@ double Property::floatValue(bool warn_wrong_type) const
 // If [warn_wrong_type] is true, a warning message is written to the log if the
 // property is not of string type
 // -----------------------------------------------------------------------------
-std::string Property::stringValue(bool warn_wrong_type) const
+string Property::stringValue(bool warn_wrong_type) const
 {
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type_ == Type::Flag)
@@ -344,7 +342,7 @@ void Property::setValue(double val)
 // -----------------------------------------------------------------------------
 // Sets the property to [val], and changes its type to string if necessary
 // -----------------------------------------------------------------------------
-void Property::setValue(std::string_view val)
+void Property::setValue(string_view val)
 {
 	// Change type if necessary
 	if (type_ != Type::String)
@@ -392,7 +390,7 @@ void Property::changeType(Type newtype)
 		value_.Integer = 0;
 	else if (type_ == Type::Float)
 		value_.Floating = 0.0f;
-	//else if (type_ == Type::String)
+	// else if (type_ == Type::String)
 	//	val_string_ = "";
 	else if (type_ == Type::Flag)
 		value_.Boolean = true;
@@ -403,7 +401,7 @@ void Property::changeType(Type newtype)
 // -----------------------------------------------------------------------------
 // Returns a string representing the property's value type
 // -----------------------------------------------------------------------------
-std::string Property::typeString() const
+string Property::typeString() const
 {
 	switch (type_)
 	{

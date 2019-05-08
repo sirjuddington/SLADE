@@ -117,11 +117,11 @@ bool DoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_data,
 // Writes the given [map_data] to Doom format, returning the list of entries
 // making up the map
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry::UPtr> DoomMapFormat::writeMap(
+vector<unique_ptr<ArchiveEntry>> DoomMapFormat::writeMap(
 	const MapObjectCollection& map_data,
 	const PropertyList&        map_extra_props)
 {
-	vector<ArchiveEntry::UPtr> map_entries;
+	vector<unique_ptr<ArchiveEntry>> map_entries;
 	map_entries.push_back(writeTHINGS(map_data.things()));
 	map_entries.push_back(writeLINEDEFS(map_data.lines()));
 	map_entries.push_back(writeSIDEDEFS(map_data.sides()));
@@ -348,7 +348,7 @@ bool DoomMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_dat
 // -----------------------------------------------------------------------------
 // Creates and returns a Doom-format VERTEXES entry from [vertices]
 // -----------------------------------------------------------------------------
-ArchiveEntry::UPtr DoomMapFormat::writeVERTEXES(const VertexList& vertices) const
+unique_ptr<ArchiveEntry> DoomMapFormat::writeVERTEXES(const VertexList& vertices) const
 {
 	auto entry = std::make_unique<ArchiveEntry>("VERTEXES");
 
@@ -373,7 +373,7 @@ ArchiveEntry::UPtr DoomMapFormat::writeVERTEXES(const VertexList& vertices) cons
 // -----------------------------------------------------------------------------
 // Creates and returns a Doom-format SIDEDEFS entry from [sides]
 // -----------------------------------------------------------------------------
-ArchiveEntry::UPtr DoomMapFormat::writeSIDEDEFS(const SideList& sides) const
+unique_ptr<ArchiveEntry> DoomMapFormat::writeSIDEDEFS(const SideList& sides) const
 {
 	auto entry = std::make_unique<ArchiveEntry>("SIDEDEFS");
 
@@ -411,7 +411,7 @@ ArchiveEntry::UPtr DoomMapFormat::writeSIDEDEFS(const SideList& sides) const
 // -----------------------------------------------------------------------------
 // Creates and returns a Doom-format LINEDEFS entry from [lines]
 // -----------------------------------------------------------------------------
-ArchiveEntry::UPtr DoomMapFormat::writeLINEDEFS(const LineList& lines) const
+unique_ptr<ArchiveEntry> DoomMapFormat::writeLINEDEFS(const LineList& lines) const
 {
 	auto entry = std::make_unique<ArchiveEntry>("LINEDEFS");
 
@@ -445,7 +445,7 @@ ArchiveEntry::UPtr DoomMapFormat::writeLINEDEFS(const LineList& lines) const
 // -----------------------------------------------------------------------------
 // Creates and returns a Doom-format SECTORS entry from [sectors]
 // -----------------------------------------------------------------------------
-ArchiveEntry::UPtr DoomMapFormat::writeSECTORS(const SectorList& sectors) const
+unique_ptr<ArchiveEntry> DoomMapFormat::writeSECTORS(const SectorList& sectors) const
 {
 	auto entry = std::make_unique<ArchiveEntry>("SECTORS");
 
@@ -482,7 +482,7 @@ ArchiveEntry::UPtr DoomMapFormat::writeSECTORS(const SectorList& sectors) const
 // -----------------------------------------------------------------------------
 // Creates and returns a Doom-format THINGS entry from [things]
 // -----------------------------------------------------------------------------
-ArchiveEntry::UPtr DoomMapFormat::writeTHINGS(const ThingList& things) const
+unique_ptr<ArchiveEntry> DoomMapFormat::writeTHINGS(const ThingList& things) const
 {
 	auto entry = std::make_unique<ArchiveEntry>("THINGS");
 

@@ -102,7 +102,7 @@ void BaseResourceChooser::populateChoices()
 // -----------------------------------------------------------------------------
 // Called when an announcement is received from the ArchiveManager
 // -----------------------------------------------------------------------------
-void BaseResourceChooser::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
+void BaseResourceChooser::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
 {
 	// Check the announcer
 	if (announcer != &App::archiveManager())

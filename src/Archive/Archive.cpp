@@ -57,7 +57,7 @@ vector<ArchiveFormat> Archive::formats;
 class EntryRenameUS : public UndoStep
 {
 public:
-	EntryRenameUS(ArchiveEntry* entry, std::string_view new_name) :
+	EntryRenameUS(ArchiveEntry* entry, string_view new_name) :
 		archive_{ entry->parent() },
 		entry_path_{ entry->path() },
 		entry_index_{ entry->parentDir()->entryIndex(entry) },
@@ -95,17 +95,17 @@ public:
 	}
 
 private:
-	Archive*    archive_;
-	std::string entry_path_;
-	int         entry_index_;
-	std::string old_name_;
-	std::string new_name_;
+	Archive* archive_;
+	string   entry_path_;
+	int      entry_index_;
+	string   old_name_;
+	string   new_name_;
 };
 
 class DirRenameUS : public UndoStep
 {
 public:
-	DirRenameUS(ArchiveTreeNode* dir, std::string_view new_name) :
+	DirRenameUS(ArchiveTreeNode* dir, string_view new_name) :
 		archive_{ dir->archive() },
 		path_{ dir->parent()->path().append(new_name) },
 		old_name_{ dir->name() },
@@ -138,9 +138,9 @@ public:
 
 private:
 	Archive*            archive_;
-	std::string         path_;
-	std::string         old_name_;
-	std::string         new_name_;
+	string              path_;
+	string              old_name_;
+	string              new_name_;
 	ArchiveEntry::State prev_state_;
 };
 
@@ -168,10 +168,10 @@ public:
 	bool doRedo() override { return doSwap(); }
 
 private:
-	Archive*    archive_;
-	std::string path_;
-	unsigned    index1_;
-	unsigned    index2_;
+	Archive* archive_;
+	string   path_;
+	unsigned index1_;
+	unsigned index2_;
 };
 
 class EntryCreateDeleteUS : public UndoStep
@@ -211,11 +211,11 @@ public:
 	bool doRedo() override { return !created_ ? deleteEntry() : createEntry(); }
 
 private:
-	bool               created_;
-	Archive*           archive_;
-	ArchiveEntry::UPtr entry_copy_;
-	std::string        path_;
-	unsigned           index_;
+	bool                     created_;
+	Archive*                 archive_;
+	unique_ptr<ArchiveEntry> entry_copy_;
+	string                   path_;
+	unsigned                 index_;
 };
 
 
@@ -283,10 +283,10 @@ public:
 	}
 
 private:
-	bool                             created_;
-	Archive*                         archive_;
-	std::string                      path_;
-	std::unique_ptr<ArchiveTreeNode> tree_;
+	bool                        created_;
+	Archive*                    archive_;
+	string                      path_;
+	unique_ptr<ArchiveTreeNode> tree_;
 };
 
 
@@ -300,7 +300,7 @@ private:
 // -----------------------------------------------------------------------------
 // Archive class constructor
 // -----------------------------------------------------------------------------
-Archive::Archive(std::string_view format) :
+Archive::Archive(string_view format) :
 	format_{ format },
 	parent_{ nullptr },
 	on_disk_{ false },
@@ -334,15 +334,15 @@ ArchiveFormat Archive::formatDesc() const
 // -----------------------------------------------------------------------------
 // Gets the wxWidgets file dialog filter string for the archive type
 // -----------------------------------------------------------------------------
-std::string Archive::fileExtensionString() const
+string Archive::fileExtensionString() const
 {
 	auto fmt = formatDesc();
 
 	// Multiple extensions
 	if (fmt.extensions.size() > 1)
 	{
-		auto                ext_all = fmt::format("Any {} File|", fmt.name);
-		vector<std::string> ext_strings;
+		auto           ext_all = fmt::format("Any {} File|", fmt.name);
+		vector<string> ext_strings;
 		for (const auto& ext : fmt.extensions)
 		{
 			auto ext_case = fmt::format("*.{};", StrUtil::lower(ext.first));
@@ -378,26 +378,26 @@ std::string Archive::fileExtensionString() const
 // -----------------------------------------------------------------------------
 // Returns the archive's filename, including the path if specified
 // -----------------------------------------------------------------------------
-std::string Archive::filename(bool full) const
+string Archive::filename(bool full) const
 {
 	// If the archive is within another archive, return "<parent archive>/<entry name>"
 	if (parent_)
 	{
-		std::string parent_archive;
+		string parent_archive;
 		if (parentArchive())
 			parent_archive = parentArchive()->filename(false) + "/";
 
 		return parent_archive.append(StrUtil::Path::fileNameOf(parent_->name(), false));
 	}
 
-	return full ? filename_ : std::string{ StrUtil::Path::fileNameOf(filename_) };
+	return full ? filename_ : string{ StrUtil::Path::fileNameOf(filename_) };
 }
 
 // -----------------------------------------------------------------------------
 // Reads an archive from disk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Archive::open(std::string_view filename)
+bool Archive::open(string_view filename)
 {
 	// Read the file into a MemChunk
 	MemChunk mc;
@@ -477,7 +477,7 @@ bool Archive::checkEntry(ArchiveEntry* entry)
 // Returns the entry matching [name] within [dir].
 // If no dir is given the root dir is used
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::entry(std::string_view name, bool cut_ext, ArchiveTreeNode* dir)
+ArchiveEntry* Archive::entry(string_view name, bool cut_ext, ArchiveTreeNode* dir)
 {
 	// Check if dir was given
 	if (!dir)
@@ -518,7 +518,7 @@ int Archive::entryIndex(ArchiveEntry* entry, ArchiveTreeNode* dir)
 // Returns the entry at the given path in the archive, or null if it doesn't
 // exist
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::entryAtPath(std::string_view path)
+ArchiveEntry* Archive::entryAtPath(string_view path)
 {
 	// Get path as wxFileName for processing
 	StrUtil::Path fn(StrUtil::startsWith(path, '/') ? path.substr(1) : path);
@@ -542,7 +542,7 @@ ArchiveEntry* Archive::entryAtPath(std::string_view path)
 // Returns the entry at the given path in the archive, or null if it doesn't
 // exist
 // -----------------------------------------------------------------------------
-ArchiveEntry::SPtr Archive::entryAtPathShared(std::string_view path)
+shared_ptr<ArchiveEntry> Archive::entryAtPathShared(string_view path)
 {
 	// Get path as wxFileName for processing
 	StrUtil::Path fn(StrUtil::startsWith(path, '/') ? path.substr(1) : path);
@@ -566,7 +566,7 @@ ArchiveEntry::SPtr Archive::entryAtPathShared(std::string_view path)
 // Writes the archive to a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool Archive::write(std::string_view filename, bool update)
+bool Archive::write(string_view filename, bool update)
 {
 	// Write to a MemChunk, then export it to a file
 	MemChunk mc;
@@ -584,7 +584,7 @@ bool Archive::write(std::string_view filename, bool update)
 // within another.
 // Returns false if saving was unsuccessful, true otherwise
 // -----------------------------------------------------------------------------
-bool Archive::save(std::string_view filename)
+bool Archive::save(string_view filename)
 {
 	bool success = false;
 
@@ -724,7 +724,7 @@ void Archive::putEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveTreeNode* s
 // -----------------------------------------------------------------------------
 // Adds the directory structure starting from [start] to [list]
 // -----------------------------------------------------------------------------
-void Archive::putEntryTreeAsList(vector<ArchiveEntry::SPtr>& list, ArchiveTreeNode* start)
+void Archive::putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, ArchiveTreeNode* start)
 {
 	// If no start dir is specified, use the root dir
 	if (!start)
@@ -770,7 +770,7 @@ bool Archive::paste(ArchiveTreeNode* tree, unsigned position, ArchiveTreeNode* b
 // If [base] is null, the root directory is used.
 // Returns null if the requested directory does not exist
 // -----------------------------------------------------------------------------
-ArchiveTreeNode* Archive::dir(std::string_view path, ArchiveTreeNode* base)
+ArchiveTreeNode* Archive::dir(string_view path, ArchiveTreeNode* base)
 {
 	// Check if base dir was given
 	if (!base)
@@ -792,7 +792,7 @@ ArchiveTreeNode* Archive::dir(std::string_view path, ArchiveTreeNode* base)
 // Returns the created directory, or if the directory requested to be created
 // already exists, it will be returned
 // -----------------------------------------------------------------------------
-ArchiveTreeNode* Archive::createDir(std::string_view path, ArchiveTreeNode* base)
+ArchiveTreeNode* Archive::createDir(string_view path, ArchiveTreeNode* base)
 {
 	// Abort if read only
 	if (read_only_)
@@ -829,7 +829,7 @@ ArchiveTreeNode* Archive::createDir(std::string_view path, ArchiveTreeNode* base
 // If [base] is null, the root directory is used.
 // Returns false if the directory does not exist, true otherwise
 // -----------------------------------------------------------------------------
-bool Archive::removeDir(std::string_view path, ArchiveTreeNode* base)
+bool Archive::removeDir(string_view path, ArchiveTreeNode* base)
 {
 	// Abort if read only
 	if (read_only_)
@@ -863,7 +863,7 @@ bool Archive::removeDir(std::string_view path, ArchiveTreeNode* base)
 // Renames [dir] to [new_name].
 // Returns false if [dir] isn't part of the archive, true otherwise
 // -----------------------------------------------------------------------------
-bool Archive::renameDir(ArchiveTreeNode* dir, std::string_view new_name)
+bool Archive::renameDir(ArchiveTreeNode* dir, string_view new_name)
 {
 	// Abort if read only
 	if (read_only_)
@@ -951,7 +951,7 @@ ArchiveEntry* Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveT
 // If [position] is out of bounds, it is added tothe end of the dir.
 // Return false if the entry is invalid, true otherwise
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::addNewEntry(std::string_view name, unsigned position, ArchiveTreeNode* dir)
+ArchiveEntry* Archive::addNewEntry(string_view name, unsigned position, ArchiveTreeNode* dir)
 {
 	// Abort if read only
 	if (read_only_)
@@ -970,7 +970,7 @@ ArchiveEntry* Archive::addNewEntry(std::string_view name, unsigned position, Arc
 // -----------------------------------------------------------------------------
 // Creates a new entry with [name] and adds it to [namespace] within the archive
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::addNewEntry(std::string_view name, std::string_view add_namespace)
+ArchiveEntry* Archive::addNewEntry(string_view name, string_view add_namespace)
 {
 	// Abort if read only
 	if (read_only_)
@@ -1182,7 +1182,7 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode*
 // Renames [entry] with [name].
 // Returns false if the entry was invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool Archive::renameEntry(ArchiveEntry* entry, std::string_view name)
+bool Archive::renameEntry(ArchiveEntry* entry, string_view name)
 {
 	// Abort if read only
 	if (read_only_)
@@ -1227,10 +1227,10 @@ bool Archive::renameEntry(ArchiveEntry* entry, std::string_view name)
 // Imports all files (including subdirectories) from [directory] into the
 // archive
 // -----------------------------------------------------------------------------
-bool Archive::importDir(std::string_view directory)
+bool Archive::importDir(string_view directory)
 {
 	// Get a list of all files in the directory
-	vector<std::string> files;
+	vector<string> files;
 	for (const auto& item : std::filesystem::recursive_directory_iterator{ directory })
 		if (item.is_regular_file())
 			files.push_back(item.path().string());
@@ -1297,7 +1297,7 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace of the entry at [index] within [dir]
 // -----------------------------------------------------------------------------
-std::string Archive::detectNamespace(size_t index, ArchiveTreeNode* dir)
+string Archive::detectNamespace(size_t index, ArchiveTreeNode* dir)
 {
 	if (dir && index < dir->numEntries())
 		return detectNamespace(dir->entryAt(index));
@@ -1308,7 +1308,7 @@ std::string Archive::detectNamespace(size_t index, ArchiveTreeNode* dir)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-std::string Archive::detectNamespace(ArchiveEntry* entry)
+string Archive::detectNamespace(ArchiveEntry* entry)
 {
 	// Check entry
 	if (!checkEntry(entry))

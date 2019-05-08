@@ -24,5 +24,5 @@ public:
 
 	// Static functions
 	static bool isDiskArchive(MemChunk& mc);
-	static bool isDiskArchive(const std::string& filename);
+	static bool isDiskArchive(const string& filename);
 };

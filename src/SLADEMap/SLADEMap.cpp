@@ -311,7 +311,7 @@ void SLADEMap::putDragonTargets(MapThing* first, vector<MapThing*>& list)
 	unsigned i = 0;
 	while (i < list.size())
 	{
-		std::string prop = "arg_";
+		string prop = "arg_";
 		for (int a = 0; a < 5; ++a)
 		{
 			prop[3] = ('0' + a);
@@ -329,7 +329,7 @@ void SLADEMap::putDragonTargets(MapThing* first, vector<MapThing*>& list)
 // -----------------------------------------------------------------------------
 // Returns the first texture at [tex_part] found on lines connected to [vertex]
 // -----------------------------------------------------------------------------
-std::string SLADEMap::adjacentLineTexture(MapVertex* vertex, int tex_part) const
+string SLADEMap::adjacentLineTexture(MapVertex* vertex, int tex_part) const
 {
 	// Go through adjacent lines
 	auto tex = MapSide::TEX_NONE;

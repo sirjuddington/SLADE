@@ -85,7 +85,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 		}
 
 		// Get initial texture
-		std::string tex_init;
+		string tex_init;
 		if (sel[initial].type == MapEditor::ItemType::Ceiling)
 			tex_init = editor->map().sector(sel[initial].index)->ceiling().texture;
 		else if (sel[initial].type == MapEditor::ItemType::Floor)
@@ -100,7 +100,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 		auto map_format = editor->map().currentFormat();
 
 		// Get all available texture names (sorted alphabetically)
-		vector<std::string> tex_names;
+		vector<string> tex_names;
 
 		if (sel_walls_)
 		{
@@ -169,7 +169,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 // -----------------------------------------------------------------------------
 // Sets the currentl texture to [name], if it exists
 // -----------------------------------------------------------------------------
-void QuickTextureOverlay3d::setTexture(std::string_view name)
+void QuickTextureOverlay3d::setTexture(string_view name)
 {
 	for (unsigned a = 0; a < textures_.size(); a++)
 	{
@@ -387,7 +387,7 @@ void QuickTextureOverlay3d::doSearch()
 // -----------------------------------------------------------------------------
 // Called when a key is pressed
 // -----------------------------------------------------------------------------
-void QuickTextureOverlay3d::keyDown(std::string_view key)
+void QuickTextureOverlay3d::keyDown(string_view key)
 {
 	// Up texture
 	if ((key == "right" || key == "mwheeldown") && current_index_ < textures_.size() - 1)

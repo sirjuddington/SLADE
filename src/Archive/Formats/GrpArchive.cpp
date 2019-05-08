@@ -98,7 +98,7 @@ bool GrpArchive::open(MemChunk& mc)
 	ken_magic[12] = 0;
 
 	// Check the header
-	if (std::string_view{ ken_magic } != "KenSilverman")
+	if (string_view{ ken_magic } != "KenSilverman")
 	{
 		Log::error("GrpArchive::openFile: File {} has invalid header", filename_);
 		Global::error = "Invalid grp header";
@@ -302,7 +302,7 @@ bool GrpArchive::isGrpArchive(MemChunk& mc)
 	ken_magic[12] = 0;
 
 	// Check the header
-	if (std::string_view{ ken_magic } != "KenSilverman")
+	if (string_view{ ken_magic } != "KenSilverman")
 		return false;
 
 	// Compute total size
@@ -326,7 +326,7 @@ bool GrpArchive::isGrpArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid DN3D grp archive
 // -----------------------------------------------------------------------------
-bool GrpArchive::isGrpArchive(const std::string& filename)
+bool GrpArchive::isGrpArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -353,7 +353,7 @@ bool GrpArchive::isGrpArchive(const std::string& filename)
 	ken_magic[12] = 0;
 
 	// Check the header
-	if (std::string_view{ ken_magic } != "KenSilverman")
+	if (string_view{ ken_magic } != "KenSilverman")
 		return false;
 
 	// Compute total size

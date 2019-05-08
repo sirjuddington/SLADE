@@ -50,7 +50,7 @@ MapObjectCollection::MapObjectCollection(SLADEMap* parent_map) : parent_map_{ pa
 // -----------------------------------------------------------------------------
 // Adds [object] to the map objects list
 // -----------------------------------------------------------------------------
-void MapObjectCollection::addMapObject(std::unique_ptr<MapObject> object)
+void MapObjectCollection::addMapObject(unique_ptr<MapObject> object)
 {
 	object->obj_id_     = objects_.size();
 	object->parent_map_ = parent_map_;
@@ -476,7 +476,7 @@ bool MapObjectCollection::removeThing(unsigned index)
 // -----------------------------------------------------------------------------
 // Adds [vertex] to the map
 // -----------------------------------------------------------------------------
-MapVertex* MapObjectCollection::addVertex(std::unique_ptr<MapVertex> vertex)
+MapVertex* MapObjectCollection::addVertex(unique_ptr<MapVertex> vertex)
 {
 	vertex->index_ = vertices_.size();
 	vertices_.add(vertex.get());
@@ -487,7 +487,7 @@ MapVertex* MapObjectCollection::addVertex(std::unique_ptr<MapVertex> vertex)
 // -----------------------------------------------------------------------------
 // Adds [side] to the map
 // -----------------------------------------------------------------------------
-MapSide* MapObjectCollection::addSide(std::unique_ptr<MapSide> side)
+MapSide* MapObjectCollection::addSide(unique_ptr<MapSide> side)
 {
 	side->index_ = sides_.size();
 	sides_.add(side.get());
@@ -498,7 +498,7 @@ MapSide* MapObjectCollection::addSide(std::unique_ptr<MapSide> side)
 // -----------------------------------------------------------------------------
 // Adds [line] to the map
 // -----------------------------------------------------------------------------
-MapLine* MapObjectCollection::addLine(std::unique_ptr<MapLine> line)
+MapLine* MapObjectCollection::addLine(unique_ptr<MapLine> line)
 {
 	line->index_ = lines_.size();
 	lines_.add(line.get());
@@ -509,7 +509,7 @@ MapLine* MapObjectCollection::addLine(std::unique_ptr<MapLine> line)
 // -----------------------------------------------------------------------------
 // Adds [sector] to the map
 // -----------------------------------------------------------------------------
-MapSector* MapObjectCollection::addSector(std::unique_ptr<MapSector> sector)
+MapSector* MapObjectCollection::addSector(unique_ptr<MapSector> sector)
 {
 	sector->index_ = sectors_.size();
 	sectors_.add(sector.get());
@@ -520,7 +520,7 @@ MapSector* MapObjectCollection::addSector(std::unique_ptr<MapSector> sector)
 // -----------------------------------------------------------------------------
 // Adds [thing] to the map
 // -----------------------------------------------------------------------------
-MapThing* MapObjectCollection::addThing(std::unique_ptr<MapThing> thing)
+MapThing* MapObjectCollection::addThing(unique_ptr<MapThing> thing)
 {
 	thing->index_ = things_.size();
 	things_.add(thing.get());

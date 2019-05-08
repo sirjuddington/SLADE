@@ -56,8 +56,8 @@ CVAR(Int, txed_override_font_size, 0, CVar::Flag::Save)
 vector<TextEditorCtrl*> StyleSet::editors_;
 namespace
 {
-vector<std::unique_ptr<StyleSet>> style_sets;
-StyleSet*                         ss_current = nullptr;
+vector<unique_ptr<StyleSet>> style_sets;
+StyleSet*                    ss_current = nullptr;
 } // namespace
 
 
@@ -71,7 +71,7 @@ StyleSet*                         ss_current = nullptr;
 // -----------------------------------------------------------------------------
 // TextStyle class constructor
 // -----------------------------------------------------------------------------
-TextStyle::TextStyle(std::string_view name, std::string_view description, int style_id) :
+TextStyle::TextStyle(string_view name, string_view description, int style_id) :
 	name_{ name },
 	description_{ description }
 {
@@ -214,10 +214,10 @@ bool TextStyle::copyStyle(TextStyle* copy)
 // -----------------------------------------------------------------------------
 // Returns a formatted string defining this style
 // -----------------------------------------------------------------------------
-std::string TextStyle::textDefinition(unsigned tabs) const
+string TextStyle::textDefinition(unsigned tabs) const
 {
 	fmt::memory_buffer buf;
-	std::string        indent(tabs, '\t');
+	string             indent(tabs, '\t');
 
 	// Write font
 	if (!font_.empty())
@@ -261,7 +261,7 @@ std::string TextStyle::textDefinition(unsigned tabs) const
 // -----------------------------------------------------------------------------
 // StyleSet class constructor
 // -----------------------------------------------------------------------------
-StyleSet::StyleSet(std::string_view name) :
+StyleSet::StyleSet(string_view name) :
 	ts_default_("default", "Default", wxSTC_STYLE_DEFAULT),
 	ts_selection_("selection", "Selected Text")
 {
@@ -451,7 +451,7 @@ bool StyleSet::copySet(StyleSet* copy)
 // Returns the text style associated with [name] (these are hard coded), or
 // nullptr if [name] was invalid
 // -----------------------------------------------------------------------------
-TextStyle* StyleSet::style(std::string_view name)
+TextStyle* StyleSet::style(string_view name)
 {
 	// Return style matching name given
 	if (StrUtil::equalCI(name, "default"))
@@ -485,7 +485,7 @@ TextStyle* StyleSet::style(unsigned index)
 // -----------------------------------------------------------------------------
 // Writes this style set as a text definition to a file [filename]
 // -----------------------------------------------------------------------------
-bool StyleSet::writeFile(std::string_view filename)
+bool StyleSet::writeFile(string_view filename)
 {
 	// Open file for writing
 	wxFile file(wxString{ filename.data(), filename.size() }, wxFile::write);
@@ -530,7 +530,7 @@ bool StyleSet::writeFile(std::string_view filename)
 // Returns the foreground colour of [style], or the default style's foreground
 // colour if it is not set
 // -----------------------------------------------------------------------------
-ColRGBA StyleSet::styleForeground(std::string_view style_name)
+ColRGBA StyleSet::styleForeground(string_view style_name)
 {
 	auto s = style(style_name);
 	return s && s->hasForeground() ? s->foreground() : ts_default_.foreground();
@@ -540,7 +540,7 @@ ColRGBA StyleSet::styleForeground(std::string_view style_name)
 // Returns the background colour of [style], or the default style's background
 // colour if it is not set
 // -----------------------------------------------------------------------------
-ColRGBA StyleSet::styleBackground(std::string_view style_name)
+ColRGBA StyleSet::styleBackground(string_view style_name)
 {
 	auto s = style(style_name);
 	return s && s->hasBackground() ? s->background() : ts_default_.background();
@@ -549,7 +549,7 @@ ColRGBA StyleSet::styleBackground(std::string_view style_name)
 // -----------------------------------------------------------------------------
 // Returns the default style font face
 // -----------------------------------------------------------------------------
-std::string StyleSet::defaultFontFace()
+string StyleSet::defaultFontFace()
 {
 	return !txed_override_font.value.empty() ? txed_override_font : style("default")->fontFace();
 }
@@ -637,7 +637,7 @@ StyleSet* StyleSet::currentSet()
 // Loads the style set matching [name] to the current style set.
 // Returns false if no match was found, true otherwise
 // -----------------------------------------------------------------------------
-bool StyleSet::loadSet(std::string_view name)
+bool StyleSet::loadSet(string_view name)
 {
 	// Search for set matching name
 	for (auto& style_set : style_sets)
@@ -679,7 +679,7 @@ void StyleSet::applyCurrent(TextEditorCtrl* stc)
 // Returns the name of the style set at [index], or an empty string if [index]
 // is out of bounds
 // -----------------------------------------------------------------------------
-std::string StyleSet::styleName(unsigned index)
+string StyleSet::styleName(unsigned index)
 {
 	// Check index
 	if (index >= style_sets.size())

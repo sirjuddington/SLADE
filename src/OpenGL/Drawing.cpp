@@ -631,7 +631,7 @@ wxColour Drawing::darkColour(const wxColour& colour, float percent)
 // -----------------------------------------------------------------------------
 // TextBox class constructor
 // -----------------------------------------------------------------------------
-TextBox::TextBox(std::string_view text, Drawing::Font font, int width, int line_height) :
+TextBox::TextBox(string_view text, Drawing::Font font, int width, int line_height) :
 	font_{ font },
 	width_{ width },
 	line_height_{ line_height }
@@ -643,7 +643,7 @@ TextBox::TextBox(std::string_view text, Drawing::Font font, int width, int line_
 // Splits [text] into separate lines (split by newlines), also performs further
 // splitting to word wrap the text within the box
 // -----------------------------------------------------------------------------
-void TextBox::split(std::string_view text)
+void TextBox::split(string_view text)
 {
 	// Clear current text lines
 	lines_.clear();
@@ -731,7 +731,7 @@ void TextBox::split(std::string_view text)
 // -----------------------------------------------------------------------------
 // Sets the text box text
 // -----------------------------------------------------------------------------
-void TextBox::setText(std::string_view text)
+void TextBox::setText(string_view text)
 {
 	text_ = text;
 	split(text);

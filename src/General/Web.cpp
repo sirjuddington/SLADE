@@ -47,7 +47,7 @@ wxDEFINE_EVENT(wxEVT_THREAD_WEBGET_COMPLETED, wxThreadEvent);
 // -----------------------------------------------------------------------------
 // Gets a response via http from [host]/[url] (blocking)
 // -----------------------------------------------------------------------------
-std::string Web::getHttp(const std::string& host, const std::string& uri)
+string Web::getHttp(const string& host, const string& uri)
 {
 	// Setup connection & request
 	sf::Http          http(host);
@@ -69,7 +69,7 @@ std::string Web::getHttp(const std::string& host, const std::string& uri)
 // Gets a response via http from [host]/[url] (non-blocking). When the response
 // is received, an event is sent to [event_handler]
 // -----------------------------------------------------------------------------
-void Web::getHttpAsync(const std::string& host, const std::string& uri, wxEvtHandler* event_handler)
+void Web::getHttpAsync(const string& host, const string& uri, wxEvtHandler* event_handler)
 {
 	std::thread thread([=]() {
 		// Queue wx event with http request response

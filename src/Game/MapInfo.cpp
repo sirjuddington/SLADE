@@ -63,7 +63,7 @@ void MapInfo::clear(bool maps, bool editor_nums)
 // -----------------------------------------------------------------------------
 // Returns the map info definition for map [name]
 // -----------------------------------------------------------------------------
-MapInfo::Map& MapInfo::getMap(std::string_view name)
+MapInfo::Map& MapInfo::getMap(string_view name)
 {
 	for (auto& map : maps_)
 		if (map.entry_name == name)
@@ -91,7 +91,7 @@ bool MapInfo::addOrUpdateMap(Map& map)
 // -----------------------------------------------------------------------------
 // Returns the DoomEdNum for the ZScript/DECORATE class [actor_class]
 // -----------------------------------------------------------------------------
-int MapInfo::doomEdNumForClass(std::string_view actor_class)
+int MapInfo::doomEdNumForClass(string_view actor_class)
 {
 	// Find DoomEdNum def with matching class
 	for (auto& i : editor_nums_)
@@ -139,7 +139,7 @@ bool MapInfo::readMapInfo(Archive* archive)
 // -----------------------------------------------------------------------------
 // Returns true if the next token in [tz] is '='. If not, logs an error message
 // -----------------------------------------------------------------------------
-bool MapInfo::checkEqualsToken(Tokenizer& tz, std::string_view parsing) const
+bool MapInfo::checkEqualsToken(Tokenizer& tz, string_view parsing) const
 {
 	if (tz.next() != "=")
 	{
@@ -154,7 +154,7 @@ bool MapInfo::checkEqualsToken(Tokenizer& tz, std::string_view parsing) const
 // Converts a text colour definition [str] to a colour struct [col].
 // Returns false if the given definition was invalid
 // -----------------------------------------------------------------------------
-bool MapInfo::strToCol(const std::string& str, ColRGBA& col) const
+bool MapInfo::strToCol(const string& str, ColRGBA& col) const
 {
 	wxColour wxcol;
 	if (!wxcol.Set(str))
@@ -251,7 +251,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 // Parses a ZMAPINFO map definition of [type] beginning at the current token in
 // tokenizer [tz]
 // -----------------------------------------------------------------------------
-bool MapInfo::parseZMap(Tokenizer& tz, std::string_view type)
+bool MapInfo::parseZMap(Tokenizer& tz, string_view type)
 {
 	// TODO: Handle adddefaultmap
 	auto map = default_map_;
@@ -521,7 +521,7 @@ MapInfo::Format MapInfo::detectMapInfoType(ArchiveEntry* entry) const
 	tz.openMem(entry->data(), entry->name());
 	tz.setSpecialCharacters("={}[]+,|");
 
-	std::string prev;
+	string prev;
 
 	while (!tz.atEnd())
 	{

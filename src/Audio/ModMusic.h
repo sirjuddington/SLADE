@@ -11,7 +11,7 @@ public:
 	ModMusic() = default;
 	~ModMusic();
 
-	bool     openFromFile(const std::string& filename);
+	bool     openFromFile(const string& filename);
 	bool     loadFromMemory(const uint8_t* data, const uint32_t size);
 	sf::Time duration() const;
 

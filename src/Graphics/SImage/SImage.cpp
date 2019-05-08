@@ -573,7 +573,7 @@ bool SImage::copyImage(SImage* image)
 // Detects the format of [data] and, if it's a valid image format, loads it into
 // this image
 // -----------------------------------------------------------------------------
-bool SImage::open(MemChunk& data, int index, std::string_view type_hint)
+bool SImage::open(MemChunk& data, int index, string_view type_hint)
 {
 	// Check with type hint format first
 	if (!type_hint.empty())
@@ -1335,7 +1335,7 @@ bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 // -----------------------------------------------------------------------------
 // Applies a palette translation to the image
 // -----------------------------------------------------------------------------
-bool SImage::applyTranslation(std::string_view tr, Palette* pal, bool truecolor)
+bool SImage::applyTranslation(string_view tr, Palette* pal, bool truecolor)
 {
 	Translation trans;
 	trans.clear();

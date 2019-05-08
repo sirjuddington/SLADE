@@ -71,7 +71,7 @@ STreeNode::~STreeNode()
 // Returns the 'path' to this node, ie, the names of all its parent nodes each
 // separated by a / (including the name of this node)
 // -----------------------------------------------------------------------------
-std::string STreeNode::path()
+string STreeNode::path()
 {
 	return !parent_ ? name() + '/' : parent_->path() + name() + '/';
 }
@@ -93,7 +93,7 @@ STreeNode* STreeNode::child(unsigned index)
 // Can also find deeper child nodes if a path is given in [name].
 // Returns null if no match is found
 // -----------------------------------------------------------------------------
-STreeNode* STreeNode::child(std::string_view name)
+STreeNode* STreeNode::child(string_view name)
 {
 	// Check name was given
 	if (name.empty())
@@ -105,7 +105,7 @@ STreeNode* STreeNode::child(std::string_view name)
 
 	// If no directories were given
 	auto first_sep = name.find_first_of("/\\");
-	if (first_sep == std::string_view::npos)
+	if (first_sep == string_view::npos)
 	{
 		// Find child of this node
 		for (auto& child : children_)
@@ -137,7 +137,7 @@ STreeNode* STreeNode::child(std::string_view name)
 // Returns a list of all the node's children matching [name].
 // Also handles paths as per getChild
 // -----------------------------------------------------------------------------
-vector<STreeNode*> STreeNode::children(std::string_view name)
+vector<STreeNode*> STreeNode::children(string_view name)
 {
 	// Init return vector
 	vector<STreeNode*> ret;
@@ -152,7 +152,7 @@ vector<STreeNode*> STreeNode::children(std::string_view name)
 
 	// If no directories were given
 	auto first_sep = name.find_first_of("/\\");
-	if (first_sep == std::string_view::npos)
+	if (first_sep == string_view::npos)
 	{
 		// Find child of this node
 		for (auto child : children_)
@@ -192,7 +192,7 @@ void STreeNode::addChild(STreeNode* child)
 // Creates a new child node matching [name] and adds it to the node's children.
 // Also works recursively if a path is given
 // -----------------------------------------------------------------------------
-STreeNode* STreeNode::addChild(std::string_view name)
+STreeNode* STreeNode::addChild(string_view name)
 {
 	// Check name was given
 	if (name.empty())
@@ -204,7 +204,7 @@ STreeNode* STreeNode::addChild(std::string_view name)
 
 	// If no directories were given
 	auto first_sep = name.find_first_of("/\\");
-	if (first_sep == std::string_view::npos)
+	if (first_sep == string_view::npos)
 	{
 		// If child name duplication is disallowed,
 		// check if a child with this name exists

@@ -96,7 +96,7 @@ void Configuration::setDefaults()
 // -----------------------------------------------------------------------------
 // Returns the UDMF namespace for the game configuration
 // -----------------------------------------------------------------------------
-std::string Configuration::udmfNamespace() const
+string Configuration::udmfNamespace() const
 {
 	return StrUtil::lower(udmf_namespace_);
 }
@@ -115,7 +115,7 @@ int Configuration::lightLevelInterval()
 // -----------------------------------------------------------------------------
 // Returns the map name at [index] for the game configuration
 // -----------------------------------------------------------------------------
-const std::string& Configuration::mapName(unsigned index)
+const string& Configuration::mapName(unsigned index)
 {
 	// Check index
 	if (index > maps_.size())
@@ -127,7 +127,7 @@ const std::string& Configuration::mapName(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns map info for the map matching [name]
 // -----------------------------------------------------------------------------
-Configuration::MapConf Configuration::mapInfo(std::string_view mapname)
+Configuration::MapConf Configuration::mapInfo(string_view mapname)
 {
 	for (auto& map : maps_)
 	{
@@ -152,8 +152,8 @@ void Configuration::readActionSpecials(ParseTreeNode* node, Arg::SpecialMap& sha
 		action_specials_.clear();
 
 	// Determine current 'group'
-	auto        group = node;
-	std::string groupname;
+	auto   group = node;
+	string groupname;
 	while (true)
 	{
 		if (!group || group->name() == "action_specials")
@@ -217,8 +217,8 @@ void Configuration::readThingTypes(ParseTreeNode* node, const ThingType& group_d
 		thing_types_.clear();
 
 	// --- Determine current 'group' ---
-	auto        group = node;
-	std::string groupname;
+	auto   group = node;
+	string groupname;
 	while (true)
 	{
 		if (!group || group->name() == "thing_types")
@@ -514,11 +514,11 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 // Reads a full game configuration from [cfg]
 // -----------------------------------------------------------------------------
 bool Configuration::readConfiguration(
-	std::string_view cfg,
-	std::string_view source,
-	MapFormat        format,
-	bool             ignore_game,
-	bool             clear)
+	string_view cfg,
+	string_view source,
+	MapFormat   format,
+	bool        ignore_game,
+	bool        clear)
 {
 	// Clear current configuration
 	if (clear)
@@ -625,7 +625,7 @@ bool Configuration::readConfiguration(
 					continue;
 
 				unsigned long flag_val;
-				std::string   flag_name, flag_udmf;
+				string        flag_name, flag_udmf;
 				bool          activation = false;
 
 				if (value->nValues() == 0)
@@ -685,8 +685,8 @@ bool Configuration::readConfiguration(
 				if (!(StrUtil::equalCI(value->type(), "trigger")))
 					continue;
 
-				long        flag_val;
-				std::string flag_name, flag_udmf;
+				long   flag_val;
+				string flag_name, flag_udmf;
 
 				if (value->nValues() == 0)
 				{
@@ -743,8 +743,8 @@ bool Configuration::readConfiguration(
 				if (!(StrUtil::equalCI(value->type(), "flag")))
 					continue;
 
-				long        flag_val;
-				std::string flag_name, flag_udmf;
+				long   flag_val;
+				string flag_name, flag_udmf;
 
 				if (value->nValues() == 0)
 				{
@@ -864,9 +864,9 @@ bool Configuration::readConfiguration(
 // Opens the full game configuration [game]+[port], either from the user dir or
 // program resource
 // -----------------------------------------------------------------------------
-bool Configuration::openConfig(const std::string& game, const std::string& port, MapFormat format)
+bool Configuration::openConfig(const string& game, const string& port, MapFormat format)
 {
-	std::string full_config;
+	string full_config;
 
 	// Get game configuration as string
 	auto& game_config = gameDef(game);
@@ -963,7 +963,7 @@ bool Configuration::openConfig(const std::string& game, const std::string& port,
 			Log::info("Reading SLADECFG in {}", parent->filename());
 
 		// Read embedded config
-		std::string config{ (const char*)cfg_entry->rawData(), cfg_entry->size() };
+		string config{ (const char*)cfg_entry->rawData(), cfg_entry->size() };
 		if (!readConfiguration(config, cfg_entry->name(), format, true, false))
 			Log::error("Error reading embedded game configuration, not loaded");
 	}
@@ -998,7 +998,7 @@ const ActionSpecial& Configuration::actionSpecial(unsigned id)
 // -----------------------------------------------------------------------------
 // Returns the action special name for [special], if any
 // -----------------------------------------------------------------------------
-std::string Configuration::actionSpecialName(int special)
+string Configuration::actionSpecialName(int special)
 {
 	// Check special id is valid
 	if (special < 0)
@@ -1029,7 +1029,7 @@ const ThingType& Configuration::thingType(unsigned type)
 // -----------------------------------------------------------------------------
 // Returns the default ThingType properties for [group]
 // -----------------------------------------------------------------------------
-const ThingType& Configuration::thingTypeGroupDefaults(const std::string& group)
+const ThingType& Configuration::thingTypeGroupDefaults(const string& group)
 {
 	return tt_group_defaults_[group];
 }
@@ -1037,7 +1037,7 @@ const ThingType& Configuration::thingTypeGroupDefaults(const std::string& group)
 // -----------------------------------------------------------------------------
 // Returns the name of the thing flag at [index]
 // -----------------------------------------------------------------------------
-std::string Configuration::thingFlag(unsigned flag_index)
+string Configuration::thingFlag(unsigned flag_index)
 {
 	// Check index
 	if (flag_index >= flags_thing_.size())
@@ -1062,7 +1062,7 @@ bool Configuration::thingFlagSet(unsigned flag_index, MapThing* thing)
 // -----------------------------------------------------------------------------
 // Returns true if the flag matching [flag] is set for [thing]
 // -----------------------------------------------------------------------------
-bool Configuration::thingFlagSet(std::string_view udmf_name, MapThing* thing, MapFormat map_format)
+bool Configuration::thingFlagSet(string_view udmf_name, MapThing* thing, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1081,7 +1081,7 @@ bool Configuration::thingFlagSet(std::string_view udmf_name, MapThing* thing, Ma
 // -----------------------------------------------------------------------------
 // Returns true if the basic flag matching [flag] is set for [thing]
 // -----------------------------------------------------------------------------
-bool Configuration::thingBasicFlagSet(std::string_view flag, MapThing* thing, MapFormat map_format)
+bool Configuration::thingBasicFlagSet(string_view flag, MapThing* thing, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1156,10 +1156,10 @@ bool Configuration::thingBasicFlagSet(std::string_view flag, MapThing* thing, Ma
 // -----------------------------------------------------------------------------
 // Returns a string of all thing flags set in [flags]
 // -----------------------------------------------------------------------------
-std::string Configuration::thingFlagsString(int flags)
+string Configuration::thingFlagsString(int flags)
 {
 	// Check against all flags
-	std::string ret;
+	string ret;
 	for (auto& a : flags_thing_)
 	{
 		if (flags & a.flag)
@@ -1198,7 +1198,7 @@ void Configuration::setThingFlag(unsigned flag_index, MapThing* thing, bool set)
 // Sets thing flag matching [flag] (UDMF name) for [thing].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setThingFlag(std::string_view udmf_name, MapThing* thing, MapFormat map_format, bool set)
+void Configuration::setThingFlag(string_view udmf_name, MapThing* thing, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1235,7 +1235,7 @@ void Configuration::setThingFlag(std::string_view udmf_name, MapThing* thing, Ma
 // Sets thing basic flag matching [flag] for [thing].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setThingBasicFlag(std::string_view flag, MapThing* thing, MapFormat map_format, bool set)
+void Configuration::setThingBasicFlag(string_view flag, MapThing* thing, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1426,7 +1426,7 @@ bool Configuration::lineFlagSet(unsigned flag_index, MapLine* line)
 // -----------------------------------------------------------------------------
 // Returns true if the flag matching [flag] (UDMF name) is set for [line]
 // -----------------------------------------------------------------------------
-bool Configuration::lineFlagSet(std::string_view udmf_name, MapLine* line, MapFormat map_format)
+bool Configuration::lineFlagSet(string_view udmf_name, MapLine* line, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1450,7 +1450,7 @@ bool Configuration::lineFlagSet(std::string_view udmf_name, MapLine* line, MapFo
 // 'Basic' flags are flags that are available in some way or another in all
 // game configurations
 // -----------------------------------------------------------------------------
-bool Configuration::lineBasicFlagSet(std::string_view flag, MapLine* line, MapFormat map_format)
+bool Configuration::lineBasicFlagSet(string_view flag, MapLine* line, MapFormat map_format)
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1479,7 +1479,7 @@ bool Configuration::lineBasicFlagSet(std::string_view flag, MapLine* line, MapFo
 // -----------------------------------------------------------------------------
 // Returns a string containing all flags set on [line]
 // -----------------------------------------------------------------------------
-std::string Configuration::lineFlagsString(MapLine* line)
+string Configuration::lineFlagsString(MapLine* line)
 {
 	if (!line)
 		return "None";
@@ -1487,7 +1487,7 @@ std::string Configuration::lineFlagsString(MapLine* line)
 	// TODO: UDMF flags
 
 	// Check against all flags
-	std::string ret;
+	string ret;
 	for (auto& flag : flags_line_)
 	{
 		if (line->flagSet(flag.flag))
@@ -1526,7 +1526,7 @@ void Configuration::setLineFlag(unsigned flag_index, MapLine* line, bool set)
 // Sets line flag matching [flag] (UDMF name) for [line].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setLineFlag(std::string_view udmf_name, MapLine* line, MapFormat map_format, bool set)
+void Configuration::setLineFlag(string_view udmf_name, MapLine* line, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1563,7 +1563,7 @@ void Configuration::setLineFlag(std::string_view udmf_name, MapLine* line, MapFo
 // Sets line basic flag [flag] (UDMF name) for [line].
 // If [set] is false, the flag is unset
 // -----------------------------------------------------------------------------
-void Configuration::setLineBasicFlag(std::string_view flag, MapLine* line, MapFormat map_format, bool set)
+void Configuration::setLineBasicFlag(string_view flag, MapLine* line, MapFormat map_format, bool set)
 {
 	// If UDMF, just set the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1606,7 +1606,7 @@ void Configuration::setLineBasicFlag(std::string_view flag, MapLine* line, MapFo
 // -----------------------------------------------------------------------------
 // Returns the hexen SPAC trigger for [line] as a string
 // -----------------------------------------------------------------------------
-std::string Configuration::spacTriggerString(MapLine* line, MapFormat map_format)
+string Configuration::spacTriggerString(MapLine* line, MapFormat map_format)
 {
 	if (!line)
 		return "None";
@@ -1632,8 +1632,8 @@ std::string Configuration::spacTriggerString(MapLine* line, MapFormat map_format
 	else if (map_format == MapFormat::UDMF)
 	{
 		// Go through all line UDMF properties
-		std::string trigger;
-		auto&       props = allUDMFProperties(MapObject::Type::Line);
+		string trigger;
+		auto&  props = allUDMFProperties(MapObject::Type::Line);
 		for (auto& prop : props)
 		{
 			// Check for trigger property
@@ -1685,9 +1685,9 @@ int Configuration::spacTriggerIndexHexen(MapLine* line)
 // -----------------------------------------------------------------------------
 // Returns a list of all defined SPAC triggers
 // -----------------------------------------------------------------------------
-vector<std::string> Configuration::allSpacTriggers()
+vector<string> Configuration::allSpacTriggers()
 {
-	vector<std::string> ret;
+	vector<string> ret;
 
 	for (auto& a : triggers_line_)
 		ret.push_back(a.name);
@@ -1722,7 +1722,7 @@ void Configuration::setLineSpacTrigger(unsigned trigger_index, MapLine* line)
 // -----------------------------------------------------------------------------
 // Returns the UDMF name for the SPAC trigger at [index]
 // -----------------------------------------------------------------------------
-const std::string& Configuration::spacTriggerUDMFName(unsigned trigger_index)
+const string& Configuration::spacTriggerUDMFName(unsigned trigger_index)
 {
 	// Check index
 	if (trigger_index >= triggers_line_.size())
@@ -1734,7 +1734,7 @@ const std::string& Configuration::spacTriggerUDMFName(unsigned trigger_index)
 // -----------------------------------------------------------------------------
 // Returns the UDMF property definition matching [name] for MapObject [type]
 // -----------------------------------------------------------------------------
-UDMFProperty* Configuration::getUDMFProperty(const std::string& name, MapObject::Type type)
+UDMFProperty* Configuration::getUDMFProperty(const string& name, MapObject::Type type)
 {
 	using Type = MapObject::Type;
 
@@ -1827,14 +1827,14 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 // Returns the name for sector type value [type], taking generalised types into
 // account
 // -----------------------------------------------------------------------------
-std::string Configuration::sectorTypeName(int type)
+string Configuration::sectorTypeName(int type)
 {
 	// Check for zero type
 	if (type == 0)
 		return "Normal";
 
 	// Deal with generalised flags
-	vector<std::string> gen_flags;
+	vector<string> gen_flags;
 	if (supportsSectorFlags() && type >= boom_sector_flag_start_)
 	{
 		// Damage flags
@@ -1888,7 +1888,7 @@ std::string Configuration::sectorTypeName(int type)
 // -----------------------------------------------------------------------------
 // Returns the sector type value matching [name]
 // -----------------------------------------------------------------------------
-int Configuration::sectorTypeByName(std::string_view name)
+int Configuration::sectorTypeByName(string_view name)
 {
 	for (auto& i : sector_types_)
 		if (i.second == name)
@@ -2026,7 +2026,7 @@ int Configuration::boomSectorType(int base, int damage, bool secret, bool fricti
 // -----------------------------------------------------------------------------
 // Returns the default string value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-std::string Configuration::defaultString(MapObject::Type type, const std::string& property)
+string Configuration::defaultString(MapObject::Type type, const string& property)
 {
 	switch (type)
 	{
@@ -2041,7 +2041,7 @@ std::string Configuration::defaultString(MapObject::Type type, const std::string
 // -----------------------------------------------------------------------------
 // Returns the default int value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-int Configuration::defaultInt(MapObject::Type type, const std::string& property)
+int Configuration::defaultInt(MapObject::Type type, const string& property)
 {
 	switch (type)
 	{
@@ -2056,7 +2056,7 @@ int Configuration::defaultInt(MapObject::Type type, const std::string& property)
 // -----------------------------------------------------------------------------
 // Returns the default float value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-double Configuration::defaultFloat(MapObject::Type type, const std::string& property)
+double Configuration::defaultFloat(MapObject::Type type, const string& property)
 {
 	switch (type)
 	{
@@ -2071,7 +2071,7 @@ double Configuration::defaultFloat(MapObject::Type type, const std::string& prop
 // -----------------------------------------------------------------------------
 // Returns the default boolean value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-bool Configuration::defaultBool(MapObject::Type type, const std::string& property)
+bool Configuration::defaultBool(MapObject::Type type, const string& property)
 {
 	switch (type)
 	{
@@ -2089,8 +2089,8 @@ bool Configuration::defaultBool(MapObject::Type type, const std::string& propert
 void Configuration::applyDefaults(MapObject* object, bool udmf)
 {
 	// Get all defaults for the object type
-	vector<std::string> prop_names;
-	vector<Property>    prop_vals;
+	vector<string>   prop_names;
+	vector<Property> prop_vals;
 
 	// Line defaults
 	if (object->objType() == MapObject::Type::Line)
@@ -2280,7 +2280,7 @@ void Configuration::dumpUDMFProperties()
 
 CONSOLE_COMMAND(testgc, 0, false)
 {
-	std::string game = "doomu";
+	string game = "doomu";
 
 	if (!args.empty())
 		game = args[0];

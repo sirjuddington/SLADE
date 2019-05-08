@@ -35,9 +35,9 @@
 #include "FileMonitor.h"
 #include "Archive/Archive.h"
 #include "Archive/Formats/WadArchive.h"
+#include "FileUtils.h"
 #include "StringUtils.h"
 #include <filesystem>
-#include "FileUtils.h"
 
 
 // -----------------------------------------------------------------------------
@@ -50,7 +50,7 @@
 // -----------------------------------------------------------------------------
 // FileMonitor class constructor
 // -----------------------------------------------------------------------------
-FileMonitor::FileMonitor(std::string_view filename, bool start) : filename_{ filename }
+FileMonitor::FileMonitor(string_view filename, bool start) : filename_{ filename }
 {
 	// Create process
 	process_ = std::make_unique<wxProcess>(this);
@@ -116,7 +116,7 @@ void FileMonitor::onEndProcess(wxProcessEvent& e)
 // -----------------------------------------------------------------------------
 // DB2MapFileMonitor class constructor
 // -----------------------------------------------------------------------------
-DB2MapFileMonitor::DB2MapFileMonitor(std::string_view filename, Archive* archive, std::string_view map_name) :
+DB2MapFileMonitor::DB2MapFileMonitor(string_view filename, Archive* archive, string_view map_name) :
 	FileMonitor(filename),
 	archive_{ archive },
 	map_name_{ map_name }
@@ -133,7 +133,7 @@ void DB2MapFileMonitor::fileModified()
 		return;
 
 	// Load file into temp archive
-	Archive::UPtr wad = std::make_unique<WadArchive>();
+	unique_ptr<Archive> wad = std::make_unique<WadArchive>();
 	wad->open(filename_);
 
 	// Get map info for target archive

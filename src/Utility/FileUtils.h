@@ -4,15 +4,15 @@
 
 namespace FileUtil
 {
-bool                fileExists(std::string_view path);
-bool                dirExists(std::string_view path);
-bool                removeFile(std::string_view path);
-bool                copyFile(std::string_view from, std::string_view to);
-bool                readFileToString(const std::string& path, std::string& str);
-bool                writeStringToFile(std::string& str, const std::string& path);
-bool                createDir(std::string_view path);
-vector<std::string> allFilesInDir(std::string_view path, bool include_subdirs = false, bool include_dir_paths = false);
-time_t              fileModifiedTime(std::string_view path);
+bool           fileExists(string_view path);
+bool           dirExists(string_view path);
+bool           removeFile(string_view path);
+bool           copyFile(string_view from, string_view to);
+bool           readFileToString(const string& path, string& str);
+bool           writeStringToFile(string& str, const string& path);
+bool           createDir(string_view path);
+vector<string> allFilesInDir(string_view path, bool include_subdirs = false, bool include_dir_paths = false);
+time_t         fileModifiedTime(string_view path);
 } // namespace FileUtil
 
 class SFile : public SeekableData
@@ -27,7 +27,7 @@ public:
 	};
 
 	SFile() = default;
-	SFile(std::string_view path, Mode mode = Mode::ReadOnly);
+	SFile(string_view path, Mode mode = Mode::ReadOnly);
 	~SFile() { close(); }
 
 	bool     isOpen() const { return handle_ != nullptr; }
@@ -35,7 +35,7 @@ public:
 	unsigned length() const { return handle_ ? stat_.st_size : 0; }
 	unsigned size() const override { return handle_ ? stat_.st_size : 0; }
 
-	bool open(const std::string& path, Mode mode = Mode::ReadOnly);
+	bool open(const string& path, Mode mode = Mode::ReadOnly);
 	void close();
 
 	bool seek(unsigned offset) override;
@@ -44,10 +44,10 @@ public:
 
 	bool read(void* buffer, unsigned count) override;
 	bool read(MemChunk& mc, unsigned count);
-	bool read(std::string& str, unsigned count) const;
+	bool read(string& str, unsigned count) const;
 
 	bool write(const void* buffer, unsigned count) override;
-	bool writeStr(std::string_view str) const;
+	bool writeStr(string_view str) const;
 
 private:
 	FILE*       handle_ = nullptr;

@@ -48,7 +48,7 @@ CVAR(String, snd_timidity_path, "", CVar::Flag::Save)
 CVAR(String, snd_timidity_options, "", CVar::Flag::Save)
 namespace MIDI
 {
-std::unique_ptr<MIDIPlayer> midi_player;
+unique_ptr<MIDIPlayer> midi_player;
 }
 
 
@@ -212,14 +212,14 @@ int MIDIPlayer::length()
 // Marker (FF 06)
 // Cue point (FF 07)
 // -----------------------------------------------------------------------------
-std::string MIDIPlayer::info()
+string MIDIPlayer::info()
 {
-	std::string ret;
-	size_t      pos           = 0;
-	size_t      end           = data_.size();
-	size_t      track_counter = 0;
-	uint16_t    num_tracks    = 0;
-	uint16_t    format        = 0;
+	string   ret;
+	size_t   pos           = 0;
+	size_t   end           = data_.size();
+	size_t   track_counter = 0;
+	uint16_t num_tracks    = 0;
+	uint16_t format        = 0;
 
 	while (pos + 8 < end)
 	{
@@ -276,7 +276,7 @@ std::string MIDIPlayer::info()
 							break;
 					}
 
-					std::string tmp;
+					string tmp;
 					if (evtype > 0 && evtype < 8 && evsize)
 						tmp.append((const char*)(&data_[tpos]), evsize);
 
@@ -420,7 +420,7 @@ public:
 	// Opens the MIDI file at [filename] for playback.
 	// Returns true if successful, false otherwise
 	// -------------------------------------------------------------------------
-	bool openFile(const std::string& filename) override
+	bool openFile(const string& filename) override
 	{
 		file_ = filename;
 		if (!fs_initialised_)
@@ -584,8 +584,8 @@ private:
 			return true;
 
 		// Init fluidsynth settings
-		fs_settings_ = new_fluid_settings();
-		std::string fs_driver_str = fs_driver;
+		fs_settings_         = new_fluid_settings();
+		string fs_driver_str = fs_driver;
 		if (!fs_driver_str.empty())
 			fluid_settings_setstr(fs_settings_, "audio.driver", fs_driver_str.c_str());
 
@@ -638,7 +638,7 @@ public:
 	// Opens the MIDI file at [filename] for playback.
 	// Returns true if successful, false otherwise
 	// -------------------------------------------------------------------------
-	bool openFile(const std::string& filename) override
+	bool openFile(const string& filename) override
 	{
 		file_ = filename;
 		return true;

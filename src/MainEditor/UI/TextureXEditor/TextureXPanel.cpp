@@ -138,8 +138,8 @@ public:
 	}
 
 private:
-	std::unique_ptr<CTexture>  texture_;
-	vector<ArchiveEntry::UPtr> patch_entries_;
+	unique_ptr<CTexture>             texture_;
+	vector<unique_ptr<ArchiveEntry>> patch_entries_;
 };
 
 
@@ -368,7 +368,7 @@ public:
 	}
 
 	// Texture Deleted
-	TextureCreateDeleteUS(TextureXPanel* tx_panel, CTexture::UPtr tex_removed, int removed_index) :
+	TextureCreateDeleteUS(TextureXPanel* tx_panel, unique_ptr<CTexture> tex_removed, int removed_index) :
 		tx_panel_{ tx_panel },
 		tex_removed_{ std::move(tex_removed) },
 		index_{ removed_index },
@@ -409,10 +409,10 @@ public:
 	}
 
 private:
-	TextureXPanel* tx_panel_ = nullptr;
-	CTexture::UPtr tex_removed_;
-	int            index_   = -1;
-	bool           created_ = true;
+	TextureXPanel*       tx_panel_ = nullptr;
+	unique_ptr<CTexture> tex_removed_;
+	int                  index_   = -1;
+	bool                 created_ = true;
 };
 
 class TextureModificationUS : public UndoStep
@@ -447,9 +447,9 @@ public:
 	bool doRedo() override { return swapData(); }
 
 private:
-	TextureXPanel* tx_panel_ = nullptr;
-	CTexture::UPtr tex_copy_;
-	int            index_ = -1;
+	TextureXPanel*       tx_panel_ = nullptr;
+	unique_ptr<CTexture> tex_copy_;
+	int                  index_ = -1;
 };
 
 
@@ -659,7 +659,7 @@ void TextureXPanel::applyChanges()
 // Creates a new texture called [name] from [patch]. The new texture will be
 // set to the dimensions of the patch, with the patch added at 0,0
 // -----------------------------------------------------------------------------
-CTexture::UPtr TextureXPanel::newTextureFromPatch(const wxString& name, const wxString& patch)
+unique_ptr<CTexture> TextureXPanel::newTextureFromPatch(const wxString& name, const wxString& patch)
 {
 	// Create new texture
 	auto tex = std::make_unique<CTexture>();
@@ -1106,7 +1106,7 @@ void TextureXPanel::copy()
 		return;
 
 	// Create list of textures to copy
-	vector<ClipboardItem::UPtr> copy_items;
+	vector<unique_ptr<ClipboardItem>> copy_items;
 	for (long index : selection)
 		copy_items.emplace_back(new TextureClipboardItem(*texturex_.texture(index), tx_editor_->archive()));
 
@@ -1238,7 +1238,7 @@ void TextureXPanel::renameTexture(bool each)
 	else if (selection.size() > 1)
 	{
 		// Get a list of entry names
-		vector<std::string> names;
+		vector<string> names;
 		for (auto& texture : selection)
 			names.push_back(texture->name());
 
@@ -1514,7 +1514,7 @@ void TextureXPanel::onRedo(const wxString& undo_action) const
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureXPanel::handleAction(std::string_view id)
+bool TextureXPanel::handleAction(string_view id)
 {
 	// Skip event if this panel is not the current page
 	auto parent = dynamic_cast<TabControl*>(GetParent());

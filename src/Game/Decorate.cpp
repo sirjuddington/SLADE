@@ -64,9 +64,9 @@ namespace
 // -----------------------------------------------------------------------------
 void parseStates(Tokenizer& tz, PropertyList& props)
 {
-	vector<std::string>                states;
-	std::string                        state_first;
-	std::map<std::string, std::string> state_sprites;
+	vector<string>           states;
+	string                   state_first;
+	std::map<string, string> state_sprites;
 
 	while (!tz.atEnd())
 	{
@@ -240,9 +240,9 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<ThingType>& parsed)
 {
 	// Get actor name
-	auto        name       = tz.next().text;
-	auto        actor_name = name;
-	std::string parent;
+	auto   name       = tz.next().text;
+	auto   actor_name = name;
+	string parent;
 
 	// Check for inheritance
 	// string next = tz.peekToken();
@@ -269,7 +269,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 	bool         filters_present = false;
 	bool         sprite_given    = false;
 	bool         title_given     = false;
-	std::string  group;
+	string       group;
 
 	// Skip "native" keyword if present
 	tz.advIfNextNC("native");
@@ -384,7 +384,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 			// Translation
 			else if (tz.checkNC("translation"))
 			{
-				std::string translation = "\"";
+				string translation = "\"";
 				translation += tz.next().text;
 				while (tz.checkNext(","))
 				{
@@ -477,7 +477,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 // -----------------------------------------------------------------------------
 void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 {
-	std::string  name, sprite, group;
+	string       name, sprite, group;
 	bool         spritefound = false;
 	char         frame       = 'A';
 	bool         framefound  = false;

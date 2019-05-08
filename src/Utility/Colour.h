@@ -149,7 +149,7 @@ struct ColRGBA
 		CSS,  // #rrggbb
 		ZDoom // "rr gg bb"
 	};
-	std::string toString(StringFormat format = StringFormat::CSS) const;
+	string toString(StringFormat format = StringFormat::CSS) const;
 
 	// Some basic colours
 	static const ColRGBA WHITE;

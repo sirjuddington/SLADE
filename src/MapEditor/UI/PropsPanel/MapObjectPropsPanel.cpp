@@ -1131,7 +1131,7 @@ void MapObjectPropsPanel::clearGrid()
 // -----------------------------------------------------------------------------
 void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 {
-	std::string type;
+	string type;
 	if (last_type_ == MapObject::Type::Vertex)
 		type = "Vertex";
 	else if (last_type_ == MapObject::Type::Line)
@@ -1281,7 +1281,7 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 		if (property->propName() == name)
 		{
 			// Found, apply value
-			std::string type;
+			string type;
 			if (last_type_ == MapObject::Type::Vertex)
 				type = "Vertex";
 			else if (last_type_ == MapObject::Type::Line)

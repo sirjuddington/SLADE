@@ -295,7 +295,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 // Writes the dat archive to a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ADatArchive::write(std::string_view filename, bool update)
+bool ADatArchive::write(string_view filename, bool update)
 {
 	// Write to a MemChunk, then export it to a file
 	MemChunk mc;
@@ -393,7 +393,7 @@ bool ADatArchive::isADatArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Anachronox dat archive
 // -----------------------------------------------------------------------------
-bool ADatArchive::isADatArchive(const std::string& filename)
+bool ADatArchive::isADatArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

@@ -20,7 +20,7 @@ public:
 	bool     redo() override;
 
 	// SAction Handler
-	bool handleEntryPanelAction(std::string_view id) override;
+	bool handleEntryPanelAction(string_view id) override;
 
 private:
 	TextEditorCtrl*   text_area_            = nullptr;

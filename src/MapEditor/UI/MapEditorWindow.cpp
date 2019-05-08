@@ -869,8 +869,8 @@ bool MapEditorWindow::saveMap()
 		return false;
 
 	// Check for map archive
-	Archive::UPtr tempwad;
-	auto          map = mdesc_current;
+	unique_ptr<Archive> tempwad;
+	auto                map = mdesc_current;
 	if (mdesc_current.archive && mdesc_current.head)
 	{
 		tempwad = std::make_unique<WadArchive>();
@@ -1118,7 +1118,7 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool MapEditorWindow::handleAction(std::string_view id)
+bool MapEditorWindow::handleAction(string_view id)
 {
 	auto& mdesc_current = MapEditor::editContext().mapDesc();
 

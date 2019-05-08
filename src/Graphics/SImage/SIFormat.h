@@ -25,16 +25,12 @@ public:
 		SImage::Type col_format      = SImage::Type::Unknown;
 	};
 
-	SIFormat(
-		std::string_view id,
-		std::string_view name        = "Unknown",
-		std::string_view ext         = "dat",
-		uint8_t          reliability = 255);
+	SIFormat(string_view id, string_view name = "Unknown", string_view ext = "dat", uint8_t reliability = 255);
 	virtual ~SIFormat() = default;
 
-	const std::string& id() const { return id_; }
-	const std::string& name() const { return name_; }
-	const std::string& extension() const { return extension_; }
+	const string& id() const { return id_; }
+	const string& name() const { return name_; }
+	const string& extension() const { return extension_; }
 
 	virtual bool isThisFormat(MemChunk& mc) = 0;
 
@@ -90,7 +86,7 @@ public:
 	}
 
 	static void      initFormats();
-	static SIFormat* getFormat(std::string_view name);
+	static SIFormat* getFormat(string_view name);
 	static SIFormat* determineFormat(MemChunk& mc);
 	static SIFormat* unknownFormat();
 	static SIFormat* rawFormat();
@@ -99,10 +95,10 @@ public:
 	static void      putAllFormats(vector<SIFormat*>& list);
 
 protected:
-	std::string id_;
-	std::string name_        = "Unknown";
-	std::string extension_   = "dat";
-	uint8_t     reliability_ = 255;
+	string  id_;
+	string  name_        = "Unknown";
+	string  extension_   = "dat";
+	uint8_t reliability_ = 255;
 
 	// Stuff to access protected image data
 	uint8_t* imageData(SImage& image) const { return image.data_.data(); }

@@ -45,7 +45,7 @@
 // -----------------------------------------------------------------------------
 namespace ColourConfiguration
 {
-typedef std::map<std::string, Colour> ColourHashMap;
+typedef std::map<string, Colour> ColourHashMap;
 
 double        line_hilight_width;
 double        line_selection_width;
@@ -64,7 +64,7 @@ ColourHashMap cc_colours;
 // -----------------------------------------------------------------------------
 // Returns the colour [name]
 // -----------------------------------------------------------------------------
-ColRGBA ColourConfiguration::colour(const std::string& name)
+ColRGBA ColourConfiguration::colour(const string& name)
 {
 	auto& col = cc_colours[name];
 	if (col.exists)
@@ -76,7 +76,7 @@ ColRGBA ColourConfiguration::colour(const std::string& name)
 // -----------------------------------------------------------------------------
 // Returns the colour definition [name]
 // -----------------------------------------------------------------------------
-const ColourConfiguration::Colour& ColourConfiguration::colDef(const std::string& name)
+const ColourConfiguration::Colour& ColourConfiguration::colDef(const string& name)
 {
 	return cc_colours[name];
 }
@@ -84,7 +84,7 @@ const ColourConfiguration::Colour& ColourConfiguration::colDef(const std::string
 // -----------------------------------------------------------------------------
 // Sets the colour definition [name]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::setColour(const std::string& name, int red, int green, int blue, int alpha, bool blend_additive)
+void ColourConfiguration::setColour(const string& name, int red, int green, int blue, int alpha, bool blend_additive)
 {
 	auto& col = cc_colours[name];
 	if (red >= 0)
@@ -103,7 +103,7 @@ void ColourConfiguration::setColour(const std::string& name, int red, int green,
 // -----------------------------------------------------------------------------
 // Sets the current OpenGL colour and blend mode to match definition [name]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::setGLColour(const std::string& name, float alpha_mult)
+void ColourConfiguration::setGLColour(const string& name, float alpha_mult)
 {
 	auto& col = cc_colours[name];
 	OpenGL::setColour(col.colour.r, col.colour.g, col.colour.b, col.colour.a * alpha_mult, col.blendMode());
@@ -239,7 +239,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 // -----------------------------------------------------------------------------
 bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 {
-	std::string cfgstring = "colours\n{\n";
+	string cfgstring = "colours\n{\n";
 
 	// Go through all properties
 	for (const auto& i : cc_colours)
@@ -318,7 +318,7 @@ void ColourConfiguration::loadDefaults()
 // -----------------------------------------------------------------------------
 // Reads saved colour configuration [name]
 // -----------------------------------------------------------------------------
-bool ColourConfiguration::readConfiguration(std::string_view name)
+bool ColourConfiguration::readConfiguration(string_view name)
 {
 	// TODO: search custom folder
 
@@ -337,7 +337,7 @@ bool ColourConfiguration::readConfiguration(std::string_view name)
 // -----------------------------------------------------------------------------
 // Adds all available colour configuration names to [names]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::putConfigurationNames(vector<std::string>& names)
+void ColourConfiguration::putConfigurationNames(vector<string>& names)
 {
 	// TODO: search custom folder
 
@@ -351,7 +351,7 @@ void ColourConfiguration::putConfigurationNames(vector<std::string>& names)
 // -----------------------------------------------------------------------------
 // Adds all colour names to [list]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::putColourNames(vector<std::string>& list)
+void ColourConfiguration::putColourNames(vector<string>& list)
 {
 	for (auto& i : cc_colours)
 		list.push_back(i.first);
@@ -370,7 +370,7 @@ CONSOLE_COMMAND(ccfg, 1, false)
 	if (StrUtil::equalCI(args[0], "list"))
 	{
 		// Get (sorted) list of colour names
-		vector<std::string> list;
+		vector<string> list;
 		ColourConfiguration::putColourNames(list);
 		sort(list.begin(), list.end());
 

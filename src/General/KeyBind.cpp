@@ -59,12 +59,12 @@ vector<KeyBindHandler*> kb_handlers;
 // -----------------------------------------------------------------------------
 // Returns a string representation of the keypress
 // -----------------------------------------------------------------------------
-std::string Keypress::asString() const
+string Keypress::asString() const
 {
 	if (key.empty())
 		return "";
 
-	std::string ret = "";
+	string ret = "";
 	if (ctrl)
 		ret += "Ctrl+";
 	if (alt)
@@ -72,7 +72,7 @@ std::string Keypress::asString() const
 	if (shift)
 		ret += "Shift+";
 
-	std::string keyname = key;
+	string keyname = key;
 	std::replace(keyname.begin(), keyname.end(), '_', ' ');
 	StrUtil::capitalizeIP(keyname);
 	ret += keyname;
@@ -91,7 +91,7 @@ std::string Keypress::asString() const
 // -----------------------------------------------------------------------------
 // Adds a key combination to the keybind
 // -----------------------------------------------------------------------------
-void KeyBind::addKey(std::string_view key, bool alt, bool ctrl, bool shift)
+void KeyBind::addKey(string_view key, bool alt, bool ctrl, bool shift)
 {
 	keys_.emplace_back(key, alt, ctrl, shift);
 }
@@ -99,9 +99,9 @@ void KeyBind::addKey(std::string_view key, bool alt, bool ctrl, bool shift)
 // -----------------------------------------------------------------------------
 // Returns a string representation of all the keys bound to this keybind
 // -----------------------------------------------------------------------------
-std::string KeyBind::keysAsString()
+string KeyBind::keysAsString()
 {
-	std::string ret;
+	string ret;
 
 	for (unsigned a = 0; a < keys_.size(); a++)
 	{
@@ -138,7 +138,7 @@ std::string KeyBind::keysAsString()
 // -----------------------------------------------------------------------------
 // Returns the keybind [name]
 // -----------------------------------------------------------------------------
-KeyBind& KeyBind::bind(std::string_view name)
+KeyBind& KeyBind::bind(string_view name)
 {
 	for (auto& keybind : keybinds)
 	{
@@ -152,9 +152,9 @@ KeyBind& KeyBind::bind(std::string_view name)
 // -----------------------------------------------------------------------------
 // Returns a list of all keybind names bound to [key]
 // -----------------------------------------------------------------------------
-vector<std::string> KeyBind::bindsForKey(Keypress key)
+vector<string> KeyBind::bindsForKey(Keypress key)
 {
-	vector<std::string> matches;
+	vector<string> matches;
 
 	// Go through all keybinds
 	for (auto& kb : keybinds)
@@ -176,7 +176,7 @@ vector<std::string> KeyBind::bindsForKey(Keypress key)
 // -----------------------------------------------------------------------------
 // Returns true if keybind [name] is currently pressed
 // -----------------------------------------------------------------------------
-bool KeyBind::isPressed(std::string_view name)
+bool KeyBind::isPressed(string_view name)
 {
 	return bind(name).pressed_;
 }
@@ -185,12 +185,12 @@ bool KeyBind::isPressed(std::string_view name)
 // Adds a new keybind
 // -----------------------------------------------------------------------------
 bool KeyBind::addBind(
-	std::string_view name,
-	const Keypress&  key,
-	std::string_view desc,
-	std::string_view group,
-	bool             ignore_shift,
-	int              priority)
+	string_view     name,
+	const Keypress& key,
+	string_view     desc,
+	string_view     group,
+	bool            ignore_shift,
+	int             priority)
 {
 	// Find keybind
 	KeyBind* bind = nullptr;
@@ -243,7 +243,7 @@ bool KeyBind::addBind(
 // -----------------------------------------------------------------------------
 // Returns a string representation of [key]
 // -----------------------------------------------------------------------------
-std::string KeyBind::keyName(int key)
+string KeyBind::keyName(int key)
 {
 	// Return string representation of key id
 	switch (key)
@@ -353,7 +353,7 @@ std::string KeyBind::keyName(int key)
 // -----------------------------------------------------------------------------
 // Returns a string representation of mouse [button]
 // -----------------------------------------------------------------------------
-std::string KeyBind::mbName(int button)
+string KeyBind::mbName(int button)
 {
 	switch (button)
 	{
@@ -408,7 +408,7 @@ bool KeyBind::keyPressed(Keypress key)
 // -----------------------------------------------------------------------------
 // 'Releases' all keybinds bound to [key]
 // -----------------------------------------------------------------------------
-bool KeyBind::keyReleased(std::string_view key)
+bool KeyBind::keyReleased(string_view key)
 {
 	// Ignore raw modifier keys
 	if (key == "control" || key == "shift" || key == "alt" || key == "command")
@@ -443,7 +443,7 @@ bool KeyBind::keyReleased(std::string_view key)
 // -----------------------------------------------------------------------------
 // 'Presses' the keybind [name]
 // -----------------------------------------------------------------------------
-void KeyBind::pressBind(std::string_view name)
+void KeyBind::pressBind(string_view name)
 {
 	for (auto& keybind : keybinds)
 	{
@@ -494,7 +494,7 @@ void KeyBind::releaseAll()
 void KeyBind::initBinds()
 {
 	// General
-	std::string group = "General";
+	string group = "General";
 	addBind("copy", Keypress("C", KPM_CTRL), "Copy", group);
 	addBind("cut", Keypress("X", KPM_CTRL), "Cut", group);
 	addBind("paste", Keypress("V", KPM_CTRL), "Paste", group);
@@ -749,10 +749,10 @@ void KeyBind::initBinds()
 // -----------------------------------------------------------------------------
 // Writes all keybind definitions as a string
 // -----------------------------------------------------------------------------
-std::string KeyBind::writeBinds()
+string KeyBind::writeBinds()
 {
 	// Init string
-	std::string ret = "";
+	string ret = "";
 
 	// Go through all keybinds
 	for (auto& kb : keybinds)
@@ -818,8 +818,8 @@ bool KeyBind::readBinds(Tokenizer& tz)
 				break;
 
 			// Parse key string
-			std::string key, mods;
-			if (keystr.find('|') != std::string::npos)
+			string key, mods;
+			if (keystr.find('|') != string::npos)
 			{
 				mods = StrUtil::beforeFirst(keystr, '|');
 				key  = StrUtil::afterFirst(keystr, '|');
@@ -832,9 +832,9 @@ bool KeyBind::readBinds(Tokenizer& tz)
 				name,
 				Keypress(
 					key,
-					mods.find('a') != std::string::npos,
-					mods.find('c') != std::string::npos,
-					mods.find('s') != std::string::npos));
+					mods.find('a') != string::npos,
+					mods.find('c') != string::npos,
+					mods.find('s') != string::npos));
 
 			// Check for more keys
 			if (!tz.advIfNext(","))

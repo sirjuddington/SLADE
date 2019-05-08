@@ -17,5 +17,5 @@ public:
 
 	// Static functions
 	static bool isPakArchive(MemChunk& mc);
-	static bool isPakArchive(const std::string& filename);
+	static bool isPakArchive(const string& filename);
 };

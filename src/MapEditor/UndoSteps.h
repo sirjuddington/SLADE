@@ -17,7 +17,7 @@ public:
 	bool doRedo() override;
 
 private:
-	std::unique_ptr<MapObject::Backup> backup_;
+	unique_ptr<MapObject::Backup> backup_;
 };
 
 // UndoStep for when a MapObject is either created or deleted
@@ -55,6 +55,6 @@ public:
 	bool isOk() override { return !backups_.empty(); }
 
 private:
-	vector<std::unique_ptr<MapObject::Backup>> backups_;
+	vector<unique_ptr<MapObject::Backup>> backups_;
 };
 } // namespace MapEditor

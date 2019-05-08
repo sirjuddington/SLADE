@@ -53,8 +53,8 @@ namespace
 {
 struct StandardCheckInfo
 {
-	std::string id;
-	std::string description;
+	string id;
+	string description;
 };
 std::map<MapCheck::StandardCheck, StandardCheckInfo> std_checks = {
 	{ MapCheck::MissingTexture, { "missing_tex", "Missing textures" } },
@@ -88,7 +88,7 @@ public:
 
 	void doCheck() override
 	{
-		std::string sky_flat = Game::configuration().skyFlat();
+		string sky_flat = Game::configuration().skyFlat();
 		for (unsigned a = 0; a < map_->nLines(); a++)
 		{
 			// Check what textures the line needs
@@ -159,7 +159,7 @@ public:
 
 	unsigned nProblems() override { return lines_.size(); }
 
-	std::string texName(int part) const
+	string texName(int part) const
 	{
 		switch (part)
 		{
@@ -174,7 +174,7 @@ public:
 		return "";
 	}
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		if (index < lines_.size())
 			return fmt::format("Line {} missing {}", lines_[index]->index(), texName(parts_[index]));
@@ -232,9 +232,9 @@ public:
 		return lines_[index];
 	}
 
-	std::string progressText() override { return "Checking for missing textures..."; }
+	string progressText() override { return "Checking for missing textures..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Browse Texture...";
@@ -305,7 +305,7 @@ public:
 
 	unsigned nProblems() override { return objects_.size(); }
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		if (index >= objects_.size())
 			return "No missing special tags found";
@@ -336,9 +336,9 @@ public:
 		return objects_[index];
 	}
 
-	std::string progressText() override { return "Checking for missing special tags..."; }
+	string progressText() override { return "Checking for missing special tags..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Set Tagged...";
@@ -437,7 +437,7 @@ public:
 
 	unsigned nProblems() override { return objects_.size(); }
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		if (index >= objects_.size())
 			return "No missing tagged objects found";
@@ -466,9 +466,9 @@ public:
 		return objects_[index];
 	}
 
-	std::string progressText() override { return "Checking for missing tagged objects..."; }
+	string progressText() override { return "Checking for missing tagged objects..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "...";
@@ -530,7 +530,7 @@ public:
 
 	unsigned nProblems() override { return intersections_.size(); }
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		if (index >= intersections_.size())
 			return "No intersecting lines found";
@@ -600,9 +600,9 @@ public:
 		return intersections_[index].line1;
 	}
 
-	std::string progressText() override { return "Checking for intersecting lines..."; }
+	string progressText() override { return "Checking for intersecting lines..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Split Lines";
@@ -660,7 +660,7 @@ public:
 
 	unsigned nProblems() override { return overlaps_.size(); }
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		if (index >= overlaps_.size())
 			return "No overlapping lines found";
@@ -711,9 +711,9 @@ public:
 		return overlaps_[index].line1;
 	}
 
-	std::string progressText() override { return "Checking for overlapping lines..."; }
+	string progressText() override { return "Checking for overlapping lines..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Merge Lines";
@@ -895,7 +895,7 @@ public:
 
 	unsigned nProblems() override { return overlaps_.size(); }
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		if (index >= overlaps_.size())
 			return "No overlapping things found";
@@ -947,9 +947,9 @@ public:
 		return overlaps_[index].thing1;
 	}
 
-	std::string progressText() override { return "Checking for overlapping things..."; }
+	string progressText() override { return "Checking for overlapping things..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (index >= overlaps_.size())
 			return "";
@@ -1056,12 +1056,12 @@ public:
 
 	unsigned nProblems() override { return lines_.size(); }
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		if (index >= lines_.size())
 			return "No unknown wall textures found";
 
-		std::string line = fmt::format("Line {} has unknown ", lines_[index]->index());
+		string line = fmt::format("Line {} has unknown ", lines_[index]->index());
 		switch (parts_[index])
 		{
 		case MapLine::Part::FrontUpper:
@@ -1137,9 +1137,9 @@ public:
 		return lines_[index];
 	}
 
-	std::string progressText() override { return "Checking for unknown wall textures..."; }
+	string progressText() override { return "Checking for unknown wall textures..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Browse Texture...";
@@ -1189,15 +1189,14 @@ public:
 
 	unsigned nProblems() override { return sectors_.size(); }
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		if (index >= sectors_.size())
 			return "No unknown flats found";
 
 		auto sector = sectors_[index];
 		if (floor_[index])
-			return fmt::format(
-				"Sector {} has unknown floor texture \"{}\"", sector->index(), sector->floor().texture);
+			return fmt::format("Sector {} has unknown floor texture \"{}\"", sector->index(), sector->floor().texture);
 		else
 			return fmt::format(
 				"Sector {} has unknown ceiling texture \"{}\"", sector->index(), sector->ceiling().texture);
@@ -1244,9 +1243,9 @@ public:
 		return sectors_[index];
 	}
 
-	std::string progressText() override { return "Checking for unknown flats..."; }
+	string progressText() override { return "Checking for unknown flats..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Browse Texture...";
@@ -1283,7 +1282,7 @@ public:
 
 	unsigned nProblems() override { return things_.size(); }
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		if (index >= things_.size())
 			return "No unknown thing types found";
@@ -1321,9 +1320,9 @@ public:
 		return things_[index];
 	}
 
-	std::string progressText() override { return "Checking for unknown thing types..."; }
+	string progressText() override { return "Checking for unknown thing types..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Browse Type...";
@@ -1395,7 +1394,7 @@ public:
 
 	unsigned nProblems() override { return things_.size(); }
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		if (index >= things_.size())
 			return "No stuck things found";
@@ -1441,9 +1440,9 @@ public:
 		return things_[index];
 	}
 
-	std::string progressText() override { return "Checking for things stuck in lines..."; }
+	string progressText() override { return "Checking for things stuck in lines..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Move Thing";
@@ -1491,14 +1490,14 @@ public:
 
 	unsigned nProblems() override { return invalid_refs_.size(); }
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		if (index >= invalid_refs_.size())
 			return "No wrong sector references found";
 
-		std::string side, sector;
-		auto     s1 = invalid_refs_[index].line->frontSector();
-		auto     s2 = invalid_refs_[index].line->backSector();
+		string side, sector;
+		auto   s1 = invalid_refs_[index].line->frontSector();
+		auto   s2 = invalid_refs_[index].line->backSector();
 		if (invalid_refs_[index].front)
 		{
 			side   = "front";
@@ -1571,9 +1570,9 @@ public:
 		return nullptr;
 	}
 
-	std::string progressText() override { return "Checking sector references..."; }
+	string progressText() override { return "Checking sector references..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 		{
@@ -1625,7 +1624,7 @@ public:
 
 	unsigned nProblems() override { return lines_.size(); }
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		if (index >= lines_.size())
 			return "No invalid lines found";
@@ -1691,9 +1690,9 @@ public:
 		return nullptr;
 	}
 
-	std::string progressText() override { return "Checking for invalid lines..."; }
+	string progressText() override { return "Checking for invalid lines..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (map_->line(lines_[index])->s2())
 		{
@@ -1743,7 +1742,7 @@ public:
 
 	unsigned nProblems() override { return sectors_.size(); }
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		if (index >= sectors_.size())
 			return "No unknown sector types found";
@@ -1776,9 +1775,9 @@ public:
 		return nullptr;
 	}
 
-	std::string progressText() override { return "Checking for unknown sector types..."; }
+	string progressText() override { return "Checking for unknown sector types..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Reset sector type";
@@ -1830,7 +1829,7 @@ public:
 
 	unsigned nProblems() override { return objects_.size(); }
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		bool special = (map_->currentFormat() == MapFormat::Hexen || map_->currentFormat() == MapFormat::UDMF);
 		if (index >= objects_.size())
@@ -1866,9 +1865,9 @@ public:
 		return nullptr;
 	}
 
-	std::string progressText() override { return "Checking for unknown specials..."; }
+	string progressText() override { return "Checking for unknown specials..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Reset special";
@@ -1906,7 +1905,7 @@ public:
 
 	unsigned nProblems() override { return things_.size(); }
 
-	std::string problemDesc(unsigned index) override
+	string problemDesc(unsigned index) override
 	{
 		bool special = (map_->currentFormat() == MapFormat::Hexen || map_->currentFormat() == MapFormat::UDMF);
 		if (index >= things_.size())
@@ -1940,9 +1939,9 @@ public:
 		return nullptr;
 	}
 
-	std::string progressText() override { return "Checking for obsolete things..."; }
+	string progressText() override { return "Checking for obsolete things..."; }
 
-	std::string fixText(unsigned fix_type, unsigned index) override
+	string fixText(unsigned fix_type, unsigned index) override
 	{
 		if (fix_type == 0)
 			return "Delete thing";
@@ -1966,7 +1965,7 @@ private:
 // Creates a standard MapCheck of [type], passing [map] and [texman] to the
 // constructor where necessary
 // -----------------------------------------------------------------------------
-MapCheck::UPtr MapCheck::standardCheck(StandardCheck type, SLADEMap* map, MapTextureManager* texman)
+unique_ptr<MapCheck> MapCheck::standardCheck(StandardCheck type, SLADEMap* map, MapTextureManager* texman)
 {
 	switch (type)
 	{
@@ -1992,7 +1991,7 @@ MapCheck::UPtr MapCheck::standardCheck(StandardCheck type, SLADEMap* map, MapTex
 // -----------------------------------------------------------------------------
 // Same as above, but taking a string MapCheck type id instead of an enum value
 // -----------------------------------------------------------------------------
-MapCheck::UPtr MapCheck::standardCheck(std::string_view type_id, SLADEMap* map, MapTextureManager* texman)
+unique_ptr<MapCheck> MapCheck::standardCheck(string_view type_id, SLADEMap* map, MapTextureManager* texman)
 {
 	for (auto& check : std_checks)
 		if (check.second.id == type_id)
@@ -2004,7 +2003,7 @@ MapCheck::UPtr MapCheck::standardCheck(std::string_view type_id, SLADEMap* map, 
 // -----------------------------------------------------------------------------
 // Returns the description of standard MapCheck [type]
 // -----------------------------------------------------------------------------
-std::string MapCheck::standardCheckDesc(StandardCheck type)
+string MapCheck::standardCheckDesc(StandardCheck type)
 {
 	return std_checks[type].description;
 }
@@ -2012,7 +2011,7 @@ std::string MapCheck::standardCheckDesc(StandardCheck type)
 // -----------------------------------------------------------------------------
 // Returns the string id of standard MapCheck [type]
 // -----------------------------------------------------------------------------
-std::string MapCheck::standardCheckId(StandardCheck type)
+string MapCheck::standardCheckId(StandardCheck type)
 {
 	return std_checks[type].id;
 }

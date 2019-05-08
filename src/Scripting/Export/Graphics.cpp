@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive/Archive.h"
+#include "General/Misc.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
@@ -39,7 +40,7 @@
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
 #include "thirdparty/sol/sol.hpp"
-#include "General/Misc.h"
+
 
 
 // -----------------------------------------------------------------------------
@@ -168,7 +169,7 @@ bool imageDrawImage(
 // -----------------------------------------------------------------------------
 // Loads data from [entry] into image [self]
 // -----------------------------------------------------------------------------
-std::tuple<bool, std::string> imageLoadEntry(SImage& self, ArchiveEntry* entry, int index)
+std::tuple<bool, string> imageLoadEntry(SImage& self, ArchiveEntry* entry, int index)
 {
 	bool ok = Misc::loadImageFromEntry(&self, entry, index);
 	return std::make_tuple(ok, Global::error);
@@ -215,7 +216,7 @@ void registerImageType(sol::state& lua)
         [](SImage& self, int w, int h, SImage::Type type) { self.create(w, h, type); });
 	lua_image["Copy"]      = &SImage::copyImage;
 	lua_image["FillAlpha"] = &SImage::fillAlpha;
-	lua_image["LoadData"]      = sol::overload(
+	lua_image["LoadData"]  = sol::overload(
         [](SImage& self, MemChunk& mc) { self.open(mc); },
         [](SImage& self, MemChunk& mc, int index) { self.open(mc, index); },
         &SImage::open);
@@ -273,7 +274,7 @@ void registerImageType(sol::state& lua)
 // -----------------------------------------------------------------------------
 // Loads raw rgb triplet [data] into palette [self]
 // -----------------------------------------------------------------------------
-bool paletteLoadData(Palette& self, std::string_view data)
+bool paletteLoadData(Palette& self, string_view data)
 {
 	return self.loadMem((const uint8_t*)data.data(), data.size());
 }
@@ -281,7 +282,7 @@ bool paletteLoadData(Palette& self, std::string_view data)
 // -----------------------------------------------------------------------------
 // Loads [data] in [format] to palette [self]
 // -----------------------------------------------------------------------------
-bool paletteLoadDataFormatted(Palette& self, std::string_view data, Palette::Format format)
+bool paletteLoadDataFormatted(Palette& self, string_view data, Palette::Format format)
 {
 	MemChunk mc{ (const uint8_t*)data.data(), (uint32_t)data.size() };
 	return self.loadMem(mc, format);
@@ -318,9 +319,9 @@ void registerPaletteType(sol::state& lua)
 	lua_palette["Colour"]   = &Palette::colour;
 	lua_palette["LoadData"] = sol::overload(&paletteLoadData, &paletteLoadDataFormatted);
 	lua_palette["LoadFile"] = sol::overload(
-		&Palette::loadFile, [](Palette& self, std::string_view file) { self.loadFile(file); });
+		&Palette::loadFile, [](Palette& self, string_view file) { self.loadFile(file); });
 	lua_palette["SaveFile"] = sol::overload(
-		&Palette::saveFile, [](Palette& self, std::string_view file) { self.saveFile(file); });
+		&Palette::saveFile, [](Palette& self, string_view file) { self.saveFile(file); });
 	lua_palette["SetColour"]     = &Palette::setColour;
 	lua_palette["SetColourR"]    = &Palette::setColourR;
 	lua_palette["SetColourG"]    = &Palette::setColourG;
@@ -595,7 +596,7 @@ void registerCTexturePatchTypes(sol::state& lua)
 // -----------------------------------------------------------------------------
 // Wrapper for CTexture::addPatch that changes the index to be 1-based
 // -----------------------------------------------------------------------------
-void cTextureAddPatch(CTexture& self, std::string_view patch, int x, int y, int index)
+void cTextureAddPatch(CTexture& self, string_view patch, int x, int y, int index)
 {
 	self.addPatch(patch, x, y, index - 1);
 }
@@ -639,10 +640,10 @@ void registerCTextureType(sol::state& lua)
 	lua_ctexture["Clear"]    = &CTexture::clear;
 	lua_ctexture["AddPatch"] = sol::overload(
 		&cTextureAddPatch,
-		[](CTexture& self, std::string_view patch) { return cTextureAddPatch(self, patch, 0, 0, 0); },
-		[](CTexture& self, std::string_view patch, int x, int y) { return cTextureAddPatch(self, patch, x, y, 0); });
+		[](CTexture& self, string_view patch) { return cTextureAddPatch(self, patch, 0, 0, 0); },
+		[](CTexture& self, string_view patch, int x, int y) { return cTextureAddPatch(self, patch, x, y, 0); });
 	lua_ctexture["RemovePatch"]  = [](CTexture& self, int index) { return self.removePatch(index - 1); };
-	lua_ctexture["ReplacePatch"] = [](CTexture& self, int index, std::string_view patch) {
+	lua_ctexture["ReplacePatch"] = [](CTexture& self, int index, string_view patch) {
 		return self.replacePatch(index - 1, patch);
 	};
 	lua_ctexture["DuplicatePatch"] = sol::overload(
@@ -656,9 +657,9 @@ void registerCTextureType(sol::state& lua)
 // -----------------------------------------------------------------------------
 // Returns all the patches in PatchTable [self] as a vector of strings
 // -----------------------------------------------------------------------------
-vector<std::string> patchTablePatches(PatchTable& self)
+vector<string> patchTablePatches(PatchTable& self)
 {
-	vector<std::string> patches;
+	vector<string> patches;
 	for (const auto& patch : self.patches())
 		patches.push_back(patch.name);
 	return patches;
@@ -681,9 +682,9 @@ void registerPatchTableType(sol::state& lua)
 	lua_ptable["Patch"]      = [](PatchTable& self, unsigned index) { return self.patch(index - 1).name; };
 	lua_ptable["PatchEntry"] = sol::overload(
 		[](PatchTable& self, int index) { return self.patchEntry(index - 1); },
-		sol::resolve<ArchiveEntry*(std::string_view)>(&PatchTable::patchEntry));
+		sol::resolve<ArchiveEntry*(string_view)>(&PatchTable::patchEntry));
 	lua_ptable["RemovePatch"]  = [](PatchTable& self, int index) { self.removePatch(index - 1); };
-	lua_ptable["ReplacePatch"] = [](PatchTable& self, int index, std::string_view name) {
+	lua_ptable["ReplacePatch"] = [](PatchTable& self, int index, string_view name) {
 		self.replacePatch(index - 1, name);
 	};
 	lua_ptable["AddPatch"]    = &PatchTable::addPatch;
@@ -695,7 +696,7 @@ void registerPatchTableType(sol::state& lua)
 // Wrapper for TextureXList::addTexture that changes the index to be 1-based and
 // returns a pointer to the added texture
 // -----------------------------------------------------------------------------
-CTexture* addTexture(TextureXList& self, std::string_view name, bool extended, int position)
+CTexture* addTexture(TextureXList& self, string_view name, bool extended, int position)
 {
 	auto tex     = std::make_unique<CTexture>(name, extended);
 	auto tex_ptr = tex.get();
@@ -727,12 +728,12 @@ void registerTextureXListType(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_txlist["Texture"]      = sol::resolve<CTexture*(std::string_view)>(&TextureXList::texture);
-	lua_txlist["TextureIndex"] = [](TextureXList& self, std::string_view name) { return self.textureIndex(name) + 1; };
+	lua_txlist["Texture"]      = sol::resolve<CTexture*(string_view)>(&TextureXList::texture);
+	lua_txlist["TextureIndex"] = [](TextureXList& self, string_view name) { return self.textureIndex(name) + 1; };
 	lua_txlist["AddTexture"]   = sol::overload(
         &addTexture,
-        [](TextureXList& self, std::string_view name) { return addTexture(self, name, false, 0); },
-        [](TextureXList& self, std::string_view name, bool extended) { return addTexture(self, name, extended, 0); });
+        [](TextureXList& self, string_view name) { return addTexture(self, name, false, 0); },
+        [](TextureXList& self, string_view name, bool extended) { return addTexture(self, name, extended, 0); });
 	lua_txlist["RemoveTexture"]     = [](TextureXList& self, int index) { self.removeTexture(index - 1); };
 	lua_txlist["SwapTextures"]      = [](TextureXList& self, int i1, int i2) { self.swapTextures(i1 - 1, i2 - 1); };
 	lua_txlist["Clear"]             = [](TextureXList& self) { self.clear(); };
@@ -777,7 +778,7 @@ void registerGraphicsNamespace(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	gfx["ImageFormat"]     = [](std::string_view id) { return SIFormat::getFormat(id); };
+	gfx["ImageFormat"]     = [](string_view id) { return SIFormat::getFormat(id); };
 	gfx["AllImageFormats"] = []() {
 		vector<SIFormat*> formats;
 		SIFormat::putAllFormats(formats);

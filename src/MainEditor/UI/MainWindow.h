@@ -55,7 +55,7 @@ private:
 #endif
 
 	// Action handling
-	bool handleAction(std::string_view id) override;
+	bool handleAction(string_view id) override;
 
 	// Events
 	void onClose(wxCloseEvent& e);

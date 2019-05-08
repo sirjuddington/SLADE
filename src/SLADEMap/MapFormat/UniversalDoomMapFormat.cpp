@@ -214,11 +214,11 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 // Writes the given [map_data] to UDMF format, returning the list of entries
 // making up the map
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry::UPtr> UniversalDoomMapFormat::writeMap(
+vector<unique_ptr<ArchiveEntry>> UniversalDoomMapFormat::writeMap(
 	const MapObjectCollection& map_data,
 	const PropertyList&        map_extra_props)
 {
-	vector<ArchiveEntry::UPtr> entries;
+	vector<unique_ptr<ArchiveEntry>> entries;
 	entries.push_back(std::make_unique<ArchiveEntry>("TEXTMAP"));
 
 	// Open temp text file
@@ -238,7 +238,7 @@ vector<ArchiveEntry::UPtr> UniversalDoomMapFormat::writeMap(
 	setlocale(LC_NUMERIC, "C");
 
 	// Write things
-	std::string object_def;
+	string object_def;
 	for (const auto& thing : map_data.things())
 	{
 		// Cleanup properties
@@ -320,7 +320,7 @@ vector<ArchiveEntry::UPtr> UniversalDoomMapFormat::writeMap(
 // -----------------------------------------------------------------------------
 // Creates and returns a vertex from parsed UDMF definition [def]
 // -----------------------------------------------------------------------------
-std::unique_ptr<MapVertex> UniversalDoomMapFormat::createVertex(ParseTreeNode* def) const
+unique_ptr<MapVertex> UniversalDoomMapFormat::createVertex(ParseTreeNode* def) const
 {
 	// Check for required properties
 	auto prop_x = def->childPTN("x");
@@ -335,7 +335,7 @@ std::unique_ptr<MapVertex> UniversalDoomMapFormat::createVertex(ParseTreeNode* d
 // -----------------------------------------------------------------------------
 // Creates and returns a sector from parsed UDMF definition [def]
 // -----------------------------------------------------------------------------
-std::unique_ptr<MapSector> UniversalDoomMapFormat::createSector(ParseTreeNode* def) const
+unique_ptr<MapSector> UniversalDoomMapFormat::createSector(ParseTreeNode* def) const
 {
 	// Check for required properties
 	auto prop_ftex = def->childPTN("texturefloor");
@@ -350,8 +350,7 @@ std::unique_ptr<MapSector> UniversalDoomMapFormat::createSector(ParseTreeNode* d
 // -----------------------------------------------------------------------------
 // Creates and returns a side from parsed UDMF definition [def]
 // -----------------------------------------------------------------------------
-std::unique_ptr<MapSide> UniversalDoomMapFormat::createSide(ParseTreeNode* def, const MapObjectCollection& map_data)
-	const
+unique_ptr<MapSide> UniversalDoomMapFormat::createSide(ParseTreeNode* def, const MapObjectCollection& map_data) const
 {
 	// Check for required properties
 	auto prop_sector = def->childPTN("sector");
@@ -370,8 +369,7 @@ std::unique_ptr<MapSide> UniversalDoomMapFormat::createSide(ParseTreeNode* def, 
 // -----------------------------------------------------------------------------
 // Creates and returns a line from parsed UDMF definition [def]
 // -----------------------------------------------------------------------------
-std::unique_ptr<MapLine> UniversalDoomMapFormat::createLine(ParseTreeNode* def, const MapObjectCollection& map_data)
-	const
+unique_ptr<MapLine> UniversalDoomMapFormat::createLine(ParseTreeNode* def, const MapObjectCollection& map_data) const
 {
 	// Check for required properties
 	auto prop_v1 = def->childPTN(MapLine::PROP_V1);
@@ -398,7 +396,7 @@ std::unique_ptr<MapLine> UniversalDoomMapFormat::createLine(ParseTreeNode* def, 
 // -----------------------------------------------------------------------------
 // Creates and returns a thing from parsed UDMF definition [def]
 // -----------------------------------------------------------------------------
-std::unique_ptr<MapThing> UniversalDoomMapFormat::createThing(ParseTreeNode* def) const
+unique_ptr<MapThing> UniversalDoomMapFormat::createThing(ParseTreeNode* def) const
 {
 	// Check for required properties
 	auto prop_x    = def->childPTN(MapThing::PROP_X);

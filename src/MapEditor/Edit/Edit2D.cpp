@@ -322,14 +322,14 @@ void Edit2D::changeSectorHeight(int amount, bool floor, bool ceiling) const
 	context_.endUndoRecord();
 
 	// Add editor message
-	std::string what;
+	string what;
 	if (floor && !ceiling)
 		what = "Floor";
 	else if (!floor && ceiling)
 		what = "Ceiling";
 	else
 		what = "Floor and ceiling";
-	std::string inc = "increased";
+	string inc = "increased";
 	if (amount < 0)
 	{
 		inc    = "decreased";
@@ -401,8 +401,8 @@ void Edit2D::changeSectorTexture() const
 		return;
 
 	// Determine the initial texture
-	std::string texture, browser_title, undo_name;
-	auto        mode = context_.sectorEditMode();
+	string texture, browser_title, undo_name;
+	auto   mode = context_.sectorEditMode();
 	if (mode == SectorMode::Floor)
 	{
 		texture       = selection[0]->floor().texture;

@@ -53,7 +53,7 @@ private:
 	wxEvtHandler*        handler_;
 	wxString             dir_path_;
 	vector<EntryInfo>    entry_info_;
-	vector<std::string>  removed_files_;
+	vector<string>       removed_files_;
 	DirArchiveChangeList change_list_;
 
 	void addChange(DirEntryChange change);
@@ -149,13 +149,13 @@ public:
 	void goToBookmark(long index = -1) const;
 
 	// SAction handler
-	bool handleAction(std::string_view id) override;
+	bool handleAction(string_view id) override;
 
 	vector<int> selectedArchives() const;
 	vector<int> selectedBookmarks() const;
 	vector<int> selectedFiles() const;
 
-	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
 
 	// Event handlers
 	void onListArchivesChanged(wxListEvent& e);

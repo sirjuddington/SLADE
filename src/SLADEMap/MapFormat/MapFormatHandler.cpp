@@ -51,13 +51,13 @@ public:
 		return false;
 	}
 
-	vector<ArchiveEntry::UPtr> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
+	vector<unique_ptr<ArchiveEntry>> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
 		override
 	{
 		return {};
 	}
 
-	std::string udmfNamespace() override { return ""; }
+	string udmfNamespace() override { return ""; }
 };
 
 
@@ -71,7 +71,7 @@ public:
 // -----------------------------------------------------------------------------
 // Returns an appropriate map format handler for the given map [format]
 // -----------------------------------------------------------------------------
-MapFormatHandler::UPtr MapFormatHandler::get(MapFormat format)
+unique_ptr<MapFormatHandler> MapFormatHandler::get(MapFormat format)
 {
 	switch (format)
 	{

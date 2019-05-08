@@ -61,7 +61,7 @@ PatchTable::Patch& PatchTable::patch(size_t index)
 // -----------------------------------------------------------------------------
 // Returns the patch matching [name], or an 'invalid' patch if no match is found
 // -----------------------------------------------------------------------------
-PatchTable::Patch& PatchTable::patch(std::string_view name)
+PatchTable::Patch& PatchTable::patch(string_view name)
 {
 	// Go through list
 	for (auto& patch : patches_)
@@ -77,7 +77,7 @@ PatchTable::Patch& PatchTable::patch(std::string_view name)
 // Returns the name of the patch at [index], or an empty string if [index] is
 // invalid
 // -----------------------------------------------------------------------------
-const std::string& PatchTable::patchName(size_t index) const
+const string& PatchTable::patchName(size_t index) const
 {
 	// Check index
 	if (index >= patches_.size())
@@ -109,7 +109,7 @@ ArchiveEntry* PatchTable::patchEntry(size_t index)
 // Returns the entry associated with the patch matching [name], or null if no
 // match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* PatchTable::patchEntry(std::string_view name)
+ArchiveEntry* PatchTable::patchEntry(string_view name)
 {
 	// Search for patch by name
 	for (size_t a = 0; a < patches_.size(); a++)
@@ -125,7 +125,7 @@ ArchiveEntry* PatchTable::patchEntry(std::string_view name)
 // -----------------------------------------------------------------------------
 // Returns the index of the patch matching [name], or -1 if no match found
 // -----------------------------------------------------------------------------
-int32_t PatchTable::patchIndex(std::string_view name) const
+int32_t PatchTable::patchIndex(string_view name) const
 {
 	// Search for patch by name
 	for (size_t a = 0; a < patches_.size(); a++)
@@ -180,7 +180,7 @@ bool PatchTable::removePatch(unsigned index)
 // resource archives.
 // Returns false if [index] is out of range or no matching entry was found
 // -----------------------------------------------------------------------------
-bool PatchTable::replacePatch(unsigned index, std::string_view newname)
+bool PatchTable::replacePatch(unsigned index, string_view newname)
 {
 	// Check index
 	if (index >= patches_.size())
@@ -198,7 +198,7 @@ bool PatchTable::replacePatch(unsigned index, std::string_view newname)
 // -----------------------------------------------------------------------------
 // Adds a new patch with [name] to the end of the list
 // -----------------------------------------------------------------------------
-bool PatchTable::addPatch(std::string_view name, bool allow_dup)
+bool PatchTable::addPatch(string_view name, bool allow_dup)
 {
 	// Check patch doesn't already exist
 	if (!allow_dup)

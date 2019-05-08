@@ -98,11 +98,11 @@ enum SpecialBlend
 // Parses a text definition [def] (in zdoom format, detailed here:
 // http://zdoom.org/wiki/Translation)
 // -----------------------------------------------------------------------------
-void Translation::parse(std::string_view def)
+void Translation::parse(string_view def)
 {
 	// Test for ZDoom built-in translation
-	std::string def_str{ def };
-	auto        test = StrUtil::lower(def);
+	string def_str{ def };
+	auto   test = StrUtil::lower(def);
 	if (test == "inverse")
 	{
 		built_in_name_ = "Inverse";
@@ -168,7 +168,7 @@ void Translation::parse(std::string_view def)
 // -----------------------------------------------------------------------------
 // Parses a single translation range
 // -----------------------------------------------------------------------------
-TransRange* Translation::parseRange(std::string_view range)
+TransRange* Translation::parseRange(string_view range)
 {
 	// Open definition string for processing w/tokenizer
 	Tokenizer tz;
@@ -378,9 +378,9 @@ void Translation::read(const uint8_t* data)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the translation (in zdoom format)
 // -----------------------------------------------------------------------------
-std::string Translation::asText()
+string Translation::asText()
 {
-	std::string ret;
+	string ret;
 
 	if (built_in_name_.empty())
 	{
@@ -493,7 +493,7 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 	// for (unsigned a = 0; a < nRanges(); a++)
 	for (auto& range : translations_)
 	{
-		// TransRange::UPtr& range = translations_[a];
+		// unique_ptr<TransRange>& range = translations_[a];
 
 		// Check pixel is within translation range
 		if (i < range->start() || i > range->end())
@@ -638,7 +638,7 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 TransRange* Translation::addRange(TransRange::Type type, int pos, int range_start, int range_end)
 {
 	// Create range
-	TransRange::UPtr       tr;
+	unique_ptr<TransRange> tr;
 	TransRange::IndexRange range{ range_start, range_end };
 	switch (type)
 	{
@@ -773,7 +773,7 @@ ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal)
 // -----------------------------------------------------------------------------
 // Replaces a hardcoded translation name with its transcription
 // -----------------------------------------------------------------------------
-std::string Translation::getPredefined(std::string_view def)
+string Translation::getPredefined(string_view def)
 {
 	// Some hardcoded translations from ZDoom, used in config files
 	if (def == "\"doom0\"")
@@ -869,5 +869,5 @@ std::string Translation::getPredefined(std::string_view def)
 	else if (def == "\"stealth\"")
 		def = "\"0:255=%[0.00,0.00,0.00]:[1.31,0.84,0.84]\"";
 
-	return std::string{ def };
+	return string{ def };
 }

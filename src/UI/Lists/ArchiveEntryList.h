@@ -47,10 +47,10 @@ public:
 	// Label editing
 	void labelEdited(int col, int index, const wxString& new_label) override;
 
-	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
 
 	// SAction handler
-	bool handleAction(std::string_view id) override;
+	bool handleAction(string_view id) override;
 
 	// Events
 	void onColumnHeaderRightClick(wxListEvent& e);
@@ -64,17 +64,17 @@ protected:
 	void     updateItemAttr(long item, long column, long index) const override;
 
 private:
-	Archive*           archive_ = nullptr;
-	wxString           filter_category_;
-	ArchiveTreeNode*   current_dir_ = nullptr;
-	ArchiveEntry::UPtr entry_dir_back_;
-	bool               show_dir_back_  = false;
-	UndoManager*       undo_manager_   = nullptr;
-	int                col_index_      = 0;
-	int                col_name_       = 0;
-	int                col_size_       = 0;
-	int                col_type_       = 0;
-	bool               entries_update_ = true;
+	Archive*                 archive_ = nullptr;
+	wxString                 filter_category_;
+	ArchiveTreeNode*         current_dir_ = nullptr;
+	unique_ptr<ArchiveEntry> entry_dir_back_;
+	bool                     show_dir_back_  = false;
+	UndoManager*             undo_manager_   = nullptr;
+	int                      col_index_      = 0;
+	int                      col_name_       = 0;
+	int                      col_size_       = 0;
+	int                      col_type_       = 0;
+	bool                     entries_update_ = true;
 
 	int entrySize(long index) const;
 };

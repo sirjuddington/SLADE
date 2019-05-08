@@ -103,7 +103,7 @@ ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
 	node->setName(name);
 
 	// Group
-	std::string_view ex_group = group;
+	string_view ex_group = group;
 	if (StrUtil::startsWith(ex_group, "Custom/"))
 		ex_group.remove_prefix(7);
 	if (ex_group != "Custom")
@@ -211,7 +211,7 @@ bool Game::saveCustomSpecialPresets()
 		preset.write(&root);
 
 	// Write to file
-	std::string presets;
+	string presets;
 	root.write(presets);
 	if (!file.Write(presets))
 	{
@@ -233,7 +233,7 @@ CONSOLE_COMMAND(test_preset_export, 0, false)
 	for (auto& preset : custom_presets)
 		preset.write(&root);
 
-	std::string out;
+	string out;
 	root.write(out);
 	Log::console(out);
 }

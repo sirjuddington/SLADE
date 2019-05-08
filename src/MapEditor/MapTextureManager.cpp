@@ -107,7 +107,7 @@ Palette* MapTextureManager::resourcePalette() const
 // Returns the texture matching [name], loading it from resources if necessary.
 // If [mixed] is true, flats are also searched if no matching texture is found
 // -----------------------------------------------------------------------------
-const MapTextureManager::Texture& MapTextureManager::texture(std::string_view name, bool mixed)
+const MapTextureManager::Texture& MapTextureManager::texture(string_view name, bool mixed)
 {
 	// Get texture matching name
 	auto& mtex = textures_[StrUtil::upper(name)];
@@ -218,7 +218,7 @@ const MapTextureManager::Texture& MapTextureManager::texture(std::string_view na
 // Returns the flat matching [name], loading it from resources if necessary.
 // If [mixed] is true, textures are also searched if no matching flat is found
 // -----------------------------------------------------------------------------
-const MapTextureManager::Texture& MapTextureManager::flat(std::string_view name, bool mixed)
+const MapTextureManager::Texture& MapTextureManager::flat(string_view name, bool mixed)
 {
 	// Get flat matching name
 	auto& mtex = flats_[StrUtil::upper(name)];
@@ -311,9 +311,9 @@ const MapTextureManager::Texture& MapTextureManager::flat(std::string_view name,
 // Sprite name also supports wildcards (?)
 // -----------------------------------------------------------------------------
 const MapTextureManager::Texture& MapTextureManager::sprite(
-	std::string_view name,
-	std::string_view translation,
-	std::string_view palette)
+	string_view name,
+	string_view translation,
+	string_view palette)
 {
 	// Don't bother looking for nameless sprites
 	if (name.empty())
@@ -365,7 +365,7 @@ const MapTextureManager::Texture& MapTextureManager::sprite(
 		entry = App::resources().getPatchEntry(name, "", archive_);
 	if (!entry && name.length() == 8)
 	{
-		std::string newname{ name };
+		string newname{ name };
 		newname[4] = name[6];
 		newname[5] = name[7];
 		newname[6] = name[4];
@@ -444,7 +444,7 @@ const MapTextureManager::Texture& MapTextureManager::sprite(
 // If the Y offset is noticeably larger than the sprite height, that means the
 // thing is supposed to be rendered above its real position.
 // -----------------------------------------------------------------------------
-int MapTextureManager::verticalOffset(std::string_view name) const
+int MapTextureManager::verticalOffset(string_view name) const
 {
 	// Don't bother looking for nameless sprites
 	if (name.empty())
@@ -472,7 +472,7 @@ int MapTextureManager::verticalOffset(std::string_view name) const
 // -----------------------------------------------------------------------------
 // Loads all editor images (thing icons, etc) from the program resource archive
 // -----------------------------------------------------------------------------
-void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, std::string_view path) const
+void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, string_view path) const
 {
 	SImage image;
 
@@ -503,7 +503,7 @@ void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* 
 // -----------------------------------------------------------------------------
 // Returns the editor image matching [name]
 // -----------------------------------------------------------------------------
-const MapTextureManager::Texture& MapTextureManager::editorImage(std::string_view name)
+const MapTextureManager::Texture& MapTextureManager::editorImage(string_view name)
 {
 	if (!OpenGL::isInitialised())
 		return tex_invalid;
@@ -588,7 +588,7 @@ void MapTextureManager::buildTexInfoList()
 				// Determine texture path if it's in a pk3
 				auto long_name  = patch->path(true).erase(0, 1);
 				auto short_name = StrUtil::truncate(patch->upperNameNoExt(), 8);
-				auto path      = patch->path(false);
+				auto path       = patch->path(false);
 
 				tex_info_.emplace_back(short_name, Category::Tx, patch->parent(), path, 0, long_name);
 			}
@@ -604,7 +604,7 @@ void MapTextureManager::buildTexInfoList()
 		// Determine flat path if it's in a pk3
 		auto long_name  = flat->path(true).erase(0, 1);
 		auto short_name = StrUtil::truncate(flat->upperNameNoExt(), 8);
-		auto path      = flat->path(false);
+		auto path       = flat->path(false);
 
 		flat_info_.emplace_back(short_name, Category::None, flat->parent(), path, 0, long_name);
 	}
@@ -622,7 +622,7 @@ void MapTextureManager::setArchive(Archive* archive)
 // -----------------------------------------------------------------------------
 // Handles announcements from any announcers listened to
 // -----------------------------------------------------------------------------
-void MapTextureManager::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
+void MapTextureManager::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
 {
 	// Only interested in the resource manager,
 	// archive manager and palette chooser.

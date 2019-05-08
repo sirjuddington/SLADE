@@ -57,7 +57,7 @@ CVAR(Bool, wad_force_uppercase, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // ArchiveEntry class constructor
 // -----------------------------------------------------------------------------
-ArchiveEntry::ArchiveEntry(std::string_view name, uint32_t size) :
+ArchiveEntry::ArchiveEntry(string_view name, uint32_t size) :
 	name_{ name },
 	upper_name_{ name },
 	size_{ size },
@@ -103,10 +103,10 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 // -----------------------------------------------------------------------------
 // Returns the entry name with no file extension
 // -----------------------------------------------------------------------------
-std::string_view ArchiveEntry::nameNoExt() const
+string_view ArchiveEntry::nameNoExt() const
 {
 	auto ext_pos = name_.find('.');
-	if (ext_pos != std::string::npos)
+	if (ext_pos != string::npos)
 		return { name_.data(), ext_pos };
 
 	return name_;
@@ -115,10 +115,10 @@ std::string_view ArchiveEntry::nameNoExt() const
 // -----------------------------------------------------------------------------
 // Returns the entry name in uppercase with no file extension
 // -----------------------------------------------------------------------------
-std::string_view ArchiveEntry::upperNameNoExt() const
+string_view ArchiveEntry::upperNameNoExt() const
 {
 	auto ext_pos = upper_name_.find('.');
-	if (ext_pos != std::string::npos)
+	if (ext_pos != string::npos)
 		return { upper_name_.data(), ext_pos };
 
 	return upper_name_;
@@ -151,7 +151,7 @@ Archive* ArchiveEntry::topParent() const
 // -----------------------------------------------------------------------------
 // Returns the entry path in its parent archive
 // -----------------------------------------------------------------------------
-std::string ArchiveEntry::path(bool include_name) const
+string ArchiveEntry::path(bool include_name) const
 {
 	auto path = parent_->path();
 	return include_name ? path + name() : path;
@@ -190,7 +190,7 @@ MemChunk& ArchiveEntry::data(bool allow_load)
 // Returns the parent ArchiveTreeNode's shared pointer to this entry, or
 // nullptr if this entry has no parent
 // -----------------------------------------------------------------------------
-ArchiveEntry::SPtr ArchiveEntry::getShared()
+shared_ptr<ArchiveEntry> ArchiveEntry::getShared()
 {
 	return parent_ ? parent_->sharedEntry(this) : nullptr;
 }
@@ -198,7 +198,7 @@ ArchiveEntry::SPtr ArchiveEntry::getShared()
 // -----------------------------------------------------------------------------
 // Sets the entry's name (but doesn't change state to modified)
 // -----------------------------------------------------------------------------
-void ArchiveEntry::setName(std::string_view name)
+void ArchiveEntry::setName(string_view name)
 {
 	name_       = name;
 	upper_name_ = StrUtil::upper(name);
@@ -289,7 +289,7 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 		StrUtil::upperIP(name_);
 
 	// Remove \ or / if the format supports folders
-	if (format.supports_dirs && name_.find('/') != std::string::npos || name_.find('\\') != std::string::npos)
+	if (format.supports_dirs && name_.find('/') != string::npos || name_.find('\\') != string::npos)
 	{
 		name_   = Misc::lumpNameToFileName(name_);
 		changed = true;
@@ -297,7 +297,7 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 
 	// Remove extension if the format doesn't have them
 	if (!format.names_extensions)
-		if (auto pos = name_.find('.'); pos != std::string::npos)
+		if (auto pos = name_.find('.'); pos != string::npos)
 			StrUtil::truncateIP(name_, pos);
 
 	// Update upper name
@@ -308,7 +308,7 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 // -----------------------------------------------------------------------------
 // Renames the entry
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::rename(std::string_view new_name)
+bool ArchiveEntry::rename(string_view new_name)
 {
 	// Check if locked
 	if (locked_)
@@ -420,7 +420,7 @@ bool ArchiveEntry::importMemChunk(MemChunk& mc)
 // Returns false if the file does not exist or the given offset/size are out of
 // bounds, otherwise returns true.
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importFile(std::string_view filename, uint32_t offset, uint32_t size)
+bool ArchiveEntry::importFile(string_view filename, uint32_t offset, uint32_t size)
 {
 	// Check if locked
 	if (locked_)
@@ -513,7 +513,7 @@ bool ArchiveEntry::importEntry(ArchiveEntry* entry)
 // Exports entry data to a file.
 // Returns false if file cannot be written, true otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::exportFile(std::string_view filename)
+bool ArchiveEntry::exportFile(string_view filename)
 {
 	// Attempt to open file
 	wxFile file({ filename.data(), filename.size() }, wxFile::write);
@@ -577,7 +577,7 @@ bool ArchiveEntry::read(void* buf, uint32_t size)
 // -----------------------------------------------------------------------------
 // Returns the entry's size as a string
 // -----------------------------------------------------------------------------
-std::string ArchiveEntry::sizeString() const
+string ArchiveEntry::sizeString() const
 {
 	return Misc::sizeAsString(size());
 }
@@ -622,7 +622,7 @@ void ArchiveEntry::setExtensionByType()
 // Returns true if the entry is in the [ns] namespace within its parent, false
 // otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::isInNamespace(std::string_view ns)
+bool ArchiveEntry::isInNamespace(string_view ns)
 {
 	// Can't do this without parent archive
 	if (!parent())
@@ -639,7 +639,7 @@ bool ArchiveEntry::isInNamespace(std::string_view ns)
 // Returns the entry at [path] relative to [base], or failing that, the entry
 // at absolute [path] in the archive (if [allow_absolute_path] is true)
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveEntry::relativeEntry(std::string_view at_path, bool allow_absolute_path) const
+ArchiveEntry* ArchiveEntry::relativeEntry(string_view at_path, bool allow_absolute_path) const
 {
 	if (!parent_)
 		return nullptr;

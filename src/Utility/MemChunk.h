@@ -33,14 +33,14 @@ public:
 	bool reSize(uint32_t new_size, bool preserve_data = true);
 
 	// Data import
-	bool importFile(std::string_view filename, uint32_t offset = 0, uint32_t len = 0);
+	bool importFile(string_view filename, uint32_t offset = 0, uint32_t len = 0);
 	bool importFileStreamWx(wxFile& file, uint32_t len = 0);
 	bool importFileStream(SFile& file, unsigned len = 0);
 	bool importMem(const uint8_t* start, uint32_t len);
 	bool importMem(const MemChunk& other) { return importMem(other.data_, other.size_); }
 
 	// Data export
-	bool exportFile(std::string_view filename, uint32_t start = 0, uint32_t size = 0) const;
+	bool exportFile(string_view filename, uint32_t start = 0, uint32_t size = 0) const;
 	bool exportMemChunk(MemChunk& mc, uint32_t start = 0, uint32_t size = 0) const;
 
 	// General reading/writing

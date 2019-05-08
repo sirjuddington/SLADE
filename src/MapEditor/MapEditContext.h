@@ -34,10 +34,10 @@ class MapEditContext : public SActionHandler
 public:
 	struct EditorMessage
 	{
-		std::string message;
-		long        act_time;
+		string message;
+		long   act_time;
 
-		EditorMessage(std::string_view message, long act_time) : message{ message }, act_time{ act_time } {}
+		EditorMessage(string_view message, long act_time) : message{ message }, act_time{ act_time } {}
 	};
 
 	MapEditContext();
@@ -101,18 +101,18 @@ public:
 	Edit2D&      edit2D() { return edit_2d_; }
 
 	// Editor messages
-	unsigned           numEditorMessages() const { return editor_messages_.size(); }
-	const std::string& editorMessage(int index);
-	long               editorMessageTime(int index);
-	void               addEditorMessage(std::string_view message);
+	unsigned      numEditorMessages() const { return editor_messages_.size(); }
+	const string& editorMessage(int index);
+	long          editorMessageTime(int index);
+	void          addEditorMessage(string_view message);
 
 	// Feature help text
-	const vector<std::string>& featureHelpLines() const { return feature_help_lines_; }
-	void                       setFeatureHelp(const vector<std::string>& lines);
+	const vector<string>& featureHelpLines() const { return feature_help_lines_; }
+	void                  setFeatureHelp(const vector<string>& lines);
 
 	// Undo/Redo
-	void beginUndoRecord(std::string_view name, bool mod = true, bool create = true, bool del = true);
-	void beginUndoRecordLocked(std::string_view name, bool mod = true, bool create = true, bool del = true);
+	void beginUndoRecord(string_view name, bool mod = true, bool create = true, bool del = true);
+	void beginUndoRecordLocked(string_view name, bool mod = true, bool create = true, bool del = true);
 	void endUndoRecord(bool success = true);
 	void recordPropertyChangeUndoStep(MapObject* object) const;
 	void doUndo();
@@ -136,17 +136,17 @@ public:
 	void resetPlayerStart() const;
 
 	// Misc
-	std::string modeString(bool plural = true) const;
-	bool        handleKeyBind(std::string_view key, Vec2d position);
-	void        updateDisplay();
-	void        updateStatusText() const;
-	void        updateThingLists();
-	void        setCursor(UI::MouseCursor cursor) const;
-	void        forceRefreshRenderer();
+	string modeString(bool plural = true) const;
+	bool   handleKeyBind(string_view key, Vec2d position);
+	void   updateDisplay();
+	void   updateStatusText() const;
+	void   updateThingLists();
+	void   setCursor(UI::MouseCursor cursor) const;
+	void   forceRefreshRenderer();
 
 
 	// SAction handler
-	bool handleAction(std::string_view id) override;
+	bool handleAction(string_view id) override;
 
 private:
 	SLADEMap         map_;
@@ -155,8 +155,8 @@ private:
 	long             next_frame_length_ = 0;
 
 	// Undo/Redo stuff
-	std::unique_ptr<UndoManager> undo_manager_     = nullptr;
-	UndoStep::UPtr               us_create_delete_ = nullptr;
+	unique_ptr<UndoManager> undo_manager_     = nullptr;
+	unique_ptr<UndoStep>    us_create_delete_ = nullptr;
 
 	// Editor state
 	MapEditor::Mode       edit_mode_      = MapEditor::Mode::Lines;
@@ -169,10 +169,10 @@ private:
 	bool                  mouse_locked_   = false;
 
 	// Undo/Redo
-	bool        undo_modified_ = false;
-	bool        undo_created_  = false;
-	bool        undo_deleted_  = false;
-	std::string last_undo_level_;
+	bool   undo_modified_ = false;
+	bool   undo_created_  = false;
+	bool   undo_deleted_  = false;
+	string last_undo_level_;
 
 	// Tagged items
 	vector<MapSector*> tagged_sectors_;
@@ -194,17 +194,17 @@ private:
 	ObjectEdit  object_edit_{ *this };
 
 	// Object properties and copy/paste
-	std::unique_ptr<MapThing>  copy_thing_      = nullptr;
-	std::unique_ptr<MapSector> copy_sector_     = nullptr;
-	std::unique_ptr<MapSide>   copy_side_front_ = nullptr;
-	std::unique_ptr<MapSide>   copy_side_back_  = nullptr;
-	std::unique_ptr<MapLine>   copy_line_       = nullptr;
+	unique_ptr<MapThing>  copy_thing_      = nullptr;
+	unique_ptr<MapSector> copy_sector_     = nullptr;
+	unique_ptr<MapSide>   copy_side_front_ = nullptr;
+	unique_ptr<MapSide>   copy_side_back_  = nullptr;
+	unique_ptr<MapLine>   copy_line_       = nullptr;
 
 	// Editor messages
 	vector<EditorMessage> editor_messages_;
 
 	// Feature help text
-	vector<std::string> feature_help_lines_;
+	vector<string> feature_help_lines_;
 
 	// Player start swap
 	Vec2d player_start_pos_;
@@ -217,7 +217,7 @@ private:
 	MapEditor::Input input_ = MapEditor::Input(*this);
 
 	// Full-Screen Overlay
-	std::unique_ptr<MCOverlay> overlay_current_ = nullptr;
+	unique_ptr<MCOverlay> overlay_current_ = nullptr;
 
 	// Info overlays
 	bool              info_showing_ = false;
@@ -235,17 +235,17 @@ public:
 	~MapArchClipboardItem() = default;
 
 	void               addLines(const vector<MapLine*>& lines);
-	std::string        info() const;
+	string             info() const;
 	vector<MapVertex*> pasteToMap(SLADEMap* map, Vec2d position);
 	void               putLines(vector<MapLine*>& list);
 	Vec2d              midpoint() const { return midpoint_; }
 
 private:
-	vector<std::unique_ptr<MapVertex>> vertices_;
-	vector<std::unique_ptr<MapSide>>   sides_;
-	vector<std::unique_ptr<MapLine>>   lines_;
-	vector<std::unique_ptr<MapSector>> sectors_;
-	Vec2d                              midpoint_;
+	vector<unique_ptr<MapVertex>> vertices_;
+	vector<unique_ptr<MapSide>>   sides_;
+	vector<unique_ptr<MapLine>>   lines_;
+	vector<unique_ptr<MapSector>> sectors_;
+	Vec2d                         midpoint_;
 };
 
 class MapThingsClipboardItem : public ClipboardItem
@@ -254,13 +254,13 @@ public:
 	MapThingsClipboardItem() : ClipboardItem(Type::MapThings) {}
 	~MapThingsClipboardItem() = default;
 
-	void        addThings(vector<MapThing*>& things);
-	std::string info() const;
-	void        pasteToMap(SLADEMap* map, Vec2d position);
-	void        putThings(vector<MapThing*>& list);
-	Vec2d       midpoint() const { return midpoint_; }
+	void   addThings(vector<MapThing*>& things);
+	string info() const;
+	void   pasteToMap(SLADEMap* map, Vec2d position);
+	void   putThings(vector<MapThing*>& list);
+	Vec2d  midpoint() const { return midpoint_; }
 
 private:
-	vector<std::unique_ptr<MapThing>> things_;
-	Vec2d                             midpoint_;
+	vector<unique_ptr<MapThing>> things_;
+	Vec2d                        midpoint_;
 };

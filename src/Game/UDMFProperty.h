@@ -26,9 +26,9 @@ public:
 	UDMFProperty()  = default;
 	~UDMFProperty() = default;
 
-	const std::string&      propName() const { return property_; }
-	const std::string&      name() const { return name_; }
-	const std::string&      group() const { return group_; }
+	const string&           propName() const { return property_; }
+	const string&           name() const { return name_; }
+	const string&           group() const { return group_; }
 	Type                    type() const { return type_; }
 	const Property&         defaultValue() const { return default_value_; }
 	bool                    hasDefaultValue() const { return has_default_; }
@@ -39,14 +39,14 @@ public:
 	bool                    showAlways() const { return show_always_; }
 	bool                    internalOnly() const { return internal_only_; }
 
-	void parse(ParseTreeNode* node, std::string_view group);
+	void parse(ParseTreeNode* node, string_view group);
 
-	std::string getStringRep();
+	string getStringRep();
 
 private:
-	std::string      property_;
-	std::string      name_;
-	std::string      group_;
+	string           property_;
+	string           name_;
+	string           group_;
 	Type             type_        = Type::Unknown;
 	bool             flag_        = false;
 	bool             trigger_     = false;

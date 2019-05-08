@@ -46,7 +46,7 @@
 // -----------------------------------------------------------------------------
 // Returns true if a property with the given name exists, false otherwise
 // -----------------------------------------------------------------------------
-bool MobjPropertyList::propertyExists(std::string_view key)
+bool MobjPropertyList::propertyExists(string_view key)
 {
 	for (const auto& prop : properties_)
 		if (prop.name == key)
@@ -59,7 +59,7 @@ bool MobjPropertyList::propertyExists(std::string_view key)
 // Removes a property value, returns true if [key] was removed or false if key
 // didn't exist
 // -----------------------------------------------------------------------------
-bool MobjPropertyList::removeProperty(std::string_view key)
+bool MobjPropertyList::removeProperty(string_view key)
 {
 	for (auto& prop : properties_)
 	{
@@ -89,7 +89,7 @@ void MobjPropertyList::copyTo(MobjPropertyList& list)
 // -----------------------------------------------------------------------------
 // Adds a 'flag' property [key]
 // -----------------------------------------------------------------------------
-void MobjPropertyList::addFlag(std::string_view key)
+void MobjPropertyList::addFlag(string_view key)
 {
 	Property flag;
 	properties_.emplace_back(key, flag);
@@ -98,12 +98,12 @@ void MobjPropertyList::addFlag(std::string_view key)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the property list
 // -----------------------------------------------------------------------------
-std::string MobjPropertyList::toString(bool condensed)
+string MobjPropertyList::toString(bool condensed)
 {
-	static std::string format_normal           = "{} = {};\n";
-	static std::string format_normal_string    = "{} = \"{}\"\n";
-	static std::string format_condensed        = "{}={};\n";
-	static std::string format_condensed_string = "{}=\"{}\"\n";
+	static string format_normal           = "{} = {};\n";
+	static string format_normal_string    = "{} = \"{}\"\n";
+	static string format_condensed        = "{}={};\n";
+	static string format_condensed_string = "{}=\"{}\"\n";
 
 	// Get formatter strings to use
 	const auto& format        = condensed ? format_condensed : format_normal;

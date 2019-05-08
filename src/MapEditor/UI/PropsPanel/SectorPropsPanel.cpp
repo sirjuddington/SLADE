@@ -374,8 +374,8 @@ void SectorPropsPanel::openObjects(vector<MapObject*>& objects)
 	if (objects.empty())
 		return;
 
-	int         ival;
-	std::string sval;
+	int    ival;
+	string sval;
 
 	// Special
 	if (MapObject::multiIntProperty(objects, "special", ival))

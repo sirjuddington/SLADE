@@ -30,28 +30,28 @@ public:
 		WorldPanning = 0x8000
 	};
 
-	TextureXList()  = default;
+	TextureXList() = default;
 	TextureXList(Format format) : txformat_{ format } {}
 	~TextureXList() = default;
 
-	const vector<CTexture::UPtr>& textures() const { return textures_; }
-	uint32_t                      size() const { return textures_.size(); }
+	const vector<unique_ptr<CTexture>>& textures() const { return textures_; }
+	uint32_t                            size() const { return textures_.size(); }
 
-	CTexture*   texture(size_t index);
-	CTexture*   texture(std::string_view name);
-	Format      format() const { return txformat_; }
-	std::string textureXFormatString() const;
-	int         textureIndex(std::string_view name);
+	CTexture* texture(size_t index);
+	CTexture* texture(string_view name);
+	Format    format() const { return txformat_; }
+	string    textureXFormatString() const;
+	int       textureIndex(string_view name);
 
 	void setFormat(Format format) { txformat_ = format; }
 
-	void           addTexture(CTexture::UPtr tex, int position = -1);
-	CTexture::UPtr removeTexture(unsigned index);
-	void           swapTextures(unsigned index1, unsigned index2);
-	CTexture::UPtr replaceTexture(unsigned index, CTexture::UPtr replacement);
+	void                 addTexture(unique_ptr<CTexture> tex, int position = -1);
+	unique_ptr<CTexture> removeTexture(unsigned index);
+	void                 swapTextures(unsigned index1, unsigned index2);
+	unique_ptr<CTexture> replaceTexture(unsigned index, unique_ptr<CTexture> replacement);
 
 	void clear(bool clear_patches = false);
-	void removePatch(std::string_view patch);
+	void removePatch(string_view patch);
 
 	bool readTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table, bool add = false);
 	bool writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table);
@@ -63,7 +63,7 @@ public:
 	bool findErrors();
 
 private:
-	vector<CTexture::UPtr> textures_;
-	Format                 txformat_ = Format::Normal;
-	CTexture               tex_invalid_{ "INVALID_TEXTURE" }; // Deliberately set the invalid name to >8 characters
+	vector<unique_ptr<CTexture>> textures_;
+	Format                       txformat_ = Format::Normal;
+	CTexture tex_invalid_{ "INVALID_TEXTURE" }; // Deliberately set the invalid name to >8 characters
 };

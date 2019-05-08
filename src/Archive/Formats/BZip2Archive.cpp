@@ -152,7 +152,7 @@ ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 {
 	// Init search variables
 	StrUtil::upperIP(options.match_name);
-	auto entry         = entryAt(0);
+	auto entry = entryAt(0);
 	if (entry == nullptr)
 		return entry;
 
@@ -236,7 +236,7 @@ bool BZip2Archive::isBZip2Archive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid BZip2 archive
 // -----------------------------------------------------------------------------
-bool BZip2Archive::isBZip2Archive(const std::string& filename)
+bool BZip2Archive::isBZip2Archive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

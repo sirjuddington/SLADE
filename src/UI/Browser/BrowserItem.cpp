@@ -86,7 +86,7 @@ void BrowserItem::draw(
 	bool           text_shadow)
 {
 	// Determine item name string (for normal viewtype)
-	std::string draw_name;
+	string draw_name;
 	if (nametype == NameType::Normal)
 		draw_name = name_;
 	else if (nametype == NameType::Index)
@@ -97,11 +97,11 @@ void BrowserItem::draw(
 	{
 		// textures/aquatex/AQCONC13.png -> t./a./AQCONC13.png
 		// textures/AQDIRT01.png -> t./AQDIRT01.png
-		std::string_view draw_name_v{ draw_name };
+		string_view draw_name_v{ draw_name };
 		if (StrUtil::contains(draw_name, '/'))
 		{
-			int         last_pos = 0;
-			std::string new_draw_name;
+			int    last_pos = 0;
+			string new_draw_name;
 			while (StrUtil::contains(draw_name_v.substr(last_pos), '/'))
 			{
 				new_draw_name.append(draw_name_v.substr(last_pos, 1)).append("./");
@@ -110,7 +110,7 @@ void BrowserItem::draw(
 			draw_name = new_draw_name + StrUtil::afterLast(draw_name, '/');
 		}
 		else
-			draw_name = fmt::format("{}...", std::string_view{ draw_name.data(), 8 });
+			draw_name = fmt::format("{}...", string_view{ draw_name.data(), 8 });
 	}
 
 	// Item name

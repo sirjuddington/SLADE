@@ -204,7 +204,7 @@ int SectorList::firstFreeId() const
 // -----------------------------------------------------------------------------
 // Adjusts the usage count of [tex] by [adjust]
 // -----------------------------------------------------------------------------
-void SectorList::updateTexUsage(std::string_view tex, int adjust) const
+void SectorList::updateTexUsage(string_view tex, int adjust) const
 {
 	usage_tex_[StrUtil::upper(tex)] += adjust;
 }
@@ -212,7 +212,7 @@ void SectorList::updateTexUsage(std::string_view tex, int adjust) const
 // -----------------------------------------------------------------------------
 // Returns the usage count of [tex]
 // -----------------------------------------------------------------------------
-int SectorList::texUsageCount(std::string_view tex) const
+int SectorList::texUsageCount(string_view tex) const
 {
 	return usage_tex_[StrUtil::upper(tex)];
 }

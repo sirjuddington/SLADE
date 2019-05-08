@@ -45,7 +45,7 @@ public:
 	void         duplicatePatch(int xoff = 8, int yoff = 8);
 
 	// SAction handler
-	bool handleAction(std::string_view id) override;
+	bool handleAction(string_view id) override;
 
 	// Events
 	void onDrawOutsideChanged(wxCommandEvent& e);
@@ -67,9 +67,9 @@ public:
 	void onARCChanged(wxCommandEvent& e);
 
 protected:
-	TextureXEditor*           tx_editor_ = nullptr;
-	std::unique_ptr<CTexture> tex_current_;
-	bool                      tex_modified_ = false;
+	TextureXEditor*      tx_editor_ = nullptr;
+	unique_ptr<CTexture> tex_current_;
+	bool                 tex_modified_ = false;
 
 	// View controls
 	SZoomSlider*    slider_zoom_     = nullptr;

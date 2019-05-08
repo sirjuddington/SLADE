@@ -84,7 +84,7 @@ template<> struct formatter<Log::MessageType>
 // -----------------------------------------------------------------------------
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
 {
-	std::string error = "FreeImage: ";
+	string error = "FreeImage: ";
 	if (fif != FIF_UNKNOWN)
 		error += fmt::format("[{}] ", FreeImage_GetFormatFromFIF(fif));
 	error += message;
@@ -104,7 +104,7 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
 // Returns the log entry as a formatted string:
 // HH:MM:SS: <message>
 // -----------------------------------------------------------------------------
-std::string Log::Message::formattedMessageLine() const
+string Log::Message::formattedMessageLine() const
 {
 	return fmt::format("{:%H:%M:%S}: {} {}", timestamp, type, message);
 }
@@ -180,7 +180,7 @@ void Log::setVerbosity(int verbosity)
 // -----------------------------------------------------------------------------
 // Logs a message [text] of [type]
 // -----------------------------------------------------------------------------
-void Log::message(MessageType type, std::string_view text)
+void Log::message(MessageType type, string_view text)
 {
 	// Add log message
 	auto t = std::time(nullptr);
@@ -191,12 +191,12 @@ void Log::message(MessageType type, std::string_view text)
 		sf::err() << log.back().formattedMessageLine() << "\n";
 }
 
-void Log::message(MessageType type, int level, std::string_view text, fmt::format_args args)
+void Log::message(MessageType type, int level, string_view text, fmt::format_args args)
 {
 	message(type, level, fmt::vformat(text, args));
 }
 
-void Log::message(MessageType type, std::string_view text, fmt::format_args args)
+void Log::message(MessageType type, string_view text, fmt::format_args args)
 {
 	message(type, fmt::vformat(text, args));
 }
@@ -231,13 +231,13 @@ void Log::debug(const wxString& text)
 		message(MessageType::Debug, text.ToStdString());
 }
 
-void Log::debug(int level, std::string_view text, fmt::format_args args)
+void Log::debug(int level, string_view text, fmt::format_args args)
 {
 	if (Global::debug)
 		message(MessageType::Debug, level, text, args);
 }
 
-void Log::debug(std::string_view text, fmt::format_args args)
+void Log::debug(string_view text, fmt::format_args args)
 {
 	if (Global::debug)
 		message(MessageType::Debug, text, args);
@@ -246,7 +246,7 @@ void Log::debug(std::string_view text, fmt::format_args args)
 // -----------------------------------------------------------------------------
 // Logs a message [text] of [type] at verbosity [level]
 // -----------------------------------------------------------------------------
-void Log::message(MessageType type, int level, std::string_view text)
+void Log::message(MessageType type, int level, string_view text)
 {
 	if (level > log_verbosity)
 		return;

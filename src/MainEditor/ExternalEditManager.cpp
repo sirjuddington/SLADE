@@ -93,7 +93,7 @@ public:
 		return ok;
 	}
 
-	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override
+	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override
 	{
 		if (announcer != archive_)
 			return;
@@ -119,7 +119,7 @@ protected:
 	ArchiveEntry*        entry_   = nullptr;
 	Archive*             archive_ = nullptr;
 	ExternalEditManager* manager_ = nullptr;
-	std::string          gfx_format_;
+	string               gfx_format_;
 };
 
 
@@ -206,9 +206,9 @@ public:
 	}
 
 private:
-	std::string gfx_format_;
-	Vec2i       offsets_;
-	Palette     palette_;
+	string  gfx_format_;
+	Vec2i   offsets_;
+	Palette palette_;
 };
 
 
@@ -401,7 +401,7 @@ ExternalEditManager::~ExternalEditManager()
 // -----------------------------------------------------------------------------
 // Opens [entry] for external editing with [editor] for [category]
 // -----------------------------------------------------------------------------
-bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, std::string_view editor, std::string_view category)
+bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string_view editor, string_view category)
 {
 	// Check the entry isn't already opened externally
 	for (auto& file_monitor : file_monitors_)

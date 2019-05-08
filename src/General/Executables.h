@@ -8,10 +8,10 @@ namespace Executables
 {
 struct GameExe
 {
-	std::string        id;
-	std::string        name;
-	std::string        exe_name;
-	std::string        path;
+	string             id;
+	string             name;
+	string             exe_name;
+	string             path;
 	vector<StringPair> configs;
 	bool               custom;
 	vector<bool>       configs_custom;
@@ -19,38 +19,34 @@ struct GameExe
 
 struct ExternalExe
 {
-	std::string category;
-	std::string name;
-	std::string path;
+	string category;
+	string name;
+	string path;
 };
 
-std::string writePaths();
-std::string writeExecutables();
-void        init();
-void        parse(Parser* p, bool custom);
+string writePaths();
+string writeExecutables();
+void   init();
+void   parse(Parser* p, bool custom);
 
 // Game executables
-GameExe* gameExe(std::string_view id);
+GameExe* gameExe(string_view id);
 GameExe* gameExe(unsigned index);
 unsigned nGameExes();
-void     setGameExePath(std::string_view id, std::string_view path);
+void     setGameExePath(string_view id, string_view path);
 void     parseGameExe(ParseTreeNode* node, bool custom);
-void     addGameExe(std::string_view name);
+void     addGameExe(string_view name);
 bool     removeGameExe(unsigned index);
-void     addGameExeConfig(
-		unsigned         exe_index,
-		std::string_view config_name,
-		std::string_view config_params,
-		bool             custom = true);
-bool removeGameExeConfig(unsigned exe_index, unsigned config_index);
+void     addGameExeConfig(unsigned exe_index, string_view config_name, string_view config_params, bool custom = true);
+bool     removeGameExeConfig(unsigned exe_index, unsigned config_index);
 
 // External executables
-int                 nExternalExes(std::string_view category = "");
-ExternalExe         externalExe(std::string_view name, std::string_view category = "");
-vector<ExternalExe> externalExes(std::string_view category = "");
+int                 nExternalExes(string_view category = "");
+ExternalExe         externalExe(string_view name, string_view category = "");
+vector<ExternalExe> externalExes(string_view category = "");
 void                parseExternalExe(ParseTreeNode* node);
-void                addExternalExe(std::string_view name, std::string_view path, std::string_view category);
-void                setExternalExeName(std::string_view name_old, std::string_view name_new, std::string_view category);
-void                setExternalExePath(std::string_view name, std::string_view path, std::string_view category);
-void                removeExternalExe(std::string_view name, std::string_view category);
+void                addExternalExe(string_view name, string_view path, string_view category);
+void                setExternalExeName(string_view name_old, string_view name_new, string_view category);
+void                setExternalExePath(string_view name, string_view path, string_view category);
+void                removeExternalExe(string_view name, string_view category);
 } // namespace Executables

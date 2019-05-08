@@ -81,15 +81,15 @@ std::thread::id main_thread_id;
 Version version_num{ 3, 2, 0, 1 };
 
 // Directory paths
-std::string dir_data = "";
-std::string dir_user = "";
-std::string dir_app  = "";
-std::string dir_res  = "";
-std::string dir_temp = "";
+string dir_data = "";
+string dir_user = "";
+string dir_app  = "";
+string dir_res  = "";
+string dir_temp = "";
 #ifdef WIN32
-std::string dir_separator = "\\";
+string dir_separator = "\\";
 #else
-std::string dir_separator = "/";
+string dir_separator = "/";
 #endif
 
 // App objects (managers, etc.)
@@ -146,7 +146,7 @@ int App::Version::cmp(const Version& rhs) const
 // ----------------------------------------------------------------------------
 // Returns a string representation of the version (eg. "3.2.1 beta 4")
 // ----------------------------------------------------------------------------
-std::string App::Version::toString() const
+string App::Version::toString() const
 {
 	auto vers = fmt::format("{}.{}.{}", major, minor, revision);
 	if (beta > 0)
@@ -316,9 +316,9 @@ void readConfigFile()
 // -----------------------------------------------------------------------------
 // Processes command line [args]
 // -----------------------------------------------------------------------------
-vector<std::string> processCommandLine(vector<std::string>& args)
+vector<string> processCommandLine(vector<string>& args)
 {
-	vector<std::string> to_open;
+	vector<string> to_open;
 
 	// Process command line args (except the first as it is normally the executable name)
 	for (auto& arg : args)
@@ -414,7 +414,7 @@ bool App::isExiting()
 // -----------------------------------------------------------------------------
 // Application initialisation
 // -----------------------------------------------------------------------------
-bool App::init(vector<std::string>& args, double ui_scale)
+bool App::init(vector<string>& args, double ui_scale)
 {
 	// Get the id of the current thread (should be the main one)
 	main_thread_id = std::this_thread::get_id();
@@ -697,7 +697,7 @@ const App::Version& App::version()
 // App::Dir::Executable: Directory of the SLADE executable
 // App::Dir::Temp: Temporary files directory
 // -----------------------------------------------------------------------------
-std::string App::path(std::string_view filename, Dir dir)
+string App::path(string_view filename, Dir dir)
 {
 	switch (dir)
 	{
@@ -706,7 +706,7 @@ std::string App::path(std::string_view filename, Dir dir)
 	case Dir::Executable: return fmt::format("{}{}{}", dir_app, dir_separator, filename);
 	case Dir::Resources: return fmt::format("{}{}{}", dir_res, dir_separator, filename);
 	case Dir::Temp: return fmt::format("{}{}{}", dir_temp, dir_separator, filename);
-	default: return std::string{ filename };
+	default: return string{ filename };
 	}
 }
 
@@ -741,9 +741,9 @@ bool App::useSFMLRenderWindow()
 #endif
 }
 
-const std::string& App::iconFile()
+const string& App::iconFile()
 {
-	static std::string icon = "slade.ico";
+	static string icon = "slade.ico";
 	return icon;
 }
 

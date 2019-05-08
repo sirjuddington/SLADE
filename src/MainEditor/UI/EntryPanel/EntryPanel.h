@@ -57,8 +57,8 @@ protected:
 
 	void setModified(bool c = true);
 
-	void         onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override {}
-	virtual bool handleEntryPanelAction(std::string_view id) { return false; }
+	void         onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override {}
+	virtual bool handleEntryPanelAction(string_view id) { return false; }
 	void         onToolbarButton(wxCommandEvent& e);
 
 private:
@@ -66,7 +66,7 @@ private:
 	wxStaticBox* frame_;
 	wxString     id_;
 
-	bool handleAction(std::string_view id) override
+	bool handleAction(string_view id) override
 	{
 		if (isActivePanel())
 			return handleEntryPanelAction(id);

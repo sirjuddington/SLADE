@@ -11,9 +11,7 @@ public:
 	ExternalEditManager() = default;
 	~ExternalEditManager();
 
-	bool openEntryExternal(ArchiveEntry* entry, std::string_view editor, std::string_view category);
-
-	typedef std::unique_ptr<ExternalEditManager> UPtr;
+	bool openEntryExternal(ArchiveEntry* entry, string_view editor, string_view category);
 
 private:
 	vector<ExternalEditFileMonitor*> file_monitors_;

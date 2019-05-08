@@ -78,11 +78,11 @@ bool DatArchive::open(MemChunk& mc)
 	mc.read(&num_lumps, 2);  // Size
 	mc.read(&dir_offset, 4); // Directory offset
 	mc.read(&unknown, 4);    // Unknown value
-	num_lumps             = wxINT16_SWAP_ON_BE(num_lumps);
-	dir_offset            = wxINT32_SWAP_ON_BE(dir_offset);
-	unknown               = wxINT32_SWAP_ON_BE(unknown);
-	std::string lastname  = "-noname-";
-	size_t      namecount = 0;
+	num_lumps        = wxINT16_SWAP_ON_BE(num_lumps);
+	dir_offset       = wxINT32_SWAP_ON_BE(dir_offset);
+	unknown          = wxINT32_SWAP_ON_BE(unknown);
+	string lastname  = "-noname-";
+	size_t namecount = 0;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
@@ -122,7 +122,7 @@ bool DatArchive::open(MemChunk& mc)
 			return false;
 		}
 
-		std::string myname;
+		string myname;
 		if (nameofs != 0)
 		{
 			size_t len   = 1;
@@ -210,7 +210,7 @@ bool DatArchive::open(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-std::string DatArchive::detectNamespace(ArchiveEntry* entry)
+string DatArchive::detectNamespace(ArchiveEntry* entry)
 {
 	return detectNamespace(entryIndex(entry));
 }
@@ -218,7 +218,7 @@ std::string DatArchive::detectNamespace(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-std::string DatArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
+string DatArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
 {
 	// Textures
 	if (index > (unsigned)walls_[0] && index < (unsigned)walls_[1])
@@ -297,7 +297,7 @@ ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // is true a copy of the entry is added.
 // Returns the added entry or NULL if the entry is invalid
 // -----------------------------------------------------------------------------
-ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, std::string_view add_namespace, bool copy)
+ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy)
 {
 	// Find requested namespace, only three non-global namespaces are valid in this format
 	if (StrUtil::equalCI(add_namespace, "textures"))
@@ -367,7 +367,7 @@ bool DatArchive::removeEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Override of Archive::renameEntry to update namespaces if needed
 // -----------------------------------------------------------------------------
-bool DatArchive::renameEntry(ArchiveEntry* entry, std::string_view name)
+bool DatArchive::renameEntry(ArchiveEntry* entry, string_view name)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -451,7 +451,7 @@ bool DatArchive::write(MemChunk& mc, bool update)
 	uint32_t      dir_offset   = 10;
 	uint16_t      name_offset  = numEntries() * 12;
 	uint32_t      name_size    = 0;
-	std::string   previousname = "";
+	string        previousname = "";
 	uint16_t*     nameoffsets  = new uint16_t[numEntries()];
 	ArchiveEntry* entry;
 	for (uint16_t l = 0; l < numEntries(); l++)
@@ -651,7 +651,7 @@ bool DatArchive::isDatArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Shadowcaster dat archive
 // -----------------------------------------------------------------------------
-bool DatArchive::isDatArchive(const std::string& filename)
+bool DatArchive::isDatArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -700,8 +700,8 @@ bool DatArchive::isDatArchive(const std::string& filename)
 		return false;
 	}
 
-	size_t   len   = 1;
-	size_t   start = nameofs + dir_offset;
+	size_t len   = 1;
+	size_t start = nameofs + dir_offset;
 	// Sanity checks again. Make sure there is actually a name.
 	if (start > file.Length())
 		return false;

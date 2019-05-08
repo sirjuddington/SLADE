@@ -49,20 +49,19 @@ namespace ZScript
 EntryType* etype_zscript = nullptr;
 
 // ZScript keywords (can't be function/variable names)
-vector<std::string> keywords = { "class",    "default",    "private",      "static",     "native",    "return",
-								 "if",       "else",       "for",          "while",      "do",        "break",
-								 "continue", "deprecated", "state",        "null",       "readonly",  "true",
-								 "false",    "struct",     "extend",       "clearscope", "vararg",    "ui",
-								 "play",     "virtual",    "virtualscope", "meta",       "Property",  "version",
-								 "in",       "out",        "states",       "action",     "override",  "super",
-								 "is",       "let",        "const",        "replaces",   "protected", "self" };
+vector<string> keywords = { "class",      "default", "private",  "static", "native",   "return",       "if",
+							"else",       "for",     "while",    "do",     "break",    "continue",     "deprecated",
+							"state",      "null",    "readonly", "true",   "false",    "struct",       "extend",
+							"clearscope", "vararg",  "ui",       "play",   "virtual",  "virtualscope", "meta",
+							"Property",   "version", "in",       "out",    "states",   "action",       "override",
+							"super",      "is",      "let",      "const",  "replaces", "protected",    "self" };
 
 // For test_parse_zscript console command
 bool dump_parsed_blocks    = false;
 bool dump_parsed_states    = false;
 bool dump_parsed_functions = false;
 
-std::string db_comment = "//$";
+string db_comment = "//$";
 } // namespace ZScript
 
 
@@ -76,9 +75,9 @@ namespace ZScript
 // -----------------------------------------------------------------------------
 // Writes a log [message] of [type] beginning with the location of [statement]
 // -----------------------------------------------------------------------------
-void logParserMessage(ParsedStatement& statement, Log::MessageType type, std::string_view message)
+void logParserMessage(ParsedStatement& statement, Log::MessageType type, string_view message)
 {
-	std::string location = "<unknown location>";
+	string location = "<unknown location>";
 	if (statement.entry)
 		location = statement.entry->path(true);
 
@@ -88,9 +87,9 @@ void logParserMessage(ParsedStatement& statement, Log::MessageType type, std::st
 // -----------------------------------------------------------------------------
 // Parses a ZScript type (eg. 'class<Actor>') from [tokens] beginning at [index]
 // -----------------------------------------------------------------------------
-std::string parseType(const vector<std::string>& tokens, unsigned& index)
+string parseType(const vector<string>& tokens, unsigned& index)
 {
-	std::string type;
+	string type;
 
 	// Qualifiers
 	while (index < tokens.size())
@@ -129,9 +128,9 @@ std::string parseType(const vector<std::string>& tokens, unsigned& index)
 // -----------------------------------------------------------------------------
 // Parses a ZScript value from [tokens] beginning at [index]
 // -----------------------------------------------------------------------------
-std::string parseValue(const vector<std::string>& tokens, unsigned& index)
+string parseValue(const vector<string>& tokens, unsigned& index)
 {
-	std::string value;
+	string value;
 	while (true)
 	{
 		// Read between ()
@@ -170,11 +169,7 @@ std::string parseValue(const vector<std::string>& tokens, unsigned& index)
 // Returns true if there is a keyword+value statement and writes the value to
 // [value]
 // -----------------------------------------------------------------------------
-bool checkKeywordValueStatement(
-	const vector<std::string>& tokens,
-	unsigned                   index,
-	std::string_view           word,
-	std::string&               value)
+bool checkKeywordValueStatement(const vector<string>& tokens, unsigned index, string_view word, string& value)
 {
 	if (index + 3 >= tokens.size())
 		return false;
@@ -261,7 +256,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<Ar
 // -----------------------------------------------------------------------------
 // Returns true if [word] is a ZScript keyword
 // -----------------------------------------------------------------------------
-bool isKeyword(std::string_view word)
+bool isKeyword(string_view word)
 {
 	for (auto& kw : keywords)
 		if (StrUtil::equalCI(word, kw))
@@ -327,7 +322,7 @@ bool Enumerator::parse(ParsedStatement& statement)
 // -----------------------------------------------------------------------------
 // Parses a function parameter from [tokens] beginning at [index]
 // -----------------------------------------------------------------------------
-unsigned Function::Parameter::parse(const vector<std::string>& tokens, unsigned start_index)
+unsigned Function::Parameter::parse(const vector<string>& tokens, unsigned start_index)
 {
 	// Type
 	type = parseType(tokens, start_index);
@@ -441,9 +436,9 @@ bool Function::parse(ParsedStatement& statement)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the function
 // -----------------------------------------------------------------------------
-std::string Function::asString()
+string Function::asString()
 {
-	std::string str;
+	string str;
 	if (!deprecated_.empty())
 		str += fmt::format("deprecated v{} ", deprecated_);
 	if (static_)
@@ -511,7 +506,7 @@ bool Function::isFunction(ParsedStatement& statement)
 // -----------------------------------------------------------------------------
 // Returns the first valid frame sprite (eg. TNT1 A -> TNT1A?)
 // -----------------------------------------------------------------------------
-std::string State::editorSprite()
+string State::editorSprite()
 {
 	if (frames.empty())
 		return "";
@@ -536,7 +531,7 @@ std::string State::editorSprite()
 // -----------------------------------------------------------------------------
 bool StateTable::parse(ParsedStatement& states)
 {
-	vector<std::string> current_states;
+	vector<string> current_states;
 	for (auto& statement : states.block)
 	{
 		if (statement.tokens.empty())
@@ -560,7 +555,7 @@ bool StateTable::parse(ParsedStatement& states)
 				if (!states_added)
 					current_states.clear();
 
-				std::string state;
+				string state;
 				for (auto b = index; b < a; ++b)
 					state += statement.tokens[b];
 
@@ -628,7 +623,7 @@ bool StateTable::parse(ParsedStatement& states)
 // editor.
 // Uses a state priority: Idle > See > Inactive > Spawn > [first defined]
 // -----------------------------------------------------------------------------
-std::string StateTable::editorSprite()
+string StateTable::editorSprite()
 {
 	if (!states_["idle"].frames.empty())
 		return states_["idle"].editorSprite();
@@ -775,8 +770,8 @@ void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::Thin
 	}
 
 	// Set properties from DB comments
-	auto        title = name_;
-	std::string group = "ZScript";
+	auto   title = name_;
+	string group = "ZScript";
 	for (auto& prop : db_properties_)
 	{
 		if (StrUtil::equalCI(prop.first, "Title"))
@@ -801,7 +796,7 @@ bool Class::parseClassBlock(vector<ParsedStatement>& block)
 			continue;
 
 		// Default block
-		std::string_view first_token = statement.tokens[0];
+		string_view first_token = statement.tokens[0];
 		if (StrUtil::equalCI(first_token, "default"))
 		{
 			if (!parseDefaults(statement.block))
@@ -860,7 +855,7 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 		// DB property comment
 		if (StrUtil::startsWith(statement.tokens[0], db_comment))
 		{
-			std::string_view prop = statement.tokens[0];
+			string_view prop = statement.tokens[0];
 			prop.remove_prefix(3);
 			if (statement.tokens.size() > 1)
 				db_properties_.emplace_back(prop, statement.tokens[1]);
@@ -1155,7 +1150,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 void ParsedStatement::dump(int indent)
 {
-	std::string line;
+	string line;
 	for (int a = 0; a < indent; a++)
 		line += "  ";
 

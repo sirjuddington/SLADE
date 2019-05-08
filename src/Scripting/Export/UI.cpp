@@ -35,7 +35,7 @@ namespace Lua
 // -----------------------------------------------------------------------------
 // Shows a message box with a [title] and [message]
 // -----------------------------------------------------------------------------
-void messageBox(const std::string& title, const std::string& message, MessageBoxIcon icon = MessageBoxIcon::Info)
+void messageBox(const string& title, const string& message, MessageBoxIcon icon = MessageBoxIcon::Info)
 {
 	long style = 4 | wxCENTRE;
 	switch (icon)
@@ -53,7 +53,7 @@ void messageBox(const std::string& title, const std::string& message, MessageBox
 // Shows an extended message box with a [title], [message] and [extra] in a
 // scrollable text view
 // -----------------------------------------------------------------------------
-void messageBoxExtended(const std::string& title, const std::string& message, const std::string& extra)
+void messageBoxExtended(const string& title, const string& message, const string& extra)
 {
 	ExtMessageDialog dlg(currentWindow(), title);
 	dlg.setMessage(message);
@@ -65,7 +65,7 @@ void messageBoxExtended(const std::string& title, const std::string& message, co
 // -----------------------------------------------------------------------------
 // Prompts for a string and returns what was entered
 // -----------------------------------------------------------------------------
-std::string promptString(const std::string& title, const std::string& message, const std::string& default_value)
+string promptString(const string& title, const string& message, const string& default_value)
 {
 	return wxGetTextFromUser(message, title, default_value, currentWindow()).ToStdString();
 }
@@ -73,7 +73,7 @@ std::string promptString(const std::string& title, const std::string& message, c
 // -----------------------------------------------------------------------------
 // Prompt for a number (int) and returns what was entered
 // -----------------------------------------------------------------------------
-int promptNumber(const std::string& title, const std::string& message, int default_value, int min, int max)
+int promptNumber(const string& title, const string& message, int default_value, int min, int max)
 {
 	return (int)wxGetNumberFromUser(message, "", title, default_value, min, max);
 }
@@ -81,7 +81,7 @@ int promptNumber(const std::string& title, const std::string& message, int defau
 // -----------------------------------------------------------------------------
 // Prompts for a yes/no answer and returns true if yes
 // -----------------------------------------------------------------------------
-bool promptYesNo(const std::string& title, const std::string& message)
+bool promptYesNo(const string& title, const string& message)
 {
 	return (wxMessageBox(message, title, wxYES_NO | wxICON_QUESTION) == wxYES);
 }
@@ -89,7 +89,7 @@ bool promptYesNo(const std::string& title, const std::string& message)
 // -----------------------------------------------------------------------------
 // Opens the file browser to select a single file
 // -----------------------------------------------------------------------------
-std::string browseFile(std::string_view title, std::string_view extensions, std::string_view filename)
+string browseFile(string_view title, string_view extensions, string_view filename)
 {
 	SFileDialog::FDInfo inf;
 	SFileDialog::openFile(inf, title, extensions, currentWindow(), filename);
@@ -99,10 +99,10 @@ std::string browseFile(std::string_view title, std::string_view extensions, std:
 // -----------------------------------------------------------------------------
 // Opens the file browser to select multiple files
 // -----------------------------------------------------------------------------
-vector<std::string> browseFiles(std::string_view title, std::string_view extensions)
+vector<string> browseFiles(string_view title, string_view extensions)
 {
 	SFileDialog::FDInfo inf;
-	vector<std::string> filenames;
+	vector<string>      filenames;
 	if (SFileDialog::openFiles(inf, title, extensions, currentWindow()))
 		for (const auto& file : inf.filenames)
 			filenames.push_back(file);
@@ -112,7 +112,7 @@ vector<std::string> browseFiles(std::string_view title, std::string_view extensi
 // -----------------------------------------------------------------------------
 // Opens the file browser to save a single file
 // -----------------------------------------------------------------------------
-std::string saveFile(std::string_view title, std::string_view extensions, std::string_view fn_default = {})
+string saveFile(string_view title, string_view extensions, string_view fn_default = {})
 {
 	SFileDialog::FDInfo inf;
 	if (SFileDialog::saveFile(inf, title, extensions, currentWindow(), fn_default))
@@ -124,7 +124,7 @@ std::string saveFile(std::string_view title, std::string_view extensions, std::s
 // -----------------------------------------------------------------------------
 // Opens the file browser to save multiple files
 // -----------------------------------------------------------------------------
-std::tuple<std::string, std::string> saveFiles(std::string_view title, std::string_view extensions)
+std::tuple<string, string> saveFiles(string_view title, string_view extensions)
 {
 	SFileDialog::FDInfo inf;
 	if (SFileDialog::saveFiles(inf, title, extensions, currentWindow()))
@@ -143,7 +143,7 @@ void registerUINamespace(sol::state& lua)
 	// Functions
 	// -------------------------------------------------------------------------
 	ui["MessageBox"] = sol::overload(
-		&messageBox, [](const std::string& title, const std::string& message) { messageBox(title, message); });
+		&messageBox, [](const string& title, const string& message) { messageBox(title, message); });
 	ui["MessageBoxExt"]   = &messageBoxExtended;
 	ui["PromptString"]    = &promptString;
 	ui["PromptNumber"]    = &promptNumber;
@@ -151,11 +151,11 @@ void registerUINamespace(sol::state& lua)
 	ui["PromptOpenFile"]  = &browseFile;
 	ui["PromptOpenFiles"] = &browseFiles;
 	ui["PromptSaveFile"]  = sol::overload(
-        &saveFile, [](std::string_view title, std::string_view extensions) { return saveFile(title, extensions); });
+        &saveFile, [](string_view title, string_view extensions) { return saveFile(title, extensions); });
 	ui["PromptSaveFiles"] = &saveFiles;
 	ui["ShowSplash"]      = sol::overload(
-        [](const std::string& message) { UI::showSplash(message, false, currentWindow()); },
-        [](const std::string& message, bool progress) { UI::showSplash(message, progress, currentWindow()); });
+        [](const string& message) { UI::showSplash(message, false, currentWindow()); },
+        [](const string& message, bool progress) { UI::showSplash(message, progress, currentWindow()); });
 	ui["HideSplash"]               = &UI::hideSplash;
 	ui["UpdateSplash"]             = &UI::updateSplash;
 	ui["SplashProgress"]           = &UI::getSplashProgress;

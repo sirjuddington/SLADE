@@ -37,8 +37,9 @@
 #include "MapEditor.h"
 #include "UI/MapBackupPanel.h"
 #include "UI/SDialog.h"
-#include "Utility/StringUtils.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
+
 
 
 // -----------------------------------------------------------------------------
@@ -50,8 +51,8 @@ CVAR(Int, max_map_backups, 25, CVar::Flag::Save)
 namespace
 {
 // List of entry names to be ignored for backups
-std::string mb_ignore_entries[] = { "NODES",    "SSECTORS", "ZNODES",  "SEGS",     "REJECT",
-									"BLOCKMAP", "GL_VERT",  "GL_SEGS", "GL_SSECT", "GL_NODES" };
+string mb_ignore_entries[] = { "NODES",    "SSECTORS", "ZNODES",  "SEGS",     "REJECT",
+							   "BLOCKMAP", "GL_VERT",  "GL_SEGS", "GL_SSECT", "GL_NODES" };
 } // namespace
 
 
@@ -67,9 +68,9 @@ std::string mb_ignore_entries[] = { "NODES",    "SSECTORS", "ZNODES",  "SEGS",  
 // in [map_data]
 // -----------------------------------------------------------------------------
 bool MapBackupManager::writeBackup(
-	vector<ArchiveEntry::UPtr>& map_data,
-	std::string_view            archive_name,
-	std::string_view            map_name) const
+	vector<unique_ptr<ArchiveEntry>>& map_data,
+	std::string_view                  archive_name,
+	std::string_view                  map_name) const
 {
 	// Create backup directory if needed
 	auto backup_dir = App::path("backups", App::Dir::User);
@@ -78,7 +79,7 @@ bool MapBackupManager::writeBackup(
 
 	// Open or create backup zip
 	ZipArchive backup;
-	std::string fname{ archive_name };
+	string     fname{ archive_name };
 	std::replace(fname.begin(), fname.end(), '.', '_');
 	auto backup_file = fmt::format("{}/{}_backup.zip", backup_dir, fname);
 	if (!backup.open(backup_file))
@@ -164,7 +165,7 @@ bool MapBackupManager::writeBackup(
 // Shows the map backups for [map_name] in [archive_name], returns the selected
 // map backup data in a WadArchive
 // -----------------------------------------------------------------------------
-Archive* MapBackupManager::openBackup(std::string_view archive_name, std::string_view map_name) const
+Archive* MapBackupManager::openBackup(string_view archive_name, string_view map_name) const
 {
 	SDialog dlg(MapEditor::windowWx(), fmt::format("Restore {} backup", map_name), "map_backup", 500, 400);
 	auto    sizer = new wxBoxSizer(wxVERTICAL);

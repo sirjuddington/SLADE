@@ -112,7 +112,7 @@ Vec2d MapThing::getPoint(Point point)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapThing::intProperty(std::string_view key)
+int MapThing::intProperty(string_view key)
 {
 	if (key == PROP_TYPE)
 		return type_;
@@ -147,7 +147,7 @@ int MapThing::intProperty(std::string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the float property matching [key]
 // -----------------------------------------------------------------------------
-double MapThing::floatProperty(std::string_view key)
+double MapThing::floatProperty(string_view key)
 {
 	if (key == PROP_X)
 		return position_.x;
@@ -162,7 +162,7 @@ double MapThing::floatProperty(std::string_view key)
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapThing::setIntProperty(std::string_view key, int value)
+void MapThing::setIntProperty(string_view key, int value)
 {
 	// Update modified time
 	setModified();
@@ -200,7 +200,7 @@ void MapThing::setIntProperty(std::string_view key, int value)
 // -----------------------------------------------------------------------------
 // Sets the float value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapThing::setFloatProperty(std::string_view key, double value)
+void MapThing::setFloatProperty(string_view key, double value)
 {
 	// Update modified time
 	setModified();
@@ -417,7 +417,7 @@ void MapThing::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 // Writes the thing as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapThing::writeUDMF(std::string& def)
+void MapThing::writeUDMF(string& def)
 {
 	def = fmt::format("thing//#{}\n{\n", index_);
 

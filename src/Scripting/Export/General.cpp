@@ -49,7 +49,7 @@ namespace Lua
 // -----------------------------------------------------------------------------
 // Writes a log [message] of [type]
 // -----------------------------------------------------------------------------
-void logMessage(std::string_view message, Log::MessageType type = Log::MessageType::Script)
+void logMessage(string_view message, Log::MessageType type = Log::MessageType::Script)
 {
 	Log::message(type, message);
 }
@@ -69,9 +69,9 @@ bool showArchive(Archive* archive)
 // -----------------------------------------------------------------------------
 // Returns a string_view of a MemChunk's data
 // -----------------------------------------------------------------------------
-std::string_view memChunkData(MemChunk& mc)
+string_view memChunkData(MemChunk& mc)
 {
-	return std::string_view{ (char*)mc.data(), mc.size() };
+	return string_view{ (char*)mc.data(), mc.size() };
 }
 
 // -----------------------------------------------------------------------------
@@ -93,7 +93,7 @@ template<typename T> sol::object memChunkRead(MemChunk& self, unsigned offset)
 // If [null_terminated] is true, the read string will terminate at the first
 // null (\0) character found after [offset] (but before [offset]+[length])
 // -----------------------------------------------------------------------------
-std::string memChunkReadString(MemChunk& self, unsigned offset, unsigned length, bool null_terminated)
+string memChunkReadString(MemChunk& self, unsigned offset, unsigned length, bool null_terminated)
 {
 	if (null_terminated)
 	{
@@ -110,9 +110,9 @@ std::string memChunkReadString(MemChunk& self, unsigned offset, unsigned length,
 		}
 	}
 
-	std::string str;
+	string str;
 	str.resize(length, 0);
-	return self.read(offset, str.data(), length) ? str : std::string{};
+	return self.read(offset, str.data(), length) ? str : string{};
 }
 
 // -----------------------------------------------------------------------------
@@ -140,7 +140,7 @@ void registerMemChunkType(sol::state& lua)
 	// Functions
 	// -------------------------------------------------------------------------
 	lua_mc["AsString"] = &memChunkData;
-	lua_mc["SetData"]  = [](MemChunk& self, std::string_view data) {
+	lua_mc["SetData"]  = [](MemChunk& self, string_view data) {
         self.importMem((const uint8_t*)data.data(), data.size());
 	};
 	lua_mc["Clear"]  = &MemChunk::clear;
@@ -152,12 +152,12 @@ void registerMemChunkType(sol::state& lua)
 		[](MemChunk& self, MemChunk& mc, int offset) { return self.exportMemChunk(mc, offset); });
 	lua_mc["ImportFile"] = sol::overload(
 		&MemChunk::importFile,
-		[](MemChunk& self, std::string_view fn) { self.importFile(fn); },
-		[](MemChunk& self, std::string_view fn, int offset) { self.importFile(fn, offset); });
+		[](MemChunk& self, string_view fn) { self.importFile(fn); },
+		[](MemChunk& self, string_view fn, int offset) { self.importFile(fn, offset); });
 	lua_mc["ExportFile"] = sol::overload(
 		&MemChunk::exportFile,
-		[](MemChunk& self, std::string_view fn) { self.exportFile(fn); },
-		[](MemChunk& self, std::string_view fn, int offset) { self.exportFile(fn, offset); });
+		[](MemChunk& self, string_view fn) { self.exportFile(fn); },
+		[](MemChunk& self, string_view fn, int offset) { self.exportFile(fn, offset); });
 	lua_mc["FillData"]    = &MemChunk::fillData;
 	lua_mc["WriteInt8"]   = &memChunkWrite<int8_t>;
 	lua_mc["WriteUInt8"]  = &memChunkWrite<uint8_t>;
@@ -167,7 +167,7 @@ void registerMemChunkType(sol::state& lua)
 	lua_mc["WriteUInt32"] = &memChunkWrite<uint32_t>;
 	lua_mc["WriteInt64"]  = &memChunkWrite<int64_t>;
 	lua_mc["WriteUInt64"] = &memChunkWrite<uint64_t>;
-	lua_mc["WriteString"] = [](MemChunk& self, int offset, std::string_view value, bool expand) {
+	lua_mc["WriteString"] = [](MemChunk& self, int offset, string_view value, bool expand) {
 		self.write(offset, value.data(), value.size(), expand);
 	};
 	lua_mc["ReadInt8"]   = &memChunkRead<int8_t>;
@@ -246,9 +246,9 @@ void registerAppNamespace(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	app["LogMessage"]            = [](std::string_view message) { logMessage(message, Log::MessageType::Script); };
-	app["LogWarning"]            = [](std::string_view message) { logMessage(message, Log::MessageType::Warning); };
-	app["LogError"]              = [](std::string_view message) { logMessage(message, Log::MessageType::Error); };
+	app["LogMessage"]            = [](string_view message) { logMessage(message, Log::MessageType::Script); };
+	app["LogWarning"]            = [](string_view message) { logMessage(message, Log::MessageType::Warning); };
+	app["LogError"]              = [](string_view message) { logMessage(message, Log::MessageType::Error); };
 	app["CurrentArchive"]        = &MainEditor::currentArchive;
 	app["CurrentEntry"]          = &MainEditor::currentEntry;
 	app["CurrentEntrySelection"] = &MainEditor::currentEntrySelection;

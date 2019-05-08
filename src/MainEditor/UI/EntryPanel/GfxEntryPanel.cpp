@@ -667,7 +667,7 @@ void GfxEntryPanel::applyViewType() const
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // ----------------------------------------------------------------------------
-bool GfxEntryPanel::handleEntryPanelAction(std::string_view id)
+bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 {
 	// We're only interested in "pgfx_" actions
 	if (!StrUtil::startsWith(id, "pgfx_"))
@@ -676,7 +676,7 @@ bool GfxEntryPanel::handleEntryPanelAction(std::string_view id)
 	// For pgfx_brush actions, the string after pgfx is a brush name
 	if (StrUtil::startsWith(id, "pgfx_brush"))
 	{
-		gfx_canvas_->setBrush(SBrush::get(std::string{ id }));
+		gfx_canvas_->setBrush(SBrush::get(string{ id }));
 		button_brush_->setIcon(StrUtil::afterFirst(id, '_'));
 	}
 
@@ -1135,7 +1135,7 @@ void GfxEntryPanel::onGfxPixelsChanged(wxEvent& e)
 // -----------------------------------------------------------------------------
 // Handles any announcements
 // -----------------------------------------------------------------------------
-void GfxEntryPanel::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
+void GfxEntryPanel::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
 {
 	if (announcer != theMainWindow->paletteChooser())
 		return;

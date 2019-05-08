@@ -198,7 +198,7 @@ void SFont::drawCharacter(char c, ColRGBA colour)
 // -----------------------------------------------------------------------------
 // Draws the string [str] with the font, in [colour] with [align]ment
 // -----------------------------------------------------------------------------
-void SFont::drawString(std::string_view str, ColRGBA colour, SFont::Align align)
+void SFont::drawString(string_view str, ColRGBA colour, SFont::Align align)
 {
 	// Check texture is loaded
 	if (!OpenGL::Texture::isLoaded(texture_))

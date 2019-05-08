@@ -485,7 +485,7 @@ void MapEditContext::showItem(int index)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the current edit mode
 // -----------------------------------------------------------------------------
-std::string MapEditContext::modeString(bool plural) const
+string MapEditContext::modeString(bool plural) const
 {
 	switch (edit_mode_)
 	{
@@ -938,7 +938,7 @@ void MapEditContext::endTagEdit(bool accept)
 // -----------------------------------------------------------------------------
 // Returns the current editor message at [index]
 // -----------------------------------------------------------------------------
-const std::string& MapEditContext::editorMessage(int index)
+const string& MapEditContext::editorMessage(int index)
 {
 	// Check index
 	if (index < 0 || index >= (int)editor_messages_.size())
@@ -962,7 +962,7 @@ long MapEditContext::editorMessageTime(int index)
 // -----------------------------------------------------------------------------
 // Adds an editor message, removing the oldest if needed
 // -----------------------------------------------------------------------------
-void MapEditContext::addEditorMessage(std::string_view message)
+void MapEditContext::addEditorMessage(string_view message)
 {
 	// Remove oldest message if there are too many active
 	if (editor_messages_.size() >= 10)
@@ -975,7 +975,7 @@ void MapEditContext::addEditorMessage(std::string_view message)
 // -----------------------------------------------------------------------------
 // Sets the feature help text to display [lines]
 // -----------------------------------------------------------------------------
-void MapEditContext::setFeatureHelp(const vector<std::string>& lines)
+void MapEditContext::setFeatureHelp(const vector<string>& lines)
 {
 	feature_help_lines_.clear();
 	feature_help_lines_ = lines;
@@ -988,7 +988,7 @@ void MapEditContext::setFeatureHelp(const vector<std::string>& lines)
 // -----------------------------------------------------------------------------
 // Handles the keybind [key]
 // -----------------------------------------------------------------------------
-bool MapEditContext::handleKeyBind(std::string_view key, Vec2d position)
+bool MapEditContext::handleKeyBind(string_view key, Vec2d position)
 {
 	// --- General keybinds ---
 
@@ -1276,7 +1276,7 @@ void MapEditContext::updateDisplay()
 void MapEditContext::updateStatusText() const
 {
 	// Edit mode
-	std::string mode = "Mode: ";
+	string mode = "Mode: ";
 	switch (edit_mode_)
 	{
 	case Mode::Vertices: mode += "Vertices"; break;
@@ -1302,7 +1302,7 @@ void MapEditContext::updateStatusText() const
 	MapEditor::setStatusText(mode, 1);
 
 	// Grid
-	std::string grid;
+	string grid;
 	if (gridSize() < 1)
 		grid = fmt::format("Grid: {:1.2f}x{:1.2f}", gridSize(), gridSize());
 	else
@@ -1321,7 +1321,7 @@ void MapEditContext::updateStatusText() const
 // begin will modify object properties, [create/del] are true if it will create
 // or delete objects
 // -----------------------------------------------------------------------------
-void MapEditContext::beginUndoRecord(std::string_view name, bool mod, bool create, bool del)
+void MapEditContext::beginUndoRecord(string_view name, bool mod, bool create, bool del)
 {
 	// Setup
 	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
@@ -1352,7 +1352,7 @@ void MapEditContext::beginUndoRecord(std::string_view name, bool mod, bool creat
 // operations like offset changes etc. so that 5 offset changes to the same
 // object only create 1 undo level)
 // -----------------------------------------------------------------------------
-void MapEditContext::beginUndoRecordLocked(std::string_view name, bool mod, bool create, bool del)
+void MapEditContext::beginUndoRecordLocked(string_view name, bool mod, bool create, bool del)
 {
 	if (name != last_undo_level_)
 	{
@@ -1447,8 +1447,8 @@ void MapEditContext::doRedo()
 	selection_.clear();
 
 	// Redo
-	int      time      = App::runTimer() - 1;
-	auto     manager   = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
+	int  time      = App::runTimer() - 1;
+	auto manager   = (edit_mode_ == Mode::Visual) ? edit_3d_.undoManager() : undo_manager_.get();
 	auto undo_name = manager->redo();
 
 	// Editor message
@@ -1631,7 +1631,7 @@ void MapEditContext::drawInfoOverlay(const Vec2i& size, float alpha)
 // -----------------------------------------------------------------------------
 // Handles an SAction [id]. Returns true if the action was handled here
 // -----------------------------------------------------------------------------
-bool MapEditContext::handleAction(std::string_view id)
+bool MapEditContext::handleAction(string_view id)
 {
 	using namespace MapEditor;
 
@@ -2158,7 +2158,7 @@ void MapArchClipboardItem::addLines(const vector<MapLine*>& lines)
 // -----------------------------------------------------------------------------
 // Returns a string with info on what items are copied
 // -----------------------------------------------------------------------------
-std::string MapArchClipboardItem::info() const
+string MapArchClipboardItem::info() const
 {
 	return fmt::format(
 		"{} Vertices, {} Lines, {} Sides and {} Sectors",
@@ -2321,7 +2321,7 @@ void MapThingsClipboardItem::addThings(vector<MapThing*>& things)
 // -----------------------------------------------------------------------------
 // Returns a string with info on what items are copied
 // -----------------------------------------------------------------------------
-std::string MapThingsClipboardItem::info() const
+string MapThingsClipboardItem::info() const
 {
 	return fmt::format("{} Things", things_.size());
 }
@@ -2383,7 +2383,7 @@ CONSOLE_COMMAND(m_check, 0, true)
 	auto texman = &(MapEditor::textureManager());
 
 	// Get checks to run
-	vector<MapCheck::UPtr> checks;
+	vector<unique_ptr<MapCheck>> checks;
 
 	// Check for 'all'
 	bool all = false;

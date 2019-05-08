@@ -49,17 +49,17 @@ public:
 	void showShapeDrawPanel(bool show = true);
 
 	// SAction handler
-	bool handleAction(std::string_view id) override;
+	bool handleAction(string_view id) override;
 
 private:
-	MapCanvas*                 map_canvas_          = nullptr;
-	MapObjectPropsPanel*       panel_obj_props_     = nullptr;
-	ScriptEditorPanel*         panel_script_editor_ = nullptr;
-	vector<ArchiveEntry::UPtr> map_data_;
-	ObjectEditPanel*           panel_obj_edit_     = nullptr;
-	MapChecksPanel*            panel_checks_       = nullptr;
-	UndoManagerHistoryPanel*   panel_undo_history_ = nullptr;
-	wxMenu*                    menu_scripts_       = nullptr;
+	MapCanvas*                       map_canvas_          = nullptr;
+	MapObjectPropsPanel*             panel_obj_props_     = nullptr;
+	ScriptEditorPanel*               panel_script_editor_ = nullptr;
+	vector<unique_ptr<ArchiveEntry>> map_data_;
+	ObjectEditPanel*                 panel_obj_edit_     = nullptr;
+	MapChecksPanel*                  panel_checks_       = nullptr;
+	UndoManagerHistoryPanel*         panel_undo_history_ = nullptr;
+	wxMenu*                          menu_scripts_       = nullptr;
 
 	void buildNodes(Archive* wad);
 	void lockMapEntries(bool lock = true) const;

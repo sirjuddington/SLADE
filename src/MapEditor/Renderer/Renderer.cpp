@@ -632,7 +632,7 @@ void Renderer::drawSelectionNumbers() const
 	auto col = ColourConfiguration::colour("map_editor_message");
 
 	// Go through selection
-	std::string text;
+	string text;
 	Drawing::enableTextStateReset(false);
 	Drawing::setTextState(true);
 	view_.setOverlayCoords(true);
@@ -1739,7 +1739,7 @@ void Renderer::animateHilightChange(const MapEditor::Item& old_item, MapObject* 
 // -----------------------------------------------------------------------------
 // Adds [animation] to the list of active animations
 // -----------------------------------------------------------------------------
-void Renderer::addAnimation(std::unique_ptr<MCAnimation> animation)
+void Renderer::addAnimation(unique_ptr<MCAnimation> animation)
 {
 	animations_.push_back(std::move(animation));
 }

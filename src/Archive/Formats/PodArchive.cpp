@@ -65,7 +65,7 @@ PodArchive::PodArchive() : Archive("pod")
 // -----------------------------------------------------------------------------
 // Sets the description/id of the pod archive
 // -----------------------------------------------------------------------------
-void PodArchive::setId(std::string_view id)
+void PodArchive::setId(string_view id)
 {
 	memset(id_, 0, 80);
 	memcpy(id_, id.data(), id.size());
@@ -321,7 +321,7 @@ bool PodArchive::isPodArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid pod archive
 // -----------------------------------------------------------------------------
-bool PodArchive::isPodArchive(const std::string& filename)
+bool PodArchive::isPodArchive(const string& filename)
 {
 	wxFile file;
 	if (!file.Open(filename))
@@ -379,7 +379,7 @@ CONSOLE_COMMAND(pod_get_id, 0, 1)
 {
 	auto archive = MainEditor::currentArchive();
 	if (archive && archive->formatId() == "pod")
-		Log::console(std::string{ dynamic_cast<PodArchive*>(archive)->getId() });
+		Log::console(string{ dynamic_cast<PodArchive*>(archive)->getId() });
 	else
 		Log::console("Current tab is not a POD archive");
 }

@@ -57,10 +57,10 @@ public:
 	};
 
 	bool readMap(Archive::MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props) override;
-	vector<ArchiveEntry::UPtr> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
+	vector<unique_ptr<ArchiveEntry>> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
 		override;
 
-	std::string udmfNamespace() override { return ""; }
+	string udmfNamespace() override { return ""; }
 
 private:
 	virtual bool readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_data) const;

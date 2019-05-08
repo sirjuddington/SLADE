@@ -51,9 +51,9 @@ public:
 	void         setColumnHeaderArrow(long column, int arrow) const;
 
 protected:
-	std::unique_ptr<wxListItemAttr> item_attr_;
-	wxFont                          font_normal_;
-	wxFont                          font_monospace_;
+	unique_ptr<wxListItemAttr> item_attr_;
+	wxFont                     font_normal_;
+	wxFont                     font_monospace_;
 
 	// Item sorting/filtering
 	vector<long> items_;

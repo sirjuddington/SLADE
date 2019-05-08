@@ -61,7 +61,7 @@ ModMusic::~ModMusic()
 // -----------------------------------------------------------------------------
 // Loads a mod file for playback
 // -----------------------------------------------------------------------------
-bool ModMusic::openFromFile(const std::string& filename)
+bool ModMusic::openFromFile(const string& filename)
 {
 	// Init DUMB if needed
 	if (!init_done_)

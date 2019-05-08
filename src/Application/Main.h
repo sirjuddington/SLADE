@@ -23,8 +23,13 @@ typedef unsigned __int64 uint64_t;
 #define S_CMP(s1, s2) s1.Cmp(s2) == 0
 #define S_CMPNOCASE(s1, s2) s1.CmpNoCase(s2) == 0
 
-// Vectors
+// Usings for common std types, to avoid std:: spam
+using std::shared_ptr;
+using std::string;
+using std::string_view;
+using std::unique_ptr;
 using std::vector;
+using std::weak_ptr;
 
 // A macro to check if a value exists in a vector
 #define VECTOR_EXISTS(vec, val) find((vec).begin(), (vec).end(), val) != (vec).end()
@@ -45,11 +50,11 @@ using std::vector;
 // Namespace to hold 'global' variables
 namespace Global
 {
-extern std::string error;
-extern std::string sc_rev;
-extern bool        debug;
-extern int         win_version_major;
-extern int         win_version_minor;
+extern string error;
+extern string sc_rev;
+extern bool   debug;
+extern int    win_version_major;
+extern int    win_version_minor;
 }; // namespace Global
 
 // Global internal includes

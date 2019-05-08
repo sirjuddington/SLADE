@@ -54,7 +54,7 @@
 // Adds [texture] to the overlay if it doesn't already exist at the target part
 // (front upper, etc)
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::addTexture(TexInfo& inf, std::string_view texture) const
+void LineTextureOverlay::addTexture(TexInfo& inf, string_view texture) const
 {
 	// Ignore if texture is blank ("-")
 	if (texture == MapSide::TEX_NONE)
@@ -273,7 +273,7 @@ void LineTextureOverlay::draw(int width, int height, float fade)
 // -----------------------------------------------------------------------------
 // Draws the texture box from info in [tex]
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, std::string_view position) const
+void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string_view position) const
 {
 	// Get colours
 	ColRGBA col_bg  = ColourConfiguration::colour("map_overlay_background");
@@ -353,7 +353,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, std::s
 		Drawing::Align::Center);
 
 	// Determine texture name text
-	std::string str_texture;
+	string str_texture;
 	if (tex.textures.size() == 1)
 	{
 		auto& tex_info = OpenGL::Texture::info(tex_first);
@@ -423,7 +423,7 @@ void LineTextureOverlay::mouseRightClick() {}
 // -----------------------------------------------------------------------------
 // Called when a key is pressed
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::keyDown(std::string_view key)
+void LineTextureOverlay::keyDown(string_view key)
 {
 	// 'Select' front side
 	if ((key == "F" || key == "f") && side1_)
@@ -464,7 +464,7 @@ void LineTextureOverlay::keyDown(std::string_view key)
 // -----------------------------------------------------------------------------
 // Opens the texture browser for [tex]
 // -----------------------------------------------------------------------------
-void LineTextureOverlay::browseTexture(TexInfo& tex, std::string_view position)
+void LineTextureOverlay::browseTexture(TexInfo& tex, string_view position)
 {
 	// Get initial texture
 	auto texture = tex.textures.empty() ? MapSide::TEX_NONE : tex.textures[0];

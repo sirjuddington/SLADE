@@ -12,13 +12,13 @@ class Resource
 	friend class ResourceManager;
 
 public:
-	Resource(std::string_view type) : type_{ type } {}
+	Resource(string_view type) : type_{ type } {}
 	virtual ~Resource() = default;
 
 	virtual int length() { return 0; }
 
 private:
-	std::string type_;
+	string type_;
 };
 
 class EntryResource : public Resource
@@ -29,16 +29,16 @@ public:
 	EntryResource() : Resource("entry") {}
 	virtual ~EntryResource() = default;
 
-	void add(ArchiveEntry::SPtr& entry);
-	void remove(ArchiveEntry::SPtr& entry);
+	void add(shared_ptr<ArchiveEntry>& entry);
+	void remove(shared_ptr<ArchiveEntry>& entry);
 	void removeArchive(Archive* archive);
 
 	int length() override { return entries_.size(); }
 
-	ArchiveEntry* getEntry(Archive* priority = nullptr, std::string_view nspace = "", bool ns_required = false);
+	ArchiveEntry* getEntry(Archive* priority = nullptr, string_view nspace = "", bool ns_required = false);
 
 private:
-	vector<std::weak_ptr<ArchiveEntry>> entries_;
+	vector<weak_ptr<ArchiveEntry>> entries_;
 };
 
 class TextureResource : public Resource
@@ -63,11 +63,11 @@ public:
 	int length() override { return textures_.size(); }
 
 private:
-	vector<std::unique_ptr<Texture>> textures_;
+	vector<unique_ptr<Texture>> textures_;
 };
 
-typedef std::map<std::string, EntryResource>   EntryResourceMap;
-typedef std::map<std::string, TextureResource> TextureResourceMap;
+typedef std::map<string, EntryResource>   EntryResourceMap;
+typedef std::map<string, TextureResource> TextureResourceMap;
 
 class ResourceManager : public Listener, public Announcer
 {
@@ -78,31 +78,28 @@ public:
 	void addArchive(Archive* archive);
 	void removeArchive(Archive* archive);
 
-	void addEntry(ArchiveEntry::SPtr& entry, bool log = false);
-	void removeEntry(ArchiveEntry::SPtr& entry, bool log = false, bool full_check = false);
+	void addEntry(shared_ptr<ArchiveEntry>& entry, bool log = false);
+	void removeEntry(shared_ptr<ArchiveEntry>& entry, bool log = false, bool full_check = false);
 
 	void listAllPatches();
 	void putAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
 
 	void putAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore = nullptr);
-	void putAllTextureNames(vector<std::string>& list);
+	void putAllTextureNames(vector<string>& list);
 
 	void putAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
-	void putAllFlatNames(vector<std::string>& list);
+	void putAllFlatNames(vector<string>& list);
 
-	ArchiveEntry* getPaletteEntry(std::string_view palette, Archive* priority = nullptr);
-	ArchiveEntry* getPatchEntry(std::string_view patch, std::string_view nspace = "patches", Archive* priority = nullptr);
-	ArchiveEntry* getFlatEntry(std::string_view flat, Archive* priority = nullptr);
-	ArchiveEntry* getTextureEntry(
-		std::string_view texture,
-		std::string_view nspace   = "textures",
-		Archive*        priority = nullptr);
-	CTexture* getTexture(std::string_view texture, Archive* priority = nullptr, Archive* ignore = nullptr);
-	uint16_t  getTextureHash(std::string_view name) const;
+	ArchiveEntry* getPaletteEntry(string_view palette, Archive* priority = nullptr);
+	ArchiveEntry* getPatchEntry(string_view patch, string_view nspace = "patches", Archive* priority = nullptr);
+	ArchiveEntry* getFlatEntry(string_view flat, Archive* priority = nullptr);
+	ArchiveEntry* getTextureEntry(string_view texture, string_view nspace = "textures", Archive* priority = nullptr);
+	CTexture*     getTexture(string_view texture, Archive* priority = nullptr, Archive* ignore = nullptr);
+	uint16_t      getTextureHash(string_view name) const;
 
-	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
 
-	static std::string doom64TextureName(uint16_t hash) { return doom64_hash_table_[hash]; }
+	static string doom64TextureName(uint16_t hash) { return doom64_hash_table_[hash]; }
 
 private:
 	EntryResourceMap palettes_;
@@ -118,5 +115,5 @@ private:
 	// EntryResourceMap	satextures_fp_only_; // Probably not needed
 	TextureResourceMap textures_; // Composite textures (defined in a TEXTUREx/TEXTURES lump)
 
-	static std::string doom64_hash_table_[65536];
+	static string doom64_hash_table_[65536];
 };

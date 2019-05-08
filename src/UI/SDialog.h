@@ -20,5 +20,5 @@ public:
 	void onShow(wxShowEvent& e);
 
 private:
-	std::string id_;
+	string id_;
 };

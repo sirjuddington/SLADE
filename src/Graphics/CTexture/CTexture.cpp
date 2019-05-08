@@ -51,11 +51,7 @@
 // -----------------------------------------------------------------------------
 // CTPatch class constructor w/initial values
 // -----------------------------------------------------------------------------
-CTPatch::CTPatch(std::string_view name, int16_t offset_x, int16_t offset_y) :
-	name_{ name },
-	offset_{ offset_x, offset_y }
-{
-}
+CTPatch::CTPatch(string_view name, int16_t offset_x, int16_t offset_y) : name_{ name }, offset_{ offset_x, offset_y } {}
 
 // -----------------------------------------------------------------------------
 // Returns the entry (if any) associated with this patch via the resource
@@ -89,7 +85,7 @@ ArchiveEntry* CTPatch::patchEntry(Archive* parent)
 // -----------------------------------------------------------------------------
 // CTPatchEx class constructor w/basic initial values
 // -----------------------------------------------------------------------------
-CTPatchEx::CTPatchEx(std::string_view name, int16_t offset_x, int16_t offset_y, Type type) :
+CTPatchEx::CTPatchEx(string_view name, int16_t offset_x, int16_t offset_y, Type type) :
 	CTPatch{ name, offset_x, offset_y },
 	type_{ type }
 {
@@ -184,8 +180,8 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 			if (tz.checkNC("Translation"))
 			{
 				// Build translation string
-				std::string translate;
-				std::string temp = tz.next().text;
+				string translate;
+				string temp = tz.next().text;
 				if (StrUtil::contains(temp, '='))
 					temp = fmt::format("\"{}\"", temp);
 				translate += temp;
@@ -271,10 +267,10 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 // -----------------------------------------------------------------------------
 // Returns a text representation of the patch in ZDoom TEXTURES format
 // -----------------------------------------------------------------------------
-std::string CTPatchEx::asText()
+string CTPatchEx::asText()
 {
 	// Init text string
-	std::string typestring = "Patch";
+	string typestring = "Patch";
 	if (type_ == Type::Graphic)
 		typestring = "Graphic";
 	auto text = fmt::format("\t{} \"{}\", {}, {}\n", typestring, name_, offset_.x, offset_.y);
@@ -438,10 +434,10 @@ void CTexture::clear()
 // Adds a patch to the texture with the given attributes, at [index].
 // If [index] is -1, the patch is added to the end of the list.
 // -----------------------------------------------------------------------------
-bool CTexture::addPatch(std::string_view patch, int16_t offset_x, int16_t offset_y, int index)
+bool CTexture::addPatch(string_view patch, int16_t offset_x, int16_t offset_y, int index)
 {
 	// Create new patch
-	CTPatch::UPtr np;
+	unique_ptr<CTPatch> np;
 	if (extended_)
 		np = std::make_unique<CTPatchEx>(patch, offset_x, offset_y);
 	else
@@ -488,7 +484,7 @@ bool CTexture::removePatch(size_t index)
 // Removes all instances of [patch] from the texture.
 // Returns true if any were removed, false otherwise
 // -----------------------------------------------------------------------------
-bool CTexture::removePatch(std::string_view patch)
+bool CTexture::removePatch(string_view patch)
 {
 	// Go through patches
 	bool removed = false;
@@ -516,7 +512,7 @@ bool CTexture::removePatch(std::string_view patch)
 // ArchiveEntry with [newentry].
 // Returns false if [index] is out of bounds, true otherwise
 // -----------------------------------------------------------------------------
-bool CTexture::replacePatch(size_t index, std::string_view newpatch)
+bool CTexture::replacePatch(size_t index, string_view newpatch)
 {
 	// Check index
 	if (index >= patches_.size())
@@ -589,7 +585,7 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 // -----------------------------------------------------------------------------
 // Parses a TEXTURES format texture definition
 // -----------------------------------------------------------------------------
-bool CTexture::parse(Tokenizer& tz, std::string_view type)
+bool CTexture::parse(Tokenizer& tz, string_view type)
 {
 	// Check if optional
 	if (tz.advIfNext("optional"))
@@ -701,7 +697,7 @@ bool CTexture::parseDefine(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the texture, in ZDoom TEXTURES format
 // -----------------------------------------------------------------------------
-std::string CTexture::asText()
+string CTexture::asText()
 {
 	// Can't write non-extended texture as text
 	if (!extended_)
@@ -712,7 +708,7 @@ std::string CTexture::asText()
 		return fmt::format("define \"{}\" {} {}\n", name_, def_size_.x, def_size_.y);
 
 	// Init text string
-	std::string text;
+	string text;
 	if (optional_)
 		text = fmt::format("{} Optional \"{}\", {}, {}\n{\n", type_, name_, size_.x, size_.y);
 	else

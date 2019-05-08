@@ -479,7 +479,7 @@ bool PolygonSplitter::detectUnclosed()
 	else if (verbose_)
 	{
 		// Print invalid vertices info if verbose
-		std::string info = "Vertices with no outgoing edges: ";
+		string info = "Vertices with no outgoing edges: ";
 		for (int end_vert : end_verts)
 		{
 			info += fmt::format("{:1.2f}", vertices_[end_vert].x);
@@ -645,7 +645,7 @@ bool PolygonSplitter::tracePolyOutline(int edge_start)
 
 	if (verbose_)
 	{
-		std::string info = "Traced polygon outline: ";
+		string info = "Traced polygon outline: ";
 		info += fmt::format("{} edges, ", poly.edges.size());
 		if (poly.convex)
 			info += "convex, ";

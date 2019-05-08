@@ -18,11 +18,11 @@ public:
 
 	struct Surface
 	{
-		std::string texture;
-		int         height = 0;
-		Plane       plane  = { 0., 0., 1., 0. };
+		string texture;
+		int    height = 0;
+		Plane  plane  = { 0., 0., 1., 0. };
 
-		Surface(std::string_view texture = "", int height = 0, const Plane& plane = { 0., 0., 1., 0. }) :
+		Surface(string_view texture = "", int height = 0, const Plane& plane = { 0., 0., 1., 0. }) :
 			texture{ texture },
 			height{ height },
 			plane{ plane }
@@ -31,23 +31,23 @@ public:
 	};
 
 	// UDMF properties
-	inline static const std::string PROP_TEXFLOOR      = "texturefloor";
-	inline static const std::string PROP_TEXCEILING    = "textureceiling";
-	inline static const std::string PROP_HEIGHTFLOOR   = "heightfloor";
-	inline static const std::string PROP_HEIGHTCEILING = "heightceiling";
-	inline static const std::string PROP_LIGHTLEVEL    = "lightlevel";
-	inline static const std::string PROP_SPECIAL       = "special";
-	inline static const std::string PROP_ID            = "id";
+	inline static const string PROP_TEXFLOOR      = "texturefloor";
+	inline static const string PROP_TEXCEILING    = "textureceiling";
+	inline static const string PROP_HEIGHTFLOOR   = "heightfloor";
+	inline static const string PROP_HEIGHTCEILING = "heightceiling";
+	inline static const string PROP_LIGHTLEVEL    = "lightlevel";
+	inline static const string PROP_SPECIAL       = "special";
+	inline static const string PROP_ID            = "id";
 
 	MapSector(
-		int              f_height = 0,
-		std::string_view f_tex    = "",
-		int              c_height = 0,
-		std::string_view c_tex    = "",
-		short            light    = 0,
-		short            special  = 0,
-		short            id       = 0);
-	MapSector(std::string_view f_tex, std::string_view c_tex, ParseTreeNode* udmf_def);
+		int         f_height = 0,
+		string_view f_tex    = "",
+		int         c_height = 0,
+		string_view c_tex    = "",
+		short       light    = 0,
+		short       special  = 0,
+		short       id       = 0);
+	MapSector(string_view f_tex, string_view c_tex, ParseTreeNode* udmf_def);
 	~MapSector() = default;
 
 	void copy(MapObject* obj) override;
@@ -59,15 +59,15 @@ public:
 	short          tag() const { return id_; }
 	short          id() const { return id_; }
 
-	std::string stringProperty(std::string_view key) override;
-	int         intProperty(std::string_view key) override;
+	string stringProperty(string_view key) override;
+	int    intProperty(string_view key) override;
 
-	void setStringProperty(std::string_view key, std::string_view value) override;
-	void setFloatProperty(std::string_view key, double value) override;
-	void setIntProperty(std::string_view key, int value) override;
+	void setStringProperty(string_view key, string_view value) override;
+	void setFloatProperty(string_view key, double value) override;
+	void setIntProperty(string_view key, int value) override;
 
-	void setFloorTexture(std::string_view tex);
-	void setCeilingTexture(std::string_view tex);
+	void setFloorTexture(string_view tex);
+	void setCeilingTexture(string_view tex);
 	void setFloorHeight(short height);
 	void setCeilingHeight(short height);
 	void setFloorPlane(const Plane& p);
@@ -107,7 +107,7 @@ public:
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
 
-	void writeUDMF(std::string& def) override;
+	void writeUDMF(string& def) override;
 
 	operator Debuggable() const
 	{

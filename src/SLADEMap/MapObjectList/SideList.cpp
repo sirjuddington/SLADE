@@ -84,7 +84,7 @@ void SideList::remove(unsigned index)
 // -----------------------------------------------------------------------------
 // Adjusts the usage count of [tex] by [adjust]
 // -----------------------------------------------------------------------------
-void SideList::updateTexUsage(std::string_view tex, int adjust) const
+void SideList::updateTexUsage(string_view tex, int adjust) const
 {
 	usage_tex_[StrUtil::upper(tex)] += adjust;
 }
@@ -92,7 +92,7 @@ void SideList::updateTexUsage(std::string_view tex, int adjust) const
 // -----------------------------------------------------------------------------
 // Returns the usage count of [tex]
 // -----------------------------------------------------------------------------
-int SideList::texUsageCount(std::string_view tex) const
+int SideList::texUsageCount(string_view tex) const
 {
 	return usage_tex_[StrUtil::upper(tex)];
 }

@@ -94,7 +94,7 @@ ZipArchive::~ZipArchive()
 // Reads zip data from a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ZipArchive::open(std::string_view filename)
+bool ZipArchive::open(string_view filename)
 {
 	// Check the file exists
 	if (!FileUtil::fileExists(filename))
@@ -261,7 +261,7 @@ bool ZipArchive::write(MemChunk& mc, bool update)
 // Writes the zip archive to a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ZipArchive::write(std::string_view filename, bool update)
+bool ZipArchive::write(string_view filename, bool update)
 {
 	// Open the file
 	wxFFileOutputStream out(WxUtils::strFromView(filename));
@@ -283,9 +283,9 @@ bool ZipArchive::write(std::string_view filename, bool update)
 	// This is used to copy any entries that have been previously saved/compressed
 	// and are unmodified, to greatly speed up zip file saving by not having to
 	// recompress unchanged entries
-	std::unique_ptr<wxFFileInputStream> in;
-	std::unique_ptr<wxZipInputStream>   inzip;
-	vector<wxZipEntry*>                 c_entries;
+	unique_ptr<wxFFileInputStream> in;
+	unique_ptr<wxZipInputStream>   inzip;
+	vector<wxZipEntry*>            c_entries;
 	if (FileUtil::fileExists(temp_file_))
 	{
 		in    = std::make_unique<wxFFileInputStream>(temp_file_);
@@ -374,8 +374,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Check that the entry belongs to this archive
 	if (entry->parent() != this)
 	{
-		Log::error(
-			"ZipArchive::loadEntryData: Entry {} attempting to load data from wrong parent!", entry->name());
+		Log::error("ZipArchive::loadEntryData: Entry {} attempting to load data from wrong parent!", entry->name());
 		return false;
 	}
 
@@ -454,7 +453,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 // In a zip archive, a namespace is simply a first-level directory, ie
 // <root>/<namespace>
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchive::addEntry(ArchiveEntry* entry, std::string_view add_namespace, bool copy)
+ArchiveEntry* ZipArchive::addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy)
 {
 	// Check namespace
 	if (add_namespace.empty() || add_namespace == "global")
@@ -579,7 +578,7 @@ ArchiveEntry* ZipArchive::findFirst(SearchOptions& options)
 ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
 {
 	// Init search variables
-	auto dir           = rootDir();
+	auto dir = rootDir();
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -611,7 +610,7 @@ ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
 vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 {
 	// Init search variables
-	auto dir           = rootDir();
+	auto                  dir = rootDir();
 	vector<ArchiveEntry*> ret;
 
 	// Check for search directory (overrides namespace)
@@ -642,7 +641,7 @@ vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 // Generates the temp file path to use, from [filename].
 // The temp file will be in the configured temp folder
 // -----------------------------------------------------------------------------
-void ZipArchive::generateTempFileName(std::string_view filename)
+void ZipArchive::generateTempFileName(string_view filename)
 {
 	StrUtil::Path tfn(filename);
 	temp_file_ = App::path(tfn.fileName(), App::Dir::Temp);
@@ -695,7 +694,7 @@ bool ZipArchive::isZipArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid zip archive
 // -----------------------------------------------------------------------------
-bool ZipArchive::isZipArchive(const std::string& filename)
+bool ZipArchive::isZipArchive(const string& filename)
 {
 	// Open the file for reading
 	wxFile file(filename);

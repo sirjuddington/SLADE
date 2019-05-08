@@ -132,7 +132,7 @@ CTexture* TextureXList::texture(size_t index)
 // Returns the texture matching [name], or the 'invalid' texture if no match is
 // found
 // -----------------------------------------------------------------------------
-CTexture* TextureXList::texture(std::string_view name)
+CTexture* TextureXList::texture(string_view name)
 {
 	// Search for texture by name
 	for (auto& texture : textures_)
@@ -148,7 +148,7 @@ CTexture* TextureXList::texture(std::string_view name)
 // -----------------------------------------------------------------------------
 // Returns the index of the texture matching [name], or -1 if no match was found
 // -----------------------------------------------------------------------------
-int TextureXList::textureIndex(std::string_view name)
+int TextureXList::textureIndex(string_view name)
 {
 	// Search for texture by name
 	for (unsigned a = 0; a < textures_.size(); a++)
@@ -167,7 +167,7 @@ int TextureXList::textureIndex(std::string_view name)
 // -----------------------------------------------------------------------------
 // Adds [tex] to the texture list at [position]
 // -----------------------------------------------------------------------------
-void TextureXList::addTexture(CTexture::UPtr tex, int position)
+void TextureXList::addTexture(unique_ptr<CTexture> tex, int position)
 {
 	// Add it to the list at position if valid
 	tex->in_list_ = this;
@@ -186,7 +186,7 @@ void TextureXList::addTexture(CTexture::UPtr tex, int position)
 // -----------------------------------------------------------------------------
 // Removes the texture at [index] from the list and returns it
 // -----------------------------------------------------------------------------
-CTexture::UPtr TextureXList::removeTexture(unsigned index)
+unique_ptr<CTexture> TextureXList::removeTexture(unsigned index)
 {
 	// Check index
 	if (index >= textures_.size())
@@ -221,7 +221,7 @@ void TextureXList::swapTextures(unsigned index1, unsigned index2)
 // Replaces the texture at [index] with [replacement].
 // Returns the original texture that was replaced (or null if index was invalid)
 // -----------------------------------------------------------------------------
-CTexture::UPtr TextureXList::replaceTexture(unsigned index, CTexture::UPtr replacement)
+unique_ptr<CTexture> TextureXList::replaceTexture(unsigned index, unique_ptr<CTexture> replacement)
 {
 	// Check index
 	if (index >= textures_.size())
@@ -245,7 +245,7 @@ void TextureXList::clear(bool clear_patches)
 // -----------------------------------------------------------------------------
 // Updates all textures in the list to 'remove' [patch]
 // -----------------------------------------------------------------------------
-void TextureXList::removePatch(std::string_view patch)
+void TextureXList::removePatch(string_view patch)
 {
 	// Go through all textures
 	for (auto& texture : textures_)
@@ -451,7 +451,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, const PatchTable& pa
 
 
 			// Add it to the texture
-			std::string patch;
+			string patch;
 			if (txformat_ == Format::Jaguar)
 			{
 				patch = StrUtil::upper(tex->name_);
@@ -637,7 +637,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 			if (StrUtil::startsWith(patch->name(), "INVPATCH"))
 			{
 				// Get raw patch index from name
-				std::string_view number = patch->name();
+				string_view number = patch->name();
 				number.remove_prefix(8);
 				pdef.patch = StrUtil::asInt(number);
 			}
@@ -780,7 +780,7 @@ bool TextureXList::writeTEXTURESData(ArchiveEntry* textures)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the texture list format
 // -----------------------------------------------------------------------------
-std::string TextureXList::textureXFormatString() const
+string TextureXList::textureXFormatString() const
 {
 	switch (txformat_)
 	{

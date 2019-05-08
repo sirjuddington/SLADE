@@ -48,11 +48,11 @@
 // MapSide class constructor
 // -----------------------------------------------------------------------------
 MapSide::MapSide(
-	MapSector*      sector,
-	std::string_view tex_upper,
-	std::string_view tex_middle,
-	std::string_view tex_lower,
-	Vec2i           tex_offset) :
+	MapSector*  sector,
+	string_view tex_upper,
+	string_view tex_middle,
+	string_view tex_lower,
+	Vec2i       tex_offset) :
 	MapObject{ Type::Side },
 	sector_{ sector },
 	tex_upper_{ tex_upper },
@@ -157,7 +157,7 @@ void MapSide::changeLight(int amount)
 // -----------------------------------------------------------------------------
 // Sets the upper texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSide::setTexUpper(std::string_view tex, bool modify)
+void MapSide::setTexUpper(string_view tex, bool modify)
 {
 	if (modify)
 		setModified();
@@ -174,7 +174,7 @@ void MapSide::setTexUpper(std::string_view tex, bool modify)
 // -----------------------------------------------------------------------------
 // Sets the middle texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSide::setTexMiddle(std::string_view tex, bool modify)
+void MapSide::setTexMiddle(string_view tex, bool modify)
 {
 	if (modify)
 		setModified();
@@ -191,7 +191,7 @@ void MapSide::setTexMiddle(std::string_view tex, bool modify)
 // -----------------------------------------------------------------------------
 // Sets the lower texture to [tex]
 // -----------------------------------------------------------------------------
-void MapSide::setTexLower(std::string_view tex, bool modify)
+void MapSide::setTexLower(string_view tex, bool modify)
 {
 	if (modify)
 		setModified();
@@ -246,7 +246,7 @@ void MapSide::setSector(MapSector* sector)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapSide::intProperty(std::string_view key)
+int MapSide::intProperty(string_view key)
 {
 	if (key == PROP_SECTOR)
 	{
@@ -266,7 +266,7 @@ int MapSide::intProperty(std::string_view key)
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSide::setIntProperty(std::string_view key, int value)
+void MapSide::setIntProperty(string_view key, int value)
 {
 	// Update modified time
 	setModified();
@@ -284,7 +284,7 @@ void MapSide::setIntProperty(std::string_view key, int value)
 // -----------------------------------------------------------------------------
 // Returns the value of the string property matching [key]
 // -----------------------------------------------------------------------------
-std::string MapSide::stringProperty(std::string_view key)
+string MapSide::stringProperty(string_view key)
 {
 	if (key == PROP_TEXUPPER)
 		return tex_upper_;
@@ -299,7 +299,7 @@ std::string MapSide::stringProperty(std::string_view key)
 // -----------------------------------------------------------------------------
 // Sets the string value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapSide::setStringProperty(std::string_view key, std::string_view value)
+void MapSide::setStringProperty(string_view key, string_view value)
 {
 	// Update modified time
 	setModified();
@@ -317,7 +317,7 @@ void MapSide::setStringProperty(std::string_view key, std::string_view value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapSide::scriptCanModifyProp(std::string_view key)
+bool MapSide::scriptCanModifyProp(string_view key)
 {
 	return key != PROP_SECTOR;
 }
@@ -376,7 +376,7 @@ void MapSide::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 // Writes the side as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapSide::writeUDMF(std::string& def)
+void MapSide::writeUDMF(string& def)
 {
 	def = fmt::format("sidedef//#{}\n{\n", index_);
 

@@ -26,16 +26,16 @@ wxSizer* layoutVertically(vector<wxObject*> widgets, int expand_row = -1);
 void     layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags = {}, int expand_row = -1);
 
 // Strings
-inline std::string_view strToView(const wxString& str)
+inline string_view strToView(const wxString& str)
 {
 	return { str.data(), str.size() };
 }
-inline wxString strFromView(std::string_view view)
+inline wxString strFromView(string_view view)
 {
 	return { view.data(), view.size() };
 }
 wxArrayString arrayString(vector<wxString> vector);
-wxArrayString arrayStringStd(vector<std::string> vector);
+wxArrayString arrayStringStd(vector<string> vector);
 
 // Scaling
 wxSize  scaledSize(int x, int y);

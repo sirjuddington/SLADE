@@ -58,7 +58,7 @@ CVAR(Float, col_greyscale_b, 0.114, CVar::Flag::Save)
 
 namespace
 {
-std::string extensions =
+string extensions =
 	"Raw Palette (*.pal)|*.pal|"
 	"PNG File (*.png)|*.png|"
 	"CSV Palette (*.csv)|*.csv|"
@@ -1236,7 +1236,7 @@ bool PaletteEntryPanel::generatePalettes()
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // ----------------------------------------------------------------------------
-bool PaletteEntryPanel::handleEntryPanelAction(std::string_view id)
+bool PaletteEntryPanel::handleEntryPanelAction(string_view id)
 {
 	// Only interested in "ppal_" events
 	if (!StrUtil::startsWith(id, "ppal_"))

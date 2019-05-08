@@ -7,16 +7,14 @@ class MapObjectCollection;
 class MapFormatHandler
 {
 public:
-	typedef std::unique_ptr<MapFormatHandler> UPtr;
-
 	virtual ~MapFormatHandler() = default;
 
 	virtual bool readMap(Archive::MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props) = 0;
-	virtual vector<ArchiveEntry::UPtr> writeMap(
+	virtual vector<unique_ptr<ArchiveEntry>> writeMap(
 		const MapObjectCollection& map_data,
 		const PropertyList&        map_extra_props) = 0;
 
-	virtual std::string udmfNamespace() = 0;
+	virtual string udmfNamespace() = 0;
 
-	static UPtr get(MapFormat format);
+	static unique_ptr<MapFormatHandler> get(MapFormat format);
 };

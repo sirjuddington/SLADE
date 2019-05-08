@@ -10,12 +10,12 @@ class PatchTable : public Announcer
 public:
 	struct Patch
 	{
-		std::string         name;
-		vector<std::string> used_in;
+		string         name;
+		vector<string> used_in;
 
-		Patch(std::string_view name) : name{ name } {}
+		Patch(string_view name) : name{ name } {}
 
-		void removeTextureUsage(std::string_view texture)
+		void removeTextureUsage(string_view texture)
 		{
 			for (unsigned a = 0; a < used_in.size(); a++)
 			{
@@ -36,16 +36,16 @@ public:
 	void                 setParent(Archive* parent) { parent_ = parent; }
 	const vector<Patch>& patches() const { return patches_; }
 
-	Patch&             patch(size_t index);
-	Patch&             patch(std::string_view name);
-	const std::string& patchName(size_t index) const;
-	ArchiveEntry*      patchEntry(size_t index);
-	ArchiveEntry*      patchEntry(std::string_view name);
-	int32_t            patchIndex(std::string_view name) const;
-	int32_t            patchIndex(ArchiveEntry* entry) const;
-	bool               removePatch(unsigned index);
-	bool               replacePatch(unsigned index, std::string_view newname);
-	bool               addPatch(std::string_view name, bool allow_dup = false);
+	Patch&        patch(size_t index);
+	Patch&        patch(string_view name);
+	const string& patchName(size_t index) const;
+	ArchiveEntry* patchEntry(size_t index);
+	ArchiveEntry* patchEntry(string_view name);
+	int32_t       patchIndex(string_view name) const;
+	int32_t       patchIndex(ArchiveEntry* entry) const;
+	bool          removePatch(unsigned index);
+	bool          replacePatch(unsigned index, string_view newname);
+	bool          addPatch(string_view name, bool allow_dup = false);
 
 	bool loadPNAMES(ArchiveEntry* pnames, Archive* parent = nullptr);
 	bool writePNAMES(ArchiveEntry* pnames);

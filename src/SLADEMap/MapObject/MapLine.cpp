@@ -210,7 +210,7 @@ int MapLine::s2Index() const
 // Can be prefixed with 'side1.' or 'side2.' to get bool properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-bool MapLine::boolProperty(std::string_view key)
+bool MapLine::boolProperty(string_view key)
 {
 	if (StrUtil::startsWith(key, "side1.") && side1_)
 		return side1_->boolProperty(key.substr(6));
@@ -225,7 +225,7 @@ bool MapLine::boolProperty(std::string_view key)
 // Can be prefixed with 'side1.' or 'side2.' to get int properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-int MapLine::intProperty(std::string_view key)
+int MapLine::intProperty(string_view key)
 {
 	if (StrUtil::startsWith(key, "side1.") && side1_)
 		return side1_->intProperty(key.substr(6));
@@ -265,7 +265,7 @@ int MapLine::intProperty(std::string_view key)
 // Can be prefixed with 'side1.' or 'side2.' to get float properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-double MapLine::floatProperty(std::string_view key)
+double MapLine::floatProperty(string_view key)
 {
 	if (StrUtil::startsWith(key, "side1.") && side1_)
 		return side1_->floatProperty(key.substr(6));
@@ -280,7 +280,7 @@ double MapLine::floatProperty(std::string_view key)
 // Can be prefixed with 'side1.' or 'side2.' to get string properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-std::string MapLine::stringProperty(std::string_view key)
+string MapLine::stringProperty(string_view key)
 {
 	if (StrUtil::startsWith(key, "side1.") && side1_)
 		return side1_->stringProperty(key.substr(6));
@@ -295,7 +295,7 @@ std::string MapLine::stringProperty(std::string_view key)
 // Can be prefixed with 'side1.' or 'side2.' to set bool properties on the front
 // and back sides respectively.
 // -----------------------------------------------------------------------------
-void MapLine::setBoolProperty(std::string_view key, bool value)
+void MapLine::setBoolProperty(string_view key, bool value)
 {
 	// Front side property
 	if (StrUtil::startsWith(key, "side1."))
@@ -321,7 +321,7 @@ void MapLine::setBoolProperty(std::string_view key, bool value)
 // Can be prefixed with 'side1.' or 'side2.' to set int properties on the front
 // and back sides respectively.
 // -----------------------------------------------------------------------------
-void MapLine::setIntProperty(std::string_view key, int value)
+void MapLine::setIntProperty(string_view key, int value)
 {
 	// Front side property
 	if (StrUtil::startsWith(key, "side1."))
@@ -414,7 +414,7 @@ void MapLine::setIntProperty(std::string_view key, int value)
 // Can be prefixed with 'side1.' or 'side2.' to set float properties on the
 // front and back sides respectively.
 // -----------------------------------------------------------------------------
-void MapLine::setFloatProperty(std::string_view key, double value)
+void MapLine::setFloatProperty(string_view key, double value)
 {
 	// Front side property
 	if (StrUtil::startsWith(key, "side1."))
@@ -440,7 +440,7 @@ void MapLine::setFloatProperty(std::string_view key, double value)
 // Can be prefixed with 'side1.' or 'side2.' to set string properties on the
 // front and back sides respectively.
 // -----------------------------------------------------------------------------
-void MapLine::setStringProperty(std::string_view key, std::string_view value)
+void MapLine::setStringProperty(string_view key, string_view value)
 {
 	// Front side property
 	if (StrUtil::startsWith(key, "side1."))
@@ -464,7 +464,7 @@ void MapLine::setStringProperty(std::string_view key, std::string_view value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapLine::scriptCanModifyProp(std::string_view key)
+bool MapLine::scriptCanModifyProp(string_view key)
 {
 	return !(key == PROP_V1 || key == PROP_V2 || key == PROP_S1 || key == PROP_S2);
 }
@@ -981,7 +981,7 @@ void MapLine::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 // Writes the line as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapLine::writeUDMF(std::string& def)
+void MapLine::writeUDMF(string& def)
 {
 	def = fmt::format("linedef//#{}\n{\n", index_);
 

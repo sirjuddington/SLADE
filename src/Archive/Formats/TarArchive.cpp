@@ -310,7 +310,7 @@ bool TarArchive::open(MemChunk& mc)
 		}
 
 		// Find name
-		std::string name;
+		string name;
 		for (int a = 0; a < 100; ++a)
 		{
 			if (header.name[a] == 0)
@@ -558,7 +558,7 @@ bool TarArchive::isTarArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Unix tar archive
 // -----------------------------------------------------------------------------
-bool TarArchive::isTarArchive(const std::string& filename)
+bool TarArchive::isTarArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

@@ -10,10 +10,8 @@ class MapVertex : public MapObject
 	friend class VertexList;
 
 public:
-	typedef std::unique_ptr<MapVertex> UPtr;
-
-	inline static const std::string PROP_X = "x";
-	inline static const std::string PROP_Y = "y";
+	inline static const string PROP_X = "x";
+	inline static const string PROP_Y = "y";
 
 	MapVertex(const Vec2d& pos);
 	MapVertex(const Vec2d& pos, ParseTreeNode* udmf_def);
@@ -27,11 +25,11 @@ public:
 
 	void move(double nx, double ny);
 
-	int    intProperty(std::string_view key) override;
-	double floatProperty(std::string_view key) override;
-	void   setIntProperty(std::string_view key, int value) override;
-	void   setFloatProperty(std::string_view key, double value) override;
-	bool   scriptCanModifyProp(std::string_view key) override;
+	int    intProperty(string_view key) override;
+	double floatProperty(string_view key) override;
+	void   setIntProperty(string_view key, int value) override;
+	void   setFloatProperty(string_view key, double value) override;
+	bool   scriptCanModifyProp(string_view key) override;
 
 	void     connectLine(MapLine* line);
 	void     disconnectLine(MapLine* line);
@@ -45,7 +43,7 @@ public:
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
 
-	void writeUDMF(std::string& def) override;
+	void writeUDMF(string& def) override;
 
 	operator Debuggable() const
 	{

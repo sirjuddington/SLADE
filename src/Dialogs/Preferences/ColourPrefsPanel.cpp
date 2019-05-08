@@ -54,7 +54,7 @@ ColourPrefsPanel::ColourPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	SetSizer(sizer);
 
 	// Configurations list
-	vector<std::string> cnames;
+	vector<string> cnames;
 	ColourConfiguration::putConfigurationNames(cnames);
 	choice_configs_ = new wxChoice(this, -1);
 	for (const auto& cname : cnames)
@@ -101,7 +101,7 @@ void ColourPrefsPanel::refreshPropGrid() const
 	pg_colours_->Clear();
 
 	// Get (sorted) list of colours
-	vector<std::string> colours;
+	vector<string> colours;
 	ColourConfiguration::putColourNames(colours);
 	std::sort(colours.begin(), colours.end());
 
@@ -151,7 +151,7 @@ void ColourPrefsPanel::refreshPropGrid() const
 void ColourPrefsPanel::applyPreferences()
 {
 	// Get list of all colours
-	vector<std::string> colours;
+	vector<string> colours;
 	ColourConfiguration::putColourNames(colours);
 
 	for (unsigned a = 0; a < colours.size(); a++)

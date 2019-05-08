@@ -37,8 +37,9 @@
 #include "Archive/Formats/ZipArchive.h"
 #include "General/Misc.h"
 #include "Utility/FileUtils.h"
-#include <filesystem>
 #include "Utility/StringUtils.h"
+#include <filesystem>
+
 
 
 // -----------------------------------------------------------------------------
@@ -67,7 +68,7 @@ bool PaletteManager::init()
 // Adds the palette [pal] to the list of managed palettes, identified by [name].
 // Returns false if the palette doesn't exist or the name is invalid
 // -----------------------------------------------------------------------------
-bool PaletteManager::addPalette(Palette::UPtr pal, std::string_view name)
+bool PaletteManager::addPalette(unique_ptr<Palette> pal, string_view name)
 {
 	// Check palette and name were given
 	if (!pal || name.empty())
@@ -112,7 +113,7 @@ Palette* PaletteManager::palette(int index)
 // Returns the palette matching the given name, or the default palette
 // (greyscale) if no matching palette found
 // -----------------------------------------------------------------------------
-Palette* PaletteManager::palette(std::string_view name)
+Palette* PaletteManager::palette(string_view name)
 {
 	for (uint32_t a = 0; a < pal_names_.size(); a++)
 	{
@@ -127,7 +128,7 @@ Palette* PaletteManager::palette(std::string_view name)
 // Returns the name of the palette at [index], or an empty string if index is
 // out of bounds
 // -----------------------------------------------------------------------------
-std::string PaletteManager::palName(int index)
+string PaletteManager::palName(int index)
 {
 	if (index < 0 || index >= numPalettes())
 		return "";
@@ -139,7 +140,7 @@ std::string PaletteManager::palName(int index)
 // Returns the name of the given palette, or an empty string if the palette
 // isn't managed by the PaletteManager
 // -----------------------------------------------------------------------------
-std::string PaletteManager::palName(Palette* pal)
+string PaletteManager::palName(Palette* pal)
 {
 	for (uint32_t a = 0; a < palettes_.size(); a++)
 	{
@@ -196,7 +197,7 @@ bool PaletteManager::loadCustomPalettes()
 			continue;
 
 		// Load palette data
-		auto     pal = std::make_unique<Palette>();
+		auto     pal       = std::make_unique<Palette>();
 		auto     file_path = item.path().string();
 		MemChunk mc;
 		mc.importFile(file_path);

@@ -31,9 +31,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "OpenGL.h"
-#include "Utility/Colour.h"
 #include "General/ColourConfiguration.h"
+#include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
+
 
 
 // -----------------------------------------------------------------------------
@@ -110,7 +111,7 @@ bool OpenGL::init()
 	info.extensions = (const char*)glGetString(GL_EXTENSIONS);
 
 	// Get OpenGL version
-	std::string_view temp{ info.version.data(), 3 };
+	string_view temp{ info.version.data(), 3 };
 	StrUtil::toDouble(temp, version);
 	Log::info("OpenGL Version: {:1.1f}", version);
 

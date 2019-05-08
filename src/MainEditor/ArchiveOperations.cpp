@@ -44,9 +44,10 @@
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapThing.h"
+#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
-#include "UI/WxUtils.h"
+
 
 
 // -----------------------------------------------------------------------------
@@ -182,7 +183,7 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive)
 		map_namecounts[entry->path(true)] += 1;
 
 		// Enqueue entries
-		map_entries[std::string{ entry->nameNoExt() }].push_back(entry);
+		map_entries[string{ entry->nameNoExt() }].push_back(entry);
 	}
 
 	// Generate string of duplicate entry names
@@ -735,7 +736,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 			continue;
 
 		// Check for animation start
-		std::string flatname{ flat->nameNoExt() };
+		string flatname{ flat->nameNoExt() };
 		for (int b = 0; b < n_flat_anim; b++)
 		{
 			if (flatname == flat_anim_start[b])

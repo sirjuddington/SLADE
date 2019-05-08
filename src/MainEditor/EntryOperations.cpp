@@ -548,7 +548,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	}
 
 	// Run DB2
-	FileMonitor* fm = new DB2MapFileMonitor(filename, entry->parent(), std::string{ entry->nameNoExt() });
+	FileMonitor* fm = new DB2MapFileMonitor(filename, entry->parent(), string{ entry->nameNoExt() });
 	wxExecute(cmd, wxEXEC_ASYNC, fm->process());
 
 	return true;
@@ -1063,7 +1063,7 @@ bool EntryOperations::createTexture(const vector<ArchiveEntry*>& entries)
 		}
 
 		// Check entry name
-		std::string name{ entry->nameNoExt() };
+		string name{ entry->nameNoExt() };
 		if (name.size() > 8)
 		{
 			Log::error(

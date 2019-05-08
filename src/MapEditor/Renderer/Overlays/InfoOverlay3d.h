@@ -21,10 +21,10 @@ public:
 	}
 
 private:
-	vector<std::string> info_;
-	vector<std::string> info2_;
+	vector<string>      info_;
+	vector<string>      info2_;
 	MapEditor::ItemType current_type_ = MapEditor::ItemType::WallMiddle;
-	std::string         texname_;
+	string              texname_;
 	unsigned            texture_     = 0;
 	bool                thing_icon_  = false;
 	MapObject*          object_      = nullptr;

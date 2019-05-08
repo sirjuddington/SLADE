@@ -465,8 +465,8 @@ void TextureXEditor::showTextureMenu(bool show) const
 bool TextureXEditor::removePatch(unsigned index, bool delete_entry)
 {
 	// Get patch we're removing
-	auto&    p    = patch_table_.patch(index);
-	auto name = p.name;
+	auto& p    = patch_table_.patch(index);
+	auto  name = p.name;
 
 	// Update TEXTUREx lists
 	for (auto& texture_editor : texture_editors_)
@@ -697,7 +697,7 @@ void TextureXEditor::redo()
 // -----------------------------------------------------------------------------
 // Handles any announcements from the current texture
 // -----------------------------------------------------------------------------
-void TextureXEditor::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
+void TextureXEditor::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
 {
 	if (announcer == theMainWindow->paletteChooser() && event_name == "main_palette_changed")
 	{

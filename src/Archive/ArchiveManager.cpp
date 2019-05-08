@@ -73,12 +73,12 @@ ArchiveManager::~ArchiveManager()
 // (possibly because the user installed SLADE in the same folder as an
 // installation of SLumpEd).
 // -----------------------------------------------------------------------------
-bool ArchiveManager::validResDir(std::string_view dir) const
+bool ArchiveManager::validResDir(string_view dir) const
 {
 	// Assortment of resources that the program expects to find.
 	// If at least one is missing, then probably more are missing
 	// too, so the res folder cannot be used.
-	static std::string paths[] = {
+	static string paths[] = {
 		"animated.lmp",
 		"config/executables.cfg",
 		"config/nodebuilders.cfg",
@@ -239,7 +239,7 @@ Archive* ArchiveManager::getArchive(int index)
 // Returns the archive with the specified filename
 // (nullptr if it doesn't exist)
 // -----------------------------------------------------------------------------
-Archive* ArchiveManager::getArchive(std::string_view filename)
+Archive* ArchiveManager::getArchive(string_view filename)
 {
 	// Go through all open archives
 	for (auto& open_archive : open_archives_)
@@ -257,7 +257,7 @@ Archive* ArchiveManager::getArchive(std::string_view filename)
 // Opens and adds a archive to the list, returns a pointer to the newly opened
 // and added archive, or nullptr if an error occurred
 // -----------------------------------------------------------------------------
-Archive* ArchiveManager::openArchive(std::string_view filename, bool manage, bool silent)
+Archive* ArchiveManager::openArchive(string_view filename, bool manage, bool silent)
 {
 	// Check for directory
 	if (FileUtil::dirExists(filename))
@@ -283,7 +283,7 @@ Archive* ArchiveManager::openArchive(std::string_view filename, bool manage, boo
 	}
 
 	// Determine file format
-	std::string std_fn{ filename };
+	string std_fn{ filename };
 	if (WadArchive::isWadArchive(std_fn))
 		new_archive = new WadArchive();
 	else if (ZipArchive::isZipArchive(std_fn))
@@ -492,7 +492,7 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 // Opens [dir] as a DirArchive and adds it to the list.
 // Returns a pointer to the archive or nullptr if an error occurred.
 // -----------------------------------------------------------------------------
-Archive* ArchiveManager::openDirArchive(std::string_view dir, bool manage, bool silent)
+Archive* ArchiveManager::openDirArchive(string_view dir, bool manage, bool silent)
 {
 	auto new_archive = getArchive(dir);
 
@@ -553,7 +553,7 @@ Archive* ArchiveManager::openDirArchive(std::string_view dir, bool manage, bool 
 // archives. Returns the created archive, or nullptr if an invalid archive type
 // was given
 // -----------------------------------------------------------------------------
-Archive* ArchiveManager::newArchive(std::string_view format)
+Archive* ArchiveManager::newArchive(string_view format)
 {
 	// Create a new archive depending on the type specified
 	Archive* new_archive;
@@ -655,7 +655,7 @@ bool ArchiveManager::closeArchive(int index)
 // the list.
 // Returns false if it doesn't exist or can't be removed, true otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveManager::closeArchive(std::string_view filename)
+bool ArchiveManager::closeArchive(string_view filename)
 {
 	// Go through all open archives
 	for (int a = 0; a < (int)open_archives_.size(); a++)
@@ -741,11 +741,11 @@ vector<Archive*> ArchiveManager::getDependentArchives(Archive* archive)
 // Returns a string containing the extensions of all supported archive formats,
 // that can be used for wxWidgets file dialogs
 // -----------------------------------------------------------------------------
-std::string ArchiveManager::getArchiveExtensionsString() const
+string ArchiveManager::getArchiveExtensionsString() const
 {
-	auto                formats = Archive::allFormats();
-	vector<std::string> ext_strings;
-	std::string         ext_all = "Any supported file|";
+	auto           formats = Archive::allFormats();
+	vector<string> ext_strings;
+	string         ext_all = "Any supported file|";
 	for (const auto& fmt : formats)
 	{
 		for (const auto& ext : fmt.extensions)
@@ -803,7 +803,7 @@ void ArchiveManager::setArchiveResource(Archive* archive, bool resource)
 // -----------------------------------------------------------------------------
 // Adds [path] to the list of base resource paths
 // -----------------------------------------------------------------------------
-bool ArchiveManager::addBaseResourcePath(std::string_view path)
+bool ArchiveManager::addBaseResourcePath(string_view path)
 {
 	// Firstly, check the file exists
 	if (!FileUtil::fileExists(path))
@@ -852,7 +852,7 @@ void ArchiveManager::removeBaseResourcePath(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns the base resource path at [index]
 // -----------------------------------------------------------------------------
-std::string ArchiveManager::getBaseResourcePath(unsigned index)
+string ArchiveManager::getBaseResourcePath(unsigned index)
 {
 	// Check index
 	if (index >= base_resource_paths_.size())
@@ -914,7 +914,7 @@ bool ArchiveManager::openBaseResource(int index)
 // Returns the first entry matching [name] in the resource archives.
 // Resource archives = open archives -> base resource archives.
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveManager::getResourceEntry(std::string_view name, Archive* ignore)
+ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, Archive* ignore)
 {
 	// Go through all open archives
 	for (auto& open_archive : open_archives_)
@@ -1005,7 +1005,7 @@ vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOpti
 // -----------------------------------------------------------------------------
 // Returns the recent file path at [index]
 // -----------------------------------------------------------------------------
-std::string ArchiveManager::recentFile(unsigned index)
+string ArchiveManager::recentFile(unsigned index)
 {
 	// Check index
 	if (index >= recent_files_.size())
@@ -1017,14 +1017,14 @@ std::string ArchiveManager::recentFile(unsigned index)
 // -----------------------------------------------------------------------------
 // Adds a recent file to the list, if it doesn't exist already
 // -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFile(std::string_view path)
+void ArchiveManager::addRecentFile(string_view path)
 {
 	// Check the path is valid
 	if (!(FileUtil::fileExists(path) || FileUtil::dirExists(path)))
 		return;
 
 	// Replace \ with /
-	auto file_path = std::string{ path };
+	auto file_path = string{ path };
 	std::replace(file_path.begin(), file_path.end(), '\\', '/');
 
 	// Check if the file is already in the list
@@ -1057,7 +1057,7 @@ void ArchiveManager::addRecentFile(std::string_view path)
 // -----------------------------------------------------------------------------
 // Adds a list of recent file paths to the recent file list
 // -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFiles(const vector<std::string>& paths)
+void ArchiveManager::addRecentFiles(const vector<string>& paths)
 {
 	// Mute annoucements
 	setMuted(true);
@@ -1077,7 +1077,7 @@ void ArchiveManager::addRecentFiles(const vector<std::string>& paths)
 // -----------------------------------------------------------------------------
 // Removes the recent file matching [path]
 // -----------------------------------------------------------------------------
-void ArchiveManager::removeRecentFile(std::string_view path)
+void ArchiveManager::removeRecentFile(string_view path)
 {
 	for (unsigned a = 0; a < recent_files_.size(); a++)
 	{
@@ -1237,7 +1237,7 @@ ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
 // -----------------------------------------------------------------------------
 // Called when an announcement is recieved from one of the archives in the list
 // -----------------------------------------------------------------------------
-void ArchiveManager::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
+void ArchiveManager::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
 {
 	// Reset event data for reading
 	event_data.seek(0, SEEK_SET);
@@ -1289,7 +1289,7 @@ CONSOLE_COMMAND(list_archives, 0, true)
 // -----------------------------------------------------------------------------
 // Attempts to open each given argument (filenames)
 // -----------------------------------------------------------------------------
-void c_open(const vector<std::string>& args)
+void c_open(const vector<string>& args)
 {
 	for (const auto& arg : args)
 		App::archiveManager().openArchive(arg);

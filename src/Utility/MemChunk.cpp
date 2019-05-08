@@ -32,8 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MemChunk.h"
-#include "General/Misc.h"
 #include "FileUtils.h"
+#include "General/Misc.h"
 
 
 // -----------------------------------------------------------------------------
@@ -144,7 +144,7 @@ bool MemChunk::reSize(uint32_t new_size, bool preserve_data)
 // Loads a file (or part of it) into the MemChunk.
 // Returns false if file couldn't be opened, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::importFile(std::string_view filename, uint32_t offset, uint32_t len)
+bool MemChunk::importFile(string_view filename, uint32_t offset, uint32_t len)
 {
 	// Open the file
 	wxFile file(wxString{ filename.data(), filename.size() });
@@ -296,7 +296,7 @@ bool MemChunk::importMem(const uint8_t* start, uint32_t len)
 // to [start+size].
 // If [size] is 0, writes from [start] to the end of the data
 // -----------------------------------------------------------------------------
-bool MemChunk::exportFile(std::string_view filename, uint32_t start, uint32_t size) const
+bool MemChunk::exportFile(string_view filename, uint32_t start, uint32_t size) const
 {
 	// Check data exists
 	if (!hasData())

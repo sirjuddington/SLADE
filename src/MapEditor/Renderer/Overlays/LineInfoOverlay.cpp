@@ -72,8 +72,8 @@ void LineInfoOverlay::update(MapLine* line)
 		return;
 
 	// info.clear();
-	std::string info_text;
-	auto        map_format = MapEditor::editContext().mapDesc().format;
+	string info_text;
+	auto   map_format = MapEditor::editContext().mapDesc().format;
 
 	// General line info
 	if (Global::debug)
@@ -99,11 +99,10 @@ void LineInfoOverlay::update(MapLine* line)
 	// Line args (or sector tag)
 	if (map_format == MapFormat::Hexen || map_format == MapFormat::UDMF)
 	{
-		std::string argxstr[2];
-		argxstr[0]         = line->stringProperty("arg0str");
-		argxstr[1]         = line->stringProperty("arg1str");
-		std::string argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(
-			line->args().data(), argxstr);
+		string argxstr[2];
+		argxstr[0]    = line->stringProperty("arg0str");
+		argxstr[1]    = line->stringProperty("arg1str");
+		string argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(line->args().data(), argxstr);
 		if (!argstr.empty())
 			info_text += (fmt::format("{}", argstr));
 		else
@@ -277,13 +276,7 @@ void LineInfoOverlay::drawSide(int bottom, int right, float alpha, Side& side, i
 // -----------------------------------------------------------------------------
 // Draws a texture box with name underneath for [texture]
 // -----------------------------------------------------------------------------
-void LineInfoOverlay::drawTexture(
-	float            alpha,
-	int              x,
-	int              y,
-	std::string_view texture,
-	bool             needed,
-	std::string_view pos) const
+void LineInfoOverlay::drawTexture(float alpha, int x, int y, string_view texture, bool needed, string_view pos) const
 {
 	bool required     = (needed && texture == MapSide::TEX_NONE);
 	int  tex_box_size = 80 * scale_;
@@ -348,7 +341,7 @@ void LineInfoOverlay::drawTexture(
 	}
 
 	// Draw texture name (even if texture is blank)
-	std::string tex_str;
+	string tex_str;
 	if (required)
 		tex_str = fmt::format("{}:MISSING", pos);
 	else if (texture.size() > 8)

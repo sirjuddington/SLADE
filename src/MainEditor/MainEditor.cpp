@@ -168,7 +168,7 @@ EntryPanel* MainEditor::currentEntryPanel()
 // Opens the documentation tab to [page_name] (if enabled)
 // -----------------------------------------------------------------------------
 #ifdef USE_WEBVIEW_STARTPAGE
-void MainEditor::openDocs(std::string_view page_name)
+void MainEditor::openDocs(string_view page_name)
 {
 	main_window->openDocs(WxUtils::strFromView(page_name));
 }

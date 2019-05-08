@@ -123,7 +123,7 @@ void UndoListView::setManager(UndoManager* manager)
 // -----------------------------------------------------------------------------
 // Called when an announcement is received from the undo manager
 // -----------------------------------------------------------------------------
-void UndoListView::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
+void UndoListView::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
 {
 	if (announcer != manager_)
 		return;

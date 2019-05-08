@@ -32,9 +32,10 @@
 #include "Main.h"
 #include "WolfArchive.h"
 #include "General/UI.h"
+#include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
-#include "UI/WxUtils.h"
+
 
 
 // -----------------------------------------------------------------------------
@@ -52,13 +53,13 @@ namespace
 // does exist) and then we iterate through all of the directory's files until we
 // find the first one whose name matches.
 // -----------------------------------------------------------------------------
-std::string findFileCasing(const StrUtil::Path& filename)
+string findFileCasing(const StrUtil::Path& filename)
 {
 #ifdef _WIN32
-	return std::string{ filename.fileName() };
+	return string{ filename.fileName() };
 #else
-	std::string path{ filename.path() };
-	wxDir       dir(path);
+	string path{ filename.path() };
+	wxDir  dir(path);
 	if (!dir.IsOpened())
 	{
 		Log::error("No directory at path {}. This shouldn't happen.", path);
@@ -149,15 +150,15 @@ size_t WolfConstant(int name, size_t numlumps)
 // Looks for the string naming the song towards the end of the file.
 // Returns an empty string if nothing is found.
 // -----------------------------------------------------------------------------
-std::string searchIMFName(MemChunk& mc)
+string searchIMFName(MemChunk& mc)
 {
 	char tmp[17];
 	char tmp2[65];
 	tmp[16]  = 0;
 	tmp2[64] = 0;
 
-	std::string ret      = "";
-	std::string fullname = "";
+	string ret      = "";
+	string fullname = "";
 	if (mc.size() >= 88u)
 	{
 		uint16_t nameOffset = mc.readL16(0) + 4u;
@@ -378,11 +379,11 @@ void WolfArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) const
 // Reads a Wolf format file from disk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool WolfArchive::open(std::string_view filename)
+bool WolfArchive::open(string_view filename)
 {
 	// Find wolf archive type
 	StrUtil::Path fn1(filename);
-	std::string   fn1_name = StrUtil::upper(fn1.fileName(false));
+	string        fn1_name = StrUtil::upper(fn1.fileName(false));
 	bool          opened;
 	if (fn1_name == "MAPHEAD" || fn1_name == "GAMEMAPS" || fn1_name == "MAPTEMP")
 	{
@@ -511,7 +512,7 @@ bool WolfArchive::open(MemChunk& mc)
 		size = wxINT16_SWAP_ON_BE(size);
 
 		// Wolf chunks have no names, so just give them a number
-		std::string name;
+		string name;
 		if (d < spritestart_)
 			name = fmt::format("WAL{:05d}", l);
 		else if (d < soundstart_)
@@ -716,7 +717,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 		}
 
 		// Wolf chunks have no names, so just give them a number
-		std::string name;
+		string name;
 		if (current_seg == SegmentMusic)
 			name = searchIMFName(edata);
 		if (name.empty())
@@ -789,7 +790,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		if (offset == 0 && d > 0)
 			continue;
 
-		std::string name;
+		string name;
 		for (size_t i = 0; i < 16; ++i)
 		{
 			name += data[offset + 22 + i];
@@ -912,7 +913,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		}
 
 		// Wolf chunks have no names, so just give them a number
-		std::string name;
+		string name;
 		if (d == 0)
 			name = "INF";
 		else if (d == 1 || d == 2)
@@ -1024,7 +1025,7 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, unsigned position, Arch
 // Since there are no namespaces, just give the hot potato to the other function
 // and call it a day.
 // -----------------------------------------------------------------------------
-ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, std::string_view add_namespace, bool copy)
+ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy)
 {
 	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
 }
@@ -1032,7 +1033,7 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, std::string_view add_na
 // -----------------------------------------------------------------------------
 // Wolf chunks have no names, so renaming is pointless.
 // -----------------------------------------------------------------------------
-bool WolfArchive::renameEntry(ArchiveEntry* entry, std::string_view name)
+bool WolfArchive::renameEntry(ArchiveEntry* entry, string_view name)
 {
 	return false;
 }
@@ -1141,11 +1142,11 @@ bool WolfArchive::isWolfArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Wolfenstein VSWAP archive
 // -----------------------------------------------------------------------------
-bool WolfArchive::isWolfArchive(const std::string& filename)
+bool WolfArchive::isWolfArchive(const string& filename)
 {
 	// Find wolf archive type
 	StrUtil::Path fn1(filename);
-	std::string   fn1_name = StrUtil::upper(fn1.fileName(false));
+	string        fn1_name = StrUtil::upper(fn1.fileName(false));
 	if (fn1_name == "MAPHEAD" || fn1_name == "GAMEMAPS" || fn1_name == "MAPTEMP")
 	{
 		StrUtil::Path fn2(fn1);

@@ -107,7 +107,7 @@ bool DiskArchive::open(MemChunk& mc)
 		}
 
 		// Parse name
-		std::string name = dent.name;
+		string name = dent.name;
 		std::replace(name.begin(), name.end(), '\\', '/');
 		StrUtil::replaceIP(name, "GAME:/", "");
 		StrUtil::Path fn(name);
@@ -371,7 +371,7 @@ bool DiskArchive::isDiskArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Quake disk archive
 // -----------------------------------------------------------------------------
-bool DiskArchive::isDiskArchive(const std::string& filename)
+bool DiskArchive::isDiskArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

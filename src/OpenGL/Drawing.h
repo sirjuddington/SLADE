@@ -63,14 +63,14 @@ void  drawTextureWithin(unsigned id, double x1, double y1, double x2, double y2,
 
 // Text drawing
 void drawText(
-	const std::string& text,
-	int                x         = 0,
-	int                y         = 0,
-	ColRGBA            colour    = ColRGBA::WHITE,
-	Font               font      = Font::Normal,
-	Align              alignment = Align::Left,
-	Rectd*             bounds    = nullptr);
-Vec2d textExtents(const std::string& text, Font font = Font::Normal);
+	const string& text,
+	int           x         = 0,
+	int           y         = 0,
+	ColRGBA       colour    = ColRGBA::WHITE,
+	Font          font      = Font::Normal,
+	Align         alignment = Align::Left,
+	Rectd*        bounds    = nullptr);
+Vec2d textExtents(const string& text, Font font = Font::Normal);
 void  enableTextStateReset(bool enable = true);
 void  setTextState(bool set = true);
 void  setTextOutline(double thickness, const ColRGBA& colour = ColRGBA::BLACK);
@@ -96,23 +96,23 @@ wxColour darkColour(const wxColour& colour, float percent);
 class TextBox
 {
 public:
-	TextBox(std::string_view text, Drawing::Font font, int width, int line_height = -1);
+	TextBox(string_view text, Drawing::Font font, int width, int line_height = -1);
 	~TextBox() = default;
 
 	int  height() const { return height_; }
 	int  width() const { return width_; }
-	void setText(std::string_view text);
+	void setText(string_view text);
 	void setSize(int width);
 	void setLineHeight(int height) { line_height_ = height; }
 	void draw(int x, int y, const ColRGBA& colour = ColRGBA::WHITE, Drawing::Align alignment = Drawing::Align::Left);
 
 private:
-	std::string         text_;
-	vector<std::string> lines_;
-	Drawing::Font       font_        = Drawing::Font::Normal;
-	int                 width_       = 0;
-	int                 height_      = 0;
-	int                 line_height_ = -1;
+	string         text_;
+	vector<string> lines_;
+	Drawing::Font  font_        = Drawing::Font::Normal;
+	int            width_       = 0;
+	int            height_      = 0;
+	int            line_height_ = -1;
 
-	void split(std::string_view text);
+	void split(string_view text);
 };

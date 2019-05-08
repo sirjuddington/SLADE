@@ -470,7 +470,7 @@ void PatchBrowser::selectPatch(const wxString& name)
 // -----------------------------------------------------------------------------
 // Handles any announcements
 // -----------------------------------------------------------------------------
-void PatchBrowser::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
+void PatchBrowser::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
 {
 	if (announcer != theMainWindow->paletteChooser())
 		return;

@@ -224,8 +224,7 @@ bool SiNArchive::write(MemChunk& mc, bool update)
 		name.erase(name.begin()); // Remove leading /
 		if (name.size() > 120)
 		{
-			Log::warning(
-				"Entry {} path is too long (> 120 characters), putting it in the root directory", name);
+			Log::warning("Entry {} path is too long (> 120 characters), putting it in the root directory", name);
 			name = StrUtil::Path::fileNameOf(name);
 			if (name.size() > 120)
 				StrUtil::truncateIP(name, 120);
@@ -346,7 +345,7 @@ bool SiNArchive::isSiNArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Ritual SiN archive
 // -----------------------------------------------------------------------------
-bool SiNArchive::isSiNArchive(const std::string& filename)
+bool SiNArchive::isSiNArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

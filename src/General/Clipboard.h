@@ -18,8 +18,6 @@ public:
 
 	Type type() const { return type_; }
 
-	typedef std::unique_ptr<ClipboardItem> UPtr;
-
 private:
 	Type type_;
 };
@@ -35,8 +33,8 @@ public:
 
 	ClipboardItem* item(unsigned index) const { return index < items_.size() ? items_[index].get() : nullptr; }
 
-	void add(ClipboardItem::UPtr item) { items_.push_back(std::move(item)); }
-	void add(vector<ClipboardItem::UPtr>& items)
+	void add(unique_ptr<ClipboardItem> item) { items_.push_back(std::move(item)); }
+	void add(vector<unique_ptr<ClipboardItem>>& items)
 	{
 		for (auto& item : items)
 			items_.push_back(std::move(item));
@@ -45,5 +43,5 @@ public:
 	void clear() { items_.clear(); }
 
 private:
-	vector<ClipboardItem::UPtr> items_;
+	vector<unique_ptr<ClipboardItem>> items_;
 };

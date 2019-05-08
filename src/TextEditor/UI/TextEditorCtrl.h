@@ -20,11 +20,7 @@ wxDECLARE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
 class JumpToCalculator : public wxThread
 {
 public:
-	JumpToCalculator(
-		wxEvtHandler*    handler,
-		std::string_view  text,
-		vector<std::string> block_names,
-		vector<std::string> ignore) :
+	JumpToCalculator(wxEvtHandler* handler, string_view text, vector<string> block_names, vector<string> ignore) :
 		handler_(handler),
 		text_(text),
 		block_names_(std::move(block_names)),
@@ -36,10 +32,10 @@ public:
 	ExitCode Entry() override;
 
 private:
-	wxEvtHandler*    handler_;
-	std::string         text_;
-	vector<std::string> block_names_;
-	vector<std::string> ignore_;
+	wxEvtHandler*  handler_;
+	string         text_;
+	vector<string> block_names_;
+	vector<string> ignore_;
 };
 
 class TextEditorCtrl : public wxStyledTextCtrl
@@ -96,16 +92,16 @@ public:
 	void cycleComments() const;
 
 private:
-	TextLanguage*          language_           = nullptr;
-	FindReplacePanel*      panel_fr_           = nullptr;
-	SCallTip*              call_tip_           = nullptr;
-	wxChoice*              choice_jump_to_     = nullptr;
-	JumpToCalculator*      jump_to_calculator_ = nullptr;
-	std::unique_ptr<Lexer> lexer_;
-	wxString               prev_word_match_;
-	wxString               autocomp_list_;
-	vector<int>            jump_to_lines_;
-	long                   last_modified_ = 0;
+	TextLanguage*     language_           = nullptr;
+	FindReplacePanel* panel_fr_           = nullptr;
+	SCallTip*         call_tip_           = nullptr;
+	wxChoice*         choice_jump_to_     = nullptr;
+	JumpToCalculator* jump_to_calculator_ = nullptr;
+	unique_ptr<Lexer> lexer_;
+	wxString          prev_word_match_;
+	wxString          autocomp_list_;
+	vector<int>       jump_to_lines_;
+	long              last_modified_ = 0;
 
 	// State tracking for updates
 	int  prev_cursor_pos_      = -1;

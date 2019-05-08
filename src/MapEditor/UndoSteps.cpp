@@ -235,7 +235,7 @@ MultiMapObjectPropertyChangeUS::MultiMapObjectPropertyChangeUS()
 
 	if (Log::verbosity() >= 2)
 	{
-		std::string msg = "Modified ids: ";
+		string msg = "Modified ids: ";
 		for (auto& backup : backups_)
 			msg += fmt::format("{}, ", backup->id);
 		Log::info(msg);

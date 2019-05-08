@@ -152,7 +152,7 @@ void NodesPrefsPanel::applyPreferences()
 	nodebuilder_id = builder.id;
 
 	// Set options string
-	std::string opt = " ";
+	string opt = " ";
 	for (unsigned a = 0; a < clb_options_->GetCount(); a++)
 	{
 		if (clb_options_->IsChecked(a))

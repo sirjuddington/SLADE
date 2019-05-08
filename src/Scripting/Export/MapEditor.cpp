@@ -49,7 +49,7 @@ namespace Lua
 // Sets a boolean property [key] on the MapObject [self] to [value].
 // Also checks if the property [key] is allowed to be modified by scripts
 // -----------------------------------------------------------------------------
-void objectSetBoolProperty(MapObject& self, std::string_view key, bool value)
+void objectSetBoolProperty(MapObject& self, string_view key, bool value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setBoolProperty(key, value);
@@ -61,7 +61,7 @@ void objectSetBoolProperty(MapObject& self, std::string_view key, bool value)
 // Sets an int property [key] on the MapObject [self] to [value].
 // Also checks if the property [key] is allowed to be modified by scripts
 // -----------------------------------------------------------------------------
-void objectSetIntProperty(MapObject& self, std::string_view key, int value)
+void objectSetIntProperty(MapObject& self, string_view key, int value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setIntProperty(key, value);
@@ -73,7 +73,7 @@ void objectSetIntProperty(MapObject& self, std::string_view key, int value)
 // Sets a float property [key] on the MapObject [self] to [value].
 // Also checks if the property [key] is allowed to be modified by scripts
 // -----------------------------------------------------------------------------
-void objectSetFloatProperty(MapObject& self, std::string_view key, double value)
+void objectSetFloatProperty(MapObject& self, string_view key, double value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setFloatProperty(key, value);
@@ -85,7 +85,7 @@ void objectSetFloatProperty(MapObject& self, std::string_view key, double value)
 // Sets a string property [key] on the MapObject [self] to [value].
 // Also checks if the property [key] is allowed to be modified by scripts
 // -----------------------------------------------------------------------------
-void objectSetStringProperty(MapObject& self, std::string_view key, std::string_view value)
+void objectSetStringProperty(MapObject& self, string_view key, string_view value)
 {
 	if (self.scriptCanModifyProp(key))
 		self.setStringProperty(key, value);
@@ -224,7 +224,7 @@ sol::table lineVisibleTextures(MapLine& self)
 // -----------------------------------------------------------------------------
 // Returns true if the [flag] on map line [self] is set
 // -----------------------------------------------------------------------------
-bool lineFlag(MapLine& self, const std::string& flag)
+bool lineFlag(MapLine& self, const string& flag)
 {
 	if (Game::configuration().lineBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
 		return true;
@@ -243,21 +243,21 @@ void registerMapLine(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_line["x1"]              = sol::property(&MapLine::x1);
-	lua_line["y1"]              = sol::property(&MapLine::y1);
-	lua_line["x2"]              = sol::property(&MapLine::x2);
-	lua_line["y2"]              = sol::property(&MapLine::y2);
-	lua_line["vertex1"]         = sol::property(&MapLine::v1);
-	lua_line["vertex2"]         = sol::property(&MapLine::v2);
-	lua_line["side1"]           = sol::property(&MapLine::s1);
-	lua_line["side2"]           = sol::property(&MapLine::s2);
-	lua_line["special"]         = sol::property(&MapLine::special);
-	lua_line["length"]          = sol::property(&MapLine::length);
+	lua_line["x1"]      = sol::property(&MapLine::x1);
+	lua_line["y1"]      = sol::property(&MapLine::y1);
+	lua_line["x2"]      = sol::property(&MapLine::x2);
+	lua_line["y2"]      = sol::property(&MapLine::y2);
+	lua_line["vertex1"] = sol::property(&MapLine::v1);
+	lua_line["vertex2"] = sol::property(&MapLine::v2);
+	lua_line["side1"]   = sol::property(&MapLine::s1);
+	lua_line["side2"]   = sol::property(&MapLine::s2);
+	lua_line["special"] = sol::property(&MapLine::special);
+	lua_line["length"]  = sol::property(&MapLine::length);
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_line["Flag"] = &lineFlag;
-	lua_line["Flip"] = sol::overload(&MapLine::flip, [](MapLine& self) { self.flip(true); });
+	lua_line["Flag"]            = &lineFlag;
+	lua_line["Flip"]            = sol::overload(&MapLine::flip, [](MapLine& self) { self.flip(true); });
 	lua_line["VisibleTextures"] = &lineVisibleTextures;
 }
 
@@ -314,7 +314,7 @@ void registerMapSector(sol::state& lua)
 // -----------------------------------------------------------------------------
 // Returns true if [flag] is set on map thing [self]
 // -----------------------------------------------------------------------------
-bool thingFlag(MapThing& self, const std::string& flag)
+bool thingFlag(MapThing& self, const string& flag)
 {
 	if (Game::configuration().thingBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
 		return true;

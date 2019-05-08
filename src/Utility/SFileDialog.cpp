@@ -58,12 +58,12 @@ EXTERN_CVAR(String, dir_last)
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
 bool SFileDialog::openFile(
-	FDInfo&          info,
-	std::string_view caption,
-	std::string_view extensions,
-	wxWindow*        parent,
-	std::string_view fn_default,
-	int              ext_default)
+	FDInfo&     info,
+	string_view caption,
+	string_view extensions,
+	wxWindow*   parent,
+	string_view fn_default,
+	int         ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(
@@ -101,12 +101,12 @@ bool SFileDialog::openFile(
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
 bool SFileDialog::openFiles(
-	FDInfo&          info,
-	std::string_view caption,
-	std::string_view extensions,
-	wxWindow*        parent,
-	std::string_view fn_default,
-	int              ext_default)
+	FDInfo&     info,
+	string_view caption,
+	string_view extensions,
+	wxWindow*   parent,
+	string_view fn_default,
+	int         ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(
@@ -148,12 +148,12 @@ bool SFileDialog::openFiles(
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
 bool SFileDialog::saveFile(
-	FDInfo&          info,
-	std::string_view caption,
-	std::string_view extensions,
-	wxWindow*        parent,
-	std::string_view fn_default,
-	int              ext_default)
+	FDInfo&     info,
+	string_view caption,
+	string_view extensions,
+	wxWindow*   parent,
+	string_view fn_default,
+	int         ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(
@@ -192,11 +192,11 @@ bool SFileDialog::saveFile(
 // This is used to replace wxDirDialog, which sucks
 // -----------------------------------------------------------------------------
 bool SFileDialog::saveFiles(
-	FDInfo&          info,
-	std::string_view caption,
-	std::string_view extensions,
-	wxWindow*        parent,
-	int              ext_default)
+	FDInfo&     info,
+	string_view caption,
+	string_view extensions,
+	wxWindow*   parent,
+	int         ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(
@@ -231,7 +231,7 @@ bool SFileDialog::saveFiles(
 // -----------------------------------------------------------------------------
 // Returns the executable file filter string depending on the current OS
 // -----------------------------------------------------------------------------
-std::string SFileDialog::executableExtensionString()
+string SFileDialog::executableExtensionString()
 {
 	if (App::platform() == App::Platform::Windows)
 		return "Executable Files (*.exe)|*.exe";
@@ -242,10 +242,10 @@ std::string SFileDialog::executableExtensionString()
 // -----------------------------------------------------------------------------
 // Returns [exe_name] with a .exe extension if in Windows
 // -----------------------------------------------------------------------------
-std::string SFileDialog::executableFileName(std::string_view exe_name)
+string SFileDialog::executableFileName(string_view exe_name)
 {
 	if (App::platform() == App::Platform::Windows)
-		return std::string{ exe_name } + ".exe";
+		return string{ exe_name } + ".exe";
 	else
-		return std::string{ exe_name };
+		return string{ exe_name };
 }

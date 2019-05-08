@@ -345,7 +345,7 @@ bool PakArchive::isPakArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid Quake pak archive
 // -----------------------------------------------------------------------------
-bool PakArchive::isPakArchive(const std::string& filename)
+bool PakArchive::isPakArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);

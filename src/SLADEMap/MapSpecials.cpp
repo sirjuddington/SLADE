@@ -218,8 +218,8 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line) const
 			tagged.push_back(line);
 
 		// Get args
-		double      alpha = (double)args[1] / 255.0;
-		std::string type  = (args[2] == 0) ? "translucent" : "add";
+		double alpha = (double)args[1] / 255.0;
+		string type  = (args[2] == 0) ? "translucent" : "add";
 
 		// Set transparency
 		for (auto& l : tagged)
@@ -302,7 +302,7 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 							SectorColour sc;
 							sc.tag = tag;
 							sc.colour.set(r, g, b, 255);
-							Log::info(3,"Sector tag {}, colour {},{},{}", tag, r, g, b);
+							Log::info(3, "Sector tag {}, colour {},{},{}", tag, r, g, b);
 							sector_colours_.push_back(sc);
 						}
 					}
@@ -448,8 +448,7 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 			int tag = thing->arg(0);
 			if (!tag)
 			{
-				Log::warning(
-					"Ignoring slope copy thing in sector {} with no argument", target->index());
+				Log::warning("Ignoring slope copy thing in sector {} with no argument", target->index());
 				continue;
 			}
 
@@ -592,8 +591,7 @@ void MapSpecials::processEternitySlopes(SLADEMap* map) const
 		}
 		if (sector1 == sector2)
 		{
-			Log::warning(
-				"Ignoring Plane_Align on line {}, which has the same sector on both sides", line->index());
+			Log::warning("Ignoring Plane_Align on line {}, which has the same sector on both sides", line->index());
 			continue;
 		}
 
@@ -845,7 +843,7 @@ template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 template<SurfaceType T> double MapSpecials::vertexHeight(MapVertex* vertex, MapSector* sector) const
 {
 	// Return vertex height if set via UDMF property
-	std::string prop = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
+	string prop = (T == SurfaceType::Floor ? "zfloor" : "zceiling");
 	if (vertex->hasProp(prop))
 		return vertex->floatProperty(prop);
 

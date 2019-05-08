@@ -249,7 +249,7 @@ uint32_t n_valid_flat_sizes = 22;
 class SIFRaw : public SIFormat
 {
 public:
-	SIFRaw(std::string_view id = "raw") : SIFormat(id, "Raw", "dat") {}
+	SIFRaw(string_view id = "raw") : SIFormat(id, "Raw", "dat") {}
 	~SIFRaw() = default;
 
 	bool isThisFormat(MemChunk& mc) override
@@ -483,7 +483,7 @@ protected:
 // -----------------------------------------------------------------------------
 // SIFormat class constructor
 // ----------------------------------------------------------------------------
-SIFormat::SIFormat(std::string_view id, std::string_view name, std::string_view ext, uint8_t reliability) :
+SIFormat::SIFormat(string_view id, string_view name, string_view ext, uint8_t reliability) :
 	id_{ id },
 	name_{ name },
 	extension_{ ext },
@@ -569,7 +569,7 @@ void SIFormat::initFormats()
 // -----------------------------------------------------------------------------
 // Returns the format [id]
 // -----------------------------------------------------------------------------
-SIFormat* SIFormat::getFormat(std::string_view id)
+SIFormat* SIFormat::getFormat(string_view id)
 {
 	// Check for special types
 	if (id == "raw")

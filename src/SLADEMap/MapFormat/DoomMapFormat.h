@@ -59,10 +59,10 @@ public:
 	};
 
 	bool readMap(Archive::MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props) override;
-	vector<ArchiveEntry::UPtr> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
+	vector<unique_ptr<ArchiveEntry>> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
 		override;
 
-	std::string udmfNamespace() override { return ""; }
+	string udmfNamespace() override { return ""; }
 
 protected:
 	virtual bool readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_data) const;
@@ -71,9 +71,9 @@ protected:
 	virtual bool readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_data) const;
 	virtual bool readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_data) const;
 
-	virtual ArchiveEntry::UPtr writeVERTEXES(const VertexList& vertices) const;
-	virtual ArchiveEntry::UPtr writeSIDEDEFS(const SideList& sides) const;
-	virtual ArchiveEntry::UPtr writeLINEDEFS(const LineList& lines) const;
-	virtual ArchiveEntry::UPtr writeSECTORS(const SectorList& sectors) const;
-	virtual ArchiveEntry::UPtr writeTHINGS(const ThingList& things) const;
+	virtual unique_ptr<ArchiveEntry> writeVERTEXES(const VertexList& vertices) const;
+	virtual unique_ptr<ArchiveEntry> writeSIDEDEFS(const SideList& sides) const;
+	virtual unique_ptr<ArchiveEntry> writeLINEDEFS(const LineList& lines) const;
+	virtual unique_ptr<ArchiveEntry> writeSECTORS(const SectorList& sectors) const;
+	virtual unique_ptr<ArchiveEntry> writeTHINGS(const ThingList& things) const;
 };

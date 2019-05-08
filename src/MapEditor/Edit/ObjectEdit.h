@@ -16,8 +16,6 @@ public:
 		Vec2d      old_position;
 		MapVertex* map_vertex;
 		bool       ignored;
-
-		typedef std::unique_ptr<Vertex> UPtr;
 	};
 
 	struct Line
@@ -65,15 +63,15 @@ public:
 	void applyEdit();
 
 private:
-	vector<Vertex::UPtr> vertices_;
-	vector<Line>         lines_;
-	vector<Thing>        things_;
-	BBox                 bbox_;          // Current
-	BBox                 old_bbox_;      // Before drag operation
-	BBox                 original_bbox_; // From first init
-	Vec2d                offset_prev_ = { 0, 0 };
-	double               rotation_    = 0;
-	bool                 mirrored_    = false;
+	vector<unique_ptr<Vertex>> vertices_;
+	vector<Line>               lines_;
+	vector<Thing>              things_;
+	BBox                       bbox_;          // Current
+	BBox                       old_bbox_;      // Before drag operation
+	BBox                       original_bbox_; // From first init
+	Vec2d                      offset_prev_ = { 0, 0 };
+	double                     rotation_    = 0;
+	bool                       mirrored_    = false;
 };
 
 #undef None

@@ -8,8 +8,8 @@ public:
 	virtual bool isSoundfontLoaded() = 0;
 	virtual bool reloadSoundfont() { return true; }
 
-	virtual bool openFile(const std::string& filename) = 0;
-	virtual bool openData(MemChunk& mc)                = 0;
+	virtual bool openFile(const string& filename) = 0;
+	virtual bool openData(MemChunk& mc)           = 0;
 
 	virtual bool isReady() = 0;
 
@@ -23,20 +23,20 @@ public:
 	virtual bool setPosition(int pos)  = 0;
 	virtual bool setVolume(int volume) = 0;
 
-	virtual int         length();
-	virtual std::string info();
+	virtual int    length();
+	virtual string info();
 
 protected:
-	std::string file_;
-	MemChunk    data_;
-	sf::Clock   timer_;
+	string    file_;
+	MemChunk  data_;
+	sf::Clock timer_;
 };
 
 class NullMIDIPlayer : public MIDIPlayer
 {
 public:
 	bool isSoundfontLoaded() override { return false; }
-	bool openFile(const std::string& filename) override { return false; }
+	bool openFile(const string& filename) override { return false; }
 	bool openData(MemChunk& mc) override { return false; }
 	bool play() override { return false; }
 	bool pause() override { return false; }

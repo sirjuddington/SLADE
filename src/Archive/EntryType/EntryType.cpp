@@ -48,8 +48,8 @@
 // -----------------------------------------------------------------------------
 namespace
 {
-vector<EntryType*>  entry_types;      // The big list of all entry types
-vector<std::string> entry_categories; // All entry type categories
+vector<EntryType*> entry_types;      // The big list of all entry types
+vector<string>     entry_categories; // All entry type categories
 
 // Special entry types
 EntryType etype_unknown; // The default, 'unknown' entry type
@@ -69,7 +69,7 @@ EntryType etype_map;     // Map marker type
 // -----------------------------------------------------------------------------
 // EntryType class constructor
 // -----------------------------------------------------------------------------
-EntryType::EntryType(std::string_view id) : id_{ id }, format_{ EntryDataFormat::anyFormat() } {}
+EntryType::EntryType(string_view id) : id_{ id }, format_{ EntryDataFormat::anyFormat() } {}
 
 // -----------------------------------------------------------------------------
 // Adds the type to the list of entry types
@@ -139,7 +139,7 @@ void EntryType::copyToType(EntryType* target)
 // Returns a file filter string for this type:
 // "<type name> files (*.<type extension)|*.<type extension>"
 // -----------------------------------------------------------------------------
-std::string EntryType::fileFilterString() const
+string EntryType::fileFilterString() const
 {
 	return fmt::format("{0} files (*.{1})|*.{1}", name_, extension_);
 }
@@ -248,14 +248,14 @@ int EntryType::isThisType(ArchiveEntry* entry)
 	if (!match_name_.empty() || !match_extension_.empty())
 	{
 		// Get entry name (lowercase), find extension separator
-		std::string_view fn      = entry->upperName();
-		size_t           ext_sep = fn.find_first_of('.', 0);
+		string_view fn      = entry->upperName();
+		size_t      ext_sep = fn.find_first_of('.', 0);
 
 		// Check for name match if needed
 		if (!match_name_.empty())
 		{
 			auto name = fn;
-			if (ext_sep != std::string::npos)
+			if (ext_sep != string::npos)
 				name = fn.substr(0, ext_sep);
 
 			bool match = false;
@@ -278,7 +278,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		if (!match_extension_.empty())
 		{
 			bool match = false;
-			if (ext_sep != std::string::npos)
+			if (ext_sep != string::npos)
 			{
 				auto ext = fn.substr(ext_sep + 1);
 				for (const auto& match_ext : match_extension_)
@@ -319,7 +319,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 // Reads in a block of entry type definitions. Returns false if there was a
 // parsing error, true otherwise
 // -----------------------------------------------------------------------------
-bool EntryType::readEntryTypeDefinition(MemChunk& mc, std::string_view source)
+bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 {
 	// Parse the definition
 	Parser p;
@@ -631,7 +631,7 @@ bool EntryType::detectEntryType(ArchiveEntry* entry)
 // Returns the entry type with the given id, or etype_unknown if no id match is
 // found
 // -----------------------------------------------------------------------------
-EntryType* EntryType::fromId(std::string_view id)
+EntryType* EntryType::fromId(string_view id)
 {
 	for (auto type : entry_types)
 		if (type->id_ == id)
@@ -667,9 +667,9 @@ EntryType* EntryType::mapMarkerType()
 // -----------------------------------------------------------------------------
 // Returns a list of icons for all entry types, organised by type index
 // -----------------------------------------------------------------------------
-vector<std::string> EntryType::iconList()
+vector<string> EntryType::iconList()
 {
-	vector<std::string> list;
+	vector<string> list;
 
 	for (auto& entry_type : entry_types)
 		list.push_back(entry_type->icon());
@@ -704,7 +704,7 @@ vector<EntryType*> EntryType::allTypes()
 // -----------------------------------------------------------------------------
 // Returns a list of all entry type categories
 // -----------------------------------------------------------------------------
-vector<std::string> EntryType::allCategories()
+vector<string> EntryType::allCategories()
 {
 	return entry_categories;
 }
@@ -727,10 +727,10 @@ CONSOLE_COMMAND(type, 0, true)
 	if (args.empty())
 	{
 		// List existing types and their IDs
-		std::string listing   = "List of entry types:\n\t";
-		std::string separator = "]\n\t";
-		std::string colon     = ": ";
-		std::string paren     = " [";
+		string listing   = "List of entry types:\n\t";
+		string separator = "]\n\t";
+		string colon     = ": ";
+		string paren     = " [";
 		for (size_t a = 3; a < all_types.size(); a++)
 		{
 			listing += all_types[a]->name();

@@ -28,41 +28,37 @@ public:
 		New // Newly created (not saved on disk yet)
 	};
 
-	typedef std::unique_ptr<ArchiveEntry> UPtr;
-	typedef std::shared_ptr<ArchiveEntry> SPtr;
-	typedef std::weak_ptr<ArchiveEntry>   WPtr;
-
 	// Constructor/Destructor
-	ArchiveEntry(std::string_view name = "", uint32_t size = 0);
+	ArchiveEntry(string_view name = "", uint32_t size = 0);
 	ArchiveEntry(ArchiveEntry& copy);
 	~ArchiveEntry() = default;
 
 	// Accessors
-	const std::string&  name() const { return name_; }
-	std::string_view    nameNoExt() const;
-	const std::string&  upperName() const { return upper_name_; }
-	std::string_view    upperNameNoExt() const;
-	uint32_t            size() const { return data_loaded_ ? data_.size() : size_; }
-	MemChunk&           data(bool allow_load = true);
-	const uint8_t*      rawData(bool allow_load = true);
-	ArchiveTreeNode*    parentDir() const { return parent_; }
-	Archive*            parent() const;
-	Archive*            topParent() const;
-	std::string         path(bool name = false) const;
-	EntryType*          type() const { return type_; }
-	PropertyList&       exProps() { return ex_props_; }
-	const PropertyList& exProps() const { return ex_props_; }
-	Property&           exProp(const std::string& key) { return ex_props_[key]; }
-	State               state() const { return state_; }
-	bool                isLocked() const { return locked_; }
-	bool                isLoaded() const { return data_loaded_; }
-	Encryption          encryption() const { return encrypted_; }
-	ArchiveEntry*       nextEntry() const { return next_; }
-	ArchiveEntry*       prevEntry() const { return prev_; }
-	SPtr                getShared();
+	const string&            name() const { return name_; }
+	string_view              nameNoExt() const;
+	const string&            upperName() const { return upper_name_; }
+	string_view              upperNameNoExt() const;
+	uint32_t                 size() const { return data_loaded_ ? data_.size() : size_; }
+	MemChunk&                data(bool allow_load = true);
+	const uint8_t*           rawData(bool allow_load = true);
+	ArchiveTreeNode*         parentDir() const { return parent_; }
+	Archive*                 parent() const;
+	Archive*                 topParent() const;
+	string                   path(bool name = false) const;
+	EntryType*               type() const { return type_; }
+	PropertyList&            exProps() { return ex_props_; }
+	const PropertyList&      exProps() const { return ex_props_; }
+	Property&                exProp(const string& key) { return ex_props_[key]; }
+	State                    state() const { return state_; }
+	bool                     isLocked() const { return locked_; }
+	bool                     isLoaded() const { return data_loaded_; }
+	Encryption               encryption() const { return encrypted_; }
+	ArchiveEntry*            nextEntry() const { return next_; }
+	ArchiveEntry*            prevEntry() const { return prev_; }
+	shared_ptr<ArchiveEntry> getShared();
 
 	// Modifiers (won't change entry state, except setState of course :P)
-	void setName(std::string_view name);
+	void setName(string_view name);
 	void setLoaded(bool loaded = true) { data_loaded_ = loaded; }
 	void setType(EntryType* type, int r = 0)
 	{
@@ -79,7 +75,7 @@ public:
 	void formatName(const ArchiveFormat& format);
 
 	// Entry modification (will change entry state)
-	bool rename(std::string_view new_name);
+	bool rename(string_view new_name);
 	bool resize(uint32_t new_size, bool preserve_data);
 
 	// Data modification
@@ -88,12 +84,12 @@ public:
 	// Data import
 	bool importMem(const void* data, uint32_t size);
 	bool importMemChunk(MemChunk& mc);
-	bool importFile(std::string_view filename, uint32_t offset = 0, uint32_t size = 0);
+	bool importFile(string_view filename, uint32_t offset = 0, uint32_t size = 0);
 	bool importFileStream(wxFile& file, uint32_t len = 0);
 	bool importEntry(ArchiveEntry* entry);
 
 	// Data export
-	bool exportFile(std::string_view filename);
+	bool exportFile(string_view filename);
 
 	// Data access
 	bool     write(const void* data, uint32_t size);
@@ -102,18 +98,18 @@ public:
 	uint32_t currentPos() const { return data_.currentPos(); }
 
 	// Misc
-	std::string   sizeString() const;
-	std::string   typeString() const { return type_ ? type_->name() : "Unknown"; }
+	string        sizeString() const;
+	string        typeString() const { return type_ ? type_->name() : "Unknown"; }
 	void          stateChanged();
 	void          setExtensionByType();
 	int           typeReliability() const { return (type_ ? (type()->reliability() * reliability_ / 255) : 0); }
-	bool          isInNamespace(std::string_view ns);
-	ArchiveEntry* relativeEntry(std::string_view path, bool allow_absolute_path = true) const;
+	bool          isInNamespace(string_view ns);
+	ArchiveEntry* relativeEntry(string_view path, bool allow_absolute_path = true) const;
 
 private:
 	// Entry Info
-	std::string      name_;
-	std::string      upper_name_;
+	string           name_;
+	string           upper_name_;
 	uint32_t         size_ = 0;
 	MemChunk         data_;
 	EntryType*       type_   = nullptr;

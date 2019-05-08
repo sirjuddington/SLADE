@@ -49,15 +49,15 @@ namespace
 // Returns a string representation of [value] for a 'custom flags' type
 // arg, given [custom_flags]
 // -----------------------------------------------------------------------------
-std::string customFlags(int value, const vector<ArgValue>& custom_flags)
+string customFlags(int value, const vector<ArgValue>& custom_flags)
 {
 	// This has to go in REVERSE order to correctly handle multi-bit
 	// enums (so we see 3 before 1 and 2)
-	vector<std::string> flags;
-	size_t              final_length   = 0;
-	int                 last_group     = 0;
-	int                 original_value = value;
-	bool                has_flag;
+	vector<string> flags;
+	size_t         final_length   = 0;
+	int            last_group     = 0;
+	int            original_value = value;
+	bool           has_flag;
 	for (auto it = custom_flags.rbegin(); it != custom_flags.rend(); ++it)
 	{
 		if ((it->value & (it->value - 1)) != 0)
@@ -83,7 +83,7 @@ std::string customFlags(int value, const vector<ArgValue>& custom_flags)
 		flags.push_back(fmt::format("{}", value));
 
 	// Join 'em, in reverse again, to restore the original order
-	std::string out;
+	string out;
 	out.reserve(final_length);
 	auto it = flags.rbegin();
 	while (true)
@@ -109,7 +109,7 @@ std::string customFlags(int value, const vector<ArgValue>& custom_flags)
 // -----------------------------------------------------------------------------
 // Returns a string representation of [value] depending on the arg's type
 // -----------------------------------------------------------------------------
-std::string Arg::valueString(int value) const
+string Arg::valueString(int value) const
 {
 	switch (type)
 	{
@@ -152,7 +152,7 @@ std::string Arg::valueString(int value) const
 // -----------------------------------------------------------------------------
 // Returns a string representation of speed [value]
 // -----------------------------------------------------------------------------
-std::string Arg::speedLabel(int value) const
+string Arg::speedLabel(int value) const
 {
 	// Speed can optionally have a set of predefined values, most taken
 	// from the Boom generalized values
@@ -221,7 +221,7 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 
 		// Type
 		val = node->childPTN("type");
-		std::string atype;
+		string atype;
 		if (val)
 			atype = val->stringValue();
 		if (StrUtil::equalCI(atype, "yesno"))
@@ -267,9 +267,9 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 // -----------------------------------------------------------------------------
 // Returns a string representation of [values] depending on the spec arg types
 // -----------------------------------------------------------------------------
-std::string ArgSpec::stringDesc(const int values[5], std::string values_str[2]) const
+string ArgSpec::stringDesc(const int values[5], string values_str[2]) const
 {
-	std::string ret;
+	string ret;
 
 	// Add each arg to the string
 	for (unsigned a = 0; a < 5; a++)

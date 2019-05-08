@@ -466,8 +466,8 @@ void TextStylePrefsPanel::updateBackground() const
 void TextStylePrefsPanel::updatePreview()
 {
 	// Save current font override options
-	std::string f_override = txed_override_font;
-	int         s_override = txed_override_font_size;
+	string f_override = txed_override_font;
+	int    s_override = txed_override_font_size;
 
 	// Apply font override options (temporarily)
 	if (cb_font_override_->GetValue())

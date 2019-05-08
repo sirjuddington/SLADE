@@ -6,8 +6,8 @@ namespace Game
 {
 struct ArgValue
 {
-	std::string name;
-	int         value;
+	string name;
+	int    value;
 };
 
 struct Arg
@@ -23,20 +23,20 @@ struct Arg
 		Speed,
 	};
 
-	typedef std::map<std::string, Arg> SpecialMap;
+	typedef std::map<string, Arg> SpecialMap;
 
-	std::string      name;
-	std::string      desc;
+	string           name;
+	string           desc;
 	int              type = Number;
 	vector<ArgValue> custom_values;
 	vector<ArgValue> custom_flags;
 
 	Arg() {}
-	Arg(std::string_view name) : name{ name } {}
+	Arg(string_view name) : name{ name } {}
 
-	std::string valueString(int value) const;
-	std::string speedLabel(int value) const;
-	void        parse(ParseTreeNode* node, SpecialMap* shared_args);
+	string valueString(int value) const;
+	string speedLabel(int value) const;
+	void   parse(ParseTreeNode* node, SpecialMap* shared_args);
 };
 
 struct ArgSpec
@@ -49,6 +49,6 @@ struct ArgSpec
 	Arg&       operator[](int index) { return args[index]; }
 	const Arg& operator[](int index) const { return args[index]; }
 
-	std::string stringDesc(const int values[5], std::string values_str[2]) const;
+	string stringDesc(const int values[5], string values_str[2]) const;
 };
 } // namespace Game

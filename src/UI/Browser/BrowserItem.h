@@ -24,19 +24,17 @@ public:
 				Drawing::Font           font,
 				BrowserCanvas::NameType nametype    = BrowserCanvas::NameType::Normal,
 				BrowserCanvas::ItemView viewtype    = BrowserCanvas::ItemView::Normal,
-				const ColRGBA& colour      = ColRGBA::WHITE,
+				const ColRGBA&          colour      = ColRGBA::WHITE,
 				bool                    text_shadow = true);
 	virtual void     clearImage() {}
 	virtual wxString itemInfo() { return ""; }
 
-	typedef std::unique_ptr<BrowserItem> UPtr;
-
 protected:
-	wxString                 type_;
-	wxString                 name_;
-	unsigned                 index_     = 0;
-	unsigned                 image_tex_ = 0;
-	BrowserWindow*           parent_    = nullptr;
-	bool                     blank_     = false;
-	std::unique_ptr<TextBox> text_box_;
+	wxString            type_;
+	wxString            name_;
+	unsigned            index_     = 0;
+	unsigned            image_tex_ = 0;
+	BrowserWindow*      parent_    = nullptr;
+	bool                blank_     = false;
+	unique_ptr<TextBox> text_box_;
 };

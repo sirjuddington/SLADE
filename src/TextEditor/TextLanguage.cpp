@@ -73,7 +73,7 @@ const TLFunction::Context& TLFunction::context(unsigned long index) const
 // -----------------------------------------------------------------------------
 // Parses a function parameter from a list of tokens
 // -----------------------------------------------------------------------------
-void TLFunction::Parameter::parse(vector<std::string>& tokens)
+void TLFunction::Parameter::parse(vector<string>& tokens)
 {
 	// Optional
 	if (tokens[0] == "[")
@@ -102,11 +102,11 @@ void TLFunction::Parameter::parse(vector<std::string>& tokens)
 // Adds a [context] of the function
 // -----------------------------------------------------------------------------
 void TLFunction::addContext(
-	std::string_view context,
-	std::string_view args,
-	std::string_view return_type,
-	std::string_view description,
-	std::string_view deprecated_f)
+	string_view context,
+	string_view args,
+	string_view return_type,
+	string_view description,
+	string_view deprecated_f)
 {
 	contexts_.emplace_back(context, return_type, description);
 	auto& ctx = contexts_.back();
@@ -116,7 +116,7 @@ void TLFunction::addContext(
 	tz.setSpecialCharacters("[],");
 	tz.openString(args);
 
-	vector<std::string> arg_tokens;
+	vector<string> arg_tokens;
 	while (true)
 	{
 		while (!tz.check(","))
@@ -174,11 +174,11 @@ void TLFunction::addContext(
 // Adds a [context] of the function from a parsed ZScript function [func]
 // -----------------------------------------------------------------------------
 void TLFunction::addContext(
-	std::string_view         context,
+	string_view              context,
 	const ZScript::Function& func,
 	bool                     custom,
-	std::string_view         desc,
-	std::string_view         dep_f)
+	string_view              desc,
+	string_view              dep_f)
 {
 	contexts_.emplace_back(context, func.returnType(), desc, func.deprecated(), dep_f, custom);
 	auto& ctx = contexts_.back();
@@ -210,7 +210,7 @@ void TLFunction::clearCustomContexts()
 // -----------------------------------------------------------------------------
 // Returns true if the function has a context matching [name]
 // -----------------------------------------------------------------------------
-bool TLFunction::hasContext(std::string_view name)
+bool TLFunction::hasContext(string_view name)
 {
 	for (auto& c : contexts_)
 		if (StrUtil::equalCI(c.context, name))
@@ -230,7 +230,7 @@ bool TLFunction::hasContext(std::string_view name)
 // -----------------------------------------------------------------------------
 // TextLanguage class constructor
 // -----------------------------------------------------------------------------
-TextLanguage::TextLanguage(std::string_view id) : id_{ id }
+TextLanguage::TextLanguage(string_view id) : id_{ id }
 {
 	// Add to languages list
 	text_languages.push_back(this);
@@ -284,7 +284,7 @@ void TextLanguage::copyTo(TextLanguage* copy)
 // -----------------------------------------------------------------------------
 // Adds a new word of [type] to the language, if it doesn't exist already
 // -----------------------------------------------------------------------------
-void TextLanguage::addWord(WordType type, std::string_view keyword, bool custom)
+void TextLanguage::addWord(WordType type, string_view keyword, bool custom)
 {
 	// Add only if it doesn't already exist
 	auto& list = custom ? word_lists_custom_[type].list : word_lists_[type].list;
@@ -298,16 +298,16 @@ void TextLanguage::addWord(WordType type, std::string_view keyword, bool custom)
 // be added
 // -----------------------------------------------------------------------------
 void TextLanguage::addFunction(
-	std::string_view name,
-	std::string_view args,
-	std::string_view desc,
-	std::string_view deprecated,
-	bool             replace,
-	std::string_view return_type)
+	string_view name,
+	string_view args,
+	string_view desc,
+	string_view deprecated,
+	bool        replace,
+	string_view return_type)
 {
 	// Split out context from name
-	std::string context;
-	std::string func_name{ name };
+	string context;
+	string func_name{ name };
 	if (StrUtil::contains(name, '.'))
 	{
 		context   = StrUtil::beforeFirst(name, '.');
@@ -380,10 +380,10 @@ void TextLanguage::loadZScript(ZScript::Definitions& defs, bool custom)
 // Returns a string of all words of [type] in the language, separated by
 // spaces, which can be sent directly to scintilla for syntax hilighting
 // -----------------------------------------------------------------------------
-std::string TextLanguage::wordList(WordType type, bool include_custom)
+string TextLanguage::wordList(WordType type, bool include_custom)
 {
 	// Init return string
-	std::string ret;
+	string ret;
 
 	// Add each word to return string (separated by spaces)
 	for (auto& word : word_lists_[type].list)
@@ -401,10 +401,10 @@ std::string TextLanguage::wordList(WordType type, bool include_custom)
 // Returns a string of all functions in the language, separated by spaces,
 // which can be sent directly to scintilla for syntax hilighting
 // -----------------------------------------------------------------------------
-std::string TextLanguage::functionsList()
+string TextLanguage::functionsList()
 {
 	// Init return string
-	std::string ret;
+	string ret;
 
 	// Add each function name to return string (separated by spaces)
 	for (auto& func : functions_)
@@ -417,10 +417,10 @@ std::string TextLanguage::functionsList()
 // Returns a string containing all words and functions that can be used
 // directly in scintilla for an autocompletion list
 // -----------------------------------------------------------------------------
-std::string TextLanguage::autocompletionList(std::string_view start, bool include_custom)
+string TextLanguage::autocompletionList(string_view start, bool include_custom)
 {
 	// Firstly, add all functions and word lists to a vector
-	vector<std::string> list;
+	vector<string> list;
 
 	// Add word lists
 	for (unsigned type = 0; type < 4; type++)
@@ -446,7 +446,7 @@ std::string TextLanguage::autocompletionList(std::string_view start, bool includ
 	std::sort(list.begin(), list.end());
 
 	// Now build a string of the list items separated by spaces
-	std::string ret;
+	string ret;
 	for (const auto& a : list)
 		ret.append(a).append(" ");
 
@@ -456,10 +456,10 @@ std::string TextLanguage::autocompletionList(std::string_view start, bool includ
 // -----------------------------------------------------------------------------
 // Returns a sorted wxArrayString of all words of [type] in the language
 // -----------------------------------------------------------------------------
-vector<std::string> TextLanguage::wordListSorted(WordType type, bool include_custom)
+vector<string> TextLanguage::wordListSorted(WordType type, bool include_custom)
 {
 	// Get list
-	vector<std::string> list;
+	vector<string> list;
 	for (auto& word : word_lists_[type].list)
 		list.push_back(word);
 
@@ -476,10 +476,10 @@ vector<std::string> TextLanguage::wordListSorted(WordType type, bool include_cus
 // -----------------------------------------------------------------------------
 // Returns a sorted wxArrayString of all functions in the language
 // -----------------------------------------------------------------------------
-vector<std::string> TextLanguage::functionsSorted()
+vector<string> TextLanguage::functionsSorted()
 {
 	// Get list
-	vector<std::string> list;
+	vector<string> list;
 	for (auto& func : functions_)
 		list.push_back(func.name());
 
@@ -492,7 +492,7 @@ vector<std::string> TextLanguage::functionsSorted()
 // -----------------------------------------------------------------------------
 // Returns true if [word] is a [type] word in this language, false otherwise
 // -----------------------------------------------------------------------------
-bool TextLanguage::isWord(WordType type, std::string_view word)
+bool TextLanguage::isWord(WordType type, string_view word)
 {
 	for (auto& w : word_lists_[type].list)
 		if (w == word)
@@ -504,7 +504,7 @@ bool TextLanguage::isWord(WordType type, std::string_view word)
 // -----------------------------------------------------------------------------
 // Returns true if [word] is a function in this language, false otherwise
 // -----------------------------------------------------------------------------
-bool TextLanguage::isFunction(std::string_view word)
+bool TextLanguage::isFunction(string_view word)
 {
 	for (auto& func : functions_)
 		if (func.name() == word)
@@ -517,7 +517,7 @@ bool TextLanguage::isFunction(std::string_view word)
 // Returns the function definition matching [name], or NULL if no matching
 // function exists
 // -----------------------------------------------------------------------------
-TLFunction* TextLanguage::function(std::string_view name)
+TLFunction* TextLanguage::function(string_view name)
 {
 	// Find function matching [name]
 	if (case_sensitive_)
@@ -569,7 +569,7 @@ void TextLanguage::clearCustomDefs()
 // Reads in a text definition of a language. See slade.pk3 for
 // formatting examples
 // -----------------------------------------------------------------------------
-bool TextLanguage::readLanguageDefinition(MemChunk& mc, std::string_view source)
+bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 {
 	Tokenizer tz;
 
@@ -796,8 +796,8 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, std::string_view source)
 					// Go through children (functions)
 					for (unsigned f = 0; f < child->nChildren(); f++)
 					{
-						auto        child_func = child->childPTN(f);
-						std::string params;
+						auto   child_func = child->childPTN(f);
+						string params;
 
 						// Simple definition
 						if (child_func->nChildren() == 0)
@@ -831,10 +831,10 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, std::string_view source)
 						// Full definition
 						else
 						{
-							std::string         name = child_func->name();
-							vector<std::string> args;
-							std::string         desc;
-							std::string         deprecated;
+							string         name = child_func->name();
+							vector<string> args;
+							string         desc;
+							string         deprecated;
 							for (unsigned p = 0; p < child_func->nChildren(); p++)
 							{
 								auto child_prop = child_func->childPTN(p);
@@ -913,7 +913,7 @@ bool TextLanguage::loadLanguages()
 // -----------------------------------------------------------------------------
 // Returns the language definition matching [id], or NULL if no match found
 // -----------------------------------------------------------------------------
-TextLanguage* TextLanguage::fromId(std::string_view id)
+TextLanguage* TextLanguage::fromId(string_view id)
 {
 	// Find text language matching [id]
 	for (auto& text_language : text_languages)
@@ -942,7 +942,7 @@ TextLanguage* TextLanguage::fromIndex(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns the language definition matching [name], or NULL if no match found
 // -----------------------------------------------------------------------------
-TextLanguage* TextLanguage::fromName(std::string_view name)
+TextLanguage* TextLanguage::fromName(string_view name)
 {
 	// Find text language matching [name]
 	for (auto& text_language : text_languages)
@@ -958,9 +958,9 @@ TextLanguage* TextLanguage::fromName(std::string_view name)
 // -----------------------------------------------------------------------------
 // Returns a list of all language names
 // -----------------------------------------------------------------------------
-vector<std::string> TextLanguage::languageNames()
+vector<string> TextLanguage::languageNames()
 {
-	vector<std::string> ret;
+	vector<string> ret;
 
 	for (auto& text_language : text_languages)
 		ret.push_back(text_language->name_);

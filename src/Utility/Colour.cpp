@@ -188,9 +188,9 @@ void hslToRgb(double h, double s, double l, double& r, double& g, double& b)
 
 	// Now apply desaturation
 	double ds = (1. - s) * 0.5;
-	r        = ds + (r * s);
-	g        = ds + (g * s);
-	b        = ds + (b * s);
+	r         = ds + (r * s);
+	g         = ds + (g * s);
+	b         = ds + (b * s);
 
 	// Finally apply luminosity
 	double dl = l * 2.;
@@ -288,7 +288,7 @@ void ColRGBA::fromHSL(const ColHSL& hsl)
 // -----------------------------------------------------------------------------
 // Returns a string representation of the colour, in the requested [format]
 // -----------------------------------------------------------------------------
-std::string ColRGBA::toString(StringFormat format) const
+string ColRGBA::toString(StringFormat format) const
 {
 	switch (format)
 	{

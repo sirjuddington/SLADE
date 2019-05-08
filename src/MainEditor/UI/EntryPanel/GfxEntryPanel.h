@@ -29,10 +29,10 @@ public:
 	bool            extractAll() const;
 
 	// SAction handler
-	bool handleEntryPanelAction(std::string_view id) override;
+	bool handleEntryPanelAction(string_view id) override;
 	bool fillCustomMenu(wxMenu* custom) override;
 
-	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
 
 	SImage* image() const
 	{

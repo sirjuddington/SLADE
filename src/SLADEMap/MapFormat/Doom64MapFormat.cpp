@@ -107,7 +107,7 @@ bool Doom64MapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_dat
 // Writes the given [map_data] to Doom64 format, returning the list of entries
 // making up the map
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry::UPtr> Doom64MapFormat::writeMap(
+vector<unique_ptr<ArchiveEntry>> Doom64MapFormat::writeMap(
 	const MapObjectCollection& map_data,
 	const PropertyList&        map_extra_props)
 {

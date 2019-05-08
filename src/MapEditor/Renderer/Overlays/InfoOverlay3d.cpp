@@ -101,7 +101,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			info_.push_back(fmt::format("Back Side #{}", side->index()));
 
 		// Relevant flags
-		std::string flags;
+		string flags;
 		if (Game::configuration().lineBasicFlagSet("dontpegtop", line, map_format))
 			flags += "Upper Unpegged, ";
 		if (Game::configuration().lineBasicFlagSet("dontpegbottom", line, map_format))
@@ -142,7 +142,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 				xoff_part = side->floatProperty("offsetx_top");
 
 			// Add x offset string
-			std::string xoff_info;
+			string xoff_info;
 			if (xoff_part == 0)
 				xoff_info = fmt::format("{}", xoff);
 			else if (xoff_part > 0)
@@ -161,7 +161,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 				yoff_part = side->floatProperty("offsety_top");
 
 			// Add y offset string
-			std::string yoff_info;
+			string yoff_info;
 			if (yoff_part == 0)
 				yoff_info = fmt::format("{}", yoff);
 			else if (yoff_part > 0)
@@ -449,7 +449,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 				&& Game::configuration().getUDMFProperty("arg0", MapObject::Type::Thing)))
 		{
 			// Get thing args
-			std::string argxstr[2];
+			string argxstr[2];
 			argxstr[0]  = thing->stringProperty("arg0str");
 			argxstr[1]  = thing->stringProperty("arg1str");
 			auto argstr = tt.argSpec().stringDesc(thing->args().data(), argxstr);

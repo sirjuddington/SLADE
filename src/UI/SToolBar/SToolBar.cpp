@@ -191,8 +191,8 @@ void SToolBarGroup::hide(bool hide)
 	hidden_ = hide;
 
 	// Update 'hidden toolbars' cvar
-	std::string tb_hidden = toolbars_hidden;
-	auto        name      = fmt::format("[{}]", name_);
+	string tb_hidden = toolbars_hidden;
+	auto   name      = fmt::format("[{}]", name_);
 	if (hide)
 		tb_hidden += name;
 	else

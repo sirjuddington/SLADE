@@ -18,18 +18,18 @@ public:
 		BackLower   = 0x20,
 	};
 
-	inline static const std::string PROP_V1      = "v1";
-	inline static const std::string PROP_V2      = "v2";
-	inline static const std::string PROP_S1      = "sidefront";
-	inline static const std::string PROP_S2      = "sideback";
-	inline static const std::string PROP_SPECIAL = "special";
-	inline static const std::string PROP_ID      = "id";
-	inline static const std::string PROP_FLAGS   = "flags";
-	inline static const std::string PROP_ARG0    = "arg0";
-	inline static const std::string PROP_ARG1    = "arg1";
-	inline static const std::string PROP_ARG2    = "arg2";
-	inline static const std::string PROP_ARG3    = "arg3";
-	inline static const std::string PROP_ARG4    = "arg4";
+	inline static const string PROP_V1      = "v1";
+	inline static const string PROP_V2      = "v2";
+	inline static const string PROP_S1      = "sidefront";
+	inline static const string PROP_S2      = "sideback";
+	inline static const string PROP_SPECIAL = "special";
+	inline static const string PROP_ID      = "id";
+	inline static const string PROP_FLAGS   = "flags";
+	inline static const string PROP_ARG0    = "arg0";
+	inline static const string PROP_ARG1    = "arg1";
+	inline static const string PROP_ARG2    = "arg2";
+	inline static const string PROP_ARG3    = "arg3";
+	inline static const string PROP_ARG4    = "arg4";
 
 	MapLine(
 		MapVertex* v1,
@@ -68,15 +68,15 @@ public:
 	int s1Index() const;
 	int s2Index() const;
 
-	bool        boolProperty(std::string_view key) override;
-	int         intProperty(std::string_view key) override;
-	double      floatProperty(std::string_view key) override;
-	std::string stringProperty(std::string_view key) override;
-	void        setBoolProperty(std::string_view key, bool value) override;
-	void        setIntProperty(std::string_view key, int value) override;
-	void        setFloatProperty(std::string_view key, double value) override;
-	void        setStringProperty(std::string_view key, std::string_view value) override;
-	bool        scriptCanModifyProp(std::string_view key) override;
+	bool   boolProperty(string_view key) override;
+	int    intProperty(string_view key) override;
+	double floatProperty(string_view key) override;
+	string stringProperty(string_view key) override;
+	void   setBoolProperty(string_view key, bool value) override;
+	void   setIntProperty(string_view key, int value) override;
+	void   setFloatProperty(string_view key, double value) override;
+	void   setStringProperty(string_view key, string_view value) override;
+	bool   scriptCanModifyProp(string_view key) override;
 
 	void setS1(MapSide* side);
 	void setS2(MapSide* side);
@@ -110,7 +110,7 @@ public:
 	void readBackup(Backup* backup) override;
 	void copy(MapObject*) override;
 
-	void writeUDMF(std::string& def) override;
+	void writeUDMF(string& def) override;
 
 	operator Debuggable() const
 	{

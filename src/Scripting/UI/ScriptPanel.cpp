@@ -83,7 +83,7 @@ ScriptPanel::ScriptPanel(wxWindow* parent, ScriptManager::Script* script) : wxPa
 // -----------------------------------------------------------------------------
 // Returns the current text content in the editor
 // -----------------------------------------------------------------------------
-std::string ScriptPanel::currentText() const
+string ScriptPanel::currentText() const
 {
 	return text_editor_->GetText().ToStdString();
 }
@@ -134,7 +134,7 @@ bool ScriptPanel::save()
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool ScriptPanel::handleAction(std::string_view id)
+bool ScriptPanel::handleAction(string_view id)
 {
 	// Script->Save
 	if (id == "scrm_save")

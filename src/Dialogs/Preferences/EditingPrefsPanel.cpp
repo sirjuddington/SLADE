@@ -71,7 +71,7 @@ public:
 
 	~ExternalEditorList() = default;
 
-	void setCategory(std::string_view category)
+	void setCategory(string_view category)
 	{
 		exes_ = Executables::externalExes(category);
 		SetItemCount(exes_.size());

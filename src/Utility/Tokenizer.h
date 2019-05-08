@@ -16,21 +16,21 @@ public:
 
 	struct Token
 	{
-		std::string text;
-		unsigned    line_no;
-		bool        quoted_string;
-		unsigned    pos_start;
-		unsigned    pos_end;
-		unsigned    length;
-		bool        valid;
+		string   text;
+		unsigned line_no;
+		bool     quoted_string;
+		unsigned pos_start;
+		unsigned pos_end;
+		unsigned length;
+		bool     valid;
 
-		explicit operator std::string() const { return text; }
-		explicit operator const std::string() const { return text; }
+		explicit operator string() const { return text; }
+		explicit operator const string() const { return text; }
 		explicit operator const char*() const { return text.c_str(); }
-		bool     operator==(const std::string& cmp) const { return text == cmp; }
+		bool     operator==(const string& cmp) const { return text == cmp; }
 		bool     operator==(const char* cmp) const { return text == cmp; }
 		bool     operator==(char cmp) const { return length == 1 && text[0] == cmp; }
-		bool     operator!=(const std::string& cmp) const { return text != cmp; }
+		bool     operator!=(const string& cmp) const { return text != cmp; }
 		bool     operator!=(const char* cmp) const { return text != cmp; }
 		bool     operator!=(char cmp) const { return length != 1 || text[0] != cmp; }
 		char     operator[](unsigned index) const { return text[index]; }
@@ -69,18 +69,18 @@ public:
 	};
 
 	// Constructors
-	Tokenizer(int comments = CommentTypes::Default, const std::string& special_characters = DEFAULT_SPECIAL_CHARACTERS);
+	Tokenizer(int comments = CommentTypes::Default, const string& special_characters = DEFAULT_SPECIAL_CHARACTERS);
 
 	// Accessors
-	const std::string& source() const { return source_; }
-	bool               decorate() const { return decorate_; }
-	bool               readLowerCase() const { return read_lowercase_; }
-	const Token&       current() const { return token_current_; }
-	const Token&       peek() const;
+	const string& source() const { return source_; }
+	bool          decorate() const { return decorate_; }
+	bool          readLowerCase() const { return read_lowercase_; }
+	const Token&  current() const { return token_current_; }
+	const Token&  peek() const;
 
 	// Modifiers
 	void setCommentTypes(int types) { comment_types_ = types; }
-	void setSpecialCharacters(std::string_view characters)
+	void setSpecialCharacters(string_view characters)
 	{
 		special_characters_.assign(characters.data(), characters.data() + characters.size());
 	}
@@ -93,12 +93,12 @@ public:
 	const Token&  next();
 	void          adv(size_t inc = 1);
 	bool          advIf(const char* check, size_t inc = 1);
-	bool          advIf(const std::string& check, size_t inc = 1);
+	bool          advIf(const string& check, size_t inc = 1);
 	bool          advIf(char check, size_t inc = 1);
 	bool          advIfNC(const char* check, size_t inc = 1);
-	bool          advIfNC(const std::string& check, size_t inc = 1);
+	bool          advIfNC(const string& check, size_t inc = 1);
 	bool          advIfNext(const char* check, size_t inc = 1);
-	bool          advIfNext(const std::string& check, size_t inc = 1);
+	bool          advIfNext(const string& check, size_t inc = 1);
 	bool          advIfNext(char check, size_t inc = 1);
 	bool          advIfNextNC(const char* check, size_t inc = 1);
 	void          advToNextLine();
@@ -107,7 +107,7 @@ public:
 	vector<Token> getTokensUntil(const char* end);
 	vector<Token> getTokensUntilNC(const char* end);
 	vector<Token> getTokensUntilNextLine(bool from_start = false);
-	std::string   getLine(bool from_start = false);
+	string        getLine(bool from_start = false);
 
 	// Operators
 	void operator++() { adv(); }
@@ -116,23 +116,23 @@ public:
 
 	// Token Checking
 	bool check(const char* check) const { return token_current_ == check; }
-	bool check(const std::string& check) const { return token_current_ == check; }
+	bool check(const string& check) const { return token_current_ == check; }
 	bool check(char check) const { return token_current_ == check; }
 	bool checkOrEnd(const char* check) const;
-	bool checkOrEnd(const std::string& check) const;
+	bool checkOrEnd(const string& check) const;
 	bool checkOrEnd(char check) const;
 	bool checkNC(const char* check) const;
 	bool checkOrEndNC(const char* check) const;
 	bool checkNext(const char* check) const;
-	bool checkNext(const std::string& check) const;
+	bool checkNext(const string& check) const;
 	bool checkNext(char check) const;
 	bool checkNextNC(const char* check) const;
 
 	// Load Data
-	bool openFile(std::string_view filename, size_t offset = 0, size_t length = 0);
-	bool openString(std::string_view text, size_t offset = 0, size_t length = 0, std::string_view source = "unknown");
-	bool openMem(const char* mem, size_t length, std::string_view source);
-	bool openMem(const MemChunk& mc, std::string_view source);
+	bool openFile(string_view filename, size_t offset = 0, size_t length = 0);
+	bool openString(string_view text, size_t offset = 0, size_t length = 0, string_view source = "unknown");
+	bool openMem(const char* mem, size_t length, string_view source);
+	bool openMem(const MemChunk& mc, string_view source);
 
 	// General
 	bool isSpecialCharacter(char p) const { return VECTOR_EXISTS(special_characters_, p); }
@@ -140,15 +140,15 @@ public:
 	void reset();
 
 	// Old tokenizer interface bridge (don't use)
-	std::string getToken()
+	string getToken()
 	{
 		if (atEnd())
 			return "";
-		std::string t = token_current_.text;
+		string t = token_current_.text;
 		adv();
 		return t;
 	}
-	void getToken(std::string* str)
+	void getToken(string* str)
 	{
 		if (atEnd())
 			*str = "";
@@ -156,7 +156,7 @@ public:
 			*str = token_current_.text;
 		adv();
 	}
-	std::string peekToken() const
+	string peekToken() const
 	{
 		if (atEnd())
 			return "";
@@ -187,7 +187,7 @@ public:
 		return v;
 	}
 	void skipToken() { adv(); }
-	bool checkToken(const std::string& cmp)
+	bool checkToken(const string& cmp)
 	{
 		next();
 		return check(cmp);
@@ -196,8 +196,8 @@ public:
 	unsigned tokenEnd() const { return token_current_.pos_end; }
 
 
-	static const std::string DEFAULT_SPECIAL_CHARACTERS;
-	static const Token&      invalidToken() { return invalid_token_; }
+	static const string DEFAULT_SPECIAL_CHARACTERS;
+	static const Token& invalidToken() { return invalid_token_; }
 
 private:
 	vector<char>  data_;
@@ -208,7 +208,7 @@ private:
 	// Configuration
 	int          comment_types_;          // Types of comments to skip
 	vector<char> special_characters_;     // These will always be read as separate tokens
-	std::string  source_;                 // What file/entry/chunk is being tokenized
+	string       source_;                 // What file/entry/chunk is being tokenized
 	bool         decorate_       = false; // Special handling for //$ comments
 	bool         read_lowercase_ = false; // If true, tokens will all be read in lowercase
 										  // (except for quoted strings, obviously)

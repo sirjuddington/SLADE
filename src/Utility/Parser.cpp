@@ -34,8 +34,8 @@
 #include "Main.h"
 #include "Parser.h"
 #include "Archive/Archive.h"
-#include "Utility/Tokenizer.h"
 #include "StringUtils.h"
+#include "Utility/Tokenizer.h"
 
 
 // -----------------------------------------------------------------------------
@@ -48,11 +48,7 @@
 // -----------------------------------------------------------------------------
 // ParseTreeNode class constructor
 // -----------------------------------------------------------------------------
-ParseTreeNode::ParseTreeNode(
-	ParseTreeNode*   parent,
-	Parser*          parser,
-	ArchiveTreeNode* archive_dir,
-	std::string_view type) :
+ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveTreeNode* archive_dir, string_view type) :
 	STreeNode{ parent },
 	type_{ type },
 	parser_{ parser },
@@ -64,7 +60,7 @@ ParseTreeNode::ParseTreeNode(
 // -----------------------------------------------------------------------------
 // Returns true if the node's name matches [name] (case-insensitive)
 // -----------------------------------------------------------------------------
-bool ParseTreeNode::nameIsCI(std::string_view name) const
+bool ParseTreeNode::nameIsCI(string_view name) const
 {
 	return StrUtil::equalCI(name_, name);
 }
@@ -86,7 +82,7 @@ Property ParseTreeNode::value(unsigned index)
 // Returns the node's value at [index] as a string.
 // If [index] is out of range, returns an empty string
 // -----------------------------------------------------------------------------
-std::string ParseTreeNode::stringValue(unsigned index)
+string ParseTreeNode::stringValue(unsigned index)
 {
 	// Check index
 	if (index >= values_.size())
@@ -98,9 +94,9 @@ std::string ParseTreeNode::stringValue(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns the node's values as a string vector.
 // -----------------------------------------------------------------------------
-vector<std::string> ParseTreeNode::stringValues()
+vector<string> ParseTreeNode::stringValues()
 {
-	vector<std::string> string_values;
+	vector<string> string_values;
 	for (auto& value : values_)
 		string_values.push_back(value.stringValue());
 	return string_values;
@@ -148,7 +144,7 @@ double ParseTreeNode::floatValue(unsigned index)
 // -----------------------------------------------------------------------------
 // Adds a child ParseTreeNode of [name] and [type]
 // -----------------------------------------------------------------------------
-ParseTreeNode* ParseTreeNode::addChildPTN(std::string_view name, std::string_view type)
+ParseTreeNode* ParseTreeNode::addChildPTN(string_view name, string_view type)
 {
 	auto node   = dynamic_cast<ParseTreeNode*>(addChild(name));
 	node->type_ = type;
@@ -159,7 +155,7 @@ ParseTreeNode* ParseTreeNode::addChildPTN(std::string_view name, std::string_vie
 // Writes an error log message [error], showing the source and current line
 // from tokenizer [tz]
 // -----------------------------------------------------------------------------
-void ParseTreeNode::logError(const Tokenizer& tz, std::string_view error) const
+void ParseTreeNode::logError(const Tokenizer& tz, string_view error) const
 {
 	Log::error("Parse Error in {} (Line {}): {}\n", tz.source(), tz.current().line_no, error);
 }
@@ -328,7 +324,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 bool ParseTreeNode::parse(Tokenizer& tz)
 {
 	// Keep parsing until final } is reached (or end of file)
-	std::string name, type;
+	string name, type;
 	while (!tz.atEnd() && tz.current() != '}')
 	{
 		// Check for preprocessor stuff
@@ -456,10 +452,10 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 // Node types:     never
 // Node 'inherit': never
 // -----------------------------------------------------------------------------
-void ParseTreeNode::write(std::string& out, int indent) const
+void ParseTreeNode::write(string& out, int indent) const
 {
 	// Indentation
-	std::string tabs;
+	string tabs;
 	for (int a = 0; a < indent; a++)
 		tabs += "\t";
 
@@ -569,7 +565,7 @@ Parser::Parser(ArchiveTreeNode* dir_root) : archive_dir_root_{ dir_root }
 // 		</base>
 // 	</root>
 // -----------------------------------------------------------------------------
-bool Parser::parseText(MemChunk& mc, std::string_view source) const
+bool Parser::parseText(MemChunk& mc, string_view source) const
 {
 	Tokenizer tz;
 
@@ -584,7 +580,7 @@ bool Parser::parseText(MemChunk& mc, std::string_view source) const
 	// Do parsing
 	return pt_root_->parse(tz);
 }
-bool Parser::parseText(std::string_view text, std::string_view source) const
+bool Parser::parseText(string_view text, string_view source) const
 {
 	Tokenizer tz;
 
@@ -603,7 +599,7 @@ bool Parser::parseText(std::string_view text, std::string_view source) const
 // -----------------------------------------------------------------------------
 // Adds [def] to the #defines list
 // -----------------------------------------------------------------------------
-void Parser::define(std::string_view def)
+void Parser::define(string_view def)
 {
 	defines_.emplace_back(def);
 }
@@ -611,7 +607,7 @@ void Parser::define(std::string_view def)
 // -----------------------------------------------------------------------------
 // Returns true if [def] has been previously #defined (case-insensitive)
 // -----------------------------------------------------------------------------
-bool Parser::defined(std::string_view def)
+bool Parser::defined(string_view def)
 {
 	for (const auto& defined_str : defines_)
 		if (StrUtil::equalCI(defined_str, def))

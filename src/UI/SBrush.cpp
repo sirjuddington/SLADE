@@ -43,7 +43,7 @@
 // SBrushManager* SBrushManager::instance_ = nullptr;
 namespace
 {
-vector<std::unique_ptr<SBrush>> brushes;
+vector<unique_ptr<SBrush>> brushes;
 }
 
 

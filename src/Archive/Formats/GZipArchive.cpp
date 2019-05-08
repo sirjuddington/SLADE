@@ -91,7 +91,7 @@ bool GZipArchive::open(MemChunk& mc)
 	}
 
 	// Skip past name, if any
-	std::string name;
+	string name;
 	if (fname)
 	{
 		char c;
@@ -262,7 +262,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 // -----------------------------------------------------------------------------
 // Renames the entry and set the fname flag
 // -----------------------------------------------------------------------------
-bool GZipArchive::renameEntry(ArchiveEntry* entry, std::string_view name)
+bool GZipArchive::renameEntry(ArchiveEntry* entry, string_view name)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -322,7 +322,7 @@ ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
 	StrUtil::upperIP(options.match_name);
-	auto entry         = entryAt(0);
+	auto entry = entryAt(0);
 	if (entry == nullptr)
 		return entry;
 
@@ -433,8 +433,8 @@ bool GZipArchive::isGZipArchive(MemChunk& mc)
 	// Skip past name, if any
 	if (fname)
 	{
-		std::string name;
-		char     c;
+		string name;
+		char   c;
 		do
 		{
 			mc.read(&c, 1);
@@ -447,8 +447,8 @@ bool GZipArchive::isGZipArchive(MemChunk& mc)
 	// Skip past comment
 	if (fcmnt)
 	{
-		std::string comment;
-		char     c;
+		string comment;
+		char   c;
 		do
 		{
 			mc.read(&c, 1);
@@ -477,7 +477,7 @@ bool GZipArchive::isGZipArchive(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Checks if the file at [filename] is a valid GZip archive
 // -----------------------------------------------------------------------------
-bool GZipArchive::isGZipArchive(const std::string& filename)
+bool GZipArchive::isGZipArchive(const string& filename)
 {
 	// Open file for reading
 	wxFile file(filename);
@@ -531,8 +531,8 @@ bool GZipArchive::isGZipArchive(const std::string& filename)
 	// Skip past name
 	if (fname)
 	{
-		std::string name;
-		char     c;
+		string name;
+		char   c;
 		do
 		{
 			file.Read(&c, 1);
@@ -545,8 +545,8 @@ bool GZipArchive::isGZipArchive(const std::string& filename)
 	// Skip past comment
 	if (fcmnt)
 	{
-		std::string comment;
-		char     c;
+		string comment;
+		char   c;
 		do
 		{
 			file.Read(&c, 1);

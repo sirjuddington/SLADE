@@ -55,7 +55,7 @@ ScriptList scripts_acs;
 ScriptList scripts_decorate;
 ScriptList scripts_zscript;
 
-std::map<ScriptType, std::string> script_templates;
+std::map<ScriptType, string> script_templates;
 } // namespace ScriptManager
 
 
@@ -70,7 +70,7 @@ namespace ScriptManager
 // Adds a new editor script of [type], created from [entry]. [cut_path] will be
 // removed from the start of the script's path property
 // -----------------------------------------------------------------------------
-Script* addEditorScriptFromEntry(ArchiveEntry::SPtr& entry, ScriptType type, std::string_view cut_path)
+Script* addEditorScriptFromEntry(shared_ptr<ArchiveEntry>& entry, ScriptType type, string_view cut_path)
 {
 	auto s          = std::make_unique<Script>();
 	s->type         = type;
@@ -81,7 +81,7 @@ Script* addEditorScriptFromEntry(ArchiveEntry::SPtr& entry, ScriptType type, std
 
 	auto& list = scripts_editor[type];
 	list.push_back(std::move(s));
-	list.back()->text = std::string((const char*)entry->rawData(), entry->size());
+	list.back()->text = string((const char*)entry->rawData(), entry->size());
 
 	return list.back().get();
 }
@@ -89,7 +89,7 @@ Script* addEditorScriptFromEntry(ArchiveEntry::SPtr& entry, ScriptType type, std
 // -----------------------------------------------------------------------------
 // Adds a new editor script of [type], created from the file at [filename]
 // -----------------------------------------------------------------------------
-Script* addEditorScriptFromFile(std::string_view filename, ScriptType type)
+Script* addEditorScriptFromFile(string_view filename, ScriptType type)
 {
 	StrUtil::Path fn(filename);
 
@@ -142,7 +142,7 @@ void loadCustomScripts()
 // Loads all editor scripts of [type] from slade.pk3 and the user dir
 // (in scripts/[dir])
 // -----------------------------------------------------------------------------
-void loadEditorScripts(ScriptType type, std::string_view dir)
+void loadEditorScripts(ScriptType type, string_view dir)
 {
 	// Get 'scripts/(dir)' dir of slade.pk3
 	auto scripts_dir = App::archiveManager().programResourceArchive()->dir(fmt::format("scripts/{}", dir));
@@ -174,7 +174,7 @@ void loadEditorScripts(ScriptType type, std::string_view dir)
 // -----------------------------------------------------------------------------
 // Exports all scripts in [list] to .lua files at [path]
 // -----------------------------------------------------------------------------
-void exportUserScripts(std::string_view path, ScriptList& list)
+void exportUserScripts(string_view path, ScriptList& list)
 {
 	// Check dir exists
 	auto scripts_dir = App::path(path, App::Dir::User);
@@ -205,7 +205,7 @@ void exportUserScripts(std::string_view path, ScriptList& list)
 // -----------------------------------------------------------------------------
 // Loads text from the entry at [res_path] in slade.pk3 into [target]
 // -----------------------------------------------------------------------------
-void readResourceEntryText(std::string& target, std::string_view res_path)
+void readResourceEntryText(string& target, string_view res_path)
 {
 	auto entry = App::archiveManager().programResourceArchive()->entryAtPath(res_path);
 	if (entry)
@@ -217,7 +217,7 @@ void readResourceEntryText(std::string& target, std::string_view res_path)
 // that name exist.
 // If [user_only] is true, read only (internal) scripts will be ignored
 // -----------------------------------------------------------------------------
-Script* getEditorScript(std::string_view name, ScriptType type, bool user_only = true)
+Script* getEditorScript(string_view name, ScriptType type, bool user_only = true)
 {
 	for (auto& script : scripts_editor[type])
 	{
@@ -283,7 +283,7 @@ void ScriptManager::saveUserScripts()
 // Renames [script] to [new_name].
 // Returns false if the script couldn't be renamed
 // -----------------------------------------------------------------------------
-bool ScriptManager::renameScript(Script* script, std::string_view new_name)
+bool ScriptManager::renameScript(Script* script, string_view new_name)
 {
 	if (script->read_only || script->type == ScriptType::NonEditor)
 		return false;
@@ -321,7 +321,7 @@ bool ScriptManager::deleteScript(Script* script)
 // Creates a new script of [type] named [name]. If a script by that name
 // already exists, the existing script will be returned instead
 // -----------------------------------------------------------------------------
-ScriptManager::Script* ScriptManager::createEditorScript(std::string_view name, ScriptType type)
+ScriptManager::Script* ScriptManager::createEditorScript(string_view name, ScriptType type)
 {
 	// Check name
 	auto script = getEditorScript(name, type);
@@ -340,7 +340,7 @@ ScriptManager::Script* ScriptManager::createEditorScript(std::string_view name, 
 // -----------------------------------------------------------------------------
 // Returns a list of all editor scripts of [type]
 // -----------------------------------------------------------------------------
-vector<ScriptManager::Script::UPtr>& ScriptManager::editorScripts(ScriptType type)
+vector<unique_ptr<ScriptManager::Script>>& ScriptManager::editorScripts(ScriptType type)
 {
 	return scripts_editor[type];
 }
@@ -348,7 +348,7 @@ vector<ScriptManager::Script::UPtr>& ScriptManager::editorScripts(ScriptType typ
 // -----------------------------------------------------------------------------
 // Populates [menu] with all loaded editor scripts of [type]
 // -----------------------------------------------------------------------------
-void ScriptManager::populateEditorScriptMenu(wxMenu* menu, ScriptType type, std::string_view action_id)
+void ScriptManager::populateEditorScriptMenu(wxMenu* menu, ScriptType type, string_view action_id)
 {
 	int index = 0;
 	for (auto& script : scripts_editor[type])

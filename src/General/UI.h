@@ -7,12 +7,12 @@ void init(double scale = 1.);
 
 // Splash Window
 void  enableSplash(bool enable);
-void  showSplash(std::string_view message, bool progress = false, wxWindow* parent = nullptr);
+void  showSplash(string_view message, bool progress = false, wxWindow* parent = nullptr);
 void  hideSplash();
 void  updateSplash();
 float getSplashProgress();
-void  setSplashMessage(std::string_view message);
-void  setSplashProgressMessage(std::string_view message);
+void  setSplashMessage(string_view message);
+void  setSplashProgressMessage(string_view message);
 void  setSplashProgress(float progress);
 
 // Mouse Cursor

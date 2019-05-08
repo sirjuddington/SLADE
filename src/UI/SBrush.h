@@ -20,8 +20,8 @@ public:
 	static bool    initBrushes();
 
 private:
-	std::unique_ptr<SImage> image_ = nullptr; // The cursor graphic
-	wxString                name_;
-	wxString                icon_;
-	Vec2i                   center_;
+	unique_ptr<SImage> image_ = nullptr; // The cursor graphic
+	wxString           name_;
+	wxString           icon_;
+	Vec2i              center_;
 };

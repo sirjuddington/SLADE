@@ -104,23 +104,23 @@ public:
 	wxMenu* createEntryOpenMenu(const wxString& category);
 
 	// SAction handler
-	bool handleAction(std::string_view id) override;
+	bool handleAction(string_view id) override;
 
 	// Listener
-	void onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data) override;
+	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
 
 	// Static functions
 	static EntryPanel* createPanelForEntry(ArchiveEntry* entry, wxWindow* parent);
 
 protected:
-	Archive*          archive_ = nullptr;
-	UndoManager::UPtr undo_manager_;
-	bool              ignore_focus_change_ = false;
+	Archive*                archive_ = nullptr;
+	unique_ptr<UndoManager> undo_manager_;
+	bool                    ignore_focus_change_ = false;
 
 	// External edit stuff
-	ExternalEditManager::UPtr ee_manager_;
-	std::string               current_external_exe_category_;
-	vector<std::string>       current_external_exes_;
+	unique_ptr<ExternalEditManager> ee_manager_;
+	string                          current_external_exe_category_;
+	vector<string>                  current_external_exes_;
 
 	// Controls
 	ArchiveEntryList* entry_list_          = nullptr;

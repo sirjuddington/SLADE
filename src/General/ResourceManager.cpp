@@ -44,7 +44,7 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-std::string ResourceManager::doom64_hash_table_[65536];
+string ResourceManager::doom64_hash_table_[65536];
 
 
 // -----------------------------------------------------------------------------
@@ -68,7 +68,7 @@ void removeArchiveFromMap(EntryResourceMap& map, Archive* archive)
 // If [full_check] is true, all resources in the map are checked for the entry,
 // otherwise only the resource [name] is checked
 // ----------------------------------------------------------------------------
-void removeEntryFromMap(EntryResourceMap& map, const std::string& name, ArchiveEntry::SPtr& entry, bool full_check)
+void removeEntryFromMap(EntryResourceMap& map, const string& name, shared_ptr<ArchiveEntry>& entry, bool full_check)
 {
 	if (full_check)
 		for (auto& i : map)
@@ -89,7 +89,7 @@ void removeEntryFromMap(EntryResourceMap& map, const std::string& name, ArchiveE
 // -----------------------------------------------------------------------------
 // Adds matching [entry] to the resource
 // -----------------------------------------------------------------------------
-void EntryResource::add(ArchiveEntry::SPtr& entry)
+void EntryResource::add(shared_ptr<ArchiveEntry>& entry)
 {
 	if (entry->parent())
 		entries_.push_back(entry);
@@ -98,7 +98,7 @@ void EntryResource::add(ArchiveEntry::SPtr& entry)
 // -----------------------------------------------------------------------------
 // Removes matching [entry] from the resource
 // -----------------------------------------------------------------------------
-void EntryResource::remove(ArchiveEntry::SPtr& entry)
+void EntryResource::remove(shared_ptr<ArchiveEntry>& entry)
 {
 	unsigned a = 0;
 	while (a < entries_.size())
@@ -134,14 +134,14 @@ void EntryResource::removeArchive(Archive* archive)
 // within that namespace, or if [ns_required] is true, ignore anything not in
 // [nspace]
 // -----------------------------------------------------------------------------
-ArchiveEntry* EntryResource::getEntry(Archive* priority, std::string_view nspace, bool ns_required)
+ArchiveEntry* EntryResource::getEntry(Archive* priority, string_view nspace, bool ns_required)
 {
 	// Check resoure has any entries
 	if (entries_.empty())
 		return nullptr;
 
-	ArchiveEntry::SPtr best;
-	auto               i = entries_.end();
+	shared_ptr<ArchiveEntry> best;
+	auto                     i = entries_.end();
 	while (i != entries_.begin())
 	{
 		--i;
@@ -238,7 +238,7 @@ void ResourceManager::addArchive(Archive* archive)
 		return;
 
 	// Go through entries
-	vector<ArchiveEntry::SPtr> entries;
+	vector<shared_ptr<ArchiveEntry>> entries;
 	archive->putEntryTreeAsList(entries);
 	for (auto& entry : entries)
 		addEntry(entry);
@@ -288,7 +288,7 @@ void ResourceManager::removeArchive(Archive* archive)
 // Returns the Doom64 hash of a given texture name, computed using the same
 // hash algorithm as Doom64 EX itself
 // -----------------------------------------------------------------------------
-uint16_t ResourceManager::getTextureHash(std::string_view name) const
+uint16_t ResourceManager::getTextureHash(string_view name) const
 {
 	char str[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	for (size_t c = 0; c < name.length() && c < 8; c++)
@@ -304,7 +304,7 @@ uint16_t ResourceManager::getTextureHash(std::string_view name) const
 // -----------------------------------------------------------------------------
 // Adds an entry to be managed
 // -----------------------------------------------------------------------------
-void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
+void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry, bool log)
 {
 	if (!entry.get())
 		return;
@@ -438,7 +438,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 // ----------------------------------------------------------------------------
 // Removes a managed entry
 // -----------------------------------------------------------------------------
-void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full_check)
+void ResourceManager::removeEntry(shared_ptr<ArchiveEntry>& entry, bool log, bool full_check)
 {
 	if (!entry.get())
 		return;
@@ -569,7 +569,7 @@ void ResourceManager::putAllTextures(vector<TextureResource::Texture*>& list, Ar
 // -----------------------------------------------------------------------------
 // Adds all current texture names to [list]
 // -----------------------------------------------------------------------------
-void ResourceManager::putAllTextureNames(vector<std::string>& list)
+void ResourceManager::putAllTextureNames(vector<string>& list)
 {
 	// Add all primary textures to the list
 	for (auto& i : textures_)
@@ -603,7 +603,7 @@ void ResourceManager::putAllFlatEntries(vector<ArchiveEntry*>& list, Archive* pr
 // -----------------------------------------------------------------------------
 // Adds all current flat names to [list]
 // -----------------------------------------------------------------------------
-void ResourceManager::putAllFlatNames(vector<std::string>& list)
+void ResourceManager::putAllFlatNames(vector<string>& list)
 {
 	// Add all primary flats to the list
 	for (auto& i : flats_)
@@ -615,7 +615,7 @@ void ResourceManager::putAllFlatNames(vector<std::string>& list)
 // Returns the most appropriate managed resource entry for [palette], or
 // nullptr if no match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getPaletteEntry(std::string_view palette, Archive* priority)
+ArchiveEntry* ResourceManager::getPaletteEntry(string_view palette, Archive* priority)
 {
 	return palettes_[StrUtil::upper(palette)].getEntry(priority);
 }
@@ -624,7 +624,7 @@ ArchiveEntry* ResourceManager::getPaletteEntry(std::string_view palette, Archive
 // Returns the most appropriate managed resource entry for [patch],
 // or nullptr if no match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getPatchEntry(std::string_view patch, std::string_view nspace, Archive* priority)
+ArchiveEntry* ResourceManager::getPatchEntry(string_view patch, string_view nspace, Archive* priority)
 {
 	// Are we wanting to use a flat as a patch?
 	if (StrUtil::equalCI(nspace, "flats"))
@@ -650,7 +650,7 @@ ArchiveEntry* ResourceManager::getPatchEntry(std::string_view patch, std::string
 // Returns the most appropriate managed resource entry for [flat], or nullptr
 // if no match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getFlatEntry(std::string_view flat, Archive* priority)
+ArchiveEntry* ResourceManager::getFlatEntry(string_view flat, Archive* priority)
 {
 	// Check resource with matching name exists
 	auto  flat_upper = StrUtil::upper(flat);
@@ -672,7 +672,7 @@ ArchiveEntry* ResourceManager::getFlatEntry(std::string_view flat, Archive* prio
 // Returns the most appropriate managed resource entry for [texture], or
 // nullptr if no match found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getTextureEntry(std::string_view texture, std::string_view nspace, Archive* priority)
+ArchiveEntry* ResourceManager::getTextureEntry(string_view texture, string_view nspace, Archive* priority)
 {
 	auto tex_upper = StrUtil::upper(texture);
 	auto entry     = satextures_[tex_upper].getEntry(priority, nspace, true);
@@ -690,7 +690,7 @@ ArchiveEntry* ResourceManager::getTextureEntry(std::string_view texture, std::st
 // Returns the most appropriate managed texture for [texture], or nullptr if no
 // match found
 // -----------------------------------------------------------------------------
-CTexture* ResourceManager::getTexture(std::string_view texture, Archive* priority, Archive* ignore)
+CTexture* ResourceManager::getTexture(string_view texture, Archive* priority, Archive* ignore)
 {
 	// Check texture resource with matching name exists
 	auto& res = textures_[StrUtil::upper(texture)];
@@ -728,7 +728,7 @@ CTexture* ResourceManager::getTexture(std::string_view texture, Archive* priorit
 // -----------------------------------------------------------------------------
 // Called when an announcement is recieved from any managed archive
 // -----------------------------------------------------------------------------
-void ResourceManager::onAnnouncement(Announcer* announcer, std::string_view event_name, MemChunk& event_data)
+void ResourceManager::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
 {
 	event_data.seek(0, SEEK_SET);
 

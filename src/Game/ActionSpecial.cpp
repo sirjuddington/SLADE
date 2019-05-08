@@ -58,7 +58,7 @@ ActionSpecial ActionSpecial::gen_manual_;
 // -----------------------------------------------------------------------------
 // ActionSpecial class constructor
 // -----------------------------------------------------------------------------
-ActionSpecial::ActionSpecial(std::string_view name, std::string_view group) :
+ActionSpecial::ActionSpecial(string_view name, string_view group) :
 	name_{ name },
 	group_{ group },
 	tagged_{ TagType::None },
@@ -142,7 +142,7 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 // -----------------------------------------------------------------------------
 // Returns the action special info as a string
 // -----------------------------------------------------------------------------
-std::string ActionSpecial::stringDesc() const
+string ActionSpecial::stringDesc() const
 {
 	// Init string
 	auto ret = fmt::format(R"("{}" in group "{}")", name_, group_);

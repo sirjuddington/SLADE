@@ -36,8 +36,9 @@
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/SectorBuilder.h"
 #include "OpenGL/Drawing.h"
-#include "Utility/MathStuff.h"
 #include "UI/WxUtils.h"
+#include "Utility/MathStuff.h"
+
 
 using MapEditor::Mode;
 
@@ -196,7 +197,7 @@ void MapCanvas::mouseLook3d()
 // -----------------------------------------------------------------------------
 // Called when the key bind [name] is pressed
 // -----------------------------------------------------------------------------
-void MapCanvas::onKeyBindPress(std::string_view name)
+void MapCanvas::onKeyBindPress(string_view name)
 {
 	// Screenshot
 #ifdef USE_SFML_RENDERWINDOW

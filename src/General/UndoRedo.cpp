@@ -54,13 +54,13 @@ UndoManager* current_undo_manager = nullptr;
 // -----------------------------------------------------------------------------
 // UndoLevel class constructor
 // -----------------------------------------------------------------------------
-UndoLevel::UndoLevel(std::string_view name) : name_{ name }, timestamp_{ wxDateTime::Now() } {}
+UndoLevel::UndoLevel(string_view name) : name_{ name }, timestamp_{ wxDateTime::Now() } {}
 
 // -----------------------------------------------------------------------------
 // Returns a string representation of the time at which the undo level was
 // recorded
 // -----------------------------------------------------------------------------
-std::string UndoLevel::timeStamp(bool date, bool time) const
+string UndoLevel::timeStamp(bool date, bool time) const
 {
 	if (date && !time)
 		return timestamp_.FormatISODate().ToStdString();
@@ -105,7 +105,7 @@ bool UndoLevel::doRedo()
 // -----------------------------------------------------------------------------
 // Reads the undo level from a file
 // -----------------------------------------------------------------------------
-bool UndoLevel::readFile(std::string_view filename) const
+bool UndoLevel::readFile(string_view filename) const
 {
 	return true;
 }
@@ -113,7 +113,7 @@ bool UndoLevel::readFile(std::string_view filename) const
 // -----------------------------------------------------------------------------
 // Writes the undo level to a file
 // -----------------------------------------------------------------------------
-bool UndoLevel::writeFile(std::string_view filename) const
+bool UndoLevel::writeFile(string_view filename) const
 {
 	return true;
 }
@@ -121,7 +121,7 @@ bool UndoLevel::writeFile(std::string_view filename) const
 // -----------------------------------------------------------------------------
 // Adds all undo steps from all undo levels in [levels]
 // -----------------------------------------------------------------------------
-void UndoLevel::createMerged(vector<UPtr>& levels)
+void UndoLevel::createMerged(vector<unique_ptr<UndoLevel>>& levels)
 {
 	for (auto& level : levels)
 	{
@@ -145,7 +145,7 @@ void UndoLevel::createMerged(vector<UPtr>& levels)
 // -----------------------------------------------------------------------------
 // Begins 'recording' a new undo level
 // -----------------------------------------------------------------------------
-void UndoManager::beginRecord(std::string_view name)
+void UndoManager::beginRecord(string_view name)
 {
 	// Can't if currently in an undo/redo operation
 	if (undo_running_)
@@ -211,7 +211,7 @@ bool UndoManager::currentlyRecording() const
 // Records the UndoStep [step] to the current undo level, if it is currently
 // being recorded. Returns false if not currently recording
 // -----------------------------------------------------------------------------
-bool UndoManager::recordUndoStep(UndoStep::UPtr step) const
+bool UndoManager::recordUndoStep(unique_ptr<UndoStep> step) const
 {
 	// Do nothing if not recording or step not given
 	if (!step)
@@ -229,7 +229,7 @@ bool UndoManager::recordUndoStep(UndoStep::UPtr step) const
 // -----------------------------------------------------------------------------
 // Performs an undo operation
 // -----------------------------------------------------------------------------
-std::string UndoManager::undo()
+string UndoManager::undo()
 {
 	// Can't while currently recording
 	if (current_level_)
@@ -257,7 +257,7 @@ std::string UndoManager::undo()
 // -----------------------------------------------------------------------------
 // Performs a redo operation
 // -----------------------------------------------------------------------------
-std::string UndoManager::redo()
+string UndoManager::redo()
 {
 	// Can't while currently recording
 	if (current_level_)
@@ -284,7 +284,7 @@ std::string UndoManager::redo()
 // -----------------------------------------------------------------------------
 // Adds all undo level names to [list]
 // -----------------------------------------------------------------------------
-void UndoManager::putAllLevels(vector<std::string>& list)
+void UndoManager::putAllLevels(vector<string>& list)
 {
 	for (auto& undo_level : undo_levels_)
 		list.push_back(undo_level->name());
@@ -320,7 +320,7 @@ void UndoManager::clear()
 // -----------------------------------------------------------------------------
 // Creates an undo level from all levels in [manager], called [name]
 // -----------------------------------------------------------------------------
-bool UndoManager::createMergedLevel(UndoManager* manager, std::string_view name)
+bool UndoManager::createMergedLevel(UndoManager* manager, string_view name)
 {
 	// Do nothing if no levels to merge
 	if (manager->undo_levels_.empty())

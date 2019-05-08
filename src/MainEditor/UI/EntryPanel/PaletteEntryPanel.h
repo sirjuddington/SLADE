@@ -53,14 +53,14 @@ public:
 	void analysePalettes();
 
 	// SAction handler
-	bool handleEntryPanelAction(std::string_view id) override;
+	bool handleEntryPanelAction(string_view id) override;
 	bool fillCustomMenu(wxMenu* custom) override;
 
 private:
-	PaletteCanvas*        pal_canvas_ = nullptr;
-	vector<Palette::UPtr> palettes_;
-	uint32_t              cur_palette_ = 1;
-	wxStaticText*         text_curpal_ = nullptr;
+	PaletteCanvas*              pal_canvas_ = nullptr;
+	vector<unique_ptr<Palette>> palettes_;
+	uint32_t                    cur_palette_ = 1;
+	wxStaticText*               text_curpal_ = nullptr;
 
 	// A helper for generatePalettes() which has no reason to be called outside
 	void generatePalette(int r, int g, int b, int shift, int steps);

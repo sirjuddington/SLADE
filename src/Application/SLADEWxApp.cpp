@@ -42,9 +42,9 @@
 #include "OpenGL/OpenGL.h"
 #include "UI/WxUtils.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 #include "thirdparty/email/wxMailer.h"
 #include <wx/statbmp.h>
-#include "Utility/StringUtils.h"
 
 
 #undef BOOL
@@ -61,26 +61,26 @@
 // -----------------------------------------------------------------------------
 namespace Global
 {
-std::string error = error;
+string error = error;
 
 #ifdef GIT_DESCRIPTION
 string sc_rev = GIT_DESCRIPTION;
 #else
-std::string sc_rev = sc_rev;
+string sc_rev = sc_rev;
 #endif
 
 #ifdef DEBUG
 bool debug = true;
 #else
-bool        debug  = false;
+bool   debug  = false;
 #endif
 
 int win_version_major = 0;
 int win_version_minor = 0;
 } // namespace Global
 
-std::string current_action           = current_action;
-bool        update_check_message_box = false;
+string current_action           = current_action;
+bool   update_check_message_box = false;
 CVAR(String, dir_last, "", CVar::Flag::Save)
 CVAR(Bool, update_check, true, CVar::Flag::Save)
 CVAR(Bool, update_check_beta, false, CVar::Flag::Save)
@@ -548,7 +548,7 @@ bool SLADEWxApp::OnInit()
 	wxLog::SetActiveTarget(new SLADELog());
 
 	// Get command line arguments
-	vector<std::string> args;
+	vector<string> args;
 	for (int a = 1; a < argc; a++)
 		args.push_back(argv[a].ToStdString());
 
@@ -683,7 +683,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 
 	// Parse version info
 	App::Version stable, beta;
-	std::string  bin_stable, installer_stable, bin_beta; // Currently unused but may be useful in the future
+	string       bin_stable, installer_stable, bin_beta; // Currently unused but may be useful in the future
 	Parser       parser;
 	if (parser.parseText(e.GetString().ToStdString()))
 	{

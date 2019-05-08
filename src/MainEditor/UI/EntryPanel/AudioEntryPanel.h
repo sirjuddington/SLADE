@@ -55,10 +55,10 @@ private:
 	wxStaticText*   txt_track_     = nullptr;
 	wxTextCtrl*     txt_info_      = nullptr;
 
-	std::unique_ptr<sf::SoundBuffer> sound_buffer_;
-	std::unique_ptr<sf::Sound>       sound_;
-	std::unique_ptr<sf::Music>       music_;
-	std::unique_ptr<ModMusic>        mod_;
+	unique_ptr<sf::SoundBuffer> sound_buffer_;
+	unique_ptr<sf::Sound>       sound_;
+	unique_ptr<sf::Music>       music_;
+	unique_ptr<ModMusic>        mod_;
 
 	bool open();
 	bool openAudio(MemChunk& audio, const wxString& filename);

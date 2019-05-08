@@ -45,7 +45,7 @@
 // -----------------------------------------------------------------------------
 namespace Drawing
 {
-typedef std::unique_ptr<sf::Font> FontPtr;
+typedef unique_ptr<sf::Font> FontPtr;
 
 FontPtr font_normal;
 FontPtr font_condensed;
@@ -146,7 +146,7 @@ void Drawing::cleanupFonts()
 // Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
 // the rendered text string are written to it.
 // -----------------------------------------------------------------------------
-void Drawing::drawText(const std::string& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
+void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
 {
 	// Setup SFML string
 	sf::Text sf_str;
@@ -189,8 +189,7 @@ void Drawing::drawText(const std::string& text, int x, int y, ColRGBA colour, Fo
 		if (text_outline_width > 0)
 		{
 			sf_str.setOutlineThickness(text_outline_width);
-			sf_str.setOutlineColor(
-				sf::Color(outline_colour.r, outline_colour.g, outline_colour.b, outline_colour.a));
+			sf_str.setOutlineColor(sf::Color(outline_colour.r, outline_colour.g, outline_colour.b, outline_colour.a));
 		}
 
 		// Draw
@@ -204,7 +203,7 @@ void Drawing::drawText(const std::string& text, int x, int y, ColRGBA colour, Fo
 // -----------------------------------------------------------------------------
 // Returns the width and height of [text] when drawn with [font]
 // -----------------------------------------------------------------------------
-Vec2d Drawing::textExtents(const std::string& text, Font font)
+Vec2d Drawing::textExtents(const string& text, Font font)
 {
 	// Setup SFML string
 	sf::Text sf_str;

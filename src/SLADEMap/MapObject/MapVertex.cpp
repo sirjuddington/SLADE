@@ -95,7 +95,7 @@ void MapVertex::move(double nx, double ny)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapVertex::intProperty(std::string_view key)
+int MapVertex::intProperty(string_view key)
 {
 	if (key == PROP_X)
 		return (int)position_.x;
@@ -108,7 +108,7 @@ int MapVertex::intProperty(std::string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the float property matching [key]
 // -----------------------------------------------------------------------------
-double MapVertex::floatProperty(std::string_view key)
+double MapVertex::floatProperty(string_view key)
 {
 	if (key == PROP_X)
 		return position_.x;
@@ -121,7 +121,7 @@ double MapVertex::floatProperty(std::string_view key)
 // -----------------------------------------------------------------------------
 // Sets the integer value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapVertex::setIntProperty(std::string_view key, int value)
+void MapVertex::setIntProperty(string_view key, int value)
 {
 	// Update modified time
 	setModified();
@@ -145,7 +145,7 @@ void MapVertex::setIntProperty(std::string_view key, int value)
 // -----------------------------------------------------------------------------
 // Sets the float value of the property [key] to [value]
 // -----------------------------------------------------------------------------
-void MapVertex::setFloatProperty(std::string_view key, double value)
+void MapVertex::setFloatProperty(string_view key, double value)
 {
 	// Update modified time
 	setModified();
@@ -161,7 +161,7 @@ void MapVertex::setFloatProperty(std::string_view key, double value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapVertex::scriptCanModifyProp(std::string_view key)
+bool MapVertex::scriptCanModifyProp(string_view key)
 {
 	if (key == PROP_X || key == PROP_Y)
 		return false;
@@ -226,7 +226,7 @@ void MapVertex::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 // Writes the vertex as a UDMF text definition to [def]
 // -----------------------------------------------------------------------------
-void MapVertex::writeUDMF(std::string& def)
+void MapVertex::writeUDMF(string& def)
 {
 	def = fmt::format("vertex//#{}\n{\n", index_);
 
