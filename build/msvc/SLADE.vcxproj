@@ -4944,6 +4944,7 @@
     <ClInclude Include="..\..\thirdparty\lua\lundump.h" />
     <ClInclude Include="..\..\thirdparty\lua\lvm.h" />
     <ClInclude Include="..\..\thirdparty\lua\lzio.h" />
+    <ClInclude Include="..\..\thirdparty\sol\forward.hpp" />
     <ClInclude Include="..\..\thirdparty\sol\sol.hpp" />
     <ClInclude Include="..\..\src\Game\ActionSpecial.h" />
     <ClInclude Include="..\..\src\Game\Args.h" />

@@ -2789,6 +2789,9 @@
     <ClInclude Include="..\..\src\Utility\SeekableData.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\thirdparty\sol\forward.hpp">
+      <Filter>ThirdParty\Sol</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />
