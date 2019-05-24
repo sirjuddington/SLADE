@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
@@ -18,7 +18,8 @@
 /.vscode/*
 /release
 /build/msvc/Release*
-/build/msvc/Debug
+/build/msvc/Debug*
+/build/msvc/x64
 /build/msvc/.vs
 /build/CMakeFiles
 /build/CMakeTools
@@ -42,3 +43,5 @@ cmake-build-debug/
 !/dist/res
 !/dist/CMakeLists.txt
 !/dist/makebuild.ps1
+
+out/
