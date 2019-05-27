@@ -361,6 +361,7 @@
     <Linkage-sfml-system>static</Linkage-sfml-system>
     <Linkage-sfml-graphics>static</Linkage-sfml-graphics>
     <Linkage-sfml-window>static</Linkage-sfml-window>
+    <OutDir>..\..\dist\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

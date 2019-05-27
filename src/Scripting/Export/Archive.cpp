@@ -71,7 +71,7 @@ vector<Archive*> allArchives(bool resources_only)
 // [include_extension] - if true, include the extension
 // [name_uppercase] - if true, return the name in uppercase (except the path)
 // -----------------------------------------------------------------------------
-string formattedEntryName(ArchiveEntry& self, bool include_path, bool include_extension, bool name_uppercase)
+string formattedEntryName(const ArchiveEntry& self, bool include_path, bool include_extension, bool name_uppercase)
 {
 	string name;
 	if (include_path)
@@ -86,9 +86,9 @@ string formattedEntryName(ArchiveEntry& self, bool include_path, bool include_ex
 // -----------------------------------------------------------------------------
 // Returns a vector of all entries in the archive [self]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> archiveAllEntries(Archive& self)
+vector<shared_ptr<ArchiveEntry>> archiveAllEntries(Archive& self)
 {
-	vector<ArchiveEntry*> list;
+	vector<shared_ptr<ArchiveEntry>> list;
 	self.putEntryTreeAsList(list);
 	return list;
 }
@@ -97,41 +97,63 @@ vector<ArchiveEntry*> archiveAllEntries(Archive& self)
 // Creates a new entry in archive [self] at [full_path],[position-1].
 // Returns the created entry
 // -----------------------------------------------------------------------------
-ArchiveEntry* archiveCreateEntry(Archive& self, string_view full_path, int position)
+shared_ptr<ArchiveEntry> archiveCreateEntry(Archive& self, string_view full_path, int position)
 {
 	auto dir = self.dir(StrUtil::beforeLast(full_path, '/'));
-	return self.addNewEntry(StrUtil::afterLast(full_path, '/'), position - 1, dir);
+	return self.addNewEntry(StrUtil::afterLast(full_path, '/'), position - 1, dir)->getShared();
 }
 
 // -----------------------------------------------------------------------------
 // Creates a new entry in archive [self] with [name] in namespace [ns].
 // Returns the created entry
 // -----------------------------------------------------------------------------
-ArchiveEntry* archiveCreateEntryInNamespace(Archive& self, string_view name, string_view ns)
+shared_ptr<ArchiveEntry> archiveCreateEntryInNamespace(Archive& self, string_view name, string_view ns)
 {
-	return self.addNewEntry(name, ns);
-}
-
-// -----------------------------------------------------------------------------
-// Returns a list of all entries in the archive dir [self]
-// -----------------------------------------------------------------------------
-vector<ArchiveEntry*> archiveDirEntries(ArchiveTreeNode& self)
-{
-	vector<ArchiveEntry*> list;
-	for (const auto& e : self.entries())
-		list.push_back(e.get());
-	return list;
+	return self.addNewEntry(name, ns)->getShared();
 }
 
 // -----------------------------------------------------------------------------
 // Returns a list of all subdirs in the archive dir [self]
 // -----------------------------------------------------------------------------
-vector<ArchiveTreeNode*> archiveDirSubDirs(ArchiveTreeNode& self)
+vector<ArchiveTreeNode*> archiveDirSubDirs(const ArchiveTreeNode& self)
 {
 	vector<ArchiveTreeNode*> dirs;
 	for (auto child : self.allChildren())
 		dirs.push_back(dynamic_cast<ArchiveTreeNode*>(child));
 	return dirs;
+}
+
+// -----------------------------------------------------------------------------
+// Wrapper for Archive::findFirst that returns a shared pointer
+// -----------------------------------------------------------------------------
+shared_ptr<ArchiveEntry> archiveFindFirst(Archive& self, Archive::SearchOptions& opt)
+{
+	auto found = self.findFirst(opt);
+	return found ? found->getShared() : nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Wrapper for Archive::findLast that returns a shared pointer
+// -----------------------------------------------------------------------------
+shared_ptr<ArchiveEntry> archiveFindLast(Archive& self, Archive::SearchOptions& opt)
+{
+	auto found = self.findLast(opt);
+	return found ? found->getShared() : nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Wrapper for Archive::findAll that returns shared pointers
+// -----------------------------------------------------------------------------
+vector<shared_ptr<ArchiveEntry>> archiveFindAll(Archive& self, Archive::SearchOptions& opt)
+{
+	auto found = self.findAll(opt);
+
+	vector<shared_ptr<ArchiveEntry>> found_shared;
+	found_shared.reserve(found.size());
+	for (const auto& entry : found)
+		found_shared.push_back(entry->getShared());
+
+	return found_shared;
 }
 
 // -----------------------------------------------------------------------------
@@ -189,7 +211,7 @@ void registerArchive(sol::state& lua)
 	// Functions
 	// -------------------------------------------------------------------------
 	lua_archive["FilenameNoPath"]         = [](Archive& self) { return self.filename(false); };
-	lua_archive["EntryAtPath"]            = &Archive::entryAtPath;
+	lua_archive["EntryAtPath"]            = &Archive::entryAtPathShared;
 	lua_archive["DirAtPath"]              = [](Archive& self, const string& path) { return self.dir(path); };
 	lua_archive["CreateEntry"]            = &archiveCreateEntry;
 	lua_archive["CreateEntryInNamespace"] = &archiveCreateEntryInNamespace;
@@ -198,13 +220,13 @@ void registerArchive(sol::state& lua)
 	lua_archive["Save"]                   = sol::overload(
         [](Archive& self) { return std::make_tuple(self.save(), Global::error); },
         [](Archive& self, const string& filename) { return std::make_tuple(self.save(filename), Global::error); });
-	lua_archive["FindFirst"] = &Archive::findFirst;
-	lua_archive["FindLast"]  = &Archive::findLast;
-	lua_archive["FindAll"]   = &Archive::findAll;
+	lua_archive["FindFirst"] = &archiveFindFirst;
+	lua_archive["FindLast"]  = &archiveFindLast;
+	lua_archive["FindAll"]   = &archiveFindAll;
 
-// Register all subclasses
-// (perhaps it'd be a good idea to make Archive not abstract and handle
-//  the format-specific stuff somewhere else, rather than in subclasses)
+	// Register all subclasses
+	// (perhaps it'd be a good idea to make Archive not abstract and handle
+	//  the format-specific stuff somewhere else, rather than in subclasses)
 #define REGISTER_ARCHIVE(type) lua.new_usertype<type>(#type, sol::base_classes, sol::bases<Archive>())
 	REGISTER_ARCHIVE(WadArchive);
 	REGISTER_ARCHIVE(ZipArchive);
@@ -229,16 +251,6 @@ void registerArchive(sol::state& lua)
 	REGISTER_ARCHIVE(PodArchive);
 	REGISTER_ARCHIVE(ChasmBinArchive);
 #undef REGISTER_ARCHIVE
-}
-
-// -----------------------------------------------------------------------------
-// Returns the data of entry [self] as a string
-// Lua doesn't really have a dedicated binary array type so strings are
-// generally used for that kind of thing
-// -----------------------------------------------------------------------------
-string entryData(ArchiveEntry& self)
-{
-	return string((const char*)self.rawData(), self.size());
 }
 
 // -----------------------------------------------------------------------------
@@ -322,7 +334,7 @@ void registerArchiveTreeNode(sol::state& lua)
 	// -------------------------------------------------------------------------
 	lua_dir["name"]    = sol::property(&ArchiveTreeNode::name);
 	lua_dir["archive"] = sol::property(&ArchiveTreeNode::archive);
-	lua_dir["entries"] = sol::property(&archiveDirEntries);
+	lua_dir["entries"] = sol::property(&ArchiveTreeNode::entries);
 	lua_dir["parent"]  = sol::property(
         [](ArchiveTreeNode& self) { return dynamic_cast<ArchiveTreeNode*>(self.parent()); });
 	lua_dir["path"]           = sol::property(&ArchiveTreeNode::path);
