@@ -131,7 +131,7 @@ bool Palette::loadMem(const uint8_t* data, uint32_t size)
 		colours_hsl_[c] = colours_[c].asHSL();
 
 		// If we have read 256 colours, finish
-		if (c == 256)
+		if (++c == 256)
 			break;
 	}
 

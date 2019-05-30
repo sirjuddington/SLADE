@@ -49,9 +49,9 @@ public:
 	struct Texture
 	{
 		CTexture tex;
-		Archive* parent;
+		weak_ptr<Archive> parent;
 
-		Texture(const CTexture& tex_copy, Archive* parent) : parent(parent) { tex.copyTexture(tex_copy); }
+		Texture(const CTexture& tex_copy, shared_ptr<Archive> parent) : parent(parent) { tex.copyTexture(tex_copy); }
 	};
 
 	TextureResource() : Resource("texture") {}

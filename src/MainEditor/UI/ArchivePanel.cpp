@@ -381,16 +381,13 @@ size_t getNamespaceNumber(ArchiveEntry* entry, size_t index, vector<wxString>& n
 // -----------------------------------------------------------------------------
 // ArchivePanel class constructor
 // -----------------------------------------------------------------------------
-ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive) : wxPanel(parent, -1)
+ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
+	wxPanel(parent, -1),
+	archive_{ archive },
+	undo_manager_{ new UndoManager() },
+	ee_manager_{ new ExternalEditManager }
 {
-	// Init variables
-	undo_manager_        = std::make_unique<UndoManager>();
-	ignore_focus_change_ = false;
-	ee_manager_          = std::make_unique<ExternalEditManager>();
-
-	// Set archive
-	this->archive_ = archive;
-	listenTo(archive);
+	listenTo(archive.get());
 
 	// Create entry panels
 	entry_area_   = new EntryPanel(this, "nil");
@@ -436,7 +433,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive) : wxPanel(parent,
 
 	// Create entry list panel
 	entry_list_ = new ArchiveEntryList(this);
-	entry_list_->setArchive(archive);
+	entry_list_->setArchive(archive.get());
 	entry_list_->SetDropTarget(new APEntryListDropTarget(this, entry_list_));
 	entry_list_->setUndoManager(undo_manager_.get());
 	framesizer->Add(entry_list_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
@@ -617,7 +614,8 @@ void ArchivePanel::undo() const
 		entry_list_->setEntriesAutoUpdate(true);
 
 		// setEntriesAutoUpdate blocks previous announce
-		archive_->announce("entries_changed");
+		if (auto archive = archive_.lock())
+			archive->announce("entries_changed");
 	}
 }
 
@@ -634,7 +632,8 @@ void ArchivePanel::redo() const
 		entry_list_->setEntriesAutoUpdate(true);
 
 		// setEntriesAutoUpdate blocks previous announce
-		archive_->announce("entries_changed");
+		if (auto archive = archive_.lock())
+			archive->announce("entries_changed");
 	}
 }
 
@@ -643,19 +642,20 @@ void ArchivePanel::redo() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::save()
 {
-	// Check the archive exists
-	if (!archive_)
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
 		return false;
 
 	// Save any changes in the current entry panel
 	saveEntryChanges();
 
 	// Check the archive has been previously saved
-	if (!archive_->canSave())
+	if (!archive->canSave())
 		return saveAs();
 
 	// Save the archive
-	if (!archive_->save())
+	if (!archive->save())
 	{
 		// If there was an error pop up a message box
 		wxMessageBox(wxString::Format("Error:\n%s", Global::error), "Error", wxICON_ERROR);
@@ -673,17 +673,18 @@ bool ArchivePanel::save()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::saveAs()
 {
-	// Check the archive exists
-	if (!archive_)
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
 		return false;
 
 	// Do save dialog
 	SFileDialog::FDInfo info;
 	if (SFileDialog::saveFile(
-			info, "Save Archive " + archive_->filename(false) + " As", archive_->fileExtensionString(), this))
+			info, "Save Archive " + archive->filename(false) + " As", archive->fileExtensionString(), this))
 	{
 		// Save the archive
-		if (!archive_->save(info.filenames[0]))
+		if (!archive->save(info.filenames[0]))
 		{
 			// If there was an error pop up a message box
 			wxMessageBox(wxString::Format("Error:\n%s", Global::error), "Error", wxICON_ERROR);
@@ -708,6 +709,11 @@ bool ArchivePanel::saveAs()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::newEntry(NewEntry type)
 {
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
 	// Prompt for new entry name if needed
 	wxString name;
 	switch (type)
@@ -724,7 +730,7 @@ bool ArchivePanel::newEntry(NewEntry type)
 		return false;
 
 	// Get the entry index of the last selected list item
-	int index = archive_->entryIndex(entry_list_->lastSelectedEntry(), entry_list_->currentDir());
+	int index = archive->entryIndex(entry_list_->lastSelectedEntry(), entry_list_->currentDir());
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -734,7 +740,7 @@ bool ArchivePanel::newEntry(NewEntry type)
 
 	// Add the entry to the archive
 	undo_manager_->beginRecord("Add Entry");
-	auto new_entry = archive_->addNewEntry(name.ToStdString(), index, entry_list_->currentDir());
+	auto new_entry = archive->addNewEntry(name.ToStdString(), index, entry_list_->currentDir());
 	undo_manager_->endRecord(true);
 
 	// Deal with specific entry type that we may want created
@@ -790,8 +796,13 @@ bool ArchivePanel::newEntry(NewEntry type)
 // -----------------------------------------------------------------------------
 bool ArchivePanel::newDirectory() const
 {
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
 	// Check archive supports directories
-	if (!archive_->formatDesc().supports_dirs)
+	if (!archive->formatDesc().supports_dirs)
 	{
 		wxMessageBox("This Archive format does not support directories", "Can't create new directory", wxICON_ERROR);
 		return false;
@@ -810,7 +821,7 @@ bool ArchivePanel::newDirectory() const
 
 	// Add the directory to the archive
 	undo_manager_->beginRecord("Create Directory");
-	auto dir = archive_->createDir(name.ToStdString(), entry_list_->currentDir());
+	auto dir = archive->createDir(name.ToStdString(), entry_list_->currentDir());
 	undo_manager_->endRecord(!!dir);
 
 	// Return whether the directory was created ok
@@ -823,12 +834,17 @@ bool ArchivePanel::newDirectory() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::importFiles()
 {
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
 	// Run open files dialog
 	SFileDialog::FDInfo info;
 	if (SFileDialog::openFiles(info, "Choose files to import", "Any File (*.*)|*.*", this))
 	{
 		// Get the entry index of the last selected list item
-		int index = archive_->entryIndex(entry_list_->lastSelectedEntry(), entry_list_->currentDir());
+		int index = archive->entryIndex(entry_list_->lastSelectedEntry(), entry_list_->currentDir());
 
 		// If something was selected, add 1 to the index so we add the new entry after the last selected
 		if (index >= 0)
@@ -857,7 +873,7 @@ bool ArchivePanel::importFiles()
 			UI::setSplashProgressMessage(name.ToStdString());
 
 			// Add the entry to the archive
-			auto new_entry = archive_->addNewEntry(name.ToStdString(), index, entry_list_->currentDir());
+			auto new_entry = archive->addNewEntry(name.ToStdString(), index, entry_list_->currentDir());
 
 			// If the entry was created ok, load the file into it
 			if (new_entry)
@@ -906,7 +922,12 @@ bool ArchivePanel::cleanupArchive() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::buildArchive()
 {
-	if (archive_->formatId() != "folder")
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
+	if (archive->formatId() != "folder")
 	{
 		wxMessageBox("This function is only supported with directories", "Can't build archive", wxICON_ERROR);
 		return false;
@@ -932,7 +953,7 @@ bool ArchivePanel::buildArchive()
 		// import all files into new archive
 		// Get a list of all files in the directory
 		wxArrayString files;
-		wxDir::GetAllFiles(archive_->filename(), &files);
+		wxDir::GetAllFiles(archive->filename(), &files);
 
 		// Go through files
 		for (unsigned a = 0; a < files.size(); a++)
@@ -945,7 +966,7 @@ bool ArchivePanel::buildArchive()
 			}
 
 			wxString name = files[a];
-			name.Replace(archive_->filename(), "", false); // Remove directory from entry name
+			name.Replace(archive->filename(), "", false); // Remove directory from entry name
 
 			// Split filename into dir+name
 			StrUtil::Path fn(name.ToStdString());
@@ -1004,7 +1025,10 @@ bool ArchivePanel::buildArchive()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::renameEntry(bool each) const
 {
-	Global::error = "Rename failed";
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
 
 	// Get a list of selected entries
 	auto selection = entry_list_->selectedEntries();
@@ -1032,7 +1056,7 @@ bool ArchivePanel::renameEntry(bool each) const
 			// Rename entry (if needed)
 			if (!new_name.IsEmpty() && selection[a]->name() != new_name)
 			{
-				if (!archive_->renameEntry(selection[a], new_name.ToStdString()))
+				if (!archive->renameEntry(selection[a], new_name.ToStdString()))
 					wxMessageBox(
 						wxString::Format("Unable to rename entry %s: %s", selection[a]->name(), Global::error),
 						"Rename Entry",
@@ -1096,7 +1120,7 @@ bool ArchivePanel::renameEntry(bool each) const
 					fn.setFileName(filename); // Change name
 
 					// Rename in archive
-					if (!archive_->renameEntry(entry, fn.fileName()))
+					if (!archive->renameEntry(entry, fn.fileName()))
 						wxMessageBox(
 							wxString::Format("Unable to rename entry %s: %s", selection[a]->name(), Global::error),
 							"Rename Entry",
@@ -1134,7 +1158,7 @@ bool ArchivePanel::renameEntry(bool each) const
 
 		// Rename the directory if the new entered name is different from the original
 		if (new_name != old_name)
-			archive_->renameDir(selected_dirs[a], new_name);
+			archive->renameDir(selected_dirs[a], new_name);
 	}
 
 	// Finish recording undo level
@@ -1149,6 +1173,11 @@ bool ArchivePanel::renameEntry(bool each) const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::deleteEntry(bool confirm)
 {
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
 	// Get a list of selected entries
 	auto selected_entries = entry_list_->selectedEntries();
 
@@ -1199,7 +1228,7 @@ bool ArchivePanel::deleteEntry(bool confirm)
 
 		// Remove the current selected entry if it isn't a directory
 		if (selected_entries[a]->type() != EntryType::folderType())
-			archive_->removeEntry(selected_entries[a]);
+			archive->removeEntry(selected_entries[a]);
 	}
 
 	// Go through the selected directories
@@ -1217,7 +1246,7 @@ bool ArchivePanel::deleteEntry(bool confirm)
 			MainEditor::window()->archiveManagerPanel()->closeEntryTab(entry.get());
 
 		// Remove the selected directory from the archive
-		archive_->removeDir(selected_dirs[a]->name(), entry_list_->currentDir());
+		archive->removeDir(selected_dirs[a]->name(), entry_list_->currentDir());
 	}
 	entry_list_->setEntriesAutoUpdate(true);
 
@@ -1241,6 +1270,11 @@ bool ArchivePanel::deleteEntry(bool confirm)
 // -----------------------------------------------------------------------------
 bool ArchivePanel::revertEntry() const
 {
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
 	// Prompt to revert if configured to
 	if (confirm_entry_revert)
 		if (wxMessageBox(
@@ -1260,7 +1294,7 @@ bool ArchivePanel::revertEntry() const
 	for (auto& entry : selected_entries)
 	{
 		undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
-		archive_->revertEntry(entry);
+		archive->revertEntry(entry);
 	}
 
 	// Finish recording undo level
@@ -1273,7 +1307,7 @@ bool ArchivePanel::revertEntry() const
 
 	// If the entries reverted were the only modified entries in the
 	// archive, the archive is no longer modified.
-	archive_->findModifiedEntries();
+	archive->findModifiedEntries();
 
 	return true;
 }
@@ -1283,6 +1317,11 @@ bool ArchivePanel::revertEntry() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::moveUp()
 {
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
 	// Get selection
 	auto selection = entry_list_->selection();
 	long focus     = entry_list_->focusedIndex();
@@ -1299,7 +1338,7 @@ bool ArchivePanel::moveUp()
 	// Move each one up by swapping it with the entry above it
 	undo_manager_->beginRecord("Move Up");
 	for (long index : selection)
-		archive_->swapEntries(
+		archive->swapEntries(
 			entry_list_->entryIndexAt(index), entry_list_->entryIndexAt(index - 1), entry_list_->currentDir());
 	undo_manager_->endRecord(true);
 
@@ -1322,6 +1361,11 @@ bool ArchivePanel::moveUp()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::moveDown()
 {
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
 	// Get selection
 	auto selection = entry_list_->selection();
 	long focus     = entry_list_->focusedIndex();
@@ -1338,7 +1382,7 @@ bool ArchivePanel::moveDown()
 	// Move each one down by swapping it with the entry below it
 	undo_manager_->beginRecord("Move Down");
 	for (int a = selection.size() - 1; a >= 0; a--)
-		archive_->swapEntries(
+		archive->swapEntries(
 			entry_list_->entryIndexAt(selection[a]),
 			entry_list_->entryIndexAt(selection[a] + 1),
 			entry_list_->currentDir());
@@ -1373,6 +1417,11 @@ bool ArchivePanel::moveDown()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::sort() const
 {
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
 	// Get selected entries
 	auto selection = entry_list_->selection();
 	auto dir       = entry_list_->currentDir();
@@ -1588,7 +1637,7 @@ bool ArchivePanel::sort() const
 
 	// Refresh
 	entry_list_->updateList();
-	archive_->setModified(true);
+	archive->setModified(true);
 
 	return true;
 }
@@ -1602,7 +1651,7 @@ bool ArchivePanel::bookmark() const
 
 	if (entry)
 	{
-		App::archiveManager().addBookmark(entry_list_->focusedEntry());
+		App::archiveManager().addBookmark(entry->getShared());
 		return true;
 	}
 	else
@@ -1864,8 +1913,13 @@ bool ArchivePanel::pasteEntry() const
 	if (App::clipboard().empty())
 		return false;
 
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
 	// Get the entry index of the last selected list item
-	int index = archive_->entryIndex(entry_list_->lastSelectedEntry(), entry_list_->currentDir());
+	int index = archive->entryIndex(entry_list_->lastSelectedEntry(), entry_list_->currentDir());
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -1889,7 +1943,7 @@ bool ArchivePanel::pasteEntry() const
 		auto clip = dynamic_cast<EntryTreeClipboardItem*>(App::clipboard().item(a));
 
 		// Merge it in
-		if (archive_->paste(clip->tree(), index, entry_list_->currentDir()))
+		if (archive->paste(clip->tree(), index, entry_list_->currentDir()))
 			pasted = true;
 	}
 	undo_manager_->endRecord(true);
@@ -1898,7 +1952,7 @@ bool ArchivePanel::pasteEntry() const
 	if (pasted)
 	{
 		// Update archive
-		archive_->setModified(true);
+		archive->setModified(true);
 
 		return true;
 	}
@@ -2290,8 +2344,13 @@ ArchiveTreeNode* ArchivePanel::currentDir() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::swanConvert() const
 {
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
 	// Get the entry index of the last selected list item
-	int index = archive_->entryIndex(currentEntry(), entry_list_->currentDir());
+	int index = archive->entryIndex(currentEntry(), entry_list_->currentDir());
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -2343,8 +2402,8 @@ bool ArchivePanel::swanConvert() const
 			// Begin recording undo level
 			undo_manager_->beginRecord(fmt::format("Create {}", wadnames[e]));
 
-			auto output = archive_->addNewEntry(
-				(archive_->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, entry_list_->currentDir());
+			auto output = archive->addNewEntry(
+				(archive->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, entry_list_->currentDir());
 			if (output)
 			{
 				error |= !output->importMemChunk(*mc[e]);
@@ -2369,8 +2428,13 @@ bool ArchivePanel::swanConvert() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::basConvert(bool animdefs)
 {
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
 	// Get the entry index of the last selected list item
-	int index = archive_->entryIndex(currentEntry(), entry_list_->currentDir());
+	int index = archive->entryIndex(currentEntry(), entry_list_->currentDir());
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -2383,9 +2447,9 @@ bool ArchivePanel::basConvert(bool animdefs)
 	undo_manager_->beginRecord("Convert to ANIMDEFS");
 
 	// Create new entry
-	auto output = archive_->addNewEntry(
-		(animdefs ? (archive_->formatId() == "wad" ? "ANIMDEFS" : "animdefs.txt") :
-					(archive_->formatId() == "wad" ? "SWANTBLS" : "swantbls.dat")),
+	auto output = archive->addNewEntry(
+		(animdefs ? (archive->formatId() == "wad" ? "ANIMDEFS" : "animdefs.txt") :
+					(archive->formatId() == "wad" ? "SWANTBLS" : "swantbls.dat")),
 		index,
 		entry_list_->currentDir());
 
@@ -2766,6 +2830,11 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		return false;
 	}
 
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
 	// First check if the entry is already open in its own tab
 	auto am_panel = theMainWindow->archiveManagerPanel();
 
@@ -2786,7 +2855,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 			name.Remove(0, 1);
 
 		// Get directory to open
-		auto dir = archive_->dir(name.ToStdString(), nullptr);
+		auto dir = archive->dir(name.ToStdString(), nullptr);
 
 		// Check it exists (really should)
 		if (!dir)
@@ -3036,6 +3105,11 @@ bool ArchivePanel::handleAction(string_view id)
 	if (!StrUtil::startsWith(id, "arch_") && !StrUtil::startsWith(id, "pmap_"))
 		return false;
 
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
 
 	// ------------------------------------------------------------------------
 	// ARCHIVE MENU
@@ -3067,10 +3141,10 @@ bool ArchivePanel::handleAction(string_view id)
 
 	// Archive->Texture Editor
 	else if (id == "arch_texeditor")
-		MainEditor::openTextureEditor(archive_);
+		MainEditor::openTextureEditor(archive.get());
 
 	else if (id == "arch_mapeditor")
-		MainEditor::openMapEditor(archive_);
+		MainEditor::openMapEditor(archive.get());
 
 	// Archive->Convert To...
 	else if (id == "arch_convert")
@@ -3078,38 +3152,38 @@ bool ArchivePanel::handleAction(string_view id)
 
 	// Archive->Maintenance->Remove Unused Patches
 	else if (id == "arch_clean_patches")
-		ArchiveOperations::removeUnusedPatches(archive_);
+		ArchiveOperations::removeUnusedPatches(archive.get());
 
 	// Archive->Maintenance->Remove Unused Textures
 	else if (id == "arch_clean_textures")
-		ArchiveOperations::removeUnusedTextures(archive_);
+		ArchiveOperations::removeUnusedTextures(archive.get());
 
 	// Archive->Maintenance->Remove Unused Flats
 	else if (id == "arch_clean_flats")
-		ArchiveOperations::removeUnusedFlats(archive_);
+		ArchiveOperations::removeUnusedFlats(archive.get());
 
 	// Archive->Maintenance->Check Duplicate Entry Names
 	else if (id == "arch_check_duplicates")
-		ArchiveOperations::checkDuplicateEntryNames(archive_);
+		ArchiveOperations::checkDuplicateEntryNames(archive.get());
 
 	// Archive->Maintenance->Check Duplicate Entry Names
 	else if (id == "arch_check_duplicates2")
-		ArchiveOperations::checkDuplicateEntryContent(archive_);
+		ArchiveOperations::checkDuplicateEntryContent(archive.get());
 
 	// Archive->Maintenance->Check Duplicate Entry Names
 	else if (id == "arch_clean_iwaddupes")
-		ArchiveOperations::removeEntriesUnchangedFromIWAD(archive_);
+		ArchiveOperations::removeEntriesUnchangedFromIWAD(archive.get());
 
 	// Archive->Maintenance->Replace in Maps
 	else if (id == "arch_replace_maps")
 	{
-		MapReplaceDialog dlg(this, archive_);
+		MapReplaceDialog dlg(this, archive.get());
 		dlg.ShowModal();
 	}
 
 	// Archive->Scripts->...
 	else if (id == "arch_script")
-		ScriptManager::runArchiveScript(archive_, wx_id_offset_);
+		ScriptManager::runArchiveScript(archive.get(), wx_id_offset_);
 
 
 	// ------------------------------------------------------------------------
@@ -3255,10 +3329,10 @@ bool ArchivePanel::handleAction(string_view id)
 	// Run archive
 	else if (id == "arch_run")
 	{
-		RunDialog dlg(this, archive_);
+		RunDialog dlg(this, archive.get());
 		if (dlg.ShowModal() == wxID_OK)
 		{
-			wxString command = dlg.selectedCommandLine(archive_, "");
+			wxString command = dlg.selectedCommandLine(archive.get(), "");
 			if (!command.IsEmpty())
 			{
 				// Set working directory
@@ -3290,19 +3364,24 @@ bool ArchivePanel::handleAction(string_view id)
 // -----------------------------------------------------------------------------
 void ArchivePanel::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
 {
+	// Check the announcement is from our archive
+	auto archive = archive_.lock();
+	if (announcer != archive.get())
+		return;
+
 	// Reset event data for reading
 	event_data.seek(0, SEEK_SET);
 
 	// If the archive was saved
-	if (announcer == archive_ && event_name == "saved")
+	if (event_name == "saved")
 	{
 		// Update this tab's name in the parent notebook (if filename was changed)
 		auto parent = dynamic_cast<wxAuiNotebook*>(GetParent());
-		parent->SetPageText(parent->GetPageIndex(this), archive_->filename(false));
+		parent->SetPageText(parent->GetPageIndex(this), archive->filename(false));
 	}
 
 	// If an entry was removed
-	if (announcer == archive_ && event_name == "entry_removing")
+	if (event_name == "entry_removing")
 	{
 		// Get entry pointer
 		wxUIntPtr ptr;
@@ -3820,6 +3899,11 @@ void ArchivePanel::onEntryListKeyDown(wxKeyEvent& e)
 // -----------------------------------------------------------------------------
 void ArchivePanel::onEntryListActivated(wxListEvent& e)
 {
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return;
+
 	auto entry = entry_list_->focusedEntry();
 
 	if (!entry)
@@ -3833,17 +3917,17 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 	else if (
 		entry->type()->formatId() == "texturex" || entry->type() == EntryType::fromId("pnames")
 		|| entry->type() == EntryType::fromId("zdtextures"))
-		MainEditor::openTextureEditor(archive_, entry);
+		MainEditor::openTextureEditor(archive.get(), entry);
 
 	// Map
 	// TODO: Needs to filter the game/port lists in the dialog by the map format
 	else if (entry->type() == EntryType::mapMarkerType())
 	{
 		// Open map editor config dialog
-		MapEditorConfigDialog dlg(this, archive_, false);
+		MapEditorConfigDialog dlg(this, archive.get(), false);
 		if (dlg.ShowModal() == wxID_OK)
 		{
-			auto info = archive_->mapDesc(entry);
+			auto info = archive->mapDesc(entry);
 
 			// Check selected game configuration is ok
 			if (!dlg.configMatchesMap(info))

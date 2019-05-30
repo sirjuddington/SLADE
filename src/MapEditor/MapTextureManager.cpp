@@ -556,7 +556,9 @@ void MapTextureManager::buildTexInfoList()
 	for (auto& texture : textures)
 	{
 		auto tex    = &texture->tex;
-		auto parent = texture->parent;
+		auto parent = texture->parent.lock().get();
+		if (!parent)
+			continue;
 
 		auto long_name = tex->name();
 		auto path      = StrUtil::beforeLast(long_name, '/');
@@ -637,7 +639,7 @@ void MapTextureManager::onAnnouncement(Announcer* announcer, string_view event_n
 		event_data.seek(0, SEEK_SET);
 		int32_t ac_index;
 		event_data.read(&ac_index, 4);
-		if (App::archiveManager().getArchive(ac_index) == archive_)
+		if (App::archiveManager().getArchive(ac_index).get() == archive_)
 		{
 			MapEditor::windowWx()->Hide();
 			MapEditor::editContext().clearMap();

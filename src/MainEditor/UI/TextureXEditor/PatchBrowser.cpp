@@ -383,11 +383,15 @@ bool PatchBrowser::openArchive(Archive* archive)
 	{
 		if (full_path_ || res->tex.name().size() <= 8)
 		{
+			auto parent = res->parent.lock().get();
+			if (!parent)
+				continue;
+
 			// Create browser item
-			auto item = new PatchBrowserItem(res->tex.name(), res->parent, PatchBrowserItem::Type::CTexture);
+			auto item = new PatchBrowserItem(res->tex.name(), parent, PatchBrowserItem::Type::CTexture);
 
 			// Add to textures node (under parent archive name)
-			addItem(item, "Textures/" + res->parent->filename(false));
+			addItem(item, "Textures/" + parent->filename(false));
 		}
 	}
 

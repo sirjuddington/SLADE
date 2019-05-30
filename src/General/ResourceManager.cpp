@@ -198,10 +198,11 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, string_view nspace, boo
 void TextureResource::add(CTexture* tex, Archive* parent)
 {
 	// Check args
-	if (!tex || !parent)
+	auto parent_shared = App::archiveManager().shareArchive(parent);
+	if (!tex || !parent_shared)
 		return;
 
-	textures_.push_back(std::make_unique<Texture>(*tex, parent));
+	textures_.push_back(std::make_unique<Texture>(*tex, parent_shared));
 }
 
 // -----------------------------------------------------------------------------
@@ -213,7 +214,8 @@ void TextureResource::remove(Archive* parent)
 	auto i = textures_.begin();
 	while (i != textures_.end())
 	{
-		if (i->get()->parent == parent)
+		auto t_parent = i->get()->parent.lock().get();
+		if (!t_parent || t_parent == parent)
 			i = textures_.erase(i);
 		else
 			++i;
@@ -547,21 +549,21 @@ void ResourceManager::putAllTextures(vector<TextureResource::Texture*>& list, Ar
 			res = i.second.textures_[a].get();
 
 			// Skip if it's in the 'ignore' archive
-			if (res->parent == ignore)
+			auto res_parent = res->parent.lock().get();
+			if (!res_parent || res_parent == ignore)
 				continue;
 
 			// If it's in the 'priority' archive, exit loop
-			if (priority && i.second.textures_[a]->parent == priority)
+			if (priority && res_parent == priority)
 				break;
 
 			// Otherwise, if it's in a 'later' archive than the current resource, set it
-			if (App::archiveManager().archiveIndex(res->parent)
-				<= App::archiveManager().archiveIndex(i.second.textures_[a]->parent))
+			if (App::archiveManager().archiveIndex(res_parent) <= App::archiveManager().archiveIndex(res_parent))
 				res = i.second.textures_[a].get();
 		}
 
 		// Add texture resource to the list
-		if (res->parent != ignore)
+		if (res->parent.lock().get() != ignore)
 			list.push_back(res);
 	}
 }
@@ -699,22 +701,23 @@ CTexture* ResourceManager::getTexture(string_view texture, Archive* priority, Ar
 
 	// Go through resource textures
 	auto tex    = &res.textures_[0]->tex;
-	auto parent = res.textures_[0]->parent;
+	auto parent = res.textures_[0]->parent.lock().get();
 	for (auto& res_tex : res.textures_)
 	{
 		// Skip if it's in the 'ignore' archive
-		if (res_tex->parent == ignore)
+		auto rt_parent = res_tex->parent.lock().get();
+		if (!rt_parent || rt_parent == ignore)
 			continue;
 
 		// If it's in the 'priority' archive, return it
-		if (priority && res_tex->parent == priority)
+		if (priority && rt_parent == priority)
 			return &res_tex->tex;
 
 		// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-		if (App::archiveManager().archiveIndex(parent) <= App::archiveManager().archiveIndex(res_tex->parent))
+		if (App::archiveManager().archiveIndex(parent) <= App::archiveManager().archiveIndex(rt_parent))
 		{
 			tex    = &res_tex->tex;
-			parent = res_tex->parent;
+			parent = rt_parent;
 		}
 	}
 

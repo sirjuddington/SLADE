@@ -575,7 +575,7 @@ void ArchiveManagerPanel::updateArchiveTabTitle(int index) const
 
 		// Check for archive match
 		auto ap = dynamic_cast<ArchivePanel*>(stc_archives_->GetPage(a));
-		if (ap->archive() == archive)
+		if (ap->archive() == archive.get())
 		{
 			wxString title;
 			if (archive->isModified())
@@ -755,7 +755,7 @@ void ArchiveManagerPanel::openTab(int archive_index) const
 {
 	auto archive = App::archiveManager().getArchive(archive_index);
 	if (archive)
-		openTab(archive);
+		openTab(archive.get());
 }
 
 // -----------------------------------------------------------------------------
@@ -789,7 +789,8 @@ ArchivePanel* ArchiveManagerPanel::tabForArchive(Archive* archive) const
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::openTab(Archive* archive) const
 {
-	if (archive)
+	auto sp_archive = App::archiveManager().shareArchive(archive);
+	if (sp_archive)
 	{
 		// Check if the archive is already open in a tab
 		auto wp = tabForArchive(archive);
@@ -803,7 +804,7 @@ void ArchiveManagerPanel::openTab(Archive* archive) const
 		}
 
 		// If tab isn't already open, open a new one
-		wp = new ArchivePanel(stc_archives_, archive);
+		wp = new ArchivePanel(stc_archives_, sp_archive);
 
 		// Determine icon
 		string icon = "archive";
@@ -832,7 +833,7 @@ void ArchiveManagerPanel::openTab(Archive* archive) const
 void ArchiveManagerPanel::closeTab(int archive_index) const
 {
 	auto archive = App::archiveManager().getArchive(archive_index);
-	auto ap      = tabForArchive(archive);
+	auto ap      = tabForArchive(archive.get());
 
 	if (ap)
 		stc_archives_->DeletePage(stc_archives_->GetPageIndex(ap));
@@ -857,7 +858,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 
 			// Check for archive match
 			auto txed = dynamic_cast<TextureXEditor*>(stc_archives_->GetPage(a));
-			if (txed->archive() == archive)
+			if (txed->archive() == archive.get())
 			{
 				// Selected archive already has its texture editor open, so show that tab
 				stc_archives_->SetSelection(a);
@@ -869,7 +870,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 		// If tab isn't already open, open a new one
 		auto txed = new TextureXEditor(stc_archives_);
 		txed->Show(false);
-		if (!txed->openArchive(archive))
+		if (!txed->openArchive(archive.get()))
 		{
 			delete txed;
 			return;
@@ -911,7 +912,7 @@ TextureXEditor* ArchiveManagerPanel::textureTabForArchive(int archive_index) con
 
 			// Check for archive match
 			auto txed = dynamic_cast<TextureXEditor*>(stc_archives_->GetPage(a));
-			if (txed->archive() == archive)
+			if (txed->archive() == archive.get())
 				return txed;
 		}
 	}
@@ -1217,7 +1218,7 @@ bool ArchiveManagerPanel::closeAll()
 
 	while (App::archiveManager().numArchives() > 0)
 	{
-		if (!closeArchive(App::archiveManager().getArchive(0)))
+		if (!closeArchive(App::archiveManager().getArchive(0).get()))
 			return false;
 	}
 
@@ -1291,12 +1292,12 @@ void ArchiveManagerPanel::checkDirArchives()
 		if (archive->formatId() != "folder")
 			continue;
 
-		if (VECTOR_EXISTS(checking_archives_, archive))
+		if (VECTOR_EXISTS(checking_archives_, archive.get()))
 			continue;
 
 		Log::info(2, "Checking {} for external changes...", archive->filename());
-		checking_archives_.push_back(archive);
-		auto check = new DirArchiveCheck(this, (DirArchive*)archive);
+		checking_archives_.push_back(archive.get());
+		auto check = new DirArchiveCheck(this, dynamic_cast<DirArchive*>(archive.get()));
 		check->Create();
 		check->Run();
 	}
@@ -1310,7 +1311,7 @@ void ArchiveManagerPanel::createNewArchive(const wxString& format) const
 	auto new_archive = App::archiveManager().newArchive(format.ToStdString());
 
 	if (new_archive)
-		openTab(App::archiveManager().archiveIndex(new_archive));
+		openTab(App::archiveManager().archiveIndex(new_archive.get()));
 }
 
 // -----------------------------------------------------------------------------
@@ -1578,7 +1579,7 @@ void ArchiveManagerPanel::onAnnouncement(Announcer* announcer, string_view event
 
 		// Close any related tabs
 		closeTextureTab(index);
-		closeEntryTabs(App::archiveManager().getArchive(index));
+		closeEntryTabs(App::archiveManager().getArchive(index).get());
 		closeTab(index);
 	}
 
@@ -1659,7 +1660,7 @@ void ArchiveManagerPanel::saveSelection() const
 
 	// Go through the selection and save
 	for (int index : selection)
-		saveArchive(App::archiveManager().getArchive(index));
+		saveArchive(App::archiveManager().getArchive(index).get());
 }
 
 // -----------------------------------------------------------------------------
@@ -1676,7 +1677,7 @@ void ArchiveManagerPanel::saveSelectionAs() const
 
 	// Go through the selection and save as
 	for (int index : selection)
-		saveArchiveAs(App::archiveManager().getArchive(index));
+		saveArchiveAs(App::archiveManager().getArchive(index).get());
 
 	refreshArchiveList();
 }
@@ -1696,7 +1697,7 @@ bool ArchiveManagerPanel::closeSelection()
 	// Get the list of selected archives
 	vector<Archive*> selected_archives;
 	for (int index : selection)
-		selected_archives.push_back(App::archiveManager().getArchive(index));
+		selected_archives.push_back(App::archiveManager().getArchive(index).get());
 
 	// Close all selected archives, starting from the last
 	bool all_closed = true;
@@ -2026,7 +2027,7 @@ void ArchiveManagerPanel::onListArchivesChanged(wxListEvent& e)
 	if (!selected_archive)
 		return;
 
-	current_maps_ = selected_archive;
+	current_maps_ = selected_archive.get();
 }
 
 // -----------------------------------------------------------------------------
@@ -2147,16 +2148,24 @@ void ArchiveManagerPanel::onArchiveTabClose(wxAuiNotebookEvent& e)
 		auto ap      = dynamic_cast<ArchivePanel*>(page);
 		auto archive = ap->archive();
 
+		// Close dependant archives first (if any)
 		auto deps = App::archiveManager().getDependentArchives(archive);
-		deps.insert(deps.begin(), archive);
+		
 		// Iterate in reverse order so the deepest-nested is closed first
 		for (unsigned a = deps.size(); a > 0; a--)
 		{
-			if (!beforeCloseArchive(deps[a - 1]))
+			if (!beforeCloseArchive(deps[a - 1].get()))
 			{
 				e.Veto();
 				return;
 			}
+		}
+
+		// Close archive
+		if (!beforeCloseArchive(archive))
+		{
+			e.Veto();
+			return;
 		}
 
 		pending_closed_archive_ = archive;

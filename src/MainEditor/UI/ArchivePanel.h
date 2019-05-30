@@ -21,10 +21,10 @@ public:
 		Switches,
 	};
 
-	ArchivePanel(wxWindow* parent, Archive* archive);
+	ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive);
 	virtual ~ArchivePanel() = default;
 
-	Archive*     archive() const { return archive_; }
+	Archive*     archive() const { return archive_.lock().get(); }
 	UndoManager* undoManager() const { return undo_manager_.get(); }
 	bool         saveEntryChanges() const;
 	void         addMenus() const;
@@ -113,7 +113,7 @@ public:
 	static EntryPanel* createPanelForEntry(ArchiveEntry* entry, wxWindow* parent);
 
 protected:
-	Archive*                archive_ = nullptr;
+	weak_ptr<Archive>       archive_;
 	unique_ptr<UndoManager> undo_manager_;
 	bool                    ignore_focus_change_ = false;
 

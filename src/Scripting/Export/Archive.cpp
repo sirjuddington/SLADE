@@ -47,25 +47,6 @@
 namespace Lua
 {
 // -----------------------------------------------------------------------------
-// Returns a vector of all open archives.
-// If [resources_only] is true, only includes archives marked as resources
-// -----------------------------------------------------------------------------
-vector<Archive*> allArchives(bool resources_only)
-{
-	vector<Archive*> list;
-	for (int a = 0; a < App::archiveManager().numArchives(); a++)
-	{
-		auto archive = App::archiveManager().getArchive(a);
-
-		if (resources_only && !App::archiveManager().archiveIsResource(archive))
-			continue;
-
-		list.push_back(archive);
-	}
-	return list;
-}
-
-// -----------------------------------------------------------------------------
 // Returns the name of entry [self] with requested formatting:
 // [include_path] - if true, include the path to the entry
 // [include_extension] - if true, include the extension
@@ -366,7 +347,9 @@ void registerArchivesNamespace(sol::state& lua)
 {
 	auto archives = lua.create_table("Archives");
 
-	archives["All"]    = sol::overload(&allArchives, []() { return allArchives(false); });
+	archives["All"] = sol::overload(
+		[](bool res) { return App::archiveManager().allArchives(res); },
+		[]() { return App::archiveManager().allArchives(false); });
 	archives["Create"] = [](string_view format) {
 		return std::make_tuple(App::archiveManager().newArchive(format), Global::error);
 	};
@@ -384,7 +367,7 @@ void registerArchivesNamespace(sol::state& lua)
 	archives["ProgramResource"]      = []() { return App::archiveManager().programResourceArchive(); };
 	archives["RecentFiles"]          = []() { return App::archiveManager().recentFiles(); };
 	archives["Bookmarks"]            = []() { return App::archiveManager().bookmarks(); };
-	archives["AddBookmark"]          = [](ArchiveEntry* entry) { App::archiveManager().addBookmark(entry); };
+	archives["AddBookmark"]          = [](ArchiveEntry* entry) { App::archiveManager().addBookmark(entry->getShared()); };
 	archives["RemoveBookmark"]       = [](ArchiveEntry* entry) { App::archiveManager().deleteBookmark(entry); };
 	archives["EntryType"]            = &EntryType::fromId;
 }

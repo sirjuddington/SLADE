@@ -62,7 +62,7 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 	int index = 0;
 	for (int a = 0; a < App::archiveManager().numArchives(); a++)
 	{
-		auto arch = App::archiveManager().getArchive(a);
+		auto arch = App::archiveManager().getArchive(a).get();
 		if (arch != archive)
 		{
 			list_resources_->Append(arch->filename(false));
@@ -139,7 +139,7 @@ void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 		{
 			list_resources_->Append(na->filename(false));
 			list_resources_->Check(list_resources_->GetCount() - 1);
-			archives_.push_back(na);
+			archives_.push_back(na.get());
 		}
 	}
 }
@@ -163,7 +163,7 @@ void ResourceArchiveChooser::onBtnRecent(wxCommandEvent& e)
 		{
 			list_resources_->Append(na->filename(false));
 			list_resources_->Check(list_resources_->GetCount() - 1);
-			archives_.push_back(na);
+			archives_.push_back(na.get());
 		}
 	}
 }

@@ -749,7 +749,7 @@ bool PaletteEntryPanel::showPalette(uint32_t index)
 	pal_canvas_->palette().copyPalette(palettes_[index].get());
 
 	// Set current palette text
-	text_curpal_->SetLabel(wxString::Format("%u/%lu", index + 1, palettes_.size()));
+	text_curpal_->SetLabel(fmt::format("{}/{}", index + 1, palettes_.size()));
 
 	// Refresh
 	Layout();

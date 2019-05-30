@@ -276,23 +276,17 @@ void Game::updateCustomDefinitions()
 	}
 
 	// Parse custom definitions in all resource archives
-	vector<Archive*> resource_archives;
-	for (auto a = 0; a < App::archiveManager().numArchives(); a++)
-	{
-		auto archive = App::archiveManager().getArchive(a);
-		if (App::archiveManager().archiveIsResource(archive))
-			resource_archives.push_back(archive);
-	}
+	auto resource_archives = App::archiveManager().allArchives(true);
 
 	// ZScript first
-	for (auto archive : resource_archives)
-		zscript_custom.parseZScript(archive);
+	for (const auto& archive : resource_archives)
+		zscript_custom.parseZScript(archive.get());
 
 	// Other definitions
-	for (auto archive : resource_archives)
+	for (const auto& archive : resource_archives)
 	{
-		config_current.parseDecorateDefs(archive);
-		config_current.parseMapInfo(archive);
+		config_current.parseDecorateDefs(archive.get());
+		config_current.parseMapInfo(archive.get());
 	}
 
 	// Process custom definitions
