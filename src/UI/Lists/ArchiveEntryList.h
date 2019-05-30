@@ -19,7 +19,7 @@ public:
 	bool showDirBack() const { return show_dir_back_; }
 	void showDirBack(bool db) { show_dir_back_ = db; }
 
-	void setArchive(Archive* archive);
+	void setArchive(const shared_ptr<Archive>& archive);
 	void setUndoManager(UndoManager* manager) { undo_manager_ = manager; }
 
 	void setupColumns();
@@ -64,7 +64,7 @@ protected:
 	void     updateItemAttr(long item, long column, long index) const override;
 
 private:
-	Archive*                 archive_ = nullptr;
+	weak_ptr<Archive>        archive_;
 	wxString                 filter_category_;
 	ArchiveTreeNode*         current_dir_ = nullptr;
 	unique_ptr<ArchiveEntry> entry_dir_back_;

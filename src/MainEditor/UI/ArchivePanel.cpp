@@ -433,7 +433,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 
 	// Create entry list panel
 	entry_list_ = new ArchiveEntryList(this);
-	entry_list_->setArchive(archive.get());
+	entry_list_->setArchive(archive);
 	entry_list_->SetDropTarget(new APEntryListDropTarget(this, entry_list_));
 	entry_list_->setUndoManager(undo_manager_.get());
 	framesizer->Add(entry_list_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
