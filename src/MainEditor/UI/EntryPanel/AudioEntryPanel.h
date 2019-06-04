@@ -37,6 +37,7 @@ private:
 	int			subsong_		= 0;
 	int			song_length_	= 0;
 	bool		opened_			= false;
+	MemChunk    data_;
 
 	wxBitmapButton*	btn_play_		= nullptr;
 	wxBitmapButton*	btn_pause_		= nullptr;
