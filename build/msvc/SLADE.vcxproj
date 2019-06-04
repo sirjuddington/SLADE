@@ -175,7 +175,6 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">..\..\dist\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">..\..\dist\WinXP\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|Win32'">$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
@@ -196,7 +195,7 @@
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|x64'">true</GenerateManifest>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(FREEIMAGE)\Dist\x64;$(ProjectDir)..\..\src\Application;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(FREEIMAGE)\Dist\x32;$(ProjectDir)..\..\src\Application;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|x64'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(FREEIMAGE)\Dist\x64;$(ProjectDir)..\..\src\Application;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|x64'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
@@ -204,7 +203,7 @@
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|x64'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(FREEIMAGE)\Dist\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(FREEIMAGE)\Dist\x32;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|x64'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(FREEIMAGE)\Dist\x64;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|x64'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(LibraryPath)</LibraryPath>
@@ -221,7 +220,7 @@
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SLADE-dbg</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SLADE-dbg</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug - vcpkg, static|Win32'">SLADE-dbg</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug - vcpkg, static|x64'">SLADE-dbg</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug - vcpkg, static|x64'">SLADE-dbg64</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -255,6 +254,7 @@
     <Linkage-sfml-graphics>static</Linkage-sfml-graphics>
     <Linkage-sfml-window>static</Linkage-sfml-window>
     <OutDir>..\..\dist\</OutDir>
+    <TargetName>$(ProjectName)-x64</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
