@@ -308,56 +308,56 @@ bool AudioEntryPanel::open()
 		path.SetExt(entry_->type()->extension());
 
 	// Convert if necessary, then write to file
-	MemChunk convdata;
+	data_.clear();
 	if (entry_->type()->formatId() == "snd_doom" || // Doom Sound -> WAV
 		entry_->type()->formatId() == "snd_doom_mac")
-		Conversions::doomSndToWav(mcdata, convdata);
+		Conversions::doomSndToWav(mcdata, data_);
 	else if (entry_->type()->formatId() == "snd_speaker") // Doom PC Speaker Sound -> WAV
-		Conversions::spkSndToWav(mcdata, convdata);
+		Conversions::spkSndToWav(mcdata, data_);
 	else if (entry_->type()->formatId() == "snd_audiot") // AudioT PC Speaker Sound -> WAV
-		Conversions::spkSndToWav(mcdata, convdata, true);
+		Conversions::spkSndToWav(mcdata, data_, true);
 	else if (entry_->type()->formatId() == "snd_wolf") // Wolfenstein 3D Sound -> WAV
-		Conversions::wolfSndToWav(mcdata, convdata);
+		Conversions::wolfSndToWav(mcdata, data_);
 	else if (entry_->type()->formatId() == "snd_voc") // Creative Voice File -> WAV
-		Conversions::vocToWav(mcdata, convdata);
+		Conversions::vocToWav(mcdata, data_);
 	else if (entry_->type()->formatId() == "snd_jaguar") // Jaguar Doom Sound -> WAV
-		Conversions::jagSndToWav(mcdata, convdata);
+		Conversions::jagSndToWav(mcdata, data_);
 	else if (entry_->type()->formatId() == "snd_bloodsfx") // Blood Sound -> WAV
-		Conversions::bloodToWav(entry_, convdata);
+		Conversions::bloodToWav(entry_, data_);
 	else if (entry_->type()->formatId() == "midi_mus") // MUS -> MIDI
 	{
-		Conversions::musToMidi(mcdata, convdata);
+		Conversions::musToMidi(mcdata, data_);
 		path.SetExt("mid");
 	}
 	else if (
 		entry_->type()->formatId() == "midi_xmi" || // HMI/HMP/XMI -> MIDI
 		entry_->type()->formatId() == "midi_hmi" || entry_->type()->formatId() == "midi_hmp")
 	{
-		Conversions::zmusToMidi(mcdata, convdata, 0, &num_tracks_);
+		Conversions::zmusToMidi(mcdata, data_, 0, &num_tracks_);
 		path.SetExt("mid");
 	}
 	else if (entry_->type()->formatId() == "midi_gmid") // GMID -> MIDI
 	{
-		Conversions::gmidToMidi(mcdata, convdata);
+		Conversions::gmidToMidi(mcdata, data_);
 		path.SetExt("mid");
 	}
 	else
-		convdata.importMem(mcdata.data(), mcdata.size());
+		data_.importMem(mcdata.data(), mcdata.size());
 
 	// MIDI format
 	if (StrUtil::startsWith(entry_->type()->formatId(), "midi_"))
 	{
 		audio_type_ = MIDI;
-		openMidi(convdata, path.GetFullPath());
+		openMidi(data_, path.GetFullPath());
 	}
 
 	// MOD format
 	else if (StrUtil::startsWith(entry_->type()->formatId(), "mod_"))
-		openMod(convdata);
+		openMod(data_);
 
 	// Other format
 	else
-		openAudio(convdata, path.GetFullPath());
+		openAudio(data_, path.GetFullPath());
 
 	// Keep filename so we can delete it later
 	prevfile_ = path.GetFullPath();
