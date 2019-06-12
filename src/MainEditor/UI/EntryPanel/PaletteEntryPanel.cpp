@@ -1134,21 +1134,17 @@ bool PaletteEntryPanel::generateColormaps()
 	}
 #endif
 	// Now override or create new entry
-	ArchiveEntry* colormap;
-	colormap         = entry_->parent()->entry("COLORMAP", true);
-	bool preexisting = colormap != nullptr;
+	auto colormap = entry_->parent()->entry("COLORMAP", true);
 	if (!colormap)
 	{
 		// We need to create this entry
-		colormap = new ArchiveEntry("COLORMAP.lmp", 34 * 256);
+		auto nc = std::make_shared<ArchiveEntry>("COLORMAP.lmp", 34 * 256);
+		entry_->parent()->addEntry(nc);
+		colormap = nc.get();
 	}
 	if (!colormap)
 		return false;
 	colormap->importMemChunk(mc);
-	if (!preexisting)
-	{
-		entry_->parent()->addEntry(colormap);
-	}
 	return true;
 }
 #undef DIMINISH

@@ -26,26 +26,25 @@ public:
 	bool loadEntryData(ArchiveEntry* entry) override;
 
 	// Entry addition/removal
-	ArchiveEntry* addEntry(
-		ArchiveEntry*    entry,
-		unsigned         position = 0xFFFFFFFF,
-		ArchiveTreeNode* dir      = nullptr,
-		bool             copy     = false) override;
-	ArchiveEntry* addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy = false) override;
-	bool          removeEntry(ArchiveEntry* entry) override;
+	shared_ptr<ArchiveEntry> addEntry(
+		shared_ptr<ArchiveEntry> entry,
+		unsigned                 position = 0xFFFFFFFF,
+		ArchiveDir*              dir      = nullptr) override;
+	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace) override;
+	bool                     removeEntry(ArchiveEntry* entry) override;
 
 	// Entry modification
 	bool renameEntry(ArchiveEntry* entry, string_view name) override;
 
 	// Entry moving
 	bool swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override;
-	bool moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = nullptr) override;
+	bool moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveDir* dir = nullptr) override;
 
 	// Detection
 	MapDesc         mapDesc(ArchiveEntry* maphead) override;
 	vector<MapDesc> detectMaps() override;
 	string          detectNamespace(ArchiveEntry* entry) override;
-	string          detectNamespace(size_t index, ArchiveTreeNode* dir = nullptr) override;
+	string          detectNamespace(size_t index, ArchiveDir* dir = nullptr) override;
 	void            detectIncludes();
 	bool            hasFlatHack() override;
 
@@ -66,7 +65,7 @@ public:
 		for (size_t a = 0; a < entries.size(); a++)
 		{
 			// Add each entry to the wad archive
-			wad.addEntry(entries[a], entries.size(), nullptr, true);
+			wad.addEntry(std::make_shared<ArchiveEntry>(*entries[a]), entries.size(), nullptr);
 		}
 
 		return wad.save(filename);

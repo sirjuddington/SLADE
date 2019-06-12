@@ -472,7 +472,7 @@ int MapTextureManager::verticalOffset(string_view name) const
 // -----------------------------------------------------------------------------
 // Loads all editor images (thing icons, etc) from the program resource archive
 // -----------------------------------------------------------------------------
-void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, string_view path) const
+void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveDir* dir, string_view path) const
 {
 	SImage image;
 
@@ -493,10 +493,9 @@ void MapTextureManager::importEditorImages(MapTexHashMap& map, ArchiveTreeNode* 
 	}
 
 	// Go through subdirs
-	for (unsigned a = 0; a < dir->nChildren(); a++)
+	for (const auto& subdir : dir->subdirs())
 	{
-		auto subdir = dynamic_cast<ArchiveTreeNode*>(dir->child(a));
-		importEditorImages(map, subdir, fmt::format("{}{}/", path, subdir->name()));
+		importEditorImages(map, subdir.get(), fmt::format("{}{}/", path, subdir->name()));
 	}
 }
 
@@ -513,7 +512,7 @@ const MapTextureManager::Texture& MapTextureManager::editorImage(string_view nam
 	{
 		// Load all thing images to textures
 		auto slade_pk3 = App::archiveManager().programResourceArchive();
-		auto dir       = slade_pk3->dir("images");
+		auto dir       = slade_pk3->dirAtPath("images");
 		if (dir)
 			importEditorImages(editor_images_, dir, "");
 

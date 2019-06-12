@@ -1194,9 +1194,6 @@
     <ClCompile Include="..\..\src\UI\SBrush.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Archive\ArchiveTreeNode.cpp">
-      <Filter>Archive</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\StartPage.cpp">
       <Filter>Main Editor\UI</Filter>
     </ClCompile>
@@ -1583,6 +1580,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Scripting\Export\Graphics.cpp">
       <Filter>Scripting\Export</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\ArchiveDir.cpp">
+      <Filter>Archive</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2402,9 +2402,6 @@
     <ClInclude Include="..\..\src\UI\SBrush.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Archive\ArchiveTreeNode.h">
-      <Filter>Archive</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\StartPage.h">
       <Filter>Main Editor\UI</Filter>
     </ClInclude>
@@ -2791,6 +2788,9 @@
     </ClInclude>
     <ClInclude Include="..\..\thirdparty\sol\forward.hpp">
       <Filter>ThirdParty\Sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\ArchiveDir.h">
+      <Filter>Archive</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

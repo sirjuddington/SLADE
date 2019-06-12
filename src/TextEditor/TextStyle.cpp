@@ -767,7 +767,7 @@ void StyleSet::addSet(StyleSet* set)
 bool StyleSet::loadResourceStyles()
 {
 	// Get 'config/text_styles' directory in slade.pk3
-	auto dir = App::archiveManager().programResourceArchive()->dir("config/text_styles");
+	auto dir = App::archiveManager().programResourceArchive()->dirAtPath("config/text_styles");
 
 	// Check it exists
 	if (!dir)

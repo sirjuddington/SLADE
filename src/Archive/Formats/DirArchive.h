@@ -54,13 +54,13 @@ public:
 	bool loadEntryData(ArchiveEntry* entry) override;
 
 	// Dir stuff
-	bool removeDir(string_view path, ArchiveTreeNode* base = nullptr) override;
-	bool renameDir(ArchiveTreeNode* dir, string_view new_name) override;
+	shared_ptr<ArchiveDir> removeDir(string_view path, ArchiveDir* base = nullptr) override;
+	bool                   renameDir(ArchiveDir* dir, string_view new_name) override;
 
 	// Entry addition/removal
-	ArchiveEntry* addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy = false) override;
-	bool          removeEntry(ArchiveEntry* entry) override;
-	bool          renameEntry(ArchiveEntry* entry, string_view name) override;
+	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace) override;
+	bool                     removeEntry(ArchiveEntry* entry) override;
+	bool                     renameEntry(ArchiveEntry* entry, string_view name) override;
 
 	// Detection
 	MapDesc         mapDesc(ArchiveEntry* entry) override;

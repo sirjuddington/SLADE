@@ -89,10 +89,10 @@ public:
 	EntryPanel*           currentArea() const { return cur_area_; }
 	ArchiveEntry*         currentEntry() const;
 	vector<ArchiveEntry*> currentEntries() const;
-	ArchiveTreeNode*      currentDir() const;
+	ArchiveDir*           currentDir() const;
 
 	// UI related
-	bool    openDir(ArchiveTreeNode* dir) const;
+	bool    openDir(const shared_ptr<ArchiveDir>& dir) const;
 	bool    openEntry(ArchiveEntry* entry, bool force = false);
 	bool    openEntryAsText(ArchiveEntry* entry);
 	bool    openEntryAsHex(ArchiveEntry* entry);

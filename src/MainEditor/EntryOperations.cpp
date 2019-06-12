@@ -510,7 +510,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 			auto e = map.head;
 			while (true)
 			{
-				archive.addEntry(e, "", true);
+				archive.addEntry(std::make_shared<ArchiveEntry>(*e), "");
 				e->lock();
 				if (e == map.end)
 					break;
@@ -920,11 +920,12 @@ bool EntryOperations::addToPatchTable(const vector<ArchiveEntry*>& entries)
 		// not have a PNAMES lump; so create an empty one.
 		if (!pnames)
 		{
-			pnames        = new ArchiveEntry("PNAMES.lmp", 4);
-			uint32_t nada = 0;
+			auto new_pnames = std::make_shared<ArchiveEntry>("PNAMES.lmp", 4);
+			pnames          = new_pnames.get();
+			uint32_t nada   = 0;
 			pnames->write(&nada, 4);
 			pnames->seek(0, SEEK_SET);
-			parent->addEntry(pnames);
+			parent->addEntry(new_pnames);
 		}
 	}
 
@@ -1155,8 +1156,8 @@ bool EntryOperations::convertTextures(const vector<ArchiveEntry*>& entries)
 	auto textures = parent->addNewEntry("TEXTURES", parent->entryIndex(entries[0]));
 	if (textures)
 	{
-		bool ok = tx.writeTEXTURESData(textures);
-		EntryType::detectEntryType(textures);
+		bool ok = tx.writeTEXTURESData(textures.get());
+		EntryType::detectEntryType(textures.get());
 		textures->setExtensionByType();
 		return ok;
 	}
@@ -1336,7 +1337,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 
 				// Create a new entry there if it isn't BEHAVIOR
 				if (!prev || prev->upperName() != "BEHAVIOR")
-					prev = entry->parent()->addNewEntry("BEHAVIOR", entry->parent()->entryIndex(entry));
+					prev = entry->parent()->addNewEntry("BEHAVIOR", entry->parent()->entryIndex(entry)).get();
 
 				// Import compiled script
 				prev->importFile(ofile);
@@ -1358,7 +1359,9 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 
 				// If it doesn't exist, create it
 				if (!lib)
-					lib = entry->parent()->addEntry(new ArchiveEntry(fmt::format("{}.o", entry->nameNoExt())), "acs");
+					lib = entry->parent()
+							  ->addEntry(std::make_shared<ArchiveEntry>(fmt::format("{}.o", entry->nameNoExt())), "acs")
+							  .get();
 
 				// Import compiled script
 				lib->importFile(ofile);

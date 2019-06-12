@@ -720,7 +720,7 @@ bool WadArchive::loadEntryData(ArchiveEntry* entry)
 // update namespaces if needed and rename the entry if necessary to be
 // wad-friendly (8 characters max and no file extension)
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
+shared_ptr<ArchiveEntry> WadArchive::addEntry(shared_ptr<ArchiveEntry> entry, unsigned position, ArchiveDir* dir)
 {
 	// Check entry
 	if (!entry)
@@ -730,15 +730,11 @@ ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 	if (isReadOnly())
 		return nullptr;
 
-	// Copy if necessary
-	if (copy)
-		entry = new ArchiveEntry(*entry);
-
 	// Do default entry addition (to root directory)
 	TreelessArchive::addEntry(entry, position);
 
 	// Update namespaces if necessary
-	if (isNamespaceEntry(entry))
+	if (isNamespaceEntry(entry.get()))
 		updateNamespaces();
 
 	return entry;
@@ -749,7 +745,7 @@ ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // If [copy] is true a copy of the entry is added.
 // Returns the added entry or NULL if the entry is invalid
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy)
+shared_ptr<ArchiveEntry> WadArchive::addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
 {
 	// Find requested namespace
 	for (auto& ns : namespaces_)
@@ -757,7 +753,7 @@ ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, string_view add_namespac
 		if (StrUtil::equalCI(ns.name, add_namespace))
 		{
 			// Namespace found, add entry before end marker
-			return addEntry(entry, ns.end_index++, nullptr, copy);
+			return addEntry(entry, ns.end_index++, nullptr);
 		}
 	}
 
@@ -768,12 +764,12 @@ ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, string_view add_namespac
 		{
 			addNewEntry(special_ns.letter + "_start");
 			addNewEntry(special_ns.letter + "_end");
-			return addEntry(entry, add_namespace, copy);
+			return addEntry(entry, add_namespace);
 		}
 	}
 
 	// Unsupported namespace not found, so add to global namespace (ie end of archive)
-	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr);
 }
 
 // -----------------------------------------------------------------------------
@@ -852,7 +848,7 @@ bool WadArchive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 // -----------------------------------------------------------------------------
 // Override of Archive::moveEntry to update namespaces if needed
 // -----------------------------------------------------------------------------
-bool WadArchive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir)
+bool WadArchive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -1190,7 +1186,7 @@ string WadArchive::detectNamespace(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-string WadArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
+string WadArchive::detectNamespace(size_t index, ArchiveDir* dir)
 {
 	// Go through namespaces
 	for (auto& ns : namespaces_)

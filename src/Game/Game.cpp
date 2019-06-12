@@ -388,7 +388,7 @@ void Game::init()
 	}
 
 	// Add game configurations from program resource
-	auto dir = App::archiveManager().programResourceArchive()->dir("config/games");
+	auto dir = App::archiveManager().programResourceArchive()->dirAtPath("config/games");
 	if (dir)
 	{
 		for (auto& entry : dir->entries())
@@ -409,7 +409,7 @@ void Game::init()
 	}
 
 	// Add port configurations from program resource
-	dir = App::archiveManager().programResourceArchive()->dir("config/ports");
+	dir = App::archiveManager().programResourceArchive()->dirAtPath("config/ports");
 	if (dir)
 	{
 		for (auto& entry : dir->entries())

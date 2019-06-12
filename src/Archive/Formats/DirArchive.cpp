@@ -316,18 +316,18 @@ bool DirArchive::loadEntryData(ArchiveEntry* entry)
 // For DirArchive also adds all subdirs and entries to the removed files list,
 // so they are ignored when checking for changes on disk
 // -----------------------------------------------------------------------------
-bool DirArchive::removeDir(string_view path, ArchiveTreeNode* base)
+shared_ptr<ArchiveDir> DirArchive::removeDir(string_view path, ArchiveDir* base)
 {
 	// Abort if read only
 	if (read_only_)
-		return false;
+		return nullptr;
 
 	// Get the dir to remove
-	auto dir = this->dir(path, base);
+	auto dir = dirAtPath(path, base);
 
 	// Check it exists (and that it isn't the root dir)
-	if (!dir || dir == rootDir())
-		return false;
+	if (!dir || dir == rootDir().get())
+		return nullptr;
 
 	// Get all entries in the directory (and subdirectories)
 	vector<ArchiveEntry*> entries;
@@ -348,7 +348,7 @@ bool DirArchive::removeDir(string_view path, ArchiveTreeNode* base)
 // Renames [dir] to [new_name].
 // Returns false if [dir] isn't part of the archive, true otherwise
 // -----------------------------------------------------------------------------
-bool DirArchive::renameDir(ArchiveTreeNode* dir, string_view new_name)
+bool DirArchive::renameDir(ArchiveDir* dir, string_view new_name)
 {
 	auto path = dir->parent()->path();
 	if (separator_ != '/')
@@ -367,17 +367,17 @@ bool DirArchive::renameDir(ArchiveTreeNode* dir, string_view new_name)
 //
 // Namespaces in a folder are treated the same way as a zip archive
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy)
+shared_ptr<ArchiveEntry> DirArchive::addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
 {
 	// Check namespace
 	if (add_namespace.empty() || add_namespace == "global")
-		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr, copy);
+		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr);
 
 	// Get/Create namespace dir
 	auto dir = createDir(StrUtil::lower(add_namespace));
 
 	// Add the entry to the dir
-	return Archive::addEntry(entry, 0xFFFFFFFF, dir, copy);
+	return Archive::addEntry(entry, 0xFFFFFFFF, dir.get());
 }
 
 // -----------------------------------------------------------------------------
@@ -451,7 +451,7 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 	vector<MapDesc> ret;
 
 	// Get the maps directory
-	auto mapdir = dir("maps");
+	auto mapdir = dirAtPath("maps");
 	if (!mapdir)
 		return ret;
 
@@ -492,7 +492,7 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	auto dir = rootDir();
+	auto dir = rootDir().get();
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -502,7 +502,7 @@ ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 	// Check for namespace
 	else if (!options.match_namespace.empty())
 	{
-		dir = this->dir(options.match_namespace);
+		dir = dirAtPath(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
@@ -525,7 +525,7 @@ ArchiveEntry* DirArchive::findFirst(SearchOptions& options)
 ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 {
 	// Init search variables
-	auto dir = rootDir();
+	auto dir = rootDir().get();
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -535,7 +535,7 @@ ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 	// Check for namespace
 	else if (!options.match_namespace.empty())
 	{
-		dir = this->dir(options.match_namespace);
+		dir = dirAtPath(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
@@ -557,7 +557,7 @@ ArchiveEntry* DirArchive::findLast(SearchOptions& options)
 vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options)
 {
 	// Init search variables
-	auto dir = rootDir();
+	auto dir = rootDir().get();
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -567,7 +567,7 @@ vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options)
 	// Check for namespace
 	else if (!options.match_namespace.empty())
 	{
-		dir = this->dir(options.match_namespace);
+		dir = dirAtPath(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
@@ -649,7 +649,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 
 			// Create entry
 			StrUtil::Path fn(name);
-			auto          new_entry = new ArchiveEntry(fn.fileName());
+			auto          new_entry = std::make_shared<ArchiveEntry>(fn.fileName());
 
 			// Setup entry info
 			new_entry->setLoaded(false);
@@ -663,11 +663,10 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 			new_entry->importFile(change.file_path);
 			new_entry->setLoaded(true);
 
-			time_t modtime                      = wxFileModificationTime(change.file_path);
-			file_modification_times_[new_entry] = modtime;
+			file_modification_times_[new_entry.get()] = FileUtil::fileModifiedTime(change.file_path);
 
 			// Detect entry type
-			EntryType::detectEntryType(new_entry);
+			EntryType::detectEntryType(new_entry.get());
 
 			// Unload data if needed
 			if (!archive_load_data)

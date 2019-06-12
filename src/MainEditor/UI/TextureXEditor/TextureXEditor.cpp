@@ -401,7 +401,7 @@ void TextureXEditor::saveChanges()
 		{
 			// If no PNAMES entry exists in the archive, create one
 			int index = archive_->entryIndex(texture_editors_.back()->txEntry()) + 1;
-			pnames_   = archive_->addNewEntry("PNAMES", index);
+			pnames_   = archive_->addNewEntry("PNAMES", index).get();
 			pnames_->setType(EntryType::fromId("pnames"));
 			pnames_->setExtensionByType();
 		}
@@ -821,7 +821,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 
 						// Create dummy patch
 						auto dpatch = App::archiveManager().programResourceArchive()->entryAtPath("s3dummy.lmp");
-						archive->addEntry(dpatch, "patches", true);
+						archive->addEntry(std::make_shared<ArchiveEntry>(*dpatch), "patches");
 						ptt.addPatch("S3DUMMY");
 
 						// Create dummy texture
@@ -838,13 +838,13 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 						txlist.addTexture(std::move(dummytex));
 
 						// Add empty PNAMES entry to archive
-						entry_pnames = archive->addNewEntry("PNAMES");
+						entry_pnames = archive->addNewEntry("PNAMES").get();
 						ptt.writePNAMES(entry_pnames);
 						entry_pnames->setType(EntryType::fromId("pnames"));
 						entry_pnames->setExtensionByType();
 
 						// Add empty TEXTURE1 entry to archive
-						texturex = archive->addNewEntry("TEXTURE1");
+						texturex = archive->addNewEntry("TEXTURE1").get();
 						txlist.writeTEXTUREXData(texturex, ptt);
 						texturex->setType(EntryType::fromId("texturex"));
 						texturex->setExtensionByType();
@@ -856,7 +856,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 						txlist.setFormat(Format::Textures);
 
 						// Add empty TEXTURES entry to archive
-						texturex = archive->addNewEntry("TEXTURES");
+						texturex = archive->addNewEntry("TEXTURES").get();
 						texturex->setType(EntryType::fromId("zdtextures"));
 						texturex->setExtensionByType();
 
@@ -897,15 +897,15 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 					}
 
 					// Copy TEXTUREx entries over to current archive
-					for (auto& a : import_tx)
+					for (auto& entry : import_tx)
 					{
-						auto texturex = archive->addEntry(a, "global", true);
+						auto texturex = archive->addEntry(std::make_shared<ArchiveEntry>(*entry), "global");
 						texturex->setType(EntryType::fromId("texturex"));
 						texturex->setExtensionByType();
 					}
 
 					// Copy PNAMES entry over to current archive
-					entry_pnames = archive->addEntry(import_pnames, "global", true);
+					entry_pnames = archive->addEntry(std::make_shared<ArchiveEntry>(*import_pnames), "global").get();
 					entry_pnames->setType(EntryType::fromId("pnames"));
 					entry_pnames->setExtensionByType();
 				}

@@ -115,7 +115,7 @@ string Executables::writePaths()
 // -----------------------------------------------------------------------------
 string Executables::writeExecutables()
 {
-	string ret = "executables\n{{\n";
+	string ret = "executables\n{\n";
 
 	// Write game exes
 	for (auto& exe : game_exes)
@@ -133,7 +133,7 @@ string Executables::writeExecutables()
 		for (auto& config : exe.configs)
 			ret += fmt::format("\t\tconfig \"{}\" = \"{}\";\n", config.first, StrUtil::escapedString(config.second));
 
-		ret += "\t}}\n\n";
+		ret += "\t}\n\n";
 	}
 
 	// Write external exes
@@ -150,10 +150,10 @@ string Executables::writeExecutables()
 		std::replace(path.begin(), path.end(), '\\', '/');
 		ret += fmt::format("\t\tpath = \"{}\";\n", path);
 
-		ret += "\t}}\n\n";
+		ret += "\t}\n\n";
 	}
 
-	ret += "}}\n";
+	ret += "}\n";
 
 	return ret;
 }

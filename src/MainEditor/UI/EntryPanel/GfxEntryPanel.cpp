@@ -428,7 +428,7 @@ bool GfxEntryPanel::extractAll() const
 			if (newimg == nullptr)
 				return false;
 			SIFormat::getFormat("png")->saveImage(*image(), newimg->data(), &gfx_canvas_->palette());
-			EntryType::detectEntryType(newimg);
+			EntryType::detectEntryType(newimg.get());
 			pos++;
 		}
 	}

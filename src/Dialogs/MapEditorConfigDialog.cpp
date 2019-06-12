@@ -623,8 +623,8 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 		if (archive_->formatId() == "wad")
 		{
 			// Create new (empty) map at the end of the wad
-			ArchiveEntry* head = archive_->addNewEntry(mapname.ToStdString());
-			ArchiveEntry* end  = nullptr;
+			shared_ptr<ArchiveEntry> head = archive_->addNewEntry(mapname.ToStdString());
+			shared_ptr<ArchiveEntry> end;
 
 			if (map_format == MapFormat::UDMF)
 			{
@@ -664,8 +664,8 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			Archive* wad = new WadArchive();
 
 			// Create new (empty) map at the end of the wad
-			ArchiveEntry* head = wad->addNewEntry(mapname.ToStdString());
-			ArchiveEntry* end  = nullptr;
+			shared_ptr<ArchiveEntry> head = wad->addNewEntry(mapname.ToStdString());
+			shared_ptr<ArchiveEntry> end;
 
 			if (map_format == MapFormat::UDMF)
 			{
@@ -694,8 +694,8 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			}
 
 			// Add new map entry to the maps dir
-			ArchiveEntry* mapentry = archive_->addNewEntry(mapname.ToStdString() + ".wad", "maps");
-			MemChunk      mc;
+			auto     mapentry = archive_->addNewEntry(mapname.ToStdString() + ".wad", "maps");
+			MemChunk mc;
 			wad->write(mc);
 			mapentry->importMemChunk(mc);
 

@@ -3,7 +3,7 @@
 #include "PropertyList/Property.h"
 #include "Tree.h"
 
-class ArchiveTreeNode;
+class ArchiveDir;
 class Parser;
 class Tokenizer;
 
@@ -11,10 +11,10 @@ class ParseTreeNode : public STreeNode
 {
 public:
 	ParseTreeNode(
-		ParseTreeNode*   parent      = nullptr,
-		Parser*          parser      = nullptr,
-		ArchiveTreeNode* archive_dir = nullptr,
-		string_view      type        = "");
+		ParseTreeNode* parent      = nullptr,
+		Parser*        parser      = nullptr,
+		ArchiveDir*    archive_dir = nullptr,
+		string_view    type        = "");
 	~ParseTreeNode() = default;
 
 	const string& name() const override { return name_; }
@@ -63,7 +63,7 @@ private:
 	string           type_;
 	vector<Property> values_;
 	Parser*          parser_      = nullptr;
-	ArchiveTreeNode* archive_dir_ = nullptr;
+	ArchiveDir*      archive_dir_ = nullptr;
 
 	void logError(const Tokenizer& tz, string_view error) const;
 	bool parsePreprocessor(Tokenizer& tz);
@@ -73,7 +73,7 @@ private:
 class Parser
 {
 public:
-	Parser(ArchiveTreeNode* dir_root = nullptr);
+	Parser(ArchiveDir* dir_root = nullptr);
 	~Parser() = default;
 
 	ParseTreeNode* parseTreeRoot() const { return pt_root_.get(); }
@@ -91,6 +91,6 @@ public:
 private:
 	unique_ptr<ParseTreeNode> pt_root_;
 	vector<string>            defines_;
-	ArchiveTreeNode*          archive_dir_root_ = nullptr;
+	ArchiveDir*               archive_dir_root_ = nullptr;
 	bool                      case_sensitive_   = false;
 };

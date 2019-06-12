@@ -69,7 +69,7 @@ public:
 	bool doUndo() override
 	{
 		// Get entry parent dir
-		auto dir = archive_->dir(entry_path_);
+		auto dir = archive_->dirAtPath(entry_path_);
 		if (dir)
 		{
 			// Rename entry
@@ -83,7 +83,7 @@ public:
 	bool doRedo() override
 	{
 		// Get entry parent dir
-		auto dir = archive_->dir(entry_path_);
+		auto dir = archive_->dirAtPath(entry_path_);
 		if (dir)
 		{
 			// Rename entry
@@ -105,18 +105,18 @@ private:
 class DirRenameUS : public UndoStep
 {
 public:
-	DirRenameUS(ArchiveTreeNode* dir, string_view new_name) :
+	DirRenameUS(ArchiveDir* dir, string_view new_name) :
 		archive_{ dir->archive() },
-		path_{ dir->parent()->path().append(new_name) },
 		old_name_{ dir->name() },
 		new_name_{ new_name },
 		prev_state_{ dir->dirEntry()->state() }
 	{
+		path_ = fmt::format("{}/{}", dir->path(false), new_name);
 	}
 
 	void swapNames()
 	{
-		auto dir = archive_->dir(path_);
+		auto dir = archive_->dirAtPath(path_);
 		archive_->renameDir(dir, old_name_);
 		old_name_ = new_name_;
 		new_name_ = dir->name();
@@ -126,7 +126,7 @@ public:
 	bool doUndo() override
 	{
 		swapNames();
-		archive_->dir(path_)->dirEntry()->setState(prev_state_);
+		archive_->dirAtPath(path_)->dirEntry()->setState(prev_state_);
 		return true;
 	}
 
@@ -147,7 +147,7 @@ private:
 class EntrySwapUS : public UndoStep
 {
 public:
-	EntrySwapUS(ArchiveTreeNode* dir, unsigned index1, unsigned index2) :
+	EntrySwapUS(ArchiveDir* dir, unsigned index1, unsigned index2) :
 		archive_{ dir->archive() },
 		path_{ dir->path() },
 		index1_{ index1 },
@@ -158,7 +158,7 @@ public:
 	bool doSwap() const
 	{
 		// Get parent dir
-		auto dir = archive_->dir(path_);
+		auto dir = archive_->dirAtPath(path_);
 		if (dir)
 			return dir->swapEntries(index1_, index2_);
 		return false;
@@ -189,17 +189,17 @@ public:
 	bool deleteEntry() const
 	{
 		// Get parent dir
-		auto dir = archive_->dir(path_);
+		auto dir = archive_->dirAtPath(path_);
 		return dir ? archive_->removeEntry(dir->entryAt(index_)) : false;
 	}
 
 	bool createEntry() const
 	{
 		// Get parent dir
-		auto dir = archive_->dir(path_);
+		auto dir = archive_->dirAtPath(path_);
 		if (dir)
 		{
-			archive_->addEntry(entry_copy_.get(), index_, dir, true);
+			archive_->addEntry(std::make_shared<ArchiveEntry>(*entry_copy_), index_, dir);
 			return true;
 		}
 
@@ -222,7 +222,7 @@ private:
 class DirCreateDeleteUS : public UndoStep
 {
 public:
-	DirCreateDeleteUS(bool created, ArchiveTreeNode* dir) :
+	DirCreateDeleteUS(bool created, ArchiveDir* dir) :
 		created_{ created },
 		archive_{ dir->archive() },
 		path_{ dir->path() }
@@ -231,33 +231,13 @@ public:
 
 		// Backup child entries and subdirs if deleting
 		if (!created)
-		{
-			tree_ = std::make_unique<ArchiveTreeNode>();
-
-			// Get child entries
-			vector<ArchiveEntry*> entries;
-			for (unsigned a = 0; a < dir->numEntries(); a++)
-				entries.push_back(dir->entryAt(a));
-
-			// Get subdirectories
-			vector<ArchiveTreeNode*> subdirs;
-			for (unsigned a = 0; a < dir->nChildren(); a++)
-				subdirs.push_back(dynamic_cast<ArchiveTreeNode*>(dir->child(a)));
-
-			// Copy entries
-			for (auto& entry : entries)
-				tree_->addEntry(new ArchiveEntry(*entry));
-
-			// Copy dirs
-			for (auto& subdir : subdirs)
-				tree_->addChild(subdir->clone());
-		}
+			tree_ = dir->clone();
 	}
 
 	bool doUndo() override
 	{
 		if (created_)
-			return archive_->removeDir(path_);
+			return archive_->removeDir(path_) != nullptr;
 		else
 		{
 			// Create directory
@@ -265,7 +245,7 @@ public:
 
 			// Restore entries/subdirs if needed
 			if (dir && tree_)
-				dir->merge(tree_.get(), 0, ArchiveEntry::State::Unmodified);
+				ArchiveDir::merge(dir, tree_.get(), 0, ArchiveEntry::State::Unmodified);
 
 			if (dir)
 				dir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
@@ -277,16 +257,16 @@ public:
 	bool doRedo() override
 	{
 		if (!created_)
-			return archive_->removeDir(path_);
+			return archive_->removeDir(path_) != nullptr;
 		else
 			return archive_->createDir(path_) != nullptr;
 	}
 
 private:
-	bool                        created_;
-	Archive*                    archive_;
-	string                      path_;
-	unique_ptr<ArchiveTreeNode> tree_;
+	bool                   created_;
+	Archive*               archive_;
+	string                 path_;
+	shared_ptr<ArchiveDir> tree_;
 };
 
 
@@ -306,7 +286,7 @@ Archive::Archive(string_view format) :
 	on_disk_{ false },
 	read_only_{ false },
 	modified_{ true },
-	dir_root_{ nullptr, this }
+	dir_root_{ new ArchiveDir("", nullptr, this) }
 {
 }
 
@@ -477,11 +457,11 @@ bool Archive::checkEntry(ArchiveEntry* entry)
 // Returns the entry matching [name] within [dir].
 // If no dir is given the root dir is used
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::entry(string_view name, bool cut_ext, ArchiveTreeNode* dir)
+ArchiveEntry* Archive::entry(string_view name, bool cut_ext, ArchiveDir* dir)
 {
 	// Check if dir was given
 	if (!dir)
-		dir = &dir_root_; // None given, use root
+		dir = dir_root_.get(); // None given, use root
 
 	return dir->entry(name, cut_ext);
 }
@@ -491,11 +471,11 @@ ArchiveEntry* Archive::entry(string_view name, bool cut_ext, ArchiveTreeNode* di
 // If no dir is given the  root dir is used.
 // Returns null if [index] is out of bounds
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::entryAt(unsigned index, ArchiveTreeNode* dir)
+ArchiveEntry* Archive::entryAt(unsigned index, ArchiveDir* dir)
 {
 	// Check if dir was given
 	if (!dir)
-		dir = &dir_root_; // None given, use root
+		dir = dir_root_.get(); // None given, use root
 
 	return dir->entryAt(index);
 }
@@ -505,11 +485,11 @@ ArchiveEntry* Archive::entryAt(unsigned index, ArchiveTreeNode* dir)
 // If no dir is given the root dir is used.
 // Returns -1 if [entry] doesn't exist within [dir]
 // -----------------------------------------------------------------------------
-int Archive::entryIndex(ArchiveEntry* entry, ArchiveTreeNode* dir)
+int Archive::entryIndex(ArchiveEntry* entry, ArchiveDir* dir)
 {
 	// Check if dir was given
 	if (!dir)
-		dir = &dir_root_; // None given, use root
+		dir = dir_root_.get(); // None given, use root
 
 	return dir->entryIndex(entry);
 }
@@ -520,15 +500,15 @@ int Archive::entryIndex(ArchiveEntry* entry, ArchiveTreeNode* dir)
 // -----------------------------------------------------------------------------
 ArchiveEntry* Archive::entryAtPath(string_view path)
 {
-	// Get path as wxFileName for processing
+	// Get [path] as Path for processing
 	StrUtil::Path fn(StrUtil::startsWith(path, '/') ? path.substr(1) : path);
 
 	// Get directory from path
-	ArchiveTreeNode* dir;
+	ArchiveDir* dir;
 	if (fn.path(false).empty())
-		dir = &dir_root_;
+		dir = dir_root_.get();
 	else
-		dir = this->dir(fn.path(true));
+		dir = dirAtPath(fn.path(true));
 
 	// If dir doesn't exist, return nullptr
 	if (!dir)
@@ -548,11 +528,11 @@ shared_ptr<ArchiveEntry> Archive::entryAtPathShared(string_view path)
 	StrUtil::Path fn(StrUtil::startsWith(path, '/') ? path.substr(1) : path);
 
 	// Get directory from path
-	ArchiveTreeNode* dir;
+	ArchiveDir* dir;
 	if (fn.path(false).empty())
-		dir = &dir_root_;
+		dir = dir_root_.get();
 	else
-		dir = this->dir(fn.path(true));
+		dir = dirAtPath(fn.path(false));
 
 	// If dir doesn't exist, return nullptr
 	if (!dir)
@@ -650,7 +630,7 @@ bool Archive::save(string_view filename)
 // -----------------------------------------------------------------------------
 unsigned Archive::numEntries()
 {
-	return dir_root_.numEntries(true);
+	return dir_root_->numEntries(true);
 }
 
 // -----------------------------------------------------------------------------
@@ -662,7 +642,7 @@ void Archive::close()
 	announce("closing");
 
 	// Clear the root dir
-	dir_root_.clear();
+	dir_root_->clear();
 
 	// Unlock parent entry if it exists
 	if (parent_)
@@ -702,45 +682,33 @@ void Archive::entryStateChanged(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Adds the directory structure starting from [start] to [list]
 // -----------------------------------------------------------------------------
-void Archive::putEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveTreeNode* start)
+void Archive::putEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveDir* start) const
 {
 	// If no start dir is specified, use the root dir
 	if (!start)
-		start = &dir_root_;
+		start = dir_root_.get();
 
-	// Add the directory entry to the list if it isn't the root dir
-	if (start != &dir_root_)
-		list.push_back(start->dir_entry_.get());
+	// Get tree a flat list of shared pointers
+	vector<shared_ptr<ArchiveEntry>> shared_list;
+	ArchiveDir::entryTreeAsList(start, shared_list);
 
-	// Add all entries to the list
-	for (unsigned a = 0; a < start->numEntries(); a++)
-		list.push_back(start->entryAt(a));
-
-	// Go through subdirectories and add them to the list
-	for (unsigned a = 0; a < start->nChildren(); a++)
-		putEntryTreeAsList(list, (ArchiveTreeNode*)start->child(a));
+	// Build resulting list of raw pointers
+	list.reserve(shared_list.size());
+	for (const auto& entry : shared_list)
+		list.emplace_back(entry.get());
 }
 
 // -----------------------------------------------------------------------------
 // Adds the directory structure starting from [start] to [list]
 // -----------------------------------------------------------------------------
-void Archive::putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, ArchiveTreeNode* start)
+void Archive::putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, ArchiveDir* start) const
 {
 	// If no start dir is specified, use the root dir
 	if (!start)
-		start = &dir_root_;
+		start = dir_root_.get();
 
-	// Add the directory entry to the list if it isn't the root dir
-	if (start != &dir_root_)
-		list.push_back(start->dir_entry_);
-
-	// Add all entries to the list
-	for (unsigned a = 0; a < start->numEntries(); a++)
-		list.push_back(start->sharedEntryAt(a));
-
-	// Go through subdirectories and add them to the list
-	for (unsigned a = 0; a < start->nChildren(); a++)
-		putEntryTreeAsList(list, (ArchiveTreeNode*)start->child(a));
+	// Build list from [start]
+	ArchiveDir::entryTreeAsList(start, list);
 }
 
 // -----------------------------------------------------------------------------
@@ -748,7 +716,7 @@ void Archive::putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, Archive
 // [position] in [base] directory.
 // If [base] is null, the root directory is used
 // -----------------------------------------------------------------------------
-bool Archive::paste(ArchiveTreeNode* tree, unsigned position, ArchiveTreeNode* base)
+bool Archive::paste(ArchiveDir* tree, unsigned position, shared_ptr<ArchiveDir> base)
 {
 	// Check tree was given to paste
 	if (!tree)
@@ -756,34 +724,26 @@ bool Archive::paste(ArchiveTreeNode* tree, unsigned position, ArchiveTreeNode* b
 
 	// Paste to root dir if none specified
 	if (!base)
-		base = &dir_root_;
+		base = dir_root_;
 
 	// Set modified
 	setModified(true);
 
 	// Just do a merge
-	return base->merge(tree, position);
+	return ArchiveDir::merge(base, tree, position);
 }
 
-// -----------------------------------------------------------------------------
-// Gets the directory matching [path], starting from [base].
-// If [base] is null, the root directory is used.
-// Returns null if the requested directory does not exist
-// -----------------------------------------------------------------------------
-ArchiveTreeNode* Archive::dir(string_view path, ArchiveTreeNode* base)
+ // -----------------------------------------------------------------------------
+ // Gets the directory matching [path], starting from [base].
+ // If [base] is null, the root directory is used.
+ // Returns null if the requested directory does not exist
+ // -----------------------------------------------------------------------------
+ArchiveDir* Archive::dirAtPath(string_view path, ArchiveDir* base) const
 {
-	// Check if base dir was given
 	if (!base)
-	{
-		// None given, use root
-		base = &dir_root_;
+		base = dir_root_.get();
 
-		// If empty directory, just return the root
-		if (path == "/" || path.empty())
-			return &dir_root_;
-	}
-
-	return (ArchiveTreeNode*)base->child(StrUtil::startsWith(path, '/') ? path.substr(1) : path);
+	return ArchiveDir::subdirAtPath(base, path);
 }
 
 // -----------------------------------------------------------------------------
@@ -792,32 +752,32 @@ ArchiveTreeNode* Archive::dir(string_view path, ArchiveTreeNode* base)
 // Returns the created directory, or if the directory requested to be created
 // already exists, it will be returned
 // -----------------------------------------------------------------------------
-ArchiveTreeNode* Archive::createDir(string_view path, ArchiveTreeNode* base)
+shared_ptr<ArchiveDir> Archive::createDir(string_view path, shared_ptr<ArchiveDir> base)
 {
 	// Abort if read only
 	if (read_only_)
-		return &dir_root_;
+		return dir_root_;
 
 	// If no base dir specified, set it to root
 	if (!base)
-		base = &dir_root_;
+		base = dir_root_;
 
 	if (path.empty())
 		return base;
 
 	// Create the directory
-	auto dir = (ArchiveTreeNode*)((STreeNode*)base)->addChild(path);
+	auto dir = ArchiveDir::getOrCreateSubdir(base, path);
 
 	// Record undo step
 	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(std::make_unique<DirCreateDeleteUS>(true, dir));
+		UndoRedo::currentManager()->recordUndoStep(std::make_unique<DirCreateDeleteUS>(true, dir.get()));
 
 	// Set the archive state to modified
 	setModified(true);
 
 	// Announce
 	MemChunk  mc;
-	wxUIntPtr ptr = wxPtrToUInt(dir);
+	wxUIntPtr ptr = wxPtrToUInt(dir.get());
 	mc.write(&ptr, sizeof(wxUIntPtr));
 	announce("directory_added", mc);
 
@@ -827,43 +787,39 @@ ArchiveTreeNode* Archive::createDir(string_view path, ArchiveTreeNode* base)
 // -----------------------------------------------------------------------------
 // Deletes the directory matching [path], starting from [base].
 // If [base] is null, the root directory is used.
-// Returns false if the directory does not exist, true otherwise
+// Returns the directory that was removed
 // -----------------------------------------------------------------------------
-bool Archive::removeDir(string_view path, ArchiveTreeNode* base)
+shared_ptr<ArchiveDir> Archive::removeDir(string_view path, ArchiveDir* base)
 {
 	// Abort if read only
 	if (read_only_)
-		return false;
+		return nullptr;
 
 	// Get the dir to remove
-	auto dir = this->dir(path, base);
+	auto dir = dirAtPath(path, base);
 
 	// Check it exists (and that it isn't the root dir)
-	if (!dir || dir == &dir_root_)
-		return false;
+	if (!dir || dir == dir_root_.get())
+		return nullptr;
 
 	// Record undo step
 	if (UndoRedo::currentlyRecording())
 		UndoRedo::currentManager()->recordUndoStep(std::make_unique<DirCreateDeleteUS>(false, dir));
 
-	// Remove the directory from its parent
-	if (dir->parent())
-		dir->parent()->removeChild(dir);
-
-	// Delete the directory
-	delete dir;
+	// Remove the dir from its parent
+	auto removed = dir->parent_dir_.lock()->removeSubdir(dir->name());
 
 	// Set the archive state to modified
 	setModified(true);
 
-	return true;
+	return removed;
 }
 
 // -----------------------------------------------------------------------------
 // Renames [dir] to [new_name].
 // Returns false if [dir] isn't part of the archive, true otherwise
 // -----------------------------------------------------------------------------
-bool Archive::renameDir(ArchiveTreeNode* dir, string_view new_name)
+bool Archive::renameDir(ArchiveDir* dir, string_view new_name)
 {
 	// Abort if read only
 	if (read_only_)
@@ -905,7 +861,7 @@ bool Archive::renameDir(ArchiveTreeNode* dir, string_view new_name)
 // Returns the added entry, or null if [entry] is invalid or the archive is
 // read-only
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
+shared_ptr<ArchiveEntry> Archive::addEntry(shared_ptr<ArchiveEntry> entry, unsigned position, ArchiveDir* dir)
 {
 	// Abort if read only
 	if (read_only_)
@@ -917,11 +873,7 @@ ArchiveEntry* Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveT
 
 	// If no dir given, set it to the root dir
 	if (!dir)
-		dir = &dir_root_;
-
-	// Make a copy of the entry to add if needed
-	if (copy)
-		entry = new ArchiveEntry(*entry);
+		dir = dir_root_.get();
 
 	// Add the entry
 	dir->addEntry(entry, position);
@@ -933,14 +885,14 @@ ArchiveEntry* Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveT
 
 	// Announce
 	MemChunk  mc;
-	wxUIntPtr ptr = wxPtrToUInt(entry);
+	wxUIntPtr ptr = wxPtrToUInt(entry.get());
 	mc.write(&position, sizeof(uint32_t));
 	mc.write(&ptr, sizeof(wxUIntPtr));
 	announce("entry_added", mc);
 
 	// Create undo step
 	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntryCreateDeleteUS>(true, entry));
+		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntryCreateDeleteUS>(true, entry.get()));
 
 	return entry;
 }
@@ -951,14 +903,14 @@ ArchiveEntry* Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveT
 // If [position] is out of bounds, it is added tothe end of the dir.
 // Return false if the entry is invalid, true otherwise
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::addNewEntry(string_view name, unsigned position, ArchiveTreeNode* dir)
+shared_ptr<ArchiveEntry> Archive::addNewEntry(string_view name, unsigned position, ArchiveDir* dir)
 {
 	// Abort if read only
 	if (read_only_)
 		return nullptr;
 
 	// Create the new entry
-	auto entry = new ArchiveEntry(name);
+	auto entry = std::make_shared<ArchiveEntry>(name);
 
 	// Add it to the archive
 	addEntry(entry, position, dir);
@@ -970,14 +922,14 @@ ArchiveEntry* Archive::addNewEntry(string_view name, unsigned position, ArchiveT
 // -----------------------------------------------------------------------------
 // Creates a new entry with [name] and adds it to [namespace] within the archive
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::addNewEntry(string_view name, string_view add_namespace)
+shared_ptr<ArchiveEntry> Archive::addNewEntry(string_view name, string_view add_namespace)
 {
 	// Abort if read only
 	if (read_only_)
 		return nullptr;
 
 	// Create the new entry
-	auto entry = new ArchiveEntry(name);
+	auto entry = std::make_shared<ArchiveEntry>(name);
 
 	// Add it to the archive
 	addEntry(entry, add_namespace);
@@ -1047,11 +999,11 @@ bool Archive::removeEntry(ArchiveEntry* entry)
 // If [dir] is not specified, the root dir is used.
 // Returns true if the swap succeeded, false otherwise
 // -----------------------------------------------------------------------------
-bool Archive::swapEntries(unsigned index1, unsigned index2, ArchiveTreeNode* dir)
+bool Archive::swapEntries(unsigned index1, unsigned index2, ArchiveDir* dir)
 {
 	// Get directory
 	if (!dir)
-		dir = &dir_root_;
+		dir = dir_root_.get();
 
 	// Check if either entry is locked
 	if (dir->entryAt(index1)->isLocked() || dir->entryAt(index2)->isLocked())
@@ -1139,7 +1091,7 @@ bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 // If [dir] is null, the root dir is used.
 // Returns false if the entry was invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir)
+bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 {
 	// Abort if read only
 	if (read_only_)
@@ -1162,14 +1114,14 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode*
 
 	// If no destination dir specified, use root
 	if (!dir)
-		dir = &dir_root_;
+		dir = dir_root_.get();
 
 	// Remove the entry from its current dir
 	auto sptr = dir->sharedEntryAt(dir->entryIndex(entry)); // Get a shared pointer so it isn't deleted
 	removeEntry(entry);
 
 	// Add it to the destination dir
-	addEntry(entry, position, dir);
+	addEntry(sptr, position, dir);
 
 	// Set modified
 	setModified(true);
@@ -1198,7 +1150,7 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name)
 
 	// Check for directory
 	if (entry->type() == EntryType::folderType())
-		return renameDir(dir(entry->path(true)), name);
+		return renameDir(dirAtPath(entry->path(true)), name);
 
 	// Announce (before actually renaming in case old name is still needed)
 	MemChunk  mc;
@@ -1250,7 +1202,7 @@ bool Archive::importDir(string_view directory)
 
 		// Add the entry
 		auto dir   = createDir(edir);
-		auto entry = addNewEntry(ename, dir->numEntries() + 1, dir);
+		auto entry = addNewEntry(ename, dir->numEntries() + 1, dir.get());
 
 		// Load data
 		entry->importFile(file);
@@ -1297,7 +1249,7 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace of the entry at [index] within [dir]
 // -----------------------------------------------------------------------------
-string Archive::detectNamespace(size_t index, ArchiveTreeNode* dir)
+string Archive::detectNamespace(size_t index, ArchiveDir* dir)
 {
 	if (dir && index < dir->numEntries())
 		return detectNamespace(dir->entryAt(index));
@@ -1315,13 +1267,13 @@ string Archive::detectNamespace(ArchiveEntry* entry)
 		return "global";
 
 	// If the entry is in the root dir, it's in the global namespace
-	if (entry->parentDir() == &dir_root_)
+	if (entry->parentDir() == dir_root_.get())
 		return "global";
 
 	// Get the entry's *first* parent directory after root (ie <root>/namespace/)
 	auto dir = entry->parentDir();
-	while (dir && dir->parent() != &dir_root_)
-		dir = (ArchiveTreeNode*)dir->parent();
+	while (dir && dir->parent() != dir_root_)
+		dir = dir->parent().get();
 
 	// Namespace is the directory's name (in lowercase)
 	if (dir)
@@ -1339,7 +1291,7 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 	// Init search variables
 	auto dir = options.dir;
 	if (!dir)
-		dir = &dir_root_;
+		dir = dir_root_.get();
 	StrUtil::upperIP(options.match_name); // Force case-insensitive
 
 	// Begin search
@@ -1384,10 +1336,10 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 	// Search subdirectories (if needed)
 	if (options.search_subdirs)
 	{
-		for (unsigned a = 0; a < dir->nChildren(); a++)
+		for (unsigned a = 0; a < dir->numSubdirs(); a++)
 		{
 			auto opt   = options;
-			opt.dir    = (ArchiveTreeNode*)dir->child(a);
+			opt.dir    = dir->subdirAt(a).get();
 			auto match = findFirst(opt);
 
 			// If a match was found in this subdir, return it
@@ -1409,7 +1361,7 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 	// Init search variables
 	auto dir = options.dir;
 	if (!dir)
-		dir = &dir_root_;
+		dir = dir_root_.get();
 	StrUtil::upperIP(options.match_name); // Force case-insensitive
 
 	// Begin search
@@ -1454,10 +1406,10 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 	// Search subdirectories (if needed) (bottom-up)
 	if (options.search_subdirs)
 	{
-		for (int a = dir->nChildren() - 1; a >= 0; a--)
+		for (int a = dir->numSubdirs() - 1; a >= 0; a--)
 		{
 			auto opt   = options;
-			opt.dir    = (ArchiveTreeNode*)dir->child(a);
+			opt.dir    = dir->subdirAt(a).get();
 			auto match = findLast(opt);
 
 			// If a match was found in this subdir, return it
@@ -1478,7 +1430,7 @@ vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
 	// Init search variables
 	auto dir = options.dir;
 	if (!dir)
-		dir = &dir_root_;
+		dir = dir_root_.get();
 	vector<ArchiveEntry*> ret;
 	StrUtil::upperIP(options.match_name); // Force case-insensitive
 
@@ -1524,10 +1476,10 @@ vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
 	// Search subdirectories (if needed)
 	if (options.search_subdirs)
 	{
-		for (unsigned a = 0; a < dir->nChildren(); a++)
+		for (unsigned a = 0; a < dir->numSubdirs(); a++)
 		{
 			auto opt = options;
-			opt.dir  = (ArchiveTreeNode*)dir->child(a);
+			opt.dir  = dir->subdirAt(a).get();
 
 			// Add any matches to the list
 			auto vec = findAll(opt);
@@ -1543,11 +1495,11 @@ vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
 // Returns a list of modified entries, and set archive to unmodified status if
 // the list is empty
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> Archive::findModifiedEntries(ArchiveTreeNode* dir)
+vector<ArchiveEntry*> Archive::findModifiedEntries(ArchiveDir* dir)
 {
 	// Init search variables
 	if (dir == nullptr)
-		dir = &dir_root_;
+		dir = dir_root_.get();
 	vector<ArchiveEntry*> ret;
 
 	// Search entries
@@ -1561,9 +1513,9 @@ vector<ArchiveEntry*> Archive::findModifiedEntries(ArchiveTreeNode* dir)
 	}
 
 	// Search subdirectories
-	for (unsigned a = 0; a < dir->nChildren(); a++)
+	for (unsigned a = 0; a < dir->numSubdirs(); a++)
 	{
-		auto vec = findModifiedEntries((ArchiveTreeNode*)dir->child(a));
+		auto vec = findModifiedEntries(dir->subdirAt(a).get());
 		ret.insert(ret.end(), vec.begin(), vec.end());
 	}
 
@@ -1674,7 +1626,7 @@ bool Archive::loadFormats(MemChunk& mc)
 // Pastes all entries in [tree] and its subdirectories straight into the root
 // dir at [position]
 // -----------------------------------------------------------------------------
-bool TreelessArchive::paste(ArchiveTreeNode* tree, unsigned position, ArchiveTreeNode* base)
+bool TreelessArchive::paste(ArchiveDir* tree, unsigned position, shared_ptr<ArchiveDir> base)
 {
 	// Check tree was given to paste
 	if (!tree)
@@ -1684,7 +1636,7 @@ bool TreelessArchive::paste(ArchiveTreeNode* tree, unsigned position, ArchiveTre
 	for (unsigned a = 0; a < tree->numEntries(); a++)
 	{
 		// Add entry to archive
-		addEntry(tree->entryAt(a), position, nullptr, true);
+		addEntry(std::make_shared<ArchiveEntry>(*tree->entryAt(a)), position, nullptr);
 
 		// Update [position] if needed
 		if (position < 0xFFFFFFFF)
@@ -1692,11 +1644,8 @@ bool TreelessArchive::paste(ArchiveTreeNode* tree, unsigned position, ArchiveTre
 	}
 
 	// Go through paste tree subdirs and paste their entries recursively
-	for (unsigned a = 0; a < tree->nChildren(); a++)
-	{
-		auto dir = (ArchiveTreeNode*)tree->child(a);
-		paste(dir, position);
-	}
+	for (unsigned a = 0; a < tree->numSubdirs(); a++)
+		paste(tree->subdirAt(a).get(), position);
 
 	// Set modified
 	setModified(true);

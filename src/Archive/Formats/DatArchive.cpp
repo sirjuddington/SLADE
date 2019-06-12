@@ -218,7 +218,7 @@ string DatArchive::detectNamespace(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-string DatArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
+string DatArchive::detectNamespace(size_t index, ArchiveDir* dir)
 {
 	// Textures
 	if (index > (unsigned)walls_[0] && index < (unsigned)walls_[1])
@@ -268,7 +268,7 @@ void DatArchive::updateNamespaces()
 // Override of Archive::addEntry to force entry addition to the root directory,
 // and update namespaces if needed
 // -----------------------------------------------------------------------------
-ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
+shared_ptr<ArchiveEntry> DatArchive::addEntry(shared_ptr<ArchiveEntry> entry, unsigned position, ArchiveDir* dir)
 {
 	// Check entry
 	if (!entry)
@@ -278,15 +278,11 @@ ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 	if (isReadOnly())
 		return nullptr;
 
-	// Copy if necessary
-	if (copy)
-		entry = new ArchiveEntry(*entry);
-
 	// Do default entry addition (to root directory)
 	TreelessArchive::addEntry(entry, position);
 
 	// Update namespaces if necessary
-	if (isNamespaceEntry(entry))
+	if (isNamespaceEntry(entry.get()))
 		updateNamespaces();
 
 	return entry;
@@ -297,44 +293,44 @@ ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // is true a copy of the entry is added.
 // Returns the added entry or NULL if the entry is invalid
 // -----------------------------------------------------------------------------
-ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy)
+shared_ptr<ArchiveEntry> DatArchive::addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
 {
 	// Find requested namespace, only three non-global namespaces are valid in this format
 	if (StrUtil::equalCI(add_namespace, "textures"))
 	{
 		if (walls_[1] >= 0)
-			return addEntry(entry, walls_[1], nullptr, copy);
+			return addEntry(entry, walls_[1], nullptr);
 		else
 		{
 			addNewEntry("startwalls");
 			addNewEntry("endwalls");
-			return addEntry(entry, add_namespace, copy);
+			return addEntry(entry, add_namespace);
 		}
 	}
 	else if (StrUtil::equalCI(add_namespace, "flats"))
 	{
 		if (flats_[1] >= 0)
-			return addEntry(entry, flats_[1], nullptr, copy);
+			return addEntry(entry, flats_[1], nullptr);
 		else
 		{
 			addNewEntry("startflats");
 			addNewEntry("endflats");
-			return addEntry(entry, add_namespace, copy);
+			return addEntry(entry, add_namespace);
 		}
 	}
 	else if (StrUtil::equalCI(add_namespace, "sprites"))
 	{
 		if (sprites_[1] >= 0)
-			return addEntry(entry, sprites_[1], nullptr, copy);
+			return addEntry(entry, sprites_[1], nullptr);
 		else
 		{
 			addNewEntry("startsprites");
 			addNewEntry("endmonsters");
-			return addEntry(entry, add_namespace, copy);
+			return addEntry(entry, add_namespace);
 		}
 	}
 	else
-		return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
+		return addEntry(entry, 0xFFFFFFFF, nullptr);
 }
 
 // -----------------------------------------------------------------------------
@@ -415,7 +411,7 @@ bool DatArchive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 // -----------------------------------------------------------------------------
 // Override of Archive::moveEntry to update namespaces if needed
 // -----------------------------------------------------------------------------
-bool DatArchive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir)
+bool DatArchive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 {
 	// Check entry
 	if (!checkEntry(entry))

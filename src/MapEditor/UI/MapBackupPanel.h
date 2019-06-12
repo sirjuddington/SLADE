@@ -3,7 +3,7 @@
 class MapPreviewCanvas;
 class Archive;
 class ZipArchive;
-class ArchiveTreeNode;
+class ArchiveDir;
 class ListView;
 
 class MapBackupPanel : public wxPanel
@@ -22,5 +22,5 @@ private:
 	ListView*              list_backups_ = nullptr;
 	unique_ptr<ZipArchive> archive_backups_;
 	unique_ptr<Archive>    archive_mapdata_;
-	ArchiveTreeNode*       dir_current_ = nullptr;
+	ArchiveDir*            dir_current_ = nullptr;
 };

@@ -80,8 +80,8 @@ bool MapBackupPanel::loadBackups(wxString archive_name, const wxString& map_name
 		return false;
 
 	// Get backup dir for map
-	dir_current_ = archive_backups_->dir(map_name.ToStdString());
-	if (dir_current_ == archive_backups_->rootDir() || !dir_current_)
+	dir_current_ = archive_backups_->dirAtPath(map_name.ToStdString());
+	if (dir_current_ == archive_backups_->rootDir().get() || !dir_current_)
 		return false;
 
 	// Populate backups list
@@ -90,9 +90,9 @@ bool MapBackupPanel::loadBackups(wxString archive_name, const wxString& map_name
 	list_backups_->AppendColumn("Time");
 
 	int index = 0;
-	for (int a = dir_current_->nChildren() - 1; a >= 0; a--)
+	for (int a = dir_current_->numSubdirs() - 1; a >= 0; a--)
 	{
-		wxString      timestamp = dir_current_->child(a)->name();
+		wxString      timestamp = dir_current_->subdirAt(a)->name();
 		wxArrayString cols;
 
 		// Date
@@ -127,9 +127,9 @@ void MapBackupPanel::updateMapPreview()
 
 	// Load map data to temporary wad
 	archive_mapdata_ = std::make_unique<WadArchive>();
-	auto dir         = dynamic_cast<ArchiveTreeNode*>(dir_current_->child(selection));
+	auto dir         = dir_current_->subdirAt(selection);
 	for (unsigned a = 0; a < dir->numEntries(); a++)
-		archive_mapdata_->addEntry(dir->entryAt(a), "", true);
+		archive_mapdata_->addEntry(std::make_shared<ArchiveEntry>(*dir->entryAt(a)), "");
 
 	// Open map preview
 	auto maps = archive_mapdata_->detectMaps();

@@ -1001,7 +1001,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 // Override of Archive::addEntry to force entry addition to the root directory,
 // and update namespaces if needed
 // -----------------------------------------------------------------------------
-ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
+shared_ptr<ArchiveEntry> WolfArchive::addEntry(shared_ptr<ArchiveEntry> entry, unsigned position, ArchiveDir* dir)
 {
 	// Check entry
 	if (!entry)
@@ -1010,10 +1010,6 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, unsigned position, Arch
 	// Check if read-only
 	if (isReadOnly())
 		return nullptr;
-
-	// Copy if necessary
-	if (copy)
-		entry = new ArchiveEntry(*entry);
 
 	// Do default entry addition (to root directory)
 	Archive::addEntry(entry, position);
@@ -1025,9 +1021,9 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, unsigned position, Arch
 // Since there are no namespaces, just give the hot potato to the other function
 // and call it a day.
 // -----------------------------------------------------------------------------
-ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy)
+shared_ptr<ArchiveEntry> WolfArchive::addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
 {
-	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr);
 }
 
 // -----------------------------------------------------------------------------

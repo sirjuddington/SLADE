@@ -324,7 +324,7 @@ bool ColourConfiguration::readConfiguration(string_view name)
 
 	// Search resource pk3
 	auto res = App::archiveManager().programResourceArchive();
-	auto dir = res->dir("config/colours");
+	auto dir = res->dirAtPath("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
 		if (StrUtil::equalCI(dir->entryAt(a)->nameNoExt(), name))
@@ -343,7 +343,7 @@ void ColourConfiguration::putConfigurationNames(vector<string>& names)
 
 	// Search resource pk3
 	auto res = App::archiveManager().programResourceArchive();
-	auto dir = res->dir("config/colours");
+	auto dir = res->dirAtPath("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 		names.emplace_back(dir->entryAt(a)->nameNoExt());
 }

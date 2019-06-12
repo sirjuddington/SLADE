@@ -87,20 +87,20 @@ vector<Icon>& iconList(Type type)
 // -----------------------------------------------------------------------------
 // Loads all icons in [dir] to the list for [type]
 // -----------------------------------------------------------------------------
-bool loadIconsDir(Type type, ArchiveTreeNode* dir)
+bool loadIconsDir(Type type, ArchiveDir* dir)
 {
 	if (!dir)
 		return false;
 
 	// Check for icon set dirs
-	for (unsigned a = 0; a < dir->nChildren(); a++)
+	for (const auto& subdir : dir->subdirs())
 	{
-		if (dir->child(a)->name() != "large")
+		if (subdir->name() != "large")
 		{
 			if (type == General)
-				iconsets_general.push_back(dir->child(a)->name());
+				iconsets_general.push_back(subdir->name());
 			else if (type == Entry)
-				iconsets_entry.push_back(dir->child(a)->name());
+				iconsets_entry.push_back(subdir->name());
 		}
 	}
 
@@ -110,8 +110,8 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 		icon_set_dir = iconset_entry_list;
 	if (type == General)
 		icon_set_dir = iconset_general;
-	if (icon_set_dir != "Default" && dir->child(icon_set_dir))
-		dir = (ArchiveTreeNode*)dir->child(icon_set_dir);
+	if (icon_set_dir != "Default" && dir->subdir(icon_set_dir))
+		dir = dir->subdir(icon_set_dir).get();
 
 	auto& icons    = iconList(type);
 	auto  tempfile = App::path("sladetemp", App::Dir::Temp);
@@ -142,7 +142,7 @@ bool loadIconsDir(Type type, ArchiveTreeNode* dir)
 	}
 
 	// Go through large icons
-	auto dir_large = (ArchiveTreeNode*)dir->child("large");
+	auto dir_large = dir->subdir("large");
 	if (dir_large)
 	{
 		for (size_t a = 0; a < dir_large->numEntries(false); a++)
@@ -214,18 +214,18 @@ bool Icons::loadIcons()
 		return false;
 
 	// Get the icons directory of the archive
-	auto dir_icons = res_archive->dir("icons/");
+	auto dir_icons = res_archive->dirAtPath("icons");
 
 	// Load general icons
 	iconsets_general.emplace_back("Default");
-	loadIconsDir(General, (ArchiveTreeNode*)dir_icons->child("general"));
+	loadIconsDir(General, dir_icons->subdir("general").get());
 
 	// Load entry list icons
 	iconsets_entry.emplace_back("Default");
-	loadIconsDir(Entry, (ArchiveTreeNode*)dir_icons->child("entry_list"));
+	loadIconsDir(Entry, dir_icons->subdir("entry_list").get());
 
 	// Load text editor icons
-	loadIconsDir(TextEditor, (ArchiveTreeNode*)dir_icons->child("text_editor"));
+	loadIconsDir(TextEditor, dir_icons->subdir("text_editor").get());
 
 	return true;
 }

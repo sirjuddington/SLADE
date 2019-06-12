@@ -849,11 +849,11 @@ void TextureXPanel::newTextureFromFile()
 		for (const auto& file : files)
 		{
 			// Load the file into a temporary ArchiveEntry
-			auto entry = new ArchiveEntry();
+			auto entry = std::make_shared<ArchiveEntry>();
 			entry->importFile(file.ToStdString());
 
 			// Determine type
-			EntryType::detectEntryType(entry);
+			EntryType::detectEntryType(entry.get());
 
 			// If it's not a valid image type, ignore this file
 			if (!entry->type()->extraProps().propertyExists("image"))
@@ -1171,7 +1171,7 @@ void TextureXPanel::paste()
 
 				// Copy the copied patch entry over to this archive
 				if (entry)
-					tx_editor_->archive()->addEntry(entry, "patches", true);
+					tx_editor_->archive()->addEntry(std::make_shared<ArchiveEntry>(*entry), "patches");
 			}
 
 			// If the entry exists in the base resource archive or this archive, do nothing
@@ -1182,7 +1182,7 @@ void TextureXPanel::paste()
 
 			// Otherwise, copy the entry over to this archive
 			else
-				tx_editor_->archive()->addEntry(entry, "patches", true);
+				tx_editor_->archive()->addEntry(std::make_shared<ArchiveEntry>(*entry), "patches");
 		}
 	}
 
@@ -1324,11 +1324,11 @@ void TextureXPanel::exportTexture()
 		// Write converted image back to entry
 		MemChunk mc;
 		format->saveImage(*image, mc, force_rgba ? nullptr : gcd.itemPalette(a));
-		auto lump = new ArchiveEntry;
+		auto lump = std::make_shared<ArchiveEntry>();
 		lump->importMemChunk(mc);
 		lump->rename(selection[a]->name());
 		archive->addEntry(lump, "textures");
-		EntryType::detectEntryType(lump);
+		EntryType::detectEntryType(lump.get());
 		lump->setExtensionByType();
 	}
 

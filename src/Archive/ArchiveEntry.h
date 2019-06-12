@@ -4,12 +4,12 @@
 #include "Utility/PropertyList/PropertyList.h"
 
 struct ArchiveFormat;
-class ArchiveTreeNode;
+class ArchiveDir;
 class Archive;
 
 class ArchiveEntry
 {
-	friend class ArchiveTreeNode;
+	friend class ArchiveDir;
 	friend class Archive;
 
 public:
@@ -41,7 +41,7 @@ public:
 	uint32_t                 size() const { return data_loaded_ ? data_.size() : size_; }
 	MemChunk&                data(bool allow_load = true);
 	const uint8_t*           rawData(bool allow_load = true);
-	ArchiveTreeNode*         parentDir() const { return parent_; }
+	ArchiveDir*              parentDir() const { return parent_; }
 	Archive*                 parent() const;
 	Archive*                 topParent() const;
 	string                   path(bool name = false) const;
@@ -108,13 +108,13 @@ public:
 
 private:
 	// Entry Info
-	string           name_;
-	string           upper_name_;
-	uint32_t         size_ = 0;
-	MemChunk         data_;
-	EntryType*       type_   = nullptr;
-	ArchiveTreeNode* parent_ = nullptr;
-	PropertyList     ex_props_;
+	string       name_;
+	string       upper_name_;
+	uint32_t     size_ = 0;
+	MemChunk     data_;
+	EntryType*   type_   = nullptr;
+	ArchiveDir*  parent_ = nullptr;
+	PropertyList ex_props_;
 
 	// Entry status
 	State      state_        = State::New;

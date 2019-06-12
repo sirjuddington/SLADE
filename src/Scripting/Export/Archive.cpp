@@ -80,7 +80,7 @@ vector<shared_ptr<ArchiveEntry>> archiveAllEntries(Archive& self)
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> archiveCreateEntry(Archive& self, string_view full_path, int position)
 {
-	auto dir = self.dir(StrUtil::beforeLast(full_path, '/'));
+	auto dir = self.dirAtPath(StrUtil::beforeLast(full_path, '/'));
 	return self.addNewEntry(StrUtil::afterLast(full_path, '/'), position - 1, dir)->getShared();
 }
 
@@ -93,16 +93,16 @@ shared_ptr<ArchiveEntry> archiveCreateEntryInNamespace(Archive& self, string_vie
 	return self.addNewEntry(name, ns)->getShared();
 }
 
-// -----------------------------------------------------------------------------
-// Returns a list of all subdirs in the archive dir [self]
-// -----------------------------------------------------------------------------
-vector<ArchiveTreeNode*> archiveDirSubDirs(const ArchiveTreeNode& self)
-{
-	vector<ArchiveTreeNode*> dirs;
-	for (auto child : self.allChildren())
-		dirs.push_back(dynamic_cast<ArchiveTreeNode*>(child));
-	return dirs;
-}
+//// -----------------------------------------------------------------------------
+//// Returns a list of all subdirs in the archive dir [self]
+//// -----------------------------------------------------------------------------
+// vector<ArchiveDir*> archiveDirSubDirs(const ArchiveDir& self)
+//{
+//	vector<ArchiveDir*> dirs;
+//	for (auto& child : self.subdirs())
+//		dirs.push_back(child.get());
+//	return dirs;
+//}
 
 // -----------------------------------------------------------------------------
 // Wrapper for Archive::findFirst that returns a shared pointer
@@ -193,7 +193,7 @@ void registerArchive(sol::state& lua)
 	// -------------------------------------------------------------------------
 	lua_archive["FilenameNoPath"]         = [](Archive& self) { return self.filename(false); };
 	lua_archive["EntryAtPath"]            = &Archive::entryAtPathShared;
-	lua_archive["DirAtPath"]              = [](Archive& self, const string& path) { return self.dir(path); };
+	lua_archive["DirAtPath"]              = [](Archive& self, const string& path) { return self.dirAtPath(path); };
 	lua_archive["CreateEntry"]            = &archiveCreateEntry;
 	lua_archive["CreateEntryInNamespace"] = &archiveCreateEntryInNamespace;
 	lua_archive["RemoveEntry"]            = &Archive::removeEntry;
@@ -309,17 +309,16 @@ void registerArchiveEntry(sol::state& lua)
 void registerArchiveTreeNode(sol::state& lua)
 {
 	// Create ArchiveDir type, no constructor
-	auto lua_dir = lua.new_usertype<ArchiveTreeNode>("ArchiveDir", "new", sol::no_constructor);
+	auto lua_dir = lua.new_usertype<ArchiveDir>("ArchiveDir", "new", sol::no_constructor);
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_dir["name"]    = sol::property(&ArchiveTreeNode::name);
-	lua_dir["archive"] = sol::property(&ArchiveTreeNode::archive);
-	lua_dir["entries"] = sol::property(&ArchiveTreeNode::entries);
-	lua_dir["parent"]  = sol::property(
-        [](ArchiveTreeNode& self) { return dynamic_cast<ArchiveTreeNode*>(self.parent()); });
-	lua_dir["path"]           = sol::property(&ArchiveTreeNode::path);
-	lua_dir["subDirectories"] = sol::property(&archiveDirSubDirs);
+	lua_dir["name"]           = sol::property(&ArchiveDir::name);
+	lua_dir["archive"]        = sol::property(&ArchiveDir::archive);
+	lua_dir["entries"]        = sol::property(&ArchiveDir::entries);
+	lua_dir["parent"]         = sol::property(&ArchiveDir::parent);
+	lua_dir["path"]           = sol::property(&ArchiveDir::path);
+	lua_dir["subDirectories"] = sol::property(&ArchiveDir::subdirs);
 }
 
 // -----------------------------------------------------------------------------
@@ -367,9 +366,9 @@ void registerArchivesNamespace(sol::state& lua)
 	archives["ProgramResource"]      = []() { return App::archiveManager().programResourceArchive(); };
 	archives["RecentFiles"]          = []() { return App::archiveManager().recentFiles(); };
 	archives["Bookmarks"]            = []() { return App::archiveManager().bookmarks(); };
-	archives["AddBookmark"]          = [](ArchiveEntry* entry) { App::archiveManager().addBookmark(entry->getShared()); };
-	archives["RemoveBookmark"]       = [](ArchiveEntry* entry) { App::archiveManager().deleteBookmark(entry); };
-	archives["EntryType"]            = &EntryType::fromId;
+	archives["AddBookmark"]    = [](ArchiveEntry* entry) { App::archiveManager().addBookmark(entry->getShared()); };
+	archives["RemoveBookmark"] = [](ArchiveEntry* entry) { App::archiveManager().deleteBookmark(entry); };
+	archives["EntryType"]      = &EntryType::fromId;
 }
 
 // -----------------------------------------------------------------------------

@@ -160,42 +160,42 @@ private:
 
 struct Transformer
 {
-	string string;
+	string str;
 
-	Transformer(string_view init) : string{ init } {}
-	Transformer(const wxString& init) : string{ init.data(), init.size() } {}
+	Transformer(string_view init) : str{ init } {}
+	Transformer(const wxString& init) : str{ init.data(), init.size() } {}
 
 	// Case
 	Transformer& upper()
 	{
-		upperIP(string);
+		upperIP(str);
 		return *this;
 	}
 	Transformer& lower()
 	{
-		lowerIP(string);
+		lowerIP(str);
 		return *this;
 	}
 	Transformer& capitalize()
 	{
-		capitalizeIP(string);
+		capitalizeIP(str);
 		return *this;
 	}
 
 	// Trim
 	Transformer& ltrim()
 	{
-		ltrimIP(string);
+		ltrimIP(str);
 		return *this;
 	}
 	Transformer& rtrim()
 	{
-		rtrimIP(string);
+		rtrimIP(str);
 		return *this;
 	}
 	Transformer& trim()
 	{
-		trimIP(string);
+		trimIP(str);
 		return *this;
 	}
 };

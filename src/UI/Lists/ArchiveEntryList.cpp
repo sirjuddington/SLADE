@@ -134,21 +134,20 @@ wxString ArchiveEntryList::itemText(long item, long column, long index) const
 		if (entry->type() == EntryType::folderType())
 		{
 			// Entry is a folder, return the number of entries+subdirectories in it
-			ArchiveTreeNode* dir = nullptr;
+			ArchiveDir* dir = nullptr;
 
 			// Get selected directory
 			if (entry == entry_dir_back_.get())
-				dir = dynamic_cast<ArchiveTreeNode*>(
-					current_dir_->parent()); // If it's the 'back directory', get the current dir's parent
+				dir = current_dir_.lock()->parent().get(); // If it's the 'back directory', get the current dir's parent
 			else if (auto archive = archive_.lock())
-				dir = archive->dir(entry->name(), current_dir_);
+				dir = archive->dirAtPath(entry->name(), current_dir_.lock().get());
 
 			// If it's null, return error
 			if (!dir)
 				return "INVALID DIRECTORY";
 
 			// Return the number of items in the directory
-			return wxString::Format("%d entries", dir->numEntries() + dir->nChildren());
+			return wxString::Format("%d entries", dir->numEntries() + dir->numSubdirs());
 		}
 		else
 			return entry->sizeString(); // Not a folder, just return the normal size string
@@ -345,7 +344,7 @@ int ArchiveEntryList::columnType(int column) const
 void ArchiveEntryList::updateList(bool clear)
 {
 	// If no current directory, set size to 0
-	if (!current_dir_)
+	if (!current_dir_.lock())
 	{
 		SetItemCount(0);
 		Refresh();
@@ -402,6 +401,10 @@ void ArchiveEntryList::filterList(const wxString& filter, const wxString& catego
 // -----------------------------------------------------------------------------
 void ArchiveEntryList::applyFilter()
 {
+	auto dir = current_dir_.lock();
+	if (!dir)
+		return;
+
 	// Clear current filter list
 	items_.clear();
 
@@ -409,7 +412,7 @@ void ArchiveEntryList::applyFilter()
 	if (filter_text_.IsEmpty() && filter_category_.IsEmpty())
 	{
 		// No filter, just refresh the list
-		unsigned count = current_dir_->numEntries() + current_dir_->nChildren();
+		unsigned count = dir->numEntries() + dir->numSubdirs();
 		for (unsigned a = 0; a < count; a++)
 			items_.push_back(a);
 		updateList();
@@ -489,7 +492,7 @@ void ArchiveEntryList::applyFilter()
 // -----------------------------------------------------------------------------
 // Opens the given directory (if it exists)
 // -----------------------------------------------------------------------------
-bool ArchiveEntryList::setDir(ArchiveTreeNode* dir)
+bool ArchiveEntryList::setDir(const shared_ptr<ArchiveDir>& dir)
 {
 	// If it doesn't exist, do nothing
 	if (!dir)
@@ -520,7 +523,7 @@ bool ArchiveEntryList::setDir(ArchiveTreeNode* dir)
 bool ArchiveEntryList::goUpDir()
 {
 	// Get parent directory
-	return (setDir((ArchiveTreeNode*)current_dir_->parent()));
+	return setDir(current_dir_.lock()->parent());
 }
 
 // -----------------------------------------------------------------------------
@@ -532,8 +535,8 @@ int ArchiveEntryList::entrySize(long index) const
 	auto entry = entryAt(index, false);
 	if (entry->type() == EntryType::folderType())
 	{
-		auto dir = archive_.lock()->dir(entry->name(), current_dir_);
-		return dir ? dir->numEntries() + dir->nChildren() : 0;
+		auto dir = archive_.lock()->dirAtPath(entry->name(), current_dir_.lock().get());
+		return dir ? dir->numEntries() + dir->numSubdirs() : 0;
 	}
 	else
 		return entry->size();
@@ -579,14 +582,15 @@ void ArchiveEntryList::sortItems()
 int ArchiveEntryList::entriesBegin() const
 {
 	// Check directory is open
-	if (!current_dir_)
+	auto dir = current_dir_.lock();
+	if (!dir)
 		return -1;
 
 	// Determine first entry index
 	int index = 0;
-	if (show_dir_back_ && current_dir_->parent()) // Offset if '..' item exists
+	if (show_dir_back_ && dir->parent()) // Offset if '..' item exists
 		index++;
-	index += current_dir_->nChildren(); // Offset by number of subdirs
+	index += dir->numSubdirs(); // Offset by number of subdirs
 
 	return index;
 }
@@ -598,7 +602,8 @@ int ArchiveEntryList::entriesBegin() const
 ArchiveEntry* ArchiveEntryList::entryAt(int index, bool filtered) const
 {
 	// Check index & archive
-	if (index < 0 || !archive_.lock())
+	auto dir = current_dir_.lock();
+	if (index < 0 || !archive_.lock() || !dir)
 		return nullptr;
 
 	// Modify index for filtered list
@@ -611,7 +616,7 @@ ArchiveEntry* ArchiveEntryList::entryAt(int index, bool filtered) const
 	}
 
 	// Index modifier if 'up folder' entry exists
-	if (show_dir_back_ && current_dir_->parent())
+	if (show_dir_back_ && dir->parent())
 	{
 		if (index == 0)
 			return entry_dir_back_.get();
@@ -620,13 +625,13 @@ ArchiveEntry* ArchiveEntryList::entryAt(int index, bool filtered) const
 	}
 
 	// Subdirectories
-	int subdirs = current_dir_->nChildren();
+	int subdirs = dir->numSubdirs();
 	if (index < subdirs)
-		return dynamic_cast<ArchiveTreeNode*>(current_dir_->child(index))->dirEntry();
+		return dir->subdirAt(index)->dirEntry();
 
 	// Entries
-	if ((unsigned)index < subdirs + current_dir_->numEntries())
-		return current_dir_->entryAt(index - subdirs);
+	if ((unsigned)index < subdirs + dir->numEntries())
+		return dir->entryAt(index - subdirs);
 
 	// Out of bounds
 	return nullptr;
@@ -639,7 +644,8 @@ ArchiveEntry* ArchiveEntryList::entryAt(int index, bool filtered) const
 int ArchiveEntryList::entryIndexAt(int index, bool filtered)
 {
 	// Check index & archive
-	if (index < 0 || !archive_.lock())
+	auto dir = current_dir_.lock();
+	if (index < 0 || !archive_.lock() || !dir)
 		return -1;
 
 	// Modify index for filtered list
@@ -652,7 +658,7 @@ int ArchiveEntryList::entryIndexAt(int index, bool filtered)
 	}
 
 	// Index modifier if 'up folder' entry exists
-	if (show_dir_back_ && current_dir_->parent())
+	if (show_dir_back_ && dir->parent())
 	{
 		if (index == 0)
 			return -1;
@@ -661,8 +667,8 @@ int ArchiveEntryList::entryIndexAt(int index, bool filtered)
 	}
 
 	// Entries
-	int subdirs = current_dir_->nChildren();
-	if ((unsigned)index < subdirs + current_dir_->numEntries())
+	int subdirs = dir->numSubdirs();
+	if ((unsigned)index < subdirs + dir->numEntries())
 		return index - subdirs;
 
 	// Out of bounds or subdir
@@ -673,7 +679,7 @@ int ArchiveEntryList::entryIndexAt(int index, bool filtered)
 // Gets the archive entry associated with the currently focused list item.
 // Returns NULL if nothing is focused or no archive is open
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveEntryList::focusedEntry()
+ArchiveEntry* ArchiveEntryList::focusedEntry() const
 {
 	// Get the focus index
 	int focus = focusedIndex();
@@ -692,7 +698,7 @@ ArchiveEntry* ArchiveEntryList::focusedEntry()
 // -----------------------------------------------------------------------------
 // Returns a vector of all selected archive entries
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ArchiveEntryList::selectedEntries()
+vector<ArchiveEntry*> ArchiveEntryList::selectedEntries() const
 {
 	// Init vector
 	vector<ArchiveEntry*> ret;
@@ -717,7 +723,7 @@ vector<ArchiveEntry*> ArchiveEntryList::selectedEntries()
 // Gets the archive entry associated with the last selected item in the list.
 // Returns NULL if no item is selected
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveEntryList::lastSelectedEntry()
+ArchiveEntry* ArchiveEntryList::lastSelectedEntry() const
 {
 	int index = lastSelected();
 
@@ -730,9 +736,9 @@ ArchiveEntry* ArchiveEntryList::lastSelectedEntry()
 // -----------------------------------------------------------------------------
 // Returns a vector of all currently selected directories
 // -----------------------------------------------------------------------------
-vector<ArchiveTreeNode*> ArchiveEntryList::selectedDirectories()
+vector<ArchiveDir*> ArchiveEntryList::selectedDirectories() const
 {
-	vector<ArchiveTreeNode*> ret;
+	vector<ArchiveDir*> ret;
 
 	if (!archive_.lock())
 		return ret;
@@ -749,7 +755,7 @@ vector<ArchiveTreeNode*> ArchiveEntryList::selectedDirectories()
 		if (entry->type() == EntryType::folderType())
 		{
 			// If the entry is a folder type, get its ArchiveTreeNode counterpart
-			auto dir = archive_.lock()->dir(entry->name(), current_dir_);
+			auto dir = archive_.lock()->dirAtPath(entry->name(), current_dir_.lock().get());
 
 			// Add it to the return list
 			if (dir)
@@ -922,19 +928,19 @@ void ArchiveEntryList::onListItemActivated(wxListEvent& e)
 	auto entry = entryAt(e.GetIndex());
 
 	// Do nothing if NULL (shouldn't be)
-	if (!entry || !archive_.lock())
+	auto current_dir = current_dir_.lock();
+	if (!entry || !archive_.lock() || !current_dir)
 		return;
 
 	// If it's a folder, open it
 	if (entry->type() == EntryType::folderType())
 	{
 		// Get directory to open
-		ArchiveTreeNode* dir = nullptr;
+		shared_ptr<ArchiveDir> dir;
 		if (entry == entry_dir_back_.get())
-			dir = dynamic_cast<ArchiveTreeNode*>(
-				current_dir_->parent()); // 'Back directory' entry, open current dir's parent
+			dir = current_dir->parent(); // 'Back directory' entry, open current dir's parent
 		else
-			dir = archive_.lock()->dir(entry->name(), current_dir_);
+			dir = ArchiveDir::subdirAtPath(current_dir, entry->name());
 
 		// Check it exists (really should)
 		if (!dir)

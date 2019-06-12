@@ -48,7 +48,7 @@
 // -----------------------------------------------------------------------------
 // ParseTreeNode class constructor
 // -----------------------------------------------------------------------------
-ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveTreeNode* archive_dir, string_view type) :
+ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveDir* archive_dir, string_view type) :
 	STreeNode{ parent },
 	type_{ type },
 	parser_{ parser },
@@ -210,6 +210,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 			auto inc_path  = tz.next().text;
 			auto archive   = archive_dir_->archive();
 			auto inc_entry = archive->entryAtPath(archive_dir_->path() + inc_path);
+			Log::info("Looking for #include entry '{}' / '{}'", archive_dir_->path(), inc_path);
 			if (!inc_entry) // Try absolute path
 				inc_entry = archive->entryAtPath(inc_path);
 
@@ -525,7 +526,7 @@ void ParseTreeNode::write(string& out, int indent) const
 // -----------------------------------------------------------------------------
 // Parser class constructor
 // -----------------------------------------------------------------------------
-Parser::Parser(ArchiveTreeNode* dir_root) : archive_dir_root_{ dir_root }
+Parser::Parser(ArchiveDir* dir_root) : archive_dir_root_{ dir_root }
 {
 	// Create parse tree root node
 	pt_root_ = std::make_unique<ParseTreeNode>(nullptr, this, archive_dir_root_);

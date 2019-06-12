@@ -20,7 +20,7 @@ public:
 	bool loadEntryData(ArchiveEntry* entry) override;
 
 	// Entry addition/removal
-	ArchiveEntry* addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy = false) override;
+	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace) override;
 
 	// Detection
 	MapDesc         mapDesc(ArchiveEntry* maphead) override;

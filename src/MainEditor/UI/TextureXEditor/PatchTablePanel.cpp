@@ -341,11 +341,11 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 		for (const auto& file : files)
 		{
 			// Load the file into a temporary ArchiveEntry
-			auto entry = new ArchiveEntry();
+			auto entry = std::make_shared<ArchiveEntry>();
 			entry->importFile(file.ToStdString());
 
 			// Determine type
-			EntryType::detectEntryType(entry);
+			EntryType::detectEntryType(entry.get());
 
 			// If it's not a valid image type, ignore this file
 			if (!entry->type()->extraProps().propertyExists("image"))

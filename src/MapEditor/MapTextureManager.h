@@ -3,7 +3,7 @@
 #include "General/ListenerAnnouncer.h"
 #include "OpenGL/GLTexture.h"
 
-class ArchiveTreeNode;
+class ArchiveDir;
 class Archive;
 class Palette;
 
@@ -86,5 +86,5 @@ private:
 	vector<TexInfo>     tex_info_;
 	vector<TexInfo>     flat_info_;
 
-	void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, string_view path) const;
+	void importEditorImages(MapTexHashMap& map, ArchiveDir* dir, string_view path) const;
 };

@@ -647,7 +647,7 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 		// Create backup
 		if (map.head
 			&& !MapEditor::backupManager().writeBackup(
-				   map_data_, map.head->topParent()->filename(false), map.head->nameNoExt()))
+				map_data_, map.head->topParent()->filename(false), map.head->nameNoExt()))
 			Log::warning("Failed to backup map data");
 	}
 
@@ -823,16 +823,16 @@ bool MapEditorWindow::writeMap(WadArchive& wad, const wxString& name, bool nodes
 		wad.entry(name.ToStdString())->importMemChunk(mdesc_current.head->data());
 	}
 	for (auto& entry : new_map_data)
-		wad.addEntry(entry);
+		wad.addEntry(shared_ptr<ArchiveEntry>(entry));
 	if (acs) // BEHAVIOR
-		wad.addEntry(panel_script_editor_->compiledEntry(), "", true);
+		wad.addEntry(std::make_shared<ArchiveEntry>(*panel_script_editor_->compiledEntry()), "");
 	if (acs && panel_script_editor_->scriptEntry()->size() > 0) // SCRIPTS (if any)
-		wad.addEntry(panel_script_editor_->scriptEntry(), "", true);
+		wad.addEntry(std::make_shared<ArchiveEntry>(*panel_script_editor_->scriptEntry()), "");
 	if (mdesc_current.format == MapFormat::UDMF)
 	{
 		// Add extra UDMF entries
-		for (auto& a : map.udmfExtraEntries())
-			wad.addEntry(a, -1, nullptr, true);
+		for (auto& entry : map.udmfExtraEntries())
+			wad.addEntry(std::make_shared<ArchiveEntry>(*entry), -1, nullptr);
 
 		wad.addNewEntry("ENDMAP");
 	}
@@ -902,7 +902,11 @@ bool MapEditorWindow::saveMap()
 
 	// Add new map entries
 	for (unsigned a = 1; a < wad.numEntries(); a++)
-		entry = archive->addEntry(wad.entryAt(a), archive->entryIndex(map.head) + a, nullptr, true);
+	{
+		auto copy = std::make_shared<ArchiveEntry>(*wad.entryAt(a));
+		archive->addEntry(copy, archive->entryIndex(map.head) + a, nullptr);
+		entry = copy.get();
+	}
 
 	// Clean up
 	if (tempwad)
@@ -931,12 +935,12 @@ bool MapEditorWindow::saveMapAs()
 
 	// Create new, empty wad
 	WadArchive    wad;
-	auto          head = wad.addNewEntry(mdesc_current.name);
+	auto          head = wad.addNewEntry(mdesc_current.name).get();
 	ArchiveEntry* end  = nullptr;
 	if (mdesc_current.format == MapFormat::UDMF)
 	{
 		wad.addNewEntry("TEXTMAP");
-		end = wad.addNewEntry("ENDMAP");
+		end = wad.addNewEntry("ENDMAP").get();
 	}
 	else
 	{
@@ -944,7 +948,7 @@ bool MapEditorWindow::saveMapAs()
 		wad.addNewEntry("LINEDEFS");
 		wad.addNewEntry("SIDEDEFS");
 		wad.addNewEntry("VERTEXES");
-		end = wad.addNewEntry("SECTORS");
+		end = wad.addNewEntry("SECTORS").get();
 	}
 
 	// Save map data

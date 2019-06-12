@@ -453,17 +453,17 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 // In a zip archive, a namespace is simply a first-level directory, ie
 // <root>/<namespace>
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchive::addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy)
+shared_ptr<ArchiveEntry> ZipArchive::addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
 {
 	// Check namespace
 	if (add_namespace.empty() || add_namespace == "global")
-		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr, copy);
+		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr);
 
 	// Get/Create namespace dir
 	auto dir = createDir(StrUtil::lower(add_namespace));
 
 	// Add the entry to the dir
-	return Archive::addEntry(entry, 0xFFFFFFFF, dir, copy);
+	return Archive::addEntry(entry, 0xFFFFFFFF, dir.get());
 }
 
 // -----------------------------------------------------------------------------
@@ -504,7 +504,7 @@ vector<Archive::MapDesc> ZipArchive::detectMaps()
 	vector<MapDesc> ret;
 
 	// Get the maps directory
-	auto mapdir = dir("maps");
+	auto mapdir = dirAtPath("maps");
 	if (!mapdir)
 		return ret;
 
@@ -545,7 +545,7 @@ vector<Archive::MapDesc> ZipArchive::detectMaps()
 ArchiveEntry* ZipArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	auto dir = rootDir();
+	auto dir = rootDir().get();
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -555,7 +555,7 @@ ArchiveEntry* ZipArchive::findFirst(SearchOptions& options)
 	// Check for namespace
 	else if (!options.match_namespace.empty())
 	{
-		dir = this->dir(options.match_namespace);
+		dir = dirAtPath(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
@@ -578,7 +578,7 @@ ArchiveEntry* ZipArchive::findFirst(SearchOptions& options)
 ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
 {
 	// Init search variables
-	auto dir = rootDir();
+	auto dir = rootDir().get();
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -588,7 +588,7 @@ ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
 	// Check for namespace
 	else if (!options.match_namespace.empty())
 	{
-		dir = this->dir(options.match_namespace);
+		dir = dirAtPath(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)
@@ -610,7 +610,7 @@ ArchiveEntry* ZipArchive::findLast(SearchOptions& options)
 vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 {
 	// Init search variables
-	auto                  dir = rootDir();
+	auto                  dir = rootDir().get();
 	vector<ArchiveEntry*> ret;
 
 	// Check for search directory (overrides namespace)
@@ -621,7 +621,7 @@ vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 	// Check for namespace
 	else if (!options.match_namespace.empty())
 	{
-		dir = this->dir(options.match_namespace);
+		dir = dirAtPath(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
 		if (!dir)

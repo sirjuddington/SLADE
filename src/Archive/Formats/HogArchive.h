@@ -20,12 +20,11 @@ public:
 	bool loadEntryData(ArchiveEntry* entry) override;
 
 	// Entry addition/removal
-	ArchiveEntry* addEntry(
-		ArchiveEntry*    entry,
-		unsigned         position = 0xFFFFFFFF,
-		ArchiveTreeNode* dir      = nullptr,
-		bool             copy     = false) override;
-	ArchiveEntry* addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy = false) override;
+	shared_ptr<ArchiveEntry> addEntry(
+		shared_ptr<ArchiveEntry> entry,
+		unsigned                 position = 0xFFFFFFFF,
+		ArchiveDir*              dir      = nullptr) override;
+	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace) override;
 
 	// Entry modification
 	bool renameEntry(ArchiveEntry* entry, string_view name) override;

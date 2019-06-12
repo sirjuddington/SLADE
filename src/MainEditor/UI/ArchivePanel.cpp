@@ -133,6 +133,7 @@ public:
 
 		bool     yes_to_all = false;
 		wxString caption    = (filenames.size() > 1) ? "Overwrite entries" : "Overwrite entry";
+		auto     dir        = list_->currentDir().lock().get();
 
 		// Import all dragged files, inserting after the item they were dragged onto
 		for (int a = filenames.size() - 1; a >= 0; a--)
@@ -151,15 +152,14 @@ public:
 				// Find entry to replace if needed
 				if (auto_entry_replace)
 				{
-					entry = parent_->archive()->entryAtPath(list_->currentDir()->path().append(fn.fileName()));
+					entry = parent_->archive()->entryAtPath(dir->path().append(fn.fileName()));
 					// An entry with that name is already present, so ask about replacing it
 					if (entry && !yes_to_all)
 					{
 						// Since there is no standard "Yes/No to all" button or "Don't ask me again" checkbox,
 						// we will instead hack the Cancel button into being a "Yes to all" button. This is
 						// despite the existence of a wxID_YESTOALL return value...
-						auto message = fmt::format(
-							"Overwrite existing entry {}{}", list_->currentDir()->path(), fn.fileName());
+						auto message = fmt::format("Overwrite existing entry {}{}", dir->path(), fn.fileName());
 						wxMessageDialog dlg(parent_, message, caption, wxCANCEL | wxYES_NO | wxCENTRE);
 						dlg.SetYesNoCancelLabels(_("Yes"), _("No"), _("Yes to all"));
 						int result = dlg.ShowModal();
@@ -175,7 +175,7 @@ public:
 
 				// Create new entry if needed
 				if (entry == nullptr)
-					entry = parent_->archive()->addNewEntry(fn.fileName(), index, list_->currentDir());
+					entry = parent_->archive()->addNewEntry(fn.fileName(), index, dir).get();
 
 				// Import the file to it
 				entry->importFile(filenames[a].ToStdString());
@@ -247,13 +247,13 @@ private:
 class EntryTreeClipboardItem : public ClipboardItem
 {
 public:
-	EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, vector<ArchiveTreeNode*>& dirs) :
+	EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, vector<ArchiveDir*>& dirs) :
 		ClipboardItem(Type::EntryTree),
-		tree_{ new ArchiveTreeNode() }
+		tree_{ new ArchiveDir("") }
 	{
 		// Copy entries
 		for (auto& entry : entries)
-			tree_->addEntry(new ArchiveEntry(*entry));
+			tree_->addEntry(std::make_shared<ArchiveEntry>(*entry));
 
 		// Copy entries to system clipboard
 		// (exports them as temp files and adds the paths to the clipboard)
@@ -277,15 +277,15 @@ public:
 
 		// Copy dirs
 		for (auto& dir : dirs)
-			tree_->addChild(dir->clone());
+			tree_->addSubdir(dir->clone(tree_));
 	}
 
 	~EntryTreeClipboardItem() = default;
 
-	ArchiveTreeNode* tree() const { return tree_.get(); }
+	ArchiveDir* tree() const { return tree_.get(); }
 
 private:
-	unique_ptr<ArchiveTreeNode> tree_;
+	shared_ptr<ArchiveDir> tree_;
 };
 
 
@@ -730,7 +730,8 @@ bool ArchivePanel::newEntry(NewEntry type)
 		return false;
 
 	// Get the entry index of the last selected list item
-	int index = archive->entryIndex(entry_list_->lastSelectedEntry(), entry_list_->currentDir());
+	auto dir   = entry_list_->currentDir().lock().get();
+	int  index = archive->entryIndex(entry_list_->lastSelectedEntry(), dir);
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -740,7 +741,7 @@ bool ArchivePanel::newEntry(NewEntry type)
 
 	// Add the entry to the archive
 	undo_manager_->beginRecord("Add Entry");
-	auto new_entry = archive->addNewEntry(name.ToStdString(), index, entry_list_->currentDir());
+	auto new_entry = archive->addNewEntry(name.ToStdString(), index, dir);
 	undo_manager_->endRecord(true);
 
 	// Deal with specific entry type that we may want created
@@ -821,7 +822,7 @@ bool ArchivePanel::newDirectory() const
 
 	// Add the directory to the archive
 	undo_manager_->beginRecord("Create Directory");
-	auto dir = archive->createDir(name.ToStdString(), entry_list_->currentDir());
+	auto dir = archive->createDir(name.ToStdString(), entry_list_->currentDir().lock());
 	undo_manager_->endRecord(!!dir);
 
 	// Return whether the directory was created ok
@@ -844,7 +845,8 @@ bool ArchivePanel::importFiles()
 	if (SFileDialog::openFiles(info, "Choose files to import", "Any File (*.*)|*.*", this))
 	{
 		// Get the entry index of the last selected list item
-		int index = archive->entryIndex(entry_list_->lastSelectedEntry(), entry_list_->currentDir());
+		auto dir   = entry_list_->currentDir().lock().get();
+		int  index = archive->entryIndex(entry_list_->lastSelectedEntry(), dir);
 
 		// If something was selected, add 1 to the index so we add the new entry after the last selected
 		if (index >= 0)
@@ -873,13 +875,13 @@ bool ArchivePanel::importFiles()
 			UI::setSplashProgressMessage(name.ToStdString());
 
 			// Add the entry to the archive
-			auto new_entry = archive->addNewEntry(name.ToStdString(), index, entry_list_->currentDir());
+			auto new_entry = archive->addNewEntry(name.ToStdString(), index, dir);
 
 			// If the entry was created ok, load the file into it
 			if (new_entry)
 			{
-				new_entry->importFile(info.filenames[a]); // Import file to entry
-				EntryType::detectEntryType(new_entry);    // Detect entry type
+				new_entry->importFile(info.filenames[a]);    // Import file to entry
+				EntryType::detectEntryType(new_entry.get()); // Detect entry type
 				ok = true;
 			}
 
@@ -983,7 +985,7 @@ bool ArchivePanel::buildArchive()
 
 			// Add the entry
 			auto dir   = zip.createDir(edir);
-			auto entry = zip.addNewEntry(ename, dir->numEntries() + 1, dir);
+			auto entry = zip.addNewEntry(ename, dir->numEntries() + 1, dir.get());
 
 			// Log
 			UI::setSplashProgressMessage(ename);
@@ -1246,7 +1248,7 @@ bool ArchivePanel::deleteEntry(bool confirm)
 			MainEditor::window()->archiveManagerPanel()->closeEntryTab(entry.get());
 
 		// Remove the selected directory from the archive
-		archive->removeDir(selected_dirs[a]->name(), entry_list_->currentDir());
+		archive->removeDir(selected_dirs[a]->name(), entry_list_->currentDir().lock().get());
 	}
 	entry_list_->setEntriesAutoUpdate(true);
 
@@ -1337,9 +1339,9 @@ bool ArchivePanel::moveUp()
 
 	// Move each one up by swapping it with the entry above it
 	undo_manager_->beginRecord("Move Up");
+	auto dir = entry_list_->currentDir().lock().get();
 	for (long index : selection)
-		archive->swapEntries(
-			entry_list_->entryIndexAt(index), entry_list_->entryIndexAt(index - 1), entry_list_->currentDir());
+		archive->swapEntries(entry_list_->entryIndexAt(index), entry_list_->entryIndexAt(index - 1), dir);
 	undo_manager_->endRecord(true);
 
 	// Update selection
@@ -1381,11 +1383,9 @@ bool ArchivePanel::moveDown()
 
 	// Move each one down by swapping it with the entry below it
 	undo_manager_->beginRecord("Move Down");
+	auto dir = entry_list_->currentDir().lock().get();
 	for (int a = selection.size() - 1; a >= 0; a--)
-		archive->swapEntries(
-			entry_list_->entryIndexAt(selection[a]),
-			entry_list_->entryIndexAt(selection[a] + 1),
-			entry_list_->currentDir());
+		archive->swapEntries(entry_list_->entryIndexAt(selection[a]), entry_list_->entryIndexAt(selection[a] + 1), dir);
 	undo_manager_->endRecord(true);
 
 	// Update selection
@@ -1424,7 +1424,7 @@ bool ArchivePanel::sort() const
 
 	// Get selected entries
 	auto selection = entry_list_->selection();
-	auto dir       = entry_list_->currentDir();
+	auto dir       = entry_list_->currentDir().lock().get();
 
 	size_t start, stop;
 
@@ -1915,11 +1915,12 @@ bool ArchivePanel::pasteEntry() const
 
 	// Check the archive is still open
 	auto archive = archive_.lock();
-	if (!archive)
+	auto dir     = entry_list_->currentDir().lock();
+	if (!archive || !dir)
 		return false;
 
 	// Get the entry index of the last selected list item
-	int index = archive->entryIndex(entry_list_->lastSelectedEntry(), entry_list_->currentDir());
+	int index = archive->entryIndex(entry_list_->lastSelectedEntry(), dir.get());
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -1943,7 +1944,7 @@ bool ArchivePanel::pasteEntry() const
 		auto clip = dynamic_cast<EntryTreeClipboardItem*>(App::clipboard().item(a));
 
 		// Merge it in
-		if (archive->paste(clip->tree(), index, entry_list_->currentDir()))
+		if (archive->paste(clip->tree(), index, dir))
 			pasted = true;
 	}
 	undo_manager_->endRecord(true);
@@ -2330,12 +2331,12 @@ vector<ArchiveEntry*> ArchivePanel::currentEntries() const
 }
 
 // -----------------------------------------------------------------------------
-// Returns a vector of all selected entries
+// Returns the currently open dir
 // -----------------------------------------------------------------------------
-ArchiveTreeNode* ArchivePanel::currentDir() const
+ArchiveDir* ArchivePanel::currentDir() const
 {
 	if (entry_list_)
-		return entry_list_->currentDir();
+		return entry_list_->currentDir().lock().get();
 	return nullptr;
 }
 
@@ -2346,11 +2347,12 @@ bool ArchivePanel::swanConvert() const
 {
 	// Check the archive is still open
 	auto archive = archive_.lock();
-	if (!archive)
+	auto dir     = entry_list_->currentDir().lock().get();
+	if (!archive || !dir)
 		return false;
 
 	// Get the entry index of the last selected list item
-	int index = archive->entryIndex(currentEntry(), entry_list_->currentDir());
+	int index = archive->entryIndex(currentEntry(), dir);
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -2402,12 +2404,11 @@ bool ArchivePanel::swanConvert() const
 			// Begin recording undo level
 			undo_manager_->beginRecord(fmt::format("Create {}", wadnames[e]));
 
-			auto output = archive->addNewEntry(
-				(archive->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, entry_list_->currentDir());
+			auto output = archive->addNewEntry((archive->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, dir);
 			if (output)
 			{
 				error |= !output->importMemChunk(*mc[e]);
-				EntryType::detectEntryType(output);
+				EntryType::detectEntryType(output.get());
 				if (output->type() == EntryType::unknownType())
 					output->setType(EntryType::fromId(etypeids[e]));
 				if (index >= 0)
@@ -2430,11 +2431,12 @@ bool ArchivePanel::basConvert(bool animdefs)
 {
 	// Check the archive is still open
 	auto archive = archive_.lock();
-	if (!archive)
+	auto dir     = entry_list_->currentDir().lock().get();
+	if (!archive || !dir)
 		return false;
 
 	// Get the entry index of the last selected list item
-	int index = archive->entryIndex(currentEntry(), entry_list_->currentDir());
+	int index = archive->entryIndex(currentEntry(), dir);
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -2451,7 +2453,7 @@ bool ArchivePanel::basConvert(bool animdefs)
 		(animdefs ? (archive->formatId() == "wad" ? "ANIMDEFS" : "animdefs.txt") :
 					(archive->formatId() == "wad" ? "SWANTBLS" : "swantbls.dat")),
 		index,
-		entry_list_->currentDir());
+		dir);
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
@@ -2489,7 +2491,7 @@ bool ArchivePanel::basConvert(bool animdefs)
 		output->importMemChunk(animdata);
 
 		// Identify the new lump as what it is
-		EntryType::detectEntryType(output);
+		EntryType::detectEntryType(output.get());
 		// Failsafe is detectEntryType doesn't accept to work, grumble
 		if (output->type() == EntryType::unknownType())
 			output->setType(EntryType::fromId("animdefs"));
@@ -2803,7 +2805,7 @@ bool ArchivePanel::mapOpenDb2() const
 // -----------------------------------------------------------------------------
 // Opens the given directory.
 // -----------------------------------------------------------------------------
-bool ArchivePanel::openDir(ArchiveTreeNode* dir) const
+bool ArchivePanel::openDir(const shared_ptr<ArchiveDir>& dir) const
 {
 	return entry_list_->setDir(dir);
 }
@@ -2855,7 +2857,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 			name.Remove(0, 1);
 
 		// Get directory to open
-		auto dir = archive->dir(name.ToStdString(), nullptr);
+		auto dir = ArchiveDir::subdirAtPath(archive->rootDir(), name.ToStdString());
 
 		// Check it exists (really should)
 		if (!dir)
@@ -2981,8 +2983,8 @@ void ArchivePanel::focusOnEntry(ArchiveEntry* entry) const
 	if (entry)
 	{
 		// Do we need to change directory?
-		if (entry->parentDir() != entry_list_->currentDir())
-			entry_list_->setDir(entry->parentDir());
+		if (entry->parentDir() != entry_list_->currentDir().lock().get())
+			entry_list_->setDir(ArchiveDir::getShared(entry->parentDir()));
 
 		// Now focus on the entry if it is listed
 		for (long index = 0; index < entry_list_->GetItemCount(); ++index)
@@ -4037,7 +4039,7 @@ void ArchivePanel::onChoiceCategoryChanged(wxCommandEvent& e)
 void ArchivePanel::onDirChanged(wxCommandEvent& e)
 {
 	// Get directory
-	auto dir = entry_list_->currentDir();
+	auto dir = entry_list_->currentDir().lock();
 
 	if (!dir->parent())
 	{
@@ -4090,7 +4092,7 @@ bool EntryDataUS::swapData()
 	// Log::info(1, "Entry data swap...");
 
 	// Get parent dir
-	auto dir = archive_->dir(path_.ToStdString());
+	auto dir = archive_->dirAtPath(path_.ToStdString());
 	if (dir)
 	{
 		// Get entry
@@ -4373,19 +4375,19 @@ CONSOLE_COMMAND(cd, 1, true)
 
 	if (current && panel)
 	{
-		ArchiveTreeNode* dir    = panel->currentDir();
-		ArchiveTreeNode* newdir = current->dir(args[0], dir);
+		ArchiveDir* dir    = panel->currentDir();
+		ArchiveDir* newdir = current->dirAtPath(args[0], dir);
 		if (newdir == nullptr)
 		{
 			if (args[0] == "..")
-				newdir = (ArchiveTreeNode*)dir->parent();
+				newdir = dir->parent().get();
 			else if (args[0] == "/" || args[0] == "\\")
-				newdir = current->rootDir();
+				newdir = current->rootDir().get();
 		}
 
 		if (newdir)
 		{
-			panel->openDir(newdir);
+			panel->openDir(ArchiveDir::getShared(newdir));
 		}
 		else
 		{

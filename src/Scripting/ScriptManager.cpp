@@ -113,7 +113,7 @@ Script* addEditorScriptFromFile(string_view filename, ScriptType type)
 void loadGeneralScripts()
 {
 	// Get 'scripts/general' dir of slade.pk3
-	auto scripts_dir = App::archiveManager().programResourceArchive()->dir("scripts/general");
+	auto scripts_dir = App::archiveManager().programResourceArchive()->dirAtPath("scripts/general");
 	if (scripts_dir)
 		for (auto& entry : scripts_dir->allEntries())
 		{
@@ -145,7 +145,7 @@ void loadCustomScripts()
 void loadEditorScripts(ScriptType type, string_view dir)
 {
 	// Get 'scripts/(dir)' dir of slade.pk3
-	auto scripts_dir = App::archiveManager().programResourceArchive()->dir(fmt::format("scripts/{}", dir));
+	auto scripts_dir = App::archiveManager().programResourceArchive()->dirAtPath(fmt::format("scripts/{}", dir));
 	if (scripts_dir)
 	{
 		for (auto& entry : scripts_dir->allEntries())

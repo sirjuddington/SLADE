@@ -78,12 +78,12 @@ bool MapBackupManager::writeBackup(
 		wxMkdir(backup_dir);
 
 	// Open or create backup zip
-	ZipArchive backup;
-	string     fname{ archive_name };
+	shared_ptr<Archive> backup = std::make_shared<ZipArchive>();
+	string              fname{ archive_name };
 	std::replace(fname.begin(), fname.end(), '.', '_');
 	auto backup_file = fmt::format("{}/{}_backup.zip", backup_dir, fname);
-	if (!backup.open(backup_file))
-		backup.setFilename(backup_file);
+	if (!backup->open(backup_file))
+		backup->setFilename(backup_file);
 
 	// Filter ignored entries
 	vector<ArchiveEntry*> backup_entries;
@@ -105,10 +105,10 @@ bool MapBackupManager::writeBackup(
 	}
 
 	// Compare with last backup (if any)
-	auto map_dir = backup.dir(map_name);
-	if (map_dir && map_dir->nChildren() > 0)
+	auto map_dir = backup->dirAtPath(map_name);
+	if (map_dir && map_dir->numSubdirs() > 0)
 	{
-		auto last_backup = dynamic_cast<ArchiveTreeNode*>(map_dir->child(map_dir->nChildren() - 1));
+		auto last_backup = map_dir->subdirAt(map_dir->numSubdirs() - 1);
 		bool same        = true;
 		if (last_backup->numEntries() != backup_entries.size())
 			same = false;
@@ -146,16 +146,16 @@ bool MapBackupManager::writeBackup(
 	StrUtil::replaceIP(timestamp, ":", "");
 	auto dir = fmt::format("{}/{}", map_name, timestamp);
 	for (auto& entry : backup_entries)
-		backup.addEntry(entry, dir, true);
+		backup->addEntry(std::make_shared<ArchiveEntry>(*entry), dir);
 
 	// Check for max backups & remove old ones if over
-	map_dir = backup.dir(map_name);
-	while ((int)map_dir->nChildren() > max_map_backups)
-		backup.removeDir(map_dir->child(0)->name(), map_dir);
+	map_dir = backup->dirAtPath(map_name);
+	while ((int)map_dir->numSubdirs() > max_map_backups)
+		backup->removeDir(map_dir->subdirAt(0)->name(), map_dir);
 
 	// Save backup file
 	Archive::save_backup = false;
-	bool ok              = backup.save();
+	bool ok              = backup->save();
 	Archive::save_backup = true;
 
 	return ok;

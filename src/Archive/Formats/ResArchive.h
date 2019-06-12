@@ -13,7 +13,7 @@ public:
 	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset);
 
 	// Opening/writing
-	bool readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps, ArchiveTreeNode* parent);
+	bool readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps, shared_ptr<ArchiveDir> parent);
 	bool open(MemChunk& mc) override;                      // Open from MemChunk
 	bool write(MemChunk& mc, bool update = true) override; // Write to MemChunk
 

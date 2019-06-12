@@ -2150,7 +2150,7 @@ void ArchiveManagerPanel::onArchiveTabClose(wxAuiNotebookEvent& e)
 
 		// Close dependant archives first (if any)
 		auto deps = App::archiveManager().getDependentArchives(archive);
-		
+
 		// Iterate in reverse order so the deepest-nested is closed first
 		for (unsigned a = deps.size(); a > 0; a--)
 		{

@@ -77,7 +77,7 @@ void ResArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
 // Reads a res directory from a MemChunk
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps, ArchiveTreeNode* parent)
+bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps, shared_ptr<ArchiveDir> parent)
 {
 	if (!parent)
 	{

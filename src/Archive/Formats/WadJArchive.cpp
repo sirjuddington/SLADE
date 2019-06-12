@@ -309,7 +309,7 @@ bool WadJArchive::write(MemChunk& mc, bool update)
 // -----------------------------------------------------------------------------
 // Hack to account for Jaguar Doom's silly sprite scheme
 // -----------------------------------------------------------------------------
-string WadJArchive::detectNamespace(size_t index, ArchiveTreeNode* dir)
+string WadJArchive::detectNamespace(size_t index, ArchiveDir* dir)
 {
 	auto nextentry = entryAt(index + 1);
 	if (nextentry && StrUtil::equalCI(nextentry->name(), "."))

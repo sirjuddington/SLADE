@@ -18,15 +18,14 @@ public:
 	bool loadEntryData(ArchiveEntry* entry) override;
 
 	// Entry addition/removal
-	ArchiveEntry* addEntry(
-		ArchiveEntry*    entry,
-		unsigned         position = 0xFFFFFFFF,
-		ArchiveTreeNode* dir      = nullptr,
-		bool             copy     = false) override
+	shared_ptr<ArchiveEntry> addEntry(
+		shared_ptr<ArchiveEntry> entry,
+		unsigned                 position = 0xFFFFFFFF,
+		ArchiveDir*              dir      = nullptr) override
 	{
 		return nullptr;
 	}
-	ArchiveEntry* addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy = false) override
+	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace) override
 	{
 		return nullptr;
 	}
@@ -37,7 +36,7 @@ public:
 
 	// Entry moving
 	bool swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override { return false; }
-	bool moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = nullptr) override
+	bool moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveDir* dir = nullptr) override
 	{
 		return false;
 	}

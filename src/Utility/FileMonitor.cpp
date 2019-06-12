@@ -169,7 +169,7 @@ void DB2MapFileMonitor::fileModified()
 			unsigned index = archive_->entryIndex(entry);
 			for (unsigned b = 0; b < wad->numEntries(); b++)
 			{
-				auto ne = archive_->addEntry(wad->entryAt(b), index, nullptr, true);
+				auto ne = archive_->addEntry(std::make_shared<ArchiveEntry>(*wad->entryAt(b)), index, nullptr);
 				if (index <= archive_->numEntries())
 					index++;
 				ne->lock();

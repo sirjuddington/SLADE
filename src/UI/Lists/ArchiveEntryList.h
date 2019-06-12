@@ -14,7 +14,7 @@ public:
 	ArchiveEntryList(wxWindow* parent);
 	~ArchiveEntryList() = default;
 
-	ArchiveTreeNode* currentDir() const { return current_dir_; }
+	const weak_ptr<ArchiveDir>& currentDir() const { return current_dir_; }
 
 	bool showDirBack() const { return show_dir_back_; }
 	void showDirBack(bool db) { show_dir_back_ = db; }
@@ -30,19 +30,19 @@ public:
 	void filterList(const wxString& filter = "", const wxString& category = "");
 	void applyFilter() override;
 	bool goUpDir();
-	bool setDir(ArchiveTreeNode* dir);
+	bool setDir(const shared_ptr<ArchiveDir>& dir);
 
 	void setEntriesAutoUpdate(bool update) { entries_update_ = update; }
 
 	// Sorting
 	void sortItems() override;
 
-	ArchiveEntry*            entryAt(int index, bool filtered = true) const;
-	int                      entryIndexAt(int index, bool filtered = true);
-	ArchiveEntry*            focusedEntry();
-	vector<ArchiveEntry*>    selectedEntries();
-	ArchiveEntry*            lastSelectedEntry();
-	vector<ArchiveTreeNode*> selectedDirectories();
+	ArchiveEntry*         entryAt(int index, bool filtered = true) const;
+	int                   entryIndexAt(int index, bool filtered = true);
+	ArchiveEntry*         focusedEntry() const;
+	vector<ArchiveEntry*> selectedEntries() const;
+	ArchiveEntry*         lastSelectedEntry() const;
+	vector<ArchiveDir*>   selectedDirectories() const;
 
 	// Label editing
 	void labelEdited(int col, int index, const wxString& new_label) override;
@@ -66,7 +66,7 @@ protected:
 private:
 	weak_ptr<Archive>        archive_;
 	wxString                 filter_category_;
-	ArchiveTreeNode*         current_dir_ = nullptr;
+	weak_ptr<ArchiveDir>     current_dir_;
 	unique_ptr<ArchiveEntry> entry_dir_back_;
 	bool                     show_dir_back_  = false;
 	UndoManager*             undo_manager_   = nullptr;

@@ -894,13 +894,23 @@ bool TextLanguage::loadLanguages()
 	if (res_archive)
 	{
 		// Get 'config/languages' directly
-		auto dir = res_archive->dir("config/languages");
+		auto dir = res_archive->dirAtPath("config/languages");
 
 		if (dir)
 		{
-			// Read all entries in this dir
-			for (unsigned a = 0; a < dir->numEntries(); a++)
-				readLanguageDefinition(dir->entryAt(a)->data(), dir->entryAt(a)->name());
+			// Get list of config entries (to sort)
+			vector<ArchiveEntry*> defs;
+			for (const auto& entry : dir->entries())
+				defs.push_back(entry.get());
+
+			// Sort by name
+			std::sort(defs.begin(), defs.end(), [](ArchiveEntry* left, ArchiveEntry* right) {
+				return left->name() < right->name();
+			});
+
+			// Read all (sorted) entries in this dir
+			for (auto entry : defs)
+				readLanguageDefinition(entry->data(), entry->name());
 		}
 		else
 			Log::warning(

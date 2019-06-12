@@ -533,7 +533,7 @@ bool EntryType::loadEntryTypes()
 	}
 
 	// Get entry types directory
-	auto et_dir = res_archive->dir("config/entry_types/");
+	auto et_dir = res_archive->dirAtPath("config/entry_types/");
 
 	// Check it exists
 	if (!et_dir)

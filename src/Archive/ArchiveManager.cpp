@@ -1207,7 +1207,7 @@ bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 // -----------------------------------------------------------------------------
 // Removes any bookmarked entries in [node] from the list
 // -----------------------------------------------------------------------------
-bool ArchiveManager::deleteBookmarksInDir(ArchiveTreeNode* node)
+bool ArchiveManager::deleteBookmarksInDir(ArchiveDir* node)
 {
 	// Go through bookmarks
 	auto archive = node->archive();
@@ -1224,14 +1224,14 @@ bool ArchiveManager::deleteBookmarksInDir(ArchiveTreeNode* node)
 			// the removed dir or one of its descendants
 			if (bookmark)
 			{
-				remove = false;
+				remove     = false;
 				auto anode = bookmark->parentDir();
-				while (anode != archive->rootDir() && !remove)
+				while (anode != archive->rootDir().get() && !remove)
 				{
 					if (anode == node)
 						remove = true;
 					else
-						anode = (ArchiveTreeNode*)anode->parent();
+						anode = anode->parent().get();
 				}
 			}
 

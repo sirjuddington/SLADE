@@ -159,7 +159,7 @@ bool PaletteManager::loadResourcePalettes()
 {
 	// Get the 'palettes' directory of SLADE.pk3
 	auto res_archive  = App::archiveManager().programResourceArchive();
-	auto dir_palettes = res_archive->dir("palettes/");
+	auto dir_palettes = res_archive->dirAtPath("palettes");
 
 	// Check it exists
 	if (!dir_palettes)

@@ -1,6 +1,6 @@
 #pragma once
 
-class ArchiveTreeNode;
+class ArchiveDir;
 
 namespace Icons
 {

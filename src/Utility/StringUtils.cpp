@@ -528,7 +528,7 @@ string_view StrUtil::afterLastV(string_view str, char chr)
 
 string StrUtil::afterFirst(string_view str, char chr)
 {
-	for (unsigned i = 0; i < str.size(); i++)
+	for (unsigned i = 0; i < str.size(); ++i)
 		if (str[i] == chr)
 			return string{ str.substr(i + 1) };
 
@@ -537,7 +537,7 @@ string StrUtil::afterFirst(string_view str, char chr)
 
 string_view StrUtil::afterFirstV(string_view str, char chr)
 {
-	for (unsigned i = 0; i < str.size(); i++)
+	for (unsigned i = 0; i < str.size(); ++i)
 		if (str[i] == chr)
 			return str.substr(i + 1);
 

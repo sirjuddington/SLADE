@@ -350,7 +350,7 @@ bool HogArchive::loadEntryData(ArchiveEntry* entry)
 // Override of Archive::addEntry to force entry addition to the root directory
 // and set encryption for the entry
 // -----------------------------------------------------------------------------
-ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
+shared_ptr<ArchiveEntry> HogArchive::addEntry(shared_ptr<ArchiveEntry> entry, unsigned position, ArchiveDir* dir)
 {
 	// Check entry
 	if (!entry)
@@ -359,10 +359,6 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 	// Check if read-only
 	if (isReadOnly())
 		return nullptr;
-
-	// Copy if necessary
-	if (copy)
-		entry = new ArchiveEntry(*entry);
 
 	if (shouldEncodeTxb(entry->name()))
 		entry->setEncryption(ArchiveEntry::Encryption::TXB);
@@ -376,9 +372,9 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 // -----------------------------------------------------------------------------
 // Since hog files have no namespaces, just call the other function.
 // -----------------------------------------------------------------------------
-ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, string_view add_namespace, bool copy)
+shared_ptr<ArchiveEntry> HogArchive::addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
 {
-	return addEntry(entry, 0xFFFFFFFF, nullptr, copy);
+	return addEntry(entry, 0xFFFFFFFF, nullptr);
 }
 
 // -----------------------------------------------------------------------------

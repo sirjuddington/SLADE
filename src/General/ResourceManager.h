@@ -48,7 +48,7 @@ class TextureResource : public Resource
 public:
 	struct Texture
 	{
-		CTexture tex;
+		CTexture          tex;
 		weak_ptr<Archive> parent;
 
 		Texture(const CTexture& tex_copy, shared_ptr<Archive> parent) : parent(parent) { tex.copyTexture(tex_copy); }
