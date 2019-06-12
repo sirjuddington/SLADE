@@ -47,8 +47,8 @@ public:
 
 	string                 formatId() const { return format_; }
 	string                 filename(bool full = true) const;
-	ArchiveEntry*          parentEntry() const { return parent_; }
-	Archive*               parentArchive() const { return (parent_ ? parent_->parent() : nullptr); }
+	ArchiveEntry*          parentEntry() const { return parent_.lock().get(); }
+	Archive*               parentArchive() const { return parent_.lock() ? parent_.lock()->parent() : nullptr; }
 	shared_ptr<ArchiveDir> rootDir() const { return dir_root_; }
 	bool                   isModified() const { return modified_; }
 	bool                   isOnDisk() const { return on_disk_; }
@@ -88,7 +88,7 @@ public:
 	void             entryStateChanged(ArchiveEntry* entry);
 	void             putEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveDir* start = nullptr) const;
 	void             putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, ArchiveDir* start = nullptr) const;
-	bool             canSave() const { return parent_ || on_disk_; }
+	bool             canSave() const { return parent_.lock() || on_disk_; }
 	virtual bool     paste(ArchiveDir* tree, unsigned position = 0xFFFFFFFF, shared_ptr<ArchiveDir> base = nullptr);
 	virtual bool     importDir(string_view directory);
 	virtual bool     hasFlatHack() { return false; }
@@ -157,20 +157,20 @@ public:
 
 	// Static functions
 	static bool                   loadFormats(MemChunk& mc);
-	static vector<ArchiveFormat>& allFormats() { return formats; }
+	static vector<ArchiveFormat>& allFormats() { return formats_; }
 
 protected:
-	string        format_;
-	string        filename_;
-	ArchiveEntry* parent_;
-	bool          on_disk_;   // Specifies whether the archive exists on disk (as opposed to being newly created)
-	bool          read_only_; // If true, the archive cannot be modified
+	string                 format_;
+	string                 filename_;
+	weak_ptr<ArchiveEntry> parent_;
+	bool                   on_disk_; // Specifies whether the archive exists on disk (as opposed to being newly created)
+	bool                   read_only_; // If true, the archive cannot be modified
 
 private:
 	bool                   modified_;
 	shared_ptr<ArchiveDir> dir_root_;
 
-	static vector<ArchiveFormat> formats;
+	static vector<ArchiveFormat> formats_;
 };
 
 // Base class for list-based archive formats

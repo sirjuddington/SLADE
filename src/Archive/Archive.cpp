@@ -45,7 +45,7 @@
 CVAR(Bool, archive_load_data, false, CVar::Flag::Save)
 CVAR(Bool, backup_archives, true, CVar::Flag::Save)
 bool                  Archive::save_backup = true;
-vector<ArchiveFormat> Archive::formats;
+vector<ArchiveFormat> Archive::formats_;
 
 
 // -----------------------------------------------------------------------------
@@ -282,7 +282,6 @@ private:
 // -----------------------------------------------------------------------------
 Archive::Archive(string_view format) :
 	format_{ format },
-	parent_{ nullptr },
 	on_disk_{ false },
 	read_only_{ false },
 	modified_{ true },
@@ -295,8 +294,12 @@ Archive::Archive(string_view format) :
 // -----------------------------------------------------------------------------
 Archive::~Archive()
 {
-	if (parent_)
-		parent_->unlock();
+	if (auto parent = parent_.lock())
+		parent->unlock();
+
+	// Clear out subdir archive pointers in case any are being kept around
+	// (eg. by a running script)
+	dir_root_->setArchive(nullptr);
 }
 
 // -----------------------------------------------------------------------------
@@ -304,7 +307,7 @@ Archive::~Archive()
 // -----------------------------------------------------------------------------
 ArchiveFormat Archive::formatDesc() const
 {
-	for (auto fmt : formats)
+	for (auto fmt : formats_)
 		if (fmt.id == format_)
 			return fmt;
 
@@ -361,13 +364,13 @@ string Archive::fileExtensionString() const
 string Archive::filename(bool full) const
 {
 	// If the archive is within another archive, return "<parent archive>/<entry name>"
-	if (parent_)
+	if (auto parent = parent_.lock())
 	{
 		string parent_archive;
 		if (parentArchive())
 			parent_archive = parentArchive()->filename(false) + "/";
 
-		return parent_archive.append(StrUtil::Path::fileNameOf(parent_->name(), false));
+		return parent_archive.append(StrUtil::Path::fileNameOf(parent->name(), false));
 	}
 
 	return full ? filename_ : string{ StrUtil::Path::fileNameOf(filename_) };
@@ -413,11 +416,12 @@ bool Archive::open(string_view filename)
 bool Archive::open(ArchiveEntry* entry)
 {
 	// Load from entry's data
-	if (entry && open(entry->data()))
+	auto sp_entry = entry->getShared();
+	if (sp_entry && open(sp_entry->data()))
 	{
 		// Update variables and return success
-		parent_ = entry;
-		parent_->lock();
+		parent_ = sp_entry;
+		sp_entry->lock();
 		return true;
 	}
 	else
@@ -576,10 +580,10 @@ bool Archive::save(string_view filename)
 	}
 
 	// If the archive has a parent ArchiveEntry, just write it to that
-	if (parent_)
+	if (auto parent = parent_.lock())
 	{
-		success = write(parent_->data());
-		parent_->setState(ArchiveEntry::State::Modified);
+		success = write(parent->data());
+		parent->setState(ArchiveEntry::State::Modified);
 	}
 	else
 	{
@@ -645,8 +649,8 @@ void Archive::close()
 	dir_root_->clear();
 
 	// Unlock parent entry if it exists
-	if (parent_)
-		parent_->unlock();
+	if (auto parent = parent_.lock())
+		parent->unlock();
 
 	// Announce
 	announce("closed");
@@ -1600,7 +1604,7 @@ bool Archive::loadFormats(MemChunk& mc)
 		for (auto ext : fmt.extensions)
 			Log::info(3, wxString::Format("  Extension \"%s\" = \"%s\"", ext.first, ext.second));
 
-		formats.push_back(fmt);
+		formats_.push_back(fmt);
 	}
 
 	// Add builtin 'folder' format
@@ -1608,7 +1612,7 @@ bool Archive::loadFormats(MemChunk& mc)
 	fmt_folder.name             = "Folder";
 	fmt_folder.names_extensions = true;
 	fmt_folder.supports_dirs    = true;
-	formats.push_back(fmt_folder);
+	formats_.push_back(fmt_folder);
 
 	return true;
 }
