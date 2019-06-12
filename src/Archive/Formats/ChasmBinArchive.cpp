@@ -166,7 +166,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 		}
 
 		// Detect entry type
-		EntryType::detectEntryType(entry);
+		EntryType::detectEntryType(*entry);
 		fixBrokenWave(entry);
 
 		// Unload entry data if needed

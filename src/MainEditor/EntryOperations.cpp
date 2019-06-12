@@ -1157,7 +1157,7 @@ bool EntryOperations::convertTextures(const vector<ArchiveEntry*>& entries)
 	if (textures)
 	{
 		bool ok = tx.writeTEXTURESData(textures.get());
-		EntryType::detectEntryType(textures.get());
+		EntryType::detectEntryType(*textures);
 		textures->setExtensionByType();
 		return ok;
 	}

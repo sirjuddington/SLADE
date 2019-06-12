@@ -666,7 +666,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 	texturex->importMemChunk(txdata);
 
 	// Update entry type
-	EntryType::detectEntryType(texturex);
+	EntryType::detectEntryType(*texturex);
 
 	return true;
 }

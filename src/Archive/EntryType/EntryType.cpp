@@ -147,22 +147,18 @@ string EntryType::fileFilterString() const
 // -----------------------------------------------------------------------------
 // Returns true if [entry] matches the EntryType's criteria, false otherwise
 // -----------------------------------------------------------------------------
-int EntryType::isThisType(ArchiveEntry* entry)
+int EntryType::isThisType(ArchiveEntry& entry)
 {
-	// Check entry was given
-	if (!entry)
-		return EntryDataFormat::MATCH_FALSE;
-
 	// Check type is detectable
 	if (!detectable_)
 		return EntryDataFormat::MATCH_FALSE;
 
 	// Check min size
-	if (size_limit_[0] >= 0 && entry->size() < (unsigned)size_limit_[0])
+	if (size_limit_[0] >= 0 && entry.size() < (unsigned)size_limit_[0])
 		return EntryDataFormat::MATCH_FALSE;
 
 	// Check max size
-	if (size_limit_[1] >= 0 && entry->size() > (unsigned)size_limit_[1])
+	if (size_limit_[1] >= 0 && entry.size() > (unsigned)size_limit_[1])
 		return EntryDataFormat::MATCH_FALSE;
 
 	// Check for archive match if needed
@@ -171,7 +167,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		bool match = false;
 		for (const auto& a : match_archive_)
 		{
-			if (entry->parent() && entry->parent()->formatDesc().entry_format == a)
+			if (entry.parent() && entry.parent()->formatDesc().entry_format == a)
 			{
 				match = true;
 				break;
@@ -187,7 +183,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		bool match = false;
 		for (unsigned a : match_size_)
 		{
-			if (entry->size() == a)
+			if (entry.size() == a)
 			{
 				match = true;
 				break;
@@ -204,17 +200,17 @@ int EntryType::isThisType(ArchiveEntry* entry)
 	{
 		// Hack for identifying ACS script sources despite DB2 apparently appending
 		// two null bytes to them, which make the memchr test fail.
-		size_t end = entry->size() - 1;
+		size_t end = entry.size() - 1;
 		if (end > 3)
 			end -= 2;
 		// Text is a special case, as other data formats can sometimes be detected as 'text',
 		// we'll only check for it if text data is specified in the entry type
-		if (entry->size() > 0 && memchr(entry->rawData(), 0, end) != nullptr)
+		if (entry.size() > 0 && memchr(entry.rawData(), 0, end) != nullptr)
 			return EntryDataFormat::MATCH_FALSE;
 	}
-	else if (format_ != EntryDataFormat::anyFormat() && entry->size() > 0)
+	else if (format_ != EntryDataFormat::anyFormat() && entry.size() > 0)
 	{
-		r = format_->isThisFormat(entry->data());
+		r = format_->isThisFormat(entry.data());
 		if (r == EntryDataFormat::MATCH_FALSE)
 			return EntryDataFormat::MATCH_FALSE;
 	}
@@ -226,7 +222,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 		size_t size_multiple_size = size_multiple_.size();
 		for (size_t a = 0; a < size_multiple_size; a++)
 		{
-			if (entry->size() % size_multiple_[a] == 0)
+			if (entry.size() % size_multiple_[a] == 0)
 			{
 				match = true;
 				break;
@@ -248,7 +244,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 	if (!match_name_.empty() || !match_extension_.empty())
 	{
 		// Get entry name (lowercase), find extension separator
-		string_view fn      = entry->upperName();
+		string_view fn      = entry.upperName();
 		size_t      ext_sep = fn.find_first_of('.', 0);
 
 		// Check for name match if needed
@@ -300,10 +296,10 @@ int EntryType::isThisType(ArchiveEntry* entry)
 	if (!section_.empty())
 	{
 		// Check entry is part of an archive (if not it can't be in a section)
-		if (!entry->parent())
+		if (!entry.parent())
 			return EntryDataFormat::MATCH_FALSE;
 
-		auto e_section = entry->parent()->detectNamespace(entry);
+		auto e_section = entry.parent()->detectNamespace(&entry);
 
 		r = EntryDataFormat::MATCH_FALSE;
 		for (const auto& ns : section_)
@@ -583,28 +579,28 @@ bool EntryType::loadEntryTypes()
 // -----------------------------------------------------------------------------
 // Attempts to detect the given entry's type
 // -----------------------------------------------------------------------------
-bool EntryType::detectEntryType(ArchiveEntry* entry)
+bool EntryType::detectEntryType(ArchiveEntry& entry)
 {
 	// Do nothing if the entry is a folder or a map marker
-	if (!entry || entry->type() == &etype_folder || entry->type() == &etype_map)
+	if (entry.type() == &etype_folder || entry.type() == &etype_map)
 		return false;
 
 	// If the entry's size is zero, set it to marker type
-	if (entry->size() == 0)
+	if (entry.size() == 0)
 	{
-		entry->setType(&etype_marker);
+		entry.setType(&etype_marker);
 		return true;
 	}
 
 	// Reset entry type
-	entry->setType(&etype_unknown);
+	entry.setType(&etype_unknown);
 
 	// Go through all registered types
 	size_t entry_types_size = entry_types.size();
 	for (size_t a = 0; a < entry_types_size; a++)
 	{
 		// If the current type is more 'reliable' than this one, skip it
-		if (entry->typeReliability() >= entry_types[a]->reliability())
+		if (entry.typeReliability() >= entry_types[a]->reliability())
 			continue;
 
 		// Check for possible type match
@@ -612,16 +608,16 @@ bool EntryType::detectEntryType(ArchiveEntry* entry)
 		if (r > 0)
 		{
 			// Type matches, set it
-			entry->setType(entry_types[a], r);
+			entry.setType(entry_types[a], r);
 
 			// No need to continue if the identification is 100% reliable
-			if (entry->typeReliability() >= 255)
+			if (entry.typeReliability() >= 255)
 				return true;
 		}
 	}
 
 	// Return t/f depending on if a matching type was found
-	if (entry->type() == &etype_unknown)
+	if (entry.type() == &etype_unknown)
 		return false;
 	else
 		return true;

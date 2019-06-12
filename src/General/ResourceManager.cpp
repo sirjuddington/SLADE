@@ -313,7 +313,7 @@ void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry, bool log)
 
 	// Detect type if unknown
 	if (entry->type() == EntryType::unknownType())
-		EntryType::detectEntryType(entry.get());
+		EntryType::detectEntryType(*entry);
 
 	// Get entry type
 	auto type = entry->type();

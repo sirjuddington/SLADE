@@ -584,7 +584,7 @@ bool WolfArchive::open(MemChunk& mc)
 		}
 
 		// Detect entry type
-		EntryType::detectEntryType(entry);
+		EntryType::detectEntryType(*entry);
 
 		// Set entry to unchanged
 		entry->setState(ArchiveEntry::State::Unmodified);
@@ -731,7 +731,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 		// Detect entry type
 		if (size > 0)
 			nlump->importMemChunk(edata);
-		EntryType::detectEntryType(nlump.get());
+		EntryType::detectEntryType(*nlump);
 
 		// Add to entry list
 		nlump->setState(ArchiveEntry::State::Unmodified);
@@ -846,7 +846,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		}
 
 		// Detect entry type
-		EntryType::detectEntryType(entry);
+		EntryType::detectEntryType(*entry);
 
 		// Set entry to unchanged
 		entry->setState(ArchiveEntry::State::Unmodified);
@@ -981,7 +981,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		}
 
 		// Detect entry type
-		EntryType::detectEntryType(entry);
+		EntryType::detectEntryType(*entry);
 
 		// Set entry to unchanged
 		entry->setState(ArchiveEntry::State::Unmodified);

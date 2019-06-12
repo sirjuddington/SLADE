@@ -182,7 +182,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 		{
 			parent->addEntry(nlump);
 			// Detect entry type
-			EntryType::detectEntryType(nlump.get());
+			EntryType::detectEntryType(*nlump);
 			// Unload entry data if needed
 			if (!archive_load_data)
 				nlump->unloadData();

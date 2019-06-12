@@ -494,7 +494,7 @@ bool WadArchive::open(MemChunk& mc)
 		}
 
 		// Detect entry type
-		EntryType::detectEntryType(entry);
+		EntryType::detectEntryType(*entry);
 
 		// Unload entry data if needed
 		if (!archive_load_data)
@@ -1304,7 +1304,7 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 		{
 			if (entry->type() == EntryType::unknownType())
 			{
-				if (!options.match_type->isThisType(entry))
+				if (!options.match_type->isThisType(*entry))
 				{
 					entry = entry->nextEntry();
 					continue;
@@ -1384,7 +1384,7 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 		{
 			if (entry->type() == EntryType::unknownType())
 			{
-				if (!options.match_type->isThisType(entry))
+				if (!options.match_type->isThisType(*entry))
 				{
 					entry = entry->prevEntry();
 					continue;
@@ -1460,7 +1460,7 @@ vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options)
 		{
 			if (entry->type() == EntryType::unknownType())
 			{
-				if (!options.match_type->isThisType(entry))
+				if (!options.match_type->isThisType(*entry))
 				{
 					entry = entry->nextEntry();
 					continue;

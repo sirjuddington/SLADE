@@ -587,7 +587,7 @@ bool TextureXEditor::checkTextures()
 		{
 			// Check patch entry type
 			if (entry->type() == EntryType::unknownType())
-				EntryType::detectEntryType(entry);
+				EntryType::detectEntryType(*entry);
 			auto type = entry->type();
 
 			if (!type->extraProps().propertyExists("patch"))

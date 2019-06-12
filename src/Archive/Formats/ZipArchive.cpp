@@ -170,7 +170,7 @@ bool ZipArchive::open(string_view filename)
 				new_entry->setLoaded(true);
 
 				// Determine its type
-				EntryType::detectEntryType(new_entry.get());
+				EntryType::detectEntryType(*new_entry);
 
 				// Unload data if needed
 				if (!archive_load_data)

@@ -606,7 +606,7 @@ bool TextureXPanel::saveTEXTUREX()
 		ok = texturex_.writeTEXTUREXData(tx_entry_, tx_editor_->patchTable());
 
 	// Redetect type and lock it up
-	EntryType::detectEntryType(tx_entry_);
+	EntryType::detectEntryType(*tx_entry_);
 	tx_entry_->lock();
 
 	// Set all textures to unmodified
@@ -853,7 +853,7 @@ void TextureXPanel::newTextureFromFile()
 			entry->importFile(file.ToStdString());
 
 			// Determine type
-			EntryType::detectEntryType(entry.get());
+			EntryType::detectEntryType(*entry);
 
 			// If it's not a valid image type, ignore this file
 			if (!entry->type()->extraProps().propertyExists("image"))
@@ -1328,7 +1328,7 @@ void TextureXPanel::exportTexture()
 		lump->importMemChunk(mc);
 		lump->rename(selection[a]->name());
 		archive->addEntry(lump, "textures");
-		EntryType::detectEntryType(lump.get());
+		EntryType::detectEntryType(*lump);
 		lump->setExtensionByType();
 	}
 

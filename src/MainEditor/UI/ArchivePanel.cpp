@@ -179,7 +179,7 @@ public:
 
 				// Import the file to it
 				entry->importFile(filenames[a].ToStdString());
-				EntryType::detectEntryType(entry);
+				EntryType::detectEntryType(*entry);
 			}
 		}
 
@@ -880,8 +880,8 @@ bool ArchivePanel::importFiles()
 			// If the entry was created ok, load the file into it
 			if (new_entry)
 			{
-				new_entry->importFile(info.filenames[a]);    // Import file to entry
-				EntryType::detectEntryType(new_entry.get()); // Detect entry type
+				new_entry->importFile(info.filenames[a]); // Import file to entry
+				EntryType::detectEntryType(*new_entry);   // Detect entry type
 				ok = true;
 			}
 
@@ -1740,7 +1740,7 @@ bool ArchivePanel::importEntry()
 			entry->importFile(info.filenames[0]);
 
 			// Re-detect entry type
-			EntryType::detectEntryType(entry);
+			EntryType::detectEntryType(*entry);
 
 			// Restore offsets if needed
 			if (entry->type()->editor() == "gfx")
@@ -2028,7 +2028,7 @@ bool ArchivePanel::gfxConvert() const
 		MemChunk mc;
 		format->saveImage(*image, mc, gcd.itemPalette(a));
 		selection[a]->importMemChunk(mc);
-		EntryType::detectEntryType(selection[a]);
+		EntryType::detectEntryType(*selection[a]);
 		selection[a]->setExtensionByType();
 	}
 	entry_list_->setEntriesAutoUpdate(true);
@@ -2408,7 +2408,7 @@ bool ArchivePanel::swanConvert() const
 			if (output)
 			{
 				error |= !output->importMemChunk(*mc[e]);
-				EntryType::detectEntryType(output.get());
+				EntryType::detectEntryType(*output);
 				if (output->type() == EntryType::unknownType())
 					output->setType(EntryType::fromId(etypeids[e]));
 				if (index >= 0)
@@ -2491,7 +2491,7 @@ bool ArchivePanel::basConvert(bool animdefs)
 		output->importMemChunk(animdata);
 
 		// Identify the new lump as what it is
-		EntryType::detectEntryType(output.get());
+		EntryType::detectEntryType(*output);
 		// Failsafe is detectEntryType doesn't accept to work, grumble
 		if (output->type() == EntryType::unknownType())
 			output->setType(EntryType::fromId("animdefs"));
@@ -2552,7 +2552,7 @@ bool ArchivePanel::wavDSndConvert() const
 			}
 			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a])); // Create undo step
 			selection[a]->importMemChunk(dsnd);                                         // Load doom sound data
-			EntryType::detectEntryType(selection[a]);                                   // Update entry type
+			EntryType::detectEntryType(*selection[a]);                                  // Update entry type
 			selection[a]->setExtensionByType();                                         // Update extension if necessary
 		}
 	}
@@ -2612,7 +2612,7 @@ bool ArchivePanel::dSndWavConvert() const
 		{
 			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a])); // Create undo step
 			selection[a]->importMemChunk(wav);                                          // Load wav data
-			EntryType::detectEntryType(selection[a]);                                   // Update entry type
+			EntryType::detectEntryType(*selection[a]);                                  // Update entry type
 			selection[a]->setExtensionByType();                                         // Update extension if necessary
 		}
 		else
@@ -2665,7 +2665,7 @@ bool ArchivePanel::musMidiConvert() const
 			else
 				Conversions::zmusToMidi(selection[a]->data(), midi); // Convert
 			selection[a]->importMemChunk(midi);                      // Load midi data
-			EntryType::detectEntryType(selection[a]);                // Update entry type
+			EntryType::detectEntryType(*selection[a]);               // Update entry type
 			selection[a]->setExtensionByType();                      // Update extension if necessary
 		}
 	}
@@ -2846,7 +2846,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 
 	// Detect entry type if it hasn't been already
 	if (entry->type() == EntryType::unknownType())
-		EntryType::detectEntryType(entry);
+		EntryType::detectEntryType(*entry);
 
 	// Are we trying to open a directory? This can happen from bookmarks.
 	if (entry->type() == EntryType::folderType())

@@ -737,11 +737,11 @@ bool Archive::paste(ArchiveDir* tree, unsigned position, shared_ptr<ArchiveDir> 
 	return ArchiveDir::merge(base, tree, position);
 }
 
- // -----------------------------------------------------------------------------
- // Gets the directory matching [path], starting from [base].
- // If [base] is null, the root directory is used.
- // Returns null if the requested directory does not exist
- // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Gets the directory matching [path], starting from [base].
+// If [base] is null, the root directory is used.
+// Returns null if the requested directory does not exist
+// -----------------------------------------------------------------------------
 ArchiveDir* Archive::dirAtPath(string_view path, ArchiveDir* base) const
 {
 	if (!base)
@@ -1243,7 +1243,7 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 	entry->unloadData();
 	if (loadEntryData(entry))
 	{
-		EntryType::detectEntryType(entry);
+		EntryType::detectEntryType(*entry);
 		return true;
 	}
 	else
@@ -1310,7 +1310,7 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 		{
 			if (entry->type() == EntryType::unknownType())
 			{
-				if (!options.match_type->isThisType(entry))
+				if (!options.match_type->isThisType(*entry))
 					continue;
 			}
 			else if (options.match_type != entry->type())
@@ -1380,7 +1380,7 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 		{
 			if (entry->type() == EntryType::unknownType())
 			{
-				if (!options.match_type->isThisType(entry))
+				if (!options.match_type->isThisType(*entry))
 					continue;
 			}
 			else if (options.match_type != entry->type())
@@ -1450,7 +1450,7 @@ vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
 		{
 			if (entry->type() == EntryType::unknownType())
 			{
-				if (!options.match_type->isThisType(entry))
+				if (!options.match_type->isThisType(*entry))
 					continue;
 			}
 			else if (options.match_type != entry->type())

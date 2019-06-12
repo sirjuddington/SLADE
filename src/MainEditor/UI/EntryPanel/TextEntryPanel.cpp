@@ -197,7 +197,7 @@ bool TextEntryPanel::saveEntry()
 		entry_->setState(ArchiveEntry::State::Modified);
 
 	// Re-detect entry type
-	EntryType::detectEntryType(entry_);
+	EntryType::detectEntryType(*entry_);
 
 	// Set text if unknown
 	if (entry_->type() == EntryType::unknownType())

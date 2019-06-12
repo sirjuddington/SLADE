@@ -73,7 +73,7 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 
 	// Detect entry type if it isn't already
 	if (entry->type() == EntryType::unknownType())
-		EntryType::detectEntryType(entry);
+		EntryType::detectEntryType(*entry);
 
 	// Check for format "image" property
 	if (!entry->type()->extraProps().propertyExists("image"))

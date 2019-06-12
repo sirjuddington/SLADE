@@ -176,7 +176,7 @@ bool GobArchive::open(MemChunk& mc)
 		}
 
 		// Detect entry type
-		EntryType::detectEntryType(entry);
+		EntryType::detectEntryType(*entry);
 
 		// Unload entry data if needed
 		if (!archive_load_data)

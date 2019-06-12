@@ -31,12 +31,12 @@ public:
 	string fileFilterString() const;
 
 	// Magic goes here
-	int isThisType(ArchiveEntry* entry);
+	int isThisType(ArchiveEntry& entry);
 
 	// Static functions
 	static bool               readEntryTypeDefinition(MemChunk& mc, string_view source);
 	static bool               loadEntryTypes();
-	static bool               detectEntryType(ArchiveEntry* entry);
+	static bool               detectEntryType(ArchiveEntry& entry);
 	static EntryType*         fromId(string_view id);
 	static EntryType*         unknownType();
 	static EntryType*         folderType();

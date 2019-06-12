@@ -281,7 +281,7 @@ bool GfxEntryPanel::saveEntry()
 
 			// Re-detect type
 			auto oldtype = entry_->type();
-			EntryType::detectEntryType(entry_);
+			EntryType::detectEntryType(*entry_);
 
 			// Update extension if type changed
 			if (oldtype != entry_->type())
@@ -428,7 +428,7 @@ bool GfxEntryPanel::extractAll() const
 			if (newimg == nullptr)
 				return false;
 			SIFormat::getFormat("png")->saveImage(*image(), newimg->data(), &gfx_canvas_->palette());
-			EntryType::detectEntryType(newimg.get());
+			EntryType::detectEntryType(*newimg);
 			pos++;
 		}
 	}

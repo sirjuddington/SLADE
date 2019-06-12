@@ -136,7 +136,7 @@ bool PodArchive::open(MemChunk& mc)
 		all_entries[a]->importMemChunk(edata);
 
 		// Detect entry type
-		EntryType::detectEntryType(all_entries[a]);
+		EntryType::detectEntryType(*all_entries[a]);
 
 		// Unload entry data if needed
 		if (!archive_load_data)

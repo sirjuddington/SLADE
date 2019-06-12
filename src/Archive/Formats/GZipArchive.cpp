@@ -164,7 +164,7 @@ bool GZipArchive::open(MemChunk& mc)
 		return false;
 	}
 	rootDir()->addEntry(entry);
-	EntryType::detectEntryType(entry.get());
+	EntryType::detectEntryType(*entry);
 	entry->setState(ArchiveEntry::State::Unmodified);
 
 	setMuted(false);
@@ -331,7 +331,7 @@ ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 	{
 		if (entry->type() == EntryType::unknownType())
 		{
-			if (!options.match_type->isThisType(entry))
+			if (!options.match_type->isThisType(*entry))
 			{
 				return nullptr;
 			}

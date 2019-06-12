@@ -205,7 +205,7 @@ bool EntryPanel::revertEntry(bool confirm)
 			auto state = entry_->state();
 			entry_->importMemChunk(entry_data_);
 			entry_->setState(state);
-			EntryType::detectEntryType(entry_);
+			EntryType::detectEntryType(*entry_);
 			loadEntry(entry_);
 		}
 

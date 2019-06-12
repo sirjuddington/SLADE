@@ -187,7 +187,7 @@ bool DatArchive::open(MemChunk& mc)
 		}
 
 		// Detect entry type
-		EntryType::detectEntryType(entry);
+		EntryType::detectEntryType(*entry);
 
 		// Set entry to unchanged
 		entry->setState(ArchiveEntry::State::Unmodified);

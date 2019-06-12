@@ -208,7 +208,7 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 			for (const auto& entry : archive->rootDir()->allEntries())
 			{
 				if (entry->type() == EntryType::unknownType())
-					EntryType::detectEntryType(entry.get());
+					EntryType::detectEntryType(*entry);
 
 				if (entry->type()->id() == "wad")
 					// First true: yes, manage this

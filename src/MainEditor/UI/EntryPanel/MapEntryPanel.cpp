@@ -126,7 +126,7 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 	if (!found)
 	{
 		entry->setType(EntryType::unknownType());
-		EntryType::detectEntryType(entry);
+		EntryType::detectEntryType(*entry);
 		return false;
 	}
 

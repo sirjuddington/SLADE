@@ -307,7 +307,7 @@ bool PatchTable::writePNAMES(ArchiveEntry* pnames)
 	pnames->importMemChunk(pndata);
 
 	// Update entry type
-	EntryType::detectEntryType(pnames);
+	EntryType::detectEntryType(*pnames);
 
 	return true;
 }

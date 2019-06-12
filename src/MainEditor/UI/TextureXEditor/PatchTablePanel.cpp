@@ -345,7 +345,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 			entry->importFile(file.ToStdString());
 
 			// Determine type
-			EntryType::detectEntryType(entry.get());
+			EntryType::detectEntryType(*entry);
 
 			// If it's not a valid image type, ignore this file
 			if (!entry->type()->extraProps().propertyExists("image"))

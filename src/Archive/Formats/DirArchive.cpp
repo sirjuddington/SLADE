@@ -119,7 +119,7 @@ bool DirArchive::open(string_view filename)
 		file_modification_times_[new_entry.get()] = wxFileModificationTime(files[a]);
 
 		// Detect entry type
-		EntryType::detectEntryType(new_entry.get());
+		EntryType::detectEntryType(*new_entry);
 
 		// Unload data if needed
 		if (!archive_load_data)
@@ -608,7 +608,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 		{
 			auto entry = entryAtPath(change.entry_path);
 			entry->importFile(change.file_path);
-			EntryType::detectEntryType(entry);
+			EntryType::detectEntryType(*entry);
 			file_modification_times_[entry] = wxFileModificationTime(change.file_path);
 		}
 
@@ -666,7 +666,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 			file_modification_times_[new_entry.get()] = FileUtil::fileModifiedTime(change.file_path);
 
 			// Detect entry type
-			EntryType::detectEntryType(new_entry.get());
+			EntryType::detectEntryType(*new_entry);
 
 			// Unload data if needed
 			if (!archive_load_data)
