@@ -17,14 +17,7 @@
 /*.ncb
 /.vscode/*
 /release
-/build/msvc/Release*
-/build/msvc/Debug*
-/build/msvc/x64
-/build/msvc/.vs
-/build/CMakeFiles
-/build/CMakeTools
-/build/msvc/*.vspx
-/build/msvc/*.props
+/build
 /dist/*.log
 /dist/*.map
 /dist/portable
@@ -36,8 +29,10 @@
 /src/updaterevision
 /src/gitinfo.h
 /win_installer/Output
-cmake-build-debug/
-\.idea/
+/cmake-build-debug
+/.idea/
+/msvc/.vs
+/.vs
 
 /dist/*
 !/dist/res
