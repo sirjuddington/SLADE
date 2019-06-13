@@ -192,18 +192,17 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry)
 bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 {
 	// Check entry was given
-	if (entry == nullptr)
+	if (!entry)
 	{
 		Global::error = "no entry to load";
 		return false;
 	}
 
 	// Update variables
-	this->entry_ = entry;
 	setModified(false);
 
 	// Attempt to load the image
-	if (!Misc::loadImageFromEntry(image(), this->entry_, index))
+	if (!Misc::loadImageFromEntry(image(), entry, index))
 		return false;
 
 	// Only show next/prev image buttons if the entry contains multiple images
@@ -231,7 +230,7 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 		image()->setWidth(256);
 
 	// Refresh everything
-	refresh();
+	refresh(entry);
 
 	return true;
 }
@@ -241,6 +240,11 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 // -----------------------------------------------------------------------------
 bool GfxEntryPanel::saveEntry()
 {
+	// Check entry is open
+	auto entry = entry_.lock();
+	if (!entry)
+		return false;
+
 	// Set offsets
 	auto image = this->image();
 	image->setXOffset(spin_xoffset_->GetValue());
@@ -268,7 +272,7 @@ bool GfxEntryPanel::saveEntry()
 				Log::info("Image converted for writing");
 			}
 
-			if (format->saveImage(*image, entry_->data(), &gfx_canvas_->palette()))
+			if (format->saveImage(*image, entry->data(), &gfx_canvas_->palette()))
 				ok = true;
 			else
 				error = "Error writing image";
@@ -277,33 +281,33 @@ bool GfxEntryPanel::saveEntry()
 		if (ok)
 		{
 			// Set modified
-			entry_->setState(ArchiveEntry::State::Modified);
+			entry->setState(ArchiveEntry::State::Modified);
 
 			// Re-detect type
-			auto oldtype = entry_->type();
-			EntryType::detectEntryType(*entry_);
+			auto oldtype = entry->type();
+			EntryType::detectEntryType(*entry);
 
 			// Update extension if type changed
-			if (oldtype != entry_->type())
-				entry_->setExtensionByType();
+			if (oldtype != entry->type())
+				entry->setExtensionByType();
 		}
 		else
 			wxMessageBox(wxString("Cannot save changes to image: ") + error, "Error", wxICON_ERROR);
 	}
 	// Otherwise just set offsets
 	else
-		EntryOperations::setGfxOffsets(entry_, spin_xoffset_->GetValue(), spin_yoffset_->GetValue());
+		EntryOperations::setGfxOffsets(entry.get(), spin_xoffset_->GetValue(), spin_yoffset_->GetValue());
 
 	// Apply alPh/tRNS options
-	if (entry_->type()->formatId() == "img_png")
+	if (entry->type()->formatId() == "img_png")
 	{
-		bool alph = EntryOperations::getalPhChunk(entry_);
-		bool trns = EntryOperations::gettRNSChunk(entry_);
+		bool alph = EntryOperations::getalPhChunk(entry.get());
+		bool trns = EntryOperations::gettRNSChunk(entry.get());
 
 		if (alph != menu_custom_->IsChecked(SAction::fromId("pgfx_alph")->wxId()))
-			EntryOperations::modifyalPhChunk(entry_, !alph);
+			EntryOperations::modifyalPhChunk(entry.get(), !alph);
 		if (trns != menu_custom_->IsChecked(SAction::fromId("pgfx_trns")->wxId()))
-			EntryOperations::modifytRNSChunk(entry_, !trns);
+			EntryOperations::modifytRNSChunk(entry.get(), !trns);
 	}
 
 	if (ok)
@@ -401,30 +405,34 @@ void GfxEntryPanel::fillBrushMenu(wxMenu* bm) const
 // -----------------------------------------------------------------------------
 bool GfxEntryPanel::extractAll() const
 {
+	auto entry = entry_.lock();
+	if (!entry)
+		return false;
+
 	if (image()->size() < 2)
 		return false;
 
 	// Remember where we are
 	int imgindex = image()->index();
 
-	auto parent = entry_->parent();
+	auto parent = entry->parent();
 	if (parent == nullptr)
 		return false;
 
-	int      index = parent->entryIndex(entry_, entry_->parentDir());
-	wxString name  = wxFileName(entry_->name()).GetName();
+	int      index = parent->entryIndex(entry.get(), entry->parentDir());
+	wxString name  = wxFileName(entry->name()).GetName();
 
 	// Loop through subimages and get things done
 	int pos = 0;
 	for (int i = 0; i < image()->size(); ++i)
 	{
 		wxString newname = wxString::Format("%s_%i.png", name, i);
-		Misc::loadImageFromEntry(image(), entry_, i);
+		Misc::loadImageFromEntry(image(), entry.get(), i);
 
 		// Only process images that actually contain some pixels
 		if (image()->width() && image()->height())
 		{
-			auto newimg = parent->addNewEntry(newname.ToStdString(), index + pos + 1, entry_->parentDir());
+			auto newimg = parent->addNewEntry(newname.ToStdString(), index + pos + 1, entry->parentDir());
 			if (newimg == nullptr)
 				return false;
 			SIFormat::getFormat("png")->saveImage(*image(), newimg->data(), &gfx_canvas_->palette());
@@ -434,7 +442,7 @@ bool GfxEntryPanel::extractAll() const
 	}
 
 	// Reload image of where we were
-	Misc::loadImageFromEntry(image(), entry_, imgindex);
+	Misc::loadImageFromEntry(image(), entry.get(), imgindex);
 
 	return true;
 }
@@ -442,10 +450,16 @@ bool GfxEntryPanel::extractAll() const
 // -----------------------------------------------------------------------------
 // Reloads image data and force refresh
 // -----------------------------------------------------------------------------
-void GfxEntryPanel::refresh()
+void GfxEntryPanel::refresh(ArchiveEntry* entry)
 {
+	// Get entry to use
+	if (!entry)
+		entry = entry_.lock().get();
+	if (!entry)
+		return;
+
 	// Setup palette
-	theMainWindow->paletteChooser()->setGlobalFromArchive(entry_->parent(), Misc::detectPaletteHack(entry_));
+	theMainWindow->paletteChooser()->setGlobalFromArchive(entry->parent(), Misc::detectPaletteHack(entry));
 	updateImagePalette();
 
 	// Set offset text boxes
@@ -461,15 +475,15 @@ void GfxEntryPanel::refresh()
 	int menu_archgfx_exportpng = SAction::fromId("arch_gfx_exportpng")->wxId();
 
 	// Set PNG check menus
-	if (this->entry_->type() != nullptr && this->entry_->type()->formatId() == "img_png")
+	if (entry->type() != nullptr && entry->type()->formatId() == "img_png")
 	{
 		// Check for alph
-		alph_ = EntryOperations::getalPhChunk(this->entry_);
+		alph_ = EntryOperations::getalPhChunk(entry);
 		menu_custom_->Enable(menu_gfxep_alph, true);
 		menu_custom_->Check(menu_gfxep_alph, alph_);
 
 		// Check for trns
-		trns_ = EntryOperations::gettRNSChunk(this->entry_);
+		trns_ = EntryOperations::gettRNSChunk(entry);
 		menu_custom_->Enable(menu_gfxep_trns, true);
 		menu_custom_->Check(menu_gfxep_trns, trns_);
 
@@ -535,14 +549,14 @@ wxString GfxEntryPanel::statusString()
 		status += ", 8bpp";
 
 	// PNG stuff
-	if (entry_->type()->formatId() == "img_png")
+	if (auto entry = entry_.lock(); entry->type()->formatId() == "img_png")
 	{
 		// alPh
-		if (EntryOperations::getalPhChunk(entry_))
+		if (EntryOperations::getalPhChunk(entry.get()))
 			status += ", alPh";
 
 		// tRNS
-		if (EntryOperations::gettRNSChunk(entry_))
+		if (EntryOperations::gettRNSChunk(entry.get()))
 			status += ", tRNS";
 	}
 
@@ -573,16 +587,18 @@ void GfxEntryPanel::updateImagePalette() const
 // -----------------------------------------------------------------------------
 GfxCanvas::View GfxEntryPanel::detectOffsetType() const
 {
-	if (!entry_)
+	auto entry = entry_.lock();
+
+	if (!entry)
 		return GfxCanvas::View::Default;
 
-	if (!entry_->parent())
+	if (!entry->parent())
 		return GfxCanvas::View::Default;
 
 	// Check what section of the archive the entry is in -- only PNGs or images
 	// in the sprites section can be HUD or sprite
-	bool is_sprite = ("sprites" == entry_->parent()->detectNamespace(entry_));
-	bool is_png    = ("img_png" == entry_->type()->formatId());
+	bool is_sprite = ("sprites" == entry->parent()->detectNamespace(entry.get()));
+	bool is_png    = ("img_png" == entry->type()->formatId());
 	if (!is_sprite && !is_png)
 		return GfxCanvas::View::Default;
 
@@ -672,6 +688,8 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	// We're only interested in "pgfx_" actions
 	if (!StrUtil::startsWith(id, "pgfx_"))
 		return false;
+
+	auto entry = entry_.lock();
 
 	// For pgfx_brush actions, the string after pgfx is a brush name
 	if (StrUtil::startsWith(id, "pgfx_brush"))
@@ -820,10 +838,10 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	}
 
 	// Colourise
-	else if (id == "pgfx_colourise")
+	else if (id == "pgfx_colourise" && entry)
 	{
 		auto               pal = MainEditor::currentPalette();
-		GfxColouriseDialog gcd(theMainWindow, entry_, *pal);
+		GfxColouriseDialog gcd(theMainWindow, entry.get(), *pal);
 		gcd.setColour(last_colour);
 
 		// Show colourise dialog
@@ -845,10 +863,10 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	}
 
 	// Tint
-	else if (id == "pgfx_tint")
+	else if (id == "pgfx_tint" && entry)
 	{
 		auto          pal = MainEditor::currentPalette();
-		GfxTintDialog gtd(theMainWindow, entry_, *pal);
+		GfxTintDialog gtd(theMainWindow, entry.get(), *pal);
 		gtd.setValues(last_tint_colour, last_tint_amount);
 
 		// Show tint dialog
@@ -918,11 +936,11 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	}
 
 	// Optimize PNG
-	else if (id == "pgfx_pngopt")
+	else if (id == "pgfx_pngopt" && entry)
 	{
 		// This is a special case. If we set the entry as modified, SLADE will prompt
 		// to save it, rewriting the entry and cancelling the optimization done...
-		if (EntryOperations::optimizePNG(entry_))
+		if (EntryOperations::optimizePNG(entry.get()))
 			setModified(false);
 		else
 			wxMessageBox(
@@ -939,11 +957,11 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	}
 
 	// Convert
-	else if (id == "pgfx_convert")
+	else if (id == "pgfx_convert" && entry)
 	{
 		GfxConvDialog gcd(theMainWindow);
 		gcd.CenterOnParent();
-		gcd.openEntry(entry_);
+		gcd.openEntry(entry.get());
 
 		gcd.ShowModal();
 
@@ -1153,12 +1171,13 @@ void GfxEntryPanel::onAnnouncement(Announcer* announcer, string_view event_name,
 void GfxEntryPanel::onBtnNextImg(wxCommandEvent& e)
 {
 	int num = gfx_canvas_->image().size();
-	if (num > 1)
+	auto entry = entry_.lock().get();
+	if (num > 1 && entry)
 	{
 		if (cur_index_ < num - 1)
-			loadEntry(entry_, cur_index_ + 1);
+			loadEntry(entry, cur_index_ + 1);
 		else
-			loadEntry(entry_, 0);
+			loadEntry(entry, 0);
 	}
 }
 
@@ -1168,12 +1187,13 @@ void GfxEntryPanel::onBtnNextImg(wxCommandEvent& e)
 void GfxEntryPanel::onBtnPrevImg(wxCommandEvent& e)
 {
 	int num = gfx_canvas_->image().size();
-	if (num > 1)
+	auto entry = entry_.lock().get();
+	if (num > 1 && entry)
 	{
 		if (cur_index_ > 0)
-			loadEntry(entry_, cur_index_ - 1);
+			loadEntry(entry, cur_index_ - 1);
 		else
-			loadEntry(entry_, num - 1);
+			loadEntry(entry, num - 1);
 	}
 }
 

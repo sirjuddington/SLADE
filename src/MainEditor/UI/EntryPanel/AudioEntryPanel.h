@@ -17,10 +17,12 @@ public:
 	AudioEntryPanel(wxWindow* parent);
 	~AudioEntryPanel();
 
-	bool     loadEntry(ArchiveEntry* entry) override;
 	bool     saveEntry() override;
 	wxString statusString() override;
 	void     setAudioDuration(int duration);
+
+protected:
+	bool loadEntry(ArchiveEntry* entry) override;
 
 private:
 	enum AudioType
@@ -61,7 +63,7 @@ private:
 	unique_ptr<sf::Music>       music_;
 	unique_ptr<ModMusic>        mod_;
 
-	bool open();
+	bool open(ArchiveEntry* entry);
 	bool openAudio(MemChunk& audio, const wxString& filename);
 	bool openMidi(MemChunk& data, const wxString& filename);
 	bool openMod(MemChunk& data);

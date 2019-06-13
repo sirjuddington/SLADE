@@ -162,7 +162,8 @@ bool MapEntryPanel::saveEntry()
 // -----------------------------------------------------------------------------
 bool MapEntryPanel::createImage()
 {
-	if (entry_ == nullptr)
+	auto entry = entry_.lock();
+	if (!entry)
 		return false;
 
 	ArchiveEntry temp;
@@ -176,7 +177,7 @@ bool MapEntryPanel::createImage()
 			min<int>(map_image_width, map_canvas_->GetSize().x),
 			min<int>(map_image_height, map_canvas_->GetSize().y));
 
-	wxString   name = wxString::Format("%s_%s", entry_->parent()->filename(false), entry_->name());
+	wxString   name = wxString::Format("%s_%s", entry->parent()->filename(false), entry->name());
 	wxFileName fn(name);
 
 	// Create save file dialog

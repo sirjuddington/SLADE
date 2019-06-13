@@ -11,7 +11,6 @@ public:
 	TextEntryPanel(wxWindow* parent);
 	~TextEntryPanel() {}
 
-	bool     loadEntry(ArchiveEntry* entry) override;
 	bool     saveEntry() override;
 	void     refreshPanel() override;
 	void     closeEntry() override;
@@ -21,6 +20,9 @@ public:
 
 	// SAction Handler
 	bool handleEntryPanelAction(string_view id) override;
+
+protected:
+	bool loadEntry(ArchiveEntry* entry) override;
 
 private:
 	TextEditorCtrl*   text_area_            = nullptr;

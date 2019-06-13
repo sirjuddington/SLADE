@@ -11,10 +11,12 @@ public:
 	MapEntryPanel(wxWindow* parent);
 	~MapEntryPanel() = default;
 
-	bool loadEntry(ArchiveEntry* entry) override;
 	bool saveEntry() override;
 	bool createImage();
 	void toolbarButtonClick(const wxString& action_id) override;
+
+protected:
+	bool loadEntry(ArchiveEntry* entry) override;
 
 private:
 	MapPreviewCanvas* map_canvas_     = nullptr;

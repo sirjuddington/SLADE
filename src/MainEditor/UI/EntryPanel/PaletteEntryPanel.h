@@ -24,7 +24,6 @@ public:
 	PaletteEntryPanel(wxWindow* parent);
 	~PaletteEntryPanel() = default;
 
-	bool     loadEntry(ArchiveEntry* entry) override;
 	bool     saveEntry() override;
 	wxString statusString() override;
 	void     refreshPanel() override;
@@ -55,6 +54,9 @@ public:
 	// SAction handler
 	bool handleEntryPanelAction(string_view id) override;
 	bool fillCustomMenu(wxMenu* custom) override;
+
+protected:
+	bool loadEntry(ArchiveEntry* entry) override;
 
 private:
 	PaletteCanvas*              pal_canvas_ = nullptr;

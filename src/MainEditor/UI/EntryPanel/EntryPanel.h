@@ -15,14 +15,14 @@ public:
 	~EntryPanel();
 
 	wxString      name() const { return id_; }
-	ArchiveEntry* entry() const { return entry_; }
+	ArchiveEntry* entry() const { return entry_.lock().get(); }
 	bool          isModified() const { return modified_; }
 	bool          isActivePanel();
 	void          setUndoManager(UndoManager* manager) { undo_manager_ = manager; }
 	MemChunk*     entryData() { return &entry_data_; }
 
 	bool             openEntry(ArchiveEntry* entry);
-	virtual bool     loadEntry(ArchiveEntry* entry);
+	bool             openEntry(shared_ptr<ArchiveEntry> entry);
 	virtual bool     saveEntry();
 	virtual bool     revertEntry(bool confirm = true);
 	virtual void     refreshPanel();
@@ -34,16 +34,16 @@ public:
 	virtual bool     fillCustomMenu(wxMenu* custom) { return false; }
 	wxString         customMenuName() const { return custom_menu_name_; }
 	void             callRefresh() { refreshPanel(); }
-	void             nullEntry() { entry_ = nullptr; }
+	void             nullEntry() { entry_.reset(); }
 	virtual bool     undo() { return false; }
 	virtual bool     redo() { return false; }
 	void             updateToolbar();
 	virtual void     toolbarButtonClick(const wxString& action_id) {}
 
 protected:
-	MemChunk      entry_data_;
-	ArchiveEntry* entry_        = nullptr;
-	UndoManager*  undo_manager_ = nullptr;
+	MemChunk               entry_data_;
+	weak_ptr<ArchiveEntry> entry_;
+	UndoManager*           undo_manager_ = nullptr;
 
 	wxSizer*        sizer_main_   = nullptr;
 	wxSizer*        sizer_bottom_ = nullptr;
@@ -55,8 +55,8 @@ protected:
 	wxString  custom_toolbar_actions_;
 	SToolBar* toolbar_ = nullptr;
 
-	void setModified(bool c = true);
-
+	void         setModified(bool c = true);
+	virtual bool loadEntry(ArchiveEntry* entry);
 	void         onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override {}
 	virtual bool handleEntryPanelAction(string_view id) { return false; }
 	void         onToolbarButton(wxCommandEvent& e);

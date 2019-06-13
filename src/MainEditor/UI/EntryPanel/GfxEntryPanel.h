@@ -15,15 +15,13 @@ public:
 
 	Translation& prevTranslation() { return prev_translation_; }
 
-	bool            loadEntry(ArchiveEntry* entry) override;
-	bool            loadEntry(ArchiveEntry* entry, int index);
 	bool            saveEntry() override;
 	void            setupToolbar();
 	void            fillBrushMenu(wxMenu* bm) const;
 	void            updateImagePalette() const;
 	GfxCanvas::View detectOffsetType() const;
 	void            applyViewType() const;
-	void            refresh();
+	void            refresh(ArchiveEntry* entry = nullptr);
 	void            refreshPanel() override;
 	wxString        statusString() override;
 	bool            extractAll() const;
@@ -41,6 +39,10 @@ public:
 		else
 			return nullptr;
 	}
+
+protected:
+	bool loadEntry(ArchiveEntry* entry) override;
+	bool loadEntry(ArchiveEntry* entry, int index);
 
 private:
 	bool        alph_                = false;

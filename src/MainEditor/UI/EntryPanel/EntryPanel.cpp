@@ -105,18 +105,14 @@ EntryPanel::~EntryPanel()
 // -----------------------------------------------------------------------------
 void EntryPanel::setModified(bool c)
 {
-	if (!entry_)
+	auto entry = entry_.lock();
+	if (!entry)
 	{
 		modified_ = c;
 		return;
 	}
-	else
-	{
-		if (entry_->isLocked())
-			modified_ = false;
-		else
-			modified_ = c;
-	}
+
+	modified_ = entry->isLocked() ? false : c;
 
 	if (stb_save_ && stb_save_->IsEnabled() != modified_)
 	{
@@ -130,8 +126,12 @@ void EntryPanel::setModified(bool c)
 // -----------------------------------------------------------------------------
 bool EntryPanel::openEntry(ArchiveEntry* entry)
 {
+	return openEntry(entry->getShared());
+}
+bool EntryPanel::openEntry(shared_ptr<ArchiveEntry> entry)
+{
 	entry_data_.clear();
-	entry_ = nullptr;
+	entry_.reset();
 
 	// Check entry was given
 	if (!entry)
@@ -145,7 +145,7 @@ bool EntryPanel::openEntry(ArchiveEntry* entry)
 	entry_data_.importMem(entry->rawData(true), entry->size());
 
 	// Load the entry
-	if (loadEntry(entry))
+	if (loadEntry(entry.get()))
 	{
 		entry_ = entry;
 		updateStatus();
@@ -189,6 +189,10 @@ bool EntryPanel::revertEntry(bool confirm)
 {
 	if (modified_ && entry_data_.hasData())
 	{
+		auto entry = entry_.lock();
+		if (!entry)
+			return false;
+
 		bool ok = true;
 
 		// Prompt to revert if configured to
@@ -202,11 +206,11 @@ bool EntryPanel::revertEntry(bool confirm)
 
 		if (ok)
 		{
-			auto state = entry_->state();
-			entry_->importMemChunk(entry_data_);
-			entry_->setState(state);
-			EntryType::detectEntryType(*entry_);
-			loadEntry(entry_);
+			auto state = entry->state();
+			entry->importMemChunk(entry_data_);
+			entry->setState(state);
+			EntryType::detectEntryType(*entry);
+			loadEntry(entry.get());
 		}
 
 		return true;
@@ -230,7 +234,7 @@ void EntryPanel::refreshPanel()
 void EntryPanel::closeEntry()
 {
 	entry_data_.clear();
-	this->entry_ = nullptr;
+	entry_.reset();
 }
 
 // -----------------------------------------------------------------------------
@@ -239,12 +243,12 @@ void EntryPanel::closeEntry()
 void EntryPanel::updateStatus()
 {
 	// Basic info
-	if (entry_)
+	if (auto entry = entry_.lock())
 	{
-		wxString name = entry_->name();
-		wxString type = entry_->typeString();
+		wxString name = entry->name();
+		wxString type = entry->typeString();
 		wxString text = wxString::Format(
-			"%d: %s, %d bytes, %s", entry_->parentDir()->entryIndex(entry_), name, entry_->size(), type);
+			"%d: %s, %d bytes, %s", entry->parentDir()->entryIndex(entry.get()), name, entry->size(), type);
 
 		theMainWindow->CallAfter(&MainWindow::SetStatusText, text, 1);
 
@@ -314,12 +318,14 @@ void EntryPanel::onToolbarButton(wxCommandEvent& e)
 	// Save
 	if (button == "save")
 	{
-		if (modified_)
+		auto entry = entry_.lock();
+
+		if (modified_ && entry)
 		{
 			if (undo_manager_)
 			{
 				undo_manager_->beginRecord("Save Entry Modifications");
-				undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry_));
+				undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry.get()));
 			}
 
 			if (saveEntry())

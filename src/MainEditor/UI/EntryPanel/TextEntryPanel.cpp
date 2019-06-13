@@ -174,7 +174,6 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	text_area_->EmptyUndoBuffer();
 
 	// Update variables
-	this->entry_ = entry;
 	setModified(false);
 
 	return true;
@@ -185,6 +184,10 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 bool TextEntryPanel::saveEntry()
 {
+	auto entry = entry_.lock();
+	if (!entry)
+		return false;
+
 	// Trim whitespace
 	if (txed_trim_whitespace)
 		text_area_->trimWhitespace();
@@ -192,16 +195,16 @@ bool TextEntryPanel::saveEntry()
 	// Write raw text to the entry
 	MemChunk mc;
 	text_area_->getRawText(mc);
-	entry_->importMemChunk(mc);
-	if (entry_->state() == ArchiveEntry::State::Unmodified)
-		entry_->setState(ArchiveEntry::State::Modified);
+	entry->importMemChunk(mc);
+	if (entry->state() == ArchiveEntry::State::Unmodified)
+		entry->setState(ArchiveEntry::State::Modified);
 
 	// Re-detect entry type
-	EntryType::detectEntryType(*entry_);
+	EntryType::detectEntryType(*entry);
 
 	// Set text if unknown
-	if (entry_->type() == EntryType::unknownType())
-		entry_->setType(EntryType::fromId("text"));
+	if (entry->type() == EntryType::unknownType())
+		entry->setType(EntryType::fromId("text"));
 
 	// Update custom definitions if decorate or zscript
 	if (text_area_->language()
@@ -233,11 +236,12 @@ void TextEntryPanel::refreshPanel()
 void TextEntryPanel::closeEntry()
 {
 	// Check any entry is open
-	if (!entry_)
+	auto entry = entry_.lock();
+	if (!entry)
 		return;
 
 	// Save current caret position
-	entry_->exProp("TextPosition") = text_area_->GetCurrentPos();
+	entry->exProp("TextPosition") = text_area_->GetCurrentPos();
 }
 
 // -----------------------------------------------------------------------------
@@ -293,6 +297,8 @@ bool TextEntryPanel::handleEntryPanelAction(string_view id)
 	if (!isActivePanel())
 		return false;
 
+	auto entry = entry_.lock();
+
 	// Jump To Line
 	if (id == "ptxt_jump_to_line")
 		text_area_->jumpToLine();
@@ -322,11 +328,11 @@ bool TextEntryPanel::handleEntryPanelAction(string_view id)
 		text_area_->foldAll(false);
 
 	// compileACS
-	else if (id == "arch_scripts_compileacs")
-		EntryOperations::compileACS(entry_, false, nullptr, nullptr);
+	else if (id == "arch_scripts_compileacs" && entry)
+		EntryOperations::compileACS(entry.get(), false, nullptr, nullptr);
 
-	else if (id == "arch_scripts_compilehacs")
-		EntryOperations::compileACS(entry_, true, nullptr, nullptr);
+	else if (id == "arch_scripts_compilehacs" && entry)
+		EntryOperations::compileACS(entry.get(), true, nullptr, nullptr);
 
 	// Not handled
 	else
@@ -365,10 +371,13 @@ void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 	text_area_->setLanguage(tl);
 
 	// Set entry language hint
-	if (tl)
-		entry_->exProp("TextLanguage") = tl->id();
-	else
-		entry_->exProps().removeProperty("TextLanguage");
+	if (auto entry = entry_.lock())
+	{
+		if (tl)
+			entry->exProp("TextLanguage") = tl->id();
+		else
+			entry->exProps().removeProperty("TextLanguage");
+	}
 }
 
 // -----------------------------------------------------------------------------

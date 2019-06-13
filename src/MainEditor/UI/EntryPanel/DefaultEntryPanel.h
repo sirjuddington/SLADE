@@ -8,9 +8,11 @@ public:
 	DefaultEntryPanel(wxWindow* parent);
 	~DefaultEntryPanel() = default;
 
-	bool loadEntry(ArchiveEntry* entry) override;
 	bool loadEntries(vector<ArchiveEntry*>& entries);
 	bool saveEntry() override;
+
+protected:
+	bool loadEntry(ArchiveEntry* entry) override;
 
 private:
 	vector<ArchiveEntry*> entries_;

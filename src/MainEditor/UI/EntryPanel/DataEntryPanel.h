@@ -89,7 +89,6 @@ public:
 	DataEntryPanel(wxWindow* parent);
 	~DataEntryPanel() = default;
 
-	bool loadEntry(ArchiveEntry* entry) override;
 	bool saveEntry() override;
 	void setDataModified(bool modified) { EntryPanel::setModified(modified); }
 
@@ -102,6 +101,9 @@ public:
 	int  getColWithSelection() const;
 
 	vector<Vec2i> selection() const;
+
+protected:
+	bool loadEntry(ArchiveEntry* entry) override;
 
 private:
 	wxGrid*         grid_data_        = nullptr;

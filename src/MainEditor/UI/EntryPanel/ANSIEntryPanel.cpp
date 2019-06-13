@@ -85,6 +85,11 @@ bool ANSIEntryPanel::loadEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 bool ANSIEntryPanel::saveEntry()
 {
-	entry_->importMem(ansi_chardata_.data(), DATASIZE);
-	return true;
+	if (auto entry = entry_.lock())
+	{
+		entry->importMem(ansi_chardata_.data(), DATASIZE);
+		return true;
+	}
+
+	return false;
 }

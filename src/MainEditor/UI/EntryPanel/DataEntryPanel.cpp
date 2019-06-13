@@ -919,8 +919,12 @@ bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 bool DataEntryPanel::saveEntry()
 {
+	auto entry = entry_.lock();
+	if (!entry)
+		return false;
+
 	// Special handling for certain entry types
-	auto type = entry_->type()->id();
+	auto type = entry->type()->id();
 	if (type == "pnames" || type == "notpnames")
 	{
 		// PNAMES
@@ -943,7 +947,7 @@ bool DataEntryPanel::saveEntry()
 			return false;
 	}
 
-	entry_->importMemChunk(table_data_->data());
+	entry->importMemChunk(table_data_->data());
 	setModified(false);
 	return true;
 }

@@ -700,6 +700,10 @@ bool PaletteEntryPanel::loadEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 bool PaletteEntryPanel::saveEntry()
 {
+	auto entry = entry_.lock();
+	if (!entry)
+		return false;
+
 	MemChunk full;
 	MemChunk mc;
 
@@ -709,7 +713,7 @@ bool PaletteEntryPanel::saveEntry()
 		palette->saveMem(mc);
 		full.write(mc.data(), 768);
 	}
-	entry_->importMemChunk(full);
+	entry->importMemChunk(full);
 	setModified(false);
 
 	return true;
@@ -765,7 +769,7 @@ bool PaletteEntryPanel::showPalette(uint32_t index)
 // -----------------------------------------------------------------------------
 void PaletteEntryPanel::refreshPanel()
 {
-	if (entry_)
+	if (entry_.lock())
 	{
 		uint32_t our_palette = cur_palette_;
 		if (our_palette > 0 && our_palette < palettes_.size())
@@ -1055,7 +1059,8 @@ bool PaletteEntryPanel::generateColormaps()
 	static const int GREENMAP = 255;
 	static const int GRAYMAP  = 32;
 
-	if (!entry_ || !entry_->parent() || !palettes_[0])
+	auto entry = entry_.lock();
+	if (!entry || !entry->parent() || !palettes_[0])
 		return false;
 
 	MemChunk mc;
@@ -1134,12 +1139,12 @@ bool PaletteEntryPanel::generateColormaps()
 	}
 #endif
 	// Now override or create new entry
-	auto colormap = entry_->parent()->entry("COLORMAP", true);
+	auto colormap = entry->parent()->entry("COLORMAP", true);
 	if (!colormap)
 	{
 		// We need to create this entry
 		auto nc = std::make_shared<ArchiveEntry>("COLORMAP.lmp", 34 * 256);
-		entry_->parent()->addEntry(nc);
+		entry->parent()->addEntry(nc);
 		colormap = nc.get();
 	}
 	if (!colormap)
@@ -1581,7 +1586,7 @@ void PaletteEntryPanel::analysePalettes()
 		}
 #ifdef GPALCOMPANALYSIS
 		report += wxString::Format(
-			"Deviation sigma: R %+003i G %+003i B %+003i\t%s\n", devR, devG, devB, entry_->name());
+			"Deviation sigma: R %+003i G %+003i B %+003i\t%s\n", devR, devG, devB, entry_.lock()->name());
 		report += wxString::Format(
 			"Min R %+003i Min G %+003i Min B %+003i Max R %+003i Max G %+003i Max B %+003i \nError count: %i\n",
 			minR,

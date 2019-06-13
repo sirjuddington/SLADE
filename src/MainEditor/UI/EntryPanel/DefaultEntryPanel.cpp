@@ -91,8 +91,10 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 	// Bind events
 	btn_gfx_convert_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { SActionHandler::doAction("arch_gfx_convert"); });
 	btn_gfx_modify_offsets_->Bind(wxEVT_BUTTON, &DefaultEntryPanel::onBtnGfxModifyOffsets, this);
-	btn_texture_edit_->Bind(
-		wxEVT_BUTTON, [&](wxCommandEvent&) { MainEditor::openTextureEditor(entry_->parent(), entry_); });
+	btn_texture_edit_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) {
+		if (auto entry = entry_.lock())
+			MainEditor::openTextureEditor(entry->parent(), entry.get());
+	});
 
 	// Hide save/revert toolbar
 	toolbar_->deleteGroup("Entry");
