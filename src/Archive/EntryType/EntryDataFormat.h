@@ -10,7 +10,7 @@ public:
 	static const int MATCH_PROBABLY = 192;
 	static const int MATCH_TRUE     = 255;
 
-	EntryDataFormat(string_view id);
+	EntryDataFormat(string_view id) : id_{ id } {}
 	virtual ~EntryDataFormat() = default;
 
 	const string& id() const { return id_; }

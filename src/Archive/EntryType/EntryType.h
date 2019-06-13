@@ -8,7 +8,7 @@ class ArchiveEntry;
 class EntryType
 {
 public:
-	EntryType(string_view id = "Unknown");
+	EntryType(string_view id = "Unknown") : id_{ id }, format_{ EntryDataFormat::anyFormat() } {}
 	~EntryType() = default;
 
 	// Getters
@@ -25,9 +25,8 @@ public:
 	ColRGBA       colour() const { return colour_; }
 
 	// Misc
-	void   addToList();
 	void   dump();
-	void   copyToType(EntryType* target);
+	void   copyToType(EntryType& target);
 	string fileFilterString() const;
 
 	// Magic goes here
@@ -42,7 +41,6 @@ public:
 	static EntryType*         folderType();
 	static EntryType*         mapMarkerType();
 	static vector<string>     iconList();
-	static void               cleanupEntryTypes();
 	static vector<EntryType*> allTypes();
 	static vector<string>     allCategories();
 

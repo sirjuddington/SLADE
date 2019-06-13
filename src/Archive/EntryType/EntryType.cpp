@@ -48,14 +48,14 @@
 // -----------------------------------------------------------------------------
 namespace
 {
-vector<EntryType*> entry_types;      // The big list of all entry types
-vector<string>     entry_categories; // All entry type categories
+vector<unique_ptr<EntryType>> entry_types;      // The big list of all entry types
+vector<string>                entry_categories; // All entry type categories
 
 // Special entry types
-EntryType etype_unknown; // The default, 'unknown' entry type
-EntryType etype_folder;  // Folder entry type
-EntryType etype_marker;  // Marker entry type
-EntryType etype_map;     // Map marker type
+EntryType* etype_unknown = nullptr; // The default, 'unknown' entry type
+EntryType* etype_folder  = nullptr; // Folder entry type
+EntryType* etype_marker  = nullptr; // Marker entry type
+EntryType* etype_map     = nullptr; // Map marker type
 } // namespace
 
 
@@ -65,20 +65,6 @@ EntryType etype_map;     // Map marker type
 //
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// EntryType class constructor
-// -----------------------------------------------------------------------------
-EntryType::EntryType(string_view id) : id_{ id }, format_{ EntryDataFormat::anyFormat() } {}
-
-// -----------------------------------------------------------------------------
-// Adds the type to the list of entry types
-// -----------------------------------------------------------------------------
-void EntryType::addToList()
-{
-	entry_types.push_back(this);
-	index_ = entry_types.size() - 1;
-}
 
 // -----------------------------------------------------------------------------
 // Dumps entry type info to the log
@@ -109,30 +95,30 @@ void EntryType::dump()
 // -----------------------------------------------------------------------------
 // Copies this entry type's info/properties to [target]
 // -----------------------------------------------------------------------------
-void EntryType::copyToType(EntryType* target)
+void EntryType::copyToType(EntryType& target)
 {
 	// Copy type attributes
-	target->editor_      = editor_;
-	target->extension_   = extension_;
-	target->icon_        = icon_;
-	target->name_        = name_;
-	target->reliability_ = reliability_;
-	target->category_    = category_;
-	target->colour_      = colour_;
+	target.editor_      = editor_;
+	target.extension_   = extension_;
+	target.icon_        = icon_;
+	target.name_        = name_;
+	target.reliability_ = reliability_;
+	target.category_    = category_;
+	target.colour_      = colour_;
 
 	// Copy type match criteria
-	target->format_          = format_;
-	target->size_limit_[0]   = size_limit_[0];
-	target->size_limit_[1]   = size_limit_[1];
-	target->section_         = section_;
-	target->match_extension_ = match_extension_;
-	target->match_name_      = match_name_;
-	target->match_size_      = match_size_;
-	target->match_extension_ = match_extension_;
-	target->match_archive_   = match_archive_;
+	target.format_          = format_;
+	target.size_limit_[0]   = size_limit_[0];
+	target.size_limit_[1]   = size_limit_[1];
+	target.section_         = section_;
+	target.match_extension_ = match_extension_;
+	target.match_name_      = match_name_;
+	target.match_size_      = match_size_;
+	target.match_extension_ = match_extension_;
+	target.match_archive_   = match_archive_;
 
 	// Copy extra properties
-	extra_.copyTo(target->extra_);
+	extra_.copyTo(target.extra_);
 }
 
 // -----------------------------------------------------------------------------
@@ -335,15 +321,15 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 		auto typenode = pt_etypes->childPTN(a);
 
 		// Create new entry type
-		auto ntype = new EntryType{ StrUtil::lower(typenode->name()) };
+		auto ntype = std::make_unique<EntryType>(StrUtil::lower(typenode->name()));
 
 		// Copy from existing type if inherited
 		if (!typenode->inherit().empty())
 		{
 			auto parent_type = fromId(StrUtil::lower(typenode->inherit()));
 
-			if (parent_type != unknownType())
-				parent_type->copyToType(ntype);
+			if (parent_type != etype_unknown)
+				parent_type->copyToType(*ntype);
 			else
 				Log::info("Warning: Entry type {} inherits from unknown type {}", ntype->id(), typenode->inherit());
 		}
@@ -472,7 +458,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 		}
 
 		// ntype->dump();
-		ntype->addToList();
+		entry_types.push_back(std::move(ntype));
 	}
 
 	return true;
@@ -486,35 +472,43 @@ bool EntryType::loadEntryTypes()
 	auto fmt_any = EntryDataFormat::anyFormat();
 
 	// Setup unknown type
-	etype_unknown.format_      = fmt_any;
-	etype_unknown.icon_        = "unknown";
-	etype_unknown.detectable_  = false;
-	etype_unknown.reliability_ = 0;
-	etype_unknown.addToList();
+	auto et_unknown          = std::make_unique<EntryType>("unknown");
+	et_unknown->format_      = fmt_any;
+	et_unknown->icon_        = "unknown";
+	et_unknown->detectable_  = false;
+	et_unknown->reliability_ = 0;
+	etype_unknown            = et_unknown.get();
+	entry_types.push_back(std::move(et_unknown));
 
 	// Setup folder type
-	etype_folder.format_     = fmt_any;
-	etype_folder.icon_       = "folder";
-	etype_folder.name_       = "Folder";
-	etype_folder.detectable_ = false;
-	etype_folder.addToList();
+	auto et_folder         = std::make_unique<EntryType>("folder");
+	et_folder->format_     = fmt_any;
+	et_folder->icon_       = "folder";
+	et_folder->name_       = "Folder";
+	et_folder->detectable_ = false;
+	etype_folder           = et_folder.get();
+	entry_types.push_back(std::move(et_folder));
 
 	// Setup marker type
-	etype_marker.format_     = fmt_any;
-	etype_marker.icon_       = "marker";
-	etype_marker.name_       = "Marker";
-	etype_marker.detectable_ = false;
-	etype_marker.category_   = ""; // No category, markers only appear when 'All' categories shown
-	etype_marker.addToList();
+	auto et_marker         = std::make_unique<EntryType>("marker");
+	et_marker->format_     = fmt_any;
+	et_marker->icon_       = "marker";
+	et_marker->name_       = "Marker";
+	et_marker->detectable_ = false;
+	et_marker->category_   = ""; // No category, markers only appear when 'All' categories shown
+	etype_marker           = et_marker.get();
+	entry_types.push_back(std::move(et_marker));
 
 	// Setup map marker type
-	etype_map.format_     = fmt_any;
-	etype_map.icon_       = "map";
-	etype_map.name_       = "Map Marker";
-	etype_map.category_   = "Maps"; // Should appear with maps
-	etype_map.detectable_ = false;
-	etype_map.colour_     = ColRGBA(0, 255, 0);
-	etype_map.addToList();
+	auto et_map         = std::make_unique<EntryType>("map");
+	et_map->format_     = fmt_any;
+	et_map->icon_       = "map";
+	et_map->name_       = "Map Marker";
+	et_map->category_   = "Maps"; // Should appear with maps
+	et_map->detectable_ = false;
+	et_map->colour_     = ColRGBA(0, 255, 0);
+	etype_map           = et_map.get();
+	entry_types.push_back(std::move(et_map));
 
 	// -------- READ BUILT-IN TYPES ---------
 
@@ -582,18 +576,18 @@ bool EntryType::loadEntryTypes()
 bool EntryType::detectEntryType(ArchiveEntry& entry)
 {
 	// Do nothing if the entry is a folder or a map marker
-	if (entry.type() == &etype_folder || entry.type() == &etype_map)
+	if (entry.type() == etype_folder || entry.type() == etype_map)
 		return false;
 
 	// If the entry's size is zero, set it to marker type
 	if (entry.size() == 0)
 	{
-		entry.setType(&etype_marker);
+		entry.setType(etype_marker);
 		return true;
 	}
 
 	// Reset entry type
-	entry.setType(&etype_unknown);
+	entry.setType(etype_unknown);
 
 	// Go through all registered types
 	size_t entry_types_size = entry_types.size();
@@ -608,7 +602,7 @@ bool EntryType::detectEntryType(ArchiveEntry& entry)
 		if (r > 0)
 		{
 			// Type matches, set it
-			entry.setType(entry_types[a], r);
+			entry.setType(entry_types[a].get(), r);
 
 			// No need to continue if the identification is 100% reliable
 			if (entry.typeReliability() >= 255)
@@ -617,10 +611,7 @@ bool EntryType::detectEntryType(ArchiveEntry& entry)
 	}
 
 	// Return t/f depending on if a matching type was found
-	if (entry.type() == &etype_unknown)
-		return false;
-	else
-		return true;
+	return entry.type() != etype_unknown;
 }
 
 // -----------------------------------------------------------------------------
@@ -629,11 +620,11 @@ bool EntryType::detectEntryType(ArchiveEntry& entry)
 // -----------------------------------------------------------------------------
 EntryType* EntryType::fromId(string_view id)
 {
-	for (auto type : entry_types)
+	for (const auto& type : entry_types)
 		if (type->id_ == id)
-			return type;
+			return type.get();
 
-	return &etype_unknown;
+	return etype_unknown;
 }
 
 // -----------------------------------------------------------------------------
@@ -641,7 +632,7 @@ EntryType* EntryType::fromId(string_view id)
 // -----------------------------------------------------------------------------
 EntryType* EntryType::unknownType()
 {
-	return &etype_unknown;
+	return etype_unknown;
 }
 
 // -----------------------------------------------------------------------------
@@ -649,7 +640,7 @@ EntryType* EntryType::unknownType()
 // -----------------------------------------------------------------------------
 EntryType* EntryType::folderType()
 {
-	return &etype_folder;
+	return etype_folder;
 }
 
 // -----------------------------------------------------------------------------
@@ -657,7 +648,7 @@ EntryType* EntryType::folderType()
 // -----------------------------------------------------------------------------
 EntryType* EntryType::mapMarkerType()
 {
-	return &etype_map;
+	return etype_map;
 }
 
 // -----------------------------------------------------------------------------
@@ -667,6 +658,7 @@ vector<string> EntryType::iconList()
 {
 	vector<string> list;
 
+	list.reserve(entry_types.size());
 	for (auto& entry_type : entry_types)
 		list.push_back(entry_type->icon());
 
@@ -674,27 +666,15 @@ vector<string> EntryType::iconList()
 }
 
 // -----------------------------------------------------------------------------
-// Clears all defined entry types
-// -----------------------------------------------------------------------------
-void EntryType::cleanupEntryTypes()
-{
-	// This is only called on exit so no real point to doing it yet,
-	// all it seems to do is cause crashes on exit
-
-	/*for (size_t a = 4; a < entry_types.size(); a++)
-	{
-		auto e = entry_types[a];
-		if (e != &etype_unknown && e != &etype_folder && e != &etype_marker && e != &etype_map)
-			delete entry_types[a];
-	}*/
-}
-
-// -----------------------------------------------------------------------------
 // Returns a list of all entry types
 // -----------------------------------------------------------------------------
 vector<EntryType*> EntryType::allTypes()
 {
-	return entry_types;
+	vector<EntryType*> etypes;
+	etypes.reserve(entry_types.size());
+	for (const auto& type : entry_types)
+		etypes.push_back(type.get());
+	return etypes;
 }
 
 // -----------------------------------------------------------------------------

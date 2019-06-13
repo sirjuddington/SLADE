@@ -655,7 +655,6 @@ void App::exit(bool save_config)
 	archive_manager.closeAll();
 
 	// Clean up
-	EntryType::cleanupEntryTypes();
 	Drawing::cleanupFonts();
 	OpenGL::Texture::clearAll();
 
