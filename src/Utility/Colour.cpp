@@ -138,7 +138,7 @@ void hslToRgb(double h, double s, double l, double& r, double& g, double& b)
 	// No saturation means grey
 	if (s == 0.)
 	{
-		r = g = b = (uint8_t)(255. * l);
+		r = g = b = l;
 		return;
 	}
 
