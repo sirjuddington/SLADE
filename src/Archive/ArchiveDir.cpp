@@ -104,7 +104,7 @@ void ArchiveDir::setArchive(Archive* archive)
 // Returns the index of [entry] within this directory, or -1 if the entry
 // doesn't exist
 // -----------------------------------------------------------------------------
-int ArchiveDir::entryIndex(ArchiveEntry* entry, size_t startfrom)
+int ArchiveDir::entryIndex(ArchiveEntry* entry, size_t startfrom) const
 {
 	// Check entry was given
 	if (!entry)
@@ -151,13 +151,13 @@ int ArchiveDir::entryIndex(ArchiveEntry* entry, size_t startfrom)
 // Returns a flat list of all entries in this directory, including entries in
 // subdirectories (recursively)
 // -----------------------------------------------------------------------------
-vector<shared_ptr<ArchiveEntry>> ArchiveDir::allEntries()
+vector<shared_ptr<ArchiveEntry>> ArchiveDir::allEntries() const
 {
 	vector<shared_ptr<ArchiveEntry>> entries;
 
 	// Recursive lambda function to build entry list
-	std::function<void(vector<shared_ptr<ArchiveEntry>>&, ArchiveDir*)> build_list =
-		[&](vector<shared_ptr<ArchiveEntry>>& list, ArchiveDir* dir) {
+	std::function<void(vector<shared_ptr<ArchiveEntry>>&, ArchiveDir const*)> build_list =
+		[&](vector<shared_ptr<ArchiveEntry>>& list, ArchiveDir const* dir) {
 			for (const auto& subdir : dir->subdirs_)
 				build_list(list, subdir.get());
 
@@ -174,7 +174,7 @@ vector<shared_ptr<ArchiveEntry>> ArchiveDir::allEntries()
 // Returns the entry at [index] in this directory, or null if [index] is out of
 // bounds
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveDir::entryAt(unsigned index)
+ArchiveEntry* ArchiveDir::entryAt(unsigned index) const
 {
 	// Check index
 	if (index >= entries_.size())
@@ -187,7 +187,7 @@ ArchiveEntry* ArchiveDir::entryAt(unsigned index)
 // Returns a shared pointer to the entry at [index] in this directory, or null
 // if [index] is out of bounds
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> ArchiveDir::sharedEntryAt(unsigned index)
+shared_ptr<ArchiveEntry> ArchiveDir::sharedEntryAt(unsigned index) const
 {
 	// Check index
 	if (index >= entries_.size())
@@ -200,7 +200,7 @@ shared_ptr<ArchiveEntry> ArchiveDir::sharedEntryAt(unsigned index)
 // Returns the entry matching [name] in this directory, or null if no entries
 // match
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveDir::entry(string_view name, bool cut_ext)
+ArchiveEntry* ArchiveDir::entry(string_view name, bool cut_ext) const
 {
 	// Check name was given
 	if (name.empty())
@@ -222,7 +222,7 @@ ArchiveEntry* ArchiveDir::entry(string_view name, bool cut_ext)
 // Returns a shared pointer to the entry matching [name] in this directory, or
 // null if no entries match
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> ArchiveDir::sharedEntry(string_view name, bool cut_ext)
+shared_ptr<ArchiveEntry> ArchiveDir::sharedEntry(string_view name, bool cut_ext) const
 {
 	// Check name was given
 	if (name.empty())
@@ -244,7 +244,7 @@ shared_ptr<ArchiveEntry> ArchiveDir::sharedEntry(string_view name, bool cut_ext)
 // Returns a shared pointer to [entry] in this directory, or null if no entries
 // match
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> ArchiveDir::sharedEntry(ArchiveEntry* entry)
+shared_ptr<ArchiveEntry> ArchiveDir::sharedEntry(ArchiveEntry* entry) const
 {
 	// Find entry
 	for (auto& e : entries_)
@@ -258,7 +258,7 @@ shared_ptr<ArchiveEntry> ArchiveDir::sharedEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the number of entries in this directory
 // -----------------------------------------------------------------------------
-unsigned ArchiveDir::numEntries(bool inc_subdirs)
+unsigned ArchiveDir::numEntries(bool inc_subdirs) const
 {
 	if (!inc_subdirs)
 		return entries_.size();
@@ -270,17 +270,6 @@ unsigned ArchiveDir::numEntries(bool inc_subdirs)
 
 		return count;
 	}
-}
-
-// -----------------------------------------------------------------------------
-// Links two entries. [first] must come before [second] in the list
-// -----------------------------------------------------------------------------
-void ArchiveDir::linkEntries(ArchiveEntry* first, ArchiveEntry* second)
-{
-	if (first)
-		first->next_ = second;
-	if (second)
-		second->prev_ = first;
 }
 
 // -----------------------------------------------------------------------------
@@ -300,34 +289,9 @@ bool ArchiveDir::addEntry(shared_ptr<ArchiveEntry> entry, unsigned index)
 
 	// Check index
 	if (index >= entries_.size())
-	{
-		// 'Invalid' index, add to end of list
-
-		// Link entry
-		if (!entries_.empty())
-		{
-			entries_.back()->next_ = entry.get();
-			entry->prev_           = entries_.back().get();
-		}
-		entry->next_ = nullptr;
-
-		// Add it to end
-		entries_.push_back(entry);
-	}
+		entries_.push_back(entry); // 'Invalid' index, add to end of list
 	else
-	{
-		// Link entry
-		if (index > 0)
-		{
-			entries_[index - 1]->next_ = entry.get();
-			entry->prev_               = entries_[index - 1].get();
-		}
-		entries_[index]->prev_ = entry.get();
-		entry->next_           = entries_[index].get();
-
-		// Add it at index
-		entries_.insert(entries_.begin() + index, entry);
-	}
+		entries_.insert(entries_.begin() + index, entry); // Add it at index
 
 	// Check entry name if duplicate names aren't allowed
 	if (!allow_duplicate_names_)
@@ -349,14 +313,6 @@ bool ArchiveDir::removeEntry(unsigned index)
 	// De-parent entry
 	entries_[index]->parent_ = nullptr;
 
-	// De-link entry
-	entries_[index]->prev_ = nullptr;
-	entries_[index]->next_ = nullptr;
-	if (index > 0)
-		entries_[index - 1]->next_ = entryAt(index + 1);
-	if (index < entries_.size() - 1)
-		entries_[index + 1]->prev_ = entryAt(index - 1);
-
 	// Remove it from the entry list
 	entries_.erase(entries_.begin() + index);
 
@@ -373,18 +329,8 @@ bool ArchiveDir::swapEntries(unsigned index1, unsigned index2)
 	if (index1 >= entries_.size() || index2 >= entries_.size() || index1 == index2)
 		return false;
 
-	// Get entries to swap
-	auto entry1 = entries_[index1].get();
-	auto entry2 = entries_[index2].get();
-
 	// Swap entries
 	entries_[index1].swap(entries_[index2]);
-
-	// Update links
-	linkEntries(entryAt(index1 - 1), entry2);
-	linkEntries(entry2, entryAt(index1 + 1));
-	linkEntries(entryAt(index2 - 1), entry1);
-	linkEntries(entry1, entryAt(index2 + 1));
 
 	return true;
 }

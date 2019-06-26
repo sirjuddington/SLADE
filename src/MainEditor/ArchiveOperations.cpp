@@ -927,10 +927,10 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 		if (map.archive)
 		{
 			// Attempt to open entry as wad archive
-			Archive* temp_archive = new WadArchive();
-			if (temp_archive->open(map.head))
+			auto temp_archive = std::make_shared<WadArchive>();
+			if (temp_archive->open(map.head->data()))
 			{
-				achanged = ArchiveOperations::replaceThings(temp_archive, oldtype, newtype);
+				achanged = ArchiveOperations::replaceThings(temp_archive.get(), oldtype, newtype);
 				MemChunk mc;
 				if (!(temp_archive->write(mc, true)))
 				{
@@ -945,37 +945,32 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 					}
 				}
 			}
-
-			// Cleanup
-			delete temp_archive;
 		}
 		else
 		{
 			// Find the map entry to modify
-			auto          mapentry = map.head;
+			auto          entries = map.entries(*archive);
 			ArchiveEntry* things   = nullptr;
 			if (map.format == MapFormat::Doom || map.format == MapFormat::Doom64 || map.format == MapFormat::Hexen)
 			{
-				while (mapentry && mapentry != map.end)
+				for (auto mapentry : entries)
 				{
 					if (mapentry->type() == EntryType::fromId("map_things"))
 					{
 						things = mapentry;
 						break;
 					}
-					mapentry = mapentry->nextEntry();
 				}
 			}
 			else if (map.format == MapFormat::UDMF)
 			{
-				while (mapentry && mapentry != map.end)
+				for (auto mapentry : entries)
 				{
 					if (mapentry->type() == EntryType::fromId("udmf_textmap"))
 					{
 						things = mapentry;
 						break;
 					}
-					mapentry = mapentry->nextEntry();
 				}
 			}
 
@@ -1344,12 +1339,12 @@ size_t ArchiveOperations::replaceSpecials(
 		else
 		{
 			// Find the map entry to modify
-			ArchiveEntry* mapentry = map.head;
 			ArchiveEntry* t_entry  = nullptr;
 			ArchiveEntry* l_entry  = nullptr;
+			auto          entries  = map.entries(*archive);
 			if (map.format == MapFormat::Doom || map.format == MapFormat::Doom64 || map.format == MapFormat::Hexen)
 			{
-				while (mapentry && mapentry != map.end)
+				for (auto mapentry : entries)
 				{
 					if (things && mapentry->type() == EntryType::fromId("map_things"))
 					{
@@ -1363,19 +1358,17 @@ size_t ArchiveOperations::replaceSpecials(
 						if (t_entry || !things)
 							break;
 					}
-					mapentry = mapentry->nextEntry();
 				}
 			}
 			else if (map.format == MapFormat::UDMF)
 			{
-				while (mapentry && mapentry != map.end)
+				for (auto mapentry : entries)
 				{
 					if (mapentry->type() == EntryType::fromId("udmf_textmap"))
 					{
 						l_entry = t_entry = mapentry;
 						break;
 					}
-					mapentry = mapentry->nextEntry();
 				}
 			}
 
@@ -1775,12 +1768,12 @@ size_t ArchiveOperations::replaceTextures(
 		else
 		{
 			// Find the map entry to modify
-			ArchiveEntry* mapentry = map.head;
 			ArchiveEntry* sectors  = nullptr;
 			ArchiveEntry* sides    = nullptr;
+			auto          entries  = map.entries(*archive);
 			if (map.format == MapFormat::Doom || map.format == MapFormat::Doom64 || map.format == MapFormat::Hexen)
 			{
-				while (mapentry && mapentry != map.end)
+				for (auto mapentry : entries)
 				{
 					if ((floor || ceiling) && (mapentry->type() == EntryType::fromId("map_sectors")))
 					{
@@ -1794,19 +1787,17 @@ size_t ArchiveOperations::replaceTextures(
 						if (sectors || !(floor || ceiling))
 							break;
 					}
-					mapentry = mapentry->nextEntry();
 				}
 			}
 			else if (map.format == MapFormat::UDMF)
 			{
-				while (mapentry && mapentry != map.end)
+				for (auto mapentry : entries)
 				{
 					if (mapentry->type() == EntryType::fromId("udmf_textmap"))
 					{
 						sectors = sides = mapentry;
 						break;
 					}
-					mapentry = mapentry->nextEntry();
 				}
 			}
 

@@ -507,14 +507,16 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 			WadArchive archive;
 
 			// Add map entries to archive
+			auto parent = entry->parent();
 			auto e = map.head;
+			auto index = parent->entryIndex(map.head);
 			while (true)
 			{
 				archive.addEntry(std::make_shared<ArchiveEntry>(*e), "");
 				e->lock();
 				if (e == map.end)
 					break;
-				e = e->nextEntry();
+				e = parent->entryAt(++index);
 			}
 
 			// Write archive to file
@@ -1333,7 +1335,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 			if (entry->upperName() == "SCRIPTS")
 			{
 				// Get entry before SCRIPTS
-				auto prev = entry->prevEntry();
+				auto prev = entry->parent()->entryAt(entry->parent()->entryIndex(entry) - 1);
 
 				// Create a new entry there if it isn't BEHAVIOR
 				if (!prev || prev->upperName() != "BEHAVIOR")

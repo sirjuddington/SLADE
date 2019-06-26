@@ -53,8 +53,8 @@ public:
 	bool                     isLocked() const { return locked_; }
 	bool                     isLoaded() const { return data_loaded_; }
 	Encryption               encryption() const { return encrypted_; }
-	ArchiveEntry*            nextEntry() const { return next_; }
-	ArchiveEntry*            prevEntry() const { return prev_; }
+	ArchiveEntry*            nextEntry();
+	ArchiveEntry*            prevEntry();
 	shared_ptr<ArchiveEntry> getShared();
 
 	// Modifiers (won't change entry state, except setState of course :P)
@@ -124,9 +124,6 @@ private:
 	Encryption encrypted_    = Encryption::None; // Is there some encrypting on the archive?
 
 	// Misc stuff
-	int           reliability_ = 0; // The reliability of the entry's identification
-	ArchiveEntry* next_        = nullptr;
-	ArchiveEntry* prev_        = nullptr;
-
+	int    reliability_ = 0; // The reliability of the entry's identification
 	size_t index_guess_ = 0; // for speed
 };

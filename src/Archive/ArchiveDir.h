@@ -24,14 +24,14 @@ public:
 	void setArchive(Archive* archive);
 
 	// Entry Access
-	ArchiveEntry*                    entryAt(unsigned index);
-	shared_ptr<ArchiveEntry>         sharedEntryAt(unsigned index);
-	ArchiveEntry*                    entry(string_view name, bool cut_ext = false);
-	shared_ptr<ArchiveEntry>         sharedEntry(string_view name, bool cut_ext = false);
-	shared_ptr<ArchiveEntry>         sharedEntry(ArchiveEntry* entry);
-	unsigned                         numEntries(bool inc_subdirs = false);
-	int                              entryIndex(ArchiveEntry* entry, size_t startfrom = 0);
-	vector<shared_ptr<ArchiveEntry>> allEntries();
+	ArchiveEntry*                    entryAt(unsigned index) const;
+	shared_ptr<ArchiveEntry>         sharedEntryAt(unsigned index) const;
+	ArchiveEntry*                    entry(string_view name, bool cut_ext = false) const;
+	shared_ptr<ArchiveEntry>         sharedEntry(string_view name, bool cut_ext = false) const;
+	shared_ptr<ArchiveEntry>         sharedEntry(ArchiveEntry* entry) const;
+	unsigned                         numEntries(bool inc_subdirs = false) const;
+	int                              entryIndex(ArchiveEntry* entry, size_t startfrom = 0) const;
+	vector<shared_ptr<ArchiveEntry>> allEntries() const;
 
 	// Entry Operations
 	bool addEntry(shared_ptr<ArchiveEntry> entry, unsigned index = 0xFFFFFFFF);
@@ -76,6 +76,5 @@ private:
 	vector<shared_ptr<ArchiveDir>>   subdirs_;
 	bool                             allow_duplicate_names_ = true;
 
-	void        ensureUniqueName(ArchiveEntry* entry);
-	static void linkEntries(ArchiveEntry* first, ArchiveEntry* second);
+	void ensureUniqueName(ArchiveEntry* entry);
 };

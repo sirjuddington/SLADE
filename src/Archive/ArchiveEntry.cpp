@@ -80,8 +80,6 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 	type_        = copy.type_;
 	locked_      = false;
 	reliability_ = copy.reliability_;
-	next_        = nullptr;
-	prev_        = nullptr;
 	encrypted_   = copy.encrypted_;
 	index_guess_ = 0;
 
@@ -187,7 +185,25 @@ MemChunk& ArchiveEntry::data(bool allow_load)
 }
 
 // -----------------------------------------------------------------------------
-// Returns the parent ArchiveTreeNode's shared pointer to this entry, or
+// Returns the 'next' entry from this (ie. index + 1) in its parent ArchiveDir,
+// or nullptr if it is the last entry or has no parent dir
+// -----------------------------------------------------------------------------
+ArchiveEntry* ArchiveEntry::nextEntry()
+{
+	return parent_ ? parent_->entryAt(parent_->entryIndex(this) + 1) : nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the 'previous' entry from this (ie. index - 1) in its parent
+// ArchiveDir, or nullptr if it is the first entry or has no parent dir
+// -----------------------------------------------------------------------------
+ArchiveEntry* ArchiveEntry::prevEntry()
+{
+	return parent_ ? parent_->entryAt(parent_->entryIndex(this) - 1) : nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the parent ArchiveDir's shared pointer to this entry, or
 // nullptr if this entry has no parent
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> ArchiveEntry::getShared()

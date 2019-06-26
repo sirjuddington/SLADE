@@ -151,22 +151,15 @@ void DB2MapFileMonitor::fileModified()
 			}
 
 			// Delete existing map entries
-			auto entry = map.head;
-			bool done  = false;
-			while (!done)
+			auto entries = map.entries(*archive_);
+			for (auto entry : entries)
 			{
-				auto next = entry->nextEntry();
-
-				if (entry == map.end)
-					done = true;
-
 				entry->unlock();
 				archive_->removeEntry(entry);
-				entry = next;
 			}
 
 			// Now re-add map entries from the temp archive
-			unsigned index = archive_->entryIndex(entry);
+			auto index = archive_->entryIndex(map.head);
 			for (unsigned b = 0; b < wad->numEntries(); b++)
 			{
 				auto ne = archive_->addEntry(std::make_shared<ArchiveEntry>(*wad->entryAt(b)), index, nullptr);
@@ -189,14 +182,10 @@ void DB2MapFileMonitor::processTerminated()
 		if (StrUtil::equalCI(map.name, map_name_))
 		{
 			// Unlock map entries
-			auto entry = map.head;
-			while (true)
-			{
-				entry->unlock();
-				if (entry == map.end)
-					break;
-				entry = entry->nextEntry();
-			}
+			auto index     = archive_->entryIndex(map.head);
+			auto index_end = archive_->entryIndex(map.end);
+			while (index < index_end)
+				archive_->entryAt(index++)->unlock();
 		}
 	}
 

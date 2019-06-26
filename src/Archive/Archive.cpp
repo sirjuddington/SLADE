@@ -272,6 +272,37 @@ private:
 
 // -----------------------------------------------------------------------------
 //
+// Archive::MapDesc Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Returns a list of all data entries (eg. LINEDEFS, TEXTMAP) for the map.
+// If [include_head] is true, the map header entry is also added
+// -----------------------------------------------------------------------------
+vector<ArchiveEntry*> Archive::MapDesc::entries(const Archive& parent, bool include_head) const
+{
+	vector<ArchiveEntry*> list;
+
+	// Map in zip, no map data entries
+	if (archive)
+		return list;
+
+	auto index = include_head ? parent.entryIndex(head) : parent.entryIndex(head) + 1;
+	auto index_end = parent.entryIndex(end);
+	if (index < 0 || index_end < 0)
+		return list;
+
+	while (index <= index_end)
+		list.push_back(parent.entryAt(index++));
+
+	return list;
+}
+
+
+// -----------------------------------------------------------------------------
+//
 // Archive Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -443,7 +474,7 @@ void Archive::setModified(bool modified)
 // -----------------------------------------------------------------------------
 // Checks that the given entry is valid and part of this archive
 // -----------------------------------------------------------------------------
-bool Archive::checkEntry(ArchiveEntry* entry)
+bool Archive::checkEntry(ArchiveEntry* entry) const
 {
 	// Check entry is valid
 	if (!entry)
@@ -461,7 +492,7 @@ bool Archive::checkEntry(ArchiveEntry* entry)
 // Returns the entry matching [name] within [dir].
 // If no dir is given the root dir is used
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::entry(string_view name, bool cut_ext, ArchiveDir* dir)
+ArchiveEntry* Archive::entry(string_view name, bool cut_ext, ArchiveDir* dir) const
 {
 	// Check if dir was given
 	if (!dir)
@@ -475,7 +506,7 @@ ArchiveEntry* Archive::entry(string_view name, bool cut_ext, ArchiveDir* dir)
 // If no dir is given the  root dir is used.
 // Returns null if [index] is out of bounds
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::entryAt(unsigned index, ArchiveDir* dir)
+ArchiveEntry* Archive::entryAt(unsigned index, ArchiveDir* dir) const
 {
 	// Check if dir was given
 	if (!dir)
@@ -489,7 +520,7 @@ ArchiveEntry* Archive::entryAt(unsigned index, ArchiveDir* dir)
 // If no dir is given the root dir is used.
 // Returns -1 if [entry] doesn't exist within [dir]
 // -----------------------------------------------------------------------------
-int Archive::entryIndex(ArchiveEntry* entry, ArchiveDir* dir)
+int Archive::entryIndex(ArchiveEntry* entry, ArchiveDir* dir) const
 {
 	// Check if dir was given
 	if (!dir)
@@ -502,7 +533,7 @@ int Archive::entryIndex(ArchiveEntry* entry, ArchiveDir* dir)
 // Returns the entry at the given path in the archive, or null if it doesn't
 // exist
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::entryAtPath(string_view path)
+ArchiveEntry* Archive::entryAtPath(string_view path) const
 {
 	// Get [path] as Path for processing
 	StrUtil::Path fn(StrUtil::startsWith(path, '/') ? path.substr(1) : path);
@@ -526,7 +557,7 @@ ArchiveEntry* Archive::entryAtPath(string_view path)
 // Returns the entry at the given path in the archive, or null if it doesn't
 // exist
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> Archive::entryAtPathShared(string_view path)
+shared_ptr<ArchiveEntry> Archive::entryAtPathShared(string_view path) const
 {
 	// Get path as wxFileName for processing
 	StrUtil::Path fn(StrUtil::startsWith(path, '/') ? path.substr(1) : path);

@@ -889,8 +889,12 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 		return map;
 	}
 
+	auto dir         = maphead->parentDir();
+	auto head_index  = dir->entryIndex(maphead);
+	int  entry_count = dir->numEntries();
+
 	// Check for UDMF format map
-	if (maphead->nextEntry()->upperName() == "TEXTMAP")
+	if (head_index < entry_count && dir->entryAt(head_index + 1)->upperName() == "TEXTMAP")
 	{
 		// Get map info
 		map.head   = maphead;
@@ -898,8 +902,9 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 		map.format = MapFormat::UDMF;
 
 		// All entries until we find ENDMAP
-		auto entry = maphead->nextEntry();
-		while (true)
+		auto index = head_index + 1;
+		auto entry = dir->entryAt(index);
+		while (index < entry_count)
 		{
 			if (!entry || entry->upperName() == "ENDMAP")
 				break;
@@ -918,7 +923,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 				map.unk.push_back(entry);
 
 			// Next entry
-			entry = entry->nextEntry();
+			entry = dir->entryAt(++index);
 		}
 
 		// If we got to the end before we found ENDMAP, something is wrong
@@ -934,7 +939,8 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 	// Check for doom/hexen format map
 	uint8_t existing_map_lumps[NUMMAPLUMPS];
 	memset(existing_map_lumps, 0, NUMMAPLUMPS);
-	auto entry = maphead->nextEntry();
+	auto index = head_index + 1;
+	auto entry = dir->entryAt(index);
 	while (entry)
 	{
 		// Check that the entry is a valid map-related entry
@@ -963,16 +969,16 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 		// If it wasn't a map entry, exit this loop
 		if (!mapentry)
 		{
-			entry = entry->prevEntry();
+			entry = dir->entryAt(--index);
 			break;
 		}
 
 		// If we've reached the end of the archive, exit this loop
-		if (!entry->nextEntry())
+		if (index == entry_count - 1)
 			break;
 
 		// Go to next entry
-		entry = entry->nextEntry();
+		entry = dir->entryAt(++index);
 	}
 
 	// Check for the required map entries
@@ -1008,17 +1014,19 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 	vector<MapDesc> maps;
 
 	// Go through all lumps
-	auto entry               = entryAt(0);
+	auto index               = 0;
+	auto entry_count         = numEntries();
+	auto entry               = entryAt(index);
 	bool lastentryismapentry = false;
 	while (entry)
 	{
 		// UDMF format map check ********************************************************
 
 		// Check for UDMF format map lump (TEXTMAP lump)
-		if (entry->name() == "TEXTMAP" && entry->prevEntry())
+		if (entry->name() == "TEXTMAP" && index > 0)
 		{
 			// Get map info
-			auto md = mapDesc(entry->prevEntry());
+			auto md = mapDesc(entryAt(index - 1));
 
 			// Add to map list
 			if (md.head != nullptr)
@@ -1029,7 +1037,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 
 			// Current index is ENDMAP, we don't want to check for a doom/hexen format
 			// map so just go to the next index and continue the loop
-			entry = entry->nextEntry();
+			entry = entryAt(++index);
 			continue;
 		}
 
@@ -1054,10 +1062,10 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 		}
 
 		// If we've found what might be a map
-		if (maplump_found && entry->prevEntry())
+		if (maplump_found && index > 0)
 		{
 			// Save map header entry
-			auto header_entry = entry->prevEntry();
+			auto header_entry = entryAt(index - 1);
 
 			// Check off map lumps until we find a non-map lump
 			bool done = false;
@@ -1079,7 +1087,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 				}
 
 				// If we're at the end of the wad, exit the loop
-				if (!entry->nextEntry())
+				if (index == entry_count - 1)
 				{
 					lastentryismapentry = true;
 					break;
@@ -1087,12 +1095,12 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 
 				// Go to next lump if there is one
 				if (!lastentryismapentry)
-					entry = entry->nextEntry();
+					entry = entryAt(++index);
 			}
 
 			// Go back to the lump just after the last map lump found, but only if we actually moved
 			if (!lastentryismapentry)
-				entry = entry->prevEntry();
+				entry = entryAt(--index);
 
 			// Check that we have all the required map lumps: VERTEXES, LINEDEFS, SIDEDEFS, THINGS & SECTORS
 			if (!memchr(existing_map_lumps, 0, 5))
@@ -1103,7 +1111,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 				md.name = header_entry->name(); // Map title
 				md.end  = lastentryismapentry ? // End lump
 							 entry :
-							 entry->prevEntry();
+							 entryAt(--index);
 
 				// If BEHAVIOR lump exists, it's a hexen format map
 				if (existing_map_lumps[LUMP_BEHAVIOR])
@@ -1143,7 +1151,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 		}
 
 		// Not a UDMF or Doom/Hexen map lump, go to next lump
-		entry = entry->nextEntry();
+		entry = entryAt(++index);
 	}
 
 	// Set all map header entries to ETYPE_MAP type
@@ -1165,10 +1173,15 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 			format = "udmf";
 
 		auto m_entry = map.head;
-		while (m_entry && m_entry != map.end->nextEntry())
+		auto m_index = entryIndex(m_entry);
+		while (m_entry)
 		{
 			m_entry->exProp("MapFormat") = format;
-			m_entry                      = m_entry->nextEntry();
+
+			if (m_entry == map.end)
+				break;
+
+			m_entry = entryAt(++m_index);
 		}
 	}
 
@@ -1266,8 +1279,8 @@ void WadArchive::detectIncludes()
 ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	auto          start = entryAt(0);
-	ArchiveEntry* end   = nullptr;
+	unsigned index     = 0;
+	auto     index_end = numEntries();
 	StrUtil::upperIP(options.match_name);
 
 	// "graphics" namespace is the global namespace in a wad
@@ -1283,9 +1296,9 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 		{
 			if (ns.name == options.match_namespace)
 			{
-				start    = ns.start->nextEntry();
-				end      = ns.end;
-				ns_found = true;
+				index     = ns.start_index + 1;
+				index_end = ns.end_index + 1;
+				ns_found  = true;
 				break;
 			}
 		}
@@ -1296,35 +1309,28 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 	}
 
 	// Begin search
-	auto entry = start;
-	while (entry != end)
+	ArchiveEntry* entry;
+	for (; index < index_end; ++index)
 	{
+		entry = entryAt(index);
+
 		// Check type
 		if (options.match_type)
 		{
 			if (entry->type() == EntryType::unknownType())
 			{
 				if (!options.match_type->isThisType(*entry))
-				{
-					entry = entry->nextEntry();
 					continue;
-				}
 			}
 			else if (options.match_type != entry->type())
-			{
-				entry = entry->nextEntry();
 				continue;
-			}
 		}
 
 		// Check name
 		if (!options.match_name.empty())
 		{
 			if (!StrUtil::matches(options.match_name, entry->upperName()))
-			{
-				entry = entry->nextEntry();
 				continue;
-			}
 		}
 
 		// Entry passed all checks so far, so we found a match
@@ -1342,8 +1348,8 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 {
 	// Init search variables
-	auto          start = entryAt(numEntries() - 1);
-	ArchiveEntry* end   = nullptr;
+	int index       = numEntries() - 1;
+	int index_start = 0;
 	StrUtil::upperIP(options.match_name);
 
 	// "graphics" namespace is the global namespace in a wad
@@ -1363,9 +1369,9 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 		{
 			if (ns.name == options.match_namespace)
 			{
-				start    = ns.end->prevEntry();
-				end      = ns.start;
-				ns_found = true;
+				index       = ns.end_index - 1;
+				index_start = ns.start_index + 1;
+				ns_found    = true;
 				break;
 			}
 		}
@@ -1376,35 +1382,28 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 	}
 
 	// Begin search
-	auto entry = start;
-	while (entry != end)
+	ArchiveEntry* entry;
+	for (; index >= index_start; --index)
 	{
+		entry = entryAt(index);
+
 		// Check type
 		if (options.match_type)
 		{
 			if (entry->type() == EntryType::unknownType())
 			{
 				if (!options.match_type->isThisType(*entry))
-				{
-					entry = entry->prevEntry();
 					continue;
-				}
 			}
 			else if (options.match_type != entry->type())
-			{
-				entry = entry->prevEntry();
 				continue;
-			}
 		}
 
 		// Check name
 		if (!options.match_name.empty())
 		{
 			if (!StrUtil::matches(entry->upperName(), options.match_name))
-			{
-				entry = entry->prevEntry();
 				continue;
-			}
 		}
 
 		// Entry passed all checks so far, so we found a match
@@ -1421,8 +1420,8 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options)
 {
 	// Init search variables
-	auto          start = entryAt(0);
-	ArchiveEntry* end   = nullptr;
+	unsigned index     = 0;
+	auto     index_end = numEntries();
 	StrUtil::upperIP(options.match_name);
 	vector<ArchiveEntry*> ret;
 
@@ -1440,9 +1439,9 @@ vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options)
 		{
 			if (namespaces_[a].name == options.match_namespace)
 			{
-				start    = namespaces_[a].start->nextEntry();
-				end      = namespaces_[a].end;
-				ns_found = true;
+				index     = namespaces_[a].start_index + 1;
+				index_end = namespaces_[a].end_index + 1;
+				ns_found  = true;
 				break;
 			}
 		}
@@ -1452,40 +1451,32 @@ vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options)
 			return ret;
 	}
 
-	auto entry = start;
-	while (entry != end)
+	ArchiveEntry* entry;
+	for (; index < index_end; ++index)
 	{
+		entry = entryAt(index);
+
 		// Check type
 		if (options.match_type)
 		{
 			if (entry->type() == EntryType::unknownType())
 			{
 				if (!options.match_type->isThisType(*entry))
-				{
-					entry = entry->nextEntry();
 					continue;
-				}
 			}
 			else if (options.match_type != entry->type())
-			{
-				entry = entry->nextEntry();
 				continue;
-			}
 		}
 
 		// Check name
 		if (!options.match_name.empty())
 		{
 			if (!StrUtil::matches(entry->upperName(), options.match_name))
-			{
-				entry = entry->nextEntry();
 				continue;
-			}
 		}
 
 		// Entry passed all checks so far, so we found a match
 		ret.push_back(entry);
-		entry = entry->nextEntry();
 	}
 
 	// Return search result

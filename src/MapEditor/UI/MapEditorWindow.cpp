@@ -595,15 +595,9 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 		}
 		else
 		{
-			auto entry = map.head;
-			while (entry)
-			{
-				bool end = (entry == map.end);
+			auto entries = map.entries(*archive, true);
+			for (auto entry : entries)
 				map_data_.emplace_back(new ArchiveEntry(*entry));
-				entry = entry->nextEntry();
-				if (end)
-					break;
-			}
 		}
 	}
 
@@ -647,7 +641,7 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 		// Create backup
 		if (map.head
 			&& !MapEditor::backupManager().writeBackup(
-				map_data_, map.head->topParent()->filename(false), map.head->nameNoExt()))
+				   map_data_, map.head->topParent()->filename(false), map.head->nameNoExt()))
 			Log::warning("Failed to backup map data");
 	}
 
@@ -694,10 +688,10 @@ void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
 	}
 
 	// Go through map entries
-	ArchiveEntry* entry    = map.head->nextEntry();
 	ArchiveEntry* scripts  = nullptr;
 	ArchiveEntry* compiled = nullptr;
-	while (entry && entry != map.end->nextEntry())
+	auto          entries  = map.entries(*map.head->parent());
+	for (auto entry : entries)
 	{
 		// Check for SCRIPTS/BEHAVIOR
 		if (Game::configuration().scriptLanguage() == "acs_hexen"
@@ -708,9 +702,6 @@ void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
 			if (entry->upperName() == "BEHAVIOR")
 				compiled = entry;
 		}
-
-		// Next entry
-		entry = entry->nextEntry();
 	}
 
 	// Open scripts/compiled if found
@@ -886,14 +877,10 @@ bool MapEditorWindow::saveMap()
 	lockMapEntries(false);
 
 	// Delete current map entries
-	auto entry   = map.end;
 	auto archive = map.head->parent();
-	while (entry && entry != map.head)
-	{
-		auto prev = entry->prevEntry();
+	auto entries = map.entries(*archive);
+	for (auto entry : entries)
 		archive->removeEntry(entry);
-		entry = prev;
-	}
 
 	// Create backup
 	if (!MapEditor::backupManager().writeBackup(
@@ -901,18 +888,19 @@ bool MapEditorWindow::saveMap()
 		Log::warning(1, "Warning: Failed to backup map data");
 
 	// Add new map entries
+	auto entry_end = map.head;
 	for (unsigned a = 1; a < wad.numEntries(); a++)
 	{
 		auto copy = std::make_shared<ArchiveEntry>(*wad.entryAt(a));
 		archive->addEntry(copy, archive->entryIndex(map.head) + a, nullptr);
-		entry = copy.get();
+		entry_end = copy.get();
 	}
 
 	// Clean up
 	if (tempwad)
 		tempwad->save();
 	else
-		mdesc_current.end = entry; // Update map description
+		mdesc_current.end = entry_end; // Update map description
 
 	// Finish
 	lockMapEntries();

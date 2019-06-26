@@ -54,13 +54,13 @@ bool DoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_data,
 	Log::info(2, "Reading Doom format map");
 
 	// Find map entries
-	ArchiveEntry* v     = nullptr;
-	ArchiveEntry* si    = nullptr;
-	ArchiveEntry* l     = nullptr;
-	ArchiveEntry* se    = nullptr;
-	ArchiveEntry* t     = nullptr;
-	ArchiveEntry* entry = map.head;
-	while (entry != map.end->nextEntry())
+	ArchiveEntry* v       = nullptr;
+	ArchiveEntry* si      = nullptr;
+	ArchiveEntry* l       = nullptr;
+	ArchiveEntry* se      = nullptr;
+	ArchiveEntry* t       = nullptr;
+	auto          entries = map.entries(*map.head->parent());
+	for (auto entry : entries)
 	{
 		if (!v && entry->name() == "VERTEXES")
 			v = entry;
@@ -72,9 +72,6 @@ bool DoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_data,
 			se = entry;
 		else if (!t && entry->name() == "THINGS")
 			t = entry;
-
-		// Next entry
-		entry = entry->nextEntry();
 	}
 
 	// ---- Read vertices ----

@@ -121,14 +121,19 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 	if (map.format == MapFormat::UDMF)
 	{
 		ArchiveEntry* udmfdata = nullptr;
-		for (auto mapentry = map.head; mapentry != map.end; mapentry = mapentry->nextEntry())
+		auto          archive   = map.head->parent();
+		auto          index    = archive->entryIndex(map.head);
+		auto          end_index = archive->entryIndex(map.end);
+		while (index <= end_index)
 		{
 			// Check entry type
-			if (mapentry->type() == EntryType::fromId("udmf_textmap"))
+			auto entry = archive->entryAt(index);
+			if (entry->type() == EntryType::fromId("udmf_textmap"))
 			{
-				udmfdata = mapentry;
+				udmfdata = entry;
 				break;
 			}
+			++index;
 		}
 		if (udmfdata == nullptr)
 			return false;

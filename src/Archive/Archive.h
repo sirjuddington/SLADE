@@ -26,7 +26,7 @@ public:
 	{
 		string        name;
 		ArchiveEntry* head;
-		ArchiveEntry* end;
+		ArchiveEntry* end;     // The last entry of the map data
 		MapFormat     format;  // See MapTypes enum
 		bool          archive; // True if head is an archive (for maps in zips)
 
@@ -38,6 +38,8 @@ public:
 			archive    = false;
 			format     = MapFormat::Unknown;
 		}
+
+		vector<ArchiveEntry*> entries(const Archive& parent, bool include_head = false) const;
 	};
 
 	static bool save_backup;
@@ -59,12 +61,12 @@ public:
 	void setFilename(string_view filename) { this->filename_ = filename; }
 
 	// Entry retrieval/info
-	bool                             checkEntry(ArchiveEntry* entry);
-	virtual ArchiveEntry*            entry(string_view name, bool cut_ext = false, ArchiveDir* dir = nullptr);
-	virtual ArchiveEntry*            entryAt(unsigned index, ArchiveDir* dir = nullptr);
-	virtual int                      entryIndex(ArchiveEntry* entry, ArchiveDir* dir = nullptr);
-	virtual ArchiveEntry*            entryAtPath(string_view path);
-	virtual shared_ptr<ArchiveEntry> entryAtPathShared(string_view path);
+	bool                             checkEntry(ArchiveEntry* entry) const;
+	virtual ArchiveEntry*            entry(string_view name, bool cut_ext = false, ArchiveDir* dir = nullptr) const;
+	virtual ArchiveEntry*            entryAt(unsigned index, ArchiveDir* dir = nullptr) const;
+	virtual int                      entryIndex(ArchiveEntry* entry, ArchiveDir* dir = nullptr) const;
+	virtual ArchiveEntry*            entryAtPath(string_view path) const;
+	virtual shared_ptr<ArchiveEntry> entryAtPathShared(string_view path) const;
 
 	// Archive type info
 	ArchiveFormat formatDesc() const;
@@ -181,15 +183,15 @@ public:
 	virtual ~TreelessArchive() = default;
 
 	// Entry retrieval/info
-	ArchiveEntry* entry(string_view name, bool cut_ext = false, ArchiveDir* dir = nullptr) override
+	ArchiveEntry* entry(string_view name, bool cut_ext = false, ArchiveDir* dir = nullptr) const override
 	{
 		return Archive::entry(name);
 	}
-	ArchiveEntry* entryAt(unsigned index, ArchiveDir* dir = nullptr) override
+	ArchiveEntry* entryAt(unsigned index, ArchiveDir* dir = nullptr) const override
 	{
 		return Archive::entryAt(index, nullptr);
 	}
-	int entryIndex(ArchiveEntry* entry, ArchiveDir* dir = nullptr) override
+	int entryIndex(ArchiveEntry* entry, ArchiveDir* dir = nullptr) const override
 	{
 		return Archive::entryIndex(entry, nullptr);
 	}
