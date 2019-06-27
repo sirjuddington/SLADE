@@ -330,8 +330,15 @@ int isInMap(size_t index, vector<Archive::MapDesc>& maps)
 {
 	for (size_t m = 0; m < maps.size(); ++m)
 	{
-		size_t head_index = maps[m].head->parentDir()->entryIndex(maps[m].head);
-		size_t end_index  = maps[m].head->parentDir()->entryIndex(maps[m].end, head_index);
+		// Get map header and ending entries
+		auto m_head = maps[m].head.lock();
+		auto m_end  = maps[m].end.lock();
+		if (!m_head || !m_end)
+			continue;
+
+		// Check indices
+		size_t head_index = m_head->parentDir()->entryIndex(m_head.get());
+		size_t end_index  = m_head->parentDir()->entryIndex(m_end.get(), head_index);
 		if (index >= head_index && index <= end_index)
 			return m;
 	}
@@ -1477,12 +1484,16 @@ bool ArchivePanel::sort() const
 		// If this is a map entry, deal with it
 		if (!maps.empty() && mapindex > -1)
 		{
+			auto head = maps[mapindex].head.lock();
+			if (!head)
+				return false;
+
 			// Keep track of the name
 			mapname = maps[mapindex].name;
 
 			// If part of a map is selected, make sure the rest is selected as well
-			size_t head_index = maps[mapindex].head->parentDir()->entryIndex(maps[mapindex].head);
-			size_t end_index  = maps[mapindex].head->parentDir()->entryIndex(maps[mapindex].end, head_index);
+			size_t head_index = head->parentDir()->entryIndex(head.get());
+			size_t end_index  = head->parentDir()->entryIndex(maps[mapindex].end.lock().get(), head_index);
 			// Good thing we can rely on selection being contiguous
 			for (size_t a = head_index; a <= end_index; ++a)
 			{

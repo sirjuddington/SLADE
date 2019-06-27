@@ -110,7 +110,7 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 	bool             found = false;
 	for (auto& map : maps)
 	{
-		if (map.head == entry)
+		if (map.head.lock().get() == entry)
 		{
 			thismap = map;
 			found   = true;

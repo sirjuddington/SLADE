@@ -106,27 +106,28 @@ void SLADEMap::setThingsUpdated()
 // -----------------------------------------------------------------------------
 // Reads map data using info in [map]
 // -----------------------------------------------------------------------------
-bool SLADEMap::readMap(Archive::MapDesc map)
+bool SLADEMap::readMap(const Archive::MapDesc& map)
 {
-	auto omap = map;
+	auto omap = &map;
 
 	// Check for map archive
 	WadArchive tempwad;
-	if (map.archive && map.head)
+	auto       m_head = map.head.lock();
+	if (map.archive && m_head)
 	{
-		tempwad.open(map.head->data());
+		tempwad.open(m_head->data());
 		auto amaps = tempwad.detectMaps();
 		if (!amaps.empty())
-			omap = amaps[0];
+			omap = &amaps[0];
 		else
 			return false;
 	}
 
 	bool ok = false;
-	if (omap.head)
+	if (omap->head.lock())
 	{
-		auto map_handler = MapFormatHandler::get(omap.format);
-		ok               = map_handler->readMap(omap, data_, udmf_props_);
+		auto map_handler = MapFormatHandler::get(omap->format);
+		ok               = map_handler->readMap(*omap, data_, udmf_props_);
 		udmf_namespace_  = map_handler->udmfNamespace();
 	}
 	else

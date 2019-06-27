@@ -57,7 +57,7 @@ public:
 
 	vector<ArchiveEntry*>& udmfExtraEntries() { return udmf_extra_entries_; }
 
-	bool readMap(Archive::MapDesc map);
+	bool readMap(const Archive::MapDesc& map);
 	void clearMap();
 
 	MapSpecials* mapSpecials() { return &map_specials_; }

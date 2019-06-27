@@ -502,21 +502,22 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	else
 	{
 		// Write map entries to temporary wad archive
-		if (map.head)
+		if (auto m_head = map.head.lock())
 		{
+			auto       m_end = map.end.lock();
 			WadArchive archive;
 
 			// Add map entries to archive
 			auto parent = entry->parent();
-			auto e = map.head;
-			auto index = parent->entryIndex(map.head);
+			auto e = m_head;
+			auto index = parent->entryIndex(m_head.get());
 			while (true)
 			{
 				archive.addEntry(std::make_shared<ArchiveEntry>(*e), "");
 				e->lock();
-				if (e == map.end)
+				if (e == m_end)
 					break;
-				e = parent->entryAt(++index);
+				e = parent->entryAt(++index)->getShared();
 			}
 
 			// Write archive to file

@@ -488,8 +488,8 @@ Archive::MapDesc ZipArchive::mapDesc(ArchiveEntry* entry)
 
 	// Setup map info
 	map.archive = true;
-	map.head    = entry;
-	map.end     = entry;
+	map.head    = entry->getShared();
+	map.end     = entry->getShared();
 	map.name    = entry->upperNameNoExt();
 
 	return map;
@@ -511,7 +511,7 @@ vector<Archive::MapDesc> ZipArchive::detectMaps()
 	// Go through entries in map dir
 	for (unsigned a = 0; a < mapdir->numEntries(); a++)
 	{
-		auto entry = mapdir->entryAt(a);
+		auto entry = mapdir->sharedEntryAt(a);
 
 		// Maps can only be wad archives
 		if (entry->type()->formatId() != "archive_wad")

@@ -55,8 +55,14 @@
 // -----------------------------------------------------------------------------
 bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props)
 {
+	auto m_head = map.head.lock();
+	if (!m_head)
+		return false;
+
 	// Get TEXTMAP entry (will always be after the 'head' entry)
-	auto textmap = map.head->nextEntry();
+	auto textmap = m_head->nextEntry();
+	if (!textmap)
+		return false;
 
 	// --- Parse UDMF text ---
 	UI::setSplashProgressMessage("Parsing TEXTMAP");

@@ -90,6 +90,10 @@ void MapPreviewCanvas::addThing(double x, double y)
 // -----------------------------------------------------------------------------
 bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 {
+	auto m_head = map.head.lock();
+	if (!m_head)
+		return false;
+
 	// All errors = invalid map
 	Global::error = "Invalid map";
 
@@ -100,10 +104,10 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 		map_archive = true;
 
 		// Attempt to open entry as wad archive
-		temp_archive_ = new WadArchive();
-		if (!temp_archive_->open(map.head))
+		temp_archive_ = std::make_unique<WadArchive>();
+		if (!temp_archive_->open(m_head->data()))
 		{
-			delete temp_archive_;
+			temp_archive_.reset();
 			return false;
 		}
 
@@ -121,9 +125,9 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 	if (map.format == MapFormat::UDMF)
 	{
 		ArchiveEntry* udmfdata = nullptr;
-		auto          archive   = map.head->parent();
-		auto          index    = archive->entryIndex(map.head);
-		auto          end_index = archive->entryIndex(map.end);
+		auto          archive   = m_head->parent();
+		auto          index    = archive->entryIndex(m_head.get());
+		auto          end_index = archive->entryIndex(map.end.lock().get());
 		while (index <= end_index)
 		{
 			// Check entry type
@@ -140,7 +144,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 
 		// Start parsing
 		Tokenizer tz;
-		tz.openMem(udmfdata->data(), map.head->name());
+		tz.openMem(udmfdata->data(), m_head->name());
 
 		// Get first token
 		wxString token       = tz.getToken();
@@ -312,34 +316,37 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 	// Non-UDMF map
 	if (map.format != MapFormat::UDMF)
 	{
+		auto m_head = map.head.lock().get();
+		auto m_end  = map.end.lock().get();
+
 		// Read vertices (required)
-		if (!readVertices(map.head, map.end, map.format))
+		if (!readVertices(m_head, m_end, map.format))
 			return false;
 
 		// Read linedefs (required)
-		if (!readLines(map.head, map.end, map.format))
+		if (!readLines(m_head, m_end, map.format))
 			return false;
 
 		// Read things
 		if (map.format != MapFormat::UDMF)
-			readThings(map.head, map.end, map.format);
+			readThings(m_head, m_end, map.format);
 
 		// Read sides & sectors (count only)
 		ArchiveEntry* sidedefs = nullptr;
 		ArchiveEntry* sectors  = nullptr;
-		while (map.head)
+		while (m_head)
 		{
 			// Check entry type
-			if (map.head->type() == EntryType::fromId("map_sidedefs"))
-				sidedefs = map.head;
-			if (map.head->type() == EntryType::fromId("map_sectors"))
-				sectors = map.head;
+			if (m_head->type() == EntryType::fromId("map_sidedefs"))
+				sidedefs = m_head;
+			if (m_head->type() == EntryType::fromId("map_sectors"))
+				sectors = m_head;
 
 			// Exit loop if we've reached the end of the map entries
-			if (map.head == map.end)
+			if (m_head == m_end)
 				break;
 			else
-				map.head = map.head->nextEntry();
+				m_head = m_head->nextEntry();
 		}
 		if (sidedefs && sectors)
 		{
@@ -363,7 +370,6 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 	if (map_archive)
 	{
 		temp_archive_->close();
-		delete temp_archive_;
 		temp_archive_ = nullptr;
 	}
 

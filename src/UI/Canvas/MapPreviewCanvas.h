@@ -77,14 +77,14 @@ private:
 		Thing(double x, double y) : x{ x }, y{ y } {}
 	};
 
-	vector<Vertex> verts_;
-	vector<Line>   lines_;
-	vector<Thing>  things_;
-	unsigned       n_sides_   = 0;
-	unsigned       n_sectors_ = 0;
-	double         zoom_      = 1.;
-	Vec2d          offset_;
-	Archive*       temp_archive_ = nullptr;
-	unsigned       tex_thing_;
-	bool           tex_loaded_ = false;
+	vector<Vertex>      verts_;
+	vector<Line>        lines_;
+	vector<Thing>       things_;
+	unsigned            n_sides_   = 0;
+	unsigned            n_sectors_ = 0;
+	double              zoom_      = 1.;
+	Vec2d               offset_;
+	unique_ptr<Archive> temp_archive_;
+	unsigned            tex_thing_;
+	bool                tex_loaded_ = false;
 };

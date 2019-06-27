@@ -24,17 +24,16 @@ class Archive : public Announcer
 public:
 	struct MapDesc
 	{
-		string        name;
-		ArchiveEntry* head;
-		ArchiveEntry* end;     // The last entry of the map data
-		MapFormat     format;  // See MapTypes enum
-		bool          archive; // True if head is an archive (for maps in zips)
+		string                 name;
+		weak_ptr<ArchiveEntry> head;
+		weak_ptr<ArchiveEntry> end;     // The last entry of the map data
+		MapFormat              format;  // See MapTypes enum
+		bool                   archive; // True if head is an archive (for maps in zips)
 
 		vector<ArchiveEntry*> unk; // Unknown map lumps (must be preserved for UDMF compliance)
 
 		MapDesc()
 		{
-			head = end = nullptr;
 			archive    = false;
 			format     = MapFormat::Unknown;
 		}

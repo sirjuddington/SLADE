@@ -144,9 +144,12 @@ void DB2MapFileMonitor::fileModified()
 			// Check for simple case (map is in zip archive)
 			if (map.archive)
 			{
-				map.head->unlock();
-				map.head->importFile(filename_);
-				map.head->lock();
+				if (auto head = map.head.lock())
+				{
+					head->unlock();
+					head->importFile(filename_);
+					head->lock();
+				}
 				break;
 			}
 
@@ -159,7 +162,7 @@ void DB2MapFileMonitor::fileModified()
 			}
 
 			// Now re-add map entries from the temp archive
-			auto index = archive_->entryIndex(map.head);
+			auto index = archive_->entryIndex(map.head.lock().get());
 			for (unsigned b = 0; b < wad->numEntries(); b++)
 			{
 				auto ne = archive_->addEntry(std::make_shared<ArchiveEntry>(*wad->entryAt(b)), index, nullptr);
@@ -182,8 +185,8 @@ void DB2MapFileMonitor::processTerminated()
 		if (StrUtil::equalCI(map.name, map_name_))
 		{
 			// Unlock map entries
-			auto index     = archive_->entryIndex(map.head);
-			auto index_end = archive_->entryIndex(map.end);
+			auto index     = archive_->entryIndex(map.head.lock().get());
+			auto index_end = archive_->entryIndex(map.end.lock().get());
 			while (index < index_end)
 				archive_->entryAt(index++)->unlock();
 		}

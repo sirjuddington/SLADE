@@ -43,13 +43,17 @@ bool Doom64MapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_dat
 {
 	Log::info(2, "Reading Doom64 format map");
 
+	auto m_head = map.head.lock();
+	if (!m_head)
+		return false;
+
 	// Find map entries
 	ArchiveEntry* v       = nullptr;
 	ArchiveEntry* si      = nullptr;
 	ArchiveEntry* l       = nullptr;
 	ArchiveEntry* se      = nullptr;
 	ArchiveEntry* t       = nullptr;
-	auto          entries = map.entries(*map.head->parent());
+	auto          entries = map.entries(*m_head->parent());
 	for (auto entry : entries)
 	{
 		if (!v && entry->name() == "VERTEXES")

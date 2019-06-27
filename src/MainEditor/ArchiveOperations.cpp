@@ -922,13 +922,17 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 
 	for (auto& map : maps)
 	{
+		auto m_head = map.head.lock();
+		if (!m_head)
+			continue;
+
 		size_t achanged = 0;
 		// Is it an embedded wad?
 		if (map.archive)
 		{
 			// Attempt to open entry as wad archive
 			auto temp_archive = std::make_shared<WadArchive>();
-			if (temp_archive->open(map.head->data()))
+			if (temp_archive->open(m_head->data()))
 			{
 				achanged = ArchiveOperations::replaceThings(temp_archive.get(), oldtype, newtype);
 				MemChunk mc;
@@ -939,7 +943,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 				else
 				{
 					temp_archive->close();
-					if (!(map.head->importMemChunk(mc)))
+					if (!(m_head->importMemChunk(mc)))
 					{
 						achanged = 0;
 					}
@@ -950,7 +954,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 		{
 			// Find the map entry to modify
 			auto          entries = map.entries(*archive);
-			ArchiveEntry* things   = nullptr;
+			ArchiveEntry* things  = nullptr;
 			if (map.format == MapFormat::Doom || map.format == MapFormat::Doom64 || map.format == MapFormat::Hexen)
 			{
 				for (auto mapentry : entries)
@@ -983,11 +987,11 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 				case MapFormat::Hexen: achanged = replaceThingsHexen(things, oldtype, newtype); break;
 				case MapFormat::Doom64: achanged = replaceThingsDoom64(things, oldtype, newtype); break;
 				case MapFormat::UDMF: achanged = replaceThingsUDMF(things, oldtype, newtype); break;
-				default: Log::warning("Unknown map format for " + map.head->name()); break;
+				default: Log::warning("Unknown map format for " + m_head->name()); break;
 				}
 			}
 		}
-		report += wxString::Format("%s:\t%i things changed\n", map.head->name(), achanged);
+		report += wxString::Format("%s:\t%i things changed\n", m_head->name(), achanged);
 		changed += achanged;
 	}
 	Log::info(1, report);
@@ -1289,13 +1293,17 @@ size_t ArchiveOperations::replaceSpecials(
 
 	for (auto& map : maps)
 	{
+		auto m_head = map.head.lock();
+		if (!m_head)
+			continue;
+
 		size_t achanged = 0;
 		// Is it an embedded wad?
 		if (map.archive)
 		{
 			// Attempt to open entry as wad archive
 			Archive* temp_archive = new WadArchive();
-			if (temp_archive->open(map.head))
+			if (temp_archive->open(m_head.get()))
 			{
 				achanged = ArchiveOperations::replaceSpecials(
 					temp_archive,
@@ -1326,7 +1334,7 @@ size_t ArchiveOperations::replaceSpecials(
 				else
 				{
 					temp_archive->close();
-					if (!(map.head->importMemChunk(mc)))
+					if (!(m_head->importMemChunk(mc)))
 					{
 						achanged = 0;
 					}
@@ -1339,9 +1347,9 @@ size_t ArchiveOperations::replaceSpecials(
 		else
 		{
 			// Find the map entry to modify
-			ArchiveEntry* t_entry  = nullptr;
-			ArchiveEntry* l_entry  = nullptr;
-			auto          entries  = map.entries(*archive);
+			ArchiveEntry* t_entry = nullptr;
+			ArchiveEntry* l_entry = nullptr;
+			auto          entries = map.entries(*archive);
 			if (map.format == MapFormat::Doom || map.format == MapFormat::Doom64 || map.format == MapFormat::Hexen)
 			{
 				for (auto mapentry : entries)
@@ -1432,11 +1440,11 @@ size_t ArchiveOperations::replaceSpecials(
 						newarg3,
 						newarg4);
 					break;
-				default: Log::warning("Unknown map format for " + map.head->name()); break;
+				default: Log::warning("Unknown map format for " + m_head->name()); break;
 				}
 			}
 		}
-		report += wxString::Format("%s:\t%i specials changed\n", map.head->name(), achanged);
+		report += wxString::Format("%s:\t%i specials changed\n", m_head->name(), achanged);
 		changed += achanged;
 	}
 	Log::info(1, report);
@@ -1737,13 +1745,17 @@ size_t ArchiveOperations::replaceTextures(
 
 	for (auto& map : maps)
 	{
+		auto m_head = map.head.lock();
+		if (!m_head)
+			continue;
+
 		size_t achanged = 0;
 		// Is it an embedded wad?
 		if (map.archive)
 		{
 			// Attempt to open entry as wad archive
 			Archive* temp_archive = new WadArchive();
-			if (temp_archive->open(map.head))
+			if (temp_archive->open(m_head.get()))
 			{
 				achanged = ArchiveOperations::replaceTextures(
 					temp_archive, oldtex, newtex, floor, ceiling, lower, middle, upper);
@@ -1755,7 +1767,7 @@ size_t ArchiveOperations::replaceTextures(
 				else
 				{
 					temp_archive->close();
-					if (!(map.head->importMemChunk(mc)))
+					if (!(m_head->importMemChunk(mc)))
 					{
 						achanged = 0;
 					}
@@ -1768,9 +1780,9 @@ size_t ArchiveOperations::replaceTextures(
 		else
 		{
 			// Find the map entry to modify
-			ArchiveEntry* sectors  = nullptr;
-			ArchiveEntry* sides    = nullptr;
-			auto          entries  = map.entries(*archive);
+			ArchiveEntry* sectors = nullptr;
+			ArchiveEntry* sides   = nullptr;
+			auto          entries = map.entries(*archive);
 			if (map.format == MapFormat::Doom || map.format == MapFormat::Doom64 || map.format == MapFormat::Hexen)
 			{
 				for (auto mapentry : entries)
@@ -1824,11 +1836,11 @@ size_t ArchiveOperations::replaceTextures(
 				case MapFormat::UDMF:
 					achanged = replaceTexturesUDMF(sectors, oldtex, newtex, floor, ceiling, lower, middle, upper);
 					break;
-				default: Log::warning("Unknown map format for " + map.head->name()); break;
+				default: Log::warning("Unknown map format for " + m_head->name()); break;
 				}
 			}
 		}
-		report += wxString::Format("%s:\t%i elements changed\n", map.head->name(), achanged);
+		report += wxString::Format("%s:\t%i elements changed\n", m_head->name(), achanged);
 		changed += achanged;
 	}
 	Log::info(1, report);

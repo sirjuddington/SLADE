@@ -876,15 +876,16 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 {
 	MapDesc map;
 
-	if (!maphead)
+	auto s_maphead = maphead->getShared();
+	if (!s_maphead)
 		return map;
 
 	// Check for embedded wads (e.g., Doom 64 maps)
 	if (maphead->type()->formatId() == "archive_wad")
 	{
 		map.archive = true;
-		map.head    = maphead;
-		map.end     = maphead;
+		map.head    = s_maphead;
+		map.end     = s_maphead;
 		map.name    = maphead->name();
 		return map;
 	}
@@ -897,13 +898,13 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 	if (head_index < entry_count && dir->entryAt(head_index + 1)->upperName() == "TEXTMAP")
 	{
 		// Get map info
-		map.head   = maphead;
+		map.head   = s_maphead;
 		map.name   = maphead->name();
 		map.format = MapFormat::UDMF;
 
 		// All entries until we find ENDMAP
 		auto index = head_index + 1;
-		auto entry = dir->entryAt(index);
+		auto entry = dir->sharedEntryAt(index);
 		while (index < entry_count)
 		{
 			if (!entry || entry->upperName() == "ENDMAP")
@@ -920,10 +921,10 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 				}
 			}
 			if (!known)
-				map.unk.push_back(entry);
+				map.unk.push_back(entry.get());
 
 			// Next entry
-			entry = dir->entryAt(++index);
+			entry = dir->sharedEntryAt(++index);
 		}
 
 		// If we got to the end before we found ENDMAP, something is wrong
@@ -940,7 +941,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 	uint8_t existing_map_lumps[NUMMAPLUMPS];
 	memset(existing_map_lumps, 0, NUMMAPLUMPS);
 	auto index = head_index + 1;
-	auto entry = dir->entryAt(index);
+	auto entry = dir->sharedEntryAt(index);
 	while (entry)
 	{
 		// Check that the entry is a valid map-related entry
@@ -969,7 +970,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 		// If it wasn't a map entry, exit this loop
 		if (!mapentry)
 		{
-			entry = dir->entryAt(--index);
+			entry = dir->sharedEntryAt(--index);
 			break;
 		}
 
@@ -978,7 +979,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 			break;
 
 		// Go to next entry
-		entry = dir->entryAt(++index);
+		entry = dir->sharedEntryAt(++index);
 	}
 
 	// Check for the required map entries
@@ -989,7 +990,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 	}
 
 	// Setup map info
-	map.head = maphead;
+	map.head = s_maphead;
 	map.end  = entry;
 	map.name = maphead->name();
 
@@ -1016,7 +1017,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 	// Go through all lumps
 	auto index               = 0;
 	auto entry_count         = numEntries();
-	auto entry               = entryAt(index);
+	auto entry               = rootDir()->sharedEntryAt(index);
 	bool lastentryismapentry = false;
 	while (entry)
 	{
@@ -1029,15 +1030,15 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 			auto md = mapDesc(entryAt(index - 1));
 
 			// Add to map list
-			if (md.head != nullptr)
+			if (md.head.lock())
 			{
-				entry = md.end;
+				entry = md.end.lock();
 				maps.push_back(md);
 			}
 
 			// Current index is ENDMAP, we don't want to check for a doom/hexen format
 			// map so just go to the next index and continue the loop
-			entry = entryAt(++index);
+			entry = rootDir()->sharedEntryAt(++index);
 			continue;
 		}
 
@@ -1065,7 +1066,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 		if (maplump_found && index > 0)
 		{
 			// Save map header entry
-			auto header_entry = entryAt(index - 1);
+			auto header_entry = rootDir()->sharedEntryAt(index - 1);
 
 			// Check off map lumps until we find a non-map lump
 			bool done = false;
@@ -1095,12 +1096,12 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 
 				// Go to next lump if there is one
 				if (!lastentryismapentry)
-					entry = entryAt(++index);
+					entry = rootDir()->sharedEntryAt(++index);
 			}
 
 			// Go back to the lump just after the last map lump found, but only if we actually moved
 			if (!lastentryismapentry)
-				entry = entryAt(--index);
+				entry = rootDir()->sharedEntryAt(--index);
 
 			// Check that we have all the required map lumps: VERTEXES, LINEDEFS, SIDEDEFS, THINGS & SECTORS
 			if (!memchr(existing_map_lumps, 0, 5))
@@ -1111,7 +1112,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 				md.name = header_entry->name(); // Map title
 				md.end  = lastentryismapentry ? // End lump
 							 entry :
-							 entryAt(--index);
+							 rootDir()->sharedEntryAt(--index);
 
 				// If BEHAVIOR lump exists, it's a hexen format map
 				if (existing_map_lumps[LUMP_BEHAVIOR])
@@ -1151,13 +1152,13 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 		}
 
 		// Not a UDMF or Doom/Hexen map lump, go to next lump
-		entry = entryAt(++index);
+		entry = rootDir()->sharedEntryAt(++index);
 	}
 
 	// Set all map header entries to ETYPE_MAP type
 	for (auto& map : maps)
-		if (!map.archive)
-			map.head->setType(EntryType::mapMarkerType());
+		if (!map.archive && map.head.lock())
+			map.head.lock()->setType(EntryType::mapMarkerType());
 
 	// Update entry map format hints
 	for (auto& map : maps)
@@ -1172,16 +1173,16 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 		else
 			format = "udmf";
 
-		auto m_entry = map.head;
-		auto m_index = entryIndex(m_entry);
+		auto m_entry = map.head.lock();
+		auto m_index = entryIndex(m_entry.get());
 		while (m_entry)
 		{
 			m_entry->exProp("MapFormat") = format;
 
-			if (m_entry == map.end)
+			if (m_entry == map.end.lock())
 				break;
 
-			m_entry = entryAt(++m_index);
+			m_entry = rootDir()->sharedEntryAt(++m_index);
 		}
 	}
 

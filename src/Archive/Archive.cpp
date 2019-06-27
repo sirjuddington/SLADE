@@ -289,8 +289,8 @@ vector<ArchiveEntry*> Archive::MapDesc::entries(const Archive& parent, bool incl
 	if (archive)
 		return list;
 
-	auto index = include_head ? parent.entryIndex(head) : parent.entryIndex(head) + 1;
-	auto index_end = parent.entryIndex(end);
+	auto index = include_head ? parent.entryIndex(head.lock().get()) : parent.entryIndex(head.lock().get()) + 1;
+	auto index_end = parent.entryIndex(end.lock().get());
 	if (index < 0 || index_end < 0)
 		return list;
 

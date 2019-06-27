@@ -492,16 +492,17 @@ void MapEditorWindow::lockMapEntries(bool lock) const
 {
 	// Don't bother if no map is open
 	auto& map_desc = MapEditor::editContext().mapDesc();
-	if (!map_desc.head)
+	auto  head     = map_desc.head.lock();
+	if (!head)
 		return;
 
 	// Just lock/unlock the 'head' entry if it's a pk3 map
 	if (map_desc.archive)
 	{
 		if (lock)
-			map_desc.head->lock();
+			head->lock();
 		else
-			map_desc.head->unlock();
+			head->unlock();
 	}
 }
 
@@ -516,7 +517,7 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 	{
 		auto md = dlg.selectedMap();
 
-		if (md.name.empty() || (archive && !md.head))
+		if (md.name.empty() || (archive && !md.head.lock()))
 			return false;
 
 		// Attempt to load selected game configuration
@@ -581,15 +582,15 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 
 	// Get map parent archive
 	Archive* archive = nullptr;
-	if (map.head)
+	if (auto head = map.head.lock())
 	{
-		archive = map.head->parent();
+		archive = head->parent();
 
 		// Load map data
 		if (map.archive)
 		{
 			WadArchive temp;
-			temp.open(map.head->data());
+			temp.open(head->data());
 			for (unsigned a = 0; a < temp.numEntries(); a++)
 				map_data_.emplace_back(new ArchiveEntry(*(temp.entryAt(a))));
 		}
@@ -639,9 +640,10 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 			SetTitle(wxString::Format("SLADE - %s (UNSAVED)", map.name));
 
 		// Create backup
-		if (map.head
+		auto head = map.head.lock();
+		if (head
 			&& !MapEditor::backupManager().writeBackup(
-				   map_data_, map.head->topParent()->filename(false), map.head->nameNoExt()))
+				   map_data_, head->topParent()->filename(false), head->nameNoExt()))
 			Log::warning("Failed to backup map data");
 	}
 
@@ -665,7 +667,8 @@ void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
 	}
 
 	// Don't bother if new map
-	if (!map.head)
+	auto head = map.head.lock();
+	if (!head)
 	{
 		panel_script_editor_->openScripts(nullptr, nullptr);
 		return;
@@ -675,7 +678,7 @@ void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
 	if (map.archive)
 	{
 		auto wad = new WadArchive();
-		wad->open(map.head->data());
+		wad->open(head->data());
 		auto maps = wad->detectMaps();
 		if (!maps.empty())
 		{
@@ -690,7 +693,7 @@ void MapEditorWindow::loadMapScripts(Archive::MapDesc map)
 	// Go through map entries
 	ArchiveEntry* scripts  = nullptr;
 	ArchiveEntry* compiled = nullptr;
-	auto          entries  = map.entries(*map.head->parent());
+	auto          entries  = map.entries(*head->parent());
 	for (auto entry : entries)
 	{
 		// Check for SCRIPTS/BEHAVIOR
@@ -809,10 +812,9 @@ bool MapEditorWindow::writeMap(WadArchive& wad, const wxString& name, bool nodes
 	// Add map data to temporary wad
 	wad.addNewEntry(name.ToStdString());
 	// Handle fragglescript and similar content in the map header
-	if (mdesc_current.head && mdesc_current.head->size() && !mdesc_current.archive)
-	{
-		wad.entry(name.ToStdString())->importMemChunk(mdesc_current.head->data());
-	}
+	auto head = mdesc_current.head.lock();
+	if (head && head->size() && !mdesc_current.archive)
+		wad.entry(name.ToStdString())->importMemChunk(head->data());
 	for (auto& entry : new_map_data)
 		wad.addEntry(shared_ptr<ArchiveEntry>(entry));
 	if (acs) // BEHAVIOR
@@ -851,7 +853,8 @@ bool MapEditorWindow::saveMap()
 	auto& mdesc_current = MapEditor::editContext().mapDesc();
 
 	// Check for newly created map
-	if (!mdesc_current.head)
+	auto current_head = mdesc_current.head.lock();
+	if (!current_head)
 		return saveMapAs();
 
 	// Write map to temp wad
@@ -862,10 +865,10 @@ bool MapEditorWindow::saveMap()
 	// Check for map archive
 	unique_ptr<Archive> tempwad;
 	auto                map = mdesc_current;
-	if (mdesc_current.archive && mdesc_current.head)
+	if (mdesc_current.archive && current_head)
 	{
 		tempwad = std::make_unique<WadArchive>();
-		tempwad->open(mdesc_current.head);
+		tempwad->open(current_head.get());
 		auto amaps = tempwad->detectMaps();
 		if (!amaps.empty())
 			map = amaps[0];
@@ -877,14 +880,15 @@ bool MapEditorWindow::saveMap()
 	lockMapEntries(false);
 
 	// Delete current map entries
-	auto archive = map.head->parent();
+	auto m_head  = map.head.lock();
+	auto archive = m_head->parent();
 	auto entries = map.entries(*archive);
 	for (auto entry : entries)
 		archive->removeEntry(entry);
 
 	// Create backup
 	if (!MapEditor::backupManager().writeBackup(
-			map_data_, map.head->topParent()->filename(false), map.head->nameNoExt()))
+			map_data_, m_head->topParent()->filename(false), m_head->nameNoExt()))
 		Log::warning(1, "Warning: Failed to backup map data");
 
 	// Add new map entries
@@ -892,8 +896,8 @@ bool MapEditorWindow::saveMap()
 	for (unsigned a = 1; a < wad.numEntries(); a++)
 	{
 		auto copy = std::make_shared<ArchiveEntry>(*wad.entryAt(a));
-		archive->addEntry(copy, archive->entryIndex(map.head) + a, nullptr);
-		entry_end = copy.get();
+		archive->addEntry(copy, archive->entryIndex(m_head.get()) + a, nullptr);
+		entry_end = copy;
 	}
 
 	// Clean up
@@ -923,12 +927,12 @@ bool MapEditorWindow::saveMapAs()
 
 	// Create new, empty wad
 	WadArchive    wad;
-	auto          head = wad.addNewEntry(mdesc_current.name).get();
-	ArchiveEntry* end  = nullptr;
+	auto          head = wad.addNewEntry(mdesc_current.name);
+	shared_ptr<ArchiveEntry> end;
 	if (mdesc_current.format == MapFormat::UDMF)
 	{
 		wad.addNewEntry("TEXTMAP");
-		end = wad.addNewEntry("ENDMAP").get();
+		end = wad.addNewEntry("ENDMAP");
 	}
 	else
 	{
@@ -936,7 +940,7 @@ bool MapEditorWindow::saveMapAs()
 		wad.addNewEntry("LINEDEFS");
 		wad.addNewEntry("SIDEDEFS");
 		wad.addNewEntry("VERTEXES");
-		end = wad.addNewEntry("SECTORS").get();
+		end = wad.addNewEntry("SECTORS");
 	}
 
 	// Save map data
@@ -977,7 +981,7 @@ void MapEditorWindow::closeMap() const
 	lockMapEntries(false);
 
 	// Clear map info
-	MapEditor::editContext().mapDesc().head = nullptr;
+	MapEditor::editContext().mapDesc().head.reset();
 }
 
 // -----------------------------------------------------------------------------
@@ -1030,9 +1034,10 @@ bool MapEditorWindow::tryClose()
 bool MapEditorWindow::hasMapOpen(Archive* archive) const
 {
 	auto& mdesc = MapEditor::editContext().mapDesc();
-	if (!mdesc.head)
-		return false;
-	return (mdesc.head->parent() == archive);
+	if (auto head = mdesc.head.lock())
+		return head->parent() == archive;
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -1125,7 +1130,7 @@ bool MapEditorWindow::handleAction(string_view id)
 		if (saveMap())
 		{
 			// Save archive
-			auto a = mdesc_current.head->parent();
+			auto a = mdesc_current.head.lock()->parent();
 			if (a && save_archive_with_map)
 				a->save();
 		}
@@ -1144,10 +1149,10 @@ bool MapEditorWindow::handleAction(string_view id)
 	// Map->Restore Backup
 	if (id == "mapw_backup")
 	{
-		if (mdesc_current.head)
+		if (auto head = mdesc_current.head.lock())
 		{
 			auto data = MapEditor::backupManager().openBackup(
-				mdesc_current.head->topParent()->filename(false), mdesc_current.name);
+				head->topParent()->filename(false), mdesc_current.name);
 
 			if (data)
 			{
@@ -1296,8 +1301,8 @@ bool MapEditorWindow::handleAction(string_view id)
 	else if (id == "mapw_run_map" || id == "mapw_run_map_here")
 	{
 		Archive* archive = nullptr;
-		if (mdesc_current.head)
-			archive = mdesc_current.head->parent();
+		if (auto head = mdesc_current.head.lock())
+			archive = head->parent();
 		RunDialog dlg(this, archive, id == "mapw_run_map");
 		if (dlg.ShowModal() == wxID_OK)
 		{
