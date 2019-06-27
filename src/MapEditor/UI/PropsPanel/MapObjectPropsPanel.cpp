@@ -953,19 +953,24 @@ void MapObjectPropsPanel::openObject(MapObject* object)
 // ----------------------------------------------------------------------------
 void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 {
+	pg_properties_->Freeze();
+	pg_props_side1_->Freeze();
+	pg_props_side2_->Freeze();
+
 	// Check any objects were given
 	if (objects.size() == 0 || objects[0] == nullptr)
 	{
 		this->objects_.clear();
 		pg_properties_->DisableProperty(pg_properties_->GetGrid()->GetRoot());
 		pg_properties_->SetPropertyValueUnspecified(pg_properties_->GetGrid()->GetRoot());
-		pg_properties_->Refresh();
 		pg_props_side1_->DisableProperty(pg_props_side1_->GetGrid()->GetRoot());
 		pg_props_side1_->SetPropertyValueUnspecified(pg_props_side1_->GetGrid()->GetRoot());
-		pg_props_side1_->Refresh();
 		pg_props_side2_->DisableProperty(pg_props_side2_->GetGrid()->GetRoot());
 		pg_props_side2_->SetPropertyValueUnspecified(pg_props_side2_->GetGrid()->GetRoot());
-		pg_props_side2_->Refresh();
+
+		pg_properties_->Thaw();
+		pg_props_side1_->Thaw();
+		pg_props_side2_->Thaw();
 
 		return;
 	}
@@ -1072,9 +1077,9 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	// Possibly update the argument names and visibility
 	updateArgs(nullptr);
 
-	pg_properties_->Refresh();
-	pg_props_side1_->Refresh();
-	pg_props_side2_->Refresh();
+	pg_properties_->Thaw();
+	pg_props_side1_->Thaw();
+	pg_props_side2_->Thaw();
 }
 
 // ----------------------------------------------------------------------------
