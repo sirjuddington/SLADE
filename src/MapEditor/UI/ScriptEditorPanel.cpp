@@ -102,15 +102,13 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	if (S_CMPNOCASE(lang, "acs_hexen"))
 	{
 		text_editor->setLanguage(TextLanguage::fromId("acs"));
-		entry_script->setName("SCRIPTS");
-		entry_compiled->setName("BEHAVIOR");
 	}
 	else if (S_CMPNOCASE(lang, "acs_zdoom"))
 	{
 		text_editor->setLanguage(TextLanguage::fromId("acs_z"));
-		entry_script->setName("SCRIPTS");
-		entry_compiled->setName("BEHAVIOR");
 	}
+	entry_script->setName("SCRIPTS");
+	entry_compiled->setName("BEHAVIOR");
 
 	// Add Find+Replace panel
 	panel_fr = new FindReplacePanel(this, *text_editor);
