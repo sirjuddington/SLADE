@@ -435,7 +435,7 @@ void MainWindow::setupLayout()
 	{
 		// Null start_page pointer if start page tab is closed
 		auto page = stc_tabs->GetPage(stc_tabs->GetSelection());
-		if (page->GetName() == "startpage")
+		if (page && page->GetName() == "startpage")
 			start_page = nullptr;
 	});
 
