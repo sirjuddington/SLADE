@@ -421,7 +421,7 @@ void MainWindow::setupLayout()
 	Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, [&](wxAuiNotebookEvent& e) {
 		// Null start_page pointer if start page tab is closed
 		auto page = stc_tabs_->GetPage(stc_tabs_->GetSelection());
-		if (page->GetName() == "startpage")
+		if (page && page->GetName() == "startpage")
 			start_page_ = nullptr;
 	});
 
