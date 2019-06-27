@@ -165,10 +165,7 @@ protected:
 class EntryDataUS : public UndoStep
 {
 public:
-	EntryDataUS(ArchiveEntry* entry) :
-		path_{ entry->path() },
-		index_{ (unsigned)entry->parentDir()->entryIndex(entry) },
-		archive_{ entry->parent() }
+	EntryDataUS(ArchiveEntry* entry) : path_{ entry->path() }, index_{ entry->index() }, archive_{ entry->parent() }
 	{
 		data_.importMem(entry->rawData(), entry->size());
 	}
@@ -180,6 +177,6 @@ public:
 private:
 	MemChunk data_;
 	wxString path_;
-	unsigned index_   = -1;
+	int      index_   = -1;
 	Archive* archive_ = nullptr;
 };

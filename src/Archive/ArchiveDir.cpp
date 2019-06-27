@@ -284,7 +284,7 @@ bool ArchiveDir::addEntry(shared_ptr<ArchiveEntry> entry, unsigned index)
 
 	// Set entry's parent to this dir
 	if (entry->parent_)
-		entry->parent_->removeEntry(entry->parent_->entryIndex(entry.get()));
+		entry->parent_->removeEntry(entry->index());
 	entry->parent_ = this;
 
 	// Check index

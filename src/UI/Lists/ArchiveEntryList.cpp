@@ -160,7 +160,7 @@ wxString ArchiveEntryList::itemText(long item, long column, long index) const
 		if (entry->type() == EntryType::folderType())
 			return "";
 		else
-			return wxString::Format("%d", entry->parentDir()->entryIndex(entry));
+			return wxString::Format("%d", entry->index());
 	}
 	else
 		return "INVALID COLUMN"; // Invalid column

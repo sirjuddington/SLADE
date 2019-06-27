@@ -276,7 +276,7 @@ void registerArchiveEntry(sol::state& lua)
 	lua_entry["path"]  = sol::property([](ArchiveEntry& self) { return self.path(); });
 	lua_entry["type"]  = sol::property(&ArchiveEntry::type);
 	lua_entry["size"]  = sol::property(&ArchiveEntry::size);
-	lua_entry["index"] = sol::property([](ArchiveEntry& self) { return self.parentDir()->entryIndex(&self) + 1; });
+	lua_entry["index"] = sol::property([](ArchiveEntry& self) { return self.index() + 1; });
 	lua_entry["crc32"] = sol::property([](ArchiveEntry& self) { return Misc::crc(self.rawData(), self.size()); });
 	lua_entry["data"]  = sol::property([](ArchiveEntry& self) { return &self.data(); });
 

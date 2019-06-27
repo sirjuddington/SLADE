@@ -60,7 +60,7 @@ public:
 	EntryRenameUS(ArchiveEntry* entry, string_view new_name) :
 		archive_{ entry->parent() },
 		entry_path_{ entry->path() },
-		entry_index_{ entry->parentDir()->entryIndex(entry) },
+		entry_index_{ entry->index() },
 		old_name_{ entry->name() },
 		new_name_{ new_name }
 	{
@@ -182,7 +182,7 @@ public:
 		archive_{ entry->parent() },
 		entry_copy_{ new ArchiveEntry(*entry) },
 		path_{ entry->path() },
-		index_{ (unsigned)entry->parentDir()->entryIndex(entry) }
+		index_{ entry->index() }
 	{
 	}
 
@@ -215,7 +215,7 @@ private:
 	Archive*                 archive_;
 	unique_ptr<ArchiveEntry> entry_copy_;
 	string                   path_;
-	unsigned                 index_;
+	int                      index_;
 };
 
 
@@ -289,7 +289,7 @@ vector<ArchiveEntry*> Archive::MapDesc::entries(const Archive& parent, bool incl
 	if (archive)
 		return list;
 
-	auto index = include_head ? parent.entryIndex(head.lock().get()) : parent.entryIndex(head.lock().get()) + 1;
+	auto index     = include_head ? parent.entryIndex(head.lock().get()) : parent.entryIndex(head.lock().get()) + 1;
 	auto index_end = parent.entryIndex(end.lock().get());
 	if (index < 0 || index_end < 0)
 		return list;
@@ -1152,7 +1152,7 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 		dir = dir_root_.get();
 
 	// Remove the entry from its current dir
-	auto sptr = dir->sharedEntryAt(dir->entryIndex(entry)); // Get a shared pointer so it isn't deleted
+	auto sptr = entry->getShared(); // Get a shared pointer so it isn't deleted
 	removeEntry(entry);
 
 	// Add it to the destination dir

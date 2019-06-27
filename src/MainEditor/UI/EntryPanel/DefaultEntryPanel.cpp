@@ -116,7 +116,7 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Update labels
-	label_index_->SetLabel(wxString::Format("Entry Index: %d", entry->parentDir()->entryIndex(entry)));
+	label_index_->SetLabel(wxString::Format("Entry Index: %d", entry->index()));
 	label_type_->SetLabel(wxString::Format("Entry Type: %s", entry->typeString()));
 	label_size_->SetLabel(wxString::Format("Entry Size: %d bytes", entry->size()));
 
@@ -168,11 +168,11 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 	bool gfx     = false;
 	bool texture = false;
 	entries_.clear();
-	size_t max = 0, min = entries[0]->parentDir()->entryIndex(entries[0]);
+	size_t max = 0, min = entries[0]->index();
 	for (auto& entry : entries)
 	{
 		// Get index
-		size_t index = entry->parentDir()->entryIndex(entry);
+		size_t index = entry->index();
 		if (index < min)
 			min = index;
 		if (index > max)
@@ -186,7 +186,7 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 		if (entry->type()->id() == "texturex" || entry->type()->id() == "pnames")
 			texture = true;
 
-		this->entries_.push_back(entry);
+		entries_.push_back(entry);
 	}
 	label_index_->SetLabel(wxString::Format("Entry Indices: from %lu to %lu", (unsigned long)min, (unsigned long)max));
 	if (gfx)

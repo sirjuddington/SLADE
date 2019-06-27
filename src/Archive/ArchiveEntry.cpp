@@ -212,6 +212,15 @@ shared_ptr<ArchiveEntry> ArchiveEntry::getShared()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the entry's index within its parent ArchiveDir, or -1 if it isn't
+// in a dir
+// -----------------------------------------------------------------------------
+int ArchiveEntry::index()
+{
+	return parent_ ? parent_->entryIndex(this) : -1;
+}
+
+// -----------------------------------------------------------------------------
 // Sets the entry's name (but doesn't change state to modified)
 // -----------------------------------------------------------------------------
 void ArchiveEntry::setName(string_view name)

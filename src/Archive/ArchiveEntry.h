@@ -56,6 +56,7 @@ public:
 	ArchiveEntry*            nextEntry();
 	ArchiveEntry*            prevEntry();
 	shared_ptr<ArchiveEntry> getShared();
+	int                      index();
 
 	// Modifiers (won't change entry state, except setState of course :P)
 	void setName(string_view name);

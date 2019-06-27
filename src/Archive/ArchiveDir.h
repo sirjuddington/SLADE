@@ -20,7 +20,7 @@ public:
 	shared_ptr<ArchiveDir>                  parent() const { return parent_dir_.lock(); }
 
 	// Mutators
-	void setName(string_view new_name) { dir_entry_->setName(new_name); }
+	void setName(string_view new_name) const { dir_entry_->setName(new_name); }
 	void setArchive(Archive* archive);
 
 	// Entry Access
