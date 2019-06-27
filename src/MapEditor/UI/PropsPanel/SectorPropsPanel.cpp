@@ -422,9 +422,9 @@ void SectorPropsPanel::openObjects(vector<MapObject*>& objects)
 		mopp_all_props_->openObjects(objects);
 
 	// Update internal objects list
-	this->objects_.clear();
+	objects_.clear();
 	for (auto object : objects)
-		this->objects_.push_back(object);
+		objects_.push_back(object);
 
 	// Update layout
 	Layout();

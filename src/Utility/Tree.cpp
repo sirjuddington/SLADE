@@ -51,7 +51,7 @@ STreeNode::STreeNode(STreeNode* parent)
 	if (parent)
 		parent->addChild(this);
 	else
-		this->parent_ = nullptr;
+		parent_ = nullptr;
 
 	// Disallow duplicate child names by default
 	allow_dup_child_ = false;

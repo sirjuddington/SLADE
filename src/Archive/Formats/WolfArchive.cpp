@@ -443,8 +443,8 @@ bool WolfArchive::open(string_view filename)
 	if (opened)
 	{
 		// Update variables
-		this->filename_.assign(filename.data(), filename.size());
-		this->on_disk_ = true;
+		filename_.assign(filename.data(), filename.size());
+		on_disk_ = true;
 
 		return true;
 	}

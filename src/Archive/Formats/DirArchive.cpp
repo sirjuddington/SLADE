@@ -214,7 +214,7 @@ bool DirArchive::save(string_view filename)
 	long                time = App::runTimer();
 	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
-	wxDir               dir(this->filename_);
+	wxDir               dir(filename_);
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
 	Log::info(2, "GetAllFiles took {}ms", App::runTimer() - time);
 

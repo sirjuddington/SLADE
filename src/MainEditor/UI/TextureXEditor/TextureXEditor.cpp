@@ -348,7 +348,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 	tabs_->Refresh();
 
 	// Update variables
-	this->archive_   = archive;
+	archive_         = archive;
 	pnames_modified_ = false;
 
 	// Lock pnames entry if it exists

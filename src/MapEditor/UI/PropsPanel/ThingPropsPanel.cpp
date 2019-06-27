@@ -788,7 +788,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	// Update internal objects list
 	objects_.clear();
 	for (auto object : objects)
-		this->objects_.push_back(object);
+		objects_.push_back(object);
 
 	// Update layout
 	Layout();

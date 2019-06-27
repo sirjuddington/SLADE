@@ -67,7 +67,7 @@ public:
 	void setPrevEditMode() { setEditMode(edit_mode_prev_); }
 	void setSectorEditMode(MapEditor::SectorMode mode);
 	void cycleSectorEditMode();
-	void setCanvas(MapCanvas* canvas) { this->canvas_ = canvas; }
+	void setCanvas(MapCanvas* canvas) { canvas_ = canvas; }
 	void lockMouse(bool lock);
 
 	// General

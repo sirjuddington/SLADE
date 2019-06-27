@@ -124,9 +124,9 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 	// Parse UDMF map
 	if (map.format == MapFormat::UDMF)
 	{
-		ArchiveEntry* udmfdata = nullptr;
+		ArchiveEntry* udmfdata  = nullptr;
 		auto          archive   = m_head->parent();
-		auto          index    = archive->entryIndex(m_head.get());
+		auto          index     = archive->entryIndex(m_head.get());
 		auto          end_index = archive->entryIndex(map.end.lock().get());
 		while (index <= end_index)
 		{

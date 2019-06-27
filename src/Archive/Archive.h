@@ -34,8 +34,8 @@ public:
 
 		MapDesc()
 		{
-			archive    = false;
-			format     = MapFormat::Unknown;
+			archive = false;
+			format  = MapFormat::Unknown;
 		}
 
 		vector<ArchiveEntry*> entries(const Archive& parent, bool include_head = false) const;
@@ -57,7 +57,7 @@ public:
 	virtual bool           isWritable() { return true; }
 
 	void setModified(bool modified);
-	void setFilename(string_view filename) { this->filename_ = filename; }
+	void setFilename(string_view filename) { filename_ = filename; }
 
 	// Entry retrieval/info
 	bool                             checkEntry(ArchiveEntry* entry) const;

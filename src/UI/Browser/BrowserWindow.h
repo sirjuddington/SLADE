@@ -22,8 +22,8 @@ public:
 
 	const string&  name() const override { return name_; }
 	wxTreeListItem treeId() const { return tree_id_; }
-	void           setName(string_view name) override { this->name_ = name; }
-	void           setTreeId(wxTreeListItem id) { this->tree_id_ = id; }
+	void           setName(string_view name) override { name_ = name; }
+	void           setTreeId(wxTreeListItem id) { tree_id_ = id; }
 
 	void         clearItems();
 	unsigned     nItems() const { return items_.size(); }

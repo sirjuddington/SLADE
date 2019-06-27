@@ -20,7 +20,7 @@ public:
 
 	void setStartCol(ColRGBA col) { col_start_.set(col.r, col.g, col.b, 255); }
 	void setEndCol(ColRGBA col) { col_end_.set(col.r, col.g, col.b, 255); }
-	void setSteps(int steps) { this->steps_ = steps; }
+	void setSteps(int steps) { steps_ = steps; }
 
 	void draw() override;
 

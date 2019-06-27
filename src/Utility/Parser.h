@@ -18,7 +18,7 @@ public:
 	~ParseTreeNode() = default;
 
 	const string& name() const override { return name_; }
-	void          setName(string_view name) override { this->name_ = name; }
+	void          setName(string_view name) override { name_ = name; }
 
 	const string&           inherit() const { return inherit_; }
 	const string&           type() const { return type_; }

@@ -68,10 +68,10 @@ struct Item
 	// Comparison operators
 	bool operator<(const Item& other) const
 	{
-		if (this->type == other.type)
-			return this->index < other.index;
+		if (type == other.type)
+			return index < other.index;
 		else
-			return this->type < other.type;
+			return type < other.type;
 	}
 	bool operator==(const Item& other) const
 	{

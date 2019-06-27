@@ -95,7 +95,7 @@ bool GfxConvDialog::nextItem()
 	current_item_++;
 	if (current_item_ >= items_.size())
 	{
-		this->Close(true);
+		Close(true);
 		return false;
 	}
 
@@ -650,7 +650,7 @@ void GfxConvDialog::onBtnSkip(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void GfxConvDialog::onBtnSkipAll(wxCommandEvent& e)
 {
-	this->Close(true);
+	Close(true);
 }
 
 // -----------------------------------------------------------------------------

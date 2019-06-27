@@ -125,8 +125,8 @@ void MapObject::copy(MapObject* c)
 	if (!c->properties_.isEmpty())
 	{
 		c->properties_.copyTo(properties_);
-		this->parent_map_ = c->parent_map_;
-		this->filtered_   = c->filtered_;
+		parent_map_ = c->parent_map_;
+		filtered_   = c->filtered_;
 	}
 }
 

@@ -73,7 +73,7 @@ Lexer::Lexer() :
 // -----------------------------------------------------------------------------
 void Lexer::loadLanguage(TextLanguage* language)
 {
-	this->language_ = language;
+	language_ = language;
 	clearWords();
 
 	if (!language)

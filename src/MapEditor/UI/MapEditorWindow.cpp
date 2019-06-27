@@ -571,7 +571,7 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 	}
 
 	// Show blank map
-	this->Show(true);
+	Show(true);
 	map_canvas_->Refresh();
 	Layout();
 	Update();
@@ -887,8 +887,7 @@ bool MapEditorWindow::saveMap()
 		archive->removeEntry(entry);
 
 	// Create backup
-	if (!MapEditor::backupManager().writeBackup(
-			map_data_, m_head->topParent()->filename(false), m_head->nameNoExt()))
+	if (!MapEditor::backupManager().writeBackup(map_data_, m_head->topParent()->filename(false), m_head->nameNoExt()))
 		Log::warning(1, "Warning: Failed to backup map data");
 
 	// Add new map entries
@@ -926,8 +925,8 @@ bool MapEditorWindow::saveMapAs()
 		return false;
 
 	// Create new, empty wad
-	WadArchive    wad;
-	auto          head = wad.addNewEntry(mdesc_current.name);
+	WadArchive               wad;
+	auto                     head = wad.addNewEntry(mdesc_current.name);
 	shared_ptr<ArchiveEntry> end;
 	if (mdesc_current.format == MapFormat::UDMF)
 	{
@@ -1151,8 +1150,7 @@ bool MapEditorWindow::handleAction(string_view id)
 	{
 		if (auto head = mdesc_current.head.lock())
 		{
-			auto data = MapEditor::backupManager().openBackup(
-				head->topParent()->filename(false), mdesc_current.name);
+			auto data = MapEditor::backupManager().openBackup(head->topParent()->filename(false), mdesc_current.name);
 
 			if (data)
 			{
@@ -1388,7 +1386,7 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 	if (!IsMaximized())
 		Misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 
-	this->Show(false);
+	Show(false);
 	closeMap();
 }
 

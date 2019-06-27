@@ -40,8 +40,8 @@
 #include "SCallTip.h"
 #include "SLADEWxApp.h"
 #include "UI/WxUtils.h"
-#include "Utility/Tokenizer.h"
 #include "Utility/StringUtils.h"
+#include "Utility/Tokenizer.h"
 
 
 // -----------------------------------------------------------------------------
@@ -377,7 +377,7 @@ bool TextEditorCtrl::setLanguage(TextLanguage* lang)
 
 	// Update variables
 	SetWordChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-$");
-	this->language_ = lang;
+	language_ = lang;
 
 	// Re-colour text
 	Colourise(0, GetTextLength());
@@ -1621,7 +1621,7 @@ void TextEditorCtrl::onMouseDown(wxMouseEvent& e)
 	// Check for ctrl+left (web lookup)
 	if (e.LeftDown() && e.GetModifiers() == wxMOD_CMD)
 	{
-		int      pos  = CharPositionFromPointClose(e.GetX(), e.GetY());
+		int  pos  = CharPositionFromPointClose(e.GetX(), e.GetY());
 		auto word = GetTextRange(WordStartPosition(pos, true), WordEndPosition(pos, true)).ToStdString();
 
 		if (!word.empty())

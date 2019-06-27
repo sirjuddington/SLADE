@@ -509,8 +509,8 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 
 			// Add map entries to archive
 			auto parent = entry->parent();
-			auto e = m_head;
-			auto index = parent->entryIndex(m_head.get());
+			auto e      = m_head;
+			auto index  = parent->entryIndex(m_head.get());
 			while (true)
 			{
 				archive.addEntry(std::make_shared<ArchiveEntry>(*e), "");

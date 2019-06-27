@@ -927,8 +927,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 			// Add triggers dropdown
 			auto spac_triggers = WxUtils::arrayStringStd(Game::configuration().allSpacTriggers());
-			choice_trigger_ = new wxChoice(
-				panel_action_special_, -1, wxDefaultPosition, wxDefaultSize, spac_triggers);
+			choice_trigger_ = new wxChoice(panel_action_special_, -1, wxDefaultPosition, wxDefaultSize, spac_triggers);
 			sizer_trigger->Add(choice_trigger_, 0, wxEXPAND | wxALL, UI::pad());
 
 			// Add activation-related flags

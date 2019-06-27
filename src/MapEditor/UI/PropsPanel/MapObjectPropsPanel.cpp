@@ -930,7 +930,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	// Check any objects were given
 	if (objects.empty() || objects[0] == nullptr)
 	{
-		this->objects_.clear();
+		objects_.clear();
 		pg_properties_->DisableProperty(pg_properties_->GetGrid()->GetRoot());
 		pg_properties_->SetPropertyValueUnspecified(pg_properties_->GetGrid()->GetRoot());
 		pg_properties_->Refresh();
@@ -1030,11 +1030,11 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Update internal objects list
-	if (&objects != &this->objects_)
+	if (&objects != &objects_)
 	{
-		this->objects_.clear();
+		objects_.clear();
 		for (auto object : objects)
-			this->objects_.push_back(object);
+			objects_.push_back(object);
 	}
 
 	// Possibly update the argument names and visibility

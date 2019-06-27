@@ -63,7 +63,7 @@ public:
 	const vector<Context>& contexts() const { return contexts_; }
 	const Context&         context(unsigned long index) const;
 
-	void setName(string_view name) { this->name_ = name; }
+	void setName(string_view name) { name_ = name; }
 	void addContext(
 		string_view context,
 		string_view args,
@@ -130,7 +130,7 @@ public:
 
 	void copyTo(TextLanguage* copy);
 
-	void setName(string_view name) { this->name_ = name; }
+	void setName(string_view name) { name_ = name; }
 	void setPreferedComments(unsigned index) { preferred_comments_ = index; }
 	void setLineCommentList(vector<string> token) { line_comment_l_ = std::move(token); };
 	void setCommentBeginList(vector<string> token) { comment_begin_l_ = std::move(token); };

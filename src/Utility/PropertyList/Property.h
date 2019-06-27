@@ -31,7 +31,7 @@ public:
 	~Property() = default;
 
 	Type type() const { return type_; }
-	bool isType(Type type) const { return this->type_ == type; }
+	bool isType(Type type) const { return type_ == type; }
 	bool hasValue() const { return has_value_; }
 
 	void changeType(Type newtype);

@@ -125,7 +125,7 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 
 		// Tagged
 		else if (StrUtil::equalCI(name, "tagged"))
-			this->tagged_ = Game::parseTagged(child);
+			tagged_ = Game::parseTagged(child);
 
 		// Parse arg definition if it was one
 		if (argn >= 0)

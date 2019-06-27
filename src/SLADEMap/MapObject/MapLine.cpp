@@ -618,7 +618,7 @@ double MapLine::length()
 
 	if (length_ < 0)
 	{
-		length_ = this->seg().length();
+		length_ = seg().length();
 		ca_     = (vertex2_->xPos() - vertex1_->xPos()) / length_;
 		sa_     = (vertex2_->yPos() - vertex1_->yPos()) / length_;
 	}
@@ -686,7 +686,7 @@ double MapLine::distanceTo(Vec2d point)
 	// Update length data if needed
 	if (length_ < 0)
 	{
-		length_ = this->seg().length();
+		length_ = seg().length();
 		if (length_ != 0)
 		{
 			ca_ = (vertex2_->xPos() - vertex1_->xPos()) / length_;

@@ -427,7 +427,7 @@ void MapChecksPanel::onBtnEditObject(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void MapChecksPanel::onBtnExport(wxCommandEvent& e)
 {
-	auto            map_name = MapEditor::editContext().mapDesc().name;
+	auto                map_name = MapEditor::editContext().mapDesc().name;
 	SFileDialog::FDInfo info;
 	if (SFileDialog::saveFile(
 			info,

@@ -601,7 +601,7 @@ bool SectorBuilder::traceSector(SLADEMap* map, MapLine* line, bool front)
 		return false;
 
 	// Init
-	this->map_ = map;
+	map_ = map;
 	sector_edges_.clear();
 	error_ = "Unknown error";
 

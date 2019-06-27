@@ -300,7 +300,7 @@ void BrowserCanvas::draw()
 void BrowserCanvas::setScrollBar(wxScrollBar* scrollbar)
 {
 	// Set scrollbar
-	this->scrollbar_ = scrollbar;
+	scrollbar_ = scrollbar;
 
 	// Bind events
 	scrollbar->Bind(wxEVT_SCROLL_THUMBTRACK, &BrowserCanvas::onScrollThumbTrack, this);

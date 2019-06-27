@@ -23,8 +23,8 @@ public:
 
 	CTexture* texture() const { return texture_; }
 	View      viewType() const { return view_type_; }
-	void      setScale(double scale) { this->scale_ = scale; }
-	void      setViewType(View type) { this->view_type_ = type; }
+	void      setScale(double scale) { scale_ = scale; }
+	void      setViewType(View type) { view_type_ = type; }
 	void      drawOutside(bool draw = true) { draw_outside_ = draw; }
 	Vec2i     mousePrevPos() const { return mouse_prev_; }
 	bool      isDragging() const { return dragging_; }

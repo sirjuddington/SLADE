@@ -81,8 +81,8 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list)
 {
 	// Clear current lines
 	lines_.clear();
-	this->side1_   = false;
-	this->side2_   = false;
+	side1_         = false;
+	side2_         = false;
 	selected_side_ = 0;
 	for (unsigned a = 0; a < 6; a++)
 	{
@@ -106,7 +106,7 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list)
 			addTexture(textures_[FrontMiddle], side1->texMiddle());
 			addTexture(textures_[FrontLower], side1->texLower());
 
-			this->side1_ = true;
+			side1_ = true;
 		}
 
 		// Process second side
@@ -118,7 +118,7 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list)
 			addTexture(textures_[BackMiddle], side2->texMiddle());
 			addTexture(textures_[BackLower], side2->texLower());
 
-			this->side2_ = true;
+			side2_ = true;
 		}
 	}
 

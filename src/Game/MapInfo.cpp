@@ -52,12 +52,12 @@ void MapInfo::clear(bool maps, bool editor_nums)
 {
 	if (maps)
 	{
-		this->maps_.clear();
+		maps_.clear();
 		default_map_ = {};
 	}
 
 	if (editor_nums)
-		this->editor_nums_.clear();
+		editor_nums_.clear();
 }
 
 // -----------------------------------------------------------------------------

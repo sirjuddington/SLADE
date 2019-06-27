@@ -34,6 +34,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MOPGProperty.h"
+#include "Dialogs/Preferences/EditingPrefsPanel.h"
 #include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
@@ -43,7 +44,6 @@
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Dialogs/Preferences/EditingPrefsPanel.h"
 
 using namespace MapEditor;
 

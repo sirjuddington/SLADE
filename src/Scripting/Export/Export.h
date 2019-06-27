@@ -16,4 +16,4 @@ void registerArchiveTypes(sol::state& lua);
 void registerMapEditorTypes(sol::state& lua);
 void registerGameTypes(sol::state& lua);
 void registerGraphicsTypes(sol::state& lua);
-}
+} // namespace Lua

@@ -1170,7 +1170,7 @@ void GfxEntryPanel::onAnnouncement(Announcer* announcer, string_view event_name,
 // -----------------------------------------------------------------------------
 void GfxEntryPanel::onBtnNextImg(wxCommandEvent& e)
 {
-	int num = gfx_canvas_->image().size();
+	int  num   = gfx_canvas_->image().size();
 	auto entry = entry_.lock().get();
 	if (num > 1 && entry)
 	{
@@ -1186,7 +1186,7 @@ void GfxEntryPanel::onBtnNextImg(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void GfxEntryPanel::onBtnPrevImg(wxCommandEvent& e)
 {
-	int num = gfx_canvas_->image().size();
+	int  num   = gfx_canvas_->image().size();
 	auto entry = entry_.lock().get();
 	if (num > 1 && entry)
 	{
