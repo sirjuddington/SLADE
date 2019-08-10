@@ -409,6 +409,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	data_area_    = new DataEntryPanel(this);
 
 
+
 	// --- Setup Layout ---
 
 	// Create sizer
@@ -2319,6 +2320,50 @@ bool ArchivePanel::gfxExportPNG()
 	return true;
 }
 
+bool ArchivePanel::voxelConvert()
+{
+	// Get selected entries
+	auto selection = entry_list_->selectedEntries();
+
+	// Begin recording undo level
+	undo_manager_->beginRecord("Convert .vox -> .kvx");
+
+	// Go through selection
+	bool errors = false;
+	entry_list_->setEntriesAutoUpdate(false);
+	for (unsigned a = 0; a < selection.size(); a++)
+	{
+		if (a == selection.size() - 1)
+			entry_list_->setEntriesAutoUpdate(true);
+
+		if (selection[a]->type()->formatId() == "voxel_vox")
+		{
+			MemChunk kvx;
+			// Attempt conversion
+			if (!Conversions::voxToKvx(selection[a]->data(), kvx))
+			{
+				Log::error(wxString::Format("Unable to convert entry %s: %s", selection[a]->name(), Global::error));
+				errors = true;
+				continue;
+			}
+			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a])); // Create undo step
+			selection[a]->importMemChunk(kvx);                                         // Load doom sound data
+			EntryType::detectEntryType(*selection[a]);                                  // Update entry type
+			selection[a]->setExtensionByType();                                         // Update extension if necessary
+		}
+	}
+	entry_list_->setEntriesAutoUpdate(true);
+
+	// Finish recording undo level
+	undo_manager_->endRecord(true);
+
+	// Show message if errors occurred
+	if (errors)
+		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
+
+	return true;
+}
+
 // -----------------------------------------------------------------------------
 // Returns the entry currently open for editing
 // -----------------------------------------------------------------------------
@@ -3314,7 +3359,9 @@ bool ArchivePanel::handleAction(string_view id)
 		wavDSndConvert();
 	else if (id == "arch_audio_convertmus")
 		musMidiConvert();
-	else if (id == "arch_scripts_compileacs")
+	else if (id == "arch_voxel_convertvox")
+		voxelConvert();
+	else if (id == "arch_scripts_compileacs") 
 		compileACS();
 	else if (id == "arch_scripts_compilehacs")
 		compileACS(true);
@@ -3539,6 +3586,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	bool modified_selected = false;
 	bool map_selected      = false;
 	bool swan_selected     = false;
+	bool voxel_selected    = false;
 	//	bool rle_selected = false;
 	wxString category = "";
 	for (auto& entry : selection)
@@ -3548,6 +3596,11 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		{
 			if (entry->type()->extraProps().propertyExists("image"))
 				gfx_selected = true;
+		}
+		if (!voxel_selected)
+		{
+			if (entry->type()->formatId() == "voxel_vox")
+				voxel_selected = true;
 		}
 		if (!png_selected)
 		{
@@ -3771,6 +3824,22 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		SAction::fromId("arch_scripts_compileacs")->addToMenu(scripts, true);
 		SAction::fromId("arch_scripts_compilehacs")->addToMenu(scripts, true);
 	}
+
+	if (voxel_selected)
+	{
+		wxMenu* voxels;
+		if (context_submenus)
+		{
+			voxels = new wxMenu();
+			context.AppendSubMenu(voxels, "Voxels");
+		}
+		else
+		{
+			context.AppendSeparator();
+			voxels = &context;
+		}
+		SAction::fromId("arch_voxel_convertvox")->addToMenu(voxels, true);
+}
 
 	// Add map related menu items if needed
 	if (map_selected)

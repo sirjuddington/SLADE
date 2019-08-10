@@ -71,6 +71,7 @@ public:
 	bool gfxTint();
 	bool gfxModifyOffsets() const;
 	bool gfxExportPNG();
+	bool voxelConvert();
 	bool swanConvert() const;
 	bool basConvert(bool animdefs = false);
 	bool palConvert() const;
@@ -138,6 +139,7 @@ protected:
 	EntryPanel* text_area_     = nullptr;
 	EntryPanel* ansi_area_     = nullptr;
 	EntryPanel* gfx_area_      = nullptr;
+	EntryPanel* voxel_area_    = nullptr;
 	EntryPanel* pal_area_      = nullptr;
 	EntryPanel* texturex_area_ = nullptr;
 	EntryPanel* pnames_area_   = nullptr;

@@ -118,6 +118,34 @@ struct SunSndHeader
 	uint32_t rate;
 	uint32_t channels;
 };
+
+struct VoxHeader
+{
+	uint32_t width;
+	uint32_t length;
+	uint32_t height;
+};
+
+struct KvxHeader
+{
+	uint32_t total_bytes;
+
+	uint32_t width;
+	uint32_t length;
+	uint32_t height;
+
+	uint32_t pivot_x;
+	uint32_t pivot_y;
+	uint32_t pivot_z;
+};
+
+struct KvxColumnPostHeader
+{
+	uint8_t topdelta;
+	uint8_t size;
+	uint8_t culling;
+};
+
 } // namespace Conversions
 
 
@@ -1274,4 +1302,180 @@ bool Conversions::auSndToWav(MemChunk& in, MemChunk& out)
 		out.write("\0", 1);
 
 	return true;
+}
+
+bool Conversions::voxToKvx(MemChunk& in, MemChunk& out)
+{
+#define AT(x, y, z) (((x) * length + (y)) * height + (z))
+
+	const uint8_t LEFT = 1;
+	const uint8_t RIGHT = 2;
+	const uint8_t FRONT = 4;
+	const uint8_t BACK = 8;
+	const uint8_t TOP = 16;
+	const uint8_t BOTTOM = 32;
+
+	VoxHeader voxHeader;
+	in.seek(0, SEEK_SET);
+	in.read(&voxHeader, sizeof(voxHeader));
+
+
+	voxHeader.width  = wxUINT32_SWAP_ON_BE(voxHeader.width);
+	voxHeader.length = wxUINT32_SWAP_ON_BE(voxHeader.length);
+	voxHeader.height = wxUINT32_SWAP_ON_BE(voxHeader.height);
+
+	uint32_t width = voxHeader.width;
+	uint32_t length = voxHeader.length;
+	uint32_t height = voxHeader.height;
+
+
+	uint8_t* voxels = new uint8_t[width * length * height];
+	in.read(voxels, width * length * height);
+
+	uint8_t* visibilities = new uint8_t[width * length * height] {0};
+
+	for (uint32_t x = 0; x < width; x++)
+	{
+		for (uint32_t y = 0; y < length; y++)
+		{
+			for (uint32_t z = 0; z < height; z++)
+			{
+				if (voxels[AT(x, y, z)] == 255) continue;
+
+				if (x == 0 || voxels[AT(x - 1, y, z)] == 255)
+					visibilities[AT(x, y, z)] |= LEFT;
+				if (x == width - 1 || voxels[AT(x + 1, y, z)] == 255)
+					visibilities[AT(x, y, z)] |= RIGHT;
+				if (y == 0 || voxels[AT(x, y - 1, z)] == 255)
+					visibilities[AT(x, y, z)] |= FRONT;
+				if (y == length - 1 || voxels[AT(x, y + 1, z)] == 255)
+					visibilities[AT(x, y, z)] |= BACK;
+				if (z == 0 || voxels[AT(x, y, z - 1)] == 255)
+					visibilities[AT(x, y, z)] |= TOP;
+				if (z == height - 1 || voxels[AT(x, y, z + 1)] == 255)
+					visibilities[AT(x, y, z)] |= BOTTOM;
+			}	
+		}
+	}
+
+	for (uint32_t x = 0; x < width; x++)
+	{
+		for (uint32_t y = 0; y < length; y++)
+		{
+			for (uint32_t z = 0; z < height; z++)
+			{
+				if (visibilities[AT(x, y, z)] == 0)
+				{
+					voxels[AT(x, y, z)] = 255;
+				}
+			}
+		}
+	}
+	uint8_t* palette = new uint8_t[768];
+	in.read(palette, 768);
+
+	uint32_t* xoffsets  = new uint32_t[width + 1];
+	uint16_t* xyoffsets = new uint16_t[width * (length + 1)];
+
+	out.reSize(
+		(width + 1) * sizeof(uint32_t) + width * (length + 1) * sizeof(uint16_t)
+			+ sizeof(KvxHeader) + 1);
+	out.seek(
+		(width + 1) * sizeof(uint32_t) + width * (length + 1) * sizeof(uint16_t)
+			+ sizeof(KvxHeader),
+		SEEK_SET);
+	xoffsets[0] = out.currentPos() - sizeof(KvxHeader);
+
+	Log::console(wxString::Format("KVX: %d %d", xoffsets[0], out.currentPos()));
+
+	vector<uint8_t> post_colors;
+	post_colors.reserve(256);
+
+	for (uint32_t x = 0; x < width; x++)
+	{
+		xyoffsets[x * (length + 1)] = out.currentPos() - xoffsets[x] - sizeof(KvxHeader);
+		for (uint32_t y = 0; y < length; y++)
+		{
+			for (uint32_t z = 0; z < height; z++)
+			{
+				uint8_t color = voxels[AT(x, y, z)];
+				uint8_t visibility = visibilities[AT(x, y, z)];
+				bool at_end = (z == height - 1);
+
+				if (color != 255)
+				{
+					post_colors.push_back(color);
+				}
+
+
+				bool must_write_post = (!post_colors.empty()
+									   && (at_end
+										   || voxels[AT(x, y, z + 1)] == 255 
+										   || visibilities[AT(x, y, z + 1)] != visibility
+										   || post_colors.size() == 255
+					));
+
+
+				if (must_write_post)
+				{
+					KvxColumnPostHeader postHeader{ z - (post_colors.size() - 1), post_colors.size(), visibility };
+					out.write(&postHeader, sizeof(KvxColumnPostHeader));
+					out.write(post_colors.data(), post_colors.size());
+					post_colors.clear();
+				}
+			}
+			xyoffsets[x * (length + 1) + y + 1] = out.currentPos() - xoffsets[x] - sizeof(KvxHeader);
+		}
+		xoffsets[x + 1] = out.currentPos() - sizeof(KvxHeader);
+	}
+
+	uint32_t total_bytes = out.currentPos() - sizeof(uint32_t);
+	Log::console(wxString::Format("Total size: %d", total_bytes));
+
+	out.write(palette, 768);
+
+	Log::console("XOFFSETS");
+	for (int x = 0; x < width + 1; x++)
+	{
+		Log::console(wxString::Format("xoffsets[%d]: %d", x, xoffsets[x]));
+	}
+
+	Log::console("XYOFFSETS");
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < length + 1; y++)
+		{
+			Log::console(wxString::Format(
+				"xyoffsets[%d][%d]: %d, total: %d",
+				x,
+				y,
+				xyoffsets[x * (length + 1) + y],
+				xoffsets[x] + xyoffsets[x * (length - 1) + y]));
+		}
+	}
+
+	KvxHeader kvxHeader 
+	{ 
+		total_bytes, 
+		width, 
+		length, 
+		height, 
+		width << 7, 
+		length << 7,
+		height << 8
+	};
+
+	out.seek(0, SEEK_SET);
+	out.write(&kvxHeader, sizeof(KvxHeader));
+	out.write(xoffsets, (width + 1) * sizeof(uint32_t));
+	out.write(xyoffsets, width * (length + 1) * sizeof(uint16_t));
+
+	delete[] xoffsets;
+	delete[] xyoffsets;
+	delete[] voxels;
+	delete[] visibilities;
+
+	return true;
+
+#undef AT
 }
