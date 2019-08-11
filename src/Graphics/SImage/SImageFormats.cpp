@@ -356,7 +356,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 			if (chars[j].width)
 			{
 				memcpy(d, chars[j].data + (i * chars[j].width), chars[j].width);
-				d += chars[j].width + 1;
+				d += chars[j].width;
 			}
 		}
 	}
