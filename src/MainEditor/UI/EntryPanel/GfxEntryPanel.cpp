@@ -145,6 +145,9 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	btn_nextimg_ = new SIconButton(this, "right");
 	btn_previmg_ = new SIconButton(this, "left");
 	text_curimg_ = new wxStaticText(this, -1, "Image XX/XX");
+	sizer_bottom_->Add(btn_previmg_, 0, wxEXPAND | wxRIGHT, 4);
+	sizer_bottom_->Add(btn_nextimg_, 0, wxEXPAND | wxRIGHT, 4);
+	sizer_bottom_->Add(text_curimg_, 0, wxALIGN_CENTER, 0);
 	btn_nextimg_->Show(false);
 	btn_previmg_->Show(false);
 	text_curimg_->Show(false);
@@ -216,18 +219,12 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 		btn_nextimg_->Show();
 		btn_previmg_->Show();
 		text_curimg_->Show();
-		sizer_bottom_->Add(btn_previmg_, 0, wxEXPAND|wxRIGHT, 4);
-		sizer_bottom_->Add(btn_nextimg_, 0, wxEXPAND|wxRIGHT, 4);
-		sizer_bottom_->Add(text_curimg_, 0, wxALIGN_CENTER, 0);
 	}
 	else
 	{
 		btn_nextimg_->Show(false);
 		btn_previmg_->Show(false);
 		text_curimg_->Show(false);
-		sizer_bottom_->Detach(btn_nextimg_);
-		sizer_bottom_->Detach(btn_previmg_);
-		sizer_bottom_->Detach(text_curimg_);
 	}
 
 	// Hack for colormaps to be 256-wide
