@@ -118,6 +118,8 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 		entry_script_->setName("SCRIPTS");
 		entry_compiled_->setName("BEHAVIOR");
 	}
+	entry_script->setName("SCRIPTS");
+	entry_compiled->setName("BEHAVIOR");
 
 	// Add Find+Replace panel
 	panel_fr_ = new FindReplacePanel(this, *text_editor_);
