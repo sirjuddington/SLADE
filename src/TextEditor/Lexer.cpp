@@ -716,7 +716,7 @@ bool Lexer::checkToken(LexerState& state, int pos, string& token)
 // ----------------------------------------------------------------------------
 bool Lexer::checkToken(LexerState &state, int pos, vector<string> &tokens, int *found_idx)
 {
-	if (!tokens.size() == 0)
+	if (!tokens.empty())
 	{
 		int idx = 0;
 		string token;
