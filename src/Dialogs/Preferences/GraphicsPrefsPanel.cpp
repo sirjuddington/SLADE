@@ -125,9 +125,9 @@ void GraphicsPrefsPanel::init()
 void GraphicsPrefsPanel::applyPreferences()
 {
 	wxColour wxc = cp_colour1_->GetColour();
-	bgtx_colour1 = wxc.GetAsString();
+	bgtx_colour1 = wxc.GetAsString(wxC2S_CSS_SYNTAX);
 	wxc = cp_colour2_->GetColour();
-	bgtx_colour2 = wxc.GetAsString();
+	bgtx_colour2 = wxc.GetAsString(wxC2S_CSS_SYNTAX);
 	GLTexture::resetBgTex();
 	gfx_show_border = cb_show_border_->GetValue();
 	gfx_extraconv = cb_extra_gfxconv_->GetValue();
