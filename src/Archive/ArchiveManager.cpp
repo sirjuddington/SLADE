@@ -288,6 +288,21 @@ Archive* ArchiveManager::getArchive(string filename)
 }
 
 // ----------------------------------------------------------------------------
+// Returns the archive opened from the given parent entry
+// (nullptr if it doesn't exist)
+// ----------------------------------------------------------------------------
+Archive* ArchiveManager::getArchive(ArchiveEntry* parent)
+{
+	for (unsigned a = 0; a < open_archives_.size(); ++a)
+	{
+		if (open_archives_[a].archive->parentEntry() == parent)
+			return open_archives_[a].archive;
+	}
+
+	return nullptr;
+}
+
+// ----------------------------------------------------------------------------
 // ArchiveManager::openArchive
 //
 // Opens and adds a archive to the list, returns a pointer to the newly opened

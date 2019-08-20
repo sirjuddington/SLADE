@@ -17,6 +17,7 @@ public:
 	bool		validResDir(string dir) const;
 	Archive*	getArchive(int index);
 	Archive*	getArchive(string filename);
+	Archive*	getArchive(ArchiveEntry* parent);
 	Archive*	openArchive(string filename, bool manage = true, bool silent = false);
 	Archive*	openArchive(ArchiveEntry* entry, bool manage = true, bool silent = false);
 	Archive*	openDirArchive(string dir, bool manage = true, bool silent = false);
