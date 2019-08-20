@@ -167,6 +167,10 @@ void MoveObjects::end(bool accept)
 	for (unsigned a = 0; a < context_.map().nThings(); a++)
 		context_.map().getThing(a)->filter(false);
 
+	// Clear selection
+	if (accept && selection_clear_move)
+		context_.selection().clear();
+
 	// Move depending on edit mode
 	if (context_.editMode() == Mode::Things && accept)
 	{
@@ -241,10 +245,6 @@ void MoveObjects::end(bool accept)
 
 		context_.endUndoRecord(merge || !map_merge_undo_step);
 	}
-
-	// Clear selection
-	if (accept && selection_clear_move)
-		context_.selection().clear();
 
 	// Clear moving items
 	items_.clear();
