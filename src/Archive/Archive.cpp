@@ -329,8 +329,8 @@ Archive::Archive(string format) :
  *******************************************************************/
 Archive::~Archive()
 {
-	if (parent_)
-		parent_->unlock();
+	//if (parent_)
+	//	parent_->unlock();
 }
 
 /* Archive::formatDesc
@@ -459,7 +459,6 @@ bool Archive::open(ArchiveEntry* entry)
 	{
 		// Update variables and return success
 		parent_ = entry;
-		parent_->lock();
 		return true;
 	}
 	else
@@ -689,10 +688,6 @@ void Archive::close()
 
 	// Clear the root dir
 	dir_root_.clear();
-
-	// Unlock parent entry if it exists
-	if (parent_)
-		parent_->unlock();
 
 	// Announce
 	announce("closed");

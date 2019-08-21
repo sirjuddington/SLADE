@@ -529,6 +529,8 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 				mc.write(&index, 4);
 				announce("archive_opened", mc);
 			}
+
+			entry->lock();
 		}
 
 		return new_archive;
@@ -700,6 +702,8 @@ bool ArchiveManager::closeArchive(int index)
 				}
 			}
 		}
+
+		parent->unlock();
 	}
 
 	// Close the archive
