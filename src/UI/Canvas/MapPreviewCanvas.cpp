@@ -61,7 +61,6 @@ MapPreviewCanvas::MapPreviewCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 	zoom = 1;
 	offset_x = 0;
 	offset_y = 0;
-	temp_archive = nullptr;
 	tex_thing = nullptr;
 	tex_loaded = false;
 	n_sides = 0;
@@ -115,6 +114,9 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 	// All errors = invalid map
 	Global::error = "Invalid map";
 
+	// Init
+	std::unique_ptr<Archive> temp_archive;
+
 	// Check if this map is a pk3 map
 	bool map_archive = false;
 	if (map.archive)
@@ -122,12 +124,9 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 		map_archive = true;
 
 		// Attempt to open entry as wad archive
-		temp_archive = new WadArchive();
+		temp_archive = std::make_unique<WadArchive>();
 		if (!temp_archive->open(map.head))
-		{
-			delete temp_archive;
 			return false;
-		}
 
 		// Detect maps
 		vector<Archive::MapDesc> maps = temp_archive->detectMaps();
@@ -355,14 +354,6 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 				n_sectors = sectors->getSize() / 16;
 			}
 		}
-	}
-
-	// Clean up
-	if (map_archive)
-	{
-		temp_archive->close();
-		delete temp_archive;
-		temp_archive = nullptr;
 	}
 
 	// Refresh map

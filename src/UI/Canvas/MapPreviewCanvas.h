@@ -42,7 +42,6 @@ private:
 	double					zoom;
 	double					offset_x;
 	double					offset_y;
-	Archive*				temp_archive;
 	GLTexture*				tex_thing;
 	bool					tex_loaded;
 
