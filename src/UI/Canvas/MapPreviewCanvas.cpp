@@ -97,6 +97,9 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 	// All errors = invalid map
 	Global::error = "Invalid map";
 
+	// Init
+	std::unique_ptr<Archive> temp_archive;
+
 	// Check if this map is a pk3 map
 	bool map_archive = false;
 	if (map.archive)

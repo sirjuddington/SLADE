@@ -824,11 +824,9 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 
 			// Update UI
 			gfx_canvas_->updateImageTexture();
-			gfx_canvas_->Refresh();
 
 			// Update variables
 			image_data_modified_ = true;
-			gfx_canvas_->updateImageTexture();
 			setModified();
 			prev_translation_.copy(ted.getTranslation());
 		}

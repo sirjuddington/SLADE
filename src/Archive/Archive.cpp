@@ -325,9 +325,6 @@ Archive::Archive(string_view format) :
 // -----------------------------------------------------------------------------
 Archive::~Archive()
 {
-	if (auto parent = parent_.lock())
-		parent->unlock();
-
 	// Clear out subdir archive pointers in case any are being kept around
 	// (eg. by a running script)
 	dir_root_->setArchive(nullptr);
@@ -452,7 +449,6 @@ bool Archive::open(ArchiveEntry* entry)
 	{
 		// Update variables and return success
 		parent_ = sp_entry;
-		sp_entry->lock();
 		return true;
 	}
 	else
@@ -678,10 +674,6 @@ void Archive::close()
 
 	// Clear the root dir
 	dir_root_->clear();
-
-	// Unlock parent entry if it exists
-	if (auto parent = parent_.lock())
-		parent->unlock();
 
 	// Announce
 	announce("closed");

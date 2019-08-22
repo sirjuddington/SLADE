@@ -501,7 +501,7 @@ void MapEditorWindow::lockMapEntries(bool lock) const
 	{
 		if (lock)
 			head->lock();
-		else
+		else if (!App::archiveManager().getArchive(head.get()))
 			head->unlock();
 	}
 }

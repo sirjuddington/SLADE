@@ -253,7 +253,22 @@ shared_ptr<Archive> ArchiveManager::getArchive(string_view filename)
 	return nullptr;
 }
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// Returns the archive opened from the given parent entry
+// (nullptr if it doesn't exist)
+// ----------------------------------------------------------------------------
+shared_ptr<Archive> ArchiveManager::getArchive(ArchiveEntry* parent)
+{
+	for (unsigned a = 0; a < open_archives_.size(); ++a)
+	{
+		if (open_archives_[a].archive->parentEntry() == parent)
+			return open_archives_[a].archive;
+	}
+
+	return nullptr;
+}
+
+// ----------------------------------------------------------------------------
 // Opens and adds a archive to the list, returns a pointer to the newly opened
 // and added archive, or nullptr if an error occurred
 // -----------------------------------------------------------------------------
@@ -475,6 +490,8 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 				mc.write(&index, 4);
 				announce("archive_opened", mc);
 			}
+
+			entry->lock();
 		}
 
 		return new_archive;
@@ -630,6 +647,8 @@ bool ArchiveManager::closeArchive(int index)
 				}
 			}
 		}
+
+		parent->unlock();
 	}
 
 	// Close the archive

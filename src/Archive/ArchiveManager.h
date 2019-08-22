@@ -17,6 +17,7 @@ public:
 	bool                        validResDir(string_view dir) const;
 	shared_ptr<Archive>         getArchive(int index);
 	shared_ptr<Archive>         getArchive(string_view filename);
+	shared_ptr<Archive>         getArchive(ArchiveEntry* parent);
 	shared_ptr<Archive>         openArchive(string_view filename, bool manage = true, bool silent = false);
 	shared_ptr<Archive>         openArchive(ArchiveEntry* entry, bool manage = true, bool silent = false);
 	shared_ptr<Archive>         openDirArchive(string_view dir, bool manage = true, bool silent = false);

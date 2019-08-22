@@ -1306,13 +1306,13 @@ bool Conversions::auSndToWav(MemChunk& in, MemChunk& out)
 
 bool Conversions::voxToKvx(MemChunk& in, MemChunk& out)
 {
-#define AT(x, y, z) (((x) * length + (y)) * height + (z))
+#define AT(x, y, z) (((x)*length + (y)) * height + (z))
 
-	const uint8_t LEFT = 1;
-	const uint8_t RIGHT = 2;
-	const uint8_t FRONT = 4;
-	const uint8_t BACK = 8;
-	const uint8_t TOP = 16;
+	const uint8_t LEFT   = 1;
+	const uint8_t RIGHT  = 2;
+	const uint8_t FRONT  = 4;
+	const uint8_t BACK   = 8;
+	const uint8_t TOP    = 16;
 	const uint8_t BOTTOM = 32;
 
 	VoxHeader voxHeader;
@@ -1324,7 +1324,7 @@ bool Conversions::voxToKvx(MemChunk& in, MemChunk& out)
 	voxHeader.length = wxUINT32_SWAP_ON_BE(voxHeader.length);
 	voxHeader.height = wxUINT32_SWAP_ON_BE(voxHeader.height);
 
-	uint32_t width = voxHeader.width;
+	uint32_t width  = voxHeader.width;
 	uint32_t length = voxHeader.length;
 	uint32_t height = voxHeader.height;
 
@@ -1332,7 +1332,7 @@ bool Conversions::voxToKvx(MemChunk& in, MemChunk& out)
 	uint8_t* voxels = new uint8_t[width * length * height];
 	in.read(voxels, width * length * height);
 
-	uint8_t* visibilities = new uint8_t[width * length * height] {0};
+	uint8_t* visibilities = new uint8_t[width * length * height]{ 0 };
 
 	for (uint32_t x = 0; x < width; x++)
 	{
@@ -1340,7 +1340,8 @@ bool Conversions::voxToKvx(MemChunk& in, MemChunk& out)
 		{
 			for (uint32_t z = 0; z < height; z++)
 			{
-				if (voxels[AT(x, y, z)] == 255) continue;
+				if (voxels[AT(x, y, z)] == 255)
+					continue;
 
 				if (x == 0 || voxels[AT(x - 1, y, z)] == 255)
 					visibilities[AT(x, y, z)] |= LEFT;
@@ -1354,7 +1355,7 @@ bool Conversions::voxToKvx(MemChunk& in, MemChunk& out)
 					visibilities[AT(x, y, z)] |= TOP;
 				if (z == height - 1 || voxels[AT(x, y, z + 1)] == 255)
 					visibilities[AT(x, y, z)] |= BOTTOM;
-			}	
+			}
 		}
 	}
 
@@ -1377,13 +1378,8 @@ bool Conversions::voxToKvx(MemChunk& in, MemChunk& out)
 	uint32_t* xoffsets  = new uint32_t[width + 1];
 	uint16_t* xyoffsets = new uint16_t[width * (length + 1)];
 
-	out.reSize(
-		(width + 1) * sizeof(uint32_t) + width * (length + 1) * sizeof(uint16_t)
-			+ sizeof(KvxHeader) + 1);
-	out.seek(
-		(width + 1) * sizeof(uint32_t) + width * (length + 1) * sizeof(uint16_t)
-			+ sizeof(KvxHeader),
-		SEEK_SET);
+	out.reSize((width + 1) * sizeof(uint32_t) + width * (length + 1) * sizeof(uint16_t) + sizeof(KvxHeader) + 1);
+	out.seek((width + 1) * sizeof(uint32_t) + width * (length + 1) * sizeof(uint16_t) + sizeof(KvxHeader), SEEK_SET);
 	xoffsets[0] = out.currentPos() - sizeof(KvxHeader);
 
 	Log::console(wxString::Format("KVX: %d %d", xoffsets[0], out.currentPos()));
@@ -1398,9 +1394,9 @@ bool Conversions::voxToKvx(MemChunk& in, MemChunk& out)
 		{
 			for (uint32_t z = 0; z < height; z++)
 			{
-				uint8_t color = voxels[AT(x, y, z)];
+				uint8_t color      = voxels[AT(x, y, z)];
 				uint8_t visibility = visibilities[AT(x, y, z)];
-				bool at_end = (z == height - 1);
+				bool    at_end     = (z == height - 1);
 
 				if (color != 255)
 				{
@@ -1408,17 +1404,17 @@ bool Conversions::voxToKvx(MemChunk& in, MemChunk& out)
 				}
 
 
-				bool must_write_post = (!post_colors.empty()
-									   && (at_end
-										   || voxels[AT(x, y, z + 1)] == 255 
-										   || visibilities[AT(x, y, z + 1)] != visibility
-										   || post_colors.size() == 255
-					));
+				bool must_write_post =
+					(!post_colors.empty()
+					 && (at_end || voxels[AT(x, y, z + 1)] == 255 || visibilities[AT(x, y, z + 1)] != visibility
+						 || post_colors.size() == 255));
 
 
 				if (must_write_post)
 				{
-					KvxColumnPostHeader postHeader{ z - (post_colors.size() - 1), post_colors.size(), visibility };
+					KvxColumnPostHeader postHeader{ uint8_t(z - (post_colors.size() - 1)),
+													uint8_t(post_colors.size()),
+													visibility };
 					out.write(&postHeader, sizeof(KvxColumnPostHeader));
 					out.write(post_colors.data(), post_colors.size());
 					post_colors.clear();
@@ -1454,16 +1450,7 @@ bool Conversions::voxToKvx(MemChunk& in, MemChunk& out)
 		}
 	}
 
-	KvxHeader kvxHeader 
-	{ 
-		total_bytes, 
-		width, 
-		length, 
-		height, 
-		width << 7, 
-		length << 7,
-		height << 8
-	};
+	KvxHeader kvxHeader{ total_bytes, width, length, height, width << 7, length << 7, height << 8 };
 
 	out.seek(0, SEEK_SET);
 	out.write(&kvxHeader, sizeof(KvxHeader));

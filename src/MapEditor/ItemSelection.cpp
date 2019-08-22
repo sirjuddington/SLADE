@@ -466,13 +466,16 @@ vector<MapVertex*> ItemSelection::selectedVertices(bool try_hilight) const
 		return list;
 
 	// Get selected vertices
+	MapVertex* v;
 	for (auto& item : selection_)
 		if (item.type == ItemType::Vertex)
-			list.push_back(context_->map().vertex(item.index));
+			if ((v = context_->map().vertex(item.index)))
+				list.push_back(v);
 
 	// If no vertices were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0 && hilight_.type == ItemType::Vertex)
-		list.push_back(context_->map().vertex(hilight_.index));
+		if ((v = context_->map().vertex(hilight_.index)))
+			list.push_back(v);
 
 	return list;
 }
@@ -490,13 +493,16 @@ vector<MapLine*> ItemSelection::selectedLines(bool try_hilight) const
 		return list;
 
 	// Get selected lines
+	MapLine* l;
 	for (auto& item : selection_)
 		if (item.type == ItemType::Line)
-			list.push_back(context_->map().line(item.index));
+			if ((l = context_->map().line(item.index)))
+				list.push_back(l);
 
 	// If no lines were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0 && hilight_.type == ItemType::Line)
-		list.push_back(context_->map().line(hilight_.index));
+		if ((l = context_->map().line(hilight_.index)))
+			list.push_back(l);
 
 	return list;
 }
@@ -514,13 +520,16 @@ vector<MapSector*> ItemSelection::selectedSectors(bool try_hilight) const
 		return list;
 
 	// Get selected sectors
+	MapSector* s;
 	for (auto& item : selection_)
 		if (item.type == ItemType::Sector)
-			list.push_back(context_->map().sector(item.index));
+			if ((s = context_->map().sector(item.index)))
+				list.push_back(s);
 
 	// If no sectors were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0 && hilight_.type == ItemType::Sector)
-		list.push_back(context_->map().sector(hilight_.index));
+		if ((s = context_->map().sector(hilight_.index)))
+			list.push_back(s);
 
 	return list;
 }
@@ -538,13 +547,16 @@ vector<MapThing*> ItemSelection::selectedThings(bool try_hilight) const
 		return list;
 
 	// Get selected things
+	MapThing* t;
 	for (auto& item : selection_)
 		if (item.type == ItemType::Thing)
-			list.push_back(context_->map().thing(item.index));
+			if ((t = context_->map().thing(item.index)))
+				list.push_back(t);
 
 	// If no things were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0 && hilight_.type == ItemType::Thing)
-		list.push_back(context_->map().thing(hilight_.index));
+		if ((t = context_->map().thing(hilight_.index)))
+			list.push_back(t);
 
 	return list;
 }
@@ -573,12 +585,15 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 
 	// Get selected objects
 	vector<MapObject*> list;
+	MapObject* o;
 	for (auto& item : selection_)
-		list.push_back(context_->map().object(type, item.index));
+		if ((o = context_->map().object(type, item.index)))
+			list.push_back(o);
 
 	// If no objects were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0)
-		list.push_back(context_->map().object(type, hilight_.index));
+		if ((o = context_->map().object(type, hilight_.index)))
+			list.push_back(o);
 
 	return list;
 }
