@@ -918,6 +918,7 @@
     <ClCompile Include="..\src\Audio\AudioTags.cpp" />
     <ClCompile Include="..\src\Audio\MIDIPlayer.cpp" />
     <ClCompile Include="..\src\Audio\ModMusic.cpp" />
+    <ClCompile Include="..\src\Audio\Mp3Music.cpp" />
     <ClCompile Include="..\src\Dialogs\GfxColouriseDialog.cpp" />
     <ClCompile Include="..\src\Dialogs\GfxCropDialog.cpp" />
     <ClCompile Include="..\src\Dialogs\GfxTintDialog.cpp" />
@@ -4859,6 +4860,7 @@
     <ClInclude Include="..\src\Audio\AudioTags.h" />
     <ClInclude Include="..\src\Audio\MIDIPlayer.h" />
     <ClInclude Include="..\src\Audio\ModMusic.h" />
+    <ClInclude Include="..\src\Audio\Mp3Music.h" />
     <ClInclude Include="..\src\common.h" />
     <ClInclude Include="..\src\common2.h" />
     <ClInclude Include="..\src\Dialogs\GfxColouriseDialog.h" />

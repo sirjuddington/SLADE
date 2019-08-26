@@ -1584,6 +1584,9 @@
     <ClCompile Include="..\src\Archive\ArchiveDir.cpp">
       <Filter>Archive</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Audio\Mp3Music.cpp">
+      <Filter>Audio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2791,6 +2794,9 @@
     </ClInclude>
     <ClInclude Include="..\src\Archive\ArchiveDir.h">
       <Filter>Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Audio\Mp3Music.h">
+      <Filter>Audio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
