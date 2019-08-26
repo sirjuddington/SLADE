@@ -458,6 +458,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 		}
 
 		// ntype->dump();
+		ntype->index_ = entry_types.size();
 		entry_types.push_back(std::move(ntype));
 	}
 
@@ -478,6 +479,7 @@ bool EntryType::loadEntryTypes()
 	et_unknown->detectable_  = false;
 	et_unknown->reliability_ = 0;
 	etype_unknown            = et_unknown.get();
+	etype_unknown->index_    = entry_types.size();
 	entry_types.push_back(std::move(et_unknown));
 
 	// Setup folder type
@@ -487,6 +489,7 @@ bool EntryType::loadEntryTypes()
 	et_folder->name_       = "Folder";
 	et_folder->detectable_ = false;
 	etype_folder           = et_folder.get();
+	etype_folder->index_   = entry_types.size();
 	entry_types.push_back(std::move(et_folder));
 
 	// Setup marker type
@@ -497,6 +500,7 @@ bool EntryType::loadEntryTypes()
 	et_marker->detectable_ = false;
 	et_marker->category_   = ""; // No category, markers only appear when 'All' categories shown
 	etype_marker           = et_marker.get();
+	et_marker->index_      = entry_types.size();
 	entry_types.push_back(std::move(et_marker));
 
 	// Setup map marker type
@@ -508,6 +512,7 @@ bool EntryType::loadEntryTypes()
 	et_map->detectable_ = false;
 	et_map->colour_     = ColRGBA(0, 255, 0);
 	etype_map           = et_map.get();
+	etype_map->index_   = entry_types.size();
 	entry_types.push_back(std::move(et_map));
 
 	// -------- READ BUILT-IN TYPES ---------
