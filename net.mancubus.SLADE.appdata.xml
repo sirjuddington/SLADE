@@ -21,46 +21,46 @@
 	</description>
 	<screenshots>
 		<screenshot>
-			<image>http://slade.mancubus.net/shots/gfx_t.png</image>
+			<image>http://slade.mancubus.net/shots/gfx.png</image>
 			<caption>The basic editor view</caption>
 		</screenshot>
 		<screenshot>
-			<image>http://slade.mancubus.net/shots/textures_t.png</image>
+			<image>http://slade.mancubus.net/shots/textures.png</image>
 			<caption>Texture editor - also supports ZDoom TEXTURES</caption>
 		</screenshot>
 		<screenshot>
-			<image>http://slade.mancubus.net/shots/text_t.png</image>
+			<image>http://slade.mancubus.net/shots/text.png</image>
 			<caption>Advanced text editor</caption>
 		</screenshot>
 		<screenshot>
-			<image>http://slade.mancubus.net/shots/ansi_t.png</image>
+			<image>http://slade.mancubus.net/shots/ansi.png</image>
 			<caption>ANSI screen preview</caption>
 		</screenshot>
 		<screenshot>
-			<image>http://slade.mancubus.net/shots/gfxconv_t.png</image>
+			<image>http://slade.mancubus.net/shots/gfxconv.png</image>
 			<caption>Convert graphics between formats/palettes</caption>
 		</screenshot>
 		<screenshot>
-			<image>http://slade.mancubus.net/shots/gfxremap_t.png</image>
+			<image>http://slade.mancubus.net/shots/gfxremap.png</image>
 			<caption>Remap colours in graphics</caption>
 		</screenshot>
 		<screenshot>
-			<image>http://slade.mancubus.net/shots/map_t.png</image>
+			<image>http://slade.mancubus.net/shots/map.png</image>
 			<caption>The map editor</caption>
 		</screenshot>
 		<screenshot  type="default">
-			<image>http://slade.mancubus.net/shots/map3d_t.png</image>
+			<image>http://slade.mancubus.net/shots/map3d.png</image>
 			<caption>Map editor 3d mode</caption>
 		</screenshot>
 		<screenshot>
-			<image>http://slade.mancubus.net/shots/mapudmf_t.png</image>
+			<image>http://slade.mancubus.net/shots/mapudmf.png</image>
 			<caption>UDMF format support includes ZDoom extensions</caption>
 		</screenshot>
 	</screenshots>
 	<releases>
-		<release date="2017-01-18" version="3.1.1.5"/>
-		<release date="2017-09-26" version="3.1.1.4"/>
-		<release date="2016-06-25" version="3.1.1.3"/>
+		<release date="2018-12-26" version="3.1.4"/>
+		<release date="2019-05-17" version="3.1.5"/>
+		<release date="2019-08-22" version="3.1.6"/>
 	</releases>
 	<content_rating type="oars-1.1" />
 </component>
