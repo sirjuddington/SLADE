@@ -730,7 +730,7 @@ void Lexer::updateFolding(TextEditorCtrl* editor, int line_start)
 bool Lexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos)
 {
 	auto word = editor->GetTextRange(start_pos, end_pos).ToStdString();
-	if (language_->caseSensitive())
+	if (!language_->caseSensitive())
 		StrUtil::lowerIP(word);
 	return word_list_[word].style == (int)Style::Function;
 }
