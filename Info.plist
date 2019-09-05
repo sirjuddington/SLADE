@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>SLADE</string>
+	<string>slade</string>
 	<key>CFBundleGetInfoString</key>
 	<string>SLADE</string>
 	<key>CFBundleIconFile</key>
@@ -23,6 +23,8 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSSupportsAutomaticGraphicsSwitching</key>
 	<true/>
 	<key>CFBundleVersion</key>
 	<string>3.1.0</string>
