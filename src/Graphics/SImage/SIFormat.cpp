@@ -220,7 +220,7 @@ uint32_t valid_flat_size[][3] =
 {
 	{   2,   2,	0 },	// lol Heretic F_SKY1
 	{  10,  12,	0 },	// gnum format
-	{  16,  16,	1 },	// SRB2 Encore lump
+	{  16,  16,	1 },	// |
 	{  32,  32,	1 },	// |
 	{  32,  64,	0 },	// Strife startup sprite
 	{  48,  48,	0 },	// |
