@@ -48,6 +48,7 @@
 #include "UI/TextureXEditor/TextureXEditor.h"
 #include "Utility/FileMonitor.h"
 #include "Utility/Memory.h"
+#include "Utility/SFileDialog.h"
 #include "Utility/Tokenizer.h"
 
 
@@ -472,15 +473,32 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 		wxRegKey key(wxRegKey::HKLM, "SOFTWARE\\CodeImp\\Doom Builder");
 		key.QueryValue("Location", path);
 
-		// Can't proceed if DB2 isn't installed
+		// Browse for executable if DB2 isn't installed
 		if (path.IsEmpty())
 		{
-			wxMessageBox("Doom Builder 2 must be installed to use this feature.", "Doom Builder 2 Not Found");
-			return false;
-		}
+			wxMessageBox(
+				"Could not find the installation directory of Doom Builder 2, please browse for the DB2 executable",
+				"Doom Builder 2 Not Found");
 
-		// Add default executable name
-		path += "\\Builder.exe";
+			SFileDialog::FDInfo info;
+			if (SFileDialog::openFile(
+					info,
+					"Browse for DB2 Executable",
+					SFileDialog::executableExtensionString(),
+					nullptr,
+					"Builder.exe"))
+			{
+				path_db2 = info.filenames[0];
+				path     = info.filenames[0];
+			}
+			else
+				return false;
+		}
+		else
+		{
+			// Add default executable name
+			path += "\\Builder.exe";
+		}
 	}
 
 	// Get map info for entry
