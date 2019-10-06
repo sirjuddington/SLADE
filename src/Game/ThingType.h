@@ -54,6 +54,7 @@ namespace Game
 		int				number() const { return number_; }
 		bool 			decorate() const { return decorate_; }
 		const string&	className() const { return class_name_; }
+		bool            zHeightAbsolute() const { return z_height_absolute_; }
 
 		void	setSprite(string sprite) { this->sprite_ = sprite; }
 
@@ -94,6 +95,7 @@ namespace Game
 		TagType		tagged_;
 		int			number_;
 		string		class_name_;
+		bool        z_height_absolute_;
 
 		static ThingType	unknown_;
 	};

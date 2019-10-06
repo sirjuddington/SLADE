@@ -77,7 +77,8 @@ ThingType::ThingType(const string& name, const string& group, const string& clas
 	flags_{ 0 },
 	tagged_{ TagType::None },
 	number_{ -1 },
-	class_name_{ class_name }
+	class_name_{ class_name },
+	z_height_absolute_{ false }
 {
 	// Init args
 	args_.count = 0;
@@ -117,6 +118,7 @@ void ThingType::copy(const ThingType& copy)
 	icon_ = copy.icon_;
 	translation_ = copy.translation_;
 	palette_ = copy.palette_;
+	z_height_absolute_ = copy.z_height_absolute_;
 }
 
 // ----------------------------------------------------------------------------
@@ -160,6 +162,7 @@ void ThingType::reset()
 	next_args_ = 0;
 	flags_ = 0;
 	tagged_ = TagType::None;
+	z_height_absolute_ = false;
 
 	// Reset args
 	args_.count = 0;
@@ -311,6 +314,10 @@ void ThingType::parse(ParseTreeNode* node)
 		// Some things tag other things directly
 		else if (S_CMPNOCASE(name, "tagged"))
 			tagged_ = Game::parseTagged(child);
+
+		// Z Height is absolute rather than relative to the floor/ceiling
+		else if (S_CMPNOCASE(name, "z_height_absolute"))
+			z_height_absolute_ = child->boolValue();
 
 		// Parse arg definition if it was one
 		if (arg >= 0)

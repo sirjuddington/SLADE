@@ -2026,7 +2026,9 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 	}
 
 	// Determine z position
-	if (things[index].sector)
+	if (things[index].type->zHeightAbsolute())
+		things[index].z = thing->floatProperty("height");
+	else if (things[index].sector)
 	{
 		// Get sector floor (or ceiling) height
 		int sheight;
