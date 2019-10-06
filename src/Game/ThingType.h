@@ -55,6 +55,7 @@ public:
 	int            number() const { return number_; }
 	bool           decorate() const { return decorate_; }
 	const string&  className() const { return class_name_; }
+	bool           zHeightAbsolute() const { return z_height_absolute_; }
 
 	void setSprite(string_view sprite) { sprite_ = sprite; }
 
@@ -95,6 +96,7 @@ private:
 	TagType tagged_;
 	int     number_ = -1;
 	string  class_name_;
+	bool    z_height_absolute_ = false;
 
 	static ThingType unknown_;
 };

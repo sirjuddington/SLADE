@@ -70,27 +70,28 @@ ThingType::ThingType(string_view name, string_view group, string_view class_name
 // -----------------------------------------------------------------------------
 void ThingType::copy(const ThingType& copy)
 {
-	angled_      = copy.angled_;
-	hanging_     = copy.hanging_;
-	shrink_      = copy.shrink_;
-	colour_      = copy.colour_;
-	radius_      = copy.radius_;
-	height_      = copy.height_;
-	scale_       = copy.scale_;
-	fullbright_  = copy.fullbright_;
-	decoration_  = copy.decoration_;
-	decorate_    = copy.decorate_;
-	solid_       = copy.solid_;
-	zeth_icon_   = copy.zeth_icon_;
-	next_type_   = copy.next_type_;
-	next_args_   = copy.next_args_;
-	flags_       = copy.flags_;
-	tagged_      = copy.tagged_;
-	args_        = copy.args_;
-	sprite_      = copy.sprite_;
-	icon_        = copy.icon_;
-	translation_ = copy.translation_;
-	palette_     = copy.palette_;
+	angled_            = copy.angled_;
+	hanging_           = copy.hanging_;
+	shrink_            = copy.shrink_;
+	colour_            = copy.colour_;
+	radius_            = copy.radius_;
+	height_            = copy.height_;
+	scale_             = copy.scale_;
+	fullbright_        = copy.fullbright_;
+	decoration_        = copy.decoration_;
+	decorate_          = copy.decorate_;
+	solid_             = copy.solid_;
+	zeth_icon_         = copy.zeth_icon_;
+	next_type_         = copy.next_type_;
+	next_args_         = copy.next_args_;
+	flags_             = copy.flags_;
+	tagged_            = copy.tagged_;
+	args_              = copy.args_;
+	sprite_            = copy.sprite_;
+	icon_              = copy.icon_;
+	translation_       = copy.translation_;
+	palette_           = copy.palette_;
+	z_height_absolute_ = copy.z_height_absolute_;
 }
 
 // -----------------------------------------------------------------------------
@@ -109,27 +110,28 @@ void ThingType::define(int number, string_view name, string_view group)
 void ThingType::reset()
 {
 	// Reset variables
-	name_        = "Unknown";
-	group_       = "";
-	sprite_      = "";
-	icon_        = "";
-	translation_ = "";
-	palette_     = "";
-	angled_      = true;
-	hanging_     = false;
-	shrink_      = false;
-	colour_      = ColRGBA::WHITE;
-	radius_      = 20;
-	height_      = -1;
-	scale_       = { 1.0, 1.0 };
-	fullbright_  = false;
-	decoration_  = false;
-	solid_       = false;
-	zeth_icon_   = -1;
-	next_type_   = 0;
-	next_args_   = 0;
-	flags_       = 0;
-	tagged_      = TagType::None;
+	name_              = "Unknown";
+	group_             = "";
+	sprite_            = "";
+	icon_              = "";
+	translation_       = "";
+	palette_           = "";
+	angled_            = true;
+	hanging_           = false;
+	shrink_            = false;
+	colour_            = ColRGBA::WHITE;
+	radius_            = 20;
+	height_            = -1;
+	scale_             = { 1.0, 1.0 };
+	fullbright_        = false;
+	decoration_        = false;
+	solid_             = false;
+	zeth_icon_         = -1;
+	next_type_         = 0;
+	next_args_         = 0;
+	flags_             = 0;
+	tagged_            = TagType::None;
+	z_height_absolute_ = false;
 
 	// Reset args
 	args_.count = 0;
@@ -278,6 +280,10 @@ void ThingType::parse(ParseTreeNode* node)
 		// Some things tag other things directly
 		else if (name == "tagged")
 			tagged_ = Game::parseTagged(child);
+
+		// Z Height is absolute rather than relative to the floor/ceiling
+		else if (name == "z_height_absolute")
+			z_height_absolute_ = child->boolValue();
 
 		// Parse arg definition if it was one
 		if (arg >= 0)
