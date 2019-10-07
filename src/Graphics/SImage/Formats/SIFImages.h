@@ -382,22 +382,14 @@ protected:
 		// Flip the image
 		FreeImage_FlipVertical(bm);
 
-		// Write the image to a temp file
-		FreeImage_Save(FIF_PNG, bm, CHR(App::path("temp.png", App::Dir::Temp)));
-
-		// Load it into a memchunk
-		MemChunk png;
-		png.importFile(App::path("temp.png", App::Dir::Temp));
-
-		// Check it loaded ok
-		if (png.getSize() == 0)
-		{
-			LOG_MESSAGE(1, "Error reading temporary file");
-			return false;
-		}
+		// Write the image to memory
+		auto fi_png = FreeImage_OpenMemory();
+		FreeImage_SaveToMemory(FIF_PNG, bm, fi_png);
 
 		// Write PNG header and IHDR
-		const uint8_t* png_data = png.getData();
+		DWORD png_size;
+		BYTE* png_data;
+		FreeImage_AcquireMemory(fi_png, &png_data, &png_size);
 		data.clear();
 		data.write(png_data, 33);
 
@@ -418,10 +410,10 @@ protected:
 		}
 
 		// Write remaining PNG data
-		data.write(png_data + 33, png.getSize() - 33);
+		data.write(png_data + 33, png_size - 33);
 
 		// Clean up
-		wxRemoveFile(App::path("temp.png", App::Dir::Temp));
+		FreeImage_CloseMemory(fi_png);
 
 		// Success
 		return true;
