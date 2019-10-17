@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ScriptManager.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Lua.h"
 #include "UI/ScriptManagerWindow.h"

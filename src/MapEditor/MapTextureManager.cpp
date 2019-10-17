@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapTextureManager.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/Configuration.h"
 #include "General/Misc.h"
@@ -76,11 +77,14 @@ MapTextureManager::MapTextureManager(Archive* archive) : archive_{ archive }, pa
 // -----------------------------------------------------------------------------
 void MapTextureManager::init()
 {
-	// Listen to the various managers
-	listenTo(&App::resources());
-	listenTo(&App::archiveManager());
-	listenTo(theMainWindow->paletteChooser());
-	palette_->copyPalette(resourcePalette());
+	// Refresh when resources are updated or the main palette is changed
+	sc_resources_updated_ = App::resources().signals().resources_updated.connect([this]() { refreshResources(); });
+	sc_palette_changed_   = theMainWindow->paletteChooser()->signals().palette_changed.connect(
+        [this]() { refreshResources(); });
+
+	// Load palette
+	if (auto pal = resourcePalette(); pal != palette_.get())
+		palette_->copyPalette(pal);
 }
 
 // -----------------------------------------------------------------------------
@@ -618,38 +622,4 @@ void MapTextureManager::setArchive(Archive* archive)
 {
 	archive_ = archive;
 	refreshResources();
-}
-
-// -----------------------------------------------------------------------------
-// Handles announcements from any announcers listened to
-// -----------------------------------------------------------------------------
-void MapTextureManager::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	// Only interested in the resource manager,
-	// archive manager and palette chooser.
-	if (announcer != &App::resources() && announcer != theMainWindow->paletteChooser()
-		&& announcer != &App::archiveManager())
-		return;
-
-	// If the map's archive is being closed,
-	// we need to close the map editor
-	if (event_name == "archive_closing")
-	{
-		event_data.seek(0, SEEK_SET);
-		int32_t ac_index;
-		event_data.read(&ac_index, 4);
-		if (App::archiveManager().getArchive(ac_index).get() == archive_)
-		{
-			MapEditor::windowWx()->Hide();
-			MapEditor::editContext().clearMap();
-			archive_ = nullptr;
-		}
-	}
-
-	// If the resources have been updated
-	if (event_name == "resources_updated")
-		refreshResources();
-
-	if (event_name == "main_palette_changed")
-		refreshResources();
 }

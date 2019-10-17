@@ -30,8 +30,6 @@ public:
 	bool handleEntryPanelAction(string_view id) override;
 	bool fillCustomMenu(wxMenu* custom) override;
 
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
-
 	SImage* image() const
 	{
 		if (gfx_canvas_)
@@ -67,6 +65,9 @@ private:
 	wxStaticText*   text_curimg_        = nullptr;
 	SToolBarButton* button_brush_       = nullptr;
 	wxMenu*         menu_brushes_       = nullptr;
+
+	// Signal connections
+	sigslot::scoped_connection sc_palette_changed_;
 
 	// Events
 	void onPaintColourChanged(wxEvent& e);

@@ -75,7 +75,7 @@ PaletteChooser::PaletteChooser(wxWindow* parent, int id) : wxChoice(parent, id)
 // -----------------------------------------------------------------------------
 void PaletteChooser::onPaletteChanged(wxCommandEvent& e)
 {
-	announce("main_palette_changed");
+	signals_.palette_changed();
 }
 
 // -----------------------------------------------------------------------------

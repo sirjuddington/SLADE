@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "PatchTablePanel.h"
+#include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
@@ -69,8 +70,6 @@ PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table
 	VirtualListView(parent),
 	patch_table_{ patch_table }
 {
-	listenTo(patch_table);
-
 	// Add columns
 	InsertColumn(0, "#");
 	InsertColumn(1, "Patch Name");
@@ -80,8 +79,12 @@ PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table
 	// Update list
 	PatchTableListView::updateList();
 
-	// Listen to archive manager
-	listenTo(&App::archiveManager());
+	// Update the list when an archive is added/closed/modified or the patch table is modified
+	auto& am_signals = App::archiveManager().signals();
+	signal_connections_ += am_signals.archive_added.connect([this](unsigned) { updateList(); });
+	signal_connections_ += am_signals.archive_closed.connect([this](unsigned) { updateList(); });
+	signal_connections_ += am_signals.archive_modified.connect([this](unsigned) { updateList(); });
+	signal_connections_ += patch_table_->signals().modified.connect([this]() { updateList(); });
 }
 
 // -----------------------------------------------------------------------------
@@ -157,19 +160,6 @@ void PatchTableListView::updateList(bool clear)
 }
 
 // -----------------------------------------------------------------------------
-// Handles announcements from the panel's PatchTable
-// -----------------------------------------------------------------------------
-void PatchTableListView::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	// Just refresh on any event from the patch table
-	if (announcer == patch_table_)
-		updateList();
-
-	if (announcer == &App::archiveManager())
-		updateList();
-}
-
-// -----------------------------------------------------------------------------
 // Returns true if patch at index [left] is used less than [right]
 // -----------------------------------------------------------------------------
 bool PatchTableListView::usageSort(long left, long right)
@@ -237,8 +227,9 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	btn_change_patch_->Bind(wxEVT_BUTTON, &PatchTablePanel::onBtnChangePatch, this);
 	list_patches_->Bind(wxEVT_LIST_ITEM_SELECTED, &PatchTablePanel::onDisplayChanged, this);
 
-	// Palette chooser
-	listenTo(theMainWindow->paletteChooser());
+	// Update when main palette changed
+	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect(
+		[this]() { updateDisplay(); });
 }
 
 // -----------------------------------------------------------------------------
@@ -545,16 +536,4 @@ void PatchTablePanel::onDisplayChanged(wxCommandEvent& e)
 	// TODO: Separate palette changed and patch changed without breaking
 	// default palette display; optimize label_textures display
 	updateDisplay();
-}
-
-// -----------------------------------------------------------------------------
-// Handles any announcements
-// -----------------------------------------------------------------------------
-void PatchTablePanel::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	if (announcer != theMainWindow->paletteChooser())
-		return;
-
-	if (event_name == "main_palette_changed")
-		updateDisplay();
 }

@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapPreviewCanvas.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"
 #include "General/ColourConfiguration.h"

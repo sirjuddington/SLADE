@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ResourceManager.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Console/Console.h"
 #include "Graphics/CTexture/CTexture.h"
@@ -245,11 +246,23 @@ void ResourceManager::addArchive(Archive* archive)
 	for (auto& entry : entries)
 		addEntry(entry);
 
-	// Listen to the archive
-	listenTo(archive);
+	// Update entries from the archive when changed (added/removed/modified)
+	archive->signals().entry_added.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, false, true); });
+	archive->signals().entry_removed.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, true, false); });
+	archive->signals().entry_state_changed.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, true, true); });
+
+	// Update entries from the archive when renamed
+	archive->signals().entry_renamed.connect([this](Archive&, ArchiveEntry& entry, string_view prev_name) {
+		auto prev_upper   = StrUtil::upper(prev_name);
+		auto entry_shared = entry.getShared();
+		removeEntry(entry_shared, prev_upper);
+		addEntry(entry_shared);
+
+		signals_.resources_updated();
+	});
 
 	// Announce resource update
-	announce("resources_updated");
+	signals_.resources_updated();
 }
 
 // -----------------------------------------------------------------------------
@@ -283,7 +296,7 @@ void ResourceManager::removeArchive(Archive* archive)
 		i.second.remove(archive);
 
 	// Announce resource update
-	announce("resources_updated");
+	signals_.resources_updated();
 }
 
 // -----------------------------------------------------------------------------
@@ -306,7 +319,7 @@ uint16_t ResourceManager::getTextureHash(string_view name) const
 // -----------------------------------------------------------------------------
 // Adds an entry to be managed
 // -----------------------------------------------------------------------------
-void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry, bool log)
+void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry)
 {
 	if (!entry.get())
 		return;
@@ -326,8 +339,7 @@ void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry, bool log)
 	StrUtil::upperIP(path);
 	path.erase(0, 1);
 
-	if (log)
-		Log::debug("Adding entry {} to resource manager", path);
+	Log::debug("Adding entry {} to resource manager", path);
 
 	// Check for palette entry
 	if (type->id() == "palette")
@@ -440,19 +452,18 @@ void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry, bool log)
 // ----------------------------------------------------------------------------
 // Removes a managed entry
 // -----------------------------------------------------------------------------
-void ResourceManager::removeEntry(shared_ptr<ArchiveEntry>& entry, bool log, bool full_check)
+void ResourceManager::removeEntry(shared_ptr<ArchiveEntry>& entry, string_view entry_name, bool full_check)
 {
 	if (!entry.get())
 		return;
 
 	// Get resource name (extension cut, uppercase)
-	auto name = StrUtil::truncate(entry->upperNameNoExt(), 8);
+	auto name = StrUtil::truncate(entry_name.empty() ? entry->upperNameNoExt() : entry_name, 8);
 	auto path = entry->path(true);
 	StrUtil::upperIP(path);
 	path.erase(0, 1);
 
-	if (log)
-		Log::debug("Removing entry {} from resource manager", path);
+	Log::debug("Removing entry {} from resource manager", path);
 
 	// Remove from palettes
 	removeEntryFromMap(palettes_, name, entry, full_check);
@@ -728,46 +739,15 @@ CTexture* ResourceManager::getTexture(string_view texture, Archive* priority, Ar
 		return nullptr;
 }
 
-// -----------------------------------------------------------------------------
-// Called when an announcement is recieved from any managed archive
-// -----------------------------------------------------------------------------
-void ResourceManager::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
+void ResourceManager::updateEntry(ArchiveEntry& entry, bool remove, bool add)
 {
-	event_data.seek(0, SEEK_SET);
+	auto sptr = entry.getShared();
+	if (remove)
+		removeEntry(sptr);
+	if (add)
+		addEntry(sptr);
 
-	// An entry is modified
-	if (event_name == "entry_state_changed")
-	{
-		wxUIntPtr ptr;
-		event_data.read(&ptr, sizeof(wxUIntPtr), 4);
-		auto entry = (ArchiveEntry*)wxUIntToPtr(ptr);
-		auto esp   = entry->parent()->entryAtPathShared(entry->path(true));
-		removeEntry(esp, true);
-		addEntry(esp, true);
-		announce("resources_updated");
-	}
-
-	// An entry is removed or renamed
-	if (event_name == "entry_removing" || event_name == "entry_renaming")
-	{
-		wxUIntPtr ptr;
-		event_data.read(&ptr, sizeof(wxUIntPtr), sizeof(int));
-		auto entry = (ArchiveEntry*)wxUIntToPtr(ptr);
-		auto esp   = entry->parent()->entryAtPathShared(entry->path(true));
-		removeEntry(esp, true);
-		announce("resources_updated");
-	}
-
-	// An entry is added
-	if (event_name == "entry_added")
-	{
-		wxUIntPtr ptr;
-		event_data.read(&ptr, sizeof(wxUIntPtr), 4);
-		auto entry = (ArchiveEntry*)wxUIntToPtr(ptr);
-		auto esp   = entry->parent()->entryAtPathShared(entry->path(true));
-		addEntry(esp, true);
-		announce("resources_updated");
-	}
+	signals_.resources_updated();
 }
 
 

@@ -98,9 +98,10 @@ MapRenderer3D::MapRenderer3D(SLADEMap* map) : map_{ map }
 	// Init other
 	init();
 
-	// Listen to stuff
-	listenTo(theMainWindow->paletteChooser());
-	listenTo(&App::resources());
+	// Refresh textures when resources are updated or the main palette is changed
+	sc_resources_updated_ = App::resources().signals().resources_updated.connect([this]() { refreshTextures(); });
+	sc_palette_changed_   = theMainWindow->paletteChooser()->signals().palette_changed.connect(
+        [this]() { refreshTextures(); });
 }
 
 // -----------------------------------------------------------------------------
@@ -170,6 +171,40 @@ void MapRenderer3D::refresh()
 	skytex1_      = minf.sky1;
 	skytex2_      = minf.sky2;
 	skycol_top_.a = 0;
+}
+
+// -----------------------------------------------------------------------------
+// Clears texture related data
+// -----------------------------------------------------------------------------
+void MapRenderer3D::refreshTextures()
+{
+	// Refresh lines
+	for (auto& line : lines_)
+	{
+		for (auto& quad : line.quads)
+			quad.texture = 0;
+
+		line.updated_time = 0;
+	}
+
+	// Refresh flats
+	for (auto& floor : floors_)
+	{
+		floor.texture      = 0;
+		floor.updated_time = 0;
+	}
+	for (auto& ceiling : ceilings_)
+	{
+		ceiling.texture      = 0;
+		ceiling.updated_time = 0;
+	}
+
+	// Refresh things
+	for (auto& thing : things_)
+	{
+		thing.sprite       = 0;
+		thing.updated_time = 0;
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -3147,44 +3182,4 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 
 	// glEnable(GL_DEPTH_TEST);
 	OpenGL::setColour(ColRGBA::WHITE);
-}
-
-// -----------------------------------------------------------------------------
-// Handles any announcements from the palette or resource manager
-// -----------------------------------------------------------------------------
-void MapRenderer3D::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	if (announcer != theMainWindow->paletteChooser() && announcer != &App::resources())
-		return;
-
-	if (event_name == "resources_updated" || event_name == "main_palette_changed")
-	{
-		// Refresh lines
-		for (auto& line : lines_)
-		{
-			for (auto& quad : line.quads)
-				quad.texture = 0;
-
-			line.updated_time = 0;
-		}
-
-		// Refresh flats
-		for (auto& floor : floors_)
-		{
-			floor.texture      = 0;
-			floor.updated_time = 0;
-		}
-		for (auto& ceiling : ceilings_)
-		{
-			ceiling.texture      = 0;
-			ceiling.updated_time = 0;
-		}
-
-		// Refresh things
-		for (auto& thing : things_)
-		{
-			thing.sprite       = 0;
-			thing.updated_time = 0;
-		}
-	}
 }

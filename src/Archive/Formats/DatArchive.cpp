@@ -85,7 +85,7 @@ bool DatArchive::open(MemChunk& mc)
 	size_t namecount = 0;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
@@ -118,7 +118,6 @@ bool DatArchive::open(MemChunk& mc)
 		{
 			Log::error("DatArchive::open: Dat archive is invalid or corrupt at entry {}", d);
 			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
 			return false;
 		}
 
@@ -198,9 +197,8 @@ bool DatArchive::open(MemChunk& mc)
 	// detectMaps();
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 

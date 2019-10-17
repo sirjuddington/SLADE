@@ -169,7 +169,7 @@ bool PatchTable::removePatch(unsigned index)
 	patches_.erase(patches_.begin() + index);
 
 	// Announce
-	announce("modified");
+	signals_.modified();
 
 	return true;
 }
@@ -190,7 +190,7 @@ bool PatchTable::replacePatch(unsigned index, string_view newname)
 	patches_[index].name = newname;
 
 	// Announce
-	announce("modified");
+	signals_.modified();
 
 	return true;
 }
@@ -214,7 +214,7 @@ bool PatchTable::addPatch(string_view name, bool allow_dup)
 	patches_.emplace_back(name);
 
 	// Announce
-	announce("modified");
+	signals_.modified();
 
 	return true;
 }
@@ -229,7 +229,7 @@ bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent)
 		return false;
 
 	// Mute while loading
-	setMuted(true);
+	signals_.modified.block();
 
 	// Clear current table
 	patches_.clear();
@@ -266,10 +266,10 @@ bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent)
 
 	// Update variables
 	parent_ = parent;
-	setMuted(false);
+	signals_.modified.unblock();
 
 	// Announce
-	announce("modified");
+	signals_.modified();
 
 	return true;
 }
@@ -321,7 +321,7 @@ void PatchTable::clearPatchUsage()
 		patch.used_in.clear();
 
 	// Announce
-	announce("modified");
+	signals_.modified();
 }
 
 // -----------------------------------------------------------------------------
@@ -338,5 +338,5 @@ void PatchTable::updatePatchUsage(CTexture* tex)
 		patch(tex->patch(a)->name()).used_in.push_back(tex->name());
 
 	// Announce
-	announce("modified");
+	signals_.modified();
 }

@@ -474,7 +474,7 @@ bool WolfArchive::open(MemChunk& mc)
 	num_lumps    = num_chunks;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the offsets
 	UI::setSplashProgressMessage("Reading Wolf archive data");
@@ -495,7 +495,6 @@ bool WolfArchive::open(MemChunk& mc)
 		{
 			Log::error("WolfArchive::open: Wolf archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt ";
-			setMuted(false);
 			return false;
 		}
 	}
@@ -558,7 +557,6 @@ bool WolfArchive::open(MemChunk& mc)
 			{
 				Log::error("WolfArchive::open: Wolf archive is invalid or corrupt");
 				Global::error = "Archive is invalid and/or corrupt";
-				setMuted(false);
 				return false;
 			}
 		}
@@ -591,9 +589,8 @@ bool WolfArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 
@@ -615,7 +612,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 	spritestart_ = soundstart_ = num_lumps;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the offsets
 	UI::setSplashProgressMessage("Reading Wolf archive data");
@@ -693,7 +690,6 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 		{
 			Log::error("WolfArchive::openAudio: Wolf archive is invalid or corrupt");
 			Global::error = fmt::format("Archive is invalid and/or corrupt in entry {}", d);
-			setMuted(false);
 			return false;
 		}
 
@@ -739,9 +735,8 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 
@@ -763,7 +758,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 	spritestart_ = soundstart_ = num_lumps;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the offsets
 	UI::setSplashProgressMessage("Reading Wolf archive data");
@@ -783,7 +778,6 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		{
 			Log::error("WolfArchive::openMaps: Wolf archive is invalid or corrupt");
 			Global::error = fmt::format("Archive is invalid and/or corrupt in entry {}", d);
-			setMuted(false);
 			return false;
 		}
 
@@ -853,9 +847,8 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 
@@ -887,7 +880,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 	spritestart_ = soundstart_ = num_lumps;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the offsets
 	UI::setSplashProgressMessage("Reading Wolf archive data");
@@ -908,7 +901,6 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		{
 			Log::error("WolfArchive::openGraph: Wolf archive is invalid or corrupt");
 			Global::error = fmt::format("Archive is invalid and/or corrupt in entry {}", d);
-			setMuted(false);
 			return false;
 		}
 
@@ -988,9 +980,8 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 

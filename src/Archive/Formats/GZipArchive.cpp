@@ -151,25 +151,19 @@ bool GZipArchive::open(MemChunk& mc)
 		return false;
 
 	// Let's create the entry
-	setMuted(true);
-	auto     entry = std::make_shared<ArchiveEntry>(name, size - mds);
-	MemChunk xdata;
+	ArchiveModSignalBlocker sig_blocker{ *this };
+	auto                    entry = std::make_shared<ArchiveEntry>(name, size - mds);
+	MemChunk                xdata;
 	if (Compression::gzipInflate(mc, xdata))
-	{
 		entry->importMemChunk(xdata);
-	}
 	else
-	{
-		setMuted(false);
 		return false;
-	}
 	rootDir()->addEntry(entry);
 	EntryType::detectEntryType(*entry);
 	entry->setState(ArchiveEntry::State::Unmodified);
 
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	// Finish
 	return true;

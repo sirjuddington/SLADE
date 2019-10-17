@@ -394,8 +394,6 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	undo_manager_{ new UndoManager() },
 	ee_manager_{ new ExternalEditManager }
 {
-	listenTo(archive.get());
-
 	// Create entry panels
 	entry_area_   = new EntryPanel(this, "nil");
 	default_area_ = new DefaultEntryPanel(this);
@@ -488,6 +486,22 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	Bind(EVT_AEL_DIR_CHANGED, &ArchivePanel::onDirChanged, this);
 	btn_updir_->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnUpDir, this);
 	btn_clear_filter_->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnClearFilter, this);
+
+	// Update this tab's name in the parent notebook when the archive is saved
+	sc_archive_saved_ = archive->signals().saved.connect([this](Archive& a) {
+		auto parent = dynamic_cast<wxAuiNotebook*>(GetParent());
+		parent->SetPageText(parent->GetPageIndex(this), a.filename(false));
+	});
+
+	// Close current entry panel if it's entry was removed
+	sc_entry_removed_ = archive->signals().entry_removed.connect([this](Archive&, ArchiveEntry& entry) {
+		if (currentArea()->entry() == &entry)
+		{
+			currentArea()->closeEntry();
+			currentArea()->openEntry(nullptr);
+			currentArea()->Show(false);
+		}
+	});
 
 	// Update size+layout
 	entry_list_->updateWidth();
@@ -620,10 +634,6 @@ void ArchivePanel::undo() const
 		entry_list_->setEntriesAutoUpdate(false);
 		undo_manager_->undo();
 		entry_list_->setEntriesAutoUpdate(true);
-
-		// setEntriesAutoUpdate blocks previous announce
-		if (auto archive = archive_.lock())
-			archive->announce("entries_changed");
 	}
 }
 
@@ -638,10 +648,6 @@ void ArchivePanel::redo() const
 		entry_list_->setEntriesAutoUpdate(false);
 		undo_manager_->redo();
 		entry_list_->setEntriesAutoUpdate(true);
-
-		// setEntriesAutoUpdate blocks previous announce
-		if (auto archive = archive_.lock())
-			archive->announce("entries_changed");
 	}
 }
 
@@ -1983,7 +1989,7 @@ bool ArchivePanel::openEntryExternal()
 	{
 		// Open entry in selected external editor
 		bool ok = ee_manager_->openEntryExternal(
-			entry, current_external_exes_[wx_id_offset_], current_external_exe_category_);
+			*entry, current_external_exes_[wx_id_offset_], current_external_exe_category_);
 
 		// Show error message if failed
 		if (!ok)
@@ -2347,7 +2353,7 @@ bool ArchivePanel::voxelConvert()
 				continue;
 			}
 			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a])); // Create undo step
-			selection[a]->importMemChunk(kvx);                                         // Load doom sound data
+			selection[a]->importMemChunk(kvx);                                          // Load doom sound data
 			EntryType::detectEntryType(*selection[a]);                                  // Update entry type
 			selection[a]->setExtensionByType();                                         // Update extension if necessary
 		}
@@ -3361,7 +3367,7 @@ bool ArchivePanel::handleAction(string_view id)
 		musMidiConvert();
 	else if (id == "arch_voxel_convertvox")
 		voxelConvert();
-	else if (id == "arch_scripts_compileacs") 
+	else if (id == "arch_scripts_compileacs")
 		compileACS();
 	else if (id == "arch_scripts_compilehacs")
 		compileACS(true);
@@ -3416,47 +3422,6 @@ bool ArchivePanel::handleAction(string_view id)
 
 	// Action handled, return true
 	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Called when an announcement is recieved from the archive that this
-// ArchivePanel is managing
-// -----------------------------------------------------------------------------
-void ArchivePanel::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	// Check the announcement is from our archive
-	auto archive = archive_.lock();
-	if (announcer != archive.get())
-		return;
-
-	// Reset event data for reading
-	event_data.seek(0, SEEK_SET);
-
-	// If the archive was saved
-	if (event_name == "saved")
-	{
-		// Update this tab's name in the parent notebook (if filename was changed)
-		auto parent = dynamic_cast<wxAuiNotebook*>(GetParent());
-		parent->SetPageText(parent->GetPageIndex(this), archive->filename(false));
-	}
-
-	// If an entry was removed
-	if (event_name == "entry_removing")
-	{
-		// Get entry pointer
-		wxUIntPtr ptr;
-		event_data.seek(sizeof(int), 0);
-		event_data.read(&ptr, sizeof(wxUIntPtr));
-		auto entry = static_cast<ArchiveEntry*>(wxUIntToPtr(ptr));
-
-		// Close current entry panel if it's entry was removed
-		if (currentArea()->entry() == entry)
-		{
-			currentArea()->closeEntry();
-			currentArea()->openEntry(nullptr);
-			currentArea()->Show(false);
-		}
-	}
 }
 
 
@@ -3839,7 +3804,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 			voxels = &context;
 		}
 		SAction::fromId("arch_voxel_convertvox")->addToMenu(voxels, true);
-}
+	}
 
 	// Add map related menu items if needed
 	if (map_selected)

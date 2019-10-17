@@ -1,13 +1,12 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
 #include "OpenGL/GLTexture.h"
 
 class ArchiveDir;
 class Archive;
 class Palette;
 
-class MapTextureManager : public Listener
+class MapTextureManager
 {
 public:
 	enum class Category
@@ -73,8 +72,6 @@ public:
 	vector<TexInfo>& allTexturesInfo() { return tex_info_; }
 	vector<TexInfo>& allFlatsInfo() { return flat_info_; }
 
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
-
 private:
 	Archive*            archive_ = nullptr;
 	MapTexHashMap       textures_;
@@ -85,6 +82,10 @@ private:
 	unique_ptr<Palette> palette_;
 	vector<TexInfo>     tex_info_;
 	vector<TexInfo>     flat_info_;
+
+	// Signal connections
+	sigslot::scoped_connection sc_resources_updated_;
+	sigslot::scoped_connection sc_palette_changed_;
 
 	void importEditorImages(MapTexHashMap& map, ArchiveDir* dir, string_view path) const;
 };

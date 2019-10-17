@@ -205,17 +205,22 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 	// Bind events
 	Bind(wxEVT_SHOW, &TextureXEditor::onShow, this);
 
-	// Palette chooser
-	listenTo(theMainWindow->paletteChooser());
-	updateTexturePalette();
+	// Update patch browser & palette when resources are updated or the patch table is modified
+	sc_resources_updated_ = App::resources().signals().resources_updated.connect([this]() {
+		pb_update_ = true;
+		updateTexturePalette();
+	});
+	sc_ptable_modified_   = patch_table_.signals().modified.connect([this]() {
+        pb_update_ = true;
+        updateTexturePalette();
+    });
 
-	// Listen to patch table
-	listenTo(&patch_table_);
-
-	// Listen to resource manager
-	listenTo(&App::resources());
+	// Update the editor palette if the main palette is changed
+	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect(
+		[this]() { updateTexturePalette(); });
 
 	// Update + layout
+	updateTexturePalette();
 	wxWindowBase::Layout();
 	wxWindow::Show();
 }
@@ -691,29 +696,6 @@ void TextureXEditor::redo()
 	{
 		for (auto& texture_editor : texture_editors_)
 			texture_editor->onRedo(action);
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Handles any announcements from the current texture
-// -----------------------------------------------------------------------------
-void TextureXEditor::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	if (announcer == theMainWindow->paletteChooser() && event_name == "main_palette_changed")
-	{
-		updateTexturePalette();
-	}
-
-	if (announcer == &patch_table_ && event_name == "modified")
-	{
-		patch_browser_->openPatchTable(&patch_table_);
-		pb_update_ = true;
-	}
-
-	if (announcer == &App::resources() && event_name == "resources_updated")
-	{
-		pb_update_ = true;
-		updateTexturePalette();
 	}
 }
 

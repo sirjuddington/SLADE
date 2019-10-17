@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ResourceArchiveChooser.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"

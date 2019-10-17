@@ -1,14 +1,13 @@
 #pragma once
 
 #include "Archive/ArchiveEntry.h"
-#include "General/ListenerAnnouncer.h"
 #include "General/SAction.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
 
 class UndoManager;
 
-class EntryPanel : public wxPanel, public Listener, protected SActionHandler
+class EntryPanel : public wxPanel, protected SActionHandler
 {
 public:
 	EntryPanel(wxWindow* parent, const wxString& id);
@@ -57,7 +56,6 @@ protected:
 
 	void         setModified(bool c = true);
 	virtual bool loadEntry(ArchiveEntry* entry);
-	void         onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override {}
 	virtual bool handleEntryPanelAction(string_view id) { return false; }
 	void         onToolbarButton(wxCommandEvent& e);
 

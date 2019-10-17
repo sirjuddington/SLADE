@@ -115,7 +115,7 @@ bool SImage::loadFont0(const uint8_t* gfx_data, int size)
 		}
 	}
 	// Announce change and return success
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -197,7 +197,7 @@ bool SImage::loadFont1(const uint8_t* gfx_data, int size)
 			mask_[i] = 0x00;
 
 	// Announce change and return success
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -374,7 +374,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 			mask_[i] = 0;
 
 	// Announce change and return success
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -570,7 +570,7 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size)
 		}
 	}
 	// Announce change and return success
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -616,7 +616,7 @@ bool SImage::loadFontM(const uint8_t* gfx_data, int size)
 			mask_[(i * 8) + p] = ((gfx_data[i] >> (7 - p)) & 1) * 255;
 	}
 	// Announce change and return success
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -688,7 +688,7 @@ bool SImage::loadWolfFont(const uint8_t* gfx_data, int size)
 		}
 	}
 	// Announce change and return success
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -765,7 +765,7 @@ bool SImage::loadJediFNT(const uint8_t* gfx_data, int size)
 	rotate(90);
 
 	// Announce change and return success
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -830,7 +830,7 @@ bool SImage::loadJediFONT(const uint8_t* gfx_data, int size)
 		}
 	}
 	// Announce change and return success
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -918,7 +918,7 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
 	}
 
 	// Announce change and return success
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -958,6 +958,6 @@ bool SImage::loadJaguarTexture(const uint8_t* gfx_data, int size, int i_width, i
 	mirror(false);
 
 	// Announce change and return success
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }

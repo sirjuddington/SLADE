@@ -33,11 +33,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SFont.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
-
 
 
 // -----------------------------------------------------------------------------

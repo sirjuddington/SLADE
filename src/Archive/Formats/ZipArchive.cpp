@@ -124,7 +124,7 @@ bool ZipArchive::open(string_view filename)
 	}
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Go through all zip entries
 	int  entry_index = 0;
@@ -136,7 +136,6 @@ bool ZipArchive::open(string_view filename)
 		if (zip_entry->GetMethod() != wxZIP_METHOD_DEFLATE && zip_entry->GetMethod() != wxZIP_METHOD_STORE)
 		{
 			Global::error = "Unsupported zip compression method";
-			setMuted(false);
 			return false;
 		}
 
@@ -179,7 +178,6 @@ bool ZipArchive::open(string_view filename)
 			else
 			{
 				Global::error = fmt::format("Entry too large: {} is {} mb", fn.fullPath(), ze_size / (1 << 20));
-				setMuted(false);
 				return false;
 			}
 		}
@@ -204,7 +202,7 @@ bool ZipArchive::open(string_view filename)
 		entry->setState(ArchiveEntry::State::Unmodified);
 
 	// Enable announcements
-	setMuted(false);
+	sig_blocker.unblock();
 
 	// Setup variables
 	filename_ = filename;

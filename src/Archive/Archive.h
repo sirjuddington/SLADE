@@ -3,7 +3,6 @@
 #include "ArchiveDir.h"
 #include "ArchiveEntry.h"
 #include "General/Defs.h"
-#include "General/ListenerAnnouncer.h"
 
 struct ArchiveFormat
 {
@@ -19,7 +18,7 @@ struct ArchiveFormat
 	ArchiveFormat(string_view id) : id{ id }, name{ id } {}
 };
 
-class Archive : public Announcer
+class Archive
 {
 public:
 	struct MapDesc
@@ -156,6 +155,20 @@ public:
 	virtual vector<ArchiveEntry*> findAll(SearchOptions& options);
 	virtual vector<ArchiveEntry*> findModifiedEntries(ArchiveDir* dir = nullptr);
 
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<Archive&>                             modified;
+		sigslot::signal<Archive&>                             saved;
+		sigslot::signal<Archive&>                             closed;
+		sigslot::signal<Archive&, ArchiveEntry&>              entry_added;
+		sigslot::signal<Archive&, ArchiveEntry&>              entry_removed;
+		sigslot::signal<Archive&, ArchiveEntry&>              entry_state_changed;
+		sigslot::signal<Archive&, ArchiveEntry&, string_view> entry_renamed;
+	};
+	Signals& signals() { return signals_; }
+	void     blockModificationSignals(bool block = true);
+
 	// Static functions
 	static bool                   loadFormats(MemChunk& mc);
 	static vector<ArchiveFormat>& allFormats() { return formats_; }
@@ -170,6 +183,7 @@ protected:
 private:
 	bool                   modified_;
 	shared_ptr<ArchiveDir> dir_root_;
+	Signals                signals_;
 
 	static vector<ArchiveFormat> formats_;
 };
@@ -237,4 +251,17 @@ public:
 	// Detection
 	string detectNamespace(ArchiveEntry* entry) override { return "global"; }
 	string detectNamespace(size_t index, ArchiveDir* dir = nullptr) override { return "global"; }
+};
+
+// Simple class that will block and unblock modification signals for an archive via RAII
+class ArchiveModSignalBlocker
+{
+public:
+	ArchiveModSignalBlocker(Archive& archive) : archive_{ &archive } { archive_->blockModificationSignals(); }
+	~ArchiveModSignalBlocker() { archive_->blockModificationSignals(false); }
+
+	void unblock() const { archive_->blockModificationSignals(false); }
+
+private:
+	Archive* archive_;
 };

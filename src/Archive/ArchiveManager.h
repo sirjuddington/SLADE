@@ -1,14 +1,12 @@
 #pragma once
 
-#include "App.h"
 #include "Archive.h"
-#include "General/ListenerAnnouncer.h"
 
-class ArchiveManager : public Announcer, Listener
+class ArchiveManager
 {
 public:
-	ArchiveManager() = default;
-	~ArchiveManager();
+	ArchiveManager()  = default;
+	~ArchiveManager() = default;
 
 	bool                        init();
 	bool                        initBaseResource();
@@ -70,7 +68,23 @@ public:
 	ArchiveEntry* getBookmark(unsigned index);
 	unsigned      numBookmarks() const { return bookmarks_.size(); }
 
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<unsigned> archive_added;
+		sigslot::signal<unsigned> archive_opened;
+		sigslot::signal<unsigned> archive_modified;
+		sigslot::signal<unsigned> archive_saved;
+		sigslot::signal<unsigned> archive_closing;
+		sigslot::signal<unsigned> archive_closed;
+		sigslot::signal<unsigned> base_res_path_added;
+		sigslot::signal<unsigned> base_res_path_removed;
+		sigslot::signal<unsigned> base_res_current_changed;
+		sigslot::signal<>         base_res_current_cleared;
+		sigslot::signal<>         recent_files_changed;
+		sigslot::signal<>         bookmarks_changed;
+	};
+	Signals& signals() { return signals_; }
 
 private:
 	struct OpenArchive
@@ -87,6 +101,9 @@ private:
 	vector<string>                 base_resource_paths_;
 	vector<string>                 recent_files_;
 	vector<weak_ptr<ArchiveEntry>> bookmarks_;
+
+	// Signals
+	Signals signals_;
 
 	bool initArchiveFormats() const;
 	void getDependentArchivesInternal(Archive* archive, vector<shared_ptr<Archive>>& vec);

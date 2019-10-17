@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SBrush.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
 

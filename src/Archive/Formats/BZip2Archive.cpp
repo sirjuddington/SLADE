@@ -69,25 +69,19 @@ bool BZip2Archive::open(MemChunk& mc)
 		fn.setExtension({});
 
 	// Let's create the entry
-	setMuted(true);
-	auto     entry = std::make_shared<ArchiveEntry>(fn.fileName(), size);
-	MemChunk xdata;
+	ArchiveModSignalBlocker sig_blocker{ *this };
+	auto                    entry = std::make_shared<ArchiveEntry>(fn.fileName(), size);
+	MemChunk                xdata;
 	if (Compression::bzip2Decompress(mc, xdata))
-	{
 		entry->importMemChunk(xdata);
-	}
 	else
-	{
-		setMuted(false);
 		return false;
-	}
 	rootDir()->addEntry(entry);
 	EntryType::detectEntryType(*entry);
 	entry->setState(ArchiveEntry::State::Unmodified);
 
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	// Finish
 	return true;

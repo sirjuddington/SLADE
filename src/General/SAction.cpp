@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "General/SAction.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/KeyBind.h"
 #include "Graphics/Icons.h"

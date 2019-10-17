@@ -77,7 +77,7 @@ bool DiskArchive::open(MemChunk& mc)
 		return false;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
 	UI::setSplashProgressMessage("Reading disk archive data");
@@ -102,7 +102,6 @@ bool DiskArchive::open(MemChunk& mc)
 		{
 			Log::error("DiskArchive::open: Disk archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
 			return false;
 		}
 
@@ -158,9 +157,8 @@ bool DiskArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 

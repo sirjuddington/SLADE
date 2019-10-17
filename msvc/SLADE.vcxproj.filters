@@ -402,9 +402,6 @@
     <ClCompile Include="..\thirdparty\zreaders\music_xmi_midiout.cpp">
       <Filter>ThirdParty\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Dialogs\Preferences\ACSPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Dialogs\Preferences\AdvancedPrefsPanel.cpp">
       <Filter>Dialogs\Preferences</Filter>
     </ClCompile>
@@ -1329,9 +1326,6 @@
     <ClCompile Include="..\src\General\KeyBind.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\General\ListenerAnnouncer.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\General\Log.cpp">
       <Filter>General</Filter>
     </ClCompile>
@@ -1583,6 +1577,9 @@
     </ClCompile>
     <ClCompile Include="..\src\Archive\ArchiveDir.cpp">
       <Filter>Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Dialogs\Preferences\ACSPrefsPanel.cpp">
+      <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2528,9 +2525,6 @@
     <ClInclude Include="..\src\General\KeyBind.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\General\ListenerAnnouncer.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\General\Log.h">
       <Filter>General</Filter>
     </ClInclude>
@@ -2791,6 +2785,9 @@
     </ClInclude>
     <ClInclude Include="..\src\Archive\ArchiveDir.h">
       <Filter>Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\General\Sigslot.h">
+      <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

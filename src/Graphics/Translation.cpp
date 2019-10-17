@@ -40,6 +40,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Translation.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "MainEditor/MainEditor.h"
 #include "Palette/Palette.h"

@@ -460,11 +460,12 @@ bool Archive::open(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 void Archive::setModified(bool modified)
 {
-	// Set modified
+	// Update modified flag
 	modified_ = modified;
 
-	// Announce
-	announce("modified");
+	// Emit signal if changing to modified
+	if (modified)
+		signals_.modified(*this);
 }
 
 // -----------------------------------------------------------------------------
@@ -650,7 +651,7 @@ bool Archive::save(string_view filename)
 	if (success)
 	{
 		setModified(false);
-		announce("saved");
+		signals_.saved(*this);
 	}
 
 	return success;
@@ -669,14 +670,11 @@ unsigned Archive::numEntries()
 // -----------------------------------------------------------------------------
 void Archive::close()
 {
-	// Announce
-	announce("closing");
-
 	// Clear the root dir
 	dir_root_->clear();
 
 	// Announce
-	announce("closed");
+	signals_.closed(*this);
 }
 
 // -----------------------------------------------------------------------------
@@ -689,14 +687,8 @@ void Archive::entryStateChanged(ArchiveEntry* entry)
 	if (!checkEntry(entry))
 		return;
 
-	// Get the entry index and announce the change
-	MemChunk  mc(8);
-	wxUIntPtr ptr   = wxPtrToUInt(entry);
-	uint32_t  index = entryIndex(entry);
-	mc.write(&index, sizeof(uint32_t));
-	mc.write(&ptr, sizeof(wxUIntPtr));
-	announce("entry_state_changed", mc);
-
+	// Signal entry state change
+	signals_.entry_state_changed(*this, *entry);
 
 	// If entry was set to unmodified, don't set the archive to modified
 	if (entry->state() == ArchiveEntry::State::Unmodified)
@@ -802,12 +794,6 @@ shared_ptr<ArchiveDir> Archive::createDir(string_view path, shared_ptr<ArchiveDi
 	// Set the archive state to modified
 	setModified(true);
 
-	// Announce
-	MemChunk  mc;
-	wxUIntPtr ptr = wxPtrToUInt(dir.get());
-	mc.write(&ptr, sizeof(wxUIntPtr));
-	announce("directory_added", mc);
-
 	return dir;
 }
 
@@ -868,12 +854,6 @@ bool Archive::renameDir(ArchiveDir* dir, string_view new_name)
 	else
 		return true;
 
-	// Announce
-	MemChunk  mc;
-	wxUIntPtr ptr = wxPtrToUInt(dir);
-	mc.write(&ptr, sizeof(wxUIntPtr));
-	announce("directory_modified", mc);
-
 	// Update variables etc
 	setModified(true);
 
@@ -910,12 +890,8 @@ shared_ptr<ArchiveEntry> Archive::addEntry(shared_ptr<ArchiveEntry> entry, unsig
 	setModified(true);
 	entry->state_ = ArchiveEntry::State::New;
 
-	// Announce
-	MemChunk  mc;
-	wxUIntPtr ptr = wxPtrToUInt(entry.get());
-	mc.write(&position, sizeof(uint32_t));
-	mc.write(&ptr, sizeof(wxUIntPtr));
-	announce("entry_added", mc);
+	// Signal entry addition
+	signals_.entry_added(*this, *entry);
 
 	// Create undo step
 	if (UndoRedo::currentlyRecording())
@@ -998,12 +974,8 @@ bool Archive::removeEntry(ArchiveEntry* entry)
 	// Get the entry index
 	int index = dir->entryIndex(entry);
 
-	// Announce (before actually removing in case entry is still needed)
-	MemChunk  mc;
-	wxUIntPtr ptr = wxPtrToUInt(entry);
-	mc.write(&index, sizeof(int));
-	mc.write(&ptr, sizeof(wxUIntPtr));
-	announce("entry_removing", mc);
+	// Get a shared pointer to the entry to ensure it's kept around until this function ends
+	auto entry_shared = entry->getShared();
 
 	// Remove it from its directory
 	bool ok = dir->removeEntry(index);
@@ -1011,8 +983,8 @@ bool Archive::removeEntry(ArchiveEntry* entry)
 	// If it was removed ok
 	if (ok)
 	{
-		// Announce removed
-		announce("entry_removed", mc);
+		// Signal entry removed
+		signals_.entry_removed(*this, *entry);
 
 		// Update variables etc
 		setModified(true);
@@ -1043,9 +1015,6 @@ bool Archive::swapEntries(unsigned index1, unsigned index2, ArchiveDir* dir)
 	// Do swap
 	if (dir->swapEntries(index1, index2))
 	{
-		// Announce the swap
-		announce("entries_swapped");
-
 		// Set modified
 		setModified(true);
 
@@ -1102,9 +1071,6 @@ bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 
 	// Swap entries
 	dir->swapEntries(i1, i2);
-
-	// Announce the swap
-	announce("entries_swapped");
 
 	// Set modified
 	setModified(true);
@@ -1179,13 +1145,8 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name)
 	if (entry->type() == EntryType::folderType())
 		return renameDir(dirAtPath(entry->path(true)), name);
 
-	// Announce (before actually renaming in case old name is still needed)
-	MemChunk  mc;
-	int       index = entryIndex(entry);
-	wxUIntPtr ptr   = wxPtrToUInt(entry);
-	mc.write(&index, sizeof(int));
-	mc.write(&ptr, sizeof(wxUIntPtr));
-	announce("entry_renaming", mc);
+	// Keep current name for renamed signal
+	auto prev_name = entry->name();
 
 	// Create undo step
 	if (UndoRedo::currentlyRecording())
@@ -1197,6 +1158,7 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name)
 	entry->setState(ArchiveEntry::State::Modified, true);
 
 	// Announce modification
+	signals_.entry_renamed(*this, *entry, prev_name);
 	entryStateChanged(entry);
 
 	return true;
@@ -1552,6 +1514,29 @@ vector<ArchiveEntry*> Archive::findModifiedEntries(ArchiveDir* dir)
 
 	// Return matches
 	return ret;
+}
+
+// -----------------------------------------------------------------------------
+// Blocks or unblocks signals for archive/entry modifications
+// -----------------------------------------------------------------------------
+void Archive::blockModificationSignals(bool block)
+{
+	if (block)
+	{
+		signals_.modified.block();
+		signals_.entry_added.block();
+		signals_.entry_removed.block();
+		signals_.entry_state_changed.block();
+		signals_.entry_renamed.block();
+	}
+	else
+	{
+		signals_.modified.unblock();
+		signals_.entry_added.unblock();
+		signals_.entry_removed.unblock();
+		signals_.entry_state_changed.unblock();
+		signals_.entry_renamed.unblock();
+	}
 }
 
 

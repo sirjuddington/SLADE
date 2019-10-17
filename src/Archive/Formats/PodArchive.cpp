@@ -94,7 +94,7 @@ bool PodArchive::open(MemChunk& mc)
 	mc.read(files.data(), num_files * sizeof(FileEntry));
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Create entries
 	UI::setSplashProgressMessage("Reading pod archive data");
@@ -148,9 +148,8 @@ bool PodArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 

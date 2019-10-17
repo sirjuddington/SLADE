@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ArchiveOperations.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"
 #include "Dialogs/ExtMessageDialog.h"
@@ -47,7 +48,6 @@
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
-
 
 
 // -----------------------------------------------------------------------------

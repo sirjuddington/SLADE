@@ -140,7 +140,6 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 		{
 			Log::error("ResArchive::readDirectory: Res archive is invalid or corrupt, offset overflow");
 			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
 			return false;
 		}
 
@@ -233,7 +232,7 @@ bool ResArchive::open(MemChunk& mc)
 	uint32_t num_lumps = dir_size / RESDIRENTRYSIZE;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
@@ -246,9 +245,8 @@ bool ResArchive::open(MemChunk& mc)
 	detectMaps();
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 

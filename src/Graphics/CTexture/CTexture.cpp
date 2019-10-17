@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "CTexture.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
@@ -453,7 +454,7 @@ bool CTexture::addPatch(string_view patch, int16_t offset_x, int16_t offset_y, i
 	defined_ = false;
 
 	// Announce
-	announce("patches_modified");
+	signals_.patches_modified(*this);
 
 	return true;
 }
@@ -475,7 +476,7 @@ bool CTexture::removePatch(size_t index)
 	defined_ = false;
 
 	// Announce
-	announce("patches_modified");
+	signals_.patches_modified(*this);
 
 	return true;
 }
@@ -502,7 +503,7 @@ bool CTexture::removePatch(string_view patch)
 	defined_ = false;
 
 	if (removed)
-		announce("patches_modified");
+		signals_.patches_modified(*this);
 
 	return removed;
 }
@@ -522,7 +523,7 @@ bool CTexture::replacePatch(size_t index, string_view newpatch)
 	patches_[index]->setName(newpatch);
 
 	// Announce
-	announce("patches_modified");
+	signals_.patches_modified(*this);
 
 	return true;
 }
@@ -558,7 +559,7 @@ bool CTexture::duplicatePatch(size_t index, int16_t offset_x, int16_t offset_y)
 	defined_ = false;
 
 	// Announce
-	announce("patches_modified");
+	signals_.patches_modified(*this);
 
 	return true;
 }
@@ -577,7 +578,7 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 	patches_[p1].swap(patches_[p2]);
 
 	// Announce
-	announce("patches_modified");
+	signals_.patches_modified(*this);
 
 	return true;
 }

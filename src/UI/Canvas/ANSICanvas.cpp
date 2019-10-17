@@ -32,11 +32,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ANSICanvas.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "MainEditor/UI/TextureXEditor/TextureXEditor.h"
 #include "OpenGL/GLTexture.h"
 #include "Utility/CodePages.h"
-
 
 
 // -----------------------------------------------------------------------------

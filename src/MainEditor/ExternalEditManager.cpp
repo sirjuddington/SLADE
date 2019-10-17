@@ -53,17 +53,20 @@
 //
 // FileMonitor subclass to handle exporting, monitoring and reimporting an entry
 // -----------------------------------------------------------------------------
-class ExternalEditFileMonitor : public FileMonitor, Listener
+class ExternalEditFileMonitor : public FileMonitor
 {
 public:
-	ExternalEditFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager) :
+	ExternalEditFileMonitor(ArchiveEntry& entry, ExternalEditManager* manager) :
 		FileMonitor("", false),
-		entry_(entry),
+		entry_(&entry),
+		archive_{ entry.parent() },
 		manager_(manager)
 	{
-		// Listen to entry parent archive
-		archive_ = entry->parent();
-		listenTo(archive_);
+		// Stop monitoring if the entry is removed
+		sc_entry_removed_ = archive_->signals().entry_removed.connect([this](Archive&, ArchiveEntry& entry) {
+			if (&entry == entry_)
+				delete this;
+		});
 	}
 
 	virtual ~ExternalEditFileMonitor() { manager_->monitorStopped(this); }
@@ -93,33 +96,12 @@ public:
 		return ok;
 	}
 
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override
-	{
-		if (announcer != archive_)
-			return;
-
-		bool finished = false;
-
-		// Entry removed
-		if (event_name == "entry_removed")
-		{
-			int       index;
-			wxUIntPtr ptr;
-			event_data.read(&index, sizeof(int));
-			event_data.read(&ptr, sizeof(wxUIntPtr));
-			if (wxUIntToPtr(ptr) == entry_)
-				finished = true;
-		}
-
-		if (finished)
-			delete this;
-	}
-
 protected:
-	ArchiveEntry*        entry_   = nullptr;
-	Archive*             archive_ = nullptr;
-	ExternalEditManager* manager_ = nullptr;
-	string               gfx_format_;
+	ArchiveEntry*              entry_   = nullptr;
+	Archive*                   archive_ = nullptr;
+	ExternalEditManager*       manager_ = nullptr;
+	string                     gfx_format_;
+	sigslot::scoped_connection sc_entry_removed_;
 };
 
 
@@ -131,7 +113,7 @@ protected:
 class GfxExternalFileMonitor : public ExternalEditFileMonitor
 {
 public:
-	GfxExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager) : ExternalEditFileMonitor(entry, manager)
+	GfxExternalFileMonitor(ArchiveEntry& entry, ExternalEditManager* manager) : ExternalEditFileMonitor(entry, manager)
 	{
 	}
 	virtual ~GfxExternalFileMonitor() = default;
@@ -220,7 +202,7 @@ private:
 class MIDIExternalFileMonitor : public ExternalEditFileMonitor
 {
 public:
-	MIDIExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager) : ExternalEditFileMonitor(entry, manager)
+	MIDIExternalFileMonitor(ArchiveEntry& entry, ExternalEditManager* manager) : ExternalEditFileMonitor(entry, manager)
 	{
 	}
 	virtual ~MIDIExternalFileMonitor() = default;
@@ -271,11 +253,11 @@ public:
 		return false;
 	}
 
-	static bool canHandleEntry(ArchiveEntry* entry)
+	static bool canHandleEntry(ArchiveEntry& entry)
 	{
-		return entry->type()->formatId() == "midi" || entry->type()->formatId() == "midi_mus"
-			   || entry->type()->formatId() == "midi_xmi" || entry->type()->formatId() == "midi_hmi"
-			   || entry->type()->formatId() == "midi_hmp" || entry->type()->formatId() == "midi_gmid";
+		const auto& format_id = entry.type()->formatId();
+		return format_id == "midi" || format_id == "midi_mus" || format_id == "midi_xmi" || format_id == "midi_hmi"
+			   || format_id == "midi_hmp" || format_id == "midi_gmid";
 	}
 };
 
@@ -288,7 +270,7 @@ public:
 class SfxExternalFileMonitor : public ExternalEditFileMonitor
 {
 public:
-	SfxExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager) :
+	SfxExternalFileMonitor(ArchiveEntry& entry, ExternalEditManager* manager) :
 		ExternalEditFileMonitor(entry, manager),
 		doom_sound_(true)
 	{
@@ -369,12 +351,12 @@ public:
 		return false;
 	}
 
-	static bool canHandleEntry(ArchiveEntry* entry)
+	static bool canHandleEntry(ArchiveEntry& entry)
 	{
-		return entry->type()->formatId() == "snd_doom" || entry->type()->formatId() == "snd_doom_mac"
-			   || entry->type()->formatId() == "snd_speaker" || entry->type()->formatId() == "snd_audiot"
-			   || entry->type()->formatId() == "snd_wolf" || entry->type()->formatId() == "snd_voc"
-			   || entry->type()->formatId() == "snd_jaguar" || entry->type()->formatId() == "snd_bloodsfx";
+		auto& format_id = entry.type()->formatId();
+		return format_id == "snd_doom" || format_id == "snd_doom_mac" || format_id == "snd_speaker"
+			   || format_id == "snd_audiot" || format_id == "snd_wolf" || format_id == "snd_voc"
+			   || format_id == "snd_jaguar" || format_id == "snd_bloodsfx";
 	}
 
 private:
@@ -401,13 +383,13 @@ ExternalEditManager::~ExternalEditManager()
 // -----------------------------------------------------------------------------
 // Opens [entry] for external editing with [editor] for [category]
 // -----------------------------------------------------------------------------
-bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string_view editor, string_view category)
+bool ExternalEditManager::openEntryExternal(ArchiveEntry& entry, string_view editor, string_view category)
 {
 	// Check the entry isn't already opened externally
 	for (auto& file_monitor : file_monitors_)
-		if (file_monitor->getEntry() == entry)
+		if (file_monitor->getEntry() == &entry)
 		{
-			Log::warning("Entry {} is already open in an external editor", entry->name());
+			Log::warning("Entry {} is already open in an external editor", entry.name());
 			return true;
 		}
 
@@ -415,7 +397,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string_view edi
 	ExternalEditFileMonitor* monitor = nullptr;
 
 	// Gfx entry
-	if (entry->type()->editor() == "gfx" && entry->type()->id() != "png")
+	if (entry.type()->editor() == "gfx" && entry.type()->id() != "png")
 		monitor = new GfxExternalFileMonitor(entry, this);
 	// MIDI entry
 	else if (MIDIExternalFileMonitor::canHandleEntry(entry))

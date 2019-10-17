@@ -1,6 +1,5 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
 #include "MapEditor/Edit/Edit3D.h"
 #include "SLADEMap/SLADEMap.h"
 
@@ -12,7 +11,7 @@ namespace Game
 class ThingType;
 }
 
-class MapRenderer3D : public Listener
+class MapRenderer3D
 {
 public:
 	// Structs
@@ -99,6 +98,7 @@ public:
 
 	bool init();
 	void refresh();
+	void refreshTextures();
 	void clearData();
 	void buildSkyCircle();
 
@@ -181,9 +181,6 @@ public:
 	MapEditor::Item determineHilight();
 	void            renderHilight(MapEditor::Item hilight, float alpha = 1.0f);
 
-	// Listener stuff
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
-
 private:
 	SLADEMap* map_;
 	bool      fullbright_       = false;
@@ -235,4 +232,8 @@ private:
 	ColRGBA skycol_top_;
 	ColRGBA skycol_bottom_;
 	Vec2d   sky_circle_[32];
+
+	// Signal connections
+	sigslot::scoped_connection sc_resources_updated_;
+	sigslot::scoped_connection sc_palette_changed_;
 };

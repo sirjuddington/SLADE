@@ -248,18 +248,14 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 // -----------------------------------------------------------------------------
 void ArchiveEntryList::setArchive(const shared_ptr<Archive>& archive)
 {
-	// Stop listening to current archive (if any)
-	if (auto cur_archive = archive_.lock())
-		stopListening(cur_archive.get());
-
 	// Set archive (allow null)
 	archive_ = archive;
 
 	// Init new archive if given
 	if (archive)
 	{
-		// Listen to it
-		listenTo(archive.get());
+		// Update list when archive is modified
+		sc_archive_modified_ = archive->signals().modified.connect([this](Archive&) { applyFilter(); });
 
 		// Open root directory
 		current_dir_ = archive->rootDir();
@@ -783,18 +779,6 @@ void ArchiveEntryList::labelEdited(int col, int index, const wxString& new_label
 
 	if (undo_manager_)
 		undo_manager_->endRecord(true);
-}
-
-// -----------------------------------------------------------------------------
-// Called when an announcement is recieved from the archive being managed
-// -----------------------------------------------------------------------------
-void ArchiveEntryList::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	if (entries_update_ && announcer == archive_.lock().get() && event_name != "closed")
-	{
-		// updateList();
-		applyFilter();
-	}
 }
 
 // -----------------------------------------------------------------------------

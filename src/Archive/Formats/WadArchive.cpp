@@ -347,7 +347,7 @@ bool WadArchive::open(MemChunk& mc)
 		iwad_ = true;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	vector<uint32_t> offsets;
 
@@ -438,7 +438,6 @@ bool WadArchive::open(MemChunk& mc)
 			Log::error("WadArchive::open: Wad archive is invalid or corrupt");
 			Global::error = fmt::format(
 				"Archive is invalid and/or corrupt (lump {}: {} data goes past end of file)", d, name);
-			setMuted(false);
 			return false;
 		}
 
@@ -512,9 +511,8 @@ bool WadArchive::open(MemChunk& mc)
 	detectMaps();
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 

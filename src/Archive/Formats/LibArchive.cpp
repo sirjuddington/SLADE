@@ -84,7 +84,7 @@ bool LibArchive::open(MemChunk& mc)
 	uint32_t dir_offset = mc.size() - (2 + (num_lumps * 21));
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
@@ -114,7 +114,6 @@ bool LibArchive::open(MemChunk& mc)
 		{
 			Log::error("LibArchive::open: Lib archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
 			return false;
 		}
 
@@ -160,9 +159,8 @@ bool LibArchive::open(MemChunk& mc)
 	detectMaps();
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 

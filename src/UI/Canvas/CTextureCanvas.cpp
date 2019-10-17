@@ -111,11 +111,8 @@ bool CTextureCanvas::patchSelected(int index)
 // -----------------------------------------------------------------------------
 void CTextureCanvas::clearTexture()
 {
-	// Stop listening to the current texture (if it exists)
-	if (texture_)
-		stopListening(texture_);
-
-	// Clear texture;
+	// Clear texture
+	sc_patches_modified_.disconnect();
 	texture_ = nullptr;
 
 	// Clear patch textures
@@ -197,8 +194,23 @@ bool CTextureCanvas::openTexture(CTexture* tex, Archive* parent)
 		selected_patches_.push_back(false);
 	}
 
-	// Listen to it
-	listenTo(tex);
+	// Update when texture patches are modified
+	sc_patches_modified_ = tex->signals().patches_modified.connect([this](CTexture&) {
+		// Reload patches
+		selected_patches_.clear();
+		clearPatchTextures();
+		hilight_patch_ = -1;
+		for (uint32_t a = 0; a < texture_->nPatches(); a++)
+		{
+			// Create GL texture
+			patch_textures_.push_back(OpenGL::Texture::create());
+
+			// Set selection
+			selected_patches_.push_back(false);
+		}
+
+		redraw(true);
+	});
 
 	// Redraw
 	Refresh();
@@ -789,36 +801,6 @@ bool CTextureCanvas::swapPatches(size_t p1, size_t p2)
 
 	// Swap patches in the texture itself
 	return texture_->swapPatches(p1, p2);
-}
-
-// -----------------------------------------------------------------------------
-// Called when the texture canvas recieves an announcement from the texture
-// being displayed
-// -----------------------------------------------------------------------------
-void CTextureCanvas::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	// If the announcer isn't this canvas' texture, ignore it
-	if (announcer != texture_)
-		return;
-
-	// Patches modified
-	if (event_name == "patches_modified")
-	{
-		// Reload patches
-		selected_patches_.clear();
-		clearPatchTextures();
-		hilight_patch_ = -1;
-		for (uint32_t a = 0; a < texture_->nPatches(); a++)
-		{
-			// Create GL texture
-			patch_textures_.push_back(OpenGL::Texture::create());
-
-			// Set selection
-			selected_patches_.push_back(false);
-		}
-
-		redraw(true);
-	}
 }
 
 // -----------------------------------------------------------------------------

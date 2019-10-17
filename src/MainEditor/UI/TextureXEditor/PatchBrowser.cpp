@@ -35,6 +35,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "PatchBrowser.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
@@ -162,8 +163,15 @@ PatchBrowser::PatchBrowser(wxWindow* parent) : BrowserWindow(parent)
 	items_root_->addChild("Custom");
 	items_root_->addChild("Unknown");
 
-	// Init palette chooser
-	listenTo(theMainWindow->paletteChooser());
+	// Update when main palette changed
+	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]() {
+		// Update palette
+		palette_.copyPalette(theMainWindow->paletteChooser()->selectedPalette());
+
+		// Reload all items
+		reloadItems();
+		Refresh();
+	});
 
 	// Set dialog title
 	wxTopLevelWindow::SetTitle("Browse Patches");
@@ -212,10 +220,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 	}
 
 	// Update variables
-	if (patch_table_)
-		stopListening(patch_table_);
 	patch_table_ = table;
-	listenTo(table);
 
 	// Open 'all' node
 	openTree(items_root_);
@@ -469,23 +474,4 @@ void PatchBrowser::selectPatch(int pt_index)
 void PatchBrowser::selectPatch(const wxString& name)
 {
 	selectItem(name);
-}
-
-// -----------------------------------------------------------------------------
-// Handles any announcements
-// -----------------------------------------------------------------------------
-void PatchBrowser::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	if (announcer != theMainWindow->paletteChooser())
-		return;
-
-	if (event_name == "main_palette_changed")
-	{
-		// Update palette
-		palette_.copyPalette(theMainWindow->paletteChooser()->selectedPalette());
-
-		// Reload all items
-		reloadItems();
-		Refresh();
-	}
 }

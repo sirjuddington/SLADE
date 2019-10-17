@@ -65,8 +65,8 @@ CVAR(Bool, gfx_arc, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id), scale_{ UI::scaleFactor() }
 {
-	// Listen to the image for changes
-	listenTo(&image_);
+	// Update texture when the image changes
+	sc_image_changed_ = image_.signals().image_changed.connect(&GfxCanvas::updateImageTexture, this);
 
 	// Bind events
 	Bind(wxEVT_LEFT_DOWN, &GfxCanvas::onMouseLeftDown, this);
@@ -521,16 +521,6 @@ void GfxCanvas::generateBrushShadow()
 	// Load it as a GL texture
 	OpenGL::Texture::clear(tex_brush_);
 	tex_brush_ = OpenGL::Texture::createFromImage(img);
-}
-
-// -----------------------------------------------------------------------------
-// Called when an announcement is recieved from the image that this GfxCanvas is
-// displaying
-// -----------------------------------------------------------------------------
-void GfxCanvas::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	if (announcer == &image_ && event_name == "image_changed")
-		update_texture_ = true;
 }
 
 

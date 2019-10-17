@@ -107,7 +107,7 @@ bool LfdArchive::open(MemChunk& mc)
 	uint32_t num_lumps = dir_len / 16;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read each entry
 	UI::setSplashProgressMessage("Reading lfd archive data");
@@ -141,7 +141,6 @@ bool LfdArchive::open(MemChunk& mc)
 		{
 			Log::error("LfdArchive::open: lfd archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
 			return false;
 		}
 
@@ -195,9 +194,8 @@ bool LfdArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 

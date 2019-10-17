@@ -9,7 +9,7 @@
 #include "TextureXPanel.h"
 #include "UI/Controls/STabCtrl.h"
 
-class TextureXEditor : public wxPanel, public Listener
+class TextureXEditor : public wxPanel
 {
 public:
 	TextureXEditor(wxWindow* parent);
@@ -58,7 +58,11 @@ private:
 	bool pb_update_       = true;
 	bool pnames_modified_ = false;
 
+	// Signal connections
+	sigslot::scoped_connection sc_resources_updated_;
+	sigslot::scoped_connection sc_palette_changed_;
+	sigslot::scoped_connection sc_ptable_modified_;
+
 	// Events
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
 	void onShow(wxShowEvent& e);
 };

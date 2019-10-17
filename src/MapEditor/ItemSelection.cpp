@@ -585,7 +585,7 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 
 	// Get selected objects
 	vector<MapObject*> list;
-	MapObject* o;
+	MapObject*         o;
 	for (auto& item : selection_)
 		if ((o = context_->map().object(type, item.index)))
 			list.push_back(o);

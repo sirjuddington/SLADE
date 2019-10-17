@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive/Archive.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/All.h"
 #include "General/Misc.h"

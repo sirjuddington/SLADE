@@ -59,40 +59,10 @@ std::map<string, PortDef> port_defs;
 PortDef                   port_def_unknown;
 ZScript::Definitions      zscript_base;
 ZScript::Definitions      zscript_custom;
-unique_ptr<Listener>      listener;
 } // namespace Game
 CVAR(String, game_configuration, "", CVar::Flag::Save)
 CVAR(String, port_configuration, "", CVar::Flag::Save)
 CVAR(String, zdoom_pk3_path, "", CVar::Flag::Save)
-
-
-// -----------------------------------------------------------------------------
-// GameListener Class
-//
-// A Listener to handle custom definition updates resulting from archives being
-// opened or closed, since Game isn't a class
-// -----------------------------------------------------------------------------
-namespace Game
-{
-class GameListener : public Listener
-{
-public:
-	GameListener()
-	{
-		// Listen to archive manager
-		listenTo(&App::archiveManager());
-	}
-
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override
-	{
-		if (announcer == &App::archiveManager())
-		{
-			if (event_name == "archive_added" || event_name == "archive_closed")
-				updateCustomDefinitions();
-		}
-	}
-};
-} // namespace Game
 
 
 // -----------------------------------------------------------------------------
@@ -468,8 +438,9 @@ void Game::init()
 		thread.detach();
 	}
 
-	// Init game listener
-	listener = std::make_unique<GameListener>();
+	// Update custom definitions when an archive is opened or closed
+	App::archiveManager().signals().archive_added.connect([](unsigned) { updateCustomDefinitions(); });
+	App::archiveManager().signals().archive_closed.connect([](unsigned) { updateCustomDefinitions(); });
 }
 
 // -----------------------------------------------------------------------------

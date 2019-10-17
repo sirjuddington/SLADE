@@ -1,12 +1,11 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
 #include "Graphics/Palette/Palette.h"
 
 class Archive;
 class ArchiveEntry;
 
-class PaletteChooser : public wxChoice, public Announcer
+class PaletteChooser : public wxChoice
 {
 public:
 	PaletteChooser(wxWindow* parent, int id);
@@ -19,6 +18,14 @@ public:
 	void     onPaletteChanged(wxCommandEvent& e);
 	void     addPalette(wxString name);
 
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<> palette_changed;
+	};
+	Signals& signals() { return signals_; }
+
 private:
 	Palette pal_global_;
+	Signals signals_;
 };

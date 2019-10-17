@@ -34,6 +34,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextLanguage.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/ZScript.h"
 #include "Utility/Parser.h"

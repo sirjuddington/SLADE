@@ -1,6 +1,5 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
 #include "UI/Browser/BrowserWindow.h"
 
 class Archive;
@@ -41,7 +40,7 @@ private:
 	wxString nspace_;
 };
 
-class PatchBrowser : public BrowserWindow, Listener
+class PatchBrowser : public BrowserWindow
 {
 public:
 	PatchBrowser(wxWindow* parent);
@@ -59,6 +58,6 @@ private:
 	PatchTable* patch_table_ = nullptr;
 	bool        full_path_   = false; // Texture definition format supports full path texture and/or patch names
 
-	// Events
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
+	// Signal connections
+	sigslot::scoped_connection sc_palette_changed_;
 };

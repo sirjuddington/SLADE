@@ -114,8 +114,7 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 		wxEVT_BUTTON, [&](wxCommandEvent& e) { text_editor_.replaceCurrent(findText(), replaceText(), findFlags()); });
 
 	// Replace All button clicked
-	btn_replace_all_->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e)
-	{
+	btn_replace_all_->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) {
 		auto n_replaced = text_editor_.replaceAll(findText(), replaceText(), findFlags());
 		wxMessageBox(wxString::Format("Replaced %d occurrence(s)", n_replaced), "Replace All");
 	});

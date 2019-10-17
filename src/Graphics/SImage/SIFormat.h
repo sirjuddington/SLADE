@@ -56,7 +56,7 @@ public:
 			image.clear();
 
 		// Announce
-		image.announce("image_changed");
+		image.signals_.image_changed();
 
 		return ok;
 	}

@@ -271,7 +271,7 @@ bool TarArchive::open(MemChunk& mc)
 	mc.seek(0, SEEK_SET);
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 	UI::setSplashProgressMessage("Reading tar archive data");
 
 	// Two consecutive empty blocks mark the end of the file
@@ -386,9 +386,8 @@ bool TarArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 

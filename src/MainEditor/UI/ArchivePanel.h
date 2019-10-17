@@ -1,6 +1,5 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
 #include "General/SAction.h"
 #include "General/UndoRedo.h"
 #include "MainEditor/ExternalEditManager.h"
@@ -10,7 +9,7 @@ class wxStaticText;
 class wxBitmapButton;
 class EntryPanel;
 
-class ArchivePanel : public wxPanel, public Listener, SActionHandler
+class ArchivePanel : public wxPanel, SActionHandler
 {
 public:
 	enum class NewEntry
@@ -107,9 +106,6 @@ public:
 	// SAction handler
 	bool handleAction(string_view id) override;
 
-	// Listener
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
-
 	// Static functions
 	static EntryPanel* createPanelForEntry(ArchiveEntry* entry, wxWindow* parent);
 
@@ -147,6 +143,10 @@ protected:
 	EntryPanel* map_area_      = nullptr;
 	EntryPanel* audio_area_    = nullptr;
 	EntryPanel* data_area_     = nullptr;
+
+	// Signal connections
+	sigslot::scoped_connection sc_archive_saved_;
+	sigslot::scoped_connection sc_entry_removed_;
 
 	// Events
 	void         onEntryListSelectionChange(wxCommandEvent& e);

@@ -150,8 +150,11 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
 	btn_previmg_->Show(false);
 	text_curimg_->Show(false);
 
-	// Palette chooser
-	listenTo(theMainWindow->paletteChooser());
+	// Refresh when main palette changed
+	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]() {
+		updateImagePalette();
+		gfx_canvas_->Refresh();
+	});
 
 	// Custom menu
 	menu_custom_ = new wxMenu();
@@ -1143,21 +1146,6 @@ void GfxEntryPanel::onGfxPixelsChanged(wxEvent& e)
 	// Set changed
 	image_data_modified_ = true;
 	setModified();
-}
-
-// -----------------------------------------------------------------------------
-// Handles any announcements
-// -----------------------------------------------------------------------------
-void GfxEntryPanel::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	if (announcer != theMainWindow->paletteChooser())
-		return;
-
-	if (event_name == "main_palette_changed")
-	{
-		updateImagePalette();
-		gfx_canvas_->Refresh();
-	}
 }
 
 // -----------------------------------------------------------------------------

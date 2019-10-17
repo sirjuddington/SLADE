@@ -161,7 +161,7 @@ bool HogArchive::open(MemChunk& mc)
 		return false;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Iterate through files to see if the size seems okay
 	UI::setSplashProgressMessage("Reading hog archive data");
@@ -178,7 +178,6 @@ bool HogArchive::open(MemChunk& mc)
 		{
 			Log::error("HogArchive::open: hog archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
 			return false;
 		}
 
@@ -243,9 +242,8 @@ bool HogArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 

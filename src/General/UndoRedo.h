@@ -1,7 +1,5 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
-
 class UndoStep
 {
 public:
@@ -38,7 +36,7 @@ private:
 };
 
 class SLADEMap;
-class UndoManager : public Announcer
+class UndoManager
 {
 public:
 	UndoManager(SLADEMap* map = nullptr) : map_{ map } {}
@@ -62,6 +60,15 @@ public:
 	void clear();
 	bool createMergedLevel(UndoManager* manager, string_view name);
 
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<> level_recorded;
+		sigslot::signal<> undo;
+		sigslot::signal<> redo;
+	};
+	Signals& signals() { return signals_; }
+
 private:
 	vector<unique_ptr<UndoLevel>> undo_levels_;
 	unique_ptr<UndoLevel>         current_level_;
@@ -69,6 +76,7 @@ private:
 	int                           reset_point_         = -1;
 	bool                          undo_running_        = false;
 	SLADEMap*                     map_                 = nullptr;
+	Signals                       signals_;
 };
 
 namespace UndoRedo

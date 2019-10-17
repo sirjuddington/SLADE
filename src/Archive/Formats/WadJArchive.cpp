@@ -91,7 +91,7 @@ bool WadJArchive::open(MemChunk& mc)
 	}
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
@@ -156,7 +156,6 @@ bool WadJArchive::open(MemChunk& mc)
 			Log::error("WadJArchive::open: Wad archive is invalid or corrupt");
 			Global::error = fmt::format(
 				"Archive is invalid and/or corrupt (lump {}: {} data goes past end of file)", d, name);
-			setMuted(false);
 			return false;
 		}
 
@@ -232,9 +231,8 @@ bool WadJArchive::open(MemChunk& mc)
 	detectMaps();
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 

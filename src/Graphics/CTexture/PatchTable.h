@@ -1,11 +1,10 @@
 #pragma once
 
 #include "Archive/ArchiveEntry.h"
-#include "General/ListenerAnnouncer.h"
 
 class CTexture;
 
-class PatchTable : public Announcer
+class PatchTable
 {
 public:
 	struct Patch
@@ -53,8 +52,16 @@ public:
 	void clearPatchUsage();
 	void updatePatchUsage(CTexture* tex);
 
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<> modified;
+	};
+	Signals& signals() { return signals_; }
+
 private:
 	Archive*      parent_ = nullptr;
 	vector<Patch> patches_;
 	Patch         patch_invalid_{ "INVALID_PATCH" };
+	Signals       signals_;
 };

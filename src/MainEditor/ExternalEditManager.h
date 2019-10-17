@@ -11,7 +11,7 @@ public:
 	ExternalEditManager() = default;
 	~ExternalEditManager();
 
-	bool openEntryExternal(ArchiveEntry* entry, string_view editor, string_view category);
+	bool openEntryExternal(ArchiveEntry& entry, string_view editor, string_view category);
 
 private:
 	vector<ExternalEditFileMonitor*> file_monitors_;

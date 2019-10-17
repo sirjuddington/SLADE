@@ -141,6 +141,9 @@
 // fmt
 #include "thirdparty/fmt/fmt/core.h"
 
+// Sigslot
+#include "thirdparty/sigslot/signal.hpp"
+
 // C++
 #include <map>
 #include <vector>

@@ -53,7 +53,7 @@ UndoListView::UndoListView(wxWindow* parent, UndoManager* manager) : VirtualList
 	if (manager)
 	{
 		SetItemCount(manager->nUndoLevels());
-		listenTo(manager);
+		connectManagerSignals();
 	}
 }
 
@@ -111,23 +111,8 @@ void UndoListView::updateItemAttr(long item, long column, long index) const
 // -----------------------------------------------------------------------------
 void UndoListView::setManager(UndoManager* manager)
 {
-	if (manager_)
-		stopListening(manager_);
-
 	manager_ = manager;
-	listenTo(manager);
-
-	updateFromManager();
-}
-
-// -----------------------------------------------------------------------------
-// Called when an announcement is received from the undo manager
-// -----------------------------------------------------------------------------
-void UndoListView::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	if (announcer != manager_)
-		return;
-
+	connectManagerSignals();
 	updateFromManager();
 }
 
@@ -142,6 +127,16 @@ void UndoListView::updateFromManager()
 	int current_index = manager_->currentIndex();
 	if (current_index >= 0)
 		EnsureVisible(current_index);
+}
+
+// -----------------------------------------------------------------------------
+// Connect to the current UndoManager's signals
+// -----------------------------------------------------------------------------
+void UndoListView::connectManagerSignals()
+{
+	sc_recorded_ = manager_->signals().level_recorded.connect([this]() { updateFromManager(); });
+	sc_undo_     = manager_->signals().undo.connect([this]() { updateFromManager(); });
+	sc_redo_     = manager_->signals().redo.connect([this]() { updateFromManager(); });
 }
 
 

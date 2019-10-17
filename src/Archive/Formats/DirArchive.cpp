@@ -84,7 +84,7 @@ bool DirArchive::open(string_view filename)
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	UI::setSplashProgressMessage("Reading files");
 	for (unsigned a = 0; a < files.size(); a++)
@@ -145,7 +145,7 @@ bool DirArchive::open(string_view filename)
 		entry->setState(ArchiveEntry::State::Unmodified);
 
 	// Enable announcements
-	setMuted(false);
+	sig_blocker.unblock();
 
 	// Setup variables
 	filename_ = filename;

@@ -93,7 +93,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	}
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	uint16_t num_entries = 0;
 	mc.read(&num_entries, sizeof num_entries);
@@ -124,7 +124,6 @@ bool ChasmBinArchive::open(MemChunk& mc)
 		{
 			Log::error("ChasmBinArchive::open: Bin archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
 			return false;
 		}
 
@@ -178,9 +177,8 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	UI::setSplashProgressMessage("");
 

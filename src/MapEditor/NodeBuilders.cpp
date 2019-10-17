@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "NodeBuilders.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"

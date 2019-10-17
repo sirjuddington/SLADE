@@ -30,6 +30,7 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "App.h"
 #ifdef USE_SFML_RENDERWINDOW
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"

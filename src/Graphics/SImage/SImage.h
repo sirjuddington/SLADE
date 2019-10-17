@@ -1,12 +1,11 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
 #include "Graphics/Palette/Palette.h"
 
 class Translation;
 class SIFormat;
 
-class SImage : public Announcer
+class SImage
 {
 	friend class SIFormat;
 
@@ -73,6 +72,7 @@ public:
 
 	SImage() = default;
 	SImage(Type type) : type_{ type } {}
+	SImage(const SImage& img);
 	virtual ~SImage() = default;
 
 	bool isValid() const { return (width_ > 0 && height_ > 0 && data_.data()); }
@@ -161,6 +161,14 @@ public:
 	bool adjust();
 	bool mirrorpad();
 
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<int, int> offsets_changed;
+		sigslot::signal<>         image_changed;
+	};
+	Signals& signals() { return signals_; }
+
 private:
 	int       width_  = 0;
 	int       height_ = 0;
@@ -172,6 +180,7 @@ private:
 	int       offset_x_    = 0;
 	int       offset_y_    = 0;
 	SIFormat* format_      = nullptr;
+	Signals   signals_;
 
 	// For multi-image files
 	int imgindex_  = 0;

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Archive/Formats/DirArchive.h"
-#include "General/ListenerAnnouncer.h"
 #include "General/SAction.h"
+#include "General/Sigslot.h"
 #include "UI/Controls/DockPanel.h"
 #include "UI/Lists/ListView.h"
 
@@ -70,7 +70,7 @@ public:
 	void onItemActivated(wxTreeEvent& e);
 };
 
-class ArchiveManagerPanel : public DockPanel, Listener, SActionHandler
+class ArchiveManagerPanel : public DockPanel, SActionHandler
 {
 public:
 	ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives);
@@ -155,8 +155,6 @@ public:
 	vector<int> selectedBookmarks() const;
 	vector<int> selectedFiles() const;
 
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
-
 	// Event handlers
 	void onListArchivesChanged(wxListEvent& e);
 	void onListArchivesActivated(wxListEvent& e);
@@ -185,4 +183,9 @@ private:
 	bool             asked_save_unchanged_        = false;
 	bool             checked_dir_archive_changes_ = false;
 	vector<Archive*> checking_archives_;
+
+	// Signal connections
+	ScopedConnectionList signal_connections;
+
+	void connectSignals();
 };

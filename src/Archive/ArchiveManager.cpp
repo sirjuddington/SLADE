@@ -60,14 +60,6 @@ CVAR(Bool, auto_open_wads_root, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
-// ArchiveManager class destructor
-// -----------------------------------------------------------------------------
-ArchiveManager::~ArchiveManager()
-{
-	clearAnnouncers();
-}
-
-// -----------------------------------------------------------------------------
 // Checks that the given directory is actually a suitable resource directory
 // for SLADE 3, and not just a directory named 'res' that happens to be there
 // (possibly because the user installed SLADE in the same folder as an
@@ -193,11 +185,14 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 		n_archive.resource = true;
 		open_archives_.push_back(n_archive);
 
-		// Listen to the archive
-		listenTo(archive.get());
+		// Emit archive changed/saved signal when received from the archive
+		archive->signals().modified.connect(
+			[this](Archive& archive) { signals_.archive_modified(archiveIndex(&archive)); });
+		archive->signals().saved.connect(
+			[this](Archive& archive) { signals_.archive_saved(archiveIndex(&archive)); });
 
 		// Announce the addition
-		announce("archive_added");
+		signals_.archive_added(open_archives_.size() - 1);
 
 		// Add to resource manager
 		App::resources().addArchive(archive.get());
@@ -287,12 +282,7 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 	{
 		// Announce open
 		if (!silent)
-		{
-			MemChunk mc;
-			uint32_t index = archiveIndex(new_archive.get());
-			mc.write(&index, 4);
-			announce("archive_opened", mc);
-		}
+			signals_.archive_opened(archiveIndex(new_archive.get()));
 
 		return new_archive;
 	}
@@ -359,16 +349,12 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 		if (manage)
 		{
 			// Add the archive
+			auto index = open_archives_.size();
 			addArchive(new_archive);
 
 			// Announce open
 			if (!silent)
-			{
-				MemChunk mc;
-				uint32_t index = archiveIndex(new_archive.get());
-				mc.write(&index, 4);
-				announce("archive_opened", mc);
-			}
+				signals_.archive_opened(index);
 
 			// Add to recent files
 			addRecentFile(filename);
@@ -400,12 +386,7 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 		{
 			// Announce open
 			if (!silent)
-			{
-				MemChunk mc;
-				uint32_t index = archiveIndex(open_archive.archive.get());
-				mc.write(&index, 4);
-				announce("archive_opened", mc);
-			}
+				signals_.archive_opened(archiveIndex(open_archive.archive.get()));
 
 			return open_archive.archive;
 		}
@@ -480,16 +461,12 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 				open_archives_[index_parent].open_children.emplace_back(new_archive);
 
 			// Add the new archive
+			auto index = open_archives_.size();
 			addArchive(new_archive);
 
 			// Announce open
 			if (!silent)
-			{
-				MemChunk mc;
-				uint32_t index = archiveIndex(new_archive.get());
-				mc.write(&index, 4);
-				announce("archive_opened", mc);
-			}
+				signals_.archive_opened(index);
 
 			entry->lock();
 		}
@@ -518,12 +495,7 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 	{
 		// Announce open
 		if (!silent)
-		{
-			MemChunk mc;
-			uint32_t index = archiveIndex(new_archive.get());
-			mc.write(&index, 4);
-			announce("archive_opened", mc);
-		}
+			signals_.archive_opened(archiveIndex(new_archive.get()));
 
 		return new_archive;
 	}
@@ -537,16 +509,12 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 		if (manage)
 		{
 			// Add the archive
+			auto index = open_archives_.size();
 			addArchive(new_archive);
 
 			// Announce open
 			if (!silent)
-			{
-				MemChunk mc;
-				uint32_t index = archiveIndex(new_archive.get());
-				mc.write(&index, 4);
-				announce("archive_opened", mc);
-			}
+				signals_.archive_opened(index);
 
 			// Add to recent files
 			addRecentFile(dir);
@@ -604,10 +572,7 @@ bool ArchiveManager::closeArchive(int index)
 		return false;
 
 	// Announce archive closing
-	MemChunk mc;
-	int32_t  temp = index;
-	mc.write(&temp, 4);
-	announce("archive_closing", mc);
+	signals_.archive_closing(index);
 
 	// Delete any bookmarked entries contained in the archive
 	deleteBookmarksInArchive(open_archives_[index].archive.get());
@@ -658,7 +623,7 @@ bool ArchiveManager::closeArchive(int index)
 	open_archives_.erase(open_archives_.begin() + index);
 
 	// Announce closed
-	announce("archive_closed", mc);
+	signals_.archive_closed(index);
 
 	return true;
 }
@@ -863,7 +828,7 @@ bool ArchiveManager::addBaseResourcePath(string_view path)
 	base_resource_paths_.emplace_back(path);
 
 	// Announce
-	announce("base_resource_path_added");
+	signals_.base_res_path_added(base_resource_paths_.size() - 1);
 
 	return true;
 }
@@ -889,7 +854,7 @@ void ArchiveManager::removeBaseResourcePath(unsigned index)
 	base_resource_paths_.erase(base_resource_paths_.begin() + index);
 
 	// Announce
-	announce("base_resource_path_removed");
+	signals_.base_res_path_removed(index);
 }
 
 // -----------------------------------------------------------------------------
@@ -924,7 +889,7 @@ bool ArchiveManager::openBaseResource(int index)
 	if (index < 0 || (unsigned)index >= base_resource_paths_.size())
 	{
 		base_resource = -1;
-		announce("base_resource_changed");
+		signals_.base_res_current_cleared();
 		return false;
 	}
 
@@ -944,12 +909,12 @@ bool ArchiveManager::openBaseResource(int index)
 		base_resource = index;
 		UI::hideSplash();
 		App::resources().addArchive(base_resource_archive_.get());
-		announce("base_resource_changed");
+		signals_.base_res_current_changed(index);
 		return true;
 	}
 	base_resource_archive_ = nullptr;
 	UI::hideSplash();
-	announce("base_resource_changed");
+	signals_.base_res_current_changed(index);
 	return false;
 }
 
@@ -1080,7 +1045,7 @@ void ArchiveManager::addRecentFile(string_view path)
 			recent_files_.insert(recent_files_.begin(), file_path);
 
 			// Announce
-			announce("recent_files_changed");
+			signals_.recent_files_changed();
 
 			return;
 		}
@@ -1094,7 +1059,7 @@ void ArchiveManager::addRecentFile(string_view path)
 		recent_files_.pop_back();
 
 	// Announce
-	announce("recent_files_changed");
+	signals_.recent_files_changed();
 }
 
 // -----------------------------------------------------------------------------
@@ -1103,7 +1068,7 @@ void ArchiveManager::addRecentFile(string_view path)
 void ArchiveManager::addRecentFiles(const vector<string>& paths)
 {
 	// Mute annoucements
-	setMuted(true);
+	signals_.recent_files_changed.block();
 
 	// Clear existing list
 	recent_files_.clear();
@@ -1113,8 +1078,8 @@ void ArchiveManager::addRecentFiles(const vector<string>& paths)
 		addRecentFile(path);
 
 	// Announce
-	setMuted(false);
-	announce("recent_files_changed");
+	signals_.recent_files_changed.unblock();
+	signals_.recent_files_changed();
 }
 
 // -----------------------------------------------------------------------------
@@ -1127,7 +1092,7 @@ void ArchiveManager::removeRecentFile(string_view path)
 		if (recent_files_[a] == path)
 		{
 			recent_files_.erase(recent_files_.begin() + a);
-			announce("recent_files_changed");
+			signals_.recent_files_changed();
 			return;
 		}
 	}
@@ -1149,7 +1114,7 @@ void ArchiveManager::addBookmark(const shared_ptr<ArchiveEntry>& entry)
 	bookmarks_.push_back(entry);
 
 	// Announce
-	announce("bookmarks_changed");
+	signals_.bookmarks_changed();
 }
 
 // -----------------------------------------------------------------------------
@@ -1166,7 +1131,7 @@ bool ArchiveManager::deleteBookmark(ArchiveEntry* entry)
 			bookmarks_.erase(bookmarks_.begin() + a);
 
 			// Announce
-			announce("bookmarks_changed");
+			signals_.bookmarks_changed();
 
 			return true;
 		}
@@ -1189,7 +1154,7 @@ bool ArchiveManager::deleteBookmark(unsigned index)
 	bookmarks_.erase(bookmarks_.begin() + index);
 
 	// Announce
-	announce("bookmarks_changed");
+	signals_.bookmarks_changed();
 
 	return true;
 }
@@ -1216,7 +1181,7 @@ bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 	if (removed)
 	{
 		// Announce
-		announce("bookmarks_changed");
+		signals_.bookmarks_changed();
 		return true;
 	}
 	else
@@ -1266,7 +1231,7 @@ bool ArchiveManager::deleteBookmarksInDir(ArchiveDir* node)
 	if (removed)
 	{
 		// Announce
-		announce("bookmarks_changed");
+		signals_.bookmarks_changed();
 		return true;
 	}
 	else
@@ -1283,36 +1248,6 @@ ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
 		return nullptr;
 
 	return bookmarks_[index].lock().get();
-}
-
-// -----------------------------------------------------------------------------
-// Called when an announcement is recieved from one of the archives in the list
-// -----------------------------------------------------------------------------
-void ArchiveManager::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	// Reset event data for reading
-	event_data.seek(0, SEEK_SET);
-
-	// Check that the announcement came from an archive in the list
-	int32_t index = archiveIndex((Archive*)announcer);
-	if (index >= 0)
-	{
-		// If the archive was saved
-		if (event_name == "saved")
-		{
-			MemChunk mc;
-			mc.write(&index, 4);
-			announce("archive_saved", mc);
-		}
-
-		// If the archive was modified
-		if (event_name == "modified" || event_name == "entry_modified")
-		{
-			MemChunk mc;
-			mc.write(&index, 4);
-			announce("archive_modified", mc);
-		}
-	}
 }
 
 

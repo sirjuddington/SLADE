@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Archive/Archive.h"
-#include "General/ListenerAnnouncer.h"
 #include "Graphics/CTexture/CTexture.h"
 
 class ResourceManager;
@@ -69,7 +68,7 @@ private:
 typedef std::map<string, EntryResource>   EntryResourceMap;
 typedef std::map<string, TextureResource> TextureResourceMap;
 
-class ResourceManager : public Listener, public Announcer
+class ResourceManager
 {
 public:
 	ResourceManager()  = default;
@@ -78,8 +77,8 @@ public:
 	void addArchive(Archive* archive);
 	void removeArchive(Archive* archive);
 
-	void addEntry(shared_ptr<ArchiveEntry>& entry, bool log = false);
-	void removeEntry(shared_ptr<ArchiveEntry>& entry, bool log = false, bool full_check = false);
+	void addEntry(shared_ptr<ArchiveEntry>& entry);
+	void removeEntry(shared_ptr<ArchiveEntry>& entry, string_view entry_name = {}, bool full_check = false);
 
 	void listAllPatches();
 	void putAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
@@ -97,7 +96,12 @@ public:
 	CTexture*     getTexture(string_view texture, Archive* priority = nullptr, Archive* ignore = nullptr);
 	uint16_t      getTextureHash(string_view name) const;
 
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<> resources_updated;
+	};
+	Signals& signals() { return signals_; }
 
 	static string doom64TextureName(uint16_t hash) { return doom64_hash_table_[hash]; }
 
@@ -114,6 +118,9 @@ private:
 	EntryResourceMap satextures_fp_;
 	// EntryResourceMap	satextures_fp_only_; // Probably not needed
 	TextureResourceMap textures_; // Composite textures (defined in a TEXTUREx/TEXTURES lump)
+	Signals            signals_;
 
 	static string doom64_hash_table_[65536];
+
+	void updateEntry(ArchiveEntry& entry, bool remove, bool add);
 };

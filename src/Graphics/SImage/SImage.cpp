@@ -58,6 +58,25 @@ EXTERN_CVAR(Float, col_greyscale_b)
 
 
 // -----------------------------------------------------------------------------
+// SImage class copy constructor
+// -----------------------------------------------------------------------------
+SImage::SImage(const SImage& img) :
+	width_{ img.width_ },
+	height_{ img.height_ },
+	type_{ img.type_ },
+	palette_{ img.palette_ },
+	has_palette_{ img.has_palette_ },
+	offset_x_{ img.offset_x_ },
+	offset_y_{ img.offset_y_ },
+	format_{ img.format_ },
+	imgindex_{ img.imgindex_ },
+	numimages_{ img.numimages_ }
+{
+	data_.importMem(img.data_);
+	mask_.importMem(img.mask_);
+}
+
+// -----------------------------------------------------------------------------
 // Loads the image as RGBA data into [mc].
 // Returns false if image is invalid, true otherwise
 // -----------------------------------------------------------------------------
@@ -308,7 +327,7 @@ void SImage::setXOffset(int offset)
 	offset_x_ = offset;
 
 	// Announce change
-	announce("offsets_changed");
+	signals_.offsets_changed(offset_x_, offset_y_);
 }
 
 // -----------------------------------------------------------------------------
@@ -320,7 +339,7 @@ void SImage::setYOffset(int offset)
 	offset_y_ = offset;
 
 	// Announce change
-	announce("offsets_changed");
+	signals_.offsets_changed(offset_x_, offset_y_);
 }
 
 // -----------------------------------------------------------------------------
@@ -403,7 +422,7 @@ void SImage::clear()
 	offset_y_ = 0;
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 }
 
 // -----------------------------------------------------------------------------
@@ -433,7 +452,7 @@ void SImage::fillAlpha(uint8_t alpha)
 		data_.fillData(alpha);
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 }
 
 // -----------------------------------------------------------------------------
@@ -564,7 +583,7 @@ bool SImage::copyImage(SImage* image)
 		mask_.importMem(image->mask_);
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	return true;
 }
@@ -612,7 +631,7 @@ bool SImage::convertRGBA(Palette* pal)
 	has_palette_ = false;
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	// Done
 	return true;
@@ -674,7 +693,7 @@ bool SImage::convertPaletted(Palette* pal_target, Palette* pal_current)
 	has_palette_ = true;
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	// Success
 	return true;
@@ -712,7 +731,7 @@ bool SImage::convertAlphaMap(AlphaSource alpha_source, Palette* pal)
 	}
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	return true;
 }
@@ -759,7 +778,7 @@ bool SImage::maskFromColour(ColRGBA colour, Palette* pal)
 		return false;
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	return true;
 }
@@ -799,7 +818,7 @@ bool SImage::maskFromBrightness(Palette* pal)
 	// ALPHAMASK type is already a brightness mask
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	return true;
 }
@@ -849,7 +868,7 @@ bool SImage::cutoffMask(uint8_t threshold)
 		return false;
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	return true;
 }
@@ -887,7 +906,7 @@ bool SImage::setPixel(int x, int y, ColRGBA colour, Palette* pal)
 	}
 
 	// Announce
-	announce("image_changed");
+	signals_.image_changed();
 
 	return true;
 }
@@ -933,7 +952,7 @@ bool SImage::setPixel(int x, int y, uint8_t pal_index, uint8_t alpha)
 		return false;
 
 	// Announce
-	announce("image_changed");
+	signals_.image_changed();
 
 	// Invalid type
 	return true;
@@ -1047,7 +1066,7 @@ bool SImage::rotate(int angle)
 	height_ = new_height;
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -1100,7 +1119,7 @@ bool SImage::mirror(bool vertical)
 		mask_.importMem(new_mask.data(), new_mask.size());
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -1170,7 +1189,7 @@ bool SImage::crop(long x1, long y1, long x2, long y2)
 	height_ = new_height;
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -1230,7 +1249,7 @@ bool SImage::resize(int nwidth, int nheight)
 		mask_.importMem(new_mask.data(), new_mask.size());
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	return true;
 }
@@ -1249,7 +1268,7 @@ bool SImage::setImageData(const vector<uint8_t>& ndata, int nwidth, int nheight,
 		data_.importMem(ndata.data(), ndata.size());
 
 		// Announce change
-		announce("image_changed");
+		signals_.image_changed();
 
 		return true;
 	}

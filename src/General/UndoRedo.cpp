@@ -196,7 +196,7 @@ void UndoManager::endRecord(bool success)
 	// Clear current undo manager
 	current_undo_manager = nullptr;
 
-	announce("level_recorded");
+	signals_.level_recorded();
 }
 
 // -----------------------------------------------------------------------------
@@ -249,7 +249,7 @@ string UndoManager::undo()
 	current_undo_manager = nullptr;
 	current_level_index_--;
 
-	announce("undo");
+	signals_.undo();
 
 	return level->name();
 }
@@ -276,7 +276,7 @@ string UndoManager::redo()
 	undo_running_        = false;
 	current_undo_manager = nullptr;
 
-	announce("redo");
+	signals_.redo();
 
 	return level->name();
 }

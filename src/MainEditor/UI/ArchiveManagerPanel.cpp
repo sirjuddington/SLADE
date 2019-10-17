@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ArchiveManagerPanel.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/DirArchive.h"
 #include "ArchivePanel.h"
@@ -331,8 +332,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 		wxEVT_AUINOTEBOOK_PAGE_CHANGED, [&](wxAuiNotebookEvent&) { am_current_tab = stc_tabs_->GetSelection(); });
 	Bind(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, &ArchiveManagerPanel::onDirArchiveCheckCompleted, this);
 
-	// Listen to the ArchiveManager
-	listenTo(&App::archiveManager());
+	connectSignals();
 
 	// Init layout
 	wxWindowBase::Layout();
@@ -1564,89 +1564,6 @@ vector<int> ArchiveManagerPanel::selectedBookmarks() const
 }
 
 // -----------------------------------------------------------------------------
-// Called when an announcement is recieved from the Archive Manager
-// -----------------------------------------------------------------------------
-void ArchiveManagerPanel::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	// Reset event data for reading
-	event_data.seek(0, SEEK_SET);
-
-	// If an archive is about to be closed
-	if (event_name == "archive_closing")
-	{
-		int32_t index = -1;
-		event_data.read(&index, 4);
-
-		// Close any related tabs
-		closeTextureTab(index);
-		closeEntryTabs(App::archiveManager().getArchive(index).get());
-		closeTab(index);
-	}
-
-	// If an archive was closed
-	if (event_name == "archive_closed")
-	{
-		int32_t index = -1;
-		event_data.read(&index, 4);
-		refreshArchiveList();
-	}
-
-	// If an archive was added
-	if (event_name == "archive_added")
-	{
-		int index = App::archiveManager().numArchives() - 1;
-		list_archives_->addItem(index, wxEmptyString);
-		updateOpenListItem(index);
-	}
-
-	// If an archive was opened
-	if (event_name == "archive_opened")
-	{
-		uint32_t index = -1;
-		event_data.read(&index, 4);
-		openTab(index);
-	}
-
-	// If an archive was saved
-	if (event_name == "archive_saved")
-	{
-		int32_t index = -1;
-		event_data.read(&index, 4);
-		updateOpenListItem(index);
-		updateArchiveTabTitle(index);
-	}
-
-	// If an archive was modified
-	if (event_name == "archive_modified")
-	{
-		int32_t index = -1;
-		event_data.read(&index, 4);
-		updateOpenListItem(index);
-		updateArchiveTabTitle(index);
-	}
-
-	// If a texture editor is to be opened
-	if (event_name == "open_tex_editor")
-	{
-		uint32_t index = 0;
-		event_data.read(&index, 4);
-		openTextureTab(index);
-	}
-
-	// If the recent files list has changed
-	if (event_name == "recent_files_changed")
-	{
-		refreshRecentFileList();
-	}
-
-	// If the bookmarks list has changed
-	if (event_name == "bookmarks_changed")
-	{
-		refreshBookmarkList();
-	}
-}
-
-// -----------------------------------------------------------------------------
 // Saves the currently selected archive(s) in the list
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::saveSelection() const
@@ -2270,4 +2187,41 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 	}
 
 	VECTOR_REMOVE(checking_archives_, change_list.archive);
+}
+
+void ArchiveManagerPanel::connectSignals()
+{
+	auto& signals = App::archiveManager().signals();
+
+	// Update the archives list if an archive is added/closed/modified
+	signal_connections += signals.archive_added.connect([this](unsigned index) {
+		list_archives_->addItem(index, wxEmptyString);
+		updateOpenListItem(index);
+	});
+	signal_connections += signals.archive_closed.connect(
+		[this](unsigned index) { list_archives_->DeleteItem(index); });
+	signal_connections += signals.archive_saved.connect([this](unsigned index) {
+		updateOpenListItem(index);
+		updateArchiveTabTitle(index);
+	});
+	signal_connections += signals.archive_modified.connect([this](unsigned index) {
+		updateOpenListItem(index);
+		updateArchiveTabTitle(index);
+	});
+
+	// When an archive is being closed, close any related tabs
+	signal_connections += signals.archive_closing.connect([this](unsigned index) {
+		closeTextureTab(index);
+		closeEntryTabs(App::archiveManager().getArchive(index).get());
+		closeTab(index);
+	});
+
+	// When an archive is opened, open its tab
+	signal_connections += signals.archive_opened.connect([this](int index) { openTab(index); });
+
+	// Refresh recent files list when changed
+	signal_connections += signals.recent_files_changed.connect([this]() { refreshRecentFileList(); });
+
+	// Refresh bookmarks list when changed
+	signal_connections += signals.bookmarks_changed.connect([this]() { refreshBookmarkList(); });
 }
