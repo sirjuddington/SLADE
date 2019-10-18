@@ -59,6 +59,7 @@ std::map<string, PortDef> port_defs;
 PortDef                   port_def_unknown;
 ZScript::Definitions      zscript_base;
 ZScript::Definitions      zscript_custom;
+unique_ptr<std::thread>   zscript_parse_thread;
 } // namespace Game
 CVAR(String, game_configuration, "", CVar::Flag::Save)
 CVAR(String, port_configuration, "", CVar::Flag::Save)
@@ -410,7 +411,7 @@ void Game::init()
 	// Load zdoom.pk3 stuff
 	if (wxFileExists(zdoom_pk3_path))
 	{
-		std::thread thread([=]() {
+		zscript_parse_thread = std::make_unique<std::thread>([=]() {
 			ZipArchive zdoom_pk3;
 			if (!zdoom_pk3.open(zdoom_pk3_path))
 				return;
@@ -435,7 +436,7 @@ void Game::init()
 				config_current.parseMapInfo(&zdoom_pk3);
 			}
 		});
-		thread.detach();
+		zscript_parse_thread->detach();
 	}
 
 	// Update custom definitions when an archive is opened or closed
