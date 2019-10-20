@@ -43,44 +43,48 @@
 
 
 // -----------------------------------------------------------------------------
-// Returns true if a property with the given name exists, false otherwise
+// Returns true if a property with the given key exists, false otherwise
 // -----------------------------------------------------------------------------
-bool PropertyList::propertyExists(const string& key)
+bool PropertyList::propertyExists(string_view key) const
 {
 	// Try to find specified key
-	return !(properties_.empty() || properties_.find(key) == properties_.end());
+	for (const auto& p : properties_)
+		if (p.key == key)
+			return true;
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
 // Removes a property value, returns true if [key] was removed or false if key
 // didn't exist
 // -----------------------------------------------------------------------------
-bool PropertyList::removeProperty(const string& key)
+bool PropertyList::removeProperty(string_view key)
 {
-	return properties_.erase(key) > 0;
+	for (auto i = properties_.begin(); i != properties_.end(); ++i)
+	{
+		if (i->key == key)
+		{
+			properties_.erase(i);
+			return true;
+		}
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
 // Copies all properties to [list]
 // -----------------------------------------------------------------------------
-void PropertyList::copyTo(PropertyList& list)
+void PropertyList::copyTo(PropertyList& list) const
 {
 	// Clear given list
 	list.clear();
 
 	// Copy
-	for (auto& i : properties_)
-		if (i.second.hasValue())
-			list[i.first] = i.second;
-}
-
-// -----------------------------------------------------------------------------
-// Adds a 'flag' property [key]
-// -----------------------------------------------------------------------------
-void PropertyList::addFlag(const string& key)
-{
-	Property flag;
-	properties_[key] = flag;
+	for (const auto& i : properties_)
+		if (i.prop.hasValue())
+			list.properties_.emplace_back(i);
 }
 
 // -----------------------------------------------------------------------------
@@ -92,23 +96,26 @@ string PropertyList::toString(bool condensed) const
 	string ret;
 
 	// Go through all properties
-	for (auto& i : properties_)
+	for (const auto& i : properties_)
 	{
 		// Skip if no value
-		if (!i.second.hasValue())
+		if (!i.prop.hasValue())
 			continue;
 
 		// Add "key = value;\n" to the return string
-		auto key = i.first;
-		auto val = i.second.stringValue();
+		auto key = i.key;
+		auto val = i.prop.stringValue();
 
-		if (i.second.type() == Property::Type::String)
-			val = "\"" + val + "\"";
+		if (i.prop.type() == Property::Type::String)
+		{
+			val.insert(val.begin(), '\"');
+			val.push_back('\"');
+		}
 
 		if (condensed)
-			ret += key + "=" + val + ";\n";
+			ret += fmt::format("{}={};\n", key, val);
 		else
-			ret += key + " = " + val + ";\n";
+			ret += fmt::format("{} = {};\n", key, val);
 	}
 
 	return ret;
@@ -117,21 +124,21 @@ string PropertyList::toString(bool condensed) const
 // -----------------------------------------------------------------------------
 // Adds all existing properties to [list]
 // -----------------------------------------------------------------------------
-void PropertyList::allProperties(vector<Property>& list, bool ignore_no_value)
+void PropertyList::allProperties(vector<Property>& list, bool ignore_no_value) const
 {
 	// Add all properties to the list
-	for (auto& i : properties_)
-		if (!(ignore_no_value && !i.second.hasValue()))
-			list.push_back(i.second);
+	for (const auto& i : properties_)
+		if (!(ignore_no_value && !i.prop.hasValue()))
+			list.push_back(i.prop);
 }
 
 // -----------------------------------------------------------------------------
 // Adds all existing property names to [list]
 // -----------------------------------------------------------------------------
-void PropertyList::allPropertyNames(vector<string>& list, bool ignore_no_value)
+void PropertyList::allPropertyNames(vector<string>& list, bool ignore_no_value) const
 {
 	// Add all properties to the list
-	for (auto& i : properties_)
-		if (!(ignore_no_value && !i.second.hasValue()))
-			list.push_back(i.first);
+	for (const auto& i : properties_)
+		if (!(ignore_no_value && !i.prop.hasValue()))
+			list.push_back(i.key);
 }
