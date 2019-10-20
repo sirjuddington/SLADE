@@ -123,6 +123,8 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 			map = maps[0];
 		else
 			return false;
+
+		m_head = maps[0].head.lock();
 	}
 
 	// Parse UDMF map

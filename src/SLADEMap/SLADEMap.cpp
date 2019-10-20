@@ -108,7 +108,7 @@ void SLADEMap::setThingsUpdated()
 // -----------------------------------------------------------------------------
 bool SLADEMap::readMap(const Archive::MapDesc& map)
 {
-	auto omap = &map;
+	auto omap = map;
 
 	// Check for map archive
 	WadArchive tempwad;
@@ -118,23 +118,23 @@ bool SLADEMap::readMap(const Archive::MapDesc& map)
 		tempwad.open(m_head->data());
 		auto amaps = tempwad.detectMaps();
 		if (!amaps.empty())
-			omap = &amaps[0];
+			omap = amaps[0];
 		else
 			return false;
 	}
 
 	bool ok = false;
-	if (omap->head.lock())
+	if (omap.head.lock())
 	{
-		auto map_handler = MapFormatHandler::get(omap->format);
-		ok               = map_handler->readMap(*omap, data_, udmf_props_);
+		auto map_handler = MapFormatHandler::get(omap.format);
+		ok               = map_handler->readMap(omap, data_, udmf_props_);
 		udmf_namespace_  = map_handler->udmfNamespace();
 	}
 	else
 		ok = true;
 
 	// Copy extra entries
-	for (auto& entry : map.unk)
+	for (auto& entry : omap.unk)
 		udmf_extra_entries_.push_back(new ArchiveEntry(*entry));
 
 	// Set map info
@@ -144,11 +144,11 @@ bool SLADEMap::readMap(const Archive::MapDesc& map)
 	if (ok)
 	{
 		// Update variables
-		current_format_   = map.format;
+		current_format_   = omap.format;
 		geometry_updated_ = App::runTimer();
 
 		// When creating a new map, retrieve UDMF namespace information from the configuration
-		if (map.format == MapFormat::UDMF && udmf_namespace_.empty())
+		if (omap.format == MapFormat::UDMF && udmf_namespace_.empty())
 			udmf_namespace_ = Game::configuration().udmfNamespace();
 	}
 
