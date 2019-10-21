@@ -31,12 +31,14 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #ifndef USE_SFML_RENDERWINDOW
+#include "App.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Drawing.h"
 #include "MapEditor/UI/MapCanvas.h"
 #include "Utility/MathStuff.h"
 #include <FTGL/ftgl.h>
+
 
 // -----------------------------------------------------------------------------
 //
