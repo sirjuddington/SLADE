@@ -203,7 +203,9 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 
 	if (num_entries > MAX_ENTRY_COUNT)
 	{
-		Log::error("ChasmBinArchive::write: Bin archive can contain no more than {} entries", MAX_ENTRY_COUNT);
+		Log::error(
+			"ChasmBinArchive::write: Bin archive can contain no more than {} entries",
+			(unsigned)MAX_ENTRY_COUNT);
 		Global::error = "Maximum number of entries exceeded for Chasm: The Rift bin archive";
 		return false;
 	}
