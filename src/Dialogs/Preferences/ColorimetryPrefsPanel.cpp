@@ -85,7 +85,7 @@ wxSpinCtrlDouble* createSpin(
 		-1,
 		name,
 		wxDefaultPosition,
-		{ UI::px(UI::Size::SpinCtrlWidth), -1 },
+		{ -1, -1 },
 		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
 		min,
 		max,
@@ -236,45 +236,45 @@ void ColorimetryPrefsPanel::setupLayout()
 	SetSizer(gbsizer);
 
 	// RGB weights for greyscale luminance
-	gbsizer->Add(new wxStaticText(this, -1, "RGB weights for greyscale luminance:"), { 0, 0 }, { 1, 6 });
+	gbsizer->Add(new wxStaticText(this, -1, "RGB weights for greyscale luminance:"), { 0, 0 }, { 1, 3 });
 	gbsizer->Add(WxUtils::createLabelHBox(this, "R:", spin_grey_r_), { 1, 0 }, { 1, 1 }, wxALIGN_RIGHT);
 	gbsizer->Add(WxUtils::createLabelHBox(this, "G:", spin_grey_g_), { 1, 1 }, { 1, 1 }, wxALIGN_RIGHT);
 	gbsizer->Add(WxUtils::createLabelHBox(this, "B:", spin_grey_b_), { 1, 2 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "Presets:", choice_presets_grey_), { 1, 3 }, { 1, 3 }, wxEXPAND);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "Presets:", choice_presets_grey_), { 2, 0 }, { 1, 3 }, wxEXPAND);
 
-	gbsizer->Add(new wxStaticLine(this, -1), { 2, 0 }, { 1, 7 }, wxEXPAND | wxTOP | wxBOTTOM, UI::pad());
+	gbsizer->Add(new wxStaticLine(this, -1), { 3, 0 }, { 1, 3 }, wxEXPAND | wxTOP | wxBOTTOM, UI::pad());
 
 	// Color matching method
-	gbsizer->Add(WxUtils::createLabelHBox(this, "Colour matching:", choice_colmatch_), { 3, 0 }, { 1, 6 }, wxEXPAND);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "Colour matching:", choice_colmatch_), { 4, 0 }, { 1, 3 }, wxEXPAND);
 
 	// RGB and HSL weights for color matching
-	gbsizer->Add(WxUtils::createLabelHBox(this, "R:", spin_factor_r_), { 4, 0 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "G:", spin_factor_g_), { 4, 1 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "B:", spin_factor_b_), { 4, 2 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "H:", spin_factor_h_), { 4, 3 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "S:", spin_factor_s_), { 4, 4 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "L:", spin_factor_l_), { 4, 5 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "R:", spin_factor_r_), { 5, 0 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "G:", spin_factor_g_), { 5, 1 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "B:", spin_factor_b_), { 5, 2 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "H:", spin_factor_h_), { 6, 0 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "S:", spin_factor_s_), { 6, 1 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "L:", spin_factor_l_), { 6, 2 }, { 1, 1 }, wxALIGN_RIGHT);
 
-	gbsizer->Add(new wxStaticLine(this, -1), { 5, 0 }, { 1, 7 }, wxEXPAND | wxTOP | wxBOTTOM, UI::pad());
+	gbsizer->Add(new wxStaticLine(this, -1), { 7, 0 }, { 1, 3 }, wxEXPAND | wxTOP | wxBOTTOM, UI::pad());
 
 	// CIE Lab funkiness: tristimulus values for RGB->Lab conversion,
 	// and KL, KC, KH, K1 and K2 factors for CIE94 and CIEDE2000 equations
-	gbsizer->Add(new wxStaticText(this, -1, "CIE Lab Tristimulus:"), { 6, 0 }, { 1, 6 });
-	gbsizer->Add(WxUtils::createLabelHBox(this, "X:", spin_tristim_x_), { 7, 0 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "Z:", spin_tristim_z_), { 7, 1 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(choice_presets_tristim_, { 7, 2 }, { 1, 4 }, wxEXPAND);
+	gbsizer->Add(new wxStaticText(this, -1, "CIE Lab Tristimulus:"), { 8, 0 }, { 1, 3 });
+	gbsizer->Add(WxUtils::createLabelHBox(this, "X:", spin_tristim_x_), { 9, 0 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "Z:", spin_tristim_z_), { 9, 1 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(choice_presets_tristim_, { 9, 2 }, { 1, 1 }, wxEXPAND);
 
-	gbsizer->Add(new wxStaticLine(this, -1), { 8, 0 }, { 1, 7 }, wxEXPAND | wxTOP | wxBOTTOM, UI::pad());
+	gbsizer->Add(new wxStaticLine(this, -1), { 10, 0 }, { 1, 3 }, wxEXPAND | wxTOP | wxBOTTOM, UI::pad());
 
 	// CIE equation factors
-	gbsizer->Add(new wxStaticText(this, -1, "CIE 94 and CIEDE 2000 Factors:"), { 9, 0 }, { 1, 6 }, wxEXPAND);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "KL:", spin_cie_kl_), { 10, 0 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "K1:", spin_cie_k1_), { 10, 1 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "K2:", spin_cie_k2_), { 10, 2 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "KC:", spin_cie_kc_), { 10, 3 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "KH:", spin_cie_kh_), { 10, 4 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, "CIE 94 and CIEDE 2000 Factors:"), { 11, 0 }, { 1, 3 }, wxEXPAND);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "KL:", spin_cie_kl_), { 12, 0 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "K1:", spin_cie_k1_), { 12, 1 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "K2:", spin_cie_k2_), { 12, 2 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "KC:", spin_cie_kc_), { 13, 0 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "KH:", spin_cie_kh_), { 13, 1 }, { 1, 1 }, wxALIGN_RIGHT);
 
-	gbsizer->AddGrowableCol(6, 1);
+	//gbsizer->AddGrowableCol(6, 1);
 }
 
 // ----------------------------------------------------------------------------
@@ -329,7 +329,7 @@ void ColorimetryPrefsPanel::onChoiceGreyscalePresetSelected(wxCommandEvent& e)
 // Called when the tristimulus 'preset' dropdown choice is changed
 // CIE Lab tristimulus values are normalized so that Y is always 100.00.
 // X and Z depend on the observer and illuminant, here are a few values:
-//				2° observer		10° observer
+//				2ï¿½ observer		10ï¿½ observer
 //	Illuminant	__Xn__	__Zn__	__Xn__	__Zn__
 //		A		109.83	 35.55	111.16	 35.19
 //		C		 98.04	118.11	 97.30	116.14
@@ -348,75 +348,75 @@ void ColorimetryPrefsPanel::onChoiceTristimPresetSelected(wxCommandEvent& e)
 
 	switch (preset)
 	{
-	case 0:		// 2°A
+	case 0:		// 2ï¿½A
 		spin_tristim_x_->SetValue(109.83);
 		spin_tristim_z_->SetValue( 35.55);
 		break;
-	case 1:		// 10°A
+	case 1:		// 10ï¿½A
 		spin_tristim_x_->SetValue(111.16);
 		spin_tristim_z_->SetValue( 35.19);
 		break;
-	case 2:		// 2°C
+	case 2:		// 2ï¿½C
 		spin_tristim_x_->SetValue( 98.04);
 		spin_tristim_z_->SetValue(118.11);
 		break;
-	case 3:		// 10°C
+	case 3:		// 10ï¿½C
 		spin_tristim_x_->SetValue( 97.30);
 		spin_tristim_z_->SetValue(116.14);
 		break;
-	case 4:		// 2°D50
+	case 4:		// 2ï¿½D50
 		spin_tristim_x_->SetValue( 96.38);
 		spin_tristim_z_->SetValue( 82.45);
 		break;
-	case 5:		// 10°D50
+	case 5:		// 10ï¿½D50
 		spin_tristim_x_->SetValue( 96.72);
 		spin_tristim_z_->SetValue( 81.45);
 		break;
-	case 6:		// 2°D60
+	case 6:		// 2ï¿½D60
 		spin_tristim_x_->SetValue( 95.23);
 		spin_tristim_z_->SetValue(100.86);
 		break;
-	case 7:		// 10°D60
+	case 7:		// 10ï¿½D60
 		spin_tristim_x_->SetValue( 95.21);
 		spin_tristim_z_->SetValue( 99.60);
 		break;
-	case 8:		// 2°D65
+	case 8:		// 2ï¿½D65
 		spin_tristim_x_->SetValue( 95.02);
 		spin_tristim_z_->SetValue(108.82);
 		break;
-	case 9:		// 10°D65
+	case 9:		// 10ï¿½D65
 		spin_tristim_x_->SetValue( 94.83);
 		spin_tristim_z_->SetValue(107.38);
 		break;
-	case 10:		// 2°D75
+	case 10:		// 2ï¿½D75
 		spin_tristim_x_->SetValue( 94.96);
 		spin_tristim_z_->SetValue(122.53);
 		break;
-	case 11:		// 10°D75
+	case 11:		// 10ï¿½D75
 		spin_tristim_x_->SetValue( 94.45);
 		spin_tristim_z_->SetValue(120.70);
 		break;
-	case 12:		// 2°F2
+	case 12:		// 2ï¿½F2
 		spin_tristim_x_->SetValue( 98.09);
 		spin_tristim_z_->SetValue( 67.53);
 		break;
-	case 13:		// 10°F2
+	case 13:		// 10ï¿½F2
 		spin_tristim_x_->SetValue(102.13);
 		spin_tristim_z_->SetValue( 69.37);
 		break;
-	case 14:		// 2°TL4
+	case 14:		// 2ï¿½TL4
 		spin_tristim_x_->SetValue(101.40);
 		spin_tristim_z_->SetValue( 65.90);
 		break;
-	case 15:		// 10°TL4
+	case 15:		// 10ï¿½TL4
 		spin_tristim_x_->SetValue(103.82);
 		spin_tristim_z_->SetValue( 66.90);
 		break;
-	case 16:		// 2°UL3000
+	case 16:		// 2ï¿½UL3000
 		spin_tristim_x_->SetValue(107.99);
 		spin_tristim_z_->SetValue( 33.91);
 		break;
-	case 17:		// 10°UL3000
+	case 17:		// 10ï¿½UL3000
 		spin_tristim_x_->SetValue(111.12);
 		spin_tristim_z_->SetValue( 35.21);
 		break;
