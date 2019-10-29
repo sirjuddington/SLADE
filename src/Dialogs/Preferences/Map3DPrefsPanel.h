@@ -27,6 +27,8 @@ private:
 	wxCheckBox*		cb_show_distance_;
 	wxCheckBox*		cb_invert_y_;
 	wxCheckBox*		cb_shade_orthogonal_;
+	wxSlider*		slider_fov_;
+	wxStaticText*	label_fov_;
 
 	// Events
 	void	onSliderMaxRenderDistChanged(wxCommandEvent& e);
