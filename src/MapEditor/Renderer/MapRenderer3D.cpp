@@ -69,6 +69,7 @@ CVAR(Bool, render_shade_orthogonal_lines, true, CVar::Flag::Save)
 CVAR(Bool, mlook_invert_y, false, CVar::Flag::Save)
 CVAR(Float, camera_3d_sensitivity_x, 1.0f, CVar::Flag::Save)
 CVAR(Float, camera_3d_sensitivity_y, 1.0f, CVar::Flag::Save)
+CVAR(Int, render_fov, 90, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -470,7 +471,7 @@ void MapRenderer3D::setupView(int width, int height)
 {
 	// Calculate aspect ratio
 	float aspect = (1.6f / 1.333333f) * ((float)width / (float)height);
-	float fovy   = 2 * MathStuff::radToDeg(atan(tan(MathStuff::degToRad(90) / 2) / aspect));
+	float fovy   = 2 * MathStuff::radToDeg(atan(tan(MathStuff::degToRad(render_fov) / 2) / aspect));
 
 	// Setup projection
 	glMatrixMode(GL_PROJECTION);

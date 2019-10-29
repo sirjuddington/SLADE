@@ -27,4 +27,6 @@ private:
 	wxCheckBox*   cb_show_distance_        = nullptr;
 	wxCheckBox*   cb_invert_y_             = nullptr;
 	wxCheckBox*   cb_shade_orthogonal_     = nullptr;
+	wxSlider*     slider_fov_              = nullptr;
+	wxStaticText* label_fov_               = nullptr;
 };

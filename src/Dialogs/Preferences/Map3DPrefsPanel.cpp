@@ -48,6 +48,7 @@ EXTERN_CVAR(Bool, render_3d_sky)
 EXTERN_CVAR(Bool, camera_3d_show_distance)
 EXTERN_CVAR(Bool, mlook_invert_y)
 EXTERN_CVAR(Bool, render_shade_orthogonal_lines)
+EXTERN_CVAR(Int, render_fov)
 
 
 // -----------------------------------------------------------------------------
@@ -89,6 +90,13 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	gbsizer->Add(cb_max_thing_dist_lock_, { 1, 3 }, { 1, 1 }, wxEXPAND);
 	gbsizer->AddGrowableCol(1, 1);
 
+	// FOV
+	gbsizer->Add(new wxStaticText(this, -1, "FOV:"), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	slider_fov_ = new wxSlider(this, -1, 1, 7, 12, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
+	gbsizer->Add(slider_fov_, { 2, 1 }, { 1, 1 }, wxEXPAND);
+	label_fov_ = new wxStaticText(this, -1, "00000");
+	gbsizer->Add(label_fov_, { 2, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	psizer->Add(hbox, 0, wxEXPAND);
 
@@ -128,6 +136,7 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	slider_max_thing_dist_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) { updateDistanceControls(); });
 	cb_max_thing_dist_lock_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { updateDistanceControls(); });
 	cb_distance_unlimited_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { updateDistanceControls(); });
+	slider_fov_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&){ updateDistanceControls(); });
 }
 
 // -----------------------------------------------------------------------------
@@ -154,6 +163,7 @@ void Map3DPrefsPanel::init()
 		cb_max_thing_dist_lock_->SetValue(false);
 	}
 
+	slider_fov_->SetValue(render_fov / 10);
 	cb_render_dist_adaptive_->SetValue(render_max_dist_adaptive);
 	int fps = 1.0 / (render_adaptive_ms / 1000.0);
 	spin_adaptive_fps_->SetValue(fps);
@@ -194,6 +204,9 @@ void Map3DPrefsPanel::updateDistanceControls() const
 		label_thing_dist_->SetLabel(wxString::Format("%d", slider_max_thing_dist_->GetValue() * 500));
 		slider_max_thing_dist_->Enable();
 	}
+
+	// FOV
+	label_fov_->SetLabel(wxString::Format("%d", slider_fov_->GetValue() * 10));
 }
 
 // -----------------------------------------------------------------------------
@@ -221,5 +234,6 @@ void Map3DPrefsPanel::applyPreferences()
 	render_3d_sky                 = cb_render_sky_->GetValue();
 	camera_3d_show_distance       = cb_show_distance_->GetValue();
 	mlook_invert_y                = cb_invert_y_->GetValue();
+	render_fov                    = slider_fov_->GetValue() * 10;
 	render_shade_orthogonal_lines = cb_shade_orthogonal_->GetValue();
 }

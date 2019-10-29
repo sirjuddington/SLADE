@@ -76,7 +76,7 @@ wxSpinCtrlDouble* createSpin(wxWindow* parent, const wxString& name, double min,
 		-1,
 		name,
 		wxDefaultPosition,
-		{ UI::px(UI::Size::SpinCtrlWidth), -1 },
+		{ -1, -1 },
 		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
 		min,
 		max,
@@ -207,45 +207,45 @@ void ColorimetryPrefsPanel::setupLayout()
 	SetSizer(gbsizer);
 
 	// RGB weights for greyscale luminance
-	gbsizer->Add(new wxStaticText(this, -1, "RGB weights for greyscale luminance:"), { 0, 0 }, { 1, 6 });
+	gbsizer->Add(new wxStaticText(this, -1, "RGB weights for greyscale luminance:"), { 0, 0 }, { 1, 3 });
 	gbsizer->Add(WxUtils::createLabelHBox(this, "R:", spin_grey_r_), { 1, 0 }, { 1, 1 }, wxALIGN_RIGHT);
 	gbsizer->Add(WxUtils::createLabelHBox(this, "G:", spin_grey_g_), { 1, 1 }, { 1, 1 }, wxALIGN_RIGHT);
 	gbsizer->Add(WxUtils::createLabelHBox(this, "B:", spin_grey_b_), { 1, 2 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "Presets:", choice_presets_grey_), { 1, 3 }, { 1, 3 }, wxEXPAND);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "Presets:", choice_presets_grey_), { 2, 0 }, { 1, 3 }, wxEXPAND);
 
-	gbsizer->Add(new wxStaticLine(this, -1), { 2, 0 }, { 1, 7 }, wxEXPAND | wxTOP | wxBOTTOM, UI::pad());
+	gbsizer->Add(new wxStaticLine(this, -1), { 3, 0 }, { 1, 3 }, wxEXPAND | wxTOP | wxBOTTOM, UI::pad());
 
 	// Color matching method
-	gbsizer->Add(WxUtils::createLabelHBox(this, "Colour matching:", choice_colmatch_), { 3, 0 }, { 1, 6 }, wxEXPAND);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "Colour matching:", choice_colmatch_), { 4, 0 }, { 1, 3 }, wxEXPAND);
 
 	// RGB and HSL weights for color matching
-	gbsizer->Add(WxUtils::createLabelHBox(this, "R:", spin_factor_r_), { 4, 0 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "G:", spin_factor_g_), { 4, 1 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "B:", spin_factor_b_), { 4, 2 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "H:", spin_factor_h_), { 4, 3 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "S:", spin_factor_s_), { 4, 4 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "L:", spin_factor_l_), { 4, 5 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "R:", spin_factor_r_), { 5, 0 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "G:", spin_factor_g_), { 5, 1 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "B:", spin_factor_b_), { 5, 2 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "H:", spin_factor_h_), { 6, 0 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "S:", spin_factor_s_), { 6, 1 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "L:", spin_factor_l_), { 6, 2 }, { 1, 1 }, wxALIGN_RIGHT);
 
-	gbsizer->Add(new wxStaticLine(this, -1), { 5, 0 }, { 1, 7 }, wxEXPAND | wxTOP | wxBOTTOM, UI::pad());
+	gbsizer->Add(new wxStaticLine(this, -1), { 7, 0 }, { 1, 3 }, wxEXPAND | wxTOP | wxBOTTOM, UI::pad());
 
 	// CIE Lab funkiness: tristimulus values for RGB->Lab conversion,
 	// and KL, KC, KH, K1 and K2 factors for CIE94 and CIEDE2000 equations
-	gbsizer->Add(new wxStaticText(this, -1, "CIE Lab Tristimulus:"), { 6, 0 }, { 1, 6 });
-	gbsizer->Add(WxUtils::createLabelHBox(this, "X:", spin_tristim_x_), { 7, 0 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "Z:", spin_tristim_z_), { 7, 1 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(choice_presets_tristim_, { 7, 2 }, { 1, 4 }, wxEXPAND);
+	gbsizer->Add(new wxStaticText(this, -1, "CIE Lab Tristimulus:"), { 8, 0 }, { 1, 3 });
+	gbsizer->Add(WxUtils::createLabelHBox(this, "X:", spin_tristim_x_), { 9, 0 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "Z:", spin_tristim_z_), { 9, 1 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(choice_presets_tristim_, { 9, 2 }, { 1, 1 }, wxEXPAND);
 
-	gbsizer->Add(new wxStaticLine(this, -1), { 8, 0 }, { 1, 7 }, wxEXPAND | wxTOP | wxBOTTOM, UI::pad());
+	gbsizer->Add(new wxStaticLine(this, -1), { 10, 0 }, { 1, 3 }, wxEXPAND | wxTOP | wxBOTTOM, UI::pad());
 
 	// CIE equation factors
-	gbsizer->Add(new wxStaticText(this, -1, "CIE 94 and CIEDE 2000 Factors:"), { 9, 0 }, { 1, 6 }, wxEXPAND);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "KL:", spin_cie_kl_), { 10, 0 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "K1:", spin_cie_k1_), { 10, 1 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "K2:", spin_cie_k2_), { 10, 2 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "KC:", spin_cie_kc_), { 10, 3 }, { 1, 1 }, wxALIGN_RIGHT);
-	gbsizer->Add(WxUtils::createLabelHBox(this, "KH:", spin_cie_kh_), { 10, 4 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(new wxStaticText(this, -1, "CIE 94 and CIEDE 2000 Factors:"), { 11, 0 }, { 1, 3 }, wxEXPAND);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "KL:", spin_cie_kl_), { 12, 0 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "K1:", spin_cie_k1_), { 12, 1 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "K2:", spin_cie_k2_), { 12, 2 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "KC:", spin_cie_kc_), { 13, 0 }, { 1, 1 }, wxALIGN_RIGHT);
+	gbsizer->Add(WxUtils::createLabelHBox(this, "KH:", spin_cie_kh_), { 13, 1 }, { 1, 1 }, wxALIGN_RIGHT);
 
-	gbsizer->AddGrowableCol(6, 1);
+	//gbsizer->AddGrowableCol(6, 1);
 }
 
 // -----------------------------------------------------------------------------
