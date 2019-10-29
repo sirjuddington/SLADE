@@ -398,7 +398,10 @@ protected:
 
 		// Check
 		if (datastart < 16 || datastart >= data.size())
-			return false;
+		{
+			image.create(0, 0, SImage::Type::PalMask, nullptr, index, info.numimages);
+			return true;
+		}
 
 		// Create image (swapped width/height because column-major)
 		image.create(info.height, info.width, SImage::Type::PalMask, nullptr, index, info.numimages);
@@ -431,21 +434,30 @@ protected:
 private:
 	unsigned getTileInfo(SImage::Info& info, MemChunk& mc, int index) const
 	{
+		size_t headeroffset = 0;
+
+		// Test for "BUILDART" magic string (for Ion Fury)
+		if (mc[0] == 'B' && mc[1] == 'U' && mc[2] == 'I' && mc[3] == 'L' && mc[4] == 'D' && mc[5] == 'A' && mc[6] == 'R'
+			&& mc[7] == 'T')
+		{
+			headeroffset = 8;
+		}
+
 		// Get tile info
-		uint32_t firsttile = wxUINT32_SWAP_ON_BE(((uint32_t*)mc.data())[2]);
-		uint32_t lasttile  = wxUINT32_SWAP_ON_BE(((uint32_t*)mc.data())[3]);
+		uint32_t firsttile = wxUINT32_SWAP_ON_BE(((uint32_t*)(mc.data() + headeroffset))[2]);
+		uint32_t lasttile  = wxUINT32_SWAP_ON_BE(((uint32_t*)(mc.data() + headeroffset))[3]);
 
 		// Set number of images
 		info.numimages = 1 + lasttile - firsttile;
 
 		// Each tile has a 2-byte width, a 2-byte height, and a 4-byte
 		// picanm struct. The header itself is 16 bytes.
-		size_t x_offs = 16;
+		size_t x_offs = 16 + headeroffset;
 		size_t y_offs = x_offs + (info.numimages << 1);
 		size_t o_offs = y_offs + (info.numimages << 1);
 
 		// Compute the address where our tile's graphic data starts
-		size_t datastart = (info.numimages * 8) + 16;
+		size_t datastart = (info.numimages * 8) + 16 + headeroffset;
 		if (index > 0)
 		{
 			// We can skip these steps if looking at the first tile in the ART file.

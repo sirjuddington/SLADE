@@ -139,16 +139,26 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
 	sizer_bottom_->Add(cb_tile_, 0, wxEXPAND, 0);
 	sizer_bottom_->AddSpacer(UI::padLarge());
 
-	// Image selection buttons
-	btn_nextimg_ = new SIconButton(this, "right");
-	btn_previmg_ = new SIconButton(this, "left");
-	text_curimg_ = new wxStaticText(this, -1, "Image XX/XX");
-	sizer_bottom_->Add(btn_previmg_, 0, wxEXPAND | wxRIGHT, 4);
-	sizer_bottom_->Add(btn_nextimg_, 0, wxEXPAND | wxRIGHT, 4);
-	sizer_bottom_->Add(text_curimg_, 0, wxALIGN_CENTER, 0);
-	btn_nextimg_->Show(false);
-	btn_previmg_->Show(false);
-	text_curimg_->Show(false);
+	// Image selection controls
+	text_imgnum_ = new wxStaticText(this, -1, "Image: ");
+	text_imgoutof_ = new wxStaticText(this, -1, " out of XX");
+	spin_curimg_ = new wxSpinCtrl(
+		this,
+		-1,
+		wxEmptyString,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER | wxSP_WRAP,
+		1,
+		1,
+		0);
+	spin_curimg_->SetMinSize(spinsize);
+	sizer_bottom_->Add(text_imgnum_, 0, wxALIGN_CENTER, 0);
+	sizer_bottom_->Add(spin_curimg_, 0, wxSHRINK | wxALIGN_CENTER, UI::pad());
+	sizer_bottom_->Add(text_imgoutof_, 0, wxALIGN_CENTER, 0);
+	text_imgnum_->Show(false);
+	spin_curimg_->Show(false);
+	text_imgoutof_->Show(false);
 
 	// Refresh when main palette changed
 	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]() {
@@ -180,8 +190,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
 	Bind(wxEVT_GFXCANVAS_OFFSET_CHANGED, &GfxEntryPanel::onGfxOffsetChanged, this, gfx_canvas_->GetId());
 	Bind(wxEVT_GFXCANVAS_PIXELS_CHANGED, &GfxEntryPanel::onGfxPixelsChanged, this, gfx_canvas_->GetId());
 	Bind(wxEVT_GFXCANVAS_COLOUR_PICKED, &GfxEntryPanel::onColourPicked, this, gfx_canvas_->GetId());
-	btn_nextimg_->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnNextImg, this);
-	btn_previmg_->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnPrevImg, this);
+	spin_curimg_->Bind(wxEVT_SPINCTRL, &GfxEntryPanel::onCurImgChanged, this);
 	btn_auto_offset_->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnAutoOffset, this);
 
 	// Apply layout
@@ -214,15 +223,15 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 	// Only show next/prev image buttons if the entry contains multiple images
 	if (image()->size() > 1)
 	{
-		btn_nextimg_->Show();
-		btn_previmg_->Show();
-		text_curimg_->Show();
+		text_imgnum_->Show();
+		spin_curimg_->Show();
+		text_imgoutof_->Show();
 	}
 	else
 	{
-		btn_nextimg_->Show(false);
-		btn_previmg_->Show(false);
-		text_curimg_->Show(false);
+		text_imgnum_->Show(false);
+		spin_curimg_->Show(false);
+		text_imgoutof_->Show(false);
 	}
 
 	// Hack for colormaps to be 256-wide
@@ -511,7 +520,9 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 		menu_custom_->Enable(menu_gfxep_extract, true);
 	else
 		menu_custom_->Enable(menu_gfxep_extract, false);
-	text_curimg_->SetLabel(wxString::Format("Image %d/%d", cur_index_ + 1, image()->size()));
+	text_imgoutof_->SetLabel(wxString::Format(" out of %d", image()->size()));
+	spin_curimg_->SetValue(cur_index_ + 1);
+	spin_curimg_->SetMax(image()->size());
 
 	// Update status bar in case image dimensions changed
 	updateStatus();
@@ -1124,7 +1135,6 @@ void GfxEntryPanel::onARCChanged(wxCommandEvent& e)
 	gfx_arc = cb_arc_->IsChecked();
 	gfx_canvas_->Refresh();
 }
-
 // -----------------------------------------------------------------------------
 // Called when the gfx canvas image offsets are changed
 // -----------------------------------------------------------------------------
@@ -1149,34 +1159,16 @@ void GfxEntryPanel::onGfxPixelsChanged(wxEvent& e)
 }
 
 // -----------------------------------------------------------------------------
-// Called when the 'next image' button is clicked
+// Called when the 'current image' spinbox is changed
 // -----------------------------------------------------------------------------
-void GfxEntryPanel::onBtnNextImg(wxCommandEvent& e)
+void GfxEntryPanel::onCurImgChanged(wxCommandEvent& e) 
 {
 	int  num   = gfx_canvas_->image().size();
 	auto entry = entry_.lock().get();
-	if (num > 1 && entry)
+	int  newindex = spin_curimg_->GetValue() - 1;
+	if (num > 1 && entry && newindex != cur_index_)
 	{
-		if (cur_index_ < num - 1)
-			loadEntry(entry, cur_index_ + 1);
-		else
-			loadEntry(entry, 0);
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Called when the 'previous image' button is clicked
-// -----------------------------------------------------------------------------
-void GfxEntryPanel::onBtnPrevImg(wxCommandEvent& e)
-{
-	int  num   = gfx_canvas_->image().size();
-	auto entry = entry_.lock().get();
-	if (num > 1 && entry)
-	{
-		if (cur_index_ > 0)
-			loadEntry(entry, cur_index_ - 1);
-		else
-			loadEntry(entry, num - 1);
+		loadEntry(entry, newindex);
 	}
 }
 

@@ -1011,17 +1011,24 @@ public:
 		size_t size = mc.size();
 		if (size < 16)
 			return MATCH_FALSE;
-		uint32_t version = mc.readL32(0);
+		// Check for "BUILDART" magic string (for Ion Fury)
+		size_t headeroffset = 0;
+		if (mc[0] == 'B' && mc[1] == 'U' && mc[2] == 'I' && mc[3] == 'L' && mc[4] == 'D' && mc[5] == 'A' && mc[6] == 'R'
+			&& mc[7] == 'T')
+		{
+			headeroffset = 8;
+		} 
+		uint32_t version = mc.readL32(0 + headeroffset);
 		if (version != 1)
 			return MATCH_FALSE;
-		uint32_t firsttile = mc.readL32(8);
-		uint32_t lasttile  = mc.readL16(12);
+		uint32_t firsttile = mc.readL32(8 + headeroffset);
+		uint32_t lasttile  = mc.readL32(12 + headeroffset);
 		uint32_t tilecount = 1 + lasttile - firsttile;
-		size_t   datastart = (16 + (tilecount * 8));
+		size_t   datastart = (16 + headeroffset + (tilecount * 8));
 		if (size < datastart)
 			return MATCH_FALSE;
 		size_t gfxdatasize = 0;
-		size_t xofs        = 16;
+		size_t xofs        = 16 + headeroffset;
 		size_t yofs        = xofs + (tilecount << 1);
 		for (size_t a = 0; a < tilecount; ++a)
 		{

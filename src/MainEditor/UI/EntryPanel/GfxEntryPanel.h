@@ -60,9 +60,9 @@ private:
 	wxCheckBox*     cb_tile_            = nullptr;
 	wxCheckBox*     cb_arc_             = nullptr;
 	wxButton*       btn_auto_offset_    = nullptr;
-	wxButton*       btn_nextimg_        = nullptr;
-	wxButton*       btn_previmg_        = nullptr;
-	wxStaticText*   text_curimg_        = nullptr;
+	wxSpinCtrl*     spin_curimg_        = nullptr;
+	wxStaticText*   text_imgnum_        = nullptr;
+	wxStaticText*   text_imgoutof_      = nullptr;
 	SToolBarButton* button_brush_       = nullptr;
 	wxMenu*         menu_brushes_       = nullptr;
 
@@ -78,8 +78,7 @@ private:
 	void onARCChanged(wxCommandEvent& e);
 	void onGfxOffsetChanged(wxEvent& e);
 	void onGfxPixelsChanged(wxEvent& e);
-	void onBtnNextImg(wxCommandEvent& e);
-	void onBtnPrevImg(wxCommandEvent& e);
+	void onCurImgChanged(wxCommandEvent& e);
 	void onBtnAutoOffset(wxCommandEvent& e);
 	void onColourPicked(wxEvent& e);
 };
