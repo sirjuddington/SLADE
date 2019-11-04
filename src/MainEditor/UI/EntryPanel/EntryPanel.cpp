@@ -126,7 +126,7 @@ void EntryPanel::setModified(bool c)
 // -----------------------------------------------------------------------------
 bool EntryPanel::openEntry(ArchiveEntry* entry)
 {
-	return openEntry(entry->getShared());
+	return openEntry(entry ? entry->getShared() : nullptr);
 }
 bool EntryPanel::openEntry(shared_ptr<ArchiveEntry> entry)
 {
