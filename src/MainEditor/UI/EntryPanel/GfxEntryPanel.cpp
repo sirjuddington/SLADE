@@ -522,7 +522,7 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 		menu_custom_->Enable(menu_gfxep_extract, false);
 	text_imgoutof_->SetLabel(wxString::Format(" out of %d", image()->size()));
 	spin_curimg_->SetValue(cur_index_ + 1);
-	spin_curimg_->SetMax(image()->size());
+	spin_curimg_->SetRange(1, image()->size());
 
 	// Update status bar in case image dimensions changed
 	updateStatus();
