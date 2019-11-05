@@ -104,6 +104,7 @@ void AudioPrefsPanel::init()
 	cb_snd_autoplay_->SetValue(snd_autoplay);
 	cb_dmx_padding_->SetValue(dmx_padding);
 	rb_fluidsynth_->SetValue(midi_fsynth);
+    rb_timidity_->SetValue(!midi_fsynth);
 	flp_soundfont_->setLocation(fs_soundfont_path);
 	flp_timidity_->setLocation(snd_timidity_path);
 	text_timidity_options_->SetValue(snd_timidity_options);
