@@ -122,6 +122,7 @@ void AudioPrefsPanel::init()
 	cb_snd_autoplay_->SetValue(snd_autoplay);
 	cb_dmx_padding_->SetValue(dmx_padding);
 	rb_fluidsynth_->SetValue(!snd_midi_usetimidity);
+	rb_timidity_->SetValue(snd_midi_usetimidity);
 	flp_soundfont_->setLocation(fs_soundfont_path);
 	flp_timidity_->setLocation(snd_timidity_path);
 	text_timidity_options_->SetValue(wxString(snd_timidity_options));
