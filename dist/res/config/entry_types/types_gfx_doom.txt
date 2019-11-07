@@ -100,6 +100,7 @@ entry_types
 		extra = image;
 		export_ext = "lmp";
 		image_format = "doom_snea";
+		reliability = 200;
 	}
 
 	gfx_doom_gnum : gfx_base
