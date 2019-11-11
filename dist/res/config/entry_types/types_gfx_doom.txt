@@ -30,6 +30,7 @@ entry_types
 		name = "Graphic (SRB2 Encore)";
 		size = 256;
 		extra = image;
+		reliability = 30;
 		image_format = "raw_flat";
 	}
 
