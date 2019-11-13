@@ -603,7 +603,7 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 	}
 
 	// Set texture manager archive
-	MapEditor::textureManager().setArchive(archive);
+	MapEditor::textureManager().setArchive(App::archiveManager().shareArchive(archive));
 
 	// Clear current map
 	closeMap();

@@ -54,11 +54,11 @@ public:
 		}
 	};
 
-	MapTextureManager(Archive* archive = nullptr);
+	MapTextureManager(shared_ptr<Archive> archive = nullptr);
 	~MapTextureManager() = default;
 
 	void init();
-	void setArchive(Archive* archive);
+	void setArchive(shared_ptr<Archive> archive);
 	void refreshResources();
 	void buildTexInfoList();
 
@@ -73,7 +73,7 @@ public:
 	vector<TexInfo>& allFlatsInfo() { return flat_info_; }
 
 private:
-	Archive*            archive_ = nullptr;
+	weak_ptr<Archive>   archive_;
 	MapTexHashMap       textures_;
 	MapTexHashMap       flats_;
 	MapTexHashMap       sprites_;
