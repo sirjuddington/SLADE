@@ -1129,9 +1129,12 @@ bool MapEditorWindow::handleAction(string_view id)
 		if (saveMap())
 		{
 			// Save archive
-			auto a = mdesc_current.head.lock()->parent();
-			if (a && save_archive_with_map)
-				a->save();
+			if (auto head = mdesc_current.head.lock())
+			{
+				auto a = head->parent();
+				if (a && save_archive_with_map)
+					a->save();
+			}
 		}
 		MapEditor::editContext().renderer().forceUpdate();
 		return true;
