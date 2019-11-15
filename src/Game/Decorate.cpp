@@ -330,7 +330,11 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 
 			// Scale
 			else if (tz.checkNC("scale"))
-				found_props["scalex"] = found_props["scaley"] = tz.next().asFloat();
+			{
+				auto val              = tz.next().asFloat();
+				found_props["scalex"] = val;
+				found_props["scaley"] = val;
+			}
 			else if (tz.checkNC("xscale"))
 				found_props["scalex"] = tz.next().asFloat();
 			else if (tz.checkNC("yscale"))

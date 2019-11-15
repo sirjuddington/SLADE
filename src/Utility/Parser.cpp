@@ -287,7 +287,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 		else if (token.isInteger()) // Integer
 			value = token.asInt();
 		else if (token.isHex()) // Hex (0xXXXXXX)
-			value = token.asInt();
+			value = StrUtil::asInt({ token.text.data() + 2, token.text.size() - 2 }, 16);
 		else if (token.isFloat()) // Floating point
 			value = token.asFloat();
 		else // Unknown, just treat as string
