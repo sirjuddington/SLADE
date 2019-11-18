@@ -226,8 +226,8 @@
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|x64'">true</GenerateManifest>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|Win32'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(FREEIMAGE)\Dist\x32;$(ProjectDir)..\src\Application;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|x64'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(FREEIMAGE)\Dist\x64;$(ProjectDir)..\src\Application;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|Win32'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|x64'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\src\Application;$(CURL)\include;$(FTGL)\src;$(FREETYPE)\include;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|x64'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\src\Application;$(CURL)\include;$(FTGL)\src;$(FREETYPE)\include;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
@@ -236,8 +236,8 @@
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|x64'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(FREEIMAGE)\Dist\x32;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|x64'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(FREEIMAGE)\Dist\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - vcpkg, static|x64'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(FTGL)\msvc\build;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|x64'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(FTGL)\msvc\build;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - No WebView|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(LibraryPath)</LibraryPath>
@@ -246,12 +246,12 @@
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|x64'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(SFML)\extlibs\libs-msvc\x86;$(LibraryPath)</LibraryPath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug - vckpg, static|Win32'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(FREEIMAGE)\Dist\x32;$(ProjectDir)..\src\Application;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug - vckpg, static|x64'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(FREEIMAGE)\Dist\x64;$(ProjectDir)..\src\Application;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug - vckpg, static|Win32'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug - vckpg, static|x64'">$(ProjectDir)..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..;$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src\Application;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(CURL)\lib\static-debug-x86;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(CURL)\lib\static-debug-x86;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug - vckpg, static|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(FREEIMAGE)\Dist\x32;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug - vckpg, static|x64'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(FREEIMAGE)\Dist\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug - vckpg, static|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug - vckpg, static|x64'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SLADE-dbg</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SLADE-dbg</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug - vckpg, static|Win32'">SLADE-dbg</TargetName>
@@ -451,7 +451,7 @@
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;FreeImage.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)-dbg.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -479,7 +479,7 @@
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;FreeImage.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)-dbg.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -592,7 +592,7 @@
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;FreeImage.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableUAC>false</EnableUAC>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -631,7 +631,7 @@
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;FreeImage.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableUAC>false</EnableUAC>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
