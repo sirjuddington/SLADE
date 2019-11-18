@@ -79,7 +79,7 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase{ par
 	btn_savestyleset_ = new wxButton(this, -1, "Save Set");
 	auto hbox         = new wxBoxSizer(wxHORIZONTAL);
 	hbox->Add(new wxStaticText(this, -1, "Style Set:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
-	hbox->Add(choice_styleset_, 1, wxALIGN_CENTER_VERTICAL | wxEXPAND | wxRIGHT, UI::pad());
+	hbox->Add(choice_styleset_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
 	hbox->Add(btn_savestyleset_, 0, wxEXPAND);
 	sizer->Add(hbox, { 1, 0 }, { 1, 2 }, wxEXPAND);
 
