@@ -76,6 +76,7 @@ public:
 	bool saveImage(SImage& image, MemChunk& out, Palette* pal = nullptr, int index = 0)
 	{
 		// Attempt to write image data
+		out.seek(0, SEEK_SET);
 		bool ok = writeImage(image, out, pal, index);
 
 		// Set format if successful
