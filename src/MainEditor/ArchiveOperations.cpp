@@ -824,6 +824,12 @@ CONSOLE_COMMAND(test_cleanflats, 0, false)
 	if (current) ArchiveOperations::removeUnusedFlats(current);
 }
 
+void importEntryDataKeepType(ArchiveEntry* entry, const void* data, unsigned size)
+{
+	auto type = entry->getType();
+	entry->importMem(data, size);
+	entry->setType(type, type->reliability());
+}
 size_t replaceThingsDoom(ArchiveEntry* entry, int oldtype, int newtype)
 {
 	if (entry == nullptr) return 0;
@@ -846,7 +852,7 @@ size_t replaceThingsDoom(ArchiveEntry* entry, int oldtype, int newtype)
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(things, size);
+		importEntryDataKeepType(entry, things, size);
 	delete[] things;
 
 	return changed;
@@ -874,7 +880,7 @@ size_t replaceThingsDoom64(ArchiveEntry* entry, int oldtype, int newtype)
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(things, size);
+		importEntryDataKeepType(entry, things, size);
 	delete[] things;
 
 	return changed;
@@ -902,7 +908,7 @@ size_t replaceThingsHexen(ArchiveEntry* entry, int oldtype, int newtype)
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(things, size);
+		importEntryDataKeepType(entry, things, size);
 	delete[] things;
 
 	return changed;
@@ -1125,7 +1131,7 @@ size_t replaceSpecialsDoom(ArchiveEntry* entry, int oldtype, int newtype, bool t
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(lines, size);
+		importEntryDataKeepType(entry, lines, size);
 	delete[] lines;
 
 	return changed;
@@ -1178,7 +1184,7 @@ size_t replaceSpecialsHexen(ArchiveEntry* l_entry, ArchiveEntry* t_entry, int ol
 		// Import the changes if needed
 		if (lchanged > 0)
 		{
-			l_entry->importMem(lines, size);
+			importEntryDataKeepType(l_entry, lines, size);
 			changed += lchanged;
 		}
 		delete[] lines;
@@ -1217,7 +1223,7 @@ size_t replaceSpecialsHexen(ArchiveEntry* l_entry, ArchiveEntry* t_entry, int ol
 		// Import the changes if needed
 		if (tchanged > 0)
 		{
-			t_entry->importMem(things, size);
+			importEntryDataKeepType(t_entry, things, size);
 			changed += tchanged;
 		}
 		delete[] things;
@@ -1458,7 +1464,7 @@ size_t replaceFlatsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, 
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(sectors, size);
+		importEntryDataKeepType(entry, sectors, size);
 	delete[] sectors;
 
 	return changed;
@@ -1491,7 +1497,7 @@ size_t replaceWallsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, 
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(sides, size);
+		importEntryDataKeepType(entry, sides, size);
 	delete[] sides;
 
 	return changed;
@@ -1530,7 +1536,7 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, string oldtex, string newtex, boo
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(sectors, size);
+		importEntryDataKeepType(entry, sectors, size);
 	delete[] sectors;
 
 	return changed;
@@ -1574,7 +1580,7 @@ size_t replaceWallsDoom64(ArchiveEntry* entry, string oldtex, string newtex, boo
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(sides, size);
+		importEntryDataKeepType(entry, sides, size);
 	delete[] sides;
 
 	return changed;
