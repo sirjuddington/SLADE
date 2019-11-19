@@ -161,7 +161,12 @@ void read_cvar(string name, string value)
 				*((CIntCVar*) cvars[c]) = atoi(CHR(value));
 
 			if (cvars[c]->type == CVAR_BOOLEAN)
-				*((CBoolCVar*) cvars[c]) = !!(atoi(CHR(value)));
+			{
+				if (value.CmpNoCase("true") == 0)
+					*((CBoolCVar*) cvars[c]) = true;
+				else
+					*((CBoolCVar*) cvars[c]) = !!(atoi(CHR(value)));
+			}
 
 			if (cvars[c]->type == CVAR_FLOAT)
 				*((CFloatCVar*) cvars[c]) = atof(CHR(value));
