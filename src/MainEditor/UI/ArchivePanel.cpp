@@ -423,12 +423,15 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 
 
 	// Create path display
+	auto min_pad         = UI::px(UI::Size::PadMinimum);
 	sizer_path_controls_ = new wxBoxSizer(wxHORIZONTAL);
 	framesizer->Add(sizer_path_controls_, 0, wxEXPAND | wxLEFT | wxRIGHT, UI::pad());
-	framesizer->AddSpacer(UI::px(UI::Size::PadMinimum));
+	framesizer->AddSpacer(min_pad);
 
 	// Label
-	label_path_ = new wxStaticText(this, -1, "Path:", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_START);
+	label_path_ =
+		new wxStaticText(this, -1, "/", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_START | wxST_NO_AUTORESIZE);
+	sizer_path_controls_->Add(new wxStaticText(this, -1, "Path:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, min_pad);
 	sizer_path_controls_->Add(label_path_, 1, wxRIGHT | wxALIGN_CENTER_VERTICAL, UI::pad());
 
 	// 'Up' button
@@ -4089,7 +4092,7 @@ void ArchivePanel::onDirChanged(wxCommandEvent& e)
 	if (!dir->parent())
 	{
 		// Root dir
-		label_path_->SetLabel("Path:");
+		label_path_->SetLabel("/");
 		btn_updir_->Enable(false);
 	}
 	else
@@ -4097,7 +4100,6 @@ void ArchivePanel::onDirChanged(wxCommandEvent& e)
 		// Setup path string
 		wxString path = dir->path();
 		path.Remove(0, 1);
-		path.Prepend("Path: ");
 
 		label_path_->SetLabel(path);
 		btn_updir_->Enable(true);

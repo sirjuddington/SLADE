@@ -813,7 +813,7 @@ CONSOLE_COMMAND(test_cleanflats, 0, false)
 
 void importEntryDataKeepType(ArchiveEntry* entry, const void* data, unsigned size)
 {
-	auto type = entry->getType();
+	auto type = entry->type();
 	entry->importMem(data, size);
 	entry->setType(type, type->reliability());
 }
