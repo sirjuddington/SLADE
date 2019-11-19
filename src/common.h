@@ -136,6 +136,7 @@
 #endif
 
 // Freeimage
+#define FREEIMAGE_LIB
 #include <FreeImage.h>
 
 // C++
