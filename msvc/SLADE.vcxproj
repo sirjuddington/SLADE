@@ -927,6 +927,7 @@
     <ClCompile Include="..\src\Scripting\Export\Graphics.cpp" />
     <ClCompile Include="..\src\Scripting\Export\MapEditor.cpp" />
     <ClCompile Include="..\src\Scripting\Export\UI.cpp" />
+    <ClCompile Include="..\src\UI\Canvas\GLCanvas.cpp" />
     <ClCompile Include="..\src\Utility\FileUtils.cpp" />
     <ClCompile Include="..\thirdparty\bzip2\blocksort.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -4865,6 +4866,7 @@
     <ClInclude Include="..\src\Dialogs\GfxTintDialog.h" />
     <ClInclude Include="..\src\General\Sigslot.h" />
     <ClInclude Include="..\src\Scripting\Export\Export.h" />
+    <ClInclude Include="..\src\UI\Canvas\GLCanvas.h" />
     <ClInclude Include="..\src\Utility\FileUtils.h" />
     <ClInclude Include="..\src\Utility\SeekableData.h" />
     <ClInclude Include="..\thirdparty\bzip2\bzlib.h" />
