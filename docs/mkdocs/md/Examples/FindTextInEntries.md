@@ -1,9 +1,10 @@
+<article-head>Example: Find Text in Entries</article-head>
 
 This example script will prompt for a search term, then search all text entries in the currently selected archive for the term. Matches are logged to the console.
 
 ```lua
 -- Function to find the line number of [position] in [text]
-function lineNum(text, position)
+function LineNum(text, position)
     local line = 1
     for i = 1,position do
         if text:sub(i, i) == '\n' then
@@ -14,24 +15,25 @@ function lineNum(text, position)
 end
 
 -- Function to find [term] in text [entry]
-function findTerm(entry, term)
-    local text = entry.data
-    local word_end = 1
+function FindTerm(entry, term)
+    local text = entry.data:AsString()
+    local wordEnd = 1
     while true do
-        i, word_end = text:find(term, word_end)
+        i, wordEnd = text:find(term, wordEnd)
         if i == nil then break end
-        App.logMessage('Text "' .. term .. '" found in ' .. entry:formattedName() .. ' on line ' .. lineNum(text, i))
+        App.LogMessage(
+            'Text "'..term..'" found in '..entry:FormattedName()..' on line '..LineNum(text, i))
     end
 end
 
 -- Prompt for search term
-local search = App.promptString('Find Text In Entries', 'Enter text to find in all entries', '')
+local search = UI.PromptString('Find Text In Entries', 'Enter text to find in all entries', '')
 
 -- Go through all entries in the currently selected archive
-for i,entry in ipairs(App.currentArchive().entries) do
+for _,entry in ipairs(App.CurrentArchive().entries) do
     -- Do search if the entry is opened in the text editor
     if entry.type.editor == 'text' then
-        findTerm(entry, search)
+        FindTerm(entry, search)
     end
 end
 ```

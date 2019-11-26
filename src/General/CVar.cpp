@@ -1,226 +1,230 @@
 
-/* *****************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2009 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    cvar.cpp
- * Description: Cvar system. 'Borrowed' from ZDoom, which is written
- *              by Randy Heit.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- * *****************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2019 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    CVar.cpp
+// Description: CVar system. 'Borrowed' from ZDoom, which is written by Randi
+//              Heit
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Utility/StringUtils.h"
+#include "thirdparty/fmt/fmt/format.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-CVar**		cvars;
-uint16_t	n_cvars;
-
-
-/*******************************************************************
- * FUNCTIONS
- *******************************************************************/
-
-/* add_cvar_list
- * Adds a CVar to the CVar list
- *******************************************************************/
-void add_cvar_list(CVar* cvar)
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+namespace
 {
-	cvars = (CVar**)realloc(cvars, (n_cvars + 1) * sizeof(CVar*));
+CVar**   cvars;
+uint16_t n_cvars;
+} // namespace
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Adds a CVar to the CVar list
+// -----------------------------------------------------------------------------
+void addCVarList(CVar* cvar)
+{
+	cvars          = (CVar**)realloc(cvars, (n_cvars + 1) * sizeof(CVar*));
 	cvars[n_cvars] = cvar;
 	n_cvars++;
 }
+} // namespace
 
-/* get_cvar
- * Finds a CVar by name
- *******************************************************************/
-CVar* get_cvar(string name)
+
+// -----------------------------------------------------------------------------
+//
+// CVar (and subclasses) Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// CIntCVar class constructor
+// -----------------------------------------------------------------------------
+CIntCVar::CIntCVar(const string& NAME, int defval, uint16_t FLAGS)
 {
-	for (uint16_t c = 0; c < n_cvars; c++)
+	name  = NAME;
+	flags = FLAGS;
+	value = defval;
+	type  = Type::Integer;
+	addCVarList(this);
+}
+
+// -----------------------------------------------------------------------------
+// CBoolCVar class constructor
+// -----------------------------------------------------------------------------
+CBoolCVar::CBoolCVar(const string& NAME, bool defval, uint16_t FLAGS)
+{
+	name  = NAME;
+	flags = FLAGS;
+	value = defval;
+	type  = Type::Boolean;
+	addCVarList(this);
+}
+
+// -----------------------------------------------------------------------------
+// CFloatCVar class constructor
+// -----------------------------------------------------------------------------
+CFloatCVar::CFloatCVar(const string& NAME, double defval, uint16_t FLAGS)
+{
+	name  = NAME;
+	flags = FLAGS;
+	value = defval;
+	type  = Type::Float;
+	addCVarList(this);
+}
+
+// -----------------------------------------------------------------------------
+// CStringCVar class constructor
+// -----------------------------------------------------------------------------
+CStringCVar::CStringCVar(const string& NAME, const string& defval, uint16_t FLAGS)
+{
+	name  = NAME;
+	flags = FLAGS;
+	value = defval;
+	type  = Type::String;
+	addCVarList(this);
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// CVar Class Static Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Finds a CVar by name
+// -----------------------------------------------------------------------------
+CVar* CVar::get(const string& name)
+{
+	for (unsigned i = 0; i < n_cvars; ++i)
 	{
-		if (cvars[c]->name == name)
-			return cvars[c];
+		if (cvars[i]->name == name)
+			return cvars[i];
 	}
 
 	return nullptr;
 }
 
-/* dump_cvars
- * Dumps all CVar info to a string
- *******************************************************************/
-void dump_cvars()
+// -----------------------------------------------------------------------------
+// Adds all cvar names to a vector of strings
+// -----------------------------------------------------------------------------
+void CVar::putList(vector<string>& list)
 {
-	for (uint16_t c = 0; c < n_cvars; c++)
+	for (unsigned i = 0; i < n_cvars; ++i)
 	{
-		if (!(cvars[c]->flags & CVAR_SECRET))
-		{
-			if (cvars[c]->type == CVAR_INTEGER)
-				printf("%s %d\n", CHR(cvars[c]->name), cvars[c]->GetValue().Int);
-
-			if (cvars[c]->type == CVAR_BOOLEAN)
-				printf("%s %d\n", CHR(cvars[c]->name), cvars[c]->GetValue().Bool);
-
-			if (cvars[c]->type == CVAR_FLOAT)
-				printf("%s %1.5f\n", CHR(cvars[c]->name), cvars[c]->GetValue().Float);
-
-			if (cvars[c]->type == CVAR_STRING)
-				printf("%s \"%s\"\n", CHR(cvars[c]->name), CHR(((CStringCVar*)cvars[c])->value));
-		}
+		if (!(cvars[i]->flags & Flag::Secret))
+			list.push_back(cvars[i]->name);
 	}
 }
 
-/* get_cvar_list
- * Adds all cvar names to a vector of strings
- *******************************************************************/
-void get_cvar_list(vector<string>& list)
-{
-	for (uint16_t c = 0; c < n_cvars; c++)
-	{
-		if (!(cvars[c]->flags & CVAR_SECRET))
-			list.push_back(cvars[c]->name);
-	}
-}
-
-/* save_cvars
- * Saves cvars to a config file
- *******************************************************************/
-void save_cvars(wxFile& file)
+// -----------------------------------------------------------------------------
+// Saves cvars to a config file
+// -----------------------------------------------------------------------------
+string CVar::writeAll()
 {
 	uint32_t max_size = 0;
-	for (uint32_t c = 0; c < n_cvars; c++)
+	for (unsigned i = 0; i < n_cvars; ++i)
 	{
-		if (cvars[c]->name.size() > max_size)
-			max_size = cvars[c]->name.size();
+		if (cvars[i]->name.size() > max_size)
+			max_size = cvars[i]->name.size();
 	}
 
-	file.Write("cvars\n{\n");
+	fmt::memory_buffer buf;
+	format_to(buf, "cvars\n{{\n");
 
-	for (uint32_t c = 0; c < n_cvars; c++)
+	for (unsigned i = 0; i < n_cvars; ++i)
 	{
-		if (cvars[c]->flags & CVAR_SAVE)
+		auto cvar = cvars[i];
+		if (cvar->flags & Flag::Save)
 		{
-			file.Write(S_FMT("\t%s ", cvars[c]->name));
+			format_to(buf, "\t{} ", cvar->name);
 
-			int spaces = max_size - cvars[c]->name.size();
-			for (int a = 0; a < spaces; a++) file.Write(" ");
+			int spaces = max_size - cvar->name.size();
+			for (int a = 0; a < spaces; a++)
+				buf.push_back(' ');
 
-			if (cvars[c]->type == CVAR_INTEGER)
-				file.Write(S_FMT("%d\n", cvars[c]->GetValue().Int));
+			if (cvar->type == Type::Integer)
+				format_to(buf, "{}\n", cvar->getValue().Int);
 
-			if (cvars[c]->type == CVAR_BOOLEAN)
-				file.Write(S_FMT("%d\n", cvars[c]->GetValue().Bool));
+			if (cvar->type == Type::Boolean)
+				format_to(buf, "{}\n", cvar->getValue().Bool);
 
-			if (cvars[c]->type == CVAR_FLOAT)
-				file.Write(S_FMT("%1.5f\n", cvars[c]->GetValue().Float));
+			if (cvar->type == Type::Float)
+				format_to(buf, "{:1.5f}\n", cvar->getValue().Float);
 
-			if (cvars[c]->type == CVAR_STRING)
+			if (cvar->type == Type::String)
 			{
-				string value = ((CStringCVar*)cvars[c])->value;
-				value.Replace("\\", "/");
-				value.Replace("\"", "\\\"");
-				file.Write(S_FMT("\"%s\"\n", value), wxConvUTF8);
+				auto value = StrUtil::escapedString(dynamic_cast<CStringCVar*>(cvar)->value, true);
+				format_to(buf, "\"{}\"\n", value);
 			}
 		}
 	}
 
-	file.Write("}\n\n");
+	format_to(buf, "}}\n\n");
+
+	return to_string(buf);
 }
 
-/* read_cvar
- * Reads [value] into the CVar with matching [name], or does nothing
- * if no CVar [name] exists
- *******************************************************************/
-void read_cvar(string name, string value)
+// -----------------------------------------------------------------------------
+// Reads [value] into the CVar with matching [name],
+// or does nothing if no CVar [name] exists
+// -----------------------------------------------------------------------------
+void CVar::set(const string& name, const string& value)
 {
-	for (uint16_t c = 0; c < n_cvars; c++)
+	for (unsigned i = 0; i < n_cvars; ++i)
 	{
-		if (name == cvars[c]->name)
+		auto cvar = cvars[i];
+		if (name == cvar->name)
 		{
-			if (cvars[c]->type == CVAR_INTEGER)
-				*((CIntCVar*) cvars[c]) = atoi(CHR(value));
+			if (cvar->type == Type::Integer)
+				*dynamic_cast<CIntCVar*>(cvar) = StrUtil::asInt(value);
 
-			if (cvars[c]->type == CVAR_BOOLEAN)
-				*((CBoolCVar*) cvars[c]) = !!(atoi(CHR(value)));
+			if (cvar->type == Type::Boolean)
+				*dynamic_cast<CBoolCVar*>(cvar) = StrUtil::asBoolean(value);
 
-			if (cvars[c]->type == CVAR_FLOAT)
-				*((CFloatCVar*) cvars[c]) = atof(CHR(value));
+			if (cvar->type == Type::Float)
+				*dynamic_cast<CFloatCVar*>(cvar) = StrUtil::asFloat(value);
 
-			if (cvars[c]->type == CVAR_STRING)
-				*((CStringCVar*) cvars[c]) = wxString::FromUTF8(CHR(value));
+			if (cvar->type == Type::String)
+				*dynamic_cast<CStringCVar*>(cvar) = value;
 		}
 	}
-}
-
-
-/*******************************************************************
- * C<TYPE>CVAR CLASS FUNCTIONS
- *******************************************************************/
-
-/* CIntCVar::CIntCVar
- * CIntCVar class constructor
- *******************************************************************/
-CIntCVar::CIntCVar(string NAME, int defval, uint16_t FLAGS)
-{
-	name = NAME;
-	flags = FLAGS;
-	value = defval;
-	type = CVAR_INTEGER;
-	add_cvar_list(this);
-}
-
-/* CBoolCVar::CBoolCVar
- * CBoolCVar class constructor
- *******************************************************************/
-CBoolCVar::CBoolCVar(string NAME, bool defval, uint16_t FLAGS)
-{
-	name = NAME;
-	flags = FLAGS;
-	value = defval;
-	type = CVAR_BOOLEAN;
-	add_cvar_list(this);
-}
-
-/* CFloatCVar::CFloatCVar
- * CFloatCVar class constructor
- *******************************************************************/
-CFloatCVar::CFloatCVar(string NAME, double defval, uint16_t FLAGS)
-{
-	name = NAME;
-	flags = FLAGS;
-	value = defval;
-	type = CVAR_FLOAT;
-	add_cvar_list(this);
-}
-
-/* CStringCVar::CStringCVar
- * CStringCVar class constructor
- *******************************************************************/
-CStringCVar::CStringCVar(string NAME, string defval, uint16_t FLAGS)
-{
-	name = NAME;
-	flags = FLAGS;
-	value = defval;
-	type = CVAR_STRING;
-	add_cvar_list(this);
 }

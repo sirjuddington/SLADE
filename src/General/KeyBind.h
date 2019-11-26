@@ -1,29 +1,21 @@
+#pragma once
 
-#ifndef __KEYBIND_H__
-#define __KEYBIND_H__
-
-#define KPM_CTRL	0x01
-#define KPM_ALT		0x02
-#define KPM_SHIFT	0x04
+#define KPM_CTRL 0x01
+#define KPM_ALT 0x02
+#define KPM_SHIFT 0x04
 
 class Tokenizer;
 
-struct keypress_t
+struct Keypress
 {
-	string	key;
-	bool	alt;
-	bool	ctrl;
-	bool	shift;
+	string key;
+	bool   alt;
+	bool   ctrl;
+	bool   shift;
 
-	keypress_t(string key, bool alt, bool ctrl, bool shift)
-	{
-		this->key = key;
-		this->alt = alt;
-		this->ctrl = ctrl;
-		this->shift = shift;
-	}
+	Keypress(string_view key, bool alt, bool ctrl, bool shift) : key{ key }, alt{ alt }, ctrl{ ctrl }, shift{ shift } {}
 
-	keypress_t(string key = "", int modifiers = 0)
+	Keypress(string_view key = "", int modifiers = 0)
 	{
 		this->key = key;
 		ctrl = alt = shift = false;
@@ -35,87 +27,84 @@ struct keypress_t
 			shift = true;
 	}
 
-	string as_string()
-	{
-		if (key.IsEmpty())
-			return "";
-
-		string ret = "";
-		if (ctrl) ret += "Ctrl+";
-		if (alt) ret += "Alt+";
-		if (shift) ret += "Shift+";
-
-		string keyname = key;
-		keyname.Replace("_", " ");
-		keyname = keyname.Capitalize();
-		ret += keyname;
-
-		return ret;
-	}
+	string asString() const;
 };
 
 class KeyBind
 {
-private:
-	string				name;
-	vector<keypress_t>	keys;
-	vector<keypress_t>	defaults;
-	bool				pressed;
-	string				description;
-	string				group;
-	bool				ignore_shift;
-	int					priority;
-
 public:
-	KeyBind(string name);
-	~KeyBind();
+	KeyBind(string_view name) : name_{ name } {}
+	~KeyBind() = default;
 
 	// Operators
-	inline bool operator> (const KeyBind r) const
+	bool operator>(const KeyBind r) const
 	{
-		if (priority == r.priority)
-			return name < r.name;
+		if (priority_ == r.priority_)
+			return name_ < r.name_;
 		else
-			return priority < r.priority;
-	}
-	inline bool operator< (const KeyBind r) const
-	{
-		if (priority == r.priority)
-			return name > r.name;
-		else
-			return priority > r.priority;
+			return priority_ < r.priority_;
 	}
 
-	void	clear() { keys.clear(); }
-	void	addKey(string key, bool alt = false, bool ctrl = false, bool shift = false);
-	string	getName() { return name; }
-	string	getGroup() { return group; }
-	string	getDescription() { return description; }
-	string	keysAsString();
+	bool operator<(const KeyBind r) const
+	{
+		if (priority_ == r.priority_)
+			return name_ > r.name_;
+		else
+			return priority_ > r.priority_;
+	}
 
-	int			nKeys() { return keys.size(); }
-	keypress_t	getKey(unsigned index) { if (index >= keys.size()) return keypress_t(); else return keys[index]; }
-	int			nDefaults() { return defaults.size(); }
-	keypress_t	getDefault(unsigned index) { return defaults[index]; }
+	void   clear() { keys_.clear(); }
+	void   addKey(string_view key, bool alt = false, bool ctrl = false, bool shift = false);
+	string name() const { return name_; }
+	string group() const { return group_; }
+	string description() const { return description_; }
+	string keysAsString();
+
+	int      nKeys() const { return keys_.size(); }
+	Keypress key(unsigned index)
+	{
+		if (index >= keys_.size())
+			return Keypress();
+		else
+			return keys_[index];
+	}
+	int      nDefaults() const { return defaults_.size(); }
+	Keypress defaultKey(unsigned index) { return defaults_[index]; }
 
 	// Static functions
-	static KeyBind&			getBind(string name);
-	static wxArrayString	getBinds(keypress_t key);
-	static bool				isPressed(string name);
-	static bool				addBind(string name, keypress_t key, string desc = "", string group = "", bool ignore_shift = false, int priority = -1);
-	static string			keyName(int key);
-	static string			mbName(int button);
-	static bool				keyPressed(keypress_t key);
-	static bool				keyReleased(string key);
-	static keypress_t		asKeyPress(int keycode, int modifiers);
-	static void				allKeyBinds(vector<KeyBind*>& list);
-	static void				releaseAll();
-	static void				pressBind(string name);
+	static KeyBind&       bind(string_view name);
+	static vector<string> bindsForKey(Keypress key);
+	static bool           isPressed(string_view name);
+	static bool           addBind(
+				  string_view     name,
+				  const Keypress& key,
+				  string_view     desc         = "",
+				  string_view     group        = "",
+				  bool            ignore_shift = false,
+				  int             priority     = -1);
+	static string   keyName(int key);
+	static string   mbName(int button);
+	static bool     keyPressed(Keypress key);
+	static bool     keyReleased(string_view key);
+	static Keypress asKeyPress(int keycode, int modifiers);
+	static void     allKeyBinds(vector<KeyBind*>& list);
+	static void     releaseAll();
+	static void     pressBind(string_view name);
 
-	static void		initBinds();
-	static string	writeBinds();
-	static bool		readBinds(Tokenizer& tz);
-	static void     updateSortedBindsList();
+	static void   initBinds();
+	static string writeBinds();
+	static bool   readBinds(Tokenizer& tz);
+	static void   updateSortedBindsList();
+
+private:
+	string           name_;
+	vector<Keypress> keys_;
+	vector<Keypress> defaults_;
+	bool             pressed_ = false;
+	string           description_;
+	string           group_;
+	bool             ignore_shift_ = false;
+	int              priority_     = 0;
 };
 
 
@@ -125,8 +114,6 @@ public:
 	KeyBindHandler();
 	virtual ~KeyBindHandler();
 
-	virtual void onKeyBindPress(string name) {}
-	virtual void onKeyBindRelease(string name) {}
+	virtual void onKeyBindPress(string_view name) {}
+	virtual void onKeyBindRelease(string_view name) {}
 };
-
-#endif//__KEYBIND_H__

@@ -1,58 +1,73 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    MapCanvas.cpp
- * Description: MapCanvas class, the OpenGL canvas widget that the
- *              2d/3d map view is drawn on
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2019 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         https://slade.mancubus.net
+// Filename:    MapCanvas.cpp
+// Description: MapCanvas class, the OpenGL canvas widget that the 2d/3d map
+//              view is drawn on
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "MapCanvas.h"
+#include "App.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/SectorBuilder.h"
 #include "OpenGL/Drawing.h"
+#include "UI/WxUtils.h"
 #include "Utility/MathStuff.h"
+
 
 using MapEditor::Mode;
 
 
-/*******************************************************************
- * MAPCANVAS CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+CVAR(Int, map_bg_ms, 15, CVar::Flag::Save)
 
-/* MapCanvas::MapCanvas
- * MapCanvas class constructor
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+//
+// MapCanvas Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// MapCanvas class constructor
+// -----------------------------------------------------------------------------
 MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 	OGLCanvas{ parent, id, false },
 	context_{ context }
 {
 	// Init variables
 	context_->setCanvas(this);
-	last_time = 0;
+	last_time_ = 0;
 
 #ifdef USE_SFML_RENDERWINDOW
 	setVerticalSyncEnabled(false);
@@ -84,19 +99,12 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 	Bind(wxEVT_IDLE, &MapCanvas::onIdle, this);
 #endif
 
-	timer.Start(10, true);
+	timer_.Start(map_bg_ms, true);
 }
 
-/* MapCanvas::~MapCanvas
- * MapCanvas class destructor
- *******************************************************************/
-MapCanvas::~MapCanvas()
-{
-}
-
-/* MapCanvas::draw
- * Draw the current map (2d or 3d) and any overlays etc
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Draw the current map (2d or 3d) and any overlays etc
+// -----------------------------------------------------------------------------
 void MapCanvas::draw()
 {
 	if (!IsEnabled())
@@ -109,20 +117,21 @@ void MapCanvas::draw()
 	glFinish();
 }
 
-/* MapCanvas::mouseToCenter
- * Moves the mouse cursor to the center of the canvas
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Moves the mouse cursor to the center of the canvas
+// -----------------------------------------------------------------------------
 void MapCanvas::mouseToCenter()
 {
-	wxRect rect = GetScreenRect();
+	auto rect   = GetScreenRect();
 	mouse_warp_ = true;
-	sf::Mouse::setPosition(sf::Vector2i(rect.x + int(rect.width*0.5), rect.y + int(rect.height*0.5)));
+	sf::Mouse::setPosition(sf::Vector2i(rect.x + int(rect.width * 0.5), rect.y + int(rect.height * 0.5)));
 }
 
-/* MapCanvas::lockMouse
- * Locks/unlocks the mouse cursor. A locked cursor is invisible and
- * will be moved to the center of the canvas every frame
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Locks/unlocks the mouse cursor.
+// A locked cursor is invisible and will be moved to the center of the canvas
+// every frame
+// -----------------------------------------------------------------------------
 void MapCanvas::lockMouse(bool lock)
 {
 	if (lock)
@@ -149,9 +158,9 @@ void MapCanvas::lockMouse(bool lock)
 	}
 }
 
-/* MapCanvas::mouseLook3d
- * Handles 3d mode mouselook
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Handles 3d mode mouselook
+// -----------------------------------------------------------------------------
 void MapCanvas::mouseLook3d()
 {
 	// Check for 3d mode
@@ -161,16 +170,16 @@ void MapCanvas::mouseLook3d()
 		if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
 		{
 			// Get relative mouse movement (scale with dpi on macOS)
-			const double scale = App::platform() == App::MacOS ? GetContentScaleFactor() : 1.;
+			const double scale     = App::platform() == App::MacOS ? GetContentScaleFactor() : 1.;
 			const double threshold = scale - 1.0;
 
-			wxRealPoint mousePos = wxGetMousePosition();
-			mousePos.x *= scale;
-			mousePos.y *= scale;
+			wxRealPoint mouse_pos = wxGetMousePosition();
+			mouse_pos.x *= scale;
+			mouse_pos.y *= scale;
 
-			const wxRealPoint screenPos = GetScreenPosition();
-			const double xpos = mousePos.x - screenPos.x;
-			const double ypos = mousePos.y - screenPos.y;
+			const wxRealPoint screen_pos = GetScreenPosition();
+			const double      xpos       = mouse_pos.x - screen_pos.x;
+			const double      ypos       = mouse_pos.y - screen_pos.y;
 
 			const wxSize size = GetSize();
 			const double xrel = xpos - floor(size.x * 0.5);
@@ -185,17 +194,21 @@ void MapCanvas::mouseLook3d()
 	}
 }
 
-/* MapCanvas::onKeyBindPress
- * Called when the key bind [name] is pressed
- *******************************************************************/
-void MapCanvas::onKeyBindPress(string name)
+// -----------------------------------------------------------------------------
+// Called when the key bind [name] is pressed
+// -----------------------------------------------------------------------------
+void MapCanvas::onKeyBindPress(string_view name)
 {
 	// Screenshot
 #ifdef USE_SFML_RENDERWINDOW
 	if (name == "map_screenshot")
 	{
 		// Capture shot
-		sf::Image shot = capture();
+		// auto shot = capture();
+		sf::Texture tex;
+		tex.create(RenderWindow::getSize().x, RenderWindow::getSize().y);
+		tex.update(*this);
+		auto shot = tex.copyToImage();
 
 		// Remove alpha
 		// sf::Image kinda sucks, shouldn't have to do it like this
@@ -203,7 +216,7 @@ void MapCanvas::onKeyBindPress(string name)
 		{
 			for (unsigned y = 0; y < shot.getSize().y; y++)
 			{
-				sf::Color col = shot.getPixel(x, y);
+				auto col = shot.getPixel(x, y);
 				shot.setPixel(x, y, sf::Color(col.r, col.g, col.b, 255));
 			}
 		}
@@ -211,32 +224,34 @@ void MapCanvas::onKeyBindPress(string name)
 		// Save to file
 		wxDateTime date;
 		date.SetToCurrent();
-		string timestamp = date.FormatISOCombined('-');
+		auto timestamp = date.FormatISOCombined('-');
 		timestamp.Replace(":", "");
-		string filename = App::path(S_FMT("sladeshot-%s.png", timestamp), App::Dir::User);
-		if (shot.saveToFile(UTF8(filename)))
+		auto filename = App::path(fmt::format("sladeshot-{}.png", WxUtils::strToView(timestamp)), App::Dir::User);
+		if (shot.saveToFile(filename))
 		{
 			// Editor message if the file is actually written, with full path
-			context_->addEditorMessage(S_FMT("Screenshot taken (%s)", filename));
+			context_->addEditorMessage(fmt::format("Screenshot taken ({})", filename));
 		}
 		else
 		{
 			// Editor message also if the file couldn't be written
-			context_->addEditorMessage(S_FMT("Screenshot failed (%s)", filename));
+			context_->addEditorMessage(fmt::format("Screenshot failed ({})", filename));
 		}
-
 	}
 #endif
 }
 
 
-/*******************************************************************
- * MAPCANVAS CLASS EVENTS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// MapCanvas Class Events
+//
+// -----------------------------------------------------------------------------
 
-/* MapCanvas::onSize
- * Called when the canvas is resized
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Called when the canvas is resized
+// -----------------------------------------------------------------------------
 void MapCanvas::onSize(wxSizeEvent& e)
 {
 	// Update screen limits
@@ -245,9 +260,9 @@ void MapCanvas::onSize(wxSizeEvent& e)
 	e.Skip();
 }
 
-/* MapCanvas::onKeyDown
- * Called when a key is pressed within the canvas
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when a key is pressed within the canvas
+// -----------------------------------------------------------------------------
 void MapCanvas::onKeyDown(wxKeyEvent& e)
 {
 	// Send to editor
@@ -261,20 +276,19 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		{
 			Polygon2D poly;
 			sf::Clock clock;
-			LOG_MESSAGE(1, "Generating polygons...");
+			Log::info(1, "Generating polygons...");
 			for (unsigned a = 0; a < context_->map().nSectors(); a++)
 			{
-				if (!poly.openSector(context_->map().getSector(a)))
-					LOG_MESSAGE(1, "Splitting failed for sector %d", a);
+				if (!poly.openSector(context_->map().sector(a)))
+					Log::info(1, wxString::Format("Splitting failed for sector %d", a));
 			}
-			//int ms = clock.GetElapsedTime() * 1000;
-			//LOG_MESSAGE(1, "Polygon generation took %dms", ms);
+			// int ms = clock.GetElapsedTime() * 1000;
+			// Log::info(1, "Polygon generation took %dms", ms);
 		}
 		if (e.GetKeyCode() == WXK_F7)
 		{
 			// Get nearest line
-			int nearest = context_->map().nearestLine(context_->input().mousePosMap(), 999999);
-			MapLine* line = context_->map().getLine(nearest);
+			auto line = context_->map().lines().nearest(context_->input().mousePosMap(), 999999);
 			if (line)
 			{
 				SectorBuilder sbuilder;
@@ -290,18 +304,21 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		if (e.GetKeyCode() == WXK_F5)
 		{
 			// Get nearest line
-			int nearest = context_->map().nearestLine(context_->input().mousePosMap(), 999999);
-			MapLine* line = context_->map().getLine(nearest);
+			auto line = context_->map().lines().nearest(context_->input().mousePosMap(), 999999);
+			if (!line)
+				return;
 
 			// Get sectors
-			MapSector* sec1 = context_->map().getLineSideSector(line, true);
-			MapSector* sec2 = context_->map().getLineSideSector(line, false);
-			int i1 = -1;
-			int i2 = -1;
-			if (sec1) i1 = sec1->getIndex();
-			if (sec2) i2 = sec2->getIndex();
+			auto sec1 = context_->map().lineSideSector(line, true);
+			auto sec2 = context_->map().lineSideSector(line, false);
+			int  i1   = -1;
+			int  i2   = -1;
+			if (sec1)
+				i1 = sec1->index();
+			if (sec2)
+				i2 = sec2->index();
 
-			context_->addEditorMessage(S_FMT("Front %d Back %d", i1, i2));
+			context_->addEditorMessage(fmt::format("Front {} Back {}", i1, i2));
 		}
 		if (e.GetKeyCode() == WXK_F5 && context_->editMode() == Mode::Sectors)
 		{
@@ -314,27 +331,22 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 	}
 
 	// Update cursor in object edit mode
-	//if (mouse_state == Input::MouseState::ObjectEdit)
+	// if (mouse_state == Input::MouseState::ObjectEdit)
 	//	determineObjectEditState();
 
 #ifndef __WXMAC__
 	// Skipping events on OS X doesn't do anything but causes
 	// sound alert (a.k.a. error beep) on every key press
-	if (e.GetKeyCode() != WXK_UP &&
-		e.GetKeyCode() != WXK_DOWN &&
-		e.GetKeyCode() != WXK_LEFT &&
-		e.GetKeyCode() != WXK_RIGHT &&
-		e.GetKeyCode() != WXK_NUMPAD_UP &&
-		e.GetKeyCode() != WXK_NUMPAD_DOWN &&
-		e.GetKeyCode() != WXK_NUMPAD_LEFT &&
-		e.GetKeyCode() != WXK_NUMPAD_RIGHT)
+	if (e.GetKeyCode() != WXK_UP && e.GetKeyCode() != WXK_DOWN && e.GetKeyCode() != WXK_LEFT
+		&& e.GetKeyCode() != WXK_RIGHT && e.GetKeyCode() != WXK_NUMPAD_UP && e.GetKeyCode() != WXK_NUMPAD_DOWN
+		&& e.GetKeyCode() != WXK_NUMPAD_LEFT && e.GetKeyCode() != WXK_NUMPAD_RIGHT)
 		e.Skip();
 #endif // !__WXMAC__
 }
 
-/* MapCanvas::onKeyUp
- * Called when a key is released within the canvas
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when a key is released within the canvas
+// -----------------------------------------------------------------------------
 void MapCanvas::onKeyUp(wxKeyEvent& e)
 {
 	// Send to editor
@@ -344,9 +356,9 @@ void MapCanvas::onKeyUp(wxKeyEvent& e)
 	e.Skip();
 }
 
-/* MapCanvas::onMouseDown
- * Called when a mouse button is pressed within the canvas
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when a mouse button is pressed within the canvas
+// -----------------------------------------------------------------------------
 void MapCanvas::onMouseDown(wxMouseEvent& e)
 {
 	using namespace MapEditor;
@@ -384,9 +396,9 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 	}
 }
 
-/* MapCanvas::onMouseUp
- * Called when a mouse button is released within the canvas
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when a mouse button is released within the canvas
+// -----------------------------------------------------------------------------
 void MapCanvas::onMouseUp(wxMouseEvent& e)
 {
 	using namespace MapEditor;
@@ -409,9 +421,9 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 		e.Skip();
 }
 
-/* MapCanvas::onMouseMotion
- * Called when the mouse cursor is moved within the canvas
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the mouse cursor is moved within the canvas
+// -----------------------------------------------------------------------------
 void MapCanvas::onMouseMotion(wxMouseEvent& e)
 {
 	// Ignore if it was generated by a mouse pointer warp
@@ -429,9 +441,9 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 	e.Skip();
 }
 
-/* MapCanvas::onMouseWheel
- * Called when the mouse wheel is moved
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the mouse wheel is moved
+// -----------------------------------------------------------------------------
 void MapCanvas::onMouseWheel(wxMouseEvent& e)
 {
 #ifdef __WXOSX__
@@ -448,9 +460,9 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 	context_->input().mouseWheel(e.GetWheelRotation() > 0, mwheel_rotation);
 }
 
-/* MapCanvas::onMouseLeave
- * Called when the mouse cursor leaves the canvas
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the mouse cursor leaves the canvas
+// -----------------------------------------------------------------------------
 void MapCanvas::onMouseLeave(wxMouseEvent& e)
 {
 	context_->input().mouseLeave();
@@ -458,58 +470,58 @@ void MapCanvas::onMouseLeave(wxMouseEvent& e)
 	e.Skip();
 }
 
-/* MapCanvas::onMouseEnter
- * Called when the mouse cursor enters the canvas
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the mouse cursor enters the canvas
+// -----------------------------------------------------------------------------
 void MapCanvas::onMouseEnter(wxMouseEvent& e)
 {
 	// Set focus
-	//SetFocus();
+	// SetFocus();
 
 	e.Skip();
 }
 
-/* MapCanvas::onIdle
- * Called when the canvas is idle
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the canvas is idle
+// -----------------------------------------------------------------------------
 void MapCanvas::onIdle(wxIdleEvent& e)
 {
 	// Handle 3d mode mouselook
 	mouseLook3d();
 
 	// Get time since last redraw
-	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time;
+	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time_;
 
 	if (context_->update(frametime))
 	{
-		last_time = (sf_clock_.getElapsedTime().asMilliseconds());
+		last_time_ = (sf_clock_.getElapsedTime().asMilliseconds());
 		Refresh();
 	}
 }
 
-/* MapCanvas::onRTimer
- * Called when the canvas timer is triggered
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the canvas timer is triggered
+// -----------------------------------------------------------------------------
 void MapCanvas::onRTimer(wxTimerEvent& e)
 {
 	// Handle 3d mode mouselook
 	mouseLook3d();
 
 	// Get time since last redraw
-	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time;
+	long frametime = (sf_clock_.getElapsedTime().asMilliseconds()) - last_time_;
 
 	if (context_->update(frametime))
 	{
-		last_time = (sf_clock_.getElapsedTime().asMilliseconds());
+		last_time_ = (sf_clock_.getElapsedTime().asMilliseconds());
 		Refresh();
 	}
 
-	timer.Start(-1, true);
+	timer_.Start(map_bg_ms, true);
 }
 
-/* MapCanvas::onFocus
- * Called when the canvas loses or gains focus
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the canvas loses or gains focus
+// -----------------------------------------------------------------------------
 void MapCanvas::onFocus(wxFocusEvent& e)
 {
 	if (e.GetEventType() == wxEVT_SET_FOCUS)

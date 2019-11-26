@@ -1,60 +1,55 @@
 #pragma once
 
 #include "UI/Canvas/OGLCanvas.h"
-#include "OpenGL/GLTexture.h"
 
 class SImage;
 class NumberTextCtrl;
-class GLTexture;
 
 class CropCanvas : public OGLCanvas
 {
 public:
 	CropCanvas(wxWindow* parent, SImage* image, Palette* palette);
 
-	rect_t	cropRect() { return crop_rect; }
-	void	setCropRect(rect_t& rect) { crop_rect.set(rect); }
+	const Recti& cropRect() const { return crop_rect_; }
+	void         setCropRect(Recti& rect) { crop_rect_.set(rect); }
 
-	void	draw() override;
+	void draw() override;
 
 private:
-	std::unique_ptr<GLTexture>	texture;
-	rect_t						crop_rect;
+	unsigned texture_ = 0;
+	Recti    crop_rect_;
 };
 
 class GfxCropDialog : public wxDialog
 {
 public:
 	GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette);
-	~GfxCropDialog() {}
+	~GfxCropDialog() = default;
 
-	rect_t	getCropRect() { return crop_rect; }
-	void	updatePreview();
+	const Recti& cropRect() const { return crop_rect_; }
+	void         updatePreview();
 
 private:
-	CropCanvas*		canvas_preview;
-	NumberTextCtrl*	text_left;
-	NumberTextCtrl*	text_top;
-	NumberTextCtrl*	text_right;
-	NumberTextCtrl*	text_bottom;
-	wxRadioButton*	rb_absolute;
-	wxRadioButton*	rb_relative;
+	CropCanvas*     canvas_preview_ = nullptr;
+	NumberTextCtrl* text_left_      = nullptr;
+	NumberTextCtrl* text_top_       = nullptr;
+	NumberTextCtrl* text_right_     = nullptr;
+	NumberTextCtrl* text_bottom_    = nullptr;
+	wxRadioButton*  rb_absolute_    = nullptr;
+	wxRadioButton*  rb_relative_    = nullptr;
 
-	int		max_width;
-	int		max_height;
-	rect_t	crop_rect;
+	int   max_width_  = 0;
+	int   max_height_ = 0;
+	Recti crop_rect_;
 
-	void	updateValues();
-	void	setLeft();
-	void	setTop();
-	void	setRight();
-	void	setBottom();
+	void bindEvents();
 
-	void	onTextChanged(wxCommandEvent& e);
-	void	onTextEnter(wxCommandEvent& e);
-	void	onLeftTextFocus(wxFocusEvent& e);
-	void	onTopTextFocus(wxFocusEvent& e);
-	void	onRightTextFocus(wxFocusEvent& e);
-	void	onBottomTextFocus(wxFocusEvent& e);
-	void	onAbsoluteRelativeChanged(wxCommandEvent& e);
+	void updateValues() const;
+	void setLeft();
+	void setTop();
+	void setRight();
+	void setBottom();
+
+	// Events
+	void onTextEnter(wxCommandEvent& e);
 };

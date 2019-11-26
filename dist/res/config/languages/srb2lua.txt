@@ -1,9 +1,9 @@
 
 srb2lua {
 	name = "SRB2 Lua Script";
-	comment_begin = "/*", "--[[";
-	comment_end = "*/", "]]";
-	comment_line = "//", "--";
+	comment_begin = "--[[", "/*";
+	comment_end =  "]]", "*/";
+	comment_line = "--", "//";
 	case_sensitive = true;
 
 	keywords = {
@@ -13,6 +13,7 @@ srb2lua {
 	}
 
 	constants = {
+		// userdata types
 		valid,
 
 		sprnames,
@@ -23,6 +24,7 @@ srb2lua {
 		powers,
 		skins,
 		mapthings,
+		mapheaderinfo,
 		vertexes,
 		lines,
 		sides,
@@ -31,18 +33,127 @@ srb2lua {
 		sidenum,
 		hudinfo,
 
+		// console variable flags
 		CV_OnOff,
 		CV_YesNo,
 		CV_Unsigned,
-		CV_Natural
+		CV_Natural,
+		CV_SAVE,
+		CV_CALL,
+		CV_NETVAR,
+		CV_NOINIT,
+		CV_FLOAT,
+	 	CV_NOTINNET,
+	 	CV_MODIFIED,
+		CV_SHOWMODIF,
+		CV_SHOWMODIFONETIME,
+	 	CV_NOSHOWHELP,
+		CV_HIDEN,
+		CV_HIDDEN,
+		CV_CHEAT,
+
+		// integer type limits
+		INT8_MIN,
+		INT16_MIN,
+		INT32_MIN,
+		INT8_MAX,
+		INT16_MAX,
+		INT32_MAX,
+		UINT8_MAX,
+		UINT16_MAX,
+		UINT32_MAX,
+
+		// angles
+		ANG1,
+		ANG2,
+		ANG10,
+		ANG15,
+		ANG20,
+		ANG30,
+		ANG60,
+		ANG64h,
+		ANG105,
+		ANG210,
+		ANG255,
+		ANG340,
+		ANG350,
+
+		ANGLE_11hh,
+		ANGLE_22h,
+		ANGLE_45,
+		ANGLE_67h,
+		ANGLE_90,
+		ANGLE_112h,
+		ANGLE_135,
+		ANGLE_157h,
+		ANGLE_180,
+		ANGLE_202h,
+		ANGLE_225,
+		ANGLE_247h,
+		ANGLE_270,
+		ANGLE_292h,
+		ANGLE_315,
+		ANGLE_337h,
+		ANGLE_MAX,
+
+		// misc
+		FRACUNIT,
+		FRACBITS,
+		TICRATE,
+		RING_DIST,
+		PUSHACCEL,
+		MODID,
+		CODEBASE,
+		VERSION,
+		FLOATSPEED,
+		MAXSTEPMOVE,
+		USERANGE,
+		MELEERANGE,
+		MISSILERANGE,
+		ONFLOORZ,
+		ONCEILINGZ,
+
+		// translucency levels
+		TR_TRANS10,
+		TR_TRANS20,
+		TR_TRANS30,
+		TR_TRANS40,
+		TR_TRANS50,
+		TR_TRANS60,
+		TR_TRANS70,
+		TR_TRANS80,
+		TR_TRANS90,
+		NUMTRANSMAPS,
+
+		// kick reasons
+		KR_KICK,
+		KR_BAN,
+		KR_LEAVE,
+		KR_TIMEOUT,
+		KR_SYNCH,
+		KR_PINGLIMIT,
+
+		// slope flags
+		SL_NOPHYSICS,
+		SL_NODYNAMIC,
+		SL_ANCHORVERTEX,
+		SL_VERTEXSLOPE,
+
+		// save override
+		SAVE_NEVER,
+		SAVE_DEFAULT,
+		SAVE_ALWAYS
 	}
 
 	functions {
 		print = "string output, [string output2], [...]";
+		chatprint = "string output, [boolean sound]";
+		chatprintf = "player_t player, string output, [boolean sound]";
 		freeslot = "string resource, [string resource2], [...]";
 		super = "mobj_t actor, int var1, int var2";
 		addHook = "string hook, function(?) fn, [int extra]";
 		EvalMath = "string word";
+		IsPlayerAdmin = "player_t player";
 
 		// math
 		abs = "int a";
@@ -72,7 +183,10 @@ srb2lua {
 
 		// p_random
 		P_Random;
+		P_RandomFixed;
+		P_RandomByte;
 		P_SignedRandom;
+		P_RandomChance = "fixed p";
 		P_RandomKey = "int a";
 		P_RandomRange = "int a, int b";
 
@@ -103,6 +217,7 @@ srb2lua {
 		P_WeaponOrPanel = "int type";
 		P_FlashPal = "player_t player, int type, int duration";
 		P_GetClosestAxis = "mobj_t mobj";
+		P_GetMobjGravity = "mobj_t mobj";
 		P_SpawnParaloop = "fixed x, fixed y, fixed z, fixed radius, int number, int type, int rotate, [int state], [boolean spawncenter?]";
 		P_BossTargetPlayer = "mobj_t actor, [boolean closest?]";
 		P_SupermanLook4Players = "mobj_t actor";
@@ -111,6 +226,9 @@ srb2lua {
 		P_InsideANonSolidFFloor = "mobj_t mobj, ffloor_t rover";
 		P_CheckSolidLava = "mobj_t mobj, ffloor_t rover";
 		P_CanRunOnWater = "player_t player, ffloor_t rover";
+
+		// p_slopes
+		P_GetZAt = "pslope_t slope, fixed x, fixed y";
 
 		// p_user
 		P_GetPlayerHeight = "player_t player";
@@ -143,6 +261,10 @@ srb2lua {
 		P_InSpaceSector = "mobj_t mobj";
 		P_DoJumpShield = "player_t player";
 		P_IsObjectInGoop = "mobj_t mobj";
+
+		// r_data
+		R_TextureNumForName = "string name";
+		R_CheckTextureNumForName = "string name";
 
 		// p_map
 		P_CheckPosition = "mobj_t mobj, fixed x, fixed y, fixed z";
@@ -218,7 +340,8 @@ srb2lua {
 		// g_game
 		G_BuildMapName = "int map";
 		G_DoReborn = "int playernum";
-		G_ExitLevel;
+		G_ExitLevel = "[int nextmap], [boolean skipstats]";
+		G_SetCustomExitVars = "[int nextmap], [boolean skipstats]";
 		G_IsSpecialStage = "int map";
 		G_GametypeUsesLives;
 		G_GametypeHasTeams;
@@ -239,6 +362,9 @@ srb2lua {
 		CV_RegisterVar = "table{string name/string defaultvalue/int flags/PossibleValue pv/function() fn}, [...]";
 		CONS_Printf = "player_t player, string text";
 
+		// blockmap search
+		searchBlockmap = "string searchtype, function fn, mobj_t refmobj, [fixed x1], [fixed x2], [fixed y1], [fixed y2]";
+
 		// iterators
 		players.iterate;
 		thinkers.iterate = "string type";
@@ -251,18 +377,21 @@ srb2lua {
 
 		hud.enable = "string huditem";
 		hud.disable = "string huditem";
+		hud.enabled = "string huditem";
 		hud.add = "function(drawer v/[player_t stplyr]), string type)";
 
 		// technically these are a part of the video code but you can rename that whatever you want...
-		draw = "int x, int y, patch patch, [int flags], [(unimplemented) colormap]";
-		drawScaled = "fixed x, fixed y, fixed scale, patch patch, [int flags], [(unimplemented) colormap]";
+		draw = "int x, int y, patch patch, [int flags], [colormap c]";
+		drawScaled = "fixed x, fixed y, fixed scale, patch patch, [int flags], [colormap c]";
 		drawNum = "int x, int y, int num, [int flags]";
 		drawPaddedNum = "int x, int y, int num, [int digits], [int flags]";
 		drawFill = "[int x], [int y], [int w], [int h], [int color]";
 		drawString = "fixed x, fixed y, string str, [int flags], [string alignment]";
 		patchExists = "string name";
 		cachePatch = "string name";
+		getColormap = "[string/int skin], [int color]";
 		stringWidth = "string string, [int flags], [string widthtype]";
+		getLocalTransFlag;
 
 		// basic Lua
 		assert = "boolean assert, [string errormsg]";

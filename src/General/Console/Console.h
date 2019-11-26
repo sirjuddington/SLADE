@@ -1,53 +1,52 @@
-
-#ifndef	__CONSOLE_H__
-#define	__CONSOLE_H__
+#pragma once
 
 class ConsoleCommand
 {
 public:
-	ConsoleCommand(string name, void(*commandFunc)(vector<string>), int min_args, bool show_in_list = true);
+	ConsoleCommand(
+		string_view name,
+		void (*command_func)(const vector<string>&),
+		int  min_args,
+		bool show_in_list = true);
+	~ConsoleCommand() = default;
 
-	~ConsoleCommand() {}
+	string name() const { return name_; }
+	bool   showInList() const { return show_in_list_; }
+	void   execute(const vector<string>& args) const;
+	size_t minArgs() const { return min_args_; }
 
-	string	getName() { return name; }
-	bool	showInList() { return show_in_list; }
-	void	execute(vector<string> args);
-	size_t	minArgs() { return min_args; }
-
-	inline bool operator<(ConsoleCommand c) const { return name < c.getName(); }
-	inline bool operator>(ConsoleCommand c) const { return name > c.getName(); }
+	bool operator<(ConsoleCommand c) const { return name_ < c.name(); }
+	bool operator>(ConsoleCommand c) const { return name_ > c.name(); }
 
 private:
-	string	name;
-	void(*commandFunc)(vector<string>);
-	size_t	min_args;
-	bool	show_in_list;
+	string name_;
+	void (*command_func_)(const vector<string>&);
+	size_t min_args_;
+	bool   show_in_list_;
 };
 
 class Console
 {
 public:
-	Console();
-	~Console();
+	Console()  = default;
+	~Console() = default;
 
-	int numCommands() { return (int) commands.size(); }
+	int             numCommands() const { return (int)commands_.size(); }
 	ConsoleCommand& command(size_t index);
 
-	void			addCommand(ConsoleCommand& c);
-	void			execute(string command);
-	string			lastCommand();
-	string			prevCommand(int index);
-	int				numPrevCommands() { return cmd_log.size(); }
+	void   addCommand(ConsoleCommand& c);
+	void   execute(string_view command);
+	string lastCommand();
+	string prevCommand(int index);
+	int    numPrevCommands() const { return cmd_log_.size(); }
 
 private:
-	vector<ConsoleCommand>	commands;
-	vector<string>			cmd_log;
+	vector<ConsoleCommand> commands_;
+	vector<string>         cmd_log_;
 };
 
 // Define for neat console command definitions
-#define CONSOLE_COMMAND(name, min_args, show_in_list) \
-	void c_##name(vector<string> args); \
+#define CONSOLE_COMMAND(name, min_args, show_in_list)              \
+	void           c_##name(const vector<string>& args);           \
 	ConsoleCommand name(#name, &c_##name, min_args, show_in_list); \
-	void c_##name(vector<string> args)
-
-#endif //__CONSOLE_H__
+	void           c_##name(const vector<string>& args)

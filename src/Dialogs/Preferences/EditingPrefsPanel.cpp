@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -14,21 +14,21 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "EditingPrefsPanel.h"
 #include "Archive/EntryType/EntryType.h"
@@ -36,15 +36,15 @@
 #include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "UI/Controls/STabCtrl.h"
-#include "Utility/SFileDialog.h"
 #include "UI/WxUtils.h"
+#include "Utility/SFileDialog.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, wad_force_uppercase)
 EXTERN_CVAR(Int, autosave_entry_changes)
 EXTERN_CVAR(Bool, percent_encoding)
@@ -55,30 +55,29 @@ EXTERN_CVAR(Bool, confirm_entry_revert)
 EXTERN_CVAR(Int, dir_archive_change_action)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ExternalEditorList Class
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class ExternalEditorList : public VirtualListView
 {
 public:
-	ExternalEditorList(wxWindow* parent)
-		: VirtualListView(parent)
+	ExternalEditorList(wxWindow* parent) : VirtualListView(parent)
 	{
 		AppendColumn("Name");
 		AppendColumn("Path");
 	}
 
-	~ExternalEditorList() {}
+	~ExternalEditorList() = default;
 
-	void setCategory(string category)
+	void setCategory(string_view category)
 	{
-		exes_ = Executables::getExternalExes(category);
+		exes_ = Executables::externalExes(category);
 		SetItemCount(exes_.size());
 	}
 
-	string getItemText(long item, long column, long index) const override
+	wxString itemText(long item, long column, long index) const override
 	{
 		if (item < 0 || item >= (long)exes_.size())
 			return "";
@@ -92,49 +91,42 @@ public:
 	}
 
 private:
-	vector<Executables::external_exe_t> exes_;
+	vector<Executables::ExternalExe> exes_;
 };
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ExternalEditorDialog Class
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class ExternalEditorDialog : public wxDialog
 {
 public:
-	ExternalEditorDialog(wxWindow* parent, bool browse_on_open, string name = "", string path = "")
-		: wxDialog(parent, -1, "External Editor"), browse_on_open_(browse_on_open)
+	ExternalEditorDialog(wxWindow* parent, bool browse_on_open, const wxString& name = "", const wxString& path = "") :
+		wxDialog(parent, -1, "External Editor"),
+		browse_on_open_(browse_on_open)
 	{
-		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+		auto sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
 
 		// Name
-		wxGridBagSizer* gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+		auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
 		sizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::padLarge());
-		gb_sizer->Add(
-			new wxStaticText(this, -1, "Name:"),
-			wxGBPosition(0, 0),
-			wxDefaultSpan,
-			wxALIGN_CENTER_VERTICAL);
+		gb_sizer->Add(new wxStaticText(this, -1, "Name:"), { 0, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 		text_name_ = new wxTextCtrl(this, -1, name);
-		gb_sizer->Add(text_name_, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
+		gb_sizer->Add(text_name_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
 		// Path
-		gb_sizer->Add(
-			new wxStaticText(this, -1, "Path:"),
-			wxGBPosition(1, 0),
-			wxDefaultSpan,
-			wxALIGN_CENTER_VERTICAL);
+		gb_sizer->Add(new wxStaticText(this, -1, "Path:"), { 1, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 		text_path_ = new wxTextCtrl(this, -1, path, wxDefaultPosition, wxSize(UI::scalePx(300), -1));
-		gb_sizer->Add(text_path_, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
-		btn_browse_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "open"));
-		gb_sizer->Add(btn_browse_, wxGBPosition(1, 2), wxDefaultSpan);
+		gb_sizer->Add(text_path_, { 1, 1 }, wxDefaultSpan, wxEXPAND);
+		btn_browse_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "open"));
+		gb_sizer->Add(btn_browse_, { 1, 2 }, wxDefaultSpan);
 
 		// Ok/Cancel
-		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-		gb_sizer->Add(hbox, wxGBPosition(2, 0), wxGBSpan(1, 3), wxEXPAND);
+		auto hbox = new wxBoxSizer(wxHORIZONTAL);
+		gb_sizer->Add(hbox, { 2, 0 }, { 1, 3 }, wxEXPAND);
 		hbox->AddStretchSpacer();
 		btn_cancel_ = new wxButton(this, wxID_CANCEL, "Cancel");
 		hbox->Add(btn_cancel_, 0, wxEXPAND | wxRIGHT, UI::pad());
@@ -143,29 +135,35 @@ public:
 
 		gb_sizer->AddGrowableCol(1);
 
-		btn_browse_->Bind(wxEVT_BUTTON, &ExternalEditorDialog::onBtnBrowseClicked, this);
-		Bind(wxEVT_SHOW, &ExternalEditorDialog::onShow, this);
+		// Browse button click
+		btn_browse_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { browse(); });
 
-		Fit();
+		// Show event
+		Bind(wxEVT_SHOW, [&](wxShowEvent& e) {
+			if (e.IsShown() && browse_on_open_ && text_path_->GetValue().IsEmpty())
+				browse();
+		});
+
+		wxWindowBase::Fit();
 		CenterOnParent();
 	}
 
-	~ExternalEditorDialog() {}
+	~ExternalEditorDialog() = default;
 
-	string getName() const { return text_name_->GetValue(); }
-	string getPath() const { return text_path_->GetValue(); }
+	wxString getName() const { return text_name_->GetValue(); }
+	wxString getPath() const { return text_path_->GetValue(); }
 
 private:
-	wxTextCtrl*		text_name_;
-	wxTextCtrl*		text_path_;
-	wxBitmapButton*	btn_browse_;
-	wxButton*		btn_ok_;
-	wxButton*		btn_cancel_;
-	bool			browse_on_open_;
+	wxTextCtrl*     text_name_;
+	wxTextCtrl*     text_path_;
+	wxBitmapButton* btn_browse_;
+	wxButton*       btn_ok_;
+	wxButton*       btn_cancel_;
+	bool            browse_on_open_;
 
 	void browse()
 	{
-		SFileDialog::fd_info_t info;
+		SFileDialog::FDInfo info;
 #ifdef WIN32
 		if (SFileDialog::openFile(info, "Browse for External Editor", "Executable Files (*.exe)|*.exe", this))
 #else
@@ -181,36 +179,23 @@ private:
 			}
 		}
 	}
-
-	void onBtnBrowseClicked(wxCommandEvent& e)
-	{
-		browse();
-	}
-
-	void onShow(wxShowEvent& e)
-	{
-		if (e.IsShown() && browse_on_open_ && text_path_->GetValue().IsEmpty())
-			browse();
-	}
 };
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // EditingPrefsPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// EditingPrefsPanel::EditingPrefsPanel
-//
+// -----------------------------------------------------------------------------
 // EditingPrefsPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Tabs
@@ -224,102 +209,73 @@ EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	stc_tabs_->AddPage(setupExternalTab(), "External Editors", false);
 
 	// Bind events
-	choice_category_->Bind(wxEVT_CHOICE, &EditingPrefsPanel::onChoiceCategoryChanged, this);
+	choice_category_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&) {
+		((ExternalEditorList*)lv_ext_editors_)->setCategory(WxUtils::strToView(choice_category_->GetStringSelection()));
+	});
 	btn_add_exe_->Bind(wxEVT_BUTTON, &EditingPrefsPanel::onBtnAddClicked, this);
 	btn_remove_exe_->Bind(wxEVT_BUTTON, &EditingPrefsPanel::onBtnRemoveClicked, this);
 	lv_ext_editors_->Bind(wxEVT_LIST_ITEM_ACTIVATED, &EditingPrefsPanel::onExternalExeActivated, this);
 }
 
-// ----------------------------------------------------------------------------
-// EditingPrefsPanel::~EditingPrefsPanel
-//
-// EditingPrefsPanel class destructor
-// ----------------------------------------------------------------------------
-EditingPrefsPanel::~EditingPrefsPanel()
-{
-}
-
-// ----------------------------------------------------------------------------
-// EditingPrefsPanel::setupGeneralTab
-//
+// -----------------------------------------------------------------------------
 // Creates and returns the 'General' tab
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxPanel* EditingPrefsPanel::setupGeneralTab()
 {
-	wxPanel* panel = new wxPanel(stc_tabs_, -1);
+	auto panel = new wxPanel(stc_tabs_, -1);
 
 	// Create controls
-	cb_wad_force_uppercase_ = new wxCheckBox(panel, -1, "Force uppercase entry names in Wad Archives");
-	cb_zip_percent_encoding_ = new wxCheckBox(
-		panel,
-		-1,
-		"Use percent encoding if needed outside of Wad Archives"
-	);
-	cb_auto_entry_replace_ = new wxCheckBox(
-		panel,
-		-1,
-		"Automatically replace entries with same name as drag-and-dropped files"
-	);
+	cb_wad_force_uppercase_  = new wxCheckBox(panel, -1, "Force uppercase entry names in Wad Archives");
+	cb_zip_percent_encoding_ = new wxCheckBox(panel, -1, "Use percent encoding if needed outside of Wad Archives");
+	cb_auto_entry_replace_   = new wxCheckBox(
+        panel, -1, "Automatically replace entries with same name as drag-and-dropped files");
 	cb_save_archive_with_map_ = new wxCheckBox(panel, -1, "Save the map's parent archive when saving a map");
-	cb_confirm_entry_delete_ = new wxCheckBox(panel, -1, "Show confirmation dialog on deleting an entry");
-	cb_confirm_entry_revert_ = new wxCheckBox(panel, -1, "Show confirmation dialog on reverting entry changes");
-	choice_entry_mod_ = new wxChoice(panel, -1);
-	choice_dir_mod_ = new wxChoice(panel, -1);
+	cb_confirm_entry_delete_  = new wxCheckBox(panel, -1, "Show confirmation dialog on deleting an entry");
+	cb_confirm_entry_revert_  = new wxCheckBox(panel, -1, "Show confirmation dialog on reverting entry changes");
+	choice_entry_mod_         = new wxChoice(panel, -1);
+	choice_dir_mod_           = new wxChoice(panel, -1);
 
 	// Populate dropdowns
-	choice_entry_mod_->Set(vector<string>{ "Don't Save", "Save", "Ask" });
-	choice_dir_mod_->Set(vector<string>{ "Ignore Changes", "Apply Changes", "Ask"});
+	choice_entry_mod_->Set(WxUtils::arrayString({ "Don't Save", "Save", "Ask" }));
+	choice_dir_mod_->Set(WxUtils::arrayString({ "Ignore Changes", "Apply Changes", "Ask" }));
 
 	// Layout
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 	WxUtils::layoutVertically(
 		panel->GetSizer(),
-		vector<wxObject*>{
-			cb_wad_force_uppercase_,
-			cb_zip_percent_encoding_,
-			cb_auto_entry_replace_,
-			cb_save_archive_with_map_,
-			cb_confirm_entry_delete_,
-			cb_confirm_entry_revert_,
-			WxUtils::createLabelHBox(
-				panel,
-				"Action on unsaved entry changes:",
-				choice_entry_mod_
-			),
-			WxUtils::createLabelHBox(
-				panel,
-				"Action on external directory changes:",
-				choice_dir_mod_
-			)
-		},
-		wxSizerFlags(0).Expand().Border(wxALL, UI::padLarge())
-	);
+		vector<wxObject*>{ cb_wad_force_uppercase_,
+						   cb_zip_percent_encoding_,
+						   cb_auto_entry_replace_,
+						   cb_save_archive_with_map_,
+						   cb_confirm_entry_delete_,
+						   cb_confirm_entry_revert_,
+						   WxUtils::createLabelHBox(panel, "Action on unsaved entry changes:", choice_entry_mod_),
+						   WxUtils::createLabelHBox(panel, "Action on external directory changes:", choice_dir_mod_) },
+		wxSizerFlags(0).Expand().Border(wxALL, UI::padLarge()));
 
 	return panel;
 }
 
-// ----------------------------------------------------------------------------
-// EditingPrefsPanel::setupExternalTab
-//
+// -----------------------------------------------------------------------------
 // Creates and returns the 'External Editors' tab
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxPanel* EditingPrefsPanel::setupExternalTab()
 {
-	wxPanel* panel = new wxPanel(stc_tabs_, -1);
+	auto panel = new wxPanel(stc_tabs_, -1);
 
 	// Create controls
-	auto categories = EntryType::allCategories();
-	choice_category_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, categories.size(), &categories[0]);
-	lv_ext_editors_ = new ExternalEditorList(panel);
-	btn_add_exe_ = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "plus"));
+	auto categories  = WxUtils::arrayStringStd(EntryType::allCategories());
+	choice_category_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, categories);
+	lv_ext_editors_  = new ExternalEditorList(panel);
+	btn_add_exe_     = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::General, "plus"));
 	btn_add_exe_->SetToolTip("Add External Editor");
-	btn_remove_exe_ = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "minus"));
+	btn_remove_exe_ = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::General, "minus"));
 	btn_remove_exe_->SetToolTip("Remove Selected External Editors");
 
 	// Layout
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 	auto sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	panel->GetSizer()->Add(sizer, 1, wxEXPAND|wxALL, UI::padLarge());
+	panel->GetSizer()->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
 
 	sizer->Add(new wxStaticText(panel, -1, "Category: "), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(choice_category_, { 0, 1 }, { 1, 2 }, wxEXPAND);
@@ -333,11 +289,9 @@ wxPanel* EditingPrefsPanel::setupExternalTab()
 	return panel;
 }
 
-// ----------------------------------------------------------------------------
-// EditingPrefsPanel::init
-//
+// -----------------------------------------------------------------------------
 // Initialises panel controls
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EditingPrefsPanel::init()
 {
 	cb_wad_force_uppercase_->SetValue(wad_force_uppercase);
@@ -350,32 +304,28 @@ void EditingPrefsPanel::init()
 	choice_dir_mod_->SetSelection(dir_archive_change_action);
 
 	choice_category_->SetSelection(0);
-	((ExternalEditorList*)lv_ext_editors_)->setCategory(choice_category_->GetStringSelection());
+	((ExternalEditorList*)lv_ext_editors_)->setCategory(WxUtils::strToView(choice_category_->GetStringSelection()));
 }
 
-// ----------------------------------------------------------------------------
-// EditingPrefsPanel::applyPreferences
-//
+// -----------------------------------------------------------------------------
 // Applies preference values from the controls to CVARs
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EditingPrefsPanel::applyPreferences()
 {
-	wad_force_uppercase = cb_wad_force_uppercase_->GetValue();
-	percent_encoding = cb_zip_percent_encoding_->GetValue();
-	auto_entry_replace = cb_auto_entry_replace_->GetValue();
-	save_archive_with_map = cb_save_archive_with_map_->GetValue();
-	autosave_entry_changes = choice_entry_mod_->GetSelection();
-	confirm_entry_delete = cb_confirm_entry_delete_->GetValue();
-	confirm_entry_revert = cb_confirm_entry_revert_->GetValue();
+	wad_force_uppercase       = cb_wad_force_uppercase_->GetValue();
+	percent_encoding          = cb_zip_percent_encoding_->GetValue();
+	auto_entry_replace        = cb_auto_entry_replace_->GetValue();
+	save_archive_with_map     = cb_save_archive_with_map_->GetValue();
+	autosave_entry_changes    = choice_entry_mod_->GetSelection();
+	confirm_entry_delete      = cb_confirm_entry_delete_->GetValue();
+	confirm_entry_revert      = cb_confirm_entry_revert_->GetValue();
 	dir_archive_change_action = choice_dir_mod_->GetSelection();
 }
 
-// ----------------------------------------------------------------------------
-// EditingPrefsPanel::showSubSection
-//
+// -----------------------------------------------------------------------------
 // Shows [subsection] on the prefs page
-// ----------------------------------------------------------------------------
-void EditingPrefsPanel::showSubSection(string subsection)
+// -----------------------------------------------------------------------------
+void EditingPrefsPanel::showSubSection(const wxString& subsection)
 {
 	// 'External' tab
 	if (subsection == "external")
@@ -387,42 +337,30 @@ void EditingPrefsPanel::showSubSection(string subsection)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // EditingPrefsPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// EditingPrefsPanel::onChoiceCategoryChanged
-//
-// Called when the external executables 'Category' dropdown changes
-// ----------------------------------------------------------------------------
-void EditingPrefsPanel::onChoiceCategoryChanged(wxCommandEvent& e)
-{
-	((ExternalEditorList*)lv_ext_editors_)->setCategory(choice_category_->GetStringSelection());
-}
-
-// ----------------------------------------------------------------------------
-// EditingPrefsPanel::onBtnAddClicked
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Add' button is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EditingPrefsPanel::onBtnAddClicked(wxCommandEvent& e)
 {
 	ExternalEditorDialog dlg(this, true);
 	while (dlg.ShowModal() == wxID_OK)
 	{
-		if (dlg.getName() == "")
+		if (dlg.getName().empty())
 			wxMessageBox("Please enter a name for the editor", "Name Required");
-		else if (dlg.getPath() == "")
+		else if (dlg.getPath().empty())
 			wxMessageBox("Please enter or select an executable", "Path Required");
 		else
 		{
 			// Add executable
-			string category = choice_category_->GetStringSelection();
-			Executables::addExternalExe(dlg.getName(), dlg.getPath(), category);
+			auto category = choice_category_->GetStringSelection().ToStdString();
+			Executables::addExternalExe(dlg.getName().ToStdString(), dlg.getPath().ToStdString(), category);
 
 			// Refresh list
 			((ExternalEditorList*)lv_ext_editors_)->setCategory(category);
@@ -432,50 +370,46 @@ void EditingPrefsPanel::onBtnAddClicked(wxCommandEvent& e)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// EditingPrefsPanel::onBtnRemoveClicked
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Remove' button is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EditingPrefsPanel::onBtnRemoveClicked(wxCommandEvent& e)
 {
-	vector<long> selection = lv_ext_editors_->getSelection();
-	string category = choice_category_->GetStringSelection();
+	auto selection = lv_ext_editors_->selection();
+	auto category  = choice_category_->GetStringSelection().ToStdString();
 
 	// Remove selected editors
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (long item : selection)
 	{
-		string name = lv_ext_editors_->GetItemText(selection[a]);
-		Executables::removeExternalExe(name, category);
+		wxString name = lv_ext_editors_->GetItemText(item);
+		Executables::removeExternalExe(WxUtils::strToView(name), category);
 	}
 
 	// Refresh list
 	((ExternalEditorList*)lv_ext_editors_)->setCategory(category);
 }
 
-// ----------------------------------------------------------------------------
-// EditingPrefsPanel::onExternalExeActivated
-//
+// -----------------------------------------------------------------------------
 // Called when an item in the external editors list is activated
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EditingPrefsPanel::onExternalExeActivated(wxListEvent& e)
 {
-	string name = lv_ext_editors_->GetItemText(e.GetIndex());
-	string category = choice_category_->GetStringSelection();
-	Executables::external_exe_t exe = Executables::getExternalExe(name, category);
+	auto name     = lv_ext_editors_->GetItemText(e.GetIndex()).ToStdString();
+	auto category = choice_category_->GetStringSelection().ToStdString();
+	auto exe      = Executables::externalExe(name, category);
 
 	ExternalEditorDialog dlg(this, false, name, exe.path);
 	while (dlg.ShowModal() == wxID_OK)
 	{
-		if (dlg.getName() == "")
+		if (dlg.getName().empty())
 			wxMessageBox("Please enter a name for the editor", "Name Required");
-		else if (dlg.getPath() == "")
+		else if (dlg.getPath().empty())
 			wxMessageBox("Please enter or select an executable", "Path Required");
 		else
 		{
 			// Update executable
-			Executables::setExternalExeName(name, dlg.getName(), category);
-			Executables::setExternalExePath(dlg.getName(), dlg.getPath(), category);
+			Executables::setExternalExeName(name, dlg.getName().ToStdString(), category);
+			Executables::setExternalExePath(dlg.getName().ToStdString(), dlg.getPath().ToStdString(), category);
 
 			// Refresh list
 			((ExternalEditorList*)lv_ext_editors_)->setCategory(category);

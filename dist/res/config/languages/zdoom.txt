@@ -29,7 +29,7 @@ z_cvarinfo {
 		// Scopes
 		server, user,
 
-		noarchive, cheat,
+		noarchive, cheat, latch,
 
 		// Types
 		bool, color, float, int, string
@@ -102,6 +102,23 @@ z_gldefs {
 	constants = {
 		color, size, offset, subtractive, secondarySize, interval, chance, dontlightself,
 		scale, map, iwad, thiswad, disablefullbright, Texture, Shader, speed, attenuate
+	}
+}
+
+z_iwadinfo
+{
+	name = "ZDoom IWAD Info";
+	case_sensitive = false;
+	
+	keywords =
+	{
+		IWad, Order, Names
+	}
+
+	properties =
+	{
+		Name, Autoname, Game, Config, IWADName, Mapinfo, Compatibility, MustContain,
+		BannerColors, Required, Load
 	}
 }
 
@@ -203,7 +220,7 @@ z_mapinfo {
 		SuckTime, TeamDamage, TeamPlayOff, TeamPlayOn, TitlePatch, TotalInfighting,
 		Translator, UnFreezeSinglePlayerConversations, UsePlayerStartZ, VertWallShade,
 		ForceFakeContrast, PrecacheTextures, PrecacheClasses, HazardColor, HazardFlash,
-		AddEventHandlers, EventHandlers,
+		AddEventHandlers, EventHandlers, TextMusic, TextFlat, TextPic,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate, PixelRatio,
@@ -218,7 +235,7 @@ z_mapinfo {
 		// GameInfo definitions
 		GameInfo, AddCreditPage, AddInfoPage, AddPlayerClasses, AddQuitMessages, AdvisoryTime, Border, BackpackType,
 		BorderFlat, ChatSound, CreditPage, DefaultBloodColor, DefaultBloodParticleColor, DefKickback, DrawReadThis,
-		FinaleFlat, FinaleMusic, FinalePage, InfoPage, IntermissionCounter, IntermissionMusic, MapInfo, NoLoopFinaleMusic,
+		FinaleFlat, FinaleMusic, FinalePage, InfoPage, IntermissionCounter, IntermissionMusic, NoLoopFinaleMusic,
 		PageTime, QuitSound, SkyFlatName, StatusBar, TeleFogHeight, TitleMusic, TitlePage, TitleTime, Translator,
 		WeaponSlot, ArmorIcons, DimColor, DimAmount, DefInventoryMaxAmount, DefaultRespawnTime, DefaultDropStyle, Endoom,
 		PickupColor, QuitMessages, MenuFontColor_Title, MenuFontColor_Label, MenuFontColor_Value,
@@ -227,7 +244,7 @@ z_mapinfo {
 		NoRandomPlayerclass, StatScreen_EnteringPatch, StatScreen_FinishedPatch, StatScreen_MapNameFont, NightmareFast,
 		DontCrunchCorpses, CheatKey, ForceKillScripts, MessageBoxClass, StatusBarClass, DefaultConversationMenuClass,
 		StatScreen_FinishedFont, StatScreen_EnteringFont, Dialogue, StatScreen_Single, StatScreen_Coop, StatScreen_DM,
-		BlurAmount,
+		BlurAmount, CorrectPrintBold, MenuSliderColor,
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,

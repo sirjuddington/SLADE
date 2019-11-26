@@ -136,7 +136,14 @@
 #endif
 
 // Freeimage
+#define FREEIMAGE_LIB
 #include <FreeImage.h>
+
+// fmt
+#include "thirdparty/fmt/fmt/core.h"
+
+// Sigslot
+#include "thirdparty/sigslot/signal.hpp"
 
 // C++
 #include <map>

@@ -1,144 +1,227 @@
+<article-head>Archives</article-head>
+
 The `Archives` scripting namespace contains functions for managing archives.
 
-## Functions
+## Functions - Archive Management
 
-### `all`
+### All
 
-**Returns** <type>[Archive](../Types/Archive.md)\[\]</type>
+<fdef>function Archives.<func>All</func>()</fdef>
 
-Returns an array of all currently open archives.
+<listhead>Returns</listhead>
+
+* <type>[Archive](../Types/Archive/Archive.md)\[\]</type>: An array of all currently open archives
 
 ---
-### `create`
+### Create
+
+<fdef>function Archives.<func>Create</func>(<arg>formatId</arg>)</fdef>
+
+Creates a new archive of the format specified in <arg>formatId</arg>.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>format_id</arg>: The <type>[ArchiveFormat](../Types/ArchiveFormat.md)</type> id to create
+* <arg>formatId</arg> (<type>string</type>): The <type>[ArchiveFormat](../Types/Archive/ArchiveFormat.md)</type> id to create
 
-**Returns** <type>[Archive](../Types/Archive.md)</type>
+<listhead>Returns</listhead>
 
-Creates a new archive of the format specified in <arg>format_id</arg>. Returns `nil` if the archive could not be created (generally if the <arg>format_id</arg> is invalid).
+* <type>[Archive](../Types/Archive/Archive.md)</type>: The created archive, or `nil` if creation failed
+* <type>string</type>: An error message if creation failed
 
-!!! Note
-    Currently only `wad` and `zip` formats are supported for creation
+#### Notes
+
+Currently only `wad` and `zip` formats are supported for creation.
+
+#### Example
+
+```lua
+local archive, err = Archives.Create('wad')
+if archive == nil then
+    App.LogMessage('Error creating archive: ' .. err)
+end
+```
 
 ---
-### `openFile`
+### OpenFile
+
+<fdef>function Archives.<func>OpenFile</func>(<arg>path</arg>)</fdef>
+
+Attempts to open the archive file at <arg>path</arg> on disk.
 
 <listhead>Parameters</listhead>
 
-* <type>string</type> <arg>path</arg>: The full path + name of the archive file to open
+* <arg>path</arg> (<type>string</type>): The full path (on disk) of the archive file to open
 
-**Returns** <type>[Archive](../Types/Archive.md)</type>
+<listhead>Returns</listhead>
 
-Attempts to open the file at <arg>path</arg> on disk. Returns the archive if it opened successfully, or `nil` if it could not be opened.
-
-If opening fails, the error that occurred should be available via <code>[slade.globalError](App.md#globalerror)()</code>.
+* <type>[Archive](../Types/Archive/Archive.md)</type>: The opened archive, or `nil` if opening failed
+* <type>string</type>: An error message if opening failed
 
 ---
-### `close` <sup>(1)</sup>
+### Close <sup>(1)</sup>
+
+<fdef>function Archives.<func>Close</func>(<arg>archive</arg>)</fdef>
+
+Closes the given <arg>archive</arg>.
 
 <listhead>Parameters</listhead>
 
-* <type>[Archive](../Types/Archive.md)</type> <arg>archive</arg>: The archive to close
+* <arg>archive</arg> (<type>[Archive](../Types/Archive/Archive.md)</type>): The archive to close
 
-**Returns** <type>boolean</type>
+<listhead>Returns</listhead>
 
-Closes the given <arg>archive</arg>. Returns `false` if <arg>archive</arg> is invalid or not currently open.
+* <type>boolean</type>: `false` if <arg>archive</arg> is invalid or not currently open
+
+#### Notes
+
+!!! warning
+    Please be careful when using the `Close*` functions - attempting to access a closed archive from a script will currently cause a crash.
 
 ---
-### `close` <sup>(2)</sup>
+### Close <sup>(2)</sup>
+
+<fdef>function Archives.<func>Close</func>(<arg>index</arg>)</fdef>
+
+Closes the archive at <arg>index</arg> in the list of currently open archives (see <code>[All](#All)</code>).
 
 <listhead>Parameters</listhead>
 
-* <type>number</type> <arg>index</arg>: The index of the archive to close
+* <arg>index</arg> (<type>number</type>): The index of the archive to close
 
-**Returns** <type>boolean</type>
+<listhead>Returns</listhead>
 
-Closes the archive at <arg>index</arg> in the list of currently open archives (see <code>[all](#all)</code>). Returns `false` if the given <arg>index</arg> is invalid.
+* <type>boolean</type>: `false` if the given <arg>index</arg> is invalid
 
 ---
-### `closeAll`
+### CloseAll
+
+<fdef>function Archives.<func>CloseAll</func>()</fdef>
 
 Closes all currently open archives.
 
----
-### `fileExtensionsString`
+## Functions - Resource Archives
 
-**Returns** <type>string</type>
+### BaseResource
 
-Returns a string with the extension filter for all supported archive file types.
+<fdef>function Archives.<func>BaseResource</func>()</fdef>
 
-See <code>[slade.browseFile](App.md#browsefile)</code> and the [Open Archive](../Examples/OpenArchive.md) example for more information.
+<listhead>Returns</listhead>
 
----
-### `baseResource`
-
-**Returns** <type>[Archive](../Types/Archive.md)</type>
-
-Returns the currently loaded base resource archive.
+* <type>[Archive](../Types/Archive/Archive.md)</type>: The currently loaded base resource archive
 
 ---
-### `baseResourcePaths`
+### BaseResourcePaths
 
-**Returns** <type>string[]</type>
+<fdef>function Archives.<func>BaseResourcePaths</func>()</fdef>
 
-Returns an array of configured base resource archive file paths.
+<listhead>Returns</listhead>
 
-!!! note "TODO"
-    Needs a better description
+* <type>string[]</type>: An array of configured base resource archive file paths
+
+#### Notes
+
+This is the list of base resource archive paths as seen in the base resource configuration dialog.
 
 ---
-### `openBaseResource`
+### OpenBaseResource
+
+<fdef>function Archives.<func>OpenBaseResource</func>(<arg>index</arg>)</fde>
+
+Opens the base resource archive at <arg>index</arg> in the list of base resource archive file paths (see <code>[BaseResourcePaths](#baseresourcepaths)</code>).
 
 <listhead>Parameters</listhead>
 
-* <type>number</type> <arg>index</arg>: The base resource path index to open
+* <arg>index</arg> (<type>number</type>): The base resource path index to open
 
-**Returns** <type>boolean</type>
+<listhead>Returns</listhead>
 
-Opens the base resource archive from the path at <arg>index</arg> in the list of base resource archive file paths (see <code>[baseResourcePaths](#baseresourcepaths)</code>).
-
-!!! note "TODO"
-    Needs a better description
+* <type>boolean</type>: `false` if the given index was out of range
 
 ---
-### `programResource`
+### ProgramResource
 
-**Returns** <type>[Archive](../Types/Archive.md)</type>
+<fdef>function Archives.<func>ProgramResource</func>()</fdef>
 
-Returns the program resource archive (either `slade.pk3` or the `res` folder if you are running a dev build).
+<listhead>Returns</listhead>
 
----
-### `recentFiles`
+* <type>[Archive](../Types/Archive/Archive.md)</type>: the program resource archive (either `slade.pk3` or the `res` folder if you are running a dev build)
 
-**Returns** <type>string[]</type>
+## Functions - Bookmarks
 
-Returns an array of file paths to recently opened archives.
+### Bookmarks
 
----
-### `bookmarks`
+<fdef>function Archives.<func>Bookmarks</func>()</fdef>
 
-**Returns** <type>[ArchiveEntry](../Types/ArchiveEntry.md)`[`]</type>
+<listhead>Returns</listhead>
 
-Returns an array of all currently bookmarked entries.
+* <type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)`[`]</type>: An array of all currently bookmarked entries
 
 ---
-### `addBookmark`
+### AddBookmark
 
-<listhead>Parameters</listhead>
-
-* <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type> <arg>entry</arg>: The entry to bookmark
+<fdef>function Archives.<func>AddBookmark</func>(<arg>entry</arg>)</fdef>
 
 Adds <arg>entry</arg> as a bookmark.
 
+<listhead>Parameters</listhead>
+
+* <arg>entry</arg> (<type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)</type>): The entry to bookmark
+
 ---
-### `removeBookmark`
+### RemoveBookmark
+
+<fdef>function Archives.<func>RemoveBookmark</func>(<arg>entry</arg>)</fdef>
+
+Removes <arg>entry</arg> from the bookmarked entries list.
 
 <listhead>Parameters</listhead>
 
-* <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type> <arg>entry</arg>: The entry to un-bookmark
+* <arg>entry</arg> (<type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)</type>): The entry to un-bookmark
 
-**Returns** <type>boolean</type>
+<listhead>Returns</listhead>
 
-Removes <arg>entry</arg> from the bookmarked entries list. Returns `false` if the given <arg>entry</arg> was not currently bookmarked.
+* <type>boolean</type>: `false` if the given <arg>entry</arg> was not currently bookmarked
+
+## Functions - Misc
+
+### FileExtensionsString
+
+<fdef>function Archives.<func>FileExtensionsString</func>()</fdef>
+
+<listhead>Returns</listhead>
+
+* <type>string</type>: The extension filter string for all supported archive file types
+
+#### Notes
+
+See <code>[App.BrowseFile](App.md#browsefile)</code> and the [Open Archive](../Examples/OpenArchive.md) example for more information.
+
+---
+### RecentFiles
+
+<fdef>function Archives.<func>RecentFiles</func>()</fdef>
+
+<listhead>Returns</listhead>
+
+* <type>string[]</type>: An array of file paths to recently opened archives
+
+---
+### EntryType
+
+<fdef>function Archives.<func>EntryType</func>(<arg>type</arg>)</fdef>
+
+<listhead>Parameters</listhead>
+
+* <arg>id</arg> (<type>string</type>): The id of the <type>[EntryType](../Types/Archive/EntryType.md)</type> to get
+
+<listhead>Returns</listhead>
+
+* <type>[EntryType](../Types/Archive/EntryType.md)</type>: The entry type with the given <arg>id</arg>, or `nil` if no type has that id
+
+#### Example
+
+```lua
+-- Will write 'Wad Archive' to the log
+local type = Archives.EntryType('wad')
+App.LogMessage(type.name)
+```

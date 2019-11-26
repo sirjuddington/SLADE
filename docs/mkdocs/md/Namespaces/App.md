@@ -1,169 +1,118 @@
+<article-head>App</article-head>
+
 The `App` scripting namespace contains a set of functions for general interaction with the SLADE application.
 
 ## Functions
 
-### `logMessage`
+### LogMessage
 
-<listhead>Parameters</listhead>
-
-* <type>string</type> <arg>message</arg>: The message to print to the log
+<fdef>function App.<func>LogMessage</func>(<arg>message</arg>)</fdef>
 
 Writes a message to the SLADE log.
 
-**Example**
+<listhead>Parameters</listhead>
+
+* <arg>message</arg> (<type>string</type>): The message to print to the log
+
+#### Example
 
 ```lua
-App.logMessage('This is a log message')
+App.LogMessage('This is a log message')
 ```
 
 ---
-### `globalError`
+### LogWarning
 
-**Returns** <type>string</type>
+<fdef>function App.<func>LogWarning</func>(<arg>message</arg>)</fdef>
 
-Returns the most recently generated error message
-
----
-### `messageBox`
+Writes a warning message to the SLADE log. Warning messages are displayed in a yellow colour in the console log window.
 
 <listhead>Parameters</listhead>
 
-  * <type>string</type> <arg>title</arg>: The dialog caption
-  * <type>string</type> <arg>message</arg>: The message to display
-
-Shows a simple message dialog
+* <arg>message</arg> (<type>string</type>): The message to print to the log
 
 ---
-### `messageBoxExt`
+### LogError
+
+<fdef>function App.<func>LogError</func>(<arg>message</arg>)</fdef>
+
+Writes an error message to the SLADE log. Error messages are displayed in a red colour in the console log window.
 
 <listhead>Parameters</listhead>
 
-  * <type>string</type> <arg>title</arg>: The dialog caption
-  * <type>string</type> <arg>message</arg>: The message to display
-  * <type>string</type> <arg>detail</arg>: The detailed message to display
-
-Shows an extended message box with an extra scrollable text box displaying <arg>detail</arg>
+* <arg>message</arg> (<type>string</type>): The message to print to the log
 
 ---
-### `promptString`
+### CurrentArchive
+
+<fdef>function App.<func>CurrentArchive</func>()</fdef>
+
+<listhead>Returns</listhead>
+
+* <type>[Archive](../Types/Archive/Archive.md)</type>: The archive for the currently open tab in the main SLADE window
+
+---
+### CurrentEntry
+
+<fdef>function App.<func>CurrentEntry</func>()</fdef>
+
+<listhead>Returns</listhead>
+
+* <type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)</type>: The currently open entry in the main SLADE window
+
+---
+### CurrentEntrySelection
+
+<fdef>function App.<func>CurrentEntrySelection</func>()</fdef>
+
+<listhead>Returns</listhead>
+
+* <type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)\[\]</type>: An array of the currently selected entries in the main SLADE window
+
+---
+### CurrentPalette
+
+<fdef>function App.<func>CurrentPalette</func>(<arg>entryFor</arg>)</fdef>
 
 <listhead>Parameters</listhead>
 
-  * <type>string</type> <arg>title</arg>: The dialog caption
-  * <type>string</type> <arg>message</arg>: The message to display
-  * <type>string</type> <arg>default_value</arg>: The initial default value
+* <arg>[entryFor]</arg> (<type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)</type>, default `nil`): If given, the appropriate palette for this entry will be found (if 'Existing/Global' is selected)
 
-**Returns** <type>string</type>
+<listhead>Returns</listhead>
 
-Shows a dialog prompt for the user to enter a string value
+* <type>[Palette](../Types/Graphics/Palette.md)</type>: The currently selected palette
+
+#### Notes
+
+If 'Existing/Global' is selected in the main window palette dropdown, this will return the palette from the currently selected base resource archive. Additionally, if <arg>entryFor</arg> was given, this will check for certain cases where an entry does not use `PLAYPAL` as its palette, and return the appropriate palette instead.
 
 ---
-### `promptNumber`
+### ShowArchive
+
+<fdef>function App.<func>ShowArchive</func>(<arg>archive</arg>)</fdef>
+
+Shows the tab for the given <arg>archive</arg> in the main SLADE window.
 
 <listhead>Parameters</listhead>
 
-  * <type>string</type> <arg>title</arg>: The dialog caption
-  * <type>string</type> <arg>message</arg>: The message to display
-  * <type>number</type> <arg>default_value</arg>: The initial default value
-  * <type>number</type> <arg>min</arg>: The minimum value allowed
-  * <type>number</type> <arg>max</arg>: The maximum value allowed
-
-**Returns** <type>number</type>
-
-Shows a dialog prompt for the user to enter a numeric value
+  * <arg>archive</arg> (<type>[Archive](../Types/Archive/Archive.md)</type>): The archive to show
 
 ---
-### `promptYesNo`
+### ShowEntry
+
+<fdef>function App.<func>ShowEntry</func>(<arg>entry</arg>)</fdef>
+
+Shows the given <arg>entry</arg> in a tab in the main SLADE window.
 
 <listhead>Parameters</listhead>
 
-  * <type>string</type> <arg>title</arg>: The dialog caption
-  * <type>string</type> <arg>message</arg>: The message to display
-
-**Returns** <type>boolean</type>
-
-Shows a dialog prompt with 'Yes' and 'No' buttons, returning `true` for yes or `false` for no
+  * <arg>entry</arg> (<type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)</type>): The entry to show
 
 ---
-### `browseFile`
+### MapEditor
 
-<listhead>Parameters</listhead>
+<fdef>function App.<func>MapEditor</func>()</fdef>
 
-  * <type>string</type> <arg>title</arg>: The dialog caption
-  * <type>string</type> <arg>extensions</arg>: A formatted list of selectable file extensions (see description for format)
-  * <type>string</type> <arg>filename</arg>: The name of the file to browse for
+<listhead>Returns</listhead>
 
-**Returns** <type>string</type>
-
-Shows a file browser dialog allowing the user to select a file and returns the full path to the selected file. If no file was selected it will return an empty <type>string</type>.
-
-The extensions parameter must be in the following format:
-
-> \[Type Name 1\]|\[Extension 1\]|\[Type Name 2\]|\[Extension 2\]|...
-
-Where `Type Name X` is the name to display in the type selection dropdown, and `Extension` is the wildcard file extension for that type. For an example see below
-
-**Example**
-
-```lua
-local path = App.browseFile('Select a File', 'Wad Files (*.wad)|*.wad|All Files|*.*', '')
-App.logMessage('Selected file ' .. path)
-```
-
----
-### `browseFiles`
-
-<listhead>Parameters</listhead>
-
-  * <type>string</type> <arg>title</arg>: The dialog caption
-  * <type>string</type> <arg>extensions</arg>: A formatted list of selectable file extensions
-
-**Returns** <type>string[]</type>
-
-Shows a file browser dialog allowing the user to select multiple files and returns an array of full paths to the selected files. If no file was selected it will return an empty array. See **browseFile** above for the formatting of the <arg>extensions</arg> parameter.
-
----
-### `currentArchive`
-
-**Returns** <type>[Archive](../Types/Archive.md)</type>
-
-Returns the archive for the currently open tab in the main SLADE window.
-
----
-### `currentEntry`
-
-**Returns** <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type>
-
-Returns the currently open entry in the main SLADE window.
-
----
-### `currentEntrySelection`
-
-**Returns** <type>[ArchiveEntry](../Types/ArchiveEntry.md)\[\]</type>
-
-Returns an array of the currently selected entries in the main SLADE window.
-
----
-### `showArchive`
-
-<listhead>Parameters</listhead>
-
-  * <type>[Archive](../Types/Archive.md)</type> <arg>archive</arg>: The archive to show
-
-Shows the tab for the given archive in the main SLADE window.
-
----
-### `showEntry`
-
-<listhead>Parameters</listhead>
-
-  * <type>[ArchiveEntry](../Types/ArchiveEntry.md)</type> <arg>entry</arg>: The entry to show_
-
-Shows the given entry in a tab in the main SLADE window.
-
----
-### `mapEditor`
-
-**Returns** <type>[MapEditor](../Types/MapEditor.md)</type>
-
-Returns the currently open map editor
+* <type>[MapEditor](../Types/Map/MapEditor.md)</type>: The currently open map editor

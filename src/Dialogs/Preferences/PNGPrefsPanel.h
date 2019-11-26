@@ -8,15 +8,15 @@ class PNGPrefsPanel : public PrefsPanelBase
 {
 public:
 	PNGPrefsPanel(wxWindow* parent);
-	~PNGPrefsPanel();
+	~PNGPrefsPanel() = default;
 
-	void	init() override;
-	void	applyPreferences() override;
+	void init() override;
+	void applyPreferences() override;
 
-	string pageTitle() override { return "PNG Optimization Tools"; }
+	wxString pageTitle() override { return "PNG Optimization Tools"; }
 
 private:
-	FileLocationPanel*	flp_pngout_;
-	FileLocationPanel*	flp_pngcrush_;
-	FileLocationPanel*	flp_deflopt_;
+	FileLocationPanel* flp_pngout_   = nullptr;
+	FileLocationPanel* flp_pngcrush_ = nullptr;
+	FileLocationPanel* flp_deflopt_  = nullptr;
 };

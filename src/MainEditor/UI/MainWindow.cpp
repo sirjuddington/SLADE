@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -14,136 +14,128 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
-#include "SLADEWxApp.h"
 #include "MainWindow.h"
-#include "UI/Controls/ConsolePanel.h"
-#include "Archive/ArchiveManager.h"
+#include "App.h"
 #include "Archive/Archive.h"
-#include "Graphics/Icons.h"
-#include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
-#include "UI/Controls/BaseResourceChooser.h"
-#include "Dialogs/Preferences/PreferencesDialog.h"
-#include "Utility/Tokenizer.h"
-#include "MapEditor/MapEditor.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/Controls/UndoManagerHistoryPanel.h"
-#include "ArchivePanel.h"
-#include "General/Misc.h"
-#include "UI/SAuiTabArt.h"
-#include "UI/Controls/STabCtrl.h"
-#include "TextureXEditor/TextureXEditor.h"
-#include "UI/Controls/PaletteChooser.h"
+#include "Archive/ArchiveManager.h"
 #include "ArchiveManagerPanel.h"
-#include "StartPage.h"
+#include "ArchivePanel.h"
+#include "Dialogs/Preferences/PreferencesDialog.h"
+#include "General/Misc.h"
+#include "Graphics/Icons.h"
+#include "MapEditor/MapEditor.h"
+#include "SLADEWxApp.h"
 #include "Scripting/ScriptManager.h"
+#include "StartPage.h"
+#include "UI/Controls/BaseResourceChooser.h"
+#include "UI/Controls/ConsolePanel.h"
+#include "UI/Controls/PaletteChooser.h"
+#include "UI/Controls/STabCtrl.h"
+#include "UI/Controls/UndoManagerHistoryPanel.h"
+#include "UI/SAuiTabArt.h"
+#include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
+#include "Utility/Tokenizer.h"
 #ifdef USE_WEBVIEW_STARTPAGE
 #include "DocsPage.h"
 #endif
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 namespace
 {
-	string main_window_layout = "";
+wxString main_window_layout = "";
 }
-CVAR(Bool, show_start_page, true, CVAR_SAVE);
-CVAR(String, global_palette, "", CVAR_SAVE);
-CVAR(Bool, mw_maximized, true, CVAR_SAVE);
-CVAR(Bool, confirm_exit, true, CVAR_SAVE);
+CVAR(Bool, show_start_page, true, CVar::Flag::Save);
+CVAR(String, global_palette, "", CVar::Flag::Save);
+CVAR(Bool, mw_maximized, true, CVar::Flag::Save);
+CVAR(Bool, confirm_exit, true, CVar::Flag::Save);
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, tabs_condensed)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // MainWindowDropTarget Class
 //
 // Handles drag'n'drop of files on to the SLADE window
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class MainWindowDropTarget : public wxFileDropTarget
 {
 public:
-	MainWindowDropTarget() {}
-	~MainWindowDropTarget() {}
+	MainWindowDropTarget()  = default;
+	~MainWindowDropTarget() = default;
 
 	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) override
 	{
-		for (unsigned a = 0; a < filenames.size(); a++)
-			App::archiveManager().openArchive(filenames[a]);
+		for (const auto& filename : filenames)
+			App::archiveManager().openArchive(filename.ToStdString());
 
 		return true;
 	}
 };
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // MainWindow Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// MainWindow::MainWindow
-//
+// -----------------------------------------------------------------------------
 // MainWindow class constructor
-// ----------------------------------------------------------------------------
-MainWindow::MainWindow()
-	: STopWindow("SLADE", "main")
+// -----------------------------------------------------------------------------
+MainWindow::MainWindow() : STopWindow("SLADE", "main")
 {
-	lasttipindex = 0;
 	custom_menus_begin_ = 2;
-	if (mw_maximized) Maximize();
+
+	if (mw_maximized)
+		wxTopLevelWindow::Maximize();
+
 	setupLayout();
-	SetDropTarget(new MainWindowDropTarget());
-#ifdef USE_WEBVIEW_STARTPAGE
-	docs_page = nullptr;
-#endif
+
+	wxWindow::SetDropTarget(new MainWindowDropTarget());
 }
 
-// ----------------------------------------------------------------------------
-// MainWindow::~MainWindow
-//
+// -----------------------------------------------------------------------------
 // MainWindow class destructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 MainWindow::~MainWindow()
 {
-	m_mgr->UnInit();
+	aui_mgr_->UnInit();
 }
 
-// ----------------------------------------------------------------------------
-// MainWindow::loadLayout
-//
+// -----------------------------------------------------------------------------
 // Loads the previously saved layout file for the window
-// ----------------------------------------------------------------------------
-void MainWindow::loadLayout()
+// -----------------------------------------------------------------------------
+void MainWindow::loadLayout() const
 {
 	// Open layout file
 	Tokenizer tz;
@@ -154,25 +146,23 @@ void MainWindow::loadLayout()
 	while (true)
 	{
 		// Read component+layout pair
-		string component = tz.getToken();
-		string layout = tz.getToken();
+		wxString component = tz.getToken();
+		wxString layout    = tz.getToken();
 
 		// Load layout to component
 		if (!component.IsEmpty() && !layout.IsEmpty())
-			m_mgr->LoadPaneInfo(layout, m_mgr->GetPane(component));
+			aui_mgr_->LoadPaneInfo(layout, aui_mgr_->GetPane(component));
 
 		// Check if we're done
-		if (tz.peekToken().IsEmpty())
+		if (tz.peekToken().empty())
 			break;
 	}
 }
 
-// ----------------------------------------------------------------------------
-// MainWindow::saveLayout
-//
+// -----------------------------------------------------------------------------
 // Saves the current window layout to a file
-// ----------------------------------------------------------------------------
-void MainWindow::saveLayout()
+// -----------------------------------------------------------------------------
+void MainWindow::saveLayout() const
 {
 	// Open layout file
 	wxFile file(App::path("mainwindow.layout", App::Dir::User), wxFile::write);
@@ -181,65 +171,63 @@ void MainWindow::saveLayout()
 
 	// Console pane
 	file.Write("\"console\" ");
-	string pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("console"));
-	file.Write(S_FMT("\"%s\"\n", pinf));
+	wxString pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("console"));
+	file.Write(wxString::Format("\"%s\"\n", pinf));
 
 	// Archive Manager pane
 	file.Write("\"archive_manager\" ");
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("archive_manager"));
-	file.Write(S_FMT("\"%s\"\n", pinf));
+	pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("archive_manager"));
+	file.Write(wxString::Format("\"%s\"\n", pinf));
 
 	// Undo History pane
 	file.Write("\"undo_history\" ");
-	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("undo_history"));
-	file.Write(S_FMT("\"%s\"\n", pinf));
+	pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("undo_history"));
+	file.Write(wxString::Format("\"%s\"\n", pinf));
 
 	// Close file
 	file.Close();
 }
 
-// ----------------------------------------------------------------------------
-// MainWindow::setupLayout
-//
+// -----------------------------------------------------------------------------
 // Sets up the wxWidgets window layout
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MainWindow::setupLayout()
 {
 	// Create the wxAUI manager & related things
-	m_mgr = new wxAuiManager(this);
-	m_mgr->SetArtProvider(new SAuiDockArt());
+	aui_mgr_ = new wxAuiManager(this);
+	aui_mgr_->SetArtProvider(new SAuiDockArt());
 	wxAuiPaneInfo p_inf;
 
 	// Set icon
-	string icon_filename = App::path("slade.ico", App::Dir::Temp);
-	App::archiveManager().programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
+	auto icon_filename = App::path(App::iconFile(), App::Dir::Temp);
+	App::archiveManager().programResourceArchive()->entry(App::iconFile())->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
 
 
 	// -- Editor Area --
-	stc_tabs = new STabCtrl(this, true, true, tabs_condensed ? 27 : 31, true, true);
+	stc_tabs_ = new STabCtrl(this, true, true, tabs_condensed ? 27 : 31, true, true);
 
 	// Setup panel info & add panel
 	p_inf.CenterPane();
 	p_inf.Name("editor_area");
 	p_inf.PaneBorder(false);
-	m_mgr->AddPane(stc_tabs, p_inf);
+	aui_mgr_->AddPane(stc_tabs_, p_inf);
 
 	// Create Start Page
-	start_page = new SStartPage(stc_tabs);
+	start_page_ = new SStartPage(stc_tabs_);
 	if (show_start_page)
 	{
-		stc_tabs->AddPage(start_page, "Start Page");
-		stc_tabs->SetPageBitmap(0, Icons::getIcon(Icons::GENERAL, "logo"));
-		start_page->init();
+		stc_tabs_->AddPage(start_page_, "Start Page");
+		stc_tabs_->SetPageBitmap(0, Icons::getIcon(Icons::General, "logo"));
+		start_page_->init();
 		createStartPage();
 	}
 	else
-		start_page->Show(false);
+		start_page_->Show(false);
 
 	// -- Console Panel --
-	ConsolePanel* panel_console = new ConsolePanel(this, -1);
+	auto panel_console = new ConsolePanel(this, -1);
 
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
@@ -250,11 +238,11 @@ void MainWindow::setupLayout()
 	p_inf.Show(false);
 	p_inf.Caption("Console");
 	p_inf.Name("console");
-	m_mgr->AddPane(panel_console, p_inf);
+	aui_mgr_->AddPane(panel_console, p_inf);
 
 
 	// -- Archive Manager Panel --
-	panel_archivemanager = new ArchiveManagerPanel(this, stc_tabs);
+	panel_archivemanager_ = new ArchiveManagerPanel(this, stc_tabs_);
 
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
@@ -264,11 +252,11 @@ void MainWindow::setupLayout()
 	p_inf.Name("archive_manager");
 	p_inf.Show(true);
 	p_inf.Dock();
-	m_mgr->AddPane(panel_archivemanager, p_inf);
+	aui_mgr_->AddPane(panel_archivemanager_, p_inf);
 
 
 	// -- Undo History Panel --
-	panel_undo_history = new UndoManagerHistoryPanel(this, nullptr);
+	panel_undo_history_ = new UndoManagerHistoryPanel(this, nullptr);
 
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
@@ -278,19 +266,19 @@ void MainWindow::setupLayout()
 	p_inf.Name("undo_history");
 	p_inf.Show(false);
 	p_inf.Dock();
-	m_mgr->AddPane(panel_undo_history, p_inf);
+	aui_mgr_->AddPane(panel_undo_history_, p_inf);
 
 
 	// -- Menu bar --
-	wxMenuBar* menu = new wxMenuBar();
+	auto menu = new wxMenuBar();
 	menu->SetThemeEnabled(false);
 
 	// File menu
-	wxMenu* file_new_menu = new wxMenu("");
+	auto file_new_menu = new wxMenu("");
 	SAction::fromId("aman_newwad")->addToMenu(file_new_menu, "&Wad Archive");
 	SAction::fromId("aman_newzip")->addToMenu(file_new_menu, "&Zip Archive");
 	SAction::fromId("aman_newmap")->addToMenu(file_new_menu, "&Map");
-	wxMenu* file_menu = new wxMenu("");
+	auto file_menu = new wxMenu("");
 	file_menu->AppendSubMenu(file_new_menu, "&New", "Create a new Archive");
 	SAction::fromId("aman_open")->addToMenu(file_menu);
 	SAction::fromId("aman_opendir")->addToMenu(file_menu);
@@ -298,7 +286,7 @@ void MainWindow::setupLayout()
 	SAction::fromId("aman_save")->addToMenu(file_menu);
 	SAction::fromId("aman_saveas")->addToMenu(file_menu);
 	SAction::fromId("aman_saveall")->addToMenu(file_menu);
-	file_menu->AppendSubMenu(panel_archivemanager->getRecentMenu(), "&Recent Files");
+	file_menu->AppendSubMenu(panel_archivemanager_->getRecentMenu(), "&Recent Files");
 	file_menu->AppendSeparator();
 	SAction::fromId("aman_close")->addToMenu(file_menu);
 	SAction::fromId("aman_closeall")->addToMenu(file_menu);
@@ -307,7 +295,7 @@ void MainWindow::setupLayout()
 	menu->Append(file_menu, "&File");
 
 	// Edit menu
-	wxMenu* editor_menu = new wxMenu("");
+	auto editor_menu = new wxMenu("");
 	SAction::fromId("main_undo")->addToMenu(editor_menu);
 	SAction::fromId("main_redo")->addToMenu(editor_menu);
 	editor_menu->AppendSeparator();
@@ -316,7 +304,7 @@ void MainWindow::setupLayout()
 	menu->Append(editor_menu, "E&dit");
 
 	// View menu
-	wxMenu* view_menu = new wxMenu("");
+	auto view_menu = new wxMenu("");
 	SAction::fromId("main_showam")->addToMenu(view_menu);
 	SAction::fromId("main_showconsole")->addToMenu(view_menu);
 	SAction::fromId("main_showundohistory")->addToMenu(view_menu);
@@ -326,12 +314,12 @@ void MainWindow::setupLayout()
 	menu->Append(view_menu, "&View");
 
 	// Tools menu
-	wxMenu* tools_menu = new wxMenu("");
+	auto tools_menu = new wxMenu("");
 	SAction::fromId("main_runscript")->addToMenu(tools_menu);
 	menu->Append(tools_menu, "&Tools");
 
 	// Help menu
-	wxMenu* help_menu = new wxMenu("");
+	auto help_menu = new wxMenu("");
 	SAction::fromId("main_onlinedocs")->addToMenu(help_menu);
 	SAction::fromId("main_about")->addToMenu(help_menu);
 #ifdef __WXMSW__
@@ -348,7 +336,7 @@ void MainWindow::setupLayout()
 	toolbar_ = new SToolBar(this, true);
 
 	// Create File toolbar
-	SToolBarGroup* tbg_file = new SToolBarGroup(toolbar_, "_File");
+	auto tbg_file = new SToolBarGroup(toolbar_, "_File");
 	tbg_file->addActionButton("aman_newwad");
 	tbg_file->addActionButton("aman_newzip");
 	tbg_file->addActionButton("aman_open");
@@ -361,7 +349,7 @@ void MainWindow::setupLayout()
 	toolbar_->addGroup(tbg_file);
 
 	// Create Archive toolbar
-	SToolBarGroup* tbg_archive = new SToolBarGroup(toolbar_, "_Archive");
+	auto tbg_archive = new SToolBarGroup(toolbar_, "_Archive");
 	tbg_archive->addActionButton("arch_newentry");
 	tbg_archive->addActionButton("arch_newdir");
 	tbg_archive->addActionButton("arch_importfiles");
@@ -371,7 +359,7 @@ void MainWindow::setupLayout()
 	toolbar_->addGroup(tbg_archive);
 
 	// Create Entry toolbar
-	SToolBarGroup* tbg_entry = new SToolBarGroup(toolbar_, "_Entry");
+	auto tbg_entry = new SToolBarGroup(toolbar_, "_Entry");
 	tbg_entry->addActionButton("arch_entry_rename");
 	tbg_entry->addActionButton("arch_entry_delete");
 	tbg_entry->addActionButton("arch_entry_import");
@@ -381,17 +369,17 @@ void MainWindow::setupLayout()
 	toolbar_->addGroup(tbg_entry);
 
 	// Create Base Resource Archive toolbar
-	SToolBarGroup* tbg_bra = new SToolBarGroup(toolbar_, "_Base Resource", true);
-	BaseResourceChooser* brc = new BaseResourceChooser(tbg_bra);
+	auto tbg_bra = new SToolBarGroup(toolbar_, "_Base Resource", true);
+	auto brc     = new BaseResourceChooser(tbg_bra);
 	tbg_bra->addCustomControl(brc);
 	tbg_bra->addActionButton("main_setbra", "settings");
 	toolbar_->addGroup(tbg_bra);
 
 	// Create Palette Chooser toolbar
-	SToolBarGroup* tbg_palette = new SToolBarGroup(toolbar_, "_Palette", true);
-	palette_chooser = new PaletteChooser(tbg_palette, -1);
-	palette_chooser->selectPalette(global_palette);
-	tbg_palette->addCustomControl(palette_chooser);
+	auto tbg_palette = new SToolBarGroup(toolbar_, "_Palette", true);
+	palette_chooser_ = new PaletteChooser(tbg_palette, -1);
+	palette_chooser_->selectPalette(global_palette);
+	tbg_palette->addCustomControl(palette_chooser_);
 	toolbar_->addGroup(tbg_palette);
 
 	// Archive and Entry toolbars are initially disabled
@@ -399,7 +387,7 @@ void MainWindow::setupLayout()
 	toolbar_->enableGroup("_entry", false);
 
 	// Add toolbar
-	m_mgr->AddPane(
+	aui_mgr_->AddPane(
 		toolbar_,
 		wxAuiPaneInfo()
 			.Top()
@@ -407,8 +395,7 @@ void MainWindow::setupLayout()
 			.MinSize(-1, SToolBar::getBarHeight())
 			.Resizable(false)
 			.PaneBorder(false)
-			.Name("toolbar")
-	);
+			.Name("toolbar"));
 
 	// Populate the 'View->Toolbars' menu
 	populateToolbarsMenu();
@@ -422,7 +409,7 @@ void MainWindow::setupLayout()
 	loadLayout();
 
 	// Finalize
-	m_mgr->Update();
+	aui_mgr_->Update();
 	Layout();
 
 	// Bind events
@@ -431,62 +418,57 @@ void MainWindow::setupLayout()
 	Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &MainWindow::onTabChanged, this);
 	Bind(wxEVT_STOOLBAR_LAYOUT_UPDATED, &MainWindow::onToolBarLayoutChanged, this, toolbar_->GetId());
 	Bind(wxEVT_ACTIVATE, &MainWindow::onActivate, this);
-	Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, [&](wxAuiNotebookEvent& e)
-	{
+	Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, [&](wxAuiNotebookEvent& e) {
 		// Null start_page pointer if start page tab is closed
-		auto page = stc_tabs->GetPage(stc_tabs->GetSelection());
-		if (page->GetName() == "startpage")
-			start_page = nullptr;
+		auto page = stc_tabs_->GetPage(stc_tabs_->GetSelection());
+		if (page && page->GetName() == "startpage")
+			start_page_ = nullptr;
 	});
 
 	// Initial focus to toolbar
 	toolbar_->SetFocus();
 }
 
-// ----------------------------------------------------------------------------
-// MainWindow::createStartPage
-//
+// -----------------------------------------------------------------------------
 // (Re-)Creates the start page
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MainWindow::createStartPage(bool newtip) const
 {
-	if (start_page)
-		start_page->load(newtip);
+	if (start_page_)
+		start_page_->load(newtip);
 }
 
-// ----------------------------------------------------------------------------
-// MainWindow::exitProgram
-//
+// -----------------------------------------------------------------------------
 // Attempts to exit the program. Only fails if an unsaved archive is found and
 // the user cancels the exit
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool MainWindow::exitProgram()
 {
 	// Confirm exit
-	if (confirm_exit && !panel_archivemanager->askedSaveUnchanged())
+	if (confirm_exit && !panel_archivemanager_->askedSaveUnchanged())
 	{
-		if (wxMessageBox("Are you sure you want to exit SLADE?", "SLADE", wxICON_QUESTION|wxYES_NO, this) != wxYES)
+		if (wxMessageBox("Are you sure you want to exit SLADE?", "SLADE", wxICON_QUESTION | wxYES_NO, this) != wxYES)
 			return false;
 	}
 
 	// Check if we can close the map editor
-	if (MapEditor::windowWx()->IsShown())
+	if (MapEditor::windowCreated() && MapEditor::windowWx()->IsShown())
 		if (!MapEditor::windowWx()->Close())
 			return false;
 
 	// Close all archives
-	if (!panel_archivemanager->closeAll())
+	if (!panel_archivemanager_->closeAll())
 		return false;
 
 	// Save current layout
-	//main_window_layout = m_mgr->SavePerspective();
+	// main_window_layout = aui_mgr_->SavePerspective();
 	saveLayout();
 	mw_maximized = IsMaximized();
 	if (!IsMaximized())
 		Misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 
 	// Save selected palette
-	global_palette = palette_chooser->GetStringSelection();
+	global_palette = WxUtils::strToView(palette_chooser_->GetStringSelection());
 
 	// Exit application
 	App::exit(true);
@@ -494,62 +476,56 @@ bool MainWindow::exitProgram()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// MainWindow::startPageTabOpen
-//
+// -----------------------------------------------------------------------------
 // Returns true if the Start Page tab is currently open
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool MainWindow::startPageTabOpen() const
 {
-	for (unsigned a = 0; a < stc_tabs->GetPageCount(); a++)
+	for (unsigned a = 0; a < stc_tabs_->GetPageCount(); a++)
 	{
-		if (stc_tabs->GetPage(a)->GetName() == "startpage")
+		if (stc_tabs_->GetPage(a)->GetName() == "startpage")
 			return true;
 	}
 
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// MainWindow::openStartPageTab
-//
+// -----------------------------------------------------------------------------
 // Switches to the Start Page tab, or (re)creates it if it has been closed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MainWindow::openStartPageTab()
 {
 	// Find existing tab
-	for (unsigned a = 0; a < stc_tabs->GetPageCount(); a++)
+	for (unsigned a = 0; a < stc_tabs_->GetPageCount(); a++)
 	{
-		if (stc_tabs->GetPage(a)->GetName() == "startpage")
+		if (stc_tabs_->GetPage(a)->GetName() == "startpage")
 		{
-			stc_tabs->SetSelection(a);
+			stc_tabs_->SetSelection(a);
 			return;
 		}
 	}
 
 	// Not found, create start page tab
-	start_page = new SStartPage(stc_tabs);
-	start_page->init();
-	stc_tabs->AddPage(start_page, "Start Page");
-	stc_tabs->SetPageBitmap(0, Icons::getIcon(Icons::GENERAL, "logo"));
+	start_page_ = new SStartPage(stc_tabs_);
+	start_page_->init();
+	stc_tabs_->AddPage(start_page_, "Start Page");
+	stc_tabs_->SetPageBitmap(0, Icons::getIcon(Icons::General, "logo"));
 	createStartPage();
 }
 
-// ----------------------------------------------------------------------------
-// MainWindow::openDocs
-//
+// -----------------------------------------------------------------------------
 // Opens [entry] in its own tab
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #ifdef USE_WEBVIEW_STARTPAGE
-void MainWindow::openDocs(string page_name)
+void MainWindow::openDocs(const wxString& page_name)
 {
 	// Check if docs tab is already open
 	bool found = false;
-	for (unsigned a = 0; a < stc_tabs->GetPageCount(); a++)
+	for (unsigned a = 0; a < stc_tabs_->GetPageCount(); a++)
 	{
-		if (stc_tabs->GetPage(a)->GetName() == "docs")
+		if (stc_tabs_->GetPage(a)->GetName() == "docs")
 		{
-			stc_tabs->SetSelection(a);
+			stc_tabs_->SetSelection(a);
 			found = true;
 			break;
 		}
@@ -559,34 +535,32 @@ void MainWindow::openDocs(string page_name)
 	if (!found)
 	{
 		// Create docs page
-		docs_page = new DocsPage(this);
-		docs_page->SetName("docs");
+		docs_page_ = new DocsPage(this);
+		docs_page_->SetName("docs");
 
 		// Add tab
-		stc_tabs->AddPage(docs_page, "Documentation", true, -1);
-		stc_tabs->SetPageBitmap(stc_tabs->GetPageCount() - 1, Icons::getIcon(Icons::GENERAL, "wiki"));
+		stc_tabs_->AddPage(docs_page_, "Documentation", true, -1);
+		stc_tabs_->SetPageBitmap(stc_tabs_->GetPageCount() - 1, Icons::getIcon(Icons::General, "wiki"));
 	}
 
 	// Load specified page, if any
-	if (page_name != "")
-		docs_page->openPage(page_name);
+	if (!page_name.empty())
+		docs_page_->openPage(page_name);
 
 	// Refresh page
-	docs_page->Layout();
-	docs_page->Update();
+	docs_page_->Layout();
+	docs_page_->Update();
 }
 #endif
 
-// ----------------------------------------------------------------------------
-// MainWindow::handleAction
-//
+// -----------------------------------------------------------------------------
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
-// ----------------------------------------------------------------------------
-bool MainWindow::handleAction(string id)
+// -----------------------------------------------------------------------------
+bool MainWindow::handleAction(string_view id)
 {
 	// We're only interested in "main_" actions
-	if (!id.StartsWith("main_"))
+	if (!StrUtil::startsWith(id, "main_"))
 		return false;
 
 	// File->Exit
@@ -599,14 +573,14 @@ bool MainWindow::handleAction(string id)
 	// Edit->Undo
 	if (id == "main_undo")
 	{
-		panel_archivemanager->undo();
+		panel_archivemanager_->undo();
 		return true;
 	}
 
 	// Edit->Redo
 	if (id == "main_redo")
 	{
-		panel_archivemanager->redo();
+		panel_archivemanager_->redo();
 		return true;
 	}
 
@@ -629,8 +603,8 @@ bool MainWindow::handleAction(string id)
 	// View->Archive Manager
 	if (id == "main_showam")
 	{
-		wxAuiManager* m_mgr = wxAuiManager::GetManager(panel_archivemanager);
-		wxAuiPaneInfo& p_inf = m_mgr->GetPane("archive_manager");
+		auto  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
+		auto& p_inf = m_mgr->GetPane("archive_manager");
 		p_inf.Show(!p_inf.IsShown());
 		m_mgr->Update();
 		return true;
@@ -639,8 +613,8 @@ bool MainWindow::handleAction(string id)
 	// View->Console
 	if (id == "main_showconsole")
 	{
-		wxAuiManager* m_mgr = wxAuiManager::GetManager(panel_archivemanager);
-		wxAuiPaneInfo& p_inf = m_mgr->GetPane("console");
+		auto  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
+		auto& p_inf = m_mgr->GetPane("console");
 		p_inf.Show(!p_inf.IsShown());
 		p_inf.MinSize(WxUtils::scaledSize(200, 128));
 		m_mgr->Update();
@@ -650,8 +624,8 @@ bool MainWindow::handleAction(string id)
 	// View->Undo History
 	if (id == "main_showundohistory")
 	{
-		wxAuiManager* m_mgr = wxAuiManager::GetManager(panel_archivemanager);
-		wxAuiPaneInfo& p_inf = m_mgr->GetPane("undo_history");
+		auto  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
+		auto& p_inf = m_mgr->GetPane("undo_history");
 		p_inf.Show(!p_inf.IsShown());
 		m_mgr->Update();
 		return true;
@@ -673,21 +647,21 @@ bool MainWindow::handleAction(string id)
 	{
 		wxAboutDialogInfo info;
 		info.SetName("SLADE");
-		string version = "v" + Global::version;
-		if (Global::sc_rev != "")
+		wxString version = "v" + App::version().toString();
+		if (!Global::sc_rev.empty())
 			version = version + " (Git Rev " + Global::sc_rev + ")";
 		info.SetVersion(version);
 		info.SetWebSite("http://slade.mancubus.net");
 		info.SetDescription("It's a Doom Editor");
 
 		// Set icon
-		string icon_filename = App::path("slade.ico", App::Dir::Temp);
-		App::archiveManager().programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
+		auto icon_filename = App::path(App::iconFile(), App::Dir::Temp);
+		App::archiveManager().programResourceArchive()->entry(App::iconFile())->exportFile(icon_filename);
 		info.SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 		wxRemoveFile(icon_filename);
 
-		string year = wxNow().Right(4);
-		info.SetCopyright(S_FMT("(C) 2008-%s Simon Judd <sirjuddington@gmail.com>", year));
+		wxString year = wxNow().Right(4);
+		info.SetCopyright(wxString::Format("(C) 2008-%s Simon Judd <sirjuddington@gmail.com>", year));
 
 		wxAboutBox(info);
 
@@ -717,33 +691,29 @@ bool MainWindow::handleAction(string id)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // MainWindow Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// MainWindow::onClose
-//
+// -----------------------------------------------------------------------------
 // Called when the window is closed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MainWindow::onClose(wxCloseEvent& e)
 {
 	if (!exitProgram())
 		e.Veto();
 }
 
-// ----------------------------------------------------------------------------
-// MainWindow::onTabChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the current tab is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MainWindow::onTabChanged(wxAuiNotebookEvent& e)
 {
 	// Get current page
-	wxWindow* page = stc_tabs->GetPage(stc_tabs->GetSelection());
+	auto page = stc_tabs_->GetPage(stc_tabs_->GetSelection());
 
 	// If start page is selected, refresh it
 	if (page->GetName() == "startpage")
@@ -755,24 +725,22 @@ void MainWindow::onTabChanged(wxAuiNotebookEvent& e)
 
 	// Archive tab, update undo history panel
 	else if (page->GetName() == "archive")
-		panel_undo_history->setManager(((ArchivePanel*)page)->undoManager());
+		panel_undo_history_->setManager(((ArchivePanel*)page)->undoManager());
 
 	// Continue
 	e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// MainWindow::onSize
-//
+// -----------------------------------------------------------------------------
 // Called when the window is resized
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MainWindow::onSize(wxSizeEvent& e)
 {
 	// Update toolbar layout (if needed)
 	toolbar_->updateLayout();
 #ifndef __WXMSW__
-	m_mgr->GetPane(toolbar_).MinSize(-1, toolbar_->minHeight());
-	m_mgr->Update();
+	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->minHeight());
+	aui_mgr_->Update();
 #endif
 
 	// Update maximized cvar
@@ -781,23 +749,19 @@ void MainWindow::onSize(wxSizeEvent& e)
 	e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// MainWindow::onToolBarLayoutChanged
-//
+// -----------------------------------------------------------------------------
 // Called when the toolbar layout is changed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MainWindow::onToolBarLayoutChanged(wxEvent& e)
 {
 	// Update toolbar size
-	m_mgr->GetPane(toolbar_).MinSize(-1, toolbar_->minHeight());
-	m_mgr->Update();
+	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->minHeight());
+	aui_mgr_->Update();
 }
 
-// ----------------------------------------------------------------------------
-// MainWindow::onActivate
-//
+// -----------------------------------------------------------------------------
 // Called when the window is activated
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void MainWindow::onActivate(wxActivateEvent& e)
 {
 	if (!e.GetActive() || this->IsBeingDeleted() || App::isExiting())
@@ -807,9 +771,9 @@ void MainWindow::onActivate(wxActivateEvent& e)
 	}
 
 	// Get current tab
-	if (stc_tabs->GetPageCount())
+	if (stc_tabs_->GetPageCount())
 	{
-		wxWindow* page = stc_tabs->GetPage(stc_tabs->GetSelection());
+		auto page = stc_tabs_->GetPage(stc_tabs_->GetSelection());
 
 		// If start page is selected, refresh it
 		if (page && page->GetName() == "startpage")

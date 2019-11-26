@@ -1,33 +1,34 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    MapPreviewCanvas.cpp
- * Description: OpenGL Canvas that shows a basic map preview, can
- *              also save the preview to an image
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2019 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         https://slade.mancubus.net
+// Filename:    SIFormat.cpp
+// Description: Base class for SImage format system
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
 #undef BOOL
@@ -37,94 +38,96 @@
 #include "SIFormat.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-vector<SIFormat*>	simage_formats;
-SIFormat*			sif_raw = nullptr;
-SIFormat*			sif_flat = nullptr;
-SIFormat*			sif_general = nullptr;
-SIFormat*			sif_unknown = nullptr;
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+vector<SIFormat*> simage_formats;
+SIFormat*         sif_raw     = nullptr;
+SIFormat*         sif_flat    = nullptr;
+SIFormat*         sif_general = nullptr;
+SIFormat*         sif_unknown = nullptr;
+} // namespace
 
 
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, gfx_extraconv)
 
 
-/*******************************************************************
- * SIF* CLASSES
- *******************************************************************/
-#include "Formats/SIFImages.h"
+// -----------------------------------------------------------------------------
+//
+// SIF* Classes
+//
+// -----------------------------------------------------------------------------
 #include "Formats/SIFDoom.h"
 #include "Formats/SIFHexen.h"
-#include "Formats/SIFZDoom.h"
-#include "Formats/SIFQuake.h"
-#include "Formats/SIFOther.h"
-#include "Formats/SIFRott.h"
+#include "Formats/SIFImages.h"
 #include "Formats/SIFJedi.h"
+#include "Formats/SIFOther.h"
+#include "Formats/SIFQuake.h"
+#include "Formats/SIFRott.h"
+#include "Formats/SIFZDoom.h"
 
 
-/*******************************************************************
- * SIFUNKNOWN CLASS
- *******************************************************************
- * 'Unknown' format
- */
+// -----------------------------------------------------------------------------
+// SIFUnknown Class
+//
+// 'Unknown' format
+// -----------------------------------------------------------------------------
 class SIFUnknown : public SIFormat
 {
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) { return false; }
+	bool readImage(SImage& image, MemChunk& data, int index) override { return false; }
 
 public:
-	SIFUnknown() : SIFormat("unknown") { reliability = 0; }
-	~SIFUnknown() {}
+	SIFUnknown() : SIFormat("unknown") { reliability_ = 0; }
+	~SIFUnknown() = default;
 
-	bool			isThisFormat(MemChunk& mc) { return false; }
-	SImage::info_t	getInfo(MemChunk& mc, int index) { return SImage::info_t(); }
+	bool         isThisFormat(MemChunk& mc) override { return false; }
+	SImage::Info info(MemChunk& mc, int index) override { return {}; }
 };
 
 
-/*******************************************************************
- * SIFGENERALIMAGE CLASS
- *******************************************************************
- * General image format is a special case, only try if no other
- * formats are detected
- */
+// -----------------------------------------------------------------------------
+// SIFGeneralImage Class
+//
+// General image format is a special case, only try if no other formats are
+// detected
+// -----------------------------------------------------------------------------
 class SIFGeneralImage : public SIFormat
 {
-private:
-	FIBITMAP* getFIInfo(MemChunk& data, SImage::info_t& info)
+public:
+	SIFGeneralImage() : SIFormat("image", "Image", "dat") {}
+	~SIFGeneralImage() = default;
+
+	bool isThisFormat(MemChunk& mc) override
 	{
-		// Get FreeImage bitmap info from entry data
-		FIMEMORY* mem = FreeImage_OpenMemory((BYTE*)data.getData(), data.getSize());
-		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(mem, 0);
-		FIBITMAP* bm = FreeImage_LoadFromMemory(fif, mem, 0);
+		auto mem = FreeImage_OpenMemory((BYTE*)mc.data(), mc.size());
+		auto fif = FreeImage_GetFileTypeFromMemory(mem, 0);
 		FreeImage_CloseMemory(mem);
+		return fif != FIF_UNKNOWN;
+	}
 
-		// Check it created/read ok
-		if (!bm)
-			return nullptr;
-
-		// Get info from image
-		info.width = FreeImage_GetWidth(bm);
-		info.height = FreeImage_GetHeight(bm);
-		info.colformat = RGBA;	// Generic images always converted to RGBA on loading
-		info.format = id;
-
-		// Check if palette supplied
-		if (FreeImage_GetColorsUsed(bm) > 0)
-			info.has_palette = true;
-
-		return bm;
+	SImage::Info info(MemChunk& mc, int index) override
+	{
+		SImage::Info info;
+		getFIInfo(mc, info);
+		return info;
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index)
+	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Get image info
-		SImage::info_t info;
-		FIBITMAP* bm = getFIInfo(data, info);
+		SImage::Info info;
+		auto         bm = getFIInfo(data, info);
 
 		// Check it created/read ok
 		if (!bm)
@@ -134,7 +137,7 @@ protected:
 		}
 
 		// Get image palette if it exists
-		RGBQUAD* bm_pal = FreeImage_GetPalette(bm);
+		auto    bm_pal = FreeImage_GetPalette(bm);
 		Palette palette;
 		if (bm_pal)
 		{
@@ -143,7 +146,7 @@ protected:
 			if (b > 256)
 				b = 256;
 			for (; a < b; a++)
-				palette.setColour(a, rgba_t(bm_pal[a].rgbRed, bm_pal[a].rgbGreen, bm_pal[a].rgbBlue, 255));
+				palette.setColour(a, ColRGBA(bm_pal[a].rgbRed, bm_pal[a].rgbGreen, bm_pal[a].rgbBlue, 255));
 		}
 
 		// Create image
@@ -151,21 +154,27 @@ protected:
 			image.create(info, &palette);
 		else
 			image.create(info);
-		uint8_t* img_data = imageData(image);
+		auto img_data = imageData(image);
 
 		// Convert to 32bpp & flip vertically
-		FIBITMAP* rgba = FreeImage_ConvertTo32Bits(bm);
+		auto rgba = FreeImage_ConvertTo32Bits(bm);
+		if (!rgba)
+		{
+			Log::error("FreeImage_ConvertTo32Bits failed for image data");
+			Global::error = "Error reading PNG data";
+			return false;
+		}
 		FreeImage_FlipVertical(rgba);
 
 		// Load raw RGBA data
-		uint8_t* bits_rgba = FreeImage_GetBits(rgba);
-		int c = 0;
+		auto bits_rgba = FreeImage_GetBits(rgba);
+		int  c         = 0;
 		for (int a = 0; a < info.width * info.height; a++)
 		{
-			img_data[c++] = bits_rgba[a * 4 + 2];	// Red
-			img_data[c++] = bits_rgba[a * 4 + 1];	// Green
-			img_data[c++] = bits_rgba[a * 4];		// Blue
-			img_data[c++] = bits_rgba[a * 4 + 3];	// Alpha
+			img_data[c++] = bits_rgba[a * 4 + 2]; // Red
+			img_data[c++] = bits_rgba[a * 4 + 1]; // Green
+			img_data[c++] = bits_rgba[a * 4];     // Blue
+			img_data[c++] = bits_rgba[a * 4 + 3]; // Alpha
 		}
 
 		// Free memory
@@ -175,78 +184,133 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index)
-	{
-		return false;
-	}
+	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override { return false; }
 
-public:
-	SIFGeneralImage() : SIFormat("image")
+private:
+	FIBITMAP* getFIInfo(MemChunk& data, SImage::Info& info) const
 	{
-		name = "Image";
-		extension = "dat";
-	}
-	~SIFGeneralImage() {}
-
-	bool isThisFormat(MemChunk& mc)
-	{
-		FIMEMORY* mem = FreeImage_OpenMemory((BYTE*)mc.getData(), mc.getSize());
-		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(mem, 0);
+		// Get FreeImage bitmap info from entry data
+		auto mem = FreeImage_OpenMemory((BYTE*)data.data(), data.size());
+		auto fif = FreeImage_GetFileTypeFromMemory(mem, 0);
+		auto bm  = FreeImage_LoadFromMemory(fif, mem, 0);
 		FreeImage_CloseMemory(mem);
-		if (fif == FIF_UNKNOWN)
-			return false;
-		else
-			return true;
-	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index)
-	{
-		SImage::info_t info;
+		// Check it created/read ok
+		if (!bm)
+			return nullptr;
 
-		getFIInfo(mc, info);
+		// Get info from image
+		info.width     = FreeImage_GetWidth(bm);
+		info.height    = FreeImage_GetHeight(bm);
+		info.colformat = SImage::Type::RGBA; // Generic images always converted to RGBA on loading
+		info.format    = id_;
 
-		return info;
+		// Check if palette supplied
+		if (FreeImage_GetColorsUsed(bm) > 0)
+			info.has_palette = true;
+
+		return bm;
 	}
 };
 
 // Define valid raw flat sizes
-uint32_t valid_flat_size[][3] =
-{
-	{   2,   2,	0 },	// lol Heretic F_SKY1
-	{  10,  12,	0 },	// gnum format
-	{  16,  16,	0 },	// |
-	{  32,  32,	0 },	// |
-	{  32,  64,	0 },	// Strife startup sprite
-	{  48,  48,	0 },	// |
-	{  64,  64,	1 },	// standard flat size
-	{  64,	65,	0 },	// Heretic flat size variant
-	{  64, 128,	0 },	// Hexen flat size variant
-	{  80,  50, 	0 },	// SRB2 fade mask size 1
-	{ 128, 128,	1 },	// |
-	{ 160, 100, 	0 },	// SRB2 fade mask size 2
-	{ 256,  34,	0 },    // SRB2 colormap
-	{ 256,  66,	0 },	// Blake Stone colormap
-	{ 256, 200,	0 },	// Rise of the Triad sky
-	{ 256, 256,	1 },	// hires flat size
-	{ 320, 200,	0 },	// full screen format
-	{ 512, 512,	1 },	// hires flat size
-	{ 640, 400, 	0 },	// SRB2 fade mask size 4
-	{1024,1024,	1 },	// hires flat size
-	{2048,2048,	1 },	// super hires flat size (SRB2)
-	{4096,4096,	1 },	// |
+uint32_t valid_flat_size[][3] = {
+	{ 2, 2, 0 },       // lol Heretic F_SKY1
+	{ 10, 12, 0 },     // gnum format
+	{ 16, 16, 1 },     // |
+	{ 32, 32, 1 },     // |
+	{ 32, 64, 0 },     // Strife startup sprite
+	{ 48, 48, 0 },     // |
+	{ 64, 64, 1 },     // standard flat size
+	{ 64, 65, 0 },     // Heretic flat size variant
+	{ 64, 128, 0 },    // Hexen flat size variant
+	{ 80, 50, 1 },     // SRB2 fade mask size 1
+	{ 128, 128, 1 },   // |
+	{ 160, 100, 1 },   // SRB2 fade mask size 2
+	{ 256, 34, 1 },    // SRB2 colormap
+	{ 256, 66, 0 },    // Blake Stone colormap
+	{ 256, 200, 0 },   // Rise of the Triad sky
+	{ 256, 256, 1 },   // hires flat size
+	{ 320, 200, 0 },   // full screen format
+	{ 512, 512, 1 },   // hires flat size
+	{ 640, 400, 1 },   // SRB2 fade mask size 4
+	{ 1024, 1024, 1 }, // hires flat size
+	{ 2048, 2048, 1 }, // super hires flat size (SRB2)
+	{ 4096, 4096, 1 }, // |
 };
-uint32_t	n_valid_flat_sizes = 22;
+uint32_t n_valid_flat_sizes = 22;
 
 
-/*******************************************************************
- * SIFRAW CLASS
- *******************************************************************
- * Raw format is a special case - not detectable
- */
+// -----------------------------------------------------------------------------
+// SIFRaw Class
+//
+// Raw format is a special case - not detectable
+// -----------------------------------------------------------------------------
 class SIFRaw : public SIFormat
 {
+public:
+	SIFRaw(string_view id = "raw") : SIFormat(id, "Raw", "dat") {}
+	~SIFRaw() = default;
+
+	bool isThisFormat(MemChunk& mc) override
+	{
+		// Just check the size
+		return validSize(mc.size());
+	}
+
+	SImage::Info info(MemChunk& mc, int index) override
+	{
+		SImage::Info info;
+		unsigned     size = mc.size();
+
+		// Determine dimensions
+		bool valid_size = false;
+		for (uint32_t a = 0; a < n_valid_flat_sizes; a++)
+		{
+			uint32_t w = valid_flat_size[a][0];
+			uint32_t h = valid_flat_size[a][1];
+
+			if (size == w * h || size - 4 == w * h)
+			{
+				info.width  = w;
+				info.height = h;
+				valid_size  = true;
+				break;
+			}
+		}
+		if (size == 8776) // Inkworks and its signature at the end of COLORMAPS
+		{
+			size = 8704;
+		}
+		if (!valid_size)
+		{
+			if (size % 320 == 0) // This should handle any custom AUTOPAGE
+			{
+				info.width  = 320;
+				info.height = size / 320;
+			}
+			else if (size % 256 == 0) // This allows display of COLORMAPS
+			{
+				info.width  = 256;
+				info.height = size / 256;
+			}
+		}
+
+		// Setup other info
+		info.colformat = SImage::Type::PalMask;
+		info.format    = "raw";
+
+		return info;
+	}
+
+	bool canWriteType(SImage::Type type) override
+	{
+		// Raw format only supports paletted images
+		return type == SImage::Type::PalMask;
+	}
+
 protected:
-	bool validSize(unsigned size)
+	bool validSize(unsigned size) const
 	{
 		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
 		{
@@ -255,7 +319,8 @@ protected:
 		}
 
 		// COLORMAP size
-		if (size == 8776) size = 8704;	// Ignore inkworks signature
+		if (size == 8776)
+			size = 8704; // Ignore inkworks signature
 		if (size % 256 == 0)
 			return true;
 
@@ -266,12 +331,12 @@ protected:
 		return false;
 	}
 
-	bool validSize(int width, int height)
+	bool validSize(int width, int height) const
 	{
 		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
 		{
-			if (valid_flat_size[a][0] == width && valid_flat_size[a][1] == height
-			        && (valid_flat_size[a][2] == 1 || gfx_extraconv))
+			if ((int)valid_flat_size[a][0] == width && (int)valid_flat_size[a][1] == height
+				&& (valid_flat_size[a][2] == 1 || gfx_extraconv))
 				return true;
 		}
 
@@ -286,144 +351,60 @@ protected:
 		return false;
 	}
 
-	bool readImage(SImage& image, MemChunk& data, int index)
+	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Get info
-		SImage::info_t info = getInfo(data, index);
+		auto inf = info(data, index);
 
 		// Create image from data
-		image.create(info.width, info.height, PALMASK);
-		data.read(imageData(image), info.width*info.height, 0);
+		image.create(inf.width, inf.height, SImage::Type::PalMask);
+		data.read(imageData(image), inf.width * inf.height, 0);
 		image.fillAlpha(255);
 
 		return true;
 	}
-
-public:
-	SIFRaw(string id = "raw") : SIFormat(id)
-	{
-		this->name = "Raw";
-		this->extension = "dat";
-	}
-	~SIFRaw() {}
-
-	bool isThisFormat(MemChunk& mc)
-	{
-		// Just check the size
-		return validSize(mc.getSize());
-	}
-
-	SImage::info_t getInfo(MemChunk& mc, int index)
-	{
-		SImage::info_t info;
-		unsigned size = mc.getSize();
-
-		// Determine dimensions
-		bool valid_size = false;
-		for (uint32_t a = 0; a < n_valid_flat_sizes; a++)
-		{
-			uint32_t w = valid_flat_size[a][0];
-			uint32_t h = valid_flat_size[a][1];
-
-			if (size == w * h || size - 4 == w * h)
-			{
-				info.width = w;
-				info.height = h;
-				valid_size = true;
-				break;
-			}
-		}
-		if (size == 8776)   // Inkworks and its signature at the end of COLORMAPS
-		{
-			size = 8704;
-		}
-		if (!valid_size)
-		{
-			if (size % 320 == 0)	 	// This should handle any custom AUTOPAGE
-			{
-				info.width = 320;
-				info.height = size/320;
-			}
-			else if (size % 256 == 0)   // This allows display of COLORMAPS
-			{
-				info.width = 256;
-				info.height = size/256;
-			}
-		}
-
-		// Setup other info
-		info.colformat = PALMASK;
-		info.format = "raw";
-
-		return info;
-	}
-
-	bool canWriteType(SIType type)
-	{
-		// Raw format only supports paletted images
-		if (type == PALMASK)
-			return true;
-		else
-			return false;
-	}
 };
 
 
-/*******************************************************************
- * SIFRAWFLAT CLASS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// SIFRawFlat Class
+//
+// -----------------------------------------------------------------------------
 class SIFRawFlat : public SIFRaw
 {
-protected:
-	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index)
-	{
-		// Can't write if RGBA
-		if (image.getType() == RGBA)
-			return false;
-
-		// Check size
-		if (!validSize(image.getWidth(), image.getHeight()))
-			return false;
-
-		// Just dump image data to memchunk
-		data.clear();
-		data.write(imageData(image), image.getWidth()*image.getHeight());
-
-		return true;
-	}
-
 public:
 	SIFRawFlat() : SIFRaw("raw_flat")
 	{
-		this->name = "Doom Flat";
-		this->extension = "lmp";
+		name_      = "Doom Flat";
+		extension_ = "lmp";
 	}
-	~SIFRawFlat() {}
+	~SIFRawFlat() = default;
 
-	int canWrite(SImage& image)
+	Writable canWrite(SImage& image) override
 	{
 		// If it's the correct size and colour format, it's writable
-		int width = image.getWidth();
-		int height = image.getHeight();
+		int width  = image.width();
+		int height = image.height();
 
 		// Shouldn't happen but...
 		if (width < 0 || height < 0)
-			return NOTWRITABLE;
+			return Writable::No;
 
-		if (image.getType() == PALMASK &&
-		        validSize(image.getWidth(), image.getHeight()))
-			return WRITABLE;
+		if (image.type() == SImage::Type::PalMask && validSize(image.width(), image.height()))
+			return Writable::Yes;
 
 		// Otherwise, check if it can be cropped to a valid size
 		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
-			if (((unsigned)width >= valid_flat_size[a][0] && (unsigned)height >= valid_flat_size[a][1] &&
-				valid_flat_size[a][2] == 1) || gfx_extraconv)
-					return CONVERTIBLE;
+			if (((unsigned)width >= valid_flat_size[a][0] && (unsigned)height >= valid_flat_size[a][1]
+				 && valid_flat_size[a][2] == 1)
+				|| gfx_extraconv)
+				return Writable::Convert;
 
-		return NOTWRITABLE;
+		return Writable::No;
 	}
 
-	bool convertWritable(SImage& image, convert_options_t opt)
+	bool convertWritable(SImage& image, ConvertOptions opt) override
 	{
 		// Firstly, make image paletted
 		image.convertPaletted(opt.pal_target, opt.pal_current);
@@ -433,15 +414,15 @@ public:
 
 		// Quick hack for COLORMAP size
 		// TODO: Remove me when a proper COLORMAP editor is implemented
-		if (image.getWidth() == 256 && image.getHeight() >= 32 && image.getHeight() <= 34)
+		if (image.width() == 256 && image.height() >= 32 && image.height() <= 34)
 			return true;
 
 		// Check for fullscreen/autopage size
-		if (image.getWidth() == 320)
+		if (image.width() == 320)
 			return true;
 
 		// And finally, find a suitable flat size and crop to that size
-		int width = 0;
+		int width  = 0;
 		int height = 0;
 
 		for (unsigned a = 1; a < n_valid_flat_sizes; a++)
@@ -449,16 +430,13 @@ public:
 			bool writable = (valid_flat_size[a][2] == 1 || gfx_extraconv);
 
 			// Check for exact match (no need to crop)
-			if (image.getWidth() == valid_flat_size[a][0] &&
-			    image.getHeight() == valid_flat_size[a][1] &&
-				writable)
+			if (image.width() == (int)valid_flat_size[a][0] && image.height() == (int)valid_flat_size[a][1] && writable)
 				return true;
 
 			// If the flat will fit within this size, crop to the previous size
 			// (this works because flat sizes list is in size-order)
-			if (image.getWidth() <= (int)valid_flat_size[a][0] &&
-			    image.getHeight() <= (int)valid_flat_size[a][1] &&
-			    width > 0 && height > 0)
+			if (image.width() <= (int)valid_flat_size[a][0] && image.height() <= (int)valid_flat_size[a][1] && width > 0
+				&& height > 0)
 			{
 				image.crop(0, 0, width, height);
 				return true;
@@ -467,58 +445,73 @@ public:
 			// Save 'previous' valid size
 			if (writable)
 			{
-				width = valid_flat_size[a][0];
+				width  = valid_flat_size[a][0];
 				height = valid_flat_size[a][1];
 			}
 		}
 
 		return false;
 	}
+
+protected:
+	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index) override
+	{
+		// Can't write if RGBA
+		if (image.type() == SImage::Type::RGBA)
+			return false;
+
+		// Check size
+		if (!validSize(image.width(), image.height()))
+			return false;
+
+		// Just dump image data to memchunk
+		data.clear();
+		data.write(imageData(image), image.width() * image.height());
+
+		return true;
+	}
 };
 
 
-/*******************************************************************
- * SIFORMAT CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// SIFormat Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* SIFormat::SIFormat
- * SIFormat class constructor
- *******************************************************************/
-SIFormat::SIFormat(string id)
+
+// -----------------------------------------------------------------------------
+// SIFormat class constructor
+// ----------------------------------------------------------------------------
+SIFormat::SIFormat(string_view id, string_view name, string_view ext, uint8_t reliability) :
+	id_{ id },
+	name_{ name },
+	extension_{ ext },
+	reliability_{ reliability }
 {
-	// Init variables
-	this->id = id;
-	this->name = "Unknown";
-	this->extension = "dat";
-	this->reliability = 255;
-
 	// Add to list of formats
 	simage_formats.push_back(this);
 }
 
-/* SIFormat::~SIFormat
- * SIFormat class destructor
- *******************************************************************/
-SIFormat::~SIFormat()
-{
-}
+
+// -----------------------------------------------------------------------------
+//
+// SIFormat Class Static Functions
+//
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * SIFORMAT CLASS STATIC FUNCTIONS
- *******************************************************************/
-
-/* SIFormat::initFormats
- * Initialises all SIFormats
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Initialises all SIFormats
+// -----------------------------------------------------------------------------
 void SIFormat::initFormats()
 {
 	// Non-detectable formats
 	sif_unknown = new SIFUnknown();
-	sif_raw = new SIFRaw();
-	sif_flat = new SIFRawFlat();
+	sif_raw     = new SIFRaw();
+	sif_flat    = new SIFRawFlat();
 	sif_general = new SIFGeneralImage();
-	simage_formats.clear();	// Remove previously created formats from the list
+	simage_formats.clear(); // Remove previously created formats from the list
 
 	// Image formats
 	new SIFPng();
@@ -573,10 +566,10 @@ void SIFormat::initFormats()
 	new SIFWolfSprite();
 }
 
-/* SIFormat::getFormat
- * Returns the format [id]
- *******************************************************************/
-SIFormat* SIFormat::getFormat(string id)
+// -----------------------------------------------------------------------------
+// Returns the format [id]
+// -----------------------------------------------------------------------------
+SIFormat* SIFormat::getFormat(string_view id)
 {
 	// Check for special types
 	if (id == "raw")
@@ -587,35 +580,35 @@ SIFormat* SIFormat::getFormat(string id)
 		return sif_general;
 
 	// Search for format matching id
-	for (unsigned a = 0; a < simage_formats.size(); a++)
+	for (auto& simage_format : simage_formats)
 	{
-		if (simage_formats[a]->id == id)
-			return simage_formats[a];
+		if (simage_format->id_ == id)
+			return simage_format;
 	}
 
 	// Not found, return unknown format
 	return sif_unknown;
 }
 
-/* SIFormat::determineFormat
- * Determines the format of the image data in [mc]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Determines the format of the image data in [mc]
+// -----------------------------------------------------------------------------
 SIFormat* SIFormat::determineFormat(MemChunk& mc)
 {
 	// Go through all registered formats
 	SIFormat* format = sif_unknown;
-	for (unsigned a = 0; a < simage_formats.size(); a++)
+	for (auto& simage_format : simage_formats)
 	{
 		// Don't bother checking if the format is less reliable
-		if (simage_formats[a]->reliability < format->reliability)
+		if (simage_format->reliability_ < format->reliability_)
 			continue;
 
 		// Check if data matches format
-		if (simage_formats[a]->isThisFormat(mc))
-			format = simage_formats[a];
+		if (simage_format->isThisFormat(mc))
+			format = simage_format;
 
 		// Stop if format detected is 100% reliable
-		if (format->reliability == 255)
+		if (format->reliability_ == 255)
 			break;
 	}
 
@@ -623,50 +616,49 @@ SIFormat* SIFormat::determineFormat(MemChunk& mc)
 	return format;
 }
 
-/* SIFormat::unknownFormat
- * Returns the 'unknown' image format
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the 'unknown' image format
+// -----------------------------------------------------------------------------
 SIFormat* SIFormat::unknownFormat()
 {
 	return sif_unknown;
 }
 
-
-/* SIFormat::rawFormat
- * Returns the raw image format
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the raw image format
+// -----------------------------------------------------------------------------
 SIFormat* SIFormat::rawFormat()
 {
 	return sif_raw;
 }
 
-/* SIFormat::flatFormat
- * Returns the raw/flat image format
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the raw/flat image format
+// -----------------------------------------------------------------------------
 SIFormat* SIFormat::flatFormat()
 {
 	return sif_flat;
 }
 
-/* SIFormat::generalFormat
- * Returns the 'general' image format
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the 'general' image format
+// -----------------------------------------------------------------------------
 SIFormat* SIFormat::generalFormat()
 {
 	return sif_general;
 }
 
-/* SIFormat::getAllFormats
- * Adds all image formats to [list]
- *******************************************************************/
-void SIFormat::getAllFormats(vector<SIFormat*>& list)
+// -----------------------------------------------------------------------------
+// Adds all image formats to [list]
+// -----------------------------------------------------------------------------
+void SIFormat::putAllFormats(vector<SIFormat*>& list)
 {
 	// Clear list
 	list.clear();
 
 	// Add formats
-	for (unsigned a = 0; a < simage_formats.size(); a++)
-		list.push_back(simage_formats[a]);
+	for (auto simage_format : simage_formats)
+		list.push_back(simage_format);
 
 	// Add special formats
 	list.push_back(sif_general);

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "UI/SDialog.h"
 #include "Game/SpecialPreset.h"
+#include "UI/SDialog.h"
 
 class SpecialPresetTreeView;
 
@@ -10,8 +10,8 @@ class SpecialPresetDialog : public SDialog
 public:
 	SpecialPresetDialog(wxWindow* parent);
 
-	Game::SpecialPreset	selectedPreset() const;
+	Game::SpecialPreset selectedPreset() const;
 
 private:
-	SpecialPresetTreeView*	tree_presets_;
+	SpecialPresetTreeView* tree_presets_ = nullptr;
 };

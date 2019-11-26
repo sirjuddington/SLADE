@@ -1,46 +1,40 @@
+#pragma once
 
-#ifndef __FILE_MONITOR_H__
-#define __FILE_MONITOR_H__
-
-#include "common.h"
-#include "General/ListenerAnnouncer.h"
+class Archive;
 
 class FileMonitor : public wxTimer
 {
-private:
-	wxProcess*	process;
+public:
+	FileMonitor(string_view filename, bool start = true);
+	virtual ~FileMonitor() = default;
+
+	wxProcess*    process() const { return process_.get(); }
+	const string& filename() const { return filename_; }
+
+	virtual void fileModified() {}
+	virtual void processTerminated() {}
+
+	void Notify() override;
+	void onEndProcess(wxProcessEvent& e);
 
 protected:
-	string	filename;
-	time_t	file_modified;
+	string filename_;
+	time_t file_modified_;
 
-public:
-	FileMonitor(string filename, bool start = true);
-	virtual ~FileMonitor();
-
-	wxProcess*	getProcess() { return process; }
-	string		getFilename() { return filename; }
-
-	virtual void	fileModified() {}
-	virtual void	processTerminated() {}
-
-	void	Notify();
-	void	onEndProcess(wxProcessEvent& e);
+private:
+	unique_ptr<wxProcess> process_;
 };
 
-class Archive;
 class DB2MapFileMonitor : public FileMonitor
 {
-private:
-	Archive*	archive;
-	string		map_name;
-
 public:
-	DB2MapFileMonitor(string filename, Archive* archive, string map_name);
-	~DB2MapFileMonitor();
+	DB2MapFileMonitor(string_view filename, Archive* archive, string_view map_name);
+	~DB2MapFileMonitor() = default;
 
-	void	fileModified();
-	void	processTerminated();
+	void fileModified() override;
+	void processTerminated() override;
+
+private:
+	Archive* archive_ = nullptr;
+	string   map_name_;
 };
-
-#endif//__FILE_MONITOR_H__

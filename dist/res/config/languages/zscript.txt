@@ -11,15 +11,143 @@ zscript
 	keywords =
 	{
 		// General keywords
-		class, default, private, static, native, return, if, else, for, while, do, break, continue,
-		deprecated, state, null, readonly, true, false, struct, extend, clearscope, vararg, ui, play,
-		virtual, virtualscope, meta, Property, version, in, out, states, action, override, super, is,
-		let, const, replaces, protected, self, abstract, enum
+		class, default, private, static, native, return, if, else, for, while, do,
+		break, continue, deprecated, state, null, readonly, true, false, struct,
+		extend, clearscope, vararg, ui, play, virtual, virtualscope, meta, Property,
+		version, in, out, states, action, override, super, is, let, const, replaces,
+		protected, self, abstract, enum, switch, case, until
 	}
 
 	types =
 	{
-		object, vector2, vector3, name, string, color, sound, void, double, bool, int, float,
-		uint8, uint16, uint, int8, int16, TextureID, SpriteID, Array, voidptr, short
+		object, vector2, vector3, name, string, color, sound, void, double, bool,
+		int, float, uint8, uint16, uint, int8, int16, TextureID, SpriteID, Array,
+		voidptr, short
+	}
+
+	// Function info we cannot parse from (g)zdoom.pk3
+	// Currently only the deprecated functions are defined. More will be added at some point.
+	functions
+	{
+		// 'base.txt' ----------------------------------------------------------
+
+		DrawHUDTexture
+		{
+			description = "Access 'statusBar.DrawTexture' directly.";
+		}
+		LastIndexOf
+		{
+			description = "Do not use. Contains a bug that couldn't be fixed.";
+			deprecated_f = "RightIndexOf";
+		}
+
+		// 'actor.txt' ---------------------------------------------------------
+
+		A_FaceConsolePlayer
+		{
+			description = "Do not use. Has no effects, only exists to let old Zandronum mods run without aborting.";
+		}
+		A_MeleeAttack
+		{
+			description = "Performs a melee attack.";
+			deprecated_f = "A_CustomMeleeAttack";
+		}
+		A_MissileAttack
+		{
+			description = "Turns the actor to face its target, then launches a missile.";
+			deprecated_f = "A_CustomMissile";
+		}
+		A_ComboAttack
+		{
+			description = "A customizable projectile attack for monsters.";
+			deprecated_f = "A_CustomComboAttack";
+		}
+		A_BulletAttack
+		{
+			description = "Performs a hitscan attack.";
+			deprecated_f = "A_CustomBulletAttack";
+		}
+		A_PlayWeaponSound
+		{
+			description = "Plays the specified sound but uses the weapon channel.";
+			deprecated_f = "A_PlaySound";
+		}
+		A_PlaySoundEx
+		{
+			description = "Plays the a sound on the specified channel.";
+			deprecated_f = "A_PlaySound";
+		}
+		A_StopSoundEx
+		{
+			description = "Stops the sound playing on the specified channel.";
+			deprecated_f = "A_StopSound";
+		}
+		A_ChangeFlag
+		{
+			description = "Do not use. Flags are just variables in ZScript, access them directly.";
+		}
+		A_SetUserVar
+		{
+			description = "Do not use. Actor variables are directly accessible in ZScript.";
+		}
+		A_SetUserArray
+		{
+			description = "Do not use. Actor variables are directly accessible in ZScript.";
+		}
+		A_SetUserVarFloat
+		{
+			description = "Do not use. Actor variables are directly accessible in ZScript.";
+		}
+		A_SetUserArrayFloat
+		{
+			description = "Do not use. Actor variables are directly accessible in ZScript.";
+		}
+
+		// 'actor_checks.txt' --------------------------------------------------
+
+		A_CheckFlag
+		{
+			description = "Do not use. Flags are just variables in ZScript, access them directly.";
+		}
+
+		// 'compatibility.txt' -------------------------------------------------
+
+		GameType
+		{
+			description = "Do not use. 'gameinfo.gametype' can be accessed directly.";
+		}
+		C_MidPrint
+		{
+			deprecated_f = "MidPrint";
+		}
+		A_CustomMissile
+		{
+			description = "A customizable projectile attack for monsters.";
+			deprecated_f = "A_SpawnProjectile";
+		}
+		A_FireCustomMissile
+		{
+			description = "Fires a projectile from a Weapon or a CustomInventory.";
+			deprecated_f = "A_FireProjectile";
+		}
+
+		// 'stateprovider.txt' -------------------------------------------------
+
+		A_GunFlash
+		{
+			description = "Do not use. Placeholder to prevent old mods from not being able to load.";
+		}
+		A_Lower
+		{
+			description = "Do not use. Placeholder to prevent old mods from not being able to load.";
+		}
+		A_Raise
+		{
+			description = "Do not use. Placeholder to prevent old mods from not being able to load.";
+		}
+		A_CheckReload
+		{
+			description = "Do not use. Placeholder to prevent old mods from not being able to load.";
+		}
 	}
 }

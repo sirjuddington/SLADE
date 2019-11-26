@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -15,55 +15,46 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "UI/SAuiTabArt.h"
 #include "STabCtrl.h"
 #include "General/UI.h"
+#include "UI/SAuiTabArt.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
-CVAR(Bool, tabs_condensed, false, CVAR_SAVE)
+// -----------------------------------------------------------------------------
+CVAR(Bool, tabs_condensed, false, CVar::Flag::Save)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // STabCtrl Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// STabCtrl::STabCtrl
-//
+// -----------------------------------------------------------------------------
 // STabCtrl class constructor
-// ----------------------------------------------------------------------------
-STabCtrl::STabCtrl(
-	wxWindow* parent,
-	bool close_buttons,
-	bool window_list,
-	int height,
-	bool main_tabs,
-	bool move_tabs
-) :	wxAuiNotebook()
+// -----------------------------------------------------------------------------
+STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int height, bool main_tabs, bool move_tabs)
 {
 	// Init height
 	if (height < 0)
@@ -83,22 +74,20 @@ STabCtrl::STabCtrl(
 
 	// Setup tabs
 	SetArtProvider(new SAuiTabArt(close_buttons, main_tabs));
-	SetTabCtrlHeight(UI::scalePx(height));
+	wxAuiNotebook::SetTabCtrlHeight(UI::scalePx(height));
 }
 
-// ----------------------------------------------------------------------------
-// STabCtrl::DoGetBestClientSize
-//
+// -----------------------------------------------------------------------------
 // wxAuiNotebook doesn't automatically set its own minimum size to the minimum
 // size of its contents, so we have to do that for it.
 // See http://trac.wxwidgets.org/ticket/4698
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxSize STabCtrl::DoGetBestClientSize() const
 {
 	wxSize ret;
 	for (unsigned i = 0; i < GetPageCount(); i++)
 	{
-		wxWindow* page = GetPage(i);
+		auto page = GetPage(i);
 		ret.IncTo(page->GetBestSize());
 	}
 
@@ -108,29 +97,27 @@ wxSize STabCtrl::DoGetBestClientSize() const
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // STabCtrl Class Static Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// STabCtrl::createControl
-//
+// -----------------------------------------------------------------------------
 // Creates a platform-dependant tab control (STabCtrl in Windows, wxNotebook
 // anywhere else)
-// 
+//
 // I'm using STabCtrl in Windows because the native tab control gives tab pages
 // a white background, which looks like crap
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TabControl* STabCtrl::createControl(
 	wxWindow* parent,
-	bool close_buttons,
-	bool window_list,
-	int height,
-	bool main_tabs,
-	bool move_tabs)
+	bool      close_buttons,
+	bool      window_list,
+	int       height,
+	bool      main_tabs,
+	bool      move_tabs)
 {
 #ifdef WIN32
 	return new STabCtrl(parent, close_buttons, window_list, height, main_tabs, move_tabs);

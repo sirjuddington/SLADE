@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -15,38 +15,36 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "HexEntryPanel.h"
 #include "UI/Controls/HexEditorPanel.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // HexEntryPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// HexEntryPanel::HexEntryPanel
-//
+// -----------------------------------------------------------------------------
 // HexEntryPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 HexEntryPanel::HexEntryPanel(wxWindow* parent) : EntryPanel(parent, "hex")
 {
 	// Create hex editor
@@ -56,14 +54,12 @@ HexEntryPanel::HexEntryPanel(wxWindow* parent) : EntryPanel(parent, "hex")
 	// Hide toolbar
 	toolbar_->Show(false);
 
-	Layout();
+	wxWindowBase::Layout();
 }
 
-// ----------------------------------------------------------------------------
-// HexEntryPanel::loadEntry
-//
+// -----------------------------------------------------------------------------
 // Loads an entry to the panel
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool HexEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Check entry exists
@@ -71,14 +67,12 @@ bool HexEntryPanel::loadEntry(ArchiveEntry* entry)
 		return false;
 
 	// Load entry data to hex editor
-	return hex_editor_->loadData(entry->getMCData());
+	return hex_editor_->loadData(entry->data());
 }
 
-// ----------------------------------------------------------------------------
-// HexEntryPanel::saveEntry
-//
+// -----------------------------------------------------------------------------
 // Saves changes to the entry
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool HexEntryPanel::saveEntry()
 {
 	return true;

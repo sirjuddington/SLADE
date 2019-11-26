@@ -1,26 +1,27 @@
 
 -- Browse for archive file to open
-local path = App.browseFile('Open Archive', Archives.fileExtensionsString(), '')
+local path = UI.PromptOpenFile('Open Archive', Archives.FileExtensionsString(), '')
 if path == '' then
-    App.logMessage('No archive selected')
+    App.LogMessage('No archive selected')
 else
     -- Open it
-    local archive = Archives.openFile(path)
+    local archive, error = Archives.OpenFile(path)
 
     -- Check it opened ok
     if archive == nil then
-        App.logMessage('Archive not opened: ' .. App.globalError())
+        App.LogMessage('Archive not opened: ' .. error)
     else
-        App.logMessage('Archive opened successfully')
+        App.LogMessage('Archive opened successfully')
 
         -- List all entries
-        for i,entry in ipairs(archive.entries) do
-            App.logMessage(entry:formattedName() .. ' (' .. entry:formattedSize() .. ', ' .. entry.type.name .. ')')
+        for _,entry in ipairs(archive.entries) do
+            App.LogMessage(entry:FormattedName() .. ' (' .. entry:FormattedSize() .. ', ' .. entry.type.name .. ')')
         end
 
         -- Prompt to close
-        if (App.promptYesNo('Close Archive', 'Do you want to close the archive now?')) then
-            Archives.close(archive)
+        if (UI.PromptYesNo('Close Archive', 'Do you want to close the archive now?')) then
+            Archives.Close(archive)
+            archive = nil
         end
     end
 end

@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -15,50 +15,48 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SectorSpecialDialog.h"
 #include "Game/Configuration.h"
 #include "UI/WxUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // SectorSpecialPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// SectorSpecialPanel::SectorSpecialPanel
-//
+// -----------------------------------------------------------------------------
 // SectorSpecialPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Special list
-	wxStaticBox* frame = new wxStaticBox(this, -1, "Special");
-	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	lv_specials_ = new ListView(this, -1);
-	framesizer->Add(lv_specials_, 1, wxEXPAND|wxALL, UI::pad());
+	auto frame      = new wxStaticBox(this, -1, "Special");
+	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	lv_specials_    = new ListView(this, -1);
+	framesizer->Add(lv_specials_, 1, wxEXPAND | wxALL, UI::pad());
 	sizer->Add(framesizer, 1, wxEXPAND);
 
 	lv_specials_->enableSizeUpdate(false);
@@ -68,7 +66,7 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	for (auto& type : types)
 	{
 		wxArrayString item;
-		item.Add(S_FMT("%d", type.first));
+		item.Add(wxString::Format("%d", type.first));
 		item.Add(type.second);
 		lv_specials_->addItem(999999, item);
 	}
@@ -79,44 +77,41 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	int width = UI::scalePx(300);
 	if (Game::configuration().supportsSectorFlags())
 	{
-		frame = new wxStaticBox(this, -1, "Flags");
+		frame      = new wxStaticBox(this, -1, "Flags");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		sizer->Add(framesizer, 0, wxEXPAND|wxTOP, UI::pad());
+		sizer->Add(framesizer, 0, wxEXPAND | wxTOP, UI::pad());
 
 		// Damage
-		string damage_types[] = { "None", "5%", "10%", "20%" };
-		choice_damage_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, damage_types);
+		wxString damage_types[] = { "None", "5%", "10%", "20%" };
+		choice_damage_          = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, damage_types);
 		choice_damage_->Select(0);
-		framesizer->Add(WxUtils::createLabelHBox(this, "Damage:", choice_damage_), 0, wxEXPAND|wxALL, UI::pad());
+		framesizer->Add(WxUtils::createLabelHBox(this, "Damage:", choice_damage_), 0, wxEXPAND | wxALL, UI::pad());
 
 		// Secret | Friction | Pusher/Puller
-		cb_secret_ = new wxCheckBox(this, -1, "Secret");
+		cb_secret_   = new wxCheckBox(this, -1, "Secret");
 		cb_friction_ = new wxCheckBox(this, -1, "Friction Enabled");
 		cb_pushpull_ = new wxCheckBox(this, -1, "Pushers/Pullers Enabled");
 		WxUtils::layoutHorizontally(
 			framesizer,
 			{ cb_secret_, cb_friction_, cb_pushpull_ },
-			wxSizerFlags(0).Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM, UI::pad())
-		);
+			wxSizerFlags(0).Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM, UI::pad()));
 
 		width = -1;
 	}
 
-	SetMinSize(WxUtils::scaledSize(width, 300));
+	wxWindowBase::SetMinSize(WxUtils::scaledSize(width, 300));
 }
 
-// ----------------------------------------------------------------------------
-// SectorSpecialPanel::setup
-//
+// -----------------------------------------------------------------------------
 // Sets up controls on the dialog to show [special]
-// ----------------------------------------------------------------------------
-void SectorSpecialPanel::setup(int special)
+// -----------------------------------------------------------------------------
+void SectorSpecialPanel::setup(int special) const
 {
 	int base_type = Game::configuration().baseSectorType(special);
 
 	// Select base type
 	auto& types = Game::configuration().allSectorTypes();
-	int index = 0;
+	int   index = 0;
 	for (auto& i : types)
 	{
 		if (i.first == base_type)
@@ -146,16 +141,14 @@ void SectorSpecialPanel::setup(int special)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// SectorSpecialPanel::getSelectedSpecial
-//
+// -----------------------------------------------------------------------------
 // Returns the currently selected sector special
-// ----------------------------------------------------------------------------
-int SectorSpecialPanel::getSelectedSpecial()
+// -----------------------------------------------------------------------------
+int SectorSpecialPanel::selectedSpecial() const
 {
-	auto& types = Game::configuration().allSectorTypes();
-	int selection = 0;
-	wxArrayInt items = lv_specials_->selectedItems();
+	auto& types     = Game::configuration().allSectorTypes();
+	int   selection = 0;
+	auto  items     = lv_specials_->selectedItems();
 	if (items.GetCount())
 		selection = items[0];
 
@@ -183,47 +176,40 @@ int SectorSpecialPanel::getSelectedSpecial()
 			choice_damage_->GetSelection(),
 			cb_secret_->GetValue(),
 			cb_friction_->GetValue(),
-			cb_pushpull_->GetValue()
-		);
+			cb_pushpull_->GetValue());
 	}
 	else
 		return base;
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // SectorSpecialDialog Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// SectorSpecialDialog::SectorSpecialDialog
-//
+// -----------------------------------------------------------------------------
 // SectorSpecialDialog class constructor
-// ----------------------------------------------------------------------------
-SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
-: SDialog(parent, "Select Sector Special", "sectorspecial")
+// -----------------------------------------------------------------------------
+SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent) : SDialog(parent, "Select Sector Special", "sectorspecial")
 {
 	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Special panel
 	panel_special_ = new SectorSpecialPanel(this);
-	sizer->Add(panel_special_, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, UI::padLarge());
+	sizer->Add(panel_special_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::padLarge());
 
 	// Dialog buttons
 	sizer->AddSpacer(UI::pad());
-	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, UI::padLarge());
+	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
 
 	// Bind Events
-	panel_special_->getSpecialsList()->Bind(wxEVT_LIST_ITEM_ACTIVATED, [&](wxListEvent& e)
-	{
-		EndModal(wxID_OK);
-	});
+	panel_special_->getSpecialsList()->Bind(wxEVT_LIST_ITEM_ACTIVATED, [&](wxListEvent& e) { EndModal(wxID_OK); });
 
-	SetMinClientSize(sizer->GetMinSize());
+	wxWindowBase::SetMinClientSize(sizer->GetMinSize());
 	CenterOnParent();
 }

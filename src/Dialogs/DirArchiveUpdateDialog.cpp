@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -17,43 +17,38 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "DirArchiveUpdateDialog.h"
 #include "General/UI.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // DirArchiveUpdateDialog Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// DirArchiveUpdateDialog::DirArchiveUpdateDialog
-//
+// -----------------------------------------------------------------------------
 // DirArchiveUpdateDialog class constructor
-// ----------------------------------------------------------------------------
-DirArchiveUpdateDialog::DirArchiveUpdateDialog(
-	wxWindow* parent,
-	DirArchive* archive,
-	vector<DirEntryChange>& changes
-) :	SDialog(parent, "Directory Content Changed", "dir_archive_update"),
+// -----------------------------------------------------------------------------
+DirArchiveUpdateDialog::DirArchiveUpdateDialog(wxWindow* parent, DirArchive* archive, vector<DirEntryChange>& changes) :
+	SDialog(parent, "Directory Content Changed", "dir_archive_update"),
 	archive_{ archive },
 	changes_{ changes }
 {
@@ -61,10 +56,8 @@ DirArchiveUpdateDialog::DirArchiveUpdateDialog(
 	SetSizer(sizer);
 
 	// Message
-	string message = S_FMT(
-		"Contents of the directory \"%s\" have been modified outside of SLADE,\n",
-		archive->filename()
-	);
+	wxString message = wxString::Format(
+		"Contents of the directory \"%s\" have been modified outside of SLADE,\n", archive->filename());
 	message += "please tick the changes below that you wish to apply.";
 	sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxALL, UI::padLarge());
 	message = "Note that any unticked changes will be overwritten on disk when the directory is saved.";
@@ -86,25 +79,14 @@ DirArchiveUpdateDialog::DirArchiveUpdateDialog(
 
 	populateChangeList();
 
-	Layout();
-	Fit();
+	wxWindowBase::Layout();
+	wxWindowBase::Fit();
 	SetInitialSize(GetSize());
 }
 
-// ----------------------------------------------------------------------------
-// DirArchiveUpdateDialog::~DirArchiveUpdateDialog
-//
-// DirArchiveUpdateDialog class destructor
-// ----------------------------------------------------------------------------
-DirArchiveUpdateDialog::~DirArchiveUpdateDialog()
-{
-}
-
-// ----------------------------------------------------------------------------
-// DirArchiveUpdateDialog::populateChangeList
-//
+// -----------------------------------------------------------------------------
 // Populates the changes list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void DirArchiveUpdateDialog::populateChangeList()
 {
 	wxVector<wxVariant> row;
@@ -113,11 +95,11 @@ void DirArchiveUpdateDialog::populateChangeList()
 		row.push_back(wxVariant(true));
 		switch (changes_[a].action)
 		{
-		case DirEntryChange::ADDED_FILE: row.push_back(wxVariant("Added")); break;
-		case DirEntryChange::ADDED_DIR: row.push_back(wxVariant("Added")); break;
-		case DirEntryChange::DELETED_FILE: row.push_back(wxVariant("Deleted")); break;
-		case DirEntryChange::DELETED_DIR: row.push_back(wxVariant("Deleted")); break;
-		case DirEntryChange::UPDATED: row.push_back(wxVariant("Modified")); break;
+		case DirEntryChange::Action::AddedFile: row.push_back(wxVariant("Added")); break;
+		case DirEntryChange::Action::AddedDir: row.push_back(wxVariant("Added")); break;
+		case DirEntryChange::Action::DeletedFile: row.push_back(wxVariant("Deleted")); break;
+		case DirEntryChange::Action::DeletedDir: row.push_back(wxVariant("Deleted")); break;
+		case DirEntryChange::Action::Updated: row.push_back(wxVariant("Modified")); break;
 		default: break;
 		}
 		row.push_back(wxVariant(changes_[a].file_path));
@@ -127,18 +109,16 @@ void DirArchiveUpdateDialog::populateChangeList()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // DirArchiveUpdateDialog Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// DirArchiveUpdateDialog::onBtnOKClicked
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Apply Selected Changes' button is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void DirArchiveUpdateDialog::onBtnOKClicked(wxCommandEvent& e)
 {
 	// Get selected changes to apply

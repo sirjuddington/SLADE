@@ -1,19 +1,13 @@
-
-#ifndef __MAP_BACKUP_MANAGER_H__
-#define __MAP_BACKUP_MANAGER_H__
+#pragma once
 
 class ArchiveEntry;
 class Archive;
 class MapBackupManager
 {
-private:
-
 public:
-	MapBackupManager();
-	~MapBackupManager();
+	MapBackupManager()  = default;
+	~MapBackupManager() = default;
 
-	bool		writeBackup(vector<ArchiveEntry*>& map_data, string archive_name, string map_name);
-	Archive*	openBackup(string archive_name, string map_name);
+	bool writeBackup(vector<unique_ptr<ArchiveEntry>>& map_data, string_view archive_name, string_view map_name) const;
+	Archive* openBackup(string_view archive_name, string_view map_name) const;
 };
-
-#endif//__MAP_BACKUP_MANAGER_H__

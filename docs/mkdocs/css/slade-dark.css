@@ -1,0 +1,181 @@
+
+@import url('https://fonts.googleapis.com/css?family=Fira+Sans:400,400i,500,700,700i,800');
+@import url('https://fonts.googleapis.com/css?family=Fira+Mono:500,600');
+
+body, h1, h2, h3, h4, h5, h6 {
+	font-family: 'Fira Sans', 'Segoe UI', sans-serif;
+	font-size: 1.5em;
+	color: hsl(220, 10%, 85%);
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-weight: bold;
+}
+
+body {
+	/* background-color: hsla(220, 20%, 15%, 1); */
+	background-color: hsl(220, 20%, 15%);
+}
+
+A:link,
+A:visited {
+	color: hsl(40, 100%, 70%);
+}
+
+A:hover,
+A:active {
+	color: hsl(40, 100%, 95%);
+}
+
+type,
+arg,
+prop,
+prop.ro,
+prop.rw,
+code,
+function,
+.admonition code,
+.md-typeset code {
+    font-family: 'Fira Mono', 'Consolas', monospace !important;
+    font-size: 0.9em;
+    background-color: inherit;
+    box-shadow: none;
+}
+
+code,
+.md-typeset code,
+.admonition code {
+	color: hsl(220, 68%, 83%);
+	border: none;
+	background-color: inherit;
+	padding: 0;
+	margin: 0;
+}
+
+code a {
+	font-weight: 600;
+}
+
+type,
+type a {
+	/*color: hsl(40, 98%, 33%) !important;*/
+	color: hsl(80, 48%, 63%) !important;
+}
+
+type a {
+	font-weight: 500;
+	text-decoration: underline;
+}
+
+type a:hover {
+	/*color: hsl(40, 100%, 45%) !important;*/
+	color: hsl(80, 58%, 83%) !important;
+}
+
+arg,
+prop,
+prop.ro,
+prop.rw {
+	/* font-weight: 600; */
+	color: hsl(270, 58%, 63%);
+}
+
+prop,
+prop.ro,
+prop.rw {
+	color: hsl(170, 68%, 43%);
+}
+
+prop.ro::before {
+	content: "\25CB";
+	color: hsl(10, 88%, 53%);
+	margin-right: 0.4em;
+	font-size: 1.1em;
+}
+
+prop.rw::before {
+	content: "\25CF";
+	color: hsl(140, 68%, 33%);
+	margin-right: 0.4em;
+	font-size: 1.1em;
+}
+
+
+
+
+.navbar {
+	background-color: hsla(220, 35%, 40%, 1);
+	background-image: none;
+	border-bottom: 0;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+.dropdown-menu {
+	background-color: hsla(220, 35%, 40%, 1);
+}
+
+.dropdown-menu > li > a {
+	color: hsl(220, 10%, 85%);
+}
+
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover,
+.navbar-default .navbar-nav > .active > a:focus,
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus,
+.navbar-nav > li:hover,
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > a:hover,
+.dropdown-menu > .active > a:focus,
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+	color: #fff;
+	background-color: hsl(220, 55%, 60%) !important;
+}
+
+
+
+
+
+.col-md-9 {
+	box-sizing: border-box;
+	padding-left: 25%;
+	padding-top: 1em;
+	width: 100%;
+}
+
+.col-md-3 {
+	padding-left: 0;
+	z-index: 1;
+	background-color: hsl(220, 10%, 16%);
+}
+
+.well {
+	border-radius: 3px;
+	border: none;
+	background-color: hsl(220, 10%, 30%);
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.bs-sidebar .nav > li > a {
+	padding-left: 2.5em;
+}
+
+.bs-sidebar .nav > li.main > a {
+	padding-left: 1.3em;
+}
+
+ul.nav .main {
+	font-weight: bold;
+	/* background-color: hsl(220, 20%, 36%) !important; */
+}
+
+ul.nav .main .bs-sidebar .nav > li > a {
+	padding-left: 20px;
+}
+
+.nav > li > a:hover,
+.nav > li > a:focus {
+	text-decoration: none;
+	background-color: hsl(220, 30%, 32%);
+}

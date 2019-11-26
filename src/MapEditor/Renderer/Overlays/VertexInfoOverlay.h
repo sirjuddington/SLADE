@@ -1,20 +1,16 @@
-
-#ifndef __VERTEX_INFO_OVERLAY_H__
-#define __VERTEX_INFO_OVERLAY_H__
+#pragma once
 
 class MapVertex;
 class VertexInfoOverlay
 {
-private:
-	string	info;
-	bool	pos_frac;
-
 public:
-	VertexInfoOverlay();
-	~VertexInfoOverlay();
+	VertexInfoOverlay()  = default;
+	~VertexInfoOverlay() = default;
 
-	void	update(MapVertex* vertex);
-	void	draw(int bottom, int right, float alpha = 1.0f);
+	void update(MapVertex* vertex);
+	void draw(int bottom, int right, float alpha = 1.0f) const;
+
+private:
+	string info_;
+	bool   pos_frac_ = false;
 };
-
-#endif//__VERTEX_INFO_OVERLAY_H__

@@ -1,355 +1,91 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    Drawing.cpp
- * Description: Various OpenGL drawing functions
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2019 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Drawing.cpp
+// Description: Various OpenGL drawing functions and related classes
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Drawing.h"
-#include "GLTexture.h"
 #include "Archive/ArchiveManager.h"
-#include "General/Console/Console.h"
-#include "Utility/MathStuff.h"
+#include "GLTexture.h"
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "OpenGL.h"
+#include "Utility/MathStuff.h"
+#include "Utility/StringUtils.h"
 
-#ifdef USE_SFML_RENDERWINDOW
-#include <SFML/Graphics.hpp>
-#else
-#include <FTGL/ftgl.h>
-#endif
-
-#ifdef __WXGTK20__
+#ifdef __WXGTK3__
+#include <gtk-3.0/gtk/gtk.h>
+#elif __WXGTK20__
 #define GSocket GlibGSocket
 #include <gtk-2.0/gtk/gtk.h>
 #undef GSocket
 #endif
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-CVAR(Bool, hud_statusbar, 1, CVAR_SAVE)
-CVAR(Bool, hud_center, 1, CVAR_SAVE)
-CVAR(Bool, hud_wide, 0, CVAR_SAVE)
-CVAR(Bool, hud_bob, 0, CVAR_SAVE)
-CVAR(Int, gl_font_size, 12, CVAR_SAVE)
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+CVAR(Bool, hud_statusbar, 1, CVar::Flag::Save)
+CVAR(Bool, hud_center, 1, CVar::Flag::Save)
+CVAR(Bool, hud_wide, 0, CVar::Flag::Save)
+CVAR(Bool, hud_bob, 0, CVar::Flag::Save)
+CVAR(Int, gl_font_size, 12, CVar::Flag::Save)
 
 namespace Drawing
 {
-#ifdef USE_SFML_RENDERWINDOW
-	sf::RenderWindow*	render_target = nullptr;
-	bool				text_state_reset = true;
-#endif
-	double				text_outline_width = 0;
-	rgba_t				text_outline_colour = COL_BLACK;
-};
+double  text_outline_width = 0;
+ColRGBA fill_colour        = ColRGBA::WHITE;
+ColRGBA outline_colour     = ColRGBA::BLACK;
+}; // namespace Drawing
 
 
-/*******************************************************************
- * FONTMANAGER CLASS
- *******************************************************************/
-class FontManager
-{
-private:
-#ifdef USE_SFML_RENDERWINDOW
-	sf::Font	font_normal;
-	sf::Font	font_condensed;
-	sf::Font	font_bold;
-	sf::Font	font_boldcondensed;
-	sf::Font	font_mono;
-	sf::Font	font_small;
-#else
-	FTFont*		font_normal;
-	FTFont*		font_condensed;
-	FTFont*		font_bold;
-	FTFont*		font_boldcondensed;
-	FTFont*		font_mono;
-	FTFont*		font_small;
-#endif
-	static FontManager*	instance;
-
-public:
-	FontManager()
-	{
-#ifndef USE_SFML_RENDERWINDOW
-		font_normal = NULL;
-		font_condensed = NULL;
-		font_bold = NULL;
-		font_boldcondensed = NULL;
-		font_mono = NULL;
-		font_small = NULL;
-#endif
-	}
-	~FontManager()
-	{
-#ifndef USE_SFML_RENDERWINDOW
-		if (font_normal)		{ delete font_normal;			font_normal = NULL;			}
-		if (font_condensed)		{ delete font_condensed;		font_condensed = NULL;		}
-		if (font_bold)			{ delete font_bold;				font_bold = NULL;			}
-		if (font_boldcondensed) { delete font_boldcondensed;	font_boldcondensed = NULL;	}
-		if (font_mono)			{ delete font_mono;				font_mono = NULL;			}
-		if (font_small)			{ delete font_small;			font_small = NULL;			}
-#endif
-	}
-
-	static FontManager*	getInstance()
-	{
-		if (!instance)
-			instance = new FontManager();
-
-		return instance;
-	}
-	int initFonts();
-
-#ifdef USE_SFML_RENDERWINDOW
-	sf::Font*	getFont(int font);
-#else
-	FTFont*		getFont(int font);
-#endif
-
-};
-#define theFontManager FontManager::getInstance()
-FontManager* FontManager::instance = nullptr;
+// -----------------------------------------------------------------------------
+//
+// Drawing Namespace Functions
+//
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * FONTMANAGER CLASS FUNCTIONS
- *******************************************************************/
-
-#ifdef USE_SFML_RENDERWINDOW
-
-/* FontManager::initFonts
- * Loads all needed fonts for rendering. SFML 2.x implementation
- *******************************************************************/
-int FontManager::initFonts()
-{
-	// --- Load general fonts ---
-	int ret = 0;
-
-	// Normal
-	ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry) ++ret, font_normal.loadFromMemory((const char*)entry->getData(), entry->getSize());
-
-	// Condensed
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
-	if (entry) ++ret, font_condensed.loadFromMemory((const char*)entry->getData(), entry->getSize());
-
-	// Bold
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
-	if (entry) ++ret, font_bold.loadFromMemory((const char*)entry->getData(), entry->getSize());
-
-	// Condensed Bold
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
-	if (entry) ++ret, font_boldcondensed.loadFromMemory((const char*)entry->getData(), entry->getSize());
-
-	// Monospace
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
-	if (entry) ++ret, font_small.loadFromMemory((const char*)entry->getData(), entry->getSize());
-
-	return ret;
-}
-
-#else
-/* FontManager::initFonts
- * Loads all needed fonts for rendering. Non-SFML implementation
- *******************************************************************/
-int FontManager::initFonts()
-{
-	// --- Load general fonts ---
-	int ret = 0;
-
-	if (font_normal)		{ delete font_normal;			font_normal = NULL;			}
-	if (font_condensed)		{ delete font_condensed;		font_condensed = NULL;		}
-	if (font_bold)			{ delete font_bold;				font_bold = NULL;			}
-	if (font_boldcondensed) { delete font_boldcondensed;	font_boldcondensed = NULL;	}
-	if (font_mono)			{ delete font_mono;				font_mono = NULL;			}
-	if (font_small)			{ delete font_small;			font_small = NULL;			}
-
-	// Normal
-	ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry)
-	{
-		font_normal = new FTTextureFont(entry->getData(), entry->getSize());
-		font_normal->FaceSize(UI::scalePx(gl_font_size));
-
-		// Check it loaded ok
-		if (font_normal->Error())
-		{
-			delete font_normal;
-			font_normal = NULL;
-		}
-		else ++ ret;
-	}
-
-	// Condensed
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
-	if (entry)
-	{
-		font_condensed = new FTTextureFont(entry->getData(), entry->getSize());
-		font_condensed->FaceSize(UI::scalePx(gl_font_size));
-
-		// Check it loaded ok
-		if (font_condensed->Error())
-		{
-			delete font_condensed;
-			font_condensed = NULL;
-		}
-		else ++ ret;
-	}
-
-	// Bold
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
-	if (entry)
-	{
-		font_bold = new FTTextureFont(entry->getData(), entry->getSize());
-		font_bold->FaceSize(UI::scalePx(gl_font_size));
-
-		// Check it loaded ok
-		if (font_bold->Error())
-		{
-			delete font_bold;
-			font_bold = NULL;
-		}
-		else ++ ret;
-	}
-
-	// Condensed bold
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
-	if (entry)
-	{
-		font_boldcondensed = new FTTextureFont(entry->getData(), entry->getSize());
-		font_boldcondensed->FaceSize(UI::scalePx(gl_font_size));
-
-		// Check it loaded ok
-		if (font_boldcondensed->Error())
-		{
-			delete font_boldcondensed;
-			font_boldcondensed = NULL;
-		}
-		else ++ ret;
-	}
-
-	// Monospace
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
-	if (entry)
-	{
-		font_mono = new FTTextureFont(entry->getData(), entry->getSize());
-		font_mono->FaceSize(UI::scalePx(gl_font_size));
-
-		// Check it loaded ok
-		if (font_mono->Error())
-		{
-			delete font_mono;
-			font_mono = NULL;
-		}
-		else ++ ret;
-	}
-
-	// Small
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry)
-	{
-		font_small = new FTTextureFont(entry->getData(), entry->getSize());
-		font_small->FaceSize((UI::scalePx(gl_font_size) * 0.6) + 1);
-
-		// Check it loaded ok
-		if (font_small->Error())
-		{
-			delete font_small;
-			font_small = NULL;
-		}
-		else ++ ret;
-	}
-
-	return ret;
-}
-#endif
-
-/* FontManager::getFont
- * Returns a font
- *******************************************************************/
-#ifdef USE_SFML_RENDERWINDOW
-sf::Font* FontManager::getFont(int font)
-{
-	switch (font)
-	{
-	case Drawing::FONT_NORMAL:			return &font_normal;
-	case Drawing::FONT_CONDENSED:		return &font_condensed;
-	case Drawing::FONT_BOLD:			return &font_bold;
-	case Drawing::FONT_BOLDCONDENSED:	return &font_boldcondensed;
-	case Drawing::FONT_MONOSPACE:		return &font_mono;
-	case Drawing::FONT_SMALL:			return &font_small;
-	default:							return &font_normal;
-	};
-	return nullptr;
-}
-#else // USE_SFML_RENDERWINDOW
-FTFont* FontManager::getFont(int font)
-{
-	switch (font)
-	{
-	case Drawing::FONT_NORMAL:			return font_normal;
-	case Drawing::FONT_CONDENSED:		return font_condensed;
-	case Drawing::FONT_BOLD:			return font_bold;
-	case Drawing::FONT_BOLDCONDENSED:	return font_boldcondensed;
-	case Drawing::FONT_MONOSPACE:		return font_mono;
-	case Drawing::FONT_SMALL:			return font_small;
-	default:							return font_normal;
-	};
-	return NULL;
-}
-#endif // USE_SFML_RENDERWINDOW
-
-
-/*******************************************************************
- * DRAWING NAMESPACE FUNCTIONS
- *******************************************************************/
-
-/* Drawing::initFonts
- * Creates a FontManager if needed and let it init its own fonts
- *******************************************************************/
-void Drawing::initFonts()
-{
-	theFontManager->initFonts();
-}
-
-/* Drawing::fontSize
- * Returns the configured font size (scaled for DPI etc)
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the configured font size (scaled for DPI etc)
+// -----------------------------------------------------------------------------
 int Drawing::fontSize()
 {
 	return UI::scalePx(gl_font_size);
 }
 
-/* Drawing::drawLine
- * Draws a line from [start] to [end]
- *******************************************************************/
-void Drawing::drawLine(fpoint2_t start, fpoint2_t end)
+// -----------------------------------------------------------------------------
+// Draws a line from [start] to [end]
+// -----------------------------------------------------------------------------
+void Drawing::drawLine(Vec2d start, Vec2d end)
 {
 	glBegin(GL_LINES);
 	glVertex2d(start.x, start.y);
@@ -357,9 +93,9 @@ void Drawing::drawLine(fpoint2_t start, fpoint2_t end)
 	glEnd();
 }
 
-/* Drawing::drawLine
- * Draws a line from [x1,y1] to [x2,y2]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Draws a line from [x1,y1] to [x2,y2]
+// -----------------------------------------------------------------------------
 void Drawing::drawLine(double x1, double y1, double x2, double y2)
 {
 	glBegin(GL_LINES);
@@ -368,10 +104,10 @@ void Drawing::drawLine(double x1, double y1, double x2, double y2)
 	glEnd();
 }
 
-/* Drawing::drawLineTabbed
- * Draws a line from [start] to [end]
- *******************************************************************/
-void Drawing::drawLineTabbed(fpoint2_t start, fpoint2_t end, double tab, double tab_max)
+// -----------------------------------------------------------------------------
+// Draws a line from [start] to [end]
+// -----------------------------------------------------------------------------
+void Drawing::drawLineTabbed(Vec2d start, Vec2d end, double tab, double tab_max)
 {
 	// Draw line
 	glBegin(GL_LINES);
@@ -380,47 +116,53 @@ void Drawing::drawLineTabbed(fpoint2_t start, fpoint2_t end, double tab, double 
 	glEnd();
 
 	// Calculate midpoint
-	fpoint2_t mid;
+	Vec2d mid;
 	mid.x = start.x + ((end.x - start.x) * 0.5);
 	mid.y = start.y + ((end.y - start.y) * 0.5);
 
 	// Calculate tab length
 	double tablen = MathStuff::distance(start, end) * tab;
-	if (tablen > tab_max) tablen = tab_max;
-	if (tablen < 2) tablen = 2;
+	if (tablen > tab_max)
+		tablen = tab_max;
+	if (tablen < 2)
+		tablen = 2;
 
 	// Calculate tab endpoint
-	fpoint2_t invdir(-(end.y - start.y), end.x - start.x);
+	Vec2d invdir(-(end.y - start.y), end.x - start.x);
 	invdir.normalize();
 
 	// Draw tab
 	glBegin(GL_LINES);
 	glVertex2d(mid.x, mid.y);
-	glVertex2d(mid.x - invdir.x*tablen, mid.y - invdir.y*tablen);
+	glVertex2d(mid.x - invdir.x * tablen, mid.y - invdir.y * tablen);
 	glEnd();
 }
 
-/* Drawing::drawArrow
- * Draws a line from [p1] to [p2] with an arrowhead at the [p1] end.
- * If [twoway] is true, an arrowhead is also drawn at the [p2] end
- *******************************************************************/
-void Drawing::drawArrow(fpoint2_t p1, fpoint2_t p2, rgba_t color, bool twoway, double ah_angle, double ah_length)
+// -----------------------------------------------------------------------------
+// Draws a line from [p1] to [p2] with an arrowhead at the [p1] end.
+// If [twoway] is true, an arrowhead is also drawn at the [p2] end
+// -----------------------------------------------------------------------------
+void Drawing::drawArrow(Vec2d p1, Vec2d p2, ColRGBA color, bool twoway, double arrowhead_angle, double arrowhead_length)
 {
-	fpoint2_t a1l, a1r, a2l, a2r;
-	fpoint2_t vector = p1 - p2;
-	double angle = atan2(-vector.y, vector.x);
+	Vec2d  a1l, a1r, a2l, a2r;
+	Vec2d  vector = p1 - p2;
+	double angle  = atan2(-vector.y, vector.x);
 	a1l = a1r = p1;
-	a1l.x += ah_length * sin(angle - ah_angle); a1l.y += ah_length * cos(angle - ah_angle);
-	a1r.x -= ah_length * sin(angle + ah_angle); a1r.y -= ah_length * cos(angle + ah_angle);
+	a1l.x += arrowhead_length * sin(angle - arrowhead_angle);
+	a1l.y += arrowhead_length * cos(angle - arrowhead_angle);
+	a1r.x -= arrowhead_length * sin(angle + arrowhead_angle);
+	a1r.y -= arrowhead_length * cos(angle + arrowhead_angle);
 	if (twoway)
 	{
 		vector = p2 - p1;
-		angle = atan2(-vector.y, vector.x);
+		angle  = atan2(-vector.y, vector.x);
 		a2l = a2r = p2;
-		a2l.x += ah_length * sin(angle - ah_angle); a2l.y += ah_length * cos(angle - ah_angle);
-		a2r.x -= ah_length * sin(angle + ah_angle); a2r.y -= ah_length * cos(angle + ah_angle);
+		a2l.x += arrowhead_length * sin(angle - arrowhead_angle);
+		a2l.y += arrowhead_length * cos(angle - arrowhead_angle);
+		a2r.x -= arrowhead_length * sin(angle + arrowhead_angle);
+		a2r.y -= arrowhead_length * cos(angle + arrowhead_angle);
 	}
-	OpenGL::setColour(color);
+	OpenGL::setColour(fill_colour);
 	glBegin(GL_LINES);
 	glVertex2d(p1.x, p1.y);
 	glVertex2d(p2.x, p2.y);
@@ -442,10 +184,10 @@ void Drawing::drawArrow(fpoint2_t p1, fpoint2_t p2, rgba_t color, bool twoway, d
 	}
 }
 
-/* Drawing::drawRect
- * Draws a rectangle from [tl] to [br]
- *******************************************************************/
-void Drawing::drawRect(fpoint2_t tl, fpoint2_t br)
+// -----------------------------------------------------------------------------
+// Draws a rectangle from [tl] to [br]
+// -----------------------------------------------------------------------------
+void Drawing::drawRect(Vec2d tl, Vec2d br)
 {
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(tl.x, tl.y);
@@ -455,9 +197,9 @@ void Drawing::drawRect(fpoint2_t tl, fpoint2_t br)
 	glEnd();
 }
 
-/* Drawing::drawRect
- * Draws a rectangle from [x1,y1] to [x2,y2]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Draws a rectangle from [x1,y1] to [x2,y2]
+// -----------------------------------------------------------------------------
 void Drawing::drawRect(double x1, double y1, double x2, double y2)
 {
 	glBegin(GL_LINE_LOOP);
@@ -468,10 +210,10 @@ void Drawing::drawRect(double x1, double y1, double x2, double y2)
 	glEnd();
 }
 
-/* Drawing::drawFilledRect
- * Draws a filled rectangle from [tl] to [br]
- *******************************************************************/
-void Drawing::drawFilledRect(fpoint2_t tl, fpoint2_t br)
+// -----------------------------------------------------------------------------
+// Draws a filled rectangle from [tl] to [br]
+// -----------------------------------------------------------------------------
+void Drawing::drawFilledRect(Vec2d tl, Vec2d br)
 {
 	glBegin(GL_QUADS);
 	glVertex2d(tl.x, tl.y);
@@ -481,9 +223,9 @@ void Drawing::drawFilledRect(fpoint2_t tl, fpoint2_t br)
 	glEnd();
 }
 
-/* Drawing::drawFilledRect
- * Draws a filled rectangle from [x1,y1] to [x2,y2]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Draws a filled rectangle from [x1,y1] to [x2,y2]
+// -----------------------------------------------------------------------------
 void Drawing::drawFilledRect(double x1, double y1, double x2, double y2)
 {
 	glBegin(GL_QUADS);
@@ -494,21 +236,27 @@ void Drawing::drawFilledRect(double x1, double y1, double x2, double y2)
 	glEnd();
 }
 
-/* Drawing::drawBorderedRect
- * Draws a filled rectangle with a border from [x1,y1] to [x2,y2]
- *******************************************************************/
-void Drawing::drawBorderedRect(fpoint2_t tl, fpoint2_t br, rgba_t colour, rgba_t border_colour)
+// -----------------------------------------------------------------------------
+// Draws a filled rectangle with a border from [x1,y1] to [x2,y2]
+// -----------------------------------------------------------------------------
+void Drawing::drawBorderedRect(Vec2d tl, Vec2d br, const ColRGBA& colour, const ColRGBA& border_colour)
 {
 	drawBorderedRect(tl.x, tl.y, br.x, br.y, colour, border_colour);
 }
 
-/* Drawing::drawBorderedRect
- * Draws a filled rectangle with a border from [x1,y1] to [x2,y2]
- *******************************************************************/
-void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, rgba_t colour, rgba_t border_colour)
+// -----------------------------------------------------------------------------
+// Draws a filled rectangle with a border from [x1,y1] to [x2,y2]
+// -----------------------------------------------------------------------------
+void Drawing::drawBorderedRect(
+	double         x1,
+	double         y1,
+	double         x2,
+	double         y2,
+	const ColRGBA& colour,
+	const ColRGBA& border_colour)
 {
 	// Rect
-	OpenGL::setColour(colour, false);
+	OpenGL::setColour(colour);
 	glBegin(GL_QUADS);
 	glVertex2d(x1, y1);
 	glVertex2d(x1, y2);
@@ -517,22 +265,22 @@ void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, rgba_
 	glEnd();
 
 	// Border
-	OpenGL::setColour(border_colour, false);
+	OpenGL::setColour(border_colour);
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(x1, y1);
-	glVertex2d(x1, y2-1);
-	glVertex2d(x2-1, y2-1);
-	glVertex2d(x2-1, y1);
+	glVertex2d(x1, y2 - 1);
+	glVertex2d(x2 - 1, y2 - 1);
+	glVertex2d(x2 - 1, y1);
 	glEnd();
 }
 
-/* Drawing::drawEllipse
- * Draws an ellipse at [mid]
- *******************************************************************/
-void Drawing::drawEllipse(fpoint2_t mid, double radius_x, double radius_y, int sides, rgba_t colour)
+// -----------------------------------------------------------------------------
+// Draws an ellipse at [mid]
+// -----------------------------------------------------------------------------
+void Drawing::drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides, const ColRGBA& colour)
 {
 	// Set colour
-	OpenGL::setColour(colour, false);
+	OpenGL::setColour(colour);
 
 	// Draw circle as line loop
 	glBegin(GL_LINE_LOOP);
@@ -545,13 +293,13 @@ void Drawing::drawEllipse(fpoint2_t mid, double radius_x, double radius_y, int s
 	glEnd();
 }
 
-/* Drawing::drawFilledEllipse
- * Draws a filled ellipse at [mid]
- *******************************************************************/
-void Drawing::drawFilledEllipse(fpoint2_t mid, double radius_x, double radius_y, int sides, rgba_t colour)
+// -----------------------------------------------------------------------------
+// Draws a filled ellipse at [mid]
+// -----------------------------------------------------------------------------
+void Drawing::drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int sides, const ColRGBA& colour)
 {
 	// Set colour
-	OpenGL::setColour(colour, false);
+	OpenGL::setColour(colour);
 
 	// Draw circle as line loop
 	glBegin(GL_TRIANGLE_FAN);
@@ -565,339 +313,196 @@ void Drawing::drawFilledEllipse(fpoint2_t mid, double radius_x, double radius_y,
 	glEnd();
 }
 
-/* Drawing::fitTextureWithin
- * Fits [tex] within the rectangle from [x1,y1] to [x2,y2], centered
- * and keeping the correct aspect ratio. If [upscale] is true the
- * texture will be zoomed to fit the rectangle. Returns the resulting
- * texture rectangle coordinates
- *******************************************************************/
-frect_t Drawing::fitTextureWithin(GLTexture* tex, double x1, double y1, double x2, double y2, double padding, double max_scale)
+void Drawing::drawTexture(unsigned id, double x, double y, bool flipx, bool flipy)
 {
-	// Ignore null texture
-	if (!tex)
-		return frect_t();
+	// Ignore empty texture
+	if (!OpenGL::Texture::isLoaded(id))
+		return;
 
-	double width = x2 - x1;
+	// Flipping?
+	auto& tex_info = OpenGL::Texture::info(id);
+	if (flipx)
+		x += tex_info.size.x;
+	if (flipy)
+		y += tex_info.size.y;
+
+	// Bind the texture
+	OpenGL::Texture::bind(id);
+
+	// Setup metrics
+	double h = (double)tex_info.size.x;
+	double v = (double)tex_info.size.y;
+	if (flipx)
+		h = -h;
+	if (flipy)
+		v = -v;
+
+	// Translate to position
+	glPushMatrix();
+	glTranslated(x, y, 0);
+
+	// Draw
+	glBegin(GL_QUADS);
+	glTexCoord2d(0, 0);
+	glVertex2d(0, 0);
+	glTexCoord2d(0, 1);
+	glVertex2d(0, v);
+	glTexCoord2d(1, 1);
+	glVertex2d(h, v);
+	glTexCoord2d(1, 0);
+	glVertex2d(h, 0);
+	glEnd();
+
+	glPopMatrix();
+}
+
+void Drawing::drawTextureTiled(unsigned id, uint32_t width, uint32_t height)
+{
+	// Ignore empty texture
+	if (!OpenGL::Texture::isLoaded(id))
+		return;
+
+	// Bind the texture
+	OpenGL::Texture::bind(id);
+
+	// Calculate texture coordinates
+	auto&  tex_info = OpenGL::Texture::info(id);
+	double tex_x    = (double)width / (double)tex_info.size.x;
+	double tex_y    = (double)height / (double)tex_info.size.y;
+
+	// Draw
+	glBegin(GL_QUADS);
+	glTexCoord2d(0, 0);
+	glVertex2d(0, 0);
+	glTexCoord2d(0, tex_y);
+	glVertex2d(0, height);
+	glTexCoord2d(tex_x, tex_y);
+	glVertex2d(width, height);
+	glTexCoord2d(tex_x, 0);
+	glVertex2d(width, 0);
+	glEnd();
+}
+
+// -----------------------------------------------------------------------------
+// Fits [tex] within the rectangle from [x1,y1] to [x2,y2], centered and keeping
+// the correct aspect ratio.
+// If [upscale] is true the texture will be zoomed to fit the rectangle.
+// Returns the resulting texture rectangle coordinates
+// -----------------------------------------------------------------------------
+Rectd Drawing::fitTextureWithin(
+	unsigned id,
+	double   x1,
+	double   y1,
+	double   x2,
+	double   y2,
+	double   padding,
+	double   max_scale)
+{
+	// Ignore empty texture
+	if (!OpenGL::Texture::isLoaded(id))
+		return {};
+
+	double width  = x2 - x1;
 	double height = y2 - y1;
 
 	// Get image dimensions
-	double x_dim = (double)tex->getWidth();
-	double y_dim = (double)tex->getHeight();
+	auto&  tex_info = OpenGL::Texture::info(id);
+	double x_dim    = (double)tex_info.size.x;
+	double y_dim    = (double)tex_info.size.y;
 
 	// Get max scale for x and y (including padding)
 	double x_scale = ((double)width - padding) / x_dim;
 	double y_scale = ((double)width - padding) / y_dim;
 
 	// Set scale to smallest of the 2 (so that none of the texture will be clipped)
-	double scale = MIN(x_scale, y_scale);
+	double scale = std::min<double>(x_scale, y_scale);
 
 	// Clamp scale to maximum desired scale
 	if (scale > max_scale)
 		scale = max_scale;
 
 	// Return the fitted rectangle
-	return frect_t(x1 + width*0.5 - (scale*tex->getWidth()*0.5),
-	               y1 + height*0.5 - (scale*tex->getHeight()*0.5),
-	               x1 + width*0.5 + (scale*tex->getWidth()*0.5),
-	               y1 + height*0.5 + (scale*tex->getHeight()*0.5));
+	return { x1 + width * 0.5 - (scale * x_dim * 0.5),
+			 y1 + height * 0.5 - (scale * y_dim * 0.5),
+			 x1 + width * 0.5 + (scale * x_dim * 0.5),
+			 y1 + height * 0.5 + (scale * y_dim * 0.5) };
 }
 
-/* Drawing::drawTextureWithin
- * Draws [tex] within the rectangle from [x1,y1] to [x2,y2], centered
- * and keeping the correct aspect ratio. If [upscale] is true the
- * texture will be zoomed to fit the rectangle
- *******************************************************************/
-void Drawing::drawTextureWithin(GLTexture* tex, double x1, double y1, double x2, double y2, double padding, double max_scale)
+// -----------------------------------------------------------------------------
+// Draws [tex] within the rectangle from [x1,y1] to [x2,y2], centered and
+// keeping the correct aspect ratio.
+// If [upscale] is true the texture will be zoomed to fit the rectangle
+// -----------------------------------------------------------------------------
+void Drawing::drawTextureWithin(
+	unsigned id,
+	double   x1,
+	double   y1,
+	double   x2,
+	double   y2,
+	double   padding,
+	double   max_scale)
 {
-	// Ignore null texture
-	if (!tex)
+	// Ignore empty texture
+	if (!OpenGL::Texture::isLoaded(id))
 		return;
 
-	double width = x2 - x1;
+	double width  = x2 - x1;
 	double height = y2 - y1;
 
 	// Get image dimensions
-	double x_dim = (double)tex->getWidth();
-	double y_dim = (double)tex->getHeight();
+	auto&  tex_info = OpenGL::Texture::info(id);
+	double x_dim    = (double)tex_info.size.x;
+	double y_dim    = (double)tex_info.size.y;
 
 	// Get max scale for x and y (including padding)
 	double x_scale = ((double)width - padding) / x_dim;
 	double y_scale = ((double)height - padding) / y_dim;
 
 	// Set scale to smallest of the 2 (so that none of the texture will be clipped)
-	double scale = MIN(x_scale, y_scale);
+	double scale = std::min<double>(x_scale, y_scale);
 
 	// Clamp scale to maximum desired scale
 	if (scale > max_scale)
 		scale = max_scale;
 
 	// Now draw the texture
+	OpenGL::Texture::bind(id);
 	glPushMatrix();
-	glTranslated(x1 + width*0.5, y1 + height*0.5, 0);	// Translate to middle of area
-	glScaled(scale, scale, scale);						// Scale to fit within area
-	tex->draw2d(tex->getWidth()*-0.5, tex->getHeight()*-0.5);
+	glTranslated(x1 + width * 0.5, y1 + height * 0.5, 0); // Translate to middle of area
+	glScaled(scale, scale, scale);                        // Scale to fit within area
+	glTranslated(x_dim * -0.5, y_dim * -0.5, 0);
+	glBegin(GL_QUADS);
+	glTexCoord2d(0, 0);
+	glVertex2d(0, 0);
+	glTexCoord2d(0, 1);
+	glVertex2d(0, y_dim);
+	glTexCoord2d(1, 1);
+	glVertex2d(x_dim, y_dim);
+	glTexCoord2d(1, 0);
+	glVertex2d(x_dim, 0);
+	glEnd();
 	glPopMatrix();
 }
 
-#ifdef USE_SFML_RENDERWINDOW
-/*******************************************************************
- * SFML 2.x TEXT FUNCTION IMPLEMENTATIONS
- *******************************************************************/
-
-/* Drawing::drawText
- * Draws [text] at [x,y]. If [bounds] is not null, the bounding
- * coordinates of the rendered text string are written to it.
- *******************************************************************/
-void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int alignment, frect_t* bounds)
-{
-	// Setup SFML string
-	sf::Text sf_str;
-	sf_str.setString(UTF8(text));
-	sf_str.setColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
-
-	// Set font
-	sf::Font* f = theFontManager->getFont(font);
-	sf_str.setFont(*f);
-	if (font == FONT_SMALL)
-		sf_str.setCharacterSize((UI::scalePx(gl_font_size) * 0.6) + 1);
-	else
-		sf_str.setCharacterSize(UI::scalePx(gl_font_size));
-
-	// Setup alignment
-	if (alignment != ALIGN_LEFT)
-	{
-		float width = sf_str.getLocalBounds().width;
-
-		if (alignment == ALIGN_CENTER)
-			x -= MathStuff::round(width*0.5);
-		else
-			x -= width;
-	}
-	sf_str.setPosition(x, y);
-
-	// Set bounds rect
-	if (bounds)
-	{
-		sf::FloatRect rect = sf_str.getGlobalBounds();
-		bounds->set(rect.left, rect.top, rect.left+rect.width, rect.top+rect.height);
-	}
-
-	// Draw the string
-	if (render_target)
-	{
-		if (text_state_reset)
-			setTextState(true);
-
-		if (text_outline_width > 0)
-		{
-#if (SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR >= 4) || SFML_VERSION_MAJOR > 2
-			// Set text outline if SFML version is 2.4 or later
-			sf_str.setOutlineThickness(text_outline_width);
-			sf_str.setOutlineColor(
-				sf::Color(
-					text_outline_colour.r,
-					text_outline_colour.g,
-					text_outline_colour.b,
-					text_outline_colour.a
-				)
-			);
-#else
-			// On SFML < 2.4, use old hacky outline method
-			sf_str.setColor(
-				sf::Color(
-					text_outline_colour.r,
-					text_outline_colour.g,
-					text_outline_colour.b,
-					text_outline_colour.a
-				)
-			);
-			sf_str.setPosition(x - 2, y - 1);
-			render_target->draw(sf_str);
-			sf_str.setPosition(x - 2, y + 1);
-			render_target->draw(sf_str);
-			sf_str.setPosition(x + 2, y + 1);
-			render_target->draw(sf_str);
-			sf_str.setPosition(x + 2, y - 1);
-			render_target->draw(sf_str);
-			sf_str.setPosition(x, y);
-			sf_str.setColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
-#endif
-		}
-
-		// Draw
-		render_target->draw(sf_str);
-
-		if (text_state_reset)
-			setTextState(false);
-	}
-}
-
-/* Drawing::textExtents
- * Returns the width and height of [text] when drawn with [font]
- *******************************************************************/
-fpoint2_t Drawing::textExtents(string text, int font)
-{
-	// Setup SFML string
-	sf::Text sf_str;
-	sf_str.setString(CHR(text));
-
-	// Set font
-	sf::Font* f = theFontManager->getFont(font);
-	sf_str.setFont(*f);
-	if (font == FONT_SMALL)
-		sf_str.setCharacterSize((UI::scalePx(gl_font_size) * 0.6) + 1);
-	else
-		sf_str.setCharacterSize(UI::scalePx(gl_font_size));
-
-	// Return width and height of text
-	sf::FloatRect rect = sf_str.getGlobalBounds();
-	return fpoint2_t(rect.width, rect.height);
-}
-
-#else
-/*******************************************************************
- * FTGL TEXT FUNCTION IMPLEMENTATIONS
- *******************************************************************/
-
-/* Drawing::drawText
- * Draws [text] at [x,y]. If [bounds] is not null, the bounding
- * coordinates of the rendered text string are written to it.
- *******************************************************************/
-void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int alignment, frect_t* bounds)
-{
-	// Get desired font
-	FTFont* ftgl_font = theFontManager->getFont(font);
-
-	// If FTGL font is invalid, do nothing
-	if (!ftgl_font)
-		return;
-
-	// Setup alignment
-	FTBBox bbox = ftgl_font->BBox(CHR(text), -1);
-	int xpos = x;
-	int ypos = y;
-	float width = bbox.Upper().X() - bbox.Lower().X();
-	float height = ftgl_font->LineHeight();
-	if (alignment != ALIGN_LEFT)
-	{
-		if (alignment == ALIGN_CENTER)
-			xpos -= MathStuff::round(width*0.5);
-		else
-			xpos -= width;
-	}
-
-	// Set bounds rect
-	if (bounds)
-	{
-		bbox = ftgl_font->BBox(CHR(text), -1, FTPoint(xpos, ypos));
-		bounds->set(bbox.Lower().X(), bbox.Lower().Y(), bbox.Upper().X(), bbox.Lower().Y() + height);
-	}
-
-	// Draw the string
-	glPushMatrix();
-	glTranslatef(xpos, ypos + ftgl_font->FaceSize(), 0.0f);
-	glTranslatef(-0.375f, -0.375f, 0);
-	glScalef(1.0f, -1.0f, 1.0f);
-	if (text_outline_width > 0)
-	{
-		// Draw outline if set
-		OpenGL::setColour(text_outline_colour);
-		glTranslatef(-2.0f, -1.0f, 0.0f);
-		ftgl_font->Render(CHR(text), -1);
-		glTranslatef(0.0f, 2.0f, 0.0f);
-		ftgl_font->Render(CHR(text), -1);
-		glTranslatef(4.0f, 0.0f, 0.0f);
-		ftgl_font->Render(CHR(text), -1);
-		glTranslatef(0.0f, -2.0f, 0.0f);
-		ftgl_font->Render(CHR(text), -1);
-		glTranslatef(-2.0f, 1.0f, 0.0f);
-	}
-	OpenGL::setColour(colour);
-	ftgl_font->Render(CHR(text), -1);
-	glPopMatrix();
-}
-
-/* Drawing::textExtents
- * Returns the width and height of [text] when drawn with [font]
- *******************************************************************/
-fpoint2_t Drawing::textExtents(string text, int font)
-{
-	// Get desired font
-	FTFont* ftgl_font = theFontManager->getFont(font);
-
-	// If FTGL font is invalid, return empty
-	if (!ftgl_font)
-		return fpoint2_t(0,0);
-
-	// Return width and height of text
-	FTBBox bbox = ftgl_font->BBox(CHR(text), -1);
-	return fpoint2_t(bbox.Upper().X() - bbox.Lower().X(), ftgl_font->LineHeight());
-}
-
-#endif
-
-/* Drawing::enableTextStateReset
- * When enabled, the OpenGL state is set for text rendering each time
- * drawText is called and restored after (SFML only)
- *******************************************************************/
-void Drawing::enableTextStateReset(bool enable)
-{
-#ifdef USE_SFML_RENDERWINDOW
-	text_state_reset = enable;
-#endif
-}
-
-/* Drawing::setTextState
- * Sets or restores (depending on [set]) the OpenGL state for SFML
- * text rendering
- *******************************************************************/
-void Drawing::setTextState(bool set)
-{
-#ifdef USE_SFML_RENDERWINDOW
-	if (set)
-	{
-		// Push related states
-		glPushMatrix();
-		glMatrixMode(GL_TEXTURE);
-		glPushMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glPushAttrib(GL_VIEWPORT_BIT);
-		render_target->resetGLStates();
-	}
-	else
-	{
-		// Pop related states
-		glPopAttrib();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		glMatrixMode(GL_TEXTURE);
-		glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-	}
-#endif
-}
-
-/* Drawing::setTextOutline
- * Sets the [thickness] and [colour] of the outline to use when
- * drawing text
- *******************************************************************/
-void Drawing::setTextOutline(double thickness, rgba_t colour)
+// -----------------------------------------------------------------------------
+// Sets the [thickness] and [colour] of the outline to use when drawing text
+// -----------------------------------------------------------------------------
+void Drawing::setTextOutline(double thickness, const ColRGBA& colour)
 {
 	text_outline_width = thickness;
-	text_outline_colour = colour;
+	outline_colour     = colour;
 }
 
-/* Drawing::drawHud
- * Draws doom hud offset guide lines, from the center
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Draws doom hud offset guide lines, from the center
+// -----------------------------------------------------------------------------
 void Drawing::drawHud()
 {
 	// Determine some variables
 	int hw = 160;
 	int hh = 100;
-	if (hud_wide) hw = 177;
+	if (hud_wide)
+		hw = 177;
 
 	// Draw 320x200 screen outline
 	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
@@ -909,9 +514,9 @@ void Drawing::drawHud()
 	glColor4f(0.0f, 0.0f, 0.0f, 0.5f);
 	if (hud_statusbar)
 	{
-		drawLine(-hw, 68, hw, 68);	// Doom's status bar: 32 pixels tall
-		drawLine(-hw, 62, hw, 62);	// Hexen: 38 pixels
-		drawLine(-hw, 58, hw, 58);	// Heretic: 42 pixels
+		drawLine(-hw, 68, hw, 68); // Doom's status bar: 32 pixels tall
+		drawLine(-hw, 62, hw, 62); // Hexen: 38 pixels
+		drawLine(-hw, 58, hw, 58); // Heretic: 42 pixels
 	}
 
 	// Draw center lines if needed
@@ -936,39 +541,29 @@ void Drawing::drawHud()
 	}
 }
 
-#ifdef USE_SFML_RENDERWINDOW
-/* Drawing::setRenderTarget
- * Sets the SFML render target to [target]
- *******************************************************************/
-void Drawing::setRenderTarget(sf::RenderWindow* target)
-{
-	render_target = target;
-}
-#endif
-
 
 // The following functions are taken from CodeLite (http://codelite.org)
 
-wxColour Drawing::getPanelBGColour()
+wxColour Drawing::systemPanelBGColour()
 {
 #ifdef __WXGTK__
 	static bool     intitialized(false);
 	static wxColour bgColour(wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE));
 
-	if( !intitialized )
+	if (!intitialized)
 	{
 		// try to get the background colour from a menu
 		GtkWidget* menu = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		GtkStyle*   def = gtk_rc_get_style( menu );
-		if(!def)
+		GtkStyle*  def  = gtk_rc_get_style(menu);
+		if (!def)
 			def = gtk_widget_get_default_style();
 
-		if(def)
+		if (def)
 		{
 			GdkColor col = def->bg[GTK_STATE_NORMAL];
-			bgColour = wxColour(col);
+			bgColour     = wxColour(col);
 		}
-		gtk_widget_destroy( menu );
+		gtk_widget_destroy(menu);
 		intitialized = true;
 	}
 	return bgColour;
@@ -977,128 +572,132 @@ wxColour Drawing::getPanelBGColour()
 #endif
 }
 
-wxColour Drawing::getMenuTextColour()
+wxColour Drawing::systemMenuTextColour()
 {
 	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT);
 }
 
-wxColour Drawing::getMenuBarBGColour()
+wxColour Drawing::systemMenuBarBGColour()
 {
 	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENU);
 }
 
 wxColour Drawing::lightColour(const wxColour& colour, float percent)
 {
-	if(percent == 0)
+	if (percent == 0)
 	{
 		return colour;
 	}
 
 	// Convert to HSL
-	hsl_t hsl = Misc::rgbToHsl(rgba_t(COLWX(colour)));
+	ColHSL hsl = ColRGBA(COLWX(colour)).asHSL();
 
 	// Increase luminance
-	hsl.l += (float)((percent * 5.0)/100.0);
-	if (hsl.l > 1.0) hsl.l = 1.0;
+	hsl.l += (float)((percent * 5.0) / 100.0);
+	if (hsl.l > 1.0)
+		hsl.l = 1.0;
 
-	rgba_t rgb = Misc::hslToRgb(hsl);
+	ColRGBA rgb = hsl.asRGB();
 	return wxColour(rgb.r, rgb.g, rgb.b);
 }
 
 wxColour Drawing::darkColour(const wxColour& colour, float percent)
 {
-	if(percent == 0)
+	if (percent == 0)
 	{
 		return colour;
 	}
 
 	// Convert to HSL
-	hsl_t hsl = Misc::rgbToHsl(rgba_t(COLWX(colour)));
+	ColHSL hsl = ColRGBA(COLWX(colour)).asHSL();
 
 	// Decrease luminance
-	hsl.l -= (float)((percent * 5.0)/100.0);
-	if (hsl.l < 0) hsl.l = 0;
+	hsl.l -= (float)((percent * 5.0) / 100.0);
+	if (hsl.l < 0)
+		hsl.l = 0;
 
-	rgba_t rgb = Misc::hslToRgb(hsl);
+	ColRGBA rgb = hsl.asRGB();
 	return wxColour(rgb.r, rgb.g, rgb.b);
 }
 
 
-/*******************************************************************
- * TEXTBOX CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// TextBox Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* TextBox::TextBox
- * TextBox class constructor
- *******************************************************************/
-TextBox::TextBox(string text, int font, int width, int line_height)
+
+// -----------------------------------------------------------------------------
+// TextBox class constructor
+// -----------------------------------------------------------------------------
+TextBox::TextBox(string_view text, Drawing::Font font, int width, int line_height) :
+	font_{ font },
+	width_{ width },
+	line_height_{ line_height }
 {
-	this->font = font;
-	this->width = width;
-	this->height = 0;
-	this->line_height = line_height;
 	setText(text);
 }
 
-/* TextBox::split
- * Splits [text] into separate lines (split by newlines), also
- * performs further splitting to word wrap the text within the box
- *******************************************************************/
-void TextBox::split(string text)
+// -----------------------------------------------------------------------------
+// Splits [text] into separate lines (split by newlines), also performs further
+// splitting to word wrap the text within the box
+// -----------------------------------------------------------------------------
+void TextBox::split(string_view text)
 {
 	// Clear current text lines
-	lines.clear();
+	lines_.clear();
 
 	// Do nothing for empty string
-	if (text.IsEmpty())
+	if (text.empty())
 		return;
 
 	// Split at newlines
-	wxArrayString split = wxSplit(text, '\n');
-	for (unsigned a = 0; a < split.Count(); a++)
-		lines.push_back(split[a]);
+	auto split = StrUtil::splitV(text, '\n');
+	for (auto& line : split)
+		lines_.emplace_back(line);
 
 	// Don't bother wrapping if width is really small
-	if (width < 32)
+	if (width_ < 32)
 		return;
 
 	// Word wrap
 	unsigned line = 0;
-	while (line < lines.size())
+	while (line < lines_.size())
 	{
 		// Ignore empty or single-character line
-		if (lines[line].length() < 2)
+		if (lines_[line].length() < 2)
 		{
 			line++;
 			continue;
 		}
 
 		// Get line width
-		double width = Drawing::textExtents(lines[line], font).x;
+		double width = Drawing::textExtents(lines_[line], font_).x;
 
 		// Continue to next line if within box
-		if (width < this->width)
+		if (width < width_)
 		{
 			line++;
 			continue;
 		}
 
 		// Halve length until it fits in the box
-		unsigned c = lines[line].length() - 1;
-		while (width >= this->width)
+		unsigned c = lines_[line].length() - 1;
+		while (width >= width_)
 		{
 			if (c <= 1)
 				break;
 
 			c *= 0.5;
-			width = Drawing::textExtents(lines[line].Mid(0, c), font).x;
+			width = Drawing::textExtents(lines_[line].substr(0, c), font_).x;
 		}
 
 		// Increment length until it doesn't fit
-		while (width < this->width)
+		while (width < width_)
 		{
 			c++;
-			width = Drawing::textExtents(lines[line].Mid(0, c), font).x;
+			width = Drawing::textExtents(lines_[line].substr(0, c), font_).x;
 		}
 		c--;
 
@@ -1106,7 +705,7 @@ void TextBox::split(string text)
 		int sc = c;
 		while (sc >= 0)
 		{
-			if (lines[line][sc] == ' ')
+			if (lines_[line][sc] == ' ')
 				break;
 			sc--;
 		}
@@ -1116,73 +715,54 @@ void TextBox::split(string text)
 			sc++;
 
 		// Split line
-		string nl = lines[line].Mid(sc);
-		lines[line] = lines[line].Mid(0, sc);
-		lines.insert(lines.begin() + line + 1, nl);
+		auto nl      = lines_[line].substr(sc);
+		lines_[line] = lines_[line].substr(0, sc);
+		lines_.insert(lines_.begin() + line + 1, nl);
 		line++;
 	}
 
 	// Update height
-	if (line_height < 0)
-		height = Drawing::textExtents(lines[0], font).y * lines.size();
+	if (line_height_ < 0)
+		height_ = Drawing::textExtents(lines_[0], font_).y * lines_.size();
 	else
-		height = line_height * lines.size();
+		height_ = line_height_ * lines_.size();
 }
 
-/* TextBox::setText
- * Sets the text box text
- *******************************************************************/
-void TextBox::setText(string text)
+// -----------------------------------------------------------------------------
+// Sets the text box text
+// -----------------------------------------------------------------------------
+void TextBox::setText(string_view text)
 {
-	this->text = text;
+	text_ = text;
 	split(text);
 }
 
-/* TextBox::setSize
- * Sets the text box width
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the text box width
+// -----------------------------------------------------------------------------
 void TextBox::setSize(int width)
 {
-	this->width = width;
-	split(this->text);
+	width_ = width;
+	split(text_);
 }
 
-/* TextBox::draw
- * Draws the text box
- *******************************************************************/
-void TextBox::draw(int x, int y, rgba_t colour, int alignment)
+// -----------------------------------------------------------------------------
+// Draws the text box
+// -----------------------------------------------------------------------------
+void TextBox::draw(int x, int y, const ColRGBA& colour, Drawing::Align alignment)
 {
-	frect_t b;
+	Rectd b;
 	Drawing::enableTextStateReset(false);
 	Drawing::setTextState(true);
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (const auto& line : lines_)
 	{
-		Drawing::drawText(lines[a], x, y, colour, font, alignment, &b);
+		drawText(line, x, y, colour, font_, alignment, &b);
 
-		if (line_height < 0)
+		if (line_height_ < 0)
 			y += b.height();
 		else
-			y += line_height;
+			y += line_height_;
 	}
 	Drawing::enableTextStateReset(true);
 	Drawing::setTextState(false);
 }
-
-/*
-CONSOLE_COMMAND(d_testfont, 1) {
-	ArchiveEntry* entry = App::archiveManager().programResourceArchive()->entryAtPath(S_FMT("fonts/%s.ttf", args[0]));
-	if (entry) {
-		if (Drawing::font_condensed) {
-			delete Drawing::font_condensed;
-			Drawing::font_condensed = NULL;
-		}
-
-		long size = 12;
-		if (args.size() > 1)
-			args[1].ToLong(&size);
-
-		Drawing::font_condensed = new FTTextureFont(entry->getData(), entry->getSize());
-		Drawing::font_condensed->FaceSize(size);
-	}
-}
-*/

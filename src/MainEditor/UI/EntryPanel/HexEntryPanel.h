@@ -8,11 +8,13 @@ class HexEntryPanel : public EntryPanel
 {
 public:
 	HexEntryPanel(wxWindow* parent);
-	~HexEntryPanel() {}
+	~HexEntryPanel() = default;
 
-	bool	loadEntry(ArchiveEntry* entry) override;
-	bool	saveEntry() override;
+	bool saveEntry() override;
+
+protected:
+	bool loadEntry(ArchiveEntry* entry) override;
 
 private:
-	HexEditorPanel*	hex_editor_ = nullptr;
+	HexEditorPanel* hex_editor_ = nullptr;
 };

@@ -1,138 +1,106 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    SFont.cpp
- * Description: SFont class, encapsulates a bitmap font, with
- *              functions to read various bitmap font formats and
- *              draw characters and strings with the font in opengl
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2019 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    SFont.cpp
+// Description: SFont class, encapsulates a bitmap font, with functions to read
+//              various bitmap font formats and draw characters and strings with
+//              the font in OpenGL
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SFont.h"
-#include "Graphics/SImage/SImage.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
+#include "Graphics/SImage/SImage.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-SFont SFont::font_vga;
-SFont SFont::font_slade;
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+SFont SFont::font_vga_;
+SFont SFont::font_slade_;
 
 
-/*******************************************************************
- * SFONTCHAR CLASS FUNCTIONS
- *******************************************************************/
-
-/* SFontChar::SFontChar
- * SFontChar class constructor
- *******************************************************************/
-SFontChar::SFontChar()
-{
-	// Init variables
-	width = 0;
-	height = 0;
-}
-
-/* SFontChar::~SFontChar
- * SFontChar class destructor
- *******************************************************************/
-SFontChar::~SFontChar()
-{
-}
+// -----------------------------------------------------------------------------
+//
+// SFont Class Functions
+//
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * SFONT CLASS FUNCTIONS
- *******************************************************************/
-
-/* SFont::SFont
- * SFont class constructor
- *******************************************************************/
-SFont::SFont()
-{
-	// Init character map
-	for (unsigned a = 0; a < 256; a++)
-		characters[a] = nullptr;
-}
-
-/* SFont::~SFont
- * SFont class destructor
- *******************************************************************/
-SFont::~SFont()
-{
-}
-
-/* SFont::loadFont0
- * Loads a Doom alpha HUFONT font. Returns true on success, false
- * otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads a Doom alpha HUFONT font. Returns true on success, false otherwise
+// -----------------------------------------------------------------------------
 bool SFont::loadFont0(MemChunk& mc)
 {
 	return false;
 }
 
-/* SFont::loadFont1
- * Loads a ZDoom FON1 font. Returns true on success, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads a ZDoom FON1 font. Returns true on success, false otherwise
+// -----------------------------------------------------------------------------
 bool SFont::loadFont1(MemChunk& mc)
 {
 	return false;
 }
 
-/* SFont::loadFont2
- * Loads a ZDoom FON2 font. Returns true on success, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads a ZDoom FON2 font. Returns true on success, false otherwise
+// -----------------------------------------------------------------------------
 bool SFont::loadFont2(MemChunk& mc)
 {
 	return false;
 }
 
-/* SFont::loadFontM
- * Loads a monochrome vga font. Returns true on success, false
- * otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads a monochrome vga font. Returns true on success, false otherwise
+// -----------------------------------------------------------------------------
 bool SFont::loadFontM(MemChunk& mc)
 {
 	// Check data
-	if (mc.getSize() == 0 || mc.getSize() % 256)
+	if (mc.size() == 0 || mc.size() % 256)
 		return false;
 
 	// Init variables
-	unsigned width = 256;
+	unsigned width  = 256;
 	unsigned height = 256;
-	SImage image;
+	SImage   image;
 
 	// Determine character size
-	unsigned charwidth = 8;
-	unsigned charheight = mc.getSize() >> 8;
+	unsigned charwidth  = 8;
+	unsigned charheight = mc.size() >> 8;
 
 	// Setup font properties
-	line_height = charheight + 1;
-	spacing = 1;
+	line_height_ = charheight + 1;
+	spacing_     = 1;
 
 	// Setup image
 	image.resize(width, height);
@@ -140,16 +108,14 @@ bool SFont::loadFontM(MemChunk& mc)
 	// Draw characters to image
 	unsigned xoff = 0;
 	unsigned yoff = 0;
-	unsigned i = 0;
-	bool test = true;
-	for (unsigned a = 0; a < 256; a++)
+	unsigned i    = 0;
+	bool     test = true;
+	for (auto& character : characters_)
 	{
 		// Setup character info
-		SFontChar* c = new SFontChar();
-		c->tex_bounds.set(xoff, yoff, xoff+charwidth, yoff+charheight);
-		c->width = charwidth;
-		c->height = charheight;
-		characters[a] = c;
+		character.tex_bounds_.set(xoff, yoff, xoff + charwidth, yoff + charheight);
+		character.width_  = charwidth;
+		character.height_ = charheight;
 
 		// Write rows to image
 		uint8_t val = 255;
@@ -157,8 +123,8 @@ bool SFont::loadFontM(MemChunk& mc)
 		{
 			for (unsigned p = 0; p < charwidth; ++p)
 			{
-				val = ((mc[i]>>(7-p)) & 1) * 255;
-				image.setPixel(xoff + p, yoff + row, rgba_t(val, val, val, val));
+				val = ((mc[i] >> (7 - p)) & 1) * 255;
+				image.setPixel(xoff + p, yoff + row, ColRGBA(val, val, val, val));
 			}
 			i++;
 		}
@@ -175,57 +141,71 @@ bool SFont::loadFontM(MemChunk& mc)
 	}
 
 	// Load the generated image to the font texture
-	texture.loadImage(&image);
+	if (texture_ > 0)
+		OpenGL::Texture::clear(texture_);
+	texture_ = OpenGL::Texture::createFromImage(image);
 
 	return true;
 }
 
-/* SFont::loadBMF
- * Loads a BMF font. Returns true on success, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Loads a BMF font. Returns true on success, false otherwise
+// -----------------------------------------------------------------------------
 bool SFont::loadBMF(MemChunk& mc)
 {
 	return false;
 }
 
-/* SFont::drawCharacter
- * Draws the character [c] with the font, in [colour]
- *******************************************************************/
-void SFont::drawCharacter(char c, rgba_t colour)
+// -----------------------------------------------------------------------------
+// Draws the character [c] with the font, in [colour]
+// -----------------------------------------------------------------------------
+void SFont::drawCharacter(char c, ColRGBA colour)
 {
-	// Bind texture
-	if (!texture.bind())
+	// Check texture is loaded
+	if (!OpenGL::Texture::isLoaded(texture_))
 		return;
+
+	// Bind texture
+	OpenGL::Texture::bind(texture_);
 
 	// Set colour
 	OpenGL::setColour(colour);
 
 	// Get character to draw
-	SFontChar* ch = characters[(uint8_t)c];
-	if (!ch)
+	auto& ch = characters_[(uint8_t)c];
+	if (ch.width_ == 0 && ch.height_ == 0)
 		return;
 
 	// Draw it
-	frect_t tex_rect;
-	tex_rect.tl.set((double)ch->tex_bounds.x1() / (double)texture.getWidth(), (double)ch->tex_bounds.y1() / (double)texture.getHeight());
-	tex_rect.br.set((double)ch->tex_bounds.x2() / (double)texture.getWidth(), (double)ch->tex_bounds.y2() / (double)texture.getHeight());
+	Rectf tex_rect;
+	auto& tex_info = OpenGL::Texture::info(texture_);
+	tex_rect.tl.set(
+		(double)ch.tex_bounds_.x1() / (double)tex_info.size.x, (double)ch.tex_bounds_.y1() / (double)tex_info.size.y);
+	tex_rect.br.set(
+		(double)ch.tex_bounds_.x2() / (double)tex_info.size.x, (double)ch.tex_bounds_.y2() / (double)tex_info.size.y);
 	glBegin(GL_QUADS);
-	glTexCoord2d(tex_rect.x1(), tex_rect.y1());		glVertex2d(0, 0);
-	glTexCoord2d(tex_rect.x1(), tex_rect.y2());		glVertex2d(0, ch->height);
-	glTexCoord2d(tex_rect.x2(), tex_rect.y2());		glVertex2d(ch->width, ch->height);
-	glTexCoord2d(tex_rect.x2(), tex_rect.y1());		glVertex2d(ch->width, 0);
+	glTexCoord2d(tex_rect.x1(), tex_rect.y1());
+	glVertex2d(0, 0);
+	glTexCoord2d(tex_rect.x1(), tex_rect.y2());
+	glVertex2d(0, ch.height_);
+	glTexCoord2d(tex_rect.x2(), tex_rect.y2());
+	glVertex2d(ch.width_, ch.height_);
+	glTexCoord2d(tex_rect.x2(), tex_rect.y1());
+	glVertex2d(ch.width_, 0);
 	glEnd();
 }
 
-/* SFont::drawString
- * Draws the string [srt] with the font, in [colour]. [align] can be
- * one of SF_ALIGN_LEFT, SF_ALIGN_RIGHT or SF_ALIGN_CENTER
- *******************************************************************/
-void SFont::drawString(string str, rgba_t colour, uint8_t align)
+// -----------------------------------------------------------------------------
+// Draws the string [str] with the font, in [colour] with [align]ment
+// -----------------------------------------------------------------------------
+void SFont::drawString(string_view str, ColRGBA colour, SFont::Align align)
 {
-	// Bind texture
-	if (!texture.bind())
+	// Check texture is loaded
+	if (!OpenGL::Texture::isLoaded(texture_))
 		return;
+
+	// Bind texture
+	OpenGL::Texture::bind(texture_);
 
 	// Set colour
 	OpenGL::setColour(colour);
@@ -235,84 +215,96 @@ void SFont::drawString(string str, rgba_t colour, uint8_t align)
 	for (unsigned a = 0; a < str.size(); a++)
 	{
 		// Get character
-		SFontChar* ch = characters[(uint8_t)CHR(str)[a]];
+		auto& ch = characters_[(uint8_t)str[a]];
 
 		// Increment total width
-		if (ch)
-			total_width += ch->width + spacing;
+		if (ch.width_ > 0 || ch.height_ > 0)
+			total_width += ch.width_ + spacing_;
 		else
-			total_width += spacing;
+			total_width += spacing_;
 	}
 
 	// Translate for alignment
 	glPushMatrix();
-	if (align == SF_ALIGN_RIGHT)
+	if (align == Align::Right)
 		glTranslated(-total_width, 0, 0);
-	else if (align == SF_ALIGN_CENTER)
-		glTranslated(-(total_width*0.5), 0, 0);
+	else if (align == Align::Center)
+		glTranslated(-(total_width * 0.5), 0, 0);
 
 	// Draw the string
 	unsigned xoff = 0;
 	for (unsigned a = 0; a < str.size(); a++)
 	{
 		// Get character
-		SFontChar* ch = characters[(uint8_t)CHR(str)[a]];
-		if (!ch)
+		auto& ch = characters_[(uint8_t)str[a]];
+		if (ch.width_ == 0 && ch.height_ == 0)
 		{
-			xoff += spacing;
+			xoff += spacing_;
 			continue;
 		}
 
 		// Draw it
-		frect_t tex_rect;
-		tex_rect.tl.set((double)ch->tex_bounds.x1() / (double)texture.getWidth(), (double)ch->tex_bounds.y1() / (double)texture.getHeight());
-		tex_rect.br.set((double)ch->tex_bounds.x2() / (double)texture.getWidth(), (double)ch->tex_bounds.y2() / (double)texture.getHeight());
+		Rectf tex_rect;
+		auto& tex_info = OpenGL::Texture::info(texture_);
+		tex_rect.tl.set(
+			(double)ch.tex_bounds_.x1() / (double)tex_info.size.x,
+			(double)ch.tex_bounds_.y1() / (double)tex_info.size.y);
+		tex_rect.br.set(
+			(double)ch.tex_bounds_.x2() / (double)tex_info.size.x,
+			(double)ch.tex_bounds_.y2() / (double)tex_info.size.y);
 		glBegin(GL_QUADS);
-		glTexCoord2d(tex_rect.x1(), tex_rect.y1());		glVertex2d(xoff, 0);
-		glTexCoord2d(tex_rect.x1(), tex_rect.y2());		glVertex2d(xoff, ch->height);
-		glTexCoord2d(tex_rect.x2(), tex_rect.y2());		glVertex2d(xoff+ch->width, ch->height);
-		glTexCoord2d(tex_rect.x2(), tex_rect.y1());		glVertex2d(xoff+ch->width, 0);
+		glTexCoord2d(tex_rect.x1(), tex_rect.y1());
+		glVertex2d(xoff, 0);
+		glTexCoord2d(tex_rect.x1(), tex_rect.y2());
+		glVertex2d(xoff, ch.height_);
+		glTexCoord2d(tex_rect.x2(), tex_rect.y2());
+		glVertex2d(xoff + ch.width_, ch.height_);
+		glTexCoord2d(tex_rect.x2(), tex_rect.y1());
+		glVertex2d(xoff + ch.width_, 0);
 		glEnd();
 
 		// Increment x to next character (1 pixel spacing)
-		xoff += ch->width + spacing;
+		xoff += ch.width_ + spacing_;
 	}
 
 	glPopMatrix();
 }
 
 
-/*******************************************************************
- * SFONT CLASS STATIC FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// SFont Class Static Functions
+//
+// -----------------------------------------------------------------------------
 
-/* SFont::sladeFont
- * Returns the global SLADE font
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Returns the global SLADE font
+// -----------------------------------------------------------------------------
 SFont& SFont::sladeFont()
 {
-	if (!font_slade.texture.isLoaded())
+	if (!font_slade_.texture_)
 	{
 		// Load slade font
 	}
 
-	return font_slade;
+	return font_slade_;
 }
 
-/* SFont::vgaFont
- * Returns the global VGA font
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the global VGA font
+// -----------------------------------------------------------------------------
 SFont& SFont::vgaFont()
 {
-	if (!font_vga.texture.isLoaded())
+	if (!font_vga_.texture_)
 	{
 		// Get vga font entry
-		ArchiveEntry* entry_vgafont = App::archiveManager().programResourceArchive()->entryAtPath("vga-rom-font.16");
+		auto entry_vgafont = App::archiveManager().programResourceArchive()->entryAtPath("vga-rom-font.16");
 
 		// Load font
 		if (entry_vgafont)
-			font_vga.loadFontM(entry_vgafont->getMCData());
+			font_vga_.loadFontM(entry_vgafont->data());
 	}
 
-	return font_vga;
+	return font_vga_;
 }

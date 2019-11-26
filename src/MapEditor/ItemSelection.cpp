@@ -1,65 +1,62 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    ItemSelection.cpp
- * Description: ItemSelection class - A container for a map editor's
- *              current selection and hilight, along with various
- *              utility functions for handling selection and hilight
- *              for a MapEditContext
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2019 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ItemSelection.cpp
+// Description: ItemSelection class - A container for a map editor's current
+//              selection and hilight, along with various utility functions for
+//              handling selection and hilight for a MapEditContext
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "Game/Configuration.h"
 #include "ItemSelection.h"
+#include "Game/Configuration.h"
 #include "MapEditContext.h"
 #include "UI/MapCanvas.h"
 #include "Utility/MathStuff.h"
 
 
-/*******************************************************************
- * ITEMSELECTION CLASS FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// ItemSelection Class Functions
+//
+// -----------------------------------------------------------------------------
 using MapEditor::ItemType;
 using MapEditor::Mode;
 using MapEditor::SectorMode;
 
-/* ItemSelection::ItemSelection
- * ItemSelection class constructor
- *******************************************************************/
-ItemSelection::ItemSelection(MapEditContext* context) :
-	hilight_{ -1, ItemType::Any },
-	hilight_lock_{ false },
-	context_{ context }
-{
-}
-
+// -----------------------------------------------------------------------------
+// Returns the currently selected items, or the currently hilighted item if
+// nothing is selected
+// -----------------------------------------------------------------------------
 vector<MapEditor::Item> ItemSelection::selectionOrHilight()
 {
 	vector<MapEditor::Item> list;
 
-	if (selection_.size() > 0)
+	if (!selection_.empty())
 		list.assign(selection_.begin(), selection_.end());
 	else if (hilight_.index >= 0)
 		list.push_back(hilight_);
@@ -67,15 +64,29 @@ vector<MapEditor::Item> ItemSelection::selectionOrHilight()
 	return list;
 }
 
-/* ItemSelection::setHilight
- * Sets the current hilight to [item]. Returns true if the hilight
- * was changed
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the first selected item, or the currently hilighted item if nothing
+// is selected
+// -----------------------------------------------------------------------------
+MapEditor::Item ItemSelection::firstSelectedOrHilight()
+{
+	if (!selection_.empty())
+		return selection_[0];
+	else if (hilight_.index >= 0)
+		return hilight_;
+
+	return {};
+}
+
+// -----------------------------------------------------------------------------
+// Sets the current hilight to [item]. Returns true if the hilight was changed
+// -----------------------------------------------------------------------------
 bool ItemSelection::setHilight(const MapEditor::Item& item)
 {
 	if (item != hilight_)
 	{
-		if (context_) context_->resetLastUndoLevel();
+		if (context_)
+			context_->resetLastUndoLevel();
 		hilight_ = item;
 		return true;
 	}
@@ -84,15 +95,16 @@ bool ItemSelection::setHilight(const MapEditor::Item& item)
 	return false;
 }
 
-/* ItemSelection::setHilight
- * Sets the current hilight item index to [index]. Returns true if
- * the hilight was changed
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the current hilight item index to [index].
+// Returns true if the hilight was changed
+// -----------------------------------------------------------------------------
 bool ItemSelection::setHilight(int index)
 {
 	if (index != hilight_.index)
 	{
-		if (context_) context_->resetLastUndoLevel();
+		if (context_)
+			context_->resetLastUndoLevel();
 		hilight_.index = index;
 		return true;
 	}
@@ -101,11 +113,11 @@ bool ItemSelection::setHilight(int index)
 	return false;
 }
 
-/* ItemSelection::updateHilight
- * Hilights the map object closest to [mouse_pos], and updates
- * anything needed if the hilight is changed
- *******************************************************************/
-bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
+// -----------------------------------------------------------------------------
+// Hilights the map object closest to [mouse_pos], and updates anything needed
+// if the hilight is changed
+// -----------------------------------------------------------------------------
+bool ItemSelection::updateHilight(Vec2d mouse_pos, double dist_scale)
 {
 	// Do nothing if hilight is locked or we have no context
 	if (hilight_lock_ || !context_)
@@ -116,32 +128,39 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 	// Update hilighted object depending on mode
 	auto& map = context_->map();
 	if (context_->editMode() == Mode::Vertices)
-		hilight_ = { map.nearestVertex(mouse_pos, 32 / dist_scale), ItemType::Vertex };
+	{
+		auto vertex = map.vertices().nearest(mouse_pos, 32 / dist_scale);
+		hilight_    = { vertex ? (int)vertex->index() : -1, ItemType::Vertex };
+	}
 	else if (context_->editMode() == Mode::Lines)
-		hilight_ = { map.nearestLine(mouse_pos, 32 / dist_scale), ItemType::Line };
+	{
+		auto line = map.lines().nearest(mouse_pos, 32 / dist_scale);
+		hilight_  = { line ? (int)line->index() : -1, ItemType::Line };
+	}
 	else if (context_->editMode() == Mode::Sectors)
-		hilight_ = { map.sectorAt(mouse_pos), ItemType::Sector };
+	{
+		auto sector = map.sectors().atPos(mouse_pos);
+		hilight_    = { sector ? (int)sector->index() : -1, ItemType::Sector };
+	}
 	else if (context_->editMode() == Mode::Things)
 	{
 		hilight_ = { -1, ItemType::Thing };
 
 		// Get (possibly multiple) nearest-thing(s)
-		auto nearest = map.nearestThingMulti(mouse_pos);
+		auto nearest = map.things().multiNearest(mouse_pos);
 		if (nearest.size() == 1)
 		{
-			auto t = map.getThing(nearest[0]);
-			auto& type = Game::configuration().thingType(t->getType());
-			if (MathStuff::distance(mouse_pos, t->point()) <= type.radius() + (32 / dist_scale))
-				hilight_.index = nearest[0];
+			auto& type = Game::configuration().thingType(nearest[0]->type());
+			if (MathStuff::distance(mouse_pos, nearest[0]->position()) <= type.radius() + (32 / dist_scale))
+				hilight_.index = nearest[0]->index();
 		}
 		else
 		{
-			for (unsigned a = 0; a < nearest.size(); a++)
+			for (auto& t : nearest)
 			{
-				auto t = map.getThing(nearest[a]);
-				auto& type = Game::configuration().thingType(t->getType());
-				if (MathStuff::distance(mouse_pos, t->point()) <= type.radius() + (32 / dist_scale))
-					hilight_.index = nearest[a];
+				auto& type = Game::configuration().thingType(t->type());
+				if (MathStuff::distance(mouse_pos, t->position()) <= type.radius() + (32 / dist_scale))
+					hilight_.index = t->index();
 			}
 		}
 	}
@@ -155,14 +174,10 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 	{
 		switch (context_->editMode())
 		{
-		case Mode::Vertices:
-			MapEditor::openObjectProperties(map.getVertex(hilight_.index)); break;
-		case Mode::Lines:
-			MapEditor::openObjectProperties(map.getLine(hilight_.index)); break;
-		case Mode::Sectors:
-			MapEditor::openObjectProperties(map.getSector(hilight_.index)); break;
-		case Mode::Things:
-			MapEditor::openObjectProperties(map.getThing(hilight_.index)); break;
+		case Mode::Vertices: MapEditor::openObjectProperties(map.vertex(hilight_.index)); break;
+		case Mode::Lines: MapEditor::openObjectProperties(map.line(hilight_.index)); break;
+		case Mode::Sectors: MapEditor::openObjectProperties(map.sector(hilight_.index)); break;
+		case Mode::Things: MapEditor::openObjectProperties(map.thing(hilight_.index)); break;
 		default: break;
 		}
 
@@ -172,9 +187,9 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 	return current != hilight_.index;
 }
 
-/* ItemSelection::clearSelection
- * Clears the current selection
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Clears the current selection
+// -----------------------------------------------------------------------------
 void ItemSelection::clear()
 {
 	// Update change set
@@ -189,10 +204,10 @@ void ItemSelection::clear()
 		context_->selectionUpdated();
 }
 
-/* ItemSelection::select
- * Changes the selection status of [item] to [select]. If
- * [new_change] is true, a new change set is started
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Changes the selection status of [item] to [select].
+// If [new_change] is true, a new change set is started
+// -----------------------------------------------------------------------------
 void ItemSelection::select(const MapEditor::Item& item, bool select, bool new_change)
 {
 	// Start new change set if specified
@@ -202,10 +217,10 @@ void ItemSelection::select(const MapEditor::Item& item, bool select, bool new_ch
 	selectItem(item, select);
 }
 
-/* ItemSelection::select
- * Changes the selection status of all items in [items] to [select].
- * If [new_change] is true, a new change set is started
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Changes the selection status of all items in [items] to [select].
+// If [new_change] is true, a new change set is started
+// -----------------------------------------------------------------------------
 void ItemSelection::select(const vector<MapEditor::Item>& items, bool select, bool new_change)
 {
 	// Start new change set if specified
@@ -216,9 +231,9 @@ void ItemSelection::select(const vector<MapEditor::Item>& items, bool select, bo
 		selectItem(item, select);
 }
 
-/* ItemSelection::selectAll
- * Selects all objects depending on the context's edit mode
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Selects all objects depending on the context's edit mode
+// -----------------------------------------------------------------------------
 void ItemSelection::selectAll()
 {
 	// Do nothing with no context
@@ -251,13 +266,13 @@ void ItemSelection::selectAll()
 			selectItem({ (int)a, ItemType::Thing });
 	}
 
-	context_->addEditorMessage(S_FMT("Selected all %lu %s", selection_.size(), context_->modeString()));
+	context_->addEditorMessage(fmt::format("Selected all {} {}", selection_.size(), context_->modeString()));
 	context_->selectionUpdated();
 }
 
-/* ItemSelection::toggleCurrent
- * Toggles selection on the currently hilighted object
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Toggles selection on the currently hilighted object
+// -----------------------------------------------------------------------------
 bool ItemSelection::toggleCurrent(bool clear_none)
 {
 	// If nothing is hilighted
@@ -286,68 +301,67 @@ bool ItemSelection::toggleCurrent(bool clear_none)
 	return true;
 }
 
-/* ItemSelection::selectVerticesWithin
- * Selects all vertices in [map] that are within [rect]
- *******************************************************************/
-void ItemSelection::selectVerticesWithin(const SLADEMap& map, const frect_t& rect)
+// -----------------------------------------------------------------------------
+// Selects all vertices in [map] that are within [rect]
+// -----------------------------------------------------------------------------
+void ItemSelection::selectVerticesWithin(const SLADEMap& map, const Rectd& rect)
 {
 	// Start new change set
 	last_change_.clear();
 
 	// Select vertices within bounds
 	for (unsigned a = 0; a < map.nVertices(); a++)
-		if (rect.contains(map.getVertex(a)->point()))
+		if (rect.contains(map.vertex(a)->position()))
 			selectItem({ (int)a, ItemType::Vertex });
 }
 
-/* ItemSelection::selectLinesWithin
- * Selects all lines in [map] that are within [rect]
- *******************************************************************/
-void ItemSelection::selectLinesWithin(const SLADEMap& map, const frect_t& rect)
+// -----------------------------------------------------------------------------
+// Selects all lines in [map] that are within [rect]
+// -----------------------------------------------------------------------------
+void ItemSelection::selectLinesWithin(const SLADEMap& map, const Rectd& rect)
 {
 	// Start new change set
 	last_change_.clear();
 
 	// Select lines within bounds
 	for (unsigned a = 0; a < map.nLines(); a++)
-		if (rect.contains(map.getLine(a)->v1()->point()) &&
-			rect.contains(map.getLine(a)->v2()->point()))
+		if (rect.contains(map.line(a)->v1()->position()) && rect.contains(map.line(a)->v2()->position()))
 			selectItem({ (int)a, ItemType::Line });
 }
 
-/* ItemSelection::selectSectorsWithin
- * Selects all sectors in [map] that are within [rect]
- *******************************************************************/
-void ItemSelection::selectSectorsWithin(const SLADEMap& map, const frect_t& rect)
+// -----------------------------------------------------------------------------
+// Selects all sectors in [map] that are within [rect]
+// -----------------------------------------------------------------------------
+void ItemSelection::selectSectorsWithin(const SLADEMap& map, const Rectd& rect)
 {
 	// Start new change set
 	last_change_.clear();
 
 	// Select sectors within bounds
 	for (unsigned a = 0; a < map.nSectors(); a++)
-		if (map.getSector(a)->boundingBox().is_within(rect.tl, rect.br))
+		if (map.sector(a)->boundingBox().isWithin(rect.tl, rect.br))
 			selectItem({ (int)a, ItemType::Sector });
 }
 
-/* ItemSelection::selectThingsWithin
- * Selects all things in [map] that are within [rect]
- *******************************************************************/
-void ItemSelection::selectThingsWithin(const SLADEMap& map, const frect_t& rect)
+// -----------------------------------------------------------------------------
+// Selects all things in [map] that are within [rect]
+// -----------------------------------------------------------------------------
+void ItemSelection::selectThingsWithin(const SLADEMap& map, const Rectd& rect)
 {
 	// Start new change set
 	last_change_.clear();
 
 	// Select vertices within bounds
 	for (unsigned a = 0; a < map.nThings(); a++)
-		if (rect.contains(map.getThing(a)->point()))
+		if (rect.contains(map.thing(a)->position()))
 			selectItem({ (int)a, ItemType::Thing });
 }
 
-/* ItemSelection::selectWithin
- * Selects all objects within [rect]. If [add] is false, the
- * selection will be cleared first
- *******************************************************************/
-bool ItemSelection::selectWithin(const frect_t& rect, bool add)
+// -----------------------------------------------------------------------------
+// Selects all objects within [rect].
+// If [add] is false, the selection will be cleared first
+// -----------------------------------------------------------------------------
+bool ItemSelection::selectWithin(const Rectd& rect, bool add)
 {
 	// Do nothing if no context
 	if (!context_)
@@ -360,10 +374,10 @@ bool ItemSelection::selectWithin(const frect_t& rect, bool add)
 	// Select depending on edit mode
 	switch (context_->editMode())
 	{
-	case Mode::Vertices:	selectVerticesWithin(context_->map(), rect); break;
-	case Mode::Lines:		selectLinesWithin(context_->map(), rect); break;
-	case Mode::Sectors:		selectSectorsWithin(context_->map(), rect); break;
-	case Mode::Things:		selectThingsWithin(context_->map(), rect); break;
+	case Mode::Vertices: selectVerticesWithin(context_->map(), rect); break;
+	case Mode::Lines: selectLinesWithin(context_->map(), rect); break;
+	case Mode::Sectors: selectSectorsWithin(context_->map(), rect); break;
+	case Mode::Things: selectThingsWithin(context_->map(), rect); break;
 	default: break;
 	}
 
@@ -377,53 +391,53 @@ bool ItemSelection::selectWithin(const frect_t& rect, bool add)
 	return false;
 }
 
-/* ItemSelection::hilightedVertex
- * Returns the currently hilighted MapVertex
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the currently hilighted MapVertex
+// -----------------------------------------------------------------------------
 MapVertex* ItemSelection::hilightedVertex() const
 {
 	if (context_ && hilight_.index >= 0 && hilight_.type == ItemType::Vertex)
-		return context_->map().getVertex(hilight_.index);
+		return context_->map().vertex(hilight_.index);
 
 	return nullptr;
 }
 
-/* ItemSelection::hilightedLine
- * Returns the currently hilighted MapLine
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the currently hilighted MapLine
+// -----------------------------------------------------------------------------
 MapLine* ItemSelection::hilightedLine() const
 {
 	if (context_ && hilight_.index >= 0 && hilight_.type == ItemType::Line)
-		return context_->map().getLine(hilight_.index);
+		return context_->map().line(hilight_.index);
 
 	return nullptr;
 }
 
-/* ItemSelection::hilightedSector
- * Returns the currently hilighted MapSector
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the currently hilighted MapSector
+// -----------------------------------------------------------------------------
 MapSector* ItemSelection::hilightedSector() const
 {
 	if (context_ && hilight_.index >= 0 && hilight_.type == ItemType::Sector)
-		return context_->map().getSector(hilight_.index);
+		return context_->map().sector(hilight_.index);
 
 	return nullptr;
 }
 
-/* ItemSelection::hilightedThing
- * Returns the currently hilighted MapThing
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the currently hilighted MapThing
+// -----------------------------------------------------------------------------
 MapThing* ItemSelection::hilightedThing() const
 {
 	if (context_ && hilight_.index >= 0 && hilight_.type == ItemType::Thing)
-		return context_->map().getThing(hilight_.index);
+		return context_->map().thing(hilight_.index);
 
 	return nullptr;
 }
 
-/* ItemSelection::hilightedObject
- * Returns the currently hilighted MapObject
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the currently hilighted MapObject
+// -----------------------------------------------------------------------------
 MapObject* ItemSelection::hilightedObject() const
 {
 	if (!context_)
@@ -432,18 +446,18 @@ MapObject* ItemSelection::hilightedObject() const
 	switch (context_->editMode())
 	{
 	case Mode::Vertices: return hilightedVertex();
-	case Mode::Lines:	return hilightedLine();
-	case Mode::Sectors:	return hilightedSector();
-	case Mode::Things:	return hilightedThing();
-	default:							return nullptr;
+	case Mode::Lines: return hilightedLine();
+	case Mode::Sectors: return hilightedSector();
+	case Mode::Things: return hilightedThing();
+	default: return nullptr;
 	}
 }
 
-/* ItemSelection::selectedVertices
- * Returns as list of the currently selected vertices.
- * If [try_hilight] is true, the hilighted vertex will be added to
- * the list if nothing is selected
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns as list of the currently selected vertices.
+// If [try_hilight] is true, the hilighted vertex will be added to the list if
+// nothing is selected
+// -----------------------------------------------------------------------------
 vector<MapVertex*> ItemSelection::selectedVertices(bool try_hilight) const
 {
 	vector<MapVertex*> list;
@@ -452,22 +466,25 @@ vector<MapVertex*> ItemSelection::selectedVertices(bool try_hilight) const
 		return list;
 
 	// Get selected vertices
+	MapVertex* v;
 	for (auto& item : selection_)
 		if (item.type == ItemType::Vertex)
-			list.push_back(context_->map().getVertex(item.index));
+			if ((v = context_->map().vertex(item.index)))
+				list.push_back(v);
 
 	// If no vertices were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0 && hilight_.type == ItemType::Vertex)
-		list.push_back(context_->map().getVertex(hilight_.index));
+		if ((v = context_->map().vertex(hilight_.index)))
+			list.push_back(v);
 
 	return list;
 }
 
-/* ItemSelection::selectedLines
- * Returns as list of the currently selected lines.
- * If [try_hilight] is true, the hilighted line will be added to
- * the list if nothing is selected
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns as list of the currently selected lines.
+// If [try_hilight] is true, the hilighted line will be added to the list if
+// nothing is selected
+// -----------------------------------------------------------------------------
 vector<MapLine*> ItemSelection::selectedLines(bool try_hilight) const
 {
 	vector<MapLine*> list;
@@ -476,22 +493,25 @@ vector<MapLine*> ItemSelection::selectedLines(bool try_hilight) const
 		return list;
 
 	// Get selected lines
+	MapLine* l;
 	for (auto& item : selection_)
 		if (item.type == ItemType::Line)
-			list.push_back(context_->map().getLine(item.index));
+			if ((l = context_->map().line(item.index)))
+				list.push_back(l);
 
 	// If no lines were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0 && hilight_.type == ItemType::Line)
-		list.push_back(context_->map().getLine(hilight_.index));
+		if ((l = context_->map().line(hilight_.index)))
+			list.push_back(l);
 
 	return list;
 }
 
-/* ItemSelection::selectedSectors
- * Returns as list of the currently selected sectors.
- * If [try_hilight] is true, the hilighted sector will be added to
- * the list if nothing is selected
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns as list of the currently selected sectors.
+// If [try_hilight] is true, the hilighted sector will be added to the list if
+// nothing is selected
+// -----------------------------------------------------------------------------
 vector<MapSector*> ItemSelection::selectedSectors(bool try_hilight) const
 {
 	vector<MapSector*> list;
@@ -500,22 +520,25 @@ vector<MapSector*> ItemSelection::selectedSectors(bool try_hilight) const
 		return list;
 
 	// Get selected sectors
+	MapSector* s;
 	for (auto& item : selection_)
 		if (item.type == ItemType::Sector)
-			list.push_back(context_->map().getSector(item.index));
+			if ((s = context_->map().sector(item.index)))
+				list.push_back(s);
 
 	// If no sectors were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0 && hilight_.type == ItemType::Sector)
-		list.push_back(context_->map().getSector(hilight_.index));
+		if ((s = context_->map().sector(hilight_.index)))
+			list.push_back(s);
 
 	return list;
 }
 
-/* ItemSelection::selectedThings
- * Returns as list of the currently selected things.
- * If [try_hilight] is true, the hilighted thing will be added to
- * the list if nothing is selected
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns as list of the currently selected things.
+// If [try_hilight] is true, the hilighted thing will be added to the list if
+// nothing is selected
+// -----------------------------------------------------------------------------
 vector<MapThing*> ItemSelection::selectedThings(bool try_hilight) const
 {
 	vector<MapThing*> list;
@@ -524,56 +547,63 @@ vector<MapThing*> ItemSelection::selectedThings(bool try_hilight) const
 		return list;
 
 	// Get selected things
+	MapThing* t;
 	for (auto& item : selection_)
 		if (item.type == ItemType::Thing)
-			list.push_back(context_->map().getThing(item.index));
+			if ((t = context_->map().thing(item.index)))
+				list.push_back(t);
 
 	// If no things were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0 && hilight_.type == ItemType::Thing)
-		list.push_back(context_->map().getThing(hilight_.index));
+		if ((t = context_->map().thing(hilight_.index)))
+			list.push_back(t);
 
 	return list;
 }
 
-/* ItemSelection::selectedObjects
- * Returns as list of the currently selected objects depending on the
- * context's edit mode. If [try_hilight] is true, the hilighted
- * object will be added to the list if nothing is selected
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns as list of the currently selected objects depending on the context's
+// edit mode.
+// If [try_hilight] is true, the hilighted object will be added to the list if
+// nothing is selected
+// -----------------------------------------------------------------------------
 vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 {
 	if (!context_)
 		return {};
 
 	// Get object type depending on edit mode
-	uint8_t type;
+	MapObject::Type type;
 	switch (context_->editMode())
 	{
-	case Mode::Vertices: type = MOBJ_VERTEX; break;
-	case Mode::Lines: type = MOBJ_LINE; break;
-	case Mode::Sectors: type = MOBJ_SECTOR; break;
-	case Mode::Things: type = MOBJ_THING; break;
+	case Mode::Vertices: type = MapObject::Type::Vertex; break;
+	case Mode::Lines: type = MapObject::Type::Line; break;
+	case Mode::Sectors: type = MapObject::Type::Sector; break;
+	case Mode::Things: type = MapObject::Type::Thing; break;
 	default: return {};
 	}
 
 	// Get selected objects
 	vector<MapObject*> list;
+	MapObject*         o;
 	for (auto& item : selection_)
-		list.push_back(context_->map().getObject(type, item.index));
+		if ((o = context_->map().object(type, item.index)))
+			list.push_back(o);
 
 	// If no objects were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0)
-		list.push_back(context_->map().getObject(type, hilight_.index));
+		if ((o = context_->map().object(type, hilight_.index)))
+			list.push_back(o);
 
 	return list;
 }
 
-/* ItemSelection::migrate
- * Converts the selection from [from_edit_mode] to one appropriate
- * for [to_edit_mode]
- * For example, selecting a sector and then switching to lines mode
- * will select all its lines
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Converts the selection from [from_edit_mode] to one appropriate for
+// [to_edit_mode].
+// For example, selecting a sector and then switching to lines mode will select
+// all its lines
+// -----------------------------------------------------------------------------
 void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 {
 	std::set<MapEditor::Item> new_selection;
@@ -594,9 +624,10 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 			// To lines mode
 			else if (to_edit_mode == Mode::Lines && baseItemType(item.type) == ItemType::Side)
 			{
-				auto side = context_->map().getSide(item.index);
-				if (!side) continue;
-				new_selection.insert({ (int)side->getParentLine()->getIndex(), ItemType::Line });
+				auto side = context_->map().side(item.index);
+				if (!side)
+					continue;
+				new_selection.insert({ (int)side->parentLine()->index(), ItemType::Line });
 			}
 		}
 	}
@@ -617,26 +648,26 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 			// Line
 			else if (baseItemType(item.type) == ItemType::Line)
 			{
-				auto line = context_->map().getLine(item.index);
+				auto line  = context_->map().line(item.index);
 				auto front = line->s1();
-				auto back = line->s2();
+				auto back  = line->s2();
 
 				// Only select the visible areas -- i.e., the ones that need texturing
 				int textures = line->needsTexture();
-				if (front && textures & TEX_FRONT_UPPER)
-					new_selection.insert({ (int)front->getIndex(), ItemType::WallTop });
-				if (front && textures & TEX_FRONT_LOWER)
-					new_selection.insert({ (int)front->getIndex(), ItemType::WallBottom });
-				if (back && textures & TEX_BACK_UPPER)
-					new_selection.insert({ (int)back->getIndex(), ItemType::WallTop });
-				if (back && textures & TEX_BACK_LOWER)
-					new_selection.insert({ (int)back->getIndex(), ItemType::WallBottom });
+				if (front && textures & MapLine::Part::FrontUpper)
+					new_selection.insert({ (int)front->index(), ItemType::WallTop });
+				if (front && textures & MapLine::Part::FrontLower)
+					new_selection.insert({ (int)front->index(), ItemType::WallBottom });
+				if (back && textures & MapLine::Part::BackUpper)
+					new_selection.insert({ (int)back->index(), ItemType::WallTop });
+				if (back && textures & MapLine::Part::BackLower)
+					new_selection.insert({ (int)back->index(), ItemType::WallBottom });
 
 				// Also include any two-sided middle textures
-				if (front && (textures & TEX_FRONT_MIDDLE || !front->getTexMiddle().empty()))
-					new_selection.insert({ (int)front->getIndex(), ItemType::WallMiddle });
-				if (back && (textures & TEX_BACK_MIDDLE || !back->getTexMiddle().empty()))
-					new_selection.insert({ (int)back->getIndex(), ItemType::WallMiddle });
+				if (front && (textures & MapLine::Part::FrontMiddle || !front->texMiddle().empty()))
+					new_selection.insert({ (int)front->index(), ItemType::WallMiddle });
+				if (back && (textures & MapLine::Part::BackMiddle || !back->texMiddle().empty()))
+					new_selection.insert({ (int)back->index(), ItemType::WallMiddle });
 			}
 
 			// Thing
@@ -652,25 +683,26 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 	{
 		for (auto& item : selection_)
 		{
-			auto sector = context_->map().getSector(item.index);
-			if (!sector) continue;
+			auto sector = context_->map().sector(item.index);
+			if (!sector)
+				continue;
 
 			// To lines mode
 			if (to_edit_mode == Mode::Lines)
 			{
 				vector<MapLine*> lines;
-				sector->getLines(lines);
+				sector->putLines(lines);
 				for (auto line : lines)
-					new_selection.insert({ (int)line->getIndex(), ItemType::Line });
+					new_selection.insert({ (int)line->index(), ItemType::Line });
 			}
 
 			// To vertices mode
 			else if (to_edit_mode == Mode::Vertices)
 			{
 				vector<MapVertex*> vertices;
-				sector->getVertices(vertices);
+				sector->putVertices(vertices);
 				for (auto vertex : vertices)
-					new_selection.insert({ (int)vertex->getIndex(), ItemType::Vertex });
+					new_selection.insert({ (int)vertex->index(), ItemType::Vertex });
 			}
 
 			// To things mode
@@ -686,10 +718,11 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 	{
 		for (auto& item : selection_)
 		{
-			auto line = context_->map().getLine(item.index);
-			if (!line) continue;
-			new_selection.insert({ (int)line->v1()->getIndex(), ItemType::Vertex });
-			new_selection.insert({ (int)line->v2()->getIndex(), ItemType::Vertex });
+			auto line = context_->map().line(item.index);
+			if (!line)
+				continue;
+			new_selection.insert({ (int)line->v1()->index(), ItemType::Vertex });
+			new_selection.insert({ (int)line->v2()->index(), ItemType::Vertex });
 		}
 	}
 
@@ -697,10 +730,10 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 	selection_.assign(new_selection.begin(), new_selection.end());
 }
 
-/* ItemSelection::selectItem
- * Selects or deselects [item] depending on the value of [select] and
- * updates the current ChangeSet
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Selects or deselects [item] depending on the value of [select] and updates
+// the current ChangeSet
+// -----------------------------------------------------------------------------
 void ItemSelection::selectItem(const MapEditor::Item& item, bool select)
 {
 	// Check if already selected

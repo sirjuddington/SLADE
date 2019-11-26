@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -15,42 +15,42 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "AdvancedPrefsPanel.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // AdvancedPrefsPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// AdvancedPrefsPanel::AdvancedPrefsPanel
-//
+// -----------------------------------------------------------------------------
 // AdvancedPrefsPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 AdvancedPrefsPanel::AdvancedPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
+
+	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
 
 	// Add property grid
 	pg_cvars_ = new wxPropertyGrid(
@@ -58,114 +58,100 @@ AdvancedPrefsPanel::AdvancedPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 		-1,
 		wxDefaultPosition,
 		wxDefaultSize,
-		wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_TOOLTIPS | wxPG_HIDE_MARGIN
-	);
+		wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_TOOLTIPS | wxPG_HIDE_MARGIN);
+	pg_cvars_->SetCaptionTextColour(inactiveTextColour);
+	pg_cvars_->SetCellDisabledTextColour(inactiveTextColour);
 	sizer->Add(pg_cvars_, 1, wxEXPAND);
 
 	// Init property grid
 	refreshPropGrid();
 
-	Layout();
+	wxPanel::Layout();
 }
 
-// ----------------------------------------------------------------------------
-// AdvancedPrefsPanel::~AdvancedPrefsPanel
-//
-// AdvancedPrefsPanel class destructor
-// ----------------------------------------------------------------------------
-AdvancedPrefsPanel::~AdvancedPrefsPanel()
-{
-}
-
-// ----------------------------------------------------------------------------
-// AdvancedPrefsPanel::init
-//
+// -----------------------------------------------------------------------------
 // Initialises panel controls
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AdvancedPrefsPanel::init()
 {
 	refreshPropGrid();
 }
 
-// ----------------------------------------------------------------------------
-// AdvancedPrefsPanel::refreshPropGrid
-//
+// -----------------------------------------------------------------------------
 // Refreshes the cvars wxPropertyGrid
-// ----------------------------------------------------------------------------
-void AdvancedPrefsPanel::refreshPropGrid()
+// -----------------------------------------------------------------------------
+void AdvancedPrefsPanel::refreshPropGrid() const
 {
 	// Clear
 	pg_cvars_->Clear();
 
 	// Get list of cvars
 	vector<string> cvars;
-	get_cvar_list(cvars);
+	CVar::putList(cvars);
 	std::sort(cvars.begin(), cvars.end());
 
-	for (unsigned a = 0; a < cvars.size(); a++)
+	for (const auto& name : cvars)
 	{
 		// Get cvar
-		CVar* cvar = get_cvar(cvars[a]);
+		auto cvar = CVar::get(name);
 
 		// Add to grid depending on type
-		if (cvar->type == CVAR_BOOLEAN)
-			pg_cvars_->Append(new wxBoolProperty(cvars[a], cvars[a], cvar->GetValue().Bool));
-		else if (cvar->type == CVAR_INTEGER)
-			pg_cvars_->Append(new wxIntProperty(cvars[a], cvars[a], cvar->GetValue().Int));
-		else if (cvar->type == CVAR_FLOAT)
-			pg_cvars_->Append(new wxFloatProperty(cvars[a], cvars[a], cvar->GetValue().Float));
-		else if (cvar->type == CVAR_STRING)
-			pg_cvars_->Append(new wxStringProperty(cvars[a], cvars[a], S_FMT("%s", ((CStringCVar*)cvar)->value)));
+		if (cvar->type == CVar::Type::Boolean)
+			pg_cvars_->Append(new wxBoolProperty(name, name, cvar->getValue().Bool));
+		else if (cvar->type == CVar::Type::Integer)
+			pg_cvars_->Append(new wxIntProperty(name, name, cvar->getValue().Int));
+		else if (cvar->type == CVar::Type::Float)
+			pg_cvars_->Append(new wxFloatProperty(name, name, cvar->getValue().Float));
+		else if (cvar->type == CVar::Type::String)
+			pg_cvars_->Append(new wxStringProperty(name, name, wxString::Format("%s", ((CStringCVar*)cvar)->value)));
 	}
 
 	// Set all bool properties to use checkboxes
 	pg_cvars_->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
 }
 
-// ----------------------------------------------------------------------------
-// AdvancedPrefsPanel::applyPreferences
-//
+// -----------------------------------------------------------------------------
 // Applies preferences from the panel controls
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void AdvancedPrefsPanel::applyPreferences()
 {
 	// Get list of cvars
 	vector<string> cvars;
-	get_cvar_list(cvars);
+	CVar::putList(cvars);
 
-	for (unsigned a = 0; a < cvars.size(); a++)
+	for (const auto& name : cvars)
 	{
 		// Get cvar
-		CVar* cvar = get_cvar(cvars[a]);
+		auto cvar = CVar::get(name);
 
 		// Check if cvar value was even modified
-		if (!pg_cvars_->GetProperty(cvars[a])->HasFlag(wxPG_PROP_MODIFIED))
+		if (!pg_cvars_->GetProperty(name)->HasFlag(wxPG_PROP_MODIFIED))
 		{
 			// If unmodified, it might still have been changed in another panel, so refresh it
-			if (cvar->type == CVAR_BOOLEAN)
-				pg_cvars_->SetPropertyValue(cvars[a], cvar->GetValue().Bool);
-			else if (cvar->type == CVAR_INTEGER)
-				pg_cvars_->SetPropertyValue(cvars[a], cvar->GetValue().Int);
-			else if (cvar->type == CVAR_FLOAT)
-				pg_cvars_->SetPropertyValue(cvars[a], cvar->GetValue().Float);
-			else if (cvar->type == CVAR_STRING)
-				pg_cvars_->SetPropertyValue(cvars[a], S_FMT("%s", ((CStringCVar*)cvar)->value));
+			if (cvar->type == CVar::Type::Boolean)
+				pg_cvars_->SetPropertyValue(wxString(name), cvar->getValue().Bool);
+			else if (cvar->type == CVar::Type::Integer)
+				pg_cvars_->SetPropertyValue(wxString(name), cvar->getValue().Int);
+			else if (cvar->type == CVar::Type::Float)
+				pg_cvars_->SetPropertyValue(wxString(name), cvar->getValue().Float);
+			else if (cvar->type == CVar::Type::String)
+				pg_cvars_->SetPropertyValue(wxString(name), wxString::Format("%s", ((CStringCVar*)cvar)->value));
 
 			continue;
 		}
 
 		// Read value from grid depending on type
-		wxVariant value = pg_cvars_->GetPropertyValue(cvars[a]);
-		if (cvar->type == CVAR_INTEGER)
-			*((CIntCVar*) cvar) = value.GetInteger();
-		else if (cvar->type == CVAR_BOOLEAN)
-			*((CBoolCVar*) cvar) = value.GetBool();
-		else if (cvar->type == CVAR_FLOAT)
-			*((CFloatCVar*) cvar) = value.GetDouble();
-		else if (cvar->type == CVAR_STRING)
-			*((CStringCVar*) cvar) = value.GetString();
+		auto value = pg_cvars_->GetPropertyValue(wxString(name));
+		if (cvar->type == CVar::Type::Integer)
+			*((CIntCVar*)cvar) = value.GetInteger();
+		else if (cvar->type == CVar::Type::Boolean)
+			*((CBoolCVar*)cvar) = value.GetBool();
+		else if (cvar->type == CVar::Type::Float)
+			*((CFloatCVar*)cvar) = value.GetDouble();
+		else if (cvar->type == CVar::Type::String)
+			*((CStringCVar*)cvar) = WxUtils::strToView(value.GetString());
 
-		pg_cvars_->GetProperty(cvars[a])->SetModifiedStatus(false);
+		pg_cvars_->GetProperty(name)->SetModifiedStatus(false);
 		pg_cvars_->Refresh();
 		pg_cvars_->RefreshEditor();
 	}

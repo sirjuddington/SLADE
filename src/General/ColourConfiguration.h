@@ -1,40 +1,48 @@
+#pragma once
 
-#ifndef __COLOUR_CONFIGURATION_H__
-#define __COLOUR_CONFIGURATION_H__
-
-struct cc_col_t
-{
-	bool	exists;
-	bool	custom;
-	string	name;
-	string	group;
-	rgba_t	colour;
-	cc_col_t() { exists = false; custom = false; }
-};
+#include "OpenGL/OpenGL.h"
+#include "Utility/Colour.h"
 
 namespace ColourConfiguration
 {
-	rgba_t		getColour(string name);
-	cc_col_t	getColDef(string name);
-	void		setColour(string name, int red = -1, int green = -1, int blue = -1, int alpha = -1, int blend = -1);
+struct Colour
+{
+	bool    exists = false;
+	bool    custom = false;
+	string  name;
+	string  group;
+	ColRGBA colour;
+	bool    blend_additive;
 
-	double		getLineHilightWidth();
-	double		getLineSelectionWidth();
-	double		getFlatAlpha();
-	void		setLineHilightWidth(double mult);
-	void		setLineSelectionWidth(double mult);
-	void		setFlatAlpha(double alpha);
+	OpenGL::Blend blendMode() const { return blend_additive ? OpenGL::Blend::Additive : OpenGL::Blend::Normal; }
+};
 
+ColRGBA       colour(const string& name);
+const Colour& colDef(const string& name);
+void          setColour(
+			 const string& name,
+			 int           red            = -1,
+			 int           green          = -1,
+			 int           blue           = -1,
+			 int           alpha          = -1,
+			 bool          blend_additive = false);
 
-	bool	readConfiguration(MemChunk& mc);
-	bool	writeConfiguration(MemChunk& mc);
-	bool	init();
-	void	loadDefaults();
+void setGLColour(const string& name, float alpha_mult = 1.f);
 
-	bool	readConfiguration(string name);
-	void	getConfigurationNames(vector<string>& names);
+double lineHilightWidth();
+double lineSelectionWidth();
+double flatAlpha();
+void   setLineHilightWidth(double mult);
+void   setLineSelectionWidth(double mult);
+void   setFlatAlpha(double alpha);
 
-	void	getColourNames(vector<string>& list);
-}
+bool readConfiguration(MemChunk& mc);
+bool writeConfiguration(MemChunk& mc);
+bool init();
+void loadDefaults();
 
-#endif//__COLOUR_CONFIGURATION_H__
+bool readConfiguration(string_view name);
+void putConfigurationNames(vector<string>& names);
+
+void putColourNames(vector<string>& list);
+} // namespace ColourConfiguration

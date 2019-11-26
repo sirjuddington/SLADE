@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -14,67 +14,64 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ACSPrefsPanel.h"
-#include "Utility/SFileDialog.h"
 #include "General/UI.h"
 #include "UI/Controls/FileLocationPanel.h"
 #include "UI/WxUtils.h"
+#include "Utility/SFileDialog.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(String, path_acc)
 EXTERN_CVAR(String, path_acc_libs)
 EXTERN_CVAR(Bool, acc_always_show_output)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ACSPrefsPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ACSPrefsPanel::ACSPrefsPanel
-//
+// -----------------------------------------------------------------------------
 // ACSPrefsPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create controls
 	flp_acc_path_ = new FileLocationPanel(
 		this,
-		wxString(path_acc),
+		path_acc,
 		true,
 		"Browse For ACC Executable",
 		SFileDialog::executableExtensionString(),
-		SFileDialog::executableFileName("acc") + ";" + SFileDialog::executableFileName("bcc")
-	);
-	list_inc_paths_ = new wxListBox(this, -1, wxDefaultPosition, wxSize(-1, UI::scalePx(200)));
-	btn_incpath_add_ = new wxButton(this, -1, "Add");
-	btn_incpath_remove_ = new wxButton(this, -1, "Remove");
+		SFileDialog::executableFileName("acc") + ";" + SFileDialog::executableFileName("bcc"));
+	list_inc_paths_        = new wxListBox(this, -1, wxDefaultPosition, wxSize(-1, UI::scalePx(200)));
+	btn_incpath_add_       = new wxButton(this, -1, "Add");
+	btn_incpath_remove_    = new wxButton(this, -1, "Remove");
 	cb_always_show_output_ = new wxCheckBox(this, -1, "Always Show Compiler Output");
-	
+
 	setupLayout();
 
 	// Bind events
@@ -82,55 +79,40 @@ ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	btn_incpath_remove_->Bind(wxEVT_BUTTON, &ACSPrefsPanel::onBtnRemoveIncPath, this);
 }
 
-// ----------------------------------------------------------------------------
-// ACSPrefsPanel::~ACSPrefsPanel
-//
-// ACSPrefsPanel class destructor
-// ----------------------------------------------------------------------------
-ACSPrefsPanel::~ACSPrefsPanel()
-{
-}
-
-// ----------------------------------------------------------------------------
-// ACSPrefsPanel::init
-//
+// -----------------------------------------------------------------------------
 // Initialises panel controls
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ACSPrefsPanel::init()
 {
-	flp_acc_path_->setLocation(wxString(path_acc));
+	flp_acc_path_->setLocation(path_acc);
 	cb_always_show_output_->SetValue(acc_always_show_output);
 
 	// Populate include paths list
 	list_inc_paths_->Set(wxSplit(path_acc_libs, ';'));
 }
 
-// ----------------------------------------------------------------------------
-// ACSPrefsPanel::applyPreferences
-//
+// -----------------------------------------------------------------------------
 // Applies preferences from the panel controls
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ACSPrefsPanel::applyPreferences()
 {
-	path_acc = flp_acc_path_->location();
+	path_acc = WxUtils::strToView(flp_acc_path_->location());
 
 	// Build include paths string
-	string paths_string;
-	wxArrayString lib_paths = list_inc_paths_->GetStrings();
-	for (unsigned a = 0; a < lib_paths.size(); a++)
-		paths_string += lib_paths[a] + ";";
+	wxString paths_string;
+	auto     lib_paths = list_inc_paths_->GetStrings();
+	for (const auto& lib_path : lib_paths)
+		paths_string += lib_path + ";";
 	if (paths_string.EndsWith(";"))
 		paths_string.RemoveLast(1);
 
-	path_acc_libs = paths_string;
+	path_acc_libs          = WxUtils::strToView(paths_string);
 	acc_always_show_output = cb_always_show_output_->GetValue();
 }
 
-// ----------------------------------------------------------------------------
-// ACSPrefsPanel::setupLayout
-//
+// -----------------------------------------------------------------------------
 // Lays out the controls on the panel
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ACSPrefsPanel::setupLayout()
 {
 	// Create sizer
@@ -142,17 +124,16 @@ void ACSPrefsPanel::setupLayout()
 		WxUtils::createLabelVBox(this, "Location of acc executable:", flp_acc_path_),
 		0,
 		wxEXPAND | wxBOTTOM,
-		UI::pad()
-	);
+		UI::pad());
 
 	// Include paths
 	sizer->Add(new wxStaticText(this, -1, "Include Paths:"), 0, wxEXPAND, UI::pad());
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 1, wxEXPAND | wxBOTTOM, UI::pad());
 	hbox->Add(list_inc_paths_, 1, wxEXPAND | wxRIGHT, UI::pad());
 
 	// Add include path
-	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
+	auto vbox = new wxBoxSizer(wxVERTICAL);
 	hbox->Add(vbox, 0, wxEXPAND);
 	vbox->Add(btn_incpath_add_, 0, wxEXPAND | wxBOTTOM, UI::pad());
 
@@ -164,18 +145,16 @@ void ACSPrefsPanel::setupLayout()
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ACSPrefsPanel Class Events
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ACSPrefsPanel::onBtnAddIncPath
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Add' include path button is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ACSPrefsPanel::onBtnAddIncPath(wxCommandEvent& e)
 {
 	wxDirDialog dlg(this, "Browse for ACC Include Path");
@@ -185,11 +164,9 @@ void ACSPrefsPanel::onBtnAddIncPath(wxCommandEvent& e)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ACSPrefsPanel::onBtnRemoveIncPath
-//
+// -----------------------------------------------------------------------------
 // Called when the 'Remove' include path button is clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ACSPrefsPanel::onBtnRemoveIncPath(wxCommandEvent& e)
 {
 	if (list_inc_paths_->GetSelection() >= 0)

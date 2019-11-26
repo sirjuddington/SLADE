@@ -1,6 +1,7 @@
 
 #include "Main.h"
 #include "GLCanvas.h"
+#include "Utility/Colour.h"
 #include <SFML/Graphics/RenderTarget.hpp>
 
 
@@ -112,7 +113,7 @@ void GLCanvas::drawContent()
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	OpenGL::setColour(COL_WHITE);
+	OpenGL::setColour(ColRGBA::WHITE);
 
 	glLineWidth(2.f);
 	glEnable(GL_LINE_SMOOTH);
@@ -162,7 +163,7 @@ void GLCanvas::render()
 	SwapBuffers();
 }
 
-bool GLCanvas::activate(bool active)
+bool GLCanvas::setActive(bool active)
 {
 	return activateContext();
 }

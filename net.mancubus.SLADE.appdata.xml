@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+	<id>net.mancubus.SLADE</id>
+	<name>SLADE</name>
+	<summary>It's a Doom editor</summary>
+	<metadata_license>CC0-1.0</metadata_license>
+	<project_license>GPL-2.0</project_license>
+	<developer_name>Simon Judd</developer_name>
+	<url type="homepage">http://slade.mancubus.net/</url>
+	<url type="bugtracker">https://github.com/sirjuddington/SLADE/issues</url>
+	<description>
+		<p>
+			SLADE3 is a modern editor for Doom-engine based games and source ports. It has the ability to view, modify, and write many different game-specific formats, and even convert between some of them, or from/to other generic formats such as PNG.
+		</p>
+		<p>
+			SLADE3 can be considered a successor to both SLumpEd and SLADE - it combines the features of both, to create an all-in-one editor. Why does it keep the name of what was previously just a map editor? Because it fits :)
+		</p>
+		<p>
+			As with SLumpEd and previous versions of SLADE, SLADE3 is fully cross-platform. It can be run on various operating systems, including Windows, Linux and Mac OS/X. So no matter your preferred OS, SLADE3 is available for you.
+		</p>
+	</description>
+	<screenshots>
+		<screenshot>
+			<image>http://slade.mancubus.net/shots/gfx.png</image>
+			<caption>The basic editor view</caption>
+		</screenshot>
+		<screenshot>
+			<image>http://slade.mancubus.net/shots/textures.png</image>
+			<caption>Texture editor - also supports ZDoom TEXTURES</caption>
+		</screenshot>
+		<screenshot>
+			<image>http://slade.mancubus.net/shots/text.png</image>
+			<caption>Advanced text editor</caption>
+		</screenshot>
+		<screenshot>
+			<image>http://slade.mancubus.net/shots/ansi.png</image>
+			<caption>ANSI screen preview</caption>
+		</screenshot>
+		<screenshot>
+			<image>http://slade.mancubus.net/shots/gfxconv.png</image>
+			<caption>Convert graphics between formats/palettes</caption>
+		</screenshot>
+		<screenshot>
+			<image>http://slade.mancubus.net/shots/gfxremap.png</image>
+			<caption>Remap colours in graphics</caption>
+		</screenshot>
+		<screenshot>
+			<image>http://slade.mancubus.net/shots/map.png</image>
+			<caption>The map editor</caption>
+		</screenshot>
+		<screenshot  type="default">
+			<image>http://slade.mancubus.net/shots/map3d.png</image>
+			<caption>Map editor 3d mode</caption>
+		</screenshot>
+		<screenshot>
+			<image>http://slade.mancubus.net/shots/mapudmf.png</image>
+			<caption>UDMF format support includes ZDoom extensions</caption>
+		</screenshot>
+	</screenshots>
+	<releases>
+		<release date="2019-10-07" version="3.1.7"/>
+		<release date="2019-08-22" version="3.1.6"/>
+		<release date="2019-05-17" version="3.1.5"/>
+		<release date="2018-12-26" version="3.1.4"/>
+	</releases>
+	<content_rating type="oars-1.1" />
+</component>

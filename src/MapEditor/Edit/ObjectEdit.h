@@ -10,74 +10,68 @@ class MapThing;
 class ObjectEditGroup
 {
 public:
-	struct vertex_t
+	struct Vertex
 	{
-		fpoint2_t	position;
-		fpoint2_t	old_position;
-		MapVertex*	map_vertex;
-		bool		ignored;
-
-		vertex_t() { map_vertex = nullptr; ignored = false; }
+		Vec2d      position;
+		Vec2d      old_position;
+		MapVertex* map_vertex;
+		bool       ignored;
 	};
 
-	struct line_t
+	struct Line
 	{
-		vertex_t*	v1;
-		vertex_t*	v2;
-		MapLine*	map_line;
+		Vertex*  v1;
+		Vertex*  v2;
+		MapLine* map_line;
 
-		bool	isExtra() { return v1->ignored || v2->ignored; }
+		bool isExtra() const { return v1->ignored || v2->ignored; }
 	};
 
-	struct thing_t
+	struct Thing
 	{
-		fpoint2_t	position;
-		fpoint2_t	old_position;
-		MapThing*	map_thing;
-		int			angle;
+		Vec2d     position;
+		Vec2d     old_position;
+		MapThing* map_thing;
+		int       angle;
 	};
 
-	ObjectEditGroup();
-	~ObjectEditGroup();
+	BBox   bbox() const { return bbox_; }
+	double rotation() const { return rotation_; }
 
-	bbox_t	getBBox() { return bbox; }
-	double	getRotation() { return rotation; }
-	void	getVertices(vector<MapVertex*>& list);
-
-	void		addVertex(MapVertex* v, bool ignored = false);
-	void		addConnectedLines();
-	void		addThing(MapThing* t);
-	bool		hasLine(MapLine* l);
-	vertex_t*	findVertex(MapVertex* v);
-	void		clear();
-	void		filterObjects(bool filter);
-	void		resetPositions();
-	bool		empty() { return vertices.empty() && things.empty(); }
-	bool		getNearestLine(fpoint2_t pos, double min, fpoint2_t& v1, fpoint2_t& v2);
+	void    addVertex(MapVertex* vertex, bool ignored = false);
+	void    addConnectedLines();
+	void    addThing(MapThing* thing);
+	bool    hasLine(MapLine* line);
+	Vertex* findVertex(MapVertex* vertex);
+	void    clear();
+	void    filterObjects(bool filter);
+	void    resetPositions();
+	bool    empty() const { return vertices_.empty() && things_.empty(); }
+	bool    nearestLineEndpoints(Vec2d pos, double min, Vec2d& v1, Vec2d& v2);
+	void    putMapVertices(vector<MapVertex*>& list);
 
 	// Drawing
-	void	getVerticesToDraw(vector<fpoint2_t>& list);
-	void	getLinesToDraw(vector<line_t>& list);
-	void	getThingsToDraw(vector<thing_t>& list);
+	void putVerticesToDraw(vector<Vec2d>& list);
+	void putLinesToDraw(vector<Line>& list);
+	void putThingsToDraw(vector<Thing>& list);
 
 	// Modification
-	void	doMove(double xoff, double yoff);
-	void	doScale(double xoff, double yoff, bool left, bool top, bool right, bool bottom);
-	void	doRotate(fpoint2_t p1, fpoint2_t p2, bool lock45);
-	void	doAll(double xoff, double yoff, double xscale, double yscale, double rotation, bool mirror_x, bool mirror_y);
-	void	applyEdit();
+	void doMove(double xoff, double yoff);
+	void doScale(double xoff, double yoff, bool left, bool top, bool right, bool bottom);
+	void doRotate(Vec2d p1, Vec2d p2, bool lock45);
+	void doAll(double xoff, double yoff, double xscale, double yscale, double rotation, bool mirror_x, bool mirror_y);
+	void applyEdit();
 
 private:
-	vector<vertex_t*>	vertices;
-	vector<line_t>		lines;
-	vector<thing_t>		things;
-	bbox_t				bbox;			// Current
-	bbox_t				old_bbox;		// Before drag operation
-	bbox_t				original_bbox;	// From first init
-	double				xoff_prev;
-	double				yoff_prev;
-	double				rotation;
-	bool				mirrored;
+	vector<unique_ptr<Vertex>> vertices_;
+	vector<Line>               lines_;
+	vector<Thing>              things_;
+	BBox                       bbox_;          // Current
+	BBox                       old_bbox_;      // Before drag operation
+	BBox                       original_bbox_; // From first init
+	Vec2d                      offset_prev_ = { 0, 0 };
+	double                     rotation_    = 0;
+	bool                       mirrored_    = false;
 };
 
 #undef None
@@ -99,24 +93,43 @@ public:
 		BottomRight,
 	};
 
-	ObjectEdit(MapEditContext& context);
+	ObjectEdit(MapEditContext& context) : context_{ context } {}
 
-	ObjectEditGroup&	group() { return group_; }
-	State				state() const { return state_; }
-	bool				rotating() const { return rotating_; }
+	ObjectEditGroup& group() { return group_; }
+	State            state() const { return state_; }
+	bool             rotating() const { return rotating_; }
 
-	bool				stateLeft(bool move = true) const;
-	bool				stateTop(bool move = true) const;
-	bool				stateRight(bool move = true) const;
-	bool				stateBottom(bool move = true) const;
-	void				determineState();
+	bool stateLeft(bool move) const
+	{
+		return state_ == State::Left || state_ == State::TopLeft || state_ == State::BottomLeft
+			   || (move && state_ == State::Move);
+	}
 
-	bool				begin();
-	void				end(bool accept);
+	bool stateTop(bool move) const
+	{
+		return state_ == State::Top || state_ == State::TopLeft || state_ == State::TopRight
+			   || (move && state_ == State::Move);
+	}
+
+	bool stateRight(bool move) const
+	{
+		return state_ == State::Right || state_ == State::TopRight || state_ == State::BottomRight
+			   || (move && state_ == State::Move);
+	}
+
+	bool stateBottom(bool move) const
+	{
+		return state_ == State::Bottom || state_ == State::BottomRight || state_ == State::BottomLeft
+			   || (move && state_ == State::Move);
+	}
+
+	bool begin();
+	void end(bool accept);
+	void determineState();
 
 private:
-	MapEditContext&	context_;
-	ObjectEditGroup	group_;
-	State			state_;
-	bool			rotating_;
+	MapEditContext& context_;
+	ObjectEditGroup group_;
+	State           state_    = State::None;
+	bool            rotating_ = false;
 };

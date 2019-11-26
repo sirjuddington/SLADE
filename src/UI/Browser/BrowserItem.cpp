@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -16,110 +16,123 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "BrowserItem.h"
 #include "BrowserWindow.h"
-#include "OpenGL/Drawing.h"
-#include "OpenGL/OpenGL.h"
 #include "General/UI.h"
+#include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
+#include "OpenGL/OpenGL.h"
+#include "Utility/StringUtils.h"
 
 
-// ----------------------------------------------------------------------------
+using NameType = BrowserCanvas::NameType;
+using ItemView = BrowserCanvas::ItemView;
+
+
+// -----------------------------------------------------------------------------
 //
 // BrowserItem Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// BrowserItem::BrowserItem
-//
+// -----------------------------------------------------------------------------
 // BrowserItem class constructor
-// ----------------------------------------------------------------------------
-BrowserItem::BrowserItem(string name, unsigned index, string type) :
+// -----------------------------------------------------------------------------
+BrowserItem::BrowserItem(const wxString& name, unsigned index, const wxString& type) :
 	type_{ type },
 	name_{ name },
 	index_{ index }
 {
 }
 
-// ----------------------------------------------------------------------------
-// BrowserItem::~BrowserItem
-//
-// BrowserItem class destructor
-// ----------------------------------------------------------------------------
-BrowserItem::~BrowserItem()
-{
-	if (text_box_)
-		delete text_box_;
-}
-
-// ----------------------------------------------------------------------------
-// BrowserItem::loadImage
-//
+// -----------------------------------------------------------------------------
 // Loads the item image (base class does nothing, must be overridden by child
 // classes to be useful at all)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool BrowserItem::loadImage()
 {
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// BrowserItem::draw
-//
+// -----------------------------------------------------------------------------
 // Draws the item in a [size]x[size] box, keeping the correct aspect ratio of
 // it's image
-// ----------------------------------------------------------------------------
-void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewtype, rgba_t colour, bool text_shadow)
+// -----------------------------------------------------------------------------
+void BrowserItem::draw(
+	int            size,
+	int            x,
+	int            y,
+	Drawing::Font  font,
+	NameType       nametype,
+	ItemView       viewtype,
+	const ColRGBA& colour,
+	bool           text_shadow)
 {
 	// Determine item name string (for normal viewtype)
-	string draw_name = "";
-	if (nametype == 0)
+	string draw_name;
+	if (nametype == NameType::Normal)
 		draw_name = name_;
-	else if (nametype == 1)
-		draw_name = S_FMT("%d", index_);
+	else if (nametype == NameType::Index)
+		draw_name = fmt::format("{}", index_);
 
 	// Truncate name if needed
-	if (parent_->truncateNames() && draw_name.Length() > 8)
+	if (parent_->truncateNames() && draw_name.size() > 8)
 	{
-		draw_name.Truncate(8);
-		draw_name += "...";
+		// textures/aquatex/AQCONC13.png -> t./a./AQCONC13.png
+		// textures/AQDIRT01.png -> t./AQDIRT01.png
+		string_view draw_name_v{ draw_name };
+		if (StrUtil::contains(draw_name, '/'))
+		{
+			int    last_pos = 0;
+			string new_draw_name;
+			while (StrUtil::contains(draw_name_v.substr(last_pos), '/'))
+			{
+				new_draw_name.append(draw_name_v.substr(last_pos, 1)).append("./");
+				last_pos += draw_name_v.substr(last_pos).find('/') + 1;
+			}
+			draw_name = new_draw_name + StrUtil::afterLast(draw_name, '/');
+		}
+		else
+			draw_name = fmt::format("{}...", string_view{ draw_name.data(), 8 });
 	}
 
 	// Item name
-	if (viewtype == 0)
+	if (viewtype == ItemView::Normal)
 	{
 		if (text_shadow)
-			Drawing::drawText(draw_name, x+(size*0.5+1), y+size+5, COL_BLACK, font, Drawing::ALIGN_CENTER);
-		Drawing::drawText(draw_name, x+(size*0.5), y+size+4, colour, font, Drawing::ALIGN_CENTER);
+			Drawing::drawText(
+				draw_name, x + (size * 0.5 + 1), y + size + 5, ColRGBA::BLACK, font, Drawing::Align::Center);
+		Drawing::drawText(draw_name, x + (size * 0.5), y + size + 4, colour, font, Drawing::Align::Center);
 	}
-	else if (viewtype == 1)
+	else if (viewtype == ItemView::Tiles)
 	{
 		// Create text box if needed
 		if (!text_box_)
-			text_box_ = new TextBox(S_FMT("%d\n%s", index_, name_), font, UI::scalePx(144), UI::scalePx(16));
-		
+			text_box_ = std::make_unique<TextBox>(
+				fmt::format("{}\n{}", index_, name_.c_str()), font, UI::scalePx(144), UI::scalePx(16));
+
 		int top = y;
-		top += ((size - text_box_->getHeight()) * 0.5);
+		top += ((size - text_box_->height()) * 0.5);
 
 		if (text_shadow)
-			text_box_->draw(x + size + 9, top + 1, COL_BLACK);
+			text_box_->draw(x + size + 9, top + 1, ColRGBA::BLACK);
 		text_box_->draw(x + size + 8, top, colour);
 	}
 
@@ -128,13 +141,13 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 		return;
 
 	// Try to load image if it isn't already
-	if (!image_ || (image_ && !image_->isLoaded()))
+	if (!image_tex_ || (image_tex_ && !OpenGL::Texture::isLoaded(image_tex_)))
 		loadImage();
 
 	// If it still isn't just draw a red box with an X
-	if (!image_ || (image_ && !image_->isLoaded()))
+	if (!image_tex_ || (image_tex_ && !OpenGL::Texture::isLoaded(image_tex_)))
 	{
-		glPushAttrib(GL_ENABLE_BIT|GL_CURRENT_BIT);
+		glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
 
 		glColor3f(1, 0, 0);
 		glDisable(GL_TEXTURE_2D);
@@ -142,17 +155,17 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 		// Outline
 		glBegin(GL_LINE_LOOP);
 		glVertex2i(x, y);
-		glVertex2i(x, y+size);
-		glVertex2i(x+size, y+size);
-		glVertex2i(x+size, y);
+		glVertex2i(x, y + size);
+		glVertex2i(x + size, y + size);
+		glVertex2i(x + size, y);
 		glEnd();
 
 		// X
 		glBegin(GL_LINES);
 		glVertex2i(x, y);
-		glVertex2i(x+size, y+size);
-		glVertex2i(x, y+size);
-		glVertex2i(x+size, y);
+		glVertex2i(x + size, y + size);
+		glVertex2i(x, y + size);
+		glVertex2i(x + size, y);
 		glEnd();
 
 		glPopAttrib();
@@ -161,8 +174,9 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 	}
 
 	// Determine texture dimensions
-	double width = image_->getWidth();
-	double height = image_->getHeight();
+	auto&  tex_info = OpenGL::Texture::info(image_tex_);
+	double width    = tex_info.size.x;
+	double height   = tex_info.size.y;
 
 	// Scale up if size > 128
 	if (size > 128)
@@ -194,27 +208,21 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 	}
 
 	// Determine draw coords
-	double top = y + ((double)size * 0.5) - (height * 0.5);
+	double top  = y + ((double)size * 0.5) - (height * 0.5);
 	double left = x + ((double)size * 0.5) - (width * 0.5);
 
 	// Draw
-	image_->bind();
-	OpenGL::setColour(COL_WHITE, false);
+	OpenGL::Texture::bind(image_tex_);
+	OpenGL::setColour(ColRGBA::WHITE);
 
 	glBegin(GL_QUADS);
-	glTexCoord2f(0.0f, 0.0f);	glVertex2d(left, top);
-	glTexCoord2f(0.0f, 1.0f);	glVertex2d(left, top + height);
-	glTexCoord2f(1.0f, 1.0f);	glVertex2d(left + width, top + height);
-	glTexCoord2f(1.0f, 0.0f);	glVertex2d(left + width, top);
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex2d(left, top);
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex2d(left, top + height);
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex2d(left + width, top + height);
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex2d(left + width, top);
 	glEnd();
-}
-
-// ----------------------------------------------------------------------------
-// BrowserItem::clearImage
-//
-// Clears the item image
-// ----------------------------------------------------------------------------
-void BrowserItem::clearImage()
-{
-	if (image_) image_->clear();
 }

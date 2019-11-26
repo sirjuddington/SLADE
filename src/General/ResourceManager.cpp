@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -15,62 +15,91 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ResourceManager.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Console/Console.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/TextureXList.h"
+#include "Utility/StringUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
-ResourceManager* ResourceManager::instance_ = nullptr;
+// -----------------------------------------------------------------------------
 string ResourceManager::doom64_hash_table_[65536];
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// ----------------------------------------------------------------------------
+namespace
+{
+// ----------------------------------------------------------------------------
+// Removes all entries in resource [map] that are within [archive]
+// ----------------------------------------------------------------------------
+void removeArchiveFromMap(EntryResourceMap& map, Archive* archive)
+{
+	for (auto& i : map)
+		i.second.removeArchive(archive);
+}
+
+// ----------------------------------------------------------------------------
+// Removes [entry] from resource [map].
+// If [full_check] is true, all resources in the map are checked for the entry,
+// otherwise only the resource [name] is checked
+// ----------------------------------------------------------------------------
+void removeEntryFromMap(EntryResourceMap& map, const string& name, shared_ptr<ArchiveEntry>& entry, bool full_check)
+{
+	if (full_check)
+		for (auto& i : map)
+			i.second.remove(entry);
+	else
+		map[name].remove(entry);
+}
+} // namespace
 
 
 // ----------------------------------------------------------------------------
 //
 // EntryResource Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// EntryResource::add
-//
+// -----------------------------------------------------------------------------
 // Adds matching [entry] to the resource
-// ----------------------------------------------------------------------------
-void EntryResource::add(ArchiveEntry::SPtr& entry)
+// -----------------------------------------------------------------------------
+void EntryResource::add(shared_ptr<ArchiveEntry>& entry)
 {
-	if (entry->getParent())
+	if (entry->parent())
 		entries_.push_back(entry);
 }
 
-// ----------------------------------------------------------------------------
-// EntryResource::remove
-//
+// -----------------------------------------------------------------------------
 // Removes matching [entry] from the resource
-// ----------------------------------------------------------------------------
-void EntryResource::remove(ArchiveEntry::SPtr& entry)
+// -----------------------------------------------------------------------------
+void EntryResource::remove(shared_ptr<ArchiveEntry>& entry)
 {
 	unsigned a = 0;
 	while (a < entries_.size())
@@ -83,24 +112,40 @@ void EntryResource::remove(ArchiveEntry::SPtr& entry)
 }
 
 // ----------------------------------------------------------------------------
-// EntryResource::getEntry
-//
+// Removes any entries in the resource that are in [archive]
+// ----------------------------------------------------------------------------
+void EntryResource::removeArchive(Archive* archive)
+{
+	unsigned a = 0;
+	while (a < entries_.size())
+	{
+		if (entries_[a].expired())
+			entries_.erase(entries_.begin() + a);
+		else if (entries_[a].lock()->parent() == archive)
+			entries_.erase(entries_.begin() + a);
+		else
+			++a;
+	}
+}
+
+// ----------------------------------------------------------------------------
 // Gets the most relevant entry for this resource, depending on [priority] and
 // [nspace]. If [priority] is set, this will prioritize entries from the
 // priority archive. If [nspace] is not empty, this will prioritize entries
 // within that namespace, or if [ns_required] is true, ignore anything not in
 // [nspace]
-// ----------------------------------------------------------------------------
-ArchiveEntry* EntryResource::getEntry(Archive* priority, string nspace, bool ns_required)
+// -----------------------------------------------------------------------------
+ArchiveEntry* EntryResource::getEntry(Archive* priority, string_view nspace, bool ns_required)
 {
 	// Check resoure has any entries
 	if (entries_.empty())
 		return nullptr;
 
-	ArchiveEntry::SPtr best;
-	auto i = entries_.begin();
-	while (i != entries_.end())
+	shared_ptr<ArchiveEntry> best;
+	auto                     i = entries_.end();
+	while (i != entries_.begin())
 	{
+		--i;
 		// Check if expired
 		if (i->expired())
 		{
@@ -109,37 +154,31 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, string nspace, bool ns_
 		}
 
 		auto entry = i->lock();
-		++i;
 
 		if (!best)
 			best = entry;
 
 		// Check namespace if required
-		if (ns_required && !nspace.IsEmpty())
+		if (ns_required && !nspace.empty())
 			if (!entry->isInNamespace(nspace))
 				continue;
 
 		// Check if in priority archive (or its parent)
-		if (priority &&
-			(entry->getParent() == priority || entry->getParent()->parentArchive() == priority))
+		if (priority && (entry->parent() == priority || entry->parent()->parentArchive() == priority))
 		{
 			best = entry;
 			break;
 		}
 
 		// Check namespace
-		if (!ns_required &&
-			!nspace.IsEmpty() &&
-			!best.get()->isInNamespace(nspace) &&
-			entry.get()->isInNamespace(nspace))
+		if (!ns_required && !nspace.empty() && !best->isInNamespace(nspace) && entry->isInNamespace(nspace))
 		{
 			best = entry;
 			continue;
 		}
 
 		// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-		if (App::archiveManager().archiveIndex(best.get()->getParent()) <=
-			App::archiveManager().archiveIndex(entry.get()->getParent()))
+		if (App::archiveManager().archiveIndex(best->parent()) <= App::archiveManager().archiveIndex(entry->parent()))
 			best = entry;
 	}
 
@@ -147,58 +186,54 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, string nspace, bool ns_
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // TextureResource Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// TextureResource::add
-//
+// -----------------------------------------------------------------------------
 // Adds a texture to this resource
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureResource::add(CTexture* tex, Archive* parent)
 {
 	// Check args
-	if (!tex || !parent)
+	auto parent_shared = App::archiveManager().shareArchive(parent);
+	if (!tex || !parent_shared)
 		return;
 
-	textures_.push_back(std::make_unique<Texture>(tex, parent));
+	textures_.push_back(std::make_unique<Texture>(*tex, parent_shared));
 }
 
-// ----------------------------------------------------------------------------
-// TextureResource::remove
-//
+// -----------------------------------------------------------------------------
 // Removes any textures in this resource that are part of [parent] archive
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TextureResource::remove(Archive* parent)
 {
 	// Remove any textures with matching parent
 	auto i = textures_.begin();
 	while (i != textures_.end())
 	{
-		if (i->get()->parent == parent)
+		auto t_parent = i->get()->parent.lock().get();
+		if (!t_parent || t_parent == parent)
 			i = textures_.erase(i);
 		else
-			i++;
+			++i;
 	}
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ResourceManager Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ResourceManager::addArchive
-//
+// -----------------------------------------------------------------------------
 // Adds an archive to be managed
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ResourceManager::addArchive(Archive* archive)
 {
 	// Check archive was given
@@ -206,79 +241,105 @@ void ResourceManager::addArchive(Archive* archive)
 		return;
 
 	// Go through entries
-	vector<ArchiveEntry::SPtr> entries;
-	archive->getEntryTreeAsList(entries);
-	for (unsigned a = 0; a < entries.size(); a++)
-		addEntry(entries[a]);
+	vector<shared_ptr<ArchiveEntry>> entries;
+	archive->putEntryTreeAsList(entries);
+	for (auto& entry : entries)
+		addEntry(entry);
 
-	// Listen to the archive
-	listenTo(archive);
+	// Update entries from the archive when changed (added/removed/modified)
+	archive->signals().entry_added.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, false, true); });
+	archive->signals().entry_removed.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, true, false); });
+	archive->signals().entry_state_changed.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, true, true); });
+
+	// Update entries from the archive when renamed
+	archive->signals().entry_renamed.connect([this](Archive&, ArchiveEntry& entry, string_view prev_name) {
+		auto prev_upper   = StrUtil::upper(prev_name);
+		auto entry_shared = entry.getShared();
+		removeEntry(entry_shared, prev_upper);
+		addEntry(entry_shared);
+
+		signals_.resources_updated();
+	});
 
 	// Announce resource update
-	announce("resources_updated");
+	signals_.resources_updated();
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::removeArchive
-//
+// -----------------------------------------------------------------------------
 // Removes a managed archive
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ResourceManager::removeArchive(Archive* archive)
 {
 	// Check archive was given
 	if (!archive)
 		return;
 
-	// Go through entries
-	vector<ArchiveEntry::SPtr> entries;
-	archive->getEntryTreeAsList(entries);
-	for (unsigned a = 0; a < entries.size(); a++)
-		removeEntry(entries[a]);
+	// Remove from palettes
+	removeArchiveFromMap(palettes_, archive);
+
+	// Remove from patches
+	removeArchiveFromMap(patches_, archive);
+	removeArchiveFromMap(patches_fp_, archive);
+	removeArchiveFromMap(patches_fp_only_, archive);
+
+	// Remove from flats
+	removeArchiveFromMap(flats_, archive);
+	removeArchiveFromMap(flats_fp_, archive);
+	removeArchiveFromMap(flats_fp_only_, archive);
+
+	// Remove from stand-alone textures
+	removeArchiveFromMap(satextures_, archive);
+	removeArchiveFromMap(satextures_fp_, archive);
+
+	// Remove any textures in the archive
+	for (auto& i : textures_)
+		i.second.remove(archive);
 
 	// Announce resource update
-	announce("resources_updated");
+	signals_.resources_updated();
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::getTextureHash
-//
+// -----------------------------------------------------------------------------
 // Returns the Doom64 hash of a given texture name, computed using the same
 // hash algorithm as Doom64 EX itself
-// ----------------------------------------------------------------------------
-uint16_t ResourceManager::getTextureHash(string name)
+// -----------------------------------------------------------------------------
+uint16_t ResourceManager::getTextureHash(string_view name) const
 {
 	char str[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	for (size_t c = 0; c < name.length() && c < 8; c++)
 		str[c] = name[c];
 
 	uint32_t hash = 1315423911;
-	for(uint32_t i = 0; i < 8 && str[i] != '\0'; ++i)
+	for (uint32_t i = 0; i < 8 && str[i] != '\0'; ++i)
 		hash ^= ((hash << 5) + toupper((int)str[i]) + (hash >> 2));
 	hash %= 65536;
 	return (uint16_t)hash;
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::addEntry
-//
+// -----------------------------------------------------------------------------
 // Adds an entry to be managed
-// ----------------------------------------------------------------------------
-void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
+// -----------------------------------------------------------------------------
+void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry)
 {
 	if (!entry.get())
 		return;
 
 	// Detect type if unknown
-	if (entry->getType() == EntryType::unknownType())
-		EntryType::detectEntryType(entry.get());
+	if (entry->type() == EntryType::unknownType())
+		EntryType::detectEntryType(*entry);
 
 	// Get entry type
-	EntryType* type = entry->getType();
+	auto type = entry->type();
 
 	// Get resource name (extension cut, uppercase)
-	string name = entry->getUpperNameNoExt();
+	auto lname = entry->upperNameNoExt();
+	auto name  = StrUtil::truncate(lname, 8);
 	// Talon1024 - Get resource path (uppercase, without leading slash)
-	string path = entry->getPath(true).Upper().Mid(1);
+	auto path = entry->path(true);
+	StrUtil::upperIP(path);
+	path.erase(0, 1);
+
+	Log::debug("Adding entry {} to resource manager", path);
 
 	// Check for palette entry
 	if (type->id() == "palette")
@@ -290,45 +351,66 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		// Reject graphics that are not in a valid namespace:
 		// Patches in wads can be in the global namespace as well, and
 		// ZDoom textures can use sprites and graphics as patches
-		if (!entry->isInNamespace("global")		&& !entry->isInNamespace("patches")		&&
-		        !entry->isInNamespace("sprites")	&& !entry->isInNamespace("graphics")	&&
-		        // Stand-alone textures can also be found in the hires namespace
-		        !entry->isInNamespace("hires")		&& !entry->isInNamespace("textures")	&&
-		        // Flats are kinda boring in comparison
-		        !entry->isInNamespace("flats"))
+		if (!entry->isInNamespace("global") && !entry->isInNamespace("patches") && !entry->isInNamespace("sprites")
+			&& !entry->isInNamespace("graphics") &&
+			// Stand-alone textures can also be found in the hires namespace
+			!entry->isInNamespace("hires") && !entry->isInNamespace("textures") &&
+			// Flats are kinda boring in comparison
+			!entry->isInNamespace("flats"))
 			return;
 
+		bool addToFpOnly = true;
+
 		// Check for patch entry
-		if (type->extraProps().propertyExists("patch") || entry->isInNamespace("patches"))
+		if (type->extraProps().propertyExists("patch") || entry->isInNamespace("patches")
+			|| entry->isInNamespace("sprites"))
 		{
+			if (patches_[name].length() == 0)
+			{
+				addToFpOnly = false;
+			}
 			patches_[name].add(entry);
-			/*
-			if (name.Length() > 8) patches[name.Left(8)].add(entry);
-			if (!entry->getParent()->isTreeless())
-				patches[path].add(entry);
-			*/
+			if (!entry->parent()->isTreeless())
+			{
+				patches_fp_[path].add(entry);
+				if ((lname.size() > 8 || patches_[name].length() > 0) && addToFpOnly)
+				{
+					patches_fp_only_[path].add(entry);
+				}
+			}
 		}
+
+		addToFpOnly = true;
 
 		// Check for flat entry
 		if (type->id() == "gfx_flat" || entry->isInNamespace("flats"))
 		{
+			if (flats_[name].length() == 0)
+			{
+				addToFpOnly = false;
+			}
 			flats_[name].add(entry);
-			// if (name.Length() > 8) flats[name.Left(8)].add(entry);
-			if (!entry->getParent()->isTreeless())
-				flats_[path].add(entry);
+			if (!entry->parent()->isTreeless())
+			{
+				flats_fp_[path].add(entry);
+				if ((lname.size() > 8 || flats_[name].length() > 0) && addToFpOnly)
+				{
+					flats_fp_only_[path].add(entry);
+				}
+			}
 		}
 
 		// Check for stand-alone texture entry
 		if (entry->isInNamespace("textures") || entry->isInNamespace("hires"))
 		{
 			satextures_[name].add(entry);
-			// if (name.Length() > 8) satextures[name.Left(8)].add(entry);
-			if (!entry->getParent()->isTreeless())
-				satextures_[path].add(entry);
+			if (!entry->parent()->isTreeless())
+			{
+				satextures_fp_[path].add(entry);
+			}
 
 			// Add name to hash table
-			ResourceManager::doom64_hash_table_[getTextureHash(name)] = name;
-
+			doom64_hash_table_[getTextureHash(name)] = name;
 		}
 	}
 
@@ -346,8 +428,8 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 		{
 			Archive::SearchOptions opt;
 			opt.match_type = EntryType::fromId("pnames");
-			ArchiveEntry* pnames = entry->getParent()->findLast(opt);
-			ptable.loadPNAMES(pnames, entry->getParent());
+			auto pnames    = entry->parent()->findLast(opt);
+			ptable.loadPNAMES(pnames, entry->parent());
 		}
 
 		// Read texture list
@@ -359,85 +441,87 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 
 		// Add all textures to resources
 		CTexture* tex;
-		for (unsigned a = 0; a < tx.nTextures(); a++)
+		for (unsigned a = 0; a < tx.size(); a++)
 		{
-			tex = tx.getTexture(a);
-			textures_[tex->getName()].add(tex, entry->getParent());
+			tex = tx.texture(a);
+			textures_[tex->name()].add(tex, entry->parent());
 		}
 	}
 }
 
 // ----------------------------------------------------------------------------
-// ResourceManager::removeEntry
-//
 // Removes a managed entry
-// ----------------------------------------------------------------------------
-void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry)
+// -----------------------------------------------------------------------------
+void ResourceManager::removeEntry(shared_ptr<ArchiveEntry>& entry, string_view entry_name, bool full_check)
 {
 	if (!entry.get())
 		return;
 
 	// Get resource name (extension cut, uppercase)
-	string name = entry->getUpperNameNoExt();
-	string path = entry->getPath(true).Upper().Mid(1);
+	auto name = StrUtil::truncate(entry_name.empty() ? entry->upperNameNoExt() : entry_name, 8);
+	auto path = entry->path(true);
+	StrUtil::upperIP(path);
+	path.erase(0, 1);
+
+	Log::debug("Removing entry {} from resource manager", path);
 
 	// Remove from palettes
-	palettes_[name].remove(entry);
+	removeEntryFromMap(palettes_, name, entry, full_check);
 
 	// Remove from patches
-	patches_[name].remove(entry);
+	removeEntryFromMap(patches_, name, entry, full_check);
+	removeEntryFromMap(patches_fp_, path, entry, full_check);
+	removeEntryFromMap(patches_fp_only_, path, entry, full_check);
 
 	// Remove from flats
-	flats_[name].remove(entry);
-	flats_[path].remove(entry);
+	removeEntryFromMap(flats_, name, entry, full_check);
+	removeEntryFromMap(flats_fp_, path, entry, full_check);
+	removeEntryFromMap(flats_fp_only_, path, entry, full_check);
 
 	// Remove from stand-alone textures
-	satextures_[name].remove(entry);
-	satextures_[path].remove(entry);
+	removeEntryFromMap(satextures_, name, entry, full_check);
+	removeEntryFromMap(satextures_fp_, path, entry, full_check);
 
 	// Check for TEXTUREx entry
 	int txentry = 0;
-	if (entry->getType()->id() == "texturex")
+	if (entry->type()->id() == "texturex")
 		txentry = 1;
-	else if (entry->getType()->id() == "zdtextures")
+	else if (entry->type()->id() == "zdtextures")
 		txentry = 2;
 	if (txentry > 0)
 	{
 		// Read texture list
 		TextureXList tx;
-		PatchTable ptable;
+		PatchTable   ptable;
 		if (txentry == 1)
 			tx.readTEXTUREXData(entry.get(), ptable);
 		else
 			tx.readTEXTURESData(entry.get());
 
 		// Remove all texture resources
-		for (unsigned a = 0; a < tx.nTextures(); a++)
-			textures_[tx.getTexture(a)->getName()].remove(entry->getParent());
+		for (unsigned a = 0; a < tx.size(); a++)
+			textures_[tx.texture(a)->name()].remove(entry->parent());
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::listAllPatches
-//
+// -----------------------------------------------------------------------------
 // Dumps all patch names and the number of matching entries for each
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ResourceManager::listAllPatches()
 {
-	EntryResourceMap::iterator i = patches_.begin();
-	while (i != patches_.end())
+	for (auto& i : patches_)
 	{
-		LOG_MESSAGE(1, "%s (%d)", i->first, i->second.length());
-		i++;
+		if (i.second.length() == 0)
+			continue;
+
+		Log::info("{} ({})", i.first, i.second.length());
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::getAllPatchEntries
-//
+// -----------------------------------------------------------------------------
 // Adds all current patch entries to [list]
-// ----------------------------------------------------------------------------
-void ResourceManager::getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority)
+// -----------------------------------------------------------------------------
+void ResourceManager::putAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath)
 {
 	for (auto& i : patches_)
 	{
@@ -445,14 +529,22 @@ void ResourceManager::getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* p
 		if (entry)
 			list.push_back(entry);
 	}
+
+	if (!fullPath)
+		return;
+
+	for (auto& i : patches_fp_only_)
+	{
+		auto entry = i.second.getEntry(priority);
+		if (entry)
+			list.push_back(entry);
+	}
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::getAllTextures
-//
+// -----------------------------------------------------------------------------
 // Adds all current textures to [list]
-// ----------------------------------------------------------------------------
-void ResourceManager::getAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore)
+// -----------------------------------------------------------------------------
+void ResourceManager::putAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore)
 {
 	// Add all primary textures to the list
 	for (auto& i : textures_)
@@ -462,50 +554,46 @@ void ResourceManager::getAllTextures(vector<TextureResource::Texture*>& list, Ar
 			continue;
 
 		// Go through resource textures
-		TextureResource::Texture* res = i.second.textures_[0].get();
+		auto res = i.second.textures_[0].get();
 		for (int a = 0; a < i.second.length(); a++)
 		{
 			res = i.second.textures_[a].get();
 
 			// Skip if it's in the 'ignore' archive
-			if (res->parent == ignore)
+			auto res_parent = res->parent.lock().get();
+			if (!res_parent || res_parent == ignore)
 				continue;
 
 			// If it's in the 'priority' archive, exit loop
-			if (priority && i.second.textures_[a].get()->parent == priority)
+			if (priority && res_parent == priority)
 				break;
 
 			// Otherwise, if it's in a 'later' archive than the current resource, set it
-			if (App::archiveManager().archiveIndex(res->parent) <=
-			        App::archiveManager().archiveIndex(i.second.textures_[a].get()->parent))
+			if (App::archiveManager().archiveIndex(res_parent) <= App::archiveManager().archiveIndex(res_parent))
 				res = i.second.textures_[a].get();
 		}
 
 		// Add texture resource to the list
-		if (res->parent != ignore)
+		if (res->parent.lock().get() != ignore)
 			list.push_back(res);
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::getAllTextureNames
-//
+// -----------------------------------------------------------------------------
 // Adds all current texture names to [list]
-// ----------------------------------------------------------------------------
-void ResourceManager::getAllTextureNames(vector<string>& list)
+// -----------------------------------------------------------------------------
+void ResourceManager::putAllTextureNames(vector<string>& list)
 {
 	// Add all primary textures to the list
 	for (auto& i : textures_)
-		if (i.second.length() > 0)	// Ignore if no entries
+		if (i.second.length() > 0) // Ignore if no entries
 			list.push_back(i.first);
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::getAllFlatEntries
-//
+// -----------------------------------------------------------------------------
 // Adds all current flat entries to [list]
-// ----------------------------------------------------------------------------
-void ResourceManager::getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority)
+// -----------------------------------------------------------------------------
+void ResourceManager::putAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath)
 {
 	for (auto& i : flats_)
 	{
@@ -513,111 +601,134 @@ void ResourceManager::getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* pr
 		if (entry)
 			list.push_back(entry);
 	}
+
+	if (!fullPath)
+		return;
+
+	for (auto& i : flats_fp_only_)
+	{
+		auto entry = i.second.getEntry(priority);
+		if (entry)
+			list.push_back(entry);
+	}
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::getAllFlatNames
-//
+// -----------------------------------------------------------------------------
 // Adds all current flat names to [list]
-// ----------------------------------------------------------------------------
-void ResourceManager::getAllFlatNames(vector<string>& list)
+// -----------------------------------------------------------------------------
+void ResourceManager::putAllFlatNames(vector<string>& list)
 {
 	// Add all primary flats to the list
 	for (auto& i : flats_)
-		if (i.second.length() > 0)	// Ignore if no entries
+		if (i.second.length() > 0) // Ignore if no entries
 			list.push_back(i.first);
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::getPaletteEntry
-//
+// -----------------------------------------------------------------------------
 // Returns the most appropriate managed resource entry for [palette], or
 // nullptr if no match found
-// ----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getPaletteEntry(string palette, Archive* priority)
+// -----------------------------------------------------------------------------
+ArchiveEntry* ResourceManager::getPaletteEntry(string_view palette, Archive* priority)
 {
-	return palettes_[palette.Upper()].getEntry(priority);
+	return palettes_[StrUtil::upper(palette)].getEntry(priority);
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::getPatchEntry
-//
+// -----------------------------------------------------------------------------
 // Returns the most appropriate managed resource entry for [patch],
 // or nullptr if no match found
-// ----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getPatchEntry(string patch, string nspace, Archive* priority)
+// -----------------------------------------------------------------------------
+ArchiveEntry* ResourceManager::getPatchEntry(string_view patch, string_view nspace, Archive* priority)
 {
 	// Are we wanting to use a flat as a patch?
-	if (!nspace.CmpNoCase("flats"))
+	if (StrUtil::equalCI(nspace, "flats"))
 		return getFlatEntry(patch, priority);
 
 	// Are we wanting to use a stand-alone texture as a patch?
-	if (!nspace.CmpNoCase("textures"))
+	if (StrUtil::equalCI(nspace, "textures"))
 		return getTextureEntry(patch, "textures", priority);
 
-	return patches_[patch.Upper()].getEntry(priority, nspace, true);
+	auto patch_upper = StrUtil::upper(patch);
+	auto entry       = patches_[patch_upper].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	entry = patches_fp_[patch_upper].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	return nullptr;
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::getFlatEntry
-//
+// -----------------------------------------------------------------------------
 // Returns the most appropriate managed resource entry for [flat], or nullptr
 // if no match found
-// ----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getFlatEntry(string flat, Archive* priority)
+// -----------------------------------------------------------------------------
+ArchiveEntry* ResourceManager::getFlatEntry(string_view flat, Archive* priority)
 {
 	// Check resource with matching name exists
-	EntryResource& res = flats_[flat.Upper()];
-	if (res.entries_.size() == 0)
-		return nullptr;
+	auto  flat_upper = StrUtil::upper(flat);
+	auto& res        = flats_[flat_upper];
 
 	// Return most relevant entry
-	return res.getEntry(priority);
+	auto entry = res.getEntry(priority);
+	if (entry)
+		return entry;
+
+	entry = flats_fp_[flat_upper].getEntry(priority, "flats", true);
+	if (entry)
+		return entry;
+
+	return nullptr;
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::getTextureEntry
-//
+// -----------------------------------------------------------------------------
 // Returns the most appropriate managed resource entry for [texture], or
 // nullptr if no match found
-// ----------------------------------------------------------------------------
-ArchiveEntry* ResourceManager::getTextureEntry(string texture, string nspace, Archive* priority)
+// -----------------------------------------------------------------------------
+ArchiveEntry* ResourceManager::getTextureEntry(string_view texture, string_view nspace, Archive* priority)
 {
-	return satextures_[texture.Upper()].getEntry(priority, nspace, true);
+	auto tex_upper = StrUtil::upper(texture);
+	auto entry     = satextures_[tex_upper].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	entry = satextures_fp_[tex_upper].getEntry(priority, nspace, true);
+	if (entry)
+		return entry;
+
+	return nullptr;
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::getTexture
-//
+// -----------------------------------------------------------------------------
 // Returns the most appropriate managed texture for [texture], or nullptr if no
 // match found
-// ----------------------------------------------------------------------------
-CTexture* ResourceManager::getTexture(string texture, Archive* priority, Archive* ignore)
+// -----------------------------------------------------------------------------
+CTexture* ResourceManager::getTexture(string_view texture, Archive* priority, Archive* ignore)
 {
 	// Check texture resource with matching name exists
-	TextureResource& res = textures_[texture.Upper()];
-	if (res.textures_.size() == 0)
+	auto& res = textures_[StrUtil::upper(texture)];
+	if (res.textures_.empty())
 		return nullptr;
 
 	// Go through resource textures
-	CTexture* tex = &res.textures_[0].get()->tex;
-	Archive* parent = res.textures_[0].get()->parent;
-	for (unsigned a = 0; a < res.textures_.size(); a++)
+	auto tex    = &res.textures_[0]->tex;
+	auto parent = res.textures_[0]->parent.lock().get();
+	for (auto& res_tex : res.textures_)
 	{
 		// Skip if it's in the 'ignore' archive
-		if (res.textures_[a].get()->parent == ignore)
+		auto rt_parent = res_tex->parent.lock().get();
+		if (!rt_parent || rt_parent == ignore)
 			continue;
 
 		// If it's in the 'priority' archive, return it
-		if (priority && res.textures_[a].get()->parent == priority)
-			return &res.textures_[a].get()->tex;
+		if (priority && rt_parent == priority)
+			return &res_tex->tex;
 
 		// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-		if (App::archiveManager().archiveIndex(parent) <=
-		        App::archiveManager().archiveIndex(res.textures_[a].get()->parent))
+		if (App::archiveManager().archiveIndex(parent) <= App::archiveManager().archiveIndex(rt_parent))
 		{
-			tex = &res.textures_[a].get()->tex;
-			parent = res.textures_[a].get()->parent;
+			tex    = &res_tex->tex;
+			parent = rt_parent;
 		}
 	}
 
@@ -628,57 +739,28 @@ CTexture* ResourceManager::getTexture(string texture, Archive* priority, Archive
 		return nullptr;
 }
 
-// ----------------------------------------------------------------------------
-// ResourceManager::onAnnouncement
-//
-// Called when an announcement is recieved from any managed archive
-// ----------------------------------------------------------------------------
-void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+void ResourceManager::updateEntry(ArchiveEntry& entry, bool remove, bool add)
 {
-	event_data.seek(0, SEEK_SET);
+	auto sptr = entry.getShared();
+	if (remove)
+		removeEntry(sptr);
+	if (add)
+		addEntry(sptr);
 
-	// An entry is modified
-	if (event_name == "entry_state_changed")
-	{
-		wxUIntPtr ptr;
-		event_data.read(&ptr, sizeof(wxUIntPtr), 4);
-		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
-		auto esp = entry->getParent()->entryAtPathShared(entry->getPath(true));
-		removeEntry(esp);
-		addEntry(esp);
-		announce("resources_updated");
-	}
-
-	// An entry is removed or renamed
-	if (event_name == "entry_removing" || event_name == "entry_renaming")
-	{
-		wxUIntPtr ptr;
-		event_data.read(&ptr, sizeof(wxUIntPtr), sizeof(int));
-		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
-		auto esp = entry->getParent()->entryAtPathShared(entry->getPath(true));
-		removeEntry(esp);
-		announce("resources_updated");
-	}
-
-	// An entry is added
-	if (event_name == "entry_added")
-	{
-		wxUIntPtr ptr;
-		event_data.read(&ptr, sizeof(wxUIntPtr), 4);
-		ArchiveEntry* entry = (ArchiveEntry*)wxUIntToPtr(ptr);
-		auto esp = entry->getParent()->entryAtPathShared(entry->getPath(true));
-		addEntry(esp);
-		announce("resources_updated");
-	}
+	signals_.resources_updated();
 }
 
 
-
+// -----------------------------------------------------------------------------
+//
+// Console Commands
+//
+// -----------------------------------------------------------------------------
 
 
 CONSOLE_COMMAND(list_res_patches, 0, false)
 {
-	theResourceManager->listAllPatches();
+	App::resources().listAllPatches();
 }
 
 #include "App.h"
@@ -690,23 +772,23 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 
 	long times[5];
 
-	for (unsigned t = 0; t < 5; t++)
+	for (long& time : times)
 	{
 		auto start = App::runTimer();
 		for (unsigned a = 0; a < 100; a++)
 		{
-			theResourceManager->getAllPatchEntries(list, nullptr);
+			App::resources().putAllPatchEntries(list, nullptr);
 			list.clear();
 		}
 		for (unsigned a = 0; a < 100; a++)
 		{
-			theResourceManager->getAllFlatEntries(list, nullptr);
+			App::resources().putAllFlatEntries(list, nullptr);
 			list.clear();
 		}
 		auto end = App::runTimer();
-		times[t] = end - start;
+		time     = end - start;
 	}
 
 	float avg = float(times[0] + times[1] + times[2] + times[3] + times[4]) / 5.0f;
-	Log::console(S_FMT("Test took %dms avg", (int)avg));
+	Log::console(fmt::format("Test took {}ms avg", (int)avg));
 }

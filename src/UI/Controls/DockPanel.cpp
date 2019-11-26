@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -15,47 +15,41 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "DockPanel.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // DockPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// DockPanel::DockPanel
-//
+// -----------------------------------------------------------------------------
 // DockPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 DockPanel::DockPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
-	// Init variables
-	current_layout_ = Orient::Normal;
-
 	// Size event
-	Bind(wxEVT_SIZE, [&](wxSizeEvent& e)
-	{
+	Bind(wxEVT_SIZE, [&](wxSizeEvent& e) {
 		// Get parent's AUI manager (if it exists)
-		wxAuiManager* mgr = wxAuiManager::GetManager(GetParent());
+		auto mgr = wxAuiManager::GetManager(GetParent());
 		if (!mgr)
 		{
 			e.Skip();
@@ -65,7 +59,8 @@ DockPanel::DockPanel(wxWindow* parent) : wxPanel(parent, -1)
 		// Check if floating
 		if (mgr->GetPane(this).IsFloating())
 		{
-			if (current_layout_ != Orient::Normal) layoutNormal();
+			if (current_layout_ != Orient::Normal)
+				layoutNormal();
 			current_layout_ = Orient::Normal;
 		}
 		else
@@ -73,12 +68,14 @@ DockPanel::DockPanel(wxWindow* parent) : wxPanel(parent, -1)
 			// Not floating, layout horizontally or vertically depending on size
 			if (GetSize().x >= GetSize().y)
 			{
-				if (current_layout_ != Orient::Horizontal) layoutHorizontal();
+				if (current_layout_ != Orient::Horizontal)
+					layoutHorizontal();
 				current_layout_ = Orient::Horizontal;
 			}
 			else
 			{
-				if (current_layout_ != Orient::Vertical) layoutVertical();
+				if (current_layout_ != Orient::Vertical)
+					layoutVertical();
 				current_layout_ = Orient::Vertical;
 			}
 		}

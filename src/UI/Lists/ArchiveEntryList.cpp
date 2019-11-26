@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -15,100 +15,91 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ArchiveEntryList.h"
-#include "Graphics/Icons.h"
 #include "General/ColourConfiguration.h"
 #include "General/UndoRedo.h"
+#include "Graphics/Icons.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
-CVAR(Int, elist_colname_width, 80, CVAR_SAVE)
-CVAR(Int, elist_colsize_width, 64, CVAR_SAVE)
-CVAR(Int, elist_coltype_width, 160, CVAR_SAVE)
-CVAR(Int, elist_colindex_width, 64, CVAR_SAVE)
-CVAR(Bool, elist_colsize_show, true, CVAR_SAVE)
-CVAR(Bool, elist_coltype_show, true, CVAR_SAVE)
-CVAR(Bool, elist_colindex_show, false, CVAR_SAVE)
-CVAR(Bool, elist_hrules, false, CVAR_SAVE)
-CVAR(Bool, elist_vrules, false, CVAR_SAVE)
-CVAR(Bool, elist_filter_dirs, false, CVAR_SAVE)
-CVAR(Bool, elist_type_bgcol, false, CVAR_SAVE)
-CVAR(Float, elist_type_bgcol_intensity, 0.18, CVAR_SAVE)
-CVAR(Bool, elist_name_monospace, false, CVAR_SAVE)
-CVAR(Bool, elist_alt_row_colour, false, CVAR_SAVE)
+// -----------------------------------------------------------------------------
+CVAR(Int, elist_colname_width, 80, CVar::Flag::Save)
+CVAR(Int, elist_colsize_width, 64, CVar::Flag::Save)
+CVAR(Int, elist_coltype_width, 160, CVar::Flag::Save)
+CVAR(Int, elist_colindex_width, 64, CVar::Flag::Save)
+CVAR(Bool, elist_colsize_show, true, CVar::Flag::Save)
+CVAR(Bool, elist_coltype_show, true, CVar::Flag::Save)
+CVAR(Bool, elist_colindex_show, false, CVar::Flag::Save)
+CVAR(Bool, elist_hrules, false, CVar::Flag::Save)
+CVAR(Bool, elist_vrules, false, CVar::Flag::Save)
+CVAR(Bool, elist_filter_dirs, false, CVar::Flag::Save)
+CVAR(Bool, elist_type_bgcol, false, CVar::Flag::Save)
+CVAR(Float, elist_type_bgcol_intensity, 0.18, CVar::Flag::Save)
+CVAR(Bool, elist_name_monospace, false, CVar::Flag::Save)
+CVAR(Bool, elist_alt_row_colour, false, CVar::Flag::Save)
 wxDEFINE_EVENT(EVT_AEL_DIR_CHANGED, wxCommandEvent);
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, list_font_monospace)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ArchiveEntryList Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::ArchiveEntryList
-//
+// -----------------------------------------------------------------------------
 // ArchiveEntryList class constructor
-// ----------------------------------------------------------------------------
- ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
+// -----------------------------------------------------------------------------
+ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 {
-	// Init variables
-	archive = nullptr;
-	filter_category = "";
-	current_dir = nullptr;
-	show_dir_back = false;
-	undo_manager = nullptr;
-	entries_update = true;
-
 	// Create dummy 'up folder' entry
-	entry_dir_back = new ArchiveEntry();
-	entry_dir_back->setType(EntryType::folderType());
-	entry_dir_back->setState(0);
-	entry_dir_back->setName("..");
+	entry_dir_back_ = std::make_unique<ArchiveEntry>();
+	entry_dir_back_->setType(EntryType::folderType());
+	entry_dir_back_->setState(ArchiveEntry::State::Unmodified);
+	entry_dir_back_->setName("..");
 
 	// Setup columns
 	setupColumns();
 
 	// Setup entry icons
-	auto image_list = WxUtils::createSmallImageList();
-	wxArrayString et_icon_list = EntryType::iconList();
-	for (size_t a = 0; a < et_icon_list.size(); a++)
+	auto image_list   = WxUtils::createSmallImageList();
+	auto et_icon_list = EntryType::iconList();
+	for (const auto& name : et_icon_list)
 	{
-		if (image_list->Add(Icons::getIcon(Icons::ENTRY, et_icon_list[a])) < 0)
-			image_list->Add(Icons::getIcon(Icons::ENTRY, "default"));
+		if (image_list->Add(Icons::getIcon(Icons::Entry, name)) < 0)
+			image_list->Add(Icons::getIcon(Icons::Entry, "default"));
 	}
 
-	SetImageList(image_list, wxIMAGE_LIST_SMALL);
+	wxListCtrl::SetImageList(image_list, wxIMAGE_LIST_SMALL);
 
 	// Bind events
 	Bind(wxEVT_LIST_COL_RIGHT_CLICK, &ArchiveEntryList::onColumnHeaderRightClick, this);
@@ -120,25 +111,13 @@ EXTERN_CVAR(Bool, list_font_monospace)
 	SetSingleStyle(wxLC_VRULES, elist_vrules);
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::~ArchiveEntryList
-//
-// ArchiveEntryList class destructor
-// ----------------------------------------------------------------------------
-ArchiveEntryList::~ArchiveEntryList()
-{
-	delete entry_dir_back;
-}
-
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::getItemText
-//
+// -----------------------------------------------------------------------------
 // Called when the widget requests the text for [item] at [column]
-// ----------------------------------------------------------------------------
-string ArchiveEntryList::getItemText(long item, long column, long index) const
+// -----------------------------------------------------------------------------
+wxString ArchiveEntryList::itemText(long item, long column, long index) const
 {
 	// Get entry
-	ArchiveEntry* entry = getEntry(index, false);
+	auto entry = entryAt(index, false);
 
 	// Check entry
 	if (!entry)
@@ -148,80 +127,76 @@ string ArchiveEntryList::getItemText(long item, long column, long index) const
 	int col = columnType(column);
 
 	if (col == 0)
-		return entry->getName();	// Name column
+		return entry->name(); // Name column
 	else if (col == 1)
 	{
 		// Size column
-		if (entry->getType() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 		{
 			// Entry is a folder, return the number of entries+subdirectories in it
-			ArchiveTreeNode* dir = nullptr;
+			ArchiveDir* dir = nullptr;
 
 			// Get selected directory
-			if (entry == entry_dir_back)
-				dir = (ArchiveTreeNode*)current_dir->getParent();	// If it's the 'back directory', get the current dir's parent
-			else
-				dir = archive->getDir(entry->getName(), current_dir);
+			if (entry == entry_dir_back_.get())
+				dir = current_dir_.lock()->parent().get(); // If it's the 'back directory', get the current dir's parent
+			else if (auto archive = archive_.lock())
+				dir = archive->dirAtPath(entry->name(), current_dir_.lock().get());
 
 			// If it's null, return error
 			if (!dir)
 				return "INVALID DIRECTORY";
 
 			// Return the number of items in the directory
-			return S_FMT("%d entries", dir->numEntries() + dir->nChildren());
+			return wxString::Format("%d entries", dir->numEntries() + dir->numSubdirs());
 		}
 		else
-			return entry->getSizeString();	// Not a folder, just return the normal size string
+			return entry->sizeString(); // Not a folder, just return the normal size string
 	}
 	else if (col == 2)
-		return entry->getTypeString();	// Type column
+		return entry->typeString(); // Type column
 	else if (col == 3)
 	{
 		// Index column
-		if (entry->getType() == EntryType::folderType())
+		if (entry->type() == EntryType::folderType())
 			return "";
 		else
-			return S_FMT("%d", entry->getParentDir()->entryIndex(entry));
+			return wxString::Format("%d", entry->index());
 	}
 	else
-		return "INVALID COLUMN";		// Invalid column
+		return "INVALID COLUMN"; // Invalid column
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::getItemIcon
-//
+// -----------------------------------------------------------------------------
 // Called when the widget requests the icon for [item]
-// ----------------------------------------------------------------------------
-int ArchiveEntryList::getItemIcon(long item, long column, long index) const
+// -----------------------------------------------------------------------------
+int ArchiveEntryList::itemIcon(long item, long column, long index) const
 {
 	if (column > 0)
 		return -1;
 
 	// Get associated entry
-	ArchiveEntry* entry = getEntry(item);
+	auto entry = entryAt(item);
 
 	// If entry doesn't exist, return invalid image
 	if (!entry)
 		return -1;
 
-	return entry->getType()->index();
+	return entry->type()->index();
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::updateItemAttr
-//
+// -----------------------------------------------------------------------------
 // Called when widget requests the attributes
 // (text colour / background colour / font) for [item]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 {
 	// Get associated entry
-	ArchiveEntry* entry = getEntry(item);
+	auto entry = entryAt(item);
 
 	// Init attributes
-	wxColour col_bg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX);
-	item_attr->SetTextColour(WXCOL(ColourConfiguration::getColour("error")));
-	item_attr->SetBackgroundColour(col_bg);
+	auto col_bg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX);
+	item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("error")));
+	item_attr_->SetBackgroundColour(col_bg);
 
 	// If entry doesn't exist, return error colour
 	if (!entry)
@@ -229,81 +204,69 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 
 	// Set font
 	if (elist_name_monospace && !list_font_monospace)
-		item_attr->SetFont((column == 0) ? *font_monospace : *font_normal);
+		item_attr_->SetFont((column == 0) ? font_monospace_ : font_normal_);
 	else
-		item_attr->SetFont(list_font_monospace ? *font_monospace : *font_normal);
+		item_attr_->SetFont(list_font_monospace ? font_monospace_ : font_normal_);
 
 	// Set background colour defined in entry type (if any)
-	rgba_t col = entry->getType()->colour();
+	auto col = entry->type()->colour();
 	if ((col.r != 255 || col.g != 255 || col.b != 255) && elist_type_bgcol)
 	{
-		rgba_t bcol;
+		ColRGBA bcol;
 
 		bcol.r = (col.r * elist_type_bgcol_intensity) + (col_bg.Red() * (1.0 - elist_type_bgcol_intensity));
 		bcol.g = (col.g * elist_type_bgcol_intensity) + (col_bg.Green() * (1.0 - elist_type_bgcol_intensity));
 		bcol.b = (col.b * elist_type_bgcol_intensity) + (col_bg.Blue() * (1.0 - elist_type_bgcol_intensity));
 
-		item_attr->SetBackgroundColour(WXCOL(bcol));
+		item_attr_->SetBackgroundColour(WXCOL(bcol));
 	}
 
 	// Alternating row colour
 	if (elist_alt_row_colour && item % 2 > 0)
 	{
-		wxColour dark = item_attr->GetBackgroundColour().ChangeLightness(95);
-		item_attr->SetBackgroundColour(dark);
+		auto dark = item_attr_->GetBackgroundColour().ChangeLightness(95);
+		item_attr_->SetBackgroundColour(dark);
 	}
 
 	// Set colour depending on entry state
-	switch (entry->getState())
+	switch (entry->state())
 	{
-	case 1:
-		item_attr->SetTextColour(WXCOL(ColourConfiguration::getColour("modified")));
+	case ArchiveEntry::State::Modified:
+		item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("modified")));
 		break;
-	case 2:
-		item_attr->SetTextColour(WXCOL(ColourConfiguration::getColour("new")));
-		break;
-	default:
-		item_attr->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
-		break;
+	case ArchiveEntry::State::New: item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("new"))); break;
+	default: item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
 	};
 
 	// Locked state overrides others
 	if (entry->isLocked())
-		item_attr->SetTextColour(WXCOL(ColourConfiguration::getColour("locked")));
+		item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("locked")));
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::setArchive
-//
+// -----------------------------------------------------------------------------
 // Sets the archive for this widget to handle (can be NULL for no archive)
-// ----------------------------------------------------------------------------
-void ArchiveEntryList::setArchive(Archive* archive)
+// -----------------------------------------------------------------------------
+void ArchiveEntryList::setArchive(const shared_ptr<Archive>& archive)
 {
-	// Stop listening to current archive (if any)
-	if (this->archive)
-		stopListening(this->archive);
-
 	// Set archive (allow null)
-	this->archive = archive;
+	archive_ = archive;
 
 	// Init new archive if given
 	if (archive)
 	{
-		// Listen to it
-		listenTo(archive);
+		// Update list when archive is modified
+		sc_archive_modified_ = archive->signals().modified.connect([this](Archive&) { applyFilter(); });
 
 		// Open root directory
-		current_dir = archive->rootDir();
+		current_dir_ = archive->rootDir();
 		applyFilter();
 		updateList();
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::setupColumns
-//
+// -----------------------------------------------------------------------------
 // Creates/sets the list columns depending on user options
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ArchiveEntryList::setupColumns()
 {
 	// Remove existing columns
@@ -312,30 +275,30 @@ void ArchiveEntryList::setupColumns()
 
 	// Create columns
 	int col_num = 0;
-	col_index = -1;
-	col_name = 0;
-	col_size = -1;
-	col_type = -1;
+	col_index_  = -1;
+	col_name_   = 0;
+	col_size_   = -1;
+	col_type_   = -1;
 
 	// Index
 	if (elist_colindex_show)
 	{
 		AppendColumn("#");
 		SetColumnWidth(col_num, elist_colindex_width);
-		col_index = col_num++;
+		col_index_ = col_num++;
 	}
 
 	// Name (always)
 	AppendColumn("Name");
 	SetColumnWidth(col_num, elist_colname_width);
-	col_name = col_num++;
+	col_name_ = col_num++;
 
 	// Size
 	if (elist_colsize_show)
 	{
 		AppendColumn("Size");
 		SetColumnWidth(col_num, elist_colsize_width);
-		col_size = col_num++;
+		col_size_ = col_num++;
 	}
 
 	// Type
@@ -343,45 +306,41 @@ void ArchiveEntryList::setupColumns()
 	{
 		AppendColumn("Type");
 		SetColumnWidth(col_num, elist_coltype_width);
-		col_type = col_num++;
+		col_type_ = col_num++;
 	}
 
 	// Set editable
-	setColumnEditable(col_name);	// Name column
+	setColumnEditable(col_name_); // Name column
 
 	// Reset sorting
-	sort_column = -1;
-	sort_descend = false;
+	sort_column_  = -1;
+	sort_descend_ = false;
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::columnType
-//
+// -----------------------------------------------------------------------------
 // Returns the 'type' of column at [column] (name, size or type)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int ArchiveEntryList::columnType(int column) const
 {
-	if (column == col_name)
+	if (column == col_name_)
 		return 0;
-	else if (column == col_size)
+	else if (column == col_size_)
 		return 1;
-	else if (column == col_type)
+	else if (column == col_type_)
 		return 2;
-	else if (column == col_index)
+	else if (column == col_index_)
 		return 3;
 
 	return -1;
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::updateList
-//
+// -----------------------------------------------------------------------------
 // Updates + refreshes the list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ArchiveEntryList::updateList(bool clear)
 {
 	// If no current directory, set size to 0
-	if (!current_dir)
+	if (!current_dir_.lock())
 	{
 		SetItemCount(0);
 		Refresh();
@@ -389,40 +348,36 @@ void ArchiveEntryList::updateList(bool clear)
 	}
 
 	// Update list
-	SetItemCount(items.size());
+	SetItemCount(items_.size());
 	sortItems();
 
 	Refresh();
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::filterList
-//
+// -----------------------------------------------------------------------------
 // Filters the list to only entries and directories with names matching
 // [filter], and with type categories matching [category].
-// ----------------------------------------------------------------------------
-void ArchiveEntryList::filterList(string filter, string category)
+// -----------------------------------------------------------------------------
+void ArchiveEntryList::filterList(const wxString& filter, const wxString& category)
 {
 	// Update variables
-	filter_text = filter;
-	filter_category = category;
+	filter_text_     = filter;
+	filter_category_ = category;
 
 	// Save current selection
-	vector<ArchiveEntry*> selection = getSelectedEntries();
-	ArchiveEntry* focus = getFocusedEntry();
+	auto selection = selectedEntries();
+	auto focus     = focusedEntry();
 
 	// Apply the filter
 	clearSelection();
 	applyFilter();
 
-	// Restore selection (if selected entries aren't filtered)
-	ArchiveEntry* entry = nullptr;
 	for (int a = 0; a < GetItemCount(); a++)
 	{
-		entry = getEntry(a, false);
-		for (unsigned b = 0; b < selection.size(); b++)
+		auto entry = entryAt(a, false);
+		for (auto& selected_entry : selection)
 		{
-			if (entry == selection[b])
+			if (entry == selected_entry)
 			{
 				selectItem(a);
 				break;
@@ -437,23 +392,25 @@ void ArchiveEntryList::filterList(string filter, string category)
 	}
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::applyFilter
-//
+// -----------------------------------------------------------------------------
 // Applies the current filter(s) to the list
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ArchiveEntryList::applyFilter()
 {
+	auto dir = current_dir_.lock();
+	if (!dir)
+		return;
+
 	// Clear current filter list
-	items.clear();
+	items_.clear();
 
 	// Check if any filters were given
-	if (filter_text.IsEmpty() && filter_category.IsEmpty())
+	if (filter_text_.IsEmpty() && filter_category_.IsEmpty())
 	{
 		// No filter, just refresh the list
-		unsigned count = current_dir->numEntries() + current_dir->nChildren();
+		unsigned count = dir->numEntries() + dir->numSubdirs();
 		for (unsigned a = 0; a < count; a++)
-			items.push_back(a);
+			items_.push_back(a);
 		updateList();
 
 		return;
@@ -461,51 +418,55 @@ void ArchiveEntryList::applyFilter()
 
 	// Filter by category
 	unsigned index = 0;
-	ArchiveEntry* entry = getEntry(index, false);
+	auto     entry = entryAt(index, false);
 	while (entry)
 	{
-		if (filter_category.IsEmpty() || entry->getType() == EntryType::folderType())
-			items.push_back(index);	// If no category specified, just add all entries to the filter
+		if (filter_category_.IsEmpty() || entry->type() == EntryType::folderType())
+			items_.push_back(index); // If no category specified, just add all entries to the filter
 		else
 		{
 			// Check for category match
-			if (S_CMPNOCASE(entry->getType()->category(), filter_category))
-				items.push_back(index);
+			if (StrUtil::equalCI(entry->type()->category(), filter_category_.ToStdString()))
+				items_.push_back(index);
 		}
 
-		entry = getEntry(++index, false);
+		entry = entryAt(++index, false);
 	}
 
 	// Now filter by name if needed
-	if (!filter_text.IsEmpty())
+	if (!filter_text_.IsEmpty())
 	{
 		// Split filter by ,
-		wxArrayString terms = wxSplit(filter_text, ',');
+		auto terms = StrUtil::split(filter_text_.ToStdString(), ',');
 
 		// Process filter strings
-		for (unsigned a = 0; a < terms.size(); a++)
+		for (auto& term : terms)
 		{
 			// Remove spaces
-			terms[a].Replace(" ", "");
+			StrUtil::replaceIP(term, " ", "");
 
-			// Set to lowercase and add * to the end
-			if (!terms[a].IsEmpty()) terms[a] = terms[a].Lower() + "*";
+			// Set to uppercase and add * to the end
+			if (!term.empty())
+			{
+				StrUtil::upperIP(term);
+				term += "*";
+			}
 		}
 
 		// Go through filtered list
-		for (unsigned a = 0; a < items.size(); a++)
+		for (unsigned a = 0; a < items_.size(); a++)
 		{
-			entry = getEntry(items[a], false);
+			entry = entryAt(items_[a], false);
 
 			// Don't filter folders if !elist_filter_dirs
-			if (!elist_filter_dirs && entry->getType() == EntryType::folderType())
+			if (!elist_filter_dirs && entry->type() == EntryType::folderType())
 				continue;
 
 			// Check for name match with filter
 			bool match = false;
-			for (unsigned b = 0; b < terms.size(); b++)
+			for (const auto& term : terms)
 			{
-				if (entry == entry_dir_back || entry->getName().Lower().Matches(terms[b]))
+				if (entry == entry_dir_back_.get() || StrUtil::matches(entry->upperName(), term))
 				{
 					match = true;
 					continue;
@@ -515,7 +476,7 @@ void ArchiveEntryList::applyFilter()
 				continue;
 
 			// No match, remove from filtered list
-			items.erase(items.begin() + a);
+			items_.erase(items_.begin() + a);
 			a--;
 		}
 	}
@@ -524,19 +485,17 @@ void ArchiveEntryList::applyFilter()
 	updateList();
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::setDir
-//
+// -----------------------------------------------------------------------------
 // Opens the given directory (if it exists)
-// ----------------------------------------------------------------------------
-bool ArchiveEntryList::setDir(ArchiveTreeNode* dir)
+// -----------------------------------------------------------------------------
+bool ArchiveEntryList::setDir(const shared_ptr<ArchiveDir>& dir)
 {
 	// If it doesn't exist, do nothing
 	if (!dir)
 		return false;
 
 	// Set current dir
-	current_dir = dir;
+	current_dir_ = dir;
 
 	// Clear current selection
 	clearSelection();
@@ -554,161 +513,148 @@ bool ArchiveEntryList::setDir(ArchiveTreeNode* dir)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::goUpDir
-//
+// -----------------------------------------------------------------------------
 // Opens the parent directory of the current directory (if it exists)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool ArchiveEntryList::goUpDir()
 {
 	// Get parent directory
-	return (setDir((ArchiveTreeNode*)current_dir->getParent()));
+	return setDir(current_dir_.lock()->parent());
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::entrySize
-//
+// -----------------------------------------------------------------------------
 // Returns either the size of the entry at [index], or if it is a folder, the
 // number of entries+subfolders within it
-// ----------------------------------------------------------------------------
-int ArchiveEntryList::entrySize(long index)
+// -----------------------------------------------------------------------------
+int ArchiveEntryList::entrySize(long index) const
 {
-	ArchiveEntry* entry = getEntry(index, false);
-	if (entry->getType() == EntryType::folderType())
+	auto entry = entryAt(index, false);
+	if (entry->type() == EntryType::folderType())
 	{
-		ArchiveTreeNode* dir = archive->getDir(entry->getName(), current_dir);
-		if (dir)
-			return dir->numEntries() + dir->nChildren();
-		else
-			return 0;
+		auto dir = archive_.lock()->dirAtPath(entry->name(), current_dir_.lock().get());
+		return dir ? dir->numEntries() + dir->numSubdirs() : 0;
 	}
 	else
-		return entry->getSize();
+		return entry->size();
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::sortItems
-//
+// -----------------------------------------------------------------------------
 // Sorts the list items depending on the current sorting column
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ArchiveEntryList::sortItems()
 {
-	lv_current = this;
-	std::sort(items.begin(), items.end(), [&](long left, long right)
-	{
-		auto le = getEntry(left, false);
-		auto re = getEntry(right, false);
+	lv_current_ = this;
+	std::sort(items_.begin(), items_.end(), [&](long left, long right) {
+		auto le = entryAt(left, false);
+		auto re = entryAt(right, false);
 
 		// Sort folder->entry first
-		if (le->getType() == EntryType::folderType() && re->getType() != EntryType::folderType())
+		if (le->type() == EntryType::folderType() && re->type() != EntryType::folderType())
 			return true;
-		if (re->getType() == EntryType::folderType() && le->getType() != EntryType::folderType())
+		if (re->type() == EntryType::folderType() && le->type() != EntryType::folderType())
 			return false;
 
 		// Name sort
-		if (col_name >= 0 && col_name == sortColumn())
-			return sort_descend ? le->getName() > re->getName() : le->getName() < re->getName();
+		if (col_name_ >= 0 && col_name_ == sortColumn())
+			return sort_descend_ ? le->name() > re->name() : le->name() < re->name();
 
 		// Size sort
-		if (col_size >= 0 && col_size == sortColumn())
-			return sort_descend ? entrySize(left) > entrySize(right) : entrySize(left) < entrySize(right);
+		if (col_size_ >= 0 && col_size_ == sortColumn())
+			return sort_descend_ ? entrySize(left) > entrySize(right) : entrySize(left) < entrySize(right);
 
 		// Index sort
-		if (col_index >= 0 && col_index == sortColumn())
-			return sort_descend ? left > right : left < right;
+		if (col_index_ >= 0 && col_index_ == sortColumn())
+			return sort_descend_ ? left > right : left < right;
 
 		// Other (default) sort
 		return VirtualListView::defaultSort(left, right);
 	});
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::entriesBegin
-//
+// -----------------------------------------------------------------------------
 // Returns the index of the first list item that is an entry (rather than a
 // directory), or -1 if no directory/archive is open)
-// ----------------------------------------------------------------------------
-int ArchiveEntryList::entriesBegin()
+// -----------------------------------------------------------------------------
+int ArchiveEntryList::entriesBegin() const
 {
 	// Check directory is open
-	if (!current_dir)
+	auto dir = current_dir_.lock();
+	if (!dir)
 		return -1;
 
 	// Determine first entry index
 	int index = 0;
-	if (show_dir_back && current_dir->getParent())		// Offset if '..' item exists
+	if (show_dir_back_ && dir->parent()) // Offset if '..' item exists
 		index++;
-	index += current_dir->nChildren();					// Offset by number of subdirs
+	index += dir->numSubdirs(); // Offset by number of subdirs
 
 	return index;
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::getEntry
-//
+// -----------------------------------------------------------------------------
 // Returns the ArchiveEntry associated with the list item at [index].
 // Returns NULL if the index is out of bounds or no archive is open
-// ----------------------------------------------------------------------------
-ArchiveEntry* ArchiveEntryList::getEntry(int index, bool filtered) const
+// -----------------------------------------------------------------------------
+ArchiveEntry* ArchiveEntryList::entryAt(int index, bool filtered) const
 {
 	// Check index & archive
-	if (index < 0 || !archive)
+	auto dir = current_dir_.lock();
+	if (index < 0 || !archive_.lock() || !dir)
 		return nullptr;
 
 	// Modify index for filtered list
 	if (filtered)
 	{
-		if ((unsigned)index >= items.size())
+		if ((unsigned)index >= items_.size())
 			return nullptr;
 		else
-			index = items[index];
+			index = items_[index];
 	}
 
 	// Index modifier if 'up folder' entry exists
-	if (show_dir_back && current_dir->getParent())
+	if (show_dir_back_ && dir->parent())
 	{
 		if (index == 0)
-			return entry_dir_back;
+			return entry_dir_back_.get();
 		else
 			index--;
 	}
 
 	// Subdirectories
-	int subdirs = current_dir->nChildren();
+	int subdirs = dir->numSubdirs();
 	if (index < subdirs)
-		return ((ArchiveTreeNode*)(current_dir->getChild(index)))->dirEntry();
+		return dir->subdirAt(index)->dirEntry();
 
 	// Entries
-	if ((unsigned)index < subdirs + current_dir->numEntries())
-		return current_dir->entryAt(index - subdirs);
+	if ((unsigned)index < subdirs + dir->numEntries())
+		return dir->entryAt(index - subdirs);
 
 	// Out of bounds
 	return nullptr;
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::getEntryIndex
-//
+// -----------------------------------------------------------------------------
 // Returns the ArchiveEntry index associated with the list item at [index].
 // Returns -1 if the index is out of bounds or no archive is open
-// ----------------------------------------------------------------------------
-int ArchiveEntryList::getEntryIndex(int index, bool filtered)
+// -----------------------------------------------------------------------------
+int ArchiveEntryList::entryIndexAt(int index, bool filtered)
 {
 	// Check index & archive
-	if (index < 0 || !archive)
+	auto dir = current_dir_.lock();
+	if (index < 0 || !archive_.lock() || !dir)
 		return -1;
 
 	// Modify index for filtered list
 	if (filtered)
 	{
-		if ((unsigned)index >= items.size())
+		if ((unsigned)index >= items_.size())
 			return -1;
 		else
-			index = items[index];
+			index = items_[index];
 	}
 
 	// Index modifier if 'up folder' entry exists
-	if (show_dir_back && current_dir->getParent())
+	if (show_dir_back_ && dir->parent())
 	{
 		if (index == 0)
 			return -1;
@@ -717,105 +663,95 @@ int ArchiveEntryList::getEntryIndex(int index, bool filtered)
 	}
 
 	// Entries
-	int subdirs = current_dir->nChildren();
-	if ((unsigned)index < subdirs + current_dir->numEntries())
+	int subdirs = dir->numSubdirs();
+	if ((unsigned)index < subdirs + dir->numEntries())
 		return index - subdirs;
 
 	// Out of bounds or subdir
 	return -1;
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::getFocusedEntry
-//
+// -----------------------------------------------------------------------------
 // Gets the archive entry associated with the currently focused list item.
 // Returns NULL if nothing is focused or no archive is open
-// ----------------------------------------------------------------------------
-ArchiveEntry* ArchiveEntryList::getFocusedEntry()
+// -----------------------------------------------------------------------------
+ArchiveEntry* ArchiveEntryList::focusedEntry() const
 {
 	// Get the focus index
-	int focus = getFocus();
+	int focus = focusedIndex();
 
 	// Check that the focus index is valid
 	if (focus < 0 || focus > GetItemCount())
 		return nullptr;
 
 	// Return the focused archive entry
-	if (archive)
-		return getEntry(focus);
+	if (archive_.lock())
+		return entryAt(focus);
 	else
 		return nullptr;
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::getSelectedEntries
-//
+// -----------------------------------------------------------------------------
 // Returns a vector of all selected archive entries
-// ----------------------------------------------------------------------------
-vector<ArchiveEntry*> ArchiveEntryList::getSelectedEntries()
+// -----------------------------------------------------------------------------
+vector<ArchiveEntry*> ArchiveEntryList::selectedEntries() const
 {
 	// Init vector
 	vector<ArchiveEntry*> ret;
 
 	// Return empty if no archive open
-	if (!archive)
+	if (!archive_.lock())
 		return ret;
-
-	// Get selection
-	vector<long> selection = getSelection();
 
 	// Go through selection and add associated entries to the return vector
 	ArchiveEntry* entry = nullptr;
-	for (size_t a = 0; a < selection.size(); a++)
+	for (long index : selection())
 	{
-		entry = getEntry(selection[a]);
-		if (entry && entry->getType() != EntryType::folderType())
+		entry = entryAt(index);
+		if (entry && entry->type() != EntryType::folderType())
 			ret.push_back(entry);
 	}
 
 	return ret;
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::getLastSelectedEntry
-//
+// -----------------------------------------------------------------------------
 // Gets the archive entry associated with the last selected item in the list.
 // Returns NULL if no item is selected
-// ----------------------------------------------------------------------------
-ArchiveEntry* ArchiveEntryList::getLastSelectedEntry()
+// -----------------------------------------------------------------------------
+ArchiveEntry* ArchiveEntryList::lastSelectedEntry() const
 {
-	int index = getLastSelected();
+	int index = lastSelected();
 
-	if (index >= 0 && archive)
-		return getEntry(index);
+	if (index >= 0 && archive_.lock())
+		return entryAt(index);
 	else
 		return nullptr;
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::getSelectedDirectories
-//
+// -----------------------------------------------------------------------------
 // Returns a vector of all currently selected directories
-// ----------------------------------------------------------------------------
-vector<ArchiveTreeNode*> ArchiveEntryList::getSelectedDirectories()
+// -----------------------------------------------------------------------------
+vector<ArchiveDir*> ArchiveEntryList::selectedDirectories() const
 {
-	vector<ArchiveTreeNode*> ret;
+	vector<ArchiveDir*> ret;
 
-	// Get all selected items
-	vector<long> selection = getSelection();
+	if (!archive_.lock())
+		return ret;
 
 	// Go through the selection
-	for (size_t a = 0; a < selection.size(); a++)
+	for (long index : selection())
 	{
-		ArchiveEntry* entry = getEntry(selection[a]);
+		auto entry = entryAt(index);
 
 		// If the selected entry is the 'back folder', ignore it
-		if (entry == entry_dir_back)
+		if (entry == entry_dir_back_.get())
 			continue;
-		else if (entry->getType() == EntryType::folderType())
+
+		if (entry->type() == EntryType::folderType())
 		{
 			// If the entry is a folder type, get its ArchiveTreeNode counterpart
-			ArchiveTreeNode* dir = archive->getDir(entry->getName(), current_dir);
+			auto dir = archive_.lock()->dirAtPath(entry->name(), current_dir_.lock().get());
 
 			// Add it to the return list
 			if (dir)
@@ -826,55 +762,37 @@ vector<ArchiveTreeNode*> ArchiveEntryList::getSelectedDirectories()
 	return ret;
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::labelEdited
-//
+// -----------------------------------------------------------------------------
 // Called when a label has been edited
-// ----------------------------------------------------------------------------
-void ArchiveEntryList::labelEdited(int col, int index, string new_label)
+// -----------------------------------------------------------------------------
+void ArchiveEntryList::labelEdited(int col, int index, const wxString& new_label)
 {
-	if (undo_manager)
-		undo_manager->beginRecord("Rename Entry");
+	if (undo_manager_)
+		undo_manager_->beginRecord("Rename Entry");
 
 	// Rename the entry
-	ArchiveEntry* entry = getEntry(index);
-	if (entry->getParent())
-		entry->getParent()->renameEntry(entry, new_label);
+	auto entry = entryAt(index);
+	if (entry->parent())
+		entry->parent()->renameEntry(entry, new_label.ToStdString());
 	else
-		entry->rename(new_label);
+		entry->rename(new_label.ToStdString());
 
-	if (undo_manager)
-		undo_manager->endRecord(true);
+	if (undo_manager_)
+		undo_manager_->endRecord(true);
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::onAnnouncement
-//
-// Called when an announcement is recieved from the archive being managed
-// ----------------------------------------------------------------------------
-void ArchiveEntryList::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
-{
-	if (entries_update && announcer == archive && event_name != "closed")
-	{
-		//updateList();
-		applyFilter();
-	}
-}
-
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::handleAction
-//
+// -----------------------------------------------------------------------------
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
-// ----------------------------------------------------------------------------
-bool ArchiveEntryList::handleAction(string id)
+// -----------------------------------------------------------------------------
+bool ArchiveEntryList::handleAction(string_view id)
 {
 	// Don't handle action if hidden
 	if (!IsShown())
 		return false;
 
 	// Only interested in actions beginning with aelt_
-	if (!id.StartsWith("aelt_"))
+	if (!StrUtil::startsWith(id, "aelt_"))
 		return false;
 
 	if (id == "aelt_sizecol")
@@ -936,18 +854,16 @@ bool ArchiveEntryList::handleAction(string id)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ARCHIVEENTRYLIST EVENTS
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::onColumnHeaderRightClick
-//
+// -----------------------------------------------------------------------------
 // Called when a column header is right clicked
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ArchiveEntryList::onColumnHeaderRightClick(wxListEvent& e)
 {
 	// Create simple popup menu with options to toggle columns
@@ -959,64 +875,61 @@ void ArchiveEntryList::onColumnHeaderRightClick(wxListEvent& e)
 	SAction::fromId("aelt_vrules")->addToMenu(&popup, true);
 	SAction::fromId("aelt_bgcolour")->addToMenu(&popup, true);
 	SAction::fromId("aelt_bgalt")->addToMenu(&popup, true);
-	popup.Check(SAction::fromId("aelt_indexcol")->getWxId(), elist_colindex_show);
-	popup.Check(SAction::fromId("aelt_sizecol")->getWxId(), elist_colsize_show);
-	popup.Check(SAction::fromId("aelt_typecol")->getWxId(), elist_coltype_show);
-	popup.Check(SAction::fromId("aelt_hrules")->getWxId(), elist_hrules);
-	popup.Check(SAction::fromId("aelt_vrules")->getWxId(), elist_vrules);
-	popup.Check(SAction::fromId("aelt_bgcolour")->getWxId(), elist_type_bgcol);
-	popup.Check(SAction::fromId("aelt_bgalt")->getWxId(), elist_alt_row_colour);
+	popup.Check(SAction::fromId("aelt_indexcol")->wxId(), elist_colindex_show);
+	popup.Check(SAction::fromId("aelt_sizecol")->wxId(), elist_colsize_show);
+	popup.Check(SAction::fromId("aelt_typecol")->wxId(), elist_coltype_show);
+	popup.Check(SAction::fromId("aelt_hrules")->wxId(), elist_hrules);
+	popup.Check(SAction::fromId("aelt_vrules")->wxId(), elist_vrules);
+	popup.Check(SAction::fromId("aelt_bgcolour")->wxId(), elist_type_bgcol);
+	popup.Check(SAction::fromId("aelt_bgalt")->wxId(), elist_alt_row_colour);
 
 	// Pop it up
 	PopupMenu(&popup);
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::onColumnResize
-//
+// -----------------------------------------------------------------------------
 // Called when a column is resized
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ArchiveEntryList::onColumnResize(wxListEvent& e)
 {
 	// Save column widths
-	elist_colname_width = GetColumnWidth(col_name);
+	elist_colname_width = GetColumnWidth(col_name_);
 	if (elist_colsize_show)
-		elist_colsize_width = GetColumnWidth(col_size);
+		elist_colsize_width = GetColumnWidth(col_size_);
 	if (elist_coltype_show)
-		elist_coltype_width = GetColumnWidth(col_type);
+		elist_coltype_width = GetColumnWidth(col_type_);
 	if (elist_colindex_show)
-		elist_colindex_width = GetColumnWidth(col_index);
+		elist_colindex_width = GetColumnWidth(col_index_);
 	e.Skip();
 }
 
-// ----------------------------------------------------------------------------
-// ArchiveEntryList::onListItemActivated
-//
+// -----------------------------------------------------------------------------
 // Called when a list item is 'activated' (double-click or enter)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void ArchiveEntryList::onListItemActivated(wxListEvent& e)
 {
 	// Get item entry
-	ArchiveEntry* entry = getEntry(e.GetIndex());
+	auto entry = entryAt(e.GetIndex());
 
 	// Do nothing if NULL (shouldn't be)
-	if (!entry)
+	auto current_dir = current_dir_.lock();
+	if (!entry || !archive_.lock() || !current_dir)
 		return;
 
 	// If it's a folder, open it
-	if (entry->getType() == EntryType::folderType())
+	if (entry->type() == EntryType::folderType())
 	{
 		// Get directory to open
-		ArchiveTreeNode* dir = nullptr;
-		if (entry == entry_dir_back)
-			dir = (ArchiveTreeNode*)current_dir->getParent();	// 'Back directory' entry, open current dir's parent
+		shared_ptr<ArchiveDir> dir;
+		if (entry == entry_dir_back_.get())
+			dir = current_dir->parent(); // 'Back directory' entry, open current dir's parent
 		else
-			dir = archive->getDir(entry->getName(), current_dir);
+			dir = ArchiveDir::subdirAtPath(current_dir, entry->name());
 
 		// Check it exists (really should)
 		if (!dir)
 		{
-			LOG_MESSAGE(1, "Error: Trying to open nonexistant directory");
+			Log::error("Error: Trying to open nonexistant directory");
 			return;
 		}
 

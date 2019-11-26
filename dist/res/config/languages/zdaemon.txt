@@ -8,16 +8,16 @@ zd_patchinf {
 	case_sensitive = false;
 
 	constants = {
-		map00, map01, map02, map03, map04, map05, map06, map07, map08, map09, 
-		map10, map11, map12, map13, map14, map15, map16, map17, map18, map19, 
-		map20, map21, map22, map23, map24, map25, map26, map27, map28, map29, 
-		map30, map31, map32, map33, map34, map35, map36, map37, map38, map39, 
-		map40, map41, map42, map43, map44, map45, map46, map47, map48, map49, 
-		map50, map51, map52, map53, map54, map55, map56, map57, map58, map59, 
-		map60, map61, map62, map63, map64, map65, map66, map67, map68, map69, 
-		map70, map71, map72, map73, map74, map75, map76, map77, map78, map79, 
-		map80, map81, map82, map83, map84, map85, map86, map87, map88, map89, 	
-		map90, map91, map92, map93, map94, map95, map96, map97, map98, map99, 
+		map00, map01, map02, map03, map04, map05, map06, map07, map08, map09,
+		map10, map11, map12, map13, map14, map15, map16, map17, map18, map19,
+		map20, map21, map22, map23, map24, map25, map26, map27, map28, map29,
+		map30, map31, map32, map33, map34, map35, map36, map37, map38, map39,
+		map40, map41, map42, map43, map44, map45, map46, map47, map48, map49,
+		map50, map51, map52, map53, map54, map55, map56, map57, map58, map59,
+		map60, map61, map62, map63, map64, map65, map66, map67, map68, map69,
+		map70, map71, map72, map73, map74, map75, map76, map77, map78, map79,
+		map80, map81, map82, map83, map84, map85, map86, map87, map88, map89,
+		map90, map91, map92, map93, map94, map95, map96, map97, map98, map99,
 		E1M1, E1M2, E1M3, E1M4, E1M5, E1M6, E1M7, E1M8, E1M9,
 		E2M1, E2M2, E2M3, E2M4, E2M5, E2M6, E2M7, E2M8, E2M9,
 		E3M1, E3M2, E3M3, E3M4, E3M5, E3M6, E3M7, E3M8, E3M9,
@@ -30,14 +30,58 @@ zd_patchinf {
 	}
 
 	functions {
-		Thing_Delete = "type, [flags], [x], [y], [z]";
-		Thing_ById_Delete = "id";
-		Thing_Change = "type, flags, x, y, z, new_angle, new_type, new_flags";
-		Thing_ById_Change = "sid, new_angle, new_type, new_flags";
-		Thing_Add = "type, x, y, angle, flags";
-		Thing_AddZ = "type, x, y, z, angle, flags";
-		ThingH_Change = "type, flags, tag, special, x, y, z, new_angle, new_type, new_flags, new_tag, new_special, new_arg1, new_arg1, new_arg2, new_arg3, new_arg4, new_arg5";
-		ThingH_ById_Change = "id, new_angle, new_type, new_flags, new_tag, new_special, new_arg1, new_arg1, new_arg2, new_arg3, new_arg4, new_arg5";
-		ThingH_Add = "type, x, y, z, angle, flags, tag, special, arg1, arg2, arg3, arg4, arg5";
+		Thing_Delete
+		{
+			args = "type, [flags], [x], [y], [z]";
+			description = "x/y/z only available in map section.";
+		}
+
+		Thing_ById_Delete
+		{
+			args = "id";
+			description = "Only available in map section.";
+		}
+
+		Thing_Change
+		{
+			args = "type, flags, x, y, z, new_angle, [new_type], [new_flags]";
+			description = "Use * for x/y/z in global section.";
+		}
+
+		Thing_ById_Change
+		{
+			args = "sid, new_angle, [new_type], [new_flags]";
+			description = "Only available in map section.";
+		}
+
+		Thing_Add
+		{
+			args = "type, x, y, angle, flags";
+			description = "Only available in map section.";
+		}
+
+		Thing_AddZ
+		{
+			args = "type, x, y, z, angle, flags";
+			description = "Only available in map section.";
+		}
+
+		ThingH_Change
+		{
+			args = "type, flags, tag, special, x, y, z, new_angle, [new_type], [new_flags], [new_tag], [new_special], [new_arg1], [new_arg2], [new_arg3], [new_arg4], [new_arg5]";
+			description = "Use * for x/y/z in global section.";
+		}
+
+		ThingH_ById_Change
+		{
+			args = "id, new_angle, [new_type], [new_flags], [new_tag], [new_special], [new_arg1], [new_arg2], [new_arg3], [new_arg4], [new_arg5]";
+			description = "Only available in map section.";
+		}
+
+		ThingH_Add
+		{
+			args = "type, x, y, z, angle, flags, [tag], [special], [arg1], [arg2], [arg3], [arg4], [arg5]";
+			description = "Only available in map section.";
+		}
 	}
 }

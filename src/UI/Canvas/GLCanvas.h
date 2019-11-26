@@ -31,5 +31,5 @@ private:
 	void	render();
 
 	// sf::RenderTarget
-	bool	activate(bool active) override;
+	bool	setActive(bool active) override;
 };

@@ -1,55 +1,52 @@
-
-#ifndef __EXECUTABLES_H__
-#define __EXECUTABLES_H__
+#pragma once
 
 class Parser;
 class ParseTreeNode;
 class wxMenu;
+
 namespace Executables
 {
-	struct game_exe_t
-	{
-		string				id;
-		string				name;
-		string				exe_name;
-		string				path;
-		vector<key_value_t>	configs;
-		bool				custom;
-		vector<bool>		configs_custom;
-	};
+struct GameExe
+{
+	string             id;
+	string             name;
+	string             exe_name;
+	string             path;
+	vector<StringPair> configs;
+	bool               custom;
+	vector<bool>       configs_custom;
+};
 
-	struct external_exe_t
-	{
-		string	category;
-		string	name;
-		string	path;
-	};
+struct ExternalExe
+{
+	string category;
+	string name;
+	string path;
+};
 
-	string	writePaths();
-	string	writeExecutables();
-	void	init();
-	void	parse(Parser* p, bool custom);
+string writePaths();
+string writeExecutables();
+void   init();
+void   parse(Parser* p, bool custom);
 
-	// Game executables
-	game_exe_t*	getGameExe(string id);
-	game_exe_t*	getGameExe(unsigned index);
-	unsigned	nGameExes();
-	void		setGameExePath(string id, string path);
-	void		parseGameExe(ParseTreeNode* node, bool custom);
-	void		addGameExe(string name);
-	bool		removeGameExe(unsigned index);
-	void		addGameExeConfig(unsigned exe_index, string config_name, string config_params, bool custom = true);
-	bool		removeGameExeConfig(unsigned exe_index, unsigned config_index);
+// Game executables
+GameExe* gameExe(string_view id);
+GameExe* gameExe(unsigned index);
+unsigned nGameExes();
+void     setGameExePath(string_view id, string_view path);
+void     parseGameExe(ParseTreeNode* node, bool custom);
+void     addGameExe(string_view name);
+bool     removeGameExe(unsigned index);
+void     addGameExeConfig(unsigned exe_index, string_view config_name, string_view config_params, bool custom = true);
+bool     removeGameExeConfig(unsigned exe_index, unsigned config_index);
 
-	// External executables
-	int						nExternalExes(string category = "");
-	external_exe_t			getExternalExe(string name, string category = "");
-	vector<external_exe_t>	getExternalExes(string category = "");
-	void					parseExternalExe(ParseTreeNode* node);
-	void					addExternalExe(string name, string path, string category);
-	void					setExternalExeName(string name_old, string name_new, string category);
-	void					setExternalExePath(string name, string path, string category);
-	void					removeExternalExe(string name, string category);
-}
-
-#endif//__EXECUTABLES_H__
+// External executables
+int                 nExternalExes(string_view category = "");
+ExternalExe         externalExe(string_view name, string_view category = "");
+vector<ExternalExe> externalExes(string_view category = "");
+void                parseExternalExe(ParseTreeNode* node);
+void                addExternalExe(string_view name, string_view path, string_view category);
+void                setExternalExeName(string_view name_old, string_view name_new, string_view category);
+void                setExternalExePath(string_view name, string_view path, string_view category);
+void                removeExternalExe(string_view name, string_view category);
+} // namespace Executables

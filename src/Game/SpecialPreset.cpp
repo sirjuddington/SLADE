@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -14,113 +14,109 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "SpecialPreset.h"
+#include "App.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 using namespace Game;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 namespace Game
 {
-	vector<SpecialPreset>	custom_presets;
+vector<SpecialPreset> custom_presets;
 }
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // SpecialPreset Struct Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// SpecialPreset::parse
-//
+// -----------------------------------------------------------------------------
 // Reads a special preset definition from a parsed tree [node]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void SpecialPreset::parse(ParseTreeNode* node)
 {
-	name = node->getName();
+	name = node->name();
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto child = node->getChildPTN(a);
-		string name = child->getName();
+		auto child = node->childPTN(a);
 
 		// Group
-		if (S_CMPNOCASE(child->getName(), "group"))
+		if (StrUtil::equalCI(child->name(), "group"))
 			group = child->stringValue();
 
 		// Special
-		else if (S_CMPNOCASE(child->getName(), "special"))
+		else if (StrUtil::equalCI(child->name(), "special"))
 			special = child->intValue();
 
 		// Flags
-		else if (S_CMPNOCASE(child->getName(), "flags"))
+		else if (StrUtil::equalCI(child->name(), "flags"))
 			for (auto& flag : child->values())
-				flags.push_back(flag.getStringValue());
+				flags.push_back(flag.stringValue());
 
 		// Args
-		else if (S_CMPNOCASE(child->getName(), "arg1"))
+		else if (StrUtil::equalCI(child->name(), "arg1"))
 			args[0] = child->intValue();
-		else if (S_CMPNOCASE(child->getName(), "arg2"))
+		else if (StrUtil::equalCI(child->name(), "arg2"))
 			args[1] = child->intValue();
-		else if (S_CMPNOCASE(child->getName(), "arg3"))
+		else if (StrUtil::equalCI(child->name(), "arg3"))
 			args[2] = child->intValue();
-		else if (S_CMPNOCASE(child->getName(), "arg4"))
+		else if (StrUtil::equalCI(child->name(), "arg4"))
 			args[3] = child->intValue();
-		else if (S_CMPNOCASE(child->getName(), "arg5"))
+		else if (StrUtil::equalCI(child->name(), "arg5"))
 			args[4] = child->intValue();
 	}
 }
 
-// ----------------------------------------------------------------------------
-// SpecialPreset::write
-//
+// -----------------------------------------------------------------------------
 // Writes the special preset to a new 'preset' ParseTreeNode under [parent] and
 // returns it
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
 {
 	auto node = new ParseTreeNode(parent, nullptr, nullptr, "preset");
 	node->setName(name);
-	
+
 	// Group
-	string ex_group = group;
-	if (ex_group.StartsWith("Custom/"))
-		ex_group = ex_group.Remove(0, 7);
+	string_view ex_group = group;
+	if (StrUtil::startsWith(ex_group, "Custom/"))
+		ex_group.remove_prefix(7);
 	if (ex_group != "Custom")
 		node->addChildPTN("group")->addStringValue(ex_group);
-	
+
 	// Special
 	node->addChildPTN("special")->addIntValue(special);
 
 	// Args
 	for (unsigned a = 0; a < 5; a++)
 		if (args[a] != 0)
-			node->addChildPTN(S_FMT("arg%d", a + 1))->addIntValue(args[a]);
-	
+			node->addChildPTN(fmt::format("arg{}", a + 1))->addIntValue(args[a]);
+
 	// Flags
 	auto node_flags = node->addChildPTN("flags");
 	for (auto& flag : flags)
@@ -130,33 +126,30 @@ ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Game Namespace Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// Game::customSpecialPresets
-//
+// -----------------------------------------------------------------------------
 // Returns all loaded custom special presets
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const vector<SpecialPreset>& Game::customSpecialPresets()
 {
 	return custom_presets;
 }
 
-// ----------------------------------------------------------------------------
-// Game::loadCustomSpecialPresets
-//
+// -----------------------------------------------------------------------------
 // Loads user defined (custom) special presets from special_presets.cfg in the
-// user data directory. Returns true on success or false if loading failed
-// ----------------------------------------------------------------------------
+// user data directory.
+// Returns true on success or false if loading failed
+// -----------------------------------------------------------------------------
 bool Game::loadCustomSpecialPresets()
 {
 	// Check file exists
-	string file = App::path("special_presets.cfg", App::Dir::User);
+	auto file = App::path("special_presets.cfg", App::Dir::User);
 	if (!wxFileExists(file))
 		return true;
 
@@ -170,20 +163,20 @@ bool Game::loadCustomSpecialPresets()
 	if (!parser.parseText(mc, "special_presets.cfg"))
 		return false;
 
-	auto node = parser.parseTreeRoot()->getChildPTN("special_presets");
+	auto node = parser.parseTreeRoot()->childPTN("special_presets");
 	if (node)
 	{
 		for (unsigned a = 0; a < node->nChildren(); a++)
 		{
-			auto child = node->getChildPTN(a);
-			if (S_CMPNOCASE(child->type(), "preset"))
+			auto child = node->childPTN(a);
+			if (StrUtil::equalCI(child->type(), "preset"))
 			{
 				custom_presets.push_back({});
 				custom_presets.back().parse(child);
 
 				// Add 'Custom' to preset group
 				if (!custom_presets.back().group.empty())
-					custom_presets.back().group = S_FMT("Custom/%s", CHR(custom_presets.back().group));
+					custom_presets.back().group = fmt::format("Custom/{}", custom_presets.back().group);
 				else
 					custom_presets.back().group = "Custom";
 			}
@@ -193,12 +186,11 @@ bool Game::loadCustomSpecialPresets()
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// Game::saveCustomSpecialPresets
-//
+// -----------------------------------------------------------------------------
 // Saves all user defined (custom) special presets to special_presets.cfg in
-// the user data directory. Returns true on success or false if writing failed
-// ----------------------------------------------------------------------------
+// the user data directory.
+// Returns true on success or false if writing failed
+// -----------------------------------------------------------------------------
 bool Game::saveCustomSpecialPresets()
 {
 	if (custom_presets.empty())
@@ -243,5 +235,5 @@ CONSOLE_COMMAND(test_preset_export, 0, false)
 
 	string out;
 	root.write(out);
-	Log::console(CHR(out));
+	Log::console(out);
 }

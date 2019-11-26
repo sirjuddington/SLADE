@@ -1,33 +1,51 @@
-
-#ifndef __ENTRYDATAFORMAT_H__
-#define __ENTRYDATAFORMAT_H__
-
-#define EDF_FALSE 0
-#define EDF_UNLIKELY 64
-#define EDF_MAYBE 128
-#define EDF_PROBABLY 192
-#define EDF_TRUE 255
+#pragma once
 
 class EntryDataFormat
 {
+public:
+	// Standard values for isThisFormat return value
+	static const int MATCH_FALSE    = 0;
+	static const int MATCH_UNLIKELY = 64;
+	static const int MATCH_MAYBE    = 128;
+	static const int MATCH_PROBABLY = 192;
+	static const int MATCH_TRUE     = 255;
+
+	EntryDataFormat(string_view id) : id_{ id } {}
+	virtual ~EntryDataFormat() = default;
+
+	const string& id() const { return id_; }
+
+	virtual int isThisFormat(MemChunk& mc);
+	void        copyToFormat(EntryDataFormat& target) const;
+
+	static void             initBuiltinFormats();
+	static bool             readDataFormatDefinition(MemChunk& mc);
+	static EntryDataFormat* format(string_view id);
+	static EntryDataFormat* anyFormat();
+	static EntryDataFormat* textFormat();
+
 private:
-	string	id;
+	string id_;
 
-	// Struct to specify a range for a byte (min <= valid >= max)
+	// Struct to specify an inclusive range for a byte (min <= valid <= max)
 	// If max == min, only 1 valid value
-	struct byte_vrange_t
+	struct ByteValueRange
 	{
-		uint8_t	min;
-		uint8_t	max;
+		uint8_t min;
+		uint8_t max;
 
-		byte_vrange_t() { min = 0; max = 255; }
+		ByteValueRange()
+		{
+			min = 0;
+			max = 255;
+		}
 	};
 
 	// Struct to specify valid values for a byte at pos
-	struct byte_pattern_t
+	struct BytePattern
 	{
-		unsigned				pos;
-		vector<byte_vrange_t>	valid_values;
+		unsigned               pos;
+		vector<ByteValueRange> valid_values;
 
 		bool match(uint8_t value)
 		{
@@ -42,25 +60,8 @@ private:
 	};
 
 	// Detection
-	unsigned				size_min;
-	vector<byte_pattern_t>	patterns;
+	unsigned            size_min_ = 0;
+	vector<BytePattern> patterns_;
 	// Also needed:
 	// Some way to check more complex values (eg. multiply byte 0 and 1, result must be in a certain range)
-
-public:
-	EntryDataFormat(string id);
-	virtual ~EntryDataFormat();
-
-	const string&	getId() const { return id; }
-
-	virtual int		isThisFormat(MemChunk& mc);
-	void			copyToFormat(EntryDataFormat& target);
-
-	static void				initBuiltinFormats();
-	static bool				readDataFormatDefinition(MemChunk& mc);
-	static EntryDataFormat*	getFormat(string id);
-	static EntryDataFormat*	anyFormat();
-	static EntryDataFormat*	textFormat();
 };
-
-#endif//__ENTRYDATAFORMAT_H__

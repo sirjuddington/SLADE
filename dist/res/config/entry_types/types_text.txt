@@ -398,11 +398,14 @@ entry_types
 	}
 
 	srb2lua : text
-	{
+    	{
 		name = "Lua Script";
+		icon = "e_lua";
+		match_extorname = 1;
+		match_ext = "lua";
 		match_name = "lua_*";
 		text_language = "srb2lua";
-	}
+   	}
 
 	// ZDaemon text lumps
 	patchinf : text
@@ -416,7 +419,7 @@ entry_types
 	misctext : text
 	{
 		name = "Text";
-		match_name = "extended", "copyrite", "serial", "license", "credits", "iwadinfo", "hacx-e";
+		match_name = "extended", "copyrite", "serial", "license", "credits", "hacx-e";
 	}
 
 	shaders : text
@@ -564,6 +567,13 @@ entry_types
 		name = "ZScript";
 		section = "zscript";
 		text_language = "zscript";
+	}
+
+	iwadinfo : text
+	{
+		name = "IWAD Info";
+		match_name = "iwadinfo";
+		text_language = "z_iwadinfo";
 	}
 
 	txt : text

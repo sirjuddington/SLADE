@@ -6,14 +6,14 @@ class HudOffsetsPrefsPanel : public PrefsPanelBase
 {
 public:
 	HudOffsetsPrefsPanel(wxWindow* parent);
-	~HudOffsetsPrefsPanel();
+	~HudOffsetsPrefsPanel() = default;
 
-	void	init() override;
-	void	applyPreferences() override;
+	void init() override;
+	void applyPreferences() override;
 
 private:
-	wxCheckBox*	cb_hud_bob_;
-	wxCheckBox*	cb_hud_center_;
-	wxCheckBox*	cb_hud_statusbar_;
-	wxCheckBox*	cb_hud_wide_;
+	wxCheckBox* cb_hud_bob_       = nullptr;
+	wxCheckBox* cb_hud_center_    = nullptr;
+	wxCheckBox* cb_hud_statusbar_ = nullptr;
+	wxCheckBox* cb_hud_wide_      = nullptr;
 };

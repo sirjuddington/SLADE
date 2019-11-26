@@ -1,5 +1,6 @@
 
-acs : cstyle {
+acs : cstyle
+{
 	name = "ACS (Hexen)";
 	case_sensitive = false;
 	keyword_link = "http://zdoom.org/wiki/Special:Search/%s";
@@ -7,11 +8,13 @@ acs : cstyle {
 	function_link = "http://zdoom.org/wiki/%s";
 	blocks = "Script", "function";
 
-	keywords = {
+	keywords =
+	{
 		open, restart, script, special, str, suspend, terminate, world, 
 	}
 
-	constants = {
+	constants =
+	{
 		// General
 		TRUE, FALSE, ON, OFF, YES, NO,
 
@@ -49,7 +52,8 @@ acs : cstyle {
 		T_CENTAUR_MASH, T_THRUSTSPIKEUP, T_THRUSTSPIKEDOWN, T_FLESH_DRIP1, T_FLESH_DRIP2, T_SPARK_DRIP
 	}
 
-	functions {
+	functions
+	{
 		ACS_Execute = "script, map, arg1, arg2, arg3";
 		ACS_LockedExecute = "script, map, arg1, arg2, lock";
 		ACS_Suspend = "script, map";
@@ -152,12 +156,14 @@ acs : cstyle {
 	}
 }
 
-acs_z : acs {
+acs_z : acs
+{
 	name = "ACS (ZDoom)";
 	case_sensitive = false;
 	blocks = "Script", "Function:1";
 
-	keywords = {
+	keywords =
+	{
 		function, enter, respawn, death, lightning, unloading, disconnect, kill,
 		fixed, global, net, import, libdefine, library, nocompact, nowadauthor,
 		EncryptStrings, static, wadauthor, region, endregion,
@@ -166,7 +172,8 @@ acs_z : acs {
 		BlueReturn, RedReturn, WhiteReturn, Pickup, ClientSide
 	}
 
-	constants = {
+	constants =
+	{
 		TRUE, FALSE, ON, OFF, YES, NO, 
 
 		LINE_FRONT, LINE_BACK, SIDE_FRONT, SIDE_BACK, 
@@ -212,7 +219,8 @@ acs_z : acs {
 		CR_UNTRANSLATED, CR_BRICK, CR_TAN, CR_GRAY, CR_GREY, CR_GREEN, CR_BROWN, 
 		CR_GOLD, CR_RED, CR_BLUE, CR_ORANGE, CR_WHITE, CR_YELLOW, CR_BLACK, 
 		CR_LIGHTBLUE, CR_CREAM, CR_OLIVE, CR_DARKGREEN, CR_DARKRED, CR_DARKBROWN, 
-		CR_PURPLE, CR_DARKGRAY, CR_DARKGREY, CR_CYAN, 
+		CR_PURPLE, CR_DARKGRAY, CR_DARKGREY, CR_CYAN, CR_ICE, CR_FIRE, CR_SAPPHIRE,
+		CR_TEAL,
 
 		HUDMSG_PLAIN, HUDMSG_FADEOUT, HUDMSG_TYPEON, HUDMSG_FADEINOUT, HUDMSG_LOG, 
 		HUDMSG_COLORSTRING, HUDMSG_ADDBLEND, HUDMSG_LAYER_OVERHUD, HUDMSG_ALPHA,
@@ -956,7 +964,13 @@ acs_z : acs {
 		GetPlayerLivesLeft = "int player";
 		GetTeamProperty = "int team, int property";
 		IncrementDBEntry = "unknown parameters list";
-		IsMultiplayer;
+
+		int IsMultiplayer
+		{
+		    description = "Checks if the game is currently a multiplayer game.";
+		    deprecated = "GameType";
+		}
+
 		IsNetworkGame;
 		IsOneFlagCTF;
 		KickFromGame = "int player, str reason";
@@ -972,8 +986,18 @@ acs_z : acs {
 		RedTeamScore;
 		RequestScriptPuke = "int script, int arg0, int arg1, int arg2";
 		ResetMap;
+		SetActivatorToPlayer
+		{
+			args = "int playernumber";
+			description = "A replacement solution for AAPTR_PLAYERx that works with all 64 players instead of only 8";
+		}
 		SetDBEntry = "str table, str variable, int value";
 		SetDBEntryString = "unknown parameters list";
+		SetDeadSpectator
+		{
+			args = "int playernumber, int deadspectator";
+			description = "Turn alive players into dead spectators (deadspectator == 1) and revive dead spectators (deadspectator == 0)";
+		}
 		SetPlayerLivesLeft = "int player, int amount";
 		SinglePlayer;
 		SortDBEntries = "unknown parameters list";

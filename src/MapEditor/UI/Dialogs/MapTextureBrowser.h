@@ -1,7 +1,7 @@
+#pragma once
 
-#ifndef __MAP_TEXTURE_BROWSER_H__
-#define __MAP_TEXTURE_BROWSER_H__
-
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/MapTextureManager.h"
 #include "UI/Browser/BrowserWindow.h"
 
 class SLADEMap;
@@ -9,32 +9,42 @@ class Archive;
 
 class MapTexBrowserItem : public BrowserItem
 {
-private:
-	int	usage_count;
-
 public:
-	MapTexBrowserItem(string name, int type, unsigned index = 0);
-	~MapTexBrowserItem();
+	static const wxString TEXTURE;
+	static const wxString FLAT;
 
-	bool	loadImage();
-	string	itemInfo();
-	int		usageCount() { return usage_count; }
-	void	setUsage(int count) { usage_count = count; }
+	MapTexBrowserItem(const wxString& name, const wxString& type, unsigned index = 0);
+	~MapTexBrowserItem() = default;
+
+	bool     loadImage() override;
+	wxString itemInfo() override;
+	int      usageCount() const { return usage_count_; }
+	void     setUsage(int count) { usage_count_ = count; }
+
+private:
+	int   usage_count_ = 0;
+	Vec2d scale_       = { 1., 1. };
 };
 
 class MapTextureBrowser : public BrowserWindow
 {
-private:
-	int			type;
-	SLADEMap*	map;
-
 public:
-	MapTextureBrowser(wxWindow* parent, int type = 0, string texture = "", SLADEMap* map = nullptr);
-	~MapTextureBrowser();
+	MapTextureBrowser(
+		wxWindow*              parent,
+		MapEditor::TextureType type    = MapEditor::TextureType::Texture,
+		const wxString&        texture = "",
+		SLADEMap*              map     = nullptr);
+	~MapTextureBrowser() = default;
 
-	string	determineTexturePath(Archive* archive, uint8_t category, string type, string path);
-	void	doSort(unsigned sort_type);
-	void	updateUsage();
+	wxString determineTexturePath(
+		Archive*                    archive,
+		MapTextureManager::Category category,
+		const wxString&             type,
+		const wxString&             path) const;
+	void doSort(unsigned sort_type) override;
+	void updateUsage() const;
+
+private:
+	MapEditor::TextureType type_ = MapEditor::TextureType::Texture;
+	SLADEMap*              map_  = nullptr;
 };
-
-#endif//__MAP_TEXTURE_BROWSER_H__

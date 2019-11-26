@@ -1,67 +1,78 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    OpenGL.cpp
- * Description: OpenGL management stuff
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2019 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    OpenGL.cpp
+// Description: OpenGL management stuff
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "OpenGL.h"
+#include "General/ColourConfiguration.h"
+#include "Utility/Colour.h"
+#include "Utility/StringUtils.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-CVAR(Bool, gl_tex_enable_np2, true, CVAR_SAVE)
-CVAR(Bool, gl_point_sprite, true, CVAR_SAVE)
-CVAR(Bool, gl_tweak_accuracy, true, CVAR_SAVE)
-CVAR(Bool, gl_vbo, true, CVAR_SAVE)
-CVAR(Int, gl_depth_buffer_size, 16, CVAR_SAVE)
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+CVAR(Bool, gl_tex_enable_np2, true, CVar::Flag::Save)
+CVAR(Bool, gl_point_sprite, true, CVar::Flag::Save)
+CVAR(Bool, gl_tweak_accuracy, true, CVar::Flag::Save)
+CVAR(Bool, gl_vbo, true, CVar::Flag::Save)
+CVAR(Int, gl_depth_buffer_size, 16, CVar::Flag::Save)
 
 namespace OpenGL
 {
-	wxGLContext*	context = nullptr;
-	int				wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
-	bool			initialised = false;
-	double			version = 0;
-	unsigned		max_tex_size = 128;
-	unsigned		pow_two[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
-	uint8_t			n_pow_two = 16;
-	float			max_point_size = -1.0f;	
-	int8_t			last_blend = BLEND_NORMAL;
-	gl_info_t		info;
-}
+wxGLContext* context        = NULL;
+int          wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
+bool         initialised    = false;
+double   version        = 0;
+unsigned max_tex_size   = 128;
+unsigned pow_two[]      = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
+uint8_t  n_pow_two      = 16;
+float    max_point_size = -1.0f;
+Blend    last_blend     = Blend::Normal;
+Info     info;
+} // namespace OpenGL
 
 
-/*******************************************************************
- * OPENGL NAMESPACE FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// OpenGL Namespace Functions
+//
+// -----------------------------------------------------------------------------
 
-/* OpenGL::getContext
- * Returns the global OpenGL context, and creates it if needed
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Returns the global OpenGL context, and creates it if needed
+// -----------------------------------------------------------------------------
 wxGLContext* OpenGL::getContext(wxGLCanvas* canvas)
 {
 	if (!context)
@@ -73,93 +84,92 @@ wxGLContext* OpenGL::getContext(wxGLCanvas* canvas)
 			init();
 		}
 		else
-			LOG_MESSAGE(1, "Can't create global GL context, wxGLCanvas is hidden");
+			Log::warning("Can't create global GL context, wxGLCanvas is hidden");
 	}
 
 	return context;
 }
 
-/* OpenGL::init
- * Initialises general OpenGL variables and settings
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Initialises general OpenGL variables and settings
+// -----------------------------------------------------------------------------
 bool OpenGL::init()
 {
 	if (initialised)
 		return true;
 
-	LOG_MESSAGE(1, "Initialising OpenGL...");
+	Log::info(1, "Initialising OpenGL...");
 
 	// Get OpenGL info
-	info.vendor = wxString::From8BitData((const char*)glGetString(GL_VENDOR));
-	info.renderer = wxString::From8BitData((const char*)glGetString(GL_RENDERER));
-	info.version = wxString::From8BitData((const char*)glGetString(GL_VERSION));
-	info.extensions = wxString::From8BitData((const char*)glGetString(GL_EXTENSIONS));
+	info.vendor     = (const char*)glGetString(GL_VENDOR);
+	info.renderer   = (const char*)glGetString(GL_RENDERER);
+	info.version    = (const char*)glGetString(GL_VERSION);
+	info.extensions = (const char*)glGetString(GL_EXTENSIONS);
 
 	// Get OpenGL version
-	string temp = info.version;
-	temp.Truncate(3);
-	temp.ToDouble(&version);
-	LOG_MESSAGE(1, "OpenGL Version: %1.1f", version);
+	string_view temp{ info.version.data(), 3 };
+	StrUtil::toDouble(temp, version);
+	Log::info("OpenGL Version: {:1.1f}", version);
 
 	// Get max texture size
 	GLint val = 0;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &val);
 	max_tex_size = val;
-	LOG_MESSAGE(1, "Max Texture Size: %dx%d", max_tex_size, max_tex_size);
+	Log::info("Max Texture Size: {}x{}", max_tex_size, max_tex_size);
 
 	// Initialise GLEW
 	glewInit();
 
 	// Test extensions
-	LOG_MESSAGE(1, "Checking extensions...");
+	Log::info("Checking extensions...");
 	if (GLEW_ARB_vertex_buffer_object)
-		LOG_MESSAGE(1, "Vertex Buffer Objects supported");
+		Log::info("Vertex Buffer Objects supported");
 	else
-		LOG_MESSAGE(1, "Vertex Buffer Objects not supported");
+		Log::info("Vertex Buffer Objects not supported");
 	if (GLEW_ARB_point_sprite)
-		LOG_MESSAGE(1, "Point Sprites supported");
+		Log::info("Point Sprites supported");
 	else
-		LOG_MESSAGE(1, "Point Sprites not supported");
+		Log::info("Point Sprites not supported");
 	if (GLEW_ARB_framebuffer_object)
-		LOG_MESSAGE(1, "Framebuffer Objects supported");
+		Log::info("Framebuffer Objects supported");
 	else
-		LOG_MESSAGE(1, "Framebuffer Objects not supported");
+		Log::info("Framebuffer Objects not supported");
 
 	initialised = true;
 	return true;
 }
 
-/* OpenGL::np2TexSupport
- * Returns true if the installed OpenGL version supports non-power-
- * of-two textures, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns true if the installed OpenGL version supports non-power-of-two
+// textures, false otherwise
+// -----------------------------------------------------------------------------
 bool OpenGL::np2TexSupport()
 {
 	return GLEW_ARB_texture_non_power_of_two && gl_tex_enable_np2;
 }
 
-/* OpenGL::pointSpriteSupport
- * Returns true if the installed OpenGL version supports point
- * sprites, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns true if the installed OpenGL version supports point sprites, false
+// otherwise
+// -----------------------------------------------------------------------------
 bool OpenGL::pointSpriteSupport()
 {
 	return GLEW_ARB_point_sprite && gl_point_sprite;
 }
 
-/* OpenGL::vboSupport
- * Returns true if the installed OpenGL version supports vertex
- * buffer objects, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns true if the installed OpenGL version supports vertex buffer objects,
+// false otherwise
+// -----------------------------------------------------------------------------
 bool OpenGL::vboSupport()
 {
 	return GLEW_ARB_vertex_buffer_object && gl_vbo;
 }
 
-/* OpenGL::validTexDimension
- * Returns true if [dim] is a valid texture dimension on the system
- * OpenGL version
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns true if [dim] is a valid texture dimension on the system OpenGL
+// version
+// -----------------------------------------------------------------------------
 bool OpenGL::validTexDimension(unsigned dim)
 {
 	if (dim > max_tex_size)
@@ -178,9 +188,9 @@ bool OpenGL::validTexDimension(unsigned dim)
 		return true;
 }
 
-/* OpenGL::maxPointSize
- * Returns the implementation-dependant maximum size for GL_POINTS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the implementation-dependant maximum size for GL_POINTS
+// -----------------------------------------------------------------------------
 float OpenGL::maxPointSize()
 {
 	if (max_point_size < 0)
@@ -188,41 +198,40 @@ float OpenGL::maxPointSize()
 		GLfloat sizes[2];
 		glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, sizes);
 		max_point_size = sizes[1];
-		//LOG_MESSAGE(1, "Max GL point size %1.2f", max_point_size);
 	}
 
 	return max_point_size;
 }
 
-/* OpenGL::maxTextureSize
- * Returns the maximum texture size
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the maximum texture size
+// -----------------------------------------------------------------------------
 unsigned OpenGL::maxTextureSize()
 {
 	return max_tex_size;
 }
 
-/* OpenGL::isInitialised
- * Returns true if OpenGL has been initialised
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns true if OpenGL has been initialised
+// -----------------------------------------------------------------------------
 bool OpenGL::isInitialised()
 {
 	return initialised;
 }
 
-/* OpenGL::accuracyTweak
- * Returns true if the 'accuracy tweak' is enabled. This can fix
- * inaccuracies when rendering 2d textures, but tends to cause fonts
- * to blur when using FTGL
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns true if the 'accuracy tweak' is enabled.
+// This can fix inaccuracies when rendering 2d textures, but tends to cause
+// fonts to blur when using FTGL
+// -----------------------------------------------------------------------------
 bool OpenGL::accuracyTweak()
 {
 	return gl_tweak_accuracy;
 }
 
-/* OpenGL::getWxGLAttribs
- * Returns the GL attributes array for use with wxGLCanvas
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns the GL attributes array for use with wxGLCanvas
+// -----------------------------------------------------------------------------
 int* OpenGL::getWxGLAttribs()
 {
 	// Set specified depth buffer size
@@ -231,77 +240,77 @@ int* OpenGL::getWxGLAttribs()
 	return wx_gl_attrib;
 }
 
-/* OpenGL::setColour
- * Sets the colour to [col], and changes the colour blend mode if
- * needed and [set_blend] is true
- *******************************************************************/
-void OpenGL::setColour(rgba_t col, bool set_blend)
+// -----------------------------------------------------------------------------
+// Sets the colour to [col], and changes the colour blend mode if needed and
+// [set_blend] is true
+// -----------------------------------------------------------------------------
+void OpenGL::setColour(const ColRGBA& col, Blend blend)
 {
 	// Colour
 	glColor4ub(col.r, col.g, col.b, col.a);
 
 	// Blend
-	if (set_blend && col.blend != last_blend)
+	if (blend != Blend::Ignore && blend != last_blend)
 	{
-		if (col.blend == BLEND_NORMAL)
+		if (blend == Blend::Normal)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else if (col.blend == BLEND_ADDITIVE)
+		else if (blend == Blend::Additive)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-		last_blend = col.blend;
+		last_blend = blend;
 	}
 }
 
-/* OpenGL::setColour
- * Sets the colour to [r,g,b,a], and changes the colour blend mode to
- * [blend] if needed
- *******************************************************************/
-void OpenGL::setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a, int8_t blend)
+// -----------------------------------------------------------------------------
+// Sets the colour to [r,g,b,a], and changes the colour blend mode to [blend] if
+// needed
+// -----------------------------------------------------------------------------
+void OpenGL::setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a, Blend blend)
 {
 	// Colour
 	glColor4ub(r, g, b, a);
 
 	// Blend
-	if (blend != BLEND_IGNORE && blend != last_blend)
+	if (blend != Blend::Ignore && blend != last_blend)
 	{
-		if (blend == BLEND_NORMAL)
+		if (blend == Blend::Normal)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else if (blend == BLEND_ADDITIVE)
+		else if (blend == Blend::Additive)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 		last_blend = blend;
 	}
 }
 
-/* OpenGL::setBlend
- * Sets the colour blend mode to [blend] if needed
- *******************************************************************/
-void OpenGL::setBlend(int blend)
+// -----------------------------------------------------------------------------
+// Sets the colour blend mode to [blend] if needed
+// -----------------------------------------------------------------------------
+void OpenGL::setBlend(Blend blend)
 {
-	if (blend != BLEND_IGNORE && blend != last_blend)
+	if (blend != Blend::Ignore && blend != last_blend)
 	{
-		if (blend == BLEND_NORMAL)
+		if (blend == Blend::Normal)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else if (blend == BLEND_ADDITIVE)
+		else if (blend == Blend::Additive)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 		last_blend = blend;
 	}
 }
 
-/* OpenGL::resetBlend
- * Resets colour blending to defaults
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Resets colour blending to defaults
+// -----------------------------------------------------------------------------
 void OpenGL::resetBlend()
 {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	last_blend = BLEND_NORMAL;
+	last_blend = Blend::Normal;
 }
 
-/* OpenGL::getInfo
- * Returns OpenGL system info
- *******************************************************************/
-OpenGL::gl_info_t OpenGL::getInfo()
+// -----------------------------------------------------------------------------
+// Returns OpenGL system info
+// -----------------------------------------------------------------------------
+OpenGL::Info OpenGL::sysInfo()
 {
 	return info;
 }

@@ -1,31 +1,26 @@
-
-#ifndef __TEMP_FOLDER_WIZARD_PAGE_H__
-#define __TEMP_FOLDER_WIZARD_PAGE_H__
+#pragma once
 
 #include "WizardPageBase.h"
-#include "UI/WxBasicControls.h"
 
 class TempFolderWizardPage : public WizardPageBase
 {
-private:
-	wxRadioButton*	rb_use_system;
-	wxRadioButton*	rb_use_slade_dir;
-	wxRadioButton*	rb_use_custom_dir;
-	wxTextCtrl*		text_custom_dir;
-	wxButton*		btn_browse_dir;
-
 public:
 	TempFolderWizardPage(wxWindow* parent);
-	~TempFolderWizardPage();
+	~TempFolderWizardPage() = default;
 
-	bool	canGoNext();
-	void	applyChanges();
-	string	getTitle() { return "SLADE Temp Folder"; }
-	string	getDescription();
+	bool     canGoNext() override;
+	void     applyChanges() override;
+	wxString title() override { return "SLADE Temp Folder"; }
+	wxString description() override;
+
+private:
+	wxRadioButton* rb_use_system_     = nullptr;
+	wxRadioButton* rb_use_slade_dir_  = nullptr;
+	wxRadioButton* rb_use_custom_dir_ = nullptr;
+	wxTextCtrl*    text_custom_dir_   = nullptr;
+	wxButton*      btn_browse_dir_    = nullptr;
 
 	// Events
-	void	onRadioButtonChanged(wxCommandEvent& e);
-	void	onBtnBrowse(wxCommandEvent& e);
+	void onRadioButtonChanged(wxCommandEvent& e);
+	void onBtnBrowse(wxCommandEvent& e);
 };
-
-#endif//__TEMP_FOLDER_WIZARD_PAGE__

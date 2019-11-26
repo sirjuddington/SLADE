@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -14,38 +14,36 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "UI/Canvas/ANSICanvas.h"
 #include "ANSIEntryPanel.h"
+#include "UI/Canvas/ANSICanvas.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // ANSIEntryPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ANSIEntryPanel::ANSIEntryPanel
-//
+// -----------------------------------------------------------------------------
 // ANSIEntryPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 ANSIEntryPanel::ANSIEntryPanel(wxWindow* parent) : EntryPanel(parent, "ansi")
 {
 	// Get the VGA font
@@ -56,25 +54,23 @@ ANSIEntryPanel::ANSIEntryPanel(wxWindow* parent) : EntryPanel(parent, "ansi")
 	// Hide toolbar (no reason for it on this panel, yet)
 	toolbar_->Show(false);
 
-	Layout();
+	wxWindowBase::Layout();
 }
 
-// ----------------------------------------------------------------------------
-// ANSIEntryPanel::loadEntry
-//
+// -----------------------------------------------------------------------------
 // Loads an entry to the panel
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool ANSIEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Check entry exists
 	if (!entry)
 		return false;
 
-	if (entry->getSize() == DATASIZE)
+	if (entry->size() == DATASIZE)
 	{
-		ansi_chardata_.assign(entry->getData(), entry->getData() + DATASIZE);
+		ansi_chardata_.assign(entry->rawData(), entry->rawData() + DATASIZE);
 		ansi_canvas_->loadData(ansi_chardata_.data());
-		for (size_t i = 0; i < DATASIZE/2; i++)
+		for (size_t i = 0; i < DATASIZE / 2; i++)
 			ansi_canvas_->drawCharacter(i);
 		Layout();
 		Refresh();
@@ -84,13 +80,16 @@ bool ANSIEntryPanel::loadEntry(ArchiveEntry* entry)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// ANSIEntryPanel::saveEntry
-//
+// -----------------------------------------------------------------------------
 // Saves changes to the entry
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool ANSIEntryPanel::saveEntry()
 {
-	entry_->importMem(ansi_chardata_.data(), DATASIZE);
-	return true;
+	if (auto entry = entry_.lock())
+	{
+		entry->importMem(ansi_chardata_.data(), DATASIZE);
+		return true;
+	}
+
+	return false;
 }

@@ -1,83 +1,92 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    ColourConfiguration.cpp
- * Description: Functions for handling colour configurations
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2019 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ColourConfiguration.cpp
+// Description: Functions for handling colour configurations
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "ColourConfiguration.h"
-#include "Utility/Parser.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Console/Console.h"
+#include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-typedef std::map<string, cc_col_t> ColourHashMap;
-ColourHashMap	cc_colours;
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 namespace ColourConfiguration
 {
-	double	line_hilight_width;
-	double	line_selection_width;
-	double	flat_alpha;
-}
+typedef std::map<string, Colour> ColourHashMap;
+
+double        line_hilight_width;
+double        line_selection_width;
+double        flat_alpha;
+ColourHashMap cc_colours;
+} // namespace ColourConfiguration
 
 
-/*******************************************************************
- * COLOURCONFIGURATION NAMESPACE FUNCTIONS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// ColourConfiguration Namespace Functions
+//
+// -----------------------------------------------------------------------------
 
-/* ColourConfiguration::getColour
- * Returns the colour [name]
- *******************************************************************/
-rgba_t ColourConfiguration::getColour(string name)
+
+// -----------------------------------------------------------------------------
+// Returns the colour [name]
+// -----------------------------------------------------------------------------
+ColRGBA ColourConfiguration::colour(const string& name)
 {
-	cc_col_t& col = cc_colours[name];
+	auto& col = cc_colours[name];
 	if (col.exists)
 		return col.colour;
 	else
-		return COL_WHITE;
+		return ColRGBA::WHITE;
 }
 
-/* ColourConfiguration::getColDef
- * Returns the colour definition [name]
- *******************************************************************/
-cc_col_t ColourConfiguration::getColDef(string name)
+// -----------------------------------------------------------------------------
+// Returns the colour definition [name]
+// -----------------------------------------------------------------------------
+const ColourConfiguration::Colour& ColourConfiguration::colDef(const string& name)
 {
 	return cc_colours[name];
 }
 
-/* ColourConfiguration::setColour
- * Sets the colour definition [name]
- *******************************************************************/
-void ColourConfiguration::setColour(string name, int red, int green, int blue, int alpha, int blend)
+// -----------------------------------------------------------------------------
+// Sets the colour definition [name]
+// -----------------------------------------------------------------------------
+void ColourConfiguration::setColour(const string& name, int red, int green, int blue, int alpha, bool blend_additive)
 {
-	cc_col_t& col = cc_colours[name];
+	auto& col = cc_colours[name];
 	if (red >= 0)
 		col.colour.r = red;
 	if (green >= 0)
@@ -86,62 +95,71 @@ void ColourConfiguration::setColour(string name, int red, int green, int blue, i
 		col.colour.b = blue;
 	if (alpha >= 0)
 		col.colour.a = alpha;
-	if (blend >= 0)
-		col.colour.blend = blend;
-	col.exists = true;
+
+	col.blend_additive = blend_additive;
+	col.exists         = true;
 }
 
-/* ColourConfiguration::getLineHilightWidth
- * Returns the line hilight width multiplier
- *******************************************************************/
-double ColourConfiguration::getLineHilightWidth()
+// -----------------------------------------------------------------------------
+// Sets the current OpenGL colour and blend mode to match definition [name]
+// -----------------------------------------------------------------------------
+void ColourConfiguration::setGLColour(const string& name, float alpha_mult)
+{
+	auto& col = cc_colours[name];
+	OpenGL::setColour(col.colour.r, col.colour.g, col.colour.b, col.colour.a * alpha_mult, col.blendMode());
+}
+
+// -----------------------------------------------------------------------------
+// Returns the line hilight width multiplier
+// -----------------------------------------------------------------------------
+double ColourConfiguration::lineHilightWidth()
 {
 	return line_hilight_width;
 }
 
-/* ColourConfiguration::getLineSelectionWidth
- * Returns the line selection width multiplier
- *******************************************************************/
-double ColourConfiguration::getLineSelectionWidth()
+// -----------------------------------------------------------------------------
+// Returns the line selection width multiplier
+// -----------------------------------------------------------------------------
+double ColourConfiguration::lineSelectionWidth()
 {
 	return line_selection_width;
 }
 
-/* ColourConfiguration::getFlatAlpha
- * Returns the flat alpha multiplier
- *******************************************************************/
-double ColourConfiguration::getFlatAlpha()
+// -----------------------------------------------------------------------------
+// Returns the flat alpha multiplier
+// -----------------------------------------------------------------------------
+double ColourConfiguration::flatAlpha()
 {
 	return flat_alpha;
 }
 
-/* ColourConfiguration::setLineHilightWidth
- * Sets the line hilight width multiplier
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the line hilight width multiplier
+// -----------------------------------------------------------------------------
 void ColourConfiguration::setLineHilightWidth(double mult)
 {
 	line_hilight_width = mult;
 }
 
-/* ColourConfiguration::setLineSelectionWidth
- * Sets the line selection width multiplier
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the line selection width multiplier
+// -----------------------------------------------------------------------------
 void ColourConfiguration::setLineSelectionWidth(double mult)
 {
 	line_selection_width = mult;
 }
 
-/* ColourConfiguration::setFlatAlpha
- * Sets the flat alpha multiplier
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets the flat alpha multiplier
+// -----------------------------------------------------------------------------
 void ColourConfiguration::setFlatAlpha(double alpha)
 {
 	flat_alpha = alpha;
 }
 
-/* ColourConfiguration::readConfiguration
- * Reads a colour configuration from text data [mc]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Reads a colour configuration from text data [mc]
+// -----------------------------------------------------------------------------
 bool ColourConfiguration::readConfiguration(MemChunk& mc)
 {
 	// Parse text
@@ -149,139 +167,126 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 	parser.parseText(mc);
 
 	// Get 'colours' block
-	auto colours = parser.parseTreeRoot()->getChildPTN("colours");
+	auto colours = parser.parseTreeRoot()->childPTN("colours");
 	if (colours)
 	{
 		// Read all colour definitions
 		for (unsigned a = 0; a < colours->nChildren(); a++)
 		{
-			auto def = colours->getChildPTN(a);
+			auto def = colours->childPTN(a);
 
 			// Read properties
 			for (unsigned b = 0; b < def->nChildren(); b++)
 			{
-				auto prop = def->getChildPTN(b);
-				cc_col_t& col = cc_colours[def->getName()];
+				auto  prop = def->childPTN(b);
+				auto& col  = cc_colours[def->name()];
 				col.exists = true;
 
 				// Colour name
-				if (prop->getName() == "name")
+				if (prop->name() == "name")
 					col.name = prop->stringValue();
 
 				// Colour group (for config ui)
-				else if (prop->getName() == "group")
+				else if (prop->name() == "group")
 					col.group = prop->stringValue();
 
 				// Colour
-				else if (prop->getName() == "rgb")
+				else if (prop->name() == "rgb")
 					col.colour.set(prop->intValue(0), prop->intValue(1), prop->intValue(2));
 
 				// Alpha
-				else if (prop->getName() == "alpha")
+				else if (prop->name() == "alpha")
 					col.colour.a = prop->intValue();
 
 				// Additive
-				else if (prop->getName() == "additive")
-				{
-					if (prop->boolValue())
-						col.colour.blend = 1;
-					else
-						col.colour.blend = 0;
-				}
+				else if (prop->name() == "additive")
+					col.blend_additive = prop->boolValue();
 
 				else
-					LOG_MESSAGE(1, "Warning: unknown colour definition property \"%s\"", prop->getName());
+					Log::warning(fmt::format("Unknown colour definition property \"{}\"", prop->name()));
 			}
 		}
 	}
 
 	// Get 'theme' block
-	auto theme = parser.parseTreeRoot()->getChildPTN("theme");
+	auto theme = parser.parseTreeRoot()->childPTN("theme");
 	if (theme)
 	{
 		// Read all theme definitions
 		for (unsigned a = 0; a < theme->nChildren(); a++)
 		{
-			auto prop = theme->getChildPTN(a);
+			auto prop = theme->childPTN(a);
 
-			if (prop->getName() == "line_hilight_width")
+			if (prop->name() == "line_hilight_width")
 				line_hilight_width = prop->floatValue();
 
-			else if (prop->getName() == "line_selection_width")
+			else if (prop->name() == "line_selection_width")
 				line_selection_width = prop->floatValue();
 
-			else if (prop->getName() == "flat_alpha")
+			else if (prop->name() == "flat_alpha")
 				flat_alpha = prop->floatValue();
 
 			else
-				LOG_MESSAGE(1, "Warning: unknown theme property \"%s\"", prop->getName());
+				Log::warning(fmt::format("Unknown theme property \"{}\"", prop->name()));
 		}
 	}
 
 	return true;
 }
 
-/* ColourConfiguration::writeConfiguration
- * Writes the current colour configuration to text data [mc]
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Writes the current colour configuration to text data [mc]
+// -----------------------------------------------------------------------------
 bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 {
 	string cfgstring = "colours\n{\n";
 
-	ColourHashMap::iterator i = cc_colours.begin();
-
 	// Go through all properties
-	while (i != cc_colours.end())
+	for (const auto& i : cc_colours)
 	{
 		// Skip if it doesn't 'exist'
-		cc_col_t cc = i->second;
+		const auto& cc = i.second;
 		if (!cc.exists)
-		{
-			i++;
 			continue;
-		}
 
 		// Colour definition name
-		cfgstring += S_FMT("\t%s\n\t{\n", i->first);
+		cfgstring += fmt::format("\t{}\n\t{{\n", i.first);
 
 		// Full name
-		cfgstring += S_FMT("\t\tname = \"%s\";\n", cc.name);
+		cfgstring += fmt::format("\t\tname = \"{}\";\n", cc.name);
 
 		// Group
-		cfgstring += S_FMT("\t\tgroup = \"%s\";\n", cc.group);
+		cfgstring += fmt::format("\t\tgroup = \"{}\";\n", cc.group);
 
 		// Colour values
-		cfgstring += S_FMT("\t\trgb = %d, %d, %d;\n", cc.colour.r, cc.colour.g, cc.colour.b);
+		cfgstring += fmt::format("\t\trgb = {}, {}, {};\n", cc.colour.r, cc.colour.g, cc.colour.b);
 
 		// Alpha
 		if (cc.colour.a < 255)
-			cfgstring += S_FMT("\t\talpha = %d;\n", cc.colour.a);
+			cfgstring += fmt::format("\t\talpha = {};\n", cc.colour.a);
 
 		// Additive
-		if (cc.colour.blend == 1)
+		if (cc.blend_additive)
 			cfgstring += "\t\tadditive = true;\n";
 
 		cfgstring += "\t}\n\n";
-
-		// Next colour
-		i++;
 	}
 
 	cfgstring += "}\n\ntheme\n{\n";
 
-	cfgstring += S_FMT("\tline_hilight_width = %1.3f;\n", line_hilight_width);
-	cfgstring += S_FMT("\tline_selection_width = %1.3f;\n", line_selection_width);
-	cfgstring += S_FMT("\tflat_alpha = %1.3f;\n", flat_alpha);
+	cfgstring += fmt::format("\tline_hilight_width = {:1.3f};\n", line_hilight_width);
+	cfgstring += fmt::format("\tline_selection_width = {:1.3f};\n", line_selection_width);
+	cfgstring += fmt::format("\tflat_alpha = {:1.3f};\n", flat_alpha);
 	cfgstring += "}\n";
 
-	mc.write(cfgstring.ToAscii(), cfgstring.size());
+	mc.write(cfgstring.data(), cfgstring.size());
 
 	return true;
 }
 
-/* ColourConfiguration::init
- * Initialises the colour configuration
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Initialises the colour configuration
+// -----------------------------------------------------------------------------
 bool ColourConfiguration::init()
 {
 	// Load default configuration
@@ -298,82 +303,81 @@ bool ColourConfiguration::init()
 	return true;
 }
 
-/* ColourConfiguration::loadDefaults
- * Sets all colours in the current configuration to default
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets all colours in the current configuration to default
+// -----------------------------------------------------------------------------
 void ColourConfiguration::loadDefaults()
 {
 	// Read default colours
-	Archive* pres = App::archiveManager().programResourceArchive();
-	ArchiveEntry* entry_default_cc = pres->entryAtPath("config/colours/default.txt");
+	auto pres             = App::archiveManager().programResourceArchive();
+	auto entry_default_cc = pres->entryAtPath("config/colours/default.txt");
 	if (entry_default_cc)
-		readConfiguration(entry_default_cc->getMCData());
+		readConfiguration(entry_default_cc->data());
 }
 
-/* ColourConfiguration::readConfiguration
- * Reads saved colour configuration [name]
- *******************************************************************/
-bool ColourConfiguration::readConfiguration(string name)
+// -----------------------------------------------------------------------------
+// Reads saved colour configuration [name]
+// -----------------------------------------------------------------------------
+bool ColourConfiguration::readConfiguration(string_view name)
 {
 	// TODO: search custom folder
 
 	// Search resource pk3
-	Archive* res = App::archiveManager().programResourceArchive();
-	ArchiveTreeNode* dir = res->getDir("config/colours");
+	auto res = App::archiveManager().programResourceArchive();
+	auto dir = res->dirAtPath("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		if (S_CMPNOCASE(dir->entryAt(a)->getName(true), name))
-			return readConfiguration(dir->entryAt(a)->getMCData());
+		if (StrUtil::equalCI(dir->entryAt(a)->nameNoExt(), name))
+			return readConfiguration(dir->entryAt(a)->data());
 	}
 
 	return false;
 }
 
-/* ColourConfiguration::getConfigurationNames
- * Adds all available colour configuration names to [names]
- *******************************************************************/
-void ColourConfiguration::getConfigurationNames(vector<string>& names)
+// -----------------------------------------------------------------------------
+// Adds all available colour configuration names to [names]
+// -----------------------------------------------------------------------------
+void ColourConfiguration::putConfigurationNames(vector<string>& names)
 {
 	// TODO: search custom folder
 
 	// Search resource pk3
-	Archive* res = App::archiveManager().programResourceArchive();
-	ArchiveTreeNode* dir = res->getDir("config/colours");
+	auto res = App::archiveManager().programResourceArchive();
+	auto dir = res->dirAtPath("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
-		names.push_back(dir->entryAt(a)->getName(true));
+		names.emplace_back(dir->entryAt(a)->nameNoExt());
 }
 
-/* ColourConfiguration::getColourNames
- * Adds all colour names to [list]
- *******************************************************************/
-void ColourConfiguration::getColourNames(vector<string>& list)
+// -----------------------------------------------------------------------------
+// Adds all colour names to [list]
+// -----------------------------------------------------------------------------
+void ColourConfiguration::putColourNames(vector<string>& list)
 {
-	ColourHashMap::iterator i = cc_colours.begin();
-	while (i != cc_colours.end())
-	{
-		list.push_back(i->first);
-		i++;
-	}
+	for (auto& i : cc_colours)
+		list.push_back(i.first);
 }
 
 
-/*******************************************************************
- * CONSOLE COMMANDS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Console Commands
+//
+// -----------------------------------------------------------------------------
+
 CONSOLE_COMMAND(ccfg, 1, false)
 {
 	// Check for 'list'
-	if (S_CMPNOCASE(args[0], "list"))
+	if (StrUtil::equalCI(args[0], "list"))
 	{
 		// Get (sorted) list of colour names
 		vector<string> list;
-		ColourConfiguration::getColourNames(list);
+		ColourConfiguration::putColourNames(list);
 		sort(list.begin(), list.end());
 
 		// Dump list to console
-		Log::console(S_FMT("%lu Colours:", list.size()));
-		for (unsigned a = 0; a < list.size(); a++)
-			Log::console(list[a]);
+		Log::console(fmt::format("{} Colours:", list.size()));
+		for (const auto& a : list)
+			Log::console(a);
 	}
 	else
 	{
@@ -381,28 +385,28 @@ CONSOLE_COMMAND(ccfg, 1, false)
 		if (args.size() >= 4)
 		{
 			// Read RGB
-			long red, green, blue;
-			args[1].ToLong(&red);
-			args[2].ToLong(&green);
-			args[3].ToLong(&blue);
+			int red   = StrUtil::asInt(args[1]);
+			int green = StrUtil::asInt(args[2]);
+			int blue  = StrUtil::asInt(args[3]);
 
 			// Read alpha (if specified)
-			long alpha = -1;
+			int alpha = -1;
 			if (args.size() >= 5)
-				args[4].ToLong(&alpha);
+				alpha = StrUtil::asInt(args[4]);
 
 			// Read blend (if specified)
-			long blend = -1;
+			int blend = -1;
 			if (args.size() >= 6)
-				args[5].ToLong(&blend);
+				blend = StrUtil::asInt(args[5]);
 
 			// Set colour
 			ColourConfiguration::setColour(args[0], red, green, blue, alpha, blend);
 		}
 
 		// Print colour
-		rgba_t col = ColourConfiguration::getColour(args[0]);
-		Log::console(S_FMT("Colour \"%s\" = %d %d %d %d %d", args[0], col.r, col.g, col.b, col.a, col.blend));
+		auto def = ColourConfiguration::colDef(args[0]);
+		Log::console(fmt::format(
+			"Colour \"{}\" = {} {} {} {} {}", args[0], def.colour.r, def.colour.g, def.colour.b, def.blend_additive));
 	}
 }
 

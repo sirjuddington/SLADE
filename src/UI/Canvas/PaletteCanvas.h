@@ -6,32 +6,39 @@
 class PaletteCanvas : public GLCanvas
 {
 public:
+	enum class SelectionType
+	{
+		None,
+		One,
+		Range
+	};
+
 	PaletteCanvas(wxWindow* parent, int id);
-	~PaletteCanvas() {}
+	~PaletteCanvas() = default;
 
-	Palette&	palette() { return palette_; }
-	bool		doubleWidth() const { return double_width_; }
-	int			selectionStart() const { return sel_begin_; }
-	int			selectionEnd() const { return sel_end_; }
-	int			allowSelection() const { return allow_selection_; }
+	Palette&      palette() { return palette_; }
+	bool          doubleWidth() const { return double_width_; }
+	int           selectionStart() const { return sel_begin_; }
+	int           selectionEnd() const { return sel_end_; }
+	SelectionType selectionType() const { return allow_selection_; }
 
-	void	doubleWidth(bool dw) { double_width_ = dw; }
-	void	setSelection(int begin, int end = -1);
-	void	allowSelection(int sel) { allow_selection_ = sel; }
-	void	setPalette(Palette* pal) { palette_.copyPalette(pal); }
+	void doubleWidth(bool dw) { double_width_ = dw; }
+	void setSelection(int begin, int end = -1);
+	void setSelectionType(SelectionType sel) { allow_selection_ = sel; }
+	void setPalette(Palette* pal) { palette_.copyPalette(pal); }
 
-	void	drawContent() override;
-	rgba_t	getSelectedColour();
+	void    drawContent() override;
+	ColRGBA selectedColour() const;
 
 	// Events
-	void	onMouseLeftDown(wxMouseEvent& e);
-	void	onMouseRightDown(wxMouseEvent& e);
-	void	onMouseMotion(wxMouseEvent& e);
+	void onMouseLeftDown(wxMouseEvent& e);
+	void onMouseRightDown(wxMouseEvent& e);
+	void onMouseMotion(wxMouseEvent& e);
 
 private:
-	int		sel_begin_			= -1;
-	int		sel_end_			= -1;
-	bool	double_width_		= false;
-	int		allow_selection_	= 0;	// 0 = no, 1 = one colour only, 2 = any (range)
-	Palette	palette_;
+	int           sel_begin_       = -1;
+	int           sel_end_         = -1;
+	bool          double_width_    = false;
+	SelectionType allow_selection_ = SelectionType::None;
+	Palette       palette_;
 };

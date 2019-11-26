@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -14,165 +14,179 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Tokenizer.h"
 #include "StringUtils.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
-const string Tokenizer::DEFAULT_SPECIAL_CHARACTERS = ";,:|={}/";
-Tokenizer::Token Tokenizer::invalid_token_{ "", 0, false, 0, 0 };
+// -----------------------------------------------------------------------------
+const string     Tokenizer::DEFAULT_SPECIAL_CHARACTERS = ";,:|={}/";
+Tokenizer::Token Tokenizer::invalid_token_{ "", 0, false, 0, 0, 0, false };
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Local Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 namespace
 {
-	// ------------------------------------------------------------------------
-	// isWhitespace
-	//
-	// Returns true if [p] is a whitespace character
-	// ------------------------------------------------------------------------
-	bool isWhitespace(char p)
-	{
-		// Whitespace is either a newline, tab character or space
-		if (p == '\n' || p == 13 || p == ' ' || p == '\t')
-			return true;
-		else
-			return false;
-	}
+// -----------------------------------------------------------------------------
+// Returns true if [p] is a whitespace character
+// -----------------------------------------------------------------------------
+bool isWhitespace(char p)
+{
+	// Whitespace is either a newline, tab character or space
+	return p == '\n' || p == 13 || p == ' ' || p == '\t';
 }
+} // namespace
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Tokenizer::Token Struct Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// Token::isInteger
-//
+// -----------------------------------------------------------------------------
 // Returns true if the token is a valid integer. If [allow_hex] is true, can
 // also be a valid hex string
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Tokenizer::Token::isInteger(bool allow_hex) const
 {
-	return StringUtils::isInteger(text, allow_hex);
+	return StrUtil::isInteger(text, allow_hex);
 }
 
-// ----------------------------------------------------------------------------
-// Token::isHex
-//
+// -----------------------------------------------------------------------------
 // Returns true if the token is a valid hex string
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Tokenizer::Token::isHex() const
 {
-	return StringUtils::isHex(text);
+	return StrUtil::isHex(text);
 }
 
-// ----------------------------------------------------------------------------
-// Token::isFloat
-//
+// -----------------------------------------------------------------------------
 // Returns true if the token is a floating point number
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Tokenizer::Token::isFloat() const
 {
-	return StringUtils::isFloat(text);
+	return StrUtil::isFloat(text);
 }
 
 // ----------------------------------------------------------------------------
-// Token::asBool
-//
+// Returns the token as an integer value
+// ----------------------------------------------------------------------------
+int Tokenizer::Token::asInt() const
+{
+	return StrUtil::asInt(text);
+}
+
+// -----------------------------------------------------------------------------
 // Returns the token as a bool value.
 // "false", "no" and "0" are false, anything else is true.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Tokenizer::Token::asBool() const
 {
-	return !(S_CMPNOCASE(text, "false") ||
-			S_CMPNOCASE(text, "no") ||
-			S_CMPNOCASE(text, "0"));
+	return !(
+		text.empty() || StrUtil::equalCI(text, "false") || StrUtil::equalCI(text, "no") || StrUtil::equalCI(text, "0"));
 }
 
 // ----------------------------------------------------------------------------
-// Token::toBool
-//
+// Returns the token as a floating point value
+// ----------------------------------------------------------------------------
+double Tokenizer::Token::asFloat() const
+{
+	return StrUtil::asDouble(text);
+}
+
+// ----------------------------------------------------------------------------
+// Sets [val] to the integer value of the token
+// ----------------------------------------------------------------------------
+void Tokenizer::Token::toInt(int& val) const
+{
+	val = StrUtil::asInt(text);
+}
+
+// -----------------------------------------------------------------------------
 // Sets [val] to the token as a bool value.
 // "false", "no" and "0" are false, anything else is true.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Tokenizer::Token::toBool(bool& val) const
 {
-	val = !(S_CMPNOCASE(text, "false") ||
-			S_CMPNOCASE(text, "no") ||
-			S_CMPNOCASE(text, "0"));
+	val = !(
+		text.empty() || StrUtil::equalCI(text, "false") || StrUtil::equalCI(text, "no") || StrUtil::equalCI(text, "0"));
+}
+
+// ----------------------------------------------------------------------------
+// Sets [val] to the floating point (double) value of the token
+// ----------------------------------------------------------------------------
+void Tokenizer::Token::toFloat(double& val) const
+{
+	val = StrUtil::asDouble(text);
+}
+
+// ----------------------------------------------------------------------------
+// Sets [val] to the floating point (float) value of the token
+// ----------------------------------------------------------------------------
+void Tokenizer::Token::toFloat(float& val) const
+{
+	val = StrUtil::asFloat(text);
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Tokenizer Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// Tokenizer::Tokenizer
-//
+// -----------------------------------------------------------------------------
 // Tokenizer class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 Tokenizer::Tokenizer(int comments, const string& special_characters) :
 	comment_types_{ comments },
-	special_characters_{special_characters.begin(), special_characters.end()},
-	decorate_{ false },
-	read_lowercase_{ false },
-	debug_{ false }
+	special_characters_{ special_characters.begin(), special_characters.end() }
 {
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::peek
-//
+// -----------------------------------------------------------------------------
 // Returns the 'next' token but doesn't advance
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const Tokenizer::Token& Tokenizer::peek() const
 {
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return invalid_token_;
 
 	return token_next_;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::next
-//
+// -----------------------------------------------------------------------------
 // Returns the 'next' token and advances to it
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const Tokenizer::Token& Tokenizer::next()
 {
-	if (token_next_.pos_start == token_current_.pos_start)
+	if (!token_next_.valid)
 		return invalid_token_;
 
 	token_current_ = token_next_;
@@ -180,29 +194,25 @@ const Tokenizer::Token& Tokenizer::next()
 	return token_current_;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::adv
-//
+// -----------------------------------------------------------------------------
 // Advances [inc] tokens
-// ----------------------------------------------------------------------------
-void Tokenizer::adv(int inc)
+// -----------------------------------------------------------------------------
+void Tokenizer::adv(size_t inc)
 {
 	if (inc <= 0)
 		return;
 
-	for (int a = 0; a < inc - 1; a++)
+	for (size_t a = 0; a < inc - 1; a++)
 		readNext();
 
 	token_current_ = token_next_;
 	readNext();
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::advIf
-//
+// -----------------------------------------------------------------------------
 // Advances [inc] tokens if the current token matches [check]
-// ----------------------------------------------------------------------------
-bool Tokenizer::advIf(const char* check, int inc)
+// -----------------------------------------------------------------------------
+bool Tokenizer::advIf(const char* check, size_t inc)
 {
 	if (token_current_ == check)
 	{
@@ -212,7 +222,7 @@ bool Tokenizer::advIf(const char* check, int inc)
 
 	return false;
 }
-bool Tokenizer::advIf(const string& check, int inc)
+bool Tokenizer::advIf(const string& check, size_t inc)
 {
 	if (token_current_ == check)
 	{
@@ -222,7 +232,7 @@ bool Tokenizer::advIf(const string& check, int inc)
 
 	return false;
 }
-bool Tokenizer::advIf(char check, int inc)
+bool Tokenizer::advIf(char check, size_t inc)
 {
 	if (token_current_ == check)
 	{
@@ -233,14 +243,12 @@ bool Tokenizer::advIf(char check, int inc)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::advIfNC
-//
+// -----------------------------------------------------------------------------
 // Advances [inc] tokens if the current token matches [check] (Case-Insensitive)
-// ----------------------------------------------------------------------------
-bool Tokenizer::advIfNC(const char* check, int inc)
+// -----------------------------------------------------------------------------
+bool Tokenizer::advIfNC(const char* check, size_t inc)
 {
-	if (S_CMPNOCASE(token_current_.text, check))
+	if (StrUtil::equalCI(token_current_.text, check))
 	{
 		adv(inc);
 		return true;
@@ -248,9 +256,9 @@ bool Tokenizer::advIfNC(const char* check, int inc)
 
 	return false;
 }
-bool Tokenizer::advIfNC(const string& check, int inc)
+bool Tokenizer::advIfNC(const string& check, size_t inc)
 {
-	if (S_CMPNOCASE(token_current_.text, check))
+	if (StrUtil::equalCI(token_current_.text, check))
 	{
 		adv(inc);
 		return true;
@@ -259,12 +267,10 @@ bool Tokenizer::advIfNC(const string& check, int inc)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::advIfNext
-//
+// -----------------------------------------------------------------------------
 // Advances [inc] tokens if the next token matches [check]
-// ----------------------------------------------------------------------------
-bool Tokenizer::advIfNext(const char* check, int inc)
+// -----------------------------------------------------------------------------
+bool Tokenizer::advIfNext(const char* check, size_t inc)
 {
 	if (!token_next_.valid)
 		return false;
@@ -277,7 +283,7 @@ bool Tokenizer::advIfNext(const char* check, int inc)
 
 	return false;
 }
-bool Tokenizer::advIfNext(const string& check, int inc)
+bool Tokenizer::advIfNext(const string& check, size_t inc)
 {
 	if (!token_next_.valid)
 		return false;
@@ -290,7 +296,7 @@ bool Tokenizer::advIfNext(const string& check, int inc)
 
 	return false;
 }
-bool Tokenizer::advIfNext(char check, int inc)
+bool Tokenizer::advIfNext(char check, size_t inc)
 {
 	if (!token_next_.valid)
 		return false;
@@ -304,17 +310,15 @@ bool Tokenizer::advIfNext(char check, int inc)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::advIfNextNC
-//
+// -----------------------------------------------------------------------------
 // Advances [inc] tokens if the next token matches [check] (Case-Insensitive)
-// ----------------------------------------------------------------------------
-bool Tokenizer::advIfNextNC(const char* check, int inc)
+// -----------------------------------------------------------------------------
+bool Tokenizer::advIfNextNC(const char* check, size_t inc)
 {
 	if (!token_next_.valid)
 		return false;
 
-	if (S_CMPNOCASE(token_next_.text, check))
+	if (StrUtil::equalCI(token_next_.text, check))
 	{
 		adv(inc);
 		return true;
@@ -323,11 +327,9 @@ bool Tokenizer::advIfNextNC(const char* check, int inc)
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::advToNextLine
-//
+// -----------------------------------------------------------------------------
 // Advances to the first token on the next line
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Tokenizer::advToNextLine()
 {
 	// Ignore if we're on the last token already
@@ -344,7 +346,7 @@ void Tokenizer::advToNextLine()
 
 	// Otherwise skip until the line increments or we reach the last token
 	unsigned line = token_current_.line_no;
-	bool end = false;
+	bool     end  = false;
 	while (!end)
 	{
 		end = !readNext(&token_current_);
@@ -372,22 +374,18 @@ void Tokenizer::advToEndOfLine()
 
 	// Otherwise skip until the next token is on the next line
 	// (or we reach the last token)
-	unsigned line = token_current_.line_no;
-	while (token_next_.pos_start > token_current_.pos_start &&
-			token_next_.line_no <= token_current_.line_no)
+	while (token_next_.pos_start > token_current_.pos_start && token_next_.line_no <= token_current_.line_no)
 		adv();
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::skipSection
-//
+// -----------------------------------------------------------------------------
 // Advances tokens until [end] is found. Can also handle nesting if [begin] is
 // specified. If [allow_quoted] is true, section delimiters will count even if
 // within a quoted string.
 //
 // Relies on the current token being *within* the section to be skipped, and
 // will exit on the token after the end of the section.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Tokenizer::skipSection(const char* begin, const char* end, bool allow_quoted)
 {
 	int depth = 1;
@@ -476,7 +474,7 @@ string Tokenizer::getLine(bool from_start)
 	// Otherwise reset to start of next token
 	else
 	{
-		state_.position = token_next_.pos_start;
+		state_.position     = token_next_.pos_start;
 		state_.current_line = token_next_.line_no;
 	}
 
@@ -515,20 +513,23 @@ bool Tokenizer::checkOrEnd(char check) const
 	return token_current_ == check;
 }
 
+bool Tokenizer::checkNC(const char* check) const
+{
+	return StrUtil::equalCI(token_current_.text, check);
+}
+
 bool Tokenizer::checkOrEndNC(const char* check) const
 {
 	// At end, return true
 	if (!token_next_.valid)
 		return true;
 
-	return S_CMPNOCASE(token_current_.text, check);
+	return StrUtil::equalCI(token_current_.text, check);
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::checkNext
-//
+// -----------------------------------------------------------------------------
 // Returns true if the next token matches [check]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Tokenizer::checkNext(const char* check) const
 {
 	if (!token_next_.valid)
@@ -556,24 +557,22 @@ bool Tokenizer::checkNextNC(const char* check) const
 	if (!token_next_.valid)
 		return false;
 
-	return S_CMPNOCASE(token_next_.text, check);
+	return StrUtil::equalCI(token_next_.text, check);
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::openFile
-//
+// -----------------------------------------------------------------------------
 // Opens text from a file [filename], reading [length] bytes from [offset].
 // If [length] is 0, read to the end of the file
-// ----------------------------------------------------------------------------
-bool Tokenizer::openFile(const string& filename, unsigned offset, unsigned length)
+// -----------------------------------------------------------------------------
+bool Tokenizer::openFile(string_view filename, size_t offset, size_t length)
 {
 	// Open the file
-	wxFile file(filename);
+	wxFile file(string{ filename });
 
 	// Check file opened
 	if (!file.IsOpened())
 	{
-		Log::error(S_FMT("Tokenizer::openFile: Unable to open file %s", filename));
+		Log::error("Tokenizer::openFile: Unable to open file {}", filename);
 		return false;
 	}
 
@@ -583,48 +582,43 @@ bool Tokenizer::openFile(const string& filename, unsigned offset, unsigned lengt
 	// If length isn't specified or exceeds the file length,
 	// only read to the end of the file
 	if (offset + length > file.Length() || length == 0)
-		length = file.Length() - offset;
+		length = (size_t)file.Length() - offset;
 
 	// Read the file portion
-	data_.resize(length, 0);
+	data_.resize((size_t)length, 0);
 	file.Seek(offset, wxFromStart);
-	file.Read(data_.data(), length);
+	file.Read(data_.data(), (size_t)length);
 
 	reset();
 
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::openString
-//
+// -----------------------------------------------------------------------------
 // Opens text from a string [text], reading [length] bytes from [offset].
 // If [length] is 0, read to the end of the string
-// ----------------------------------------------------------------------------
-bool Tokenizer::openString(const string& text, unsigned offset, unsigned length, const string& source)
+// -----------------------------------------------------------------------------
+bool Tokenizer::openString(string_view text, size_t offset, size_t length, string_view source)
 {
 	source_ = source;
 
 	// If length isn't specified or exceeds the string's length,
 	// only copy to the end of the string
-	auto ascii = text.ToAscii();
-	if (offset + length > (unsigned)ascii.length() || length == 0)
-		length = (unsigned)ascii.length() - offset;
+	if (offset + length > text.length() || length == 0)
+		length = text.length() - offset;
 
 	// Copy the string portion
-	data_.assign(ascii.data() + offset, ascii.data() + offset + length);
+	data_.assign(text.data() + offset, text.data() + offset + length);
 
 	reset();
 
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::openMem
-//
+// -----------------------------------------------------------------------------
 // Opens text from memory [mem], reading [length] bytes
-// ----------------------------------------------------------------------------
-bool Tokenizer::openMem(const char* mem, unsigned length, const string& source)
+// -----------------------------------------------------------------------------
+bool Tokenizer::openMem(const char* mem, size_t length, string_view source)
 {
 	source_ = source;
 	data_.assign(mem, mem + length);
@@ -634,30 +628,26 @@ bool Tokenizer::openMem(const char* mem, unsigned length, const string& source)
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::openMem
-//
+// -----------------------------------------------------------------------------
 // Opens text from a MemChunk [mc]
-// ----------------------------------------------------------------------------
-bool Tokenizer::openMem(const MemChunk& mc, const string& source)
+// -----------------------------------------------------------------------------
+bool Tokenizer::openMem(const MemChunk& mc, string_view source)
 {
 	source_ = source;
-	data_.assign(mc.getData(), mc.getData() + mc.getSize());
+	data_.assign(mc.data(), mc.data() + mc.size());
 
 	reset();
 
 	return true;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::reset
-//
+// -----------------------------------------------------------------------------
 // Resets the tokenizer to the beginning of the data
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Tokenizer::reset()
 {
 	// Init tokenizing state
-	state_ = TokenizeState{};
+	state_      = TokenizeState{};
 	state_.size = data_.size();
 
 	// Read first tokens
@@ -665,33 +655,25 @@ void Tokenizer::reset()
 	readNext(&token_next_);
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::checkCommentBegin
-//
+// -----------------------------------------------------------------------------
 // Checks if a comment begins at the current position and returns the comment
 // type if one does (0 otherwise)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 unsigned Tokenizer::checkCommentBegin()
 {
 	// C-Style comment (/*)
-	if (comment_types_ & CStyle &&
-		state_.position + 1 < state_.size &&
-		data_[state_.position] == '/' &&
-		data_[state_.position + 1] == '*')
+	if (comment_types_ & CStyle && state_.position + 1 < state_.size && data_[state_.position] == '/'
+		&& data_[state_.position + 1] == '*')
 		return CStyle;
 
 	// CPP-Style comment (//)
-	if (comment_types_ & CPPStyle &&
-		state_.position + 1 < state_.size &&
-		data_[state_.position] == '/' &&
-		data_[state_.position + 1] == '/')
+	if (comment_types_ & CPPStyle && state_.position + 1 < state_.size && data_[state_.position] == '/'
+		&& data_[state_.position + 1] == '/')
 		return CPPStyle;
 
 	// ## comment
-	if (comment_types_ & DoubleHash &&
-		state_.position + 1 < state_.size &&
-		data_[state_.position] == '#' &&
-		data_[state_.position + 1] == '#')
+	if (comment_types_ & DoubleHash && state_.position + 1 < state_.size && data_[state_.position] == '#'
+		&& data_[state_.position + 1] == '#')
 		return DoubleHash;
 
 	// # comment
@@ -706,11 +688,9 @@ unsigned Tokenizer::checkCommentBegin()
 	return 0;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::tokenizeUnknown
-//
+// -----------------------------------------------------------------------------
 // Process the current unknown character
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Tokenizer::tokenizeUnknown()
 {
 	// Whitespace
@@ -738,9 +718,9 @@ void Tokenizer::tokenizeUnknown()
 	if (isSpecialCharacter(data_[state_.position]))
 	{
 		// End token
-		state_.current_token.line_no = state_.current_line;
+		state_.current_token.line_no       = state_.current_line;
 		state_.current_token.quoted_string = false;
-		state_.current_token.pos_start = state_.position;
+		state_.current_token.pos_start     = state_.position;
 		++state_.position;
 		state_.done = true;
 		return;
@@ -753,26 +733,24 @@ void Tokenizer::tokenizeUnknown()
 		++state_.position;
 
 		// Begin token
-		state_.current_token.line_no = state_.current_line;
+		state_.current_token.line_no       = state_.current_line;
 		state_.current_token.quoted_string = true;
-		state_.current_token.pos_start = state_.position;
-		state_.state = TokenizeState::State::Token;
+		state_.current_token.pos_start     = state_.position;
+		state_.state                       = TokenizeState::State::Token;
 
 		return;
 	}
 
 	// Token
-	state_.current_token.line_no = state_.current_line;
+	state_.current_token.line_no       = state_.current_line;
 	state_.current_token.quoted_string = false;
-	state_.current_token.pos_start = state_.position;
-	state_.state = TokenizeState::State::Token;
+	state_.current_token.pos_start     = state_.position;
+	state_.state                       = TokenizeState::State::Token;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::tokenizeToken
-//
+// -----------------------------------------------------------------------------
 // Process the current token character
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Tokenizer::tokenizeToken()
 {
 	// Quoted string
@@ -783,7 +761,7 @@ void Tokenizer::tokenizeToken()
 		{
 			// Skip to character after closing " and end token
 			state_.state = TokenizeState::State::Unknown;
-			state_.done = true;
+			state_.done  = true;
 			return;
 		}
 
@@ -798,13 +776,13 @@ void Tokenizer::tokenizeToken()
 	}
 
 	// Check for end of token
-	if (isWhitespace(data_[state_.position]) ||			// Whitespace
-		isSpecialCharacter(data_[state_.position]) ||	// Special character
-		checkCommentBegin() > 0)						// Comment
+	if (isWhitespace(data_[state_.position]) ||       // Whitespace
+		isSpecialCharacter(data_[state_.position]) || // Special character
+		checkCommentBegin() > 0)                      // Comment
 	{
 		// End token
 		state_.state = TokenizeState::State::Unknown;
-		state_.done = true;
+		state_.done  = true;
 
 		return;
 	}
@@ -813,25 +791,21 @@ void Tokenizer::tokenizeToken()
 	++state_.position;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::tokenizeComment
-//
+// -----------------------------------------------------------------------------
 // Process the current comment character
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Tokenizer::tokenizeComment()
 {
 	// Check for decorate //$
 	if (decorate_ && state_.comment_type == CPPStyle)
 	{
-		if (data_[state_.position] == '$' &&
-			data_[state_.position - 1] == '/' &&
-			data_[state_.position - 2] == '/')
+		if (data_[state_.position] == '$' && data_[state_.position - 1] == '/' && data_[state_.position - 2] == '/')
 		{
 			// We have a token instead
-			state_.current_token.line_no = state_.current_line;
+			state_.current_token.line_no       = state_.current_line;
 			state_.current_token.quoted_string = false;
-			state_.current_token.pos_start = state_.position - 2;
-			state_.state = TokenizeState::State::Token;
+			state_.current_token.pos_start     = state_.position - 2;
+			state_.state                       = TokenizeState::State::Token;
 			return;
 		}
 	}
@@ -847,9 +821,7 @@ void Tokenizer::tokenizeComment()
 	// Check for end of C-Style multi line comment
 	if (state_.comment_type == CStyle)
 	{
-		if (state_.position + 1 < state_.size &&
-			data_[state_.position] == '*' &&
-			data_[state_.position + 1] == '/')
+		if (state_.position + 1 < state_.size && data_[state_.position] == '*' && data_[state_.position + 1] == '/')
 		{
 			state_.state = TokenizeState::State::Unknown;
 			state_.position += 2;
@@ -861,11 +833,9 @@ void Tokenizer::tokenizeComment()
 	++state_.position;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::tokenizeWhitespace
-//
+// -----------------------------------------------------------------------------
 // Process the current whitespace character
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Tokenizer::tokenizeWhitespace()
 {
 	if (isWhitespace(data_[state_.position]))
@@ -874,16 +844,15 @@ void Tokenizer::tokenizeWhitespace()
 		state_.state = TokenizeState::State::Unknown;
 }
 
-// ----------------------------------------------------------------------------
-// Tokenizer::readNext
-//
+// -----------------------------------------------------------------------------
 // Reads the next token from the data and writes it to [target] if specified
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Tokenizer::readNext(Token* target)
 {
-	if (data_.size() == 0 || state_.position >= state_.size)
+	if (data_.empty() || state_.position >= state_.size)
 	{
-		if (target) target->valid = false;
+		if (target)
+			target->valid = false;
 		return false;
 	}
 
@@ -892,30 +861,23 @@ bool Tokenizer::readNext(Token* target)
 	while (state_.position < state_.size && !state_.done)
 	{
 		// Check for newline
-		if (data_[state_.position] == '\n')
+		if (data_[state_.position] == '\n' && state_.state != TokenizeState::State::Token)
 			++state_.current_line;
 
 		// Process current character depending on state
 		switch (state_.state)
 		{
-		case TokenizeState::State::Unknown:		tokenizeUnknown(); break;
-		case TokenizeState::State::Whitespace:	tokenizeWhitespace(); break;
-		case TokenizeState::State::Token:		tokenizeToken(); break;
-		case TokenizeState::State::Comment:		tokenizeComment(); break;
-		default: ++state_.position; break;
+		case TokenizeState::State::Unknown: tokenizeUnknown(); break;
+		case TokenizeState::State::Whitespace: tokenizeWhitespace(); break;
+		case TokenizeState::State::Token: tokenizeToken(); break;
+		case TokenizeState::State::Comment: tokenizeComment(); break;
 		}
 	}
 
 	// Write to target token (if specified)
 	if (target)
 	{
-		// How is this slower than using += in a loop as below? Just wxString things >_>
-		//target->text.assign(
-		//	data_.data() + state_.current_token.pos_start,
-		//	state_.position - state_.current_token.pos_start
-		//);
-		
-		target->text.Empty();
+		target->text.clear();
 		for (unsigned a = state_.current_token.pos_start; a < state_.position; ++a)
 		{
 			if (state_.current_token.quoted_string && data_[a] == '\\')
@@ -924,16 +886,16 @@ bool Tokenizer::readNext(Token* target)
 			target->text += data_[a];
 		}
 
-		target->line_no = state_.current_token.line_no;
+		target->line_no       = state_.current_token.line_no;
 		target->quoted_string = state_.current_token.quoted_string;
-		target->pos_start = state_.current_token.pos_start;
-		target->pos_end = state_.position;
-		target->length = target->pos_end - target->pos_start;
-		target->valid = true;
+		target->pos_start     = state_.current_token.pos_start;
+		target->pos_end       = state_.position;
+		target->length        = target->pos_end - target->pos_start;
+		target->valid         = true;
 
 		// Convert to lowercase if configured to and it isn't a quoted string
 		if (read_lowercase_ && !target->quoted_string)
-			target->text.LowerCase();
+			StrUtil::lowerIP(target->text);
 	}
 
 	// Skip closing " if it was a quoted string
@@ -941,17 +903,17 @@ bool Tokenizer::readNext(Token* target)
 		++state_.position;
 
 	if (debug_)
-		Log::debug(S_FMT("%d: \"%s\"", token_current_.line_no, CHR(token_current_.text)));
-		
+		Log::debug("{}: \"{}\"", token_current_.line_no, token_current_.text);
+
 	return true;
 }
 
 void Tokenizer::resetToLineStart()
 {
 	// Reset state to start of current token
-	state_.position = token_current_.pos_start;
+	state_.position     = token_current_.pos_start;
 	state_.current_line = token_current_.line_no;
-	state_.state = TokenizeState::State::Unknown;
+	state_.state        = TokenizeState::State::Unknown;
 
 	while (true)
 	{
@@ -970,10 +932,10 @@ void Tokenizer::resetToLineStart()
 
 // Testing
 
+#include "App.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/Console/Console.h"
 #include "MainEditor/MainEditor.h"
-#include "Archive/ArchiveEntry.h"
-#include "App.h"
 
 CONSOLE_COMMAND(test_tokenizer, 0, false)
 {
@@ -981,26 +943,26 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 	if (!entry)
 		return;
 
-	long num = 1;
+	int num = 1;
 	if (!args.empty())
-		args[0].ToLong(&num);
+		num = StrUtil::asInt(args[0]);
 
 	bool lower = (VECTOR_EXISTS(args, "lower"));
-	bool dump = (VECTOR_EXISTS(args, "dump"));
+	bool dump  = (VECTOR_EXISTS(args, "dump"));
 
 	struct TestToken
 	{
-		string text;
-		bool quoted_string;
+		string   text;
+		bool     quoted_string;
 		unsigned line_no;
 	};
 
 	// Tokenize it
-	Tokenizer tz;
+	Tokenizer         tz;
 	vector<TestToken> t_new;
 	tz.setReadLowerCase(lower);
 	long time = App::runTimer();
-	tz.openMem(entry->getMCData(), entry->getName());
+	tz.openMem(entry->data(), entry->name());
 	for (long a = 0; a < num; a++)
 	{
 		while (!tz.atEnd())
@@ -1015,7 +977,7 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 
 	long new_time = App::runTimer() - time;
 
-	Log::info(S_FMT("Tokenize x%d took %dms", num, new_time));
+	Log::info("Tokenize x{} took {}ms", num, new_time);
 
 
 	// Test old tokenizer also
@@ -1037,13 +999,13 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 		tzo.reset();
 	}
 	time = App::runTimer() - time;
-	Log::info(S_FMT("Old Tokenize x%d took %dms", num, time));
-	Log::info(S_FMT("%1.3fx time", (float)new_time / (float)time));
+	Log::info(string::Format("Old Tokenize x%d took %dms", num, time));
+	Log::info(string::Format("%1.3fx time", (float)new_time / (float)time));
 	*/
 
 	if (dump)
 	{
 		for (auto& token : t_new)
-			Log::debug(S_FMT("%d: \"%s\"%s", token.line_no, CHR(token.text), token.quoted_string ? " (quoted)" : ""));
+			Log::debug("{}: \"{}\"{}", token.line_no, token.text, token.quoted_string ? " (quoted)" : "");
 	}
 }

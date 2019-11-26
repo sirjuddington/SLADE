@@ -1,69 +1,27 @@
 #pragma once
-#ifndef __SBRUSH_H__
-#define __SBRUSH_H__
 
-#include "common.h"
+#include "Graphics/SImage/SImage.h"
 
 class SAction;
-class SImage;
+
 class SBrush
 {
-private:
-	// The cursor graphic
-	SImage * image;
-	string name;
-	string icon;
-	int cx, cy;
 public:
-	// Constructor
-	SBrush(string name);
-	// Destructor
-	~SBrush();
+	SBrush(const wxString& name);
+	~SBrush() = default;
 
-	// Returns an action ready to be inserted in a menu or toolbar
-	SAction getAction();
+	// SAction getAction(); // Returns an action ready to be inserted in a menu or toolbar (NYI)
 
-	// Returns the brush's name ("pgfx_brush_xyz")
-	string getName() { return name; }
+	wxString name() const { return name_; } // Returns the brush's name ("pgfx_brush_xyz")
+	wxString icon() const { return icon_; } // Returns the brush's icon name ("brush_xyz")
+	uint8_t  pixel(int x, int y) const;
 
-	// Returns the brush's icon name ("brush_xyz")
-	string getIcon() { return icon; }
+	static SBrush* get(const wxString& name);
+	static bool    initBrushes();
 
-	// Returns intensity of how much this pixel is affected by the brush; [0, 0] is the brush's center
-	uint8_t getPixel(int x, int y);
-};
-
-class SBrushManager
-{
 private:
-	// The collection of SBrushes
-	vector<SBrush *> brushes;
-
-	// Single-instance implementation
-	static SBrushManager* instance;
-public:
-	// Constructor
-	SBrushManager();
-	// Destructor
-	~SBrushManager();
-
-	// Get a brush from its name
-	SBrush* get(string name);
-
-	// Add a brush
-	void add(SBrush* brush);
-
-	// Single-instance implementation
-	static SBrushManager* getInstance()
-	{
-		if (!instance)
-			instance = new SBrushManager();
-		return instance;
-	}
-
-	// Init brushes
-	static bool initBrushes();
+	unique_ptr<SImage> image_ = nullptr; // The cursor graphic
+	wxString           name_;
+	wxString           icon_;
+	Vec2i              center_;
 };
-#define theBrushManager SBrushManager::getInstance()
-
-#endif // __SBRUSH_H__

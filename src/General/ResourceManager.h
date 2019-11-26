@@ -1,8 +1,6 @@
 #pragma once
 
-#include "common.h"
 #include "Archive/Archive.h"
-#include "General/ListenerAnnouncer.h"
 #include "Graphics/CTexture/CTexture.h"
 
 class ResourceManager;
@@ -11,116 +9,118 @@ class ResourceManager;
 class Resource
 {
 	friend class ResourceManager;
-public:
-	Resource(string type) { this->type_ = type; }
-	virtual ~Resource() {}
 
-	virtual int	length() { return 0; }
+public:
+	Resource(string_view type) : type_{ type } {}
+	virtual ~Resource() = default;
+
+	virtual int length() { return 0; }
 
 private:
-	string	type_;
+	string type_;
 };
 
 class EntryResource : public Resource
 {
 	friend class ResourceManager;
+
 public:
 	EntryResource() : Resource("entry") {}
-	virtual ~EntryResource() {}
+	virtual ~EntryResource() = default;
 
-	void	add(ArchiveEntry::SPtr& entry);
-	void	remove(ArchiveEntry::SPtr& entry);
+	void add(shared_ptr<ArchiveEntry>& entry);
+	void remove(shared_ptr<ArchiveEntry>& entry);
+	void removeArchive(Archive* archive);
 
-	int		length() override { return entries_.size(); }
+	int length() override { return entries_.size(); }
 
-	ArchiveEntry*	getEntry(Archive* priority = nullptr, string nspace = "", bool ns_required = false);
+	ArchiveEntry* getEntry(Archive* priority = nullptr, string_view nspace = "", bool ns_required = false);
 
 private:
-	vector<std::weak_ptr<ArchiveEntry>>	entries_;
+	vector<weak_ptr<ArchiveEntry>> entries_;
 };
 
 class TextureResource : public Resource
 {
 	friend class ResourceManager;
+
 public:
 	struct Texture
 	{
-		CTexture	tex;
-		Archive*	parent;
+		CTexture          tex;
+		weak_ptr<Archive> parent;
 
-		Texture(CTexture* tex_copy, Archive* parent) : parent(parent)
-		{
-			if (tex_copy)
-				tex.copyTexture(tex_copy);
-		}
+		Texture(const CTexture& tex_copy, shared_ptr<Archive> parent) : parent(parent) { tex.copyTexture(tex_copy); }
 	};
 
-	TextureResource()  : Resource("texture") {}
-	virtual ~TextureResource() {}
+	TextureResource() : Resource("texture") {}
+	virtual ~TextureResource() = default;
 
-	void	add(CTexture* tex, Archive* parent);
-	void	remove(Archive* parent);
+	void add(CTexture* tex, Archive* parent);
+	void remove(Archive* parent);
 
-	int		length() override { return textures_.size(); }
+	int length() override { return textures_.size(); }
 
 private:
-	vector<std::unique_ptr<Texture>>	textures_;
+	vector<unique_ptr<Texture>> textures_;
 };
 
-typedef std::map<string, EntryResource> EntryResourceMap;
+typedef std::map<string, EntryResource>   EntryResourceMap;
 typedef std::map<string, TextureResource> TextureResourceMap;
 
-class ResourceManager : public Listener, public Announcer
+class ResourceManager
 {
 public:
-	ResourceManager() {}
-	~ResourceManager() {}
+	ResourceManager()  = default;
+	~ResourceManager() = default;
 
-	static ResourceManager*	getInstance()
+	void addArchive(Archive* archive);
+	void removeArchive(Archive* archive);
+
+	void addEntry(shared_ptr<ArchiveEntry>& entry);
+	void removeEntry(shared_ptr<ArchiveEntry>& entry, string_view entry_name = {}, bool full_check = false);
+
+	void listAllPatches();
+	void putAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
+
+	void putAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore = nullptr);
+	void putAllTextureNames(vector<string>& list);
+
+	void putAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority, bool fullPath = false);
+	void putAllFlatNames(vector<string>& list);
+
+	ArchiveEntry* getPaletteEntry(string_view palette, Archive* priority = nullptr);
+	ArchiveEntry* getPatchEntry(string_view patch, string_view nspace = "patches", Archive* priority = nullptr);
+	ArchiveEntry* getFlatEntry(string_view flat, Archive* priority = nullptr);
+	ArchiveEntry* getTextureEntry(string_view texture, string_view nspace = "textures", Archive* priority = nullptr);
+	CTexture*     getTexture(string_view texture, Archive* priority = nullptr, Archive* ignore = nullptr);
+	uint16_t      getTextureHash(string_view name) const;
+
+	// Signals
+	struct Signals
 	{
-		if (!instance_)
-			instance_ = new ResourceManager();
+		sigslot::signal<> resources_updated;
+	};
+	Signals& signals() { return signals_; }
 
-		return instance_;
-	}
-
-	void	addArchive(Archive* archive);
-	void	removeArchive(Archive* archive);
-
-	void	addEntry(ArchiveEntry::SPtr& entry);
-	void	removeEntry(ArchiveEntry::SPtr& entry);
-
-	void	listAllPatches();
-	void	getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority);
-
-	void	getAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore = nullptr);
-	void	getAllTextureNames(vector<string>& list);
-
-	void	getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority);
-	void	getAllFlatNames(vector<string>& list);
-
-	ArchiveEntry*	getPaletteEntry(string palette, Archive* priority = nullptr);
-	ArchiveEntry*	getPatchEntry(string patch, string nspace = "patches", Archive* priority = nullptr);
-	ArchiveEntry*	getFlatEntry(string flat, Archive* priority = nullptr);
-	ArchiveEntry*	getTextureEntry(string texture, string nspace = "textures", Archive* priority = nullptr);
-	CTexture*		getTexture(string texture, Archive* priority = nullptr, Archive* ignore = nullptr);
-	uint16_t		getTextureHash(string name);
-
-	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
-
-	static string	getTextureName(uint16_t hash) { return doom64_hash_table_[hash]; }
+	static string doom64TextureName(uint16_t hash) { return doom64_hash_table_[hash]; }
 
 private:
-	EntryResourceMap	palettes_;
-	EntryResourceMap	patches_;
-	EntryResourceMap	graphics_;
-	EntryResourceMap	flats_;
-	EntryResourceMap	satextures_;	// Stand Alone textures (e.g., between TX_ or T_ markers)
-	TextureResourceMap	textures_;		// Composite textures (defined in a TEXTUREx/TEXTURES lump)
+	EntryResourceMap palettes_;
+	EntryResourceMap patches_;
+	EntryResourceMap patches_fp_;      // Full path
+	EntryResourceMap patches_fp_only_; // Patches that can only be used by their full path name
+	EntryResourceMap graphics_;
+	EntryResourceMap flats_;
+	EntryResourceMap flats_fp_;
+	EntryResourceMap flats_fp_only_;
+	EntryResourceMap satextures_; // Stand Alone textures (e.g., between TX_ or T_ markers)
+	EntryResourceMap satextures_fp_;
+	// EntryResourceMap	satextures_fp_only_; // Probably not needed
+	TextureResourceMap textures_; // Composite textures (defined in a TEXTUREx/TEXTURES lump)
+	Signals            signals_;
 
-	static ResourceManager*	instance_;
-	static string			doom64_hash_table_[65536];
+	static string doom64_hash_table_[65536];
+
+	void updateEntry(ArchiveEntry& entry, bool remove, bool add);
 };
-
-// Define for less cumbersome ResourceManager::getInstance()
-#define theResourceManager ResourceManager::getInstance()

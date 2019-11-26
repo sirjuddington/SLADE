@@ -1,13 +1,10 @@
+#pragma once
 
-#ifndef CIEDELTAEQ_H
-#define	CIEDELTAEQ_H
+#include "Colour.h"
 
-#include "Main.h"
-
-namespace CIE {
-	double CIE76 (lab_t& col1, lab_t& col2);
-	double CIE94 (lab_t& col1, lab_t& col2);
-	double CIEDE2000(lab_t& col1, lab_t& col2);
-}
-
-#endif//CIEDELTAEQ_H
+namespace CIE
+{
+double CIE76(const ColLAB& col1, const ColLAB& col2);
+double CIE94(const ColLAB& col1, const ColLAB& col2);
+double CIEDE2000(const ColLAB& col1, const ColLAB& col2);
+} // namespace CIE

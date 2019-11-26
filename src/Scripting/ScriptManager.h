@@ -6,44 +6,43 @@ class SLADEMap;
 
 namespace ScriptManager
 {
-	enum class ScriptType
-	{
-		Editor,
-		Custom,
-		Global,
-		Archive,
-		Entry,
-		Map,
-		NonEditor
-	};
+enum class ScriptType
+{
+	Editor,
+	Custom,
+	Global,
+	Archive,
+	Entry,
+	Map,
+	NonEditor
+};
 
-	struct Script
-	{
-		ScriptType			type = ScriptType::Editor;
-		string				text;
-		string				name;
-		string				path;
-		bool				read_only = false;
-		ArchiveEntry::WPtr	source;
+struct Script
+{
+	ScriptType             type = ScriptType::Editor;
+	string                 text;
+	string                 name;
+	string                 path;
+	bool                   read_only = false;
+	weak_ptr<ArchiveEntry> source_entry;
+	string                 source_file;
+};
 
-		typedef std::unique_ptr<Script>	UPtr;
-	};
+typedef vector<unique_ptr<Script>> ScriptList;
 
-	typedef vector<Script::UPtr> ScriptList;
+ScriptList& editorScripts(ScriptType type = ScriptType::Editor);
 
-	ScriptList&	editorScripts(ScriptType type = ScriptType::Editor);
+void init();
+void open();
+void saveUserScripts();
 
-	void	init();
-	void	open();
-	void	saveUserScripts();
+bool renameScript(Script* script, string_view new_name);
+bool deleteScript(Script* script);
 
-	bool	renameScript(Script* script, const string& new_name);
-	bool	deleteScript(Script* script);
+Script* createEditorScript(string_view name, ScriptType type);
+void    populateEditorScriptMenu(wxMenu* menu, ScriptType type, string_view action_id);
 
-	Script*	createEditorScript(const string& name, ScriptType type);
-	void	populateEditorScriptMenu(wxMenu* menu, ScriptType type, const string& action_id);
-
-	void	runArchiveScript(Archive* archive, int index, wxWindow* parent = nullptr);
-	void	runEntryScript(vector<ArchiveEntry*> entries, int index, wxWindow* parent = nullptr);
-	void	runMapScript(SLADEMap* map, int index, wxWindow* parent = nullptr);
-}
+void runArchiveScript(Archive* archive, int index, wxWindow* parent = nullptr);
+void runEntryScript(vector<ArchiveEntry*> entries, int index, wxWindow* parent = nullptr);
+void runMapScript(SLADEMap* map, int index, wxWindow* parent = nullptr);
+} // namespace ScriptManager

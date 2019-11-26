@@ -1,82 +1,73 @@
+#pragma once
 
-#ifndef __MAP_REPLACE_DIALOG_H__
-#define __MAP_REPLACE_DIALOG_H__
-
-#include "common.h"
 #include "UI/Controls/STabCtrl.h"
-#include "UI/WxBasicControls.h"
-
 
 class Archive;
+
 class ThingTypeReplacePanel : public wxPanel
 {
-private:
-	wxSpinCtrl*	spin_from;
-	wxSpinCtrl*	spin_to;
-	wxButton*	btn_browse_from;
-	wxButton*	btn_browse_to;
-
 public:
 	ThingTypeReplacePanel(wxWindow* parent);
-	~ThingTypeReplacePanel();
+	~ThingTypeReplacePanel() = default;
 
-	void	doReplace(Archive* archive);
+	void doReplace(Archive* archive) const;
+
+private:
+	wxSpinCtrl* spin_from_ = nullptr;
+	wxSpinCtrl* spin_to_   = nullptr;
 };
 
 class SpecialReplacePanel : public wxPanel
 {
-private:
-	wxSpinCtrl* spin_from;
-	wxSpinCtrl*	spin_to;
-	wxCheckBox*	cb_line_specials;
-	wxCheckBox*	cb_thing_specials;
-	wxSpinCtrl*	spin_args_from[5];
-	wxSpinCtrl*	spin_args_to[5];
-	wxCheckBox*	cb_args[5];
-
 public:
 	SpecialReplacePanel(wxWindow* parent);
-	~SpecialReplacePanel();
+	~SpecialReplacePanel() = default;
 
-	void doReplace(Archive* archive);
+	void doReplace(Archive* archive) const;
+
+private:
+	wxSpinCtrl* spin_from_         = nullptr;
+	wxSpinCtrl* spin_to_           = nullptr;
+	wxCheckBox* cb_line_specials_  = nullptr;
+	wxCheckBox* cb_thing_specials_ = nullptr;
+	wxSpinCtrl* spin_args_from_[5] = {};
+	wxSpinCtrl* spin_args_to_[5]   = {};
+	wxCheckBox* cb_args_[5]        = {};
 };
 
 class TextureReplacePanel : public wxPanel
 {
-private:
-	wxTextCtrl*	text_from;
-	wxTextCtrl*	text_to;
-	wxCheckBox*	cb_floor;
-	wxCheckBox*	cb_ceiling;
-	wxCheckBox* cb_lower;
-	wxCheckBox*	cb_middle;
-	wxCheckBox*	cb_upper;
-
 public:
 	TextureReplacePanel(wxWindow* parent);
-	~TextureReplacePanel();
+	~TextureReplacePanel() = default;
 
-	void doReplace(Archive* archive);
+	void doReplace(Archive* archive) const;
+
+private:
+	wxTextCtrl* text_from_  = nullptr;
+	wxTextCtrl* text_to_    = nullptr;
+	wxCheckBox* cb_floor_   = nullptr;
+	wxCheckBox* cb_ceiling_ = nullptr;
+	wxCheckBox* cb_lower_   = nullptr;
+	wxCheckBox* cb_middle_  = nullptr;
+	wxCheckBox* cb_upper_   = nullptr;
 };
 
 class MapReplaceDialog : public wxDialog
 {
-private:
-	Archive*	archive;
-
-	TabControl*				stc_tabs;
-	ThingTypeReplacePanel*	panel_thing;
-	SpecialReplacePanel*	panel_special;
-	TextureReplacePanel*	panel_texture;
-	wxButton*				btn_replace;
-	wxButton*				btn_done;
-
 public:
 	MapReplaceDialog(wxWindow* parent = nullptr, Archive* archive = nullptr);
-	~MapReplaceDialog();
+	~MapReplaceDialog() = default;
 
-	void	onBtnDone(wxCommandEvent& e);
-	void	onBtnReplace(wxCommandEvent& e);
+private:
+	Archive* archive_ = nullptr;
+
+	TabControl*            stc_tabs_      = nullptr;
+	ThingTypeReplacePanel* panel_thing_   = nullptr;
+	SpecialReplacePanel*   panel_special_ = nullptr;
+	TextureReplacePanel*   panel_texture_ = nullptr;
+	wxButton*              btn_replace_   = nullptr;
+	wxButton*              btn_done_      = nullptr;
+
+	void onBtnReplace(wxCommandEvent& e);
 };
-
-#endif//__MAP_REPLACE_DIALOG_H__

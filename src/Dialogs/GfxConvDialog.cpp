@@ -1,40 +1,41 @@
 
-/*******************************************************************
- * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2014 Simon Judd
- *
- * Email:       sirjuddington@gmail.com
- * Web:         http://slade.mancubus.net
- * Filename:    GfxConvDialog.cpp
- * Description: A dialog UI for converting between different gfx
- *              formats, including options for conversion
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2019 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    GfxConvDialog.cpp
+// Description: A dialog UI for converting between different gfx formats,
+//              including options for conversion
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
 
 
-/*******************************************************************
- * INCLUDES
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "GfxConvDialog.h"
 #include "Archive/ArchiveManager.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
-#include "General/Console/Console.h"
 #include "General/Misc.h"
 #include "General/UI.h"
-#include "GfxConvDialog.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/Icons.h"
 #include "Graphics/Palette/PaletteManager.h"
@@ -44,126 +45,133 @@
 #include "UI/Controls/PaletteChooser.h"
 
 
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-string GfxConvDialog::current_palette_name = "";
-string GfxConvDialog::target_palette_name = "";
-CVAR(Bool, gfx_extraconv, false, CVAR_SAVE)
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+wxString GfxConvDialog::current_palette_name_ = "";
+wxString GfxConvDialog::target_palette_name_  = "";
+CVAR(Bool, gfx_extraconv, false, CVar::Flag::Save)
 
 
-/*******************************************************************
- * GFXCONVDIALOG CLASS FUNCTINOS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// GfxConvDialog Class Functions
+//
+// -----------------------------------------------------------------------------
 
-/* GfxConvDialog::GfxConvDialog
- * GfxConvDialog class constructor
- *******************************************************************/
-GfxConvDialog::GfxConvDialog(wxWindow* parent)
-: SDialog(parent, "Graphic Format Conversion", "gfxconv")
+
+// -----------------------------------------------------------------------------
+// GfxConvDialog class constructor
+// -----------------------------------------------------------------------------
+GfxConvDialog::GfxConvDialog(wxWindow* parent) : SDialog(parent, "Graphic Format Conversion", "gfxconv")
 {
-	current_item = 0;
-
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "convert"));
+	icon.CopyFromBitmap(Icons::getIcon(Icons::General, "convert"));
 	SetIcon(icon);
 
 	setupLayout();
 	CenterOnParent();
 }
 
-/* GfxConvDialog::~GfxConvDialog
- * GfxConvDialog class destructor
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// GfxConvDialog class destructor
+// -----------------------------------------------------------------------------
 GfxConvDialog::~GfxConvDialog()
 {
-	current_palette_name = pal_chooser_current->GetStringSelection();
-	target_palette_name = pal_chooser_target->GetStringSelection();
+	current_palette_name_ = pal_chooser_current_->GetStringSelection();
+	target_palette_name_  = pal_chooser_target_->GetStringSelection();
 }
 
-/* GfxConvDialog::nextItem
- * Opens the next item to be converted. Returns true if the selected
- * format was valid for the next image, false otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Opens the next item to be converted.
+// Returns true if the selected format was valid for the next image
+// -----------------------------------------------------------------------------
 bool GfxConvDialog::nextItem()
 {
 	// Go to next image
-	current_item++;
-	if (current_item >= items.size())
+	current_item_++;
+	if (current_item_ >= items_.size())
 	{
-		this->Close(true);
+		Close(true);
 		return false;
 	}
 
 	// Load image if needed
-	if (!items[current_item].image.isValid())
+	if (!items_[current_item_].image.isValid())
 	{
 		// If loading images from entries
-		if (items[current_item].entry != nullptr)
+		if (items_[current_item_].entry != nullptr)
 		{
-			if (!Misc::loadImageFromEntry(&(items[current_item].image), items[current_item].entry))
-				return nextItem();	// Skip if not a valid image entry
+			if (!Misc::loadImageFromEntry(&(items_[current_item_].image), items_[current_item_].entry))
+				return nextItem(); // Skip if not a valid image entry
 		}
 		// If loading images from textures
-		else if (items[current_item].texture != nullptr)
+		else if (items_[current_item_].texture != nullptr)
 		{
-			if (items[current_item].force_rgba)
-				items[current_item].image.convertRGBA(items[current_item].palette);
-			if (!items[current_item].texture->toImage(items[current_item].image, items[current_item].archive, items[current_item].palette, items[current_item].force_rgba))
-				return nextItem();	// Skip if not a valid image entry
+			if (items_[current_item_].force_rgba)
+				items_[current_item_].image.convertRGBA(items_[current_item_].palette);
+			if (!items_[current_item_].texture->toImage(
+					items_[current_item_].image,
+					items_[current_item_].archive,
+					items_[current_item_].palette,
+					items_[current_item_].force_rgba))
+				return nextItem(); // Skip if not a valid image entry
 		}
-		else return nextItem();	// Skip if not a valid image entry
+		else
+			return nextItem(); // Skip if not a valid image entry
 	}
 
 	// Update valid formats
-	combo_target_format->Clear();
-	conv_formats.clear();
+	combo_target_format_->Clear();
+	conv_formats_.clear();
 	vector<SIFormat*> all_formats;
-	SIFormat::getAllFormats(all_formats);
+	SIFormat::putAllFormats(all_formats);
 	int current_index = -1;
 	int default_index = -1;
-	for (unsigned a = 0; a < all_formats.size(); a++)
+	for (auto& format : all_formats)
 	{
 		// Check if the image can be written to this format
-		if (all_formats[a]->canWrite(items[current_item].image))
+		if (format->canWrite(items_[current_item_].image) != SIFormat::Writable::No)
 		{
 			// Add conversion formats depending on what colour types this image format can handle
-			if (all_formats[a]->canWriteType(PALMASK))
+			if (format->canWriteType(SImage::Type::PalMask))
 			{
 				// Add format
-				conv_formats.push_back(conv_format_t(all_formats[a], PALMASK));
-				combo_target_format->Append(all_formats[a]->getName() + " (Paletted)");
+				conv_formats_.emplace_back(format, SImage::Type::PalMask);
+				combo_target_format_->Append(format->name() + " (Paletted)");
 
 				// Check for match with current format
-				if (current_format.format == all_formats[a] && current_format.coltype == PALMASK)
-					current_index = conv_formats.size() - 1;
+				if (current_format_.format == format && current_format_.coltype == SImage::Type::PalMask)
+					current_index = conv_formats_.size() - 1;
 
 				// Default format is 'doom gfx'
-				if (all_formats[a]->getId() == "doom")
-					default_index = conv_formats.size() - 1;
+				if (format->id() == "doom")
+					default_index = conv_formats_.size() - 1;
 			}
 
-			if (all_formats[a]->canWriteType(RGBA))
+			if (format->canWriteType(SImage::Type::RGBA))
 			{
 				// Add format
-				conv_formats.push_back(conv_format_t(all_formats[a], RGBA));
-				combo_target_format->Append(all_formats[a]->getName() + " (Truecolour)");
+				conv_formats_.emplace_back(format, SImage::Type::RGBA);
+				combo_target_format_->Append(format->name() + " (Truecolour)");
 
 				// Check for match with current format
-				if (current_format.format == all_formats[a] && current_format.coltype == RGBA)
-					current_index = conv_formats.size() - 1;
+				if (current_format_.format == format && current_format_.coltype == SImage::Type::RGBA)
+					current_index = conv_formats_.size() - 1;
 			}
 
-			if (all_formats[a]->canWriteType(ALPHAMAP))
+			if (format->canWriteType(SImage::Type::AlphaMap))
 			{
 				// Add format
-				conv_formats.push_back(conv_format_t(all_formats[a], ALPHAMAP));
-				combo_target_format->Append(all_formats[a]->getName() + " (Alpha Map)");
+				conv_formats_.emplace_back(format, SImage::Type::AlphaMap);
+				combo_target_format_->Append(format->name() + " (Alpha Map)");
 
 				// Check for match with current format
-				if (current_format.format == all_formats[a] && current_format.coltype == ALPHAMAP)
-					current_index = conv_formats.size() - 1;
+				if (current_format_.format == format && current_format_.coltype == SImage::Type::AlphaMap)
+					current_index = conv_formats_.size() - 1;
 			}
 		}
 	}
@@ -174,115 +182,112 @@ bool GfxConvDialog::nextItem()
 	{
 		// Default to Doom Gfx
 		current_index = default_index;
-		ok = false;
+		ok            = false;
 	}
 
 	// Set current format
-	combo_target_format->SetSelection(current_index);
-	current_format = conv_formats[current_index];
+	combo_target_format_->SetSelection(current_index);
+	current_format_ = conv_formats_[current_index];
 
 	// Setup current format string
-	string fmt_string = "Current Format: ";
-	if (items[current_item].texture == nullptr)
+	wxString fmt_string = "Current Format: ";
+	if (items_[current_item_].texture == nullptr)
 	{
-		if (items[current_item].image.getFormat())
-			fmt_string += items[current_item].image.getFormat()->getName();
-		else fmt_string += "Font";
+		if (items_[current_item_].image.format())
+			fmt_string += items_[current_item_].image.format()->name();
+		else
+			fmt_string += "Font";
 	}
 	else
 		fmt_string += "Texture";
-	if (items[current_item].image.getType() == RGBA)
+	if (items_[current_item_].image.type() == SImage::Type::RGBA)
 		fmt_string += " (Truecolour)";
-	else if (items[current_item].image.getType() == PALMASK)
+	else if (items_[current_item_].image.type() == SImage::Type::PalMask)
 	{
 		fmt_string += " (Paletted - ";
-		if (items[current_item].image.hasPalette())
+		if (items_[current_item_].image.hasPalette())
 			fmt_string += "Internally)";
-		else fmt_string += "Externally)";
+		else
+			fmt_string += "Externally)";
 	}
-	else if (items[current_item].image.getType() == ALPHAMAP)
+	else if (items_[current_item_].image.type() == SImage::Type::AlphaMap)
 		fmt_string += " (Alpha Map)";
-	label_current_format->SetLabel(fmt_string);
+	label_current_format_->SetLabel(fmt_string);
 
 	// Update UI
 	updatePreviewGfx();
-	UI::setSplashProgressMessage(S_FMT("%d of %lu", current_item, items.size()));
-	UI::setSplashProgress((float)current_item / (float)items.size());
+	UI::setSplashProgressMessage(fmt::format("{} of {}", current_item_, items_.size()));
+	UI::setSplashProgress((float)current_item_ / (float)items_.size());
 
 	return ok;
 }
 
-/* GfxConvDialog::setupLayout
- * Sets up the dialog UI layout
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Sets up the dialog UI layout
+// -----------------------------------------------------------------------------
 void GfxConvDialog::setupLayout()
 {
-	int px_inner = UI::pad();
-	int px_outer = UI::padLarge();
-	int px_pad = UI::px(UI::Size::PadMinimum);
+	int px_inner        = UI::pad();
+	int px_outer        = UI::padLarge();
+	int px_pad          = UI::px(UI::Size::PadMinimum);
 	int px_preview_size = UI::scalePx(192);
 
-	wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
 
-	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);
-	msizer->Add(m_vbox, 1, wxEXPAND|wxALL, px_outer);
+	auto m_vbox = new wxBoxSizer(wxVERTICAL);
+	msizer->Add(m_vbox, 1, wxEXPAND | wxALL, px_outer);
 
 	// Add current format label
-	label_current_format = new wxStaticText(this, -1, "Current Format:");
-	m_vbox->Add(label_current_format, 0, wxALIGN_CENTER_VERTICAL|wxBOTTOM, px_inner);
+	label_current_format_ = new wxStaticText(this, -1, "Current Format:");
+	m_vbox->Add(label_current_format_, 0, wxALIGN_CENTER_VERTICAL | wxBOTTOM, px_inner);
 
 	// Add 'Convert To' combo box
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(hbox, 0, wxEXPAND|wxBOTTOM, px_outer);
-	hbox->Add(new wxStaticText(this, -1, "Convert to:"), 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, px_pad);
-	combo_target_format = new wxChoice(this, -1);
-	hbox->Add(combo_target_format, 1, wxEXPAND);
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	m_vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, px_outer);
+	hbox->Add(new wxStaticText(this, -1, "Convert to:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, px_pad);
+	combo_target_format_ = new wxChoice(this, -1);
+	hbox->Add(combo_target_format_, 1, wxEXPAND);
 
 
 	// Add Gfx previews
-	wxStaticBox* frame = new wxStaticBox(this, -1, "Colour Options");
-	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
-	m_vbox->Add(framesizer, 1, wxEXPAND|wxBOTTOM, px_outer);
+	auto frame      = new wxStaticBox(this, -1, "Colour Options");
+	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
+	m_vbox->Add(framesizer, 1, wxEXPAND | wxBOTTOM, px_outer);
 
 	auto gbsizer = new wxGridBagSizer(px_inner, px_inner);
 	framesizer->Add(gbsizer, 1, wxEXPAND | wxALL, px_inner);
 
 	// Current
 	gbsizer->Add(new wxStaticText(this, -1, "Current Graphic"), { 0, 0 }, { 1, 1 });
-	gfx_current = new GfxCanvas(this, -1);
-	gfx_current->SetInitialSize(wxSize(px_preview_size, px_preview_size));
-	gfx_current->setViewType(GFXVIEW_CENTERED);
-	gbsizer->Add(gfx_current, { 1, 0 }, { 1, 1 }, wxEXPAND);
-	pal_chooser_current = new PaletteChooser(this, -1);
-	pal_chooser_current->selectPalette(current_palette_name);
-	gbsizer->Add(pal_chooser_current, { 2, 0 }, { 1, 1 }, wxEXPAND);
+	gfx_current_ = new GfxCanvas(this, -1);
+	gfx_current_->SetInitialSize(wxSize(px_preview_size, px_preview_size));
+	gfx_current_->setViewType(GfxCanvas::View::Centered);
+	gbsizer->Add(gfx_current_, { 1, 0 }, { 1, 1 }, wxEXPAND);
+	pal_chooser_current_ = new PaletteChooser(this, -1);
+	pal_chooser_current_->selectPalette(current_palette_name_);
+	gbsizer->Add(pal_chooser_current_, { 2, 0 }, { 1, 1 }, wxEXPAND);
 
 	// Converted
 	gbsizer->Add(new wxStaticText(this, -1, "Converted Graphic"), { 0, 1 }, { 1, 2 });
-	gfx_target = new GfxCanvas(this, -1);
-	gfx_target->SetInitialSize(wxSize(px_preview_size, px_preview_size));
-	gfx_target->setViewType(1);
-	gbsizer->Add(gfx_target, { 1, 1 }, { 1, 2 }, wxEXPAND);
-	pal_chooser_target = new PaletteChooser(this, -1);
-	pal_chooser_target->selectPalette(target_palette_name);
-	gbsizer->Add(pal_chooser_target, { 2, 1 }, { 1, 1 }, wxEXPAND);
-	btn_colorimetry_settings = new wxBitmapButton(
-		this,
-		-1,
-		Icons::getIcon(Icons::GENERAL, "settings"),
-		wxDefaultPosition,
-		wxDefaultSize
-	);
-	btn_colorimetry_settings->SetToolTip("Adjust Colorimetry Settings...");
-	gbsizer->Add(btn_colorimetry_settings, { 2, 2 }, { 1, 1 }, wxALIGN_CENTER);
+	gfx_target_ = new GfxCanvas(this, -1);
+	gfx_target_->SetInitialSize(wxSize(px_preview_size, px_preview_size));
+	gfx_target_->setViewType(GfxCanvas::View::Centered);
+	gbsizer->Add(gfx_target_, { 1, 1 }, { 1, 2 }, wxEXPAND);
+	pal_chooser_target_ = new PaletteChooser(this, -1);
+	pal_chooser_target_->selectPalette(target_palette_name_);
+	gbsizer->Add(pal_chooser_target_, { 2, 1 }, { 1, 1 }, wxEXPAND);
+	btn_colorimetry_settings_ = new wxBitmapButton(
+		this, -1, Icons::getIcon(Icons::General, "settings"), wxDefaultPosition, wxDefaultSize);
+	btn_colorimetry_settings_->SetToolTip("Adjust Colorimetry Settings...");
+	gbsizer->Add(btn_colorimetry_settings_, { 2, 2 }, { 1, 1 }, wxALIGN_CENTER);
 	gbsizer->AddGrowableCol(0, 1);
 	gbsizer->AddGrowableCol(1, 1);
 	gbsizer->AddGrowableRow(1, 1);
 
 
 	// Add transparency options
-	frame = new wxStaticBox(this, -1, "Transparency Options");
+	frame      = new wxStaticBox(this, -1, "Transparency Options");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	m_vbox->Add(framesizer, 0, wxEXPAND | wxBOTTOM, px_outer);
 
@@ -290,161 +295,145 @@ void GfxConvDialog::setupLayout()
 	framesizer->Add(gbsizer, 1, wxEXPAND | wxALL, px_inner);
 
 	// 'Enable transparency' checkbox
-	cb_enable_transparency = new wxCheckBox(this, -1, "Enable Transparency");
-	cb_enable_transparency->SetValue(true);
-	cb_enable_transparency->SetToolTip("Uncheck this to remove any existing transparency from the graphic");
-	gbsizer->Add(cb_enable_transparency, { 0, 0 }, { 1, 2 });
+	cb_enable_transparency_ = new wxCheckBox(this, -1, "Enable Transparency");
+	cb_enable_transparency_->SetValue(true);
+	cb_enable_transparency_->SetToolTip("Uncheck this to remove any existing transparency from the graphic");
+	gbsizer->Add(cb_enable_transparency_, { 0, 0 }, { 1, 2 });
 
 	// Keep existing transparency
-	rb_transparency_existing = new wxRadioButton(
-		this,
-		100,
-		"Existing w/Threshold:",
-		wxDefaultPosition,
-		wxDefaultSize,
-		wxRB_GROUP
-	);
-	rb_transparency_existing->SetValue(true);
-	gbsizer->Add(rb_transparency_existing, { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	rb_transparency_existing_ = new wxRadioButton(
+		this, 100, "Existing w/Threshold:", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+	rb_transparency_existing_->SetValue(true);
+	gbsizer->Add(rb_transparency_existing_, { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	// Alpha threshold
-	slider_alpha_threshold = new wxSlider(
-		this,
-		-1,
-		0,
-		0,
-		255,
-		wxDefaultPosition,
-		wxDefaultSize,
-		wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM
-	);
-	slider_alpha_threshold->SetToolTip(
+	slider_alpha_threshold_ = new wxSlider(
+		this, -1, 0, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
+	slider_alpha_threshold_->SetToolTip(
 		"Specifies the 'cutoff' transparency level, anything above this will be fully opaque, "
-		"anything equal or below will be completely transparent"
-	);
-	gbsizer->Add(slider_alpha_threshold, { 1, 1 }, { 1, 1 }, wxEXPAND);
+		"anything equal or below will be completely transparent");
+	gbsizer->Add(slider_alpha_threshold_, { 1, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Transparent colour
-	rb_transparency_colour = new wxRadioButton(this, 101, "Transparent Colour:", wxDefaultPosition, wxDefaultSize, 0);
-	rb_transparency_colour->SetValue(false);
-	gbsizer->Add(rb_transparency_colour, { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	rb_transparency_colour_ = new wxRadioButton(this, 101, "Transparent Colour:", wxDefaultPosition, wxDefaultSize, 0);
+	rb_transparency_colour_->SetValue(false);
+	gbsizer->Add(rb_transparency_colour_, { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
-	colbox_transparent = new ColourBox(this, -1, false);
-	colbox_transparent->setColour(rgba_t(0, 255, 255, 255));
-	gbsizer->Add(colbox_transparent, { 2, 1 }, { 1, 1 });
+	colbox_transparent_ = new ColourBox(this, -1, false);
+	colbox_transparent_->setColour(ColRGBA(0, 255, 255, 255));
+	gbsizer->Add(colbox_transparent_, { 2, 1 }, { 1, 1 });
 
 	// From brightness
-	rb_transparency_brightness = new wxRadioButton(this, 102, "Transparency from Brightness");
-	rb_transparency_brightness->SetValue(false);
-	gbsizer->Add(rb_transparency_brightness, { 3, 0 }, { 1, 2 });
+	rb_transparency_brightness_ = new wxRadioButton(this, 102, "Transparency from Brightness");
+	rb_transparency_brightness_->SetValue(false);
+	gbsizer->Add(rb_transparency_brightness_, { 3, 0 }, { 1, 2 });
 	gbsizer->AddGrowableCol(1, 1);
 
 	// Buttons
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	m_vbox->Add(hbox, 0, wxEXPAND);
 
-	btn_convert = new wxButton(this, -1, "Convert");
-	btn_convert_all = new wxButton(this, -1, "Convert All");
-	btn_skip = new wxButton(this, -1, "Skip");
-	btn_skip_all = new wxButton(this, -1, "Skip All");
+	btn_convert_     = new wxButton(this, -1, "Convert");
+	btn_convert_all_ = new wxButton(this, -1, "Convert All");
+	btn_skip_        = new wxButton(this, -1, "Skip");
+	btn_skip_all_    = new wxButton(this, -1, "Skip All");
 
 	hbox->AddStretchSpacer(1);
-	hbox->Add(btn_convert, 0, wxEXPAND | wxRIGHT, px_inner);
-	hbox->Add(btn_convert_all, 0, wxEXPAND | wxRIGHT, px_inner);
-	hbox->Add(btn_skip, 0, wxEXPAND | wxRIGHT, px_inner);
-	hbox->Add(btn_skip_all, 0, wxEXPAND);
+	hbox->Add(btn_convert_, 0, wxEXPAND | wxRIGHT, px_inner);
+	hbox->Add(btn_convert_all_, 0, wxEXPAND | wxRIGHT, px_inner);
+	hbox->Add(btn_skip_, 0, wxEXPAND | wxRIGHT, px_inner);
+	hbox->Add(btn_skip_all_, 0, wxEXPAND);
 
 
 	// Bind events
 	Bind(wxEVT_SIZE, &GfxConvDialog::onResize, this);
-	btn_convert->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnConvert, this);
-	btn_convert_all->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnConvertAll, this);
-	btn_skip->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnSkip, this);
-	btn_skip_all->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnSkipAll, this);
-	combo_target_format->Bind(wxEVT_CHOICE, &GfxConvDialog::onTargetFormatChanged, this);
-	pal_chooser_current->Bind(wxEVT_CHOICE, &GfxConvDialog::onCurrentPaletteChanged, this);
-	pal_chooser_target->Bind(wxEVT_CHOICE, &GfxConvDialog::onTargetPaletteChanged, this);
-	slider_alpha_threshold->Bind(wxEVT_SLIDER, &GfxConvDialog::onAlphaThresholdChanged, this);
-	cb_enable_transparency->Bind(wxEVT_CHECKBOX, &GfxConvDialog::onEnableTransparencyChanged, this);
-	rb_transparency_colour->Bind(wxEVT_RADIOBUTTON, &GfxConvDialog::onTransTypeChanged, this);
-	rb_transparency_existing->Bind(wxEVT_RADIOBUTTON, &GfxConvDialog::onTransTypeChanged, this);
-	rb_transparency_brightness->Bind(wxEVT_RADIOBUTTON, &GfxConvDialog::onTransTypeChanged, this);
-	Bind(wxEVT_COLOURBOX_CHANGED, &GfxConvDialog::onTransColourChanged, this, colbox_transparent->GetId());
-	gfx_current->Bind(wxEVT_LEFT_DOWN, &GfxConvDialog::onPreviewCurrentMouseDown, this);
-	btn_colorimetry_settings->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnColorimetrySettings, this);
+	btn_convert_->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnConvert, this);
+	btn_convert_all_->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnConvertAll, this);
+	btn_skip_->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnSkip, this);
+	btn_skip_all_->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnSkipAll, this);
+	combo_target_format_->Bind(wxEVT_CHOICE, &GfxConvDialog::onTargetFormatChanged, this);
+	pal_chooser_current_->Bind(wxEVT_CHOICE, &GfxConvDialog::onCurrentPaletteChanged, this);
+	pal_chooser_target_->Bind(wxEVT_CHOICE, &GfxConvDialog::onTargetPaletteChanged, this);
+	slider_alpha_threshold_->Bind(wxEVT_SLIDER, &GfxConvDialog::onAlphaThresholdChanged, this);
+	cb_enable_transparency_->Bind(wxEVT_CHECKBOX, &GfxConvDialog::onEnableTransparencyChanged, this);
+	rb_transparency_colour_->Bind(wxEVT_RADIOBUTTON, &GfxConvDialog::onTransTypeChanged, this);
+	rb_transparency_existing_->Bind(wxEVT_RADIOBUTTON, &GfxConvDialog::onTransTypeChanged, this);
+	rb_transparency_brightness_->Bind(wxEVT_RADIOBUTTON, &GfxConvDialog::onTransTypeChanged, this);
+	Bind(wxEVT_COLOURBOX_CHANGED, &GfxConvDialog::onTransColourChanged, this, colbox_transparent_->GetId());
+	gfx_current_->Bind(wxEVT_LEFT_DOWN, &GfxConvDialog::onPreviewCurrentMouseDown, this);
+	btn_colorimetry_settings_->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnColorimetrySettings, this);
 
 
 	// Autosize to fit contents (and set this as the minimum size)
-	//SetInitialSize(wxSize(-1, -1));
 	SetMinClientSize(msizer->GetMinSize());
 }
 
-/* GfxConvDialog::openEntry
- * Opens an image entry to be converted
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Opens an image entry to be converted
+// -----------------------------------------------------------------------------
 void GfxConvDialog::openEntry(ArchiveEntry* entry)
 {
 	// Add item
-	items.push_back(gcd_item_t(entry));
+	items_.emplace_back(entry);
 
 	// Open it
-	current_item = -1;
+	current_item_ = -1;
 	nextItem();
 }
 
-/* GfxConvDialog::openEntries
- * Opens a list of image entries to be converted
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Opens a list of image entries to be converted
+// -----------------------------------------------------------------------------
 void GfxConvDialog::openEntries(vector<ArchiveEntry*> entries)
 {
 	// Add entries to item list
-	for (unsigned a = 0; a < entries.size(); a++)
-		items.push_back(gcd_item_t(entries[a]));
+	for (auto& entry : entries)
+		items_.emplace_back(entry);
 
 	// Open the first item
-	current_item = -1;
+	current_item_ = -1;
 	nextItem();
 }
 
-/* GfxConvDialog::openTextures
- * Opens a list of composite textures to be converted
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Opens a list of composite textures to be converted
+// -----------------------------------------------------------------------------
 void GfxConvDialog::openTextures(vector<CTexture*> textures, Palette* palette, Archive* archive, bool force_rgba)
 {
 	// Add entries to item list
-	for (unsigned a = 0; a < textures.size(); a++)
-		items.push_back(gcd_item_t(textures[a], palette, archive, force_rgba));
+	for (auto& texture : textures)
+		items_.emplace_back(texture, palette, archive, force_rgba);
 
 	// Open the first item
-	current_item = -1;
+	current_item_ = -1;
 	nextItem();
 }
 
-/* GfxConvDialog::updatePreviewGfx
- * Updates the current and target preview windows
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Updates the current and target preview windows
+// -----------------------------------------------------------------------------
 void GfxConvDialog::updatePreviewGfx()
 {
 	// Check current item is valid
-	if (items.size() <= current_item)
+	if (items_.size() <= current_item_)
 		return;
 
 	// Get the current image entry
-	gcd_item_t& item = items[current_item];
+	auto& item = items_[current_item_];
 
 	// Set palettes
-	if (item.image.hasPalette() && pal_chooser_current->globalSelected())
-		gfx_current->setPalette(item.image.getPalette());
+	if (item.image.hasPalette() && pal_chooser_current_->globalSelected())
+		gfx_current_->setPalette(item.image.palette());
 	else
-		gfx_current->setPalette(pal_chooser_current->getSelectedPalette(item.entry));
-	if (pal_chooser_target->globalSelected())
-		gfx_target->setPalette(gfx_current->getPalette());
+		gfx_current_->setPalette(pal_chooser_current_->selectedPalette(item.entry));
+	if (pal_chooser_target_->globalSelected())
+		gfx_target_->setPalette(&gfx_current_->palette());
 	else
-		gfx_target->setPalette(pal_chooser_target->getSelectedPalette(item.entry));
+		gfx_target_->setPalette(pal_chooser_target_->selectedPalette(item.entry));
 
 	// Load the image to both gfx canvases
-	gfx_current->getImage()->copyImage(&item.image);
-	gfx_target->getImage()->copyImage(&item.image);
+	gfx_current_->image().copyImage(&item.image);
+	gfx_target_->image().copyImage(&item.image);
 
 	// Update controls
 	updateControls();
@@ -453,195 +442,191 @@ void GfxConvDialog::updatePreviewGfx()
 	// --- Apply image conversion to target preview ---
 
 	// Get conversion options
-	SIFormat::convert_options_t opt;
-	getConvertOptions(opt);
+	SIFormat::ConvertOptions opt;
+	convertOptions(opt);
 
 	// Do conversion
-	//LOG_MESSAGE(1, "Converting to %s", current_format.format->getName());
-	current_format.format->convertWritable(*(gfx_target->getImage()), opt);
+	current_format_.format->convertWritable(gfx_target_->image(), opt);
 
 
 	// Refresh
-	gfx_current->zoomToFit(true, 0.05f);
-	gfx_current->Refresh();
-	gfx_target->zoomToFit(true, 0.05f);
-	gfx_target->Refresh();
+	gfx_current_->zoomToFit(true, 0.05f);
+	gfx_current_->Refresh();
+	gfx_target_->zoomToFit(true, 0.05f);
+	gfx_target_->Refresh();
 }
 
-/* GfxConvDialog::updateControls
- * Disables/enables controls based on what is currently selected
- *******************************************************************/
-void GfxConvDialog::updateControls()
+// -----------------------------------------------------------------------------
+// Disables/enables controls based on what is currently selected
+// -----------------------------------------------------------------------------
+void GfxConvDialog::updateControls() const
 {
 	// Check current item is valid
-	if (items.size() <= current_item)
+	if (items_.size() <= current_item_)
 		return;
 
 	// Set colourbox palette if source image has one
-	SIType coltype = gfx_current->getImage()->getType();
-	if (coltype == PALMASK)
-	{
-		colbox_transparent->setPalette(gfx_current->getPalette());
-	}
+	auto coltype = gfx_current_->image().type();
+	if (coltype == SImage::Type::PalMask)
+		colbox_transparent_->setPalette(&gfx_current_->palette());
 	else
-		colbox_transparent->setPalette(nullptr);
+		colbox_transparent_->setPalette(nullptr);
 
 	// Disable/enable transparency options depending on transparency checkbox
-	if (cb_enable_transparency->GetValue())
+	if (cb_enable_transparency_->GetValue())
 	{
 		// Disable/enable alpha threshold slider as needed
-		if (coltype == RGBA || coltype == ALPHAMAP)
-			slider_alpha_threshold->Enable(true);
+		if (coltype == SImage::Type::RGBA || coltype == SImage::Type::AlphaMap)
+			slider_alpha_threshold_->Enable(true);
 		else
-			slider_alpha_threshold->Enable(false);
+			slider_alpha_threshold_->Enable(false);
 
-		rb_transparency_colour->Enable(true);
-		rb_transparency_existing->Enable(true);
-		rb_transparency_brightness->Enable(true);
+		rb_transparency_colour_->Enable(true);
+		rb_transparency_existing_->Enable(true);
+		rb_transparency_brightness_->Enable(true);
 	}
 	else
 	{
-		rb_transparency_colour->Enable(false);
-		rb_transparency_existing->Enable(false);
-		rb_transparency_brightness->Enable(false);
-		slider_alpha_threshold->Enable(false);
+		rb_transparency_colour_->Enable(false);
+		rb_transparency_existing_->Enable(false);
+		rb_transparency_brightness_->Enable(false);
+		slider_alpha_threshold_->Enable(false);
 	}
 }
 
-/* GfxConvDialog::getConvertOptions
- * Writes the state of the conversion option controls to [opt]
- *******************************************************************/
-void GfxConvDialog::getConvertOptions(SIFormat::convert_options_t& opt)
+// -----------------------------------------------------------------------------
+// Writes the state of the conversion option controls to [opt]
+// -----------------------------------------------------------------------------
+void GfxConvDialog::convertOptions(SIFormat::ConvertOptions& opt)
 {
 	// Set transparency options
-	opt.transparency = cb_enable_transparency->GetValue();
-	if (rb_transparency_existing->GetValue())
+	opt.transparency = cb_enable_transparency_->GetValue();
+	if (rb_transparency_existing_->GetValue())
 	{
-		opt.mask_source = SIFormat::MASK_ALPHA;
-		opt.alpha_threshold = slider_alpha_threshold->GetValue();
+		opt.mask_source     = SIFormat::Mask::Alpha;
+		opt.alpha_threshold = slider_alpha_threshold_->GetValue();
 	}
-	else if (rb_transparency_colour->GetValue())
+	else if (rb_transparency_colour_->GetValue())
 	{
-		opt.mask_source = SIFormat::MASK_COLOUR;
-		opt.mask_colour = colbox_transparent->colour();
+		opt.mask_source = SIFormat::Mask::Colour;
+		opt.mask_colour = colbox_transparent_->colour();
 	}
 	else
-		opt.mask_source = SIFormat::MASK_BRIGHTNESS;
+		opt.mask_source = SIFormat::Mask::Brightness;
 
 	// Set conversion palettes
-	//opt.pal_current = gfx_current->getPalette();
-	//opt.pal_target = gfx_target->getPalette();
-	// Palettes were already set
-	opt.pal_current = pal_chooser_current->getSelectedPalette(items[current_item].entry);
-	opt.pal_target = pal_chooser_target->getSelectedPalette(items[current_item].entry);
+	opt.pal_current = pal_chooser_current_->selectedPalette(items_[current_item_].entry);
+	opt.pal_target  = pal_chooser_target_->selectedPalette(items_[current_item_].entry);
 
 	// Set conversion colour format
-	opt.col_format = current_format.coltype;
+	opt.col_format = current_format_.coltype;
 }
 
-/* GfxConvDialog::itemModified
- * Returns true if the item at [index] has been modified, false
- * otherwise
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Returns true if the item at [index] has been modified, false otherwise
+// -----------------------------------------------------------------------------
 bool GfxConvDialog::itemModified(int index)
 {
 	// Check index
-	if (index < 0 || index >= (int)items.size())
+	if (index < 0 || index >= (int)items_.size())
 		return false;
 
-	return items[index].modified;
+	return items_[index].modified;
 }
 
-/* GfxConvDialog::getItemImage
- * Returns the image for the item at [index]
- *******************************************************************/
-SImage* GfxConvDialog::getItemImage(int index)
+// -----------------------------------------------------------------------------
+// Returns the image for the item at [index]
+// -----------------------------------------------------------------------------
+SImage* GfxConvDialog::itemImage(int index)
 {
 	// Check index
-	if (index < 0 || index >= (int)items.size())
+	if (index < 0 || index >= (int)items_.size())
 		return nullptr;
 
-	return &(items[index].image);
+	return &(items_[index].image);
 }
 
-/* GfxConvDialog::getItemFormat
- * Returns the format for the item at [index]
- *******************************************************************/
-SIFormat* GfxConvDialog::getItemFormat(int index)
+// -----------------------------------------------------------------------------
+// Returns the format for the item at [index]
+// -----------------------------------------------------------------------------
+SIFormat* GfxConvDialog::itemFormat(int index)
 {
 	// Check index
-	if (index < 0 || index >= (int)items.size())
+	if (index < 0 || index >= (int)items_.size())
 		return nullptr;
 
-	return items[index].new_format;
+	return items_[index].new_format;
 }
 
-/* GfxConvDialog::getItemPalette
- * Returns the palette for the item at [index]
- *******************************************************************/
-Palette* GfxConvDialog::getItemPalette(int index)
+// -----------------------------------------------------------------------------
+// Returns the palette for the item at [index]
+// -----------------------------------------------------------------------------
+Palette* GfxConvDialog::itemPalette(int index)
 {
 	// Check index
-	if (index < 0 || index >= (int)items.size())
+	if (index < 0 || index >= (int)items_.size())
 		return nullptr;
 
-	return items[index].palette;
+	return items_[index].palette;
 }
 
-/* GfxConvDialog::applyConversion
- * Applies the conversion to the current image
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Applies the conversion to the current image
+// -----------------------------------------------------------------------------
 void GfxConvDialog::applyConversion()
 {
 	// Get current item
-	gcd_item_t& item = items[current_item];
+	auto& item = items_[current_item_];
 
 	// Write converted image data to it
-	item.image.copyImage(gfx_target->getImage());
+	item.image.copyImage(&gfx_target_->image());
 
 	// Update item info
-	item.modified = true;
-	item.new_format = current_format.format;
-	item.palette = pal_chooser_target->getSelectedPalette(item.entry);
+	item.modified   = true;
+	item.new_format = current_format_.format;
+	item.palette    = pal_chooser_target_->selectedPalette(item.entry);
 }
 
 
-/*******************************************************************
- * GFXCONVDIALOG EVENTS
- *******************************************************************/
+// -----------------------------------------------------------------------------
+//
+// GfxConvDialog Class Events
+//
+// -----------------------------------------------------------------------------
 
-/* GfxConvDialog::resize
- * Called when the dialog is resized
- *******************************************************************/
+
+// -----------------------------------------------------------------------------
+// Called when the dialog is resized
+// -----------------------------------------------------------------------------
 void GfxConvDialog::onResize(wxSizeEvent& e)
 {
-	wxDialog::OnSize(e);
+	OnSize(e);
 
-	gfx_current->zoomToFit(true, 0.05f);
-	gfx_target->zoomToFit(true, 0.05f);
+	gfx_current_->zoomToFit(true, 0.05f);
+	gfx_target_->zoomToFit(true, 0.05f);
 
 	e.Skip();
 }
 
-/* GfxConvDialog::btnConvertClicked
- * Called when the 'Convert' button is clicked
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the 'Convert' button is clicked
+// -----------------------------------------------------------------------------
 void GfxConvDialog::onBtnConvert(wxCommandEvent& e)
 {
 	applyConversion();
 	nextItem();
 }
 
-/* GfxConvDialog::btnConvertAllClicked
- * Called when the 'Convert All' button is clicked
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the 'Convert All' button is clicked
+// -----------------------------------------------------------------------------
 void GfxConvDialog::onBtnConvertAll(wxCommandEvent& e)
 {
 	// Show splash window
 	UI::showSplash("Converting Gfx...", true);
 
 	// Convert all images
-	for (size_t a = current_item; a < items.size(); a++)
+	for (size_t a = current_item_; a < items_.size(); a++)
 	{
 		applyConversion();
 		if (!nextItem())
@@ -652,50 +637,50 @@ void GfxConvDialog::onBtnConvertAll(wxCommandEvent& e)
 	UI::hideSplash();
 }
 
-/* GfxConvDialog::btnSkipClicked
- * Called when the 'Skip' button is clicked
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the 'Skip' button is clicked
+// -----------------------------------------------------------------------------
 void GfxConvDialog::onBtnSkip(wxCommandEvent& e)
 {
 	nextItem();
 }
 
-/* GfxConvDialog::btnSkipAllClicked
- * Called when the 'Skip All' button is clicked
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the 'Skip All' button is clicked
+// -----------------------------------------------------------------------------
 void GfxConvDialog::onBtnSkipAll(wxCommandEvent& e)
 {
-	this->Close(true);
+	Close(true);
 }
 
-/* GfxConvDialog::comboTargetFormatChanged
- * Called when the 'Convert To' combo box is changed
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the 'Convert To' combo box is changed
+// -----------------------------------------------------------------------------
 void GfxConvDialog::onTargetFormatChanged(wxCommandEvent& e)
 {
-	current_format = conv_formats[combo_target_format->GetSelection()];
+	current_format_ = conv_formats_[combo_target_format_->GetSelection()];
 	updatePreviewGfx();
 }
 
-/* GfxConvDialog::paletteCurrentChanged
- * Called when the current image palette chooser is changed
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the current image palette chooser is changed
+// -----------------------------------------------------------------------------
 void GfxConvDialog::onCurrentPaletteChanged(wxCommandEvent& e)
 {
 	updatePreviewGfx();
 }
 
-/* GfxConvDialog::paletteTargetChanged
- * Called when the target image palette chooser is changed
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the target image palette chooser is changed
+// -----------------------------------------------------------------------------
 void GfxConvDialog::onTargetPaletteChanged(wxCommandEvent& e)
 {
 	updatePreviewGfx();
 }
 
-/* GfxConvDialog::sliderAlphaThresholdChanged
- * Called when the alpha threshold slider is changed
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the alpha threshold slider is changed
+// -----------------------------------------------------------------------------
 void GfxConvDialog::onAlphaThresholdChanged(wxCommandEvent& e)
 {
 	// Ignore while slider is being dragged
@@ -708,51 +693,51 @@ void GfxConvDialog::onAlphaThresholdChanged(wxCommandEvent& e)
 	updatePreviewGfx();
 }
 
-/* GfxConvDialog::cbEnableTransparencyChanged
- * Called when the 'enable transparency' checkbox is changed
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the 'enable transparency' checkbox is changed
+// -----------------------------------------------------------------------------
 void GfxConvDialog::onEnableTransparencyChanged(wxCommandEvent& e)
 {
 	updatePreviewGfx();
 }
 
-/* GfxConvDialog::transTypeChanged
- * Called when the 'existing' and 'colour' radio buttons are toggled
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the 'existing' and 'colour' radio buttons are toggled
+// -----------------------------------------------------------------------------
 void GfxConvDialog::onTransTypeChanged(wxCommandEvent& e)
 {
 	updatePreviewGfx();
 }
 
-/* GfxConvDialog::transColourChanged
- * Called when the transparent colour box is changed
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the transparent colour box is changed
+// -----------------------------------------------------------------------------
 void GfxConvDialog::onTransColourChanged(wxEvent& e)
 {
 	updatePreviewGfx();
 }
 
-/* GfxConvDialog::onPreviewCurrentMouseDown
- * Called when the 'current' gfx preview is clicked
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the 'current' gfx preview is clicked
+// -----------------------------------------------------------------------------
 void GfxConvDialog::onPreviewCurrentMouseDown(wxMouseEvent& e)
 {
 	// Get image coordinates of the point clicked
-	point2_t imgcoord = gfx_current->imageCoords(e.GetX(), e.GetY());
+	auto imgcoord = gfx_current_->imageCoords(e.GetX(), e.GetY());
 	if (imgcoord.x < 0)
 		return;
 
 	// Get the colour at that point
-	rgba_t col = gfx_current->getImage()->getPixel(imgcoord.x, imgcoord.y, gfx_current->getPalette());
+	auto col = gfx_current_->image().pixelAt(imgcoord.x, imgcoord.y, &gfx_current_->palette());
 
 	// Set the background colour
-	colbox_transparent->setColour(col);
+	colbox_transparent_->setColour(col);
 	updatePreviewGfx();
 }
 
-/* GfxConvDialog::onBtnColorimetrySettings
- * Called when the 'Adjust Colorimetry Settings' button is clicked
- *******************************************************************/
+// -----------------------------------------------------------------------------
+// Called when the 'Adjust Colorimetry Settings' button is clicked
+// -----------------------------------------------------------------------------
 void GfxConvDialog::onBtnColorimetrySettings(wxCommandEvent& e)
 {
 	PreferencesDialog::openPreferences(this, "Colorimetry");

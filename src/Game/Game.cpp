@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -15,97 +15,67 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Game.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "Configuration.h"
-#include "Game.h"
 #include "TextEditor/TextLanguage.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 #include "ZScript.h"
 #include <thread>
 
 using namespace Game;
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 namespace Game
 {
-	Configuration				config_current;
-	std::map<string, GameDef>	game_defs;
-	GameDef						game_def_unknown;
-	std::map<string, PortDef>	port_defs;
-	PortDef						port_def_unknown;
-	ZScript::Definitions		zscript_base;
-	ZScript::Definitions		zscript_custom;
-	std::unique_ptr<Listener>	listener;
-}
-CVAR(String, game_configuration, "", CVAR_SAVE)
-CVAR(String, port_configuration, "", CVAR_SAVE)
-CVAR(String, zdoom_pk3_path, "", CVAR_SAVE)
+Configuration             config_current;
+std::map<string, GameDef> game_defs;
+GameDef                   game_def_unknown;
+std::map<string, PortDef> port_defs;
+PortDef                   port_def_unknown;
+ZScript::Definitions      zscript_base;
+ZScript::Definitions      zscript_custom;
+unique_ptr<std::thread>   zscript_parse_thread;
+} // namespace Game
+CVAR(String, game_configuration, "", CVar::Flag::Save)
+CVAR(String, port_configuration, "", CVar::Flag::Save)
+CVAR(String, zdoom_pk3_path, "", CVar::Flag::Save)
 
 
-// ----------------------------------------------------------------------------
-// GameListener Class
-//
-// A Listener to handle custom definition updates resulting from archives being
-// opened or closed, since Game isn't a class
-// ----------------------------------------------------------------------------
-namespace Game
-{
-class GameListener : public Listener
-{
-public:
-	GameListener()
-	{
-		// Listen to archive manager
-		listenTo(&App::archiveManager());
-	}
-
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override
-	{
-		if (announcer == &App::archiveManager())
-		{
-			if (event_name == "archive_added" || event_name == "archive_closed")
-				updateCustomDefinitions();
-		}
-	}
-};
-}
-
-
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // GameDef Struct Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// GameDef::parse
-//
+// -----------------------------------------------------------------------------
 // Parses the basic game definition in [mc]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool GameDef::parse(MemChunk& mc)
 {
 	// Parse configuration
@@ -116,7 +86,7 @@ bool GameDef::parse(MemChunk& mc)
 	ParseTreeNode* node_game = nullptr;
 	for (unsigned a = 0; a < parser.parseTreeRoot()->nChildren(); a++)
 	{
-		auto child = parser.parseTreeRoot()->getChildPTN(a);
+		auto child = parser.parseTreeRoot()->childPTN(a);
 		if (child->type() == "game")
 		{
 			node_game = child;
@@ -126,68 +96,64 @@ bool GameDef::parse(MemChunk& mc)
 	if (node_game)
 	{
 		// Game id
-		name = node_game->getName();
+		name = node_game->name();
 
 		// Game name
-		auto node_name = node_game->getChildPTN("name");
+		auto node_name = node_game->childPTN("name");
 		if (node_name)
 			title = node_name->stringValue();
 
 		// Supported map formats
-		auto node_maps = node_game->getChildPTN("map_formats");
+		auto node_maps = node_game->childPTN("map_formats");
 		if (node_maps)
 		{
-			for (unsigned a = 0; a < node_maps->nValues(); a++)
+			for (const auto& str_val : node_maps->stringValues())
 			{
-				if (S_CMPNOCASE(node_maps->stringValue(a), "doom"))
-					supported_formats[MAP_DOOM] = true;
-				else if (S_CMPNOCASE(node_maps->stringValue(a), "hexen"))
-					supported_formats[MAP_HEXEN] = true;
-				else if (S_CMPNOCASE(node_maps->stringValue(a), "doom64"))
-					supported_formats[MAP_DOOM64] = true;
-				else if (S_CMPNOCASE(node_maps->stringValue(a), "udmf"))
-					supported_formats[MAP_UDMF] = true;
+				if (StrUtil::equalCI(str_val, "doom"))
+					supported_formats[MapFormat::Doom] = true;
+				else if (StrUtil::equalCI(str_val, "hexen"))
+					supported_formats[MapFormat::Hexen] = true;
+				else if (StrUtil::equalCI(str_val, "doom64"))
+					supported_formats[MapFormat::Doom64] = true;
+				else if (StrUtil::equalCI(str_val, "udmf"))
+					supported_formats[MapFormat::UDMF] = true;
 			}
 		}
 		// Filters
-		auto node_filters = node_game->getChildPTN("filters");
+		auto node_filters = node_game->childPTN("filters");
 		if (node_filters)
 		{
 			for (unsigned a = 0; a < node_filters->nValues(); a++)
-				filters.push_back(node_filters->stringValue(a).Lower());
+				filters.push_back(StrUtil::lower(node_filters->stringValue(a)));
 		}
 	}
 
 	return (node_game != nullptr);
 }
 
-// ----------------------------------------------------------------------------
-// GameDef::supportsFilter
-//
+// -----------------------------------------------------------------------------
 // Checks if this game supports [filter]
-// ----------------------------------------------------------------------------
-bool GameDef::supportsFilter(const string& filter) const
+// -----------------------------------------------------------------------------
+bool GameDef::supportsFilter(string_view filter) const
 {
 	for (auto& f : filters)
-		if (S_CMPNOCASE(f, filter))
+		if (StrUtil::equalCI(f, filter))
 			return true;
 
 	return false;
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // PortDef Struct Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// PortDef::parse
-//
+// -----------------------------------------------------------------------------
 // Parses the basic port definition in [mc]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool PortDef::parse(MemChunk& mc)
 {
 	// Parse configuration
@@ -198,7 +164,7 @@ bool PortDef::parse(MemChunk& mc)
 	ParseTreeNode* node_port = nullptr;
 	for (unsigned a = 0; a < parser.parseTreeRoot()->nChildren(); a++)
 	{
-		auto child = parser.parseTreeRoot()->getChildPTN(a);
+		auto child = parser.parseTreeRoot()->childPTN(a);
 		if (child->type() == "port")
 		{
 			node_port = child;
@@ -208,35 +174,35 @@ bool PortDef::parse(MemChunk& mc)
 	if (node_port)
 	{
 		// Port id
-		name = node_port->getName();
+		name = node_port->name();
 
 		// Port name
-		auto node_name = node_port->getChildPTN("name");
+		auto node_name = node_port->childPTN("name");
 		if (node_name)
 			title = node_name->stringValue();
 
 		// Supported games
-		auto node_games = node_port->getChildPTN("games");
+		auto node_games = node_port->childPTN("games");
 		if (node_games)
 		{
 			for (unsigned a = 0; a < node_games->nValues(); a++)
-				supported_games.push_back(node_games->stringValue(a));
+				supported_games.emplace_back(node_games->stringValue(a));
 		}
 
 		// Supported map formats
-		auto node_maps = node_port->getChildPTN("map_formats");
+		auto node_maps = node_port->childPTN("map_formats");
 		if (node_maps)
 		{
-			for (unsigned a = 0; a < node_maps->nValues(); a++)
+			for (const auto& str_val : node_maps->stringValues())
 			{
-				if (S_CMPNOCASE(node_maps->stringValue(a), "doom"))
-					supported_formats[MAP_DOOM] = true;
-				else if (S_CMPNOCASE(node_maps->stringValue(a), "hexen"))
-					supported_formats[MAP_HEXEN] = true;
-				else if (S_CMPNOCASE(node_maps->stringValue(a), "doom64"))
-					supported_formats[MAP_DOOM64] = true;
-				else if (S_CMPNOCASE(node_maps->stringValue(a), "udmf"))
-					supported_formats[MAP_UDMF] = true;
+				if (StrUtil::equalCI(str_val, "doom"))
+					supported_formats[MapFormat::Doom] = true;
+				else if (StrUtil::equalCI(str_val, "hexen"))
+					supported_formats[MapFormat::Hexen] = true;
+				else if (StrUtil::equalCI(str_val, "doom64"))
+					supported_formats[MapFormat::Doom64] = true;
+				else if (StrUtil::equalCI(str_val, "udmf"))
+					supported_formats[MapFormat::UDMF] = true;
 			}
 		}
 	}
@@ -245,29 +211,25 @@ bool PortDef::parse(MemChunk& mc)
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Game Namespace Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// Game::configuration
-//
+// -----------------------------------------------------------------------------
 // Returns the currently loaded game configuration
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 Configuration& Game::configuration()
 {
 	return config_current;
 }
 
-// ----------------------------------------------------------------------------
-// Game::updateCustomDefinitions
-//
+// -----------------------------------------------------------------------------
 // Clears and re-parses custom definitions in all open archives
 // (DECORATE, *MAPINFO, ZScript etc.)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Game::updateCustomDefinitions()
 {
 	// Clear out all existing custom definitions
@@ -285,23 +247,17 @@ void Game::updateCustomDefinitions()
 	}
 
 	// Parse custom definitions in all resource archives
-	vector<Archive*> resource_archives;
-	for (auto a = 0; a < App::archiveManager().numArchives(); a++)
-	{
-		auto archive = App::archiveManager().getArchive(a);
-		if (App::archiveManager().archiveIsResource(archive))
-			resource_archives.push_back(archive);
-	}
+	auto resource_archives = App::archiveManager().allArchives(true);
 
 	// ZScript first
-	for (auto archive : resource_archives)
-		zscript_custom.parseZScript(archive);
+	for (const auto& archive : resource_archives)
+		zscript_custom.parseZScript(archive.get());
 
 	// Other definitions
-	for (auto archive : resource_archives)
+	for (const auto& archive : resource_archives)
 	{
-		config_current.parseDecorateDefs(archive);
-		config_current.parseMapInfo(archive);
+		config_current.parseDecorateDefs(archive.get());
+		config_current.parseMapInfo(archive.get());
 	}
 
 	// Process custom definitions
@@ -316,51 +272,46 @@ void Game::updateCustomDefinitions()
 	}
 }
 
-// ----------------------------------------------------------------------------
-// Game::parseTagged
-//
+// -----------------------------------------------------------------------------
 // Returns the tagged type of the parsed tree node [tagged]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 TagType Game::parseTagged(ParseTreeNode* tagged)
 {
-	static std::map<string, TagType> tag_type_map
-	{
-		{ "no",										TagType::None },
-		{ "sector",									TagType::Sector },
-		{ "line",									TagType::Line },
-		{ "lineid",									TagType::LineId },
-		{ "lineid_hi5",								TagType::LineIdHi5 },
-		{ "thing",									TagType::Thing },
-		{ "sector_back",							TagType::Back },
-		{ "sector_or_back",							TagType::SectorOrBack },
-		{ "sector_and_back",						TagType::SectorAndBack },
-		{ "line_negative",							TagType::LineNegative },
-		{ "ex_1thing_2sector",						TagType::Thing1Sector2 },
-		{ "ex_1thing_3sector",						TagType::Thing1Sector3 },
-		{ "ex_1thing_2thing",						TagType::Thing1Thing2 },
-		{ "ex_1thing_4thing",						TagType::Thing1Thing4 },
-		{ "ex_1thing_2thing_3thing",				TagType::Thing1Thing2Thing3 },
-		{ "ex_1sector_2thing_3thing_5thing",		TagType::Sector1Thing2Thing3Thing5 },
-		{ "ex_1lineid_2line",						TagType::LineId1Line2 },
-		{ "ex_4thing",								TagType::Thing4 },
-		{ "ex_5thing",								TagType::Thing5 },
-		{ "ex_1line_2sector",						TagType::Line1Sector2 },
-		{ "ex_1sector_2sector",						TagType::Sector1Sector2 },
-		{ "ex_1sector_2sector_3sector_4_sector",	TagType::Sector1Sector2Sector3Sector4 },
-		{ "ex_sector_2is3_line",					TagType::Sector2Is3Line },
-		{ "ex_1sector_2thing",						TagType::Sector1Thing2 },
-		{ "patrol",									TagType::Patrol },
-		{ "interpolation",							TagType::Interpolation }
+	static std::map<string, TagType> tag_type_map{
+		{ "no", TagType::None },
+		{ "sector", TagType::Sector },
+		{ "line", TagType::Line },
+		{ "lineid", TagType::LineId },
+		{ "lineid_hi5", TagType::LineIdHi5 },
+		{ "thing", TagType::Thing },
+		{ "sector_back", TagType::Back },
+		{ "sector_or_back", TagType::SectorOrBack },
+		{ "sector_and_back", TagType::SectorAndBack },
+		{ "line_negative", TagType::LineNegative },
+		{ "ex_1thing_2sector", TagType::Thing1Sector2 },
+		{ "ex_1thing_3sector", TagType::Thing1Sector3 },
+		{ "ex_1thing_2thing", TagType::Thing1Thing2 },
+		{ "ex_1thing_4thing", TagType::Thing1Thing4 },
+		{ "ex_1thing_2thing_3thing", TagType::Thing1Thing2Thing3 },
+		{ "ex_1sector_2thing_3thing_5thing", TagType::Sector1Thing2Thing3Thing5 },
+		{ "ex_1lineid_2line", TagType::LineId1Line2 },
+		{ "ex_4thing", TagType::Thing4 },
+		{ "ex_5thing", TagType::Thing5 },
+		{ "ex_1line_2sector", TagType::Line1Sector2 },
+		{ "ex_1sector_2sector", TagType::Sector1Sector2 },
+		{ "ex_1sector_2sector_3sector_4_sector", TagType::Sector1Sector2Sector3Sector4 },
+		{ "ex_sector_2is3_line", TagType::Sector2Is3Line },
+		{ "ex_1sector_2thing", TagType::Sector1Thing2 },
+		{ "patrol", TagType::Patrol },
+		{ "interpolation", TagType::Interpolation }
 	};
 
-	return tag_type_map[tagged->stringValue().MakeLower()];
+	return tag_type_map[StrUtil::lower(tagged->stringValue())];
 }
 
-// ----------------------------------------------------------------------------
-// Game::init
-//
+// -----------------------------------------------------------------------------
 // Game related initialisation (read basic definitions, etc.)
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Game::init()
 {
 	// Init static ThingTypes
@@ -372,18 +323,18 @@ void Game::init()
 	// Add game configurations from user dir
 	wxArrayString allfiles;
 	wxDir::GetAllFiles(App::path("games", App::Dir::User), &allfiles);
-	for (unsigned a = 0; a < allfiles.size(); a++)
+	for (const auto& filename : allfiles)
 	{
 		// Read config info
 		MemChunk mc;
-		mc.importFile(allfiles[a]);
+		mc.importFile(filename.ToStdString());
 
 		// Add to list if valid
 		GameDef gdef;
 		if (gdef.parse(mc))
 		{
-			gdef.filename = wxFileName(allfiles[a]).GetName();
-			gdef.user = true;
+			gdef.filename        = wxFileName(filename).GetName();
+			gdef.user            = true;
 			game_defs[gdef.name] = gdef;
 		}
 	}
@@ -391,66 +342,66 @@ void Game::init()
 	// Add port configurations from user dir
 	allfiles.clear();
 	wxDir::GetAllFiles(App::path("ports", App::Dir::User), &allfiles);
-	for (unsigned a = 0; a < allfiles.size(); a++)
+	for (const auto& filename : allfiles)
 	{
 		// Read config info
 		MemChunk mc;
-		mc.importFile(allfiles[a]);
+		mc.importFile(filename.ToStdString());
 
 		// Add to list if valid
 		PortDef pdef;
 		if (pdef.parse(mc))
 		{
-			pdef.filename = wxFileName(allfiles[a]).GetName();
-			pdef.user = true;
+			pdef.filename        = wxFileName(filename).GetName();
+			pdef.user            = true;
 			port_defs[pdef.name] = pdef;
 		}
 	}
 
 	// Add game configurations from program resource
-	auto dir = App::archiveManager().programResourceArchive()->getDir("config/games");
+	auto dir = App::archiveManager().programResourceArchive()->dirAtPath("config/games");
 	if (dir)
 	{
 		for (auto& entry : dir->entries())
 		{
 			// Read config info
 			GameDef conf;
-			if (!conf.parse(entry.get()->getMCData()))
-				continue;	// Ignore if invalid
+			if (!conf.parse(entry->data()))
+				continue; // Ignore if invalid
 
 			// Add to list if it doesn't already exist
 			if (game_defs.find(conf.name) == game_defs.end())
 			{
-				conf.filename = entry.get()->getName(true);
-				conf.user = false;
+				conf.filename        = entry->nameNoExt();
+				conf.user            = false;
 				game_defs[conf.name] = conf;
 			}
 		}
 	}
 
 	// Add port configurations from program resource
-	dir = App::archiveManager().programResourceArchive()->getDir("config/ports");
+	dir = App::archiveManager().programResourceArchive()->dirAtPath("config/ports");
 	if (dir)
 	{
 		for (auto& entry : dir->entries())
 		{
 			// Read config info
 			PortDef conf;
-			if (!conf.parse(entry.get()->getMCData()))
-				continue;	// Ignore if invalid
+			if (!conf.parse(entry->data()))
+				continue; // Ignore if invalid
 
 			// Add to list if it doesn't already exist
 			if (port_defs.find(conf.name) == port_defs.end())
 			{
-				conf.filename = entry.get()->getName(true);
-				conf.user = false;
+				conf.filename        = entry->nameNoExt();
+				conf.user            = false;
 				port_defs[conf.name] = conf;
 			}
 		}
 	}
 
 	// Load last configuration if any
-	if (game_configuration != "")
+	if (!game_configuration.value.empty())
 		config_current.openConfig(game_configuration, port_configuration);
 
 	// Load custom special presets
@@ -460,79 +411,77 @@ void Game::init()
 	// Load zdoom.pk3 stuff
 	if (wxFileExists(zdoom_pk3_path))
 	{
-		std::thread thread([=]()
-		{
+		zscript_parse_thread = std::make_unique<std::thread>([=]() {
 			ZipArchive zdoom_pk3;
 			if (!zdoom_pk3.open(zdoom_pk3_path))
 				return;
 
 			// ZScript
 			auto zscript_entry = zdoom_pk3.entryAtPath("zscript.txt");
-			zscript_base.parseZScript(zscript_entry);
 
-			auto lang = TextLanguage::fromId("zscript");
-			if (lang)
-				lang->loadZScript(zscript_base);
+			if (!zscript_entry)
+			{
+				// Bail out if no entry is found.
+				Log::warning(1, "Could not find \'zscript.txt\' in " + zdoom_pk3_path);
+			}
+			else
+			{
+				zscript_base.parseZScript(zscript_entry);
 
-			// MapInfo
-			auto mapinfo_entry = zdoom_pk3.entryAtPath("zmapinfo.txt");
-			config_current.parseMapInfo(&zdoom_pk3);
+				auto lang = TextLanguage::fromId("zscript");
+				if (lang)
+					lang->loadZScript(zscript_base);
+
+				// MapInfo
+				config_current.parseMapInfo(&zdoom_pk3);
+			}
 		});
-		thread.detach();
+		zscript_parse_thread->detach();
 	}
 
-	// Init game listener
-	listener = std::make_unique<GameListener>();
+	// Update custom definitions when an archive is opened or closed
+	App::archiveManager().signals().archive_added.connect([](unsigned) { updateCustomDefinitions(); });
+	App::archiveManager().signals().archive_closed.connect([](unsigned) { updateCustomDefinitions(); });
 }
 
-// ----------------------------------------------------------------------------
-// Game::gameDefs
-//
+// -----------------------------------------------------------------------------
 // Returns a vector of all basic game definitions
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const std::map<string, GameDef>& Game::gameDefs()
 {
 	return game_defs;
 }
 
-// ----------------------------------------------------------------------------
-// Game::gameDef
-//
+// -----------------------------------------------------------------------------
 // Returns the basic game configuration matching [id]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const GameDef& Game::gameDef(const string& id)
 {
 	return game_defs.empty() ? game_def_unknown : game_defs[id];
 }
 
-// ----------------------------------------------------------------------------
-// Game::portDefs
-//
+// -----------------------------------------------------------------------------
 // Returns a vector of all basic port definitions
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const std::map<string, PortDef>& Game::portDefs()
 {
 	return port_defs;
 }
 
-// ----------------------------------------------------------------------------
-// Game::portDef
-//
+// -----------------------------------------------------------------------------
 // Returns the basic port configuration matching [id]
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 const PortDef& Game::portDef(const string& id)
 {
 	return port_defs.empty() ? port_def_unknown : port_defs[id];
 }
 
-// ----------------------------------------------------------------------------
-// Game::mapFormatSupported
-//
+// -----------------------------------------------------------------------------
 // Checks if the combination of [game] and [port] supports the map [format]
-// ----------------------------------------------------------------------------
-bool Game::mapFormatSupported(int format, const string& game, const string& port)
+// -----------------------------------------------------------------------------
+bool Game::mapFormatSupported(MapFormat format, const string& game, const string& port)
 {
-	if (format < 0 || format >= MAP_UNKNOWN)
+	if (format == MapFormat::Unknown)
 		return false;
 
 	if (!port.empty())
@@ -633,7 +582,7 @@ namespace
 							tz.setSpecialCharacters("");
 							string lnstr = tz.getLine();
 							tz.setSpecialCharacters("(),[=|");
-							tl.openString(lnstr, 0, 0, S_FMT("Line %d", line));
+							tl.openString(lnstr, 0, 0, wxString::Format("Line %d", line));
 							tl.setSpecialCharacters("(),[=|");
 #if 1
 							// Create line
@@ -696,7 +645,7 @@ namespace
 								}
 
 								if (val != -666 && xline.args[a].IsEmpty())
-									xline.args[a] = S_FMT("%d", val);
+									xline.args[a] = wxString::Format("%d", val);
 
 								if (S_CMP(tl.peekToken(), ")"))
 									break;
@@ -725,7 +674,7 @@ namespace
 				}
 			}
 			// Read configuration
-			if (i > 0 && configuration().openConfig(games[i], i < 4 ? "zdoom" : "eternity", MAP_DOOM))
+			if (i > 0 && configuration().openConfig(games[i], i < 4 ? "zdoom" : "eternity", MapFormat::Doom))
 			{
 				for (size_t z = 0; z < lines.size(); ++z)
 				{
@@ -733,16 +682,16 @@ namespace
 					if (lines[z].game.empty())
 						lines[z].group = configuration().actionSpecial(lines[z].type).group();
 					else
-						lines[z].group = S_FMT("%s/%s", lines[z].game, configuration().actionSpecial(lines[z].type).group());
+						lines[z].group = wxString::Format("%s/%s", lines[z].game, configuration().actionSpecial(lines[z].type).group());
 				}
 			}
 			// Convert special names to numbers
-			configuration().openConfig("doom2", "zdoom", MAP_HEXEN);
+			configuration().openConfig("doom2", "zdoom", MapFormat::Hexen);
 			for (auto& l : lines)
 			{
 				for (auto& i : configuration().allActionSpecials())
 					if (i.second.defined() && i.second.name() == l.special)
-						l.special = S_FMT("%d", i.first);
+						l.special = wxString::Format("%d", i.first);
 			}
 		}
 #if 0
@@ -786,13 +735,13 @@ namespace
 		string file;
 		for (size_t l = 0; l < lines.size(); ++l)
 		{
-			string output = S_FMT("preset \"%d: %s\"\n{\n", lines[l].type, lines[l].description);
-			output += S_FMT("\tgroup = \"%s\";\n", lines[l].group);
-			output += S_FMT("\tspecial = %s;\n", lines[l].special);
+			string output = wxString::Format("preset \"%d: %s\"\n{\n", lines[l].type, lines[l].description);
+			output += wxString::Format("\tgroup = \"%s\";\n", lines[l].group);
+			output += wxString::Format("\tspecial = %s;\n", lines[l].special);
 			for (size_t i = 0; i < 5; ++i)
 			{
 				if (lines[l].args[i].size() && lines[l].args[i] != "tag" && lines[l].args[i] != "0")
-					output += S_FMT("\targ%d = %s;\n", i+1, lines[l].args[i]);
+					output += wxString::Format("\targ%d = %s;\n", i+1, lines[l].args[i]);
 			}
 			int spac = 1 << ((lines[l].flags & 15) >> 1);
 			string flags = "";
@@ -803,9 +752,9 @@ namespace
 			if (lines[l].flags & 1)  flags += "repeatspecial, ";
 			if (lines[l].flags & 16) flags += "monsteractivate, ";
 			flags.RemoveLast(2);
-			output += S_FMT("\tflags = %s;\n", flags);
+			output += wxString::Format("\tflags = %s;\n", flags);
 			output += "}\n\n";
-			Log::debug(S_FMT("%s", output));
+			Log::debug(wxString::Format("%s", output));
 			file += output;
 			//		DPrintf("%d = %s : %d, %s (%s, %s, %s, %s, %s)",
 			//			lines[l].type, lines[l].description, lines[l].flags, lines[l].special,

@@ -1,180 +1,129 @@
+#pragma once
 
-#ifndef __TRANSLATION_EDITOR_DIALOG_H__
-#define __TRANSLATION_EDITOR_DIALOG_H__
-
-#include "Graphics/Translation.h"
 #include "Graphics/SImage/SImage.h"
+#include "Graphics/Translation.h"
 #include "UI/Canvas/OGLCanvas.h"
-#include "UI/WxBasicControls.h"
 #include "UI/Controls/ColourBox.h"
 
 class GfxCanvas;
 class PaletteCanvas;
 class Palette;
-class GradientBox : public OGLCanvas
-{
-private:
-	rgba_t	col_start;
-	rgba_t	col_end;
-	int		steps;
-
-public:
-	GradientBox(wxWindow* parent, int steps = -1);
-	~GradientBox();
-
-	void	setStartCol(rgba_t col) { col_start.set(col.r, col.g, col.b, 255); }
-	void	setEndCol(rgba_t col) { col_end.set(col.r, col.g, col.b, 255); }
-	void	setSteps(int steps) { this->steps = steps; }
-
-	void	draw();
-};
-
 class ArchiveEntry;
 class wxListBox;
 class wxPanel;
+
+class GradientBox : public OGLCanvas
+{
+public:
+	GradientBox(wxWindow* parent, int steps = -1);
+	~GradientBox() = default;
+
+	void setStartCol(ColRGBA col) { col_start_.set(col.r, col.g, col.b, 255); }
+	void setEndCol(ColRGBA col) { col_end_.set(col.r, col.g, col.b, 255); }
+	void setSteps(int steps) { steps_ = steps; }
+
+	void draw() override;
+
+private:
+	ColRGBA col_start_ = ColRGBA::BLACK;
+	ColRGBA col_end_   = ColRGBA::WHITE;
+	int     steps_     = 0;
+};
+
 class TranslationEditorDialog : public wxDialog
 {
-private:
-	Palette*	palette;
-	Translation		translation;
-	SImage			image_preview;
+public:
+	TranslationEditorDialog(
+		wxWindow*       parent,
+		const Palette&  pal,
+		const wxString& title         = "Edit Translation",
+		SImage*         preview_image = nullptr);
+	~TranslationEditorDialog() = default;
 
-	PaletteCanvas*	pal_canvas_original;
-	wxListBox*		list_translations;
-	wxButton*		btn_add;
-	wxButton*		btn_remove;
-	wxButton*		btn_up;
-	wxButton*		btn_down;
-	wxButton*		btn_load;
-	wxButton*		btn_save;
-	wxRadioButton*	rb_type_palette;
-	wxRadioButton*	rb_type_colour;
-	wxRadioButton*	rb_type_desaturate;
-	wxRadioButton*	rb_type_colourise;
-	wxRadioButton*	rb_type_tint;
-	wxTextCtrl*		text_string;
+	Translation& getTranslation() { return translation_; }
+	bool         getTruecolor() const;
+
+	void openTranslation(Translation& trans);
+	void openRange(int index);
+	void updateListItem(int index);
+	void setStartColour(ColRGBA col);
+	void setEndColour(ColRGBA col);
+	void setTintColour(ColRGBA col);
+	void setTintAmount(int amount);
+	void showPaletteTarget();
+	void showGradientTarget();
+	void showTintTarget(bool tint);
+	void updatePreviews();
+
+private:
+	Palette     palette_;
+	Translation translation_;
+	SImage      image_preview_;
+
+	PaletteCanvas* pal_canvas_original_ = nullptr;
+	wxListBox*     list_translations_   = nullptr;
+	wxButton*      btn_add_             = nullptr;
+	wxButton*      btn_remove_          = nullptr;
+	wxButton*      btn_up_              = nullptr;
+	wxButton*      btn_down_            = nullptr;
+	wxButton*      btn_load_            = nullptr;
+	wxButton*      btn_save_            = nullptr;
+	wxRadioButton* rb_type_palette_     = nullptr;
+	wxRadioButton* rb_type_colour_      = nullptr;
+	wxRadioButton* rb_type_desaturate_  = nullptr;
+	wxRadioButton* rb_type_colourise_   = nullptr;
+	wxRadioButton* rb_type_tint_        = nullptr;
+	wxTextCtrl*    text_string_         = nullptr;
 
 	// Paletted target range
-	wxPanel*		panel_target_palette;
-	PaletteCanvas*	pal_canvas_target;
-	wxCheckBox*		cb_target_reverse;
+	wxPanel*       panel_target_palette_ = nullptr;
+	PaletteCanvas* pal_canvas_target_    = nullptr;
+	wxCheckBox*    cb_target_reverse_    = nullptr;
 
 	// Colour gradient target range
-	wxPanel*		panel_target_gradient;
-	ColourBox*		cb_range_begin;
-	ColourBox*		cb_range_end;
-	GradientBox*	gb_gradient;
+	wxPanel*     panel_target_gradient_ = nullptr;
+	ColourBox*   cb_range_begin_        = nullptr;
+	ColourBox*   cb_range_end_          = nullptr;
+	GradientBox* gb_gradient_           = nullptr;
 
 	// Colourise/tint target range
-	wxPanel*		panel_target_tint;
-	ColourBox*		cb_target_tint;
-	wxSlider*		slider_tint;
-	wxStaticText*	label_tint;
-	wxStaticText*	label_amount;
+	wxPanel*      panel_target_tint_ = nullptr;
+	ColourBox*    cb_target_tint_    = nullptr;
+	wxSlider*     slider_tint_       = nullptr;
+	wxStaticText* label_tint_        = nullptr;
+	wxStaticText* label_amount_      = nullptr;
 
 	// Preview
-	PaletteCanvas*	pal_canvas_preview;
-	GfxCanvas*		gfx_preview;
+	PaletteCanvas* pal_canvas_preview_ = nullptr;
+	GfxCanvas*     gfx_preview_        = nullptr;
 
 	// Truecolor
-	wxCheckBox*		cb_truecolor;
-	wxCheckBox*		cb_paletteonly;
+	wxCheckBox* cb_truecolor_   = nullptr;
+	wxCheckBox* cb_paletteonly_ = nullptr;
 
-public:
-	TranslationEditorDialog(wxWindow* parent, Palette* pal, string title = "Edit Translation", SImage* preview_image = nullptr);
-	~TranslationEditorDialog();
-
-	Translation&	getTranslation() { return translation; }
-	bool			getTruecolor();
-
-	void	openTranslation(Translation& trans);
-	void	openRange(int index);
-	void	updateListItem(int index);
-	void	setStartColour(rgba_t col);
-	void	setEndColour(rgba_t col);
-	void	setTintColour(rgba_t col);
-	void	setTintAmount(int amount);
-	void	showPaletteTarget();
-	void	showGradientTarget();
-	void	showTintTarget(bool tint);
-	void	updatePreviews();
 
 	// Events
-	void	onSize(wxSizeEvent& e);
-	void	onTranslationListItemSelected(wxCommandEvent& e);
-	void	onRBPaletteSelected(wxCommandEvent& e);
-	void	onRBColourSelected(wxCommandEvent& e);
-	void	onRBDesaturateSelected(wxCommandEvent& e);
-	void	onRBColouriseSelected(wxCommandEvent& e);
-	void	onRBTintSelected(wxCommandEvent& e);
-	void	onBeginColourChanged(wxEvent& e);
-	void	onEndColourChanged(wxEvent& e);
-	void	onTintColourChanged(wxEvent& e);
-	void	onPalOriginLeftUp(wxMouseEvent& e);
-	void	onPalTargetLeftUp(wxMouseEvent& e);
-	void	onTintAmountChanged(wxCommandEvent& e);
-	void	onBtnRemove(wxCommandEvent& e);
-	void	onBtnAdd(wxCommandEvent& e);
-	void	onBtnUp(wxCommandEvent& e);
-	void	onBtnDown(wxCommandEvent& e);
-	void	onBtnLoad(wxCommandEvent& e);
-	void	onBtnSave(wxCommandEvent& e);
-	void	onGfxPreviewMouseMotion(wxMouseEvent& e);
-	void	onCBTargetReverse(wxCommandEvent& e);
-	void	onCBTruecolor(wxCommandEvent& e);
-	void	onCBPaletteOnly(wxCommandEvent& e);
+	void onSize(wxSizeEvent& e);
+	void onTranslationListItemSelected(wxCommandEvent& e);
+	void onRBPaletteSelected(wxCommandEvent& e);
+	void onRBColourSelected(wxCommandEvent& e);
+	void onRBDesaturateSelected(wxCommandEvent& e);
+	void onRBColouriseSelected(wxCommandEvent& e);
+	void onRBTintSelected(wxCommandEvent& e);
+	void onBeginColourChanged(wxEvent& e);
+	void onEndColourChanged(wxEvent& e);
+	void onTintColourChanged(wxEvent& e);
+	void onPalOriginLeftUp(wxMouseEvent& e);
+	void onPalTargetLeftUp(wxMouseEvent& e);
+	void onTintAmountChanged(wxCommandEvent& e);
+	void onBtnRemove(wxCommandEvent& e);
+	void onBtnAdd(wxCommandEvent& e);
+	void onBtnUp(wxCommandEvent& e);
+	void onBtnDown(wxCommandEvent& e);
+	void onBtnLoad(wxCommandEvent& e);
+	void onBtnSave(wxCommandEvent& e);
+	void onGfxPreviewMouseMotion(wxMouseEvent& e);
+	void onCBTargetReverse(wxCommandEvent& e);
+	void onCBTruecolor(wxCommandEvent& e);
+	void onCBPaletteOnly(wxCommandEvent& e);
 };
-
-
-/*******************************************************************
- * GFXCOLOURISEDIALOG CLASS
- *******************************************************************
- A simple dialog for the 'Colourise' function, allows the user to
- select a colour and shows a preview of the colourised image
- */
-class GfxColouriseDialog : public wxDialog
-{
-private:
-	GfxCanvas*			gfx_preview;
-	ArchiveEntry*		entry;
-	Palette*		palette;
-	ColourBox*			cb_colour;
-
-public:
-	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal);
-	rgba_t getColour();
-	void setColour(string col);
-	void onColourChanged(wxEvent& e);
-	void onResize(wxSizeEvent& e);
-};
-
-
-/*******************************************************************
- * GFXTINTDIALOG CLASS
- *******************************************************************
- A simple dialog for the 'Tint' function, allows the user to select
- tint colour+amount and shows a preview of the tinted image
- */
-class GfxTintDialog : public wxDialog
-{
-private:
-	GfxCanvas*			gfx_preview;
-	ArchiveEntry*		entry;
-	Palette*		palette;
-	ColourBox*			cb_colour;
-	wxSlider*			slider_amount;
-	wxStaticText*		label_amount;
-
-public:
-	GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette* pal);
-	rgba_t getColour();
-	float getAmount();
-	void setValues(string col, int val);
-	void onColourChanged(wxEvent& e);
-	void onAmountChanged(wxCommandEvent& e);
-	void onResize(wxSizeEvent& e);
-};
-
-
-
-#endif//__TRANSLATION_EDITOR_DIALOG_H__

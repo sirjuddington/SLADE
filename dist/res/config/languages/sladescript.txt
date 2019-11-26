@@ -7,112 +7,216 @@ sladescript : lua
 	properties =
 	{
 		// Namespaces
-		App, Archives, Game, SplashWindow
+		App, Archives, Game, UI
 	}
 
 	types =
 	{
-		Archive, ArchiveDir, ArchiveEntry, ArchiveFormat, EntryType,
+		Archive, ArchiveDir, ArchiveEntry, ArchiveFormat, ArchiveSearchOptions, EntryType,
+		CTexture, CTPatch, CTPatchEx, PatchTable, TextureXList,
 		ThingType,
+		Palette,
 		Map, MapEditor, MapLine, MapObject, MapSector, MapSide, MapThing, MapVertex,
+		Translation, TransRange, TransRangeBlend, TransRangeColour, TransRangeDesat, TransRangePalette, TransRangeSpecial, TransRangeTint,
 		Colour, Plane, Point
 	}
 
 	functions
 	{
 		// App namespace
-						App.logMessage = "string message";
-		string			App.globalError;
-						App.messageBox = "string title, string message";
-						App.messageBoxExt = "string title, string message, string detail";
-		string			App.promptString = "string title, string message, string default_value";
-		number			App.promptNumber = "string title, string message, number default_value, number min, number max";
-		boolean			App.promptYesNo = "string title, string message";
-		string			App.browseFile = "string title, string extensions, string filename";
-		string[]		App.browseFiles = "string title, string extensions";
-		Archive			App.currentArchive;
-		ArchiveEntry	App.currentEntry;
-		ArchiveEntry[]	App.currentEntrySelection;
-						App.showArchive = "Archive archive";
-						App.showEntry = "ArchiveEntry entry";
-		MapEditor		App.mapEditor;
+						App.LogMessage = "string message";
+		Archive			App.CurrentArchive;
+		ArchiveEntry	App.CurrentEntry;
+		ArchiveEntry[]	App.CurrentEntrySelection;
+						App.ShowArchive = "Archive archive";
+						App.ShowEntry = "ArchiveEntry entry";
+		MapEditor		App.MapEditor;
 
 		// Archives namespace
-		Archive[]		Archives.all;
-		Archive			Archives.create = "string format_id";
-		Archive			Archives.openFile = "string path";
-		boolean			Archives.close = "Archive archive", "number index";
-						Archives.closeAll;
-		string			Archives.fileExtensionsString;
-		Archive			Archives.baseResource;
-		string[]		Archives.baseResourcePaths;
-		boolean			Archives.openBaseResource = "number index";
-		Archive			Archives.programResource;
-		string[]		Archives.recentFiles;
-		ArchiveEntry[]	Archives.bookmarks;
-						Archives.addBookmark = "ArchiveEntry entry";
-		boolean			Archives.removeBookmark = "ArchiveEntry entry";
+		Archive[]		Archives.All;
+		Archive			Archives.Create = "string format_id";
+		Archive			Archives.OpenFile = "string path";
+		boolean			Archives.Close = "Archive archive", "number index";
+						Archives.CloseAll;
+		string			Archives.FileExtensionsString;
+		Archive			Archives.BaseResource;
+		string[]		Archives.BaseResourcePaths;
+		boolean			Archives.OpenBaseResource = "number index";
+		Archive			Archives.ProgramResource;
+		string[]		Archives.RecentFiles;
+		ArchiveEntry[]	Archives.Bookmarks;
+						Archives.AddBookmark = "ArchiveEntry entry";
+		boolean			Archives.RemoveBookmark = "ArchiveEntry entry";
+		EntryType		Archives.EntryType = "string id";
 
 		// Game namespace
-		ThingType	Game.thingType = "number type";
+		ThingType	Game.ThingType = "number type";
 
-		// SplashWindow namespace
-				SplashWindow.show = "string message, [boolean progress]";
-				SplashWindow.hide;
-				SplashWindow.update;
-		number	SplashWindow.progress;
-				SplashWindow.setMessage = "string message";
-				SplashWindow.setProgressMessage = "string message";
-				SplashWindow.setProgress = "number progress";
+		// UI namespace
+					UI.MessageBox = "string title, string message";
+					UI.MessageBoxExt = "string title, string message, string detail";
+		string		UI.PromptString = "string title, string message, string default_value";
+		number		UI.PromptNumber = "string title, string message, number default_value, number min, number max";
+		boolean		UI.PromptYesNo = "string title, string message";
+		string		UI.BrowseFile = "string title, string extensions, string filename";
+		string[]	UI.BrowseFiles = "string title, string extensions";
+					UI.ShowSplash = "string message, [boolean progress]";
+					UI.HideSplash;
+					UI.UpdateSplash;
+		number		UI.SplashProgress;
+					UI.SetSplashMessage = "string message";
+					UI.SetSplashProgressMessage = "string message";
+					UI.SetSplashProgress = "number progress";
 
 		// Archive type
-		ArchiveDir		Archive.getDir = "string path";
-		ArchiveEntry	Archive.createEntry = "string full_path, number position";
-		ArchiveEntry	Archive.createEntryInNamespace = "string name, string namespace";
-		boolean			Archive.removeEntry = "ArchiveEntry entry";
-		boolean			Archive.renameEntry = "ArchiveEntry entry, string name";
-		boolean			Archive.save = "[string path]";
+		ArchiveDir		Archive.GetDir = "string path";
+		ArchiveEntry	Archive.CreateEntry = "string full_path, number position";
+		ArchiveEntry	Archive.CreateEntryInNamespace = "string name, string namespace";
+		boolean			Archive.RemoveEntry = "ArchiveEntry entry";
+		boolean			Archive.RenameEntry = "ArchiveEntry entry, string name";
+		boolean			Archive.Save = "[string path]";
+		ArchiveEntry	Archive.FindFirst = "ArchiveSearchOptions options";
+		ArchiveEntry	Archive.FindLast = "ArchiveSearchOptions options";
+		ArchiveEntry[]	Archive.FindAll = "ArchiveSearchOptions options";
 
 		// ArchiveEntry type
-		string	ArchiveEntry.formattedName = "[boolean include_path], [boolean include_extension], [boolean upper_case]";
-		string	ArchiveEntry.formattedSize;
-		boolean	ArchiveEntry.importFile = "string path";
-		boolean	ArchiveEntry.importEntry = "ArchiveEntry entry";
-		boolean ArchiveEntry.importData = "string data";
-		boolean ArchiveEntry.exportFile = "string path";
+		string	ArchiveEntry.FormattedName = "[boolean include_path], [boolean include_extension], [boolean upper_case]";
+		string	ArchiveEntry.FormattedSize;
+		boolean	ArchiveEntry.ImportFile = "string path";
+		boolean	ArchiveEntry.ImportEntry = "ArchiveEntry entry";
+		boolean ArchiveEntry.ImportData = "string data";
+		boolean ArchiveEntry.ExportFile = "string path";
 
 		// MapEditor type
-		MapVertex[]	MapEditor.selectedVertices = "[boolean try_highlight]";
-		MapLine[]	MapEditor.selectedLines = "[boolean try_highlight]";
-		MapSector[]	MapEditor.selectedSectors = "[boolean try_highlight]";
-		MapThing[]	MapEditor.selectedThings = "[boolean try_highlight]";
-					MapEditor.clearSelection;
-					MapEditor.select = "MapObject object, [boolean select]";
-					MapEditor.setEditMode = "number mode, number sector_mode";
+		MapVertex[]	MapEditor.SelectedVertices = "[boolean try_highlight]";
+		MapLine[]	MapEditor.SelectedLines = "[boolean try_highlight]";
+		MapSector[]	MapEditor.SelectedSectors = "[boolean try_highlight]";
+		MapThing[]	MapEditor.SelectedThings = "[boolean try_highlight]";
+					MapEditor.ClearSelection;
+					MapEditor.Select = "MapObject object, [boolean select]";
+					MapEditor.SetEditMode = "number mode, number sector_mode";
 		
 		// MapLine type
-		boolean	MapLine.flag = "string flag_name";
-				MapLine.flip = "[boolean swap_sides]";
+		boolean	MapLine.Flag = "string flag_name";
+				MapLine.Flip = "[boolean swap_sides]";
 		
 		// MapObject type
-		boolean	MapObject.hasProperty = "string name";
-		boolean	MapObject.boolProperty = "string name";
-		number	MapObject.intProperty = "string name";
-		number	MapObject.floatProperty = "string name";
-		string	MapObject.stringProperty = "string name";
-				MapObject.setBoolProperty = "string name, boolean value";
-				MapObject.setIntProperty = "string name, number value";
-				MapObject.setFloatProperty = "string name, number value";
-				MapObject.setStringProperty = "string name, string value";
+		boolean	MapObject.HasProperty = "string name";
+		boolean	MapObject.BoolProperty = "string name";
+		number	MapObject.IntProperty = "string name";
+		number	MapObject.FloatProperty = "string name";
+		string	MapObject.StringProperty = "string name";
+				MapObject.SetBoolProperty = "string name, boolean value";
+				MapObject.SetIntProperty = "string name, number value";
+				MapObject.SetFloatProperty = "string name, number value";
+				MapObject.SetStringProperty = "string name, string value";
 		
 		// MapSector type
-		boolean	MapSector.containsPoint = "Point position";
+		boolean	MapSector.ContainsPoint = "Point position";
 
 		// MapThing type
-		boolean	MapThing.flag = "string flag_name";
-				MapThing.setAnglePoint = "Point position";
+		boolean	MapThing.Flag = "string flag_name";
+				MapThing.SetAnglePoint = "Point position";
 		
 		// Plane type
-		number	Plane.heightAt = "Point position";
+		number	Plane.HeightAt = "Point position";
+
+		// CTexture type
+		string	CTexture.AsText;
+				CTexture.Clear;
+				CTexture.ConvertExtended;
+				CTexture.ConvertRegular;
+				CTexture.CopyTexture = "CTexture other, [boolean keepFormat]";
+				CTexture.AddPatch = "string patch, [number x], [number y], [number index]";
+				CTexture.DuplicatePatch = "number index, [number offsetX], [number offsetY]";
+		boolean	CTexture.RemovePatch = "number index";
+		boolean CTexture.ReplacePatch = "number index, string newPatch";
+		boolean CTexture.SwapPatches = "number index1, number index2";
+
+		// CTPatch type
+		ArchiveEntry	CTPatch.PatchEntry = "Archive parent";
+		CTPatchEx		CTPatch.AsExtended;
+
+		// CTPatchEx type
+		string	CTPatchEx.AsText;
+
+		// PatchTable type
+		string			PatchTable.Patch = "number index";
+		ArchiveEntry	PatchTable.PatchEntry = "number index", "string name";
+		boolean			PatchTable.RemovePatch = "number index";
+		boolean			PatchTable.ReplacePatch = "number index, string name";
+		boolean			PatchTable.AddPatch = "string name, boolean allowDuplicate";
+		boolean			PatchTable.LoadPNAMES = "ArchiveEntry pnames";
+		boolean			PatchTable.WritePNAMES = "ArchiveEntry pnames";
+
+		// TextureXList type
+		CTexture	TextureXList.Texture = "string name";
+		number		TextureXList.TextureIndex = "string name";
+		boolean		TextureXList.ConvertToTEXTURES;
+		boolean		TextureXList.FindErrors;
+		CTexture	TextureXList.AddTexture = "string name, [boolean extended], [number index]";
+					TextureXList.RemoveTexture = "number index";
+					TextureXList.SwapTextures = "number index1, number index2";
+					TextureXList.Clear;
+					TextureXList.RemovePatch = "string patch";
+		boolean		TextureXList.ReadTEXTUREXData = "ArchiveEntry entry, PatchTable patchTable, boolean additive";
+		boolean		TextureXList.WriteTEXTUREXData = "ArchiveEntry entry, PatchTable patchTable";
+		boolean		TextureXList.ReadTEXTURESData = "ArchiveEntry entry";
+		boolean		TextureXList.WriteTEXTURESData = "ArchiveEntry entry";
+
+		// Palette type
+		Colour	Palette.Colour = "number index";
+				Palette.CopyColours = "Palette other";
+		number	Palette.CountUniqueColours;
+		number	Palette.FindColour = "Colour colour";
+		number	Palette.NearestColour = "Colour colour, number matchMode";
+		boolean	Palette.LoadData = "string data, [number format]";
+		boolean Palette.LoadFile = "string path, [number format]";
+		boolean Palette.SaveFile = "string path, [number format]";
+				Palette.SetColour = "number index, Colour colour";
+				Palette.SetColourR = "number index, number r";
+				Palette.SetColourG = "number index, number g";
+				Palette.SetColourB = "number index, number b";
+				Palette.SetColourA = "number index, number a";
+				Palette.ApplyTranslation = "Translation translation";
+				Palette.Colourise = "Colour colour, number firstIndex, number lastIndex";
+				Palette.Tint = "Colour colour, number amount, number firstIndex, number lastIndex";
+				Palette.Saturate = "number amount, number firstIndex, number lastIndex";
+				Palette.Illuminate = "number amount, number firstIndex, number lastIndex";
+				Palette.Shift = "number amount, number firstIndex, number lastIndex";
+				Palette.Invert = "number firstIndex, number lastIndex";
+				Palette.Gradient = "Colour startColour, Colour endColour, number firstIndex, number lastIndex";
+		
+		// Translation type
+		string				Translation.AsText;
+							Translation.Clear;
+							Translation.Copy = "Translation other";
+		boolean				Translation.IsEmpty;
+							Translation.Parse = "string definition";
+		Colour				Translation.Translate = "Colour colour, [Palette palette]";
+		TransRange			Translation.Range = "number index";
+		TransRange			Translation.AddRange = "string definition";
+		TransRangePalette	Translation.AddPaletteRange = "number rangeStart, number rangeEnd";
+		TransRangeColour	Translation.AddColourRange = "number rangeStart, number rangeEnd";
+		TransRangeDesat		Translation.AddDesatRange = "number rangeStart, number rangeEnd";
+		TransRangeBlend		Translation.AddBlendRange = "number rangeStart, number rangeEnd";
+		TransRangeTint		Translation.AddTintRange = "number rangeStart, number rangeEnd";
+		TransRangeSpecial	Translation.AddSpecialRange = "number rangeStart, number rangeEnd";
+							Translation.ReadTable = "string data";
+							Translation.RemoveRange = "number index";
+							Translation.SwapRanges = "number index1, number index2";
+		
+		// TransRange type
+		string				TransRange.AsText;
+		TransRangePalette	TransRange.AsPaletteRange;
+		TransRangeColour	TransRange.AsColourRange;
+		TransRangeDesat		TransRange.AsDesatRange;
+		TransRangeBlend		TransRange.AsBlendRange;
+		TransRangeTint		TransRange.AsTintRange;
+		TransRangeSpecial	TransRange.AsSpecialRange;
+
+		// TransRangeDesat type
+		TransRangeDesat.SetStartRGB = "number r, number g, number b";
+		TransRangeDesat.SetEndRGB = "number r, number g, number b";
 	}
 }

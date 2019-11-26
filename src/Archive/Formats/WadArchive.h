@@ -1,72 +1,63 @@
-
-#ifndef __WADARCHIVE_H__
-#define __WADARCHIVE_H__
+#pragma once
 
 #include "Archive/Archive.h"
 
 class WadArchive : public TreelessArchive
 {
 public:
-	WadArchive();
-	~WadArchive();
+	WadArchive() : TreelessArchive("wad") {}
+	~WadArchive() = default;
 
 	// Wad specific
-	bool		isIWAD() const { return iwad_; }
-	bool		isWritable() override;
-	uint32_t	getEntryOffset(ArchiveEntry* entry);
-	void		setEntryOffset(ArchiveEntry* entry, uint32_t offset);
-	void		updateNamespaces();
+	bool     isIWAD() const { return iwad_; }
+	bool     isWritable() override;
+	uint32_t getEntryOffset(ArchiveEntry* entry);
+	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset);
+	void     updateNamespaces();
 
 	// Opening
-	bool	open(MemChunk& mc) override;
+	bool open(MemChunk& mc) override;
 
 	// Writing/Saving
-	bool	write(MemChunk& mc, bool update = true) override;		// Write to MemChunk
-	bool	write(string filename, bool update = true) override;	// Write to File
+	bool write(MemChunk& mc, bool update = true) override;         // Write to MemChunk
+	bool write(string_view filename, bool update = true) override; // Write to File
 
 	// Misc
-	bool	loadEntryData(ArchiveEntry* entry) override;
+	bool loadEntryData(ArchiveEntry* entry) override;
 
 	// Entry addition/removal
-	ArchiveEntry*	addEntry(
-						ArchiveEntry* entry,
-						unsigned position = 0xFFFFFFFF,
-						ArchiveTreeNode* dir = nullptr,
-						bool copy = false
-					) override;
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) override;
-	bool			removeEntry(ArchiveEntry* entry) override;
+	shared_ptr<ArchiveEntry> addEntry(
+		shared_ptr<ArchiveEntry> entry,
+		unsigned                 position = 0xFFFFFFFF,
+		ArchiveDir*              dir      = nullptr) override;
+	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace) override;
+	bool                     removeEntry(ArchiveEntry* entry) override;
 
 	// Entry modification
-	string	processEntryName(string name);
-	bool	renameEntry(ArchiveEntry* entry, string name) override;
+	bool renameEntry(ArchiveEntry* entry, string_view name) override;
 
 	// Entry moving
-	bool	swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override;
-	bool	moveEntry(
-				ArchiveEntry* entry,
-				unsigned position = 0xFFFFFFFF,
-				ArchiveTreeNode* dir = nullptr
-			) override;
+	bool swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) override;
+	bool moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveDir* dir = nullptr) override;
 
 	// Detection
-	MapDesc			getMapInfo(ArchiveEntry* maphead) override;
-	vector<MapDesc>	detectMaps() override;
-	string			detectNamespace(ArchiveEntry* entry) override;
-	string			detectNamespace(size_t index, ArchiveTreeNode * dir = nullptr) override;
-	void			detectIncludes();
-	bool			hasFlatHack() override;
+	MapDesc         mapDesc(ArchiveEntry* maphead) override;
+	vector<MapDesc> detectMaps() override;
+	string          detectNamespace(ArchiveEntry* entry) override;
+	string          detectNamespace(size_t index, ArchiveDir* dir = nullptr) override;
+	void            detectIncludes();
+	bool            hasFlatHack() override;
 
 	// Search
-	ArchiveEntry*			findFirst(SearchOptions& options) override;
-	ArchiveEntry*			findLast(SearchOptions& options) override;
-	vector<ArchiveEntry*>	findAll(SearchOptions& options) override;
+	ArchiveEntry*         findFirst(SearchOptions& options) override;
+	ArchiveEntry*         findLast(SearchOptions& options) override;
+	vector<ArchiveEntry*> findAll(SearchOptions& options) override;
 
 	// Static functions
 	static bool isWadArchive(MemChunk& mc);
-	static bool isWadArchive(string filename);
+	static bool isWadArchive(const string& filename);
 
-	static bool exportEntriesAsWad(string filename, vector<ArchiveEntry*> entries)
+	static bool exportEntriesAsWad(string_view filename, vector<ArchiveEntry*> entries)
 	{
 		WadArchive wad;
 
@@ -74,7 +65,7 @@ public:
 		for (size_t a = 0; a < entries.size(); a++)
 		{
 			// Add each entry to the wad archive
-			wad.addEntry(entries[a], entries.size(), nullptr, true);
+			wad.addEntry(std::make_shared<ArchiveEntry>(*entries[a]), entries.size(), nullptr);
 		}
 
 		return wad.save(filename);
@@ -86,21 +77,15 @@ private:
 	// Struct to hold namespace info
 	struct NSPair
 	{
-		ArchiveEntry*	start;	// eg. P_START
-		size_t			start_index;
-		ArchiveEntry*	end;	// eg. P_END
-		size_t			end_index;
-		string			name;	// eg. "P" (since P or PP is a special case will be set to "patches")
+		ArchiveEntry* start; // eg. P_START
+		size_t        start_index;
+		ArchiveEntry* end; // eg. P_END
+		size_t        end_index;
+		string        name; // eg. "P" (since P or PP is a special case will be set to "patches")
 
-		NSPair(ArchiveEntry* start, ArchiveEntry* end)
-		{
-			this->start = start;
-			this->end = end;
-		}
+		NSPair(ArchiveEntry* start, ArchiveEntry* end) : start{ start }, start_index{ 0 }, end{ end }, end_index{ 0 } {}
 	};
 
-	bool				iwad_;
-	vector<NSPair>	namespaces_;
+	bool           iwad_ = false;
+	vector<NSPair> namespaces_;
 };
-
-#endif//__WADARCHIVE_H__

@@ -2,19 +2,21 @@
 
 namespace BoomGenLineSpecial
 {
-	enum
-	{
-		// Special types
-		GS_FLOOR = 0,
-		GS_CEILING,
-		GS_DOOR,
-		GS_LOCKED_DOOR,
-		GS_LIFT,
-		GS_STAIRS,
-		GS_CRUSHER
-	};
+enum SpecialType
+{
+	// Special types
+	None  = -1,
+	Floor = 0,
+	Ceiling,
+	Door,
+	LockedDoor,
+	Lift,
+	Stairs,
+	Crusher
+};
 
-	string	parseLineType(int type);
-	int		getLineTypeProperties(int type, int* props);
-	int		generateSpecial(int type, int* props);
-}
+string      parseLineType(int type);
+SpecialType getLineTypeProperties(int type, int* props);
+int         generateSpecial(SpecialType type, const int* props);
+
+} // namespace BoomGenLineSpecial

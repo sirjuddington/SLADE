@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=SLADE
-Exec=slade 
-Type=Application
-Categories=Development
-Comment=It's a Doom editor
-Icon=slade
-Terminal=false

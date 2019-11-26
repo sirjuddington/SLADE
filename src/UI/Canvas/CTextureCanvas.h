@@ -1,79 +1,82 @@
-
-#ifndef __CTEXTURECANVAS_H__
-#define __CTEXTURECANVAS_H__
+#pragma once
 
 #include "OGLCanvas.h"
-#include "OpenGL/GLTexture.h"
-#include "General/ListenerAnnouncer.h"
 
 wxDECLARE_EVENT(EVT_DRAG_END, wxCommandEvent);
 
 class CTexture;
 class Archive;
-class CTextureCanvas : public OGLCanvas, Listener
+
+class CTextureCanvas : public OGLCanvas
 {
-private:
-	CTexture*			texture;
-	Archive*			parent;
-	vector<GLTexture*>	patch_textures;
-	GLTexture			tex_preview;
-	vector<bool>		selected_patches;
-	int					hilight_patch;
-	fpoint2_t			offset;
-	point2_t			mouse_prev;
-	double				scale;
-	bool				draw_outside;
-	bool				dragging;
-	bool				show_grid;
-	bool				blend_rgba;
-	bool				tex_scale;
-	int					view_type;	// 0=normal, 1=sprite offsets, 2=hud offsets
-
 public:
+	enum class View
+	{
+		Normal,
+		Sprite,
+		HUD
+	};
+
 	CTextureCanvas(wxWindow* parent, int id);
-	~CTextureCanvas();
+	~CTextureCanvas() = default;
 
-	CTexture*	getTexture() { return texture; }
-	int			getViewType() { return view_type; }
-	void		setScale(double scale) { this->scale = scale; }
-	void		setViewType(int type) { this->view_type = type; }
-	void		drawOutside(bool draw = true) { draw_outside = draw; }
-	point2_t	getMousePrevPos() { return mouse_prev; }
-	bool		isDragging() { return dragging; }
-	bool		showGrid() { return show_grid; }
-	void		showGrid(bool show = true) { show_grid = show; }
-	void		blendRGBA(bool rgba) { blend_rgba = rgba; }
-	bool		getBlendRGBA() { return blend_rgba; }
-	bool		applyTexScale() { return tex_scale; }
-	void		applyTexScale(bool apply) { tex_scale = apply; }
+	CTexture* texture() const { return texture_; }
+	View      viewType() const { return view_type_; }
+	void      setScale(double scale) { scale_ = scale; }
+	void      setViewType(View type) { view_type_ = type; }
+	void      drawOutside(bool draw = true) { draw_outside_ = draw; }
+	Vec2i     mousePrevPos() const { return mouse_prev_; }
+	bool      isDragging() const { return dragging_; }
+	bool      showGrid() const { return show_grid_; }
+	void      showGrid(bool show = true) { show_grid_ = show; }
+	void      setBlendRGBA(bool rgba) { blend_rgba_ = rgba; }
+	bool      blendRGBA() const { return blend_rgba_; }
+	bool      applyTexScale() const { return tex_scale_; }
+	void      applyTexScale(bool apply) { tex_scale_ = apply; }
 
-	void	selectPatch(int index);
-	void	deSelectPatch(int index);
-	bool	patchSelected(int index);
+	void selectPatch(int index);
+	void deSelectPatch(int index);
+	bool patchSelected(int index);
 
-	void	clearTexture();
-	void	clearPatchTextures();
-	void	updatePatchTextures();
-	void	updateTexturePreview();
-	bool	openTexture(CTexture* tex, Archive* parent);
-	void	draw();
-	void	drawTexture();
-	void	drawPatch(int num, bool outside = false);
-	void	drawTextureBorder();
-	void	drawOffsetLines();
-	void	resetOffsets() { offset.x = offset.y = 0; }
-	void	redraw(bool update_tex = false);
+	void clearTexture();
+	void clearPatchTextures();
+	void updatePatchTextures();
+	void updateTexturePreview();
+	bool openTexture(CTexture* tex, Archive* parent);
+	void draw() override;
+	void drawTexture();
+	void drawPatch(int num, bool outside = false);
+	void drawTextureBorder() const;
+	void drawOffsetLines() const;
+	void resetOffsets() { offset_.x = offset_.y = 0; }
+	void redraw(bool update_tex = false);
 
-	point2_t	screenToTexPosition(int x, int y);
-	point2_t	texToScreenPosition(int x, int y);
-	int			patchAt(int x, int y);
+	Vec2i screenToTexPosition(int x, int y) const;
+	Vec2i texToScreenPosition(int x, int y) const;
+	int   patchAt(int x, int y);
 
-	bool	swapPatches(size_t p1, size_t p2);
+	bool swapPatches(size_t p1, size_t p2);
 
-	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+private:
+	CTexture*        texture_ = nullptr;
+	Archive*         parent_  = nullptr;
+	vector<unsigned> patch_textures_;
+	unsigned         tex_preview_;
+	vector<bool>     selected_patches_;
+	int              hilight_patch_ = -1;
+	Vec2d            offset_;
+	Vec2i            mouse_prev_;
+	double           scale_        = 1.;
+	bool             draw_outside_ = true;
+	bool             dragging_     = false;
+	bool             show_grid_    = false;
+	bool             blend_rgba_   = false;
+	bool             tex_scale_    = false;
+	View             view_type_    = View::Normal;
+
+	// Signal connections
+	sigslot::scoped_connection sc_patches_modified_;
 
 	// Events
-	void	onMouseEvent(wxMouseEvent& e);
+	void onMouseEvent(wxMouseEvent& e);
 };
-
-#endif//__CTEXTURECANVAS_H__

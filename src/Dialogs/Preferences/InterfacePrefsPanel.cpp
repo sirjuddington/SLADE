@@ -1,7 +1,7 @@
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2019 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -14,21 +14,21 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
 // You should have received a copy of the GNU General Public License along with
 // this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Includes
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "InterfacePrefsPanel.h"
 #include "General/UI.h"
@@ -36,11 +36,11 @@
 #include "UI/Controls/STabCtrl.h"
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // External Variables
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, size_as_string)
 EXTERN_CVAR(Bool, elist_filter_dirs)
 EXTERN_CVAR(Bool, show_start_page)
@@ -57,45 +57,32 @@ EXTERN_CVAR(Bool, tabs_condensed)
 EXTERN_CVAR(Bool, web_dark_theme)
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // InterfacePrefsPanel Class Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// InterfacePrefsPanel::InterfacePrefsPanel
-//
+// -----------------------------------------------------------------------------
 // InterfacePrefsPanel class constructor
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
+	auto psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Add tabs
-	TabControl* stc_tabs = STabCtrl::createControl(this);
+	auto stc_tabs = STabCtrl::createControl(this);
 	psizer->Add(stc_tabs, 1, wxEXPAND);
 	stc_tabs->AddPage(setupGeneralTab(stc_tabs), "General");
 	stc_tabs->AddPage(setupEntryListTab(stc_tabs), "Entry List");
 }
 
-// ----------------------------------------------------------------------------
-// InterfacePrefsPanel::~InterfacePrefsPanel
-//
-// InterfacePrefsPanel class destructor
-// ----------------------------------------------------------------------------
-InterfacePrefsPanel::~InterfacePrefsPanel()
-{
-}
-
-// ----------------------------------------------------------------------------
-// InterfacePrefsPanel::init
-//
+// -----------------------------------------------------------------------------
 // Initialises panel controls
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void InterfacePrefsPanel::init()
 {
 	cb_size_as_string_->SetValue(size_as_string);
@@ -132,22 +119,20 @@ void InterfacePrefsPanel::init()
 		}
 }
 
-// ----------------------------------------------------------------------------
-// InterfacePrefsPanel::applyPreferences
-//
+// -----------------------------------------------------------------------------
 // Applies preference values from the controls to CVARs
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void InterfacePrefsPanel::applyPreferences()
 {
-	size_as_string = cb_size_as_string_->GetValue();
-	elist_filter_dirs = !cb_filter_dirs_->GetValue();
+	size_as_string      = cb_size_as_string_->GetValue();
+	elist_filter_dirs   = !cb_filter_dirs_->GetValue();
 	list_font_monospace = cb_list_monospace_->GetValue();
-	show_start_page = cb_start_page_->GetValue();
-	context_submenus = cb_context_submenus_->GetValue();
-	elist_type_bgcol = cb_elist_bgcol_->GetValue();
+	show_start_page     = cb_start_page_->GetValue();
+	context_submenus    = cb_context_submenus_->GetValue();
+	elist_type_bgcol    = cb_elist_bgcol_->GetValue();
 	am_file_browser_tab = cb_file_browser_->GetValue();
-	tabs_condensed = cb_condensed_tabs_->GetValue();
-	web_dark_theme = cb_web_dark_theme_->GetValue();
+	tabs_condensed      = cb_condensed_tabs_->GetValue();
+	web_dark_theme      = cb_web_dark_theme_->GetValue();
 
 	if (choice_toolbar_size_->GetSelection() == 0)
 		toolbar_size = 16;
@@ -156,32 +141,28 @@ void InterfacePrefsPanel::applyPreferences()
 	else
 		toolbar_size = 32;
 
-	iconset_general = choice_iconset_general_->GetString(choice_iconset_general_->GetSelection());
-	iconset_entry_list = choice_iconset_entry_->GetString(choice_iconset_entry_->GetSelection());
+	iconset_general = WxUtils::strToView(choice_iconset_general_->GetString(choice_iconset_general_->GetSelection()));
+	iconset_entry_list = WxUtils::strToView(choice_iconset_entry_->GetString(choice_iconset_entry_->GetSelection()));
 }
 
-// ----------------------------------------------------------------------------
-// InterfacePrefsPanel::setupGeneralTab
-//
+// -----------------------------------------------------------------------------
 // Creates and returns the panel for the 'General' tab
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 {
 	auto panel = new wxPanel(stc_tabs, -1);
-	
+
 	// Create controls
-	cb_start_page_ = new wxCheckBox(panel, -1, "Show Start Page on Startup");
+	cb_start_page_     = new wxCheckBox(panel, -1, "Show Start Page on Startup");
 	cb_web_dark_theme_ = new wxCheckBox(panel, -1, "Use dark theme for web content *");
-	cb_web_dark_theme_->SetToolTip(
-		"Use a dark theme for web content eg. the Start Page and Online Documentation"
-	);
-	cb_file_browser_ = new wxCheckBox(panel, -1, "Show File Browser tab in the Archive Manager panel *");
-	cb_list_monospace_ = new wxCheckBox(panel, -1, "Use monospaced font for lists");
-	cb_condensed_tabs_ = new wxCheckBox(panel, -1, "Condensed tabs *");
-	string sizes[] = { "Normal", "Large", "Extra Large" };
-	choice_toolbar_size_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, sizes);
-	vector<string> sets = Icons::getIconSets(Icons::GENERAL);
-	choice_iconset_general_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets.size(), &sets[0]);
+	cb_web_dark_theme_->SetToolTip("Use a dark theme for web content eg. the Start Page and Online Documentation");
+	cb_file_browser_        = new wxCheckBox(panel, -1, "Show File Browser tab in the Archive Manager panel *");
+	cb_list_monospace_      = new wxCheckBox(panel, -1, "Use monospaced font for lists");
+	cb_condensed_tabs_      = new wxCheckBox(panel, -1, "Condensed tabs *");
+	wxString sizes[]        = { "Normal", "Large", "Extra Large" };
+	choice_toolbar_size_    = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, sizes);
+	auto sets               = WxUtils::arrayStringStd(Icons::iconSets(Icons::General));
+	choice_iconset_general_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets);
 
 	// Layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -208,22 +189,20 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	return panel;
 }
 
-// ----------------------------------------------------------------------------
-// InterfacePrefsPanel::setupEntryListTab
-//
+// -----------------------------------------------------------------------------
 // Creates and returns the panel for the 'Entry List' tab
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 {
 	auto panel = new wxPanel(stc_tabs, -1);
 
 	// Create controls
-	cb_size_as_string_ = new wxCheckBox(panel, -1, "Show entry size as a string with units");
-	cb_filter_dirs_ = new wxCheckBox(panel, -1, "Ignore directories when filtering by name");
-	cb_elist_bgcol_ = new wxCheckBox(panel, -1, "Colour entry list item background by entry type");
-	cb_context_submenus_ = new wxCheckBox(panel, -1, "Group related entry context menu items into submenus");
-	auto sets = Icons::getIconSets(Icons::ENTRY);
-	choice_iconset_entry_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets.size(), &sets[0]);
+	cb_size_as_string_    = new wxCheckBox(panel, -1, "Show entry size as a string with units");
+	cb_filter_dirs_       = new wxCheckBox(panel, -1, "Ignore directories when filtering by name");
+	cb_elist_bgcol_       = new wxCheckBox(panel, -1, "Colour entry list item background by entry type");
+	cb_context_submenus_  = new wxCheckBox(panel, -1, "Group related entry context menu items into submenus");
+	auto sets             = WxUtils::arrayStringStd(Icons::iconSets(Icons::Entry));
+	choice_iconset_entry_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets);
 
 	// Layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
