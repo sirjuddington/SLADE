@@ -63,8 +63,7 @@ Lexer::Lexer() :
 	re_int3_{ "^0x[0-9A-Fa-f]+$", wxRE_DEFAULT|wxRE_NOSUB },
 	re_float_{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT|wxRE_NOSUB },
 	fold_comments_{ false },
-	fold_preprocessor_{ false },
-	curr_comment_idx_ { -1 }
+	fold_preprocessor_{ false }
 {
 	// Default word characters
 	setWordChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
@@ -80,7 +79,7 @@ Lexer::Lexer() :
 // ----------------------------------------------------------------------------
 void Lexer::loadLanguage(TextLanguage* language)
 {
-	this->language_ = language;
+	language_ = language;
 	clearWords();
 
 	if (!language)
@@ -110,7 +109,7 @@ void Lexer::loadLanguage(TextLanguage* language)
 // Returns true if the next line needs to be styled (eg. for multi-line
 // comments)
 // ----------------------------------------------------------------------------
-bool Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
+void Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 {
 	if (start < 0)
 		start = 0;
@@ -121,19 +120,14 @@ bool Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 		start,
 		end,
 		line,
-		lines_[line].comment_idx >= 0 ? State::Comment : State::Unknown,
+		State::Unknown,
 		0,
 		0,
 		false,
 		editor
 	};
 
-	if (state.state == State::Comment)
-		curr_comment_idx_ = lines_[line].comment_idx;
-	else
-		curr_comment_idx_ = -1;
-
-	editor->StartStyling(start, 31);
+	editor->StartStyling(start, 0);
 	if (debug_lexer)
 		Log::debug(S_FMT("START STYLING FROM %d TO %d (LINE %d)", start, end, line + 1));
 
@@ -144,8 +138,6 @@ bool Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 		{
 		case State::Whitespace:
 			done = processWhitespace(state); break;
-		case State::Comment:
-			done = processComment(state); break;
 		case State::String:
 			done = processString(state); break;
 		case State::Char:
@@ -162,24 +154,72 @@ bool Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 	// Set current & next line's info
 	lines_[line].fold_increment = state.fold_increment;
 	lines_[line].has_word = state.has_word;
-	if (state.state == State::Comment)
+}
+
+// ----------------------------------------------------------------------------
+// Updates and styles comments in [editor], for characters from [start] to
+// [end].
+// ----------------------------------------------------------------------------
+void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
+{
+	// Block comment handling
+	auto& block_begin = language_->commentBeginL();
+	auto& block_end = language_->commentEndL();
+	int token_index;
+
+	// Extend start/end if either is within a block comment
+	auto cb = isWithinComment(start);
+	if (cb >= 0)
+		start = comment_blocks_[cb].start_pos;
+	cb = isWithinComment(end);
+	if (cb >= 0)
+		end = comment_blocks_[cb].end_pos;
+
+	// Remove any existing comment blocks within start->end
+	for (int i = comment_blocks_.size() - 1; i >= 0; --i)
 	{
-		lines_[line + 1].comment_idx = curr_comment_idx_;
-		if (debug_lexer)
-		{
-			Log::debug(S_FMT("Line %d is block comment, using idx (%d)",
-					         line + 2,
-					         lines_[line + 1].comment_idx));
-		}
-	}
-	else if (state.state == State::Whitespace)
-	{
-		lines_[line].comment_idx = -1;
-		lines_[line + 1].comment_idx = -1;
+		if (comment_blocks_[i].start_pos >= start && comment_blocks_[i].end_pos <= end)
+			comment_blocks_.erase(comment_blocks_.begin() + i);
 	}
 
-	// Return true if we are still inside a comment
-	return (state.state == State::Comment);
+	// Scan text
+	auto pos = start;
+	while (pos < end)
+	{
+		// Line comment
+		if (checkToken(editor, pos, language_->lineCommentL()))
+		{
+			const auto l_end = editor->GetLineEndPosition(editor->LineFromPosition(pos));
+			editor->StartStyling(pos, 0);
+			editor->SetStyling(l_end - pos, Style::Comment);
+			pos = l_end;
+			continue;
+		}
+
+		// Block comment
+		if (checkToken(editor, pos, block_begin, &token_index))
+		{
+			auto& end_token = block_end[token_index];
+			editor->StartStyling(pos, 0);
+			auto cb_start = pos;
+			pos += block_begin[token_index].size();
+			while (pos < end)
+			{
+				if (checkToken(editor, pos, end_token))
+				{
+					pos += end_token.size();
+					break;
+				}
+				++pos;
+			}
+
+			comment_blocks_.push_back({ cb_start, pos });
+			editor->SetStyling(pos - cb_start, Style::Comment);
+			continue;
+		}
+
+		++pos;
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -252,17 +292,11 @@ bool Lexer::processUnknown(LexerState& state)
 	int u_length = 0;
 	bool end = false;
 	bool pp = false;
-	vector<string> comment_begin_l;
-	string comment_doc;
-	vector<string> comment_line_l;
 	string block_begin;
 	string block_end;
 
 	if (language_)
 	{
-		comment_begin_l	= language_->commentBeginL();
-		comment_doc 	= language_->docComment();
-		comment_line_l 	= language_->lineCommentL();
 		block_begin 	= language_->blockBegin();
 		block_end 		= language_->blockEnd();
 	}
@@ -272,7 +306,6 @@ bool Lexer::processUnknown(LexerState& state)
 		// Check for end of line
 		if (state.position > state.end)
 		{
-			lines_[state.line + 1].comment_idx = -1;
 			end = true;
 			break;
 		}
@@ -305,42 +338,6 @@ bool Lexer::processUnknown(LexerState& state)
 			state.length = 1;
 			state.has_word = true;
 			break;
-		}
-
-		// Start of block comment
-		else if (checkToken(state, state.position, comment_begin_l, &(curr_comment_idx_)))
-		{
-			state.state = State::Comment;
-			state.length = comment_begin_l[curr_comment_idx_].size();
-			state.position += comment_begin_l[curr_comment_idx_].size();
-			if (fold_comments_)
-			{
-				state.fold_increment++;
-				state.has_word = true;
-			}
-			break;
-		}
-
-		// Start of doc line comment
-		else if (checkToken(state, state.position, comment_doc))
-		{
-			// Format as comment to end of line
-			state.editor->SetStyling(u_length, Style::Default);
-			state.editor->SetStyling(state.end - state.position + 1, Style::CommentDoc);
-			if (debug_lexer)
-				Log::debug(S_FMT("comment_d: %d", state.end - state.position + 1));
-			return true;
-		}
-
-		// Start of line comment
-		else if (checkToken(state, state.position, comment_line_l))
-		{
-			// Format as comment to end of line
-			state.editor->SetStyling(u_length, Style::Default);
-			state.editor->SetStyling(state.end - state.position + 1, Style::Comment);
-			if (debug_lexer)
-				Log::debug(S_FMT("comment_l: %d", state.end - state.position + 1));
-			return true;
 		}
 
 		// Whitespace
@@ -388,11 +385,11 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Block begin
-		else if (checkToken(state, state.position, block_begin))
+		else if (checkToken(state.editor, state.position, block_begin))
 			state.fold_increment++;
 
 		// Block end
-		else if (checkToken(state, state.position, block_end))
+		else if (checkToken(state.editor, state.position, block_end))
 			state.fold_increment--;
 
 		// if (debug_lexer)
@@ -405,52 +402,6 @@ bool Lexer::processUnknown(LexerState& state)
 	if (debug_lexer && u_length > 0)
 		Log::debug(S_FMT("unknown: %d", u_length));
 	state.editor->SetStyling(u_length, Style::Default);
-
-	return end;
-}
-
-// ----------------------------------------------------------------------------
-// Lexer::processComment
-//
-// Process comment characters, updating [state].
-// Returns true if the end of the current text range was reached
-// ----------------------------------------------------------------------------
-bool Lexer::processComment(LexerState& state)
-{
-	bool end = false;
-	string comment_end = "";
-	if (curr_comment_idx_ >= 0)
-		comment_end = language_->commentEndL()[curr_comment_idx_];
-
-	while (true)
-	{
-		// Check for end of line
-		if (state.position > state.end)
-		{
-			end = true;
-			break;
-		}
-
-		// End of comment
-		if (checkToken(state, state.position, comment_end))
-		{
-			state.length += comment_end.size();
-			state.position += comment_end.size();
-			state.state = State::Unknown;
-			curr_comment_idx_ = -1;
-			if (fold_comments_)
-				state.fold_increment--;
-			break;
-		}
-
-		state.length++;
-		state.position++;
-	}
-
-	if (debug_lexer)
-		Log::debug(S_FMT("comment_b: %lu", state.length));
-
-	state.editor->SetStyling(state.length, Style::Comment);
 
 	return end;
 }
@@ -474,7 +425,6 @@ bool Lexer::processWord(LexerState& state)
 		// Check for end of line
 		if (state.position > state.end)
 		{
-			lines_[state.line + 1].comment_idx = -1;
 			end = true;
 			break;
 		}
@@ -536,7 +486,6 @@ bool Lexer::processString(LexerState& state)
 		// Check for end of line
 		if (state.position > state.end)
 		{
-			lines_[state.line + 1].comment_idx = -1;
 			end = true;
 			break;
 		}
@@ -578,7 +527,6 @@ bool Lexer::processChar(LexerState& state)
 		// Check for end of line
 		if (state.position > state.end)
 		{
-			lines_[state.line + 1].comment_idx = -1;
 			end = true;
 			break;
 		}
@@ -620,7 +568,6 @@ bool Lexer::processOperator(LexerState& state)
 		// Check for end of line
 		if (state.position > state.end)
 		{
-			lines_[state.line + 1].comment_idx = -1;
 			end = true;
 			break;
 		}
@@ -661,7 +608,6 @@ bool Lexer::processWhitespace(LexerState& state)
 		// Check for end of line
 		if (state.position > state.end)
 		{
-			lines_[state.line + 1].comment_idx = -1;
 			end = true;
 			break;
 		}
@@ -692,14 +638,14 @@ bool Lexer::processWhitespace(LexerState& state)
 //
 // Checks if the text in [editor] starting from [pos] matches [token]
 // ----------------------------------------------------------------------------
-bool Lexer::checkToken(LexerState& state, int pos, string& token)
+bool Lexer::checkToken(TextEditorCtrl* editor, int pos, const string& token)
 {
 	if (!token.empty())
 	{
 		unsigned long token_size = token.size();
 		for (unsigned i = 0; i < token_size; i++)
 		{
-			if (state.editor->GetCharAt(pos + i) != (int) token[i])
+			if (editor->GetCharAt(pos + i) != (int) token[i])
 				return false;
 		}
 		return true;
@@ -714,7 +660,7 @@ bool Lexer::checkToken(LexerState& state, int pos, string& token)
 // Writes the fitst index that matched to [found_index] if a valid pointer
 // is passed. Returns true if there's a match, false if not.
 // ----------------------------------------------------------------------------
-bool Lexer::checkToken(LexerState &state, int pos, vector<string> &tokens, int *found_idx)
+bool Lexer::checkToken(TextEditorCtrl* editor, int pos, const vector<string>& tokens, int *found_idx)
 {
 	if (!tokens.empty())
 	{
@@ -723,7 +669,7 @@ bool Lexer::checkToken(LexerState &state, int pos, vector<string> &tokens, int *
 		while (idx < tokens.size())
 		{
 			token = tokens[idx];
-			if (checkToken(state, pos, token))
+			if (checkToken(editor, pos, token))
 			{
 				if (found_idx)
 					*found_idx = idx;
@@ -734,6 +680,19 @@ bool Lexer::checkToken(LexerState &state, int pos, vector<string> &tokens, int *
 		}
 	}
 	return false;
+}
+
+// ----------------------------------------------------------------------------
+// Checks if [pos] is within a block comment, and returns the index for
+// comment_blocks_ if it is (-1 otherwise)
+// ----------------------------------------------------------------------------
+int Lexer::isWithinComment(int pos)
+{
+	for (unsigned i = 0; i < comment_blocks_.size(); ++i)
+		if (pos >= comment_blocks_[i].start_pos && pos < comment_blocks_[i].end_pos)
+			return i;
+
+	return -1;
 }
 
 // ----------------------------------------------------------------------------

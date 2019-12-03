@@ -29,7 +29,9 @@ public:
 
 	virtual void	loadLanguage(TextLanguage* language);
 
-	virtual bool	doStyling(TextEditorCtrl* editor, int start, int end);
+	virtual void	doStyling(TextEditorCtrl* editor, int start, int end);
+	void			updateComments(TextEditorCtrl* editor, int start, int end);
+
 	virtual void	addWord(string word, int style);
 	virtual void	clearWords() { word_list_.clear(); }
 	virtual void    resetLineInfo() { lines_.clear(); }
@@ -48,7 +50,6 @@ protected:
 	{
 		Unknown,
 		Word,
-		Comment,
 		String,
 		Char,
 		Number,
@@ -67,7 +68,6 @@ protected:
 	bool					fold_comments_;
 	bool					fold_preprocessor_;
 	char					preprocessor_char_;
-	int						curr_comment_idx_;
 
 	struct WLIndex
 	{
@@ -78,14 +78,19 @@ protected:
 
 	struct LineInfo
 	{
-		int 	comment_idx;
 		int		fold_increment;
 		bool	has_word;
-		LineInfo() : comment_idx { -1 },
-					 fold_increment { 0 },
+		LineInfo() : fold_increment { 0 },
 					 has_word { false } {}
 	};
 	std::map<int, LineInfo> lines_;
+
+	struct CommentBlock
+	{
+		int start_pos = -1;
+		int end_pos = -1;
+	};
+	vector<CommentBlock> comment_blocks_;
 
 	struct LexerState
 	{
@@ -98,8 +103,8 @@ protected:
 		bool			has_word;
 		TextEditorCtrl*	editor;
 	};
+
 	bool	processUnknown(LexerState& state);
-	bool	processComment(LexerState& state);
 	bool	processWord(LexerState& state);
 	bool	processString(LexerState& state);
 	bool	processChar(LexerState& state);
@@ -107,10 +112,11 @@ protected:
 	bool	processWhitespace(LexerState& state);
 
 	virtual void	styleWord(LexerState& state, string word);
-	bool			checkToken(LexerState& state, int pos, string& token);
-	bool			checkToken(LexerState &state, int pos,
-							   vector<string> &tokens,
+	bool			checkToken(TextEditorCtrl* editor, int pos, const string& token);
+	bool			checkToken(TextEditorCtrl* editor, int pos,
+							   const vector<string>& tokens,
 							   int *found_idx = nullptr);
+	int				isWithinComment(int pos);
 };
 
 class ZScriptLexer : public Lexer
