@@ -2,7 +2,7 @@
 
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GLCanvas.h"
 #include "UI/Controls/ColourBox.h"
 
 class GfxCanvas;
@@ -12,7 +12,7 @@ class ArchiveEntry;
 class wxListBox;
 class wxPanel;
 
-class GradientBox : public OGLCanvas
+class GradientBox : public GLCanvas
 {
 public:
 	GradientBox(wxWindow* parent, int steps = -1);
@@ -22,7 +22,7 @@ public:
 	void setEndCol(ColRGBA col) { col_end_.set(col.r, col.g, col.b, 255); }
 	void setSteps(int steps) { steps_ = steps; }
 
-	void draw() override;
+	void drawContent() override;
 
 private:
 	ColRGBA col_start_ = ColRGBA::BLACK;

@@ -55,7 +55,7 @@
 // -----------------------------------------------------------------------------
 // SideTexCanvas class constructor
 // -----------------------------------------------------------------------------
-SideTexCanvas::SideTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
+SideTexCanvas::SideTexCanvas(wxWindow* parent) : GLCanvas(parent)
 {
 	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
 	SetInitialSize(WxUtils::scaledSize(136, 136));
@@ -80,28 +80,10 @@ void SideTexCanvas::setTexture(const wxString& tex)
 // -----------------------------------------------------------------------------
 // Draws the canvas content
 // -----------------------------------------------------------------------------
-void SideTexCanvas::draw()
+void SideTexCanvas::drawContent()
 {
-	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Clear
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
-	// Draw background
+	setup2D();
+	clear();
 	drawCheckeredBackground();
 
 	// Draw texture
@@ -118,9 +100,6 @@ void SideTexCanvas::draw()
 		OpenGL::setColour(180, 0, 0);
 		Drawing::drawTextureWithin(tex, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
 	}
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
 }
 
 

@@ -529,7 +529,7 @@ void MapEditContext::forceRefreshRenderer()
 		info_3d_.update(hl.index, hl.type, &map_);
 	}
 
-	if (!canvas_->setActive())
+	if (!canvas_->activateContext())
 		return;
 
 	renderer_.forceUpdate();

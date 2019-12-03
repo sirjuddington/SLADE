@@ -1,21 +1,19 @@
 
 #include "Main.h"
 #include "GLCanvas.h"
+#include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
 #include "Utility/Colour.h"
 #include <SFML/Graphics/RenderTarget.hpp>
 
 
 GLCanvas::GLCanvas(wxWindow* parent, int id) :
-	wxGLCanvas{
-		parent,
-		id,
-		OpenGL::getWxGLAttribs(),
-		wxDefaultPosition,
-		wxDefaultSize,
-		wxBORDER_NONE | wxWANTS_CHARS
-	}
+	wxGLCanvas{ parent, id, OpenGL::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS }
 {
-	Bind(wxEVT_PAINT, [&](wxPaintEvent&) { wxPaintDC dc(this); render(); });
+	Bind(wxEVT_PAINT, [&](wxPaintEvent&) {
+		wxPaintDC dc(this);
+		render();
+	});
 	Bind(wxEVT_ERASE_BACKGROUND, [&](wxEraseEvent&) {});
 	Bind(wxEVT_SIZE, [&](wxSizeEvent&) { render(); });
 }
@@ -30,15 +28,16 @@ bool GLCanvas::activateContext()
 	if (const auto context = OpenGL::getContext(this))
 	{
 		context->SetCurrent(*this);
+		Drawing::setRenderTarget(this);
 		return true;
 	}
-	
+
 	return false;
 }
 
 void GLCanvas::setup2D()
 {
-	int width = GetSize().x;
+	int width  = GetSize().x;
 	int height = GetSize().y;
 
 	// Setup the screen projection
@@ -52,6 +51,12 @@ void GLCanvas::setup2D()
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
 	if (OpenGL::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
+}
+
+void GLCanvas::clear(ColRGBA colour)
+{
+	glClearColor(colour.fr(), colour.fg(), colour.fb(), 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void GLCanvas::reset()
@@ -70,6 +75,38 @@ void GLCanvas::reset()
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_FOG);
 	glEnable(GL_ALPHA_TEST);
+}
+
+void GLCanvas::drawCheckeredBackground() const
+{
+	// Save current matrix
+	glPushMatrix();
+
+	// Enable textures
+	glEnable(GL_TEXTURE_2D);
+
+	// Bind background texture
+	OpenGL::Texture::bind(OpenGL::Texture::backgroundTexture());
+
+	// Draw background
+	Rectf rect(0, 0, GetSize().x, GetSize().y);
+	OpenGL::setColour(ColRGBA::WHITE);
+	glBegin(GL_QUADS);
+	glTexCoord2d(rect.x1() * 0.0625, rect.y1() * 0.0625);
+	glVertex2d(rect.x1(), rect.y1());
+	glTexCoord2d(rect.x1() * 0.0625, rect.y2() * 0.0625);
+	glVertex2d(rect.x1(), rect.y2());
+	glTexCoord2d(rect.x2() * 0.0625, rect.y2() * 0.0625);
+	glVertex2d(rect.x2(), rect.y2());
+	glTexCoord2d(rect.x2() * 0.0625, rect.y1() * 0.0625);
+	glVertex2d(rect.x2(), rect.y1());
+	glEnd();
+
+	// Disable textures
+	glDisable(GL_TEXTURE_2D);
+
+	// Restore previous matrix
+	glPopMatrix();
 }
 
 void GLCanvas::beginSFMLDraw()
@@ -106,12 +143,11 @@ void GLCanvas::endSFMLDraw()
 
 void GLCanvas::drawContent()
 {
-	auto width = GetSize().x;
+	auto width  = GetSize().x;
 	auto height = GetSize().y;
 
 	setup2D();
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	clear();
 
 	OpenGL::setColour(ColRGBA::WHITE);
 
@@ -120,12 +156,18 @@ void GLCanvas::drawContent()
 	glDisable(GL_TEXTURE_2D);
 
 	glBegin(GL_LINES);
-	glVertex2i(0, 0); glVertex2i(width, 0);
-	glVertex2i(width, 0); glVertex2i(width, height);
-	glVertex2i(width, height); glVertex2i(0, height);
-	glVertex2i(0, height); glVertex2i(0, 0);
-	glVertex2i(0, 0); glVertex2i(width, height);
-	glVertex2i(width, 0); glVertex2i(0, height);
+	glVertex2i(0, 0);
+	glVertex2i(width, 0);
+	glVertex2i(width, 0);
+	glVertex2i(width, height);
+	glVertex2i(width, height);
+	glVertex2i(0, height);
+	glVertex2i(0, height);
+	glVertex2i(0, 0);
+	glVertex2i(0, 0);
+	glVertex2i(width, height);
+	glVertex2i(width, 0);
+	glVertex2i(0, height);
 	glEnd();
 
 
@@ -144,7 +186,7 @@ void GLCanvas::drawContent()
 
 void GLCanvas::render()
 {
-	auto width = GetSize().x;
+	auto width  = GetSize().x;
 	auto height = GetSize().y;
 
 	if (!activateContext())
@@ -177,14 +219,13 @@ bool GLCanvas::setActive(bool active)
 
 CONSOLE_COMMAND(tgc, 0, false)
 {
-	wxDialog dlg{
+	wxDialog dlg(
 		STopWindow::currentActive(),
 		-1,
 		"GLCanvas Test",
 		wxDefaultPosition,
 		{ 800, 800 },
-		wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER
-	};
+		wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
 
 	dlg.SetSizer(new wxBoxSizer(wxVERTICAL));
 	dlg.GetSizer()->Add(new GLCanvas{ &dlg }, 1, wxEXPAND | wxALL, 10);

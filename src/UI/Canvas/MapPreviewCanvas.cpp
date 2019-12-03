@@ -649,7 +649,7 @@ void MapPreviewCanvas::showMap()
 // -----------------------------------------------------------------------------
 // Draws the map
 // -----------------------------------------------------------------------------
-void MapPreviewCanvas::draw()
+void MapPreviewCanvas::drawContent()
 {
 	// Setup colours
 	auto col_view_background   = ColourConfiguration::colour("map_view_background");
@@ -659,16 +659,8 @@ void MapPreviewCanvas::draw()
 	auto col_view_line_macro   = ColourConfiguration::colour("map_view_line_macro");
 	auto col_view_thing        = ColourConfiguration::colour("map_view_thing");
 
-	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, GetSize().x, 0, GetSize().y, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	// Setup standard 2d view
+	setup2D();
 
 	// Clear
 	glClearColor(
@@ -678,10 +670,6 @@ void MapPreviewCanvas::draw()
 		((double)col_view_background.a) / 255.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
 	// Zoom/offset to show full map
 	showMap();
 
@@ -689,7 +677,7 @@ void MapPreviewCanvas::draw()
 	glTranslated(GetSize().x * 0.5, GetSize().y * 0.5, 0);
 
 	// Zoom
-	glScaled(zoom_, zoom_, 1);
+	glScaled(zoom_, -zoom_, 1);
 
 	// Translate to offset
 	glTranslated(-offset_.x, -offset_.y, 0);
@@ -784,9 +772,6 @@ void MapPreviewCanvas::draw()
 
 	glLineWidth(1.0f);
 	glDisable(GL_LINE_SMOOTH);
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
 }
 
 

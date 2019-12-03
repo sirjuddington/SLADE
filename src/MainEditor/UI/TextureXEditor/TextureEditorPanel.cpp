@@ -126,7 +126,7 @@ void TextureEditorPanel::setupLayout()
 	hbox->Add(cb_draw_outside_, 0, wxEXPAND);
 
 	// Add texture canvas
-	vbox->Add(tex_canvas_->toPanel(this), 1, wxEXPAND);
+	vbox->Add(tex_canvas_, 1, wxEXPAND);
 
 	// Add extra view controls
 	hbox = new wxBoxSizer(wxHORIZONTAL);

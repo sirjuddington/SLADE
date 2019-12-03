@@ -1,8 +1,6 @@
 #pragma once
 
-#ifdef USE_SFML_RENDERWINDOW
 #include <SFML/Graphics.hpp>
-#endif
 #include "Utility/Colour.h"
 
 class FontManager;
@@ -79,9 +77,7 @@ void  setTextOutline(double thickness, const ColRGBA& colour = ColRGBA::BLACK);
 void drawHud();
 
 // Implementation-specific
-#ifdef USE_SFML_RENDERWINDOW
-void setRenderTarget(sf::RenderWindow* target);
-#endif
+void setRenderTarget(sf::RenderTarget* target);
 
 
 // From CodeLite

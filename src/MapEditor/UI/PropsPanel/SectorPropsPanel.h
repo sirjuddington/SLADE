@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PropsPanelBase.h"
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GLCanvas.h"
 #include "UI/Controls/STabCtrl.h"
 
 class SectorSpecialPanel;
@@ -9,7 +9,7 @@ class MapObject;
 class MapObjectPropsPanel;
 class NumberTextCtrl;
 
-class FlatTexCanvas : public OGLCanvas
+class FlatTexCanvas : public GLCanvas
 {
 public:
 	FlatTexCanvas(wxWindow* parent);
@@ -17,7 +17,7 @@ public:
 
 	wxString texName() const { return texname_; }
 	void     setTexture(const wxString& texture);
-	void     draw() override;
+	void     drawContent() override;
 
 private:
 	unsigned texture_ = 0;

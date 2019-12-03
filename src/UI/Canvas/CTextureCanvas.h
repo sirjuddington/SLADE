@@ -1,13 +1,14 @@
 #pragma once
 
-#include "OGLCanvas.h"
+#include "GLCanvas.h"
+#include "Graphics/Palette/Palette.h"
 
 wxDECLARE_EVENT(EVT_DRAG_END, wxCommandEvent);
 
 class CTexture;
 class Archive;
 
-class CTextureCanvas : public OGLCanvas
+class CTextureCanvas : public GLCanvas
 {
 public:
 	enum class View
@@ -22,17 +23,20 @@ public:
 
 	CTexture* texture() const { return texture_; }
 	View      viewType() const { return view_type_; }
-	void      setScale(double scale) { scale_ = scale; }
-	void      setViewType(View type) { view_type_ = type; }
-	void      drawOutside(bool draw = true) { draw_outside_ = draw; }
-	Vec2i     mousePrevPos() const { return mouse_prev_; }
 	bool      isDragging() const { return dragging_; }
 	bool      showGrid() const { return show_grid_; }
-	void      showGrid(bool show = true) { show_grid_ = show; }
-	void      setBlendRGBA(bool rgba) { blend_rgba_ = rgba; }
+	Vec2i     mousePrevPos() const { return mouse_prev_; }
 	bool      blendRGBA() const { return blend_rgba_; }
 	bool      applyTexScale() const { return tex_scale_; }
-	void      applyTexScale(bool apply) { tex_scale_ = apply; }
+	Palette&  palette() { return palette_; }
+
+	void setScale(double scale) { scale_ = scale; }
+	void setViewType(View type) { view_type_ = type; }
+	void drawOutside(bool draw = true) { draw_outside_ = draw; }
+	void showGrid(bool show = true) { show_grid_ = show; }
+	void setBlendRGBA(bool rgba) { blend_rgba_ = rgba; }
+	void applyTexScale(bool apply) { tex_scale_ = apply; }
+	void setPalette(Palette* pal) { palette_.copyPalette(pal); }
 
 	void selectPatch(int index);
 	void deSelectPatch(int index);
@@ -43,7 +47,7 @@ public:
 	void updatePatchTextures();
 	void updateTexturePreview();
 	bool openTexture(CTexture* tex, Archive* parent);
-	void draw() override;
+	void drawContent() override;
 	void drawTexture();
 	void drawPatch(int num, bool outside = false);
 	void drawTextureBorder() const;
@@ -73,6 +77,7 @@ private:
 	bool             blend_rgba_   = false;
 	bool             tex_scale_    = false;
 	View             view_type_    = View::Normal;
+	Palette          palette_;
 
 	// Signal connections
 	sigslot::scoped_connection sc_patches_modified_;

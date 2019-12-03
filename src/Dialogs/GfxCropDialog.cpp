@@ -49,14 +49,11 @@
 // -----------------------------------------------------------------------------
 // CropCanvas class constructor
 // -----------------------------------------------------------------------------
-CropCanvas::CropCanvas(wxWindow* parent, SImage* image, Palette* palette) : OGLCanvas(parent, -1, false)
+CropCanvas::CropCanvas(wxWindow* parent, SImage* image, Palette* palette) :
+	GLCanvas(parent),
+	image_{ image },
+	palette_{ palette }
 {
-	if (image && image->isValid())
-	{
-		texture_ = OpenGL::Texture::createFromImage(*image, palette);
-		crop_rect_.set(0, 0, image->width(), image->height());
-	}
-
 	int size = UI::scalePx(220);
 	SetInitialSize(wxSize(size, size));
 }
@@ -64,8 +61,15 @@ CropCanvas::CropCanvas(wxWindow* parent, SImage* image, Palette* palette) : OGLC
 // -----------------------------------------------------------------------------
 // Draw the canvas contents
 // -----------------------------------------------------------------------------
-void CropCanvas::draw()
+void CropCanvas::drawContent()
 {
+	// Generate texture if needed
+	if (!texture_ && image_ && image_->isValid())
+	{
+		texture_ = OpenGL::Texture::createFromImage(*image_, palette_);
+		crop_rect_.set(0, 0, image_->width(), image_->height());
+	}
+
 	// Setup for 2d
 	setup2D();
 
@@ -120,8 +124,6 @@ void CropCanvas::draw()
 	Drawing::drawFilledRect(crop_rect_.tl.x, crop_rect_.br.y, crop_rect_.br.x, 1000);  // Bottom
 
 	glPopMatrix();
-
-	SwapBuffers();
 }
 
 

@@ -81,7 +81,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
 
 	// Add gfx canvas
 	gfx_canvas_ = new GfxCanvas(this, -1);
-	sizer_main_->Add(gfx_canvas_->toPanel(this), 1, wxEXPAND, 0);
+	sizer_main_->Add(gfx_canvas_, 1, wxEXPAND, 0);
 	gfx_canvas_->setViewType(GfxCanvas::View::Default);
 	gfx_canvas_->allowDrag(true);
 	gfx_canvas_->allowScroll(true);

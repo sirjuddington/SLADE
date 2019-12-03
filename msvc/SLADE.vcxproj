@@ -4277,7 +4277,6 @@
     <ClCompile Include="..\src\MapEditor\UI\ShapeDrawPanel.cpp" />
     <ClCompile Include="..\src\MapEditor\UndoSteps.cpp" />
     <ClCompile Include="..\src\OpenGL\Drawing.cpp" />
-    <ClCompile Include="..\src\OpenGL\DrawingFTGL.cpp" />
     <ClCompile Include="..\src\OpenGL\DrawingSFML.cpp" />
     <ClCompile Include="..\src\OpenGL\GLTexture.cpp" />
     <ClCompile Include="..\src\OpenGL\OpenGL.cpp" />
@@ -4318,7 +4317,6 @@
     <ClCompile Include="..\src\UI\Canvas\CTextureCanvas.cpp" />
     <ClCompile Include="..\src\UI\Canvas\GfxCanvas.cpp" />
     <ClCompile Include="..\src\UI\Canvas\MapPreviewCanvas.cpp" />
-    <ClCompile Include="..\src\UI\Canvas\OGLCanvas.cpp" />
     <ClCompile Include="..\src\UI\Canvas\PaletteCanvas.cpp" />
     <ClCompile Include="..\src\UI\Controls\BaseResourceChooser.cpp" />
     <ClCompile Include="..\src\UI\Controls\ColourBox.cpp" />
@@ -5158,7 +5156,6 @@
     <ClInclude Include="..\src\UI\Canvas\CTextureCanvas.h" />
     <ClInclude Include="..\src\UI\Canvas\GfxCanvas.h" />
     <ClInclude Include="..\src\UI\Canvas\MapPreviewCanvas.h" />
-    <ClInclude Include="..\src\UI\Canvas\OGLCanvas.h" />
     <ClInclude Include="..\src\UI\Canvas\PaletteCanvas.h" />
     <ClInclude Include="..\src\UI\Controls\BaseResourceChooser.h" />
     <ClInclude Include="..\src\UI\Controls\ColourBox.h" />

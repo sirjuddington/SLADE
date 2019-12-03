@@ -59,7 +59,7 @@ DEFINE_EVENT_TYPE(wxEVT_BROWSERCANVAS_SELECTION_CHANGED)
 // BrowserCanvas class constructor
 // -----------------------------------------------------------------------------
 BrowserCanvas::BrowserCanvas(wxWindow* parent) :
-	OGLCanvas{ parent, -1 },
+	GLCanvas{ parent, -1 },
 	item_border_{ UI::scalePx(8) },
 	font_{ Drawing::Font::Bold }
 {
@@ -143,18 +143,10 @@ int BrowserCanvas::fullItemSizeY() const
 // -----------------------------------------------------------------------------
 // Handles drawing of the canvas content
 // -----------------------------------------------------------------------------
-void BrowserCanvas::draw()
+void BrowserCanvas::drawContent()
 {
-	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	// Setup standard 2d view
+	setup2D();
 
 	// Setup colours
 	ColRGBA col_bg, col_text;
@@ -187,10 +179,6 @@ void BrowserCanvas::draw()
 	// Clear
 	glClearColor(col_bg.fr(), col_bg.fg(), col_bg.fb(), 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
 
 	// Draw background if required
 	if (browser_bg_type == 0)
@@ -289,9 +277,6 @@ void BrowserCanvas::draw()
 				break;
 		}
 	}
-
-	// Swap Buffers
-	SwapBuffers();
 }
 
 // -----------------------------------------------------------------------------

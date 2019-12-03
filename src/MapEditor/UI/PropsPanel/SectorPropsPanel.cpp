@@ -57,7 +57,7 @@
 // -----------------------------------------------------------------------------
 // FlatTexCanvas class constructor
 // -----------------------------------------------------------------------------
-FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
+FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : GLCanvas(parent)
 {
 	// Init variables
 	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
@@ -69,6 +69,8 @@ FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 // -----------------------------------------------------------------------------
 void FlatTexCanvas::setTexture(const wxString& tex)
 {
+	activateContext();
+
 	texname_ = tex;
 	if (tex.empty() || tex == "-")
 		texture_ = 0;
@@ -83,26 +85,14 @@ void FlatTexCanvas::setTexture(const wxString& tex)
 // -----------------------------------------------------------------------------
 // Draws the canvas content
 // -----------------------------------------------------------------------------
-void FlatTexCanvas::draw()
+void FlatTexCanvas::drawContent()
 {
-	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	// Setup standard 2d view
+	setup2D();
 
 	// Clear
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	// Draw background
 	drawCheckeredBackground();
@@ -121,9 +111,6 @@ void FlatTexCanvas::draw()
 		OpenGL::setColour(180, 0, 0);
 		Drawing::drawTextureWithin(tex, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
 	}
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
 }
 
 

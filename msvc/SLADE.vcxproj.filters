@@ -837,9 +837,6 @@
     <ClCompile Include="..\src\UI\Canvas\MapPreviewCanvas.cpp">
       <Filter>UI\Canvas</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\UI\Canvas\OGLCanvas.cpp">
-      <Filter>UI\Canvas</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\UI\Canvas\PaletteCanvas.cpp">
       <Filter>UI\Canvas</Filter>
     </ClCompile>
@@ -1479,9 +1476,6 @@
     <ClCompile Include="..\src\OpenGL\DrawingSFML.cpp">
       <Filter>OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\OpenGL\DrawingFTGL.cpp">
-      <Filter>OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\SLADEMap\MapObjectCollection.cpp">
       <Filter>SLADEMap</Filter>
     </ClCompile>
@@ -1978,9 +1972,6 @@
       <Filter>UI\Canvas</Filter>
     </ClInclude>
     <ClInclude Include="..\src\UI\Canvas\MapPreviewCanvas.h">
-      <Filter>UI\Canvas</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\UI\Canvas\OGLCanvas.h">
       <Filter>UI\Canvas</Filter>
     </ClInclude>
     <ClInclude Include="..\src\UI\Canvas\PaletteCanvas.h">

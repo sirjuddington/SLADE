@@ -1,11 +1,11 @@
 #pragma once
 
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GLCanvas.h"
 
 class MapSide;
 class NumberTextCtrl;
 
-class SideTexCanvas : public OGLCanvas
+class SideTexCanvas : public GLCanvas
 {
 public:
 	SideTexCanvas(wxWindow* parent);
@@ -13,7 +13,7 @@ public:
 
 	wxString texName() const { return texname_; }
 	void     setTexture(const wxString& texture);
-	void     draw() override;
+	void     drawContent() override;
 
 private:
 	unsigned texture_ = 0;

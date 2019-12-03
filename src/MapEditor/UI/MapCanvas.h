@@ -2,16 +2,16 @@
 
 #include "General/KeyBind.h"
 #include "MapEditor/MapEditContext.h"
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GLCanvas.h"
 
-class MapCanvas : public OGLCanvas, public KeyBindHandler
+class MapCanvas : public GLCanvas, public KeyBindHandler
 {
 public:
 	MapCanvas(wxWindow* parent, int id, MapEditContext* context);
 	~MapCanvas() = default;
 
 	// Drawing
-	void draw() override;
+	void drawContent() override;
 
 	// Mouse
 	void mouseToCenter();
@@ -26,6 +26,8 @@ private:
 	bool            mouse_warp_ = false;
 	vector<int>     fps_avg_;
 	sf::Clock       sf_clock_;
+	wxTimer         timer_;
+	long            last_time_ = 0;
 
 	// Events
 	void onSize(wxSizeEvent& e);

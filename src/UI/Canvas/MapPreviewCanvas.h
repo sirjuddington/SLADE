@@ -1,14 +1,14 @@
 #pragma once
 
 #include "Archive/Archive.h"
-#include "OGLCanvas.h"
+#include "GLCanvas.h"
 
 class GLTexture;
 
-class MapPreviewCanvas : public OGLCanvas
+class MapPreviewCanvas : public GLCanvas
 {
 public:
-	MapPreviewCanvas(wxWindow* parent) : OGLCanvas(parent, -1) {}
+	MapPreviewCanvas(wxWindow* parent) : GLCanvas(parent, -1) {}
 	~MapPreviewCanvas() = default;
 
 	void addVertex(double x, double y);
@@ -20,7 +20,7 @@ public:
 	bool readThings(ArchiveEntry* map_head, ArchiveEntry* map_end, MapFormat map_format);
 	void clearMap();
 	void showMap();
-	void draw() override;
+	void drawContent() override;
 	void createImage(ArchiveEntry& ae, int width, int height);
 
 	unsigned nVertices();

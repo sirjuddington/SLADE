@@ -59,7 +59,7 @@ EXTERN_CVAR(Bool, gfx_show_border)
 // -----------------------------------------------------------------------------
 // CTextureCanvas class constructor
 // -----------------------------------------------------------------------------
-CTextureCanvas::CTextureCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
+CTextureCanvas::CTextureCanvas(wxWindow* parent, int id) : GLCanvas(parent, id)
 {
 	// Bind events
 	Bind(wxEVT_MOTION, &CTextureCanvas::onMouseEvent, this);
@@ -221,26 +221,14 @@ bool CTextureCanvas::openTexture(CTexture* tex, Archive* parent)
 // -----------------------------------------------------------------------------
 // Draws the canvas contents
 // -----------------------------------------------------------------------------
-void CTextureCanvas::draw()
+void CTextureCanvas::drawContent()
 {
-	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	// Setup standard 2d view
+	setup2D();
 
 	// Clear
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	// Draw background
 	drawCheckeredBackground();
@@ -251,9 +239,6 @@ void CTextureCanvas::draw()
 	// Draw texture
 	if (texture_)
 		drawTexture();
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
 }
 
 // -----------------------------------------------------------------------------

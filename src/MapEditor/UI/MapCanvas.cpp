@@ -62,16 +62,12 @@ CVAR(Int, map_bg_ms, 15, CVar::Flag::Save)
 // MapCanvas class constructor
 // -----------------------------------------------------------------------------
 MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
-	OGLCanvas{ parent, id, false },
+	GLCanvas{ parent, id },
 	context_{ context }
 {
 	// Init variables
 	context_->setCanvas(this);
 	last_time_ = 0;
-
-#ifdef USE_SFML_RENDERWINDOW
-	setVerticalSyncEnabled(false);
-#endif
 
 	// Bind Events
 	Bind(wxEVT_SIZE, &MapCanvas::onSize, this);
@@ -95,9 +91,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 	Bind(wxEVT_SET_FOCUS, &MapCanvas::onFocus, this);
 	Bind(wxEVT_KILL_FOCUS, &MapCanvas::onFocus, this);
 	Bind(wxEVT_TIMER, &MapCanvas::onRTimer, this);
-#ifdef USE_SFML_RENDERWINDOW
 	Bind(wxEVT_IDLE, &MapCanvas::onIdle, this);
-#endif
 
 	timer_.Start(map_bg_ms, true);
 }
@@ -105,14 +99,12 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 // -----------------------------------------------------------------------------
 // Draw the current map (2d or 3d) and any overlays etc
 // -----------------------------------------------------------------------------
-void MapCanvas::draw()
+void MapCanvas::drawContent()
 {
 	if (!IsEnabled())
 		return;
 
 	context_->renderer().draw();
-
-	SwapBuffers();
 
 	glFinish();
 }
@@ -144,17 +136,11 @@ void MapCanvas::lockMouse(bool lock)
 		img.SetMask(true);
 		img.SetMaskColour(0, 0, 0);
 		SetCursor(wxCursor(img));
-#ifdef USE_SFML_RENDERWINDOW
-		setMouseCursorVisible(false);
-#endif
 	}
 	else
 	{
 		// Show cursor
 		SetCursor(wxNullCursor);
-#ifdef USE_SFML_RENDERWINDOW
-		setMouseCursorVisible(true);
-#endif
 	}
 }
 
@@ -199,8 +185,8 @@ void MapCanvas::mouseLook3d()
 // -----------------------------------------------------------------------------
 void MapCanvas::onKeyBindPress(string_view name)
 {
-	// Screenshot
-#ifdef USE_SFML_RENDERWINDOW
+	// Screenshot (TODO)
+#if 0
 	if (name == "map_screenshot")
 	{
 		// Capture shot

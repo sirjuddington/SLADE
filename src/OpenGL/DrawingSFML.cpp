@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
-#ifdef USE_SFML_RENDERWINDOW
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Drawing.h"
@@ -54,7 +53,7 @@ FontPtr font_bold;
 FontPtr font_boldcondensed;
 FontPtr font_mono;
 
-sf::RenderWindow* render_target    = nullptr;
+sf::RenderTarget* render_target    = nullptr;
 bool              text_state_reset = true;
 } // namespace Drawing
 
@@ -265,9 +264,7 @@ void Drawing::enableTextStateReset(bool enable)
 // -----------------------------------------------------------------------------
 // Sets the SFML render target to [target]
 // -----------------------------------------------------------------------------
-void Drawing::setRenderTarget(sf::RenderWindow* target)
+void Drawing::setRenderTarget(sf::RenderTarget* target)
 {
 	render_target = target;
 }
-
-#endif

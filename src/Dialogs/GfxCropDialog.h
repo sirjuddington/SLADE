@@ -1,11 +1,11 @@
 #pragma once
 
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GLCanvas.h"
 
 class SImage;
 class NumberTextCtrl;
 
-class CropCanvas : public OGLCanvas
+class CropCanvas : public GLCanvas
 {
 public:
 	CropCanvas(wxWindow* parent, SImage* image, Palette* palette);
@@ -13,10 +13,12 @@ public:
 	const Recti& cropRect() const { return crop_rect_; }
 	void         setCropRect(Recti& rect) { crop_rect_.set(rect); }
 
-	void draw() override;
+	void drawContent() override;
 
 private:
 	unsigned texture_ = 0;
+	SImage*  image_ = nullptr;
+	Palette* palette_ = nullptr;
 	Recti    crop_rect_;
 };
 

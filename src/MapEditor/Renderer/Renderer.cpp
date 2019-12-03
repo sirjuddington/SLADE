@@ -636,7 +636,7 @@ void Renderer::drawSelectionNumbers() const
 	Drawing::enableTextStateReset(false);
 	Drawing::setTextState(true);
 	view_.setOverlayCoords(true);
-#if USE_SFML_RENDERWINDOW && ((SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR >= 4) || SFML_VERSION_MAJOR > 2)
+#if ((SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR >= 4) || SFML_VERSION_MAJOR > 2)
 	Drawing::setTextOutline(1.0f, ColRGBA::BLACK);
 #else
 	if (context_.selection().size() <= map_max_selection_numbers * 0.5)
@@ -1222,7 +1222,7 @@ void Renderer::drawMap3d()
 void Renderer::draw()
 {
 	// Setup the viewport
-	glViewport(0, 0, view_.size().x, view_.size().y);
+	//glViewport(0, 0, view_.size().x, view_.size().y);
 
 	// Setup GL state
 	auto col_bg = ColourConfiguration::colour("map_background");

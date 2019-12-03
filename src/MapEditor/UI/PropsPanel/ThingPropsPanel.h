@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PropsPanelBase.h"
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GLCanvas.h"
 #include "UI/Controls/STabCtrl.h"
 
 class NumberTextCtrl;
@@ -13,7 +13,7 @@ namespace Game
 class ThingType;
 }
 
-class SpriteTexCanvas : public OGLCanvas
+class SpriteTexCanvas : public GLCanvas
 {
 public:
 	SpriteTexCanvas(wxWindow* parent);
@@ -21,7 +21,7 @@ public:
 
 	wxString texName() const { return texname_; }
 	void     setSprite(const Game::ThingType& type);
-	void     draw() override;
+	void     drawContent() override;
 
 private:
 	unsigned texture_ = 0;
@@ -31,14 +31,14 @@ private:
 };
 
 class AngleControl;
-class ThingDirCanvas : public OGLCanvas
+class ThingDirCanvas : public GLCanvas
 {
 public:
 	ThingDirCanvas(AngleControl* parent);
 	~ThingDirCanvas() = default;
 
 	void setAngle(int angle);
-	void draw() override;
+	void drawContent() override;
 
 	void onMouseEvent(wxMouseEvent& e);
 

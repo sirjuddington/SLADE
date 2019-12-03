@@ -61,7 +61,7 @@ const int NUMCOLS = 80;
 // -----------------------------------------------------------------------------
 // ANSICanvas class constructor
 // -----------------------------------------------------------------------------
-ANSICanvas::ANSICanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
+ANSICanvas::ANSICanvas(wxWindow* parent, int id) : GLCanvas(parent, id)
 {
 	// Get the all-important font data
 	auto res_archive = App::archiveManager().programResourceArchive();
@@ -109,37 +109,32 @@ void ANSICanvas::writeRGBAData(uint8_t* dest) const
 }
 
 // -----------------------------------------------------------------------------
+// Loads ANSI [data] to the canvas
+// -----------------------------------------------------------------------------
+void ANSICanvas::loadData(uint8_t* data)
+{
+	ansidata_ = data;
+	OpenGL::Texture::clear(tex_image_);
+	tex_image_ = 0;
+}
+
+// -----------------------------------------------------------------------------
 // Draws the image
 // -----------------------------------------------------------------------------
-void ANSICanvas::draw()
+void ANSICanvas::drawContent()
 {
-	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	// Setup standard 2d view
+	setup2D();
 
 	// Clear
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	// Draw background
 	drawCheckeredBackground();
 
 	// Draw the image
 	drawImage();
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
 }
 
 // -----------------------------------------------------------------------------

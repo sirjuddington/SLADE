@@ -56,7 +56,7 @@
 // -----------------------------------------------------------------------------
 // SpriteTexCanvas class constructor
 // -----------------------------------------------------------------------------
-SpriteTexCanvas::SpriteTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
+SpriteTexCanvas::SpriteTexCanvas(wxWindow* parent) : GLCanvas(parent)
 {
 	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
 	SetInitialSize(WxUtils::scaledSize(128, 128));
@@ -95,28 +95,10 @@ void SpriteTexCanvas::setSprite(const Game::ThingType& type)
 // -----------------------------------------------------------------------------
 // Draws the canvas content
 // -----------------------------------------------------------------------------
-void SpriteTexCanvas::draw()
+void SpriteTexCanvas::drawContent()
 {
-	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Clear
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
-	// Draw background
+	setup2D();
+	clear();
 	drawCheckeredBackground();
 
 	// Draw texture
@@ -133,9 +115,6 @@ void SpriteTexCanvas::draw()
 		glEnable(GL_TEXTURE_2D);
 		Drawing::drawTextureWithin(texture_, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
 	}
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
 }
 
 
@@ -151,7 +130,7 @@ void SpriteTexCanvas::draw()
 // -----------------------------------------------------------------------------
 // ThingDirCanvas class constructor
 // -----------------------------------------------------------------------------
-ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : OGLCanvas(parent, -1, true, 15), parent_{ parent }
+ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : GLCanvas(parent), parent_{ parent }
 {
 	// Get system panel background colour
 	auto bgcolwx = Drawing::systemPanelBGColour();
@@ -214,22 +193,10 @@ void ThingDirCanvas::setAngle(int angle)
 // -----------------------------------------------------------------------------
 // Draws the control
 // -----------------------------------------------------------------------------
-void ThingDirCanvas::draw()
+void ThingDirCanvas::drawContent()
 {
-	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-1.2, 1.2, 1.2, -1.2, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Clear
-	glClearColor(col_bg_.fr(), col_bg_.fg(), col_bg_.fb(), 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	setup2D();
+	clear(col_bg_);
 
 	// Draw angle ring
 	glDisable(GL_TEXTURE_2D);
@@ -273,9 +240,6 @@ void ThingDirCanvas::draw()
 		glVertex2d(dir_points_[point_sel_].x, dir_points_[point_sel_].y);
 		glEnd();
 	}
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
 }
 
 
@@ -370,14 +334,12 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 AngleControl::AngleControl(wxWindow* parent) : wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 {
+	text_angle_ = new NumberTextCtrl(this);
+	dc_angle_   = new ThingDirCanvas(this);
+
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
-
-	// Angle visual control
-	sizer->Add(dc_angle_ = new ThingDirCanvas(this), 1, wxEXPAND | wxALL, UI::pad());
-
-	// Angle text box
-	text_angle_ = new NumberTextCtrl(this);
+	sizer->Add(dc_angle_, 1, wxEXPAND | wxALL, UI::pad());
 	sizer->Add(text_angle_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
 
 	// Bind events

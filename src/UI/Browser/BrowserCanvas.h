@@ -1,12 +1,12 @@
 #pragma once
 
 #include "OpenGL/Drawing.h"
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GLCanvas.h"
 
 class wxScrollBar;
 class BrowserItem;
 
-class BrowserCanvas : public OGLCanvas
+class BrowserCanvas : public GLCanvas
 {
 public:
 	BrowserCanvas(wxWindow* parent);
@@ -31,7 +31,7 @@ public:
 	void                  clearItems();
 	int                   fullItemSizeX() const;
 	int                   fullItemSizeY() const;
-	void                  draw() override;
+	void                  drawContent() override;
 	void                  setScrollBar(wxScrollBar* scrollbar);
 	void                  updateLayout(int viewed_index = -1);
 	BrowserItem*          selectedItem() const;

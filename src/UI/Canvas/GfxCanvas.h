@@ -1,7 +1,7 @@
 #pragma once
 
+#include "GLCanvas.h"
 #include "Graphics/SImage/SImage.h"
-#include "OGLCanvas.h"
 #include "OpenGL/GLTexture.h"
 
 class SImage;
@@ -9,7 +9,7 @@ class SBrush;
 class GLTexture;
 class Translation;
 
-class GfxCanvas : public OGLCanvas
+class GfxCanvas : public GLCanvas
 {
 public:
 	enum class View
@@ -32,7 +32,8 @@ public:
 	GfxCanvas(wxWindow* parent, int id);
 	~GfxCanvas() = default;
 
-	SImage& image() { return image_; }
+	SImage&  image() { return image_; }
+	Palette& palette() { return palette_; }
 
 	void    setViewType(View type) { view_type_ = type; }
 	View    viewType() const { return view_type_; }
@@ -45,10 +46,11 @@ public:
 	void    setEditingMode(EditMode mode) { editing_mode_ = mode; }
 	void    setTranslation(Translation* tr) { translation_ = tr; }
 	void    setBrush(SBrush* br) { brush_ = br; }
+	void    setPalette(Palette* pal) { palette_.copyPalette(pal); }
 	SBrush* brush() const { return brush_; }
 	ColRGBA paintColour() const { return paint_colour_; }
 
-	void draw() override;
+	void drawContent() override;
 	void drawImage();
 	void drawOffsetLines() const;
 	void updateImageTexture();
@@ -86,6 +88,7 @@ private:
 	Vec2i        cursor_pos_   = { -1, -1 };     // position of cursor, relative to image
 	Vec2i        prev_pos_     = { -1, -1 };     // previous position of cursor
 	unsigned     tex_brush_;                     // preview the effect of the brush
+	Palette      palette_;
 
 	// Signal connections
 	sigslot::scoped_connection sc_image_changed_;
