@@ -211,7 +211,13 @@ bool runEditorScript(const string& script, T param)
 // ----------------------------------------------------------------------------
 bool Lua::init()
 {
-	lua.open_libraries(sol::lib::base, sol::lib::string);
+	lua.open_libraries(sol::lib::base,
+					   sol::lib::string,
+					   sol::lib::math,
+					   sol::lib::table,
+					   sol::lib::coroutine,
+					   sol::lib::package,
+					   sol::lib::utf8);
 
 	// Register namespaces
 	registerAppNamespace(lua);
