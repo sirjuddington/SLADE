@@ -1012,6 +1012,7 @@ void Edit3D::changeThingZ(int amount) const
 
 	// Go through 3d selection
 	auto& selection_3d = context_.selection();
+	bool changed = false;
 	for (unsigned a = 0; a < selection_3d.size(); a++)
 	{
 		// Check if thing
@@ -1025,9 +1026,13 @@ void Edit3D::changeThingZ(int amount) const
 				double z = thing->intProperty("height");
 				z += amount;
 				thing->setIntProperty("height", z);
+				changed = true;
 			}
 		}
 	}
+
+	if (changed)
+		context_.map().recomputeSpecials();
 }
 
 /* Edit3D::deleteThing
