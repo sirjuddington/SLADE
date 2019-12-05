@@ -1816,9 +1816,8 @@ void TextEditorCtrl::onStyleNeeded(wxStyledTextEvent& e)
 	}
 
 	// Lex until done (end of lines, end of file or end of block comment)
-	int  l          = line_start;
-	bool force_next = false;
-	while (l <= GetNumberOfLines() && (l <= line_end || force_next))
+	int l = line_start;
+	while (l <= GetNumberOfLines() && (l <= line_end))
 	{
 		int end   = GetLineEndPosition(l) - 1;
 		int start = end - GetLineLength(l) + 1;
@@ -1826,9 +1825,12 @@ void TextEditorCtrl::onStyleNeeded(wxStyledTextEvent& e)
 		if (start > end)
 			end = start;
 
-		force_next = lexer_->doStyling(this, start, end);
+		lexer_->doStyling(this, start, end);
 		l++;
 	}
+
+	// Update+style comments
+	lexer_->updateComments(this, line_start == 0 ? 0 : GetLineEndPosition(line_start - 1), GetLineEndPosition(line_end));
 
 	if (txed_fold_enable)
 	{

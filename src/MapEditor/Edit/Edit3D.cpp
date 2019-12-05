@@ -992,6 +992,7 @@ void Edit3D::changeThingZ(int amount) const
 
 	// Go through 3d selection
 	auto& selection_3d = context_.selection();
+    bool changed = false;
 	for (auto& item : selection_3d)
 	{
 		// Check if thing
@@ -1002,8 +1003,12 @@ void Edit3D::changeThingZ(int amount) const
 			double z = thing->zPos();
 			z += amount;
 			thing->setZ(z);
+			changed = true;
 		}
 	}
+
+	if (changed)
+		context_.map().recomputeSpecials();
 }
 
 // -----------------------------------------------------------------------------
