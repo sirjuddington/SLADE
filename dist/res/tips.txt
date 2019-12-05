@@ -11,7 +11,7 @@
 "You can customise the entry list columns by right clicking the column headers."
 "The 'Filter' text box below the entry list can be used to quickly filter entries by name. Wildcards are supported here, too (eg. '*.png')."
 "The 'Show' dropdown menu below the entry list can be used to quickly filter entries by type."
-"If you come across any problems be sure to report them either at the SLADE forum, or via email (contact details are in 'Help->About')."
+"If you come across any problems be sure to report them as issues on GitHub, or via email (contact details are in 'Help->About')."
 "Do take a look at the Editor->Preferences options! Many useful settings can be tailored to your taste here."
 "Double-clicking an entry in the entry list will open it in its own tab."
 "You can drag files onto the entry list to import them."
