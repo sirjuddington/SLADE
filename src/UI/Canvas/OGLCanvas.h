@@ -18,7 +18,7 @@ public:
 	virtual Palette& palette() { return palette_; }
 	void             setPalette(Palette* pal) { palette_.copyPalette(pal); }
 	bool             setContext();
-	void             createSFML();
+	bool             createSFML();
 	void             init();
 	virtual void     draw() = 0;
 	virtual void     update(long frametime) {}

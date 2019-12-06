@@ -49,6 +49,14 @@
 
 // -----------------------------------------------------------------------------
 //
+// External Variables
+//
+// -----------------------------------------------------------------------------
+EXTERN_CVAR(Int, gl_depth_buffer_size)
+
+
+// -----------------------------------------------------------------------------
+//
 // OGLCanvas Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -118,29 +126,30 @@ bool OGLCanvas::setContext()
 #endif
 }
 
-void OGLCanvas::createSFML()
+bool OGLCanvas::createSFML()
 {
 #ifdef USE_SFML_RENDERWINDOW
 	// Code taken from SFML wxWidgets integration example
 	sf::WindowHandle handle;
 #ifdef __WXGTK__
-	// GTK implementation requires to go deeper to find the
-	// low-level X11 identifier of the widget
-	gtk_widget_realize(m_wxwindow);
-	gtk_widget_set_double_buffered(m_wxwindow, false);
-	GdkWindow* Win = gtk_widget_get_window(m_wxwindow);
-	XFlush(GDK_WINDOW_XDISPLAY(Win));
-	// sf::RenderWindow::Create(GDK_WINDOW_XWINDOW(Win));
-	handle = GDK_WINDOW_XWINDOW(Win);
+	auto widget = GetHandle();
+	if (!widget)
+		return false;
+	auto window = gtk_widget_get_window(widget);
+	if (!window)
+		return false;
+	handle = gdk_x11_window_get_xid(window);
 #else
 	handle = GetHandle();
 #endif
 	// Context settings
 	sf::ContextSettings settings;
-	settings.depthBits   = 24;
 	settings.stencilBits = 8;
+	settings.depthBits = gl_depth_buffer_size;
+	settings.attributeFlags = sf::ContextSettings::Default;
 	sf::RenderWindow::create(handle, settings);
 #endif
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -303,7 +312,9 @@ void OGLCanvas::onPaint(wxPaintEvent& e)
 
 	if (recreate_)
 	{
-		createSFML();
+		if (!createSFML())
+			return;
+
 		recreate_ = false;
 	}
 
