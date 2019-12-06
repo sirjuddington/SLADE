@@ -232,6 +232,8 @@ void MapEditorWindow::setupMenu()
 	SAction::fromId("mapw_undo")->addToMenu(menu_editor);
 	SAction::fromId("mapw_redo")->addToMenu(menu_editor);
 	menu_editor->AppendSeparator();
+	SAction::fromId("mapw_clear_selection")->addToMenu(menu_editor);
+	menu_editor->AppendSeparator();
 	SAction::fromId("mapw_draw_lines")->addToMenu(menu_editor);
 	SAction::fromId("mapw_draw_shape")->addToMenu(menu_editor);
 	SAction::fromId("mapw_edit_objects")->addToMenu(menu_editor);
@@ -244,16 +246,24 @@ void MapEditorWindow::setupMenu()
 
 	// View menu
 	wxMenu* menu_view = new wxMenu("");
-	SAction::fromId("mapw_showproperties")->addToMenu(menu_view);
-	SAction::fromId("mapw_showconsole")->addToMenu(menu_view);
-	SAction::fromId("mapw_showundohistory")->addToMenu(menu_view);
-	SAction::fromId("mapw_showchecks")->addToMenu(menu_view);
-	SAction::fromId("mapw_showscripteditor")->addToMenu(menu_view);
+	auto menu_window = new wxMenu();
+	menu_view->AppendSubMenu(menu_window, "Windows");
+	SAction::fromId("mapw_showproperties")->addToMenu(menu_window);
+	SAction::fromId("mapw_showconsole")->addToMenu(menu_window);
+	SAction::fromId("mapw_showundohistory")->addToMenu(menu_window);
+	SAction::fromId("mapw_showchecks")->addToMenu(menu_window);
+	SAction::fromId("mapw_showscripteditor")->addToMenu(menu_window);
 	toolbar_menu_ = new wxMenu();
 	menu_view->AppendSubMenu(toolbar_menu_, "Toolbars");
 	menu_view->AppendSeparator();
 	SAction::fromId("mapw_show_fullmap")->addToMenu(menu_view);
 	SAction::fromId("mapw_show_item")->addToMenu(menu_view);
+	menu_view->AppendSeparator();
+	auto menu_grid = new wxMenu();
+	menu_view->AppendSubMenu(menu_grid, "Grid");
+	SAction::fromId("mapw_grid_increment")->addToMenu(menu_grid);
+	SAction::fromId("mapw_grid_decrement")->addToMenu(menu_grid);
+	SAction::fromId("mapw_grid_snap")->addToMenu(menu_grid);
 	menu->Append(menu_view, "View");
 
 	// Tools menu

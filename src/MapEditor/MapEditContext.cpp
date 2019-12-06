@@ -1740,6 +1740,13 @@ bool MapEditContext::handleAction(string id)
 		return true;
 	}
 
+	// Clear selection
+	else if (id == "mapw_clear_selection")
+	{
+		selection_.clear();
+		addEditorMessage("Selection cleared");
+	}
+
 	// Begin line drawing
 	else if (id == "mapw_draw_lines" && mouse_state == Input::MouseState::Normal)
 	{
@@ -1843,6 +1850,25 @@ bool MapEditContext::handleAction(string id)
 	{
 		edit_2d_.mirror(true);
 		return true;
+	}
+
+	// Increment grid
+	else if (id == "mapw_grid_increment")
+		incrementGrid();
+
+	// Decrement grid
+	else if (id == "mapw_grid_decrement")
+		decrementGrid();
+
+	// Toggle grid snap
+	else if (id == "mapw_grid_snap")
+	{
+		grid_snap_ = !grid_snap_;
+		if (grid_snap_)
+			addEditorMessage("Grid Snapping On");
+		else
+			addEditorMessage("Grid Snapping Off");
+		updateStatusText();
 	}
 
 
