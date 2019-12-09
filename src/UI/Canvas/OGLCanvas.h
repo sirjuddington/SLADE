@@ -5,7 +5,7 @@
 
 class wxWindow;
 #ifdef USE_SFML_RENDERWINDOW
-class OGLCanvas : public wxControl, public sf::RenderWindow
+class OGLCanvas : public wxGLCanvas, public sf::RenderWindow
 {
 #else
 class OGLCanvas : public wxGLCanvas
@@ -28,7 +28,11 @@ public:
 	void             setup2D() const;
 
 #ifdef USE_SFML_RENDERWINDOW
-	void SwapBuffers() { display(); }
+	bool SwapBuffers() override
+	{
+		display();
+		return true;
+	}
 #endif
 
 protected:

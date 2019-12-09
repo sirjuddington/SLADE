@@ -21,10 +21,8 @@
 #endif
 // clang-format on
 
-#ifndef USE_SFML_RENDERWINDOW
 #include <wx/glcanvas.h>
 #undef None // Why does <X11/X.h> #define this? Idiotic
-#endif
 
 // Forward declarations
 struct ColRGBA;
@@ -61,12 +59,10 @@ float    maxPointSize();
 unsigned maxTextureSize();
 bool     isInitialised();
 bool     accuracyTweak();
-#ifndef USE_SFML_RENDERWINDOW
-int* getWxGLAttribs();
-#endif
-void setColour(const ColRGBA& col, Blend blend = Blend::Ignore);
-void setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, Blend blend = Blend::Ignore);
-void setBlend(Blend blend);
-void resetBlend();
-Info sysInfo();
+int*     getWxGLAttribs();
+void     setColour(const ColRGBA& col, Blend blend = Blend::Ignore);
+void     setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, Blend blend = Blend::Ignore);
+void     setBlend(Blend blend);
+void     resetBlend();
+Info     sysInfo();
 } // namespace OpenGL

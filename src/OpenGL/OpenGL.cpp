@@ -46,14 +46,14 @@ CVAR(Bool, gl_tex_enable_np2, true, CVar::Flag::Save)
 CVAR(Bool, gl_point_sprite, true, CVar::Flag::Save)
 CVAR(Bool, gl_tweak_accuracy, true, CVar::Flag::Save)
 CVAR(Bool, gl_vbo, true, CVar::Flag::Save)
-CVAR(Int, gl_depth_buffer_size, 16, CVar::Flag::Save)
+CVAR(Int, gl_depth_buffer_size, 24, CVar::Flag::Save)
 
 namespace OpenGL
 {
 #ifndef USE_SFML_RENDERWINDOW
-wxGLContext* context        = NULL;
-int          wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
+wxGLContext* context = NULL;
 #endif
+int      wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
 bool     initialised    = false;
 double   version        = 0;
 unsigned max_tex_size   = 128;
@@ -236,7 +236,6 @@ bool OpenGL::accuracyTweak()
 // -----------------------------------------------------------------------------
 // Returns the GL attributes array for use with wxGLCanvas
 // -----------------------------------------------------------------------------
-#ifndef USE_SFML_RENDERWINDOW
 int* OpenGL::getWxGLAttribs()
 {
 	// Set specified depth buffer size
@@ -244,7 +243,6 @@ int* OpenGL::getWxGLAttribs()
 
 	return wx_gl_attrib;
 }
-#endif
 
 // -----------------------------------------------------------------------------
 // Sets the colour to [col], and changes the colour blend mode if needed and
