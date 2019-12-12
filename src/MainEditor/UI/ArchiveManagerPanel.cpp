@@ -1685,6 +1685,10 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	else if (id == "aman_newzip")
 		createNewArchive("zip");
 
+	// File->New Grp
+	else if (id == "aman_newgrp")
+		createNewArchive("grp");
+
 	// File->New Map
 	else if (id == "aman_newmap")
 	{
@@ -1771,7 +1775,7 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	// File->Save All
 	else if (id == "aman_saveall")
 		saveAll();
-
+	
 	// File->Close All
 	else if (id == "aman_closeall")
 		closeAll();
@@ -1780,30 +1784,30 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	else if (id == "aman_close")
 		closeArchive(currentArchive());
 
-	// Archives context menu cannot needs its own functions!
+		// Archives context menu cannot needs its own functions!
 	else if (id == "aman_save_a")
-		saveSelection();
+	saveSelection();
 	else if (id == "aman_saveas_a")
-		saveSelectionAs();
+	saveSelectionAs();
 	else if (id == "aman_close_a")
-		closeSelection();
+	closeSelection();
 
 	// Recent files context menu
 	else if (id == "aman_recent_open")
-		openSelection();
+	openSelection();
 	else if (id == "aman_recent_remove")
-		removeSelection();
+	removeSelection();
 
 	// Bookmarks context menu
 	else if (id == "aman_bookmark_go")
-		goToBookmark();
+	goToBookmark();
 	else if (id == "aman_bookmark_remove")
-		deleteSelectedBookmarks();
+	deleteSelectedBookmarks();
 
 
 	// Unknown action
 	else
-		return false;
+	return false;
 
 	// Action performed, return true
 	return true;

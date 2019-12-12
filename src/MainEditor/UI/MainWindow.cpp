@@ -276,6 +276,7 @@ void MainWindow::setupLayout()
 	// File menu
 	auto file_new_menu = new wxMenu("");
 	SAction::fromId("aman_newwad")->addToMenu(file_new_menu, "&Wad Archive");
+	SAction::fromId("aman_newgrp")->addToMenu(file_new_menu, "&Grp Archive");
 	SAction::fromId("aman_newzip")->addToMenu(file_new_menu, "&Zip Archive");
 	SAction::fromId("aman_newmap")->addToMenu(file_new_menu, "&Map");
 	auto file_menu = new wxMenu("");
