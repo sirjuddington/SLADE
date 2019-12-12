@@ -1,8 +1,5 @@
 #pragma once
 
-#ifdef USE_SFML_RENDERWINDOW
-#include <SFML/Graphics.hpp>
-#endif
 #include "Utility/Colour.h"
 
 class FontManager;
@@ -71,17 +68,10 @@ void drawText(
 	Align         alignment = Align::Left,
 	Rectd*        bounds    = nullptr);
 Vec2d textExtents(const string& text, Font font = Font::Normal);
-void  enableTextStateReset(bool enable = true);
-void  setTextState(bool set = true);
 void  setTextOutline(double thickness, const ColRGBA& colour = ColRGBA::BLACK);
 
 // Specific
 void drawHud();
-
-// Implementation-specific
-#ifdef USE_SFML_RENDERWINDOW
-void setRenderTarget(sf::RenderWindow* target);
-#endif
 
 
 // From CodeLite

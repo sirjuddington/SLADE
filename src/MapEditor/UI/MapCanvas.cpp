@@ -69,10 +69,6 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 	context_->setCanvas(this);
 	last_time_ = 0;
 
-#ifdef USE_SFML_RENDERWINDOW
-	setVerticalSyncEnabled(false);
-#endif
-
 	// Bind Events
 	Bind(wxEVT_SIZE, &MapCanvas::onSize, this);
 	Bind(wxEVT_KEY_DOWN, &MapCanvas::onKeyDown, this);
@@ -95,9 +91,6 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* context) :
 	Bind(wxEVT_SET_FOCUS, &MapCanvas::onFocus, this);
 	Bind(wxEVT_KILL_FOCUS, &MapCanvas::onFocus, this);
 	Bind(wxEVT_TIMER, &MapCanvas::onRTimer, this);
-#ifdef USE_SFML_RENDERWINDOW
-	Bind(wxEVT_IDLE, &MapCanvas::onIdle, this);
-#endif
 
 	timer_.Start(map_bg_ms, true);
 }
@@ -144,17 +137,11 @@ void MapCanvas::lockMouse(bool lock)
 		img.SetMask(true);
 		img.SetMaskColour(0, 0, 0);
 		SetCursor(wxCursor(img));
-#ifdef USE_SFML_RENDERWINDOW
-		setMouseCursorVisible(false);
-#endif
 	}
 	else
 	{
 		// Show cursor
 		SetCursor(wxNullCursor);
-#ifdef USE_SFML_RENDERWINDOW
-		setMouseCursorVisible(true);
-#endif
 	}
 }
 
@@ -200,7 +187,8 @@ void MapCanvas::mouseLook3d()
 void MapCanvas::onKeyBindPress(string_view name)
 {
 	// Screenshot
-#ifdef USE_SFML_RENDERWINDOW
+	// TODO: Redo without SFML
+#if 0
 	if (name == "map_screenshot")
 	{
 		// Capture shot

@@ -151,7 +151,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;NO_FLUIDSYNTH;SFML_STATIC;CURL_STATICLIB;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;USE_WEBVIEW_STARTPAGE;NO_FLUIDSYNTH;SFML_STATIC;CURL_STATICLIB;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -1513,8 +1513,6 @@
     <ClCompile Include="..\src\MapEditor\UI\ShapeDrawPanel.cpp" />
     <ClCompile Include="..\src\MapEditor\UndoSteps.cpp" />
     <ClCompile Include="..\src\OpenGL\Drawing.cpp" />
-    <ClCompile Include="..\src\OpenGL\DrawingFTGL.cpp" />
-    <ClCompile Include="..\src\OpenGL\DrawingSFML.cpp" />
     <ClCompile Include="..\src\OpenGL\GLTexture.cpp" />
     <ClCompile Include="..\src\OpenGL\OpenGL.cpp" />
     <ClCompile Include="..\src\Scripting\Lua.cpp" />

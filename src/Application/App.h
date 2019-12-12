@@ -65,7 +65,6 @@ enum Platform
 };
 Platform      platform();
 bool          useWebView();
-bool          useSFMLRenderWindow();
 const string& iconFile();
 
 std::thread::id mainThreadId();

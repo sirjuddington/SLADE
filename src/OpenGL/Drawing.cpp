@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Drawing.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "GLTexture.h"
 #include "General/Misc.h"
@@ -38,6 +39,7 @@
 #include "OpenGL.h"
 #include "Utility/MathStuff.h"
 #include "Utility/StringUtils.h"
+#include <FTGL/ftgl.h>
 
 #ifdef __WXGTK3__
 #include <gtk-3.0/gtk/gtk.h>
@@ -64,6 +66,14 @@ namespace Drawing
 double  text_outline_width = 0;
 ColRGBA fill_colour        = ColRGBA::WHITE;
 ColRGBA outline_colour     = ColRGBA::BLACK;
+
+// Fonts
+FTFont* font_normal        = nullptr;
+FTFont* font_condensed     = nullptr;
+FTFont* font_bold          = nullptr;
+FTFont* font_boldcondensed = nullptr;
+FTFont* font_mono          = nullptr;
+FTFont* font_small         = nullptr;
 }; // namespace Drawing
 
 
@@ -72,7 +82,182 @@ ColRGBA outline_colour     = ColRGBA::BLACK;
 // Drawing Namespace Functions
 //
 // -----------------------------------------------------------------------------
+namespace Drawing
+{
+// -----------------------------------------------------------------------------
+// Loads all needed fonts for rendering. Non-SFML implementation
+// -----------------------------------------------------------------------------
+int initFonts()
+{
+	// --- Load general fonts ---
+	int ret = 0;
 
+	if (font_normal)
+	{
+		delete font_normal;
+		font_normal = nullptr;
+	}
+	if (font_condensed)
+	{
+		delete font_condensed;
+		font_condensed = nullptr;
+	}
+	if (font_bold)
+	{
+		delete font_bold;
+		font_bold = nullptr;
+	}
+	if (font_boldcondensed)
+	{
+		delete font_boldcondensed;
+		font_boldcondensed = nullptr;
+	}
+	if (font_mono)
+	{
+		delete font_mono;
+		font_mono = nullptr;
+	}
+	if (font_small)
+	{
+		delete font_small;
+		font_small = nullptr;
+	}
+
+	// Normal
+	auto entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
+	if (entry)
+	{
+		font_normal = new FTTextureFont(entry->rawData(), entry->size());
+		font_normal->FaceSize(UI::scalePx(gl_font_size));
+
+		// Check it loaded ok
+		if (font_normal->Error())
+		{
+			delete font_normal;
+			font_normal = nullptr;
+		}
+		else
+			++ret;
+	}
+
+	// Condensed
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
+	if (entry)
+	{
+		font_condensed = new FTTextureFont(entry->rawData(), entry->size());
+		font_condensed->FaceSize(UI::scalePx(gl_font_size));
+
+		// Check it loaded ok
+		if (font_condensed->Error())
+		{
+			delete font_condensed;
+			font_condensed = nullptr;
+		}
+		else
+			++ret;
+	}
+
+	// Bold
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
+	if (entry)
+	{
+		font_bold = new FTTextureFont(entry->rawData(), entry->size());
+		font_bold->FaceSize(UI::scalePx(gl_font_size));
+
+		// Check it loaded ok
+		if (font_bold->Error())
+		{
+			delete font_bold;
+			font_bold = nullptr;
+		}
+		else
+			++ret;
+	}
+
+	// Condensed bold
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
+	if (entry)
+	{
+		font_boldcondensed = new FTTextureFont(entry->rawData(), entry->size());
+		font_boldcondensed->FaceSize(UI::scalePx(gl_font_size));
+
+		// Check it loaded ok
+		if (font_boldcondensed->Error())
+		{
+			delete font_boldcondensed;
+			font_boldcondensed = nullptr;
+		}
+		else
+			++ret;
+	}
+
+	// Monospace
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
+	if (entry)
+	{
+		font_mono = new FTTextureFont(entry->rawData(), entry->size());
+		font_mono->FaceSize(UI::scalePx(gl_font_size));
+
+		// Check it loaded ok
+		if (font_mono->Error())
+		{
+			delete font_mono;
+			font_mono = nullptr;
+		}
+		else
+			++ret;
+	}
+
+	// Small
+	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
+	if (entry)
+	{
+		font_small = new FTTextureFont(entry->rawData(), entry->size());
+		font_small->FaceSize((UI::scalePx(gl_font_size) * 0.6) + 1);
+
+		// Check it loaded ok
+		if (font_small->Error())
+		{
+			delete font_small;
+			font_small = nullptr;
+		}
+		else
+			++ret;
+	}
+
+	return ret;
+}
+
+// -----------------------------------------------------------------------------
+// Cleans up all created fonts
+// -----------------------------------------------------------------------------
+void cleanupFonts()
+{
+	delete font_normal;
+	delete font_condensed;
+	delete font_bold;
+	delete font_boldcondensed;
+	delete font_mono;
+	delete font_small;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the requested [font]
+// -----------------------------------------------------------------------------
+FTFont* getFont(Font font)
+{
+	switch (font)
+	{
+	case Font::Normal: return font_normal;
+	case Font::Condensed: return font_condensed;
+	case Font::Bold: return font_bold;
+	case Font::BoldCondensed: return font_boldcondensed;
+	case Font::Monospace: return font_mono;
+	case Font::Small: return font_small;
+	default: return font_normal;
+	};
+}
+} // namespace Drawing
 
 // -----------------------------------------------------------------------------
 // Returns the configured font size (scaled for DPI etc)
@@ -485,6 +670,81 @@ void Drawing::drawTextureWithin(
 }
 
 // -----------------------------------------------------------------------------
+// Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
+// the rendered text string are written to it.
+// -----------------------------------------------------------------------------
+void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
+{
+	// Get desired font
+	auto ftgl_font = getFont(font);
+
+	// If FTGL font is invalid, do nothing
+	if (!ftgl_font)
+		return;
+
+	// Setup alignment
+	auto  bbox   = ftgl_font->BBox(text.c_str(), -1);
+	int   xpos   = x;
+	int   ypos   = y;
+	float width  = bbox.Upper().X() - bbox.Lower().X();
+	float height = ftgl_font->LineHeight();
+	if (alignment != Align::Left)
+	{
+		if (alignment == Align::Center)
+			xpos -= MathStuff::round(width * 0.5);
+		else
+			xpos -= width;
+	}
+
+	// Set bounds rect
+	if (bounds)
+	{
+		bbox = ftgl_font->BBox(text.c_str(), -1, FTPoint(xpos, ypos));
+		bounds->set(bbox.Lower().X(), bbox.Lower().Y(), bbox.Upper().X(), bbox.Lower().Y() + height);
+	}
+
+	// Draw the string
+	glPushMatrix();
+	glTranslatef(xpos, ypos + ftgl_font->FaceSize(), 0.0f);
+	glTranslatef(-0.375f, -0.375f, 0);
+	glScalef(1.0f, -1.0f, 1.0f);
+	if (text_outline_width > 0)
+	{
+		// Draw outline if set
+		OpenGL::setColour(outline_colour);
+		glTranslatef(-2.0f, -1.0f, 0.0f);
+		ftgl_font->Render(text.c_str(), -1);
+		glTranslatef(0.0f, 2.0f, 0.0f);
+		ftgl_font->Render(text.c_str(), -1);
+		glTranslatef(4.0f, 0.0f, 0.0f);
+		ftgl_font->Render(text.c_str(), -1);
+		glTranslatef(0.0f, -2.0f, 0.0f);
+		ftgl_font->Render(text.c_str(), -1);
+		glTranslatef(-2.0f, 1.0f, 0.0f);
+	}
+	OpenGL::setColour(colour);
+	ftgl_font->Render(text.c_str(), -1);
+	glPopMatrix();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the width and height of [text] when drawn with [font]
+// -----------------------------------------------------------------------------
+Vec2d Drawing::textExtents(const string& text, Font font)
+{
+	// Get desired font
+	auto ftgl_font = getFont(font);
+
+	// If FTGL font is invalid, return empty
+	if (!ftgl_font)
+		return { 0, 0 };
+
+	// Return width and height of text
+	auto bbox = ftgl_font->BBox(text.c_str(), -1);
+	return Vec2d(bbox.Upper().X() - bbox.Lower().X(), ftgl_font->LineHeight());
+}
+
+// -----------------------------------------------------------------------------
 // Sets the [thickness] and [colour] of the outline to use when drawing text
 // -----------------------------------------------------------------------------
 void Drawing::setTextOutline(double thickness, const ColRGBA& colour)
@@ -632,9 +892,7 @@ wxColour Drawing::darkColour(const wxColour& colour, float percent)
 // TextBox class constructor
 // -----------------------------------------------------------------------------
 TextBox::TextBox(string_view text, Drawing::Font font, int width, int line_height) :
-	font_{ font },
-	width_{ width },
-	line_height_{ line_height }
+	font_{ font }, width_{ width }, line_height_{ line_height }
 {
 	setText(text);
 }
@@ -752,8 +1010,6 @@ void TextBox::setSize(int width)
 void TextBox::draw(int x, int y, const ColRGBA& colour, Drawing::Align alignment)
 {
 	Rectd b;
-	Drawing::enableTextStateReset(false);
-	Drawing::setTextState(true);
 	for (const auto& line : lines_)
 	{
 		drawText(line, x, y, colour, font_, alignment, &b);
@@ -763,6 +1019,4 @@ void TextBox::draw(int x, int y, const ColRGBA& colour, Drawing::Align alignment
 		else
 			y += line_height_;
 	}
-	Drawing::enableTextStateReset(true);
-	Drawing::setTextState(false);
 }

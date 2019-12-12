@@ -1476,12 +1476,6 @@
     <ClCompile Include="..\src\Dialogs\GfxTintDialog.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\OpenGL\DrawingSFML.cpp">
-      <Filter>OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\OpenGL\DrawingFTGL.cpp">
-      <Filter>OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\SLADEMap\MapObjectCollection.cpp">
       <Filter>SLADEMap</Filter>
     </ClCompile>

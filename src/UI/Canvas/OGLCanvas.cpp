@@ -37,15 +37,6 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 
-#ifdef USE_SFML_RENDERWINDOW
-#ifdef __WXGTK__
-#include <gdk/gdkprivate.h>
-#include <gdk/gdkx.h>
-#include <gtk/gtk.h>
-#include <gtk/gtkwidget.h>
-#endif
-#endif
-
 
 // -----------------------------------------------------------------------------
 //
@@ -62,32 +53,6 @@ EXTERN_CVAR(Int, gl_depth_buffer_size)
 // -----------------------------------------------------------------------------
 
 
-#ifdef USE_SFML_RENDERWINDOW
-// -----------------------------------------------------------------------------
-// OGLCanvas class constructor, SFML implementation
-// -----------------------------------------------------------------------------
-OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval) :
-	wxGLCanvas(parent, id, OpenGL::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
-	timer_{ this },
-	last_time_{ App::runTimer() }
-{
-	if (handle_timer)
-		timer_.Start(timer_interval);
-
-	// Create SFML RenderWindow
-	createSFML();
-
-	// Bind events
-	Bind(wxEVT_PAINT, &OGLCanvas::onPaint, this);
-	Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::onEraseBackground, this);
-	// Bind(wxEVT_IDLE, &OGLCanvas::onIdle, this);
-	if (handle_timer)
-		Bind(wxEVT_TIMER, &OGLCanvas::onTimer, this);
-	Bind(wxEVT_SIZE, &OGLCanvas::onResize, this);
-
-	OpenGL::Texture::resetBackgroundTexture();
-}
-#else
 // -----------------------------------------------------------------------------
 // OGLCanvas class constructor, wxGLCanvas implementation
 // -----------------------------------------------------------------------------
@@ -102,16 +67,14 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 
 	OpenGL::Texture::resetBackgroundTexture();
 }
-#endif
 
 // -----------------------------------------------------------------------------
 // Sets the current gl context to the canvas' context, and creates it if it
 // doesn't exist.
 // Returns true if the context is valid, false otherwise
 // -----------------------------------------------------------------------------
-bool OGLCanvas::setContext()
+bool OGLCanvas::activateContext()
 {
-#ifndef USE_SFML_RENDERWINDOW
 	auto context = OpenGL::getContext(this);
 
 	if (context)
@@ -121,35 +84,6 @@ bool OGLCanvas::setContext()
 	}
 	else
 		return false;
-#else
-	return true;
-#endif
-}
-
-bool OGLCanvas::createSFML()
-{
-#ifdef USE_SFML_RENDERWINDOW
-	// Code taken from SFML wxWidgets integration example
-	sf::WindowHandle handle;
-#ifdef __WXGTK__
-	auto widget = GetHandle();
-	if (!widget)
-		return false;
-	auto window = gtk_widget_get_window(widget);
-	if (!window)
-		return false;
-	handle = gdk_x11_window_get_xid(window);
-#else
-	handle = GetHandle();
-#endif
-	// Context settings
-	sf::ContextSettings settings;
-	settings.stencilBits = 8;
-	settings.depthBits = gl_depth_buffer_size;
-	settings.attributeFlags = sf::ContextSettings::Default;
-	sf::RenderWindow::create(handle, settings);
-#endif
-	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -226,14 +160,6 @@ void OGLCanvas::drawCheckeredBackground() const
 // -----------------------------------------------------------------------------
 wxWindow* OGLCanvas::toPanel(wxWindow* parent)
 {
-#ifdef USE_SFML_RENDERWINDOW
-#ifdef __WXGTK__
-	// Reparenting the window causes a crash under gtk, so don't do it there
-	// (this was only to fix a bug in winxp anyway)
-	return this;
-#endif
-#endif
-
 	// Create panel
 	auto panel = new wxPanel(parent, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL | wxBORDER_SIMPLE);
 
@@ -248,26 +174,6 @@ wxWindow* OGLCanvas::toPanel(wxWindow* parent)
 	sizer->Add(this, 1, wxEXPAND);
 
 	return panel;
-}
-
-// -----------------------------------------------------------------------------
-// Activates the GL context for this canvas.
-// Returns false if setting the active context failed
-// -----------------------------------------------------------------------------
-bool OGLCanvas::setActive()
-{
-#ifdef USE_SFML_RENDERWINDOW
-	if (!sf::RenderWindow::setActive())
-		return false;
-
-	Drawing::setRenderTarget(this);
-	resetGLStates();
-	setView(sf::View(sf::FloatRect(0.0f, 0.0f, GetSize().x, GetSize().y)));
-
-	return true;
-#else
-	return setContext();
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -310,18 +216,10 @@ void OGLCanvas::onPaint(wxPaintEvent& e)
 {
 	wxPaintDC dc(this);
 
-	if (recreate_)
-	{
-		if (!createSFML())
-			return;
-
-		recreate_ = false;
-	}
-
 	if (IsShown())
 	{
 		// Set context to this window
-		if (!setActive())
+		if (!activateContext())
 			return;
 
 		// Init if needed
@@ -355,17 +253,4 @@ void OGLCanvas::onTimer(wxTimerEvent& e)
 	// Update/refresh
 	update(frametime);
 	Refresh();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the GL canvas is resized
-// -----------------------------------------------------------------------------
-void OGLCanvas::onResize(wxSizeEvent& e)
-{
-#if (SFML_VERSION_MAJOR >= 2 && SFML_VERSION_MINOR >= 1) || __WXGTK__
-	// Recreate SFML RenderWindow
-	recreate_ = true;
-#endif
-
-	e.Skip();
 }

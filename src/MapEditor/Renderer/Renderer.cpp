@@ -533,8 +533,6 @@ void Renderer::drawEditorMessages() const
 		yoff = 16;
 	auto col_fg = ColourConfiguration::colour("map_editor_message");
 	auto col_bg = ColourConfiguration::colour("map_editor_message_outline");
-	Drawing::setTextState(true);
-	Drawing::enableTextStateReset(false);
 
 	// Go through editor messages
 	for (unsigned a = 0; a < context_.numEditorMessages(); a++)
@@ -569,8 +567,6 @@ void Renderer::drawEditorMessages() const
 		yoff += 16;
 	}
 	Drawing::setTextOutline(0);
-	Drawing::setTextState(false);
-	Drawing::enableTextStateReset(true);
 }
 
 // -----------------------------------------------------------------------------
@@ -606,16 +602,12 @@ void Renderer::drawFeatureHelpText() const
 
 	// Draw help text
 	int yoff = 22;
-	Drawing::setTextState(true);
-	Drawing::enableTextStateReset(false);
 	for (unsigned a = 1; a < help_lines.size(); a++)
 	{
 		Drawing::drawText(help_lines[a], view_.size().x - 2, yoff, col, Drawing::Font::Bold, Drawing::Align::Right);
 		yoff += 16;
 	}
 	Drawing::setTextOutline(0);
-	Drawing::setTextState(false);
-	Drawing::enableTextStateReset(true);
 }
 
 // -----------------------------------------------------------------------------
@@ -633,15 +625,9 @@ void Renderer::drawSelectionNumbers() const
 
 	// Go through selection
 	string text;
-	Drawing::enableTextStateReset(false);
-	Drawing::setTextState(true);
 	view_.setOverlayCoords(true);
-#if USE_SFML_RENDERWINDOW && ((SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR >= 4) || SFML_VERSION_MAJOR > 2)
-	Drawing::setTextOutline(1.0f, ColRGBA::BLACK);
-#else
 	if (context_.selection().size() <= map_max_selection_numbers * 0.5)
 		Drawing::setTextOutline(1.0f, ColRGBA::BLACK);
-#endif
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		if ((int)a > map_max_selection_numbers)
@@ -668,8 +654,6 @@ void Renderer::drawSelectionNumbers() const
 		Drawing::drawText(fmt::format("{}", a + 1), tp.x, tp.y, col, Drawing::Font::Bold);
 	}
 	Drawing::setTextOutline(0);
-	Drawing::enableTextStateReset();
-	Drawing::setTextState(false);
 	view_.setOverlayCoords(false);
 
 	glDisable(GL_TEXTURE_2D);
