@@ -163,6 +163,10 @@ void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 			comment_blocks_.erase(comment_blocks_.begin() + i);
 	}
 
+	// Do not look for comments if no language is loaded
+	if (!language_)
+		return;
+
 	// Scan text
 	auto pos = start;
 	while (pos < end)
