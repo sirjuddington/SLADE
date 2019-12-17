@@ -162,6 +162,9 @@ void Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 // ----------------------------------------------------------------------------
 void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 {
+	if (!language_)
+		return;
+	
 	// Block comment handling
 	auto& block_begin = language_->commentBeginL();
 	auto& block_end = language_->commentEndL();
