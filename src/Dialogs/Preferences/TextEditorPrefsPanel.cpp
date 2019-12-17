@@ -61,6 +61,7 @@ EXTERN_CVAR(Int, txed_hilight_current_line)
 EXTERN_CVAR(Int, txed_line_extra_height)
 EXTERN_CVAR(Bool, txed_tab_spaces)
 EXTERN_CVAR(Int, txed_show_whitespace)
+EXTERN_CVAR(Bool, txed_calltips_argset_kb)
 
 
 // ----------------------------------------------------------------------------
@@ -238,6 +239,10 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	cb_calltips_use_font_ = new wxCheckBox(this, -1, "Use the text editor font in calltips");
 	gb_sizer->Add(cb_calltips_use_font_, { ++row, 0 }, { 1, 2 }, wxEXPAND);
 
+	// Up/down keys to change between multiple function signatures
+	cb_calltips_argset_kb_ = new wxCheckBox(this, -1, "Use up/down keys to cycle function signatures");
+	gb_sizer->Add(cb_calltips_argset_kb_, { row, 2 }, { 1, 2 }, wxEXPAND);
+
 	// Separator
 	gb_sizer->Add(
 		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL),
@@ -297,6 +302,7 @@ void TextEditorPrefsPanel::init()
 	cb_calltips_colourise_->SetValue(txed_calltips_colourise);
 	cb_calltips_dim_optional_->SetValue(txed_calltips_dim_optional);
 	cb_calltips_use_font_->SetValue(txed_calltips_use_font);
+	cb_calltips_argset_kb_->SetValue(txed_calltips_argset_kb);
 	spin_right_margin_->SetValue(txed_edge_column);
 	spin_tab_width_->SetValue(txed_tab_width);
 	cb_fold_enable_->SetValue(txed_fold_enable);
@@ -329,6 +335,7 @@ void TextEditorPrefsPanel::applyPreferences()
 	txed_calltips_colourise = cb_calltips_colourise_->GetValue();
 	txed_calltips_dim_optional = cb_calltips_dim_optional_->GetValue();
 	txed_calltips_use_font = cb_calltips_use_font_->GetValue();
+	txed_calltips_argset_kb = cb_calltips_argset_kb_->GetValue();
 	txed_fold_enable = cb_fold_enable_->GetValue();
 	txed_fold_comments = cb_fold_comments_->GetValue();
 	txed_fold_preprocessor = cb_fold_preprocessor_->GetValue();

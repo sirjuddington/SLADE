@@ -26,6 +26,7 @@ private:
 	wxCheckBox*	cb_calltips_colourise_;
 	wxCheckBox*	cb_calltips_dim_optional_;
 	wxCheckBox*	cb_calltips_use_font_;
+	wxCheckBox* cb_calltips_argset_kb_;
 	wxCheckBox*	cb_fold_enable_;
 	wxCheckBox*	cb_fold_comments_;
 	wxCheckBox*	cb_fold_preprocessor_;
