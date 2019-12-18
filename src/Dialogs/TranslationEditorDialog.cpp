@@ -181,7 +181,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	pal_canvas_original_->setPalette(&palette_);
 	pal_canvas_original_->SetInitialSize(wxSize(UI::scalePx(448), UI::scalePx(112)));
 	pal_canvas_original_->setSelectionType(PaletteCanvas::SelectionType::Range);
-	framesizer->Add(pal_canvas_original_->toPanel(this), 1, wxALL | wxEXPAND, UI::pad());
+	framesizer->Add(pal_canvas_original_, 1, wxALL | wxEXPAND, UI::pad());
 
 
 	// --- Bottom half (translation target) ---
@@ -228,7 +228,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	pal_canvas_target_->setPalette(&palette_);
 	pal_canvas_target_->SetInitialSize(wxSize(UI::scalePx(448), UI::scalePx(112)));
 	pal_canvas_target_->setSelectionType(PaletteCanvas::SelectionType::Range);
-	vbox->Add(pal_canvas_target_->toPanel(panel_target_palette_), 1, wxEXPAND);
+	vbox->Add(pal_canvas_target_, 1, wxEXPAND);
 
 	// Reverse origin range
 	cb_target_reverse_ = new wxCheckBox(panel_target_palette_, -1, "Reverse Selection");
@@ -305,7 +305,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	pal_canvas_preview_ = new PaletteCanvas(this, -1);
 	pal_canvas_preview_->SetInitialSize(wxSize(UI::scalePx(224), UI::scalePx(224)));
 	pal_canvas_preview_->setPalette(&palette_);
-	framesizer->Add(pal_canvas_preview_->toPanel(this), 1, wxEXPAND | wxALL, UI::pad());
+	framesizer->Add(pal_canvas_preview_, 1, wxEXPAND | wxALL, UI::pad());
 
 	// Image preview
 	frame      = new wxStaticBox(this, -1, "Preview");
@@ -777,9 +777,9 @@ void TranslationEditorDialog::showTintTarget(bool tint)
 void TranslationEditorDialog::updatePreviews()
 {
 	// Update palette preview
-	pal_canvas_preview_->setPalette(&palette_);
-	pal_canvas_preview_->palette().applyTranslation(&translation_);
-	pal_canvas_preview_->Refresh();
+	Palette pal(palette_);
+	pal.applyTranslation(&translation_);
+	pal_canvas_preview_->setPalette(&pal);
 
 	// Update image preview
 	gfx_preview_->image().copyImage(&image_preview_);

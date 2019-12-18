@@ -130,7 +130,7 @@ public:
 		CenterOnParent();
 	}
 
-	Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return &(pal_preview_->palette()); }
 
 	ColRGBA colour() const
 	{
@@ -141,9 +141,9 @@ public:
 	// Re-apply the changes in selection and colour on a fresh palette
 	void redraw() const
 	{
-		pal_preview_->setPalette(palette_);
-		pal_preview_->palette().colourise(colour(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
-		pal_preview_->draw();
+		Palette pal(*palette_);
+		pal.colourise(colour(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal_preview_->setPalette(&pal);
 	}
 
 private:
@@ -227,7 +227,7 @@ public:
 		label_amount_->SetLabel("50% ");
 	}
 
-	Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return &(pal_preview_->palette()); }
 
 	ColRGBA colour() const
 	{
@@ -240,9 +240,9 @@ public:
 	// Re-apply the changes in selection, colour and amount on a fresh palette
 	void redraw() const
 	{
-		pal_preview_->setPalette(palette_);
-		pal_preview_->palette().tint(colour(), amount(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
-		pal_preview_->draw();
+		Palette pal(*palette_);
+		pal.tint(colour(), amount(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal_preview_->setPalette(&pal);
 	}
 
 private:
@@ -360,7 +360,7 @@ public:
 		label_lum_->SetLabel("100% ");
 	}
 
-	Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return &(pal_preview_->palette()); }
 
 	float hue() const { return (float)slider_hue_->GetValue() * 0.002f; }
 	float sat() const { return (float)slider_sat_->GetValue() * 0.01f; }
@@ -369,11 +369,11 @@ public:
 	// Re-apply the changes in selection, hue, saturation and luminosity on a fresh palette
 	void redraw() const
 	{
-		pal_preview_->setPalette(palette_);
-		pal_preview_->palette().shift(hue(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
-		pal_preview_->palette().saturate(sat(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
-		pal_preview_->palette().illuminate(lum(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
-		pal_preview_->draw();
+		Palette pal(*palette_);
+		pal.shift(hue(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal.saturate(sat(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal.illuminate(lum(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal_preview_->setPalette(&pal);
 	}
 
 private:
@@ -436,14 +436,14 @@ public:
 		CenterOnParent();
 	}
 
-	Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return &(pal_preview_->palette()); }
 
 	// Re-apply the changes in selection on a fresh palette
 	void redraw() const
 	{
-		pal_preview_->setPalette(palette_);
-		pal_preview_->palette().invert(pal_preview_->selectionStart(), pal_preview_->selectionEnd());
-		pal_preview_->draw();
+		Palette pal(*palette_);
+		pal.invert(pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal_preview_->setPalette(&pal);
 	}
 
 private:
@@ -577,7 +577,7 @@ public:
 		CenterOnParent();
 	}
 
-	Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return &(pal_preview_->palette()); }
 
 	ColRGBA startColour() const
 	{
@@ -594,10 +594,10 @@ public:
 	// Re-apply the changes in selection and colour on a fresh palette
 	void redraw() const
 	{
-		pal_preview_->setPalette(palette_);
-		pal_preview_->palette().setGradient(
+		Palette pal(*palette_);
+		pal.setGradient(
 			pal_preview_->selectionStart(), pal_preview_->selectionEnd(), startColour(), endColour());
-		pal_preview_->draw();
+		pal_preview_->setPalette(&pal);
 	}
 
 private:
@@ -623,7 +623,7 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "pal
 	// Add palette canvas
 	pal_canvas_ = new PaletteCanvas(this, -1);
 	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
-	sizer_main_->Add(pal_canvas_->toPanel(this), 1, wxEXPAND, 0);
+	sizer_main_->Add(pal_canvas_, 1, wxEXPAND, 0);
 
 	// Setup custom menu
 	menu_custom_ = new wxMenu();
@@ -750,7 +750,7 @@ bool PaletteEntryPanel::showPalette(uint32_t index)
 		return false;
 
 	// Copy palette at index into canvas
-	pal_canvas_->palette().copyPalette(palettes_[index].get());
+	pal_canvas_->setPalette(palettes_[index].get());
 
 	// Set current palette text
 	text_curpal_->SetLabel(fmt::format("{}/{}", index + 1, palettes_.size()));

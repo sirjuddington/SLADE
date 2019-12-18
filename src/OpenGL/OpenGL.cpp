@@ -60,6 +60,8 @@ uint8_t      n_pow_two      = 16;
 float        max_point_size = -1.0f;
 Blend        last_blend     = Blend::Normal;
 Info         info;
+unsigned     vbo_current;
+unsigned     vao_current;
 } // namespace OpenGL
 
 
@@ -313,4 +315,58 @@ void OpenGL::resetBlend()
 OpenGL::Info OpenGL::sysInfo()
 {
 	return info;
+}
+
+unsigned OpenGL::currentVBO()
+{
+	return vbo_current;
+}
+
+unsigned OpenGL::createVBO()
+{
+	unsigned vbo;
+	glGenBuffers(1, &vbo);
+	return vbo;
+}
+
+void OpenGL::bindVBO(unsigned id)
+{
+	if (vbo_current == id)
+		return;
+
+	glBindBuffer(GL_ARRAY_BUFFER, id);
+	vbo_current = id;
+}
+
+void OpenGL::deleteVBO(unsigned id)
+{
+	if (id > 0)
+		glDeleteBuffers(1, &id);
+}
+
+unsigned OpenGL::currentVAO()
+{
+	return vao_current;
+}
+
+unsigned OpenGL::createVAO()
+{
+	unsigned vao;
+	glGenVertexArrays(1, &vao);
+	return vao;
+}
+
+void OpenGL::bindVAO(unsigned id)
+{
+	if (vao_current == id)
+		return;
+
+	glBindVertexArray(id);
+	vao_current = id;
+}
+
+void OpenGL::deleteVAO(unsigned id)
+{
+	if (id > 0)
+		glDeleteVertexArrays(1, &id);
 }

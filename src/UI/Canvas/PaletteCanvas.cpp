@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "PaletteCanvas.h"
+#include "OpenGL/Draw2D.h"
 
 
 // -----------------------------------------------------------------------------
@@ -44,12 +45,18 @@
 // -----------------------------------------------------------------------------
 // PaletteCanvas class constructor
 // -----------------------------------------------------------------------------
-PaletteCanvas::PaletteCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
+PaletteCanvas::PaletteCanvas(wxWindow* parent, int id) : GLCanvas(parent)
 {
 	// Bind events
 	Bind(wxEVT_LEFT_DOWN, &PaletteCanvas::onMouseLeftDown, this);
 	Bind(wxEVT_RIGHT_DOWN, &PaletteCanvas::onMouseRightDown, this);
 	Bind(wxEVT_MOTION, &PaletteCanvas::onMouseMotion, this);
+
+	// Update when resized
+	Bind(wxEVT_SIZE, [this](wxSizeEvent& e) {
+		updatePaletteBuffer();
+		e.Skip();
+	});
 }
 
 // -----------------------------------------------------------------------------
@@ -57,120 +64,15 @@ PaletteCanvas::PaletteCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 // -----------------------------------------------------------------------------
 void PaletteCanvas::draw()
 {
-	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	if (vb_palette_.empty())
+		updatePaletteBuffer();
 
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glDisable(GL_DEPTH_TEST);
-
-	// Clear
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
-	// Setup some variables
-	int rows = 16;
-	int cols = 16;
-	if (double_width_)
-	{
-		rows = 8;
-		cols = 32;
-	}
-	int x_size = (GetSize().x) / cols;
-	int y_size = (GetSize().y) / rows;
-	int size   = std::min<int>(x_size, y_size);
+	// Setup default 2d shader (untextured)
+	const auto& shader = OpenGL::Draw2D::defaultShader(false);
+	OpenGL::Draw2D::setupFor2D(shader, *this);
 
 	// Draw palette
-	int c = 0;
-	for (int y = 0; y < rows; y++)
-	{
-		for (int x = 0; x < cols; x++)
-		{
-			// Set colour
-			OpenGL::setColour(palette_.colour(c), OpenGL::Blend::Normal);
-
-			// Draw square
-			glBegin(GL_QUADS);
-			glVertex2d(x * size + 1, y * size + 1);
-			glVertex2d(x * size + 1, y * size + size - 1);
-			glVertex2d(x * size + size - 1, y * size + size - 1);
-			glVertex2d(x * size + size - 1, y * size + 1);
-			glEnd();
-
-			// Draw selection outline if needed
-			if (c >= sel_begin_ && c <= sel_end_)
-			{
-				OpenGL::setColour(ColRGBA::WHITE);
-				glBegin(GL_LINES);
-				glVertex2d(x * size, y * size);
-				glVertex2d(x * size + size, y * size);
-				glVertex2d(x * size, y * size + size - 1);
-				glVertex2d(x * size + size, y * size + size - 1);
-				glEnd();
-
-				OpenGL::setColour(ColRGBA::BLACK);
-				glBegin(GL_LINES);
-				glVertex2d(x * size + 1, y * size + 1);
-				glVertex2d(x * size + size - 1, y * size + 1);
-				glVertex2d(x * size + 1, y * size + size - 2);
-				glVertex2d(x * size + size - 1, y * size + size - 2);
-				glEnd();
-
-				// Selection beginning
-				if (c == sel_begin_)
-				{
-					OpenGL::setColour(ColRGBA::WHITE);
-					glBegin(GL_LINES);
-					glVertex2d(x * size, y * size);
-					glVertex2d(x * size, y * size + size);
-					glEnd();
-
-					OpenGL::setColour(ColRGBA::BLACK);
-					glBegin(GL_LINES);
-					glVertex2d(x * size + 1, y * size + 1);
-					glVertex2d(x * size + 1, y * size + size - 1);
-					glEnd();
-				}
-
-				// Selection ending
-				if (c == sel_end_)
-				{
-					OpenGL::setColour(ColRGBA::WHITE);
-					glBegin(GL_LINES);
-					glVertex2d(x * size + size - 1, y * size + size - 2);
-					glVertex2d(x * size + size - 1, y * size);
-					glEnd();
-
-					OpenGL::setColour(ColRGBA::BLACK);
-					glBegin(GL_LINES);
-					glVertex2d(x * size + size - 2, y * size + 1);
-					glVertex2d(x * size + size - 2, y * size + size - 1);
-					glEnd();
-				}
-			}
-
-			// Next colour
-			c++;
-
-			if (c > 255)
-				break;
-		}
-
-		if (c > 255)
-			break;
-	}
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
+	vb_palette_.draw(OpenGL::Primitive::Quads);
 }
 
 // -----------------------------------------------------------------------------
@@ -195,6 +97,88 @@ void PaletteCanvas::setSelection(int begin, int end)
 		sel_end_ = begin;
 	else
 		sel_end_ = end;
+
+	updatePaletteBuffer();
+	Refresh();
+}
+
+// -----------------------------------------------------------------------------
+// Sets the palette to display
+// -----------------------------------------------------------------------------
+void PaletteCanvas::setPalette(Palette* pal)
+{
+	palette_.copyPalette(pal);
+	updatePaletteBuffer();
+	Refresh();
+}
+
+// -----------------------------------------------------------------------------
+// Updates the palette vertex buffer
+// -----------------------------------------------------------------------------
+void PaletteCanvas::updatePaletteBuffer()
+{
+	// Update variables
+	rows_        = double_width_ ? 8 : 16;
+	cols_        = double_width_ ? 32 : 16;
+	int x_size   = (GetSize().x) / cols_;
+	int y_size   = (GetSize().y) / rows_;
+	square_size_ = std::min<int>(x_size, y_size);
+
+	vb_palette_.clear();
+
+	// Add vertices to buffer
+	unsigned  index     = 0;
+	glm::vec4 colour    = { 1.f, 1.f, 1.f, 1.f };
+	glm::vec4 col_white = { 1.f, 1.f, 1.f, 1.f };
+	glm::vec4 col_black = { 0.f, 0.f, 0.f, 1.f };
+	float     x         = 1.f;
+	float     y         = 1.f;
+	float     sizef     = static_cast<float>(square_size_) - 2.f;
+	for (auto row = 0; row < rows_; row++)
+	{
+		for (auto col = 0; col < cols_; col++)
+		{
+			// Get colour
+			colour.r = palette_.colour(index).fr();
+			colour.g = palette_.colour(index).fg();
+			colour.b = palette_.colour(index).fb();
+
+			if (index >= sel_begin_ && index <= sel_end_)
+			{
+				// Selected: White -> Black -> Colour
+				vb_palette_.add({ { x, y }, col_white });
+				vb_palette_.add({ { x + sizef, y }, col_white });
+				vb_palette_.add({ { x + sizef, y + sizef }, col_white });
+				vb_palette_.add({ { x, y + sizef }, col_white });
+
+				vb_palette_.add({ { x + 1.f, y + 1.f }, col_black });
+				vb_palette_.add({ { x + sizef - 1.f, y + 1.f }, col_black });
+				vb_palette_.add({ { x + sizef - 1.f, y + sizef - 1.f }, col_black });
+				vb_palette_.add({ { x + 1.f, y + sizef - 1.f }, col_black });
+
+				vb_palette_.add({ { x + 2.f, y + 2.f }, colour });
+				vb_palette_.add({ { x + sizef - 2.f, y + 2.f }, colour });
+				vb_palette_.add({ { x + sizef - 2.f, y + sizef - 2.f }, colour });
+				vb_palette_.add({ { x + 2.f, y + sizef - 2.f }, colour });
+			}
+			else
+			{
+				// Not selected
+				vb_palette_.add({ { x, y }, colour });
+				vb_palette_.add({ { x + sizef, y }, colour });
+				vb_palette_.add({ { x + sizef, y + sizef }, colour });
+				vb_palette_.add({ { x, y + sizef }, colour });
+			}
+
+			// Next column
+			++index;
+			x += sizef + 2.f;
+		}
+
+		// Next row
+		y += sizef + 2.f;
+		x = 1.f;
+	}
 }
 
 
@@ -259,23 +243,13 @@ void PaletteCanvas::onMouseMotion(wxMouseEvent& e)
 	if (e.LeftIsDown() && allow_selection_ == SelectionType::Range)
 	{
 		// Figure out what 'grid' position the cursor is over
-		int rows = 16;
-		int cols = 16;
-		if (double_width_)
-		{
-			rows = 8;
-			cols = 32;
-		}
-		int x_size = (GetSize().x) / cols;
-		int y_size = (GetSize().y) / rows;
-		int size   = std::min<int>(x_size, y_size);
-		int x      = e.GetX() / size;
-		int y      = e.GetY() / size;
+		int x = e.GetX() / square_size_;
+		int y = e.GetY() / square_size_;
 
 		// Set selection accordingly
-		if (x >= 0 && x < cols && y >= 0 && y < rows)
+		if (x >= 0 && x < cols_ && y >= 0 && y < rows_)
 		{
-			int sel = y * cols + x;
+			int sel = y * cols_ + x;
 			if (sel > sel_begin_)
 				setSelection(sel_begin_, sel);
 

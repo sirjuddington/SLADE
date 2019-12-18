@@ -292,12 +292,16 @@
     <ClCompile Include="..\src\Dialogs\GfxColouriseDialog.cpp" />
     <ClCompile Include="..\src\Dialogs\GfxCropDialog.cpp" />
     <ClCompile Include="..\src\Dialogs\GfxTintDialog.cpp" />
+    <ClCompile Include="..\src\OpenGL\Draw2D.cpp" />
+    <ClCompile Include="..\src\OpenGL\Shader.cpp" />
+    <ClCompile Include="..\src\OpenGL\VertexBuffer2D.cpp" />
     <ClCompile Include="..\src\Scripting\Export\Archive.cpp" />
     <ClCompile Include="..\src\Scripting\Export\Game.cpp" />
     <ClCompile Include="..\src\Scripting\Export\General.cpp" />
     <ClCompile Include="..\src\Scripting\Export\Graphics.cpp" />
     <ClCompile Include="..\src\Scripting\Export\MapEditor.cpp" />
     <ClCompile Include="..\src\Scripting\Export\UI.cpp" />
+    <ClCompile Include="..\src\UI\Canvas\GLCanvas.cpp" />
     <ClCompile Include="..\src\Utility\FileUtils.cpp" />
     <ClCompile Include="..\thirdparty\bzip2\blocksort.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -1823,7 +1827,12 @@
     <ClInclude Include="..\src\Dialogs\GfxCropDialog.h" />
     <ClInclude Include="..\src\Dialogs\GfxTintDialog.h" />
     <ClInclude Include="..\src\General\Sigslot.h" />
+    <ClInclude Include="..\src\OpenGL\Draw2D.h" />
+    <ClInclude Include="..\src\OpenGL\Shader.h" />
+    <ClInclude Include="..\src\OpenGL\Structs.h" />
+    <ClInclude Include="..\src\OpenGL\VertexBuffer2D.h" />
     <ClInclude Include="..\src\Scripting\Export\Export.h" />
+    <ClInclude Include="..\src\UI\Canvas\GLCanvas.h" />
     <ClInclude Include="..\src\Utility\FileUtils.h" />
     <ClInclude Include="..\src\Utility\SeekableData.h" />
     <ClInclude Include="..\thirdparty\bzip2\bzlib.h" />

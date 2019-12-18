@@ -36,7 +36,11 @@
 #include "Archive/ArchiveManager.h"
 #include "MainEditor/UI/TextureXEditor/TextureXEditor.h"
 #include "OpenGL/GLTexture.h"
+#include "OpenGL/Shader.h"
+#include "OpenGL/VertexBuffer2D.h"
+#include "OpenGL/Draw2D.h"
 #include "Utility/CodePages.h"
+#include <glm/ext/matrix_transform.hpp>
 
 
 // -----------------------------------------------------------------------------
@@ -61,7 +65,7 @@ const int NUMCOLS = 80;
 // -----------------------------------------------------------------------------
 // ANSICanvas class constructor
 // -----------------------------------------------------------------------------
-ANSICanvas::ANSICanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
+ANSICanvas::ANSICanvas(wxWindow* parent, int id) : GLCanvas(parent, GLCanvas::BGStyle::Checkered)
 {
 	// Get the all-important font data
 	auto res_archive = App::archiveManager().programResourceArchive();
@@ -113,47 +117,11 @@ void ANSICanvas::writeRGBAData(uint8_t* dest) const
 // -----------------------------------------------------------------------------
 void ANSICanvas::draw()
 {
-	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	using namespace OpenGL;
 
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Clear
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
-	// Draw background
-	drawCheckeredBackground();
-
-	// Draw the image
-	drawImage();
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
-}
-
-// -----------------------------------------------------------------------------
-// Draws the image
-// (reloads the image as a texture each time, will change this later...)
-// -----------------------------------------------------------------------------
-void ANSICanvas::drawImage()
-{
 	// Check image is valid
 	if (!picdata_)
 		return;
-
-	// Save current matrix
-	glPushMatrix();
 
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
@@ -163,31 +131,14 @@ void ANSICanvas::drawImage()
 	{
 		vector<uint8_t> rgba_data(width_ * height_ * 4);
 		writeRGBAData(rgba_data.data());
-		tex_image_ = OpenGL::Texture::createFromData(rgba_data.data(), width_, height_);
+		tex_image_ = Texture::createFromData(rgba_data.data(), width_, height_);
 	}
 
-	// Determine (texture)coordinates
-	double x = (double)width_;
-	double y = (double)height_;
+	// Setup default 2d shader
+	Draw2D::setupFor2D(Draw2D::defaultShader(true), *this);
 
-	// Draw the image
-	OpenGL::setColour(ColRGBA::WHITE, OpenGL::Blend::Normal);
-	Drawing::drawTexture(tex_image_);
-
-	// Disable textures
-	glDisable(GL_TEXTURE_2D);
-
-	// Draw outline
-	OpenGL::setColour(0, 0, 0, 64);
-	glBegin(GL_LINE_LOOP);
-	glVertex2d(0, 0);
-	glVertex2d(0, y);
-	glVertex2d(x, y);
-	glVertex2d(x, 0);
-	glEnd();
-
-	// Restore previous matrix
-	glPopMatrix();
+	// Draw image
+	Draw2D::drawRect({ 0.f, 0.f, static_cast<float>(width_), static_cast<float>(height_) }, { tex_image_ });
 }
 
 // -----------------------------------------------------------------------------

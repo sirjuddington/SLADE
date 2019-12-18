@@ -1575,6 +1575,18 @@
     <ClCompile Include="..\src\Dialogs\Preferences\ACSPrefsPanel.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\UI\Canvas\GLCanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\OpenGL\Shader.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\OpenGL\VertexBuffer2D.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\OpenGL\Draw2D.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2782,6 +2794,21 @@
     </ClInclude>
     <ClInclude Include="..\src\General\Sigslot.h">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\Canvas\GLCanvas.h">
+      <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\Structs.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\Shader.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\VertexBuffer2D.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\OpenGL\Draw2D.h">
+      <Filter>OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

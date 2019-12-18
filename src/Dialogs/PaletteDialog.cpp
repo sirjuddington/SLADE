@@ -56,7 +56,7 @@ PaletteDialog::PaletteDialog(Palette* palette) :
 	SetSizer(m_vbox);
 
 	pal_canvas_ = new PaletteCanvas(this, -1);
-	pal_canvas_->palette().copyPalette(palette);
+	pal_canvas_->setPalette(palette);
 	pal_canvas_->SetInitialSize(wxSize(size, size));
 	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
 	m_vbox->Add(pal_canvas_, 1, wxEXPAND | wxALL, UI::padLarge());

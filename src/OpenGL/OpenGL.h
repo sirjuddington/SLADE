@@ -21,6 +21,7 @@
 #endif
 // clang-format on
 
+
 #include <wx/glcanvas.h>
 #undef None // Why does <X11/X.h> #define this? Idiotic
 
@@ -35,6 +36,15 @@ enum class Blend
 	Additive,
 
 	Ignore
+};
+
+enum class Primitive
+{
+	Points    = GL_POINTS,
+	Lines     = GL_LINES,
+	LineLoop  = GL_LINE_LOOP,
+	Triangles = GL_TRIANGLES,
+	Quads     = GL_QUADS
 };
 
 struct Info
@@ -63,4 +73,17 @@ void         setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, Blend b
 void         setBlend(Blend blend);
 void         resetBlend();
 Info         sysInfo();
+
+// VBO
+unsigned currentVBO();
+unsigned createVBO();
+void     bindVBO(unsigned id);
+void     deleteVBO(unsigned id);
+
+// VAO
+unsigned currentVAO();
+unsigned createVAO();
+void     bindVAO(unsigned id);
+void     deleteVAO(unsigned id);
+
 } // namespace OpenGL

@@ -892,7 +892,9 @@ wxColour Drawing::darkColour(const wxColour& colour, float percent)
 // TextBox class constructor
 // -----------------------------------------------------------------------------
 TextBox::TextBox(string_view text, Drawing::Font font, int width, int line_height) :
-	font_{ font }, width_{ width }, line_height_{ line_height }
+	font_{ font },
+	width_{ width },
+	line_height_{ line_height }
 {
 	setText(text);
 }
