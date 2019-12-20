@@ -29,6 +29,8 @@ namespace Draw2D
 	};
 
 	const Shader& defaultShader(bool textured = true);
+	const Shader& linesShader();
+	const Shader& pointSpriteShader();
 	void          setupFor2D(const Shader& shader, const GLCanvas& canvas);
 
 	void drawRect(Rectf rect, const RenderOptions& opt = {});

@@ -341,7 +341,15 @@ void OpenGL::bindVBO(unsigned id)
 void OpenGL::deleteVBO(unsigned id)
 {
 	if (id > 0)
+	{
+		if (vbo_current == id)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			vbo_current = 0;
+		}
+
 		glDeleteBuffers(1, &id);
+	}
 }
 
 unsigned OpenGL::currentVAO()
@@ -368,5 +376,13 @@ void OpenGL::bindVAO(unsigned id)
 void OpenGL::deleteVAO(unsigned id)
 {
 	if (id > 0)
+	{
+		if (vao_current == id)
+		{
+			glBindVertexArray(0);
+			vao_current = 0;
+		}
+
 		glDeleteVertexArrays(1, &id);
+	}
 }

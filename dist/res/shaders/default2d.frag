@@ -1,14 +1,37 @@
-#version 330 core
-
-in vec4 v_colour;
-in vec2 v_tex_coord;
+in VertexData
+{
+	vec4 colour;
+	vec2 tex_coord;
+} vertex_in;
 
 out vec4 f_colour;
 
-uniform sampler2D tex_unit;
 uniform vec4 colour;
+
+#ifdef TEXTURED
+uniform sampler2D tex_unit;
+#endif
+
+#ifdef THICK_LINES
+uniform float line_width;
+varying vec2 line_center;
+#endif
 
 void main()
 {
-	f_colour = v_colour * colour * texture(tex_unit, v_tex_coord);
+#ifdef TEXTURED
+	vec4 col = vertex_in.colour * colour * texture(tex_unit, vertex_in.tex_coord);
+#else
+	vec4 col = vertex_in.colour * colour;
+#endif
+
+#ifdef THICK_LINES
+	float d = length(line_center - gl_FragCoord.xy);
+	if (d > line_width)
+		col.a = 0;
+	else
+		col.a *= pow(float((line_width - d) / line_width), 1.2);
+#endif
+
+	f_colour = col;
 }

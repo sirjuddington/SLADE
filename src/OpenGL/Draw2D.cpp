@@ -42,29 +42,27 @@ const Shader& setOptions(const RenderOptions& opt)
 } // namespace OpenGL::Draw2D
 
 
-const Shader& OpenGL::Draw2D::defaultShader(bool textured)
+const Shader& Draw2D::defaultShader(bool textured)
 {
 	static Shader shader_2d("default2d");
 	static Shader shader_2d_notex("default2d_notex");
 
 	if (!shader_2d.isValid())
 	{
-		string shader_vert, shader_frag, shader_frag_notex;
+		string shader_vert, shader_frag;
 
 		auto program_resource = App::archiveManager().programResourceArchive();
 		if (program_resource)
 		{
-			auto entry_vert       = program_resource->entryAtPath("shaders/default2d.vert");
-			auto entry_frag       = program_resource->entryAtPath("shaders/default2d.frag");
-			auto entry_frag_notex = program_resource->entryAtPath("shaders/default2d_notex.frag");
-			if (entry_vert && entry_frag && entry_frag_notex)
+			auto entry_vert = program_resource->entryAtPath("shaders/default2d.vert");
+			auto entry_frag = program_resource->entryAtPath("shaders/default2d.frag");
+			if (entry_vert && entry_frag)
 			{
 				shader_vert.assign(reinterpret_cast<const char*>(entry_vert->rawData()), entry_vert->size());
 				shader_frag.assign(reinterpret_cast<const char*>(entry_frag->rawData()), entry_frag->size());
-				shader_frag_notex.assign(
-					reinterpret_cast<const char*>(entry_frag_notex->rawData()), entry_frag_notex->size());
+				shader_2d.define("TEXTURED");
 				shader_2d.load(shader_vert, shader_frag);
-				shader_2d_notex.load(shader_vert, shader_frag_notex);
+				shader_2d_notex.load(shader_vert, shader_frag);
 			}
 			else
 				Log::error("Unable to find default 2d shaders in the program resource!");
@@ -74,12 +72,72 @@ const Shader& OpenGL::Draw2D::defaultShader(bool textured)
 	return textured ? shader_2d : shader_2d_notex;
 }
 
-void OpenGL::Draw2D::setupFor2D(const Shader& shader, const GLCanvas& canvas)
+const Shader& Draw2D::linesShader()
+{
+	static Shader shader_lines("default2d_lines");
+
+	if (!shader_lines.isValid())
+	{
+		string text_vert, text_frag;
+
+		auto program_resource = App::archiveManager().programResourceArchive();
+		if (program_resource)
+		{
+			auto entry_vert = program_resource->entryAtPath("shaders/default2d.vert");
+			auto entry_frag = program_resource->entryAtPath("shaders/default2d.frag");
+			if (entry_vert && entry_frag)
+			{
+				text_vert.assign(reinterpret_cast<const char*>(entry_vert->rawData()), entry_vert->size());
+				text_frag.assign(reinterpret_cast<const char*>(entry_frag->rawData()), entry_frag->size());
+				shader_lines.define("THICK_LINES");
+				shader_lines.load(text_vert, text_frag);
+			}
+			else
+				Log::error("Unable to find default 2d shaders in the program resource!");
+		}
+	}
+
+	return shader_lines;
+}
+
+const Shader& Draw2D::pointSpriteShader()
+{
+	static Shader shader_psprite("default2d_pointsprite");
+
+	if (!shader_psprite.isValid())
+	{
+		string text_vert, text_geom, text_frag;
+
+		auto program_resource = App::archiveManager().programResourceArchive();
+		if (program_resource)
+		{
+			auto entry_vert = program_resource->entryAtPath("shaders/default2d.vert");
+			auto entry_geom = program_resource->entryAtPath("shaders/point_sprite.geom");
+			auto entry_frag = program_resource->entryAtPath("shaders/default2d.frag");
+			if (entry_vert && entry_frag)
+			{
+				text_vert.assign(reinterpret_cast<const char*>(entry_vert->rawData()), entry_vert->size());
+				text_geom.assign(reinterpret_cast<const char*>(entry_geom->rawData()), entry_geom->size());
+				text_frag.assign(reinterpret_cast<const char*>(entry_frag->rawData()), entry_frag->size());
+				shader_psprite.define("TEXTURED");
+				shader_psprite.define("GEOMETRY_SHADER");
+				shader_psprite.load(text_vert, text_frag, text_geom);
+			}
+			else
+				Log::error("Unable to find default 2d shaders in the program resource!");
+		}
+	}
+
+	return shader_psprite;
+}
+
+void Draw2D::setupFor2D(const Shader& shader, const GLCanvas& canvas)
 {
 	shader.bind();
 	shader.setUniform("projection", canvas.orthoProjectionMatrix());
 	shader.setUniform("model", glm::mat4(1.f));
 	shader.setUniform("colour", glm::vec4(1.f, 1.f, 1.f, 1.f));
+	shader.setUniform("viewport_size", glm::vec2(canvas.GetSize().x, canvas.GetSize().y));
 }
 
 void Draw2D::drawRect(Rectf rect, const RenderOptions& opt)
@@ -95,7 +153,7 @@ void Draw2D::drawRect(Rectf rect, const RenderOptions& opt)
 	shader.setUniform("model", identity_matrix);
 }
 
-void OpenGL::Draw2D::drawRectOutline(Rectf rect, const RenderOptions& opt)
+void Draw2D::drawRectOutline(Rectf rect, const RenderOptions& opt)
 {
 	auto& shader = setOptions(opt);
 

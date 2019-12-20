@@ -1,5 +1,7 @@
 #pragma once
 
+class ColRGBA;
+
 namespace OpenGL
 {
 class Shader
@@ -12,12 +14,23 @@ public:
 	bool     isValid() const { return id_ > 0; }
 	bool     isCurrent() const { return id_ == current_shader_; }
 
+	void define(string_view name, string_view value = {});
 	bool loadVertex(const string& shader_text);
 	bool loadVertexFile(const string& filename);
 	bool loadFragment(const string& shader_text);
 	bool loadFragmentFile(const string& filename);
-	bool load(const string& vertex_text, const string& fragment_text, bool link = true);
-	bool loadFiles(const string& vertex_file, const string& fragment_file, bool link = true);
+	bool loadGeometry(const string& shader_text);
+	bool loadGeometryFile(const string& filename);
+	bool load(
+		const string& vertex_text,
+		const string& fragment_text,
+		const string& geometry_text = {},
+		bool          link          = true);
+	bool loadFiles(
+		const string& vertex_file,
+		const string& fragment_file,
+		const string& geometry_file = {},
+		bool          link          = true);
 	bool link();
 
 	void bind() const;
@@ -27,19 +40,21 @@ public:
 	bool setUniform(const string& name, bool value) const;
 	bool setUniform(const string& name, int value) const;
 	bool setUniform(const string& name, float value) const;
-	bool setUniform(const string& name, glm::vec2 value) const;
-	bool setUniform(const string& name, glm::vec3 value) const;
-	bool setUniform(const string& name, glm::vec4 value) const;
-	bool setUniform(const string& name, glm::mat4 value) const;
+	bool setUniform(const string& name, const glm::vec2& value) const;
+	bool setUniform(const string& name, const glm::vec3& value) const;
+	bool setUniform(const string& name, const glm::vec4& value) const;
+	bool setUniform(const string& name, const glm::mat4& value) const;
+	bool setUniform(const string& name, const ColRGBA& value) const;
 
-	static void          unbind();
-	//static const Shader& default2D(bool textured = true);
+	static void unbind();
 
 private:
-	unsigned id_          = 0;
-	unsigned id_vertex_   = 0;
-	unsigned id_fragment_ = 0;
-	string   name_;
+	unsigned                 id_          = 0;
+	unsigned                 id_vertex_   = 0;
+	unsigned                 id_fragment_ = 0;
+	unsigned                 id_geometry_ = 0;
+	string                   name_;
+	std::map<string, string> defines_;
 
 	struct UniformLocInfo
 	{

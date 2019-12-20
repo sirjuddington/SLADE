@@ -38,12 +38,16 @@
 #include "General/ColourConfiguration.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
+#include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
+#include "OpenGL/Shader.h"
+#include "OpenGL/VertexBuffer2D.h"
 #include "SLADEMap/MapFormat/Doom64MapFormat.h"
 #include "SLADEMap/MapFormat/DoomMapFormat.h"
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "Utility/Tokenizer.h"
+#include <glm/ext/matrix_transform.hpp>
 
 
 // -----------------------------------------------------------------------------
@@ -612,6 +616,10 @@ void MapPreviewCanvas::clearMap()
 	things_.clear();
 	n_sides_   = 0;
 	n_sectors_ = 0;
+	if (vb_lines_)
+		vb_lines_->clear();
+	if (vb_things_)
+		vb_things_->clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -651,85 +659,37 @@ void MapPreviewCanvas::showMap()
 // -----------------------------------------------------------------------------
 void MapPreviewCanvas::draw()
 {
-	// Setup colours
-	auto col_view_background   = ColourConfiguration::colour("map_view_background");
-	auto col_view_line_1s      = ColourConfiguration::colour("map_view_line_1s");
-	auto col_view_line_2s      = ColourConfiguration::colour("map_view_line_2s");
-	auto col_view_line_special = ColourConfiguration::colour("map_view_line_special");
-	auto col_view_line_macro   = ColourConfiguration::colour("map_view_line_macro");
-	auto col_view_thing        = ColourConfiguration::colour("map_view_thing");
-
-	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, GetSize().x, 0, GetSize().y, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Clear
-	glClearColor(
-		((double)col_view_background.r) / 255.f,
-		((double)col_view_background.g) / 255.f,
-		((double)col_view_background.b) / 255.f,
-		((double)col_view_background.a) / 255.f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
+	// Update buffer if needed
+	if (!vb_lines_ || vb_lines_->empty())
+		updateLinesBuffer();
 
 	// Zoom/offset to show full map
 	showMap();
 
 	// Translate to middle of canvas
-	glTranslated(GetSize().x * 0.5, GetSize().y * 0.5, 0);
+	glm::mat4 model = glm::translate(glm::mat4(1.f), { GetSize().x * 0.5f, GetSize().y * 0.5f, 0.f });
 
 	// Zoom
-	glScaled(zoom_, zoom_, 1);
+	model = glm::scale(model, { zoom_, -zoom_, 1. });
 
 	// Translate to offset
-	glTranslated(-offset_.x, -offset_.y, 0);
+	model = glm::translate(model, { -offset_.x, -offset_.y, 0. });
 
 	// Setup drawing
-	glDisable(GL_TEXTURE_2D);
-	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	glLineWidth(1.5f);
-	glEnable(GL_LINE_SMOOTH);
+	auto& shader = OpenGL::Draw2D::linesShader();
+	OpenGL::Draw2D::setupFor2D(shader, *this);
+	shader.setUniform("model", model);
+	shader.setUniform("line_width", 1.5f);
 
 	// Draw lines
-	for (auto& line : lines_)
-	{
-		// Check ends
-		if (line.v1 >= verts_.size() || line.v2 >= verts_.size())
-			continue;
-
-		// Get vertices
-		auto v1 = verts_[line.v1];
-		auto v2 = verts_[line.v2];
-
-		// Set colour
-		if (line.special)
-			OpenGL::setColour(col_view_line_special);
-		else if (line.macro)
-			OpenGL::setColour(col_view_line_macro);
-		else if (line.twosided)
-			OpenGL::setColour(col_view_line_2s);
-		else
-			OpenGL::setColour(col_view_line_1s);
-
-		// Draw line
-		glBegin(GL_LINES);
-		glVertex2d(v1.x, v1.y);
-		glVertex2d(v2.x, v2.y);
-		glEnd();
-	}
+	glLineWidth(1.5f);
+	glDepthMask(GL_FALSE);
+	vb_lines_->draw(OpenGL::Primitive::Lines);
+	glDepthMask(GL_TRUE);
+	glLineWidth(1.f);
 
 	// Load thing texture if needed
-	if (!tex_loaded_)
+	if (!tex_thing_)
 	{
 		// Load thing texture
 		SImage image;
@@ -741,52 +701,26 @@ void MapPreviewCanvas::draw()
 		}
 		else
 			tex_thing_ = 0;
-
-		tex_loaded_ = true;
 	}
 
 	// Draw things
 	if (map_view_things)
 	{
-		OpenGL::setColour(col_view_thing);
-		if (tex_thing_)
-		{
-			double radius = 20;
-			glEnable(GL_TEXTURE_2D);
-			OpenGL::Texture::bind(tex_thing_);
-			for (auto& thing : things_)
-			{
-				glPushMatrix();
-				glTranslated(thing.x, thing.y, 0);
-				glBegin(GL_QUADS);
-				glTexCoord2f(0.0f, 0.0f);
-				glVertex2d(-radius, -radius);
-				glTexCoord2f(0.0f, 1.0f);
-				glVertex2d(-radius, radius);
-				glTexCoord2f(1.0f, 1.0f);
-				glVertex2d(radius, radius);
-				glTexCoord2f(1.0f, 0.0f);
-				glVertex2d(radius, -radius);
-				glEnd();
-				glPopMatrix();
-			}
-		}
-		else
-		{
-			glEnable(GL_POINT_SMOOTH);
-			glPointSize(8.0f);
-			glBegin(GL_POINTS);
-			for (auto& thing : things_)
-				glVertex2d(thing.x, thing.y);
-			glEnd();
-		}
+		// Update buffer if needed
+		if (!vb_things_ || vb_things_->empty())
+			updateThingsBuffer();
+
+		// Setup drawing
+		const auto& shader = OpenGL::Draw2D::pointSpriteShader();
+		OpenGL::Draw2D::setupFor2D(shader, *this);
+		shader.setUniform("model", model);
+		shader.setUniform("point_radius", 20.f);
+		shader.setUniform("colour", ColourConfiguration::colour("map_view_thing").asVec4());
+
+		// Draw things
+		OpenGL::Texture::bind(tex_thing_);
+		vb_things_->draw(OpenGL::Primitive::Points);
 	}
-
-	glLineWidth(1.0f);
-	glDisable(GL_LINE_SMOOTH);
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
 }
 
 
@@ -1036,4 +970,63 @@ unsigned MapPreviewCanvas::height()
 	}
 
 	return max_y - min_y;
+}
+
+// -----------------------------------------------------------------------------
+// Updates the lines vertex buffer
+// -----------------------------------------------------------------------------
+void MapPreviewCanvas::updateLinesBuffer()
+{
+	// Setup colours
+	auto col_view_line_1s      = ColourConfiguration::colour("map_view_line_1s").asVec4();
+	auto col_view_line_2s      = ColourConfiguration::colour("map_view_line_2s").asVec4();
+	auto col_view_line_special = ColourConfiguration::colour("map_view_line_special").asVec4();
+	auto col_view_line_macro   = ColourConfiguration::colour("map_view_line_macro").asVec4();
+
+	if (!vb_lines_)
+		vb_lines_ = std::make_unique<OpenGL::VertexBuffer2D>();
+	else
+		vb_lines_->clear();
+
+	OpenGL::Vertex2D vertex({ 0.f, 0.f });
+	for (auto& line : lines_)
+	{
+		// Check ends
+		if (line.v1 >= verts_.size() || line.v2 >= verts_.size())
+			continue;
+
+		// Set colour
+		if (line.special)
+			vertex.colour = col_view_line_special;
+		else if (line.macro)
+			vertex.colour = col_view_line_macro;
+		else if (line.twosided)
+			vertex.colour = col_view_line_2s;
+		else
+			vertex.colour = col_view_line_1s;
+
+		// First vertex
+		vertex.position = { verts_[line.v1].x, verts_[line.v1].y };
+		vb_lines_->add(vertex);
+
+		// Second vertex
+		vertex.position = { verts_[line.v2].x, verts_[line.v2].y };
+		vb_lines_->add(vertex);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Updates the things vertex buffer
+// -----------------------------------------------------------------------------
+void MapPreviewCanvas::updateThingsBuffer()
+{
+	if (!vb_things_)
+		vb_things_ = std::make_unique<OpenGL::VertexBuffer2D>();
+	else
+		vb_things_->clear();
+
+	auto col = ColourConfiguration::colour("map_view_thing").asVec4();
+	auto tc  = glm::vec2();
+	for (auto& thing : things_)
+		vb_things_->add({ { thing.x, thing.y }, col, tc });
 }

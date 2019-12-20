@@ -1,15 +1,14 @@
 #pragma once
 
 #include "Archive/Archive.h"
-#include "OGLCanvas.h"
+#include "GLCanvas.h"
+#include "OpenGL/VertexBuffer2D.h"
 
-class GLTexture;
-
-class MapPreviewCanvas : public OGLCanvas
+class MapPreviewCanvas : public GLCanvas
 {
 public:
-	MapPreviewCanvas(wxWindow* parent) : OGLCanvas(parent, -1) {}
-	~MapPreviewCanvas() = default;
+	MapPreviewCanvas(wxWindow* parent) : GLCanvas(parent) {}
+	virtual ~MapPreviewCanvas() = default;
 
 	void addVertex(double x, double y);
 	void addLine(unsigned v1, unsigned v2, bool twosided, bool special, bool macro = false);
@@ -60,12 +59,7 @@ private:
 			bool     special  = false,
 			bool     macro    = false,
 			bool     segment  = false) :
-			v1{ v1 },
-			v2{ v2 },
-			twosided{ twosided },
-			special{ special },
-			macro{ macro },
-			segment{ segment }
+			v1{ v1 }, v2{ v2 }, twosided{ twosided }, special{ special }, macro{ macro }, segment{ segment }
 		{
 		}
 	};
@@ -85,6 +79,11 @@ private:
 	double              zoom_      = 1.;
 	Vec2d               offset_;
 	unique_ptr<Archive> temp_archive_;
-	unsigned            tex_thing_;
-	bool                tex_loaded_ = false;
+	unsigned            tex_thing_ = 0;
+
+	unique_ptr<OpenGL::VertexBuffer2D> vb_lines_;
+	unique_ptr<OpenGL::VertexBuffer2D> vb_things_;
+
+	void updateLinesBuffer();
+	void updateThingsBuffer();
 };
