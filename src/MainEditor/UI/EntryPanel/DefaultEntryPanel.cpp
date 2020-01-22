@@ -153,7 +153,7 @@ bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 {
 	// Update labels
-	label_type_->SetLabel(wxString::Format("%lu selected entries", entries.size()));
+	label_type_->SetLabel(wxString::Format("%llu selected entries", entries.size()));
 	unsigned size = 0;
 	for (auto& entry : entries)
 		size += entry->size();
