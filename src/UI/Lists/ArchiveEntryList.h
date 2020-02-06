@@ -32,6 +32,7 @@ public:
 	bool setDir(const shared_ptr<ArchiveDir>& dir);
 
 	void setEntriesAutoUpdate(bool update) { entries_update_ = update; }
+	void updateEntries();
 
 	// Sorting
 	void sortItems() override;
