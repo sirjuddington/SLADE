@@ -400,11 +400,12 @@ bool PatchBrowser::openArchive(Archive* archive)
 		}
 	}
 
-	// Open 'patches' node
-	openTree(dynamic_cast<BrowserTreeNode*>(items_root_->child("Patches")));
-
 	// Update tree control
 	populateItemTree();
+
+	// Open 'patches' node
+	openTree(dynamic_cast<BrowserTreeNode*>(items_root_->child("Patches")), true, true);
+
 
 	return true;
 }
