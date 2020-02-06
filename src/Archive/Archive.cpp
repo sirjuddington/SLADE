@@ -843,7 +843,7 @@ bool Archive::renameDir(ArchiveDir* dir, string_view new_name)
 		return false;
 
 	// Rename the directory if needed
-	if (dir->name() == new_name)
+	if (dir->name() != new_name)
 	{
 		if (UndoRedo::currentlyRecording())
 			UndoRedo::currentManager()->recordUndoStep(std::make_unique<DirRenameUS>(dir, new_name));
