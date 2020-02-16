@@ -1165,6 +1165,9 @@ bool ArchivePanel::deleteEntry(bool confirm)
 	// Get a list of selected directories
 	vector<ArchiveTreeNode*> selected_dirs = entry_list_->getSelectedDirectories();
 
+	if (selected_entries.empty() && selected_dirs.empty())
+		return false;
+
 	// Confirmation dialog
 	if (confirm_entry_delete && confirm)
 	{
