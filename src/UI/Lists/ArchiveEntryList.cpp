@@ -607,7 +607,7 @@ void ArchiveEntryList::sortItems()
 
 		// Name sort
 		if (col_name >= 0 && col_name == sortColumn())
-			return sort_descend ? le->getName() > re->getName() : le->getName() < re->getName();
+			return sort_descend ? le->getUpperName() > re->getUpperName() : le->getUpperName() < re->getUpperName();
 
 		// Size sort
 		if (col_size >= 0 && col_size == sortColumn())
