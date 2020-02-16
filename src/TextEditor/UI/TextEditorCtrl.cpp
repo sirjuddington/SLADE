@@ -72,6 +72,7 @@ CVAR(Int, txed_hilight_current_line, 2, CVar::Flag::Save)
 CVAR(Int, txed_line_extra_height, 0, CVar::Flag::Save)
 CVAR(Bool, txed_tab_spaces, false, CVar::Flag::Save)
 CVAR(Int, txed_show_whitespace, 0, CVar::Flag::Save)
+CVAR(Bool, txed_calltips_argset_kb, true, CVar::Flag::Save)
 
 wxDEFINE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
@@ -1352,7 +1353,7 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 	}
 
 	// Check for up/down keys while calltip with multiple arg sets is open
-	if (call_tip_->IsShown() && ct_function_ && ct_function_->contexts().size() > 1 && !ct_dwell_)
+	if (txed_calltips_argset_kb && call_tip_->IsShown() && ct_function_ && ct_function_->contexts().size() > 1 && !ct_dwell_)
 	{
 		if (e.GetKeyCode() == WXK_UP)
 		{
