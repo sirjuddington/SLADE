@@ -65,7 +65,7 @@ public:
 	virtual void doSort(unsigned sort_type = 0);
 	void         setSortType(int type);
 
-	void openTree(BrowserTreeNode* node, bool clear = true);
+	void openTree(BrowserTreeNode* node, bool clear = true, bool show = false);
 	void populateItemTree(bool collapse_all = true);
 	void addItemTree(BrowserTreeNode* node, wxTreeListItem& item) const;
 

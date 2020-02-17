@@ -255,7 +255,7 @@ void ArchiveEntryList::setArchive(const shared_ptr<Archive>& archive)
 	if (archive)
 	{
 		// Update list when archive is modified
-		sc_archive_modified_ = archive->signals().modified.connect([this](Archive&) { applyFilter(); });
+		sc_archive_modified_ = archive->signals().modified.connect([this](Archive&) { updateEntries(); });
 
 		// Open root directory
 		current_dir_ = archive->rootDir();
@@ -511,6 +511,14 @@ bool ArchiveEntryList::setDir(const shared_ptr<ArchiveDir>& dir)
 	ProcessWindowEvent(evt);
 
 	return true;
+}
+
+void ArchiveEntryList::updateEntries()
+{
+	if (entries_update_)
+	{
+		applyFilter();
+	}
 }
 
 // -----------------------------------------------------------------------------

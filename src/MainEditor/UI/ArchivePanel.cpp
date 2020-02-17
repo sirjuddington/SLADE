@@ -637,6 +637,7 @@ void ArchivePanel::undo() const
 		entry_list_->setEntriesAutoUpdate(false);
 		undo_manager_->undo();
 		entry_list_->setEntriesAutoUpdate(true);
+		entry_list_->updateEntries();
 	}
 }
 
@@ -651,6 +652,7 @@ void ArchivePanel::redo() const
 		entry_list_->setEntriesAutoUpdate(false);
 		undo_manager_->redo();
 		entry_list_->setEntriesAutoUpdate(true);
+		entry_list_->updateEntries();
 	}
 }
 
@@ -1331,6 +1333,40 @@ bool ArchivePanel::revertEntry() const
 	// archive, the archive is no longer modified.
 	archive->findModifiedEntries();
 
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Swaps selected entries
+// -----------------------------------------------------------------------------
+bool ArchivePanel::swapEntries()
+{
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
+	// Get selection
+	auto selection = entry_list_->selection();
+
+	// Exactly 2 entries must be selected
+	if (selection.size() != 2)
+		return false;
+
+	auto entry1 = entry_list_->entryIndexAt(selection[0]);
+	auto entry2 = entry_list_->entryIndexAt(selection[1]);
+
+	// Swap the entries
+	undo_manager_->beginRecord("Swap Entries");
+	auto dir = entry_list_->currentDir().lock().get();
+	archive->swapEntries(entry1, entry2, dir);
+	undo_manager_->endRecord(true);
+	
+	// Update archive
+	entry_list_->updateList();
+	archive->setModified(true);
+
+	// Return success
 	return true;
 }
 
@@ -3287,6 +3323,10 @@ bool ArchivePanel::handleAction(string_view id)
 	else if (id == "arch_entry_paste")
 		pasteEntry();
 
+	// Entry->Swap
+	else if (id == "arch_entry_swap")
+		swapEntries();
+
 	// Entry->Move Up
 	else if (id == "arch_entry_moveup")
 		moveUp();
@@ -3669,6 +3709,8 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	SAction::fromId("arch_entry_import")->addToMenu(&context, true);
 	SAction::fromId("arch_entry_export")->addToMenu(&context, true);
 	context.AppendSeparator();
+	if (selection.size() == 2)
+		SAction::fromId("arch_entry_swap")->addToMenu(&context, true);
 	SAction::fromId("arch_entry_moveup")->addToMenu(&context, true);
 	SAction::fromId("arch_entry_movedown")->addToMenu(&context, true);
 	SAction::fromId("arch_entry_sort")->addToMenu(&context, true);
@@ -3896,6 +3938,13 @@ void ArchivePanel::onEntryListKeyDown(wxKeyEvent& e)
 		else if (bind == "el_delete")
 		{
 			deleteEntry();
+			return;
+		}
+
+		// Swap Entries
+		else if (bind == "el_swap")
+		{
+			swapEntries();
 			return;
 		}
 

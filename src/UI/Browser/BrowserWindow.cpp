@@ -464,9 +464,9 @@ void BrowserWindow::setSortType(int type)
 // -----------------------------------------------------------------------------
 // 'Opens' the items in [node] and all its children, adding them to the browser
 // canvas' list of items. If [clear] is true, the current list contents will be
-// cleared
+// cleared. If [show] is true, expands the tree to show the item.
 // -----------------------------------------------------------------------------
-void BrowserWindow::openTree(BrowserTreeNode* node, bool clear)
+void BrowserWindow::openTree(BrowserTreeNode* node, bool clear, bool show)
 {
 	// Clear if needed
 	if (clear)
@@ -495,6 +495,12 @@ void BrowserWindow::openTree(BrowserTreeNode* node, bool clear)
 		doSort(choice_sort_->GetSelection());
 		canvas_->filterItems(text_filter_->GetValue());
 		canvas_->showSelectedItem();
+	}
+
+	// Expand the tree to show the node
+	if (show)
+	{
+		tree_items_->Expand(node->treeId());
 	}
 }
 

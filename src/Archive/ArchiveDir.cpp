@@ -584,12 +584,12 @@ shared_ptr<ArchiveDir> ArchiveDir::subdirAtPath(const shared_ptr<ArchiveDir>& ro
 // -----------------------------------------------------------------------------
 ArchiveDir* ArchiveDir::subdirAtPath(ArchiveDir* root, string_view path)
 {
-	if (path.empty())
+	if (path.empty() || path == "/")
 		return root;
-	if (path.back() == '/')
-		path.remove_suffix(1);
 	if (path[0] == '/')
 		path.remove_prefix(1);
+	if (path.back() == '/')
+		path.remove_suffix(1);
 
 	// Split path into parts
 	auto parts = StrUtil::splitV(path, '/');
