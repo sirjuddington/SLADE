@@ -80,13 +80,14 @@ bool FileUtil::removeFile(string_view path)
 }
 
 // -----------------------------------------------------------------------------
-// Copies the file at [from] to a file at [to], overwriting it if the target
-// file already exists
+// Copies the file at [from] to a file at [to]. If [overwrite] is true, it will
+// overwrite the file if it already exists.
 // -----------------------------------------------------------------------------
-bool FileUtil::copyFile(string_view from, string_view to)
+bool FileUtil::copyFile(string_view from, string_view to, bool overwrite)
 {
 	static std::error_code ec;
-	if (!fs::copy_file(from, to, ec))
+	auto options = overwrite ? fs::copy_options::overwrite_existing : fs::copy_options::none;
+	if (!fs::copy_file(from, to, options, ec))
 	{
 		Log::warning("Unable to copy file from \"{}\" to \"{}\": {}", from, to, ec.message());
 		return false;
