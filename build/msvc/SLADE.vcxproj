@@ -383,7 +383,7 @@
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wsock32.lib;crypt32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wsock32.lib;crypt32.lib;Ws2_32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)-dbg.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -410,7 +410,7 @@
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wsock32.lib;crypt32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wsock32.lib;crypt32.lib;Ws2_32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)-dbg.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -517,7 +517,7 @@
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wsock32.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wsock32.lib;ws2_32.lib;crypt32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableUAC>false</EnableUAC>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -555,7 +555,7 @@
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wsock32.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wsock32.lib;ws2_32.lib;crypt32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableUAC>false</EnableUAC>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
