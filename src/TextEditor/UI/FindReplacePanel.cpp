@@ -137,6 +137,9 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 
 	// Set tab order
 	text_replace_->MoveAfterInTabOrder(text_find_);
+
+	Layout();
+	Fit();
 }
 
 // -----------------------------------------------------------------------------

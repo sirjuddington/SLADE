@@ -513,6 +513,7 @@ void TextEditorCtrl::showFindReplacePanel(bool show)
 
 	// Show the F+R panel
 	panel_fr_->Show();
+	panel_fr_->Layout();
 	panel_fr_->GetParent()->Layout();
 	panel_fr_->setFindText(find);
 }
@@ -1816,6 +1817,9 @@ void TextEditorCtrl::onStyleNeeded(wxStyledTextEvent& e)
 		block_comment_closed_ = false;
 	}
 
+	// Update comment block info
+	lexer_->updateComments(this, line_start == 0 ? 0 : GetLineEndPosition(line_start - 1), GetLineEndPosition(line_end));
+
 	// Lex until done (end of lines, end of file or end of block comment)
 	int l = line_start;
 	while (l <= GetNumberOfLines() && (l <= line_end))
@@ -1829,9 +1833,6 @@ void TextEditorCtrl::onStyleNeeded(wxStyledTextEvent& e)
 		lexer_->doStyling(this, start, end);
 		l++;
 	}
-
-	// Update+style comments
-	lexer_->updateComments(this, line_start == 0 ? 0 : GetLineEndPosition(line_start - 1), GetLineEndPosition(line_end));
 
 	if (txed_fold_enable)
 	{

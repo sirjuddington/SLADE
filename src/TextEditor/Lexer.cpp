@@ -121,6 +121,16 @@ void Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 	bool done = false;
 	while (!done)
 	{
+		auto cb = isWithinComment(state.position);
+		if (cb >= 0)
+		{
+			editor->SetStyling(comment_blocks_[cb].end_pos - state.position, Style::Comment);
+			state.position = comment_blocks_[cb].end_pos;
+			state.line = editor->LineFromPosition(state.position);
+			state.state = State::Unknown;
+			continue;
+		}
+		
 		switch (state.state)
 		{
 		case State::Whitespace: done = processWhitespace(state); break;
@@ -151,7 +161,7 @@ void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 	auto& block_end   = language_->commentEndL();
 	int   token_index;
 
-	// Extend start/end if either is within a block comment
+	// Extend start/end if either is within a comment
 	auto cb = isWithinComment(start);
 	if (cb >= 0)
 		start = comment_blocks_[cb].start_pos;
@@ -177,9 +187,8 @@ void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 		// Line comment
 		if (checkToken(editor, pos, language_->lineCommentL()))
 		{
-			const auto l_end = editor->GetLineEndPosition(editor->LineFromPosition(pos));
-			editor->StartStyling(pos, 0);
-			editor->SetStyling(l_end - pos, Style::Comment);
+			const auto l_end = editor->GetLineEndPosition(editor->LineFromPosition(pos)) + 1;
+			comment_blocks_.push_back({ pos, l_end });
 			pos = l_end;
 			continue;
 		}
@@ -188,7 +197,6 @@ void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 		if (checkToken(editor, pos, block_begin, &token_index))
 		{
 			auto& end_token = block_end[token_index];
-			editor->StartStyling(pos, 0);
 			auto cb_start = pos;
 			pos += block_begin[token_index].size();
 			while (pos < end)
@@ -202,7 +210,6 @@ void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 			}
 
 			comment_blocks_.push_back({ cb_start, pos });
-			editor->SetStyling(pos - cb_start, Style::Comment);
 			continue;
 		}
 
