@@ -18,7 +18,7 @@ public:
 	// STreeNode
 	string	getName() override;
 	void 	addChild(STreeNode* child) override;
-	void	setName(string name) override { dir_entry_->name = name; }
+	void	setName(string name) override;
 	
 	// Entry Access
 	ArchiveEntry*		entryAt(unsigned index);
@@ -52,6 +52,7 @@ protected:
 	{
 		ArchiveTreeNode* node = new ArchiveTreeNode();
 		node->dir_entry_->name = name;
+		node->dir_entry_->upper_name = name.Upper();
 		node->archive_ = archive_;
 		node->allow_duplicate_names_ = allow_duplicate_names_;
 		return node;

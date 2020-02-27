@@ -76,6 +76,15 @@ void ArchiveTreeNode::addChild(STreeNode* child)
 }
 
 // ----------------------------------------------------------------------------
+// Sets the node (directory) name
+// ----------------------------------------------------------------------------
+void ArchiveTreeNode::setName(string name)
+{
+	dir_entry_->name = name;
+	dir_entry_->upper_name = name.Upper();
+}
+
+// ----------------------------------------------------------------------------
 // ArchiveTreeNode::archive
 //
 // Returns the parent archive of this node (gets the parent archive of the
