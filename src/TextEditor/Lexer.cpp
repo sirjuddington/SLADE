@@ -75,6 +75,7 @@ void Lexer::loadLanguage(TextLanguage* language)
 {
 	language_ = language;
 	clearWords();
+	comment_blocks_.clear();
 
 	if (!language)
 		return;
