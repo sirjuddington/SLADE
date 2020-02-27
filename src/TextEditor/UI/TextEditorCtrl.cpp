@@ -705,7 +705,7 @@ int TextEditorCtrl::replaceAll(string find, string replace, int flags)
 			replaced++;
 
 			// Continue from end of replaced text
-			SetSelection(found + find.length(), found + find.length());
+			SetSelection(found + replace.length(), found + replace.length());
 		}
 	}
 
