@@ -370,6 +370,10 @@ bool DirArchive::renameDir(ArchiveTreeNode* dir, string new_name)
  *******************************************************************/
 ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
 {
+	// Check entry
+	if (!checkEntry(entry))
+		return nullptr;
+	
 	// Check namespace
 	if (add_namespace.IsEmpty() || add_namespace == "global")
 		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr, copy);
@@ -387,6 +391,10 @@ ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
  *******************************************************************/
 bool DirArchive::removeEntry(ArchiveEntry* entry)
 {
+	// Check entry
+	if (!checkEntry(entry))
+		return false;
+	
 	string old_name = entry->exProp("filePath").getStringValue();
 	bool success = Archive::removeEntry(entry);
 	if (success)
@@ -399,6 +407,10 @@ bool DirArchive::removeEntry(ArchiveEntry* entry)
  *******************************************************************/
 bool DirArchive::renameEntry(ArchiveEntry* entry, string name)
 {
+	// Check entry
+	if (!checkEntry(entry))
+		return false;
+	
 	// Check rename won't result in duplicated name
 	if (entry->getParentDir()->entry(name))
 	{
