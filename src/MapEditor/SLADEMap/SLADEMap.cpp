@@ -1595,18 +1595,19 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 		if (prop == prop_ftex || prop == prop_ctex)
 			continue;
 
-		if (S_CMPNOCASE(prop->getName(), "heightfloor"))
+		string propName = prop->getName();
+		if (S_CMPNOCASE(propName, "heightfloor"))
 			ns->setFloorHeight(prop->intValue());
-		else if (S_CMPNOCASE(prop->getName(), "heightceiling"))
+		else if (S_CMPNOCASE(propName, "heightceiling"))
 			ns->setCeilingHeight(prop->intValue());
-		else if (S_CMPNOCASE(prop->getName(), "lightlevel"))
+		else if (S_CMPNOCASE(propName, "lightlevel"))
 			ns->light = prop->intValue();
-		else if (S_CMPNOCASE(prop->getName(), "special"))
+		else if (S_CMPNOCASE(propName, "special"))
 			ns->special = prop->intValue();
-		else if (S_CMPNOCASE(prop->getName(), "id"))
+		else if (S_CMPNOCASE(propName, "id"))
 			ns->tag = prop->intValue();
 		else
-			ns->properties[prop->getName()] = prop->value();
+			ns->properties[propName] = prop->value();
 	}
 
 	// Add sector to map
@@ -2497,6 +2498,58 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		{
 			Game::configuration().cleanObjectUDMFProps(sectors_[a]);
 			object_def += sectors_[a]->properties.toString(true);
+		}
+
+		// For UDMF floor planes, ALL values must be added.
+		bool floorPlane = (
+			sectors_[a]->hasProp("floorplane_a") ||
+			sectors_[a]->hasProp("floorplane_b") ||
+			sectors_[a]->hasProp("floorplane_c") ||
+			sectors_[a]->hasProp("floorplane_d"));
+		bool ceilingPlane = (
+			sectors_[a]->hasProp("ceilingplane_a") ||
+			sectors_[a]->hasProp("ceilingplane_b") ||
+			sectors_[a]->hasProp("ceilingplane_c") ||
+			sectors_[a]->hasProp("ceilingplane_d"));
+		// Write other floor plane values, using defaults for properties that
+		// are not given.
+		if (floorPlane)
+		{
+			if (!sectors_[a]->hasProp("floorplane_a"))
+			{
+				object_def += "floorplane_a = 0;\n";
+			}
+			if (!sectors_[a]->hasProp("floorplane_b"))
+			{
+				object_def += "floorplane_b = 0;\n";
+			}
+			if (!sectors_[a]->hasProp("floorplane_c"))
+			{
+				object_def += "floorplane_c = 0;\n";
+			}
+			if (!sectors_[a]->hasProp("floorplane_d"))
+			{
+				object_def += S_FMT("floorplane_d = %d;\n", sectors_[a]->f_height);
+			}
+		}
+		if (ceilingPlane)
+		{
+			if (!sectors_[a]->hasProp("ceilingplane_a"))
+			{
+				object_def += "ceilingplane_a = 0;\n";
+			}
+			if (!sectors_[a]->hasProp("ceilingplane_b"))
+			{
+				object_def += "ceilingplane_b = 0;\n";
+			}
+			if (!sectors_[a]->hasProp("ceilingplane_c"))
+			{
+				object_def += "ceilingplane_c = 0;\n";
+			}
+			if (!sectors_[a]->hasProp("ceilingplane_d"))
+			{
+				object_def += S_FMT("ceilingplane_d = %d;\n", sectors_[a]->c_height);
+			}
 		}
 
 		object_def += "}\n\n";
