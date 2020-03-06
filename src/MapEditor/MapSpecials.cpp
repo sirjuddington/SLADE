@@ -372,6 +372,41 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		target->setPlane<CEILING_PLANE>(plane_t::flat(target->getPlaneHeight<CEILING_PLANE>()));
 	}
 
+	// Floor/ceiling plane properties
+	for (unsigned a = 0; a < map->nSectors(); a++)
+	{
+		plane_t flatplane;
+
+		MapSector* target = map->getSector(a);
+		// Check for floor plane
+		// Note that these properties will only work if all of them are present
+		if (target->hasProp("floorplane_a") && 
+			target->hasProp("floorplane_b") &&
+			target->hasProp("floorplane_c") &&
+			target->hasProp("floorplane_d"))
+		{
+			// Set A, B, and C negative to compensate for the calculation
+			// differences between SLADE and GZDoom.
+			flatplane.a = -target->floatProperty("floorplane_a");
+			flatplane.b = -target->floatProperty("floorplane_b");
+			flatplane.c = -target->floatProperty("floorplane_c");
+			flatplane.d = target->floatProperty("floorplane_d");
+			target->setFloorPlane(flatplane);
+		}
+		// Check for ceiling plane
+		if (target->hasProp("ceilingplane_a") && 
+			target->hasProp("ceilingplane_b") &&
+			target->hasProp("ceilingplane_c") &&
+			target->hasProp("ceilingplane_d"))
+		{
+			flatplane.a = -target->floatProperty("ceilingplane_a");
+			flatplane.b = -target->floatProperty("ceilingplane_b");
+			flatplane.c = -target->floatProperty("ceilingplane_c");
+			flatplane.d = target->floatProperty("ceilingplane_d");
+			target->setCeilingPlane(flatplane);
+		}
+	}
+
 	// Plane_Align (line special 181)
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
