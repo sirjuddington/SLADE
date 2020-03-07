@@ -2493,6 +2493,52 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		if (sectors_[a]->special != 0) object_def += S_FMT("special=%d;\n", sectors_[a]->special);
 		if (sectors_[a]->tag != 0) object_def += S_FMT("id=%d;\n", sectors_[a]->tag);
 
+		// For UDMF sector planes, ALL values must be added, or else GZDoom
+		// will consider them invalid.
+		// Check for UDMF floor planes, and if they are present, copy the
+		// values from the existing floor planes, and remove the floor plane
+		// properties so that they can be put in order.
+		double floor_a = 0, floor_b = 0, floor_c = 0, floor_d = 0;
+		bool hasFloorPlane = (
+			sectors_[a]->hasProp("floorplane_a") ||
+			sectors_[a]->hasProp("floorplane_b") ||
+			sectors_[a]->hasProp("floorplane_c") ||
+			sectors_[a]->hasProp("floorplane_d"));
+		if (hasFloorPlane)
+		{
+			plane_t floor_plane = sectors_[a]->getFloorPlane();
+			// The ABC values are internally negated to compensate for the
+			// differences in the point height calculations between SLADE and
+			// GZDoom
+			floor_a = -floor_plane.a;
+			floor_b = -floor_plane.b;
+			floor_c = -floor_plane.c;
+			floor_d = floor_plane.d;
+			sectors_[a]->props().removeProperty("floorplane_a");
+			sectors_[a]->props().removeProperty("floorplane_b");
+			sectors_[a]->props().removeProperty("floorplane_c");
+			sectors_[a]->props().removeProperty("floorplane_d");
+		}
+		// Do the same for the ceiling plane
+		double ceiling_a = 0, ceiling_b = 0, ceiling_c = 0, ceiling_d = 0;
+		bool hasCeilingPlane = (
+			sectors_[a]->hasProp("ceilingplane_a") ||
+			sectors_[a]->hasProp("ceilingplane_b") ||
+			sectors_[a]->hasProp("ceilingplane_c") ||
+			sectors_[a]->hasProp("ceilingplane_d"));
+		if (hasCeilingPlane)
+		{
+			plane_t ceiling_plane = sectors_[a]->getCeilingPlane();
+			ceiling_a = -ceiling_plane.a;
+			ceiling_b = -ceiling_plane.b;
+			ceiling_c = -ceiling_plane.c;
+			ceiling_d = ceiling_plane.d;
+			sectors_[a]->props().removeProperty("ceilingplane_a");
+			sectors_[a]->props().removeProperty("ceilingplane_b");
+			sectors_[a]->props().removeProperty("ceilingplane_c");
+			sectors_[a]->props().removeProperty("ceilingplane_d");
+		}
+
 		// Other properties
 		if (!sectors_[a]->properties.isEmpty())
 		{
@@ -2500,56 +2546,20 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 			object_def += sectors_[a]->properties.toString(true);
 		}
 
-		// For UDMF floor planes, ALL values must be added.
-		bool floorPlane = (
-			sectors_[a]->hasProp("floorplane_a") ||
-			sectors_[a]->hasProp("floorplane_b") ||
-			sectors_[a]->hasProp("floorplane_c") ||
-			sectors_[a]->hasProp("floorplane_d"));
-		bool ceilingPlane = (
-			sectors_[a]->hasProp("ceilingplane_a") ||
-			sectors_[a]->hasProp("ceilingplane_b") ||
-			sectors_[a]->hasProp("ceilingplane_c") ||
-			sectors_[a]->hasProp("ceilingplane_d"));
-		// Write other floor plane values, using defaults for properties that
-		// are not given.
-		if (floorPlane)
+		// Write the floor and ceiling plane values in order
+		if (hasFloorPlane)
 		{
-			if (!sectors_[a]->hasProp("floorplane_a"))
-			{
-				object_def += "floorplane_a = 0;\n";
-			}
-			if (!sectors_[a]->hasProp("floorplane_b"))
-			{
-				object_def += "floorplane_b = 0;\n";
-			}
-			if (!sectors_[a]->hasProp("floorplane_c"))
-			{
-				object_def += "floorplane_c = 0;\n";
-			}
-			if (!sectors_[a]->hasProp("floorplane_d"))
-			{
-				object_def += S_FMT("floorplane_d = %d;\n", sectors_[a]->f_height);
-			}
+			object_def += S_FMT("floorplane_a = %f;", floor_a);
+			object_def += S_FMT("floorplane_b = %f;", floor_b);
+			object_def += S_FMT("floorplane_c = %f;", floor_c);
+			object_def += S_FMT("floorplane_d = %f;", floor_d);
 		}
-		if (ceilingPlane)
+		if (hasCeilingPlane)
 		{
-			if (!sectors_[a]->hasProp("ceilingplane_a"))
-			{
-				object_def += "ceilingplane_a = 0;\n";
-			}
-			if (!sectors_[a]->hasProp("ceilingplane_b"))
-			{
-				object_def += "ceilingplane_b = 0;\n";
-			}
-			if (!sectors_[a]->hasProp("ceilingplane_c"))
-			{
-				object_def += "ceilingplane_c = 0;\n";
-			}
-			if (!sectors_[a]->hasProp("ceilingplane_d"))
-			{
-				object_def += S_FMT("ceilingplane_d = %d;\n", sectors_[a]->c_height);
-			}
+			object_def += S_FMT("ceilingplane_a = %f;", ceiling_a);
+			object_def += S_FMT("ceilingplane_b = %f;", ceiling_b);
+			object_def += S_FMT("ceilingplane_c = %f;", ceiling_c);
+			object_def += S_FMT("ceilingplane_d = %f;", ceiling_d);
 		}
 
 		object_def += "}\n\n";
