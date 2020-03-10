@@ -2553,6 +2553,11 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 			object_def += S_FMT("floorplane_b = %f;", floor_b);
 			object_def += S_FMT("floorplane_c = %f;", floor_c);
 			object_def += S_FMT("floorplane_d = %f;", floor_d);
+			// Persist between multiple saves
+			sectors_[a]->props()["floorplane_a"] = floor_a;
+			sectors_[a]->props()["floorplane_b"] = floor_b;
+			sectors_[a]->props()["floorplane_c"] = floor_c;
+			sectors_[a]->props()["floorplane_d"] = floor_d;
 		}
 		if (hasCeilingPlane)
 		{
@@ -2560,6 +2565,11 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 			object_def += S_FMT("ceilingplane_b = %f;", ceiling_b);
 			object_def += S_FMT("ceilingplane_c = %f;", ceiling_c);
 			object_def += S_FMT("ceilingplane_d = %f;", ceiling_d);
+			// Persist between multiple saves
+			sectors_[a]->props()["ceilingplane_a"] = ceiling_a;
+			sectors_[a]->props()["ceilingplane_b"] = ceiling_b;
+			sectors_[a]->props()["ceilingplane_c"] = ceiling_c;
+			sectors_[a]->props()["ceilingplane_d"] = ceiling_d;
 		}
 
 		object_def += "}\n\n";
