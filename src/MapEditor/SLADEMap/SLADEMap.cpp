@@ -2493,6 +2493,14 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		if (sectors_[a]->special != 0) object_def += S_FMT("special=%d;\n", sectors_[a]->special);
 		if (sectors_[a]->tag != 0) object_def += S_FMT("id=%d;\n", sectors_[a]->tag);
 
+		// Remove properties which have default values
+		bool hasOtherProperties = false;
+		if (!sectors_[a]->properties.isEmpty())
+		{
+			Game::configuration().cleanObjectUDMFProps(sectors_[a]);
+			hasOtherProperties = true;
+		}
+
 		// For UDMF sector planes, ALL values must be added, or else GZDoom
 		// will consider them invalid.
 		// Check for UDMF floor planes, and if they are present, copy the
@@ -2514,6 +2522,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 			floor_b = -floor_plane.b;
 			floor_c = -floor_plane.c;
 			floor_d = floor_plane.d;
+			// Write the floor/ceiling plane properties in order later
 			sectors_[a]->props().removeProperty("floorplane_a");
 			sectors_[a]->props().removeProperty("floorplane_b");
 			sectors_[a]->props().removeProperty("floorplane_c");
@@ -2539,10 +2548,9 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 			sectors_[a]->props().removeProperty("ceilingplane_d");
 		}
 
-		// Other properties
-		if (!sectors_[a]->properties.isEmpty())
+		// Write properties which are not related to the floor/ceiling planes
+		if (hasOtherProperties)
 		{
-			Game::configuration().cleanObjectUDMFProps(sectors_[a]);
 			object_def += sectors_[a]->properties.toString(true);
 		}
 
