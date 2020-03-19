@@ -268,9 +268,6 @@ double MathStuff::angle2DRad(fpoint2_t p1, fpoint2_t p2, fpoint2_t p3)
 	// counterclockwise.
 	fpoint2_t ab(p1.x - p2.x, p1.y - p2.y);
 	fpoint2_t cb(p3.x - p2.x, p3.y - p2.y);
-	// Normalize vectors
-	ab.normalize();
-	cb.normalize();
 	// Dot and cross product of the two vectors
 	double dot = ab.dot(cb);
 	double cross = ab.cross(cb);
