@@ -1595,18 +1595,19 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 		if (prop == prop_ftex || prop == prop_ctex)
 			continue;
 
-		if (S_CMPNOCASE(prop->getName(), "heightfloor"))
+		string propName = prop->getName();
+		if (S_CMPNOCASE(propName, "heightfloor"))
 			ns->setFloorHeight(prop->intValue());
-		else if (S_CMPNOCASE(prop->getName(), "heightceiling"))
+		else if (S_CMPNOCASE(propName, "heightceiling"))
 			ns->setCeilingHeight(prop->intValue());
-		else if (S_CMPNOCASE(prop->getName(), "lightlevel"))
+		else if (S_CMPNOCASE(propName, "lightlevel"))
 			ns->light = prop->intValue();
-		else if (S_CMPNOCASE(prop->getName(), "special"))
+		else if (S_CMPNOCASE(propName, "special"))
 			ns->special = prop->intValue();
-		else if (S_CMPNOCASE(prop->getName(), "id"))
+		else if (S_CMPNOCASE(propName, "id"))
 			ns->tag = prop->intValue();
 		else
-			ns->properties[prop->getName()] = prop->value();
+			ns->properties[propName] = prop->value();
 	}
 
 	// Add sector to map
@@ -2492,11 +2493,91 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		if (sectors_[a]->special != 0) object_def += S_FMT("special=%d;\n", sectors_[a]->special);
 		if (sectors_[a]->tag != 0) object_def += S_FMT("id=%d;\n", sectors_[a]->tag);
 
-		// Other properties
+		// Remove properties which have default values
+		bool hasOtherProperties = false;
 		if (!sectors_[a]->properties.isEmpty())
 		{
 			Game::configuration().cleanObjectUDMFProps(sectors_[a]);
+			hasOtherProperties = true;
+		}
+
+		// For UDMF sector planes, ALL values must be added, or else GZDoom
+		// will consider them invalid.
+		// Check for UDMF floor planes, and if they are present, copy the
+		// values from the existing floor planes, and remove the floor plane
+		// properties so that they can be put in order.
+		double floor_a = 0, floor_b = 0, floor_c = 0, floor_d = 0;
+		bool hasFloorPlane = (
+			sectors_[a]->hasProp("floorplane_a") ||
+			sectors_[a]->hasProp("floorplane_b") ||
+			sectors_[a]->hasProp("floorplane_c") ||
+			sectors_[a]->hasProp("floorplane_d"));
+		if (hasFloorPlane)
+		{
+			plane_t floor_plane = sectors_[a]->getFloorPlane();
+			// The ABC values are internally negated to compensate for the
+			// differences in the point height calculations between SLADE and
+			// GZDoom
+			floor_a = -floor_plane.a;
+			floor_b = -floor_plane.b;
+			floor_c = -floor_plane.c;
+			floor_d = floor_plane.d;
+			// Write the floor/ceiling plane properties in order later
+			sectors_[a]->props().removeProperty("floorplane_a");
+			sectors_[a]->props().removeProperty("floorplane_b");
+			sectors_[a]->props().removeProperty("floorplane_c");
+			sectors_[a]->props().removeProperty("floorplane_d");
+		}
+		// Do the same for the ceiling plane
+		double ceiling_a = 0, ceiling_b = 0, ceiling_c = 0, ceiling_d = 0;
+		bool hasCeilingPlane = (
+			sectors_[a]->hasProp("ceilingplane_a") ||
+			sectors_[a]->hasProp("ceilingplane_b") ||
+			sectors_[a]->hasProp("ceilingplane_c") ||
+			sectors_[a]->hasProp("ceilingplane_d"));
+		if (hasCeilingPlane)
+		{
+			plane_t ceiling_plane = sectors_[a]->getCeilingPlane();
+			ceiling_a = -ceiling_plane.a;
+			ceiling_b = -ceiling_plane.b;
+			ceiling_c = -ceiling_plane.c;
+			ceiling_d = ceiling_plane.d;
+			sectors_[a]->props().removeProperty("ceilingplane_a");
+			sectors_[a]->props().removeProperty("ceilingplane_b");
+			sectors_[a]->props().removeProperty("ceilingplane_c");
+			sectors_[a]->props().removeProperty("ceilingplane_d");
+		}
+
+		// Write properties which are not related to the floor/ceiling planes
+		if (hasOtherProperties)
+		{
 			object_def += sectors_[a]->properties.toString(true);
+		}
+
+		// Write the floor and ceiling plane values in order
+		if (hasFloorPlane)
+		{
+			object_def += S_FMT("floorplane_a = %f;", floor_a);
+			object_def += S_FMT("floorplane_b = %f;", floor_b);
+			object_def += S_FMT("floorplane_c = %f;", floor_c);
+			object_def += S_FMT("floorplane_d = %f;", floor_d);
+			// Persist between multiple saves
+			sectors_[a]->props()["floorplane_a"] = floor_a;
+			sectors_[a]->props()["floorplane_b"] = floor_b;
+			sectors_[a]->props()["floorplane_c"] = floor_c;
+			sectors_[a]->props()["floorplane_d"] = floor_d;
+		}
+		if (hasCeilingPlane)
+		{
+			object_def += S_FMT("ceilingplane_a = %f;", ceiling_a);
+			object_def += S_FMT("ceilingplane_b = %f;", ceiling_b);
+			object_def += S_FMT("ceilingplane_c = %f;", ceiling_c);
+			object_def += S_FMT("ceilingplane_d = %f;", ceiling_d);
+			// Persist between multiple saves
+			sectors_[a]->props()["ceilingplane_a"] = ceiling_a;
+			sectors_[a]->props()["ceilingplane_b"] = ceiling_b;
+			sectors_[a]->props()["ceilingplane_c"] = ceiling_c;
+			sectors_[a]->props()["ceilingplane_d"] = ceiling_d;
 		}
 
 		object_def += "}\n\n";

@@ -372,6 +372,70 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		target->setPlane<CEILING_PLANE>(plane_t::flat(target->getPlaneHeight<CEILING_PLANE>()));
 	}
 
+	// Floor/ceiling plane properties
+	for (unsigned a = 0; a < map->nSectors(); a++)
+	{
+		MapSector* target = map->getSector(a);
+		plane_t floorplane = plane_t::flat(target->getFloorHeight());
+		bool hasFloorplane = false;
+		// Check for floor plane.
+		// Note that these properties will only work in GZDoom if all of them
+		// are present.
+		// Set A, B, and C negative to compensate for the calculation
+		// differences between SLADE and GZDoom.
+		if (target->hasProp("floorplane_a"))
+		{
+			floorplane.a = -target->floatProperty("floorplane_a");
+			hasFloorplane = true;
+		}
+		if (target->hasProp("floorplane_b"))
+		{
+			floorplane.b = -target->floatProperty("floorplane_b");
+			hasFloorplane = true;
+		}
+		if (target->hasProp("floorplane_c"))
+		{
+			floorplane.c = -target->floatProperty("floorplane_c");
+			hasFloorplane = true;
+		}
+		if (target->hasProp("floorplane_d"))
+		{
+			floorplane.d = target->floatProperty("floorplane_d");
+			hasFloorplane = true;
+		}
+		if (hasFloorplane)
+		{
+			target->setFloorPlane(floorplane);
+		}
+		// Check for ceiling plane
+		plane_t ceilingplane = plane_t::flat(target->getCeilingHeight());
+		bool hasCeilingplane = false;
+		if (target->hasProp("ceilingplane_a"))
+		{
+			ceilingplane.a = -target->floatProperty("ceilingplane_a");
+			hasCeilingplane = true;
+		}
+		if (target->hasProp("ceilingplane_b"))
+		{
+			ceilingplane.b = -target->floatProperty("ceilingplane_b");
+			hasCeilingplane = true;
+		}
+		if (target->hasProp("ceilingplane_c"))
+		{
+			ceilingplane.c = -target->floatProperty("ceilingplane_c");
+			hasCeilingplane = true;
+		}
+		if (target->hasProp("ceilingplane_d"))
+		{
+			ceilingplane.d = target->floatProperty("ceilingplane_d");
+			hasCeilingplane = true;
+		}
+		if (hasCeilingplane)
+		{
+			target->setCeilingPlane(ceilingplane);
+		}
+	}
+
 	// Plane_Align (line special 181)
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
@@ -875,8 +939,9 @@ double MapSpecials::vertexHeight(MapVertex* vertex, MapSector* sector)
 	if (vertex->hasProp(prop))
 		return vertex->floatProperty(prop);
 
-	// Otherwise just return sector height
-	return sector->getPlaneHeight<p>();
+	// Otherwise just return sector plane height at vertex position
+	plane_t flatplane = sector->getPlane<p>();
+	return flatplane.height_at(vertex->xPos(), vertex->yPos());
 }
 
 /* MapSpecials::applyVertexHeightSlope
