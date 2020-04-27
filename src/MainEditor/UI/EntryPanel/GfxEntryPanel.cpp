@@ -926,6 +926,8 @@ bool GfxEntryPanel::handleEntryPanelAction(const string& id)
 					"Adjust Offsets?",
 					wxYES_NO) == wxYES)
 				{
+					spin_xoffset_->SetValue(image->offset().x - crop.tl.x);
+					spin_yoffset_->SetValue(image->offset().y - crop.tl.y);
 					image->setXOffset(image->offset().x - crop.tl.x);
 					image->setYOffset(image->offset().y - crop.tl.y);
 				}
