@@ -102,6 +102,7 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 	// Clear properties that shouldn't be copied
 	ex_props.removeProperty("ZipIndex");
 	ex_props.removeProperty("Offset");
+	ex_props.removeProperty("filePath");
 
 	// Set entry state
 	state = 2;
