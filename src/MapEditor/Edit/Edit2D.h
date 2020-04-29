@@ -29,7 +29,7 @@ public:
 	void	joinSectors(bool remove_lines) const;
 
 	// Things
-	void	changeThingType() const;
+	void	changeThingType();
 	void	thingQuickAngle(fpoint2_t mouse_pos) const;
 
 	// Copy / Paste

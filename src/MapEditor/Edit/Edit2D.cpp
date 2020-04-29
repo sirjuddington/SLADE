@@ -559,7 +559,7 @@ void Edit2D::joinSectors(bool remove_lines) const
 /* Edit2D::changeThingType
  * Opens the thing type browser for the currently selected thing(s)
  *******************************************************************/
-void Edit2D::changeThingType() const
+void Edit2D::changeThingType()
 {
 	// Get selected things (if any)
 	auto selection = context_.selection().selectedThings();
@@ -584,6 +584,9 @@ void Edit2D::changeThingType() const
 			context_.addEditorMessage(S_FMT("Changed type to \"%s\"", type_name));
 		else
 			context_.addEditorMessage(S_FMT("Changed %lu things to type \"%s\"", selection.size(), type_name));
+
+		// Update 'copy' thing with new type
+		copy_thing_.setIntProperty("type", newtype);
 
 		// Update display
 		context_.updateDisplay();
