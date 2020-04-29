@@ -659,15 +659,22 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 		gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
 		sizer->Add(gb_sizer, 0, wxEXPAND|wxALL, UI::pad());
 		gb_sizer->Add(new wxStaticText(panel, -1, "TID:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-		gb_sizer->Add(text_id_ = new NumberTextCtrl(panel), { 0, 1 }, { 1, 1 }, wxEXPAND);
+		gb_sizer->Add(text_id_ = new NumberTextCtrl(panel), { 0, 1 }, { 1, 1 }, wxEXPAND|wxALIGN_CENTER_VERTICAL);
+		gb_sizer->Add(btn_new_id_ = new wxButton(panel, -1, "New TID"), { 0, 2 }, { 1, 1 });
 
 		// Z Height
 		gb_sizer->Add(new wxStaticText(panel, -1, "Z Height:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-		gb_sizer->Add(text_height_ = new NumberTextCtrl(panel), { 1, 1 }, { 1, 1 }, wxEXPAND);
+		gb_sizer->Add(text_height_ = new NumberTextCtrl(panel), { 1, 1 }, { 1, 2 }, wxEXPAND);
 		if (map_format == MAP_UDMF)
 			text_height_->allowDecimal(true);
 
 		gb_sizer->AddGrowableCol(1, 1);
+
+		// 'New TID' button event
+		btn_new_id_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&)
+		{
+			text_id_->setNumber(MapEditor::editContext().map().findUnusedThingId());
+		});
 	}
 
 	return panel;

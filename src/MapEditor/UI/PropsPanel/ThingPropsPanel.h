@@ -92,6 +92,7 @@ private:
 	AngleControl*			ac_direction_		= nullptr;
 	NumberTextCtrl*			text_id_			= nullptr;
 	NumberTextCtrl*			text_height_		= nullptr;
+	wxButton*				btn_new_id_			= nullptr;
 
 	vector<string>	udmf_flags_;
 	vector<string>	udmf_flags_extra_;
