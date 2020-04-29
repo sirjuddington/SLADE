@@ -24,9 +24,10 @@ private:
 	ResourceArchiveChooser*	rac_resources;
 	wxTextCtrl*				text_extra_params;
 	wxCheckBox*				cb_start_3d;
+	bool					run_map;
 
 public:
-	RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb = false);
+	RunDialog(wxWindow* parent, Archive* archive, bool run_map = false);
 	~RunDialog();
 
 	void	openGameExe(unsigned index);

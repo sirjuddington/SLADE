@@ -133,9 +133,14 @@ private:
 /* RunDialog::RunDialog
  * RunDialog class constructor
  *******************************************************************/
-RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb)
-: SDialog(parent, "Run", "run", 500, 400)
+RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool run_map)
+: SDialog(parent, "Run", "run", 500, 400), run_map{ run_map }
 {
+	// Set dialog icon
+	wxIcon icon;
+	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "run"));
+	SetIcon(icon);
+	
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -177,7 +182,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb)
 	gb_sizer->Add(choice_config, wxGBPosition(2, 1), wxDefaultSpan, wxEXPAND);
 	btn_edit_config = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "settings"));
 	btn_edit_config->SetToolTip("Edit command line");
-	gb_sizer->Add(btn_edit_config, wxGBPosition(2, 2));
+	gb_sizer->Add(btn_edit_config, wxGBPosition(2, 2), wxDefaultSpan, wxALIGN_RIGHT);
 	btn_add_config = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "plus"));
 	gb_sizer->Add(btn_add_config, wxGBPosition(2, 3));
 	btn_remove_config = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "minus"));
@@ -208,7 +213,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb)
 	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
 	cb_start_3d = new wxCheckBox(this, -1, "Start from 3D mode camera position");
 	cb_start_3d->SetValue(run_start_3d);
-	if (show_start_3d_cb)
+	if (run_map)
 		hbox->Add(cb_start_3d, 1, wxALIGN_CENTER_VERTICAL);
 	else
 	{
@@ -281,8 +286,11 @@ void RunDialog::openGameExe(unsigned index)
 	Executables::game_exe_t* exe = Executables::getGameExe(index);
 	if (exe)
 	{
-		for (unsigned a = 0; a < exe->configs.size(); a++)
-			choice_config->AppendString(exe->configs[a].key);
+		const auto& configs = run_map ? exe->map_configs : exe->run_configs;
+		const auto& configs_custom = run_map ? exe->map_configs_custom : exe->run_configs_custom;
+		
+		for (unsigned a = 0; a < configs.size(); a++)
+			choice_config->AppendString(configs[a].key);
 
 		text_exe_path->SetValue(exe->path);
 		btn_remove_game->Enable(exe->custom);
@@ -292,7 +300,7 @@ void RunDialog::openGameExe(unsigned index)
 		{
 			choice_config->SetSelection(0);
 			btn_edit_config->Enable();
-			btn_remove_config->Enable(exe->configs_custom[0]);
+			btn_remove_config->Enable(configs_custom[0]);
 		}
 	}
 }
@@ -353,10 +361,11 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 		string path = S_FMT("\"%s\"", exe_path);
 
 		unsigned cfg = choice_config->GetSelection();
-		if (cfg < exe->configs.size())
+		const auto& configs = run_map ? exe->map_configs : exe->run_configs;
+		if (cfg < configs.size())
 		{
 			path += " ";
-			path += exe->configs[cfg].value;
+			path += configs[cfg].value;
 		}
 
 		// IWAD
@@ -515,7 +524,10 @@ void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 	Executables::game_exe_t* exe = Executables::getGameExe(choice_game_exes->GetSelection());
 	string init_params = "";
 	if (choice_config->GetSelection() >= 0)
-		init_params = exe->configs[choice_config->GetSelection()].value;
+	{
+		const auto& configs = run_map ? exe->map_configs : exe->run_configs;
+		init_params = configs[choice_config->GetSelection()].value;
+	}
 
 	RunConfigDialog dlg(this, S_FMT("Add Run Config for %s", exe->name), "", init_params);
 	if (dlg.ShowModal() == wxID_OK)
@@ -525,7 +537,11 @@ void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 		if (name.IsEmpty())
 			name = S_FMT("Config %d", choice_config->GetCount() + 1);
 
-		Executables::addGameExeConfig(choice_game_exes->GetSelection(), name, dlg.getParams());
+		if (run_map)
+			Executables::addGameExeMapConfig(choice_game_exes->GetSelection(), name, dlg.getParams());
+		else
+			Executables::addGameExeRunConfig(choice_game_exes->GetSelection(), name, dlg.getParams());
+		
 		choice_config->AppendString(name);
 		choice_config->Select(choice_config->GetCount() - 1);
 	}
@@ -541,16 +557,18 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
 
 	Executables::game_exe_t* exe = Executables::getGameExe(choice_game_exes->GetSelection());
 	int index = choice_config->GetSelection();
-	string name = exe->configs[index].key;
-	string params = exe->configs[index].value;
-	bool custom = exe->configs_custom[index];
+	auto& configs = run_map ? exe->map_configs : exe->run_configs;
+	auto& configs_custom = run_map ? exe->map_configs_custom : exe->run_configs_custom;
+	string name = configs[index].key;
+	string params = configs[index].value;
+	bool custom = configs_custom[index];
 
 	RunConfigDialog dlg(this, "Edit Run Config", name, params, custom);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		string name = dlg.getName().IsEmpty() ? exe->configs[index].key : dlg.getName();
-		exe->configs[index].key = name;
-		exe->configs[index].value = dlg.getParams();
+		string name = dlg.getName().IsEmpty() ? configs[index].key : dlg.getName();
+		configs[index].key = name;
+		configs[index].value = dlg.getParams();
 		choice_config->SetString(index, name);
 	}
 }
@@ -608,7 +626,8 @@ void RunDialog::onChoiceConfig(wxCommandEvent& e)
 	run_last_config = choice_config->GetSelection();
 	btn_edit_config->Enable(true);
 	Executables::game_exe_t* exe = Executables::getGameExe(choice_game_exes->GetSelection());
-	btn_remove_config->Enable(exe->configs_custom[choice_config->GetSelection()]);
+	const auto& configs_custom = run_map ? exe->map_configs_custom : exe->run_configs_custom;
+	btn_remove_config->Enable(configs_custom[choice_config->GetSelection()]);
 }
 
 /* RunDialog::onBtnRemoveGame
@@ -635,6 +654,13 @@ void RunDialog::onBtnRemoveGame(wxCommandEvent& e)
  *******************************************************************/
 void RunDialog::onBtnRemoveConfig(wxCommandEvent& e)
 {
-	if (Executables::removeGameExeConfig(choice_game_exes->GetSelection(), choice_config->GetSelection()))
+	bool removed = false;
+
+	if (run_map)
+		removed = Executables::removeGameExeMapConfig(choice_game_exes->GetSelection(), choice_config->GetSelection());
+	else
+		removed = Executables::removeGameExeRunConfig(choice_game_exes->GetSelection(), choice_config->GetSelection());
+
+	if (removed)
 		openGameExe(choice_game_exes->GetSelection());
 }

@@ -13,9 +13,11 @@ namespace Executables
 		string				name;
 		string				exe_name;
 		string				path;
-		vector<key_value_t>	configs;
+		vector<key_value_t>	run_configs;
+		vector<key_value_t>	map_configs;
 		bool				custom;
-		vector<bool>		configs_custom;
+		vector<bool>		run_configs_custom;
+		vector<bool>		map_configs_custom;
 	};
 
 	struct external_exe_t
@@ -38,8 +40,10 @@ namespace Executables
 	void		parseGameExe(ParseTreeNode* node, bool custom);
 	void		addGameExe(string name);
 	bool		removeGameExe(unsigned index);
-	void		addGameExeConfig(unsigned exe_index, string config_name, string config_params, bool custom = true);
-	bool		removeGameExeConfig(unsigned exe_index, unsigned config_index);
+	void		addGameExeRunConfig(unsigned exe_index, string config_name, string config_params, bool custom = true);
+	bool		removeGameExeRunConfig(unsigned exe_index, unsigned config_index);
+	void		addGameExeMapConfig(unsigned exe_index, string config_name, string config_params, bool custom = true);
+	bool		removeGameExeMapConfig(unsigned exe_index, unsigned config_index);
 
 	// External executables
 	int						nExternalExes(string category = "");
