@@ -99,6 +99,7 @@ void registerArchive(sol::state& lua)
 		"dirAtPath",				[](Archive& self, const string& path) { return self.getDir(path); },
 		"createEntry",				&archiveCreateEntry,
 		"createEntryInNamespace",	&archiveCreateEntryInNamespace,
+		"createDir",				[](Archive& self, const string& path) { return self.createDir(path); },
 		"removeEntry",				&Archive::removeEntry,
 		"renameEntry",				&Archive::renameEntry,
 		"save", sol::overload(
