@@ -176,6 +176,13 @@ entry_types
 		match_name = "zmapinfo";
 		text_language = "z_mapinfo";
 	}
+
+	mapinfo_ns : text
+	{
+		name = "Mapinfo";
+		section = "mapinfo";
+		text_language = "z_mapinfo";
+	}
 	
 	xlat : text
 	{
