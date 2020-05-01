@@ -357,6 +357,7 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 {
 	// ZDoom has a variety of slope mechanisms, which must be evaluated in a
 	// specific order.
+	//  - UDMF plane properties
 	//  - Plane_Align, in line order
 	//  - line slope + sector tilt + vavoom, in thing order
 	//  - slope copy things, in thing order
@@ -403,7 +404,7 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 			floorplane.d = target->floatProperty("floorplane_d");
 			hasFloorplane = true;
 		}
-		if (hasFloorplane)
+		if (hasFloorplane && !(floorplane.a == 0 && floorplane.b == 0 && floorplane.c == -1 && floorplane.d == 0))
 		{
 			target->setFloorPlane(floorplane);
 		}
@@ -430,7 +431,7 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 			ceilingplane.d = target->floatProperty("ceilingplane_d");
 			hasCeilingplane = true;
 		}
-		if (hasCeilingplane)
+		if (hasCeilingplane && !(ceilingplane.a == 0 && ceilingplane.b == 0 && ceilingplane.c == -1 && ceilingplane.d == 0))
 		{
 			target->setCeilingPlane(ceilingplane);
 		}
