@@ -149,8 +149,9 @@ namespace ZScript
 
 		const vector<Function>&	functions() const { return functions_; }
 
-		bool	parse(ParsedStatement& block);
+		bool	parse(ParsedStatement& block, const vector<Class>& parsed_classes);
 		bool	extend(ParsedStatement& block);
+		void	inherit(const Class& parent);
 		void	toThingType(std::map<int, Game::ThingType>& types, vector<Game::ThingType>& parsed);
 
 	private:
