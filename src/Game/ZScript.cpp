@@ -651,7 +651,7 @@ string StateTable::editorSprite()
 // -----------------------------------------------------------------------------
 // Parses a class definition statement/block [class_statement]
 // -----------------------------------------------------------------------------
-bool Class::parse(ParsedStatement& class_statement)
+bool Class::parse(ParsedStatement& class_statement, const vector<Class>& parsed_classes)
 {
 	if (class_statement.tokens.size() < 2)
 	{
@@ -665,7 +665,15 @@ bool Class::parse(ParsedStatement& class_statement)
 	{
 		// Inherits
 		if (class_statement.tokens[a] == ':' && a < class_statement.tokens.size() - 1)
+		{
 			inherits_class_ = class_statement.tokens[a + 1];
+			for (const auto& pclass : parsed_classes)
+				if (StrUtil::equalCI(pclass.name_, inherits_class_))
+				{
+					inherit(pclass);
+					break;
+				}
+		}
 
 		// Native
 		else if (StrUtil::equalCI(class_statement.tokens[a], "native"))
@@ -736,10 +744,23 @@ bool Class::extend(ParsedStatement& block)
 	return parseClassBlock(block.block);
 }
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// 'Inherits' data from the given [parent] class
+// ----------------------------------------------------------------------------
+void Class::inherit(const Class& parent)
+{
+	variables_          = parent.variables_;
+	functions_          = parent.functions_;
+	enumerators_        = parent.enumerators_;
+	default_properties_ = parent.default_properties_;
+	states_             = parent.states_;
+	db_properties_      = parent.db_properties_;
+}
+
+// ----------------------------------------------------------------------------
 // Adds this class as a ThingType to [parsed], or updates an existing ThingType
 // definition in [types] or [parsed]
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::ThingType>& parsed)
 {
 	// Find existing definition
@@ -951,7 +972,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 		{
 			Class nc(Class::Type::Class);
 
-			if (!nc.parse(block))
+			if (!nc.parse(block, classes_))
 				return false;
 
 			classes_.push_back(nc);
@@ -962,7 +983,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 		{
 			Class nc(Class::Type::Struct);
 
-			if (!nc.parse(block))
+			if (!nc.parse(block, classes_))
 				return false;
 
 			classes_.push_back(nc);

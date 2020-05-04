@@ -140,18 +140,18 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
 	sizer_bottom_->AddSpacer(UI::padLarge());
 
 	// Image selection controls
-	text_imgnum_ = new wxStaticText(this, -1, "Image: ");
+	text_imgnum_   = new wxStaticText(this, -1, "Image: ");
 	text_imgoutof_ = new wxStaticText(this, -1, " out of XX");
-	spin_curimg_ = new wxSpinCtrl(
-		this,
-		-1,
-		wxEmptyString,
-		wxDefaultPosition,
-		wxDefaultSize,
-		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER | wxSP_WRAP,
-		1,
-		1,
-		0);
+	spin_curimg_   = new wxSpinCtrl(
+        this,
+        -1,
+        wxEmptyString,
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER | wxSP_WRAP,
+        1,
+        1,
+        0);
 	spin_curimg_->SetMinSize(spinsize);
 	sizer_bottom_->Add(text_imgnum_, 0, wxALIGN_CENTER, 0);
 	sizer_bottom_->Add(spin_curimg_, 0, wxSHRINK | wxALIGN_CENTER, UI::pad());
@@ -918,6 +918,8 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 						wxYES_NO)
 					== wxYES)
 				{
+					spin_xoffset_->SetValue(image->offset().x - crop.tl.x);
+					spin_yoffset_->SetValue(image->offset().y - crop.tl.y);
 					image->setXOffset(image->offset().x - crop.tl.x);
 					image->setYOffset(image->offset().y - crop.tl.y);
 				}
@@ -1161,10 +1163,10 @@ void GfxEntryPanel::onGfxPixelsChanged(wxEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the 'current image' spinbox is changed
 // -----------------------------------------------------------------------------
-void GfxEntryPanel::onCurImgChanged(wxCommandEvent& e) 
+void GfxEntryPanel::onCurImgChanged(wxCommandEvent& e)
 {
-	int  num   = gfx_canvas_->image().size();
-	auto entry = entry_.lock().get();
+	int  num      = gfx_canvas_->image().size();
+	auto entry    = entry_.lock().get();
 	int  newindex = spin_curimg_->GetValue() - 1;
 	if (num > 1 && entry && newindex != cur_index_)
 	{

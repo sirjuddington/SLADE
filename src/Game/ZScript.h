@@ -148,8 +148,9 @@ public:
 
 	const vector<Function>& functions() const { return functions_; }
 
-	bool parse(ParsedStatement& class_statement);
+	bool parse(ParsedStatement& class_statement, const vector<Class>& parsed_classes);
 	bool extend(ParsedStatement& block);
+    void inherit(const Class& parent);
 	void toThingType(std::map<int, Game::ThingType>& types, vector<Game::ThingType>& parsed);
 
 private:

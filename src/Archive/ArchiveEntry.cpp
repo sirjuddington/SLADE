@@ -58,10 +58,7 @@ CVAR(Bool, wad_force_uppercase, true, CVar::Flag::Save)
 // ArchiveEntry class constructor
 // -----------------------------------------------------------------------------
 ArchiveEntry::ArchiveEntry(string_view name, uint32_t size) :
-	name_{ name },
-	upper_name_{ name },
-	size_{ size },
-	type_{ EntryType::unknownType() }
+	name_{ name }, upper_name_{ name }, size_{ size }, type_{ EntryType::unknownType() }
 {
 	StrUtil::upperIP(upper_name_);
 }
@@ -92,6 +89,7 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 	// Clear properties that shouldn't be copied
 	ex_props_.removeProperty("ZipIndex");
 	ex_props_.removeProperty("Offset");
+	ex_props_.removeProperty("filePath");
 
 	// Set entry state
 	state_        = State::New;

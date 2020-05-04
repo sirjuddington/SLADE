@@ -362,6 +362,7 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 {
 	// ZDoom has a variety of slope mechanisms, which must be evaluated in a
 	// specific order.
+	//  - UDMF plane properties
 	//  - Plane_Align, in line order
 	//  - line slope + sector tilt + vavoom, in thing order
 	//  - slope copy things, in thing order
@@ -375,6 +376,71 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 		auto target = map->sector(a);
 		target->setPlane<SurfaceType::Floor>(Plane::flat(target->planeHeight<SurfaceType::Floor>()));
 		target->setPlane<SurfaceType::Ceiling>(Plane::flat(target->planeHeight<SurfaceType::Ceiling>()));
+	}
+
+	// Floor/ceiling plane properties
+	for (unsigned a = 0; a < map->nSectors(); a++)
+	{
+		auto target        = map->sector(a);
+		auto floorplane    = Plane::flat(target->floor().height);
+		bool hasFloorplane = false;
+		// Check for floor plane.
+		// Note that these properties will only work in GZDoom if all of them are present.
+		// Set A, B, and C negative to compensate for the calculation
+		// differences between SLADE and GZDoom.
+		if (target->hasProp("floorplane_a"))
+		{
+			floorplane.a  = -target->floatProperty("floorplane_a");
+			hasFloorplane = true;
+		}
+		if (target->hasProp("floorplane_b"))
+		{
+			floorplane.b  = -target->floatProperty("floorplane_b");
+			hasFloorplane = true;
+		}
+		if (target->hasProp("floorplane_c"))
+		{
+			floorplane.c  = -target->floatProperty("floorplane_c");
+			hasFloorplane = true;
+		}
+		if (target->hasProp("floorplane_d"))
+		{
+			floorplane.d  = target->floatProperty("floorplane_d");
+			hasFloorplane = true;
+		}
+		if (hasFloorplane && !(floorplane.a == 0 && floorplane.b == 0 && floorplane.c == -1 && floorplane.d == 0))
+		{
+			target->setFloorPlane(floorplane);
+		}
+
+		// Check for ceiling plane
+		auto ceilingplane    = Plane::flat(target->ceiling().height);
+		bool hasCeilingplane = false;
+		if (target->hasProp("ceilingplane_a"))
+		{
+			ceilingplane.a  = -target->floatProperty("ceilingplane_a");
+			hasCeilingplane = true;
+		}
+		if (target->hasProp("ceilingplane_b"))
+		{
+			ceilingplane.b  = -target->floatProperty("ceilingplane_b");
+			hasCeilingplane = true;
+		}
+		if (target->hasProp("ceilingplane_c"))
+		{
+			ceilingplane.c  = -target->floatProperty("ceilingplane_c");
+			hasCeilingplane = true;
+		}
+		if (target->hasProp("ceilingplane_d"))
+		{
+			ceilingplane.d  = target->floatProperty("ceilingplane_d");
+			hasCeilingplane = true;
+		}
+		if (hasCeilingplane
+			&& !(ceilingplane.a == 0 && ceilingplane.b == 0 && ceilingplane.c == -1 && ceilingplane.d == 0))
+		{
+			target->setCeilingPlane(ceilingplane);
+		}
 	}
 
 	// Plane_Align (line special 181)

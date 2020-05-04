@@ -263,15 +263,18 @@ wxString TextEntryPanel::statusString()
 // -----------------------------------------------------------------------------
 bool TextEntryPanel::undo()
 {
+	if (!HasFocus() && !text_area_->HasFocus())
+		return false;
+
 	if (text_area_->CanUndo())
 	{
 		text_area_->Undo();
 		// If we have undone all the way back, it is not modified anymore
 		if (!text_area_->CanUndo())
 			setModified(false);
-		return true;
 	}
-	return false;
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -279,12 +282,13 @@ bool TextEntryPanel::undo()
 // -----------------------------------------------------------------------------
 bool TextEntryPanel::redo()
 {
+	if (!HasFocus() && !text_area_->HasFocus())
+		return false;
+
 	if (text_area_->CanRedo())
-	{
 		text_area_->Redo();
-		return true;
-	}
-	return false;
+
+	return true;
 }
 
 // ----------------------------------------------------------------------------

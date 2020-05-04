@@ -70,9 +70,7 @@ MapSector::MapSector(
 // MapSector class constructor from UDMF definition
 // -----------------------------------------------------------------------------
 MapSector::MapSector(string_view f_tex, string_view c_tex, ParseTreeNode* udmf_def) :
-	MapObject(Type::Sector),
-	floor_{ f_tex },
-	ceiling_{ c_tex }
+	MapObject(Type::Sector), floor_{ f_tex }, ceiling_{ c_tex }
 {
 	// Set UDMF defaults
 	light_ = 160;
@@ -914,9 +912,75 @@ void MapSector::writeUDMF(string& def)
 	if (id_ != 0)
 		def += fmt::format("id={};\n", id_);
 
-	// Other properties
+	// For UDMF sector planes, ALL values must be added, or else GZDoom
+	// will consider them invalid.
+	// Check for UDMF floor planes, and if they are present, copy the
+	// values from the existing floor planes, and remove the floor plane
+	// properties so that they can be put in order.
+	double floor_a = 0, floor_b = 0, floor_c = 0, floor_d = 0;
+	bool   hasFloorPlane =
+		(hasProp("floorplane_a") || hasProp("floorplane_b") || hasProp("floorplane_c") || hasProp("floorplane_d"));
+	if (hasFloorPlane)
+	{
+		// The ABC values are internally negated to compensate for the
+		// differences in the point height calculations between SLADE and
+		// GZDoom
+		floor_a = -floor_.plane.a;
+		floor_b = -floor_.plane.b;
+		floor_c = -floor_.plane.c;
+		floor_d = floor_.plane.d;
+		// Write the floor/ceiling plane properties in order later
+		properties_.removeProperty("floorplane_a");
+		properties_.removeProperty("floorplane_b");
+		properties_.removeProperty("floorplane_c");
+		properties_.removeProperty("floorplane_d");
+	}
+	// Do the same for the ceiling plane
+	double ceiling_a = 0, ceiling_b = 0, ceiling_c = 0, ceiling_d = 0;
+	bool   hasCeilingPlane =
+		(hasProp("ceilingplane_a") || hasProp("ceilingplane_b") || hasProp("ceilingplane_c")
+		 || hasProp("ceilingplane_d"));
+	if (hasCeilingPlane)
+	{
+		ceiling_a = -ceiling_.plane.a;
+		ceiling_b = -ceiling_.plane.b;
+		ceiling_c = -ceiling_.plane.c;
+		ceiling_d = ceiling_.plane.d;
+		properties_.removeProperty("ceilingplane_a");
+		properties_.removeProperty("ceilingplane_b");
+		properties_.removeProperty("ceilingplane_c");
+		properties_.removeProperty("ceilingplane_d");
+	}
+
+	// Other properties (that are not related to floor/ceiling planes
 	if (!properties_.isEmpty())
 		def += properties_.toString(true);
+
+	// Write the floor and ceiling plane values in order
+	if (hasFloorPlane)
+	{
+		def += fmt::format("floorplane_a = {};", floor_a);
+		def += fmt::format("floorplane_b = {};", floor_b);
+		def += fmt::format("floorplane_c = {};", floor_c);
+		def += fmt::format("floorplane_d = {};", floor_d);
+		// Persist between multiple saves
+		properties_["floorplane_a"] = floor_a;
+		properties_["floorplane_b"] = floor_b;
+		properties_["floorplane_c"] = floor_c;
+		properties_["floorplane_d"] = floor_d;
+	}
+	if (hasCeilingPlane)
+	{
+		def += fmt::format("ceilingplane_a = {};", ceiling_a);
+		def += fmt::format("ceilingplane_b = {};", ceiling_b);
+		def += fmt::format("ceilingplane_c = {};", ceiling_c);
+		def += fmt::format("ceilingplane_d = {};", ceiling_d);
+		// Persist between multiple saves
+		properties_["ceilingplane_a"] = ceiling_a;
+		properties_["ceilingplane_b"] = ceiling_b;
+		properties_["ceilingplane_c"] = ceiling_c;
+		properties_["ceilingplane_d"] = ceiling_d;
+	}
 
 	def += "}\n\n";
 }

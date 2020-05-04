@@ -197,6 +197,7 @@ void registerArchive(sol::state& lua)
 	lua_archive["DirAtPath"]              = [](Archive& self, const string& path) { return self.dirAtPath(path); };
 	lua_archive["CreateEntry"]            = &archiveCreateEntry;
 	lua_archive["CreateEntryInNamespace"] = &archiveCreateEntryInNamespace;
+	lua_archive["CreateDir"]              = [](Archive& self, const string& path) { return self.createDir(path); };
 	lua_archive["RemoveEntry"]            = &Archive::removeEntry;
 	lua_archive["RenameEntry"]            = &Archive::renameEntry;
 	lua_archive["Save"]                   = sol::overload(

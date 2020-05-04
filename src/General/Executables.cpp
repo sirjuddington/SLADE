@@ -130,8 +130,14 @@ string Executables::writeExecutables()
 		ret += fmt::format("\t\texe_name = \"{}\";\n\n", exe.exe_name);
 
 		// Configs
-		for (auto& config : exe.configs)
+		for (auto& config : exe.run_configs)
 			ret += fmt::format("\t\tconfig \"{}\" = \"{}\";\n", config.first, StrUtil::escapedString(config.second));
+
+		// Map Run Configs
+		ret += "\n";
+		for (auto& config : exe.map_configs)
+			ret += fmt::format(
+				"\t\tmap_config \"{}\" = \"{}\";\n", config.first, StrUtil::escapedString(config.second));
 
 		ret += "\t}\n\n";
 	}
@@ -229,12 +235,12 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 	{
 		auto prop = node->childPTN(b);
 
-		// Config
+		// Run Config
 		if (StrUtil::equalCI(prop->type(), "config"))
 		{
 			// Update if exists
 			bool found = false;
-			for (auto& config : exe->configs)
+			for (auto& config : exe->run_configs)
 			{
 				if (config.first == prop->name())
 				{
@@ -246,8 +252,30 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 			// Create if new
 			if (!found)
 			{
-				exe->configs.emplace_back(prop->name(), prop->stringValue());
-				exe->configs_custom.push_back(custom);
+				exe->run_configs.emplace_back(prop->name(), prop->stringValue());
+				exe->run_configs_custom.push_back(custom);
+			}
+		}
+
+		// Map Run Config
+		if (StrUtil::equalCI(prop->type(), "map_config"))
+		{
+			// Update if exists
+			bool found = false;
+			for (auto& config : exe->map_configs)
+			{
+				if (config.first == prop->name())
+				{
+					config.second = prop->stringValue();
+					found         = true;
+				}
+			}
+
+			// Create if new
+			if (!found)
+			{
+				exe->map_configs.emplace_back(prop->name(), prop->stringValue());
+				exe->map_configs_custom.push_back(custom);
 			}
 		}
 
@@ -300,33 +328,78 @@ bool Executables::removeGameExe(unsigned index)
 // -----------------------------------------------------------------------------
 // Adds a run configuration for game executable at [exe_index]
 // -----------------------------------------------------------------------------
-void Executables::addGameExeConfig(unsigned exe_index, string_view config_name, string_view config_params, bool custom)
+void Executables::addGameExeRunConfig(
+	unsigned    exe_index,
+	string_view config_name,
+	string_view config_params,
+	bool        custom)
 {
 	// Check index
 	if (exe_index >= game_exes.size())
 		return;
 
-	game_exes[exe_index].configs.emplace_back(config_name, config_params);
-	game_exes[exe_index].configs_custom.push_back(custom);
+	game_exes[exe_index].run_configs.emplace_back(config_name, config_params);
+	game_exes[exe_index].run_configs_custom.push_back(custom);
 }
 
 // -----------------------------------------------------------------------------
 // Removes run configuration at [config_index] in game exe definition at
 // [exe_index]
 // -----------------------------------------------------------------------------
-bool Executables::removeGameExeConfig(unsigned exe_index, unsigned config_index)
+bool Executables::removeGameExeRunConfig(unsigned exe_index, unsigned config_index)
 {
 	// Check indices
 	if (exe_index >= game_exes.size())
 		return false;
-	if (config_index >= game_exes[exe_index].configs.size())
+	if (config_index >= game_exes[exe_index].run_configs.size())
 		return false;
 
 	// Check config is custom
-	if (game_exes[exe_index].configs_custom[config_index])
+	if (game_exes[exe_index].run_configs_custom[config_index])
 	{
-		VECTOR_REMOVE_AT(game_exes[exe_index].configs, config_index);
-		VECTOR_REMOVE_AT(game_exes[exe_index].configs_custom, config_index);
+		VECTOR_REMOVE_AT(game_exes[exe_index].run_configs, config_index);
+		VECTOR_REMOVE_AT(game_exes[exe_index].run_configs_custom, config_index);
+
+		return true;
+	}
+	else
+		return false;
+}
+
+// -----------------------------------------------------------------------------
+// Adds a map run configuration for game executable at [exe_index]
+// -----------------------------------------------------------------------------
+void Executables::addGameExeMapConfig(
+	unsigned    exe_index,
+	string_view config_name,
+	string_view config_params,
+	bool        custom)
+{
+	// Check index
+	if (exe_index >= game_exes.size())
+		return;
+
+	game_exes[exe_index].map_configs.emplace_back(config_name, config_params);
+	game_exes[exe_index].map_configs_custom.push_back(custom);
+}
+
+// -----------------------------------------------------------------------------
+// Removes map run configuration at [config_index] in game exe definition at
+// [exe_index]
+// -----------------------------------------------------------------------------
+bool Executables::removeGameExeMapConfig(unsigned exe_index, unsigned config_index)
+{
+	// Check indices
+	if (exe_index >= game_exes.size())
+		return false;
+	if (config_index >= game_exes[exe_index].map_configs.size())
+		return false;
+
+	// Check config is custom
+	if (game_exes[exe_index].map_configs_custom[config_index])
+	{
+		VECTOR_REMOVE_AT(game_exes[exe_index].map_configs, config_index);
+		VECTOR_REMOVE_AT(game_exes[exe_index].map_configs_custom, config_index);
 
 		return true;
 	}

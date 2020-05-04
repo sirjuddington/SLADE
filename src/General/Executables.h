@@ -12,9 +12,11 @@ struct GameExe
 	string             name;
 	string             exe_name;
 	string             path;
-	vector<StringPair> configs;
+	vector<StringPair> run_configs;
+	vector<StringPair> map_configs;
 	bool               custom;
-	vector<bool>       configs_custom;
+	vector<bool>       run_configs_custom;
+	vector<bool>       map_configs_custom;
 };
 
 struct ExternalExe
@@ -37,8 +39,10 @@ void     setGameExePath(string_view id, string_view path);
 void     parseGameExe(ParseTreeNode* node, bool custom);
 void     addGameExe(string_view name);
 bool     removeGameExe(unsigned index);
-void     addGameExeConfig(unsigned exe_index, string_view config_name, string_view config_params, bool custom = true);
-bool     removeGameExeConfig(unsigned exe_index, unsigned config_index);
+void addGameExeRunConfig(unsigned exe_index, string_view config_name, string_view config_params, bool custom = true);
+bool removeGameExeRunConfig(unsigned exe_index, unsigned config_index);
+void addGameExeMapConfig(unsigned exe_index, string_view config_name, string_view config_params, bool custom = true);
+bool removeGameExeMapConfig(unsigned exe_index, unsigned config_index);
 
 // External executables
 int                 nExternalExes(string_view category = "");

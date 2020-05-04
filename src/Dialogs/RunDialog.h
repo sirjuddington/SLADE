@@ -7,7 +7,7 @@ class Archive;
 class RunDialog : public SDialog
 {
 public:
-	RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb = false);
+	RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb = false, bool run_map = false);
 	~RunDialog();
 
 	void     openGameExe(unsigned index) const;
@@ -31,7 +31,8 @@ private:
 	wxButton*               btn_cancel_        = nullptr;
 	ResourceArchiveChooser* rac_resources_     = nullptr;
 	wxTextCtrl*             text_extra_params_ = nullptr;
-	wxCheckBox*             cb_start__3_d_     = nullptr;
+	wxCheckBox*             cb_start_3d_       = nullptr;
+	bool                    run_map_           = false;
 
 	// Events
 	void onBtnAddGame(wxCommandEvent& e);
