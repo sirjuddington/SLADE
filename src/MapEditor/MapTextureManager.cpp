@@ -567,7 +567,7 @@ void MapTextureManager::buildTexInfoList()
 			continue;
 
 		auto long_name = tex->name();
-		auto path      = StrUtil::beforeLast(long_name, '/');
+		auto path      = StrUtil::contains(long_name, '/') ? StrUtil::beforeLast(long_name, '/') : StrUtil::EMPTY;
 
 		if (tex->isExtended())
 		{
@@ -596,7 +596,7 @@ void MapTextureManager::buildTexInfoList()
 				// Determine texture path if it's in a pk3
 				auto long_name  = patch->path(true).erase(0, 1);
 				auto short_name = StrUtil::truncate(patch->upperNameNoExt(), 8);
-				auto path       = patch->path(false);
+				auto path       = patch->path(false).erase(0, 1);
 
 				tex_info_.emplace_back(short_name, Category::Tx, patch->parent(), path, 0, long_name);
 			}
@@ -612,7 +612,7 @@ void MapTextureManager::buildTexInfoList()
 		// Determine flat path if it's in a pk3
 		auto long_name  = flat->path(true).erase(0, 1);
 		auto short_name = StrUtil::truncate(flat->upperNameNoExt(), 8);
-		auto path       = flat->path(false);
+		auto path       = flat->path(false).erase(0, 1);
 
 		flat_info_.emplace_back(short_name, Category::None, flat->parent(), path, 0, long_name);
 	}

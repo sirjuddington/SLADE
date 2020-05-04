@@ -37,6 +37,7 @@
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/StringUtils.h"
 
 using namespace MapEditor;
 
@@ -139,9 +140,7 @@ wxString MapTexBrowserItem::itemInfo()
 // MapTextureBrowser class constructor
 // -----------------------------------------------------------------------------
 MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const wxString& texture, SLADEMap* map) :
-	BrowserWindow(parent, true),
-	type_{ type },
-	map_{ map }
+	BrowserWindow(parent, true), type_{ type }, map_{ map }
 {
 	// Init sorting
 	addSortType("Usage Count");
@@ -180,6 +179,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const w
 
 			if (dont_add)
 				continue;
+
 			// Add browser item
 			addItem(
 				new MapTexBrowserItem(textures[a].short_name, MapTexBrowserItem::TEXTURE, textures[a].index),
@@ -210,12 +210,14 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const w
 					break;
 				}
 			}
-
 			if (dont_add)
 				continue;
 
 			// Determine tree path
-			wxString path = determineTexturePath(flats[a].archive, flats[a].category, "Flats", flats[a].path);
+			wxString flat_path = flats[a].path;
+			if (flat_path.Lower().StartsWith("flats/"))
+				flat_path = flat_path.substr(6);
+			wxString path = determineTexturePath(flats[a].archive, flats[a].category, "Flats", flat_path);
 
 			// Add browser item
 			if (flats[a].category == MapTextureManager::Category::ZDTextures)
@@ -295,7 +297,10 @@ wxString MapTextureBrowser::determineTexturePath(
 		ret += "/";
 	}
 
-	return ret + path;
+	if (category == MapTextureManager::Category::Tx)
+		return ret + path.substr(9);
+	else
+		return ret + path;
 }
 
 // -----------------------------------------------------------------------------
