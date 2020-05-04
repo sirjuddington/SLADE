@@ -1371,7 +1371,7 @@ void Configuration::importZScriptDefs(ZScript::Definitions& defs)
 // -----------------------------------------------------------------------------
 // Parses all *MAPINFO definitions in [archive]
 // -----------------------------------------------------------------------------
-bool Configuration::parseMapInfo(Archive* archive)
+bool Configuration::parseMapInfo(const Archive& archive)
 {
 	return map_info_.readMapInfo(archive);
 }

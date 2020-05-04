@@ -135,7 +135,7 @@ public:
 	void importZScriptDefs(ZScript::Definitions& defs);
 
 	// MapInfo
-	bool parseMapInfo(Archive* archive);
+	bool parseMapInfo(const Archive& archive);
 	void clearMapInfo() { map_info_.clear(); }
 	void linkDoomEdNums();
 

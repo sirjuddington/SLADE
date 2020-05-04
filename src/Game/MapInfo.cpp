@@ -105,31 +105,38 @@ int MapInfo::doomEdNumForClass(string_view actor_class)
 // -----------------------------------------------------------------------------
 // Reads and parses all MAPINFO entries in [archive]
 // -----------------------------------------------------------------------------
-bool MapInfo::readMapInfo(Archive* archive)
+bool MapInfo::readMapInfo(const Archive& archive)
 {
-	vector<ArchiveEntry*> entries;
-	archive->putEntryTreeAsList(entries);
-
-	for (auto entry : entries)
+	for (const auto& entry : archive.rootDir()->entries())
 	{
 		// ZMapInfo
 		if (entry->type()->id() == "zmapinfo")
-			parseZMapInfo(entry);
+			return parseZMapInfo(entry.get());
 
 		// TODO: EMapInfo
-		else if (entry->type()->id() == "emapinfo")
-			Log::info("EMAPINFO not implemented");
+		if (entry->type()->id() == "emapinfo")
+			Log::info("EMAPINFO parsing not yet implemented");
 
 		// MapInfo
 		else if (entry->type()->id() == "mapinfo")
 		{
 			// Detect format
-			auto format = detectMapInfoType(entry);
-
-			if (format == Format::ZDoomNew)
-				parseZMapInfo(entry);
-			else
-				Log::info("MAPINFO not implemented");
+			switch (detectMapInfoType(entry.get()))
+			{
+			case Format::Hexen:
+			case Format::ZDoomOld:
+				Log::info("MAPINFO (Hexen/Old ZDoom) parsing not yet implemented");
+				break;
+			case Format::ZDoomNew:
+				return parseZMapInfo(entry.get());
+			case Format::Eternity:
+				Log::info("EMAPINFO parsing not yet implemented");
+				break;
+			case Format::Universal:
+				Log::info("UMAPINFO parsing not yet implemented");
+				break;
+			default: break;
+			}
 		}
 	}
 
@@ -195,7 +202,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		if (tz.check("include"))
 		{
 			// Get entry at include path
-			auto include_entry = entry->parent()->entryAtPath(tz.next().text);
+			auto* include_entry = entry->parent()->entryAtPath(tz.next().text);
 
 			if (!include_entry)
 			{
@@ -212,7 +219,8 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		// Map
 		else if (tz.check("map") || tz.check("defaultmap") || tz.check("adddefaultmap"))
 		{
-			if (!parseZMap(tz, tz.current().text))
+			auto type = tz.current().text;
+			if (!parseZMap(tz, type))
 				return false;
 		}
 
@@ -583,10 +591,10 @@ void MapInfo::dumpDoomEdNums()
 
 CONSOLE_COMMAND(test_parse_zmapinfo, 1, false)
 {
-	auto archive = MainEditor::currentArchive();
+	auto* archive = MainEditor::currentArchive();
 	if (archive)
 	{
-		auto entry = archive->entryAtPath(args[0]);
+		auto* entry = archive->entryAtPath(args[0]);
 		if (!entry)
 			Log::console("Invalid entry path");
 		else

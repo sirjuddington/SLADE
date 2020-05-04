@@ -243,7 +243,7 @@ void Game::updateCustomDefinitions()
 	{
 		zscript_custom.parseZScript(base_resource);
 		config_current.parseDecorateDefs(base_resource);
-		config_current.parseMapInfo(base_resource);
+		config_current.parseMapInfo(*base_resource);
 	}
 
 	// Parse custom definitions in all resource archives
@@ -257,7 +257,7 @@ void Game::updateCustomDefinitions()
 	for (const auto& archive : resource_archives)
 	{
 		config_current.parseDecorateDefs(archive.get());
-		config_current.parseMapInfo(archive.get());
+		config_current.parseMapInfo(*archive);
 	}
 
 	// Process custom definitions
@@ -433,7 +433,7 @@ void Game::init()
 					lang->loadZScript(zscript_base);
 
 				// MapInfo
-				config_current.parseMapInfo(&zdoom_pk3);
+				config_current.parseMapInfo(zdoom_pk3);
 			}
 		});
 		zscript_parse_thread->detach();

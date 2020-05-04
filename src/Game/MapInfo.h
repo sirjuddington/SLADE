@@ -71,7 +71,7 @@ public:
 	int                 doomEdNumForClass(string_view actor_class);
 
 	// MAPINFO loading
-	bool readMapInfo(Archive* archive);
+	bool readMapInfo(const Archive& archive);
 
 	// General parsing helpers
 	bool checkEqualsToken(Tokenizer& tz, string_view parsing) const;
