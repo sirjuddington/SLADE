@@ -225,14 +225,18 @@ bool StrUtil::matches(string_view str, string_view match)
 	unsigned m_start;
 	unsigned t_pos = 0;
 	unsigned i;
+	bool     wildcard;
 
 	while (true)
 	{
+		wildcard = false;
+		
 		if (m_pos == match.size())
 			return t_pos == str.size();
-
+		
 		if (match[m_pos] == '*')
 		{
+			wildcard = true;
 			while (match[m_pos] == '*')
 			{
 				++m_pos;
@@ -255,8 +259,10 @@ bool StrUtil::matches(string_view str, string_view match)
 
 			if (match[m_start + i] == '?' || str[t_pos] == match[m_start + i])
 				++i;
-			else
+			else if (wildcard)
 				i = 0;
+			else
+				return false;
 
 			++t_pos;
 		}
@@ -273,14 +279,18 @@ bool StrUtil::matchesCI(string_view str, string_view match)
 	unsigned m_start;
 	unsigned t_pos = 0;
 	unsigned i;
+	bool wildcard;
 
 	while (true)
 	{
+		wildcard = false;
+		
 		if (m_pos == match.size())
 			return t_pos == str.size();
 
 		if (match[m_pos] == '*')
 		{
+			wildcard = true;
 			while (match[m_pos] == '*')
 			{
 				++m_pos;
@@ -303,8 +313,10 @@ bool StrUtil::matchesCI(string_view str, string_view match)
 
 			if (match[m_start + i] == '?' || tolower(str[t_pos]) == tolower(match[m_start + i]))
 				++i;
-			else
+			else if (wildcard)
 				i = 0;
+			else
+				return false;
 
 			++t_pos;
 		}

@@ -1579,7 +1579,7 @@
       <Filter>Archive</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Dialogs\Preferences\ACSPrefsPanel.cpp">
-      <Filter>Game</Filter>
+      <Filter>Dialogs\Preferences</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
