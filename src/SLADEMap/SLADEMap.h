@@ -113,7 +113,7 @@ public:
 	void       setLineSide(MapLine* line, MapSide* side, bool front);
 
 	// Merge
-	bool     mergeArch(vector<MapVertex*> vertices);
+	bool     mergeArch(const vector<MapVertex*>& vertices);
 	MapLine* mergeOverlappingLines(MapLine* line1, MapLine* line2);
 	void     correctSectors(vector<MapLine*> lines, bool existing_only = false);
 
@@ -138,7 +138,6 @@ private:
 	MapObjectCollection data_;
 	string              udmf_namespace_;
 	PropertyList        udmf_props_;
-	bool                position_frac_ = false;
 	string              name_;
 	MapFormat           current_format_;
 	long                opened_time_ = 0;

@@ -13,7 +13,6 @@ public:
 	MapObjectCollection(SLADEMap* parent_map = nullptr);
 
 	SLADEMap*         parentMap() const { return parent_map_; }
-	MapFormat         mapFormat() const { return current_format_; }
 	VertexList&       vertices() { return vertices_; }
 	SideList&         sides() { return sides_; }
 	LineList&         lines() { return lines_; }
@@ -85,10 +84,7 @@ private:
 		MapObjectHolder(unique_ptr<MapObject> object, bool in_map) : object{ std::move(object) }, in_map{ in_map } {}
 	};
 
-	SLADEMap* parent_map_     = nullptr;
-	MapFormat current_format_ = MapFormat::Doom;
-	bool      position_frac_  = false;
-
+	SLADEMap*               parent_map_ = nullptr;
 	vector<MapObjectHolder> objects_;
 	VertexList              vertices_;
 	SideList                sides_;

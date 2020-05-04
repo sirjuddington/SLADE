@@ -383,8 +383,11 @@ bool MapObjectCollection::removeSide(unsigned index, bool remove_from_line)
 			l->setS2(nullptr);
 
 		// Set appropriate line flags
-		Game::configuration().setLineBasicFlag("blocking", l, current_format_, true);
-		Game::configuration().setLineBasicFlag("twosided", l, current_format_, false);
+		if (parent_map_)
+		{
+			Game::configuration().setLineBasicFlag("blocking", l, parent_map_->currentFormat(), true);
+			Game::configuration().setLineBasicFlag("twosided", l, parent_map_->currentFormat(), false);
+		}
 	}
 
 	// Remove side from its sector, if any
