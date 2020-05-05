@@ -14,7 +14,7 @@ public:
 	Resource(string_view type) : type_{ type } {}
 	virtual ~Resource() = default;
 
-	virtual int length() { return 0; }
+	virtual int length() const { return 0; }
 
 private:
 	string type_;
@@ -32,7 +32,7 @@ public:
 	void remove(shared_ptr<ArchiveEntry>& entry);
 	void removeArchive(Archive* archive);
 
-	int length() override { return entries_.size(); }
+	int length() const override { return entries_.size(); }
 
 	ArchiveEntry* getEntry(Archive* priority = nullptr, string_view nspace = "", bool ns_required = false);
 
@@ -59,7 +59,7 @@ public:
 	void add(CTexture* tex, Archive* parent);
 	void remove(Archive* parent);
 
-	int length() override { return textures_.size(); }
+	int length() const override { return textures_.size(); }
 
 private:
 	vector<unique_ptr<Texture>> textures_;

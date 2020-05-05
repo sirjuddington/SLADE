@@ -215,7 +215,7 @@ void TextureResource::remove(Archive* parent)
 	auto i = textures_.begin();
 	while (i != textures_.end())
 	{
-		auto t_parent = i->get()->parent.lock().get();
+		auto* t_parent = i->get()->parent.lock().get();
 		if (!t_parent || t_parent == parent)
 			i = textures_.erase(i);
 		else
@@ -329,7 +329,7 @@ void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry)
 		EntryType::detectEntryType(*entry);
 
 	// Get entry type
-	auto type = entry->type();
+	auto* type = entry->type();
 
 	// Get resource name (extension cut, uppercase)
 	auto lname = entry->upperNameNoExt();
@@ -428,7 +428,7 @@ void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry)
 		{
 			Archive::SearchOptions opt;
 			opt.match_type = EntryType::fromId("pnames");
-			auto pnames    = entry->parent()->findLast(opt);
+			auto* pnames   = entry->parent()->findLast(opt);
 			ptable.loadPNAMES(pnames, entry->parent());
 		}
 
@@ -525,7 +525,7 @@ void ResourceManager::putAllPatchEntries(vector<ArchiveEntry*>& list, Archive* p
 {
 	for (auto& i : patches_)
 	{
-		auto entry = i.second.getEntry(priority);
+		auto* entry = i.second.getEntry(priority);
 		if (entry)
 			list.push_back(entry);
 	}
@@ -535,7 +535,7 @@ void ResourceManager::putAllPatchEntries(vector<ArchiveEntry*>& list, Archive* p
 
 	for (auto& i : patches_fp_only_)
 	{
-		auto entry = i.second.getEntry(priority);
+		auto* entry = i.second.getEntry(priority);
 		if (entry)
 			list.push_back(entry);
 	}
@@ -553,29 +553,35 @@ void ResourceManager::putAllTextures(vector<TextureResource::Texture*>& list, Ar
 		if (i.second.length() == 0)
 			continue;
 
+		const auto& tex_res = i.second;
+
 		// Go through resource textures
-		auto res = i.second.textures_[0].get();
-		for (int a = 0; a < i.second.length(); a++)
+		auto* best_res = tex_res.textures_[0].get();
+		for (int a = 1; a < tex_res.length(); a++)
 		{
-			res = i.second.textures_[a].get();
+			auto* res        = tex_res.textures_[a].get();
+			auto* res_parent = res->parent.lock().get();
 
 			// Skip if it's in the 'ignore' archive
-			auto res_parent = res->parent.lock().get();
 			if (!res_parent || res_parent == ignore)
 				continue;
 
 			// If it's in the 'priority' archive, exit loop
 			if (priority && res_parent == priority)
+			{
+				best_res = tex_res.textures_[a].get();
 				break;
+			}
 
 			// Otherwise, if it's in a 'later' archive than the current resource, set it
-			if (App::archiveManager().archiveIndex(res_parent) <= App::archiveManager().archiveIndex(res_parent))
-				res = i.second.textures_[a].get();
+			if (App::archiveManager().archiveIndex(res_parent)
+				<= App::archiveManager().archiveIndex(best_res->parent.lock().get()))
+				best_res = tex_res.textures_[a].get();
 		}
 
 		// Add texture resource to the list
-		if (res->parent.lock().get() != ignore)
-			list.push_back(res);
+		if (best_res->parent.lock().get() != ignore)
+			list.push_back(best_res);
 	}
 }
 
@@ -597,7 +603,7 @@ void ResourceManager::putAllFlatEntries(vector<ArchiveEntry*>& list, Archive* pr
 {
 	for (auto& i : flats_)
 	{
-		auto entry = i.second.getEntry(priority);
+		auto* entry = i.second.getEntry(priority);
 		if (entry)
 			list.push_back(entry);
 	}
@@ -607,7 +613,7 @@ void ResourceManager::putAllFlatEntries(vector<ArchiveEntry*>& list, Archive* pr
 
 	for (auto& i : flats_fp_only_)
 	{
-		auto entry = i.second.getEntry(priority);
+		auto* entry = i.second.getEntry(priority);
 		if (entry)
 			list.push_back(entry);
 	}
@@ -647,8 +653,8 @@ ArchiveEntry* ResourceManager::getPatchEntry(string_view patch, string_view nspa
 	if (StrUtil::equalCI(nspace, "textures"))
 		return getTextureEntry(patch, "textures", priority);
 
-	auto patch_upper = StrUtil::upper(patch);
-	auto entry       = patches_[patch_upper].getEntry(priority, nspace, true);
+	auto  patch_upper = StrUtil::upper(patch);
+	auto* entry       = patches_[patch_upper].getEntry(priority, nspace, true);
 	if (entry)
 		return entry;
 
@@ -670,7 +676,7 @@ ArchiveEntry* ResourceManager::getFlatEntry(string_view flat, Archive* priority)
 	auto& res        = flats_[flat_upper];
 
 	// Return most relevant entry
-	auto entry = res.getEntry(priority);
+	auto* entry = res.getEntry(priority);
 	if (entry)
 		return entry;
 
@@ -687,8 +693,8 @@ ArchiveEntry* ResourceManager::getFlatEntry(string_view flat, Archive* priority)
 // -----------------------------------------------------------------------------
 ArchiveEntry* ResourceManager::getTextureEntry(string_view texture, string_view nspace, Archive* priority)
 {
-	auto tex_upper = StrUtil::upper(texture);
-	auto entry     = satextures_[tex_upper].getEntry(priority, nspace, true);
+	auto  tex_upper = StrUtil::upper(texture);
+	auto* entry     = satextures_[tex_upper].getEntry(priority, nspace, true);
 	if (entry)
 		return entry;
 
@@ -711,12 +717,12 @@ CTexture* ResourceManager::getTexture(string_view texture, Archive* priority, Ar
 		return nullptr;
 
 	// Go through resource textures
-	auto tex    = &res.textures_[0]->tex;
-	auto parent = res.textures_[0]->parent.lock().get();
+	auto* tex    = &res.textures_[0]->tex;
+	auto* parent = res.textures_[0]->parent.lock().get();
 	for (auto& res_tex : res.textures_)
 	{
 		// Skip if it's in the 'ignore' archive
-		auto rt_parent = res_tex->parent.lock().get();
+		auto* rt_parent = res_tex->parent.lock().get();
 		if (!rt_parent || rt_parent == ignore)
 			continue;
 

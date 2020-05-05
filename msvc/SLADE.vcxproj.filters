@@ -202,12 +202,6 @@
     <Filter Include="ThirdParty\Sigslot">
       <UniqueIdentifier>{53b2423e-9eb8-49b9-8e4b-07ffcd5d2181}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Map">
-      <UniqueIdentifier>{a98ee935-f71b-4e2e-9be7-51620090bd14}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map\Object">
-      <UniqueIdentifier>{78036817-d352-4543-89ff-b53387f4fdb4}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\thirdparty\mus2mid\mus2mid.cpp">

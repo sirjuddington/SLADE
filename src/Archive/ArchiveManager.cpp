@@ -803,6 +803,9 @@ vector<shared_ptr<Archive>> ArchiveManager::allArchives(bool resource_only)
 // -----------------------------------------------------------------------------
 shared_ptr<Archive> ArchiveManager::shareArchive(Archive* const archive)
 {
+	if (archive == base_resource_archive_.get())
+		return base_resource_archive_;
+	
 	for (const auto& oa : open_archives_)
 		if (oa.archive.get() == archive)
 			return oa.archive;
