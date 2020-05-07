@@ -34,6 +34,8 @@
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Parser.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //

@@ -3,6 +3,8 @@
 #include "Archive/ArchiveEntry.h"
 #include "Graphics/Translation.h"
 
+namespace slade
+{
 class SImage;
 class Tokenizer;
 
@@ -209,3 +211,4 @@ private:
 	// Signals
 	Signals signals_;
 };
+} // namespace slade

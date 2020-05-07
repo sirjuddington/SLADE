@@ -35,7 +35,8 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
-using namespace Game;
+using namespace slade;
+using namespace game;
 
 
 // -----------------------------------------------------------------------------
@@ -153,7 +154,7 @@ void ThingType::parse(ParseTreeNode* node)
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
 		auto child = node->childPTN(a);
-		auto name  = StrUtil::lower(child->name());
+		auto name  = strutil::lower(child->name());
 		int  arg   = -1;
 
 		// Name
@@ -279,7 +280,7 @@ void ThingType::parse(ParseTreeNode* node)
 
 		// Some things tag other things directly
 		else if (name == "tagged")
-			tagged_ = Game::parseTagged(child);
+			tagged_ = parseTagged(child);
 
 		// Z Height is absolute rather than relative to the floor/ceiling
 		else if (name == "z_height_absolute")
@@ -321,11 +322,11 @@ void ThingType::parse(ParseTreeNode* node)
 				string atype;
 				if (val)
 					atype = val->stringValue();
-				if (StrUtil::equalCI(atype, "yesno"))
+				if (strutil::equalCI(atype, "yesno"))
 					args_[arg].type = Arg::Type::YesNo;
-				else if (StrUtil::equalCI(atype, "noyes"))
+				else if (strutil::equalCI(atype, "noyes"))
 					args_[arg].type = Arg::Type::NoYes;
-				else if (StrUtil::equalCI(atype, "angle"))
+				else if (strutil::equalCI(atype, "angle"))
 					args_[arg].type = Arg::Type::Angle;
 				else
 					args_[arg].type = Arg::Type::Number;
@@ -373,7 +374,7 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 	// Sprite
 	if (props["sprite"].hasValue())
 	{
-		if (StrUtil::equalCI(props["sprite"].stringValue(), "tnt1a?"))
+		if (strutil::equalCI(props["sprite"].stringValue(), "tnt1a?"))
 		{
 			if ((!(props["icon"].hasValue())) && icon_.empty())
 				icon_ = "tnt1a0";
@@ -388,7 +389,7 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 		// SLADE Colour
 		wxColour wxc(props["colour"].stringValue());
 		if (wxc.IsOk())
-			colour_.set(COLWX(wxc));
+			colour_.set(wxc);
 	}
 	else if (props["color"].hasValue())
 	{

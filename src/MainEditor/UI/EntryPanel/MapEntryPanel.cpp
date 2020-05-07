@@ -36,6 +36,8 @@
 #include "UI/Canvas/MapPreviewCanvas.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -119,7 +121,7 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 	}
 
 	// All errors = invalid map
-	Global::error = "Invalid map";
+	global::error = "Invalid map";
 
 	// There is no map entry for the map marker.
 	// This may happen if a map marker lump is copy/pasted without the rest of the map lumps.
@@ -197,7 +199,7 @@ bool MapEntryPanel::createImage()
 		bool ret = temp.exportFile(dialog_save.GetPath().ToStdString());
 
 		// Save 'dir_last'
-		dir_last = WxUtils::strToView(dialog_save.GetDirectory());
+		dir_last = wxutil::strToView(dialog_save.GetDirectory());
 
 		// Open the saved image
 		wxLaunchDefaultApplication(dialog_save.GetPath());

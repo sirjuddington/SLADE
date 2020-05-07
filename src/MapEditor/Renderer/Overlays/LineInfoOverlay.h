@@ -2,6 +2,8 @@
 
 #include "OpenGL/Drawing.h"
 
+namespace slade
+{
 class MapLine;
 
 class LineInfoOverlay
@@ -36,3 +38,4 @@ private:
 	void drawSide(int bottom, int right, float alpha, Side& side, int xstart = 0);
 	void drawTexture(float alpha, int x, int y, string_view texture, bool needed, string_view pos = "U") const;
 };
+} // namespace slade

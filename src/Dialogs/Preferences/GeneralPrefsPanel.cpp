@@ -33,6 +33,8 @@
 #include "GeneralPrefsPanel.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -61,7 +63,7 @@ EXTERN_CVAR(Bool, backup_archives)
 GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create + Layout controls
-	SetSizer(WxUtils::layoutVertically(
+	SetSizer(wxutil::layoutVertically(
 		{ cb_archive_load_      = new wxCheckBox(this, -1, "Load all archive entry data to memory when opened"),
 		  cb_archive_close_tab_ = new wxCheckBox(this, -1, "Close archive when its tab is closed"),
 		  cb_wads_root_         = new wxCheckBox(this, -1, "Auto open nested wad archives"),

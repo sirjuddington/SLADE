@@ -40,6 +40,8 @@
 #include "Graphics/Palette/Palette.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -60,7 +62,7 @@ DEFINE_EVENT_TYPE(wxEVT_COLOURBOX_CHANGED)
 // ColourBox class constructor
 // -----------------------------------------------------------------------------
 ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode) :
-	wxPanel{ parent, id, wxDefaultPosition, WxUtils::scaledSize(32, 22), wxNO_BORDER },
+	wxPanel{ parent, id, wxDefaultPosition, wxutil::scaledSize(32, 22), wxNO_BORDER },
 	alpha_{ enable_alpha },
 	altmode_{ mode }
 {
@@ -74,7 +76,7 @@ ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode) :
 // Alternate ColourBox class constructor
 // -----------------------------------------------------------------------------
 ColourBox::ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha, bool mode) :
-	wxPanel{ parent, id, wxDefaultPosition, WxUtils::scaledSize(32, 22), wxNO_BORDER },
+	wxPanel{ parent, id, wxDefaultPosition, wxutil::scaledSize(32, 22), wxNO_BORDER },
 	colour_{ col },
 	alpha_{ enable_alpha },
 	altmode_{ mode }
@@ -159,8 +161,8 @@ void ColourBox::popAlphaSlider()
 	auto     box = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(box);
 	auto slider = new wxSlider(&dlg, -1, colour_.a, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
-	box->Add(slider, 1, wxEXPAND | wxALL, UI::padLarge());
-	box->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
+	box->Add(slider, 1, wxEXPAND | wxALL, ui::padLarge());
+	box->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 	dlg.SetInitialSize();
 
 	if (dlg.ShowModal() == wxID_OK)
@@ -191,8 +193,8 @@ void ColourBox::onPaint(wxPaintEvent& e)
 
 	if (alpha_)
 	{
-		int a_height       = UI::scalePx(4);
-		int a_border_width = (int)UI::scaleFactor();
+		int a_height       = ui::scalePx(4);
+		int a_border_width = (int)ui::scaleFactor();
 		int a_point        = colour_.fa() * (GetClientSize().x - (2 * a_border_width));
 
 		dc.SetBrush(wxBrush(wxColour(0, 0, 0)));

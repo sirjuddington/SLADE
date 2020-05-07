@@ -39,6 +39,8 @@
 #include "UI/WxUtils.h"
 #include "Utility/Parser.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -110,7 +112,7 @@ BaseResourceArchivesPanel::BaseResourceArchivesPanel(wxWindow* parent) : PrefsPa
 // -----------------------------------------------------------------------------
 void BaseResourceArchivesPanel::setupLayout()
 {
-	auto sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	SetSizer(sizer);
 
 	// Paths list + buttons
@@ -120,7 +122,7 @@ void BaseResourceArchivesPanel::setupLayout()
 	sizer->Add(btn_detect_, { 2, 1 }, { 1, 1 }, wxEXPAND);
 
 	// ZDoom.pk3 path
-	sizer->Add(WxUtils::createLabelHBox(this, "ZDoom PK3 Path:", flp_zdoom_pk3_), { 4, 0 }, { 1, 2 }, wxEXPAND);
+	sizer->Add(wxutil::createLabelHBox(this, "ZDoom PK3 Path:", flp_zdoom_pk3_), { 4, 0 }, { 1, 2 }, wxEXPAND);
 
 	sizer->AddGrowableRow(3, 1);
 	sizer->AddGrowableCol(0, 1);
@@ -140,7 +142,7 @@ int BaseResourceArchivesPanel::selectedPathIndex() const
 void BaseResourceArchivesPanel::autodetect() const
 {
 	// List of known IWADs and common aliases
-	auto iwadlist = App::archiveManager().programResourceArchive()->entryAtPath("config/iwads.cfg");
+	auto iwadlist = app::archiveManager().programResourceArchive()->entryAtPath("config/iwads.cfg");
 	if (!iwadlist)
 		return;
 	Parser p;
@@ -193,7 +195,7 @@ void BaseResourceArchivesPanel::autodetect() const
 					// Verify existence before adding it to the list
 					if (list_base_archive_paths_->FindString(iwad) == wxNOT_FOUND)
 					{
-						App::archiveManager().addBaseResourcePath(iwad.ToStdString());
+						app::archiveManager().addBaseResourcePath(iwad.ToStdString());
 						list_base_archive_paths_->Append(iwad);
 					}
 				}
@@ -257,7 +259,7 @@ void BaseResourceArchivesPanel::autodetect() const
 			// Verify existence before adding it to the list
 			if (list_base_archive_paths_->FindString(iwad) == wxNOT_FOUND)
 			{
-				App::archiveManager().addBaseResourcePath(iwad.ToStdString());
+				app::archiveManager().addBaseResourcePath(iwad.ToStdString());
 				list_base_archive_paths_->Append(iwad);
 			}
 		}
@@ -271,8 +273,8 @@ void BaseResourceArchivesPanel::init()
 {
 	// Init paths list
 	list_base_archive_paths_->Clear();
-	for (size_t a = 0; a < App::archiveManager().numBaseResourcePaths(); a++)
-		list_base_archive_paths_->Append(App::archiveManager().getBaseResourcePath(a));
+	for (size_t a = 0; a < app::archiveManager().numBaseResourcePaths(); a++)
+		list_base_archive_paths_->Append(app::archiveManager().getBaseResourcePath(a));
 
 	// Select the currently open base archive if any
 	if (base_resource >= 0)
@@ -286,8 +288,8 @@ void BaseResourceArchivesPanel::init()
 // -----------------------------------------------------------------------------
 void BaseResourceArchivesPanel::applyPreferences()
 {
-	App::archiveManager().openBaseResource(selectedPathIndex());
-	zdoom_pk3_path = WxUtils::strToView(flp_zdoom_pk3_->location());
+	app::archiveManager().openBaseResource(selectedPathIndex());
+	zdoom_pk3_path = wxutil::strToView(flp_zdoom_pk3_->location());
 }
 
 
@@ -304,7 +306,7 @@ void BaseResourceArchivesPanel::applyPreferences()
 void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e)
 {
 	// Create extensions string
-	wxString extensions = App::archiveManager().getArchiveExtensionsString();
+	wxString extensions = app::archiveManager().getArchiveExtensionsString();
 
 	// Open a file browser dialog that allows multiple selection
 	wxFileDialog dialog_open(
@@ -326,12 +328,12 @@ void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e)
 		// Add each to the paths list
 		for (const auto& file : files)
 		{
-			if (App::archiveManager().addBaseResourcePath(file.ToStdString()))
+			if (app::archiveManager().addBaseResourcePath(file.ToStdString()))
 				list_base_archive_paths_->Append(file);
 		}
 
 		// Save 'dir_last'
-		dir_last = WxUtils::strToView(dialog_open.GetDirectory());
+		dir_last = wxutil::strToView(dialog_open.GetDirectory());
 	}
 }
 
@@ -345,5 +347,5 @@ void BaseResourceArchivesPanel::onBtnRemove(wxCommandEvent& e)
 	list_base_archive_paths_->Delete(index);
 
 	// Also remove it from the archive manager
-	App::archiveManager().removeBaseResourcePath(index);
+	app::archiveManager().removeBaseResourcePath(index);
 }

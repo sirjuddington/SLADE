@@ -35,6 +35,8 @@
 #include "Graphics/Icons.h"
 #include "UI/Controls/STabCtrl.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -141,8 +143,8 @@ void InterfacePrefsPanel::applyPreferences()
 	else
 		toolbar_size = 32;
 
-	iconset_general = WxUtils::strToView(choice_iconset_general_->GetString(choice_iconset_general_->GetSelection()));
-	iconset_entry_list = WxUtils::strToView(choice_iconset_entry_->GetString(choice_iconset_entry_->GetSelection()));
+	iconset_general    = wxutil::strToView(choice_iconset_general_->GetString(choice_iconset_general_->GetSelection()));
+	iconset_entry_list = wxutil::strToView(choice_iconset_entry_->GetString(choice_iconset_entry_->GetSelection()));
 }
 
 // -----------------------------------------------------------------------------
@@ -161,14 +163,14 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	cb_condensed_tabs_      = new wxCheckBox(panel, -1, "Condensed tabs *");
 	wxString sizes[]        = { "Normal", "Large", "Extra Large" };
 	choice_toolbar_size_    = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, sizes);
-	auto sets               = WxUtils::arrayStringStd(Icons::iconSets(Icons::General));
+	auto sets               = wxutil::arrayStringStd(icons::iconSets(icons::General));
 	choice_iconset_general_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets);
 
 	// Layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
-	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	sizer->Add(gb_sizer, 1, wxALL | wxEXPAND, UI::padLarge());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	sizer->Add(gb_sizer, 1, wxALL | wxEXPAND, ui::padLarge());
 
 	int row = 0;
 	gb_sizer->Add(cb_start_page_, { row++, 0 }, { 1, 2 }, wxEXPAND);
@@ -184,7 +186,7 @@ wxPanel* InterfacePrefsPanel::setupGeneralTab(wxWindow* stc_tabs)
 	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 
 	gb_sizer->AddGrowableCol(1, 1);
-	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), 0, wxALL | wxALIGN_RIGHT, UI::pad());
+	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), 0, wxALL | wxALIGN_RIGHT, ui::pad());
 
 	return panel;
 }
@@ -201,14 +203,14 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	cb_filter_dirs_       = new wxCheckBox(panel, -1, "Ignore directories when filtering by name");
 	cb_elist_bgcol_       = new wxCheckBox(panel, -1, "Colour entry list item background by entry type");
 	cb_context_submenus_  = new wxCheckBox(panel, -1, "Group related entry context menu items into submenus");
-	auto sets             = WxUtils::arrayStringStd(Icons::iconSets(Icons::Entry));
+	auto sets             = wxutil::arrayStringStd(icons::iconSets(icons::Entry));
 	choice_iconset_entry_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets);
 
 	// Layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
-	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	sizer->Add(gb_sizer, 1, wxALL | wxEXPAND, UI::padLarge());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	sizer->Add(gb_sizer, 1, wxALL | wxEXPAND, ui::padLarge());
 
 	int row = 0;
 	gb_sizer->Add(cb_size_as_string_, { row++, 0 }, { 1, 2 }, wxEXPAND);
@@ -220,7 +222,7 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 
 	gb_sizer->AddGrowableCol(1, 1);
-	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), 0, wxALL | wxALIGN_RIGHT, UI::pad());
+	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), 0, wxALL | wxALIGN_RIGHT, ui::pad());
 
 	return panel;
 }

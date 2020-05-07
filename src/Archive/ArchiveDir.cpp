@@ -38,6 +38,7 @@
 #include "Utility/StringUtils.h"
 #include <filesystem>
 
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -210,7 +211,7 @@ ArchiveEntry* ArchiveDir::entry(string_view name, bool cut_ext) const
 	for (auto& entry : entries_)
 	{
 		// Check for (non-case-sensitive) name match
-		if (StrUtil::equalCI(cut_ext ? entry->nameNoExt() : entry->name(), name))
+		if (strutil::equalCI(cut_ext ? entry->nameNoExt() : entry->name(), name))
 			return entry.get();
 	}
 
@@ -232,7 +233,7 @@ shared_ptr<ArchiveEntry> ArchiveDir::sharedEntry(string_view name, bool cut_ext)
 	for (auto& entry : entries_)
 	{
 		// Check for (non-case-sensitive) name match
-		if (StrUtil::equalCI(cut_ext ? entry->nameNoExt() : entry->name(), name))
+		if (strutil::equalCI(cut_ext ? entry->nameNoExt() : entry->name(), name))
 			return entry;
 	}
 
@@ -345,7 +346,7 @@ shared_ptr<ArchiveDir> ArchiveDir::subdir(string_view name)
 		name.remove_suffix(1);
 
 	for (auto&& dir : subdirs_)
-		if (StrUtil::equalCI(dir->name(), name))
+		if (strutil::equalCI(dir->name(), name))
 			return dir;
 
 	return nullptr;
@@ -372,12 +373,12 @@ bool ArchiveDir::addSubdir(shared_ptr<ArchiveDir> subdir, unsigned index)
 	// Some checks
 	if (!subdir)
 	{
-		Log::warning("Attempt to add null subdir to dir \"{}\"", name());
+		log::warning("Attempt to add null subdir to dir \"{}\"", name());
 		return false;
 	}
 	if (subdir->parent_dir_.lock().get() != this)
 	{
-		Log::warning("Can't add subdir \"{}\" to dir \"{}\" - it is not the parent", subdir->name(), name());
+		log::warning("Can't add subdir \"{}\" to dir \"{}\" - it is not the parent", subdir->name(), name());
 		return false;
 	}
 
@@ -403,7 +404,7 @@ shared_ptr<ArchiveDir> ArchiveDir::removeSubdir(string_view name)
 
 	auto count = subdirs_.size();
 	for (unsigned i = 0; i < count; ++i)
-		if (StrUtil::equalCI(name, subdirs_[i]->name()))
+		if (strutil::equalCI(name, subdirs_[i]->name()))
 		{
 			removed = subdirs_[i];
 			subdirs_.erase(subdirs_.begin() + i);
@@ -475,7 +476,7 @@ bool ArchiveDir::exportTo(string_view path)
 	for (auto& entry : entries_)
 	{
 		// Setup entry filename
-		StrUtil::Path fn(entry->name());
+		strutil::Path fn(entry->name());
 		fn.setPath(path);
 
 		// Add file extension if it doesn't exist
@@ -501,7 +502,7 @@ void ArchiveDir::ensureUniqueName(ArchiveEntry* entry)
 	unsigned      index     = 0;
 	unsigned      number    = 0;
 	const auto    n_entries = entries_.size();
-	StrUtil::Path fn(entry->name());
+	strutil::Path fn(entry->name());
 	auto          name = fn.fileName();
 	while (index < n_entries)
 	{
@@ -511,7 +512,7 @@ void ArchiveDir::ensureUniqueName(ArchiveEntry* entry)
 			continue;
 		}
 
-		if (StrUtil::equalCI(entries_[index]->name(), name))
+		if (strutil::equalCI(entries_[index]->name(), name))
 		{
 			fn.setFileName(fmt::format("{}{}", entry->nameNoExt(), ++number));
 			name  = fn.fileName();
@@ -550,7 +551,7 @@ shared_ptr<ArchiveDir> ArchiveDir::subdirAtPath(const shared_ptr<ArchiveDir>& ro
 		path.remove_prefix(1);
 
 	// Split path into parts
-	auto parts = StrUtil::splitV(path, '/');
+	auto parts = strutil::splitV(path, '/');
 
 	// Begin trace from this dir
 	auto cur_dir = root;
@@ -592,7 +593,7 @@ ArchiveDir* ArchiveDir::subdirAtPath(ArchiveDir* root, string_view path)
 		path.remove_suffix(1);
 
 	// Split path into parts
-	auto parts = StrUtil::splitV(path, '/');
+	auto parts = strutil::splitV(path, '/');
 
 	// Begin trace from this dir
 	auto cur_dir = root;
@@ -625,12 +626,12 @@ ArchiveDir* ArchiveDir::subdirAtPath(ArchiveDir* root, string_view path)
 shared_ptr<ArchiveEntry> ArchiveDir::entryAtPath(const shared_ptr<ArchiveDir>& root, string_view path)
 {
 	// Find given subdir
-	auto subdir = subdirAtPath(root, StrUtil::Path::pathOf(path, false));
+	auto subdir = subdirAtPath(root, strutil::Path::pathOf(path, false));
 	if (!subdir)
 		return nullptr;
 
 	// Return entry in subdir (if any)
-	return subdir->sharedEntry(StrUtil::Path::fileNameOf(path));
+	return subdir->sharedEntry(strutil::Path::fileNameOf(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -673,7 +674,7 @@ bool ArchiveDir::merge(shared_ptr<ArchiveDir>& target, ArchiveDir* dir, unsigned
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveDir> ArchiveDir::getOrCreateSubdir(shared_ptr<ArchiveDir>& root, string_view path)
 {
-	auto subdir_name = StrUtil::beforeFirstV(path, '/');
+	auto subdir_name = strutil::beforeFirstV(path, '/');
 
 	// Find subdir in root
 	auto subdir = root->subdir(subdir_name);
@@ -685,7 +686,7 @@ shared_ptr<ArchiveDir> ArchiveDir::getOrCreateSubdir(shared_ptr<ArchiveDir>& roo
 	}
 
 	// Check if there is more of [path] to follow
-	auto path_rest = StrUtil::afterFirstV(path, '/');
+	auto path_rest = strutil::afterFirstV(path, '/');
 	if (path_rest.empty() || path_rest == path)
 		return subdir;
 	else

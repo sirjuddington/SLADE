@@ -4,6 +4,8 @@
 #include "OGLCanvas.h"
 #include "OpenGL/GLTexture.h"
 
+namespace slade
+{
 class SImage;
 class SBrush;
 class GLTexture;
@@ -98,6 +100,7 @@ private:
 	void onMouseLeaving(wxMouseEvent& e);
 	void onKeyDown(wxKeyEvent& e);
 };
+} // namespace slade
 
 DECLARE_EVENT_TYPE(wxEVT_GFXCANVAS_OFFSET_CHANGED, -1)
 DECLARE_EVENT_TYPE(wxEVT_GFXCANVAS_PIXELS_CHANGED, -1)

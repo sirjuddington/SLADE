@@ -4,10 +4,13 @@
 #include "UI/Lists/ListView.h"
 #include "UI/SDialog.h"
 
+class wxImageList;
+
+namespace slade
+{
 class MapPreviewCanvas;
 class BaseResourceChooser;
 class ResourceArchiveChooser;
-class wxImageList;
 
 class MapEditorConfigDialog : public SDialog
 {
@@ -50,3 +53,4 @@ private:
 	void onBtnNewMap(wxCommandEvent& e);
 	void onMapSelected(wxListEvent& e);
 };
+} // namespace slade

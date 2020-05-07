@@ -33,6 +33,8 @@
 #include "TextEditorPrefsPanel.h"
 #include "General/UI.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -80,7 +82,7 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::padLarge());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::padLarge());
 	auto row      = 0;
 	sizer->Add(gb_sizer, 0, wxEXPAND);
 
@@ -294,7 +296,7 @@ void TextEditorPrefsPanel::applyPreferences()
 	txed_calltips_colourise    = cb_calltips_colourise_->GetValue();
 	txed_calltips_dim_optional = cb_calltips_dim_optional_->GetValue();
 	txed_calltips_use_font     = cb_calltips_use_font_->GetValue();
-    txed_calltips_argset_kb    = cb_calltips_argset_kb_->GetValue();
+	txed_calltips_argset_kb    = cb_calltips_argset_kb_->GetValue();
 	txed_fold_enable           = cb_fold_enable_->GetValue();
 	txed_fold_comments         = cb_fold_comments_->GetValue();
 	txed_fold_preprocessor     = cb_fold_preprocessor_->GetValue();

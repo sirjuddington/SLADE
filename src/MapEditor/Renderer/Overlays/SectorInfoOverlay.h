@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class MapSector;
 class TextBox;
 
@@ -20,3 +22,4 @@ private:
 
 	void drawTexture(float alpha, int x, int y, string_view texture, string_view pos = "Upper") const;
 };
+} // namespace slade

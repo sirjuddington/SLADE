@@ -38,6 +38,8 @@
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -64,7 +66,7 @@ SectorBuilder::Edge nextEdge(SectorBuilder::Edge edge, MapLineSet& visited_lines
 	}
 
 	// Find next connected line with the lowest angle
-	double              min_angle = 2 * MathStuff::PI;
+	double              min_angle = 2 * math::PI;
 	SectorBuilder::Edge next;
 	for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
 	{
@@ -94,7 +96,7 @@ SectorBuilder::Edge nextEdge(SectorBuilder::Edge edge, MapLineSet& visited_lines
 			continue;
 
 		// Determine angle between lines
-		double angle = MathStuff::angle2DRad(
+		double angle = math::angle2DRad(
 			{ vertex_prev->xPos(), vertex_prev->yPos() },
 			{ vertex->xPos(), vertex->yPos() },
 			{ vertex_next->xPos(), vertex_next->yPos() });
@@ -194,7 +196,7 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front)
 
 		// Get next edge
 		Edge edge_next = nextEdge(edge, visited_lines);
-		Log::info(
+		log::info(
 			4,
 			"Got next edge line {}, {}",
 			edge_next.line ? edge_next.line->index() : -1,
@@ -254,7 +256,7 @@ int SectorBuilder::nearestEdge(double x, double y)
 	for (unsigned a = 0; a < o_edges_.size(); a++)
 	{
 		// Get distance to edge
-		dist = MathStuff::distanceToLineFast(point, o_edges_[a].line->seg());
+		dist = math::distanceToLineFast(point, o_edges_[a].line->seg());
 
 		// Check if minimum
 		if (dist < min_dist)
@@ -294,7 +296,7 @@ bool SectorBuilder::pointWithinOutline(double x, double y)
 	if (nearest >= 0)
 	{
 		// Check what side of the edge the point is on
-		double side = MathStuff::lineSide(point, o_edges_[nearest].line->seg());
+		double side = math::lineSide(point, o_edges_[nearest].line->seg());
 
 		// Return true if it is on the correct side
 		if (side >= 0 && o_edges_[nearest].front)
@@ -378,8 +380,8 @@ SectorBuilder::Edge SectorBuilder::findOuterEdge() const
 			// tiebreaker -- this fixes cases where the ray hits a vertex
 			// shared by two lines.  Choosing the further line would mean
 			// choosing an inner edge, which is clearly wrong.
-			double line_dist    = MathStuff::distanceToLineFast(vertex_right_->position(), line->seg());
-			double nearest_dist = MathStuff::distanceToLineFast(vertex_right_->position(), nearest->seg());
+			double line_dist    = math::distanceToLineFast(vertex_right_->position(), line->seg());
+			double nearest_dist = math::distanceToLineFast(vertex_right_->position(), nearest->seg());
 			if (line_dist < nearest_dist)
 			{
 				min_dist = dist;
@@ -394,7 +396,7 @@ SectorBuilder::Edge SectorBuilder::findOuterEdge() const
 
 
 	// Determine the edge side
-	double side = MathStuff::lineSide(vertex_right_->position(), nearest->seg());
+	double side = math::lineSide(vertex_right_->position(), nearest->seg());
 	// LOG_DEBUG("Found next outer line", nearest, "on side", side);
 	if (side >= 0)
 		return Edge{ nearest, true };
@@ -453,7 +455,7 @@ SectorBuilder::Edge SectorBuilder::findInnerEdge()
 			opposite = line->v1();
 
 		// Determine angle
-		double angle = MathStuff::angle2DRad(
+		double angle = math::angle2DRad(
 			Vec2d(vertex_right_->xPos() + 32, vertex_right_->yPos()),
 			Vec2d(vertex_right_->xPos(), vertex_right_->yPos()),
 			Vec2d(opposite->xPos(), opposite->yPos()));
@@ -703,7 +705,7 @@ void SectorBuilder::createSector(MapSector* sector, MapSector* sector_copy)
 void SectorBuilder::drawResult()
 {
 	glDisable(GL_TEXTURE_2D);
-	OpenGL::setColour(255, 255, 255, 255, OpenGL::Blend::Normal);
+	gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
 
 	// Go through sector edges
 	for (auto& edge : sector_edges_)

@@ -2,6 +2,8 @@
 
 #include "Utility/Colour.h"
 
+namespace slade
+{
 class Palette;
 
 class ColourBox : public wxPanel
@@ -37,5 +39,6 @@ private:
 
 	void sendChangeEvent();
 };
+} // namespace slade
 
 DECLARE_EVENT_TYPE(wxEVT_COLOURBOX_CHANGED, -1)

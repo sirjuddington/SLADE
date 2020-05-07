@@ -4,6 +4,9 @@
 #include "OpenGL/OpenGL.h"
 
 class wxWindow;
+
+namespace slade
+{
 #ifdef USE_SFML_RENDERWINDOW
 class OGLCanvas : public wxGLCanvas, public sf::RenderWindow
 {
@@ -48,3 +51,4 @@ protected:
 	void onTimer(wxTimerEvent& e);
 	void onResize(wxSizeEvent& e);
 };
+} // namespace slade

@@ -2,6 +2,8 @@
 
 #include "PrefsPanelBase.h"
 
+namespace slade
+{
 class FileLocationPanel;
 
 class AudioPrefsPanel : public PrefsPanelBase
@@ -26,3 +28,4 @@ private:
 	void setupLayout();
 	void updateControls() const;
 };
+} // namespace slade

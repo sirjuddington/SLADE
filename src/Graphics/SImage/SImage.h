@@ -2,6 +2,8 @@
 
 #include "Graphics/Palette/Palette.h"
 
+namespace slade
+{
 class Translation;
 class SIFormat;
 
@@ -189,3 +191,4 @@ private:
 	// Internal functions
 	void clearData(bool clear_mask = true);
 };
+} // namespace slade

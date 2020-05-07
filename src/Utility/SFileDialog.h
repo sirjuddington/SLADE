@@ -1,6 +1,6 @@
 #pragma once
 
-namespace SFileDialog
+namespace slade::filedialog
 {
 struct FDInfo
 {
@@ -43,4 +43,4 @@ bool saveFiles(
 
 string executableExtensionString();
 string executableFileName(string_view exe_name);
-} // namespace SFileDialog
+} // namespace slade::filedialog

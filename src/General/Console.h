@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class ConsoleCommand
 {
 public:
@@ -44,6 +46,7 @@ private:
 	vector<ConsoleCommand> commands_;
 	vector<string>         cmd_log_;
 };
+} // namespace slade
 
 // Define for neat console command definitions
 #define CONSOLE_COMMAND(name, min_args, show_in_list)              \

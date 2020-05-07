@@ -2,6 +2,8 @@
 
 #include "Utility/Colour.h"
 
+namespace slade
+{
 class PaletteCanvas;
 class Palette;
 
@@ -16,3 +18,4 @@ public:
 private:
 	PaletteCanvas* pal_canvas_ = nullptr;
 };
+} // namespace slade

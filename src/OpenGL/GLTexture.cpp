@@ -34,6 +34,8 @@
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -44,10 +46,10 @@ CVAR(String, bgtx_colour1, "#404050", CVar::Flag::Save)
 CVAR(String, bgtx_colour2, "#505060", CVar::Flag::Save)
 namespace
 {
-std::map<unsigned, OpenGL::Texture> textures;
-OpenGL::Texture                     tex_missing;
-OpenGL::Texture                     tex_background;
-unsigned                            last_bound_tex = 0;
+std::map<unsigned, gl::Texture> textures;
+gl::Texture                     tex_missing;
+gl::Texture                     tex_background;
+unsigned                        last_bound_tex = 0;
 } // namespace
 
 
@@ -61,7 +63,7 @@ unsigned                            last_bound_tex = 0;
 // -----------------------------------------------------------------------------
 // Returns true if the OpenGL texture [id] exists
 // -----------------------------------------------------------------------------
-bool OpenGL::Texture::isCreated(unsigned id)
+bool gl::Texture::isCreated(unsigned id)
 {
 	return textures[id].id > 0;
 }
@@ -69,7 +71,7 @@ bool OpenGL::Texture::isCreated(unsigned id)
 // -----------------------------------------------------------------------------
 // Returns true if the OpenGL texture [id] exists and has image data
 // -----------------------------------------------------------------------------
-bool OpenGL::Texture::isLoaded(unsigned id)
+bool gl::Texture::isLoaded(unsigned id)
 {
 	auto& inf = textures[id];
 	return inf.id > 0 && inf.size.x > 0 && inf.size.y > 0;
@@ -78,7 +80,7 @@ bool OpenGL::Texture::isLoaded(unsigned id)
 // -----------------------------------------------------------------------------
 // Returns the info struct for the OpenGL texture [id]
 // -----------------------------------------------------------------------------
-const OpenGL::Texture& OpenGL::Texture::info(unsigned id)
+const gl::Texture& gl::Texture::info(unsigned id)
 {
 	auto& tex = textures[id];
 	if (tex.id > 0)
@@ -90,9 +92,9 @@ const OpenGL::Texture& OpenGL::Texture::info(unsigned id)
 // -----------------------------------------------------------------------------
 // Returns the 'missing' texture id
 // -----------------------------------------------------------------------------
-unsigned OpenGL::Texture::missingTexture()
+unsigned gl::Texture::missingTexture()
 {
-	if (!OpenGL::isInitialised())
+	if (!gl::isInitialised())
 		return 0;
 
 	// Create the 'missing' texture if necessary
@@ -109,9 +111,9 @@ unsigned OpenGL::Texture::missingTexture()
 // -----------------------------------------------------------------------------
 // Returns the 'background' texture id
 // -----------------------------------------------------------------------------
-unsigned OpenGL::Texture::backgroundTexture()
+unsigned gl::Texture::backgroundTexture()
 {
-	if (!OpenGL::isInitialised())
+	if (!gl::isInitialised())
 		return 0;
 
 	// Create the 'background' texture if necessary
@@ -121,7 +123,7 @@ unsigned OpenGL::Texture::backgroundTexture()
 		wxColour col2(bgtx_colour2);
 
 		auto id = create();
-		genChequeredTexture(id, 8, { COLWX(col1), 255 }, { COLWX(col2), 255 });
+		genChequeredTexture(id, 8, ColRGBA{ col1 }, ColRGBA{ col2 });
 		tex_background = textures[id];
 	}
 
@@ -131,7 +133,7 @@ unsigned OpenGL::Texture::backgroundTexture()
 // -----------------------------------------------------------------------------
 // Resets (clears) the 'background' texture
 // -----------------------------------------------------------------------------
-void OpenGL::Texture::resetBackgroundTexture()
+void gl::Texture::resetBackgroundTexture()
 {
 	glDeleteTextures(1, &tex_background.id);
 
@@ -142,10 +144,10 @@ void OpenGL::Texture::resetBackgroundTexture()
 // -----------------------------------------------------------------------------
 // Creates a new OpenGL texture and returns the id
 // -----------------------------------------------------------------------------
-unsigned OpenGL::Texture::create(TexFilter filter, bool tiling)
+unsigned gl::Texture::create(TexFilter filter, bool tiling)
 {
 	// Check OpenGL is initialised
-	if (!OpenGL::isInitialised())
+	if (!gl::isInitialised())
 		return 0;
 
 	// Generate the texture id
@@ -163,7 +165,7 @@ unsigned OpenGL::Texture::create(TexFilter filter, bool tiling)
 // -----------------------------------------------------------------------------
 // Creates a new OpenGL texture with RGBA [data] of [width]x[height]
 // -----------------------------------------------------------------------------
-unsigned OpenGL::Texture::createFromData(
+unsigned gl::Texture::createFromData(
 	const uint8_t* data,
 	unsigned       width,
 	unsigned       height,
@@ -183,7 +185,7 @@ unsigned OpenGL::Texture::createFromData(
 // -----------------------------------------------------------------------------
 // Creates a new OpenGL texture from [image], using [pal] if necessary
 // -----------------------------------------------------------------------------
-unsigned OpenGL::Texture::createFromImage(const SImage& image, Palette* pal, TexFilter filter, bool tiling)
+unsigned gl::Texture::createFromImage(const SImage& image, Palette* pal, TexFilter filter, bool tiling)
 {
 	auto id = create(filter, tiling);
 	if (!loadImage(id, image, pal))
@@ -198,23 +200,23 @@ unsigned OpenGL::Texture::createFromImage(const SImage& image, Palette* pal, Tex
 // -----------------------------------------------------------------------------
 // Loads RGBA [data] of [width]x[height] to the OpenGL texture [id]
 // -----------------------------------------------------------------------------
-bool OpenGL::Texture::loadData(unsigned id, const uint8_t* data, unsigned width, unsigned height)
+bool gl::Texture::loadData(unsigned id, const uint8_t* data, unsigned width, unsigned height)
 {
 	// Check OpenGL is initialised
-	if (!OpenGL::isInitialised())
+	if (!gl::isInitialised())
 		return false;
 
 	// Check given id
 	if (id == 0 || id == tex_missing.id || id == tex_background.id)
 	{
-		Log::warning("Unable to load OpenGL texture with id {} - invalid or built-in texture", id);
+		log::warning("Unable to load OpenGL texture with id {} - invalid or built-in texture", id);
 		return false;
 	}
 
 	// Check image dimensions
 	if (!validTexDimension(width) || !validTexDimension(height))
 	{
-		Log::warning("Attempt to create OpenGL texture of invalid size {}x{}", width, height);
+		log::warning("Attempt to create OpenGL texture of invalid size {}x{}", width, height);
 		return false;
 	}
 
@@ -274,7 +276,7 @@ bool OpenGL::Texture::loadData(unsigned id, const uint8_t* data, unsigned width,
 // -----------------------------------------------------------------------------
 // Loads [image] to the OpenGL texture [id], using [pal] if necessary
 // -----------------------------------------------------------------------------
-bool OpenGL::Texture::loadImage(unsigned id, const SImage& image, Palette* pal)
+bool gl::Texture::loadImage(unsigned id, const SImage& image, Palette* pal)
 {
 	// Check image dimensions
 	if (validTexDimension(image.width()) && validTexDimension(image.height()))
@@ -287,7 +289,7 @@ bool OpenGL::Texture::loadImage(unsigned id, const SImage& image, Palette* pal)
 		return loadData(id, rgba.data(), image.width(), image.height());
 	}
 
-	Log::warning("Attempt to create OpenGL texture of invalid size {}x{}", image.width(), image.height());
+	log::warning("Attempt to create OpenGL texture of invalid size {}x{}", image.width(), image.height());
 	return false;
 }
 
@@ -295,7 +297,7 @@ bool OpenGL::Texture::loadImage(unsigned id, const SImage& image, Palette* pal)
 // Generates a 'chequerboard' texture using colours [col1] and [col2] and loads
 // it to OpenGL texture [id]
 // -----------------------------------------------------------------------------
-bool OpenGL::Texture::genChequeredTexture(unsigned id, uint8_t block_size, ColRGBA col1, ColRGBA col2)
+bool gl::Texture::genChequeredTexture(unsigned id, uint8_t block_size, ColRGBA col1, ColRGBA col2)
 {
 	// Check given block size and change if necessary
 	for (uint8_t s = 1; s <= 64; s *= 2)
@@ -353,7 +355,7 @@ bool OpenGL::Texture::genChequeredTexture(unsigned id, uint8_t block_size, ColRG
 // -----------------------------------------------------------------------------
 // Returns the average colour of the OpenGL texture [id] within [area]
 // -----------------------------------------------------------------------------
-ColRGBA OpenGL::Texture::averageColour(unsigned id, Recti area)
+ColRGBA gl::Texture::averageColour(unsigned id, Recti area)
 {
 	// Check texture is loaded
 	if (!isLoaded(id))
@@ -409,7 +411,7 @@ ColRGBA OpenGL::Texture::averageColour(unsigned id, Recti area)
 // -----------------------------------------------------------------------------
 // Binds the OpenGL texture [id] for use (unless it is already bound)
 // -----------------------------------------------------------------------------
-void OpenGL::Texture::bind(unsigned id, bool force)
+void gl::Texture::bind(unsigned id, bool force)
 {
 	if (force)
 	{
@@ -426,7 +428,7 @@ void OpenGL::Texture::bind(unsigned id, bool force)
 // -----------------------------------------------------------------------------
 // Deletes the OpenGL texture [id]
 // -----------------------------------------------------------------------------
-void OpenGL::Texture::clear(unsigned id)
+void gl::Texture::clear(unsigned id)
 {
 	if (id == 0 || id == tex_missing.id || id == tex_background.id || textures.empty())
 		return;
@@ -438,7 +440,7 @@ void OpenGL::Texture::clear(unsigned id)
 // -----------------------------------------------------------------------------
 // Deletes all OpenGL textures
 // -----------------------------------------------------------------------------
-void OpenGL::Texture::clearAll()
+void gl::Texture::clearAll()
 {
 	for (auto& tex : textures)
 		glDeleteTextures(1, &tex.second.id);

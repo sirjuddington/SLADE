@@ -2,6 +2,8 @@
 
 #include "OpenGL/GLTexture.h"
 
+namespace slade
+{
 class ArchiveDir;
 class Archive;
 class Palette;
@@ -24,7 +26,7 @@ public:
 		unsigned gl_id         = 0;
 		bool     world_panning = false;
 		Vec2d    scale         = { 1., 1. };
-		~Texture() { OpenGL::Texture::clear(gl_id); }
+		~Texture() { gl::Texture::clear(gl_id); }
 	};
 	typedef std::map<string, Texture> MapTexHashMap;
 
@@ -89,3 +91,4 @@ private:
 
 	void importEditorImages(MapTexHashMap& map, ArchiveDir* dir, string_view path) const;
 };
+} // namespace slade

@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "AdvancedPrefsPanel.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -149,7 +151,7 @@ void AdvancedPrefsPanel::applyPreferences()
 		else if (cvar->type == CVar::Type::Float)
 			*((CFloatCVar*)cvar) = value.GetDouble();
 		else if (cvar->type == CVar::Type::String)
-			*((CStringCVar*)cvar) = WxUtils::strToView(value.GetString());
+			*((CStringCVar*)cvar) = wxutil::strToView(value.GetString());
 
 		pg_cvars_->GetProperty(name)->SetModifiedStatus(false);
 		pg_cvars_->Refresh();

@@ -38,6 +38,8 @@
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -156,15 +158,15 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 		// Verify validity and only accept square images
 		if (!image.isValid())
 		{
-			Global::error = "Palette information cannot be loaded from an invalid image";
-			Log::error(Global::error);
+			global::error = "Palette information cannot be loaded from an invalid image";
+			log::error(global::error);
 			return false;
 		}
 		int side = image.height();
 		if (side != image.width() || side % 16)
 		{
-			Global::error = "Palette information cannot be loaded from a non-square image";
-			Log::error(Global::error);
+			global::error = "Palette information cannot be loaded from a non-square image";
+			log::error(global::error);
 			return false;
 		}
 
@@ -190,14 +192,14 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 			for (int b = x; b < (x + (cell > 3 ? cell - 1 : cell)); ++b)
 				for (int c = y; c < (y + (cell > 3 ? cell - 1 : cell)); ++c)
 					if (!col.equals(image.pixelAt(b, c)))
-						Log::warning(
+						log::warning(
 							"Image does not seem to be a valid palette, color discrepancy in cell {} at [{}, {}]",
 							a,
 							b,
 							c);
 
 			// Color is validated, so add it
-			Log::info(3, "Colour index {} / at {},{} / rgb {},{},{}", a, x, y, col.r, col.g, col.b);
+			log::info(3, "Colour index {} / at {},{} / rgb {},{},{}", a, x, y, col.r, col.g, col.b);
 			setColour(a, col);
 		}
 
@@ -219,15 +221,15 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 		{
 			if (!tz.checkToken("JASC-PAL") || !tz.checkToken("0100"))
 			{
-				Global::error = "Invalid JASC palette (unknown header)";
-				Log::error(Global::error);
+				global::error = "Invalid JASC palette (unknown header)";
+				log::error(global::error);
 				return false;
 			}
 			int count = tz.getInteger();
 			if (count > 256 || count < 0)
 			{
-				Global::error = "Invalid JASC palette (wrong count)";
-				Log::error(Global::error);
+				global::error = "Invalid JASC palette (wrong count)";
+				log::error(global::error);
 				return false;
 			}
 		}
@@ -235,8 +237,8 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 		{
 			if (!tz.checkToken("GIMP") || !tz.checkToken("Palette"))
 			{
-				Global::error = "Invalid GIMP palette (unknown header)";
-				Log::error(Global::error);
+				global::error = "Invalid GIMP palette (unknown header)";
+				log::error(global::error);
 				return false;
 			}
 		}
@@ -277,9 +279,9 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 				tz.advToEndOfLine();
 
 			// If we haven't skipped this part from a continue, then we have a colour triplet.
-			col.r     = StrUtil::asInt(s1);
-			col.g     = StrUtil::asInt(s2);
-			col.b     = StrUtil::asInt(s3);
+			col.r     = strutil::asInt(s1);
+			col.g     = strutil::asInt(s2);
+			col.b     = strutil::asInt(s3);
 			col.index = c;
 			setColour(c++, col);
 		} while (c < 256 && !tz.peekToken().empty());
@@ -289,8 +291,8 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 
 	else
 	{
-		Global::error = "Palette could not be imported, this format is not supported yet for import.";
-		Log::error(Global::error);
+		global::error = "Palette could not be imported, this format is not supported yet for import.";
+		log::error(global::error);
 	}
 
 	return false;
@@ -387,7 +389,7 @@ bool Palette::saveFile(string_view filename, Format format)
 {
 	// Write data to MemChunk
 	MemChunk mc;
-	if (!saveMem(mc, format, StrUtil::Path::fileNameOf(filename, false)))
+	if (!saveMem(mc, format, strutil::Path::fileNameOf(filename, false)))
 		return false;
 
 	// Write MemChunk to file
@@ -562,9 +564,9 @@ double Palette::colourDiff(const ColRGBA& rgb, const ColHSL& hsl, const ColLAB& 
 		d2 *= col_match_s;
 		d3 *= col_match_l;
 		break;
-	case ColourMatch::C76: return CIE::CIE76(lab, colours_lab_[index]);
-	case ColourMatch::C94: return CIE::CIE94(lab, colours_lab_[index]);
-	case ColourMatch::C2K: return CIE::CIEDE2000(lab, colours_lab_[index]);
+	case ColourMatch::C76: return cie::CIE76(lab, colours_lab_[index]);
+	case ColourMatch::C94: return cie::CIE94(lab, colours_lab_[index]);
+	case ColourMatch::C2K: return cie::CIEDE2000(lab, colours_lab_[index]);
 	}
 	return (d1 * d1) + (d2 * d2) + (d3 * d3);
 }

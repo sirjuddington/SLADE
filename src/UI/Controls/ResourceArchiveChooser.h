@@ -1,8 +1,8 @@
 #pragma once
 
+namespace slade
+{
 class Archive;
-class wxButton;
-class wxCheckListBox;
 
 class ResourceArchiveChooser : public wxPanel
 {
@@ -24,3 +24,4 @@ private:
 	void onBtnRecent(wxCommandEvent& e);
 	void onResourceChecked(wxCommandEvent& e);
 };
+} // namespace slade

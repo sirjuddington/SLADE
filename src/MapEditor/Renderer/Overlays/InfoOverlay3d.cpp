@@ -45,6 +45,8 @@
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -64,10 +66,10 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 // -----------------------------------------------------------------------------
 // Updates the info text for the object of [item_type] at [item_index] in [map]
 // -----------------------------------------------------------------------------
-void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEMap* map)
+void InfoOverlay3D::update(int item_index, mapeditor::ItemType item_type, SLADEMap* map)
 {
-	using Game::Feature;
-	using Game::UDMFFeature;
+	using game::Feature;
+	using game::UDMFFeature;
 
 	// Clear current info
 	info_.clear();
@@ -78,11 +80,11 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 	texname_        = "";
 	texture_        = 0;
 	thing_icon_     = false;
-	auto map_format = MapEditor::editContext().mapDesc().format;
+	auto map_format = mapeditor::editContext().mapDesc().format;
 
 	// Wall
-	if (item_type == MapEditor::ItemType::WallBottom || item_type == MapEditor::ItemType::WallMiddle
-		|| item_type == MapEditor::ItemType::WallTop)
+	if (item_type == mapeditor::ItemType::WallBottom || item_type == mapeditor::ItemType::WallMiddle
+		|| item_type == mapeditor::ItemType::WallTop)
 	{
 		// Get line and side
 		auto side = map->side(item_index);
@@ -102,14 +104,14 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 		// Relevant flags
 		string flags;
-		if (Game::configuration().lineBasicFlagSet("dontpegtop", line, map_format))
+		if (game::configuration().lineBasicFlagSet("dontpegtop", line, map_format))
 			flags += "Upper Unpegged, ";
-		if (Game::configuration().lineBasicFlagSet("dontpegbottom", line, map_format))
+		if (game::configuration().lineBasicFlagSet("dontpegbottom", line, map_format))
 			flags += "Lower Unpegged, ";
-		if (Game::configuration().lineBasicFlagSet("blocking", line, map_format))
+		if (game::configuration().lineBasicFlagSet("blocking", line, map_format))
 			flags += "Blocking, ";
 		if (!flags.empty())
-			StrUtil::removeLast(flags, 2);
+			strutil::removeLast(flags, 2);
 		info_.push_back(flags);
 
 		info_.push_back(fmt::format("Length: {}", (int)line->length()));
@@ -120,23 +122,23 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// --- Wall part info ---
 
 		// Part
-		if (item_type == MapEditor::ItemType::WallBottom)
+		if (item_type == mapeditor::ItemType::WallBottom)
 			info2_.emplace_back("Lower Texture");
-		else if (item_type == MapEditor::ItemType::WallMiddle)
+		else if (item_type == mapeditor::ItemType::WallMiddle)
 			info2_.emplace_back("Middle Texture");
 		else
 			info2_.emplace_back("Upper Texture");
 
 		// Offsets
 		if (map->currentFormat() == MapFormat::UDMF
-			&& Game::configuration().featureSupported(UDMFFeature::TextureOffsets))
+			&& game::configuration().featureSupported(UDMFFeature::TextureOffsets))
 		{
 			// Get x offset info
 			int    xoff      = side->texOffsetX();
 			double xoff_part = 0;
-			if (item_type == MapEditor::ItemType::WallBottom)
+			if (item_type == mapeditor::ItemType::WallBottom)
 				xoff_part = side->floatProperty("offsetx_bottom");
-			else if (item_type == MapEditor::ItemType::WallMiddle)
+			else if (item_type == mapeditor::ItemType::WallMiddle)
 				xoff_part = side->floatProperty("offsetx_mid");
 			else
 				xoff_part = side->floatProperty("offsetx_top");
@@ -153,9 +155,9 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			// Get y offset info
 			int    yoff      = side->texOffsetY();
 			double yoff_part = 0;
-			if (item_type == MapEditor::ItemType::WallBottom)
+			if (item_type == mapeditor::ItemType::WallBottom)
 				yoff_part = side->floatProperty("offsety_bottom");
-			else if (item_type == MapEditor::ItemType::WallMiddle)
+			else if (item_type == mapeditor::ItemType::WallMiddle)
 				yoff_part = side->floatProperty("offsety_mid");
 			else
 				yoff_part = side->floatProperty("offsety_top");
@@ -179,16 +181,16 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 		// UDMF extras
 		if (map->currentFormat() == MapFormat::UDMF
-			&& Game::configuration().featureSupported(UDMFFeature::TextureScaling))
+			&& game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			// Scale
 			double xscale, yscale;
-			if (item_type == MapEditor::ItemType::WallBottom)
+			if (item_type == mapeditor::ItemType::WallBottom)
 			{
 				xscale = side->floatProperty("scalex_bottom");
 				yscale = side->floatProperty("scaley_bottom");
 			}
-			else if (item_type == MapEditor::ItemType::WallMiddle)
+			else if (item_type == mapeditor::ItemType::WallMiddle)
 			{
 				xscale = side->floatProperty("scalex_mid");
 				yscale = side->floatProperty("scaley_mid");
@@ -229,7 +231,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			other_sector = other_side->sector();
 
 		double left_height, right_height;
-		if (item_type == MapEditor::ItemType::WallMiddle && other_sector)
+		if (item_type == mapeditor::ItemType::WallMiddle && other_sector)
 		{
 			// A two-sided line's middle area is the smallest distance between
 			// both sides' floors and ceilings, which is more complicated with
@@ -246,7 +248,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		else
 		{
 			Plane top_plane, bottom_plane;
-			if (item_type == MapEditor::ItemType::WallMiddle)
+			if (item_type == mapeditor::ItemType::WallMiddle)
 			{
 				top_plane    = this_sector->ceiling().plane;
 				bottom_plane = this_sector->floor().plane;
@@ -255,7 +257,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			{
 				if (!other_sector)
 					return;
-				if (item_type == MapEditor::ItemType::WallTop)
+				if (item_type == mapeditor::ItemType::WallTop)
 				{
 					top_plane    = this_sector->ceiling().plane;
 					bottom_plane = other_sector->ceiling().plane;
@@ -276,20 +278,20 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			info2_.push_back(fmt::format("Height: {} ~ {}", (int)left_height, (int)right_height));
 
 		// Texture
-		if (item_type == MapEditor::ItemType::WallBottom)
+		if (item_type == mapeditor::ItemType::WallBottom)
 			texname_ = side->texLower();
-		else if (item_type == MapEditor::ItemType::WallMiddle)
+		else if (item_type == mapeditor::ItemType::WallMiddle)
 			texname_ = side->texMiddle();
 		else
 			texname_ = side->texUpper();
-		texture_ = MapEditor::textureManager()
-					   .texture(texname_, Game::configuration().featureSupported(Feature::MixTexFlats))
+		texture_ = mapeditor::textureManager()
+					   .texture(texname_, game::configuration().featureSupported(Feature::MixTexFlats))
 					   .gl_id;
 	}
 
 
 	// Floor
-	else if (item_type == MapEditor::ItemType::Floor || item_type == MapEditor::ItemType::Ceiling)
+	else if (item_type == mapeditor::ItemType::Floor || item_type == mapeditor::ItemType::Ceiling)
 	{
 		// Get sector
 		auto sector = map->sector(item_index);
@@ -311,7 +313,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 		// ZDoom UDMF extras
 		/*
-		if (Game::configuration().udmfNamespace() == "zdoom") {
+		if (game::configuration().udmfNamespace() == "zdoom") {
 			// Sector colour
 			ColRGBA col = sector->getColour(0, true);
 			info.push_back(fmt::format("Colour: R{}, G{}, B{}", col.r, col.g, col.b));
@@ -322,19 +324,19 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// --- Flat info ---
 
 		// Height
-		if (item_type == MapEditor::ItemType::Floor)
+		if (item_type == mapeditor::ItemType::Floor)
 			info2_.push_back(fmt::format("Floor Height: {}", fheight));
 		else
 			info2_.push_back(fmt::format("Ceiling Height: {}", cheight));
 
 		// Light
 		int light = sector->lightLevel();
-		if (Game::configuration().featureSupported(UDMFFeature::FlatLighting))
+		if (game::configuration().featureSupported(UDMFFeature::FlatLighting))
 		{
 			// Get extra light info
 			int  fl  = 0;
 			bool abs = false;
-			if (item_type == MapEditor::ItemType::Floor)
+			if (item_type == mapeditor::ItemType::Floor)
 			{
 				fl  = sector->intProperty("lightfloor");
 				abs = sector->boolProperty("lightfloorabsolute");
@@ -364,14 +366,14 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			info2_.push_back(fmt::format("Light: {}", light));
 
 		// UDMF extras
-		if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
+		if (mapeditor::editContext().mapDesc().format == MapFormat::UDMF)
 		{
 			// Offsets
 			double xoff, yoff;
 			xoff = yoff = 0.0;
-			if (Game::configuration().featureSupported(UDMFFeature::FlatPanning))
+			if (game::configuration().featureSupported(UDMFFeature::FlatPanning))
 			{
-				if (item_type == MapEditor::ItemType::Floor)
+				if (item_type == mapeditor::ItemType::Floor)
 				{
 					xoff = sector->floatProperty("xpanningfloor");
 					yoff = sector->floatProperty("ypanningfloor");
@@ -387,9 +389,9 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 			// Scaling
 			double xscale, yscale;
 			xscale = yscale = 1.0;
-			if (Game::configuration().featureSupported(UDMFFeature::FlatScaling))
+			if (game::configuration().featureSupported(UDMFFeature::FlatScaling))
 			{
-				if (item_type == MapEditor::ItemType::Floor)
+				if (item_type == mapeditor::ItemType::Floor)
 				{
 					xscale = sector->floatProperty("xscalefloor");
 					yscale = sector->floatProperty("yscalefloor");
@@ -404,17 +406,17 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		}
 
 		// Texture
-		if (item_type == MapEditor::ItemType::Floor)
+		if (item_type == mapeditor::ItemType::Floor)
 			texname_ = sector->floor().texture;
 		else
 			texname_ = sector->ceiling().texture;
-		texture_ = MapEditor::textureManager()
-					   .flat(texname_, Game::configuration().featureSupported(Feature::MixTexFlats))
+		texture_ = mapeditor::textureManager()
+					   .flat(texname_, game::configuration().featureSupported(Feature::MixTexFlats))
 					   .gl_id;
 	}
 
 	// Thing
-	else if (item_type == MapEditor::ItemType::Thing)
+	else if (item_type == mapeditor::ItemType::Thing)
 	{
 		// index, type, position, sector, zpos, height?, radius?
 
@@ -428,8 +430,8 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		info_.push_back(fmt::format("Thing #{}", item_index));
 
 		// Position
-		if (MapEditor::editContext().mapDesc().format == MapFormat::Hexen
-			|| MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
+		if (mapeditor::editContext().mapDesc().format == MapFormat::Hexen
+			|| mapeditor::editContext().mapDesc().format == MapFormat::UDMF)
 			info_.push_back(
 				fmt::format("Position: {}, {}, {}", (int)thing->xPos(), (int)thing->yPos(), (int)thing->zPos()));
 		else
@@ -437,16 +439,16 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 
 		// Type
-		auto& tt = Game::configuration().thingType(thing->type());
+		auto& tt = game::configuration().thingType(thing->type());
 		if (!tt.defined())
 			info2_.push_back(fmt::format("Type: {}", thing->type()));
 		else
 			info2_.push_back(fmt::format("Type: {}", tt.name()));
 
 		// Args
-		if (MapEditor::editContext().mapDesc().format == MapFormat::Hexen
-			|| (MapEditor::editContext().mapDesc().format == MapFormat::UDMF
-				&& Game::configuration().getUDMFProperty("arg0", MapObject::Type::Thing)))
+		if (mapeditor::editContext().mapDesc().format == MapFormat::Hexen
+			|| (mapeditor::editContext().mapDesc().format == MapFormat::UDMF
+				&& game::configuration().getUDMFProperty("arg0", MapObject::Type::Thing)))
 		{
 			// Get thing args
 			string argxstr[2];
@@ -469,21 +471,21 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 
 
 		// Texture
-		texture_ = MapEditor::textureManager().sprite(tt.sprite(), tt.translation(), tt.palette()).gl_id;
+		texture_ = mapeditor::textureManager().sprite(tt.sprite(), tt.translation(), tt.palette()).gl_id;
 		if (!texture_)
 		{
 			if (use_zeth_icons && tt.zethIcon() >= 0)
-				texture_ = MapEditor::textureManager()
+				texture_ = mapeditor::textureManager()
 							   .editorImage(fmt::format("zethicons/zeth{:02d}", tt.zethIcon()))
 							   .gl_id;
 			if (!texture_)
-				texture_ = MapEditor::textureManager().editorImage(fmt::format("thing/{}", tt.icon())).gl_id;
+				texture_ = mapeditor::textureManager().editorImage(fmt::format("thing/{}", tt.icon())).gl_id;
 			thing_icon_ = true;
 		}
 		texname_ = "";
 	}
 
-	last_update_ = App::runTimer();
+	last_update_ = app::runTimer();
 }
 
 // -----------------------------------------------------------------------------
@@ -515,13 +517,13 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	int nlines = std::max<int>(info_.size(), info2_.size());
 	if (nlines < 4)
 		nlines = 4;
-	double scale       = (Drawing::fontSize() / 12.0);
+	double scale       = (drawing::fontSize() / 12.0);
 	int    line_height = 16 * scale;
 	int    height      = nlines * line_height + 4;
 
 	// Get colours
-	ColRGBA col_bg = ColourConfiguration::colour("map_3d_overlay_background");
-	ColRGBA col_fg = ColourConfiguration::colour("map_3d_overlay_foreground");
+	ColRGBA col_bg = colourconfig::colour("map_3d_overlay_background");
+	ColRGBA col_fg = colourconfig::colour("map_3d_overlay_foreground");
 	col_fg.a       = col_fg.a * alpha;
 	col_bg.a       = col_bg.a * alpha;
 	ColRGBA col_border(0, 0, 0, 140);
@@ -533,14 +535,14 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 
 	// Draw overlay background
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	Drawing::drawBorderedRect(0, bottom - height - 4, right, bottom + 2, col_bg, col_border);
+	drawing::drawBorderedRect(0, bottom - height - 4, right, bottom + 2, col_bg, col_border);
 
 	// Draw info text lines (left)
 	int y = height;
 	for (const auto& text : info_)
 	{
-		Drawing::drawText(
-			text, middle - (40 * scale) - 4, bottom - y, col_fg, Drawing::Font::Condensed, Drawing::Align::Right);
+		drawing::drawText(
+			text, middle - (40 * scale) - 4, bottom - y, col_fg, drawing::Font::Condensed, drawing::Align::Right);
 		y -= line_height;
 	}
 
@@ -548,7 +550,7 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	y = height;
 	for (const auto& text : info2_)
 	{
-		Drawing::drawText(text, middle + (40 * scale) + 4, bottom - y, col_fg, Drawing::Font::Condensed);
+		drawing::drawText(text, middle + (40 * scale) + 4, bottom - y, col_fg, drawing::Font::Condensed);
 		y -= line_height;
 	}
 
@@ -564,13 +566,13 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 // -----------------------------------------------------------------------------
 void InfoOverlay3D::drawTexture(float alpha, int x, int y) const
 {
-	double scale        = (Drawing::fontSize() / 12.0);
+	double scale        = (drawing::fontSize() / 12.0);
 	int    tex_box_size = 80 * scale;
 	int    line_height  = 16 * scale;
 
 	// Get colours
-	ColRGBA col_bg = ColourConfiguration::colour("map_3d_overlay_background");
-	ColRGBA col_fg = ColourConfiguration::colour("map_3d_overlay_foreground");
+	ColRGBA col_bg = colourconfig::colour("map_3d_overlay_background");
+	ColRGBA col_fg = colourconfig::colour("map_3d_overlay_foreground");
 	col_fg.a       = col_fg.a * alpha;
 
 	// Check texture exists
@@ -578,59 +580,59 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y) const
 	{
 		// Draw background
 		glEnable(GL_TEXTURE_2D);
-		OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
+		gl::setColour(255, 255, 255, 255 * alpha, gl::Blend::Normal);
 		glPushMatrix();
 		glTranslated(x, y - tex_box_size - line_height, 0);
-		Drawing::drawTextureTiled(OpenGL::Texture::backgroundTexture(), tex_box_size, tex_box_size);
+		drawing::drawTextureTiled(gl::Texture::backgroundTexture(), tex_box_size, tex_box_size);
 		glPopMatrix();
 
 		// Draw texture
-		if (texture_ && texture_ != OpenGL::Texture::missingTexture())
+		if (texture_ && texture_ != gl::Texture::missingTexture())
 		{
-			OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
-			Drawing::drawTextureWithin(
+			gl::setColour(255, 255, 255, 255 * alpha, gl::Blend::Normal);
+			drawing::drawTextureWithin(
 				texture_, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0);
 		}
 		else if (texname_ == "-")
 		{
 			// Draw missing icon
-			auto icon = MapEditor::textureManager().editorImage("thing/minus").gl_id;
+			auto icon = mapeditor::textureManager().editorImage("thing/minus").gl_id;
 			glEnable(GL_TEXTURE_2D);
-			OpenGL::setColour(180, 0, 0, 255 * alpha, OpenGL::Blend::Normal);
-			Drawing::drawTextureWithin(
+			gl::setColour(180, 0, 0, 255 * alpha, gl::Blend::Normal);
+			drawing::drawTextureWithin(
 				icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.2);
 		}
-		else if (texname_ != "-" && texture_ == OpenGL::Texture::missingTexture())
+		else if (texname_ != "-" && texture_ == gl::Texture::missingTexture())
 		{
 			// Draw unknown icon
-			auto icon = MapEditor::textureManager().editorImage("thing/unknown").gl_id;
+			auto icon = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
 			glEnable(GL_TEXTURE_2D);
-			OpenGL::setColour(180, 0, 0, 255 * alpha, OpenGL::Blend::Normal);
-			Drawing::drawTextureWithin(
+			gl::setColour(180, 0, 0, 255 * alpha, gl::Blend::Normal);
+			drawing::drawTextureWithin(
 				icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.2);
 		}
 
 		glDisable(GL_TEXTURE_2D);
 
 		// Draw outline
-		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, OpenGL::Blend::Normal);
+		gl::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, gl::Blend::Normal);
 		glLineWidth(1.0f);
 		glDisable(GL_LINE_SMOOTH);
-		Drawing::drawRect(x, y - tex_box_size - line_height, x + tex_box_size, y - line_height);
+		drawing::drawRect(x, y - tex_box_size - line_height, x + tex_box_size, y - line_height);
 	}
 
 	// Draw texture name (even if texture is blank)
 	auto tn_truncated = texname_;
 	if (tn_truncated.size() > 8)
 	{
-		StrUtil::truncateIP(tn_truncated, 8);
+		strutil::truncateIP(tn_truncated, 8);
 		tn_truncated.append("...");
 	}
-	Drawing::drawText(
+	drawing::drawText(
 		tn_truncated,
 		x + (tex_box_size * 0.5),
 		y - line_height,
 		col_fg,
-		Drawing::Font::Condensed,
-		Drawing::Align::Center);
+		drawing::Font::Condensed,
+		drawing::Align::Center);
 }

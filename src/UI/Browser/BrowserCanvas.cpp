@@ -37,6 +37,8 @@
 #include "General/UI.h"
 #include "OpenGL/Drawing.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -60,8 +62,8 @@ DEFINE_EVENT_TYPE(wxEVT_BROWSERCANVAS_SELECTION_CHANGED)
 // -----------------------------------------------------------------------------
 BrowserCanvas::BrowserCanvas(wxWindow* parent) :
 	OGLCanvas{ parent, -1 },
-	item_border_{ UI::scalePx(8) },
-	font_{ Drawing::Font::Bold }
+	item_border_{ ui::scalePx(8) },
+	font_{ drawing::Font::Bold }
 {
 	// Bind events
 	Bind(wxEVT_SIZE, &BrowserCanvas::onSize, this);
@@ -162,12 +164,12 @@ void BrowserCanvas::draw()
 	if (browser_bg_type == 1)
 	{
 		// Get system panel background colour
-		auto bgcolwx = Drawing::systemPanelBGColour();
-		col_bg.set(COLWX(bgcolwx));
+		auto bgcolwx = drawing::systemPanelBGColour();
+		col_bg.set(bgcolwx);
 
 		// Get system text colour
 		auto textcol = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
-		col_text.set(COLWX(textcol));
+		col_text.set(textcol);
 
 		// Check text colour brightness, if it's dark don't draw text shadow
 		auto col_temp = col_text;
@@ -189,7 +191,7 @@ void BrowserCanvas::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
+	if (gl::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Draw background if required

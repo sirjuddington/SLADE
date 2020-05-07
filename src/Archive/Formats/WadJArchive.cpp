@@ -35,6 +35,8 @@
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -85,8 +87,8 @@ bool WadJArchive::open(MemChunk& mc)
 	// Check the header
 	if (wad_type_[1] != 'W' || wad_type_[2] != 'A' || wad_type_[3] != 'D')
 	{
-		Log::error("WadJArchive::openFile: File {} has invalid header", filename_);
-		Global::error = "Invalid wad header";
+		log::error("WadJArchive::openFile: File {} has invalid header", filename_);
+		global::error = "Invalid wad header";
 		return false;
 	}
 
@@ -95,11 +97,11 @@ bool WadJArchive::open(MemChunk& mc)
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
-	UI::setSplashProgressMessage("Reading wad archive data");
+	ui::setSplashProgressMessage("Reading wad archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		char     name[9] = "";
@@ -153,8 +155,8 @@ bool WadJArchive::open(MemChunk& mc)
 		// the wadfile is invalid
 		if (offset + actualsize > mc.size())
 		{
-			Log::error("WadJArchive::open: Wad archive is invalid or corrupt");
-			Global::error = fmt::format(
+			log::error("WadJArchive::open: Wad archive is invalid or corrupt");
+			global::error = fmt::format(
 				"Archive is invalid and/or corrupt (lump {}: {} data goes past end of file)", d, name);
 			return false;
 		}
@@ -181,11 +183,11 @@ bool WadJArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)num_lumps)));
+		ui::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		auto entry = entryAt(a);
@@ -202,7 +204,7 @@ bool WadJArchive::open(MemChunk& mc)
 					&& (unsigned)(int)(entry->exProp("FullSize")) > entry->size())
 					edata.reSize((int)(entry->exProp("FullSize")), true);
 				if (!jaguarDecode(edata))
-					Log::warning(
+					log::warning(
 						"{}: {} (following {}), did not decode properly",
 						a,
 						entry->name(),
@@ -227,14 +229,14 @@ bool WadJArchive::open(MemChunk& mc)
 	}
 
 	// Detect maps (will detect map entry types)
-	UI::setSplashProgressMessage("Detecting maps");
+	ui::setSplashProgressMessage("Detecting maps");
 	detectMaps();
 
 	// Setup variables
 	sig_blocker.unblock();
 	setModified(false);
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -310,7 +312,7 @@ bool WadJArchive::write(MemChunk& mc, bool update)
 string WadJArchive::detectNamespace(size_t index, ArchiveDir* dir)
 {
 	auto nextentry = entryAt(index + 1);
-	if (nextentry && StrUtil::equalCI(nextentry->name(), "."))
+	if (nextentry && strutil::equalCI(nextentry->name(), "."))
 		return "sprites";
 	return WadArchive::detectNamespace(index);
 }
@@ -318,7 +320,7 @@ string WadJArchive::detectNamespace(ArchiveEntry* entry)
 {
 	size_t index     = entryIndex(entry);
 	auto   nextentry = entryAt(index + 1);
-	if (nextentry && StrUtil::equalCI(nextentry->name(), "."))
+	if (nextentry && strutil::equalCI(nextentry->name(), "."))
 		return "sprites";
 	return WadArchive::detectNamespace(index);
 }
@@ -460,7 +462,7 @@ bool WadJArchive::jaguarDecode(MemChunk& mc)
 	}
 	// Finalize stuff
 	size_t osize = output - ostart;
-	// Log::info(1, "Input size = %d, used input = %d, computed length = %d, output size = %d", isize, input - istart,
+	// log::info(1, "Input size = %d, used input = %d, computed length = %d, output size = %d", isize, input - istart,
 	// length, osize);
 	mc.importMem(ostart, osize);
 	delete[] ostart;

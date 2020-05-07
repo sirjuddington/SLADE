@@ -3,6 +3,8 @@
 #include "BrowserCanvas.h"
 #include "OpenGL/Drawing.h"
 
+namespace slade
+{
 class BrowserWindow;
 
 class BrowserItem
@@ -21,7 +23,7 @@ public:
 				int                     size,
 				int                     x,
 				int                     y,
-				Drawing::Font           font,
+				drawing::Font           font,
 				BrowserCanvas::NameType nametype    = BrowserCanvas::NameType::Normal,
 				BrowserCanvas::ItemView viewtype    = BrowserCanvas::ItemView::Normal,
 				const ColRGBA&          colour      = ColRGBA::WHITE,
@@ -38,3 +40,4 @@ protected:
 	bool                blank_     = false;
 	unique_ptr<TextBox> text_box_;
 };
+} // namespace slade

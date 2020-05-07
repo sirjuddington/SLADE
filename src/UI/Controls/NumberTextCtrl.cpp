@@ -34,6 +34,8 @@
 #include "Main.h"
 #include "NumberTextCtrl.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //

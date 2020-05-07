@@ -1,6 +1,6 @@
 #pragma once
 
-namespace UI
+namespace slade::ui
 {
 // General
 void init(double scale = 1.);
@@ -44,4 +44,4 @@ int    scalePx(int px);
 int    pad();      // Shortcut for UI::px(UI::Size::Pad)
 int    padLarge(); // Shortcut for UI::px(UI::Size::PadLarge)
 
-} // namespace UI
+} // namespace slade::ui

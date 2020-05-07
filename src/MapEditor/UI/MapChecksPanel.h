@@ -2,9 +2,12 @@
 
 #include "UI/Controls/DockPanel.h"
 
+class wxListBox;
+
+namespace slade
+{
 class SLADEMap;
 class MapCheck;
-class wxListBox;
 
 class MapChecksPanel : public DockPanel
 {
@@ -51,3 +54,4 @@ private:
 	void onBtnEditObject(wxCommandEvent& e);
 	void onBtnExport(wxCommandEvent& e);
 };
+} // namespace slade

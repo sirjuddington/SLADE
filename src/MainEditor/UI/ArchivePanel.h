@@ -7,6 +7,9 @@
 
 class wxStaticText;
 class wxBitmapButton;
+
+namespace slade
+{
 class EntryPanel;
 
 class ArchivePanel : public wxPanel, SActionHandler
@@ -183,3 +186,4 @@ private:
 	int      index_   = -1;
 	Archive* archive_ = nullptr;
 };
+} // namespace slade

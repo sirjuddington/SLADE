@@ -41,6 +41,7 @@
 #include "Graphics/SImage/SImage.h"
 #include "thirdparty/sol/sol.hpp"
 
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -48,7 +49,7 @@
 // Lua Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace Lua
+namespace slade::lua
 {
 // -----------------------------------------------------------------------------
 // Registers the ImageConvertOptions (SIFormat::ConvertOptions) type with lua
@@ -171,8 +172,8 @@ bool imageDrawImage(
 // -----------------------------------------------------------------------------
 std::tuple<bool, string> imageLoadEntry(SImage& self, ArchiveEntry* entry, int index)
 {
-	bool ok = Misc::loadImageFromEntry(&self, entry, index);
-	return std::make_tuple(ok, Global::error);
+	bool ok = misc::loadImageFromEntry(&self, entry, index);
+	return std::make_tuple(ok, global::error);
 }
 
 // -----------------------------------------------------------------------------
@@ -787,4 +788,4 @@ void registerGraphicsNamespace(sol::state& lua)
 	gfx["DetectImageFormat"] = [](MemChunk& mc) { return SIFormat::determineFormat(mc); };
 }
 
-} // namespace Lua
+} // namespace slade::lua

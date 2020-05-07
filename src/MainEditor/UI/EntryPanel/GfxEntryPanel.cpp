@@ -38,7 +38,6 @@
 #include "Dialogs/GfxTintDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "Dialogs/TranslationEditorDialog.h"
-#include "General/Console/ConsoleHelpers.h"
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
@@ -50,6 +49,8 @@
 #include "UI/Controls/SZoomSlider.h"
 #include "UI/SBrush.h"
 #include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -85,11 +86,11 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
 	gfx_canvas_->setViewType(GfxCanvas::View::Default);
 	gfx_canvas_->allowDrag(true);
 	gfx_canvas_->allowScroll(true);
-	gfx_canvas_->setPalette(MainEditor::currentPalette());
+	gfx_canvas_->setPalette(maineditor::currentPalette());
 	gfx_canvas_->setTranslation(&edit_translation_);
 
 	// Offsets
-	wxSize spinsize = { UI::px(UI::Size::SpinCtrlWidth), -1 };
+	wxSize spinsize = { ui::px(ui::Size::SpinCtrlWidth), -1 };
 	spin_xoffset_   = new wxSpinCtrl(
         this,
         -1,
@@ -113,14 +114,14 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
 	spin_xoffset_->SetMinSize(spinsize);
 	spin_yoffset_->SetMinSize(spinsize);
 	sizer_bottom_->Add(new wxStaticText(this, -1, "Offsets:"), 0, wxALIGN_CENTER_VERTICAL, 0);
-	sizer_bottom_->Add(spin_xoffset_, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, UI::pad());
-	sizer_bottom_->Add(spin_yoffset_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+	sizer_bottom_->Add(spin_xoffset_, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::pad());
+	sizer_bottom_->Add(spin_yoffset_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 
 	// Gfx (offset) type
 	wxString offset_types[] = { "Auto", "Graphic", "Sprite", "HUD" };
 	choice_offset_type_     = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, offset_types);
 	choice_offset_type_->SetSelection(0);
-	sizer_bottom_->Add(choice_offset_type_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+	sizer_bottom_->Add(choice_offset_type_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 
 	// Auto offset
 	btn_auto_offset_ = new SIconButton(this, "offset", "Modify Offsets...");
@@ -132,12 +133,12 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
 	cb_arc_ = new wxCheckBox(this, -1, "Aspect Ratio Correction");
 	cb_arc_->SetValue(gfx_arc);
 	sizer_bottom_->Add(cb_arc_, 0, wxEXPAND, 0);
-	sizer_bottom_->AddSpacer(UI::padLarge());
+	sizer_bottom_->AddSpacer(ui::padLarge());
 
 	// Tile checkbox
 	cb_tile_ = new wxCheckBox(this, -1, "Tile");
 	sizer_bottom_->Add(cb_tile_, 0, wxEXPAND, 0);
-	sizer_bottom_->AddSpacer(UI::padLarge());
+	sizer_bottom_->AddSpacer(ui::padLarge());
 
 	// Image selection controls
 	text_imgnum_   = new wxStaticText(this, -1, "Image: ");
@@ -154,7 +155,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
         0);
 	spin_curimg_->SetMinSize(spinsize);
 	sizer_bottom_->Add(text_imgnum_, 0, wxALIGN_CENTER, 0);
-	sizer_bottom_->Add(spin_curimg_, 0, wxSHRINK | wxALIGN_CENTER, UI::pad());
+	sizer_bottom_->Add(spin_curimg_, 0, wxSHRINK | wxALIGN_CENTER, ui::pad());
 	sizer_bottom_->Add(text_imgoutof_, 0, wxALIGN_CENTER, 0);
 	text_imgnum_->Show(false);
 	spin_curimg_->Show(false);
@@ -209,7 +210,7 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 	// Check entry was given
 	if (!entry)
 	{
-		Global::error = "no entry to load";
+		global::error = "no entry to load";
 		return false;
 	}
 
@@ -217,7 +218,7 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 	setModified(false);
 
 	// Attempt to load the image
-	if (!Misc::loadImageFromEntry(image(), entry, index))
+	if (!misc::loadImageFromEntry(image(), entry, index))
 		return false;
 
 	// Only show next/prev image buttons if the entry contains multiple images
@@ -235,7 +236,7 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 	}
 
 	// Hack for colormaps to be 256-wide
-	if (StrUtil::equalCI(entry->type()->name(), "colormap"))
+	if (strutil::equalCI(entry->type()->name(), "colormap"))
 		image()->setWidth(256);
 
 	// Refresh everything
@@ -278,7 +279,7 @@ bool GfxEntryPanel::saveEntry()
 			if (writable == SIFormat::Writable::Convert)
 			{
 				format->convertWritable(*image, SIFormat::ConvertOptions());
-				Log::info("Image converted for writing");
+				log::info("Image converted for writing");
 			}
 
 			if (format->saveImage(*image, entry->data(), &gfx_canvas_->palette()))
@@ -305,18 +306,18 @@ bool GfxEntryPanel::saveEntry()
 	}
 	// Otherwise just set offsets
 	else
-		EntryOperations::setGfxOffsets(entry.get(), spin_xoffset_->GetValue(), spin_yoffset_->GetValue());
+		entryoperations::setGfxOffsets(entry.get(), spin_xoffset_->GetValue(), spin_yoffset_->GetValue());
 
 	// Apply alPh/tRNS options
 	if (entry->type()->formatId() == "img_png")
 	{
-		bool alph = EntryOperations::getalPhChunk(entry.get());
-		bool trns = EntryOperations::gettRNSChunk(entry.get());
+		bool alph = entryoperations::getalPhChunk(entry.get());
+		bool trns = entryoperations::gettRNSChunk(entry.get());
 
 		if (alph != menu_custom_->IsChecked(SAction::fromId("pgfx_alph")->wxId()))
-			EntryOperations::modifyalPhChunk(entry.get(), !alph);
+			entryoperations::modifyalPhChunk(entry.get(), !alph);
 		if (trns != menu_custom_->IsChecked(SAction::fromId("pgfx_trns")->wxId()))
-			EntryOperations::modifytRNSChunk(entry.get(), !trns);
+			entryoperations::modifytRNSChunk(entry.get(), !trns);
 	}
 
 	if (ok)
@@ -436,7 +437,7 @@ bool GfxEntryPanel::extractAll() const
 	for (int i = 0; i < image()->size(); ++i)
 	{
 		wxString newname = wxString::Format("%s_%i.png", name, i);
-		Misc::loadImageFromEntry(image(), entry.get(), i);
+		misc::loadImageFromEntry(image(), entry.get(), i);
 
 		// Only process images that actually contain some pixels
 		if (image()->width() && image()->height())
@@ -451,7 +452,7 @@ bool GfxEntryPanel::extractAll() const
 	}
 
 	// Reload image of where we were
-	Misc::loadImageFromEntry(image(), entry.get(), imgindex);
+	misc::loadImageFromEntry(image(), entry.get(), imgindex);
 
 	return true;
 }
@@ -468,7 +469,7 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 		return;
 
 	// Setup palette
-	theMainWindow->paletteChooser()->setGlobalFromArchive(entry->parent(), Misc::detectPaletteHack(entry));
+	theMainWindow->paletteChooser()->setGlobalFromArchive(entry->parent(), misc::detectPaletteHack(entry));
 	updateImagePalette();
 
 	// Set offset text boxes
@@ -487,12 +488,12 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 	if (entry->type() != nullptr && entry->type()->formatId() == "img_png")
 	{
 		// Check for alph
-		alph_ = EntryOperations::getalPhChunk(entry);
+		alph_ = entryoperations::getalPhChunk(entry);
 		menu_custom_->Enable(menu_gfxep_alph, true);
 		menu_custom_->Check(menu_gfxep_alph, alph_);
 
 		// Check for trns
-		trns_ = EntryOperations::gettRNSChunk(entry);
+		trns_ = entryoperations::gettRNSChunk(entry);
 		menu_custom_->Enable(menu_gfxep_trns, true);
 		menu_custom_->Check(menu_gfxep_trns, trns_);
 
@@ -563,11 +564,11 @@ wxString GfxEntryPanel::statusString()
 	if (auto entry = entry_.lock(); entry->type()->formatId() == "img_png")
 	{
 		// alPh
-		if (EntryOperations::getalPhChunk(entry.get()))
+		if (entryoperations::getalPhChunk(entry.get()))
 			status += ", alPh";
 
 		// tRNS
-		if (EntryOperations::gettRNSChunk(entry.get()))
+		if (entryoperations::gettRNSChunk(entry.get()))
 			status += ", tRNS";
 	}
 
@@ -589,7 +590,7 @@ void GfxEntryPanel::refreshPanel()
 // -----------------------------------------------------------------------------
 void GfxEntryPanel::updateImagePalette() const
 {
-	gfx_canvas_->setPalette(MainEditor::currentPalette());
+	gfx_canvas_->setPalette(maineditor::currentPalette());
 	gfx_canvas_->updateImageTexture();
 }
 
@@ -697,16 +698,16 @@ void GfxEntryPanel::applyViewType() const
 bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 {
 	// We're only interested in "pgfx_" actions
-	if (!StrUtil::startsWith(id, "pgfx_"))
+	if (!strutil::startsWith(id, "pgfx_"))
 		return false;
 
 	auto entry = entry_.lock();
 
 	// For pgfx_brush actions, the string after pgfx is a brush name
-	if (StrUtil::startsWith(id, "pgfx_brush"))
+	if (strutil::startsWith(id, "pgfx_brush"))
 	{
 		gfx_canvas_->setBrush(SBrush::get(string{ id }));
-		button_brush_->setIcon(StrUtil::afterFirst(id, '_'));
+		button_brush_->setIcon(strutil::afterFirst(id, '_'));
 	}
 
 	// Editing - drag mode
@@ -824,7 +825,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	else if (id == "pgfx_remap")
 	{
 		// Create translation editor dialog
-		auto                    pal = MainEditor::currentPalette();
+		auto                    pal = maineditor::currentPalette();
 		TranslationEditorDialog ted(theMainWindow, *pal, " Colour Remap", &gfx_canvas_->image());
 
 		// Create translation to edit
@@ -849,7 +850,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	// Colourise
 	else if (id == "pgfx_colourise" && entry)
 	{
-		auto               pal = MainEditor::currentPalette();
+		auto               pal = maineditor::currentPalette();
 		GfxColouriseDialog gcd(theMainWindow, entry.get(), *pal);
 		gcd.setColour(last_colour);
 
@@ -874,7 +875,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	// Tint
 	else if (id == "pgfx_tint" && entry)
 	{
-		auto          pal = MainEditor::currentPalette();
+		auto          pal = maineditor::currentPalette();
 		GfxTintDialog gtd(theMainWindow, entry.get(), *pal);
 		gtd.setValues(last_tint_colour, last_tint_amount);
 
@@ -901,7 +902,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	else if (id == "pgfx_crop")
 	{
 		auto          image = this->image();
-		auto          pal   = MainEditor::currentPalette();
+		auto          pal   = maineditor::currentPalette();
 		GfxCropDialog gcd(theMainWindow, image, pal);
 
 		// Show crop dialog
@@ -951,7 +952,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	{
 		// This is a special case. If we set the entry as modified, SLADE will prompt
 		// to save it, rewriting the entry and cancelling the optimization done...
-		if (EntryOperations::optimizePNG(entry.get()))
+		if (entryoperations::optimizePNG(entry.get()))
 			setModified(false);
 		else
 			wxMessageBox(
@@ -1004,7 +1005,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 				temp.setType(EntryType::fromId("png"));
 				menu_custom_->Enable(MENU_GFXEP_ALPH, true);
 				menu_custom_->Enable(MENU_GFXEP_TRNS, true);
-				menu_custom_->Check(MENU_GFXEP_TRNS, EntryOperations::gettRNSChunk(&temp));
+				menu_custom_->Check(MENU_GFXEP_TRNS, entryoperations::gettRNSChunk(&temp));
 				menu_custom_->Enable(MENU_ARCHGFX_EXPORTPNG, false);
 				menu_custom_->Enable(MENU_GFXEP_PNGOPT, true);
 				toolbar_->enableGroup("PNG", true);
@@ -1221,21 +1222,24 @@ void GfxEntryPanel::onColourPicked(wxEvent& e)
 
 // I'd love to put them in their own file, but attempting to do so
 // results in a circular include nightmare and nothing works anymore.
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "MainEditor/UI/ArchivePanel.h"
 
-GfxEntryPanel* CH::getCurrentGfxPanel()
+namespace
 {
-	auto panel = MainEditor::currentEntryPanel();
+GfxEntryPanel* getCurrentGfxPanel()
+{
+	auto panel = maineditor::currentEntryPanel();
 	if (panel)
 	{
 		if (!(panel->name().CmpNoCase("gfx")))
 		{
-			return static_cast<GfxEntryPanel*>(panel);
+			return dynamic_cast<GfxEntryPanel*>(panel);
 		}
 	}
 	return nullptr;
 }
+} // namespace
 
 CONSOLE_COMMAND(rotate, 1, true)
 {
@@ -1251,38 +1255,38 @@ CONSOLE_COMMAND(rotate, 1, true)
 			val = 270.;
 		else
 		{
-			Log::error(wxString::Format("Invalid parameter: %s is not a number.", bluh.mb_str()));
+			log::error(wxString::Format("Invalid parameter: %s is not a number.", bluh.mb_str()));
 			return;
 		}
 	}
 	int angle = (int)val;
 	if (angle % 90)
 	{
-		Log::error(wxString::Format("Invalid parameter: %i is not a multiple of 90.", angle));
+		log::error(wxString::Format("Invalid parameter: %i is not a multiple of 90.", angle));
 		return;
 	}
 
-	auto foo = CH::getCurrentArchivePanel();
+	auto foo = maineditor::currentArchivePanel();
 	if (!foo)
 	{
-		Log::info(1, "No active panel.");
+		log::info(1, "No active panel.");
 		return;
 	}
 	auto bar = foo->currentEntry();
 	if (!bar)
 	{
-		Log::info(1, "No active entry.");
+		log::info(1, "No active entry.");
 		return;
 	}
-	auto meep = CH::getCurrentGfxPanel();
+	auto meep = getCurrentGfxPanel();
 	if (!meep)
 	{
-		Log::info(1, "No image selected.");
+		log::info(1, "No image selected.");
 		return;
 	}
 
 	// Get current entry
-	auto entry = MainEditor::currentEntry();
+	auto entry = maineditor::currentEntry();
 
 	if (meep->image())
 	{
@@ -1304,25 +1308,25 @@ CONSOLE_COMMAND(mirror, 1, true)
 		vertical = false;
 	else
 	{
-		Log::error(wxString::Format("Invalid parameter: %s is not a known value.", bluh.mb_str()));
+		log::error(wxString::Format("Invalid parameter: %s is not a known value.", bluh.mb_str()));
 		return;
 	}
-	auto foo = CH::getCurrentArchivePanel();
+	auto foo = maineditor::currentArchivePanel();
 	if (!foo)
 	{
-		Log::info(1, "No active panel.");
+		log::info(1, "No active panel.");
 		return;
 	}
 	auto bar = foo->currentEntry();
 	if (!bar)
 	{
-		Log::info(1, "No active entry.");
+		log::info(1, "No active entry.");
 		return;
 	}
-	auto meep = CH::getCurrentGfxPanel();
+	auto meep = getCurrentGfxPanel();
 	if (!meep)
 	{
-		Log::info(1, "No image selected.");
+		log::info(1, "No image selected.");
 		return;
 	}
 	if (meep->image())
@@ -1338,25 +1342,25 @@ CONSOLE_COMMAND(mirror, 1, true)
 CONSOLE_COMMAND(crop, 4, true)
 {
 	int x1, y1, x2, y2;
-	if (StrUtil::toInt(args[0], x1) && StrUtil::toInt(args[1], y1) && StrUtil::toInt(args[2], x2)
-		&& StrUtil::toInt(args[3], y2))
+	if (strutil::toInt(args[0], x1) && strutil::toInt(args[1], y1) && strutil::toInt(args[2], x2)
+		&& strutil::toInt(args[3], y2))
 	{
-		auto foo = CH::getCurrentArchivePanel();
+		auto foo = maineditor::currentArchivePanel();
 		if (!foo)
 		{
-			Log::info(1, "No active panel.");
+			log::info(1, "No active panel.");
 			return;
 		}
-		auto meep = CH::getCurrentGfxPanel();
+		auto meep = getCurrentGfxPanel();
 		if (!meep)
 		{
-			Log::info(1, "No image selected.");
+			log::info(1, "No image selected.");
 			return;
 		}
 		auto bar = foo->currentEntry();
 		if (!bar)
 		{
-			Log::info(1, "No active entry.");
+			log::info(1, "No active entry.");
 			return;
 		}
 		if (meep->image())
@@ -1372,22 +1376,22 @@ CONSOLE_COMMAND(crop, 4, true)
 
 CONSOLE_COMMAND(adjust, 0, true)
 {
-	auto foo = CH::getCurrentArchivePanel();
+	auto foo = maineditor::currentArchivePanel();
 	if (!foo)
 	{
-		Log::info(1, "No active panel.");
+		log::info(1, "No active panel.");
 		return;
 	}
-	auto meep = CH::getCurrentGfxPanel();
+	auto meep = getCurrentGfxPanel();
 	if (!meep)
 	{
-		Log::info(1, "No image selected.");
+		log::info(1, "No image selected.");
 		return;
 	}
 	auto bar = foo->currentEntry();
 	if (!bar)
 	{
-		Log::info(1, "No active entry.");
+		log::info(1, "No active entry.");
 		return;
 	}
 	if (meep->image())
@@ -1402,22 +1406,22 @@ CONSOLE_COMMAND(adjust, 0, true)
 
 CONSOLE_COMMAND(mirrorpad, 0, true)
 {
-	auto foo = CH::getCurrentArchivePanel();
+	auto foo = maineditor::currentArchivePanel();
 	if (!foo)
 	{
-		Log::info(1, "No active panel.");
+		log::info(1, "No active panel.");
 		return;
 	}
-	auto meep = CH::getCurrentGfxPanel();
+	auto meep = getCurrentGfxPanel();
 	if (!meep)
 	{
-		Log::info(1, "No image selected.");
+		log::info(1, "No image selected.");
 		return;
 	}
 	auto bar = foo->currentEntry();
 	if (!bar)
 	{
-		Log::info(1, "No active entry.");
+		log::info(1, "No active entry.");
 		return;
 	}
 	if (meep->image())
@@ -1432,22 +1436,22 @@ CONSOLE_COMMAND(mirrorpad, 0, true)
 
 CONSOLE_COMMAND(imgconv, 0, true)
 {
-	auto foo = CH::getCurrentArchivePanel();
+	auto foo = maineditor::currentArchivePanel();
 	if (!foo)
 	{
-		Log::info(1, "No active panel.");
+		log::info(1, "No active panel.");
 		return;
 	}
 	auto bar = foo->currentEntry();
 	if (!bar)
 	{
-		Log::info(1, "No active entry.");
+		log::info(1, "No active entry.");
 		return;
 	}
-	auto meep = CH::getCurrentGfxPanel();
+	auto meep = getCurrentGfxPanel();
 	if (!meep)
 	{
-		Log::info(1, "No image selected.");
+		log::info(1, "No image selected.");
 		return;
 	}
 	if (meep->image())

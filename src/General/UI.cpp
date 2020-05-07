@@ -32,9 +32,11 @@
 #include "Main.h"
 #include "UI.h"
 #include "App.h"
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "UI/SplashWindow.h"
 #include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -42,7 +44,7 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace UI
+namespace slade::ui
 {
 unique_ptr<SplashWindow> splash_window;
 bool                     splash_enabled = true;
@@ -55,7 +57,7 @@ int    px_pad_min;
 int    px_splitter;
 int    px_spin_width;
 
-} // namespace UI
+} // namespace slade::ui
 
 
 // -----------------------------------------------------------------------------
@@ -63,28 +65,28 @@ int    px_spin_width;
 // UI Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace UI
+namespace slade::ui
 {
 // -----------------------------------------------------------------------------
 // Returns true when called from the main (UI) thread
 // -----------------------------------------------------------------------------
 bool isMainThread()
 {
-	return App::mainThreadId() == std::this_thread::get_id();
+	return app::mainThreadId() == std::this_thread::get_id();
 }
-} // namespace UI
+} // namespace slade::ui
 
 // -----------------------------------------------------------------------------
 // Initialises UI metric values based on [scale]
 // -----------------------------------------------------------------------------
-void UI::init(double scale)
+void ui::init(double scale)
 {
-	UI::scale    = scale;
+	ui::scale    = scale;
 	px_pad_small = 8 * scale;
 	px_pad       = 12 * scale;
 	px_pad_min   = 3 * scale;
 	px_splitter  = 10 * scale;
-	if (App::platform() == App::Platform::Linux)
+	if (app::platform() == app::Platform::Linux)
 		px_spin_width = -1;
 	else
 		px_spin_width = 64 * scale;
@@ -93,7 +95,7 @@ void UI::init(double scale)
 // -----------------------------------------------------------------------------
 // Enables or disables the splash window depending on [enable]
 // -----------------------------------------------------------------------------
-void UI::enableSplash(bool enable)
+void ui::enableSplash(bool enable)
 {
 	splash_enabled = enable;
 }
@@ -102,7 +104,7 @@ void UI::enableSplash(bool enable)
 // Shows the splash window with [message].
 // If [progress] is true, the progress bar is displayed
 // -----------------------------------------------------------------------------
-void UI::showSplash(string_view message, bool progress, wxWindow* parent)
+void ui::showSplash(string_view message, bool progress, wxWindow* parent)
 {
 	if (!splash_enabled || !isMainThread())
 		return;
@@ -119,7 +121,7 @@ void UI::showSplash(string_view message, bool progress, wxWindow* parent)
 // -----------------------------------------------------------------------------
 // Hides the splash window
 // -----------------------------------------------------------------------------
-void UI::hideSplash()
+void ui::hideSplash()
 {
 	if (splash_window && isMainThread())
 	{
@@ -131,7 +133,7 @@ void UI::hideSplash()
 // -----------------------------------------------------------------------------
 // Redraws the splash window
 // -----------------------------------------------------------------------------
-void UI::updateSplash()
+void ui::updateSplash()
 {
 	if (splash_window && isMainThread())
 		splash_window->forceRedraw();
@@ -140,7 +142,7 @@ void UI::updateSplash()
 // -----------------------------------------------------------------------------
 // Returns the current splash window progress
 // -----------------------------------------------------------------------------
-float UI::getSplashProgress()
+float ui::getSplashProgress()
 {
 	return splash_window ? splash_window->progress() : 0.0f;
 }
@@ -148,7 +150,7 @@ float UI::getSplashProgress()
 // -----------------------------------------------------------------------------
 // Sets the splash window [message]
 // -----------------------------------------------------------------------------
-void UI::setSplashMessage(string_view message)
+void ui::setSplashMessage(string_view message)
 {
 	if (splash_window && isMainThread())
 		splash_window->setMessage(wxString{ message.data(), message.size() });
@@ -157,7 +159,7 @@ void UI::setSplashMessage(string_view message)
 // -----------------------------------------------------------------------------
 // Sets the splash window progress bar [message]
 // -----------------------------------------------------------------------------
-void UI::setSplashProgressMessage(string_view message)
+void ui::setSplashProgressMessage(string_view message)
 {
 	if (splash_window && isMainThread())
 		splash_window->setProgressMessage(wxString{ message.data(), message.size() });
@@ -166,7 +168,7 @@ void UI::setSplashProgressMessage(string_view message)
 // -----------------------------------------------------------------------------
 // Sets the splash window [progress]
 // -----------------------------------------------------------------------------
-void UI::setSplashProgress(float progress)
+void ui::setSplashProgress(float progress)
 {
 	if (splash_window && isMainThread())
 		splash_window->setProgress(progress);
@@ -175,7 +177,7 @@ void UI::setSplashProgress(float progress)
 // -----------------------------------------------------------------------------
 // Sets the mouse cursor for [window]
 // -----------------------------------------------------------------------------
-void UI::setCursor(wxWindow* window, MouseCursor cursor)
+void ui::setCursor(wxWindow* window, MouseCursor cursor)
 {
 	switch (cursor)
 	{
@@ -193,7 +195,7 @@ void UI::setCursor(wxWindow* window, MouseCursor cursor)
 // -----------------------------------------------------------------------------
 // Returns the UI scaling factor
 // -----------------------------------------------------------------------------
-double UI::scaleFactor()
+double ui::scaleFactor()
 {
 	return scale;
 }
@@ -203,7 +205,7 @@ double UI::scaleFactor()
 // Use this for UI sizes like padding, spin control widths etc. to keep things
 // consistent
 // -----------------------------------------------------------------------------
-int UI::px(Size size)
+int ui::px(Size size)
 {
 	switch (size)
 	{
@@ -219,7 +221,7 @@ int UI::px(Size size)
 // -----------------------------------------------------------------------------
 // Returns [px] scaled by the current scaling factor (in pixels)
 // -----------------------------------------------------------------------------
-int UI::scalePx(int px)
+int ui::scalePx(int px)
 {
 	return px * scale;
 }
@@ -227,7 +229,7 @@ int UI::scalePx(int px)
 // -----------------------------------------------------------------------------
 // Returns the standard padding size in pixels
 // -----------------------------------------------------------------------------
-int UI::pad()
+int ui::pad()
 {
 	return px_pad_small;
 }
@@ -235,7 +237,7 @@ int UI::pad()
 // -----------------------------------------------------------------------------
 // Returns the standard large padding size in pixels
 // -----------------------------------------------------------------------------
-int UI::padLarge()
+int ui::padLarge()
 {
 	return px_pad;
 }
@@ -255,14 +257,14 @@ int UI::padLarge()
 CONSOLE_COMMAND(splash, 0, false)
 {
 	if (args.empty())
-		UI::hideSplash();
+		ui::hideSplash();
 	else if (args.size() == 1)
-		UI::showSplash(args[0]);
+		ui::showSplash(args[0]);
 	else
 	{
-		UI::showSplash(args[0], true);
-		float prog = StrUtil::asFloat(args[1]);
-		UI::setSplashProgress(prog);
-		UI::setSplashProgressMessage(fmt::format("Progress {}", args[1]));
+		ui::showSplash(args[0], true);
+		float prog = strutil::asFloat(args[1]);
+		ui::setSplashProgress(prog);
+		ui::setSplashProgressMessage(fmt::format("Progress {}", args[1]));
 	}
 }

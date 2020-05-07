@@ -38,6 +38,8 @@
 #include "MapFormat/MapFormatHandler.h"
 #include "Utility/MathStuff.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -92,7 +94,7 @@ MapObject* SLADEMap::object(MapObject::Type type, unsigned index) const
 // -----------------------------------------------------------------------------
 void SLADEMap::setGeometryUpdated()
 {
-	geometry_updated_ = App::runTimer();
+	geometry_updated_ = app::runTimer();
 }
 
 // -----------------------------------------------------------------------------
@@ -100,7 +102,7 @@ void SLADEMap::setGeometryUpdated()
 // -----------------------------------------------------------------------------
 void SLADEMap::setThingsUpdated()
 {
-	things_updated_ = App::runTimer();
+	things_updated_ = app::runTimer();
 }
 
 // -----------------------------------------------------------------------------
@@ -145,11 +147,11 @@ bool SLADEMap::readMap(const Archive::MapDesc& map)
 	{
 		// Update variables
 		current_format_   = omap.format;
-		geometry_updated_ = App::runTimer();
+		geometry_updated_ = app::runTimer();
 
 		// When creating a new map, retrieve UDMF namespace information from the configuration
 		if (omap.format == MapFormat::UDMF && udmf_namespace_.empty())
-			udmf_namespace_ = Game::configuration().udmfNamespace();
+			udmf_namespace_ = game::configuration().udmfNamespace();
 	}
 
 	mapOpenChecks();
@@ -158,7 +160,7 @@ bool SLADEMap::readMap(const Archive::MapDesc& map)
 	data_.sectors().initPolygons();
 	recomputeSpecials();
 
-	opened_time_ = App::runTimer() + 10;
+	opened_time_ = app::runTimer() + 10;
 
 	return ok;
 }
@@ -261,7 +263,7 @@ MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x,
 		if (s_line == line)
 			continue;
 
-		double dist = MathStuff::distanceRayLine(mid, mid + vec, s_line->start(), s_line->end());
+		double dist = math::distanceRayLine(mid, mid + vec, s_line->start(), s_line->end());
 
 		if (dist < min_dist && dist > 0)
 		{
@@ -412,7 +414,7 @@ MapSector* SLADEMap::lineSideSector(MapLine* line, bool front)
 
 	// Rotate very slightly to avoid some common cases where
 	// the ray will cross a vertex exactly
-	dir = MathStuff::rotatePoint(mid, dir, 0.01);
+	dir = math::rotatePoint(mid, dir, 0.01);
 
 	// Find closest line intersecting front/back vector
 	double      dist;
@@ -424,7 +426,7 @@ MapSector* SLADEMap::lineSideSector(MapLine* line, bool front)
 		if (lines[a] == line)
 			continue;
 
-		dist = MathStuff::distanceRayLine(mid, dir, lines[a]->start(), lines[a]->end());
+		dist = math::distanceRayLine(mid, dir, lines[a]->start(), lines[a]->end());
 		if (dist < min_dist && dist > 0)
 		{
 			min_dist = dist;
@@ -436,12 +438,12 @@ MapSector* SLADEMap::lineSideSector(MapLine* line, bool front)
 	// and return the appropriate sector
 	if (index >= 0)
 	{
-		// Log::info(3, "Closest line %d", index);
+		// log::info(3, "Closest line %d", index);
 		auto* l = lines[index];
 
 		// Check side of line
 		MapSector* sector = nullptr;
-		if (MathStuff::lineSide(mid, l->seg()) >= 0)
+		if (math::lineSide(mid, l->seg()) >= 0)
 			sector = l->frontSector();
 		else
 			sector = l->backSector();
@@ -482,7 +484,7 @@ bool SLADEMap::isModified() const
 // -----------------------------------------------------------------------------
 void SLADEMap::setOpenedTime()
 {
-	opened_time_ = App::runTimer();
+	opened_time_ = app::runTimer();
 }
 
 // -----------------------------------------------------------------------------
@@ -525,8 +527,8 @@ MapVertex* SLADEMap::createVertex(Vec2d pos, double split_dist)
 	// Round position to integral if fractional positions are disabled
 	if (current_format_ != MapFormat::UDMF && current_format_ != MapFormat::Doom64)
 	{
-		pos.x = MathStuff::round(pos.x);
-		pos.y = MathStuff::round(pos.y);
+		pos.x = math::round(pos.x);
+		pos.y = math::round(pos.y);
 	}
 
 	// First check that it won't overlap any other vertex
@@ -548,14 +550,14 @@ MapVertex* SLADEMap::createVertex(Vec2d pos, double split_dist)
 
 			if (line->distanceTo(pos) < split_dist)
 			{
-				Log::debug("Vertex at ({:1.2f},{:1.2f}) splits line {}", pos.x, pos.y, line->index());
+				log::debug("Vertex at ({:1.2f},{:1.2f}) splits line {}", pos.x, pos.y, line->index());
 				splitLine(line, nv);
 			}
 		}
 	}
 
 	// Set geometry age
-	geometry_updated_ = App::runTimer();
+	geometry_updated_ = app::runTimer();
 
 	return nv;
 }
@@ -568,13 +570,13 @@ MapLine* SLADEMap::createLine(Vec2d p1, Vec2d p2, double split_dist)
 	// Round coordinates to integral if fractional positions are disabled
 	if (current_format_ != MapFormat::UDMF && current_format_ != MapFormat::Doom64)
 	{
-		p1.x = MathStuff::round(p1.x);
-		p1.y = MathStuff::round(p1.y);
-		p2.x = MathStuff::round(p2.x);
-		p2.y = MathStuff::round(p2.y);
+		p1.x = math::round(p1.x);
+		p1.y = math::round(p1.y);
+		p2.x = math::round(p2.x);
+		p2.y = math::round(p2.y);
 	}
 
-	// Log::info(1, "Create line (%1.2f,%1.2f) to (%1.2f,%1.2f)", p1.x, p1.y, p2.x, p2.y);
+	// log::info(1, "Create line (%1.2f,%1.2f) to (%1.2f,%1.2f)", p1.x, p1.y, p2.x, p2.y);
 
 	// Get vertices at points
 	auto* vertex1 = vertices().vertexAt(p1.x, p1.y);
@@ -616,7 +618,7 @@ MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force
 	vertex2->connectLine(nl);
 
 	// Set geometry age
-	geometry_updated_ = App::runTimer();
+	geometry_updated_ = app::runTimer();
 
 	return nl;
 }
@@ -690,17 +692,17 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 	}
 
 	// Delete the vertex
-	Log::info(4, "Merging vertices {} and {} (removing {})", vertex1, vertex2, vertex2);
+	log::info(4, "Merging vertices {} and {} (removing {})", vertex1, vertex2, vertex2);
 	data_.removeVertex(vertex2);
 
 	// Delete any resulting zero-length lines
 	for (auto& zline : zlines)
 	{
-		Log::info(4, "Removing zero-length line {}", zline->index());
+		log::info(4, "Removing zero-length line {}", zline->index());
 		data_.removeLine(zline);
 	}
 
-	geometry_updated_ = App::runTimer();
+	geometry_updated_ = app::runTimer();
 }
 
 // -----------------------------------------------------------------------------
@@ -728,7 +730,7 @@ MapVertex* SLADEMap::mergeVerticesPoint(const Vec2d& pos)
 		a--;
 	}
 
-	geometry_updated_ = App::runTimer();
+	geometry_updated_ = app::runTimer();
 
 	// Return the final merged vertex
 	return vertex(merge);
@@ -786,7 +788,7 @@ MapLine* SLADEMap::splitLine(MapLine* line, MapVertex* vertex)
 		line->setIntProperty("side2.offsetx", xoff2 + nl->length());
 	}
 
-	geometry_updated_ = App::runTimer();
+	geometry_updated_ = app::runTimer();
 
 	return nl;
 }
@@ -808,7 +810,7 @@ void SLADEMap::splitLinesAt(MapVertex* vertex, double split_dist)
 
 		if (line->distanceTo(vertex->position()) < split_dist)
 		{
-			Log::info(2, "Vertex at ({:1.2f},{:1.2f}) splits line {}", vertex->position_.x, vertex->position_.y, i);
+			log::info(2, "Vertex at ({:1.2f},{:1.2f}) splits line {}", vertex->position_.x, vertex->position_.y, i);
 			splitLine(line, vertex);
 		}
 	}
@@ -852,8 +854,8 @@ bool SLADEMap::setLineSector(unsigned line_index, unsigned sector_index, bool fr
 
 		// Set appropriate line flags
 		bool twosided = (line->side1_ && line->side2_);
-		Game::configuration().setLineBasicFlag("blocking", line, current_format_, !twosided);
-		Game::configuration().setLineBasicFlag("twosided", line, current_format_, twosided);
+		game::configuration().setLineBasicFlag("blocking", line, current_format_, !twosided);
+		game::configuration().setLineBasicFlag("twosided", line, current_format_, twosided);
 
 		// Invalidate sector polygon
 		sector->resetPolygon();
@@ -1047,7 +1049,7 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 
 			// Check for intersection
 			Vec2d intersection;
-			if (MathStuff::linesIntersect(seg1, line2->seg(), intersection))
+			if (math::linesIntersect(seg1, line2->seg(), intersection))
 			{
 				// Create split vertex
 				auto* nv = createVertex(intersection);
@@ -1109,7 +1111,7 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 	// Remove overlapping lines
 	for (auto& remove_line : remove_lines)
 	{
-		Log::info(4, "Removing overlapping line {} (#{})", remove_line->objId(), remove_line->index());
+		log::info(4, "Removing overlapping line {} (#{})", remove_line->objId(), remove_line->index());
 		data_.removeLine(remove_line);
 	}
 	for (unsigned a = 0; a < connected_lines_.size(); a++)
@@ -1163,11 +1165,11 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 
 	if (merged)
 	{
-		Log::info(4, "Architecture merged");
+		log::info(4, "Architecture merged");
 	}
 	else
 	{
-		Log::info(4, "No Architecture merged");
+		log::info(4, "No Architecture merged");
 	}
 
 	return merged;
@@ -1370,7 +1372,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		data_.removeSide(edge.front ? edge.line->side1_ : edge.line->side2_);
 	}
 
-	// Log::info(1, "Ran sector builder %d times", runs);
+	// log::info(1, "Ran sector builder %d times", runs);
 
 	// Check if any lines need to be flipped
 	for (auto& line : lines)
@@ -1417,7 +1419,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		}
 
 		// Otherwise, use defaults from game configuration
-		Game::configuration().applyDefaults(sector(a), current_format_ == MapFormat::UDMF);
+		game::configuration().applyDefaults(sector(a), current_format_ == MapFormat::UDMF);
 	}
 
 	// Update line textures
@@ -1431,7 +1433,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		// Set middle texture if needed
 		if (side == line->s1() && !line->s2() && side->texMiddle() == MapSide::TEX_NONE)
 		{
-			// Log::info(1, "midtex");
+			// log::info(1, "midtex");
 			// Find adjacent texture (any)
 			auto tex = adjacentLineTexture(line->v1());
 			if (tex == MapSide::TEX_NONE)
@@ -1439,7 +1441,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 
 			// If no adjacent texture, get default from game configuration
 			if (tex == MapSide::TEX_NONE)
-				tex = Game::configuration().defaultString(MapObject::Type::Side, "texturemiddle");
+				tex = game::configuration().defaultString(MapObject::Type::Side, "texturemiddle");
 
 			// Set texture
 			side->setTexMiddle(tex);
@@ -1460,7 +1462,7 @@ void SLADEMap::mapOpenChecks()
 	int rsec    = data_.removeDetachedSectors();
 	int risides = data_.removeInvalidSides();
 
-	Log::info(
+	log::info(
 		"Removed {} detached vertices, {} detached sides, {} invalid sides and {} detached sectors",
 		rverts,
 		rsides,

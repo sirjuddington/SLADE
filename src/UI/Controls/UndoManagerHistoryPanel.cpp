@@ -37,6 +37,8 @@
 #include "UI/WxUtils.h"
 #include "Utility/Colour.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -101,9 +103,9 @@ void UndoListView::updateItemAttr(long item, long column, long index) const
 	item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
 
 	if (item == manager_->currentIndex())
-		item_attr_->SetTextColour(WXCOL(ColRGBA(0, 170, 0)));
+		item_attr_->SetTextColour(ColRGBA(0, 170, 0).toWx());
 	else if (item > manager_->currentIndex())
-		item_attr_->SetTextColour(WXCOL(ColRGBA(150, 150, 150)));
+		item_attr_->SetTextColour(ColRGBA(150, 150, 150).toWx());
 }
 
 // -----------------------------------------------------------------------------
@@ -160,9 +162,9 @@ UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* 
 
 	// Add undo levels list
 	list_levels_ = new UndoListView(this, manager);
-	sizer->Add(list_levels_, 1, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(list_levels_, 1, wxEXPAND | wxALL, ui::pad());
 
-	list_levels_->AppendColumn("Action", wxLIST_FORMAT_LEFT, UI::scalePx(160));
+	list_levels_->AppendColumn("Action", wxLIST_FORMAT_LEFT, ui::scalePx(160));
 	list_levels_->AppendColumn("Time", wxLIST_FORMAT_RIGHT);
 	list_levels_->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &UndoManagerHistoryPanel::onItemRightClick, this);
 	Bind(wxEVT_MENU, &UndoManagerHistoryPanel::onMenu, this);

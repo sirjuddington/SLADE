@@ -2,6 +2,8 @@
 
 #include "WizardPageBase.h"
 
+namespace slade
+{
 class BaseResourceArchivesPanel;
 class BaseResourceWizardPage : public WizardPageBase
 {
@@ -17,3 +19,4 @@ public:
 private:
 	BaseResourceArchivesPanel* bra_panel_ = nullptr;
 };
+} // namespace slade

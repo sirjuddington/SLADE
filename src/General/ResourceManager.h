@@ -3,6 +3,8 @@
 #include "Archive/Archive.h"
 #include "Graphics/CTexture/CTexture.h"
 
+namespace slade
+{
 class ResourceManager;
 
 // This base class is probably not really needed
@@ -124,3 +126,4 @@ private:
 
 	void updateEntry(ArchiveEntry& entry, bool remove, bool add);
 };
+} // namespace slade

@@ -46,6 +46,8 @@
 #endif
 #endif
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -67,9 +69,9 @@ EXTERN_CVAR(Int, gl_depth_buffer_size)
 // OGLCanvas class constructor, SFML implementation
 // -----------------------------------------------------------------------------
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval) :
-	wxGLCanvas(parent, id, OpenGL::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
+	wxGLCanvas(parent, id, gl::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
 	timer_{ this },
-	last_time_{ App::runTimer() }
+	last_time_{ app::runTimer() }
 {
 	if (handle_timer)
 		timer_.Start(timer_interval);
@@ -85,7 +87,7 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 		Bind(wxEVT_TIMER, &OGLCanvas::onTimer, this);
 	Bind(wxEVT_SIZE, &OGLCanvas::onResize, this);
 
-	OpenGL::Texture::resetBackgroundTexture();
+	gl::Texture::resetBackgroundTexture();
 }
 #else
 // -----------------------------------------------------------------------------
@@ -94,7 +96,7 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval) :
 	wxGLCanvas(parent, id, OpenGL::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
 	timer_{ this },
-	last_time_{ App::runTimer() }
+	last_time_{ app::runTimer() }
 {
 	// Bind events
 	Bind(wxEVT_PAINT, &OGLCanvas::onPaint, this);
@@ -144,8 +146,8 @@ bool OGLCanvas::createSFML()
 #endif
 	// Context settings
 	sf::ContextSettings settings;
-	settings.stencilBits = 8;
-	settings.depthBits = gl_depth_buffer_size;
+	settings.stencilBits    = 8;
+	settings.depthBits      = gl_depth_buffer_size;
 	settings.attributeFlags = sf::ContextSettings::Default;
 	sf::RenderWindow::create(handle, settings);
 #endif
@@ -157,7 +159,7 @@ bool OGLCanvas::createSFML()
 // -----------------------------------------------------------------------------
 void OGLCanvas::init()
 {
-	OpenGL::init();
+	gl::init();
 
 	glViewport(0, 0, GetSize().x, GetSize().y);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -197,11 +199,11 @@ void OGLCanvas::drawCheckeredBackground() const
 	glEnable(GL_TEXTURE_2D);
 
 	// Bind background texture
-	OpenGL::Texture::bind(OpenGL::Texture::backgroundTexture());
+	gl::Texture::bind(gl::Texture::backgroundTexture());
 
 	// Draw background
 	Rectf rect(0, 0, GetSize().x, GetSize().y);
-	OpenGL::setColour(ColRGBA::WHITE);
+	gl::setColour(ColRGBA::WHITE);
 	glBegin(GL_QUADS);
 	glTexCoord2d(rect.x1() * 0.0625, rect.y1() * 0.0625);
 	glVertex2d(rect.x1(), rect.y1());
@@ -260,7 +262,7 @@ bool OGLCanvas::setActive()
 	if (!sf::RenderWindow::setActive())
 		return false;
 
-	Drawing::setRenderTarget(this);
+	drawing::setRenderTarget(this);
 	resetGLStates();
 	setView(sf::View(sf::FloatRect(0.0f, 0.0f, GetSize().x, GetSize().y)));
 
@@ -291,7 +293,7 @@ void OGLCanvas::setup2D() const
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
+	if (gl::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
 }
 
@@ -329,7 +331,7 @@ void OGLCanvas::onPaint(wxPaintEvent& e)
 			init();
 
 		// Draw content
-		OpenGL::resetBlend();
+		gl::resetBlend();
 		draw();
 	}
 }
@@ -349,8 +351,8 @@ void OGLCanvas::onEraseBackground(wxEraseEvent& e)
 void OGLCanvas::onTimer(wxTimerEvent& e)
 {
 	// Get time since last redraw
-	long frametime = App::runTimer() - last_time_;
-	last_time_     = App::runTimer();
+	long frametime = app::runTimer() - last_time_;
+	last_time_     = app::runTimer();
 
 	// Update/refresh
 	update(frametime);

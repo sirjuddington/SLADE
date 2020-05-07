@@ -37,6 +37,8 @@
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -56,19 +58,19 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 
 	// Resource archive list
 	list_resources_ = new wxCheckListBox(this, -1);
-	sizer->Add(list_resources_, 1, wxEXPAND | wxBOTTOM, UI::pad());
-	list_resources_->SetInitialSize(WxUtils::scaledSize(350, 100));
+	sizer->Add(list_resources_, 1, wxEXPAND | wxBOTTOM, ui::pad());
+	list_resources_->SetInitialSize(wxutil::scaledSize(350, 100));
 
 	// Populate resource archive list
 	int index = 0;
-	for (int a = 0; a < App::archiveManager().numArchives(); a++)
+	for (int a = 0; a < app::archiveManager().numArchives(); a++)
 	{
-		auto arch = App::archiveManager().getArchive(a).get();
+		auto arch = app::archiveManager().getArchive(a).get();
 		if (arch != archive)
 		{
 			list_resources_->Append(arch->filename(false));
 			archives_.push_back(arch);
-			if (App::archiveManager().archiveIsResource(arch))
+			if (app::archiveManager().archiveIsResource(arch))
 				list_resources_->Check(index);
 			index++;
 		}
@@ -76,9 +78,9 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 
 	// 'Open Resource' button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxRIGHT, UI::pad());
+	sizer->Add(hbox, 0, wxEXPAND | wxRIGHT, ui::pad());
 	btn_open_resource_ = new wxButton(this, -1, "Open Archive");
-	hbox->Add(btn_open_resource_, 0, wxEXPAND | wxRIGHT, UI::pad());
+	hbox->Add(btn_open_resource_, 0, wxEXPAND | wxRIGHT, ui::pad());
 
 	// 'Open Recent' button
 	btn_recent_ = new wxButton(this, -1, "Open Recent");
@@ -130,12 +132,12 @@ wxString ResourceArchiveChooser::selectedResourceList()
 // -----------------------------------------------------------------------------
 void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 {
-	SFileDialog::FDInfo info;
-	if (SFileDialog::openFile(info, "Open Resource Archive", App::archiveManager().getArchiveExtensionsString(), this))
+	filedialog::FDInfo info;
+	if (filedialog::openFile(info, "Open Resource Archive", app::archiveManager().getArchiveExtensionsString(), this))
 	{
-		UI::showSplash("Opening Resource Archive", true);
-		auto na = App::archiveManager().openArchive(info.filenames[0], true, true);
-		UI::hideSplash();
+		ui::showSplash("Opening Resource Archive", true);
+		auto na = app::archiveManager().openArchive(info.filenames[0], true, true);
+		ui::hideSplash();
 		if (na)
 		{
 			list_resources_->Append(na->filename(false));
@@ -152,14 +154,14 @@ void ResourceArchiveChooser::onBtnRecent(wxCommandEvent& e)
 {
 	// Build list of recent wad filename strings
 	wxArrayString recent;
-	for (unsigned a = 0; a < App::archiveManager().numRecentFiles(); a++)
-		recent.Add(App::archiveManager().recentFile(a));
+	for (unsigned a = 0; a < app::archiveManager().numRecentFiles(); a++)
+		recent.Add(app::archiveManager().recentFile(a));
 
 	// Show dialog
 	wxSingleChoiceDialog dlg(this, "Select a recent Archive to open", "Open Recent", recent);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		auto na = App::archiveManager().openArchive(App::archiveManager().recentFile(dlg.GetSelection()), true, true);
+		auto na = app::archiveManager().openArchive(app::archiveManager().recentFile(dlg.GetSelection()), true, true);
 		if (na)
 		{
 			list_resources_->Append(na->filename(false));
@@ -174,5 +176,5 @@ void ResourceArchiveChooser::onBtnRecent(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void ResourceArchiveChooser::onResourceChecked(wxCommandEvent& e)
 {
-	App::archiveManager().setArchiveResource(archives_[e.GetInt()], list_resources_->IsChecked(e.GetInt()));
+	app::archiveManager().setArchiveResource(archives_[e.GetInt()], list_resources_->IsChecked(e.GetInt()));
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class SAction;
 
 class SToolBarButton : public wxControl
@@ -51,5 +53,6 @@ private:
 	void onFocus(wxFocusEvent& e);
 	void onEraseBackground(wxEraseEvent& e);
 };
+} // namespace slade
 
 wxDECLARE_EVENT(wxEVT_STOOLBAR_BUTTON_CLICKED, wxCommandEvent);

@@ -3,6 +3,8 @@
 #include "Utility/Colour.h"
 #include <array>
 
+namespace slade
+{
 class SFontChar
 {
 	friend class SFont;
@@ -57,3 +59,4 @@ private:
 	static SFont font_vga_;
 	static SFont font_slade_;
 };
+} // namespace slade

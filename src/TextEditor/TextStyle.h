@@ -3,6 +3,8 @@
 #include "Utility/Colour.h"
 #include "Utility/Parser.h"
 
+namespace slade
+{
 class TextEditorCtrl;
 class TextStyle
 {
@@ -114,3 +116,4 @@ private:
 
 	static vector<TextEditorCtrl*> editors_;
 };
+} // namespace slade

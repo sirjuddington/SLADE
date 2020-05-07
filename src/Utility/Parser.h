@@ -3,6 +3,8 @@
 #include "PropertyList/Property.h"
 #include "Tree.h"
 
+namespace slade
+{
 class ArchiveDir;
 class Parser;
 class Tokenizer;
@@ -94,3 +96,4 @@ private:
 	ArchiveDir*               archive_dir_root_ = nullptr;
 	bool                      case_sensitive_   = false;
 };
+} // namespace slade

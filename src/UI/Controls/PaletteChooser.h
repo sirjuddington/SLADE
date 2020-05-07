@@ -2,6 +2,8 @@
 
 #include "Graphics/Palette/Palette.h"
 
+namespace slade
+{
 class Archive;
 class ArchiveEntry;
 
@@ -29,3 +31,4 @@ private:
 	Palette pal_global_;
 	Signals signals_;
 };
+} // namespace slade

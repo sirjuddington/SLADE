@@ -4,6 +4,8 @@
 #define KPM_ALT 0x02
 #define KPM_SHIFT 0x04
 
+namespace slade
+{
 class Tokenizer;
 
 struct Keypress
@@ -117,3 +119,4 @@ public:
 	virtual void onKeyBindPress(string_view name) {}
 	virtual void onKeyBindRelease(string_view name) {}
 };
+} // namespace slade

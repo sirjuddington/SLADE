@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class ModifyOffsetsDialog : public wxDialog
 {
 public:
@@ -28,3 +30,4 @@ private:
 	void onOptSet(wxCommandEvent& e);
 	void onOptAuto(wxCommandEvent& e);
 };
+} // namespace slade

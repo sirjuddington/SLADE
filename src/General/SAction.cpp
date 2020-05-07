@@ -41,6 +41,8 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -94,7 +96,7 @@ SAction::SAction(
 // -----------------------------------------------------------------------------
 string SAction::shortcutText() const
 {
-	if (StrUtil::startsWith(shortcut_, "kb:"))
+	if (strutil::startsWith(shortcut_, "kb:"))
 	{
 		auto kp = KeyBind::bind({ shortcut_.data() + 3, shortcut_.size() - 3 }).key(0);
 		if (!kp.key.empty())
@@ -159,8 +161,8 @@ bool SAction::addToMenu(
 
 	// Determine shortcut key
 	auto sc         = shortcut_;
-	bool sc_control = StrUtil::contains(shortcut_, "Ctrl") || StrUtil::contains(shortcut_, "Alt");
-	if (StrUtil::startsWith(shortcut_, "kb:"))
+	bool sc_control = strutil::contains(shortcut_, "Ctrl") || strutil::contains(shortcut_, "Alt");
+	if (strutil::startsWith(shortcut_, "kb:"))
 	{
 		auto kp = KeyBind::bind({ shortcut_.data() + 3, shortcut_.size() - 3 }).key(0);
 		if (!kp.key.empty())
@@ -184,7 +186,7 @@ bool SAction::addToMenu(
 	if (!sc.empty())
 		help += fmt::format(" (Shortcut: {})", sc);
 	if (type_ == Type::Normal)
-		menu->Append(WxUtils::createMenuItem(menu, wid, item_text, help, WxUtils::strFromView(real_icon)));
+		menu->Append(wxutil::createMenuItem(menu, wid, item_text, help, wxutil::strFromView(real_icon)));
 	else if (type_ == Type::Check)
 	{
 		auto item = menu->AppendCheckItem(wid, item_text, help);
@@ -214,11 +216,11 @@ bool SAction::addToToolbar(wxAuiToolBar* toolbar, string_view icon_override, int
 	// Append this action to the toolbar
 	int wid = wx_id_ + wx_id_offset;
 	if (type_ == Type::Normal)
-		toolbar->AddTool(wid, text_, Icons::getIcon(Icons::General, useicon), helptext_);
+		toolbar->AddTool(wid, text_, icons::getIcon(icons::General, useicon), helptext_);
 	else if (type_ == Type::Check)
-		toolbar->AddTool(wid, text_, Icons::getIcon(Icons::General, useicon), helptext_, wxITEM_CHECK);
+		toolbar->AddTool(wid, text_, icons::getIcon(icons::General, useicon), helptext_, wxITEM_CHECK);
 	else if (type_ == Type::Radio)
-		toolbar->AddTool(wid, text_, Icons::getIcon(Icons::General, useicon), helptext_, wxITEM_RADIO);
+		toolbar->AddTool(wid, text_, icons::getIcon(icons::General, useicon), helptext_, wxITEM_RADIO);
 
 	return true;
 }
@@ -241,11 +243,11 @@ bool SAction::addToToolbar(wxToolBar* toolbar, string_view icon_override, int wx
 	// Append this action to the toolbar
 	int wid = wx_id_ + wx_id_offset;
 	if (type_ == Type::Normal)
-		toolbar->AddTool(wid, "", Icons::getIcon(Icons::General, useicon), helptext_);
+		toolbar->AddTool(wid, "", icons::getIcon(icons::General, useicon), helptext_);
 	else if (type_ == Type::Check)
-		toolbar->AddTool(wid, "", Icons::getIcon(Icons::General, useicon), helptext_, wxITEM_CHECK);
+		toolbar->AddTool(wid, "", icons::getIcon(icons::General, useicon), helptext_, wxITEM_CHECK);
 	else if (type_ == Type::Radio)
-		toolbar->AddTool(wid, "", Icons::getIcon(Icons::General, useicon), helptext_, wxITEM_RADIO);
+		toolbar->AddTool(wid, "", icons::getIcon(icons::General, useicon), helptext_, wxITEM_RADIO);
 
 	return true;
 }
@@ -261,7 +263,7 @@ bool SAction::parse(ParseTreeNode* node)
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
 		auto prop      = node->childPTN(a);
-		auto prop_name = StrUtil::lower(prop->name());
+		auto prop_name = strutil::lower(prop->name());
 
 		// Text
 		if (prop_name == "text")
@@ -286,7 +288,7 @@ bool SAction::parse(ParseTreeNode* node)
 		// Type
 		else if (prop_name == "type")
 		{
-			auto lc_type = StrUtil::lower(prop->stringValue());
+			auto lc_type = strutil::lower(prop->stringValue());
 			if (lc_type == "check")
 				type_ = Type::Check;
 			else if (lc_type == "radio")
@@ -344,7 +346,7 @@ bool SAction::parse(ParseTreeNode* node)
 bool SAction::initActions()
 {
 	// Get actions.cfg from slade.pk3
-	auto cfg_entry = App::archiveManager().programResourceArchive()->entryAtPath("actions.cfg");
+	auto cfg_entry = app::archiveManager().programResourceArchive()->entryAtPath("actions.cfg");
 	if (!cfg_entry)
 		return false;
 
@@ -357,7 +359,7 @@ bool SAction::initActions()
 			auto node = root->childPTN(a);
 
 			// Single action
-			if (StrUtil::equalCI(node->type(), "action"))
+			if (strutil::equalCI(node->type(), "action"))
 			{
 				auto action = new SAction(node->name(), node->name());
 				if (action->parse(node))
@@ -367,14 +369,14 @@ bool SAction::initActions()
 			}
 
 			// Group of actions
-			else if (StrUtil::equalCI(node->name(), "group"))
+			else if (strutil::equalCI(node->name(), "group"))
 			{
 				int group = newGroup();
 
 				for (unsigned b = 0; b < node->nChildren(); b++)
 				{
 					auto group_node = node->childPTN(b);
-					if (StrUtil::equalCI(group_node->type(), "action"))
+					if (strutil::equalCI(group_node->type(), "action"))
 					{
 						auto action = new SAction(group_node->name(), group_node->name());
 						if (action->parse(group_node))
@@ -408,7 +410,7 @@ SAction* SAction::fromId(string_view id)
 {
 	// Find action with id
 	for (auto& action : actions_)
-		if (StrUtil::equalCI(action->id_, id))
+		if (strutil::equalCI(action->id_, id))
 			return action;
 
 	// Not found
@@ -500,12 +502,12 @@ bool SActionHandler::doAction(string_view id)
 
 	// Warn if nothing handled it
 	if (!handled)
-		Log::warning(fmt::format("Warning: Action \"{}\" not handled", id));
+		log::warning(fmt::format("Warning: Action \"{}\" not handled", id));
 
 	// Log action (to log file only)
 	// TODO: this
 	// exiting = true;
-	// Log::info(1, "**** Action \"%s\"", id);
+	// log::info(1, "**** Action \"%s\"", id);
 	// exiting = false;
 
 	// Return true if handled

@@ -34,6 +34,8 @@
 #include "Graphics/Icons.h"
 #include "MapEditor/UI/MapCanvas.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -45,14 +47,14 @@
 // -----------------------------------------------------------------------------
 // SIconButton class constructor
 // -----------------------------------------------------------------------------
-SIconButton::SIconButton(wxWindow* parent, Icons::Type icon_type, const wxString& icon, const wxString& tooltip) :
+SIconButton::SIconButton(wxWindow* parent, icons::Type icon_type, const wxString& icon, const wxString& tooltip) :
 	wxBitmapButton{ parent, -1, wxNullBitmap }
 {
 	// Create icon
-	auto bmp = Icons::getIcon(icon_type, icon.ToStdString(), UI::scaleFactor() > 1.);
+	auto bmp = icons::getIcon(icon_type, icon.ToStdString(), ui::scaleFactor() > 1.);
 
 	// Scale icon if required
-	auto size = UI::scalePx(16);
+	auto size = ui::scalePx(16);
 	if (bmp.GetWidth() != size)
 	{
 		auto img = bmp.ConvertToImage();

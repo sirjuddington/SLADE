@@ -4,6 +4,8 @@
 
 class wxSpinCtrlDouble;
 
+namespace slade
+{
 class ColorimetryPrefsPanel : public PrefsPanelBase
 {
 public:
@@ -40,3 +42,4 @@ private:
 	void onChoiceGreyscalePresetSelected(wxCommandEvent& e);
 	void onChoiceTristimPresetSelected(wxCommandEvent& e);
 };
+} // namespace slade

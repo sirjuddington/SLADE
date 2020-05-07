@@ -3,6 +3,8 @@
 #include "MapEditor/MapEditor.h"
 #include "SLADEMap/MapObject/MapThing.h"
 
+namespace slade
+{
 class MapEditContext;
 class MapSide;
 class UndoManager;
@@ -39,11 +41,11 @@ public:
 		link_offset_ = offsets;
 	}
 
-	void selectAdjacent(MapEditor::Item item) const;
+	void selectAdjacent(mapeditor::Item item) const;
 	void changeSectorLight(int amount) const;
 	void changeOffset(int amount, bool x) const;
 	void changeSectorHeight(int amount) const;
-	void autoAlignX(MapEditor::Item start) const;
+	void autoAlignX(mapeditor::Item start) const;
 	void resetOffsets() const;
 	void toggleUnpegged(bool lower) const;
 	void copy(CopyType type);
@@ -63,18 +65,19 @@ private:
 	string                  copy_texture_;
 	MapThing                copy_thing_;
 
-	vector<MapEditor::Item> getAdjacent(MapEditor::Item item) const;
+	vector<mapeditor::Item> getAdjacent(mapeditor::Item item) const;
 
 	// Helper for selectAdjacent
-	static bool wallMatches(MapSide* side, MapEditor::ItemType part, string_view tex);
-	void        getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& list) const;
-	void        getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& list) const;
+	static bool wallMatches(MapSide* side, mapeditor::ItemType part, string_view tex);
+	void        getAdjacentWalls(mapeditor::Item item, vector<mapeditor::Item>& list) const;
+	void        getAdjacentFlats(mapeditor::Item item, vector<mapeditor::Item>& list) const;
 
 	// Helper for autoAlignX3d
 	static void doAlignX(
 		MapSide*                 side,
 		int                      offset,
 		string_view              tex,
-		vector<MapEditor::Item>& walls_done,
+		vector<mapeditor::Item>& walls_done,
 		int                      tex_width);
 };
+} // namespace slade

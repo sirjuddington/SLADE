@@ -37,6 +37,8 @@
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -80,11 +82,11 @@ bool DiskArchive::open(MemChunk& mc)
 	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
-	UI::setSplashProgressMessage("Reading disk archive data");
+	ui::setSplashProgressMessage("Reading disk archive data");
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)d / (float)num_entries));
+		ui::setSplashProgress(((float)d / (float)num_entries));
 
 		// Read entry info
 		DiskEntry dent;
@@ -100,16 +102,16 @@ bool DiskArchive::open(MemChunk& mc)
 		// Check offset+size
 		if (dent.offset + dent.length > mcsize)
 		{
-			Log::error("DiskArchive::open: Disk archive is invalid or corrupt (entry goes past end of file)");
-			Global::error = "Archive is invalid and/or corrupt";
+			log::error("DiskArchive::open: Disk archive is invalid or corrupt (entry goes past end of file)");
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
 		// Parse name
 		string name = dent.name;
 		std::replace(name.begin(), name.end(), '\\', '/');
-		StrUtil::replaceIP(name, "GAME:/", "");
-		StrUtil::Path fn(name);
+		strutil::replaceIP(name, "GAME:/", "");
+		strutil::Path fn(name);
 
 		// Create directory if needed
 		auto dir = createDir(fn.path());
@@ -128,11 +130,11 @@ bool DiskArchive::open(MemChunk& mc)
 	MemChunk              edata;
 	vector<ArchiveEntry*> all_entries;
 	putEntryTreeAsList(all_entries);
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)num_entries)));
+		ui::setSplashProgress((((float)a / (float)num_entries)));
 
 		// Get entry
 		auto entry = all_entries[a];
@@ -160,7 +162,7 @@ bool DiskArchive::open(MemChunk& mc)
 	sig_blocker.unblock();
 	setModified(false);
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -222,14 +224,14 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		// The leading "GAME:\" part of the name means there is only 58 usable characters for path
 		if (name.size() > 58)
 		{
-			Log::warning(
+			log::warning(
 				"Warning: Entry {} path is too long (> 58 characters), putting it in the root directory", name);
 
-			auto fname = StrUtil::Path::fileNameOf(name);
+			auto fname = strutil::Path::fileNameOf(name);
 			name       = (fname.size() > 57) ? fname.substr(0, 57) : fname;
 			name.insert(name.begin(), '\\'); // Add leading "\"
 		}
-		StrUtil::prependIP(name, "GAME:");
+		strutil::prependIP(name, "GAME:");
 
 		DiskEntry dent;
 
@@ -295,7 +297,7 @@ bool DiskArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error("DiskArchive::loadEntryData: Unable to open archive file {}", filename_);
+		log::error("DiskArchive::loadEntryData: Unable to open archive file {}", filename_);
 		return false;
 	}
 

@@ -2,6 +2,8 @@
 
 #include "MapObject.h"
 
+namespace slade
+{
 class MapLine : public MapObject
 {
 	friend class SLADEMap;
@@ -137,3 +139,4 @@ private:
 	double sa_     = 0.; // ^^
 	Vec2d  front_vec_;
 };
+} // namespace slade

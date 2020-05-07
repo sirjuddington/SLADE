@@ -38,6 +38,8 @@
 #include "UI/SToolBar/SToolBarButton.h"
 #include "common.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -96,7 +98,7 @@ DocsPage::DocsPage(wxWindow* parent) : wxPanel(parent, -1)
         "home", "Home", "wiki", "Return to the SLADE Documentation Wiki main page", true);
 	g_links->addActionButton("tutorials", "Tutorials", "wiki", "Go to the tutorials index", true);
 	g_links->addActionButton("index", "Wiki Index", "wiki", "Go to the wiki index", true);
-	if (Global::debug)
+	if (global::debug)
 		g_links->addActionButton("edit", "Edit on GitHub", "wiki", "Edit this page on GitHub", true);
 	toolbar_->addGroup(g_links);
 

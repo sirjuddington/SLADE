@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class ClipboardItem
 {
 public:
@@ -45,3 +47,4 @@ public:
 private:
 	vector<unique_ptr<ClipboardItem>> items_;
 };
+} // namespace slade

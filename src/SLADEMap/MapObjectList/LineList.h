@@ -4,6 +4,8 @@
 #include "MapObjectList.h"
 #include "SLADEMap/MapObject/MapLine.h"
 
+namespace slade
+{
 class LineList : public MapObjectList<MapLine>
 {
 public:
@@ -16,3 +18,4 @@ public:
 	void             putAllTaggingWithId(int id, int type, vector<MapLine*>& list) const;
 	int              firstFreeId(MapFormat format) const;
 };
+} // namespace slade

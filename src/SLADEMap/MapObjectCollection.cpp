@@ -37,6 +37,8 @@
 #include "MapObject/MapSector.h"
 #include "SLADEMap.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 // MapObjectCollection class constructor
@@ -325,7 +327,7 @@ bool MapObjectCollection::removeLine(unsigned index)
 	if (index >= lines_.size())
 		return false;
 
-	Log::info(4, "id {}  index {}  objindex {}", lines_[index]->obj_id_, index, lines_[index]->index_);
+	log::info(4, "id {}  index {}  objindex {}", lines_[index]->obj_id_, index, lines_[index]->index_);
 
 	// Init
 	auto line = lines_[index];
@@ -385,8 +387,8 @@ bool MapObjectCollection::removeSide(unsigned index, bool remove_from_line)
 		// Set appropriate line flags
 		if (parent_map_)
 		{
-			Game::configuration().setLineBasicFlag("blocking", l, parent_map_->currentFormat(), true);
-			Game::configuration().setLineBasicFlag("twosided", l, parent_map_->currentFormat(), false);
+			game::configuration().setLineBasicFlag("blocking", l, parent_map_->currentFormat(), true);
+			game::configuration().setLineBasicFlag("twosided", l, parent_map_->currentFormat(), false);
 		}
 	}
 

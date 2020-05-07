@@ -5,12 +5,14 @@
 #include "UI/Canvas/OGLCanvas.h"
 #include "UI/Controls/ColourBox.h"
 
-class GfxCanvas;
-class PaletteCanvas;
-class Palette;
-class ArchiveEntry;
 class wxListBox;
 class wxPanel;
+
+namespace slade
+{
+class GfxCanvas;
+class PaletteCanvas;
+class ArchiveEntry;
 
 class GradientBox : public OGLCanvas
 {
@@ -127,3 +129,4 @@ private:
 	void onCBTruecolor(wxCommandEvent& e);
 	void onCBPaletteOnly(wxCommandEvent& e);
 };
+} // namespace slade

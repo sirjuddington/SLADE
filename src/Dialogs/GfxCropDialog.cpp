@@ -38,6 +38,8 @@
 #include "OpenGL/GLTexture.h"
 #include "UI/Controls/NumberTextCtrl.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -53,11 +55,11 @@ CropCanvas::CropCanvas(wxWindow* parent, SImage* image, Palette* palette) : OGLC
 {
 	if (image && image->isValid())
 	{
-		texture_ = OpenGL::Texture::createFromImage(*image, palette);
+		texture_ = gl::Texture::createFromImage(*image, palette);
 		crop_rect_.set(0, 0, image->width(), image->height());
 	}
 
-	int size = UI::scalePx(220);
+	int size = ui::scalePx(220);
 	SetInitialSize(wxSize(size, size));
 }
 
@@ -77,13 +79,13 @@ void CropCanvas::draw()
 	double height = GetSize().y;
 
 	// Get image dimensions
-	auto&  tex_info = OpenGL::Texture::info(texture_);
+	auto&  tex_info = gl::Texture::info(texture_);
 	double x_dim    = (double)tex_info.size.x;
 	double y_dim    = (double)tex_info.size.y;
 
 	// Get max scale for x and y (including padding)
-	double x_scale = ((double)width - UI::scalePx(24)) / x_dim;
-	double y_scale = ((double)height - UI::scalePx(24)) / y_dim;
+	double x_scale = ((double)width - ui::scalePx(24)) / x_dim;
+	double y_scale = ((double)height - ui::scalePx(24)) / y_dim;
 
 	// Set scale to smallest of the 2 (so that none of the texture will be clipped)
 	double scale = std::min<double>(x_scale, y_scale);
@@ -100,24 +102,24 @@ void CropCanvas::draw()
 		glEnable(GL_TEXTURE_2D);
 		hw = x_dim * -0.5;
 		hh = y_dim * -0.5;
-		Drawing::drawTexture(texture_, hw, hh);
+		drawing::drawTexture(texture_, hw, hh);
 	}
 
 	// Draw cropping rectangle
-	OpenGL::setColour(0, 0, 0, 255, OpenGL::Blend::Normal);
+	gl::setColour(0, 0, 0, 255, gl::Blend::Normal);
 	glDisable(GL_TEXTURE_2D);
 	glTranslated(hw, hh, 0);                                          // Translate to top-left of graphic
-	Drawing::drawLine(crop_rect_.tl.x, -1000, crop_rect_.tl.x, 1000); // Left
-	Drawing::drawLine(-1000, crop_rect_.tl.y, 1000, crop_rect_.tl.y); // Top
-	Drawing::drawLine(crop_rect_.br.x, -1000, crop_rect_.br.x, 1000); // Right
-	Drawing::drawLine(-1000, crop_rect_.br.y, 1000, crop_rect_.br.y); // Bottom
+	drawing::drawLine(crop_rect_.tl.x, -1000, crop_rect_.tl.x, 1000); // Left
+	drawing::drawLine(-1000, crop_rect_.tl.y, 1000, crop_rect_.tl.y); // Top
+	drawing::drawLine(crop_rect_.br.x, -1000, crop_rect_.br.x, 1000); // Right
+	drawing::drawLine(-1000, crop_rect_.br.y, 1000, crop_rect_.br.y); // Bottom
 
 	// Shade cropped-out area
-	OpenGL::setColour(0, 0, 0, 100, OpenGL::Blend::Normal);
-	Drawing::drawFilledRect(-1000, -1000, crop_rect_.tl.x, 1000);                      // Left
-	Drawing::drawFilledRect(crop_rect_.br.x, -1000, 1000, 1000);                       // Right
-	Drawing::drawFilledRect(crop_rect_.tl.x, -1000, crop_rect_.br.x, crop_rect_.tl.y); // Top
-	Drawing::drawFilledRect(crop_rect_.tl.x, crop_rect_.br.y, crop_rect_.br.x, 1000);  // Bottom
+	gl::setColour(0, 0, 0, 100, gl::Blend::Normal);
+	drawing::drawFilledRect(-1000, -1000, crop_rect_.tl.x, 1000);                      // Left
+	drawing::drawFilledRect(crop_rect_.br.x, -1000, 1000, 1000);                       // Right
+	drawing::drawFilledRect(crop_rect_.tl.x, -1000, crop_rect_.br.x, crop_rect_.tl.y); // Top
+	drawing::drawFilledRect(crop_rect_.tl.x, crop_rect_.br.y, crop_rect_.br.x, 1000);  // Bottom
 
 	glPopMatrix();
 
@@ -150,37 +152,37 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(Icons::getIcon(Icons::General, "settings"));
+	icon.CopyFromBitmap(icons::getIcon(icons::General, "settings"));
 	SetIcon(icon);
 
 	// Setup main sizer
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+	msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 
 	// Add preview
 	canvas_preview_ = new CropCanvas(this, image, palette);
-	sizer->Add(canvas_preview_, 1, wxEXPAND | wxBOTTOM, UI::pad());
+	sizer->Add(canvas_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Add crop controls
 	auto frame      = new wxStaticBox(this, -1, "Crop Borders");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 0, wxEXPAND | wxBOTTOM, UI::padLarge());
+	sizer->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::padLarge());
 
 	// Absolute
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	framesizer->Add(hbox, 0, wxEXPAND | wxALL, UI::pad());
+	framesizer->Add(hbox, 0, wxEXPAND | wxALL, ui::pad());
 	rb_absolute_ = new wxRadioButton(frame, -1, "Absolute");
 	rb_absolute_->SetValue(true);
-	hbox->Add(rb_absolute_, 0, wxEXPAND | wxRIGHT, UI::pad());
+	hbox->Add(rb_absolute_, 0, wxEXPAND | wxRIGHT, ui::pad());
 
 	// Relative
 	rb_relative_ = new wxRadioButton(frame, -1, "Relative");
 	hbox->Add(rb_relative_, 0, wxEXPAND);
 
-	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::pad());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Left
 	gb_sizer->Add(new wxStaticText(frame, -1, "Left:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);

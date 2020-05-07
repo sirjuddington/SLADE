@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class SToolBarButton;
 class SToolBar;
 
@@ -76,5 +78,6 @@ private:
 	void onButtonClick(wxCommandEvent& e);
 	void onEraseBackground(wxEraseEvent& e);
 };
+} // namespace slade
 
 DECLARE_EVENT_TYPE(wxEVT_STOOLBAR_LAYOUT_UPDATED, -1)

@@ -35,6 +35,8 @@
 #include "Utility/Compression.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -107,10 +109,10 @@ bool GZipArchive::open(MemChunk& mc)
 	{
 		// Build name from filename
 		name = filename(false);
-		StrUtil::Path fn(name);
-		if (StrUtil::equalCI(fn.extension(), "tgz"))
+		strutil::Path fn(name);
+		if (strutil::equalCI(fn.extension(), "tgz"))
 			fn.setExtension("tar");
-		else if (StrUtil::equalCI(fn.extension(), "gz"))
+		else if (strutil::equalCI(fn.extension(), "gz"))
 			fn.setExtension("");
 		name = fn.fileName();
 	}
@@ -126,7 +128,7 @@ bool GZipArchive::open(MemChunk& mc)
 				comment_ += c;
 			++mds;
 		} while (c != 0 && size > mds);
-		Log::info("Archive {} says:\n {}", filename(true), comment_);
+		log::info("Archive {} says:\n {}", filename(true), comment_);
 	}
 
 	// Skip past CRC 16 check
@@ -134,7 +136,7 @@ bool GZipArchive::open(MemChunk& mc)
 	{
 		uint8_t* crcbuffer = new uint8_t[mc.currentPos()];
 		memcpy(crcbuffer, mc.data(), mc.currentPos());
-		uint32_t fullcrc = Misc::crc(crcbuffer, mc.currentPos());
+		uint32_t fullcrc = misc::crc(crcbuffer, mc.currentPos());
 		delete[] crcbuffer;
 		uint16_t hcrc;
 		mc.read(&hcrc, 2);
@@ -142,7 +144,7 @@ bool GZipArchive::open(MemChunk& mc)
 		mds += 2;
 		if (hcrc != (fullcrc & 0x0000FFFF))
 		{
-			Log::info(1, "CRC-16 mismatch for GZip header");
+			log::info(1, "CRC-16 mismatch for GZip header");
 		}
 	}
 
@@ -154,7 +156,7 @@ bool GZipArchive::open(MemChunk& mc)
 	ArchiveModSignalBlocker sig_blocker{ *this };
 	auto                    entry = std::make_shared<ArchiveEntry>(name, size - mds);
 	MemChunk                xdata;
-	if (Compression::gzipInflate(mc, xdata))
+	if (compression::gzipInflate(mc, xdata))
 		entry->importMemChunk(xdata);
 	else
 		return false;
@@ -181,7 +183,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 	if (numEntries() == 1)
 	{
 		MemChunk stream;
-		if (Compression::gzipDeflate(entryAt(0)->data(), stream, 9))
+		if (compression::gzipDeflate(entryAt(0)->data(), stream, 9))
 		{
 			auto     data = stream.data();
 			uint32_t working;
@@ -238,7 +240,7 @@ bool GZipArchive::write(MemChunk& mc, bool update)
 			// And finally, the half CRC, which we recalculate
 			if (flags_ & FLG_FHCRC)
 			{
-				uint32_t fullcrc = Misc::crc(mc.data(), mc.size());
+				uint32_t fullcrc = misc::crc(mc.data(), mc.size());
 				uint16_t hcrc    = (fullcrc & 0x0000FFFF);
 				hcrc             = wxUINT16_SWAP_ON_BE(hcrc);
 				mc.write(&hcrc, 2);
@@ -294,7 +296,7 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error("GZipArchive::loadEntryData: Failed to open gzip file {}", filename_);
+		log::error("GZipArchive::loadEntryData: Failed to open gzip file {}", filename_);
 		return false;
 	}
 
@@ -315,7 +317,7 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
 ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	StrUtil::upperIP(options.match_name);
+	strutil::upperIP(options.match_name);
 	auto entry = entryAt(0);
 	if (entry == nullptr)
 		return entry;
@@ -339,7 +341,7 @@ ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
 	// Check name
 	if (!options.match_name.empty())
 	{
-		if (!StrUtil::matches(entry->upperName(), options.match_name))
+		if (!strutil::matches(entry->upperName(), options.match_name))
 		{
 			return nullptr;
 		}

@@ -47,6 +47,8 @@
 #undef GSocket
 #endif
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -59,12 +61,12 @@ CVAR(Bool, hud_wide, 0, CVar::Flag::Save)
 CVAR(Bool, hud_bob, 0, CVar::Flag::Save)
 CVAR(Int, gl_font_size, 12, CVar::Flag::Save)
 
-namespace Drawing
+namespace slade::drawing
 {
 double  text_outline_width = 0;
 ColRGBA fill_colour        = ColRGBA::WHITE;
 ColRGBA outline_colour     = ColRGBA::BLACK;
-}; // namespace Drawing
+}; // namespace slade::drawing
 
 
 // -----------------------------------------------------------------------------
@@ -77,15 +79,15 @@ ColRGBA outline_colour     = ColRGBA::BLACK;
 // -----------------------------------------------------------------------------
 // Returns the configured font size (scaled for DPI etc)
 // -----------------------------------------------------------------------------
-int Drawing::fontSize()
+int drawing::fontSize()
 {
-	return UI::scalePx(gl_font_size);
+	return ui::scalePx(gl_font_size);
 }
 
 // -----------------------------------------------------------------------------
 // Draws a line from [start] to [end]
 // -----------------------------------------------------------------------------
-void Drawing::drawLine(Vec2d start, Vec2d end)
+void drawing::drawLine(Vec2d start, Vec2d end)
 {
 	glBegin(GL_LINES);
 	glVertex2d(start.x, start.y);
@@ -96,7 +98,7 @@ void Drawing::drawLine(Vec2d start, Vec2d end)
 // -----------------------------------------------------------------------------
 // Draws a line from [x1,y1] to [x2,y2]
 // -----------------------------------------------------------------------------
-void Drawing::drawLine(double x1, double y1, double x2, double y2)
+void drawing::drawLine(double x1, double y1, double x2, double y2)
 {
 	glBegin(GL_LINES);
 	glVertex2d(x1, y1);
@@ -107,7 +109,7 @@ void Drawing::drawLine(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 // Draws a line from [start] to [end]
 // -----------------------------------------------------------------------------
-void Drawing::drawLineTabbed(Vec2d start, Vec2d end, double tab, double tab_max)
+void drawing::drawLineTabbed(Vec2d start, Vec2d end, double tab, double tab_max)
 {
 	// Draw line
 	glBegin(GL_LINES);
@@ -121,7 +123,7 @@ void Drawing::drawLineTabbed(Vec2d start, Vec2d end, double tab, double tab_max)
 	mid.y = start.y + ((end.y - start.y) * 0.5);
 
 	// Calculate tab length
-	double tablen = MathStuff::distance(start, end) * tab;
+	double tablen = math::distance(start, end) * tab;
 	if (tablen > tab_max)
 		tablen = tab_max;
 	if (tablen < 2)
@@ -142,7 +144,7 @@ void Drawing::drawLineTabbed(Vec2d start, Vec2d end, double tab, double tab_max)
 // Draws a line from [p1] to [p2] with an arrowhead at the [p1] end.
 // If [twoway] is true, an arrowhead is also drawn at the [p2] end
 // -----------------------------------------------------------------------------
-void Drawing::drawArrow(Vec2d p1, Vec2d p2, ColRGBA color, bool twoway, double arrowhead_angle, double arrowhead_length)
+void drawing::drawArrow(Vec2d p1, Vec2d p2, ColRGBA color, bool twoway, double arrowhead_angle, double arrowhead_length)
 {
 	Vec2d  a1l, a1r, a2l, a2r;
 	Vec2d  vector = p1 - p2;
@@ -162,7 +164,7 @@ void Drawing::drawArrow(Vec2d p1, Vec2d p2, ColRGBA color, bool twoway, double a
 		a2r.x -= arrowhead_length * sin(angle + arrowhead_angle);
 		a2r.y -= arrowhead_length * cos(angle + arrowhead_angle);
 	}
-	OpenGL::setColour(fill_colour);
+	gl::setColour(fill_colour);
 	glBegin(GL_LINES);
 	glVertex2d(p1.x, p1.y);
 	glVertex2d(p2.x, p2.y);
@@ -187,7 +189,7 @@ void Drawing::drawArrow(Vec2d p1, Vec2d p2, ColRGBA color, bool twoway, double a
 // -----------------------------------------------------------------------------
 // Draws a rectangle from [tl] to [br]
 // -----------------------------------------------------------------------------
-void Drawing::drawRect(Vec2d tl, Vec2d br)
+void drawing::drawRect(Vec2d tl, Vec2d br)
 {
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(tl.x, tl.y);
@@ -200,7 +202,7 @@ void Drawing::drawRect(Vec2d tl, Vec2d br)
 // -----------------------------------------------------------------------------
 // Draws a rectangle from [x1,y1] to [x2,y2]
 // -----------------------------------------------------------------------------
-void Drawing::drawRect(double x1, double y1, double x2, double y2)
+void drawing::drawRect(double x1, double y1, double x2, double y2)
 {
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(x1, y1);
@@ -213,7 +215,7 @@ void Drawing::drawRect(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 // Draws a filled rectangle from [tl] to [br]
 // -----------------------------------------------------------------------------
-void Drawing::drawFilledRect(Vec2d tl, Vec2d br)
+void drawing::drawFilledRect(Vec2d tl, Vec2d br)
 {
 	glBegin(GL_QUADS);
 	glVertex2d(tl.x, tl.y);
@@ -226,7 +228,7 @@ void Drawing::drawFilledRect(Vec2d tl, Vec2d br)
 // -----------------------------------------------------------------------------
 // Draws a filled rectangle from [x1,y1] to [x2,y2]
 // -----------------------------------------------------------------------------
-void Drawing::drawFilledRect(double x1, double y1, double x2, double y2)
+void drawing::drawFilledRect(double x1, double y1, double x2, double y2)
 {
 	glBegin(GL_QUADS);
 	glVertex2d(x1, y1);
@@ -239,7 +241,7 @@ void Drawing::drawFilledRect(double x1, double y1, double x2, double y2)
 // -----------------------------------------------------------------------------
 // Draws a filled rectangle with a border from [x1,y1] to [x2,y2]
 // -----------------------------------------------------------------------------
-void Drawing::drawBorderedRect(Vec2d tl, Vec2d br, const ColRGBA& colour, const ColRGBA& border_colour)
+void drawing::drawBorderedRect(Vec2d tl, Vec2d br, const ColRGBA& colour, const ColRGBA& border_colour)
 {
 	drawBorderedRect(tl.x, tl.y, br.x, br.y, colour, border_colour);
 }
@@ -247,7 +249,7 @@ void Drawing::drawBorderedRect(Vec2d tl, Vec2d br, const ColRGBA& colour, const 
 // -----------------------------------------------------------------------------
 // Draws a filled rectangle with a border from [x1,y1] to [x2,y2]
 // -----------------------------------------------------------------------------
-void Drawing::drawBorderedRect(
+void drawing::drawBorderedRect(
 	double         x1,
 	double         y1,
 	double         x2,
@@ -256,7 +258,7 @@ void Drawing::drawBorderedRect(
 	const ColRGBA& border_colour)
 {
 	// Rect
-	OpenGL::setColour(colour);
+	gl::setColour(colour);
 	glBegin(GL_QUADS);
 	glVertex2d(x1, y1);
 	glVertex2d(x1, y2);
@@ -265,7 +267,7 @@ void Drawing::drawBorderedRect(
 	glEnd();
 
 	// Border
-	OpenGL::setColour(border_colour);
+	gl::setColour(border_colour);
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(x1, y1);
 	glVertex2d(x1, y2 - 1);
@@ -277,10 +279,10 @@ void Drawing::drawBorderedRect(
 // -----------------------------------------------------------------------------
 // Draws an ellipse at [mid]
 // -----------------------------------------------------------------------------
-void Drawing::drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides, const ColRGBA& colour)
+void drawing::drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides, const ColRGBA& colour)
 {
 	// Set colour
-	OpenGL::setColour(colour);
+	gl::setColour(colour);
 
 	// Draw circle as line loop
 	glBegin(GL_LINE_LOOP);
@@ -296,10 +298,10 @@ void Drawing::drawEllipse(Vec2d mid, double radius_x, double radius_y, int sides
 // -----------------------------------------------------------------------------
 // Draws a filled ellipse at [mid]
 // -----------------------------------------------------------------------------
-void Drawing::drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int sides, const ColRGBA& colour)
+void drawing::drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int sides, const ColRGBA& colour)
 {
 	// Set colour
-	OpenGL::setColour(colour);
+	gl::setColour(colour);
 
 	// Draw circle as line loop
 	glBegin(GL_TRIANGLE_FAN);
@@ -313,21 +315,21 @@ void Drawing::drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int
 	glEnd();
 }
 
-void Drawing::drawTexture(unsigned id, double x, double y, bool flipx, bool flipy)
+void drawing::drawTexture(unsigned id, double x, double y, bool flipx, bool flipy)
 {
 	// Ignore empty texture
-	if (!OpenGL::Texture::isLoaded(id))
+	if (!gl::Texture::isLoaded(id))
 		return;
 
 	// Flipping?
-	auto& tex_info = OpenGL::Texture::info(id);
+	auto& tex_info = gl::Texture::info(id);
 	if (flipx)
 		x += tex_info.size.x;
 	if (flipy)
 		y += tex_info.size.y;
 
 	// Bind the texture
-	OpenGL::Texture::bind(id);
+	gl::Texture::bind(id);
 
 	// Setup metrics
 	double h = (double)tex_info.size.x;
@@ -356,17 +358,17 @@ void Drawing::drawTexture(unsigned id, double x, double y, bool flipx, bool flip
 	glPopMatrix();
 }
 
-void Drawing::drawTextureTiled(unsigned id, uint32_t width, uint32_t height)
+void drawing::drawTextureTiled(unsigned id, uint32_t width, uint32_t height)
 {
 	// Ignore empty texture
-	if (!OpenGL::Texture::isLoaded(id))
+	if (!gl::Texture::isLoaded(id))
 		return;
 
 	// Bind the texture
-	OpenGL::Texture::bind(id);
+	gl::Texture::bind(id);
 
 	// Calculate texture coordinates
-	auto&  tex_info = OpenGL::Texture::info(id);
+	auto&  tex_info = gl::Texture::info(id);
 	double tex_x    = (double)width / (double)tex_info.size.x;
 	double tex_y    = (double)height / (double)tex_info.size.y;
 
@@ -389,7 +391,7 @@ void Drawing::drawTextureTiled(unsigned id, uint32_t width, uint32_t height)
 // If [upscale] is true the texture will be zoomed to fit the rectangle.
 // Returns the resulting texture rectangle coordinates
 // -----------------------------------------------------------------------------
-Rectd Drawing::fitTextureWithin(
+Rectd drawing::fitTextureWithin(
 	unsigned id,
 	double   x1,
 	double   y1,
@@ -399,14 +401,14 @@ Rectd Drawing::fitTextureWithin(
 	double   max_scale)
 {
 	// Ignore empty texture
-	if (!OpenGL::Texture::isLoaded(id))
+	if (!gl::Texture::isLoaded(id))
 		return {};
 
 	double width  = x2 - x1;
 	double height = y2 - y1;
 
 	// Get image dimensions
-	auto&  tex_info = OpenGL::Texture::info(id);
+	auto&  tex_info = gl::Texture::info(id);
 	double x_dim    = (double)tex_info.size.x;
 	double y_dim    = (double)tex_info.size.y;
 
@@ -433,7 +435,7 @@ Rectd Drawing::fitTextureWithin(
 // keeping the correct aspect ratio.
 // If [upscale] is true the texture will be zoomed to fit the rectangle
 // -----------------------------------------------------------------------------
-void Drawing::drawTextureWithin(
+void drawing::drawTextureWithin(
 	unsigned id,
 	double   x1,
 	double   y1,
@@ -443,14 +445,14 @@ void Drawing::drawTextureWithin(
 	double   max_scale)
 {
 	// Ignore empty texture
-	if (!OpenGL::Texture::isLoaded(id))
+	if (!gl::Texture::isLoaded(id))
 		return;
 
 	double width  = x2 - x1;
 	double height = y2 - y1;
 
 	// Get image dimensions
-	auto&  tex_info = OpenGL::Texture::info(id);
+	auto&  tex_info = gl::Texture::info(id);
 	double x_dim    = (double)tex_info.size.x;
 	double y_dim    = (double)tex_info.size.y;
 
@@ -466,7 +468,7 @@ void Drawing::drawTextureWithin(
 		scale = max_scale;
 
 	// Now draw the texture
-	OpenGL::Texture::bind(id);
+	gl::Texture::bind(id);
 	glPushMatrix();
 	glTranslated(x1 + width * 0.5, y1 + height * 0.5, 0); // Translate to middle of area
 	glScaled(scale, scale, scale);                        // Scale to fit within area
@@ -487,7 +489,7 @@ void Drawing::drawTextureWithin(
 // -----------------------------------------------------------------------------
 // Sets the [thickness] and [colour] of the outline to use when drawing text
 // -----------------------------------------------------------------------------
-void Drawing::setTextOutline(double thickness, const ColRGBA& colour)
+void drawing::setTextOutline(double thickness, const ColRGBA& colour)
 {
 	text_outline_width = thickness;
 	outline_colour     = colour;
@@ -496,7 +498,7 @@ void Drawing::setTextOutline(double thickness, const ColRGBA& colour)
 // -----------------------------------------------------------------------------
 // Draws doom hud offset guide lines, from the center
 // -----------------------------------------------------------------------------
-void Drawing::drawHud()
+void drawing::drawHud()
 {
 	// Determine some variables
 	int hw = 160;
@@ -544,7 +546,7 @@ void Drawing::drawHud()
 
 // The following functions are taken from CodeLite (http://codelite.org)
 
-wxColour Drawing::systemPanelBGColour()
+wxColour drawing::systemPanelBGColour()
 {
 #ifdef __WXGTK__
 	static bool     intitialized(false);
@@ -572,17 +574,17 @@ wxColour Drawing::systemPanelBGColour()
 #endif
 }
 
-wxColour Drawing::systemMenuTextColour()
+wxColour drawing::systemMenuTextColour()
 {
 	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT);
 }
 
-wxColour Drawing::systemMenuBarBGColour()
+wxColour drawing::systemMenuBarBGColour()
 {
 	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENU);
 }
 
-wxColour Drawing::lightColour(const wxColour& colour, float percent)
+wxColour drawing::lightColour(const wxColour& colour, float percent)
 {
 	if (percent == 0)
 	{
@@ -590,7 +592,7 @@ wxColour Drawing::lightColour(const wxColour& colour, float percent)
 	}
 
 	// Convert to HSL
-	ColHSL hsl = ColRGBA(COLWX(colour)).asHSL();
+	ColHSL hsl = ColRGBA(colour).asHSL();
 
 	// Increase luminance
 	hsl.l += (float)((percent * 5.0) / 100.0);
@@ -601,7 +603,7 @@ wxColour Drawing::lightColour(const wxColour& colour, float percent)
 	return wxColour(rgb.r, rgb.g, rgb.b);
 }
 
-wxColour Drawing::darkColour(const wxColour& colour, float percent)
+wxColour drawing::darkColour(const wxColour& colour, float percent)
 {
 	if (percent == 0)
 	{
@@ -609,7 +611,7 @@ wxColour Drawing::darkColour(const wxColour& colour, float percent)
 	}
 
 	// Convert to HSL
-	ColHSL hsl = ColRGBA(COLWX(colour)).asHSL();
+	ColHSL hsl = ColRGBA(colour).asHSL();
 
 	// Decrease luminance
 	hsl.l -= (float)((percent * 5.0) / 100.0);
@@ -631,7 +633,7 @@ wxColour Drawing::darkColour(const wxColour& colour, float percent)
 // -----------------------------------------------------------------------------
 // TextBox class constructor
 // -----------------------------------------------------------------------------
-TextBox::TextBox(string_view text, Drawing::Font font, int width, int line_height) :
+TextBox::TextBox(string_view text, drawing::Font font, int width, int line_height) :
 	font_{ font },
 	width_{ width },
 	line_height_{ line_height }
@@ -653,7 +655,7 @@ void TextBox::split(string_view text)
 		return;
 
 	// Split at newlines
-	auto split = StrUtil::splitV(text, '\n');
+	auto split = strutil::splitV(text, '\n');
 	for (auto& line : split)
 		lines_.emplace_back(line);
 
@@ -673,7 +675,7 @@ void TextBox::split(string_view text)
 		}
 
 		// Get line width
-		double width = Drawing::textExtents(lines_[line], font_).x;
+		double width = drawing::textExtents(lines_[line], font_).x;
 
 		// Continue to next line if within box
 		if (width < width_)
@@ -690,14 +692,14 @@ void TextBox::split(string_view text)
 				break;
 
 			c *= 0.5;
-			width = Drawing::textExtents(lines_[line].substr(0, c), font_).x;
+			width = drawing::textExtents(lines_[line].substr(0, c), font_).x;
 		}
 
 		// Increment length until it doesn't fit
 		while (width < width_)
 		{
 			c++;
-			width = Drawing::textExtents(lines_[line].substr(0, c), font_).x;
+			width = drawing::textExtents(lines_[line].substr(0, c), font_).x;
 		}
 		c--;
 
@@ -723,7 +725,7 @@ void TextBox::split(string_view text)
 
 	// Update height
 	if (line_height_ < 0)
-		height_ = Drawing::textExtents(lines_[0], font_).y * lines_.size();
+		height_ = drawing::textExtents(lines_[0], font_).y * lines_.size();
 	else
 		height_ = line_height_ * lines_.size();
 }
@@ -749,11 +751,11 @@ void TextBox::setSize(int width)
 // -----------------------------------------------------------------------------
 // Draws the text box
 // -----------------------------------------------------------------------------
-void TextBox::draw(int x, int y, const ColRGBA& colour, Drawing::Align alignment)
+void TextBox::draw(int x, int y, const ColRGBA& colour, drawing::Align alignment)
 {
 	Rectd b;
-	Drawing::enableTextStateReset(false);
-	Drawing::setTextState(true);
+	drawing::enableTextStateReset(false);
+	drawing::setTextState(true);
 	for (const auto& line : lines_)
 	{
 		drawText(line, x, y, colour, font_, alignment, &b);
@@ -763,6 +765,6 @@ void TextBox::draw(int x, int y, const ColRGBA& colour, Drawing::Align alignment
 		else
 			y += line_height_;
 	}
-	Drawing::enableTextStateReset(true);
-	Drawing::setTextState(false);
+	drawing::enableTextStateReset(true);
+	drawing::setTextState(false);
 }

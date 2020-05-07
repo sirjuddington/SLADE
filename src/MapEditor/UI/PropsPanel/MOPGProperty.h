@@ -3,9 +3,15 @@
 #include "Game/Args.h"
 #include "MapEditor/MapEditor.h"
 
+namespace slade
+{
+namespace game
+{
+	class UDMFProperty;
+}
 class MapObject;
 class MapObjectPropsPanel;
-class UDMFProperty;
+
 class MOPGProperty
 {
 public:
@@ -32,7 +38,7 @@ public:
 
 	wxString     propName() const { return propname_; }
 	void         setParent(MapObjectPropsPanel* parent) { parent_ = parent; }
-	virtual void setUDMFProp(UDMFProperty* prop) { udmf_prop_ = prop; }
+	virtual void setUDMFProp(game::UDMFProperty* prop) { udmf_prop_ = prop; }
 
 	virtual Type type()                                   = 0;
 	virtual void openObjects(vector<MapObject*>& objects) = 0;
@@ -43,7 +49,7 @@ public:
 protected:
 	MapObjectPropsPanel* parent_    = nullptr;
 	bool                 noupdate_  = false;
-	UDMFProperty*        udmf_prop_ = nullptr;
+	game::UDMFProperty*  udmf_prop_ = nullptr;
 	wxString             propname_;
 };
 
@@ -85,7 +91,7 @@ class MOPGStringProperty : public MOPGProperty, public wxStringProperty
 public:
 	MOPGStringProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	void setUDMFProp(UDMFProperty* prop) override;
+	void setUDMFProp(game::UDMFProperty* prop) override;
 
 	Type type() override { return Type::String; }
 	void openObjects(vector<MapObject*>& objects) override;
@@ -96,7 +102,7 @@ public:
 class MOPGIntWithArgsProperty : public MOPGIntProperty
 {
 protected:
-	virtual const Game::ArgSpec& argSpec() = 0;
+	virtual const game::ArgSpec& argSpec() = 0;
 
 public:
 	MOPGIntWithArgsProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
@@ -112,7 +118,7 @@ public:
 class MOPGActionSpecialProperty : public MOPGIntWithArgsProperty
 {
 protected:
-	const Game::ArgSpec& argSpec() override;
+	const game::ArgSpec& argSpec() override;
 
 public:
 	MOPGActionSpecialProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL) :
@@ -130,7 +136,7 @@ public:
 class MOPGThingTypeProperty : public MOPGIntWithArgsProperty
 {
 protected:
-	const Game::ArgSpec& argSpec() override;
+	const game::ArgSpec& argSpec() override;
 
 public:
 	MOPGThingTypeProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL) :
@@ -200,7 +206,7 @@ class MOPGTextureProperty : public MOPGStringProperty
 {
 public:
 	MOPGTextureProperty(
-		MapEditor::TextureType textype = MapEditor::TextureType::Texture,
+		mapeditor::TextureType textype = mapeditor::TextureType::Texture,
 		const wxString&        label   = wxPG_LABEL,
 		const wxString&        name    = wxPG_LABEL);
 
@@ -211,7 +217,7 @@ public:
 	bool OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 
 private:
-	MapEditor::TextureType textype_;
+	mapeditor::TextureType textype_;
 };
 
 class MOPGSPACTriggerProperty : public MOPGProperty, public wxEnumProperty
@@ -259,3 +265,4 @@ public:
 	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
 	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 };
+} // namespace slade

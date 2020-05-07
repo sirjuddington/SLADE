@@ -45,6 +45,8 @@
 #include "SLADEMap/MapObject/MapThing.h"
 #include "Utility/Tokenizer.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -96,7 +98,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 		return false;
 
 	// All errors = invalid map
-	Global::error = "Invalid map";
+	global::error = "Invalid map";
 
 	// Init
 	std::unique_ptr<Archive> temp_archive;
@@ -181,7 +183,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 						token    = tz.getToken();
 						if (token.Cmp("="))
 						{
-							Log::error(wxString::Format("Bad syntax for vertex %i in UDMF map data", vertcounter));
+							log::error(wxString::Format("Bad syntax for vertex %i in UDMF map data", vertcounter));
 							return false;
 						}
 						if (isx)
@@ -199,7 +201,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 					addVertex(x, y);
 				else
 				{
-					Log::error(wxString::Format("Wrong vertex %i in UDMF map data", vertcounter));
+					log::error(wxString::Format("Wrong vertex %i in UDMF map data", vertcounter));
 					return false;
 				}
 				vertcounter++;
@@ -219,7 +221,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 						token     = tz.getToken();
 						if (token.Cmp("="))
 						{
-							Log::error(wxString::Format("Bad syntax for linedef %i in UDMF map data", linecounter));
+							log::error(wxString::Format("Bad syntax for linedef %i in UDMF map data", linecounter));
 							return false;
 						}
 						if (isv1)
@@ -255,7 +257,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 					addLine(v1, v2, twosided, special);
 				else
 				{
-					Log::error(wxString::Format("Wrong line %i in UDMF map data", linecounter));
+					log::error(wxString::Format("Wrong line %i in UDMF map data", linecounter));
 					return false;
 				}
 				linecounter++;
@@ -276,7 +278,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 						token    = tz.getToken();
 						if (token.Cmp("="))
 						{
-							Log::error(wxString::Format("Bad syntax for thing %i in UDMF map data", vertcounter));
+							log::error(wxString::Format("Bad syntax for thing %i in UDMF map data", vertcounter));
 							return false;
 						}
 						if (isx)
@@ -294,7 +296,7 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 					addThing(x, y);
 				else
 				{
-					Log::error(wxString::Format("Wrong thing %i in UDMF map data", vertcounter));
+					log::error(wxString::Format("Wrong thing %i in UDMF map data", vertcounter));
 					return false;
 				}
 				vertcounter++;
@@ -652,12 +654,12 @@ void MapPreviewCanvas::showMap()
 void MapPreviewCanvas::draw()
 {
 	// Setup colours
-	auto col_view_background   = ColourConfiguration::colour("map_view_background");
-	auto col_view_line_1s      = ColourConfiguration::colour("map_view_line_1s");
-	auto col_view_line_2s      = ColourConfiguration::colour("map_view_line_2s");
-	auto col_view_line_special = ColourConfiguration::colour("map_view_line_special");
-	auto col_view_line_macro   = ColourConfiguration::colour("map_view_line_macro");
-	auto col_view_thing        = ColourConfiguration::colour("map_view_thing");
+	auto col_view_background   = colourconfig::colour("map_view_background");
+	auto col_view_line_1s      = colourconfig::colour("map_view_line_1s");
+	auto col_view_line_2s      = colourconfig::colour("map_view_line_2s");
+	auto col_view_line_special = colourconfig::colour("map_view_line_special");
+	auto col_view_line_macro   = colourconfig::colour("map_view_line_macro");
+	auto col_view_thing        = colourconfig::colour("map_view_thing");
 
 	// Setup the viewport
 	glViewport(0, 0, GetSize().x, GetSize().y);
@@ -679,7 +681,7 @@ void MapPreviewCanvas::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
+	if (gl::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Zoom/offset to show full map
@@ -713,13 +715,13 @@ void MapPreviewCanvas::draw()
 
 		// Set colour
 		if (line.special)
-			OpenGL::setColour(col_view_line_special);
+			gl::setColour(col_view_line_special);
 		else if (line.macro)
-			OpenGL::setColour(col_view_line_macro);
+			gl::setColour(col_view_line_macro);
 		else if (line.twosided)
-			OpenGL::setColour(col_view_line_2s);
+			gl::setColour(col_view_line_2s);
 		else
-			OpenGL::setColour(col_view_line_1s);
+			gl::setColour(col_view_line_1s);
 
 		// Draw line
 		glBegin(GL_LINES);
@@ -733,11 +735,11 @@ void MapPreviewCanvas::draw()
 	{
 		// Load thing texture
 		SImage image;
-		auto   entry = App::archiveManager().programResourceArchive()->entryAtPath("images/thing/normal_n.png");
+		auto   entry = app::archiveManager().programResourceArchive()->entryAtPath("images/thing/normal_n.png");
 		if (entry)
 		{
 			image.open(entry->data());
-			tex_thing_ = OpenGL::Texture::createFromImage(image, nullptr, OpenGL::TexFilter::Mipmap);
+			tex_thing_ = gl::Texture::createFromImage(image, nullptr, gl::TexFilter::Mipmap);
 		}
 		else
 			tex_thing_ = 0;
@@ -748,12 +750,12 @@ void MapPreviewCanvas::draw()
 	// Draw things
 	if (map_view_things)
 	{
-		OpenGL::setColour(col_view_thing);
+		gl::setColour(col_view_thing);
 		if (tex_thing_)
 		{
 			double radius = 20;
 			glEnable(GL_TEXTURE_2D);
-			OpenGL::Texture::bind(tex_thing_);
+			gl::Texture::bind(tex_thing_);
 			for (auto& thing : things_)
 			{
 				glPushMatrix();
@@ -824,23 +826,23 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 		height = mapheight / abs(height);
 
 	// Setup colours
-	auto col_save_background   = ColourConfiguration::colour("map_image_background");
-	auto col_save_line_1s      = ColourConfiguration::colour("map_image_line_1s");
-	auto col_save_line_2s      = ColourConfiguration::colour("map_image_line_2s");
-	auto col_save_line_special = ColourConfiguration::colour("map_image_line_special");
-	auto col_save_line_macro   = ColourConfiguration::colour("map_image_line_macro");
+	auto col_save_background   = colourconfig::colour("map_image_background");
+	auto col_save_line_1s      = colourconfig::colour("map_image_line_1s");
+	auto col_save_line_2s      = colourconfig::colour("map_image_line_2s");
+	auto col_save_line_special = colourconfig::colour("map_image_line_special");
+	auto col_save_line_macro   = colourconfig::colour("map_image_line_macro");
 
 	// Setup OpenGL rigmarole
 	GLuint tex_id, fbo_id;
 	if (GLEW_ARB_framebuffer_object)
 	{
 		glGenTextures(1, &tex_id);
-		OpenGL::Texture::bind(tex_id);
+		gl::Texture::bind(tex_id);
 		// We don't use mipmaps, but OpenGL will refuse to attach
 		// the texture to the framebuffer if they are not present
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-		OpenGL::Texture::bind(0);
+		gl::Texture::bind(0);
 		glGenFramebuffersEXT(1, &fbo_id);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, tex_id, 0);
@@ -866,7 +868,7 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
+	if (gl::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Zoom/offset to show full map
@@ -910,13 +912,13 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 
 		// Set colour
 		if (line.special)
-			OpenGL::setColour(col_save_line_special);
+			gl::setColour(col_save_line_special);
 		else if (line.macro)
-			OpenGL::setColour(col_save_line_macro);
+			gl::setColour(col_save_line_macro);
 		else if (line.twosided)
-			OpenGL::setColour(col_save_line_2s);
+			gl::setColour(col_save_line_2s);
 		else
-			OpenGL::setColour(col_save_line_1s);
+			gl::setColour(col_save_line_1s);
 
 		// Draw line
 		glBegin(GL_LINES);
@@ -941,11 +943,11 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 
 		// Set colour
 		if (line.special)
-			OpenGL::setColour(col_save_line_special);
+			gl::setColour(col_save_line_special);
 		else if (line.macro)
-			OpenGL::setColour(col_save_line_macro);
+			gl::setColour(col_save_line_macro);
 		else
-			OpenGL::setColour(col_save_line_1s);
+			gl::setColour(col_save_line_1s);
 
 		// Draw line
 		glBegin(GL_LINES);

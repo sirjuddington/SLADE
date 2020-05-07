@@ -38,6 +38,8 @@
 #include "SLADEMap/MapObjectCollection.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -51,7 +53,7 @@
 // -----------------------------------------------------------------------------
 bool DoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props)
 {
-	Log::info(2, "Reading Doom format map");
+	log::info(2, "Reading Doom format map");
 
 	auto m_head = map.head.lock();
 	if (!m_head)
@@ -79,37 +81,37 @@ bool DoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_data,
 	}
 
 	// ---- Read vertices ----
-	UI::setSplashProgressMessage("Reading Vertices");
-	UI::setSplashProgress(0.0f);
+	ui::setSplashProgressMessage("Reading Vertices");
+	ui::setSplashProgress(0.0f);
 	if (!readVERTEXES(v, map_data))
 		return false;
 
 	// ---- Read sectors ----
-	UI::setSplashProgressMessage("Reading Sectors");
-	UI::setSplashProgress(0.2f);
+	ui::setSplashProgressMessage("Reading Sectors");
+	ui::setSplashProgress(0.2f);
 	if (!readSECTORS(se, map_data))
 		return false;
 
 	// ---- Read sides ----
-	UI::setSplashProgressMessage("Reading Sides");
-	UI::setSplashProgress(0.4f);
+	ui::setSplashProgressMessage("Reading Sides");
+	ui::setSplashProgress(0.4f);
 	if (!readSIDEDEFS(si, map_data))
 		return false;
 
 	// ---- Read lines ----
-	UI::setSplashProgressMessage("Reading Lines");
-	UI::setSplashProgress(0.6f);
+	ui::setSplashProgressMessage("Reading Lines");
+	ui::setSplashProgress(0.6f);
 	if (!readLINEDEFS(l, map_data))
 		return false;
 
 	// ---- Read things ----
-	UI::setSplashProgressMessage("Reading Things");
-	UI::setSplashProgress(0.8f);
+	ui::setSplashProgressMessage("Reading Things");
+	ui::setSplashProgress(0.8f);
 	if (!readTHINGS(t, map_data))
 		return false;
 
-	UI::setSplashProgressMessage("Init Map Data");
-	UI::setSplashProgress(1.0f);
+	ui::setSplashProgressMessage("Init Map Data");
+	ui::setSplashProgress(1.0f);
 
 	return true;
 }
@@ -138,28 +140,28 @@ bool DoomMapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_d
 {
 	if (!entry)
 	{
-		Global::error = "Map has no VERTEXES entry!";
-		Log::info(Global::error);
+		global::error = "Map has no VERTEXES entry!";
+		log::info(global::error);
 		return false;
 	}
 
 	// Check for empty entry
 	if (entry->size() < sizeof(Vertex))
 	{
-		Log::info(3, "Read 0 vertices");
+		log::info(3, "Read 0 vertices");
 		return true;
 	}
 
 	auto     vert_data = (Vertex*)entry->rawData(true);
 	unsigned nv        = entry->size() / sizeof(Vertex);
-	float    p         = UI::getSplashProgress();
+	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nv; a++)
 	{
-		UI::setSplashProgress(p + ((float)a / nv) * 0.2f);
+		ui::setSplashProgress(p + ((float)a / nv) * 0.2f);
 		map_data.addVertex(std::make_unique<MapVertex>(Vec2d{ (double)vert_data[a].x, (double)vert_data[a].y }));
 	}
 
-	Log::info(3, "Read {} vertices", map_data.vertices().size());
+	log::info(3, "Read {} vertices", map_data.vertices().size());
 
 	return true;
 }
@@ -171,35 +173,35 @@ bool DoomMapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 {
 	if (!entry)
 	{
-		Global::error = "Map has no SIDEDEFS entry!";
-		Log::info(Global::error);
+		global::error = "Map has no SIDEDEFS entry!";
+		log::info(global::error);
 		return false;
 	}
 
 	// Check for empty entry
 	if (entry->size() < sizeof(SideDef))
 	{
-		Log::info(3, "Read 0 sides");
+		log::info(3, "Read 0 sides");
 		return true;
 	}
 
 	auto     side_data = (SideDef*)entry->rawData(true);
 	unsigned ns        = entry->size() / sizeof(SideDef);
-	float    p         = UI::getSplashProgress();
+	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
 	{
-		UI::setSplashProgress(p + ((float)a / ns) * 0.2f);
+		ui::setSplashProgress(p + ((float)a / ns) * 0.2f);
 
 		// Add side
 		map_data.addSide(std::make_unique<MapSide>(
 			map_data.sectors().at(side_data[a].sector),
-			StrUtil::viewFromChars(side_data[a].tex_upper, 8),
-			StrUtil::viewFromChars(side_data[a].tex_middle, 8),
-			StrUtil::viewFromChars(side_data[a].tex_lower, 8),
+			strutil::viewFromChars(side_data[a].tex_upper, 8),
+			strutil::viewFromChars(side_data[a].tex_middle, 8),
+			strutil::viewFromChars(side_data[a].tex_lower, 8),
 			Vec2i{ side_data[a].x_offset, side_data[a].y_offset }));
 	}
 
-	Log::info(3, "Read {} sides", map_data.sides().size());
+	log::info(3, "Read {} sides", map_data.sides().size());
 
 	return true;
 }
@@ -211,24 +213,24 @@ bool DoomMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 {
 	if (!entry)
 	{
-		Global::error = "Map has no LINEDEFS entry!";
-		Log::info(Global::error);
+		global::error = "Map has no LINEDEFS entry!";
+		log::info(global::error);
 		return false;
 	}
 
 	// Check for empty entry
 	if (entry->size() < sizeof(LineDef))
 	{
-		Log::info(3, "Read 0 lines");
+		log::info(3, "Read 0 lines");
 		return true;
 	}
 
 	auto     line_data = (LineDef*)entry->rawData(true);
 	unsigned nl        = entry->size() / sizeof(LineDef);
-	float    p         = UI::getSplashProgress();
+	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
 	{
-		UI::setSplashProgress(p + ((float)a / nl) * 0.2f);
+		ui::setSplashProgress(p + ((float)a / nl) * 0.2f);
 		const auto& data = line_data[a];
 
 		// Check vertices exist
@@ -236,7 +238,7 @@ bool DoomMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 		auto v2 = map_data.vertices().at(data.vertex2);
 		if (!v1 || !v2)
 		{
-			Log::warning("Line {} invalid, not added", a);
+			log::warning("Line {} invalid, not added", a);
 			continue;
 		}
 
@@ -261,7 +263,7 @@ bool DoomMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_d
 		line->setId(data.sector_tag);
 	}
 
-	Log::info(3, "Read {} lines", map_data.lines().size());
+	log::info(3, "Read {} lines", map_data.lines().size());
 
 	return true;
 }
@@ -273,38 +275,38 @@ bool DoomMapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_da
 {
 	if (!entry)
 	{
-		Global::error = "Map has no SECTORS entry!";
-		Log::info(Global::error);
+		global::error = "Map has no SECTORS entry!";
+		log::info(global::error);
 		return false;
 	}
 
 	// Check for empty entry
 	if (entry->size() < sizeof(Sector))
 	{
-		Log::info(3, "Read 0 sectors");
+		log::info(3, "Read 0 sectors");
 		return true;
 	}
 
 	auto     sect_data = (Sector*)entry->rawData(true);
 	unsigned ns        = entry->size() / sizeof(Sector);
-	float    p         = UI::getSplashProgress();
+	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
 	{
-		UI::setSplashProgress(p + ((float)a / ns) * 0.2f);
+		ui::setSplashProgress(p + ((float)a / ns) * 0.2f);
 		const auto& data = sect_data[a];
 
 		// Add sector
 		map_data.addSector(std::make_unique<MapSector>(
 			data.f_height,
-			StrUtil::viewFromChars(data.f_tex, 8),
+			strutil::viewFromChars(data.f_tex, 8),
 			data.c_height,
-			StrUtil::viewFromChars(data.c_tex, 8),
+			strutil::viewFromChars(data.c_tex, 8),
 			data.light,
 			data.special,
 			data.tag));
 	}
 
-	Log::info(3, "Read {} sectors", map_data.sectors().size());
+	log::info(3, "Read {} sectors", map_data.sectors().size());
 
 	return true;
 }
@@ -316,24 +318,24 @@ bool DoomMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_dat
 {
 	if (!entry)
 	{
-		Global::error = "Map has no THINGS entry!";
-		Log::info(Global::error);
+		global::error = "Map has no THINGS entry!";
+		log::info(global::error);
 		return false;
 	}
 
 	// Check for empty entry
 	if (entry->size() < sizeof(Thing))
 	{
-		Log::info(3, "Read 0 things");
+		log::info(3, "Read 0 things");
 		return true;
 	}
 
 	auto     thng_data = (Thing*)entry->rawData(true);
 	unsigned nt        = entry->size() / sizeof(Thing);
-	float    p         = UI::getSplashProgress();
+	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nt; a++)
 	{
-		UI::setSplashProgress(p + ((float)a / nt) * 0.2f);
+		ui::setSplashProgress(p + ((float)a / nt) * 0.2f);
 		map_data.addThing(std::make_unique<MapThing>(
 			Vec3d{ (double)thng_data[a].x, (double)thng_data[a].y, 0. },
 			thng_data[a].type,
@@ -341,7 +343,7 @@ bool DoomMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_dat
 			thng_data[a].flags));
 	}
 
-	Log::info(3, "Read {} things", map_data.things().size());
+	log::info(3, "Read {} things", map_data.things().size());
 
 	return true;
 }

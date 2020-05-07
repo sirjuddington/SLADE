@@ -2,6 +2,8 @@
 
 #include "UI/Browser/BrowserWindow.h"
 
+namespace slade
+{
 class Archive;
 class TextureXList;
 class PatchTable;
@@ -61,3 +63,4 @@ private:
 	// Signal connections
 	sigslot::scoped_connection sc_palette_changed_;
 };
+} // namespace slade

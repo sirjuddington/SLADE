@@ -37,6 +37,8 @@
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -72,7 +74,7 @@ MapThing* ThingList::nearest(Vec2d point, double min) const
 	// to check for minimum hilight distance
 	if (nearest)
 	{
-		double rdist = MathStuff::distance(nearest->position(), point);
+		double rdist = math::distance(nearest->position(), point);
 		if (rdist > min)
 			return nullptr;
 	}
@@ -158,8 +160,8 @@ MapThing* ThingList::firstWithId(int id, unsigned start, int type, bool ignore_d
 		{
 			if (ignore_dragon)
 			{
-				auto& tt = Game::configuration().thingType(objects_[i]->type());
-				if (tt.flags() & Game::ThingType::Flags::Dragon)
+				auto& tt = game::configuration().thingType(objects_[i]->type());
+				if (tt.flags() & game::ThingType::Flags::Dragon)
 					continue;
 			}
 
@@ -177,8 +179,8 @@ void ThingList::putAllPathed(vector<MapThing*>& list) const
 	// Find things that need to be pathed
 	for (const auto& thing : objects_)
 	{
-		auto& tt = Game::configuration().thingType(thing->type());
-		if (tt.flags() & (Game::ThingType::Flags::Pathed | Game::ThingType::Flags::Dragon))
+		auto& tt = game::configuration().thingType(thing->type());
+		if (tt.flags() & (game::ThingType::Flags::Pathed | game::ThingType::Flags::Dragon))
 			list.push_back(thing);
 	}
 }
@@ -189,18 +191,18 @@ void ThingList::putAllPathed(vector<MapThing*>& list) const
 #define IDEQ(x) (((x) != 0) && ((x) == id))
 void ThingList::putAllTaggingWithId(int id, int type, vector<MapThing*>& list, int ttype) const
 {
-	using Game::TagType;
+	using game::TagType;
 
 	// Find things with special affecting matching id
 	int tag, arg2, arg3, arg4, arg5, tid;
 	for (auto& thing : objects_)
 	{
-		auto& tt        = Game::configuration().thingType(thing->type());
+		auto& tt        = game::configuration().thingType(thing->type());
 		auto  needs_tag = tt.needsTag();
-		if (needs_tag != TagType::None || (thing->special() && !(tt.flags() & Game::ThingType::Flags::Script)))
+		if (needs_tag != TagType::None || (thing->special() && !(tt.flags() & game::ThingType::Flags::Script)))
 		{
 			if (needs_tag == TagType::None)
-				needs_tag = Game::configuration().actionSpecial(thing->special()).needsTag();
+				needs_tag = game::configuration().actionSpecial(thing->special()).needsTag();
 			tag       = thing->arg(0);
 			bool fits = false;
 			int  path_type;

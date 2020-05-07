@@ -34,11 +34,13 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "MainEditor/MainEditor.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include <filesystem>
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -71,25 +73,25 @@ EntryType* etype_map     = nullptr; // Map marker type
 // -----------------------------------------------------------------------------
 void EntryType::dump()
 {
-	Log::info("Type {} \"{}\", format {}, extension {}", id_, name_, format_->id(), extension_);
-	Log::info("Size limit: {}-{}", size_limit_[0], size_limit_[1]);
+	log::info("Type {} \"{}\", format {}, extension {}", id_, name_, format_->id(), extension_);
+	log::info("Size limit: {}-{}", size_limit_[0], size_limit_[1]);
 
 	for (const auto& a : match_archive_)
-		Log::info("Match Archive: \"{}\"", a);
+		log::info("Match Archive: \"{}\"", a);
 
 	for (const auto& a : match_extension_)
-		Log::info("Match Extension: \"{}\"", a);
+		log::info("Match Extension: \"{}\"", a);
 
 	for (const auto& a : match_name_)
-		Log::info("Match Name: \"{}\"", a);
+		log::info("Match Name: \"{}\"", a);
 
 	for (int a : match_size_)
-		Log::info("Match Size: {}", a);
+		log::info("Match Size: {}", a);
 
 	for (int a : size_multiple_)
-		Log::info("Size Multiple: {}", a);
+		log::info("Size Multiple: {}", a);
 
-	Log::info("---");
+	log::info("---");
 }
 
 // -----------------------------------------------------------------------------
@@ -243,7 +245,7 @@ int EntryType::isThisType(ArchiveEntry& entry)
 			bool match = false;
 			for (const auto& match_name : match_name_)
 			{
-				if (StrUtil::matches(name, match_name))
+				if (strutil::matches(name, match_name))
 				{
 					match = true;
 					break;
@@ -289,7 +291,7 @@ int EntryType::isThisType(ArchiveEntry& entry)
 
 		r = EntryDataFormat::MATCH_FALSE;
 		for (const auto& ns : section_)
-			if (StrUtil::equalCI(ns, e_section))
+			if (strutil::equalCI(ns, e_section))
 				r = EntryDataFormat::MATCH_TRUE;
 	}
 
@@ -321,17 +323,17 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 		auto typenode = pt_etypes->childPTN(a);
 
 		// Create new entry type
-		auto ntype = std::make_unique<EntryType>(StrUtil::lower(typenode->name()));
+		auto ntype = std::make_unique<EntryType>(strutil::lower(typenode->name()));
 
 		// Copy from existing type if inherited
 		if (!typenode->inherit().empty())
 		{
-			auto parent_type = fromId(StrUtil::lower(typenode->inherit()));
+			auto parent_type = fromId(strutil::lower(typenode->inherit()));
 
 			if (parent_type != etype_unknown)
 				parent_type->copyToType(*ntype);
 			else
-				Log::info("Warning: Entry type {} inherits from unknown type {}", ntype->id(), typenode->inherit());
+				log::info("Warning: Entry type {} inherits from unknown type {}", ntype->id(), typenode->inherit());
 		}
 
 		// Go through all parsed fields
@@ -339,7 +341,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 		{
 			// Get child as ParseTreeNode
 			auto fieldnode = typenode->childPTN(b);
-			auto fn_name   = StrUtil::lower(fieldnode->name());
+			auto fn_name   = strutil::lower(fieldnode->name());
 
 			// Process it
 			if (fn_name == "name") // Name field
@@ -361,12 +363,12 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 
 				// Warn if undefined format
 				if (ntype->format_ == EntryDataFormat::anyFormat())
-					Log::warning("Entry type {} requires undefined format {}", ntype->id(), format_string);
+					log::warning("Entry type {} requires undefined format {}", ntype->id(), format_string);
 			}
 			else if (fn_name == "icon") // Icon field
 			{
 				ntype->icon_ = fieldnode->stringValue();
-				if (StrUtil::startsWith(ntype->icon_, "e_"))
+				if (strutil::startsWith(ntype->icon_, "e_"))
 					ntype->icon_ = ntype->icon_.substr(2);
 			}
 			else if (fn_name == "editor") // Editor field (to be removed)
@@ -376,17 +378,17 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 			else if (fn_name == "section") // Section field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->section_.emplace_back(StrUtil::lower(fieldnode->stringValue(v)));
+					ntype->section_.emplace_back(strutil::lower(fieldnode->stringValue(v)));
 			}
 			else if (fn_name == "match_ext") // Match Extension field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_extension_.emplace_back(StrUtil::upper(fieldnode->stringValue(v)));
+					ntype->match_extension_.emplace_back(strutil::upper(fieldnode->stringValue(v)));
 			}
 			else if (fn_name == "match_name") // Match Name field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_name_.emplace_back(StrUtil::upper(fieldnode->stringValue(v)));
+					ntype->match_name_.emplace_back(strutil::upper(fieldnode->stringValue(v)));
 			}
 			else if (fn_name == "match_extorname") // Match name or extension
 			{
@@ -417,7 +419,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 			else if (fn_name == "match_archive") // Archive field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_archive_.emplace_back(StrUtil::lower(fieldnode->stringValue(v)));
+					ntype->match_archive_.emplace_back(strutil::lower(fieldnode->stringValue(v)));
 			}
 			else if (fn_name == "extra") // Extra properties
 			{
@@ -432,7 +434,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 				bool exists = false;
 				for (auto& category : entry_categories)
 				{
-					if (StrUtil::equalCI(category, ntype->category_))
+					if (strutil::equalCI(category, ntype->category_))
 					{
 						exists = true;
 						break;
@@ -448,7 +450,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 				if (fieldnode->nValues() >= 3)
 					ntype->colour_ = ColRGBA(fieldnode->intValue(0), fieldnode->intValue(1), fieldnode->intValue(2));
 				else
-					Log::warning("Not enough colour components defined for entry type {}", ntype->id());
+					log::warning("Not enough colour components defined for entry type {}", ntype->id());
 			}
 			else
 			{
@@ -518,12 +520,12 @@ bool EntryType::loadEntryTypes()
 	// -------- READ BUILT-IN TYPES ---------
 
 	// Get builtin entry types from resource archive
-	auto res_archive = App::archiveManager().programResourceArchive();
+	auto res_archive = app::archiveManager().programResourceArchive();
 
 	// Check resource archive exists
 	if (!res_archive)
 	{
-		Log::error("No resource archive open!");
+		log::error("No resource archive open!");
 		return false;
 	}
 
@@ -533,7 +535,7 @@ bool EntryType::loadEntryTypes()
 	// Check it exists
 	if (!et_dir)
 	{
-		Log::error("config/entry_types does not exist in slade.pk3");
+		log::error("config/entry_types does not exist in slade.pk3");
 		return false;
 	}
 
@@ -548,17 +550,17 @@ bool EntryType::loadEntryTypes()
 
 	// Warn if no types were read (this shouldn't happen unless the resource archive is corrupted)
 	if (!etypes_read)
-		Log::warning("No built-in entry types could be loaded from slade.pk3");
+		log::warning("No built-in entry types could be loaded from slade.pk3");
 
 	// -------- READ CUSTOM TYPES ---------
 
 	// If the directory doesn't exist create it
 	namespace fs = std::filesystem;
-	if (!fs::exists(App::path("entry_types", App::Dir::User)))
-		fs::create_directory(App::path("entry_types", App::Dir::User));
+	if (!fs::exists(app::path("entry_types", app::Dir::User)))
+		fs::create_directory(app::path("entry_types", app::Dir::User));
 
 	// Go through each file in the custom types directory
-	for (const auto& item : fs::directory_iterator{ App::path("entry_types", App::Dir::User) })
+	for (const auto& item : fs::directory_iterator{ app::path("entry_types", app::Dir::User) })
 	{
 		if (!item.is_regular_file())
 			continue;
@@ -721,7 +723,7 @@ CONSOLE_COMMAND(type, 0, true)
 			listing += all_types[a]->formatId();
 			listing += separator;
 		}
-		Log::info(listing);
+		log::info(listing);
 	}
 	else
 	{
@@ -730,16 +732,16 @@ CONSOLE_COMMAND(type, 0, true)
 		bool match    = false;
 
 		// Use true unknown type rather than map marker...
-		if (StrUtil::equalCI(args[0], "unknown") || StrUtil::equalCI(args[0], "none")
-			|| StrUtil::equalCI(args[0], "any"))
+		if (strutil::equalCI(args[0], "unknown") || strutil::equalCI(args[0], "none")
+			|| strutil::equalCI(args[0], "any"))
 			match = true;
 
 		// Find actual format
 		else
 			for (size_t a = 3; a < all_types.size(); a++)
 			{
-				if (StrUtil::equalCI(args[0], all_types[a]->formatId())
-					|| StrUtil::equalCI(args[0], all_types[a]->id()))
+				if (strutil::equalCI(args[0], all_types[a]->formatId())
+					|| strutil::equalCI(args[0], all_types[a]->id()))
 				{
 					desttype = all_types[a];
 					match    = true;
@@ -748,16 +750,16 @@ CONSOLE_COMMAND(type, 0, true)
 			}
 		if (!match)
 		{
-			Log::info("Type {} does not exist (use \"type\" without parameter for a list)", args[0]);
+			log::info("Type {} does not exist (use \"type\" without parameter for a list)", args[0]);
 			return;
 		}
 
 		// Allow to force type change even if format checks fails (use at own risk!)
-		int  force = !(args.size() < 2 || StrUtil::equalCI(args[1], "force"));
-		auto meep  = MainEditor::currentEntrySelection();
+		int  force = !(args.size() < 2 || strutil::equalCI(args[1], "force"));
+		auto meep  = maineditor::currentEntrySelection();
 		if (meep.empty())
 		{
-			Log::info("No entry selected");
+			log::info("No entry selected");
 			return;
 		}
 
@@ -767,9 +769,9 @@ CONSOLE_COMMAND(type, 0, true)
 			// Check if format corresponds to entry
 			foo = EntryDataFormat::format(desttype->formatId());
 			if (foo)
-				Log::info("Identifying as {}", desttype->name());
+				log::info("Identifying as {}", desttype->name());
 			else
-				Log::info("No data format for this type!");
+				log::info("No data format for this type!");
 		}
 		else
 			force = true; // Always force the unknown type
@@ -781,16 +783,16 @@ CONSOLE_COMMAND(type, 0, true)
 			{
 				okay = foo->isThisFormat(b->data());
 				if (okay)
-					Log::info("{}: Identification successful ({}/255)", b->name(), okay);
+					log::info("{}: Identification successful ({}/255)", b->name(), okay);
 				else
-					Log::info("{}: Identification failed", b->name());
+					log::info("{}: Identification failed", b->name());
 			}
 
 			// Change type
 			if (force || okay)
 			{
 				b->setType(desttype, okay);
-				Log::info("{}: Type changed.", b->name());
+				log::info("{}: Type changed.", b->name());
 			}
 		}
 	}
@@ -798,11 +800,11 @@ CONSOLE_COMMAND(type, 0, true)
 
 CONSOLE_COMMAND(size, 0, true)
 {
-	auto meep = MainEditor::currentEntry();
+	auto meep = maineditor::currentEntry();
 	if (!meep)
 	{
-		Log::info("No entry selected");
+		log::info("No entry selected");
 		return;
 	}
-	Log::info("{}: {} bytes", meep->name(), meep->size());
+	log::info("{}: {} bytes", meep->name(), meep->size());
 }

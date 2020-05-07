@@ -1,6 +1,9 @@
 #pragma once
 
+namespace slade
+{
 class MapVertex;
+
 class VertexInfoOverlay
 {
 public:
@@ -14,3 +17,4 @@ private:
 	string info_;
 	bool   pos_frac_ = false;
 };
+} // namespace slade

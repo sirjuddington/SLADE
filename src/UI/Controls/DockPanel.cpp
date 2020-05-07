@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "DockPanel.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //

@@ -36,6 +36,8 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -94,7 +96,7 @@ MapSide::MapSide(MapSector* sector, ParseTreeNode* udmf_def) : MapObject{ Type::
 			tex_offset_.y = prop->intValue();
 		else
 			properties_[prop->name()] = prop->value();
-		// Log::info(1, "Property %s type %s (%s)", prop->getName(), prop->getValue().typeString(),
+		// log::info(1, "Property %s type %s (%s)", prop->getName(), prop->getValue().typeString(),
 		// prop->getValue().getStringValue());
 	}
 }
@@ -126,7 +128,7 @@ uint8_t MapSide::light()
 	bool include_sector = true;
 
 	if (parent_map_->currentFormat() == MapFormat::UDMF
-		&& Game::configuration().featureSupported(Game::UDMFFeature::SideLighting))
+		&& game::configuration().featureSupported(game::UDMFFeature::SideLighting))
 	{
 		light += intProperty("light");
 		if (boolProperty("lightabsolute"))
@@ -150,7 +152,7 @@ uint8_t MapSide::light()
 void MapSide::changeLight(int amount)
 {
 	if (parent_map_->currentFormat() == MapFormat::UDMF
-		&& Game::configuration().featureSupported(Game::UDMFFeature::SideLighting))
+		&& game::configuration().featureSupported(game::UDMFFeature::SideLighting))
 		setIntProperty("light", intProperty("light") + amount);
 }
 

@@ -2,18 +2,20 @@
 
 #include "SeekableData.h"
 
-namespace FileUtil
+namespace slade
 {
-bool           fileExists(string_view path);
-bool           dirExists(string_view path);
-bool           removeFile(string_view path);
-bool           copyFile(string_view from, string_view to, bool overwrite = true);
-bool           readFileToString(const string& path, string& str);
-bool           writeStringToFile(string& str, const string& path);
-bool           createDir(string_view path);
-vector<string> allFilesInDir(string_view path, bool include_subdirs = false, bool include_dir_paths = false);
-time_t         fileModifiedTime(string_view path);
-} // namespace FileUtil
+namespace fileutil
+{
+	bool           fileExists(string_view path);
+	bool           dirExists(string_view path);
+	bool           removeFile(string_view path);
+	bool           copyFile(string_view from, string_view to, bool overwrite = true);
+	bool           readFileToString(const string& path, string& str);
+	bool           writeStringToFile(string& str, const string& path);
+	bool           createDir(string_view path);
+	vector<string> allFilesInDir(string_view path, bool include_subdirs = false, bool include_dir_paths = false);
+	time_t         fileModifiedTime(string_view path);
+} // namespace fileutil
 
 class SFile : public SeekableData
 {
@@ -53,3 +55,4 @@ private:
 	FILE*       handle_ = nullptr;
 	struct stat stat_;
 };
+} // namespace slade

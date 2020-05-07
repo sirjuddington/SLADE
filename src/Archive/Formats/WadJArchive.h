@@ -3,6 +3,8 @@
 #include "Archive/Archive.h"
 #include "WadArchive.h"
 
+namespace slade
+{
 class WadJArchive : public WadArchive
 {
 public:
@@ -25,3 +27,4 @@ private:
 	vector<ArchiveEntry*> entries_;
 	char                  wad_type_[4] = { 'P', 'W', 'A', 'D' };
 };
+} // namespace slade

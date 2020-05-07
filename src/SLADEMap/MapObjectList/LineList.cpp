@@ -37,6 +37,8 @@
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -107,7 +109,7 @@ vector<Vec2d> LineList::cutPoints(const Seg2d& cutter) const
 	{
 		// Check for intersection
 		intersection = cutter.start();
-		if (MathStuff::linesIntersect(cutter, line->seg(), intersection))
+		if (math::linesIntersect(cutter, line->seg(), intersection))
 		{
 			// Add intersection point to vector
 			intersect_points.push_back(intersection);
@@ -192,7 +194,7 @@ vector<MapLine*> LineList::allWithId(int id) const
 #define IDEQ(x) (((x) != 0) && ((x) == id))
 void LineList::putAllTaggingWithId(int id, int type, vector<MapLine*>& list) const
 {
-	using Game::TagType;
+	using game::TagType;
 
 	// Find lines with special affecting matching id
 	int tag, arg2, arg3, arg4, arg5;
@@ -203,7 +205,7 @@ void LineList::putAllTaggingWithId(int id, int type, vector<MapLine*>& list) con
 		{
 			tag       = line->arg(0);
 			bool fits = false;
-			switch (Game::configuration().actionSpecial(special).needsTag())
+			switch (game::configuration().actionSpecial(special).needsTag())
 			{
 			case TagType::Sector:
 			case TagType::SectorOrBack:
@@ -320,7 +322,7 @@ int LineList::firstFreeId(MapFormat format) const
 	}
 
 	// Boom (sector tag (arg0))
-	else if (format == MapFormat::Doom && Game::configuration().featureSupported(Game::Feature::Boom))
+	else if (format == MapFormat::Doom && game::configuration().featureSupported(game::Feature::Boom))
 	{
 		for (unsigned a = 0; a < count_; a++)
 		{

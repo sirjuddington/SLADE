@@ -37,32 +37,34 @@
 #include <charconv>
 #include <regex>
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace wxStringUtils
+namespace slade::wxStringUtils
 {
 wxRegEx re_int1{ "^[+-]?[0-9]+[0-9]*$", wxRE_DEFAULT | wxRE_NOSUB };
 wxRegEx re_int2{ "^0[0-9]+$", wxRE_DEFAULT | wxRE_NOSUB };
 wxRegEx re_int3{ "^0x[0-9A-Fa-f]+$", wxRE_DEFAULT | wxRE_NOSUB };
 wxRegEx re_float{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT | wxRE_NOSUB };
-} // namespace wxStringUtils
+} // namespace slade::wxStringUtils
 
-namespace StrUtil
+namespace slade::strutil
 {
 std::regex re_int1{ "^[+-]?[0-9]+[0-9]*$" };
 std::regex re_int2{ "^0[0-9]+$" };
 std::regex re_int3{ "^0x[0-9A-Fa-f]+$" };
 std::regex re_float{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$" };
-} // namespace StrUtil
+} // namespace slade::strutil
 
 
 // -----------------------------------------------------------------------------
 //
-// StrUtil Namespace Functions
+// strutil Namespace Functions
 //
 // -----------------------------------------------------------------------------
 
@@ -71,7 +73,7 @@ std::regex re_float{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$" };
 // Returns true if [str] is a valid integer. If [allow_hex] is true, can also
 // be a valid hex string
 // -----------------------------------------------------------------------------
-bool StrUtil::isInteger(string_view str, bool allow_hex)
+bool strutil::isInteger(string_view str, bool allow_hex)
 {
 	return std::regex_search(str.data(), re_int1) || std::regex_search(str.data(), re_int2)
 		   || (allow_hex && std::regex_search(str.data(), re_int3));
@@ -80,7 +82,7 @@ bool StrUtil::isInteger(string_view str, bool allow_hex)
 // -----------------------------------------------------------------------------
 // Returns true if [str] is a valid hex string
 // -----------------------------------------------------------------------------
-bool StrUtil::isHex(string_view str)
+bool strutil::isHex(string_view str)
 {
 	return std::regex_search(str.data(), re_int3);
 }
@@ -88,7 +90,7 @@ bool StrUtil::isHex(string_view str)
 // -----------------------------------------------------------------------------
 // Returns true if [str] is a valid floating-point number
 // -----------------------------------------------------------------------------
-bool StrUtil::isFloat(string_view str)
+bool strutil::isFloat(string_view str)
 {
 	if (str.empty() || str[0] == '$')
 		return false;
@@ -96,7 +98,7 @@ bool StrUtil::isFloat(string_view str)
 	return std::regex_search(str.data(), re_float);
 }
 
-bool StrUtil::equalCI(string_view left, string_view right)
+bool strutil::equalCI(string_view left, string_view right)
 {
 	auto sz = left.size();
 	if (right.size() != sz)
@@ -110,7 +112,7 @@ bool StrUtil::equalCI(string_view left, string_view right)
 }
 
 // This one is a bit tricky - the string_view == string_view one above should be sufficient
-// bool StrUtil::equalCI(string_view left, const char* right)
+// bool strutil::equalCI(string_view left, const char* right)
 //{
 //	if (!right)
 //		return false;
@@ -129,17 +131,17 @@ bool StrUtil::equalCI(string_view left, string_view right)
 //	return true;
 //}
 
-bool StrUtil::startsWith(string_view str, string_view check)
+bool strutil::startsWith(string_view str, string_view check)
 {
 	return check.size() <= str.size() && str.compare(0, check.size(), check) == 0;
 }
 
-bool StrUtil::startsWith(string_view str, char check)
+bool strutil::startsWith(string_view str, char check)
 {
 	return !str.empty() && str[0] == check;
 }
 
-bool StrUtil::startsWithCI(string_view str, string_view check)
+bool strutil::startsWithCI(string_view str, string_view check)
 {
 	const auto c_size = check.size();
 	if (c_size > str.size())
@@ -152,22 +154,22 @@ bool StrUtil::startsWithCI(string_view str, string_view check)
 	return true;
 }
 
-bool StrUtil::startsWithCI(string_view str, char check)
+bool strutil::startsWithCI(string_view str, char check)
 {
 	return !str.empty() && tolower(str[0]) == tolower(check);
 }
 
-bool StrUtil::endsWith(string_view str, string_view check)
+bool strutil::endsWith(string_view str, string_view check)
 {
 	return check.size() <= str.size() && str.compare(str.size() - check.size(), check.size(), check) == 0;
 }
 
-bool StrUtil::endsWith(string_view str, char check)
+bool strutil::endsWith(string_view str, char check)
 {
 	return !str.empty() && str.back() == check;
 }
 
-bool StrUtil::endsWithCI(string_view str, string_view check)
+bool strutil::endsWithCI(string_view str, string_view check)
 {
 	const auto c_size = check.size();
 	if (c_size > str.size())
@@ -186,12 +188,12 @@ bool endsWithCI(string_view str, char check)
 	return !str.empty() && tolower(str.back()) == tolower(check);
 }
 
-bool StrUtil::contains(string_view str, char check)
+bool strutil::contains(string_view str, char check)
 {
 	return str.find(check) != string::npos;
 }
 
-bool StrUtil::containsCI(string_view str, char check)
+bool strutil::containsCI(string_view str, char check)
 {
 	const auto lc = tolower(check);
 	for (auto c : str)
@@ -201,12 +203,12 @@ bool StrUtil::containsCI(string_view str, char check)
 	return false;
 }
 
-bool StrUtil::contains(string_view str, string_view check)
+bool strutil::contains(string_view str, string_view check)
 {
 	return str.find(check) != string::npos;
 }
 
-bool StrUtil::containsCI(string_view str, string_view check)
+bool strutil::containsCI(string_view str, string_view check)
 {
 	if (str.size() < check.size())
 		return false;
@@ -215,7 +217,7 @@ bool StrUtil::containsCI(string_view str, string_view check)
 	return lower(str).find(lower(check)) != string::npos;
 }
 
-bool StrUtil::matches(string_view str, string_view match)
+bool strutil::matches(string_view str, string_view match)
 {
 	// Empty [match] only matches empty [str]
 	if (match.empty())
@@ -230,10 +232,10 @@ bool StrUtil::matches(string_view str, string_view match)
 	while (true)
 	{
 		wildcard = false;
-		
+
 		if (m_pos == match.size())
 			return t_pos == str.size();
-		
+
 		if (match[m_pos] == '*')
 		{
 			wildcard = true;
@@ -269,7 +271,7 @@ bool StrUtil::matches(string_view str, string_view match)
 	}
 }
 
-bool StrUtil::matchesCI(string_view str, string_view match)
+bool strutil::matchesCI(string_view str, string_view match)
 {
 	// Empty [match] only matches empty [str]
 	if (match.empty())
@@ -279,12 +281,12 @@ bool StrUtil::matchesCI(string_view str, string_view match)
 	unsigned m_start;
 	unsigned t_pos = 0;
 	unsigned i;
-	bool wildcard;
+	bool     wildcard;
 
 	while (true)
 	{
 		wildcard = false;
-		
+
 		if (m_pos == match.size())
 			return t_pos == str.size();
 
@@ -330,7 +332,7 @@ bool StrUtil::matchesCI(string_view str, string_view match)
 // If [swap_backslash] is true, instead of escaping it will swap backslashes to
 // forward slashes
 // -----------------------------------------------------------------------------
-string StrUtil::escapedString(string_view str, bool swap_backslash)
+string strutil::escapedString(string_view str, bool swap_backslash)
 {
 	auto escaped = string{ str };
 
@@ -340,7 +342,7 @@ string StrUtil::escapedString(string_view str, bool swap_backslash)
 	return escaped;
 }
 
-string& StrUtil::replaceIP(string& str, string_view from, string_view to)
+string& strutil::replaceIP(string& str, string_view from, string_view to)
 {
 	size_t start_pos = 0;
 	while ((start_pos = str.find(from.data(), start_pos)) != string::npos)
@@ -351,14 +353,14 @@ string& StrUtil::replaceIP(string& str, string_view from, string_view to)
 	return str;
 }
 
-string StrUtil::replace(string_view str, string_view from, string_view to)
+string strutil::replace(string_view str, string_view from, string_view to)
 {
 	auto s = string{ str };
 	replaceIP(s, from, to);
 	return s;
 }
 
-string& StrUtil::replaceFirstIP(string& str, string_view from, string_view to)
+string& strutil::replaceFirstIP(string& str, string_view from, string_view to)
 {
 	auto pos = str.find(from.data(), 0);
 	if (pos != string::npos)
@@ -366,73 +368,73 @@ string& StrUtil::replaceFirstIP(string& str, string_view from, string_view to)
 	return str;
 }
 
-string StrUtil::replaceFirst(string_view str, string_view from, string_view to)
+string strutil::replaceFirst(string_view str, string_view from, string_view to)
 {
 	auto s = string{ str };
 	replaceFirstIP(s, from, to);
 	return s;
 }
 
-string& StrUtil::lowerIP(string& str)
+string& strutil::lowerIP(string& str)
 {
 	transform(str.begin(), str.end(), str.begin(), ::tolower);
 	return str;
 }
 
-string& StrUtil::upperIP(string& str)
+string& strutil::upperIP(string& str)
 {
 	transform(str.begin(), str.end(), str.begin(), ::toupper);
 	return str;
 }
 
-string StrUtil::lower(string_view str)
+string strutil::lower(string_view str)
 {
 	auto s = string{ str };
 	transform(s.begin(), s.end(), s.begin(), ::tolower);
 	return s;
 }
 
-string StrUtil::upper(string_view str)
+string strutil::upper(string_view str)
 {
 	auto s = string{ str };
 	transform(s.begin(), s.end(), s.begin(), ::toupper);
 	return s;
 }
 
-string& StrUtil::ltrimIP(string& str)
+string& strutil::ltrimIP(string& str)
 {
 	str.erase(0, str.find_first_not_of(WHITESPACE_CHARACTERS));
 	return str;
 }
 
-string& StrUtil::rtrimIP(string& str)
+string& strutil::rtrimIP(string& str)
 {
 	str.erase(0, str.find_last_not_of(WHITESPACE_CHARACTERS) + 1);
 	return str;
 }
 
-string& StrUtil::trimIP(string& str)
+string& strutil::trimIP(string& str)
 {
 	str.erase(0, str.find_first_not_of(WHITESPACE_CHARACTERS));    // left
 	str.erase(0, str.find_last_not_of(WHITESPACE_CHARACTERS) + 1); // right
 	return str;
 }
 
-string StrUtil::ltrim(string_view str)
+string strutil::ltrim(string_view str)
 {
 	auto s = string{ str };
 	s.erase(0, s.find_first_not_of(WHITESPACE_CHARACTERS));
 	return s;
 }
 
-string StrUtil::rtrim(string_view str)
+string strutil::rtrim(string_view str)
 {
 	auto s = string{ str };
 	s.erase(0, s.find_last_not_of(WHITESPACE_CHARACTERS) + 1);
 	return s;
 }
 
-string StrUtil::trim(string_view str)
+string strutil::trim(string_view str)
 {
 	auto s = string{ str };
 	s.erase(0, s.find_first_not_of(WHITESPACE_CHARACTERS));    // left
@@ -440,7 +442,7 @@ string StrUtil::trim(string_view str)
 	return s;
 }
 
-string& StrUtil::capitalizeIP(string& str)
+string& strutil::capitalizeIP(string& str)
 {
 	if (str.empty())
 		return str;
@@ -451,7 +453,7 @@ string& StrUtil::capitalizeIP(string& str)
 	return str;
 }
 
-string StrUtil::capitalize(string_view str)
+string strutil::capitalize(string_view str)
 {
 	if (str.empty())
 		return {};
@@ -462,7 +464,7 @@ string StrUtil::capitalize(string_view str)
 	return s;
 }
 
-string StrUtil::wildcardToRegex(string_view str)
+string strutil::wildcardToRegex(string_view str)
 {
 	// Process [str] to be a valid regex string
 	// (replace ? with . and add . before any *)
@@ -481,30 +483,30 @@ string StrUtil::wildcardToRegex(string_view str)
 	return regex;
 }
 
-string StrUtil::prepend(string_view str, string_view prefix)
+string strutil::prepend(string_view str, string_view prefix)
 {
 	string s{ str.data(), str.size() };
 	s.insert(s.begin(), prefix.begin(), prefix.end());
 	return s;
 }
 
-string& StrUtil::prependIP(string& str, string_view prefix)
+string& strutil::prependIP(string& str, string_view prefix)
 {
 	str.insert(str.begin(), prefix.begin(), prefix.end());
 	return str;
 }
 
-string StrUtil::left(string_view str, unsigned n)
+string strutil::left(string_view str, unsigned n)
 {
 	return string{ str.substr(0, n) };
 }
 
-string_view StrUtil::leftV(string_view str, unsigned n)
+string_view strutil::leftV(string_view str, unsigned n)
 {
 	return str.substr(0, n);
 }
 
-string StrUtil::right(string_view str, unsigned n)
+string strutil::right(string_view str, unsigned n)
 {
 	if (str.size() <= n)
 		return string{ str };
@@ -512,7 +514,7 @@ string StrUtil::right(string_view str, unsigned n)
 	return string{ str.substr(str.size() - n, n) };
 }
 
-string_view StrUtil::rightV(string_view str, unsigned n)
+string_view strutil::rightV(string_view str, unsigned n)
 {
 	if (str.size() <= n)
 		return str;
@@ -520,7 +522,7 @@ string_view StrUtil::rightV(string_view str, unsigned n)
 	return str.substr(str.size() - n, n);
 }
 
-string StrUtil::afterLast(string_view str, char chr)
+string strutil::afterLast(string_view str, char chr)
 {
 	for (int i = str.size() - 1; i >= 0; --i)
 		if (str[i] == chr)
@@ -529,7 +531,7 @@ string StrUtil::afterLast(string_view str, char chr)
 	return string{ str };
 }
 
-string_view StrUtil::afterLastV(string_view str, char chr)
+string_view strutil::afterLastV(string_view str, char chr)
 {
 	for (int i = str.size() - 1; i >= 0; --i)
 		if (str[i] == chr)
@@ -538,7 +540,7 @@ string_view StrUtil::afterLastV(string_view str, char chr)
 	return str;
 }
 
-string StrUtil::afterFirst(string_view str, char chr)
+string strutil::afterFirst(string_view str, char chr)
 {
 	for (unsigned i = 0; i < str.size(); ++i)
 		if (str[i] == chr)
@@ -547,7 +549,7 @@ string StrUtil::afterFirst(string_view str, char chr)
 	return string{ str };
 }
 
-string_view StrUtil::afterFirstV(string_view str, char chr)
+string_view strutil::afterFirstV(string_view str, char chr)
 {
 	for (unsigned i = 0; i < str.size(); ++i)
 		if (str[i] == chr)
@@ -556,7 +558,7 @@ string_view StrUtil::afterFirstV(string_view str, char chr)
 	return str;
 }
 
-string StrUtil::beforeLast(string_view str, char chr)
+string strutil::beforeLast(string_view str, char chr)
 {
 	for (int i = str.size() - 1; i >= 0; --i)
 		if (str[i] == chr)
@@ -565,7 +567,7 @@ string StrUtil::beforeLast(string_view str, char chr)
 	return string{ str };
 }
 
-string_view StrUtil::beforeLastV(string_view str, char chr)
+string_view strutil::beforeLastV(string_view str, char chr)
 {
 	for (int i = str.size() - 1; i >= 0; --i)
 		if (str[i] == chr)
@@ -574,7 +576,7 @@ string_view StrUtil::beforeLastV(string_view str, char chr)
 	return str;
 }
 
-string StrUtil::beforeFirst(string_view str, char chr)
+string strutil::beforeFirst(string_view str, char chr)
 {
 	for (unsigned i = 0; i < str.size(); i++)
 		if (str[i] == chr)
@@ -583,7 +585,7 @@ string StrUtil::beforeFirst(string_view str, char chr)
 	return string{ str };
 }
 
-string_view StrUtil::beforeFirstV(string_view str, char chr)
+string_view strutil::beforeFirstV(string_view str, char chr)
 {
 	for (unsigned i = 0; i < str.size(); i++)
 		if (str[i] == chr)
@@ -592,7 +594,7 @@ string_view StrUtil::beforeFirstV(string_view str, char chr)
 	return str;
 }
 
-vector<string> StrUtil::split(string_view str, char separator)
+vector<string> strutil::split(string_view str, char separator)
 {
 	unsigned       start = 0;
 	auto           size  = str.size();
@@ -611,7 +613,7 @@ vector<string> StrUtil::split(string_view str, char separator)
 	return split;
 }
 
-vector<string_view> StrUtil::splitV(string_view str, char separator)
+vector<string_view> strutil::splitV(string_view str, char separator)
 {
 	unsigned            start = 0;
 	auto                size  = str.size();
@@ -630,7 +632,7 @@ vector<string_view> StrUtil::splitV(string_view str, char separator)
 	return split;
 }
 
-string StrUtil::truncate(string_view str, unsigned length)
+string strutil::truncate(string_view str, unsigned length)
 {
 	if (str.size() > length)
 		return { str.data(), length };
@@ -638,14 +640,14 @@ string StrUtil::truncate(string_view str, unsigned length)
 		return { str.data(), str.size() };
 }
 
-string& StrUtil::truncateIP(string& str, unsigned length)
+string& strutil::truncateIP(string& str, unsigned length)
 {
 	if (str.size() > length)
 		str.resize(length);
 	return str;
 }
 
-string StrUtil::removeLast(string_view str, unsigned n)
+string strutil::removeLast(string_view str, unsigned n)
 {
 	if (str.size() <= n)
 		return {};
@@ -653,7 +655,7 @@ string StrUtil::removeLast(string_view str, unsigned n)
 	return { str.data(), str.size() - n };
 }
 
-string& StrUtil::removeLastIP(string& str, unsigned n)
+string& strutil::removeLastIP(string& str, unsigned n)
 {
 	if (str.size() <= n)
 		str.clear();
@@ -663,35 +665,35 @@ string& StrUtil::removeLastIP(string& str, unsigned n)
 	return str;
 }
 
-string StrUtil::removePrefix(string_view str, char prefix)
+string strutil::removePrefix(string_view str, char prefix)
 {
 	if (!str.empty() && str[0] == prefix)
 		str.remove_prefix(1);
 	return { str.data(), str.size() };
 }
 
-string& StrUtil::removePrefixIP(string& str, char prefix)
+string& strutil::removePrefixIP(string& str, char prefix)
 {
 	if (!str.empty() && str[0] == prefix)
 		str.erase(0, 1);
 	return str;
 }
 
-string StrUtil::removeSuffix(string_view str, char suffix)
+string strutil::removeSuffix(string_view str, char suffix)
 {
 	if (!str.empty() && str.back() == suffix)
 		str.remove_suffix(1);
 	return { str.data(), str.size() };
 }
 
-string& StrUtil::removeSuffixIP(string& str, char suffix)
+string& strutil::removeSuffixIP(string& str, char suffix)
 {
 	if (!str.empty() && str.back() == suffix)
 		str.pop_back();
 	return str;
 }
 
-StrUtil::Path::Path(string_view full_path) : full_path_{ full_path.data(), full_path.size() }
+strutil::Path::Path(string_view full_path) : full_path_{ full_path.data(), full_path.size() }
 {
 	// Enforce / as separators
 	std::replace(full_path_.begin(), full_path_.end(), '\\', '/');
@@ -702,7 +704,7 @@ StrUtil::Path::Path(string_view full_path) : full_path_{ full_path.data(), full_
 	filename_end_     = ext_pos == string::npos ? full_path_.size() : ext_pos;
 }
 
-string_view StrUtil::Path::path(bool include_end_sep) const
+string_view strutil::Path::path(bool include_end_sep) const
 {
 	if (filename_start_ == 0 || filename_start_ == string::npos)
 		return {};
@@ -711,7 +713,7 @@ string_view StrUtil::Path::path(bool include_end_sep) const
 							 string_view{ full_path_.data(), filename_start_ - 1 };
 }
 
-string_view StrUtil::Path::fileName(bool include_extension) const
+string_view strutil::Path::fileName(bool include_extension) const
 {
 	if (filename_start_ == string::npos)
 		return {};
@@ -720,7 +722,7 @@ string_view StrUtil::Path::fileName(bool include_extension) const
 							   string_view{ full_path_.data() + filename_start_, filename_end_ - filename_start_ };
 }
 
-string_view StrUtil::Path::extension() const
+string_view strutil::Path::extension() const
 {
 	if (filename_start_ == string::npos || filename_end_ >= full_path_.size())
 		return {};
@@ -728,7 +730,7 @@ string_view StrUtil::Path::extension() const
 	return string_view{ full_path_.data() + filename_end_ + 1 };
 }
 
-vector<string_view> StrUtil::Path::pathParts() const
+vector<string_view> strutil::Path::pathParts() const
 {
 	if (filename_start_ == 0 || filename_start_ == string::npos)
 		return {};
@@ -736,12 +738,12 @@ vector<string_view> StrUtil::Path::pathParts() const
 	return splitV({ full_path_.data(), filename_start_ - 1 }, '/');
 }
 
-bool StrUtil::Path::hasExtension() const
+bool strutil::Path::hasExtension() const
 {
 	return filename_start_ != string::npos && filename_end_ < full_path_.size();
 }
 
-void StrUtil::Path::set(string_view full_path)
+void strutil::Path::set(string_view full_path)
 {
 	full_path_ = full_path;
 
@@ -754,7 +756,7 @@ void StrUtil::Path::set(string_view full_path)
 	filename_end_     = ext_pos == string::npos ? full_path_.size() : ext_pos;
 }
 
-void StrUtil::Path::setPath(string_view path)
+void strutil::Path::setPath(string_view path)
 {
 	if (filename_start_ == string::npos)
 		return;
@@ -782,11 +784,11 @@ void StrUtil::Path::setPath(string_view path)
 	}
 }
 
-void StrUtil::Path::setPath(const vector<string_view>& parts) {}
+void strutil::Path::setPath(const vector<string_view>& parts) {}
 
-void StrUtil::Path::setPath(const vector<string>& parts) {}
+void strutil::Path::setPath(const vector<string>& parts) {}
 
-void StrUtil::Path::setFileName(string_view file_name)
+void strutil::Path::setFileName(string_view file_name)
 {
 	if (filename_start_ == string::npos)
 		return;
@@ -809,7 +811,7 @@ void StrUtil::Path::setFileName(string_view file_name)
 	std::replace(full_path_.begin() + filename_start_, full_path_.begin() + filename_end_, '.', '_');
 }
 
-void StrUtil::Path::setExtension(string_view extension)
+void strutil::Path::setExtension(string_view extension)
 {
 	if (extension.empty())
 	{
@@ -829,7 +831,7 @@ void StrUtil::Path::setExtension(string_view extension)
 	std::replace(full_path_.begin() + filename_end_, full_path_.end(), '\\', '_');
 }
 
-string_view StrUtil::Path::fileNameOf(string_view full_path, bool include_extension)
+string_view strutil::Path::fileNameOf(string_view full_path, bool include_extension)
 {
 	int pos;
 	for (pos = full_path.size() - 1; pos > 0; --pos)
@@ -846,7 +848,7 @@ string_view StrUtil::Path::fileNameOf(string_view full_path, bool include_extens
 	return pos > 0 ? full_path.substr(pos) : full_path;
 }
 
-string_view StrUtil::Path::extensionOf(string_view full_path)
+string_view strutil::Path::extensionOf(string_view full_path)
 {
 	// Ignore any '.' in path
 	auto last_sep_pos = full_path.find_last_of("/\\");
@@ -857,7 +859,7 @@ string_view StrUtil::Path::extensionOf(string_view full_path)
 	return ext_pos == string_view::npos ? string_view{} : full_path.substr(ext_pos + 1);
 }
 
-string_view StrUtil::Path::pathOf(string_view full_path, bool include_end_sep)
+string_view strutil::Path::pathOf(string_view full_path, bool include_end_sep)
 {
 	auto last_sep_pos = full_path.find_last_of("/\\");
 	return last_sep_pos == string_view::npos ? string_view{} :
@@ -870,7 +872,7 @@ string_view StrUtil::Path::pathOf(string_view full_path, bool include_end_sep)
 // Reads the text file at [filename], processing any #include statements in the
 // file recursively. The resulting 'expanded' text is written to [out]
 // -----------------------------------------------------------------------------
-void StrUtil::processIncludes(const string& filename, string& out)
+void strutil::processIncludes(const string& filename, string& out)
 {
 	// Open file
 	wxTextFile file;
@@ -912,14 +914,14 @@ void StrUtil::processIncludes(const string& filename, string& out)
 // as well as in the parent archive. The resulting 'expanded' text is written
 // to [out]
 // -----------------------------------------------------------------------------
-void StrUtil::processIncludes(ArchiveEntry* entry, string& out, bool use_res)
+void strutil::processIncludes(ArchiveEntry* entry, string& out, bool use_res)
 {
 	// Check entry was given
 	if (!entry)
 		return;
 
 	// Write entry to temp file
-	auto filename = App::path(entry->name(), App::Dir::Temp);
+	auto filename = app::path(entry->name(), app::Dir::Temp);
 	entry->exportFile(filename);
 
 	// Open file
@@ -952,13 +954,13 @@ void StrUtil::processIncludes(ArchiveEntry* entry, string& out, bool use_res)
 				done = true;
 			}
 			else
-				Log::warning(2, fmt::format("Couldn't find entry to #include: {}", name));
+				log::warning(2, fmt::format("Couldn't find entry to #include: {}", name));
 
 			// Look in resource pack
-			if (use_res && !done && App::archiveManager().programResourceArchive())
+			if (use_res && !done && app::archiveManager().programResourceArchive())
 			{
 				name      = "config/games/" + tz.current().text;
-				entry_inc = App::archiveManager().programResourceArchive()->entryAtPath(name);
+				entry_inc = app::archiveManager().programResourceArchive()->entryAtPath(name);
 				if (entry_inc)
 				{
 					processIncludes(entry_inc, out);
@@ -968,7 +970,7 @@ void StrUtil::processIncludes(ArchiveEntry* entry, string& out, bool use_res)
 
 			// Okay, we've exhausted all possibilities
 			if (!done)
-				Log::error(
+				log::error(
 					fmt::format("Attempting to #include nonexistant entry \"{}\" from entry {}", name, entry->name()));
 		}
 		else
@@ -981,40 +983,40 @@ void StrUtil::processIncludes(ArchiveEntry* entry, string& out, bool use_res)
 	wxRemoveFile(filename);
 }
 
-int StrUtil::asInt(string_view str, int base)
+int strutil::asInt(string_view str, int base)
 {
 	int  val    = 0;
 	auto result = std::from_chars(str.data(), str.data() + str.size(), val, base);
 	if (result.ec == std::errc::invalid_argument)
-		Log::error("Can't convert \"{}\" to an integer (invalid)", str);
+		log::error("Can't convert \"{}\" to an integer (invalid)", str);
 	else if (result.ec == std::errc::result_out_of_range)
-		Log::error("Can't convert \"{}\" to an integer (out of range)", str);
+		log::error("Can't convert \"{}\" to an integer (out of range)", str);
 
 	return val;
 }
 
-unsigned StrUtil::asUInt(string_view str, int base)
+unsigned strutil::asUInt(string_view str, int base)
 {
 	unsigned val    = 0;
 	auto     result = std::from_chars(str.data(), str.data() + str.size(), val, base);
 	if (result.ec == std::errc::invalid_argument)
-		Log::error("Can't convert \"{}\" to an unsigned integer (invalid)", str);
+		log::error("Can't convert \"{}\" to an unsigned integer (invalid)", str);
 	else if (result.ec == std::errc::result_out_of_range)
-		Log::error("Can't convert \"{}\" to an unsigned integer (out of range)", str);
+		log::error("Can't convert \"{}\" to an unsigned integer (out of range)", str);
 
 	return val;
 }
 
-float StrUtil::asFloat(string_view str)
+float strutil::asFloat(string_view str)
 {
 	float val = 0;
 
 #ifdef _MSC_VER
 	auto result = std::from_chars(str.data(), str.data() + str.size(), val);
 	if (result.ec == std::errc::invalid_argument)
-		Log::error("Can't convert \"{}\" to a float (invalid)", str);
+		log::error("Can't convert \"{}\" to a float (invalid)", str);
 	else if (result.ec == std::errc::result_out_of_range)
-		Log::error("Can't convert \"{}\" to a float (out of range)", str);
+		log::error("Can't convert \"{}\" to a float (out of range)", str);
 #else
 	// TODO: Remove this once non-MSVC compilers support std::from_chars with float
 	try
@@ -1023,7 +1025,7 @@ float StrUtil::asFloat(string_view str)
 	}
 	catch (const std::exception& ex)
 	{
-		Log::error("Can't convert \"{}\" to a float ({})", str, ex.what());
+		log::error("Can't convert \"{}\" to a float ({})", str, ex.what());
 		return 0.f;
 	}
 #endif
@@ -1031,16 +1033,16 @@ float StrUtil::asFloat(string_view str)
 	return val;
 }
 
-double StrUtil::asDouble(string_view str)
+double strutil::asDouble(string_view str)
 {
 	double val = 0;
 
 #ifdef _MSC_VER
 	auto result = std::from_chars(str.data(), str.data() + str.size(), val);
 	if (result.ec == std::errc::invalid_argument)
-		Log::error("Can't convert \"{}\" to a double (invalid)", str);
+		log::error("Can't convert \"{}\" to a double (invalid)", str);
 	else if (result.ec == std::errc::result_out_of_range)
-		Log::error("Can't convert \"{}\" to a double (out of range)", str);
+		log::error("Can't convert \"{}\" to a double (out of range)", str);
 #else
 	// TODO: Remove this once non-MSVC compilers support std::from_chars with double
 	try
@@ -1049,7 +1051,7 @@ double StrUtil::asDouble(string_view str)
 	}
 	catch (const std::exception& ex)
 	{
-		Log::error("Can't convert \"{}\" to a double ({})", str, ex.what());
+		log::error("Can't convert \"{}\" to a double ({})", str, ex.what());
 		return 0.;
 	}
 #endif
@@ -1057,61 +1059,61 @@ double StrUtil::asDouble(string_view str)
 	return val;
 }
 
-bool StrUtil::asBoolean(string_view str)
+bool strutil::asBoolean(string_view str)
 {
 	// Empty, 0 or "false" are false, everything else true
 	return !(str.empty() || str == "0" || equalCI(str, "false"));
 }
 
-bool StrUtil::toInt(string_view str, int& target, int base)
+bool strutil::toInt(string_view str, int& target, int base)
 {
 	auto result = std::from_chars(str.data(), str.data() + str.size(), target, base);
 
 	if (result.ec == std::errc::invalid_argument)
 	{
-		Log::error("Can't convert \"{}\" to an integer (invalid)", str);
+		log::error("Can't convert \"{}\" to an integer (invalid)", str);
 		return false;
 	}
 	if (result.ec == std::errc::result_out_of_range)
 	{
-		Log::error("Can't convert \"{}\" to an integer (out of range)", str);
+		log::error("Can't convert \"{}\" to an integer (out of range)", str);
 		return false;
 	}
 
 	return true;
 }
 
-bool StrUtil::toUInt(string_view str, unsigned& target, int base)
+bool strutil::toUInt(string_view str, unsigned& target, int base)
 {
 	auto result = std::from_chars(str.data(), str.data() + str.size(), target, base);
 
 	if (result.ec == std::errc::invalid_argument)
 	{
-		Log::error("Can't convert \"{}\" to an unsigned integer (invalid)", str);
+		log::error("Can't convert \"{}\" to an unsigned integer (invalid)", str);
 		return false;
 	}
 	if (result.ec == std::errc::result_out_of_range)
 	{
-		Log::error("Can't convert \"{}\" to an unsigned integer (out of range)", str);
+		log::error("Can't convert \"{}\" to an unsigned integer (out of range)", str);
 		return false;
 	}
 
 	return true;
 }
 
-bool StrUtil::toFloat(string_view str, float& target)
+bool strutil::toFloat(string_view str, float& target)
 {
 #ifdef _MSC_VER
 	auto result = std::from_chars(str.data(), str.data() + str.size(), target);
 
 	if (result.ec == std::errc::invalid_argument)
 	{
-		Log::error("Can't convert \"{}\" to a float (invalid)", str);
+		log::error("Can't convert \"{}\" to a float (invalid)", str);
 		return false;
 	}
 	if (result.ec == std::errc::result_out_of_range)
 	{
-		Log::error("Can't convert \"{}\" to a float (out of range)", str);
+		log::error("Can't convert \"{}\" to a float (out of range)", str);
 		return false;
 	}
 #else
@@ -1122,7 +1124,7 @@ bool StrUtil::toFloat(string_view str, float& target)
 	}
 	catch (const std::exception& ex)
 	{
-		Log::error("Can't convert \"{}\" to a float ({})", str, ex.what());
+		log::error("Can't convert \"{}\" to a float ({})", str, ex.what());
 		return false;
 	}
 #endif
@@ -1130,19 +1132,19 @@ bool StrUtil::toFloat(string_view str, float& target)
 	return true;
 }
 
-bool StrUtil::toDouble(string_view str, double& target)
+bool strutil::toDouble(string_view str, double& target)
 {
 #ifdef _MSC_VER
 	auto result = std::from_chars(str.data(), str.data() + str.size(), target);
 
 	if (result.ec == std::errc::invalid_argument)
 	{
-		Log::error("Can't convert \"{}\" to a double (invalid)", str);
+		log::error("Can't convert \"{}\" to a double (invalid)", str);
 		return false;
 	}
 	if (result.ec == std::errc::result_out_of_range)
 	{
-		Log::error("Can't convert \"{}\" to a double (out of range)", str);
+		log::error("Can't convert \"{}\" to a double (out of range)", str);
 		return false;
 	}
 #else
@@ -1153,7 +1155,7 @@ bool StrUtil::toDouble(string_view str, double& target)
 	}
 	catch (const std::exception& ex)
 	{
-		Log::error("Can't convert \"{}\" to a double ({})", str, ex.what());
+		log::error("Can't convert \"{}\" to a double ({})", str, ex.what());
 		return false;
 	}
 #endif
@@ -1165,7 +1167,7 @@ bool StrUtil::toDouble(string_view str, double& target)
 // Converts a string_view [str] to a string, where [str] can be null-terminated.
 // If not null-terminated, the size of the string_view is used instead.
 // -----------------------------------------------------------------------------
-string StrUtil::toString(string_view str)
+string strutil::toString(string_view str)
 {
 	auto end = str.find('\0');
 	return string{ str.data(), end == string_view::npos ? str.size() : end };
@@ -1176,7 +1178,7 @@ string StrUtil::toString(string_view str)
 // The size of the string_view is either the position of the first found null in
 // [chars], or [max_length], whatever comes first.
 // -----------------------------------------------------------------------------
-string_view StrUtil::viewFromChars(const char* chars, unsigned max_length)
+string_view strutil::viewFromChars(const char* chars, unsigned max_length)
 {
 	string_view::size_type size = 0;
 	while (size < max_length)
@@ -1264,7 +1266,7 @@ void wxStringUtils::processIncludes(ArchiveEntry* entry, wxString& out, bool use
 		return;
 
 	// Write entry to temp file
-	auto filename = App::path(entry->name(), App::Dir::Temp);
+	auto filename = app::path(entry->name(), app::Dir::Temp);
 	entry->exportFile(filename);
 
 	// Open file
@@ -1297,13 +1299,13 @@ void wxStringUtils::processIncludes(ArchiveEntry* entry, wxString& out, bool use
 				done = true;
 			}
 			else
-				Log::info(2, wxString::Format("Couldn't find entry to #include: %s", name));
+				log::info(2, wxString::Format("Couldn't find entry to #include: %s", name));
 
 			// Look in resource pack
-			if (use_res && !done && App::archiveManager().programResourceArchive())
+			if (use_res && !done && app::archiveManager().programResourceArchive())
 			{
 				name      = "config/games/" + tz.current().text;
-				entry_inc = App::archiveManager().programResourceArchive()->entryAtPath(name.ToStdString());
+				entry_inc = app::archiveManager().programResourceArchive()->entryAtPath(name.ToStdString());
 				if (entry_inc)
 				{
 					processIncludes(entry_inc, out);
@@ -1313,7 +1315,7 @@ void wxStringUtils::processIncludes(ArchiveEntry* entry, wxString& out, bool use
 
 			// Okay, we've exhausted all possibilities
 			if (!done)
-				Log::info(
+				log::info(
 					1,
 					wxString::Format(
 						"Error: Attempting to #include nonexistant entry \"%s\" from entry %s", name, entry->name()));
@@ -1362,7 +1364,7 @@ int wxStringUtils::toInt(const wxString& str)
 	if (str.ToLong(&tmp))
 		return tmp;
 
-	Log::error(wxString::Format("Can't convert \"%s\" to an integer", str));
+	log::error(wxString::Format("Can't convert \"%s\" to an integer", str));
 	return 0;
 }
 
@@ -1375,7 +1377,7 @@ float wxStringUtils::toFloat(const wxString& str)
 	if (str.ToDouble(&tmp))
 		return tmp;
 
-	Log::error(wxString::Format("Can't convert \"%s\" to a float", str));
+	log::error(wxString::Format("Can't convert \"%s\" to a float", str));
 	return 0.f;
 }
 
@@ -1388,6 +1390,6 @@ double wxStringUtils::toDouble(const wxString& str)
 	if (str.ToDouble(&tmp))
 		return tmp;
 
-	Log::error(wxString::Format("Can't convert \"%s\" to a double", str));
+	log::error(wxString::Format("Can't convert \"%s\" to a double", str));
 	return 0.;
 }

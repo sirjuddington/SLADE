@@ -9,6 +9,8 @@
 #include "TextureXPanel.h"
 #include "UI/Controls/STabCtrl.h"
 
+namespace slade
+{
 class TextureXEditor : public wxPanel
 {
 public:
@@ -66,3 +68,4 @@ private:
 	// Events
 	void onShow(wxShowEvent& e);
 };
+} // namespace slade

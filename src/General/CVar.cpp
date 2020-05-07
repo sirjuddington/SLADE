@@ -34,6 +34,8 @@
 #include "Utility/StringUtils.h"
 #include "thirdparty/fmt/fmt/format.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -192,7 +194,7 @@ string CVar::writeAll()
 
 			if (cvar->type == Type::String)
 			{
-				auto value = StrUtil::escapedString(dynamic_cast<CStringCVar*>(cvar)->value, true);
+				auto value = strutil::escapedString(dynamic_cast<CStringCVar*>(cvar)->value, true);
 				format_to(buf, "\"{}\"\n", value);
 			}
 		}
@@ -215,13 +217,13 @@ void CVar::set(const string& name, const string& value)
 		if (name == cvar->name)
 		{
 			if (cvar->type == Type::Integer)
-				*dynamic_cast<CIntCVar*>(cvar) = StrUtil::asInt(value);
+				*dynamic_cast<CIntCVar*>(cvar) = strutil::asInt(value);
 
 			if (cvar->type == Type::Boolean)
-				*dynamic_cast<CBoolCVar*>(cvar) = StrUtil::asBoolean(value);
+				*dynamic_cast<CBoolCVar*>(cvar) = strutil::asBoolean(value);
 
 			if (cvar->type == Type::Float)
-				*dynamic_cast<CFloatCVar*>(cvar) = StrUtil::asFloat(value);
+				*dynamic_cast<CFloatCVar*>(cvar) = strutil::asFloat(value);
 
 			if (cvar->type == Type::String)
 				*dynamic_cast<CStringCVar*>(cvar) = value;

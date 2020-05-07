@@ -41,6 +41,8 @@
 #include "UI/WxUtils.h"
 #include <utility>
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -64,7 +66,7 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	wxSize textsize;
 
 	// Populate tree
-	for (auto& i : Game::configuration().allActionSpecials())
+	for (auto& i : game::configuration().allActionSpecials())
 	{
 		if (!i.second.defined())
 			continue;
@@ -84,8 +86,8 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 
 	// 64 is an arbitrary fudge factor -- should be at least the width of a
 	// scrollbar plus the expand icons plus any extra padding
-	int min_width = textsize.GetWidth() + GetIndent() + UI::scalePx(64);
-	wxWindowBase::SetMinSize({ min_width, UI::scalePx(200) });
+	int min_width = textsize.GetWidth() + GetIndent() + ui::scalePx(64);
+	wxWindowBase::SetMinSize({ min_width, ui::scalePx(200) });
 }
 
 // -----------------------------------------------------------------------------
@@ -194,6 +196,8 @@ wxDataViewItem ActionSpecialTreeView::getGroup(const wxString& group_name)
 }
 
 
+namespace slade
+{
 // -----------------------------------------------------------------------------
 // ArgsControl Class
 //
@@ -204,7 +208,7 @@ wxDataViewItem ActionSpecialTreeView::getGroup(const wxString& group_name)
 class ArgsControl : public wxPanel
 {
 public:
-	ArgsControl(wxWindow* parent, Game::Arg arg) : wxPanel(parent, -1), arg_(std::move(arg))
+	ArgsControl(wxWindow* parent, game::Arg arg) : wxPanel(parent, -1), arg_(std::move(arg))
 	{
 		SetSizer(new wxBoxSizer(wxVERTICAL));
 	}
@@ -214,7 +218,7 @@ public:
 	virtual void setArgValue(long val) = 0;
 
 protected:
-	Game::Arg arg_; // Original arg configuration
+	game::Arg arg_; // Original arg configuration
 };
 
 // -----------------------------------------------------------------------------
@@ -226,9 +230,9 @@ protected:
 class ArgsTextControl : public ArgsControl
 {
 public:
-	ArgsTextControl(wxWindow* parent, const Game::Arg& arg, bool limit_byte) : ArgsControl(parent, arg)
+	ArgsTextControl(wxWindow* parent, const game::Arg& arg, bool limit_byte) : ArgsControl(parent, arg)
 	{
-		text_control_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, WxUtils::scaledSize(40, -1));
+		text_control_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxutil::scaledSize(40, -1));
 		if (limit_byte)
 			text_control_->SetValidator(wxIntegerValidator<unsigned char>());
 		else
@@ -299,9 +303,9 @@ public:
 class ArgsChoiceControl : public ArgsControl
 {
 public:
-	ArgsChoiceControl(wxWindow* parent, const Game::Arg& arg) : ArgsControl(parent, arg)
+	ArgsChoiceControl(wxWindow* parent, const game::Arg& arg) : ArgsControl(parent, arg)
 	{
-		choice_control_ = new wxComboBox(this, -1, "", wxDefaultPosition, WxUtils::scaledSize(100, -1));
+		choice_control_ = new wxComboBox(this, -1, "", wxDefaultPosition, wxutil::scaledSize(100, -1));
 		choice_control_->SetValidator(ComboBoxAwareIntegerValidator<unsigned char>());
 
 		for (const auto& custom_value : arg.custom_values)
@@ -365,7 +369,7 @@ protected:
 class ArgsFlagsControl : public ArgsTextControl
 {
 public:
-	ArgsFlagsControl(wxWindow* parent, const Game::Arg& arg, bool limit_byte) :
+	ArgsFlagsControl(wxWindow* parent, const game::Arg& arg, bool limit_byte) :
 		ArgsTextControl(parent, arg, limit_byte),
 		flag_to_bit_group_(arg.custom_flags.size(), 0),
 		controls_(arg.custom_flags.size(), nullptr)
@@ -564,7 +568,7 @@ private:
 class ArgsSpeedControl : public ArgsChoiceControl
 {
 public:
-	ArgsSpeedControl(wxWindow* parent, const Game::Arg& arg) : ArgsChoiceControl(parent, arg)
+	ArgsSpeedControl(wxWindow* parent, const game::Arg& arg) : ArgsChoiceControl(parent, arg)
 	{
 		auto row = new wxBoxSizer(wxHORIZONTAL);
 
@@ -579,7 +583,7 @@ public:
 
 		GetSizer()->Detach(choice_control_);
 		row->Add(choice_control_, wxSizerFlags(0).Expand());
-		row->AddSpacer(UI::pad());
+		row->AddSpacer(ui::pad());
 		row->Add(slider_control_, wxSizerFlags(1).Align(wxALIGN_CENTER_VERTICAL));
 		GetSizer()->Add(row, wxSizerFlags(1).Expand());
 		GetSizer()->Add(speed_label_, wxSizerFlags(1).Expand());
@@ -621,6 +625,7 @@ protected:
 		}
 	}
 };
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------
@@ -640,7 +645,7 @@ ArgsPanel::ArgsPanel(wxWindow* parent) : wxScrolled<wxPanel>{ parent, -1, wxDefa
 	SetSizer(sizer);
 
 	// Add arg controls
-	fg_sizer_ = new wxFlexGridSizer(2, UI::pad(), UI::pad());
+	fg_sizer_ = new wxFlexGridSizer(2, ui::pad(), ui::pad());
 	fg_sizer_->AddGrowableCol(1);
 	sizer->Add(fg_sizer_, 1, wxEXPAND);
 
@@ -648,7 +653,7 @@ ArgsPanel::ArgsPanel(wxWindow* parent) : wxScrolled<wxPanel>{ parent, -1, wxDefa
 	{
 		label_args_[a]      = new wxStaticText(this, -1, "");
 		control_args_[a]    = nullptr;
-		label_args_desc_[a] = new wxStaticText(this, -1, "", wxDefaultPosition, WxUtils::scaledSize(100, -1));
+		label_args_desc_[a] = new wxStaticText(this, -1, "", wxDefaultPosition, wxutil::scaledSize(100, -1));
 	}
 
 	// Set up vertical scrollbar
@@ -660,9 +665,9 @@ ArgsPanel::ArgsPanel(wxWindow* parent) : wxScrolled<wxPanel>{ parent, -1, wxDefa
 // -----------------------------------------------------------------------------
 // Sets up the arg names and descriptions from specification in [args]
 // -----------------------------------------------------------------------------
-void ArgsPanel::setup(const Game::ArgSpec& args, bool udmf)
+void ArgsPanel::setup(const game::ArgSpec& args, bool udmf)
 {
-	using Game::Arg;
+	using game::Arg;
 
 	// Reset stuff (but preserve the values)
 	int old_values[5];
@@ -827,13 +832,13 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 	// Setup layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 
-	if (Game::configuration().featureSupported(Game::Feature::Boom))
+	if (game::configuration().featureSupported(game::Feature::Boom))
 	{
 		// Action Special radio button
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
 		rb_special_ = new wxRadioButton(this, -1, "Action Special", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-		hbox->Add(rb_special_, 0, wxEXPAND | wxRIGHT, UI::pad());
+		hbox->Add(rb_special_, 0, wxEXPAND | wxRIGHT, ui::pad());
 
 		// Generalised Special radio button
 		rb_generalised_ = new wxRadioButton(this, -1, "Generalised Special");
@@ -870,7 +875,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 	// Special box
 	text_special_ = new NumberTextCtrl(panel_action_special_);
-	sizer->Add(text_special_, 0, wxEXPAND | wxBOTTOM, UI::pad());
+	sizer->Add(text_special_, 0, wxEXPAND | wxBOTTOM, ui::pad());
 	text_special_->Bind(
 		wxEVT_TEXT, [&](wxCommandEvent& e) { tree_specials_->showSpecial(text_special_->number(), false); });
 
@@ -881,10 +886,10 @@ void ActionSpecialPanel::setupSpecialPanel()
 	if (show_trigger_)
 	{
 		// UDMF Triggers
-		if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
+		if (mapeditor::editContext().mapDesc().format == MapFormat::UDMF)
 		{
 			// Get all UDMF properties
-			auto& props = Game::configuration().allUDMFProperties(MapObject::Type::Line);
+			auto& props = game::configuration().allUDMFProperties(MapObject::Type::Line);
 
 			// Get all UDMF trigger properties
 			std::map<wxString, wxFlexGridSizer*> named_flexgrids;
@@ -899,13 +904,13 @@ void ActionSpecialPanel::setupSpecialPanel()
 				{
 					auto frame_triggers = new wxStaticBox(panel_action_special_, -1, group);
 					auto sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
-					sizer->Add(sizer_triggers, 0, wxEXPAND | wxTOP, UI::pad());
+					sizer->Add(sizer_triggers, 0, wxEXPAND | wxTOP, ui::pad());
 
-					frame_sizer = new wxFlexGridSizer(3, UI::pad() / 2, UI::pad());
+					frame_sizer = new wxFlexGridSizer(3, ui::pad() / 2, ui::pad());
 					frame_sizer->AddGrowableCol(0, 1);
 					frame_sizer->AddGrowableCol(1, 1);
 					frame_sizer->AddGrowableCol(2, 1);
-					sizer_triggers->Add(frame_sizer, 1, wxEXPAND | wxALL, UI::pad());
+					sizer_triggers->Add(frame_sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 					named_flexgrids.find(group)->second = frame_sizer;
 				}
@@ -919,31 +924,31 @@ void ActionSpecialPanel::setupSpecialPanel()
 		}
 
 		// Hexen trigger
-		else if (MapEditor::editContext().mapDesc().format == MapFormat::Hexen)
+		else if (mapeditor::editContext().mapDesc().format == MapFormat::Hexen)
 		{
 			auto frame_trigger = new wxStaticBox(panel_action_special_, -1, "Special Trigger");
 			auto sizer_trigger = new wxStaticBoxSizer(frame_trigger, wxVERTICAL);
-			sizer->Add(sizer_trigger, 0, wxEXPAND | wxALL, UI::pad());
+			sizer->Add(sizer_trigger, 0, wxEXPAND | wxALL, ui::pad());
 
 			// Add triggers dropdown
-			auto spac_triggers = WxUtils::arrayStringStd(Game::configuration().allSpacTriggers());
+			auto spac_triggers = wxutil::arrayStringStd(game::configuration().allSpacTriggers());
 			choice_trigger_ = new wxChoice(panel_action_special_, -1, wxDefaultPosition, wxDefaultSize, spac_triggers);
-			sizer_trigger->Add(choice_trigger_, 0, wxEXPAND | wxALL, UI::pad());
+			sizer_trigger->Add(choice_trigger_, 0, wxEXPAND | wxALL, ui::pad());
 
 			// Add activation-related flags
-			auto fg_sizer = new wxFlexGridSizer(3, UI::pad() / 2, UI::pad());
+			auto fg_sizer = new wxFlexGridSizer(3, ui::pad() / 2, ui::pad());
 			fg_sizer->AddGrowableCol(0, 1);
 			fg_sizer->AddGrowableCol(1, 1);
 			fg_sizer->AddGrowableCol(2, 1);
-			sizer_trigger->Add(fg_sizer, 0, wxEXPAND | wxALL, UI::pad());
-			for (unsigned a = 0; a < Game::configuration().nLineFlags(); a++)
+			sizer_trigger->Add(fg_sizer, 0, wxEXPAND | wxALL, ui::pad());
+			for (unsigned a = 0; a < game::configuration().nLineFlags(); a++)
 			{
-				if (Game::configuration().lineFlag(a).activation)
+				if (game::configuration().lineFlag(a).activation)
 				{
 					flags_.push_back(
-						{ new wxCheckBox(panel_action_special_, -1, Game::configuration().lineFlag(a).name),
+						{ new wxCheckBox(panel_action_special_, -1, game::configuration().lineFlag(a).name),
 						  (int)a,
-						  Game::configuration().lineFlag(a).udmf });
+						  game::configuration().lineFlag(a).udmf });
 					fg_sizer->Add(flags_.back().check_box, 0, wxEXPAND);
 				}
 			}
@@ -951,7 +956,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 		// Preset button
 		btn_preset_ = new wxButton(panel_action_special_, -1, "Preset...");
-		sizer->Add(btn_preset_, 0, wxALIGN_RIGHT | wxTOP, UI::pad());
+		sizer->Add(btn_preset_, 0, wxALIGN_RIGHT | wxTOP, ui::pad());
 		btn_preset_->Bind(wxEVT_BUTTON, &ActionSpecialPanel::onSpecialPresetClicked, this);
 	}
 
@@ -964,7 +969,7 @@ void ActionSpecialPanel::setupSpecialPanel()
 void ActionSpecialPanel::setSpecial(int special)
 {
 	// Check for boom generalised special
-	if (Game::configuration().featureSupported(Game::Feature::Boom))
+	if (game::configuration().featureSupported(game::Feature::Boom))
 	{
 		if (panel_gen_specials_->loadSpecial(special))
 		{
@@ -985,8 +990,8 @@ void ActionSpecialPanel::setSpecial(int special)
 	// Setup args if any
 	if (panel_args_)
 	{
-		auto& args = Game::configuration().actionSpecial(selectedSpecial()).argSpec();
-		panel_args_->setup(args, (MapEditor::editContext().mapDesc().format == MapFormat::UDMF));
+		auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
+		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
 	}
 }
 
@@ -1019,7 +1024,7 @@ void ActionSpecialPanel::setTrigger(const wxString& trigger)
 	if (choice_trigger_)
 	{
 		for (unsigned a = 0; a < choice_trigger_->GetCount(); a++)
-			if (Game::configuration().spacTriggerUDMFName(a) == trigger)
+			if (game::configuration().spacTriggerUDMFName(a) == trigger)
 			{
 				choice_trigger_->SetSelection(a);
 				break;
@@ -1054,7 +1059,7 @@ void ActionSpecialPanel::clearTrigger()
 // -----------------------------------------------------------------------------
 int ActionSpecialPanel::selectedSpecial() const
 {
-	if (Game::configuration().featureSupported(Game::Feature::Boom))
+	if (game::configuration().featureSupported(game::Feature::Boom))
 	{
 		if (rb_special_->GetValue())
 			return tree_specials_->selectedSpecial();
@@ -1071,7 +1076,7 @@ int ActionSpecialPanel::selectedSpecial() const
 // -----------------------------------------------------------------------------
 void ActionSpecialPanel::showGeneralised(bool show)
 {
-	if (!Game::configuration().featureSupported(Game::Feature::Boom))
+	if (!game::configuration().featureSupported(game::Feature::Boom))
 		return;
 
 	if (show)
@@ -1139,7 +1144,7 @@ void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
 		{
 			// Hexen
 			if (choice_trigger_)
-				Game::configuration().setLineSpacTrigger(choice_trigger_->GetSelection(), (MapLine*)line);
+				game::configuration().setLineSpacTrigger(choice_trigger_->GetSelection(), (MapLine*)line);
 
 			// UDMF / Flags
 			for (auto& flag : flags_)
@@ -1148,7 +1153,7 @@ void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
 					continue;
 
 				if (choice_trigger_)
-					Game::configuration().setLineFlag(flag.index, (MapLine*)line, flag.check_box->GetValue());
+					game::configuration().setLineFlag(flag.index, (MapLine*)line, flag.check_box->GetValue());
 				else
 					line->setBoolProperty(flag.udmf.ToStdString(), flag.check_box->GetValue());
 			}
@@ -1187,10 +1192,10 @@ void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
 		// Hexen
 		if (choice_trigger_)
 		{
-			int trigger = Game::configuration().spacTriggerIndexHexen((MapLine*)lines[0]);
+			int trigger = game::configuration().spacTriggerIndexHexen((MapLine*)lines[0]);
 			for (unsigned a = 1; a < lines.size(); a++)
 			{
-				if (trigger != Game::configuration().spacTriggerIndexHexen((MapLine*)lines[a]))
+				if (trigger != game::configuration().spacTriggerIndexHexen((MapLine*)lines[a]))
 				{
 					trigger = -1;
 					break;
@@ -1204,13 +1209,13 @@ void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
 			for (auto& flag : flags_)
 			{
 				// Set initial flag checked value
-				flag.check_box->SetValue(Game::configuration().lineFlagSet(flag.index, (MapLine*)lines[0]));
+				flag.check_box->SetValue(game::configuration().lineFlagSet(flag.index, (MapLine*)lines[0]));
 
 				// Go through subsequent lines
 				for (unsigned b = 1; b < lines.size(); b++)
 				{
 					// Check for mismatch
-					if (flag.check_box->GetValue() != Game::configuration().lineFlagSet(flag.index, (MapLine*)lines[b]))
+					if (flag.check_box->GetValue() != game::configuration().lineFlagSet(flag.index, (MapLine*)lines[b]))
 					{
 						// Set undefined
 						flag.check_box->Set3StateValue(wxCHK_UNDETERMINED);
@@ -1257,7 +1262,7 @@ void ActionSpecialPanel::onRadioButtonChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 {
-	if ((Game::configuration().featureSupported(Game::Feature::Boom) && rb_generalised_->GetValue())
+	if ((game::configuration().featureSupported(game::Feature::Boom) && rb_generalised_->GetValue())
 		|| selectedSpecial() < 0)
 	{
 		e.Skip();
@@ -1269,8 +1274,8 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 
 	if (panel_args_)
 	{
-		auto& args = Game::configuration().actionSpecial(selectedSpecial()).argSpec();
-		panel_args_->setup(args, (MapEditor::editContext().mapDesc().format == MapFormat::UDMF));
+		auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
+		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
 	}
 }
 
@@ -1290,8 +1295,8 @@ void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent& e)
 	// Jump to args tab, if there is one
 	if (panel_args_)
 	{
-		auto& args = Game::configuration().actionSpecial(selectedSpecial()).argSpec();
-		panel_args_->setup(args, (MapEditor::editContext().mapDesc().format == MapFormat::UDMF));
+		auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
+		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
 		panel_args_->SetFocus();
 	}
 }
@@ -1343,31 +1348,31 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args) :
 	SetSizer(sizer);
 
 	// No args
-	if (MapEditor::editContext().mapDesc().format == MapFormat::Doom || !show_args)
+	if (mapeditor::editContext().mapDesc().format == MapFormat::Doom || !show_args)
 	{
 		panel_special_ = new ActionSpecialPanel(this, false);
-		sizer->Add(panel_special_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::padLarge());
+		sizer->Add(panel_special_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
 	}
 
 	// Args (use tabs)
 	else
 	{
 		stc_tabs_ = STabCtrl::createControl(this);
-		sizer->Add(stc_tabs_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::padLarge());
+		sizer->Add(stc_tabs_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
 
 		// Special panel
 		panel_special_ = new ActionSpecialPanel(stc_tabs_);
-		stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_special_), "Special");
+		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_special_), "Special");
 
 		// Args panel
 		panel_args_ = new ArgsPanel(stc_tabs_);
-		stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_args_), "Args");
+		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_args_), "Args");
 		panel_special_->setArgsPanel(panel_args_);
 	}
 
 	// Add buttons
-	sizer->AddSpacer(UI::pad());
-	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
+	sizer->AddSpacer(ui::pad());
+	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 
 	// Init
 	SetSizerAndFit(sizer);
@@ -1382,8 +1387,8 @@ void ActionSpecialDialog::setSpecial(int special) const
 	panel_special_->setSpecial(special);
 	if (panel_args_)
 	{
-		auto& args = Game::configuration().actionSpecial(special).argSpec();
-		panel_args_->setup(args, (MapEditor::editContext().mapDesc().format == MapFormat::UDMF));
+		auto& args = game::configuration().actionSpecial(special).argSpec();
+		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
 	}
 }
 

@@ -2,6 +2,8 @@
 
 #include "MapObject.h"
 
+namespace slade
+{
 class MapThing : public MapObject
 {
 	friend class SLADEMap;
@@ -92,3 +94,4 @@ private:
 	int    id_      = 0;
 	int    special_ = 0;
 };
+} // namespace slade

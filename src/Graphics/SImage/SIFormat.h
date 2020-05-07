@@ -2,6 +2,8 @@
 
 #include "SImage.h"
 
+namespace slade
+{
 class ArchiveEntry;
 class SIFormat
 {
@@ -109,3 +111,4 @@ protected:
 	virtual bool readImage(SImage& image, MemChunk& data, int index) = 0;
 	virtual bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index) { return false; }
 };
+} // namespace slade

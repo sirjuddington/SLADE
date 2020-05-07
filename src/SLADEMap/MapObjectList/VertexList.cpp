@@ -35,6 +35,8 @@
 #include "VertexList.h"
 #include "Utility/MathStuff.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -70,7 +72,7 @@ MapVertex* VertexList::nearest(Vec2d point, double min) const
 	// to check for minimum hilight distance
 	if (nearest)
 	{
-		double rdist = MathStuff::distance(nearest->position(), point);
+		double rdist = math::distance(nearest->position(), point);
 		if (rdist > min)
 			return nullptr;
 	}
@@ -115,10 +117,10 @@ MapVertex* VertexList::firstCrossed(const Seg2d& line) const
 			continue;
 
 		// Check if on line
-		if (MathStuff::distanceToLineFast(point, line) == 0)
+		if (math::distanceToLineFast(point, line) == 0)
 		{
 			// Check distance between line start and vertex
-			double dist = MathStuff::distance(line.start(), point);
+			double dist = math::distance(line.start(), point);
 			if (dist < min_dist)
 			{
 				cv       = vertex;

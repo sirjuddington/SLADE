@@ -34,6 +34,8 @@
 #include "Compression.h"
 #include "thirdparty/zreaders/files.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -46,7 +48,7 @@
 // Inflates the content of [in] to [out]
 // -----------------------------------------------------------------------------
 #define CHUNK 4096
-bool Compression::genericInflate(MemChunk& in, MemChunk& out, int windowbits, const char* function)
+bool compression::genericInflate(MemChunk& in, MemChunk& out, int windowbits, const char* function)
 {
 	in.seek(0, SEEK_SET);
 	out.clear();
@@ -67,7 +69,7 @@ bool Compression::genericInflate(MemChunk& in, MemChunk& out, int windowbits, co
 // Basically a copy of zpipe.
 // Deflates the content of [in] to [out]
 // -----------------------------------------------------------------------------
-bool Compression::genericDeflate(MemChunk& in, MemChunk& out, int level, int windowbits, const char* function)
+bool compression::genericDeflate(MemChunk& in, MemChunk& out, int level, int windowbits, const char* function)
 {
 	in.seek(0, SEEK_SET);
 	out.clear();
@@ -88,7 +90,7 @@ bool Compression::genericDeflate(MemChunk& in, MemChunk& out, int level, int win
 		ret = deflateInit2(&strm, level, Z_DEFLATED, windowbits, 9, Z_DEFAULT_STRATEGY);
 	if (ret != Z_OK)
 	{
-		Log::error("{} init error {}: {}", function, ret, strm.msg);
+		log::error("{} init error {}: {}", function, ret, strm.msg);
 		return false;
 	}
 
@@ -135,12 +137,12 @@ bool Compression::genericDeflate(MemChunk& in, MemChunk& out, int level, int win
 // ZIP streams use a windowbits size of MAX_WBITS (15).
 // The value is inverted to signify wrapping should be used.
 // -----------------------------------------------------------------------------
-bool Compression::zipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
+bool compression::zipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 {
-	bool ret = Compression::genericInflate(in, out, -MAX_WBITS, "ZipInflate");
+	bool ret = compression::genericInflate(in, out, -MAX_WBITS, "ZipInflate");
 
 	if (maxsize && out.size() != maxsize)
-		Log::warning("Zip stream inflated to {}, expected {}", out.size(), maxsize);
+		log::warning("Zip stream inflated to {}, expected {}", out.size(), maxsize);
 
 	return ret;
 }
@@ -150,9 +152,9 @@ bool Compression::zipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 // GZip streams use a windowbits size of MAX_WBITS (15).
 // The value is inverted to tell it shouldn't use headers or footers
 // -----------------------------------------------------------------------------
-bool Compression::zipDeflate(MemChunk& in, MemChunk& out, int level)
+bool compression::zipDeflate(MemChunk& in, MemChunk& out, int level)
 {
-	return Compression::genericDeflate(in, out, level, -MAX_WBITS, "ZipDeflate");
+	return compression::genericDeflate(in, out, level, -MAX_WBITS, "ZipDeflate");
 }
 
 // -----------------------------------------------------------------------------
@@ -160,12 +162,12 @@ bool Compression::zipDeflate(MemChunk& in, MemChunk& out, int level)
 // GZip streams use a windowbits size of MAX_WBITS (15).
 // The +16 tells zlib to look out for a gzip header
 // -----------------------------------------------------------------------------
-bool Compression::gzipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
+bool compression::gzipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 {
-	bool ret = Compression::genericInflate(in, out, 16 + MAX_WBITS, "GZipInflate");
+	bool ret = compression::genericInflate(in, out, 16 + MAX_WBITS, "GZipInflate");
 
 	if (maxsize && out.size() != maxsize)
-		Log::warning("Zip stream inflated to {}, expected {}", out.size(), maxsize);
+		log::warning("Zip stream inflated to {}, expected {}", out.size(), maxsize);
 
 	return ret;
 }
@@ -175,9 +177,9 @@ bool Compression::gzipInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 // GZip streams use a windowbits size of MAX_WBITS (15).
 // The +16 tells zlib to use a gzip header
 // -----------------------------------------------------------------------------
-bool Compression::gzipDeflate(MemChunk& in, MemChunk& out, int level)
+bool compression::gzipDeflate(MemChunk& in, MemChunk& out, int level)
 {
-	return Compression::genericDeflate(in, out, level, 16 + MAX_WBITS, "GZipDeflate");
+	return compression::genericDeflate(in, out, level, 16 + MAX_WBITS, "GZipDeflate");
 }
 
 // -----------------------------------------------------------------------------
@@ -186,12 +188,12 @@ bool Compression::gzipDeflate(MemChunk& in, MemChunk& out, int level)
 // as well, but the function used for initialization is different so we use 0
 // here instead.
 // -----------------------------------------------------------------------------
-bool Compression::zlibInflate(MemChunk& in, MemChunk& out, size_t maxsize)
+bool compression::zlibInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 {
-	bool ret = Compression::genericInflate(in, out, 0, "ZlibInflate");
+	bool ret = compression::genericInflate(in, out, 0, "ZlibInflate");
 
 	if (maxsize && out.size() != maxsize)
-		Log::warning("Zlib stream inflated to {}, expected {}", out.size(), maxsize);
+		log::warning("Zlib stream inflated to {}, expected {}", out.size(), maxsize);
 
 	return ret;
 }
@@ -199,15 +201,15 @@ bool Compression::zlibInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 // -----------------------------------------------------------------------------
 // Deflates the content of [in] as a zlib stream to [out]
 // -----------------------------------------------------------------------------
-bool Compression::zlibDeflate(MemChunk& in, MemChunk& out, int level)
+bool compression::zlibDeflate(MemChunk& in, MemChunk& out, int level)
 {
-	return Compression::genericDeflate(in, out, level, 0, "ZlibDeflate");
+	return compression::genericDeflate(in, out, level, 0, "ZlibDeflate");
 }
 
 // -----------------------------------------------------------------------------
 // Decompress the content of [in] as a bzip2 stream to [out]
 // -----------------------------------------------------------------------------
-bool Compression::bzip2Decompress(MemChunk& in, MemChunk& out, size_t maxsize)
+bool compression::bzip2Decompress(MemChunk& in, MemChunk& out, size_t maxsize)
 {
 	in.seek(0, SEEK_SET);
 	out.clear();
@@ -224,7 +226,7 @@ bool Compression::bzip2Decompress(MemChunk& in, MemChunk& out, size_t maxsize)
 	} while (gotten == 4096 && stream.Status == BZ_OK);
 
 	if (maxsize && out.size() != maxsize)
-		Log::warning("bzip2 stream inflated to {}, expected {}", out.size(), maxsize);
+		log::warning("bzip2 stream inflated to {}, expected {}", out.size(), maxsize);
 
 	return (stream.Status == BZ_OK || stream.Status == BZ_STREAM_END);
 }
@@ -232,7 +234,7 @@ bool Compression::bzip2Decompress(MemChunk& in, MemChunk& out, size_t maxsize)
 // -----------------------------------------------------------------------------
 // Compress the content of [in] as a bzip2 stream to [out]
 // -----------------------------------------------------------------------------
-bool Compression::bzip2Compress(MemChunk& in, MemChunk& out)
+bool compression::bzip2Compress(MemChunk& in, MemChunk& out)
 {
 	// Clear out
 	out.clear();
@@ -261,7 +263,7 @@ bool Compression::bzip2Compress(MemChunk& in, MemChunk& out)
 // -----------------------------------------------------------------------------
 // Decompress the content of [in] as an LZMA stream to [out]
 // -----------------------------------------------------------------------------
-bool Compression::lzmaDecompress(MemChunk& in, MemChunk& out, size_t size)
+bool compression::lzmaDecompress(MemChunk& in, MemChunk& out, size_t size)
 {
 	in.seek(0, SEEK_SET);
 	out.clear();

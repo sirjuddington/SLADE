@@ -4,6 +4,8 @@
 
 wxDECLARE_EVENT(EVT_DRAG_END, wxCommandEvent);
 
+namespace slade
+{
 class CTexture;
 class Archive;
 
@@ -80,3 +82,4 @@ private:
 	// Events
 	void onMouseEvent(wxMouseEvent& e);
 };
+} // namespace slade

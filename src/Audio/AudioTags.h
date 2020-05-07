@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Audio
+namespace slade::audio
 {
 wxString getID3Tag(MemChunk& mc);
 wxString getOggComments(MemChunk& mc);
@@ -15,4 +15,4 @@ wxString getSunInfo(MemChunk& mc);
 wxString getRmidInfo(MemChunk& mc);
 wxString getAiffInfo(MemChunk& mc);
 size_t   checkForTags(MemChunk& mc);
-} // namespace Audio
+} // namespace slade::audio

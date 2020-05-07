@@ -4,6 +4,8 @@
 #include "MapEditor/MapTextureManager.h"
 #include "UI/Browser/BrowserWindow.h"
 
+namespace slade
+{
 class SLADEMap;
 class Archive;
 
@@ -31,7 +33,7 @@ class MapTextureBrowser : public BrowserWindow
 public:
 	MapTextureBrowser(
 		wxWindow*              parent,
-		MapEditor::TextureType type    = MapEditor::TextureType::Texture,
+		mapeditor::TextureType type    = mapeditor::TextureType::Texture,
 		const wxString&        texture = "",
 		SLADEMap*              map     = nullptr);
 	~MapTextureBrowser() = default;
@@ -45,6 +47,7 @@ public:
 	void updateUsage() const;
 
 private:
-	MapEditor::TextureType type_ = MapEditor::TextureType::Texture;
+	mapeditor::TextureType type_ = mapeditor::TextureType::Texture;
 	SLADEMap*              map_  = nullptr;
 };
+} // namespace slade

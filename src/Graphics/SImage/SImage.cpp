@@ -36,8 +36,9 @@
 #include "Graphics/Translation.h"
 #include "SIFormat.h"
 #include "Utility/MathStuff.h"
-
 #undef BOOL
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -1046,7 +1047,7 @@ bool SImage::rotate(int angle)
 		}
 		if (j >= numpixels)
 		{
-			Log::error("Pixel {} remapped to {}, how did this even happen?", i, j);
+			log::error("Pixel {} remapped to {}, how did this even happen?", i, j);
 			return false;
 		}
 		for (k = 0; k < numbpp; ++k)
@@ -1101,7 +1102,7 @@ bool SImage::mirror(bool vertical)
 			j = ((i / width_) * width_) + ((width_ - 1) - (i % width_));
 		if (j >= numpixels)
 		{
-			Log::error("Pixel {} remapped to {}, how did this even happen?", i, j);
+			log::error("Pixel {} remapped to {}, how did this even happen?", i, j);
 			return false;
 		}
 		for (k = 0; k < numbpp; ++k)
@@ -1417,40 +1418,40 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 	if (properties.blend == BlendType::Add)
 	{
 		d_colour.set(
-			MathStuff::clamp(d_colour.r + colour.r * alpha, 0, 255),
-			MathStuff::clamp(d_colour.g + colour.g * alpha, 0, 255),
-			MathStuff::clamp(d_colour.b + colour.b * alpha, 0, 255),
-			MathStuff::clamp(d_colour.a + colour.a, 0, 255));
+			math::clamp(d_colour.r + colour.r * alpha, 0, 255),
+			math::clamp(d_colour.g + colour.g * alpha, 0, 255),
+			math::clamp(d_colour.b + colour.b * alpha, 0, 255),
+			math::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
 	// Subtractive blending
 	else if (properties.blend == BlendType::Subtract)
 	{
 		d_colour.set(
-			MathStuff::clamp(d_colour.r - colour.r * alpha, 0, 255),
-			MathStuff::clamp(d_colour.g - colour.g * alpha, 0, 255),
-			MathStuff::clamp(d_colour.b - colour.b * alpha, 0, 255),
-			MathStuff::clamp(d_colour.a + colour.a, 0, 255));
+			math::clamp(d_colour.r - colour.r * alpha, 0, 255),
+			math::clamp(d_colour.g - colour.g * alpha, 0, 255),
+			math::clamp(d_colour.b - colour.b * alpha, 0, 255),
+			math::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
 	// Reverse-Subtractive blending
 	else if (properties.blend == BlendType::ReverseSubtract)
 	{
 		d_colour.set(
-			MathStuff::clamp((-d_colour.r) + colour.r * alpha, 0, 255),
-			MathStuff::clamp((-d_colour.g) + colour.g * alpha, 0, 255),
-			MathStuff::clamp((-d_colour.b) + colour.b * alpha, 0, 255),
-			MathStuff::clamp(d_colour.a + colour.a, 0, 255));
+			math::clamp((-d_colour.r) + colour.r * alpha, 0, 255),
+			math::clamp((-d_colour.g) + colour.g * alpha, 0, 255),
+			math::clamp((-d_colour.b) + colour.b * alpha, 0, 255),
+			math::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
 	// 'Modulate' blending
 	else if (properties.blend == BlendType::Modulate)
 	{
 		d_colour.set(
-			MathStuff::clamp(colour.r * (double)d_colour.r / 255., 0, 255),
-			MathStuff::clamp(colour.g * (double)d_colour.g / 255., 0, 255),
-			MathStuff::clamp(colour.b * (double)d_colour.b / 255., 0, 255),
-			MathStuff::clamp(d_colour.a + colour.a, 0, 255));
+			math::clamp(colour.r * (double)d_colour.r / 255., 0, 255),
+			math::clamp(colour.g * (double)d_colour.g / 255., 0, 255),
+			math::clamp(colour.b * (double)d_colour.b / 255., 0, 255),
+			math::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
 	// Normal blending (or unknown blend type)
@@ -1461,7 +1462,7 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 			d_colour.r * inv_alpha + colour.r * alpha,
 			d_colour.g * inv_alpha + colour.g * alpha,
 			d_colour.b * inv_alpha + colour.b * alpha,
-			MathStuff::clamp(d_colour.a + colour.a, 0, 255));
+			math::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
 	// Apply new colour

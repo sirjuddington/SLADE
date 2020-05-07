@@ -2,6 +2,8 @@
 
 #include "DoomMapFormat.h"
 
+namespace slade
+{
 class HexenMapFormat : public DoomMapFormat
 {
 public:
@@ -36,3 +38,4 @@ protected:
 	unique_ptr<ArchiveEntry> writeLINEDEFS(const LineList& lines) const override;
 	unique_ptr<ArchiveEntry> writeTHINGS(const ThingList& things) const override;
 };
+} // namespace slade

@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class WizardPageBase : public wxPanel
 {
 public:
@@ -11,3 +13,4 @@ public:
 	virtual wxString title() { return "Page Title"; }
 	virtual wxString description() { return ""; }
 };
+} // namespace slade

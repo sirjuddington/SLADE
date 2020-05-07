@@ -2,6 +2,8 @@
 
 #include "MapFormatHandler.h"
 
+namespace slade
+{
 class Doom64MapFormat : public MapFormatHandler
 {
 public:
@@ -69,3 +71,4 @@ private:
 	virtual bool readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_data) const;
 	virtual bool readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_data) const;
 };
+} // namespace slade

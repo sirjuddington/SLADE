@@ -47,6 +47,8 @@
 #include "UI/Controls/SZoomSlider.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -80,7 +82,7 @@ PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table
 	PatchTableListView::updateList();
 
 	// Update the list when an archive is added/closed/modified or the patch table is modified
-	auto& am_signals = App::archiveManager().signals();
+	auto& am_signals = app::archiveManager().signals();
 	signal_connections_ += am_signals.archive_added.connect([this](unsigned) { updateList(); });
 	signal_connections_ += am_signals.archive_closed.connect([this](unsigned) { updateList(); });
 	signal_connections_ += am_signals.archive_modified.connect([this](unsigned) { updateList(); });
@@ -243,21 +245,21 @@ void PatchTablePanel::setupLayout()
 	// Patches List + actions
 	auto frame      = new wxStaticBox(this, -1, "Patch List (PNAMES)");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 0, wxEXPAND | wxALL, UI::pad());
-	framesizer->Add(list_patches_, 1, wxEXPAND | wxALL, UI::pad());
-	WxUtils::layoutHorizontally(
+	sizer->Add(framesizer, 0, wxEXPAND | wxALL, ui::pad());
+	framesizer->Add(list_patches_, 1, wxEXPAND | wxALL, ui::pad());
+	wxutil::layoutHorizontally(
 		framesizer,
 		vector<wxObject*>{ btn_add_patch_, btn_patch_from_file_, btn_remove_patch_, btn_change_patch_ },
-		wxSizerFlags(0).Border(wxLEFT | wxRIGHT | wxBOTTOM, UI::pad()));
+		wxSizerFlags(0).Border(wxLEFT | wxRIGHT | wxBOTTOM, ui::pad()));
 
 	// Patch preview & info
 	frame      = new wxStaticBox(this, -1, "Patch Preview && Info");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, UI::pad());
-	framesizer->Add(slider_zoom_, 0, wxALL, UI::pad());
-	framesizer->Add(patch_canvas_->toPanel(this), 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
-	framesizer->Add(label_dimensions_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
-	framesizer->Add(label_textures_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	sizer->Add(framesizer, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
+	framesizer->Add(slider_zoom_, 0, wxALL, ui::pad());
+	framesizer->Add(patch_canvas_->toPanel(this), 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	framesizer->Add(label_dimensions_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	framesizer->Add(label_textures_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 }
 
 
@@ -281,7 +283,7 @@ void PatchTablePanel::onBtnAddPatch(wxCommandEvent& e)
 		return;
 
 	// Add to patch table
-	patch_table_->addPatch(WxUtils::strToView(patch));
+	patch_table_->addPatch(wxutil::strToView(patch));
 
 	// Update list
 	list_patches_->updateList();
@@ -326,7 +328,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 		dialog_open.GetPaths(files);
 
 		// Save 'dir_last'
-		dir_last = WxUtils::strToView(dialog_open.GetDirectory());
+		dir_last = wxutil::strToView(dialog_open.GetDirectory());
 
 		// Go through file selection
 		for (const auto& file : files)
@@ -341,7 +343,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 			// If it's not a valid image type, ignore this file
 			if (!entry->type()->extraProps().propertyExists("image"))
 			{
-				Log::warning(wxString::Format("%s is not a valid image file", file));
+				log::warning(wxString::Format("%s is not a valid image file", file));
 				continue;
 			}
 
@@ -358,7 +360,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 			parent_->archive()->addEntry(entry, "patches");
 
 			// Add patch to patch table
-			patch_table_->addPatch(WxUtils::strToView(name));
+			patch_table_->addPatch(wxutil::strToView(name));
 		}
 
 		// Refresh patch list
@@ -439,7 +441,7 @@ void PatchTablePanel::onBtnChangePatch(wxCommandEvent& e)
 
 		// Update the patch if it's not the Cancel button that was clicked
 		if (newname.Length() > 0)
-			patch_table_->replacePatch(index, WxUtils::strToView(newname));
+			patch_table_->replacePatch(index, wxutil::strToView(newname));
 
 		// Update the list
 		list_patches_->updateList();
@@ -461,7 +463,7 @@ void PatchTablePanel::updateDisplay()
 
 	// Load the image
 	auto entry = patch_table_->patchEntry(index);
-	if (Misc::loadImageFromEntry(&patch_canvas_->image(), entry))
+	if (misc::loadImageFromEntry(&patch_canvas_->image(), entry))
 	{
 		theMainWindow->paletteChooser()->setGlobalFromArchive(entry->parent());
 		patch_canvas_->setPalette(theMainWindow->paletteChooser()->selectedPalette());

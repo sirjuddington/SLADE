@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class EntryDataFormat
 {
 public:
@@ -65,3 +67,4 @@ private:
 	// Also needed:
 	// Some way to check more complex values (eg. multiply byte 0 and 1, result must be in a certain range)
 };
+} // namespace slade

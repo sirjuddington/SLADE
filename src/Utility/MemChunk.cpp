@@ -35,6 +35,8 @@
 #include "FileUtils.h"
 #include "General/Misc.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -108,7 +110,7 @@ bool MemChunk::reSize(uint32_t new_size, bool preserve_data)
 	// Check for invalid new size
 	if (new_size == 0)
 	{
-		Log::error("MemChunk::reSize: new_size cannot be 0");
+		log::error("MemChunk::reSize: new_size cannot be 0");
 		return false;
 	}
 
@@ -152,8 +154,8 @@ bool MemChunk::importFile(string_view filename, uint32_t offset, uint32_t len)
 	// Return false if file open failed
 	if (!file.IsOpened())
 	{
-		Log::error("MemChunk::importFile: Unable to open file {}", filename);
-		Global::error = fmt::format("Unable to open file {}", filename);
+		log::error("MemChunk::importFile: Unable to open file {}", filename);
+		global::error = fmt::format("Unable to open file {}", filename);
 		return false;
 	}
 
@@ -179,9 +181,9 @@ bool MemChunk::importFile(string_view filename, uint32_t offset, uint32_t len)
 			size_t count = file.Read(data_, size_);
 			if (count != size_)
 			{
-				Log::error(
+				log::error(
 					"MemChunk::importFile: Unable to read full file {}, read {} out of {}", filename, count, size_);
-				Global::error = fmt::format("Unable to read file {}", filename);
+				global::error = fmt::format("Unable to read file {}", filename);
 				clear();
 				file.Close();
 				return false;
@@ -314,8 +316,8 @@ bool MemChunk::exportFile(string_view filename, uint32_t start, uint32_t size) c
 	wxFile file(wxString{ filename.data(), filename.size() }, wxFile::write);
 	if (!file.IsOpened())
 	{
-		Log::error("Unable to write to file {}", filename);
-		Global::error = "Unable to open file for writing";
+		log::error("Unable to write to file {}", filename);
+		global::error = "Unable to open file for writing";
 		return false;
 	}
 
@@ -541,7 +543,7 @@ bool MemChunk::fillData(uint8_t val) const
 // -----------------------------------------------------------------------------
 uint32_t MemChunk::crc() const
 {
-	return hasData() ? Misc::crc(data_, size_) : 0;
+	return hasData() ? misc::crc(data_, size_) : 0;
 }
 
 
@@ -560,7 +562,7 @@ uint8_t* MemChunk::allocData(uint32_t size, bool set_data)
 	}
 	catch (std::bad_alloc& ba)
 	{
-		Log::error("MemChunk: Allocation of {} bytes failed: {}", size, ba.what());
+		log::error("MemChunk: Allocation of {} bytes failed: {}", size, ba.what());
 
 		if (set_data)
 		{

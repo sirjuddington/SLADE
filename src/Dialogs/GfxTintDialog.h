@@ -2,6 +2,8 @@
 
 #include "Graphics/Palette/Palette.h"
 
+namespace slade
+{
 class ColourBox;
 class GfxCanvas;
 class ArchiveEntry;
@@ -34,3 +36,4 @@ private:
 	void onAmountChanged(wxCommandEvent& e);
 	void onResize(wxSizeEvent& e);
 };
+} // namespace slade

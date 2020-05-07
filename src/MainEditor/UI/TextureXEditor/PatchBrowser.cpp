@@ -48,6 +48,8 @@
 #include "UI/Controls/PaletteChooser.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -61,7 +63,7 @@
 // -----------------------------------------------------------------------------
 PatchBrowserItem::~PatchBrowserItem()
 {
-	OpenGL::Texture::clear(image_tex_);
+	gl::Texture::clear(image_tex_);
 }
 
 // -----------------------------------------------------------------------------
@@ -75,11 +77,11 @@ bool PatchBrowserItem::loadImage()
 	if (type_ == Type::Patch)
 	{
 		// Find patch entry
-		auto entry = App::resources().getPatchEntry(name_.ToStdString(), nspace_.ToStdString(), archive_);
+		auto entry = app::resources().getPatchEntry(name_.ToStdString(), nspace_.ToStdString(), archive_);
 
 		// Load entry to image, if it exists
 		if (entry)
-			Misc::loadImageFromEntry(&img, entry);
+			misc::loadImageFromEntry(&img, entry);
 		else
 			return false;
 	}
@@ -88,7 +90,7 @@ bool PatchBrowserItem::loadImage()
 	if (type_ == Type::CTexture)
 	{
 		// Find texture
-		auto tex = App::resources().getTexture(name_.ToStdString(), archive_);
+		auto tex = app::resources().getTexture(name_.ToStdString(), archive_);
 
 		// Load texture to image, if it exists
 		if (tex)
@@ -98,8 +100,8 @@ bool PatchBrowserItem::loadImage()
 	}
 
 	// Create gl texture from image
-	OpenGL::Texture::clear(image_tex_);
-	image_tex_ = OpenGL::Texture::createFromImage(img, parent_->palette());
+	gl::Texture::clear(image_tex_);
+	image_tex_ = gl::Texture::createFromImage(img, parent_->palette());
 	return image_tex_ > 0;
 }
 
@@ -113,7 +115,7 @@ wxString PatchBrowserItem::itemInfo()
 	// Add dimensions if known
 	if (image_tex_)
 	{
-		auto& tex_info = OpenGL::Texture::info(image_tex_);
+		auto& tex_info = gl::Texture::info(image_tex_);
 		info += wxString::Format("%dx%d", tex_info.size.x, tex_info.size.y);
 	}
 	else
@@ -141,7 +143,7 @@ wxString PatchBrowserItem::itemInfo()
 // -----------------------------------------------------------------------------
 void PatchBrowserItem::clearImage()
 {
-	OpenGL::Texture::clear(image_tex_);
+	gl::Texture::clear(image_tex_);
 	image_tex_ = 0;
 }
 
@@ -202,7 +204,7 @@ bool PatchBrowser::openPatchTable(PatchTable* table)
 		wxString whereis = "Unknown";
 
 		// Get patch entry
-		auto entry = App::resources().getPatchEntry(patch.name);
+		auto entry = app::resources().getPatchEntry(patch.name);
 
 		// Check its parent archive
 		Archive* parent_archive = nullptr;
@@ -258,12 +260,12 @@ bool PatchBrowser::openArchive(Archive* archive)
 
 	// Get a list of all available patch entries
 	vector<ArchiveEntry*> patches;
-	App::resources().putAllPatchEntries(patches, archive, full_path_);
+	app::resources().putAllPatchEntries(patches, archive, full_path_);
 
 	// Add flats, too
 	{
 		vector<ArchiveEntry*> flats;
-		App::resources().putAllFlatEntries(flats, archive, full_path_);
+		app::resources().putAllFlatEntries(flats, archive, full_path_);
 		for (auto& flat : flats)
 			if (flat->isInNamespace("flats") && flat->parent()->isTreeless())
 				patches.push_back(flat);
@@ -359,7 +361,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 			addItem(item, fnspace + "/" + arch);
 		}
 
-		wxString name = StrUtil::truncate(entry->upperNameNoExt(), 8);
+		wxString name = strutil::truncate(entry->upperNameNoExt(), 8);
 
 		bool duplicate = false;
 		for (auto& usedname : usednames)
@@ -381,7 +383,7 @@ bool PatchBrowser::openArchive(Archive* archive)
 
 	// Get list of all available textures (that aren't in the given archive)
 	vector<TextureResource::Texture*> textures;
-	App::resources().putAllTextures(textures, nullptr, archive);
+	app::resources().putAllTextures(textures, nullptr, archive);
 
 	// Go through the list
 	for (auto res : textures)

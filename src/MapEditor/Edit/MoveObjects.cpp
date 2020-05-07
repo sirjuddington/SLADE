@@ -35,6 +35,8 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/UndoSteps.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -62,7 +64,7 @@ MoveObjects::MoveObjects(MapEditContext& context) : context_{ context } {}
 // -----------------------------------------------------------------------------
 bool MoveObjects::begin(Vec2d mouse_pos)
 {
-	using MapEditor::Mode;
+	using mapeditor::Mode;
 
 	// Check if we have any selection or hilight
 	if (!context_.selection().hasHilightOrSelection())
@@ -122,7 +124,7 @@ bool MoveObjects::begin(Vec2d mouse_pos)
 // -----------------------------------------------------------------------------
 void MoveObjects::update(Vec2d mouse_pos)
 {
-	using MapEditor::Mode;
+	using mapeditor::Mode;
 
 	// Special case: single vertex or thing
 	if (items_.size() == 1 && (context_.editMode() == Mode::Vertices || context_.editMode() == Mode::Things))
@@ -149,7 +151,7 @@ void MoveObjects::update(Vec2d mouse_pos)
 // -----------------------------------------------------------------------------
 void MoveObjects::end(bool accept)
 {
-	using MapEditor::Mode;
+	using mapeditor::Mode;
 
 	// Un-filter objects
 	for (const auto& line : context_.map().lines())
@@ -170,7 +172,7 @@ void MoveObjects::end(bool accept)
 		{
 			if (auto thing = item.asThing(context_.map()))
 			{
-				context_.undoManager()->recordUndoStep(std::make_unique<MapEditor::PropertyChangeUS>(thing));
+				context_.undoManager()->recordUndoStep(std::make_unique<mapeditor::PropertyChangeUS>(thing));
 				thing->move(thing->position() + offset_);
 			}
 		}

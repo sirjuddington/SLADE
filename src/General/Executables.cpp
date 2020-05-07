@@ -37,18 +37,20 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace Executables
+namespace slade::executables
 {
 vector<GameExe>     game_exes;
 vector<StringPair>  exe_paths;
 vector<ExternalExe> external_exes;
-} // namespace Executables
+} // namespace slade::executables
 
 
 // -----------------------------------------------------------------------------
@@ -61,7 +63,7 @@ vector<ExternalExe> external_exes;
 // -----------------------------------------------------------------------------
 // Returns the game executable definition for [id]
 // -----------------------------------------------------------------------------
-Executables::GameExe* Executables::gameExe(string_view id)
+executables::GameExe* executables::gameExe(string_view id)
 {
 	for (auto& exe : game_exes)
 		if (exe.id == id)
@@ -73,7 +75,7 @@ Executables::GameExe* Executables::gameExe(string_view id)
 // -----------------------------------------------------------------------------
 // Returns the game executable definition at [index]
 // -----------------------------------------------------------------------------
-Executables::GameExe* Executables::gameExe(unsigned index)
+executables::GameExe* executables::gameExe(unsigned index)
 {
 	if (index < game_exes.size())
 		return &(game_exes[index]);
@@ -84,7 +86,7 @@ Executables::GameExe* Executables::gameExe(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns the number of game executables defined
 // -----------------------------------------------------------------------------
-unsigned Executables::nGameExes()
+unsigned executables::nGameExes()
 {
 	return game_exes.size();
 }
@@ -92,7 +94,7 @@ unsigned Executables::nGameExes()
 // -----------------------------------------------------------------------------
 // Sets the path of game executable [id] to [path]
 // -----------------------------------------------------------------------------
-void Executables::setGameExePath(string_view id, string_view path)
+void executables::setGameExePath(string_view id, string_view path)
 {
 	exe_paths.emplace_back(id, path);
 }
@@ -100,12 +102,12 @@ void Executables::setGameExePath(string_view id, string_view path)
 // -----------------------------------------------------------------------------
 // Writes all game executable paths as a string (for slade3.cfg)
 // -----------------------------------------------------------------------------
-string Executables::writePaths()
+string executables::writePaths()
 {
 	string ret;
 
 	for (auto& exe : game_exes)
-		ret += fmt::format("\t{} \"{}\"\n", exe.id, StrUtil::escapedString(exe.path, true));
+		ret += fmt::format("\t{} \"{}\"\n", exe.id, strutil::escapedString(exe.path, true));
 
 	return ret;
 }
@@ -113,7 +115,7 @@ string Executables::writePaths()
 // -----------------------------------------------------------------------------
 // Writes all executable definitions as text
 // -----------------------------------------------------------------------------
-string Executables::writeExecutables()
+string executables::writeExecutables()
 {
 	string ret = "executables\n{\n";
 
@@ -131,13 +133,13 @@ string Executables::writeExecutables()
 
 		// Configs
 		for (auto& config : exe.run_configs)
-			ret += fmt::format("\t\tconfig \"{}\" = \"{}\";\n", config.first, StrUtil::escapedString(config.second));
+			ret += fmt::format("\t\tconfig \"{}\" = \"{}\";\n", config.first, strutil::escapedString(config.second));
 
 		// Map Run Configs
 		ret += "\n";
 		for (auto& config : exe.map_configs)
 			ret += fmt::format(
-				"\t\tmap_config \"{}\" = \"{}\";\n", config.first, StrUtil::escapedString(config.second));
+				"\t\tmap_config \"{}\" = \"{}\";\n", config.first, strutil::escapedString(config.second));
 
 		ret += "\t}\n\n";
 	}
@@ -167,10 +169,10 @@ string Executables::writeExecutables()
 // -----------------------------------------------------------------------------
 // Reads all executable definitions from the program resource and user dir
 // -----------------------------------------------------------------------------
-void Executables::init()
+void executables::init()
 {
 	// Load from pk3
-	auto res_archive = App::archiveManager().programResourceArchive();
+	auto res_archive = app::archiveManager().programResourceArchive();
 	auto entry       = res_archive->entryAtPath("config/executables.cfg");
 	if (!entry)
 		return;
@@ -183,7 +185,7 @@ void Executables::init()
 	// Parse user executables config
 	Parser   p2;
 	MemChunk mc;
-	if (mc.importFile(App::path("executables.cfg", App::Dir::User)))
+	if (mc.importFile(app::path("executables.cfg", app::Dir::User)))
 	{
 		p2.parseText(mc, "user execuatbles.cfg");
 		parse(&p2, true);
@@ -193,7 +195,7 @@ void Executables::init()
 // -----------------------------------------------------------------------------
 // Parses an executables configuration from [p]
 // -----------------------------------------------------------------------------
-void Executables::parse(Parser* p, bool custom)
+void executables::parse(Parser* p, bool custom)
 {
 	auto n = p->parseTreeRoot()->childPTN("executables");
 	if (!n)
@@ -217,10 +219,10 @@ void Executables::parse(Parser* p, bool custom)
 // -----------------------------------------------------------------------------
 // Parses a game executable config from [node]
 // -----------------------------------------------------------------------------
-void Executables::parseGameExe(ParseTreeNode* node, bool custom)
+void executables::parseGameExe(ParseTreeNode* node, bool custom)
 {
 	// Get GameExe being parsed
-	auto exe = gameExe(StrUtil::lower(node->name()));
+	auto exe = gameExe(strutil::lower(node->name()));
 	if (!exe)
 	{
 		// Create if new
@@ -236,7 +238,7 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 		auto prop = node->childPTN(b);
 
 		// Run Config
-		if (StrUtil::equalCI(prop->type(), "config"))
+		if (strutil::equalCI(prop->type(), "config"))
 		{
 			// Update if exists
 			bool found = false;
@@ -258,7 +260,7 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 		}
 
 		// Map Run Config
-		if (StrUtil::equalCI(prop->type(), "map_config"))
+		if (strutil::equalCI(prop->type(), "map_config"))
 		{
 			// Update if exists
 			bool found = false;
@@ -297,12 +299,12 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 // -----------------------------------------------------------------------------
 // Adds a new game executable definition for game [name]
 // -----------------------------------------------------------------------------
-void Executables::addGameExe(string_view name)
+void executables::addGameExe(string_view name)
 {
 	GameExe game;
 	game.name = name;
 
-	game.id = StrUtil::lower(name);
+	game.id = strutil::lower(name);
 	std::replace(game.id.begin(), game.id.end(), ' ', '_');
 
 	game_exes.push_back(game);
@@ -311,7 +313,7 @@ void Executables::addGameExe(string_view name)
 // -----------------------------------------------------------------------------
 // Removes the game executable definition at [index]
 // -----------------------------------------------------------------------------
-bool Executables::removeGameExe(unsigned index)
+bool executables::removeGameExe(unsigned index)
 {
 	if (index < game_exes.size())
 	{
@@ -328,7 +330,7 @@ bool Executables::removeGameExe(unsigned index)
 // -----------------------------------------------------------------------------
 // Adds a run configuration for game executable at [exe_index]
 // -----------------------------------------------------------------------------
-void Executables::addGameExeRunConfig(
+void executables::addGameExeRunConfig(
 	unsigned    exe_index,
 	string_view config_name,
 	string_view config_params,
@@ -346,7 +348,7 @@ void Executables::addGameExeRunConfig(
 // Removes run configuration at [config_index] in game exe definition at
 // [exe_index]
 // -----------------------------------------------------------------------------
-bool Executables::removeGameExeRunConfig(unsigned exe_index, unsigned config_index)
+bool executables::removeGameExeRunConfig(unsigned exe_index, unsigned config_index)
 {
 	// Check indices
 	if (exe_index >= game_exes.size())
@@ -369,7 +371,7 @@ bool Executables::removeGameExeRunConfig(unsigned exe_index, unsigned config_ind
 // -----------------------------------------------------------------------------
 // Adds a map run configuration for game executable at [exe_index]
 // -----------------------------------------------------------------------------
-void Executables::addGameExeMapConfig(
+void executables::addGameExeMapConfig(
 	unsigned    exe_index,
 	string_view config_name,
 	string_view config_params,
@@ -387,7 +389,7 @@ void Executables::addGameExeMapConfig(
 // Removes map run configuration at [config_index] in game exe definition at
 // [exe_index]
 // -----------------------------------------------------------------------------
-bool Executables::removeGameExeMapConfig(unsigned exe_index, unsigned config_index)
+bool executables::removeGameExeMapConfig(unsigned exe_index, unsigned config_index)
 {
 	// Check indices
 	if (exe_index >= game_exes.size())
@@ -411,7 +413,7 @@ bool Executables::removeGameExeMapConfig(unsigned exe_index, unsigned config_ind
 // Returns the number of external executables for [category], or all if
 // [category] is not specified
 // -----------------------------------------------------------------------------
-int Executables::nExternalExes(string_view category)
+int executables::nExternalExes(string_view category)
 {
 	int num = 0;
 	for (auto& exe : external_exes)
@@ -425,7 +427,7 @@ int Executables::nExternalExes(string_view category)
 // Returns the external executable matching [name] and [category].
 // If [category] is empty, it is ignored
 // -----------------------------------------------------------------------------
-Executables::ExternalExe Executables::externalExe(string_view name, string_view category)
+executables::ExternalExe executables::externalExe(string_view name, string_view category)
 {
 	for (auto& exe : external_exes)
 		if (category.empty() || exe.category == category)
@@ -439,7 +441,7 @@ Executables::ExternalExe Executables::externalExe(string_view name, string_view 
 // Returns a list of all external executables matching [category].
 // If [category] is empty, it is ignored
 // -----------------------------------------------------------------------------
-vector<Executables::ExternalExe> Executables::externalExes(string_view category)
+vector<executables::ExternalExe> executables::externalExes(string_view category)
 {
 	vector<ExternalExe> ret;
 	for (auto& exe : external_exes)
@@ -452,7 +454,7 @@ vector<Executables::ExternalExe> Executables::externalExes(string_view category)
 // -----------------------------------------------------------------------------
 // Parses an external executable config from [node]
 // -----------------------------------------------------------------------------
-void Executables::parseExternalExe(ParseTreeNode* node)
+void executables::parseExternalExe(ParseTreeNode* node)
 {
 	ExternalExe exe;
 	exe.name = node->name();
@@ -477,7 +479,7 @@ void Executables::parseExternalExe(ParseTreeNode* node)
 // Adds a new external executable, if one matching [name] and [category] doesn't
 // already exist
 // -----------------------------------------------------------------------------
-void Executables::addExternalExe(string_view name, string_view path, string_view category)
+void executables::addExternalExe(string_view name, string_view path, string_view category)
 {
 	// Check it doesn't already exist
 	for (auto& exe : external_exes)
@@ -495,7 +497,7 @@ void Executables::addExternalExe(string_view name, string_view path, string_view
 // Sets the name of the external executable matching [name_old] and [category]
 // to [name_new]
 // -----------------------------------------------------------------------------
-void Executables::setExternalExeName(string_view name_old, string_view name_new, string_view category)
+void executables::setExternalExeName(string_view name_old, string_view name_new, string_view category)
 {
 	for (auto& exe : external_exes)
 		if (exe.name == name_old && exe.category == category)
@@ -509,7 +511,7 @@ void Executables::setExternalExeName(string_view name_old, string_view name_new,
 // Sets the path of the external executable matching [name] and [category] to
 // [path]
 // -----------------------------------------------------------------------------
-void Executables::setExternalExePath(string_view name, string_view path, string_view category)
+void executables::setExternalExePath(string_view name, string_view path, string_view category)
 {
 	for (auto& exe : external_exes)
 		if (exe.name == name && exe.category == category)
@@ -522,7 +524,7 @@ void Executables::setExternalExePath(string_view name, string_view path, string_
 // -----------------------------------------------------------------------------
 // Removes the external executable matching [name] and [category]
 // -----------------------------------------------------------------------------
-void Executables::removeExternalExe(string_view name, string_view category)
+void executables::removeExternalExe(string_view name, string_view category)
 {
 	for (unsigned a = 0; a < external_exes.size(); a++)
 		if (external_exes[a].name == name && external_exes[a].category == category)

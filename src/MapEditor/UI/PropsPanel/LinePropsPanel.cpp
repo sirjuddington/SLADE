@@ -40,6 +40,8 @@
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -67,20 +69,20 @@ LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	stc_tabs_->AddPage(setupSpecialTab(), "Special");
 
 	// Args tab
-	if (MapEditor::editContext().mapDesc().format != MapFormat::Doom)
+	if (mapeditor::editContext().mapDesc().format != MapFormat::Doom)
 	{
 		panel_args_ = new ArgsPanel(this);
-		stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_args_), "Args");
+		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_args_), "Args");
 		panel_special_->setArgsPanel(panel_args_);
 	}
 
 	// Front side tab
 	panel_side1_ = new SidePropsPanel(this);
-	stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_side1_), "Front Side");
+	stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_side1_), "Front Side");
 
 	// Back side tab
 	panel_side2_ = new SidePropsPanel(this);
-	stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_side2_), "Back Side");
+	stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_side2_), "Back Side");
 
 	// All properties tab
 	mopp_all_props_ = new MapObjectPropsPanel(stc_tabs_, true);
@@ -119,7 +121,7 @@ LinePropsPanel::~LinePropsPanel()
 wxPanel* LinePropsPanel::setupGeneralTab()
 {
 	auto panel_flags = new wxPanel(stc_tabs_, -1);
-	auto map_format  = MapEditor::editContext().mapDesc().format;
+	auto map_format  = mapeditor::editContext().mapDesc().format;
 
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -127,22 +129,22 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 
 	// Flags
 	auto sizer_flags = new wxStaticBoxSizer(wxVERTICAL, panel_flags, "Flags");
-	sizer->Add(sizer_flags, 0, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(sizer_flags, 0, wxEXPAND | wxALL, ui::pad());
 
 	// Init flags
-	auto gb_sizer_flags = new wxGridBagSizer(UI::pad() / 2, UI::pad());
-	sizer_flags->Add(gb_sizer_flags, 1, wxEXPAND | wxALL, UI::pad());
+	auto gb_sizer_flags = new wxGridBagSizer(ui::pad() / 2, ui::pad());
+	sizer_flags->Add(gb_sizer_flags, 1, wxEXPAND | wxALL, ui::pad());
 	unsigned row = 0;
 	unsigned col = 0;
 
 	// Get all UDMF properties
-	auto& props = Game::configuration().allUDMFProperties(MapObject::Type::Line);
+	auto& props = game::configuration().allUDMFProperties(MapObject::Type::Line);
 
 	// UDMF flags
 	if (map_format == MapFormat::UDMF)
 	{
 		// Get all udmf flag properties
-		vector<UDMFProperty> flags_udmf;
+		vector<game::UDMFProperty> flags_udmf;
 		for (auto& i : props)
 			if (i.second.isFlag())
 				flags_udmf.push_back(i.second);
@@ -170,18 +172,18 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	else
 	{
 		// Add flag checkboxes
-		unsigned flag_mid = Game::configuration().nLineFlags() / 3;
-		if (Game::configuration().nLineFlags() % 3 == 0)
+		unsigned flag_mid = game::configuration().nLineFlags() / 3;
+		if (game::configuration().nLineFlags() % 3 == 0)
 			flag_mid--;
-		for (unsigned a = 0; a < Game::configuration().nLineFlags(); a++)
+		for (unsigned a = 0; a < game::configuration().nLineFlags(); a++)
 		{
-			if (Game::configuration().lineFlag(a).activation)
+			if (game::configuration().lineFlag(a).activation)
 				continue;
 
 			auto cb_flag = new wxCheckBox(
 				panel_flags,
 				-1,
-				Game::configuration().lineFlag(a).name,
+				game::configuration().lineFlag(a).name,
 				wxDefaultPosition,
 				wxDefaultSize,
 				wxCHK_3STATE);
@@ -204,16 +206,16 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	if (map_format == MapFormat::Doom)
 	{
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
-		hbox->Add(new wxStaticText(panel_flags, -1, "Sector Tag:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
-		hbox->Add(text_tag_ = new NumberTextCtrl(panel_flags), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(panel_flags, -1, "Sector Tag:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+		hbox->Add(text_tag_ = new NumberTextCtrl(panel_flags), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 		btn_new_tag_ = new wxButton(panel_flags, -1, "New Tag");
 		hbox->Add(btn_new_tag_, 0, wxEXPAND);
 
 		// Bind event
 		btn_new_tag_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, [&](wxCommandEvent& e) {
-			text_tag_->setNumber(MapEditor::editContext().map().sectors().firstFreeId());
+			text_tag_->setNumber(mapeditor::editContext().map().sectors().firstFreeId());
 		});
 	}
 
@@ -221,15 +223,15 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	if (map_format == MapFormat::UDMF)
 	{
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
-		hbox->Add(new wxStaticText(panel_flags, -1, "Line ID:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
-		hbox->Add(text_id_ = new NumberTextCtrl(panel_flags), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(panel_flags, -1, "Line ID:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+		hbox->Add(text_id_ = new NumberTextCtrl(panel_flags), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 		hbox->Add(btn_new_id_ = new wxButton(panel_flags, -1, "New ID"), 0, wxEXPAND);
 
 		// Bind event
 		btn_new_id_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, [&](wxCommandEvent& e) {
-			auto& map = MapEditor::editContext().map();
+			auto& map = mapeditor::editContext().map();
 			text_id_->setNumber(map.lines().firstFreeId(map.currentFormat()));
 		});
 	}
@@ -250,13 +252,13 @@ wxPanel* LinePropsPanel::setupSpecialTab()
 
 	// Action special panel
 	panel_special_ = new ActionSpecialPanel(panel);
-	sizer->Add(panel_special_, 1, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(panel_special_, 1, wxEXPAND | wxALL, ui::pad());
 
 	// 'Override Special' checkbox
 	cb_override_special_ = new wxCheckBox(panel, -1, "Override Action Special");
 	cb_override_special_->SetToolTip(
 		"Differing action specials detected, tick this to set the action special for all selected lines");
-	sizer->Add(cb_override_special_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	sizer->Add(cb_override_special_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	return panel;
 }
@@ -269,7 +271,7 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 	if (lines.empty())
 		return;
 
-	auto map_format = MapEditor::editContext().mapDesc().format;
+	auto map_format = mapeditor::editContext().mapDesc().format;
 
 	// Load flags
 	if (map_format == MapFormat::UDMF)
@@ -288,13 +290,13 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 		for (auto& flag : flags_)
 		{
 			// Set initial flag checked value
-			flag.check_box->SetValue(Game::configuration().lineFlagSet(flag.index, (MapLine*)lines[0]));
+			flag.check_box->SetValue(game::configuration().lineFlagSet(flag.index, (MapLine*)lines[0]));
 
 			// Go through subsequent lines
 			for (unsigned b = 1; b < lines.size(); b++)
 			{
 				// Check for mismatch
-				if (flag.check_box->GetValue() != Game::configuration().lineFlagSet(flag.index, (MapLine*)lines[b]))
+				if (flag.check_box->GetValue() != game::configuration().lineFlagSet(flag.index, (MapLine*)lines[b]))
 				{
 					// Set undefined
 					flag.check_box->Set3StateValue(wxCHK_UNDETERMINED);
@@ -388,7 +390,7 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 // -----------------------------------------------------------------------------
 void LinePropsPanel::applyChanges()
 {
-	auto map_format = MapEditor::editContext().mapDesc().format;
+	auto map_format = mapeditor::editContext().mapDesc().format;
 
 	// Apply general properties
 	for (auto& object : objects_)
@@ -406,7 +408,7 @@ void LinePropsPanel::applyChanges()
 			// Other
 			for (auto& flag : flags_)
 				if (flag.check_box->Get3StateValue() != wxCHK_UNDETERMINED)
-					Game::configuration().setLineFlag(flag.index, (MapLine*)object, flag.check_box->GetValue());
+					game::configuration().setLineFlag(flag.index, (MapLine*)object, flag.check_box->GetValue());
 		}
 
 		// Sector tag

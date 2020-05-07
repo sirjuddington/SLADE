@@ -13,9 +13,6 @@
     <Filter Include="Map Editor">
       <UniqueIdentifier>{e7c66597-c337-43fc-bedc-5e753bf3ddb8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="General\Console">
-      <UniqueIdentifier>{511149d3-5ded-4b1c-b004-d65769996d9d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Dialogs\Preferences">
       <UniqueIdentifier>{22c29a05-108c-473f-a3cc-a3a235cea9e5}</UniqueIdentifier>
     </Filter>
@@ -153,9 +150,6 @@
     </Filter>
     <Filter Include="Archive\EntryType\Config">
       <UniqueIdentifier>{e7b5e9e0-b8de-4082-845a-f7bd5fa91926}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="General\Colours">
-      <UniqueIdentifier>{2396ead4-6f0e-4df8-9e57-2d51554e5f40}</UniqueIdentifier>
     </Filter>
     <Filter Include="Map Editor\Edit">
       <UniqueIdentifier>{8c15c8af-a29b-46c5-b73c-699f04cea254}</UniqueIdentifier>
@@ -1347,9 +1341,6 @@
     <ClCompile Include="..\src\General\UndoRedo.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\General\Console\Console.cpp">
-      <Filter>General\Console</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Graphics\Icons.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
@@ -1583,6 +1574,9 @@
     </ClCompile>
     <ClCompile Include="..\src\Dialogs\Preferences\ACSPrefsPanel.cpp">
       <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\General\Console.cpp">
+      <Filter>General</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1931,12 +1925,6 @@
     </ClInclude>
     <ClInclude Include="..\src\Utility\MemChunk.h">
       <Filter>Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\General\Console\Console.h">
-      <Filter>General\Console</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\General\Console\ConsoleHelpers.h">
-      <Filter>General\Console</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Application\Main.h">
       <Filter>Application</Filter>
@@ -2795,6 +2783,9 @@
     <ClInclude Include="..\thirdparty\sigslot\signal.hpp">
       <Filter>ThirdParty\Sigslot</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\General\Console.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />
@@ -2812,9 +2803,6 @@
     </None>
     <None Include="..\dist\makebuild.ps1">
       <Filter>Installer</Filter>
-    </None>
-    <None Include="..\dist\res\config\colours\SLADE 2.cfg">
-      <Filter>General\Colours</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -2854,15 +2842,6 @@
     </Text>
     <Text Include="..\dist\res\config\entry_types\types_text.txt">
       <Filter>Archive\EntryType\Config</Filter>
-    </Text>
-    <Text Include="..\dist\res\config\colours\Clean.txt">
-      <Filter>General\Colours</Filter>
-    </Text>
-    <Text Include="..\dist\res\config\colours\Default.txt">
-      <Filter>General\Colours</Filter>
-    </Text>
-    <Text Include="..\dist\res\config\colours\Doom Builder 2.txt">
-      <Filter>General\Colours</Filter>
     </Text>
   </ItemGroup>
 </Project>

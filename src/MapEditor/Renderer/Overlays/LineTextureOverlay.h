@@ -2,6 +2,8 @@
 
 #include "MCOverlay.h"
 
+namespace slade
+{
 class MapLine;
 class MapSide;
 
@@ -76,3 +78,4 @@ private:
 	void drawTexture(float alpha, int size, TexInfo& tex, string_view position) const;
 	void browseTexture(TexInfo& tex, string_view position);
 };
+} // namespace slade

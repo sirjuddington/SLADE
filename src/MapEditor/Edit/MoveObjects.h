@@ -2,6 +2,8 @@
 
 #include "MapEditor/MapEditor.h"
 
+namespace slade
+{
 class MapEditContext;
 
 class MoveObjects
@@ -9,7 +11,7 @@ class MoveObjects
 public:
 	MoveObjects(MapEditContext& context);
 
-	const vector<MapEditor::Item>& items() const { return items_; }
+	const vector<mapeditor::Item>& items() const { return items_; }
 	Vec2d                          offset() const { return offset_; }
 
 	bool begin(Vec2d mouse_pos);
@@ -20,6 +22,7 @@ private:
 	MapEditContext&         context_;
 	Vec2d                   origin_;
 	Vec2d                   offset_;
-	vector<MapEditor::Item> items_;
-	MapEditor::Item         item_closest_ = 0;
+	vector<mapeditor::Item> items_;
+	mapeditor::Item         item_closest_ = 0;
 };
+} // namespace slade

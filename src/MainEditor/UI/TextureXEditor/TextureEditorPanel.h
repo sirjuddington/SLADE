@@ -3,6 +3,8 @@
 #include "General/SAction.h"
 #include "UI/Lists/ListView.h"
 
+namespace slade
+{
 class TextureXEditor;
 class TextureXList;
 class CTextureCanvas;
@@ -106,3 +108,4 @@ protected:
 	// Input
 	bool alt_press_ = false;
 };
+} // namespace slade

@@ -33,6 +33,8 @@
 #include "ANSIEntryPanel.h"
 #include "UI/Canvas/ANSICanvas.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //

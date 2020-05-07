@@ -4,6 +4,8 @@
 
 class wxPropertyGrid;
 
+namespace slade
+{
 class ColourPrefsPanel : public PrefsPanelBase
 {
 public:
@@ -19,3 +21,4 @@ private:
 	wxChoice*       choice_configs_ = nullptr;
 	wxPropertyGrid* pg_colours_     = nullptr;
 };
+} // namespace slade

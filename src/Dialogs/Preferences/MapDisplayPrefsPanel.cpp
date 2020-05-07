@@ -34,6 +34,8 @@
 #include "MapDisplayPrefsPanel.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -113,25 +115,25 @@ void MapDisplayPrefsPanel::setupGeneralTab()
 	stc_pages_->AddPage(panel, "General", true);
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
-	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	sz_border->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	sz_border->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 	int row = 0;
 
 	// Crosshair
 	choice_crosshair_ = new wxChoice(panel, -1);
-	choice_crosshair_->Set(WxUtils::arrayString({ "None", "Small", "Full" }));
+	choice_crosshair_->Set(wxutil::arrayString({ "None", "Small", "Full" }));
 	gb_sizer->Add(new wxStaticText(panel, -1, "Cursor Crosshair:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_crosshair_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Texture filter
 	choice_tex_filter_ = new wxChoice(panel, -1);
-	choice_tex_filter_->Set(WxUtils::arrayString({ "None", "Linear", "Linear (Mipmapped)", "None (Mipmapped)" }));
+	choice_tex_filter_->Set(wxutil::arrayString({ "None", "Linear", "Linear (Mipmapped)", "None (Mipmapped)" }));
 	gb_sizer->Add(new wxStaticText(panel, -1, "Texture Filtering:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_tex_filter_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 
 	// 64 grid
 	choice_grid_64_ = new wxChoice(panel, -1);
-	choice_grid_64_->Set(WxUtils::arrayString({ "None", "Full", "Crosses" }));
+	choice_grid_64_->Set(wxutil::arrayString({ "None", "Full", "Crosses" }));
 	gb_sizer->Add(new wxStaticText(panel, -1, "64 Grid:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_grid_64_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 
@@ -183,17 +185,17 @@ void MapDisplayPrefsPanel::setupVerticesTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+	sz_border->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 
 	slider_vertex_size_ = new wxSlider(panel, -1, vertex_size, 2, 16, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
 	choice_vertices_always_ = new wxChoice(panel, -1);
-	choice_vertices_always_->Set(WxUtils::arrayString({ "Hide", "Show", "Fade" }));
+	choice_vertices_always_->Set(wxutil::arrayString({ "Hide", "Show", "Fade" }));
 	cb_vertex_round_ = new wxCheckBox(panel, -1, "Round vertices");
 
-	WxUtils::layoutVertically(
+	wxutil::layoutVertically(
 		sizer,
-		{ WxUtils::createLabelHBox(panel, "Vertex Size:", slider_vertex_size_),
-		  WxUtils::createLabelHBox(panel, "When not in vertices mode:", choice_vertices_always_),
+		{ wxutil::createLabelHBox(panel, "Vertex Size:", slider_vertex_size_),
+		  wxutil::createLabelHBox(panel, "When not in vertices mode:", choice_vertices_always_),
 		  cb_vertex_round_ },
 		wxSizerFlags(0).Expand());
 }
@@ -209,11 +211,11 @@ void MapDisplayPrefsPanel::setupLinesTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+	sz_border->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 
-	WxUtils::layoutVertically(
+	wxutil::layoutVertically(
 		sizer,
-		{ WxUtils::createLabelHBox(
+		{ wxutil::createLabelHBox(
 			  panel,
 			  "Line width:",
 			  slider_line_width_ = new wxSlider(
@@ -233,22 +235,22 @@ void MapDisplayPrefsPanel::setupThingsTab()
 	stc_pages_->AddPage(panel, "Things");
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
-	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	sz_border->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	sz_border->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 	int row = 0;
 
 	// Thing style
 	gb_sizer->Add(new wxStaticText(panel, -1, "Thing style: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	choice_thing_drawtype_ = new wxChoice(panel, -1);
 	choice_thing_drawtype_->Set(
-		WxUtils::arrayString({ "Square", "Round", "Sprite", "Square + Sprite", "Framed Sprite" }));
+		wxutil::arrayString({ "Square", "Round", "Sprite", "Square + Sprite", "Framed Sprite" }));
 	gb_sizer->Add(choice_thing_drawtype_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// When not in things mode
 	gb_sizer->Add(
 		new wxStaticText(panel, -1, "When not in things mode: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	choice_things_always_ = new wxChoice(panel, -1);
-	choice_things_always_->Set(WxUtils::arrayString({ "Hide", "Show", "Fade" }));
+	choice_things_always_->Set(wxutil::arrayString({ "Hide", "Show", "Fade" }));
 	gb_sizer->Add(choice_things_always_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Shadow opacity
@@ -299,11 +301,11 @@ void MapDisplayPrefsPanel::setupFlatsTab()
 	auto sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+	sz_border->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 
-	WxUtils::layoutVertically(
+	wxutil::layoutVertically(
 		sizer,
-		{ WxUtils::createLabelHBox(
+		{ wxutil::createLabelHBox(
 			  panel,
 			  "Flat brightness:",
 			  slider_flat_brightness_ = new wxSlider(

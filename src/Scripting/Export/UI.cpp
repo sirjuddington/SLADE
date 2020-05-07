@@ -7,6 +7,8 @@
 #include "Utility/SFileDialog.h"
 #include "thirdparty/sol/sol.hpp"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -30,7 +32,7 @@ enum class MessageBoxIcon
 // Lua Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace Lua
+namespace slade::lua
 {
 // -----------------------------------------------------------------------------
 // Shows a message box with a [title] and [message]
@@ -91,8 +93,8 @@ bool promptYesNo(const string& title, const string& message)
 // -----------------------------------------------------------------------------
 string browseFile(string_view title, string_view extensions, string_view filename)
 {
-	SFileDialog::FDInfo inf;
-	SFileDialog::openFile(inf, title, extensions, currentWindow(), filename);
+	filedialog::FDInfo inf;
+	filedialog::openFile(inf, title, extensions, currentWindow(), filename);
 	return inf.filenames.empty() ? "" : inf.filenames[0];
 }
 
@@ -101,9 +103,9 @@ string browseFile(string_view title, string_view extensions, string_view filenam
 // -----------------------------------------------------------------------------
 vector<string> browseFiles(string_view title, string_view extensions)
 {
-	SFileDialog::FDInfo inf;
-	vector<string>      filenames;
-	if (SFileDialog::openFiles(inf, title, extensions, currentWindow()))
+	filedialog::FDInfo inf;
+	vector<string>     filenames;
+	if (filedialog::openFiles(inf, title, extensions, currentWindow()))
 		for (const auto& file : inf.filenames)
 			filenames.push_back(file);
 	return filenames;
@@ -114,8 +116,8 @@ vector<string> browseFiles(string_view title, string_view extensions)
 // -----------------------------------------------------------------------------
 string saveFile(string_view title, string_view extensions, string_view fn_default = {})
 {
-	SFileDialog::FDInfo inf;
-	if (SFileDialog::saveFile(inf, title, extensions, currentWindow(), fn_default))
+	filedialog::FDInfo inf;
+	if (filedialog::saveFile(inf, title, extensions, currentWindow(), fn_default))
 		return inf.filenames[0];
 
 	return {};
@@ -126,8 +128,8 @@ string saveFile(string_view title, string_view extensions, string_view fn_defaul
 // -----------------------------------------------------------------------------
 std::tuple<string, string> saveFiles(string_view title, string_view extensions)
 {
-	SFileDialog::FDInfo inf;
-	if (SFileDialog::saveFiles(inf, title, extensions, currentWindow()))
+	filedialog::FDInfo inf;
+	if (filedialog::saveFiles(inf, title, extensions, currentWindow()))
 		return std::make_tuple(inf.path, inf.extension);
 
 	return { {}, {} };
@@ -154,14 +156,14 @@ void registerUINamespace(sol::state& lua)
         &saveFile, [](string_view title, string_view extensions) { return saveFile(title, extensions); });
 	ui["PromptSaveFiles"] = &saveFiles;
 	ui["ShowSplash"]      = sol::overload(
-        [](const string& message) { UI::showSplash(message, false, currentWindow()); },
-        [](const string& message, bool progress) { UI::showSplash(message, progress, currentWindow()); });
-	ui["HideSplash"]               = &UI::hideSplash;
-	ui["UpdateSplash"]             = &UI::updateSplash;
-	ui["SplashProgress"]           = &UI::getSplashProgress;
-	ui["SetSplashMessage"]         = &UI::setSplashMessage;
-	ui["SetSplashProgressMessage"] = &UI::setSplashProgressMessage;
-	ui["SetSplashProgress"]        = &UI::setSplashProgress;
+        [](const string& message) { ui::showSplash(message, false, currentWindow()); },
+        [](const string& message, bool progress) { ui::showSplash(message, progress, currentWindow()); });
+	ui["HideSplash"]               = &ui::hideSplash;
+	ui["UpdateSplash"]             = &ui::updateSplash;
+	ui["SplashProgress"]           = &ui::getSplashProgress;
+	ui["SetSplashMessage"]         = &ui::setSplashMessage;
+	ui["SetSplashProgressMessage"] = &ui::setSplashProgressMessage;
+	ui["SetSplashProgress"]        = &ui::setSplashProgress;
 
 	// Constants
 	// -------------------------------------------------------------------------
@@ -170,4 +172,4 @@ void registerUINamespace(sol::state& lua)
 	ui["MB_ICON_WARNING"]  = sol::property([]() { return MessageBoxIcon::Warning; });
 	ui["MB_ICON_ERROR"]    = sol::property([]() { return MessageBoxIcon::Error; });
 }
-} // namespace Lua
+} // namespace slade::lua

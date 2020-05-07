@@ -39,7 +39,7 @@ protected:
 		size_t data_offset = data.readL32(24 + (index << 2));
 		if (!info.width || !info.height || !data_offset || data.size() < data_offset + (info.width * info.height))
 		{
-			Global::error = "HLT file: invalid data for mip level";
+			global::error = "HLT file: invalid data for mip level";
 			return false;
 		}
 
@@ -48,14 +48,14 @@ protected:
 		size_t  pal_offset = data.readL32(36) + ((data.readL32(16) >> 3) * (data.readL32(20) >> 3));
 		if (data.size() < pal_offset + 5)
 		{
-			Global::error = "HLT file: invalid palette offset";
+			global::error = "HLT file: invalid palette offset";
 			return false;
 		}
 		size_t palsize = data.readL16(pal_offset);
 		if (palsize == 0 || palsize > 256 || data.size() < (pal_offset + 2 + (palsize * 3)))
 		{
-			Log::error(wxString::Format("palsize %d, paloffset %d, entry size %d", palsize, pal_offset, data.size()));
-			Global::error = "HLT file: invalid palette size";
+			log::error(wxString::Format("palsize %d, paloffset %d, entry size %d", palsize, pal_offset, data.size()));
+			global::error = "HLT file: invalid palette size";
 			return false;
 		}
 		for (size_t c = 0; c < palsize; ++c)
@@ -197,7 +197,7 @@ public:
 		SImage::Info info;
 
 		// Read header
-		Graphics::PatchHeader header;
+		gfx::PatchHeader header;
 		mc.read(&header, 8, 0);
 
 		// Set info
@@ -215,7 +215,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Setup variables
-		Graphics::PatchHeader header;
+		gfx::PatchHeader header;
 		data.read(&header, 8, 0);
 		int width    = wxINT16_SWAP_ON_BE(header.width);
 		int height   = wxINT16_SWAP_ON_BE(header.height);

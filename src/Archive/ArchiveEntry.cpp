@@ -38,6 +38,8 @@
 #include "General/Misc.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -58,9 +60,12 @@ CVAR(Bool, wad_force_uppercase, true, CVar::Flag::Save)
 // ArchiveEntry class constructor
 // -----------------------------------------------------------------------------
 ArchiveEntry::ArchiveEntry(string_view name, uint32_t size) :
-	name_{ name }, upper_name_{ name }, size_{ size }, type_{ EntryType::unknownType() }
+	name_{ name },
+	upper_name_{ name },
+	size_{ size },
+	type_{ EntryType::unknownType() }
 {
-	StrUtil::upperIP(upper_name_);
+	strutil::upperIP(upper_name_);
 }
 
 // -----------------------------------------------------------------------------
@@ -224,7 +229,7 @@ int ArchiveEntry::index()
 void ArchiveEntry::setName(string_view name)
 {
 	name_       = name;
-	upper_name_ = StrUtil::upper(name);
+	upper_name_ = strutil::upper(name);
 }
 
 // -----------------------------------------------------------------------------
@@ -298,34 +303,34 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 	bool changed = false;
 
 	// Perform character substitution if needed
-	name_ = Misc::fileNameToLumpName(name_);
+	name_ = misc::fileNameToLumpName(name_);
 
 	// Max length
 	if (format.max_name_length > 0 && (int)name_.size() > format.max_name_length)
 	{
-		StrUtil::truncateIP(name_, format.max_name_length);
+		strutil::truncateIP(name_, format.max_name_length);
 		changed = true;
 	}
 
 	// Uppercase
 	if (format.prefer_uppercase && wad_force_uppercase)
-		StrUtil::upperIP(name_);
+		strutil::upperIP(name_);
 
 	// Remove \ or / if the format supports folders
 	if (format.supports_dirs && name_.find('/') != string::npos || name_.find('\\') != string::npos)
 	{
-		name_   = Misc::lumpNameToFileName(name_);
+		name_   = misc::lumpNameToFileName(name_);
 		changed = true;
 	}
 
 	// Remove extension if the format doesn't have them
 	if (!format.names_extensions)
 		if (auto pos = name_.find('.'); pos != string::npos)
-			StrUtil::truncateIP(name_, pos);
+			strutil::truncateIP(name_, pos);
 
 	// Update upper name
 	if (changed)
-		upper_name_ = StrUtil::upper(name_);
+		upper_name_ = strutil::upper(name_);
 }
 
 // -----------------------------------------------------------------------------
@@ -336,7 +341,7 @@ bool ArchiveEntry::rename(string_view new_name)
 	// Check if locked
 	if (locked_)
 	{
-		Global::error = "Entry is locked";
+		global::error = "Entry is locked";
 		return false;
 	}
 
@@ -356,7 +361,7 @@ bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
 	// Check if locked
 	if (locked_)
 	{
-		Global::error = "Entry is locked";
+		global::error = "Entry is locked";
 		return false;
 	}
 
@@ -374,7 +379,7 @@ void ArchiveEntry::clearData()
 	// Check if locked
 	if (locked_)
 	{
-		Global::error = "Entry is locked";
+		global::error = "Entry is locked";
 		return;
 	}
 
@@ -400,7 +405,7 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 	// Check if locked
 	if (locked_)
 	{
-		Global::error = "Entry is locked";
+		global::error = "Entry is locked";
 		return false;
 	}
 
@@ -448,7 +453,7 @@ bool ArchiveEntry::importFile(string_view filename, uint32_t offset, uint32_t si
 	// Check if locked
 	if (locked_)
 	{
-		Global::error = "Entry is locked";
+		global::error = "Entry is locked";
 		return false;
 	}
 
@@ -458,7 +463,7 @@ bool ArchiveEntry::importFile(string_view filename, uint32_t offset, uint32_t si
 	// Check that it opened ok
 	if (!file.IsOpened())
 	{
-		Global::error = "Unable to open file for reading";
+		global::error = "Unable to open file for reading";
 		return false;
 	}
 
@@ -489,7 +494,7 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 	// Check if locked
 	if (locked_)
 	{
-		Global::error = "Entry is locked";
+		global::error = "Entry is locked";
 		return false;
 	}
 
@@ -518,7 +523,7 @@ bool ArchiveEntry::importEntry(ArchiveEntry* entry)
 	// Check if locked
 	if (locked_)
 	{
-		Global::error = "Entry is locked";
+		global::error = "Entry is locked";
 		return false;
 	}
 
@@ -544,7 +549,7 @@ bool ArchiveEntry::exportFile(string_view filename)
 	// Check it opened ok
 	if (!file.IsOpened())
 	{
-		Global::error = fmt::format("Unable to open file {} for writing", filename);
+		global::error = fmt::format("Unable to open file {} for writing", filename);
 		return false;
 	}
 
@@ -564,7 +569,7 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 	// Check if locked
 	if (locked_)
 	{
-		Global::error = "Entry is locked";
+		global::error = "Entry is locked";
 		return false;
 	}
 
@@ -602,7 +607,7 @@ bool ArchiveEntry::read(void* buf, uint32_t size)
 // -----------------------------------------------------------------------------
 string ArchiveEntry::sizeString() const
 {
-	return Misc::sizeAsString(size());
+	return misc::sizeAsString(size());
 }
 
 // -----------------------------------------------------------------------------
@@ -627,7 +632,7 @@ void ArchiveEntry::setExtensionByType()
 		return;
 
 	// Convert name to wxFileName for processing
-	StrUtil::Path fn(name_);
+	strutil::Path fn(name_);
 
 	// Set new extension
 	fn.setExtension(type_->extension());

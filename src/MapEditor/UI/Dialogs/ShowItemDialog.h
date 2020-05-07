@@ -5,6 +5,8 @@
 class wxChoice;
 class wxTextCtrl;
 
+namespace slade
+{
 class ShowItemDialog : public wxDialog
 {
 public:
@@ -19,3 +21,4 @@ private:
 	wxChoice*   choice_type_ = nullptr;
 	wxTextCtrl* text_index_  = nullptr;
 };
+} // namespace slade

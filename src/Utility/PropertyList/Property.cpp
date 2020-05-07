@@ -35,6 +35,8 @@
 #include "Property.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -130,7 +132,7 @@ bool Property::boolValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Boolean)
-		Log::warning("Requested Boolean value of a {} Property", typeString());
+		log::warning("Requested Boolean value of a {} Property", typeString());
 
 	// Return value (convert if needed)
 	if (type_ == Type::Boolean)
@@ -144,7 +146,7 @@ bool Property::boolValue(bool warn_wrong_type) const
 	else if (type_ == Type::String)
 	{
 		// Anything except "0", "no" or "false" is considered true
-		return !(val_string_ == '0' || StrUtil::equalCI(val_string_, "no") || StrUtil::equalCI(val_string_, "false"));
+		return !(val_string_ == '0' || strutil::equalCI(val_string_, "no") || strutil::equalCI(val_string_, "false"));
 	}
 
 	// Return default boolean value
@@ -168,7 +170,7 @@ int Property::intValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Int)
-		Log::warning("Requested Integer value of a {} Property", typeString());
+		log::warning("Requested Integer value of a {} Property", typeString());
 
 	// Return value (convert if needed)
 	if (type_ == Type::Int)
@@ -180,7 +182,7 @@ int Property::intValue(bool warn_wrong_type) const
 	else if (type_ == Type::Float)
 		return (int)value_.Floating;
 	else if (type_ == Type::String)
-		return StrUtil::asInt(val_string_);
+		return strutil::asInt(val_string_);
 
 	// Return default integer value
 	return 0;
@@ -203,7 +205,7 @@ double Property::floatValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Float)
-		Log::warning("Requested Float value of a {} Property", typeString());
+		log::warning("Requested Float value of a {} Property", typeString());
 
 	// Return value (convert if needed)
 	if (type_ == Type::Float)
@@ -215,7 +217,7 @@ double Property::floatValue(bool warn_wrong_type) const
 	else if (type_ == Type::UInt)
 		return (double)value_.Unsigned;
 	else if (type_ == Type::String)
-		return StrUtil::asDouble(val_string_);
+		return strutil::asDouble(val_string_);
 
 	// Return default float value
 	return 0.0f;
@@ -238,7 +240,7 @@ string Property::stringValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::String)
-		Log::warning("Warning: Requested String value of a {} Property", typeString());
+		log::warning("Warning: Requested String value of a {} Property", typeString());
 
 	// Return value (convert if needed)
 	if (type_ == Type::String)
@@ -278,7 +280,7 @@ unsigned Property::unsignedValue(bool warn_wrong_type) const
 
 	// Write warning to log if needed
 	if (warn_wrong_type && type_ != Type::Int)
-		Log::warning("Requested Integer value of a {} Property", typeString());
+		log::warning("Requested Integer value of a {} Property", typeString());
 
 	// Return value (convert if needed)
 	if (type_ == Type::Int)
@@ -288,7 +290,7 @@ unsigned Property::unsignedValue(bool warn_wrong_type) const
 	else if (type_ == Type::Float)
 		return (int)value_.Floating;
 	else if (type_ == Type::String)
-		return StrUtil::asUInt(val_string_);
+		return strutil::asUInt(val_string_);
 	else if (type_ == Type::UInt)
 		return value_.Unsigned;
 

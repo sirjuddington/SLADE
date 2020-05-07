@@ -2,6 +2,8 @@
 
 #include "Archive.h"
 
+namespace slade
+{
 class ArchiveManager
 {
 public:
@@ -108,3 +110,4 @@ private:
 	bool initArchiveFormats() const;
 	void getDependentArchivesInternal(Archive* archive, vector<shared_ptr<Archive>>& vec);
 };
+} // namespace slade

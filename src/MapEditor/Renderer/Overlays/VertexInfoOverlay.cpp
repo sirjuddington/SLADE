@@ -39,6 +39,8 @@
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "Utility/MathStuff.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -62,7 +64,7 @@ void VertexInfoOverlay::update(MapVertex* vertex)
 	else
 		info_ = fmt::format("Vertex {}: ({}, {})", vertex->index(), (int)vertex->xPos(), (int)vertex->yPos());
 
-	if (Global::debug)
+	if (global::debug)
 		info_ += fmt::format(" ({})", vertex->objId());
 }
 
@@ -80,8 +82,8 @@ void VertexInfoOverlay::draw(int bottom, int right, float alpha) const
 	glDisable(GL_LINE_SMOOTH);
 
 	// Get colours
-	auto col_bg = ColourConfiguration::colour("map_overlay_background");
-	auto col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	auto col_bg = colourconfig::colour("map_overlay_background");
+	auto col_fg = colourconfig::colour("map_overlay_foreground");
 	col_fg.a    = col_fg.a * alpha;
 	col_bg.a    = col_bg.a * alpha;
 	ColRGBA col_border(0, 0, 0, 140);
@@ -91,12 +93,12 @@ void VertexInfoOverlay::draw(int bottom, int right, float alpha) const
 	bottom += 16 * alpha_inv * alpha_inv;
 
 	// Draw overlay background
-	int line_height = 16 * (Drawing::fontSize() / 12.0);
+	int line_height = 16 * (drawing::fontSize() / 12.0);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	Drawing::drawBorderedRect(0, bottom - line_height - 8, right, bottom + 2, col_bg, col_border);
+	drawing::drawBorderedRect(0, bottom - line_height - 8, right, bottom + 2, col_bg, col_border);
 
 	// Draw text
-	Drawing::drawText(info_, 2, bottom - line_height - 4, col_fg, Drawing::Font::Condensed);
+	drawing::drawText(info_, 2, bottom - line_height - 4, col_fg, drawing::Font::Condensed);
 
 	// Done
 	glEnable(GL_LINE_SMOOTH);

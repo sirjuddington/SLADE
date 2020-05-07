@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class UndoStep
 {
 public:
@@ -79,9 +81,10 @@ private:
 	Signals                       signals_;
 };
 
-namespace UndoRedo
+namespace undoredo
 {
-bool         currentlyRecording();
-UndoManager* currentManager();
-SLADEMap*    currentMap();
-} // namespace UndoRedo
+	bool         currentlyRecording();
+	UndoManager* currentManager();
+	SLADEMap*    currentMap();
+} // namespace undoredo
+} // namespace slade

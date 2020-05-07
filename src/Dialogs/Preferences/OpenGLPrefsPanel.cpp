@@ -35,6 +35,8 @@
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -63,12 +65,12 @@ OpenGLPrefsPanel::OpenGLPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent), l
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	WxUtils::layoutVertically(
+	wxutil::layoutVertically(
 		sizer,
 		vector<wxObject*>{ cb_gl_np2_ = new wxCheckBox(this, -1, "Enable Non-power-of-two textures if supported"),
 						   cb_gl_point_sprite_ = new wxCheckBox(this, -1, "Enable point sprites if supported"),
 						   cb_gl_use_vbo_      = new wxCheckBox(this, -1, "Use Vertex Buffer Objects if supported"),
-						   WxUtils::createLabelHBox(this, "Font Size:", ntc_font_size_ = new NumberTextCtrl(this)) },
+						   wxutil::createLabelHBox(this, "Font Size:", ntc_font_size_ = new NumberTextCtrl(this)) },
 		wxSizerFlags(0).Expand());
 
 	cb_gl_point_sprite_->SetToolTip(
@@ -98,7 +100,7 @@ void OpenGLPrefsPanel::applyPreferences()
 	gl_font_size      = ntc_font_size_->number();
 
 	if (gl_font_size != last_font_size_)
-		Drawing::initFonts();
+		drawing::initFonts();
 
 	last_font_size_ = gl_font_size;
 }

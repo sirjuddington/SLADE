@@ -6,6 +6,8 @@
 
 class wxListBox;
 
+namespace slade
+{
 class TextStylePrefsPanel : public PrefsPanelBase
 {
 public:
@@ -71,3 +73,4 @@ private:
 	void onCBOverrideFont(wxCommandEvent& e);
 	void onFontOverrideChanged(wxFontPickerEvent& e);
 };
+} // namespace slade

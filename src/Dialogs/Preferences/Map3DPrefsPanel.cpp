@@ -34,6 +34,8 @@
 #include "General/UI.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -67,8 +69,8 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	auto psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
-	auto gbsizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	psizer->Add(gbsizer, 0, wxEXPAND | wxBOTTOM, UI::pad());
+	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	psizer->Add(gbsizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Render distance
 	gbsizer->Add(new wxStaticText(this, -1, "Render distance:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -102,24 +104,24 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 
 	// Adaptive render distance
 	cb_render_dist_adaptive_ = new wxCheckBox(this, -1, "Adaptive render distance");
-	hbox->Add(cb_render_dist_adaptive_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::padLarge());
+	hbox->Add(cb_render_dist_adaptive_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
 
-	hbox->Add(new wxStaticText(this, -1, "Target framerate:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+	hbox->Add(new wxStaticText(this, -1, "Target framerate:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 	spin_adaptive_fps_ = new wxSpinCtrl(
 		this,
 		-1,
 		"30",
 		wxDefaultPosition,
-		{ UI::px(UI::Size::SpinCtrlWidth), -1 },
+		{ ui::px(ui::Size::SpinCtrlWidth), -1 },
 		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
 		10,
 		100,
 		30);
 	hbox->Add(spin_adaptive_fps_, 0, wxEXPAND);
 
-	psizer->Add(new wxStaticLine(this, -1), 0, wxEXPAND | wxTOP | wxBOTTOM, UI::padLarge());
+	psizer->Add(new wxStaticLine(this, -1), 0, wxEXPAND | wxTOP | wxBOTTOM, ui::padLarge());
 
-	WxUtils::layoutVertically(
+	wxutil::layoutVertically(
 		psizer,
 		{ cb_render_sky_       = new wxCheckBox(this, -1, "Render sky preview"),
 		  cb_show_distance_    = new wxCheckBox(this, -1, "Show distance under crosshair"),
@@ -136,7 +138,7 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	slider_max_thing_dist_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) { updateDistanceControls(); });
 	cb_max_thing_dist_lock_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { updateDistanceControls(); });
 	cb_distance_unlimited_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { updateDistanceControls(); });
-	slider_fov_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&){ updateDistanceControls(); });
+	slider_fov_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) { updateDistanceControls(); });
 }
 
 // -----------------------------------------------------------------------------

@@ -2,7 +2,10 @@
 
 #include "PrefsPanelBase.h"
 
+namespace slade
+{
 class NumberTextCtrl;
+
 class MapEditorPrefsPanel : public PrefsPanelBase
 {
 public:
@@ -24,3 +27,4 @@ private:
 	wxCheckBox*     cb_split_auto_offset_         = nullptr;
 	NumberTextCtrl* text_max_backups_             = nullptr;
 };
+} // namespace slade

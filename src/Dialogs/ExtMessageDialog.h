@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class ExtMessageDialog : public wxDialog
 {
 public:
@@ -16,3 +18,4 @@ private:
 	// Events
 	void onSize(wxSizeEvent& e);
 };
+} // namespace slade

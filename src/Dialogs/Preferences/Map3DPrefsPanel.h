@@ -2,6 +2,8 @@
 
 #include "PrefsPanelBase.h"
 
+namespace slade
+{
 class Map3DPrefsPanel : public PrefsPanelBase
 {
 public:
@@ -30,3 +32,4 @@ private:
 	wxSlider*     slider_fov_              = nullptr;
 	wxStaticText* label_fov_               = nullptr;
 };
+} // namespace slade

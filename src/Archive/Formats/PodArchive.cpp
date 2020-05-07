@@ -32,10 +32,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "PodArchive.h"
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
 #include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -97,27 +99,27 @@ bool PodArchive::open(MemChunk& mc)
 	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Create entries
-	UI::setSplashProgressMessage("Reading pod archive data");
+	ui::setSplashProgressMessage("Reading pod archive data");
 	for (unsigned a = 0; a < num_files; a++)
 	{
 		// Create entry
-		auto new_entry = std::make_shared<ArchiveEntry>(StrUtil::Path::fileNameOf(files[a].name), files[a].size);
+		auto new_entry = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(files[a].name), files[a].size);
 		new_entry->exProp("Offset") = files[a].offset;
 		new_entry->setLoaded(false);
 
 		// Add entry and directory to directory tree
-		auto ndir = createDir(StrUtil::Path::pathOf(files[a].name, false));
+		auto ndir = createDir(strutil::Path::pathOf(files[a].name, false));
 		ndir->addEntry(new_entry);
 
 		new_entry->setState(ArchiveEntry::State::Unmodified);
 
-		Log::info(5, "File size: {}, offset: {}, name: {}", files[a].size, files[a].offset, files[a].name);
+		log::info(5, "File size: {}, offset: {}, name: {}", files[a].size, files[a].offset, files[a].name);
 	}
 
 	// Detect entry types
 	vector<ArchiveEntry*> all_entries;
 	putEntryTreeAsList(all_entries);
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (unsigned a = 0; a < all_entries.size(); a++)
 	{
 		// Skip dir/marker
@@ -128,7 +130,7 @@ bool PodArchive::open(MemChunk& mc)
 		}
 
 		// Update splash window progress
-		UI::setSplashProgress((float)a / (float)all_entries.size());
+		ui::setSplashProgress((float)a / (float)all_entries.size());
 
 		// Read data
 		MemChunk edata;
@@ -144,14 +146,14 @@ bool PodArchive::open(MemChunk& mc)
 
 		// Set entry to unchanged
 		all_entries[a]->setState(ArchiveEntry::State::Unmodified);
-		Log::info(5, "entry {} size {}", all_entries[a]->name(), all_entries[a]->size());
+		log::info(5, "entry {} size {}", all_entries[a]->name(), all_entries[a]->size());
 	}
 
 	// Setup variables
 	sig_blocker.unblock();
 	setModified(false);
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -180,15 +182,15 @@ bool PodArchive::write(MemChunk& mc, bool update)
 	// Init MemChunk
 	mc.clear();
 	mc.reSize(4 + 80 + (entries.size() * 40) + data_size, false);
-	Log::info(5, "MC size {}", mc.size());
+	log::info(5, "MC size {}", mc.size());
 
 	// Write no. entries
 	uint32_t n_entries = entries.size() - ndirs;
-	Log::info(5, "n_entries {}", n_entries);
+	log::info(5, "n_entries {}", n_entries);
 	mc.write(&n_entries, 4);
 
 	// Write id
-	Log::info(5, "id {}", id_);
+	log::info(5, "id {}", id_);
 	mc.write(id_, 80);
 
 	// Write directory
@@ -203,8 +205,8 @@ bool PodArchive::write(MemChunk& mc, bool update)
 		memset(fe.name, 0, 32);
 		auto path = entry->path(true);
 		std::replace(path.begin(), path.end(), '/', '\\');
-		path = StrUtil::afterFirst(path, '\\');
-		// Log::info(2, path);
+		path = strutil::afterFirst(path, '\\');
+		// log::info(2, path);
 		memcpy(fe.name, path.data(), path.size());
 
 		// Size
@@ -214,7 +216,7 @@ bool PodArchive::write(MemChunk& mc, bool update)
 		mc.write(fe.name, 32);
 		mc.write(&fe.size, 4);
 		mc.write(&fe.offset, 4);
-		Log::info(
+		log::info(
 			5,
 			"entry {}: old={} new={} size={}",
 			fe.name,
@@ -258,7 +260,7 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error("PodArchive::loadEntryData: Failed to open file {}", filename_);
+		log::error("PodArchive::loadEntryData: Failed to open file {}", filename_);
 		return false;
 	}
 
@@ -376,18 +378,18 @@ bool PodArchive::isPodArchive(const string& filename)
 
 CONSOLE_COMMAND(pod_get_id, 0, 1)
 {
-	auto archive = MainEditor::currentArchive();
+	auto archive = maineditor::currentArchive();
 	if (archive && archive->formatId() == "pod")
-		Log::console(string{ dynamic_cast<PodArchive*>(archive)->getId() });
+		log::console(string{ dynamic_cast<PodArchive*>(archive)->getId() });
 	else
-		Log::console("Current tab is not a POD archive");
+		log::console("Current tab is not a POD archive");
 }
 
 CONSOLE_COMMAND(pod_set_id, 1, true)
 {
-	auto archive = MainEditor::currentArchive();
+	auto archive = maineditor::currentArchive();
 	if (archive && archive->formatId() == "pod")
-		dynamic_cast<PodArchive*>(archive)->setId(StrUtil::truncate(args[0], 80));
+		dynamic_cast<PodArchive*>(archive)->setId(strutil::truncate(args[0], 80));
 	else
-		Log::console("Current tab is not a POD archive");
+		log::console("Current tab is not a POD archive");
 }

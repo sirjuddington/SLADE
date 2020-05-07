@@ -35,7 +35,8 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
-using namespace Game;
+using namespace slade;
+using namespace game;
 
 
 // -----------------------------------------------------------------------------
@@ -108,24 +109,24 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 		int  argn  = -1;
 
 		// Name
-		if (StrUtil::equalCI(name, "name"))
+		if (strutil::equalCI(name, "name"))
 			name_ = child->stringValue();
 
 		// Args
-		else if (StrUtil::equalCI(name, "arg1"))
+		else if (strutil::equalCI(name, "arg1"))
 			argn = 0;
-		else if (StrUtil::equalCI(name, "arg2"))
+		else if (strutil::equalCI(name, "arg2"))
 			argn = 1;
-		else if (StrUtil::equalCI(name, "arg3"))
+		else if (strutil::equalCI(name, "arg3"))
 			argn = 2;
-		else if (StrUtil::equalCI(name, "arg4"))
+		else if (strutil::equalCI(name, "arg4"))
 			argn = 3;
-		else if (StrUtil::equalCI(name, "arg5"))
+		else if (strutil::equalCI(name, "arg5"))
 			argn = 4;
 
 		// Tagged
-		else if (StrUtil::equalCI(name, "tagged"))
-			tagged_ = Game::parseTagged(child);
+		else if (strutil::equalCI(name, "tagged"))
+			tagged_ = parseTagged(child);
 
 		// Parse arg definition if it was one
 		if (argn >= 0)
@@ -181,7 +182,7 @@ string ActionSpecial::stringDesc() const
 // -----------------------------------------------------------------------------
 // Initialises the global (static) action special types
 // -----------------------------------------------------------------------------
-void Game::ActionSpecial::initGlobal()
+void ActionSpecial::initGlobal()
 {
 	gen_switched_.name_   = "Boom Generalized Switched Special";
 	gen_switched_.tagged_ = TagType::Sector;

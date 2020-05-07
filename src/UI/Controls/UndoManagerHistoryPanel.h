@@ -2,6 +2,8 @@
 
 #include "UI/Lists/VirtualListView.h"
 
+namespace slade
+{
 class UndoManager;
 
 class UndoListView : public VirtualListView
@@ -46,3 +48,4 @@ private:
 	void onItemRightClick(wxCommandEvent& e);
 	void onMenu(wxCommandEvent& e);
 };
+} // namespace slade

@@ -36,6 +36,8 @@
 #include "Game/Configuration.h"
 #include "SLADEMap/SLADEMap.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -60,7 +62,7 @@ long prop_backup_time = -1;
 // -----------------------------------------------------------------------------
 MapObject::MapObject(Type type, SLADEMap* parent) :
 	parent_map_{ parent },
-	modified_time_{ App::runTimer() },
+	modified_time_{ app::runTimer() },
 	type_{ type }
 {
 }
@@ -103,7 +105,7 @@ void MapObject::setModified()
 		backupTo(obj_backup_.get());
 	}
 
-	modified_time_ = App::runTimer();
+	modified_time_ = app::runTimer();
 }
 
 // -----------------------------------------------------------------------------
@@ -153,7 +155,7 @@ bool MapObject::boolProperty(string_view key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(string{ key }, type_);
+		auto prop = game::configuration().getUDMFProperty(string{ key }, type_);
 		if (prop)
 			return prop->defaultValue().boolValue();
 		else
@@ -173,7 +175,7 @@ int MapObject::intProperty(string_view key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(string{ key }, type_);
+		auto prop = game::configuration().getUDMFProperty(string{ key }, type_);
 		if (prop)
 			return prop->defaultValue().intValue();
 		else
@@ -193,7 +195,7 @@ double MapObject::floatProperty(string_view key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(string{ key }, type_);
+		auto prop = game::configuration().getUDMFProperty(string{ key }, type_);
 		if (prop)
 			return prop->defaultValue().floatValue();
 		else
@@ -213,7 +215,7 @@ string MapObject::stringProperty(string_view key)
 	// Otherwise check the game configuration for a default value
 	else
 	{
-		auto prop = Game::configuration().getUDMFProperty(string{ key }, type_);
+		auto prop = game::configuration().getUDMFProperty(string{ key }, type_);
 		if (prop)
 			return prop->defaultValue().stringValue();
 		else
@@ -293,14 +295,14 @@ void MapObject::loadFromBackup(Backup* backup)
 	// Check type match
 	if (backup->type != type_)
 	{
-		Log::error(
+		log::error(
 			"loadFromBackup: Mobj type mismatch, {} != {}", static_cast<int>(type_), static_cast<int>(backup->type));
 		return;
 	}
 	// Check id match
 	if (backup->id != obj_id_)
 	{
-		Log::error("loadFromBackup: Mobj id mismatch, {} != {}", obj_id_, backup->id);
+		log::error("loadFromBackup: Mobj id mismatch, {} != {}", obj_id_, backup->id);
 		return;
 	}
 

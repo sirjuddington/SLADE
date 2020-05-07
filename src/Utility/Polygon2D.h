@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class MapSector;
 
 class Polygon2D
@@ -141,3 +143,4 @@ private:
 	bool            verbose_           = false;
 	double          last_angle_        = 0.;
 };
+} // namespace slade

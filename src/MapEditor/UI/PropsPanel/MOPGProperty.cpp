@@ -45,7 +45,8 @@
 #include "MapObjectPropsPanel.h"
 #include "SLADEMap/SLADEMap.h"
 
-using namespace MapEditor;
+using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -338,7 +339,7 @@ MOPGStringProperty::MOPGStringProperty(const wxString& label, const wxString& na
 // -----------------------------------------------------------------------------
 // Load a list of possible choices from the given UDMF prop, if any
 // -----------------------------------------------------------------------------
-void MOPGStringProperty::setUDMFProp(UDMFProperty* prop)
+void MOPGStringProperty::setUDMFProp(game::UDMFProperty* prop)
 {
 	MOPGProperty::setUDMFProp(prop);
 
@@ -550,10 +551,10 @@ void MOPGIntWithArgsProperty::OnSetValue()
 // -----------------------------------------------------------------------------
 // Returns a little object describing the args for this thing type
 // -----------------------------------------------------------------------------
-const Game::ArgSpec& MOPGActionSpecialProperty::argSpec()
+const game::ArgSpec& MOPGActionSpecialProperty::argSpec()
 {
 	int special = m_value.GetInteger();
-	return Game::configuration().actionSpecial(special).argSpec();
+	return game::configuration().actionSpecial(special).argSpec();
 }
 
 // -----------------------------------------------------------------------------
@@ -567,7 +568,7 @@ wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, int argFlags
 	if (special == 0)
 		return "0: None";
 	else
-		return wxString::Format("%d: %s", special, Game::configuration().actionSpecial(special).name());
+		return wxString::Format("%d: %s", special, game::configuration().actionSpecial(special).name());
 }
 
 // -----------------------------------------------------------------------------
@@ -579,7 +580,7 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		int                 special = -1;
-		ActionSpecialDialog dlg(MapEditor::windowWx());
+		ActionSpecialDialog dlg(mapeditor::windowWx());
 		dlg.setSpecial(GetValue().GetInteger());
 		if (dlg.ShowModal() == wxID_OK)
 			special = dlg.selectedSpecial();
@@ -602,9 +603,9 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 // -----------------------------------------------------------------------------
 // Returns a little object describing the args for this thing type
 // -----------------------------------------------------------------------------
-const Game::ArgSpec& MOPGThingTypeProperty::argSpec()
+const game::ArgSpec& MOPGThingTypeProperty::argSpec()
 {
-	return Game::configuration().thingType(m_value.GetInteger()).argSpec();
+	return game::configuration().thingType(m_value.GetInteger()).argSpec();
 }
 
 // -----------------------------------------------------------------------------
@@ -618,7 +619,7 @@ wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) co
 	if (type == 0)
 		return "0: None";
 
-	auto& tt = Game::configuration().thingType(type);
+	auto& tt = game::configuration().thingType(type);
 	return wxString::Format("%d: %s", type, tt.name());
 }
 
@@ -635,7 +636,7 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
 			init_type = GetValue().GetInteger();
 
 		// Open thing browser
-		ThingTypeBrowser browser(MapEditor::windowWx(), init_type);
+		ThingTypeBrowser browser(mapeditor::windowWx(), init_type);
 		if (browser.ShowModal() == wxID_OK)
 		{
 			// Set the value if a type was selected
@@ -679,12 +680,12 @@ void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Check flag against first object
-	bool first = Game::configuration().lineFlagSet(index_, (MapLine*)objects[0]);
+	bool first = game::configuration().lineFlagSet(index_, (MapLine*)objects[0]);
 
 	// Check whether all objects share the same flag setting
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (Game::configuration().lineFlagSet(index_, (MapLine*)objects[a]) != first)
+		if (game::configuration().lineFlagSet(index_, (MapLine*)objects[a]) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -716,7 +717,7 @@ void MOPGLineFlagProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		Game::configuration().setLineFlag(index_, (MapLine*)object, GetValue());
+		game::configuration().setLineFlag(index_, (MapLine*)object, GetValue());
 }
 
 
@@ -750,12 +751,12 @@ void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Check flag against first object
-	bool first = Game::configuration().thingFlagSet(index_, (MapThing*)objects[0]);
+	bool first = game::configuration().thingFlagSet(index_, (MapThing*)objects[0]);
 
 	// Check whether all objects share the same flag setting
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (Game::configuration().thingFlagSet(index_, (MapThing*)objects[a]) != first)
+		if (game::configuration().thingFlagSet(index_, (MapThing*)objects[a]) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -787,7 +788,7 @@ void MOPGThingFlagProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		Game::configuration().setThingFlag(index_, (MapThing*)object, GetValue());
+		game::configuration().setThingFlag(index_, (MapThing*)object, GetValue());
 }
 
 
@@ -1068,7 +1069,7 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 			tex_current = GetValueAsString();
 
 		// Open map texture browser
-		MapTextureBrowser browser(MapEditor::windowWx(), textype_, tex_current, &(MapEditor::editContext().map()));
+		MapTextureBrowser browser(mapeditor::windowWx(), textype_, tex_current, &(mapeditor::editContext().map()));
 		if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 			GetGrid()->ChangePropertyValue(this, browser.selectedItem()->name());
 
@@ -1098,7 +1099,7 @@ MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wx
 	SetEditor(wxPGEditor_ComboBox);
 
 	// Setup combo box choices
-	auto labels = WxUtils::arrayStringStd(Game::configuration().allSpacTriggers());
+	auto labels = wxutil::arrayStringStd(game::configuration().allSpacTriggers());
 	SetChoices(wxPGChoices(labels));
 }
 
@@ -1116,13 +1117,13 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	auto     map_format = MapEditor::editContext().mapDesc().format;
-	wxString first      = Game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[0]), map_format);
+	auto     map_format = mapeditor::editContext().mapDesc().format;
+	wxString first      = game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[0]), map_format);
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (Game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[a]), map_format) != first)
+		if (game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[a]), map_format) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -1166,7 +1167,7 @@ void MOPGSPACTriggerProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		Game::configuration().setLineSpacTrigger(GetChoiceSelection(), dynamic_cast<MapLine*>(object));
+		game::configuration().setLineSpacTrigger(GetChoiceSelection(), dynamic_cast<MapLine*>(object));
 }
 
 
@@ -1311,7 +1312,7 @@ wxString MOPGSectorSpecialProperty::ValueToString(wxVariant& value, int argFlags
 {
 	int type = value.GetInteger();
 
-	return wxString::Format("%d: %s", type, Game::configuration().sectorTypeName(type));
+	return wxString::Format("%d: %s", type, game::configuration().sectorTypeName(type));
 }
 
 // -----------------------------------------------------------------------------
@@ -1322,7 +1323,7 @@ bool MOPGSectorSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 	// '...' button clicked
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
-		SectorSpecialDialog dlg(MapEditor::windowWx());
+		SectorSpecialDialog dlg(mapeditor::windowWx());
 		dlg.setup(m_value.GetInteger());
 		if (dlg.ShowModal() == wxID_OK)
 			GetGrid()->ChangePropertyValue(this, dlg.getSelectedSpecial());

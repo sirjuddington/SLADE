@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class ResArchive : public Archive
 {
 public:
@@ -28,3 +30,4 @@ public:
 private:
 	static const int RESDIRENTRYSIZE = 39; // The size of a res entry in the res directory
 };
+} // namespace slade

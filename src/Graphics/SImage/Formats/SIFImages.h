@@ -241,7 +241,7 @@ protected:
 		// Check it created/read ok
 		if (!bm)
 		{
-			Global::error = "Error reading PNG data";
+			global::error = "Error reading PNG data";
 			return false;
 		}
 
@@ -347,8 +347,8 @@ protected:
 			auto rgb = FreeImage_ConvertTo32Bits(bm);
 			if (!rgb)
 			{
-				Log::error("FreeImage_ConvertTo32Bits failed for PNG data");
-				Global::error = "Error reading PNG data";
+				log::error("FreeImage_ConvertTo32Bits failed for PNG data");
+				global::error = "Error reading PNG data";
 				return false;
 			}
 			FreeImage_FlipVertical(rgb);
@@ -393,7 +393,7 @@ protected:
 			bm = FreeImage_Allocate(width, height, 32, 0x0000FF00, 0x00FF0000, 0x000000FF);
 			if (!bm)
 			{
-				Log::error("FreeImage_Allocate failed for 32bit image");
+				log::error("FreeImage_Allocate failed for 32bit image");
 				return false;
 			}
 
@@ -414,7 +414,7 @@ protected:
 			bm = FreeImage_Allocate(width, height, 8);
 			if (!bm)
 			{
-				Log::error("FreeImage_Allocate failed for 8bit image");
+				log::error("FreeImage_Allocate failed for 8bit image");
 				return false;
 			}
 
@@ -479,7 +479,7 @@ protected:
 			bm = FreeImage_Allocate(width, height, 8);
 			if (!bm)
 			{
-				Log::error("FreeImage_Allocate failed for 8bit image");
+				log::error("FreeImage_Allocate failed for 8bit image");
 				return false;
 			}
 

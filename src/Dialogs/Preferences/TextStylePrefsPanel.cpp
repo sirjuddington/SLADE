@@ -37,6 +37,8 @@
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -63,14 +65,14 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase{ par
 	ss_current_.copySet(StyleSet::currentSet());
 	ts_current_ = ss_current_.style("default");
 
-	auto sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	SetSizer(sizer);
 
 	// Styleset font override
 	cb_font_override_ = new wxCheckBox(this, -1, "Override Default Font:");
 	cb_font_override_->SetToolTip("Always use the selected font in the text editor, instead of the style's font below");
 	fp_font_override_ = new wxFontPickerCtrl(this, -1);
-	sizer->Add(WxUtils::layoutHorizontally({ cb_font_override_, fp_font_override_ }, 1), { 0, 0 }, { 1, 2 }, wxEXPAND);
+	sizer->Add(wxutil::layoutHorizontally({ cb_font_override_, fp_font_override_ }, 1), { 0, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Styleset selector
 	choice_styleset_ = new wxChoice(this, -1);
@@ -78,8 +80,8 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase{ par
 		choice_styleset_->Append(StyleSet::styleName(a));
 	btn_savestyleset_ = new wxButton(this, -1, "Save Set");
 	auto hbox         = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(new wxStaticText(this, -1, "Style Set:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
-	hbox->Add(choice_styleset_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+	hbox->Add(new wxStaticText(this, -1, "Style Set:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(choice_styleset_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 	hbox->Add(btn_savestyleset_, 0, wxEXPAND);
 	sizer->Add(hbox, { 1, 0 }, { 1, 2 }, wxEXPAND);
 
@@ -152,25 +154,25 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase{ par
 wxPanel* TextStylePrefsPanel::createStylePanel()
 {
 	auto panel = new wxPanel(this);
-	auto sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	panel->SetSizer(sizer);
 
 	// Font
 	sizer->Add(
-		WxUtils::createLabelHBox(panel, "Font:", fp_font_ = new wxFontPickerCtrl(panel, -1)),
+		wxutil::createLabelHBox(panel, "Font:", fp_font_ = new wxFontPickerCtrl(panel, -1)),
 		{ 0, 0 },
 		{ 1, 2 },
 		wxEXPAND);
 
 	// Override properties
-	auto override_props_sizer = WxUtils::layoutHorizontally(
+	auto override_props_sizer = wxutil::layoutHorizontally(
 		vector<wxObject*>{ cb_override_font_face_       = new wxCheckBox(panel, -1, "Face"),
 						   cb_override_font_size_       = new wxCheckBox(panel, -1, "Size"),
 						   cb_override_font_bold_       = new wxCheckBox(panel, -1, "Bold"),
 						   cb_override_font_italic_     = new wxCheckBox(panel, -1, "Italic"),
 						   cb_override_font_underlined_ = new wxCheckBox(panel, -1, "Underlined") });
 	sizer->Add(
-		WxUtils::createLabelVBox(panel, "Override default font properties:", override_props_sizer),
+		wxutil::createLabelVBox(panel, "Override default font properties:", override_props_sizer),
 		{ 1, 0 },
 		{ 1, 2 },
 		wxEXPAND);
@@ -337,7 +339,7 @@ void TextStylePrefsPanel::updateStyleControls()
 		col_foreground.set(style_default->foreground());
 		cb_override_foreground_->SetValue(false);
 	}
-	cp_foreground_->SetColour(WXCOL(col_foreground));
+	cp_foreground_->SetColour(col_foreground.toWx());
 
 	// Background
 	ColRGBA col_background;
@@ -348,7 +350,7 @@ void TextStylePrefsPanel::updateStyleControls()
 		col_background.set(style_default->background());
 		cb_override_background_->SetValue(false);
 	}
-	cp_background_->SetColour(WXCOL(col_background));
+	cp_background_->SetColour(col_background.toWx());
 
 	// Apply font
 	fp_font_->SetSelectedFont(font);
@@ -436,7 +438,7 @@ void TextStylePrefsPanel::updateForeground() const
 	if (cb_override_foreground_->GetValue())
 	{
 		auto wxc = cp_foreground_->GetColour();
-		ts_current_->setForeground(ColRGBA(COLWX(wxc), 255));
+		ts_current_->setForeground(ColRGBA(wxc));
 	}
 	else
 	{
@@ -452,7 +454,7 @@ void TextStylePrefsPanel::updateBackground() const
 	if (cb_override_background_->GetValue())
 	{
 		auto wxc = cp_background_->GetColour();
-		ts_current_->setBackground(ColRGBA(COLWX(wxc), 255));
+		ts_current_->setBackground(ColRGBA(wxc));
 	}
 	else
 	{
@@ -472,7 +474,7 @@ void TextStylePrefsPanel::updatePreview()
 	// Apply font override options (temporarily)
 	if (cb_font_override_->GetValue())
 	{
-		txed_override_font      = WxUtils::strToView(fp_font_override_->GetSelectedFont().GetFaceName());
+		txed_override_font      = wxutil::strToView(fp_font_override_->GetSelectedFont().GetFaceName());
 		txed_override_font_size = fp_font_override_->GetSelectedFont().GetPointSize();
 	}
 	else
@@ -496,7 +498,7 @@ void TextStylePrefsPanel::applyPreferences()
 {
 	if (cb_font_override_->GetValue())
 	{
-		txed_override_font      = WxUtils::strToView(fp_font_override_->GetSelectedFont().GetFaceName());
+		txed_override_font      = wxutil::strToView(fp_font_override_->GetSelectedFont().GetFaceName());
 		txed_override_font_size = fp_font_override_->GetSelectedFont().GetPointSize();
 	}
 	else
@@ -647,7 +649,7 @@ void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 	std::replace(name.begin(), name.end(), ' ', '_');
 
 	// Write set to file
-	auto filename = App::path(fmt::format("text_styles/{}.sss", name), App::Dir::User);
+	auto filename = app::path(fmt::format("text_styles/{}.sss", name), app::Dir::User);
 	ss_temp.writeFile(filename);
 
 	// Add new set to list

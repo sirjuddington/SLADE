@@ -35,13 +35,15 @@
 #include "General/UI.h"
 #include "SLADEMap/SLADEMap.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 // Reads the given Doom64-format [map], populating [map_data]
 // -----------------------------------------------------------------------------
 bool Doom64MapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props)
 {
-	Log::info(2, "Reading Doom64 format map");
+	log::info(2, "Reading Doom64 format map");
 
 	auto m_head = map.head.lock();
 	if (!m_head)
@@ -69,37 +71,37 @@ bool Doom64MapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_dat
 	}
 
 	// ---- Read vertices ----
-	UI::setSplashProgressMessage("Reading Vertices");
-	UI::setSplashProgress(0.0f);
+	ui::setSplashProgressMessage("Reading Vertices");
+	ui::setSplashProgress(0.0f);
 	if (!readVERTEXES(v, map_data))
 		return false;
 
 	// ---- Read sectors ----
-	UI::setSplashProgressMessage("Reading Sectors");
-	UI::setSplashProgress(0.2f);
+	ui::setSplashProgressMessage("Reading Sectors");
+	ui::setSplashProgress(0.2f);
 	if (!readSECTORS(se, map_data))
 		return false;
 
 	// ---- Read sides ----
-	UI::setSplashProgressMessage("Reading Sides");
-	UI::setSplashProgress(0.4f);
+	ui::setSplashProgressMessage("Reading Sides");
+	ui::setSplashProgress(0.4f);
 	if (!readSIDEDEFS(si, map_data))
 		return false;
 
 	// ---- Read lines ----
-	UI::setSplashProgressMessage("Reading Lines");
-	UI::setSplashProgress(0.6f);
+	ui::setSplashProgressMessage("Reading Lines");
+	ui::setSplashProgress(0.6f);
 	if (!readLINEDEFS(l, map_data))
 		return false;
 
 	// ---- Read things ----
-	UI::setSplashProgressMessage("Reading Things");
-	UI::setSplashProgress(0.8f);
+	ui::setSplashProgressMessage("Reading Things");
+	ui::setSplashProgress(0.8f);
 	if (!readTHINGS(t, map_data))
 		return false;
 
-	UI::setSplashProgressMessage("Init Map Data");
-	UI::setSplashProgress(1.0f);
+	ui::setSplashProgressMessage("Init Map Data");
+	ui::setSplashProgress(1.0f);
 
 	return true;
 }
@@ -112,8 +114,8 @@ vector<unique_ptr<ArchiveEntry>> Doom64MapFormat::writeMap(
 	const MapObjectCollection& map_data,
 	const PropertyList&        map_extra_props)
 {
-	Global::error = "Saving Doom64 maps is not currently supported";
-	Log::warning(Global::error);
+	global::error = "Saving Doom64 maps is not currently supported";
+	log::warning(global::error);
 
 	return {};
 }
@@ -125,29 +127,29 @@ bool Doom64MapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map
 {
 	if (!entry)
 	{
-		Global::error = "Map has no VERTEXES entry!";
-		Log::info(Global::error);
+		global::error = "Map has no VERTEXES entry!";
+		log::info(global::error);
 		return false;
 	}
 
 	// Check for empty entry
 	if (entry->size() < sizeof(Vertex))
 	{
-		Log::info(3, "Read 0 vertices");
+		log::info(3, "Read 0 vertices");
 		return true;
 	}
 
 	auto     vert_data = (Vertex*)entry->rawData(true);
 	unsigned nv        = entry->size() / sizeof(Vertex);
-	float    p         = UI::getSplashProgress();
+	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nv; a++)
 	{
-		UI::setSplashProgress(p + ((float)a / nv) * 0.2f);
+		ui::setSplashProgress(p + ((float)a / nv) * 0.2f);
 		map_data.addVertex(
 			std::make_unique<MapVertex>(Vec2d{ (double)vert_data[a].x / 65536, (double)vert_data[a].y / 65536 }));
 	}
 
-	Log::info(3, "Read {} vertices", map_data.vertices().size());
+	log::info(3, "Read {} vertices", map_data.vertices().size());
 
 	return true;
 }
@@ -159,24 +161,24 @@ bool Doom64MapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 {
 	if (!entry)
 	{
-		Global::error = "Map has no SIDEDEFS entry!";
-		Log::info(Global::error);
+		global::error = "Map has no SIDEDEFS entry!";
+		log::info(global::error);
 		return false;
 	}
 
 	// Check for empty entry
 	if (entry->size() < sizeof(SideDef))
 	{
-		Log::info(3, "Read 0 sides");
+		log::info(3, "Read 0 sides");
 		return true;
 	}
 
 	auto     side_data = (SideDef*)entry->rawData(true);
 	unsigned ns        = entry->size() / sizeof(SideDef);
-	float    p         = UI::getSplashProgress();
+	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
 	{
-		UI::setSplashProgress(p + ((float)a / ns) * 0.2f);
+		ui::setSplashProgress(p + ((float)a / ns) * 0.2f);
 
 		// Add side
 		map_data.addSide(std::make_unique<MapSide>(
@@ -187,7 +189,7 @@ bool Doom64MapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 			Vec2i{ side_data[a].x_offset, side_data[a].y_offset }));
 	}
 
-	Log::info(3, "Read {} sides", map_data.sides().size());
+	log::info(3, "Read {} sides", map_data.sides().size());
 
 	return true;
 }
@@ -199,24 +201,24 @@ bool Doom64MapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 {
 	if (!entry)
 	{
-		Global::error = "Map has no LINEDEFS entry!";
-		Log::info(Global::error);
+		global::error = "Map has no LINEDEFS entry!";
+		log::info(global::error);
 		return false;
 	}
 
 	// Check for empty entry
 	if (entry->size() < sizeof(LineDef))
 	{
-		Log::info(3, "Read 0 lines");
+		log::info(3, "Read 0 lines");
 		return true;
 	}
 
 	auto     line_data = (LineDef*)entry->rawData(true);
 	unsigned nl        = entry->size() / sizeof(LineDef);
-	float    p         = UI::getSplashProgress();
+	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
 	{
-		UI::setSplashProgress(p + ((float)a / nl) * 0.2f);
+		ui::setSplashProgress(p + ((float)a / nl) * 0.2f);
 		const auto& data = line_data[a];
 
 		// Check vertices exist
@@ -224,7 +226,7 @@ bool Doom64MapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 		auto v2 = map_data.vertices().at(data.vertex2);
 		if (!v1 || !v2)
 		{
-			Log::warning("Line {} invalid, not added", a);
+			log::warning("Line {} invalid, not added", a);
 			continue;
 		}
 
@@ -254,7 +256,7 @@ bool Doom64MapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 		line->setIntProperty("extraflags", data.type >> 9);
 	}
 
-	Log::info(3, "Read {} lines", map_data.lines().size());
+	log::info(3, "Read {} lines", map_data.lines().size());
 
 	return true;
 }
@@ -266,24 +268,24 @@ bool Doom64MapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_
 {
 	if (!entry)
 	{
-		Global::error = "Map has no SECTORS entry!";
-		Log::info(Global::error);
+		global::error = "Map has no SECTORS entry!";
+		log::info(global::error);
 		return false;
 	}
 
 	// Check for empty entry
 	if (entry->size() < sizeof(Sector))
 	{
-		Log::info(3, "Read 0 sectors");
+		log::info(3, "Read 0 sectors");
 		return true;
 	}
 
 	auto     sect_data = (Sector*)entry->rawData(true);
 	unsigned ns        = entry->size() / sizeof(Sector);
-	float    p         = UI::getSplashProgress();
+	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
 	{
-		UI::setSplashProgress(p + ((float)a / ns) * 0.2f);
+		ui::setSplashProgress(p + ((float)a / ns) * 0.2f);
 		const auto& data = sect_data[a];
 
 		// Add sector
@@ -305,7 +307,7 @@ bool Doom64MapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_
 		sector->setIntProperty("color_lower", data.color[4]);
 	}
 
-	Log::info(3, "Read {} sectors", map_data.sectors().size());
+	log::info(3, "Read {} sectors", map_data.sectors().size());
 
 	return true;
 }
@@ -317,25 +319,25 @@ bool Doom64MapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_d
 {
 	if (!entry)
 	{
-		Global::error = "Map has no THINGS entry!";
-		Log::info(Global::error);
+		global::error = "Map has no THINGS entry!";
+		log::info(global::error);
 		return false;
 	}
 
 	// Check for empty entry
 	if (entry->size() < sizeof(Thing))
 	{
-		Log::info(3, "Read 0 things");
+		log::info(3, "Read 0 things");
 		return true;
 	}
 
 	auto              thng_data = (Thing*)entry->rawData(true);
 	unsigned          nt        = entry->size() / sizeof(Thing);
-	float             p         = UI::getSplashProgress();
+	float             p         = ui::getSplashProgress();
 	MapObject::ArgSet args;
 	for (size_t a = 0; a < nt; a++)
 	{
-		UI::setSplashProgress(p + ((float)a / nt) * 0.2f);
+		ui::setSplashProgress(p + ((float)a / nt) * 0.2f);
 		const auto& data = thng_data[a];
 
 		// Create thing
@@ -348,7 +350,7 @@ bool Doom64MapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_d
 			data.tid));
 	}
 
-	Log::info(3, "Read {} things", map_data.things().size());
+	log::info(3, "Read {} things", map_data.things().size());
 
 	return true;
 }

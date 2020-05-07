@@ -4,6 +4,8 @@
 
 class wxPropertyGrid;
 
+namespace slade
+{
 class AdvancedPrefsPanel : public PrefsPanelBase
 {
 public:
@@ -17,3 +19,4 @@ public:
 private:
 	wxPropertyGrid* pg_cvars_ = nullptr;
 };
+} // namespace slade

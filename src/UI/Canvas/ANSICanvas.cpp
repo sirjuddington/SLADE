@@ -38,6 +38,8 @@
 #include "OpenGL/GLTexture.h"
 #include "Utility/CodePages.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -64,7 +66,7 @@ const int NUMCOLS = 80;
 ANSICanvas::ANSICanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 {
 	// Get the all-important font data
-	auto res_archive = App::archiveManager().programResourceArchive();
+	auto res_archive = app::archiveManager().programResourceArchive();
 	if (!res_archive)
 		return;
 	auto ansi_font = res_archive->entryAtPath("vga-rom-font.16");
@@ -86,7 +88,7 @@ ANSICanvas::ANSICanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 // -----------------------------------------------------------------------------
 ANSICanvas::~ANSICanvas()
 {
-	OpenGL::Texture::clear(tex_image_);
+	gl::Texture::clear(tex_image_);
 	delete[] picdata_;
 	// fontdata belongs to the ansi_font ArchiveEntry
 	// ansidata belongs to the parent ANSIPanel
@@ -100,7 +102,7 @@ void ANSICanvas::writeRGBAData(uint8_t* dest) const
 	for (size_t i = 0; i < width_ * height_; ++i)
 	{
 		size_t j    = i << 2;
-		auto   c    = CodePages::ansiColor(picdata_[i]);
+		auto   c    = codepages::ansiColor(picdata_[i]);
 		dest[j + 0] = c.r;
 		dest[j + 1] = c.g;
 		dest[j + 2] = c.b;
@@ -129,7 +131,7 @@ void ANSICanvas::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
+	if (gl::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Draw background
@@ -163,7 +165,7 @@ void ANSICanvas::drawImage()
 	{
 		vector<uint8_t> rgba_data(width_ * height_ * 4);
 		writeRGBAData(rgba_data.data());
-		tex_image_ = OpenGL::Texture::createFromData(rgba_data.data(), width_, height_);
+		tex_image_ = gl::Texture::createFromData(rgba_data.data(), width_, height_);
 	}
 
 	// Determine (texture)coordinates
@@ -171,14 +173,14 @@ void ANSICanvas::drawImage()
 	double y = (double)height_;
 
 	// Draw the image
-	OpenGL::setColour(ColRGBA::WHITE, OpenGL::Blend::Normal);
-	Drawing::drawTexture(tex_image_);
+	gl::setColour(ColRGBA::WHITE, gl::Blend::Normal);
+	drawing::drawTexture(tex_image_);
 
 	// Disable textures
 	glDisable(GL_TEXTURE_2D);
 
 	// Draw outline
-	OpenGL::setColour(0, 0, 0, 64);
+	gl::setColour(0, 0, 0, 64);
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(0, 0);
 	glVertex2d(0, y);

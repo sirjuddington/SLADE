@@ -3,6 +3,8 @@
 #include "MapObjectList.h"
 #include "SLADEMap/MapObject/MapThing.h"
 
+namespace slade
+{
 class ThingList : public MapObjectList<MapThing>
 {
 public:
@@ -16,3 +18,4 @@ public:
 	void              putAllTaggingWithId(int id, int type, vector<MapThing*>& list, int ttype) const;
 	int               firstFreeId() const;
 };
+} // namespace slade

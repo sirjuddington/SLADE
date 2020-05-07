@@ -34,6 +34,8 @@
 #include "Main.h"
 #include "PropertyList.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //

@@ -2,6 +2,8 @@
 
 #include "WizardPageBase.h"
 
+namespace slade
+{
 class NodesPrefsPanel;
 class NodeBuildersWizardPage : public WizardPageBase
 {
@@ -17,3 +19,4 @@ public:
 private:
 	NodesPrefsPanel* panel_nodes_ = nullptr;
 };
+} // namespace slade

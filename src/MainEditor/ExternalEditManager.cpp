@@ -47,7 +47,10 @@
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
 
+namespace slade
+{
 // -----------------------------------------------------------------------------
 // ExternalEditFileMonitor Class
 //
@@ -79,7 +82,7 @@ public:
 	virtual bool exportEntry()
 	{
 		// Determine export filename/path
-		StrUtil::Path fn(App::path(entry_->name(), App::Dir::Temp));
+		strutil::Path fn(app::path(entry_->name(), app::Dir::Temp));
 		fn.setExtension(entry_->type()->extension());
 
 		// Export entry and start monitoring
@@ -87,11 +90,11 @@ public:
 		if (ok)
 		{
 			filename_      = fn.fullPath();
-			file_modified_ = FileUtil::fileModifiedTime(filename_);
+			file_modified_ = fileutil::fileModifiedTime(filename_);
 			Start(1000);
 		}
 		else
-			Global::error = "Failed to export entry";
+			global::error = "Failed to export entry";
 
 		return ok;
 	}
@@ -138,40 +141,40 @@ public:
 			{
 				// Update entry data
 				entry_->importMemChunk(conv_data);
-				EntryOperations::setGfxOffsets(entry_, offsets_.x, offsets_.y);
+				entryoperations::setGfxOffsets(entry_, offsets_.x, offsets_.y);
 			}
 			else
 			{
-				Log::error("Unable to convert external png to {}", format->name());
+				log::error("Unable to convert external png to {}", format->name());
 			}
 		}
 	}
 
 	bool exportEntry() override
 	{
-		StrUtil::Path fn(App::path(entry_->name(), App::Dir::Temp));
+		strutil::Path fn(app::path(entry_->name(), app::Dir::Temp));
 
 		fn.setExtension("png");
 
 		// Create image from entry
 		SImage image;
-		if (!Misc::loadImageFromEntry(&image, entry_))
+		if (!misc::loadImageFromEntry(&image, entry_))
 		{
-			Global::error = "Could not read graphic";
+			global::error = "Could not read graphic";
 			return false;
 		}
 
 		// Set export info
 		gfx_format_ = image.format()->id();
 		offsets_    = image.offset();
-		palette_.copyPalette(MainEditor::currentPalette(entry_));
+		palette_.copyPalette(maineditor::currentPalette(entry_));
 
 		// Write png data
 		MemChunk png;
 		auto     fmt_png = SIFormat::getFormat("png");
 		if (!fmt_png->saveImage(image, png, &palette_))
 		{
-			Global::error = "Error converting to png";
+			global::error = "Error converting to png";
 			return false;
 		}
 
@@ -179,7 +182,7 @@ public:
 		filename_ = fn.fullPath();
 		if (png.exportFile(filename_))
 		{
-			file_modified_ = FileUtil::fileModifiedTime(filename_);
+			file_modified_ = fileutil::fileModifiedTime(filename_);
 			Start(1000);
 			return true;
 		}
@@ -215,7 +218,7 @@ public:
 
 	bool exportEntry() override
 	{
-		StrUtil::Path fn(App::path(entry_->name(), App::Dir::Temp));
+		strutil::Path fn(app::path(entry_->name(), app::Dir::Temp));
 		fn.setExtension("mid");
 
 		// Convert to MIDI data
@@ -223,21 +226,21 @@ public:
 
 		// MUS
 		if (entry_->type()->formatId() == "midi_mus")
-			Conversions::musToMidi(entry_->data(), convdata);
+			conversion::musToMidi(entry_->data(), convdata);
 
 		// HMI/HMP/XMI
 		else if (
 			entry_->type()->formatId() == "midi_xmi" || entry_->type()->formatId() == "midi_hmi"
 			|| entry_->type()->formatId() == "midi_hmp")
-			Conversions::zmusToMidi(entry_->data(), convdata, 0);
+			conversion::zmusToMidi(entry_->data(), convdata, 0);
 
 		// GMID
 		else if (entry_->type()->formatId() == "midi_gmid")
-			Conversions::gmidToMidi(entry_->data(), convdata);
+			conversion::gmidToMidi(entry_->data(), convdata);
 
 		else
 		{
-			Global::error = fmt::format("Type {} can not be converted to MIDI", entry_->type()->name());
+			global::error = fmt::format("Type {} can not be converted to MIDI", entry_->type()->name());
 			return false;
 		}
 
@@ -245,7 +248,7 @@ public:
 		filename_ = fn.fullPath();
 		if (convdata.exportFile(filename_))
 		{
-			file_modified_ = FileUtil::fileModifiedTime(filename_);
+			file_modified_ = fileutil::fileModifiedTime(filename_);
 			Start(1000);
 			return true;
 		}
@@ -284,7 +287,7 @@ public:
 		{
 			MemChunk in, out;
 			in.importFile(filename_);
-			if (Conversions::wavToDoomSnd(in, out))
+			if (conversion::wavToDoomSnd(in, out))
 			{
 				// Import converted data to entry if successful
 				entry_->importMemChunk(out);
@@ -299,7 +302,7 @@ public:
 
 	bool exportEntry() override
 	{
-		StrUtil::Path fn(App::path(entry_->name(), App::Dir::Temp));
+		strutil::Path fn(app::path(entry_->name(), app::Dir::Temp));
 		fn.setExtension("mid");
 
 		// Convert to WAV data
@@ -307,35 +310,35 @@ public:
 
 		// Doom Sound
 		if (entry_->type()->formatId() == "snd_doom" || entry_->type()->formatId() == "snd_doom_mac")
-			Conversions::doomSndToWav(entry_->data(), convdata);
+			conversion::doomSndToWav(entry_->data(), convdata);
 
 		// Doom PC Speaker Sound
 		else if (entry_->type()->formatId() == "snd_speaker")
-			Conversions::spkSndToWav(entry_->data(), convdata);
+			conversion::spkSndToWav(entry_->data(), convdata);
 
 		// AudioT PC Speaker Sound
 		else if (entry_->type()->formatId() == "snd_audiot")
-			Conversions::spkSndToWav(entry_->data(), convdata, true);
+			conversion::spkSndToWav(entry_->data(), convdata, true);
 
 		// Wolfenstein 3D Sound
 		else if (entry_->type()->formatId() == "snd_wolf")
-			Conversions::wolfSndToWav(entry_->data(), convdata);
+			conversion::wolfSndToWav(entry_->data(), convdata);
 
 		// Creative Voice File
 		else if (entry_->type()->formatId() == "snd_voc")
-			Conversions::vocToWav(entry_->data(), convdata);
+			conversion::vocToWav(entry_->data(), convdata);
 
 		// Jaguar Doom Sound
 		else if (entry_->type()->formatId() == "snd_jaguar")
-			Conversions::jagSndToWav(entry_->data(), convdata);
+			conversion::jagSndToWav(entry_->data(), convdata);
 
 		// Blood Sound
 		else if (entry_->type()->formatId() == "snd_bloodsfx")
-			Conversions::bloodToWav(entry_, convdata);
+			conversion::bloodToWav(entry_, convdata);
 
 		else
 		{
-			Global::error = fmt::format("Type {} can not be converted to WAV", entry_->type()->name());
+			global::error = fmt::format("Type {} can not be converted to WAV", entry_->type()->name());
 			return false;
 		}
 
@@ -343,7 +346,7 @@ public:
 		filename_ = fn.fullPath();
 		if (convdata.exportFile(filename_))
 		{
-			file_modified_ = FileUtil::fileModifiedTime(filename_);
+			file_modified_ = fileutil::fileModifiedTime(filename_);
 			Start(1000);
 			return true;
 		}
@@ -362,6 +365,7 @@ public:
 private:
 	bool doom_sound_;
 };
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------
@@ -389,7 +393,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry& entry, string_view edi
 	for (auto& file_monitor : file_monitors_)
 		if (file_monitor->getEntry() == &entry)
 		{
-			Log::warning("Entry {} is already open in an external editor", entry.name());
+			log::warning("Entry {} is already open in an external editor", entry.name());
 			return true;
 		}
 
@@ -417,14 +421,14 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry& entry, string_view edi
 	}
 
 	// Get external editor path
-	auto exe_path = Executables::externalExe(editor, category).path;
+	auto exe_path = executables::externalExe(editor, category).path;
 #ifdef WIN32
-	if (exe_path.empty() || !FileUtil::fileExists(exe_path))
+	if (exe_path.empty() || !fileutil::fileExists(exe_path))
 #else
 	if (exe_path.empty())
 #endif
 	{
-		Global::error = fmt::format("External editor {} has invalid path", editor);
+		global::error = fmt::format("External editor {} has invalid path", editor);
 		delete monitor;
 		return false;
 	}
@@ -434,7 +438,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry& entry, string_view edi
 	long success = wxExecute(command, wxEXEC_ASYNC, monitor->process());
 	if (success == 0)
 	{
-		Global::error = fmt::format("Failed to launch {}", editor);
+		global::error = fmt::format("Failed to launch {}", editor);
 		delete monitor;
 		return false;
 	}

@@ -5,6 +5,8 @@
 struct DUH;
 struct DUH_SIGRENDERER;
 
+namespace slade::audio
+{
 class ModMusic : public sf::SoundStream
 {
 public:
@@ -28,3 +30,4 @@ private:
 
 	static bool init_done_;
 };
+} // namespace slade::audio

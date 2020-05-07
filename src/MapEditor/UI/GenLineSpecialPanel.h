@@ -4,6 +4,8 @@ class wxChoice;
 class wxStaticText;
 class wxGridBagSizer;
 
+namespace slade
+{
 class GenLineSpecialPanel : public wxPanel
 {
 public:
@@ -25,3 +27,4 @@ private:
 	void onChoiceTypeChanged(wxCommandEvent& e);
 	void onChoicePropertyChanged(wxCommandEvent& e);
 };
+} // namespace slade

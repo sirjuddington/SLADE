@@ -41,6 +41,8 @@
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -58,33 +60,33 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 
 	// Add index label
 	label_index_ = new wxStaticText(this, -1, "Index");
-	sizer_main_->Add(label_index_, 0, wxALL | wxALIGN_CENTER, UI::pad());
+	sizer_main_->Add(label_index_, 0, wxALL | wxALIGN_CENTER, ui::pad());
 
 	// Add type label
 	label_type_ = new wxStaticText(this, -1, "Type");
-	sizer_main_->Add(label_type_, 0, wxALL | wxALIGN_CENTER, UI::pad());
+	sizer_main_->Add(label_type_, 0, wxALL | wxALIGN_CENTER, ui::pad());
 
 	// Add size label
 	label_size_ = new wxStaticText(this, -1, "Size");
-	sizer_main_->Add(label_size_, 0, wxALL | wxALIGN_CENTER, UI::pad());
+	sizer_main_->Add(label_size_, 0, wxALL | wxALIGN_CENTER, ui::pad());
 
 	// Add actions frame
 	frame_actions_  = new wxStaticBox(this, -1, "Actions");
 	auto framesizer = new wxStaticBoxSizer(frame_actions_, wxVERTICAL);
-	sizer_main_->Add(framesizer, 0, wxALL | wxALIGN_CENTER, UI::pad());
+	sizer_main_->Add(framesizer, 0, wxALL | wxALIGN_CENTER, ui::pad());
 
 	// Add 'Convert Gfx' button
 	btn_gfx_convert_ = new wxButton(this, -1, "Convert Gfx To...");
 	framesizer->AddSpacer(4);
-	framesizer->Add(btn_gfx_convert_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	framesizer->Add(btn_gfx_convert_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Add 'Modify Gfx Offsets' button
 	btn_gfx_modify_offsets_ = new wxButton(this, -1, "Modify Gfx Offsets");
-	framesizer->Add(btn_gfx_modify_offsets_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	framesizer->Add(btn_gfx_modify_offsets_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Add 'Edit Textures' button
 	btn_texture_edit_ = new wxButton(this, -1, "Edit Textures");
-	framesizer->Add(btn_texture_edit_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	framesizer->Add(btn_texture_edit_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	sizer_main_->AddStretchSpacer(1);
 
@@ -93,7 +95,7 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 	btn_gfx_modify_offsets_->Bind(wxEVT_BUTTON, &DefaultEntryPanel::onBtnGfxModifyOffsets, this);
 	btn_texture_edit_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) {
 		if (auto entry = entry_.lock())
-			MainEditor::openTextureEditor(entry->parent(), entry.get());
+			maineditor::openTextureEditor(entry->parent(), entry.get());
 	});
 
 	// Hide save/revert toolbar
@@ -157,7 +159,7 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 	unsigned size = 0;
 	for (auto& entry : entries)
 		size += entry->size();
-	label_size_->SetLabel(wxString::Format("Total Size: %s", Misc::sizeAsString(size)));
+	label_size_->SetLabel(wxString::Format("Total Size: %s", misc::sizeAsString(size)));
 
 	// Setup actions frame
 	btn_gfx_convert_->Show(false);
@@ -235,6 +237,6 @@ void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e)
 
 	// Apply offsets to selected entries
 	for (auto& entry : entries_)
-		EntryOperations::modifyGfxOffsets(entry, &mod);
-	MainEditor::currentEntryPanel()->callRefresh();
+		entryoperations::modifyGfxOffsets(entry, &mod);
+	maineditor::currentEntryPanel()->callRefresh();
 }

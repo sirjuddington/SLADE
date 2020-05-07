@@ -3,8 +3,10 @@
 #include "EntryDataFormat.h"
 #include "Utility/Colour.h"
 #include "Utility/PropertyList/PropertyList.h"
-class ArchiveEntry;
 
+namespace slade
+{
+class ArchiveEntry;
 class EntryType
 {
 public:
@@ -63,7 +65,7 @@ private:
 								 // supported image formats
 								 // bool "patch": Can be used as a TEXTUREx patch
 								 // string "image_format": An SIFormat type id 'hint', mostly used for
-								 // Misc::loadImageFromEntry
+								 // misc::loadImageFromEntry
 
 	// Type matching criteria
 	EntryDataFormat* format_;        // To be of this type, the entry data must match the specified format
@@ -78,3 +80,4 @@ private:
 								   // between SS_START/SS_END in a wad, or the 'sprites' folder in a zip
 	vector<string> match_archive_; // The types of archive the entry can be found in (e.g., wad or zip)
 };
+} // namespace slade

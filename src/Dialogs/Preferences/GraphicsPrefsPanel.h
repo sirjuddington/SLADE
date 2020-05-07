@@ -4,6 +4,8 @@
 
 class wxColourPickerCtrl;
 
+namespace slade
+{
 class GraphicsPrefsPanel : public PrefsPanelBase
 {
 public:
@@ -27,3 +29,4 @@ private:
 	// Events
 	void onChoicePresetSelected(wxCommandEvent& e);
 };
+} // namespace slade

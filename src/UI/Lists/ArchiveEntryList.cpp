@@ -38,6 +38,8 @@
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -91,12 +93,12 @@ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 	setupColumns();
 
 	// Setup entry icons
-	auto image_list   = WxUtils::createSmallImageList();
+	auto image_list   = wxutil::createSmallImageList();
 	auto et_icon_list = EntryType::iconList();
 	for (const auto& name : et_icon_list)
 	{
-		if (image_list->Add(Icons::getIcon(Icons::Entry, name)) < 0)
-			image_list->Add(Icons::getIcon(Icons::Entry, "default"));
+		if (image_list->Add(icons::getIcon(icons::Entry, name)) < 0)
+			image_list->Add(icons::getIcon(icons::Entry, "default"));
 	}
 
 	wxListCtrl::SetImageList(image_list, wxIMAGE_LIST_SMALL);
@@ -195,7 +197,7 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 
 	// Init attributes
 	auto col_bg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX);
-	item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("error")));
+	item_attr_->SetTextColour(colourconfig::colour("error").toWx());
 	item_attr_->SetBackgroundColour(col_bg);
 
 	// If entry doesn't exist, return error colour
@@ -218,7 +220,7 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 		bcol.g = (col.g * elist_type_bgcol_intensity) + (col_bg.Green() * (1.0 - elist_type_bgcol_intensity));
 		bcol.b = (col.b * elist_type_bgcol_intensity) + (col_bg.Blue() * (1.0 - elist_type_bgcol_intensity));
 
-		item_attr_->SetBackgroundColour(WXCOL(bcol));
+		item_attr_->SetBackgroundColour(bcol.toWx());
 	}
 
 	// Alternating row colour
@@ -231,16 +233,14 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 	// Set colour depending on entry state
 	switch (entry->state())
 	{
-	case ArchiveEntry::State::Modified:
-		item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("modified")));
-		break;
-	case ArchiveEntry::State::New: item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("new"))); break;
+	case ArchiveEntry::State::Modified: item_attr_->SetTextColour(colourconfig::colour("modified").toWx()); break;
+	case ArchiveEntry::State::New: item_attr_->SetTextColour(colourconfig::colour("new").toWx()); break;
 	default: item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
 	};
 
 	// Locked state overrides others
 	if (entry->isLocked())
-		item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("locked")));
+		item_attr_->SetTextColour(colourconfig::colour("locked").toWx());
 }
 
 // -----------------------------------------------------------------------------
@@ -426,7 +426,7 @@ void ArchiveEntryList::applyFilter()
 		else
 		{
 			// Check for category match
-			if (StrUtil::equalCI(entry->type()->category(), filter_category_.ToStdString()))
+			if (strutil::equalCI(entry->type()->category(), filter_category_.ToStdString()))
 				items_.push_back(index);
 		}
 
@@ -437,18 +437,18 @@ void ArchiveEntryList::applyFilter()
 	if (!filter_text_.IsEmpty())
 	{
 		// Split filter by ,
-		auto terms = StrUtil::split(filter_text_.ToStdString(), ',');
+		auto terms = strutil::split(filter_text_.ToStdString(), ',');
 
 		// Process filter strings
 		for (auto& term : terms)
 		{
 			// Remove spaces
-			StrUtil::replaceIP(term, " ", "");
+			strutil::replaceIP(term, " ", "");
 
 			// Set to uppercase and add * to the end
 			if (!term.empty())
 			{
-				StrUtil::upperIP(term);
+				strutil::upperIP(term);
 				term += "*";
 			}
 		}
@@ -466,7 +466,7 @@ void ArchiveEntryList::applyFilter()
 			bool match = false;
 			for (const auto& term : terms)
 			{
-				if (entry == entry_dir_back_.get() || StrUtil::matches(entry->upperName(), term))
+				if (entry == entry_dir_back_.get() || strutil::matches(entry->upperName(), term))
 				{
 					match = true;
 					continue;
@@ -800,7 +800,7 @@ bool ArchiveEntryList::handleAction(string_view id)
 		return false;
 
 	// Only interested in actions beginning with aelt_
-	if (!StrUtil::startsWith(id, "aelt_"))
+	if (!strutil::startsWith(id, "aelt_"))
 		return false;
 
 	if (id == "aelt_sizecol")
@@ -937,7 +937,7 @@ void ArchiveEntryList::onListItemActivated(wxListEvent& e)
 		// Check it exists (really should)
 		if (!dir)
 		{
-			Log::error("Error: Trying to open nonexistant directory");
+			log::error("Error: Trying to open nonexistant directory");
 			return;
 		}
 

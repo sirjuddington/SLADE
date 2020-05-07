@@ -2,6 +2,8 @@
 
 #include "SeekableData.h"
 
+namespace slade
+{
 class SFile;
 
 class MemChunk : public SeekableData
@@ -80,3 +82,4 @@ protected:
 
 	uint8_t* allocData(uint32_t size, bool set_data = true);
 };
+} // namespace slade

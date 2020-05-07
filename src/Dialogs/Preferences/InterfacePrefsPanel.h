@@ -2,6 +2,8 @@
 
 #include "PrefsPanelBase.h"
 
+namespace slade
+{
 class InterfacePrefsPanel : public PrefsPanelBase
 {
 public:
@@ -29,3 +31,4 @@ private:
 	wxPanel* setupGeneralTab(wxWindow* stc_tabs);
 	wxPanel* setupEntryListTab(wxWindow* stc_tabs);
 };
+} // namespace slade

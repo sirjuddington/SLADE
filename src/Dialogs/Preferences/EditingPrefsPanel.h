@@ -4,6 +4,8 @@
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Lists/VirtualListView.h"
 
+namespace slade
+{
 class EditingPrefsPanel : public PrefsPanelBase
 {
 public:
@@ -41,3 +43,4 @@ private:
 	void onBtnRemoveClicked(wxCommandEvent& e);
 	void onExternalExeActivated(wxListEvent& e);
 };
+} // namespace slade

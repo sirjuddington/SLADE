@@ -34,6 +34,9 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+using namespace game;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -62,12 +65,12 @@ void UDMFProperty::parse(ParseTreeNode* node, string_view group)
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
 		auto prop     = node->childPTN(a);
-		auto pn_lower = StrUtil::lower(prop->name());
+		auto pn_lower = strutil::lower(prop->name());
 
 		// Property type
 		if (pn_lower == "type")
 		{
-			auto val_lower = StrUtil::lower(prop->stringValue());
+			auto val_lower = strutil::lower(prop->stringValue());
 
 			if (val_lower == "bool")
 				type_ = Type::Boolean;
@@ -121,7 +124,7 @@ void UDMFProperty::parse(ParseTreeNode* node, string_view group)
 			// Not sure why I have to do this here, but for whatever reason prop->getIntValue() doesn't work
 			// if the value parsed was hex (or it could be to do with the colour type? who knows)
 			if (type_ == Type::Colour)
-				default_value_ = StrUtil::asInt(prop->stringValue());
+				default_value_ = strutil::asInt(prop->stringValue());
 
 			has_default_ = true;
 		}

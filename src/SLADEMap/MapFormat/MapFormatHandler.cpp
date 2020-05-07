@@ -37,6 +37,8 @@
 #include "HexenMapFormat.h"
 #include "UniversalDoomMapFormat.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 // NoMapFormat Class

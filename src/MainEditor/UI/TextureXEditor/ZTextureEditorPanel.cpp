@@ -41,6 +41,8 @@
 #include "UI/WxUtils.h"
 #include "Utility/Tokenizer.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -79,8 +81,8 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 0, wxEXPAND);
 
-	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::pad());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Name
 	text_tex_name_ = new wxTextCtrl(panel, -1);
@@ -89,7 +91,7 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(text_tex_name_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Size
-	const auto spinsize  = wxSize{ UI::px(UI::Size::SpinCtrlWidth), -1 };
+	const auto spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
 	const auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
 	spin_tex_width_  = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
 	spin_tex_height_ = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
@@ -218,12 +220,12 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	// Add patches list
 	list_patches_ = new ListView(panel, -1);
 	list_patches_->enableSizeUpdate(false);
-	list_patches_->SetInitialSize(WxUtils::scaledSize(100, -1));
-	framesizer->Add(list_patches_, 1, wxEXPAND | wxALL, UI::pad());
+	list_patches_->SetInitialSize(wxutil::scaledSize(100, -1));
+	framesizer->Add(list_patches_, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Add patch buttons
-	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 0, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, UI::pad());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 0, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// 'Add' button
 	btn_patch_add_ = new SIconButton(panel, "patch_add", "Add new patch to texture");
@@ -254,13 +256,13 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	// -- Patch Properties frame --
 	frame      = new wxStaticBox(panel, -1, "Patch Properties");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 0, wxEXPAND | wxTOP, UI::pad());
+	sizer->Add(framesizer, 0, wxEXPAND | wxTOP, ui::pad());
 
-	gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::pad());
+	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// X Position
-	const auto spinsize  = wxSize{ UI::px(UI::Size::SpinCtrlWidth), -1 };
+	const auto spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
 	const auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
 	spin_patch_left_     = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "X Position:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -305,10 +307,10 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 
 	frame      = new wxStaticBox(panel, -1, "Patch Colour");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 0, wxEXPAND | wxTOP, UI::pad());
+	sizer->Add(framesizer, 0, wxEXPAND | wxTOP, ui::pad());
 
-	gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::pad());
+	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 	gb_sizer->AddGrowableCol(0, 1);
 	gb_sizer->AddGrowableCol(1, 1);
 
@@ -346,7 +348,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 
 	// Translation text entry
 	text_translation_ = new wxTextCtrl(panel, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	hbox->Add(text_translation_, 1, wxEXPAND | wxRIGHT, UI::pad());
+	hbox->Add(text_translation_, 1, wxEXPAND | wxRIGHT, ui::pad());
 
 	// Translation edit button
 	btn_edit_translation_ = new wxButton(panel, -1, "Edit", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
@@ -429,7 +431,7 @@ void ZTextureEditorPanel::updatePatchControls()
 			auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(selection[0]));
 			if (!patch)
 			{
-				Log::error("Selected patch does not exist in texture");
+				log::error("Selected patch does not exist in texture");
 				return;
 			}
 
@@ -668,7 +670,7 @@ void ZTextureEditorPanel::onTexTypeChanged(wxCommandEvent& e)
 {
 	// Set texture's type
 	if (tex_current_)
-		tex_current_->setType(WxUtils::strToView(choice_type_->GetStringSelection()));
+		tex_current_->setType(wxutil::strToView(choice_type_->GetStringSelection()));
 
 	tex_modified_ = true;
 }
@@ -856,7 +858,7 @@ void ZTextureEditorPanel::onPatchAlphaStyleChanged(wxCommandEvent& e)
 	{
 		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(list_patches_->selectedItems()[a]));
 		if (patch)
-			patch->setStyle(WxUtils::strToView(choice_style_->GetStringSelection()));
+			patch->setStyle(wxutil::strToView(choice_style_->GetStringSelection()));
 	}
 
 	// Update UI
@@ -1043,7 +1045,7 @@ void ZTextureEditorPanel::onBtnEditTranslation(wxCommandEvent& e)
 	tex_canvas_->texture()->loadPatchImage(selection[0], image, tx_editor_->archive(), &tex_canvas_->palette());
 
 	// Open translation editor dialog
-	TranslationEditorDialog ted(MainEditor::windowWx(), tex_canvas_->palette(), "Edit Translation", &image);
+	TranslationEditorDialog ted(maineditor::windowWx(), tex_canvas_->palette(), "Edit Translation", &image);
 	ted.openTranslation(trans);
 	if (ted.ShowModal() == wxID_OK)
 	{

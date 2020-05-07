@@ -6,7 +6,10 @@
 
 wxDECLARE_EVENT(EVT_AEL_DIR_CHANGED, wxCommandEvent);
 
+namespace slade
+{
 class UndoManager;
+
 class ArchiveEntryList : public VirtualListView, public SActionHandler
 {
 public:
@@ -79,3 +82,4 @@ private:
 
 	int entrySize(long index) const;
 };
+} // namespace slade

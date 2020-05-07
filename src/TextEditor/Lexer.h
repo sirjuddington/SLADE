@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class TextEditorCtrl;
 class TextLanguage;
 
@@ -131,3 +133,4 @@ protected:
 private:
 	vector<string> functions_;
 };
+} // namespace slade

@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class WadArchive : public TreelessArchive
 {
 public:
@@ -89,3 +91,4 @@ private:
 	bool           iwad_ = false;
 	vector<NSPair> namespaces_;
 };
+} // namespace slade

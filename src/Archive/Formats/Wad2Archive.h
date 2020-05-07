@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 // From http://www.gamers.org/dEngine/quake/spec/quake-spec31.html#CWADF
 struct Wad2Entry
 {
@@ -34,3 +36,4 @@ public:
 private:
 	bool wad3_ = false;
 };
+} // namespace slade

@@ -1,10 +1,12 @@
 #pragma once
 
-namespace ZScript
+namespace slade
 {
-class Function;
-class Definitions;
-} // namespace ZScript
+namespace zscript
+{
+	class Function;
+	class Definitions;
+} // namespace zscript
 
 class TLFunction
 {
@@ -72,7 +74,7 @@ public:
 		string_view deprecated_f);
 	void addContext(
 		string_view              context,
-		const ZScript::Function& func,
+		const zscript::Function& func,
 		bool                     custom,
 		string_view              desc,
 		string_view              dep_f);
@@ -146,7 +148,7 @@ public:
 		string_view deprecated  = "",
 		bool        replace     = false,
 		string_view return_type = "");
-	void loadZScript(ZScript::Definitions& defs, bool custom = false);
+	void loadZScript(zscript::Definitions& defs, bool custom = false);
 
 	string wordList(WordType type, bool include_custom = true);
 	string functionsList();
@@ -218,3 +220,4 @@ private:
 	};
 	std::map<string, ZFuncExProp> zfuncs_ex_props_;
 };
+} // namespace slade

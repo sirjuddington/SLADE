@@ -24,6 +24,8 @@
  *			- Select transparency colour (to 32bit - select colour, to paletted - select from target palette)
  */
 
+namespace slade
+{
 class Archive;
 class ArchiveEntry;
 class CTexture;
@@ -143,3 +145,4 @@ private:
 	void onPreviewCurrentMouseDown(wxMouseEvent& e);
 	void onBtnColorimetrySettings(wxCommandEvent& e);
 };
+} // namespace slade

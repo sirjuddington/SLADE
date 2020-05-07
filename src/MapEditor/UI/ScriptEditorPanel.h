@@ -2,8 +2,11 @@
 
 #include "General/SAction.h"
 
-class ArchiveEntry;
 class wxTreeListCtrl;
+
+namespace slade
+{
+class ArchiveEntry;
 class TextEditorCtrl;
 class FindReplacePanel;
 
@@ -35,3 +38,4 @@ private:
 
 	void onWordListActivate(wxCommandEvent& e);
 };
+} // namespace slade

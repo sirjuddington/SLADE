@@ -46,6 +46,8 @@
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -88,33 +90,33 @@ public:
 	{
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::General, "palette_colourise"));
+		icon.CopyFromBitmap(icons::getIcon(icons::General, "palette_colourise"));
 		SetIcon(icon);
 
 		// Setup main sizer
 		auto msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		auto sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+		msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 
 		// Add colour chooser
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 		cp_colour_ = new wxColourPickerCtrl(this, -1, wxColour(255, 0, 0));
-		hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 		hbox->Add(cp_colour_, 0, wxEXPAND);
 
 		// Add preview
 		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, UI::pad());
+		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 		// Add buttons
 		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(UI::scalePx(384), UI::scalePx(384)));
+		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
 		redraw();
 
 		// Init layout
@@ -132,11 +134,7 @@ public:
 
 	Palette* finalPalette() const { return &(pal_preview_->palette()); }
 
-	ColRGBA colour() const
-	{
-		wxColour col = cp_colour_->GetColour();
-		return { COLWX(col) };
-	}
+	ColRGBA colour() const { return ColRGBA{ cp_colour_->GetColour() }; }
 
 	// Re-apply the changes in selection and colour on a fresh palette
 	void redraw() const
@@ -168,43 +166,43 @@ public:
 	{
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::General, "palette_tint"));
+		icon.CopyFromBitmap(icons::getIcon(icons::General, "palette_tint"));
 		SetIcon(icon);
 
 		// Setup main sizer
 		auto msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		auto sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+		msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 
 		// Add colour chooser
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 		cp_colour_ = new wxColourPickerCtrl(this, -1, wxColour(255, 0, 0));
-		hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 		hbox->Add(cp_colour_, 0, wxALIGN_CENTER_VERTICAL);
 
 		// Add 'amount' slider
 		hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 		slider_amount_ = new wxSlider(this, -1, 50, 0, 100);
 		label_amount_  = new wxStaticText(this, -1, "100%");
-		hbox->Add(new wxStaticText(this, -1, "Amount:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
-		hbox->Add(slider_amount_, 1, wxEXPAND | wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(this, -1, "Amount:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+		hbox->Add(slider_amount_, 1, wxEXPAND | wxRIGHT, ui::pad());
 		hbox->Add(label_amount_, 0, wxALIGN_CENTER_VERTICAL);
 
 		// Add preview
 		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, UI::pad());
+		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 		// Add buttons
 		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(UI::scalePx(384), UI::scalePx(384)));
+		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
 		redraw();
 
 		// Init layout
@@ -229,11 +227,7 @@ public:
 
 	Palette* finalPalette() const { return &(pal_preview_->palette()); }
 
-	ColRGBA colour() const
-	{
-		wxColour col = cp_colour_->GetColour();
-		return { COLWX(col) };
-	}
+	ColRGBA colour() const { return ColRGBA{ cp_colour_->GetColour() }; }
 
 	float amount() const { return (float)slider_amount_->GetValue() * 0.01f; }
 
@@ -280,55 +274,55 @@ public:
 	{
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::General, "palette_tweak"));
+		icon.CopyFromBitmap(icons::getIcon(icons::General, "palette_tweak"));
 		SetIcon(icon);
 
 		// Setup main sizer
 		auto msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		auto sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+		msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 
 		// Add 'hue shift' slider
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 		slider_hue_ = new wxSlider(this, -1, 0, 0, 500);
 		label_hue_  = new wxStaticText(this, -1, "0.000");
-		hbox->Add(new wxStaticText(this, -1, "Hue Shift:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
-		hbox->Add(slider_hue_, 1, wxEXPAND | wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(this, -1, "Hue Shift:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+		hbox->Add(slider_hue_, 1, wxEXPAND | wxRIGHT, ui::pad());
 		hbox->Add(label_hue_, 0, wxALIGN_CENTER_VERTICAL);
 
 		// Add 'Saturation' slider
 		hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 		slider_sat_ = new wxSlider(this, -1, 100, 0, 200);
 		label_sat_  = new wxStaticText(this, -1, "100%");
-		hbox->Add(new wxStaticText(this, -1, "Saturation:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
-		hbox->Add(slider_sat_, 1, wxEXPAND | wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(this, -1, "Saturation:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+		hbox->Add(slider_sat_, 1, wxEXPAND | wxRIGHT, ui::pad());
 		hbox->Add(label_sat_, 0, wxALIGN_CENTER_VERTICAL);
 
 		// Add 'Luminosity' slider
 		hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 		slider_lum_ = new wxSlider(this, -1, 100, 0, 200);
 		label_lum_  = new wxStaticText(this, -1, "100%");
-		hbox->Add(new wxStaticText(this, -1, "Luminosity:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
-		hbox->Add(slider_lum_, 1, wxEXPAND | wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(this, -1, "Luminosity:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+		hbox->Add(slider_lum_, 1, wxEXPAND | wxRIGHT, ui::pad());
 		hbox->Add(label_lum_, 0, wxALIGN_CENTER_VERTICAL);
 
 		// Add preview
 		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, UI::pad());
+		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 		// Add buttons
 		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(UI::scalePx(384), UI::scalePx(384)));
+		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
 		redraw();
 
 		// Init layout
@@ -403,25 +397,25 @@ public:
 	{
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::General, "palette_invert"));
+		icon.CopyFromBitmap(icons::getIcon(icons::General, "palette_invert"));
 		SetIcon(icon);
 
 		// Setup main sizer
 		auto msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		auto sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+		msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 
 		// Add preview
 		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, UI::pad());
+		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 		// Add buttons
 		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(UI::scalePx(384), UI::scalePx(384)));
+		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
 		redraw();
 
 		// Init layout
@@ -473,18 +467,18 @@ public:
 	{
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::Entry, "palette"));
+		icon.CopyFromBitmap(icons::getIcon(icons::Entry, "palette"));
 		SetIcon(icon);
 
 		// Setup main sizer
 		auto msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		auto sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+		msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 
 		// Add buttons
 		rb_doom_ = new wxRadioButton(this, -1, "Doom (14 Palettes)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-		sizer->Add(rb_doom_, 0, wxEXPAND | wxBOTTOM, UI::pad());
+		sizer->Add(rb_doom_, 0, wxEXPAND | wxBOTTOM, ui::pad());
 		rb_hexen_ = new wxRadioButton(this, -1, "Hexen (28 Palettes)");
 		sizer->Add(rb_hexen_, 0, wxEXPAND);
 
@@ -530,37 +524,37 @@ public:
 	{
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::General, "palette_gradient"));
+		icon.CopyFromBitmap(icons::getIcon(icons::General, "palette_gradient"));
 		SetIcon(icon);
 
 		// Setup main sizer
 		auto msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		auto sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+		msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 
 		// Add colour choosers
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
+		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 		cp_startcolour_ = new wxColourPickerCtrl(this, -1, wxColour(0, 0, 0));
-		hbox->Add(new wxStaticText(this, -1, "Start Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(this, -1, "Start Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 		hbox->Add(cp_startcolour_, 0, wxEXPAND);
 
 		cp_endcolour_ = new wxColourPickerCtrl(this, -1, wxColour(255, 255, 255));
-		hbox->Add(new wxStaticText(this, -1, "End Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+		hbox->Add(new wxStaticText(this, -1, "End Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 		hbox->Add(cp_endcolour_, 0, wxEXPAND);
 
 		// Add preview
 		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, UI::pad());
+		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 		// Add buttons
 		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(UI::scalePx(384), UI::scalePx(384)));
+		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
 		redraw();
 
 		// Init layout
@@ -579,17 +573,9 @@ public:
 
 	Palette* finalPalette() const { return &(pal_preview_->palette()); }
 
-	ColRGBA startColour() const
-	{
-		wxColour col = cp_startcolour_->GetColour();
-		return { COLWX(col) };
-	}
+	ColRGBA startColour() const { return ColRGBA{ cp_startcolour_->GetColour() }; }
 
-	ColRGBA endColour() const
-	{
-		wxColour col = cp_endcolour_->GetColour();
-		return { COLWX(col) };
-	}
+	ColRGBA endColour() const { return ColRGBA{ cp_endcolour_->GetColour() }; }
 
 	// Re-apply the changes in selection and colour on a fresh palette
 	void redraw() const
@@ -815,12 +801,12 @@ bool PaletteEntryPanel::addCustomPalette()
 		return false;
 
 	// Write current palette to the user palettes directory
-	auto path = App::path(fmt::format("palettes/{}.pal", name), App::Dir::User);
+	auto path = app::path(fmt::format("palettes/{}.pal", name), app::Dir::User);
 	palettes_[cur_palette_]->saveFile(path);
 
 	// Add to palette manager and main palette chooser
 	auto pal = std::make_unique<Palette>(*palettes_[cur_palette_]);
-	App::paletteManager()->addPalette(std::move(pal), name);
+	app::paletteManager()->addPalette(std::move(pal), name);
 	theMainWindow->paletteChooser()->addPalette(name);
 
 	return true;
@@ -837,7 +823,7 @@ bool PaletteEntryPanel::testPalette()
 
 	// Add to palette manager and main palette chooser
 	auto pal = std::make_unique<Palette>(*palettes_[cur_palette_]);
-	App::paletteManager()->addPalette(std::move(pal), name.ToStdString());
+	app::paletteManager()->addPalette(std::move(pal), name.ToStdString());
 	theMainWindow->paletteChooser()->addPalette(name);
 	theMainWindow->paletteChooser()->selectPalette(name);
 
@@ -850,8 +836,8 @@ bool PaletteEntryPanel::testPalette()
 bool PaletteEntryPanel::exportAs()
 {
 	// Run save file dialog
-	SFileDialog::FDInfo info;
-	if (SFileDialog::saveFile(info, "Export Palette As", extensions, this))
+	filedialog::FDInfo info;
+	if (filedialog::saveFile(info, "Export Palette As", extensions, this))
 		return palettes_[cur_palette_]->saveFile(info.filenames[0], pal_formats[info.ext_index]);
 
 	return false;
@@ -865,8 +851,8 @@ bool PaletteEntryPanel::importFrom()
 	bool ret = false;
 
 	// Run open file dialog
-	SFileDialog::FDInfo info;
-	if (SFileDialog::openFile(info, "Import Palette As", extensions, this))
+	filedialog::FDInfo info;
+	if (filedialog::openFile(info, "Import Palette As", extensions, this))
 	{
 		// Load palette
 		ret = palettes_[cur_palette_]->loadFile(info.filenames[0], pal_formats[info.ext_index]);
@@ -876,7 +862,7 @@ bool PaletteEntryPanel::importFrom()
 			showPalette(cur_palette_);
 		}
 		else
-			wxMessageBox(Global::error, "Import Failed", wxICON_ERROR | wxOK);
+			wxMessageBox(global::error, "Import Failed", wxICON_ERROR | wxOK);
 	}
 	return ret;
 }
@@ -889,7 +875,7 @@ bool PaletteEntryPanel::clearOne()
 	// Always keep at least one palette
 	if (cur_palette_ == 0 && palettes_.size() == 1)
 	{
-		Log::warning("Palette cannot be removed, no other palette in this entry.");
+		log::warning("Palette cannot be removed, no other palette in this entry.");
 		return false;
 	}
 
@@ -1240,7 +1226,7 @@ bool PaletteEntryPanel::generatePalettes()
 bool PaletteEntryPanel::handleEntryPanelAction(string_view id)
 {
 	// Only interested in "ppal_" events
-	if (!StrUtil::startsWith(id, "ppal_"))
+	if (!strutil::startsWith(id, "ppal_"))
 		return false;
 
 	// Add to custom palettes
@@ -1441,7 +1427,7 @@ void PaletteEntryPanel::onPalCanvasMouseEvent(wxMouseEvent& e)
 		{
 			ColRGBA col = pal_canvas_->selectedColour();
 			// Open a colour dialog
-			wxColour cd = wxGetColourFromUser(GetParent(), WXCOL(col));
+			wxColour cd = wxGetColourFromUser(GetParent(), col.toWx());
 
 			if (cd.Ok())
 			{
@@ -1607,5 +1593,5 @@ void PaletteEntryPanel::analysePalettes()
 #endif
 	}
 
-	Log::info(1, report);
+	log::info(1, report);
 }

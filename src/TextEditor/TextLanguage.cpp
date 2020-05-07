@@ -41,6 +41,8 @@
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -176,7 +178,7 @@ void TLFunction::addContext(
 // -----------------------------------------------------------------------------
 void TLFunction::addContext(
 	string_view              context,
-	const ZScript::Function& func,
+	const zscript::Function& func,
 	bool                     custom,
 	string_view              desc,
 	string_view              dep_f)
@@ -214,7 +216,7 @@ void TLFunction::clearCustomContexts()
 bool TLFunction::hasContext(string_view name)
 {
 	for (auto& c : contexts_)
-		if (StrUtil::equalCI(c.context, name))
+		if (strutil::equalCI(c.context, name))
 			return true;
 
 	return false;
@@ -309,10 +311,10 @@ void TextLanguage::addFunction(
 	// Split out context from name
 	string context;
 	string func_name{ name };
-	if (StrUtil::contains(name, '.'))
+	if (strutil::contains(name, '.'))
 	{
-		context   = StrUtil::beforeFirst(name, '.');
-		func_name = StrUtil::afterFirst(name, '.');
+		context   = strutil::beforeFirst(name, '.');
+		func_name = strutil::afterFirst(name, '.');
 	}
 
 	// Check if the function exists
@@ -340,7 +342,7 @@ void TextLanguage::addFunction(
 // -----------------------------------------------------------------------------
 // Loads types (classes) and functions from parsed ZScript definitions [defs]
 // -----------------------------------------------------------------------------
-void TextLanguage::loadZScript(ZScript::Definitions& defs, bool custom)
+void TextLanguage::loadZScript(zscript::Definitions& defs, bool custom)
 {
 	// Classes
 	for (auto& c : defs.classes())
@@ -427,20 +429,20 @@ string TextLanguage::autocompletionList(string_view start, bool include_custom)
 	for (unsigned type = 0; type < 4; type++)
 	{
 		for (auto& word : word_lists_[type].list)
-			if (StrUtil::startsWithCI(word, start))
+			if (strutil::startsWithCI(word, start))
 				list.push_back(fmt::format("{}?{}", word, type + 1));
 
 		if (!include_custom)
 			continue;
 
 		for (auto& word : word_lists_custom_[type].list)
-			if (StrUtil::startsWithCI(word, start))
+			if (strutil::startsWithCI(word, start))
 				list.push_back(fmt::format("{}?{}", word, type + 1));
 	}
 
 	// Add functions
 	for (auto& func : functions_)
-		if (StrUtil::startsWithCI(func.name(), start))
+		if (strutil::startsWithCI(func.name(), start))
 			list.push_back(fmt::format("{}{}", func.name(), "?5"));
 
 	// Sort the list
@@ -530,7 +532,7 @@ TLFunction* TextLanguage::function(string_view name)
 	else
 	{
 		for (auto& func : functions_)
-			if (StrUtil::equalCI(func.name(), name))
+			if (strutil::equalCI(func.name(), name))
 				return &func;
 	}
 
@@ -577,7 +579,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 	// Open the given text data
 	if (!tz.openMem(mc, source))
 	{
-		Log::warning("Unable to open language definition {}", source);
+		log::warning("Unable to open language definition {}", source);
 		return false;
 	}
 
@@ -601,14 +603,14 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 			if (inherit)
 				inherit->copyTo(lang);
 			else
-				Log::warning("Warning: Language {} inherits from undefined language {}", node->name(), node->inherit());
+				log::warning("Warning: Language {} inherits from undefined language {}", node->name(), node->inherit());
 		}
 
 		// Parse language info
 		for (unsigned c = 0; c < node->nChildren(); c++)
 		{
 			auto child    = node->childPTN(c);
-			auto pn_lower = StrUtil::lower(child->name());
+			auto pn_lower = strutil::lower(child->name());
 
 			// Language name
 			if (pn_lower == "name")
@@ -713,7 +715,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 					auto val = child->stringValue(v);
 
 					// Check for '$override'
-					if (StrUtil::equalCI(val, "$override"))
+					if (strutil::equalCI(val, "$override"))
 					{
 						// Clear any inherited keywords
 						lang->clearWordList(WordType::Keyword);
@@ -734,7 +736,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 					auto val = child->stringValue(v);
 
 					// Check for '$override'
-					if (StrUtil::equalCI(val, "$override"))
+					if (strutil::equalCI(val, "$override"))
 					{
 						// Clear any inherited constants
 						lang->clearWordList(WordType::Constant);
@@ -755,7 +757,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 					auto val = child->stringValue(v);
 
 					// Check for '$override'
-					if (StrUtil::equalCI(val, "$override"))
+					if (strutil::equalCI(val, "$override"))
 					{
 						// Clear any inherited constants
 						lang->clearWordList(WordType::Type);
@@ -776,7 +778,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 					auto val = child->stringValue(v);
 
 					// Check for '$override'
-					if (StrUtil::equalCI(val, "$override"))
+					if (strutil::equalCI(val, "$override"))
 					{
 						// Clear any inherited constants
 						lang->clearWordList(WordType::Property);
@@ -821,7 +823,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 								params,
 								"",
 								"",
-								!StrUtil::contains(child_func->name(), '.'),
+								!strutil::contains(child_func->name(), '.'),
 								child_func->type());
 
 							// Add args
@@ -889,7 +891,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 bool TextLanguage::loadLanguages()
 {
 	// Get slade resource archive
-	auto res_archive = App::archiveManager().programResourceArchive();
+	auto res_archive = app::archiveManager().programResourceArchive();
 
 	// Read language definitions from resource archive
 	if (res_archive)
@@ -914,7 +916,7 @@ bool TextLanguage::loadLanguages()
 				readLanguageDefinition(entry->data(), entry->name());
 		}
 		else
-			Log::warning(
+			log::warning(
 				1, "Warning: 'config/languages' not found in slade.pk3, no builtin text language definitions loaded");
 	}
 
@@ -958,7 +960,7 @@ TextLanguage* TextLanguage::fromName(string_view name)
 	// Find text language matching [name]
 	for (auto& text_language : text_languages)
 	{
-		if (StrUtil::equalCI(text_language->name_, name))
+		if (strutil::equalCI(text_language->name_, name))
 			return text_language;
 	}
 

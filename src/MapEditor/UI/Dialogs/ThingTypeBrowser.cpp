@@ -38,6 +38,8 @@
 #include "OpenGL/Drawing.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -61,21 +63,21 @@ CVAR(Bool, use_zeth_icons, false, CVar::Flag::Save)
 bool ThingBrowserItem::loadImage()
 {
 	// Get sprite
-	auto tex = MapEditor::textureManager().sprite(type_.sprite(), type_.translation(), type_.palette()).gl_id;
+	auto tex = mapeditor::textureManager().sprite(type_.sprite(), type_.translation(), type_.palette()).gl_id;
 	if (!tex && use_zeth_icons && type_.zethIcon() >= 0)
 	{
 		// Sprite not found, try the Zeth icon
-		tex = MapEditor::textureManager().editorImage(fmt::format("zethicons/zeth{:02d}", type_.zethIcon())).gl_id;
+		tex = mapeditor::textureManager().editorImage(fmt::format("zethicons/zeth{:02d}", type_.zethIcon())).gl_id;
 	}
 	if (!tex)
 	{
 		// Sprite not found, try an icon
-		tex = MapEditor::textureManager().editorImage(fmt::format("thing/{}", type_.icon())).gl_id;
+		tex = mapeditor::textureManager().editorImage(fmt::format("thing/{}", type_.icon())).gl_id;
 	}
 	if (!tex)
 	{
 		// Icon not found either, use unknown icon
-		tex = MapEditor::textureManager().editorImage("thing/unknown").gl_id;
+		tex = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
 	}
 
 	if (tex)
@@ -106,10 +108,10 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 	// Add 'Details view' checkbox
 	cb_view_tiles_ = new wxCheckBox(this, -1, "Details view");
 	cb_view_tiles_->SetValue(browser_thing_tiles);
-	sizer_bottom_->Add(cb_view_tiles_, 0, wxEXPAND | wxRIGHT, UI::pad());
+	sizer_bottom_->Add(cb_view_tiles_, 0, wxEXPAND | wxRIGHT, ui::pad());
 
 	// Populate tree
-	auto& types = Game::configuration().allThingTypes();
+	auto& types = game::configuration().allThingTypes();
 	for (auto& i : types)
 		addItem(new ThingBrowserItem(i.second.name(), i.second, i.first), i.second.group());
 	populateItemTree();
@@ -120,7 +122,7 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 
 	// Select initial item if any
 	if (type >= 0)
-		selectItem(Game::configuration().thingType(type).name());
+		selectItem(game::configuration().thingType(type).name());
 	else
 		openTree(items_root_); // Otherwise open 'all' category
 
@@ -138,13 +140,13 @@ void ThingTypeBrowser::setupViewOptions()
 {
 	if (browser_thing_tiles)
 	{
-		setFont(Drawing::Font::Condensed);
+		setFont(drawing::Font::Condensed);
 		setItemSize(48);
 		setItemViewType(BrowserCanvas::ItemView::Tiles);
 	}
 	else
 	{
-		setFont(Drawing::Font::Bold);
+		setFont(drawing::Font::Bold);
 		setItemSize(80);
 		setItemViewType(BrowserCanvas::ItemView::Normal);
 	}
@@ -161,7 +163,7 @@ int ThingTypeBrowser::selectedType() const
 	auto selected = selectedItem();
 	if (selected)
 	{
-		Log::info(wxString::Format("Selected item %d", selected->index()));
+		log::info(wxString::Format("Selected item %d", selected->index()));
 		return selected->index();
 	}
 	else

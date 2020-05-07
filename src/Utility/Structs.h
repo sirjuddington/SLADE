@@ -8,6 +8,8 @@ using std::min;
 // This is basically a collection of handy little structs I use a lot,
 // with some useful functions for each of them
 
+namespace slade
+{
 // 2D Vector/Point
 template<typename T> struct Vec2
 {
@@ -449,3 +451,4 @@ struct BBox
 
 // Formerly key_value_t
 typedef std::pair<string, string> StringPair;
+} // namespace slade

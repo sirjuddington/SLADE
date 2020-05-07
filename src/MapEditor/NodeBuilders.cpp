@@ -37,20 +37,22 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace NodeBuilders
+namespace slade::nodebuilders
 {
 vector<Builder> builders;
 Builder         invalid;
 Builder         none;
 string          custom;
 vector<string>  builder_paths;
-} // namespace NodeBuilders
+} // namespace slade::nodebuilders
 
 
 // -----------------------------------------------------------------------------
@@ -63,7 +65,7 @@ vector<string>  builder_paths;
 // -----------------------------------------------------------------------------
 // Loads all node builder definitions from the program resource
 // -----------------------------------------------------------------------------
-void NodeBuilders::init()
+void nodebuilders::init()
 {
 	// Init default builders
 	invalid.id = "invalid";
@@ -72,7 +74,7 @@ void NodeBuilders::init()
 	builders.push_back(none);
 
 	// Get nodebuilders configuration from slade.pk3
-	auto archive = App::archiveManager().programResourceArchive();
+	auto archive = app::archiveManager().programResourceArchive();
 	auto config  = archive->entryAtPath("config/nodebuilders.cfg");
 	if (!config)
 		return;
@@ -99,22 +101,22 @@ void NodeBuilders::init()
 			auto node = n_builder->childPTN(b);
 
 			// Option
-			if (StrUtil::equalCI(node->type(), "option"))
+			if (strutil::equalCI(node->type(), "option"))
 			{
 				builder.options.push_back(node->name());
 				builder.option_desc.push_back(node->stringValue());
 			}
 
 			// Builder name
-			else if (StrUtil::equalCI(node->name(), "name"))
+			else if (strutil::equalCI(node->name(), "name"))
 				builder.name = node->stringValue();
 
 			// Builder command
-			else if (StrUtil::equalCI(node->name(), "command"))
+			else if (strutil::equalCI(node->name(), "command"))
 				builder.command = node->stringValue();
 
 			// Builder executable
-			else if (StrUtil::equalCI(node->name(), "executable"))
+			else if (strutil::equalCI(node->name(), "executable"))
 				builder.exe = node->stringValue();
 		}
 		builders.push_back(builder);
@@ -128,7 +130,7 @@ void NodeBuilders::init()
 // -----------------------------------------------------------------------------
 // Adds [path] for [builder]
 // -----------------------------------------------------------------------------
-void NodeBuilders::addBuilderPath(string_view builder, string_view path)
+void nodebuilders::addBuilderPath(string_view builder, string_view path)
 {
 	builder_paths.emplace_back(builder);
 	builder_paths.emplace_back(path);
@@ -137,7 +139,7 @@ void NodeBuilders::addBuilderPath(string_view builder, string_view path)
 // -----------------------------------------------------------------------------
 // Writes builder paths to [file]
 // -----------------------------------------------------------------------------
-void NodeBuilders::saveBuilderPaths(wxFile& file)
+void nodebuilders::saveBuilderPaths(wxFile& file)
 {
 	file.Write("nodebuilder_paths\n{\n");
 	for (auto& builder : builders)
@@ -152,7 +154,7 @@ void NodeBuilders::saveBuilderPaths(wxFile& file)
 // -----------------------------------------------------------------------------
 // Returns the number of node builders defined
 // -----------------------------------------------------------------------------
-unsigned NodeBuilders::nNodeBuilders()
+unsigned nodebuilders::nNodeBuilders()
 {
 	return builders.size();
 }
@@ -160,7 +162,7 @@ unsigned NodeBuilders::nNodeBuilders()
 // -----------------------------------------------------------------------------
 // Returns the node builder definition matching [id]
 // -----------------------------------------------------------------------------
-NodeBuilders::Builder& NodeBuilders::builder(string_view id)
+nodebuilders::Builder& nodebuilders::builder(string_view id)
 {
 	for (unsigned a = 0; a < builders.size(); a++)
 	{
@@ -174,7 +176,7 @@ NodeBuilders::Builder& NodeBuilders::builder(string_view id)
 // -----------------------------------------------------------------------------
 // Returns the node builder definition at [index]
 // -----------------------------------------------------------------------------
-NodeBuilders::Builder& NodeBuilders::builder(unsigned index)
+nodebuilders::Builder& nodebuilders::builder(unsigned index)
 {
 	// Check index
 	if (index >= builders.size())

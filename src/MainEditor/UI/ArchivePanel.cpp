@@ -76,6 +76,8 @@
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -146,7 +148,7 @@ public:
 			}
 			else
 			{
-				StrUtil::Path fn(filenames[a].ToStdString());
+				strutil::Path fn(filenames[a].ToStdString());
 				ArchiveEntry* entry = nullptr;
 
 				// Find entry to replace if needed
@@ -211,7 +213,7 @@ public:
 	{
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::Entry, "palette"));
+		icon.CopyFromBitmap(icons::getIcon(icons::Entry, "palette"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -261,7 +263,7 @@ public:
 		{
 			wxTheClipboard->Clear();
 			auto file          = new wxFileDataObject();
-			auto tmp_directory = App::path("", App::Dir::Temp); // cache temp directory
+			auto tmp_directory = app::path("", app::Dir::Temp); // cache temp directory
 			for (auto& entry : entries)
 			{
 				// Export to file
@@ -353,15 +355,15 @@ int isInMap(size_t index, vector<Archive::MapDesc>& maps)
 size_t getNamespaceNumber(ArchiveEntry* entry, size_t index, vector<wxString>& ns, vector<Archive::MapDesc>& maps)
 {
 	auto ens = entry->parent()->detectNamespace(index);
-	if (StrUtil::equalCI(ens, "global"))
+	if (strutil::equalCI(ens, "global"))
 	{
 		if (!maps.empty() && isInMap(index, maps) >= 0)
 			ens = "maps";
-		else if (StrUtil::equalCI(entry->type()->category(), "Graphics"))
+		else if (strutil::equalCI(entry->type()->category(), "Graphics"))
 			ens = "graphics";
-		else if (StrUtil::equalCI(entry->type()->category(), "Audio"))
+		else if (strutil::equalCI(entry->type()->category(), "Audio"))
 		{
-			if (StrUtil::equalCI(entry->type()->icon(), "music"))
+			if (strutil::equalCI(entry->type()->icon(), "music"))
 				ens = "music";
 			else
 				ens = "sounds";
@@ -419,23 +421,23 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	// Create & set sizer & border
 	auto frame      = new wxStaticBox(this, -1, "Entries");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	m_hbox->Add(framesizer, 0, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, UI::pad());
+	m_hbox->Add(framesizer, 0, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::pad());
 
 
 	// Create path display
-	auto min_pad         = UI::px(UI::Size::PadMinimum);
+	auto min_pad         = ui::px(ui::Size::PadMinimum);
 	sizer_path_controls_ = new wxBoxSizer(wxHORIZONTAL);
-	framesizer->Add(sizer_path_controls_, 0, wxEXPAND | wxLEFT | wxRIGHT, UI::pad());
+	framesizer->Add(sizer_path_controls_, 0, wxEXPAND | wxLEFT | wxRIGHT, ui::pad());
 	framesizer->AddSpacer(min_pad);
 
 	// Label
-	label_path_ =
-		new wxStaticText(this, -1, "/", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_START | wxST_NO_AUTORESIZE);
+	label_path_ = new wxStaticText(
+		this, -1, "/", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_START | wxST_NO_AUTORESIZE);
 	sizer_path_controls_->Add(new wxStaticText(this, -1, "Path:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, min_pad);
-	sizer_path_controls_->Add(label_path_, 1, wxRIGHT | wxALIGN_CENTER_VERTICAL, UI::pad());
+	sizer_path_controls_->Add(label_path_, 1, wxRIGHT | wxALIGN_CENTER_VERTICAL, ui::pad());
 
 	// 'Up' button
-	btn_updir_ = new SIconButton(this, Icons::Entry, "upfolder");
+	btn_updir_ = new SIconButton(this, icons::Entry, "upfolder");
 	btn_updir_->Enable(false);
 	sizer_path_controls_->Add(btn_updir_, 0, wxEXPAND);
 
@@ -445,11 +447,11 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	entry_list_->setArchive(archive);
 	entry_list_->SetDropTarget(new APEntryListDropTarget(this, entry_list_));
 	entry_list_->setUndoManager(undo_manager_.get());
-	framesizer->Add(entry_list_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	framesizer->Add(entry_list_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 
-	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Create category selector
 	choice_category_ = new wxChoice(this, -1);
@@ -573,7 +575,7 @@ void ArchivePanel::addMenus() const
 		SAction::fromId("arch_replace_maps")->addToMenu(menu_clean);
 		menu_archive->AppendSubMenu(menu_clean, "&Maintenance");
 		auto menu_scripts = new wxMenu();
-		ScriptManager::populateEditorScriptMenu(menu_scripts, ScriptManager::ScriptType::Archive, "arch_script");
+		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Archive, "arch_script");
 		menu_archive->AppendSubMenu(menu_scripts, "&Run Script");
 	}
 	if (!menu_entry)
@@ -597,18 +599,18 @@ void ArchivePanel::addMenus() const
 		menu_entry->AppendSeparator();
 		SAction::fromId("arch_entry_bookmark")->addToMenu(menu_entry);
 		auto menu_scripts = new wxMenu();
-		ScriptManager::populateEditorScriptMenu(menu_scripts, ScriptManager::ScriptType::Entry, "arch_entry_script");
+		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Entry, "arch_entry_script");
 		menu_entry->AppendSubMenu(menu_scripts, "&Run Script");
 	}
 
 	// Add them to the main window menubar
-	MainEditor::window()->addCustomMenu(menu_archive, "&Archive");
-	MainEditor::window()->addCustomMenu(menu_entry, "&Entry");
+	maineditor::window()->addCustomMenu(menu_archive, "&Archive");
+	maineditor::window()->addCustomMenu(menu_entry, "&Entry");
 	cur_area_->addCustomMenu();
 
 	// Also enable the related toolbars
-	MainEditor::window()->enableToolBar("_archive");
-	MainEditor::window()->enableToolBar("_entry");
+	maineditor::window()->enableToolBar("_archive");
+	maineditor::window()->enableToolBar("_entry");
 }
 
 // -----------------------------------------------------------------------------
@@ -617,13 +619,13 @@ void ArchivePanel::addMenus() const
 void ArchivePanel::removeMenus() const
 {
 	// Remove ArchivePanel menus from the main window menubar
-	MainEditor::window()->removeCustomMenu(menu_archive);
-	MainEditor::window()->removeCustomMenu(menu_entry);
+	maineditor::window()->removeCustomMenu(menu_archive);
+	maineditor::window()->removeCustomMenu(menu_entry);
 	cur_area_->removeCustomMenu();
 
 	// Also disable the related toolbars
-	MainEditor::window()->enableToolBar("_archive", false);
-	MainEditor::window()->enableToolBar("_entry", false);
+	maineditor::window()->enableToolBar("_archive", false);
+	maineditor::window()->enableToolBar("_entry", false);
 }
 
 // -----------------------------------------------------------------------------
@@ -677,7 +679,7 @@ bool ArchivePanel::save()
 	if (!archive->save())
 	{
 		// If there was an error pop up a message box
-		wxMessageBox(wxString::Format("Error:\n%s", Global::error), "Error", wxICON_ERROR);
+		wxMessageBox(wxString::Format("Error:\n%s", global::error), "Error", wxICON_ERROR);
 		return false;
 	}
 
@@ -698,15 +700,15 @@ bool ArchivePanel::saveAs()
 		return false;
 
 	// Do save dialog
-	SFileDialog::FDInfo info;
-	if (SFileDialog::saveFile(
+	filedialog::FDInfo info;
+	if (filedialog::saveFile(
 			info, "Save Archive " + archive->filename(false) + " As", archive->fileExtensionString(), this))
 	{
 		// Save the archive
 		if (!archive->save(info.filenames[0]))
 		{
 			// If there was an error pop up a message box
-			wxMessageBox(wxString::Format("Error:\n%s", Global::error), "Error", wxICON_ERROR);
+			wxMessageBox(wxString::Format("Error:\n%s", global::error), "Error", wxICON_ERROR);
 			return false;
 		}
 	}
@@ -715,7 +717,7 @@ bool ArchivePanel::saveAs()
 	entry_list_->updateList();
 
 	// Add as recent file
-	App::archiveManager().addRecentFile(info.filenames[0]);
+	app::archiveManager().addRecentFile(info.filenames[0]);
 
 	return true;
 }
@@ -778,9 +780,9 @@ bool ArchivePanel::newEntry(NewEntry type)
 				Palette* pal;
 				int      choice = cp.getChoice();
 				if (choice)
-					pal = App::paletteManager()->palette(choice - 1);
+					pal = app::paletteManager()->palette(choice - 1);
 				else
-					pal = App::paletteManager()->globalPalette();
+					pal = app::paletteManager()->globalPalette();
 				pal->saveMem(mc);
 			}
 			else
@@ -791,13 +793,13 @@ bool ArchivePanel::newEntry(NewEntry type)
 			break;
 			// Import the ZDoom definitions as a baseline
 		case NewEntry::Animated:
-			e_import = App::archiveManager().programResourceArchive()->entryAtPath("animated.lmp");
+			e_import = app::archiveManager().programResourceArchive()->entryAtPath("animated.lmp");
 			if (e_import)
 				new_entry->importEntry(e_import);
 			break;
 			// Import the Boom definitions as a baseline
 		case NewEntry::Switches:
-			e_import = App::archiveManager().programResourceArchive()->entryAtPath("switches.lmp");
+			e_import = app::archiveManager().programResourceArchive()->entryAtPath("switches.lmp");
 			if (e_import)
 				new_entry->importEntry(e_import);
 			break;
@@ -860,8 +862,8 @@ bool ArchivePanel::importFiles()
 		return false;
 
 	// Run open files dialog
-	SFileDialog::FDInfo info;
-	if (SFileDialog::openFiles(info, "Choose files to import", "Any File (*.*)|*.*", this))
+	filedialog::FDInfo info;
+	if (filedialog::openFiles(info, "Choose files to import", "Any File (*.*)|*.*", this))
 	{
 		// Get the entry index of the last selected list item
 		auto dir   = entry_list_->currentDir().lock().get();
@@ -879,7 +881,7 @@ bool ArchivePanel::importFiles()
 		// Go through the list of files
 		bool ok = false;
 		entry_list_->Show(false);
-		UI::showSplash("Importing Files...", true);
+		ui::showSplash("Importing Files...", true);
 		entry_list_->setEntriesAutoUpdate(false);
 		for (size_t a = 0; a < info.filenames.size(); a++)
 		{
@@ -890,8 +892,8 @@ bool ArchivePanel::importFiles()
 			wxString name = wxFileName(info.filenames[a]).GetFullName();
 
 			// Update splash window
-			UI::setSplashProgress(float(a) / float(info.filenames.size()));
-			UI::setSplashProgressMessage(name.ToStdString());
+			ui::setSplashProgress(float(a) / float(info.filenames.size()));
+			ui::setSplashProgressMessage(name.ToStdString());
 
 			// Add the entry to the archive
 			auto new_entry = archive->addNewEntry(name.ToStdString(), index, dir);
@@ -907,7 +909,7 @@ bool ArchivePanel::importFiles()
 			if (index > 0)
 				index++;
 		}
-		UI::hideSplash();
+		ui::hideSplash();
 		entry_list_->Show(true);
 
 		// End recording undo level
@@ -958,18 +960,18 @@ bool ArchivePanel::buildArchive()
 	ZipArchive zip;
 
 	// Create dialog
-	SFileDialog::FDInfo info;
-	if (SFileDialog::saveFile(info, "Build archive", zip.fileExtensionString(), this))
+	filedialog::FDInfo info;
+	if (filedialog::saveFile(info, "Build archive", zip.fileExtensionString(), this))
 	{
-		UI::showSplash("Building " + info.filenames[0], true);
-		UI::setSplashProgress(0.0f);
+		ui::showSplash("Building " + info.filenames[0], true);
+		ui::setSplashProgress(0.0f);
 
 		// prevent for "archive in archive" when saving in the current directory
 		if (wxFileExists(info.filenames[0]))
 			wxRemoveFile(info.filenames[0]);
 
 		// Log
-		UI::setSplashMessage("Importing files... (Esc to cancel)");
+		ui::setSplashMessage("Importing files... (Esc to cancel)");
 
 		// import all files into new archive
 		// Get a list of all files in the directory
@@ -982,7 +984,7 @@ bool ArchivePanel::buildArchive()
 			// Cancel event
 			if (wxGetKeyState(WXK_ESCAPE))
 			{
-				UI::hideSplash();
+				ui::hideSplash();
 				return true;
 			}
 
@@ -990,12 +992,12 @@ bool ArchivePanel::buildArchive()
 			name.Replace(archive->filename(), "", false); // Remove directory from entry name
 
 			// Split filename into dir+name
-			StrUtil::Path fn(name.ToStdString());
+			strutil::Path fn(name.ToStdString());
 			auto          ename = fn.fileName();
 			auto          edir  = fn.path();
 
 			// Remove beginning \ or / from dir
-			if (StrUtil::startsWith(edir, '\\') || StrUtil::startsWith(edir, '/'))
+			if (strutil::startsWith(edir, '\\') || strutil::startsWith(edir, '/'))
 				edir.remove_prefix(1);
 
 			// Skip hidden files
@@ -1007,8 +1009,8 @@ bool ArchivePanel::buildArchive()
 			auto entry = zip.addNewEntry(ename, dir->numEntries() + 1, dir.get());
 
 			// Log
-			UI::setSplashProgressMessage(ename);
-			UI::setSplashProgress((float)a / files.size());
+			ui::setSplashProgressMessage(ename);
+			ui::setSplashProgress((float)a / files.size());
 
 			// Load data
 			entry->importFile(files[a].ToStdString());
@@ -1018,22 +1020,22 @@ bool ArchivePanel::buildArchive()
 			dir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
 		}
 
-		UI::setSplashProgress(1.0f);
-		UI::setSplashMessage("Saving archive...");
-		UI::setSplashProgressMessage("");
+		ui::setSplashProgress(1.0f);
+		ui::setSplashMessage("Saving archive...");
+		ui::setSplashProgressMessage("");
 
 		// Save the archive
 		if (!zip.save(info.filenames[0]))
 		{
-			UI::hideSplash();
+			ui::hideSplash();
 
 			// If there was an error pop up a message box
-			wxMessageBox(wxString::Format("Error:\n%s", Global::error), "Error", wxICON_ERROR);
+			wxMessageBox(wxString::Format("Error:\n%s", global::error), "Error", wxICON_ERROR);
 			return false;
 		}
 	}
 
-	UI::hideSplash();
+	ui::hideSplash();
 
 	// Refresh entry list
 	entry_list_->updateList();
@@ -1079,7 +1081,7 @@ bool ArchivePanel::renameEntry(bool each) const
 			{
 				if (!archive->renameEntry(selection[a], new_name.ToStdString()))
 					wxMessageBox(
-						wxString::Format("Unable to rename entry %s: %s", selection[a]->name(), Global::error),
+						wxString::Format("Unable to rename entry %s: %s", selection[a]->name(), global::error),
 						"Rename Entry",
 						wxICON_EXCLAMATION | wxOK);
 			}
@@ -1093,7 +1095,7 @@ bool ArchivePanel::renameEntry(bool each) const
 			names.emplace_back(entry->nameNoExt());
 
 		// Get filter string
-		auto filter = Misc::massRenameFilter(names);
+		auto filter = misc::massRenameFilter(names);
 
 		// Prompt for a new name
 		auto new_name = wxGetTextFromUser(
@@ -1107,7 +1109,7 @@ bool ArchivePanel::renameEntry(bool each) const
 		// Apply mass rename to list of names
 		if (!new_name.empty())
 		{
-			Misc::doMassRename(names, new_name);
+			misc::doMassRename(names, new_name);
 
 			// Go through the list
 			entry_list_->setEntriesAutoUpdate(false);
@@ -1123,7 +1125,7 @@ bool ArchivePanel::renameEntry(bool each) const
 					continue;
 
 				// Get current name as wxFileName for processing
-				StrUtil::Path fn(entry->name());
+				strutil::Path fn(entry->name());
 
 				// Rename the entry (if needed)
 				if (fn.fileName(false) != names[a])
@@ -1132,18 +1134,18 @@ bool ArchivePanel::renameEntry(bool each) const
 					/* file renaming syntax */
 					int num = a / alphabet.size();
 					int cn  = a - (num * alphabet.size());
-					StrUtil::replaceIP(filename, "^^", { alphabet_lower.data() + cn, 1 });
-					StrUtil::replaceIP(filename, "^", { alphabet.data() + cn, 1 });
-					StrUtil::replaceIP(filename, "%%", fmt::format("{}", num));
-					StrUtil::replaceIP(filename, "%", fmt::format("{}", num + 1));
-					StrUtil::replaceIP(filename, "&&", fmt::format("{}", a));
-					StrUtil::replaceIP(filename, "&", fmt::format("{}", a + 1));
+					strutil::replaceIP(filename, "^^", { alphabet_lower.data() + cn, 1 });
+					strutil::replaceIP(filename, "^", { alphabet.data() + cn, 1 });
+					strutil::replaceIP(filename, "%%", fmt::format("{}", num));
+					strutil::replaceIP(filename, "%", fmt::format("{}", num + 1));
+					strutil::replaceIP(filename, "&&", fmt::format("{}", a));
+					strutil::replaceIP(filename, "&", fmt::format("{}", a + 1));
 					fn.setFileName(filename); // Change name
 
 					// Rename in archive
 					if (!archive->renameEntry(entry, fn.fileName()))
 						wxMessageBox(
-							wxString::Format("Unable to rename entry %s: %s", selection[a]->name(), Global::error),
+							wxString::Format("Unable to rename entry %s: %s", selection[a]->name(), global::error),
 							"Rename Entry",
 							wxICON_EXCLAMATION | wxOK);
 				}
@@ -1175,7 +1177,7 @@ bool ArchivePanel::renameEntry(bool each) const
 			continue;
 
 		// Discard any given path (for now)
-		new_name = StrUtil::Path::fileNameOf(new_name);
+		new_name = strutil::Path::fileNameOf(new_name);
 
 		// Rename the directory if the new entered name is different from the original
 		if (new_name != old_name)
@@ -1245,10 +1247,10 @@ bool ArchivePanel::deleteEntry(bool confirm)
 			entry_list_->setEntriesAutoUpdate(true);
 
 		// Remove from bookmarks
-		App::archiveManager().deleteBookmark(selected_entries[a]);
+		app::archiveManager().deleteBookmark(selected_entries[a]);
 
 		// Close entry tab if open
-		MainEditor::window()->archiveManagerPanel()->closeEntryTab(selected_entries[a]);
+		maineditor::window()->archiveManagerPanel()->closeEntryTab(selected_entries[a]);
 
 		// Remove the current selected entry if it isn't a directory
 		if (selected_entries[a]->type() != EntryType::folderType())
@@ -1263,11 +1265,11 @@ bool ArchivePanel::deleteEntry(bool confirm)
 			entry_list_->setEntriesAutoUpdate(true);
 
 		// Remove from bookmarks
-		App::archiveManager().deleteBookmarksInDir(selected_dirs[a]);
+		app::archiveManager().deleteBookmarksInDir(selected_dirs[a]);
 
 		// Close entry tabs
 		for (const auto& entry : selected_dirs[a]->entries())
-			MainEditor::window()->archiveManagerPanel()->closeEntryTab(entry.get());
+			maineditor::window()->archiveManagerPanel()->closeEntryTab(entry.get());
 
 		// Remove the selected directory from the archive
 		archive->removeDir(selected_dirs[a]->name(), entry_list_->currentDir().lock().get());
@@ -1325,9 +1327,9 @@ bool ArchivePanel::revertEntry() const
 	undo_manager_->endRecord(true);
 
 	// Reload entry if currently open
-	if (selected_entries.size() == 1 && MainEditor::currentEntryPanel()
-		&& MainEditor::currentEntryPanel()->entry() == selected_entries[0])
-		MainEditor::currentEntryPanel()->openEntry(selected_entries[0]);
+	if (selected_entries.size() == 1 && maineditor::currentEntryPanel()
+		&& maineditor::currentEntryPanel()->entry() == selected_entries[0])
+		maineditor::currentEntryPanel()->openEntry(selected_entries[0]);
 
 	// If the entries reverted were the only modified entries in the
 	// archive, the archive is no longer modified.
@@ -1361,7 +1363,7 @@ bool ArchivePanel::swapEntries()
 	auto dir = entry_list_->currentDir().lock().get();
 	archive->swapEntries(entry1, entry2, dir);
 	undo_manager_->endRecord(true);
-	
+
 	// Update archive
 	entry_list_->updateList();
 	archive->setModified(true);
@@ -1574,7 +1576,7 @@ bool ArchivePanel::sort() const
 		string name, ename = entry->upperName();
 		// Want to get another hack in this stuff? Yeah, of course you do!
 		// This here hack will sort Doom II songs by their associated map.
-		if (StrUtil::startsWith(ename, "D_") && StrUtil::equalCI(entry->type()->icon(), "music"))
+		if (strutil::startsWith(ename, "D_") && strutil::equalCI(entry->type()->icon(), "music"))
 		{
 			if (ename == "D_RUNNIN")
 				ename = "D_MAP01";
@@ -1711,7 +1713,7 @@ bool ArchivePanel::bookmark() const
 
 	if (entry)
 	{
-		App::archiveManager().addBookmark(entry->getShared());
+		app::archiveManager().addBookmark(entry->getShared());
 		return true;
 	}
 	else
@@ -1728,7 +1730,7 @@ bool ArchivePanel::openTab() const
 
 	// Open each in its own tab
 	for (auto& entry : selection)
-		MainEditor::openEntry(entry);
+		maineditor::openEntry(entry);
 
 	return true;
 }
@@ -1748,7 +1750,7 @@ bool ArchivePanel::crc32() const
 		uint32_t crc = entry->data().crc();
 		checksums += wxString::Format("%s:\t%x\n", entry->name(), crc);
 	}
-	Log::info(1, checksums);
+	log::info(1, checksums);
 	wxMessageBox(checksums);
 
 	return true;
@@ -1780,8 +1782,8 @@ bool ArchivePanel::importEntry()
 	for (auto& entry : selection)
 	{
 		// Run open file dialog
-		SFileDialog::FDInfo info;
-		if (SFileDialog::openFile(info, "Import Entry \"" + entry->name() + "\"", "Any File (*.*)|*.*", this))
+		filedialog::FDInfo info;
+		if (filedialog::openFile(info, "Import Entry \"" + entry->name() + "\"", "Any File (*.*)|*.*", this))
 		{
 			// Preserve gfx offset if needed
 			Vec2i offset;
@@ -1834,7 +1836,7 @@ bool ArchivePanel::importEntry()
 				}
 				// Warn if the offsets couldn't be written
 				if (ok && si.format() && !si.format()->writeOffset(si, entry, offset))
-					Log::warning(wxString::Format(
+					log::warning(wxString::Format(
 						"Old offset information [%d, %d] couldn't be "
 						"preserved in the new image format for image %s.",
 						offset.x,
@@ -1872,7 +1874,7 @@ bool ArchivePanel::exportEntry()
 	// If we're just exporting 1 entry
 	if (selection.size() == 1 && selected_dirs.empty())
 	{
-		wxString   name = Misc::lumpNameToFileName(selection[0]->name());
+		wxString   name = misc::lumpNameToFileName(selection[0]->name());
 		wxFileName fn(name);
 
 		// Add appropriate extension if needed
@@ -1880,8 +1882,8 @@ bool ArchivePanel::exportEntry()
 			fn.SetExt(selection[0]->type()->extension());
 
 		// Run save file dialog
-		SFileDialog::FDInfo info;
-		if (SFileDialog::saveFile(
+		filedialog::FDInfo info;
+		if (filedialog::saveFile(
 				info,
 				"Export Entry \"" + selection[0]->name() + "\"",
 				"Any File (*.*)|*.*",
@@ -1892,8 +1894,8 @@ bool ArchivePanel::exportEntry()
 	else
 	{
 		// Run save files dialog
-		SFileDialog::FDInfo info;
-		if (SFileDialog::saveFiles(info, "Export Multiple Entries (Filename is ignored)", "Any File (*.*)|*.*", this))
+		filedialog::FDInfo info;
+		if (filedialog::saveFiles(info, "Export Multiple Entries (Filename is ignored)", "Any File (*.*)|*.*", this))
 		{
 			// Go through the selected entries
 			for (auto& entry : selection)
@@ -1944,7 +1946,7 @@ bool ArchivePanel::copyEntry() const
 		return false;
 
 	// Create clipboard item from selection
-	App::clipboard().add(std::make_unique<EntryTreeClipboardItem>(entries, dirs));
+	app::clipboard().add(std::make_unique<EntryTreeClipboardItem>(entries, dirs));
 
 	return true;
 }
@@ -1970,7 +1972,7 @@ bool ArchivePanel::cutEntry()
 bool ArchivePanel::pasteEntry() const
 {
 	// Do nothing if there is nothing in the clipboard
-	if (App::clipboard().empty())
+	if (app::clipboard().empty())
 		return false;
 
 	// Check the archive is still open
@@ -1994,14 +1996,14 @@ bool ArchivePanel::pasteEntry() const
 	bool pasted = false;
 	undo_manager_->beginRecord("Paste Entry");
 	entry_list_->setEntriesAutoUpdate(false);
-	for (unsigned a = 0; a < App::clipboard().size(); a++)
+	for (unsigned a = 0; a < app::clipboard().size(); a++)
 	{
 		// Check item type
-		if (App::clipboard().item(a)->type() != ClipboardItem::Type::EntryTree)
+		if (app::clipboard().item(a)->type() != ClipboardItem::Type::EntryTree)
 			continue;
 
 		// Get clipboard item
-		auto clip = dynamic_cast<EntryTreeClipboardItem*>(App::clipboard().item(a));
+		auto clip = dynamic_cast<EntryTreeClipboardItem*>(app::clipboard().item(a));
 
 		// Merge it in
 		if (archive->paste(clip->tree(), index, dir))
@@ -2036,7 +2038,7 @@ bool ArchivePanel::openEntryExternal()
 		// Show error message if failed
 		if (!ok)
 			wxMessageBox(
-				wxString::Format("Failed opening %s in external editor: %s", entry->name(), Global::error),
+				wxString::Format("Failed opening %s in external editor: %s", entry->name(), global::error),
 				"External Edit Failed",
 				wxOK | wxICON_ERROR);
 	}
@@ -2060,7 +2062,7 @@ bool ArchivePanel::gfxConvert() const
 	gcd.ShowModal();
 
 	// Show splash window
-	UI::showSplash("Writing converted image data...", true);
+	ui::showSplash("Writing converted image data...", true);
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Gfx Format Conversion");
@@ -2073,8 +2075,8 @@ bool ArchivePanel::gfxConvert() const
 			entry_list_->setEntriesAutoUpdate(true);
 
 		// Update splash window
-		UI::setSplashProgressMessage(selection[a]->name());
-		UI::setSplashProgress((float)a / (float)selection.size());
+		ui::setSplashProgressMessage(selection[a]->name());
+		ui::setSplashProgress((float)a / (float)selection.size());
 
 		// Skip if the image wasn't converted
 		if (!gcd.itemModified(a))
@@ -2097,8 +2099,8 @@ bool ArchivePanel::gfxConvert() const
 	undo_manager_->endRecord(true);
 
 	// Hide splash window
-	UI::hideSplash();
-	MainEditor::currentEntryPanel()->callRefresh();
+	ui::hideSplash();
+	maineditor::currentEntryPanel()->callRefresh();
 
 	return true;
 }
@@ -2113,7 +2115,7 @@ bool ArchivePanel::gfxRemap()
 
 	// Create preview image (just use first selected entry)
 	SImage image(SImage::Type::PalMask);
-	Misc::loadImageFromEntry(&image, selection[0]);
+	misc::loadImageFromEntry(&image, selection[0]);
 
 	// Create translation editor dialog
 	auto                    pal = theMainWindow->paletteChooser()->selectedPalette();
@@ -2137,7 +2139,7 @@ bool ArchivePanel::gfxRemap()
 				entry_list_->setEntriesAutoUpdate(true);
 
 			auto entry = selection[a];
-			if (Misc::loadImageFromEntry(&temp, entry))
+			if (misc::loadImageFromEntry(&temp, entry))
 			{
 				// Apply translation
 				temp.applyTranslation(&ted.getTranslation(), pal);
@@ -2147,7 +2149,7 @@ bool ArchivePanel::gfxRemap()
 
 				// Write modified image data
 				if (!temp.format()->saveImage(temp, mc, pal))
-					Log::error(1, wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
+					log::error(1, wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2160,7 +2162,7 @@ bool ArchivePanel::gfxRemap()
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
 	}
-	MainEditor::currentEntryPanel()->callRefresh();
+	maineditor::currentEntryPanel()->callRefresh();
 
 	return true;
 }
@@ -2194,7 +2196,7 @@ bool ArchivePanel::gfxColourise()
 				entry_list_->setEntriesAutoUpdate(true);
 
 			auto entry = selection[a];
-			if (Misc::loadImageFromEntry(&temp, entry))
+			if (misc::loadImageFromEntry(&temp, entry))
 			{
 				// Apply translation
 				temp.colourise(gcd.colour(), pal);
@@ -2204,7 +2206,7 @@ bool ArchivePanel::gfxColourise()
 
 				// Write modified image data
 				if (!temp.format()->saveImage(temp, mc, pal))
-					Log::error(wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
+					log::error(wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2214,7 +2216,7 @@ bool ArchivePanel::gfxColourise()
 		undo_manager_->endRecord(true);
 	}
 	last_colour = gcd.colour().toString(ColRGBA::StringFormat::RGB);
-	MainEditor::currentEntryPanel()->callRefresh();
+	maineditor::currentEntryPanel()->callRefresh();
 
 	return true;
 }
@@ -2248,7 +2250,7 @@ bool ArchivePanel::gfxTint()
 				entry_list_->setEntriesAutoUpdate(true);
 
 			auto entry = selection[a];
-			if (Misc::loadImageFromEntry(&temp, entry))
+			if (misc::loadImageFromEntry(&temp, entry))
 			{
 				// Apply translation
 				temp.tint(gtd.colour(), gtd.amount(), pal);
@@ -2258,7 +2260,7 @@ bool ArchivePanel::gfxTint()
 
 				// Write modified image data
 				if (!temp.format()->saveImage(temp, mc, pal))
-					Log::info(wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
+					log::info(wxString::Format(ERROR_UNWRITABLE_IMAGE_FORMAT, entry->name()));
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2270,7 +2272,7 @@ bool ArchivePanel::gfxTint()
 	}
 	last_tint_colour = gtd.colour().toString(ColRGBA::StringFormat::RGB);
 	last_tint_amount = (int)(gtd.amount() * 100.0f);
-	MainEditor::currentEntryPanel()->callRefresh();
+	maineditor::currentEntryPanel()->callRefresh();
 
 	return true;
 }
@@ -2297,9 +2299,9 @@ bool ArchivePanel::gfxModifyOffsets() const
 	for (auto& entry : selection)
 	{
 		undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
-		EntryOperations::modifyGfxOffsets(entry, &mod);
+		entryoperations::modifyGfxOffsets(entry, &mod);
 	}
-	MainEditor::currentEntryPanel()->callRefresh();
+	maineditor::currentEntryPanel()->callRefresh();
 	entry_list_->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
@@ -2319,15 +2321,15 @@ bool ArchivePanel::gfxExportPNG()
 	// If we're just exporting 1 entry
 	if (selection.size() == 1)
 	{
-		wxString   name = Misc::lumpNameToFileName(selection[0]->name());
+		wxString   name = misc::lumpNameToFileName(selection[0]->name());
 		wxFileName fn(name);
 
 		// Set extension
 		fn.SetExt("png");
 
 		// Run save file dialog
-		SFileDialog::FDInfo info;
-		if (SFileDialog::saveFile(
+		filedialog::FDInfo info;
+		if (filedialog::saveFile(
 				info,
 				"Export Entry \"" + selection[0]->name() + "\" as PNG",
 				"PNG Files (*.png)|*.png",
@@ -2335,9 +2337,9 @@ bool ArchivePanel::gfxExportPNG()
 				fn.GetFullName().ToStdString()))
 		{
 			// If a filename was selected, export it
-			if (!EntryOperations::exportAsPNG(selection[0], info.filenames[0]))
+			if (!entryoperations::exportAsPNG(selection[0], info.filenames[0]))
 			{
-				wxMessageBox(wxString::Format("Error: %s", Global::error), "Error", wxOK | wxICON_ERROR);
+				wxMessageBox(wxString::Format("Error: %s", global::error), "Error", wxOK | wxICON_ERROR);
 				return false;
 			}
 		}
@@ -2347,8 +2349,8 @@ bool ArchivePanel::gfxExportPNG()
 	else
 	{
 		// Run save files dialog
-		SFileDialog::FDInfo info;
-		if (SFileDialog::saveFiles(
+		filedialog::FDInfo info;
+		if (filedialog::saveFiles(
 				info, "Export Entries as PNG (Filename will be ignored)", "PNG Files (*.png)|*.png", this))
 		{
 			// Go through the selection
@@ -2360,7 +2362,7 @@ bool ArchivePanel::gfxExportPNG()
 				fn.SetExt("png");
 
 				// Do export
-				EntryOperations::exportAsPNG(entry, fn.GetFullPath());
+				entryoperations::exportAsPNG(entry, fn.GetFullPath());
 			}
 		}
 	}
@@ -2388,9 +2390,9 @@ bool ArchivePanel::voxelConvert()
 		{
 			MemChunk kvx;
 			// Attempt conversion
-			if (!Conversions::voxToKvx(selection[a]->data(), kvx))
+			if (!conversion::voxToKvx(selection[a]->data(), kvx))
 			{
-				Log::error(wxString::Format("Unable to convert entry %s: %s", selection[a]->name(), Global::error));
+				log::error(wxString::Format("Unable to convert entry %s: %s", selection[a]->name(), global::error));
 				errors = true;
 				continue;
 			}
@@ -2475,8 +2477,8 @@ bool ArchivePanel::swanConvert() const
 	{
 		if (entry->type()->id() == "swantbls")
 		{
-			error |= !EntryOperations::convertSwanTbls(entry, &mca, false);
-			error |= !EntryOperations::convertSwanTbls(entry, &mcs, true);
+			error |= !entryoperations::convertSwanTbls(entry, &mca, false);
+			error |= !entryoperations::convertSwanTbls(entry, &mcs, true);
 		}
 	}
 
@@ -2588,9 +2590,9 @@ bool ArchivePanel::basConvert(bool animdefs)
 		for (auto& entry : selection)
 		{
 			if (entry->type()->formatId() == "animated")
-				EntryOperations::convertAnimated(entry, &animdata, animdefs);
+				entryoperations::convertAnimated(entry, &animdata, animdefs);
 			else if (entry->type()->formatId() == "switches")
-				EntryOperations::convertSwitches(entry, &animdata, animdefs);
+				entryoperations::convertSwitches(entry, &animdata, animdefs);
 		}
 		output->importMemChunk(animdata);
 
@@ -2620,7 +2622,7 @@ bool ArchivePanel::palConvert() const
 	for (size_t i = 0; i < pal6bit->size(); ++i)
 		dest[i] = ((dest[i] << 2) | (dest[i] >> 4));
 	pal6bit->importMem(dest.data(), pal6bit->size());
-	MainEditor::currentEntryPanel()->callRefresh();
+	maineditor::currentEntryPanel()->callRefresh();
 	return true;
 }
 
@@ -2648,9 +2650,9 @@ bool ArchivePanel::wavDSndConvert() const
 		{
 			MemChunk dsnd;
 			// Attempt conversion
-			if (!Conversions::wavToDoomSnd(selection[a]->data(), dsnd))
+			if (!conversion::wavToDoomSnd(selection[a]->data(), dsnd))
 			{
-				Log::error(wxString::Format("Unable to convert entry %s: %s", selection[a]->name(), Global::error));
+				log::error(wxString::Format("Unable to convert entry %s: %s", selection[a]->name(), global::error));
 				errors = true;
 				continue;
 			}
@@ -2695,22 +2697,22 @@ bool ArchivePanel::dSndWavConvert() const
 		MemChunk wav;
 		// Convert Doom Sound -> WAV if the entry is Doom Sound format
 		if (selection[a]->type()->formatId() == "snd_doom" || selection[a]->type()->formatId() == "snd_doom_mac")
-			worked = Conversions::doomSndToWav(selection[a]->data(), wav);
+			worked = conversion::doomSndToWav(selection[a]->data(), wav);
 		// Or Doom Speaker sound format
 		else if (selection[a]->type()->formatId() == "snd_speaker")
-			worked = Conversions::spkSndToWav(selection[a]->data(), wav);
+			worked = conversion::spkSndToWav(selection[a]->data(), wav);
 		// Or Jaguar Doom sound format
 		else if (selection[a]->type()->formatId() == "snd_jaguar")
-			worked = Conversions::jagSndToWav(selection[a]->data(), wav);
+			worked = conversion::jagSndToWav(selection[a]->data(), wav);
 		// Or Wolfenstein 3D sound format
 		else if (selection[a]->type()->formatId() == "snd_wolf")
-			worked = Conversions::wolfSndToWav(selection[a]->data(), wav);
+			worked = conversion::wolfSndToWav(selection[a]->data(), wav);
 		// Or Creative Voice File format
 		else if (selection[a]->type()->formatId() == "snd_voc")
-			worked = Conversions::vocToWav(selection[a]->data(), wav);
+			worked = conversion::vocToWav(selection[a]->data(), wav);
 		// Or Blood SFX format (this one needs to be given the entry, not just the mem chunk)
 		else if (selection[a]->type()->formatId() == "snd_bloodsfx")
-			worked = Conversions::bloodToWav(selection[a], wav);
+			worked = conversion::bloodToWav(selection[a], wav);
 		// If successfully converted, update the entry
 		if (worked)
 		{
@@ -2721,7 +2723,7 @@ bool ArchivePanel::dSndWavConvert() const
 		}
 		else
 		{
-			Log::error(wxString::Format("Unable to convert entry %s: %s", selection[a]->name(), Global::error));
+			log::error(wxString::Format("Unable to convert entry %s: %s", selection[a]->name(), global::error));
 			errors = true;
 			continue;
 		}
@@ -2758,19 +2760,19 @@ bool ArchivePanel::musMidiConvert() const
 
 		// Convert MUS -> MIDI if the entry is a MIDI-like format
 		const auto& format_id = selection[a]->type()->formatId();
-		if (StrUtil::startsWith(format_id, "midi_") && format_id != "midi_smf")
+		if (strutil::startsWith(format_id, "midi_") && format_id != "midi_smf")
 		{
 			MemChunk midi;
 			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a])); // Create undo step
 			if (format_id == "midi_mus")
-				Conversions::musToMidi(selection[a]->data(), midi); // Convert
+				conversion::musToMidi(selection[a]->data(), midi); // Convert
 			else if (format_id == "midi_gmid")
-				Conversions::gmidToMidi(selection[a]->data(), midi); // Convert
+				conversion::gmidToMidi(selection[a]->data(), midi); // Convert
 			else
-				Conversions::zmusToMidi(selection[a]->data(), midi); // Convert
-			selection[a]->importMemChunk(midi);                      // Load midi data
-			EntryType::detectEntryType(*selection[a]);               // Update entry type
-			selection[a]->setExtensionByType();                      // Update extension if necessary
+				conversion::zmusToMidi(selection[a]->data(), midi); // Convert
+			selection[a]->importMemChunk(midi);                     // Load midi data
+			EntryType::detectEntryType(*selection[a]);              // Update entry type
+			selection[a]->setExtensionByType();                     // Update extension if necessary
 		}
 	}
 	entry_list_->setEntriesAutoUpdate(true);
@@ -2796,7 +2798,7 @@ bool ArchivePanel::compileACS(bool hexen) const
 		if (a == selection.size() - 1)
 			entry_list_->setEntriesAutoUpdate(true);
 		// Compile ACS script
-		EntryOperations::compileACS(selection[a], hexen, nullptr, theMainWindow);
+		entryoperations::compileACS(selection[a], hexen, nullptr, theMainWindow);
 	}
 	entry_list_->setEntriesAutoUpdate(true);
 
@@ -2825,7 +2827,7 @@ bool ArchivePanel::optimizePNG() const
 	// Get selected entries
 	auto selection = entry_list_->selectedEntries();
 
-	UI::showSplash("Running external programs, please wait...", true);
+	ui::showSplash("Running external programs, please wait...", true);
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Optimize PNG");
@@ -2837,16 +2839,16 @@ bool ArchivePanel::optimizePNG() const
 		if (a == selection.size() - 1)
 			entry_list_->setEntriesAutoUpdate(true);
 
-		UI::setSplashProgressMessage(selection[a]->nameNoExt());
-		UI::setSplashProgress(float(a) / float(selection.size()));
+		ui::setSplashProgressMessage(selection[a]->nameNoExt());
+		ui::setSplashProgress(float(a) / float(selection.size()));
 		if (selection[a]->type()->formatId() == "img_png")
 		{
 			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a]));
-			EntryOperations::optimizePNG(selection[a]);
+			entryoperations::optimizePNG(selection[a]);
 		}
 	}
 	entry_list_->setEntriesAutoUpdate(true);
-	UI::hideSplash();
+	ui::hideSplash();
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
@@ -2867,7 +2869,7 @@ bool ArchivePanel::convertTextures() const
 	undo_manager_->beginRecord("Convert TEXTUREx -> TEXTURES");
 
 	// Do conversion
-	if (EntryOperations::convertTextures(selection))
+	if (entryoperations::convertTextures(selection))
 	{
 		// Select new TEXTURES entry
 		entry_list_->clearSelection();
@@ -2890,7 +2892,7 @@ bool ArchivePanel::convertTextures() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::findTextureErrors() const
 {
-	return EntryOperations::findTextureErrors(entry_list_->selectedEntries());
+	return entryoperations::findTextureErrors(entry_list_->selectedEntries());
 }
 
 // -----------------------------------------------------------------------------
@@ -2903,7 +2905,7 @@ bool ArchivePanel::mapOpenDb2() const
 	auto entry = entry_list_->entryAt(entry_list_->firstSelected());
 
 	// Do open in db2
-	return EntryOperations::openMapDB2(entry);
+	return entryoperations::openMapDB2(entry);
 }
 
 // -----------------------------------------------------------------------------
@@ -2932,7 +2934,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 	// Null entry, do nothing
 	if (!entry)
 	{
-		Log::warning("NULL entry focused in the list");
+		log::warning("NULL entry focused in the list");
 		return false;
 	}
 
@@ -2966,7 +2968,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		// Check it exists (really should)
 		if (!dir)
 		{
-			Log::error(wxString::Format("Trying to open nonexistant directory %s", name));
+			log::error(wxString::Format("Trying to open nonexistant directory %s", name));
 			return false;
 		}
 		entry_list_->setDir(dir);
@@ -3000,12 +3002,12 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		else if (entry->type()->editor() == "default")
 			new_area = default_area_;
 		else
-			Log::warning(
+			log::warning(
 				wxString::Format("Entry editor %s does not exist, using default editor", entry->type()->editor()));
 
 		// Load the entry into the panel
 		if (!new_area->openEntry(entry))
-			wxMessageBox(wxString::Format("Error loading entry:\n%s", Global::error), "Error", wxOK | wxICON_ERROR);
+			wxMessageBox(wxString::Format("Error loading entry:\n%s", global::error), "Error", wxOK | wxICON_ERROR);
 
 		// Show the new entry panel
 		bool changed = (cur_area_ != new_area);
@@ -3036,7 +3038,7 @@ bool ArchivePanel::openEntryAsText(ArchiveEntry* entry)
 
 	// Load the current entry into the panel
 	if (!text_area_->openEntry(entry))
-		wxMessageBox(wxString::Format("Error loading entry:\n%s", Global::error), "Error", wxOK | wxICON_ERROR);
+		wxMessageBox(wxString::Format("Error loading entry:\n%s", global::error), "Error", wxOK | wxICON_ERROR);
 
 	// Show the text entry panel
 	return showEntryPanel(text_area_);
@@ -3061,7 +3063,7 @@ bool ArchivePanel::openEntryAsHex(ArchiveEntry* entry)
 
 	// Load the current entry into the panel
 	if (!hex_area_->openEntry(entry))
-		wxMessageBox(wxString::Format("Error loading entry:\n%s", Global::error), "Error", wxOK | wxICON_ERROR);
+		wxMessageBox(wxString::Format("Error loading entry:\n%s", global::error), "Error", wxOK | wxICON_ERROR);
 
 	// Show the text entry panel
 	return showEntryPanel(hex_area_);
@@ -3178,7 +3180,7 @@ wxMenu* ArchivePanel::createEntryOpenMenu(const wxString& category)
 	menu_open->AppendSeparator();
 
 	// External editors
-	auto     external   = Executables::externalExes(category.ToStdString());
+	auto     external   = executables::externalExes(category.ToStdString());
 	auto     a_open_ext = SAction::fromId("arch_entry_openext");
 	unsigned num        = std::min<unsigned>(external.size(), 20);
 	for (unsigned a = 0; a < num; a++)
@@ -3208,7 +3210,7 @@ bool ArchivePanel::handleAction(string_view id)
 		return false;
 
 	// We're only interested in "arch_" actions (and some others)
-	if (!StrUtil::startsWith(id, "arch_") && !StrUtil::startsWith(id, "pmap_"))
+	if (!strutil::startsWith(id, "arch_") && !strutil::startsWith(id, "pmap_"))
 		return false;
 
 	// Check the archive is still open
@@ -3247,10 +3249,10 @@ bool ArchivePanel::handleAction(string_view id)
 
 	// Archive->Texture Editor
 	else if (id == "arch_texeditor")
-		MainEditor::openTextureEditor(archive.get());
+		maineditor::openTextureEditor(archive.get());
 
 	else if (id == "arch_mapeditor")
-		MainEditor::openMapEditor(archive.get());
+		maineditor::openMapEditor(archive.get());
 
 	// Archive->Convert To...
 	else if (id == "arch_convert")
@@ -3258,27 +3260,27 @@ bool ArchivePanel::handleAction(string_view id)
 
 	// Archive->Maintenance->Remove Unused Patches
 	else if (id == "arch_clean_patches")
-		ArchiveOperations::removeUnusedPatches(archive.get());
+		archiveoperations::removeUnusedPatches(archive.get());
 
 	// Archive->Maintenance->Remove Unused Textures
 	else if (id == "arch_clean_textures")
-		ArchiveOperations::removeUnusedTextures(archive.get());
+		archiveoperations::removeUnusedTextures(archive.get());
 
 	// Archive->Maintenance->Remove Unused Flats
 	else if (id == "arch_clean_flats")
-		ArchiveOperations::removeUnusedFlats(archive.get());
+		archiveoperations::removeUnusedFlats(archive.get());
 
 	// Archive->Maintenance->Check Duplicate Entry Names
 	else if (id == "arch_check_duplicates")
-		ArchiveOperations::checkDuplicateEntryNames(archive.get());
+		archiveoperations::checkDuplicateEntryNames(archive.get());
 
 	// Archive->Maintenance->Check Duplicate Entry Names
 	else if (id == "arch_check_duplicates2")
-		ArchiveOperations::checkDuplicateEntryContent(archive.get());
+		archiveoperations::checkDuplicateEntryContent(archive.get());
 
 	// Archive->Maintenance->Check Duplicate Entry Names
 	else if (id == "arch_clean_iwaddupes")
-		ArchiveOperations::removeEntriesUnchangedFromIWAD(archive.get());
+		archiveoperations::removeEntriesUnchangedFromIWAD(archive.get());
 
 	// Archive->Maintenance->Replace in Maps
 	else if (id == "arch_replace_maps")
@@ -3289,7 +3291,7 @@ bool ArchivePanel::handleAction(string_view id)
 
 	// Archive->Scripts->...
 	else if (id == "arch_script")
-		ScriptManager::runArchiveScript(archive.get(), wx_id_offset_);
+		scriptmanager::runArchiveScript(archive.get(), wx_id_offset_);
 
 
 	// ------------------------------------------------------------------------
@@ -3373,7 +3375,7 @@ bool ArchivePanel::handleAction(string_view id)
 
 	// Entry->Run Script
 	else if (id == "arch_entry_script")
-		ScriptManager::runEntryScript(entry_list_->selectedEntries(), wx_id_offset_, MainEditor::windowWx());
+		scriptmanager::runEntryScript(entry_list_->selectedEntries(), wx_id_offset_, maineditor::windowWx());
 
 
 	// Context menu actions
@@ -3394,9 +3396,9 @@ bool ArchivePanel::handleAction(string_view id)
 	else if (id == "arch_gfx_offsets")
 		gfxModifyOffsets();
 	else if (id == "arch_gfx_addptable")
-		EntryOperations::addToPatchTable(entry_list_->selectedEntries());
+		entryoperations::addToPatchTable(entry_list_->selectedEntries());
 	else if (id == "arch_gfx_addtexturex")
-		EntryOperations::createTexture(entry_list_->selectedEntries());
+		entryoperations::createTexture(entry_list_->selectedEntries());
 	else if (id == "arch_gfx_exportpng")
 		gfxExportPNG();
 	else if (id == "arch_gfx_pngopt")
@@ -3643,7 +3645,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		}
 		if (!mus_selected)
 		{
-			if (StrUtil::startsWith(entry->type()->formatId(), "midi_") && entry->type()->formatId() != "midi_smf")
+			if (strutil::startsWith(entry->type()->formatId(), "midi_") && entry->type()->formatId() != "midi_smf")
 				mus_selected = true;
 		}
 		if (!text_selected)
@@ -3720,7 +3722,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	// SAction::fromId("arch_entry_crc32")->addToMenu(&context, true);
 
 	// Add 'Open In' menu
-	context.AppendSubMenu(createEntryOpenMenu(category), "Open")->SetBitmap(Icons::getIcon(Icons::General, "open"));
+	context.AppendSubMenu(createEntryOpenMenu(category), "Open")->SetBitmap(icons::getIcon(icons::General, "open"));
 
 	// Add custom menu items
 	wxMenu* custom;
@@ -3864,10 +3866,10 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	}
 
 	// Entry scripts
-	if (!ScriptManager::editorScripts(ScriptManager::ScriptType::Entry).empty())
+	if (!scriptmanager::editorScripts(scriptmanager::ScriptType::Entry).empty())
 	{
 		auto menu_scripts = new wxMenu();
-		ScriptManager::populateEditorScriptMenu(menu_scripts, ScriptManager::ScriptType::Entry, "arch_entry_script");
+		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Entry, "arch_entry_script");
 		context.AppendSeparator();
 		context.AppendSubMenu(menu_scripts, "Run &Script");
 	}
@@ -4013,13 +4015,13 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 
 	// Archive
 	if (entry->type()->formatId().substr(0, 8) == "archive_")
-		App::archiveManager().openArchive(entry);
+		app::archiveManager().openArchive(entry);
 
 	// Texture list
 	else if (
 		entry->type()->formatId() == "texturex" || entry->type() == EntryType::fromId("pnames")
 		|| entry->type() == EntryType::fromId("zdtextures"))
-		MainEditor::openTextureEditor(archive.get(), entry);
+		maineditor::openTextureEditor(archive.get(), entry);
 
 	// Map
 	// TODO: Needs to filter the game/port lists in the dialog by the map format
@@ -4037,17 +4039,17 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 			else
 			{
 				// Load game configuration
-				Game::configuration().openConfig(
+				game::configuration().openConfig(
 					dlg.selectedGame().ToStdString(), dlg.selectedPort().ToStdString(), info.format);
 
 				// Attempt to open map
-				if (MapEditor::window()->openMap(info))
-					MapEditor::window()->Show();
+				if (mapeditor::window()->openMap(info))
+					mapeditor::window()->Show();
 				else
 				{
-					MapEditor::window()->Hide();
+					mapeditor::window()->Hide();
 					wxMessageBox(
-						wxString::Format("Unable to open map %s: %s", entry->name(), Global::error),
+						wxString::Format("Unable to open map %s: %s", entry->name(), global::error),
 						"Invalid map error",
 						wxICON_ERROR);
 				}
@@ -4057,7 +4059,7 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 
 	// Other entry
 	else if (entry->type() != EntryType::folderType())
-		MainEditor::openEntry(entry);
+		maineditor::openEntry(entry);
 
 	e.Skip();
 }
@@ -4188,7 +4190,7 @@ void ArchivePanel::onBtnClearFilter(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 bool EntryDataUS::swapData()
 {
-	// Log::info(1, "Entry data swap...");
+	// log::info(1, "Entry data swap...");
 
 	// Get parent dir
 	auto dir = archive_->dirAtPath(path_.ToStdString());
@@ -4202,18 +4204,18 @@ bool EntryDataUS::swapData()
 		// Backup data
 		MemChunk temp_data;
 		temp_data.importMem(entry->rawData(), entry->size());
-		// Log::info(1, "Backup current data, size %d", entry->getSize());
+		// log::info(1, "Backup current data, size %d", entry->getSize());
 
 		// Restore entry data
 		if (data_.size() == 0)
 		{
 			entry->clearData();
-			// Log::info(1, "Clear entry data");
+			// log::info(1, "Clear entry data");
 		}
 		else
 		{
 			entry->importMemChunk(data_);
-			// Log::info(1, "Restored entry data, size %d", data.getSize());
+			// log::info(1, "Restored entry data, size %d", data.getSize());
 		}
 
 		// Store previous entry data
@@ -4238,34 +4240,11 @@ bool EntryDataUS::swapData()
 // -----------------------------------------------------------------------------
 
 #include "App.h"
-#include "General/Console/Console.h"
-#include "General/Console/ConsoleHelpers.h"
-Archive* CH::getCurrentArchive()
-{
-	if (MainEditor::window())
-	{
-		if (MainEditor::window()->archiveManagerPanel())
-		{
-			return MainEditor::window()->archiveManagerPanel()->currentArchive();
-		}
-	}
-	return nullptr;
-}
-
-ArchivePanel* CH::getCurrentArchivePanel()
-{
-	ArchiveManagerPanel* archie = MainEditor::window()->archiveManagerPanel();
-	if (archie)
-	{
-		if (archie->isArchivePanel(archie->currentTabIndex()))
-			return (ArchivePanel*)(archie->currentPanel());
-	}
-	return nullptr;
-}
+#include "General/Console.h"
 
 CONSOLE_COMMAND(palconv, 0, false)
 {
-	ArchivePanel* meep = CH::getCurrentArchivePanel();
+	ArchivePanel* meep = maineditor::currentArchivePanel();
 	if (meep)
 	{
 		meep->palConvert();
@@ -4275,7 +4254,7 @@ CONSOLE_COMMAND(palconv, 0, false)
 
 CONSOLE_COMMAND(palconv64, 0, false)
 {
-	ArchivePanel* meep = CH::getCurrentArchivePanel();
+	ArchivePanel* meep = maineditor::currentArchivePanel();
 	if (meep)
 	{
 		// Get the entry index of the last selected list item
@@ -4294,14 +4273,14 @@ CONSOLE_COMMAND(palconv64, 0, false)
 			dest[(3 * i) + 2] = b;
 		}
 		pal->importMem(dest, (pal->size() / 2) * 3);
-		MainEditor::currentEntryPanel()->callRefresh();
+		maineditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
 
 CONSOLE_COMMAND(palconvpsx, 0, false)
 {
-	ArchivePanel* meep = CH::getCurrentArchivePanel();
+	ArchivePanel* meep = maineditor::currentArchivePanel();
 	if (meep)
 	{
 		// Get the entry index of the last selected list item
@@ -4325,14 +4304,14 @@ CONSOLE_COMMAND(palconvpsx, 0, false)
 			dest[(3 * i) + 2] = b;
 		}
 		pal->importMem(dest, (pal->size() / 2) * 3);
-		MainEditor::currentEntryPanel()->callRefresh();
+		maineditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
 
 CONSOLE_COMMAND(vertex32x, 0, false)
 {
-	ArchivePanel* meep = CH::getCurrentArchivePanel();
+	ArchivePanel* meep = maineditor::currentArchivePanel();
 	if (meep)
 	{
 		// Get the entry index of the last selected list item
@@ -4345,14 +4324,14 @@ CONSOLE_COMMAND(vertex32x, 0, false)
 			dest[2 * i + 1] = source[4 * i + 0];
 		}
 		v32x->importMem(dest, v32x->size() / 2);
-		MainEditor::currentEntryPanel()->callRefresh();
+		maineditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
 
 CONSOLE_COMMAND(vertexpsx, 0, false)
 {
-	ArchivePanel* meep = CH::getCurrentArchivePanel();
+	ArchivePanel* meep = maineditor::currentArchivePanel();
 	if (meep)
 	{
 		// Get the entry index of the last selected list item
@@ -4365,14 +4344,14 @@ CONSOLE_COMMAND(vertexpsx, 0, false)
 			dest[2 * i + 1] = source[4 * i + 3];
 		}
 		vpsx->importMem(dest, vpsx->size() / 2);
-		MainEditor::currentEntryPanel()->callRefresh();
+		maineditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
 
 CONSOLE_COMMAND(lightspsxtopalette, 0, false)
 {
-	ArchivePanel* meep = CH::getCurrentArchivePanel();
+	ArchivePanel* meep = maineditor::currentArchivePanel();
 	if (meep)
 	{
 		// Get the entry index of the last selected list item
@@ -4387,7 +4366,7 @@ CONSOLE_COMMAND(lightspsxtopalette, 0, false)
 			dest[3 * i + 2] = source[4 * i + 2];
 		}
 		lights->importMem(dest, entries * 3);
-		MainEditor::currentEntryPanel()->callRefresh();
+		maineditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
@@ -4396,8 +4375,8 @@ CONSOLE_COMMAND(lightspsxtopalette, 0, false)
 vector<ArchiveEntry*> Console_SearchEntries(wxString name)
 {
 	vector<ArchiveEntry*> entries;
-	Archive*              archive = MainEditor::currentArchive();
-	ArchivePanel*         panel   = CH::getCurrentArchivePanel();
+	Archive*              archive = maineditor::currentArchive();
+	ArchivePanel*         panel   = maineditor::currentArchivePanel();
 
 	if (archive)
 	{
@@ -4426,12 +4405,12 @@ CONSOLE_COMMAND(find, 1, true)
 			message += entries[i]->path(true) + "\n";
 		}
 	}
-	Log::info(wxString::Format("Found %i entr%s", count, count == 1 ? "y" : "ies\n") + message);
+	log::info(wxString::Format("Found %i entr%s", count, count == 1 ? "y" : "ies\n") + message);
 }
 
 CONSOLE_COMMAND(ren, 2, true)
 {
-	Archive*              archive = MainEditor::currentArchive();
+	Archive*              archive = maineditor::currentArchive();
 	vector<ArchiveEntry*> entries = Console_SearchEntries(args[0]);
 	if (!entries.empty())
 	{
@@ -4463,14 +4442,14 @@ CONSOLE_COMMAND(ren, 2, true)
 			if (archive->renameEntry(entries[i], newname.ToStdString()))
 				++count;
 		}
-		Log::info(wxString::Format("Renamed %i entr%s", count, count == 1 ? "y" : "ies"));
+		log::info(wxString::Format("Renamed %i entr%s", count, count == 1 ? "y" : "ies"));
 	}
 }
 
 CONSOLE_COMMAND(cd, 1, true)
 {
-	Archive*      current = MainEditor::currentArchive();
-	ArchivePanel* panel   = CH::getCurrentArchivePanel();
+	Archive*      current = maineditor::currentArchive();
+	ArchivePanel* panel   = maineditor::currentArchivePanel();
 
 	if (current && panel)
 	{
@@ -4490,7 +4469,7 @@ CONSOLE_COMMAND(cd, 1, true)
 		}
 		else
 		{
-			Log::error(wxString::Format("Error: Trying to open nonexistant directory %s", args[0]));
+			log::error(wxString::Format("Error: Trying to open nonexistant directory %s", args[0]));
 		}
 	}
 }

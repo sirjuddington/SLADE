@@ -2,6 +2,8 @@
 
 #include "General/Sigslot.h"
 
+namespace slade
+{
 class BaseResourceChooser : public wxChoice
 {
 public:
@@ -14,3 +16,4 @@ private:
 	bool                 load_change_;
 	ScopedConnectionList signal_connections_;
 };
+} // namespace slade

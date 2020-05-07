@@ -39,6 +39,8 @@
 #include "portable_endian.h"
 #include "Utility/Memory.h"
 
+using namespace slade;
+
 // MACROS ------------------------------------------------------------------
 
 #define MAX_FOR_DEPTH		4
@@ -165,12 +167,12 @@ int XMISong::FindXMIDforms(const uint8_t *chunk, int len, TrackInfo *songs) cons
 
 	for (int p = 0; p <= len - 12; )
 	{
-		uint32_t chunktype = Memory::readL32(chunk, p);
-		int chunklen = Memory::readB32(chunk, p + 4);
+		uint32_t chunktype = memory::readL32(chunk, p);
+		int chunklen = memory::readB32(chunk, p + 4);
 
 		if (chunktype == MAKE_ID('F','O','R','M'))
 		{
-			uint32_t chunktype2 = Memory::readL32(chunk, p + 8);
+			uint32_t chunktype2 = memory::readL32(chunk, p + 8);
 			if (chunktype2 == MAKE_ID('X','M','I','D'))
 			{
 				if (songs != NULL)
@@ -207,7 +209,7 @@ void XMISong::FoundXMID(const uint8_t *chunk, int len, TrackInfo *song) const
 	for (int p = 0; p <= len - 8; )
 	{
 		uint32_t chunktype = *(uint32_t*)(chunk + p);
-		int chunklen = Memory::readB32(chunk, p + 4);
+		int chunklen = memory::readB32(chunk, p + 4);
 
 		if (chunktype == MAKE_ID('T','I','M','B'))
 		{

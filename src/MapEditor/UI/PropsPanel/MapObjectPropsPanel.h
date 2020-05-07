@@ -7,7 +7,13 @@
 
 class wxPropertyGrid;
 class wxPGProperty;
-class UDMFProperty;
+
+namespace slade
+{
+namespace game
+{
+	class UDMFProperty;
+}
 class MOPGProperty;
 
 class MapObjectPropsPanel : public PropsPanelBase
@@ -54,62 +60,62 @@ private:
 	vector<wxString> hide_props_;
 
 	MOPGProperty* addBoolProperty(
-		wxPGProperty*   group,
-		const wxString& label,
-		const wxString& propname,
-		bool            readonly  = false,
-		wxPropertyGrid* grid      = nullptr,
-		UDMFProperty*   udmf_prop = nullptr);
+		wxPGProperty*       group,
+		const wxString&     label,
+		const wxString&     propname,
+		bool                readonly  = false,
+		wxPropertyGrid*     grid      = nullptr,
+		game::UDMFProperty* udmf_prop = nullptr);
 	MOPGProperty* addIntProperty(
-		wxPGProperty*   group,
-		const wxString& label,
-		const wxString& propname,
-		bool            readonly  = false,
-		wxPropertyGrid* grid      = nullptr,
-		UDMFProperty*   udmf_prop = nullptr);
+		wxPGProperty*       group,
+		const wxString&     label,
+		const wxString&     propname,
+		bool                readonly  = false,
+		wxPropertyGrid*     grid      = nullptr,
+		game::UDMFProperty* udmf_prop = nullptr);
 	MOPGProperty* addFloatProperty(
-		wxPGProperty*   group,
-		const wxString& label,
-		const wxString& propname,
-		bool            readonly  = false,
-		wxPropertyGrid* grid      = nullptr,
-		UDMFProperty*   udmf_prop = nullptr);
+		wxPGProperty*       group,
+		const wxString&     label,
+		const wxString&     propname,
+		bool                readonly  = false,
+		wxPropertyGrid*     grid      = nullptr,
+		game::UDMFProperty* udmf_prop = nullptr);
 	MOPGProperty* addStringProperty(
-		wxPGProperty*   group,
-		const wxString& label,
-		const wxString& propname,
-		bool            readonly  = false,
-		wxPropertyGrid* grid      = nullptr,
-		UDMFProperty*   udmf_prop = nullptr);
+		wxPGProperty*       group,
+		const wxString&     label,
+		const wxString&     propname,
+		bool                readonly  = false,
+		wxPropertyGrid*     grid      = nullptr,
+		game::UDMFProperty* udmf_prop = nullptr);
 	MOPGProperty* addLineFlagProperty(
-		wxPGProperty*   group,
-		const wxString& label,
-		const wxString& propname,
-		int             index,
-		bool            readonly  = false,
-		wxPropertyGrid* grid      = nullptr,
-		UDMFProperty*   udmf_prop = nullptr);
+		wxPGProperty*       group,
+		const wxString&     label,
+		const wxString&     propname,
+		int                 index,
+		bool                readonly  = false,
+		wxPropertyGrid*     grid      = nullptr,
+		game::UDMFProperty* udmf_prop = nullptr);
 	MOPGProperty* addThingFlagProperty(
-		wxPGProperty*   group,
-		const wxString& label,
-		const wxString& propname,
-		int             index,
-		bool            readonly  = false,
-		wxPropertyGrid* grid      = nullptr,
-		UDMFProperty*   udmf_prop = nullptr);
+		wxPGProperty*       group,
+		const wxString&     label,
+		const wxString&     propname,
+		int                 index,
+		bool                readonly  = false,
+		wxPropertyGrid*     grid      = nullptr,
+		game::UDMFProperty* udmf_prop = nullptr);
 	MOPGProperty* addTextureProperty(
 		wxPGProperty*          group,
 		const wxString&        label,
 		const wxString&        propname,
-		MapEditor::TextureType textype,
+		mapeditor::TextureType textype,
 		bool                   readonly  = false,
 		wxPropertyGrid*        grid      = nullptr,
-		UDMFProperty*          udmf_prop = nullptr);
+		game::UDMFProperty*    udmf_prop = nullptr);
 	void addUDMFProperty(
-		UDMFProperty&   prop,
-		MapObject::Type objtype,
-		const wxString& basegroup = "",
-		wxPropertyGrid* grid      = nullptr);
+		game::UDMFProperty& prop,
+		MapObject::Type     objtype,
+		const wxString&     basegroup = "",
+		wxPropertyGrid*     grid      = nullptr);
 
 	bool setBoolProperty(wxPGProperty* prop, bool value, bool force_set = false) const;
 
@@ -123,3 +129,4 @@ private:
 	void onBtnAdd(wxCommandEvent& e);
 	void onPropertyChanged(wxPropertyGridEvent& e);
 };
+} // namespace slade

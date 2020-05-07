@@ -5,6 +5,8 @@
 //   (via the constructor or otherwise)
 // - Deleting a STreeNode will not remove it from its parent, this must be done manually
 
+namespace slade
+{
 class STreeNode
 {
 public:
@@ -37,3 +39,4 @@ protected:
 
 	virtual STreeNode* createChild(string_view name) = 0;
 };
+} // namespace slade

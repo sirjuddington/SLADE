@@ -4,6 +4,8 @@
 #include "UI/Canvas/OGLCanvas.h"
 #include "UI/Controls/STabCtrl.h"
 
+namespace slade
+{
 class SectorSpecialPanel;
 class MapObject;
 class MapObjectPropsPanel;
@@ -71,3 +73,4 @@ private:
 	void onTextureClicked(wxMouseEvent& e);
 	void onBtnNewTag(wxCommandEvent& e);
 };
+} // namespace slade

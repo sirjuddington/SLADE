@@ -33,6 +33,8 @@
 #include "LibArchive.h"
 #include "General/UI.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -88,11 +90,11 @@ bool LibArchive::open(MemChunk& mc)
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
-	UI::setSplashProgressMessage("Reading lib archive data");
+	ui::setSplashProgressMessage("Reading lib archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		char     myname[13] = "";
@@ -112,8 +114,8 @@ bool LibArchive::open(MemChunk& mc)
 		// the wadfile is invalid
 		if (offset + size > dir_offset)
 		{
-			Log::error("LibArchive::open: Lib archive is invalid or corrupt");
-			Global::error = "Archive is invalid and/or corrupt";
+			log::error("LibArchive::open: Lib archive is invalid or corrupt");
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
@@ -130,11 +132,11 @@ bool LibArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)num_lumps)));
+		ui::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		auto entry = entryAt(a);
@@ -155,14 +157,14 @@ bool LibArchive::open(MemChunk& mc)
 	}
 
 	// Detect maps (will detect map entry types)
-	UI::setSplashProgressMessage("Detecting maps");
+	ui::setSplashProgressMessage("Detecting maps");
 	detectMaps();
 
 	// Setup variables
 	sig_blocker.unblock();
 	setModified(false);
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -254,7 +256,7 @@ bool LibArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error("LibArchive::loadEntryData: Failed to open libfile {}", filename_);
+		log::error("LibArchive::loadEntryData: Failed to open libfile {}", filename_);
 		return false;
 	}
 

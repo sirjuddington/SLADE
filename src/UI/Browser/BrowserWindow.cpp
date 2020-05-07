@@ -37,6 +37,8 @@
 #include "General/Misc.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -170,14 +172,14 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	truncate_names_{ truncate_names }
 {
 	// Init size/pos
-	auto info = Misc::getWindowInfo("browser");
+	auto info = misc::getWindowInfo("browser");
 	if (!info.id.empty())
 	{
 		SetClientSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
-		Misc::setWindowInfo("browser", 768, 600, 0, 0);
+		misc::setWindowInfo("browser", 768, 600, 0, 0);
 
 	// Init variables
 	items_root_ = new BrowserTreeNode();
@@ -188,11 +190,11 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	SetSizer(m_vbox);
 
 	auto m_hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(m_hbox, 1, wxEXPAND | wxALL, UI::padLarge());
+	m_vbox->Add(m_hbox, 1, wxEXPAND | wxALL, ui::padLarge());
 
 	// Browser tree
 	tree_items_ = new wxTreeListCtrl(this, -1, wxDefaultPosition, wxDefaultSize, wxTL_SINGLE | wxDV_ROW_LINES);
-	m_hbox->Add(tree_items_, 0, wxEXPAND | wxRIGHT, UI::pad());
+	m_hbox->Add(tree_items_, 0, wxEXPAND | wxRIGHT, ui::pad());
 
 	// Browser area
 	auto vbox = new wxBoxSizer(wxVERTICAL);
@@ -200,22 +202,22 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 
 	// Zoom
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::pad());
+	vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
 	slider_zoom_ = new wxSlider(this, -1, browser_item_size, 64, 256);
 	slider_zoom_->SetLineSize(16);
 	slider_zoom_->SetPageSize(32);
-	hbox->Add(new wxStaticText(this, -1, "Zoom:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+	hbox->Add(new wxStaticText(this, -1, "Zoom:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 	hbox->Add(slider_zoom_, 1, wxEXPAND);
 
 	// Sorting
 	choice_sort_ = new wxChoice(this, -1);
 	hbox->AddStretchSpacer();
-	hbox->Add(new wxStaticText(this, -1, "Sort:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
-	hbox->Add(choice_sort_, 0, wxEXPAND | wxRIGHT, UI::pad());
+	hbox->Add(new wxStaticText(this, -1, "Sort:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(choice_sort_, 0, wxEXPAND | wxRIGHT, ui::pad());
 
 	// Filter
 	text_filter_ = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
-	hbox->Add(new wxStaticText(this, -1, "Filter:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+	hbox->Add(new wxStaticText(this, -1, "Filter:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 	hbox->Add(text_filter_, 0, wxEXPAND);
 
 	// Browser canvas
@@ -231,14 +233,14 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 
 	// Bottom sizer
 	sizer_bottom_ = new wxBoxSizer(wxHORIZONTAL);
-	vbox->Add(sizer_bottom_, 0, wxEXPAND | wxBOTTOM, UI::pad());
+	vbox->Add(sizer_bottom_, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Buttons and info label
 	label_info_      = new wxStaticText(this, -1, "");
 	auto buttonsizer = CreateButtonSizer(wxOK | wxCANCEL);
-	buttonsizer->Insert(0, label_info_, 1, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, UI::pad());
+	buttonsizer->Insert(0, label_info_, 1, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::pad());
 
-	m_vbox->Add(buttonsizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
+	m_vbox->Add(buttonsizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 
 	// Setup sorting options
 	addSortType("Index");
@@ -255,7 +257,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent, bool truncate_names) :
 	canvas_->Bind(wxEVT_CHAR, &BrowserWindow::onCanvasKeyChar, this);
 
 	wxWindowBase::Layout();
-	wxTopLevelWindowBase::SetMinSize(WxUtils::scaledSize(540, 400));
+	wxTopLevelWindowBase::SetMinSize(wxutil::scaledSize(540, 400));
 
 	if (browser_maximised)
 		wxTopLevelWindow::Maximize();
@@ -273,7 +275,7 @@ BrowserWindow::~BrowserWindow()
 {
 	browser_maximised = wxTopLevelWindow::IsMaximized();
 	if (!wxTopLevelWindow::IsMaximized())
-		Misc::setWindowInfo("browser", GetClientSize().x, GetClientSize().y, GetPosition().x, GetPosition().y);
+		misc::setWindowInfo("browser", GetClientSize().x, GetClientSize().y, GetPosition().x, GetPosition().y);
 }
 
 // -----------------------------------------------------------------------------
@@ -555,7 +557,7 @@ void BrowserWindow::addItemTree(BrowserTreeNode* node, wxTreeListItem& item) con
 // -----------------------------------------------------------------------------
 // Sets the font to be used for item names
 // -----------------------------------------------------------------------------
-void BrowserWindow::setFont(Drawing::Font font) const
+void BrowserWindow::setFont(drawing::Font font) const
 {
 	canvas_->setFont(font);
 }

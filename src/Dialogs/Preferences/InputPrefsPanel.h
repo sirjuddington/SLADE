@@ -3,6 +3,8 @@
 #include "General/KeyBind.h"
 #include "PrefsPanelBase.h"
 
+namespace slade
+{
 class InputKeyCtrl : public wxTextCtrl
 {
 public:
@@ -52,3 +54,4 @@ private:
 	void onBtnDefaults(wxCommandEvent& e);
 	void onListKeyDown(wxKeyEvent& e);
 };
+} // namespace slade

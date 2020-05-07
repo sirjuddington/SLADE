@@ -2,7 +2,10 @@
 
 #include "PrefsPanelBase.h"
 
+namespace slade
+{
 class NumberTextCtrl;
+
 class OpenGLPrefsPanel : public PrefsPanelBase
 {
 public:
@@ -19,3 +22,4 @@ private:
 	NumberTextCtrl* ntc_font_size_      = nullptr;
 	int             last_font_size_     = 0;
 };
+} // namespace slade

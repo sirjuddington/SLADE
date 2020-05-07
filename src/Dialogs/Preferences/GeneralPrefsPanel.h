@@ -2,6 +2,8 @@
 
 #include "PrefsPanelBase.h"
 
+namespace slade
+{
 class GeneralPrefsPanel : public PrefsPanelBase
 {
 public:
@@ -21,3 +23,4 @@ private:
 	wxCheckBox* cb_confirm_exit_      = nullptr;
 	wxCheckBox* cb_backup_archives_   = nullptr;
 };
+} // namespace slade

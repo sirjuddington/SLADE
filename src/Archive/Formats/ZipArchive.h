@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class ZipArchive : public Archive
 {
 public:
@@ -40,3 +42,4 @@ private:
 
 	void generateTempFileName(string_view filename);
 };
+} // namespace slade

@@ -2,6 +2,9 @@
 
 #include "MapEditor/Edit/Edit3D.h"
 
+namespace slade
+{
+// Forward declarations
 class MapLine;
 class MapVertex;
 class Polygon2D;
@@ -167,7 +170,7 @@ public:
 	MCAHilightFade3D(
 		long                start,
 		int                 item_index,
-		MapEditor::ItemType item_type,
+		mapeditor::ItemType item_type,
 		MapRenderer3D*      renderer,
 		float               fade_init);
 	~MCAHilightFade3D() = default;
@@ -177,8 +180,9 @@ public:
 
 private:
 	int                 item_index_ = 0;
-	MapEditor::ItemType item_type_;
+	mapeditor::ItemType item_type_;
 	float               fade_      = 1.f;
 	float               init_fade_ = 1.f;
 	MapRenderer3D*      renderer_  = nullptr;
 };
+} // namespace slade

@@ -35,6 +35,8 @@
 #include "ExtMessageDialog.h"
 #include "General/UI.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -55,21 +57,21 @@ ExtMessageDialog::ExtMessageDialog(wxWindow* parent, const wxString& caption) :
 
 	// Add message label
 	label_message_ = new wxStaticText(this, -1, "", wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
-	sizer->Add(label_message_, 0, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(label_message_, 0, wxEXPAND | wxALL, ui::pad());
 
 	// Add extended text box
 	text_ext_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
 	text_ext_->SetFont(wxFont(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-	sizer->Add(text_ext_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	sizer->Add(text_ext_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Add OK button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 	hbox->AddStretchSpacer(1);
 	auto btn_ok = new wxButton(this, wxID_OK, "OK");
 	hbox->Add(btn_ok);
 
-	int size = UI::scalePx(500);
+	int size = ui::scalePx(500);
 	SetInitialSize(wxSize(size, size));
 
 	// Bind events

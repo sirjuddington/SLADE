@@ -4,10 +4,12 @@
 #include "MapObjectCollection.h"
 #include "MapSpecials.h"
 
+namespace slade
+{
 class ParseTreeNode;
 namespace Game
 {
-enum class TagType;
+	enum class TagType;
 }
 
 class SLADEMap
@@ -151,3 +153,4 @@ private:
 	// Usage counts
 	std::map<int, int> usage_thing_type_;
 };
+} // namespace slade

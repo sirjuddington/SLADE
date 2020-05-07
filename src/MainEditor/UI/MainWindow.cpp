@@ -57,6 +57,8 @@
 #include "DocsPage.h"
 #endif
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -95,7 +97,7 @@ public:
 	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) override
 	{
 		for (const auto& filename : filenames)
-			App::archiveManager().openArchive(filename.ToStdString());
+			app::archiveManager().openArchive(filename.ToStdString());
 
 		return true;
 	}
@@ -139,7 +141,7 @@ void MainWindow::loadLayout() const
 {
 	// Open layout file
 	Tokenizer tz;
-	if (!tz.openFile(App::path("mainwindow.layout", App::Dir::User)))
+	if (!tz.openFile(app::path("mainwindow.layout", app::Dir::User)))
 		return;
 
 	// Parse layout
@@ -165,7 +167,7 @@ void MainWindow::loadLayout() const
 void MainWindow::saveLayout() const
 {
 	// Open layout file
-	wxFile file(App::path("mainwindow.layout", App::Dir::User), wxFile::write);
+	wxFile file(app::path("mainwindow.layout", app::Dir::User), wxFile::write);
 
 	// Write component layout
 
@@ -199,8 +201,8 @@ void MainWindow::setupLayout()
 	wxAuiPaneInfo p_inf;
 
 	// Set icon
-	auto icon_filename = App::path(App::iconFile(), App::Dir::Temp);
-	App::archiveManager().programResourceArchive()->entry(App::iconFile())->exportFile(icon_filename);
+	auto icon_filename = app::path(app::iconFile(), app::Dir::Temp);
+	app::archiveManager().programResourceArchive()->entry(app::iconFile())->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
 
@@ -219,7 +221,7 @@ void MainWindow::setupLayout()
 	if (show_start_page)
 	{
 		stc_tabs_->AddPage(start_page_, "Start Page");
-		stc_tabs_->SetPageBitmap(0, Icons::getIcon(Icons::General, "logo"));
+		stc_tabs_->SetPageBitmap(0, icons::getIcon(icons::General, "logo"));
 		start_page_->init();
 		createStartPage();
 	}
@@ -232,9 +234,9 @@ void MainWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Float();
-	p_inf.FloatingSize(WxUtils::scaledSize(600, 400));
-	p_inf.FloatingPosition(WxUtils::scaledPoint(100, 100));
-	p_inf.MinSize(WxUtils::scaledSize(-1, 192));
+	p_inf.FloatingSize(wxutil::scaledSize(600, 400));
+	p_inf.FloatingPosition(wxutil::scaledPoint(100, 100));
+	p_inf.MinSize(wxutil::scaledSize(-1, 192));
 	p_inf.Show(false);
 	p_inf.Caption("Console");
 	p_inf.Name("console");
@@ -247,7 +249,7 @@ void MainWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Left();
-	p_inf.BestSize(WxUtils::scaledSize(192, 480));
+	p_inf.BestSize(wxutil::scaledSize(192, 480));
 	p_inf.Caption("Archive Manager");
 	p_inf.Name("archive_manager");
 	p_inf.Show(true);
@@ -261,7 +263,7 @@ void MainWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Right();
-	p_inf.BestSize(WxUtils::scaledSize(128, 480));
+	p_inf.BestSize(wxutil::scaledSize(128, 480));
 	p_inf.Caption("Undo History");
 	p_inf.Name("undo_history");
 	p_inf.Show(false);
@@ -453,8 +455,8 @@ bool MainWindow::exitProgram()
 	}
 
 	// Check if we can close the map editor
-	if (MapEditor::windowCreated() && MapEditor::windowWx()->IsShown())
-		if (!MapEditor::windowWx()->Close())
+	if (mapeditor::windowCreated() && mapeditor::windowWx()->IsShown())
+		if (!mapeditor::windowWx()->Close())
 			return false;
 
 	// Close all archives
@@ -466,13 +468,13 @@ bool MainWindow::exitProgram()
 	saveLayout();
 	mw_maximized = IsMaximized();
 	if (!IsMaximized())
-		Misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+		misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 
 	// Save selected palette
-	global_palette = WxUtils::strToView(palette_chooser_->GetStringSelection());
+	global_palette = wxutil::strToView(palette_chooser_->GetStringSelection());
 
 	// Exit application
-	App::exit(true);
+	app::exit(true);
 
 	return true;
 }
@@ -510,7 +512,7 @@ void MainWindow::openStartPageTab()
 	start_page_ = new SStartPage(stc_tabs_);
 	start_page_->init();
 	stc_tabs_->AddPage(start_page_, "Start Page");
-	stc_tabs_->SetPageBitmap(0, Icons::getIcon(Icons::General, "logo"));
+	stc_tabs_->SetPageBitmap(0, icons::getIcon(icons::General, "logo"));
 	createStartPage();
 }
 
@@ -541,7 +543,7 @@ void MainWindow::openDocs(const wxString& page_name)
 
 		// Add tab
 		stc_tabs_->AddPage(docs_page_, "Documentation", true, -1);
-		stc_tabs_->SetPageBitmap(stc_tabs_->GetPageCount() - 1, Icons::getIcon(Icons::General, "wiki"));
+		stc_tabs_->SetPageBitmap(stc_tabs_->GetPageCount() - 1, icons::getIcon(icons::General, "wiki"));
 	}
 
 	// Load specified page, if any
@@ -561,7 +563,7 @@ void MainWindow::openDocs(const wxString& page_name)
 bool MainWindow::handleAction(string_view id)
 {
 	// We're only interested in "main_" actions
-	if (!StrUtil::startsWith(id, "main_"))
+	if (!strutil::startsWith(id, "main_"))
 		return false;
 
 	// File->Exit
@@ -617,7 +619,7 @@ bool MainWindow::handleAction(string_view id)
 		auto  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
 		auto& p_inf = m_mgr->GetPane("console");
 		p_inf.Show(!p_inf.IsShown());
-		p_inf.MinSize(WxUtils::scaledSize(200, 128));
+		p_inf.MinSize(wxutil::scaledSize(200, 128));
 		m_mgr->Update();
 		return true;
 	}
@@ -639,7 +641,7 @@ bool MainWindow::handleAction(string_view id)
 	// Tools->Run Script
 	if (id == "main_runscript")
 	{
-		ScriptManager::open();
+		scriptmanager::open();
 		return true;
 	}
 
@@ -648,16 +650,16 @@ bool MainWindow::handleAction(string_view id)
 	{
 		wxAboutDialogInfo info;
 		info.SetName("SLADE");
-		wxString version = "v" + App::version().toString();
-		if (!Global::sc_rev.empty())
-			version = version + " (Git Rev " + Global::sc_rev + ")";
+		wxString version = "v" + app::version().toString();
+		if (!global::sc_rev.empty())
+			version = version + " (Git Rev " + global::sc_rev + ")";
 		info.SetVersion(version);
 		info.SetWebSite("http://slade.mancubus.net");
 		info.SetDescription("It's a Doom Editor");
 
 		// Set icon
-		auto icon_filename = App::path(App::iconFile(), App::Dir::Temp);
-		App::archiveManager().programResourceArchive()->entry(App::iconFile())->exportFile(icon_filename);
+		auto icon_filename = app::path(app::iconFile(), app::Dir::Temp);
+		app::archiveManager().programResourceArchive()->entry(app::iconFile())->exportFile(icon_filename);
 		info.SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 		wxRemoveFile(icon_filename);
 
@@ -765,7 +767,7 @@ void MainWindow::onToolBarLayoutChanged(wxEvent& e)
 // -----------------------------------------------------------------------------
 void MainWindow::onActivate(wxActivateEvent& e)
 {
-	if (!e.GetActive() || this->IsBeingDeleted() || App::isExiting())
+	if (!e.GetActive() || this->IsBeingDeleted() || app::isExiting())
 	{
 		e.Skip();
 		return;

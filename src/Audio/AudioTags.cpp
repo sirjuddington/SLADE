@@ -34,6 +34,8 @@
 #include "Utility/Memory.h"
 #include <SFML/System.hpp>
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -494,9 +496,9 @@ wxString parseID3v2Tag(MemChunk& mc, size_t start)
 				for (size_t i = 0; i < u16c; ++i)
 				{
 					if (bomle)
-						wchars[i] = (wchar_t)Memory::readL16((const uint8_t*)buffer, bom + 2 * i);
+						wchars[i] = (wchar_t)memory::readL16((const uint8_t*)buffer, bom + 2 * i);
 					else
-						wchars[i] = (wchar_t)Memory::readB16((const uint8_t*)buffer, bom + 2 * i);
+						wchars[i] = (wchar_t)memory::readB16((const uint8_t*)buffer, bom + 2 * i);
 				}
 				content = wxString(wchars, u16c);
 				delete[] wchars;
@@ -797,7 +799,7 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 				{
 					size_t cueofs        = 8 + (const char*)cue - data;
 					size_t cuesize       = wxUINT32_SWAP_ON_BE(cue->size);
-					size_t numcuepoints  = Memory::readL32(udata, cueofs);
+					size_t numcuepoints  = memory::readL32(udata, cueofs);
 					auto   alreadylisted = new bool[numcuepoints];
 					memset(alreadylisted, false, numcuepoints * sizeof(bool));
 					if (cuesize >= 4 + numcuepoints * sizeof(WavCue))
@@ -810,7 +812,7 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 							auto   note  = (const WavChunk*)(data + ioffset);
 							size_t isize = wxUINT32_SWAP_ON_BE(note->size);
 							ioffset += 8;
-							size_t cuepoint = Memory::readL32(udata, ioffset);
+							size_t cuepoint = memory::readL32(udata, ioffset);
 							int    cpindex  = -1;
 							for (size_t i = 0; i < numcuepoints; ++i)
 							{
@@ -844,7 +846,7 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 								liststr += wxString::Format(
 									"Cue point %d: sample length %d, purpose %s\n",
 									cuepoint,
-									Memory::readL32(udata, (ioffset + 4)),
+									memory::readL32(udata, (ioffset + 4)),
 									wxString::From8BitData(data + ioffset + 8, 4));
 							}
 							else if (
@@ -920,7 +922,7 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 //
 // -----------------------------------------------------------------------------
 
-wxString Audio::getID3Tag(MemChunk& mc)
+wxString audio::getID3Tag(MemChunk& mc)
 {
 	// We actually identify RIFF-WAVE files as MP3 if they are encoded with
 	// the MP3 codec, but that means the metadata format is different, so
@@ -986,7 +988,7 @@ wxString Audio::getID3Tag(MemChunk& mc)
 	return ret;
 }
 
-wxString Audio::getOggComments(MemChunk& mc)
+wxString audio::getOggComments(MemChunk& mc)
 {
 	OggPageHeader ogg;
 	VorbisHeader  vorb;
@@ -1032,7 +1034,7 @@ wxString Audio::getOggComments(MemChunk& mc)
 	return ret;
 }
 
-wxString Audio::getFlacComments(MemChunk& mc)
+wxString audio::getFlacComments(MemChunk& mc)
 {
 	wxString ret = "";
 	// FLAC files begin with identifier "fLaC"; skip them
@@ -1057,7 +1059,7 @@ wxString Audio::getFlacComments(MemChunk& mc)
 	return ret;
 }
 
-wxString Audio::getITComments(MemChunk& mc)
+wxString audio::getITComments(MemChunk& mc)
 {
 	auto   data = (const char*)mc.data();
 	auto   head = (const ITHeader*)data;
@@ -1086,7 +1088,7 @@ wxString Audio::getITComments(MemChunk& mc)
 		ret += wxString::Format("\n%d instruments:\n", wxUINT16_SWAP_ON_BE(head->insnum));
 	for (size_t i = 0; i < wxUINT16_SWAP_ON_BE(head->insnum); ++i)
 	{
-		size_t ofs = Memory::readL32((const uint8_t*)data, (offset + (i << 2)));
+		size_t ofs = memory::readL32((const uint8_t*)data, (offset + (i << 2)));
 		if (ofs > offset && ofs + 60 < mc.size() && data[ofs] == 'I' && data[ofs + 1] == 'M' && data[ofs + 2] == 'P'
 			&& data[ofs + 3] == 'I')
 		{
@@ -1134,7 +1136,7 @@ wxString Audio::getITComments(MemChunk& mc)
 	return ret;
 }
 
-wxString Audio::getModComments(MemChunk& mc)
+wxString audio::getModComments(MemChunk& mc)
 {
 	auto   data = (const char*)mc.data();
 	size_t s    = 20;
@@ -1160,7 +1162,7 @@ wxString Audio::getModComments(MemChunk& mc)
 	return ret;
 }
 
-wxString Audio::getS3MComments(MemChunk& mc)
+wxString audio::getS3MComments(MemChunk& mc)
 {
 	auto   data = (const char*)mc.data();
 	auto   head = (const S3MHeader*)data;
@@ -1195,7 +1197,7 @@ wxString Audio::getS3MComments(MemChunk& mc)
 	return ret;
 }
 
-wxString Audio::getXMComments(MemChunk& mc)
+wxString audio::getXMComments(MemChunk& mc)
 {
 	auto   data = (const char*)mc.data();
 	auto   head = (const XMHeader*)data;
@@ -1271,7 +1273,7 @@ wxString Audio::getXMComments(MemChunk& mc)
 	return ret;
 }
 
-wxString Audio::getSunInfo(MemChunk& mc)
+wxString audio::getSunInfo(MemChunk& mc)
 {
 	size_t datasize   = mc.readB32(8);
 	size_t codec      = mc.readB32(12);
@@ -1308,7 +1310,7 @@ wxString Audio::getSunInfo(MemChunk& mc)
 	return ret;
 }
 
-wxString Audio::getVocInfo(MemChunk& mc)
+wxString audio::getVocInfo(MemChunk& mc)
 {
 	int         codec      = -1;
 	int         blockcount = 0;
@@ -1409,7 +1411,7 @@ wxString Audio::getVocInfo(MemChunk& mc)
 	return ret;
 }
 
-wxString Audio::getWavInfo(MemChunk& mc)
+wxString audio::getWavInfo(MemChunk& mc)
 {
 	auto               data  = (const char*)mc.data();
 	auto               udata = (const uint8_t*)data;
@@ -1492,7 +1494,7 @@ wxString Audio::getWavInfo(MemChunk& mc)
 	if (fact && wxUINT32_SWAP_ON_BE(fact->size) >= 4 && tag != 1)
 	{
 		size_t offset = (const uint8_t*)fact - udata + 8;
-		samples       = Memory::readL32(udata, offset);
+		samples       = memory::readL32(udata, offset);
 	}
 	size_t bps = wxUINT16_SWAP_ON_BE(fmt->bps);
 	if (tag == 65534 && bps != 0)
@@ -1526,7 +1528,7 @@ wxString Audio::getWavInfo(MemChunk& mc)
 	return ret;
 }
 
-wxString Audio::getRmidInfo(MemChunk& mc)
+wxString audio::getRmidInfo(MemChunk& mc)
 {
 	auto            data  = (const char*)mc.data();
 	auto            udata = (const uint8_t*)data;
@@ -1567,7 +1569,7 @@ wxString Audio::getRmidInfo(MemChunk& mc)
 	return ret;
 }
 
-wxString Audio::getAiffInfo(MemChunk& mc)
+wxString audio::getAiffInfo(MemChunk& mc)
 {
 	auto            data  = (const char*)mc.data();
 	auto            udata = (const uint8_t*)data;
@@ -1657,7 +1659,7 @@ wxString Audio::getAiffInfo(MemChunk& mc)
 // returns the index at which the true audio data begins.
 // Returns 0 if there is no tag before audio data.
 // -----------------------------------------------------------------------------
-size_t Audio::checkForTags(MemChunk& mc)
+size_t audio::checkForTags(MemChunk& mc)
 {
 	// Check for empty wasted space at the beginning, since it's apparently
 	// quite popular in MP3s to start with a useless blank frame.

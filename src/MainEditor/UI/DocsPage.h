@@ -3,6 +3,9 @@
 #include "common.h"
 
 class wxWebView;
+
+namespace slade
+{
 class SToolBar;
 class SToolBarButton;
 
@@ -27,3 +30,4 @@ private:
 	void onHTMLLinkClicked(wxEvent& e);
 	void onNavigationDone(wxEvent& e);
 };
+} // namespace slade

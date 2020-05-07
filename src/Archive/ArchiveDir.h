@@ -2,6 +2,8 @@
 
 #include "ArchiveEntry.h"
 
+namespace slade
+{
 class ArchiveDir
 {
 	friend class Archive;
@@ -78,3 +80,4 @@ private:
 
 	void ensureUniqueName(ArchiveEntry* entry);
 };
+} // namespace slade

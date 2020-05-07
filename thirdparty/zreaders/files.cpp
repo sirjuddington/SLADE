@@ -36,6 +36,8 @@
 #include "files.h"
 #include "templates.h"
 
+using namespace slade;
+
 //==========================================================================
 //
 // FileReader
@@ -345,7 +347,7 @@ void FileReaderBZ2::FillBuffer ()
 
 extern "C" void bz_internal_error (int errcode)
 {
-	Log::info(wxString::Format("libbzip2: internal error number %d\n", errcode));
+	slade::log::info(wxString::Format("libbzip2: internal error number %d\n", errcode));
 }
 
 //==========================================================================

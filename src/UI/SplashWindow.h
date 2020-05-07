@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class SplashWindow : public wxMiniFrame
 {
 public:
@@ -28,3 +30,4 @@ private:
 	bool        show_progress_            = false;
 	wxStopWatch timer_;
 };
+} // namespace slade

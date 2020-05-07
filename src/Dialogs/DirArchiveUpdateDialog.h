@@ -4,6 +4,9 @@
 #include "UI/SDialog.h"
 
 class wxDataViewListCtrl;
+
+namespace slade
+{
 class DirArchiveUpdateDialog : public SDialog
 {
 public:
@@ -20,3 +23,4 @@ private:
 	vector<DirEntryChange> changes_;
 	wxDataViewListCtrl*    list_changes_ = nullptr;
 };
+} // namespace slade

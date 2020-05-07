@@ -33,9 +33,11 @@
 #include "ColourConfiguration.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "Console/Console.h"
+#include "Console.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -43,7 +45,7 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace ColourConfiguration
+namespace slade::colourconfig
 {
 typedef std::map<string, Colour> ColourHashMap;
 
@@ -51,7 +53,7 @@ double        line_hilight_width;
 double        line_selection_width;
 double        flat_alpha;
 ColourHashMap cc_colours;
-} // namespace ColourConfiguration
+} // namespace slade::colourconfig
 
 
 // -----------------------------------------------------------------------------
@@ -64,7 +66,7 @@ ColourHashMap cc_colours;
 // -----------------------------------------------------------------------------
 // Returns the colour [name]
 // -----------------------------------------------------------------------------
-ColRGBA ColourConfiguration::colour(const string& name)
+ColRGBA colourconfig::colour(const string& name)
 {
 	auto& col = cc_colours[name];
 	if (col.exists)
@@ -76,7 +78,7 @@ ColRGBA ColourConfiguration::colour(const string& name)
 // -----------------------------------------------------------------------------
 // Returns the colour definition [name]
 // -----------------------------------------------------------------------------
-const ColourConfiguration::Colour& ColourConfiguration::colDef(const string& name)
+const colourconfig::Colour& colourconfig::colDef(const string& name)
 {
 	return cc_colours[name];
 }
@@ -84,7 +86,7 @@ const ColourConfiguration::Colour& ColourConfiguration::colDef(const string& nam
 // -----------------------------------------------------------------------------
 // Sets the colour definition [name]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::setColour(const string& name, int red, int green, int blue, int alpha, bool blend_additive)
+void colourconfig::setColour(const string& name, int red, int green, int blue, int alpha, bool blend_additive)
 {
 	auto& col = cc_colours[name];
 	if (red >= 0)
@@ -103,16 +105,16 @@ void ColourConfiguration::setColour(const string& name, int red, int green, int 
 // -----------------------------------------------------------------------------
 // Sets the current OpenGL colour and blend mode to match definition [name]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::setGLColour(const string& name, float alpha_mult)
+void colourconfig::setGLColour(const string& name, float alpha_mult)
 {
 	auto& col = cc_colours[name];
-	OpenGL::setColour(col.colour.r, col.colour.g, col.colour.b, col.colour.a * alpha_mult, col.blendMode());
+	gl::setColour(col.colour.r, col.colour.g, col.colour.b, col.colour.a * alpha_mult, col.blendMode());
 }
 
 // -----------------------------------------------------------------------------
 // Returns the line hilight width multiplier
 // -----------------------------------------------------------------------------
-double ColourConfiguration::lineHilightWidth()
+double colourconfig::lineHilightWidth()
 {
 	return line_hilight_width;
 }
@@ -120,7 +122,7 @@ double ColourConfiguration::lineHilightWidth()
 // -----------------------------------------------------------------------------
 // Returns the line selection width multiplier
 // -----------------------------------------------------------------------------
-double ColourConfiguration::lineSelectionWidth()
+double colourconfig::lineSelectionWidth()
 {
 	return line_selection_width;
 }
@@ -128,7 +130,7 @@ double ColourConfiguration::lineSelectionWidth()
 // -----------------------------------------------------------------------------
 // Returns the flat alpha multiplier
 // -----------------------------------------------------------------------------
-double ColourConfiguration::flatAlpha()
+double colourconfig::flatAlpha()
 {
 	return flat_alpha;
 }
@@ -136,7 +138,7 @@ double ColourConfiguration::flatAlpha()
 // -----------------------------------------------------------------------------
 // Sets the line hilight width multiplier
 // -----------------------------------------------------------------------------
-void ColourConfiguration::setLineHilightWidth(double mult)
+void colourconfig::setLineHilightWidth(double mult)
 {
 	line_hilight_width = mult;
 }
@@ -144,7 +146,7 @@ void ColourConfiguration::setLineHilightWidth(double mult)
 // -----------------------------------------------------------------------------
 // Sets the line selection width multiplier
 // -----------------------------------------------------------------------------
-void ColourConfiguration::setLineSelectionWidth(double mult)
+void colourconfig::setLineSelectionWidth(double mult)
 {
 	line_selection_width = mult;
 }
@@ -152,7 +154,7 @@ void ColourConfiguration::setLineSelectionWidth(double mult)
 // -----------------------------------------------------------------------------
 // Sets the flat alpha multiplier
 // -----------------------------------------------------------------------------
-void ColourConfiguration::setFlatAlpha(double alpha)
+void colourconfig::setFlatAlpha(double alpha)
 {
 	flat_alpha = alpha;
 }
@@ -160,7 +162,7 @@ void ColourConfiguration::setFlatAlpha(double alpha)
 // -----------------------------------------------------------------------------
 // Reads a colour configuration from text data [mc]
 // -----------------------------------------------------------------------------
-bool ColourConfiguration::readConfiguration(MemChunk& mc)
+bool colourconfig::readConfiguration(MemChunk& mc)
 {
 	// Parse text
 	Parser parser;
@@ -203,7 +205,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 					col.blend_additive = prop->boolValue();
 
 				else
-					Log::warning(fmt::format("Unknown colour definition property \"{}\"", prop->name()));
+					log::warning(fmt::format("Unknown colour definition property \"{}\"", prop->name()));
 			}
 		}
 	}
@@ -227,7 +229,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 				flat_alpha = prop->floatValue();
 
 			else
-				Log::warning(fmt::format("Unknown theme property \"{}\"", prop->name()));
+				log::warning(fmt::format("Unknown theme property \"{}\"", prop->name()));
 		}
 	}
 
@@ -237,7 +239,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Writes the current colour configuration to text data [mc]
 // -----------------------------------------------------------------------------
-bool ColourConfiguration::writeConfiguration(MemChunk& mc)
+bool colourconfig::writeConfiguration(MemChunk& mc)
 {
 	string cfgstring = "colours\n{\n";
 
@@ -287,16 +289,16 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Initialises the colour configuration
 // -----------------------------------------------------------------------------
-bool ColourConfiguration::init()
+bool colourconfig::init()
 {
 	// Load default configuration
 	loadDefaults();
 
 	// Check for saved colour configuration
-	if (wxFileExists(App::path("colours.cfg", App::Dir::User)))
+	if (wxFileExists(app::path("colours.cfg", app::Dir::User)))
 	{
 		MemChunk ccfg;
-		ccfg.importFile(App::path("colours.cfg", App::Dir::User));
+		ccfg.importFile(app::path("colours.cfg", app::Dir::User));
 		readConfiguration(ccfg);
 	}
 
@@ -306,10 +308,10 @@ bool ColourConfiguration::init()
 // -----------------------------------------------------------------------------
 // Sets all colours in the current configuration to default
 // -----------------------------------------------------------------------------
-void ColourConfiguration::loadDefaults()
+void colourconfig::loadDefaults()
 {
 	// Read default colours
-	auto pres             = App::archiveManager().programResourceArchive();
+	auto pres             = app::archiveManager().programResourceArchive();
 	auto entry_default_cc = pres->entryAtPath("config/colours/default.txt");
 	if (entry_default_cc)
 		readConfiguration(entry_default_cc->data());
@@ -318,16 +320,16 @@ void ColourConfiguration::loadDefaults()
 // -----------------------------------------------------------------------------
 // Reads saved colour configuration [name]
 // -----------------------------------------------------------------------------
-bool ColourConfiguration::readConfiguration(string_view name)
+bool colourconfig::readConfiguration(string_view name)
 {
 	// TODO: search custom folder
 
 	// Search resource pk3
-	auto res = App::archiveManager().programResourceArchive();
+	auto res = app::archiveManager().programResourceArchive();
 	auto dir = res->dirAtPath("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		if (StrUtil::equalCI(dir->entryAt(a)->nameNoExt(), name))
+		if (strutil::equalCI(dir->entryAt(a)->nameNoExt(), name))
 			return readConfiguration(dir->entryAt(a)->data());
 	}
 
@@ -337,12 +339,12 @@ bool ColourConfiguration::readConfiguration(string_view name)
 // -----------------------------------------------------------------------------
 // Adds all available colour configuration names to [names]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::putConfigurationNames(vector<string>& names)
+void colourconfig::putConfigurationNames(vector<string>& names)
 {
 	// TODO: search custom folder
 
 	// Search resource pk3
-	auto res = App::archiveManager().programResourceArchive();
+	auto res = app::archiveManager().programResourceArchive();
 	auto dir = res->dirAtPath("config/colours");
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 		names.emplace_back(dir->entryAt(a)->nameNoExt());
@@ -351,7 +353,7 @@ void ColourConfiguration::putConfigurationNames(vector<string>& names)
 // -----------------------------------------------------------------------------
 // Adds all colour names to [list]
 // -----------------------------------------------------------------------------
-void ColourConfiguration::putColourNames(vector<string>& list)
+void colourconfig::putColourNames(vector<string>& list)
 {
 	for (auto& i : cc_colours)
 		list.push_back(i.first);
@@ -367,17 +369,17 @@ void ColourConfiguration::putColourNames(vector<string>& list)
 CONSOLE_COMMAND(ccfg, 1, false)
 {
 	// Check for 'list'
-	if (StrUtil::equalCI(args[0], "list"))
+	if (strutil::equalCI(args[0], "list"))
 	{
 		// Get (sorted) list of colour names
 		vector<string> list;
-		ColourConfiguration::putColourNames(list);
+		colourconfig::putColourNames(list);
 		sort(list.begin(), list.end());
 
 		// Dump list to console
-		Log::console(fmt::format("{} Colours:", list.size()));
+		log::console(fmt::format("{} Colours:", list.size()));
 		for (const auto& a : list)
-			Log::console(a);
+			log::console(a);
 	}
 	else
 	{
@@ -385,32 +387,32 @@ CONSOLE_COMMAND(ccfg, 1, false)
 		if (args.size() >= 4)
 		{
 			// Read RGB
-			int red   = StrUtil::asInt(args[1]);
-			int green = StrUtil::asInt(args[2]);
-			int blue  = StrUtil::asInt(args[3]);
+			int red   = strutil::asInt(args[1]);
+			int green = strutil::asInt(args[2]);
+			int blue  = strutil::asInt(args[3]);
 
 			// Read alpha (if specified)
 			int alpha = -1;
 			if (args.size() >= 5)
-				alpha = StrUtil::asInt(args[4]);
+				alpha = strutil::asInt(args[4]);
 
 			// Read blend (if specified)
 			int blend = -1;
 			if (args.size() >= 6)
-				blend = StrUtil::asInt(args[5]);
+				blend = strutil::asInt(args[5]);
 
 			// Set colour
-			ColourConfiguration::setColour(args[0], red, green, blue, alpha, blend);
+			colourconfig::setColour(args[0], red, green, blue, alpha, blend);
 		}
 
 		// Print colour
-		auto def = ColourConfiguration::colDef(args[0]);
-		Log::console(fmt::format(
+		auto def = colourconfig::colDef(args[0]);
+		log::console(fmt::format(
 			"Colour \"{}\" = {} {} {} {} {}", args[0], def.colour.r, def.colour.g, def.colour.b, def.blend_additive));
 	}
 }
 
 CONSOLE_COMMAND(load_ccfg, 1, false)
 {
-	ColourConfiguration::readConfiguration(args[0]);
+	colourconfig::readConfiguration(args[0]);
 }

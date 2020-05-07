@@ -39,6 +39,8 @@
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/ColourBox.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -57,7 +59,7 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, const Palett
 {
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(Icons::getIcon(Icons::General, "tint"));
+	icon.CopyFromBitmap(icons::getIcon(icons::General, "tint"));
 	SetIcon(icon);
 
 	// Setup main sizer
@@ -97,7 +99,7 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, const Palett
 	gfx_preview_->setViewType(GfxCanvas::View::Centered);
 	gfx_preview_->setPalette(&palette_);
 	gfx_preview_->SetInitialSize(wxSize(256, 256));
-	Misc::loadImageFromEntry(&gfx_preview_->image(), entry);
+	misc::loadImageFromEntry(&gfx_preview_->image(), entry);
 	gfx_preview_->image().tint(colour(), amount(), &palette_);
 	gfx_preview_->updateImageTexture();
 
@@ -139,8 +141,7 @@ float GfxTintDialog::amount() const
 // -----------------------------------------------------------------------------
 void GfxTintDialog::setValues(const wxString& col, int val)
 {
-	wxColour wxcol(col);
-	cb_colour_->setColour(ColRGBA(COLWX(wxcol)));
+	cb_colour_->setColour(ColRGBA(wxColour(col)));
 	slider_amount_->SetValue(val);
 	label_amount_->SetLabel(wxString::Format("%d%% ", slider_amount_->GetValue()));
 	gfx_preview_->image().tint(colour(), amount(), &palette_);
@@ -161,7 +162,7 @@ void GfxTintDialog::setValues(const wxString& col, int val)
 // -----------------------------------------------------------------------------
 void GfxTintDialog::onColourChanged(wxEvent& e)
 {
-	Misc::loadImageFromEntry(&gfx_preview_->image(), entry_);
+	misc::loadImageFromEntry(&gfx_preview_->image(), entry_);
 	gfx_preview_->image().tint(colour(), amount(), &palette_);
 	gfx_preview_->updateImageTexture();
 	gfx_preview_->Refresh();
@@ -172,7 +173,7 @@ void GfxTintDialog::onColourChanged(wxEvent& e)
 // -----------------------------------------------------------------------------
 void GfxTintDialog::onAmountChanged(wxCommandEvent& e)
 {
-	Misc::loadImageFromEntry(&gfx_preview_->image(), entry_);
+	misc::loadImageFromEntry(&gfx_preview_->image(), entry_);
 	gfx_preview_->image().tint(colour(), amount(), &palette_);
 	gfx_preview_->updateImageTexture();
 	gfx_preview_->Refresh();

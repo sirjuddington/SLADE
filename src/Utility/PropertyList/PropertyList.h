@@ -2,6 +2,8 @@
 
 #include "Property.h"
 
+namespace slade
+{
 class PropertyList
 {
 public:
@@ -43,3 +45,4 @@ private:
 		return properties_.back().prop;
 	}
 };
+} // namespace slade

@@ -35,6 +35,8 @@
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -58,16 +60,16 @@ EXTERN_CVAR(String, nodebuilder_options)
 NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent, bool useframe) : PrefsPanelBase(parent)
 {
 	// Create sizer
-	auto sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	SetSizer(sizer);
 
 	// Nodebuilder list
 	wxArrayString builders;
 	unsigned      sel = 0;
-	for (unsigned a = 0; a < NodeBuilders::nNodeBuilders(); a++)
+	for (unsigned a = 0; a < nodebuilders::nNodeBuilders(); a++)
 	{
-		builders.Add(NodeBuilders::builder(a).name);
-		if (nodebuilder_id == NodeBuilders::builder(a).id)
+		builders.Add(nodebuilders::builder(a).name);
+		if (nodebuilder_id == nodebuilders::builder(a).id)
 			sel = a;
 	}
 	choice_nodebuilder_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, builders);
@@ -85,7 +87,7 @@ NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent, bool useframe) : PrefsPanelBa
 
 	// Nodebuilder options
 	clb_options_ = new wxCheckListBox(this, -1, wxDefaultPosition, wxDefaultSize);
-	sizer->Add(WxUtils::createLabelVBox(this, "Options:", clb_options_), { 2, 0 }, { 1, 3 }, wxEXPAND);
+	sizer->Add(wxutil::createLabelVBox(this, "Options:", clb_options_), { 2, 0 }, { 1, 3 }, wxEXPAND);
 
 	sizer->AddGrowableCol(1, 1);
 	sizer->AddGrowableRow(2, 1);
@@ -105,9 +107,9 @@ NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent, bool useframe) : PrefsPanelBa
 void NodesPrefsPanel::init()
 {
 	unsigned sel = 0;
-	for (unsigned a = 0; a < NodeBuilders::nNodeBuilders(); a++)
+	for (unsigned a = 0; a < nodebuilders::nNodeBuilders(); a++)
 	{
-		if (nodebuilder_id == NodeBuilders::builder(a).id)
+		if (nodebuilder_id == nodebuilders::builder(a).id)
 		{
 			sel = a;
 			break;
@@ -124,7 +126,7 @@ void NodesPrefsPanel::init()
 void NodesPrefsPanel::populateOptions(const wxString& options) const
 {
 	// Get current builder
-	auto& builder = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
+	auto& builder = nodebuilders::builder(choice_nodebuilder_->GetSelection());
 	btn_browse_path_->Enable(builder.id != "none");
 
 	// Set builder path
@@ -148,7 +150,7 @@ void NodesPrefsPanel::populateOptions(const wxString& options) const
 void NodesPrefsPanel::applyPreferences()
 {
 	// Set nodebuilder
-	auto& builder  = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
+	auto& builder  = nodebuilders::builder(choice_nodebuilder_->GetSelection());
 	nodebuilder_id = builder.id;
 
 	// Set options string
@@ -177,7 +179,7 @@ void NodesPrefsPanel::applyPreferences()
 // -----------------------------------------------------------------------------
 void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e)
 {
-	auto& builder = NodeBuilders::builder(choice_nodebuilder_->GetSelection());
+	auto& builder = nodebuilders::builder(choice_nodebuilder_->GetSelection());
 
 	// Setup extension
 #ifdef __WXMSW__
@@ -187,8 +189,8 @@ void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e)
 #endif
 
 	// Browse for exe
-	SFileDialog::FDInfo info;
-	if (!SFileDialog::openFile(info, "Browse for Nodebuilder Executable", ext, this))
+	filedialog::FDInfo info;
+	if (!filedialog::openFile(info, "Browse for Nodebuilder Executable", ext, this))
 		return;
 
 	// Set builder path

@@ -3,12 +3,14 @@
 #include "MapEditor/Edit/Edit3D.h"
 #include "SLADEMap/SLADEMap.h"
 
+namespace slade
+{
 class ItemSelection;
 class Polygon2D;
 
-namespace Game
+namespace game
 {
-class ThingType;
+	class ThingType;
 }
 
 class MapRenderer3D
@@ -64,7 +66,7 @@ public:
 	struct Thing
 	{
 		uint8_t                flags        = 0;
-		Game::ThingType const* type         = nullptr;
+		game::ThingType const* type         = nullptr;
 		MapSector*             sector       = nullptr;
 		float                  z            = 0.f;
 		float                  height       = 0.f;
@@ -102,8 +104,8 @@ public:
 	void clearData();
 	void buildSkyCircle();
 
-	Quad* getQuad(MapEditor::Item item);
-	Flat* getFlat(MapEditor::Item item);
+	Quad* getQuad(mapeditor::Item item);
+	Flat* getFlat(mapeditor::Item item);
 
 	// Camera
 	void cameraMove(double distance, bool z = true);
@@ -178,8 +180,8 @@ public:
 	void  checkVisibleFlats();
 
 	// Hilight
-	MapEditor::Item determineHilight();
-	void            renderHilight(MapEditor::Item hilight, float alpha = 1.0f);
+	mapeditor::Item determineHilight();
+	void            renderHilight(mapeditor::Item hilight, float alpha = 1.0f);
 
 private:
 	SLADEMap* map_;
@@ -237,3 +239,4 @@ private:
 	sigslot::scoped_connection sc_resources_updated_;
 	sigslot::scoped_connection sc_palette_changed_;
 };
+} // namespace slade

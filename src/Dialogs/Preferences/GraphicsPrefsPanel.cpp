@@ -35,6 +35,8 @@
 #include "OpenGL/GLTexture.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -66,21 +68,21 @@ GraphicsPrefsPanel::GraphicsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 	cp_colour1_     = new wxColourPickerCtrl(this, -1, *wxBLACK, wxDefaultPosition, wxDefaultSize, cp_flags);
 	cp_colour2_     = new wxColourPickerCtrl(this, -1, *wxBLACK, wxDefaultPosition, wxDefaultSize, cp_flags);
 	choice_presets_ = new wxChoice(this, -1);
-	choice_presets_->Append(WxUtils::arrayString({ "Default",
-												   "Black",
-												   "Black (Checkered)",
-												   "Cyan",
-												   "Cyan (Checkered)",
-												   "Magenta",
-												   "Magenta (Checkered)",
-												   "White",
-												   "White (Checkered)",
-												   "Yellow",
-												   "Yellow (Checkered)",
-												   "Vintage Id Software" }));
+	choice_presets_->Append(wxutil::arrayString({ "Default",
+												  "Black",
+												  "Black (Checkered)",
+												  "Cyan",
+												  "Cyan (Checkered)",
+												  "Magenta",
+												  "Magenta (Checkered)",
+												  "White",
+												  "White (Checkered)",
+												  "Yellow",
+												  "Yellow (Checkered)",
+												  "Vintage Id Software" }));
 	choice_browser_bg_ = new wxChoice(this, -1);
 	choice_browser_bg_->Append(
-		WxUtils::arrayString({ "Transparent background (as above)", "System background", "Black background" }));
+		wxutil::arrayString({ "Transparent background (as above)", "System background", "Black background" }));
 	cb_show_border_       = new wxCheckBox(this, -1, "Show outline around graphics and textures");
 	cb_hilight_mouseover_ = new wxCheckBox(this, -1, "Hilight graphics on mouse hover");
 	cb_extra_gfxconv_     = new wxCheckBox(this, -1, "Offer additional conversion options");
@@ -110,15 +112,15 @@ void GraphicsPrefsPanel::init()
 void GraphicsPrefsPanel::applyPreferences()
 {
 	wxColour wxc = cp_colour1_->GetColour();
-	bgtx_colour1 = WxUtils::strToView(wxc.GetAsString(wxC2S_CSS_SYNTAX));
+	bgtx_colour1 = wxutil::strToView(wxc.GetAsString(wxC2S_CSS_SYNTAX));
 	wxc          = cp_colour2_->GetColour();
-	bgtx_colour2 = WxUtils::strToView(wxc.GetAsString(wxC2S_CSS_SYNTAX));
-	OpenGL::Texture::resetBackgroundTexture();
+	bgtx_colour2 = wxutil::strToView(wxc.GetAsString(wxC2S_CSS_SYNTAX));
+	gl::Texture::resetBackgroundTexture();
 	gfx_show_border       = cb_show_border_->GetValue();
 	gfx_extraconv         = cb_extra_gfxconv_->GetValue();
 	browser_bg_type       = choice_browser_bg_->GetSelection();
 	gfx_hilight_mouseover = cb_hilight_mouseover_->GetValue();
-	MainEditor::windowWx()->Refresh();
+	maineditor::windowWx()->Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -131,20 +133,20 @@ void GraphicsPrefsPanel::setupLayout()
 	SetSizer(sizer);
 
 	// Transparent background colours
-	WxUtils::layoutVertically(
+	wxutil::layoutVertically(
 		sizer,
 		{ new wxStaticText(this, -1, "Transparent background colours:"),
 		  cp_colour1_,
 		  cp_colour2_,
-		  WxUtils::createLabelHBox(this, "Preset:", choice_presets_) },
+		  wxutil::createLabelHBox(this, "Preset:", choice_presets_) },
 		wxSizerFlags(0).Expand());
 
-	sizer->Add(new wxStaticLine(this, -1), 0, wxEXPAND | wxTOP | wxBOTTOM, UI::padLarge());
+	sizer->Add(new wxStaticLine(this, -1), 0, wxEXPAND | wxTOP | wxBOTTOM, ui::padLarge());
 
 	// Other gfx options
-	WxUtils::layoutVertically(
+	wxutil::layoutVertically(
 		sizer,
-		{ WxUtils::createLabelHBox(this, "Browser Background:", choice_browser_bg_),
+		{ wxutil::createLabelHBox(this, "Browser Background:", choice_browser_bg_),
 		  cb_show_border_,
 		  cb_hilight_mouseover_,
 		  cb_extra_gfxconv_ },

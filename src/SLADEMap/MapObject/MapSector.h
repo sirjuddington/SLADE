@@ -4,6 +4,8 @@
 #include "Utility/Colour.h"
 #include "Utility/Polygon2D.h"
 
+namespace slade
+{
 class MapSector : public MapObject
 {
 	friend class SLADEMap;
@@ -161,3 +163,4 @@ template<> inline void MapSector::setPlane<MapSector::Ceiling>(const Plane& plan
 {
 	setCeilingPlane(plane);
 }
+} // namespace slade

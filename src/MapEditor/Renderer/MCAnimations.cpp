@@ -41,6 +41,8 @@
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -87,7 +89,7 @@ void MCASelboxFader::draw()
 	glDisable(GL_TEXTURE_2D);
 
 	// Outline
-	ColourConfiguration::setGLColour("map_selbox_outline", fade_);
+	colourconfig::setGLColour("map_selbox_outline", fade_);
 	glLineWidth(2.0f);
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(tl_.x, tl_.y);
@@ -97,7 +99,7 @@ void MCASelboxFader::draw()
 	glEnd();
 
 	// Fill
-	ColourConfiguration::setGLColour("map_selbox_fill", fade_);
+	colourconfig::setGLColour("map_selbox_fill", fade_);
 	glBegin(GL_QUADS);
 	glVertex2d(tl_.x, tl_.y);
 	glVertex2d(tl_.x, br_.y);
@@ -149,9 +151,9 @@ void MCAThingSelection::draw()
 {
 	// Setup colour
 	if (select_)
-		OpenGL::setColour(255, 255, 255, 255 * fade_, OpenGL::Blend::Additive);
+		gl::setColour(255, 255, 255, 255 * fade_, gl::Blend::Additive);
 	else
-		ColourConfiguration::setGLColour("map_selection", fade_);
+		colourconfig::setGLColour("map_selection", fade_);
 
 	// Get texture if needed
 	if (!thing_overlay_square)
@@ -160,16 +162,16 @@ void MCAThingSelection::draw()
 		unsigned tex;
 		if (thing_drawtype == MapRenderer2D::ThingDrawType::Round
 			|| thing_drawtype == MapRenderer2D::ThingDrawType::Sprite)
-			tex = MapEditor::textureManager().editorImage("thing/hilight").gl_id;
+			tex = mapeditor::textureManager().editorImage("thing/hilight").gl_id;
 		else
-			tex = MapEditor::textureManager().editorImage("thing/square/hilight").gl_id;
+			tex = mapeditor::textureManager().editorImage("thing/square/hilight").gl_id;
 
 		if (!tex)
 			return;
 
 		// Bind the texture
 		glEnable(GL_TEXTURE_2D);
-		OpenGL::Texture::bind(tex);
+		gl::Texture::bind(tex);
 	}
 
 	// Animate radius
@@ -241,12 +243,12 @@ void MCALineSelection::draw()
 {
 	// Setup colour
 	if (select_)
-		OpenGL::setColour(255, 255, 255, 255 * fade_, OpenGL::Blend::Additive);
+		gl::setColour(255, 255, 255, 255 * fade_, gl::Blend::Additive);
 	else
-		ColourConfiguration::setGLColour("map_selection", fade_);
+		colourconfig::setGLColour("map_selection", fade_);
 
 	// Draw lines
-	glLineWidth(line_width * ColourConfiguration::lineSelectionWidth());
+	glLineWidth(line_width * colourconfig::lineSelectionWidth());
 	glBegin(GL_LINES);
 	for (unsigned a = 0; a < lines_.size(); a++)
 	{
@@ -305,13 +307,13 @@ void MCAVertexSelection::draw()
 {
 	// Setup colour
 	if (select_)
-		OpenGL::setColour(255, 255, 255, 255 * fade_, OpenGL::Blend::Additive);
+		gl::setColour(255, 255, 255, 255 * fade_, gl::Blend::Additive);
 	else
-		ColourConfiguration::setGLColour("map_selection", fade_);
+		colourconfig::setGLColour("map_selection", fade_);
 
 	// Setup point sprites if supported
 	bool point = false;
-	if (OpenGL::pointSpriteSupport())
+	if (gl::pointSpriteSupport())
 	{
 		// Get appropriate vertex texture
 		unsigned tex;
@@ -321,23 +323,23 @@ void MCAVertexSelection::draw()
 		if (select_)
 		{
 			if (vertex_round)
-				tex = MapEditor::textureManager().editorImage("vertex/round").gl_id;
+				tex = mapeditor::textureManager().editorImage("vertex/round").gl_id;
 			else
-				tex = MapEditor::textureManager().editorImage("vertex/square").gl_id;
+				tex = mapeditor::textureManager().editorImage("vertex/square").gl_id;
 		}
 		else
 		{
 			if (vertex_round)
-				tex = MapEditor::textureManager().editorImage("vertex/hilight_r").gl_id;
+				tex = mapeditor::textureManager().editorImage("vertex/hilight_r").gl_id;
 			else
-				tex = MapEditor::textureManager().editorImage("vertex/hilight_s").gl_id;
+				tex = mapeditor::textureManager().editorImage("vertex/hilight_s").gl_id;
 		}
 
 		// If it was found, enable point sprites
 		if (tex)
 		{
 			glEnable(GL_TEXTURE_2D);
-			OpenGL::Texture::bind(tex);
+			gl::Texture::bind(tex);
 			glEnable(GL_POINT_SPRITE);
 			glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
 			point = true;
@@ -413,9 +415,9 @@ void MCASectorSelection::draw()
 
 	// Setup colour
 	if (select_)
-		OpenGL::setColour(255, 255, 255, 180 * fade_, OpenGL::Blend::Additive);
+		gl::setColour(255, 255, 255, 180 * fade_, gl::Blend::Additive);
 	else
-		ColourConfiguration::setGLColour("map_selection", fade_);
+		colourconfig::setGLColour("map_selection", fade_);
 
 	// Draw polygons
 	for (auto& polygon : polygons_)
@@ -459,9 +461,9 @@ void MCA3dWallSelection::draw()
 {
 	// Setup colour
 	if (select_)
-		OpenGL::setColour(255, 255, 255, 90 * fade_, OpenGL::Blend::Additive);
+		gl::setColour(255, 255, 255, 90 * fade_, gl::Blend::Additive);
 	else
-		ColourConfiguration::setGLColour("map_3d_selection", fade_);
+		colourconfig::setGLColour("map_3d_selection", fade_);
 
 	// Draw quad outline
 	glLineWidth(2.0f);
@@ -472,7 +474,7 @@ void MCA3dWallSelection::draw()
 	glEnd();
 
 	// Draw quad fill
-	ColourConfiguration::setGLColour("map_3d_selection", fade_ * 0.5f);
+	colourconfig::setGLColour("map_3d_selection", fade_ * 0.5f);
 	glBegin(GL_QUADS);
 	for (auto& point : points_)
 		glVertex3d(point.x, point.y, point.z);
@@ -520,9 +522,9 @@ void MCA3dFlatSelection::draw()
 
 	// Setup colour
 	if (select_)
-		OpenGL::setColour(255, 255, 255, 60 * fade_, OpenGL::Blend::Additive);
+		gl::setColour(255, 255, 255, 60 * fade_, gl::Blend::Additive);
 	else
-		ColourConfiguration::setGLColour("map_3d_selection", fade_);
+		colourconfig::setGLColour("map_3d_selection", fade_);
 	glDisable(GL_CULL_FACE);
 
 	// Set polygon to plane height
@@ -598,7 +600,7 @@ void MCAHilightFade::draw()
 MCAHilightFade3D::MCAHilightFade3D(
 	long                start,
 	int                 item_index,
-	MapEditor::ItemType item_type,
+	mapeditor::ItemType item_type,
 	MapRenderer3D*      renderer,
 	float               fade_init) :
 	MCAnimation(start, true),

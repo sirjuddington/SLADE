@@ -3,7 +3,7 @@
 #include "OpenGL/OpenGL.h"
 #include "Utility/Colour.h"
 
-namespace ColourConfiguration
+namespace slade::colourconfig
 {
 struct Colour
 {
@@ -14,7 +14,7 @@ struct Colour
 	ColRGBA colour;
 	bool    blend_additive;
 
-	OpenGL::Blend blendMode() const { return blend_additive ? OpenGL::Blend::Additive : OpenGL::Blend::Normal; }
+	gl::Blend blendMode() const { return blend_additive ? gl::Blend::Additive : gl::Blend::Normal; }
 };
 
 ColRGBA       colour(const string& name);
@@ -45,4 +45,4 @@ bool readConfiguration(string_view name);
 void putConfigurationNames(vector<string>& names);
 
 void putColourNames(vector<string>& list);
-} // namespace ColourConfiguration
+} // namespace slade::colourconfig

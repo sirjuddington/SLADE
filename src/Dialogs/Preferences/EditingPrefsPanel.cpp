@@ -39,6 +39,8 @@
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -73,7 +75,7 @@ public:
 
 	void setCategory(string_view category)
 	{
-		exes_ = Executables::externalExes(category);
+		exes_ = executables::externalExes(category);
 		SetItemCount(exes_.size());
 	}
 
@@ -91,7 +93,7 @@ public:
 	}
 
 private:
-	vector<Executables::ExternalExe> exes_;
+	vector<executables::ExternalExe> exes_;
 };
 
 
@@ -111,17 +113,17 @@ public:
 		SetSizer(sizer);
 
 		// Name
-		auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-		sizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+		auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+		sizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 		gb_sizer->Add(new wxStaticText(this, -1, "Name:"), { 0, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 		text_name_ = new wxTextCtrl(this, -1, name);
 		gb_sizer->Add(text_name_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
 		// Path
 		gb_sizer->Add(new wxStaticText(this, -1, "Path:"), { 1, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-		text_path_ = new wxTextCtrl(this, -1, path, wxDefaultPosition, wxSize(UI::scalePx(300), -1));
+		text_path_ = new wxTextCtrl(this, -1, path, wxDefaultPosition, wxSize(ui::scalePx(300), -1));
 		gb_sizer->Add(text_path_, { 1, 1 }, wxDefaultSpan, wxEXPAND);
-		btn_browse_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "open"));
+		btn_browse_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "open"));
 		gb_sizer->Add(btn_browse_, { 1, 2 }, wxDefaultSpan);
 
 		// Ok/Cancel
@@ -129,7 +131,7 @@ public:
 		gb_sizer->Add(hbox, { 2, 0 }, { 1, 3 }, wxEXPAND);
 		hbox->AddStretchSpacer();
 		btn_cancel_ = new wxButton(this, wxID_CANCEL, "Cancel");
-		hbox->Add(btn_cancel_, 0, wxEXPAND | wxRIGHT, UI::pad());
+		hbox->Add(btn_cancel_, 0, wxEXPAND | wxRIGHT, ui::pad());
 		btn_ok_ = new wxButton(this, wxID_OK, "OK");
 		hbox->Add(btn_ok_, 0, wxEXPAND);
 
@@ -163,9 +165,9 @@ private:
 
 	void browse()
 	{
-		SFileDialog::FDInfo info;
+		filedialog::FDInfo info;
 #ifdef WIN32
-		if (SFileDialog::openFile(info, "Browse for External Editor", "Executable Files (*.exe)|*.exe", this))
+		if (filedialog::openFile(info, "Browse for External Editor", "Executable Files (*.exe)|*.exe", this))
 #else
 		if (SFileDialog::openFile(info, "Browse for External Editor", wxFileSelectorDefaultWildcardStr, this))
 #endif
@@ -210,7 +212,7 @@ EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 
 	// Bind events
 	choice_category_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&) {
-		((ExternalEditorList*)lv_ext_editors_)->setCategory(WxUtils::strToView(choice_category_->GetStringSelection()));
+		((ExternalEditorList*)lv_ext_editors_)->setCategory(wxutil::strToView(choice_category_->GetStringSelection()));
 	});
 	btn_add_exe_->Bind(wxEVT_BUTTON, &EditingPrefsPanel::onBtnAddClicked, this);
 	btn_remove_exe_->Bind(wxEVT_BUTTON, &EditingPrefsPanel::onBtnRemoveClicked, this);
@@ -236,12 +238,12 @@ wxPanel* EditingPrefsPanel::setupGeneralTab()
 	choice_dir_mod_           = new wxChoice(panel, -1);
 
 	// Populate dropdowns
-	choice_entry_mod_->Set(WxUtils::arrayString({ "Don't Save", "Save", "Ask" }));
-	choice_dir_mod_->Set(WxUtils::arrayString({ "Ignore Changes", "Apply Changes", "Ask" }));
+	choice_entry_mod_->Set(wxutil::arrayString({ "Don't Save", "Save", "Ask" }));
+	choice_dir_mod_->Set(wxutil::arrayString({ "Ignore Changes", "Apply Changes", "Ask" }));
 
 	// Layout
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));
-	WxUtils::layoutVertically(
+	wxutil::layoutVertically(
 		panel->GetSizer(),
 		vector<wxObject*>{ cb_wad_force_uppercase_,
 						   cb_zip_percent_encoding_,
@@ -249,9 +251,9 @@ wxPanel* EditingPrefsPanel::setupGeneralTab()
 						   cb_save_archive_with_map_,
 						   cb_confirm_entry_delete_,
 						   cb_confirm_entry_revert_,
-						   WxUtils::createLabelHBox(panel, "Action on unsaved entry changes:", choice_entry_mod_),
-						   WxUtils::createLabelHBox(panel, "Action on external directory changes:", choice_dir_mod_) },
-		wxSizerFlags(0).Expand().Border(wxALL, UI::padLarge()));
+						   wxutil::createLabelHBox(panel, "Action on unsaved entry changes:", choice_entry_mod_),
+						   wxutil::createLabelHBox(panel, "Action on external directory changes:", choice_dir_mod_) },
+		wxSizerFlags(0).Expand().Border(wxALL, ui::padLarge()));
 
 	return panel;
 }
@@ -264,18 +266,18 @@ wxPanel* EditingPrefsPanel::setupExternalTab()
 	auto panel = new wxPanel(stc_tabs_, -1);
 
 	// Create controls
-	auto categories  = WxUtils::arrayStringStd(EntryType::allCategories());
+	auto categories  = wxutil::arrayStringStd(EntryType::allCategories());
 	choice_category_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, categories);
 	lv_ext_editors_  = new ExternalEditorList(panel);
-	btn_add_exe_     = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::General, "plus"));
+	btn_add_exe_     = new wxBitmapButton(panel, -1, icons::getIcon(icons::General, "plus"));
 	btn_add_exe_->SetToolTip("Add External Editor");
-	btn_remove_exe_ = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::General, "minus"));
+	btn_remove_exe_ = new wxBitmapButton(panel, -1, icons::getIcon(icons::General, "minus"));
 	btn_remove_exe_->SetToolTip("Remove Selected External Editors");
 
 	// Layout
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));
-	auto sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	panel->GetSizer()->Add(sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	panel->GetSizer()->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 
 	sizer->Add(new wxStaticText(panel, -1, "Category: "), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(choice_category_, { 0, 1 }, { 1, 2 }, wxEXPAND);
@@ -304,7 +306,7 @@ void EditingPrefsPanel::init()
 	choice_dir_mod_->SetSelection(dir_archive_change_action);
 
 	choice_category_->SetSelection(0);
-	((ExternalEditorList*)lv_ext_editors_)->setCategory(WxUtils::strToView(choice_category_->GetStringSelection()));
+	((ExternalEditorList*)lv_ext_editors_)->setCategory(wxutil::strToView(choice_category_->GetStringSelection()));
 }
 
 // -----------------------------------------------------------------------------
@@ -360,7 +362,7 @@ void EditingPrefsPanel::onBtnAddClicked(wxCommandEvent& e)
 		{
 			// Add executable
 			auto category = choice_category_->GetStringSelection().ToStdString();
-			Executables::addExternalExe(dlg.getName().ToStdString(), dlg.getPath().ToStdString(), category);
+			executables::addExternalExe(dlg.getName().ToStdString(), dlg.getPath().ToStdString(), category);
 
 			// Refresh list
 			((ExternalEditorList*)lv_ext_editors_)->setCategory(category);
@@ -382,7 +384,7 @@ void EditingPrefsPanel::onBtnRemoveClicked(wxCommandEvent& e)
 	for (long item : selection)
 	{
 		wxString name = lv_ext_editors_->GetItemText(item);
-		Executables::removeExternalExe(WxUtils::strToView(name), category);
+		executables::removeExternalExe(wxutil::strToView(name), category);
 	}
 
 	// Refresh list
@@ -396,7 +398,7 @@ void EditingPrefsPanel::onExternalExeActivated(wxListEvent& e)
 {
 	auto name     = lv_ext_editors_->GetItemText(e.GetIndex()).ToStdString();
 	auto category = choice_category_->GetStringSelection().ToStdString();
-	auto exe      = Executables::externalExe(name, category);
+	auto exe      = executables::externalExe(name, category);
 
 	ExternalEditorDialog dlg(this, false, name, exe.path);
 	while (dlg.ShowModal() == wxID_OK)
@@ -408,8 +410,8 @@ void EditingPrefsPanel::onExternalExeActivated(wxListEvent& e)
 		else
 		{
 			// Update executable
-			Executables::setExternalExeName(name, dlg.getName().ToStdString(), category);
-			Executables::setExternalExePath(dlg.getName().ToStdString(), dlg.getPath().ToStdString(), category);
+			executables::setExternalExeName(name, dlg.getName().ToStdString(), category);
+			executables::setExternalExePath(dlg.getName().ToStdString(), dlg.getPath().ToStdString(), category);
 
 			// Refresh list
 			((ExternalEditorList*)lv_ext_editors_)->setCategory(category);

@@ -2,6 +2,8 @@
 
 #include "PrefsPanelBase.h"
 
+namespace slade
+{
 class HudOffsetsPrefsPanel : public PrefsPanelBase
 {
 public:
@@ -17,3 +19,4 @@ private:
 	wxCheckBox* cb_hud_statusbar_ = nullptr;
 	wxCheckBox* cb_hud_wide_      = nullptr;
 };
+} // namespace slade

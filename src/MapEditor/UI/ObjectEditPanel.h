@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class ObjectEditGroup;
 
 class ObjectEditPanel : public wxPanel
@@ -31,3 +33,4 @@ private:
 	void setupLayout();
 	void onBtnPreviewClicked(wxCommandEvent& e);
 };
+} // namespace slade

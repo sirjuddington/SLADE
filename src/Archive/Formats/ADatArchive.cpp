@@ -35,6 +35,8 @@
 #include "Utility/Compression.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -73,8 +75,8 @@ bool ADatArchive::open(MemChunk& mc)
 	// Check it
 	if (magic[0] != 'A' || magic[1] != 'D' || magic[2] != 'A' || magic[3] != 'T')
 	{
-		Log::error("ADatArchive::open: Opening failed, invalid header");
-		Global::error = "Invalid dat header";
+		log::error("ADatArchive::open: Opening failed, invalid header");
+		global::error = "Invalid dat header";
 		return false;
 	}
 
@@ -84,11 +86,11 @@ bool ADatArchive::open(MemChunk& mc)
 	// Read the directory
 	size_t num_entries = dir_size / DIRENTRY;
 	mc.seek(dir_offset, SEEK_SET);
-	UI::setSplashProgressMessage("Reading dat archive data");
+	ui::setSplashProgressMessage("Reading dat archive data");
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)d / (float)num_entries));
+		ui::setSplashProgress(((float)d / (float)num_entries));
 
 		// Read entry info
 		char name[128];
@@ -110,16 +112,16 @@ bool ADatArchive::open(MemChunk& mc)
 		// Check offset+size
 		if ((unsigned)(offset + compsize) > mc.size())
 		{
-			Log::error("ADatArchive::open: dat archive is invalid or corrupt (entry goes past end of file)");
-			Global::error = "Archive is invalid and/or corrupt";
+			log::error("ADatArchive::open: dat archive is invalid or corrupt (entry goes past end of file)");
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
 		// Create directory if needed
-		auto dir = createDir(StrUtil::Path::pathOf(name));
+		auto dir = createDir(strutil::Path::pathOf(name));
 
 		// Create entry
-		auto entry                = std::make_shared<ArchiveEntry>(StrUtil::Path::fileNameOf(name), compsize);
+		auto entry                = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(name), compsize);
 		entry->exProp("Offset")   = (int)offset;
 		entry->exProp("FullSize") = (int)decsize;
 		entry->setLoaded(false);
@@ -133,11 +135,11 @@ bool ADatArchive::open(MemChunk& mc)
 	MemChunk              edata;
 	vector<ArchiveEntry*> all_entries;
 	putEntryTreeAsList(all_entries);
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((float)a / (float)num_entries);
+		ui::setSplashProgress((float)a / (float)num_entries);
 
 		// Get entry
 		auto entry = all_entries[a];
@@ -148,11 +150,11 @@ bool ADatArchive::open(MemChunk& mc)
 			// Read the entry data
 			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->size());
 			MemChunk xdata;
-			if (Compression::zlibInflate(edata, xdata, (int)entry->exProp("FullSize")))
+			if (compression::zlibInflate(edata, xdata, (int)entry->exProp("FullSize")))
 				entry->importMemChunk(xdata);
 			else
 			{
-				Log::warning("Entry {} couldn't be inflated", entry->name());
+				log::warning("Entry {} couldn't be inflated", entry->name());
 				entry->importMemChunk(edata);
 			}
 		}
@@ -172,7 +174,7 @@ bool ADatArchive::open(MemChunk& mc)
 	sig_blocker.unblock();
 	setModified(false);
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -212,14 +214,14 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 
 		// Create compressed version of the lump
 		MemChunk* data;
-		if (Compression::zlibDeflate(entry->data(), compressed, 9))
+		if (compression::zlibDeflate(entry->data(), compressed, 9))
 		{
 			data = &compressed;
 		}
 		else
 		{
 			data = &(entry->data());
-			Log::warning("Entry {} couldn't be deflated", entry->name());
+			log::warning("Entry {} couldn't be deflated", entry->name());
 		}
 
 		// Update entry
@@ -239,8 +241,8 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		name.erase(0, 1); // Remove leading /
 		if (name.size() > 128)
 		{
-			Log::warning("Entry {} path is too long (> 128 characters), putting it in the root directory", name);
-			auto fname = StrUtil::Path::fileNameOf(name);
+			log::warning("Entry {} path is too long (> 128 characters), putting it in the root directory", name);
+			auto fname = strutil::Path::fileNameOf(name);
 			name       = (fname.size() > 128) ? fname.substr(0, 128) : fname;
 		}
 
@@ -327,7 +329,7 @@ bool ADatArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error("ADatArchive::loadEntryData: Unable to open archive file {}", filename_);
+		log::error("ADatArchive::loadEntryData: Unable to open archive file {}", filename_);
 		return false;
 	}
 

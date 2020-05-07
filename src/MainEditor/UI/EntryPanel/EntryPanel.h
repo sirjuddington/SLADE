@@ -5,6 +5,8 @@
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
 
+namespace slade
+{
 class UndoManager;
 
 class EntryPanel : public wxPanel, protected SActionHandler
@@ -72,3 +74,4 @@ private:
 		return false;
 	}
 };
+} // namespace slade

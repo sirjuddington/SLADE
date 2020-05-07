@@ -3,6 +3,8 @@
 #include "Archive/Archive.h"
 #include "OGLCanvas.h"
 
+namespace slade
+{
 class GLTexture;
 
 class MapPreviewCanvas : public OGLCanvas
@@ -88,3 +90,4 @@ private:
 	unsigned            tex_thing_;
 	bool                tex_loaded_ = false;
 };
+} // namespace slade

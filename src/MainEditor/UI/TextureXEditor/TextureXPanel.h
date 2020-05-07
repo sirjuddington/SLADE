@@ -4,6 +4,8 @@
 #include "Graphics/CTexture/TextureXList.h"
 #include "UI/Lists/VirtualListView.h"
 
+namespace slade
+{
 class TextureXEditor;
 class TextureEditorPanel;
 class UndoManager;
@@ -105,3 +107,4 @@ private:
 	void onTextFilterChanged(wxCommandEvent& e);
 	void onBtnClearFitler(wxCommandEvent& e);
 };
+} // namespace slade

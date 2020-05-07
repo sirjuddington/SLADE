@@ -2,6 +2,8 @@
 
 #include "OpenGL/Drawing.h"
 
+namespace slade
+{
 class MapThing;
 class GLTexture;
 
@@ -23,3 +25,4 @@ private:
 	TextBox text_box_;
 	int     last_size_ = 100;
 };
+} // namespace slade

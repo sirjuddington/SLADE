@@ -682,7 +682,7 @@ public:
 		return MATCH_FALSE;
 	}
 
-	int isThisFormat(MemChunk& mc) override { return validMPEG(mc, 2, Audio::checkForTags(mc)); }
+	int isThisFormat(MemChunk& mc) override { return validMPEG(mc, 2, audio::checkForTags(mc)); }
 };
 
 class MP3DataFormat : public EntryDataFormat
@@ -701,7 +701,7 @@ public:
 		if (rwfmt == WAVE_FMT_MP3)
 			return MATCH_TRUE;
 
-		return MP2DataFormat::validMPEG(mc, 3, Audio::checkForTags(mc));
+		return MP2DataFormat::validMPEG(mc, 3, audio::checkForTags(mc));
 	}
 };
 
@@ -884,11 +884,11 @@ public:
 			{
 				size_t size = mc.readB32(4) + 8;
 				if (debugaiff)
-					Log::info(wxString::Format("size %d", size));
+					log::info(wxString::Format("size %d", size));
 				if (size > mc.size())
 				{
 					if (debugaiff)
-						Log::info(wxString::Format("%d <= %d fails", size, mc.size()));
+						log::info(wxString::Format("%d <= %d fails", size, mc.size()));
 					return MATCH_FALSE;
 				}
 				size_t s          = 12;
@@ -897,7 +897,7 @@ public:
 				while (s < size && !(comm_found && ssnd_found))
 				{
 					if (debugaiff)
-						Log::info(wxString::Format("%d/%d", s, size));
+						log::info(wxString::Format("%d/%d", s, size));
 					if (mc[s + 0] == 'C' && mc[s + 1] == 'O' && mc[s + 2] == 'M' && mc[s + 3] == 'M')
 						comm_found = true;
 					else if (mc[s + 0] == 'S' && mc[s + 1] == 'S' && mc[s + 2] == 'N' && mc[s + 3] == 'D')
@@ -906,12 +906,12 @@ public:
 					if (s % 2)
 						++s;
 					if (debugaiff)
-						Log::info(wxString::Format("looking now at offset %d", s));
+						log::info(wxString::Format("looking now at offset %d", s));
 				}
 				if (comm_found && ssnd_found)
 					return MATCH_TRUE;
 				if (debugaiff)
-					Log::info(wxString::Format(
+					log::info(wxString::Format(
 						"COMM was %sfound and SSND was %sfound", comm_found ? "" : "not ", ssnd_found ? "" : "not "));
 			}
 		}
@@ -1127,7 +1127,7 @@ public:
 			{
 				// Extract, then check for vgm signature
 				MemChunk tmp;
-				if (Compression::gzipInflate(mc, tmp) && tmp.size() > 64 && memcmp(tmp.data(), "Vgm ", 4) == 0)
+				if (compression::gzipInflate(mc, tmp) && tmp.size() > 64 && memcmp(tmp.data(), "Vgm ", 4) == 0)
 					return MATCH_TRUE;
 			}
 		}

@@ -5,14 +5,12 @@
 #include "Graphics/Palette/Palette.h"
 #include "Utility/Tree.h"
 
-namespace Drawing
+namespace slade
 {
-enum class Font;
+namespace drawing
+{
+	enum class Font;
 }
-class wxChoice;
-class wxTextCtrl;
-class wxSlider;
-class wxStaticText;
 
 class BrowserTreeNode : public STreeNode
 {
@@ -70,7 +68,7 @@ public:
 	void addItemTree(BrowserTreeNode* node, wxTreeListItem& item) const;
 
 	// Canvas display options
-	void setFont(Drawing::Font font) const;
+	void setFont(drawing::Font font) const;
 	void setItemNameType(BrowserCanvas::NameType type) const;
 	void setItemSize(int size);
 	void setItemViewType(BrowserCanvas::ItemView type) const;
@@ -99,3 +97,4 @@ private:
 	void onCanvasSelectionChanged(wxEvent& e);
 	void onCanvasKeyChar(wxKeyEvent& e);
 };
+} // namespace slade

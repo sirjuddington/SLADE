@@ -2,6 +2,8 @@
 
 #include "MapFormatHandler.h"
 
+namespace slade
+{
 class MapVertex;
 class MapSector;
 class MapSide;
@@ -28,3 +30,4 @@ private:
 	unique_ptr<MapLine>   createLine(ParseTreeNode* def, const MapObjectCollection& map_data) const;
 	unique_ptr<MapThing>  createThing(ParseTreeNode* def) const;
 };
+} // namespace slade

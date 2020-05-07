@@ -3,6 +3,8 @@
 #include "EntryType/EntryType.h"
 #include "Utility/PropertyList/PropertyList.h"
 
+namespace slade
+{
 struct ArchiveFormat;
 class ArchiveDir;
 class Archive;
@@ -128,3 +130,4 @@ private:
 	int    reliability_ = 0; // The reliability of the entry's identification
 	size_t index_guess_ = 0; // for speed
 };
+} // namespace slade

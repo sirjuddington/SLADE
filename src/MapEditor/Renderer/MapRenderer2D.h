@@ -3,6 +3,8 @@
 #include "MapEditor/MapEditor.h"
 #include "Utility/Colour.h"
 
+namespace slade
+{
 // Forward declarations
 class ItemSelection;
 class MapLine;
@@ -10,9 +12,9 @@ class MapSector;
 class MapThing;
 class ObjectEditGroup;
 class SLADEMap;
-namespace Game
+namespace game
 {
-class ThingType;
+	class ThingType;
 }
 
 class MapRenderer2D
@@ -56,24 +58,24 @@ public:
 		double                 x,
 		double                 y,
 		double                 angle,
-		const Game::ThingType& type,
+		const game::ThingType& type,
 		float                  alpha       = 1.0f,
 		double                 radius_mult = 1.0) const;
 	bool renderSpriteThing(
 		double                 x,
 		double                 y,
 		double                 angle,
-		const Game::ThingType& type,
+		const game::ThingType& type,
 		unsigned               index,
 		float                  alpha     = 1.0f,
 		bool                   fitradius = false);
-	void renderSimpleSquareThing(double x, double y, double angle, const Game::ThingType& type, float alpha = 1.0f)
+	void renderSimpleSquareThing(double x, double y, double angle, const game::ThingType& type, float alpha = 1.0f)
 		const;
 	bool renderSquareThing(
 		double                 x,
 		double                 y,
 		double                 angle,
-		const Game::ThingType& type,
+		const game::ThingType& type,
 		float                  alpha    = 1.0f,
 		bool                   showicon = true,
 		bool                   framed   = false) const;
@@ -94,10 +96,10 @@ public:
 	void renderTaggedFlats(vector<MapSector*>& sectors, float fade) const;
 
 	// Moving
-	void renderMovingVertices(const vector<MapEditor::Item>& vertices, Vec2d move_vec) const;
-	void renderMovingLines(const vector<MapEditor::Item>& lines, Vec2d move_vec) const;
-	void renderMovingSectors(const vector<MapEditor::Item>& sectors, Vec2d move_vec) const;
-	void renderMovingThings(const vector<MapEditor::Item>& things, Vec2d move_vec);
+	void renderMovingVertices(const vector<mapeditor::Item>& vertices, Vec2d move_vec) const;
+	void renderMovingLines(const vector<mapeditor::Item>& lines, Vec2d move_vec) const;
+	void renderMovingSectors(const vector<mapeditor::Item>& sectors, Vec2d move_vec) const;
+	void renderMovingThings(const vector<mapeditor::Item>& things, Vec2d move_vec);
 
 	// Paste
 	void renderPasteThings(vector<MapThing*>& things, Vec2d pos);
@@ -195,3 +197,4 @@ private:
 	vector<ThingPath> thing_paths_;
 	long              thing_paths_updated_ = 0;
 };
+} // namespace slade

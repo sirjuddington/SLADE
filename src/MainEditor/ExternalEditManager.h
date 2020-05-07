@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class ArchiveEntry;
 class ExternalEditFileMonitor;
 
@@ -18,3 +20,4 @@ private:
 
 	void monitorStopped(ExternalEditFileMonitor* monitor);
 };
+} // namespace slade

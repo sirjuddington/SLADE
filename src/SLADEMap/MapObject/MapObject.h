@@ -7,6 +7,8 @@
 #include "SLADEMap/MobjPropertyList.h"
 #include <array>
 
+namespace slade
+{
 class ParseTreeNode;
 class SLADEMap;
 
@@ -118,3 +120,4 @@ protected:
 private:
 	Type type_ = Type::Object;
 };
+} // namespace slade

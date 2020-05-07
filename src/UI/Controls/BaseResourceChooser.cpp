@@ -37,6 +37,8 @@
 #include "Archive/ArchiveManager.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -67,19 +69,19 @@ BaseResourceChooser::BaseResourceChooser(wxWindow* parent, bool load_change) :
 	Bind(wxEVT_CHOICE, [&](wxCommandEvent&) {
 		// Open the selected base resource
 		if (load_change_)
-			App::archiveManager().openBaseResource(GetSelection() - 1);
+			app::archiveManager().openBaseResource(GetSelection() - 1);
 	});
 
 	// Handle base resource change signals from the Archive Manager
-	auto& am_signals = App::archiveManager().signals();
+	auto& am_signals = app::archiveManager().signals();
 	signal_connections_ += am_signals.base_res_path_added.connect([this](unsigned) { populateChoices(); });
 	signal_connections_ += am_signals.base_res_path_removed.connect([this](unsigned) { populateChoices(); });
 	signal_connections_ += am_signals.base_res_current_cleared.connect([this]() { SetSelection(0); });
 	signal_connections_ += am_signals.base_res_current_changed.connect(
 		[this](unsigned) { SetSelection(base_resource + 1); });
 
-	if (App::platform() != App::Platform::Linux)
-		wxWindowBase::SetMinSize(WxUtils::scaledSize(128, -1));
+	if (app::platform() != app::Platform::Linux)
+		wxWindowBase::SetMinSize(wxutil::scaledSize(128, -1));
 }
 
 // -----------------------------------------------------------------------------
@@ -95,9 +97,9 @@ void BaseResourceChooser::populateChoices()
 	AppendString("<none>");
 
 	// Populate with base resource paths
-	for (unsigned a = 0; a < App::archiveManager().numBaseResourcePaths(); a++)
+	for (unsigned a = 0; a < app::archiveManager().numBaseResourcePaths(); a++)
 	{
-		wxFileName fn(App::archiveManager().getBaseResourcePath(a));
+		wxFileName fn(app::archiveManager().getBaseResourcePath(a));
 		AppendString(fn.GetFullName());
 	}
 

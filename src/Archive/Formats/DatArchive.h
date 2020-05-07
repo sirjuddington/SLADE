@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class DatArchive : public TreelessArchive
 {
 public:
@@ -48,3 +50,4 @@ private:
 	int flats_[2];
 	int walls_[2];
 };
+} // namespace slade

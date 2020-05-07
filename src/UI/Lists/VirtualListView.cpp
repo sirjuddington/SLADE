@@ -40,6 +40,9 @@
 #include <CommCtrl.h>
 #endif
 
+using namespace slade;
+
+
 // -----------------------------------------------------------------------------
 //
 // Variables
@@ -77,7 +80,7 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	wxListCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_VIRTUAL),
 #endif
 	font_normal_{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) },
-	font_monospace_{ WxUtils::monospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)) }
+	font_monospace_{ wxutil::monospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)) }
 {
 	item_attr_ = std::make_unique<wxListItemAttr>();
 
@@ -674,11 +677,11 @@ void VirtualListView::onColumnLeftClick(wxListEvent& e)
 
 	if (sort_column_ >= 0)
 	{
-		Log::info(2, wxString::Format("Sort column %d (%s)", sort_column_, sort_descend_ ? "descending" : "ascending"));
+		log::info(2, wxString::Format("Sort column %d (%s)", sort_column_, sort_descend_ ? "descending" : "ascending"));
 	}
 	else
 	{
-		Log::info(2, "No sorting");
+		log::info(2, "No sorting");
 	}
 
 	updateList();

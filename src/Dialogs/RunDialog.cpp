@@ -47,6 +47,8 @@
 #include <wx/osx/core/cfstring.h>
 #endif // __WXOSX_MAC__
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -70,7 +72,7 @@ namespace
 // Helper function to get the actual path of game executable [exe], with special
 // handling for macOS .apps
 // -----------------------------------------------------------------------------
-wxString getExecutablePath(const Executables::GameExe* const exe)
+wxString getExecutablePath(const executables::GameExe* const exe)
 {
 	const wxString& exe_path = exe->path;
 
@@ -132,8 +134,8 @@ public:
 		auto sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
 
-		auto gb_sizer = new wxGridBagSizer(UI::padLarge(), UI::pad());
-		sizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::padLarge());
+		auto gb_sizer = new wxGridBagSizer(ui::padLarge(), ui::pad());
+		sizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 
 		// Config name
 		gb_sizer->Add(
@@ -158,7 +160,7 @@ public:
 		label_help->SetLabel(
 			"%i - Base resource archive\n%r - Resource archive(s)\n%a - Current archive\n%mn - Map name\n"
 			"%mw - Map number (eg. E1M1 = 1 1, MAP02 = 02)");
-		label_help->Wrap(UI::scalePx(300));
+		label_help->Wrap(ui::scalePx(300));
 		text_params_->SetInsertionPoint(0);
 	}
 	~RunConfigDialog() = default;
@@ -183,28 +185,29 @@ private:
 // RunDialog class constructor
 // -----------------------------------------------------------------------------
 RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, bool run_map) :
-	SDialog(parent, "Run", "run", 500, 400), run_map_{ run_map }
+	SDialog(parent, "Run", "run", 500, 400),
+	run_map_{ run_map }
 {
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(Icons::getIcon(Icons::General, "run"));
+	icon.CopyFromBitmap(icons::getIcon(icons::General, "run"));
 	SetIcon(icon);
 
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	sizer->Add(gb_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::padLarge());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	sizer->Add(gb_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
 
 	// Game Executable
 	gb_sizer->Add(
 		new wxStaticText(this, -1, "Game Executable:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	choice_game_exes_ = new wxChoice(this, -1);
 	gb_sizer->Add(choice_game_exes_, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
-	btn_add_game_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "plus"));
+	btn_add_game_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "plus"));
 	gb_sizer->Add(btn_add_game_, wxGBPosition(0, 3));
-	btn_remove_game_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "minus"));
+	btn_remove_game_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "minus"));
 	gb_sizer->Add(btn_remove_game_, wxGBPosition(0, 4));
 
 	// Executable path
@@ -212,7 +215,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	text_exe_path_ = new wxTextCtrl(this, -1, "");
 	text_exe_path_->Enable(false);
 	gb_sizer->Add(text_exe_path_, wxGBPosition(1, 1), wxGBSpan(1, 3), wxEXPAND);
-	btn_browse_exe_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "open"));
+	btn_browse_exe_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "open"));
 	btn_browse_exe_->SetToolTip("Browse...");
 	gb_sizer->Add(btn_browse_exe_, wxGBPosition(1, 4));
 
@@ -221,12 +224,12 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 		new wxStaticText(this, -1, "Run Configuration:"), wxGBPosition(2, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	choice_config_ = new wxChoice(this, -1);
 	gb_sizer->Add(choice_config_, wxGBPosition(2, 1), wxDefaultSpan, wxEXPAND);
-	btn_edit_config_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "settings"));
+	btn_edit_config_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "settings"));
 	btn_edit_config_->SetToolTip("Edit command line");
 	gb_sizer->Add(btn_edit_config_, wxGBPosition(2, 2));
-	btn_add_config_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "plus"));
+	btn_add_config_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "plus"));
 	gb_sizer->Add(btn_add_config_, wxGBPosition(2, 3));
-	btn_remove_config_ = new wxBitmapButton(this, -1, Icons::getIcon(Icons::General, "minus"));
+	btn_remove_config_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "minus"));
 	btn_remove_config_->Enable(false);
 	gb_sizer->Add(btn_remove_config_, wxGBPosition(2, 4));
 
@@ -239,15 +242,15 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	// Resources
 	auto frame      = new wxStaticBox(this, -1, "Resources");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->AddSpacer(UI::padLarge());
-	sizer->Add(framesizer, 1, wxEXPAND | wxLEFT | wxRIGHT, UI::padLarge());
+	sizer->AddSpacer(ui::padLarge());
+	sizer->Add(framesizer, 1, wxEXPAND | wxLEFT | wxRIGHT, ui::padLarge());
 	rac_resources_ = new ResourceArchiveChooser(this, archive);
-	framesizer->Add(rac_resources_, 1, wxEXPAND | wxALL, UI::pad());
+	framesizer->Add(rac_resources_, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Start from 3d mode camera
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->AddSpacer(UI::padLarge());
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
+	sizer->AddSpacer(ui::padLarge());
+	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 	cb_start_3d_ = new wxCheckBox(this, -1, "Start from 3D mode camera position");
 	cb_start_3d_->SetValue(run_start_3d);
 	if (show_start_3d_cb)
@@ -261,16 +264,16 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	// Dialog buttons
 	btn_run_ = new wxButton(this, wxID_OK, "Run");
 	btn_run_->SetDefault();
-	hbox->Add(btn_run_, 0, wxEXPAND | wxRIGHT, UI::pad());
+	hbox->Add(btn_run_, 0, wxEXPAND | wxRIGHT, ui::pad());
 
 	btn_cancel_ = new wxButton(this, wxID_CANCEL, "Cancel");
 	hbox->Add(btn_cancel_, 0, wxEXPAND);
 
 	// Populate game executables dropdown
 	int last_index = -1;
-	for (unsigned a = 0; a < Executables::nGameExes(); a++)
+	for (unsigned a = 0; a < executables::nGameExes(); a++)
 	{
-		auto exe = Executables::gameExe(a);
+		auto exe = executables::gameExe(a);
 		choice_game_exes_->AppendString(exe->name);
 
 		if (exe->id == run_last_exe)
@@ -296,7 +299,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	choice_config_->Bind(wxEVT_CHOICE, &RunDialog::onChoiceConfig, this);
 
 	gb_sizer->AddGrowableCol(1, 1);
-	wxTopLevelWindowBase::SetMinSize(wxSize(UI::scalePx(500), UI::scalePx(400)));
+	wxTopLevelWindowBase::SetMinSize(wxSize(ui::scalePx(500), ui::scalePx(400)));
 	wxWindowBase::Layout();
 	CenterOnParent();
 	btn_run_->SetFocusFromKbd();
@@ -320,7 +323,7 @@ void RunDialog::openGameExe(unsigned index) const
 	text_exe_path_->SetValue("");
 
 	// Populate configs
-	auto exe = Executables::gameExe(index);
+	auto exe = executables::gameExe(index);
 	if (exe)
 	{
 		const auto& configs        = run_map_ ? exe->map_configs : exe->run_configs;
@@ -348,7 +351,7 @@ void RunDialog::openGameExe(unsigned index) const
 // -----------------------------------------------------------------------------
 wxString RunDialog::selectedCommandLine(Archive* archive, const wxString& map_name, const wxString& map_file) const
 {
-	auto exe = Executables::gameExe(choice_game_exes_->GetSelection());
+	auto exe = executables::gameExe(choice_game_exes_->GetSelection());
 	if (exe)
 	{
 		// Get exe path
@@ -368,7 +371,7 @@ wxString RunDialog::selectedCommandLine(Archive* archive, const wxString& map_na
 		}
 
 		// IWAD
-		auto bra = App::archiveManager().baseResourceArchive();
+		auto bra = app::archiveManager().baseResourceArchive();
 		path.Replace("%i", wxString::Format("\"%s\"", bra ? bra->filename() : ""));
 
 		// Resources
@@ -421,7 +424,7 @@ wxString RunDialog::selectedCommandLine(Archive* archive, const wxString& map_na
 			path += text_extra_params_->GetValue();
 		}
 
-		Log::info(2, wxString::Format("Run command: %s", path));
+		log::info(2, wxString::Format("Run command: %s", path));
 		return path;
 	}
 
@@ -441,7 +444,7 @@ wxString RunDialog::selectedResourceList() const
 // -----------------------------------------------------------------------------
 wxString RunDialog::selectedExeDir() const
 {
-	auto exe = Executables::gameExe(choice_game_exes_->GetSelection());
+	auto exe = executables::gameExe(choice_game_exes_->GetSelection());
 	if (exe)
 	{
 		wxFileName fn(exe->path);
@@ -456,7 +459,7 @@ wxString RunDialog::selectedExeDir() const
 // -----------------------------------------------------------------------------
 wxString RunDialog::selectedExeId() const
 {
-	auto exe = Executables::gameExe(choice_game_exes_->GetSelection());
+	auto exe = executables::gameExe(choice_game_exes_->GetSelection());
 	if (exe)
 		return exe->id;
 	else
@@ -485,10 +488,10 @@ bool RunDialog::start3dModeChecked() const
 void RunDialog::onBtnAddGame(wxCommandEvent& e)
 {
 	wxString name = wxGetTextFromUser("Enter a name for the game executable");
-	Executables::addGameExe(WxUtils::strToView(name));
+	executables::addGameExe(wxutil::strToView(name));
 	choice_game_exes_->AppendString(name);
 	choice_game_exes_->Select(choice_game_exes_->GetCount() - 1);
-	openGameExe(Executables::nGameExes() - 1);
+	openGameExe(executables::nGameExes() - 1);
 }
 
 // -----------------------------------------------------------------------------
@@ -496,13 +499,13 @@ void RunDialog::onBtnAddGame(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void RunDialog::onBtnBrowseExe(wxCommandEvent& e)
 {
-	auto exe = Executables::gameExe(choice_game_exes_->GetSelection());
+	auto exe = executables::gameExe(choice_game_exes_->GetSelection());
 
 	if (exe)
 	{
-		SFileDialog::FDInfo info;
+		filedialog::FDInfo info;
 #ifdef WIN32
-		if (SFileDialog::openFile(
+		if (filedialog::openFile(
 				info, "Browse for game executable", "Executable files (*.exe)|*.exe;*.bat", this, exe->exe_name))
 #else
 		if (SFileDialog::openFile(
@@ -523,7 +526,7 @@ void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 	if (choice_game_exes_->GetSelection() < 0)
 		return;
 
-	auto     exe         = Executables::gameExe(choice_game_exes_->GetSelection());
+	auto     exe         = executables::gameExe(choice_game_exes_->GetSelection());
 	wxString init_params = "";
 	if (choice_config_->GetSelection() >= 0)
 	{
@@ -540,9 +543,9 @@ void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 			name = fmt::format("Config {}", choice_config_->GetCount() + 1);
 
 		if (run_map_)
-			Executables::addGameExeMapConfig(choice_game_exes_->GetSelection(), name, dlg.params().ToStdString());
+			executables::addGameExeMapConfig(choice_game_exes_->GetSelection(), name, dlg.params().ToStdString());
 		else
-			Executables::addGameExeRunConfig(choice_game_exes_->GetSelection(), name, dlg.params().ToStdString());
+			executables::addGameExeRunConfig(choice_game_exes_->GetSelection(), name, dlg.params().ToStdString());
 
 		choice_config_->AppendString(name);
 		choice_config_->Select(choice_config_->GetCount() - 1);
@@ -557,7 +560,7 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
 	if (choice_game_exes_->GetSelection() < 0 || choice_config_->GetSelection() < 0)
 		return;
 
-	auto     exe            = Executables::gameExe(choice_game_exes_->GetSelection());
+	auto     exe            = executables::gameExe(choice_game_exes_->GetSelection());
 	int      index          = choice_config_->GetSelection();
 	auto&    configs        = run_map_ ? exe->map_configs : exe->run_configs;
 	auto&    configs_custom = run_map_ ? exe->map_configs_custom : exe->run_configs_custom;
@@ -592,9 +595,9 @@ void RunDialog::onBtnRun(wxCommandEvent& e)
 	}
 
 	// Update cvars
-	run_last_extra  = WxUtils::strToView(text_extra_params_->GetValue());
+	run_last_extra  = wxutil::strToView(text_extra_params_->GetValue());
 	run_last_config = choice_config_->GetSelection();
-	run_last_exe    = WxUtils::strToView(selectedExeId());
+	run_last_exe    = wxutil::strToView(selectedExeId());
 
 	EndModal(wxID_OK);
 }
@@ -605,9 +608,9 @@ void RunDialog::onBtnRun(wxCommandEvent& e)
 void RunDialog::onBtnCancel(wxCommandEvent& e)
 {
 	// Update cvars
-	run_last_extra  = WxUtils::strToView(text_extra_params_->GetValue());
+	run_last_extra  = wxutil::strToView(text_extra_params_->GetValue());
 	run_last_config = choice_config_->GetSelection();
-	run_last_exe    = WxUtils::strToView(selectedExeId());
+	run_last_exe    = wxutil::strToView(selectedExeId());
 
 	EndModal(wxID_CANCEL);
 }
@@ -618,7 +621,7 @@ void RunDialog::onBtnCancel(wxCommandEvent& e)
 void RunDialog::onChoiceGameExe(wxCommandEvent& e)
 {
 	openGameExe(e.GetSelection());
-	run_last_exe = WxUtils::strToView(selectedExeId());
+	run_last_exe = wxutil::strToView(selectedExeId());
 }
 
 // -----------------------------------------------------------------------------
@@ -628,7 +631,7 @@ void RunDialog::onChoiceConfig(wxCommandEvent& e)
 {
 	run_last_config = choice_config_->GetSelection();
 	btn_edit_config_->Enable(true);
-	auto        exe            = Executables::gameExe(choice_game_exes_->GetSelection());
+	auto        exe            = executables::gameExe(choice_game_exes_->GetSelection());
 	const auto& configs_custom = run_map_ ? exe->map_configs_custom : exe->run_configs_custom;
 	btn_remove_config_->Enable(configs_custom[choice_config_->GetSelection()]);
 }
@@ -638,11 +641,11 @@ void RunDialog::onChoiceConfig(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void RunDialog::onBtnRemoveGame(wxCommandEvent& e)
 {
-	if (Executables::removeGameExe(choice_game_exes_->GetSelection()))
+	if (executables::removeGameExe(choice_game_exes_->GetSelection()))
 	{
 		choice_game_exes_->Clear();
-		for (unsigned a = 0; a < Executables::nGameExes(); a++)
-			choice_game_exes_->AppendString(Executables::gameExe(a)->name);
+		for (unsigned a = 0; a < executables::nGameExes(); a++)
+			choice_game_exes_->AppendString(executables::gameExe(a)->name);
 
 		if (choice_game_exes_->GetCount() > 0)
 		{
@@ -660,10 +663,10 @@ void RunDialog::onBtnRemoveConfig(wxCommandEvent& e)
 	bool removed = false;
 
 	if (run_map_)
-		removed = Executables::removeGameExeMapConfig(
+		removed = executables::removeGameExeMapConfig(
 			choice_game_exes_->GetSelection(), choice_config_->GetSelection());
 	else
-		removed = Executables::removeGameExeRunConfig(
+		removed = executables::removeGameExeRunConfig(
 			choice_game_exes_->GetSelection(), choice_config_->GetSelection());
 
 	if (removed)

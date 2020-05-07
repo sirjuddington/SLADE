@@ -35,6 +35,8 @@
 #include "Utility/StringUtils.h"
 #include "thirdparty/fmt/fmt/color.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -119,7 +121,7 @@ string MobjPropertyList::toString(bool condensed)
 
 		// Add "key = value;\n" to the buffer
 		if (prop.value.type() == Property::Type::String)
-			fmt::format_to(buffer, format_string, prop.name, StrUtil::escapedString(prop.value.stringValue()));
+			fmt::format_to(buffer, format_string, prop.name, strutil::escapedString(prop.value.stringValue()));
 		else
 			fmt::format_to(buffer, format, prop.name, prop.value.stringValue());
 	}

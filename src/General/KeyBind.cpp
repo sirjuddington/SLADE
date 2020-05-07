@@ -34,6 +34,8 @@
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -74,7 +76,7 @@ string Keypress::asString() const
 
 	string keyname = key;
 	std::replace(keyname.begin(), keyname.end(), '_', ' ');
-	StrUtil::capitalizeIP(keyname);
+	strutil::capitalizeIP(keyname);
 	ret += keyname;
 
 	return ret;
@@ -114,7 +116,7 @@ string KeyBind::keysAsString()
 
 		auto keyname = keys_[a].key;
 		std::replace(keyname.begin(), keyname.end(), '_', ' ');
-		StrUtil::capitalizeIP(keyname);
+		strutil::capitalizeIP(keyname);
 		ret += keyname;
 
 		if (a < keys_.size() - 1)
@@ -822,8 +824,8 @@ bool KeyBind::readBinds(Tokenizer& tz)
 			string key, mods;
 			if (keystr.find('|') != string::npos)
 			{
-				mods = StrUtil::beforeFirst(keystr, '|');
-				key  = StrUtil::afterFirst(keystr, '|');
+				mods = strutil::beforeFirst(keystr, '|');
+				key  = strutil::afterFirst(keystr, '|');
 			}
 			else
 				key = keystr;

@@ -35,6 +35,8 @@
 #include "UI/TextEditorCtrl.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -115,9 +117,9 @@ void Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 #else
 	editor->StartStyling(start);
 #endif
-	
+
 	if (debug_lexer)
-		Log::debug(wxString::Format("START STYLING FROM %d TO %d (LINE %d)", start, end, line + 1));
+		log::debug(wxString::Format("START STYLING FROM %d TO %d (LINE %d)", start, end, line + 1));
 
 	bool done = false;
 	while (!done)
@@ -127,11 +129,11 @@ void Lexer::doStyling(TextEditorCtrl* editor, int start, int end)
 		{
 			editor->SetStyling(comment_blocks_[cb].end_pos - state.position, Style::Comment);
 			state.position = comment_blocks_[cb].end_pos;
-			state.line = editor->LineFromPosition(state.position);
-			state.state = State::Unknown;
+			state.line     = editor->LineFromPosition(state.position);
+			state.state    = State::Unknown;
 			continue;
 		}
-		
+
 		switch (state.state)
 		{
 		case State::Whitespace: done = processWhitespace(state); break;
@@ -156,7 +158,7 @@ void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 {
 	if (!language_)
 		return;
-	
+
 	// Block comment handling
 	auto& block_begin = language_->commentBeginL();
 	auto& block_end   = language_->commentEndL();
@@ -198,7 +200,7 @@ void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 		if (checkToken(editor, pos, block_begin, &token_index))
 		{
 			auto& end_token = block_end[token_index];
-			auto cb_start = pos;
+			auto  cb_start  = pos;
 			pos += block_begin[token_index].size();
 			while (pos < end)
 			{
@@ -223,7 +225,7 @@ void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 // -----------------------------------------------------------------------------
 void Lexer::addWord(string_view word, int style)
 {
-	word_list_[language_->caseSensitive() ? string{ word } : StrUtil::lower(word)].style = (char)style;
+	word_list_[language_->caseSensitive() ? string{ word } : strutil::lower(word)].style = (char)style;
 }
 
 // -----------------------------------------------------------------------------
@@ -234,16 +236,16 @@ void Lexer::styleWord(LexerState& state, string_view word)
 {
 	string word_str{ word };
 	if (!language_->caseSensitive())
-		StrUtil::lowerIP(word_str);
+		strutil::lowerIP(word_str);
 
 	if (word_list_[word_str].style > 0)
 		state.editor->SetStyling(word.length(), word_list_[word_str].style);
-	else if (StrUtil::startsWith(word_str, language_->preprocessor()))
+	else if (strutil::startsWith(word_str, language_->preprocessor()))
 		state.editor->SetStyling(word.length(), Style::Preprocessor);
 	else
 	{
 		// Check for number
-		if (StrUtil::isInteger(word) || StrUtil::isFloat(word))
+		if (strutil::isInteger(word) || strutil::isFloat(word))
 			state.editor->SetStyling(word.length(), Style::Number);
 		else
 			state.editor->SetStyling(word.length(), Style::Default);
@@ -380,14 +382,14 @@ bool Lexer::processUnknown(LexerState& state)
 			state.fold_increment--;
 
 		// if (debug_lexer)
-		// 	Log::debug(wxString::Format("unknown char '%c' (%d)", c, c));
+		// 	log::debug(wxString::Format("unknown char '%c' (%d)", c, c));
 		u_length++;
 		state.position++;
 		pp = false;
 	}
 
 	if (debug_lexer && u_length > 0)
-		Log::debug(wxString::Format("unknown: %d", u_length));
+		log::debug(wxString::Format("unknown: %d", u_length));
 	state.editor->SetStyling(u_length, Style::Default);
 
 	return end;
@@ -429,7 +431,7 @@ bool Lexer::processWord(LexerState& state)
 
 	// Get word as string
 	string word_string{ &word[0], word.size() };
-	auto   word_lower = StrUtil::lower(word_string);
+	auto   word_lower = strutil::lower(word_string);
 
 	// Check for preprocessor folding word
 	if (fold_preprocessor_ && word[0] == preprocessor_char_)
@@ -448,7 +450,7 @@ bool Lexer::processWord(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug("word: {}", word_string);
+		log::debug("word: {}", word_string);
 
 	styleWord(state, word_string);
 
@@ -487,7 +489,7 @@ bool Lexer::processString(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(wxString::Format("string: %lu", state.length));
+		log::debug(wxString::Format("string: %lu", state.length));
 
 	state.editor->SetStyling(state.length, Style::String);
 
@@ -526,7 +528,7 @@ bool Lexer::processChar(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(wxString::Format("char: %lu", state.length));
+		log::debug(wxString::Format("char: %lu", state.length));
 
 	state.editor->SetStyling(state.length, Style::Char);
 
@@ -564,7 +566,7 @@ bool Lexer::processOperator(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(wxString::Format("operator: %lu", state.length));
+		log::debug(wxString::Format("operator: %lu", state.length));
 
 	state.editor->SetStyling(state.length, Style::Operator);
 
@@ -602,7 +604,7 @@ bool Lexer::processWhitespace(LexerState& state)
 	}
 
 	if (debug_lexer)
-		Log::debug(wxString::Format("whitespace: %lu", state.length));
+		log::debug(wxString::Format("whitespace: %lu", state.length));
 
 	state.editor->SetStyling(state.length, Style::Default);
 
@@ -709,7 +711,7 @@ bool Lexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos)
 {
 	auto word = editor->GetTextRange(start_pos, end_pos).ToStdString();
 	if (!language_->caseSensitive())
-		StrUtil::lowerIP(word);
+		strutil::lowerIP(word);
 	return word_list_[word].style == (int)Style::Function;
 }
 
@@ -728,7 +730,7 @@ bool Lexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos)
 void ZScriptLexer::addWord(string_view word, int style)
 {
 	if (style == Style::Function)
-		functions_.push_back(language_->caseSensitive() ? string{ word } : StrUtil::lower(word));
+		functions_.push_back(language_->caseSensitive() ? string{ word } : strutil::lower(word));
 	else
 		Lexer::addWord(word, style);
 }
@@ -752,7 +754,7 @@ void ZScriptLexer::styleWord(LexerState& state, string_view word)
 	{
 		string word_str{ word };
 		if (!language_->caseSensitive())
-			StrUtil::lowerIP(word_str);
+			strutil::lowerIP(word_str);
 
 		if (VECTOR_EXISTS(functions_, word_str))
 		{
@@ -796,6 +798,6 @@ bool ZScriptLexer::isFunction(TextEditorCtrl* editor, int start_pos, int end_pos
 	// Check if word is a function name
 	auto word = editor->GetTextRange(start_pos, end_pos).ToStdString();
 	if (!language_->caseSensitive())
-		StrUtil::lowerIP(word);
+		strutil::lowerIP(word);
 	return VECTOR_EXISTS(functions_, word);
 }

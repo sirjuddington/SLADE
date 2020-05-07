@@ -35,26 +35,26 @@
 #include "Game/Configuration.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
 // Helper Classes
 //
 // -----------------------------------------------------------------------------
-namespace
+namespace slade
 {
 class SpecialPresetData : public wxClientData
 {
 public:
-	SpecialPresetData(const Game::SpecialPreset& preset) : preset_{ preset } {}
+	SpecialPresetData(const game::SpecialPreset& preset) : preset_{ preset } {}
 
-	const Game::SpecialPreset& preset() const { return preset_; }
+	const game::SpecialPreset& preset() const { return preset_; }
 
 private:
-	Game::SpecialPreset const& preset_;
+	game::SpecialPreset const& preset_;
 };
-} // namespace
-
 
 // -----------------------------------------------------------------------------
 // SpecialPresetTreeView Class
@@ -77,8 +77,8 @@ public:
 		wxSize textsize;
 
 		// Populate tree
-		addPresets(Game::customSpecialPresets(), textsize, dc);           // User custom presets
-		addPresets(Game::configuration().specialPresets(), textsize, dc); // From game configuration
+		addPresets(game::customSpecialPresets(), textsize, dc);           // User custom presets
+		addPresets(game::configuration().specialPresets(), textsize, dc); // From game configuration
 		wxDataViewCtrl::Expand(root_);
 
 		// Bind events
@@ -96,11 +96,11 @@ public:
 
 		// 64 is an arbitrary fudge factor -- should be at least the width of a
 		// scrollbar plus the expand icons plus any extra padding
-		int min_width = textsize.GetWidth() + GetIndent() + UI::scalePx(64);
-		wxWindowBase::SetMinSize(wxSize(min_width, UI::scalePx(200)));
+		int min_width = textsize.GetWidth() + GetIndent() + ui::scalePx(64);
+		wxWindowBase::SetMinSize(wxSize(min_width, ui::scalePx(200)));
 	}
 
-	Game::SpecialPreset selectedPreset() const
+	game::SpecialPreset selectedPreset() const
 	{
 		// Get data from selected item
 		auto sel_data = dynamic_cast<SpecialPresetData*>(GetItemData(GetSelection()));
@@ -166,7 +166,7 @@ private:
 		return current;
 	}
 
-	void addPresets(const vector<Game::SpecialPreset>& presets, wxSize& textsize, wxClientDC& dc)
+	void addPresets(const vector<game::SpecialPreset>& presets, wxSize& textsize, wxClientDC& dc)
 	{
 		for (auto& preset : presets)
 		{
@@ -176,6 +176,7 @@ private:
 		}
 	}
 };
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------
@@ -196,14 +197,14 @@ SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) : SDialog{ parent, "S
 	// Presets tree
 	tree_presets_ = new SpecialPresetTreeView(this);
 	tree_presets_->setParentDialog(this);
-	sizer->Add(tree_presets_, 1, wxALL | wxEXPAND, UI::padLarge());
+	sizer->Add(tree_presets_, 1, wxALL | wxEXPAND, ui::padLarge());
 
 	// OK button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
+	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 	hbox->AddStretchSpacer(1);
 	auto btn_ok = new wxButton(this, -1, "OK");
-	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, UI::pad());
+	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, ui::pad());
 	btn_ok->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_OK); });
 
 	// Cancel button
@@ -215,7 +216,7 @@ SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) : SDialog{ parent, "S
 // -----------------------------------------------------------------------------
 // Returns the currently selected special preset
 // -----------------------------------------------------------------------------
-Game::SpecialPreset SpecialPresetDialog::selectedPreset() const
+game::SpecialPreset SpecialPresetDialog::selectedPreset() const
 {
 	return tree_presets_->selectedPreset();
 }

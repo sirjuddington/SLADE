@@ -37,6 +37,7 @@
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -63,7 +64,7 @@ void Console::addCommand(ConsoleCommand& c)
 // -----------------------------------------------------------------------------
 void Console::execute(string_view command)
 {
-	Log::info("> {}", command);
+	log::info("> {}", command);
 
 	// Don't bother doing anything else with an empty command
 	if (command.empty())
@@ -110,9 +111,9 @@ void Console::execute(string_view command)
 					*dynamic_cast<CBoolCVar*>(cvar) = true;
 			}
 			else if (cvar->type == CVar::Type::Integer)
-				*dynamic_cast<CIntCVar*>(cvar) = StrUtil::asInt(args[0]);
+				*dynamic_cast<CIntCVar*>(cvar) = strutil::asInt(args[0]);
 			else if (cvar->type == CVar::Type::Float)
-				*dynamic_cast<CFloatCVar*>(cvar) = StrUtil::asFloat(args[0]);
+				*dynamic_cast<CFloatCVar*>(cvar) = strutil::asFloat(args[0]);
 			else if (cvar->type == CVar::Type::String)
 				*dynamic_cast<CStringCVar*>(cvar) = args[0];
 		}
@@ -133,7 +134,7 @@ void Console::execute(string_view command)
 		else
 			value = ((CStringCVar*)cvar)->value;
 
-		Log::console(fmt::format(R"("{}" = "{}")", cmd_name, value));
+		log::console(fmt::format(R"("{}" = "{}")", cmd_name, value));
 
 		return;
 	}
@@ -141,17 +142,17 @@ void Console::execute(string_view command)
 	// Toggle global debug mode
 	if (cmd_name == "debug")
 	{
-		Global::debug = !Global::debug;
-		if (Global::debug)
-			Log::console("Debugging stuff enabled");
+		global::debug = !global::debug;
+		if (global::debug)
+			log::console("Debugging stuff enabled");
 		else
-			Log::console("Debugging stuff disabled");
+			log::console("Debugging stuff disabled");
 
 		return;
 	}
 
 	// Command not found
-	Log::console(fmt::format("Unknown command: \"{}\"", cmd_name));
+	log::console(fmt::format("Unknown command: \"{}\"", cmd_name));
 }
 
 // -----------------------------------------------------------------------------
@@ -210,7 +211,7 @@ ConsoleCommand::ConsoleCommand(
 	show_in_list_ = show_in_list;
 
 	// Add this command to the console
-	App::console()->addCommand(*this);
+	app::console()->addCommand(*this);
 }
 
 // -----------------------------------------------------------------------------
@@ -222,7 +223,7 @@ void ConsoleCommand::execute(const vector<string>& args) const
 	if (args.size() >= min_args_)
 		command_func_(args);
 	else
-		Log::console(fmt::format("Missing command arguments, type \"cmdhelp {}\" for more information", name_));
+		log::console(fmt::format("Missing command arguments, type \"cmdhelp {}\" for more information", name_));
 }
 
 
@@ -239,7 +240,7 @@ void ConsoleCommand::execute(const vector<string>& args) const
 // -----------------------------------------------------------------------------
 CONSOLE_COMMAND(echo, 1, true)
 {
-	Log::console(args[0]);
+	log::console(args[0]);
 }
 
 // -----------------------------------------------------------------------------
@@ -247,13 +248,13 @@ CONSOLE_COMMAND(echo, 1, true)
 // -----------------------------------------------------------------------------
 CONSOLE_COMMAND(cmdlist, 0, true)
 {
-	Log::console(fmt::format("{} Valid Commands:", App::console()->numCommands()));
+	log::console(fmt::format("{} Valid Commands:", app::console()->numCommands()));
 
-	for (int a = 0; a < App::console()->numCommands(); a++)
+	for (int a = 0; a < app::console()->numCommands(); a++)
 	{
-		auto& cmd = App::console()->command(a);
-		if (cmd.showInList() || Global::debug)
-			Log::console(fmt::format("\"{}\" ({} args)", cmd.name(), cmd.minArgs()));
+		auto& cmd = app::console()->command(a);
+		if (cmd.showInList() || global::debug)
+			log::console(fmt::format("\"{}\" ({} args)", cmd.name(), cmd.minArgs()));
 	}
 }
 
@@ -267,11 +268,11 @@ CONSOLE_COMMAND(cvarlist, 0, true)
 	CVar::putList(list);
 	sort(list.begin(), list.end());
 
-	Log::console(fmt::format("{} CVars:", list.size()));
+	log::console(fmt::format("{} CVars:", list.size()));
 
 	// Write list to console
 	for (const auto& a : list)
-		Log::console(a);
+		log::console(a);
 }
 
 // -----------------------------------------------------------------------------
@@ -280,12 +281,12 @@ CONSOLE_COMMAND(cvarlist, 0, true)
 CONSOLE_COMMAND(cmdhelp, 1, true)
 {
 	// Check command exists
-	for (int a = 0; a < App::console()->numCommands(); a++)
+	for (int a = 0; a < app::console()->numCommands(); a++)
 	{
-		if (StrUtil::equalCI(App::console()->command(a).name(), args[0]))
+		if (strutil::equalCI(app::console()->command(a).name(), args[0]))
 		{
 #ifdef USE_WEBVIEW_STARTPAGE
-			MainEditor::openDocs(fmt::format("{}-Console-Command", args[0]));
+			maineditor::openDocs(fmt::format("{}-Console-Command", args[0]));
 #else
 			wxString url = wxString::Format("https://github.com/sirjuddington/SLADE/wiki/%s-Console-Command", args[0]);
 			wxLaunchDefaultBrowser(url);
@@ -295,7 +296,7 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 	}
 
 	// No command found
-	Log::console(fmt::format("No command \"{}\" exists", args[0]));
+	log::console(fmt::format("No command \"{}\" exists", args[0]));
 }
 
 
@@ -304,20 +305,20 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 
 CONSOLE_COMMAND(testmatch, 2, false)
 {
-	bool match = StrUtil::matches(args[1], args[0]);
+	bool match = strutil::matches(args[1], args[0]);
 	if (match)
-		Log::console("Match");
+		log::console("Match");
 	else
-		Log::console("No Match");
+		log::console("No Match");
 }
 
 CONSOLE_COMMAND(testmatchci, 2, false)
 {
-	bool match = StrUtil::matchesCI(args[1], args[0]);
+	bool match = strutil::matchesCI(args[1], args[0]);
 	if (match)
-		Log::console("Match");
+		log::console("Match");
 	else
-		Log::console("No Match");
+		log::console("No Match");
 }
 
 
@@ -377,7 +378,7 @@ CONSOLE_COMMAND (langfuncsplit, 1)
 			}
 		}
 		lmsg += ";";
-		Log::console(lmsg);
+		log::console(lmsg);
 	}
 }
 

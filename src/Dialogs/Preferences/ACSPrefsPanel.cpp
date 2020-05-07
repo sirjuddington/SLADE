@@ -36,6 +36,8 @@
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -65,9 +67,9 @@ ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 		path_acc,
 		true,
 		"Browse For ACC Executable",
-		SFileDialog::executableExtensionString(),
-		SFileDialog::executableFileName("acc") + ";" + SFileDialog::executableFileName("bcc"));
-	list_inc_paths_        = new wxListBox(this, -1, wxDefaultPosition, wxSize(-1, UI::scalePx(200)));
+		filedialog::executableExtensionString(),
+		filedialog::executableFileName("acc") + ";" + filedialog::executableFileName("bcc"));
+	list_inc_paths_        = new wxListBox(this, -1, wxDefaultPosition, wxSize(-1, ui::scalePx(200)));
 	btn_incpath_add_       = new wxButton(this, -1, "Add");
 	btn_incpath_remove_    = new wxButton(this, -1, "Remove");
 	cb_always_show_output_ = new wxCheckBox(this, -1, "Always Show Compiler Output");
@@ -96,7 +98,7 @@ void ACSPrefsPanel::init()
 // -----------------------------------------------------------------------------
 void ACSPrefsPanel::applyPreferences()
 {
-	path_acc = WxUtils::strToView(flp_acc_path_->location());
+	path_acc = wxutil::strToView(flp_acc_path_->location());
 
 	// Build include paths string
 	wxString paths_string;
@@ -106,7 +108,7 @@ void ACSPrefsPanel::applyPreferences()
 	if (paths_string.EndsWith(";"))
 		paths_string.RemoveLast(1);
 
-	path_acc_libs          = WxUtils::strToView(paths_string);
+	path_acc_libs          = wxutil::strToView(paths_string);
 	acc_always_show_output = cb_always_show_output_->GetValue();
 }
 
@@ -121,24 +123,21 @@ void ACSPrefsPanel::setupLayout()
 
 	// ACC.exe path
 	sizer->Add(
-		WxUtils::createLabelVBox(this, "Location of acc executable:", flp_acc_path_),
-		0,
-		wxEXPAND | wxBOTTOM,
-		UI::pad());
+		wxutil::createLabelVBox(this, "Location of acc executable:", flp_acc_path_), 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Include paths
-	sizer->Add(new wxStaticText(this, -1, "Include Paths:"), 0, wxEXPAND, UI::pad());
+	sizer->Add(new wxStaticText(this, -1, "Include Paths:"), 0, wxEXPAND, ui::pad());
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 1, wxEXPAND | wxBOTTOM, UI::pad());
-	hbox->Add(list_inc_paths_, 1, wxEXPAND | wxRIGHT, UI::pad());
+	sizer->Add(hbox, 1, wxEXPAND | wxBOTTOM, ui::pad());
+	hbox->Add(list_inc_paths_, 1, wxEXPAND | wxRIGHT, ui::pad());
 
 	// Add include path
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	hbox->Add(vbox, 0, wxEXPAND);
-	vbox->Add(btn_incpath_add_, 0, wxEXPAND | wxBOTTOM, UI::pad());
+	vbox->Add(btn_incpath_add_, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Remove include path
-	vbox->Add(btn_incpath_remove_, 0, wxEXPAND | wxBOTTOM, UI::pad());
+	vbox->Add(btn_incpath_remove_, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// 'Always Show Output' checkbox
 	sizer->Add(cb_always_show_output_, 0, wxEXPAND);

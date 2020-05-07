@@ -37,6 +37,8 @@
 #include "StringUtils.h"
 #include "Utility/Tokenizer.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -62,7 +64,7 @@ ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveDir* 
 // -----------------------------------------------------------------------------
 bool ParseTreeNode::nameIsCI(string_view name) const
 {
-	return StrUtil::equalCI(name_, name);
+	return strutil::equalCI(name_, name);
 }
 
 // -----------------------------------------------------------------------------
@@ -157,7 +159,7 @@ ParseTreeNode* ParseTreeNode::addChildPTN(string_view name, string_view type)
 // -----------------------------------------------------------------------------
 void ParseTreeNode::logError(const Tokenizer& tz, string_view error) const
 {
-	Log::error("Parse Error in {} (Line {}): {}\n", tz.source(), tz.current().line_no, error);
+	log::error("Parse Error in {} (Line {}): {}\n", tz.source(), tz.current().line_no, error);
 }
 
 // -----------------------------------------------------------------------------
@@ -165,7 +167,7 @@ void ParseTreeNode::logError(const Tokenizer& tz, string_view error) const
 // -----------------------------------------------------------------------------
 bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 {
-	// Log::debug(wxString::Format("Preprocessor %s", CHR(tz.current().text)));
+	// log::debug(wxString::Format("Preprocessor %s", CHR(tz.current().text)));
 
 	// #define
 	if (tz.current() == "#define")
@@ -210,11 +212,11 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 			auto inc_path  = tz.next().text;
 			auto archive   = archive_dir_->archive();
 			auto inc_entry = archive->entryAtPath(archive_dir_->path() + inc_path);
-			Log::info("Looking for #include entry '{}' / '{}'", archive_dir_->path(), inc_path);
+			log::info("Looking for #include entry '{}' / '{}'", archive_dir_->path(), inc_path);
 			if (!inc_entry) // Try absolute path
 				inc_entry = archive->entryAtPath(inc_path);
 
-			// Log::debug(wxString::Format("Include %s", CHR(inc_path)));
+			// log::debug(wxString::Format("Include %s", CHR(inc_path)));
 
 			if (inc_entry)
 			{
@@ -287,7 +289,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 		else if (token.isInteger()) // Integer
 			value = token.asInt();
 		else if (token.isHex()) // Hex (0xXXXXXX)
-			value = StrUtil::asInt({ token.text.data() + 2, token.text.size() - 2 }, 16);
+			value = strutil::asInt({ token.text.data() + 2, token.text.size() - 2 }, 16);
 		else if (token.isFloat()) // Floating point
 			value = token.asFloat();
 		else // Unknown, just treat as string
@@ -367,7 +369,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			}
 		}
 
-		// Log::debug(wxString::Format("%s \"%s\", op %s", CHR(type), CHR(name), CHR(tz.current().text)));
+		// log::debug(wxString::Format("%s \"%s\", op %s", CHR(type), CHR(name), CHR(tz.current().text)));
 
 		// Assignment
 		if (tz.advIfNext('=', 2))
@@ -466,7 +468,7 @@ void ParseTreeNode::write(string& out, int indent) const
 		out += type_ + " ";
 
 	// Name
-	if (StrUtil::contains(name_, ' ') || name_.empty())
+	if (strutil::contains(name_, ' ') || name_.empty())
 		out += fmt::format("\"{}\"", name_);
 	else
 		out += fmt::format("{}", name_);
@@ -574,7 +576,7 @@ bool Parser::parseText(MemChunk& mc, string_view source) const
 	tz.setReadLowerCase(!case_sensitive_);
 	if (!tz.openMem(mc, source))
 	{
-		Log::error("Unable to open text data for parsing");
+		log::error("Unable to open text data for parsing");
 		return false;
 	}
 
@@ -589,7 +591,7 @@ bool Parser::parseText(string_view text, string_view source) const
 	tz.setReadLowerCase(!case_sensitive_);
 	if (!tz.openString(text, 0, 0, source))
 	{
-		Log::error("Unable to open text data for parsing");
+		log::error("Unable to open text data for parsing");
 		return false;
 	}
 
@@ -611,7 +613,7 @@ void Parser::define(string_view def)
 bool Parser::defined(string_view def)
 {
 	for (const auto& defined_str : defines_)
-		if (StrUtil::equalCI(defined_str, def))
+		if (strutil::equalCI(defined_str, def))
 			return true;
 
 	return false;

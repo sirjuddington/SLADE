@@ -2,8 +2,11 @@
 
 #include "UI/SDialog.h"
 
+namespace slade
+{
 class ResourceArchiveChooser;
 class Archive;
+
 class RunDialog : public SDialog
 {
 public:
@@ -46,3 +49,4 @@ private:
 	void onBtnRemoveGame(wxCommandEvent& e);
 	void onBtnRemoveConfig(wxCommandEvent& e);
 };
+} // namespace slade

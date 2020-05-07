@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class GobArchive : public TreelessArchive
 {
 public:
@@ -23,3 +25,4 @@ public:
 	static bool isGobArchive(MemChunk& mc);
 	static bool isGobArchive(const string& filename);
 };
+} // namespace slade

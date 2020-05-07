@@ -36,6 +36,7 @@
 #include <filesystem>
 #include <fstream>
 
+using namespace slade;
 namespace fs = std::filesystem;
 
 
@@ -49,7 +50,7 @@ namespace fs = std::filesystem;
 // -----------------------------------------------------------------------------
 // Returns true if a file at [path] exists
 // -----------------------------------------------------------------------------
-bool FileUtil::fileExists(string_view path)
+bool fileutil::fileExists(string_view path)
 {
 	auto fs_path = fs::path{ path };
 	return fs::exists(fs_path) && fs::is_regular_file(fs_path);
@@ -58,7 +59,7 @@ bool FileUtil::fileExists(string_view path)
 // -----------------------------------------------------------------------------
 // Returns true if a directory at [path] exists
 // -----------------------------------------------------------------------------
-bool FileUtil::dirExists(string_view path)
+bool fileutil::dirExists(string_view path)
 {
 	auto fs_path = fs::path{ path };
 	return fs::exists(fs_path) && fs::is_directory(fs_path);
@@ -67,12 +68,12 @@ bool FileUtil::dirExists(string_view path)
 // -----------------------------------------------------------------------------
 // Removes the file at [path], returns true if successful
 // -----------------------------------------------------------------------------
-bool FileUtil::removeFile(string_view path)
+bool fileutil::removeFile(string_view path)
 {
 	static std::error_code ec;
 	if (!fs::remove(path, ec))
 	{
-		Log::warning("Unable to remove file \"{}\": {}", path, ec.message());
+		log::warning("Unable to remove file \"{}\": {}", path, ec.message());
 		return false;
 	}
 
@@ -83,13 +84,13 @@ bool FileUtil::removeFile(string_view path)
 // Copies the file at [from] to a file at [to]. If [overwrite] is true, it will
 // overwrite the file if it already exists.
 // -----------------------------------------------------------------------------
-bool FileUtil::copyFile(string_view from, string_view to, bool overwrite)
+bool fileutil::copyFile(string_view from, string_view to, bool overwrite)
 {
 	static std::error_code ec;
-	auto options = overwrite ? fs::copy_options::overwrite_existing : fs::copy_options::none;
+	auto                   options = overwrite ? fs::copy_options::overwrite_existing : fs::copy_options::none;
 	if (!fs::copy_file(from, to, options, ec))
 	{
-		Log::warning("Unable to copy file from \"{}\" to \"{}\": {}", from, to, ec.message());
+		log::warning("Unable to copy file from \"{}\" to \"{}\": {}", from, to, ec.message());
 		return false;
 	}
 
@@ -99,12 +100,12 @@ bool FileUtil::copyFile(string_view from, string_view to, bool overwrite)
 // -----------------------------------------------------------------------------
 // Reads all text from the file at [path] into [str]
 // -----------------------------------------------------------------------------
-bool FileUtil::readFileToString(const string& path, string& str)
+bool fileutil::readFileToString(const string& path, string& str)
 {
 	std::ifstream file(path);
 	if (!file.is_open())
 	{
-		Log::warning("Unable to open file \"{}\" for reading", path);
+		log::warning("Unable to open file \"{}\" for reading", path);
 		return false;
 	}
 
@@ -121,12 +122,12 @@ bool FileUtil::readFileToString(const string& path, string& str)
 // Writes [str] to a file at [path]. Will overwrite the file if it
 // already exists
 // -----------------------------------------------------------------------------
-bool FileUtil::writeStringToFile(string& str, const string& path)
+bool fileutil::writeStringToFile(string& str, const string& path)
 {
 	std::ofstream file(path);
 	if (!file.is_open())
 	{
-		Log::warning("Unable to open file \"{}\" for writing", path);
+		log::warning("Unable to open file \"{}\" for writing", path);
 		return false;
 	}
 
@@ -140,7 +141,7 @@ bool FileUtil::writeStringToFile(string& str, const string& path)
 // Creates a new directory at [path] if it doesn't aleady exist.
 // Returns false if the directory doesn't exist and could not be created
 // -----------------------------------------------------------------------------
-bool FileUtil::createDir(string_view path)
+bool fileutil::createDir(string_view path)
 {
 	return fs::create_directory(path);
 }
@@ -152,7 +153,7 @@ bool FileUtil::createDir(string_view path)
 // If [include_dir_paths] is true, each filename will be prefixed with the given
 // [path]
 // -----------------------------------------------------------------------------
-vector<string> FileUtil::allFilesInDir(string_view path, bool include_subdirs, bool include_dir_paths)
+vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, bool include_dir_paths)
 {
 	vector<string> paths;
 
@@ -176,7 +177,7 @@ vector<string> FileUtil::allFilesInDir(string_view path, bool include_subdirs, b
 // Returns the modification time of the file at [path], or 0 if the file doesn't
 // exist or can't be acessed
 // -----------------------------------------------------------------------------
-time_t FileUtil::fileModifiedTime(string_view path)
+time_t fileutil::fileModifiedTime(string_view path)
 {
 	return static_cast<time_t>(fs::last_write_time(path).time_since_epoch().count());
 }

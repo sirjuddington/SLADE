@@ -39,6 +39,8 @@
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -68,12 +70,12 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	panel_fr_ = new FindReplacePanel(this, *text_area_);
 	text_area_->setFindReplacePanel(panel_fr_);
 	panel_fr_->Hide();
-	sizer_main_->Add(panel_fr_, 0, wxEXPAND | wxTOP, UI::padLarge());
+	sizer_main_->Add(panel_fr_, 0, wxEXPAND | wxTOP, ui::padLarge());
 	// sizer_main_->AddSpacer(UI::pad());
 
 	// Add 'Text Language' choice to toolbar
 	auto group_language = new SToolBarGroup(toolbar_, "Text Language", true);
-	auto languages      = WxUtils::arrayStringStd(TextLanguage::languageNames());
+	auto languages      = wxutil::arrayStringStd(TextLanguage::languageNames());
 	languages.Sort();
 	languages.Insert("None", 0, 1);
 	choice_text_language_ = new wxChoice(group_language, -1, wxDefaultPosition, wxDefaultSize, languages);
@@ -83,7 +85,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 
 	// Add 'Jump To' choice to toolbar
 	auto group_jump_to = new SToolBarGroup(toolbar_, "Jump To", true);
-	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(UI::scalePx(200), -1));
+	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(ui::scalePx(200), -1));
 	group_jump_to->addCustomControl(choice_jump_to_);
 	toolbar_->addGroup(group_jump_to);
 	text_area_->setJumpToControl(choice_jump_to_);
@@ -160,7 +162,7 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	{
 		for (auto a = 0u; a < choice_text_language_->GetCount(); ++a)
 		{
-			if (StrUtil::equalCI(tl->name(), WxUtils::strToView(choice_text_language_->GetString(a))))
+			if (strutil::equalCI(tl->name(), wxutil::strToView(choice_text_language_->GetString(a))))
 			{
 				choice_text_language_->Select(a);
 				break;
@@ -209,7 +211,7 @@ bool TextEntryPanel::saveEntry()
 	// Update custom definitions if decorate or zscript
 	if (text_area_->language()
 		&& (text_area_->language()->id() == "decorate" || text_area_->language()->id() == "zscript"))
-		Game::updateCustomDefinitions();
+		game::updateCustomDefinitions();
 
 	// Update variables
 	setModified(false);
@@ -333,10 +335,10 @@ bool TextEntryPanel::handleEntryPanelAction(string_view id)
 
 	// compileACS
 	else if (id == "arch_scripts_compileacs" && entry)
-		EntryOperations::compileACS(entry.get(), false, nullptr, nullptr);
+		entryoperations::compileACS(entry.get(), false, nullptr, nullptr);
 
 	else if (id == "arch_scripts_compilehacs" && entry)
-		EntryOperations::compileACS(entry.get(), true, nullptr, nullptr);
+		entryoperations::compileACS(entry.get(), true, nullptr, nullptr);
 
 	// Not handled
 	else
@@ -369,7 +371,7 @@ void TextEntryPanel::onTextModified(wxCommandEvent& e)
 void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 {
 	// Get selected language
-	auto tl = TextLanguage::fromName(WxUtils::strToView(choice_text_language_->GetStringSelection()));
+	auto tl = TextLanguage::fromName(wxutil::strToView(choice_text_language_->GetStringSelection()));
 
 	// Set text editor language
 	text_area_->setLanguage(tl);

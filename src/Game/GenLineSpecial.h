@@ -1,6 +1,6 @@
 #pragma once
 
-namespace BoomGenLineSpecial
+namespace slade::genlinespecial
 {
 enum SpecialType
 {
@@ -19,4 +19,4 @@ string      parseLineType(int type);
 SpecialType getLineTypeProperties(int type, int* props);
 int         generateSpecial(SpecialType type, const int* props);
 
-} // namespace BoomGenLineSpecial
+} // namespace slade::genlinespecial

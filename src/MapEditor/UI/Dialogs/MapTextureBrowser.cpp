@@ -39,7 +39,8 @@
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/StringUtils.h"
 
-using namespace MapEditor;
+using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -80,9 +81,9 @@ bool MapTexBrowserItem::loadImage()
 
 	// Get texture or flat depending on type
 	if (type_ == "texture")
-		tex = &MapEditor::textureManager().texture(name_.ToStdString(), false);
+		tex = &mapeditor::textureManager().texture(name_.ToStdString(), false);
 	else if (type_ == "flat")
-		tex = &MapEditor::textureManager().flat(name_.ToStdString(), false);
+		tex = &mapeditor::textureManager().flat(name_.ToStdString(), false);
 
 	if (tex)
 	{
@@ -106,7 +107,7 @@ wxString MapTexBrowserItem::itemInfo()
 		return "No Texture";
 
 	// Add dimensions if known
-	auto& tex_info = OpenGL::Texture::info(image_tex_);
+	auto& tex_info = gl::Texture::info(image_tex_);
 	if (image_tex_ || loadImage())
 		info += wxString::Format("%dx%d", tex_info.size.x, tex_info.size.y);
 	else
@@ -140,7 +141,9 @@ wxString MapTexBrowserItem::itemInfo()
 // MapTextureBrowser class constructor
 // -----------------------------------------------------------------------------
 MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const wxString& texture, SLADEMap* map) :
-	BrowserWindow(parent, true), type_{ type }, map_{ map }
+	BrowserWindow(parent, true),
+	type_{ type },
+	map_{ map }
 {
 	// Init sorting
 	addSortType("Usage Count");
@@ -152,14 +155,14 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const w
 	auto map_format = map->currentFormat();
 
 	// Textures
-	if (type == TextureType::Texture || Game::configuration().featureSupported(Game::Feature::MixTexFlats))
+	if (type == TextureType::Texture || game::configuration().featureSupported(game::Feature::MixTexFlats))
 	{
 		addGlobalItem(new MapTexBrowserItem("-", MapTexBrowserItem::TEXTURE, 0));
 
-		auto& textures = MapEditor::textureManager().allTexturesInfo();
+		auto& textures = mapeditor::textureManager().allTexturesInfo();
 		for (unsigned a = 0; a < textures.size(); a++)
 		{
-			if ((map_format != MapFormat::UDMF || !Game::configuration().featureSupported(Game::Feature::LongNames))
+			if ((map_format != MapFormat::UDMF || !game::configuration().featureSupported(game::Feature::LongNames))
 				&& textures[a].short_name.size() > 8)
 			{
 				// Only UDMF supports texture/flat names longer than 8 characters
@@ -188,12 +191,12 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const w
 	}
 
 	// Flats
-	if (type == TextureType::Flat || Game::configuration().featureSupported(Game::Feature::MixTexFlats))
+	if (type == TextureType::Flat || game::configuration().featureSupported(game::Feature::MixTexFlats))
 	{
-		auto& flats = MapEditor::textureManager().allFlatsInfo();
+		auto& flats = mapeditor::textureManager().allFlatsInfo();
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
-			if ((map_format != MapFormat::UDMF || !Game::configuration().featureSupported(Game::Feature::LongNames))
+			if ((map_format != MapFormat::UDMF || !game::configuration().featureSupported(game::Feature::LongNames))
 				&& flats[a].short_name.size() > 8)
 			{
 				// Only UDMF supports texture/flat names longer than 8 characters
@@ -228,10 +231,10 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const w
 	}
 
 	// Full path textures
-	if (map_format == MapFormat::UDMF && Game::configuration().featureSupported(Game::Feature::LongNames))
+	if (map_format == MapFormat::UDMF && game::configuration().featureSupported(game::Feature::LongNames))
 	{
 		// Textures
-		auto& fp_textures = MapEditor::textureManager().allTexturesInfo();
+		auto& fp_textures = mapeditor::textureManager().allTexturesInfo();
 		for (auto& tex : fp_textures)
 		{
 			if (tex.category != MapTextureManager::Category::ZDTextures
@@ -245,7 +248,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, const w
 		}
 
 		// Flats
-		auto& fp_flats = MapEditor::textureManager().allFlatsInfo();
+		auto& fp_flats = mapeditor::textureManager().allFlatsInfo();
 		for (auto& flat : fp_flats)
 		{
 			if (!flat.path.empty() && flat.path != "/")

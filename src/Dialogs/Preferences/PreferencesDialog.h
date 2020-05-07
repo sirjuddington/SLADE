@@ -2,10 +2,13 @@
 
 #include "UI/SDialog.h"
 
-class PrefsPanelBase;
-class BaseResourceArchivesPanel;
 class wxPanel;
 class wxTreebook;
+
+namespace slade
+{
+class PrefsPanelBase;
+class BaseResourceArchivesPanel;
 
 class PreferencesDialog : public SDialog
 {
@@ -47,3 +50,4 @@ private:
 	// Events
 	void onButtonClicked(wxCommandEvent& e);
 };
+} // namespace slade

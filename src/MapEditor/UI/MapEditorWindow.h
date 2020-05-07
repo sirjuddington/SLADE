@@ -4,6 +4,8 @@
 #include "General/SAction.h"
 #include "UI/STopWindow.h"
 
+namespace slade
+{
 class MapObject;
 class MapObjectPropsPanel;
 class ScriptEditorPanel;
@@ -68,3 +70,4 @@ private:
 	void onClose(wxCloseEvent& e);
 	void onSize(wxSizeEvent& e);
 };
+} // namespace slade

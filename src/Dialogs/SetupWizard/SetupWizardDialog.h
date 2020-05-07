@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class WizardPageBase;
 class SetupWizardDialog : public wxDialog
 {
@@ -23,3 +25,4 @@ private:
 	void onBtnNext(wxCommandEvent& e);
 	void onBtnPrev(wxCommandEvent& e);
 };
+} // namespace slade

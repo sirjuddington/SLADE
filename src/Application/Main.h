@@ -48,14 +48,14 @@ using std::weak_ptr;
 #undef Bool
 
 // Namespace to hold 'global' variables
-namespace Global
+namespace slade::global
 {
 extern string error;
 extern string sc_rev;
 extern bool   debug;
 extern int    win_version_major;
 extern int    win_version_minor;
-}; // namespace Global
+}; // namespace slade::global
 
 // Global internal includes
 #include "General/CVar.h"

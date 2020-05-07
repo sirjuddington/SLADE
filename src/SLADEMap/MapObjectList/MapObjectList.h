@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class MapObject;
 
 template<class T> class MapObjectList
@@ -75,3 +77,4 @@ protected:
 	vector<T*> objects_;
 	unsigned   count_ = 0;
 };
+} // namespace slade

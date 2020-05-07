@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class BSPArchive : public Archive
 {
 public:
@@ -20,3 +22,4 @@ public:
 	static bool isBSPArchive(MemChunk& mc);
 	static bool isBSPArchive(const string& filename);
 };
+} // namespace slade

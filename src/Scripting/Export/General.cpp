@@ -38,20 +38,22 @@
 #include "Scripting/Lua.h"
 #include "thirdparty/sol/sol.hpp"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
 // Lua Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace Lua
+namespace slade::lua
 {
 // -----------------------------------------------------------------------------
 // Writes a log [message] of [type]
 // -----------------------------------------------------------------------------
-void logMessage(string_view message, Log::MessageType type = Log::MessageType::Script)
+void logMessage(string_view message, log::MessageType type = log::MessageType::Script)
 {
-	Log::message(type, message);
+	log::message(type, message);
 }
 
 // -----------------------------------------------------------------------------
@@ -62,7 +64,7 @@ bool showArchive(Archive* archive)
 	if (!archive)
 		return false;
 
-	MainEditor::openArchiveTab(archive);
+	maineditor::openArchiveTab(archive);
 	return true;
 }
 
@@ -84,8 +86,8 @@ template<typename T> sol::object memChunkRead(MemChunk& self, unsigned offset)
 	// just to return 0 if the read fails, rather than nil
 	T val;
 	if (!self.read(offset, &val, sizeof(T)))
-		return sol::make_object(Lua::state().lua_state(), sol::nil);
-	return sol::make_object(Lua::state().lua_state(), val);
+		return sol::make_object(lua::state().lua_state(), sol::nil);
+	return sol::make_object(lua::state().lua_state(), val);
 }
 
 // -----------------------------------------------------------------------------
@@ -246,16 +248,16 @@ void registerAppNamespace(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	app["LogMessage"]            = [](string_view message) { logMessage(message, Log::MessageType::Script); };
-	app["LogWarning"]            = [](string_view message) { logMessage(message, Log::MessageType::Warning); };
-	app["LogError"]              = [](string_view message) { logMessage(message, Log::MessageType::Error); };
-	app["CurrentArchive"]        = &MainEditor::currentArchive;
-	app["CurrentEntry"]          = &MainEditor::currentEntry;
-	app["CurrentEntrySelection"] = &MainEditor::currentEntrySelection;
-	app["CurrentPalette"] = sol::overload(&MainEditor::currentPalette, []() { return MainEditor::currentPalette(); });
+	app["LogMessage"]            = [](string_view message) { logMessage(message, log::MessageType::Script); };
+	app["LogWarning"]            = [](string_view message) { logMessage(message, log::MessageType::Warning); };
+	app["LogError"]              = [](string_view message) { logMessage(message, log::MessageType::Error); };
+	app["CurrentArchive"]        = &maineditor::currentArchive;
+	app["CurrentEntry"]          = &maineditor::currentEntry;
+	app["CurrentEntrySelection"] = &maineditor::currentEntrySelection;
+	app["CurrentPalette"] = sol::overload(&maineditor::currentPalette, []() { return maineditor::currentPalette(); });
 	app["ShowArchive"]    = &showArchive;
-	app["ShowEntry"]      = &MainEditor::openEntry;
-	app["MapEditor"]      = &MapEditor::editContext;
+	app["ShowEntry"]      = &maineditor::openEntry;
+	app["MapEditor"]      = &mapeditor::editContext;
 }
 
-} // namespace Lua
+} // namespace slade::lua

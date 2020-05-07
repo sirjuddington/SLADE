@@ -3,12 +3,15 @@
 #include "General/SAction.h"
 #include "UI/STopWindow.h"
 
+class wxAuiManager;
+
+namespace slade
+{
 class ArchiveManagerPanel;
 class PaletteChooser;
 class SToolBar;
 class STabCtrl;
 class UndoManagerHistoryPanel;
-class wxAuiManager;
 class SStartPage;
 #ifdef USE_WEBVIEW_STARTPAGE
 class DocsPage;
@@ -64,3 +67,4 @@ private:
 	void onToolBarLayoutChanged(wxEvent& e);
 	void onActivate(wxActivateEvent& e);
 };
+} // namespace slade

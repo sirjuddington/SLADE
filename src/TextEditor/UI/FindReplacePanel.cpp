@@ -36,6 +36,8 @@
 #include "UI/Controls/SIconButton.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -53,8 +55,8 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 {
 	SetSizer(new wxBoxSizer(wxVERTICAL));
 
-	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	GetSizer()->Add(gb_sizer, 1, wxEXPAND | wxBOTTOM, UI::pad());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	GetSizer()->Add(gb_sizer, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Find
 	text_find_     = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
@@ -85,13 +87,13 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditorCtrl& text_editor
 	auto wsizer          = new wxWrapSizer(wxHORIZONTAL, wxREMOVE_LEADING_SPACES);
 	GetSizer()->Add(wsizer, 0, wxEXPAND);
 	wsizer->Add(cb_match_case_, 0, wxEXPAND);
-	wsizer->AddSpacer(UI::pad());
+	wsizer->AddSpacer(ui::pad());
 	wsizer->Add(cb_match_word_whole_, 0, wxEXPAND);
-	wsizer->AddSpacer(UI::pad());
+	wsizer->AddSpacer(ui::pad());
 	wsizer->Add(cb_match_word_start_, 0, wxEXPAND);
-	wsizer->AddSpacer(UI::pad());
+	wsizer->AddSpacer(ui::pad());
 	wsizer->Add(cb_search_regex_, 0, wxEXPAND);
-	wsizer->AddSpacer(UI::pad());
+	wsizer->AddSpacer(ui::pad());
 	wsizer->Add(cb_allow_escape_, 0, wxEXPAND);
 
 	gb_sizer->AddGrowableCol(1, 1);

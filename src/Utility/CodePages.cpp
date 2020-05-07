@@ -33,6 +33,8 @@
 #include "Main.h"
 #include "CodePages.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -154,7 +156,7 @@ uint8_t ansicolors[16][3] =
 //
 // -----------------------------------------------------------------------------
 
-wxString CodePages::fromASCII(uint8_t val)
+wxString codepages::fromASCII(uint8_t val)
 {
 	if (val < 128)
 		return asciitable[val];
@@ -162,12 +164,12 @@ wxString CodePages::fromASCII(uint8_t val)
 		return "";
 }
 
-wxString CodePages::fromCP437(uint8_t val)
+wxString codepages::fromCP437(uint8_t val)
 {
 	return wxString::FromUTF8((const char*)cp437table[val], cp437len[val]);
 }
 
-ColRGBA CodePages::ansiColor(uint8_t val)
+ColRGBA codepages::ansiColor(uint8_t val)
 {
 	if (val >= 16)
 		val = ((val >> 4) & 7);

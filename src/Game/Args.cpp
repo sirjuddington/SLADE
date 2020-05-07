@@ -35,7 +35,8 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
-using namespace Game;
+using namespace slade;
+using namespace game;
 
 
 // -----------------------------------------------------------------------------
@@ -186,7 +187,7 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 		auto name = node->stringValue();
 
 		// Names beginning with a dollar sign are references to predeclared args
-		if (shared_args && StrUtil::startsWith(name, '$'))
+		if (shared_args && strutil::startsWith(name, '$'))
 		{
 			auto it = shared_args->find(name.substr(1));
 			if (it == shared_args->end())
@@ -224,17 +225,17 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 		string atype;
 		if (val)
 			atype = val->stringValue();
-		if (StrUtil::equalCI(atype, "yesno"))
+		if (strutil::equalCI(atype, "yesno"))
 			type = YesNo;
-		else if (StrUtil::equalCI(atype, "noyes"))
+		else if (strutil::equalCI(atype, "noyes"))
 			type = NoYes;
-		else if (StrUtil::equalCI(atype, "angle"))
+		else if (strutil::equalCI(atype, "angle"))
 			type = Angle;
-		else if (StrUtil::equalCI(atype, "choice"))
+		else if (strutil::equalCI(atype, "choice"))
 			type = Choice;
-		else if (StrUtil::equalCI(atype, "flags"))
+		else if (strutil::equalCI(atype, "flags"))
 			type = Flags;
-		else if (StrUtil::equalCI(atype, "speed"))
+		else if (strutil::equalCI(atype, "speed"))
 			type = Speed;
 		else
 			type = Number;
@@ -244,14 +245,14 @@ void Arg::parse(ParseTreeNode* node, SpecialMap* shared_args)
 		if (val)
 		{
 			for (auto cv : val->allChildren())
-				custom_values.push_back({ Parser::node(cv)->stringValue(), StrUtil::asInt(cv->name()) });
+				custom_values.push_back({ Parser::node(cv)->stringValue(), strutil::asInt(cv->name()) });
 		}
 
 		val = node->childPTN("custom_flags");
 		if (val)
 		{
 			for (auto cf : val->allChildren())
-				custom_flags.push_back({ Parser::node(cf)->stringValue(), StrUtil::asInt(cf->name()) });
+				custom_flags.push_back({ Parser::node(cf)->stringValue(), strutil::asInt(cf->name()) });
 		}
 	}
 }
@@ -275,7 +276,7 @@ string ArgSpec::stringDesc(const int values[5], string values_str[2]) const
 	for (unsigned a = 0; a < 5; a++)
 	{
 		// Skip if the arg name is undefined and the arg value is 0
-		if (values[a] == 0 && StrUtil::startsWith(args[a].name, "Arg"))
+		if (values[a] == 0 && strutil::startsWith(args[a].name, "Arg"))
 			continue;
 
 		ret += args[a].name;
@@ -289,7 +290,7 @@ string ArgSpec::stringDesc(const int values[5], string values_str[2]) const
 
 	// Cut ending ", "
 	if (!ret.empty())
-		StrUtil::removeLastIP(ret, 2);
+		strutil::removeLastIP(ret, 2);
 
 	return ret;
 }

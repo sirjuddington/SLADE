@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 struct ColHSL;
 struct ColLAB;
 
@@ -20,6 +22,7 @@ struct ColRGBA
 	{
 	}
 	ColRGBA(const ColRGBA& c) : r{ c.r }, g{ c.g }, b{ c.b }, a{ c.a }, index{ c.index } {}
+	explicit ColRGBA(const wxColour& c) : r{ c.Red() }, g{ c.Green() }, b{ c.Blue() }, a{ c.Alpha() } {}
 
 	// Functions
 	void set(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, char blend = -1, short index = -1)
@@ -38,6 +41,14 @@ struct ColRGBA
 		b     = colour.b;
 		a     = colour.a;
 		index = colour.index;
+	}
+
+	void set(const wxColour& colour)
+	{
+		r = colour.Red();
+		g = colour.Green();
+		b = colour.Blue();
+		a = colour.Alpha();
 	}
 
 	float fr() const { return (float)r / 255.0f; }
@@ -149,7 +160,8 @@ struct ColRGBA
 		CSS,  // #rrggbb
 		ZDoom // "rr gg bb"
 	};
-	string toString(StringFormat format = StringFormat::CSS) const;
+	string   toString(StringFormat format = StringFormat::CSS) const;
+	wxColour toWx() const { return wxColour(r, g, b, a); }
 
 	// Some basic colours
 	static const ColRGBA WHITE;
@@ -161,10 +173,6 @@ struct ColRGBA
 	static const ColRGBA PURPLE;
 	static const ColRGBA CYAN;
 };
-
-// Convert ColRGBA <-> wxColor
-#define WXCOL(rgba) wxColor(rgba.r, rgba.g, rgba.b, rgba.a)
-#define COLWX(wxcol) wxcol.Red(), wxcol.Green(), wxcol.Blue()
 
 // ColHSL: Represents a colour in HSL format, generally used for calculations
 struct ColHSL
@@ -187,3 +195,4 @@ struct ColLAB
 	ColLAB() = default;
 	ColLAB(double l, double a, double b, double alpha = 1.) : l{ l }, a{ a }, b{ b }, alpha{ alpha } {}
 };
+} // namespace slade

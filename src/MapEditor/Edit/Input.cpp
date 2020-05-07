@@ -40,7 +40,8 @@
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "MapEditor/UI/ObjectEditPanel.h"
 
-using namespace MapEditor;
+using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -107,7 +108,7 @@ bool Input::mouseMove(int new_x, int new_y)
 		status_text = fmt::format("Position: ({:1.3f}, {:1.3f})", mx, my);
 	else
 		status_text = fmt::format("Position: ({}, {})", (int)mx, (int)my);
-	MapEditor::setStatusText(status_text, 3);
+	mapeditor::setStatusText(status_text, 3);
 
 	// Object edit
 	auto edit_state = context_.objectEdit().state();
@@ -122,7 +123,7 @@ bool Input::mouseMove(int new_x, int new_y)
 			{
 				// Rotate
 				group.doRotate(mouse_down_pos_map_, mouse_pos_map_, !shift_down_);
-				MapEditor::window()->objectEditPanel()->update(&group, true);
+				mapeditor::window()->objectEditPanel()->update(&group, true);
 			}
 			else
 			{
@@ -141,7 +142,7 @@ bool Input::mouseMove(int new_x, int new_y)
 				{
 					// Move objects
 					group.doMove(xoff, yoff);
-					MapEditor::window()->objectEditPanel()->update(&group);
+					mapeditor::window()->objectEditPanel()->update(&group);
 				}
 				else
 				{
@@ -153,7 +154,7 @@ bool Input::mouseMove(int new_x, int new_y)
 						context_.objectEdit().stateTop(false),
 						context_.objectEdit().stateRight(false),
 						context_.objectEdit().stateBottom(false));
-					MapEditor::window()->objectEditPanel()->update(&group);
+					mapeditor::window()->objectEditPanel()->update(&group);
 				}
 			}
 		}
@@ -276,7 +277,7 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 				{
 					// Finish shape draw
 					context_.lineDraw().end(true);
-					MapEditor::window()->showShapeDrawPanel(false);
+					mapeditor::window()->showShapeDrawPanel(false);
 					mouse_state_ = MouseState::Normal;
 				}
 			}
@@ -327,7 +328,7 @@ bool Input::mouseDown(MouseButton button, bool double_click)
 			if (!sel.empty())
 			{
 				// Check type
-				if (sel[0].type == MapEditor::ItemType::Thing)
+				if (sel[0].type == mapeditor::ItemType::Thing)
 					context_.edit2D().changeThingType();
 				else
 					context_.edit3D().changeTexture();
@@ -398,7 +399,7 @@ bool Input::mouseUp(MouseButton button)
 
 			// Begin selection box fade animation
 			context_.renderer().addAnimation(
-				std::make_unique<MCASelboxFader>(App::runTimer(), mouse_down_pos_map_, mouse_pos_map_));
+				std::make_unique<MCASelboxFader>(app::runTimer(), mouse_down_pos_map_, mouse_pos_map_));
 		}
 
 		// If we're in object edit mode
@@ -423,7 +424,7 @@ bool Input::mouseUp(MouseButton button)
 			mouse_state_ = MouseState::Normal;
 
 		else if (mouse_state_ == MouseState::Normal)
-			MapEditor::openContextMenu();
+			mapeditor::openContextMenu();
 	}
 
 	// Any other mouse button (let keybind system handle it)
@@ -471,7 +472,7 @@ void Input::mouseLeave()
 	if (panning_)
 	{
 		panning_ = false;
-		context_.setCursor(UI::MouseCursor::Normal);
+		context_.setCursor(ui::MouseCursor::Normal);
 	}
 }
 
@@ -569,7 +570,7 @@ void Input::onKeyBindRelease(string_view name)
 		panning_ = false;
 		if (mouse_state_ == MouseState::Normal)
 			context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale());
-		context_.setCursor(UI::MouseCursor::Normal);
+		context_.setCursor(ui::MouseCursor::Normal);
 	}
 
 	else if (name == "me2d_thing_quick_angle" && mouse_state_ == MouseState::ThingAngle)
@@ -633,7 +634,7 @@ void Input::handleKeyBind2dView(string_view name)
 		panning_        = true;
 		if (mouse_state_ == MouseState::Normal)
 			context_.selection().clearHilight();
-		context_.setCursor(UI::MouseCursor::Move);
+		context_.setCursor(ui::MouseCursor::Move);
 	}
 
 	// Increment grid
@@ -658,7 +659,7 @@ void Input::handleKeyBind2d(string_view name)
 		{
 			mouse_state_ = MouseState::Normal;
 			context_.lineDraw().end();
-			MapEditor::window()->showShapeDrawPanel(false);
+			mapeditor::window()->showShapeDrawPanel(false);
 		}
 
 		// Cancel line draw
@@ -666,7 +667,7 @@ void Input::handleKeyBind2d(string_view name)
 		{
 			mouse_state_ = MouseState::Normal;
 			context_.lineDraw().end(false);
-			MapEditor::window()->showShapeDrawPanel(false);
+			mapeditor::window()->showShapeDrawPanel(false);
 		}
 	}
 
@@ -756,7 +757,7 @@ void Input::handleKeyBind2d(string_view name)
 			context_.objectEdit().end(true);
 			mouse_state_ = MouseState::Normal;
 			context_.renderer().renderer2D().forceUpdate();
-			context_.setCursor(UI::MouseCursor::Normal);
+			context_.setCursor(ui::MouseCursor::Normal);
 		}
 
 		// Cancel edit
@@ -765,7 +766,7 @@ void Input::handleKeyBind2d(string_view name)
 			context_.objectEdit().end(false);
 			mouse_state_ = MouseState::Normal;
 			context_.renderer().renderer2D().forceUpdate();
-			context_.setCursor(UI::MouseCursor::Normal);
+			context_.setCursor(ui::MouseCursor::Normal);
 		}
 	}
 
@@ -810,7 +811,7 @@ void Input::handleKeyBind2d(string_view name)
 			default: break;
 			};
 
-			MapEditor::window()->refreshToolBar();
+			mapeditor::window()->refreshToolBar();
 		}
 
 		// Move items (toggle)
@@ -869,12 +870,12 @@ void Input::handleKeyBind2d(string_view name)
 		{
 			// Check if any data is copied
 			ClipboardItem* item = nullptr;
-			for (unsigned a = 0; a < App::clipboard().size(); a++)
+			for (unsigned a = 0; a < app::clipboard().size(); a++)
 			{
-				if (App::clipboard().item(a)->type() == ClipboardItem::Type::MapArchitecture
-					|| App::clipboard().item(a)->type() == ClipboardItem::Type::MapThings)
+				if (app::clipboard().item(a)->type() == ClipboardItem::Type::MapArchitecture
+					|| app::clipboard().item(a)->type() == ClipboardItem::Type::MapThings)
 				{
-					item = App::clipboard().item(a);
+					item = app::clipboard().item(a);
 					break;
 				}
 			}

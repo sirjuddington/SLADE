@@ -3,6 +3,9 @@
 #include "PrefsPanelBase.h"
 
 class wxListBox;
+
+namespace slade
+{
 class FileLocationPanel;
 
 class ACSPrefsPanel : public PrefsPanelBase
@@ -29,3 +32,4 @@ private:
 	void onBtnAddIncPath(wxCommandEvent& e);
 	void onBtnRemoveIncPath(wxCommandEvent& e);
 };
+} // namespace slade

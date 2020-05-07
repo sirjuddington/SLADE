@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class Archive;
 
 class FileMonitor : public wxTimer
@@ -38,3 +40,4 @@ private:
 	Archive* archive_ = nullptr;
 	string   map_name_;
 };
+} // namespace slade

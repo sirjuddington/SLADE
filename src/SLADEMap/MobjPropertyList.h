@@ -2,6 +2,8 @@
 
 #include "Utility/PropertyList/Property.h"
 
+namespace slade
+{
 class MobjPropertyList
 {
 public:
@@ -44,3 +46,4 @@ public:
 private:
 	vector<Prop> properties_;
 };
+} // namespace slade

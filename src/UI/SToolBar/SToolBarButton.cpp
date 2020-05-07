@@ -37,6 +37,8 @@
 #include "OpenGL/Drawing.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -72,9 +74,9 @@ SToolBarButton::SToolBarButton(wxWindow* parent, const wxString& action, const w
 	action_id_{ action_->id() },
 	action_name_{ action_->text() },
 	help_text_{ action_->helpText() },
-	pad_outer_{ UI::scalePx(1) },
-	pad_inner_{ UI::scalePx(2) },
-	icon_size_{ UI::scalePx(toolbar_size) }
+	pad_outer_{ ui::scalePx(1) },
+	pad_inner_{ ui::scalePx(2) },
+	icon_size_{ ui::scalePx(toolbar_size) }
 {
 	// Determine width of name text if shown
 	if (show_name)
@@ -93,9 +95,9 @@ SToolBarButton::SToolBarButton(wxWindow* parent, const wxString& action, const w
 
 	// Load icon
 	if (icon.IsEmpty())
-		icon_ = Icons::getIcon(Icons::General, action_->iconName(), icon_size_ > 16);
+		icon_ = icons::getIcon(icons::General, action_->iconName(), icon_size_ > 16);
 	else
-		icon_ = Icons::getIcon(Icons::General, icon.ToStdString(), icon_size_ > 16);
+		icon_ = icons::getIcon(icons::General, icon.ToStdString(), icon_size_ > 16);
 
 	// Add shortcut to help text if it exists
 	wxString sc = action_->shortcutText();
@@ -140,9 +142,9 @@ SToolBarButton::SToolBarButton(
 	action_id_{ action_id },
 	action_name_{ action_name },
 	help_text_{ help_text },
-	pad_outer_{ UI::scalePx(1) },
-	pad_inner_{ UI::scalePx(2) },
-	icon_size_{ UI::scalePx(toolbar_size) }
+	pad_outer_{ ui::scalePx(1) },
+	pad_inner_{ ui::scalePx(2) },
+	icon_size_{ ui::scalePx(toolbar_size) }
 {
 	// Determine width of name text if shown
 	text_width_ = show_name ? GetTextExtent(action_name).GetWidth() + pad_inner_ * 2 : 0;
@@ -155,7 +157,7 @@ SToolBarButton::SToolBarButton(
 	SetSize(width, height);
 
 	// Load icon
-	icon_ = Icons::getIcon(Icons::General, icon.ToStdString(), icon_size_ > 16);
+	icon_ = icons::getIcon(icons::General, icon.ToStdString(), icon_size_ > 16);
 
 	// Set tooltip
 	if (!show_name)
@@ -178,7 +180,7 @@ SToolBarButton::SToolBarButton(
 void SToolBarButton::setIcon(const wxString& icon)
 {
 	if (!icon.IsEmpty())
-		icon_ = Icons::getIcon(Icons::General, icon.ToStdString(), icon_size_ > 16);
+		icon_ = icons::getIcon(icons::General, icon.ToStdString(), icon_size_ > 16);
 }
 
 // -----------------------------------------------------------------------------
@@ -186,7 +188,7 @@ void SToolBarButton::setIcon(const wxString& icon)
 // -----------------------------------------------------------------------------
 int SToolBarButton::pixelHeight()
 {
-	return UI::scalePx(toolbar_size + 8);
+	return ui::scalePx(toolbar_size + 8);
 }
 
 // -----------------------------------------------------------------------------
@@ -241,7 +243,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 
 	int  height   = icon_size_ + pad_inner_ * 2;
 	int  width    = height + text_width_;
-	auto scale_px = UI::scaleFactor();
+	auto scale_px = ui::scaleFactor();
 
 	// Draw toggled border/background
 	if (action_ && action_->isChecked())
@@ -257,15 +259,15 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		if (toolbar_button_flat)
 		{
 			// Draw border
-			col_trans.Set(COLWX(col_trans), 80);
+			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 			gc->SetBrush(col_trans);
-			gc->SetPen(wxPen(Drawing::darkColour(col_toggle, 5.0f), scale_px));
+			gc->SetPen(wxPen(drawing::darkColour(col_toggle, 5.0f), scale_px));
 			gc->DrawRectangle(pad_outer_, pad_outer_, width, height);
 		}
 		else
 		{
 			// Draw border
-			col_trans.Set(COLWX(col_trans), 80);
+			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(col_hilight, scale_px));
 			gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width, height, 2 * scale_px);
@@ -281,12 +283,12 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 			trans = 200;
 
 		// Create semitransparent hilight colour
-		wxColour col_trans(COLWX(col_hilight), trans);
+		wxColour col_trans(col_hilight.Red(), col_hilight.Green(), col_hilight.Blue(), trans);
 
 		if (toolbar_button_flat)
 		{
 			// Draw border
-			col_trans.Set(COLWX(col_trans), 80);
+			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(col_hilight, scale_px));
 			gc->DrawRectangle(pad_outer_, pad_outer_, width, height);
@@ -294,7 +296,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		else
 		{
 			// Draw border
-			col_trans.Set(COLWX(col_trans), 80);
+			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(col_hilight));
 			gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width, height, 2 * scale_px);

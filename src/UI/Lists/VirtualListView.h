@@ -3,6 +3,8 @@
 // An event to indicate when the selection has changed
 wxDECLARE_EVENT(EVT_VLV_SELECTION_CHANGED, wxCommandEvent);
 
+namespace slade
+{
 class VirtualListView : public wxListCtrl
 {
 public:
@@ -106,3 +108,4 @@ private:
 
 	void sendSelectionChangedEvent();
 };
+} // namespace slade

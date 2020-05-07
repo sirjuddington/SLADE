@@ -3,6 +3,9 @@
 #include "PrefsPanelBase.h"
 
 class wxCheckListBox;
+
+namespace slade
+{
 class NodesPrefsPanel : public PrefsPanelBase
 {
 public:
@@ -24,3 +27,4 @@ private:
 	// Events
 	void onBtnBrowse(wxCommandEvent& e);
 };
+} // namespace slade

@@ -37,6 +37,8 @@
 #include "General/Misc.h"
 #include "SIFormat.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -132,7 +134,7 @@ protected:
 		// Check it created/read ok
 		if (!bm)
 		{
-			Global::error = "Unable to read image data (unsupported format?)";
+			global::error = "Unable to read image data (unsupported format?)";
 			return false;
 		}
 
@@ -160,8 +162,8 @@ protected:
 		auto rgba = FreeImage_ConvertTo32Bits(bm);
 		if (!rgba)
 		{
-			Log::error("FreeImage_ConvertTo32Bits failed for image data");
-			Global::error = "Error reading PNG data";
+			log::error("FreeImage_ConvertTo32Bits failed for image data");
+			global::error = "Error reading PNG data";
 			return false;
 		}
 		FreeImage_FlipVertical(rgba);

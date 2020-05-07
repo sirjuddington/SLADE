@@ -34,6 +34,8 @@
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -68,7 +70,7 @@ MapEditorPrefsPanel::MapEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	WxUtils::layoutVertically(
+	wxutil::layoutVertically(
 		sizer,
 		vector<wxObject*>{
 			cb_scroll_smooth_         = new wxCheckBox(this, -1, "Enable smooth scrolling"),
@@ -80,7 +82,7 @@ MapEditorPrefsPanel::MapEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 			cb_remove_invalid_lines_ = new wxCheckBox(this, -1, "Remove any resulting invalid lines on sector delete"),
 			cb_merge_lines_vertex_delete_ = new wxCheckBox(this, -1, "Merge connected lines when deleting a vertex"),
 			cb_split_auto_offset_         = new wxCheckBox(this, -1, "Automatic x-offset on line split"),
-			WxUtils::createLabelHBox(this, "Max backups to keep:", text_max_backups_ = new NumberTextCtrl(this)) },
+			wxutil::createLabelHBox(this, "Max backups to keep:", text_max_backups_ = new NumberTextCtrl(this)) },
 		wxSizerFlags(0).Expand());
 
 	wxWindowBase::Layout();

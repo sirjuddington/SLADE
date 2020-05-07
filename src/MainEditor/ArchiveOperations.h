@@ -2,7 +2,7 @@
 
 #include "Archive/Archive.h"
 
-namespace ArchiveOperations
+namespace slade::archiveoperations
 {
 bool removeUnusedPatches(Archive* archive);
 bool checkDuplicateEntryNames(Archive* archive);
@@ -43,4 +43,4 @@ size_t replaceSpecials(
 	bool     arg4    = false,
 	int      oldarg4 = 0,
 	int      newarg4 = 0);
-}; // namespace ArchiveOperations
+}; // namespace slade::archiveoperations

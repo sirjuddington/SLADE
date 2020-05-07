@@ -41,7 +41,8 @@
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
-using namespace MapEditor;
+using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -229,7 +230,7 @@ bool ObjectEditGroup::nearestLineEndpoints(Vec2d pos, double min, Vec2d& v1, Vec
 	double min_dist = min;
 	for (auto& line : lines_)
 	{
-		double d = MathStuff::distanceToLineFast(pos, { line.v1->position, line.v2->position });
+		double d = math::distanceToLineFast(pos, { line.v1->position, line.v2->position });
 
 		if (d < min_dist)
 		{
@@ -404,8 +405,8 @@ void ObjectEditGroup::doRotate(Vec2d p1, Vec2d p2, bool lock45)
 	Vec2d mid(old_bbox_.min.x + old_bbox_.width() * 0.5, old_bbox_.min.y + old_bbox_.height() * 0.5);
 
 	// Determine angle
-	double angle = MathStuff::angle2DRad(p1, mid, p2);
-	rotation_    = MathStuff::radToDeg(angle);
+	double angle = math::angle2DRad(p1, mid, p2);
+	rotation_    = math::radToDeg(angle);
 
 	// Lock to 45 degree increments if needed
 	if (lock45)
@@ -419,12 +420,12 @@ void ObjectEditGroup::doRotate(Vec2d p1, Vec2d p2, bool lock45)
 	for (auto& vertex : vertices_)
 	{
 		if (!vertex->ignored)
-			vertex->position = MathStuff::rotatePoint(mid, vertex->old_position, rotation_);
+			vertex->position = math::rotatePoint(mid, vertex->old_position, rotation_);
 	}
 
 	// Rotate things
 	for (auto& thing : things_)
-		thing.position = MathStuff::rotatePoint(mid, thing.old_position, rotation_);
+		thing.position = math::rotatePoint(mid, thing.old_position, rotation_);
 }
 
 // -----------------------------------------------------------------------------
@@ -486,7 +487,7 @@ void ObjectEditGroup::doAll(
 
 		// Rotate
 		if (rotation != 0)
-			vertex->position = MathStuff::rotatePoint(bbox_.mid(), vertex->position, rotation);
+			vertex->position = math::rotatePoint(bbox_.mid(), vertex->position, rotation);
 
 		vertex->old_position = vertex->position;
 	}
@@ -528,7 +529,7 @@ void ObjectEditGroup::doAll(
 
 		// Rotate
 		if (rotation != 0)
-			thing.position = MathStuff::rotatePoint(bbox_.mid(), thing.position, rotation);
+			thing.position = math::rotatePoint(bbox_.mid(), thing.position, rotation);
 
 		thing.old_position = thing.position;
 	}
@@ -672,7 +673,7 @@ bool ObjectEdit::begin()
 	if (group_.empty())
 		return false;
 
-	MapEditor::showObjectEditPanel(true, &group_);
+	mapeditor::showObjectEditPanel(true, &group_);
 
 	context_.input().setMouseState(Input::MouseState::ObjectEdit);
 	context_.renderer().renderer2D().forceUpdate();
@@ -729,7 +730,7 @@ void ObjectEdit::end(bool accept)
 		context_.endUndoRecord(merge || !map_merge_undo_step);
 	}
 
-	MapEditor::showObjectEditPanel(false, nullptr);
+	mapeditor::showObjectEditPanel(false, nullptr);
 	context_.setFeatureHelp({});
 }
 
@@ -754,7 +755,7 @@ void ObjectEdit::determineState()
 	{
 		// Outside bbox
 		state_ = State::None;
-		context_.setCursor(UI::MouseCursor::Normal);
+		context_.setCursor(ui::MouseCursor::Normal);
 		return;
 	}
 
@@ -765,21 +766,21 @@ void ObjectEdit::determineState()
 		if (mouse_pos.y < top + bbox_pad && bbox.height() > 0)
 		{
 			state_ = State::TopLeft;
-			context_.setCursor(rotating_ ? UI::MouseCursor::Cross : UI::MouseCursor::SizeNWSE);
+			context_.setCursor(rotating_ ? ui::MouseCursor::Cross : ui::MouseCursor::SizeNWSE);
 		}
 
 		// Bottom left
 		else if (mouse_pos.y > bottom - bbox_pad && bbox.height() > 0)
 		{
 			state_ = State::BottomLeft;
-			context_.setCursor(rotating_ ? UI::MouseCursor::Cross : UI::MouseCursor::SizeNESW);
+			context_.setCursor(rotating_ ? ui::MouseCursor::Cross : ui::MouseCursor::SizeNESW);
 		}
 
 		// Left
 		else if (!rotating_)
 		{
 			state_ = State::Left;
-			context_.setCursor(UI::MouseCursor::SizeWE);
+			context_.setCursor(ui::MouseCursor::SizeWE);
 		}
 	}
 
@@ -790,21 +791,21 @@ void ObjectEdit::determineState()
 		if (mouse_pos.y < top + bbox_pad && bbox.height() > 0)
 		{
 			state_ = State::TopRight;
-			context_.setCursor(rotating_ ? UI::MouseCursor::Cross : UI::MouseCursor::SizeNESW);
+			context_.setCursor(rotating_ ? ui::MouseCursor::Cross : ui::MouseCursor::SizeNESW);
 		}
 
 		// Bottom right
 		else if (mouse_pos.y > bottom - bbox_pad && bbox.height() > 0)
 		{
 			state_ = State::BottomRight;
-			context_.setCursor(rotating_ ? UI::MouseCursor::Cross : UI::MouseCursor::SizeNWSE);
+			context_.setCursor(rotating_ ? ui::MouseCursor::Cross : ui::MouseCursor::SizeNWSE);
 		}
 
 		// Right
 		else if (!rotating_)
 		{
 			state_ = State::Right;
-			context_.setCursor(UI::MouseCursor::SizeWE);
+			context_.setCursor(ui::MouseCursor::SizeWE);
 		}
 	}
 
@@ -812,20 +813,20 @@ void ObjectEdit::determineState()
 	else if (mouse_pos.y < top + bbox_pad && bbox.height() > 0 && !rotating_)
 	{
 		state_ = State::Top;
-		context_.setCursor(UI::MouseCursor::SizeNS);
+		context_.setCursor(ui::MouseCursor::SizeNS);
 	}
 
 	// Bottom
 	else if (mouse_pos.y > bottom - bbox_pad && bbox.height() > 0 && !rotating_)
 	{
 		state_ = State::Bottom;
-		context_.setCursor(UI::MouseCursor::SizeNS);
+		context_.setCursor(ui::MouseCursor::SizeNS);
 	}
 
 	// Middle
 	else
 	{
 		state_ = rotating_ ? State::None : State::Move;
-		context_.setCursor(rotating_ ? UI::MouseCursor::Normal : UI::MouseCursor::Move);
+		context_.setCursor(rotating_ ? ui::MouseCursor::Normal : ui::MouseCursor::Move);
 	}
 }

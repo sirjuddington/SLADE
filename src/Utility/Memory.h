@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Memory
+namespace slade::memory
 {
 // Platform-independent functions to read litte-endian values from 8-bit arrays
 inline uint16_t readL16(const uint8_t* data, unsigned ofs)
@@ -29,4 +29,4 @@ inline uint32_t readB32(const uint8_t* data, unsigned ofs)
 {
 	return data[ofs + 3] + (data[ofs + 2] << 8) + (data[ofs + 1] << 16) + (data[ofs] << 24);
 }
-} // namespace Memory
+} // namespace slade::memory

@@ -4,6 +4,8 @@
 #include "Graphics/Translation.h"
 #include "UI/Canvas/GfxCanvas.h"
 
+namespace slade
+{
 class SZoomSlider;
 class ColourBox;
 
@@ -82,3 +84,4 @@ private:
 	void onBtnAutoOffset(wxCommandEvent& e);
 	void onColourPicked(wxEvent& e);
 };
+} // namespace slade

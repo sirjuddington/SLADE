@@ -34,6 +34,8 @@
 #include "HexEntryPanel.h"
 #include "UI/Controls/HexEditorPanel.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //

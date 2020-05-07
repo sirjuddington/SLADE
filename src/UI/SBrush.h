@@ -2,6 +2,8 @@
 
 #include "Graphics/SImage/SImage.h"
 
+namespace slade
+{
 class SAction;
 
 class SBrush
@@ -25,3 +27,4 @@ private:
 	wxString           icon_;
 	Vec2i              center_;
 };
+} // namespace slade

@@ -37,6 +37,7 @@
 #include "Utility/MathStuff.h"
 #include "Utility/Tokenizer.h"
 
+using namespace slade;
 using SurfaceType = MapSector::SurfaceType;
 
 
@@ -47,7 +48,7 @@ using SurfaceType = MapSector::SurfaceType;
 // -----------------------------------------------------------------------------
 namespace
 {
-const double TAU = MathStuff::PI * 2; // Number of radians in the unit circle
+const double TAU = math::PI * 2; // Number of radians in the unit circle
 } // namespace
 
 
@@ -73,10 +74,10 @@ void MapSpecials::reset()
 void MapSpecials::processMapSpecials(SLADEMap* map) const
 {
 	// ZDoom
-	if (Game::configuration().currentPort() == "zdoom")
+	if (game::configuration().currentPort() == "zdoom")
 		processZDoomMapSpecials(map);
 	// Eternity, currently no need for processEternityMapSpecials
-	else if (Game::configuration().currentPort() == "eternity")
+	else if (game::configuration().currentPort() == "eternity")
 		processEternitySlopes(map);
 }
 
@@ -85,7 +86,7 @@ void MapSpecials::processMapSpecials(SLADEMap* map) const
 // -----------------------------------------------------------------------------
 void MapSpecials::processLineSpecial(MapLine* line) const
 {
-	if (Game::configuration().currentPort() == "zdoom")
+	if (game::configuration().currentPort() == "zdoom")
 		processZDoomLineSpecial(line);
 }
 
@@ -227,7 +228,7 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line) const
 			l->setFloatProperty("alpha", alpha);
 			l->setStringProperty("renderstyle", type);
 
-			Log::info(3, "Line {} translucent: ({}) {:1.2f}, {}", l->index(), args[1], alpha, type);
+			log::info(3, "Line {} translucent: ({}) {:1.2f}, {}", l->index(), args[1], alpha, type);
 		}
 	}
 }
@@ -251,14 +252,14 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 	{
 		if (tz.checkNC("script"))
 		{
-			Log::info(3, "script found");
+			log::info(3, "script found");
 
 			tz.adv(2); // Skip script #
 
 			// Check for open script
 			if (tz.checkNC("OPEN"))
 			{
-				Log::info(3, "script is OPEN");
+				log::info(3, "script is OPEN");
 
 				// Skip to opening brace
 				while (!tz.check("{"))
@@ -295,14 +296,14 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						// Check everything is set
 						if (b < 0)
 						{
-							Log::info(2, "Invalid Sector_SetColor parameters");
+							log::info(2, "Invalid Sector_SetColor parameters");
 						}
 						else
 						{
 							SectorColour sc;
 							sc.tag = tag;
 							sc.colour.set(r, g, b, 255);
-							Log::info(3, "Sector tag {}, colour {},{},{}", tag, r, g, b);
+							log::info(3, "Sector tag {}, colour {},{},{}", tag, r, g, b);
 							sector_colours_.push_back(sc);
 						}
 					}
@@ -334,14 +335,14 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 						// Check everything is set
 						if (b < 0)
 						{
-							Log::info(2, "Invalid Sector_SetFade parameters");
+							log::info(2, "Invalid Sector_SetFade parameters");
 						}
 						else
 						{
 							SectorColour sc;
 							sc.tag = tag;
 							sc.colour.set(r, g, b, 0);
-							Log::info(3, "Sector tag {}, fade colour {},{},{}", tag, r, g, b);
+							log::info(3, "Sector tag {}, fade colour {},{},{}", tag, r, g, b);
 							sector_fadecolours_.push_back(sc);
 						}
 					}
@@ -454,12 +455,12 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 		auto sector2 = line->backSector();
 		if (!sector1 || !sector2)
 		{
-			Log::warning("Ignoring Plane_Align on one-sided line {}", line->index());
+			log::warning("Ignoring Plane_Align on one-sided line {}", line->index());
 			continue;
 		}
 		if (sector1 == sector2)
 		{
-			Log::warning("Ignoring Plane_Align on line {}, which has the same sector on both sides", line->index());
+			log::warning("Ignoring Plane_Align on line {}, which has the same sector on both sides", line->index());
 			continue;
 		}
 
@@ -514,14 +515,14 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map) const
 			int tag = thing->arg(0);
 			if (!tag)
 			{
-				Log::warning("Ignoring slope copy thing in sector {} with no argument", target->index());
+				log::warning("Ignoring slope copy thing in sector {} with no argument", target->index());
 				continue;
 			}
 
 			auto tagged_sector = map->sectors().firstWithId(tag);
 			if (!tagged_sector)
 			{
-				Log::warning(
+				log::warning(
 					"Ignoring slope copy thing in sector {}; no sectors have target tag {}", target->index(), tag);
 				continue;
 			}
@@ -652,12 +653,12 @@ void MapSpecials::processEternitySlopes(SLADEMap* map) const
 		auto sector2 = line->backSector();
 		if (!sector1 || !sector2)
 		{
-			Log::warning("Ignoring Plane_Align on one-sided line {}", line->index());
+			log::warning("Ignoring Plane_Align on one-sided line {}", line->index());
 			continue;
 		}
 		if (sector1 == sector2)
 		{
-			Log::warning("Ignoring Plane_Align on line {}, which has the same sector on both sides", line->index());
+			log::warning("Ignoring Plane_Align on line {}, which has the same sector on both sides", line->index());
 			continue;
 		}
 
@@ -753,7 +754,7 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 
 	if (!furthest_vertex || furthest_dist < 0.01)
 	{
-		Log::warning(
+		log::warning(
 			"Ignoring Plane_Align on line {}; sector {} has no appropriate reference vertex",
 			line->index(),
 			target->index());
@@ -767,7 +768,7 @@ template<SurfaceType T> void MapSpecials::applyPlaneAlign(MapLine* line, MapSect
 	Vec3d  p1(line->x1(), line->y1(), modelz);
 	Vec3d  p2(line->x2(), line->y2(), modelz);
 	Vec3d  p3(furthest_vertex->position(), targetz);
-	target->setPlane<T>(MathStuff::planeFromTriangle(p1, p2, p3));
+	target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
 }
 
 // -----------------------------------------------------------------------------
@@ -778,7 +779,7 @@ template<SurfaceType T> void MapSpecials::applyLineSlopeThing(SLADEMap* map, Map
 	int lineid = thing->arg(0);
 	if (!lineid)
 	{
-		Log::warning("Ignoring line slope thing {} with no lineid argument", thing->index());
+		log::warning("Ignoring line slope thing {} with no lineid argument", thing->index());
 		return;
 	}
 
@@ -790,7 +791,7 @@ template<SurfaceType T> void MapSpecials::applyLineSlopeThing(SLADEMap* map, Map
 	{
 		// Line slope things only affect the sector on the side of the line
 		// that faces the thing
-		double     side   = MathStuff::lineSide(thing->position(), line->seg());
+		double     side   = math::lineSide(thing->position(), line->seg());
 		MapSector* target = nullptr;
 		if (side < 0)
 			target = line->backSector();
@@ -813,7 +814,7 @@ template<SurfaceType T> void MapSpecials::applyLineSlopeThing(SLADEMap* map, Map
 		Vec3d p1(line->x1(), line->y1(), target_plane.heightAt(line->start()));
 		Vec3d p2(line->x2(), line->y2(), target_plane.heightAt(line->end()));
 		Vec3d p3(thing->xPos(), thing->yPos(), thingz);
-		target->setPlane<T>(MathStuff::planeFromTriangle(p1, p2, p3));
+		target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
 	}
 }
 
@@ -859,7 +860,7 @@ template<SurfaceType T> void MapSpecials::applySectorTiltThing(SLADEMap* map, Ma
 	// and y by multiplying by cos and sin of the thing's facing angle.
 	Vec3d vec2(cos_tilt * cos_angle, cos_tilt * sin_angle, sin_tilt);
 
-	target->setPlane<T>(MathStuff::planeFromTriangle(point, point + vec1, point + vec2));
+	target->setPlane<T>(math::planeFromTriangle(point, point + vec1, point + vec2));
 }
 
 // -----------------------------------------------------------------------------
@@ -885,9 +886,9 @@ template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 		// Vavoom things use the plane defined by the thing and its two
 		// endpoints, based on the sector's original (flat) plane and treating
 		// the thing's height as absolute
-		if (MathStuff::distanceToLineFast(thing->position(), lines[a]->seg()) == 0)
+		if (math::distanceToLineFast(thing->position(), lines[a]->seg()) == 0)
 		{
-			Log::warning("Vavoom thing {} lies directly on its target line {}", thing->index(), a);
+			log::warning("Vavoom thing {} lies directly on its target line {}", thing->index(), a);
 			return;
 		}
 
@@ -896,11 +897,11 @@ template<SurfaceType T> void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, M
 		Vec3d p2(lines[a]->x1(), lines[a]->y1(), height);
 		Vec3d p3(lines[a]->x2(), lines[a]->y2(), height);
 
-		target->setPlane<T>(MathStuff::planeFromTriangle(p1, p2, p3));
+		target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
 		return;
 	}
 
-	Log::warning("Vavoom thing {} has no matching line with first arg {}", thing->index(), tid);
+	log::warning("Vavoom thing {} has no matching line with first arg {}", thing->index(), tid);
 }
 
 // -----------------------------------------------------------------------------
@@ -932,5 +933,5 @@ void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& 
 	Vec3d p1(vertices[0]->xPos(), vertices[0]->yPos(), z1);
 	Vec3d p2(vertices[1]->xPos(), vertices[1]->yPos(), z2);
 	Vec3d p3(vertices[2]->xPos(), vertices[2]->yPos(), z3);
-	target->setPlane<T>(MathStuff::planeFromTriangle(p1, p2, p3));
+	target->setPlane<T>(math::planeFromTriangle(p1, p2, p3));
 }

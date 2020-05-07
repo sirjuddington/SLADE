@@ -3,7 +3,7 @@
 #include "General/UndoRedo.h"
 #include "SLADEMap/MapObject/MapObject.h"
 
-namespace MapEditor
+namespace slade::mapeditor
 {
 // UndoStep for when a MapObject has properties changed
 class PropertyChangeUS : public UndoStep
@@ -57,4 +57,4 @@ public:
 private:
 	vector<unique_ptr<MapObject::Backup>> backups_;
 };
-} // namespace MapEditor
+} // namespace slade::mapeditor

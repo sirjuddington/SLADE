@@ -38,6 +38,8 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -212,9 +214,9 @@ int MapLine::s2Index() const
 // -----------------------------------------------------------------------------
 bool MapLine::boolProperty(string_view key)
 {
-	if (StrUtil::startsWith(key, "side1.") && side1_)
+	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->boolProperty(key.substr(6));
-	else if (StrUtil::startsWith(key, "side2.") && side2_)
+	else if (strutil::startsWith(key, "side2.") && side2_)
 		return side2_->boolProperty(key.substr(6));
 	else
 		return MapObject::boolProperty(key);
@@ -227,9 +229,9 @@ bool MapLine::boolProperty(string_view key)
 // -----------------------------------------------------------------------------
 int MapLine::intProperty(string_view key)
 {
-	if (StrUtil::startsWith(key, "side1.") && side1_)
+	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->intProperty(key.substr(6));
-	if (StrUtil::startsWith(key, "side2.") && side2_)
+	if (strutil::startsWith(key, "side2.") && side2_)
 		return side2_->intProperty(key.substr(6));
 
 	if (key == PROP_V1)
@@ -267,9 +269,9 @@ int MapLine::intProperty(string_view key)
 // -----------------------------------------------------------------------------
 double MapLine::floatProperty(string_view key)
 {
-	if (StrUtil::startsWith(key, "side1.") && side1_)
+	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->floatProperty(key.substr(6));
-	else if (StrUtil::startsWith(key, "side2.") && side2_)
+	else if (strutil::startsWith(key, "side2.") && side2_)
 		return side2_->floatProperty(key.substr(6));
 	else
 		return MapObject::floatProperty(key);
@@ -282,9 +284,9 @@ double MapLine::floatProperty(string_view key)
 // -----------------------------------------------------------------------------
 string MapLine::stringProperty(string_view key)
 {
-	if (StrUtil::startsWith(key, "side1.") && side1_)
+	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->stringProperty(key.substr(6));
-	else if (StrUtil::startsWith(key, "side2.") && side2_)
+	else if (strutil::startsWith(key, "side2.") && side2_)
 		return side2_->stringProperty(key.substr(6));
 	else
 		return MapObject::stringProperty(key);
@@ -298,14 +300,14 @@ string MapLine::stringProperty(string_view key)
 void MapLine::setBoolProperty(string_view key, bool value)
 {
 	// Front side property
-	if (StrUtil::startsWith(key, "side1."))
+	if (strutil::startsWith(key, "side1."))
 	{
 		if (side1_)
 			return side1_->setBoolProperty(key.substr(6), value);
 	}
 
 	// Back side property
-	else if (StrUtil::startsWith(key, "side2."))
+	else if (strutil::startsWith(key, "side2."))
 	{
 		if (side2_)
 			return side2_->setBoolProperty(key.substr(6), value);
@@ -324,7 +326,7 @@ void MapLine::setBoolProperty(string_view key, bool value)
 void MapLine::setIntProperty(string_view key, int value)
 {
 	// Front side property
-	if (StrUtil::startsWith(key, "side1."))
+	if (strutil::startsWith(key, "side1."))
 	{
 		if (side1_)
 			side1_->setIntProperty(key.substr(6), value);
@@ -332,7 +334,7 @@ void MapLine::setIntProperty(string_view key, int value)
 	}
 
 	// Back side property
-	else if (StrUtil::startsWith(key, "side2."))
+	else if (strutil::startsWith(key, "side2."))
 	{
 		if (side2_)
 			side2_->setIntProperty(key.substr(6), value);
@@ -417,14 +419,14 @@ void MapLine::setIntProperty(string_view key, int value)
 void MapLine::setFloatProperty(string_view key, double value)
 {
 	// Front side property
-	if (StrUtil::startsWith(key, "side1."))
+	if (strutil::startsWith(key, "side1."))
 	{
 		if (side1_)
 			return side1_->setFloatProperty(key.substr(6), value);
 	}
 
 	// Back side property
-	else if (StrUtil::startsWith(key, "side2."))
+	else if (strutil::startsWith(key, "side2."))
 	{
 		if (side2_)
 			return side2_->setFloatProperty(key.substr(6), value);
@@ -443,14 +445,14 @@ void MapLine::setFloatProperty(string_view key, double value)
 void MapLine::setStringProperty(string_view key, string_view value)
 {
 	// Front side property
-	if (StrUtil::startsWith(key, "side1."))
+	if (strutil::startsWith(key, "side1."))
 	{
 		if (side1_)
 			return side1_->setStringProperty(key.substr(6), value);
 	}
 
 	// Back side property
-	else if (StrUtil::startsWith(key, "side2."))
+	else if (strutil::startsWith(key, "side2."))
 	{
 		if (side2_)
 			return side2_->setStringProperty(key.substr(6), value);
@@ -788,7 +790,7 @@ bool MapLine::overlaps(MapLine* other) const
 // -----------------------------------------------------------------------------
 bool MapLine::intersects(MapLine* other, Vec2d& intersect_point) const
 {
-	return MathStuff::linesIntersect(seg(), other->seg(), intersect_point);
+	return math::linesIntersect(seg(), other->seg(), intersect_point);
 }
 
 // -----------------------------------------------------------------------------

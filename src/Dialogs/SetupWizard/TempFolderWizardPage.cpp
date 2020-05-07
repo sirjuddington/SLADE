@@ -35,6 +35,8 @@
 #include "General/UI.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -57,7 +59,7 @@ EXTERN_CVAR(String, temp_location_custom)
 // -----------------------------------------------------------------------------
 TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(parent)
 {
-	auto pad_xl = UI::scalePx(16);
+	auto pad_xl = ui::scalePx(16);
 
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -73,12 +75,12 @@ TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(pa
 	sizer->Add(rb_use_slade_dir_, 0, wxEXPAND | wxBOTTOM, pad_xl);
 
 	rb_use_custom_dir_ = new wxRadioButton(this, -1, "Use custom folder:");
-	sizer->Add(rb_use_custom_dir_, 0, wxEXPAND | wxBOTTOM, UI::pad());
+	sizer->Add(rb_use_custom_dir_, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND);
 	text_custom_dir_ = new wxTextCtrl(this, -1, "");
-	hbox->Add(text_custom_dir_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+	hbox->Add(text_custom_dir_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 	btn_browse_dir_ = new wxButton(this, -1, "Browse...");
 	hbox->Add(btn_browse_dir_, 0, wxEXPAND);
 	text_custom_dir_->Enable(false);
@@ -107,7 +109,7 @@ bool TempFolderWizardPage::canGoNext()
 	if (rb_use_system_->GetValue())
 		testfilename = wxStandardPaths::Get().GetTempDir().Append(sep).Append("SLADE3").Append(sep).Append("test.txt");
 	else if (rb_use_slade_dir_->GetValue())
-		testfilename = App::path("test.txt", App::Dir::Executable);
+		testfilename = app::path("test.txt", app::Dir::Executable);
 	else
 		testfilename = text_custom_dir_->GetValue() + sep + "test.txt";
 
@@ -138,7 +140,7 @@ void TempFolderWizardPage::applyChanges()
 	else
 	{
 		temp_location        = 2;
-		temp_location_custom = WxUtils::strToView(text_custom_dir_->GetValue());
+		temp_location_custom = wxutil::strToView(text_custom_dir_->GetValue());
 	}
 }
 

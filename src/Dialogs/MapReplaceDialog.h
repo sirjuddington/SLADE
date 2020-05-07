@@ -2,6 +2,8 @@
 
 #include "UI/Controls/STabCtrl.h"
 
+namespace slade
+{
 class Archive;
 
 class ThingTypeReplacePanel : public wxPanel
@@ -71,3 +73,4 @@ private:
 
 	void onBtnReplace(wxCommandEvent& e);
 };
+} // namespace slade

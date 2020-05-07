@@ -2,6 +2,8 @@
 
 #include "Archive/ArchiveEntry.h"
 
+namespace slade
+{
 class CTexture;
 
 class PatchTable
@@ -65,3 +67,4 @@ private:
 	Patch         patch_invalid_{ "INVALID_PATCH" };
 	Signals       signals_;
 };
+} // namespace slade

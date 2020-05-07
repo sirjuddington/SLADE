@@ -58,7 +58,7 @@ public:
 			size_t lastentry = ((mc.size() % numentries) ? numentries : numentries - 1);
 
 			// Check that the last entry ends on an ANIM_STOP type
-			if (mc[lastentry * sizeof(AnimatedEntry)] == AnimTypes::STOP)
+			if (mc[lastentry * sizeof(AnimatedEntry)] == animtype::STOP)
 				return MATCH_TRUE;
 		}
 		return MATCH_FALSE;
@@ -78,7 +78,7 @@ public:
 			size_t numentries = mc.size() / sizeof(SwitchesEntry);
 
 			// Check that the last entry ends on a SWCH_STOP type
-			if (mc.readL16((numentries * sizeof(SwitchesEntry) - 2)) == SwitchTypes::STOP)
+			if (mc.readL16((numentries * sizeof(SwitchesEntry) - 2)) == switchtype::STOP)
 				return MATCH_TRUE;
 		}
 		return MATCH_FALSE;

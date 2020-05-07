@@ -37,6 +37,8 @@
 #include "Utility/MathStuff.h"
 #include "Utility/Parser.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -62,7 +64,7 @@ MapSector::MapSector(
 	light_{ light },
 	special_{ special },
 	id_{ id },
-	geometry_updated_{ App::runTimer() }
+	geometry_updated_{ app::runTimer() }
 {
 }
 
@@ -70,7 +72,9 @@ MapSector::MapSector(
 // MapSector class constructor from UDMF definition
 // -----------------------------------------------------------------------------
 MapSector::MapSector(string_view f_tex, string_view c_tex, ParseTreeNode* udmf_def) :
-	MapObject(Type::Sector), floor_{ f_tex }, ceiling_{ c_tex }
+	MapObject(Type::Sector),
+	floor_{ f_tex },
+	ceiling_{ c_tex }
 {
 	// Set UDMF defaults
 	light_ = 160;
@@ -146,7 +150,7 @@ void MapSector::copy(MapObject* obj)
 // -----------------------------------------------------------------------------
 void MapSector::setGeometryUpdated()
 {
-	geometry_updated_ = App::runTimer();
+	geometry_updated_ = app::runTimer();
 }
 
 // -----------------------------------------------------------------------------
@@ -199,16 +203,16 @@ void MapSector::setStringProperty(string_view key, string_view value)
 // -----------------------------------------------------------------------------
 void MapSector::setFloatProperty(string_view key, double value)
 {
-	using Game::UDMFFeature;
+	using game::UDMFFeature;
 
 	// Check if flat offset/scale/rotation is changing (if UDMF)
 	if (parent_map_->currentFormat() == MapFormat::UDMF)
 	{
-		if ((Game::configuration().featureSupported(UDMFFeature::FlatPanning)
+		if ((game::configuration().featureSupported(UDMFFeature::FlatPanning)
 			 && (key == "xpanningfloor" || key == "ypanningfloor"))
-			|| (Game::configuration().featureSupported(UDMFFeature::FlatScaling)
+			|| (game::configuration().featureSupported(UDMFFeature::FlatScaling)
 				&& (key == "xscalefloor" || key == "yscalefloor" || key == "xscaleceiling" || key == "yscaleceiling"))
-			|| (Game::configuration().featureSupported(UDMFFeature::FlatRotation)
+			|| (game::configuration().featureSupported(UDMFFeature::FlatRotation)
 				&& (key == "rotationfloor" || key == "rotationceiling")))
 			polygon_.setTexture(0); // Clear texture to force update
 	}
@@ -429,7 +433,7 @@ bool MapSector::containsPoint(Vec2d point)
 		return false;
 
 	// Check the side of the nearest line
-	double side = MathStuff::lineSide(point, nline->seg());
+	double side = math::lineSide(point, nline->seg());
 	if (side >= 0 && nline->frontSector() == this)
 		return true;
 	else if (side < 0 && nline->backSector() == this)
@@ -451,16 +455,16 @@ double MapSector::distanceTo(Vec2d point, double maxdist)
 	if (!bbox_.isValid())
 		updateBBox();
 	double min_dist = 9999999;
-	double dist     = MathStuff::distanceToLine(point, bbox_.leftSide());
+	double dist     = math::distanceToLine(point, bbox_.leftSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = MathStuff::distanceToLine(point, bbox_.topSide());
+	dist = math::distanceToLine(point, bbox_.topSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = MathStuff::distanceToLine(point, bbox_.rightSide());
+	dist = math::distanceToLine(point, bbox_.rightSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = MathStuff::distanceToLine(point, bbox_.bottomSide());
+	dist = math::distanceToLine(point, bbox_.bottomSide());
 	if (dist < min_dist)
 		min_dist = dist;
 
@@ -545,7 +549,7 @@ uint8_t MapSector::lightAt(int where)
 {
 	// Check for UDMF + flat lighting
 	if (parent_map_->currentFormat() == MapFormat::UDMF
-		&& Game::configuration().featureSupported(Game::UDMFFeature::FlatLighting))
+		&& game::configuration().featureSupported(game::UDMFFeature::FlatLighting))
 	{
 		// Get general light level
 		int l = light_;
@@ -607,7 +611,7 @@ void MapSector::changeLight(int amount, int where)
 
 	// Check for UDMF + flat lighting independent from the sector
 	bool separate = parent_map_->currentFormat() == MapFormat::UDMF
-					&& Game::configuration().featureSupported(Game::UDMFFeature::FlatLighting);
+					&& game::configuration().featureSupported(game::UDMFFeature::FlatLighting);
 
 	// Change light level by amount
 	if (where == 1 && separate)
@@ -633,7 +637,7 @@ void MapSector::changeLight(int amount, int where)
 // -----------------------------------------------------------------------------
 ColRGBA MapSector::colourAt(int where, bool fullbright)
 {
-	using Game::UDMFFeature;
+	using game::UDMFFeature;
 
 	// Check for sector colour set in open script
 	// TODO: Test if this is correct behaviour
@@ -662,12 +666,12 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 
 	// Check for UDMF
 	if (parent_map_->currentFormat() == MapFormat::UDMF
-		&& (Game::configuration().featureSupported(UDMFFeature::SectorColor)
-			|| Game::configuration().featureSupported(UDMFFeature::FlatLighting)))
+		&& (game::configuration().featureSupported(UDMFFeature::SectorColor)
+			|| game::configuration().featureSupported(UDMFFeature::FlatLighting)))
 	{
 		// Get sector light colour
 		wxColour wxcol;
-		if (Game::configuration().featureSupported(UDMFFeature::SectorColor))
+		if (game::configuration().featureSupported(UDMFFeature::SectorColor))
 		{
 			int intcol = MapObject::intProperty("lightcolor");
 			wxcol      = wxColour(intcol);
@@ -683,7 +687,7 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 		// Get sector light level
 		int ll = light_;
 
-		if (Game::configuration().featureSupported(UDMFFeature::FlatLighting))
+		if (game::configuration().featureSupported(UDMFFeature::FlatLighting))
 		{
 			// Get specific light level
 			if (where == 1)
@@ -750,7 +754,7 @@ ColRGBA MapSector::fogColour()
 
 	// udmf
 	if (parent_map_->currentFormat() == MapFormat::UDMF
-		&& Game::configuration().featureSupported(Game::UDMFFeature::SectorFog))
+		&& game::configuration().featureSupported(game::UDMFFeature::SectorFog))
 	{
 		int intcol = MapObject::intProperty("fadecolor");
 
@@ -782,7 +786,7 @@ void MapSector::findTextPoint()
 	for (auto& connected_side : connected_sides_)
 	{
 		auto   l    = connected_side->parentLine();
-		double dist = MathStuff::distanceToLineFast(text_point_, l->seg());
+		double dist = math::distanceToLineFast(text_point_, l->seg());
 
 		if (dist < min_dist)
 		{
@@ -806,7 +810,7 @@ void MapSector::findTextPoint()
 			continue;
 
 		auto   line = connected_side->parentLine();
-		double dist = MathStuff::distanceRayLine(r_o, r_o + r_d, line->start(), line->end());
+		double dist = math::distanceRayLine(r_o, r_o + r_d, line->start(), line->end());
 
 		if (dist > 0 && dist < min_dist)
 			min_dist = dist;

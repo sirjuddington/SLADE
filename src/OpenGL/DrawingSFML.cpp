@@ -38,13 +38,15 @@
 #include "MapEditor/UI/MapCanvas.h"
 #include "Utility/MathStuff.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace Drawing
+namespace slade::drawing
 {
 typedef unique_ptr<sf::Font> FontPtr;
 
@@ -56,7 +58,7 @@ FontPtr font_mono;
 
 sf::RenderWindow* render_target    = nullptr;
 bool              text_state_reset = true;
-} // namespace Drawing
+} // namespace slade::drawing
 
 
 // -----------------------------------------------------------------------------
@@ -64,11 +66,11 @@ bool              text_state_reset = true;
 // External Variables
 //
 // -----------------------------------------------------------------------------
-namespace Drawing
+namespace slade::drawing
 {
 extern double  text_outline_width;
 extern ColRGBA outline_colour;
-} // namespace Drawing
+} // namespace slade::drawing
 EXTERN_CVAR(Int, gl_font_size)
 
 
@@ -77,14 +79,14 @@ EXTERN_CVAR(Int, gl_font_size)
 // Drawing Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace Drawing
+namespace slade::drawing
 {
 // -----------------------------------------------------------------------------
 // Returns an SFML font created from the resource archive entry [res_path]
 // -----------------------------------------------------------------------------
 FontPtr createFont(const wxString& res_path, int& counter)
 {
-	auto entry = App::archiveManager().programResourceArchive()->entryAtPath(res_path.ToStdString());
+	auto entry = app::archiveManager().programResourceArchive()->entryAtPath(res_path.ToStdString());
 	if (!entry)
 		return nullptr;
 
@@ -112,12 +114,12 @@ sf::Font* getFont(Font font)
 	default: return font_normal.get();
 	};
 }
-} // namespace Drawing
+} // namespace slade::drawing
 
 // -----------------------------------------------------------------------------
 // Loads all needed fonts for rendering. SFML 2.x implementation
 // -----------------------------------------------------------------------------
-int Drawing::initFonts()
+int drawing::initFonts()
 {
 	// --- Load general fonts ---
 	int ret = 0;
@@ -134,7 +136,7 @@ int Drawing::initFonts()
 // -----------------------------------------------------------------------------
 // Cleans up all created fonts
 // -----------------------------------------------------------------------------
-void Drawing::cleanupFonts()
+void drawing::cleanupFonts()
 {
 	font_normal.reset(nullptr);
 	font_condensed.reset(nullptr);
@@ -147,7 +149,7 @@ void Drawing::cleanupFonts()
 // Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
 // the rendered text string are written to it.
 // -----------------------------------------------------------------------------
-void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
+void drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
 {
 	// Setup SFML string
 	sf::Text sf_str;
@@ -158,9 +160,9 @@ void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font fo
 	auto f = getFont(font);
 	sf_str.setFont(*f);
 	if (font == Font::Small)
-		sf_str.setCharacterSize((UI::scalePx(gl_font_size) * 0.6) + 1);
+		sf_str.setCharacterSize((ui::scalePx(gl_font_size) * 0.6) + 1);
 	else
-		sf_str.setCharacterSize(UI::scalePx(gl_font_size));
+		sf_str.setCharacterSize(ui::scalePx(gl_font_size));
 
 	// Setup alignment
 	if (alignment != Align::Left)
@@ -168,7 +170,7 @@ void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font fo
 		float width = sf_str.getLocalBounds().width;
 
 		if (alignment == Align::Center)
-			x -= MathStuff::round(width * 0.5);
+			x -= math::round(width * 0.5);
 		else
 			x -= width;
 	}
@@ -204,7 +206,7 @@ void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font fo
 // -----------------------------------------------------------------------------
 // Returns the width and height of [text] when drawn with [font]
 // -----------------------------------------------------------------------------
-Vec2d Drawing::textExtents(const string& text, Font font)
+Vec2d drawing::textExtents(const string& text, Font font)
 {
 	// Setup SFML string
 	sf::Text sf_str;
@@ -214,9 +216,9 @@ Vec2d Drawing::textExtents(const string& text, Font font)
 	auto f = getFont(font);
 	sf_str.setFont(*f);
 	if (font == Font::Small)
-		sf_str.setCharacterSize((UI::scalePx(gl_font_size) * 0.6) + 1);
+		sf_str.setCharacterSize((ui::scalePx(gl_font_size) * 0.6) + 1);
 	else
-		sf_str.setCharacterSize(UI::scalePx(gl_font_size));
+		sf_str.setCharacterSize(ui::scalePx(gl_font_size));
 
 	// Return width and height of text
 	auto rect = sf_str.getGlobalBounds();
@@ -227,7 +229,7 @@ Vec2d Drawing::textExtents(const string& text, Font font)
 // Sets or restores (depending on [set]) the OpenGL state for SFML text
 // rendering
 // -----------------------------------------------------------------------------
-void Drawing::setTextState(bool set)
+void drawing::setTextState(bool set)
 {
 	if (set)
 	{
@@ -257,7 +259,7 @@ void Drawing::setTextState(bool set)
 // When enabled, the OpenGL state is set for text rendering each time drawText
 // is called and restored after (SFML only)
 // -----------------------------------------------------------------------------
-void Drawing::enableTextStateReset(bool enable)
+void drawing::enableTextStateReset(bool enable)
 {
 	text_state_reset = enable;
 }
@@ -265,7 +267,7 @@ void Drawing::enableTextStateReset(bool enable)
 // -----------------------------------------------------------------------------
 // Sets the SFML render target to [target]
 // -----------------------------------------------------------------------------
-void Drawing::setRenderTarget(sf::RenderWindow* target)
+void drawing::setRenderTarget(sf::RenderWindow* target)
 {
 	render_target = target;
 }

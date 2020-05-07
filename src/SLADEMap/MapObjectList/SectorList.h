@@ -3,6 +3,8 @@
 #include "MapObjectList.h"
 #include "SLADEMap/MapObject/MapSector.h"
 
+namespace slade
+{
 class SectorList : public MapObjectList<MapSector>
 {
 public:
@@ -27,3 +29,4 @@ public:
 private:
 	mutable std::map<string, int> usage_tex_;
 };
+} // namespace slade

@@ -7,6 +7,8 @@
 #include "MapObjectList/ThingList.h"
 #include "MapObjectList/VertexList.h"
 
+namespace slade
+{
 class MapObjectCollection
 {
 public:
@@ -92,3 +94,4 @@ private:
 	SectorList              sectors_;
 	ThingList               things_;
 };
+} // namespace slade

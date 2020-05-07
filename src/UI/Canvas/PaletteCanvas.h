@@ -2,6 +2,8 @@
 
 #include "OGLCanvas.h"
 
+namespace slade
+{
 class PaletteCanvas : public OGLCanvas
 {
 public:
@@ -39,3 +41,4 @@ private:
 	bool          double_width_    = false;
 	SelectionType allow_selection_ = SelectionType::None;
 };
+} // namespace slade

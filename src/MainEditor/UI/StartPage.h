@@ -3,6 +3,8 @@
 // Test
 //#undef USE_WEBVIEW_STARTPAGE
 
+namespace slade
+{
 class ArchiveEntry;
 
 class SStartPage : public wxPanel
@@ -35,3 +37,4 @@ private:
 
 	void onHTMLLinkClicked(wxEvent& e);
 };
+} // namespace slade

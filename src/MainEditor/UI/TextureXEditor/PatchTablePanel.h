@@ -4,6 +4,8 @@
 #include "Graphics/CTexture/PatchTable.h"
 #include "UI/Lists/VirtualListView.h"
 
+namespace slade
+{
 class GfxCanvas;
 class SZoomSlider;
 class TextureXEditor;
@@ -64,3 +66,4 @@ private:
 	void onDisplayChanged(wxCommandEvent& e);
 	void updateDisplay();
 };
+} // namespace slade

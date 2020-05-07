@@ -2,7 +2,7 @@
 
 #include "General/UI.h"
 
-namespace WxUtils
+namespace slade::wxutil
 {
 wxMenuItem* createMenuItem(
 	wxMenu*         menu,
@@ -41,4 +41,4 @@ wxArrayString arrayStringStd(vector<string> vector);
 wxSize  scaledSize(int x, int y);
 wxPoint scaledPoint(int x, int y);
 wxRect  scaledRect(int x, int y, int width, int height);
-} // namespace WxUtils
+} // namespace slade::wxutil

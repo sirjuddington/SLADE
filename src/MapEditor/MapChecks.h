@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class SLADEMap;
 class MapTextureManager;
 class MapObject;
@@ -48,3 +50,4 @@ public:
 protected:
 	SLADEMap* map_;
 };
+} // namespace slade

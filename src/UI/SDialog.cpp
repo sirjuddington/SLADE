@@ -34,6 +34,8 @@
 #include "SDialog.h"
 #include "General/Misc.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -50,14 +52,14 @@ SDialog::SDialog(wxWindow* parent, const wxString& title, const wxString& id, in
 	id_{ id }
 {
 	// Init size/pos
-	auto info = Misc::getWindowInfo(id_);
+	auto info = misc::getWindowInfo(id_);
 	if (!info.id.empty())
 	{
 		SetClientSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
-		Misc::setWindowInfo(id_, width, height, x, y);
+		misc::setWindowInfo(id_, width, height, x, y);
 
 	// Bind events
 	if (!id.empty())
@@ -74,7 +76,7 @@ SDialog::SDialog(wxWindow* parent, const wxString& title, const wxString& id, in
 SDialog::~SDialog()
 {
 	if (!id_.empty())
-		Misc::setWindowInfo(id_, GetClientSize().x, GetClientSize().y, GetPosition().x, GetPosition().y);
+		misc::setWindowInfo(id_, GetClientSize().x, GetClientSize().y, GetPosition().x, GetPosition().y);
 }
 
 // -----------------------------------------------------------------------------
@@ -82,7 +84,7 @@ SDialog::~SDialog()
 // -----------------------------------------------------------------------------
 void SDialog::setSavedSize(int def_width, int def_height)
 {
-	auto info = Misc::getWindowInfo(id_);
+	auto info = misc::getWindowInfo(id_);
 	if (!info.id.empty())
 	{
 		SetInitialSize(wxSize(info.width, info.height));
@@ -109,7 +111,7 @@ void SDialog::setSavedSize(int def_width, int def_height)
 void SDialog::onSize(wxSizeEvent& e)
 {
 	// Update window size settings
-	Misc::setWindowInfo(id_, GetClientSize().x, GetClientSize().y, -2, -2);
+	misc::setWindowInfo(id_, GetClientSize().x, GetClientSize().y, -2, -2);
 	e.Skip();
 }
 
@@ -119,7 +121,7 @@ void SDialog::onSize(wxSizeEvent& e)
 void SDialog::onMove(wxMoveEvent& e)
 {
 	// Update window position settings
-	Misc::setWindowInfo(id_, -2, -2, GetPosition().x, GetPosition().y);
+	misc::setWindowInfo(id_, -2, -2, GetPosition().x, GetPosition().y);
 	e.Skip();
 }
 

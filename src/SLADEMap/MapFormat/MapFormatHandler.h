@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class MapObjectCollection;
 
 class MapFormatHandler
@@ -18,3 +20,4 @@ public:
 
 	static unique_ptr<MapFormatHandler> get(MapFormat format);
 };
+} // namespace slade

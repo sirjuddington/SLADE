@@ -4,6 +4,8 @@
 #include "ArchiveEntry.h"
 #include "General/Defs.h"
 
+namespace slade
+{
 struct ArchiveFormat
 {
 	string             id;
@@ -265,3 +267,4 @@ public:
 private:
 	Archive* archive_;
 };
+} // namespace slade

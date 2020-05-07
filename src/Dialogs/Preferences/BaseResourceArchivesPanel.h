@@ -4,6 +4,9 @@
 
 class wxListBox;
 class wxButton;
+
+namespace slade
+{
 class FileLocationPanel;
 
 class BaseResourceArchivesPanel : public PrefsPanelBase
@@ -33,3 +36,4 @@ private:
 	void onBtnRemove(wxCommandEvent& e);
 	void onBtnDetect(wxCommandEvent& e);
 };
+} // namespace slade

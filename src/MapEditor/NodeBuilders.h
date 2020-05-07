@@ -1,6 +1,6 @@
 #pragma once
 
-namespace NodeBuilders
+namespace slade::nodebuilders
 {
 struct Builder
 {
@@ -19,4 +19,4 @@ void     saveBuilderPaths(wxFile& file);
 unsigned nNodeBuilders();
 Builder& builder(string_view id);
 Builder& builder(unsigned index);
-} // namespace NodeBuilders
+} // namespace slade::nodebuilders

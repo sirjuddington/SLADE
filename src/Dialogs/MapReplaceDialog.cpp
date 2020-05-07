@@ -36,6 +36,8 @@
 #include "General/UI.h"
 #include "MainEditor/ArchiveOperations.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -53,9 +55,9 @@ ThingTypeReplacePanel::ThingTypeReplacePanel(wxWindow* parent) : wxPanel(parent,
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	auto gbsizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	sizer->AddStretchSpacer();
-	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, UI::padLarge());
+	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, ui::padLarge());
 	sizer->AddStretchSpacer();
 
 	// From type
@@ -77,7 +79,7 @@ ThingTypeReplacePanel::ThingTypeReplacePanel(wxWindow* parent) : wxPanel(parent,
 // -----------------------------------------------------------------------------
 void ThingTypeReplacePanel::doReplace(Archive* archive) const
 {
-	size_t count = ArchiveOperations::replaceThings(archive, spin_from_->GetValue(), spin_to_->GetValue());
+	size_t count = archiveoperations::replaceThings(archive, spin_from_->GetValue(), spin_to_->GetValue());
 	wxMessageBox(
 		wxString::Format("Replaced %d occurrences. See console log for more detailed information.", count),
 		"Replace Things");
@@ -100,9 +102,9 @@ SpecialReplacePanel::SpecialReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	auto gbsizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	sizer->AddStretchSpacer();
-	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, UI::padLarge());
+	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, ui::padLarge());
 
 	// From special
 	gbsizer->Add(
@@ -128,11 +130,11 @@ SpecialReplacePanel::SpecialReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL),
 		0,
 		wxEXPAND | wxLEFT | wxRIGHT,
-		UI::pad());
+		ui::pad());
 
 	// Args
-	gbsizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, UI::padLarge());
+	gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, ui::padLarge());
 	for (int a = 0; a < 5; a++)
 	{
 		// Create controls
@@ -161,7 +163,7 @@ SpecialReplacePanel::SpecialReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 // -----------------------------------------------------------------------------
 void SpecialReplacePanel::doReplace(Archive* archive) const
 {
-	size_t count = ArchiveOperations::replaceSpecials(
+	size_t count = archiveoperations::replaceSpecials(
 		archive,
 		spin_from_->GetValue(),
 		spin_to_->GetValue(),
@@ -205,9 +207,9 @@ TextureReplacePanel::TextureReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	auto gbsizer = new wxGridBagSizer(UI::pad(), UI::pad());
+	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	sizer->AddStretchSpacer();
-	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, UI::pad());
+	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, ui::pad());
 
 	// From texture
 	gbsizer->Add(
@@ -222,10 +224,10 @@ TextureReplacePanel::TextureReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 	gbsizer->Add(text_to_, { 1, 1 }, { 1, 1 }, wxEXPAND);
 
 	sizer->Add(
-		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL), 0, wxEXPAND | wxALL, UI::pad());
+		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL), 0, wxEXPAND | wxALL, ui::pad());
 
-	gbsizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, UI::pad());
+	gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	sizer->Add(gbsizer, 0, wxALIGN_CENTER | wxALL, ui::pad());
 
 	// Upper
 	cb_upper_ = new wxCheckBox(this, -1, "Upper Textures");
@@ -259,7 +261,7 @@ TextureReplacePanel::TextureReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 // -----------------------------------------------------------------------------
 void TextureReplacePanel::doReplace(Archive* archive) const
 {
-	size_t count = ArchiveOperations::replaceTextures(
+	size_t count = archiveoperations::replaceTextures(
 		archive,
 		text_from_->GetValue(),
 		text_to_->GetValue(),
@@ -298,7 +300,7 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive) :
 
 	// Add tabs
 	stc_tabs_ = STabCtrl::createControl(this);
-	sizer->Add(stc_tabs_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::padLarge());
+	sizer->Add(stc_tabs_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
 
 	// Thing type tab
 	panel_thing_ = new ThingTypeReplacePanel(stc_tabs_);
@@ -317,10 +319,10 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive) :
 	btn_done_    = new wxButton(this, -1, "Close");
 	auto hbox    = new wxBoxSizer(wxHORIZONTAL);
 	hbox->AddStretchSpacer();
-	hbox->Add(btn_replace_, 0, wxEXPAND | wxRIGHT, UI::pad());
-	hbox->Add(btn_done_, 0, wxEXPAND, UI::pad());
-	sizer->AddSpacer(UI::pad());
-	sizer->Add(hbox, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, UI::padLarge());
+	hbox->Add(btn_replace_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_done_, 0, wxEXPAND, ui::pad());
+	sizer->AddSpacer(ui::pad());
+	sizer->Add(hbox, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, ui::padLarge());
 
 	// Setup dialog layout
 	SetInitialSize(wxSize(-1, -1));

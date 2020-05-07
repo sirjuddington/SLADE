@@ -3,7 +3,10 @@
 #include "PrefsPanelBase.h"
 #include "UI/Controls/STabCtrl.h"
 
+namespace slade
+{
 class STabCtrl;
+
 class MapDisplayPrefsPanel : public PrefsPanelBase
 {
 public:
@@ -59,3 +62,4 @@ private:
 	wxCheckBox* cb_flat_fade_            = nullptr;
 	wxCheckBox* cb_sector_selected_fill_ = nullptr;
 };
+} // namespace slade

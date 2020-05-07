@@ -38,6 +38,8 @@
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -61,8 +63,8 @@ public:
 	SToolBarSeparator(wxWindow* parent) : wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 	{
 		// Set size
-		int height = UI::scalePx(toolbar_size + 6);
-		int width  = UI::scalePx(4);
+		int height = ui::scalePx(toolbar_size + 6);
+		int width  = ui::scalePx(4);
 		wxWindowBase::SetSizeHints(width, height, width, height);
 		wxWindowBase::SetMinSize(wxSize(width, height));
 		SetSize(width, height);
@@ -80,9 +82,9 @@ public:
 
 		// Get system colours needed
 		auto    col_background = GetBackgroundColour();
-		ColRGBA bg(COLWX(col_background));
-		auto    col_light = WXCOL(bg.amp(50, 50, 50, 0));
-		auto    col_dark  = WXCOL(bg.amp(-50, -50, -50, 0));
+		ColRGBA bg(col_background);
+		auto    col_light = bg.amp(50, 50, 50, 0).toWx();
+		auto    col_dark  = bg.amp(-50, -50, -50, 0).toWx();
 
 		// Draw background
 		dc.SetBackground(wxBrush(col_background));
@@ -90,10 +92,10 @@ public:
 
 		// Draw separator lines
 		int height = (toolbar_size / 16.0) * 11;
-		dc.GradientFillLinear(WxUtils::scaledRect(1, 0, 1, height), col_background, col_dark, wxSOUTH);
-		dc.GradientFillLinear(WxUtils::scaledRect(1, height, 1, height), col_background, col_dark, wxNORTH);
-		dc.GradientFillLinear(WxUtils::scaledRect(2, 0, 1, height), col_background, col_light, wxSOUTH);
-		dc.GradientFillLinear(WxUtils::scaledRect(2, height, 1, height), col_background, col_light, wxNORTH);
+		dc.GradientFillLinear(wxutil::scaledRect(1, 0, 1, height), col_background, col_dark, wxSOUTH);
+		dc.GradientFillLinear(wxutil::scaledRect(1, height, 1, height), col_background, col_dark, wxNORTH);
+		dc.GradientFillLinear(wxutil::scaledRect(2, 0, 1, height), col_background, col_light, wxSOUTH);
+		dc.GradientFillLinear(wxutil::scaledRect(2, height, 1, height), col_background, col_light, wxNORTH);
 	}
 };
 
@@ -108,8 +110,8 @@ public:
 	SToolBarVLine(wxWindow* parent) : wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 	{
 		// Set size
-		wxWindowBase::SetMaxSize(WxUtils::scaledSize(-1, 2));
-		wxWindowBase::SetMinSize(WxUtils::scaledSize(-1, 2));
+		wxWindowBase::SetMaxSize(wxutil::scaledSize(-1, 2));
+		wxWindowBase::SetMinSize(wxutil::scaledSize(-1, 2));
 
 		// Set window name
 		wxWindowBase::SetName("tb_vline");
@@ -127,8 +129,8 @@ public:
 
 		// Get system colours needed
 		auto col_background = GetBackgroundColour(); // toolbar_win10 ? *wxWHITE : Drawing::getPanelBGColour();
-		auto col_light      = Drawing::lightColour(col_background, 1.5f);
-		auto col_dark       = Drawing::darkColour(col_background, 1.5f);
+		auto col_light      = drawing::lightColour(col_background, 1.5f);
+		auto col_dark       = drawing::darkColour(col_background, 1.5f);
 
 		// Draw lines
 		// dc.SetPen(wxPen(col_dark));
@@ -175,10 +177,10 @@ SToolBarGroup::SToolBarGroup(SToolBar* parent, const wxString& name, bool force_
 			showname.Remove(0, 1);
 
 		auto label = new wxStaticText(this, -1, wxString::Format("%s:", showname));
-		label->SetForegroundColour(Drawing::systemMenuTextColour());
-		sizer->AddSpacer(UI::pad());
+		label->SetForegroundColour(drawing::systemMenuTextColour());
+		sizer->AddSpacer(ui::pad());
 		sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL);
-		sizer->AddSpacer(UI::px(UI::Size::PadMinimum));
+		sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
 	}
 }
 
@@ -196,7 +198,7 @@ void SToolBarGroup::hide(bool hide)
 	if (hide)
 		tb_hidden += name;
 	else
-		StrUtil::replaceIP(tb_hidden, name, {});
+		strutil::replaceIP(tb_hidden, name, {});
 
 	toolbars_hidden = tb_hidden;
 }
@@ -215,7 +217,7 @@ SToolBarButton* SToolBarGroup::addActionButton(const wxString& action, const wxS
 	button->SetBackgroundColour(GetBackgroundColour());
 
 	// Add it to the group
-	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL | wxALL, UI::scalePx(1));
+	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL | wxALL, ui::scalePx(1));
 
 	return button;
 }
@@ -240,7 +242,7 @@ SToolBarButton* SToolBarGroup::addActionButton(
 	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &SToolBarGroup::onButtonClicked, this, button->GetId());
 
 	// Add it to the group
-	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL | wxALL, UI::scalePx(1));
+	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL | wxALL, ui::scalePx(1));
 
 	return button;
 }
@@ -254,7 +256,7 @@ void SToolBarGroup::addCustomControl(wxWindow* control)
 	control->SetParent(this);
 
 	// Add it to the group
-	GetSizer()->Add(control, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, UI::scalePx(1));
+	GetSizer()->Add(control, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::scalePx(1));
 }
 
 // -----------------------------------------------------------------------------
@@ -324,7 +326,7 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar) : wxPanel(parent, -1), m
 	// Enable double buffering to avoid flickering
 #ifdef __WXMSW__
 	// In Windows, only enable on Vista or newer
-	if (Global::win_version_major >= 6)
+	if (global::win_version_major >= 6)
 		wxWindow::SetDoubleBuffered(true);
 #elif !defined __WXMAC__
 	SetDoubleBuffered(true);
@@ -332,7 +334,7 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar) : wxPanel(parent, -1), m
 
 	// Set background colour
 	wxPanel::SetBackgroundColour(
-		(main_toolbar && Global::win_version_major >= 10) ? wxColor(250, 250, 250) : Drawing::systemPanelBGColour());
+		(main_toolbar && global::win_version_major >= 10) ? wxColor(250, 250, 250) : drawing::systemPanelBGColour());
 
 	// Create sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -484,7 +486,7 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 
 		// Check if the group will fit
 		group->Show();
-		if (group->GetBestSize().x + current_width + UI::pad() > GetSize().x && groups_line > 0)
+		if (group->GetBestSize().x + current_width + ui::pad() > GetSize().x && groups_line > 0)
 		{
 			// The group won't fit, begin a new line
 			auto vline = new SToolBarVLine(this);
@@ -504,13 +506,13 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 			auto sep = new SToolBarSeparator(this);
 			sep->SetBackgroundColour(GetBackgroundColour());
 			separators_.push_back(sep);
-			hbox->Add(sep, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, UI::px(UI::Size::PadMinimum));
-			current_width += UI::pad() * 2;
+			hbox->Add(sep, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::px(ui::Size::PadMinimum));
+			current_width += ui::pad() * 2;
 		}
 
 		// Add the group
-		hbox->Add(group, 0, wxEXPAND | wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, UI::px(UI::Size::PadMinimum));
-		current_width += group->GetBestSize().x + UI::pad();
+		hbox->Add(group, 0, wxEXPAND | wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, ui::px(ui::Size::PadMinimum));
+		current_width += group->GetBestSize().x + ui::pad();
 
 		groups_line++;
 	}
@@ -600,7 +602,7 @@ int SToolBar::calculateNumRows(int width)
 			continue;
 
 		// Check if the group will fit
-		if (group->GetBestSize().x + current_width + UI::pad() > width && groups_line > 0)
+		if (group->GetBestSize().x + current_width + ui::pad() > width && groups_line > 0)
 		{
 			// The group won't fit, begin a new line
 			groups_line   = 0;
@@ -610,7 +612,7 @@ int SToolBar::calculateNumRows(int width)
 
 		// Add separator if needed
 		if (groups_line > 0)
-			current_width += UI::pad();
+			current_width += ui::pad();
 
 		// Add the group
 		current_width += group->GetBestSize().x;
@@ -664,7 +666,7 @@ void SToolBar::onPaint(wxPaintEvent& e)
 
 	// Get system colours needed
 	auto col_background = GetBackgroundColour();
-	auto col_light      = Drawing::lightColour(col_background, 1.5f);
+	auto col_light      = drawing::lightColour(col_background, 1.5f);
 	// wxColour col_dark = win10_theme ? *wxWHITE : Drawing::darkColour(col_background, 1.5f);
 
 	// Draw background
@@ -775,5 +777,5 @@ void SToolBar::onEraseBackground(wxEraseEvent& e) {}
 // -----------------------------------------------------------------------------
 int SToolBar::getBarHeight()
 {
-	return UI::scalePx(toolbar_size + 14);
+	return ui::scalePx(toolbar_size + 14);
 }

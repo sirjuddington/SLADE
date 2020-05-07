@@ -1,9 +1,12 @@
 #pragma once
 
-class ParseTreeNode;
 class wxMenu;
 class wxAuiToolBar;
 class wxToolBar;
+
+namespace slade
+{
+class ParseTreeNode;
 class CBoolCVar;
 
 class SAction
@@ -112,3 +115,4 @@ protected:
 private:
 	static vector<SActionHandler*> action_handlers_;
 };
+} // namespace slade

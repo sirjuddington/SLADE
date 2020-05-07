@@ -45,6 +45,8 @@
 #include "Utility/Tokenizer.h"
 #include "thirdparty/fmt/fmt/color.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -105,37 +107,37 @@ bool TextStyle::parse(ParseTreeNode* node)
 		auto name  = child->name();
 
 		// Font name
-		if (StrUtil::equalCI(name, "font"))
+		if (strutil::equalCI(name, "font"))
 			font_ = child->stringValue();
 
 		// Font size
-		else if (StrUtil::equalCI(name, "size"))
+		else if (strutil::equalCI(name, "size"))
 			size_ = child->intValue();
 
 		// Foreground colour
-		else if (StrUtil::equalCI(name, "foreground"))
+		else if (strutil::equalCI(name, "foreground"))
 		{
 			foreground_.set(child->intValue(0), child->intValue(1), child->intValue(2), 255);
 			fg_defined_ = true;
 		}
 
 		// Background colour
-		else if (StrUtil::equalCI(name, "background"))
+		else if (strutil::equalCI(name, "background"))
 		{
 			background_.set(child->intValue(0), child->intValue(1), child->intValue(2), 255);
 			bg_defined_ = true;
 		}
 
 		// Bold
-		else if (StrUtil::equalCI(name, "bold"))
+		else if (strutil::equalCI(name, "bold"))
 			bold_ = (int)child->boolValue();
 
 		// Italic
-		else if (StrUtil::equalCI(name, "italic"))
+		else if (strutil::equalCI(name, "italic"))
 			italic_ = (int)child->boolValue();
 
 		// Underlined
-		else if (StrUtil::equalCI(name, "underlined"))
+		else if (strutil::equalCI(name, "underlined"))
 			underlined_ = (int)child->boolValue();
 	}
 
@@ -163,11 +165,11 @@ void TextStyle::applyTo(wxStyledTextCtrl* stc)
 
 		// Set foreground
 		if (fg_defined_)
-			stc->StyleSetForeground(wx_style, WXCOL(foreground_));
+			stc->StyleSetForeground(wx_style, foreground_.toWx());
 
 		// Set background
 		if (bg_defined_)
-			stc->StyleSetBackground(wx_style, WXCOL(background_));
+			stc->StyleSetBackground(wx_style, background_.toWx());
 
 		// Set bold
 		if (bold_ > 0)
@@ -400,34 +402,34 @@ void StyleSet::applyToWx(wxStyledTextCtrl* stc)
 
 	// Set selection background if customised
 	if (ts_selection_.hasBackground())
-		stc->SetSelBackground(true, WXCOL(ts_selection_.background_));
+		stc->SetSelBackground(true, ts_selection_.background_.toWx());
 	else
 		stc->SetSelBackground(false, wxColour("red"));
 
 	// Set selection foreground if customised
 	if (ts_selection_.hasForeground())
-		stc->SetSelForeground(true, WXCOL(ts_selection_.foreground_));
+		stc->SetSelForeground(true, ts_selection_.foreground_.toWx());
 	else
 		stc->SetSelForeground(false, wxColour("red"));
 
 	// Set caret colour to text foreground colour
-	stc->SetCaretForeground(WXCOL(ts_default_.foreground_));
+	stc->SetCaretForeground(ts_default_.foreground_.toWx());
 
 	// Set indent and right margin line colour
-	stc->SetEdgeColour(WXCOL(style("guides")->foreground()));
-	stc->StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, WXCOL(styleBackground("guides")));
-	stc->StyleSetForeground(wxSTC_STYLE_INDENTGUIDE, WXCOL(styleForeground("guides")));
+	stc->SetEdgeColour(style("guides")->foreground().toWx());
+	stc->StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, styleBackground("guides").toWx());
+	stc->StyleSetForeground(wxSTC_STYLE_INDENTGUIDE, styleForeground("guides").toWx());
 
 	// Set word match indicator colour
 	stc->SetIndicatorCurrent(8);
-	stc->IndicatorSetForeground(8, WXCOL(styleForeground("wordmatch")));
+	stc->IndicatorSetForeground(8, styleForeground("wordmatch").toWx());
 
 	// Set current line colour
-	stc->SetCaretLineBackground(WXCOL(styleBackground("current_line")));
+	stc->SetCaretLineBackground(styleBackground("current_line").toWx());
 	stc->MarkerDefine(
-		1, wxSTC_MARK_BACKGROUND, WXCOL(styleBackground("current_line")), WXCOL(styleBackground("current_line")));
+		1, wxSTC_MARK_BACKGROUND, styleBackground("current_line").toWx(), styleBackground("current_line").toWx());
 	stc->MarkerDefine(
-		2, wxSTC_MARK_UNDERLINE, WXCOL(styleForeground("current_line")), WXCOL(styleForeground("current_line")));
+		2, wxSTC_MARK_UNDERLINE, styleForeground("current_line").toWx(), styleForeground("current_line").toWx());
 }
 
 // -----------------------------------------------------------------------------
@@ -454,9 +456,9 @@ bool StyleSet::copySet(StyleSet* copy)
 TextStyle* StyleSet::style(string_view name)
 {
 	// Return style matching name given
-	if (StrUtil::equalCI(name, "default"))
+	if (strutil::equalCI(name, "default"))
 		return &ts_default_;
-	else if (StrUtil::equalCI(name, "selection"))
+	else if (strutil::equalCI(name, "selection"))
 		return &ts_selection_;
 	else
 	{
@@ -584,8 +586,8 @@ void StyleSet::initCurrent()
 	ss_current->name_ = "<current styleset>";
 
 	// First up, check if "<userdir>/current.sss" exists
-	auto path = App::path("current.sss", App::Dir::User);
-	if (FileUtil::fileExists(path))
+	auto path = app::path("current.sss", app::Dir::User);
+	if (fileutil::fileExists(path))
 	{
 		// Read it in
 		Tokenizer tz;
@@ -619,7 +621,7 @@ void StyleSet::saveCurrent()
 	if (!ss_current)
 		return;
 
-	ss_current->writeFile(App::path("current.sss", App::Dir::User));
+	ss_current->writeFile(app::path("current.sss", app::Dir::User));
 }
 
 // -----------------------------------------------------------------------------
@@ -642,7 +644,7 @@ bool StyleSet::loadSet(string_view name)
 	// Search for set matching name
 	for (auto& style_set : style_sets)
 	{
-		if (StrUtil::equalCI(style_set->name_, name))
+		if (strutil::equalCI(style_set->name_, name))
 		{
 			ss_current->copySet(style_set.get());
 			return true;
@@ -767,12 +769,12 @@ void StyleSet::addSet(StyleSet* set)
 bool StyleSet::loadResourceStyles()
 {
 	// Get 'config/text_styles' directory in slade.pk3
-	auto dir = App::archiveManager().programResourceArchive()->dirAtPath("config/text_styles");
+	auto dir = app::archiveManager().programResourceArchive()->dirAtPath("config/text_styles");
 
 	// Check it exists
 	if (!dir)
 	{
-		Log::warning("No 'config/text_styles' directory exists in slade.pk3");
+		log::warning("No 'config/text_styles' directory exists in slade.pk3");
 		return false;
 	}
 
@@ -838,11 +840,11 @@ bool StyleSet::loadResourceStyles()
 bool StyleSet::loadCustomStyles()
 {
 	// If the custom stylesets directory doesn't exist, create it
-	auto custom_dir = App::path("text_styles", App::Dir::User);
-	FileUtil::createDir(custom_dir);
+	auto custom_dir = app::path("text_styles", app::Dir::User);
+	fileutil::createDir(custom_dir);
 
 	// Go through each file in the directory
-	for (const auto& path : FileUtil::allFilesInDir(custom_dir))
+	for (const auto& path : fileutil::allFilesInDir(custom_dir))
 	{
 		// Read file into tokenizer
 		Tokenizer tz;

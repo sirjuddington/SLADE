@@ -4,6 +4,9 @@
 #include "UI/Canvas/OGLCanvas.h"
 
 class wxScrollBar;
+
+namespace slade
+{
 class BrowserItem;
 
 class BrowserCanvas : public OGLCanvas
@@ -43,7 +46,7 @@ public:
 	void                  showItem(int item, int where);
 	void                  showSelectedItem();
 	bool                  searchItemFrom(int from);
-	void                  setFont(Drawing::Font font) { this->font_ = font; }
+	void                  setFont(drawing::Font font) { this->font_ = font; }
 	void                  setItemNameType(NameType type) { this->show_names_ = type; }
 	void                  setItemSize(int size) { this->item_size_ = size; }
 	void                  setItemViewType(ItemView type) { this->item_type_ = type; }
@@ -70,7 +73,7 @@ private:
 	// Display
 	int           yoff_        = 0;
 	int           item_border_ = 0;
-	Drawing::Font font_        = Drawing::Font::Normal;
+	drawing::Font font_        = drawing::Font::Normal;
 	NameType      show_names_  = NameType::Normal;
 	int           item_size_   = -1;
 	int           top_index_   = 0;
@@ -78,5 +81,6 @@ private:
 	ItemView      item_type_   = ItemView::Normal;
 	int           num_cols_    = -1;
 };
+} // namespace slade
 
 DECLARE_EVENT_TYPE(wxEVT_BROWSERCANVAS_SELECTION_CHANGED, -1)

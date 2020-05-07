@@ -34,6 +34,8 @@
 #include "General/UI.h"
 #include "Graphics/Icons.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -52,20 +54,20 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 	auto m_vbox = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(m_vbox, 1, wxEXPAND | wxALL, UI::padLarge());
+	sizer->Add(m_vbox, 1, wxEXPAND | wxALL, ui::padLarge());
 
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(Icons::getIcon(Icons::General, "offset"));
+	icon.CopyFromBitmap(icons::getIcon(icons::General, "offset"));
 	SetIcon(icon);
 
 	// Setup layout
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::padLarge());
+	m_vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::padLarge());
 
 	// 'Auto Offsets'
 	opt_auto_ = new wxRadioButton(this, -1, "Automatic Offsets", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-	hbox->Add(opt_auto_, 1, wxEXPAND | wxRIGHT, UI::pad());
+	hbox->Add(opt_auto_, 1, wxEXPAND | wxRIGHT, ui::pad());
 
 	wxString offtypes[] = {
 		"Monster",           "Monster (GL-friendly)", "Projectile",         "Hud/Weapon",
@@ -77,18 +79,18 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 	hbox->Add(combo_aligntype_, 0, wxEXPAND);
 
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, UI::padLarge());
+	m_vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::padLarge());
 
 	// 'Set Offsets'
 	opt_set_ = new wxRadioButton(this, -1, "Set Offsets");
-	hbox->Add(opt_set_, 1, wxEXPAND | wxRIGHT, UI::pad());
+	hbox->Add(opt_set_, 1, wxEXPAND | wxRIGHT, ui::pad());
 
-	int width      = UI::scalePx(40);
+	int width      = ui::scalePx(40);
 	entry_xoff_    = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(width, -1));
 	entry_yoff_    = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(width, -1));
 	cbox_relative_ = new wxCheckBox(this, wxID_ANY, "Relative");
-	hbox->Add(entry_xoff_, 0, wxEXPAND | wxRIGHT, UI::pad());
-	hbox->Add(entry_yoff_, 0, wxEXPAND | wxRIGHT, UI::pad());
+	hbox->Add(entry_xoff_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(entry_yoff_, 0, wxEXPAND | wxRIGHT, ui::pad());
 	hbox->Add(cbox_relative_, 0, wxEXPAND);
 	entry_xoff_->Enable(false);
 	entry_yoff_->Enable(false);

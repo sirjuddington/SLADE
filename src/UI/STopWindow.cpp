@@ -37,6 +37,8 @@
 #include "SToolBar/SToolBar.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -65,14 +67,14 @@ STopWindow::STopWindow(const wxString& title, const wxString& id, int x, int y, 
 
 #ifndef __WXOSX__
 	// Init size/pos
-	auto info = Misc::getWindowInfo(id_);
+	auto info = misc::getWindowInfo(id_);
 	if (!info.id.empty())
 	{
 		SetSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
-		Misc::setWindowInfo(id_, width, height, x, y);
+		misc::setWindowInfo(id_, width, height, x, y);
 #endif
 
 	// Init toolbar menu action(s)
@@ -90,7 +92,7 @@ STopWindow::STopWindow(const wxString& title, const wxString& id, int x, int y, 
 STopWindow::~STopWindow()
 {
 	if (!wxFrame::IsMaximized() && !wxFrame::IsFullScreen())
-		Misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+		misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 }
 
 // -----------------------------------------------------------------------------
@@ -188,7 +190,7 @@ void STopWindow::populateToolbarsMenu() const
 		auto group = toolbar_->groups()[a];
 
 		auto name = group->name().ToStdString();
-		StrUtil::replaceIP(name, "_", "");
+		strutil::replaceIP(name, "_", "");
 
 		action_toolbar_menu_->addToMenu(toolbar_menu_, name, "NO", a + 1);
 		toolbar_menu_->GetMenuItems()[toolbar_menu_->GetMenuItemCount() - 1]->Check(!group->hidden());

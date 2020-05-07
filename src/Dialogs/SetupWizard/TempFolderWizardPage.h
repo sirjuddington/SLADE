@@ -2,6 +2,8 @@
 
 #include "WizardPageBase.h"
 
+namespace slade
+{
 class TempFolderWizardPage : public WizardPageBase
 {
 public:
@@ -24,3 +26,4 @@ private:
 	void onRadioButtonChanged(wxCommandEvent& e);
 	void onBtnBrowse(wxCommandEvent& e);
 };
+} // namespace slade

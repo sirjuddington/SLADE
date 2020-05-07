@@ -33,6 +33,8 @@
 #include "Tokenizer.h"
 #include "StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -74,7 +76,7 @@ bool isWhitespace(char p)
 // -----------------------------------------------------------------------------
 bool Tokenizer::Token::isInteger(bool allow_hex) const
 {
-	return StrUtil::isInteger(text, allow_hex);
+	return strutil::isInteger(text, allow_hex);
 }
 
 // -----------------------------------------------------------------------------
@@ -82,7 +84,7 @@ bool Tokenizer::Token::isInteger(bool allow_hex) const
 // -----------------------------------------------------------------------------
 bool Tokenizer::Token::isHex() const
 {
-	return StrUtil::isHex(text);
+	return strutil::isHex(text);
 }
 
 // -----------------------------------------------------------------------------
@@ -90,7 +92,7 @@ bool Tokenizer::Token::isHex() const
 // -----------------------------------------------------------------------------
 bool Tokenizer::Token::isFloat() const
 {
-	return StrUtil::isFloat(text);
+	return strutil::isFloat(text);
 }
 
 // ----------------------------------------------------------------------------
@@ -98,7 +100,7 @@ bool Tokenizer::Token::isFloat() const
 // ----------------------------------------------------------------------------
 int Tokenizer::Token::asInt() const
 {
-	return StrUtil::asInt(text);
+	return strutil::asInt(text);
 }
 
 // -----------------------------------------------------------------------------
@@ -108,7 +110,7 @@ int Tokenizer::Token::asInt() const
 bool Tokenizer::Token::asBool() const
 {
 	return !(
-		text.empty() || StrUtil::equalCI(text, "false") || StrUtil::equalCI(text, "no") || StrUtil::equalCI(text, "0"));
+		text.empty() || strutil::equalCI(text, "false") || strutil::equalCI(text, "no") || strutil::equalCI(text, "0"));
 }
 
 // ----------------------------------------------------------------------------
@@ -116,7 +118,7 @@ bool Tokenizer::Token::asBool() const
 // ----------------------------------------------------------------------------
 double Tokenizer::Token::asFloat() const
 {
-	return StrUtil::asDouble(text);
+	return strutil::asDouble(text);
 }
 
 // ----------------------------------------------------------------------------
@@ -124,7 +126,7 @@ double Tokenizer::Token::asFloat() const
 // ----------------------------------------------------------------------------
 void Tokenizer::Token::toInt(int& val) const
 {
-	val = StrUtil::asInt(text);
+	val = strutil::asInt(text);
 }
 
 // -----------------------------------------------------------------------------
@@ -134,7 +136,7 @@ void Tokenizer::Token::toInt(int& val) const
 void Tokenizer::Token::toBool(bool& val) const
 {
 	val = !(
-		text.empty() || StrUtil::equalCI(text, "false") || StrUtil::equalCI(text, "no") || StrUtil::equalCI(text, "0"));
+		text.empty() || strutil::equalCI(text, "false") || strutil::equalCI(text, "no") || strutil::equalCI(text, "0"));
 }
 
 // ----------------------------------------------------------------------------
@@ -142,7 +144,7 @@ void Tokenizer::Token::toBool(bool& val) const
 // ----------------------------------------------------------------------------
 void Tokenizer::Token::toFloat(double& val) const
 {
-	val = StrUtil::asDouble(text);
+	val = strutil::asDouble(text);
 }
 
 // ----------------------------------------------------------------------------
@@ -150,7 +152,7 @@ void Tokenizer::Token::toFloat(double& val) const
 // ----------------------------------------------------------------------------
 void Tokenizer::Token::toFloat(float& val) const
 {
-	val = StrUtil::asFloat(text);
+	val = strutil::asFloat(text);
 }
 
 
@@ -248,7 +250,7 @@ bool Tokenizer::advIf(char check, size_t inc)
 // -----------------------------------------------------------------------------
 bool Tokenizer::advIfNC(const char* check, size_t inc)
 {
-	if (StrUtil::equalCI(token_current_.text, check))
+	if (strutil::equalCI(token_current_.text, check))
 	{
 		adv(inc);
 		return true;
@@ -258,7 +260,7 @@ bool Tokenizer::advIfNC(const char* check, size_t inc)
 }
 bool Tokenizer::advIfNC(const string& check, size_t inc)
 {
-	if (StrUtil::equalCI(token_current_.text, check))
+	if (strutil::equalCI(token_current_.text, check))
 	{
 		adv(inc);
 		return true;
@@ -318,7 +320,7 @@ bool Tokenizer::advIfNextNC(const char* check, size_t inc)
 	if (!token_next_.valid)
 		return false;
 
-	if (StrUtil::equalCI(token_next_.text, check))
+	if (strutil::equalCI(token_next_.text, check))
 	{
 		adv(inc);
 		return true;
@@ -515,7 +517,7 @@ bool Tokenizer::checkOrEnd(char check) const
 
 bool Tokenizer::checkNC(const char* check) const
 {
-	return StrUtil::equalCI(token_current_.text, check);
+	return strutil::equalCI(token_current_.text, check);
 }
 
 bool Tokenizer::checkOrEndNC(const char* check) const
@@ -524,7 +526,7 @@ bool Tokenizer::checkOrEndNC(const char* check) const
 	if (!token_next_.valid)
 		return true;
 
-	return StrUtil::equalCI(token_current_.text, check);
+	return strutil::equalCI(token_current_.text, check);
 }
 
 // -----------------------------------------------------------------------------
@@ -557,7 +559,7 @@ bool Tokenizer::checkNextNC(const char* check) const
 	if (!token_next_.valid)
 		return false;
 
-	return StrUtil::equalCI(token_next_.text, check);
+	return strutil::equalCI(token_next_.text, check);
 }
 
 // -----------------------------------------------------------------------------
@@ -572,7 +574,7 @@ bool Tokenizer::openFile(string_view filename, size_t offset, size_t length)
 	// Check file opened
 	if (!file.IsOpened())
 	{
-		Log::error("Tokenizer::openFile: Unable to open file {}", filename);
+		log::error("Tokenizer::openFile: Unable to open file {}", filename);
 		return false;
 	}
 
@@ -895,7 +897,7 @@ bool Tokenizer::readNext(Token* target)
 
 		// Convert to lowercase if configured to and it isn't a quoted string
 		if (read_lowercase_ && !target->quoted_string)
-			StrUtil::lowerIP(target->text);
+			strutil::lowerIP(target->text);
 	}
 
 	// Skip closing " if it was a quoted string
@@ -903,7 +905,7 @@ bool Tokenizer::readNext(Token* target)
 		++state_.position;
 
 	if (debug_)
-		Log::debug("{}: \"{}\"", token_current_.line_no, token_current_.text);
+		log::debug("{}: \"{}\"", token_current_.line_no, token_current_.text);
 
 	return true;
 }
@@ -934,18 +936,18 @@ void Tokenizer::resetToLineStart()
 
 #include "App.h"
 #include "Archive/ArchiveEntry.h"
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "MainEditor/MainEditor.h"
 
 CONSOLE_COMMAND(test_tokenizer, 0, false)
 {
-	auto entry = MainEditor::currentEntry();
+	auto entry = maineditor::currentEntry();
 	if (!entry)
 		return;
 
 	int num = 1;
 	if (!args.empty())
-		num = StrUtil::asInt(args[0]);
+		num = strutil::asInt(args[0]);
 
 	bool lower = (VECTOR_EXISTS(args, "lower"));
 	bool dump  = (VECTOR_EXISTS(args, "dump"));
@@ -961,7 +963,7 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 	Tokenizer         tz;
 	vector<TestToken> t_new;
 	tz.setReadLowerCase(lower);
-	long time = App::runTimer();
+	long time = app::runTimer();
 	tz.openMem(entry->data(), entry->name());
 	for (long a = 0; a < num; a++)
 	{
@@ -975,9 +977,9 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 		tz.reset();
 	}
 
-	long new_time = App::runTimer() - time;
+	long new_time = app::runTimer() - time;
 
-	Log::info("Tokenize x{} took {}ms", num, new_time);
+	log::info("Tokenize x{} took {}ms", num, new_time);
 
 
 	// Test old tokenizer also
@@ -999,13 +1001,13 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 		tzo.reset();
 	}
 	time = App::runTimer() - time;
-	Log::info(string::Format("Old Tokenize x%d took %dms", num, time));
-	Log::info(string::Format("%1.3fx time", (float)new_time / (float)time));
+	log::info(string::Format("Old Tokenize x%d took %dms", num, time));
+	log::info(string::Format("%1.3fx time", (float)new_time / (float)time));
 	*/
 
 	if (dump)
 	{
 		for (auto& token : t_new)
-			Log::debug("{}: \"{}\"{}", token.line_no, token.text, token.quoted_string ? " (quoted)" : "");
+			log::debug("{}: \"{}\"{}", token.line_no, token.text, token.quoted_string ? " (quoted)" : "");
 	}
 }

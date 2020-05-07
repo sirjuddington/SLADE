@@ -2,6 +2,8 @@
 
 #include "UI/Canvas/OGLCanvas.h"
 
+namespace slade
+{
 class SImage;
 class NumberTextCtrl;
 
@@ -53,3 +55,4 @@ private:
 	// Events
 	void onTextEnter(wxCommandEvent& e);
 };
+} // namespace slade

@@ -3,6 +3,8 @@
 #include "UI/Lists/ListView.h"
 #include "UI/SDialog.h"
 
+namespace slade
+{
 class SectorSpecialPanel : public wxPanel
 {
 public:
@@ -34,3 +36,4 @@ public:
 private:
 	SectorSpecialPanel* panel_special_ = nullptr;
 };
+} // namespace slade

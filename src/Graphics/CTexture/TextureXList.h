@@ -4,6 +4,8 @@
 #include "CTexture.h"
 #include "PatchTable.h"
 
+namespace slade
+{
 class TextureXList
 {
 public:
@@ -67,3 +69,4 @@ private:
 	Format                       txformat_ = Format::Normal;
 	CTexture tex_invalid_{ "INVALID_TEXTURE" }; // Deliberately set the invalid name to >8 characters
 };
+} // namespace slade

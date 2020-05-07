@@ -36,6 +36,8 @@
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -156,10 +158,10 @@ InputPrefsPanel::InputPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 
 	// Keybinds list
 	list_binds_ = new wxTreeListCtrl(this, -1);
-	sizer->Add(list_binds_, 1, wxEXPAND | wxBOTTOM, UI::pad());
+	sizer->Add(list_binds_, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Buttons
-	WxUtils::layoutHorizontally(
+	wxutil::layoutHorizontally(
 		sizer,
 		{ btn_change_   = new wxButton(this, -1, "Set Key"),
 		  btn_add_      = new wxButton(this, -1, "Add Key"),
@@ -296,11 +298,11 @@ void InputPrefsPanel::changeKey(wxTreeListItem item)
 
 	// Add key input box
 	auto key_ctrl = new InputKeyCtrl(&dlg, bind->key);
-	sizer->Add(key_ctrl, 0, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(key_ctrl, 0, wxEXPAND | wxALL, ui::pad());
 
 	// Add buttons
 	auto btnsizer = dlg.CreateButtonSizer(wxOK | wxCANCEL);
-	sizer->Add(btnsizer, 0, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(btnsizer, 0, wxEXPAND | wxALL, ui::pad());
 
 	// Init dialog
 	dlg.SetInitialSize(wxSize(-1, -1));
@@ -435,7 +437,7 @@ void InputPrefsPanel::applyPreferences()
 	KeyBind::updateSortedBindsList();
 
 	// Update map editor menus
-	MapEditor::window()->setupMenu();
+	mapeditor::window()->setupMenu();
 }
 
 

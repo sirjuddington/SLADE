@@ -44,6 +44,8 @@
 #include "UI/Controls/ColourBox.h"
 #include "UI/Controls/PaletteChooser.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -69,7 +71,7 @@ GfxConvDialog::GfxConvDialog(wxWindow* parent) : SDialog(parent, "Graphic Format
 {
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(Icons::getIcon(Icons::General, "convert"));
+	icon.CopyFromBitmap(icons::getIcon(icons::General, "convert"));
 	SetIcon(icon);
 
 	setupLayout();
@@ -105,7 +107,7 @@ bool GfxConvDialog::nextItem()
 		// If loading images from entries
 		if (items_[current_item_].entry != nullptr)
 		{
-			if (!Misc::loadImageFromEntry(&(items_[current_item_].image), items_[current_item_].entry))
+			if (!misc::loadImageFromEntry(&(items_[current_item_].image), items_[current_item_].entry))
 				return nextItem(); // Skip if not a valid image entry
 		}
 		// If loading images from textures
@@ -216,8 +218,8 @@ bool GfxConvDialog::nextItem()
 
 	// Update UI
 	updatePreviewGfx();
-	UI::setSplashProgressMessage(fmt::format("{} of {}", current_item_, items_.size()));
-	UI::setSplashProgress((float)current_item_ / (float)items_.size());
+	ui::setSplashProgressMessage(fmt::format("{} of {}", current_item_, items_.size()));
+	ui::setSplashProgress((float)current_item_ / (float)items_.size());
 
 	return ok;
 }
@@ -227,10 +229,10 @@ bool GfxConvDialog::nextItem()
 // -----------------------------------------------------------------------------
 void GfxConvDialog::setupLayout()
 {
-	int px_inner        = UI::pad();
-	int px_outer        = UI::padLarge();
-	int px_pad          = UI::px(UI::Size::PadMinimum);
-	int px_preview_size = UI::scalePx(192);
+	int px_inner        = ui::pad();
+	int px_outer        = ui::padLarge();
+	int px_pad          = ui::px(ui::Size::PadMinimum);
+	int px_preview_size = ui::scalePx(192);
 
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
@@ -278,7 +280,7 @@ void GfxConvDialog::setupLayout()
 	pal_chooser_target_->selectPalette(target_palette_name_);
 	gbsizer->Add(pal_chooser_target_, { 2, 1 }, { 1, 1 }, wxEXPAND);
 	btn_colorimetry_settings_ = new wxBitmapButton(
-		this, -1, Icons::getIcon(Icons::General, "settings"), wxDefaultPosition, wxDefaultSize);
+		this, -1, icons::getIcon(icons::General, "settings"), wxDefaultPosition, wxDefaultSize);
 	btn_colorimetry_settings_->SetToolTip("Adjust Colorimetry Settings...");
 	gbsizer->Add(btn_colorimetry_settings_, { 2, 2 }, { 1, 1 }, wxALIGN_CENTER);
 	gbsizer->AddGrowableCol(0, 1);
@@ -623,7 +625,7 @@ void GfxConvDialog::onBtnConvert(wxCommandEvent& e)
 void GfxConvDialog::onBtnConvertAll(wxCommandEvent& e)
 {
 	// Show splash window
-	UI::showSplash("Converting Gfx...", true);
+	ui::showSplash("Converting Gfx...", true);
 
 	// Convert all images
 	for (size_t a = current_item_; a < items_.size(); a++)
@@ -634,7 +636,7 @@ void GfxConvDialog::onBtnConvertAll(wxCommandEvent& e)
 	}
 
 	// Hide splash window
-	UI::hideSplash();
+	ui::hideSplash();
 }
 
 // -----------------------------------------------------------------------------

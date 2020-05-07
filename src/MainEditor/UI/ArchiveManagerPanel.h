@@ -6,14 +6,16 @@
 #include "UI/Controls/DockPanel.h"
 #include "UI/Lists/ListView.h"
 
+wxDECLARE_EVENT(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, wxThreadEvent);
+
+namespace slade
+{
 class ArchiveManagerPanel;
 class ArchivePanel;
 class Archive;
 class STabCtrl;
 class TextureXEditor;
 class EntryPanel;
-
-wxDECLARE_EVENT(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, wxThreadEvent);
 
 struct DirArchiveChangeList
 {
@@ -189,3 +191,4 @@ private:
 
 	void connectSignals();
 };
+} // namespace slade

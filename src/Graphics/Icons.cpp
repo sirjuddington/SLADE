@@ -36,6 +36,8 @@
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -45,7 +47,7 @@
 CVAR(String, iconset_general, "Default", CVar::Flag::Save)
 CVAR(String, iconset_entry_list, "Default", CVar::Flag::Save)
 
-namespace Icons
+namespace slade::icons
 {
 struct Icon
 {
@@ -61,7 +63,7 @@ vector<Icon>   icons_entry;
 wxBitmap       icon_empty;
 vector<string> iconsets_entry;
 vector<string> iconsets_general;
-} // namespace Icons
+} // namespace slade::icons
 
 
 // -----------------------------------------------------------------------------
@@ -69,7 +71,7 @@ vector<string> iconsets_general;
 // Icons Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace Icons
+namespace slade::icons
 {
 // -----------------------------------------------------------------------------
 // Returns a list of all icons of [type]
@@ -114,7 +116,7 @@ bool loadIconsDir(Type type, ArchiveDir* dir)
 		dir = dir->subdir(icon_set_dir).get();
 
 	auto& icons    = iconList(type);
-	auto  tempfile = App::path("sladetemp", App::Dir::Temp);
+	auto  tempfile = app::path("sladetemp", app::Dir::Temp);
 
 	// Go through each entry in the directory
 	for (size_t a = 0; a < dir->numEntries(false); a++)
@@ -122,7 +124,7 @@ bool loadIconsDir(Type type, ArchiveDir* dir)
 		auto entry = dir->entryAt(a);
 
 		// Ignore anything not png format
-		if (!StrUtil::endsWith(entry->upperName(), ".PNG"))
+		if (!strutil::endsWith(entry->upperName(), ".PNG"))
 			continue;
 
 		// Export entry data to a temporary file
@@ -150,7 +152,7 @@ bool loadIconsDir(Type type, ArchiveDir* dir)
 			auto entry = dir_large->entryAt(a);
 
 			// Ignore anything not png format
-			if (!StrUtil::endsWith(entry->upperName(), ".PNG"))
+			if (!strutil::endsWith(entry->upperName(), ".PNG"))
 				continue;
 
 			// Export entry data to a temporary file
@@ -197,17 +199,17 @@ bool loadIconsDir(Type type, ArchiveDir* dir)
 
 	return true;
 }
-} // namespace Icons
+} // namespace slade::icons
 
 // -----------------------------------------------------------------------------
 // Loads all icons from slade.pk3 (in the icons/ dir)
 // -----------------------------------------------------------------------------
-bool Icons::loadIcons()
+bool icons::loadIcons()
 {
-	auto tempfile = App::path("sladetemp", App::Dir::Temp);
+	auto tempfile = app::path("sladetemp", app::Dir::Temp);
 
 	// Get slade.pk3
-	auto res_archive = App::archiveManager().programResourceArchive();
+	auto res_archive = app::archiveManager().programResourceArchive();
 
 	// Do nothing if it doesn't exist
 	if (!res_archive)
@@ -236,7 +238,7 @@ bool Icons::loadIcons()
 // If [type] is less than 0, try all icon types.
 // If [log_missing] is true, log an error message if the icon was not found
 // -----------------------------------------------------------------------------
-wxBitmap Icons::getIcon(Type type, string_view name, bool large, bool log_missing)
+wxBitmap icons::getIcon(Type type, string_view name, bool large, bool log_missing)
 {
 	// Check all types if [type] is < 0
 	if (type == Any)
@@ -248,7 +250,7 @@ wxBitmap Icons::getIcon(Type type, string_view name, bool large, bool log_missin
 			icon = getIcon(TextEditor, name, large, false);
 
 		if (!icon.IsOk() && log_missing)
-			Log::warning(2, "Icon \"{}\" does not exist", name);
+			log::warning(2, "Icon \"{}\" does not exist", name);
 
 		return icon;
 	}
@@ -273,7 +275,7 @@ wxBitmap Icons::getIcon(Type type, string_view name, bool large, bool log_missin
 	}
 
 	if (log_missing)
-		Log::warning(2, "Icon \"{}\" does not exist", name);
+		log::warning(2, "Icon \"{}\" does not exist", name);
 
 	return wxNullBitmap;
 }
@@ -281,15 +283,15 @@ wxBitmap Icons::getIcon(Type type, string_view name, bool large, bool log_missin
 // -----------------------------------------------------------------------------
 // Returns the icon [name] of [type]
 // -----------------------------------------------------------------------------
-wxBitmap Icons::getIcon(Type type, string_view name)
+wxBitmap icons::getIcon(Type type, string_view name)
 {
-	return getIcon(type, name, UI::scaleFactor() > 1.25);
+	return getIcon(type, name, ui::scaleFactor() > 1.25);
 }
 
 // -----------------------------------------------------------------------------
 // Exports icon [name] of [type] to a png image file at [path]
 // -----------------------------------------------------------------------------
-bool Icons::exportIconPNG(Type type, string_view name, string_view path)
+bool icons::exportIconPNG(Type type, string_view name, string_view path)
 {
 	auto& icons = iconList(type);
 
@@ -305,7 +307,7 @@ bool Icons::exportIconPNG(Type type, string_view name, string_view path)
 // -----------------------------------------------------------------------------
 // Returns a list of currently available icon sets for [type]
 // -----------------------------------------------------------------------------
-vector<string> Icons::iconSets(Type type)
+vector<string> icons::iconSets(Type type)
 {
 	if (type == General)
 		return iconsets_general;

@@ -45,6 +45,8 @@
 #include "UI/WxUtils.h"
 #include "Utility/MathStuff.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 // SpriteTexCanvas Class Functions
@@ -59,25 +61,25 @@
 SpriteTexCanvas::SpriteTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 {
 	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
-	SetInitialSize(WxUtils::scaledSize(128, 128));
+	SetInitialSize(wxutil::scaledSize(128, 128));
 }
 
 // -----------------------------------------------------------------------------
 // Sets the texture to display
 // -----------------------------------------------------------------------------
-void SpriteTexCanvas::setSprite(const Game::ThingType& type)
+void SpriteTexCanvas::setSprite(const game::ThingType& type)
 {
 	texname_ = type.sprite();
 	icon_    = false;
 	colour_  = ColRGBA::WHITE;
 
 	// Sprite
-	texture_ = MapEditor::textureManager().sprite(texname_.ToStdString(), type.translation(), type.palette()).gl_id;
+	texture_ = mapeditor::textureManager().sprite(texname_.ToStdString(), type.translation(), type.palette()).gl_id;
 
 	// Icon
 	if (!texture_)
 	{
-		texture_ = MapEditor::textureManager().editorImage(fmt::format("thing/{}", type.icon())).gl_id;
+		texture_ = mapeditor::textureManager().editorImage(fmt::format("thing/{}", type.icon())).gl_id;
 		colour_  = type.colour();
 		icon_    = true;
 	}
@@ -85,7 +87,7 @@ void SpriteTexCanvas::setSprite(const Game::ThingType& type)
 	// Unknown
 	if (!texture_)
 	{
-		texture_ = MapEditor::textureManager().editorImage("thing/unknown").gl_id;
+		texture_ = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
 		icon_    = true;
 	}
 
@@ -113,25 +115,25 @@ void SpriteTexCanvas::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
+	if (gl::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Draw background
 	drawCheckeredBackground();
 
 	// Draw texture
-	OpenGL::setColour(colour_);
+	gl::setColour(colour_);
 	if (texture_ && !icon_)
 	{
 		// Sprite
 		glEnable(GL_TEXTURE_2D);
-		Drawing::drawTextureWithin(texture_, 0, 0, GetSize().x, GetSize().y, 4, 2);
+		drawing::drawTextureWithin(texture_, 0, 0, GetSize().x, GetSize().y, 4, 2);
 	}
 	else if (texture_ && icon_)
 	{
 		// Icon
 		glEnable(GL_TEXTURE_2D);
-		Drawing::drawTextureWithin(texture_, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
+		drawing::drawTextureWithin(texture_, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
 	}
 
 	// Swap buffers (ie show what was drawn)
@@ -154,12 +156,12 @@ void SpriteTexCanvas::draw()
 ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : OGLCanvas(parent, -1, true, 15), parent_{ parent }
 {
 	// Get system panel background colour
-	auto bgcolwx = Drawing::systemPanelBGColour();
-	col_bg_.set(COLWX(bgcolwx));
+	auto bgcolwx = drawing::systemPanelBGColour();
+	col_bg_.set(bgcolwx);
 
 	// Get system text colour
 	auto textcol = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
-	col_fg_.set(COLWX(textcol));
+	col_fg_.set(textcol);
 
 	// Setup dir points
 	double rot = 0;
@@ -175,7 +177,7 @@ ThingDirCanvas::ThingDirCanvas(AngleControl* parent) : OGLCanvas(parent, -1, tru
 	Bind(wxEVT_LEFT_DOWN, &ThingDirCanvas::onMouseEvent, this);
 
 	// Fixed size
-	auto size = UI::scalePx(128);
+	auto size = ui::scalePx(128);
 	SetInitialSize(wxSize(size, size));
 	wxWindowBase::SetMaxSize(wxSize(size, size));
 }
@@ -237,21 +239,21 @@ void ThingDirCanvas::draw()
 	glEnable(GL_LINE_SMOOTH);
 	ColRGBA col_faded(
 		col_bg_.r * 0.6 + col_fg_.r * 0.4, col_bg_.g * 0.6 + col_fg_.g * 0.4, col_bg_.b * 0.6 + col_fg_.b * 0.4);
-	Drawing::drawEllipse(Vec2d(0, 0), 1, 1, 48, col_faded);
+	drawing::drawEllipse(Vec2d(0, 0), 1, 1, 48, col_faded);
 
 	// Draw dir points
 	for (auto dir_point : dir_points_)
 	{
-		Drawing::drawFilledEllipse(dir_point, 0.12, 0.12, 8, col_bg_);
-		Drawing::drawEllipse(dir_point, 0.12, 0.12, 16, col_fg_);
+		drawing::drawFilledEllipse(dir_point, 0.12, 0.12, 8, col_bg_);
+		drawing::drawEllipse(dir_point, 0.12, 0.12, 16, col_fg_);
 	}
 
 	// Draw angle arrow
 	glLineWidth(2.0f);
 	if (parent_->angleSet())
 	{
-		auto tip = MathStuff::rotatePoint(Vec2d(0, 0), Vec2d(0.8, 0), -parent_->angle());
-		Drawing::drawArrow(tip, Vec2d(0, 0), col_fg_, false, 1.2, 0.2);
+		auto tip = math::rotatePoint(Vec2d(0, 0), Vec2d(0.8, 0), -parent_->angle());
+		drawing::drawArrow(tip, Vec2d(0, 0), col_fg_, false, 1.2, 0.2);
 	}
 
 	// Draw hover point
@@ -259,7 +261,7 @@ void ThingDirCanvas::draw()
 	glEnable(GL_POINT_SMOOTH);
 	if (point_hl_ >= 0 && point_hl_ < (int)dir_points_.size())
 	{
-		OpenGL::setColour(col_faded);
+		gl::setColour(col_faded);
 		glBegin(GL_POINTS);
 		glVertex2d(dir_points_[point_hl_].x, dir_points_[point_hl_].y);
 		glEnd();
@@ -268,7 +270,7 @@ void ThingDirCanvas::draw()
 	// Draw selected point
 	if (parent_->angleSet() && point_sel_ >= 0 && point_sel_ < (int)dir_points_.size())
 	{
-		OpenGL::setColour(col_fg_);
+		gl::setColour(col_fg_);
 		glBegin(GL_POINTS);
 		glVertex2d(dir_points_[point_sel_].x, dir_points_[point_sel_].y);
 		glEnd();
@@ -295,7 +297,7 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 	if (e.Moving())
 	{
 		auto last_point = point_hl_;
-		if (App::runTimer() > last_check_ + 15)
+		if (app::runTimer() > last_check_ + 15)
 		{
 			// Get cursor position in canvas coordinates
 			double x = -1.2 + ((double)e.GetX() / (double)GetSize().x) * 2.4;
@@ -307,7 +309,7 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 			double min_dist = 0.3;
 			for (unsigned a = 0; a < dir_points_.size(); a++)
 			{
-				double dist = MathStuff::distance(cursor_pos, dir_points_[a]);
+				double dist = math::distance(cursor_pos, dir_points_[a]);
 				if (dist < min_dist)
 				{
 					point_hl_ = a;
@@ -315,7 +317,7 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 				}
 			}
 
-			last_check_ = App::runTimer();
+			last_check_ = app::runTimer();
 		}
 
 		if (last_point != point_hl_)
@@ -374,11 +376,11 @@ AngleControl::AngleControl(wxWindow* parent) : wxControl(parent, -1, wxDefaultPo
 	SetSizer(sizer);
 
 	// Angle visual control
-	sizer->Add(dc_angle_ = new ThingDirCanvas(this), 1, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(dc_angle_ = new ThingDirCanvas(this), 1, wxEXPAND | wxALL, ui::pad());
 
 	// Angle text box
 	text_angle_ = new NumberTextCtrl(this);
-	sizer->Add(text_angle_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	sizer->Add(text_angle_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Bind events
 	text_angle_->Bind(wxEVT_TEXT, &AngleControl::onAngleTextChanged, this);
@@ -457,7 +459,7 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 
 	// Tabs
 	stc_tabs_ = STabCtrl::createControl(this);
-	sizer->Add(stc_tabs_, 1, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(stc_tabs_, 1, wxEXPAND | wxALL, ui::pad());
 
 	// General tab
 	stc_tabs_->AddPage(setupGeneralTab(), "General");
@@ -467,17 +469,17 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 		stc_tabs_->AddPage(setupExtraFlagsTab(), "Extra Flags");
 
 	// Special tab
-	if (MapEditor::editContext().mapDesc().format != MapFormat::Doom)
+	if (mapeditor::editContext().mapDesc().format != MapFormat::Doom)
 	{
 		panel_special_ = new ActionSpecialPanel(this, false);
-		stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_special_), "Special");
+		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_special_), "Special");
 	}
 
 	// Args tab
-	if (MapEditor::editContext().mapDesc().format != MapFormat::Doom)
+	if (mapeditor::editContext().mapDesc().format != MapFormat::Doom)
 	{
 		panel_args_ = new ArgsPanel(this);
-		stc_tabs_->AddPage(WxUtils::createPadPanel(stc_tabs_, panel_args_), "Args");
+		stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, panel_args_), "Args");
 		if (panel_special_)
 			panel_special_->setArgsPanel(panel_args_);
 	}
@@ -507,7 +509,7 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 // -----------------------------------------------------------------------------
 wxPanel* ThingPropsPanel::setupGeneralTab()
 {
-	auto map_format = MapEditor::editContext().mapDesc().format;
+	auto map_format = mapeditor::editContext().mapDesc().format;
 
 	// Create panel
 	auto panel = new wxPanel(stc_tabs_, -1);
@@ -519,16 +521,16 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	// --- Flags ---
 	auto frame      = new wxStaticBox(panel, -1, "Flags");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 0, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(framesizer, 0, wxEXPAND | wxALL, ui::pad());
 
 	// Init flags
-	auto gb_sizer = new wxGridBagSizer(UI::pad() / 2, UI::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::pad());
+	auto gb_sizer = new wxGridBagSizer(ui::pad() / 2, ui::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 	int row = 0;
 	int col = 0;
 
 	// Get all UDMF properties
-	auto& props = Game::configuration().allUDMFProperties(MapObject::Type::Thing);
+	auto& props = game::configuration().allUDMFProperties(MapObject::Type::Thing);
 
 	// UDMF flags
 	if (map_format == MapFormat::UDMF)
@@ -571,13 +573,13 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	else
 	{
 		// Add flag checkboxes
-		int flag_mid = Game::configuration().nThingFlags() / 3;
-		if (Game::configuration().nThingFlags() % 3 == 0)
+		int flag_mid = game::configuration().nThingFlags() / 3;
+		if (game::configuration().nThingFlags() % 3 == 0)
 			flag_mid--;
-		for (int a = 0; a < Game::configuration().nThingFlags(); a++)
+		for (int a = 0; a < game::configuration().nThingFlags(); a++)
 		{
 			auto cb_flag = new wxCheckBox(
-				panel, -1, Game::configuration().thingFlag(a), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+				panel, -1, game::configuration().thingFlag(a), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
 			gb_sizer->Add(cb_flag, { row++, col }, { 1, 1 }, wxEXPAND);
 			cb_flags_.push_back(cb_flag);
 
@@ -595,13 +597,13 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 
 	// Type
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(hbox, 0, wxEXPAND | wxALL, ui::pad());
 	frame      = new wxStaticBox(panel, -1, "Type");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	hbox->Add(framesizer, 1, wxEXPAND | wxRIGHT, UI::pad());
-	framesizer->Add(gfx_sprite_ = new SpriteTexCanvas(panel), 1, wxEXPAND | wxALL, UI::pad());
+	hbox->Add(framesizer, 1, wxEXPAND | wxRIGHT, ui::pad());
+	framesizer->Add(gfx_sprite_ = new SpriteTexCanvas(panel), 1, wxEXPAND | wxALL, ui::pad());
 	framesizer->Add(
-		label_type_ = new wxStaticText(panel, -1, ""), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+		label_type_ = new wxStaticText(panel, -1, ""), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Direction
 	frame      = new wxStaticBox(panel, -1, "Direction");
@@ -616,8 +618,8 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	if (map_format != MapFormat::Doom)
 	{
 		// Id
-		gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-		sizer->Add(gb_sizer, 0, wxEXPAND | wxALL, UI::pad());
+		gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+		sizer->Add(gb_sizer, 0, wxEXPAND | wxALL, ui::pad());
 		gb_sizer->Add(new wxStaticText(panel, -1, "TID:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 		gb_sizer->Add(text_id_ = new NumberTextCtrl(panel), { 0, 1 }, { 1, 1 }, wxEXPAND | wxALIGN_CENTER_VERTICAL);
 		gb_sizer->Add(btn_new_id_ = new wxButton(panel, -1, "New TID"), { 0, 2 }, { 1, 1 });
@@ -632,7 +634,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 
 		// 'New TID' button event
 		btn_new_id_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) {
-			text_id_->setNumber(MapEditor::editContext().map().things().firstFreeId());
+			text_id_->setNumber(mapeditor::editContext().map().things().firstFreeId());
 		});
 	}
 
@@ -652,8 +654,8 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 	panel->SetSizer(sizer);
 
 	// Init flags
-	auto gb_sizer_flags = new wxGridBagSizer(UI::pad() / 2, UI::pad());
-	sizer->Add(gb_sizer_flags, 1, wxEXPAND | wxALL, UI::pad());
+	auto gb_sizer_flags = new wxGridBagSizer(ui::pad() / 2, ui::pad());
+	sizer->Add(gb_sizer_flags, 1, wxEXPAND | wxALL, ui::pad());
 	int row = 0;
 	int col = 0;
 
@@ -661,7 +663,7 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 	vector<wxString> flags;
 	for (const auto& a : udmf_flags_extra_)
 	{
-		auto prop = Game::configuration().getUDMFProperty(a.ToStdString(), MapObject::Type::Thing);
+		auto prop = game::configuration().getUDMFProperty(a.ToStdString(), MapObject::Type::Thing);
 		flags.push_back(prop->name());
 	}
 
@@ -697,7 +699,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	if (objects.empty())
 		return;
 
-	auto   map_format = MapEditor::editContext().mapDesc().format;
+	auto   map_format = mapeditor::editContext().mapDesc().format;
 	int    ival;
 	double fval;
 
@@ -715,16 +717,16 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	}
 	else
 	{
-		for (int a = 0; a < Game::configuration().nThingFlags(); a++)
+		for (int a = 0; a < game::configuration().nThingFlags(); a++)
 		{
 			// Set initial flag checked value
-			cb_flags_[a]->SetValue(Game::configuration().thingFlagSet(a, (MapThing*)objects[0]));
+			cb_flags_[a]->SetValue(game::configuration().thingFlagSet(a, (MapThing*)objects[0]));
 
 			// Go through subsequent things
 			for (unsigned b = 1; b < objects.size(); b++)
 			{
 				// Check for mismatch
-				if (cb_flags_[a]->GetValue() != Game::configuration().thingFlagSet(a, (MapThing*)objects[b]))
+				if (cb_flags_[a]->GetValue() != game::configuration().thingFlagSet(a, (MapThing*)objects[b]))
 				{
 					// Set undefined
 					cb_flags_[a]->Set3StateValue(wxCHK_UNDETERMINED);
@@ -738,7 +740,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	type_current_ = 0;
 	if (MapObject::multiIntProperty(objects, "type", type_current_))
 	{
-		auto& tt = Game::configuration().thingType(type_current_);
+		auto& tt = game::configuration().thingType(type_current_);
 		gfx_sprite_->setSprite(tt);
 		label_type_->SetLabel(wxString::Format("%d: %s", type_current_, tt.name()));
 		label_type_->Wrap(136);
@@ -758,12 +760,12 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 		// Setup
 		if (ival > 0)
 		{
-			auto& as = Game::configuration().actionSpecial(ival).argSpec();
+			auto& as = game::configuration().actionSpecial(ival).argSpec();
 			panel_args_->setup(as, (map_format == MapFormat::UDMF));
 		}
 		else
 		{
-			auto& as = Game::configuration().thingType(type_current_).argSpec();
+			auto& as = game::configuration().thingType(type_current_).argSpec();
 			panel_args_->setup(as, (map_format == MapFormat::UDMF));
 		}
 
@@ -806,7 +808,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 // -----------------------------------------------------------------------------
 void ThingPropsPanel::applyChanges()
 {
-	auto map_format = MapEditor::editContext().mapDesc().format;
+	auto map_format = mapeditor::editContext().mapDesc().format;
 
 	// Apply general properties
 	for (auto& object : objects_)
@@ -814,10 +816,10 @@ void ThingPropsPanel::applyChanges()
 		// Flags
 		if (udmf_flags_.empty())
 		{
-			for (int f = 0; f < Game::configuration().nThingFlags(); f++)
+			for (int f = 0; f < game::configuration().nThingFlags(); f++)
 			{
 				if (cb_flags_[f]->Get3StateValue() != wxCHK_UNDETERMINED)
-					Game::configuration().setThingFlag(f, (MapThing*)object, cb_flags_[f]->GetValue());
+					game::configuration().setThingFlag(f, (MapThing*)object, cb_flags_[f]->GetValue());
 			}
 		}
 
@@ -891,7 +893,7 @@ void ThingPropsPanel::onSpriteClicked(wxMouseEvent& e)
 	{
 		// Get selected type
 		type_current_ = browser.selectedType();
-		auto& tt      = Game::configuration().thingType(type_current_);
+		auto& tt      = game::configuration().thingType(type_current_);
 
 		// Update sprite
 		gfx_sprite_->setSprite(tt);
@@ -901,7 +903,7 @@ void ThingPropsPanel::onSpriteClicked(wxMouseEvent& e)
 		if (panel_args_)
 		{
 			auto& as = tt.argSpec();
-			panel_args_->setup(as, (MapEditor::editContext().mapDesc().format == MapFormat::UDMF));
+			panel_args_->setup(as, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
 		}
 
 		// Update layout

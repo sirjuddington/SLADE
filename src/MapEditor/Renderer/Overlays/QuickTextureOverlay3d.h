@@ -3,6 +3,8 @@
 #include "MCOverlay.h"
 #include "MapEditor/Edit/Edit3D.h"
 
+namespace slade
+{
 class ItemSelection;
 class MapEditContext;
 
@@ -44,3 +46,4 @@ private:
 	bool            sel_flats_   = true;
 	bool            sel_walls_   = true;
 };
+} // namespace slade

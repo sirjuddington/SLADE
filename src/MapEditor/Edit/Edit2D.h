@@ -5,6 +5,8 @@
 #include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObject/MapThing.h"
 
+namespace slade
+{
 class MapObject;
 class MapEditContext;
 
@@ -62,3 +64,4 @@ private:
 	bool      sector_copied_ = false;
 	bool      thing_copied_  = false;
 };
+} // namespace slade

@@ -38,6 +38,8 @@
 #include "NodeBuildersWizardPage.h"
 #include "TempFolderWizardPage.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -73,11 +75,11 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 
 	// Set icon
 	wxIcon icon;
-	icon.CopyFromBitmap(Icons::getIcon(Icons::General, "logo"));
+	icon.CopyFromBitmap(icons::getIcon(icons::General, "logo"));
 	SetIcon(icon);
 
 	// Setup layout
-	SetInitialSize(wxSize(UI::scalePx(600), UI::scalePx(500)));
+	SetInitialSize(wxSize(ui::scalePx(600), ui::scalePx(500)));
 	wxWindowBase::Layout();
 	wxWindowBase::Fit();
 	wxTopLevelWindowBase::SetMinSize(GetBestSize());
@@ -95,7 +97,7 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 // -----------------------------------------------------------------------------
 void SetupWizardDialog::setupLayout()
 {
-	auto pad_xl = UI::scalePx(16);
+	auto pad_xl = ui::scalePx(16);
 
 	// Setup main sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -121,7 +123,7 @@ void SetupWizardDialog::setupLayout()
 
 	// Previous button
 	btn_prev_ = new wxButton(this, -1, "Previous");
-	hbox->Add(btn_prev_, 0, wxEXPAND | wxRIGHT, UI::pad());
+	hbox->Add(btn_prev_, 0, wxEXPAND | wxRIGHT, ui::pad());
 
 	// Next button
 	btn_next_ = new wxButton(this, -1, "Next");

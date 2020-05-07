@@ -38,6 +38,8 @@
 #include "UI/Lists/ListView.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -56,7 +58,7 @@ MapBackupPanel::MapBackupPanel(wxWindow* parent) : wxPanel{ parent, -1 }, archiv
 	SetSizer(sizer);
 
 	// Backups list
-	sizer->Add(list_backups_ = new ListView(this, -1), 0, wxEXPAND | wxRIGHT, UI::pad());
+	sizer->Add(list_backups_ = new ListView(this, -1), 0, wxEXPAND | wxRIGHT, ui::pad());
 
 	// Map preview
 	sizer->Add(canvas_map_ = new MapPreviewCanvas(this), 1, wxEXPAND);
@@ -75,7 +77,7 @@ bool MapBackupPanel::loadBackups(wxString archive_name, const wxString& map_name
 {
 	// Open backup file
 	archive_name.Replace(".", "_");
-	auto backup_file = App::path("backups", App::Dir::User) + "/" + archive_name.ToStdString() + "_backup.zip";
+	auto backup_file = app::path("backups", app::Dir::User) + "/" + archive_name.ToStdString() + "_backup.zip";
 	if (!archive_backups_->open(backup_file))
 		return false;
 

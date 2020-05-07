@@ -43,6 +43,8 @@
 #include "Utility/MathStuff.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -88,7 +90,7 @@ public:
 
 	void doCheck() override
 	{
-		string sky_flat = Game::configuration().skyFlat();
+		string sky_flat = game::configuration().skyFlat();
 		for (unsigned a = 0; a < map_->nLines(); a++)
 		{
 			// Check what textures the line needs
@@ -99,8 +101,8 @@ public:
 
 			// Detect if sky hack might apply
 			bool sky_hack = false;
-			if (side1 && StrUtil::equalCI(sky_flat, side1->sector()->ceiling().texture) && side2
-				&& StrUtil::equalCI(sky_flat, side2->sector()->ceiling().texture))
+			if (side1 && strutil::equalCI(sky_flat, side1->sector()->ceiling().texture) && side2
+				&& strutil::equalCI(sky_flat, side2->sector()->ceiling().texture))
 				sky_hack = true;
 
 			// Check for missing textures (front side)
@@ -154,7 +156,7 @@ public:
 			}
 		}
 
-		Log::info(3, "Missing Texture Check: {} missing textures", parts_.size());
+		log::info(3, "Missing Texture Check: {} missing textures", parts_.size());
 	}
 
 	unsigned nProblems() override { return lines_.size(); }
@@ -190,7 +192,7 @@ public:
 		if (fix_type == 0)
 		{
 			// Browse textures
-			MapTextureBrowser browser(MapEditor::windowWx(), MapEditor::TextureType::Texture, "-", map_);
+			MapTextureBrowser browser(mapeditor::windowWx(), mapeditor::TextureType::Texture, "-", map_);
 			if (browser.ShowModal() == wxID_OK)
 			{
 				editor->beginUndoRecord("Change Texture", true, false, false);
@@ -261,7 +263,7 @@ public:
 
 	void doCheck() override
 	{
-		using Game::TagType;
+		using game::TagType;
 
 		for (auto& line : map_->lines())
 		{
@@ -269,7 +271,7 @@ public:
 				continue;
 
 			// Get action special
-			auto tagged = Game::configuration().actionSpecial(line->special()).needsTag();
+			auto tagged = game::configuration().actionSpecial(line->special()).needsTag();
 
 			// Check for back sector that removes need for tagged sector
 			if ((tagged == TagType::Back || tagged == TagType::SectorOrBack) && line->backSector())
@@ -285,8 +287,8 @@ public:
 			for (unsigned a = 0; a < map_->nThings(); ++a)
 			{
 				// Ignore the Heresiarch which does not have a real special
-				auto& tt = Game::configuration().thingType(map_->thing(a)->type());
-				if (tt.flags() & Game::ThingType::Flags::Script)
+				auto& tt = game::configuration().thingType(map_->thing(a)->type());
+				if (tt.flags() & game::ThingType::Flags::Script)
 					continue;
 
 				// Get special and tag
@@ -294,7 +296,7 @@ public:
 				int tag     = map_->thing(a)->arg(0);
 
 				// Get action special
-				auto tagged = Game::configuration().actionSpecial(special).needsTag();
+				auto tagged = game::configuration().actionSpecial(special).needsTag();
 
 				// Check if tag is required but not set
 				if (tagged != TagType::None && tagged != TagType::Back && tag == 0)
@@ -317,7 +319,7 @@ public:
 			mo->objType() == MapObject::Type::Line ? "Line" : "Thing",
 			mo->index(),
 			special,
-			Game::configuration().actionSpecial(special).name());
+			game::configuration().actionSpecial(special).name());
 	}
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
@@ -364,7 +366,7 @@ public:
 
 	void doCheck() override
 	{
-		using Game::TagType;
+		using game::TagType;
 
 		unsigned nlines  = map_->nLines();
 		unsigned nthings = 0;
@@ -385,8 +387,8 @@ public:
 			// Ignore the Heresiarch which does not have a real special
 			if (thingmode)
 			{
-				auto& tt = Game::configuration().thingType(((MapThing*)mo)->type());
-				if (tt.flags() & Game::ThingType::Flags::Script)
+				auto& tt = game::configuration().thingType(((MapThing*)mo)->type());
+				if (tt.flags() & game::ThingType::Flags::Script)
 					continue;
 			}
 
@@ -395,7 +397,7 @@ public:
 			int tag     = mo->intProperty("arg0");
 
 			// Get action special
-			auto tagged = Game::configuration().actionSpecial(special).needsTag();
+			auto tagged = game::configuration().actionSpecial(special).needsTag();
 
 			// Check if tag is required and set (not set is a different check...)
 			if (tagged != TagType::None && tag != 0)
@@ -449,7 +451,7 @@ public:
 			objects_[index]->index(),
 			objects_[index]->intProperty("arg0"),
 			special,
-			Game::configuration().actionSpecial(special).name());
+			game::configuration().actionSpecial(special).name());
 	}
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) override
@@ -751,7 +753,7 @@ public:
 		for (unsigned a = 0; a < map_->nThings(); a++)
 		{
 			auto  thing1 = map_->thing(a);
-			auto& tt1    = Game::configuration().thingType(thing1->type());
+			auto& tt1    = game::configuration().thingType(thing1->type());
 			r1           = tt1.radius() - 1;
 
 			// Ignore if no radius
@@ -761,9 +763,9 @@ public:
 			// Go through uncompared things
 			auto map_format = map_->currentFormat();
 			bool udmf_zdoom =
-				(map_format == MapFormat::UDMF && StrUtil::equalCI(Game::configuration().udmfNamespace(), "zdoom"));
+				(map_format == MapFormat::UDMF && strutil::equalCI(game::configuration().udmfNamespace(), "zdoom"));
 			bool udmf_eternity =
-				(map_format == MapFormat::UDMF && StrUtil::equalCI(Game::configuration().udmfNamespace(), "eternity"));
+				(map_format == MapFormat::UDMF && strutil::equalCI(game::configuration().udmfNamespace(), "eternity"));
 			int min_skill = udmf_zdoom || udmf_eternity ? 1 : 2;
 			int max_skill = udmf_zdoom ? 17 : 5;
 			int max_class = udmf_zdoom ? 17 : 4;
@@ -771,7 +773,7 @@ public:
 			for (unsigned b = a + 1; b < map_->nThings(); b++)
 			{
 				auto  thing2 = map_->thing(b);
-				auto& tt2    = Game::configuration().thingType(thing2->type());
+				auto& tt2    = game::configuration().thingType(thing2->type());
 				r2           = tt2.radius() - 1;
 
 				// Ignore if no radius
@@ -784,8 +786,8 @@ public:
 				for (int s = min_skill; s < max_skill; ++s)
 				{
 					auto skill = fmt::format("skill{}", s);
-					if (Game::configuration().thingBasicFlagSet(skill, thing1, map_format)
-						&& Game::configuration().thingBasicFlagSet(skill, thing2, map_format))
+					if (game::configuration().thingBasicFlagSet(skill, thing1, map_format)
+						&& game::configuration().thingBasicFlagSet(skill, thing2, map_format))
 					{
 						shareflag = true;
 						s         = max_skill;
@@ -796,18 +798,18 @@ public:
 
 				// Booleans for single, coop, deathmatch, and teamgame status for each thing
 				bool s1, s2, c1, c2, d1, d2, t1, t2;
-				s1 = Game::configuration().thingBasicFlagSet("single", thing1, map_format);
-				s2 = Game::configuration().thingBasicFlagSet("single", thing2, map_format);
-				c1 = Game::configuration().thingBasicFlagSet("coop", thing1, map_format);
-				c2 = Game::configuration().thingBasicFlagSet("coop", thing2, map_format);
-				d1 = Game::configuration().thingBasicFlagSet("dm", thing1, map_format);
-				d2 = Game::configuration().thingBasicFlagSet("dm", thing2, map_format);
+				s1 = game::configuration().thingBasicFlagSet("single", thing1, map_format);
+				s2 = game::configuration().thingBasicFlagSet("single", thing2, map_format);
+				c1 = game::configuration().thingBasicFlagSet("coop", thing1, map_format);
+				c2 = game::configuration().thingBasicFlagSet("coop", thing2, map_format);
+				d1 = game::configuration().thingBasicFlagSet("dm", thing1, map_format);
+				d2 = game::configuration().thingBasicFlagSet("dm", thing2, map_format);
 				t1 = t2 = false;
 
 				// Player starts
 				// P1 are automatically S and C; P2+ are automatically C;
 				// Deathmatch starts are automatically D, and team start are T.
-				if (tt1.flags() & Game::ThingType::Flags::CoOpStart)
+				if (tt1.flags() & game::ThingType::Flags::CoOpStart)
 				{
 					c1 = true;
 					d1 = t1 = false;
@@ -816,17 +818,17 @@ public:
 					else
 						s1 = false;
 				}
-				else if (tt1.flags() & Game::ThingType::Flags::DMStart)
+				else if (tt1.flags() & game::ThingType::Flags::DMStart)
 				{
 					s1 = c1 = t1 = false;
 					d1           = true;
 				}
-				else if (tt1.flags() & Game::ThingType::Flags::TeamStart)
+				else if (tt1.flags() & game::ThingType::Flags::TeamStart)
 				{
 					s1 = c1 = d1 = false;
 					t1           = true;
 				}
-				if (tt2.flags() & Game::ThingType::Flags::CoOpStart)
+				if (tt2.flags() & game::ThingType::Flags::CoOpStart)
 				{
 					c2 = true;
 					d2 = t2 = false;
@@ -835,12 +837,12 @@ public:
 					else
 						s2 = false;
 				}
-				else if (tt2.flags() & Game::ThingType::Flags::DMStart)
+				else if (tt2.flags() & game::ThingType::Flags::DMStart)
 				{
 					s2 = c2 = t2 = false;
 					d2           = true;
 				}
-				else if (tt2.flags() & Game::ThingType::Flags::TeamStart)
+				else if (tt2.flags() & game::ThingType::Flags::TeamStart)
 				{
 					s2 = c2 = d2 = false;
 					t2           = true;
@@ -858,8 +860,8 @@ public:
 					for (int c = 1; c < max_class; ++c)
 					{
 						auto pclass = fmt::format("class{}", c);
-						if (Game::configuration().thingBasicFlagSet(pclass, thing1, map_format)
-							&& Game::configuration().thingBasicFlagSet(pclass, thing2, map_format))
+						if (game::configuration().thingBasicFlagSet(pclass, thing1, map_format)
+							&& game::configuration().thingBasicFlagSet(pclass, thing2, map_format))
 						{
 							shareflag = true;
 							c         = max_class;
@@ -871,7 +873,7 @@ public:
 
 				// Also check player start spots in Hexen-style hubs
 				shareflag = false;
-				if (tt1.flags() & Game::ThingType::Flags::CoOpStart && tt2.flags() & Game::ThingType::Flags::CoOpStart)
+				if (tt1.flags() & game::ThingType::Flags::CoOpStart && tt2.flags() & game::ThingType::Flags::CoOpStart)
 				{
 					if (thing1->arg(0) == thing2->arg(0))
 						shareflag = true;
@@ -985,7 +987,7 @@ public:
 
 	void doCheck() override
 	{
-		bool mixed = Game::configuration().featureSupported(Game::Feature::MixTexFlats);
+		bool mixed = game::configuration().featureSupported(game::Feature::MixTexFlats);
 
 		// Go through lines
 		for (unsigned a = 0; a < map_->nLines(); a++)
@@ -1001,21 +1003,21 @@ public:
 				auto lower  = line->s1()->texLower();
 
 				// Upper
-				if (upper != "-" && texman_->texture(upper, mixed).gl_id == OpenGL::Texture::missingTexture())
+				if (upper != "-" && texman_->texture(upper, mixed).gl_id == gl::Texture::missingTexture())
 				{
 					lines_.push_back(line);
 					parts_.push_back(MapLine::Part::FrontUpper);
 				}
 
 				// Middle
-				if (middle != "-" && texman_->texture(middle, mixed).gl_id == OpenGL::Texture::missingTexture())
+				if (middle != "-" && texman_->texture(middle, mixed).gl_id == gl::Texture::missingTexture())
 				{
 					lines_.push_back(line);
 					parts_.push_back(MapLine::Part::FrontMiddle);
 				}
 
 				// Lower
-				if (lower != "-" && texman_->texture(lower, mixed).gl_id == OpenGL::Texture::missingTexture())
+				if (lower != "-" && texman_->texture(lower, mixed).gl_id == gl::Texture::missingTexture())
 				{
 					lines_.push_back(line);
 					parts_.push_back(MapLine::Part::FrontLower);
@@ -1031,21 +1033,21 @@ public:
 				auto lower  = line->s2()->texLower();
 
 				// Upper
-				if (upper != "-" && texman_->texture(upper, mixed).gl_id == OpenGL::Texture::missingTexture())
+				if (upper != "-" && texman_->texture(upper, mixed).gl_id == gl::Texture::missingTexture())
 				{
 					lines_.push_back(line);
 					parts_.push_back(MapLine::Part::BackUpper);
 				}
 
 				// Middle
-				if (middle != "-" && texman_->texture(middle, mixed).gl_id == OpenGL::Texture::missingTexture())
+				if (middle != "-" && texman_->texture(middle, mixed).gl_id == gl::Texture::missingTexture())
 				{
 					lines_.push_back(line);
 					parts_.push_back(MapLine::Part::BackMiddle);
 				}
 
 				// Lower
-				if (lower != "-" && texman_->texture(lower, mixed).gl_id == OpenGL::Texture::missingTexture())
+				if (lower != "-" && texman_->texture(lower, mixed).gl_id == gl::Texture::missingTexture())
 				{
 					lines_.push_back(line);
 					parts_.push_back(MapLine::Part::BackLower);
@@ -1096,7 +1098,7 @@ public:
 		if (fix_type == 0)
 		{
 			// Browse textures
-			MapTextureBrowser browser(MapEditor::windowWx(), MapEditor::TextureType::Texture, "-", map_);
+			MapTextureBrowser browser(mapeditor::windowWx(), mapeditor::TextureType::Texture, "-", map_);
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
@@ -1166,20 +1168,20 @@ public:
 
 	void doCheck() override
 	{
-		bool mixed = Game::configuration().featureSupported(Game::Feature::MixTexFlats);
+		bool mixed = game::configuration().featureSupported(game::Feature::MixTexFlats);
 
 		// Go through sectors
 		for (unsigned a = 0; a < map_->nSectors(); a++)
 		{
 			// Check floor texture
-			if (texman_->flat(map_->sector(a)->floor().texture, mixed).gl_id == OpenGL::Texture::missingTexture())
+			if (texman_->flat(map_->sector(a)->floor().texture, mixed).gl_id == gl::Texture::missingTexture())
 			{
 				sectors_.push_back(map_->sector(a));
 				floor_.push_back(true);
 			}
 
 			// Check ceiling texture
-			if (texman_->flat(map_->sector(a)->ceiling().texture, mixed).gl_id == OpenGL::Texture::missingTexture())
+			if (texman_->flat(map_->sector(a)->ceiling().texture, mixed).gl_id == gl::Texture::missingTexture())
 			{
 				sectors_.push_back(map_->sector(a));
 				floor_.push_back(false);
@@ -1210,7 +1212,7 @@ public:
 		if (fix_type == 0)
 		{
 			// Browse textures
-			MapTextureBrowser browser(MapEditor::windowWx(), MapEditor::TextureType::Flat, "", map_);
+			MapTextureBrowser browser(mapeditor::windowWx(), mapeditor::TextureType::Flat, "", map_);
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
@@ -1274,7 +1276,7 @@ public:
 	{
 		for (unsigned a = 0; a < map_->nThings(); a++)
 		{
-			auto& tt = Game::configuration().thingType(map_->thing(a)->type());
+			auto& tt = game::configuration().thingType(map_->thing(a)->type());
 			if (!tt.defined())
 				things_.push_back(map_->thing(a));
 		}
@@ -1297,7 +1299,7 @@ public:
 
 		if (fix_type == 0)
 		{
-			ThingTypeBrowser browser(MapEditor::windowWx());
+			ThingTypeBrowser browser(mapeditor::windowWx());
 			if (browser.ShowModal() == wxID_OK)
 			{
 				editor->beginUndoRecord("Change Thing Type");
@@ -1357,7 +1359,7 @@ public:
 			line = map_->line(a);
 
 			// Skip if line is 2-sided and not blocking
-			if (line->s2() && !Game::configuration().lineBasicFlagSet("blocking", line, map_->currentFormat()))
+			if (line->s2() && !game::configuration().lineBasicFlagSet("blocking", line, map_->currentFormat()))
 				continue;
 
 			check_lines.push_back(line);
@@ -1367,7 +1369,7 @@ public:
 		for (unsigned a = 0; a < map_->nThings(); a++)
 		{
 			auto  thing = map_->thing(a);
-			auto& tt    = Game::configuration().thingType(thing->type());
+			auto& tt    = game::configuration().thingType(thing->type());
 
 			// Skip if not a solid thing
 			if (!tt.solid())
@@ -1382,7 +1384,7 @@ public:
 				line = check_line;
 
 				// Check intersection
-				if (MathStuff::boxLineIntersect(bbox, line->seg()))
+				if (math::boxLineIntersect(bbox, line->seg()))
 				{
 					things_.push_back(thing);
 					lines_.push_back(line);
@@ -1413,11 +1415,11 @@ public:
 			auto line  = lines_[index];
 
 			// Get nearest line point to thing
-			auto np = MathStuff::closestPointOnLine(thing->position(), line->seg());
+			auto np = math::closestPointOnLine(thing->position(), line->seg());
 
 			// Get distance to move
-			double r    = Game::configuration().thingType(thing->type()).radius();
-			double dist = MathStuff::distance(Vec2d(), Vec2d(r, r));
+			double r    = game::configuration().thingType(thing->type()).radius();
+			double dist = math::distance(Vec2d(), Vec2d(r, r));
 
 			editor->beginUndoRecord("Move Thing", true, false, false);
 
@@ -1734,8 +1736,8 @@ public:
 		for (unsigned a = 0; a < map_->nSectors(); a++)
 		{
 			int special = map_->sector(a)->special();
-			int base    = Game::configuration().baseSectorType(special);
-			if (Game::configuration().sectorTypeName(special) == "Unknown")
+			int base    = game::configuration().baseSectorType(special);
+			if (game::configuration().sectorTypeName(special) == "Unknown")
 				sectors_.push_back(a);
 		}
 	}
@@ -1760,7 +1762,7 @@ public:
 		{
 			// Try to preserve flags if they exist
 			int special = sec->special();
-			int base    = Game::configuration().baseSectorType(special);
+			int base    = game::configuration().baseSectorType(special);
 			special &= ~base;
 			sec->setIntProperty("special", special);
 		}
@@ -1807,7 +1809,7 @@ public:
 		for (unsigned a = 0; a < map_->nLines(); ++a)
 		{
 			int special = map_->line(a)->special();
-			if (Game::configuration().actionSpecialName(special) == "Unknown")
+			if (game::configuration().actionSpecialName(special) == "Unknown")
 				objects_.push_back(map_->line(a));
 		}
 		// In Hexen or UDMF, go through map things too since they too can have specials
@@ -1816,12 +1818,12 @@ public:
 			for (unsigned a = 0; a < map_->nThings(); ++a)
 			{
 				// Ignore the Heresiarch which does not have a real special
-				auto& tt = Game::configuration().thingType(map_->thing(a)->type());
-				if (tt.flags() & Game::ThingType::Flags::Script)
+				auto& tt = game::configuration().thingType(map_->thing(a)->type());
+				if (tt.flags() & game::ThingType::Flags::Script)
 					continue;
 
 				// Otherwise, check special
-				if (Game::configuration().actionSpecialName(map_->thing(a)->special()) == "Unknown")
+				if (game::configuration().actionSpecialName(map_->thing(a)->special()) == "Unknown")
 					objects_.push_back(map_->thing(a));
 			}
 		}
@@ -1897,8 +1899,8 @@ public:
 		for (unsigned a = 0; a < map_->nThings(); ++a)
 		{
 			auto  thing = map_->thing(a);
-			auto& tt    = Game::configuration().thingType(thing->type());
-			if (tt.flags() & Game::ThingType::Flags::Obsolete)
+			auto& tt    = game::configuration().thingType(thing->type());
+			if (tt.flags() & game::ThingType::Flags::Obsolete)
 				things_.push_back(thing);
 		}
 	}

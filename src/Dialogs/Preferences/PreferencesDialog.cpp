@@ -60,6 +60,8 @@
 #include "TextEditorPrefsPanel.h"
 #include "TextStylePrefsPanel.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -98,8 +100,8 @@ wxSizer* createTitleSizer(wxWindow* parent, const wxString& title, const wxStrin
 		sizer->Add(new wxStaticText(parent, -1, description), 0, wxEXPAND);
 
 	// Separator
-	sizer->AddSpacer(UI::px(UI::Size::PadMinimum));
-	sizer->Add(new wxStaticLine(parent), 0, wxEXPAND | wxBOTTOM, UI::padLarge());
+	sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
+	sizer->Add(new wxStaticLine(parent), 0, wxEXPAND | wxBOTTOM, ui::padLarge());
 
 	return sizer;
 }
@@ -124,7 +126,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 
 	// Set icon
 	wxIcon icon;
-	icon.CopyFromBitmap(Icons::getIcon(Icons::General, "settings"));
+	icon.CopyFromBitmap(icons::getIcon(icons::General, "settings"));
 	SetIcon(icon);
 
 	// Create preferences TreeBook
@@ -161,10 +163,10 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 		tree_prefs_->ExpandNode(page);
 
 	// Add preferences treebook
-	sizer->Add(tree_prefs_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::padLarge());
+	sizer->Add(tree_prefs_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
 
 	// Add buttons
-	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL | wxAPPLY), 0, wxEXPAND | wxALL, UI::padLarge());
+	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL | wxAPPLY), 0, wxEXPAND | wxALL, ui::padLarge());
 
 	// Bind events
 	Bind(wxEVT_BUTTON, &PreferencesDialog::onButtonClicked, this);
@@ -173,7 +175,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 	SetInitialSize(GetSize());
 	wxWindowBase::Layout();
 	wxWindowBase::Fit();
-	wxTopLevelWindowBase::SetMinSize(wxSize(UI::scalePx(800), UI::scalePx(600)));
+	wxTopLevelWindowBase::SetMinSize(wxSize(ui::scalePx(800), ui::scalePx(600)));
 	CenterOnParent();
 
 	// Collapse all tree nodes
@@ -200,11 +202,11 @@ void PreferencesDialog::addPrefsPage(PrefsPanelBase* page, const wxString& title
 			panel, page->pageTitle().empty() ? title + " Settings" : page->pageTitle(), page->pageDescription()),
 		0,
 		wxEXPAND | wxLEFT,
-		UI::pad());
+		ui::pad());
 
 	// Add prefs page to panel
 	page->Reparent(panel);
-	panel->GetSizer()->Add(page, 1, wxEXPAND | wxLEFT, UI::pad());
+	panel->GetSizer()->Add(page, 1, wxEXPAND | wxLEFT, ui::pad());
 
 	// Add panel to treebook
 	if (sub_page)
@@ -228,11 +230,11 @@ wxPanel* PreferencesDialog::setupBaseResourceArchivesPanel()
 	panel->SetSizer(psizer);
 
 	// Add page title section
-	psizer->Add(createTitleSizer(panel, "Base Resource Archive", ""), 0, wxEXPAND | wxLEFT, UI::pad());
+	psizer->Add(createTitleSizer(panel, "Base Resource Archive", ""), 0, wxEXPAND | wxLEFT, ui::pad());
 
 	// Add BRA panel
 	panel_bra_ = new BaseResourceArchivesPanel(panel);
-	psizer->Add(panel_bra_, 1, wxEXPAND | wxLEFT, UI::pad());
+	psizer->Add(panel_bra_, 1, wxEXPAND | wxLEFT, ui::pad());
 
 	return panel;
 }
@@ -256,11 +258,11 @@ wxPanel* PreferencesDialog::setupAdvancedPanel()
 			"Most of these settings can be changed more safely from the other sections."),
 		0,
 		wxEXPAND | wxLEFT,
-		UI::pad());
+		ui::pad());
 
 	// Add advanced settings panel
 	prefs_advanced_ = new AdvancedPrefsPanel(panel);
-	psizer->Add(prefs_advanced_, 1, wxEXPAND | wxLEFT, UI::pad());
+	psizer->Add(prefs_advanced_, 1, wxEXPAND | wxLEFT, ui::pad());
 
 	return panel;
 }
@@ -318,7 +320,7 @@ void PreferencesDialog::applyPreferences()
 	prefs_advanced_->applyPreferences();
 
 	// Write file so changes are not lost
-	App::saveConfigFile();
+	app::saveConfigFile();
 }
 
 

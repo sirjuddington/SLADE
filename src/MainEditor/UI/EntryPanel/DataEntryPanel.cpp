@@ -37,6 +37,8 @@
 #include "MainEditor/BinaryControlLump.h"
 #include "MainEditor/MainEditor.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -395,7 +397,7 @@ wxGridCellAttr* DataEntryTable::GetAttr(int row, int col, wxGridCellAttr::wxAttr
 	{
 		if (i == row)
 		{
-			attr->SetTextColour(WXCOL(ColourConfiguration::colour("new")));
+			attr->SetTextColour(colourconfig::colour("new").toWx());
 			new_row = true;
 			break;
 		}
@@ -408,7 +410,7 @@ wxGridCellAttr* DataEntryTable::GetAttr(int row, int col, wxGridCellAttr::wxAttr
 		{
 			if (cell.x == row && cell.y == col)
 			{
-				attr->SetTextColour(WXCOL(ColourConfiguration::colour("modified")));
+				attr->SetTextColour(colourconfig::colour("modified").toWx());
 				break;
 			}
 		}
@@ -677,9 +679,9 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		columns_.emplace_back("On Texture", ColType::String, 8, 9);
 
 		Column col_type("Type", ColType::CustomValue, 2, 18);
-		col_type.addCustomValue(SwitchTypes::DEMO, "Shareware");
-		col_type.addCustomValue(SwitchTypes::FULL, "Registered");
-		col_type.addCustomValue(SwitchTypes::COMM, "Commercial");
+		col_type.addCustomValue(switchtype::DEMO, "Shareware");
+		col_type.addCustomValue(switchtype::FULL, "Registered");
+		col_type.addCustomValue(switchtype::COMM, "Commercial");
 		columns_.push_back(col_type);
 
 		row_stride_ = 20;
@@ -869,11 +871,11 @@ DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), t
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	sizer_main_->Add(vbox, 1, wxEXPAND);
 	combo_cell_value_ = new wxComboBox(this, -1, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxTE_PROCESS_ENTER);
-	vbox->Add(combo_cell_value_, 0, wxEXPAND | wxBOTTOM, UI::pad());
+	vbox->Add(combo_cell_value_, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Create grid
 	grid_data_ = new wxGrid(this, -1);
-	vbox->Add(grid_data_, 1, wxEXPAND | wxBOTTOM, UI::pad());
+	vbox->Add(grid_data_, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Add actions to toolbar
 	wxArrayString actions;
@@ -904,7 +906,7 @@ bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 	combo_cell_value_->Clear();
 
 	// Set column widths
-	grid_data_->SetColMinimalAcceptableWidth(UI::scalePx(64));
+	grid_data_->SetColMinimalAcceptableWidth(ui::scalePx(64));
 	for (int a = 0; a < table_data_->GetNumberCols(); a++)
 		grid_data_->AutoSizeColLabelSize(a);
 	grid_data_->ForceRefresh();
@@ -1083,7 +1085,7 @@ void DataEntryPanel::changeValue() const
 	}
 
 	// Create dialog
-	wxDialog dlg(MainEditor::windowWx(), -1, "Change Value");
+	wxDialog dlg(maineditor::windowWx(), -1, "Change Value");
 
 	auto          ci = table_data_->columnInfo(selection[0].y);
 	wxArrayString choices;
@@ -1222,7 +1224,7 @@ void DataEntryPanel::onGridRightClick(wxGridEvent& e)
 {
 	// Check if only one column is selected
 	int col = getColWithSelection();
-	Log::info(2, wxString::Format("Column %d", col));
+	log::info(2, wxString::Format("Column %d", col));
 
 	wxMenu menu;
 	SAction::fromId("data_add_row")->addToMenu(&menu);

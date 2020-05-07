@@ -33,7 +33,7 @@
 #include "SLADEWxApp.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "General/Web.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
@@ -45,13 +45,12 @@
 #include "Utility/StringUtils.h"
 #include "thirdparty/email/wxMailer.h"
 #include <wx/statbmp.h>
-
-
 #undef BOOL
-
 #ifdef UPDATEREVISION
 #include "gitinfo.h"
 #endif
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -59,25 +58,25 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace Global
+namespace slade::global
 {
-string error = error;
+string error;
 
 #ifdef GIT_DESCRIPTION
 string sc_rev = GIT_DESCRIPTION;
 #else
-string sc_rev = sc_rev;
+string sc_rev;
 #endif
 
 #ifdef DEBUG
 bool debug = true;
 #else
-bool   debug  = false;
+bool   debug = false;
 #endif
 
 int win_version_major = 0;
 int win_version_minor = 0;
-} // namespace Global
+} // namespace slade::global
 
 string current_action           = current_action;
 bool   update_check_message_box = false;
@@ -109,11 +108,11 @@ protected:
 	void DoLogText(const wxString& msg) override
 	{
 		if (msg.Lower().Contains("error"))
-			Log::error(msg.Right(msg.size() - 10));
+			log::error(msg.Right(msg.size() - 10));
 		else if (msg.Lower().Contains("warning"))
-			Log::warning(msg.Right(msg.size() - 10));
+			log::warning(msg.Right(msg.size() - 10));
 		else
-			Log::info(msg.Right(msg.size() - 10));
+			log::info(msg.Right(msg.size() - 10));
 	}
 
 public:
@@ -185,12 +184,12 @@ public:
 		sizer->Add(hbox, 0, wxEXPAND);
 
 		// Add dead doomguy picture
-		App::archiveManager()
+		app::archiveManager()
 			.programResourceArchive()
 			->entryAtPath("images/STFDEAD0.png")
-			->exportFile(App::path("STFDEAD0.png", App::Dir::Temp));
+			->exportFile(app::path("STFDEAD0.png", app::Dir::Temp));
 		wxImage img;
-		img.LoadFile(App::path("STFDEAD0.png", App::Dir::Temp));
+		img.LoadFile(app::path("STFDEAD0.png", app::Dir::Temp));
 		img.Rescale(img.GetWidth(), img.GetHeight(), wxIMAGE_QUALITY_NEAREST);
 		wxStaticBitmap* picture = new wxStaticBitmap(this, -1, wxBitmap(img));
 		hbox->Add(picture, 0, wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxTOP | wxBOTTOM, 10);
@@ -220,10 +219,10 @@ public:
 #endif
 
 		// SLADE info
-		if (Global::sc_rev.empty())
-			trace_ = wxString::Format("Version: %s\n", App::version().toString());
+		if (global::sc_rev.empty())
+			trace_ = wxString::Format("Version: %s\n", app::version().toString());
 		else
-			trace_ = wxString::Format("Version: %s (%s)\n", App::version().toString(), Global::sc_rev);
+			trace_ = wxString::Format("Version: %s (%s)\n", app::version().toString(), global::sc_rev);
 		if (current_action.empty())
 			trace_ += "No current action\n";
 		else
@@ -231,7 +230,7 @@ public:
 		trace_ += "\n";
 
 		// System info
-		OpenGL::Info gl_info = OpenGL::sysInfo();
+		gl::Info gl_info = gl::sysInfo();
 		trace_ += "Operating System: " + wxGetOsDescription() + "\n";
 		trace_ += "Graphics Vendor: " + gl_info.vendor + "\n";
 		trace_ += "Graphics Hardware: " + gl_info.renderer + "\n";
@@ -243,7 +242,7 @@ public:
 
 		// Last 10 log lines
 		trace_ += "\nLast Log Messages:\n";
-		auto& log = Log::history();
+		auto& log = log::history();
 		for (auto a = log.size() - 10; a < log.size(); a++)
 			trace_ += log[a].message + "\n";
 
@@ -257,7 +256,7 @@ public:
 		sizer->Add(text_stack_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
 		// Dump stack trace to a file (just in case)
-		wxFile file(App::path("slade3_crash.log", App::Dir::User), wxFile::write);
+		wxFile file(app::path("slade3_crash.log", app::Dir::User), wxFile::write);
 		file.Write(trace_);
 		file.Close();
 
@@ -313,9 +312,9 @@ public:
 		wxEmailMessage msg;
 		msg.SetFrom("SLADE");
 		msg.SetTo("slade.crashes@gmail.com");
-		msg.SetSubject("[" + App::version().toString() + "] @ " + top_level_);
+		msg.SetSubject("[" + app::version().toString() + "] @ " + top_level_);
 		msg.SetMessage(wxString::Format("Description:\n%s\n\n%s", text_description_->GetValue(), trace_));
-		msg.AddAttachment(App::path("slade3.log", App::Dir::User));
+		msg.AddAttachment(app::path("slade3.log", app::Dir::User));
 		msg.Finalize();
 
 		// Send email
@@ -422,7 +421,7 @@ public:
 
 	bool OnPoke(const wxString& topic, const wxString& item, const void* data, size_t size, wxIPCFormat format) override
 	{
-		App::archiveManager().openArchive(item.ToStdString());
+		app::archiveManager().openArchive(item.ToStdString());
 		return true;
 	}
 };
@@ -540,8 +539,8 @@ bool SLADEWxApp::OnInit()
 
 	// Get Windows version
 #ifdef __WXMSW__
-	wxGetOsVersion(&Global::win_version_major, &Global::win_version_minor);
-	Log::info("Windows Version: {}.{}", Global::win_version_major, Global::win_version_minor);
+	wxGetOsVersion(&global::win_version_major, &global::win_version_minor);
+	log::info("Windows Version: {}.{}", global::win_version_major, global::win_version_minor);
 #endif
 
 	// Reroute wx log messages
@@ -553,7 +552,7 @@ bool SLADEWxApp::OnInit()
 		args.push_back(argv[a].ToStdString());
 
 	// Init application
-	if (!App::init(args, ui_scale))
+	if (!app::init(args, ui_scale))
 		return false;
 
 		// Check for updates
@@ -614,8 +613,8 @@ void SLADEWxApp::checkForUpdates(bool message_box)
 {
 #ifdef __WXMSW__
 	update_check_message_box = message_box;
-	Log::info(1, "Checking for updates...");
-	Web::getHttpAsync("slade.mancubus.net", "/version_win.txt", this);
+	log::info(1, "Checking for updates...");
+	web::getHttpAsync("slade.mancubus.net", "/version_win.txt", this);
 #endif
 }
 
@@ -671,7 +670,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	// Check failed
 	if (e.GetString() == "connect_failed")
 	{
-		Log::error("Version check failed, unable to connect");
+		log::error("Version check failed, unable to connect");
 		if (update_check_message_box)
 			wxMessageBox(
 				"Update check failed: unable to connect to internet. "
@@ -682,7 +681,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	}
 
 	// Parse version info
-	App::Version stable, beta;
+	app::Version stable, beta;
 	string       bin_stable, installer_stable, bin_beta; // Currently unused but may be useful in the future
 	Parser       parser;
 	if (parser.parseText(e.GetString().ToStdString()))
@@ -739,19 +738,19 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	// Check for correct info
 	if (stable.major == 0 || beta.major == 0)
 	{
-		Log::warning("Version check failed, received invalid version info");
-		Log::debug("Received version text:\n\n%s", WxUtils::strToView(e.GetString()));
+		log::warning("Version check failed, received invalid version info");
+		log::debug("Received version text:\n\n%s", wxutil::strToView(e.GetString()));
 		if (update_check_message_box)
 			wxMessageBox("Update check failed: received invalid version info.", "Check for Updates");
 		return;
 	}
 
-	Log::info("Latest stable release: v{}", stable.toString());
-	Log::info("Latest beta release: v{}", beta.toString());
+	log::info("Latest stable release: v{}", stable.toString());
+	log::info("Latest beta release: v{}", beta.toString());
 
 	// Check if new stable version
-	bool new_stable = App::version().cmp(stable) < 0;
-	bool new_beta   = App::version().cmp(beta) < 0;
+	bool new_stable = app::version().cmp(stable) < 0;
+	bool new_beta   = app::version().cmp(beta) < 0;
 
 	// Set up for new beta/stable version prompt (if any)
 	wxString message, caption, version;
@@ -778,7 +777,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	else
 	{
 		// No update
-		Log::info(1, "Already up-to-date");
+		log::info(1, "Already up-to-date");
 		if (update_check_message_box)
 			wxMessageBox("SLADE is already up to date", "Check for Updates");
 
@@ -786,8 +785,8 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 	}
 
 	// Prompt to update
-	auto main_window = MainEditor::window();
-	if (main_window->startPageTabOpen() && App::useWebView())
+	auto main_window = maineditor::window();
+	if (main_window->startPageTabOpen() && app::useWebView())
 	{
 		// Start Page (webview version) is open, show it there
 		main_window->openStartPageTab();
@@ -806,7 +805,7 @@ void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 // -----------------------------------------------------------------------------
 void SLADEWxApp::onActivate(wxActivateEvent& e)
 {
-	if (!e.GetActive() || App::isExiting())
+	if (!e.GetActive() || app::isExiting())
 	{
 		e.Skip();
 		return;
@@ -844,9 +843,9 @@ CONSOLE_COMMAND(quit, 0, true)
 	bool save_config = true;
 	for (auto& arg : args)
 	{
-		if (StrUtil::equalCI(arg, "nosave"))
+		if (strutil::equalCI(arg, "nosave"))
 			save_config = false;
 	}
 
-	App::exit(save_config);
+	app::exit(save_config);
 }

@@ -41,13 +41,15 @@
 #include <filesystem>
 #include <fstream>
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace ScriptManager
+namespace slade::scriptmanager
 {
 ScriptManagerWindow*             window = nullptr;
 std::map<ScriptType, ScriptList> scripts_editor;
@@ -57,7 +59,7 @@ ScriptList scripts_decorate;
 ScriptList scripts_zscript;
 
 std::map<ScriptType, string> script_templates;
-} // namespace ScriptManager
+} // namespace slade::scriptmanager
 
 
 // -----------------------------------------------------------------------------
@@ -65,7 +67,7 @@ std::map<ScriptType, string> script_templates;
 // ScriptManager Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace ScriptManager
+namespace slade::scriptmanager
 {
 // -----------------------------------------------------------------------------
 // Adds a new editor script of [type], created from [entry]. [cut_path] will be
@@ -78,7 +80,7 @@ Script* addEditorScriptFromEntry(shared_ptr<ArchiveEntry>& entry, ScriptType typ
 	s->name         = entry->nameNoExt();
 	s->path         = entry->path();
 	s->source_entry = entry;
-	StrUtil::replaceIP(s->path, cut_path, {});
+	strutil::replaceIP(s->path, cut_path, {});
 
 	auto& list = scripts_editor[type];
 	list.push_back(std::move(s));
@@ -92,7 +94,7 @@ Script* addEditorScriptFromEntry(shared_ptr<ArchiveEntry>& entry, ScriptType typ
 // -----------------------------------------------------------------------------
 Script* addEditorScriptFromFile(string_view filename, ScriptType type)
 {
-	StrUtil::Path fn(filename);
+	strutil::Path fn(filename);
 
 	auto s         = std::make_unique<Script>();
 	s->type        = type;
@@ -103,7 +105,7 @@ Script* addEditorScriptFromFile(string_view filename, ScriptType type)
 	auto& list = scripts_editor[type];
 	list.push_back(std::move(s));
 
-	FileUtil::readFileToString(fn.fullPath(), list.back()->text);
+	fileutil::readFileToString(fn.fullPath(), list.back()->text);
 
 	return list.back().get();
 }
@@ -114,7 +116,7 @@ Script* addEditorScriptFromFile(string_view filename, ScriptType type)
 void loadGeneralScripts()
 {
 	// Get 'scripts/general' dir of slade.pk3
-	auto scripts_dir = App::archiveManager().programResourceArchive()->dirAtPath("scripts/general");
+	auto scripts_dir = app::archiveManager().programResourceArchive()->dirAtPath("scripts/general");
 	if (scripts_dir)
 		for (auto& entry : scripts_dir->allEntries())
 		{
@@ -129,12 +131,12 @@ void loadGeneralScripts()
 void loadCustomScripts()
 {
 	// If the directory doesn't exist create it
-	auto user_scripts_dir = App::path("scripts/custom", App::Dir::User);
-	if (!FileUtil::dirExists(user_scripts_dir))
-		FileUtil::createDir(user_scripts_dir);
+	auto user_scripts_dir = app::path("scripts/custom", app::Dir::User);
+	if (!fileutil::dirExists(user_scripts_dir))
+		fileutil::createDir(user_scripts_dir);
 
 	// Go through each file in the custom_scripts directory
-	auto files = FileUtil::allFilesInDir(user_scripts_dir);
+	auto files = fileutil::allFilesInDir(user_scripts_dir);
 	for (const auto& filename : files)
 		addEditorScriptFromFile(filename, ScriptType::Custom);
 }
@@ -146,12 +148,12 @@ void loadCustomScripts()
 void loadEditorScripts(ScriptType type, string_view dir)
 {
 	// Get 'scripts/(dir)' dir of slade.pk3
-	auto scripts_dir = App::archiveManager().programResourceArchive()->dirAtPath(fmt::format("scripts/{}", dir));
+	auto scripts_dir = app::archiveManager().programResourceArchive()->dirAtPath(fmt::format("scripts/{}", dir));
 	if (scripts_dir)
 	{
 		for (auto& entry : scripts_dir->allEntries())
 		{
-			if (!StrUtil::startsWith(entry->name(), '_'))
+			if (!strutil::startsWith(entry->name(), '_'))
 			{
 				auto script       = addEditorScriptFromEntry(entry, type, fmt::format("/scripts/{}/", dir));
 				script->read_only = true;
@@ -162,12 +164,12 @@ void loadEditorScripts(ScriptType type, string_view dir)
 	// Load user archive scripts
 
 	// If the directory doesn't exist create it
-	auto user_scripts_dir = App::path(fmt::format("scripts/{}", dir), App::Dir::User);
-	if (!FileUtil::dirExists(user_scripts_dir))
-		FileUtil::createDir(user_scripts_dir);
+	auto user_scripts_dir = app::path(fmt::format("scripts/{}", dir), app::Dir::User);
+	if (!fileutil::dirExists(user_scripts_dir))
+		fileutil::createDir(user_scripts_dir);
 
 	// Go through each file in the custom_scripts directory
-	auto files = FileUtil::allFilesInDir(user_scripts_dir);
+	auto files = fileutil::allFilesInDir(user_scripts_dir);
 	for (const auto& filename : files)
 		addEditorScriptFromFile(filename, type);
 }
@@ -178,8 +180,8 @@ void loadEditorScripts(ScriptType type, string_view dir)
 void exportUserScripts(string_view path, ScriptList& list)
 {
 	// Check dir exists
-	auto scripts_dir = App::path(path, App::Dir::User);
-	if (FileUtil::dirExists(scripts_dir))
+	auto scripts_dir = app::path(path, app::Dir::User);
+	if (fileutil::dirExists(scripts_dir))
 	{
 		// Exists, clear lua files in directory
 		for (const auto& item : std::filesystem::directory_iterator{ scripts_dir })
@@ -189,7 +191,7 @@ void exportUserScripts(string_view path, ScriptList& list)
 	else
 	{
 		// Doesn't exist, create directory
-		FileUtil::createDir(scripts_dir);
+		fileutil::createDir(scripts_dir);
 	}
 
 	// Write scripts to directory
@@ -198,8 +200,8 @@ void exportUserScripts(string_view path, ScriptList& list)
 		if (script->read_only)
 			continue;
 
-		FileUtil::writeStringToFile(
-			script->text, App::path(fmt::format("{}/{}.lua", path, script->name), App::Dir::User));
+		fileutil::writeStringToFile(
+			script->text, app::path(fmt::format("{}/{}.lua", path, script->name), app::Dir::User));
 	}
 }
 
@@ -208,7 +210,7 @@ void exportUserScripts(string_view path, ScriptList& list)
 // -----------------------------------------------------------------------------
 void readResourceEntryText(string& target, string_view res_path)
 {
-	auto entry = App::archiveManager().programResourceArchive()->entryAtPath(res_path);
+	auto entry = app::archiveManager().programResourceArchive()->entryAtPath(res_path);
 	if (entry)
 		target.assign((const char*)entry->rawData(), entry->size());
 }
@@ -225,24 +227,24 @@ Script* getEditorScript(string_view name, ScriptType type, bool user_only = true
 		if (user_only && script->read_only)
 			continue;
 
-		if (StrUtil::equalCI(script->name, name))
+		if (strutil::equalCI(script->name, name))
 			return script.get();
 	}
 
 	return nullptr;
 }
 
-} // namespace ScriptManager
+} // namespace slade::scriptmanager
 
 // -----------------------------------------------------------------------------
 // Initialises the script manager
 // -----------------------------------------------------------------------------
-void ScriptManager::init()
+void scriptmanager::init()
 {
 	// Create user scripts directory if it doesn't exist
-	auto user_scripts_dir = App::path("scripts", App::Dir::User);
-	if (!FileUtil::dirExists(user_scripts_dir))
-		FileUtil::createDir(user_scripts_dir);
+	auto user_scripts_dir = app::path("scripts", app::Dir::User);
+	if (!fileutil::dirExists(user_scripts_dir))
+		fileutil::createDir(user_scripts_dir);
 
 	// Init script templates
 	readResourceEntryText(script_templates[ScriptType::Archive], "scripts/archive/_template.lua");
@@ -261,7 +263,7 @@ void ScriptManager::init()
 // -----------------------------------------------------------------------------
 // Opens the script manager window
 // -----------------------------------------------------------------------------
-void ScriptManager::open()
+void scriptmanager::open()
 {
 	if (!window)
 		window = new ScriptManagerWindow();
@@ -272,7 +274,7 @@ void ScriptManager::open()
 // -----------------------------------------------------------------------------
 // Saves all user scripts to disk
 // -----------------------------------------------------------------------------
-void ScriptManager::saveUserScripts()
+void scriptmanager::saveUserScripts()
 {
 	exportUserScripts("scripts/custom", scripts_editor[ScriptType::Custom]);
 	exportUserScripts("scripts/archive", scripts_editor[ScriptType::Archive]);
@@ -284,7 +286,7 @@ void ScriptManager::saveUserScripts()
 // Renames [script] to [new_name].
 // Returns false if the script couldn't be renamed
 // -----------------------------------------------------------------------------
-bool ScriptManager::renameScript(Script* script, string_view new_name)
+bool scriptmanager::renameScript(Script* script, string_view new_name)
 {
 	if (script->read_only || script->type == ScriptType::NonEditor)
 		return false;
@@ -300,7 +302,7 @@ bool ScriptManager::renameScript(Script* script, string_view new_name)
 // -----------------------------------------------------------------------------
 // Deletes [script]. Returns false if the script couldn't be deleted
 // -----------------------------------------------------------------------------
-bool ScriptManager::deleteScript(Script* script)
+bool scriptmanager::deleteScript(Script* script)
 {
 	if (script->read_only || script->type == ScriptType::NonEditor)
 		return false;
@@ -322,7 +324,7 @@ bool ScriptManager::deleteScript(Script* script)
 // Creates a new script of [type] named [name]. If a script by that name
 // already exists, the existing script will be returned instead
 // -----------------------------------------------------------------------------
-ScriptManager::Script* ScriptManager::createEditorScript(string_view name, ScriptType type)
+scriptmanager::Script* scriptmanager::createEditorScript(string_view name, ScriptType type)
 {
 	// Check name
 	auto script = getEditorScript(name, type);
@@ -341,7 +343,7 @@ ScriptManager::Script* ScriptManager::createEditorScript(string_view name, Scrip
 // -----------------------------------------------------------------------------
 // Returns a list of all editor scripts of [type]
 // -----------------------------------------------------------------------------
-vector<unique_ptr<ScriptManager::Script>>& ScriptManager::editorScripts(ScriptType type)
+vector<unique_ptr<scriptmanager::Script>>& scriptmanager::editorScripts(ScriptType type)
 {
 	return scripts_editor[type];
 }
@@ -349,7 +351,7 @@ vector<unique_ptr<ScriptManager::Script>>& ScriptManager::editorScripts(ScriptTy
 // -----------------------------------------------------------------------------
 // Populates [menu] with all loaded editor scripts of [type]
 // -----------------------------------------------------------------------------
-void ScriptManager::populateEditorScriptMenu(wxMenu* menu, ScriptType type, string_view action_id)
+void scriptmanager::populateEditorScriptMenu(wxMenu* menu, ScriptType type, string_view action_id)
 {
 	int index = 0;
 	for (auto& script : scripts_editor[type])
@@ -359,35 +361,35 @@ void ScriptManager::populateEditorScriptMenu(wxMenu* menu, ScriptType type, stri
 // -----------------------------------------------------------------------------
 // Runs the archive script at [index] on [archive]
 // -----------------------------------------------------------------------------
-void ScriptManager::runArchiveScript(Archive* archive, int index, wxWindow* parent)
+void scriptmanager::runArchiveScript(Archive* archive, int index, wxWindow* parent)
 {
 	if (parent)
-		Lua::setCurrentWindow(parent);
+		lua::setCurrentWindow(parent);
 
-	if (!Lua::runArchiveScript(scripts_editor[ScriptType::Archive][index]->text, archive))
-		Lua::showErrorDialog(parent);
+	if (!lua::runArchiveScript(scripts_editor[ScriptType::Archive][index]->text, archive))
+		lua::showErrorDialog(parent);
 }
 
 // -----------------------------------------------------------------------------
 // Runs the entry script at [index] on [entries]
 // -----------------------------------------------------------------------------
-void ScriptManager::runEntryScript(vector<ArchiveEntry*> entries, int index, wxWindow* parent)
+void scriptmanager::runEntryScript(vector<ArchiveEntry*> entries, int index, wxWindow* parent)
 {
 	if (parent)
-		Lua::setCurrentWindow(parent);
+		lua::setCurrentWindow(parent);
 
-	if (!Lua::runEntryScript(scripts_editor[ScriptType::Entry][index]->text, entries))
-		Lua::showErrorDialog(parent);
+	if (!lua::runEntryScript(scripts_editor[ScriptType::Entry][index]->text, entries))
+		lua::showErrorDialog(parent);
 }
 
 // -----------------------------------------------------------------------------
 // Runs the map editor script at [index] on [map]
 // -----------------------------------------------------------------------------
-void ScriptManager::runMapScript(SLADEMap* map, int index, wxWindow* parent)
+void scriptmanager::runMapScript(SLADEMap* map, int index, wxWindow* parent)
 {
 	if (parent)
-		Lua::setCurrentWindow(parent);
+		lua::setCurrentWindow(parent);
 
-	if (!Lua::runMapScript(scripts_editor[ScriptType::Map][index]->text, map))
-		Lua::showErrorDialog(parent);
+	if (!lua::runMapScript(scripts_editor[ScriptType::Map][index]->text, map))
+		lua::showErrorDialog(parent);
 }

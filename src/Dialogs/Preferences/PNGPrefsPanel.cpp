@@ -34,6 +34,8 @@
 #include "UI/Controls/FileLocationPanel.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -62,9 +64,9 @@ PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	WxUtils::layoutVertically(
+	wxutil::layoutVertically(
 		sizer,
-		vector<wxObject*>{ WxUtils::createLabelVBox(
+		vector<wxObject*>{ wxutil::createLabelVBox(
 							   this,
 							   "Location of PNGout:",
 							   flp_pngout_ = new FileLocationPanel(
@@ -72,9 +74,9 @@ PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 								   path_pngout,
 								   true,
 								   "Browse for PNGout Executable",
-								   SFileDialog::executableExtensionString(),
-								   SFileDialog::executableFileName("pngout"))),
-						   WxUtils::createLabelVBox(
+								   filedialog::executableExtensionString(),
+								   filedialog::executableFileName("pngout"))),
+						   wxutil::createLabelVBox(
 							   this,
 							   "Location of PNGCrush:",
 							   flp_pngcrush_ = new FileLocationPanel(
@@ -82,9 +84,9 @@ PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 								   path_pngcrush,
 								   true,
 								   "Browse for PNGCrush Executable",
-								   SFileDialog::executableExtensionString(),
-								   SFileDialog::executableFileName("pngcrush"))),
-						   WxUtils::createLabelVBox(
+								   filedialog::executableExtensionString(),
+								   filedialog::executableFileName("pngcrush"))),
+						   wxutil::createLabelVBox(
 							   this,
 							   "Location of DeflOpt:",
 							   flp_deflopt_ = new FileLocationPanel(
@@ -92,8 +94,8 @@ PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 								   path_deflopt,
 								   true,
 								   "Browse for DeflOpt Executable",
-								   SFileDialog::executableExtensionString(),
-								   SFileDialog::executableFileName("deflopt"))) },
+								   filedialog::executableExtensionString(),
+								   filedialog::executableFileName("deflopt"))) },
 		wxSizerFlags(0).Expand());
 }
 
@@ -112,7 +114,7 @@ void PNGPrefsPanel::init()
 // -----------------------------------------------------------------------------
 void PNGPrefsPanel::applyPreferences()
 {
-	path_pngout   = WxUtils::strToView(flp_pngout_->location());
-	path_pngcrush = WxUtils::strToView(flp_pngcrush_->location());
-	path_deflopt  = WxUtils::strToView(flp_deflopt_->location());
+	path_pngout   = wxutil::strToView(flp_pngout_->location());
+	path_pngcrush = wxutil::strToView(flp_pngcrush_->location());
+	path_deflopt  = wxutil::strToView(flp_deflopt_->location());
 }

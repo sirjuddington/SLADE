@@ -2,6 +2,8 @@
 
 #include "PrefsPanelBase.h"
 
+namespace slade
+{
 class FileLocationPanel;
 
 class PNGPrefsPanel : public PrefsPanelBase
@@ -20,3 +22,4 @@ private:
 	FileLocationPanel* flp_pngcrush_ = nullptr;
 	FileLocationPanel* flp_deflopt_  = nullptr;
 };
+} // namespace slade

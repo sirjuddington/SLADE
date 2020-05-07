@@ -2,6 +2,8 @@
 
 #include "MapFormatHandler.h"
 
+namespace slade
+{
 class ThingList;
 class SectorList;
 class LineList;
@@ -77,3 +79,4 @@ protected:
 	virtual unique_ptr<ArchiveEntry> writeSECTORS(const SectorList& sectors) const;
 	virtual unique_ptr<ArchiveEntry> writeTHINGS(const ThingList& things) const;
 };
+} // namespace slade

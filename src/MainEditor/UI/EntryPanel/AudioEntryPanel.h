@@ -2,7 +2,11 @@
 
 #include "EntryPanel.h"
 
+// Forward declarations
+namespace slade::audio
+{
 class ModMusic;
+}
 namespace sf
 {
 class SoundBuffer;
@@ -11,6 +15,8 @@ class Music;
 } // namespace sf
 class wxMediaCtrl;
 
+namespace slade
+{
 class AudioEntryPanel : public EntryPanel
 {
 public:
@@ -61,7 +67,7 @@ private:
 	unique_ptr<sf::SoundBuffer> sound_buffer_;
 	unique_ptr<sf::Sound>       sound_;
 	unique_ptr<sf::Music>       music_;
-	unique_ptr<ModMusic>        mod_;
+	unique_ptr<audio::ModMusic> mod_;
 
 	bool open(ArchiveEntry* entry);
 	bool openAudio(MemChunk& audio, const wxString& filename);
@@ -83,3 +89,4 @@ private:
 	void onSliderSeekChanged(wxCommandEvent& e);
 	void onSliderVolumeChanged(wxCommandEvent& e);
 };
+} // namespace slade

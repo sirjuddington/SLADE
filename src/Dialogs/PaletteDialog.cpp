@@ -36,6 +36,8 @@
 #include "Graphics/Palette/Palette.h"
 #include "UI/Canvas/PaletteCanvas.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -50,7 +52,7 @@
 PaletteDialog::PaletteDialog(Palette* palette) :
 	wxDialog(nullptr, -1, "Palette", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
-	int size = UI::scalePx(400);
+	int size = ui::scalePx(400);
 
 	auto m_vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(m_vbox);
@@ -59,10 +61,10 @@ PaletteDialog::PaletteDialog(Palette* palette) :
 	pal_canvas_->palette().copyPalette(palette);
 	pal_canvas_->SetInitialSize(wxSize(size, size));
 	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
-	m_vbox->Add(pal_canvas_, 1, wxEXPAND | wxALL, UI::padLarge());
+	m_vbox->Add(pal_canvas_, 1, wxEXPAND | wxALL, ui::padLarge());
 
-	m_vbox->AddSpacer(UI::pad());
-	m_vbox->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
+	m_vbox->AddSpacer(ui::pad());
+	m_vbox->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 
 	// Bind events
 	pal_canvas_->Bind(wxEVT_LEFT_DCLICK, [&](wxMouseEvent&) { EndModal(wxID_OK); });

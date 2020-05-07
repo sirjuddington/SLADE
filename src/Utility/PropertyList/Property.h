@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class Property
 {
 public:
@@ -102,3 +104,4 @@ private:
 	string val_string_; // I *would* put this in the union but i'm not sure about using const char* there
 	bool   has_value_ = false;
 };
+} // namespace slade

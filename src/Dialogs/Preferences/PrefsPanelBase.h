@@ -2,6 +2,8 @@
 
 #include "UI/WxUtils.h" // Will be needed for most prefs panels
 
+namespace slade
+{
 class PrefsPanelBase : public wxPanel
 {
 public:
@@ -14,3 +16,4 @@ public:
 	virtual wxString pageTitle() { return ""; }
 	virtual wxString pageDescription() { return ""; }
 };
+} // namespace slade

@@ -35,6 +35,9 @@
 #include "App.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+using namespace audio;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -46,7 +49,7 @@ CVAR(String, fs_soundfont_path, "", CVar::Flag::Save)
 CVAR(String, fs_driver, "", CVar::Flag::Save)
 CVAR(String, snd_timidity_path, "", CVar::Flag::Save)
 CVAR(String, snd_timidity_options, "", CVar::Flag::Save)
-namespace MIDI
+namespace slade::audio
 {
 unique_ptr<MIDIPlayer> midi_player;
 }
@@ -342,16 +345,16 @@ public:
 		file_           = "";
 
 		// Set fluidsynth driver to alsa in linux (no idea why it defaults to jack)
-		if (App::platform() == App::Platform::Linux && fs_driver.value.empty())
+		if (app::platform() == app::Platform::Linux && fs_driver.value.empty())
 			fs_driver = "alsa";
 
 		// Init soundfont path
 		if (fs_soundfont_path.value.empty())
 		{
-			if (App::platform() == App::Platform::Linux)
+			if (app::platform() == app::Platform::Linux)
 				fs_soundfont_path = "/usr/share/sounds/sf2/FluidR3_GM.sf2:/usr/share/sounds/sf2/FluidR3_GS.sf2";
 			else
-				Log::warning(1, "No FluidSynth soundfont set, MIDI playback will not work");
+				log::warning(1, "No FluidSynth soundfont set, MIDI playback will not work");
 		}
 
 		// Setup fluidsynth
@@ -359,7 +362,7 @@ public:
 		FluidSynthMIDIPlayer::reloadSoundfont();
 
 		if (!fs_player_ || !fs_adriver_)
-			Log::warning(1, "Failed to initialise FluidSynth, MIDI playback disabled");
+			log::warning(1, "Failed to initialise FluidSynth, MIDI playback disabled");
 	}
 
 	// -------------------------------------------------------------------------
@@ -388,7 +391,7 @@ public:
 		if (!fs_initialised_)
 			return false;
 
-		char separator = App::platform() == App::Platform::Windows ? ';' : ':';
+		char separator = app::platform() == app::Platform::Windows ? ';' : ':';
 
 		// Unload any current soundfont
 		for (int a = fs_soundfont_ids_.size() - 1; a >= 0; --a)
@@ -399,7 +402,7 @@ public:
 		}
 
 		// Load soundfonts
-		auto paths  = StrUtil::split(fs_soundfont_path, separator);
+		auto paths  = strutil::split(fs_soundfont_path, separator);
 		bool retval = false;
 		for (int a = paths.size() - 1; a >= 0; --a)
 		{
@@ -654,7 +657,7 @@ public:
 		mc.seek(0, SEEK_SET);
 		data_.importMem(mc.data(), mc.size());
 
-		file_ = App::path("slade-timidity.mid", App::Dir::Temp);
+		file_ = app::path("slade-timidity.mid", app::Dir::Temp);
 		mc.exportFile(file_);
 
 		return true;
@@ -704,7 +707,7 @@ public:
 			int pid = program_->GetPid();
 			if (isPlaying())
 			{
-				if (App::platform() == App::Platform::Windows)
+				if (app::platform() == app::Platform::Windows)
 					wxProcess::Kill(pid, wxSIGKILL, wxKILL_CHILDREN);
 				else
 					wxProcess::Kill(pid);
@@ -762,27 +765,27 @@ private:
 
 // -----------------------------------------------------------------------------
 //
-// MIDI Namespace Functions
+// audio Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace MIDI
+namespace slade::audio
 {
 // -----------------------------------------------------------------------------
 // Returns the current MIDIPlayer instance.
 // Creates one if there is no current instance, depending on what is configured
 // (and available)
 // -----------------------------------------------------------------------------
-MIDIPlayer& player()
+MIDIPlayer& midiPlayer()
 {
 	if (!midi_player)
 	{
 #ifndef NO_FLUIDSYNTH
-		if (StrUtil::equalCI(snd_midi_player, "fluidsynth"))
+		if (strutil::equalCI(snd_midi_player, "fluidsynth"))
 			midi_player = std::make_unique<FluidSynthMIDIPlayer>();
-		else if (StrUtil::equalCI(snd_midi_player, "timidity"))
+		else if (strutil::equalCI(snd_midi_player, "timidity"))
 			midi_player = std::make_unique<TimidityMIDIPlayer>();
 #else
-		if (StrUtil::equalCI(snd_midi_player, "timidity"))
+		if (strutil::equalCI(snd_midi_player, "timidity"))
 			midi_player = std::make_unique<TimidityMIDIPlayer>();
 #endif
 
@@ -796,9 +799,9 @@ MIDIPlayer& player()
 // -----------------------------------------------------------------------------
 // Resets the current MIDIPlayer
 // -----------------------------------------------------------------------------
-void resetPlayer()
+void resetMIDIPlayer()
 {
 	if (midi_player)
 		midi_player.reset(nullptr);
 }
-} // namespace MIDI
+} // namespace slade::audio

@@ -2,6 +2,8 @@
 
 class wxBoxSizer;
 
+namespace slade
+{
 class ShapeDrawPanel : public wxPanel
 {
 public:
@@ -18,3 +20,4 @@ private:
 	wxSpinCtrl* spin_sides_   = nullptr;
 	wxPanel*    panel_sides_  = nullptr;
 };
+} // namespace slade
