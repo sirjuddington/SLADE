@@ -641,7 +641,7 @@ void Renderer::drawSelectionNumbers() const
 	drawing::setTextOutline(1.0f, ColRGBA::BLACK);
 #else
 	if (context_.selection().size() <= map_max_selection_numbers * 0.5)
-		Drawing::setTextOutline(1.0f, ColRGBA::BLACK);
+		drawing::setTextOutline(1.0f, ColRGBA::BLACK);
 #endif
 	for (unsigned a = 0; a < selection.size(); a++)
 	{

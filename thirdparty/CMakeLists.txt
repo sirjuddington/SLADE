@@ -1,18 +1,6 @@
 # Use system packages if available
-find_package(ZLIB)
-find_package(BZip2)
-
-if(NOT ZLIB_FOUND)
-	set(ZLIB_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/zlib)
-	add_subdirectory(zlib)
-	set(ZLIB_LIBRARY z)
-endif(NOT ZLIB_FOUND)
-
-if(NOT BZIP2_FOUND)
-	set(BZIP2_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bzip2)
-	add_subdirectory(bzip2)
-	set(BZIP2_LIBRARIES bz2)
-endif(NOT BZIP2_FOUND)
+find_package(ZLIB REQUIRED)
+find_package(BZip2 REQUIRED)
 
 # Set in parent scope
 set(ZLIB_LIBRARY ${ZLIB_LIBRARY} PARENT_SCOPE)

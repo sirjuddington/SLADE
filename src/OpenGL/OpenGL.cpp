@@ -77,7 +77,7 @@ Info     info;
 // Returns the global OpenGL context, and creates it if needed
 // -----------------------------------------------------------------------------
 #ifndef USE_SFML_RENDERWINDOW
-wxGLContext* OpenGL::getContext(wxGLCanvas* canvas)
+wxGLContext* gl::getContext(wxGLCanvas* canvas)
 {
 	if (!context)
 	{

@@ -169,7 +169,7 @@ private:
 #ifdef WIN32
 		if (filedialog::openFile(info, "Browse for External Editor", "Executable Files (*.exe)|*.exe", this))
 #else
-		if (SFileDialog::openFile(info, "Browse for External Editor", wxFileSelectorDefaultWildcardStr, this))
+		if (filedialog::openFile(info, "Browse for External Editor", wxFileSelectorDefaultWildcardStr, this))
 #endif
 		{
 			text_path_->SetValue(info.filenames[0]);

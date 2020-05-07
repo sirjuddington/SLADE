@@ -508,7 +508,7 @@ void RunDialog::onBtnBrowseExe(wxCommandEvent& e)
 		if (filedialog::openFile(
 				info, "Browse for game executable", "Executable files (*.exe)|*.exe;*.bat", this, exe->exe_name))
 #else
-		if (SFileDialog::openFile(
+		if (filedialog::openFile(
 				info, "Browse for game executable", wxFileSelectorDefaultWildcardStr, this, exe->exe_name))
 #endif
 		{

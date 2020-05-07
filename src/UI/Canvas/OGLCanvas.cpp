@@ -94,7 +94,7 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 // OGLCanvas class constructor, wxGLCanvas implementation
 // -----------------------------------------------------------------------------
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval) :
-	wxGLCanvas(parent, id, OpenGL::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
+	wxGLCanvas(parent, id, gl::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
 	timer_{ this },
 	last_time_{ app::runTimer() }
 {
@@ -102,7 +102,7 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 	Bind(wxEVT_PAINT, &OGLCanvas::onPaint, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::onEraseBackground, this);
 
-	OpenGL::Texture::resetBackgroundTexture();
+	gl::Texture::resetBackgroundTexture();
 }
 #endif
 
@@ -114,7 +114,7 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 bool OGLCanvas::setContext()
 {
 #ifndef USE_SFML_RENDERWINDOW
-	auto context = OpenGL::getContext(this);
+	auto context = gl::getContext(this);
 
 	if (context)
 	{

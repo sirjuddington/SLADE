@@ -122,7 +122,7 @@ int initFonts()
 	if (entry)
 	{
 		font_normal = new FTTextureFont(entry->rawData(), entry->size());
-		font_normal->FaceSize(UI::scalePx(gl_font_size));
+		font_normal->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_normal->Error())
@@ -139,7 +139,7 @@ int initFonts()
 	if (entry)
 	{
 		font_condensed = new FTTextureFont(entry->rawData(), entry->size());
-		font_condensed->FaceSize(UI::scalePx(gl_font_size));
+		font_condensed->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_condensed->Error())
@@ -156,7 +156,7 @@ int initFonts()
 	if (entry)
 	{
 		font_bold = new FTTextureFont(entry->rawData(), entry->size());
-		font_bold->FaceSize(UI::scalePx(gl_font_size));
+		font_bold->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_bold->Error())
@@ -173,7 +173,7 @@ int initFonts()
 	if (entry)
 	{
 		font_boldcondensed = new FTTextureFont(entry->rawData(), entry->size());
-		font_boldcondensed->FaceSize(UI::scalePx(gl_font_size));
+		font_boldcondensed->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_boldcondensed->Error())
@@ -190,7 +190,7 @@ int initFonts()
 	if (entry)
 	{
 		font_mono = new FTTextureFont(entry->rawData(), entry->size());
-		font_mono->FaceSize(UI::scalePx(gl_font_size));
+		font_mono->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_mono->Error())
@@ -207,7 +207,7 @@ int initFonts()
 	if (entry)
 	{
 		font_small = new FTTextureFont(entry->rawData(), entry->size());
-		font_small->FaceSize((UI::scalePx(gl_font_size) * 0.6) + 1);
+		font_small->FaceSize((ui::scalePx(gl_font_size) * 0.6) + 1);
 
 		// Check it loaded ok
 		if (font_small->Error())
@@ -275,7 +275,7 @@ void drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font fo
 	if (alignment != Align::Left)
 	{
 		if (alignment == Align::Center)
-			xpos -= MathStuff::round(width * 0.5);
+			xpos -= math::round(width * 0.5);
 		else
 			xpos -= width;
 	}
@@ -295,7 +295,7 @@ void drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font fo
 	if (text_outline_width > 0)
 	{
 		// Draw outline if set
-		OpenGL::setColour(outline_colour);
+		gl::setColour(outline_colour);
 		glTranslatef(-2.0f, -1.0f, 0.0f);
 		ftgl_font->Render(text.c_str(), -1);
 		glTranslatef(0.0f, 2.0f, 0.0f);
@@ -306,7 +306,7 @@ void drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font fo
 		ftgl_font->Render(text.c_str(), -1);
 		glTranslatef(-2.0f, 1.0f, 0.0f);
 	}
-	OpenGL::setColour(colour);
+	gl::setColour(colour);
 	ftgl_font->Render(text.c_str(), -1);
 	glPopMatrix();
 }
