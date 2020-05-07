@@ -3,18 +3,13 @@
 // OpenGL
 // glew.h needs to be #included before gl/glu headers
 // clang-format off
-#ifdef __WXMSW__
-// Windows GL headers
-#include "thirdparty/glew/glew.h" // Use built-in GLEW so we don't need any extra dlls
-#include <gl/GL.h>
-#include <gl/GLU.h>
-#elif __APPLE__
+#ifdef __APPLE__
 // OSX GL headers
 #include <GL/glew.h>
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #else
-// Unix GL headers
+// Windows/Unix GL headers
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>

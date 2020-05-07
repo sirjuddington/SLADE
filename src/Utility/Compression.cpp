@@ -249,7 +249,7 @@ bool compression::bzip2Compress(MemChunk& in, MemChunk& out)
 			buffer,
 			&bufferlen,
 			// How ridiculous is it that casting is needed here?
-			(const char*)in.data(),
+			(char*)in.data(),
 			in.size(),
 			9,
 			0,

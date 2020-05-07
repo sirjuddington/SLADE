@@ -6,8 +6,8 @@
 #include "templates.h"
 #include "tarray.h"
 #include <stdio.h>
-#include "../zlib/zlib.h"
-#include "../bzip2/bzlib.h"
+#include <zlib.h>
+#include <bzlib.h>
 #include "../lzma/C/LzmaDec.h"
 
 #undef Status

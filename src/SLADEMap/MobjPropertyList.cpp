@@ -33,7 +33,7 @@
 #include "Main.h"
 #include "MobjPropertyList.h"
 #include "Utility/StringUtils.h"
-#include "thirdparty/fmt/fmt/color.h"
+#include <fmt/format.h>
 
 using namespace slade;
 

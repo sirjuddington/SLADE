@@ -140,7 +140,7 @@
 #include <FreeImage.h>
 
 // fmt
-#include "thirdparty/fmt/fmt/core.h"
+#include <fmt/core.h>
 
 // Sigslot
 #include "thirdparty/sigslot/signal.hpp"

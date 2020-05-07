@@ -31,7 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
-#include "thirdparty/fmt/fmt/time.h"
+#include <fmt/chrono.h>
+#include <fmt/format.h>
 #include <fstream>
 
 using namespace slade;
@@ -62,12 +63,12 @@ template<> struct formatter<log::MessageType>
 	{
 		switch (type)
 		{
-		case log::MessageType::Info: return format_to(ctx.begin(), " [Info]");
-		case log::MessageType::Warning: return format_to(ctx.begin(), " [Warn]");
-		case log::MessageType::Error: return format_to(ctx.begin(), "[Error]");
-		case log::MessageType::Debug: return format_to(ctx.begin(), "[Debug]");
-		case log::MessageType::Script: return format_to(ctx.begin(), "[Script]");
-		default: return format_to(ctx.begin(), "  [Log]");
+		case log::MessageType::Info: return format_to(ctx.out(), " [Info]");
+		case log::MessageType::Warning: return format_to(ctx.out(), " [Warn]");
+		case log::MessageType::Error: return format_to(ctx.out(), "[Error]");
+		case log::MessageType::Debug: return format_to(ctx.out(), "[Debug]");
+		case log::MessageType::Script: return format_to(ctx.out(), "[Script]");
+		default: return format_to(ctx.out(), "  [Log]");
 		}
 	}
 };

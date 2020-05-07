@@ -58,9 +58,11 @@ extern int    win_version_minor;
 }; // namespace slade::global
 
 // Global internal includes
+// clang-format off
 #include "General/CVar.h"
 #include "Utility/Structs.h"
 #include "General/Log.h"
 #include "Utility/MemChunk.h"
+// clang-format on
 
 #endif // __MAIN_H__

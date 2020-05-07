@@ -22,9 +22,7 @@ namespace log
 		std::tm     timestamp;
 
 		Message(string_view message, MessageType type, std::tm timestamp) :
-			message{ message.data(), message.size() },
-			type{ type },
-			timestamp{ timestamp }
+			message{ message.data(), message.size() }, type{ type }, timestamp{ timestamp }
 		{
 		}
 
@@ -104,7 +102,6 @@ namespace log
 			message(MessageType::Debug, text, fmt::make_format_args(args...));
 	}
 } // namespace log
-} // namespace slade
 
 
 // Debug helper type
@@ -188,3 +185,4 @@ struct Debuggable
 #define LOG_DEBUG(...)
 #define LOG_DEBUG_VAR(name)
 #endif // DEBUG
+} // namespace slade

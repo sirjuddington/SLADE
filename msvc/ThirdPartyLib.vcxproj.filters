@@ -1,0 +1,566 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Sol">
+      <UniqueIdentifier>{7c93f03e-016e-4278-b65c-e5e25873f446}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sigslot">
+      <UniqueIdentifier>{d42cd101-892d-44fb-b22c-5fe334a5e3b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DUMB">
+      <UniqueIdentifier>{abf870ec-24ec-4aef-a7a8-6c5b25835a1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DUMB\core">
+      <UniqueIdentifier>{e21df2db-53fe-4288-a9df-987a7edc7353}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DUMB\helpers">
+      <UniqueIdentifier>{675fcb04-54b0-4c69-a5b4-533851b0921c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DUMB\internal">
+      <UniqueIdentifier>{804af09c-5bd4-4586-a626-dd8d4ca28a95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DUMB\it">
+      <UniqueIdentifier>{5bb069ab-8262-4d07-b463-f91b195fc970}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lzma">
+      <UniqueIdentifier>{fc74c1f5-c490-4931-8cfc-0f4da5eeed7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="wxEmail">
+      <UniqueIdentifier>{9bd8ef62-16e8-4c8f-a9b2-5430cd08c98a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\thirdparty\sol\forward.hpp">
+      <Filter>Sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\sol\sol.hpp">
+      <Filter>Sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\sigslot\signal.hpp">
+      <Filter>Sigslot</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\dumb\dumb.h">
+      <Filter>DUMB</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\dumb\internal\aldumb.h">
+      <Filter>DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\dumb\internal\barray.h">
+      <Filter>DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\dumb\internal\dumb.h">
+      <Filter>DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\dumb\internal\dumbfile.h">
+      <Filter>DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\dumb\internal\fir_resampler.h">
+      <Filter>DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\dumb\internal\it.h">
+      <Filter>DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\dumb\internal\lpc.h">
+      <Filter>DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\dumb\internal\resampler.h">
+      <Filter>DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\dumb\internal\riff.h">
+      <Filter>DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\dumb\internal\stack_alloc.h">
+      <Filter>DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\dumb\internal\tarray.h">
+      <Filter>DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\7z.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\7zAlloc.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\7zBuf.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\7zCrc.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\7zFile.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\7zVersion.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\Alloc.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\Bcj2.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\Bra.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\CpuArch.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\Delta.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\LzFind.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\LzFindMt.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\LzHash.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\Lzma2Dec.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\Lzma2Enc.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\Lzma86.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\LzmaDec.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\LzmaEnc.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\LzmaLib.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\MtCoder.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\Ppmd.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\Ppmd7.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\RotateDefs.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\Sha256.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\Threads.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\Types.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\Xz.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\XzCrc64.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lzma\C\XzEnc.h">
+      <Filter>Lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\email\wxEmailMessage.h">
+      <Filter>wxEmail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\email\wxEmailMessageID.h">
+      <Filter>wxEmail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\email\wxMailer.h">
+      <Filter>wxEmail</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\thirdparty\dumb\core\atexit.c">
+      <Filter>DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\core\duhlen.c">
+      <Filter>DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\core\duhtag.c">
+      <Filter>DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\core\dumbfile.c">
+      <Filter>DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\core\loadduh.c">
+      <Filter>DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\core\makeduh.c">
+      <Filter>DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\core\rawsig.c">
+      <Filter>DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\core\readduh.c">
+      <Filter>DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\core\register.c">
+      <Filter>DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\core\rendduh.c">
+      <Filter>DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\core\rendsig.c">
+      <Filter>DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\core\unload.c">
+      <Filter>DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\helpers\barray.c">
+      <Filter>DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\helpers\clickrem.c">
+      <Filter>DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\helpers\fir_resampler.c">
+      <Filter>DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\helpers\lpc.c">
+      <Filter>DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\helpers\memfile.c">
+      <Filter>DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\helpers\resample.c">
+      <Filter>DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\helpers\resampler.c">
+      <Filter>DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\helpers\riff.c">
+      <Filter>DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\helpers\sampbuf.c">
+      <Filter>DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\helpers\silence.c">
+      <Filter>DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\helpers\stdfile.c">
+      <Filter>DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\helpers\tarray.c">
+      <Filter>DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\itload.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\itload2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\itmisc.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\itorder.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\itread.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\itread2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\itrender.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\itunload.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\load669.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\load6692.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadamf.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadamf2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadany.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadany2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadasy.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadasy2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadmod.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadmod2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadmtm.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadmtm2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadokt.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadokt2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadoldpsm.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadoldpsm2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadpsm.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadpsm2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadptm.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadptm2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadriff.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadriff2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loads3m.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loads3m2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadstm.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadstm2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadxm.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\loadxm2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\ptmeffect.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\read669.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\read6692.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readam.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readamf.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readamf2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readany.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readany2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readasy.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readdsmf.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readmod.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readmod2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readmtm.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readokt.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readokt2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readoldpsm.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readpsm.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readptm.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readriff.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\reads3m.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\reads3m2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readstm.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readstm2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readxm.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\readxm2.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\dumb\it\xmeffect.c">
+      <Filter>DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\7zAlloc.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\7zBuf.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\7zBuf2.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\7zCrc.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\7zCrcOpt.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\7zDec.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\7zFile.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\7zIn.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\7zStream.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Alloc.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Bcj2.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Bra.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Bra86.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\BraIA64.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\CpuArch.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Delta.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\LzFind.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\LzFindMt.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Lzma2Dec.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Lzma2Enc.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Lzma86Dec.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Lzma86Enc.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\LzmaDec.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\LzmaEnc.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\LzmaLib.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\MtCoder.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Ppmd7.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Ppmd7Dec.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Ppmd7Enc.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Sha256.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Threads.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\Xz.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\XzCrc64.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\XzDec.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\XzEnc.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lzma\C\XzIn.c">
+      <Filter>Lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\email\wxEmailMessage.cpp">
+      <Filter>wxEmail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\email\wxEmailMessageID.cpp">
+      <Filter>wxEmail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\email\wxMailer.cpp">
+      <Filter>wxEmail</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\thirdparty\dumb\helpers\resamp2.inc">
+      <Filter>DUMB\helpers</Filter>
+    </None>
+    <None Include="..\thirdparty\dumb\helpers\resamp3.inc">
+      <Filter>DUMB\helpers</Filter>
+    </None>
+    <None Include="..\thirdparty\dumb\helpers\resample.inc">
+      <Filter>DUMB\helpers</Filter>
+    </None>
+  </ItemGroup>
+</Project>
