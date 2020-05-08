@@ -44,7 +44,7 @@ namespace drawing
 	void drawArrow(
 		Vec2d   p1,
 		Vec2d   p2,
-		ColRGBA color            = ColRGBA::WHITE,
+		const ColRGBA& color            = ColRGBA::WHITE,
 		bool    twoway           = false,
 		double  arrowhead_angle  = 0.7854f,
 		double  arrowhead_length = 25.f);

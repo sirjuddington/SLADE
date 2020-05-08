@@ -64,7 +64,6 @@ CVAR(Int, gl_font_size, 12, CVar::Flag::Save)
 namespace slade::drawing
 {
 double  text_outline_width = 0;
-ColRGBA fill_colour        = ColRGBA::WHITE;
 ColRGBA outline_colour     = ColRGBA::BLACK;
 }; // namespace slade::drawing
 
@@ -144,7 +143,7 @@ void drawing::drawLineTabbed(Vec2d start, Vec2d end, double tab, double tab_max)
 // Draws a line from [p1] to [p2] with an arrowhead at the [p1] end.
 // If [twoway] is true, an arrowhead is also drawn at the [p2] end
 // -----------------------------------------------------------------------------
-void drawing::drawArrow(Vec2d p1, Vec2d p2, ColRGBA color, bool twoway, double arrowhead_angle, double arrowhead_length)
+void drawing::drawArrow(Vec2d p1, Vec2d p2, const ColRGBA& color, bool twoway, double arrowhead_angle, double arrowhead_length)
 {
 	Vec2d  a1l, a1r, a2l, a2r;
 	Vec2d  vector = p1 - p2;
@@ -164,7 +163,7 @@ void drawing::drawArrow(Vec2d p1, Vec2d p2, ColRGBA color, bool twoway, double a
 		a2r.x -= arrowhead_length * sin(angle + arrowhead_angle);
 		a2r.y -= arrowhead_length * cos(angle + arrowhead_angle);
 	}
-	gl::setColour(fill_colour);
+	gl::setColour(color);
 	glBegin(GL_LINES);
 	glVertex2d(p1.x, p1.y);
 	glVertex2d(p2.x, p2.y);
