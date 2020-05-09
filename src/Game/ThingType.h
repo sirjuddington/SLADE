@@ -58,6 +58,7 @@ namespace game
 		bool           decorate() const { return decorate_; }
 		const string&  className() const { return class_name_; }
 		bool           zHeightAbsolute() const { return z_height_absolute_; }
+		const string&  pointLight() const { return point_light_; }
 
 		void setSprite(string_view sprite) { sprite_ = sprite; }
 
@@ -99,6 +100,7 @@ namespace game
 		int     number_ = -1;
 		string  class_name_;
 		bool    z_height_absolute_ = false;
+		string  point_light_;
 
 		static ThingType unknown_;
 	};

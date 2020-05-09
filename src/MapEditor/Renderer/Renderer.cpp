@@ -92,9 +92,7 @@ EXTERN_CVAR(Int, vertex_size)
 // Renderer class constructor
 // -----------------------------------------------------------------------------
 Renderer::Renderer(MapEditContext& context) :
-	context_{ context },
-	renderer_2d_{ &context.map() },
-	renderer_3d_{ &context.map() }
+	context_{ context }, renderer_2d_{ &context.map() }, renderer_3d_{ &context.map() }
 {
 }
 
@@ -1071,6 +1069,7 @@ void Renderer::drawMap2d()
 		// Things mode
 		renderer_2d_.renderVertices(fade_vertices_);             // Vertices
 		renderer_2d_.renderLines(line_tabs_always, fade_lines_); // Lines
+		renderer_2d_.renderPointLightPreviews(fade_things_);     // Point light previews
 		renderer_2d_.renderThings(fade_things_, force_dir);      // Things
 
 		// Thing paths

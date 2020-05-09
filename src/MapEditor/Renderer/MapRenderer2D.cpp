@@ -782,19 +782,35 @@ void MapRenderer2D::renderThingOverlay(double x, double y, double radius, bool p
 // Renders a round thing icon at [x,y]
 // -----------------------------------------------------------------------------
 void MapRenderer2D::renderRoundThing(
-	double                 x,
-	double                 y,
-	double                 angle,
-	const game::ThingType& type,
-	float                  alpha,
-	double                 radius_mult) const
+	double                   x,
+	double                   y,
+	double                   angle,
+	const game::ThingType&   type,
+	const MapObject::ArgSet& args,
+	float                    alpha,
+	double                   radius_mult) const
 {
 	// --- Determine texture to use ---
 	unsigned tex    = 0;
 	bool     rotate = false;
 
 	// Set colour
-	glColor4f(type.colour().fr(), type.colour().fg(), type.colour().fb(), alpha);
+	if (type.pointLight().empty())
+		glColor4f(type.colour().fr(), type.colour().fg(), type.colour().fb(), alpha);
+	else if (type.pointLight() == "zdoom")
+		glColor4f(
+			static_cast<float>(args[0]) / 255.f,
+			static_cast<float>(args[1]) / 255.f,
+			static_cast<float>(args[2]) / 255.f,
+			alpha);
+	else if (type.pointLight() == "vavoom")
+		glColor4f(
+			static_cast<float>(args[1]) / 255.f,
+			static_cast<float>(args[2]) / 255.f,
+			static_cast<float>(args[3]) / 255.f,
+			alpha);
+	else
+		glColor4f(1.f, 1.f, 1.f, alpha);
 
 	// Check for custom thing icon
 	if (!type.icon().empty() && !thing_force_dir && !things_angles_)
@@ -823,7 +839,7 @@ void MapRenderer2D::renderRoundThing(
 	// If for whatever reason the thing texture doesn't exist, just draw a basic, square thing
 	if (!tex)
 	{
-		renderSimpleSquareThing(x, y, angle, type, alpha);
+		renderSimpleSquareThing(x, y, angle, type, args, alpha);
 		return;
 	}
 
@@ -864,13 +880,14 @@ void MapRenderer2D::renderRoundThing(
 // If [fitradius] is true, the sprite is drawn to fit within the thing's radius
 // -----------------------------------------------------------------------------
 bool MapRenderer2D::renderSpriteThing(
-	double                 x,
-	double                 y,
-	double                 angle,
-	const game::ThingType& type,
-	unsigned               index,
-	float                  alpha,
-	bool                   fitradius)
+	double                   x,
+	double                   y,
+	double                   angle,
+	const game::ThingType&   type,
+	const MapObject::ArgSet& args,
+	unsigned                 index,
+	float                    alpha,
+	bool                     fitradius)
 {
 	// Refresh sprites list if needed
 	if (thing_sprites_.size() != map_->nThings())
@@ -900,9 +917,9 @@ bool MapRenderer2D::renderSpriteThing(
 	if (!tex)
 	{
 		if (thing_drawtype == ThingDrawType::FramedSprite)
-			renderRoundThing(x, y, angle, type, alpha, 0.7);
+			renderRoundThing(x, y, angle, type, args, alpha, 0.7);
 		else
-			renderRoundThing(x, y, angle, type, alpha);
+			renderRoundThing(x, y, angle, type, args, alpha);
 		return false;
 	}
 
@@ -975,19 +992,35 @@ bool MapRenderer2D::renderSpriteThing(
 // Renders a square thing icon at [x,y]
 // -----------------------------------------------------------------------------
 bool MapRenderer2D::renderSquareThing(
-	double                 x,
-	double                 y,
-	double                 angle,
-	const game::ThingType& type,
-	float                  alpha,
-	bool                   showicon,
-	bool                   framed) const
+	double                   x,
+	double                   y,
+	double                   angle,
+	const game::ThingType&   type,
+	const MapObject::ArgSet& args,
+	float                    alpha,
+	bool                     showicon,
+	bool                     framed) const
 {
 	// --- Determine texture to use ---
 	unsigned tex = 0;
 
 	// Set colour
-	glColor4f(type.colour().fr(), type.colour().fg(), type.colour().fb(), alpha);
+	if (type.pointLight().empty())
+		glColor4f(type.colour().fr(), type.colour().fg(), type.colour().fb(), alpha);
+	else if (type.pointLight() == "zdoom")
+		glColor4f(
+			static_cast<float>(args[0]) / 255.f,
+			static_cast<float>(args[1]) / 255.f,
+			static_cast<float>(args[2]) / 255.f,
+			alpha);
+	else if (type.pointLight() == "vavoom")
+		glColor4f(
+			static_cast<float>(args[1]) / 255.f,
+			static_cast<float>(args[2]) / 255.f,
+			static_cast<float>(args[3]) / 255.f,
+			alpha);
+	else
+		glColor4f(1.f, 1.f, 1.f, alpha);
 
 	// Show icon anyway if no sprite set
 	if (type.sprite().empty())
@@ -1053,7 +1086,7 @@ bool MapRenderer2D::renderSquareThing(
 	// If for whatever reason the thing texture doesn't exist, just draw a basic, square thing
 	if (!tex)
 	{
-		renderSimpleSquareThing(x, y, angle, type, alpha);
+		renderSimpleSquareThing(x, y, angle, type, args, alpha);
 		return false;
 	}
 
@@ -1091,8 +1124,13 @@ bool MapRenderer2D::renderSquareThing(
 // -----------------------------------------------------------------------------
 // Renders a simple square thing icon at [x,y]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderSimpleSquareThing(double x, double y, double angle, const game::ThingType& type, float alpha)
-	const
+void MapRenderer2D::renderSimpleSquareThing(
+	double                   x,
+	double                   y,
+	double                   angle,
+	const game::ThingType&   type,
+	const MapObject::ArgSet& args,
+	float                    alpha) const
 {
 	// Get thing info
 	double radius = type.radius();
@@ -1113,9 +1151,25 @@ void MapRenderer2D::renderSimpleSquareThing(double x, double y, double angle, co
 	glVertex2d(radius, -radius);
 	glEnd();
 
+	// Set colour
+	if (type.pointLight().empty())
+		glColor4f(type.colour().fr(), type.colour().fg(), type.colour().fb(), alpha);
+	else if (type.pointLight() == "zdoom")
+		glColor4f(
+			static_cast<float>(args[0]) / 255.f,
+			static_cast<float>(args[1]) / 255.f,
+			static_cast<float>(args[2]) / 255.f,
+			alpha);
+	else if (type.pointLight() == "vavoom")
+		glColor4f(
+			static_cast<float>(args[1]) / 255.f,
+			static_cast<float>(args[2]) / 255.f,
+			static_cast<float>(args[3]) / 255.f,
+			alpha);
+	else
+		glColor4f(1.f, 1.f, 1.f, alpha);
+
 	// Draw base
-	// tt.getColour().set_gl(false);
-	glColor4f(type.colour().fr(), type.colour().fg(), type.colour().fb(), alpha);
 	glBegin(GL_QUADS);
 	glVertex2d(-radius + radius2, -radius + radius2);
 	glVertex2d(-radius + radius2, radius - radius2);
@@ -1275,11 +1329,11 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 		if (thing_drawtype == ThingDrawType::Sprite) // Drawtype 2: Sprites
 		{
 			// Check if we need to draw the direction arrow for this thing
-			if (renderSpriteThing(x, y, angle, tt, a, talpha))
+			if (renderSpriteThing(x, y, angle, tt, thing->args(), a, talpha))
 				things_arrows.push_back(a);
 		}
 		else if (thing_drawtype == ThingDrawType::Round) // Drawtype 1: Round
-			renderRoundThing(x, y, angle, tt, talpha);
+			renderRoundThing(x, y, angle, tt, thing->args(), talpha);
 		else // Drawtype 0 (or other): Square
 		{
 			if (renderSquareThing(
@@ -1287,6 +1341,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 					y,
 					angle,
 					tt,
+					thing->args(),
 					talpha,
 					(thing_drawtype < ThingDrawType::SquareSprite),
 					(thing_drawtype == ThingDrawType::FramedSprite)))
@@ -1319,7 +1374,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 			else
 				talpha = alpha;
 
-			renderSpriteThing(x, y, thing->angle(), tt, a, talpha, true);
+			renderSpriteThing(x, y, thing->angle(), tt, thing->args(), a, talpha, true);
 		}
 	}
 
@@ -1802,6 +1857,70 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 		}
 	}
 }
+
+// -----------------------------------------------------------------------------
+// Renders point light previews
+// -----------------------------------------------------------------------------
+void MapRenderer2D::renderPointLightPreviews(float alpha) const
+{
+	ColRGBA light_col{ 0, 0, 0, static_cast<uint8_t>(alpha * 128.f) };
+	double  light_radius;
+
+	glEnable(GL_TEXTURE_2D);
+	const auto light_tex = mapeditor::textureManager().editorImage("thing/light_preview").gl_id;
+	gl::Texture::bind(light_tex);
+
+	for (const auto& thing : map_->things())
+	{
+		const auto& ttype = game::configuration().thingType(thing->type());
+
+		// Not a point light
+		if (ttype.pointLight().empty())
+			continue;
+
+		// ZDoom point light
+		if (ttype.pointLight() == "zdoom")
+		{
+			light_col.r  = thing->arg(0);
+			light_col.g  = thing->arg(1);
+			light_col.b  = thing->arg(2);
+			light_radius = thing->arg(3);
+		}
+
+		// Vavoom point light
+		else if (ttype.pointLight() == "vavoom")
+		{
+			light_col.r  = thing->arg(1);
+			light_col.g  = thing->arg(2);
+			light_col.b  = thing->arg(3);
+			light_radius = thing->arg(0);
+		}
+
+		// Vavoom white light
+		else if (ttype.pointLight() == "vavoom_white")
+		{
+			light_col.r  = 255;
+			light_col.g  = 255;
+			light_col.b  = 255;
+			light_radius = thing->arg(0);
+		}
+
+		light_radius *= alpha;
+		gl::setColour(light_col, gl::Blend::Additive);
+
+		glBegin(GL_QUADS);
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex2d(thing->xPos() - light_radius, thing->yPos() - light_radius);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex2d(thing->xPos() + light_radius, thing->yPos() - light_radius);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex2d(thing->xPos() + light_radius, thing->yPos() + light_radius);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex2d(thing->xPos() - light_radius, thing->yPos() + light_radius);
+		glEnd();
+	}
+}
+
 
 // -----------------------------------------------------------------------------
 // Renders map flats (sectors)
@@ -2572,15 +2691,16 @@ void MapRenderer2D::renderMovingThings(const vector<mapeditor::Item>& things, Ve
 
 		// Draw thing depending on 'things_drawtype' cvar
 		if (thing_drawtype == ThingDrawType::Sprite) // Drawtype 2: Sprites
-			renderSpriteThing(x, y, angle, tt, a, 1.0f);
+			renderSpriteThing(x, y, angle, tt, thing->args(), a, 1.0f);
 		else if (thing_drawtype == ThingDrawType::Round) // Drawtype 1: Round
-			renderRoundThing(x, y, angle, tt, 1.0f);
+			renderRoundThing(x, y, angle, tt, thing->args(), 1.0f);
 		else // Drawtype 0 (or other): Square
 			renderSquareThing(
 				x,
 				y,
 				angle,
 				tt,
+				thing->args(),
 				1.0f,
 				thing_drawtype < ThingDrawType::SquareSprite,
 				thing_drawtype == ThingDrawType::FramedSprite);
@@ -2601,7 +2721,7 @@ void MapRenderer2D::renderMovingThings(const vector<mapeditor::Item>& things, Ve
 				y        = thing->yPos() + move_vec.y;
 				angle    = thing->angle();
 
-				renderSpriteThing(x, y, angle, tt, item.index, 1.0f, true);
+				renderSpriteThing(x, y, angle, tt, thing->args(), item.index, 1.0f, true);
 			}
 		}
 	}
@@ -2661,15 +2781,16 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, Vec2d pos)
 
 		// Draw thing depending on 'things_drawtype' cvar
 		if (thing_drawtype == ThingDrawType::Sprite) // Drawtype 2: Sprites
-			renderSpriteThing(x, y, angle, tt, wxUINT32_MAX, 1.0f);
+			renderSpriteThing(x, y, angle, tt, thing->args(), wxUINT32_MAX, 1.0f);
 		else if (thing_drawtype == ThingDrawType::Round) // Drawtype 1: Round
-			renderRoundThing(x, y, angle, tt, 1.0f);
+			renderRoundThing(x, y, angle, tt, thing->args(), 1.0f);
 		else // Drawtype 0 (or other): Square
 			renderSquareThing(
 				x,
 				y,
 				angle,
 				tt,
+				thing->args(),
 				1.0f,
 				thing_drawtype < ThingDrawType::SquareSprite,
 				thing_drawtype == ThingDrawType::FramedSprite);
@@ -2688,7 +2809,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, Vec2d pos)
 			y        = thing->yPos() + pos.y;
 			angle    = thing->angle();
 
-			renderSpriteThing(x, y, angle, tt, wxUINT32_MAX, 1.0f, true);
+			renderSpriteThing(x, y, angle, tt, thing->args(), wxUINT32_MAX, 1.0f, true);
 		}
 	}
 
@@ -2808,15 +2929,16 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 
 			// Draw thing depending on 'things_drawtype' cvar
 			if (thing_drawtype == ThingDrawType::Sprite) // Drawtype 2: Sprites
-				renderSpriteThing(x, y, angle, tt, thing->index(), 1.0f);
+				renderSpriteThing(x, y, angle, tt, thing->args(), thing->index(), 1.0f);
 			else if (thing_drawtype == ThingDrawType::Round) // Drawtype 1: Round
-				renderRoundThing(x, y, angle, tt, 1.0f);
+				renderRoundThing(x, y, angle, tt, thing->args(), 1.0f);
 			else // Drawtype 0 (or other): Square
 				renderSquareThing(
 					x,
 					y,
 					angle,
 					tt,
+					thing->args(),
 					1.0f,
 					thing_drawtype < ThingDrawType::SquareSprite,
 					thing_drawtype == ThingDrawType::FramedSprite);
@@ -2836,7 +2958,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 				y        = item.position.y;
 				angle    = thing->angle();
 
-				renderSpriteThing(x, y, angle, tt, thing->index(), 1.0f, true);
+				renderSpriteThing(x, y, angle, tt, thing->args(), thing->index(), 1.0f, true);
 			}
 		}
 

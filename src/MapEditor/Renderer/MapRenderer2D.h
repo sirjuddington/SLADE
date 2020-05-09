@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MapEditor/MapEditor.h"
+#include "SLADEMap/MapObject/MapObject.h"
 #include "Utility/Colour.h"
 
 namespace slade
@@ -55,30 +56,38 @@ public:
 	bool setupThingOverlay() const;
 	void renderThingOverlay(double x, double y, double radius, bool point) const;
 	void renderRoundThing(
-		double                 x,
-		double                 y,
-		double                 angle,
-		const game::ThingType& type,
-		float                  alpha       = 1.0f,
-		double                 radius_mult = 1.0) const;
+		double                   x,
+		double                   y,
+		double                   angle,
+		const game::ThingType&   type,
+		const MapObject::ArgSet& args,
+		float                    alpha       = 1.0f,
+		double                   radius_mult = 1.0) const;
 	bool renderSpriteThing(
-		double                 x,
-		double                 y,
-		double                 angle,
-		const game::ThingType& type,
-		unsigned               index,
-		float                  alpha     = 1.0f,
-		bool                   fitradius = false);
-	void renderSimpleSquareThing(double x, double y, double angle, const game::ThingType& type, float alpha = 1.0f)
-		const;
+		double                   x,
+		double                   y,
+		double                   angle,
+		const game::ThingType&   type,
+		const MapObject::ArgSet& args,
+		unsigned                 index,
+		float                    alpha     = 1.0f,
+		bool                     fitradius = false);
+	void renderSimpleSquareThing(
+		double                   x,
+		double                   y,
+		double                   angle,
+		const game::ThingType&   type,
+		const MapObject::ArgSet& args,
+		float                    alpha = 1.0f) const;
 	bool renderSquareThing(
-		double                 x,
-		double                 y,
-		double                 angle,
-		const game::ThingType& type,
-		float                  alpha    = 1.0f,
-		bool                   showicon = true,
-		bool                   framed   = false) const;
+		double                   x,
+		double                   y,
+		double                   angle,
+		const game::ThingType&   type,
+		const MapObject::ArgSet& args,
+		float                    alpha    = 1.0f,
+		bool                     showicon = true,
+		bool                     framed   = false) const;
 	void renderThings(float alpha = 1.0f, bool force_dir = false);
 	void renderThingsImmediate(float alpha);
 	void renderThingHilight(int index, float fade) const;
@@ -86,6 +95,7 @@ public:
 	void renderTaggedThings(vector<MapThing*>& things, float fade) const;
 	void renderTaggingThings(vector<MapThing*>& things, float fade) const;
 	void renderPathedThings(vector<MapThing*>& things);
+	void renderPointLightPreviews(float alpha) const;
 
 	// Flats (sectors)
 	void renderFlats(int type = 0, bool texture = true, float alpha = 1.0f);

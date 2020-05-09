@@ -58,10 +58,7 @@ ThingType ThingType::unknown_;
 // ThingType class constructor
 // -----------------------------------------------------------------------------
 ThingType::ThingType(string_view name, string_view group, string_view class_name) :
-	name_{ name },
-	group_{ group },
-	tagged_{ TagType::None },
-	class_name_{ class_name }
+	name_{ name }, group_{ group }, tagged_{ TagType::None }, class_name_{ class_name }
 {
 }
 
@@ -93,6 +90,7 @@ void ThingType::copy(const ThingType& copy)
 	translation_       = copy.translation_;
 	palette_           = copy.palette_;
 	z_height_absolute_ = copy.z_height_absolute_;
+	point_light_       = copy.point_light_;
 }
 
 // -----------------------------------------------------------------------------
@@ -133,6 +131,7 @@ void ThingType::reset()
 	flags_             = 0;
 	tagged_            = TagType::None;
 	z_height_absolute_ = false;
+	point_light_       = "";
 
 	// Reset args
 	args_.count = 0;
@@ -285,6 +284,10 @@ void ThingType::parse(ParseTreeNode* node)
 		// Z Height is absolute rather than relative to the floor/ceiling
 		else if (name == "z_height_absolute")
 			z_height_absolute_ = child->boolValue();
+
+		// Thing is a point light
+		else if (name == "point_light")
+			point_light_ = strutil::lower(child->stringValue());
 
 		// Parse arg definition if it was one
 		if (arg >= 0)
