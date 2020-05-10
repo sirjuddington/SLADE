@@ -60,6 +60,8 @@ CVAR(Bool, line_smooth, true, CVar::Flag::Save)
 CVAR(Int, thing_drawtype, 1, CVar::Flag::Save)
 CVAR(Bool, thing_force_dir, false, CVar::Flag::Save)
 CVAR(Bool, thing_overlay_square, false, CVar::Flag::Save)
+CVAR(Bool, thing_preview_lights, true, CVar::Flag::Save)
+CVAR(Float, thing_light_intensity, 0.5f, CVar::Flag::Save)
 CVAR(Float, flat_brightness, 0.8f, CVar::Flag::Save)
 CVAR(Bool, flat_ignore_light, false, CVar::Flag::Save)
 CVAR(Float, thing_shadow, 0.5f, CVar::Flag::Save)
@@ -1863,8 +1865,11 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 // -----------------------------------------------------------------------------
 void MapRenderer2D::renderPointLightPreviews(float alpha) const
 {
-	ColRGBA light_col{ 0, 0, 0, static_cast<uint8_t>(alpha * 128.f) };
-	double  light_radius;
+	if (!thing_preview_lights)
+		return;
+	
+	ColRGBA light_col{ 0, 0, 0, static_cast<uint8_t>(alpha * (thing_light_intensity * 255.f)) };
+	double  light_radius = 0.;
 
 	glEnable(GL_TEXTURE_2D);
 	const auto light_tex = mapeditor::textureManager().editorImage("thing/light_preview").gl_id;
@@ -1905,7 +1910,7 @@ void MapRenderer2D::renderPointLightPreviews(float alpha) const
 			light_radius = thing->arg(0);
 		}
 
-		light_radius *= alpha;
+		//light_radius *= alpha;
 		gl::setColour(light_col, gl::Blend::Additive);
 
 		glBegin(GL_QUADS);

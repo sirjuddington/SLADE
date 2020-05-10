@@ -79,6 +79,7 @@ CVAR(Bool, hilight_smooth, true, CVar::Flag::Save)
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Int, flat_drawtype)
+EXTERN_CVAR(Bool, thing_preview_lights)
 
 
 // -----------------------------------------------------------------------------
@@ -227,7 +228,15 @@ void MapEditContext::setEditMode(Mode mode)
 			SAction::fromId("mapw_sectormode_ceiling")->setChecked();
 	}
 	else if (mode == Mode::Things)
+	{
 		SAction::fromId("mapw_mode_things")->setChecked();
+
+		wxArrayString actions;
+		actions.Add("mapw_thing_light_previews");
+		mapeditor::window()->addCustomToolBar("Things Mode", actions);
+
+		SAction::fromId("mapw_thing_light_previews")->setChecked(thing_preview_lights);
+	}
 	else if (mode == Mode::Visual)
 	{
 		SAction::fromId("mapw_mode_3d")->setChecked();
