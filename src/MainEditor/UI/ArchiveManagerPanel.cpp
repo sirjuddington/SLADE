@@ -37,7 +37,6 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/DirArchive.h"
 #include "ArchivePanel.h"
-#include "Dialogs/DirArchiveUpdateDialog.h"
 #include "EntryPanel/EntryPanel.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
@@ -47,6 +46,7 @@
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "TextureXEditor/TextureXEditor.h"
 #include "UI/Controls/STabCtrl.h"
+#include "UI/Dialogs/DirArchiveUpdateDialog.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 

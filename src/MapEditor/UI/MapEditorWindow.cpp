@@ -34,10 +34,6 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"
-#include "Dialogs/MapEditorConfigDialog.h"
-#include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
-#include "Dialogs/Preferences/PreferencesDialog.h"
-#include "Dialogs/RunDialog.h"
 #include "Game/Configuration.h"
 #include "General/Misc.h"
 #include "General/UI.h"
@@ -57,6 +53,10 @@
 #include "Scripting/ScriptManager.h"
 #include "UI/Controls/ConsolePanel.h"
 #include "UI/Controls/UndoManagerHistoryPanel.h"
+#include "UI/Dialogs/MapEditorConfigDialog.h"
+#include "UI/Dialogs/Preferences/BaseResourceArchivesPanel.h"
+#include "UI/Dialogs/Preferences/PreferencesDialog.h"
+#include "UI/Dialogs/RunDialog.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
@@ -655,7 +655,7 @@ bool MapEditorWindow::openMap(Archive::MapDesc map)
 		auto head = map.head.lock();
 		if (head
 			&& !mapeditor::backupManager().writeBackup(
-				   map_data_, head->topParent()->filename(false), head->nameNoExt()))
+				map_data_, head->topParent()->filename(false), head->nameNoExt()))
 			log::warning("Failed to backup map data");
 	}
 

@@ -32,12 +32,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ZTextureEditorPanel.h"
-#include "Dialogs/TranslationEditorDialog.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/WxUtils.h"
 #include "Utility/Tokenizer.h"
 

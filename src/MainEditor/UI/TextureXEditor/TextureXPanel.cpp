@@ -34,8 +34,6 @@
 #include "TextureXPanel.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "Dialogs/GfxConvDialog.h"
-#include "Dialogs/ModifyOffsetsDialog.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
 #include "General/KeyBind.h"
@@ -46,6 +44,8 @@
 #include "Graphics/Icons.h"
 #include "TextureXEditor.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/Dialogs/GfxConvDialog.h"
+#include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
@@ -86,8 +86,7 @@ class TextureClipboardItem : public ClipboardItem
 {
 public:
 	TextureClipboardItem(const CTexture& texture, Archive* parent) :
-		ClipboardItem(Type::CompositeTexture),
-		texture_{ new CTexture() }
+		ClipboardItem(Type::CompositeTexture), texture_{ new CTexture() }
 	{
 		// Create/copy texture
 		texture_->copyTexture(texture);
@@ -156,8 +155,7 @@ private:
 // TextureXListView class constructor
 // -----------------------------------------------------------------------------
 TextureXListView::TextureXListView(wxWindow* parent, TextureXList* texturex) :
-	VirtualListView{ parent },
-	texturex_{ texturex }
+	VirtualListView{ parent }, texturex_{ texturex }
 {
 	// Add columns
 	InsertColumn(0, "Name");
@@ -338,9 +336,7 @@ class TextureSwapUS : public UndoStep
 {
 public:
 	TextureSwapUS(TextureXList& texturex, int index1, int index2) :
-		texturex_(texturex),
-		index1_(index1),
-		index2_(index2)
+		texturex_(texturex), index1_(index1), index2_(index2)
 	{
 	}
 	~TextureSwapUS() = default;
@@ -371,10 +367,7 @@ public:
 
 	// Texture Deleted
 	TextureCreateDeleteUS(TextureXPanel* tx_panel, unique_ptr<CTexture> tex_removed, int removed_index) :
-		tx_panel_{ tx_panel },
-		tex_removed_{ std::move(tex_removed) },
-		index_{ removed_index },
-		created_{ false }
+		tx_panel_{ tx_panel }, tex_removed_{ std::move(tex_removed) }, index_{ removed_index }, created_{ false }
 	{
 	}
 
@@ -466,9 +459,7 @@ private:
 // TextureXPanel class constructor
 // -----------------------------------------------------------------------------
 TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
-	wxPanel{ parent, -1 },
-	tx_editor_{ &tx_editor },
-	undo_manager_{ tx_editor.undoManager() }
+	wxPanel{ parent, -1 }, tx_editor_{ &tx_editor }, undo_manager_{ tx_editor.undoManager() }
 {
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);

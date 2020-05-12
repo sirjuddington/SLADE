@@ -34,13 +34,13 @@
 #include "TextureXEditor.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "Dialogs/ExtMessageDialog.h"
 #include "General/ResourceManager.h"
 #include "General/UndoRedo.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/UndoManagerHistoryPanel.h"
+#include "UI/Dialogs/ExtMessageDialog.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;

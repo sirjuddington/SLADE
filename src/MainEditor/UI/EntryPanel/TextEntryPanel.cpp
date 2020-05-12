@@ -31,12 +31,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextEntryPanel.h"
-#include "Dialogs/Preferences/EditingPrefsPanel.h"
 #include "Game/Configuration.h"
 #include "General/UI.h"
 #include "MainEditor/EntryOperations.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
+#include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;

@@ -37,15 +37,6 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "ArchiveManagerPanel.h"
-#include "Dialogs/GfxColouriseDialog.h"
-#include "Dialogs/GfxConvDialog.h"
-#include "Dialogs/GfxTintDialog.h"
-#include "Dialogs/MapEditorConfigDialog.h"
-#include "Dialogs/MapReplaceDialog.h"
-#include "Dialogs/ModifyOffsetsDialog.h"
-#include "Dialogs/Preferences/PreferencesDialog.h"
-#include "Dialogs/RunDialog.h"
-#include "Dialogs/TranslationEditorDialog.h"
 #include "EntryPanel/ANSIEntryPanel.h"
 #include "EntryPanel/AudioEntryPanel.h"
 #include "EntryPanel/DataEntryPanel.h"
@@ -73,6 +64,15 @@
 #include "Scripting/ScriptManager.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/Dialogs/GfxColouriseDialog.h"
+#include "UI/Dialogs/GfxConvDialog.h"
+#include "UI/Dialogs/GfxTintDialog.h"
+#include "UI/Dialogs/MapEditorConfigDialog.h"
+#include "UI/Dialogs/MapReplaceDialog.h"
+#include "UI/Dialogs/ModifyOffsetsDialog.h"
+#include "UI/Dialogs/Preferences/PreferencesDialog.h"
+#include "UI/Dialogs/RunDialog.h"
+#include "UI/Dialogs/TranslationEditorDialog.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
@@ -250,8 +250,7 @@ class EntryTreeClipboardItem : public ClipboardItem
 {
 public:
 	EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, vector<ArchiveDir*>& dirs) :
-		ClipboardItem(Type::EntryTree),
-		tree_{ new ArchiveDir("") }
+		ClipboardItem(Type::EntryTree), tree_{ new ArchiveDir("") }
 	{
 		// Copy entries
 		for (auto& entry : entries)
@@ -391,10 +390,7 @@ size_t getNamespaceNumber(ArchiveEntry* entry, size_t index, vector<wxString>& n
 // ArchivePanel class constructor
 // -----------------------------------------------------------------------------
 ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
-	wxPanel(parent, -1),
-	archive_{ archive },
-	undo_manager_{ new UndoManager() },
-	ee_manager_{ new ExternalEditManager }
+	wxPanel(parent, -1), archive_{ archive }, undo_manager_{ new UndoManager() }, ee_manager_{ new ExternalEditManager }
 {
 	// Create entry panels
 	entry_area_   = new EntryPanel(this, "nil");

@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "GfxConvDialog.h"
 #include "Archive/ArchiveManager.h"
-#include "Dialogs/Preferences/PreferencesDialog.h"
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "Graphics/CTexture/CTexture.h"
@@ -43,6 +42,7 @@
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/ColourBox.h"
 #include "UI/Controls/PaletteChooser.h"
+#include "UI/Dialogs/Preferences/PreferencesDialog.h"
 
 using namespace slade;
 

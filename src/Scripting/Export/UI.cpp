@@ -1,9 +1,9 @@
 
 #include "Main.h"
-#include "Dialogs/ExtMessageDialog.h"
-#include "Dialogs/Preferences/ACSPrefsPanel.h"
 #include "Export.h"
 #include "Scripting/Lua.h"
+#include "UI/Dialogs/ExtMessageDialog.h"
+#include "UI/Dialogs/Preferences/ACSPrefsPanel.h"
 #include "Utility/SFileDialog.h"
 #include "thirdparty/sol/sol.hpp"
 

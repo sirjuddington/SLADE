@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "BaseResourceWizardPage.h"
-#include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
+#include "UI/Dialogs/Preferences/BaseResourceArchivesPanel.h"
 
 using namespace slade;
 

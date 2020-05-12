@@ -34,12 +34,12 @@
 #include "Main.h"
 #include "DefaultEntryPanel.h"
 #include "Archive/ArchiveManager.h"
-#include "Dialogs/ModifyOffsetsDialog.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
 #include "General/UI.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
+#include "UI/Dialogs/ModifyOffsetsDialog.h"
 
 using namespace slade;
 

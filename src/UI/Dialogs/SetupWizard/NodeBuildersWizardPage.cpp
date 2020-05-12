@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "NodeBuildersWizardPage.h"
-#include "Dialogs/Preferences/NodesPrefsPanel.h"
+#include "UI/Dialogs/Preferences/NodesPrefsPanel.h"
 
 using namespace slade;
 

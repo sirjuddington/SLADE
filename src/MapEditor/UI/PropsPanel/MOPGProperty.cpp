@@ -34,7 +34,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MOPGProperty.h"
-#include "Dialogs/Preferences/EditingPrefsPanel.h"
 #include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
@@ -44,6 +43,7 @@
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
 #include "SLADEMap/SLADEMap.h"
+#include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -82,8 +82,7 @@ void MOPGProperty::resetValue()
 // MOPGBoolProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGBoolProperty::MOPGBoolProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxBoolProperty(label, name, false)
+	MOPGProperty{ name }, wxBoolProperty(label, name, false)
 {
 }
 
@@ -165,8 +164,7 @@ void MOPGBoolProperty::applyValue()
 // MOPGIntProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGIntProperty::MOPGIntProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxIntProperty(label, name, 0)
+	MOPGProperty{ name }, wxIntProperty(label, name, 0)
 {
 }
 
@@ -248,8 +246,7 @@ void MOPGIntProperty::applyValue()
 // MOPGFloatProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGFloatProperty::MOPGFloatProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxFloatProperty(label, name, 0)
+	MOPGProperty{ name }, wxFloatProperty(label, name, 0)
 {
 }
 
@@ -331,8 +328,7 @@ void MOPGFloatProperty::applyValue()
 // MOPGStringProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGStringProperty::MOPGStringProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxStringProperty(label, name, "")
+	MOPGProperty{ name }, wxStringProperty(label, name, "")
 {
 }
 
@@ -661,8 +657,7 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
 // MOPGLineFlagProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGLineFlagProperty::MOPGLineFlagProperty(const wxString& label, const wxString& name, int index) :
-	MOPGBoolProperty(label, name),
-	index_{ index }
+	MOPGBoolProperty(label, name), index_{ index }
 {
 }
 
@@ -732,8 +727,7 @@ void MOPGLineFlagProperty::applyValue()
 // MOPGThingFlagProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGThingFlagProperty::MOPGThingFlagProperty(const wxString& label, const wxString& name, int index) :
-	MOPGBoolProperty(label, name),
-	index_{ index }
+	MOPGBoolProperty(label, name), index_{ index }
 {
 }
 
@@ -803,8 +797,7 @@ void MOPGThingFlagProperty::applyValue()
 // MOPGAngleProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGAngleProperty::MOPGAngleProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxEditEnumProperty(label, name)
+	MOPGProperty{ name }, wxEditEnumProperty(label, name)
 {
 	// Setup combo box choices
 	wxArrayString labels;
@@ -928,8 +921,7 @@ wxString MOPGAngleProperty::ValueToString(wxVariant& value, int arg_flags) const
 // MOPGColourProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGColourProperty::MOPGColourProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxColourProperty(label, name)
+	MOPGProperty{ name }, wxColourProperty(label, name)
 {
 }
 
@@ -1014,8 +1006,7 @@ void MOPGColourProperty::applyValue()
 // MOPGTextureProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGTextureProperty::MOPGTextureProperty(TextureType textype, const wxString& label, const wxString& name) :
-	MOPGStringProperty(label, name),
-	textype_{ textype }
+	MOPGStringProperty(label, name), textype_{ textype }
 {
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
@@ -1092,8 +1083,7 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 // MOPGSPACTriggerProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxEnumProperty(label, name)
+	MOPGProperty{ name }, wxEnumProperty(label, name)
 {
 	// Set to combo box editor
 	SetEditor(wxPGEditor_ComboBox);
@@ -1183,8 +1173,7 @@ void MOPGSPACTriggerProperty::applyValue()
 // MOPGTagProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGTagProperty::MOPGTagProperty(IdType id_type, const wxString& label, const wxString& name) :
-	MOPGIntProperty(label, name),
-	id_type_{ id_type }
+	MOPGIntProperty(label, name), id_type_{ id_type }
 {
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);

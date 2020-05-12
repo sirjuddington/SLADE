@@ -36,8 +36,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ColourBox.h"
-#include "Dialogs/PaletteDialog.h"
 #include "Graphics/Palette/Palette.h"
+#include "UI/Dialogs/PaletteDialog.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
