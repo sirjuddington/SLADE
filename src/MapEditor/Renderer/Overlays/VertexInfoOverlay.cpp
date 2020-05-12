@@ -37,6 +37,7 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
 #include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -57,15 +58,32 @@ void VertexInfoOverlay::update(MapVertex* vertex)
 	if (!vertex)
 		return;
 
-	// Update info string
-	// TODO: pos_frac_ is never set, enable for UDMF?
-	if (pos_frac_)
-		info_ = fmt::format("Vertex {}: ({:1.4f}, {:1.4f})", vertex->index(), vertex->xPos(), vertex->yPos());
-	else
-		info_ = fmt::format("Vertex {}: ({}, {})", vertex->index(), (int)vertex->xPos(), (int)vertex->yPos());
+	info_.clear();
+	bool udmf = vertex->parentMap()->currentFormat() == MapFormat::UDMF;
 
+	// Update info string
+	auto pos = vertex->position();
+	auto line = fmt::format("Vertex {}: (", vertex->index());
+	if (pos.x == static_cast<int>(pos.x))
+		line += fmt::format("{}, ", static_cast<int>(pos.x));
+	else
+		line += fmt::format("{:1.4f}, ", pos.x);
+	if (pos.y == static_cast<int>(pos.y))
+		line += fmt::format("{})", static_cast<int>(pos.y));
+	else
+		line += fmt::format("{:1.4f})", pos.y);
+	
 	if (global::debug)
-		info_ += fmt::format(" ({})", vertex->objId());
+		line += fmt::format(" ({})", vertex->objId());
+
+	info_.push_back(line);
+
+	// Add vertex heights if they are set
+	if (udmf && (vertex->hasProp("zfloor") || vertex->hasProp("zceiling")))
+	{
+		info_.push_back(fmt::format("Floor Height: {}", vertex->floatProperty("zfloor")));
+		info_.push_back(fmt::format("Ceiling Height: {}", vertex->floatProperty("zceiling")));
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -95,10 +113,15 @@ void VertexInfoOverlay::draw(int bottom, int right, float alpha) const
 	// Draw overlay background
 	int line_height = 16 * (drawing::fontSize() / 12.0);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	drawing::drawBorderedRect(0, bottom - line_height - 8, right, bottom + 2, col_bg, col_border);
+	drawing::drawBorderedRect(0, bottom - (line_height * info_.size()) - 8, right, bottom + 2, col_bg, col_border);
 
 	// Draw text
-	drawing::drawText(info_, 2, bottom - line_height - 4, col_fg, drawing::Font::Condensed);
+	int y = bottom - (line_height * info_.size()) - 4;
+	for (const auto& line : info_)
+	{
+		drawing::drawText(line, 2, y, col_fg, drawing::Font::Condensed);
+		y += line_height;
+	}
 
 	// Done
 	glEnable(GL_LINE_SMOOTH);
