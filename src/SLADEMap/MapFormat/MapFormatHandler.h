@@ -16,7 +16,8 @@ public:
 		const MapObjectCollection& map_data,
 		const PropertyList&        map_extra_props) = 0;
 
-	virtual string udmfNamespace() = 0;
+	virtual string udmfNamespace() const { return {}; }
+	virtual void   setUDMFNamespace(string_view ns) {}
 
 	static unique_ptr<MapFormatHandler> get(MapFormat format);
 };

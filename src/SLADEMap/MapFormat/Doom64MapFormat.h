@@ -62,8 +62,6 @@ public:
 	vector<unique_ptr<ArchiveEntry>> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
 		override;
 
-	string udmfNamespace() override { return ""; }
-
 private:
 	virtual bool readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_data) const;
 	virtual bool readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map_data) const;

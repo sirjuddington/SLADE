@@ -58,8 +58,6 @@ public:
 	{
 		return {};
 	}
-
-	string udmfNamespace() override { return ""; }
 };
 
 

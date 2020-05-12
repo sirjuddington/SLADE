@@ -19,7 +19,8 @@ public:
 	vector<unique_ptr<ArchiveEntry>> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
 		override;
 
-	string udmfNamespace() override { return udmf_namespace_; }
+	string udmfNamespace() const override { return udmf_namespace_; }
+	void   setUDMFNamespace(string_view ns) override { udmf_namespace_ = ns; }
 
 private:
 	string udmf_namespace_;

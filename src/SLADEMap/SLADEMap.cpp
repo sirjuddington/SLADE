@@ -503,7 +503,12 @@ void SLADEMap::recomputeSpecials()
 // -----------------------------------------------------------------------------
 bool SLADEMap::writeMap(vector<ArchiveEntry*>& map_entries) const
 {
-	auto out = MapFormatHandler::get(current_format_)->writeMap(data_, udmf_props_);
+	// Get format handler
+	auto handler = MapFormatHandler::get(current_format_);
+	handler->setUDMFNamespace(udmf_namespace_);
+
+	// Get map data
+	auto out = handler->writeMap(data_, udmf_props_);
 	if (out.empty())
 		return false;
 
