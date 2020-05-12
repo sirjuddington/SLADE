@@ -2,6 +2,7 @@
 
 #include "StringUtils.h"
 #include <variant>
+#undef Bool
 
 namespace slade
 {
