@@ -218,7 +218,7 @@ void MapEditorWindow::setupMenu()
 	auto menu_map = new wxMenu("");
 	SAction::fromId("mapw_save")->addToMenu(menu_map);
 	SAction::fromId("mapw_saveas")->addToMenu(menu_map);
-	SAction::fromId("mapw_rename")->addToMenu(menu_map);
+	//SAction::fromId("mapw_rename")->addToMenu(menu_map);
 	SAction::fromId("mapw_backup")->addToMenu(menu_map);
 	menu_map->AppendSeparator();
 	SAction::fromId("mapw_run_map")->addToMenu(menu_map);
@@ -300,7 +300,8 @@ void MapEditorWindow::setupLayout()
 	auto tbg_map = new SToolBarGroup(toolbar_, "_Map");
 	tbg_map->addActionButton("mapw_save");
 	tbg_map->addActionButton("mapw_saveas");
-	tbg_map->addActionButton("mapw_rename");
+	//tbg_map->addActionButton("mapw_rename"); // TODO: Actually implement this one
+	tbg_map->addActionButton("mapw_preferences");
 	toolbar_->addGroup(tbg_map);
 
 	// Mode toolbar
@@ -1207,7 +1208,7 @@ bool MapEditorWindow::handleAction(string_view id)
 	// Editor->Preferences
 	if (id == "mapw_preferences")
 	{
-		PreferencesDialog::openPreferences(this);
+		PreferencesDialog::openPreferences(this, "Map Editor");
 
 		return true;
 	}

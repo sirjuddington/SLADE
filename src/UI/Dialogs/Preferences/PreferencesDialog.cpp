@@ -278,6 +278,7 @@ void PreferencesDialog::showPage(const wxString& name, const wxString& subsectio
 		if (S_CMPNOCASE(tree_prefs_->GetPageText(a), name))
 		{
 			tree_prefs_->SetSelection(a);
+			tree_prefs_->ExpandNode(a);
 			if (prefs_pages_[name])
 				prefs_pages_[name]->showSubSection(subsection);
 			return;
