@@ -198,7 +198,7 @@ string UDMFProperty::getStringRep()
 	{
 		if (type_ == Type::Boolean)
 		{
-			if ((bool)default_value_)
+			if (property::value<bool>(default_value_, false))
 				ret += ", default = true";
 			else
 				ret += ", default = false";
@@ -206,11 +206,11 @@ string UDMFProperty::getStringRep()
 		else if (
 			type_ == Type::Int || type_ == Type::ActionSpecial || type_ == Type::SectorSpecial
 			|| type_ == Type::ThingType || type_ == Type::Colour)
-			ret += fmt::format(", default = {}", default_value_.intValue());
+			ret += fmt::format(", default = {}", property::value<int>(default_value_, 0));
 		else if (type_ == Type::Float)
-			ret += fmt::format(", default = {:1.2f}", (double)default_value_);
+			ret += fmt::format(", default = {:1.2f}", property::value<double>(default_value_, 0.));
 		else
-			ret += fmt::format(", default = \"{}\"", default_value_.stringValue());
+			ret += fmt::format(", default = \"{}\"", property::value<string>(default_value_, {}));
 	}
 	else
 		ret += ", no valid default";
@@ -225,7 +225,7 @@ string UDMFProperty::getStringRep()
 		ret += "\nPossible values: ";
 		for (unsigned a = 0; a < values_.size(); a++)
 		{
-			ret += values_[a].stringValue();
+			ret += property::value<string>(values_[a], {});
 			if (a < values_.size() - 1)
 				ret += ", ";
 		}

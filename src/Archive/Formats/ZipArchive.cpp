@@ -323,8 +323,8 @@ bool ZipArchive::write(string_view filename, bool update)
 
 		// Get entry zip index
 		int index = -1;
-		if (entries[a]->exProps().propertyExists("ZipIndex"))
-			index = entries[a]->exProp("ZipIndex");
+		if (entries[a]->exProps().contains("ZipIndex"))
+			index = entries[a]->exProp<int>("ZipIndex");
 
 		auto saname = misc::lumpNameToFileName(entries[a]->name());
 		if (!inzip || entries[a]->state() != ArchiveEntry::State::Unmodified || index < 0
@@ -388,8 +388,8 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Check that the entry has a zip index
 	int zip_index;
-	if (entry->exProps().propertyExists("ZipIndex"))
-		zip_index = entry->exProp("ZipIndex");
+	if (entry->exProps().contains("ZipIndex"))
+		zip_index = entry->exProp<int>("ZipIndex");
 	else
 	{
 		log::error("ZipArchive::loadEntryData: Entry {} has no zip entry index!", entry->name());

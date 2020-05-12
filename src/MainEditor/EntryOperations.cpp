@@ -971,7 +971,7 @@ bool entryoperations::addToPatchTable(const vector<ArchiveEntry*>& entries)
 	for (auto& entry : entries)
 	{
 		// Check entry type
-		if (!(entry->type()->extraProps().propertyExists("image")))
+		if (!(entry->type()->extraProps().contains("image")))
 		{
 			log::error("Entry {} is not a valid image", entry->name());
 			continue;
@@ -1076,7 +1076,7 @@ bool entryoperations::createTexture(const vector<ArchiveEntry*>& entries)
 	for (auto& entry : entries)
 	{
 		// Check entry type
-		if (!(entry->type()->extraProps().propertyExists("image")))
+		if (!(entry->type()->extraProps().contains("image")))
 		{
 			log::error(wxString::Format("Entry %s is not a valid image", entry->name()));
 			continue;

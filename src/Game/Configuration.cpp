@@ -1777,6 +1777,8 @@ UDMFPropMap& Configuration::allUDMFProperties(MapObject::Type type)
 // -----------------------------------------------------------------------------
 void Configuration::cleanObjectUDMFProps(MapObject* object)
 {
+	using namespace property;
+
 	// Get UDMF properties list for type
 	UDMFPropMap* map  = nullptr;
 	auto         type = object->objType();
@@ -1794,32 +1796,36 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 		return;
 
 	// Go through properties
-	for (auto& i : *map)
+	for (const auto& i : *map)
 	{
+		const auto& name      = i.first;
+		const auto& udmf_prop = i.second;
+
 		// Check if the object even has this property
-		if (!object->hasProp(i.first))
+		if (!object->hasProp(name))
 			continue;
 
 		// Remove the property from the object if it is the default value
-		if (i.second.defaultValue().type() == Property::Type::Boolean)
+		const auto& default_val = udmf_prop.defaultValue();
+		switch (valueType(default_val))
 		{
-			if (i.second.defaultValue().boolValue() == object->boolProperty(i.first))
-				object->props().removeProperty(i.first);
-		}
-		else if (i.second.defaultValue().type() == Property::Type::Int)
-		{
-			if (i.second.defaultValue().intValue() == object->intProperty(i.first))
-				object->props().removeProperty(i.first);
-		}
-		else if (i.second.defaultValue().type() == Property::Type::Float)
-		{
-			if (i.second.defaultValue().floatValue() == object->floatProperty(i.first))
-				object->props().removeProperty(i.first);
-		}
-		else if (i.second.defaultValue().type() == Property::Type::String)
-		{
-			if (i.second.defaultValue().stringValue() == object->stringProperty(i.first))
-				object->props().removeProperty(i.first);
+		case ValueType::Bool:
+			if (udmf_prop.isDefault<bool>(object->boolProperty(name)))
+				object->props().remove(name);
+			break;
+		case ValueType::Int:
+			if (udmf_prop.isDefault<int>(object->intProperty(name)))
+				object->props().remove(name);
+			break;
+		case ValueType::Float:
+			if (udmf_prop.isDefault<double>(object->floatProperty(name)))
+				object->props().remove(name);
+			break;
+		case ValueType::String:
+			if (udmf_prop.isDefault<string>(object->stringProperty(name)))
+				object->props().remove(name);
+			break;
+		default: break;
 		}
 	}
 }
@@ -2027,29 +2033,29 @@ int Configuration::boomSectorType(int base, int damage, bool secret, bool fricti
 // -----------------------------------------------------------------------------
 // Returns the default string value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-string Configuration::defaultString(MapObject::Type type, const string& property)
+string Configuration::defaultString(MapObject::Type type, const string& property) const
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_[property].stringValue();
-	case MapObject::Type::Side: return defaults_side_[property].stringValue();
-	case MapObject::Type::Sector: return defaults_sector_[property].stringValue();
-	case MapObject::Type::Thing: return defaults_thing_[property].stringValue();
-	default: return "";
+	case MapObject::Type::Line: return defaults_line_.getOr<string>(property, {});
+	case MapObject::Type::Side: return defaults_side_.getOr<string>(property, {});
+	case MapObject::Type::Sector: return defaults_sector_.getOr<string>(property, {});
+	case MapObject::Type::Thing: return defaults_thing_.getOr<string>(property, {});
+	default: return {};
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Returns the default int value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-int Configuration::defaultInt(MapObject::Type type, const string& property)
+int Configuration::defaultInt(MapObject::Type type, const string& property) const
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_[property].intValue();
-	case MapObject::Type::Side: return defaults_side_[property].intValue();
-	case MapObject::Type::Sector: return defaults_sector_[property].intValue();
-	case MapObject::Type::Thing: return defaults_thing_[property].intValue();
+	case MapObject::Type::Line: return defaults_line_.getOr<int>(property, 0);
+	case MapObject::Type::Side: return defaults_side_.getOr<int>(property, 0);
+	case MapObject::Type::Sector: return defaults_sector_.getOr<int>(property, 0);
+	case MapObject::Type::Thing: return defaults_thing_.getOr<int>(property, 0);
 	default: return 0;
 	}
 }
@@ -2057,29 +2063,29 @@ int Configuration::defaultInt(MapObject::Type type, const string& property)
 // -----------------------------------------------------------------------------
 // Returns the default float value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-double Configuration::defaultFloat(MapObject::Type type, const string& property)
+double Configuration::defaultFloat(MapObject::Type type, const string& property) const
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_[property].floatValue();
-	case MapObject::Type::Side: return defaults_side_[property].floatValue();
-	case MapObject::Type::Sector: return defaults_sector_[property].floatValue();
-	case MapObject::Type::Thing: return defaults_thing_[property].floatValue();
-	default: return 0;
+	case MapObject::Type::Line: return defaults_line_.getOr(property, 0.);
+	case MapObject::Type::Side: return defaults_side_.getOr(property, 0.);
+	case MapObject::Type::Sector: return defaults_sector_.getOr(property, 0.);
+	case MapObject::Type::Thing: return defaults_thing_.getOr(property, 0.);
+	default: return 0.;
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Returns the default boolean value for [property] of MapObject type [type]
 // -----------------------------------------------------------------------------
-bool Configuration::defaultBool(MapObject::Type type, const string& property)
+bool Configuration::defaultBool(MapObject::Type type, const string& property) const
 {
 	switch (type)
 	{
-	case MapObject::Type::Line: return defaults_line_[property].boolValue();
-	case MapObject::Type::Side: return defaults_side_[property].boolValue();
-	case MapObject::Type::Sector: return defaults_sector_[property].boolValue();
-	case MapObject::Type::Thing: return defaults_thing_[property].boolValue();
+	case MapObject::Type::Line: return defaults_line_.getOr(property, false);
+	case MapObject::Type::Side: return defaults_side_.getOr(property, false);
+	case MapObject::Type::Sector: return defaults_sector_.getOr(property, false);
+	case MapObject::Type::Thing: return defaults_thing_.getOr(property, false);
 	default: return false;
 	}
 }
@@ -2144,15 +2150,17 @@ void Configuration::applyDefaults(MapObject* object, bool udmf)
 	// Apply defaults to object
 	for (unsigned a = 0; a < prop_names.size(); a++)
 	{
-		if (prop_vals[a].type() == Property::Type::Boolean)
-			object->setBoolProperty(prop_names[a], prop_vals[a].boolValue());
-		else if (prop_vals[a].type() == Property::Type::Int)
-			object->setIntProperty(prop_names[a], prop_vals[a].intValue());
-		else if (prop_vals[a].type() == Property::Type::Float)
-			object->setFloatProperty(prop_names[a], prop_vals[a].floatValue());
-		else if (prop_vals[a].type() == Property::Type::String)
-			object->setStringProperty(prop_names[a], prop_vals[a].stringValue());
-		log::info(3, "Applied default property {} = {}", prop_names[a], prop_vals[a].stringValue());
+		switch (property::valueType(prop_vals[a]))
+		{
+		case property::ValueType::Bool: object->setBoolProperty(prop_names[a], std::get<bool>(prop_vals[a])); break;
+		case property::ValueType::Int: object->setIntProperty(prop_names[a], std::get<int>(prop_vals[a])); break;
+		case property::ValueType::UInt: object->setIntProperty(prop_names[a], std::get<unsigned int>(prop_vals[a])); break;
+		case property::ValueType::Float: object->setFloatProperty(prop_names[a], std::get<double>(prop_vals[a])); break;
+		case property::ValueType::String: object->setStringProperty(prop_names[a], std::get<string>(prop_vals[a])); break;
+		default: break;
+		}
+				
+		//log::info(3, "Applied default property {} = {}", prop_names[a], prop_vals[a].stringValue());
 	}
 }
 

@@ -375,26 +375,26 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 	decorate_ = decorate;
 
 	// Sprite
-	if (props["sprite"].hasValue())
+	if (auto sprite = props.getIf<string>("sprite"))
 	{
-		if (strutil::equalCI(props["sprite"].stringValue(), "tnt1a?"))
+		if (strutil::equalCI(*sprite, "tnt1a?"))
 		{
-			if ((!(props["icon"].hasValue())) && icon_.empty())
+			if (!props.contains("icon"))
 				icon_ = "tnt1a0";
 		}
 		else
-			sprite_ = props["sprite"].stringValue();
+			sprite_ = *sprite;
 	}
 
 	// Colour
-	if (props["colour"].hasValue())
+	if (auto colour = props.getIf<string>("colour"))
 	{
 		// SLADE Colour
-		wxColour wxc(props["colour"].stringValue());
+		wxColour wxc(*colour);
 		if (wxc.IsOk())
 			colour_.set(wxc);
 	}
-	else if (props["color"].hasValue())
+	else if (auto color = props.getIf<int>("color"))
 	{
 		// Translate DB2 color indices to RGB values
 		static vector<ColRGBA> db2_colours{
@@ -420,48 +420,47 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 			{ 0xDA, 0xA5, 0x20, 0xFF }, // Goldenrod		ARGB value of #FFDAA520
 		};
 
-		int color = props["color"].intValue();
-		if (color < (int)db2_colours.size())
-			colour_ = db2_colours[color];
+		if (*color < (int)db2_colours.size())
+			colour_ = db2_colours[*color];
 	}
 
 	// Other props
-	if (props["radius"].hasValue())
-		radius_ = props["radius"].intValue();
-	if (props["height"].hasValue())
-		height_ = props["height"].intValue();
-	if (props["scalex"].hasValue())
-		scale_.x = props["scalex"].floatValue();
-	if (props["scaley"].hasValue())
-		scale_.y = props["scaley"].floatValue();
-	if (props["hanging"].hasValue())
-		hanging_ = props["hanging"].boolValue();
-	if (props["angled"].hasValue())
-		angled_ = props["angled"].boolValue();
-	if (props["bright"].hasValue())
-		fullbright_ = props["bright"].boolValue();
-	if (props["decoration"].hasValue())
-		decoration_ = props["decoration"].boolValue();
-	if (props["icon"].hasValue())
-		icon_ = props["icon"].stringValue();
-	if (props["translation"].hasValue())
-		translation_ = props["translation"].stringValue();
-	if (props["solid"].hasValue())
-		solid_ = props["solid"].boolValue();
-	if (props["obsolete"].hasValue())
+	if (auto val = props.getIf<int>("radius"))
+		radius_ = *val;
+	if (auto val = props.getIf<int>("height"))
+		height_ = *val;
+	if (auto val = props.getIf<double>("scalex"))
+		scale_.x = *val;
+	if (auto val = props.getIf<double>("scaley"))
+		scale_.y = *val;
+	if (auto val = props.getIf<bool>("hanging"))
+		hanging_ = *val;
+	if (auto val = props.getIf<bool>("angled"))
+		angled_ = *val;
+	if (auto val = props.getIf<bool>("bright"))
+		fullbright_ = *val;
+	if (auto val = props.getIf<bool>("decoration"))
+		decoration_ = *val;
+	if (auto val = props.getIf<string>("icon"))
+		icon_ = *val;
+	if (auto val = props.getIf<string>("translation"))
+		translation_ = *val;
+	if (auto val = props.getIf<bool>("solid"))
+		solid_ = *val;
+	if (auto val = props.getIf<bool>("obsolete"))
 		flags_ |= Obsolete;
 
 	// ZScript-only props
 	if (zscript)
 	{
-		if (props["scale"].hasValue())
-			scale_.x = scale_.y = props["scale"].floatValue();
-		if (props["scale.x"].hasValue())
-			scale_.x = props["scale.x"].floatValue();
-		if (props["scale.y"].hasValue())
-			scale_.y = props["scale.y"].floatValue();
-		if (props["spawnceiling"].hasValue())
-			hanging_ = props["spawnceiling"].boolValue();
+		if (auto val = props.getIf<double>("scale"))
+			scale_.x = scale_.y = *val;
+		if (auto val = props.getIf<double>("scale.x"))
+			scale_.x = *val;
+		if (auto val = props.getIf<double>("scale.y"))
+			scale_.y = *val;
+		if (auto val = props.getIf<bool>("spawnceiling"))
+			hanging_ = *val;
 	}
 }
 

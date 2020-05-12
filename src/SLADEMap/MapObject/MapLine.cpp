@@ -912,8 +912,8 @@ void MapLine::writeBackup(Backup* backup)
 void MapLine::readBackup(Backup* backup)
 {
 	// Vertices
-	auto v1 = parent_map_->mapData().getObjectById(backup->props_internal[PROP_V1]);
-	auto v2 = parent_map_->mapData().getObjectById(backup->props_internal[PROP_V2]);
+	auto v1 = parent_map_->mapData().getObjectById(backup->props_internal.get<unsigned>(PROP_V1));
+	auto v2 = parent_map_->mapData().getObjectById(backup->props_internal.get<unsigned>(PROP_V2));
 	if (v1)
 	{
 		vertex1_->disconnectLine(this);
@@ -930,8 +930,8 @@ void MapLine::readBackup(Backup* backup)
 	}
 
 	// Sides
-	auto s1 = parent_map_->mapData().getObjectById(backup->props_internal["s1"]);
-	auto s2 = parent_map_->mapData().getObjectById(backup->props_internal["s2"]);
+	auto s1 = parent_map_->mapData().getObjectById(backup->props_internal.get<unsigned>("s1"));
+	auto s2 = parent_map_->mapData().getObjectById(backup->props_internal.get<unsigned>("s2"));
 	side1_  = dynamic_cast<MapSide*>(s1);
 	side2_  = dynamic_cast<MapSide*>(s2);
 	if (side1_)
@@ -940,16 +940,16 @@ void MapLine::readBackup(Backup* backup)
 		side2_->parent_ = this;
 
 	// Flags
-	flags_ = backup->props_internal[PROP_FLAGS];
+	flags_ = backup->props_internal.get<int>(PROP_FLAGS);
 
 	// Special
-	special_ = backup->props_internal[PROP_SPECIAL];
-	id_      = backup->props_internal[PROP_ID];
-	args_[0] = backup->props_internal[PROP_ARG0];
-	args_[1] = backup->props_internal[PROP_ARG1];
-	args_[2] = backup->props_internal[PROP_ARG2];
-	args_[3] = backup->props_internal[PROP_ARG3];
-	args_[4] = backup->props_internal[PROP_ARG4];
+	special_ = backup->props_internal.get<int>(PROP_SPECIAL);
+	id_      = backup->props_internal.get<int>(PROP_ID);
+	args_[0] = backup->props_internal.get<int>(PROP_ARG0);
+	args_[1] = backup->props_internal.get<int>(PROP_ARG1);
+	args_[2] = backup->props_internal.get<int>(PROP_ARG2);
+	args_[3] = backup->props_internal.get<int>(PROP_ARG3);
+	args_[4] = backup->props_internal.get<int>(PROP_ARG4);
 }
 
 // -----------------------------------------------------------------------------
@@ -985,7 +985,7 @@ void MapLine::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 void MapLine::writeUDMF(string& def)
 {
-	def = fmt::format("linedef//#{}\n{\n", index_);
+	def = fmt::format("linedef//#{}\n{{\n", index_);
 
 	// Basic properties
 	def += fmt::format("v1={};\nv2={};\nsidefront={};\n", v1Index(), v2Index(), s1Index());
@@ -1002,7 +1002,7 @@ void MapLine::writeUDMF(string& def)
 			def += fmt::format("arg{}={};\n", i, args_[i]);
 
 	// Other properties
-	if (!properties_.isEmpty())
+	if (!properties_.empty())
 		def += properties_.toString(true);
 
 	def += "}\n\n";

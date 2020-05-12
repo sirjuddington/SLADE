@@ -78,7 +78,7 @@ void SpecialPreset::parse(ParseTreeNode* node)
 		// Flags
 		else if (strutil::equalCI(child->name(), "flags"))
 			for (auto& flag : child->values())
-				flags.push_back(flag.stringValue());
+				flags.push_back(property::asString(flag));
 
 		// Args
 		else if (strutil::equalCI(child->name(), "arg1"))

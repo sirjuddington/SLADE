@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PropertyList/Property.h"
+#include "Property.h"
 #include "Tree.h"
 
 namespace slade
@@ -42,7 +42,7 @@ public:
 	ParseTreeNode* childPTN(unsigned index) { return dynamic_cast<ParseTreeNode*>(child(index)); }
 
 	ParseTreeNode* addChildPTN(string_view name, string_view type = "");
-	void           addStringValue(string_view value) { values_.emplace_back(value); }
+	void           addStringValue(string_view value) { values_.emplace_back(string{ value }); }
 	void           addIntValue(int value) { values_.emplace_back(value); }
 	void           addBoolValue(bool value) { values_.emplace_back(value); }
 	void           addFloatValue(double value) { values_.emplace_back(value); }

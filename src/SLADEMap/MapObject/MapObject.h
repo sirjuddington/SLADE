@@ -4,7 +4,7 @@
 #pragma clang diagnostic ignored "-Wundefined-bool-conversion"
 #endif
 
-#include "SLADEMap/MobjPropertyList.h"
+#include "Utility/Property.h"
 #include <array>
 
 namespace slade
@@ -44,10 +44,10 @@ public:
 
 	struct Backup
 	{
-		MobjPropertyList properties;
-		MobjPropertyList props_internal;
-		unsigned         id   = 0;
-		Type             type = Type::Object;
+		PropertyList properties;
+		PropertyList props_internal;
+		unsigned     id   = 0;
+		Type         type = Type::Object;
 	};
 
 	typedef std::array<int, 5> ArgSet;
@@ -70,8 +70,8 @@ public:
 	void      setModified();
 	void      setIndex(unsigned index) { index_ = index; }
 
-	MobjPropertyList& props() { return properties_; }
-	bool              hasProp(string_view key);
+	PropertyList& props() { return properties_; }
+	bool          hasProp(string_view key);
 
 	// Generic property modification
 	virtual bool   boolProperty(string_view key);
@@ -111,7 +111,7 @@ public:
 protected:
 	unsigned           index_      = 0;
 	SLADEMap*          parent_map_ = nullptr;
-	MobjPropertyList   properties_;
+	PropertyList       properties_;
 	bool               filtered_      = false;
 	long               modified_time_ = 0;
 	unsigned           obj_id_        = 0;

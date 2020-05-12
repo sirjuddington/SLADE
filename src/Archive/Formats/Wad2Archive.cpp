@@ -143,7 +143,7 @@ bool Wad2Archive::open(MemChunk& mc)
 		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->size());
+			mc.exportMemChunk(edata, entry->exProp<int>("Offset"), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -219,11 +219,11 @@ bool Wad2Archive::write(MemChunk& mc, bool update)
 		Wad2Entry info;
 		memset(info.name, 0, 16);
 		memcpy(info.name, entry->name().data(), entry->name().size());
-		info.cmprs  = (bool)entry->exProp("W2Comp");
+		info.cmprs  = entry->exProp<bool>("W2Comp");
 		info.dsize  = entry->size();
 		info.size   = entry->size();
-		info.offset = (int)entry->exProp("Offset");
-		info.type   = (int)entry->exProp("W2Type");
+		info.offset = entry->exProp<int>("Offset");
+		info.type   = entry->exProp<int>("W2Type");
 
 		// Write it
 		mc.write(&info, 32);
@@ -264,7 +264,7 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Seek to lump offset in file and read it in
-	file.Seek((int)entry->exProp("Offset"), wxFromStart);
+	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
 	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded

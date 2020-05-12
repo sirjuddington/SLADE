@@ -366,7 +366,7 @@ void expandWolfGraphLump(ArchiveEntry* entry, size_t lumpnum, size_t numlumps, H
 // -----------------------------------------------------------------------------
 uint32_t WolfArchive::getEntryOffset(ArchiveEntry* entry) const
 {
-	return uint32_t((int)entry->exProp("Offset"));
+	return uint32_t(entry->exProp<int>("Offset"));
 }
 
 // -----------------------------------------------------------------------------

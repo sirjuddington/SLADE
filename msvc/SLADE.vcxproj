@@ -478,7 +478,6 @@
     <ClCompile Include="..\src\SLADEMap\MapObject\MapThing.cpp" />
     <ClCompile Include="..\src\SLADEMap\MapObject\MapVertex.cpp" />
     <ClCompile Include="..\src\SLADEMap\MapSpecials.cpp" />
-    <ClCompile Include="..\src\SLADEMap\MobjPropertyList.cpp" />
     <ClCompile Include="..\src\SLADEMap\SLADEMap.cpp" />
     <ClCompile Include="..\src\TextEditor\Lexer.cpp" />
     <ClCompile Include="..\src\TextEditor\TextLanguage.cpp" />
@@ -543,8 +542,7 @@
     <ClCompile Include="..\src\Utility\MemChunk.cpp" />
     <ClCompile Include="..\src\Utility\Parser.cpp" />
     <ClCompile Include="..\src\Utility\Polygon2D.cpp" />
-    <ClCompile Include="..\src\Utility\PropertyList\Property.cpp" />
-    <ClCompile Include="..\src\Utility\PropertyList\PropertyList.cpp" />
+    <ClCompile Include="..\src\Utility\Property.cpp" />
     <ClCompile Include="..\src\Utility\SFileDialog.cpp" />
     <ClCompile Include="..\src\Utility\StringUtils.cpp" />
     <ClCompile Include="..\src\Utility\Tokenizer.cpp" />
@@ -663,6 +661,7 @@
     <ClInclude Include="..\src\General\Sigslot.h" />
     <ClInclude Include="..\src\Scripting\Export\Export.h" />
     <ClInclude Include="..\src\Utility\FileUtils.h" />
+    <ClInclude Include="..\src\Utility\Property.h" />
     <ClInclude Include="..\src\Utility\SeekableData.h" />
     <ClInclude Include="..\src\Dialogs\DirArchiveUpdateDialog.h" />
     <ClInclude Include="..\src\Dialogs\ExtMessageDialog.h" />
@@ -846,7 +845,6 @@
     <ClInclude Include="..\src\SLADEMap\MapObject\MapThing.h" />
     <ClInclude Include="..\src\SLADEMap\MapObject\MapVertex.h" />
     <ClInclude Include="..\src\SLADEMap\MapSpecials.h" />
-    <ClInclude Include="..\src\SLADEMap\MobjPropertyList.h" />
     <ClInclude Include="..\src\SLADEMap\SLADEMap.h" />
     <ClInclude Include="..\src\TextEditor\Lexer.h" />
     <ClInclude Include="..\src\TextEditor\TextLanguage.h" />
@@ -898,8 +896,6 @@
     <ClInclude Include="..\src\Utility\Memory.h" />
     <ClInclude Include="..\src\Utility\Parser.h" />
     <ClInclude Include="..\src\Utility\Polygon2D.h" />
-    <ClInclude Include="..\src\Utility\PropertyList\Property.h" />
-    <ClInclude Include="..\src\Utility\PropertyList\PropertyList.h" />
     <ClInclude Include="..\src\Utility\SFileDialog.h" />
     <ClInclude Include="..\src\Utility\StringUtils.h" />
     <ClInclude Include="..\src\Utility\Structs.h" />

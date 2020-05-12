@@ -8,7 +8,7 @@
 #include "SpecialPreset.h"
 #include "ThingType.h"
 #include "UDMFProperty.h"
-#include "Utility/PropertyList/PropertyList.h"
+#include "Utility/Property.h"
 
 namespace slade
 {
@@ -178,10 +178,10 @@ namespace game
 		int    boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull) const;
 
 		// Defaults
-		string defaultString(MapObject::Type type, const string& property);
-		int    defaultInt(MapObject::Type type, const string& property);
-		double defaultFloat(MapObject::Type type, const string& property);
-		bool   defaultBool(MapObject::Type type, const string& property);
+		string defaultString(MapObject::Type type, const string& property) const;
+		int    defaultInt(MapObject::Type type, const string& property) const;
+		double defaultFloat(MapObject::Type type, const string& property) const;
+		bool   defaultBool(MapObject::Type type, const string& property) const;
 		void   applyDefaults(MapObject* object, bool udmf = false);
 
 		// Special Presets

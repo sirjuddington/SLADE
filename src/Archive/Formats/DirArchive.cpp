@@ -275,7 +275,7 @@ bool DirArchive::save(string_view filename)
 
 		// Check if entry needs to be (re)written
 		if (entries[a]->state() == ArchiveEntry::State::Unmodified
-			&& path == entries[a]->exProp("filePath").stringValue())
+			&& path == entries[a]->exProp<string>("filePath"))
 			continue;
 
 		// Write entry to file
@@ -301,9 +301,9 @@ bool DirArchive::save(string_view filename)
 // -----------------------------------------------------------------------------
 bool DirArchive::loadEntryData(ArchiveEntry* entry)
 {
-	if (entry->importFile(entry->exProp("filePath").stringValue()))
+	if (entry->importFile(entry->exProp<string>("filePath")))
 	{
-		file_modification_times_[entry] = wxFileModificationTime(entry->exProp("filePath").stringValue());
+		file_modification_times_[entry] = wxFileModificationTime(entry->exProp<string>("filePath"));
 		return true;
 	}
 
@@ -338,8 +338,8 @@ shared_ptr<ArchiveDir> DirArchive::removeDir(string_view path, ArchiveDir* base)
 	// Add to removed files list
 	for (auto& entry : entries)
 	{
-		log::info(2, entry->exProp("filePath").stringValue());
-		removed_files_.push_back(entry->exProp("filePath").stringValue());
+		log::info(2, entry->exProp<string>("filePath"));
+		removed_files_.push_back(entry->exProp<string>("filePath"));
 	}
 
 	// Do normal dir remove
@@ -397,7 +397,7 @@ bool DirArchive::removeEntry(ArchiveEntry* entry)
 	if (!checkEntry(entry))
 		return false;
 
-	auto old_name = entry->exProp("filePath").stringValue();
+	auto old_name = entry->exProp<string>("filePath");
 	bool success  = Archive::removeEntry(entry);
 	if (success)
 		removed_files_.push_back(old_name);
@@ -420,7 +420,7 @@ bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name)
 		return false;
 	}
 
-	auto old_name = entry->exProp("filePath").stringValue();
+	auto old_name = entry->exProp<string>("filePath");
 	bool success  = Archive::renameEntry(entry, name);
 	if (success)
 		removed_files_.push_back(old_name);

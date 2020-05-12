@@ -134,7 +134,7 @@ bool PodArchive::open(MemChunk& mc)
 
 		// Read data
 		MemChunk edata;
-		mc.exportMemChunk(edata, all_entries[a]->exProp("Offset").intValue(), all_entries[a]->size());
+		mc.exportMemChunk(edata, all_entries[a]->exProp<int>("Offset"), all_entries[a]->size());
 		all_entries[a]->importMemChunk(edata);
 
 		// Detect entry type
@@ -220,7 +220,7 @@ bool PodArchive::write(MemChunk& mc, bool update)
 			5,
 			"entry {}: old={} new={} size={}",
 			fe.name,
-			entry->exProp("Offset").intValue(),
+			entry->exProp<int>("Offset"),
 			fe.offset,
 			entry->size());
 
@@ -265,7 +265,7 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Seek to lump offset in file and read it in
-	file.Seek((int)entry->exProp("Offset"), wxFromStart);
+	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
 	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded

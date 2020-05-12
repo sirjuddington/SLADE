@@ -127,7 +127,7 @@ void MOPGBoolProperty::openObjects(vector<MapObject*>& objects)
 void MOPGBoolProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().boolValue() == GetValue().GetBool())
+		&& property::asBool(udmf_prop_->defaultValue()) == GetValue().GetBool())
 		Hide(true);
 	else
 		Hide(false);
@@ -210,7 +210,7 @@ void MOPGIntProperty::openObjects(vector<MapObject*>& objects)
 void MOPGIntProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().intValue() == GetValue().GetInteger())
+		&& property::asInt(udmf_prop_->defaultValue()) == GetValue().GetInteger())
 		Hide(true);
 	else
 		Hide(false);
@@ -293,7 +293,7 @@ void MOPGFloatProperty::openObjects(vector<MapObject*>& objects)
 void MOPGFloatProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().floatValue() == GetValue().GetDouble())
+		&& property::asFloat(udmf_prop_->defaultValue()) == GetValue().GetDouble())
 		Hide(true);
 	else
 		Hide(false);
@@ -351,7 +351,7 @@ void MOPGStringProperty::setUDMFProp(game::UDMFProperty* prop)
 		auto choices = wxPGChoices();
 
 		for (auto& val : prop->possibleValues())
-			choices.Add(val.stringValue());
+			choices.Add(property::asString(val));
 
 		SetChoices(choices);
 		SetEditor(wxPGEditor_ComboBox);
@@ -398,7 +398,7 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
 void MOPGStringProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().stringValue() == GetValue().GetString())
+		&& property::asString(udmf_prop_->defaultValue()) == GetValue().GetString())
 		Hide(true);
 	else
 		Hide(false);
@@ -464,7 +464,7 @@ void MOPGIntWithArgsProperty::updateArgs(wxPGProperty* args[5])
 	unsigned argcount;
 
 	if (udmf_prop_)
-		default_value = udmf_prop_->defaultValue().intValue();
+		default_value = property::asInt(udmf_prop_->defaultValue());
 
 	if (parent_->showAll())
 		argcount = 5;
@@ -869,7 +869,7 @@ void MOPGAngleProperty::openObjects(vector<MapObject*>& objects)
 void MOPGAngleProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().intValue() == GetValue().GetInteger())
+		&& property::asInt(udmf_prop_->defaultValue()) == GetValue().GetInteger())
 		Hide(true);
 	else
 		Hide(false);
@@ -1144,7 +1144,7 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 void MOPGSPACTriggerProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().intValue() == GetValue().GetInteger())
+		&& property::asInt(udmf_prop_->defaultValue()) == GetValue().GetInteger())
 		Hide(true);
 	else
 		Hide(false);

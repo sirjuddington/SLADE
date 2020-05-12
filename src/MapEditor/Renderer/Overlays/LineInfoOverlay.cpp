@@ -86,7 +86,7 @@ void LineInfoOverlay::update(MapLine* line)
 
 	// Line special
 	int as_id = line->special();
-	if (line->props().propertyExists("macro"))
+	if (line->hasProp("macro"))
 	{
 		int macro = line->intProperty("macro");
 		info_text += (fmt::format("Macro: #{}\n", macro));

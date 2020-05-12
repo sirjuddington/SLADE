@@ -129,7 +129,7 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 	if (!state_sprites[state_first].empty())
 		props["sprite"] = state_sprites[state_first] + "?";
 
-	log::debug(2, "Parsed states, got sprite {}", props["sprite"].stringValue());
+	log::debug(2, "Parsed states, got sprite {}", property::asString(props["sprite"]));
 
 
 

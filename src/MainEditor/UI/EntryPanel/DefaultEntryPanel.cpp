@@ -129,7 +129,7 @@ bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 	frame_actions_->Show(false);
 
 	// Check for gfx entry
-	if (entry->type()->extraProps().propertyExists("image"))
+	if (entry->type()->extraProps().contains("image"))
 	{
 		frame_actions_->Show(true);
 		btn_gfx_convert_->Show(true);
@@ -181,7 +181,7 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 			max = index;
 
 		// Check for gfx entry
-		if (entry->type()->extraProps().propertyExists("image"))
+		if (entry->type()->extraProps().contains("image"))
 			gfx = true;
 
 		// Check for TEXTUREx related entry

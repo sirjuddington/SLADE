@@ -109,9 +109,6 @@
     <Filter Include="Archive\EntryType\Data Formats">
       <UniqueIdentifier>{639d4195-f616-4708-bc9b-82e7652914c0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Utility\Property List">
-      <UniqueIdentifier>{999a30d0-f905-4f75-885f-209959ffe1c9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Archive\EntryType\Config">
       <UniqueIdentifier>{e7b5e9e0-b8de-4082-845a-f7bd5fa91926}</UniqueIdentifier>
     </Filter>
@@ -293,12 +290,6 @@
     </ClCompile>
     <ClCompile Include="..\src\OpenGL\GLTexture.cpp">
       <Filter>OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Utility\PropertyList\Property.cpp">
-      <Filter>Utility\Property List</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Utility\PropertyList\PropertyList.cpp">
-      <Filter>Utility\Property List</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Utility\CIEDeltaEquations.cpp">
       <Filter>Utility</Filter>
@@ -903,9 +894,6 @@
     <ClCompile Include="..\src\SLADEMap\MapObjectCollection.cpp">
       <Filter>SLADEMap</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\SLADEMap\MobjPropertyList.cpp">
-      <Filter>SLADEMap</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\SLADEMap\SLADEMap.cpp">
       <Filter>SLADEMap</Filter>
     </ClCompile>
@@ -998,6 +986,9 @@
     </ClCompile>
     <ClCompile Include="..\thirdparty\mus2mid\mus2mid.cpp">
       <Filter>ThirdParty\Mus2Mid</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Utility\Property.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1145,12 +1136,6 @@
     </ClInclude>
     <ClInclude Include="..\src\OpenGL\GLTexture.h">
       <Filter>OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Utility\PropertyList\Property.h">
-      <Filter>Utility\Property List</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Utility\PropertyList\PropertyList.h">
-      <Filter>Utility\Property List</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Utility\CIEDeltaEquations.h">
       <Filter>Utility</Filter>
@@ -1820,9 +1805,6 @@
     <ClInclude Include="..\src\SLADEMap\MapObjectCollection.h">
       <Filter>SLADEMap</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\SLADEMap\MobjPropertyList.h">
-      <Filter>SLADEMap</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\SLADEMap\SLADEMap.h">
       <Filter>SLADEMap</Filter>
     </ClInclude>
@@ -1906,6 +1888,9 @@
     </ClInclude>
     <ClInclude Include="..\thirdparty\mus2mid\mus2mid.h">
       <Filter>ThirdParty\Mus2Mid</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Utility\Property.h">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

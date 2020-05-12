@@ -120,7 +120,7 @@ void EntryType::copyToType(EntryType& target)
 	target.match_archive_   = match_archive_;
 
 	// Copy extra properties
-	extra_.copyTo(target.extra_);
+	target.extra_ = extra_;
 }
 
 // -----------------------------------------------------------------------------
@@ -424,7 +424,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 			else if (fn_name == "extra") // Extra properties
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->extra_.addFlag(fieldnode->stringValue(v));
+					ntype->extra_[fieldnode->stringValue(v)] = true;
 			}
 			else if (fn_name == "category") // Type category
 			{

@@ -876,15 +876,15 @@ void MapSector::readBackup(Backup* backup)
 	parent_map_->sectors().updateTexUsage(floor_.texture, -1);
 	parent_map_->sectors().updateTexUsage(ceiling_.texture, -1);
 
-	floor_.texture   = backup->props_internal[PROP_TEXFLOOR].stringValue();
-	ceiling_.texture = backup->props_internal[PROP_TEXCEILING].stringValue();
-	floor_.height    = backup->props_internal[PROP_HEIGHTFLOOR].intValue();
-	ceiling_.height  = backup->props_internal[PROP_HEIGHTCEILING].intValue();
+	floor_.texture   = backup->props_internal.get<string>(PROP_TEXFLOOR);
+	ceiling_.texture = backup->props_internal.get<string>(PROP_TEXCEILING);
+	floor_.height    = backup->props_internal.get<int>(PROP_HEIGHTFLOOR);
+	ceiling_.height  = backup->props_internal.get<int>(PROP_HEIGHTCEILING);
 	floor_.plane.set(0, 0, 1, floor_.height);
 	ceiling_.plane.set(0, 0, 1, ceiling_.height);
-	light_   = backup->props_internal[PROP_LIGHTLEVEL].intValue();
-	special_ = backup->props_internal[PROP_SPECIAL].intValue();
-	id_      = backup->props_internal[PROP_ID].intValue();
+	light_   = backup->props_internal.get<int>(PROP_LIGHTLEVEL);
+	special_ = backup->props_internal.get<int>(PROP_SPECIAL);
+	id_      = backup->props_internal.get<int>(PROP_ID);
 
 	// Update texture counts (increment new)
 	parent_map_->sectors().updateTexUsage(floor_.texture, 1);
@@ -901,7 +901,7 @@ void MapSector::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 void MapSector::writeUDMF(string& def)
 {
-	def = fmt::format("sector//#{}\n{\n", index_);
+	def = fmt::format("sector//#{}\n{{\n", index_);
 
 	// Basic properties
 	def += fmt::format("texturefloor=\"{}\";\ntextureceiling=\"{}\";\n", floor_.texture, ceiling_.texture);
@@ -934,10 +934,10 @@ void MapSector::writeUDMF(string& def)
 		floor_c = -floor_.plane.c;
 		floor_d = floor_.plane.d;
 		// Write the floor/ceiling plane properties in order later
-		properties_.removeProperty("floorplane_a");
-		properties_.removeProperty("floorplane_b");
-		properties_.removeProperty("floorplane_c");
-		properties_.removeProperty("floorplane_d");
+		properties_.remove("floorplane_a");
+		properties_.remove("floorplane_b");
+		properties_.remove("floorplane_c");
+		properties_.remove("floorplane_d");
 	}
 	// Do the same for the ceiling plane
 	double ceiling_a = 0, ceiling_b = 0, ceiling_c = 0, ceiling_d = 0;
@@ -950,14 +950,14 @@ void MapSector::writeUDMF(string& def)
 		ceiling_b = -ceiling_.plane.b;
 		ceiling_c = -ceiling_.plane.c;
 		ceiling_d = ceiling_.plane.d;
-		properties_.removeProperty("ceilingplane_a");
-		properties_.removeProperty("ceilingplane_b");
-		properties_.removeProperty("ceilingplane_c");
-		properties_.removeProperty("ceilingplane_d");
+		properties_.remove("ceilingplane_a");
+		properties_.remove("ceilingplane_b");
+		properties_.remove("ceilingplane_c");
+		properties_.remove("ceilingplane_d");
 	}
 
 	// Other properties (that are not related to floor/ceiling planes
-	if (!properties_.isEmpty())
+	if (!properties_.empty())
 		def += properties_.toString(true);
 
 	// Write the floor and ceiling plane values in order

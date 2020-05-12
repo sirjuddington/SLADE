@@ -448,7 +448,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	// VERTEXES
 	if (type == "map_vertexes")
 	{
-		if (entry->exProp("MapFormat") == "doom64")
+		if (entry->exProp<string>("MapFormat") == "doom64")
 		{
 			columns_.emplace_back("X Position", ColType::Fixed, 4, 0);
 			columns_.emplace_back("Y Position", ColType::Fixed, 4, 4);
@@ -466,7 +466,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	else if (type == "map_linedefs")
 	{
 		// Doom format
-		if (entry->exProp("MapFormat") == "doom")
+		if (entry->exProp<string>("MapFormat") == "doom")
 		{
 			columns_.emplace_back("Vertex 1", ColType::IntUnsigned, 2, 0);
 			columns_.emplace_back("Vertex 2", ColType::IntUnsigned, 2, 2);
@@ -479,7 +479,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		}
 
 		// Hexen format
-		else if (entry->exProp("MapFormat") == "hexen")
+		else if (entry->exProp<string>("MapFormat") == "hexen")
 		{
 			columns_.emplace_back("Vertex 1", ColType::IntUnsigned, 2, 0);
 			columns_.emplace_back("Vertex 2", ColType::IntUnsigned, 2, 2);
@@ -496,7 +496,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		}
 
 		// Doom 64 format
-		else if (entry->exProp("MapFormat") == "doom64")
+		else if (entry->exProp<string>("MapFormat") == "doom64")
 		{
 			columns_.emplace_back("Vertex 1", ColType::IntUnsigned, 2, 0);
 			columns_.emplace_back("Vertex 2", ColType::IntUnsigned, 2, 2);
@@ -513,7 +513,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	else if (type == "map_sidedefs")
 	{
 		// Doom 64 format
-		if (entry->exProp("MapFormat") == "doom64")
+		if (entry->exProp<string>("MapFormat") == "doom64")
 		{
 			columns_.emplace_back("X Offset", ColType::IntSigned, 2, 0);
 			columns_.emplace_back("Y Offset", ColType::IntSigned, 2, 2);
@@ -541,7 +541,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	else if (type == "map_sectors")
 	{
 		// Doom 64 format
-		if (entry->exProp("MapFormat") == "doom64")
+		if (entry->exProp<string>("MapFormat") == "doom64")
 		{
 			columns_.emplace_back("Floor Height", ColType::IntSigned, 2, 0);
 			columns_.emplace_back("Ceiling Height", ColType::IntSigned, 2, 2);
@@ -576,7 +576,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	else if (type == "map_things")
 	{
 		// Doom format
-		if (entry->exProp("MapFormat") == "doom")
+		if (entry->exProp<string>("MapFormat") == "doom")
 		{
 			columns_.emplace_back("X Position", ColType::IntSigned, 2, 0);
 			columns_.emplace_back("Y Position", ColType::IntSigned, 2, 2);
@@ -587,7 +587,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		}
 
 		// Hexen format
-		else if (entry->exProp("MapFormat") == "hexen")
+		else if (entry->exProp<string>("MapFormat") == "hexen")
 		{
 			columns_.emplace_back("ID", ColType::IntUnsigned, 2, 0);
 			columns_.emplace_back("X Position", ColType::IntSigned, 2, 2);

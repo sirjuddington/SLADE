@@ -250,9 +250,9 @@ vector<unique_ptr<ArchiveEntry>> UniversalDoomMapFormat::writeMap(
 	for (const auto& thing : map_data.things())
 	{
 		// Cleanup properties
-		if (!thing->props().isEmpty())
+		if (!thing->props().empty())
 		{
-			thing->props().removeProperty("flags");
+			thing->props().remove("flags");
 			game::configuration().cleanObjectUDMFProps(thing);
 		}
 
@@ -266,9 +266,9 @@ vector<unique_ptr<ArchiveEntry>> UniversalDoomMapFormat::writeMap(
 	for (const auto& line : map_data.lines())
 	{
 		// Cleanup properties
-		if (!line->props().isEmpty())
+		if (!line->props().empty())
 		{
-			line->props().removeProperty("flags");
+			line->props().remove("flags");
 			game::configuration().cleanObjectUDMFProps(line);
 		}
 
@@ -282,7 +282,7 @@ vector<unique_ptr<ArchiveEntry>> UniversalDoomMapFormat::writeMap(
 	for (const auto& side : map_data.sides())
 	{
 		// Cleanup properties
-		if (!side->props().isEmpty())
+		if (!side->props().empty())
 			game::configuration().cleanObjectUDMFProps(side);
 
 		side->writeUDMF(object_def);
@@ -295,7 +295,7 @@ vector<unique_ptr<ArchiveEntry>> UniversalDoomMapFormat::writeMap(
 	for (const auto& vertex : map_data.vertices())
 	{
 		// Cleanup properties
-		if (!vertex->props().isEmpty())
+		if (!vertex->props().empty())
 			game::configuration().cleanObjectUDMFProps(vertex);
 
 		vertex->writeUDMF(object_def);
@@ -308,7 +308,7 @@ vector<unique_ptr<ArchiveEntry>> UniversalDoomMapFormat::writeMap(
 	for (const auto& sector : map_data.sectors())
 	{
 		// Cleanup properties
-		if (!sector->props().isEmpty())
+		if (!sector->props().empty())
 			game::configuration().cleanObjectUDMFProps(sector);
 
 		sector->writeUDMF(object_def);

@@ -61,9 +61,7 @@ long prop_backup_time = -1;
 // MapObject class constructor
 // -----------------------------------------------------------------------------
 MapObject::MapObject(Type type, SLADEMap* parent) :
-	parent_map_{ parent },
-	modified_time_{ app::runTimer() },
-	type_{ type }
+	parent_map_{ parent }, modified_time_{ app::runTimer() }, type_{ type }
 {
 }
 
@@ -124,9 +122,9 @@ void MapObject::copy(MapObject* c)
 	properties_.clear();
 
 	// Copy object properties
-	if (!c->properties_.isEmpty())
+	if (!c->properties_.empty())
 	{
-		c->properties_.copyTo(properties_);
+		properties_ = c->properties_;
 		parent_map_ = c->parent_map_;
 		filtered_   = c->filtered_;
 	}
@@ -137,8 +135,8 @@ void MapObject::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 bool MapObject::hasProp(string_view key)
 {
-	if (properties_.propertyExists(key))
-		return properties_[key].hasValue();
+	if (properties_.contains(key))
+		return property::hasValue(properties_[key]);
 
 	return false;
 }
@@ -149,18 +147,14 @@ bool MapObject::hasProp(string_view key)
 bool MapObject::boolProperty(string_view key)
 {
 	// If the property exists already, return it
-	if (properties_[key].hasValue())
-		return properties_[key].boolValue();
+	if (auto val = properties_.getIf<bool>(key))
+		return *val;
 
 	// Otherwise check the game configuration for a default value
-	else
-	{
-		auto prop = game::configuration().getUDMFProperty(string{ key }, type_);
-		if (prop)
-			return prop->defaultValue().boolValue();
-		else
-			return false;
-	}
+	if (auto* prop = game::configuration().getUDMFProperty(string{ key }, type_))
+		return property::value<bool>(prop->defaultValue(), false);
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -169,18 +163,14 @@ bool MapObject::boolProperty(string_view key)
 int MapObject::intProperty(string_view key)
 {
 	// If the property exists already, return it
-	if (properties_[key].hasValue())
-		return properties_[key].intValue();
+	if (auto val = properties_.getIf<int>(key))
+		return *val;
 
 	// Otherwise check the game configuration for a default value
-	else
-	{
-		auto prop = game::configuration().getUDMFProperty(string{ key }, type_);
-		if (prop)
-			return prop->defaultValue().intValue();
-		else
-			return 0;
-	}
+	if (auto* prop = game::configuration().getUDMFProperty(string{ key }, type_))
+		return property::value<int>(prop->defaultValue(), 0);
+
+	return 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -189,18 +179,14 @@ int MapObject::intProperty(string_view key)
 double MapObject::floatProperty(string_view key)
 {
 	// If the property exists already, return it
-	if (properties_[key].hasValue())
-		return properties_[key].floatValue();
+	if (auto val = properties_.getIf<double>(key))
+		return *val;
 
 	// Otherwise check the game configuration for a default value
-	else
-	{
-		auto prop = game::configuration().getUDMFProperty(string{ key }, type_);
-		if (prop)
-			return prop->defaultValue().floatValue();
-		else
-			return 0;
-	}
+	if (auto* prop = game::configuration().getUDMFProperty(string{ key }, type_))
+		return property::value<double>(prop->defaultValue(), 0.);
+
+	return 0.;
 }
 
 // -----------------------------------------------------------------------------
@@ -209,18 +195,14 @@ double MapObject::floatProperty(string_view key)
 string MapObject::stringProperty(string_view key)
 {
 	// If the property exists already, return it
-	if (properties_[key].hasValue())
-		return properties_[key].stringValue();
+	if (auto val = properties_.getIf<string>(key))
+		return *val;
 
 	// Otherwise check the game configuration for a default value
-	else
-	{
-		auto prop = game::configuration().getUDMFProperty(string{ key }, type_);
-		if (prop)
-			return prop->defaultValue().stringValue();
-		else
-			return "";
-	}
+	if (auto* prop = game::configuration().getUDMFProperty(string{ key }, type_))
+		return property::value<string>(prop->defaultValue(), {});
+
+	return {};
 }
 
 // -----------------------------------------------------------------------------
@@ -268,7 +250,7 @@ void MapObject::setStringProperty(string_view key, string_view value)
 	setModified();
 
 	// Set property
-	properties_[key] = value;
+	properties_[key] = string{ value };
 }
 
 // -----------------------------------------------------------------------------
@@ -281,7 +263,7 @@ void MapObject::backupTo(Backup* backup)
 	backup->type = type_;
 
 	// Save general properties to list
-	properties_.copyTo(backup->properties);
+	backup->properties = properties_;
 
 	// Object-specific properties
 	writeBackup(backup);
@@ -310,8 +292,7 @@ void MapObject::loadFromBackup(Backup* backup)
 	setModified();
 
 	// Load general properties from list
-	properties_.clear();
-	backup->properties.copyTo(properties_);
+	properties_ = backup->properties;
 
 	// Object-specific properties
 	readBackup(backup);

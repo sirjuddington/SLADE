@@ -597,7 +597,7 @@ bool TextureXEditor::checkTextures()
 				EntryType::detectEntryType(*entry);
 			auto type = entry->type();
 
-			if (!type->extraProps().propertyExists("patch"))
+			if (!type->extraProps().contains("patch"))
 				problems += wxString::Format(
 					"Patch %s is of type \"%s\", which is not a valid gfx format for patches. "
 					"Convert it to either Doom Gfx or PNG\n",

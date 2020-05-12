@@ -351,7 +351,7 @@ void MapSide::writeBackup(Backup* backup)
 void MapSide::readBackup(Backup* backup)
 {
 	// Sector
-	auto s = parent_map_->mapData().getObjectById(backup->props_internal[PROP_SECTOR]);
+	auto s = parent_map_->mapData().getObjectById(backup->props_internal.get<unsigned>(PROP_SECTOR));
 	if (s)
 	{
 		sector_->disconnectSide(this);
@@ -366,13 +366,13 @@ void MapSide::readBackup(Backup* backup)
 	}
 
 	// Textures
-	setTexUpper(backup->props_internal[PROP_TEXUPPER].stringValue(), false);
-	setTexMiddle(backup->props_internal[PROP_TEXMIDDLE].stringValue(), false);
-	setTexLower(backup->props_internal[PROP_TEXLOWER].stringValue(), false);
+	setTexUpper(backup->props_internal.get<string>(PROP_TEXUPPER), false);
+	setTexMiddle(backup->props_internal.get<string>(PROP_TEXMIDDLE), false);
+	setTexLower(backup->props_internal.get<string>(PROP_TEXLOWER), false);
 
 	// Offsets
-	tex_offset_.x = backup->props_internal[PROP_OFFSETX].intValue();
-	tex_offset_.y = backup->props_internal[PROP_OFFSETY].intValue();
+	tex_offset_.x = backup->props_internal.get<int>(PROP_OFFSETX);
+	tex_offset_.y = backup->props_internal.get<int>(PROP_OFFSETY);
 }
 
 // -----------------------------------------------------------------------------
@@ -380,7 +380,7 @@ void MapSide::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 void MapSide::writeUDMF(string& def)
 {
-	def = fmt::format("sidedef//#{}\n{\n", index_);
+	def = fmt::format("sidedef//#{}\n{{\n", index_);
 
 	// Basic properties
 	def += fmt::format("sector={};\n", sector_->index());
@@ -396,7 +396,7 @@ void MapSide::writeUDMF(string& def)
 		def += fmt::format("offsety={};\n", tex_offset_.y);
 
 	// Other properties
-	if (!properties_.isEmpty())
+	if (!properties_.empty())
 		def += properties_.toString(true);
 
 	def += "}\n\n";

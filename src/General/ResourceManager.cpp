@@ -364,7 +364,7 @@ void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry)
 		bool addToFpOnly = true;
 
 		// Check for patch entry
-		if (type->extraProps().propertyExists("patch") || entry->isInNamespace("patches")
+		if (type->extraProps().contains("patch") || entry->isInNamespace("patches")
 			|| entry->isInNamespace("sprites"))
 		{
 			if (patches_[name].length() == 0)

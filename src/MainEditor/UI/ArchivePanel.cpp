@@ -1691,7 +1691,7 @@ bool ArchivePanel::sort() const
 			dir->swapEntries(i, itr->second);
 
 			// Update the position of the displaced texture in the emap
-			auto name  = entry->exProp("sortkey").stringValue();
+			auto name  = entry->exProp<string>("sortkey");
 			emap[name] = itr->second;
 		}
 	}
@@ -3607,7 +3607,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		// Check for gfx entry
 		if (!gfx_selected)
 		{
-			if (entry->type()->extraProps().propertyExists("image"))
+			if (entry->type()->extraProps().contains("image"))
 				gfx_selected = true;
 		}
 		if (!voxel_selected)

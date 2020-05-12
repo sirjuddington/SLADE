@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EntryType/EntryType.h"
-#include "Utility/PropertyList/PropertyList.h"
+#include "Utility/Property.h"
 
 namespace slade
 {
@@ -51,6 +51,7 @@ public:
 	PropertyList&            exProps() { return ex_props_; }
 	const PropertyList&      exProps() const { return ex_props_; }
 	Property&                exProp(const string& key) { return ex_props_[key]; }
+	template<typename T> T   exProp(const string& key) { return std::get<T>(ex_props_[key]); }
 	State                    state() const { return state_; }
 	bool                     isLocked() const { return locked_; }
 	bool                     isLoaded() const { return data_loaded_; }

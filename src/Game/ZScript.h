@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ThingType.h"
-#include "Utility/PropertyList/PropertyList.h"
+#include "Utility/Property.h"
 
 namespace slade
 {

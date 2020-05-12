@@ -51,10 +51,7 @@ using namespace slade;
 // ParseTreeNode class constructor
 // -----------------------------------------------------------------------------
 ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveDir* archive_dir, string_view type) :
-	STreeNode{ parent },
-	type_{ type },
-	parser_{ parser },
-	archive_dir_{ archive_dir }
+	STreeNode{ parent }, type_{ type }, parser_{ parser }, archive_dir_{ archive_dir }
 {
 	allowDup(true);
 }
@@ -90,7 +87,7 @@ string ParseTreeNode::stringValue(unsigned index)
 	if (index >= values_.size())
 		return {};
 
-	return values_[index].stringValue();
+	return property::asString(values_[index]);
 }
 
 // -----------------------------------------------------------------------------
@@ -99,8 +96,8 @@ string ParseTreeNode::stringValue(unsigned index)
 vector<string> ParseTreeNode::stringValues()
 {
 	vector<string> string_values;
-	for (auto& value : values_)
-		string_values.push_back(value.stringValue());
+	for (const auto& value : values_)
+		string_values.push_back(property::asString(value));
 	return string_values;
 }
 
@@ -114,7 +111,7 @@ int ParseTreeNode::intValue(unsigned index)
 	if (index >= values_.size())
 		return 0;
 
-	return (int)values_[index];
+	return property::asInt(values_[index]);
 }
 
 // -----------------------------------------------------------------------------
@@ -127,7 +124,7 @@ bool ParseTreeNode::boolValue(unsigned index)
 	if (index >= values_.size())
 		return false;
 
-	return (bool)values_[index];
+	return property::asBool(values_[index]);
 }
 
 // -----------------------------------------------------------------------------
@@ -140,7 +137,7 @@ double ParseTreeNode::floatValue(unsigned index)
 	if (index >= values_.size())
 		return 0.0f;
 
-	return (double)values_[index];
+	return property::asFloat(values_[index]);
 }
 
 // -----------------------------------------------------------------------------
@@ -148,7 +145,7 @@ double ParseTreeNode::floatValue(unsigned index)
 // -----------------------------------------------------------------------------
 ParseTreeNode* ParseTreeNode::addChildPTN(string_view name, string_view type)
 {
-	auto node   = dynamic_cast<ParseTreeNode*>(addChild(name));
+	auto* node  = dynamic_cast<ParseTreeNode*>(addChild(name));
 	node->type_ = type;
 	return node;
 }
@@ -188,7 +185,7 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 		int skip = 0;
 		while (true)
 		{
-			auto& token = tz.next();
+			const auto& token = tz.next();
 			if (token == "#endif")
 				skip--;
 			else if (token == "#ifdef")
@@ -209,9 +206,9 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 		if (archive_dir_)
 		{
 			// Get entry to include
-			auto inc_path  = tz.next().text;
-			auto archive   = archive_dir_->archive();
-			auto inc_entry = archive->entryAtPath(archive_dir_->path() + inc_path);
+			auto  inc_path  = tz.next().text;
+			auto* archive   = archive_dir_->archive();
+			auto* inc_entry = archive->entryAtPath(archive_dir_->path() + inc_path);
 			log::info("Looking for #include entry '{}' / '{}'", archive_dir_->path(), inc_path);
 			if (!inc_entry) // Try absolute path
 				inc_entry = archive->entryAtPath(inc_path);
@@ -221,8 +218,8 @@ bool ParseTreeNode::parsePreprocessor(Tokenizer& tz)
 			if (inc_entry)
 			{
 				// Save the current dir and set it to the included entry's dir
-				auto orig_dir = archive_dir_;
-				archive_dir_  = inc_entry->parentDir();
+				auto* orig_dir = archive_dir_;
+				archive_dir_   = inc_entry->parentDir();
 
 				// Parse text in the entry
 				Tokenizer inc_tz;
@@ -270,7 +267,7 @@ bool ParseTreeNode::parseAssignment(Tokenizer& tz, ParseTreeNode* child) const
 	// Parse until ; or }
 	while (true)
 	{
-		auto& token = tz.current();
+		const auto& token = tz.current();
 
 		// Check for list end
 		if (token == list_end && !token.quoted_string)
@@ -401,7 +398,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			if (tz.checkNext('{'))
 			{
 				// Add child node
-				auto child      = addChildPTN(name, type);
+				auto* child     = addChildPTN(name, type);
 				child->inherit_ = tz.current().text;
 
 				// Skip {
@@ -414,7 +411,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			else if (tz.checkNext(';')) // Empty child node
 			{
 				// Add child node
-				auto child      = addChildPTN(name, type);
+				auto* child     = addChildPTN(name, type);
 				child->inherit_ = tz.current().text;
 
 				// Skip ;
@@ -457,6 +454,8 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 void ParseTreeNode::write(string& out, int indent) const
 {
+	using Type = property::ValueType;
+
 	// Indentation
 	string tabs;
 	for (int a = 0; a < indent; a++)
@@ -483,13 +482,13 @@ void ParseTreeNode::write(string& out, int indent) const
 		out += " = ";
 
 		bool first = true;
-		for (auto& value : values_)
+		for (const auto& value : values_)
 		{
 			if (!first)
 				out += ", ";
 			first = false;
 
-			switch (value.type())
+			/*switch (value.type())
 			{
 			case Property::Type::Boolean:
 			case Property::Type::Flag: out += value.boolValue() ? "true" : "false"; break;
@@ -497,6 +496,14 @@ void ParseTreeNode::write(string& out, int indent) const
 			case Property::Type::Float: out += fmt::format("{:1.3f}", value.floatValue()); break;
 			case Property::Type::UInt: out += fmt::format("{}", value.unsignedValue()); break;
 			default: out += fmt::format("\"{}\"", value.stringValue()); break;
+			}*/
+			switch (property::valueType(value))
+			{
+			case property::ValueType::Bool:
+			case property::ValueType::Int:
+			case property::ValueType::UInt: out += property::asString(value); break;
+			case property::ValueType::Float: out += fmt::format("{:1.3f}", std::get<double>(value)); break;
+			default: out += fmt::format("\"{}\"", property::asString(value)); break;
 			}
 		}
 
@@ -509,7 +516,7 @@ void ParseTreeNode::write(string& out, int indent) const
 		// Opening brace
 		out += "\n" + tabs + "{\n";
 
-		for (auto node : children_)
+		for (auto* node : children_)
 			dynamic_cast<ParseTreeNode*>(node)->write(out, indent + 1);
 
 		// Closing brace

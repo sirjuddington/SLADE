@@ -2,7 +2,7 @@
 
 #include "EntryDataFormat.h"
 #include "Utility/Colour.h"
-#include "Utility/PropertyList/PropertyList.h"
+#include "Utility/Property.h"
 
 namespace slade
 {

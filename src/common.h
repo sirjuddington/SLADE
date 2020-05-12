@@ -153,6 +153,7 @@
 #include <set>
 #include <cmath>
 #include <memory>
+#include <optional>
 
 // C
 #include <locale.h>

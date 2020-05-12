@@ -89,12 +89,12 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 	data_.importMem(copy.rawData(true), copy.size());
 
 	// Copy extra properties
-	copy.exProps().copyTo(ex_props_);
+	ex_props_ = copy.exProps();
 
 	// Clear properties that shouldn't be copied
-	ex_props_.removeProperty("ZipIndex");
-	ex_props_.removeProperty("Offset");
-	ex_props_.removeProperty("filePath");
+	ex_props_.remove("ZipIndex");
+	ex_props_.remove("Offset");
+	ex_props_.remove("filePath");
 
 	// Set entry state
 	state_        = State::New;

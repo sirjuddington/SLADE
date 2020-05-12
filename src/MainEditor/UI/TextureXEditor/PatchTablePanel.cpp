@@ -303,7 +303,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 	for (auto& etype : etypes)
 	{
 		// If the type is a valid image type, add its extension filter
-		if (etype->extraProps().propertyExists("image"))
+		if (etype->extraProps().contains("image"))
 		{
 			ext_filter += etype->fileFilterString();
 			ext_filter += "|";
@@ -341,7 +341,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 			EntryType::detectEntryType(*entry);
 
 			// If it's not a valid image type, ignore this file
-			if (!entry->type()->extraProps().propertyExists("image"))
+			if (!entry->type()->extraProps().contains("image"))
 			{
 				log::warning(wxString::Format("%s is not a valid image file", file));
 				continue;

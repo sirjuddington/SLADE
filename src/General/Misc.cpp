@@ -78,16 +78,16 @@ bool misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 		EntryType::detectEntryType(*entry);
 
 	// Check for format "image" property
-	if (!entry->type()->extraProps().propertyExists("image"))
+	if (!entry->type()->extraProps().contains("image"))
 	{
 		global::error = "Entry type is not a valid image";
 		return false;
 	}
 
 	// Get image format hint from type, if any
-	string format_hint = "";
-	if (entry->type()->extraProps().propertyExists("image_format"))
-		format_hint = entry->type()->extraProps()["image_format"].stringValue();
+	string format_hint;
+	if (entry->type()->extraProps().contains("image_format"))
+		format_hint = entry->type()->extraProps().getOr<string>("image_format", {});
 
 	// Font formats are still manually loaded for now
 	auto format = entry->type()->formatId();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Utility/PropertyList/Property.h"
+#include "Utility/Property.h"
 
 namespace slade
 {
@@ -31,18 +31,19 @@ namespace game
 		UDMFProperty()  = default;
 		~UDMFProperty() = default;
 
-		const string&           propName() const { return property_; }
-		const string&           name() const { return name_; }
-		const string&           group() const { return group_; }
-		Type                    type() const { return type_; }
-		const Property&         defaultValue() const { return default_value_; }
-		bool                    hasDefaultValue() const { return has_default_; }
-		bool                    hasPossibleValues() const { return !values_.empty(); }
-		const vector<Property>& possibleValues() const { return values_; }
-		bool                    isFlag() const { return flag_; }
-		bool                    isTrigger() const { return trigger_; }
-		bool                    showAlways() const { return show_always_; }
-		bool                    internalOnly() const { return internal_only_; }
+		const string&             propName() const { return property_; }
+		const string&             name() const { return name_; }
+		const string&             group() const { return group_; }
+		Type                      type() const { return type_; }
+		const Property&           defaultValue() const { return default_value_; }
+		bool                      hasDefaultValue() const { return has_default_; }
+		bool                      hasPossibleValues() const { return !values_.empty(); }
+		const vector<Property>&   possibleValues() const { return values_; }
+		bool                      isFlag() const { return flag_; }
+		bool                      isTrigger() const { return trigger_; }
+		bool                      showAlways() const { return show_always_; }
+		bool                      internalOnly() const { return internal_only_; }
+		template<typename T> bool isDefault(T value) const { return property::value<T>(default_value_) == value; }
 
 		void parse(ParseTreeNode* node, string_view group);
 

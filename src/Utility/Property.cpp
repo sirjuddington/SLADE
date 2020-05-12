@@ -33,11 +33,113 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Property.h"
-#include "Utility/StringUtils.h"
 
 using namespace slade;
 
+namespace slade::property
+{
+bool asBool(const Property& prop)
+{
+	switch (prop.index())
+	{
+	case 0: return std::get<bool>(prop);
+	case 1: return std::get<int>(prop) != 0;
+	case 2: return std::get<unsigned int>(prop) != 0;
+	case 3: return std::get<double>(prop) != 0.;
+	case 4: return strutil::asBoolean(std::get<string>(prop));
+	default: return false;
+	}
+}
 
+int asInt(const Property& prop)
+{
+	switch (prop.index())
+	{
+	case 0: return std::get<bool>(prop) ? 1 : 0;
+	case 1: return std::get<int>(prop);
+	case 2: return static_cast<int>(std::get<unsigned int>(prop));
+	case 3: return static_cast<int>(std::get<double>(prop));
+	case 4: return strutil::asInt(std::get<string>(prop));
+	default: return 0;
+	}
+}
+
+unsigned asUInt(const Property& prop)
+{
+	switch (prop.index())
+	{
+	case 0: return std::get<bool>(prop) ? 1 : 0;
+	case 1: return static_cast<unsigned int>(std::get<int>(prop));
+	case 2: return std::get<unsigned int>(prop);
+	case 3: return static_cast<unsigned int>(std::get<double>(prop));
+	case 4: return strutil::asUInt(std::get<string>(prop));
+	default: return 0;
+	}
+}
+
+double asFloat(const Property& prop)
+{
+	switch (prop.index())
+	{
+	case 0: return std::get<bool>(prop) ? 1. : 0.;
+	case 1: return static_cast<double>(std::get<int>(prop));
+	case 2: return static_cast<double>(std::get<unsigned int>(prop));
+	case 3: return std::get<double>(prop);
+	case 4: return strutil::asDouble(std::get<string>(prop));
+	default: return 0.;
+	}
+}
+
+string asString(const Property& prop)
+{
+	switch (prop.index())
+	{
+	case 0: return std::get<bool>(prop) ? "true" : "false";
+	case 1: return fmt::format("{}", std::get<int>(prop));
+	case 2: return fmt::format("{}", std::get<unsigned int>(prop));
+	case 3: return fmt::format("{}", std::get<double>(prop));
+	case 4: return std::get<string>(prop);
+	default: return {};
+	}
+}
+
+
+} // namespace property
+
+string PropertyList::toString(bool condensed) const
+{
+	// Init return string
+	string ret;
+
+	// Go through all properties
+	for (const auto& prop : properties_)
+	{
+		// Add "key = value;\n" to the return string
+		auto val = property::asString(prop.value);
+
+		if (property::valueType(prop.value) == property::ValueType::String)
+		{
+			val.insert(val.begin(), '\"');
+			val.push_back('\"');
+		}
+
+		if (condensed)
+			ret += fmt::format("{}={};\n", prop.name, val);
+		else
+			ret += fmt::format("{} = {};\n", prop.name, val);
+	}
+
+	return ret;
+}
+
+
+
+
+
+
+
+
+#if 0
 // -----------------------------------------------------------------------------
 //
 // Property Class Functions
@@ -416,3 +518,4 @@ string Property::typeString() const
 	default: return "Unknown";
 	}
 }
+#endif

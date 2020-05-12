@@ -146,7 +146,7 @@ uint32_t WadArchive::getEntryOffset(ArchiveEntry* entry)
 	if (!checkEntry(entry))
 		return 0;
 
-	return (uint32_t)(int)entry->exProp("Offset");
+	return (uint32_t)entry->exProp<int>("Offset");
 }
 
 // -----------------------------------------------------------------------------
@@ -481,9 +481,9 @@ bool WadArchive::open(MemChunk& mc)
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
 			if (entry->encryption() != ArchiveEntry::Encryption::None)
 			{
-				if (entry->exProps().propertyExists("FullSize")
-					&& (unsigned)(int)(entry->exProp("FullSize")) > entry->size())
-					edata.reSize((int)(entry->exProp("FullSize")), true);
+				if (entry->exProps().contains("FullSize")
+					&& (unsigned)(entry->exProp<int>("FullSize")) > entry->size())
+					edata.reSize((entry->exProp<int>("FullSize")), true);
 				if (!WadJArchive::jaguarDecode(edata))
 					log::warning(
 						"{}: {} (following {}), did not decode properly",

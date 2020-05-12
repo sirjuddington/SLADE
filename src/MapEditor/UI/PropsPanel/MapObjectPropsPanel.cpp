@@ -967,13 +967,9 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		for (auto& object : objects)
 		{
 			// Go through object properties
-			auto objprops = object->props().allProperties();
+			auto objprops = object->props().properties();
 			for (auto& prop : objprops)
 			{
-				// Ignore unset properties
-				if (!prop.value.hasValue())
-					continue;
-
 				// Ignore side property
 				if (strutil::startsWith(prop.name, "side1.") || strutil::startsWith(prop.name, "side2."))
 					continue;
@@ -1000,11 +996,11 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 						group_custom_ = pg_properties_->Append(new wxPropertyCategory("Custom"));
 
 					// Add property
-					switch (prop.value.type())
+					switch (property::valueType(prop.value))
 					{
-					case Property::Type::Boolean: addBoolProperty(group_custom_, prop.name, prop.name); break;
-					case Property::Type::Int: addIntProperty(group_custom_, prop.name, prop.name); break;
-					case Property::Type::Float: addFloatProperty(group_custom_, prop.name, prop.name); break;
+					case property::ValueType::Bool: addBoolProperty(group_custom_, prop.name, prop.name); break;
+					case property::ValueType::Int: addIntProperty(group_custom_, prop.name, prop.name); break;
+					case property::ValueType::Float: addFloatProperty(group_custom_, prop.name, prop.name); break;
 					default: addStringProperty(group_custom_, prop.name, prop.name); break;
 					}
 				}

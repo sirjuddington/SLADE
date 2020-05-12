@@ -136,8 +136,8 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 		return false;
 
 	// Scroll to previous position (if any)
-	if (entry->exProps().propertyExists("TextPosition"))
-		text_area_->GotoPos((int)(entry->exProp("TextPosition")));
+	if (auto pos = entry->exProps().getIf<int>("TextPosition"))
+		text_area_->GotoPos(*pos);
 
 	// --- Attempt to determine text language ---
 	TextLanguage* tl = nullptr;
@@ -147,12 +147,13 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 		tl = TextLanguage::fromId("fragglescript");
 
 	// From entry language hint
-	if (entry->exProps().propertyExists("TextLanguage"))
-		tl = TextLanguage::fromId(entry->exProp("TextLanguage").stringValue());
+	if (auto lang = entry->exProps().getIf<string>("TextLanguage"))
+		tl = TextLanguage::fromId(*lang);
 
 	// Or, from entry type
-	if (!tl && entry->type()->extraProps().propertyExists("text_language"))
-		tl = TextLanguage::fromId(entry->type()->extraProps()["text_language"].stringValue());
+	if (!tl)
+		if (auto lang = entry->type()->extraProps().getIf<string>("text_language"))
+			tl = TextLanguage::fromId(*lang);
 
 	// Load language
 	text_area_->setLanguage(tl);
@@ -382,7 +383,7 @@ void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 		if (tl)
 			entry->exProp("TextLanguage") = tl->id();
 		else
-			entry->exProps().removeProperty("TextLanguage");
+			entry->exProps().remove("TextLanguage");
 	}
 }
 
