@@ -275,6 +275,7 @@ bool DirArchive::save(string_view filename)
 
 		// Check if entry needs to be (re)written
 		if (entries[a]->state() == ArchiveEntry::State::Unmodified
+			&& entries[a]->exProps().contains("filePath")
 			&& path == entries[a]->exProp<string>("filePath"))
 			continue;
 
@@ -338,6 +339,9 @@ shared_ptr<ArchiveDir> DirArchive::removeDir(string_view path, ArchiveDir* base)
 	// Add to removed files list
 	for (auto& entry : entries)
 	{
+		if (!entry->exProps().contains("filePath"))
+			continue;
+		
 		log::info(2, entry->exProp<string>("filePath"));
 		removed_files_.push_back(entry->exProp<string>("filePath"));
 	}
@@ -397,11 +401,16 @@ bool DirArchive::removeEntry(ArchiveEntry* entry)
 	if (!checkEntry(entry))
 		return false;
 
-	auto old_name = entry->exProp<string>("filePath");
-	bool success  = Archive::removeEntry(entry);
-	if (success)
-		removed_files_.push_back(old_name);
-	return success;
+	if (entry->exProps().contains("filePath"))
+	{
+		auto old_name = entry->exProp<string>("filePath");
+		bool success  = Archive::removeEntry(entry);
+		if (success)
+			removed_files_.push_back(old_name);
+		return success;
+	}
+
+	return Archive::removeEntry(entry);
 }
 
 // -----------------------------------------------------------------------------
@@ -420,11 +429,16 @@ bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name)
 		return false;
 	}
 
-	auto old_name = entry->exProp<string>("filePath");
-	bool success  = Archive::renameEntry(entry, name);
-	if (success)
-		removed_files_.push_back(old_name);
-	return success;
+	if (entry->exProps().contains("filePath"))
+	{
+		auto old_name = entry->exProp<string>("filePath");
+		bool success  = Archive::renameEntry(entry, name);
+		if (success)
+			removed_files_.push_back(old_name);
+		return success;
+	}
+
+	return Archive::renameEntry(entry, name);
 }
 
 // -----------------------------------------------------------------------------
