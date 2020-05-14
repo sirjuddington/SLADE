@@ -12,7 +12,7 @@ class UndoManager;
 class EntryPanel : public wxPanel, protected SActionHandler
 {
 public:
-	EntryPanel(wxWindow* parent, const wxString& id);
+	EntryPanel(wxWindow* parent, const wxString& id, bool frame = true);
 	~EntryPanel();
 
 	wxString      name() const { return id_; }
@@ -62,8 +62,8 @@ protected:
 	void         onToolbarButton(wxCommandEvent& e);
 
 private:
-	bool         modified_;
-	wxStaticBox* frame_;
+	bool         modified_ = false;
+	wxStaticBox* frame_    = nullptr;
 	wxString     id_;
 
 	bool handleAction(string_view id) override

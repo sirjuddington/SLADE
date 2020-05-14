@@ -60,7 +60,7 @@ EXTERN_CVAR(Bool, txed_trim_whitespace)
 // -----------------------------------------------------------------------------
 // TextEntryPanel class constructor
 // -----------------------------------------------------------------------------
-TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
+TextEntryPanel::TextEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent, "text", frame)
 {
 	// Create the text area
 	text_area_ = new TextEditorCtrl(this, -1);

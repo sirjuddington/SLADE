@@ -546,6 +546,8 @@ shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
 		new_archive = std::make_shared<ZipArchive>();
 	else if (format == "grp")
 		new_archive = std::make_shared<GrpArchive>();
+	else if (format == "pak")
+		new_archive = std::make_shared<PakArchive>();
 	else
 	{
 		global::error = fmt::format("Can not create archive of format: {}", format);

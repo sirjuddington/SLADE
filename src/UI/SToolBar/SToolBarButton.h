@@ -17,6 +17,9 @@ public:
 		bool            show_name = false);
 	~SToolBarButton() = default;
 
+	SAction*        action() const { return action_; }
+	const wxString& actionId() const { return action_id_; }
+
 	void setIcon(const wxString& icon);
 
 	static int pixelHeight();

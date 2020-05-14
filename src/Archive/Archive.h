@@ -16,6 +16,7 @@ struct ArchiveFormat
 	string             entry_format;
 	vector<StringPair> extensions;
 	bool               prefer_uppercase = false;
+	bool               create           = false;
 
 	ArchiveFormat(string_view id) : id{ id }, name{ id } {}
 };

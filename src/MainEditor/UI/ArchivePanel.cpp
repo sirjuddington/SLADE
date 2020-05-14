@@ -73,6 +73,7 @@
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/Dialogs/RunDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
+#include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
@@ -432,18 +433,38 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	sizer_path_controls_->Add(new wxStaticText(this, -1, "Path:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, min_pad);
 	sizer_path_controls_->Add(label_path_, 1, wxRIGHT | wxALIGN_CENTER_VERTICAL, ui::pad());
 
-	// 'Up' button
-	btn_updir_ = new SIconButton(this, icons::Entry, "upfolder");
-	btn_updir_->Enable(false);
-	sizer_path_controls_->Add(btn_updir_, 0, wxEXPAND);
-
 
 	// Create entry list panel
 	entry_list_ = new ArchiveEntryList(this);
 	entry_list_->setArchive(archive);
 	entry_list_->SetDropTarget(new APEntryListDropTarget(this, entry_list_));
 	entry_list_->setUndoManager(undo_manager_.get());
-	framesizer->Add(entry_list_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+
+	// Entry list toolbar
+	toolbar_elist_ = new SToolBar(this, false, wxVERTICAL);
+	auto* tbg_dir  = new SToolBarGroup(toolbar_elist_, "_Dir");
+	tbg_dir->addActionButton("arch_updir");
+	toolbar_elist_->addGroup(tbg_dir);
+	auto* tbg_create = new SToolBarGroup(toolbar_elist_, "_Create");
+	tbg_create->addActionButton("arch_newentry");
+	tbg_create->addActionButton("arch_newdir");
+	tbg_create->addActionButton("arch_importfiles");
+	toolbar_elist_->addGroup(tbg_create);
+	auto* tbg_entry = new SToolBarGroup(toolbar_elist_, "_Entry");
+	tbg_entry->addActionButton("arch_entry_rename");
+	tbg_entry->addActionButton("arch_entry_import");
+	tbg_entry->addActionButton("arch_entry_export");
+	tbg_entry->addActionButton("arch_entry_moveup");
+	tbg_entry->addActionButton("arch_entry_movedown");
+	tbg_entry->addActionButton("arch_entry_delete");
+	tbg_entry->addActionButton("arch_entry_bookmark");
+	tbg_entry->Enable(false);
+	toolbar_elist_->addGroup(tbg_entry);
+
+	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
+	hbox->Add(toolbar_elist_, 0, wxEXPAND);
+	hbox->Add(entry_list_, 1, wxEXPAND);
+	framesizer->Add(hbox, 1, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
 
 
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
@@ -476,16 +497,12 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 
 	// Bind events
 	entry_list_->Bind(EVT_VLV_SELECTION_CHANGED, &ArchivePanel::onEntryListSelectionChange, this);
-#ifndef __WXGTK__
-	entry_list_->Bind(wxEVT_LIST_ITEM_FOCUSED, &ArchivePanel::onEntryListFocusChange, this);
-#endif
 	entry_list_->Bind(wxEVT_KEY_DOWN, &ArchivePanel::onEntryListKeyDown, this);
 	entry_list_->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &ArchivePanel::onEntryListRightClick, this);
 	entry_list_->Bind(wxEVT_LIST_ITEM_ACTIVATED, &ArchivePanel::onEntryListActivated, this);
 	text_filter_->Bind(wxEVT_TEXT, &ArchivePanel::onTextFilterChanged, this);
 	choice_category_->Bind(wxEVT_CHOICE, &ArchivePanel::onChoiceCategoryChanged, this);
 	Bind(EVT_AEL_DIR_CHANGED, &ArchivePanel::onDirChanged, this);
-	btn_updir_->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnUpDir, this);
 	btn_clear_filter_->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnClearFilter, this);
 
 	// Update this tab's name in the parent notebook when the archive is saved
@@ -3214,6 +3231,10 @@ bool ArchivePanel::handleAction(string_view id)
 	if (!archive)
 		return false;
 
+	// 'Up Dir' button
+	if (id == "arch_updir")
+		entry_list_->goUpDir();
+
 
 	// ------------------------------------------------------------------------
 	// ARCHIVE MENU
@@ -3479,26 +3500,26 @@ bool ArchivePanel::handleAction(string_view id)
 // -----------------------------------------------------------------------------
 // Creates the appropriate EntryPanel for [entry] and returns it
 // -----------------------------------------------------------------------------
-EntryPanel* ArchivePanel::createPanelForEntry(ArchiveEntry* entry, wxWindow* parent)
+EntryPanel* ArchivePanel::createPanelForEntry(ArchiveEntry* entry, wxWindow* parent, bool frame)
 {
 	EntryPanel* entry_panel;
 
 	if (entry->type() == EntryType::mapMarkerType())
-		entry_panel = new MapEntryPanel(parent);
+		entry_panel = new MapEntryPanel(parent, frame);
 	else if (entry->type()->editor() == "gfx")
-		entry_panel = new GfxEntryPanel(parent);
+		entry_panel = new GfxEntryPanel(parent, frame);
 	else if (entry->type()->editor() == "palette")
-		entry_panel = new PaletteEntryPanel(parent);
+		entry_panel = new PaletteEntryPanel(parent, frame);
 	else if (entry->type()->editor() == "ansi")
-		entry_panel = new ANSIEntryPanel(parent);
+		entry_panel = new ANSIEntryPanel(parent, frame);
 	else if (entry->type()->editor() == "text")
-		entry_panel = new TextEntryPanel(parent);
+		entry_panel = new TextEntryPanel(parent, frame);
 	else if (entry->type()->editor() == "audio")
-		entry_panel = new AudioEntryPanel(parent);
+		entry_panel = new AudioEntryPanel(parent, frame);
 	else if (entry->type()->editor() == "data")
-		entry_panel = new DataEntryPanel(parent);
+		entry_panel = new DataEntryPanel(parent, frame);
 	else
-		entry_panel = new DefaultEntryPanel(parent);
+		entry_panel = new DefaultEntryPanel(parent, frame);
 
 	return entry_panel;
 }
@@ -3524,53 +3545,24 @@ void ArchivePanel::onEntryListSelectionChange(wxCommandEvent& e)
 	auto selection = entry_list_->selectedEntries();
 
 	if (selection.empty())
-		return; // If no entries are selected do nothing
+	{
+		toolbar_elist_->enableGroup("_Entry", false);
+	}
 	else if (selection.size() == 1)
 	{
 		// If one entry is selected, open it in the entry area
+		toolbar_elist_->enableGroup("_Entry", true);
 		openEntry(selection[0]);
 	}
 	else
 	{
 		// If multiple entries are selected, show/update the multi entry area
+		toolbar_elist_->enableGroup("_Entry", true);
 		showEntryPanel(default_area_);
 		dynamic_cast<DefaultEntryPanel*>(default_area_)->loadEntries(selection);
 	}
-}
 
-// -----------------------------------------------------------------------------
-// Called when the focused item on the entry list is changed
-// -----------------------------------------------------------------------------
-void ArchivePanel::onEntryListFocusChange(wxListEvent& e)
-{
-	// Do nothing if not shown
-	if (!IsShown())
-		return;
-
-	// Ignore if needed (once)
-	if (ignore_focus_change_)
-	{
-		ignore_focus_change_ = false;
-		return;
-	}
-
-	// Get selected entries
-	auto selection = entry_list_->selectedEntries();
-
-	if (selection.empty())
-		return; // If no entries are selected do nothing
-	else if (selection.size() == 1)
-	{
-		// If one entry is selected, open it in the entry area
-		openEntry(selection[0]);
-		e.Skip();
-	}
-	else
-	{
-		// If multiple entries are selected, show/update the multi entry area
-		showEntryPanel(default_area_);
-		dynamic_cast<DefaultEntryPanel*>(default_area_)->loadEntries(selection);
-	}
+	toolbar_elist_->Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -4143,7 +4135,11 @@ void ArchivePanel::onDirChanged(wxCommandEvent& e)
 	{
 		// Root dir
 		label_path_->SetLabel("/");
-		btn_updir_->Enable(false);
+		if (auto* btn = toolbar_elist_->findActionButton("arch_updir"))
+		{
+			btn->Enable(false);
+			toolbar_elist_->Refresh();
+		}
 	}
 	else
 	{
@@ -4152,7 +4148,11 @@ void ArchivePanel::onDirChanged(wxCommandEvent& e)
 		path.Remove(0, 1);
 
 		label_path_->SetLabel(path);
-		btn_updir_->Enable(true);
+		if (auto* btn = toolbar_elist_->findActionButton("arch_updir"))
+		{
+			btn->Enable(true);
+			toolbar_elist_->Refresh();
+		}
 	}
 }
 

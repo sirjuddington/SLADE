@@ -47,7 +47,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // HexEntryPanel class constructor
 // -----------------------------------------------------------------------------
-HexEntryPanel::HexEntryPanel(wxWindow* parent) : EntryPanel(parent, "hex")
+HexEntryPanel::HexEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent, "hex", frame)
 {
 	// Create hex editor
 	hex_editor_ = new HexEditorPanel(this);

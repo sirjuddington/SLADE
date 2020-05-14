@@ -88,7 +88,7 @@ private:
 class DataEntryPanel : public EntryPanel
 {
 public:
-	DataEntryPanel(wxWindow* parent);
+	DataEntryPanel(wxWindow* parent, bool frame = true);
 	~DataEntryPanel() = default;
 
 	bool saveEntry() override;

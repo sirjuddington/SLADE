@@ -7,7 +7,7 @@ namespace slade
 class DefaultEntryPanel : public EntryPanel
 {
 public:
-	DefaultEntryPanel(wxWindow* parent);
+	DefaultEntryPanel(wxWindow* parent, bool frame = true);
 	~DefaultEntryPanel() = default;
 
 	bool loadEntries(vector<ArchiveEntry*>& entries);

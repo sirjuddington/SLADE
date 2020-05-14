@@ -47,6 +47,7 @@
 #include "TextureXEditor/TextureXEditor.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Dialogs/DirArchiveUpdateDialog.h"
+#include "UI/Dialogs/NewArchiveDiaog.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -991,7 +992,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 		return;
 
 	// Create an EntryPanel for the entry
-	auto ep = ArchivePanel::createPanelForEntry(entry, stc_archives_);
+	auto ep = ArchivePanel::createPanelForEntry(entry, stc_archives_, false);
 	ep->openEntry(entry);
 
 	// Don't bother with the default entry panel
@@ -1310,10 +1311,12 @@ void ArchiveManagerPanel::checkDirArchives()
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::createNewArchive(const wxString& format) const
 {
-	auto new_archive = app::archiveManager().newArchive(format.ToStdString());
-
-	if (new_archive)
-		openTab(app::archiveManager().archiveIndex(new_archive.get()));
+	auto* na_dlg = new ui::NewArchiveDialog(maineditor::windowWx());
+	if (na_dlg->ShowModal() == wxID_OK)
+	{
+		if (na_dlg->createdArchive())
+			openTab(app::archiveManager().archiveIndex(na_dlg->createdArchive()));
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1679,17 +1682,9 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	if (!strutil::startsWith(id, "aman_"))
 		return false;
 
-	// File->New Wad
-	if (id == "aman_newwad")
-		createNewArchive("wad");
-
-	// File->New Zip
-	else if (id == "aman_newzip")
-		createNewArchive("zip");
-
-	// File->New Grp
-	else if (id == "aman_newgrp")
-		createNewArchive("grp");
+	// File->New Archive
+	if (id == "aman_newarchive")
+		createNewArchive("");
 
 	// File->New Map
 	else if (id == "aman_newmap")

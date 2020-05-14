@@ -12,7 +12,7 @@ class ColourBox;
 class GfxEntryPanel : public EntryPanel
 {
 public:
-	GfxEntryPanel(wxWindow* parent);
+	GfxEntryPanel(wxWindow* parent, bool frame = true);
 	~GfxEntryPanel() = default;
 
 	Translation& prevTranslation() { return prev_translation_; }

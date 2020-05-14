@@ -25,31 +25,36 @@ public:
 		bool            show_name = false);
 	void addCustomControl(wxWindow* control);
 
+	SToolBarButton* findActionButton(const wxString& action) const;
+
 	void onButtonClicked(wxCommandEvent& e);
 
 private:
-	wxString name_;
-	bool     hidden_;
+	wxString      name_;
+	bool          hidden_      = false;
+	wxOrientation orientation_ = wxHORIZONTAL;
 };
 
 class SToolBar : public wxPanel
 {
 public:
-	SToolBar(wxWindow* parent, bool main_toolbar = false);
+	SToolBar(wxWindow* parent, bool main_toolbar = false, wxOrientation orientation = wxHORIZONTAL);
 	~SToolBar() = default;
 
 	const vector<SToolBarGroup*>& groups() const { return groups_; }
-	int                           minHeight() const { return min_height_; }
-	bool                          mainToolbar() const { return main_toolbar_; }
+	// int                           minHeight() const { return min_height_; }
+	bool          mainToolbar() const { return main_toolbar_; }
+	wxOrientation orientation() const { return orientation_; }
 
-	SToolBarGroup* group(const wxString& name);
-	void           addGroup(SToolBarGroup* group);
-	void           deleteGroup(const wxString& name);
-	void           deleteCustomGroups();
-	void           addActionGroup(const wxString& name, wxArrayString actions);
-	void           enableGroup(const wxString& name, bool enable = true);
-	void           populateGroupsMenu(wxMenu* menu, int start_id = 0);
-	void           enableContextMenu(bool enable = true) { enable_context_menu_ = enable; }
+	SToolBarGroup*  group(const wxString& name);
+	void            addGroup(SToolBarGroup* group);
+	void            deleteGroup(const wxString& name);
+	void            deleteCustomGroups();
+	void            addActionGroup(const wxString& name, wxArrayString actions);
+	void            enableGroup(const wxString& name, bool enable = true);
+	void            populateGroupsMenu(wxMenu* menu, int start_id = 0);
+	void            enableContextMenu(bool enable = true) { enable_context_menu_ = enable; }
+	SToolBarButton* findActionButton(const wxString& action_id) const;
 
 	void updateLayout(bool force = false, bool generate_event = true);
 	int  calculateNumRows(int width);
@@ -62,12 +67,10 @@ public:
 private:
 	vector<SToolBarGroup*> groups_;
 	vector<wxWindow*>      separators_;
-	vector<wxWindow*>      vlines_;
-	int                    min_height_          = 0;
-	int                    n_rows_              = 0;
 	bool                   draw_border_         = true;
 	bool                   main_toolbar_        = false;
 	bool                   enable_context_menu_ = false;
+	wxOrientation          orientation_         = wxHORIZONTAL;
 
 	// Events
 	void onSize(wxSizeEvent& e);

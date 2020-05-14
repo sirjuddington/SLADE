@@ -20,7 +20,7 @@ namespace slade
 class AudioEntryPanel : public EntryPanel
 {
 public:
-	AudioEntryPanel(wxWindow* parent);
+	AudioEntryPanel(wxWindow* parent, bool frame = true);
 	~AudioEntryPanel();
 
 	bool     saveEntry() override;

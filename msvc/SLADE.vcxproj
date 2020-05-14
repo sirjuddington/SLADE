@@ -310,6 +310,7 @@
     <ClCompile Include="..\src\UI\Dialogs\MapEditorConfigDialog.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\MapReplaceDialog.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\ModifyOffsetsDialog.cpp" />
+    <ClCompile Include="..\src\UI\Dialogs\NewArchiveDialog.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\PaletteDialog.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\ACSPrefsPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\AdvancedPrefsPanel.cpp" />
@@ -666,6 +667,7 @@
     <ClInclude Include="..\src\UI\Dialogs\MapEditorConfigDialog.h" />
     <ClInclude Include="..\src\UI\Dialogs\MapReplaceDialog.h" />
     <ClInclude Include="..\src\UI\Dialogs\ModifyOffsetsDialog.h" />
+    <ClInclude Include="..\src\UI\Dialogs\NewArchiveDiaog.h" />
     <ClInclude Include="..\src\UI\Dialogs\PaletteDialog.h" />
     <ClInclude Include="..\src\UI\Dialogs\Preferences\ACSPrefsPanel.h" />
     <ClInclude Include="..\src\UI\Dialogs\Preferences\AdvancedPrefsPanel.h" />

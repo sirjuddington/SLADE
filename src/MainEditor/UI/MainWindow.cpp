@@ -277,12 +277,10 @@ void MainWindow::setupLayout()
 
 	// File menu
 	auto file_new_menu = new wxMenu("");
-	SAction::fromId("aman_newwad")->addToMenu(file_new_menu, "&Wad Archive");
-	SAction::fromId("aman_newgrp")->addToMenu(file_new_menu, "&Grp Archive");
-	SAction::fromId("aman_newzip")->addToMenu(file_new_menu, "&Zip Archive");
+	SAction::fromId("aman_newarchive")->addToMenu(file_new_menu, "&Archive");
 	SAction::fromId("aman_newmap")->addToMenu(file_new_menu, "&Map");
 	auto file_menu = new wxMenu("");
-	file_menu->AppendSubMenu(file_new_menu, "&New", "Create a new Archive");
+	file_menu->AppendSubMenu(file_new_menu, "&New");
 	SAction::fromId("aman_open")->addToMenu(file_menu);
 	SAction::fromId("aman_opendir")->addToMenu(file_menu);
 	file_menu->AppendSeparator();
@@ -340,8 +338,7 @@ void MainWindow::setupLayout()
 
 	// Create File toolbar
 	auto tbg_file = new SToolBarGroup(toolbar_, "_File");
-	tbg_file->addActionButton("aman_newwad");
-	tbg_file->addActionButton("aman_newzip");
+	tbg_file->addActionButton("aman_newarchive");
 	tbg_file->addActionButton("aman_open");
 	tbg_file->addActionButton("aman_opendir");
 	tbg_file->addActionButton("aman_save");
@@ -353,23 +350,23 @@ void MainWindow::setupLayout()
 
 	// Create Archive toolbar
 	auto tbg_archive = new SToolBarGroup(toolbar_, "_Archive");
-	tbg_archive->addActionButton("arch_newentry");
-	tbg_archive->addActionButton("arch_newdir");
-	tbg_archive->addActionButton("arch_importfiles");
+	//tbg_archive->addActionButton("arch_newentry");
+	//tbg_archive->addActionButton("arch_newdir");
+	//tbg_archive->addActionButton("arch_importfiles");
 	tbg_archive->addActionButton("arch_texeditor");
 	tbg_archive->addActionButton("arch_mapeditor");
 	tbg_archive->addActionButton("arch_run");
 	toolbar_->addGroup(tbg_archive);
 
-	// Create Entry toolbar
-	auto tbg_entry = new SToolBarGroup(toolbar_, "_Entry");
-	tbg_entry->addActionButton("arch_entry_rename");
-	tbg_entry->addActionButton("arch_entry_delete");
-	tbg_entry->addActionButton("arch_entry_import");
-	tbg_entry->addActionButton("arch_entry_export");
-	tbg_entry->addActionButton("arch_entry_moveup");
-	tbg_entry->addActionButton("arch_entry_movedown");
-	toolbar_->addGroup(tbg_entry);
+	//// Create Entry toolbar
+	//auto tbg_entry = new SToolBarGroup(toolbar_, "_Entry");
+	//tbg_entry->addActionButton("arch_entry_rename");
+	//tbg_entry->addActionButton("arch_entry_import");
+	//tbg_entry->addActionButton("arch_entry_export");
+	//tbg_entry->addActionButton("arch_entry_moveup");
+	//tbg_entry->addActionButton("arch_entry_movedown");
+	//tbg_entry->addActionButton("arch_entry_delete");
+	//toolbar_->addGroup(tbg_entry);
 
 	// Create Base Resource Archive toolbar
 	auto tbg_bra = new SToolBarGroup(toolbar_, "_Base Resource", true);
@@ -742,7 +739,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 	// Update toolbar layout (if needed)
 	toolbar_->updateLayout();
 #ifndef __WXMSW__
-	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->minHeight());
+	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->getBarHeight());
 	aui_mgr_->Update();
 #endif
 
@@ -758,7 +755,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 void MainWindow::onToolBarLayoutChanged(wxEvent& e)
 {
 	// Update toolbar size
-	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->minHeight());
+	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->getBarHeight());
 	aui_mgr_->Update();
 }
 

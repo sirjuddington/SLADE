@@ -11,6 +11,7 @@ class wxBitmapButton;
 namespace slade
 {
 class EntryPanel;
+class SToolBar;
 
 class ArchivePanel : public wxPanel, SActionHandler
 {
@@ -111,7 +112,7 @@ public:
 	bool handleAction(string_view id) override;
 
 	// Static functions
-	static EntryPanel* createPanelForEntry(ArchiveEntry* entry, wxWindow* parent);
+	static EntryPanel* createPanelForEntry(ArchiveEntry* entry, wxWindow* parent, bool frame = true);
 
 protected:
 	weak_ptr<Archive>       archive_;
@@ -129,8 +130,8 @@ protected:
 	wxButton*         btn_clear_filter_    = nullptr;
 	wxChoice*         choice_category_     = nullptr;
 	wxStaticText*     label_path_          = nullptr;
-	wxBitmapButton*   btn_updir_           = nullptr;
 	wxSizer*          sizer_path_controls_ = nullptr;
+	SToolBar*         toolbar_elist_       = nullptr;
 
 	// Entry panels
 	EntryPanel* cur_area_      = nullptr;
@@ -154,7 +155,6 @@ protected:
 
 	// Events
 	void         onEntryListSelectionChange(wxCommandEvent& e);
-	void         onEntryListFocusChange(wxListEvent& e);
 	void         onEntryListRightClick(wxListEvent& e);
 	void         onEntryListKeyDown(wxKeyEvent& e);
 	virtual void onEntryListActivated(wxListEvent& e);

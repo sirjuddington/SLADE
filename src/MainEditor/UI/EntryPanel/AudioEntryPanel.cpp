@@ -64,8 +64,8 @@ CVAR(Bool, snd_autoplay, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // AudioEntryPanel class constructor
 // -----------------------------------------------------------------------------
-AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
-	EntryPanel(parent, "audio"),
+AudioEntryPanel::AudioEntryPanel(wxWindow* parent, bool frame) :
+	EntryPanel(parent, "audio", frame),
 	timer_seek_{ new wxTimer(this) },
 	sound_{ new sf::Sound() },
 	music_{ new sf::Music() },

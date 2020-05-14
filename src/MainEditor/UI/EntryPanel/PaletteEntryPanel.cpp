@@ -604,7 +604,7 @@ private:
 // -----------------------------------------------------------------------------
 // PaletteEntryPanel class constructor
 // -----------------------------------------------------------------------------
-PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "palette")
+PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent, "palette", frame)
 {
 	// Add palette canvas
 	pal_canvas_ = new PaletteCanvas(this, -1);
