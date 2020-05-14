@@ -278,9 +278,9 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	if (state_ == State::MouseOver || state_ == State::MouseDown)
 	{
 		// Determine transparency level
-		int trans = 160;
+		int trans = 80;
 		if (state_ == State::MouseDown)
-			trans = 200;
+			trans = 160;
 
 		// Create semitransparent hilight colour
 		wxColour col_trans(col_hilight.Red(), col_hilight.Green(), col_hilight.Blue(), trans);
@@ -288,7 +288,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		if (toolbar_button_flat)
 		{
 			// Draw border
-			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
+			//col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(col_hilight, scale_px));
 			gc->DrawRectangle(pad_outer_, pad_outer_, width, height);
@@ -296,7 +296,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		else
 		{
 			// Draw border
-			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
+			//col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(col_hilight));
 			gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width, height, 2 * scale_px);
@@ -368,20 +368,28 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 	if (e.GetEventType() == wxEVT_LEFT_DOWN || e.GetEventType() == wxEVT_LEFT_DCLICK)
 	{
 		state_ = State::MouseDown;
-
-		if (action_)
-		{
-			if (action_->isRadio())
-				GetParent()->Refresh();
-			SActionHandler::doAction(action_->id());
-		}
-		else
-			sendClickedEvent();
 	}
 
 	// Left button up
 	if (e.GetEventType() == wxEVT_LEFT_UP)
 	{
+		if (state_ == State::MouseDown)
+		{
+			if (action_)
+			{
+				state_ = State::MouseOver;
+				Update();
+				Refresh();
+
+				if (action_->isRadio())
+					GetParent()->Refresh();
+
+				SActionHandler::doAction(action_->id());
+			}
+			else
+				sendClickedEvent();
+		}
+
 		state_ = State::MouseOver;
 
 		// Clear status bar help text
@@ -389,6 +397,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 			parent_window->SetStatusText("");
 	}
 
+	Update();
 	Refresh();
 
 	// e.Skip();
