@@ -49,7 +49,7 @@ public:
 	wxOrientation orientation() const { return orientation_; }
 
 	SToolBarGroup*  group(const wxString& name);
-	void            addGroup(SToolBarGroup* group);
+	void            addGroup(SToolBarGroup* group, bool at_end = false);
 	void            deleteGroup(const wxString& name);
 	void            deleteCustomGroups();
 	void            addActionGroup(const wxString& name, wxArrayString actions);
@@ -68,6 +68,7 @@ public:
 
 private:
 	vector<SToolBarGroup*> groups_;
+	vector<SToolBarGroup*> groups_end_;
 	vector<wxWindow*>      separators_;
 	bool                   draw_border_         = true;
 	bool                   main_toolbar_        = false;

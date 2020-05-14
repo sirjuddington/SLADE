@@ -365,7 +365,7 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar, wxOrientation orientatio
 // -----------------------------------------------------------------------------
 // Adds [group] to the toolbar
 // -----------------------------------------------------------------------------
-void SToolBar::addGroup(SToolBarGroup* group)
+void SToolBar::addGroup(SToolBarGroup* group, bool at_end)
 {
 	// Set the group's parent
 	group->SetParent(this);
@@ -374,7 +374,10 @@ void SToolBar::addGroup(SToolBarGroup* group)
 	group->SetBackgroundColour(GetBackgroundColour());
 
 	// Add it to the list of groups
-	groups_.push_back(group);
+	if (at_end)
+		groups_end_.push_back(group);
+	else
+		groups_.push_back(group);
 
 	// Update layout
 	updateLayout(true);
@@ -485,7 +488,6 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 	// Go through all groups
 	int current_size = 0;
 	int groups_line  = 0;
-	// n_rows_          = 0;
 	for (auto& group : groups_)
 	{
 		// Skip if group is hidden
@@ -537,6 +539,67 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 
 		groups_line++;
 	}
+
+	if (!groups_end_.empty())
+		sizer->AddStretchSpacer();
+
+	// Go through 'end' groups
+	groups_line = 0;
+	for (auto& group : groups_end_)
+	{
+		// Skip if group is hidden
+		if (group->hidden())
+		{
+			group->Show(false);
+			continue;
+		}
+
+		// Check if the group will fit
+		group->Show();
+		auto best_size = horizontal ? group->GetBestSize().x : group->GetBestSize().y;
+		auto c_size    = horizontal ? GetSize().x : GetSize().y;
+		if (best_size + current_size + ui::pad() > c_size && groups_line > 0)
+		{
+			// Won't fit, don't show (for now)
+			// TODO: 'Compress' group, try again, compress previous groups, try again
+			group->Show(false);
+			continue;
+		}
+
+		// Add separator if needed
+		bool pad_left = false;
+		if (groups_line > 0)
+		{
+			auto* sep = horizontal ? static_cast<wxWindow*>(new SToolBarHSeparator(this)) :
+									 static_cast<wxWindow*>(new SToolBarVSeparator(this));
+			sep->SetBackgroundColour(GetBackgroundColour());
+			separators_.push_back(sep);
+			if (horizontal)
+				sizer->Add(sep, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::px(ui::Size::PadMinimum));
+			else
+				sizer->Add(sep, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
+			current_size += ui::pad() * 2;
+			pad_left = true;
+		}
+
+		// Add the group
+		if (pad_left)
+			sizer->Add(group, 0, wxEXPAND | wxALL, ui::px(ui::Size::PadMinimum));
+		else
+		{
+			if (horizontal)
+				sizer->Add(group, 0, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT, ui::px(ui::Size::PadMinimum));
+			else
+				sizer->Add(group, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::px(ui::Size::PadMinimum));
+		}
+		current_size += best_size + ui::pad();
+
+		groups_line++;
+	}
+
+	// Add end padding if needed
+	if (main_toolbar_ && !groups_end_.empty())
+		sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
 
 	// Apply layout
 	Layout();

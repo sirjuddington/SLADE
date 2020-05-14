@@ -462,7 +462,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 
 	// Layout entry list
 	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(toolbar_elist_, 0, wxEXPAND);
+	hbox->Add(toolbar_elist_, 0, wxEXPAND | wxLEFT, ui::scalePx(1));
 	hbox->AddSpacer(min_pad);
 	auto* vbox = new wxBoxSizer(wxVERTICAL);
 	vbox->AddSpacer(min_pad);

@@ -350,37 +350,24 @@ void MainWindow::setupLayout()
 
 	// Create Archive toolbar
 	auto tbg_archive = new SToolBarGroup(toolbar_, "_Archive");
-	//tbg_archive->addActionButton("arch_newentry");
-	//tbg_archive->addActionButton("arch_newdir");
-	//tbg_archive->addActionButton("arch_importfiles");
 	tbg_archive->addActionButton("arch_texeditor");
 	tbg_archive->addActionButton("arch_mapeditor");
 	tbg_archive->addActionButton("arch_run");
 	toolbar_->addGroup(tbg_archive);
-
-	//// Create Entry toolbar
-	//auto tbg_entry = new SToolBarGroup(toolbar_, "_Entry");
-	//tbg_entry->addActionButton("arch_entry_rename");
-	//tbg_entry->addActionButton("arch_entry_import");
-	//tbg_entry->addActionButton("arch_entry_export");
-	//tbg_entry->addActionButton("arch_entry_moveup");
-	//tbg_entry->addActionButton("arch_entry_movedown");
-	//tbg_entry->addActionButton("arch_entry_delete");
-	//toolbar_->addGroup(tbg_entry);
 
 	// Create Base Resource Archive toolbar
 	auto tbg_bra = new SToolBarGroup(toolbar_, "_Base Resource", true);
 	auto brc     = new BaseResourceChooser(tbg_bra);
 	tbg_bra->addCustomControl(brc);
 	tbg_bra->addActionButton("main_setbra", "settings");
-	toolbar_->addGroup(tbg_bra);
+	toolbar_->addGroup(tbg_bra, true);
 
 	// Create Palette Chooser toolbar
 	auto tbg_palette = new SToolBarGroup(toolbar_, "_Palette", true);
 	palette_chooser_ = new PaletteChooser(tbg_palette, -1);
 	palette_chooser_->selectPalette(global_palette);
 	tbg_palette->addCustomControl(palette_chooser_);
-	toolbar_->addGroup(tbg_palette);
+	toolbar_->addGroup(tbg_palette, true);
 
 	// Archive and Entry toolbars are initially disabled
 	toolbar_->enableGroup("_archive", false);
