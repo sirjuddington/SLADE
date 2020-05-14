@@ -408,6 +408,8 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 
 
 	// --- Setup Layout ---
+	auto min_pad  = ui::px(ui::Size::PadMinimum);
+	bool has_dirs = archive->formatDesc().supports_dirs;
 
 	// Create sizer
 	auto m_hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -422,17 +424,11 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 
 
 	// Create path display
-	auto min_pad         = ui::px(ui::Size::PadMinimum);
-	sizer_path_controls_ = new wxBoxSizer(wxHORIZONTAL);
-	framesizer->Add(sizer_path_controls_, 0, wxEXPAND | wxLEFT | wxRIGHT, ui::pad());
-	framesizer->AddSpacer(min_pad);
-
-	// Label
-	label_path_ = new wxStaticText(
-		this, -1, "/", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_START | wxST_NO_AUTORESIZE);
-	sizer_path_controls_->Add(new wxStaticText(this, -1, "Path:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, min_pad);
-	sizer_path_controls_->Add(label_path_, 1, wxRIGHT | wxALIGN_CENTER_VERTICAL, ui::pad());
-
+	if (has_dirs)
+	{
+		label_path_ = new wxStaticText(
+			this, -1, "/", { -1, -1 }, { -1, -1 }, wxST_ELLIPSIZE_START | wxST_NO_AUTORESIZE);
+	}
 
 	// Create entry list panel
 	entry_list_ = new ArchiveEntryList(this);
@@ -442,9 +438,12 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 
 	// Entry list toolbar
 	toolbar_elist_ = new SToolBar(this, false, wxVERTICAL);
-	auto* tbg_dir  = new SToolBarGroup(toolbar_elist_, "_Dir");
-	tbg_dir->addActionButton("arch_updir");
-	toolbar_elist_->addGroup(tbg_dir);
+	if (has_dirs)
+	{
+		auto* tbg_dir = new SToolBarGroup(toolbar_elist_, "_Dir");
+		tbg_dir->addActionButton("arch_updir");
+		toolbar_elist_->addGroup(tbg_dir);
+	}
 	auto* tbg_create = new SToolBarGroup(toolbar_elist_, "_Create");
 	tbg_create->addActionButton("arch_newentry");
 	tbg_create->addActionButton("arch_newdir");
@@ -461,10 +460,21 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	tbg_entry->Enable(false);
 	toolbar_elist_->addGroup(tbg_entry);
 
+	// Layout entry list
 	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
 	hbox->Add(toolbar_elist_, 0, wxEXPAND);
-	hbox->Add(entry_list_, 1, wxEXPAND);
-	framesizer->Add(hbox, 1, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
+	hbox->AddSpacer(min_pad);
+	auto* vbox = new wxBoxSizer(wxVERTICAL);
+	vbox->AddSpacer(min_pad);
+	if (has_dirs)
+	{
+		vbox->AddSpacer(min_pad);
+		vbox->Add(wxutil::createLabelHBox(this, "Path:", label_path_), 0, wxEXPAND | wxRIGHT, ui::pad());
+		vbox->AddSpacer(min_pad);
+	}
+	vbox->Add(entry_list_, 1, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
+	hbox->Add(vbox, 1, wxEXPAND);
+	framesizer->Add(hbox, 1, wxEXPAND);
 
 
 	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());

@@ -130,7 +130,6 @@ protected:
 	wxButton*         btn_clear_filter_    = nullptr;
 	wxChoice*         choice_category_     = nullptr;
 	wxStaticText*     label_path_          = nullptr;
-	wxSizer*          sizer_path_controls_ = nullptr;
 	SToolBar*         toolbar_elist_       = nullptr;
 
 	// Entry panels
