@@ -26,13 +26,15 @@ public:
 	void addCustomControl(wxWindow* control);
 
 	SToolBarButton* findActionButton(const wxString& action) const;
-
-	void onButtonClicked(wxCommandEvent& e);
+	void            refreshButtons() const;
 
 private:
-	wxString      name_;
-	bool          hidden_      = false;
-	wxOrientation orientation_ = wxHORIZONTAL;
+	wxString                name_;
+	bool                    hidden_      = false;
+	wxOrientation           orientation_ = wxHORIZONTAL;
+	vector<SToolBarButton*> buttons_;
+
+	void onButtonClicked(wxCommandEvent& e);
 };
 
 class SToolBar : public wxPanel
@@ -71,6 +73,10 @@ private:
 	bool                   main_toolbar_        = false;
 	bool                   enable_context_menu_ = false;
 	wxOrientation          orientation_         = wxHORIZONTAL;
+
+#ifdef __WXGTK__
+	wxTimer timer_refresh_;
+#endif
 
 	// Events
 	void onSize(wxSizeEvent& e);

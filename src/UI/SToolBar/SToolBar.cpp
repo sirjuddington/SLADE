@@ -217,6 +217,7 @@ SToolBarButton* SToolBarGroup::addActionButton(const wxString& action, const wxS
 
 	// Add it to the group
 	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL | wxALL, ui::scalePx(1));
+	buttons_.push_back(button);
 
 	return button;
 }
@@ -242,6 +243,7 @@ SToolBarButton* SToolBarGroup::addActionButton(
 
 	// Add it to the group
 	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL | wxALL, ui::scalePx(1));
+	buttons_.push_back(button);
 
 	return button;
 }
@@ -267,18 +269,20 @@ void SToolBarGroup::addCustomControl(wxWindow* control)
 // -----------------------------------------------------------------------------
 SToolBarButton* SToolBarGroup::findActionButton(const wxString& action) const
 {
-	const auto& children = wxWindow::GetChildren();
-	for (int i = 0; i < children.GetCount(); i++)
-	{
-		if (children[i]->GetName() == "stbutton")
-		{
-			if (auto* stbb = dynamic_cast<SToolBarButton*>(children[i]))
-				if (stbb->actionId() == action)
-					return stbb;
-		}
-	}
+	for (auto* button : buttons_)
+		if (button->actionId() == action)
+			return button;
 
 	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Refreshes all SToolBarButtons in the group if needed
+// -----------------------------------------------------------------------------
+void SToolBarGroup::refreshButtons() const
+{
+	for (auto* button : buttons_)
+		button->updateState();
 }
 
 // -----------------------------------------------------------------------------
@@ -346,6 +350,16 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar, wxOrientation orientatio
 	Bind(wxEVT_LEFT_DOWN, &SToolBar::onMouseEvent, this);
 	Bind(wxEVT_MENU, &SToolBar::onContextMenu, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &SToolBar::onEraseBackground, this);
+	
+	// On wxGTK we need to constantly update the toolbar buttons since mouse leave events are
+	// too unreliable so we end up with toolbar buttons stuck in a mouseover state
+#ifdef __WXGTK__
+	timer_refresh_.Bind(wxEVT_TIMER, [this](wxTimerEvent&) {
+		for (auto* group : groups_)
+			group->refreshButtons();
+	});
+	timer_refresh_.Start(250);
+#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -439,6 +453,10 @@ void SToolBar::addActionGroup(const wxString& name, wxArrayString actions)
 	updateLayout(true);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the SToolBarButton for the given [action] within this toolbar (all
+// groups), or nullptr if not found
+// -----------------------------------------------------------------------------
 SToolBarButton* SToolBar::findActionButton(const wxString& action_id) const
 {
 	for (const auto& group : groups_)

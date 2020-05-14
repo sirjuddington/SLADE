@@ -22,6 +22,8 @@ public:
 
 	void setIcon(const wxString& icon);
 
+	bool updateState();
+
 	static int pixelHeight();
 
 private:

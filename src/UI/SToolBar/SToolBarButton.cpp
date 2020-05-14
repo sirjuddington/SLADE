@@ -184,6 +184,34 @@ void SToolBarButton::setIcon(const wxString& icon)
 }
 
 // -----------------------------------------------------------------------------
+// Checks if the mouseover state of the button needs updating.
+// If it does, the button is refreshed and this returns true
+// -----------------------------------------------------------------------------
+bool SToolBarButton::updateState()
+{
+	auto prev_state = state_;
+
+	if (GetScreenRect().Contains(wxGetMousePosition()))
+	{
+		if (wxGetMouseState().LeftIsDown())
+			state_ = State::MouseDown;
+		else
+			state_ = State::MouseOver;
+	}
+	else
+		state_ = State::Normal;
+
+	if (prev_state != state_)
+	{
+		Update();
+		Refresh();
+		return true;
+	}
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the pixel height of all SToolBarButtons
 // -----------------------------------------------------------------------------
 int SToolBarButton::pixelHeight()
