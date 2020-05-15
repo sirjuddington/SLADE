@@ -216,9 +216,11 @@ SToolBarButton* SToolBarGroup::addActionButton(const wxString& action, const wxS
 	button->SetBackgroundColour(GetBackgroundColour());
 
 	// Add it to the group
-	sizer->AddSpacer(static_cast<int>(toolbar_size * 0.1));
+	if (toolbar_size > 16)
+		sizer->AddSpacer(static_cast<int>(toolbar_size * 0.1));
 	sizer->Add(button, 0, wxALIGN_CENTER | wxALL, ui::scalePx(1));
-	sizer->AddSpacer(static_cast<int>(toolbar_size * 0.1));
+	if (toolbar_size > 16)
+		sizer->AddSpacer(static_cast<int>(toolbar_size * 0.1));
 	buttons_.push_back(button);
 
 	return button;
@@ -244,7 +246,11 @@ SToolBarButton* SToolBarGroup::addActionButton(
 	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &SToolBarGroup::onButtonClicked, this, button->GetId());
 
 	// Add it to the group
+	if (toolbar_size > 16)
+		sizer->AddSpacer(static_cast<int>(toolbar_size * 0.1));
 	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL | wxALL, ui::scalePx(1));
+	if (toolbar_size > 16)
+		sizer->AddSpacer(static_cast<int>(toolbar_size * 0.1));
 	buttons_.push_back(button);
 
 	return button;
