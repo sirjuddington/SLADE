@@ -1,14 +1,12 @@
 #pragma once
 
-#include "UI/SDialog.h"
-
 namespace slade
 {
 class Archive;
 
 namespace ui
 {
-	class NewArchiveDialog : public SDialog
+	class NewArchiveDialog : public wxDialog
 	{
 	public:
 		NewArchiveDialog(wxWindow* parent);
