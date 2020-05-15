@@ -100,6 +100,7 @@ CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
 CVAR(Int, last_tint_amount, 50, CVar::Flag::Save)
 CVAR(Bool, auto_entry_replace, false, CVar::Flag::Save)
 CVAR(Bool, archive_build_skip_hidden, true, CVar::Flag::Save)
+CVAR(Bool, elist_show_filter, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -459,12 +460,45 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	tbg_entry->addActionButton("arch_entry_bookmark");
 	tbg_entry->Enable(false);
 	toolbar_elist_->addGroup(tbg_entry);
+	auto* tbg_filter = new SToolBarGroup(toolbar_elist_, "_Filter");
+	tbg_filter->addActionButton("arch_elist_togglefilter")->action()->setChecked(elist_show_filter);
+	toolbar_elist_->addGroup(tbg_filter, true);
+
+	// Entry List filter controls	
+	panel_filter_ = new wxPanel(this, -1);
+	auto* gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	panel_filter_->SetSizer(gbsizer);
+
+	// Create category selector
+	choice_category_ = new wxChoice(panel_filter_, -1);
+	choice_category_->Append("All");
+	for (const auto& cat : EntryType::allCategories())
+		choice_category_->Append(cat);
+	choice_category_->SetSelection(0);
+	gbsizer->Add(new wxStaticText(panel_filter_, -1, "Show:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(choice_category_, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
+	gbsizer->AddGrowableCol(1, 1);
+
+	// Create filter
+	text_filter_ = new wxTextCtrl(panel_filter_, -1);
+	gbsizer->Add(new wxStaticText(panel_filter_, -1, "Filter:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(text_filter_, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
+	btn_clear_filter_ = new SIconButton(panel_filter_, "close");
+	btn_clear_filter_->SetToolTip("Clear Filter");
+	gbsizer->Add(btn_clear_filter_, wxGBPosition(1, 2), wxDefaultSpan, wxEXPAND);
+
+	// Show/hide filter controls depending on cvar
+	panel_filter_->Show(elist_show_filter);
 
 	// Layout entry list
 	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(toolbar_elist_, 0, app::platform() == app::Platform::Linux ? wxEXPAND | wxLEFT : wxEXPAND, ui::scalePx(1));
+	if (app::platform() == app::Platform::Linux)
+		hbox->AddSpacer(ui::scalePx(1));
+	hbox->Add(toolbar_elist_, 0, wxEXPAND | wxBOTTOM, min_pad);
 	hbox->AddSpacer(min_pad);
 	auto* vbox = new wxBoxSizer(wxVERTICAL);
+	hbox->Add(vbox, 1, wxEXPAND);
+	framesizer->Add(hbox, 1, wxEXPAND);
 	vbox->AddSpacer(min_pad);
 	if (has_dirs)
 	{
@@ -473,30 +507,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 		vbox->AddSpacer(min_pad);
 	}
 	vbox->Add(entry_list_, 1, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
-	hbox->Add(vbox, 1, wxEXPAND);
-	framesizer->Add(hbox, 1, wxEXPAND);
-
-
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
-
-	// Create category selector
-	choice_category_ = new wxChoice(this, -1);
-	choice_category_->Append("All");
-	for (const auto& cat : EntryType::allCategories())
-		choice_category_->Append(cat);
-	choice_category_->SetSelection(0);
-	gb_sizer->Add(new wxStaticText(this, -1, "Show:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(choice_category_, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
-	gb_sizer->AddGrowableCol(1, 1);
-
-	// Create filter
-	text_filter_ = new wxTextCtrl(this, -1);
-	gb_sizer->Add(new wxStaticText(this, -1, "Filter:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(text_filter_, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
-	btn_clear_filter_ = new SIconButton(this, "close");
-	btn_clear_filter_->SetToolTip("Clear Filter");
-	gb_sizer->Add(btn_clear_filter_, wxGBPosition(1, 2), wxDefaultSpan, wxEXPAND);
+	vbox->Add(panel_filter_, 0, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
 
 
 	// Add default entry panel
@@ -3241,9 +3252,22 @@ bool ArchivePanel::handleAction(string_view id)
 	if (!archive)
 		return false;
 
+
+	// ------------------------------------------------------------------------
+	// ENTRY LIST
+	// ------------------------------------------------------------------------
+
 	// 'Up Dir' button
 	if (id == "arch_updir")
 		entry_list_->goUpDir();
+
+	// 'Toggle Filter Controls' button
+	else if (id == "arch_elist_togglefilter")
+	{
+		panel_filter_->Show(elist_show_filter);
+		Layout();
+		Refresh();
+	}
 
 
 	// ------------------------------------------------------------------------

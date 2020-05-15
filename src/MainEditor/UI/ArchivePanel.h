@@ -125,12 +125,13 @@ protected:
 	vector<string>                  current_external_exes_;
 
 	// Controls
-	ArchiveEntryList* entry_list_          = nullptr;
-	wxTextCtrl*       text_filter_         = nullptr;
-	wxButton*         btn_clear_filter_    = nullptr;
-	wxChoice*         choice_category_     = nullptr;
-	wxStaticText*     label_path_          = nullptr;
-	SToolBar*         toolbar_elist_       = nullptr;
+	ArchiveEntryList* entry_list_       = nullptr;
+	wxTextCtrl*       text_filter_      = nullptr;
+	wxButton*         btn_clear_filter_ = nullptr;
+	wxChoice*         choice_category_  = nullptr;
+	wxStaticText*     label_path_       = nullptr;
+	SToolBar*         toolbar_elist_    = nullptr;
+	wxPanel*          panel_filter_     = nullptr;
 
 	// Entry panels
 	EntryPanel* cur_area_      = nullptr;
