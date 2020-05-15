@@ -194,7 +194,7 @@ void TLFunction::addContext(
 	if (func.parameters().empty())
 		ctx.params.push_back({ "void", "", "", false });
 	else
-		for (auto& p : func.parameters())
+		for (const auto& p : func.parameters())
 			ctx.params.push_back({ p.type, p.name, p.default_value, !p.default_value.empty() });
 }
 
@@ -318,7 +318,7 @@ void TextLanguage::addFunction(
 	}
 
 	// Check if the function exists
-	auto func = function(func_name);
+	auto* func = function(func_name);
 
 	// If it doesn't, create it
 	if (!func)
@@ -345,20 +345,20 @@ void TextLanguage::addFunction(
 void TextLanguage::loadZScript(zscript::Definitions& defs, bool custom)
 {
 	// Classes
-	for (auto& c : defs.classes())
+	for (const auto& c : defs.classes())
 	{
 		// Add class as type
 		addWord(Type, c.name(), custom);
 
 		// Add class functions
-		for (auto& f : c.functions())
+		for (const auto& f : c.functions())
 		{
 			// Ignore overriding functions
 			if (f.isOverride())
 				continue;
 
 			// Check if the function exists
-			auto func = function(f.name());
+			auto* func = function(f.name());
 
 			// If it doesn't, create it
 			if (!func)
@@ -368,7 +368,7 @@ void TextLanguage::loadZScript(zscript::Definitions& defs, bool custom)
 			}
 
 			// Add the context
-			if (!func->hasContext(c.name()))
+			if (!func->hasContext(f.baseClass()))
 				func->addContext(
 					c.name(),
 					f,
@@ -591,15 +591,15 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 	// Get parsed data
 	for (unsigned a = 0; a < root.nChildren(); a++)
 	{
-		auto node = root.childPTN(a);
+		auto* node = root.childPTN(a);
 
 		// Create language
-		auto lang = new TextLanguage(node->name());
+		auto* lang = new TextLanguage(node->name());
 
 		// Check for inheritance
 		if (!node->inherit().empty())
 		{
-			auto inherit = fromId(node->inherit());
+			auto* inherit = fromId(node->inherit());
 			if (inherit)
 				inherit->copyTo(lang);
 			else
@@ -609,8 +609,8 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 		// Parse language info
 		for (unsigned c = 0; c < node->nChildren(); c++)
 		{
-			auto child    = node->childPTN(c);
-			auto pn_lower = strutil::lower(child->name());
+			auto* child    = node->childPTN(c);
+			auto  pn_lower = strutil::lower(child->name());
 
 			// Language name
 			if (pn_lower == "name")
@@ -799,7 +799,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 					// Go through children (functions)
 					for (unsigned f = 0; f < child->nChildren(); f++)
 					{
-						auto   child_func = child->childPTN(f);
+						auto*  child_func = child->childPTN(f);
 						string params;
 
 						// Simple definition
@@ -840,7 +840,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 							string         deprecated;
 							for (unsigned p = 0; p < child_func->nChildren(); p++)
 							{
-								auto child_prop = child_func->childPTN(p);
+								auto* child_prop = child_func->childPTN(p);
 								if (child_prop->name() == "args")
 								{
 									for (unsigned v = 0; v < child_prop->nValues(); v++)
@@ -866,10 +866,10 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 					ZFuncExProp ex_prop;
 					for (unsigned f = 0; f < child->nChildren(); f++)
 					{
-						auto child_func = child->childPTN(f);
+						auto* child_func = child->childPTN(f);
 						for (unsigned p = 0; p < child_func->nChildren(); ++p)
 						{
-							auto child_prop = child_func->childPTN(p);
+							auto* child_prop = child_func->childPTN(p);
 							if (child_prop->name() == "description")
 								ex_prop.description = child_prop->stringValue();
 							else if (child_prop->name() == "deprecated_f")
@@ -891,13 +891,13 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 bool TextLanguage::loadLanguages()
 {
 	// Get slade resource archive
-	auto res_archive = app::archiveManager().programResourceArchive();
+	auto* res_archive = app::archiveManager().programResourceArchive();
 
 	// Read language definitions from resource archive
 	if (res_archive)
 	{
 		// Get 'config/languages' directly
-		auto dir = res_archive->dirAtPath("config/languages");
+		auto* dir = res_archive->dirAtPath("config/languages");
 
 		if (dir)
 		{
@@ -912,7 +912,7 @@ bool TextLanguage::loadLanguages()
 			});
 
 			// Read all (sorted) entries in this dir
-			for (auto entry : defs)
+			for (auto* entry : defs)
 				readLanguageDefinition(entry->data(), entry->name());
 		}
 		else
