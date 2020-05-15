@@ -216,7 +216,9 @@ SToolBarButton* SToolBarGroup::addActionButton(const wxString& action, const wxS
 	button->SetBackgroundColour(GetBackgroundColour());
 
 	// Add it to the group
+	sizer->AddSpacer(static_cast<int>(toolbar_size * 0.1));
 	sizer->Add(button, 0, wxALIGN_CENTER | wxALL, ui::scalePx(1));
+	sizer->AddSpacer(static_cast<int>(toolbar_size * 0.1));
 	buttons_.push_back(button);
 
 	return button;
@@ -350,16 +352,6 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar, wxOrientation orientatio
 	Bind(wxEVT_LEFT_DOWN, &SToolBar::onMouseEvent, this);
 	Bind(wxEVT_MENU, &SToolBar::onContextMenu, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &SToolBar::onEraseBackground, this);
-	
-	// On wxGTK we need to constantly update the toolbar buttons since mouse leave events are
-	// too unreliable so we end up with toolbar buttons stuck in a mouseover state
-#ifdef __WXGTK__
-	timer_refresh_.Bind(wxEVT_TIMER, [this](wxTimerEvent&) {
-		for (auto* group : groups_)
-			group->refreshButtons();
-	});
-	timer_refresh_.Start(250);
-#endif
 }
 
 // -----------------------------------------------------------------------------

@@ -75,10 +75,6 @@ private:
 	bool                   enable_context_menu_ = false;
 	wxOrientation          orientation_         = wxHORIZONTAL;
 
-#ifdef __WXGTK__
-	wxTimer timer_refresh_;
-#endif
-
 	// Events
 	void onSize(wxSizeEvent& e);
 	void onPaint(wxPaintEvent& e);

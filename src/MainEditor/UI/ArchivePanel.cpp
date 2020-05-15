@@ -442,7 +442,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	if (has_dirs)
 	{
 		auto* tbg_dir = new SToolBarGroup(toolbar_elist_, "_Dir");
-		tbg_dir->addActionButton("arch_updir");
+		tbg_dir->addActionButton("arch_updir")->Enable(false);
 		toolbar_elist_->addGroup(tbg_dir);
 	}
 	auto* tbg_create = new SToolBarGroup(toolbar_elist_, "_Create");
