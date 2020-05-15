@@ -447,18 +447,21 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	}
 	auto* tbg_create = new SToolBarGroup(toolbar_elist_, "_Create");
 	tbg_create->addActionButton("arch_newentry");
-	tbg_create->addActionButton("arch_newdir");
+	if (has_dirs)
+		tbg_create->addActionButton("arch_newdir");
 	tbg_create->addActionButton("arch_importfiles");
 	toolbar_elist_->addGroup(tbg_create);
 	auto* tbg_entry = new SToolBarGroup(toolbar_elist_, "_Entry");
 	tbg_entry->addActionButton("arch_entry_rename");
+	tbg_entry->addActionButton("arch_entry_rename_each");
 	tbg_entry->addActionButton("arch_entry_import");
 	tbg_entry->addActionButton("arch_entry_export");
 	tbg_entry->addActionButton("arch_entry_moveup");
 	tbg_entry->addActionButton("arch_entry_movedown");
+	tbg_entry->addActionButton("arch_entry_sort");
 	tbg_entry->addActionButton("arch_entry_delete");
 	tbg_entry->addActionButton("arch_entry_bookmark");
-	tbg_entry->Enable(false);
+	tbg_entry->setAllButtonsEnabled(false);
 	toolbar_elist_->addGroup(tbg_entry);
 	auto* tbg_filter = new SToolBarGroup(toolbar_elist_, "_Filter");
 	tbg_filter->addActionButton("arch_elist_togglefilter")->action()->setChecked(elist_show_filter);
@@ -3580,20 +3583,32 @@ void ArchivePanel::onEntryListSelectionChange(wxCommandEvent& e)
 
 	if (selection.empty())
 	{
-		toolbar_elist_->enableGroup("_Entry", false);
+		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(false);
 	}
 	else if (selection.size() == 1)
 	{
 		// If one entry is selected, open it in the entry area
-		toolbar_elist_->enableGroup("_Entry", true);
+		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
+		toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(false);
 		openEntry(selection[0]);
 	}
 	else
 	{
 		// If multiple entries are selected, show/update the multi entry area
-		toolbar_elist_->enableGroup("_Entry", true);
+		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
+		toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(true);
 		showEntryPanel(default_area_);
 		dynamic_cast<DefaultEntryPanel*>(default_area_)->loadEntries(selection);
+	}
+
+	// Get selected directories
+	auto sel_dirs = entry_list_->selectedDirectories();
+
+	if (selection.empty() && !sel_dirs.empty())
+	{
+		toolbar_elist_->findActionButton("arch_entry_rename")->Enable(true);
+		toolbar_elist_->findActionButton("arch_entry_delete")->Enable(true);
+		//toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
 	}
 
 	toolbar_elist_->Refresh();

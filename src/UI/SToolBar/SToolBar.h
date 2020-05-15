@@ -27,6 +27,7 @@ public:
 
 	SToolBarButton* findActionButton(const wxString& action) const;
 	void            refreshButtons() const;
+	void            setAllButtonsEnabled(bool enable = true);
 
 private:
 	wxString                name_;

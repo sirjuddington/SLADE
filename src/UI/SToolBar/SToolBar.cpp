@@ -294,6 +294,17 @@ void SToolBarGroup::refreshButtons() const
 }
 
 // -----------------------------------------------------------------------------
+// Enables/disables all SToolBarButtons in the group
+// -----------------------------------------------------------------------------
+void SToolBarGroup::setAllButtonsEnabled(bool enable)
+{
+	Freeze();
+	for (auto* button : buttons_)
+		button->Enable(enable);
+	Thaw();
+}
+
+// -----------------------------------------------------------------------------
 // Redraws all controls in the group
 // -----------------------------------------------------------------------------
 void SToolBarGroup::redraw()
