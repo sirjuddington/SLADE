@@ -95,10 +95,6 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent
 	text_area_->Bind(wxEVT_TEXT_CHANGED, &TextEntryPanel::onTextModified, this);
 	text_area_->Bind(wxEVT_STC_UPDATEUI, &TextEntryPanel::onUpdateUI, this);
 
-	// Custom toolbar
-	custom_toolbar_actions_ = "arch_scripts_compileacs;arch_scripts_compilehacs";
-	toolbar_->addActionGroup("Scripts", wxSplit(custom_toolbar_actions_, ';'));
-
 
 	// --- Custom menu ---
 	menu_custom_ = new wxMenu();
