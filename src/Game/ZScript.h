@@ -72,7 +72,10 @@ namespace zscript
 	class Function : public Identifier
 	{
 	public:
-		Function(string_view name = "") : Identifier(name), return_type_{ "void" } {}
+		Function(string_view name = {}, string_view def_class = {}) :
+			Identifier(name), return_type_{ "void" }, base_class_{ def_class }
+		{
+		}
 
 		virtual ~Function() = default;
 
@@ -92,6 +95,7 @@ namespace zscript
 		bool                     isStatic() const { return static_; }
 		bool                     isAction() const { return action_; }
 		bool                     isOverride() const { return override_; }
+		const string&            baseClass() const { return base_class_; }
 
 		bool   parse(ParsedStatement& statement);
 		string asString();
@@ -105,6 +109,9 @@ namespace zscript
 		bool              static_   = false;
 		bool              action_   = false;
 		bool              override_ = false;
+
+		string base_class_; // This is needed to keep track of the class that originally defined the function, so we
+							// know if a function is inherited or not
 	};
 
 	struct State
