@@ -216,7 +216,7 @@ SToolBarButton* SToolBarGroup::addActionButton(const wxString& action, const wxS
 	button->SetBackgroundColour(GetBackgroundColour());
 
 	// Add it to the group
-	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL | wxALL, ui::scalePx(1));
+	sizer->Add(button, 0, wxALIGN_CENTER | wxALL, ui::scalePx(1));
 	buttons_.push_back(button);
 
 	return button;

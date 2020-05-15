@@ -56,8 +56,6 @@ public:
 		string_view text_override = "NO",
 		string_view icon_override = "NO",
 		int         wx_id_offset  = 0);
-	bool addToToolbar(wxAuiToolBar* toolbar, string_view icon_override = "NO", int wx_id_offset = 0) const;
-	bool addToToolbar(wxToolBar* toolbar, string_view icon_override = "NO", int wx_id_offset = 0) const;
 
 	// Static functions
 	static void     initWxId(int id) { cur_id_ = id; }

@@ -199,60 +199,6 @@ bool SAction::addToMenu(
 }
 
 // -----------------------------------------------------------------------------
-// Adds this action to [toolbar]. If [icon_override] is not "NO", it will be
-// used instead of the action's icon as the tool icon
-// -----------------------------------------------------------------------------
-bool SAction::addToToolbar(wxAuiToolBar* toolbar, string_view icon_override, int wx_id_offset) const
-{
-	// Can't add to nonexistant toolbar
-	if (!toolbar)
-		return false;
-
-	// Setup icon
-	auto useicon = icon_;
-	if (icon_override != "NO")
-		useicon = icon_override;
-
-	// Append this action to the toolbar
-	int wid = wx_id_ + wx_id_offset;
-	if (type_ == Type::Normal)
-		toolbar->AddTool(wid, text_, icons::getIcon(icons::General, useicon), helptext_);
-	else if (type_ == Type::Check)
-		toolbar->AddTool(wid, text_, icons::getIcon(icons::General, useicon), helptext_, wxITEM_CHECK);
-	else if (type_ == Type::Radio)
-		toolbar->AddTool(wid, text_, icons::getIcon(icons::General, useicon), helptext_, wxITEM_RADIO);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds this action to [toolbar]. If [icon_override] is not "NO", it will be
-// used instead of the action's icon as the tool icon
-// -----------------------------------------------------------------------------
-bool SAction::addToToolbar(wxToolBar* toolbar, string_view icon_override, int wx_id_offset) const
-{
-	// Can't add to nonexistant toolbar
-	if (!toolbar)
-		return false;
-
-	// Setup icon
-	auto useicon = icon_;
-	if (icon_override != "NO")
-		useicon = icon_override;
-
-	// Append this action to the toolbar
-	int wid = wx_id_ + wx_id_offset;
-	if (type_ == Type::Normal)
-		toolbar->AddTool(wid, "", icons::getIcon(icons::General, useicon), helptext_);
-	else if (type_ == Type::Check)
-		toolbar->AddTool(wid, "", icons::getIcon(icons::General, useicon), helptext_, wxITEM_CHECK);
-	else if (type_ == Type::Radio)
-		toolbar->AddTool(wid, "", icons::getIcon(icons::General, useicon), helptext_, wxITEM_RADIO);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
 // Loads a parsed SAction definition
 // -----------------------------------------------------------------------------
 bool SAction::parse(ParseTreeNode* node)

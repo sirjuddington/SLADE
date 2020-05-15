@@ -38,6 +38,7 @@
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
 #include "General/Web.h"
+#include "Graphics/Icons.h"
 #include "Utility/Tokenizer.h"
 
 using namespace slade;
@@ -140,14 +141,14 @@ void SStartPage::init()
 		entry_export_.push_back(res_archive->entryAtPath("fonts/FiraSans-Bold.woff"));
 		entry_export_.push_back(res_archive->entryAtPath("fonts/FiraSans-Heavy.woff"));
 		entry_export_.push_back(res_archive->entryAtPath("logo_icon.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/archive.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/wad.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/zip.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/folder.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/general/open.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/general/newarchive.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/general/mapeditor.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/general/wiki.png"));
+		entry_export_.push_back(icons::getIconEntry(icons::Entry, "archive", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::Entry, "wad", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::Entry, "zip", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::Entry, "folder", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::General, "open", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::General, "newarchive", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::General, "mapeditor", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::General, "wiki", 16));
 
 		// Load tips
 		auto entry_tips = res_archive->entryAtPath("tips.txt");
