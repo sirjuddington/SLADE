@@ -80,7 +80,7 @@ SAction::SAction(
 	wx_id_{ 0 },
 	reserved_ids_{ reserve_ids },
 	text_{ text },
-	icon_{ icon },
+	icons_{ string{ icon } },
 	helptext_{ helptext },
 	shortcut_{ shortcut },
 	type_{ type },
@@ -88,6 +88,18 @@ SAction::SAction(
 	checked_{ false },
 	linked_cvar_{ nullptr }
 {
+}
+
+// -----------------------------------------------------------------------------
+// Returns the name of the icon to use for this action
+// -----------------------------------------------------------------------------
+string SAction::iconName() const
+{
+	for (const auto& name : icons_)
+		if (icons::iconExists(icons::Any, name))
+			return name;
+
+	return {};
 }
 
 // -----------------------------------------------------------------------------
@@ -182,7 +194,7 @@ bool SAction::addToMenu(
 	// Append this action to the menu
 	auto help      = helptext_;
 	int  wid       = wx_id_ + wx_id_offset;
-	auto real_icon = (icon_override == "NO") ? icon_ : icon_override;
+	auto real_icon = (icon_override == "NO") ? iconName() : string{ icon_override };
 	if (!sc.empty())
 		help += fmt::format(" (Shortcut: {})", sc);
 	if (type_ == Type::Normal)
@@ -217,7 +229,8 @@ bool SAction::parse(ParseTreeNode* node)
 
 		// Icon
 		else if (prop_name == "icon")
-			icon_ = prop->stringValue();
+			for (const auto& icon : prop->stringValues())
+				icons_.push_back(icon);
 
 		// Help Text
 		else if (prop_name == "help_text")

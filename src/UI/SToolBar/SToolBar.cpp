@@ -177,7 +177,7 @@ SToolBarGroup::SToolBarGroup(SToolBar* parent, const wxString& name, bool force_
 
 		auto* label = new wxStaticText(this, -1, wxString::Format("%s:", showname));
 		label->SetForegroundColour(drawing::systemMenuTextColour());
-		//sizer->AddSpacer(ui::pad());
+		// sizer->AddSpacer(ui::pad());
 		sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL);
 		sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
 	}
@@ -269,6 +269,19 @@ void SToolBarGroup::addCustomControl(wxWindow* control)
 		GetSizer()->Add(control, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::scalePx(1));
 	else
 		GetSizer()->Add(control, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP | wxBOTTOM, ui::scalePx(1));
+}
+
+void SToolBarGroup::addSeparator()
+{
+	bool horizontal = orientation_ == wxHORIZONTAL;
+
+	auto* sep = horizontal ? static_cast<wxWindow*>(new SToolBarHSeparator(this)) :
+							 static_cast<wxWindow*>(new SToolBarVSeparator(this));
+
+	if (horizontal)
+		GetSizer()->Add(sep, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::px(ui::Size::PadMinimum));
+	else
+		GetSizer()->Add(sep, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
 }
 
 // -----------------------------------------------------------------------------
@@ -447,7 +460,7 @@ void SToolBar::deleteCustomGroups()
 // Adds a new group [name] to the toolbar, containing toolbar buttons for each
 // action in [actions]
 // -----------------------------------------------------------------------------
-void SToolBar::addActionGroup(const wxString& name, wxArrayString actions)
+void SToolBar::addActionGroup(const wxString& name, wxArrayString actions, bool at_end)
 {
 	// Do nothing if no actions were given
 	if (actions.empty())
@@ -455,7 +468,10 @@ void SToolBar::addActionGroup(const wxString& name, wxArrayString actions)
 
 	// Create new toolbar group
 	auto* group = new SToolBarGroup(this, name);
-	groups_.push_back(group);
+	if (at_end)
+		groups_end_.push_back(group);
+	else
+		groups_.push_back(group);
 
 	// Add actions to the group
 	for (const auto& action : actions)

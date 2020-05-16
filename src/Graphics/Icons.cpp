@@ -268,14 +268,14 @@ bool icons::loadIcons()
 	auto tempfile = app::path("sladetemp", app::Dir::Temp);
 
 	// Get slade.pk3
-	auto res_archive = app::archiveManager().programResourceArchive();
+	auto* res_archive = app::archiveManager().programResourceArchive();
 
 	// Do nothing if it doesn't exist
 	if (!res_archive)
 		return false;
 
 	// Get the icons directory of the archive
-	auto dir_icons = res_archive->dirAtPath("icons");
+	auto* dir_icons = res_archive->dirAtPath("icons");
 
 	// Load general icons
 	iconsets_general.emplace_back("Default");
@@ -314,14 +314,9 @@ wxBitmap icons::getIcon(Type type, string_view name, int size, bool log_missing)
 		return icon;
 	}
 
-	auto& icons = iconList(type);
-
-	size_t icons_size = icons.size();
-	for (size_t a = 0; a < icons_size; a++)
-	{
-		if (icons[a].name == name)
-			return wxBitmap(validImageForSize(icons[a], size).wx_image);
-	}
+	for (const auto& icon : iconList(type))
+		if (icon.name == name)
+			return wxBitmap(validImageForSize(icon, size).wx_image);
 
 	if (log_missing)
 		log::warning(2, "Icon \"{}\" does not exist", name);
@@ -335,6 +330,31 @@ wxBitmap icons::getIcon(Type type, string_view name, int size, bool log_missing)
 wxBitmap icons::getIcon(Type type, string_view name)
 {
 	return getIcon(type, name, 16 * ui::scaleFactor());
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if an icon with [name] of [type] exists
+// -----------------------------------------------------------------------------
+bool icons::iconExists(Type type, string_view name)
+{
+	// Check all types if [type] is < 0
+	if (type == Any)
+	{
+		bool exists = iconExists(General, name);
+		if (!exists)
+			exists = iconExists(Entry, name);
+		if (!exists)
+			exists = iconExists(TextEditor, name);
+
+		return exists;
+	}
+
+	auto& icons = iconList(type);
+	for (const auto& icon : icons)
+		if (icon.name == name)
+			return true;
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------

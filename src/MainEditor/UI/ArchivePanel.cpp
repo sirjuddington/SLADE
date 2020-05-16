@@ -454,12 +454,15 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	auto* tbg_entry = new SToolBarGroup(toolbar_elist_, "_Entry");
 	tbg_entry->addActionButton("arch_entry_rename");
 	tbg_entry->addActionButton("arch_entry_rename_each");
+	tbg_entry->addActionButton("arch_entry_delete");
+	tbg_entry->addSeparator();
 	tbg_entry->addActionButton("arch_entry_import");
 	tbg_entry->addActionButton("arch_entry_export");
+	tbg_entry->addSeparator();
 	tbg_entry->addActionButton("arch_entry_moveup");
 	tbg_entry->addActionButton("arch_entry_movedown");
 	tbg_entry->addActionButton("arch_entry_sort");
-	tbg_entry->addActionButton("arch_entry_delete");
+	tbg_entry->addSeparator();
 	tbg_entry->addActionButton("arch_entry_bookmark");
 	tbg_entry->setAllButtonsEnabled(false);
 	toolbar_elist_->addGroup(tbg_entry);

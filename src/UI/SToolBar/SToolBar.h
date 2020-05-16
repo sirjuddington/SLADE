@@ -24,6 +24,7 @@ public:
 		const wxString& help_text,
 		bool            show_name = false);
 	void addCustomControl(wxWindow* control);
+	void addSeparator();
 
 	SToolBarButton* findActionButton(const wxString& action) const;
 	void            refreshButtons() const;
@@ -53,7 +54,7 @@ public:
 	void            addGroup(SToolBarGroup* group, bool at_end = false);
 	void            deleteGroup(const wxString& name);
 	void            deleteCustomGroups();
-	void            addActionGroup(const wxString& name, wxArrayString actions);
+	void            addActionGroup(const wxString& name, wxArrayString actions, bool at_end = false);
 	void            enableGroup(const wxString& name, bool enable = true);
 	void            populateGroupsMenu(wxMenu* menu, int start_id = 0);
 	void            enableContextMenu(bool enable = true) { enable_context_menu_ = enable; }
