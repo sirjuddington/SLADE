@@ -83,8 +83,8 @@ public:
 		// Get system colours needed
 		auto    col_background = GetBackgroundColour();
 		ColRGBA bg(col_background);
-		auto    col_light = bg.amp(50, 50, 50, 0).toWx();
-		auto    col_dark  = bg.amp(-50, -50, -50, 0).toWx();
+		auto    col_light = bg.amp(90, 90, 90, 0).toWx();
+		auto    col_dark  = bg.amp(-90, -90, -90, 0).toWx();
 
 		// Draw background
 		dc.SetBackground(wxBrush(col_background));
@@ -124,8 +124,8 @@ public:
 		// Get system colours needed
 		auto    col_background = GetBackgroundColour();
 		ColRGBA bg(col_background);
-		auto    col_light = bg.amp(50, 50, 50, 0).toWx();
-		auto    col_dark  = bg.amp(-50, -50, -50, 0).toWx();
+		auto    col_light = bg.amp(90, 90, 90, 0).toWx();
+		auto    col_dark  = bg.amp(-90, -90, -90, 0).toWx();
 
 		// Draw background
 		dc.SetBackground(wxBrush(col_background));
@@ -380,7 +380,7 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar, wxOrientation orientatio
 	Bind(wxEVT_KILL_FOCUS, &SToolBar::onFocus, this);
 	Bind(wxEVT_RIGHT_DOWN, &SToolBar::onMouseEvent, this);
 	Bind(wxEVT_LEFT_DOWN, &SToolBar::onMouseEvent, this);
-	Bind(wxEVT_MENU, &SToolBar::onContextMenu, this);
+	//Bind(wxEVT_MENU, &SToolBar::onContextMenu, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &SToolBar::onEraseBackground, this);
 }
 
@@ -802,6 +802,7 @@ void SToolBar::onMouseEvent(wxMouseEvent& e)
 		// Build context menu
 		wxMenu context;
 		populateGroupsMenu(&context);
+		context.Bind(wxEVT_MENU, &SToolBar::onContextMenu, this);
 
 		// Popup context menu
 		PopupMenu(&context);

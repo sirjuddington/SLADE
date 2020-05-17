@@ -45,7 +45,6 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, toolbar_button_flat, true, CVar::Flag::Save)
 wxDEFINE_EVENT(wxEVT_STOOLBAR_BUTTON_CLICKED, wxCommandEvent);
 
 
@@ -277,30 +276,19 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	// Draw toggled border/background
 	if (action_ && action_->isChecked())
 	{
-		// Use greyscale version of hilight colour
-		uint8_t r = col_hilight.Red();
-		uint8_t g = col_hilight.Green();
-		uint8_t b = col_hilight.Blue();
-		wxColour::MakeGrey(&r, &g, &b);
-		wxColour col_toggle(r, g, b, 255);
-		wxColour col_trans(r, g, b, 150);
+		//// Use greyscale version of hilight colour
+		//uint8_t r = col_hilight.Red();
+		//uint8_t g = col_hilight.Green();
+		//uint8_t b = col_hilight.Blue();
+		//wxColour::MakeGrey(&r, &g, &b);
+		//wxColour col_toggle(r, g, b, 255);
+		//wxColour col_trans(r, g, b, 150);
 
-		if (toolbar_button_flat)
-		{
-			// Draw border
-			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
-			gc->SetBrush(col_trans);
-			gc->SetPen(wxPen(drawing::darkColour(col_toggle, 5.0f), scale_px));
-			gc->DrawRectangle(pad_outer_, pad_outer_, width, height);
-		}
-		else
-		{
-			// Draw border
-			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
-			gc->SetBrush(col_trans);
-			gc->SetPen(wxPen(col_hilight, scale_px));
-			gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width, height, 2 * scale_px);
-		}
+		// Draw border
+		//col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
+		gc->SetBrush(*wxTRANSPARENT_BRUSH);
+		gc->SetPen(wxPen(col_hilight, scale_px));
+		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width - 1., height - 1., 1 * scale_px);
 	}
 
 	// Draw border on mouseover
@@ -314,20 +302,10 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		// Create semitransparent hilight colour
 		wxColour col_trans(col_hilight.Red(), col_hilight.Green(), col_hilight.Blue(), trans);
 
-		if (toolbar_button_flat)
-		{
-			// Draw border
-			gc->SetBrush(col_trans);
-			gc->SetPen(wxPen(col_hilight, scale_px));
-			gc->DrawRectangle(pad_outer_, pad_outer_, width, height);
-		}
-		else
-		{
-			// Draw border
-			gc->SetBrush(col_trans);
-			gc->SetPen(wxPen(col_hilight));
-			gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width, height, 2 * scale_px);
-		}
+		// Draw border
+		gc->SetBrush(col_trans);
+		gc->SetPen(*wxTRANSPARENT_PEN);
+		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width, height, 1 * scale_px);
 	}
 
 	if (icon_.IsOk())
