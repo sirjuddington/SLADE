@@ -57,6 +57,8 @@ EXTERN_CVAR(String, iconset_general)
 EXTERN_CVAR(String, iconset_entry_list)
 EXTERN_CVAR(Bool, tabs_condensed)
 EXTERN_CVAR(Bool, web_dark_theme)
+EXTERN_CVAR(Int, elist_icon_size)
+EXTERN_CVAR(Int, elist_icon_padding)
 
 
 // -----------------------------------------------------------------------------
@@ -119,6 +121,13 @@ void InterfacePrefsPanel::init()
 			choice_iconset_entry_->SetSelection(a);
 			break;
 		}
+
+	if (elist_icon_size <= 16)
+		choice_elist_icon_size_->Select(0);
+	else if (elist_icon_size <= 24)
+		choice_elist_icon_size_->Select(1);
+	else
+		choice_elist_icon_size_->Select(2);
 }
 
 // -----------------------------------------------------------------------------
@@ -145,6 +154,13 @@ void InterfacePrefsPanel::applyPreferences()
 
 	iconset_general    = wxutil::strToView(choice_iconset_general_->GetString(choice_iconset_general_->GetSelection()));
 	iconset_entry_list = wxutil::strToView(choice_iconset_entry_->GetString(choice_iconset_entry_->GetSelection()));
+
+	if (choice_elist_icon_size_->GetSelection() == 0)
+		elist_icon_size = 16;
+	else if (choice_elist_icon_size_->GetSelection() == 1)
+		elist_icon_size = 24;
+	else
+		elist_icon_size = 32;
 }
 
 // -----------------------------------------------------------------------------
@@ -199,12 +215,24 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	auto panel = new wxPanel(stc_tabs, -1);
 
 	// Create controls
-	cb_size_as_string_    = new wxCheckBox(panel, -1, "Show entry size as a string with units");
-	cb_filter_dirs_       = new wxCheckBox(panel, -1, "Ignore directories when filtering by name");
-	cb_elist_bgcol_       = new wxCheckBox(panel, -1, "Colour entry list item background by entry type");
-	cb_context_submenus_  = new wxCheckBox(panel, -1, "Group related entry context menu items into submenus");
-	auto sets             = wxutil::arrayStringStd(icons::iconSets(icons::Entry));
-	choice_iconset_entry_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets);
+	cb_size_as_string_      = new wxCheckBox(panel, -1, "Show entry size as a string with units");
+	cb_filter_dirs_         = new wxCheckBox(panel, -1, "Ignore directories when filtering by name");
+	cb_elist_bgcol_         = new wxCheckBox(panel, -1, "Colour entry list item background by entry type");
+	cb_context_submenus_    = new wxCheckBox(panel, -1, "Group related entry context menu items into submenus");
+	auto sets               = wxutil::arrayStringStd(icons::iconSets(icons::Entry));
+	choice_iconset_entry_   = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets);
+	wxString icon_sizes[]   = { "16x16", "24x24", "32x32" };
+	choice_elist_icon_size_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, icon_sizes);
+	spin_elist_icon_pad_    = new wxSpinCtrl(
+        panel,
+        -1,
+        "1",
+        wxDefaultPosition,
+        { ui::px(ui::Size::SpinCtrlWidth), -1 },
+        wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
+        0,
+        3,
+        1);
 
 	// Layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -213,12 +241,17 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	sizer->Add(gb_sizer, 1, wxALL | wxEXPAND, ui::padLarge());
 
 	int row = 0;
-	gb_sizer->Add(cb_size_as_string_, { row++, 0 }, { 1, 2 }, wxEXPAND);
-	gb_sizer->Add(cb_filter_dirs_, { row++, 0 }, { 1, 2 }, wxEXPAND);
-	gb_sizer->Add(cb_elist_bgcol_, { row++, 0 }, { 1, 2 }, wxEXPAND);
-	gb_sizer->Add(cb_context_submenus_, { row++, 0 }, { 1, 2 }, wxEXPAND);
+	gb_sizer->Add(cb_size_as_string_, { row++, 0 }, { 1, 4 }, wxEXPAND);
+	gb_sizer->Add(cb_filter_dirs_, { row++, 0 }, { 1, 4 }, wxEXPAND);
+	gb_sizer->Add(cb_elist_bgcol_, { row++, 0 }, { 1, 4 }, wxEXPAND);
+	gb_sizer->Add(cb_context_submenus_, { row++, 0 }, { 1, 4 }, wxEXPAND);
+	gb_sizer->Add(new wxStaticText(panel, -1, "Icon size:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(choice_elist_icon_size_, { row, 1 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(new wxStaticText(panel, -1, "Padding:"), { row, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(spin_elist_icon_pad_, { row, 3 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 4 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Icons:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
-	gb_sizer->Add(choice_iconset_entry_, { row, 1 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(choice_iconset_entry_, { row, 1 }, { 1, 3 }, wxEXPAND);
 	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 
 	gb_sizer->AddGrowableCol(1, 1);
