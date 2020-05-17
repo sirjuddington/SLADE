@@ -17,6 +17,7 @@ namespace icons
 
 	bool           loadIcons();
 	wxBitmap       getIcon(Type type, string_view name, int size, bool log_missing = true);
+	wxBitmap       getPaddedIcon(Type type, string_view name, int size, int padding = 1);
 	wxBitmap       getIcon(Type type, string_view name);
 	bool           iconExists(Type type, string_view name);
 	ArchiveEntry*  getIconEntry(Type type, string_view name, int size);

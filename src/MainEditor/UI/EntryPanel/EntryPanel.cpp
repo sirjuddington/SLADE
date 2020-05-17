@@ -96,10 +96,7 @@ EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool frame, bool le
 
 	// Create left toolbar
 	if (left_toolbar)
-	{
 		toolbar_left_ = new SToolBar(this, false, wxVERTICAL);
-		toolbar_left_->Show(false);
-	}
 
 	// Setup sizer positions
 	sizer_bottom_ = new wxBoxSizer(wxHORIZONTAL);

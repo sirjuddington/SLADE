@@ -325,6 +325,41 @@ wxBitmap icons::getIcon(Type type, string_view name, int size, bool log_missing)
 }
 
 // -----------------------------------------------------------------------------
+// Returns the icon matching [name] of [type] as a wxBitmap (for toolbars etc)
+// with [padding] pixels transparent border, or an empty bitmap if no icon was
+// found.
+// If [type] is less than 0, try all icon types.
+// -----------------------------------------------------------------------------
+wxBitmap icons::getPaddedIcon(Type type, string_view name, int size, int padding)
+{
+	// Check all types if [type] is < 0
+	if (type == Any)
+	{
+		auto icon = getPaddedIcon(General, name, size, padding);
+		if (!icon.IsOk())
+			icon = getPaddedIcon(Entry, name, size, padding);
+		if (!icon.IsOk())
+			icon = getPaddedIcon(TextEditor, name, size, padding);
+
+		return icon;
+	}
+
+	for (const auto& icon : iconList(type))
+		if (icon.name == name)
+		{
+			const auto& image = validImageForSize(icon, size).wx_image;
+			wxImage     padded(image.GetWidth() + padding * 2, image.GetHeight() + padding * 2);
+			padded.SetMaskColour(0, 0, 0);
+			padded.InitAlpha();
+			padded.Paste(image, padding, padding);
+
+			return wxBitmap(padded);
+		}
+
+	return wxNullBitmap;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the icon [name] of [type]
 // -----------------------------------------------------------------------------
 wxBitmap icons::getIcon(Type type, string_view name)

@@ -60,6 +60,8 @@ CVAR(Bool, elist_type_bgcol, false, CVar::Flag::Save)
 CVAR(Float, elist_type_bgcol_intensity, 0.18, CVar::Flag::Save)
 CVAR(Bool, elist_name_monospace, false, CVar::Flag::Save)
 CVAR(Bool, elist_alt_row_colour, false, CVar::Flag::Save)
+CVAR(Int, elist_icon_size, 16, CVar::Flag::Save)
+CVAR(Int, elist_icon_padding, 1, CVar::Flag::Save)
 wxDEFINE_EVENT(EVT_AEL_DIR_CHANGED, wxCommandEvent);
 
 
@@ -93,12 +95,13 @@ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 	setupColumns();
 
 	// Setup entry icons
-	auto image_list   = wxutil::createSmallImageList();
-	auto et_icon_list = EntryType::iconList();
+	auto  icon_size    = elist_icon_size + elist_icon_padding * 2;
+	auto* image_list   = new wxImageList(icon_size, icon_size, false, 0);
+	auto  et_icon_list = EntryType::iconList();
 	for (const auto& name : et_icon_list)
 	{
-		if (image_list->Add(icons::getIcon(icons::Entry, name)) < 0)
-			image_list->Add(icons::getIcon(icons::Entry, "default"));
+		if (image_list->Add(icons::getPaddedIcon(icons::Entry, name, elist_icon_size, elist_icon_padding)) < 0)
+			image_list->Add(icons::getPaddedIcon(icons::Entry, "default", elist_icon_size, elist_icon_padding));
 	}
 
 	wxListCtrl::SetImageList(image_list, wxIMAGE_LIST_SMALL);

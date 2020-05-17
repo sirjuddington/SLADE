@@ -630,7 +630,6 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent, bool frame) : EntryPanel(
 	toolbar_->addActionGroup("Palette Operations", wxSplit(actions, ';'));
 
 	// --- Left toolbar ---
-	toolbar_left_->Show(true);
 
 	// Colour Operations
 	actions = "ppal_colourise;ppal_tint;ppal_invert;ppal_tweak;ppal_gradient";
