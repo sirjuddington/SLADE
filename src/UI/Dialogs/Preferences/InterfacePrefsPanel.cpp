@@ -98,6 +98,7 @@ void InterfacePrefsPanel::init()
 	cb_file_browser_->SetValue(am_file_browser_tab);
 	cb_condensed_tabs_->SetValue(tabs_condensed);
 	cb_web_dark_theme_->SetValue(web_dark_theme);
+	spin_elist_icon_pad_->SetValue(elist_icon_padding);
 
 	if (toolbar_size <= 16)
 		choice_toolbar_size_->Select(0);
@@ -144,6 +145,7 @@ void InterfacePrefsPanel::applyPreferences()
 	am_file_browser_tab = cb_file_browser_->GetValue();
 	tabs_condensed      = cb_condensed_tabs_->GetValue();
 	web_dark_theme      = cb_web_dark_theme_->GetValue();
+	elist_icon_padding  = spin_elist_icon_pad_->GetValue();
 
 	if (choice_toolbar_size_->GetSelection() == 0)
 		toolbar_size = 16;
@@ -252,7 +254,7 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 4 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Icons:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(choice_iconset_entry_, { row, 1 }, { 1, 3 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 4 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 
 	gb_sizer->AddGrowableCol(1, 1);
 	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), 0, wxALL | wxALIGN_RIGHT, ui::pad());
