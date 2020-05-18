@@ -150,7 +150,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent, bool frame) :
 	sizer_gb->Add(new wxStaticText(this, -1, "Volume:"), wxGBPosition(1, 7), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	slider_volume_ = new wxSlider(this, -1, 0, 0, 100, wxDefaultPosition, wxSize(ui::scalePx(128), -1));
 	slider_volume_->SetValue(snd_volume);
-	sizer_gb->Add(slider_volume_, wxGBPosition(1, 8));
+	sizer_gb->Add(slider_volume_, wxGBPosition(1, 8), { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	// Set volume
 	sound_->setVolume(snd_volume);
