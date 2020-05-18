@@ -341,20 +341,20 @@ void TextLanguage::addFunction(string name, string args, string desc, bool repla
 void TextLanguage::loadZScript(ZScript::Definitions& defs, bool custom)
 {
 	// Classes
-	for (auto& c : defs.classes())
+	for (const auto& c : defs.classes())
 	{
 		// Add class as type
 		addWord(Type, c.name(), custom);
 
 		// Add class functions
-		for (auto& f : c.functions())
+		for (const auto& f : c.functions())
 		{
 			// Ignore overriding functions
 			if (f.isOverride())
 				continue;
 
 			// Check if the function exists
-			auto func = function(f.name());
+			auto* func = function(f.name());
 
 			// If it doesn't, create it
 			if (!func)
@@ -364,7 +364,7 @@ void TextLanguage::loadZScript(ZScript::Definitions& defs, bool custom)
 			}
 
 			// Add the context
-			if (!func->hasContext(c.name()))
+			if (!func->hasContext(f.baseClass()))
 				func->addContext(c.name(), f, custom);
 		}
 	}

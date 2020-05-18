@@ -883,7 +883,7 @@ bool Class::parseClassBlock(vector<ParsedStatement>& block)
 		// Function
 		else if (Function::isFunction(statement))
 		{
-			Function fn;
+			Function fn{ {}, name_ };
 			if (fn.parse(statement))
 				functions_.push_back(fn);
 		}
