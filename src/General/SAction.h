@@ -44,6 +44,7 @@ public:
 	bool   isWxId(int id) const { return id >= wx_id_ && id < wx_id_ + reserved_ids_; }
 	void   setChecked(bool checked = true);
 	void   toggle() { setChecked(!checked_); }
+	void   initWxId();
 
 	bool addToMenu(
 		wxMenu*     menu,
@@ -58,7 +59,7 @@ public:
 		int         wx_id_offset  = 0);
 
 	// Static functions
-	static void     initWxId(int id) { cur_id_ = id; }
+	static void     setBaseWxId(int id) { cur_id_ = id; }
 	static bool     initActions();
 	static int      newGroup();
 	static SAction* fromId(string_view id);
