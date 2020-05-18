@@ -2112,7 +2112,7 @@ void ArchiveManagerPanel::deleteSelectedBookmarks() const
 	// Remove bookmarks
 	for (int a = selection.size()-1; a >= 0; a--)
 	{
-		App::archiveManager().deleteBookmark(a);
+		App::archiveManager().deleteBookmark(selection[a]);
 	}
 }
 
