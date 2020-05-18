@@ -447,7 +447,7 @@ bool App::init(vector<string>& args, double ui_scale)
 	}
 
 	// Init SActions
-	SAction::initWxId(26000);
+	SAction::setBaseWxId(26000);
 	SAction::initActions();
 
 	// Init lua

@@ -16,7 +16,7 @@
 // any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 // more details.
 //
@@ -32,9 +32,9 @@
 //
 // ----------------------------------------------------------------------------
 #include "Main.h"
+#include "General/SAction.h"
 #include "Archive/ArchiveManager.h"
 #include "General/KeyBind.h"
-#include "General/SAction.h"
 #include "Graphics/Icons.h"
 #include "UI/WxUtils.h"
 #include "Utility/Parser.h"
@@ -45,12 +45,12 @@
 // Variables
 //
 // ----------------------------------------------------------------------------
-int						SAction::n_groups = 0;
-int						SAction::cur_id = 0;
-vector<SAction*>		SAction::actions;
-SAction*				SAction::action_invalid = nullptr;
-vector<SActionHandler*>	SActionHandler::action_handlers;
-int						SActionHandler::wx_id_offset = 0;
+int                     SAction::n_groups_ = 0;
+int                     SAction::cur_id_   = 0;
+vector<SAction*>        SAction::actions_;
+SAction*                SAction::action_invalid_ = nullptr;
+vector<SActionHandler*> SActionHandler::action_handlers;
+int                     SActionHandler::wx_id_offset = 0;
 
 
 // ----------------------------------------------------------------------------
@@ -65,27 +65,25 @@ int						SActionHandler::wx_id_offset = 0;
 //
 // SAction class constructor
 // ----------------------------------------------------------------------------
-SAction::SAction(
-	string id,
-	string text,
-	string icon,
-	string helptext,
-	string shortcut,
-	Type type,
-	int radio_group,
-	int reserve_ids
-) :
-	id { id },
-	wx_id{ -1 },
-	reserved_ids{ reserve_ids },
-	text{ text },
-	icon{ icon },
-	helptext{ helptext },
-	shortcut{ shortcut },
-	type{ type },
-	group{ radio_group },
-	checked{ false },
-	linked_cvar{ nullptr }
+SAction::SAction(string id,
+				 string text,
+				 string icon,
+				 string helptext,
+				 string shortcut,
+				 Type   type,
+				 int    radio_group,
+				 int    reserve_ids) :
+	id_{ id },
+	wx_id_{ -1 },
+	reserved_ids_{ reserve_ids },
+	text_{ text },
+	icon_{ icon },
+	helptext_{ helptext },
+	shortcut_{ shortcut },
+	type_{ type },
+	group_{ radio_group },
+	checked_{ false },
+	linked_cvar_{ nullptr }
 {
 }
 
@@ -94,9 +92,7 @@ SAction::SAction(
 //
 // SAction class destructor
 // ----------------------------------------------------------------------------
-SAction::~SAction()
-{
-}
+SAction::~SAction() {}
 
 // ----------------------------------------------------------------------------
 // SAction::getShortcutText
@@ -106,16 +102,16 @@ SAction::~SAction()
 // ----------------------------------------------------------------------------
 string SAction::getShortcutText() const
 {
-	if (shortcut.StartsWith("kb:"))
+	if (shortcut_.StartsWith("kb:"))
 	{
-		auto kp = KeyBind::getBind(shortcut.Mid(3)).getKey(0);
+		auto kp = KeyBind::getBind(shortcut_.Mid(3)).getKey(0);
 		if (kp.key != "")
 			return kp.as_string();
 
 		return "INVALID KEYBIND";
 	}
 
-	return shortcut;
+	return shortcut_;
 }
 
 // ----------------------------------------------------------------------------
@@ -126,30 +122,39 @@ string SAction::getShortcutText() const
 // ----------------------------------------------------------------------------
 void SAction::setChecked(bool toggle)
 {
-	if (type == Type::Normal)
+	if (type_ == Type::Normal)
 	{
-		checked = false;
+		checked_ = false;
 		return;
 	}
 
 	// If toggling a radio action, un-toggle others in the group
-	if (toggle && type == Type::Radio && group >= 0)
+	if (toggle && type_ == Type::Radio && group_ >= 0)
 	{
 		// Go through and toggle off all other actions in the same group
-		for (unsigned a = 0; a < actions.size(); a++)
+		for (unsigned a = 0; a < actions_.size(); a++)
 		{
-			if (actions[a]->group == group)
-				actions[a]->setChecked(false);
+			if (actions_[a]->group_ == group_)
+				actions_[a]->setChecked(false);
 		}
 
-		checked = true;
+		checked_ = true;
 	}
 	else
-		checked = toggle;	// Otherwise just set toggled state
+		checked_ = toggle; // Otherwise just set toggled state
 
 	// Update linked CVar
-	if (linked_cvar)
-		*linked_cvar = checked;
+	if (linked_cvar_)
+		*linked_cvar_ = checked_;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the action's wxWidgets id to the next available id
+// -----------------------------------------------------------------------------
+void SAction::initWxId()
+{
+	wx_id_ = cur_id_;
+	cur_id_ += reserved_ids_;
 }
 
 // ----------------------------------------------------------------------------
@@ -169,11 +174,11 @@ bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override, 
 		return false;
 
 	// Determine shortcut key
-	string sc = shortcut;
-	bool sc_control = shortcut.Contains("Ctrl") || shortcut.Contains("Alt");
-	if (shortcut.StartsWith("kb:"))
+	string sc         = shortcut_;
+	bool   sc_control = shortcut_.Contains("Ctrl") || shortcut_.Contains("Alt");
+	if (shortcut_.StartsWith("kb:"))
 	{
-		auto kp = KeyBind::getBind(shortcut.Mid(3)).getKey(0);
+		auto kp = KeyBind::getBind(shortcut_.Mid(3)).getKey(0);
 		if (kp.key != "")
 			sc = kp.as_string();
 		else
@@ -182,25 +187,26 @@ bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override, 
 	}
 
 	// Setup menu item string
-	string item_text = text;
+	string item_text = text_;
 	if (!(S_CMP(text_override, "NO")))
 		item_text = text_override;
 	if (!sc.IsEmpty() && (sc_control || show_shortcut))
 		item_text = S_FMT("%s\t%s", item_text, sc);
 
 	// Append this action to the menu
-	string help = helptext;
-	int wid = wx_id + wx_id_offset;
-	string real_icon = (icon_override == "NO") ? icon : icon_override;
-	if (!sc.IsEmpty()) help += S_FMT(" (Shortcut: %s)", sc);
-	if (type == Type::Normal)
+	string help      = helptext_;
+	int    wid       = wx_id_ + wx_id_offset;
+	string real_icon = (icon_override == "NO") ? icon_ : icon_override;
+	if (!sc.IsEmpty())
+		help += S_FMT(" (Shortcut: %s)", sc);
+	if (type_ == Type::Normal)
 		menu->Append(WxUtils::createMenuItem(menu, wid, item_text, help, real_icon));
-	else if (type == Type::Check)
+	else if (type_ == Type::Check)
 	{
 		auto item = menu->AppendCheckItem(wid, item_text, help);
-		item->Check(checked);
+		item->Check(checked_);
 	}
-	else if (type == Type::Radio)
+	else if (type_ == Type::Radio)
 		menu->AppendRadioItem(wid, item_text, help);
 
 	return true;
@@ -219,18 +225,18 @@ bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override, int wx_i
 		return false;
 
 	// Setup icon
-	string useicon = icon;
+	string useicon = icon_;
 	if (!(S_CMP(icon_override, "NO")))
 		useicon = icon_override;
 
 	// Append this action to the toolbar
-	int wid = wx_id + wx_id_offset;
-	if (type == Type::Normal)
-		toolbar->AddTool(wid, text, Icons::getIcon(Icons::GENERAL, useicon), helptext);
-	else if (type == Type::Check)
-		toolbar->AddTool(wid, text, Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_CHECK);
-	else if (type == Type::Radio)
-		toolbar->AddTool(wid, text, Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_RADIO);
+	int wid = wx_id_ + wx_id_offset;
+	if (type_ == Type::Normal)
+		toolbar->AddTool(wid, text_, Icons::getIcon(Icons::GENERAL, useicon), helptext_);
+	else if (type_ == Type::Check)
+		toolbar->AddTool(wid, text_, Icons::getIcon(Icons::GENERAL, useicon), helptext_, wxITEM_CHECK);
+	else if (type_ == Type::Radio)
+		toolbar->AddTool(wid, text_, Icons::getIcon(Icons::GENERAL, useicon), helptext_, wxITEM_RADIO);
 
 	return true;
 }
@@ -248,18 +254,18 @@ bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override, int wx_id_o
 		return false;
 
 	// Setup icon
-	string useicon = icon;
+	string useicon = icon_;
 	if (!(S_CMP(icon_override, "NO")))
 		useicon = icon_override;
 
 	// Append this action to the toolbar
-	int wid = wx_id + wx_id_offset;
-	if (type == Type::Normal)
-		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext);
-	else if (type == Type::Check)
-		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_CHECK);
-	else if (type == Type::Radio)
-		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_RADIO);
+	int wid = wx_id_ + wx_id_offset;
+	if (type_ == Type::Normal)
+		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext_);
+	else if (type_ == Type::Check)
+		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext_, wxITEM_CHECK);
+	else if (type_ == Type::Radio)
+		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext_, wxITEM_RADIO);
 
 	return true;
 }
@@ -272,41 +278,41 @@ bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override, int wx_id_o
 bool SAction::parse(ParseTreeNode* node)
 {
 	string linked_cvar;
-	int custom_wxid = -1;
+	int    custom_wxid = -1;
 
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
-		auto prop = node->getChildPTN(a);
+		auto   prop      = node->getChildPTN(a);
 		string prop_name = prop->getName();
-		
+
 		// Text
 		if (S_CMPNOCASE(prop_name, "text"))
-			text = prop->stringValue();
+			text_ = prop->stringValue();
 
 		// Icon
 		else if (S_CMPNOCASE(prop_name, "icon"))
-			icon = prop->stringValue();
+			icon_ = prop->stringValue();
 
 		// Help Text
 		else if (S_CMPNOCASE(prop_name, "help_text"))
-			helptext = prop->stringValue();
+			helptext_ = prop->stringValue();
 
 		// Shortcut
 		else if (S_CMPNOCASE(prop_name, "shortcut"))
-			shortcut = prop->stringValue();
+			shortcut_ = prop->stringValue();
 
 		// Keybind (shortcut)
 		else if (S_CMPNOCASE(prop_name, "keybind"))
-			shortcut = S_FMT("kb:%s", prop->stringValue());
+			shortcut_ = S_FMT("kb:%s", prop->stringValue());
 
 		// Type
 		else if (S_CMPNOCASE(prop_name, "type"))
 		{
 			string lc_type = prop->stringValue().Lower();
 			if (lc_type == "check")
-				type = Type::Check;
+				type_ = Type::Check;
 			else if (lc_type == "radio")
-				type = Type::Radio;
+				type_ = Type::Radio;
 		}
 
 		// Linked CVar
@@ -319,29 +325,26 @@ bool SAction::parse(ParseTreeNode* node)
 
 		// Reserve ids
 		else if (S_CMPNOCASE(prop_name, "reserve_ids"))
-			reserved_ids = prop->intValue();
+			reserved_ids_ = prop->intValue();
 	}
 
 	// Setup wxWidgets id stuff
 	if (custom_wxid == -1)
-	{
-		wx_id = cur_id;
-		cur_id += reserved_ids;
-	}
+		initWxId();
 	else
-		wx_id = custom_wxid;
+		wx_id_ = custom_wxid;
 
 	// Setup linked cvar
-	if (type == Type::Check && !linked_cvar.IsEmpty())
+	if (type_ == Type::Check && !linked_cvar.IsEmpty())
 	{
 		auto cvar = get_cvar(linked_cvar);
 		if (cvar && cvar->type == CVAR_BOOLEAN)
 		{
-			this->linked_cvar = (CBoolCVar*)cvar;
-			checked = cvar->GetValue().Bool;
+			this->linked_cvar_ = (CBoolCVar*)cvar;
+			checked_           = cvar->GetValue().Bool;
 		}
 	}
-	
+
 	return true;
 }
 
@@ -379,7 +382,7 @@ bool SAction::initActions()
 			{
 				auto action = new SAction(node->getName(), node->getName());
 				if (action->parse(node))
-					actions.push_back(action);
+					actions_.push_back(action);
 				else
 					delete action;
 			}
@@ -397,8 +400,8 @@ bool SAction::initActions()
 						auto action = new SAction(group_node->getName(), group_node->getName());
 						if (action->parse(group_node))
 						{
-							action->group = group;
-							actions.push_back(action);
+							action->group_ = group;
+							actions_.push_back(action);
 						}
 						else
 							delete action;
@@ -418,7 +421,7 @@ bool SAction::initActions()
 // ----------------------------------------------------------------------------
 int SAction::newGroup()
 {
-	return n_groups++;
+	return n_groups_++;
 }
 
 // ----------------------------------------------------------------------------
@@ -429,8 +432,8 @@ int SAction::newGroup()
 SAction* SAction::fromId(const string& id)
 {
 	// Find action with id
-	for (auto& action : actions)
-		if (S_CMPNOCASE(action->id, id))
+	for (auto& action : actions_)
+		if (S_CMPNOCASE(action->id_, id))
 			return action;
 
 	// Not found
@@ -445,7 +448,7 @@ SAction* SAction::fromId(const string& id)
 SAction* SAction::fromWxId(int wx_id)
 {
 	// Find action with id
-	for (auto& action : actions)
+	for (auto& action : actions_)
 		if (action->isWxId(wx_id))
 			return action;
 
@@ -463,10 +466,10 @@ void SAction::add(SAction* action)
 	if (!action)
 		return;
 
-	if (VECTOR_EXISTS(actions, action))
+	if (VECTOR_EXISTS(actions_, action))
 		return;
 
-	actions.push_back(action);
+	actions_.push_back(action);
 }
 
 // ----------------------------------------------------------------------------
@@ -476,10 +479,10 @@ void SAction::add(SAction* action)
 // ----------------------------------------------------------------------------
 SAction* SAction::invalidAction()
 {
-	if (!action_invalid)
-		action_invalid = new SAction("invalid", "Invalid Action", "", "Something's gone wrong here");
+	if (!action_invalid_)
+		action_invalid_ = new SAction("invalid", "Invalid Action", "", "Something's gone wrong here");
 
-	return action_invalid;
+	return action_invalid_;
 }
 
 
@@ -539,9 +542,9 @@ bool SActionHandler::doAction(string id)
 
 	// Log action (to log file only)
 	// TODO: this
-	//exiting = true;
-	//LOG_MESSAGE(1, "**** Action \"%s\"", id);
-	//exiting = false;
+	// exiting = true;
+	// LOG_MESSAGE(1, "**** Action \"%s\"", id);
+	// exiting = false;
 
 	// Return true if handled
 	return handled;

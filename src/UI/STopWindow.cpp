@@ -88,6 +88,7 @@ STopWindow::STopWindow(string title, string id, int x, int y, int width, int hei
 		-1,
 		10
 	);
+	action_toolbar_menu_->initWxId();
 	SAction::add(action_toolbar_menu_);
 
 	// Bind events
