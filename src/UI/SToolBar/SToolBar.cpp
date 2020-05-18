@@ -271,6 +271,9 @@ void SToolBarGroup::addCustomControl(wxWindow* control)
 		GetSizer()->Add(control, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP | wxBOTTOM, ui::scalePx(1));
 }
 
+// -----------------------------------------------------------------------------
+// Adds a separator to the group
+// -----------------------------------------------------------------------------
 void SToolBarGroup::addSeparator()
 {
 	bool horizontal = orientation_ == wxHORIZONTAL;
@@ -461,6 +464,26 @@ void SToolBar::deleteCustomGroups()
 // action in [actions]
 // -----------------------------------------------------------------------------
 void SToolBar::addActionGroup(const wxString& name, wxArrayString actions, bool at_end)
+{
+	// Do nothing if no actions were given
+	if (actions.empty())
+		return;
+
+	// Create new toolbar group
+	auto* group = new SToolBarGroup(this, name);
+	if (at_end)
+		groups_end_.push_back(group);
+	else
+		groups_.push_back(group);
+
+	// Add actions to the group
+	for (const auto& action : actions)
+		group->addActionButton(action);
+
+	// Update layout
+	updateLayout(true);
+}
+void SToolBar::addActionGroup(const wxString& name, const vector<string>& actions, bool at_end)
 {
 	// Do nothing if no actions were given
 	if (actions.empty())

@@ -19,8 +19,10 @@ public:
 
 	SAction*        action() const { return action_; }
 	const wxString& actionId() const { return action_id_; }
+	bool            isChecked() const;
 
 	void setIcon(const wxString& icon);
+	void setChecked(bool checked);
 
 	bool updateState();
 
@@ -43,6 +45,7 @@ private:
 	wxString action_id_;
 	wxString action_name_;
 	wxString help_text_;
+	bool     checked_ = false;
 
 	// Layout
 	int pad_outer_  = 3;

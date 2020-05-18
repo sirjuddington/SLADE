@@ -46,6 +46,8 @@
 #include "UI/Controls/SIconButton.h"
 #include "UI/Dialogs/GfxConvDialog.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
+#include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
@@ -465,56 +467,36 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
 
-	// Add textures list
-	auto frame       = new wxStaticBox(this, -1, "Textures");
-	auto framesizer  = new wxStaticBoxSizer(frame, wxVERTICAL);
-	auto hbox        = new wxBoxSizer(wxHORIZONTAL);
-	label_tx_format_ = new wxStaticText(this, -1, "Format:");
-	hbox->Add(label_tx_format_, 0, wxALIGN_BOTTOM | wxRIGHT, ui::pad());
-	btn_save_ = new SIconButton(this, "save", "Save");
-	hbox->AddStretchSpacer();
-	hbox->Add(btn_save_, 0, wxEXPAND);
-	framesizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT, ui::pad());
-	list_textures_ = new TextureXListView(this, &texturex_);
-	framesizer->Add(list_textures_, 1, wxEXPAND | wxALL, ui::pad());
+	// Frame
+	frame_textures_ = new wxStaticBox(this, -1, "Textures");
+	auto framesizer = new wxStaticBoxSizer(frame_textures_, wxHORIZONTAL);
 	sizer->Add(framesizer, 0, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::pad());
 
-	// Texture list filter
+	// Toolbar
+	toolbar_ = new SToolBar(this, false, wxVERTICAL);
+	toolbar_->addActionGroup("_Save", { "txed_savelist" });
+	toolbar_->addActionGroup("_New", { "txed_new", "txed_new_file" });
+	toolbar_->addActionGroup("_Texture", { "txed_rename", "txed_rename_each", "txed_delete" });
+	toolbar_->addActionGroup("_Sorting", { "txed_up", "txed_down", "txed_sort" });
+	framesizer->Add(toolbar_, 0, wxEXPAND | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
+
+	// Textures list + filter
+	list_textures_    = new TextureXListView(this, &texturex_);
 	text_filter_      = new wxTextCtrl(this, -1);
 	btn_clear_filter_ = new SIconButton(this, "close", "Clear Filter");
-	wxutil::layoutHorizontally(
-		framesizer,
-		vector<wxObject*>{ wxutil::createLabelHBox(this, "Filter:", text_filter_), btn_clear_filter_ },
-		wxSizerFlags(0).Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM, ui::pad()),
-		0);
-
-	// Add texture operations buttons
-	auto gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gbsizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
-	btn_move_up_        = new SIconButton(this, "up", "Move Up");
-	btn_move_down_      = new SIconButton(this, "down", "Move Down");
-	btn_new_texture_    = new SIconButton(this, "tex_new", "New");
-	btn_remove_texture_ = new SIconButton(this, "tex_delete", "Remove");
-	btn_new_from_patch_ = new SIconButton(this, "tex_newpatch", "New from Patch");
-	btn_new_from_file_  = new SIconButton(this, "tex_newfile", "New from File");
-	gbsizer->Add(btn_new_texture_, { 0, 0 }, { 1, 1 });
-	gbsizer->Add(btn_new_from_patch_, { 0, 1 }, { 1, 1 });
-	gbsizer->Add(btn_new_from_file_, { 0, 2 }, { 1, 1 });
-	gbsizer->Add(btn_remove_texture_, { 0, 3 }, { 1, 1 });
-	gbsizer->Add(btn_move_up_, { 0, 4 }, { 1, 1 });
-	gbsizer->Add(btn_move_down_, { 0, 5 }, { 1, 1 });
+	auto* vbox        = new wxBoxSizer(wxVERTICAL);
+	framesizer->AddSpacer(ui::px(ui::Size::PadMinimum));
+	framesizer->Add(vbox, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
+	vbox->Add(list_textures_, 1, wxEXPAND | wxBOTTOM, ui::pad());
+	vbox->Add(
+		wxutil::layoutHorizontally({ wxutil::createLabelHBox(this, "Filter:", text_filter_), btn_clear_filter_ }, 0),
+		0,
+		wxEXPAND);
 
 	// Bind events
 	list_textures_->Bind(wxEVT_LIST_ITEM_SELECTED, &TextureXPanel::onTextureListSelect, this);
 	list_textures_->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &TextureXPanel::onTextureListRightClick, this);
 	list_textures_->Bind(wxEVT_KEY_DOWN, &TextureXPanel::onTextureListKeyDown, this);
-	btn_new_texture_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { newTexture(); });
-	btn_new_from_patch_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { newTextureFromPatch(); });
-	btn_new_from_file_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { newTextureFromFile(); });
-	btn_remove_texture_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { removeTexture(); });
-	btn_move_up_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { moveUp(); });
-	btn_move_down_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { moveDown(); });
-	btn_save_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { tx_editor_->saveChanges(); });
 	Bind(wxEVT_SHOW, [&](wxShowEvent&) { tx_editor_->updateMenuStatus(); });
 	text_filter_->Bind(wxEVT_TEXT, &TextureXPanel::onTextFilterChanged, this);
 	btn_clear_filter_->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnClearFitler, this);
@@ -574,10 +556,12 @@ bool TextureXPanel::openTEXTUREX(ArchiveEntry* entry)
 	texture_editor_->setupLayout();
 
 	// Update format label
-	label_tx_format_->SetLabel("Format: " + texturex_.textureXFormatString());
+	frame_textures_->SetLabel("Textures (" + texturex_.textureXFormatString() + " format)");
 
 	// Update texture list
 	list_textures_->updateList();
+	Layout();
+	Update();
 
 	return true;
 }
@@ -1522,7 +1506,9 @@ bool TextureXPanel::handleAction(string_view id)
 		return false;
 
 	// Handle action
-	if (id == "txed_new")
+	if (id == "txed_savelist")
+		saveTEXTUREX();
+	else if (id == "txed_new")
 		newTexture();
 	else if (id == "txed_delete")
 		removeTexture();

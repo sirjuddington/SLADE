@@ -879,7 +879,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 			return;
 		}
 
-		stc_archives_->AddPage(txed, wxString::Format("Texture Editor (%s)", archive->filename(false)), true);
+		stc_archives_->AddPage(txed, wxString::Format("TEXTUREx Editor (%s)", archive->filename(false)), true);
 		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, icons::getIcon(icons::Entry, "texturex"));
 		txed->SetName("texture");
 		txed->setSelection(entry);

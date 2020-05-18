@@ -175,12 +175,32 @@ SToolBarButton::SToolBarButton(
 }
 
 // -----------------------------------------------------------------------------
+// Returns whether this button is checked
+// -----------------------------------------------------------------------------
+bool SToolBarButton::isChecked() const
+{
+	return action_ ? action_->isChecked() : checked_;
+}
+
+// -----------------------------------------------------------------------------
 // Allows to dynamically change the button's icon
 // -----------------------------------------------------------------------------
 void SToolBarButton::setIcon(const wxString& icon)
 {
 	if (!icon.IsEmpty())
 		icon_ = icons::getIcon(icons::Any, icon.ToStdString(), icon_size_);
+}
+
+void SToolBarButton::setChecked(bool checked)
+{
+	if (action_)
+		action_->setChecked(checked);
+	else
+	{
+		checked_ = checked;
+		Update();
+		Refresh();
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -274,7 +294,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	auto scale_px = ui::scaleFactor();
 
 	// Draw toggled border/background
-	if (action_ && action_->isChecked())
+	if (isChecked())
 	{
 		//// Use greyscale version of hilight colour
 		//uint8_t r = col_hilight.Red();
