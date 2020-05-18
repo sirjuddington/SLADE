@@ -222,8 +222,8 @@ else(APPLE)
 			DESTINATION share/applications/
 			)
 
-		install(FILES "${PROJECT_SOURCE_DIR}/net.mancubus.SLADE.appdata.xml"
-			DESTINATION share/appdata/
+		install(FILES "${PROJECT_SOURCE_DIR}/net.mancubus.SLADE.metainfo.xml"
+			DESTINATION share/metainfo/
 			)
 	endif(UNIX)
 endif(APPLE)
