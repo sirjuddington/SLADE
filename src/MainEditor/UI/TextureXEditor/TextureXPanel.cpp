@@ -478,6 +478,9 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
 	toolbar_->addActionGroup("_New", { "txed_new", "txed_new_file" });
 	toolbar_->addActionGroup("_Texture", { "txed_rename", "txed_rename_each", "txed_delete" });
 	toolbar_->addActionGroup("_Sorting", { "txed_up", "txed_down", "txed_sort" });
+	toolbar_->group("_Texture")->setAllButtonsEnabled(false);
+	toolbar_->group("_Sorting")->setAllButtonsEnabled(false);
+	toolbar_->findActionButton("txed_sort")->Enable();
 	framesizer->Add(toolbar_, 0, wxEXPAND | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
 
 	// Textures list + filter
@@ -1560,6 +1563,23 @@ bool TextureXPanel::handleAction(string_view id)
 // -----------------------------------------------------------------------------
 void TextureXPanel::onTextureListSelect(wxListEvent& e)
 {
+	// Update toolbar buttons
+	auto selcount = list_textures_->GetSelectedItemCount();
+	if (selcount == 0)
+	{
+		toolbar_->group("_Texture")->setAllButtonsEnabled(false);
+		toolbar_->group("_Sorting")->setAllButtonsEnabled(false);
+		toolbar_->findActionButton("txed_sort")->Enable();
+	}
+	if (selcount >= 1)
+	{
+		toolbar_->group("_Texture")->setAllButtonsEnabled(true);
+		toolbar_->group("_Sorting")->setAllButtonsEnabled(true);
+	}
+	if (selcount == 1)
+		toolbar_->findActionButton("txed_rename_each")->Enable(false);
+	
+
 	// Do nothing if multiple textures are selected
 	if (list_textures_->GetSelectedItemCount() > 1)
 	{

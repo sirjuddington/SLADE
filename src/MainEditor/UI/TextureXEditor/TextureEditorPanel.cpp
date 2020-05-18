@@ -39,6 +39,7 @@
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/SZoomSlider.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -309,6 +310,8 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 		  "txed_patch_forward",
 		  "txed_patch_replace",
 		  "txed_patch_duplicate" });
+	tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
+	tb_patches_->findActionButton("txed_patch_add")->Enable();
 	framesizer->Add(tb_patches_, 0, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
 
 
@@ -1124,6 +1127,9 @@ void TextureEditorPanel::onTexWorldPanningChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void TextureEditorPanel::onPatchListSelect(wxListEvent& e)
 {
+	if (list_patches_->GetSelectedItemCount() > 0)
+		tb_patches_->group("_Patch")->setAllButtonsEnabled(true);
+
 	// Select the patch on the texture canvas
 	tex_canvas_->selectPatch(e.GetIndex());
 
@@ -1137,6 +1143,12 @@ void TextureEditorPanel::onPatchListSelect(wxListEvent& e)
 // -----------------------------------------------------------------------------
 void TextureEditorPanel::onPatchListDeSelect(wxListEvent& e)
 {
+	if (list_patches_->GetSelectedItemCount() == 0)
+	{
+		tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
+		tb_patches_->findActionButton("txed_patch_add")->Enable();
+	}
+
 	// Deselect the patch on the texture canvas
 	tex_canvas_->deSelectPatch(e.GetIndex());
 

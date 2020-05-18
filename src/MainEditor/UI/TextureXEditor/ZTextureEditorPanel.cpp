@@ -40,6 +40,7 @@
 #include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/WxUtils.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include "Utility/Tokenizer.h"
 
 using namespace slade;
@@ -234,6 +235,8 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 		  "txed_patch_forward",
 		  "txed_patch_replace",
 		  "txed_patch_duplicate" });
+	tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
+	tb_patches_->findActionButton("txed_patch_add")->Enable();
 	framesizer->Add(tb_patches_, 0, wxEXPAND | wxTOP | wxBOTTOM, ui::pad());
 
 

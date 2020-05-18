@@ -58,6 +58,7 @@
 #include <wx/panel.h>
 #include <wx/popupwin.h>
 #include <wx/process.h>
+#include <wx/propgrid/property.h>
 #include <wx/propgrid/advprops.h>
 #include <wx/propgrid/propgrid.h>
 #include <wx/protocol/http.h>
