@@ -778,9 +778,9 @@ bool Class::extend(ParsedStatement& block)
 // ----------------------------------------------------------------------------
 void Class::inherit(const Class& parent)
 {
-	variables_ = parent.variables_;
-	functions_ = parent.functions_;
-	enumerators_ = parent.enumerators_;
+	//variables_ = parent.variables_;
+	//functions_ = parent.functions_;
+	//enumerators_ = parent.enumerators_;
 	default_properties_ = parent.default_properties_;
 	states_ = parent.states_;
 	db_properties_ = parent.db_properties_;
