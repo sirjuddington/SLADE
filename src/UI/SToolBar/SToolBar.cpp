@@ -321,6 +321,17 @@ void SToolBarGroup::setAllButtonsEnabled(bool enable)
 }
 
 // -----------------------------------------------------------------------------
+// Checks/unchecks all SToolBarButtons in the group
+// -----------------------------------------------------------------------------
+void SToolBarGroup::setAllButtonsChecked(bool check)
+{
+	Freeze();
+	for (auto* button : buttons_)
+		button->setChecked(check);
+	Thaw();
+}
+
+// -----------------------------------------------------------------------------
 // Redraws all controls in the group
 // -----------------------------------------------------------------------------
 void SToolBarGroup::redraw()

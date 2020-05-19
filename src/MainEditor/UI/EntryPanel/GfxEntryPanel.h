@@ -83,5 +83,6 @@ private:
 	void onCurImgChanged(wxCommandEvent& e);
 	void onBtnAutoOffset(wxCommandEvent& e);
 	void onColourPicked(wxEvent& e);
+	void onToolSelected(wxCommandEvent& e);
 };
 } // namespace slade

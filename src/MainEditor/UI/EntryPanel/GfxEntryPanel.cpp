@@ -336,7 +336,7 @@ void GfxEntryPanel::setupToolbars()
 	// Brush options
 	auto* g_brush = new SToolBarGroup(toolbar_, "Brush", true);
 	button_brush_ = g_brush->addActionButton("pgfx_setbrush");
-	cb_colour_ = new ColourBox(g_brush, -1, ColRGBA::BLACK, false, true, SToolBar::scaledButtonSize());
+	cb_colour_    = new ColourBox(g_brush, -1, ColRGBA::BLACK, false, true, SToolBar::scaledButtonSize());
 	cb_colour_->setPalette(&gfx_canvas_->palette());
 	cb_colour_->SetToolTip("Set brush colour");
 	g_brush->addCustomControl(cb_colour_);
@@ -370,18 +370,20 @@ void GfxEntryPanel::setupToolbars()
 	slider_zoom_ = new SZoomSlider(g_zoom, gfx_canvas_);
 	g_zoom->addCustomControl(slider_zoom_);
 	toolbar_->addGroup(g_zoom, true);
-	
+
 
 
 	// --- Left Toolbar ---
 
 	// Tool
 	auto* g_tool = new SToolBarGroup(toolbar_left_, "Tool");
-	g_tool->addActionButton("pgfx_drag");
-	g_tool->addActionButton("pgfx_draw");
-	g_tool->addActionButton("pgfx_erase");
-	g_tool->addActionButton("pgfx_magic");
-	SAction::fromId("pgfx_drag")->setChecked(); // Drag offsets by default
+	g_tool->addActionButton("tool_drag", "Drag offsets", "gfx_drag", "Drag image to change its offsets")
+		->setChecked(true);
+	g_tool->addActionButton("tool_draw", "Drag pixels", "gfx_draw", "Draw on the image");
+	g_tool->addActionButton("tool_erase", "Erase pizels", "gfx_erase", "Erase pixels from the image");
+	g_tool->addActionButton(
+		"tool_translate", "Translate pixels", "gfx_translate", "Apply a translation to pixels of the image");
+	g_tool->Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &GfxEntryPanel::onToolSelected, this);
 	toolbar_left_->addGroup(g_tool);
 }
 
@@ -514,7 +516,6 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 		// Add 'Optimize PNG' option
 		menu_custom_->Enable(menu_gfxep_pngopt, true);
 		toolbar_->findActionButton("pgfx_pngopt")->Enable(true);
-		//toolbar_->enableGroup("PNG", true);
 	}
 	else
 	{
@@ -525,7 +526,6 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 		menu_custom_->Enable(menu_gfxep_pngopt, false);
 		menu_custom_->Enable(menu_archgfx_exportpng, true);
 		toolbar_->findActionButton("pgfx_pngopt")->Enable(false);
-		//toolbar_->enableGroup("PNG", false);
 	}
 
 	// Set multi-image format stuff thingies
@@ -564,7 +564,7 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 wxString GfxEntryPanel::statusString()
 {
 	// Setup status string
-	auto* image  = this->image();
+	auto*    image  = this->image();
 	wxString status = wxString::Format("%dx%d", image->width(), image->height());
 
 	// Colour format
@@ -721,43 +721,6 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		button_brush_->setIcon(strutil::afterFirst(id, '_'));
 	}
 
-	// Editing - drag mode
-	else if (id == "pgfx_drag")
-	{
-		editing_ = false;
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::None);
-		toolbar_->group("Brush")->hide();
-		toolbar_->updateLayout();
-	}
-
-	// Editing - draw mode
-	else if (id == "pgfx_draw")
-	{
-		editing_ = true;
-		toolbar_->group("Brush")->hide(false);
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Paint);
-		gfx_canvas_->setPaintColour(cb_colour_->colour());
-		toolbar_->updateLayout();
-	}
-
-	// Editing - erase mode
-	else if (id == "pgfx_erase")
-	{
-		editing_ = true;
-		toolbar_->group("Brush")->hide(false);
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Erase);
-		toolbar_->updateLayout();
-	}
-
-	// Editing - translate mode
-	else if (id == "pgfx_magic")
-	{
-		editing_ = true;
-		toolbar_->group("Brush")->hide(false);
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Translate);
-		toolbar_->updateLayout();
-	}
-
 	// Editing - set translation
 	else if (id == "pgfx_settrans")
 	{
@@ -844,7 +807,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	else if (id == "pgfx_remap")
 	{
 		// Create translation editor dialog
-		auto* pal = maineditor::currentPalette();
+		auto*                   pal = maineditor::currentPalette();
 		TranslationEditorDialog ted(theMainWindow, *pal, " Colour Remap", &gfx_canvas_->image());
 
 		// Create translation to edit
@@ -869,7 +832,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	// Colourise
 	else if (id == "pgfx_colourise" && entry)
 	{
-		auto* pal = maineditor::currentPalette();
+		auto*              pal = maineditor::currentPalette();
 		GfxColouriseDialog gcd(theMainWindow, entry.get(), *pal);
 		gcd.setColour(last_colour);
 
@@ -894,7 +857,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	// Tint
 	else if (id == "pgfx_tint" && entry)
 	{
-		auto* pal = maineditor::currentPalette();
+		auto*         pal = maineditor::currentPalette();
 		GfxTintDialog gtd(theMainWindow, entry.get(), *pal);
 		gtd.setValues(last_tint_colour, last_tint_amount);
 
@@ -920,8 +883,8 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	// Crop
 	else if (id == "pgfx_crop")
 	{
-		auto* image = this->image();
-		auto* pal   = maineditor::currentPalette();
+		auto*         image = this->image();
+		auto*         pal   = maineditor::currentPalette();
 		GfxCropDialog gcd(theMainWindow, image, pal);
 
 		// Show crop dialog
@@ -1185,9 +1148,9 @@ void GfxEntryPanel::onGfxPixelsChanged(wxEvent& e)
 // -----------------------------------------------------------------------------
 void GfxEntryPanel::onCurImgChanged(wxCommandEvent& e)
 {
-	int  num      = gfx_canvas_->image().size();
+	int   num      = gfx_canvas_->image().size();
 	auto* entry    = entry_.lock().get();
-	int  newindex = spin_curimg_->GetValue() - 1;
+	int   newindex = spin_curimg_->GetValue() - 1;
 	if (num > 1 && entry && newindex != cur_index_)
 	{
 		loadEntry(entry, newindex);
@@ -1231,6 +1194,56 @@ void GfxEntryPanel::onColourPicked(wxEvent& e)
 	cb_colour_->setColour(gfx_canvas_->paintColour());
 }
 
+// -----------------------------------------------------------------------------
+// Called when a button is clicked on the tools toolbar group
+// -----------------------------------------------------------------------------
+void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
+{
+	auto id = e.GetString();
+
+	toolbar_left_->group("Tool")->setAllButtonsChecked(false);
+
+	// Editing - drag mode
+	if (id == "tool_drag")
+	{
+		editing_ = false;
+		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::None);
+		toolbar_->group("Brush")->hide();
+		toolbar_left_->findActionButton("tool_drag")->setChecked(true);
+		toolbar_->updateLayout();
+	}
+
+	// Editing - draw mode
+	else if (id == "tool_draw")
+	{
+		editing_ = true;
+		toolbar_->group("Brush")->hide(false);
+		toolbar_left_->findActionButton("tool_draw")->setChecked(true);
+		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Paint);
+		gfx_canvas_->setPaintColour(cb_colour_->colour());
+		toolbar_->updateLayout();
+	}
+
+	// Editing - erase mode
+	else if (id == "tool_erase")
+	{
+		editing_ = true;
+		toolbar_->group("Brush")->hide(false);
+		toolbar_left_->findActionButton("tool_erase")->setChecked(true);
+		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Erase);
+		toolbar_->updateLayout();
+	}
+
+	// Editing - translate mode
+	else if (id == "tool_translate")
+	{
+		editing_ = true;
+		toolbar_->group("Brush")->hide(false);
+		toolbar_left_->findActionButton("tool_translate")->setChecked(true);
+		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Translate);
+		toolbar_->updateLayout();
+	}
+}
 
 
 // -----------------------------------------------------------------------------
