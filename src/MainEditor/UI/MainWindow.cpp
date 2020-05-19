@@ -283,11 +283,11 @@ void MainWindow::setupLayout()
 	file_menu->AppendSubMenu(file_new_menu, "&New");
 	SAction::fromId("aman_open")->addToMenu(file_menu);
 	SAction::fromId("aman_opendir")->addToMenu(file_menu);
+	file_menu->AppendSubMenu(panel_archivemanager_->getRecentMenu(), "&Recent Files");
 	file_menu->AppendSeparator();
 	SAction::fromId("aman_save")->addToMenu(file_menu);
 	SAction::fromId("aman_saveas")->addToMenu(file_menu);
 	SAction::fromId("aman_saveall")->addToMenu(file_menu);
-	file_menu->AppendSubMenu(panel_archivemanager_->getRecentMenu(), "&Recent Files");
 	file_menu->AppendSeparator();
 	SAction::fromId("aman_close")->addToMenu(file_menu);
 	SAction::fromId("aman_closeall")->addToMenu(file_menu);

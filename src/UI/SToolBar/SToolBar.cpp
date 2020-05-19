@@ -383,7 +383,7 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar, wxOrientation orientatio
 	Bind(wxEVT_KILL_FOCUS, &SToolBar::onFocus, this);
 	Bind(wxEVT_RIGHT_DOWN, &SToolBar::onMouseEvent, this);
 	Bind(wxEVT_LEFT_DOWN, &SToolBar::onMouseEvent, this);
-	//Bind(wxEVT_MENU, &SToolBar::onContextMenu, this);
+	// Bind(wxEVT_MENU, &SToolBar::onContextMenu, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &SToolBar::onEraseBackground, this);
 }
 

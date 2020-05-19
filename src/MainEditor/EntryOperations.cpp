@@ -503,7 +503,7 @@ bool entryoperations::openMapDB2(ArchiveEntry* entry)
 	auto map = entry->parent()->mapDesc(entry);
 
 	// Check valid map
-	if (map.format == MapFormat::Unknown)
+	if (!map.archive && map.format == MapFormat::Unknown)
 		return false;
 
 	// Export the map to a temp .wad file

@@ -19,6 +19,6 @@ file(GLOB_RECURSE EXTERNAL_SOURCES
 	${SLADE_HEADERS}
 	)
 
-add_library(external ${EXTERNAL_SOURCES})
+add_library(external STATIC ${EXTERNAL_SOURCES})
 target_link_libraries(external ${ZLIB_LIBRARY})
 set(EXTERNAL_LIBRARIES external PARENT_SCOPE)
