@@ -484,7 +484,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	Archive::MapDesc map = entry->getParent()->getMapInfo(entry);
 
 	// Check valid map
-	if (map.format == MAP_UNKNOWN)
+	if (!map.archive && map.format == MAP_UNKNOWN)
 		return false;
 
 	// Export the map to a temp .wad file
