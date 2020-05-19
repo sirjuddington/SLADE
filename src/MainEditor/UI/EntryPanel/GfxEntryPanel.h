@@ -21,8 +21,8 @@ public:
 	void            setupToolbars();
 	void            fillBrushMenu(wxMenu* bm) const;
 	void            updateImagePalette() const;
-	GfxCanvas::View detectOffsetType() const;
-	void            applyViewType() const;
+	GfxCanvas::View detectOffsetType(ArchiveEntry* entry) const;
+	void            applyViewType(ArchiveEntry* entry) const;
 	void            refresh(ArchiveEntry* entry = nullptr);
 	void            refreshPanel() override;
 	wxString        statusString() override;

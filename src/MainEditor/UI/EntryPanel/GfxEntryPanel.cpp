@@ -542,7 +542,7 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 	updateStatus();
 
 	// Apply offset view type
-	applyViewType();
+	applyViewType(entry);
 
 	// Reset display offsets in graphics mode
 	if (gfx_canvas_->viewType() != GfxCanvas::View::Sprite)
@@ -610,10 +610,8 @@ void GfxEntryPanel::updateImagePalette() const
 // -----------------------------------------------------------------------------
 // Detects the offset view type of the current entry
 // -----------------------------------------------------------------------------
-GfxCanvas::View GfxEntryPanel::detectOffsetType() const
+GfxCanvas::View GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
 {
-	auto entry = entry_.lock();
-
 	if (!entry)
 		return GfxCanvas::View::Default;
 
@@ -622,7 +620,7 @@ GfxCanvas::View GfxEntryPanel::detectOffsetType() const
 
 	// Check what section of the archive the entry is in -- only PNGs or images
 	// in the sprites section can be HUD or sprite
-	bool is_sprite = ("sprites" == entry->parent()->detectNamespace(entry.get()));
+	bool is_sprite = ("sprites" == entry->parent()->detectNamespace(entry));
 	bool is_png    = ("img_png" == entry->type()->formatId());
 	if (!is_sprite && !is_png)
 		return GfxCanvas::View::Default;
@@ -681,7 +679,7 @@ GfxCanvas::View GfxEntryPanel::detectOffsetType() const
 // Sets the view type of the gfx canvas depending on what is selected in the
 // offset type combo box
 // -----------------------------------------------------------------------------
-void GfxEntryPanel::applyViewType() const
+void GfxEntryPanel::applyViewType(ArchiveEntry* entry) const
 {
 	// Tile checkbox overrides offset type selection
 	if (cb_tile_->IsChecked())
@@ -692,7 +690,7 @@ void GfxEntryPanel::applyViewType() const
 		int sel = choice_offset_type_->GetSelection();
 		switch (sel)
 		{
-		case 0: gfx_canvas_->setViewType(detectOffsetType()); break;
+		case 0: gfx_canvas_->setViewType(detectOffsetType(entry)); break;
 		case 1: gfx_canvas_->setViewType(GfxCanvas::View::Default); break;
 		case 2: gfx_canvas_->setViewType(GfxCanvas::View::Sprite); break;
 		case 3: gfx_canvas_->setViewType(GfxCanvas::View::HUD); break;
@@ -1139,7 +1137,7 @@ void GfxEntryPanel::onYOffsetChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void GfxEntryPanel::onOffsetTypeChanged(wxCommandEvent& e)
 {
-	applyViewType();
+	applyViewType(entry_.lock().get());
 }
 
 // -----------------------------------------------------------------------------
@@ -1148,7 +1146,7 @@ void GfxEntryPanel::onOffsetTypeChanged(wxCommandEvent& e)
 void GfxEntryPanel::onTileChanged(wxCommandEvent& e)
 {
 	choice_offset_type_->Enable(!cb_tile_->IsChecked());
-	applyViewType();
+	applyViewType(entry_.lock().get());
 }
 
 // -----------------------------------------------------------------------------
