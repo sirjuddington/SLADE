@@ -38,10 +38,11 @@
 #include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
-#include "UI/WxUtils.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+#include "UI/WxUtils.h"
 #include "Utility/Tokenizer.h"
+
 
 using namespace slade;
 

@@ -42,6 +42,7 @@
 #include "General/UI.h"
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
+#include "MainEditor/MainEditor.h"
 #include "TextureXEditor.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Dialogs/GfxConvDialog.h"
@@ -88,7 +89,8 @@ class TextureClipboardItem : public ClipboardItem
 {
 public:
 	TextureClipboardItem(const CTexture& texture, Archive* parent) :
-		ClipboardItem(Type::CompositeTexture), texture_{ new CTexture() }
+		ClipboardItem(Type::CompositeTexture),
+		texture_{ new CTexture() }
 	{
 		// Create/copy texture
 		texture_->copyTexture(texture);
@@ -147,6 +149,149 @@ private:
 
 
 // -----------------------------------------------------------------------------
+// NewTextureDialog Class
+//
+// A simple dialog for creating a new texture that allows the user to enter a
+// texture name, and either create a blank texture of a specified size, or
+// generate one from an existing patch
+// -----------------------------------------------------------------------------
+class NewTextureDialog : public wxDialog
+{
+public:
+	NewTextureDialog(wxWindow* parent, TextureXEditor* editor, TextureXList* texturex) :
+		wxDialog(parent, -1, "New Texture"),
+		editor_{ editor },
+		texturex_{ texturex }
+	{
+		wxutil::setWindowIcon(this, "tex_new");
+
+		SetSizer(new wxBoxSizer(wxVERTICAL));
+		auto* sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+		GetSizer()->Add(sizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
+
+		// Name
+		text_name_ = new wxTextCtrl(this, -1);
+		sizer->Add(new wxStaticText(this, -1, "Name:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		sizer->Add(text_name_, { 0, 1 }, { 1, 4 }, wxEXPAND);
+
+		// Blank
+		rb_blank_ = new wxRadioButton(this, -1, "Blank");
+		rb_blank_->SetValue(true);
+		spin_width_  = wxutil::createSpinCtrl(this, 64, 0, 4096);
+		spin_height_ = wxutil::createSpinCtrl(this, 128, 0, 4096);
+		sizer->Add(rb_blank_, { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		sizer->Add(new wxStaticText(this, -1, "Size:"), { 1, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+		sizer->Add(spin_width_, { 1, 2 }, { 1, 1 }, wxEXPAND);
+		sizer->Add(new wxStaticText(this, -1, "x"), { 1, 3 }, { 1, 1 }, wxALIGN_CENTER);
+		sizer->Add(spin_height_, { 1, 4 }, { 1, 1 }, wxEXPAND);
+
+		// From Patch
+		rb_patch_         = new wxRadioButton(this, -1, "From Patch");
+		text_patch_       = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
+		btn_browse_patch_ = new wxButton(this, -1, "Browse");
+		btn_browse_patch_->Enable(false);
+		sizer->Add(rb_patch_, { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		sizer->Add(text_patch_, { 2, 1 }, { 1, 3 }, wxEXPAND);
+		sizer->Add(btn_browse_patch_, { 2, 4 }, { 1, 1 }, wxEXPAND);
+
+		sizer->AddGrowableCol(1, 1);
+
+		// Separator
+		GetSizer()->Add(
+			new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL),
+			0,
+			wxEXPAND | wxLEFT | wxRIGHT | wxTOP,
+			ui::padLarge());
+
+		// Dialog buttons
+		auto* btn_create = new wxButton(this, -1, "Create");
+		auto* btn_cancel = new wxButton(this, -1, "Cancel");
+		btn_create->SetDefault();
+		auto* hbox = new wxBoxSizer(wxHORIZONTAL);
+		hbox->AddStretchSpacer(1);
+		hbox->Add(btn_create, 0, wxEXPAND | wxRIGHT, ui::pad());
+		hbox->Add(btn_cancel, 0, wxEXPAND);
+		GetSizer()->Add(hbox, 0, wxEXPAND | wxALL, ui::padLarge());
+
+		// Bind events
+		rb_blank_->Bind(wxEVT_RADIOBUTTON, [this](wxCommandEvent&) {
+			spin_width_->Enable(rb_blank_->GetValue());
+			spin_height_->Enable(rb_blank_->GetValue());
+			btn_browse_patch_->Enable(!rb_blank_->GetValue());
+		});
+		rb_patch_->Bind(wxEVT_RADIOBUTTON, [this](wxCommandEvent&) {
+			spin_width_->Enable(rb_blank_->GetValue());
+			spin_height_->Enable(rb_blank_->GetValue());
+			btn_browse_patch_->Enable(!rb_blank_->GetValue());
+		});
+		btn_browse_patch_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { browsePatch(); });
+		btn_cancel->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_CANCEL); });
+		btn_create->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+			if (checkValues())
+				EndModal(wxID_OK);
+		});
+
+		// Setup dialog size
+		SetInitialSize({ ui::scalePx(400), -1 });
+		wxWindowBase::Layout();
+		wxWindowBase::Fit();
+		wxTopLevelWindowBase::SetMinSize(GetBestSize());
+		CenterOnParent();
+	}
+
+	wxString texName() const { return text_name_->GetValue(); }
+	bool     blankSelected() const { return rb_blank_->GetValue(); }
+	int      texWidth() const { return spin_width_->GetValue(); }
+	int      texHeight() const { return spin_height_->GetValue(); }
+	wxString patch() const { return text_patch_->GetValue(); }
+
+private:
+	TextureXEditor* editor_   = nullptr;
+	TextureXList*   texturex_ = nullptr;
+
+	wxTextCtrl*    text_name_        = nullptr;
+	wxRadioButton* rb_blank_         = nullptr;
+	wxRadioButton* rb_patch_         = nullptr;
+	wxSpinCtrl*    spin_width_       = nullptr;
+	wxSpinCtrl*    spin_height_      = nullptr;
+	wxTextCtrl*    text_patch_       = nullptr;
+	wxButton*      btn_browse_patch_ = nullptr;
+
+	bool checkValues()
+	{
+		// Name
+		if (text_name_->GetValue().Trim().IsEmpty())
+		{
+			wxMessageBox("Please enter a texture name", "New Texture");
+			return false;
+		}
+
+		// Patch
+		if (rb_patch_->GetValue() && text_patch_->GetValue().Trim().IsEmpty())
+		{
+			wxMessageBox("Please select a patch", "New Texture");
+			return false;
+		}
+
+		return true;
+	}
+
+	void browsePatch()
+	{
+		// Browse for patch
+		wxString patch;
+		if (TxListIsTextures(*texturex_))
+			patch = editor_->browsePatchEntry();
+		else
+			patch = editor_->patchTable().patchName(editor_->browsePatchTable());
+
+		if (!patch.IsEmpty())
+			text_patch_->SetValue(patch);
+	}
+};
+
+
+// -----------------------------------------------------------------------------
 //
 // TextureXListView Class Functions
 //
@@ -157,7 +302,8 @@ private:
 // TextureXListView class constructor
 // -----------------------------------------------------------------------------
 TextureXListView::TextureXListView(wxWindow* parent, TextureXList* texturex) :
-	VirtualListView{ parent }, texturex_{ texturex }
+	VirtualListView{ parent },
+	texturex_{ texturex }
 {
 	// Add columns
 	InsertColumn(0, "Name");
@@ -338,7 +484,9 @@ class TextureSwapUS : public UndoStep
 {
 public:
 	TextureSwapUS(TextureXList& texturex, int index1, int index2) :
-		texturex_(texturex), index1_(index1), index2_(index2)
+		texturex_(texturex),
+		index1_(index1),
+		index2_(index2)
 	{
 	}
 	~TextureSwapUS() = default;
@@ -369,7 +517,10 @@ public:
 
 	// Texture Deleted
 	TextureCreateDeleteUS(TextureXPanel* tx_panel, unique_ptr<CTexture> tex_removed, int removed_index) :
-		tx_panel_{ tx_panel }, tex_removed_{ std::move(tex_removed) }, index_{ removed_index }, created_{ false }
+		tx_panel_{ tx_panel },
+		tex_removed_{ std::move(tex_removed) },
+		index_{ removed_index },
+		created_{ false }
 	{
 	}
 
@@ -461,7 +612,9 @@ private:
 // TextureXPanel class constructor
 // -----------------------------------------------------------------------------
 TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor& tx_editor) :
-	wxPanel{ parent, -1 }, tx_editor_{ &tx_editor }, undo_manager_{ tx_editor.undoManager() }
+	wxPanel{ parent, -1 },
+	tx_editor_{ &tx_editor },
+	undo_manager_{ tx_editor.undoManager() }
 {
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -674,43 +827,48 @@ unique_ptr<CTexture> TextureXPanel::newTextureFromPatch(const wxString& name, co
 }
 
 // -----------------------------------------------------------------------------
-// Creates a new, empty texture
+// Create a new texture. Shows a dialog allowing the user to either create a
+// blank texture, or generate one from a single patch
 // -----------------------------------------------------------------------------
 void TextureXPanel::newTexture()
 {
-	// Prompt for new texture name
-	wxString name = wxGetTextFromUser("Enter a texture name:", "New Texture");
-
-	// Do nothing if no name entered
-	if (name.IsEmpty())
+	auto* dialog = new NewTextureDialog(maineditor::windowWx(), tx_editor_, &texturex_);
+	if (dialog->ShowModal() != wxID_OK)
 		return;
 
 	// Process name
+	auto name = dialog->texName();
 	if (!TxListIsTextures(texturex_))
-	{
 		name = name.Upper().Truncate(8);
-	}
 
 	// Create new texture
-	auto tex = std::make_unique<CTexture>();
-	tex->setName(wxutil::strToView(name));
-	tex->setState(2);
-
-	// Default size = 64x128
-	tex->setWidth(64);
-	tex->setHeight(128);
-
-	// Setup texture scale
-	if (TxListIsTextures(texturex_))
+	unique_ptr<CTexture> tex;
+	if (dialog->blankSelected())
 	{
-		tex->setScale({ 1., 1. });
-		tex->setExtended(true);
+		// Blank texture
+		tex = std::make_unique<CTexture>();
+		tex->setName(wxutil::strToView(name));
+		tex->setState(2);
+
+		// Size
+		tex->setWidth(dialog->texWidth());
+		tex->setHeight(dialog->texHeight());
+
+		// Setup texture scale
+		if (TxListIsTextures(texturex_))
+		{
+			tex->setScale({ 1., 1. });
+			tex->setExtended(true);
+		}
+		else
+			tex->setScale({ 0., 0. });
 	}
-	else
-		tex->setScale({ 0., 0. });
+	else // From patch
+		tex = newTextureFromPatch(name, dialog->patch());
 
 	// Add it after the last selected item
-	int selected = list_textures_->itemIndex(list_textures_->lastSelected());
+	auto* tex_ptr  = tex.get();
+	int   selected = list_textures_->itemIndex(list_textures_->lastSelected());
 	if (selected == -1)
 		selected = texturex_.size() - 1; // Add to end of the list if nothing selected
 	texturex_.addTexture(std::move(tex), selected + 1);
@@ -727,6 +885,10 @@ void TextureXPanel::newTexture()
 	list_textures_->clearSelection();
 	list_textures_->selectItem(selected + 1);
 	list_textures_->EnsureVisible(selected + 1);
+
+	// Update patch table counts
+	if (dialog->blankSelected())
+		tx_editor_->patchTable().updatePatchUsage(tex_ptr);
 
 	// Update variables
 	modified_ = true;
@@ -1578,7 +1740,7 @@ void TextureXPanel::onTextureListSelect(wxListEvent& e)
 	}
 	if (selcount == 1)
 		toolbar_->findActionButton("txed_rename_each")->Enable(false);
-	
+
 
 	// Do nothing if multiple textures are selected
 	if (list_textures_->GetSelectedItemCount() > 1)

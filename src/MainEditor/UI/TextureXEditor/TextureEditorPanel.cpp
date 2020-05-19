@@ -78,7 +78,8 @@ EXTERN_CVAR(Bool, tx_arc)
 // TextureEditorPanel class constructor
 // -----------------------------------------------------------------------------
 TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_editor) :
-	wxPanel(parent, -1), tx_editor_{ tx_editor }
+	wxPanel(parent, -1),
+	tx_editor_{ tx_editor }
 {
 	// Create controls
 	tex_canvas_      = new CTextureCanvas(this, -1);
@@ -166,12 +167,6 @@ void TextureEditorPanel::setupLayout()
 	spin_tex_height_->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onTexHeightChanged, this);
 	list_patches_->Bind(wxEVT_LIST_ITEM_SELECTED, &TextureEditorPanel::onPatchListSelect, this);
 	list_patches_->Bind(wxEVT_LIST_ITEM_DESELECTED, &TextureEditorPanel::onPatchListDeSelect, this);
-	/*btn_patch_add_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { addPatch(); });
-	btn_patch_remove_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { removePatch(); });
-	btn_patch_back_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { patchBack(); });
-	btn_patch_forward_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { patchForward(); });
-	btn_patch_replace_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { replacePatch(); });
-	btn_patch_duplicate_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { duplicatePatch(); });*/
 	spin_patch_left_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onPatchPositionXChanged, this);
 	spin_patch_top_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onPatchPositionYChanged, this);
 	spin_patch_left_->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onPatchPositionXChanged, this);
