@@ -897,3 +897,11 @@ int SToolBar::getBarHeight()
 {
 	return ui::scalePx(toolbar_size + 14);
 }
+
+// -----------------------------------------------------------------------------
+// Returns the scaled pixel size for SToolBar buttons
+// -----------------------------------------------------------------------------
+int SToolBar::scaledButtonSize()
+{
+	return ui::scalePx(toolbar_size);
+}

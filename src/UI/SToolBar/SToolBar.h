@@ -68,6 +68,7 @@ public:
 
 	// Static
 	static int getBarHeight();
+	static int scaledButtonSize();
 
 private:
 	vector<SToolBarGroup*> groups_;

@@ -18,7 +18,7 @@ public:
 	Translation& prevTranslation() { return prev_translation_; }
 
 	bool            saveEntry() override;
-	void            setupToolbar();
+	void            setupToolbars();
 	void            fillBrushMenu(wxMenu* bm) const;
 	void            updateImagePalette() const;
 	GfxCanvas::View detectOffsetType() const;
