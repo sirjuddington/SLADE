@@ -141,7 +141,6 @@ void SAction::setChecked(bool toggle)
 }
 
 // -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
 // Sets the action's wxWidgets id to the next available id
 // -----------------------------------------------------------------------------
 void SAction::initWxId()
@@ -319,7 +318,7 @@ bool SAction::parse(ParseTreeNode* node)
 	}
 
 	// Setup wxWidgets id stuff
-	if (custom_wxid == -1)
+	if (custom_wxid == 0)
 		initWxId();
 	else
 		wx_id_ = custom_wxid;
