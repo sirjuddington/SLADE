@@ -3200,7 +3200,11 @@ void ArchivePanel::refreshPanel()
 	// Refresh current entry panel
 	cur_area_->refreshPanel();
 
+	// Update filter control visibility
+	panel_filter_->Show(elist_show_filter);
+
 	// Refresh entire panel
+	Layout();
 	Update();
 	Refresh();
 }

@@ -2036,6 +2036,7 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 		auto ap = dynamic_cast<ArchivePanel*>(stc_archives_->GetPage(selection));
 		ap->currentArea()->updateStatus();
 		ap->addMenus();
+		ap->refreshPanel();
 	}
 
 	// EntryPanel
