@@ -346,7 +346,7 @@ SToolBar::SToolBar(wxWindow* parent, bool main_toolbar) : wxPanel(parent, -1), m
 	Bind(wxEVT_KILL_FOCUS, &SToolBar::onFocus, this);
 	Bind(wxEVT_RIGHT_DOWN, &SToolBar::onMouseEvent, this);
 	Bind(wxEVT_LEFT_DOWN, &SToolBar::onMouseEvent, this);
-	Bind(wxEVT_MENU, &SToolBar::onContextMenu, this);
+	// Bind(wxEVT_MENU, &SToolBar::onContextMenu, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &SToolBar::onEraseBackground, this);
 }
 
@@ -708,6 +708,7 @@ void SToolBar::onMouseEvent(wxMouseEvent& e)
 		// Build context menu
 		wxMenu context;
 		populateGroupsMenu(&context);
+		context.Bind(wxEVT_MENU, &SToolBar::onContextMenu, this);
 
 		// Popup context menu
 		PopupMenu(&context);

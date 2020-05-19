@@ -141,6 +141,16 @@ void SAction::setChecked(bool toggle)
 }
 
 // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Sets the action's wxWidgets id to the next available id
+// -----------------------------------------------------------------------------
+void SAction::initWxId()
+{
+	wx_id_ = cur_id_;
+	cur_id_ += reserved_ids_;
+}
+
+// ----------------------------------------------------------------------------
 // Adds this action to [menu]. If [text_override] is not "NO", it will be used
 // instead of the action's text as the menu item label
 // -----------------------------------------------------------------------------
@@ -309,11 +319,8 @@ bool SAction::parse(ParseTreeNode* node)
 	}
 
 	// Setup wxWidgets id stuff
-	if (custom_wxid == 0)
-	{
-		wx_id_ = cur_id_;
-		cur_id_ += reserved_ids_;
-	}
+	if (custom_wxid == -1)
+		initWxId();
 	else
 		wx_id_ = custom_wxid;
 

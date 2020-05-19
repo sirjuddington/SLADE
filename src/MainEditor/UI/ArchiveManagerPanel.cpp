@@ -1887,7 +1887,7 @@ void ArchiveManagerPanel::deleteSelectedBookmarks() const
 
 	// Remove bookmarks
 	for (int a = selection.size() - 1; a >= 0; a--)
-		app::archiveManager().deleteBookmark(a);
+		app::archiveManager().deleteBookmark(selection[a]);
 }
 
 // -----------------------------------------------------------------------------
