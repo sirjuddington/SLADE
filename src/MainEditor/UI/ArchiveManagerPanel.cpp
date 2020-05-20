@@ -300,6 +300,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	auto panel_bm = new wxPanel(stc_tabs_);
 	panel_bm->SetSizer(new wxBoxSizer(wxVERTICAL));
 	list_bookmarks_ = new ListView(panel_bm, -1);
+	menu_bookmarks_ = new wxMenu();
 	panel_bm->GetSizer()->Add(list_bookmarks_, 1, wxEXPAND | wxALL, ui::pad());
 	refreshBookmarkList();
 	stc_tabs_->AddPage(panel_bm, "Bookmarks", true);
@@ -1801,6 +1802,10 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	else if (id == "aman_bookmark_remove")
 		deleteSelectedBookmarks();
 
+	// Bookmarks dropdown menu
+	else if (id == "aman_bookmark_menu")
+		goToBookmark(wx_id_offset_);
+
 
 	// Unknown action
 	else
@@ -1842,12 +1847,21 @@ void ArchiveManagerPanel::updateBookmarkListItem(int index) const
 }
 
 // -----------------------------------------------------------------------------
-// Clears and rebuilds the bookmark list
+// Clears and rebuilds the bookmark list and menu
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::refreshBookmarkList() const
 {
+	// Get first bookmark menu id
+	auto a_bookmark  = SAction::fromId("aman_bookmark_menu");
+	int  id_bm_start = a_bookmark->wxId();
+
 	// Clear the list
 	list_bookmarks_->ClearAll();
+
+	// Clear menu; needs to do with a count down rather than up
+	// otherwise the following elements are not properly removed
+	for (unsigned a = menu_bookmarks_->GetMenuItemCount(); a > 0; a--)
+		menu_bookmarks_->Destroy(id_bm_start + a - 1);
 
 	// Add columns
 	list_bookmarks_->InsertColumn(0, "Entry");
@@ -1859,6 +1873,17 @@ void ArchiveManagerPanel::refreshBookmarkList() const
 	{
 		list_bookmarks_->addItem(a, wxEmptyString);
 		updateBookmarkListItem(a);
+
+		// Add to menu
+		if (a < 20)
+		{
+			// Get path and determine icon
+			auto* entry      = app::archiveManager().getBookmark(a);
+			auto  entry_path = fmt::format("{}/{}", entry->parent()->filename(false), entry->path(true).substr(1));
+
+			// Create and add menu item
+			a_bookmark->addToMenu(menu_bookmarks_, entry_path, entry->type()->icon(), a);
+		}
 	}
 
 	// Update size

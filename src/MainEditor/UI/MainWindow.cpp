@@ -50,6 +50,7 @@
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -283,7 +284,7 @@ void MainWindow::setupLayout()
 	file_menu->AppendSubMenu(file_new_menu, "&New");
 	SAction::fromId("aman_open")->addToMenu(file_menu);
 	SAction::fromId("aman_opendir")->addToMenu(file_menu);
-	file_menu->AppendSubMenu(panel_archivemanager_->getRecentMenu(), "&Recent Files");
+	file_menu->AppendSubMenu(panel_archivemanager_->recentFilesMenu(), "&Recent Files");
 	file_menu->AppendSeparator();
 	SAction::fromId("aman_save")->addToMenu(file_menu);
 	SAction::fromId("aman_saveas")->addToMenu(file_menu);
@@ -354,6 +355,13 @@ void MainWindow::setupLayout()
 	tbg_archive->addActionButton("arch_mapeditor");
 	tbg_archive->addActionButton("arch_run");
 	toolbar_->addGroup(tbg_archive);
+
+	// Create Boomkarks toolbar
+	auto* tbg_bookmarks = new SToolBarGroup(toolbar_, "_Bookmarks");
+	auto* b_bookmarks   = tbg_bookmarks->addActionButton(
+        "bookmarks", "Bookmarks", "bookmark", "Go to a bookmarked entry");
+	b_bookmarks->setMenu(panel_archivemanager_->bookmarksMenu());
+	toolbar_->addGroup(tbg_bookmarks);
 
 	// Create Base Resource Archive toolbar
 	auto tbg_bra = new SToolBarGroup(toolbar_, "_Base Resource", true);

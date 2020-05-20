@@ -91,15 +91,17 @@
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SLADE-dbg</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
     <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     <Linkage-sfml-audio>static</Linkage-sfml-audio>
     <Linkage-sfml-system>static</Linkage-sfml-system>
     <Linkage-sfml-graphics>static</Linkage-sfml-graphics>
     <Linkage-sfml-window>static</Linkage-sfml-window>
+    <EnableMicrosoftCodeAnalysis>true</EnableMicrosoftCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
     <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     <Linkage-sfml-audio>static</Linkage-sfml-audio>
     <Linkage-sfml-system>static</Linkage-sfml-system>
@@ -107,12 +109,17 @@
     <Linkage-sfml-window>static</Linkage-sfml-window>
     <OutDir>..\dist\</OutDir>
     <IntDir>..\build\$(Platform)\$(Configuration)\</IntDir>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <EnableMicrosoftCodeAnalysis>true</EnableMicrosoftCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Linkage-sfml-audio>static</Linkage-sfml-audio>
     <Linkage-sfml-system>static</Linkage-sfml-system>
     <Linkage-sfml-graphics>static</Linkage-sfml-graphics>
     <Linkage-sfml-window>static</Linkage-sfml-window>
+    <EnableMicrosoftCodeAnalysis>true</EnableMicrosoftCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Linkage-sfml-audio>static</Linkage-sfml-audio>
@@ -121,6 +128,9 @@
     <Linkage-sfml-window>static</Linkage-sfml-window>
     <OutDir>..\dist\</OutDir>
     <IntDir>..\build\$(Platform)\$(Configuration)\</IntDir>
+    <EnableMicrosoftCodeAnalysis>true</EnableMicrosoftCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -331,6 +341,7 @@
     <ClCompile Include="..\src\UI\Dialogs\Preferences\OpenGLPrefsPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\PNGPrefsPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\PreferencesDialog.cpp" />
+    <ClCompile Include="..\src\UI\Dialogs\Preferences\PreferencesDialog2.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\TextEditorPrefsPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\TextStylePrefsPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\RunDialog.cpp" />
@@ -688,6 +699,7 @@
     <ClInclude Include="..\src\UI\Dialogs\Preferences\OpenGLPrefsPanel.h" />
     <ClInclude Include="..\src\UI\Dialogs\Preferences\PNGPrefsPanel.h" />
     <ClInclude Include="..\src\UI\Dialogs\Preferences\PreferencesDialog.h" />
+    <ClInclude Include="..\src\UI\Dialogs\Preferences\PreferencesDialog2.h" />
     <ClInclude Include="..\src\UI\Dialogs\Preferences\PrefsPanelBase.h" />
     <ClInclude Include="..\src\UI\Dialogs\Preferences\TextEditorPrefsPanel.h" />
     <ClInclude Include="..\src\UI\Dialogs\Preferences\TextStylePrefsPanel.h" />

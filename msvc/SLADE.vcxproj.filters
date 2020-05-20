@@ -993,6 +993,9 @@
     <ClCompile Include="..\src\UI\Dialogs\NewArchiveDialog.cpp">
       <Filter>UI\Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\UI\Dialogs\Preferences\PreferencesDialog2.cpp">
+      <Filter>UI\Dialogs\Preferences</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -1897,6 +1900,9 @@
     </ClInclude>
     <ClInclude Include="..\src\UI\Dialogs\NewArchiveDiaog.h">
       <Filter>UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\Dialogs\Preferences\PreferencesDialog2.h">
+      <Filter>UI\Dialogs\Preferences</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
