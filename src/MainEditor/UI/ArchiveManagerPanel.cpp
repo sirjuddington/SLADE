@@ -1805,6 +1805,8 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	// Bookmarks dropdown menu
 	else if (id == "aman_bookmark_menu")
 		goToBookmark(wx_id_offset_);
+	else if (id == "aman_bookmark_removeall")
+		app::archiveManager().deleteAllBookmarks();
 
 
 	// Unknown action
@@ -1858,10 +1860,9 @@ void ArchiveManagerPanel::refreshBookmarkList() const
 	// Clear the list
 	list_bookmarks_->ClearAll();
 
-	// Clear menu; needs to do with a count down rather than up
-	// otherwise the following elements are not properly removed
-	for (unsigned a = menu_bookmarks_->GetMenuItemCount(); a > 0; a--)
-		menu_bookmarks_->Destroy(id_bm_start + a - 1);
+	// Clear menu
+	while (!menu_bookmarks_->GetMenuItems().empty())
+		menu_bookmarks_->Delete(menu_bookmarks_->GetMenuItems()[0]);
 
 	// Add columns
 	list_bookmarks_->InsertColumn(0, "Entry");
@@ -1885,6 +1886,11 @@ void ArchiveManagerPanel::refreshBookmarkList() const
 			a_bookmark->addToMenu(menu_bookmarks_, entry_path, entry->type()->icon(), a);
 		}
 	}
+
+	// Add 'remove all bookmarks' to bookmarks menu
+	if (menu_bookmarks_->GetMenuItemCount() > 0)
+		menu_bookmarks_->AppendSeparator();
+	SAction::fromId("aman_bookmark_removeall")->addToMenu(menu_bookmarks_);
 
 	// Update size
 	list_bookmarks_->enableSizeUpdate(true);

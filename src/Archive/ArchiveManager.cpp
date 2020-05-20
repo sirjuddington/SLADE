@@ -1247,6 +1247,18 @@ bool ArchiveManager::deleteBookmarksInDir(ArchiveDir* node)
 }
 
 // -----------------------------------------------------------------------------
+// Clears all bookmarks
+// -----------------------------------------------------------------------------
+void ArchiveManager::deleteAllBookmarks()
+{
+	if (!bookmarks_.empty())
+	{
+		bookmarks_.clear();
+		signals_.bookmarks_changed();
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Returns the bookmarked entry at [index]
 // -----------------------------------------------------------------------------
 ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
