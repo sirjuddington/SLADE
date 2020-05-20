@@ -745,6 +745,15 @@ const string App::getIcon()
 	return "slade.ico";
 }
 
+bool App::isWin64Build()
+{
+#if defined(_WIN64)
+	return true;
+#else
+	return false;
+#endif
+}
+
 std::thread::id App::mainThreadId()
 {
 	return main_thread_id;

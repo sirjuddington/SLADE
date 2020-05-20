@@ -108,7 +108,10 @@ void Log::init()
 	string year = wxNow().Right(4);
 	info("SLADE - It's a Doom Editor");
 	info(S_FMT("Version %s", App::version().toString()));
-	if (Global::sc_rev != "") info(S_FMT("Git Revision %s", Global::sc_rev));
+	if (Global::sc_rev != "")
+		info(S_FMT("Git Revision %s", Global::sc_rev));
+	if (App::platform() == App::Platform::Windows)
+		info(S_FMT("%s Windows Build", App::isWin64Build() ? "64bit" : "32bit"));
 	info(S_FMT("Written by Simon Judd, 2008-%s", year));
 #ifdef SFML_VERSION_MAJOR
 	info(S_FMT(

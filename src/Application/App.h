@@ -28,14 +28,11 @@ struct Version
 	unsigned long beta     = 0;
 
 	Version(unsigned long major = 0, unsigned long minor = 0, unsigned long revision = 0, unsigned long beta = 0) :
-		major{ major },
-		minor{ minor },
-		revision{ revision },
-		beta{ beta }
+		major{ major }, minor{ minor }, revision{ revision }, beta{ beta }
 	{
 	}
 
-	int cmp(const Version& rhs) const;
+	int    cmp(const Version& rhs) const;
 	string toString() const;
 };
 const Version& version();
@@ -63,6 +60,7 @@ Platform     platform();
 bool         useWebView();
 bool         useSFMLRenderWindow();
 const string getIcon();
+bool         isWin64Build();
 
 std::thread::id mainThreadId();
 } // namespace App

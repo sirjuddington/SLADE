@@ -227,9 +227,13 @@ public:
 
 		// SLADE info
 		if (Global::sc_rev.empty())
-			trace = S_FMT("Version: %s\n", App::version().toString());
+			trace = S_FMT("Version: %s", App::version().toString());
 		else
-			trace = S_FMT("Version: %s (%s)\n", App::version().toString(), Global::sc_rev);
+			trace = S_FMT("Version: %s (%s)", App::version().toString(), Global::sc_rev);
+		if (App::platform() == App::Platform::Windows)
+			trace += S_FMT(" (%s)\n", App::isWin64Build() ? "x64" : "x86");
+		else
+			trace += "\n";
 		if (current_action.IsEmpty())
 			trace += "No current action\n";
 		else
