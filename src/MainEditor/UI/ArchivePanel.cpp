@@ -470,7 +470,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	tbg_filter->addActionButton("arch_elist_togglefilter")->action()->setChecked(elist_show_filter);
 	toolbar_elist_->addGroup(tbg_filter, true);
 
-	// Entry List filter controls	
+	// Entry List filter controls
 	panel_filter_ = new wxPanel(this, -1);
 	auto* gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	panel_filter_->SetSizer(gbsizer);
@@ -481,13 +481,15 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	for (const auto& cat : EntryType::allCategories())
 		choice_category_->Append(cat);
 	choice_category_->SetSelection(0);
-	gbsizer->Add(new wxStaticText(panel_filter_, -1, "Show:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(
+		new wxStaticText(panel_filter_, -1, "Show:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	gbsizer->Add(choice_category_, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
 	gbsizer->AddGrowableCol(1, 1);
 
 	// Create filter
 	text_filter_ = new wxTextCtrl(panel_filter_, -1);
-	gbsizer->Add(new wxStaticText(panel_filter_, -1, "Filter:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(
+		new wxStaticText(panel_filter_, -1, "Filter:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	gbsizer->Add(text_filter_, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
 	btn_clear_filter_ = new SIconButton(panel_filter_, "close");
 	btn_clear_filter_->SetToolTip("Clear Filter");
@@ -548,6 +550,10 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 		}
 	});
 
+	// Refresh entry list when bookmarks are changed
+	sc_bookmarks_changed_ = app::archiveManager().signals().bookmarks_changed.connect(
+		[this]() { entry_list_->updateList(); });
+
 	// Update size+layout
 	entry_list_->updateWidth();
 	wxPanel::Layout();
@@ -605,15 +611,8 @@ void ArchivePanel::addMenus() const
 		menu_archive->AppendSeparator();
 		SAction::fromId("arch_texeditor")->addToMenu(menu_archive);
 		SAction::fromId("arch_mapeditor")->addToMenu(menu_archive);
-		auto menu_clean = new wxMenu("");
-		SAction::fromId("arch_clean_patches")->addToMenu(menu_clean);
-		SAction::fromId("arch_clean_textures")->addToMenu(menu_clean);
-		SAction::fromId("arch_clean_flats")->addToMenu(menu_clean);
-		SAction::fromId("arch_clean_iwaddupes")->addToMenu(menu_clean);
-		SAction::fromId("arch_check_duplicates")->addToMenu(menu_clean);
-		SAction::fromId("arch_check_duplicates2")->addToMenu(menu_clean);
-		SAction::fromId("arch_replace_maps")->addToMenu(menu_clean);
-		menu_archive->AppendSubMenu(menu_clean, "&Maintenance");
+		auto menu_clean = createMaintenanceMenu();
+		menu_archive->AppendSubMenu(menu_clean, "&Maintenance")->SetBitmap(icons::getIcon(icons::Type::Any, "wrench"));
 		auto menu_scripts = new wxMenu();
 		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Archive, "arch_script");
 		menu_archive->AppendSubMenu(menu_scripts, "&Run Script");
@@ -637,7 +636,7 @@ void ArchivePanel::addMenus() const
 		SAction::fromId("arch_entry_import")->addToMenu(menu_entry);
 		SAction::fromId("arch_entry_export")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		SAction::fromId("arch_entry_bookmark")->addToMenu(menu_entry);
+		// SAction::fromId("arch_entry_bookmark")->addToMenu(menu_entry);
 		auto menu_scripts = new wxMenu();
 		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Entry, "arch_entry_script");
 		menu_entry->AppendSubMenu(menu_scripts, "&Run Script");
@@ -1745,7 +1744,7 @@ bool ArchivePanel::sort() const
 }
 
 // -----------------------------------------------------------------------------
-// Adds the currently focused archive entry to the list of bookmarks
+// Toggles a bookmark on the currently focused entry
 // -----------------------------------------------------------------------------
 bool ArchivePanel::bookmark() const
 {
@@ -1753,7 +1752,11 @@ bool ArchivePanel::bookmark() const
 
 	if (entry)
 	{
-		app::archiveManager().addBookmark(entry->getShared());
+		if (app::archiveManager().isBookmarked(entry))
+			app::archiveManager().deleteBookmark(entry);
+		else
+			app::archiveManager().addBookmark(entry->getShared());
+
 		return true;
 	}
 	else
@@ -3568,6 +3571,22 @@ EntryPanel* ArchivePanel::createPanelForEntry(ArchiveEntry* entry, wxWindow* par
 	return entry_panel;
 }
 
+// -----------------------------------------------------------------------------
+// Creates and returns the 'Maintenance' menu for archives
+// -----------------------------------------------------------------------------
+wxMenu* ArchivePanel::createMaintenanceMenu()
+{
+	auto menu_clean = new wxMenu();
+	SAction::fromId("arch_clean_patches")->addToMenu(menu_clean);
+	SAction::fromId("arch_clean_textures")->addToMenu(menu_clean);
+	SAction::fromId("arch_clean_flats")->addToMenu(menu_clean);
+	SAction::fromId("arch_clean_iwaddupes")->addToMenu(menu_clean);
+	SAction::fromId("arch_check_duplicates")->addToMenu(menu_clean);
+	SAction::fromId("arch_check_duplicates2")->addToMenu(menu_clean);
+	SAction::fromId("arch_replace_maps")->addToMenu(menu_clean);
+	return menu_clean;
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -3597,6 +3616,7 @@ void ArchivePanel::onEntryListSelectionChange(wxCommandEvent& e)
 		// If one entry is selected, open it in the entry area
 		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
 		toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(false);
+		toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
 		openEntry(selection[0]);
 	}
 	else
@@ -3604,6 +3624,7 @@ void ArchivePanel::onEntryListSelectionChange(wxCommandEvent& e)
 		// If multiple entries are selected, show/update the multi entry area
 		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
 		toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(true);
+		toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(false);
 		showEntryPanel(default_area_);
 		dynamic_cast<DefaultEntryPanel*>(default_area_)->loadEntries(selection);
 	}
@@ -3615,7 +3636,7 @@ void ArchivePanel::onEntryListSelectionChange(wxCommandEvent& e)
 	{
 		toolbar_elist_->findActionButton("arch_entry_rename")->Enable(true);
 		toolbar_elist_->findActionButton("arch_entry_delete")->Enable(true);
-		//toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
+		// toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
 	}
 
 	toolbar_elist_->Refresh();
@@ -3761,9 +3782,8 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	SAction::fromId("arch_entry_movedown")->addToMenu(&context, true);
 	SAction::fromId("arch_entry_sort")->addToMenu(&context, true);
 	context.AppendSeparator();
-	SAction::fromId("arch_entry_bookmark")->addToMenu(&context, true);
-	// SAction::fromId("arch_entry_opentab")->addToMenu(&context, true);
-	// SAction::fromId("arch_entry_crc32")->addToMenu(&context, true);
+	if (selection.size() == 1)
+		SAction::fromId("arch_entry_bookmark")->addToMenu(&context, true);
 
 	// Add 'Open In' menu
 	context.AppendSubMenu(createEntryOpenMenu(category), "Open")->SetBitmap(icons::getIcon(icons::General, "open"));
@@ -4033,6 +4053,13 @@ void ArchivePanel::onEntryListKeyDown(wxKeyEvent& e)
 		else if (bind == "el_up_dir")
 		{
 			entry_list_->goUpDir();
+			return;
+		}
+
+		// Toggle bookmark
+		else if (bind == "el_bookmark")
+		{
+			bookmark();
 			return;
 		}
 	}

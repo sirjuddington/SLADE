@@ -113,6 +113,7 @@ public:
 
 	// Static functions
 	static EntryPanel* createPanelForEntry(ArchiveEntry* entry, wxWindow* parent, bool frame = true);
+	static wxMenu*     createMaintenanceMenu();
 
 protected:
 	weak_ptr<Archive>       archive_;
@@ -152,6 +153,7 @@ protected:
 	// Signal connections
 	sigslot::scoped_connection sc_archive_saved_;
 	sigslot::scoped_connection sc_entry_removed_;
+	sigslot::scoped_connection sc_bookmarks_changed_;
 
 	// Events
 	void         onEntryListSelectionChange(wxCommandEvent& e);

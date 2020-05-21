@@ -70,6 +70,7 @@ public:
 	void          deleteAllBookmarks();
 	ArchiveEntry* getBookmark(unsigned index);
 	unsigned      numBookmarks() const { return bookmarks_.size(); }
+	bool          isBookmarked(ArchiveEntry* entry);
 
 	// Signals
 	struct Signals

@@ -1270,6 +1270,18 @@ ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
 	return bookmarks_[index].lock().get();
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [entry] exists in the bookmarks list
+// -----------------------------------------------------------------------------
+bool slade::ArchiveManager::isBookmarked(ArchiveEntry* entry)
+{
+	for (const auto& bm : bookmarks_)
+		if (bm.lock().get() == entry)
+			return true;
+
+	return false;
+}
+
 
 // -----------------------------------------------------------------------------
 //

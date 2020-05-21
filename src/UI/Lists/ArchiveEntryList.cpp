@@ -32,6 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ArchiveEntryList.h"
+#include "App.h"
+#include "Archive/ArchiveManager.h"
 #include "General/ColourConfiguration.h"
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
@@ -212,6 +214,9 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 		item_attr_->SetFont((column == 0) ? font_monospace_ : font_normal_);
 	else
 		item_attr_->SetFont(list_font_monospace ? font_monospace_ : font_normal_);
+
+	if (app::archiveManager().isBookmarked(entry) && column == 0)
+		item_attr_->SetFont(item_attr_->GetFont().Bold());
 
 	// Set background colour defined in entry type (if any)
 	auto col = entry->type()->colour();

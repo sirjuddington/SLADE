@@ -204,6 +204,7 @@ void SToolBarButton::setChecked(bool checked)
 void SToolBarButton::setMenu(wxMenu* menu)
 {
 	menu_dropdown_ = menu;
+	SetToolTip("");
 	updateSize();
 }
 
