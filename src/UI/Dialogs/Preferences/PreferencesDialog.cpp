@@ -172,10 +172,10 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 	Bind(wxEVT_BUTTON, &PreferencesDialog::onButtonClicked, this);
 
 	// Setup layout
+	Layout();
 	SetInitialSize(GetSize());
-	wxWindowBase::Layout();
-	wxWindowBase::Fit();
-	wxTopLevelWindowBase::SetMinSize(wxSize(ui::scalePx(800), ui::scalePx(600)));
+	//Fit();
+	SetMinSize(wxSize(ui::scalePx(800), ui::scalePx(600)));
 	CenterOnParent();
 
 	// Collapse all tree nodes

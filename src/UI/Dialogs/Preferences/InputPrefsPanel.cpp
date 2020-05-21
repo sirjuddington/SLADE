@@ -196,9 +196,9 @@ void InputPrefsPanel::init()
 	updateBindsList();
 
 	// Update list column sizes
-	int width = list_binds_->GetSize().x / 3;
-	list_binds_->SetColumnWidth(1, width);
-	list_binds_->SetColumnWidth(0, width * 1.8);
+	//int width = list_binds_->GetSize().x / 3;
+	//list_binds_->SetColumnWidth(1, width);
+	//list_binds_->SetColumnWidth(0, width * 1.8);
 }
 
 // -----------------------------------------------------------------------------
@@ -252,8 +252,10 @@ void InputPrefsPanel::initBindsList() const
 	}
 
 	// Update list column sizes
-	list_binds_->SetColumnWidth(1, width);
-	list_binds_->SetColumnWidth(0, width * 1.8);
+	//list_binds_->SetColumnWidth(1, width);
+	//list_binds_->SetColumnWidth(0, width * 1.8);
+	list_binds_->SetColumnWidth(1, wxCOL_WIDTH_AUTOSIZE);
+	list_binds_->SetColumnWidth(0, wxCOL_WIDTH_AUTOSIZE);
 }
 
 // -----------------------------------------------------------------------------
