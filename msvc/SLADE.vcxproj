@@ -341,7 +341,6 @@
     <ClCompile Include="..\src\UI\Dialogs\Preferences\OpenGLPrefsPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\PNGPrefsPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\PreferencesDialog.cpp" />
-    <ClCompile Include="..\src\UI\Dialogs\Preferences\PreferencesDialog2.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\TextEditorPrefsPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\TextStylePrefsPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\RunDialog.cpp" />
@@ -699,7 +698,6 @@
     <ClInclude Include="..\src\UI\Dialogs\Preferences\OpenGLPrefsPanel.h" />
     <ClInclude Include="..\src\UI\Dialogs\Preferences\PNGPrefsPanel.h" />
     <ClInclude Include="..\src\UI\Dialogs\Preferences\PreferencesDialog.h" />
-    <ClInclude Include="..\src\UI\Dialogs\Preferences\PreferencesDialog2.h" />
     <ClInclude Include="..\src\UI\Dialogs\Preferences\PrefsPanelBase.h" />
     <ClInclude Include="..\src\UI\Dialogs\Preferences\TextEditorPrefsPanel.h" />
     <ClInclude Include="..\src\UI\Dialogs\Preferences\TextStylePrefsPanel.h" />

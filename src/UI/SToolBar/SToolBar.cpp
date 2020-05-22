@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SToolBar.h"
+#include "General/SAction.h"
 #include "OpenGL/Drawing.h"
 #include "SToolBarButton.h"
 #include "UI/WxUtils.h"
@@ -168,6 +169,20 @@ SToolBarGroup::SToolBarGroup(SToolBar* parent, const wxString& name, bool force_
 	auto* sizer = new wxBoxSizer(orientation_);
 	SetSizer(sizer);
 
+	// Add group separator (hidden by default)
+	auto spacing = ui::px(ui::Size::PadMinimum) + ui::scalePx(2);
+	if (orientation_ == wxHORIZONTAL)
+	{
+		separator_ = static_cast<wxWindow*>(new SToolBarHSeparator(this));
+		sizer->Add(separator_, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, spacing);
+	}
+	else
+	{
+		separator_ = static_cast<wxWindow*>(new SToolBarVSeparator(this));
+		sizer->Add(separator_, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM, spacing);
+	}
+	separator_->Show(false);
+
 	// Create group label if necessary
 	if (show_toolbar_names || force_name)
 	{
@@ -177,10 +192,21 @@ SToolBarGroup::SToolBarGroup(SToolBar* parent, const wxString& name, bool force_
 
 		auto* label = new wxStaticText(this, -1, wxString::Format("%s:", showname));
 		label->SetForegroundColour(drawing::systemMenuTextColour());
-		// sizer->AddSpacer(ui::pad());
 		sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL);
-		sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
+		sizer->AddSpacer(spacing);
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the group contains any custom controls
+// -----------------------------------------------------------------------------
+bool SToolBarGroup::hasCustomControls() const
+{
+	for (const auto& item : items_)
+		if (item.type == GroupItem::Type::CustomControl)
+			return true;
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -221,7 +247,8 @@ SToolBarButton* SToolBarGroup::addActionButton(const wxString& action, const wxS
 	sizer->Add(button, 0, wxALIGN_CENTER | wxALL, ui::scalePx(1));
 	if (toolbar_size > 16)
 		sizer->AddSpacer(static_cast<int>(toolbar_size * 0.1));
-	buttons_.push_back(button);
+
+	items_.push_back({ GroupItem::Type::Button, button });
 
 	return button;
 }
@@ -251,7 +278,8 @@ SToolBarButton* SToolBarGroup::addActionButton(
 	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL | wxALL, ui::scalePx(1));
 	if (toolbar_size > 16)
 		sizer->AddSpacer(static_cast<int>(toolbar_size * 0.1));
-	buttons_.push_back(button);
+
+	items_.push_back({ GroupItem::Type::Button, button });
 
 	return button;
 }
@@ -266,9 +294,11 @@ void SToolBarGroup::addCustomControl(wxWindow* control)
 
 	// Add it to the group
 	if (orientation_ == wxHORIZONTAL)
-		GetSizer()->Add(control, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::scalePx(1));
+		GetSizer()->Add(control, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::px(ui::Size::PadMinimum));
 	else
-		GetSizer()->Add(control, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP | wxBOTTOM, ui::scalePx(1));
+		GetSizer()->Add(control, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
+
+	items_.push_back({ GroupItem::Type::CustomControl, control });
 }
 
 // -----------------------------------------------------------------------------
@@ -285,6 +315,8 @@ void SToolBarGroup::addSeparator()
 		GetSizer()->Add(sep, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::px(ui::Size::PadMinimum));
 	else
 		GetSizer()->Add(sep, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
+
+	items_.push_back({ GroupItem::Type::Separator, sep });
 }
 
 // -----------------------------------------------------------------------------
@@ -293,9 +325,13 @@ void SToolBarGroup::addSeparator()
 // -----------------------------------------------------------------------------
 SToolBarButton* SToolBarGroup::findActionButton(const wxString& action) const
 {
-	for (auto* button : buttons_)
-		if (button->actionId() == action)
-			return button;
+	for (const auto& item : items_)
+		if (item.type == GroupItem::Type::Button)
+		{
+			auto* button = dynamic_cast<SToolBarButton*>(item.control);
+			if (button->actionId() == action)
+				return button;
+		}
 
 	return nullptr;
 }
@@ -305,8 +341,9 @@ SToolBarButton* SToolBarGroup::findActionButton(const wxString& action) const
 // -----------------------------------------------------------------------------
 void SToolBarGroup::refreshButtons() const
 {
-	for (auto* button : buttons_)
-		button->updateState();
+	for (const auto& item : items_)
+		if (item.type == GroupItem::Type::Button)
+			dynamic_cast<SToolBarButton*>(item.control)->updateState();
 }
 
 // -----------------------------------------------------------------------------
@@ -315,8 +352,9 @@ void SToolBarGroup::refreshButtons() const
 void SToolBarGroup::setAllButtonsEnabled(bool enable)
 {
 	Freeze();
-	for (auto* button : buttons_)
-		button->Enable(enable);
+	for (const auto& item : items_)
+		if (item.type == GroupItem::Type::Button)
+			dynamic_cast<SToolBarButton*>(item.control)->Enable(enable);
 	Thaw();
 }
 
@@ -326,9 +364,33 @@ void SToolBarGroup::setAllButtonsEnabled(bool enable)
 void SToolBarGroup::setAllButtonsChecked(bool check)
 {
 	Freeze();
-	for (auto* button : buttons_)
-		button->setChecked(check);
+	for (const auto& item : items_)
+		if (item.type == GroupItem::Type::Button)
+			dynamic_cast<SToolBarButton*>(item.control)->setChecked(check);
 	Thaw();
+}
+
+void SToolBarGroup::addToMenu(wxMenu& menu)
+{
+	auto* submenu = new wxMenu();
+	for (const auto& item : items_)
+	{
+		switch (item.type)
+		{
+		case GroupItem::Type::Button:
+			if (auto* button = dynamic_cast<SToolBarButton*>(item.control))
+				if (button->action())
+					button->action()->addToMenu(submenu);
+			break;
+		case GroupItem::Type::Separator: submenu->AppendSeparator(); break;
+		default: break;
+		}
+	}
+
+	if (name_.StartsWith("_"))
+		menu.AppendSubMenu(submenu, name_.substr(1));
+	else
+		menu.AppendSubMenu(submenu, name_);
 }
 
 // -----------------------------------------------------------------------------
@@ -539,14 +601,14 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 	auto* sizer = GetSizer();
 	sizer->Clear();
 
-	// Delete previous separators
-	for (auto& separator : separators_)
-		delete separator;
-	separators_.clear();
+	// Add start padding if needed
+	if (main_toolbar_)
+		sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
 
-	// Go through all groups
-	int current_size = 0;
-	int groups_line  = 0;
+	// Go through 'start' groups
+	int  current_size = 0;
+	int  groups_line  = 0;
+	auto szf          = wxSizerFlags(0).Expand();
 	for (auto& group : groups_)
 	{
 		// Skip if group is hidden
@@ -556,47 +618,13 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 			continue;
 		}
 
-		// Check if the group will fit
-		group->Show();
-		auto best_size = horizontal ? group->GetBestSize().x : group->GetBestSize().y;
-		auto c_size    = horizontal ? GetSize().x : GetSize().y;
-		if (best_size + current_size + ui::pad() > c_size && groups_line > 0)
-		{
-			// Won't fit, don't show (for now)
-			// TODO: 'Compress' group, try again, compress previous groups, try again
-			group->Show(false);
-			continue;
-		}
-
-		// Add separator if needed
-		bool pad_left = main_toolbar_;
-		if (groups_line > 0)
-		{
-			auto* sep = horizontal ? static_cast<wxWindow*>(new SToolBarHSeparator(this)) :
-									 static_cast<wxWindow*>(new SToolBarVSeparator(this));
-			sep->SetBackgroundColour(GetBackgroundColour());
-			separators_.push_back(sep);
-			if (horizontal)
-				sizer->Add(sep, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::px(ui::Size::PadMinimum));
-			else
-				sizer->Add(sep, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
-			current_size += ui::pad() * 2;
-			pad_left = true;
-		}
-
-		// Add the group
-		if (pad_left)
-			sizer->Add(group, 0, wxEXPAND | wxALL, ui::px(ui::Size::PadMinimum));
-		else
-		{
-			if (horizontal)
-				sizer->Add(group, 0, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT, ui::px(ui::Size::PadMinimum));
-			else
-				sizer->Add(group, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::px(ui::Size::PadMinimum));
-		}
-		current_size += best_size + ui::pad();
+		// Add group to toolbar
+		group->showGroupSeparator(groups_line > 0);
+		group->Show(true);
+		sizer->Add(group, szf);
 
 		groups_line++;
+		current_size += horizontal ? group->GetBestSize().x : group->GetBestSize().y;
 	}
 
 	if (!groups_end_.empty())
@@ -613,48 +641,28 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 			continue;
 		}
 
-		// Check if the group will fit
-		group->Show();
-		auto best_size = horizontal ? group->GetBestSize().x : group->GetBestSize().y;
-		auto c_size    = horizontal ? GetSize().x : GetSize().y;
-		if (best_size + current_size + ui::pad() > c_size && groups_line > 0)
-		{
-			// Won't fit, don't show (for now)
-			// TODO: 'Compress' group, try again, compress previous groups, try again
-			group->Show(false);
-			continue;
-		}
-
-		// Add separator if needed
-		bool pad_left = false;
-		if (groups_line > 0)
-		{
-			auto* sep = horizontal ? static_cast<wxWindow*>(new SToolBarHSeparator(this)) :
-									 static_cast<wxWindow*>(new SToolBarVSeparator(this));
-			sep->SetBackgroundColour(GetBackgroundColour());
-			separators_.push_back(sep);
-			if (horizontal)
-				sizer->Add(sep, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, ui::px(ui::Size::PadMinimum));
-			else
-				sizer->Add(sep, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
-			current_size += ui::pad() * 2;
-			pad_left = true;
-		}
-
-		// Add the group
-		if (pad_left)
-			sizer->Add(group, 0, wxEXPAND | wxALL, ui::px(ui::Size::PadMinimum));
-		else
-		{
-			if (horizontal)
-				sizer->Add(group, 0, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT, ui::px(ui::Size::PadMinimum));
-			else
-				sizer->Add(group, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::px(ui::Size::PadMinimum));
-		}
-		current_size += best_size + ui::pad();
+		// Add group to toolbar
+		group->showGroupSeparator(groups_line > 0);
+		group->Show(true);
+		sizer->Add(group, szf);
 
 		groups_line++;
+		current_size += horizontal ? group->GetBestSize().x : group->GetBestSize().y;
 	}
+
+	// If all groups can't fit, hide as needed and add an overflow button to the end of the toolbar
+	if (current_size > (horizontal ? GetSize().x : GetSize().y))
+	{
+		hideOverflowGroups();
+
+		if (groups_end_.empty())
+			sizer->AddStretchSpacer(1);
+
+		btn_overflow_->Show();
+		sizer->Add(btn_overflow_, szf);
+	}
+	else if (btn_overflow_)
+		btn_overflow_->Show(false);
 
 	// Add end padding if needed
 	if (main_toolbar_ && !groups_end_.empty())
@@ -663,6 +671,87 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 	// Apply layout
 	Layout();
 	Refresh();
+}
+
+// -----------------------------------------------------------------------------
+// Hides any toolbar groups that don't fit within the toolbar and adds them to
+// the overflow button menu
+// -----------------------------------------------------------------------------
+void SToolBar::hideOverflowGroups()
+{
+	const bool horizontal = orientation_ == wxHORIZONTAL;
+
+	struct GroupInfo
+	{
+		SToolBarGroup* group;
+		int            size;
+		bool           overflow;
+
+		GroupInfo(SToolBarGroup* group, bool horizontal) : group{ group }, overflow{ false }
+		{
+			size = horizontal ? group->GetBestSize().x : group->GetBestSize().y;
+		}
+	};
+	vector<GroupInfo> group_info;
+
+	// Get info on all groups
+	int total_size = 0;
+	for (auto& group : groups_)
+	{
+		group_info.emplace_back(group, horizontal);
+		total_size += group_info.back().size;
+	}
+	for (auto& group : groups_end_)
+	{
+		group_info.emplace_back(group, horizontal);
+		total_size += group_info.back().size;
+	}
+
+	// Hide groups (end first) until we can fit everything
+	int index    = group_info.size() - 1;
+	int fit_size = horizontal ? GetSize().x : GetSize().y;
+	fit_size -= ui::scalePx(toolbar_size * 1.5);
+	while (index >= 0)
+	{
+		// Don't hide groups with custom controls
+		if (group_info[index].group->hasCustomControls())
+		{
+			--index;
+			continue;
+		}
+
+		group_info[index].group->Show(false);
+		group_info[index].overflow = true;
+		total_size -= group_info[index].size;
+
+		if (total_size <= fit_size)
+			break;
+
+		--index;
+	}
+
+	// See if we can re-enable some groups safely
+	for (auto& i : group_info)
+	{
+		if (!i.overflow || i.group->hasCustomControls())
+			continue;
+
+		if (total_size + i.size <= fit_size)
+		{
+			i.group->Show(true);
+			i.overflow = false;
+			total_size += i.size;
+		}
+	}
+
+	// Setup overflow button
+	if (!btn_overflow_)
+		btn_overflow_ = new SToolBarButton(this, "", "", "overflow_menu", "");
+	auto* overflow_menu = new wxMenu();
+	for (const auto& i : group_info)
+		if (i.overflow)
+			i.group->addToMenu(*overflow_menu);
+	btn_overflow_->setMenu(overflow_menu, true);
 }
 
 // -----------------------------------------------------------------------------

@@ -201,8 +201,11 @@ void SToolBarButton::setChecked(bool checked)
 // -----------------------------------------------------------------------------
 // Sets dropdown menu for the button
 // -----------------------------------------------------------------------------
-void SToolBarButton::setMenu(wxMenu* menu)
+void SToolBarButton::setMenu(wxMenu* menu, bool delete_existing)
 {
+	if (menu_dropdown_ && delete_existing)
+		delete menu_dropdown_;
+
 	menu_dropdown_ = menu;
 	SetToolTip("");
 	updateSize();

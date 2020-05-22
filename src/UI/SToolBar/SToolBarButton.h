@@ -20,10 +20,11 @@ public:
 	SAction*        action() const { return action_; }
 	const wxString& actionId() const { return action_id_; }
 	bool            isChecked() const;
+	wxMenu*         menu() const { return menu_dropdown_; }
 
 	void setIcon(const wxString& icon);
 	void setChecked(bool checked);
-	void setMenu(wxMenu* menu);
+	void setMenu(wxMenu* menu, bool delete_existing = false);
 
 	bool updateState();
 
