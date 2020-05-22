@@ -1,1 +1,2 @@
+mkdocs==1.0.4
 mkdocs-windmill==1.0.0
