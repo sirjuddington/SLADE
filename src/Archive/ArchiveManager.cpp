@@ -79,8 +79,8 @@ bool ArchiveManager::validResDir(string_view dir) const
 		"fonts/dejavu_sans.ttf",
 		"html/box-title-back.png",
 		"html/startpage.htm",
-		"icons/entry_list/archive.png",
-		"icons/general/wiki.png",
+		"icons/entry_list/16/archive.png",
+		"icons/general/16/wiki.png",
 		"images/arrow.png",
 		"logo.png",
 		"palettes/Doom .pal",
@@ -546,6 +546,8 @@ shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
 		new_archive = std::make_shared<ZipArchive>();
 	else if (format == "grp")
 		new_archive = std::make_shared<GrpArchive>();
+	else if (format == "pak")
+		new_archive = std::make_shared<PakArchive>();
 	else
 	{
 		global::error = fmt::format("Can not create archive of format: {}", format);
@@ -1245,6 +1247,18 @@ bool ArchiveManager::deleteBookmarksInDir(ArchiveDir* node)
 }
 
 // -----------------------------------------------------------------------------
+// Clears all bookmarks
+// -----------------------------------------------------------------------------
+void ArchiveManager::deleteAllBookmarks()
+{
+	if (!bookmarks_.empty())
+	{
+		bookmarks_.clear();
+		signals_.bookmarks_changed();
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Returns the bookmarked entry at [index]
 // -----------------------------------------------------------------------------
 ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
@@ -1254,6 +1268,18 @@ ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
 		return nullptr;
 
 	return bookmarks_[index].lock().get();
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if [entry] exists in the bookmarks list
+// -----------------------------------------------------------------------------
+bool slade::ArchiveManager::isBookmarked(ArchiveEntry* entry)
+{
+	for (const auto& bm : bookmarks_)
+		if (bm.lock().get() == entry)
+			return true;
+
+	return false;
 }
 
 

@@ -13,6 +13,7 @@ wxMenuItem* createMenuItem(
 wxFont       monospaceFont(wxFont base);
 wxImageList* createSmallImageList();
 wxPanel*     createPadPanel(wxWindow* parent, wxWindow* control, int pad = -1);
+wxSpinCtrl*  createSpinCtrl(wxWindow* parent, int value, int min, int max);
 
 wxSizer* createLabelHBox(wxWindow* parent, const wxString& label, wxWindow* widget);
 wxSizer* createLabelHBox(wxWindow* parent, const wxString& label, wxSizer* sizer);
@@ -41,4 +42,7 @@ wxArrayString arrayStringStd(vector<string> vector);
 wxSize  scaledSize(int x, int y);
 wxPoint scaledPoint(int x, int y);
 wxRect  scaledRect(int x, int y, int width, int height);
+
+// Misc
+void setWindowIcon(wxTopLevelWindow* window, string_view icon);
 } // namespace slade::wxutil

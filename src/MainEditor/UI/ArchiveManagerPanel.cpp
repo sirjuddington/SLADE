@@ -47,6 +47,7 @@
 #include "TextureXEditor/TextureXEditor.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Dialogs/DirArchiveUpdateDialog.h"
+#include "UI/Dialogs/NewArchiveDiaog.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -299,6 +300,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	auto panel_bm = new wxPanel(stc_tabs_);
 	panel_bm->SetSizer(new wxBoxSizer(wxVERTICAL));
 	list_bookmarks_ = new ListView(panel_bm, -1);
+	menu_bookmarks_ = new wxMenu();
 	panel_bm->GetSizer()->Add(list_bookmarks_, 1, wxEXPAND | wxALL, ui::pad());
 	refreshBookmarkList();
 	stc_tabs_->AddPage(panel_bm, "Bookmarks", true);
@@ -878,7 +880,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 			return;
 		}
 
-		stc_archives_->AddPage(txed, wxString::Format("Texture Editor (%s)", archive->filename(false)), true);
+		stc_archives_->AddPage(txed, wxString::Format("TEXTUREx Editor (%s)", archive->filename(false)), true);
 		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, icons::getIcon(icons::Entry, "texturex"));
 		txed->SetName("texture");
 		txed->setSelection(entry);
@@ -991,7 +993,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 		return;
 
 	// Create an EntryPanel for the entry
-	auto ep = ArchivePanel::createPanelForEntry(entry, stc_archives_);
+	auto ep = ArchivePanel::createPanelForEntry(entry, stc_archives_, false);
 	ep->openEntry(entry);
 
 	// Don't bother with the default entry panel
@@ -1310,10 +1312,12 @@ void ArchiveManagerPanel::checkDirArchives()
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::createNewArchive(const wxString& format) const
 {
-	auto new_archive = app::archiveManager().newArchive(format.ToStdString());
-
-	if (new_archive)
-		openTab(app::archiveManager().archiveIndex(new_archive.get()));
+	auto* na_dlg = new ui::NewArchiveDialog(maineditor::windowWx());
+	if (na_dlg->ShowModal() == wxID_OK)
+	{
+		if (na_dlg->createdArchive())
+			openTab(app::archiveManager().archiveIndex(na_dlg->createdArchive()));
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1679,17 +1683,9 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	if (!strutil::startsWith(id, "aman_"))
 		return false;
 
-	// File->New Wad
-	if (id == "aman_newwad")
-		createNewArchive("wad");
-
-	// File->New Zip
-	else if (id == "aman_newzip")
-		createNewArchive("zip");
-
-	// File->New Grp
-	else if (id == "aman_newgrp")
-		createNewArchive("grp");
+	// File->New Archive
+	if (id == "aman_newarchive")
+		createNewArchive("");
 
 	// File->New Map
 	else if (id == "aman_newmap")
@@ -1806,6 +1802,12 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	else if (id == "aman_bookmark_remove")
 		deleteSelectedBookmarks();
 
+	// Bookmarks dropdown menu
+	else if (id == "aman_bookmark_menu")
+		goToBookmark(wx_id_offset_);
+	else if (id == "aman_bookmark_removeall")
+		app::archiveManager().deleteAllBookmarks();
+
 
 	// Unknown action
 	else
@@ -1847,12 +1849,20 @@ void ArchiveManagerPanel::updateBookmarkListItem(int index) const
 }
 
 // -----------------------------------------------------------------------------
-// Clears and rebuilds the bookmark list
+// Clears and rebuilds the bookmark list and menu
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::refreshBookmarkList() const
 {
+	// Get first bookmark menu id
+	auto a_bookmark  = SAction::fromId("aman_bookmark_menu");
+	int  id_bm_start = a_bookmark->wxId();
+
 	// Clear the list
 	list_bookmarks_->ClearAll();
+
+	// Clear menu
+	while (!menu_bookmarks_->GetMenuItems().empty())
+		menu_bookmarks_->Delete(menu_bookmarks_->GetMenuItems()[0]);
 
 	// Add columns
 	list_bookmarks_->InsertColumn(0, "Entry");
@@ -1864,7 +1874,23 @@ void ArchiveManagerPanel::refreshBookmarkList() const
 	{
 		list_bookmarks_->addItem(a, wxEmptyString);
 		updateBookmarkListItem(a);
+
+		// Add to menu
+		if (a < 20)
+		{
+			// Get path and determine icon
+			auto* entry      = app::archiveManager().getBookmark(a);
+			auto  entry_path = fmt::format("{}/{}", entry->parent()->filename(false), entry->path(true).substr(1));
+
+			// Create and add menu item
+			a_bookmark->addToMenu(menu_bookmarks_, entry_path, entry->type()->icon(), a);
+		}
 	}
+
+	// Add 'remove all bookmarks' to bookmarks menu
+	if (menu_bookmarks_->GetMenuItemCount() > 0)
+		menu_bookmarks_->AppendSeparator();
+	SAction::fromId("aman_bookmark_removeall")->addToMenu(menu_bookmarks_);
 
 	// Update size
 	list_bookmarks_->enableSizeUpdate(true);
@@ -2041,6 +2067,7 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 		auto ap = dynamic_cast<ArchivePanel*>(stc_archives_->GetPage(selection));
 		ap->currentArea()->updateStatus();
 		ap->addMenus();
+		ap->refreshPanel();
 	}
 
 	// EntryPanel

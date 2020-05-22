@@ -9,7 +9,7 @@ class ANSICanvas;
 class ANSIEntryPanel : public EntryPanel
 {
 public:
-	ANSIEntryPanel(wxWindow* parent);
+	ANSIEntryPanel(wxWindow* parent, bool frame = true);
 	~ANSIEntryPanel() = default;
 
 	bool saveEntry() override;

@@ -990,6 +990,9 @@
     <ClCompile Include="..\src\UI\Dialogs\SetupWizard\TempFolderWizardPage.cpp">
       <Filter>UI\Dialogs\SetupWizard</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\UI\Dialogs\NewArchiveDialog.cpp">
+      <Filter>UI\Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -1891,6 +1894,9 @@
     </ClInclude>
     <ClInclude Include="..\src\UI\Dialogs\SetupWizard\WizardPageBase.h">
       <Filter>UI\Dialogs\SetupWizard</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\Dialogs\NewArchiveDiaog.h">
+      <Filter>UI\Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

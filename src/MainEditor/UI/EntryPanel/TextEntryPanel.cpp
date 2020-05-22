@@ -60,7 +60,7 @@ EXTERN_CVAR(Bool, txed_trim_whitespace)
 // -----------------------------------------------------------------------------
 // TextEntryPanel class constructor
 // -----------------------------------------------------------------------------
-TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
+TextEntryPanel::TextEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent, "text", frame)
 {
 	// Create the text area
 	text_area_ = new TextEditorCtrl(this, -1);
@@ -94,10 +94,6 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	choice_text_language_->Bind(wxEVT_CHOICE, &TextEntryPanel::onChoiceLanguageChanged, this);
 	text_area_->Bind(wxEVT_TEXT_CHANGED, &TextEntryPanel::onTextModified, this);
 	text_area_->Bind(wxEVT_STC_UPDATEUI, &TextEntryPanel::onUpdateUI, this);
-
-	// Custom toolbar
-	custom_toolbar_actions_ = "arch_scripts_compileacs;arch_scripts_compilehacs";
-	toolbar_->addActionGroup("Scripts", wxSplit(custom_toolbar_actions_, ';'));
 
 
 	// --- Custom menu ---

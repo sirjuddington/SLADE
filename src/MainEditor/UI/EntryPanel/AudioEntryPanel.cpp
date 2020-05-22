@@ -64,8 +64,8 @@ CVAR(Bool, snd_autoplay, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // AudioEntryPanel class constructor
 // -----------------------------------------------------------------------------
-AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
-	EntryPanel(parent, "audio"),
+AudioEntryPanel::AudioEntryPanel(wxWindow* parent, bool frame) :
+	EntryPanel(parent, "audio", frame),
 	timer_seek_{ new wxTimer(this) },
 	sound_{ new sf::Sound() },
 	music_{ new sf::Music() },
@@ -107,15 +107,15 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	sizer_gb->Add(slider_seek_, wxGBPosition(0, 0), wxGBSpan(1, 9), wxEXPAND);
 
 	// Add play controls
-	btn_play_ = new SIconButton(this, "play");
+	btn_play_ = new SIconButton(this, "play", "", 24);
 	sizer_gb->Add(btn_play_, wxGBPosition(1, 0));
-	btn_pause_ = new SIconButton(this, "pause");
+	btn_pause_ = new SIconButton(this, "pause", "", 24);
 	sizer_gb->Add(btn_pause_, wxGBPosition(1, 1));
-	btn_stop_ = new SIconButton(this, "stop");
+	btn_stop_ = new SIconButton(this, "stop", "", 24);
 	sizer_gb->Add(btn_stop_, wxGBPosition(1, 2));
-	btn_prev_ = new SIconButton(this, "prev");
+	btn_prev_ = new SIconButton(this, "prev", "", 24);
 	sizer_gb->Add(btn_prev_, wxGBPosition(1, 3));
-	btn_next_ = new SIconButton(this, "next");
+	btn_next_ = new SIconButton(this, "next", "", 24);
 	sizer_gb->Add(btn_next_, wxGBPosition(1, 4));
 
 	// Separator
@@ -150,7 +150,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	sizer_gb->Add(new wxStaticText(this, -1, "Volume:"), wxGBPosition(1, 7), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	slider_volume_ = new wxSlider(this, -1, 0, 0, 100, wxDefaultPosition, wxSize(ui::scalePx(128), -1));
 	slider_volume_->SetValue(snd_volume);
-	sizer_gb->Add(slider_volume_, wxGBPosition(1, 8));
+	sizer_gb->Add(slider_volume_, wxGBPosition(1, 8), { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
 	// Set volume
 	sound_->setVolume(snd_volume);

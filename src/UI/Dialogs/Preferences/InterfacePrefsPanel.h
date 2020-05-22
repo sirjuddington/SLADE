@@ -27,6 +27,8 @@ private:
 	wxChoice*   choice_tab_style_       = nullptr;
 	wxChoice*   choice_iconset_general_ = nullptr;
 	wxChoice*   choice_iconset_entry_   = nullptr;
+	wxChoice*   choice_elist_icon_size_ = nullptr;
+	wxSpinCtrl* spin_elist_icon_pad_    = nullptr;
 
 	wxPanel* setupGeneralTab(wxWindow* stc_tabs);
 	wxPanel* setupEntryListTab(wxWindow* stc_tabs);

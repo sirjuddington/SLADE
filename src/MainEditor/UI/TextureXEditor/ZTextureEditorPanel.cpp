@@ -38,8 +38,11 @@
 #include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
+#include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/Tokenizer.h"
+
 
 using namespace slade;
 
@@ -221,36 +224,21 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	list_patches_ = new ListView(panel, -1);
 	list_patches_->enableSizeUpdate(false);
 	list_patches_->SetInitialSize(wxutil::scaledSize(100, -1));
-	framesizer->Add(list_patches_, 1, wxEXPAND | wxALL, ui::pad());
+	framesizer->Add(list_patches_, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::pad());
 
-	// Add patch buttons
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, 0, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
-
-	// 'Add' button
-	btn_patch_add_ = new SIconButton(panel, "patch_add", "Add new patch to texture");
-	gb_sizer->Add(btn_patch_add_, { 0, 0 });
-
-	// 'Remove' button
-	btn_patch_remove_ = new SIconButton(panel, "patch_remove", "Remove selected patch(es) from texture");
-	gb_sizer->Add(btn_patch_remove_, { 0, 1 });
-
-	// 'Back' button
-	btn_patch_back_ = new SIconButton(panel, "patch_back", "Send selected patch(es) back");
-	gb_sizer->Add(btn_patch_back_, { 1, 0 });
-
-	// 'Forward' button
-	btn_patch_forward_ = new SIconButton(panel, "patch_forward", "Bring selected patch(es) forward");
-	gb_sizer->Add(btn_patch_forward_, { 1, 1 });
-
-	// 'Replace' button
-	btn_patch_replace_ = new SIconButton(panel, "patch_replace", "Replace selected patch(es)");
-	gb_sizer->Add(btn_patch_replace_, { 2, 0 });
-
-	// 'Duplicate' button
-	btn_patch_duplicate_ = new SIconButton(panel, "patch_duplicate", "Duplicate selected patch(es)");
-	gb_sizer->Add(btn_patch_duplicate_, { 2, 1 });
-
+	// Patches toolbar
+	tb_patches_ = new SToolBar(panel, false, wxVERTICAL);
+	tb_patches_->addActionGroup(
+		"_Patch",
+		{ "txed_patch_add",
+		  "txed_patch_remove",
+		  "txed_patch_back",
+		  "txed_patch_forward",
+		  "txed_patch_replace",
+		  "txed_patch_duplicate" });
+	tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
+	tb_patches_->findActionButton("txed_patch_add")->Enable();
+	framesizer->Add(tb_patches_, 0, wxEXPAND | wxTOP | wxBOTTOM, ui::pad());
 
 
 	// -- Patch Properties frame --
@@ -258,7 +246,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 0, wxEXPAND | wxTOP, ui::pad());
 
-	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	auto* gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// X Position

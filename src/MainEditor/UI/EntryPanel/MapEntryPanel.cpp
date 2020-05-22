@@ -67,7 +67,7 @@ EXTERN_CVAR(Bool, map_view_things)
 // -----------------------------------------------------------------------------
 // MapEntryPanel class constructor
 // -----------------------------------------------------------------------------
-MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
+MapEntryPanel::MapEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent, "map", frame)
 {
 	// Setup map canvas
 	map_canvas_ = new MapPreviewCanvas(this);

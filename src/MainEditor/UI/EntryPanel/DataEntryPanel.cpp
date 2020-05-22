@@ -865,7 +865,8 @@ void DataEntryTable::pasteRows(int row)
 // -----------------------------------------------------------------------------
 // DataEntryPanel class constructor
 // -----------------------------------------------------------------------------
-DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), table_data_{ new DataEntryTable(this) }
+DataEntryPanel::DataEntryPanel(wxWindow* parent, bool frame) :
+	EntryPanel(parent, "data", frame), table_data_{ new DataEntryTable(this) }
 {
 	// Cell value combo box
 	auto vbox = new wxBoxSizer(wxVERTICAL);

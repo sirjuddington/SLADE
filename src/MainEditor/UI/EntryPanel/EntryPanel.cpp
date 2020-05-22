@@ -60,22 +60,32 @@ CVAR(Bool, confirm_entry_revert, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // EntryPanel class constructor
 // -----------------------------------------------------------------------------
-EntryPanel::EntryPanel(wxWindow* parent, const wxString& id) : wxPanel(parent, -1), id_{ id }
+EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool frame, bool left_toolbar) :
+	wxPanel(parent, -1), id_{ id }
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Create & set sizer & border
-	frame_          = new wxStaticBox(this, -1, "Entry Contents");
-	auto framesizer = new wxStaticBoxSizer(frame_, wxVERTICAL);
-	sizer->Add(framesizer, 1, wxEXPAND | wxALL, ui::pad());
+	wxSizer* framesizer;
+	if (frame)
+	{
+		frame_     = new wxStaticBox(this, -1, "Entry Contents");
+		framesizer = new wxStaticBoxSizer(frame_, wxVERTICAL);
+		sizer->Add(framesizer, 1, wxEXPAND | wxALL, ui::pad());
+	}
+	else
+		framesizer = sizer;
+
 	wxWindow::Show(false);
 
 	// Add toolbar
-	toolbar_ = new SToolBar(this);
-	toolbar_->drawBorder(false);
-	framesizer->Add(toolbar_, 0, wxEXPAND | wxLEFT | wxRIGHT, ui::pad());
-	framesizer->AddSpacer(ui::px(ui::Size::PadMinimum));
+	toolbar_     = new SToolBar(this);
+	auto pad_min = ui::px(ui::Size::PadMinimum);
+	if (!frame)
+		framesizer->AddSpacer(pad_min);
+	framesizer->Add(toolbar_, 0, wxEXPAND | wxLEFT | wxRIGHT, pad_min);
+	framesizer->AddSpacer(pad_min);
 
 	// Default entry toolbar group
 	auto tb_group = new SToolBarGroup(toolbar_, "Entry");
@@ -84,10 +94,24 @@ EntryPanel::EntryPanel(wxWindow* parent, const wxString& id) : wxPanel(parent, -
 	toolbar_->addGroup(tb_group);
 	toolbar_->enableGroup("Entry", false);
 
+	// Create left toolbar
+	if (left_toolbar)
+		toolbar_left_ = new SToolBar(this, false, wxVERTICAL);
+
 	// Setup sizer positions
 	sizer_bottom_ = new wxBoxSizer(wxHORIZONTAL);
 	sizer_main_   = new wxBoxSizer(wxVERTICAL);
-	framesizer->Add(sizer_main_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	if (left_toolbar)
+	{
+		auto* hbox = new wxBoxSizer(wxHORIZONTAL);
+		if (!frame)
+			hbox->AddSpacer(pad_min);
+		hbox->Add(toolbar_left_, 0, wxEXPAND | wxRIGHT, pad_min);
+		hbox->Add(sizer_main_, 1, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
+		framesizer->Add(hbox, 1, wxEXPAND);
+	}
+	else
+		framesizer->Add(sizer_main_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 	framesizer->Add(sizer_bottom_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Bind button events
@@ -152,6 +176,8 @@ bool EntryPanel::openEntry(shared_ptr<ArchiveEntry> entry)
 		entry_ = entry;
 		updateStatus();
 		toolbar_->updateLayout(true);
+		if (frame_)
+			frame_->SetLabel(entry->path(true).substr(1));
 		Layout();
 		return true;
 	}

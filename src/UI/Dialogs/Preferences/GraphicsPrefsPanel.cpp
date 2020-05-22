@@ -49,6 +49,7 @@ EXTERN_CVAR(Bool, gfx_show_border)
 EXTERN_CVAR(Bool, gfx_extraconv)
 EXTERN_CVAR(Int, browser_bg_type)
 EXTERN_CVAR(Bool, gfx_hilight_mouseover)
+EXTERN_CVAR(Bool, translation_editor_condensed)
 
 
 // -----------------------------------------------------------------------------
@@ -83,9 +84,13 @@ GraphicsPrefsPanel::GraphicsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 	choice_browser_bg_ = new wxChoice(this, -1);
 	choice_browser_bg_->Append(
 		wxutil::arrayString({ "Transparent background (as above)", "System background", "Black background" }));
-	cb_show_border_       = new wxCheckBox(this, -1, "Show outline around graphics and textures");
-	cb_hilight_mouseover_ = new wxCheckBox(this, -1, "Hilight graphics on mouse hover");
-	cb_extra_gfxconv_     = new wxCheckBox(this, -1, "Offer additional conversion options");
+	cb_show_border_          = new wxCheckBox(this, -1, "Show outline around graphics and textures");
+	cb_hilight_mouseover_    = new wxCheckBox(this, -1, "Hilight graphics on mouse hover");
+	cb_extra_gfxconv_        = new wxCheckBox(this, -1, "Offer additional conversion options");
+	cb_condensed_trans_edit_ = new wxCheckBox(this, -1, "Condensed Translation Editor layout");
+	cb_condensed_trans_edit_->SetToolTip(
+		"On some displays the translation editor dialog can be too large to fit on the screen vertically. Enable this "
+		"to reduce its vertical size.");
 
 	setupLayout();
 
@@ -104,6 +109,7 @@ void GraphicsPrefsPanel::init()
 	cb_extra_gfxconv_->SetValue(gfx_extraconv);
 	choice_browser_bg_->SetSelection(browser_bg_type);
 	cb_hilight_mouseover_->SetValue(gfx_hilight_mouseover);
+	cb_condensed_trans_edit_->SetValue(translation_editor_condensed);
 }
 
 // -----------------------------------------------------------------------------
@@ -116,10 +122,11 @@ void GraphicsPrefsPanel::applyPreferences()
 	wxc          = cp_colour2_->GetColour();
 	bgtx_colour2 = wxutil::strToView(wxc.GetAsString(wxC2S_CSS_SYNTAX));
 	gl::Texture::resetBackgroundTexture();
-	gfx_show_border       = cb_show_border_->GetValue();
-	gfx_extraconv         = cb_extra_gfxconv_->GetValue();
-	browser_bg_type       = choice_browser_bg_->GetSelection();
-	gfx_hilight_mouseover = cb_hilight_mouseover_->GetValue();
+	gfx_show_border              = cb_show_border_->GetValue();
+	gfx_extraconv                = cb_extra_gfxconv_->GetValue();
+	browser_bg_type              = choice_browser_bg_->GetSelection();
+	gfx_hilight_mouseover        = cb_hilight_mouseover_->GetValue();
+	translation_editor_condensed = cb_condensed_trans_edit_->GetValue();
 	maineditor::windowWx()->Refresh();
 }
 
@@ -149,7 +156,8 @@ void GraphicsPrefsPanel::setupLayout()
 		{ wxutil::createLabelHBox(this, "Browser Background:", choice_browser_bg_),
 		  cb_show_border_,
 		  cb_hilight_mouseover_,
-		  cb_extra_gfxconv_ },
+		  cb_extra_gfxconv_,
+		  cb_condensed_trans_edit_ },
 		wxSizerFlags(0).Expand());
 }
 

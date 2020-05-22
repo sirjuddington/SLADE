@@ -10,7 +10,7 @@ class ColourBox : public wxPanel
 {
 public:
 	ColourBox(wxWindow* parent, int id = -1, bool enable_alpha = false, bool mode = false);
-	ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha = false, bool mode = false);
+	ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha = false, bool mode = false, int size = -1);
 	~ColourBox() = default;
 
 	ColRGBA colour() const { return colour_; }

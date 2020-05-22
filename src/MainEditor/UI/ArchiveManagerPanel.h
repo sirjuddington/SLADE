@@ -44,10 +44,7 @@ private:
 			const wxString& file_path     = "",
 			bool            is_dir        = false,
 			time_t          file_modified = 0) :
-			entry_path{ entry_path },
-			file_path{ file_path },
-			is_dir{ is_dir },
-			file_modified{ file_modified }
+			entry_path{ entry_path }, file_path{ file_path }, is_dir{ is_dir }, file_modified{ file_modified }
 		{
 		}
 	};
@@ -78,7 +75,8 @@ public:
 	ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives);
 	~ArchiveManagerPanel() = default;
 
-	wxMenu* getRecentMenu() const { return menu_recent_; }
+	wxMenu* recentFilesMenu() const { return menu_recent_; }
+	wxMenu* bookmarksMenu() const { return menu_bookmarks_; }
 
 	// DockPanel layout
 	void createArchivesPanel();
@@ -180,6 +178,7 @@ private:
 	ListView*        list_bookmarks_              = nullptr;
 	WMFileBrowser*   file_browser_                = nullptr;
 	wxMenu*          menu_recent_                 = nullptr;
+	wxMenu*          menu_bookmarks_              = nullptr;
 	Archive*         current_maps_                = nullptr;
 	Archive*         pending_closed_archive_      = nullptr;
 	bool             asked_save_unchanged_        = false;

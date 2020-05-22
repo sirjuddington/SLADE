@@ -10,7 +10,7 @@ class FindReplacePanel;
 class TextEntryPanel : public EntryPanel
 {
 public:
-	TextEntryPanel(wxWindow* parent);
+	TextEntryPanel(wxWindow* parent, bool frame = true);
 	~TextEntryPanel() {}
 
 	bool     saveEntry() override;

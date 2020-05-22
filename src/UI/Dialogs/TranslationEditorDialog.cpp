@@ -47,6 +47,14 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
+// Variables
+//
+// -----------------------------------------------------------------------------
+CVAR(Bool, translation_editor_condensed, false, CVar::Save)
+
+
+// -----------------------------------------------------------------------------
+//
 // GradientBox Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -154,18 +162,19 @@ TranslationEditorDialog::TranslationEditorDialog(
 
 	// Add translation button
 	auto vbox = new wxBoxSizer(wxVERTICAL);
+	auto min_pad = ui::px(ui::Size::PadMinimum);
 	framesizer->Add(vbox, 0, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT, ui::pad());
 
 	btn_add_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "plus"));
-	vbox->Add(btn_add_, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	vbox->Add(btn_add_, 0, wxEXPAND | wxBOTTOM, min_pad);
 
 	// Remove translation button
 	btn_remove_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "minus"));
-	vbox->Add(btn_remove_, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	vbox->Add(btn_remove_, 0, wxEXPAND | wxBOTTOM, min_pad);
 
 	// Move up button
 	btn_up_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "up"));
-	vbox->Add(btn_up_, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	vbox->Add(btn_up_, 0, wxEXPAND | wxBOTTOM, min_pad);
 
 	// Move down button
 	btn_down_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "down"));
@@ -234,7 +243,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 
 	// Reverse origin range
 	cb_target_reverse_ = new wxCheckBox(panel_target_palette_, -1, "Reverse Selection");
-	vbox->Add(cb_target_reverse_, 0, wxTOP, ui::pad());
+	vbox->Add(cb_target_reverse_, 0, wxTOP, min_pad);
 
 
 	// Target colour gradient panel
@@ -305,7 +314,11 @@ TranslationEditorDialog::TranslationEditorDialog(
 	hbox->Add(framesizer, 0, wxEXPAND | wxRIGHT, ui::pad());
 
 	pal_canvas_preview_ = new PaletteCanvas(this, -1);
-	pal_canvas_preview_->SetInitialSize(wxSize(ui::scalePx(224), ui::scalePx(224)));
+	pal_canvas_preview_->doubleWidth(translation_editor_condensed);
+	if (translation_editor_condensed)
+		pal_canvas_preview_->SetInitialSize(wxSize(ui::scalePx(320), ui::scalePx(80)));
+	else
+		pal_canvas_preview_->SetInitialSize(wxSize(ui::scalePx(160), ui::scalePx(160)));
 	pal_canvas_preview_->setPalette(&palette_);
 	framesizer->Add(pal_canvas_preview_->toPanel(this), 1, wxEXPAND | wxALL, ui::pad());
 

@@ -604,21 +604,16 @@ private:
 // -----------------------------------------------------------------------------
 // PaletteEntryPanel class constructor
 // -----------------------------------------------------------------------------
-PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "palette")
+PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent, "palette", frame, true)
 {
-	// Add palette canvas
-	pal_canvas_ = new PaletteCanvas(this, -1);
-	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
-	sizer_main_->Add(pal_canvas_->toPanel(this), 1, wxEXPAND, 0);
-
 	// Setup custom menu
 	menu_custom_ = new wxMenu();
 	PaletteEntryPanel::fillCustomMenu(menu_custom_);
 	custom_menu_name_ = "Palette";
 
-	// --- Setup custom toolbar groups ---
+	// --- Top toolbar ---
 
-	// Palette
+	// Palette Selector
 	auto group_palette = new SToolBarGroup(toolbar_, "Palette", true);
 	group_palette->addActionButton("pal_prev", "Previous Palette", "left", "");
 	text_curpal_ = new wxStaticText(group_palette, -1, "XX/XX");
@@ -630,13 +625,20 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "pal
 	wxString actions = "ppal_moveup;ppal_movedown;ppal_duplicate;ppal_remove;ppal_removeothers";
 	toolbar_->addActionGroup("Palette Organisation", wxSplit(actions, ';'));
 
-	// Colour Operations
-	actions = "ppal_colourise;ppal_tint;ppal_invert;ppal_tweak;ppal_gradient";
-	toolbar_->addActionGroup("Colours", wxSplit(actions, ';'));
-
-	// Palette Operations
+	// Palette Entry Operations
 	actions = "ppal_addcustom;ppal_exportas;ppal_importfrom;ppal_test;ppal_generate";
 	toolbar_->addActionGroup("Palette Operations", wxSplit(actions, ';'));
+
+	// --- Left toolbar ---
+
+	// Colour Operations
+	actions = "ppal_colourise;ppal_tint;ppal_invert;ppal_tweak;ppal_gradient";
+	toolbar_left_->addActionGroup("Colours", wxSplit(actions, ';'));
+	
+	// --- Palette canvas ---
+	pal_canvas_ = new PaletteCanvas(this, -1);
+	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
+	sizer_main_->Add(pal_canvas_, 1, wxEXPAND, 0);
 
 	// Bind events
 	pal_canvas_->Bind(wxEVT_LEFT_DOWN, &PaletteEntryPanel::onPalCanvasMouseEvent, this);
