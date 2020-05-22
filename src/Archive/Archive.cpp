@@ -1570,27 +1570,27 @@ bool Archive::loadFormats(MemChunk& mc)
 			auto prop = (ParseTreeNode*)fmt_desc->child(p);
 
 			// Format name
-			if (strutil::equalCI(prop->name(), "name"))
+			if (prop->nameIsCI("name"))
 				fmt.name = prop->stringValue();
 
 			// Supports dirs
-			else if (strutil::equalCI(prop->name(), "supports_dirs"))
+			else if (prop->nameIsCI("supports_dirs"))
 				fmt.supports_dirs = prop->boolValue();
 
 			// Entry names have extensions
-			else if (strutil::equalCI(prop->name(), "names_extensions"))
+			else if (prop->nameIsCI("names_extensions"))
 				fmt.names_extensions = prop->boolValue();
 
 			// Max entry name length
-			else if (strutil::equalCI(prop->name(), "max_name_length"))
+			else if (prop->nameIsCI("max_name_length"))
 				fmt.max_name_length = prop->intValue();
 
 			// Entry format (id)
-			else if (strutil::equalCI(prop->name(), "entry_format"))
+			else if (prop->nameIsCI("entry_format"))
 				fmt.entry_format = prop->stringValue();
 
 			// Extensions
-			else if (strutil::equalCI(prop->name(), "extensions"))
+			else if (prop->nameIsCI("extensions"))
 			{
 				for (unsigned e = 0; e < prop->nChildren(); e++)
 				{
@@ -1600,8 +1600,12 @@ bool Archive::loadFormats(MemChunk& mc)
 			}
 
 			// Prefer uppercase entry names
-			else if (strutil::equalCI(prop->name(), "prefer_uppercase"))
+			else if (prop->nameIsCI("prefer_uppercase"))
 				fmt.prefer_uppercase = prop->boolValue();
+
+			// Can be created
+			else if (prop->nameIsCI("create"))
+				fmt.create = prop->boolValue();
 		}
 
 		log::info(3, wxString::Format("Read archive format %s: \"%s\"", fmt.id, fmt.name));

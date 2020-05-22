@@ -118,6 +118,15 @@ wxPanel* wxutil::createPadPanel(wxWindow* parent, wxWindow* control, int pad)
 }
 
 // -----------------------------------------------------------------------------
+// Creates a wxSpinCtrl using the SLADE sizing for spin controls
+// -----------------------------------------------------------------------------
+wxSpinCtrl* wxutil::createSpinCtrl(wxWindow* parent, int value, int min, int max)
+{
+	return new wxSpinCtrl(
+		parent, -1, "", wxDefaultPosition, { ui::px(ui::Size::SpinCtrlWidth), -1 }, wxSP_ARROW_KEYS, min, max, value);
+}
+
+// -----------------------------------------------------------------------------
 // Creates a simple horizontal box sizer with a [label] on the left and
 // [widget] on the right
 // -----------------------------------------------------------------------------
@@ -292,4 +301,14 @@ wxPoint wxutil::scaledPoint(int x, int y)
 wxRect wxutil::scaledRect(int x, int y, int width, int height)
 {
 	return { ui::scalePx(x), ui::scalePx(y), ui::scalePx(width), ui::scalePx(height) };
+}
+
+// -----------------------------------------------------------------------------
+// Sets the given [window]'s [icon]
+// -----------------------------------------------------------------------------
+void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
+{
+	wxIcon wx_icon;
+	wx_icon.CopyFromBitmap(icons::getIcon(icons::General, icon));
+	window->SetIcon(wx_icon);
 }

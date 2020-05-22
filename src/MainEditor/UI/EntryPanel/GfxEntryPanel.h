@@ -12,13 +12,13 @@ class ColourBox;
 class GfxEntryPanel : public EntryPanel
 {
 public:
-	GfxEntryPanel(wxWindow* parent);
+	GfxEntryPanel(wxWindow* parent, bool frame = true);
 	~GfxEntryPanel() = default;
 
 	Translation& prevTranslation() { return prev_translation_; }
 
 	bool            saveEntry() override;
-	void            setupToolbar();
+	void            setupToolbars();
 	void            fillBrushMenu(wxMenu* bm) const;
 	void            updateImagePalette() const;
 	GfxCanvas::View detectOffsetType(ArchiveEntry* entry) const;
@@ -83,5 +83,6 @@ private:
 	void onCurImgChanged(wxCommandEvent& e);
 	void onBtnAutoOffset(wxCommandEvent& e);
 	void onColourPicked(wxEvent& e);
+	void onToolSelected(wxCommandEvent& e);
 };
 } // namespace slade

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "General/SAction.h"
 #include "General/Sigslot.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "UI/Lists/VirtualListView.h"
@@ -9,6 +10,7 @@ namespace slade
 class GfxCanvas;
 class SZoomSlider;
 class TextureXEditor;
+class SToolBar;
 
 class PatchTableListView : public VirtualListView
 {
@@ -33,37 +35,37 @@ private:
 };
 
 
-class PatchTablePanel : public wxPanel
+class PatchTablePanel : public wxPanel, SActionHandler
 {
 public:
 	PatchTablePanel(wxWindow* parent, PatchTable* patch_table, TextureXEditor* tx_editor = nullptr);
 	~PatchTablePanel() = default;
 
 private:
-	PatchTable*         patch_table_           = nullptr;
-	PatchTableListView* list_patches_          = nullptr;
-	wxButton*           btn_add_patch_         = nullptr;
-	wxButton*           btn_patch_from_file_   = nullptr;
-	wxButton*           btn_remove_patch_      = nullptr;
-	wxButton*           btn_change_patch_      = nullptr;
-	wxButton*           btn_import_patch_file_ = nullptr;
-	TextureXEditor*     parent_                = nullptr;
-	GfxCanvas*          patch_canvas_          = nullptr;
-	wxStaticText*       label_dimensions_      = nullptr;
-	wxStaticText*       label_textures_        = nullptr;
-	SZoomSlider*        slider_zoom_           = nullptr;
+	PatchTable*         patch_table_      = nullptr;
+	PatchTableListView* list_patches_     = nullptr;
+	TextureXEditor*     parent_           = nullptr;
+	GfxCanvas*          patch_canvas_     = nullptr;
+	wxStaticText*       label_dimensions_ = nullptr;
+	wxStaticText*       label_textures_   = nullptr;
+	SZoomSlider*        slider_zoom_      = nullptr;
+	SToolBar*           toolbar_          = nullptr;
+
+	void setupLayout();
+	void updateDisplay();
+
+	void addPatch();
+	void addPatchFromFile();
+	void removePatch();
+	void changePatch();
 
 	// Signal connections
 	sigslot::scoped_connection sc_palette_changed_;
 
-	void setupLayout();
+	// SAction handler
+	bool handleAction(string_view id) override;
 
 	// Events
-	void onBtnAddPatch(wxCommandEvent& e);
-	void onBtnPatchFromFile(wxCommandEvent& e);
-	void onBtnRemovePatch(wxCommandEvent& e);
-	void onBtnChangePatch(wxCommandEvent& e);
 	void onDisplayChanged(wxCommandEvent& e);
-	void updateDisplay();
 };
 } // namespace slade

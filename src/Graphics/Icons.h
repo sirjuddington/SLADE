@@ -1,8 +1,9 @@
 #pragma once
 
+
 namespace slade
 {
-class ArchiveDir;
+class ArchiveEntry;
 
 namespace icons
 {
@@ -15,8 +16,11 @@ namespace icons
 	};
 
 	bool           loadIcons();
-	wxBitmap       getIcon(Type type, string_view name, bool large, bool log_missing = true);
+	wxBitmap       getIcon(Type type, string_view name, int size, bool log_missing = true);
+	wxBitmap       getPaddedIcon(Type type, string_view name, int size, int padding = 1);
 	wxBitmap       getIcon(Type type, string_view name);
+	bool           iconExists(Type type, string_view name);
+	ArchiveEntry*  getIconEntry(Type type, string_view name, int size);
 	bool           exportIconPNG(Type type, string_view name, string_view path);
 	vector<string> iconSets(Type type);
 } // namespace icons

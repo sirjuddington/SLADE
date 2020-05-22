@@ -38,6 +38,7 @@
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
 #include "General/Web.h"
+#include "Graphics/Icons.h"
 #include "Utility/Tokenizer.h"
 
 using namespace slade;
@@ -49,6 +50,15 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 CVAR(Bool, web_dark_theme, false, CVar::Flag::Save)
+
+
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
+EXTERN_CVAR(String, iconset_general)
+EXTERN_CVAR(String, iconset_entry_list)
 
 
 // -----------------------------------------------------------------------------
@@ -131,15 +141,14 @@ void SStartPage::init()
 		entry_export_.push_back(res_archive->entryAtPath("fonts/FiraSans-Bold.woff"));
 		entry_export_.push_back(res_archive->entryAtPath("fonts/FiraSans-Heavy.woff"));
 		entry_export_.push_back(res_archive->entryAtPath("logo_icon.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/Rounded/archive.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/Rounded/wad.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/Rounded/zip.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/Rounded/folder.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/general/open.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/general/newarchive.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/general/newzip.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/general/mapeditor.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/general/wiki.png"));
+		entry_export_.push_back(icons::getIconEntry(icons::Entry, "archive", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::Entry, "wad", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::Entry, "zip", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::Entry, "folder", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::General, "open", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::General, "newarchive", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::General, "mapeditor", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::General, "wiki", 16));
 
 		// Load tips
 		auto entry_tips = res_archive->entryAtPath("tips.txt");
@@ -414,10 +423,8 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 		// Action
 		if (href.EndsWith("open"))
 			SActionHandler::doAction("aman_open");
-		else if (href.EndsWith("newwad"))
-			SActionHandler::doAction("aman_newwad");
-		else if (href.EndsWith("newzip"))
-			SActionHandler::doAction("aman_newzip");
+		else if (href.EndsWith("newarchive"))
+			SActionHandler::doAction("aman_newarchive");
 		else if (href.EndsWith("newmap"))
 		{
 			SActionHandler::doAction("aman_newmap");

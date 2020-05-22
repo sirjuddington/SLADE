@@ -136,7 +136,7 @@ void ConsolePanel::update()
 
 	// Add new log messages to log text area
 	text_log_->SetEditable(true);
-	int line_no = next_message_index_ + 1;
+	int line_no = next_message_index_;
 	for (auto a = next_message_index_; a < log.size(); ++a)
 	{
 		if (a > 0)

@@ -34,7 +34,7 @@ public:
 	string id() const { return id_; }
 	int    wxId() const { return wx_id_; }
 	string text() const { return text_; }
-	string iconName() const { return icon_; }
+	string iconName() const;
 	string helpText() const { return helptext_; }
 	string shortcut() const { return shortcut_; }
 	string shortcutText() const;
@@ -57,8 +57,6 @@ public:
 		string_view text_override = "NO",
 		string_view icon_override = "NO",
 		int         wx_id_offset  = 0);
-	bool addToToolbar(wxAuiToolBar* toolbar, string_view icon_override = "NO", int wx_id_offset = 0) const;
-	bool addToToolbar(wxToolBar* toolbar, string_view icon_override = "NO", int wx_id_offset = 0) const;
 
 	// Static functions
 	static void     setBaseWxId(int id) { cur_id_ = id; }
@@ -73,17 +71,17 @@ private:
 	// where xxxx is some 4 letter identifier for the SActionHandler that handles this action
 	string id_;
 
-	int        wx_id_;
-	int        reserved_ids_; // Can reserve a range of wx ids
-	string     text_;
-	string     icon_;
-	string     helptext_;
-	string     shortcut_;
-	Type       type_;
-	int        group_;
-	bool       checked_;
-	string     keybind_;
-	CBoolCVar* linked_cvar_;
+	int            wx_id_;
+	int            reserved_ids_; // Can reserve a range of wx ids
+	string         text_;
+	vector<string> icons_;
+	string         helptext_;
+	string         shortcut_;
+	Type           type_;
+	int            group_;
+	bool           checked_;
+	string         keybind_;
+	CBoolCVar*     linked_cvar_;
 
 	// Internal functions
 	bool parse(ParseTreeNode* node);

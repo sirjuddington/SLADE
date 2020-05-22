@@ -50,6 +50,7 @@
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -277,15 +278,13 @@ void MainWindow::setupLayout()
 
 	// File menu
 	auto file_new_menu = new wxMenu("");
-	SAction::fromId("aman_newwad")->addToMenu(file_new_menu, "&Wad Archive");
-	SAction::fromId("aman_newgrp")->addToMenu(file_new_menu, "&Grp Archive");
-	SAction::fromId("aman_newzip")->addToMenu(file_new_menu, "&Zip Archive");
+	SAction::fromId("aman_newarchive")->addToMenu(file_new_menu, "&Archive");
 	SAction::fromId("aman_newmap")->addToMenu(file_new_menu, "&Map");
 	auto file_menu = new wxMenu("");
-	file_menu->AppendSubMenu(file_new_menu, "&New", "Create a new Archive");
+	file_menu->AppendSubMenu(file_new_menu, "&New");
 	SAction::fromId("aman_open")->addToMenu(file_menu);
 	SAction::fromId("aman_opendir")->addToMenu(file_menu);
-	file_menu->AppendSubMenu(panel_archivemanager_->getRecentMenu(), "&Recent Files");
+	file_menu->AppendSubMenu(panel_archivemanager_->recentFilesMenu(), "&Recent Files");
 	file_menu->AppendSeparator();
 	SAction::fromId("aman_save")->addToMenu(file_menu);
 	SAction::fromId("aman_saveas")->addToMenu(file_menu);
@@ -340,8 +339,7 @@ void MainWindow::setupLayout()
 
 	// Create File toolbar
 	auto tbg_file = new SToolBarGroup(toolbar_, "_File");
-	tbg_file->addActionButton("aman_newwad");
-	tbg_file->addActionButton("aman_newzip");
+	tbg_file->addActionButton("aman_newarchive");
 	tbg_file->addActionButton("aman_open");
 	tbg_file->addActionButton("aman_opendir");
 	tbg_file->addActionButton("aman_save");
@@ -353,37 +351,34 @@ void MainWindow::setupLayout()
 
 	// Create Archive toolbar
 	auto tbg_archive = new SToolBarGroup(toolbar_, "_Archive");
-	tbg_archive->addActionButton("arch_newentry");
-	tbg_archive->addActionButton("arch_newdir");
-	tbg_archive->addActionButton("arch_importfiles");
 	tbg_archive->addActionButton("arch_texeditor");
 	tbg_archive->addActionButton("arch_mapeditor");
 	tbg_archive->addActionButton("arch_run");
+	auto* b_maint = tbg_archive->addActionButton(
+		"arch_maintenance", "Maintenance", "wrench", "Archive maintenance/cleanup tools");
+	b_maint->setMenu(ArchivePanel::createMaintenanceMenu());
 	toolbar_->addGroup(tbg_archive);
 
-	// Create Entry toolbar
-	auto tbg_entry = new SToolBarGroup(toolbar_, "_Entry");
-	tbg_entry->addActionButton("arch_entry_rename");
-	tbg_entry->addActionButton("arch_entry_delete");
-	tbg_entry->addActionButton("arch_entry_import");
-	tbg_entry->addActionButton("arch_entry_export");
-	tbg_entry->addActionButton("arch_entry_moveup");
-	tbg_entry->addActionButton("arch_entry_movedown");
-	toolbar_->addGroup(tbg_entry);
+	// Create Boomkarks toolbar
+	auto* tbg_bookmarks = new SToolBarGroup(toolbar_, "_Bookmarks");
+	auto* b_bookmarks   = tbg_bookmarks->addActionButton(
+        "bookmarks", "Bookmarks", "bookmark", "Go to a bookmarked entry");
+	b_bookmarks->setMenu(panel_archivemanager_->bookmarksMenu());
+	toolbar_->addGroup(tbg_bookmarks);
 
 	// Create Base Resource Archive toolbar
 	auto tbg_bra = new SToolBarGroup(toolbar_, "_Base Resource", true);
 	auto brc     = new BaseResourceChooser(tbg_bra);
 	tbg_bra->addCustomControl(brc);
 	tbg_bra->addActionButton("main_setbra", "settings");
-	toolbar_->addGroup(tbg_bra);
+	toolbar_->addGroup(tbg_bra, true);
 
 	// Create Palette Chooser toolbar
 	auto tbg_palette = new SToolBarGroup(toolbar_, "_Palette", true);
 	palette_chooser_ = new PaletteChooser(tbg_palette, -1);
 	palette_chooser_->selectPalette(global_palette);
 	tbg_palette->addCustomControl(palette_chooser_);
-	toolbar_->addGroup(tbg_palette);
+	toolbar_->addGroup(tbg_palette, true);
 
 	// Archive and Entry toolbars are initially disabled
 	toolbar_->enableGroup("_archive", false);
@@ -742,7 +737,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 	// Update toolbar layout (if needed)
 	toolbar_->updateLayout();
 #ifndef __WXMSW__
-	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->minHeight());
+	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->getBarHeight());
 	aui_mgr_->Update();
 #endif
 
@@ -758,7 +753,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 void MainWindow::onToolBarLayoutChanged(wxEvent& e)
 {
 	// Update toolbar size
-	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->minHeight());
+	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->getBarHeight());
 	aui_mgr_->Update();
 }
 

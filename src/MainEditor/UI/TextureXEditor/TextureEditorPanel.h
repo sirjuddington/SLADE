@@ -11,6 +11,7 @@ class CTextureCanvas;
 class CTexture;
 class Palette;
 class SZoomSlider;
+class SToolBar;
 
 class TextureEditorPanel : public wxPanel, SActionHandler
 {
@@ -93,13 +94,8 @@ protected:
 	wxCheckBox*   cb_tex_world_panning_ = nullptr;
 
 	// Texture patches list + related controls
-	ListView* list_patches_        = nullptr;
-	wxButton* btn_patch_add_       = nullptr;
-	wxButton* btn_patch_remove_    = nullptr;
-	wxButton* btn_patch_back_      = nullptr;
-	wxButton* btn_patch_forward_   = nullptr;
-	wxButton* btn_patch_replace_   = nullptr;
-	wxButton* btn_patch_duplicate_ = nullptr;
+	ListView* list_patches_ = nullptr;
+	SToolBar* tb_patches_   = nullptr;
 
 	// Patch controls
 	wxSpinCtrl* spin_patch_left_ = nullptr;

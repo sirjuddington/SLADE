@@ -80,7 +80,7 @@ SAction::SAction(
 	wx_id_{ 0 },
 	reserved_ids_{ reserve_ids },
 	text_{ text },
-	icon_{ icon },
+	icons_{ string{ icon } },
 	helptext_{ helptext },
 	shortcut_{ shortcut },
 	type_{ type },
@@ -88,6 +88,18 @@ SAction::SAction(
 	checked_{ false },
 	linked_cvar_{ nullptr }
 {
+}
+
+// -----------------------------------------------------------------------------
+// Returns the name of the icon to use for this action
+// -----------------------------------------------------------------------------
+string SAction::iconName() const
+{
+	for (const auto& name : icons_)
+		if (icons::iconExists(icons::Any, name))
+			return name;
+
+	return {};
 }
 
 // -----------------------------------------------------------------------------
@@ -149,7 +161,7 @@ void SAction::initWxId()
 	cur_id_ += reserved_ids_;
 }
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Adds this action to [menu]. If [text_override] is not "NO", it will be used
 // instead of the action's text as the menu item label
 // -----------------------------------------------------------------------------
@@ -191,7 +203,7 @@ bool SAction::addToMenu(
 	// Append this action to the menu
 	auto help      = helptext_;
 	int  wid       = wx_id_ + wx_id_offset;
-	auto real_icon = (icon_override == "NO") ? icon_ : icon_override;
+	auto real_icon = (icon_override == "NO") ? iconName() : string{ icon_override };
 	if (!sc.empty())
 		help += fmt::format(" (Shortcut: {})", sc);
 	if (type_ == Type::Normal)
@@ -203,60 +215,6 @@ bool SAction::addToMenu(
 	}
 	else if (type_ == Type::Radio)
 		menu->AppendRadioItem(wid, item_text, help);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds this action to [toolbar]. If [icon_override] is not "NO", it will be
-// used instead of the action's icon as the tool icon
-// -----------------------------------------------------------------------------
-bool SAction::addToToolbar(wxAuiToolBar* toolbar, string_view icon_override, int wx_id_offset) const
-{
-	// Can't add to nonexistant toolbar
-	if (!toolbar)
-		return false;
-
-	// Setup icon
-	auto useicon = icon_;
-	if (icon_override != "NO")
-		useicon = icon_override;
-
-	// Append this action to the toolbar
-	int wid = wx_id_ + wx_id_offset;
-	if (type_ == Type::Normal)
-		toolbar->AddTool(wid, text_, icons::getIcon(icons::General, useicon), helptext_);
-	else if (type_ == Type::Check)
-		toolbar->AddTool(wid, text_, icons::getIcon(icons::General, useicon), helptext_, wxITEM_CHECK);
-	else if (type_ == Type::Radio)
-		toolbar->AddTool(wid, text_, icons::getIcon(icons::General, useicon), helptext_, wxITEM_RADIO);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Adds this action to [toolbar]. If [icon_override] is not "NO", it will be
-// used instead of the action's icon as the tool icon
-// -----------------------------------------------------------------------------
-bool SAction::addToToolbar(wxToolBar* toolbar, string_view icon_override, int wx_id_offset) const
-{
-	// Can't add to nonexistant toolbar
-	if (!toolbar)
-		return false;
-
-	// Setup icon
-	auto useicon = icon_;
-	if (icon_override != "NO")
-		useicon = icon_override;
-
-	// Append this action to the toolbar
-	int wid = wx_id_ + wx_id_offset;
-	if (type_ == Type::Normal)
-		toolbar->AddTool(wid, "", icons::getIcon(icons::General, useicon), helptext_);
-	else if (type_ == Type::Check)
-		toolbar->AddTool(wid, "", icons::getIcon(icons::General, useicon), helptext_, wxITEM_CHECK);
-	else if (type_ == Type::Radio)
-		toolbar->AddTool(wid, "", icons::getIcon(icons::General, useicon), helptext_, wxITEM_RADIO);
 
 	return true;
 }
@@ -280,7 +238,8 @@ bool SAction::parse(ParseTreeNode* node)
 
 		// Icon
 		else if (prop_name == "icon")
-			icon_ = prop->stringValue();
+			for (const auto& icon : prop->stringValues())
+				icons_.push_back(icon);
 
 		// Help Text
 		else if (prop_name == "help_text")

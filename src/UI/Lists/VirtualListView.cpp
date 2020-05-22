@@ -98,6 +98,7 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	Bind(wxEVT_LIST_BEGIN_LABEL_EDIT, &VirtualListView::onLabelEditBegin, this);
 	Bind(wxEVT_LIST_END_LABEL_EDIT, &VirtualListView::onLabelEditEnd, this);
 	Bind(wxEVT_LIST_COL_CLICK, &VirtualListView::onColumnLeftClick, this);
+	Bind(wxEVT_IDLE, &VirtualListView::onIdle, this);
 #ifdef __WXGTK__
 	// Not sure if this is needed any more - causes duplicate selection events in linux
 	// Bind(wxEVT_LIST_ITEM_SELECTED, &VirtualListView::onItemSelected, this);
@@ -186,7 +187,7 @@ void VirtualListView::selectAll()
 	for (int a = 0; a < itemcount; a++)
 		SetItemState(a, 0xFFFF, wxLIST_STATE_SELECTED);
 
-	sendSelectionChangedEvent();
+	//sendSelectionChangedEvent();
 }
 
 // -----------------------------------------------------------------------------
@@ -380,7 +381,7 @@ void VirtualListView::focusOnIndex(long index)
 		selectItem(index);
 		focusItem(index);
 		EnsureVisible(index);
-		sendSelectionChangedEvent();
+		//sendSelectionChangedEvent();
 	}
 }
 
@@ -506,7 +507,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 				selectItem(focus - 1);
 				focusItem(focus - 1);
 				EnsureVisible(focus - 1);
-				sendSelectionChangedEvent();
+				//sendSelectionChangedEvent();
 			}
 		}
 		else if (e.GetModifiers() == wxMOD_NONE)
@@ -521,7 +522,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 				selectItem(focus - 1);
 				focusItem(focus - 1);
 				EnsureVisible(focus - 1);
-				sendSelectionChangedEvent();
+				//sendSelectionChangedEvent();
 			}
 		}
 		search_ = "";
@@ -539,7 +540,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 				selectItem(focus + 1);
 				focusItem(focus + 1);
 				EnsureVisible(focus + 1);
-				sendSelectionChangedEvent();
+				//sendSelectionChangedEvent();
 			}
 		}
 		else if (e.GetModifiers() == wxMOD_NONE)
@@ -554,7 +555,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 				selectItem(focus + 1);
 				focusItem(focus + 1);
 				EnsureVisible(focus + 1);
-				sendSelectionChangedEvent();
+				//sendSelectionChangedEvent();
 			}
 		}
 		search_ = "";
@@ -697,4 +698,13 @@ void VirtualListView::onItemSelected(wxListEvent& e)
 		selection_updating_ = true;
 		CallAfter(&VirtualListView::sendSelectionChangedEvent);
 	}
+}
+
+void VirtualListView::onIdle(wxIdleEvent& e)
+{
+	if (GetSelectedItemCount() != prev_idle_selcount_ || firstSelected() != prev_idle_index_)
+		CallAfter(&VirtualListView::sendSelectionChangedEvent);
+
+	prev_idle_selcount_ = GetSelectedItemCount();
+	prev_idle_index_ = firstSelected();
 }

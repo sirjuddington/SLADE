@@ -12,7 +12,7 @@ class UndoManager;
 class EntryPanel : public wxPanel, protected SActionHandler
 {
 public:
-	EntryPanel(wxWindow* parent, const wxString& id);
+	EntryPanel(wxWindow* parent, const wxString& id, bool frame = true, bool left_toolbar = false);
 	~EntryPanel();
 
 	wxString      name() const { return id_; }
@@ -54,7 +54,8 @@ protected:
 	wxMenu*   menu_custom_ = nullptr;
 	wxString  custom_menu_name_;
 	wxString  custom_toolbar_actions_;
-	SToolBar* toolbar_ = nullptr;
+	SToolBar* toolbar_      = nullptr;
+	SToolBar* toolbar_left_ = nullptr;
 
 	void         setModified(bool c = true);
 	virtual bool loadEntry(ArchiveEntry* entry);
@@ -62,8 +63,8 @@ protected:
 	void         onToolbarButton(wxCommandEvent& e);
 
 private:
-	bool         modified_;
-	wxStaticBox* frame_;
+	bool         modified_ = false;
+	wxStaticBox* frame_    = nullptr;
 	wxString     id_;
 
 	bool handleAction(string_view id) override

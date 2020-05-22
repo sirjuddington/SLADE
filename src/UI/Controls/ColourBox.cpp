@@ -75,12 +75,17 @@ ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode) :
 // -----------------------------------------------------------------------------
 // Alternate ColourBox class constructor
 // -----------------------------------------------------------------------------
-ColourBox::ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha, bool mode) :
-	wxPanel{ parent, id, wxDefaultPosition, wxutil::scaledSize(32, 22), wxNO_BORDER },
+ColourBox::ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha, bool mode, int size) :
+	wxPanel{ parent, id, wxDefaultPosition, wxDefaultSize, wxNO_BORDER },
 	colour_{ col },
 	alpha_{ enable_alpha },
 	altmode_{ mode }
 {
+	if (size > 0)
+		SetInitialSize({ size, size });
+	else
+		SetInitialSize(wxutil::scaledSize(32, 22));
+	
 	// Bind events
 	Bind(wxEVT_PAINT, &ColourBox::onPaint, this);
 	Bind(wxEVT_LEFT_DOWN, &ColourBox::onMouseLeftDown, this);

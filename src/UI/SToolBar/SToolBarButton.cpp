@@ -45,7 +45,6 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, toolbar_button_flat, true, CVar::Flag::Save)
 wxDEFINE_EVENT(wxEVT_STOOLBAR_BUTTON_CLICKED, wxCommandEvent);
 
 
@@ -87,17 +86,13 @@ SToolBarButton::SToolBarButton(wxWindow* parent, const wxString& action, const w
 	}
 
 	// Set size
-	int height = pad_outer_ * 2 + pad_inner_ * 2 + icon_size_;
-	int width  = height + text_width_;
-	wxWindowBase::SetSizeHints(width, height, width, height);
-	wxWindowBase::SetMinSize(wxSize(width, height));
-	SetSize(width, height);
+	updateSize();
 
 	// Load icon
 	if (icon.IsEmpty())
-		icon_ = icons::getIcon(icons::General, action_->iconName(), icon_size_ > 16);
+		icon_ = icons::getIcon(icons::Any, action_->iconName(), icon_size_);
 	else
-		icon_ = icons::getIcon(icons::General, icon.ToStdString(), icon_size_ > 16);
+		icon_ = icons::getIcon(icons::Any, icon.ToStdString(), icon_size_);
 
 	// Add shortcut to help text if it exists
 	wxString sc = action_->shortcutText();
@@ -150,14 +145,10 @@ SToolBarButton::SToolBarButton(
 	text_width_ = show_name ? GetTextExtent(action_name).GetWidth() + pad_inner_ * 2 : 0;
 
 	// Set size
-	int height = pad_outer_ * 2 + pad_inner_ * 2 + icon_size_;
-	int width  = height + text_width_;
-	wxWindowBase::SetSizeHints(width, height, width, height);
-	wxWindowBase::SetMinSize(wxSize(width, height));
-	SetSize(width, height);
+	updateSize();
 
 	// Load icon
-	icon_ = icons::getIcon(icons::General, icon.ToStdString(), icon_size_ > 16);
+	icon_ = icons::getIcon(icons::Any, icon.ToStdString(), icon_size_);
 
 	// Set tooltip
 	if (!show_name)
@@ -172,6 +163,15 @@ SToolBarButton::SToolBarButton(
 	Bind(wxEVT_KILL_FOCUS, &SToolBarButton::onFocus, this);
 	Bind(wxEVT_LEFT_DCLICK, &SToolBarButton::onMouseEvent, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &SToolBarButton::onEraseBackground, this);
+	Bind(wxEVT_IDLE, [this](wxIdleEvent&) { updateState(); });
+}
+
+// -----------------------------------------------------------------------------
+// Returns whether this button is checked
+// -----------------------------------------------------------------------------
+bool SToolBarButton::isChecked() const
+{
+	return action_ ? action_->isChecked() : checked_;
 }
 
 // -----------------------------------------------------------------------------
@@ -180,7 +180,63 @@ SToolBarButton::SToolBarButton(
 void SToolBarButton::setIcon(const wxString& icon)
 {
 	if (!icon.IsEmpty())
-		icon_ = icons::getIcon(icons::General, icon.ToStdString(), icon_size_ > 16);
+		icon_ = icons::getIcon(icons::Any, icon.ToStdString(), icon_size_);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the button's checked state (in the associated SAction if any)
+// -----------------------------------------------------------------------------
+void SToolBarButton::setChecked(bool checked)
+{
+	if (action_)
+		action_->setChecked(checked);
+	else
+	{
+		checked_ = checked;
+		Update();
+		Refresh();
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Sets dropdown menu for the button
+// -----------------------------------------------------------------------------
+void SToolBarButton::setMenu(wxMenu* menu, bool delete_existing)
+{
+	if (menu_dropdown_ && delete_existing)
+		delete menu_dropdown_;
+
+	menu_dropdown_ = menu;
+	SetToolTip("");
+	updateSize();
+}
+
+// -----------------------------------------------------------------------------
+// Checks if the mouseover state of the button needs updating.
+// If it does, the button is refreshed and this returns true
+// -----------------------------------------------------------------------------
+bool SToolBarButton::updateState()
+{
+	auto prev_state = state_;
+
+	if (GetScreenRect().Contains(wxGetMousePosition()) && IsEnabled())
+	{
+		if (wxGetMouseState().LeftIsDown())
+			state_ = State::MouseDown;
+		else
+			state_ = State::MouseOver;
+	}
+	else
+		state_ = State::Normal;
+
+	if (prev_state != state_)
+	{
+		Update();
+		Refresh();
+		return true;
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -201,6 +257,21 @@ void SToolBarButton::sendClickedEvent()
 	ev.SetEventObject(this);
 	ev.SetString(action_id_);
 	ProcessWindowEvent(ev);
+}
+
+// -----------------------------------------------------------------------------
+// Updates the buttons size
+// -----------------------------------------------------------------------------
+void SToolBarButton::updateSize()
+{
+	int height = pad_outer_ * 2 + pad_inner_ * 2 + icon_size_;
+	int width  = height + text_width_;
+	if (menu_dropdown_)
+		width += ui::scalePx(10);
+
+	wxWindowBase::SetSizeHints(width, height, width, height);
+	wxWindowBase::SetMinSize(wxSize(width, height));
+	SetSize(width, height);
 }
 
 
@@ -244,63 +315,42 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	int  height   = icon_size_ + pad_inner_ * 2;
 	int  width    = height + text_width_;
 	auto scale_px = ui::scaleFactor();
+	if (menu_dropdown_)
+		width += 10 * scale_px;
 
 	// Draw toggled border/background
-	if (action_ && action_->isChecked())
+	if (isChecked())
 	{
-		// Use greyscale version of hilight colour
-		uint8_t r = col_hilight.Red();
-		uint8_t g = col_hilight.Green();
-		uint8_t b = col_hilight.Blue();
-		wxColour::MakeGrey(&r, &g, &b);
-		wxColour col_toggle(r, g, b, 255);
-		wxColour col_trans(r, g, b, 150);
+		//// Use greyscale version of hilight colour
+		// uint8_t r = col_hilight.Red();
+		// uint8_t g = col_hilight.Green();
+		// uint8_t b = col_hilight.Blue();
+		// wxColour::MakeGrey(&r, &g, &b);
+		// wxColour col_toggle(r, g, b, 255);
+		// wxColour col_trans(r, g, b, 150);
 
-		if (toolbar_button_flat)
-		{
-			// Draw border
-			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
-			gc->SetBrush(col_trans);
-			gc->SetPen(wxPen(drawing::darkColour(col_toggle, 5.0f), scale_px));
-			gc->DrawRectangle(pad_outer_, pad_outer_, width, height);
-		}
-		else
-		{
-			// Draw border
-			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
-			gc->SetBrush(col_trans);
-			gc->SetPen(wxPen(col_hilight, scale_px));
-			gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width, height, 2 * scale_px);
-		}
+		// Draw border
+		// col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
+		gc->SetBrush(*wxTRANSPARENT_BRUSH);
+		gc->SetPen(wxPen(col_hilight, scale_px));
+		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width - 1., height - 1., 1 * scale_px);
 	}
 
 	// Draw border on mouseover
 	if (state_ == State::MouseOver || state_ == State::MouseDown)
 	{
 		// Determine transparency level
-		int trans = 160;
+		int trans = 80;
 		if (state_ == State::MouseDown)
-			trans = 200;
+			trans = 160;
 
 		// Create semitransparent hilight colour
 		wxColour col_trans(col_hilight.Red(), col_hilight.Green(), col_hilight.Blue(), trans);
 
-		if (toolbar_button_flat)
-		{
-			// Draw border
-			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
-			gc->SetBrush(col_trans);
-			gc->SetPen(wxPen(col_hilight, scale_px));
-			gc->DrawRectangle(pad_outer_, pad_outer_, width, height);
-		}
-		else
-		{
-			// Draw border
-			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
-			gc->SetBrush(col_trans);
-			gc->SetPen(wxPen(col_hilight));
-			gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width, height, 2 * scale_px);
-		}
+		// Draw border
+		gc->SetBrush(col_trans);
+		gc->SetPen(*wxTRANSPARENT_PEN);
+		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width, height, 1 * scale_px);
 	}
 
 	if (icon_.IsOk())
@@ -332,6 +382,18 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		dc.DrawText(name, left, top);
 	}
 
+	if (menu_dropdown_)
+	{
+		gc->SetBrush(*wxTRANSPARENT_BRUSH);
+		gc->SetPen(wxPen(dc.GetTextForeground(), 1));
+		wxPoint2DDouble points[] = {
+			wxPoint2DDouble(width - 9. * scale_px, height / 2. - 1.),
+			wxPoint2DDouble(width - 6. * scale_px, height / 2. + 2.),
+			wxPoint2DDouble(width - 3. * scale_px, height / 2. - 1.),
+		};
+		gc->DrawLines(3, points);
+	}
+
 	delete gc;
 }
 
@@ -345,9 +407,6 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 	// Mouse enter
 	if (e.GetEventType() == wxEVT_ENTER_WINDOW)
 	{
-		// Set state to mouseover
-		state_ = State::MouseOver;
-
 		// Set status bar help text
 		if (parent_window && parent_window->GetStatusBar())
 			parent_window->SetStatusText(help_text_);
@@ -356,40 +415,37 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 	// Mouse leave
 	if (e.GetEventType() == wxEVT_LEAVE_WINDOW)
 	{
-		// Set state to normal
-		state_ = State::Normal;
-
 		// Clear status bar help text
 		if (parent_window && parent_window->GetStatusBar())
 			parent_window->SetStatusText("");
 	}
 
 	// Left button down
-	if (e.GetEventType() == wxEVT_LEFT_DOWN || e.GetEventType() == wxEVT_LEFT_DCLICK)
-	{
-		state_ = State::MouseDown;
-
-		if (action_)
-		{
-			if (action_->isRadio())
-				GetParent()->Refresh();
-			SActionHandler::doAction(action_->id());
-		}
-		else
-			sendClickedEvent();
-	}
+	if (e.GetEventType() == wxEVT_LEFT_DOWN && menu_dropdown_)
+		PopupMenu(menu_dropdown_, 0, GetSize().y);
 
 	// Left button up
-	if (e.GetEventType() == wxEVT_LEFT_UP)
+	if (e.GetEventType() == wxEVT_LEFT_UP && !menu_dropdown_)
 	{
-		state_ = State::MouseOver;
+		if (state_ == State::MouseDown)
+		{
+			if (action_)
+			{
+				if (action_->isRadio())
+					GetParent()->Refresh();
+
+				SActionHandler::doAction(action_->id());
+			}
+			else
+				sendClickedEvent();
+		}
 
 		// Clear status bar help text
 		if (parent_window && parent_window->GetStatusBar())
 			parent_window->SetStatusText("");
 	}
 
-	Refresh();
+	updateState();
 
 	// e.Skip();
 }

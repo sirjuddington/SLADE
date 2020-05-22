@@ -38,6 +38,8 @@
 #include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/SZoomSlider.h"
+#include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -165,12 +167,6 @@ void TextureEditorPanel::setupLayout()
 	spin_tex_height_->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onTexHeightChanged, this);
 	list_patches_->Bind(wxEVT_LIST_ITEM_SELECTED, &TextureEditorPanel::onPatchListSelect, this);
 	list_patches_->Bind(wxEVT_LIST_ITEM_DESELECTED, &TextureEditorPanel::onPatchListDeSelect, this);
-	btn_patch_add_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { addPatch(); });
-	btn_patch_remove_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { removePatch(); });
-	btn_patch_back_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { patchBack(); });
-	btn_patch_forward_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { patchForward(); });
-	btn_patch_replace_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { replacePatch(); });
-	btn_patch_duplicate_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { duplicatePatch(); });
 	spin_patch_left_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onPatchPositionXChanged, this);
 	spin_patch_top_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onPatchPositionYChanged, this);
 	spin_patch_left_->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onPatchPositionXChanged, this);
@@ -297,36 +293,21 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	list_patches_ = new ListView(panel, -1);
 	list_patches_->enableSizeUpdate(false);
 	list_patches_->SetInitialSize(wxutil::scaledSize(100, -1));
-	framesizer->Add(list_patches_, 1, wxEXPAND | wxALL, ui::pad());
+	framesizer->Add(list_patches_, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::pad());
 
-	// Add patch buttons
-	auto vbox = new wxBoxSizer(wxVERTICAL);
-	framesizer->Add(vbox, 0, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
-
-	// 'Add' button
-	btn_patch_add_ = new SIconButton(panel, "patch_add", "Add new patch to texture");
-	vbox->Add(btn_patch_add_, 0, wxBOTTOM, ui::pad());
-
-	// 'Remove' button
-	btn_patch_remove_ = new SIconButton(panel, "patch_remove", "Remove selected patch(es) from texture");
-	vbox->Add(btn_patch_remove_, 0, wxBOTTOM, ui::pad());
-
-	// 'Back' button
-	btn_patch_back_ = new SIconButton(panel, "patch_back", "Send selected patch(es) back");
-	vbox->Add(btn_patch_back_, 0, wxBOTTOM, ui::pad());
-
-	// 'Forward' button
-	btn_patch_forward_ = new SIconButton(panel, "patch_forward", "Bring selected patch(es) forward");
-	vbox->Add(btn_patch_forward_, 0, wxBOTTOM, ui::pad());
-
-	// 'Replace' button
-	btn_patch_replace_ = new SIconButton(panel, "patch_replace", "Replace selected patch(es)");
-	vbox->Add(btn_patch_replace_, 0, wxBOTTOM, ui::pad());
-
-	// 'Duplicate' button
-	btn_patch_duplicate_ = new SIconButton(panel, "patch_duplicate", "Duplicate selected patch(es)");
-	vbox->Add(btn_patch_duplicate_, 0);
-
+	// Patches toolbar
+	tb_patches_ = new SToolBar(panel, false, wxVERTICAL);
+	tb_patches_->addActionGroup(
+		"_Patch",
+		{ "txed_patch_add",
+		  "txed_patch_remove",
+		  "txed_patch_back",
+		  "txed_patch_forward",
+		  "txed_patch_replace",
+		  "txed_patch_duplicate" });
+	tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
+	tb_patches_->findActionButton("txed_patch_add")->Enable();
+	framesizer->Add(tb_patches_, 0, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
 
 
 	// -- Patch Properties frame --
@@ -1141,6 +1122,9 @@ void TextureEditorPanel::onTexWorldPanningChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void TextureEditorPanel::onPatchListSelect(wxListEvent& e)
 {
+	if (list_patches_->GetSelectedItemCount() > 0)
+		tb_patches_->group("_Patch")->setAllButtonsEnabled(true);
+
 	// Select the patch on the texture canvas
 	tex_canvas_->selectPatch(e.GetIndex());
 
@@ -1154,6 +1138,12 @@ void TextureEditorPanel::onPatchListSelect(wxListEvent& e)
 // -----------------------------------------------------------------------------
 void TextureEditorPanel::onPatchListDeSelect(wxListEvent& e)
 {
+	if (list_patches_->GetSelectedItemCount() == 0)
+	{
+		tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
+		tb_patches_->findActionButton("txed_patch_add")->Enable();
+	}
+
 	// Deselect the patch on the texture canvas
 	tex_canvas_->deSelectPatch(e.GetIndex());
 

@@ -74,7 +74,7 @@ EXTERN_CVAR(Int, last_tint_amount)
 // -----------------------------------------------------------------------------
 // GfxEntryPanel class constructor
 // -----------------------------------------------------------------------------
-GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
+GfxEntryPanel::GfxEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent, "gfx", frame, true)
 {
 	// Init variables
 	prev_translation_.addRange(TransRange::Type::Palette, 0);
@@ -177,7 +177,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx")
 	fillBrushMenu(menu_brushes_);
 
 	// Custom toolbar
-	setupToolbar();
+	setupToolbars();
 
 	// Bind Events
 	cb_colour_->Bind(wxEVT_COLOURBOX_CHANGED, &GfxEntryPanel::onPaintColourChanged, this);
@@ -256,7 +256,7 @@ bool GfxEntryPanel::saveEntry()
 		return false;
 
 	// Set offsets
-	auto image = this->image();
+	auto* image = this->image();
 	image->setXOffset(spin_xoffset_->GetValue());
 	image->setYOffset(spin_yoffset_->GetValue());
 
@@ -264,7 +264,7 @@ bool GfxEntryPanel::saveEntry()
 	bool ok = true;
 	if (image_data_modified_)
 	{
-		auto format = image->format();
+		auto* format = image->format();
 
 		wxString error = "";
 		ok             = false;
@@ -294,7 +294,7 @@ bool GfxEntryPanel::saveEntry()
 			entry->setState(ArchiveEntry::State::Modified);
 
 			// Re-detect type
-			auto oldtype = entry->type();
+			auto* oldtype = entry->type();
 			EntryType::detectEntryType(*entry);
 
 			// Update extension if type changed
@@ -329,49 +329,62 @@ bool GfxEntryPanel::saveEntry()
 // -----------------------------------------------------------------------------
 // Adds controls to the entry panel toolbar
 // -----------------------------------------------------------------------------
-void GfxEntryPanel::setupToolbar()
+void GfxEntryPanel::setupToolbars()
 {
-	// Zoom
-	auto g_zoom  = new SToolBarGroup(toolbar_, "Zoom");
-	slider_zoom_ = new SZoomSlider(g_zoom, gfx_canvas_);
-	g_zoom->addCustomControl(slider_zoom_);
-	toolbar_->addGroup(g_zoom);
+	// --- Top Toolbar ---
 
-	// Editing operations
-	auto g_edit = new SToolBarGroup(toolbar_, "Editing");
-	g_edit->addActionButton("pgfx_settrans", "");
-	cb_colour_ = new ColourBox(g_edit, -1, ColRGBA::BLACK, false, true);
+	// Brush options
+	auto* g_brush = new SToolBarGroup(toolbar_, "Brush", true);
+	button_brush_ = g_brush->addActionButton("pgfx_setbrush");
+	cb_colour_    = new ColourBox(g_brush, -1, ColRGBA::BLACK, false, true, SToolBar::scaledButtonSize());
 	cb_colour_->setPalette(&gfx_canvas_->palette());
-	button_brush_ = g_edit->addActionButton("pgfx_setbrush", "");
-	g_edit->addCustomControl(cb_colour_);
-	g_edit->addActionButton("pgfx_drag", "");
-	g_edit->addActionButton("pgfx_draw", "");
-	g_edit->addActionButton("pgfx_erase", "");
-	g_edit->addActionButton("pgfx_magic", "");
-	SAction::fromId("pgfx_drag")->setChecked(); // Drag offsets by default
-	toolbar_->addGroup(g_edit);
+	cb_colour_->SetToolTip("Set brush colour");
+	g_brush->addCustomControl(cb_colour_);
+	g_brush->addActionButton("pgfx_settrans", "");
+	toolbar_->addGroup(g_brush);
+	g_brush->hide();
 
 	// Image operations
-	auto g_image = new SToolBarGroup(toolbar_, "Image");
+	auto* g_image = new SToolBarGroup(toolbar_, "Image");
 	g_image->addActionButton("pgfx_mirror", "");
 	g_image->addActionButton("pgfx_flip", "");
 	g_image->addActionButton("pgfx_rotate", "");
 	g_image->addActionButton("pgfx_crop", "");
-	g_image->addActionButton("pgfx_convert", "");
 	toolbar_->addGroup(g_image);
 
 	// Colour operations
-	auto g_colour = new SToolBarGroup(toolbar_, "Colour");
+	auto* g_colour = new SToolBarGroup(toolbar_, "Colour");
 	g_colour->addActionButton("pgfx_remap", "");
 	g_colour->addActionButton("pgfx_colourise", "");
 	g_colour->addActionButton("pgfx_tint", "");
 	toolbar_->addGroup(g_colour);
 
-	// Misc operations
-	auto g_png = new SToolBarGroup(toolbar_, "PNG");
-	g_png->addActionButton("pgfx_pngopt", "");
-	toolbar_->addGroup(g_png);
-	toolbar_->enableGroup("PNG", false);
+	// File operations
+	auto* g_file = new SToolBarGroup(toolbar_, "File");
+	g_file->addActionButton("pgfx_convert", "");
+	g_file->addActionButton("pgfx_pngopt", "")->Enable(false);
+	toolbar_->addGroup(g_file);
+
+	// Zoom
+	auto g_zoom  = new SToolBarGroup(toolbar_, "Zoom");
+	slider_zoom_ = new SZoomSlider(g_zoom, gfx_canvas_);
+	g_zoom->addCustomControl(slider_zoom_);
+	toolbar_->addGroup(g_zoom, true);
+
+
+
+	// --- Left Toolbar ---
+
+	// Tool
+	auto* g_tool = new SToolBarGroup(toolbar_left_, "Tool");
+	g_tool->addActionButton("tool_drag", "Drag offsets", "gfx_drag", "Drag image to change its offsets")
+		->setChecked(true);
+	g_tool->addActionButton("tool_draw", "Drag pixels", "gfx_draw", "Draw on the image");
+	g_tool->addActionButton("tool_erase", "Erase pizels", "gfx_erase", "Erase pixels from the image");
+	g_tool->addActionButton(
+		"tool_translate", "Translate pixels", "gfx_translate", "Apply a translation to pixels of the image");
+	g_tool->Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &GfxEntryPanel::onToolSelected, this);
+	toolbar_left_->addGroup(g_tool);
 }
 
 // -----------------------------------------------------------------------------
@@ -425,7 +438,7 @@ bool GfxEntryPanel::extractAll() const
 	// Remember where we are
 	int imgindex = image()->index();
 
-	auto parent = entry->parent();
+	auto* parent = entry->parent();
 	if (parent == nullptr)
 		return false;
 
@@ -502,7 +515,7 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 
 		// Add 'Optimize PNG' option
 		menu_custom_->Enable(menu_gfxep_pngopt, true);
-		toolbar_->enableGroup("PNG", true);
+		toolbar_->findActionButton("pgfx_pngopt")->Enable(true);
 	}
 	else
 	{
@@ -512,7 +525,7 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 		menu_custom_->Check(menu_gfxep_trns, false);
 		menu_custom_->Enable(menu_gfxep_pngopt, false);
 		menu_custom_->Enable(menu_archgfx_exportpng, true);
-		toolbar_->enableGroup("PNG", false);
+		toolbar_->findActionButton("pgfx_pngopt")->Enable(false);
 	}
 
 	// Set multi-image format stuff thingies
@@ -551,7 +564,7 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 wxString GfxEntryPanel::statusString()
 {
 	// Setup status string
-	auto     image  = this->image();
+	auto*    image  = this->image();
 	wxString status = wxString::Format("%dx%d", image->width(), image->height());
 
 	// Colour format
@@ -612,7 +625,7 @@ GfxCanvas::View GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
 	if (!is_sprite && !is_png)
 		return GfxCanvas::View::Default;
 
-	auto img = image();
+	auto* img = image();
 	if (is_png && img->offset().x == 0 && img->offset().y == 0)
 		return GfxCanvas::View::Default;
 
@@ -708,35 +721,6 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		button_brush_->setIcon(strutil::afterFirst(id, '_'));
 	}
 
-	// Editing - drag mode
-	else if (id == "pgfx_drag")
-	{
-		editing_ = false;
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::None);
-	}
-
-	// Editing - draw mode
-	else if (id == "pgfx_draw")
-	{
-		editing_ = true;
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Paint);
-		gfx_canvas_->setPaintColour(cb_colour_->colour());
-	}
-
-	// Editing - erase mode
-	else if (id == "pgfx_erase")
-	{
-		editing_ = true;
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Erase);
-	}
-
-	// Editing - translate mode
-	else if (id == "pgfx_magic")
-	{
-		editing_ = true;
-		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Translate);
-	}
-
 	// Editing - set translation
 	else if (id == "pgfx_settrans")
 	{
@@ -823,7 +807,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	else if (id == "pgfx_remap")
 	{
 		// Create translation editor dialog
-		auto                    pal = maineditor::currentPalette();
+		auto*                   pal = maineditor::currentPalette();
 		TranslationEditorDialog ted(theMainWindow, *pal, " Colour Remap", &gfx_canvas_->image());
 
 		// Create translation to edit
@@ -848,7 +832,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	// Colourise
 	else if (id == "pgfx_colourise" && entry)
 	{
-		auto               pal = maineditor::currentPalette();
+		auto*              pal = maineditor::currentPalette();
 		GfxColouriseDialog gcd(theMainWindow, entry.get(), *pal);
 		gcd.setColour(last_colour);
 
@@ -873,7 +857,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	// Tint
 	else if (id == "pgfx_tint" && entry)
 	{
-		auto          pal = maineditor::currentPalette();
+		auto*         pal = maineditor::currentPalette();
 		GfxTintDialog gtd(theMainWindow, entry.get(), *pal);
 		gtd.setValues(last_tint_colour, last_tint_amount);
 
@@ -899,8 +883,8 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	// Crop
 	else if (id == "pgfx_crop")
 	{
-		auto          image = this->image();
-		auto          pal   = maineditor::currentPalette();
+		auto*         image = this->image();
+		auto*         pal   = maineditor::currentPalette();
 		GfxCropDialog gcd(theMainWindow, image, pal);
 
 		// Show crop dialog
@@ -978,8 +962,8 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		if (gcd.itemModified(0))
 		{
 			// Get image and conversion info
-			auto image  = gcd.itemImage(0);
-			auto format = gcd.itemFormat(0);
+			auto* image  = gcd.itemImage(0);
+			auto* format = gcd.itemFormat(0);
 
 			// Write converted image back to entry
 			format->saveImage(*image, entry_data_, gcd.itemPalette(0));
@@ -1164,9 +1148,9 @@ void GfxEntryPanel::onGfxPixelsChanged(wxEvent& e)
 // -----------------------------------------------------------------------------
 void GfxEntryPanel::onCurImgChanged(wxCommandEvent& e)
 {
-	int  num      = gfx_canvas_->image().size();
-	auto entry    = entry_.lock().get();
-	int  newindex = spin_curimg_->GetValue() - 1;
+	int   num      = gfx_canvas_->image().size();
+	auto* entry    = entry_.lock().get();
+	int   newindex = spin_curimg_->GetValue() - 1;
 	if (num > 1 && entry && newindex != cur_index_)
 	{
 		loadEntry(entry, newindex);
@@ -1210,6 +1194,56 @@ void GfxEntryPanel::onColourPicked(wxEvent& e)
 	cb_colour_->setColour(gfx_canvas_->paintColour());
 }
 
+// -----------------------------------------------------------------------------
+// Called when a button is clicked on the tools toolbar group
+// -----------------------------------------------------------------------------
+void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
+{
+	auto id = e.GetString();
+
+	toolbar_left_->group("Tool")->setAllButtonsChecked(false);
+
+	// Editing - drag mode
+	if (id == "tool_drag")
+	{
+		editing_ = false;
+		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::None);
+		toolbar_->group("Brush")->hide();
+		toolbar_left_->findActionButton("tool_drag")->setChecked(true);
+		toolbar_->updateLayout();
+	}
+
+	// Editing - draw mode
+	else if (id == "tool_draw")
+	{
+		editing_ = true;
+		toolbar_->group("Brush")->hide(false);
+		toolbar_left_->findActionButton("tool_draw")->setChecked(true);
+		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Paint);
+		gfx_canvas_->setPaintColour(cb_colour_->colour());
+		toolbar_->updateLayout();
+	}
+
+	// Editing - erase mode
+	else if (id == "tool_erase")
+	{
+		editing_ = true;
+		toolbar_->group("Brush")->hide(false);
+		toolbar_left_->findActionButton("tool_erase")->setChecked(true);
+		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Erase);
+		toolbar_->updateLayout();
+	}
+
+	// Editing - translate mode
+	else if (id == "tool_translate")
+	{
+		editing_ = true;
+		toolbar_->group("Brush")->hide(false);
+		toolbar_left_->findActionButton("tool_translate")->setChecked(true);
+		gfx_canvas_->setEditingMode(GfxCanvas::EditMode::Translate);
+		toolbar_->updateLayout();
+	}
+}
 
 
 // -----------------------------------------------------------------------------
@@ -1227,7 +1261,7 @@ namespace
 {
 GfxEntryPanel* getCurrentGfxPanel()
 {
-	auto panel = maineditor::currentEntryPanel();
+	auto* panel = maineditor::currentEntryPanel();
 	if (panel)
 	{
 		if (!(panel->name().CmpNoCase("gfx")))
@@ -1264,19 +1298,19 @@ CONSOLE_COMMAND(rotate, 1, true)
 		return;
 	}
 
-	auto foo = maineditor::currentArchivePanel();
+	auto* foo = maineditor::currentArchivePanel();
 	if (!foo)
 	{
 		log::info(1, "No active panel.");
 		return;
 	}
-	auto bar = foo->currentEntry();
+	auto* bar = foo->currentEntry();
 	if (!bar)
 	{
 		log::info(1, "No active entry.");
 		return;
 	}
-	auto meep = getCurrentGfxPanel();
+	auto* meep = getCurrentGfxPanel();
 	if (!meep)
 	{
 		log::info(1, "No image selected.");
@@ -1284,7 +1318,7 @@ CONSOLE_COMMAND(rotate, 1, true)
 	}
 
 	// Get current entry
-	auto entry = maineditor::currentEntry();
+	auto* entry = maineditor::currentEntry();
 
 	if (meep->image())
 	{
@@ -1309,19 +1343,19 @@ CONSOLE_COMMAND(mirror, 1, true)
 		log::error(wxString::Format("Invalid parameter: %s is not a known value.", bluh.mb_str()));
 		return;
 	}
-	auto foo = maineditor::currentArchivePanel();
+	auto* foo = maineditor::currentArchivePanel();
 	if (!foo)
 	{
 		log::info(1, "No active panel.");
 		return;
 	}
-	auto bar = foo->currentEntry();
+	auto* bar = foo->currentEntry();
 	if (!bar)
 	{
 		log::info(1, "No active entry.");
 		return;
 	}
-	auto meep = getCurrentGfxPanel();
+	auto* meep = getCurrentGfxPanel();
 	if (!meep)
 	{
 		log::info(1, "No image selected.");
@@ -1343,19 +1377,19 @@ CONSOLE_COMMAND(crop, 4, true)
 	if (strutil::toInt(args[0], x1) && strutil::toInt(args[1], y1) && strutil::toInt(args[2], x2)
 		&& strutil::toInt(args[3], y2))
 	{
-		auto foo = maineditor::currentArchivePanel();
+		auto* foo = maineditor::currentArchivePanel();
 		if (!foo)
 		{
 			log::info(1, "No active panel.");
 			return;
 		}
-		auto meep = getCurrentGfxPanel();
+		auto* meep = getCurrentGfxPanel();
 		if (!meep)
 		{
 			log::info(1, "No image selected.");
 			return;
 		}
-		auto bar = foo->currentEntry();
+		auto* bar = foo->currentEntry();
 		if (!bar)
 		{
 			log::info(1, "No active entry.");
@@ -1374,19 +1408,19 @@ CONSOLE_COMMAND(crop, 4, true)
 
 CONSOLE_COMMAND(adjust, 0, true)
 {
-	auto foo = maineditor::currentArchivePanel();
+	auto* foo = maineditor::currentArchivePanel();
 	if (!foo)
 	{
 		log::info(1, "No active panel.");
 		return;
 	}
-	auto meep = getCurrentGfxPanel();
+	auto* meep = getCurrentGfxPanel();
 	if (!meep)
 	{
 		log::info(1, "No image selected.");
 		return;
 	}
-	auto bar = foo->currentEntry();
+	auto* bar = foo->currentEntry();
 	if (!bar)
 	{
 		log::info(1, "No active entry.");
@@ -1404,19 +1438,19 @@ CONSOLE_COMMAND(adjust, 0, true)
 
 CONSOLE_COMMAND(mirrorpad, 0, true)
 {
-	auto foo = maineditor::currentArchivePanel();
+	auto* foo = maineditor::currentArchivePanel();
 	if (!foo)
 	{
 		log::info(1, "No active panel.");
 		return;
 	}
-	auto meep = getCurrentGfxPanel();
+	auto* meep = getCurrentGfxPanel();
 	if (!meep)
 	{
 		log::info(1, "No image selected.");
 		return;
 	}
-	auto bar = foo->currentEntry();
+	auto* bar = foo->currentEntry();
 	if (!bar)
 	{
 		log::info(1, "No active entry.");
@@ -1434,19 +1468,19 @@ CONSOLE_COMMAND(mirrorpad, 0, true)
 
 CONSOLE_COMMAND(imgconv, 0, true)
 {
-	auto foo = maineditor::currentArchivePanel();
+	auto* foo = maineditor::currentArchivePanel();
 	if (!foo)
 	{
 		log::info(1, "No active panel.");
 		return;
 	}
-	auto bar = foo->currentEntry();
+	auto* bar = foo->currentEntry();
 	if (!bar)
 	{
 		log::info(1, "No active entry.");
 		return;
 	}
-	auto meep = getCurrentGfxPanel();
+	auto* meep = getCurrentGfxPanel();
 	if (!meep)
 	{
 		log::info(1, "No image selected.");

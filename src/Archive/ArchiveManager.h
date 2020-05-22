@@ -67,8 +67,10 @@ public:
 	bool          deleteBookmark(unsigned index);
 	bool          deleteBookmarksInArchive(Archive* archive);
 	bool          deleteBookmarksInDir(ArchiveDir* node);
+	void          deleteAllBookmarks();
 	ArchiveEntry* getBookmark(unsigned index);
 	unsigned      numBookmarks() const { return bookmarks_.size(); }
+	bool          isBookmarked(ArchiveEntry* entry);
 
 	// Signals
 	struct Signals
