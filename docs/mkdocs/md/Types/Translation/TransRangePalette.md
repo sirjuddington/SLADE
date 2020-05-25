@@ -1,5 +1,3 @@
-<article-head>TransRangePalette</article-head>
-
 A custom translation range that maps directly between palette indices. See [Translation](https://zdoom.org/wiki/Translation) for more info.
 
 ### Inherits <type>[TransRange](TransRange.md)</type>  
@@ -17,6 +15,6 @@ All properties and functions of <type>[TransRange](TransRange.md)</type> can be 
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[Translation.AddPaletteRange](Translation.md#addpaletterange)</code>

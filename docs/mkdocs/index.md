@@ -1,12 +1,8 @@
-<article-head>SLADE Scripting Documentation</article-head>
+# SLADE Scripting Documentation
 
-Here is the documentation for the SLADE Lua scripting system.
+Here is the documentation for the SLADE Lua scripting system. To start with it is probably best to take a look at the examples to get an idea of how things work, since currently there aren't any real tutorials or basic 'how-to' articles (something like that may come later).
 
-## Notes
-
-### Running Scripts
-
-State is not presereved after running a script - eg. a global variable defined in a script will not be available next time a script is run
+## Documentation Conventions
 
 ### Type Properties
 
@@ -47,3 +43,23 @@ SomeType.SomeFunction(object, param1, param2)
 ```
 
 It is generally recommended to use the `:` format in these cases, as it is shorter and less error-prone.
+
+### Multiple Return Values
+
+Lua allows functions to return multiple values, which is something some SLADE scripting functions take advantage of.
+
+An example of this is <code>[Colour.AsHSL](md/Types/Colour.md#ashsl)</code>. The values returned can be retrieved as per the example below:
+
+```lua
+local red = Colour.new(255, 0, 0)
+local h, s, l = red:AsHSL()
+
+-- Prints "Red HSL: 0.0, 1.0, 0.5"
+App.LogMessage(string.format("Red HSL: %1.1f, %1.1f, %1.1f", h, s, l))
+```
+
+## Notes
+
+### Running Scripts
+
+State is not presereved after running a script - eg. a global variable defined in a script will not be available next time a script is run.

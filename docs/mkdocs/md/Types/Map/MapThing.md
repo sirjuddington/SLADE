@@ -1,5 +1,3 @@
-<article-head>MapThing</article-head>
-
 Represents a map thing (ie. an item/actor on the map).
 
 ### Inherits <type>[MapObject](MapObject.md)</type>  
@@ -19,17 +17,30 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
+**See:**
+
+* <code>[Map.things](Map.md#properties)</code>
+
 ## Functions
 
+### Overview
+
+#### Info
+
+<fdef>[Flag](#flag)(<arg>flagName</arg>) -> <type>boolean</type></fdef>
+
+#### Modification
+
+<fdef>[SetAnglePoint](#setanglepoint)(<arg>position</arg>)</fdef>
+
+---
 ### Flag
 
-<fdef>function <type>MapThing</type>.<func>Flag</func>(<arg>*self*</arg>, <arg>flagName</arg>)</fdef>
-
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>flagName</arg> (<type>string</type>): The name of the flag to check
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if the given flag is set
 
@@ -52,10 +63,8 @@ If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly 
 ---
 ### SetAnglePoint
 
-<fdef>function <type>MapThing</type>.<func>SetAnglePoint</func>(<arg>*self*</arg>, <arg>position</arg>)</fdef>
-
 Sets the <prop>angle</prop> property so that the thing is facing towards <arg>position</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>position</arg> (<type>[Point](../Point.md)</type>): Position in map coordinates

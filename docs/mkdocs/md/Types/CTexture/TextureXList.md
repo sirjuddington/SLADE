@@ -1,5 +1,3 @@
-<article-head>TextureXList</article-head>
-
 The <type>TextureXList</type> type is a list of composite textures (<type>[CTexture](CTexture.md)</type>), which can be in various formats.
 
 ## Constants
@@ -22,56 +20,79 @@ The <type>TextureXList</type> type is a list of composite textures (<type>[CText
 
 ## Constructors
 
-<fdef>function <type>TextureXList</type>.<func>new</func>()</fdef>
+<code><type>TextureXList</type>.<func>new</func>()</code>
 
 Creates a new, empty list with <prop>format</prop> set to `FORMAT_NORMAL`.
 
 ---
 
-<fdef>function <type>TextureXList</type>.<func>new</func>(<arg>format</arg>)</fdef>
+<code><type>TextureXList</type>.<func>new</func>(<arg>format</arg>)</code>
 
 Creates a new, empty list of the given <arg>format</arg>.
 
-Parameters
+#### Parameters
 
 * <arg>format</arg> (<type>number</type>): The format of the list (see `FORMAT_` constants)
 
 
-## Functions - General
+## Functions
 
+### Overview
+
+#### General
+
+<fdef>[Texture](#texture)(<arg>name</arg>) -> <type>[CTexture](CTexture.md)</type></fdef>
+<fdef>[TextureIndex](#textureindex)(<arg>name</arg>) -> <type>number</type></fdef>
+<fdef>[ConvertToTEXTURES](#converttotextures)() -> <type>boolean</type></fdef>
+<fdef>[FindErrors](#finderrors)() -> <type>boolean</type></fdef>
+
+#### Texture List Modification
+
+<fdef>[AddTexture](#addtexture)(<arg>name</arg>, <arg>[extended]</arg>, <arg>[position]</arg>) -> <type>[CTexture](CTexture.md)</type></fdef>
+<fdef>[RemoveTexture](#removetexture)(<arg>position</arg>)</fdef>
+<fdef>[SwapTextures](#swaptextures)(<arg>position1</arg>, <arg>position2</arg>)</fdef>
+<fdef>[Clear](#clear)()</fdef>
+<fdef>[RemovePatch](#removepatch)(<arg>patch</arg>)</fdef>
+
+#### Read/Write
+
+<fdef>[ReadTEXTUREXData](#readtexturexdata)(<arg>entry</arg>, <arg>patchTable</arg>, <arg>additive</arg>) -> <type>boolean</type></fdef>
+<fdef>[WriteTEXTUREXData](#writetexturexdata)(<arg>entry</arg>, <arg>patchTable</arg>) -> <type>boolean</type></fdef>
+<fdef>[ReadTEXTURESData](#readtexturesdata)(<arg>entry</arg>) -> <type>boolean</type></fdef>
+<fdef>[WriteTEXTURESData](#writetexturesdata)(<arg>entry</arg>) -> <type>boolean</type></fdef>
+
+---
 ### Texture
 
-<fdef>function <type>TextureXList</type>.<func>Texture</func>(<arg>*self*</arg>, <arg>name</arg>)</fdef>
+Gets the texture in the list matching <arg>name</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>name</arg> (<type>string</type>): The name of the texture to get
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[CTexture](CTexture.md)</type>: The first texture found in the list with <arg>name</arg>, or `nil` if not found
 
 ---
 ### TextureIndex
 
-<fdef>function <type>TextureXList</type>.<func>TextureIndex</func>(<arg>*self*</arg>, <arg>name</arg>)</fdef>
+Gets the index of the texture in the list matching <arg>name</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>name</arg> (<type>string</type>): The name of the texture
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>number</type>: The index of the first texture found in the list with <arg>name</arg>, or `0` if not found
 
 ---
 ### ConvertToTEXTURES
 
-<fdef>function <type>TextureXList</type>.<func>ConvertToTEXTURES</func>(<arg>*self*</arg>)</fdef>
-
 Converts all textures in the list to extended format.
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` on success, `false` if the list was already in `TEXTURES` format
 
@@ -82,61 +103,42 @@ This will set <prop>format</prop> to `FORMAT_TEXTURES`.
 ---
 ### FindErrors
 
-<fdef>function <type>TextureXList</type>.<func>FindErrors</func>(<arg>*self*</arg>)</fdef>
-
 Finds and logs any errors in the texture list.
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if any errors were found
 
-
-## Functions - Texture List Modification
-
+---
 ### AddTexture
-
-<!--
-<fdef>
-<block>function <type>TextureXList</type>.<func>AddTexture</func>(</block>
-<block><arg>*self*</arg>,<br/><arg>name</arg>,<br/><arg>extended</arg>,<br/><arg>index</arg></block>
-<block><br/><br/><br/>)</block>
-<block><br/>-- <type>string</type><br/>-- <type>boolean</type><br/>-- <type>number</type></block>
-<block><br/><br/>(default: false)<br/>(default: 0)</block>
-</fdef>
--->
-<fdef>function <type>TextureXList</type>.<func>AddTexture</func>(<arg>*self*</arg>, <arg>name</arg>, <arg>extended</arg>, <arg>position</arg>)</fdef>
 
 Adds a new texture to the list.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>name</arg> (<type>string</type>): The name of the new texture
-* <arg>[extended]</arg> (<type>boolean</type>, default `false`): If `true`, the new texture will be in ZDoom `TEXTURES` format
-* <arg>[position]</arg> (<type>number</type>, default `0`): The position the new texture should be added in the list. If `0`, it will be added to the end of the list
+* <arg>[extended]</arg> (<type>boolean</type>): If `true`, the new texture will be in ZDoom `TEXTURES` format. Default is `false`
+* <arg>[position]</arg> (<type>number</type>): The position the new texture should be added in the list. Default is `0`, which will add to the end of the list
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[CTexture](CTexture.md)</type>: The newly created texture
 
 ---
 ### RemoveTexture
 
-<fdef>function <type>TextureXList</type>.<func>RemoveTexture</func>(<arg>*self*</arg>, <arg>position</arg>)</fdef>
-
 Removes the texture at <arg>position</arg> in the list.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>position</arg> (<type>number</type>): The position of the texture to remove
 
 ---
 ### SwapTextures
 
-<fdef>function <type>TextureXList</type>.<func>SwapTextures</func>(<arg>*self*</arg>, <arg>position1</arg>, <arg>position2</arg>)</fdef>
-
 Swaps the textures at <arg>position1</arg> and <arg>position2</arg> in the list.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>position1</arg> (<type>number</type>): The position of the first texture to swap
 * <arg>position2</arg> (<type>number</type>): The position of the second texture to swap
@@ -144,37 +146,29 @@ Swaps the textures at <arg>position1</arg> and <arg>position2</arg> in the list.
 ---
 ### Clear
 
-<fdef>function <type>TextureXList</type>.<func>Clear</func>(<arg>*self*</arg>)</fdef>
-
 Removes all textures from the list.
 
 ---
 ### RemovePatch
 
-<fdef>function <type>TextureXList</type>.<func>RemovePatch</func>(<arg>*self*</arg>, <arg>patch</arg>)</fdef>
-
 Removes <arg>patch</arg> from all textures in the list.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>patch</arg> (<type>string</type>): The name of the patch to be removed
 
-
-## Functions - Read/Write
-
+---
 ### ReadTEXTUREXData
-
-<fdef>function <type>TextureXList</type>.<func>ReadTEXTUREXData</func>(<arg>*self*</arg>, <arg>entry</arg>, <arg>patchTable</arg>, <arg>additive</arg>)</fdef>
 
 Reads a Doom-format `TEXTUREx` entry.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>entry</arg> (<type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type>): The entry to read the data from
 * <arg>patchTable</arg> (<type>[PatchTable](PatchTable.md)</type>): The patch table (PNAMES) to use for patch names
 * <arg>additive</arg> (<type>boolean</type>): If `true`, textures are added to the current list, otherwise all textures are cleared first
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` on success
 
@@ -185,45 +179,39 @@ This will set <prop>format</prop> to the type of list that was loaded.
 ---
 ### WriteTEXTUREXData
 
-<fdef>function <type>TextureXList</type>.<func>WriteTEXTUREXData</func>(<arg>*self*</arg>, <arg>entry</arg>, <arg>patchTable</arg>)</fdef>
-
 Writes the list in Doom `TEXTUREx` format to <arg>entry</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>entry</arg> (<type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type>): The entry to write the data to
 * <arg>patchTable</arg> (<type>[PatchTable](PatchTable.md)</type>): The patch table (PNAMES) to use for patch names
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` on success
 
 ---
 ### ReadTEXTURESData
 
-<fdef>function <type>TextureXList</type>.<func>ReadTEXTURESData</func>(<arg>*self*</arg>, <arg>entry</arg>)</fdef>
-
 Reads ZDoom `TEXTURES` data from <arg>entry</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>entry</arg> (<type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type>): The entry to read data from
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` on success
 
 ---
 ### WriteTEXTURESData
 
-<fdef>function <type>TextureXList</type>.<func>WriteTEXTURESData</func>(<arg>*self*</arg>, <arg>entry</arg>)</fdef>
-
 Writes the list in ZDoom `TEXURES` format to <arg>entry</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>entry</arg> (<type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type>): The entry to write data to
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` on success

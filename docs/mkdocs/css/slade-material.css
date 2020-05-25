@@ -1,6 +1,7 @@
 
 @import url('https://fonts.googleapis.com/css?family=Fira+Sans:400,400i,500,700,700i,800');
 @import url('https://fonts.googleapis.com/css?family=Fira+Mono:500,600');
+@import url('https://fonts.googleapis.com/css?family=Nunito+Sans:400,400i,600,800');
 /*@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');*/
 
 li,
@@ -10,7 +11,7 @@ p {
 }
 
 body, h1, h2, h3, h4, h5, h6 {
-	font-family: 'Fira Sans', 'Segoe UI', sans-serif;
+	font-family: 'Nunito Sans', 'Segoe UI', sans-serif;
 }
 
 article a {

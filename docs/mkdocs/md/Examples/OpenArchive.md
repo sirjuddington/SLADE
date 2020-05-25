@@ -1,5 +1,3 @@
-<article-head>Example: Open Archive</article-head>
-
 This example script does the following:
 
 1. Prompts the user to select a SLADE-supported archive file

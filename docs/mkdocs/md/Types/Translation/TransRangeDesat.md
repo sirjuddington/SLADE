@@ -1,5 +1,3 @@
-<article-head>TransRangeDesat</article-head>
-
 A custom translation range that maps to a desaturated colour gradient. See [Translation](https://zdoom.org/wiki/Translation) for more info.
 
 ### Inherits <type>[TransRange](TransRange.md)</type>  
@@ -21,19 +19,23 @@ All properties and functions of <type>[TransRange](TransRange.md)</type> can be 
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[Translation.AddDesatRange](Translation.md#adddesatrange)</code>
 
 ## Functions
 
-### SetStartRGB
+### Overview
 
-<fdef>function <type>TransRangeDesat</type>.<func>SetStartRGB</func>(<arg>*self*</arg>, <arg>r</arg>, <arg>g</arg>, <arg>b</arg>)</fdef>
+<fdef>[SetStartRGB](#setstartrgb)(<arg>r</arg>, <arg>g</arg>, <arg>b</arg>)</fdef>
+<fdef>[SetEndRGB](#setendrgb)(<arg>r</arg>, <arg>g</arg>, <arg>b</arg>)</fdef>
+
+---
+### SetStartRGB
 
 Sets the starting colour of the desaturated gradient.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>r</arg> (<type>number</type>): Red component (`0.0` - `2.0`)
 * <arg>g</arg> (<type>number</type>): Green component (`0.0` - `2.0`)
@@ -42,11 +44,9 @@ Sets the starting colour of the desaturated gradient.
 ---
 ### SetEndRGB
 
-<fdef>function <type>TransRangeDesat</type>.<func>SetEndRGB</func>(<arg>*self*</arg>, <arg>r</arg>, <arg>g</arg>, <arg>b</arg>)</fdef>
-
 Sets the ending colour of the desaturated gradient.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>r</arg> (<type>number</type>): Red component (`0.0` - `2.0`)
 * <arg>g</arg> (<type>number</type>): Green component (`0.0` - `2.0`)

@@ -1,5 +1,3 @@
-<article-head>MapLine</article-head>
-
 Represents a map linedef.
 
 ### Inherits <type>[MapObject](MapObject.md)</type>  
@@ -25,17 +23,31 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
+**See:**
+
+* <code>[Map.linedefs](Map.md#properties)</code>
+
 ## Functions
 
+### Overview
+
+#### Info
+
+<fdef>[Flag](#flag)</func>(<arg>flagName</arg>) -> <type>boolean</type></fdef>
+<fdef>[VisibleTextures](#visibletextures)</func>() -> <type>table</type></fdef>
+
+#### Modification
+
+<fdef>[Flip](#flip)</func>(<arg>[swapSides]</arg>)</fdef>
+
+---
 ### Flag
 
-<fdef>function <type>MapLine</type>.<func>Flag</func>(<arg>*self*</arg>, <arg>flagName</arg>)</fdef>
-
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>flagName</arg> (<type>string</type>): The name of the flag to check
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if the given flag is set
 
@@ -49,24 +61,11 @@ If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly 
 * `dontpegbottom`
 
 ---
-### Flip
-
-<fdef>function <type>MapLine</type>.<func>Flip</func>(<arg>*self*</arg>, <arg>swapSides</arg>)</fdef>
-
-Flips the line so that it faces the opposite direction. If <arg>swapSides</arg> is `true`, <prop>side1</prop> and <prop>side2</prop> will also be swapped so that they stay on the same spatial "side" of the line.
-
-<listhead>Parameters</listhead>
-
-* <arg>[swapSides]</arg> (<type>boolean</type>, default `true`): Whether to swap the sides
-
----
 ### VisibleTextures
-
-<fdef>function <type>MapLine</type>.<func>VisibleTextures</func>(<arg>*self*</arg>)</fdef>
 
 Determines what textures (parts) of the line are showing.
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>table</type>: A table containing the following <type>boolean</type> values:
     * `frontUpper`
@@ -89,3 +88,12 @@ if visible.frontUpper == true then
     end
 end
 ```
+
+---
+### Flip
+
+Flips the line so that it faces the opposite direction. If <arg>swapSides</arg> is `true`, <prop>side1</prop> and <prop>side2</prop> will also be swapped so that they stay on the same spatial "side" of the line.
+
+#### Parameters
+
+* <arg>[swapSides]</arg> (<type>boolean</type>): Whether to swap the sides. Default is `true`

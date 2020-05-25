@@ -1,5 +1,3 @@
-<article-head>MapVertex</article-head>
-
 Represents a map vertex.
 
 ### Inherits <type>[MapObject](MapObject.md)</type>  
@@ -17,3 +15,7 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
+
+**See:**
+
+* <code>[Map.vertices](Map.md#properties)</code>

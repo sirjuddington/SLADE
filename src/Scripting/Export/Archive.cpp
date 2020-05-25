@@ -78,6 +78,18 @@ vector<shared_ptr<ArchiveEntry>> archiveAllEntries(Archive& self)
 }
 
 // -----------------------------------------------------------------------------
+// Creates a new directory in archive [self] at [path].
+// Returns the created directory or nullptr if the archive doesn't support them
+// -----------------------------------------------------------------------------
+shared_ptr<ArchiveDir> archiveCreateDir(Archive& self, string_view path)
+{
+	if (self.formatDesc().supports_dirs)
+		return self.createDir(path);
+	else
+		return {};
+}
+
+// -----------------------------------------------------------------------------
 // Creates a new entry in archive [self] at [full_path],[position-1].
 // Returns the created entry
 // -----------------------------------------------------------------------------
@@ -95,17 +107,6 @@ shared_ptr<ArchiveEntry> archiveCreateEntryInNamespace(Archive& self, string_vie
 {
 	return self.addNewEntry(name, ns)->getShared();
 }
-
-//// -----------------------------------------------------------------------------
-//// Returns a list of all subdirs in the archive dir [self]
-//// -----------------------------------------------------------------------------
-// vector<ArchiveDir*> archiveDirSubDirs(const ArchiveDir& self)
-//{
-//	vector<ArchiveDir*> dirs;
-//	for (auto& child : self.subdirs())
-//		dirs.push_back(child.get());
-//	return dirs;
-//}
 
 // -----------------------------------------------------------------------------
 // Wrapper for Archive::findFirst that returns a shared pointer
@@ -199,7 +200,7 @@ void registerArchive(sol::state& lua)
 	lua_archive["DirAtPath"]              = [](Archive& self, const string& path) { return self.dirAtPath(path); };
 	lua_archive["CreateEntry"]            = &archiveCreateEntry;
 	lua_archive["CreateEntryInNamespace"] = &archiveCreateEntryInNamespace;
-	lua_archive["CreateDir"]              = [](Archive& self, const string& path) { return self.createDir(path); };
+	lua_archive["CreateDir"]              = &archiveCreateDir;
 	lua_archive["RemoveEntry"]            = &Archive::removeEntry;
 	lua_archive["RenameEntry"]            = &Archive::renameEntry;
 	lua_archive["Save"]                   = sol::overload(

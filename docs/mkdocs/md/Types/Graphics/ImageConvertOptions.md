@@ -1,5 +1,3 @@
-<article-head>ImageConvertOptions</article-head>
-
 Contains various options for converting an image from one pixel format to another.
 
 <listhead>See:</listhead>
@@ -26,3 +24,13 @@ Contains various options for converting an image from one pixel format to anothe
 <prop class="rw">alphaThreshold</prop> | <type>number</type> | The threshold 8-bit alpha value to use in cases where the target image format does not support a full alpha channel. Anything less than this will be fully transparent
 <prop class="rw">transparency</prop> | <type>boolean</type> | If `false`, all pixels in the converted image will be set to fully opaque
 <prop class="rw">pixelFormat</prop> | <type>number</type> | The pixel format to use if the target image format supports multiple (see [Image](Image.md#constants)`.PIXELFORMAT_` constants)
+
+## Constructors
+
+<code><type>ImageConvertOptions</type>.<func>new</func>()</code>
+
+Creates a new <type>ImageConvertOptions</type> with the following default properties:
+
+* <prop>maskSource</prop>: `MASK_ALPHA`
+* <prop>alphaThreshold</prop>: `0`
+* <prop>transparency</prop>: `true`

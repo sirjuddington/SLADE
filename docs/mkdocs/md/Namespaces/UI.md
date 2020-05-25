@@ -1,5 +1,3 @@
-<article-head>UI</article-head>
-
 The `UI` scripting namespace contains functions for interacting with and displaying anything UI related.
 
 ## Constants
@@ -11,28 +9,52 @@ The `UI` scripting namespace contains functions for interacting with and display
 `MB_ICON_WARNING` | 2
 `MB_ICON_ERROR` | 3
 
-## Functions - Message Boxes
+## Functions
 
+### Overview
+
+#### Message Boxes
+
+<fdef>[MessageBox](#messagebox)</func>(<arg>title</arg>, <arg>message</arg>, <arg>[icon]</arg>)</fdef>
+<fdef>[MessageBoxExt](#messageboxext)</func>(<arg>title</arg>, <arg>message</arg>, <arg>detail</arg>)</fdef>
+<fdef>[PromptString](#promptstring)</func>(<arg>title</arg>, <arg>message</arg>, <arg>defaultValue</arg>) -> <type>string</type></fdef>
+<fdef>[PromptNumber](#promptnumber)</func>(<arg>title</arg>, <arg>message</arg>, <arg>defaultValue</arg>, <arg>min</arg>, <arg>max</arg>) -> <type>number</type></fdef>
+<fdef>[PromptYesNo](#promptyesno)</func>(<arg>title</arg>, <arg>message</arg>) -> <type>boolean</type></fdef>
+
+#### File Dialogs
+
+<fdef>[PromptOpenFile](#promptopenfile)</func>(<arg>title</arg>, <arg>extensions</arg>, <arg>filename</arg>) -> <type>string</type></fdef>
+<fdef>[PromptOpenFiles](#promptopenfiles)</func>(<arg>title</arg>, <arg>extensions</arg>) -> <type>string[]</type></fdef>
+<fdef>[PromptSaveFile](#promptsavefile)</func>(<arg>title</arg>, <arg>extensions</arg>, <arg>[defaultFilename]</arg>) -> <type>string</type></fdef>
+<fdef>[PromptSaveFiles](#promptsavefiles)</func>(<arg>title</arg>, <arg>extensions</arg>) -> <type>string</type>, <type>string</type></fdef>
+
+#### Splash Window
+
+<fdef>[ShowSplash](#showsplash)</func>(<arg>message</arg>, <arg>[showProgress]</arg>)</fdef>
+<fdef>[HideSplash](#hidesplash)</func>()</fdef>
+<fdef>[UpdateSplash](#updatesplash)</func>()</fdef>
+<fdef>[SplashProgress](#splashprogress)</func>() -> <type>number</type></fdef>
+<fdef>[SetSplashMessage](#setsplashmessage)</func>(<arg>message</arg>)</fdef>
+<fdef>[SetSplashProgressMessage](#setsplashprogressmessage)</func>(<arg>message</arg>)</fdef>
+<fdef>[SetSplashProgress](#setsplashprogress)</func>(<arg>progress</arg>)</fdef>
+
+---
 ### MessageBox
-
-<fdef>function UI.<func>MessageBox</func>(<arg>title</arg>, <arg>message</arg>, <arg>icon</arg>)</fdef>
 
 Shows a simple message dialog.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
   * <arg>title</arg> (<type>string</type>): The dialog caption
   * <arg>message</arg> (<type>string</type>): The message to display
-  * <arg>[icon]</arg> (<type>number</type>, default `MB_ICON_INFO`): The icon to display on the message box, see the `MB_ICON_` constants above
+  * <arg>[icon]</arg> (<type>number</type>): The icon to display on the message box, see the `MB_ICON_` constants above. Default is `MB_ICON_INFO`
 
 ---
 ### MessageBoxExt
 
-<fdef>function UI.<func>MessageBoxExt</func>(<arg>title</arg>, <arg>message</arg>, <arg>detail</arg>)</fdef>
-
 Shows an extended message box with an extra scrollable text box displaying <arg>detail</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
   * <arg>title</arg> (<type>string</type>): The dialog caption
   * <arg>message</arg> (<type>string</type>): The message to display
@@ -41,28 +63,24 @@ Shows an extended message box with an extra scrollable text box displaying <arg>
 ---
 ### PromptString
 
-<fdef>function UI.<func>PromptString</func>(<arg>title</arg>, <arg>message</arg>, <arg>defaultValue</arg>)</fdef>
-
 Shows a dialog prompt for the user to enter a string value.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
   * <arg>title</arg> (<type>string</type>): The dialog caption
   * <arg>message</arg> (<type>string</type>): The message to display
   * <arg>defaultValue</arg> (<type>string</type>): The initial default value
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>string</type>: The text entered by the user
 
 ---
 ### PromptNumber
 
-<fdef>function UI.<func>PromptNumber</func>(<arg>title</arg>, <arg>message</arg>, <arg>defaultValue</arg>, <arg>min</arg>, <arg>max</arg>)</fdef>
-
 Shows a dialog prompt for the user to enter a numeric value.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
   * <arg>title</arg> (<type>string</type>): The dialog caption
   * <arg>message</arg> (<type>string</type>): The message to display
@@ -70,41 +88,36 @@ Shows a dialog prompt for the user to enter a numeric value.
   * <arg>min</arg> (<type>number</type>): The minimum value allowed
   * <arg>max</arg> (<type>number</type>): The maximum value allowed
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>number</type>: The number entered by the user
 
 ---
 ### PromptYesNo
 
-<fdef>function UI.<func>PromptYesNo</func>(<arg>title</arg>, <arg>message</arg>)</fdef>
-
 Shows a dialog prompt with 'Yes' and 'No' buttons.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
   * <arg>title</arg> (<type>string</type>): The dialog caption
   * <arg>message</arg> (<type>string</type>): The message to display
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if the user clicked 'Yes'
 
-## Functions - File Dialogs
-
+---
 ### PromptOpenFile
-
-<fdef>function UI.<func>PromptOpenFile</func>(<arg>title</arg>, <arg>extensions</arg>, <arg>filename</arg>)</fdef>
 
 Shows a file browser dialog allowing the user to select a file to open.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
   * <arg>title</arg> (<type>string</type>): The dialog caption
   * <arg>extensions</arg> (<type>string</type>): A formatted list of selectable file extensions (see description for format)
   * <arg>filename</arg> (<type>string</type>): The name of the file to browse for
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>string</type>: The full path to the selected file, or an empty string if none selected
 
@@ -126,16 +139,14 @@ App.LogMessage('Selected file ' .. path)
 ---
 ### PromptOpenFiles
 
-<fdef>function UI.<func>PromptOpenFiles</func>(<arg>title</arg>, <arg>extensions</arg>)</fdef>
-
 Shows a file browser dialog allowing the user to select multiple files to open.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
   * <arg>title</arg> (<type>string</type>): The dialog caption
   * <arg>extensions</arg> (<type>string</type>): A formatted list of selectable file extensions
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>string[]</type>: An array of full paths to the selected files
 
@@ -146,17 +157,15 @@ See <code>[PromptOpenFile](#promptopenfile)</code> above for the formatting of t
 ---
 ### PromptSaveFile
 
-<fdef>function UI.<func>PromptSaveFile</func>(<arg>title</arg>, <arg>extensions</arg>, <arg>defaultFilename</arg>)</fdef>
-
 Shows a file browser dialog allowing the user to select a path+filename to save a single file to.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>title</arg> (<type>string</type>): The dialog caption
 * <arg>extensions</arg> (<type>string</type>): A formatted list of selectable file extensions
-* <arg>[defaultFilename]</arg> (<type>string</type>, default `""`): The default name to put in the browser dialog 'file name' text box
+* <arg>[defaultFilename]</arg> (<type>string</type>): The default name to put in the browser dialog 'file name' text box. Default is `""`
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>string</type>: The full selected path, or an empty string if the dialog was cancelled
 
@@ -167,16 +176,14 @@ See <code>[PromptOpenFile](#promptopenfile)</code> above for the formatting of t
 ---
 ### PromptSaveFiles
 
-<fdef>function UI.<func>PromptSaveFiles</func>(<arg>title</arg>, <arg>extensions</arg>)</fdef>
-
 Shows a file browser dialog allowing the user to select a path to save multiple files to.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>title</arg> (<type>string</type>): The dialog caption
 * <arg>extensions</arg> (<type>string</type>): A formatted list of selectable file extensions
 
-<listheac>Returns</listheac>
+#### Returns
 
 * <type>string</type>: The directory path to save the files to
 * <type>string</type>: The file extension that was selected (not the full wildcard, just the extension - eg. `wad` or `*`)
@@ -185,19 +192,15 @@ Shows a file browser dialog allowing the user to select a path to save multiple 
 
 See <code>[PromptOpenFile](#promptopenfile)</code> above for the formatting of the <arg>extensions</arg> parameter.
 
-
-## Functions - Splash Window
-
+---
 ### ShowSplash
-
-<fdef>function UI.<func>ShowSplash</func>(<arg>message</arg>, <arg>showProgress</arg>)</fdef>
 
 Shows the splash window with <arg>message</arg>. 
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>message</arg> (<type>string</type>): The message to show
-* <arg>[showProgress]</arg> (<type>boolean</type>, default `false`): If `true`, a progress bar will be shown on the splash window (see <code>[SplashProgress](#splashprogress)</code>, <code>[SetSplashProgressMessage](#setsplashprogressmessage)</code>, <code>[SetSplashProgress](#setsplashprogress)</code> below)
+* <arg>[showProgress]</arg> (<type>boolean</type>): If `true`, a progress bar will be shown on the splash window (see <code>[SplashProgress](#splashprogress)</code>, <code>[SetSplashProgressMessage](#setsplashprogressmessage)</code>, <code>[SetSplashProgress](#setsplashprogress)</code> below). Default is `false`
 
 #### Example
 
@@ -212,55 +215,43 @@ UI.ShowSplash('Doing some things...', true)
 ---
 ### HideSplash
 
-<fdef>function UI.<func>HideSplash</func>()</fdef>
-
 Hides the splash window if it is currently showing.
 
 ---
 ### UpdateSplash
-
-<fdef>function UI.<func>UpdateSplash</func>()</fdef>
 
 Updates and redraws the splash window.
 
 ---
 ### SplashProgress
 
-<fdef>function UI.<func>SplashProgress</func>()</fdef>
-
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>number</type>: The current progress bar progress. This is a floating point number between `0.0` (empty) and `1.0` (full)
 
 ---
 ### SetSplashMessage
 
-<fdef>function UI.<func>SetSplashMessage</func>(<arg>message</arg>)</fdef>
-
 Sets the splash window message.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>message</arg> (<type>string</type>): The message to show
 
 ---
 ### SetSplashProgressMessage
 
-<fdef>function UI.<func>SetSplashProgressMessage</func>(<arg>message</arg>)</fdef>
-
 Sets the small message within the progress bar.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>message</arg> (<type>string</type>): The message to show in the progress bar
 
 ---
 ### SetSplashProgress
 
-<fdef>function UI.<func>SetSplashProgress</func>(<arg>progress</arg>)</fdef>
-
 Sets the progress bar progress amount.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>progress</arg> (<type>number</type>): The progress amount. This is a floating point number between `0.0` (empty) and `1.0` (full)

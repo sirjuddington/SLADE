@@ -1,5 +1,3 @@
-<article-head>CTPatch</article-head>
-
 A single patch in a composite texture. See [TEXTURE1 and TEXTURE2](https://doomwiki.org/wiki/TEXTURE1_and_TEXTURE2) for more information.
 
 ### Derived Types
@@ -21,21 +19,25 @@ The following types inherit all <type>CTPatch</type> properties and functions:
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[CTexture.AddPatch](CTexture.md#addpatch)</code>
 
 ## Functions
 
+### Overview
+
+<fdef>[PatchEntry](#patchentry)(<arg>parent</arg>) -> <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type></fdef>
+<fdef>[AsExtended](#asextended)() -> <type>[CTPatchEx](CTPatchEx.md)</type></fdef>
+
+---
 ### PatchEntry
 
-<fdef>function <type>CTPatch</type>.<func>PatchEntry</func>(<arg>*self*</arg>, <arg>parent</arg>)</fdef>
-
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>parent</arg> (<type>[Archive](../Archive/Archive.md)</type>): The parent archive (can be `nil`)
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type>: The associated <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type> for the patch, or `nil` if none found
 
@@ -46,8 +48,8 @@ Entries in the given <arg>parent</arg> archive will be prioritised when searchin
 ---
 ### AsExtended
 
-<fdef>function <type>CTPatch</type>.<func>AsExtended</func>(<arg>*self*</arg>)</fdef>
+Casts to a <type>[CTPatchEx](CTPatchEx.md)</type>, if it is one.
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[CTPatchEx](CTPatchEx.md)</type>: The patch as a <type>[CTPatchEx](CTPatchEx.md)</type>, or `nil` if it is not that type

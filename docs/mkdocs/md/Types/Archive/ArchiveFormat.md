@@ -1,5 +1,3 @@
-<article-head>ArchiveFormat</article-head>
-
 The <type>ArchiveFormat</type> type contains information about an archive's format.
 
 ## Properties
@@ -17,6 +15,6 @@ The <type>ArchiveFormat</type> type contains information about an archive's form
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[Archive.format](Archive.md#properties)</code>

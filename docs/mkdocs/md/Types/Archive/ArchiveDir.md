@@ -1,5 +1,3 @@
-<article-head>ArchiveDir</article-head>
-
 The <type>ArchiveDir</type> type represents a 'directory' of entries in SLADE, such as in zip/pk3 archives.
 
 ## Properties
@@ -18,6 +16,7 @@ The <type>ArchiveDir</type> type represents a 'directory' of entries in SLADE, s
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
+* <code>[Archive.CreateDir](Archive.md#createdir)</code>
 * <code>[Archive.DirAtPath](Archive.md#diratpath)</code>

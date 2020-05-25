@@ -1,8 +1,6 @@
-<article-head>ArchiveSearchOptions</article-head>
-
 The <type>ArchiveSearchOptions</type> type contains options for searching for entries in an <type>[Archive](Archive.md)</type>.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[Archive.FindFirst](Archive.md#findfirst)</code>
 * <code>[Archive.FindLast](Archive.md#findlast)</code>
@@ -21,7 +19,7 @@ The <type>ArchiveSearchOptions</type> type contains options for searching for en
 
 ## Constructors
 
-<fdef>function <type>ArchiveSearchOptions</type>.<func>new</func>()</fdef>
+<code><type>ArchiveSearchOptions</type>.<func>new</func>()</code>
 
 Creates a new <type>ArchiveSearchOptions</type> with the following default values:
 

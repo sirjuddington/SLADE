@@ -1,5 +1,3 @@
-<article-head>CTPatchEx</article-head>
-
 An extended composite texture patch, with extra properties for use in ZDoom's [TEXTURES](https://zdoom.org/wiki/TEXTURES) lump.
 
 ### Inherits <type>[CTPatch](CTPatch.md)</type>  
@@ -35,16 +33,21 @@ All properties and functions of <type>[CTPatch](CTPatch.md)</type> can be used i
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[CTexture.AddPatch](CTexture.md#addpatch)</code>
 
 ## Functions
 
+### Overview
+
+<fdef>[AsText](#astext)()</fdef>
+
+---
 ### AsText
 
-<fdef>function <type>CTPatchEx</type>.<func>AsText</func>(<arg>*self*</arg>)</fdef>
+Gets the ZDoom [TEXTURES](https://zdoom.org/wiki/TEXTURES) format text definition for this patch.
 
-<listhead>Returns</listhead>
+#### Returns
 
-* <type>string</type>: A text representation of the patch in ZDoom [TEXTURES](https://zdoom.org/wiki/TEXTURES) format
+* <type>string</type>: A text representation of the patch

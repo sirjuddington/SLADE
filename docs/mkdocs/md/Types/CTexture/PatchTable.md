@@ -1,5 +1,3 @@
-<article-head>PatchTable</article-head>
-
 A patch table is a list of patch names used for Doom's composite texture system (see: [PNAMES](https://doomwiki.org/wiki/PNAMES) on the doom wiki).
 
 ## Properties
@@ -11,34 +9,51 @@ A patch table is a list of patch names used for Doom's composite texture system 
 
 ## Constructors
 
-<fdef>function <type>PatchTable</type>.<func>new</func>()</fdef>
+<code><type>PatchTable</type>.<func>new</func>()</code>
 
 Creates a new, empty patch table.
 
 ## Functions
 
+### Overview
+
+#### Patches
+
+<fdef>[Patch](#patch)(<arg>index</arg>) -> <type>string</type></fdef>
+<fdef>[PatchEntry](#patchentry-1)(<arg>index</arg>) -> <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type></fdef>
+<fdef>[PatchEntry](#patchentry-2)(<arg>name</arg>) -> <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type></fdef>
+<fdef>[RemovePatch](#removepatch)(<arg>index</arg>) -> <type>boolean</type></fdef>
+<fdef>[ReplacePatch](#replacepatch)(<arg>index</arg>, <arg>name</arg>) -> <type>boolean</type></fdef>
+<fdef>[AddPatch](#addpatch)(<arg>name</arg>, <arg>allowDuplicate</arg>) -> <type>boolean</type></fdef>
+
+#### Read/Write
+
+<fdef>[LoadPNAMES](#loadpnames)(<arg>pnames</arg>) -> <type>boolean</type></fdef>
+<fdef>[WritePNAMES](#writepnames)(<arg>pnames</arg>) -> <type>boolean</type></fdef>
+
+---
 ### Patch
 
-<fdef>function <type>PatchTable</type>.<func>Patch</func>(<arg>*self*</arg>, <arg>index</arg>)</fdef>
+Gets the name of the patch at <arg>index</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>index</arg> (<type>number</type>): The patch index
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>string</type>: The name of the patch at <arg>index</arg>, or `"INVALID PATCH"` if the index was out of bounds
 
 ---
 ### PatchEntry <sup>(1)</sup>
 
-<fdef>function <type>PatchTable</type>.<func>PatchEntry</func>(<arg>*self*</arg>, <arg>index</arg>)</fdef>
+Gets the associated <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type> for the patch at <arg>index</arg> in the list.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>index</arg> (<type>number</type>): The patch index
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type>: The associated <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type> for the patch at <arg>index</arg>, or `nil` if no entry was found or the given index was out of bounds
 
@@ -49,13 +64,13 @@ When searching for the patch entry, the <prop>parent</prop> archive of the table
 ---
 ### PatchEntry <sup>(2)</sup>
 
-<fdef>function <type>PatchTable</type>.<func>PatchEntry</func>(<arg>*self*</arg>, <arg>name</arg>)</fdef>
+Gets the associated <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type> for the patch with the given <arg>name</arg> in the list.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>name</arg> (<type>string</type>): The patch name
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type> The associated <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type> for the patch with the given <arg>name</arg>, or `nil` if no entry was found or the given name was not in the patch table
 
@@ -66,62 +81,54 @@ When searching for the patch entry, the <prop>parent</prop> archive of the table
 ---
 ### RemovePatch
 
-<fdef>function <type>PatchTable</type>.<func>RemovePatch</func>(<arg>*self*</arg>, <arg>index</arg>)</fdef>
-
 Removes the patch at <arg>index</arg> from the table.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>index</arg> (<type>number</type>): The patch index
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `false` if the given index was out of bounds
 
 ---
 ### ReplacePatch
 
-<fdef>function <type>PatchTable</type>.<func>ReplacePatch</func>(<arg>*self*</arg>, <arg>index</arg>, <arg>name</arg>)</fdef>
-
 Replaces the patch at <arg>index</arg> in the table with <arg>name</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>index</arg> (<type>number</type>): The patch index
 * <arg>name</arg> (<type>string</type>): The new name for the patch
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `false` if the given index was out of bounds
 
 ---
 ### AddPatch
 
-<fdef>function <type>PatchTable</type>.<func>AddPatch</func>(<arg>*self*</arg>, <arg>name</arg>, <arg>allowDuplicate</arg>)</fdef>
-
 Adds a new patch with <arg>name</arg> to the end of the table. 
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>name</arg> (<type>string</type>): The name of the patch to add
 * <arg>allowDuplicate</arg> (<type>boolean</type>): If `false`, no new patch will be added if a patch already exists in the table with the given name
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if a new patch was added
 
 ---
 ### LoadPNAMES
 
-<fdef>function <type>PatchTable</type>.<func>LoadPNAMES</func>(<arg>*self*</arg>, <arg>pnames</arg>)</fdef>
-
 Clears any existing patches in the table and loads in PNAMES data from the given entry <arg>pnames</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>pnames</arg> (<type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type>): The PNAMES entry to load
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` on success
 
@@ -132,14 +139,12 @@ This will set the table's <prop>parent</prop> property to the parent archive of 
 ---
 ### WritePNAMES
 
-<fdef>function <type>PatchTable</type>.<func>WritePNAMES</func>(<arg>*self*</arg>, <arg>pnames</arg>)</fdef>
-
 Writes the patch table to <arg>pnames</arg> in PNAMES format.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>pnames</arg> (<type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type>): The entry to write PNAMES data to
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` on success

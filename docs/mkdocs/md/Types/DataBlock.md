@@ -1,5 +1,3 @@
-<article-head>DataBlock</article-head>
-
 A <type>DataBlock</type> is a simple block of binary data, with various functions to help deal with reading/writing raw binary data to the block.
 
 ## Properties
@@ -11,38 +9,79 @@ A <type>DataBlock</type> is a simple block of binary data, with various function
 
 ## Constructors
 
-<fdef>function <type>DataBlock</type>.<func>new</func>()</fdef>
+<code><type>DataBlock</type>.<func>new</func>()</code>
 
 Creates a new, empty <type>DataBlock</type> (<prop>size</prop> will be `0`).
 
 ---
 
-<fdef>function <type>DataBlock</type>.<func>new</func>(<arg>size</arg>)</fdef>
+<code><type>DataBlock</type>.<func>new</func>(<arg>size</arg>)</code>
 
 Creates a new <type>DataBlock</type> of <arg>size</arg> bytes, with each byte set to `0`.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>size</arg> (<type>number</type>): The size (in bytes) of the block
 
+
 ## Functions
 
+### Overview
+
+#### General
+
+<fdef>[AsString](#asstring)() -> <type>string</type></fdef>
+<fdef>[SetData](#setdata)(<arg>data</arg>)</fdef>
+<fdef>[Clear](#clear)()</fdef>
+<fdef>[Resize](#resize)(<arg>newSize</arg>, <arg>preserveData</arg>) -> <type>boolean</type></fdef>
+<fdef>[Copy](#copy)(<arg>other</arg>) -> <type>boolean</type></fdef>
+<fdef>[CopyTo](#copyto)(<arg>other</arg>, <arg>[offset]</arg>, <arg>[length]</arg>) -> <type>boolean</type></fdef>
+<fdef>[ImportFile](#importfile)(<arg>path</arg>, <arg>[offset]</arg>, <arg>[length]</arg>) -> <type>boolean</type></fdef>
+<fdef>[ExportFile](#exportfile)(<arg>path</arg>, <arg>[offset]</arg>, <arg>[length]</arg>) -> <type>boolean</type></fdef>
+<fdef>[FillData](#filldata)(<arg>value</arg>) -> <type>boolean</type></fdef>
+
+#### Reading
+
+<fdef>[ReadInt8](#readint8)(<arg>offset</arg>) -> <type>number</type></fdef>
+<fdef>[ReadUInt8](#readuint8)(<arg>offset</arg>) -> <type>number</type></fdef>
+<fdef>[ReadInt16](#readint16)(<arg>offset</arg>) -> <type>number</type></fdef>
+<fdef>[ReadUInt16](#readuint16)(<arg>offset</arg>) -> <type>number</type></fdef>
+<fdef>[ReadInt32](#readint32)(<arg>offset</arg>) -> <type>number</type></fdef>
+<fdef>[ReadUInt32](#readuint32)(<arg>offset</arg>) -> <type>number</type></fdef>
+<fdef>[ReadInt64](#readint64)(<arg>offset</arg>) -> <type>number</type></fdef>
+<fdef>[ReadUInt64](#readuint64)(<arg>offset</arg>) -> <type>number</type></fdef>
+<fdef>[ReadString](#readstring)(<arg>offset</arg>, <arg>length</arg>, <arg>[nullTerminated]</arg>) -> <type>string</type></fdef>
+
+#### Writing
+
+!!! attention
+    Note that these functions **overwrite** data, they do not insert
+
+<fdef>[WriteInt8](#writeint8)(<arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>) -> <type>boolean</type></fdef>
+<fdef>[WriteUInt8](#writeuint8)(<arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>) -> <type>boolean</type></fdef>
+<fdef>[WriteInt16](#writeint16)(<arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>) -> <type>boolean</type></fdef>
+<fdef>[WriteUInt16](#writeuint16)(<arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>) -> <type>boolean</type></fdef>
+<fdef>[WriteInt32](#writeint32)(<arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>) -> <type>boolean</type></fdef>
+<fdef>[WriteUInt32](#writeuint32)(<arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>) -> <type>boolean</type></fdef>
+<fdef>[WriteInt64](#writeint64)(<arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>) -> <type>boolean</type></fdef>
+<fdef>[WriteUInt64](#writeuint64)(<arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>) -> <type>boolean</type></fdef>
+<fdef>[WriteString](#writestring)(<arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>) -> <type>boolean</type></fdef>
+
+---
 ### AsString
 
-<fdef>function <type>DataBlock</type>.<func>AsString</func>(<arg>*self*</arg>)</fdef>
+Gets the data as a lua <type>string</type>.
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>string</type>: The data as a string
 
 ---
 ### SetData
 
-<fdef>function <type>DataBlock</type>.<func>SetData</func>(<arg>*self*</arg>, <arg>data</arg>)</fdef>
-
 Sets the data contained within this <type>DataBlock</type> to the given string, resizing if necessary.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>data</arg> (<type>string</type>): The data to import
 
@@ -60,243 +99,209 @@ App.LogMessage('Size is ' .. data.size) -- 43
 ---
 ### Clear
 
-<fdef>function <type>DataBlock</type>.<func>Clear</func>(<arg>*self*</arg>)</fdef>
-
 Clears all data and sets <prop>size</prop> to `0`.
 
 ---
 ### Resize
 
-<fdef>function <type>DataBlock</type>.<func>Resize</func>(<arg>*self*</arg>, <arg>newSize</arg>, <arg>preserveData</arg>)</fdef>
-
 Resizes the block to <arg>newSize</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>newSize</arg> (<type>number</type>): The new size of the block. If `0` the resize will fail (use <func>[Clear](#clear)</func> instead)
 * <arg>preserveData</arg> (<type>boolean</type>): If `true`, existing byte values in the block will be preserved, otherwise all bytes will be set to `0`
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if the resize was successful
 
 ---
 ### Copy
 
-<fdef>function <type>DataBlock</type>.<func>Copy</func>(<arg>*self*</arg>, <arg>other</arg>)</fdef>
-
 Copies data from another <type>DataBlock</type>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>other</arg> (<type>DataBlock</type>): The <type>DataBlock</type> to copy data from
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` on success
 
 ---
 ### CopyTo
 
-<fdef>function <type>DataBlock</type>.<func>CopyTo</func>(<arg>*self*</arg>, <arg>other</arg>, <arg>offset</arg>, <arg>length</arg>)</fdef>
-
 Copies data to another <type>DataBlock</type>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>other</arg> (<type>DataBlock</type>): The <type>DataBlock</type> to copy data to
-* <arg>[offset]</arg> (<type>number</type>, default `0`): Only copy bytes starting from this (`0`-based) offset
-* <arg>[length]</arg> (<type>number</type>, default `0`): Copy this number of bytes. If `0`, all bytes to the end of the block are copied
+* <arg>[offset]</arg> (<type>number</type>): Only copy bytes starting from this (`0`-based) offset. Default is `0`
+* <arg>[length]</arg> (<type>number</type>): Copy this number of bytes. Default is `0`, which means all bytes to the end of the block will be copied
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` on success
 
 ---
 ### ImportFile
 
-<fdef>function <type>DataBlock</type>.<func>ImportFile</func>(<arg>*self*</arg>, <arg>path</arg>, <arg>offset</arg>, <arg>length</arg>)</fdef>
-
 Imports data from a file on disk at <arg>path</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>path</arg> (<type>string</type>): The path to the file on disk
-* <arg>[offset]</arg> (<type>number</type>, default `0`): Only import data starting from this (`0`-based) offset in the file
-* <arg>[length]</arg> (<type>number</type>, default `0`): Import this number of bytes. If `0`, all bytes to the end of the file are imported
+* <arg>[offset]</arg> (<type>number</type>): Only import data starting from this (`0`-based) offset in the file. Default is `0`
+* <arg>[length]</arg> (<type>number</type>): Import this number of bytes. Default is `0`, which means all bytes to the end of the file will be imported
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` on success
 
 ---
 ### ExportFile
 
-<fdef>function <type>DataBlock</type>.<func>ExportFile</func>(<arg>*self*</arg>, <arg>path</arg>, <arg>offset</arg>, <arg>length</arg>)</fdef>
-
 Exports data to a file on disk at <arg>path</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>path</arg> (<type>string</type>): The path to the file on disk. The file will be created if it doesn't already exist
-* <arg>[offset]</arg> (<type>number</type>, default `0`): Only export data starting from this (`0`-based) offset
-* <arg>[length]</arg> (<type>number</type>, default `0`): Export this number of bytes. If `0`, all bytes to the end of the block are exported
+* <arg>[offset]</arg> (<type>number</type>): Only export data starting from this (`0`-based) offset. Default is `0`
+* <arg>[length]</arg> (<type>number</type>): Export this number of bytes. Default is `0`, which means all bytes to the end of the block will be exported
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` on success
 
 ---
 ### FillData
 
-<fdef>function <type>DataBlock</type>.<func>FillData</func>(<arg>*self*</arg>, <arg>value</arg>)</fdef>
-
 Sets all bytes in the block to <arg>value</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>value</arg> (<type>number</type>): The value to set all bytes to (`0`-`255`)
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `false` if the block is empty
 
-
-## Functions - Reading
-
+---
 ### ReadInt8
-
-<fdef>function <type>DataBlock</type>.<func>ReadInt8</func>(<arg>*self*</arg>, <arg>offset</arg>)</fdef>
 
 Reads the byte at <arg>offset</arg> bytes into the block as an 8-bit (1 byte) *signed* integer.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to the start of the data to read
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>number</type>: The value read, or `nil` if the <arg>offset</arg> was invalid
 
 ---
 ### ReadUInt8
 
-<fdef>function <type>DataBlock</type>.<func>ReadUInt8</func>(<arg>*self*</arg>, <arg>offset</arg>)</fdef>
-
 Reads the byte at <arg>offset</arg> bytes into the block as an 8-bit (1 byte) *unsigned* integer.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to the start of the data to read
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>number</type>: The value read, or `nil` if the <arg>offset</arg> was invalid
 
 ---
 ### ReadInt16
 
-<fdef>function <type>DataBlock</type>.<func>ReadInt16</func>(<arg>*self*</arg>, <arg>offset</arg>)</fdef>
-
 Reads the bytes beginning at <arg>offset</arg> bytes into the block as a 16-bit (2 byte) *signed* integer.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to the start of the data to read
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>number</type>: The value read, or `nil` if the <arg>offset</arg> was invalid
 
 ---
 ### ReadUInt16
 
-<fdef>function <type>DataBlock</type>.<func>ReadUInt16</func>(<arg>*self*</arg>, <arg>offset</arg>)</fdef>
-
 Reads the bytes beginning at <arg>offset</arg> bytes into the block as a 16-bit (2 byte) *unsigned* integer.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to the start of the data to read
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>number</type>: The value read, or `nil` if the <arg>offset</arg> was invalid
 
 ---
 ### ReadInt32
 
-<fdef>function <type>DataBlock</type>.<func>ReadInt32</func>(<arg>*self*</arg>, <arg>offset</arg>)</fdef>
-
 Reads the bytes beginning at <arg>offset</arg> bytes into the block as a 32-bit (4 byte) *signed* integer.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to the start of the data to read
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>number</type>: The value read, or `nil` if the <arg>offset</arg> was invalid
 
 ---
 ### ReadUInt32
 
-<fdef>function <type>DataBlock</type>.<func>ReadUInt32</func>(<arg>*self*</arg>, <arg>offset</arg>)</fdef>
-
 Reads the bytes beginning at <arg>offset</arg> bytes into the block as a 32-bit (4 byte) *unsigned* integer.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to the start of the data to read
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>number</type>: The value read, or `nil` if the <arg>offset</arg> was invalid
 
 ---
 ### ReadInt64
 
-<fdef>function <type>DataBlock</type>.<func>ReadInt64</func>(<arg>*self*</arg>, <arg>offset</arg>)</fdef>
-
 Reads the bytes beginning at <arg>offset</arg> bytes into the block as a 64-bit (8 byte) *signed* integer.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to the start of the data to read
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>number</type>: The value read, or `nil` if the <arg>offset</arg> was invalid
 
 ---
 ### ReadUInt64
 
-<fdef>function <type>DataBlock</type>.<func>ReadUInt64</func>(<arg>*self*</arg>, <arg>offset</arg>)</fdef>
-
 Reads the bytes beginning at <arg>offset</arg> bytes into the block as a 64-bit (8 byte) *unsigned* integer.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to the start of the data to read
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>number</type>: The value read, or `nil` if the <arg>offset</arg> was invalid
 
 ---
 ### ReadString
 
-<fdef>function <type>DataBlock</type>.<func>ReadString</func>(<arg>*self*</arg>, <arg>offset</arg>, <arg>length</arg>, <arg>nullTerminated</arg>)</fdef>
-
 Reads <arg>length</arg> bytes beginning at <arg>offset</arg> bytes into the block as a <type>string</type>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to the start of the data to read
 * <arg>length</arg> (<type>number</type>): The number of bytes to read
-* <arg>[nullTerminated]</arg> (<type>boolean</type>, default `false`): If `true`, the string will end at the first `0` after <arg>offset</arg>, or <arg>length</arg> bytes after offset, whichever comes first
+* <arg>[nullTerminated]</arg> (<type>boolean</type>): If `true`, the string will end at the first `0` after <arg>offset</arg>, or <arg>length</arg> bytes after offset, whichever comes first. Default is `false`
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>string</type>: The string that was read, or an empty string if the <arg>offset</arg> was invalid
 
@@ -319,160 +324,137 @@ App.LogMessage('twoThree: ' .. #twoThree)     -- twoThree: 9
 App.LogMessage('twoThreeNT: ' .. #twoThreeNT) -- twoThreeNT: 3
 ```
 
-
-## Functions - Writing
-
-!!! attention
-    Note that these functions **overwrite** data, they do not insert
-
+---
 ### WriteInt8
-
-<fdef>function <type>DataBlock</type>.<func>WriteInt8</func>(<arg>*self*</arg>, <arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>)</fdef>
 
 Writes <arg>value</arg> as an 8-bit (1 byte) *signed* integer at <arg>offset</arg> bytes into the block.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to write data to
 * <arg>value</arg> (<type>number</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if the value was written successfully
 
 ---
 ### WriteUInt8
 
-<fdef>function <type>DataBlock</type>.<func>WriteUInt8</func>(<arg>*self*</arg>, <arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>)</fdef>
-
 Writes <arg>value</arg> as an 8-bit (1 byte) *unsigned* integer at <arg>offset</arg> bytes into the block.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to write data to
 * <arg>value</arg> (<type>number</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if the value was written successfully
 
 ---
 ### WriteInt16
 
-<fdef>function <type>DataBlock</type>.<func>WriteInt16</func>(<arg>*self*</arg>, <arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>)</fdef>
-
 Writes <arg>value</arg> as a 16-bit (2 byte) *signed* integer at <arg>offset</arg> bytes into the block.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to write data to
 * <arg>value</arg> (<type>number</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if the value was written successfully
 
 ---
 ### WriteUInt16
 
-<fdef>function <type>DataBlock</type>.<func>WriteUInt16</func>(<arg>*self*</arg>, <arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>)</fdef>
-
 Writes <arg>value</arg> as a 16-bit (2 byte) *unsigned* integer at <arg>offset</arg> bytes into the block.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to write data to
 * <arg>value</arg> (<type>number</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if the value was written successfully
 
 ---
 ### WriteInt32
 
-<fdef>function <type>DataBlock</type>.<func>WriteInt32</func>(<arg>*self*</arg>, <arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>)</fdef>
-
 Writes <arg>value</arg> as a 32-bit (4 byte) *signed* integer at <arg>offset</arg> bytes into the block.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to write data to
 * <arg>value</arg> (<type>number</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if the value was written successfully
 
 ---
 ### WriteUInt32
 
-<fdef>function <type>DataBlock</type>.<func>WriteUInt32</func>(<arg>*self*</arg>, <arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>)</fdef>
-
 Writes <arg>value</arg> as a 32-bit (4 byte) *unsigned* integer at <arg>offset</arg> bytes into the block.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to write data to
 * <arg>value</arg> (<type>number</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if the value was written successfully
 
 ---
 ### WriteInt64
 
-<fdef>function <type>DataBlock</type>.<func>WriteInt64</func>(<arg>*self*</arg>, <arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>)</fdef>
-
 Writes <arg>value</arg> as a 64-bit (8 byte) *signed* integer at <arg>offset</arg> bytes into the block.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to write data to
 * <arg>value</arg> (<type>number</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if the value was written successfully
 
 ---
 ### WriteUInt64
 
-<fdef>function <type>DataBlock</type>.<func>WriteUInt64</func>(<arg>*self*</arg>, <arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>)</fdef>
-
 Writes <arg>value</arg> as a 64-bit (8 byte) *unsigned* integer at <arg>offset</arg> bytes into the block.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to write data to
 * <arg>value</arg> (<type>number</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if the value was written successfully
 
 ---
 ### WriteString
 
-<fdef>function <type>DataBlock</type>.<func>WriteString</func>(<arg>*self*</arg>, <arg>offset</arg>, <arg>value</arg>, <arg>allowExpand</arg>)</fdef>
-
 Writes the given string <arg>value</arg> at <arg>offset</arg> bytes into the block.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>offset</arg> (<type>number</type>): The (`0`-based) offset to write data to
 * <arg>value</arg> (<type>string</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if the value was written successfully

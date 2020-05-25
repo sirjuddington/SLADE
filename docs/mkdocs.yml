@@ -4,17 +4,19 @@ repo_url: https://github.com/sirjuddington/SLADE
 edit_uri: ''
 
 # Settings
-docs_dir: 'mkdocs'
-site_dir: 'build'
+docs_dir: './mkdocs'
+site_dir: './build'
 use_directory_urls: false
 
 # Theme
-theme: windmill
+theme:
+  name: material
+  palette:
+    primary: indigo
+    accent: amber
+    scheme: slate
 extra_css:
-- 'css/hack-font.css'
-- 'css/windmill-slade.css'
-- 'css/codehilite-slade-dark.css'
-- 'css/windmill-slade-dark.css'
+- 'css/slade-material-dark.css'
 
 # Extensions
 markdown_extensions:

@@ -1,8 +1,6 @@
-<article-head>ImageDrawOptions</article-head>
-
 The <type>ImageDrawOptions</type> type contains colour blending options for use in <type>[Image](Image.md)</type>'s drawing functions.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[Image.DrawPixel](Image.md#drawpixel)</code>
 * <code>[Image.DrawImage](Image.md#drawimage)</code>
@@ -17,7 +15,7 @@ The <type>ImageDrawOptions</type> type contains colour blending options for use 
 
 ## Constructors
 
-<fdef>function <type>ImageDrawOptions</type>.<func>new</func>()</fdef>
+<code><type>ImageDrawOptions</type>.<func>new</func>()</code>
 
 Creates a new <type>ImageDrawOptions</type> with the following default properties:
 

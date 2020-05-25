@@ -1,5 +1,3 @@
-<article-head>Plane</article-head>
-
 A geometrical [Plane](https://en.wikipedia.org/wiki/Plane_(geometry)), represented in general form (<prop>a</prop>`x+`<prop>b</prop>`y+`<prop>c</prop>`z+`<prop>d </prop>`= 0`).
 
 ## Properties
@@ -13,17 +11,17 @@ A geometrical [Plane](https://en.wikipedia.org/wiki/Plane_(geometry)), represent
 
 ## Constructors
 
-<fdef>function <type>Plane</type>.<func>new</func>()</fdef>
+<code><type>Plane</type>.<func>new</func>()</code>
 
 Creates a new plane with all components set to `0`.
 
 ---
 
-<fdef>function <type>Plane</type>.<func>new</func>(<arg>a</arg>, <arg>b</arg>, <arg>c</arg>, <arg>d</arg>)</fdef>
+<code><type>Plane</type>.<func>new</func>(<arg>a</arg>, <arg>b</arg>, <arg>c</arg>, <arg>d</arg>)</code>
 
 Creates a new plane with the given <arg>a</arg>, <arg>b</arg>, <arg>c</arg> and <arg>d</arg> components.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>a</arg> (<type>number</type>): The <prop>a</prop> component (normal X)
 * <arg>b</arg> (<type>number</type>): The <prop>b</prop> component (normal Y)
@@ -32,14 +30,19 @@ Creates a new plane with the given <arg>a</arg>, <arg>b</arg>, <arg>c</arg> and 
 
 ## Functions
 
+### Overview
+
+<fdef>[HeightAt](#heightat)(<arg>position</arg>) -> <type>number</type></fdef>
+
+---
 ### HeightAt
 
-<fdef>function <type>Plane</type>.<func>HeightAt</func>(<arg>*self*</arg>, <arg>position</arg>)</fdef>
+Calculates the height (`z`) at <arg>position</arg> on the plane.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>position</arg> (<type>[Point](Point.md)</type>): The 2D position to find the plane height at
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>number</type>: The height (`z`) on the plane at <arg>position</arg>

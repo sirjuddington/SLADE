@@ -1,5 +1,3 @@
-<article-head>MapSector</article-head>
-
 Represents a map sector.
 
 ### Inherits <type>[MapObject](MapObject.md)</type>  
@@ -27,16 +25,27 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
+**See:**
+
+* <code>[Map.sectors](Map.md#properties)</code>
+
 ## Functions
 
+### Overview
+
+#### Info
+
+<fdef>[ContainsPoint](#containspoint)(<arg>position</arg>) -> <type>boolean</type></fdef>
+
+---
 ### ContainsPoint
 
-<fdef>function <type>MapSector</type>.<func>ContainsPoint</func>(<arg>*self*</arg>, <arg>position</arg>)</fdef>
+Checks if the given <arg>position</arg> is within the sector.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>position</arg> (<type>[Point](../Point.md)</type>): Point coordinates in map units
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if <arg>position</arg> is inside the sector

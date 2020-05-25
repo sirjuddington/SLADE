@@ -1,29 +1,54 @@
-<article-head>Archives</article-head>
-
 The `Archives` scripting namespace contains functions for managing archives.
 
-## Functions - Archive Management
+## Functions
 
+### Overview
+
+#### Archive Management
+
+<fdef>[All](#all)() -> <type>[Archive](../Types/Archive/Archive.md)\[\]</type></fdef>
+<fdef>[Create](#create)(<arg>formatId</arg>) -> <type>[Archive](../Types/Archive/Archive.md)</type>, <type>string</type></fdef>
+<fdef>[OpenFile](#openfile)(<arg>path</arg>) -> <type>[Archive](../Types/Archive/Archive.md)</type>, <type>string</type></fdef>
+<fdef>[Close](#close-1)(<arg>archive</arg>) -> <type>boolean</type></fdef>
+<fdef>[Close](#close-2)(<arg>index</arg>) -> <type>boolean</type></fdef>
+<fdef>[CloseAll](#closeall)()</fdef>
+
+#### Resource Archives
+
+<fdef>[BaseResource](#baseresource)() -> <type>[Archive](../Types/Archive/Archive.md)</type></fdef>
+<fdef>[BaseResourcePaths](#baseresourcepaths)() -> <type>string[]</type></fdef>
+<fdef>[OpenBaseResource](#openbaseresource)(<arg>index</arg>) -> <type>boolean</type></fdef>
+<fdef>[ProgramResource](#programresource)() -> <type>[Archive](../Types/Archive/Archive.md)</type></fdef>
+
+#### Bookmarks
+
+<fdef>[Bookmarks](#bookmarks)() -> <type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)\[\]</type></fdef>
+<fdef>[AddBookmark](#addbookmark)(<arg>entry</arg>)</fdef>
+<fdef>[RemoveBookmark](#removebookmark)(<arg>entry</arg>) -> <type>boolean</type></fdef>
+
+#### Misc
+
+<fdef>[FileExtensionsString](#fileextensionsstring)() -> <type>string</type></fdef>
+<fdef>[RecentFiles](#recentfiles)() -> <type>string[]</type></fdef>
+<fdef>[EntryType](#entrytype)(<arg>type</arg>) -> <type>[EntryType](../Types/Archive/EntryType.md)</type></fdef>
+
+---
 ### All
 
-<fdef>function Archives.<func>All</func>()</fdef>
-
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[Archive](../Types/Archive/Archive.md)\[\]</type>: An array of all currently open archives
 
 ---
 ### Create
 
-<fdef>function Archives.<func>Create</func>(<arg>formatId</arg>)</fdef>
-
 Creates a new archive of the format specified in <arg>formatId</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>formatId</arg> (<type>string</type>): The <type>[ArchiveFormat](../Types/Archive/ArchiveFormat.md)</type> id to create
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[Archive](../Types/Archive/Archive.md)</type>: The created archive, or `nil` if creation failed
 * <type>string</type>: An error message if creation failed
@@ -44,15 +69,13 @@ end
 ---
 ### OpenFile
 
-<fdef>function Archives.<func>OpenFile</func>(<arg>path</arg>)</fdef>
-
 Attempts to open the archive file at <arg>path</arg> on disk.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>path</arg> (<type>string</type>): The full path (on disk) of the archive file to open
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[Archive](../Types/Archive/Archive.md)</type>: The opened archive, or `nil` if opening failed
 * <type>string</type>: An error message if opening failed
@@ -60,15 +83,13 @@ Attempts to open the archive file at <arg>path</arg> on disk.
 ---
 ### Close <sup>(1)</sup>
 
-<fdef>function Archives.<func>Close</func>(<arg>archive</arg>)</fdef>
-
 Closes the given <arg>archive</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>archive</arg> (<type>[Archive](../Types/Archive/Archive.md)</type>): The archive to close
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `false` if <arg>archive</arg> is invalid or not currently open
 
@@ -80,41 +101,36 @@ Closes the given <arg>archive</arg>.
 ---
 ### Close <sup>(2)</sup>
 
-<fdef>function Archives.<func>Close</func>(<arg>index</arg>)</fdef>
-
 Closes the archive at <arg>index</arg> in the list of currently open archives (see <code>[All](#All)</code>).
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>index</arg> (<type>number</type>): The index of the archive to close
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `false` if the given <arg>index</arg> is invalid
 
 ---
 ### CloseAll
 
-<fdef>function Archives.<func>CloseAll</func>()</fdef>
-
 Closes all currently open archives.
 
-## Functions - Resource Archives
-
+---
 ### BaseResource
 
-<fdef>function Archives.<func>BaseResource</func>()</fdef>
+Gets the currently loaded base resource archive.
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[Archive](../Types/Archive/Archive.md)</type>: The currently loaded base resource archive
 
 ---
 ### BaseResourcePaths
 
-<fdef>function Archives.<func>BaseResourcePaths</func>()</fdef>
+Gets all configured base resource archive file paths.
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>string[]</type>: An array of configured base resource archive file paths
 
@@ -125,96 +141,88 @@ This is the list of base resource archive paths as seen in the base resource con
 ---
 ### OpenBaseResource
 
-<fdef>function Archives.<func>OpenBaseResource</func>(<arg>index</arg>)</fde>
-
 Opens the base resource archive at <arg>index</arg> in the list of base resource archive file paths (see <code>[BaseResourcePaths](#baseresourcepaths)</code>).
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>index</arg> (<type>number</type>): The base resource path index to open
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `false` if the given index was out of range
 
 ---
 ### ProgramResource
 
-<fdef>function Archives.<func>ProgramResource</func>()</fdef>
+Gets the program resource archive.
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[Archive](../Types/Archive/Archive.md)</type>: the program resource archive (either `slade.pk3` or the `res` folder if you are running a dev build)
 
-## Functions - Bookmarks
-
+---
 ### Bookmarks
 
-<fdef>function Archives.<func>Bookmarks</func>()</fdef>
+Gets all currently bookmarked entries.
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)`[`]</type>: An array of all currently bookmarked entries
 
 ---
 ### AddBookmark
 
-<fdef>function Archives.<func>AddBookmark</func>(<arg>entry</arg>)</fdef>
-
 Adds <arg>entry</arg> as a bookmark.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>entry</arg> (<type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)</type>): The entry to bookmark
 
 ---
 ### RemoveBookmark
 
-<fdef>function Archives.<func>RemoveBookmark</func>(<arg>entry</arg>)</fdef>
-
 Removes <arg>entry</arg> from the bookmarked entries list.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>entry</arg> (<type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)</type>): The entry to un-bookmark
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `false` if the given <arg>entry</arg> was not currently bookmarked
 
-## Functions - Misc
-
+---
 ### FileExtensionsString
 
-<fdef>function Archives.<func>FileExtensionsString</func>()</fdef>
+Gets an extension filter string for all supported archive file types.
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>string</type>: The extension filter string for all supported archive file types
 
 #### Notes
 
-See <code>[App.BrowseFile](App.md#browsefile)</code> and the [Open Archive](../Examples/OpenArchive.md) example for more information.
+See <code>[UI.PromptOpenFile](UI.md#promptopenfile)</code> and the [Open Archive](../Examples/OpenArchive.md) example for more information.
 
 ---
 ### RecentFiles
 
-<fdef>function Archives.<func>RecentFiles</func>()</fdef>
+Gets all recently opened archive file paths.
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>string[]</type>: An array of file paths to recently opened archives
 
 ---
 ### EntryType
 
-<fdef>function Archives.<func>EntryType</func>(<arg>type</arg>)</fdef>
+Gets the entry type with the given <arg>id</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>id</arg> (<type>string</type>): The id of the <type>[EntryType](../Types/Archive/EntryType.md)</type> to get
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[EntryType](../Types/Archive/EntryType.md)</type>: The entry type with the given <arg>id</arg>, or `nil` if no type has that id
 

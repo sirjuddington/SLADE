@@ -1,5 +1,3 @@
-<article-head>Map</article-head>
-
 Contains information and structures representing a Doom map.
 
 ## Properties
@@ -19,6 +17,6 @@ Contains information and structures representing a Doom map.
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[MapEditor.map](MapEditor.md#properties)</code>

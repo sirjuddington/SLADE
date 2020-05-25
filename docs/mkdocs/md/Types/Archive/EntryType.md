@@ -1,5 +1,3 @@
-<article-head>EntryType</article-head>
-
 The <type>EntryType</type> type contains information about an entry's type/format.
 
 ## Properties
@@ -18,6 +16,6 @@ The <type>EntryType</type> type contains information about an entry's type/forma
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[Archives.EntryType](../../Namespaces/Archives.md#entrytype)</code>
