@@ -105,7 +105,7 @@ Closes the archive at <arg>index</arg> in the list of currently open archives (s
 
 #### Parameters
 
-* <arg>index</arg> (<type>number</type>): The index of the archive to close
+* <arg>index</arg> (<type>integer</type>): The index of the archive to close
 
 #### Returns
 
@@ -145,7 +145,7 @@ Opens the base resource archive at <arg>index</arg> in the list of base resource
 
 #### Parameters
 
-* <arg>index</arg> (<type>number</type>): The base resource path index to open
+* <arg>index</arg> (<type>integer</type>): The base resource path index to open
 
 #### Returns
 

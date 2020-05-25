@@ -38,7 +38,7 @@ Gets the name of the patch at <arg>index</arg>.
 
 #### Parameters
 
-* <arg>index</arg> (<type>number</type>): The patch index
+* <arg>index</arg> (<type>integer</type>): The patch index
 
 #### Returns
 
@@ -51,7 +51,7 @@ Gets the associated <type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type> for 
 
 #### Parameters
 
-* <arg>index</arg> (<type>number</type>): The patch index
+* <arg>index</arg> (<type>integer</type>): The patch index
 
 #### Returns
 
@@ -85,7 +85,7 @@ Removes the patch at <arg>index</arg> from the table.
 
 #### Parameters
 
-* <arg>index</arg> (<type>number</type>): The patch index
+* <arg>index</arg> (<type>integer</type>): The patch index
 
 #### Returns
 
@@ -98,7 +98,7 @@ Replaces the patch at <arg>index</arg> in the table with <arg>name</arg>.
 
 #### Parameters
 
-* <arg>index</arg> (<type>number</type>): The patch index
+* <arg>index</arg> (<type>integer</type>): The patch index
 * <arg>name</arg> (<type>string</type>): The new name for the patch
 
 #### Returns

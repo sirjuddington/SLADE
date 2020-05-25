@@ -13,7 +13,7 @@ The `Game` scripting namespace contains functions related to the currently loade
 
 #### Parameters
 
-* <arg>doomednum</arg> (<type>number</type>): The editor number (DoomEdNum) of the type
+* <arg>doomednum</arg> (<type>integer</type>): The editor number (DoomEdNum) of the type
 
 #### Returns
 

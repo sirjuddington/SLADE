@@ -4,8 +4,8 @@ Represents a 2D (x,y) point.
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop class="rw">x</prop> | <type>number</type> | X coordinate
-<prop class="rw">y</prop> | <type>number</type> | Y coordinate
+<prop class="rw">x</prop> | <type>float</type> | X coordinate
+<prop class="rw">y</prop> | <type>float</type> | Y coordinate
 
 ## Constructors
 
@@ -21,5 +21,5 @@ Creates a new point with the given <arg>x</arg> and <arg>y</arg> values.
 
 #### Parameters
 
-* <arg>x</arg> (<type>number</type>): The X coordinate
-* <arg>y</arg> (<type>number</type>): The Y coordinate
+* <arg>x</arg> (<type>float</type>): The X coordinate
+* <arg>y</arg> (<type>float</type>): The Y coordinate

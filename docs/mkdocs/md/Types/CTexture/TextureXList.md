@@ -15,7 +15,7 @@ The <type>TextureXList</type> type is a list of composite textures (<type>[CText
 | Property | Type | Description |
 |:---------|:-----|:------------|
 <prop class="ro">textures</prop> | <type>[CTexture](CTexture.md)\[\]</type> | All textures in the list
-<prop class="ro">format</prop> | <type>number</type> | The format of this list (see `FORMAT_` constants)
+<prop class="ro">format</prop> | <type>integer</type> | The format of this list (see `FORMAT_` constants)
 <prop class="ro">formatString</prop> | <type>string</type> | The name of the list <prop>format</prop>
 
 ## Constructors
@@ -32,7 +32,7 @@ Creates a new, empty list of the given <arg>format</arg>.
 
 #### Parameters
 
-* <arg>format</arg> (<type>number</type>): The format of the list (see `FORMAT_` constants)
+* <arg>format</arg> (<type>integer</type>): The format of the list (see `FORMAT_` constants)
 
 
 ## Functions
@@ -42,7 +42,7 @@ Creates a new, empty list of the given <arg>format</arg>.
 #### General
 
 <fdef>[Texture](#texture)(<arg>name</arg>) -> <type>[CTexture](CTexture.md)</type></fdef>
-<fdef>[TextureIndex](#textureindex)(<arg>name</arg>) -> <type>number</type></fdef>
+<fdef>[TextureIndex](#textureindex)(<arg>name</arg>) -> <type>integer</type></fdef>
 <fdef>[ConvertToTEXTURES](#converttotextures)() -> <type>boolean</type></fdef>
 <fdef>[FindErrors](#finderrors)() -> <type>boolean</type></fdef>
 
@@ -85,7 +85,7 @@ Gets the index of the texture in the list matching <arg>name</arg>.
 
 #### Returns
 
-* <type>number</type>: The index of the first texture found in the list with <arg>name</arg>, or `0` if not found
+* <type>integer</type>: The index of the first texture found in the list with <arg>name</arg>, or `0` if not found
 
 ---
 ### ConvertToTEXTURES
@@ -118,7 +118,7 @@ Adds a new texture to the list.
 
 * <arg>name</arg> (<type>string</type>): The name of the new texture
 * <arg>[extended]</arg> (<type>boolean</type>): If `true`, the new texture will be in ZDoom `TEXTURES` format. Default is `false`
-* <arg>[position]</arg> (<type>number</type>): The position the new texture should be added in the list. Default is `0`, which will add to the end of the list
+* <arg>[position]</arg> (<type>integer</type>): The position the new texture should be added in the list. Default is `0`, which will add to the end of the list
 
 #### Returns
 
@@ -131,7 +131,7 @@ Removes the texture at <arg>position</arg> in the list.
 
 #### Parameters
 
-* <arg>position</arg> (<type>number</type>): The position of the texture to remove
+* <arg>position</arg> (<type>integer</type>): The position of the texture to remove
 
 ---
 ### SwapTextures
@@ -140,8 +140,8 @@ Swaps the textures at <arg>position1</arg> and <arg>position2</arg> in the list.
 
 #### Parameters
 
-* <arg>position1</arg> (<type>number</type>): The position of the first texture to swap
-* <arg>position2</arg> (<type>number</type>): The position of the second texture to swap
+* <arg>position1</arg> (<type>integer</type>): The position of the first texture to swap
+* <arg>position2</arg> (<type>integer</type>): The position of the second texture to swap
 
 ---
 ### Clear

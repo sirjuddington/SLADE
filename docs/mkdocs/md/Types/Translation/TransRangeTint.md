@@ -8,7 +8,7 @@ All properties and functions of <type>[TransRange](TransRange.md)</type> can be 
 | Property | Type | Description |
 |:---------|:-----|:------------|
 <prop class="rw">colour</prop> | <type>[Colour](../Colour.md)</type> | The colour to tint
-<prop class="rw">amount</prop> | <type>number</type> | The amount to tint (`0` - `255`)
+<prop class="rw">amount</prop> | <type>integer</type> | The amount to tint (`0` - `255`)
 
 ## Constructors
 

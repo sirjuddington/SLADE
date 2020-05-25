@@ -151,7 +151,7 @@ Creates a new entry named <arg>fullPath</arg> in the archive at <arg>index</arg>
 #### Parameters
 
 * <arg>fullPath</arg> (<type>string</type>): The full path and name of the entry to create
-* <arg>index</arg> (<type>number</type>): The index to insert the entry
+* <arg>index</arg> (<type>integer</type>): The index to insert the entry
 
 #### Returns
 

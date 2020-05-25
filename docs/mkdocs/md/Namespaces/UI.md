@@ -18,7 +18,7 @@ The `UI` scripting namespace contains functions for interacting with and display
 <fdef>[MessageBox](#messagebox)</func>(<arg>title</arg>, <arg>message</arg>, <arg>[icon]</arg>)</fdef>
 <fdef>[MessageBoxExt](#messageboxext)</func>(<arg>title</arg>, <arg>message</arg>, <arg>detail</arg>)</fdef>
 <fdef>[PromptString](#promptstring)</func>(<arg>title</arg>, <arg>message</arg>, <arg>defaultValue</arg>) -> <type>string</type></fdef>
-<fdef>[PromptNumber](#promptnumber)</func>(<arg>title</arg>, <arg>message</arg>, <arg>defaultValue</arg>, <arg>min</arg>, <arg>max</arg>) -> <type>number</type></fdef>
+<fdef>[PromptNumber](#promptnumber)</func>(<arg>title</arg>, <arg>message</arg>, <arg>defaultValue</arg>, <arg>min</arg>, <arg>max</arg>) -> <type>integer</type></fdef>
 <fdef>[PromptYesNo](#promptyesno)</func>(<arg>title</arg>, <arg>message</arg>) -> <type>boolean</type></fdef>
 
 #### File Dialogs
@@ -33,7 +33,7 @@ The `UI` scripting namespace contains functions for interacting with and display
 <fdef>[ShowSplash](#showsplash)</func>(<arg>message</arg>, <arg>[showProgress]</arg>)</fdef>
 <fdef>[HideSplash](#hidesplash)</func>()</fdef>
 <fdef>[UpdateSplash](#updatesplash)</func>()</fdef>
-<fdef>[SplashProgress](#splashprogress)</func>() -> <type>number</type></fdef>
+<fdef>[SplashProgress](#splashprogress)</func>() -> <type>integer</type></fdef>
 <fdef>[SetSplashMessage](#setsplashmessage)</func>(<arg>message</arg>)</fdef>
 <fdef>[SetSplashProgressMessage](#setsplashprogressmessage)</func>(<arg>message</arg>)</fdef>
 <fdef>[SetSplashProgress](#setsplashprogress)</func>(<arg>progress</arg>)</fdef>
@@ -47,7 +47,7 @@ Shows a simple message dialog.
 
   * <arg>title</arg> (<type>string</type>): The dialog caption
   * <arg>message</arg> (<type>string</type>): The message to display
-  * <arg>[icon]</arg> (<type>number</type>): The icon to display on the message box, see the `MB_ICON_` constants above. Default is `MB_ICON_INFO`
+  * <arg>[icon]</arg> (<type>integer</type>): The icon to display on the message box, see the `MB_ICON_` constants above. Default is `MB_ICON_INFO`
 
 ---
 ### MessageBoxExt
@@ -84,13 +84,13 @@ Shows a dialog prompt for the user to enter a numeric value.
 
   * <arg>title</arg> (<type>string</type>): The dialog caption
   * <arg>message</arg> (<type>string</type>): The message to display
-  * <arg>defaultValue</arg> (<type>number</type>): The initial default value
-  * <arg>min</arg> (<type>number</type>): The minimum value allowed
-  * <arg>max</arg> (<type>number</type>): The maximum value allowed
+  * <arg>defaultValue</arg> (<type>integer</type>): The initial default value
+  * <arg>min</arg> (<type>integer</type>): The minimum value allowed
+  * <arg>max</arg> (<type>integer</type>): The maximum value allowed
 
 #### Returns
 
-* <type>number</type>: The number entered by the user
+* <type>integer</type>: The number entered by the user
 
 ---
 ### PromptYesNo
@@ -227,7 +227,7 @@ Updates and redraws the splash window.
 
 #### Returns
 
-* <type>number</type>: The current progress bar progress. This is a floating point number between `0.0` (empty) and `1.0` (full)
+* <type>integer</type>: The current progress bar progress. This is a floating point number between `0.0` (empty) and `1.0` (full)
 
 ---
 ### SetSplashMessage
@@ -254,4 +254,4 @@ Sets the progress bar progress amount.
 
 #### Parameters
 
-* <arg>progress</arg> (<type>number</type>): The progress amount. This is a floating point number between `0.0` (empty) and `1.0` (full)
+* <arg>progress</arg> (<type>integer</type>): The progress amount. This is a floating point number between `0.0` (empty) and `1.0` (full)

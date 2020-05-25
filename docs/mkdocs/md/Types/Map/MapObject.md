@@ -14,8 +14,8 @@ The following types inherit all `MapObject` properties and functions:
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop class="ro">index</prop>     | <type>number</type> | The object's index in the map
-<prop class="ro">type</prop>      | <type>number</type> | The object's type (see `TYPE_` constants)
+<prop class="ro">index</prop>     | <type>integer</type> | The object's index in the map
+<prop class="ro">type</prop>      | <type>integer</type> | The object's type (see `TYPE_` constants)
 <prop class="ro">typeName</prop>  | <type>string</type> | The object type name (eg. `Vertex`)
 
 ## Constants
@@ -45,8 +45,8 @@ The following types inherit all `MapObject` properties and functions:
 
 <fdef>[HasProperty](#hasproperty)(<arg>name</arg>) -> <type>boolean</type></fdef>
 <fdef>[BoolProperty](#boolproperty)(<arg>name</arg>) -> <type>boolean</type></fdef>
-<fdef>[IntProperty](#intproperty)(<arg>name</arg>) -> <type>number</type></fdef>
-<fdef>[FloatProperty](#floatproperty)(<arg>name</arg>) -> <type>number</type></fdef>
+<fdef>[IntProperty](#intproperty)(<arg>name</arg>) -> <type>integer</type></fdef>
+<fdef>[FloatProperty](#floatproperty)(<arg>name</arg>) -> <type>float</type></fdef>
 <fdef>[StringProperty](#stringproperty)(<arg>name</arg>) -> <type>string</type></fdef>
 <fdef>[SetBoolProperty](#setboolproperty)(<arg>name</arg>, <arg>value</arg>)</fdef>
 <fdef>[SetIntProperty](#setintproperty)(<arg>name</arg>, <arg>value</arg>)</fdef>
@@ -88,7 +88,7 @@ If the property doesn't exist in the object, the game configuration is checked f
 
 #### Returns
 
-* <type>number</type>: The value of the property, or `0` if no applicable value was found
+* <type>integer</type>: The value of the property, or `0` if no applicable value was found
 
 #### Notes
 
@@ -103,7 +103,7 @@ If the property doesn't exist in the object, the game configuration is checked f
 
 #### Returns
 
-* <type>number</type>: The value of the property, or `0` if no applicable value was found
+* <type>float</type>: The value of the property, or `0` if no applicable value was found
 
 #### Notes
 
@@ -146,7 +146,7 @@ Sets the property <arg>name</arg> to <arg>value</arg>.
 #### Parameters
 
 * <arg>name</arg> (<type>string</type>): The name of the property to set
-* <arg>value</arg> (<type>number</type>): The value to apply
+* <arg>value</arg> (<type>integer</type>): The value to apply
 
 #### Notes
 
@@ -160,7 +160,7 @@ Sets the property <arg>name</arg> to <arg>value</arg>.
 #### Parameters
 
 * <arg>name</arg> (<type>string</type>): The name of the property to set
-* <arg>value</arg> (<type>number</type>): The value to apply
+* <arg>value</arg> (<type>float</type>): The value to apply
 
 #### Notes
 

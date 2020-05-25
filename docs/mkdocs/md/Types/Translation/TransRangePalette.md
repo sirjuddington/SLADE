@@ -7,8 +7,8 @@ All properties and functions of <type>[TransRange](TransRange.md)</type> can be 
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop class="rw">destStart</prop> | <type>number</type> | The first palette index of the destination range (`0` - `255`)
-<prop class="rw">destEnd</prop> | <type>number</type> | The last palette index of the destination range (`0` - `255`)
+<prop class="rw">destStart</prop> | <type>integer</type> | The first palette index of the destination range (`0` - `255`)
+<prop class="rw">destEnd</prop> | <type>integer</type> | The last palette index of the destination range (`0` - `255`)
 
 ## Constructors
 

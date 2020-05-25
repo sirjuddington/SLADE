@@ -7,12 +7,12 @@ All properties and functions of <type>[TransRange](TransRange.md)</type> can be 
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop>startR</prop> | <type>number</type> | The red component of the starting colour (`0.0` - `2.0`)
-<prop>startG</prop> | <type>number</type> | The green component of the starting colour (`0.0` - `2.0`)
-<prop>startB</prop> | <type>number</type> | The blue component of the starting colour (`0.0` - `2.0`)
-<prop>endR</prop> | <type>number</type> | The red component of the ending colour (`0.0` - `2.0`)
-<prop>endG</prop> | <type>number</type> | The green component of the ending colour (`0.0` - `2.0`)
-<prop>endB</prop> | <type>number</type> | The blue component of the ending colour (`0.0` - `2.0`)
+<prop>startR</prop> | <type>float</type> | The red component of the starting colour (`0.0` - `2.0`)
+<prop>startG</prop> | <type>float</type> | The green component of the starting colour (`0.0` - `2.0`)
+<prop>startB</prop> | <type>float</type> | The blue component of the starting colour (`0.0` - `2.0`)
+<prop>endR</prop> | <type>float</type> | The red component of the ending colour (`0.0` - `2.0`)
+<prop>endG</prop> | <type>float</type> | The green component of the ending colour (`0.0` - `2.0`)
+<prop>endB</prop> | <type>float</type> | The blue component of the ending colour (`0.0` - `2.0`)
 
 ## Constructors
 
@@ -37,9 +37,9 @@ Sets the starting colour of the desaturated gradient.
 
 #### Parameters
 
-* <arg>r</arg> (<type>number</type>): Red component (`0.0` - `2.0`)
-* <arg>g</arg> (<type>number</type>): Green component (`0.0` - `2.0`)
-* <arg>b</arg> (<type>number</type>): Blue component (`0.0` - `2.0`)
+* <arg>r</arg> (<type>float</type>): Red component (`0.0` - `2.0`)
+* <arg>g</arg> (<type>float</type>): Green component (`0.0` - `2.0`)
+* <arg>b</arg> (<type>float</type>): Blue component (`0.0` - `2.0`)
 
 ---
 ### SetEndRGB
@@ -48,6 +48,6 @@ Sets the ending colour of the desaturated gradient.
 
 #### Parameters
 
-* <arg>r</arg> (<type>number</type>): Red component (`0.0` - `2.0`)
-* <arg>g</arg> (<type>number</type>): Green component (`0.0` - `2.0`)
-* <arg>b</arg> (<type>number</type>): Blue component (`0.0` - `2.0`)
+* <arg>r</arg> (<type>float</type>): Red component (`0.0` - `2.0`)
+* <arg>g</arg> (<type>float</type>): Green component (`0.0` - `2.0`)
+* <arg>b</arg> (<type>float</type>): Blue component (`0.0` - `2.0`)

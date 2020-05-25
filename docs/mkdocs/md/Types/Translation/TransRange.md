@@ -26,9 +26,9 @@ The following types inherit all <type>TransRange</type> properties and functions
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop class="ro">type</prop> | <type>number</type> | The type of translation for this range (see `TYPE_` constants)
-<prop class="rw">rangeStart</prop> | <type>number</type> | The first palette index of the range (`0` - `255`)
-<prop class="rw">rangeEnd</prop> | <type>number</type> | The last palette index of the range (`0` - `255`)
+<prop class="ro">type</prop> | <type>integer</type> | The type of translation for this range (see `TYPE_` constants)
+<prop class="rw">rangeStart</prop> | <type>integer</type> | The first palette index of the range (`0` - `255`)
+<prop class="rw">rangeEnd</prop> | <type>integer</type> | The last palette index of the range (`0` - `255`)
 
 ## Constructors
 

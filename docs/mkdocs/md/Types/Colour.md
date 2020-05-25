@@ -4,10 +4,10 @@ Represents an RGBA colour. Note that colour each component is an 8-bit integer (
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop class="rw">r</prop> | <type>number</type> | Red component
-<prop class="rw">g</prop> | <type>number</type> | Green component
-<prop class="rw">b</prop> | <type>number</type> | Blue component
-<prop class="rw">a</prop> | <type>number</type> | Alpha component (transparency)
+<prop class="rw">r</prop> | <type>integer</type> | Red component
+<prop class="rw">g</prop> | <type>integer</type> | Green component
+<prop class="rw">b</prop> | <type>integer</type> | Blue component
+<prop class="rw">a</prop> | <type>integer</type> | Alpha component (transparency)
 
 ## Constructors
 
@@ -22,9 +22,9 @@ Creates a new colour with the given <arg>r</arg>, <arg>g</arg> and <arg>b</arg> 
 
 <listhead>Parameters</listhead>
 
-* <arg>r</arg> (<type>number</type>): Red component (`0` - `255`)
-* <arg>g</arg> (<type>number</type>): Green component (`0` - `255`)
-* <arg>b</arg> (<type>number</type>): Blue component (`0` - `255`)
+* <arg>r</arg> (<type>integer</type>): Red component (`0` - `255`)
+* <arg>g</arg> (<type>integer</type>): Green component (`0` - `255`)
+* <arg>b</arg> (<type>integer</type>): Blue component (`0` - `255`)
 
 ---
 <code><type>Colour</type>.<func>new</func>(<arg>r</arg>, <arg>g</arg>, <arg>b</arg>, <arg>a</arg>)</code>
@@ -33,10 +33,10 @@ Creates a new colour with the given <arg>r</arg>, <arg>g</arg>, <arg>b</arg> and
 
 <listhead>Parameters</listhead>
 
-* <arg>r</arg> (<type>number</type>): Red component (`0` - `255`)
-* <arg>g</arg> (<type>number</type>): Green component (`0` - `255`)
-* <arg>b</arg> (<type>number</type>): Blue component (`0` - `255`)
-* <arg>a</arg> (<type>number</type>): Alpha component (`0` - `255`)
+* <arg>r</arg> (<type>integer</type>): Red component (`0` - `255`)
+* <arg>g</arg> (<type>integer</type>): Green component (`0` - `255`)
+* <arg>b</arg> (<type>integer</type>): Blue component (`0` - `255`)
+* <arg>a</arg> (<type>integer</type>): Alpha component (`0` - `255`)
 
 ## Functions
 
@@ -44,8 +44,8 @@ Creates a new colour with the given <arg>r</arg>, <arg>g</arg>, <arg>b</arg> and
 
 #### Conversion
 
-<fdef>[AsHSL](#ashsl)() -> <type>number</type>, <type>number</type>, <type>number</type></fdef>
-<fdef>[AsLAB](#aslab)() -> <type>number</type>, <type>number</type>, <type>number</type></fdef>
+<fdef>[AsHSL](#ashsl)() -> <type>float</type>, <type>float</type>, <type>float</type></fdef>
+<fdef>[AsLAB](#aslab)() -> <type>float</type>, <type>float</type>, <type>float</type></fdef>
 <fdef>[FromHSL](#fromhsl)(<arg>hue</arg>, <arg>saturation</arg>, <arg>lightness</arg>)</fdef>
 
 ---
@@ -55,9 +55,9 @@ Gets the colour in [HSL](https://en.wikipedia.org/wiki/HSL_and_HSV) colourspace.
 
 <listhead>Returns</listhead>
 
-* <type>number</type>: The hue value (`0.0` - `1.0`)
-* <type>number</type>: The saturation value (`0.0` - `1.0`)
-* <type>number</type>: The lightness value (`0.0` - `1.0`)
+* <type>float</type>: The hue value (`0.0` - `1.0`)
+* <type>float</type>: The saturation value (`0.0` - `1.0`)
+* <type>float</type>: The lightness value (`0.0` - `1.0`)
 
 ---
 ### AsLAB
@@ -66,9 +66,9 @@ Gets the colour in [CIELAB](https://en.wikipedia.org/wiki/CIELAB_color_space) co
 
 <listhead>Returns</listhead>
 
-* <type>number</type>: The lightness value (`0.0` - `1.0`)
-* <type>number</type>: The green-red value (`0.0` - `1.0`)
-* <type>number</type>: The blue-yellow value (`0.0` - `1.0`)
+* <type>float</type>: The lightness value (`0.0` - `1.0`)
+* <type>float</type>: The green-red value (`0.0` - `1.0`)
+* <type>float</type>: The blue-yellow value (`0.0` - `1.0`)
 
 ---
 ### FromHSL
@@ -77,6 +77,6 @@ Sets the colour from the given HSL colourspace values.
 
 <listhead>Parameters</listhead>
 
-* <arg>hue</arg> (<type>number</type>): The hue value to set (`0.0` - `1.0`)
-* <arg>saturation</arg> (<type>number</type>): The saturation value to set (`0.0` - `1.0`)
-* <arg>lightness</arg> (<type>number</type>): The lightness value to set (`0.0` - `1.0`)
+* <arg>hue</arg> (<type>float</type>): The hue value to set (`0.0` - `1.0`)
+* <arg>saturation</arg> (<type>float</type>): The saturation value to set (`0.0` - `1.0`)
+* <arg>lightness</arg> (<type>float</type>): The lightness value to set (`0.0` - `1.0`)

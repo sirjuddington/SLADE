@@ -8,7 +8,7 @@ The <type>ArchiveFormat</type> type contains information about an archive's form
 <prop class="ro">name</prop> | <type>string</type> | The format name
 <prop class="ro">supportsDirs</prop> | <type>boolean</type> | Whether the archive format supports directories
 <prop class="ro">hasExtensions</prop> | <type>boolean</type> | Whether entry names in the archive have extensions
-<prop class="ro">maxNameLength</prop> | <type>number</type> | The maximum length of entry names
+<prop class="ro">maxNameLength</prop> | <type>integer</type> | The maximum length of entry names
 
 ## Constructors
 

@@ -4,10 +4,10 @@ A geometrical [Plane](https://en.wikipedia.org/wiki/Plane_(geometry)), represent
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop class="rw">a</prop> | <type>number</type> | Normal X component
-<prop class="rw">b</prop> | <type>number</type> | Normal Y component
-<prop class="rw">c</prop> | <type>number</type> | Normal Z component
-<prop class="rw">d</prop> | <type>number</type> | Distance component
+<prop class="rw">a</prop> | <type>float</type> | Normal X component
+<prop class="rw">b</prop> | <type>float</type> | Normal Y component
+<prop class="rw">c</prop> | <type>float</type> | Normal Z component
+<prop class="rw">d</prop> | <type>float</type> | Distance component
 
 ## Constructors
 
@@ -23,16 +23,16 @@ Creates a new plane with the given <arg>a</arg>, <arg>b</arg>, <arg>c</arg> and 
 
 #### Parameters
 
-* <arg>a</arg> (<type>number</type>): The <prop>a</prop> component (normal X)
-* <arg>b</arg> (<type>number</type>): The <prop>b</prop> component (normal Y)
-* <arg>c</arg> (<type>number</type>): The <prop>c</prop> component (normal Z)
-* <arg>d</arg> (<type>number</type>): The <prop>d</prop> component (distance)
+* <arg>a</arg> (<type>float</type>): The <prop>a</prop> component (normal X)
+* <arg>b</arg> (<type>float</type>): The <prop>b</prop> component (normal Y)
+* <arg>c</arg> (<type>float</type>): The <prop>c</prop> component (normal Z)
+* <arg>d</arg> (<type>float</type>): The <prop>d</prop> component (distance)
 
 ## Functions
 
 ### Overview
 
-<fdef>[HeightAt](#heightat)(<arg>position</arg>) -> <type>number</type></fdef>
+<fdef>[HeightAt](#heightat)(<arg>position</arg>) -> <type>float</type></fdef>
 
 ---
 ### HeightAt
@@ -45,4 +45,4 @@ Calculates the height (`z`) at <arg>position</arg> on the plane.
 
 #### Returns
 
-* <type>number</type>: The height (`z`) on the plane at <arg>position</arg>
+* <type>float</type>: The height (`z`) on the plane at <arg>position</arg>

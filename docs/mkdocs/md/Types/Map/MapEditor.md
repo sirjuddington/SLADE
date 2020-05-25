@@ -4,9 +4,9 @@ Map editing context for the currently open map editor in SLADE.
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop class="ro">editMode</prop>        | <type>number</type> | The current edit mode (see `MODE_` constants below)
-<prop class="ro">sectorEditMode</prop>  | <type>number</type> | The current sector edit mode (see `SECTORMODE_` constants below)
-<prop class="ro">gridSize</prop>        | <type>number</type> | The current grid size
+<prop class="ro">editMode</prop>        | <type>integer</type> | The current edit mode (see `MODE_` constants below)
+<prop class="ro">sectorEditMode</prop>  | <type>integer</type> | The current sector edit mode (see `SECTORMODE_` constants below)
+<prop class="ro">gridSize</prop>        | <type>integer</type> | The current grid size
 <prop class="ro">map</prop>             | <type>[Map](Map.md)</type> | The map associated with this editor
 
 ## Constants
@@ -55,8 +55,8 @@ Sets the edit mode to the given <arg>mode</arg>. If the mode is being set to `MO
 
 #### Parameters
 
-* <arg>mode</arg> (<type>number</type>): The edit mode to switch to (see `MODE_` constants)
-* <arg>[sectorMode]</arg> (<type>number</type>): The sector edit mode to switch to (see `SECTORMODE_` constants). Default is `SECTORMODE_BOTH`
+* <arg>mode</arg> (<type>integer</type>): The edit mode to switch to (see `MODE_` constants)
+* <arg>[sectorMode]</arg> (<type>integer</type>): The sector edit mode to switch to (see `SECTORMODE_` constants). Default is `SECTORMODE_BOTH`
 
 ---
 ### ClearSelection

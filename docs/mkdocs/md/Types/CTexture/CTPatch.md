@@ -11,8 +11,8 @@ The following types inherit all <type>CTPatch</type> properties and functions:
 | Property | Type | Description |
 |:---------|:-----|:------------|
 <prop class="rw">name</prop> | <type>string</type> | The name of the patch
-<prop class="rw">offsetX</prop> | <type>number</type> | The horizontal offset of the patch (from the left of the texture)
-<prop class="rw">offsetY</prop> | <type>number</type> | The vertical offset of the patch (from the top of the texture)
+<prop class="rw">offsetX</prop> | <type>integer</type> | The horizontal offset of the patch (from the left of the texture)
+<prop class="rw">offsetY</prop> | <type>integer</type> | The vertical offset of the patch (from the top of the texture)
 
 ## Constructors
 

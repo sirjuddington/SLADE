@@ -36,7 +36,7 @@ The <type>ImageFormat</type> type is a handler for an image format that SLADE su
 <fdef>[IsThisFormat](#isthisformat)(<arg>data</arg>) -> <type>boolean</type></fdef>
 <fdef>[LoadImage](#loadimage)(<arg>image</arg>, <arg>data</arg>, <arg>[index]</arg>) -> <type>boolean</type></fdef>
 <fdef>[SaveImage](#saveimage)(<arg>image</arg>, <arg>dataOut</arg>, <arg>[palette]</arg>, <arg>[index]</arg>) -> <type>boolean</type></fdef>
-<fdef>[CanWrite](#canwrite)(<arg>image</arg>) -> <type>number</type></fdef>
+<fdef>[CanWrite](#canwrite)(<arg>image</arg>) -> <type>integer</type></fdef>
 <fdef>[CanWritePixelFormat](#canwritepixelformat)(<arg>pixelFormat</arg>) -> <type>boolean</type></fdef>
 <fdef>[ConvertWritable](#convertwritable)(<arg>image</arg>, <arg>convertOptions</arg>) -> <type>boolean</type></fdef>
 
@@ -62,7 +62,7 @@ Loads <arg>data</arg> of this format into <arg>image</arg>.
 
 * <arg>image</arg> (<type>[Image](Image.md)</type>): The target image to load the data into
 * <arg>data</arg> (<type>[DataBlock](../DataBlock.md)</type>): The data to load
-* <arg>[index]</arg> (<type>number</type>): The index of the image in the data (for cases where the image format contains multiple images, eg. Duke3D ART). Default is `0`
+* <arg>[index]</arg> (<type>integer</type>): The index of the image in the data (for cases where the image format contains multiple images, eg. Duke3D ART). Default is `0`
 
 #### Returns
 
@@ -78,7 +78,7 @@ Saves the given <arg>image</arg> to <arg>dataOut</arg> in this format.
 * <arg>image</arg> (<type>[Image](Image.md)</type>): The image to write
 * <arg>dataOut</arg> (<type>[DataBlock](../DataBlock.md)</type>): The data block to write to
 * <arg>[palette]</arg> (<type>[Palette](Palette.md)</type>): The palette to use if <arg>image</arg> is 8-bit indexed but does not contain its own internal palette. Default is `nil`
-* <arg>[index]</arg> (<type>number</type>): The index to write the image to in the data (for cases where the image format contains multiple images, eg. Duke3D ART). Default is `0`
+* <arg>[index]</arg> (<type>integer</type>): The index to write the image to in the data (for cases where the image format contains multiple images, eg. Duke3D ART). Default is `0`
 
 #### Returns
 
@@ -95,7 +95,7 @@ Checks if the given <arg>image</arg> can be written in this format.
 
 #### Returns
 
-* <type>number</type>: Whether the given image can be saved as this format:
+* <type>integer</type>: Whether the given image can be saved as this format:
     * `WRITABLE_NO`: Can't be written
     * `WRITABLE_YES`: Can be written
     * `WRITABLE_NEEDS_CONVERSION`: Can't be written as-is, requires conversion to a supported pixel format first (see <func>[ConvertWritable](#convertwritable)</func>)
@@ -105,7 +105,7 @@ Checks if the given <arg>image</arg> can be written in this format.
 
 #### Parameters
 
-* <arg>pixelFormat</arg> (<type>number</type>): The image pixel format to check (see <type>[Image](Image.md#constants)</type>`.PIXELFORMAT_` constants)
+* <arg>pixelFormat</arg> (<type>integer</type>): The image pixel format to check (see <type>[Image](Image.md#constants)</type>`.PIXELFORMAT_` constants)
 
 #### Returns
 

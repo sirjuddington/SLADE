@@ -24,15 +24,15 @@ An image can have one of three pixel formats, which determines how data for each
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop class="ro">pixelFormat</prop> | <type>number</type> | The format of the pixels in the image (see [Image Pixel Formats](#_top))
-<prop class="ro">width</prop> | <type>number</type> | The width of the image
-<prop class="ro">height</prop> | <type>number</type> | The height of the image
+<prop class="ro">pixelFormat</prop> | <type>integer</type> | The format of the pixels in the image (see [Image Pixel Formats](#_top))
+<prop class="ro">width</prop> | <type>integer</type> | The width of the image
+<prop class="ro">height</prop> | <type>integer</type> | The height of the image
 <prop class="ro">hasPalette</prop> | <type>boolean</type> | Whether this image has an internal palette
 <prop class="rw">palette</prop> | <type>[Palette](Palette.md)</type> | The image's internal palette. If <prop>hasPalette</prop> is `false` this will be greyscale
-<prop class="rw">offsetX</prop> | <type>number</type> | The X offset of the image
-<prop class="rw">offsetY</prop> | <type>number</type> | The Y offset of the image
-<prop class="ro">stride</prop> | <type>number</type> | The number of bytes per row of image data
-<prop class="ro">bpp</prop> | <type>number</type> | The number of bytes per pixel in the image data
+<prop class="rw">offsetX</prop> | <type>integer</type> | The X offset of the image
+<prop class="rw">offsetY</prop> | <type>integer</type> | The Y offset of the image
+<prop class="ro">stride</prop> | <type>integer</type> | The number of bytes per row of image data
+<prop class="ro">bpp</prop> | <type>integer</type> | The number of bytes per pixel in the image data
 
 ## Constructors
 
@@ -48,7 +48,7 @@ Creates a new, empty image of <arg>pixelFormat</arg>.
 
 #### Parameters
 
-* <arg>pixelFormat</arg> (<type>number</type>): The pixel format of the image (see `PIXELFORMAT_` constants)
+* <arg>pixelFormat</arg> (<type>integer</type>): The pixel format of the image (see `PIXELFORMAT_` constants)
 
 
 ## Functions
@@ -63,11 +63,11 @@ Creates a new, empty image of <arg>pixelFormat</arg>.
 
 #### Image Info
 
-<fdef>[CountUniqueColours](#countuniquecolours)() -> <type>number</type></fdef>
-<fdef>[FindUnusedColour](#findunusedcolour)() -> <type>number</type></fdef>
+<fdef>[CountUniqueColours](#countuniquecolours)() -> <type>integer</type></fdef>
+<fdef>[FindUnusedColour](#findunusedcolour)() -> <type>integer</type></fdef>
 <fdef>[IsValid](#isvalid)() -> <type>boolean</type></fdef>
 <fdef>[PixelAt](#pixelat)(<arg>x</arg>, <arg>y</arg>, <arg>[palette]</arg>) -> <type>[Colour](../Colour.md)</type></fdef>
-<fdef>[PixelIndexAt](#pixelindexat)(<arg>x</arg>, <arg>y</arg>) -> <type>number</type></fdef>
+<fdef>[PixelIndexAt](#pixelindexat)(<arg>x</arg>, <arg>y</arg>) -> <type>integer</type></fdef>
 
 #### Read Data
 
@@ -136,9 +136,9 @@ Copies all data and properties from another <type>Image</type>.
 
 #### Parameters
 
-* <arg>width</arg> (<type>number</type>): The width of the image
-* <arg>height</arg> (<type>number</type>): The height of the image
-* <arg>type</arg> (<type>number</type>): The type of image to create (see `PIXELFORMAT_` constants)
+* <arg>width</arg> (<type>integer</type>): The width of the image
+* <arg>height</arg> (<type>integer</type>): The height of the image
+* <arg>type</arg> (<type>integer</type>): The type of image to create (see `PIXELFORMAT_` constants)
 * <arg>[palette]</arg> (<type>[Palette](Palette.md)</type>, default `nil`): The palette to use as the internal image palette
 
 ---
@@ -148,7 +148,7 @@ Counts the number of unique colours present in the image.
 
 #### Returns
 
-* <type>number</type>: The number of unique colours present in the image, or `0` if the image isn't `PIXELFORMAT_INDEXED`
+* <type>integer</type>: The number of unique colours present in the image, or `0` if the image isn't `PIXELFORMAT_INDEXED`
 
 ---
 ### FindUnusedColour
@@ -157,7 +157,7 @@ Gets the index of the first unused colour in the palette. Will return `-1` if th
 
 #### Returns
 
-* <type>number</type>: The index of the first colour in the palette not used in the image.
+* <type>integer</type>: The index of the first colour in the palette not used in the image.
 
 ---
 ### IsValid
@@ -173,8 +173,8 @@ Checks if the image is valid (ie. has any data).
 
 #### Parameters
 
-* <arg>x</arg> (<type>number</type>): The X position of the pixel
-* <arg>y</arg> (<type>number</type>): The Y position of the pixel
+* <arg>x</arg> (<type>integer</type>): The X position of the pixel
+* <arg>y</arg> (<type>integer</type>): The Y position of the pixel
 * <arg>[palette]</arg> (<type>[Palette](Palette.md)</type>): The palette to use if the image is `PIXELFORMAT_INDEXED` and has no internal palette. Default is `nil`
 
 #### Returns
@@ -188,12 +188,12 @@ Gets the palette index of the pixel at (<arg>x</arg>,<arg>y</arg>). Will be `0` 
 
 #### Parameters
 
-* <arg>x</arg> (<type>number</type>): The X position of the pixel
-* <arg>y</arg> (<type>number</type>): The Y position of the pixel
+* <arg>x</arg> (<type>integer</type>): The X position of the pixel
+* <arg>y</arg> (<type>integer</type>): The Y position of the pixel
 
 #### Returns
 
-* <type>number</type>: The palette index of the pixel at (<arg>x</arg>,<arg>y</arg>)
+* <type>integer</type>: The palette index of the pixel at (<arg>x</arg>,<arg>y</arg>)
 
 ---
 ### LoadData
@@ -203,7 +203,7 @@ Reads the given <arg>data</arg> to the image. The data can be in any supported i
 #### Parameters
 
 * <arg>data</arg> (<type>[DataBlock](../DataBlock.md)</type>): The data to read
-* <arg>[index]</arg> (<type>number</type>): The index of the image to load, for cases where the image format contains multiple images. Default is `0`
+* <arg>[index]</arg> (<type>integer</type>): The index of the image to load, for cases where the image format contains multiple images. Default is `0`
 * <arg>[typeHint]</arg> (<type>string</type>): The image format id to try loading first, before auto-detecting. Default is `""`
 
 #### Returns
@@ -218,7 +218,7 @@ Reads the given <arg>entry</arg>'s data to the image. The data can be in any sup
 #### Parameters
 
 * <arg>entry</arg> (<type>[ArchiveEntry](../Archive/ArchiveEntry.md)</type>): The entry to read
-* <arg>[index]</arg> (<type>number</type>): The index of the image to load, for cases where the image format contains multiple images. Default is `0`
+* <arg>[index]</arg> (<type>integer</type>): The index of the image to load, for cases where the image format contains multiple images. Default is `0`
 
 #### Returns
 
@@ -277,7 +277,7 @@ Converts the image to `PIXELFORMAT_ALPHA`.
 
 #### Parameters
 
-* <arg>alphaSource</arg> (<type>number</type>): The source to generate the alpha values from:
+* <arg>alphaSource</arg> (<type>integer</type>): The source to generate the alpha values from:
     * `SOURCE_ALPHA`: Use existing alpha values
     * `SOURCE_BRIGHTNESS`: Determine alpha from the brightness of each pixel's colour
 * <arg>[palette]</arg> (<type>[Palette](Palette.md)</type>): The palette to use if the image is `PIXELFORMAT_INDEXED` but doesn't have an internal <prop>palette</prop>. Default is `nil`
@@ -320,10 +320,10 @@ Crops the image to a new rectangle between (<arg>left</arg>, <arg>top</arg>) -> 
 
 #### Parameters
 
-* <arg>left</arg> (<type>number</type>): The new left of the image (anything to the left of this will be cut)
-* <arg>top</arg> (<type>number</type>): The new top of the image (anything above this will be cut)
-* <arg>right</arg> (<type>number</type>): The new right of the image (anything to the right of this will be cut)
-* <arg>bottom</arg> (<type>number</type>): The new bottom of the image (anything below this will be cut)
+* <arg>left</arg> (<type>integer</type>): The new left of the image (anything to the left of this will be cut)
+* <arg>top</arg> (<type>integer</type>): The new top of the image (anything above this will be cut)
+* <arg>right</arg> (<type>integer</type>): The new right of the image (anything to the right of this will be cut)
+* <arg>bottom</arg> (<type>integer</type>): The new bottom of the image (anything below this will be cut)
 
 #### Returns
 
@@ -354,8 +354,8 @@ Resizes the image to <arg>newWidth</arg> x <arg>newHeight</arg>, conserving any 
 
 #### Parameters
 
-* <arg>newWidth</arg> (<type>number</type>): The new image width
-* <arg>newHeight</arg> (<type>number</type>): The new image height
+* <arg>newWidth</arg> (<type>integer</type>): The new image width
+* <arg>newHeight</arg> (<type>integer</type>): The new image height
 
 #### Returns
 
@@ -368,7 +368,7 @@ Rotates the image by <arg>angle</arg>.
 
 #### Parameters
 
-* <arg>angle</arg> (<type>number</type>): The amount (in degrees) to rotate the image
+* <arg>angle</arg> (<type>integer</type>): The amount (in degrees) to rotate the image
 
 #### Returns
 
@@ -419,8 +419,8 @@ Sets the pixel at (<arg>x</arg>,<arg>y</arg>) to <arg>colour</arg>.
 
 #### Parameters
 
-* <arg>x</arg> (<type>number</type>): The X position of the pixel
-* <arg>y</arg> (<type>number</type>): The Y position of the pixel
+* <arg>x</arg> (<type>integer</type>): The X position of the pixel
+* <arg>y</arg> (<type>integer</type>): The Y position of the pixel
 * <arg>colour</arg> (<type>[Colour](../Colour.md)</type>): The colour to set the pixel to
 * <arg>[palette]</arg> (<type>[Palette](Palette.md)</type>): The palette to use if the image is `PIXELFORMAT_INDEXED` but doesn't have an internal <prop>palette</prop>. Default is `nil`
 
@@ -435,10 +435,10 @@ Ses the pixel at (<arg>x</arg>,<arg>y</arg>) to the palette colour <arg>index</a
 
 #### Parameters
 
-* <arg>x</arg> (<type>number</type>): The X position of the pixel
-* <arg>y</arg> (<type>number</type>): The Y position of the pixel
-* <arg>index</arg> (<type>number</type>): The (`0`-based) palette colour index
-* <arg>[alpha]</arg> (<type>number</type>): The alpha value for the pixel. Default is `255` (fully opaque)
+* <arg>x</arg> (<type>integer</type>): The X position of the pixel
+* <arg>y</arg> (<type>integer</type>): The Y position of the pixel
+* <arg>index</arg> (<type>integer</type>): The (`0`-based) palette colour index
+* <arg>[alpha]</arg> (<type>integer</type>): The alpha value for the pixel. Default is `255` (fully opaque)
 
 #### Returns
 
@@ -452,7 +452,7 @@ Tints the image to <arg>colour</arg> by <arg>amount</arg>.
 #### Parameters
 
 * <arg>colour</arg> (<type>[Colour](../Colour.md)</type>): The colour to apply
-* <arg>amount</arg> (<type>number</type>): The amount to tint (`0.0` - `1.0`)
+* <arg>amount</arg> (<type>float</type>): The amount to tint (`0.0` - `1.0`)
 * <arg>[palette]</arg> (<type>[Palette](Palette.md)</type>): The palette to use if the image is `PIXELFORMAT_INDEXED` but doesn't have an internal <prop>palette</prop>. Default is `nil`
 
 #### Returns
@@ -466,7 +466,7 @@ Sets all alpha values in the image to <arg>alpha</arg>.
 
 #### Parameters
 
-* <arg>alpha</arg> (<type>number</type>): The alpha value to set
+* <arg>alpha</arg> (<type>integer</type>): The alpha value to set
 
 ---
 ### MaskFromBrightness
@@ -502,8 +502,8 @@ Draws <arg>srcImage</arg> at (<arg>x</arg>,<arg>y</arg>) on the image.
 
 #### Parameters
 
-* <arg>x</arg> (<type>number</type>): The X position to draw <arg>srcImage</arg>. Can be negative
-* <arg>y</arg> (<type>number</type>): The Y position to draw <arg>srcImage</arg>. Can be negative
+* <arg>x</arg> (<type>integer</type>): The X position to draw <arg>srcImage</arg>. Can be negative
+* <arg>y</arg> (<type>integer</type>): The Y position to draw <arg>srcImage</arg>. Can be negative
 * <arg>srcImage</arg> (<type>Image</type>): The image to draw
 * <arg>drawOptions</arg> (<type>[ImageDrawOptions](ImageDrawOptions.md)</type>): Options for blending <arg>srcImage</arg>'s pixels with the existing image
 * <arg>[srcPalette]</arg> (<type>[Palette](Palette.md)</type>): The palette to use for <arg>srcImage</arg> if it is `PIXELFORMAT_INDEXED` but doesn't have an internal <prop>palette</prop>. Default is `nil`
@@ -524,8 +524,8 @@ Draws a pixel of <arg>colour</arg> at (<arg>x</arg>,<arg>y</arg>) on the image.
 
 #### Parameters
 
-* <arg>x</arg> (<type>number</type>): The X position to draw the pixel
-* <arg>y</arg> (<type>number</type>): The Y position to draw the pixel
+* <arg>x</arg> (<type>integer</type>): The X position to draw the pixel
+* <arg>y</arg> (<type>integer</type>): The Y position to draw the pixel
 * <arg>colour</arg> (<type>[Colour](../Colour.md)</type>): The colour of the pixel to draw
 * <arg>drawOptions</arg> (<type>[ImageDrawOptions](ImageDrawOptions.md)</type>): Options for blending the pixel with the existing image
 * <arg>[palette]</arg> (<type>[Palette](Palette.md)</type>): The palette to use if the image is `PIXELFORMAT_INDEXED` but doesn't have an internal <prop>palette</prop>. Default is `nil`

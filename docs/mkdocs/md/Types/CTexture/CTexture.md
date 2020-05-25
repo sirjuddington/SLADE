@@ -12,15 +12,15 @@ For more information, see:
 |:---------|:-----|:------------|
 <prop class="ro">patches</prop> | <type>[CTPatch](CTPatch.md)\[\]</type> | The patches that make up the texture
 <prop class="rw">name</prop> | <type>string</type> | The texture name
-<prop class="rw">width</prop> | <type>number</type> | Width of the texture
-<prop class="rw">height</prop> | <type>number</type> | Height of the texture
+<prop class="rw">width</prop> | <type>integer</type> | Width of the texture
+<prop class="rw">height</prop> | <type>integer</type> | Height of the texture
 <prop class="rw">worldPanning</prop> | <type>boolean</type> | If `true`, use world units instead of pixels for offsets (in map)
 <prop class="rw">extended</prop> | <type>boolean</type> | If `true`, this is a ZDoom `TEXTURES` format texture, and contains <type>[CTPatchEx](CTPatchEx.md)</type> patches
 <prop class="rw">type</prop> | <type>string</type> | The type of the texture: `texture`, `sprite`, `graphic`, `walltexture` or `flat`
-<prop class="rw">scaleX</prop> | <type>number</type> | Horizontal scale of the texture (multiplier, eg. `0.5` is half size)
-<prop class="rw">scaleY</prop> | <type>number</type> | Vertical scale of the texture (multiplier, eg. `0.5` is half size)
-<prop class="rw">offsetX</prop> | <type>number</type> | X offset of the texture
-<prop class="rw">offsetY</prop> | <type>number</type> | Y offset of the texture
+<prop class="rw">scaleX</prop> | <type>float</type> | Horizontal scale of the texture (multiplier, eg. `0.5` is half size)
+<prop class="rw">scaleY</prop> | <type>float</type> | Vertical scale of the texture (multiplier, eg. `0.5` is half size)
+<prop class="rw">offsetX</prop> | <type>integer</type> | X offset of the texture
+<prop class="rw">offsetY</prop> | <type>integer</type> | Y offset of the texture
 <prop class="rw">optional</prop> | <type>boolean</type> | If `true`, texture is optional
 <prop class="rw">noDecals</prop> | <type>boolean</type> | If `true`, no decals will show on this texture
 <prop class="rw">nullTexture</prop> | <type>boolean</type> | If `true`, this texture is never drawn ingame (like `AASHITTY`)
@@ -102,9 +102,9 @@ Adds a new patch to the texture.
 #### Parameters
 
 * <arg>patch</arg> (<type>string</type>): The name of the patch to add
-* <arg>[x]</arg> (<type>number</type>, default `0`): The x position of the patch within the texture
-* <arg>[y]</arg> (<type>number</type>, default `0`): The y position of the patch within the texture
-* <arg>[index]</arg> (<type>number</type>, default `0`): Where to add the patch in the <prop>patches</prop> array. Patches later in the array are drawn over the top of previous ones. If `0`, the patch is added to the end of the array
+* <arg>[x]</arg> (<type>integer</type>, default `0`): The x position of the patch within the texture
+* <arg>[y]</arg> (<type>integer</type>, default `0`): The y position of the patch within the texture
+* <arg>[index]</arg> (<type>integer</type>, default `0`): Where to add the patch in the <prop>patches</prop> array. Patches later in the array are drawn over the top of previous ones. If `0`, the patch is added to the end of the array
 
 #### Notes
 
@@ -120,9 +120,9 @@ Duplicates the patch at <arg>index</arg> in the texture.
 
 #### Parameters
 
-* <arg>index</arg> (<type>number</type>): The index of the patch to duplicate
-* <arg>[offsetX]</arg> (<type>number</type>): The amount to add to the X offset of the duplicated patch. Default is `8`
-* <arg>[offsetY]</arg> (<type>number</type>): The amount to add to the Y offset of the duplicated patch. Default is `8`
+* <arg>index</arg> (<type>integer</type>): The index of the patch to duplicate
+* <arg>[offsetX]</arg> (<type>integer</type>): The amount to add to the X offset of the duplicated patch. Default is `8`
+* <arg>[offsetY]</arg> (<type>integer</type>): The amount to add to the Y offset of the duplicated patch. Default is `8`
 
 #### Example
 
@@ -144,7 +144,7 @@ Removes the patch at <arg>index</arg> in the texture.
 
 #### Parameters
 
-* <arg>index</arg> (<type>number</type>): The index of the patch to remove
+* <arg>index</arg> (<type>integer</type>): The index of the patch to remove
 
 #### Returns
 
@@ -157,7 +157,7 @@ Replaces the patch at <arg>index</arg> in the texture with <arg>newPatch</arg>.
 
 #### Parameters
 
-* <arg>index</arg> (<type>number</type>): The index of the patch to replace
+* <arg>index</arg> (<type>integer</type>): The index of the patch to replace
 * <arg>newPatch</arg> (<type>string</type>): The new patch name
 
 #### Returns
@@ -171,8 +171,8 @@ Swaps the patch at <arg>index1</arg> in the texture with the patch at <arg>index
 
 #### Parameters
 
-* <arg>index1</arg> (<type>number</type>): The index of the first patch to swap
-* <arg>index2</arg> (<type>number</type>): The index of the second patch to swap
+* <arg>index1</arg> (<type>integer</type>): The index of the first patch to swap
+* <arg>index2</arg> (<type>integer</type>): The index of the second patch to swap
 
 #### Returns
 

@@ -7,10 +7,10 @@ The <type>ArchiveEntry</type> type represents an entry in SLADE.
 <prop class="ro">name</prop> | <type>string</type> | The entry name.<br/>As an example, for an entry `Actors/Weapons/Gun1.txt` this will be `Gun1.txt`
 <prop class="ro">path</prop> | <type>string</type> | The path to the entry in the archive, beginning and ending with `/`.<br/>As an example, for an entry `Actors/Weapons/Gun1.txt`, this will be `/Actors/Weapons/`. If the entry isn't in a directory this will be just `/`
 <prop class="ro">type</prop> | <type>[EntryType](EntryType.md)</type> | The entry's type information
-<prop class="ro">size</prop> | <type>number</type> | The size of the entry in bytes
+<prop class="ro">size</prop> | <type>integer</type> | The size of the entry in bytes
 <prop class="ro">data</prop> | <type>[DataBlock](../DataBlock.md)</type> | The entry's data
-<prop class="ro">index</prop> | <type>number</type> | The index of the entry within its containing archive or directory
-<prop class="ro">crc32</prop> | <type>number</type> | The 32-bit [crc](https://en.wikipedia.org/wiki/Cyclic_redundancy_check) value calculated from the entry's data
+<prop class="ro">index</prop> | <type>integer</type> | The index of the entry within its containing archive or directory
+<prop class="ro">crc32</prop> | <type>integer</type> | The 32-bit [crc](https://en.wikipedia.org/wiki/Cyclic_redundancy_check) value calculated from the entry's data
 
 ## Constructors
 

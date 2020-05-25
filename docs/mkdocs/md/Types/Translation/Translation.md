@@ -8,9 +8,9 @@ See the [Translation](https://zdoom.org/wiki/Translation) page on the ZDoom wiki
 | Property | Type | Description |
 |:---------|:-----|:------------|
 <prop class="ro">ranges</prop> | <type>[TransRange](TransRange.md)\[\]</type> | An array of all custom ranges in the translation
-<prop class="ro">rangeCount</prop> | <type>number</type> | The number of custom ranges in the translation
+<prop class="ro">rangeCount</prop> | <type>integer</type> | The number of custom ranges in the translation
 <prop class="rw">standardName</prop> | <type>string</type> | The name of the 'built in' translation to use (for TEXTURES). If this is set the <prop>ranges</prop> above will be ignored. See [TEXTURES](https://zdoom.org/wiki/TEXTURES) for information on the available options.
-<prop class="rw">desatAmount</prop> | <type>number</type> | The desaturation amount (`1` - `31`) if <prop>standardName</prop> is `desaturate`
+<prop class="rw">desatAmount</prop> | <type>integer</type> | The desaturation amount (`1` - `31`) if <prop>standardName</prop> is `desaturate`
 
 
 ## Constructors
@@ -127,7 +127,7 @@ Gets a single part (<type>[TransRange](TransRange.md)</type>) of the translation
 
 #### Parameters
 
-* <arg>index</arg> (<type>number</type>) : The index of the range to get
+* <arg>index</arg> (<type>integer</type>) : The index of the range to get
 
 #### Returns
 
@@ -153,8 +153,8 @@ Adds a new custom translation range of type <type>[TransRangePalette](TransRange
 
 #### Parameters
 
-* <arg>rangeStart</arg> (<type>number</type>): The first palette index of the range (`0` - `255`)
-* <arg>rangeEnd</arg> (<type>number</type>): The last palette index of the range (`0` - `255`)
+* <arg>rangeStart</arg> (<type>integer</type>): The first palette index of the range (`0` - `255`)
+* <arg>rangeEnd</arg> (<type>integer</type>): The last palette index of the range (`0` - `255`)
 
 #### Returns
 
@@ -177,8 +177,8 @@ Adds a new custom translation range of type <type>[TransRangeColour](TransRangeC
 
 #### Parameters
 
-* <arg>rangeStart</arg> (<type>number</type>): The first palette index of the range (`0` - `255`)
-* <arg>rangeEnd</arg> (<type>number</type>): The last palette index of the range (`0` - `255`)
+* <arg>rangeStart</arg> (<type>integer</type>): The first palette index of the range (`0` - `255`)
+* <arg>rangeEnd</arg> (<type>integer</type>): The last palette index of the range (`0` - `255`)
 
 #### Returns
 
@@ -191,8 +191,8 @@ Adds a new custom translation range of type <type>[TransRangeDesat](TransRangeDe
 
 #### Parameters
 
-* <arg>rangeStart</arg> (<type>number</type>): The first palette index of the range (`0` - `255`)
-* <arg>rangeEnd</arg> (<type>number</type>): The last palette index of the range (`0` - `255`)
+* <arg>rangeStart</arg> (<type>integer</type>): The first palette index of the range (`0` - `255`)
+* <arg>rangeEnd</arg> (<type>integer</type>): The last palette index of the range (`0` - `255`)
 
 #### Returns
 
@@ -205,8 +205,8 @@ Adds a new custom translation range of type <type>[TransRangeBlend](TransRangeBl
 
 #### Parameters
 
-* <arg>rangeStart</arg> (<type>number</type>): The first palette index of the range (`0` - `255`)
-* <arg>rangeEnd</arg> (<type>number</type>): The last palette index of the range (`0` - `255`)
+* <arg>rangeStart</arg> (<type>integer</type>): The first palette index of the range (`0` - `255`)
+* <arg>rangeEnd</arg> (<type>integer</type>): The last palette index of the range (`0` - `255`)
 
 #### Returns
 
@@ -219,8 +219,8 @@ Adds a new custom translation range of type <type>[TransRangeTint](TransRangeTin
 
 #### Parameters
 
-* <arg>rangeStart</arg> (<type>number</type>): The first palette index of the range (`0` - `255`)
-* <arg>rangeEnd</arg> (<type>number</type>): The last palette index of the range (`0` - `255`)
+* <arg>rangeStart</arg> (<type>integer</type>): The first palette index of the range (`0` - `255`)
+* <arg>rangeEnd</arg> (<type>integer</type>): The last palette index of the range (`0` - `255`)
 
 #### Returns
 
@@ -233,8 +233,8 @@ Adds a new custom translation range of type <type>[TransRangeSpecial](TransRange
 
 #### Parameters
 
-* <arg>rangeStart</arg> (<type>number</type>): The first palette index of the range (`0` - `255`)
-* <arg>rangeEnd</arg> (<type>number</type>): The last palette index of the range (`0` - `255`)
+* <arg>rangeStart</arg> (<type>integer</type>): The first palette index of the range (`0` - `255`)
+* <arg>rangeEnd</arg> (<type>integer</type>): The last palette index of the range (`0` - `255`)
 
 #### Returns
 
@@ -256,7 +256,7 @@ Removes the custom translation range at <arg>index</arg> in <prop>ranges</prop>
 
 #### Parameters
 
-* <arg>index</arg> (<type>number</type>): The index of the range to remove
+* <arg>index</arg> (<type>integer</type>): The index of the range to remove
 
 ---
 ### SwapRanges
@@ -265,5 +265,5 @@ Swaps the custom translation ranges at <arg>index1</arg> and <arg>index2</arg> i
 
 #### Parameters
 
-* <arg>index1</arg> (<type>number</type>): The index of the first range to swap
-* <arg>index2</arg> (<type>number</type>): The index of the second range to swap
+* <arg>index1</arg> (<type>integer</type>): The index of the first range to swap
+* <arg>index2</arg> (<type>integer</type>): The index of the second range to swap
