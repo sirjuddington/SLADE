@@ -1,3 +1,6 @@
+<subhead>Example</subhead>
+<header>Find Text in Entries</header>
+
 This example script will prompt for a search term, then search all text entries in the currently selected archive for the term. Matches are logged to the console.
 
 ```lua

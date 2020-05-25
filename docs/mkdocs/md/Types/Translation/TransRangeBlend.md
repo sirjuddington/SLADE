@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>TransRangeBlend</header>
+
 A custom translation range that blends with a colour. See [Translation](https://zdoom.org/wiki/Translation) for more info.
 
 ### Inherits <type>[TransRange](TransRange.md)</type>  

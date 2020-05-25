@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>MapSide</header>
+
 Represents a map sidedef.
 
 ### Inherits <type>[MapObject](MapObject.md)</type>  

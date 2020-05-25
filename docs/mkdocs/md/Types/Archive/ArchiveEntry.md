@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>ArchiveEntry</header>
+
 The <type>ArchiveEntry</type> type represents an entry in SLADE.
 
 ## Properties

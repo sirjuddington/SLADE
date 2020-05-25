@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>ArchiveSearchOptions</header>
+
 The <type>ArchiveSearchOptions</type> type contains options for searching for entries in an <type>[Archive](Archive.md)</type>.
 
 **See:**

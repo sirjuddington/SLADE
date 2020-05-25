@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>MapVertex</header>
+
 Represents a map vertex.
 
 ### Inherits <type>[MapObject](MapObject.md)</type>  

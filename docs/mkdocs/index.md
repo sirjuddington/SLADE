@@ -1,4 +1,4 @@
-# SLADE Scripting Documentation
+<header>SLADE Scripting Documentation</header>
 
 Here is the documentation for the SLADE Lua scripting system. To start with it is probably best to take a look at the examples to get an idea of how things work, since currently there aren't any real tutorials or basic 'how-to' articles (something like that may come later).
 

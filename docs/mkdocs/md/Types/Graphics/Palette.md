@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>Palette</header>
+
 A palette containing (up to) 256 <type>[Colour](../Colour.md)</type>s
 
 ## Constants

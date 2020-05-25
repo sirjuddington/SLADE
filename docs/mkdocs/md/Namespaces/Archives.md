@@ -1,3 +1,6 @@
+<subhead>Namespace</subhead>
+<header>Archives</header>
+
 The `Archives` scripting namespace contains functions for managing archives.
 
 ## Functions

@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>TransRangeTint</header>
+
 A custom translation range that tints by a colour + amount. See [Translation](https://zdoom.org/wiki/Translation) for more info.
 
 ### Inherits <type>[TransRange](TransRange.md)</type>  

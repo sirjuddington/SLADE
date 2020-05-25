@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>MapSector</header>
+
 Represents a map sector.
 
 ### Inherits <type>[MapObject](MapObject.md)</type>  

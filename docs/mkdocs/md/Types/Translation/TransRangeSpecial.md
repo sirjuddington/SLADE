@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>TransRangeSpecial</header>
+
 A custom translation range that maps to a built-in colour translation.
 
 !!! attention

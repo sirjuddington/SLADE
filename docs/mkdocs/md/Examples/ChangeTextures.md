@@ -1,3 +1,6 @@
+<subhead>Example</subhead>
+<header>Change Textures</header>
+
 This example script changes all wall textures in a map to `AASHITTY` and all floor/ceiling textures to `SLIME09`.
 
 ```lua

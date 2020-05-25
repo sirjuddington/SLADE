@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>Plane</header>
+
 A geometrical [Plane](https://en.wikipedia.org/wiki/Plane_(geometry)), represented in general form (<prop>a</prop>`x+`<prop>b</prop>`y+`<prop>c</prop>`z+`<prop>d </prop>`= 0`).
 
 ## Properties

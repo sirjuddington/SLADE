@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>ArchiveFormat</header>
+
 The <type>ArchiveFormat</type> type contains information about an archive's format.
 
 ## Properties

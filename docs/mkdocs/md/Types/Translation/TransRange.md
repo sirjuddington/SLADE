@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>TransRange</header>
+
 A single 'part' of a custom <type>[Translation](Translation.md)</type>, which can be made up of multiple (each one corresponding to a range in the palette).
 
 ### Derived Types

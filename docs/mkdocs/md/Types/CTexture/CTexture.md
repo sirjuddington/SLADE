@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>CTexture</header>
+
 Represents a (z)doom format composite texture. A composite texture is made up of one or more patches (<type>[CTPatch](CTPatch.md)</type>).
 
 For more information, see:

@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>Image</header>
+
 An <type>Image</type> contains pixel data making up an image. The data can be in multiple formats (see the 'Image Pixel Formats' section below).
 
 The type also has various functions for manipulating image data and reading the various formats supported by SLADE (see <type>[ImageFormat](ImageFormat.md)</type>).

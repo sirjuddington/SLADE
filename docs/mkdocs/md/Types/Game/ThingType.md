@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>ThingType</header>
+
 Represents a thing type definition from the current game configuration (or parsed from DECORATE/ZScript etc.)
 
 ## Properties

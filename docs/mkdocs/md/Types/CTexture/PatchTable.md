@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>PatchTable</header>
+
 A patch table is a list of patch names used for Doom's composite texture system (see: [PNAMES](https://doomwiki.org/wiki/PNAMES) on the doom wiki).
 
 ## Properties

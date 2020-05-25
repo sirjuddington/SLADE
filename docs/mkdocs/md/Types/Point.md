@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>Point</header>
+
 Represents a 2D (x,y) point.
 
 ## Properties

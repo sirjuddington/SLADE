@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>MapLine</header>
+
 Represents a map linedef.
 
 ### Inherits <type>[MapObject](MapObject.md)</type>  

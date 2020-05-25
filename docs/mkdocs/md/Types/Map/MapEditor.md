@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>MapEditor</header>
+
 Map editing context for the currently open map editor in SLADE.
 
 ## Properties

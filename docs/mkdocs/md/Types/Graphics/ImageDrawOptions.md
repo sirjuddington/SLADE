@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>ImageDrawOptions</header>
+
 The <type>ImageDrawOptions</type> type contains colour blending options for use in <type>[Image](Image.md)</type>'s drawing functions.
 
 **See:**

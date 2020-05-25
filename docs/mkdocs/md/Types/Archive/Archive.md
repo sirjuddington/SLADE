@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>Archive</header>
+
 The <type>Archive</type> type represents an archive (wad/pk3/etc) in SLADE.
 
 ## Properties

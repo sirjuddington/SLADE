@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>DataBlock</header>
+
 A <type>DataBlock</type> is a simple block of binary data, with various functions to help deal with reading/writing raw binary data to the block.
 
 ## Properties

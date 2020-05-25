@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>MapObject</header>
+
 The <type>MapObject</type> type is a base type for all map editor objects.
 
 ### Derived Types

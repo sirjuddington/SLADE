@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>Colour</header>
+
 Represents an RGBA colour. Note that colour each component is an 8-bit integer (ie. must be between `0` and `255`).
 
 ## Properties

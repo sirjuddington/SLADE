@@ -1,3 +1,6 @@
+<subhead>Namespace</subhead>
+<header>Game</header>
+
 The `Game` scripting namespace contains functions related to the currently loaded game configuration in SLADE.
 
 ## Functions

@@ -1,4 +1,5 @@
-<!--<article-head>App</article-head>-->
+<subhead>Namespace</subhead>
+<header>App</header>
 
 The `App` scripting namespace contains a set of functions for general interaction with the SLADE application.
 

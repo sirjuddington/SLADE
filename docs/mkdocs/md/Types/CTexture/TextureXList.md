@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>TextureXList</header>
+
 The <type>TextureXList</type> type is a list of composite textures (<type>[CTexture](CTexture.md)</type>), which can be in various formats.
 
 ## Constants

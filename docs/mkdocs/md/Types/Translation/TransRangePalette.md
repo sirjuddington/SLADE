@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>TransRangePalette</header>
+
 A custom translation range that maps directly between palette indices. See [Translation](https://zdoom.org/wiki/Translation) for more info.
 
 ### Inherits <type>[TransRange](TransRange.md)</type>  

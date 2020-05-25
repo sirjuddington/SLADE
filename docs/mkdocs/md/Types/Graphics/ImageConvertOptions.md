@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>ImageConvertOptions</header>
+
 Contains various options for converting an image from one pixel format to another.
 
 <listhead>See:</listhead>

@@ -1,3 +1,6 @@
+<subhead>Example</subhead>
+<header>Archvile Madness</header>
+
 This example script changes all monsters in a map to Archviles.
 
 ```lua

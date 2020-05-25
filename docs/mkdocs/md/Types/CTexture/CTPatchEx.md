@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>CTPatchEx</header>
+
 An extended composite texture patch, with extra properties for use in ZDoom's [TEXTURES](https://zdoom.org/wiki/TEXTURES) lump.
 
 ### Inherits <type>[CTPatch](CTPatch.md)</type>  

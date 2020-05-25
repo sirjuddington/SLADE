@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>ImageFormat</header>
+
 The <type>ImageFormat</type> type is a handler for an image format that SLADE supports (eg. Doom Gfx), with the ability to read from or write to an <type>[Image](Image.md)</type>.
 
 ## Constants

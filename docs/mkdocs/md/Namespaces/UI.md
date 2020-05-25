@@ -1,3 +1,6 @@
+<subhead>Namespace</subhead>
+<header>UI</header>
+
 The `UI` scripting namespace contains functions for interacting with and displaying anything UI related.
 
 ## Constants

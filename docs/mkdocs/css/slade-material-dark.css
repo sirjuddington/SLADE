@@ -1,14 +1,11 @@
 
 /* ---- Fonts ---- */
 
-@import url('https://fonts.googleapis.com/css?family=Fira+Sans:400,400i,600,800');
-@import url('https://fonts.googleapis.com/css?family=Fira+Mono:400,500,600');
-
-@import url('https://fonts.googleapis.com/css?family=Montserrat:400,400i,500,600,800');
-@import url('https://fonts.googleapis.com/css?family=Share+Tech+Mono:400,500,600');
+@import url('https://fonts.googleapis.com/css?family=Fira+Sans:400,400i,500,600,800');
+@import url('https://fonts.googleapis.com/css?family=Fira+Code:400,500');
 
 body, h1, h2, h3, h4, h5, h6 {
-	font-family: 'Montserrat', 'Fira Sans', 'Segoe UI', sans-serif;
+	font-family: 'Fira Sans', 'Segoe UI', sans-serif;
 }
 
 type,
@@ -20,10 +17,8 @@ code,
 function,
 .admonition code,
 .md-typeset code,
-/* pre code,
-.codehilite pre, */
 fdef {
-	font-family: 'Fira Mono', 'Consolas', monospace !important;
+	font-family: 'Fira Code', 'Consolas', monospace !important;
 }
 
 
@@ -36,7 +31,7 @@ p {
 }
 
 strong {
-	font-weight: 600;;
+	font-weight: 600;
 }
 
 body,
@@ -91,21 +86,51 @@ article code A:active,
 	background-color: hsla(220, 35%, 40%, 1);
 }
 
+article > header {
+	font-size: 2.3em;
+	font-weight: 600;
+	color: hsl(220, 48%, 73%);
+	display: block;
+	border-bottom: 0.05em solid hsl(220, 15%, 30%);
+    padding-bottom: 0;
+	margin-top: -0.7em;
+	margin-bottom: 0.6em;
+}
+
+subhead {
+	font-size: 0.9em;
+    color: hsl(220, 20%, 55%);
+	font-weight: 500 !important;
+	display: block;
+	margin-top: -1em;
+	text-transform: uppercase;
+}
+
 .md-typeset h1,
 .md-typeset h2,
 .md-typeset h3,
 .md-typeset h3 code {
 	color: hsl(220, 48%, 73%) !important;
+}
+
+.md-typeset h1 {
 	font-weight: 600 !important;
+	display: none;
 }
 
 .md-typeset h2 {
 	font-weight: 500 !important;
+	font-size: 1.8em;
+}
+
+.md-typeset h3 {
+	font-size: 1.4em;
 }
 
 .md-typeset h4,
 .md-typeset h5 {
 	/* color: hsl(220, 48%, 73%) !important; */
+	color: hsl(220, 10%, 95%);
 	font-weight: 500 !important;
 	font-size: 1.0em;
 }
@@ -199,6 +224,10 @@ pre code,
 	border: 1px solid hsl(220, 20%, 34%);
 	line-height: 1.5em !important;
 	font-size: 0.8em;
+}
+
+#__code_0 > code {
+	font-variant-ligatures: none;
 }
 
 .codehilite pre .n,

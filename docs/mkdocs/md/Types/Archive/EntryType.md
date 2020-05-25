@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>EntryType</header>
+
 The <type>EntryType</type> type contains information about an entry's type/format.
 
 ## Properties

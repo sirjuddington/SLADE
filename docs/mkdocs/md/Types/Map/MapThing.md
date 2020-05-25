@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>MapThing</header>
+
 Represents a map thing (ie. an item/actor on the map).
 
 ### Inherits <type>[MapObject](MapObject.md)</type>  

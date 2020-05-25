@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>CTPatch</header>
+
 A single patch in a composite texture. See [TEXTURE1 and TEXTURE2](https://doomwiki.org/wiki/TEXTURE1_and_TEXTURE2) for more information.
 
 ### Derived Types

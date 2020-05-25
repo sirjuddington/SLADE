@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>Translation</header>
+
 A colour translation definition. Can either be a built in translation or a custom translation made up of one or more <type>[TransRange](TransRange.md)</type>s.
 
 See the [Translation](https://zdoom.org/wiki/Translation) page on the ZDoom wiki for more information.

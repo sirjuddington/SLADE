@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>ArchiveDir</header>
+
 The <type>ArchiveDir</type> type represents a 'directory' of entries in SLADE, such as in zip/pk3 archives.
 
 ## Properties

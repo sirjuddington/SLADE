@@ -1,3 +1,6 @@
+<subhead>Namespace</subhead>
+<header>Graphics</header>
+
 The `Graphics` namespace contains various graphics-related functions.
 
 ## Constants

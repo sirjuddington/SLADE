@@ -1,3 +1,6 @@
+<subhead>Type</subhead>
+<header>Map</header>
+
 Contains information and structures representing a Doom map.
 
 ## Properties
