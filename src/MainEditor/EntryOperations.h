@@ -12,18 +12,7 @@ class ModifyOffsetsDialog;
 namespace entryoperations
 {
 	bool openMapDB2(ArchiveEntry* entry);
-	bool gfxConvert(
-		ArchiveEntry*            entry,
-		const wxString&          target_format,
-		SIFormat::ConvertOptions opt,
-		SImage::Type             target_colformat = SImage::Type::Unknown);
-	bool modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog* dialog);
-	bool setGfxOffsets(ArchiveEntry* entry, int x, int y);
-	bool modifyalPhChunk(ArchiveEntry* entry, bool value);
-	bool modifytRNSChunk(ArchiveEntry* entry, bool value);
-	bool getalPhChunk(ArchiveEntry* entry);
-	bool gettRNSChunk(ArchiveEntry* entry);
-	bool readgrAbChunk(ArchiveEntry* entry, Vec2i& offsets);
+	//bool modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog* dialog);
 	bool addToPatchTable(const vector<ArchiveEntry*>& entries);
 	bool createTexture(const vector<ArchiveEntry*>& entries);
 	bool convertTextures(const vector<ArchiveEntry*>& entries);

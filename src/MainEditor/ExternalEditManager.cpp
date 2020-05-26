@@ -37,11 +37,11 @@
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Conversions.h"
-#include "EntryOperations.h"
 #include "General/Executables.h"
 #include "General/Misc.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
+#include "Graphics/Graphics.h"
 #include "MainEditor.h"
 #include "Utility/FileMonitor.h"
 #include "Utility/FileUtils.h"
@@ -141,7 +141,7 @@ public:
 			{
 				// Update entry data
 				entry_->importMemChunk(conv_data);
-				entryoperations::setGfxOffsets(entry_, offsets_.x, offsets_.y);
+				gfx::setImageOffsets(entry_->data(), offsets_.x, offsets_.y);
 			}
 			else
 			{

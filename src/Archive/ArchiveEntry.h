@@ -77,6 +77,7 @@ public:
 	void lockState() { state_locked_ = true; }
 	void unlockState() { state_locked_ = false; }
 	void formatName(const ArchiveFormat& format);
+	void updateSize() { size_ = data_.size(); }
 
 	// Entry modification (will change entry state)
 	bool rename(string_view new_name);

@@ -2342,7 +2342,7 @@ bool ArchivePanel::gfxModifyOffsets() const
 	for (auto& entry : selection)
 	{
 		undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
-		entryoperations::modifyGfxOffsets(entry, &mod);
+		mod.apply(*entry);
 	}
 	maineditor::currentEntryPanel()->callRefresh();
 	entry_list_->setEntriesAutoUpdate(true);

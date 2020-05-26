@@ -2,6 +2,8 @@
 
 namespace slade
 {
+class ArchiveEntry;
+
 class ModifyOffsetsDialog : public wxDialog
 {
 public:
@@ -15,6 +17,7 @@ public:
 	bool  xOffChange() const;
 	bool  yOffChange() const;
 	Vec2i calculateOffsets(int xoff, int yoff, int width, int height) const;
+	bool  apply(ArchiveEntry& entry);
 
 private:
 	wxChoice* combo_aligntype_ = nullptr;

@@ -31,7 +31,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ModifyOffsetsDialog.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/UI.h"
+#include "Graphics/GameFormats.h"
+#include "Graphics/Graphics.h"
 #include "Graphics/Icons.h"
 
 using namespace slade;
@@ -120,7 +123,7 @@ Vec2i ModifyOffsetsDialog::offset() const
 	entry_xoff_->GetValue().ToLong(&x);
 	entry_yoff_->GetValue().ToLong(&y);
 
-	return { int(x), int(y) };
+	return { static_cast<int>(x), static_cast<int>(y) };
 }
 
 // -----------------------------------------------------------------------------
@@ -260,6 +263,96 @@ Vec2i ModifyOffsetsDialog::calculateOffsets(int xoff, int yoff, int width, int h
 	}
 
 	return { x, y };
+}
+
+// -----------------------------------------------------------------------------
+// Changes the offsets of the given gfx entry, based on settings selected in
+// the dialog.
+// Returns false if the entry is not an offset-supported format
+// -----------------------------------------------------------------------------
+bool ModifyOffsetsDialog::apply(ArchiveEntry& entry)
+{
+	auto* type = entry.type();
+	if (type == nullptr)
+		return false;
+
+	// Check entry type
+	wxString entryformat = type->formatId();
+	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" || entryformat == "img_doom_alpha"
+		  || entryformat == "img_doom_beta" || entryformat == "img_png"))
+	{
+		log::error(wxString::Format(
+			"Entry \"%s\" is of type \"%s\" which does not support offsets", entry.name(), type->name()));
+		return false;
+	}
+
+	// Doom gfx format, normal and beta version.
+	// Also arah format from alpha 0.2 because it uses the same header format.
+	if (entryformat == "img_doom" || entryformat == "img_doom_beta" || entryformat == "image_doom_arah")
+	{
+		// Get patch header
+		gfx::PatchHeader header;
+		entry.seek(0, SEEK_SET);
+		entry.read(&header, 8);
+
+		// Calculate new offsets
+		Vec2i offsets = calculateOffsets(header.left, header.top, header.width, header.height);
+
+		// Apply new offsets
+		header.left = wxINT16_SWAP_ON_BE((int16_t)offsets.x);
+		header.top  = wxINT16_SWAP_ON_BE((int16_t)offsets.y);
+
+		// Write new header to entry
+		entry.seek(0, SEEK_SET);
+		entry.write(&header, 8);
+	}
+
+	// Doom alpha gfx format
+	else if (entryformat == "img_doom_alpha")
+	{
+		// Get patch header
+		entry.seek(0, SEEK_SET);
+		gfx::OldPatchHeader header;
+		entry.read(&header, 4);
+
+		// Calculate new offsets
+		Vec2i offsets = calculateOffsets(header.left, header.top, header.width, header.height);
+
+		// Apply new offsets
+		header.left = (int8_t)offsets.x;
+		header.top  = (int8_t)offsets.y;
+
+		// Write new header to entry
+		entry.seek(0, SEEK_SET);
+		entry.write(&header, 4);
+	}
+
+	// PNG format
+	else if (entryformat == "img_png")
+	{
+		// Get PNG size
+		auto size = gfx::pngGetSize(entry.data());
+
+		// Get PNG offsets (grAb chunk)
+		auto ofs  = gfx::pngGetgrAb(entry.data());
+		auto xoff = ofs ? ofs->x : 0;
+		auto yoff = ofs ? ofs->y : 0;
+
+		// Calculate new offsets
+		Vec2i offsets = calculateOffsets(xoff, yoff, size.x, size.y);
+
+		// Write offsets to PNG data
+		if (gfx::pngSetgrAb(entry.data(), offsets.x, offsets.y))
+		{
+			// Data changed, update entry state
+			entry.setState(ArchiveEntry::State::Modified);
+			entry.updateSize();
+		}
+	}
+	else
+		return false;
+
+	return true;
 }
 
 

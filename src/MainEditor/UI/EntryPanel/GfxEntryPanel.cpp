@@ -35,6 +35,7 @@
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
+#include "Graphics/Graphics.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
@@ -306,18 +307,18 @@ bool GfxEntryPanel::saveEntry()
 	}
 	// Otherwise just set offsets
 	else
-		entryoperations::setGfxOffsets(entry.get(), spin_xoffset_->GetValue(), spin_yoffset_->GetValue());
+		gfx::setImageOffsets(entry->data(), spin_xoffset_->GetValue(), spin_yoffset_->GetValue());
 
 	// Apply alPh/tRNS options
 	if (entry->type()->formatId() == "img_png")
 	{
-		bool alph = entryoperations::getalPhChunk(entry.get());
-		bool trns = entryoperations::gettRNSChunk(entry.get());
+		bool alph = gfx::pngGetalPh(entry->data());
+		bool trns = gfx::pngGettRNS(entry->data());
 
 		if (alph != menu_custom_->IsChecked(SAction::fromId("pgfx_alph")->wxId()))
-			entryoperations::modifyalPhChunk(entry.get(), !alph);
+			gfx::pngSetalPh(entry->data(), !alph);
 		if (trns != menu_custom_->IsChecked(SAction::fromId("pgfx_trns")->wxId()))
-			entryoperations::modifytRNSChunk(entry.get(), !trns);
+			gfx::pngSettRNS(entry->data(), !trns);
 	}
 
 	if (ok)
@@ -501,12 +502,12 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 	if (entry->type() != nullptr && entry->type()->formatId() == "img_png")
 	{
 		// Check for alph
-		alph_ = entryoperations::getalPhChunk(entry);
+		alph_ = gfx::pngGetalPh(entry->data());
 		menu_custom_->Enable(menu_gfxep_alph, true);
 		menu_custom_->Check(menu_gfxep_alph, alph_);
 
 		// Check for trns
-		trns_ = entryoperations::gettRNSChunk(entry);
+		trns_ = gfx::pngGettRNS(entry->data());
 		menu_custom_->Enable(menu_gfxep_trns, true);
 		menu_custom_->Check(menu_gfxep_trns, trns_);
 
@@ -577,11 +578,11 @@ wxString GfxEntryPanel::statusString()
 	if (auto entry = entry_.lock(); entry->type()->formatId() == "img_png")
 	{
 		// alPh
-		if (entryoperations::getalPhChunk(entry.get()))
+		if (gfx::pngGetalPh(entry->data()))
 			status += ", alPh";
 
 		// tRNS
-		if (entryoperations::gettRNSChunk(entry.get()))
+		if (gfx::pngGettRNS(entry->data()))
 			status += ", tRNS";
 	}
 
@@ -982,12 +983,9 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			int MENU_ARCHGFX_EXPORTPNG = SAction::fromId("arch_gfx_exportpng")->wxId();
 			if (format->name() == "PNG")
 			{
-				ArchiveEntry temp;
-				temp.importMemChunk(entry_data_);
-				temp.setType(EntryType::fromId("png"));
 				menu_custom_->Enable(MENU_GFXEP_ALPH, true);
 				menu_custom_->Enable(MENU_GFXEP_TRNS, true);
-				menu_custom_->Check(MENU_GFXEP_TRNS, entryoperations::gettRNSChunk(&temp));
+				menu_custom_->Check(MENU_GFXEP_TRNS, gfx::pngGettRNS(entry_data_));
 				menu_custom_->Enable(MENU_ARCHGFX_EXPORTPNG, false);
 				menu_custom_->Enable(MENU_GFXEP_PNGOPT, true);
 				toolbar_->enableGroup("PNG", true);

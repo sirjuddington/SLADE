@@ -39,6 +39,7 @@
 #include "General/UI.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/ArchivePanel.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
 
 using namespace slade;
@@ -235,8 +236,17 @@ void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e)
 	if (mod.ShowModal() == wxID_CANCEL)
 		return;
 
-	// Apply offsets to selected entries
+	// Begin recording undo level
+	undo_manager_->beginRecord("Gfx Modify Offsets");
+
+	// Go through selected entries
 	for (auto& entry : entries_)
-		entryoperations::modifyGfxOffsets(entry, &mod);
+	{
+		undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
+		mod.apply(*entry);
+	}
 	maineditor::currentEntryPanel()->callRefresh();
+
+	// Finish recording undo level
+	undo_manager_->endRecord(true);
 }
