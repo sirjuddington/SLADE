@@ -14,6 +14,8 @@ The <type>ArchiveEntry</type> type represents an entry in SLADE.
 <prop class="ro">data</prop> | <type>[DataBlock](../DataBlock.md)</type> | The entry's data
 <prop class="ro">index</prop> | <type>integer</type> | The index of the entry within its containing archive or directory
 <prop class="ro">crc32</prop> | <type>integer</type> | The 32-bit [crc](https://en.wikipedia.org/wiki/Cyclic_redundancy_check) value calculated from the entry's data
+<prop class="ro">parentArchive</prop> | <type>[Archive](Archive.md)</type> | The <type>Archive</type> that contains this entry
+<prop class="ro">parentDir</prop> | <type>[ArchiveDir](ArchiveDir.md)</type> | The <type>ArchiveDir</type> that contains this entry
 
 ## Constructors
 

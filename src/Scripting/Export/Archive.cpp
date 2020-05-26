@@ -268,6 +268,25 @@ bool entryRename(ArchiveEntry& self, string_view new_name)
 }
 
 // -----------------------------------------------------------------------------
+// Returns entry [self]'s parent archive as a shared pointer if possible
+// -----------------------------------------------------------------------------
+shared_ptr<Archive> entryParent(ArchiveEntry& self)
+{
+	return app::archiveManager().shareArchive(self.parent());
+}
+
+// -----------------------------------------------------------------------------
+// Returns entry [self]'s parent directory as a shared pointer if possible
+// -----------------------------------------------------------------------------
+shared_ptr<ArchiveDir> entryDir(ArchiveEntry& self)
+{
+	if (self.parentDir())
+		return ArchiveDir::getShared(self.parentDir());
+
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
 // Registers the ArchiveEntry type with lua
 // -----------------------------------------------------------------------------
 void registerArchiveEntry(sol::state& lua)
@@ -284,6 +303,8 @@ void registerArchiveEntry(sol::state& lua)
 	lua_entry["index"] = sol::property([](ArchiveEntry& self) { return self.index() + 1; });
 	lua_entry["crc32"] = sol::property([](ArchiveEntry& self) { return misc::crc(self.rawData(), self.size()); });
 	lua_entry["data"]  = sol::property([](ArchiveEntry& self) { return &self.data(); });
+	lua_entry["parentArchive"] = sol::property(&entryParent);
+	lua_entry["parentDir"]     = sol::property(&entryDir);
 
 	// Functions
 	// -------------------------------------------------------------------------
