@@ -39,6 +39,7 @@
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
+#include "Scripting/Lua.h"
 #include "thirdparty/sol/sol.hpp"
 
 using namespace slade;
@@ -754,12 +755,40 @@ void registerGraphicsTypes(sol::state& lua)
 {
 	registerImageConvertOptionsType(lua);
 	registerImageFormatType(lua);
+	registerImageDrawOptionsType(lua);
 	registerImageType(lua);
 	registerTranslationType(lua);
 	registerCTexturePatchTypes(lua);
 	registerCTextureType(lua);
 	registerPatchTableType(lua);
 	registerTextureXListType(lua);
+}
+
+// -----------------------------------------------------------------------------
+// Returns a table with info (SImage::Info struct) about the image in [data]
+// -----------------------------------------------------------------------------
+sol::table getImageInfo(MemChunk& data, int index)
+{
+	auto* format = SIFormat::determineFormat(data);
+	auto  info   = format->info(data, index);
+
+	return lua::state().create_table_with(
+		"width",
+		info.width,
+		"height",
+		info.height,
+		"type",
+		info.colformat,
+		"format",
+		info.format,
+		"imageCount",
+		info.numimages,
+		"offsetX",
+		info.offset_x,
+		"offsetY",
+		info.offset_y,
+		"hasPalette",
+		info.has_palette);
 }
 
 // -----------------------------------------------------------------------------
@@ -786,6 +815,7 @@ void registerGraphicsNamespace(sol::state& lua)
 		return formats;
 	};
 	gfx["DetectImageFormat"] = [](MemChunk& mc) { return SIFormat::determineFormat(mc); };
+	gfx["GetImageInfo"]      = sol::overload(&getImageInfo, [](MemChunk& data) { return getImageInfo(data, 0); });
 }
 
 } // namespace slade::lua
