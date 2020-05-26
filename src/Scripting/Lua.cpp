@@ -172,6 +172,17 @@ bool lua::init()
 	registerGameTypes(lua);
 	registerGraphicsTypes(lua);
 
+	// Override default lua print to redirect it to the script log
+	string new_print =
+		"function print (...)\
+	        local line = ''\
+            for i,v in ipairs({...}) do\
+               line = line .. tostring(v) .. ' '\
+            end\
+            App.logMessage(line)\
+         end";
+	lua.script(new_print);
+
 	return true;
 }
 
