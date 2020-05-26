@@ -232,7 +232,7 @@ bool Lua::init()
 	registerGameTypes(lua);
 
 	// Override default lua print to redirect it to the script log
-	string new_print =
+	std::string new_print =
 		"function print (...)\
 	        local line = ''\
             for i,v in ipairs({...}) do\
