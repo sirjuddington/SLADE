@@ -90,13 +90,13 @@ shared_ptr<ArchiveDir> archiveCreateDir(Archive& self, string_view path)
 }
 
 // -----------------------------------------------------------------------------
-// Creates a new entry in archive [self] at [full_path],[position-1].
+// Creates a new entry in archive [self] at [full_path],[position].
 // Returns the created entry
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> archiveCreateEntry(Archive& self, string_view full_path, int position)
 {
 	auto dir = self.dirAtPath(strutil::beforeLast(full_path, '/'));
-	return self.addNewEntry(strutil::afterLast(full_path, '/'), position - 1, dir)->getShared();
+	return self.addNewEntry(strutil::afterLast(full_path, '/'), position, dir)->getShared();
 }
 
 // -----------------------------------------------------------------------------
@@ -300,7 +300,7 @@ void registerArchiveEntry(sol::state& lua)
 	lua_entry["path"]  = sol::property([](ArchiveEntry& self) { return self.path(); });
 	lua_entry["type"]  = sol::property(&ArchiveEntry::type);
 	lua_entry["size"]  = sol::property(&ArchiveEntry::size);
-	lua_entry["index"] = sol::property([](ArchiveEntry& self) { return self.index() + 1; });
+	lua_entry["index"] = sol::property(&ArchiveEntry::index);
 	lua_entry["crc32"] = sol::property([](ArchiveEntry& self) { return misc::crc(self.rawData(), self.size()); });
 	lua_entry["data"]  = sol::property([](ArchiveEntry& self) { return &self.data(); });
 	lua_entry["parentArchive"] = sol::property(&entryParent);
@@ -388,7 +388,7 @@ void registerArchivesNamespace(sol::state& lua)
 	archives["FileExtensionsString"] = []() { return app::archiveManager().getArchiveExtensionsString(); };
 	archives["BaseResource"]         = []() { return app::archiveManager().baseResourceArchive(); };
 	archives["BaseResourcePaths"]    = []() { return app::archiveManager().baseResourcePaths(); };
-	archives["OpenBaseResource"]     = [](int index) { return app::archiveManager().openBaseResource(index - 1); };
+	archives["OpenBaseResource"]     = [](int index) { return app::archiveManager().openBaseResource(index); };
 	archives["ProgramResource"]      = []() { return app::archiveManager().programResourceArchive(); };
 	archives["RecentFiles"]          = []() { return app::archiveManager().recentFiles(); };
 	archives["Bookmarks"]            = []() { return app::archiveManager().bookmarks(); };

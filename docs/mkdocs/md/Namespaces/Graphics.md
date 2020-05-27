@@ -68,12 +68,19 @@ Returns a <type>table</type> containing basic information about the image contai
 
 #### Returns
 
-* <type>table</type>: A table containing the following values:
-    * `width` (<type>integer</type>): The pixel width of the image
-    * `height` (<type>integer</type>): The pixel height of the image
-    * `type` (<type>integer</type>): The pixel format of the image (see <type>[Image](../Types/Graphics/Image.md#constants)</type>`.PIXELFORMAT_` constants)
-    * `format` (<type>string</type>): The format id of the image (see <type>[ImageFormat](../Types/Graphics/ImageFormat.md)</type>`.`<prop>id</prop>)
-    * `imageCount` (<type>integer</type>): The number of sub-images contained in the image
-    * `offsetX` (<type>integer</type>): The X-offset of the image
-    * `offsetY` (<type>integer</type>): The Y-offset of the image
-    * `hasPalette` (<type>boolean</type>): `true` if the image contains an internal palette
+* <type>table</type>: A table containing information about the image (see notes below)
+
+#### Notes
+
+The table returned by this function has the following keys:
+
+| Name | Type | Description |
+|:-----|:-----|:------------|
+<nobr>`width`</nobr> | <type>integer</type> | The pixel width of the image
+<nobr>`height`</nobr> | <type>integer</type> | The pixel height of the image
+<nobr>`type`</nobr> | <type>integer</type> | The pixel format of the image (see <type>[Image](../Types/Graphics/Image.md#constants)</type>`.PIXELFORMAT_` constants)
+<nobr>`format`</nobr> | <type>string</type> | The format id of the image (see <type>[ImageFormat](../Types/Graphics/ImageFormat.md)</type>`.`<prop>id</prop>)
+<nobr>`imageCount`</nobr> | <type>integer</type> | The number of sub-images contained in the image
+<nobr>`offsetX`</nobr> | <type>integer</type> | The X-offset of the image
+<nobr>`offsetY`</nobr> | <type>integer</type> | The Y-offset of the image
+<nobr>`hasPalette`</nobr> | <type>boolean</type> | `true` if the image contains an internal palette

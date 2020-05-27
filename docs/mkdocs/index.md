@@ -23,9 +23,20 @@ Below are some general notes about some things that may trip you up if you're us
 
 Lua differs from most other languages in the way array indices work - usually, the first element of an array is index `0`, but in Lua the first element will be index `1`.
 
-SLADE scripting functions & types use the Lua (`1`-based) convention by default, except where it makes more sense to begin at `0`. As an example, map objects (lines, sectors, etc.) start at index `0` in the game and editor, so these will also begin at `0` in scripts.
+SLADE scripting functions and types use the 'standard' (`0`-based) convention for things like index parameters. This means you may need to be careful when using an index from a Lua array in a SLADE scripting function.
 
-This documentation will also specifically mention if an index is `0`-based, otherwise it can be assumed to start at `1`.
+Also note that functions that return an array will return a Lua array, which means it starts at index `1`.
+
+```lua
+local archive = Archives.OpenFile("c:/games/doom/somewad.wad")
+
+-- The first element in entries is entries[1], because it is a Lua array
+-- (entries[0] is invalid)
+local entries = some_archive.entries
+
+-- Will print "0" because entries in SLADE begin at index 0
+App.LogMessage(entries[1].index)
+```
 
 ### Type Member Functions
 

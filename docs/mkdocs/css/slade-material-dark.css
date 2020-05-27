@@ -1,7 +1,7 @@
 
 /* ---- Fonts ---- */
 
-@import url('https://fonts.googleapis.com/css?family=Fira+Sans:400,400i,500,600,800');
+@import url('https://fonts.googleapis.com/css?family=Fira+Sans:300,300i,400,500,600,800');
 @import url('https://fonts.googleapis.com/css?family=Fira+Code:400,500');
 
 body, h1, h2, h3, h4, h5, h6 {
@@ -25,9 +25,11 @@ fdef {
 
 
 li,
-p {
-	font-size: 0.7rem;
-	line-height: 1.5em;
+p,
+td {
+	font-size: 0.75rem;
+	line-height: 1.4em;
+	font-weight: 300;
 }
 
 strong {
@@ -48,7 +50,7 @@ html .md-nav--primary .md-nav__title {
 }
 
 body, h1, h2, h3, h4, h5,h h6 {
-	color: hsl(220, 10%, 85%);
+	color: hsl(220, 10%, 90%);
 }
 
 article {
@@ -56,7 +58,7 @@ article {
 }
 
 article a {
-    font-weight: 500;
+    font-weight: 400;
 }
 
 
@@ -125,13 +127,14 @@ subhead {
 
 .md-typeset h3 {
 	font-size: 1.4em;
+	font-weight: 400 !important;
 }
 
 .md-typeset h4,
 .md-typeset h5 {
 	/* color: hsl(220, 48%, 73%) !important; */
-	color: hsl(220, 10%, 95%);
-	font-weight: 500 !important;
+	color: hsl(220, 100%, 95%);
+	font-weight: 400 !important;
 	font-size: 1.0em;
 }
 

@@ -85,11 +85,11 @@ Creates a new palette with <arg>count</arg> colours in a greyscale gradient.
 ---
 ### Colour
 
-Gets the colour at the given (`0`-based) <arg>index</arg> in the palette.
+Gets the colour at the given <arg>index</arg> in the palette.
 
 #### Parameters
 
-* <arg>index</arg> (<type>integer</type>): The (`0`-based) index of the colour to get
+* <arg>index</arg> (<type>integer</type>): The index of the colour to get
 
 #### Returns
 
@@ -128,7 +128,7 @@ Finds the index of the first colour in the palette that *exactly* matches the gi
 
 #### Returns
 
-* <type>integer</type>: The (`0`-based) index of the first matching colour in the palette, or `-1` if no match was found
+* <type>integer</type>: The index of the first matching colour in the palette, or `-1` if no match was found
 
 ---
 ### NearestColour
@@ -142,7 +142,7 @@ Finds the index of the colour in the palette that most closely matches the given
 
 #### Returns
 
-* <type>integer</type>: The (`0`-based) index of the closest matching colour
+* <type>integer</type>: The index of the closest matching colour
 
 ---
 ### LoadData
@@ -193,7 +193,7 @@ Sets the colour at <arg>index</arg> in the palette.
 
 #### Parameters
 
-* <arg>index</arg> (<type>integer</type>): The (`0`-based) index of the colour to set
+* <arg>index</arg> (<type>integer</type>): The index of the colour to set
 * <arg>colour</arg> (<type>[Colour](../Colour.md)</type>): The colour to set it to
 
 ---
@@ -203,7 +203,7 @@ Sets red component of the colour at <arg>index</arg> in the palette.
 
 #### Parameters
 
-* <arg>index</arg> (<type>integer</type>): The (`0`-based) index of the colour in the palette
+* <arg>index</arg> (<type>integer</type>): The index of the colour in the palette
 * <arg>r</arg> (<type>integer</type>): The new red component value
 
 ---
@@ -213,7 +213,7 @@ Sets green component of the colour at <arg>index</arg> in the palette.
 
 #### Parameters
 
-* <arg>index</arg> (<type>integer</type>): The (`0`-based) index of the colour in the palette
+* <arg>index</arg> (<type>integer</type>): The index of the colour in the palette
 * <arg>g</arg> (<type>integer</type>): The new green component value
 
 ---
@@ -223,7 +223,7 @@ Sets blue component of the colour at <arg>index</arg> in the palette.
 
 #### Parameters
 
-* <arg>index</arg> (<type>integer</type>): The (`0`-based) index of the colour in the palette
+* <arg>index</arg> (<type>integer</type>): The index of the colour in the palette
 * <arg>b</arg> (<type>integer</type>): The new blue component value
 
 ---
@@ -233,7 +233,7 @@ Sets alpha component of the colour at <arg>index</arg> in the palette.
 
 #### Parameters
 
-* <arg>index</arg> (<type>integer</type>): The (`0`-based) index of the colour in the palette
+* <arg>index</arg> (<type>integer</type>): The index of the colour in the palette
 * <arg>a</arg> (<type>integer</type>): The new alpha component value
 
 ---
@@ -253,8 +253,8 @@ Colourises a range of colours in the palette.
 #### Parameters
 
 * <arg>colour</arg> (<type>[Colour](../Colour.md)</type>): The colour to use
-* <arg>firstIndex</arg> (<type>integer</type>): The (`0`-based) index of the first colour to apply to
-* <arg>lastIndex</arg> (<type>integer</type>): The (`0`-based) index of the last colour to apply to
+* <arg>firstIndex</arg> (<type>integer</type>): The index of the first colour to apply to
+* <arg>lastIndex</arg> (<type>integer</type>): The index of the last colour to apply to
 
 ---
 ### Tint
@@ -265,8 +265,8 @@ Tints a range of colours in the palette.
 
 * <arg>colour</arg> (<type>[Colour](../Colour.md)</type>): The colour to use
 * <arg>amount</arg> (<type>float</type>): The amount to tint (`0.0` - `1.0`)
-* <arg>firstIndex</arg> (<type>integer</type>): The (`0`-based) index of the first colour to apply to
-* <arg>lastIndex</arg> (<type>integer</type>): The (`0`-based) index of the last colour to apply to
+* <arg>firstIndex</arg> (<type>integer</type>): The index of the first colour to apply to
+* <arg>lastIndex</arg> (<type>integer</type>): The index of the last colour to apply to
 
 ---
 ### Saturate
@@ -276,8 +276,8 @@ Adjusts the saturation on a range of colours in the palette.
 #### Parameters
 
 * <arg>amount</arg> (<type>float</type>): The amount to adjust by (`0.0` - `2.0`)
-* <arg>firstIndex</arg> (<type>integer</type>): The (`0`-based) index of the first colour to apply to
-* <arg>lastIndex</arg> (<type>integer</type>): The (`0`-based) index of the last colour to apply to
+* <arg>firstIndex</arg> (<type>integer</type>): The index of the first colour to apply to
+* <arg>lastIndex</arg> (<type>integer</type>): The index of the last colour to apply to
 
 ---
 ### Illuminate
@@ -287,8 +287,8 @@ Adjusts the brightness on a range of colours in the palette.
 #### Parameters
 
 * <arg>amount</arg> (<type>float</type>): The amount to adjust by (`0.0` - `2.0`)
-* <arg>firstIndex</arg> (<type>integer</type>): The (`0`-based) index of the first colour to apply to
-* <arg>lastIndex</arg> (<type>integer</type>): The (`0`-based) index of the last colour to apply to
+* <arg>firstIndex</arg> (<type>integer</type>): The index of the first colour to apply to
+* <arg>lastIndex</arg> (<type>integer</type>): The index of the last colour to apply to
 
 ---
 ### Shift
@@ -298,8 +298,8 @@ Shifts the hue on a range of colours in the palette.
 #### Parameters
 
 * <arg>amount</arg> (<type>float</type>): The amount to shift by (`0.0` - `1.0`)
-* <arg>firstIndex</arg> (<type>integer</type>): The (`0`-based) index of the first colour to apply to
-* <arg>lastIndex</arg> (<type>integer</type>): The (`0`-based) index of the last colour to apply to
+* <arg>firstIndex</arg> (<type>integer</type>): The index of the first colour to apply to
+* <arg>lastIndex</arg> (<type>integer</type>): The index of the last colour to apply to
 
 ---
 ### Invert
@@ -308,8 +308,8 @@ Inverts a range of colours in the palette.
 
 #### Parameters
 
-* <arg>firstIndex</arg> (<type>integer</type>): The (`0`-based) index of the first colour to apply to
-* <arg>lastIndex</arg> (<type>integer</type>): The (`0`-based) index of the last colour to apply to
+* <arg>firstIndex</arg> (<type>integer</type>): The index of the first colour to apply to
+* <arg>lastIndex</arg> (<type>integer</type>): The index of the last colour to apply to
 
 ---
 ### Gradient
@@ -320,5 +320,5 @@ Converts a range of colours in the palette to a colour gradient from <arg>startC
 
 * <arg>startColour</arg> (<type>[Colour](../Colour.md)</type>): The starting colour of the gradient
 * <arg>endColour</arg> (<type>[Colour](../Colour.md)</type>): The ending colour of the gradient
-* <arg>firstIndex</arg> (<type>integer</type>): The (`0`-based) index of the first colour to apply to
-* <arg>lastIndex</arg> (<type>integer</type>): The (`0`-based) index of the last colour to apply to
+* <arg>firstIndex</arg> (<type>integer</type>): The index of the first colour to apply to
+* <arg>lastIndex</arg> (<type>integer</type>): The index of the last colour to apply to

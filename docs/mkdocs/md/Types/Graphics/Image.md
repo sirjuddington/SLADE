@@ -9,9 +9,11 @@ The type also has various functions for manipulating image data and reading the 
 
 An image can have one of three pixel formats, which determines how data for each pixel is stored:
 
-* `PIXELFORMAT_INDEXED`: The image is 8-bit with a mask. Each pixel is 2 bytes - one (`0`-based) palette index and one alpha value. The palette can be stored in the image (see <prop>palette</prop>/<prop>hasPalette</prop> properties). If it doesn't have an internal palette, an external one needs to be supplied in any functions dealing with colours in the image
-* `PIXELFORMAT_RGBA`: The image is 32-bit. Each pixel is 4 bytes - red, green, blue, alpha
-* `PIXELFORMAT_ALPHA`: The image is purely an 8-bit alpha map. Each pixel is 1 byte - the alpha value
+| Format | Description |
+|:-------|:------------|
+<nobr>`PIXELFORMAT_INDEXED`</nobr> | The image is 8-bit with a mask. Each pixel is 2 bytes - one palette index and one alpha value. The palette can be stored in the image (see <prop>palette</prop>/<prop>hasPalette</prop> properties). If it doesn't have an internal palette, an external one needs to be supplied in any functions dealing with colours in the image
+`PIXELFORMAT_RGBA` | The image is 32-bit. Each pixel is 4 bytes - red, green, blue, alpha
+`PIXELFORMAT_ALPHA` | The image is purely an 8-bit alpha map. Each pixel is 1 byte - the alpha value
 
 ## Constants
 
@@ -440,7 +442,7 @@ Ses the pixel at (<arg>x</arg>,<arg>y</arg>) to the palette colour <arg>index</a
 
 * <arg>x</arg> (<type>integer</type>): The X position of the pixel
 * <arg>y</arg> (<type>integer</type>): The Y position of the pixel
-* <arg>index</arg> (<type>integer</type>): The (`0`-based) palette colour index
+* <arg>index</arg> (<type>integer</type>): The palette colour index
 * <arg>[alpha]</arg> (<type>integer</type>): The alpha value for the pixel. Default is `255` (fully opaque)
 
 #### Returns

@@ -139,7 +139,7 @@ Copies data to another <type>DataBlock</type>.
 #### Parameters
 
 * <arg>other</arg> (<type>DataBlock</type>): The <type>DataBlock</type> to copy data to
-* <arg>[offset]</arg> (<type>integer</type>): Only copy bytes starting from this (`0`-based) offset. Default is `0`
+* <arg>[offset]</arg> (<type>integer</type>): Only copy bytes starting from this offset. Default is `0`
 * <arg>[length]</arg> (<type>integer</type>): Copy this number of bytes. Default is `0`, which means all bytes to the end of the block will be copied
 
 #### Returns
@@ -154,7 +154,7 @@ Imports data from a file on disk at <arg>path</arg>.
 #### Parameters
 
 * <arg>path</arg> (<type>string</type>): The path to the file on disk
-* <arg>[offset]</arg> (<type>integer</type>): Only import data starting from this (`0`-based) offset in the file. Default is `0`
+* <arg>[offset]</arg> (<type>integer</type>): Only import data starting from this offset in the file. Default is `0`
 * <arg>[length]</arg> (<type>integer</type>): Import this number of bytes. Default is `0`, which means all bytes to the end of the file will be imported
 
 #### Returns
@@ -169,7 +169,7 @@ Exports data to a file on disk at <arg>path</arg>.
 #### Parameters
 
 * <arg>path</arg> (<type>string</type>): The path to the file on disk. The file will be created if it doesn't already exist
-* <arg>[offset]</arg> (<type>integer</type>): Only export data starting from this (`0`-based) offset. Default is `0`
+* <arg>[offset]</arg> (<type>integer</type>): Only export data starting from this offset. Default is `0`
 * <arg>[length]</arg> (<type>integer</type>): Export this number of bytes. Default is `0`, which means all bytes to the end of the block will be exported
 
 #### Returns
@@ -196,7 +196,7 @@ Reads the byte at <arg>offset</arg> bytes into the block as an 8-bit (1 byte) *s
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to the start of the data to read
+* <arg>offset</arg> (<type>integer</type>): The offset to the start of the data to read
 
 #### Returns
 
@@ -209,7 +209,7 @@ Reads the byte at <arg>offset</arg> bytes into the block as an 8-bit (1 byte) *u
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to the start of the data to read
+* <arg>offset</arg> (<type>integer</type>): The offset to the start of the data to read
 
 #### Returns
 
@@ -222,7 +222,7 @@ Reads the bytes beginning at <arg>offset</arg> bytes into the block as a 16-bit 
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to the start of the data to read
+* <arg>offset</arg> (<type>integer</type>): The offset to the start of the data to read
 
 #### Returns
 
@@ -235,7 +235,7 @@ Reads the bytes beginning at <arg>offset</arg> bytes into the block as a 16-bit 
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to the start of the data to read
+* <arg>offset</arg> (<type>integer</type>): The offset to the start of the data to read
 
 #### Returns
 
@@ -248,7 +248,7 @@ Reads the bytes beginning at <arg>offset</arg> bytes into the block as a 32-bit 
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to the start of the data to read
+* <arg>offset</arg> (<type>integer</type>): The offset to the start of the data to read
 
 #### Returns
 
@@ -261,7 +261,7 @@ Reads the bytes beginning at <arg>offset</arg> bytes into the block as a 32-bit 
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to the start of the data to read
+* <arg>offset</arg> (<type>integer</type>): The offset to the start of the data to read
 
 #### Returns
 
@@ -274,7 +274,7 @@ Reads the bytes beginning at <arg>offset</arg> bytes into the block as a 64-bit 
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to the start of the data to read
+* <arg>offset</arg> (<type>integer</type>): The offset to the start of the data to read
 
 #### Returns
 
@@ -287,7 +287,7 @@ Reads the bytes beginning at <arg>offset</arg> bytes into the block as a 64-bit 
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to the start of the data to read
+* <arg>offset</arg> (<type>integer</type>): The offset to the start of the data to read
 
 #### Returns
 
@@ -300,7 +300,7 @@ Reads <arg>length</arg> bytes beginning at <arg>offset</arg> bytes into the bloc
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to the start of the data to read
+* <arg>offset</arg> (<type>integer</type>): The offset to the start of the data to read
 * <arg>length</arg> (<type>integer</type>): The number of bytes to read
 * <arg>[nullTerminated]</arg> (<type>boolean</type>): If `true`, the string will end at the first `0` after <arg>offset</arg>, or <arg>length</arg> bytes after offset, whichever comes first. Default is `false`
 
@@ -334,7 +334,7 @@ Writes <arg>value</arg> as an 8-bit (1 byte) *signed* integer at <arg>offset</ar
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to write data to
+* <arg>offset</arg> (<type>integer</type>): The offset to write data to
 * <arg>value</arg> (<type>integer</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
@@ -349,7 +349,7 @@ Writes <arg>value</arg> as an 8-bit (1 byte) *unsigned* integer at <arg>offset</
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to write data to
+* <arg>offset</arg> (<type>integer</type>): The offset to write data to
 * <arg>value</arg> (<type>integer</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
@@ -364,7 +364,7 @@ Writes <arg>value</arg> as a 16-bit (2 byte) *signed* integer at <arg>offset</ar
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to write data to
+* <arg>offset</arg> (<type>integer</type>): The offset to write data to
 * <arg>value</arg> (<type>integer</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
@@ -379,7 +379,7 @@ Writes <arg>value</arg> as a 16-bit (2 byte) *unsigned* integer at <arg>offset</
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to write data to
+* <arg>offset</arg> (<type>integer</type>): The offset to write data to
 * <arg>value</arg> (<type>integer</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
@@ -394,7 +394,7 @@ Writes <arg>value</arg> as a 32-bit (4 byte) *signed* integer at <arg>offset</ar
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to write data to
+* <arg>offset</arg> (<type>integer</type>): The offset to write data to
 * <arg>value</arg> (<type>integer</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
@@ -409,7 +409,7 @@ Writes <arg>value</arg> as a 32-bit (4 byte) *unsigned* integer at <arg>offset</
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to write data to
+* <arg>offset</arg> (<type>integer</type>): The offset to write data to
 * <arg>value</arg> (<type>integer</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
@@ -424,7 +424,7 @@ Writes <arg>value</arg> as a 64-bit (8 byte) *signed* integer at <arg>offset</ar
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to write data to
+* <arg>offset</arg> (<type>integer</type>): The offset to write data to
 * <arg>value</arg> (<type>integer</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
@@ -439,7 +439,7 @@ Writes <arg>value</arg> as a 64-bit (8 byte) *unsigned* integer at <arg>offset</
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to write data to
+* <arg>offset</arg> (<type>integer</type>): The offset to write data to
 * <arg>value</arg> (<type>integer</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
@@ -454,7 +454,7 @@ Writes the given string <arg>value</arg> at <arg>offset</arg> bytes into the blo
 
 #### Parameters
 
-* <arg>offset</arg> (<type>integer</type>): The (`0`-based) offset to write data to
+* <arg>offset</arg> (<type>integer</type>): The offset to write data to
 * <arg>value</arg> (<type>string</type>): The value to write
 * <arg>allowExpand</arg> (<type>boolean</type>): If `true`, the data will be expanded to accomodate the written value if it goes past the end of the data, otherwise nothing will be written if <arg>offset</arg> is invalid
 
