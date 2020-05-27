@@ -204,6 +204,40 @@ std::tuple<double, double, double> colourAsLAB(ColRGBA& self)
 }
 
 // -----------------------------------------------------------------------------
+// Registers the Colour (ColRGBA) type with lua
+// -----------------------------------------------------------------------------
+void registerColourType(sol::state& lua)
+{
+	auto lua_colour = lua.new_usertype<ColRGBA>(
+		"Colour", sol::constructors<ColRGBA(), ColRGBA(u8, u8, u8), ColRGBA(u8, u8, u8, u8)>());
+
+	// Constants
+	// -------------------------------------------------------------------------
+	lua_colour["FORMAT_RGB"]   = sol::property([]() { return ColRGBA::StringFormat::RGB; });
+	lua_colour["FORMAT_RGBA"]  = sol::property([]() { return ColRGBA::StringFormat::RGBA; });
+	lua_colour["FORMAT_HEX"]   = sol::property([]() { return ColRGBA::StringFormat::HEX; });
+	lua_colour["FORMAT_ZDOOM"] = sol::property([]() { return ColRGBA::StringFormat::ZDoom; });
+
+	// Properties
+	// -------------------------------------------------------------------------
+	lua_colour["r"]  = &ColRGBA::r;
+	lua_colour["g"]  = &ColRGBA::g;
+	lua_colour["b"]  = &ColRGBA::b;
+	lua_colour["a"]  = &ColRGBA::a;
+	lua_colour["fr"] = sol::property(&ColRGBA::fr);
+	lua_colour["fg"] = sol::property(&ColRGBA::fg);
+	lua_colour["fb"] = sol::property(&ColRGBA::fb);
+	lua_colour["fa"] = sol::property(&ColRGBA::fa);
+
+	// Functions
+	// -------------------------------------------------------------------------
+	lua_colour["AsHSL"]    = &colourAsHSL;
+	lua_colour["AsLAB"]    = &colourAsLAB;
+	lua_colour["AsString"] = &ColRGBA::toString;
+	lua_colour["FromHSL"]  = sol::resolve<void(double, double, double)>(&ColRGBA::fromHSL);
+}
+
+// -----------------------------------------------------------------------------
 // Registers some misc. types with lua
 // -----------------------------------------------------------------------------
 void registerMiscTypes(sol::state& lua)
@@ -214,17 +248,7 @@ void registerMiscTypes(sol::state& lua)
 	lua_vec2f["y"] = &Vec2d::y;
 
 	// Colour type
-	auto lua_colour = lua.new_usertype<ColRGBA>(
-		"Colour",
-		sol::
-			constructors<ColRGBA(), ColRGBA(uint8_t, uint8_t, uint8_t), ColRGBA(uint8_t, uint8_t, uint8_t, uint8_t)>());
-	lua_colour["r"]       = &ColRGBA::r;
-	lua_colour["g"]       = &ColRGBA::g;
-	lua_colour["b"]       = &ColRGBA::b;
-	lua_colour["a"]       = &ColRGBA::a;
-	lua_colour["AsHSL"]   = &colourAsHSL;
-	lua_colour["AsLAB"]   = &colourAsLAB;
-	lua_colour["FromHSL"] = sol::resolve<void(double, double, double)>(&ColRGBA::fromHSL);
+	registerColourType(lua);
 
 	// Plane type
 	auto lua_plane = lua.new_usertype<Plane>(
