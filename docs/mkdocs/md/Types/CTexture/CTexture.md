@@ -107,7 +107,7 @@ Adds a new patch to the texture.
 * <arg>patch</arg> (<type>string</type>): The name of the patch to add
 * <arg>[x]</arg> (<type>integer</type>, default `0`): The x position of the patch within the texture
 * <arg>[y]</arg> (<type>integer</type>, default `0`): The y position of the patch within the texture
-* <arg>[index]</arg> (<type>integer</type>, default `0`): Where to add the patch in the <prop>patches</prop> array. Patches later in the array are drawn over the top of previous ones. If `0`, the patch is added to the end of the array
+* <arg>[index]</arg> (<type>integer</type>, default `-1`): Where to add the patch in the <prop>patches</prop> array. Patches later in the array are drawn over the top of previous ones. If `-1`, the patch is added to the end of the array
 
 #### Notes
 

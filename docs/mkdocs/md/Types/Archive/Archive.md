@@ -164,7 +164,7 @@ Creates a new entry named <arg>fullPath</arg> in the archive at <arg>index</arg>
 
 If the Archive is a format that supports directories, <arg>fullPath</arg> can optionally contain a path eg. `Scripts/NewScript.txt`.
 
-The new entry will be inserted at <arg>index</arg> in the directory it is added to (always the root for Archives that don't support directories). If <arg>index</arg> is `0` or larger than the number of entries in the destination directory, the new entry will be added at the end.
+The new entry will be inserted at <arg>index</arg> in the directory it is added to (always the root for Archives that don't support directories). If <arg>index</arg> is `-1` or larger than the number of entries in the destination directory, the new entry will be added at the end.
 
 #### Example
 

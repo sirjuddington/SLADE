@@ -3,7 +3,7 @@
 -- or "Run Script" in the entry list context menu
 
 function Execute(entries)
-    for i,entry in ipairs(entries) do
-        -- Write your entry script here
-    end
+   for i,entry in ipairs(entries) do
+      -- Write your entry script here
+   end
 end

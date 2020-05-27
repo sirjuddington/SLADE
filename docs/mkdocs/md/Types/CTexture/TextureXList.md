@@ -88,7 +88,7 @@ Gets the index of the texture in the list matching <arg>name</arg>.
 
 #### Returns
 
-* <type>integer</type>: The index of the first texture found in the list with <arg>name</arg>, or `0` if not found
+* <type>integer</type>: The index of the first texture found in the list with <arg>name</arg>, or `-1` if not found
 
 ---
 ### ConvertToTEXTURES

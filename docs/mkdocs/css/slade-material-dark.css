@@ -84,6 +84,11 @@ article code A:active,
 	color: hsla(220, 25%, 40%, 1);
 }
 
+li.md-nav__item.md-nav__item--active > a {
+	color: hsl(220, 48%, 73%);
+	font-weight: 400;
+}
+
 .md-header {
 	background-color: hsla(220, 35%, 40%, 1);
 }
@@ -262,7 +267,8 @@ pre code,
 }
 
 .codehilite pre .s1,
-.codehilite pre .se {
+.codehilite pre .se,
+.codehilite pre .s2 {
 	color: rgb(216, 101, 84);
 }
 
