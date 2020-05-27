@@ -173,7 +173,7 @@ bool lua::init()
 	registerGraphicsTypes(lua);
 
 	// Override default lua print to redirect it to the script log
-	string new_print =
+	auto new_print =
 		"function print (...)\
 	        local line = ''\
             for i,v in ipairs({...}) do\

@@ -220,9 +220,13 @@ public:
 
 		// SLADE info
 		if (global::sc_rev.empty())
-			trace_ = wxString::Format("Version: %s\n", app::version().toString());
+			trace_ = wxString::Format("Version: %s", app::version().toString());
 		else
-			trace_ = wxString::Format("Version: %s (%s)\n", app::version().toString(), global::sc_rev);
+			trace_ = wxString::Format("Version: %s (%s)", app::version().toString(), global::sc_rev);
+		if (app::platform() == app::Platform::Windows)
+			trace_ += wxString::Format(" (%s)\n", app::isWin64Build() ? "x64" : "x86");
+		else
+			trace_ += "\n";
 		if (current_action.empty())
 			trace_ += "No current action\n";
 		else

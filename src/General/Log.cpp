@@ -136,6 +136,8 @@ void log::init()
 	info(fmt::format("Version {}", app::version().toString()));
 	if (!global::sc_rev.empty())
 		info(fmt::format("Git Revision {}", global::sc_rev));
+    if (app::platform() == app::Platform::Windows)
+		info(fmt::format("{} Windows Build", app::isWin64Build() ? "64bit" : "32bit"));
 	info(fmt::format("Written by Simon Judd, 2008-{:%Y}", *tm));
 #ifdef SFML_VERSION_MAJOR
 	info(fmt::format(

@@ -751,6 +751,15 @@ const string& app::iconFile()
 	return icon;
 }
 
+bool app::isWin64Build()
+{
+#if defined(_WIN64)
+	return true;
+#else
+	return false;
+#endif
+}
+
 std::thread::id app::mainThreadId()
 {
 	return main_thread_id;
