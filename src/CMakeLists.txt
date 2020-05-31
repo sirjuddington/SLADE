@@ -72,6 +72,7 @@ set(SFML_FIND_COMPONENTS system audio window graphics network)
 ADD_DEFINITIONS(-DUSE_SFML_RENDERWINDOW)
 else (USE_SFML_RENDERWINDOW)
 set(SFML_FIND_COMPONENTS system audio window network)
+find_package(FTGL REQUIRED)
 endif(USE_SFML_RENDERWINDOW)
 
 # Fluidsynth
@@ -100,7 +101,6 @@ endif()
 
 find_package(FreeImage REQUIRED)
 find_package(SFML COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
-find_package(FTGL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(CURL REQUIRED)
