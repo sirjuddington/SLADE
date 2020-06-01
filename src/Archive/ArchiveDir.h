@@ -69,6 +69,7 @@ public:
 						  vector<shared_ptr<ArchiveEntry>>& list,
 						  bool                              include_dir_entry = false);
 	static shared_ptr<ArchiveDir> getShared(ArchiveDir* dir);
+	static shared_ptr<ArchiveDir> findDirByDirEntry(shared_ptr<ArchiveDir> dir_root, const ArchiveEntry& entry);
 
 private:
 	Archive*                         archive_;

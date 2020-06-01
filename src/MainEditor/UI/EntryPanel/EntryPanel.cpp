@@ -72,7 +72,7 @@ EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool frame, bool le
 	{
 		frame_     = new wxStaticBox(this, -1, "Entry Contents");
 		framesizer = new wxStaticBoxSizer(frame_, wxVERTICAL);
-		sizer->Add(framesizer, 1, wxEXPAND | wxALL, ui::pad());
+		sizer->Add(framesizer, 1, wxEXPAND/* | wxALL, ui::pad()*/);
 	}
 	else
 		framesizer = sizer;

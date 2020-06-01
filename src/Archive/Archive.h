@@ -165,9 +165,11 @@ public:
 		sigslot::signal<Archive&>                             saved;
 		sigslot::signal<Archive&>                             closed;
 		sigslot::signal<Archive&, ArchiveEntry&>              entry_added;
-		sigslot::signal<Archive&, ArchiveEntry&>              entry_removed;
+		sigslot::signal<Archive&, ArchiveDir&, ArchiveEntry&> entry_removed; // Archive, Parent Dir, Removed Entry
 		sigslot::signal<Archive&, ArchiveEntry&>              entry_state_changed;
 		sigslot::signal<Archive&, ArchiveEntry&, string_view> entry_renamed;
+		sigslot::signal<Archive&, ArchiveDir&>                dir_added;
+		sigslot::signal<Archive&, ArchiveDir&, ArchiveDir&>   dir_removed; // Archive, Parent dir, Removed Dir
 	};
 	Signals& signals() { return signals_; }
 	void     blockModificationSignals(bool block = true);

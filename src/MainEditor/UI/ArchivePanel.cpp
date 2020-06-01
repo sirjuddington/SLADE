@@ -73,6 +73,7 @@
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/Dialogs/RunDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
+#include "UI/Lists/ArchiveEntryTree.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
@@ -101,6 +102,7 @@ CVAR(Int, last_tint_amount, 50, CVar::Flag::Save)
 CVAR(Bool, auto_entry_replace, false, CVar::Flag::Save)
 CVAR(Bool, archive_build_skip_hidden, true, CVar::Flag::Save)
 CVAR(Bool, elist_show_filter, false, CVar::Flag::Save)
+CVAR(Int, ap_splitter_position, 300, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -122,77 +124,79 @@ EXTERN_CVAR(Bool, confirm_entry_revert)
 class APEntryListDropTarget : public wxFileDropTarget
 {
 public:
-	APEntryListDropTarget(ArchivePanel* parent, ArchiveEntryList* list) : parent_{ parent }, list_{ list } {}
+	APEntryListDropTarget(ArchivePanel* parent, wxDataViewCtrl* list) : parent_{ parent }, list_{ list } {}
 	virtual ~APEntryListDropTarget() = default;
 
 	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) override
 	{
-		// Determine what item the files were dragged onto
-		int  flags;
-		long index = list_->HitTest(wxPoint(x, y), flags) - list_->entriesBegin();
+		//// Determine what item the files were dragged onto
+		// int  flags;
+		// long index = list_->HitTest(wxPoint(x, y), flags) - list_->entriesBegin();
 
-		// Add to end if no item was hit
-		if (index < 0)
-			index = list_->GetItemCount() - list_->entriesBegin();
+		//// Add to end if no item was hit
+		// if (index < 0)
+		//	index = list_->GetItemCount() - list_->entriesBegin();
 
-		bool     yes_to_all = false;
-		wxString caption    = (filenames.size() > 1) ? "Overwrite entries" : "Overwrite entry";
-		auto     dir        = list_->currentDir().lock().get();
+		// bool     yes_to_all = false;
+		// wxString caption    = (filenames.size() > 1) ? "Overwrite entries" : "Overwrite entry";
+		// auto     dir        = list_->currentDir().lock().get();
 
-		// Import all dragged files, inserting after the item they were dragged onto
-		for (int a = filenames.size() - 1; a >= 0; a--)
-		{
-			// Is this a directory?
-			if (wxDirExists(filenames[a]))
-			{
-				// TODO: Handle folders with recursively importing all content
-				// and converting to namespaces if dropping in a treeless archive.
-			}
-			else
-			{
-				strutil::Path fn(filenames[a].ToStdString());
-				ArchiveEntry* entry = nullptr;
+		//// Import all dragged files, inserting after the item they were dragged onto
+		// for (int a = filenames.size() - 1; a >= 0; a--)
+		//{
+		//	// Is this a directory?
+		//	if (wxDirExists(filenames[a]))
+		//	{
+		//		// TODO: Handle folders with recursively importing all content
+		//		// and converting to namespaces if dropping in a treeless archive.
+		//	}
+		//	else
+		//	{
+		//		strutil::Path fn(filenames[a].ToStdString());
+		//		ArchiveEntry* entry = nullptr;
 
-				// Find entry to replace if needed
-				if (auto_entry_replace)
-				{
-					entry = parent_->archive()->entryAtPath(dir->path().append(fn.fileName()));
-					// An entry with that name is already present, so ask about replacing it
-					if (entry && !yes_to_all)
-					{
-						// Since there is no standard "Yes/No to all" button or "Don't ask me again" checkbox,
-						// we will instead hack the Cancel button into being a "Yes to all" button. This is
-						// despite the existence of a wxID_YESTOALL return value...
-						auto message = fmt::format("Overwrite existing entry {}{}", dir->path(), fn.fileName());
-						wxMessageDialog dlg(parent_, message, caption, wxCANCEL | wxYES_NO | wxCENTRE);
-						dlg.SetYesNoCancelLabels(_("Yes"), _("No"), _("Yes to all"));
-						int result = dlg.ShowModal();
+		//		// Find entry to replace if needed
+		//		if (auto_entry_replace)
+		//		{
+		//			entry = parent_->archive()->entryAtPath(dir->path().append(fn.fileName()));
+		//			// An entry with that name is already present, so ask about replacing it
+		//			if (entry && !yes_to_all)
+		//			{
+		//				// Since there is no standard "Yes/No to all" button or "Don't ask me again" checkbox,
+		//				// we will instead hack the Cancel button into being a "Yes to all" button. This is
+		//				// despite the existence of a wxID_YESTOALL return value...
+		//				auto message = fmt::format("Overwrite existing entry {}{}", dir->path(), fn.fileName());
+		//				wxMessageDialog dlg(parent_, message, caption, wxCANCEL | wxYES_NO | wxCENTRE);
+		//				dlg.SetYesNoCancelLabels(_("Yes"), _("No"), _("Yes to all"));
+		//				int result = dlg.ShowModal();
 
-						// User doesn't want to replace the entry
-						if (result == wxID_NO)
-							entry = nullptr;
-						// User wants to replace all entries
-						if (result == wxID_CANCEL)
-							yes_to_all = true;
-					}
-				}
+		//				// User doesn't want to replace the entry
+		//				if (result == wxID_NO)
+		//					entry = nullptr;
+		//				// User wants to replace all entries
+		//				if (result == wxID_CANCEL)
+		//					yes_to_all = true;
+		//			}
+		//		}
 
-				// Create new entry if needed
-				if (entry == nullptr)
-					entry = parent_->archive()->addNewEntry(fn.fileName(), index, dir).get();
+		//		// Create new entry if needed
+		//		if (entry == nullptr)
+		//			entry = parent_->archive()->addNewEntry(fn.fileName(), index, dir).get();
 
-				// Import the file to it
-				entry->importFile(filenames[a].ToStdString());
-				EntryType::detectEntryType(*entry);
-			}
-		}
+		//		// Import the file to it
+		//		entry->importFile(filenames[a].ToStdString());
+		//		EntryType::detectEntryType(*entry);
+		//	}
+		//}
 
-		return true;
+		// return true;
+
+		return false;
 	}
 
 private:
-	ArchivePanel*     parent_ = nullptr;
-	ArchiveEntryList* list_   = nullptr;
+	ArchivePanel*   parent_ = nullptr;
+	wxDataViewCtrl* list_   = nullptr;
 };
 
 
@@ -394,57 +398,100 @@ size_t getNamespaceNumber(ArchiveEntry* entry, size_t index, vector<wxString>& n
 ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	wxPanel(parent, -1), archive_{ archive }, undo_manager_{ new UndoManager() }, ee_manager_{ new ExternalEditManager }
 {
-	// Create entry panels
-	entry_area_   = new EntryPanel(this, "nil");
-	default_area_ = new DefaultEntryPanel(this);
-	text_area_    = new TextEntryPanel(this);
-	gfx_area_     = new GfxEntryPanel(this);
-	pal_area_     = new PaletteEntryPanel(this);
-	hex_area_     = new HexEntryPanel(this);
-	ansi_area_    = new ANSIEntryPanel(this);
-	map_area_     = new MapEntryPanel(this);
-	audio_area_   = new AudioEntryPanel(this);
-	data_area_    = new DataEntryPanel(this);
-
-
-
 	// --- Setup Layout ---
-	auto min_pad  = ui::px(ui::Size::PadMinimum);
-	bool has_dirs = archive->formatDesc().supports_dirs;
 
 	// Create sizer
 	auto m_hbox = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(m_hbox);
 
+	// Create splitter
+	splitter_ = new wxSplitterWindow(this, -1, wxDefaultPosition, wxDefaultSize, wxSP_3DSASH | wxSP_LIVE_UPDATE);
+	splitter_->SetMinimumPaneSize(ui::scalePx(300));
+	m_hbox->Add(splitter_, wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
+
+	// Create entry panels
+	entry_area_   = new EntryPanel(splitter_, "nil", false);
+	default_area_ = new DefaultEntryPanel(splitter_, false);
+	text_area_    = new TextEntryPanel(splitter_, false);
+	gfx_area_     = new GfxEntryPanel(splitter_, false);
+	pal_area_     = new PaletteEntryPanel(splitter_, false);
+	hex_area_     = new HexEntryPanel(splitter_, false);
+	ansi_area_    = new ANSIEntryPanel(splitter_, false);
+	map_area_     = new MapEntryPanel(splitter_, false);
+	audio_area_   = new AudioEntryPanel(splitter_, false);
+	data_area_    = new DataEntryPanel(splitter_, false);
+
+
 	// Entry list panel
+	auto* elist_panel = createEntryListPanel(splitter_);
+
+	// Add default entry panel
+	cur_area_ = entry_area_;
+	cur_area_->Show(true);
+	cur_area_->setUndoManager(undo_manager_.get());
+
+	splitter_->SplitVertically(elist_panel, cur_area_, ap_splitter_position);
+
+	// Bind events
+	entry_tree_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &ArchivePanel::onEntryListSelectionChange, this);
+	// entry_list_->Bind(wxEVT_KEY_DOWN, &ArchivePanel::onEntryListKeyDown, this);
+	entry_tree_->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &ArchivePanel::onEntryListRightClick, this);
+	entry_tree_->Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, &ArchivePanel::onEntryListActivated, this);
+	text_filter_->Bind(wxEVT_TEXT, &ArchivePanel::onTextFilterChanged, this);
+	choice_category_->Bind(wxEVT_CHOICE, &ArchivePanel::onChoiceCategoryChanged, this);
+	// Bind(EVT_AEL_DIR_CHANGED, &ArchivePanel::onDirChanged, this);
+	btn_clear_filter_->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnClearFilter, this);
+
+	// Update splitter position cvar when moved
+	splitter_->Bind(wxEVT_SPLITTER_SASH_POS_CHANGED, [this](wxSplitterEvent& e) {
+		ap_splitter_position = e.GetSashPosition();
+	});
+
+	// Update this tab's name in the parent notebook when the archive is saved
+	sc_archive_saved_ = archive->signals().saved.connect([this](Archive& a) {
+		auto parent = dynamic_cast<wxAuiNotebook*>(GetParent());
+		parent->SetPageText(parent->GetPageIndex(this), a.filename(false));
+	});
+
+	// Close current entry panel if it's entry was removed
+	sc_entry_removed_ = archive->signals().entry_removed.connect([this](Archive&, ArchiveDir&, ArchiveEntry& entry) {
+		if (currentArea()->entry() == &entry)
+		{
+			currentArea()->closeEntry();
+			currentArea()->openEntry(nullptr);
+			currentArea()->Show(false);
+		}
+	});
+
+	// Refresh entry list when bookmarks are changed
+	// sc_bookmarks_changed_ = app::archiveManager().signals().bookmarks_changed.connect(
+	//	[this]() { entry_list_->updateList(); });
+
+	// Update size+layout
+	// entry_list_->updateWidth();
+	wxPanel::Layout();
+	elist_panel->Layout();
+	elist_panel->Update();
+	elist_panel->Refresh();
+}
+
+wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
+{
+	auto* panel    = new wxPanel(parent);
+	auto  archive  = archive_.lock();
+	bool  has_dirs = archive->formatDesc().supports_dirs;
+	auto  min_pad  = ui::px(ui::Size::PadMinimum);
 
 	// Create & set sizer & border
-	auto frame      = new wxStaticBox(this, -1, "Entries");
-	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	m_hbox->Add(framesizer, 0, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::pad());
-
-
-	// Create path display
-	if (has_dirs)
-	{
-		label_path_ = new wxStaticText(
-			this, -1, "/", { -1, -1 }, { -1, -1 }, wxST_ELLIPSIZE_START | wxST_NO_AUTORESIZE);
-	}
+	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
+	panel->SetSizer(hbox);
 
 	// Create entry list panel
-	entry_list_ = new ArchiveEntryList(this);
-	entry_list_->setArchive(archive);
-	entry_list_->SetDropTarget(new APEntryListDropTarget(this, entry_list_));
-	entry_list_->setUndoManager(undo_manager_.get());
+	entry_tree_ = new ui::ArchiveEntryTree(panel, archive);
+	entry_tree_->SetInitialSize({ 400, -1 });
 
 	// Entry list toolbar
-	toolbar_elist_ = new SToolBar(this, false, wxVERTICAL);
-	if (has_dirs)
-	{
-		auto* tbg_dir = new SToolBarGroup(toolbar_elist_, "_Dir");
-		tbg_dir->addActionButton("arch_updir")->Enable(false);
-		toolbar_elist_->addGroup(tbg_dir);
-	}
+	toolbar_elist_ = new SToolBar(panel, false, wxVERTICAL);
 	auto* tbg_create = new SToolBarGroup(toolbar_elist_, "_Create");
 	tbg_create->addActionButton("arch_newentry");
 	if (has_dirs)
@@ -471,7 +518,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	toolbar_elist_->addGroup(tbg_filter, true);
 
 	// Entry List filter controls
-	panel_filter_ = new wxPanel(this, -1);
+	panel_filter_ = new wxPanel(panel, -1);
 	auto* gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	panel_filter_->SetSizer(gbsizer);
 
@@ -499,64 +546,14 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	panel_filter_->Show(elist_show_filter);
 
 	// Layout entry list
-	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
-	if (app::platform() == app::Platform::Linux)
-		hbox->AddSpacer(ui::scalePx(1));
-	hbox->Add(toolbar_elist_, 0, wxEXPAND | wxBOTTOM, min_pad);
+	hbox->Add(toolbar_elist_, 0, wxEXPAND | wxBOTTOM | wxTOP, min_pad);
 	hbox->AddSpacer(min_pad);
 	auto* vbox = new wxBoxSizer(wxVERTICAL);
 	hbox->Add(vbox, 1, wxEXPAND);
-	framesizer->Add(hbox, 1, wxEXPAND);
-	vbox->AddSpacer(min_pad);
-	if (has_dirs)
-	{
-		vbox->AddSpacer(min_pad);
-		vbox->Add(wxutil::createLabelHBox(this, "Path:", label_path_), 0, wxEXPAND | wxRIGHT, ui::pad());
-		vbox->AddSpacer(min_pad);
-	}
-	vbox->Add(entry_list_, 1, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
+	vbox->Add(entry_tree_, 1, wxEXPAND | wxRIGHT | wxBOTTOM | wxTOP, ui::pad());
 	vbox->Add(panel_filter_, 0, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
 
-
-	// Add default entry panel
-	cur_area_ = entry_area_;
-	m_hbox->Add(cur_area_, 1, wxEXPAND);
-	cur_area_->Show(true);
-	cur_area_->setUndoManager(undo_manager_.get());
-
-	// Bind events
-	entry_list_->Bind(EVT_VLV_SELECTION_CHANGED, &ArchivePanel::onEntryListSelectionChange, this);
-	entry_list_->Bind(wxEVT_KEY_DOWN, &ArchivePanel::onEntryListKeyDown, this);
-	entry_list_->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &ArchivePanel::onEntryListRightClick, this);
-	entry_list_->Bind(wxEVT_LIST_ITEM_ACTIVATED, &ArchivePanel::onEntryListActivated, this);
-	text_filter_->Bind(wxEVT_TEXT, &ArchivePanel::onTextFilterChanged, this);
-	choice_category_->Bind(wxEVT_CHOICE, &ArchivePanel::onChoiceCategoryChanged, this);
-	Bind(EVT_AEL_DIR_CHANGED, &ArchivePanel::onDirChanged, this);
-	btn_clear_filter_->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnClearFilter, this);
-
-	// Update this tab's name in the parent notebook when the archive is saved
-	sc_archive_saved_ = archive->signals().saved.connect([this](Archive& a) {
-		auto parent = dynamic_cast<wxAuiNotebook*>(GetParent());
-		parent->SetPageText(parent->GetPageIndex(this), a.filename(false));
-	});
-
-	// Close current entry panel if it's entry was removed
-	sc_entry_removed_ = archive->signals().entry_removed.connect([this](Archive&, ArchiveEntry& entry) {
-		if (currentArea()->entry() == &entry)
-		{
-			currentArea()->closeEntry();
-			currentArea()->openEntry(nullptr);
-			currentArea()->Show(false);
-		}
-	});
-
-	// Refresh entry list when bookmarks are changed
-	sc_bookmarks_changed_ = app::archiveManager().signals().bookmarks_changed.connect(
-		[this]() { entry_list_->updateList(); });
-
-	// Update size+layout
-	entry_list_->updateWidth();
-	wxPanel::Layout();
+	return panel;
 }
 
 // -----------------------------------------------------------------------------
@@ -675,10 +672,10 @@ void ArchivePanel::undo() const
 	if (!(cur_area_ && cur_area_->undo()))
 	{
 		// Undo
-		entry_list_->setEntriesAutoUpdate(false);
+		// entry_list_->setEntriesAutoUpdate(false);
 		undo_manager_->undo();
-		entry_list_->setEntriesAutoUpdate(true);
-		entry_list_->updateEntries();
+		// entry_list_->setEntriesAutoUpdate(true);
+		// entry_list_->updateEntries();
 	}
 }
 
@@ -690,10 +687,10 @@ void ArchivePanel::redo() const
 	if (!(cur_area_ && cur_area_->redo()))
 	{
 		// Redo
-		entry_list_->setEntriesAutoUpdate(false);
+		// entry_list_->setEntriesAutoUpdate(false);
 		undo_manager_->redo();
-		entry_list_->setEntriesAutoUpdate(true);
-		entry_list_->updateEntries();
+		// entry_list_->setEntriesAutoUpdate(true);
+		// entry_list_->updateEntries();
 	}
 }
 
@@ -723,7 +720,7 @@ bool ArchivePanel::save()
 	}
 
 	// Refresh entry list
-	entry_list_->updateList();
+	// entry_list_->updateList();
 
 	return true;
 }
@@ -753,7 +750,7 @@ bool ArchivePanel::saveAs()
 	}
 
 	// Refresh entry list
-	entry_list_->updateList();
+	// entry_list_->updateList();
 
 	// Add as recent file
 	app::archiveManager().addRecentFile(info.filenames[0]);
@@ -769,6 +766,9 @@ bool ArchivePanel::saveAs()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::newEntry(NewEntry type)
 {
+	return false;
+
+	/*
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
@@ -849,6 +849,7 @@ bool ArchivePanel::newEntry(NewEntry type)
 
 	// Return whether the entry was created ok
 	return !!new_entry;
+	*/
 }
 
 // -----------------------------------------------------------------------------
@@ -857,6 +858,9 @@ bool ArchivePanel::newEntry(NewEntry type)
 // -----------------------------------------------------------------------------
 bool ArchivePanel::newDirectory() const
 {
+	return false;
+
+	/*
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
@@ -887,6 +891,7 @@ bool ArchivePanel::newDirectory() const
 
 	// Return whether the directory was created ok
 	return !!dir;
+	*/
 }
 
 // -----------------------------------------------------------------------------
@@ -895,6 +900,9 @@ bool ArchivePanel::newDirectory() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::importFiles()
 {
+	return false;
+
+	/*
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
@@ -959,6 +967,7 @@ bool ArchivePanel::importFiles()
 	}
 	else // User cancelled, return false
 		return false;
+	*/
 }
 
 // -----------------------------------------------------------------------------
@@ -1076,8 +1085,6 @@ bool ArchivePanel::buildArchive()
 
 	ui::hideSplash();
 
-	// Refresh entry list
-	entry_list_->updateList();
 	return true;
 }
 
@@ -1093,7 +1100,7 @@ bool ArchivePanel::renameEntry(bool each) const
 		return false;
 
 	// Get a list of selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Rename Entry");
@@ -1106,12 +1113,8 @@ bool ArchivePanel::renameEntry(bool each) const
 	if (each || selection.size() == 1)
 	{
 		// If only one entry is selected, or "rename each" mode is desired, just do basic rename
-		entry_list_->setEntriesAutoUpdate(false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
-			if (a == selection.size() - 1)
-				entry_list_->setEntriesAutoUpdate(true);
-
 			// Prompt for a new name
 			wxString new_name = wxGetTextFromUser("Enter new entry name:", "Rename", selection[a]->name());
 
@@ -1151,12 +1154,8 @@ bool ArchivePanel::renameEntry(bool each) const
 			misc::doMassRename(names, new_name);
 
 			// Go through the list
-			entry_list_->setEntriesAutoUpdate(false);
 			for (size_t a = 0; a < selection.size(); a++)
 			{
-				if (a == selection.size() - 1)
-					entry_list_->setEntriesAutoUpdate(true);
-
 				auto entry = selection[a];
 
 				// If the entry is a folder then skip it
@@ -1194,15 +1193,11 @@ bool ArchivePanel::renameEntry(bool each) const
 
 
 	// Get a list of selected directories
-	auto selected_dirs = entry_list_->selectedDirectories();
+	auto selected_dirs = entry_tree_->selectedDirectories();
 
 	// Go through the list
-	entry_list_->setEntriesAutoUpdate(false);
 	for (size_t a = 0; a < selected_dirs.size(); a++)
 	{
-		if (a == selected_dirs.size() - 1)
-			entry_list_->setEntriesAutoUpdate(true);
-
 		// Get the current directory's name
 		auto old_name = selected_dirs[a]->name();
 
@@ -1226,7 +1221,6 @@ bool ArchivePanel::renameEntry(bool each) const
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
 
-	entry_list_->setEntriesAutoUpdate(true);
 	return true;
 }
 
@@ -1241,10 +1235,10 @@ bool ArchivePanel::deleteEntry(bool confirm)
 		return false;
 
 	// Get a list of selected entries
-	auto selected_entries = entry_list_->selectedEntries();
+	auto selected_entries = entry_tree_->selectedEntries();
 
 	// Get a list of selected directories
-	auto selected_dirs = entry_list_->selectedDirectories();
+	auto selected_dirs = entry_tree_->selectedDirectories();
 
 	if (selected_entries.empty() && selected_dirs.empty())
 		return false;
@@ -1273,18 +1267,14 @@ bool ArchivePanel::deleteEntry(bool confirm)
 	}
 
 	// Clear the selection
-	entry_list_->clearSelection();
+	entry_tree_->UnselectAll();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Delete Entry");
 
 	// Go through the selected entries
-	entry_list_->setEntriesAutoUpdate(false);
 	for (int a = selected_entries.size() - 1; a >= 0; a--)
 	{
-		if (a == 0)
-			entry_list_->setEntriesAutoUpdate(true);
-
 		// Remove from bookmarks
 		app::archiveManager().deleteBookmark(selected_entries[a]);
 
@@ -1297,12 +1287,8 @@ bool ArchivePanel::deleteEntry(bool confirm)
 	}
 
 	// Go through the selected directories
-	entry_list_->setEntriesAutoUpdate(false);
 	for (int a = selected_dirs.size() - 1; a >= 0; a--)
 	{
-		if (a == 0)
-			entry_list_->setEntriesAutoUpdate(true);
-
 		// Remove from bookmarks
 		app::archiveManager().deleteBookmarksInDir(selected_dirs[a]);
 
@@ -1311,9 +1297,8 @@ bool ArchivePanel::deleteEntry(bool confirm)
 			maineditor::window()->archiveManagerPanel()->closeEntryTab(entry.get());
 
 		// Remove the selected directory from the archive
-		archive->removeDir(selected_dirs[a]->name(), entry_list_->currentDir().lock().get());
+		archive->removeDir(selected_dirs[a]->path());
 	}
-	entry_list_->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
@@ -1350,7 +1335,7 @@ bool ArchivePanel::revertEntry() const
 			return false;
 
 	// Get selected entries
-	auto selected_entries = entry_list_->selectedEntries();
+	auto selected_entries = entry_tree_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Revert Entry");
@@ -1382,6 +1367,9 @@ bool ArchivePanel::revertEntry() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::swapEntries()
 {
+	return false;
+
+	/*
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
@@ -1409,6 +1397,7 @@ bool ArchivePanel::swapEntries()
 
 	// Return success
 	return true;
+	*/
 }
 
 // -----------------------------------------------------------------------------
@@ -1416,6 +1405,9 @@ bool ArchivePanel::swapEntries()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::moveUp()
 {
+	return false;
+
+	/*
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
@@ -1453,6 +1445,7 @@ bool ArchivePanel::moveUp()
 
 	// Return success
 	return true;
+	*/
 }
 
 // -----------------------------------------------------------------------------
@@ -1460,6 +1453,9 @@ bool ArchivePanel::moveUp()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::moveDown()
 {
+	return false;
+
+	/*
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
@@ -1497,6 +1493,7 @@ bool ArchivePanel::moveDown()
 
 	// Return success
 	return true;
+	*/
 }
 
 // -----------------------------------------------------------------------------
@@ -1514,6 +1511,9 @@ bool ArchivePanel::moveDown()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::sort() const
 {
+	return false;
+
+	/*
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
@@ -1741,6 +1741,7 @@ bool ArchivePanel::sort() const
 	archive->setModified(true);
 
 	return true;
+	*/
 }
 
 // -----------------------------------------------------------------------------
@@ -1748,9 +1749,7 @@ bool ArchivePanel::sort() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::bookmark() const
 {
-	auto entry = entry_list_->focusedEntry();
-
-	if (entry)
+	if (auto entry = entry_tree_->firstSelectedEntry())
 	{
 		if (app::archiveManager().isBookmarked(entry))
 			app::archiveManager().deleteBookmark(entry);
@@ -1769,7 +1768,7 @@ bool ArchivePanel::bookmark() const
 bool ArchivePanel::openTab() const
 {
 	// Get selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Open each in its own tab
 	for (auto& entry : selection)
@@ -1784,7 +1783,7 @@ bool ArchivePanel::openTab() const
 bool ArchivePanel::crc32() const
 {
 	// Get selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Compute CRC-32 checksums for each
 	wxString checksums = "\nCRC-32:\n";
@@ -1815,13 +1814,12 @@ bool ArchivePanel::convertEntryTo() const
 bool ArchivePanel::importEntry()
 {
 	// Get a list of selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Import Entry");
 
 	// Go through the list
-	entry_list_->setEntriesAutoUpdate(false);
 	for (auto& entry : selection)
 	{
 		// Run open file dialog
@@ -1895,7 +1893,6 @@ bool ArchivePanel::importEntry()
 				openEntry(entry, true);
 		}
 	}
-	entry_list_->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
@@ -1911,8 +1908,8 @@ bool ArchivePanel::importEntry()
 bool ArchivePanel::exportEntry()
 {
 	// Get a list of selected entries & dirs
-	auto selection     = entry_list_->selectedEntries();
-	auto selected_dirs = entry_list_->selectedDirectories();
+	auto selection     = entry_tree_->selectedEntries();
+	auto selected_dirs = entry_tree_->selectedDirectories();
 
 	// If we're just exporting 1 entry
 	if (selection.size() == 1 && selected_dirs.empty())
@@ -1979,10 +1976,10 @@ bool ArchivePanel::exportEntryAs() const
 bool ArchivePanel::copyEntry() const
 {
 	// Get a list of selected entries
-	auto entries = entry_list_->selectedEntries();
+	auto entries = entry_tree_->selectedEntries();
 
 	// Get a list of selected directories
-	auto dirs = entry_list_->selectedDirectories();
+	auto dirs = entry_tree_->selectedDirectories();
 
 	// Do nothing if nothing selected
 	if (entries.empty() && dirs.empty())
@@ -2014,6 +2011,9 @@ bool ArchivePanel::cutEntry()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::pasteEntry() const
 {
+	return false;
+
+	/*
 	// Do nothing if there is nothing in the clipboard
 	if (app::clipboard().empty())
 		return false;
@@ -2064,6 +2064,7 @@ bool ArchivePanel::pasteEntry() const
 	}
 	else
 		return false;
+	*/
 }
 
 // -----------------------------------------------------------------------------
@@ -2071,7 +2072,7 @@ bool ArchivePanel::pasteEntry() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::openEntryExternal()
 {
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 	for (auto& entry : selection)
 	{
 		// Open entry in selected external editor
@@ -2098,7 +2099,7 @@ bool ArchivePanel::gfxConvert() const
 	GfxConvDialog gcd(theMainWindow);
 
 	// Send selection to the gcd
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 	gcd.openEntries(selection);
 
 	// Run the gcd
@@ -2111,12 +2112,8 @@ bool ArchivePanel::gfxConvert() const
 	undo_manager_->beginRecord("Gfx Format Conversion");
 
 	// Write any changes
-	entry_list_->setEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		if (a == selection.size() - 1)
-			entry_list_->setEntriesAutoUpdate(true);
-
 		// Update splash window
 		ui::setSplashProgressMessage(selection[a]->name());
 		ui::setSplashProgress((float)a / (float)selection.size());
@@ -2136,7 +2133,6 @@ bool ArchivePanel::gfxConvert() const
 		EntryType::detectEntryType(*selection[a]);
 		selection[a]->setExtensionByType();
 	}
-	entry_list_->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
@@ -2154,7 +2150,7 @@ bool ArchivePanel::gfxConvert() const
 bool ArchivePanel::gfxRemap()
 {
 	// Get selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Create preview image (just use first selected entry)
 	SImage image(SImage::Type::PalMask);
@@ -2175,12 +2171,8 @@ bool ArchivePanel::gfxRemap()
 		SImage   temp;
 		MemChunk mc;
 
-		entry_list_->setEntriesAutoUpdate(false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
-			if (a == selection.size() - 1)
-				entry_list_->setEntriesAutoUpdate(true);
-
 			auto entry = selection[a];
 			if (misc::loadImageFromEntry(&temp, entry))
 			{
@@ -2197,7 +2189,6 @@ bool ArchivePanel::gfxRemap()
 					entry->importMemChunk(mc);
 			}
 		}
-		entry_list_->setEntriesAutoUpdate(true);
 
 		// Update variables
 		dynamic_cast<GfxEntryPanel*>(gfx_area_)->prevTranslation().copy(ted.getTranslation());
@@ -2216,7 +2207,7 @@ bool ArchivePanel::gfxRemap()
 bool ArchivePanel::gfxColourise()
 {
 	// Get selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Create colourise dialog
 	auto               pal = theMainWindow->paletteChooser()->selectedPalette();
@@ -2232,12 +2223,8 @@ bool ArchivePanel::gfxColourise()
 		// Apply translation to all entry images
 		SImage   temp;
 		MemChunk mc;
-		entry_list_->setEntriesAutoUpdate(false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
-			if (a == selection.size() - 1)
-				entry_list_->setEntriesAutoUpdate(true);
-
 			auto entry = selection[a];
 			if (misc::loadImageFromEntry(&temp, entry))
 			{
@@ -2254,7 +2241,6 @@ bool ArchivePanel::gfxColourise()
 					entry->importMemChunk(mc);
 			}
 		}
-		entry_list_->setEntriesAutoUpdate(true);
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
 	}
@@ -2270,7 +2256,7 @@ bool ArchivePanel::gfxColourise()
 bool ArchivePanel::gfxTint()
 {
 	// Get selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Create colourise dialog
 	auto          pal = theMainWindow->paletteChooser()->selectedPalette();
@@ -2286,12 +2272,8 @@ bool ArchivePanel::gfxTint()
 		// Apply translation to all entry images
 		SImage   temp;
 		MemChunk mc;
-		entry_list_->setEntriesAutoUpdate(false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
-			if (a == selection.size() - 1)
-				entry_list_->setEntriesAutoUpdate(true);
-
 			auto entry = selection[a];
 			if (misc::loadImageFromEntry(&temp, entry))
 			{
@@ -2308,7 +2290,6 @@ bool ArchivePanel::gfxTint()
 					entry->importMemChunk(mc);
 			}
 		}
-		entry_list_->setEntriesAutoUpdate(true);
 
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
@@ -2337,15 +2318,13 @@ bool ArchivePanel::gfxModifyOffsets() const
 	undo_manager_->beginRecord("Gfx Modify Offsets");
 
 	// Go through selected entries
-	entry_list_->setEntriesAutoUpdate(false);
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 	for (auto& entry : selection)
 	{
 		undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
 		mod.apply(*entry);
 	}
 	maineditor::currentEntryPanel()->callRefresh();
-	entry_list_->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
@@ -2359,7 +2338,7 @@ bool ArchivePanel::gfxModifyOffsets() const
 bool ArchivePanel::gfxExportPNG()
 {
 	// Get a list of selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// If we're just exporting 1 entry
 	if (selection.size() == 1)
@@ -2416,19 +2395,15 @@ bool ArchivePanel::gfxExportPNG()
 bool ArchivePanel::voxelConvert()
 {
 	// Get selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Convert .vox -> .kvx");
 
 	// Go through selection
 	bool errors = false;
-	entry_list_->setEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		if (a == selection.size() - 1)
-			entry_list_->setEntriesAutoUpdate(true);
-
 		if (selection[a]->type()->formatId() == "voxel_vox")
 		{
 			MemChunk kvx;
@@ -2445,7 +2420,6 @@ bool ArchivePanel::voxelConvert()
 			selection[a]->setExtensionByType();                                         // Update extension if necessary
 		}
 	}
-	entry_list_->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
@@ -2462,7 +2436,7 @@ bool ArchivePanel::voxelConvert()
 // -----------------------------------------------------------------------------
 ArchiveEntry* ArchivePanel::currentEntry() const
 {
-	if (entry_list_->GetSelectedItemCount() == 1)
+	if (entry_tree_->GetSelectedItemsCount() == 1)
 		return cur_area_->entry();
 	else
 		return nullptr;
@@ -2474,8 +2448,8 @@ ArchiveEntry* ArchivePanel::currentEntry() const
 vector<ArchiveEntry*> ArchivePanel::currentEntries() const
 {
 	vector<ArchiveEntry*> selection;
-	if (entry_list_)
-		selection = entry_list_->selectedEntries();
+	if (entry_tree_)
+		selection = entry_tree_->selectedEntries();
 	return selection;
 }
 
@@ -2484,8 +2458,8 @@ vector<ArchiveEntry*> ArchivePanel::currentEntries() const
 // -----------------------------------------------------------------------------
 ArchiveDir* ArchivePanel::currentDir() const
 {
-	if (entry_list_)
-		return entry_list_->currentDir().lock().get();
+	// if (entry_list_)
+	//	return entry_list_->currentDir().lock().get();
 	return nullptr;
 }
 
@@ -2496,12 +2470,11 @@ bool ArchivePanel::swanConvert() const
 {
 	// Check the archive is still open
 	auto archive = archive_.lock();
-	auto dir     = entry_list_->currentDir().lock().get();
-	if (!archive || !dir)
+	if (!archive)
 		return false;
 
 	// Get the entry index of the last selected list item
-	int index = archive->entryIndex(currentEntry(), dir);
+	int index = currentEntry()->index();
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -2511,9 +2484,8 @@ bool ArchivePanel::swanConvert() const
 	MemChunk mca, mcs;
 
 	// Get a list of selected entries
-	auto selection = entry_list_->selectedEntries();
-
-	bool error = false;
+	auto selection = entry_tree_->selectedEntries();
+	bool error     = false;
 
 	// Check each selected entry for possible conversion
 	for (auto& entry : selection)
@@ -2553,7 +2525,8 @@ bool ArchivePanel::swanConvert() const
 			// Begin recording undo level
 			undo_manager_->beginRecord(fmt::format("Create {}", wadnames[e]));
 
-			auto output = archive->addNewEntry((archive->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, dir);
+			auto output = archive->addNewEntry(
+				(archive->formatId() == "wad" ? wadnames[e] : zipnames[e]), index, currentEntry()->parentDir());
 			if (output)
 			{
 				error |= !output->importMemChunk(*mc[e]);
@@ -2580,19 +2553,18 @@ bool ArchivePanel::basConvert(bool animdefs)
 {
 	// Check the archive is still open
 	auto archive = archive_.lock();
-	auto dir     = entry_list_->currentDir().lock().get();
-	if (!archive || !dir)
+	if (!archive)
 		return false;
 
 	// Get the entry index of the last selected list item
-	int index = archive->entryIndex(currentEntry(), dir);
+	int index = currentEntry()->index();
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
 		index++;
 
 	// Get a list of selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Convert to ANIMDEFS");
@@ -2602,7 +2574,7 @@ bool ArchivePanel::basConvert(bool animdefs)
 		(animdefs ? (archive->formatId() == "wad" ? "ANIMDEFS" : "animdefs.txt") :
 					(archive->formatId() == "wad" ? "SWANTBLS" : "swantbls.dat")),
 		index,
-		dir);
+		currentEntry()->parentDir());
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
@@ -2675,19 +2647,15 @@ bool ArchivePanel::palConvert() const
 bool ArchivePanel::wavDSndConvert() const
 {
 	// Get selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Convert Wav -> Doom Sound");
 
 	// Go through selection
 	bool errors = false;
-	entry_list_->setEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		if (a == selection.size() - 1)
-			entry_list_->setEntriesAutoUpdate(true);
-
 		// Convert WAV -> Doom Sound if the entry is WAV format
 		if (selection[a]->type()->formatId() == "snd_wav")
 		{
@@ -2705,7 +2673,6 @@ bool ArchivePanel::wavDSndConvert() const
 			selection[a]->setExtensionByType();                                         // Update extension if necessary
 		}
 	}
-	entry_list_->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
@@ -2723,19 +2690,15 @@ bool ArchivePanel::wavDSndConvert() const
 bool ArchivePanel::dSndWavConvert() const
 {
 	// Get selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Convert Doom Sound -> Wav");
 
 	// Go through selection
 	bool errors = false;
-	entry_list_->setEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		if (a == selection.size() - 1)
-			entry_list_->setEntriesAutoUpdate(true);
-
 		bool     worked = false;
 		MemChunk wav;
 		// Convert Doom Sound -> WAV if the entry is Doom Sound format
@@ -2771,7 +2734,6 @@ bool ArchivePanel::dSndWavConvert() const
 			continue;
 		}
 	}
-	entry_list_->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
@@ -2789,18 +2751,14 @@ bool ArchivePanel::dSndWavConvert() const
 bool ArchivePanel::musMidiConvert() const
 {
 	// Get selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Convert Mus -> Midi");
 
 	// Go through selection
-	entry_list_->setEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		if (a == selection.size() - 1)
-			entry_list_->setEntriesAutoUpdate(true);
-
 		// Convert MUS -> MIDI if the entry is a MIDI-like format
 		const auto& format_id = selection[a]->type()->formatId();
 		if (strutil::startsWith(format_id, "midi_") && format_id != "midi_smf")
@@ -2818,7 +2776,6 @@ bool ArchivePanel::musMidiConvert() const
 			selection[a]->setExtensionByType();                     // Update extension if necessary
 		}
 	}
-	entry_list_->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
@@ -2832,18 +2789,14 @@ bool ArchivePanel::musMidiConvert() const
 bool ArchivePanel::compileACS(bool hexen) const
 {
 	// Get selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Go through selection
-	entry_list_->setEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		if (a == selection.size() - 1)
-			entry_list_->setEntriesAutoUpdate(true);
 		// Compile ACS script
 		entryoperations::compileACS(selection[a], hexen, nullptr, theMainWindow);
 	}
-	entry_list_->setEntriesAutoUpdate(true);
 
 	return true;
 }
@@ -2868,7 +2821,7 @@ bool ArchivePanel::optimizePNG() const
 	}
 
 	// Get selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	ui::showSplash("Running external programs, please wait...", true);
 
@@ -2876,12 +2829,8 @@ bool ArchivePanel::optimizePNG() const
 	undo_manager_->beginRecord("Optimize PNG");
 
 	// Go through selection
-	entry_list_->setEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		if (a == selection.size() - 1)
-			entry_list_->setEntriesAutoUpdate(true);
-
 		ui::setSplashProgressMessage(selection[a]->nameNoExt());
 		ui::setSplashProgress(float(a) / float(selection.size()));
 		if (selection[a]->type()->formatId() == "img_png")
@@ -2890,7 +2839,6 @@ bool ArchivePanel::optimizePNG() const
 			entryoperations::optimizePNG(selection[a]);
 		}
 	}
-	entry_list_->setEntriesAutoUpdate(true);
 	ui::hideSplash();
 
 	// Finish recording undo level
@@ -2905,8 +2853,7 @@ bool ArchivePanel::optimizePNG() const
 bool ArchivePanel::convertTextures() const
 {
 	// Get selected entries
-	long index     = entry_list_->selection()[0];
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Begin recording undo level
 	undo_manager_->beginRecord("Convert TEXTUREx -> TEXTURES");
@@ -2915,8 +2862,8 @@ bool ArchivePanel::convertTextures() const
 	if (entryoperations::convertTextures(selection))
 	{
 		// Select new TEXTURES entry
-		entry_list_->clearSelection();
-		entry_list_->selectItem(index);
+		// entry_list_->clearSelection();
+		// entry_list_->selectItem(index);
 
 		// Finish recording undo level
 		undo_manager_->endRecord(true);
@@ -2935,7 +2882,7 @@ bool ArchivePanel::convertTextures() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::findTextureErrors() const
 {
-	return entryoperations::findTextureErrors(entry_list_->selectedEntries());
+	return entryoperations::findTextureErrors(entry_tree_->selectedEntries());
 }
 
 // -----------------------------------------------------------------------------
@@ -2944,11 +2891,7 @@ bool ArchivePanel::findTextureErrors() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::mapOpenDb2() const
 {
-	// Get first selected entry
-	auto entry = entry_list_->entryAt(entry_list_->firstSelected());
-
-	// Do open in db2
-	return entryoperations::openMapDB2(entry);
+	return entryoperations::openMapDB2(entry_tree_->firstSelectedEntry());
 }
 
 // -----------------------------------------------------------------------------
@@ -2956,7 +2899,7 @@ bool ArchivePanel::mapOpenDb2() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::openDir(const shared_ptr<ArchiveDir>& dir) const
 {
-	return entry_list_->setDir(dir);
+	return false; // entry_list_->setDir(dir);
 }
 
 // -----------------------------------------------------------------------------
@@ -3014,7 +2957,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 			log::error(wxString::Format("Trying to open nonexistant directory %s", name));
 			return false;
 		}
-		entry_list_->setDir(dir);
+		// entry_list_->setDir(dir);
 	}
 	else
 	{
@@ -3129,22 +3072,22 @@ bool ArchivePanel::reloadCurrentPanel()
 // -----------------------------------------------------------------------------
 void ArchivePanel::focusOnEntry(ArchiveEntry* entry) const
 {
-	if (entry)
-	{
-		// Do we need to change directory?
-		if (entry->parentDir() != entry_list_->currentDir().lock().get())
-			entry_list_->setDir(ArchiveDir::getShared(entry->parentDir()));
+	// if (entry)
+	//{
+	//	// Do we need to change directory?
+	//	if (entry->parentDir() != entry_list_->currentDir().lock().get())
+	//		entry_list_->setDir(ArchiveDir::getShared(entry->parentDir()));
 
-		// Now focus on the entry if it is listed
-		for (long index = 0; index < entry_list_->GetItemCount(); ++index)
-		{
-			if (entry == entry_list_->entryAt(index))
-			{
-				entry_list_->focusOnIndex(index);
-				return;
-			}
-		}
-	}
+	//	// Now focus on the entry if it is listed
+	//	for (long index = 0; index < entry_list_->GetItemCount(); ++index)
+	//	{
+	//		if (entry == entry_list_->entryAt(index))
+	//		{
+	//			entry_list_->focusOnIndex(index);
+	//			return;
+	//		}
+	//	}
+	//}
 }
 
 // -----------------------------------------------------------------------------
@@ -3156,9 +3099,6 @@ bool ArchivePanel::showEntryPanel(EntryPanel* new_area, bool ask_save)
 	if (ask_save)
 		saveEntryChanges();
 
-	// Get the panel sizer
-	auto sizer = GetSizer();
-
 	// If the new panel is different than the current, swap them
 	if (new_area != cur_area_)
 	{
@@ -3166,9 +3106,9 @@ bool ArchivePanel::showEntryPanel(EntryPanel* new_area, bool ask_save)
 		cur_area_->removeCustomMenu(); // Remove current custom menu (if any)
 		if (new_area != nullptr)
 		{
-			sizer->Replace(cur_area_, new_area); // Swap the panels
-			cur_area_ = new_area;                // Set the new panel to current
-			cur_area_->Show(true);               // Show current
+			splitter_->ReplaceWindow(cur_area_, new_area); // Swap the panels
+			cur_area_ = new_area;                          // Set the new panel to current
+			cur_area_->Show(true);                         // Show current
 
 			// Add the current panel's custom menu and toolbar if needed
 			cur_area_->addCustomMenu();
@@ -3198,7 +3138,7 @@ bool ArchivePanel::showEntryPanel(EntryPanel* new_area, bool ask_save)
 void ArchivePanel::refreshPanel()
 {
 	// Refresh entry list
-	entry_list_->applyFilter();
+	// entry_list_->applyFilter();
 
 	// Refresh current entry panel
 	cur_area_->refreshPanel();
@@ -3207,9 +3147,17 @@ void ArchivePanel::refreshPanel()
 	panel_filter_->Show(elist_show_filter);
 
 	// Refresh entire panel
+	Freeze();
+	splitter_->GetWindow1()->Layout();
+	splitter_->GetWindow1()->Update();
+	splitter_->GetWindow1()->Refresh();
+	splitter_->GetWindow2()->Layout();
+	splitter_->GetWindow2()->Update();
+	splitter_->GetWindow2()->Refresh();
 	Layout();
 	Update();
 	Refresh();
+	Thaw();
 }
 
 // -----------------------------------------------------------------------------
@@ -3271,13 +3219,16 @@ bool ArchivePanel::handleAction(string_view id)
 	// ------------------------------------------------------------------------
 
 	// 'Up Dir' button
-	if (id == "arch_updir")
-		entry_list_->goUpDir();
+	// if (id == "arch_updir")
+	//	entry_list_->goUpDir();
 
 	// 'Toggle Filter Controls' button
-	else if (id == "arch_elist_togglefilter")
+	/*else */ if (id == "arch_elist_togglefilter")
 	{
 		panel_filter_->Show(elist_show_filter);
+		splitter_->GetWindow1()->Layout();
+		splitter_->GetWindow1()->Update();
+		splitter_->GetWindow1()->Refresh();
 		Layout();
 		Refresh();
 	}
@@ -3439,7 +3390,7 @@ bool ArchivePanel::handleAction(string_view id)
 
 	// Entry->Run Script
 	else if (id == "arch_entry_script")
-		scriptmanager::runEntryScript(entry_list_->selectedEntries(), wx_id_offset_, maineditor::windowWx());
+		scriptmanager::runEntryScript(entry_tree_->selectedEntries(), wx_id_offset_, maineditor::windowWx());
 
 
 	// Context menu actions
@@ -3460,17 +3411,17 @@ bool ArchivePanel::handleAction(string_view id)
 	else if (id == "arch_gfx_offsets")
 		gfxModifyOffsets();
 	else if (id == "arch_gfx_addptable")
-		entryoperations::addToPatchTable(entry_list_->selectedEntries());
+		entryoperations::addToPatchTable(entry_tree_->selectedEntries());
 	else if (id == "arch_gfx_addtexturex")
-		entryoperations::createTexture(entry_list_->selectedEntries());
+		entryoperations::createTexture(entry_tree_->selectedEntries());
 	else if (id == "arch_gfx_exportpng")
 		gfxExportPNG();
 	else if (id == "arch_gfx_pngopt")
 		optimizePNG();
 	else if (id == "arch_view_text")
-		openEntryAsText(entry_list_->focusedEntry());
+		openEntryAsText(entry_tree_->firstSelectedEntry());
 	else if (id == "arch_view_hex")
-		openEntryAsHex(entry_list_->focusedEntry());
+		openEntryAsHex(entry_tree_->firstSelectedEntry());
 	else if (id == "arch_audio_convertdw")
 		dSndWavConvert();
 	else if (id == "arch_audio_convertwd")
@@ -3598,14 +3549,14 @@ wxMenu* ArchivePanel::createMaintenanceMenu()
 // -----------------------------------------------------------------------------
 // Called when the selection on the entry list is changed
 // -----------------------------------------------------------------------------
-void ArchivePanel::onEntryListSelectionChange(wxCommandEvent& e)
+void ArchivePanel::onEntryListSelectionChange(wxDataViewEvent& e)
 {
 	// Do nothing if not shown
 	if (!IsShown())
 		return;
 
 	// Get selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	if (selection.empty())
 	{
@@ -3630,7 +3581,7 @@ void ArchivePanel::onEntryListSelectionChange(wxCommandEvent& e)
 	}
 
 	// Get selected directories
-	auto sel_dirs = entry_list_->selectedDirectories();
+	auto sel_dirs = entry_tree_->selectedDirectories();
 
 	if (selection.empty() && !sel_dirs.empty())
 	{
@@ -3645,10 +3596,10 @@ void ArchivePanel::onEntryListSelectionChange(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 // Called when the entry list is right clicked
 // -----------------------------------------------------------------------------
-void ArchivePanel::onEntryListRightClick(wxListEvent& e)
+void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 {
 	// Get selected entries
-	auto selection = entry_list_->selectedEntries();
+	auto selection = entry_tree_->selectedEntries();
 
 	// Check what types exist in the selection
 	// TODO: This stuff is absolutely terrible, nicer system needed
@@ -3979,7 +3930,7 @@ void ArchivePanel::onEntryListKeyDown(wxKeyEvent& e)
 		// Select All
 		else if (bind == "select_all")
 		{
-			entry_list_->selectAll();
+			entry_tree_->SelectAll();
 			return;
 		}
 
@@ -4052,7 +4003,7 @@ void ArchivePanel::onEntryListKeyDown(wxKeyEvent& e)
 		// Up directory
 		else if (bind == "el_up_dir")
 		{
-			entry_list_->goUpDir();
+			// entry_list_->goUpDir();
 			return;
 		}
 
@@ -4072,14 +4023,14 @@ void ArchivePanel::onEntryListKeyDown(wxKeyEvent& e)
 // Called when an item on the entry list is 'activated'
 // (via double-click or enter)
 // -----------------------------------------------------------------------------
-void ArchivePanel::onEntryListActivated(wxListEvent& e)
+void ArchivePanel::onEntryListActivated(wxDataViewEvent& e)
 {
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
 		return;
 
-	auto entry = entry_list_->focusedEntry();
+	auto entry = entry_tree_->entryForItem(e.GetItem());
 
 	if (!entry)
 		return;
@@ -4185,7 +4136,7 @@ void ArchivePanel::onTextFilterChanged(wxCommandEvent& e)
 		category = choice_category_->GetStringSelection();
 
 	// Filter the entry list
-	entry_list_->filterList(text_filter_->GetValue(), category);
+	// entry_list_->filterList(text_filter_->GetValue(), category);
 
 	e.Skip();
 }
@@ -4201,7 +4152,7 @@ void ArchivePanel::onChoiceCategoryChanged(wxCommandEvent& e)
 		category = choice_category_->GetStringSelection();
 
 	// Filter the entry list
-	entry_list_->filterList(text_filter_->GetValue(), category);
+	// entry_list_->filterList(text_filter_->GetValue(), category);
 
 	e.Skip();
 }
@@ -4211,6 +4162,7 @@ void ArchivePanel::onChoiceCategoryChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void ArchivePanel::onDirChanged(wxCommandEvent& e)
 {
+	/*
 	// Get directory
 	auto dir = entry_list_->currentDir().lock();
 
@@ -4237,6 +4189,7 @@ void ArchivePanel::onDirChanged(wxCommandEvent& e)
 			toolbar_elist_->Refresh();
 		}
 	}
+	*/
 }
 
 // -----------------------------------------------------------------------------
@@ -4245,7 +4198,7 @@ void ArchivePanel::onDirChanged(wxCommandEvent& e)
 void ArchivePanel::onBtnUpDir(wxCommandEvent& e)
 {
 	// Go up a directory in the entry list
-	entry_list_->goUpDir();
+	// entry_list_->goUpDir();
 }
 
 // -----------------------------------------------------------------------------

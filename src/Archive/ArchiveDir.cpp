@@ -733,3 +733,21 @@ shared_ptr<ArchiveDir> ArchiveDir::getShared(ArchiveDir* dir)
 
 	return nullptr;
 }
+
+// -----------------------------------------------------------------------------
+// Finds the ArchiveDir for the given directory [entry] within (and including)
+// [dir_root].
+// Note that in this case [entry] is the target ArchiveDir's dirEntry(), *not*
+// an entry contained within it
+// -----------------------------------------------------------------------------
+shared_ptr<ArchiveDir> slade::ArchiveDir::findDirByDirEntry(shared_ptr<ArchiveDir> dir_root, const ArchiveEntry& entry)
+{
+	if (dir_root->dir_entry_.get() == &entry)
+		return dir_root;
+
+	for (auto subdir : dir_root->subdirs_)
+		if (auto dir = findDirByDirEntry(subdir, entry))
+			return dir;
+
+	return nullptr;
+}
