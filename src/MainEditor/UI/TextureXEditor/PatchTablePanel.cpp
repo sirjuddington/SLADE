@@ -44,7 +44,7 @@
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
-#include "UI/Controls/SZoomSlider.h"
+#include "UI/Controls/ZoomControl.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
 
@@ -70,8 +70,7 @@ EXTERN_CVAR(String, dir_last)
 // PatchTableListView class constructor
 // -----------------------------------------------------------------------------
 PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table) :
-	VirtualListView(parent),
-	patch_table_{ patch_table }
+	VirtualListView(parent), patch_table_{ patch_table }
 {
 	// Add columns
 	InsertColumn(0, "#");
@@ -201,9 +200,7 @@ void PatchTableListView::sortItems()
 // PatchTablePanel class constructor
 // -----------------------------------------------------------------------------
 PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, TextureXEditor* tx_editor) :
-	wxPanel(parent, -1),
-	patch_table_{ patch_table },
-	parent_{ tx_editor }
+	wxPanel(parent, -1), patch_table_{ patch_table }, parent_{ tx_editor }
 {
 	// Create controls
 	list_patches_ = new PatchTableListView(this, patch_table);
@@ -218,7 +215,7 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	patch_canvas_->setViewType(GfxCanvas::View::Centered);
 	patch_canvas_->allowDrag(true);
 	patch_canvas_->allowScroll(true);
-	slider_zoom_ = new SZoomSlider(this, patch_canvas_);
+	zc_zoom_ = new ui::ZoomControl(this, patch_canvas_);
 
 	setupLayout();
 
@@ -250,7 +247,7 @@ void PatchTablePanel::setupLayout()
 	frame      = new wxStaticBox(this, -1, "Patch Preview && Info");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
-	framesizer->Add(slider_zoom_, 0, wxALL, ui::pad());
+	framesizer->Add(zc_zoom_, 0, wxALL, ui::pad());
 	framesizer->Add(patch_canvas_->toPanel(this), 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 	framesizer->Add(label_dimensions_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 	framesizer->Add(label_textures_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());

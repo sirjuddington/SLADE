@@ -10,8 +10,11 @@ class TextureXList;
 class CTextureCanvas;
 class CTexture;
 class Palette;
-class SZoomSlider;
 class SToolBar;
+namespace ui
+{
+	class ZoomControl;
+}
 
 class TextureEditorPanel : public wxPanel, SActionHandler
 {
@@ -75,14 +78,14 @@ protected:
 	bool                 tex_modified_ = false;
 
 	// View controls
-	SZoomSlider*    slider_zoom_     = nullptr;
-	wxCheckBox*     cb_draw_outside_ = nullptr;
-	wxCheckBox*     cb_blend_rgba_   = nullptr;
-	wxCheckBox*     cb_tex_scale_    = nullptr;
-	wxCheckBox*     cb_tex_arc_      = nullptr;
-	wxStaticText*   label_viewtype_  = nullptr;
-	wxChoice*       choice_viewtype_ = nullptr;
-	CTextureCanvas* tex_canvas_      = nullptr;
+	ui::ZoomControl* zc_zoom_         = nullptr;
+	wxCheckBox*      cb_draw_outside_ = nullptr;
+	wxCheckBox*      cb_blend_rgba_   = nullptr;
+	wxCheckBox*      cb_tex_scale_    = nullptr;
+	wxCheckBox*      cb_tex_arc_      = nullptr;
+	wxStaticText*    label_viewtype_  = nullptr;
+	wxChoice*        choice_viewtype_ = nullptr;
+	CTextureCanvas*  tex_canvas_      = nullptr;
 
 	// Texture controls
 	wxTextCtrl*   text_tex_name_        = nullptr;

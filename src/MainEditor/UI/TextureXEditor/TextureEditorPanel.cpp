@@ -37,7 +37,7 @@
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Controls/SIconButton.h"
-#include "UI/Controls/SZoomSlider.h"
+#include "UI/Controls/ZoomControl.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
@@ -78,12 +78,11 @@ EXTERN_CVAR(Bool, tx_arc)
 // TextureEditorPanel class constructor
 // -----------------------------------------------------------------------------
 TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_editor) :
-	wxPanel(parent, -1),
-	tx_editor_{ tx_editor }
+	wxPanel(parent, -1), tx_editor_{ tx_editor }
 {
 	// Create controls
 	tex_canvas_      = new CTextureCanvas(this, -1);
-	slider_zoom_     = new SZoomSlider(this, tex_canvas_);
+	zc_zoom_         = new ui::ZoomControl(this, tex_canvas_);
 	cb_tex_scale_    = new wxCheckBox(this, -1, "Apply Scale");
 	cb_tex_arc_      = new wxCheckBox(this, -1, "Aspect Ratio Correction");
 	cb_draw_outside_ = new wxCheckBox(this, -1, "Show Outside");
@@ -123,7 +122,7 @@ void TextureEditorPanel::setupLayout()
 	// Add view controls
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM | wxTOP, ui::px(ui::Size::PadMinimum));
-	hbox->Add(slider_zoom_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(zc_zoom_, 0, wxEXPAND | wxRIGHT, ui::pad());
 	hbox->AddStretchSpacer();
 	hbox->Add(cb_tex_scale_, 0, wxEXPAND | wxRIGHT, ui::pad());
 	hbox->Add(cb_tex_arc_, 0, wxEXPAND | wxRIGHT, ui::pad());

@@ -996,6 +996,9 @@
     <ClCompile Include="..\src\Graphics\Graphics.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\UI\Controls\ZoomControl.cpp">
+      <Filter>UI\Controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -1903,6 +1906,9 @@
     </ClInclude>
     <ClInclude Include="..\src\Graphics\Graphics.h">
       <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\Controls\ZoomControl.h">
+      <Filter>UI\Controls</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

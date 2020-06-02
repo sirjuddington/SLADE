@@ -34,14 +34,14 @@
 #include "Archive/Archive.h"
 #include "General/Misc.h"
 #include "General/UI.h"
-#include "Graphics/Icons.h"
 #include "Graphics/Graphics.h"
+#include "Graphics/Icons.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
-#include "UI/Controls/SZoomSlider.h"
+#include "UI/Controls/ZoomControl.h"
 #include "UI/Dialogs/GfxColouriseDialog.h"
 #include "UI/Dialogs/GfxConvDialog.h"
 #include "UI/Dialogs/GfxCropDialog.h"
@@ -49,7 +49,9 @@
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/SBrush.h"
+#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
+
 
 using namespace slade;
 
@@ -130,17 +132,6 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent, 
 
 	sizer_bottom_->AddStretchSpacer();
 
-	// Aspect ratio correction checkbox
-	cb_arc_ = new wxCheckBox(this, -1, "Aspect Ratio Correction");
-	cb_arc_->SetValue(gfx_arc);
-	sizer_bottom_->Add(cb_arc_, 0, wxEXPAND, 0);
-	sizer_bottom_->AddSpacer(ui::padLarge());
-
-	// Tile checkbox
-	cb_tile_ = new wxCheckBox(this, -1, "Tile");
-	sizer_bottom_->Add(cb_tile_, 0, wxEXPAND, 0);
-	sizer_bottom_->AddSpacer(ui::padLarge());
-
 	// Image selection controls
 	text_imgnum_   = new wxStaticText(this, -1, "Image: ");
 	text_imgoutof_ = new wxStaticText(this, -1, " out of XX");
@@ -157,10 +148,14 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent, 
 	spin_curimg_->SetMinSize(spinsize);
 	sizer_bottom_->Add(text_imgnum_, 0, wxALIGN_CENTER, 0);
 	sizer_bottom_->Add(spin_curimg_, 0, wxSHRINK | wxALIGN_CENTER, ui::pad());
-	sizer_bottom_->Add(text_imgoutof_, 0, wxALIGN_CENTER, 0);
+	sizer_bottom_->Add(text_imgoutof_, 0, wxALIGN_CENTER | wxRIGHT, ui::padLarge());
 	text_imgnum_->Show(false);
 	spin_curimg_->Show(false);
 	text_imgoutof_->Show(false);
+
+	// Zoom
+	zc_zoom_ = new ui::ZoomControl(this, gfx_canvas_);
+	sizer_bottom_->Add(zc_zoom_, 0, wxEXPAND);
 
 	// Refresh when main palette changed
 	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]() {
@@ -187,8 +182,6 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent, 
 	spin_xoffset_->Bind(wxEVT_TEXT_ENTER, &GfxEntryPanel::onXOffsetChanged, this);
 	spin_yoffset_->Bind(wxEVT_TEXT_ENTER, &GfxEntryPanel::onYOffsetChanged, this);
 	choice_offset_type_->Bind(wxEVT_CHOICE, &GfxEntryPanel::onOffsetTypeChanged, this);
-	cb_tile_->Bind(wxEVT_CHECKBOX, &GfxEntryPanel::onTileChanged, this);
-	cb_arc_->Bind(wxEVT_CHECKBOX, &GfxEntryPanel::onARCChanged, this);
 	Bind(wxEVT_GFXCANVAS_OFFSET_CHANGED, &GfxEntryPanel::onGfxOffsetChanged, this, gfx_canvas_->GetId());
 	Bind(wxEVT_GFXCANVAS_PIXELS_CHANGED, &GfxEntryPanel::onGfxPixelsChanged, this, gfx_canvas_->GetId());
 	Bind(wxEVT_GFXCANVAS_COLOUR_PICKED, &GfxEntryPanel::onColourPicked, this, gfx_canvas_->GetId());
@@ -366,11 +359,13 @@ void GfxEntryPanel::setupToolbars()
 	g_file->addActionButton("pgfx_pngopt", "")->Enable(false);
 	toolbar_->addGroup(g_file);
 
-	// Zoom
-	auto g_zoom  = new SToolBarGroup(toolbar_, "Zoom");
-	slider_zoom_ = new SZoomSlider(g_zoom, gfx_canvas_);
-	g_zoom->addCustomControl(slider_zoom_);
-	toolbar_->addGroup(g_zoom, true);
+	// View
+	auto* g_view = new SToolBarGroup(toolbar_, "View");
+	btn_arc_     = g_view->addActionButton(
+        "toggle_arc", "Aspect Ratio Correction", "aspectratio", "Toggle Aspect Ratio Correction");
+	btn_arc_->setChecked(gfx_arc);
+	btn_tile_ = g_view->addActionButton("toggle_tile", "Tile", "tile", "Toggle tiled view");
+	toolbar_->addGroup(g_view, true);
 
 
 
@@ -683,7 +678,7 @@ GfxCanvas::View GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
 void GfxEntryPanel::applyViewType(ArchiveEntry* entry) const
 {
 	// Tile checkbox overrides offset type selection
-	if (cb_tile_->IsChecked())
+	if (btn_tile_->isChecked())
 		gfx_canvas_->setViewType(GfxCanvas::View::Tiled);
 	else
 	{
@@ -1045,6 +1040,23 @@ bool GfxEntryPanel::fillCustomMenu(wxMenu* custom)
 	return true;
 }
 
+void GfxEntryPanel::toolbarButtonClick(const wxString& action_id)
+{
+	if (action_id == "toggle_arc")
+	{
+		btn_arc_->setChecked(!btn_arc_->isChecked());
+		gfx_arc = btn_arc_->isChecked();
+		gfx_canvas_->Refresh();
+	}
+
+	else if (action_id == "toggle_tile")
+	{
+		btn_tile_->setChecked(!btn_tile_->isChecked());
+		choice_offset_type_->Enable(!btn_tile_->isChecked());
+		applyViewType(entry_.lock().get());
+	}
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -1101,23 +1113,6 @@ void GfxEntryPanel::onOffsetTypeChanged(wxCommandEvent& e)
 	applyViewType(entry_.lock().get());
 }
 
-// -----------------------------------------------------------------------------
-// Called when the 'Tile' checkbox is checked/unchecked
-// -----------------------------------------------------------------------------
-void GfxEntryPanel::onTileChanged(wxCommandEvent& e)
-{
-	choice_offset_type_->Enable(!cb_tile_->IsChecked());
-	applyViewType(entry_.lock().get());
-}
-
-// -----------------------------------------------------------------------------
-// Called when the 'Aspect Ratio' checkbox is checked/unchecked
-// -----------------------------------------------------------------------------
-void GfxEntryPanel::onARCChanged(wxCommandEvent& e)
-{
-	gfx_arc = cb_arc_->IsChecked();
-	gfx_canvas_->Refresh();
-}
 // -----------------------------------------------------------------------------
 // Called when the gfx canvas image offsets are changed
 // -----------------------------------------------------------------------------
