@@ -160,11 +160,25 @@ void ZoomControl::setup()
 	for (const auto& pct : zoom_percents)
 		values.Add(fmt::format("{}%", pct));
 
+	// Combobox size
+#ifdef WIN32
+	wxSize cbsize(ui::scalePx(64), -1);
+#else
+	auto cbsize = wxDefaultSize;
+#endif
+
 	// Create controls
 	cb_zoom_ = new wxComboBox(
-		this, -1, fmt::format("{}%", zoom_), wxDefaultPosition, { ui::scalePx(64), -1 }, values, wxTE_PROCESS_ENTER);
+		this, -1, fmt::format("{}%", zoom_), wxDefaultPosition, cbsize, values, wxTE_PROCESS_ENTER);
 	btn_zoom_out_ = new SToolBarButton(this, "zoom_out", "Zoom Out", "zoom_out", "Zoom Out");
 	btn_zoom_in_  = new SToolBarButton(this, "zoom_in", "Zoom In", "zoom_in", "Zoom In");
+
+#ifdef __WXGTK__
+	// wxWidgets doesn't leave space for the dropdown arrow in gtk3 for whatever reason
+	cbsize = cb_zoom_->GetBestSize();
+	cbsize.x += ui::scalePx(20);
+	cb_zoom_->SetInitialSize(cbsize);
+#endif
 
 	// Layout
 	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
