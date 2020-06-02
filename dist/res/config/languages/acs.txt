@@ -160,7 +160,7 @@ acs_z : acs {
 	keywords = {
 		function, enter, respawn, death, lightning, unloading, disconnect, kill,
 		fixed, global, net, import, libdefine, library, nocompact, nowadauthor,
-		EncryptStrings, static, wadauthor, region, endregion,
+		EncryptStrings, static, wadauthor, region, endregion, reopen,
 		
 		// Skulltag script types
 		BlueReturn, RedReturn, WhiteReturn, Pickup, ClientSide
@@ -377,6 +377,8 @@ acs_z : acs {
 		SECF_PUSH, SECF_SILENTMOVE, SECF_DMGTERRAINFX, SECF_DMGENDGODMODE, SECF_DMGENDLEVEL,
 		SECF_DMGHAZARD,
 
+		SECPART_3D, SECPART_Ceiling, SECPART_Floor,
+
 		BLOCKF_CREATURES, BLOCKF_MONSTERS, BLOCKF_PLAYERS, BLOCKF_FLOATERS, BLOCKF_HITSCAN,
 		BLOCKF_PROJECTILES, BLOCKF_EVERYTHING, BLOCKF_RAILING, BLOCKF_USE, BLOCKF_SIGHT, 
 		BLOCKF_SOUND,
@@ -581,7 +583,10 @@ acs_z : acs {
 		Light_StrobeDoom = "int tag, int u-tics, int l-tics";
 		Line_AlignCeiling  = "int lineid, int side";
 		Line_AlignFloor = "int lineid, int side";
+		Line_SetAutomapFlags = "int lineid, int setflags, int clearflags";
+		Line_SetAutomapStyle = "int lineid, int style";
 		Line_SetBlocking = "int lineid, int setflags, int clearflags";
+		Line_SetHealth = "int lineid, int health";
 		Line_SetPortalTarget = "int sourceline, int targetline";
 		Line_SetTextureOffset = "int id, int x, int y, int side, int flags";
 		Line_SetTextureScale = "int id, int x, int y, int side, int flags";
@@ -635,6 +640,7 @@ acs_z : acs {
 		Sector_SetFloorScale2 = "int tag, int x-factor, int y-factor";
 		Sector_SetFriction = "int tag, int amount";
 		Sector_SetGravity = "int tag, int intpart, int fracpart";
+		Sector_SetHealth = "int tag, int part, int health";
 		Sector_SetLink = "int controltag, int linktag, int floor/ceiling, int movetype";
 		Sector_SetPlaneReflection = "int tag, int floor, int ceiling";
 		Sector_SetRotation = "int tag, int floor-angle, int ceiling-angle";
@@ -767,6 +773,7 @@ acs_z : acs {
 		GetCVarString = "str cvarname";
 		GetLevelInfo = "int levelinfo";
 		GetLineActivation = "int lineid";
+		GetLineHealth = "int lineid";
 		GetLineRowOffset;
 		GetLineUDMFFixed = "int lineid, str key";
 		GetLineUDMFInt = "int lineid, str key";
@@ -781,6 +788,7 @@ acs_z : acs {
 		GetScreenWidth;
 		GetSectorCeilingZ = "int tag, int x, int y";
 		GetSectorFloorZ = "int tag, int x, int y";
+		GetSectorHealth = "int tag, int part";
 		GetSectorLightLevel = "int tag";
 		GetSectorUDMFFixed = "int tag, string key";
 		GetSectorUDMFInt = "int tag, string key";
@@ -816,7 +824,7 @@ acs_z : acs {
 		PlayerIsBot = "int playernumber";
 		PlayerNumber;
 		PlayMovie = "str moviename - but this function does not work anyway";
-		PlaySound = "int tid, str sound, [int channel], [fixed volume], [bool looping], [fixed attenuation]";
+		PlaySound = "int tid, str sound, [int channel], [fixed volume], [bool looping], [fixed attenuation], [bool local]";
 		PolyWait = "int polynum";
 		Print = "type:expression";
 		PrintBold = "type:expression";
@@ -871,6 +879,7 @@ acs_z : acs {
 		SetSectorTerrain = "int tag, int whichplane, str terraintype";
 		SetSkyScrollSpeed = "int sky, float skyspeed";
 		SetThingSpecial = "int tid, int special, [int arg1], [int arg2], [int arg3], [int arg4], [int arg5]";
+		SetTranslation = "int tid, str transname";
 		SetUserArray = "int tid, str name, int pos, int value";
 		SetUserCVar = "int playernum, str cvarname, int newvalue", "int playernum, str cvarname, fixed newvalue", "int playernum, str cvarname, bool newvalue";
 		SetUserCVarString = "int playernum, str cvarname, str newvalue";
@@ -956,12 +965,14 @@ acs_z : acs {
 		GetPlayerAccountName = "unknown parameters list";
 		GetPlayerLivesLeft = "int player";
 		GetTeamProperty = "int team, int property";
+		GetTimeProperty = "int timestamp, int which, [int utc]";
 		IncrementDBEntry = "unknown parameters list";
 		IsMultiplayer;
 		IsNetworkGame;
 		IsOneFlagCTF;
 		KickFromGame = "int player, str reason";
 		Music_Change = "str music, int pattern";
+		NamedRequestScriptPuke = "str script, [int arg0], [int arg1], [int arg2], [int arg3]";
 		PlayerArmorPoints;
 		PlayerHealth;
 		PlayerIsLoggedIn = "int playernumber";
@@ -988,6 +999,8 @@ acs_z : acs {
 		SetPlayerLivesLeft = "int player, int amount";
 		SinglePlayer;
 		SortDBEntries = "unknown parameters list";
+		Strftime = "int timestamp, str format, [int utc]";
+		SystemTime;
 		
 		// ZDaemon functions
 		GetTeamScore = "int team";
