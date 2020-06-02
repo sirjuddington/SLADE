@@ -32,7 +32,7 @@ local archive = Archives.OpenFile("c:/games/doom/somewad.wad")
 
 -- The first element in entries is entries[1], because it is a Lua array
 -- (entries[0] is invalid)
-local entries = some_archive.entries
+local entries = archive.entries
 
 -- Will print "0" because entries in SLADE begin at index 0
 App.LogMessage(entries[1].index)
