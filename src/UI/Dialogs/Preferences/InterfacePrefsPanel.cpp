@@ -233,7 +233,7 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
         { ui::px(ui::Size::SpinCtrlWidth), -1 },
         wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
         0,
-        3,
+        4,
         1);
 
 	// Layout

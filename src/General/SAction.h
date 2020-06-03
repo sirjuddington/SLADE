@@ -31,20 +31,22 @@ public:
 		int         reserve_ids = 1);
 	~SAction() = default;
 
-	string id() const { return id_; }
-	int    wxId() const { return wx_id_; }
-	string text() const { return text_; }
-	string iconName() const;
-	string helpText() const { return helptext_; }
-	string shortcut() const { return shortcut_; }
-	string shortcutText() const;
-	Type   type() const { return type_; }
-	bool   isChecked() const { return checked_; }
-	bool   isRadio() const { return type_ == Type::Radio; }
-	bool   isWxId(int id) const { return id >= wx_id_ && id < wx_id_ + reserved_ids_; }
-	void   setChecked(bool checked = true);
-	void   toggle() { setChecked(!checked_); }
-	void   initWxId();
+	string     id() const { return id_; }
+	int        wxId() const { return wx_id_; }
+	string     text() const { return text_; }
+	string     iconName() const;
+	string     helpText() const { return helptext_; }
+	string     shortcut() const { return shortcut_; }
+	string     shortcutText() const;
+	Type       type() const { return type_; }
+	bool       isChecked() const { return checked_; }
+	bool       isRadio() const { return type_ == Type::Radio; }
+	bool       isWxId(int id) const { return id >= wx_id_ && id < wx_id_ + reserved_ids_; }
+	CBoolCVar* linkedCVar() const { return linked_cvar_; }
+
+	void setChecked(bool checked = true);
+	void toggle() { setChecked(!checked_); }
+	void initWxId();
 
 	bool addToMenu(
 		wxMenu*     menu,

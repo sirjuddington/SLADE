@@ -353,7 +353,7 @@ wxBitmap icons::getIcon(Type type, string_view name, int size, bool log_missing)
 // found.
 // If [type] is less than 0, try all icon types.
 // -----------------------------------------------------------------------------
-wxBitmap icons::getPaddedIcon(Type type, string_view name, int size, int padding)
+wxBitmap icons::getPaddedIcon(Type type, string_view name, int size, Point2i padding)
 {
 	// Check all types if [type] is < 0
 	if (type == Any)
@@ -371,10 +371,10 @@ wxBitmap icons::getPaddedIcon(Type type, string_view name, int size, int padding
 		if (icon.name == name)
 		{
 			const auto& image = validImageForSize(icon, size).wx_image;
-			wxImage     padded(image.GetWidth() + padding * 2, image.GetHeight() + padding * 2);
+			wxImage     padded(image.GetWidth() + padding.x * 2, image.GetHeight() + padding.y * 2);
 			padded.SetMaskColour(0, 0, 0);
 			padded.InitAlpha();
-			padded.Paste(image, padding, padding);
+			padded.Paste(image, padding.x, padding.y);
 
 			return wxBitmap(padded);
 		}
