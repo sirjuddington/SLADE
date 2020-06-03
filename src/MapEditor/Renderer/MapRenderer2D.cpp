@@ -1863,14 +1863,14 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 // -----------------------------------------------------------------------------
 // Renders point light previews
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderPointLightPreviews(float alpha) const
+void MapRenderer2D::renderPointLightPreviews(float alpha, int hilight_index) const
 {
 	if (!thing_preview_lights)
 		return;
 	
 	ColRGBA light_col{ 0, 0, 0, static_cast<uint8_t>(alpha * (thing_light_intensity * 255.f)) };
 	double  light_radius = 0.;
-
+\
 	glEnable(GL_TEXTURE_2D);
 	const auto light_tex = mapeditor::textureManager().editorImage("thing/light_preview").gl_id;
 	gl::Texture::bind(light_tex);
@@ -1910,7 +1910,7 @@ void MapRenderer2D::renderPointLightPreviews(float alpha) const
 			light_radius = thing->arg(0);
 		}
 
-		//light_radius *= alpha;
+		light_radius *= 2; // Doubling the radius value matches better with in-game results
 		gl::setColour(light_col, gl::Blend::Additive);
 
 		glBegin(GL_QUADS);
@@ -1923,6 +1923,17 @@ void MapRenderer2D::renderPointLightPreviews(float alpha) const
 		glTexCoord2f(0.0f, 1.0f);
 		glVertex2d(thing->xPos() - light_radius, thing->yPos() + light_radius);
 		glEnd();
+
+		// Draw radius circle if the thing is the current hilight
+		if (hilight_index >= 0 && thing->index() == hilight_index)
+		{
+			auto col = light_col;
+			col.a = 180;
+			glDisable(GL_TEXTURE_2D);
+			glLineWidth(2.f);
+			drawing::drawEllipse(thing->position(), light_radius, light_radius, 64, col);
+			glEnable(GL_TEXTURE_2D);
+		}
 	}
 }
 

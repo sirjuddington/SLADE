@@ -73,6 +73,7 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 EXTERN_CVAR(Int, halo_width)
 EXTERN_CVAR(Int, grid_64_style)
 EXTERN_CVAR(Bool, grid_show_origin)
+EXTERN_CVAR(Float, thing_light_intensity)
 
 
 // -----------------------------------------------------------------------------
@@ -254,22 +255,28 @@ void MapDisplayPrefsPanel::setupThingsTab()
 	gb_sizer->Add(choice_things_always_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Shadow opacity
+	auto dp = wxDefaultPosition;
+	auto ds = wxDefaultSize;
 	gb_sizer->Add(new wxStaticText(panel, -1, "Thing shadow opacity: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	slider_thing_shadow_ = new wxSlider(
-		panel, -1, thing_shadow * 10, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
+	slider_thing_shadow_ = new wxSlider(panel, -1, thing_shadow * 10, 0, 10, dp, ds, wxSL_AUTOTICKS);
 	gb_sizer->Add(slider_thing_shadow_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Arrow opacity
 	gb_sizer->Add(
 		new wxStaticText(panel, -1, "Thing angle arrow opacity: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	slider_thing_arrow_alpha_ = new wxSlider(
-		panel, -1, thing_shadow * 10, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
+	slider_thing_arrow_alpha_ = new wxSlider(panel, -1, thing_shadow * 10, 0, 10, dp, ds, wxSL_AUTOTICKS);
 	gb_sizer->Add(slider_thing_arrow_alpha_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Halo width
 	gb_sizer->Add(new wxStaticText(panel, -1, "Halo extra width: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	slider_halo_width_ = new wxSlider(panel, -1, halo_width, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
+	slider_halo_width_ = new wxSlider(panel, -1, halo_width, 0, 10, dp, ds, wxSL_AUTOTICKS);
 	gb_sizer->Add(slider_halo_width_, { row++, 1 }, { 1, 1 }, wxEXPAND);
+
+	// Point light preview intensity
+	gb_sizer->Add(
+		new wxStaticText(panel, -1, "Point light preview intensity: "), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	slider_light_intensity_ = new wxSlider(panel, -1, thing_light_intensity * 10, 1, 10, dp, ds, wxSL_AUTOTICKS);
+	gb_sizer->Add(slider_light_intensity_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Always show angles
 	cb_thing_force_dir_ = new wxCheckBox(panel, -1, "Always show thing angles");
@@ -353,6 +360,7 @@ void MapDisplayPrefsPanel::init()
 	slider_halo_width_->SetValue(halo_width);
 	choice_grid_64_->SetSelection(grid_64_style);
 	cb_grid_show_origin_->SetValue(grid_show_origin);
+	slider_light_intensity_->SetValue(thing_light_intensity * 10);
 }
 
 // -----------------------------------------------------------------------------
@@ -391,4 +399,5 @@ void MapDisplayPrefsPanel::applyPreferences()
 	halo_width            = slider_halo_width_->GetValue();
 	grid_64_style         = choice_grid_64_->GetSelection();
 	grid_show_origin      = cb_grid_show_origin_->GetValue();
+	thing_light_intensity = slider_light_intensity_->GetValue() * 0.1f;
 }

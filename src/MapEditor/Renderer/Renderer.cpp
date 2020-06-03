@@ -1067,10 +1067,11 @@ void Renderer::drawMap2d()
 			force_dir = true;
 
 		// Things mode
-		renderer_2d_.renderVertices(fade_vertices_);             // Vertices
-		renderer_2d_.renderLines(line_tabs_always, fade_lines_); // Lines
-		renderer_2d_.renderPointLightPreviews(fade_things_);     // Point light previews
-		renderer_2d_.renderThings(fade_things_, force_dir);      // Things
+		auto hl_index = context_.hilightItem().index;
+		renderer_2d_.renderVertices(fade_vertices_);                   // Vertices
+		renderer_2d_.renderLines(line_tabs_always, fade_lines_);       // Lines
+		renderer_2d_.renderPointLightPreviews(fade_things_, hl_index); // Point light previews
+		renderer_2d_.renderThings(fade_things_, force_dir);            // Things
 
 		// Thing paths
 		renderer_2d_.renderPathedThings(context_.pathedThings());
@@ -1082,7 +1083,7 @@ void Renderer::drawMap2d()
 
 		// Hilight if needed
 		if (mouse_state == Input::MouseState::Normal && !context_.overlayActive())
-			renderer_2d_.renderThingHilight(context_.hilightItem().index, anim_flash_level_);
+			renderer_2d_.renderThingHilight(hl_index, anim_flash_level_);
 	}
 
 	// Draw tagged sectors/lines/things if needed
