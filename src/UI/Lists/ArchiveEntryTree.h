@@ -26,6 +26,7 @@ namespace ui
 		unsigned int   GetColumnCount() const override;
 		wxString       GetColumnType(unsigned int col) const override;
 		void           GetValue(wxVariant& variant, const wxDataViewItem& item, unsigned int col) const override;
+		bool           GetAttr(const wxDataViewItem& item, unsigned int col, wxDataViewItemAttr& attr) const override;
 		bool           SetValue(const wxVariant& variant, const wxDataViewItem& item, unsigned int col) override;
 		wxDataViewItem GetParent(const wxDataViewItem& item) const override;
 		bool           IsContainer(const wxDataViewItem& item) const override;

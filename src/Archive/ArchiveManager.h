@@ -75,18 +75,19 @@ public:
 	// Signals
 	struct Signals
 	{
-		sigslot::signal<unsigned> archive_added;
-		sigslot::signal<unsigned> archive_opened;
-		sigslot::signal<unsigned> archive_modified;
-		sigslot::signal<unsigned> archive_saved;
-		sigslot::signal<unsigned> archive_closing;
-		sigslot::signal<unsigned> archive_closed;
-		sigslot::signal<unsigned> base_res_path_added;
-		sigslot::signal<unsigned> base_res_path_removed;
-		sigslot::signal<unsigned> base_res_current_changed;
-		sigslot::signal<>         base_res_current_cleared;
-		sigslot::signal<>         recent_files_changed;
-		sigslot::signal<>         bookmarks_changed;
+		sigslot::signal<unsigned>                     archive_added;
+		sigslot::signal<unsigned>                     archive_opened;
+		sigslot::signal<unsigned>                     archive_modified;
+		sigslot::signal<unsigned>                     archive_saved;
+		sigslot::signal<unsigned>                     archive_closing;
+		sigslot::signal<unsigned>                     archive_closed;
+		sigslot::signal<unsigned>                     base_res_path_added;
+		sigslot::signal<unsigned>                     base_res_path_removed;
+		sigslot::signal<unsigned>                     base_res_current_changed;
+		sigslot::signal<>                             base_res_current_cleared;
+		sigslot::signal<>                             recent_files_changed;
+		sigslot::signal<ArchiveEntry*>                bookmark_added;
+		sigslot::signal<const vector<ArchiveEntry*>&> bookmarks_removed;
 	};
 	Signals& signals() { return signals_; }
 

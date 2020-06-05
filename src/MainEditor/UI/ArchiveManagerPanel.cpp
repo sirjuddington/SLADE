@@ -2247,5 +2247,7 @@ void ArchiveManagerPanel::connectSignals()
 	signal_connections += signals.recent_files_changed.connect([this]() { refreshRecentFileList(); });
 
 	// Refresh bookmarks list when changed
-	signal_connections += signals.bookmarks_changed.connect([this]() { refreshBookmarkList(); });
+	signal_connections += signals.bookmark_added.connect([this](ArchiveEntry*) { refreshBookmarkList(); });
+	signal_connections += signals.bookmarks_removed.connect(
+		[this](const vector<ArchiveEntry*>&) { refreshBookmarkList(); });
 }

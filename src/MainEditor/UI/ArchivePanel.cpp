@@ -438,7 +438,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 
 	// Bind events
 	entry_tree_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &ArchivePanel::onEntryListSelectionChange, this);
-	entry_tree_->Bind(wxEVT_KEY_DOWN, &ArchivePanel::onEntryListKeyDown, this);
+	entry_tree_->Bind(wxEVT_CHAR, &ArchivePanel::onEntryListKeyDown, this);
 	entry_tree_->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &ArchivePanel::onEntryListRightClick, this);
 	entry_tree_->Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, &ArchivePanel::onEntryListActivated, this);
 	text_filter_->Bind(wxEVT_TEXT, &ArchivePanel::onTextFilterChanged, this);
@@ -3081,22 +3081,12 @@ bool ArchivePanel::reloadCurrentPanel()
 // -----------------------------------------------------------------------------
 void ArchivePanel::focusOnEntry(ArchiveEntry* entry) const
 {
-	// if (entry)
-	//{
-	//	// Do we need to change directory?
-	//	if (entry->parentDir() != entry_list_->currentDir().lock().get())
-	//		entry_list_->setDir(ArchiveDir::getShared(entry->parentDir()));
+	if (!entry)
+		return;
 
-	//	// Now focus on the entry if it is listed
-	//	for (long index = 0; index < entry_list_->GetItemCount(); ++index)
-	//	{
-	//		if (entry == entry_list_->entryAt(index))
-	//		{
-	//			entry_list_->focusOnIndex(index);
-	//			return;
-	//		}
-	//	}
-	//}
+	wxDataViewItem item{ entry };
+	entry_tree_->EnsureVisible(item);
+	entry_tree_->SetSelections(wxDataViewItemArray(1, item));
 }
 
 // -----------------------------------------------------------------------------
@@ -3227,12 +3217,8 @@ bool ArchivePanel::handleAction(string_view id)
 	// ENTRY LIST
 	// ------------------------------------------------------------------------
 
-	// 'Up Dir' button
-	// if (id == "arch_updir")
-	//	entry_list_->goUpDir();
-
 	// 'Toggle Filter Controls' button
-	/*else */ if (id == "arch_elist_togglefilter")
+	if (id == "arch_elist_togglefilter")
 	{
 		panel_filter_->Show(elist_show_filter);
 		splitter_->GetWindow1()->Layout();

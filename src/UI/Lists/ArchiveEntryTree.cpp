@@ -1,7 +1,9 @@
 #include "Main.h"
 #include "ArchiveEntryTree.h"
+#include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveManager.h"
 #include "Graphics/Icons.h"
 #include "UI/WxUtils.h"
 #include <wx/headerctrl.h>
@@ -44,26 +46,43 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive)
 		items.push_back(wxDataViewItem{ entry.get() });
 	ItemsAdded({}, items);
 
-	// Notify when entry added
+
+	// --- Connect to Archive/ArchiveManager signals ---
+
+	// Entry added
 	connections_ += archive->signals().entry_added.connect([this](Archive& archive, ArchiveEntry& entry) {
 		ItemAdded(createItemForDirectory(entry.parentDir()), wxDataViewItem(&entry));
 	});
 
-	// Notify when entry removed
+	// Entry removed
 	connections_ += archive->signals().entry_removed.connect(
 		[this](Archive& archive, ArchiveDir& dir, ArchiveEntry& entry) {
 			ItemDeleted(createItemForDirectory(&dir), wxDataViewItem(&entry));
 		});
 
-	// Notify when dir added
+	// Dir added
 	connections_ += archive->signals().dir_added.connect([this](Archive& archive, ArchiveDir& dir) {
 		ItemAdded(createItemForDirectory(dir.parent().get()), wxDataViewItem(dir.dirEntry()));
 	});
 
-	// Notify when dir removed
+	// Dir removed
 	connections_ += archive->signals().dir_removed.connect(
 		[this](Archive& archive, ArchiveDir& parent, ArchiveDir& dir) {
 			ItemDeleted(createItemForDirectory(&parent), wxDataViewItem(dir.dirEntry()));
+		});
+
+	// Bookmark added
+	connections_ += app::archiveManager().signals().bookmark_added.connect(
+		[this](ArchiveEntry* entry) { ItemChanged(wxDataViewItem(entry)); });
+
+	// Bookmark(s) removed
+	connections_ += app::archiveManager().signals().bookmarks_removed.connect(
+		[this](const vector<ArchiveEntry*>& removed) {
+			wxDataViewItemArray items;
+			for (auto* entry : removed)
+				if (entry)
+					items.emplace_back(entry);
+			ItemsChanged(items);
 		});
 }
 
@@ -114,6 +133,24 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 	// Invalid
 	else
 		variant = "Invalid Column";
+}
+
+bool ArchiveViewModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxDataViewItemAttr& attr) const
+{
+	auto* entry = static_cast<ArchiveEntry*>(item.GetID());
+	if (!entry)
+		return false;
+
+	bool has_attr = false;
+
+	// Bookmarked (bold name)
+	if (col == 0 && app::archiveManager().isBookmarked(entry))
+	{
+		attr.SetBold(true);
+		has_attr = true;
+	}
+
+	return has_attr;
 }
 
 bool ArchiveViewModel::SetValue(const wxVariant& variant, const wxDataViewItem& item, unsigned int col)
@@ -183,7 +220,7 @@ bool ArchiveViewModel::IsListModel() const
 	return false;
 }
 
-wxDataViewItem slade::ui::ArchiveViewModel::createItemForDirectory(const ArchiveDir* dir)
+wxDataViewItem ArchiveViewModel::createItemForDirectory(const ArchiveDir* dir)
 {
 	if (auto archive = archive_.lock())
 	{
