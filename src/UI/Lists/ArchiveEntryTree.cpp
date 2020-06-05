@@ -9,13 +9,27 @@
 using namespace slade;
 using namespace ui;
 
-CVAR(Int, elist_colsize_name, 150, CVar::Save)
+CVAR(Int, elist_colsize_name_tree, 150, CVar::Save)
+CVAR(Int, elist_colsize_name_list, 150, CVar::Save)
 CVAR(Int, elist_colsize_size, 80, CVar::Save)
 CVAR(Int, elist_colsize_type, 150, CVar::Save)
 CVAR(Int, elist_colsize_index, 50, CVar::Save)
 
 EXTERN_CVAR(Int, elist_icon_size)
 EXTERN_CVAR(Int, elist_icon_padding)
+
+
+namespace slade::ui
+{
+bool archiveSupportsDirs(Archive* archive)
+{
+	if (archive)
+		return archive->formatDesc().supports_dirs;
+
+	return false;
+}
+} // namespace slade::ui
+
 
 void ArchiveViewModel::openArchive(shared_ptr<Archive> archive)
 {
@@ -79,9 +93,9 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 	// Name column
 	if (col == 0)
 	{
+		auto pad      = Point2i{ 1, elist_icon_padding };
 		auto icon_bmp = elist_icon_padding > 0 ?
-							icons::getPaddedIcon(
-								icons::Type::Entry, entry->type()->icon(), elist_icon_size, elist_icon_padding) :
+							icons::getPaddedIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size, pad) :
 							icons::getIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size);
 
 		wxIcon icon;
@@ -201,7 +215,11 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 	model_->DecRef();
 
 	// Add Columns
-	col_name_ = AppendIconTextColumn("Name", 0, wxDATAVIEW_CELL_EDITABLE, elist_colsize_name);
+	col_name_ = AppendIconTextColumn(
+		"Name",
+		0,
+		wxDATAVIEW_CELL_EDITABLE,
+		archiveSupportsDirs(archive.get()) ? elist_colsize_name_tree : elist_colsize_name_list);
 	col_size_ = AppendTextColumn("Size", 1, wxDATAVIEW_CELL_INERT, elist_colsize_size);
 	col_type_ = AppendTextColumn("Type", 2, wxDATAVIEW_CELL_INERT, elist_colsize_type);
 	GetColumn(GetColumnCount() - 1)->SetWidth(0); // temp
@@ -218,7 +236,10 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 
 	// Update column width cvars when we can
 	Bind(wxEVT_IDLE, [this](wxIdleEvent& e) {
-		elist_colsize_name = col_name_->GetWidth();
+		if (archiveSupportsDirs(archive_.lock().get()))
+			elist_colsize_name_tree = col_name_->GetWidth();
+		else
+			elist_colsize_name_list = col_name_->GetWidth();
 		elist_colsize_size = col_size_->GetWidth();
 		elist_colsize_type = col_type_->GetWidth();
 	});

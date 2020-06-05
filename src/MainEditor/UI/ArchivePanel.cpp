@@ -102,7 +102,8 @@ CVAR(Int, last_tint_amount, 50, CVar::Flag::Save)
 CVAR(Bool, auto_entry_replace, false, CVar::Flag::Save)
 CVAR(Bool, archive_build_skip_hidden, true, CVar::Flag::Save)
 CVAR(Bool, elist_show_filter, false, CVar::Flag::Save)
-CVAR(Int, ap_splitter_position, 300, CVar::Flag::Save)
+CVAR(Int, ap_splitter_position_tree, 300, CVar::Flag::Save)
+CVAR(Int, ap_splitter_position_list, 300, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -430,21 +431,29 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	cur_area_->Show(true);
 	cur_area_->setUndoManager(undo_manager_.get());
 
-	splitter_->SplitVertically(elist_panel, cur_area_, ap_splitter_position);
+	int split_pos = ap_splitter_position_list;
+	if (archive && archive->formatDesc().supports_dirs)
+		split_pos = ap_splitter_position_tree;
+	splitter_->SplitVertically(elist_panel, cur_area_, split_pos);
 
 	// Bind events
 	entry_tree_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &ArchivePanel::onEntryListSelectionChange, this);
-	// entry_list_->Bind(wxEVT_KEY_DOWN, &ArchivePanel::onEntryListKeyDown, this);
+	entry_tree_->Bind(wxEVT_KEY_DOWN, &ArchivePanel::onEntryListKeyDown, this);
 	entry_tree_->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &ArchivePanel::onEntryListRightClick, this);
 	entry_tree_->Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, &ArchivePanel::onEntryListActivated, this);
 	text_filter_->Bind(wxEVT_TEXT, &ArchivePanel::onTextFilterChanged, this);
 	choice_category_->Bind(wxEVT_CHOICE, &ArchivePanel::onChoiceCategoryChanged, this);
-	// Bind(EVT_AEL_DIR_CHANGED, &ArchivePanel::onDirChanged, this);
 	btn_clear_filter_->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnClearFilter, this);
 
 	// Update splitter position cvar when moved
 	splitter_->Bind(wxEVT_SPLITTER_SASH_POS_CHANGED, [this](wxSplitterEvent& e) {
-		ap_splitter_position = e.GetSashPosition();
+		if (auto archive = archive_.lock().get())
+		{
+			if (archive->formatDesc().supports_dirs)
+				ap_splitter_position_tree = e.GetSashPosition();
+			else
+				ap_splitter_position_list = e.GetSashPosition();
+		}
 	});
 
 	// Update this tab's name in the parent notebook when the archive is saved
@@ -491,7 +500,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	entry_tree_->SetInitialSize({ 400, -1 });
 
 	// Entry list toolbar
-	toolbar_elist_ = new SToolBar(panel, false, wxVERTICAL);
+	toolbar_elist_   = new SToolBar(panel, false, wxVERTICAL);
 	auto* tbg_create = new SToolBarGroup(toolbar_elist_, "_Create");
 	tbg_create->addActionButton("arch_newentry");
 	if (has_dirs)
@@ -4155,50 +4164,6 @@ void ArchivePanel::onChoiceCategoryChanged(wxCommandEvent& e)
 	// entry_list_->filterList(text_filter_->GetValue(), category);
 
 	e.Skip();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the entry list directory is changed
-// -----------------------------------------------------------------------------
-void ArchivePanel::onDirChanged(wxCommandEvent& e)
-{
-	/*
-	// Get directory
-	auto dir = entry_list_->currentDir().lock();
-
-	if (!dir->parent())
-	{
-		// Root dir
-		label_path_->SetLabel("/");
-		if (auto* btn = toolbar_elist_->findActionButton("arch_updir"))
-		{
-			btn->Enable(false);
-			toolbar_elist_->Refresh();
-		}
-	}
-	else
-	{
-		// Setup path string
-		wxString path = dir->path();
-		path.Remove(0, 1);
-
-		label_path_->SetLabel(path);
-		if (auto* btn = toolbar_elist_->findActionButton("arch_updir"))
-		{
-			btn->Enable(true);
-			toolbar_elist_->Refresh();
-		}
-	}
-	*/
-}
-
-// -----------------------------------------------------------------------------
-// Called when the 'Up Directory' button is clicked
-// -----------------------------------------------------------------------------
-void ArchivePanel::onBtnUpDir(wxCommandEvent& e)
-{
-	// Go up a directory in the entry list
-	// entry_list_->goUpDir();
 }
 
 // -----------------------------------------------------------------------------

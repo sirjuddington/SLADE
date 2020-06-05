@@ -999,6 +999,9 @@
     <ClCompile Include="..\src\UI\Controls\ZoomControl.cpp">
       <Filter>UI\Controls</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\UI\Lists\ArchiveEntryTree.cpp">
+      <Filter>UI\Lists</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -1909,6 +1912,9 @@
     </ClInclude>
     <ClInclude Include="..\src\UI\Controls\ZoomControl.h">
       <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\Lists\ArchiveEntryTree.h">
+      <Filter>UI\Lists</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

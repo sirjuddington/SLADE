@@ -352,6 +352,7 @@
     <ClCompile Include="..\src\UI\Dialogs\SetupWizard\SetupWizardDialog.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\SetupWizard\TempFolderWizardPage.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\TranslationEditorDialog.cpp" />
+    <ClCompile Include="..\src\UI\Lists\ArchiveEntryTree.cpp" />
     <ClCompile Include="..\src\Utility\FileUtils.cpp" />
     <ClCompile Include="..\src\Game\ActionSpecial.cpp" />
     <ClCompile Include="..\src\Game\Args.cpp" />
@@ -713,6 +714,7 @@
     <ClInclude Include="..\src\UI\Dialogs\SetupWizard\TempFolderWizardPage.h" />
     <ClInclude Include="..\src\UI\Dialogs\SetupWizard\WizardPageBase.h" />
     <ClInclude Include="..\src\UI\Dialogs\TranslationEditorDialog.h" />
+    <ClInclude Include="..\src\UI\Lists\ArchiveEntryTree.h" />
     <ClInclude Include="..\src\Utility\FileUtils.h" />
     <ClInclude Include="..\src\Utility\Property.h" />
     <ClInclude Include="..\src\Utility\SeekableData.h" />

@@ -168,8 +168,6 @@ protected:
 	void         onMEPEditAsText(wxCommandEvent& e);
 	void         onTextFilterChanged(wxCommandEvent& e);
 	void         onChoiceCategoryChanged(wxCommandEvent& e);
-	void         onDirChanged(wxCommandEvent& e);
-	void         onBtnUpDir(wxCommandEvent& e);
 	void         onBtnClearFilter(wxCommandEvent& e);
 
 private:
