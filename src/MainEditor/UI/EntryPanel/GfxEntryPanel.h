@@ -6,8 +6,11 @@
 
 namespace slade
 {
-class SZoomSlider;
 class ColourBox;
+namespace ui
+{
+	class ZoomControl;
+}
 
 class GfxEntryPanel : public EntryPanel
 {
@@ -53,20 +56,23 @@ private:
 	Translation prev_translation_;
 	Translation edit_translation_;
 
-	GfxCanvas*      gfx_canvas_         = nullptr;
-	SZoomSlider*    slider_zoom_        = nullptr;
-	ColourBox*      cb_colour_          = nullptr;
-	wxChoice*       choice_offset_type_ = nullptr;
-	wxSpinCtrl*     spin_xoffset_       = nullptr;
-	wxSpinCtrl*     spin_yoffset_       = nullptr;
-	wxCheckBox*     cb_tile_            = nullptr;
-	wxCheckBox*     cb_arc_             = nullptr;
-	wxButton*       btn_auto_offset_    = nullptr;
-	wxSpinCtrl*     spin_curimg_        = nullptr;
-	wxStaticText*   text_imgnum_        = nullptr;
-	wxStaticText*   text_imgoutof_      = nullptr;
-	SToolBarButton* button_brush_       = nullptr;
-	wxMenu*         menu_brushes_       = nullptr;
+	GfxCanvas*       gfx_canvas_         = nullptr;
+	ColourBox*       cb_colour_          = nullptr;
+	wxChoice*        choice_offset_type_ = nullptr;
+	wxSpinCtrl*      spin_xoffset_       = nullptr;
+	wxSpinCtrl*      spin_yoffset_       = nullptr;
+	wxButton*        btn_auto_offset_    = nullptr;
+	wxSpinCtrl*      spin_curimg_        = nullptr;
+	wxStaticText*    text_imgnum_        = nullptr;
+	wxStaticText*    text_imgoutof_      = nullptr;
+	SToolBarButton*  button_brush_       = nullptr;
+	wxMenu*          menu_brushes_       = nullptr;
+	SToolBarButton*  btn_arc_            = nullptr;
+	SToolBarButton*  btn_tile_           = nullptr;
+	ui::ZoomControl* zc_zoom_            = nullptr;
+
+	// Toolbar
+	void toolbarButtonClick(const wxString& action_id) override;
 
 	// Signal connections
 	sigslot::scoped_connection sc_palette_changed_;
@@ -76,8 +82,6 @@ private:
 	void onXOffsetChanged(wxCommandEvent& e);
 	void onYOffsetChanged(wxCommandEvent& e);
 	void onOffsetTypeChanged(wxCommandEvent& e);
-	void onTileChanged(wxCommandEvent& e);
-	void onARCChanged(wxCommandEvent& e);
 	void onGfxOffsetChanged(wxEvent& e);
 	void onGfxPixelsChanged(wxEvent& e);
 	void onCurImgChanged(wxCommandEvent& e);

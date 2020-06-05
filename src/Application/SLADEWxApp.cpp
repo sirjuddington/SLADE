@@ -78,7 +78,7 @@ int win_version_major = 0;
 int win_version_minor = 0;
 } // namespace slade::global
 
-string current_action           = current_action;
+string current_action;
 bool   update_check_message_box = false;
 CVAR(String, dir_last, "", CVar::Flag::Save)
 CVAR(Bool, update_check, true, CVar::Flag::Save)

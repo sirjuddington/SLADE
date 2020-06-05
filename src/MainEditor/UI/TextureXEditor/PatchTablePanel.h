@@ -8,9 +8,13 @@
 namespace slade
 {
 class GfxCanvas;
-class SZoomSlider;
 class TextureXEditor;
 class SToolBar;
+
+namespace ui
+{
+	class ZoomControl;
+}
 
 class PatchTableListView : public VirtualListView
 {
@@ -48,7 +52,7 @@ private:
 	GfxCanvas*          patch_canvas_     = nullptr;
 	wxStaticText*       label_dimensions_ = nullptr;
 	wxStaticText*       label_textures_   = nullptr;
-	SZoomSlider*        slider_zoom_      = nullptr;
+	ui::ZoomControl*    zc_zoom_          = nullptr;
 	SToolBar*           toolbar_          = nullptr;
 
 	void setupLayout();

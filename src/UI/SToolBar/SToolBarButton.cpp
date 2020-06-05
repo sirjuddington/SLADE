@@ -131,7 +131,8 @@ SToolBarButton::SToolBarButton(
 	const wxString& action_name,
 	const wxString& icon,
 	const wxString& help_text,
-	bool            show_name) :
+	bool            show_name,
+	int             icon_size) :
 	wxControl{ parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton" },
 	show_name_{ show_name },
 	action_id_{ action_id },
@@ -139,7 +140,7 @@ SToolBarButton::SToolBarButton(
 	help_text_{ help_text },
 	pad_outer_{ ui::scalePx(1) },
 	pad_inner_{ ui::scalePx(2) },
-	icon_size_{ ui::scalePx(toolbar_size) }
+	icon_size_{ ui::scalePx(icon_size < 0 ? toolbar_size : icon_size) }
 {
 	// Determine width of name text if shown
 	text_width_ = show_name ? GetTextExtent(action_name).GetWidth() + pad_inner_ * 2 : 0;

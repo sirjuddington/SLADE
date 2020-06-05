@@ -451,11 +451,20 @@ SActionHandler::~SActionHandler()
 // -----------------------------------------------------------------------------
 bool SActionHandler::doAction(string_view id)
 {
+	bool handled = false;
+
 	// Toggle action if necessary
-	SAction::fromId(id)->toggle();
+	if (auto* action = SAction::fromId(id))
+		if (action->type() != SAction::Type::Normal)
+		{
+			action->toggle();
+
+			// Action is technically 'handled' already if there was a linked cvar (don't log warning)
+			if (action->linkedCVar())
+				handled = true;
+		}
 
 	// Send action to all handlers
-	bool handled = false;
 	for (auto& action_handler : action_handlers_)
 	{
 		if (action_handler->handleAction(id))

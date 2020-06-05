@@ -94,30 +94,35 @@ vector<Icon>& iconList(Type type)
 }
 
 // -----------------------------------------------------------------------------
-// Loads all icons in [dir] to the list for [type]
+// Loads all icons in [dir] to the list for [type].
+// If [append_default] is true, we are only loading icons from the default set
+// that don't already exist in the icon list
 // -----------------------------------------------------------------------------
-bool loadIconsDir(Type type, ArchiveDir* dir)
+bool loadIconsDir(Type type, ArchiveDir* dir, bool append_default)
 {
 	if (!dir)
 		return false;
 
 	// Check for icon set dirs
-	for (const auto& subdir : dir->subdirs())
+	if (!append_default)
 	{
-		if (subdir->name() != "16" && subdir->name() != "24" && subdir->name() != "32")
+		for (const auto& subdir : dir->subdirs())
 		{
-			if (type == General)
-				iconsets_general.push_back(subdir->name());
-			else if (type == Entry)
-				iconsets_entry.push_back(subdir->name());
+			if (subdir->name() != "16" && subdir->name() != "24" && subdir->name() != "32")
+			{
+				if (type == General)
+					iconsets_general.push_back(subdir->name());
+				else if (type == Entry)
+					iconsets_entry.push_back(subdir->name());
+			}
 		}
 	}
 
 	// Get icon set dir
 	string icon_set_dir = "Default";
-	if (type == Entry)
+	if (type == Entry && !append_default)
 		icon_set_dir = iconset_entry_list;
-	if (type == General)
+	if (type == General && !append_default)
 		icon_set_dir = iconset_general;
 	if (icon_set_dir != "Default")
 		if (auto subdir = dir->subdir(icon_set_dir))
@@ -126,6 +131,7 @@ bool loadIconsDir(Type type, ArchiveDir* dir)
 	auto& icons = iconList(type);
 
 	// Load 16x16 icons (these must exist)
+	bool  found  = false;
 	auto* dir_16 = dir->subdir("16").get();
 	if (!dir_16)
 	{
@@ -139,6 +145,19 @@ bool loadIconsDir(Type type, ArchiveDir* dir)
 		{
 			log::warning("Invalid 16x16 image format for icon \"{}\", must be png", entry->nameNoExt());
 			continue;
+		}
+
+		if (append_default)
+		{
+			found = false;
+			for (const auto& icon : icons)
+				if (icon.name == entry->nameNoExt())
+				{
+					found = true;
+					break;
+				}
+			if (found)
+				continue;
 		}
 
 		// Load 16x16 icon image
@@ -279,14 +298,18 @@ bool icons::loadIcons()
 
 	// Load general icons
 	iconsets_general.emplace_back("Default");
-	loadIconsDir(General, dir_icons->subdir("general").get());
+	loadIconsDir(General, dir_icons->subdir("general").get(), false);
 
 	// Load entry list icons
 	iconsets_entry.emplace_back("Default");
-	loadIconsDir(Entry, dir_icons->subdir("entry_list").get());
+	loadIconsDir(Entry, dir_icons->subdir("entry_list").get(), false);
 
 	// Load text editor icons
-	loadIconsDir(TextEditor, dir_icons->subdir("text_editor").get());
+	loadIconsDir(TextEditor, dir_icons->subdir("text_editor").get(), false);
+
+	// Load any missing icons from the default set
+	if (iconset_general != "Default")
+		loadIconsDir(General, dir_icons->subdir("general").get(), true);
 
 	return true;
 }
@@ -330,7 +353,7 @@ wxBitmap icons::getIcon(Type type, string_view name, int size, bool log_missing)
 // found.
 // If [type] is less than 0, try all icon types.
 // -----------------------------------------------------------------------------
-wxBitmap icons::getPaddedIcon(Type type, string_view name, int size, int padding)
+wxBitmap icons::getPaddedIcon(Type type, string_view name, int size, Point2i padding)
 {
 	// Check all types if [type] is < 0
 	if (type == Any)
@@ -348,10 +371,10 @@ wxBitmap icons::getPaddedIcon(Type type, string_view name, int size, int padding
 		if (icon.name == name)
 		{
 			const auto& image = validImageForSize(icon, size).wx_image;
-			wxImage     padded(image.GetWidth() + padding * 2, image.GetHeight() + padding * 2);
+			wxImage     padded(image.GetWidth() + padding.x * 2, image.GetHeight() + padding.y * 2);
 			padded.SetMaskColour(0, 0, 0);
 			padded.InitAlpha();
-			padded.Paste(image, padding, padding);
+			padded.Paste(image, padding.x, padding.y);
 
 			return wxBitmap(padded);
 		}

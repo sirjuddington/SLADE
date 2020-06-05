@@ -302,7 +302,7 @@ void drawing::drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int
 	// Set colour
 	gl::setColour(colour);
 
-	// Draw circle as line loop
+	// Draw circle as triangle fan
 	glBegin(GL_TRIANGLE_FAN);
 	glVertex2d(mid.x, mid.y);
 	double rot = 0;
@@ -314,6 +314,9 @@ void drawing::drawFilledEllipse(Vec2d mid, double radius_x, double radius_y, int
 	glEnd();
 }
 
+// -----------------------------------------------------------------------------
+// Draws a quad with the texture [id] at [x,y]
+// -----------------------------------------------------------------------------
 void drawing::drawTexture(unsigned id, double x, double y, bool flipx, bool flipy)
 {
 	// Ignore empty texture
@@ -357,6 +360,9 @@ void drawing::drawTexture(unsigned id, double x, double y, bool flipx, bool flip
 	glPopMatrix();
 }
 
+// -----------------------------------------------------------------------------
+// Draws a quad of [width]x[height] with the texture [id] tiled proportionally
+// -----------------------------------------------------------------------------
 void drawing::drawTextureTiled(unsigned id, uint32_t width, uint32_t height)
 {
 	// Ignore empty texture

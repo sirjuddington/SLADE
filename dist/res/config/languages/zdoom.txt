@@ -186,14 +186,15 @@ z_mapinfo {
 
 	keywords = {
 		// Generic
-		lookup,
+		lookup, include,
 		
 		// Cluster
 		Cluster, ClusterDef, EnterText, ExitText, ExitTextIsLump, Music, Flat, Pic, Hub, 
-		AllowIntermission,
+		AllowIntermission, entertextislump,
 		
 		// Episode
 		ClearEpisodes, Episode, Name, PicName, Key, Remove, NoSkillMenu, Optional, Extended,
+		teaser,
 		
 		// Map
 		Map, DefaultMap, AddDefaultMap, GameDefaults, 
@@ -221,6 +222,22 @@ z_mapinfo {
 		Translator, UnFreezeSinglePlayerConversations, UsePlayerStartZ, VertWallShade,
 		ForceFakeContrast, PrecacheTextures, PrecacheClasses, HazardColor, HazardFlash,
 		AddEventHandlers, EventHandlers, TextMusic, TextFlat, TextPic,
+		additive_scrollers, author, brightfog, cd_end1_track, cd_end2_track, cd_end3_track,
+		cd_intermission_track, cd_start_track, cd_title_track, compat_anybossdeath,
+		compat_badangles, compat_boomscroll, compat_checkswitchrange, compat_corpsegibs,
+		compat_crossdropoff, compat_dehhealth, compat_dropoff, compat_explode1, compat_explode2,
+		compat_floormove, compat_invisibility, compat_light, compat_limitpain,
+		compat_maskedmidtex, compat_mbfmonstermove, compat_minotaur, compat_missileclip,
+		compat_multiexit, compat_mushroom, compat_noblockfriends, compat_nodoorlight,
+		compat_nopassover, compat_notossdrops, compat_pointonline, compat_polyobj,
+		compat_pushwindow, compat_railing, compat_ravenscroll, compat_scriptwait,
+		compat_sectorsounds, compat_shorttex, compat_silent_instant_floors, compat_soundcutoff,
+		compat_soundtarget, compat_spritesort, compat_stairs, compat_teleport, compat_trace,
+		compat_useblocking, edata, endofgame, forceworldpanning, fs_nocheckposition,
+		interpic, killeractivatesdeathspecials, loadacs, mapintermusic, needclustertext,
+		noclustertext, noinfiniteflightpowerup, nomonsterfallingdamage, nostatistics,
+		notexturefill, partime, pausemusicinmenus, resetitems, skyrotate2, sndinfo, sndseq,
+		soundinfo, specialaction_lowerfloortohighest, warptrans, wrapmidtextures,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate, PixelRatio,
@@ -230,7 +247,8 @@ z_mapinfo {
 		Skill, ClearSkills, AmmoFactor, DropAmmoFactor, DoubleAmmoFactor, DamageFactor, RespawnTime, RespawnLimit,
 		Aggressiveness, SpawnFilter, ACSReturn, Key, MustConfirm, Name, PlayerClassName, PicName, TextColor, EasyBossBrain,
 		FastMonsters, SlowMonsters, DisableCheats, AutoUseHealth, ReplaceActor, MonsterHealth, FriendlyHealth, NoPain,
-		DefaultSkill, ArmorFactor, EasyKey, HealthFactor, KickbackFactor, NoMenu,
+		DefaultSkill, ArmorFactor, EasyKey, HealthFactor, KickbackFactor, NoMenu, baby, easy, hard, nightmare, normal,
+		playerrespawn,
 
 		// GameInfo definitions
 		GameInfo, AddCreditPage, AddInfoPage, AddPlayerClasses, AddQuitMessages, AdvisoryTime, Border, BackpackType,
@@ -244,18 +262,22 @@ z_mapinfo {
 		NoRandomPlayerclass, StatScreen_EnteringPatch, StatScreen_FinishedPatch, StatScreen_MapNameFont, NightmareFast,
 		DontCrunchCorpses, CheatKey, ForceKillScripts, MessageBoxClass, StatusBarClass, DefaultConversationMenuClass,
 		StatScreen_FinishedFont, StatScreen_EnteringFont, Dialogue, StatScreen_Single, StatScreen_Coop, StatScreen_DM,
-		BlurAmount, CorrectPrintBold, MenuSliderColor,
+		BlurAmount, CorrectPrintBold, MenuSliderColor, althudclass, forcenogfxsubstitution, forcetextinmenus,
+		fullscreenautoaspect, nomergepickupmsg, normforwardmove, normsidemove, statscreen_authorfont,
+		statscreen_contentfont,
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,
 		DrawConditional, Music, Sound, Time, CastClass, CastName, AttackSound, FadeType, Background2, InitialDelay,
 		ScrollDirection, ScrollTime, Position, Text, TextColor, TextDelay, TextLump, TextSpeed, WipeType,
+		down, left, right, up, fadein, fadeout, burn, crossfade, default, melt, subtitle,
 
 		// Automap
 		Automap, Automap_Overlay, AlmostBackgroundColor, Base, CeilingDiffWallColor, ExtraFloorWallColor, FloorDiffWallColor,
 		GridColor, InterTeleportColor, IntraTeleportColor, LockedColor, NotSeenColor, SecretSectorColor, SecretWallColor,
 		ShowLocks, SpecialWallColor, ThingColor, ThingColor_CountItem, ThingColor_Friend, ThingColor_Item, ThingColor_Monster,
 		ThingColor_NocountMonster, TwoSidedWallColor, WallColor, XHairColor, YourColor,
+		false, true, portalcolor, unexploredsecretcolor,
 
 		// Thing editor numbers
 		DoomEdNums, NoSkillFlags,

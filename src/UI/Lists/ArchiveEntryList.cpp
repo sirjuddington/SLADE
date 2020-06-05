@@ -97,13 +97,14 @@ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 	setupColumns();
 
 	// Setup entry icons
-	auto  icon_size    = elist_icon_size + elist_icon_padding * 2;
-	auto* image_list   = new wxImageList(icon_size, icon_size, false, 0);
+	auto  icon_size    = Point2i{ elist_icon_size + 2, elist_icon_size + elist_icon_padding * 2 };
+	auto  pad          = Point2i{ 1, elist_icon_padding };
+	auto* image_list   = new wxImageList(icon_size.x, icon_size.y, false, 0);
 	auto  et_icon_list = EntryType::iconList();
 	for (const auto& name : et_icon_list)
 	{
-		if (image_list->Add(icons::getPaddedIcon(icons::Entry, name, elist_icon_size, elist_icon_padding)) < 0)
-			image_list->Add(icons::getPaddedIcon(icons::Entry, "default", elist_icon_size, elist_icon_padding));
+		if (image_list->Add(icons::getPaddedIcon(icons::Entry, name, elist_icon_size, pad)) < 0)
+			image_list->Add(icons::getPaddedIcon(icons::Entry, "default", elist_icon_size, pad));
 	}
 
 	wxListCtrl::SetImageList(image_list, wxIMAGE_LIST_SMALL);

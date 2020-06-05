@@ -95,7 +95,7 @@ public:
 	void renderTaggedThings(vector<MapThing*>& things, float fade) const;
 	void renderTaggingThings(vector<MapThing*>& things, float fade) const;
 	void renderPathedThings(vector<MapThing*>& things);
-	void renderPointLightPreviews(float alpha) const;
+	void renderPointLightPreviews(float alpha, int hilight_index) const;
 
 	// Flats (sectors)
 	void renderFlats(int type = 0, bool texture = true, float alpha = 1.0f);

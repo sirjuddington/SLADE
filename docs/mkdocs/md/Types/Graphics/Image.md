@@ -189,7 +189,7 @@ Checks if the image is valid (ie. has any data).
 ---
 ### PixelIndexAt
 
-Gets the palette index of the pixel at (<arg>x</arg>,<arg>y</arg>). Will be `0` if the given coordinates were out of range, or if the image isn't `PIXELFORMAT_INDEXED`.
+Gets the palette index of the pixel at (<arg>x</arg>,<arg>y</arg>). Will be `-1` if the given coordinates were out of range, or if the image isn't `PIXELFORMAT_INDEXED`.
 
 #### Parameters
 

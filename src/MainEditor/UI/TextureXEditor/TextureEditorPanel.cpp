@@ -37,7 +37,7 @@
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Controls/SIconButton.h"
-#include "UI/Controls/SZoomSlider.h"
+#include "UI/Controls/ZoomControl.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
@@ -78,12 +78,11 @@ EXTERN_CVAR(Bool, tx_arc)
 // TextureEditorPanel class constructor
 // -----------------------------------------------------------------------------
 TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_editor) :
-	wxPanel(parent, -1),
-	tx_editor_{ tx_editor }
+	wxPanel(parent, -1), tx_editor_{ tx_editor }
 {
 	// Create controls
 	tex_canvas_      = new CTextureCanvas(this, -1);
-	slider_zoom_     = new SZoomSlider(this, tex_canvas_);
+	zc_zoom_         = new ui::ZoomControl(this, tex_canvas_);
 	cb_tex_scale_    = new wxCheckBox(this, -1, "Apply Scale");
 	cb_tex_arc_      = new wxCheckBox(this, -1, "Aspect Ratio Correction");
 	cb_draw_outside_ = new wxCheckBox(this, -1, "Show Outside");
@@ -123,7 +122,7 @@ void TextureEditorPanel::setupLayout()
 	// Add view controls
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM | wxTOP, ui::px(ui::Size::PadMinimum));
-	hbox->Add(slider_zoom_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(zc_zoom_, 0, wxEXPAND | wxRIGHT, ui::pad());
 	hbox->AddStretchSpacer();
 	hbox->Add(cb_tex_scale_, 0, wxEXPAND | wxRIGHT, ui::pad());
 	hbox->Add(cb_tex_arc_, 0, wxEXPAND | wxRIGHT, ui::pad());
@@ -289,13 +288,11 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
 	sizer->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
-	// Add patches list
+	// Create patches list
 	list_patches_ = new ListView(panel, -1);
 	list_patches_->enableSizeUpdate(false);
-	list_patches_->SetInitialSize(wxutil::scaledSize(100, -1));
-	framesizer->Add(list_patches_, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::pad());
-
-	// Patches toolbar
+	
+	// Create patches toolbar
 	tb_patches_ = new SToolBar(panel, false, wxVERTICAL);
 	tb_patches_->addActionGroup(
 		"_Patch",
@@ -307,6 +304,10 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 		  "txed_patch_duplicate" });
 	tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
 	tb_patches_->findActionButton("txed_patch_add")->Enable();
+
+	// Layout
+	list_patches_->SetInitialSize(wxutil::scaledSize(100, tb_patches_->group("_Patch")->GetBestSize().y));
+	framesizer->Add(list_patches_, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::pad());
 	framesizer->Add(tb_patches_, 0, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
 
 

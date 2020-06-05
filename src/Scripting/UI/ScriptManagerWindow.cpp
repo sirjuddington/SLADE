@@ -58,7 +58,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
-wxString docs_url       = "http://slade.mancubus.net/docs/scripting";
+wxString docs_url       = "https://slade.readthedocs.io/en/latest";
 int      layout_version = 1;
 } // namespace
 
@@ -185,7 +185,7 @@ wxTreeItemId getOrCreateNode(wxTreeCtrl* tree, wxTreeItemId parent_node, const w
 wxImageList* createTreeImageList()
 {
 	auto image_list = wxutil::createSmallImageList();
-	image_list->Add(icons::getIcon(icons::Entry, "text"));
+	image_list->Add(icons::getIcon(icons::Entry, "code"));
 	image_list->Add(icons::getIcon(icons::Entry, "folder"));
 	return image_list;
 }
@@ -214,11 +214,6 @@ ScriptManagerWindow::ScriptManagerWindow() : STopWindow("SLADE Script Manager", 
 		"-- Note that this will not be saved between sessions\n\n";
 	script_scratchbox_.read_only = true;
 	openScriptTab(&script_scratchbox_);
-
-	wxMessageBox(
-		"Please note that the SLADE lua scripting feature is currently WIP, "
-		"and the scripting API is subject to change.",
-		"WIP Feature");
 }
 
 // -----------------------------------------------------------------------------
@@ -657,7 +652,8 @@ void ScriptManagerWindow::openScriptTab(scriptmanager::Script* script) const
 		new ScriptPanel(tabs_scripts_, script),
 		script->name.empty() ? "UNSAVED" : script->name,
 		true,
-		icons::getIcon(icons::Entry, "text"));
+		icons::getIcon(icons::Entry, "code"));
+	tabs_scripts_->Layout();
 }
 
 // -----------------------------------------------------------------------------

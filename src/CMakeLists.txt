@@ -72,6 +72,7 @@ set(SFML_FIND_COMPONENTS system audio window graphics network)
 ADD_DEFINITIONS(-DUSE_SFML_RENDERWINDOW)
 else (USE_SFML_RENDERWINDOW)
 set(SFML_FIND_COMPONENTS system audio window network)
+find_package(FTGL REQUIRED)
 endif(USE_SFML_RENDERWINDOW)
 
 # Fluidsynth
@@ -100,10 +101,8 @@ endif()
 
 find_package(FreeImage REQUIRED)
 find_package(SFML COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
-find_package(FTGL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-find_package(Freetype REQUIRED)
 find_package(CURL REQUIRED)
 find_package(Lua REQUIRED)
 find_package(fmt CONFIG REQUIRED)
@@ -111,7 +110,6 @@ include_directories(
 	${FREEIMAGE_INCLUDE_DIR}
 	${SFML_INCLUDE_DIR}
 	${FTGL_INCLUDE_DIR}
-	${FREETYPE_INCLUDE_DIRS}
 	${GLEW_INCLUDE_PATH}
 	${CURL_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
@@ -184,7 +182,6 @@ target_link_libraries(slade
 	${SFML_LIBRARY}
 	${FTGL_LIBRARIES}
 	${OPENGL_LIBRARIES}
-	${FREETYPE_LIBRARIES}
 	${GLEW_LIBRARY}
 	${CURL_LIBRARIES}
 	${LUA_LIBRARIES}

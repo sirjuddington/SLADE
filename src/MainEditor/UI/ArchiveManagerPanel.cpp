@@ -61,7 +61,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 CVAR(Bool, close_archive_with_tab, true, CVar::Flag::Save)
 CVAR(Int, am_current_tab, 0, CVar::Flag::Save)
-CVAR(Bool, am_file_browser_tab, true, CVar::Flag::Save)
+CVAR(Bool, am_file_browser_tab, false, CVar::Flag::Save)
 CVAR(Int, dir_archive_change_action, 2, CVar::Flag::Save) // 0=always ignore, 1=always apply, 2+=ask
 
 
@@ -222,15 +222,7 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 // the filters are always shown if any are defined.
 // -----------------------------------------------------------------------------
 WMFileBrowser::WMFileBrowser(wxWindow* parent, ArchiveManagerPanel* wm, int id) :
-	wxGenericDirCtrl(
-		parent,
-		id,
-		wxDirDialogDefaultFolderStr,
-		wxDefaultPosition,
-		wxDefaultSize,
-		0,
-		app::archiveManager().getArchiveExtensionsString()),
-	parent{ wm }
+	wxGenericDirCtrl(parent, id, wxDirDialogDefaultFolderStr), parent{ wm }
 {
 	// Connect a custom event for when an item in the file tree is activated
 	auto tree_ctrl = wxGenericDirCtrl::GetTreeCtrl();

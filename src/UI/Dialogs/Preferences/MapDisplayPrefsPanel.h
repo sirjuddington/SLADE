@@ -55,6 +55,7 @@ private:
 	wxSlider*   slider_thing_arrow_alpha_ = nullptr;
 	wxCheckBox* cb_use_zeth_icons_        = nullptr;
 	wxSlider*   slider_halo_width_        = nullptr;
+	wxSlider*   slider_light_intensity_   = nullptr;
 
 	wxSlider*   slider_flat_brightness_  = nullptr;
 	wxCheckBox* cb_flat_ignore_light_    = nullptr;

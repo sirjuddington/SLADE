@@ -157,10 +157,10 @@ struct ColRGBA
 	{
 		RGB,  // RGB(r, g, b)
 		RGBA, // RGBA(r, g, b, a)
-		CSS,  // #rrggbb
+		HEX,  // #rrggbb
 		ZDoom // "rr gg bb"
 	};
-	string   toString(StringFormat format = StringFormat::CSS) const;
+	string   toString(StringFormat format = StringFormat::HEX) const;
 	wxColour toWx() const { return wxColour(r, g, b, a); }
 
 	// Some basic colours

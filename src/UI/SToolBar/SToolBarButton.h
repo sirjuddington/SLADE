@@ -14,7 +14,8 @@ public:
 		const wxString& action_name,
 		const wxString& icon,
 		const wxString& help_text,
-		bool            show_name = false);
+		bool            show_name = false,
+		int             icon_size = -1);
 	~SToolBarButton() = default;
 
 	SAction*        action() const { return action_; }
