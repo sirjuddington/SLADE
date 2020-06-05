@@ -63,7 +63,9 @@ ScriptPanel::ScriptPanel(wxWindow* parent, scriptmanager::Script* script) : wxPa
 
 	// Toolbar
 	auto toolbar = setupToolbar();
+	sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
 	sizer->Add(toolbar, 0, wxEXPAND | wxLEFT | wxRIGHT, ui::pad());
+	sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
 
 	// Text Editor
 	text_editor_ = new TextEditorCtrl(this, -1);
