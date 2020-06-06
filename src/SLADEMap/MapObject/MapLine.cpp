@@ -476,7 +476,10 @@ bool MapLine::scriptCanModifyProp(string_view key)
 // -----------------------------------------------------------------------------
 void MapLine::setS1(MapSide* side)
 {
-	if (!side1_ && parent_map_)
+	if (!side)
+		side1_ = nullptr;
+
+	else if (!side1_ && parent_map_)
 		parent_map_->setLineSide(this, side, true);
 }
 
@@ -485,7 +488,10 @@ void MapLine::setS1(MapSide* side)
 // -----------------------------------------------------------------------------
 void MapLine::setS2(MapSide* side)
 {
-	if (!side2_ && parent_map_)
+	if (!side)
+		side2_ = nullptr;
+
+	else if (!side2_ && parent_map_)
 		parent_map_->setLineSide(this, side, false);
 }
 
