@@ -1989,6 +1989,7 @@ bool ArchivePanel::copyEntry() const
 		return false;
 
 	// Create clipboard item from selection
+	app::clipboard().clear();
 	app::clipboard().add(std::make_unique<EntryTreeClipboardItem>(entries, dirs));
 
 	return true;
