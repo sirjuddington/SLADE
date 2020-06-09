@@ -220,13 +220,11 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
 	sizer->Add(framesizer, 0, wxEXPAND);
 
-	// Add patches list
+	// Create patches list
 	list_patches_ = new ListView(panel, -1);
 	list_patches_->enableSizeUpdate(false);
-	list_patches_->SetInitialSize(wxutil::scaledSize(100, -1));
-	framesizer->Add(list_patches_, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::pad());
-
-	// Patches toolbar
+	
+	// Create patches toolbar
 	tb_patches_ = new SToolBar(panel, false, wxVERTICAL);
 	tb_patches_->addActionGroup(
 		"_Patch",
@@ -238,7 +236,11 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 		  "txed_patch_duplicate" });
 	tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
 	tb_patches_->findActionButton("txed_patch_add")->Enable();
-	framesizer->Add(tb_patches_, 0, wxEXPAND | wxTOP | wxBOTTOM, ui::pad());
+
+	// Layout
+	list_patches_->SetInitialSize(wxutil::scaledSize(100, tb_patches_->group("_Patch")->GetBestSize().y));
+	framesizer->Add(list_patches_, 1, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::pad());
+	framesizer->Add(tb_patches_, 0, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, ui::px(ui::Size::PadMinimum));
 
 
 	// -- Patch Properties frame --
@@ -299,8 +301,6 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 
 	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
 	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
-	gb_sizer->AddGrowableCol(0, 1);
-	gb_sizer->AddGrowableCol(1, 1);
 
 	// 'Normal' colour
 	rb_pc_normal_ = new wxRadioButton(panel, -1, "Normal", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);

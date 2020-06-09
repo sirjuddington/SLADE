@@ -716,7 +716,7 @@ string CTexture::asText()
 	if (optional_)
 		text = fmt::format("{} Optional \"{}\", {}, {}\n{\n", type_, name_, size_.x, size_.y);
 	else
-		text = fmt::format("{} \"{}\", {}, {}\n{\n", type_, name_, size_.x, size_.y);
+		text = fmt::format("{} \"{}\", {}, {}\n{{\n", type_, name_, size_.x, size_.y);
 
 	// Write texture properties
 	if (scale_.x != 1.0)
@@ -737,7 +737,7 @@ string CTexture::asText()
 		text += dynamic_cast<CTPatchEx*>(patch.get())->asText();
 
 	// Write ending
-	text += "}\n\n";
+	text += "}}\n\n";
 
 	return text;
 }

@@ -1706,6 +1706,8 @@ bool TextureXPanel::handleAction(string_view id)
 		renameTexture(true);
 	else if (id == "txed_offsets")
 		modifyOffsets();
+	else if (texture_editor_->handleSAction(id)) // Send to TextureEditorPanel
+		return true;
 	else
 		return false; // Not handled here
 

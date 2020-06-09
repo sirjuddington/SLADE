@@ -275,7 +275,7 @@ SToolBarButton* SToolBarGroup::addActionButton(
 	// Add it to the group
 	if (toolbar_size > 16)
 		sizer->AddSpacer(static_cast<int>(toolbar_size * 0.1));
-	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL | wxALL, ui::scalePx(1));
+	sizer->Add(button, 0, wxALIGN_CENTER | wxALL, ui::scalePx(1));
 	if (toolbar_size > 16)
 		sizer->AddSpacer(static_cast<int>(toolbar_size * 0.1));
 
