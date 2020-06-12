@@ -3163,6 +3163,7 @@ bool ArchivePanel::showEntryPanel(EntryPanel* new_area, bool ask_save)
 	// If the new panel is different than the current, swap them
 	if (new_area != cur_area_)
 	{
+		Freeze();
 		cur_area_->Show(false);        // Hide current
 		cur_area_->removeCustomMenu(); // Remove current custom menu (if any)
 		if (new_area != nullptr)
@@ -3180,6 +3181,7 @@ bool ArchivePanel::showEntryPanel(EntryPanel* new_area, bool ask_save)
 
 		// Update panel layout
 		Layout();
+		Thaw();
 		theMainWindow->Update();
 		theMainWindow->Refresh();
 		theMainWindow->Update();

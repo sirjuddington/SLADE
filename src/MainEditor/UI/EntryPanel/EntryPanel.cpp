@@ -171,6 +171,7 @@ bool EntryPanel::openEntry(shared_ptr<ArchiveEntry> entry)
 	entry_data_.importMem(entry->rawData(true), entry->size());
 
 	// Load the entry
+	Freeze();
 	if (loadEntry(entry.get()))
 	{
 		entry_ = entry;
@@ -179,12 +180,14 @@ bool EntryPanel::openEntry(shared_ptr<ArchiveEntry> entry)
 		if (frame_)
 			frame_->SetLabel(entry->path(true).substr(1));
 		Layout();
+		Thaw();
 		return true;
 	}
 	else
 	{
 		theMainWindow->SetStatusText("", 1);
 		theMainWindow->SetStatusText("", 2);
+		Thaw();
 		return false;
 	}
 }
