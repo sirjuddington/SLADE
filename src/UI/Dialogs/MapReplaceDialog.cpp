@@ -315,8 +315,8 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive) :
 	stc_tabs_->AddPage(panel_texture_, "Textures");
 
 	// Dialog buttons
-	btn_replace_ = new wxButton(this, -1, "Replace");
-	btn_done_    = new wxButton(this, -1, "Close");
+	btn_replace_ = new wxButton(this, wxID_OK, "Replace");
+	btn_done_    = new wxButton(this, wxID_CANCEL, "Close");
 	auto hbox    = new wxBoxSizer(wxHORIZONTAL);
 	hbox->AddStretchSpacer();
 	hbox->Add(btn_replace_, 0, wxEXPAND | wxRIGHT, ui::pad());

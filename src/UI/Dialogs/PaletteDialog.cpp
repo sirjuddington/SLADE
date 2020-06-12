@@ -35,6 +35,7 @@
 #include "General/UI.h"
 #include "Graphics/Palette/Palette.h"
 #include "UI/Canvas/PaletteCanvas.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -62,9 +63,7 @@ PaletteDialog::PaletteDialog(Palette* palette) :
 	pal_canvas_->SetInitialSize(wxSize(size, size));
 	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
 	m_vbox->Add(pal_canvas_, 1, wxEXPAND | wxALL, ui::padLarge());
-
-	m_vbox->AddSpacer(ui::pad());
-	m_vbox->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
+	m_vbox->Add(wxutil::createDialogButtonBox(this), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 
 	// Bind events
 	pal_canvas_->Bind(wxEVT_LEFT_DCLICK, [&](wxMouseEvent&) { EndModal(wxID_OK); });

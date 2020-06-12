@@ -38,6 +38,7 @@
 #include "Graphics/SImage/SImage.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/ColourBox.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -58,42 +59,41 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, const Palett
 	palette_{ pal }
 {
 	// Set dialog icon
-	wxIcon icon;
-	icon.CopyFromBitmap(icons::getIcon(icons::General, "tint"));
-	SetIcon(icon);
+	wxutil::setWindowIcon(this, "tint");
 
 	// Setup main sizer
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	msizer->Add(sizer, 1, wxEXPAND | wxALL, 6);
+	msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
 
 	// Add colour chooser
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxALL, 4);
+	sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	cb_colour_ = new ColourBox(this, -1, false, true);
 	cb_colour_->setColour(ColRGBA::RED);
 	cb_colour_->setPalette(&palette_);
-	hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
-	hbox->Add(cb_colour_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
+	hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(cb_colour_, 0, wxALIGN_CENTER_VERTICAL);
 
 	// Add 'amount' slider
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 4);
+	sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	slider_amount_ = new wxSlider(this, -1, 50, 0, 100);
 	label_amount_  = new wxStaticText(this, -1, "100%");
-	hbox->Add(new wxStaticText(this, -1, "Amount:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
-	hbox->Add(slider_amount_, 1, wxEXPAND | wxRIGHT, 4);
+	label_amount_->SetInitialSize(label_amount_->GetBestSize());
+	hbox->Add(new wxStaticText(this, -1, "Amount:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(slider_amount_, 1, wxEXPAND | wxRIGHT, ui::pad());
 	hbox->Add(label_amount_, 0, wxALIGN_CENTER_VERTICAL);
 
 	// Add preview
 	gfx_preview_ = new GfxCanvas(this, -1);
-	sizer->Add(gfx_preview_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 4);
+	sizer->Add(gfx_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Add buttons
-	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxBOTTOM, 4);
+	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
 
 	// Setup preview
 	gfx_preview_->setViewType(GfxCanvas::View::Centered);

@@ -50,9 +50,7 @@ using namespace slade;
 // DirArchiveUpdateDialog class constructor
 // -----------------------------------------------------------------------------
 DirArchiveUpdateDialog::DirArchiveUpdateDialog(wxWindow* parent, DirArchive* archive, vector<DirEntryChange>& changes) :
-	SDialog(parent, "Directory Content Changed", "dir_archive_update"),
-	archive_{ archive },
-	changes_{ changes }
+	SDialog(parent, "Directory Content Changed", "dir_archive_update"), archive_{ archive }, changes_{ changes }
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -75,6 +73,7 @@ DirArchiveUpdateDialog::DirArchiveUpdateDialog(wxWindow* parent, DirArchive* arc
 
 	// OK button
 	auto btn_ok = new wxButton(this, wxID_OK, "Apply Selected Changes");
+	btn_ok->SetDefault();
 	sizer->AddSpacer(ui::pad());
 	sizer->Add(btn_ok, 0, wxALIGN_RIGHT | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 	btn_ok->Bind(wxEVT_BUTTON, &DirArchiveUpdateDialog::onBtnOKClicked, this);

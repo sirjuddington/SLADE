@@ -20,6 +20,12 @@ wxSizer* createLabelHBox(wxWindow* parent, const wxString& label, wxSizer* sizer
 wxSizer* createLabelVBox(wxWindow* parent, const wxString& label, wxWindow* widget);
 wxSizer* createLabelVBox(wxWindow* parent, const wxString& label, wxSizer* sizer);
 
+wxSizer* createDialogButtonBox(wxButton* btn_ok, wxButton* btn_cancel);
+wxSizer* createDialogButtonBox(
+	wxWindow*       parent,
+	const wxString& text_ok     = "OK",
+	const wxString& text_cancel = "Cancel");
+
 wxSizer* layoutHorizontally(vector<wxObject*> widgets, int expand_col = -1);
 void     layoutHorizontally(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags = {}, int expand_col = -1);
 

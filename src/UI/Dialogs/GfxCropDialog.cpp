@@ -37,6 +37,7 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "UI/Controls/NumberTextCtrl.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -215,7 +216,7 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 	gb_sizer->AddGrowableCol(1);
 
 	// Add buttons
-	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
+	sizer->Add(wxutil::createDialogButtonBox(this, "Crop", "Cancel"), 0, wxEXPAND);
 
 	bindEvents();
 

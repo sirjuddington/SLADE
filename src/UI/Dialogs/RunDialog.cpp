@@ -153,7 +153,7 @@ public:
 		wxStaticText* label_help = new wxStaticText(this, -1, "");
 		gb_sizer->Add(label_help, wxGBPosition(2, 0), wxGBSpan(1, 2), wxEXPAND);
 
-		gb_sizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), wxGBPosition(3, 0), wxGBSpan(1, 2), wxALIGN_RIGHT);
+		gb_sizer->Add(wxutil::createDialogButtonBox(this), wxGBPosition(3, 0), wxGBSpan(1, 2), wxALIGN_RIGHT);
 		gb_sizer->AddGrowableCol(1);
 		gb_sizer->AddGrowableRow(2);
 
@@ -254,20 +254,15 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	cb_start_3d_ = new wxCheckBox(this, -1, "Start from 3D mode camera position");
 	cb_start_3d_->SetValue(run_start_3d);
 	if (show_start_3d_cb)
-		hbox->Add(cb_start_3d_, 1, wxALIGN_CENTER_VERTICAL);
+		hbox->Add(cb_start_3d_, 0, wxALIGN_CENTER_VERTICAL);
 	else
-	{
-		hbox->AddStretchSpacer();
 		cb_start_3d_->Show(false);
-	}
 
 	// Dialog buttons
 	btn_run_ = new wxButton(this, wxID_OK, "Run");
 	btn_run_->SetDefault();
-	hbox->Add(btn_run_, 0, wxEXPAND | wxRIGHT, ui::pad());
-
 	btn_cancel_ = new wxButton(this, wxID_CANCEL, "Cancel");
-	hbox->Add(btn_cancel_, 0, wxEXPAND);
+	hbox->Add(wxutil::createDialogButtonBox(btn_run_, btn_cancel_), 1, wxEXPAND);
 
 	// Populate game executables dropdown
 	int last_index = -1;

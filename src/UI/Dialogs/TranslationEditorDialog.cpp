@@ -40,6 +40,7 @@
 #include "Graphics/SImage/SImage.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Canvas/PaletteCanvas.h"
+#include "UI/WxUtils.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -344,7 +345,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 
 
 	// --- Dialog buttons ---
-	auto buttonsizer = CreateButtonSizer(wxOK | wxCANCEL);
+	auto buttonsizer = wxutil::createDialogButtonBox(this);
 	sizer->Add(buttonsizer, wxGBPosition(4, 0), wxGBSpan(1, 2), wxEXPAND);
 
 	// Load button

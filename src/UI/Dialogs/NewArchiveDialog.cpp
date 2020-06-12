@@ -34,8 +34,8 @@
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
-#include "NewArchiveDiaog.h"
 #include "Graphics/Icons.h"
+#include "NewArchiveDiaog.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -66,11 +66,11 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 	wxIcon icon;
 	icon.CopyFromBitmap(icons::getIcon(icons::General, "newarchive"));
 	SetIcon(icon);
-	
+
 	// Create controls
 	auto* choice_type = new wxChoice(this, -1);
-	auto* btn_create  = new wxButton(this, -1, "Create");
-	auto* btn_cancel  = new wxButton(this, -1, "Cancel");
+	auto* btn_create  = new wxButton(this, wxID_OK, "Create");
+	auto* btn_cancel  = new wxButton(this, wxID_CANCEL, "Cancel");
 
 	// Fill formats list
 	long selected_index = 0;
@@ -79,7 +79,7 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 		{
 			if (format.id == archive_last_created_format)
 				selected_index = choice_type->GetCount();
-			
+
 			choice_type->AppendString(format.name + " Archive");
 		}
 
@@ -91,19 +91,15 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type), 0, wxEXPAND | wxALL, ui::padLarge());
-	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
-	hbox->AddStretchSpacer(1);
-	hbox->Add(btn_create, 0, wxEXPAND|wxRIGHT, ui::pad());
-	hbox->Add(btn_cancel, 0, wxEXPAND);
-	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, ui::padLarge());
+	auto* hbox = wxutil::createDialogButtonBox(btn_create, btn_cancel);
+	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 
 	// Create button click
-	btn_create->Bind(wxEVT_BUTTON, [this, choice_type](wxCommandEvent&)
-	{
+	btn_create->Bind(wxEVT_BUTTON, [this, choice_type](wxCommandEvent&) {
 		for (const auto& format : Archive::allFormats())
 			if (choice_type->GetString(choice_type->GetSelection()) == (format.name + " Archive"))
 			{
-				archive_created_ = app::archiveManager().newArchive(format.id).get();
+				archive_created_            = app::archiveManager().newArchive(format.id).get();
 				archive_last_created_format = format.id;
 				EndModal(wxID_OK);
 			}

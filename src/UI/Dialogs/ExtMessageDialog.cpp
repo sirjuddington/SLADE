@@ -69,6 +69,7 @@ ExtMessageDialog::ExtMessageDialog(wxWindow* parent, const wxString& caption) :
 	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 	hbox->AddStretchSpacer(1);
 	auto btn_ok = new wxButton(this, wxID_OK, "OK");
+	btn_ok->SetDefault();
 	hbox->Add(btn_ok);
 
 	int size = ui::scalePx(500);

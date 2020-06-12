@@ -36,6 +36,7 @@
 #include "Graphics/GameFormats.h"
 #include "Graphics/Graphics.h"
 #include "Graphics/Icons.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -53,54 +54,44 @@ using namespace slade;
 ModifyOffsetsDialog::ModifyOffsetsDialog() :
 	wxDialog(nullptr, -1, "Modify Gfx Offset(s)", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
 {
-	// Create main sizer
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(sizer);
-	auto m_vbox = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(m_vbox, 1, wxEXPAND | wxALL, ui::padLarge());
-
-	// Set dialog icon
-	wxIcon icon;
-	icon.CopyFromBitmap(icons::getIcon(icons::General, "offset"));
-	SetIcon(icon);
-
-	// Setup layout
-	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::padLarge());
-
-	// 'Auto Offsets'
-	opt_auto_ = new wxRadioButton(this, -1, "Automatic Offsets", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-	hbox->Add(opt_auto_, 1, wxEXPAND | wxRIGHT, ui::pad());
-
+	int      width      = ui::scalePx(40);
 	wxString offtypes[] = {
 		"Monster",           "Monster (GL-friendly)", "Projectile",         "Hud/Weapon",
 		"Hud/Weapon (Doom)", "Hud/Weapon (Heretic)",  "Hud/Weapon (Hexen)",
 	};
 
+	// Set dialog icon
+	wxutil::setWindowIcon(this, "offset");
+
+	// Create controls
+	opt_auto_        = new wxRadioButton(this, -1, "Automatic Offsets", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 	combo_aligntype_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 7, offtypes);
+	opt_set_         = new wxRadioButton(this, -1, "Set Offsets");
+	entry_xoff_      = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(width, -1));
+	entry_yoff_      = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(width, -1));
+	cbox_relative_   = new wxCheckBox(this, wxID_ANY, "Relative");
+
+	// Setup controls
 	combo_aligntype_->Select(0);
-	hbox->Add(combo_aligntype_, 0, wxEXPAND);
-
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::padLarge());
-
-	// 'Set Offsets'
-	opt_set_ = new wxRadioButton(this, -1, "Set Offsets");
-	hbox->Add(opt_set_, 1, wxEXPAND | wxRIGHT, ui::pad());
-
-	int width      = ui::scalePx(40);
-	entry_xoff_    = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(width, -1));
-	entry_yoff_    = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(width, -1));
-	cbox_relative_ = new wxCheckBox(this, wxID_ANY, "Relative");
-	hbox->Add(entry_xoff_, 0, wxEXPAND | wxRIGHT, ui::pad());
-	hbox->Add(entry_yoff_, 0, wxEXPAND | wxRIGHT, ui::pad());
-	hbox->Add(cbox_relative_, 0, wxEXPAND);
 	entry_xoff_->Enable(false);
 	entry_yoff_->Enable(false);
 	cbox_relative_->Enable(false);
 
+	// Setup layout
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(sizer);
+	auto* gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	sizer->Add(gbsizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	gbsizer->Add(opt_auto_, { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(combo_aligntype_, { 0, 1 }, { 1, 3 }, wxEXPAND);
+	gbsizer->Add(opt_set_, { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(entry_xoff_, { 1, 1 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(entry_yoff_, { 1, 2 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(cbox_relative_, { 1, 3 }, { 1, 1 }, wxEXPAND);
+
 	// Add default dialog buttons
-	m_vbox->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
+	sizer->Add(
+		wxutil::createDialogButtonBox(this, "OK", "Cancel"), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 
 
 	// Bind events
