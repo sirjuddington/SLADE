@@ -155,18 +155,13 @@ public:
 			choice_mapformat_->SetSelection(choice_mapformat_->GetCount() - 1);
 
 		// Add dialog buttons
-		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		msizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
-		hbox->AddStretchSpacer();
-		btn_ok_ = new wxButton(this, -1, "OK");
-		hbox->Add(btn_ok_, 0, wxEXPAND | wxRIGHT, ui::pad());
-		btn_cancel_ = new wxButton(this, -1, "Cancel");
-		hbox->Add(btn_cancel_, 0, wxEXPAND);
-		sizer->AddGrowableCol(1);
+		msizer->Add(
+			wxutil::createDialogButtonBox(this, "Create", "Cancel"),
+			0,
+			wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,
+			ui::padLarge());
 
-		// Bind events
-		btn_ok_->Bind(wxEVT_BUTTON, &NewMapDialog::onBtnOk, this);
-		btn_cancel_->Bind(wxEVT_BUTTON, &NewMapDialog::onBtnCancel, this);
+		sizer->AddGrowableCol(1);
 
 		wxWindowBase::Layout();
 		msizer->Fit(this);
@@ -176,14 +171,9 @@ public:
 	wxString getMapName() const { return cbo_mapname_->GetValue(); }
 	wxString getMapFormat() const { return choice_mapformat_->GetStringSelection(); }
 
-	void onBtnOk(wxCommandEvent& e) { EndModal(wxID_OK); }
-	void onBtnCancel(wxCommandEvent& e) { EndModal(wxID_CANCEL); }
-
 private:
 	wxComboBox* cbo_mapname_;
 	wxChoice*   choice_mapformat_;
-	wxButton*   btn_ok_;
-	wxButton*   btn_cancel_;
 };
 
 
@@ -291,13 +281,10 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 
 	// Dialog buttons
 	sizer->AddSpacer(ui::pad());
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND);
-	hbox->AddStretchSpacer();
-	btn_ok_ = new wxButton(this, -1, "OK");
-	hbox->Add(btn_ok_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	btn_ok_ = new wxButton(this, wxID_OK, "Open Map");
+	btn_ok_->SetDefault();
 	btn_cancel_ = new wxButton(this, wxID_CANCEL, "Cancel");
-	hbox->Add(btn_cancel_, 0, wxEXPAND);
+	sizer->Add(wxutil::createDialogButtonBox(btn_ok_, btn_cancel_), 0, wxEXPAND);
 
 	// Populate map list
 	populateMapList();
@@ -311,8 +298,6 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 		list_maps_->Bind(wxEVT_LIST_ITEM_SELECTED, &MapEditorConfigDialog::onMapSelected, this);
 		btn_new_map_->Bind(wxEVT_BUTTON, &MapEditorConfigDialog::onBtnNewMap, this);
 	}
-	btn_ok_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { EndModal(wxID_OK); });
-	btn_cancel_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { EndModal(wxID_CANCEL); });
 
 	wxWindowBase::Layout();
 	wxWindowBase::SetMinClientSize(mainsizer->GetMinSize());

@@ -765,7 +765,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 
 		// Voice data
 		unsigned offset = 4;
-		for (size_t i = 1; i < 3; ++i)
+		for (unsigned i = 1; i < 3; ++i)
 		{
 			columns_.emplace_back(wxString::Format("V%d: Mod Multi", i), ColType::IntUnsigned, 1, offset + 0);
 			columns_.emplace_back(wxString::Format("V%d: Mod Attack", i), ColType::IntUnsigned, 1, offset + 1);

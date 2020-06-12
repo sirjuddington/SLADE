@@ -16,7 +16,7 @@ namespace ui
 	class ZoomControl;
 }
 
-class TextureEditorPanel : public wxPanel, SActionHandler
+class TextureEditorPanel : public wxPanel
 {
 public:
 	TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_editor);
@@ -51,7 +51,7 @@ public:
 	void         duplicatePatch(int xoff = 8, int yoff = 8);
 
 	// SAction handler
-	bool handleAction(string_view id) override;
+	bool handleSAction(string_view id);
 
 	// Events
 	void onDrawOutsideChanged(wxCommandEvent& e);

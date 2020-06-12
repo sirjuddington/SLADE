@@ -167,6 +167,40 @@ wxSizer* wxutil::createLabelVBox(wxWindow* parent, const wxString& label, wxSize
 }
 
 // -----------------------------------------------------------------------------
+// Creates a horizontal sizer with the given ok/cancel buttons on the right,
+// ordered in the standard order for the platform:
+// Windows: [btn_ok] [btn_cancel]
+// Others:  [btn_cancel] [btn_ok]
+// -----------------------------------------------------------------------------
+wxSizer* wxutil::createDialogButtonBox(wxButton* btn_ok, wxButton* btn_cancel)
+{
+	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
+	hbox->AddStretchSpacer(1);
+
+#ifdef __WXMSW__
+	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_cancel, 0, wxEXPAND);
+#else
+	hbox->Add(btn_cancel, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_ok, 0, wxEXPAND);
+#endif
+
+	return hbox;
+}
+
+// -----------------------------------------------------------------------------
+// Shortcut function for createDialogButtonBox that creates ok/cancel buttons
+// with the given [text_ok] and [text_cancel]
+// -----------------------------------------------------------------------------
+wxSizer* slade::wxutil::createDialogButtonBox(wxWindow* parent, const wxString& text_ok, const wxString& text_cancel)
+{
+	auto* btn_ok = new wxButton(parent, wxID_OK, text_ok);
+	btn_ok->SetDefault();
+	auto* btn_cancel = new wxButton(parent, wxID_CANCEL, text_cancel);
+	return createDialogButtonBox(btn_ok, btn_cancel);
+}
+
+// -----------------------------------------------------------------------------
 // Returns a horizontal box sizer containing [widgets].
 // [widgets] can contain a combination of wxWindow and wxSizer objects
 // -----------------------------------------------------------------------------

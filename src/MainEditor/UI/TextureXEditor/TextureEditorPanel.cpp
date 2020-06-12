@@ -699,16 +699,8 @@ void TextureEditorPanel::duplicatePatch(int xoff, int yoff)
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureEditorPanel::handleAction(string_view id)
+bool TextureEditorPanel::handleSAction(string_view id)
 {
-	// Don't handle actions if hidden
-	if (!IsShown())
-		return false;
-
-	// Only interested in actions beginning with txed_
-	if (!strutil::startsWith(id, "txed_"))
-		return false;
-
 	// Add Patch
 	if (id == "txed_patch_add")
 		addPatch();
