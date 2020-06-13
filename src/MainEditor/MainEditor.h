@@ -14,6 +14,15 @@ class Palette;
 
 namespace maineditor
 {
+	enum class NewEntryType
+	{
+		Empty,
+		Text,
+		Palette,
+		Animated,
+		Switches
+	};
+
 	bool init();
 
 	MainWindow*           window();

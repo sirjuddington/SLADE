@@ -16,6 +16,13 @@ CVAR(Int, elist_colsize_name_list, 150, CVar::Save)
 CVAR(Int, elist_colsize_size, 80, CVar::Save)
 CVAR(Int, elist_colsize_type, 150, CVar::Save)
 CVAR(Int, elist_colsize_index, 50, CVar::Save)
+#ifdef __WXGTK__
+// Disable by default in GTK because double-click seems to trigger it, which interferes
+// with double-click to expand folders or open entries
+CVAR(Bool, elist_rename_inplace, false, CVar::Save)
+#else
+CVAR(Bool, elist_rename_inplace, true, CVar::Save)
+#endif
 
 EXTERN_CVAR(Int, elist_icon_size)
 EXTERN_CVAR(Int, elist_icon_padding)
@@ -60,6 +67,10 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive)
 			ItemDeleted(createItemForDirectory(&dir), wxDataViewItem(&entry));
 		});
 
+	// Entry modified
+	connections_ += archive->signals().entry_state_changed.connect(
+		[this](Archive& archive, ArchiveEntry& entry) { ItemChanged(wxDataViewItem(&entry)); });
+
 	// Dir added
 	connections_ += archive->signals().dir_added.connect([this](Archive& archive, ArchiveDir& dir) {
 		ItemAdded(createItemForDirectory(dir.parent().get()), wxDataViewItem(dir.dirEntry()));
@@ -81,7 +92,7 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive)
 			wxDataViewItemArray items;
 			for (auto* entry : removed)
 				if (entry)
-					items.emplace_back(entry);
+					items.push_back(wxDataViewItem{ entry });
 			ItemsChanged(items);
 		});
 }
@@ -96,10 +107,10 @@ wxString ArchiveViewModel::GetColumnType(unsigned int col) const
 	switch (col)
 	{
 	case 0: return "wxDataViewIconText";
-	case 1: return "string";
-	case 2: return "string";
-	default: return "string";
-	}
+    case 1: return "string";
+    case 2: return "string";
+    default: return "string";
+    }
 }
 
 void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, unsigned int col) const
@@ -255,7 +266,7 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 	col_name_ = AppendIconTextColumn(
 		"Name",
 		0,
-		wxDATAVIEW_CELL_EDITABLE,
+		elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT,
 		archiveSupportsDirs(archive.get()) ? elist_colsize_name_tree : elist_colsize_name_list);
 	col_size_ = AppendTextColumn("Size", 1, wxDATAVIEW_CELL_INERT, elist_colsize_size);
 	col_type_ = AppendTextColumn("Type", 2, wxDATAVIEW_CELL_INERT, elist_colsize_type);

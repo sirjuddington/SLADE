@@ -18,14 +18,6 @@ class SToolBar;
 class ArchivePanel : public wxPanel, SActionHandler
 {
 public:
-	enum class NewEntry
-	{
-		Empty = 0,
-		Palette,
-		Animated,
-		Switches,
-	};
-
 	ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive);
 	virtual ~ArchivePanel() = default;
 
@@ -44,7 +36,7 @@ public:
 	// Archive manipulation actions
 	bool save();
 	bool saveAs();
-	bool newEntry(NewEntry type = NewEntry::Empty);
+	bool newEntry();
 	bool newDirectory() const;
 	bool importFiles();
 	bool convertArchiveTo() const;

@@ -52,8 +52,7 @@ using namespace slade;
 // ArchiveDir class constructor
 // -----------------------------------------------------------------------------
 ArchiveDir::ArchiveDir(string_view name, const shared_ptr<ArchiveDir>& parent, Archive* archive) :
-	archive_{ archive },
-	parent_dir_{ parent }
+	archive_{ archive }, parent_dir_{ parent }
 {
 	// Init dir entry
 	dir_entry_          = std::make_unique<ArchiveEntry>(name);
@@ -672,7 +671,10 @@ bool ArchiveDir::merge(shared_ptr<ArchiveDir>& target, ArchiveDir* dir, unsigned
 // If the subdir doesn't exist, it will be created (including any other subdirs
 // required to get to it)
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveDir> ArchiveDir::getOrCreateSubdir(shared_ptr<ArchiveDir>& root, string_view path)
+shared_ptr<ArchiveDir> ArchiveDir::getOrCreateSubdir(
+	shared_ptr<ArchiveDir>&         root,
+	string_view                     path,
+	vector<shared_ptr<ArchiveDir>>* created_dirs)
 {
 	auto subdir_name = strutil::beforeFirstV(path, '/');
 
@@ -683,6 +685,8 @@ shared_ptr<ArchiveDir> ArchiveDir::getOrCreateSubdir(shared_ptr<ArchiveDir>& roo
 		// Not found, create it
 		subdir = std::make_shared<ArchiveDir>(subdir_name, root, root->archive_);
 		root->addSubdir(subdir, -1);
+		if (created_dirs)
+			created_dirs->push_back(subdir);
 	}
 
 	// Check if there is more of [path] to follow
@@ -690,7 +694,7 @@ shared_ptr<ArchiveDir> ArchiveDir::getOrCreateSubdir(shared_ptr<ArchiveDir>& roo
 	if (path_rest.empty() || path_rest == path)
 		return subdir;
 	else
-		return getOrCreateSubdir(subdir, path_rest);
+		return getOrCreateSubdir(subdir, path_rest, created_dirs);
 }
 
 // -----------------------------------------------------------------------------

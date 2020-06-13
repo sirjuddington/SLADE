@@ -70,6 +70,7 @@
 #include "UI/Dialogs/MapEditorConfigDialog.h"
 #include "UI/Dialogs/MapReplaceDialog.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
+#include "UI/Dialogs/NewEntryDialog.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/Dialogs/RunDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
@@ -472,12 +473,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 		}
 	});
 
-	// Refresh entry list when bookmarks are changed
-	// sc_bookmarks_changed_ = app::archiveManager().signals().bookmarks_changed.connect(
-	//	[this]() { entry_list_->updateList(); });
-
 	// Update size+layout
-	// entry_list_->updateWidth();
 	wxPanel::Layout();
 	elist_panel->Layout();
 	elist_panel->Update();
@@ -679,13 +675,7 @@ void ArchivePanel::removeMenus() const
 void ArchivePanel::undo() const
 {
 	if (!(cur_area_ && cur_area_->undo()))
-	{
-		// Undo
-		// entry_list_->setEntriesAutoUpdate(false);
 		undo_manager_->undo();
-		// entry_list_->setEntriesAutoUpdate(true);
-		// entry_list_->updateEntries();
-	}
 }
 
 // -----------------------------------------------------------------------------
@@ -694,13 +684,7 @@ void ArchivePanel::undo() const
 void ArchivePanel::redo() const
 {
 	if (!(cur_area_ && cur_area_->redo()))
-	{
-		// Redo
-		// entry_list_->setEntriesAutoUpdate(false);
 		undo_manager_->redo();
-		// entry_list_->setEntriesAutoUpdate(true);
-		// entry_list_->updateEntries();
-	}
 }
 
 // -----------------------------------------------------------------------------
@@ -769,51 +753,50 @@ bool ArchivePanel::saveAs()
 
 // -----------------------------------------------------------------------------
 // Adds a new entry to the archive after the last selected entry in the list.
-// If nothing is selected it is added at the end of the list. Asks the user for
-// a name for the new entry, and doesn't add one if no name is entered.
+// If nothing is selected it is added at the end of the list.
+// Pops up a NewEntryDialog to get the name/type/(directory) for the new entry.
 // Returns true if the entry was created, false otherwise.
 // -----------------------------------------------------------------------------
-bool ArchivePanel::newEntry(NewEntry type)
+bool ArchivePanel::newEntry()
 {
-	return false;
-
-	/*
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
 		return false;
 
-	// Prompt for new entry name if needed
-	wxString name;
-	switch (type)
-	{
-	default:
-	case NewEntry::Empty: name = wxGetTextFromUser("Enter new entry name:", "New Entry"); break;
-	case NewEntry::Palette: name = "playpal.lmp"; break;
-	case NewEntry::Animated: name = "animated.lmp"; break;
-	case NewEntry::Switches: name = "switches.lmp"; break;
-	}
-
-	// Check if any name was entered
-	if (name.empty())
+	// Show new entry dialog
+	auto* last_entry = entry_tree_->lastSelectedEntry(true);
+	auto* dlg        = new ui::NewEntryDialog(this, *archive, last_entry);
+	if (dlg->ShowModal() != wxID_OK)
 		return false;
 
+	// Determine the directory to add the new entry to
+	auto* dir = archive->rootDir().get();
+	if (archive->formatDesc().supports_dirs)
+	{
+		auto dir_path = dlg->parentDirPath().ToStdString();
+		strutil::replaceIP(dir_path, "\\", "/");
+
+		dir = archive->dirAtPath(dir_path);
+		if (!dir)
+			dir = archive->createDir(dir_path).get();
+	}
+
 	// Get the entry index of the last selected list item
-	auto dir   = entry_list_->currentDir().lock().get();
-	int  index = archive->entryIndex(entry_list_->lastSelectedEntry(), dir);
+	auto index = last_entry ? dir->entryIndex(last_entry) : -1;
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
 		index++;
-	else
-		index = -1; // If not add to the end of the list
 
 	// Add the entry to the archive
 	undo_manager_->beginRecord("Add Entry");
-	auto new_entry = archive->addNewEntry(name.ToStdString(), index, dir);
+	auto new_entry = archive->addNewEntry(dlg->entryName().ToStdString(), index, dir);
 	undo_manager_->endRecord(true);
 
 	// Deal with specific entry type that we may want created
+	using NewEntry = maineditor::NewEntryType;
+	auto type      = static_cast<NewEntry>(dlg->entryType());
 	if (type != NewEntry::Empty && new_entry)
 	{
 		ArchiveEntry*       e_import;
@@ -821,8 +804,13 @@ bool ArchivePanel::newEntry(NewEntry type)
 		ChoosePaletteDialog cp(this);
 		switch (type)
 		{
-			// Import a palette from the available ones
+		case NewEntry::Text:
+			new_entry->setType(EntryType::fromId("txt"));
+			new_entry->setExtensionByType();
+			break;
+
 		case NewEntry::Palette:
+			// Import a palette from the available ones
 			if (cp.ShowModal() == wxID_OK)
 			{
 				Palette* pal;
@@ -838,27 +826,34 @@ bool ArchivePanel::newEntry(NewEntry type)
 				mc.reSize(256 * 3);
 			}
 			new_entry->importMemChunk(mc);
+			EntryType::detectEntryType(*new_entry);
+			new_entry->setExtensionByType();
 			break;
-			// Import the ZDoom definitions as a baseline
+
 		case NewEntry::Animated:
+			// Import the ZDoom definitions as a baseline
 			e_import = app::archiveManager().programResourceArchive()->entryAtPath("animated.lmp");
 			if (e_import)
 				new_entry->importEntry(e_import);
+            EntryType::detectEntryType(*new_entry);
+            new_entry->setExtensionByType();
 			break;
-			// Import the Boom definitions as a baseline
+
 		case NewEntry::Switches:
+			// Import the Boom definitions as a baseline
 			e_import = app::archiveManager().programResourceArchive()->entryAtPath("switches.lmp");
 			if (e_import)
 				new_entry->importEntry(e_import);
+            EntryType::detectEntryType(*new_entry);
+            new_entry->setExtensionByType();
 			break;
-			// This is just to silence compilers that insist on default cases being handled
+
 		default: break;
 		}
 	}
 
 	// Return whether the entry was created ok
 	return !!new_entry;
-	*/
 }
 
 // -----------------------------------------------------------------------------
@@ -3239,14 +3234,6 @@ bool ArchivePanel::handleAction(string_view id)
 	// Archive->New->Entry
 	else if (id == "arch_newentry")
 		newEntry();
-
-	// Archive->New->Entry variants
-	else if (id == "arch_newpalette")
-		newEntry(NewEntry::Palette);
-	else if (id == "arch_newanimated")
-		newEntry(NewEntry::Animated);
-	else if (id == "arch_newswitches")
-		newEntry(NewEntry::Switches);
 
 	// Archive->New->Directory
 	else if (id == "arch_newdir")
