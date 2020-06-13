@@ -852,6 +852,12 @@ bool ArchivePanel::newEntry()
 		}
 	}
 
+	if (new_entry)
+	{
+		focusOnEntry(new_entry.get());
+		selectionChanged();
+	}
+
 	// Return whether the entry was created ok
 	return !!new_entry;
 }
@@ -860,42 +866,44 @@ bool ArchivePanel::newEntry()
 // Adds a new subdirectory to the current directory, but only if the archive
 // supports them
 // -----------------------------------------------------------------------------
-bool ArchivePanel::newDirectory() const
+bool ArchivePanel::newDirectory()
 {
-	return false;
-
-	/*
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
 		return false;
 
-	// Check archive supports directories
-	if (!archive->formatDesc().supports_dirs)
-	{
-		wxMessageBox("This Archive format does not support directories", "Can't create new directory", wxICON_ERROR);
-		return false;
-	}
+    // Show new directory dialog
+    auto* last_entry = entry_tree_->lastSelectedEntry(true);
+    auto* dlg        = new ui::NewEntryDialog(this, *archive, last_entry, true);
+    if (dlg->ShowModal() != wxID_OK)
+        return false;
 
-	// Prompt for new directory name
-	wxString name = wxGetTextFromUser("Enter new directory name:", "New Directory");
+    // Determine the parent directory
+    auto* parent_dir = archive->rootDir().get();
+    if (archive->formatDesc().supports_dirs)
+    {
+        auto dir_path = dlg->parentDirPath().ToStdString();
+        strutil::replaceIP(dir_path, "\\", "/");
 
-	// Check if any name was entered
-	if (name.empty())
-		return false;
-
-	// Remove any path from the name, if any (for now)
-	wxFileName fn(name);
-	name = fn.GetFullName();
+        parent_dir = archive->dirAtPath(dir_path);
+        if (!parent_dir)
+            parent_dir = archive->createDir(dir_path).get();
+    }
 
 	// Add the directory to the archive
-	undo_manager_->beginRecord("Create Directory");
-	auto dir = archive->createDir(name.ToStdString(), entry_list_->currentDir().lock());
-	undo_manager_->endRecord(!!dir);
+    undo_manager_->beginRecord("Create Directory");
+	auto dir = archive->createDir(dlg->entryName().ToStdString(), ArchiveDir::getShared(parent_dir));
+    undo_manager_->endRecord(!!dir);
 
-	// Return whether the directory was created ok
-	return !!dir;
-	*/
+	if (dir)
+	{
+		focusOnEntry(dir->dirEntry());
+		selectionChanged();
+	}
+
+    // Return whether the directory was created ok
+    return !!dir;
 }
 
 // -----------------------------------------------------------------------------
@@ -3523,6 +3531,49 @@ wxMenu* ArchivePanel::createMaintenanceMenu()
 	return menu_clean;
 }
 
+// -----------------------------------------------------------------------------
+// Update the UI when the selection on the entry list is changed
+// -----------------------------------------------------------------------------
+void ArchivePanel::selectionChanged()
+{
+    // Get selected entries
+    auto selection = entry_tree_->selectedEntries();
+
+    if (selection.empty())
+    {
+        toolbar_elist_->group("_Entry")->setAllButtonsEnabled(false);
+    }
+    else if (selection.size() == 1)
+    {
+        // If one entry is selected, open it in the entry area
+        toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
+        toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(false);
+        toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
+        openEntry(selection[0]);
+    }
+    else
+    {
+        // If multiple entries are selected, show/update the multi entry area
+        toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
+        toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(true);
+        toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(false);
+        showEntryPanel(default_area_);
+        dynamic_cast<DefaultEntryPanel*>(default_area_)->loadEntries(selection);
+    }
+
+    // Get selected directories
+    auto sel_dirs = entry_tree_->selectedDirectories();
+
+    if (selection.empty() && !sel_dirs.empty())
+    {
+        toolbar_elist_->findActionButton("arch_entry_rename")->Enable(true);
+        toolbar_elist_->findActionButton("arch_entry_delete")->Enable(true);
+        // toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
+    }
+
+    toolbar_elist_->Refresh();
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -3540,42 +3591,7 @@ void ArchivePanel::onEntryListSelectionChange(wxDataViewEvent& e)
 	if (!IsShown())
 		return;
 
-	// Get selected entries
-	auto selection = entry_tree_->selectedEntries();
-
-	if (selection.empty())
-	{
-		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(false);
-	}
-	else if (selection.size() == 1)
-	{
-		// If one entry is selected, open it in the entry area
-		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
-		toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(false);
-		toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
-		openEntry(selection[0]);
-	}
-	else
-	{
-		// If multiple entries are selected, show/update the multi entry area
-		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
-		toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(true);
-		toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(false);
-		showEntryPanel(default_area_);
-		dynamic_cast<DefaultEntryPanel*>(default_area_)->loadEntries(selection);
-	}
-
-	// Get selected directories
-	auto sel_dirs = entry_tree_->selectedDirectories();
-
-	if (selection.empty() && !sel_dirs.empty())
-	{
-		toolbar_elist_->findActionButton("arch_entry_rename")->Enable(true);
-		toolbar_elist_->findActionButton("arch_entry_delete")->Enable(true);
-		// toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
-	}
-
-	toolbar_elist_->Refresh();
+	selectionChanged();
 }
 
 // -----------------------------------------------------------------------------

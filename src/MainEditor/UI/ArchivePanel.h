@@ -37,7 +37,7 @@ public:
 	bool save();
 	bool saveAs();
 	bool newEntry();
-	bool newDirectory() const;
+	bool newDirectory();
 	bool importFiles();
 	bool convertArchiveTo() const;
 	bool cleanupArchive() const;
@@ -149,6 +149,8 @@ protected:
 	sigslot::scoped_connection sc_archive_saved_;
 	sigslot::scoped_connection sc_entry_removed_;
 	sigslot::scoped_connection sc_bookmarks_changed_;
+
+	void selectionChanged();
 
 	// Events
 	void         onEntryListSelectionChange(wxDataViewEvent& e);

@@ -48,8 +48,8 @@ using namespace ui;
 // -----------------------------------------------------------------------------
 namespace slade::ui
 {
-vector<string> type_names = { "Empty (Marker)", "Text", "Palette", "Boom ANIMATED", "Boom SWITCHES" };
-int selected_entry_type = 0;
+vector<string> type_names          = { "Empty (Marker)", "Text", "Palette", "Boom ANIMATED", "Boom SWITCHES" };
+int            selected_entry_type = 0;
 } // namespace slade::ui
 
 
@@ -100,10 +100,14 @@ wxString entryDirPath(const ArchiveEntry* entry, shared_ptr<ArchiveDir> root)
 // -----------------------------------------------------------------------------
 // NewEntryDialog Class Constructor
 // -----------------------------------------------------------------------------
-NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const ArchiveEntry* selected_entry) :
-	wxDialog(parent, -1, "New Entry")
+NewEntryDialog::NewEntryDialog(
+	wxWindow*           parent,
+	const Archive&      archive,
+	const ArchiveEntry* selected_entry,
+	bool                new_dir) :
+	wxDialog(parent, -1, new_dir ? "New Directory" : "New Entry")
 {
-	wxutil::setWindowIcon(this, "new_entry");
+	wxutil::setWindowIcon(this, new_dir ? "new_directory" : "new_entry");
 
 	const auto&   archive_format = archive.formatDesc();
 	auto          types          = wxutil::arrayStringStd(type_names);
@@ -121,8 +125,9 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 	// Setup controls
 	combo_parent_dir_->Show(archive_format.supports_dirs);
 	choice_entry_type_->Select(selected_entry_type);
+	choice_entry_type_->Show(!new_dir);
 	text_entry_name_->SetFocusFromKbd();
-	if (archive_format.max_name_length > 0)
+	if (!new_dir && archive_format.max_name_length > 0)
 		text_entry_name_->SetMaxLength(archive_format.max_name_length);
 
 
@@ -136,11 +141,18 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 	int row = 0;
 	sizer->Add(new wxStaticText(this, -1, "Name:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(text_entry_name_, { row++, 1 }, { 1, 1 }, wxEXPAND);
-	sizer->Add(new wxStaticText(this, -1, "Type:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	sizer->Add(choice_entry_type_, { row++, 1 }, { 1, 1 }, wxEXPAND);
+	if (!new_dir)
+	{
+		sizer->Add(new wxStaticText(this, -1, "Type:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		sizer->Add(choice_entry_type_, { row++, 1 }, { 1, 1 }, wxEXPAND);
+	}
 	if (archive_format.supports_dirs)
 	{
-		sizer->Add(new wxStaticText(this, -1, "Directory:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		sizer->Add(
+			new wxStaticText(this, -1, new_dir ? "Parent Directory:" : "Directory:"),
+			{ row, 0 },
+			{ 1, 1 },
+			wxALIGN_CENTER_VERTICAL);
 		sizer->Add(combo_parent_dir_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 	}
 	sizer->AddGrowableCol(1, 1);
@@ -175,9 +187,9 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 
 	// Init dialog size
 	SetInitialSize({ ui::scalePx(400), -1 });
-    wxDialog::Layout();
-    wxDialog::Fit();
-    wxDialog::SetMinSize(GetBestSize());
+	wxDialog::Layout();
+	wxDialog::Fit();
+	wxDialog::SetMinSize(GetBestSize());
 	wxDialog::SetMaxSize({ -1, GetBestSize().y });
 	CenterOnParent();
 }
@@ -219,7 +231,7 @@ bool NewEntryDialog::Validate()
 	// Remember type choice
 	auto type = choice_entry_type_->GetSelection();
 	if (type < 3)
-	    selected_entry_type = choice_entry_type_->GetSelection();
+		selected_entry_type = choice_entry_type_->GetSelection();
 
 	return wxDialog::Validate();
 }
