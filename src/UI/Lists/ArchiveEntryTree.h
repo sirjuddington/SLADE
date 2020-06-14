@@ -45,7 +45,7 @@ namespace ui
 		{
 			return static_cast<ArchiveEntry*>(item.GetID());
 		}
-		ArchiveDir* dirForItem(const wxDataViewItem& item) const;
+		ArchiveDir* dirForDirItem(const wxDataViewItem& item) const;
 
 		vector<ArchiveEntry*> selectedEntries(bool include_dirs = false) const;
 		ArchiveEntry*         firstSelectedEntry(bool include_dirs = false) const;
@@ -55,6 +55,7 @@ namespace ui
 		ArchiveDir*           lastSelectedDirectory() const;
 		wxDataViewItem        firstSelectedItem() const;
 		wxDataViewItem        lastSelectedItem() const;
+		ArchiveDir*           currentSelectedDir() const;
 
 	private:
 		weak_ptr<Archive> archive_;

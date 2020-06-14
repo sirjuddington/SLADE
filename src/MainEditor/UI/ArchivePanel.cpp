@@ -453,7 +453,7 @@ void ArchivePanel::setup(Archive* archive)
 void ArchivePanel::bindEvents(Archive* archive)
 {
 	entry_tree_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &ArchivePanel::onEntryListSelectionChange, this);
-	entry_tree_->Bind(wxEVT_CHAR, &ArchivePanel::onEntryListKeyDown, this);
+	entry_tree_->GetTargetWindow()->Bind(wxEVT_KEY_DOWN, &ArchivePanel::onEntryListKeyDown, this);
 	entry_tree_->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &ArchivePanel::onEntryListRightClick, this);
 	entry_tree_->Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, &ArchivePanel::onEntryListActivated, this);
 	text_filter_->Bind(wxEVT_TEXT, &ArchivePanel::onTextFilterChanged, this);
@@ -933,7 +933,7 @@ bool ArchivePanel::importFiles()
 	if (filedialog::openFiles(info, "Choose files to import", "Any File (*.*)|*.*", this))
 	{
 		// Get the entry index of the last selected list item
-		auto dir   = entry_tree_->dirForItem(entry_tree_->lastSelectedItem());
+		auto dir   = entry_tree_->currentSelectedDir();
 		int  index = archive->entryIndex(entry_tree_->lastSelectedEntry(), dir);
 
 		// If something was selected, add 1 to the index so we add the new entry after the last selected
@@ -2026,21 +2026,18 @@ bool ArchivePanel::cutEntry()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::pasteEntry() const
 {
-	return false;
-
-	/*
 	// Do nothing if there is nothing in the clipboard
 	if (app::clipboard().empty())
 		return false;
 
 	// Check the archive is still open
 	auto archive = archive_.lock();
-	auto dir     = entry_list_->currentDir().lock();
+	auto dir     = ArchiveDir::getShared(entry_tree_->currentSelectedDir());
 	if (!archive || !dir)
 		return false;
 
 	// Get the entry index of the last selected list item
-	int index = archive->entryIndex(entry_list_->lastSelectedEntry(), dir.get());
+	int index = archive->entryIndex(entry_tree_->lastSelectedEntry(), dir.get());
 
 	// If something was selected, add 1 to the index so we add the new entry after the last selected
 	if (index >= 0)
@@ -2053,7 +2050,7 @@ bool ArchivePanel::pasteEntry() const
 	panel->disableArchiveListUpdate();
 	bool pasted = false;
 	undo_manager_->beginRecord("Paste Entry");
-	entry_list_->setEntriesAutoUpdate(false);
+	entry_tree_->Freeze();
 	for (unsigned a = 0; a < app::clipboard().size(); a++)
 	{
 		// Check item type
@@ -2068,7 +2065,7 @@ bool ArchivePanel::pasteEntry() const
 			pasted = true;
 	}
 	undo_manager_->endRecord(true);
-	entry_list_->setEntriesAutoUpdate(true);
+	entry_tree_->Thaw();
 	panel->refreshArchiveList();
 	if (pasted)
 	{
@@ -2079,7 +2076,6 @@ bool ArchivePanel::pasteEntry() const
 	}
 	else
 		return false;
-	*/
 }
 
 // -----------------------------------------------------------------------------

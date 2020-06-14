@@ -304,7 +304,7 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 	});
 }
 
-ArchiveDir* ArchiveEntryTree::dirForItem(const wxDataViewItem& item) const
+ArchiveDir* ArchiveEntryTree::dirForDirItem(const wxDataViewItem& item) const
 {
 	if (auto archive = archive_.lock())
 	{
@@ -461,4 +461,27 @@ wxDataViewItem slade::ui::ArchiveEntryTree::lastSelectedItem() const
 		return selection.back();
 
 	return {};
+}
+
+// -----------------------------------------------------------------------------
+// Returns the 'current' selected directory, based on the last selected item.
+// If the item is a directory, returns that, otherwise returns the entry's
+// parent directory. If nothing is selected returns the archive root dir
+// -----------------------------------------------------------------------------
+ArchiveDir* slade::ui::ArchiveEntryTree::currentSelectedDir() const
+{
+	auto* archive = archive_.lock().get();
+	if (!archive)
+		return nullptr;
+
+	auto item = lastSelectedItem();
+	if (auto* entry = static_cast<ArchiveEntry*>(item.GetID()))
+	{
+		if (entry->type() == EntryType::folderType())
+			return dirForDirItem(item);
+		else
+			return entry->parentDir();
+	}
+
+	return archive->rootDir().get();
 }

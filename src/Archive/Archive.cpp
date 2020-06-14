@@ -745,8 +745,17 @@ bool Archive::paste(ArchiveDir* tree, unsigned position, shared_ptr<ArchiveDir> 
 	// Set modified
 	setModified(true);
 
-	// Just do a merge
-	return ArchiveDir::merge(base, tree, position);
+	// Do merge
+	vector<shared_ptr<ArchiveEntry>> created_entries;
+	vector<shared_ptr<ArchiveDir>>   created_dirs;
+	if (!ArchiveDir::merge(base, tree, position, ArchiveEntry::State::New, &created_dirs, &created_entries))
+		return false;
+
+	// Signal changes
+	for (const auto& cdir : created_dirs)
+		signals_.dir_added(*this, *cdir);
+	for (const auto& entry : created_entries)
+		signals_.entry_added(*this, *entry);
 }
 
 // -----------------------------------------------------------------------------
@@ -786,7 +795,7 @@ shared_ptr<ArchiveDir> Archive::createDir(string_view path, shared_ptr<ArchiveDi
 
 	// Create the directory
 	vector<shared_ptr<ArchiveDir>> created_dirs;
-	auto dir = ArchiveDir::getOrCreateSubdir(base, path, &created_dirs);
+	auto                           dir = ArchiveDir::getOrCreateSubdir(base, path, &created_dirs);
 
 	// Record undo step(s)
 	if (undoredo::currentlyRecording())
