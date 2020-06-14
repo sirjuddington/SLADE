@@ -1002,6 +1002,9 @@
     <ClCompile Include="..\src\UI\Lists\ArchiveEntryTree.cpp">
       <Filter>UI\Lists</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\UI\Dialogs\NewEntryDialog.cpp">
+      <Filter>UI\Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -1915,6 +1918,9 @@
     </ClInclude>
     <ClInclude Include="..\src\UI\Lists\ArchiveEntryTree.h">
       <Filter>UI\Lists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\Dialogs\NewEntryDialog.h">
+      <Filter>UI\Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

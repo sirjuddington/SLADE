@@ -400,18 +400,17 @@ size_t getNamespaceNumber(ArchiveEntry* entry, size_t index, vector<wxString>& n
 ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	wxPanel(parent, -1), archive_{ archive }, undo_manager_{ new UndoManager() }, ee_manager_{ new ExternalEditManager }
 {
-	// --- Setup Layout ---
+	setup(archive.get());
+	bindEvents(archive.get());
+}
 
-	// Create sizer
-	auto m_hbox = new wxBoxSizer(wxHORIZONTAL);
-	SetSizer(m_hbox);
-
-	// Create splitter
-	splitter_ = new wxSplitterWindow(this, -1, wxDefaultPosition, wxDefaultSize, wxSP_3DSASH | wxSP_LIVE_UPDATE);
-	splitter_->SetMinimumPaneSize(ui::scalePx(300));
-	m_hbox->Add(splitter_, wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
-
-	// Create entry panels
+// -----------------------------------------------------------------------------
+// Setup the panel controls and layout
+// -----------------------------------------------------------------------------
+void ArchivePanel::setup(Archive* archive)
+{
+	// Create controls
+	splitter_     = new wxSplitterWindow(this, -1, wxDefaultPosition, wxDefaultSize, wxSP_3DSASH | wxSP_LIVE_UPDATE);
 	entry_area_   = new EntryPanel(splitter_, "nil", false);
 	default_area_ = new DefaultEntryPanel(splitter_, false);
 	text_area_    = new TextEntryPanel(splitter_, false);
@@ -422,22 +421,37 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 	map_area_     = new MapEntryPanel(splitter_, false);
 	audio_area_   = new AudioEntryPanel(splitter_, false);
 	data_area_    = new DataEntryPanel(splitter_, false);
-
-
-	// Entry list panel
 	auto* elist_panel = createEntryListPanel(splitter_);
 
-	// Add default entry panel
+	// Create sizer
+	auto m_hbox = new wxBoxSizer(wxHORIZONTAL);
+	SetSizer(m_hbox);
+
+	// Set default entry panel
 	cur_area_ = entry_area_;
 	cur_area_->Show(true);
 	cur_area_->setUndoManager(undo_manager_.get());
 
+	// Setup splitter
+	splitter_->SetMinimumPaneSize(ui::scalePx(300));
+	m_hbox->Add(splitter_, wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
 	int split_pos = ap_splitter_position_list;
 	if (archive && archive->formatDesc().supports_dirs)
 		split_pos = ap_splitter_position_tree;
 	splitter_->SplitVertically(elist_panel, cur_area_, split_pos);
 
-	// Bind events
+	// Update size+layout
+	Layout();
+	elist_panel->Layout();
+	elist_panel->Update();
+	elist_panel->Refresh();
+}
+
+// -----------------------------------------------------------------------------
+// Bind widget events and [archive] signals
+// -----------------------------------------------------------------------------
+void ArchivePanel::bindEvents(Archive* archive)
+{
 	entry_tree_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &ArchivePanel::onEntryListSelectionChange, this);
 	entry_tree_->Bind(wxEVT_CHAR, &ArchivePanel::onEntryListKeyDown, this);
 	entry_tree_->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &ArchivePanel::onEntryListRightClick, this);
@@ -472,14 +486,11 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 			currentArea()->Show(false);
 		}
 	});
-
-	// Update size+layout
-	wxPanel::Layout();
-	elist_panel->Layout();
-	elist_panel->Update();
-	elist_panel->Refresh();
 }
 
+// -----------------------------------------------------------------------------
+// Creates the entry list panel
+// -----------------------------------------------------------------------------
 wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 {
 	auto* panel    = new wxPanel(parent);
@@ -835,8 +846,8 @@ bool ArchivePanel::newEntry()
 			e_import = app::archiveManager().programResourceArchive()->entryAtPath("animated.lmp");
 			if (e_import)
 				new_entry->importEntry(e_import);
-            EntryType::detectEntryType(*new_entry);
-            new_entry->setExtensionByType();
+			EntryType::detectEntryType(*new_entry);
+			new_entry->setExtensionByType();
 			break;
 
 		case NewEntry::Switches:
@@ -844,8 +855,8 @@ bool ArchivePanel::newEntry()
 			e_import = app::archiveManager().programResourceArchive()->entryAtPath("switches.lmp");
 			if (e_import)
 				new_entry->importEntry(e_import);
-            EntryType::detectEntryType(*new_entry);
-            new_entry->setExtensionByType();
+			EntryType::detectEntryType(*new_entry);
+			new_entry->setExtensionByType();
 			break;
 
 		default: break;
@@ -873,28 +884,28 @@ bool ArchivePanel::newDirectory()
 	if (!archive)
 		return false;
 
-    // Show new directory dialog
-    auto* last_entry = entry_tree_->lastSelectedEntry(true);
-    auto* dlg        = new ui::NewEntryDialog(this, *archive, last_entry, true);
-    if (dlg->ShowModal() != wxID_OK)
-        return false;
+	// Show new directory dialog
+	auto* last_entry = entry_tree_->lastSelectedEntry(true);
+	auto* dlg        = new ui::NewEntryDialog(this, *archive, last_entry, true);
+	if (dlg->ShowModal() != wxID_OK)
+		return false;
 
-    // Determine the parent directory
-    auto* parent_dir = archive->rootDir().get();
-    if (archive->formatDesc().supports_dirs)
-    {
-        auto dir_path = dlg->parentDirPath().ToStdString();
-        strutil::replaceIP(dir_path, "\\", "/");
+	// Determine the parent directory
+	auto* parent_dir = archive->rootDir().get();
+	if (archive->formatDesc().supports_dirs)
+	{
+		auto dir_path = dlg->parentDirPath().ToStdString();
+		strutil::replaceIP(dir_path, "\\", "/");
 
-        parent_dir = archive->dirAtPath(dir_path);
-        if (!parent_dir)
-            parent_dir = archive->createDir(dir_path).get();
-    }
+		parent_dir = archive->dirAtPath(dir_path);
+		if (!parent_dir)
+			parent_dir = archive->createDir(dir_path).get();
+	}
 
 	// Add the directory to the archive
-    undo_manager_->beginRecord("Create Directory");
+	undo_manager_->beginRecord("Create Directory");
 	auto dir = archive->createDir(dlg->entryName().ToStdString(), ArchiveDir::getShared(parent_dir));
-    undo_manager_->endRecord(!!dir);
+	undo_manager_->endRecord(!!dir);
 
 	if (dir)
 	{
@@ -902,8 +913,8 @@ bool ArchivePanel::newDirectory()
 		selectionChanged();
 	}
 
-    // Return whether the directory was created ok
-    return !!dir;
+	// Return whether the directory was created ok
+	return !!dir;
 }
 
 // -----------------------------------------------------------------------------
@@ -3536,42 +3547,42 @@ wxMenu* ArchivePanel::createMaintenanceMenu()
 // -----------------------------------------------------------------------------
 void ArchivePanel::selectionChanged()
 {
-    // Get selected entries
-    auto selection = entry_tree_->selectedEntries();
+	// Get selected entries
+	auto selection = entry_tree_->selectedEntries();
 
-    if (selection.empty())
-    {
-        toolbar_elist_->group("_Entry")->setAllButtonsEnabled(false);
-    }
-    else if (selection.size() == 1)
-    {
-        // If one entry is selected, open it in the entry area
-        toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
-        toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(false);
-        toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
-        openEntry(selection[0]);
-    }
-    else
-    {
-        // If multiple entries are selected, show/update the multi entry area
-        toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
-        toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(true);
-        toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(false);
-        showEntryPanel(default_area_);
-        dynamic_cast<DefaultEntryPanel*>(default_area_)->loadEntries(selection);
-    }
+	if (selection.empty())
+	{
+		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(false);
+	}
+	else if (selection.size() == 1)
+	{
+		// If one entry is selected, open it in the entry area
+		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
+		toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(false);
+		toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
+		openEntry(selection[0]);
+	}
+	else
+	{
+		// If multiple entries are selected, show/update the multi entry area
+		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
+		toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(true);
+		toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(false);
+		showEntryPanel(default_area_);
+		dynamic_cast<DefaultEntryPanel*>(default_area_)->loadEntries(selection);
+	}
 
-    // Get selected directories
-    auto sel_dirs = entry_tree_->selectedDirectories();
+	// Get selected directories
+	auto sel_dirs = entry_tree_->selectedDirectories();
 
-    if (selection.empty() && !sel_dirs.empty())
-    {
-        toolbar_elist_->findActionButton("arch_entry_rename")->Enable(true);
-        toolbar_elist_->findActionButton("arch_entry_delete")->Enable(true);
-        // toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
-    }
+	if (selection.empty() && !sel_dirs.empty())
+	{
+		toolbar_elist_->findActionButton("arch_entry_rename")->Enable(true);
+		toolbar_elist_->findActionButton("arch_entry_delete")->Enable(true);
+		// toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
+	}
 
-    toolbar_elist_->Refresh();
+	toolbar_elist_->Refresh();
 }
 
 
