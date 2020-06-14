@@ -188,8 +188,19 @@ wxDataViewItem ArchiveViewModel::GetParent(const wxDataViewItem& item) const
 bool ArchiveViewModel::IsContainer(const wxDataViewItem& item) const
 {
 	if (auto* entry = static_cast<ArchiveEntry*>(item.GetID()))
+	{
+		// Not a folder
 		if (entry->type() != EntryType::folderType())
 			return false;
+
+		// Empty folder
+		else if (auto* archive = archive_.lock().get())
+		{
+			if (auto* dir = archive->dirAtPath(entry->path(true)))
+				if (dir->entries().size() == 0 && dir->subdirs().size() == 0)
+					return false;
+		}
+	}
 
 	return true;
 }
