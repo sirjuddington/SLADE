@@ -453,7 +453,7 @@ void ArchivePanel::setup(Archive* archive)
 void ArchivePanel::bindEvents(Archive* archive)
 {
 	entry_tree_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &ArchivePanel::onEntryListSelectionChange, this);
-	entry_tree_->GetTargetWindow()->Bind(wxEVT_KEY_DOWN, &ArchivePanel::onEntryListKeyDown, this);
+	entry_tree_->GetMainWindow()->Bind(wxEVT_KEY_DOWN, &ArchivePanel::onEntryListKeyDown, this);
 	entry_tree_->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &ArchivePanel::onEntryListRightClick, this);
 	entry_tree_->Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, &ArchivePanel::onEntryListActivated, this);
 	text_filter_->Bind(wxEVT_TEXT, &ArchivePanel::onTextFilterChanged, this);

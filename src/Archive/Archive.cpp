@@ -756,6 +756,8 @@ bool Archive::paste(ArchiveDir* tree, unsigned position, shared_ptr<ArchiveDir> 
 		signals_.dir_added(*this, *cdir);
 	for (const auto& entry : created_entries)
 		signals_.entry_added(*this, *entry);
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
