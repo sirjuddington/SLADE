@@ -433,3 +433,21 @@ ArchiveDir* ArchiveEntryTree::lastSelectedDirectory() const
 
 	return nullptr;
 }
+
+wxDataViewItem slade::ui::ArchiveEntryTree::firstSelectedItem() const
+{
+	wxDataViewItemArray selection;
+	if (GetSelections(selection) > 0)
+		return selection[0];
+
+	return {};
+}
+
+wxDataViewItem slade::ui::ArchiveEntryTree::lastSelectedItem() const
+{
+	wxDataViewItemArray selection;
+	if (GetSelections(selection) > 0)
+		return selection.back();
+
+	return {};
+}

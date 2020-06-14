@@ -923,9 +923,6 @@ bool ArchivePanel::newDirectory()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::importFiles()
 {
-	return false;
-
-	/*
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
@@ -936,8 +933,8 @@ bool ArchivePanel::importFiles()
 	if (filedialog::openFiles(info, "Choose files to import", "Any File (*.*)|*.*", this))
 	{
 		// Get the entry index of the last selected list item
-		auto dir   = entry_list_->currentDir().lock().get();
-		int  index = archive->entryIndex(entry_list_->lastSelectedEntry(), dir);
+		auto dir   = entry_tree_->dirForItem(entry_tree_->lastSelectedItem());
+		int  index = archive->entryIndex(entry_tree_->lastSelectedEntry(), dir);
 
 		// If something was selected, add 1 to the index so we add the new entry after the last selected
 		if (index >= 0)
@@ -950,14 +947,10 @@ bool ArchivePanel::importFiles()
 
 		// Go through the list of files
 		bool ok = false;
-		entry_list_->Show(false);
+		entry_tree_->Freeze();
 		ui::showSplash("Importing Files...", true);
-		entry_list_->setEntriesAutoUpdate(false);
 		for (size_t a = 0; a < info.filenames.size(); a++)
 		{
-			if (a == info.filenames.size() - 1)
-				entry_list_->setEntriesAutoUpdate(true);
-
 			// Get filename
 			wxString name = wxFileName(info.filenames[a]).GetFullName();
 
@@ -980,17 +973,15 @@ bool ArchivePanel::importFiles()
 				index++;
 		}
 		ui::hideSplash();
-		entry_list_->Show(true);
+		entry_tree_->Thaw();
 
 		// End recording undo level
 		undo_manager_->endRecord(true);
 
-		entry_list_->setEntriesAutoUpdate(true);
 		return ok;
 	}
 	else // User cancelled, return false
 		return false;
-	*/
 }
 
 // -----------------------------------------------------------------------------

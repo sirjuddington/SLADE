@@ -53,6 +53,8 @@ namespace ui
 		vector<ArchiveDir*>   selectedDirectories() const;
 		ArchiveDir*           firstSelectedDirectory() const;
 		ArchiveDir*           lastSelectedDirectory() const;
+		wxDataViewItem        firstSelectedItem() const;
+		wxDataViewItem        lastSelectedItem() const;
 
 	private:
 		weak_ptr<Archive> archive_;
