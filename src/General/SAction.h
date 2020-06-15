@@ -67,6 +67,7 @@ public:
 	static SAction* fromId(string_view id);
 	static SAction* fromWxId(int wx_id);
 	static void     add(SAction* action);
+	static int      nextWxId();
 
 private:
 	// The id associated with this action - to keep things consistent, it should be of the format xxxx_*,

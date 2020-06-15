@@ -67,10 +67,13 @@ namespace ui
 
 	private:
 		weak_ptr<Archive> archive_;
-		ArchiveViewModel* model_    = nullptr;
-		wxDataViewColumn* col_name_ = nullptr;
-		wxDataViewColumn* col_size_ = nullptr;
-		wxDataViewColumn* col_type_ = nullptr;
+		ArchiveViewModel* model_         = nullptr;
+		wxDataViewColumn* col_name_      = nullptr;
+		wxDataViewColumn* col_size_      = nullptr;
+		wxDataViewColumn* col_type_      = nullptr;
+		int               id_reset_sort_ = -1;
+
+		void setupColumns();
 	};
 
 } // namespace ui

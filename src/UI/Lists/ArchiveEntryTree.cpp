@@ -4,6 +4,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "General/SAction.h"
 #include "Graphics/Icons.h"
 #include "UI/WxUtils.h"
 #include <wx/headerctrl.h>
@@ -255,10 +256,10 @@ int ArchiveViewModel::Compare(
 	unsigned int          column,
 	bool                  ascending) const
 {
-	auto* e1 = static_cast<ArchiveEntry*>(item1.GetID());
-	auto* e1_type = e1->type();
-	auto* e2 = static_cast<ArchiveEntry*>(item2.GetID());
-	auto* e2_type = e2->type();
+	auto* e1       = static_cast<ArchiveEntry*>(item1.GetID());
+	auto* e1_type  = e1->type();
+	auto* e2       = static_cast<ArchiveEntry*>(item2.GetID());
+	auto* e2_type  = e2->type();
 	auto* t_folder = EntryType::folderType();
 
 	// Folder <-> Entry (always show folders first)
@@ -298,12 +299,12 @@ int ArchiveViewModel::Compare(
 
 		// Type column (order by type name -> name)
 		else if (column == 2)
-		{	
+		{
 			cmpval = e1_type->name().compare(e2_type->name());
 			if (cmpval == 0)
 				cmpval = e1->upperName().compare(e2->upperName());
 		}
-		
+
 		// Default
 		else
 		{
@@ -352,16 +353,7 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 	model_->DecRef();
 
 	// Add Columns
-	col_name_ = AppendIconTextColumn(
-		"Name",
-		0,
-		elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT,
-		archiveSupportsDirs(archive.get()) ? elist_colsize_name_tree : elist_colsize_name_list,
-		wxALIGN_NOT,
-		wxDATAVIEW_COL_SORTABLE);
-	col_size_ = AppendTextColumn("Size", 1, wxDATAVIEW_CELL_INERT, elist_colsize_size, wxALIGN_NOT, wxDATAVIEW_COL_SORTABLE);
-	col_type_ = AppendTextColumn("Type", 2, wxDATAVIEW_CELL_INERT, elist_colsize_type, wxALIGN_NOT, wxDATAVIEW_COL_SORTABLE);
-	GetColumn(GetColumnCount() - 1)->SetWidth(0); // temp
+	setupColumns();
 
 	// --- Bind Events ---
 
@@ -381,6 +373,26 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 			elist_colsize_name_list = col_name_->GetWidth();
 		elist_colsize_size = col_size_->GetWidth();
 		elist_colsize_type = col_type_->GetWidth();
+	});
+
+	// Header right click
+	Bind(wxEVT_DATAVIEW_COLUMN_HEADER_RIGHT_CLICK, [this](wxDataViewEvent& e) {
+		// Popup context menu
+		wxMenu context;
+		if (id_reset_sort_ < 0)
+			id_reset_sort_ = SAction::nextWxId();
+		context.Append(id_reset_sort_, "Reset Sorting");
+		PopupMenu(&context);
+	});
+
+	// Header context menu
+	Bind(wxEVT_MENU, [this](wxCommandEvent& e) {
+		if (e.GetId() == id_reset_sort_)
+		{
+			setupColumns();
+			model_->Resort();
+			ProcessWindowEvent(wxDataViewEvent(wxEVT_DATAVIEW_COLUMN_SORTED, this, {}));
+		}
 	});
 }
 
@@ -594,4 +606,32 @@ ArchiveDir* ArchiveEntryTree::selectedEntriesDir() const
 	}
 
 	return dir;
+}
+
+void ArchiveEntryTree::setupColumns()
+{
+	auto archive = archive_.lock();
+	if (!archive)
+		return;
+
+	// Clear columns if already added
+	if (col_name_)
+	{
+		ClearColumns();
+		col_name_ = col_size_ = col_type_ = nullptr;
+	}
+
+	// Add Columns
+	col_name_ = AppendIconTextColumn(
+		"Name",
+		0,
+		elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT,
+		archiveSupportsDirs(archive.get()) ? elist_colsize_name_tree : elist_colsize_name_list,
+		wxALIGN_NOT,
+		wxDATAVIEW_COL_SORTABLE);
+	col_size_ = AppendTextColumn(
+		"Size", 1, wxDATAVIEW_CELL_INERT, elist_colsize_size, wxALIGN_NOT, wxDATAVIEW_COL_SORTABLE);
+	col_type_ = AppendTextColumn(
+		"Type", 2, wxDATAVIEW_CELL_INERT, elist_colsize_type, wxALIGN_NOT, wxDATAVIEW_COL_SORTABLE);
+	GetColumn(GetColumnCount() - 1)->SetWidth(0); // temp
 }

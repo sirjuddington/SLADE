@@ -411,6 +411,16 @@ void SAction::add(SAction* action)
 }
 
 // -----------------------------------------------------------------------------
+// Gets the next free wxWidgets action id
+// -----------------------------------------------------------------------------
+int SAction::nextWxId()
+{
+	int id = cur_id_;
+	++cur_id_;
+	return id;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the global 'invalid' SAction, creating it if necessary
 // -----------------------------------------------------------------------------
 SAction* SAction::invalidAction()
