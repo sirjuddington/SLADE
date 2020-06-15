@@ -32,6 +32,9 @@ namespace ui
 		bool           IsContainer(const wxDataViewItem& item) const override;
 		unsigned int   GetChildren(const wxDataViewItem& item, wxDataViewItemArray& children) const override;
 		bool           IsListModel() const override;
+		bool           HasDefaultCompare() const override { return true; }
+		int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned int column, bool ascending)
+			const override;
 
 		wxDataViewItem createItemForDirectory(const ArchiveDir* dir);
 	};

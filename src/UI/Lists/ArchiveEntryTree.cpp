@@ -242,6 +242,65 @@ bool ArchiveViewModel::IsListModel() const
 	return false;
 }
 
+int ArchiveViewModel::Compare(
+	const wxDataViewItem& item1,
+	const wxDataViewItem& item2,
+	unsigned int          column,
+	bool                  ascending) const
+{
+	auto* e1 = static_cast<ArchiveEntry*>(item1.GetID());
+	auto* e1_type = e1->type();
+	auto* e2 = static_cast<ArchiveEntry*>(item2.GetID());
+	auto* e2_type = e2->type();
+	auto* t_folder = EntryType::folderType();
+
+	// Folder <-> Entry (always show folders first)
+	if (e1_type == t_folder && e2_type != t_folder)
+		return -1;
+	else if (e1_type != t_folder && e2_type == t_folder)
+		return 1;
+
+	// Folder <-> Folder (always sort alphabetically for now)
+	else if (e1_type == t_folder && e2_type == t_folder)
+	{
+		if (column == 0 && !ascending)
+			return e2->upperName().compare(e1->upperName());
+		else
+			return e1->upperName().compare(e2->upperName());
+	}
+
+	// Entry <-> Entry
+	else
+	{
+		int cmpval = 0;
+
+		// Name column
+		if (column == 0)
+			cmpval = e1->upperName().compare(e2->upperName());
+
+		// Size column
+		else if (column == 1)
+		{
+			if (e1->size() > e2->size())
+				cmpval = 1;
+			else if (e1->size() < e2->size())
+				cmpval = -1;
+			else
+				cmpval = 0;
+		}
+
+		// Type column
+		else if (column == 2)
+			cmpval = e1_type->name().compare(e2_type->name());
+		
+		// Default (index)
+		else
+			cmpval = e1->index() > e2->index() ? 1 : -1;
+
+		return ascending ? cmpval : -cmpval;
+	}
+}
+
 wxDataViewItem ArchiveViewModel::createItemForDirectory(const ArchiveDir* dir)
 {
 	if (auto archive = archive_.lock())
@@ -278,9 +337,11 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 		"Name",
 		0,
 		elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT,
-		archiveSupportsDirs(archive.get()) ? elist_colsize_name_tree : elist_colsize_name_list);
-	col_size_ = AppendTextColumn("Size", 1, wxDATAVIEW_CELL_INERT, elist_colsize_size);
-	col_type_ = AppendTextColumn("Type", 2, wxDATAVIEW_CELL_INERT, elist_colsize_type);
+		archiveSupportsDirs(archive.get()) ? elist_colsize_name_tree : elist_colsize_name_list,
+		wxALIGN_NOT,
+		wxDATAVIEW_COL_SORTABLE);
+	col_size_ = AppendTextColumn("Size", 1, wxDATAVIEW_CELL_INERT, elist_colsize_size, wxALIGN_NOT, wxDATAVIEW_COL_SORTABLE);
+	col_type_ = AppendTextColumn("Type", 2, wxDATAVIEW_CELL_INERT, elist_colsize_type, wxALIGN_NOT, wxDATAVIEW_COL_SORTABLE);
 	GetColumn(GetColumnCount() - 1)->SetWidth(0); // temp
 
 	// --- Bind Events ---
@@ -445,7 +506,7 @@ ArchiveDir* ArchiveEntryTree::lastSelectedDirectory() const
 	return nullptr;
 }
 
-wxDataViewItem slade::ui::ArchiveEntryTree::firstSelectedItem() const
+wxDataViewItem ArchiveEntryTree::firstSelectedItem() const
 {
 	wxDataViewItemArray selection;
 	if (GetSelections(selection) > 0)
@@ -454,7 +515,7 @@ wxDataViewItem slade::ui::ArchiveEntryTree::firstSelectedItem() const
 	return {};
 }
 
-wxDataViewItem slade::ui::ArchiveEntryTree::lastSelectedItem() const
+wxDataViewItem ArchiveEntryTree::lastSelectedItem() const
 {
 	wxDataViewItemArray selection;
 	if (GetSelections(selection) > 0)
@@ -468,7 +529,7 @@ wxDataViewItem slade::ui::ArchiveEntryTree::lastSelectedItem() const
 // If the item is a directory, returns that, otherwise returns the entry's
 // parent directory. If nothing is selected returns the archive root dir
 // -----------------------------------------------------------------------------
-ArchiveDir* slade::ui::ArchiveEntryTree::currentSelectedDir() const
+ArchiveDir* ArchiveEntryTree::currentSelectedDir() const
 {
 	auto* archive = archive_.lock().get();
 	if (!archive)
