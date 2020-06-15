@@ -50,6 +50,10 @@ namespace ui
 		}
 		ArchiveDir* dirForDirItem(const wxDataViewItem& item) const;
 
+		bool isSortedByName() const { return GetSortingColumn() == col_name_; }
+		bool isSortedBySize() const { return GetSortingColumn() == col_size_; }
+		bool isSortedByType() const { return GetSortingColumn() == col_type_; }
+
 		vector<ArchiveEntry*> selectedEntries(bool include_dirs = false) const;
 		ArchiveEntry*         firstSelectedEntry(bool include_dirs = false) const;
 		ArchiveEntry*         lastSelectedEntry(bool include_dirs = false) const;

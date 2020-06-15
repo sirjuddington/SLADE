@@ -471,6 +471,11 @@ void ArchivePanel::bindEvents(Archive* archive)
 		}
 	});
 
+	// Update entry moving toolbar if sorting changed
+	entry_tree_->Bind(wxEVT_DATAVIEW_COLUMN_SORTED, [this](wxDataViewEvent& e) {
+		toolbar_elist_->enableGroup("_Moving", canMoveEntries());
+	});
+
 	// Update this tab's name in the parent notebook when the archive is saved
 	sc_archive_saved_ = archive->signals().saved.connect([this](Archive& a) {
 		auto parent = dynamic_cast<wxAuiNotebook*>(GetParent());
@@ -521,14 +526,21 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	tbg_entry->addSeparator();
 	tbg_entry->addActionButton("arch_entry_import");
 	tbg_entry->addActionButton("arch_entry_export");
-	tbg_entry->addSeparator();
-	tbg_entry->addActionButton("arch_entry_moveup");
-	tbg_entry->addActionButton("arch_entry_movedown");
-	tbg_entry->addActionButton("arch_entry_sort");
-	tbg_entry->addSeparator();
-	tbg_entry->addActionButton("arch_entry_bookmark");
 	tbg_entry->setAllButtonsEnabled(false);
 	toolbar_elist_->addGroup(tbg_entry);
+	if (archive->formatId() != "folder")
+	{
+		auto* tbg_moving = new SToolBarGroup(toolbar_elist_, "_Moving");
+		tbg_moving->addActionButton("arch_entry_moveup");
+		tbg_moving->addActionButton("arch_entry_movedown");
+		tbg_moving->addActionButton("arch_entry_sort");
+		tbg_moving->Enable(false);
+		toolbar_elist_->addGroup(tbg_moving);
+	}
+	auto* tbg_bookmark = new SToolBarGroup(toolbar_elist_, "_Bookmark");
+	tbg_bookmark->addActionButton("arch_entry_bookmark");
+	tbg_bookmark->setAllButtonsEnabled(false);
+	toolbar_elist_->addGroup(tbg_bookmark);
 	auto* tbg_filter = new SToolBarGroup(toolbar_elist_, "_Filter");
 	tbg_filter->addActionButton("arch_elist_togglefilter")->action()->setChecked(elist_show_filter);
 	toolbar_elist_->addGroup(tbg_filter, true);
@@ -1422,6 +1434,7 @@ bool ArchivePanel::moveUp()
 
 	// Ensure top-most entry is visible
 	entry_tree_->EnsureVisible(first);
+	entry_tree_->GetModel()->Resort();
 	entry_tree_->Thaw();
 
 	// Return success
@@ -1474,6 +1487,7 @@ bool ArchivePanel::moveDown()
 
 	// Ensure bottom-most entry is visible
 	entry_tree_->EnsureVisible(last);
+	entry_tree_->GetModel()->Resort();
 	entry_tree_->Thaw();
 
 	// Return success
@@ -3496,6 +3510,23 @@ wxMenu* ArchivePanel::createMaintenanceMenu()
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if entries can be moved up/down in the list
+// -----------------------------------------------------------------------------
+bool ArchivePanel::canMoveEntries()
+{
+	// Can't move if entry tree is sorted
+	if (entry_tree_->GetSortingColumn())
+		return false;
+
+	// Can't move in directory archives
+	if (auto archive = archive_.lock())
+		if (archive->formatId() == "folder")
+			return false;
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
 // Update the UI when the selection on the entry list is changed
 // -----------------------------------------------------------------------------
 void ArchivePanel::selectionChanged()
@@ -3506,6 +3537,7 @@ void ArchivePanel::selectionChanged()
 	if (selection.empty())
 	{
 		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(false);
+		toolbar_elist_->enableGroup("_Moving", false);
 	}
 	else if (selection.size() == 1)
 	{
@@ -3513,6 +3545,7 @@ void ArchivePanel::selectionChanged()
 		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
 		toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(false);
 		toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
+		toolbar_elist_->enableGroup("_Moving", canMoveEntries());
 		openEntry(selection[0]);
 	}
 	else
@@ -3521,6 +3554,7 @@ void ArchivePanel::selectionChanged()
 		toolbar_elist_->group("_Entry")->setAllButtonsEnabled(true);
 		toolbar_elist_->findActionButton("arch_entry_rename_each")->Enable(true);
 		toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(false);
+		toolbar_elist_->enableGroup("_Moving", canMoveEntries());
 		showEntryPanel(default_area_);
 		dynamic_cast<DefaultEntryPanel*>(default_area_)->loadEntries(selection);
 	}

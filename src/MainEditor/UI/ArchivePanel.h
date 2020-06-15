@@ -149,6 +149,7 @@ protected:
 	sigslot::scoped_connection sc_entry_removed_;
 	sigslot::scoped_connection sc_bookmarks_changed_;
 
+	bool canMoveEntries();
 	void selectionChanged();
 
 	// Events
