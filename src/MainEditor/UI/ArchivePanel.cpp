@@ -1381,37 +1381,38 @@ bool ArchivePanel::revertEntry() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::swapEntries()
 {
-	return false;
-
-	/*
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
 		return false;
 
-	// Get selection
-	auto selection = entry_list_->selection();
-
 	// Exactly 2 entries must be selected
+	auto selection = entry_tree_->selectedEntries();
 	if (selection.size() != 2)
 		return false;
 
-	auto entry1 = entry_list_->entryIndexAt(selection[0]);
-	auto entry2 = entry_list_->entryIndexAt(selection[1]);
+	// Check selection is valid for swap action (all entries must be in same dir)
+	auto* dir = entry_tree_->selectedEntriesDir();
+	if (!dir)
+	{
+		log::warning("Can't swap selected entries - both entries must be in the same directory");
+		return false;
+	}
+
+	// Get selected entry indices
+	auto i1 = selection[0]->index();
+	auto i2 = selection[1]->index();
 
 	// Swap the entries
 	undo_manager_->beginRecord("Swap Entries");
-	auto dir = entry_list_->currentDir().lock().get();
-	archive->swapEntries(entry1, entry2, dir);
+	archive->swapEntries(i1, i2, dir);
 	undo_manager_->endRecord(true);
 
 	// Update archive
-	entry_list_->updateList();
 	archive->setModified(true);
 
 	// Return success
 	return true;
-	*/
 }
 
 // -----------------------------------------------------------------------------
@@ -1419,47 +1420,51 @@ bool ArchivePanel::swapEntries()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::moveUp()
 {
-	return false;
-
-	/*
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
 		return false;
 
-	// Get selection
-	auto selection = entry_list_->selection();
-	long focus     = entry_list_->focusedIndex();
-
 	// If nothing is selected, do nothing
-	if (selection.empty())
+	if (entry_tree_->GetSelectedItemsCount() == 0)
 		return false;
 
-	// If the first selected item is at the top of the list
-	// or before entries start then don't move anything up
-	if (selection[0] <= entry_list_->entriesBegin())
+	// Check selection is valid for move action (all entries must be in same dir)
+	auto* dir = entry_tree_->selectedEntriesDir();
+	if (!dir)
+	{
+		log::warning("Can't move selected entries - all selected entries must be in the same directory");
+		return false;
+	}
+
+	// Get selection
+	wxDataViewItemArray sel_items;
+	entry_tree_->GetSelections(sel_items);
+	auto sel_entries = entry_tree_->selectedEntries();
+	auto focus       = entry_tree_->GetCurrentItem();
+	auto first       = entry_tree_->firstSelectedItem();
+
+	// If the first selected item is the first entry in the directory, don't move
+	if (sel_entries[0]->index() == 0)
 		return false;
 
 	// Move each one up by swapping it with the entry above it
+	entry_tree_->Freeze();
 	undo_manager_->beginRecord("Move Up");
-	auto dir = entry_list_->currentDir().lock().get();
-	for (long index : selection)
-		archive->swapEntries(entry_list_->entryIndexAt(index), entry_list_->entryIndexAt(index - 1), dir);
+	for (auto* entry : sel_entries)
+		archive->swapEntries(entry->index(), entry->index() - 1, dir);
 	undo_manager_->endRecord(true);
 
 	// Update selection
-	entry_list_->clearSelection();
-	for (long index : selection)
-		entry_list_->selectItem(index - 1);
-	ignore_focus_change_ = true;
-	entry_list_->focusItem(focus - 1);
+	entry_tree_->SetSelections(sel_items);
+	entry_tree_->SetCurrentItem(focus);
 
 	// Ensure top-most entry is visible
-	entry_list_->EnsureVisible(entry_list_->entryIndexAt(selection[0]));
+	entry_tree_->EnsureVisible(first);
+	entry_tree_->Thaw();
 
 	// Return success
 	return true;
-	*/
 }
 
 // -----------------------------------------------------------------------------
@@ -1467,47 +1472,51 @@ bool ArchivePanel::moveUp()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::moveDown()
 {
-	return false;
-
-	/*
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
 		return false;
 
-	// Get selection
-	auto selection = entry_list_->selection();
-	long focus     = entry_list_->focusedIndex();
-
 	// If nothing is selected, do nothing
-	if (selection.empty())
+	if (entry_tree_->GetSelectedItemsCount() == 0)
 		return false;
 
-	// If the last selected item is at the end of the list
-	// then don't move anything down
-	if (selection.back() == entry_list_->GetItemCount() - 1 || selection.back() < entry_list_->entriesBegin())
+	// Check selection is valid for move action (all entries must be in same dir)
+	auto* dir = entry_tree_->selectedEntriesDir();
+	if (!dir)
+	{
+		log::warning("Can't move selected entries - all selected entries must be in the same directory");
+		return false;
+	}
+
+	// Get selection
+	wxDataViewItemArray sel_items;
+	entry_tree_->GetSelections(sel_items);
+	auto sel_entries = entry_tree_->selectedEntries();
+	auto focus       = entry_tree_->GetCurrentItem();
+	auto last       = entry_tree_->lastSelectedItem();
+
+	// If the last selected item the last entry in the directory, don't move
+	if (sel_entries.back()->index() == dir->numEntries() - 1)
 		return false;
 
 	// Move each one down by swapping it with the entry below it
+	entry_tree_->Freeze();
 	undo_manager_->beginRecord("Move Down");
-	auto dir = entry_list_->currentDir().lock().get();
-	for (int a = selection.size() - 1; a >= 0; a--)
-		archive->swapEntries(entry_list_->entryIndexAt(selection[a]), entry_list_->entryIndexAt(selection[a] + 1), dir);
+	for (int a = sel_entries.size() - 1; a >= 0; a--)
+		archive->swapEntries(sel_entries[a]->index(), sel_entries[a]->index() + 1, dir);
 	undo_manager_->endRecord(true);
 
 	// Update selection
-	entry_list_->clearSelection();
-	for (long index : selection)
-		entry_list_->selectItem(index + 1);
-	ignore_focus_change_ = true;
-	entry_list_->focusItem(focus + 1);
+	entry_tree_->SetSelections(sel_items);
+	entry_tree_->SetCurrentItem(focus);
 
 	// Ensure bottom-most entry is visible
-	entry_list_->EnsureVisible(entry_list_->entryIndexAt(selection[selection.size() - 1]));
+	entry_tree_->EnsureVisible(last);
+	entry_tree_->Thaw();
 
 	// Return success
 	return true;
-	*/
 }
 
 // -----------------------------------------------------------------------------
@@ -3996,13 +4005,6 @@ void ArchivePanel::onEntryListKeyDown(wxKeyEvent& e)
 		else if (bind == "el_export")
 		{
 			exportEntry();
-			return;
-		}
-
-		// Up directory
-		else if (bind == "el_up_dir")
-		{
-			// entry_list_->goUpDir();
 			return;
 		}
 

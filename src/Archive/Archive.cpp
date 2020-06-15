@@ -1039,6 +1039,9 @@ bool Archive::swapEntries(unsigned index1, unsigned index2, ArchiveDir* dir)
 		// Set modified
 		setModified(true);
 
+		// Signal
+		signals_.entries_swapped(*this, *dir, index1, index2);
+
 		return true;
 	}
 	else
@@ -1095,6 +1098,9 @@ bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 
 	// Set modified
 	setModified(true);
+
+	// Signal
+	signals_.entries_swapped(*this, *dir, i1, i2);
 
 	// Return success
 	return true;

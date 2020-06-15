@@ -82,6 +82,13 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive)
 			ItemDeleted(createItemForDirectory(&parent), wxDataViewItem(dir.dirEntry()));
 		});
 
+	// Entries reordered within dir
+	connections_ += archive->signals().entries_swapped.connect(
+		[this](Archive& archive, ArchiveDir& dir, unsigned index1, unsigned index2) {
+			ItemChanged(wxDataViewItem(dir.entryAt(index1)));
+			ItemChanged(wxDataViewItem(dir.entryAt(index2)));
+		});
+
 	// Bookmark added
 	connections_ += app::archiveManager().signals().bookmark_added.connect(
 		[this](ArchiveEntry* entry) { ItemChanged(wxDataViewItem(entry)); });
@@ -107,10 +114,10 @@ wxString ArchiveViewModel::GetColumnType(unsigned int col) const
 	switch (col)
 	{
 	case 0: return "wxDataViewIconText";
-    case 1: return "string";
-    case 2: return "string";
-    default: return "string";
-    }
+	case 1: return "string";
+	case 2: return "string";
+	default: return "string";
+	}
 }
 
 void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, unsigned int col) const
@@ -545,4 +552,34 @@ ArchiveDir* ArchiveEntryTree::currentSelectedDir() const
 	}
 
 	return archive->rootDir().get();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the directory containing all currently selected entries, or nullptr
+// if the selection isn't all within one directory
+// -----------------------------------------------------------------------------
+ArchiveDir* ArchiveEntryTree::selectedEntriesDir() const
+{
+	wxDataViewItemArray selection;
+	GetSelections(selection);
+
+	ArchiveDir* dir = nullptr;
+	for (const auto& item : selection)
+	{
+		if (auto* entry = static_cast<ArchiveEntry*>(item.GetID()))
+		{
+			// Folder selected, return nullptr
+			if (entry->type() == EntryType::folderType())
+				return nullptr;
+
+			if (!dir)
+				dir = entry->parentDir();
+
+			// Entry is in a different dir than the previous, return nullptr
+			else if (dir != entry->parentDir())
+				return nullptr;
+		}
+	}
+
+	return dir;
 }
