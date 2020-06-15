@@ -3725,10 +3725,13 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 	SAction::fromId("arch_entry_import")->addToMenu(&context, true);
 	SAction::fromId("arch_entry_export")->addToMenu(&context, true);
 	context.AppendSeparator();
-	SAction::fromId("arch_entry_moveup")->addToMenu(&context, true);
-	SAction::fromId("arch_entry_movedown")->addToMenu(&context, true);
-	SAction::fromId("arch_entry_sort")->addToMenu(&context, true);
-	context.AppendSeparator();
+	if (canMoveEntries())
+	{
+		SAction::fromId("arch_entry_moveup")->addToMenu(&context, true);
+		SAction::fromId("arch_entry_movedown")->addToMenu(&context, true);
+		SAction::fromId("arch_entry_sort")->addToMenu(&context, true);
+		context.AppendSeparator();
+	}
 	if (selection.size() == 1)
 		SAction::fromId("arch_entry_bookmark")->addToMenu(&context, true);
 
