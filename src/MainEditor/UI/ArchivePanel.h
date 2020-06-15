@@ -47,7 +47,6 @@ public:
 	bool renameEntry(bool each = false) const;
 	bool deleteEntry(bool confirm = true);
 	bool revertEntry() const;
-	bool swapEntries();
 	bool moveUp();
 	bool moveDown();
 	bool sort() const;
