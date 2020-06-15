@@ -281,11 +281,11 @@ int ArchiveViewModel::Compare(
 	{
 		int cmpval = 0;
 
-		// Name column
+		// Name column (order by name only)
 		if (column == 0)
 			cmpval = e1->upperName().compare(e2->upperName());
 
-		// Size column
+		// Size column (order by size -> name)
 		else if (column == 1)
 		{
 			if (e1->size() > e2->size())
@@ -293,16 +293,28 @@ int ArchiveViewModel::Compare(
 			else if (e1->size() < e2->size())
 				cmpval = -1;
 			else
-				cmpval = 0;
+				cmpval = e1->upperName().compare(e2->upperName());
 		}
 
-		// Type column
+		// Type column (order by type name -> name)
 		else if (column == 2)
+		{	
 			cmpval = e1_type->name().compare(e2_type->name());
+			if (cmpval == 0)
+				cmpval = e1->upperName().compare(e2->upperName());
+		}
 		
-		// Default (index)
+		// Default
 		else
-			cmpval = e1->index() > e2->index() ? 1 : -1;
+		{
+			// Directory archives default to alphabetical order
+			if (auto archive = archive_.lock(); archive->formatId() == "folder")
+				cmpval = e1->upperName().compare(e2->upperName());
+
+			// Everything else defaults to index order
+			else
+				cmpval = e1->index() > e2->index() ? 1 : -1;
+		}
 
 		return ascending ? cmpval : -cmpval;
 	}
