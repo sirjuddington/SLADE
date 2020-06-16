@@ -1393,13 +1393,10 @@ bool ArchivePanel::revertEntry() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::moveUp()
 {
-	// Check the archive is still open
 	auto archive = archive_.lock();
-	if (!archive)
-		return false;
 
-	// If nothing is selected, do nothing
-	if (entry_tree_->GetSelectedItemsCount() == 0)
+	// Check we can move
+	if (!archive || entry_tree_->GetSelectedItemsCount() == 0 || !canMoveEntries())
 		return false;
 
 	// Check selection is valid for move action (all entries must be in same dir)
@@ -1446,13 +1443,10 @@ bool ArchivePanel::moveUp()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::moveDown()
 {
-	// Check the archive is still open
 	auto archive = archive_.lock();
-	if (!archive)
-		return false;
 
-	// If nothing is selected, do nothing
-	if (entry_tree_->GetSelectedItemsCount() == 0)
+	// Check we can move
+	if (!archive || entry_tree_->GetSelectedItemsCount() == 0 || !canMoveEntries())
 		return false;
 
 	// Check selection is valid for move action (all entries must be in same dir)
