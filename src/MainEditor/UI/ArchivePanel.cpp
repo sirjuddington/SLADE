@@ -3208,6 +3208,7 @@ bool ArchivePanel::handleAction(string_view id)
 	// 'Toggle Filter Controls' button
 	if (id == "arch_elist_togglefilter")
 	{
+		updateFilter();
 		panel_filter_->Show(elist_show_filter);
 		splitter_->GetWindow1()->Layout();
 		splitter_->GetWindow1()->Update();
@@ -3569,6 +3570,25 @@ void ArchivePanel::selectionChanged()
 	}
 
 	toolbar_elist_->Refresh();
+}
+
+// -----------------------------------------------------------------------------
+// Updates the filtering on the entry tree
+// -----------------------------------------------------------------------------
+void ArchivePanel::updateFilter()
+{
+	if (elist_show_filter)
+	{
+		// Get category string to filter by
+		wxString category = "";
+		if (choice_category_->GetSelection() > 0)
+			category = choice_category_->GetStringSelection();
+
+		// Filter the entry list
+		entry_tree_->setFilter(wxutil::strToView(text_filter_->GetValue()), wxutil::strToView(category));
+	}
+	else
+		entry_tree_->setFilter({}, {});
 }
 
 
@@ -4115,14 +4135,7 @@ void ArchivePanel::onDEPViewAsHex(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void ArchivePanel::onTextFilterChanged(wxCommandEvent& e)
 {
-	// Get category string to filter by
-	wxString category = "";
-	if (choice_category_->GetSelection() > 0)
-		category = choice_category_->GetStringSelection();
-
-	// Filter the entry list
-	// entry_list_->filterList(text_filter_->GetValue(), category);
-
+	updateFilter();
 	e.Skip();
 }
 
@@ -4131,14 +4144,7 @@ void ArchivePanel::onTextFilterChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void ArchivePanel::onChoiceCategoryChanged(wxCommandEvent& e)
 {
-	// Get category string to filter by
-	wxString category = "";
-	if (choice_category_->GetSelection() > 0)
-		category = choice_category_->GetStringSelection();
-
-	// Filter the entry list
-	// entry_list_->filterList(text_filter_->GetValue(), category);
-
+	updateFilter();
 	e.Skip();
 }
 

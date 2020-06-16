@@ -17,10 +17,13 @@ namespace ui
 		ArchiveViewModel() = default;
 
 		void openArchive(shared_ptr<Archive> archive);
+		void setFilter(string_view name, string_view category);
 
 	private:
 		weak_ptr<Archive>    archive_;
 		ScopedConnectionList connections_;
+		vector<string>       filter_name_;
+		string               filter_category_;
 
 		// wxDataViewModel
 		unsigned int   GetColumnCount() const override;
@@ -36,7 +39,9 @@ namespace ui
 		int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned int column, bool ascending)
 			const override;
 
-		wxDataViewItem createItemForDirectory(const ArchiveDir* dir);
+		wxDataViewItem createItemForDirectory(const ArchiveDir& dir) const;
+		bool           matchesFilter(const ArchiveEntry& entry) const;
+		void           getDirChildItems(wxDataViewItemArray& items, const ArchiveDir& dir, bool filter = true) const;
 	};
 
 	class ArchiveEntryTree : public wxDataViewCtrl
@@ -64,6 +69,8 @@ namespace ui
 		wxDataViewItem        lastSelectedItem() const;
 		ArchiveDir*           currentSelectedDir() const;
 		ArchiveDir*           selectedEntriesDir() const;
+
+		void setFilter(string_view name, string_view category);
 
 	private:
 		weak_ptr<Archive> archive_;

@@ -409,14 +409,14 @@ string& strutil::ltrimIP(string& str)
 
 string& strutil::rtrimIP(string& str)
 {
-	str.erase(0, str.find_last_not_of(WHITESPACE_CHARACTERS) + 1);
+	str.erase(str.find_last_not_of(WHITESPACE_CHARACTERS) + 1);
 	return str;
 }
 
 string& strutil::trimIP(string& str)
 {
-	str.erase(0, str.find_first_not_of(WHITESPACE_CHARACTERS));    // left
-	str.erase(0, str.find_last_not_of(WHITESPACE_CHARACTERS) + 1); // right
+	str.erase(0, str.find_first_not_of(WHITESPACE_CHARACTERS)); // left
+	str.erase(str.find_last_not_of(WHITESPACE_CHARACTERS) + 1); // right
 	return str;
 }
 
@@ -430,15 +430,15 @@ string strutil::ltrim(string_view str)
 string strutil::rtrim(string_view str)
 {
 	auto s = string{ str };
-	s.erase(0, s.find_last_not_of(WHITESPACE_CHARACTERS) + 1);
+	s.erase(s.find_last_not_of(WHITESPACE_CHARACTERS) + 1);
 	return s;
 }
 
 string strutil::trim(string_view str)
 {
 	auto s = string{ str };
-	s.erase(0, s.find_first_not_of(WHITESPACE_CHARACTERS));    // left
-	s.erase(0, s.find_last_not_of(WHITESPACE_CHARACTERS) + 1); // right
+	s.erase(0, s.find_first_not_of(WHITESPACE_CHARACTERS)); // left
+	s.erase(s.find_last_not_of(WHITESPACE_CHARACTERS) + 1); // right
 	return s;
 }
 

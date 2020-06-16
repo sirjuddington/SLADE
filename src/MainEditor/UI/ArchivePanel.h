@@ -151,6 +151,7 @@ protected:
 
 	bool canMoveEntries();
 	void selectionChanged();
+	void updateFilter();
 
 	// Events
 	void         onEntryListSelectionChange(wxDataViewEvent& e);

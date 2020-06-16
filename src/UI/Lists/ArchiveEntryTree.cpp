@@ -27,6 +27,7 @@ CVAR(Bool, elist_rename_inplace, true, CVar::Save)
 
 EXTERN_CVAR(Int, elist_icon_size)
 EXTERN_CVAR(Int, elist_icon_padding)
+EXTERN_CVAR(Bool, elist_filter_dirs)
 
 
 namespace slade::ui
@@ -46,12 +47,8 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive)
 	archive_ = archive;
 
 	// Add root items
-	auto                dir = archive->rootDir();
 	wxDataViewItemArray items;
-	for (const auto& subdir : dir->subdirs())
-		items.push_back(wxDataViewItem{ subdir->dirEntry() });
-	for (const auto& entry : dir->entries())
-		items.push_back(wxDataViewItem{ entry.get() });
+	getDirChildItems(items, *archive->rootDir());
 	ItemsAdded({}, items);
 
 
@@ -59,13 +56,13 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive)
 
 	// Entry added
 	connections_ += archive->signals().entry_added.connect([this](Archive& archive, ArchiveEntry& entry) {
-		ItemAdded(createItemForDirectory(entry.parentDir()), wxDataViewItem(&entry));
+		ItemAdded(createItemForDirectory(*entry.parentDir()), wxDataViewItem(&entry));
 	});
 
 	// Entry removed
 	connections_ += archive->signals().entry_removed.connect(
 		[this](Archive& archive, ArchiveDir& dir, ArchiveEntry& entry) {
-			ItemDeleted(createItemForDirectory(&dir), wxDataViewItem(&entry));
+			ItemDeleted(createItemForDirectory(dir), wxDataViewItem(&entry));
 		});
 
 	// Entry modified
@@ -74,13 +71,13 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive)
 
 	// Dir added
 	connections_ += archive->signals().dir_added.connect([this](Archive& archive, ArchiveDir& dir) {
-		ItemAdded(createItemForDirectory(dir.parent().get()), wxDataViewItem(dir.dirEntry()));
+		ItemAdded(createItemForDirectory(*dir.parent().get()), wxDataViewItem(dir.dirEntry()));
 	});
 
 	// Dir removed
 	connections_ += archive->signals().dir_removed.connect(
 		[this](Archive& archive, ArchiveDir& parent, ArchiveDir& dir) {
-			ItemDeleted(createItemForDirectory(&parent), wxDataViewItem(dir.dirEntry()));
+			ItemDeleted(createItemForDirectory(parent), wxDataViewItem(dir.dirEntry()));
 		});
 
 	// Entries reordered within dir
@@ -103,6 +100,47 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive)
 					items.push_back(wxDataViewItem{ entry });
 			ItemsChanged(items);
 		});
+}
+
+void ArchiveViewModel::setFilter(string_view name, string_view category)
+{
+	// Check any change is required
+	if (name.empty() && filter_name_.empty() && filter_category_ == category)
+		return;
+
+	filter_category_ = category;
+
+	// Process filter string
+	filter_name_.clear();
+	if (!name.empty())
+	{
+		auto filter_parts = strutil::splitV(name, ',');
+		for (auto p : filter_parts)
+		{
+			auto filter_part = strutil::trim(p);
+			if (filter_part.empty())
+				continue;
+
+			strutil::upperIP(filter_part);
+			filter_part += '*';
+			filter_name_.push_back(filter_part);
+		}
+	}
+
+	if (auto* archive = archive_.lock().get())
+	{
+		wxDataViewItemArray items;
+		const auto&         dir = *archive->rootDir();
+
+		// Remove root items (unfiltered)
+		getDirChildItems(items, dir, false);
+		ItemsDeleted({}, items);
+
+		// Re-Add root items (filtered)
+		items.clear();
+		getDirChildItems(items, dir);
+		ItemsAdded({}, items);
+	}
 }
 
 unsigned int ArchiveViewModel::GetColumnCount() const
@@ -232,13 +270,9 @@ unsigned int ArchiveViewModel::GetChildren(const wxDataViewItem& item, wxDataVie
 		dir = archive->rootDir().get(); // 'Invalid' item is the archive root dir
 
 	// Get items for directory subdirs + entries
-	for (const auto& subdir : dir->subdirs())
-		children.push_back(wxDataViewItem{ subdir->dirEntry() });
+	getDirChildItems(children, *dir);
 
-	for (const auto& entry : dir->entries())
-		children.push_back(wxDataViewItem{ entry.get() });
-
-	return dir->numSubdirs() + dir->numEntries();
+	return children.size();
 }
 
 bool ArchiveViewModel::IsListModel() const
@@ -321,17 +355,57 @@ int ArchiveViewModel::Compare(
 	}
 }
 
-wxDataViewItem ArchiveViewModel::createItemForDirectory(const ArchiveDir* dir)
+wxDataViewItem ArchiveViewModel::createItemForDirectory(const ArchiveDir& dir) const
 {
 	if (auto archive = archive_.lock())
 	{
-		if (dir == archive->rootDir().get())
+		if (&dir == archive->rootDir().get())
 			return {};
 		else
-			return wxDataViewItem{ dir->dirEntry() };
+			return wxDataViewItem{ dir.dirEntry() };
 	}
 
 	return {};
+}
+
+bool ArchiveViewModel::matchesFilter(const ArchiveEntry& entry) const
+{
+	// Check for name match if needed
+	if (!filter_name_.empty())
+	{
+		for (const auto& f : filter_name_)
+			if (strutil::matches(entry.upperName(), f))
+				return true;
+
+		return false;
+	}
+
+	// Check for category match if needed
+	if (!filter_category_.empty() && entry.type() != EntryType::folderType())
+		if (!strutil::equalCI(entry.type()->category(), filter_category_))
+			return false;
+
+	return true;
+}
+
+void ArchiveViewModel::getDirChildItems(wxDataViewItemArray& items, const ArchiveDir& dir, bool filtered) const
+{
+	if (filtered)
+	{
+		for (const auto& subdir : dir.subdirs())
+			if (!elist_filter_dirs || matchesFilter(*subdir->dirEntry()))
+				items.push_back(wxDataViewItem{ subdir->dirEntry() });
+		for (const auto& entry : dir.entries())
+			if (matchesFilter(*entry))
+				items.push_back(wxDataViewItem{ entry.get() });
+	}
+	else
+	{
+		for (const auto& subdir : dir.subdirs())
+			items.push_back(wxDataViewItem{ subdir->dirEntry() });
+		for (const auto& entry : dir.entries())
+			items.push_back(wxDataViewItem{ entry.get() });
+	}
 }
 
 
@@ -606,6 +680,13 @@ ArchiveDir* ArchiveEntryTree::selectedEntriesDir() const
 	}
 
 	return dir;
+}
+
+void ArchiveEntryTree::setFilter(string_view name, string_view category)
+{
+	Freeze();
+	model_->setFilter(name, category);
+	Thaw();
 }
 
 void ArchiveEntryTree::setupColumns()
