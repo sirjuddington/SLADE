@@ -131,69 +131,84 @@ public:
 
 	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) override
 	{
-		//// Determine what item the files were dragged onto
-		// int  flags;
-		// long index = list_->HitTest(wxPoint(x, y), flags) - list_->entriesBegin();
+		auto* archive = parent_->archive();
+		if (!archive)
+			return false;
 
-		//// Add to end if no item was hit
-		// if (index < 0)
-		//	index = list_->GetItemCount() - list_->entriesBegin();
+		// Determine what item the files were dragged onto
+		wxDataViewItem    hit_item;
+		wxDataViewColumn* hit_column = nullptr;
+		list_->HitTest(wxPoint(x, y), hit_item, hit_column);
 
-		// bool     yes_to_all = false;
-		// wxString caption    = (filenames.size() > 1) ? "Overwrite entries" : "Overwrite entry";
-		// auto     dir        = list_->currentDir().lock().get();
+		// Determine directory and index to import to
+		auto* hit_entry = static_cast<ArchiveEntry*>(hit_item.GetID());
+		auto* dir       = archive->rootDir().get();
+		int   index     = -1;
+		if (hit_entry)
+		{
+			if (hit_entry->type() == EntryType::folderType())
+				dir = ArchiveDir::findDirByDirEntry(archive->rootDir(), *hit_entry).get();
+			else
+			{
+				dir   = hit_entry->parentDir();
+				index = hit_entry->index();
+			}
+		}
 
-		//// Import all dragged files, inserting after the item they were dragged onto
-		// for (int a = filenames.size() - 1; a >= 0; a--)
-		//{
-		//	// Is this a directory?
-		//	if (wxDirExists(filenames[a]))
-		//	{
-		//		// TODO: Handle folders with recursively importing all content
-		//		// and converting to namespaces if dropping in a treeless archive.
-		//	}
-		//	else
-		//	{
-		//		strutil::Path fn(filenames[a].ToStdString());
-		//		ArchiveEntry* entry = nullptr;
+		bool     yes_to_all = false;
+		wxString caption    = (filenames.size() > 1) ? "Overwrite entries" : "Overwrite entry";
 
-		//		// Find entry to replace if needed
-		//		if (auto_entry_replace)
-		//		{
-		//			entry = parent_->archive()->entryAtPath(dir->path().append(fn.fileName()));
-		//			// An entry with that name is already present, so ask about replacing it
-		//			if (entry && !yes_to_all)
-		//			{
-		//				// Since there is no standard "Yes/No to all" button or "Don't ask me again" checkbox,
-		//				// we will instead hack the Cancel button into being a "Yes to all" button. This is
-		//				// despite the existence of a wxID_YESTOALL return value...
-		//				auto message = fmt::format("Overwrite existing entry {}{}", dir->path(), fn.fileName());
-		//				wxMessageDialog dlg(parent_, message, caption, wxCANCEL | wxYES_NO | wxCENTRE);
-		//				dlg.SetYesNoCancelLabels(_("Yes"), _("No"), _("Yes to all"));
-		//				int result = dlg.ShowModal();
+		// Import all dragged files, inserting after the item they were dragged onto
+		list_->Freeze();
+		for (int a = filenames.size() - 1; a >= 0; a--)
+		{
+			// Is this a directory?
+			if (wxDirExists(filenames[a]))
+			{
+				// TODO: Handle folders with recursively importing all content
+				// and converting to namespaces if dropping in a treeless archive.
+			}
+			else
+			{
+				strutil::Path fn(filenames[a].ToStdString());
+				ArchiveEntry* entry = nullptr;
 
-		//				// User doesn't want to replace the entry
-		//				if (result == wxID_NO)
-		//					entry = nullptr;
-		//				// User wants to replace all entries
-		//				if (result == wxID_CANCEL)
-		//					yes_to_all = true;
-		//			}
-		//		}
+				// Find entry to replace if needed
+				if (auto_entry_replace)
+				{
+					entry = archive->entryAtPath(dir->path().append(fn.fileName()));
+					// An entry with that name is already present, so ask about replacing it
+					if (entry && !yes_to_all)
+					{
+						// Since there is no standard "Yes/No to all" button or "Don't ask me again" checkbox,
+						// we will instead hack the Cancel button into being a "Yes to all" button. This is
+						// despite the existence of a wxID_YESTOALL return value...
+						auto message = fmt::format("Overwrite existing entry {}{}", dir->path(), fn.fileName());
+						wxMessageDialog dlg(parent_, message, caption, wxCANCEL | wxYES_NO | wxCENTRE);
+						dlg.SetYesNoCancelLabels(_("Yes"), _("No"), _("Yes to all"));
+						int result = dlg.ShowModal();
 
-		//		// Create new entry if needed
-		//		if (entry == nullptr)
-		//			entry = parent_->archive()->addNewEntry(fn.fileName(), index, dir).get();
+						// User doesn't want to replace the entry
+						if (result == wxID_NO)
+							entry = nullptr;
+						// User wants to replace all entries
+						if (result == wxID_CANCEL)
+							yes_to_all = true;
+					}
+				}
 
-		//		// Import the file to it
-		//		entry->importFile(filenames[a].ToStdString());
-		//		EntryType::detectEntryType(*entry);
-		//	}
-		//}
+				// Create new entry if needed
+				if (entry == nullptr)
+					entry = archive->addNewEntry(fn.fileName(), index, dir).get();
 
-		// return true;
+				// Import the file to it
+				entry->importFile(filenames[a].ToStdString());
+				EntryType::detectEntryType(*entry);
+			}
+		}
+		list_->Thaw();
 
-		return false;
+		return true;
 	}
 
 private:
@@ -510,6 +525,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	// Create entry list panel
 	entry_tree_ = new ui::ArchiveEntryTree(panel, archive);
 	entry_tree_->SetInitialSize({ 400, -1 });
+	entry_tree_->SetDropTarget(new APEntryListDropTarget(this, entry_tree_));
 
 	// Entry list toolbar
 	toolbar_elist_   = new SToolBar(panel, false, wxVERTICAL);
