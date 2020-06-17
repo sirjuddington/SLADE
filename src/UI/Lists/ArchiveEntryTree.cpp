@@ -6,6 +6,7 @@
 #include "Archive/ArchiveManager.h"
 #include "General/ColourConfiguration.h"
 #include "General/SAction.h"
+#include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
 #include "UI/WxUtils.h"
 #include <wx/headerctrl.h>
@@ -53,9 +54,10 @@ bool archiveSupportsDirs(Archive* archive)
 } // namespace slade::ui
 
 
-void ArchiveViewModel::openArchive(shared_ptr<Archive> archive)
+void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* undo_manager)
 {
 	archive_ = archive;
+	undo_manager_ = undo_manager;
 
 	// Add root items
 	wxDataViewItemArray items;
@@ -271,7 +273,57 @@ bool ArchiveViewModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 
 bool ArchiveViewModel::SetValue(const wxVariant& variant, const wxDataViewItem& item, unsigned int col)
 {
-	// TODO: This (in-place rename)
+	// Get+check archive and entry
+	auto* archive = archive_.lock().get();
+	if (!archive)
+		return false;
+	auto* entry = static_cast<ArchiveEntry*>(item.GetID());
+	if (!entry)
+		return false;
+
+	// Name column
+	if (col == 0)
+	{
+		bool ok = false;
+		wxDataViewIconText value;
+		value << variant;
+		auto new_name = value.GetText();
+		if (new_name.EndsWith(" *"))
+			new_name.RemoveLast(2);
+
+		// Directory
+		if (entry->type() == EntryType::folderType())
+		{
+			if (undo_manager_)
+				undo_manager_->beginRecord("Rename Directory");
+
+			// Rename the entry
+			auto dir = ArchiveDir::findDirByDirEntry(archive->rootDir(), *entry);
+			if (dir)
+				ok = archive->renameDir(dir.get(), wxutil::strToView(new_name));
+			else
+				ok = false;
+		}
+
+		// Entry
+		else
+		{
+			if (undo_manager_)
+				undo_manager_->beginRecord("Rename Entry");
+
+			// Rename the entry
+			if (entry->parent())
+				ok = entry->parent()->renameEntry(entry, new_name.ToStdString());
+			else
+				ok = entry->rename(new_name.ToStdString());
+		}
+
+		if (undo_manager_ && undo_manager_->currentlyRecording())
+			undo_manager_->endRecord(ok);
+
+		return true;
+	}
+	
 	return false;
 }
 
@@ -473,7 +525,7 @@ void ArchiveViewModel::getDirChildItems(wxDataViewItemArray& items, const Archiv
 
 
 
-ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive) :
+ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive, UndoManager* undo_manager) :
 	wxDataViewCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE), archive_{ archive }
 {
 	// Init settings
@@ -481,7 +533,7 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 
 	// Create & associate model
 	model_ = new ArchiveViewModel();
-	model_->openArchive(archive);
+	model_->openArchive(archive, undo_manager);
 	AssociateModel(model_);
 	model_->DecRef();
 

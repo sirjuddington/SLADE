@@ -8,6 +8,7 @@ namespace slade
 class Archive;
 class ArchiveEntry;
 class ArchiveDir;
+class UndoManager;
 
 namespace ui
 {
@@ -16,7 +17,7 @@ namespace ui
 	public:
 		ArchiveViewModel() = default;
 
-		void openArchive(shared_ptr<Archive> archive);
+		void openArchive(shared_ptr<Archive> archive, UndoManager* undo_manager);
 		void setFilter(string_view name, string_view category);
 
 	private:
@@ -24,6 +25,7 @@ namespace ui
 		ScopedConnectionList connections_;
 		vector<string>       filter_name_;
 		string               filter_category_;
+		UndoManager*         undo_manager_ = nullptr;
 
 		// wxDataViewModel
 		unsigned int   GetColumnCount() const override;
@@ -47,7 +49,7 @@ namespace ui
 	class ArchiveEntryTree : public wxDataViewCtrl
 	{
 	public:
-		ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive);
+		ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive, UndoManager* undo_manager);
 
 		ArchiveEntry* entryForItem(const wxDataViewItem& item) const
 		{

@@ -523,7 +523,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	panel->SetSizer(hbox);
 
 	// Create entry list panel
-	entry_tree_ = new ui::ArchiveEntryTree(panel, archive);
+	entry_tree_ = new ui::ArchiveEntryTree(panel, archive, undo_manager_.get());
 	entry_tree_->SetInitialSize({ 400, -1 });
 	entry_tree_->SetDropTarget(new APEntryListDropTarget(this, entry_tree_));
 
