@@ -72,6 +72,7 @@ namespace ui
 		ArchiveDir*           selectedEntriesDir() const;
 
 		void setFilter(string_view name, string_view category);
+		void collapseAll(const ArchiveDir& dir_start);
 
 	private:
 		weak_ptr<Archive> archive_;

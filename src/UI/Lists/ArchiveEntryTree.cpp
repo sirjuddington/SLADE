@@ -794,6 +794,14 @@ void ArchiveEntryTree::setFilter(string_view name, string_view category)
 	Thaw();
 }
 
+void ArchiveEntryTree::collapseAll(const ArchiveDir& dir_start)
+{
+	for (const auto& subdir : dir_start.subdirs())
+		collapseAll(*subdir);
+
+	Collapse(wxDataViewItem(dir_start.dirEntry()));
+}
+
 void ArchiveEntryTree::setupColumns()
 {
 	auto archive = archive_.lock();

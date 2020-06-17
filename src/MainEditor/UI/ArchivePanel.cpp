@@ -529,6 +529,12 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 
 	// Entry list toolbar
 	toolbar_elist_   = new SToolBar(panel, false, wxVERTICAL);
+	if (has_dirs)
+	{
+		auto* tbg_folder = new SToolBarGroup(toolbar_elist_, "_Folder");
+		tbg_folder->addActionButton("arch_elist_collapseall");
+		toolbar_elist_->addGroup(tbg_folder);
+	}
 	auto* tbg_create = new SToolBarGroup(toolbar_elist_, "_Create");
 	tbg_create->addActionButton("arch_newentry");
 	if (has_dirs)
@@ -3230,6 +3236,10 @@ bool ArchivePanel::handleAction(string_view id)
 		Layout();
 		Refresh();
 	}
+
+	// 'Collapse All' button
+	else if (id == "arch_elist_collapseall")
+		entry_tree_->collapseAll(*archive->rootDir());
 
 
 	// ------------------------------------------------------------------------
