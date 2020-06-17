@@ -78,9 +78,12 @@ namespace ui
 		wxDataViewColumn* col_name_      = nullptr;
 		wxDataViewColumn* col_size_      = nullptr;
 		wxDataViewColumn* col_type_      = nullptr;
+		wxDataViewColumn* col_index_     = nullptr;
 		int               id_reset_sort_ = -1;
 
 		void setupColumns();
+		void saveColumnWidths();
+		void updateColumnWidths();
 	};
 
 } // namespace ui

@@ -28,6 +28,9 @@ CVAR(Bool, elist_rename_inplace, true, CVar::Save)
 EXTERN_CVAR(Int, elist_icon_size)
 EXTERN_CVAR(Int, elist_icon_padding)
 EXTERN_CVAR(Bool, elist_filter_dirs)
+EXTERN_CVAR(Bool, elist_colsize_show)
+EXTERN_CVAR(Bool, elist_coltype_show)
+EXTERN_CVAR(Bool, elist_colindex_show)
 
 
 namespace slade::ui
@@ -145,7 +148,7 @@ void ArchiveViewModel::setFilter(string_view name, string_view category)
 
 unsigned int ArchiveViewModel::GetColumnCount() const
 {
-	return 3;
+	return 4;
 }
 
 wxString ArchiveViewModel::GetColumnType(unsigned int col) const
@@ -155,6 +158,7 @@ wxString ArchiveViewModel::GetColumnType(unsigned int col) const
 	case 0: return "wxDataViewIconText";
 	case 1: return "string";
 	case 2: return "string";
+	case 3: return "string"; // Index is a number technically, but will need to be blank for folders
 	default: return "string";
 	}
 }
@@ -186,6 +190,10 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 	// Type column
 	else if (col == 2)
 		variant = entry->typeString();
+
+	// Index column
+	else if (col == 3)
+		variant = (entry->type() == EntryType::folderType()) ? "" : fmt::format("{}", entry->index());
 
 	// Invalid
 	else
@@ -433,39 +441,65 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 
 	// Expand/Contract folders if activated
 	Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, [this](wxDataViewEvent& e) {
-		if (IsExpanded(e.GetItem()))
-			Collapse(e.GetItem());
+		if (auto* entry = static_cast<ArchiveEntry*>(e.GetItem().GetID());
+			entry && entry->type() == EntryType::folderType())
+		{
+			if (IsExpanded(e.GetItem()))
+				Collapse(e.GetItem());
+			else
+				Expand(e.GetItem());
+		}
 		else
-			Expand(e.GetItem());
+			e.Skip();
 	});
 
 	// Update column width cvars when we can
-	Bind(wxEVT_IDLE, [this](wxIdleEvent& e) {
-		if (archiveSupportsDirs(archive_.lock().get()))
-			elist_colsize_name_tree = col_name_->GetWidth();
-		else
-			elist_colsize_name_list = col_name_->GetWidth();
-		elist_colsize_size = col_size_->GetWidth();
-		elist_colsize_type = col_type_->GetWidth();
-	});
+	Bind(wxEVT_IDLE, [this](wxIdleEvent&) { saveColumnWidths(); });
 
 	// Header right click
 	Bind(wxEVT_DATAVIEW_COLUMN_HEADER_RIGHT_CLICK, [this](wxDataViewEvent& e) {
 		// Popup context menu
 		wxMenu context;
-		if (id_reset_sort_ < 0)
-			id_reset_sort_ = SAction::nextWxId();
-		context.Append(id_reset_sort_, "Reset Sorting");
+		context.Append(0, "Reset Sorting");
+		context.AppendSeparator();
+		context.AppendCheckItem(1, "Index", "Show the Index column")->Check(elist_colindex_show);
+		context.AppendCheckItem(2, "Size", "Show the Size column")->Check(elist_colsize_show);
+		context.AppendCheckItem(3, "Type", "Show the Type column")->Check(elist_coltype_show);
 		PopupMenu(&context);
 	});
 
 	// Header context menu
 	Bind(wxEVT_MENU, [this](wxCommandEvent& e) {
-		if (e.GetId() == id_reset_sort_)
+		if (e.GetId() == 0)
 		{
-			setupColumns();
+			// Reset Sorting
+			col_name_->UnsetAsSortKey();
+			col_size_->UnsetAsSortKey();
+			col_type_->UnsetAsSortKey();
+			col_index_->UnsetAsSortKey();
 			model_->Resort();
 			ProcessWindowEvent(wxDataViewEvent(wxEVT_DATAVIEW_COLUMN_SORTED, this, {}));
+		}
+		else if (e.GetId() == 1)
+		{
+			// Toggle index column
+			elist_colindex_show = !elist_colindex_show;
+			col_index_->SetHidden(!elist_colindex_show);
+			updateColumnWidths();
+		}
+		else if (e.GetId() == 2)
+		{
+			// Toggle size column
+			elist_colsize_show = !elist_colsize_show;
+			col_size_->SetHidden(!elist_colsize_show);
+			updateColumnWidths();
+		}
+		else if (e.GetId() == 3)
+		{
+			// Toggle type column
+			elist_coltype_show = !elist_coltype_show;
+			col_type_->SetHidden(!elist_coltype_show);
+			updateColumnWidths();
 		}
 	});
 }
@@ -695,24 +729,92 @@ void ArchiveEntryTree::setupColumns()
 	if (!archive)
 		return;
 
-	// Clear columns if already added
-	if (col_name_)
-	{
-		ClearColumns();
-		col_name_ = col_size_ = col_type_ = nullptr;
-	}
+	auto colstyle_visible = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE;
+	auto colstyle_hidden  = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_HIDDEN;
 
 	// Add Columns
+	col_index_ = AppendTextColumn(
+		"#",
+		3,
+		wxDATAVIEW_CELL_INERT,
+		elist_colsize_index,
+		wxALIGN_NOT,
+		elist_colindex_show ? colstyle_visible : colstyle_hidden);
 	col_name_ = AppendIconTextColumn(
 		"Name",
 		0,
 		elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT,
 		archiveSupportsDirs(archive.get()) ? elist_colsize_name_tree : elist_colsize_name_list,
 		wxALIGN_NOT,
-		wxDATAVIEW_COL_SORTABLE);
+		colstyle_visible);
 	col_size_ = AppendTextColumn(
-		"Size", 1, wxDATAVIEW_CELL_INERT, elist_colsize_size, wxALIGN_NOT, wxDATAVIEW_COL_SORTABLE);
+		"Size",
+		1,
+		wxDATAVIEW_CELL_INERT,
+		elist_colsize_size,
+		wxALIGN_NOT,
+		elist_colsize_show ? colstyle_visible : colstyle_hidden);
 	col_type_ = AppendTextColumn(
-		"Type", 2, wxDATAVIEW_CELL_INERT, elist_colsize_type, wxALIGN_NOT, wxDATAVIEW_COL_SORTABLE);
-	GetColumn(GetColumnCount() - 1)->SetWidth(0); // temp
+		"Type",
+		2,
+		wxDATAVIEW_CELL_INERT,
+		elist_colsize_type,
+		wxALIGN_NOT,
+		elist_coltype_show ? colstyle_visible : colstyle_hidden);
+	SetExpanderColumn(col_name_);
+
+	// Last column will expand anyway, this ensures we don't get unnecessary horizontal scrollbars
+	GetColumn(GetColumnCount() - 1)->SetWidth(0);
+}
+
+void ArchiveEntryTree::saveColumnWidths()
+{
+	// Get the last visible column (we don't want to save the width of this column since it stretches)
+	wxDataViewColumn* last_col = nullptr;
+	for (auto i = GetColumnCount() - 1; i >= 0; --i)
+		if (!GetColumnAt(i)->IsHidden())
+		{
+			last_col = GetColumnAt(i);
+			break;
+		}
+
+	if (last_col != col_name_)
+	{
+		if (archiveSupportsDirs(archive_.lock().get()))
+			elist_colsize_name_tree = col_name_->GetWidth();
+		else
+			elist_colsize_name_list = col_name_->GetWidth();
+	}
+
+	if (last_col != col_size_ && !col_size_->IsHidden())
+		elist_colsize_size  = col_size_->GetWidth();
+
+	if (last_col != col_type_ && !col_type_->IsHidden())
+		elist_colsize_type  = col_type_->GetWidth();
+
+	if (!col_index_->IsHidden())
+		elist_colsize_index = col_index_->GetWidth();
+}
+
+void ArchiveEntryTree::updateColumnWidths()
+{
+	auto archive = archive_.lock();
+	if (!archive)
+		return;
+
+	// Get the last visible column (we don't want to save the width of this column since it stretches)
+	wxDataViewColumn* last_col = nullptr;
+	for (auto i = GetColumnCount() - 1; i >= 0; --i)
+		if (!GetColumnAt(i)->IsHidden())
+		{
+			last_col = GetColumnAt(i);
+			break;
+		}
+
+	Freeze();
+	col_index_->SetWidth(elist_colsize_index);
+	col_name_->SetWidth(archiveSupportsDirs(archive.get()) ? elist_colsize_name_tree : elist_colsize_name_list);
+	col_size_->SetWidth(col_size_ == last_col ? 0 : elist_colsize_size);
+	col_type_->SetWidth(col_type_ == last_col ? 0 : elist_colsize_type);
+	Thaw();
 }
