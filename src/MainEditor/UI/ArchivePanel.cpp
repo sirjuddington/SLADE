@@ -720,7 +720,11 @@ void ArchivePanel::removeMenus() const
 void ArchivePanel::undo() const
 {
 	if (!(cur_area_ && cur_area_->undo()))
+	{
+		entry_tree_->Freeze();
 		undo_manager_->undo();
+		entry_tree_->Thaw();
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -729,7 +733,11 @@ void ArchivePanel::undo() const
 void ArchivePanel::redo() const
 {
 	if (!(cur_area_ && cur_area_->redo()))
+	{
+		entry_tree_->Freeze();
 		undo_manager_->redo();
+		entry_tree_->Thaw();
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1321,6 +1329,7 @@ bool ArchivePanel::deleteEntry(bool confirm)
 	undo_manager_->beginRecord("Delete Entry");
 
 	// Go through the selected entries
+	entry_tree_->Freeze();
 	for (int a = selected_entries.size() - 1; a >= 0; a--)
 	{
 		// Remove from bookmarks
@@ -1347,6 +1356,7 @@ bool ArchivePanel::deleteEntry(bool confirm)
 		// Remove the selected directory from the archive
 		archive->removeDir(selected_dirs[a]->path());
 	}
+	entry_tree_->Thaw();
 
 	// Finish recording undo level
 	undo_manager_->endRecord(true);
@@ -3239,7 +3249,11 @@ bool ArchivePanel::handleAction(string_view id)
 
 	// 'Collapse All' button
 	else if (id == "arch_elist_collapseall")
+	{
+		entry_tree_->Freeze();
 		entry_tree_->collapseAll(*archive->rootDir());
+		entry_tree_->Thaw();
+	}
 
 
 	// ------------------------------------------------------------------------

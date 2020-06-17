@@ -28,7 +28,7 @@ namespace ui
 		UndoManager*         undo_manager_ = nullptr;
 
 		// wxDataViewModel
-		unsigned int   GetColumnCount() const override;
+		unsigned int   GetColumnCount() const override { return 4; }
 		wxString       GetColumnType(unsigned int col) const override;
 		void           GetValue(wxVariant& variant, const wxDataViewItem& item, unsigned int col) const override;
 		bool           GetAttr(const wxDataViewItem& item, unsigned int col, wxDataViewItemAttr& attr) const override;

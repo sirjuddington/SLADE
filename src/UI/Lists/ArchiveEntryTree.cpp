@@ -1,3 +1,36 @@
+
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2020 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ArchiveEntryTree.cpp
+// Description: A wxDataViewCtrl-based widget that shows all entries in an
+//              archive via the ArchiveViewModel dataview model. The model will
+//              automatically keep in-sync with the associated Archive.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ArchiveEntryTree.h"
 #include "App.h"
@@ -14,6 +47,11 @@
 using namespace slade;
 using namespace ui;
 
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 namespace slade::ui
 {
 wxColour col_text_modified(0, 0, 0, 0);
@@ -34,6 +72,12 @@ CVAR(Bool, elist_rename_inplace, false, CVar::Save)
 CVAR(Bool, elist_rename_inplace, true, CVar::Save)
 #endif
 
+
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
 EXTERN_CVAR(Int, elist_icon_size)
 EXTERN_CVAR(Int, elist_icon_padding)
 EXTERN_CVAR(Bool, elist_filter_dirs)
@@ -42,6 +86,11 @@ EXTERN_CVAR(Bool, elist_coltype_show)
 EXTERN_CVAR(Bool, elist_colindex_show)
 
 
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
 namespace slade::ui
 {
 bool archiveSupportsDirs(Archive* archive)
@@ -54,6 +103,16 @@ bool archiveSupportsDirs(Archive* archive)
 } // namespace slade::ui
 
 
+// -----------------------------------------------------------------------------
+//
+// ArchiveViewModel Class Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Associates [archive] with this model, connecting to its signals and
+// populating the root node with the archive's root directory
+// -----------------------------------------------------------------------------
 void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* undo_manager)
 {
 	archive_ = archive;
@@ -115,6 +174,9 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 		});
 }
 
+// -----------------------------------------------------------------------------
+// Sets the current filter options for the model
+// -----------------------------------------------------------------------------
 void ArchiveViewModel::setFilter(string_view name, string_view category)
 {
 	// Check any change is required
@@ -156,11 +218,9 @@ void ArchiveViewModel::setFilter(string_view name, string_view category)
 	}
 }
 
-unsigned int ArchiveViewModel::GetColumnCount() const
-{
-	return 4;
-}
-
+// -----------------------------------------------------------------------------
+// Returns the wxVariant type for the column [col]
+// -----------------------------------------------------------------------------
 wxString ArchiveViewModel::GetColumnType(unsigned int col) const
 {
 	switch (col)
@@ -173,6 +233,9 @@ wxString ArchiveViewModel::GetColumnType(unsigned int col) const
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Sets [variant] the the value of [item] in the column [col]
+// -----------------------------------------------------------------------------
 void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, unsigned int col) const
 {
 	// Check the item contains an entry
@@ -214,6 +277,9 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 		variant = "Invalid Column";
 }
 
+// -----------------------------------------------------------------------------
+// Sets the cell attributes [attr] for [item] in column [col]
+// -----------------------------------------------------------------------------
 bool ArchiveViewModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxDataViewItemAttr& attr) const
 {
 	auto* entry = static_cast<ArchiveEntry*>(item.GetID());
@@ -271,6 +337,9 @@ bool ArchiveViewModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 	return has_attr;
 }
 
+// -----------------------------------------------------------------------------
+// Sets the value of [item] on column [col] to the value in [variant]
+// -----------------------------------------------------------------------------
 bool ArchiveViewModel::SetValue(const wxVariant& variant, const wxDataViewItem& item, unsigned int col)
 {
 	// Get+check archive and entry
@@ -327,6 +396,9 @@ bool ArchiveViewModel::SetValue(const wxVariant& variant, const wxDataViewItem& 
 	return false;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the parent item of [item]
+// -----------------------------------------------------------------------------
 wxDataViewItem ArchiveViewModel::GetParent(const wxDataViewItem& item) const
 {
 	if (auto* entry = static_cast<ArchiveEntry*>(item.GetID()))
@@ -342,6 +414,9 @@ wxDataViewItem ArchiveViewModel::GetParent(const wxDataViewItem& item) const
 	return {};
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [item] is a container (ie. has child items)
+// -----------------------------------------------------------------------------
 bool ArchiveViewModel::IsContainer(const wxDataViewItem& item) const
 {
 	if (auto* entry = static_cast<ArchiveEntry*>(item.GetID()))
@@ -362,6 +437,10 @@ bool ArchiveViewModel::IsContainer(const wxDataViewItem& item) const
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Populates [children] with the child items of [item], returning the number
+// of children added
+// -----------------------------------------------------------------------------
 unsigned int ArchiveViewModel::GetChildren(const wxDataViewItem& item, wxDataViewItemArray& children) const
 {
 	auto* archive = archive_.lock().get();
@@ -386,6 +465,10 @@ unsigned int ArchiveViewModel::GetChildren(const wxDataViewItem& item, wxDataVie
 	return children.size();
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if this model is a list (expanders will be hidden for a list
+// model)
+// -----------------------------------------------------------------------------
 bool ArchiveViewModel::IsListModel() const
 {
 	// Show as a list (no spacing for expanders) if the archive doesn't support directories
@@ -395,6 +478,10 @@ bool ArchiveViewModel::IsListModel() const
 	return false;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the comparison value between [item1] and [item2] when sorting by
+// [column]
+// -----------------------------------------------------------------------------
 int ArchiveViewModel::Compare(
 	const wxDataViewItem& item1,
 	const wxDataViewItem& item2,
@@ -466,6 +553,9 @@ int ArchiveViewModel::Compare(
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Returns a wxDataViewItem representing [dir]
+// -----------------------------------------------------------------------------
 wxDataViewItem ArchiveViewModel::createItemForDirectory(const ArchiveDir& dir) const
 {
 	if (auto archive = archive_.lock())
@@ -479,6 +569,9 @@ wxDataViewItem ArchiveViewModel::createItemForDirectory(const ArchiveDir& dir) c
 	return {};
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [entry] matches the current filter
+// -----------------------------------------------------------------------------
 bool ArchiveViewModel::matchesFilter(const ArchiveEntry& entry) const
 {
 	// Check for name match if needed
@@ -499,6 +592,10 @@ bool ArchiveViewModel::matchesFilter(const ArchiveEntry& entry) const
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Populates [items] with all child entries/subrirs of [dir].
+// If [filtered] is true, only adds children matching the current filter
+// -----------------------------------------------------------------------------
 void ArchiveViewModel::getDirChildItems(wxDataViewItemArray& items, const ArchiveDir& dir, bool filtered) const
 {
 	if (filtered)
@@ -520,11 +617,15 @@ void ArchiveViewModel::getDirChildItems(wxDataViewItemArray& items, const Archiv
 }
 
 
+// -----------------------------------------------------------------------------
+//
+// ArchiveEntryTree Class Functions
+//
+// -----------------------------------------------------------------------------
 
-
-
-
-
+// -----------------------------------------------------------------------------
+// ArchiveEntryTree class constructor
+// -----------------------------------------------------------------------------
 ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive, UndoManager* undo_manager) :
 	wxDataViewCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE), archive_{ archive }
 {
@@ -616,6 +717,10 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 	});
 }
 
+// -----------------------------------------------------------------------------
+// Returns the ArchiveDir that [item] represents, or nullptr if it isn't a valid
+// directory item
+// -----------------------------------------------------------------------------
 ArchiveDir* ArchiveEntryTree::dirForDirItem(const wxDataViewItem& item) const
 {
 	if (auto archive = archive_.lock())
@@ -627,6 +732,10 @@ ArchiveDir* ArchiveEntryTree::dirForDirItem(const wxDataViewItem& item) const
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if the list currently has 'default' sorting (by entry index,
+// ascending)
+// -----------------------------------------------------------------------------
 bool ArchiveEntryTree::isDefaultSorted() const
 {
 	auto* sort_col = GetSortingColumn();
@@ -638,6 +747,11 @@ bool ArchiveEntryTree::isDefaultSorted() const
 		return true;
 }
 
+// -----------------------------------------------------------------------------
+// Returns all currently selected entries.
+// If [include_dirs] is true, it will also return the entries for any selected
+// directories
+// -----------------------------------------------------------------------------
 vector<ArchiveEntry*> ArchiveEntryTree::selectedEntries(bool include_dirs) const
 {
 	if (GetSelectedItemsCount() == 0)
@@ -658,6 +772,9 @@ vector<ArchiveEntry*> ArchiveEntryTree::selectedEntries(bool include_dirs) const
 	return entries;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the first selected entry, or nullptr if none selected
+// -----------------------------------------------------------------------------
 ArchiveEntry* ArchiveEntryTree::firstSelectedEntry(bool include_dirs) const
 {
 	if (GetSelectedItemsCount() == 0)
@@ -676,6 +793,9 @@ ArchiveEntry* ArchiveEntryTree::firstSelectedEntry(bool include_dirs) const
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the last selected entry, or nullptr if none selected
+// -----------------------------------------------------------------------------
 ArchiveEntry* ArchiveEntryTree::lastSelectedEntry(bool include_dirs) const
 {
 	if (GetSelectedItemsCount() == 0)
@@ -694,6 +814,9 @@ ArchiveEntry* ArchiveEntryTree::lastSelectedEntry(bool include_dirs) const
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Returns all currently selected directories
+// -----------------------------------------------------------------------------
 vector<ArchiveDir*> ArchiveEntryTree::selectedDirectories() const
 {
 	if (GetSelectedItemsCount() == 0)
@@ -720,6 +843,9 @@ vector<ArchiveDir*> ArchiveEntryTree::selectedDirectories() const
 	return dirs;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the first selected directory, or nullptr if none selected
+// -----------------------------------------------------------------------------
 ArchiveDir* ArchiveEntryTree::firstSelectedDirectory() const
 {
 	if (GetSelectedItemsCount() == 0)
@@ -744,6 +870,9 @@ ArchiveDir* ArchiveEntryTree::firstSelectedDirectory() const
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the last selected directory, or nullptr if none selected
+// -----------------------------------------------------------------------------
 ArchiveDir* ArchiveEntryTree::lastSelectedDirectory() const
 {
 	if (GetSelectedItemsCount() == 0)
@@ -768,6 +897,9 @@ ArchiveDir* ArchiveEntryTree::lastSelectedDirectory() const
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the first selected item, or an invalid item if none selected
+// -----------------------------------------------------------------------------
 wxDataViewItem ArchiveEntryTree::firstSelectedItem() const
 {
 	wxDataViewItemArray selection;
@@ -777,6 +909,9 @@ wxDataViewItem ArchiveEntryTree::firstSelectedItem() const
 	return {};
 }
 
+// -----------------------------------------------------------------------------
+// Returns the last selected item, or an invalid item if none selected
+// -----------------------------------------------------------------------------
 wxDataViewItem ArchiveEntryTree::lastSelectedItem() const
 {
 	wxDataViewItemArray selection;
@@ -839,6 +974,9 @@ ArchiveDir* ArchiveEntryTree::selectedEntriesDir() const
 	return dir;
 }
 
+// -----------------------------------------------------------------------------
+// Set the filter options on the model
+// -----------------------------------------------------------------------------
 void ArchiveEntryTree::setFilter(string_view name, string_view category)
 {
 	Freeze();
@@ -846,6 +984,9 @@ void ArchiveEntryTree::setFilter(string_view name, string_view category)
 	Thaw();
 }
 
+// -----------------------------------------------------------------------------'
+// Collapses all currently expanded directory items
+// -----------------------------------------------------------------------------
 void ArchiveEntryTree::collapseAll(const ArchiveDir& dir_start)
 {
 	for (const auto& subdir : dir_start.subdirs())
@@ -854,6 +995,9 @@ void ArchiveEntryTree::collapseAll(const ArchiveDir& dir_start)
 	Collapse(wxDataViewItem(dir_start.dirEntry()));
 }
 
+// -----------------------------------------------------------------------------
+// Creates and sets up the tree columns
+// -----------------------------------------------------------------------------
 void ArchiveEntryTree::setupColumns()
 {
 	auto archive = archive_.lock();
@@ -898,6 +1042,9 @@ void ArchiveEntryTree::setupColumns()
 	GetColumn(GetColumnCount() - 1)->SetWidth(0);
 }
 
+// -----------------------------------------------------------------------------
+// Saves the current column widths to their respective cvars
+// -----------------------------------------------------------------------------
 void ArchiveEntryTree::saveColumnWidths()
 {
 	// Get the last visible column (we don't want to save the width of this column since it stretches)
@@ -927,6 +1074,9 @@ void ArchiveEntryTree::saveColumnWidths()
 		elist_colsize_index = col_index_->GetWidth();
 }
 
+// -----------------------------------------------------------------------------
+// Updates the currently visible columns' widths from their respective cvars
+// -----------------------------------------------------------------------------
 void ArchiveEntryTree::updateColumnWidths()
 {
 	auto archive = archive_.lock();
