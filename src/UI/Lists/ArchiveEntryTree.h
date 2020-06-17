@@ -58,6 +58,7 @@ namespace ui
 		bool isSortedByName() const { return GetSortingColumn() == col_name_; }
 		bool isSortedBySize() const { return GetSortingColumn() == col_size_; }
 		bool isSortedByType() const { return GetSortingColumn() == col_type_; }
+		bool isDefaultSorted() const;
 
 		vector<ArchiveEntry*> selectedEntries(bool include_dirs = false) const;
 		ArchiveEntry*         firstSelectedEntry(bool include_dirs = false) const;

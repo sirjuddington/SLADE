@@ -3530,7 +3530,7 @@ wxMenu* ArchivePanel::createMaintenanceMenu()
 bool ArchivePanel::canMoveEntries()
 {
 	// Can't move if entry tree is sorted
-	if (entry_tree_->GetSortingColumn())
+	if (!entry_tree_->isDefaultSorted())
 		return false;
 
 	// Can't move in directory archives

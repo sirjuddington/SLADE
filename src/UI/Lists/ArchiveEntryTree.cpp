@@ -483,7 +483,9 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 			col_index_->UnsetAsSortKey();
 #endif
 			model_->Resort();
-			//ProcessWindowEvent(wxDataViewEvent(wxEVT_DATAVIEW_COLUMN_SORTED, this, {}));
+			wxDataViewEvent de;
+			de.SetEventType(wxEVT_DATAVIEW_COLUMN_SORTED);
+			ProcessWindowEvent(de);
 		}
 		else if (e.GetId() == 1)
 		{
@@ -520,6 +522,17 @@ ArchiveDir* ArchiveEntryTree::dirForDirItem(const wxDataViewItem& item) const
 	}
 
 	return nullptr;
+}
+
+bool ArchiveEntryTree::isDefaultSorted() const
+{
+	auto* sort_col = GetSortingColumn();
+	if (sort_col && sort_col != col_index_)
+		return false;
+	else if (sort_col == col_index_)
+		return col_index_->IsSortOrderAscending();
+	else
+		return true;
 }
 
 vector<ArchiveEntry*> ArchiveEntryTree::selectedEntries(bool include_dirs) const
