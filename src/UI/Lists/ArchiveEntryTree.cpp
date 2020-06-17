@@ -466,6 +466,7 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 		context.AppendCheckItem(2, "Size", "Show the Size column")->Check(elist_colsize_show);
 		context.AppendCheckItem(3, "Type", "Show the Type column")->Check(elist_coltype_show);
 		PopupMenu(&context);
+		e.Skip();
 	});
 
 	// Header context menu
@@ -476,9 +477,13 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 			col_name_->UnsetAsSortKey();
 			col_size_->UnsetAsSortKey();
 			col_type_->UnsetAsSortKey();
+#ifdef __WXGTK__
+			col_index_->SetSortOrder(true);
+#else
 			col_index_->UnsetAsSortKey();
+#endif
 			model_->Resort();
-			ProcessWindowEvent(wxDataViewEvent(wxEVT_DATAVIEW_COLUMN_SORTED, this, {}));
+			//ProcessWindowEvent(wxDataViewEvent(wxEVT_DATAVIEW_COLUMN_SORTED, this, {}));
 		}
 		else if (e.GetId() == 1)
 		{
@@ -501,6 +506,8 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 			col_type_->SetHidden(!elist_coltype_show);
 			updateColumnWidths();
 		}
+		else
+			e.Skip();
 	});
 }
 
@@ -772,9 +779,9 @@ void ArchiveEntryTree::saveColumnWidths()
 	// Get the last visible column (we don't want to save the width of this column since it stretches)
 	wxDataViewColumn* last_col = nullptr;
 	for (auto i = GetColumnCount() - 1; i >= 0; --i)
-		if (!GetColumnAt(i)->IsHidden())
+		if (!GetColumn(i)->IsHidden())
 		{
-			last_col = GetColumnAt(i);
+			last_col = GetColumn(i);
 			break;
 		}
 
@@ -805,9 +812,9 @@ void ArchiveEntryTree::updateColumnWidths()
 	// Get the last visible column (we don't want to save the width of this column since it stretches)
 	wxDataViewColumn* last_col = nullptr;
 	for (auto i = GetColumnCount() - 1; i >= 0; --i)
-		if (!GetColumnAt(i)->IsHidden())
+		if (!GetColumn(i)->IsHidden())
 		{
-			last_col = GetColumnAt(i);
+			last_col = GetColumn(i);
 			break;
 		}
 
