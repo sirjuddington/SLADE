@@ -1462,7 +1462,7 @@ bool ArchivePanel::moveDown()
 	entry_tree_->GetSelections(sel_items);
 	auto sel_entries = entry_tree_->selectedEntries();
 	auto focus       = entry_tree_->GetCurrentItem();
-	auto last       = entry_tree_->lastSelectedItem();
+	auto last        = entry_tree_->lastSelectedItem();
 
 	// If the last selected item the last entry in the directory, don't move
 	if (sel_entries.back()->index() == dir->numEntries() - 1)
@@ -1503,17 +1503,21 @@ bool ArchivePanel::moveDown()
 // -----------------------------------------------------------------------------
 bool ArchivePanel::sort() const
 {
-	return false;
-
-	/*
 	// Check the archive is still open
 	auto archive = archive_.lock();
 	if (!archive)
 		return false;
 
-	// Get selected entries
-	auto selection = entry_list_->selection();
-	auto dir       = entry_list_->currentDir().lock().get();
+	// Get selected entries and their parent dir
+	auto sel_entries = entry_tree_->selectedEntries();
+	auto dir         = entry_tree_->selectedEntriesDir();
+	if (!dir)
+		return false; // Must all be in the same dir
+
+	// Get vector of selected entry indices
+	vector<unsigned> selection;
+	for (const auto& entry : sel_entries)
+		selection.push_back(entry->index());
 
 	size_t start, stop;
 
@@ -1544,7 +1548,7 @@ bool ArchivePanel::sort() const
 	initNamespaceVector(nspaces, dir->archive()->hasFlatHack());
 	auto maps = dir->archive()->detectMaps();
 
-	wxString ns  = dir->archive()->detectNamespace(entry_list_->entryAt(selection[0]));
+	wxString ns  = dir->archive()->detectNamespace(dir->entryAt(selection[0]));
 	size_t   nsn = 0, lnsn = 0;
 
 	// Fill a map with <entry name, entry index> pairs
@@ -1555,7 +1559,7 @@ bool ArchivePanel::sort() const
 		bool     ns_changed = false;
 		int      mapindex   = isInMap(selection[i], maps);
 		wxString mapname;
-		auto     entry = entry_list_->entryAt(selection[i]);
+		auto     entry = dir->entryAt(selection[i]);
 		if (!entry)
 			continue;
 
@@ -1703,13 +1707,14 @@ bool ArchivePanel::sort() const
 
 	// And now, sort the entries based on the map
 	undo_manager_->beginRecord("Sort Entries");
+	entry_tree_->Freeze();
 	auto itr = emap.begin();
 	for (size_t i = start; i < stop; ++i, ++itr)
 	{
 		if (itr == emap.end())
 			break;
 
-		auto entry = entry_list_->entryAt(i);
+		auto entry = dir->entryAt(i);
 
 		// Ignore subdirectories
 		if (entry->type() == EntryType::folderType())
@@ -1718,10 +1723,10 @@ bool ArchivePanel::sort() const
 		// If the entry isn't in its sorted place already
 		if (i != (size_t)itr->second)
 		{
-			// Swap the texture in the spot with the sorted one
-			dir->swapEntries(i, itr->second);
+			// Swap the entry in the spot with the sorted one
+			archive->swapEntries(i, itr->second, dir);
 
-			// Update the position of the displaced texture in the emap
+			// Update the position of the displaced entry in the emap
 			auto name  = entry->exProp<string>("sortkey");
 			emap[name] = itr->second;
 		}
@@ -1729,11 +1734,10 @@ bool ArchivePanel::sort() const
 	undo_manager_->endRecord(true);
 
 	// Refresh
-	entry_list_->updateList();
+	entry_tree_->Thaw();
 	archive->setModified(true);
 
 	return true;
-	*/
 }
 
 // -----------------------------------------------------------------------------
