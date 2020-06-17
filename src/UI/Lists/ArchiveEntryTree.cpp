@@ -4,6 +4,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "General/ColourConfiguration.h"
 #include "General/SAction.h"
 #include "Graphics/Icons.h"
 #include "UI/WxUtils.h"
@@ -11,6 +12,13 @@
 
 using namespace slade;
 using namespace ui;
+
+namespace slade::ui
+{
+wxColour col_text_modified(0, 0, 0, 0);
+wxColour col_text_new(0, 0, 0, 0);
+wxColour col_text_locked(0, 0, 0, 0);
+} // namespace slade::ui
 
 CVAR(Int, elist_colsize_name_tree, 150, CVar::Save)
 CVAR(Int, elist_colsize_name_list, 150, CVar::Save)
@@ -180,7 +188,11 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 
 		wxIcon icon;
 		icon.CopyFromBitmap(icon_bmp);
-		variant << wxDataViewIconText(entry->name(), icon);
+		wxString name = entry->name();
+		if (entry->state() != ArchiveEntry::State::Unmodified)
+			variant << wxDataViewIconText(entry->name() + " *", icon);
+		else
+			variant << wxDataViewIconText(entry->name(), icon);
 	}
 
 	// Size column
@@ -212,6 +224,45 @@ bool ArchiveViewModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 	if (col == 0 && app::archiveManager().isBookmarked(entry))
 	{
 		attr.SetBold(true);
+		has_attr = true;
+	}
+
+	// Status colour
+	if (entry->isLocked() || entry->state() != ArchiveEntry::State::Unmodified)
+	{
+		// Init precalculated status text colours if necessary
+		if (col_text_modified.Alpha() == 0)
+		{
+			auto col_modified = ColRGBA(0, 85, 255);
+			auto col_new      = ColRGBA(0, 255, 0);
+			auto col_locked   = ColRGBA(255, 0, 0);
+			auto col_text     = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
+			auto intensity    = 0.65;
+
+			col_text_modified.Set(
+				(col_modified.r * intensity) + (col_text.Red() * (1.0 - intensity)),
+				(col_modified.g * intensity) + (col_text.Green() * (1.0 - intensity)),
+				(col_modified.b * intensity) + (col_text.Blue() * (1.0 - intensity)),
+				255);
+
+			col_text_new.Set(
+				(col_new.r * intensity) + (col_text.Red() * (1.0 - intensity)),
+				(col_new.g * intensity) + (col_text.Green() * (1.0 - intensity)),
+				(col_new.b * intensity) + (col_text.Blue() * (1.0 - intensity)),
+				255);
+
+			col_text_locked.Set(
+				(col_locked.r * intensity) + (col_text.Red() * (1.0 - intensity)),
+				(col_locked.g * intensity) + (col_text.Green() * (1.0 - intensity)),
+				(col_locked.b * intensity) + (col_text.Blue() * (1.0 - intensity)),
+				255);
+		}
+
+		if (entry->isLocked())
+			attr.SetColour(col_text_locked);
+		else
+			attr.SetColour(entry->state() == ArchiveEntry::State::New ? col_text_new : col_text_modified);
+
 		has_attr = true;
 	}
 
@@ -807,10 +858,10 @@ void ArchiveEntryTree::saveColumnWidths()
 	}
 
 	if (last_col != col_size_ && !col_size_->IsHidden())
-		elist_colsize_size  = col_size_->GetWidth();
+		elist_colsize_size = col_size_->GetWidth();
 
 	if (last_col != col_type_ && !col_type_->IsHidden())
-		elist_colsize_type  = col_type_->GetWidth();
+		elist_colsize_type = col_type_->GetWidth();
 
 	if (!col_index_->IsHidden())
 		elist_colsize_index = col_index_->GetWidth();
