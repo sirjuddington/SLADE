@@ -300,6 +300,57 @@ int EntryType::isThisType(ArchiveEntry& entry)
 }
 
 // -----------------------------------------------------------------------------
+// Initialises built-in entry types (ie. types not defined in configs)
+// -----------------------------------------------------------------------------
+void slade::EntryType::initTypes()
+{
+	auto fmt_any = EntryDataFormat::anyFormat();
+
+	// Setup unknown type
+	auto et_unknown          = std::make_unique<EntryType>("unknown");
+	et_unknown->format_      = fmt_any;
+	et_unknown->icon_        = "unknown";
+	et_unknown->detectable_  = false;
+	et_unknown->reliability_ = 0;
+	etype_unknown            = et_unknown.get();
+	etype_unknown->index_    = entry_types.size();
+	entry_types.push_back(std::move(et_unknown));
+
+	// Setup folder type
+	auto et_folder         = std::make_unique<EntryType>("folder");
+	et_folder->format_     = fmt_any;
+	et_folder->icon_       = "folder";
+	et_folder->name_       = "Folder";
+	et_folder->detectable_ = false;
+	etype_folder           = et_folder.get();
+	etype_folder->index_   = entry_types.size();
+	entry_types.push_back(std::move(et_folder));
+
+	// Setup marker type
+	auto et_marker         = std::make_unique<EntryType>("marker");
+	et_marker->format_     = fmt_any;
+	et_marker->icon_       = "marker";
+	et_marker->name_       = "Marker";
+	et_marker->detectable_ = false;
+	et_marker->category_   = ""; // No category, markers only appear when 'All' categories shown
+	etype_marker           = et_marker.get();
+	et_marker->index_      = entry_types.size();
+	entry_types.push_back(std::move(et_marker));
+
+	// Setup map marker type
+	auto et_map         = std::make_unique<EntryType>("map");
+	et_map->format_     = fmt_any;
+	et_map->icon_       = "map";
+	et_map->name_       = "Map Marker";
+	et_map->category_   = "Maps"; // Should appear with maps
+	et_map->detectable_ = false;
+	et_map->colour_     = ColRGBA(0, 255, 0);
+	etype_map           = et_map.get();
+	etype_map->index_   = entry_types.size();
+	entry_types.push_back(std::move(et_map));
+}
+
+// -----------------------------------------------------------------------------
 // Reads in a block of entry type definitions. Returns false if there was a
 // parsing error, true otherwise
 // -----------------------------------------------------------------------------
@@ -472,53 +523,6 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 // -----------------------------------------------------------------------------
 bool EntryType::loadEntryTypes()
 {
-	auto fmt_any = EntryDataFormat::anyFormat();
-
-	// Setup unknown type
-	auto et_unknown          = std::make_unique<EntryType>("unknown");
-	et_unknown->format_      = fmt_any;
-	et_unknown->icon_        = "unknown";
-	et_unknown->detectable_  = false;
-	et_unknown->reliability_ = 0;
-	etype_unknown            = et_unknown.get();
-	etype_unknown->index_    = entry_types.size();
-	entry_types.push_back(std::move(et_unknown));
-
-	// Setup folder type
-	auto et_folder         = std::make_unique<EntryType>("folder");
-	et_folder->format_     = fmt_any;
-	et_folder->icon_       = "folder";
-	et_folder->name_       = "Folder";
-	et_folder->detectable_ = false;
-	etype_folder           = et_folder.get();
-	etype_folder->index_   = entry_types.size();
-	entry_types.push_back(std::move(et_folder));
-
-	// Setup marker type
-	auto et_marker         = std::make_unique<EntryType>("marker");
-	et_marker->format_     = fmt_any;
-	et_marker->icon_       = "marker";
-	et_marker->name_       = "Marker";
-	et_marker->detectable_ = false;
-	et_marker->category_   = ""; // No category, markers only appear when 'All' categories shown
-	etype_marker           = et_marker.get();
-	et_marker->index_      = entry_types.size();
-	entry_types.push_back(std::move(et_marker));
-
-	// Setup map marker type
-	auto et_map         = std::make_unique<EntryType>("map");
-	et_map->format_     = fmt_any;
-	et_map->icon_       = "map";
-	et_map->name_       = "Map Marker";
-	et_map->category_   = "Maps"; // Should appear with maps
-	et_map->detectable_ = false;
-	et_map->colour_     = ColRGBA(0, 255, 0);
-	etype_map           = et_map.get();
-	etype_map->index_   = entry_types.size();
-	entry_types.push_back(std::move(et_map));
-
-	// -------- READ BUILT-IN TYPES ---------
-
 	// Get builtin entry types from resource archive
 	auto res_archive = app::archiveManager().programResourceArchive();
 

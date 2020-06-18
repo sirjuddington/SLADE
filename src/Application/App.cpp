@@ -445,6 +445,10 @@ bool app::init(vector<string>& args, double ui_scale)
 	log::info("Loading configuration");
 	readConfigFile();
 
+	// Init entry types
+	EntryDataFormat::initBuiltinFormats();
+	EntryType::initTypes();
+
 	// Check that SLADE.pk3 can be found
 	log::info("Loading resources");
 	archive_manager.init();
@@ -493,7 +497,6 @@ bool app::init(vector<string>& args, double ui_scale)
 
 	// Load entry types
 	log::info("Loading entry types");
-	EntryDataFormat::initBuiltinFormats();
 	EntryType::loadEntryTypes();
 
 	// Load text languages

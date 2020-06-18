@@ -35,6 +35,7 @@ public:
 	int isThisType(ArchiveEntry& entry);
 
 	// Static functions
+	static void               initTypes();
 	static bool               readEntryTypeDefinition(MemChunk& mc, string_view source);
 	static bool               loadEntryTypes();
 	static bool               detectEntryType(ArchiveEntry& entry);
