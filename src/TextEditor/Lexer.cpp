@@ -187,6 +187,17 @@ void Lexer::updateComments(TextEditorCtrl* editor, int start, int end)
 	auto pos = start;
 	while (pos < end)
 	{
+		// Skip quoted strings
+		if (editor->GetCharAt(pos) == '\"')
+		{
+			while (pos++ < end)
+				if (editor->GetCharAt(pos) == '\"')
+					break;
+
+			++pos;
+			continue;
+		}
+
 		// Line comment
 		if (checkToken(editor, pos, language_->lineCommentL()))
 		{
