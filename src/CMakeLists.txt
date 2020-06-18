@@ -56,7 +56,7 @@ if (WX_GTK3)
 	set(wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
 endif (WX_GTK3)
 
-SET(WX_LIBS std aui gl stc richtext propgrid media)
+SET(WX_LIBS std aui gl stc richtext propgrid)
 if (NO_WEBVIEW)
 	SET(WX_LIBS ${WX_LIBS} html)
 else (NO_WEBVIEW)
@@ -106,6 +106,7 @@ find_package(GLEW REQUIRED)
 find_package(CURL REQUIRED)
 find_package(Lua REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_package(MPG123 REQUIRED)
 include_directories(
 	${FREEIMAGE_INCLUDE_DIR}
 	${SFML_INCLUDE_DIR}
@@ -113,6 +114,7 @@ include_directories(
 	${GLEW_INCLUDE_PATH}
 	${CURL_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
+	${MPG123_INCLUDE_DIR}
 	.
 	..
 	../thirdparty/dumb
@@ -188,6 +190,7 @@ target_link_libraries(slade
 	${GLEW_LIBRARY}
 	${CURL_LIBRARIES}
 	${LUA_LIBRARIES}
+	${MPG123_LIBRARIES}
 	fmt::fmt
 	-lstdc++fs
 )

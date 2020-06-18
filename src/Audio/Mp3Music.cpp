@@ -27,14 +27,14 @@ ssize_t memoryDataRead(void* raw_mp3_data, void* buffer, size_t nbyte)
 	{
 		size_t read_size    = mp3_data->size - mp3_data->offset;
 		size_t mem_set_size = mp3_data->offset + nbyte - (ssize_t)mp3_data->size;
-		memcpy_s(buffer, read_size, (unsigned char*)mp3_data->data + mp3_data->offset, read_size);
+		memcpy(buffer, (unsigned char*)mp3_data->data + mp3_data->offset, read_size);
 		memset(buffer, 0, mem_set_size);
 		mp3_data->offset += read_size;
 		return (ssize_t)read_size;
 	}
 	else
 	{
-		memcpy_s(buffer, nbyte, (unsigned char*)mp3_data->data + mp3_data->offset, nbyte);
+		memcpy(buffer, (unsigned char*)mp3_data->data + mp3_data->offset, nbyte);
 		mp3_data->offset += nbyte;
 		return (ssize_t)nbyte;
 	}
