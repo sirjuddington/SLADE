@@ -426,16 +426,16 @@ void ArchivePanel::setup(Archive* archive)
 {
 	// Create controls
 	splitter_     = new wxSplitterWindow(this, -1, wxDefaultPosition, wxDefaultSize, wxSP_3DSASH | wxSP_LIVE_UPDATE);
-	entry_area_   = new EntryPanel(splitter_, "nil", false);
-	default_area_ = new DefaultEntryPanel(splitter_, false);
-	text_area_    = new TextEntryPanel(splitter_, false);
-	gfx_area_     = new GfxEntryPanel(splitter_, false);
-	pal_area_     = new PaletteEntryPanel(splitter_, false);
-	hex_area_     = new HexEntryPanel(splitter_, false);
-	ansi_area_    = new ANSIEntryPanel(splitter_, false);
-	map_area_     = new MapEntryPanel(splitter_, false);
-	audio_area_   = new AudioEntryPanel(splitter_, false);
-	data_area_    = new DataEntryPanel(splitter_, false);
+	entry_area_   = new EntryPanel(splitter_, "nil");
+	default_area_ = new DefaultEntryPanel(splitter_);
+	text_area_    = new TextEntryPanel(splitter_);
+	gfx_area_     = new GfxEntryPanel(splitter_);
+	pal_area_     = new PaletteEntryPanel(splitter_);
+	hex_area_     = new HexEntryPanel(splitter_);
+	ansi_area_    = new ANSIEntryPanel(splitter_);
+	map_area_     = new MapEntryPanel(splitter_);
+	audio_area_   = new AudioEntryPanel(splitter_);
+	data_area_    = new DataEntryPanel(splitter_);
 	auto* elist_panel = createEntryListPanel(splitter_);
 
 	// Create sizer
@@ -528,7 +528,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	entry_tree_->SetDropTarget(new APEntryListDropTarget(this, entry_tree_));
 
 	// Entry list toolbar
-	toolbar_elist_   = new SToolBar(panel, false, wxVERTICAL);
+	toolbar_elist_ = new SToolBar(panel, false, wxVERTICAL);
 	if (has_dirs)
 	{
 		auto* tbg_folder = new SToolBarGroup(toolbar_elist_, "_Folder");
@@ -3504,26 +3504,26 @@ bool ArchivePanel::handleAction(string_view id)
 // -----------------------------------------------------------------------------
 // Creates the appropriate EntryPanel for [entry] and returns it
 // -----------------------------------------------------------------------------
-EntryPanel* ArchivePanel::createPanelForEntry(ArchiveEntry* entry, wxWindow* parent, bool frame)
+EntryPanel* ArchivePanel::createPanelForEntry(ArchiveEntry* entry, wxWindow* parent)
 {
 	EntryPanel* entry_panel;
 
 	if (entry->type() == EntryType::mapMarkerType())
-		entry_panel = new MapEntryPanel(parent, frame);
+		entry_panel = new MapEntryPanel(parent);
 	else if (entry->type()->editor() == "gfx")
-		entry_panel = new GfxEntryPanel(parent, frame);
+		entry_panel = new GfxEntryPanel(parent);
 	else if (entry->type()->editor() == "palette")
-		entry_panel = new PaletteEntryPanel(parent, frame);
+		entry_panel = new PaletteEntryPanel(parent);
 	else if (entry->type()->editor() == "ansi")
-		entry_panel = new ANSIEntryPanel(parent, frame);
+		entry_panel = new ANSIEntryPanel(parent);
 	else if (entry->type()->editor() == "text")
-		entry_panel = new TextEntryPanel(parent, frame);
+		entry_panel = new TextEntryPanel(parent);
 	else if (entry->type()->editor() == "audio")
-		entry_panel = new AudioEntryPanel(parent, frame);
+		entry_panel = new AudioEntryPanel(parent);
 	else if (entry->type()->editor() == "data")
-		entry_panel = new DataEntryPanel(parent, frame);
+		entry_panel = new DataEntryPanel(parent);
 	else
-		entry_panel = new DefaultEntryPanel(parent, frame);
+		entry_panel = new DefaultEntryPanel(parent);
 
 	return entry_panel;
 }

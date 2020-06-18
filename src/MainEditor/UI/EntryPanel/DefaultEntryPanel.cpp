@@ -55,7 +55,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // DefaultEntryPanel class constructor
 // -----------------------------------------------------------------------------
-DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent, "default", frame)
+DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "default")
 {
 	sizer_main_->AddStretchSpacer(1);
 

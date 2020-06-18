@@ -10,7 +10,7 @@ class ArchiveEntry;
 class MapEntryPanel : public EntryPanel
 {
 public:
-	MapEntryPanel(wxWindow* parent, bool frame = true);
+	MapEntryPanel(wxWindow* parent);
 	~MapEntryPanel() = default;
 
 	bool saveEntry() override;

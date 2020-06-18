@@ -24,7 +24,7 @@ class ArchiveEntry;
 class PaletteEntryPanel : public EntryPanel
 {
 public:
-	PaletteEntryPanel(wxWindow* parent, bool frame = true);
+	PaletteEntryPanel(wxWindow* parent);
 	~PaletteEntryPanel() = default;
 
 	bool     saveEntry() override;

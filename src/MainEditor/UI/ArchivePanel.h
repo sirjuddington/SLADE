@@ -105,7 +105,7 @@ public:
 	bool handleAction(string_view id) override;
 
 	// Static functions
-	static EntryPanel* createPanelForEntry(ArchiveEntry* entry, wxWindow* parent, bool frame = true);
+	static EntryPanel* createPanelForEntry(ArchiveEntry* entry, wxWindow* parent);
 	static wxMenu*     createMaintenanceMenu();
 
 protected:

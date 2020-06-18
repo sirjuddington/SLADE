@@ -985,7 +985,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 		return;
 
 	// Create an EntryPanel for the entry
-	auto ep = ArchivePanel::createPanelForEntry(entry, stc_archives_, false);
+	auto ep = ArchivePanel::createPanelForEntry(entry, stc_archives_);
 	ep->openEntry(entry);
 
 	// Don't bother with the default entry panel
