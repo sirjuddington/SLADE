@@ -150,10 +150,7 @@ class EntrySwapUS : public UndoStep
 {
 public:
 	EntrySwapUS(ArchiveDir* dir, unsigned index1, unsigned index2) :
-		archive_{ dir->archive() },
-		path_{ dir->path() },
-		index1_{ index1 },
-		index2_{ index2 }
+		archive_{ dir->archive() }, path_{ dir->path() }, index1_{ index1 }, index2_{ index2 }
 	{
 	}
 
@@ -225,9 +222,7 @@ class DirCreateDeleteUS : public UndoStep
 {
 public:
 	DirCreateDeleteUS(bool created, ArchiveDir* dir) :
-		created_{ created },
-		archive_{ dir->archive() },
-		path_{ dir->path() }
+		created_{ created }, archive_{ dir->archive() }, path_{ dir->path() }
 	{
 		strutil::removePrefixIP(path_, '/');
 
@@ -750,8 +745,19 @@ bool Archive::paste(ArchiveDir* tree, unsigned position, shared_ptr<ArchiveDir> 
 	// Set modified
 	setModified(true);
 
-	// Just do a merge
-	return ArchiveDir::merge(base, tree, position);
+	// Do merge
+	vector<shared_ptr<ArchiveEntry>> created_entries;
+	vector<shared_ptr<ArchiveDir>>   created_dirs;
+	if (!ArchiveDir::merge(base, tree, position, ArchiveEntry::State::New, &created_dirs, &created_entries))
+		return false;
+
+	// Signal changes
+	for (const auto& cdir : created_dirs)
+		signals_.dir_added(*this, *cdir);
+	for (const auto& entry : created_entries)
+		signals_.entry_added(*this, *entry);
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -783,18 +789,27 @@ shared_ptr<ArchiveDir> Archive::createDir(string_view path, shared_ptr<ArchiveDi
 	if (!base)
 		base = dir_root_;
 
+	if (strutil::startsWith(path, '/'))
+		path.remove_prefix(1);
+
 	if (path.empty())
 		return base;
 
 	// Create the directory
-	auto dir = ArchiveDir::getOrCreateSubdir(base, path);
+	vector<shared_ptr<ArchiveDir>> created_dirs;
+	auto                           dir = ArchiveDir::getOrCreateSubdir(base, path, &created_dirs);
 
-	// Record undo step
+	// Record undo step(s)
 	if (undoredo::currentlyRecording())
-		undoredo::currentManager()->recordUndoStep(std::make_unique<DirCreateDeleteUS>(true, dir.get()));
+		for (const auto& cdir : created_dirs)
+			undoredo::currentManager()->recordUndoStep(std::make_unique<DirCreateDeleteUS>(true, cdir.get()));
 
 	// Set the archive state to modified
 	setModified(true);
+
+	// Signal directory addition
+	for (const auto& cdir : created_dirs)
+		signals_.dir_added(*this, *cdir);
 
 	return dir;
 }
@@ -822,10 +837,14 @@ shared_ptr<ArchiveDir> Archive::removeDir(string_view path, ArchiveDir* base)
 		undoredo::currentManager()->recordUndoStep(std::make_unique<DirCreateDeleteUS>(false, dir));
 
 	// Remove the dir from its parent
-	auto removed = dir->parent_dir_.lock()->removeSubdir(dir->name());
+	auto& parent  = *dir->parent_dir_.lock();
+	auto  removed = parent.removeSubdir(dir->name());
 
 	// Set the archive state to modified
 	setModified(true);
+
+	// Signal directory removal
+	signals_.dir_removed(*this, parent, *dir);
 
 	return removed;
 }
@@ -986,7 +1005,7 @@ bool Archive::removeEntry(ArchiveEntry* entry)
 	if (ok)
 	{
 		// Signal entry removed
-		signals_.entry_removed(*this, *entry);
+		signals_.entry_removed(*this, *dir, *entry);
 
 		// Update variables etc
 		setModified(true);
@@ -1019,6 +1038,9 @@ bool Archive::swapEntries(unsigned index1, unsigned index2, ArchiveDir* dir)
 	{
 		// Set modified
 		setModified(true);
+
+		// Signal
+		signals_.entries_swapped(*this, *dir, index1, index2);
 
 		return true;
 	}
@@ -1076,6 +1098,9 @@ bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 
 	// Set modified
 	setModified(true);
+
+	// Signal
+	signals_.entries_swapped(*this, *dir, i1, i2);
 
 	// Return success
 	return true;

@@ -46,7 +46,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // ANSIEntryPanel class constructor
 // -----------------------------------------------------------------------------
-ANSIEntryPanel::ANSIEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent, "ansi", frame)
+ANSIEntryPanel::ANSIEntryPanel(wxWindow* parent) : EntryPanel(parent, "ansi")
 {
 	// Get the VGA font
 	ansi_chardata_.assign(DATASIZE, 0);

@@ -506,7 +506,6 @@ void KeyBind::initBinds()
 	group = "Entry List";
 	addBind("el_new", Keypress("N", KPM_CTRL), "New Entry", group);
 	addBind("el_delete", Keypress("delete"), "Delete Entry", group);
-	addBind("el_swap", Keypress("T", KPM_CTRL), "Swap Entries", group);
 	addBind("el_move_up", Keypress("U", KPM_CTRL), "Move Entry up", group);
 	addBind("el_move_down", Keypress("D", KPM_CTRL), "Move Entry down", group);
 	addBind("el_rename", Keypress("R", KPM_CTRL), "Rename Entry", group);

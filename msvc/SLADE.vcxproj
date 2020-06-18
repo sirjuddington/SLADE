@@ -133,6 +133,18 @@
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -324,6 +336,7 @@
     <ClCompile Include="..\src\UI\Dialogs\MapReplaceDialog.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\ModifyOffsetsDialog.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\NewArchiveDialog.cpp" />
+    <ClCompile Include="..\src\UI\Dialogs\NewEntryDialog.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\PaletteDialog.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\ACSPrefsPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\AdvancedPrefsPanel.cpp" />
@@ -352,6 +365,7 @@
     <ClCompile Include="..\src\UI\Dialogs\SetupWizard\SetupWizardDialog.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\SetupWizard\TempFolderWizardPage.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\TranslationEditorDialog.cpp" />
+    <ClCompile Include="..\src\UI\Lists\ArchiveEntryTree.cpp" />
     <ClCompile Include="..\src\Utility\FileUtils.cpp" />
     <ClCompile Include="..\src\Game\ActionSpecial.cpp" />
     <ClCompile Include="..\src\Game\Args.cpp" />
@@ -683,6 +697,7 @@
     <ClInclude Include="..\src\UI\Dialogs\MapReplaceDialog.h" />
     <ClInclude Include="..\src\UI\Dialogs\ModifyOffsetsDialog.h" />
     <ClInclude Include="..\src\UI\Dialogs\NewArchiveDiaog.h" />
+    <ClInclude Include="..\src\UI\Dialogs\NewEntryDialog.h" />
     <ClInclude Include="..\src\UI\Dialogs\PaletteDialog.h" />
     <ClInclude Include="..\src\UI\Dialogs\Preferences\ACSPrefsPanel.h" />
     <ClInclude Include="..\src\UI\Dialogs\Preferences\AdvancedPrefsPanel.h" />
@@ -713,6 +728,7 @@
     <ClInclude Include="..\src\UI\Dialogs\SetupWizard\TempFolderWizardPage.h" />
     <ClInclude Include="..\src\UI\Dialogs\SetupWizard\WizardPageBase.h" />
     <ClInclude Include="..\src\UI\Dialogs\TranslationEditorDialog.h" />
+    <ClInclude Include="..\src\UI\Lists\ArchiveEntryTree.h" />
     <ClInclude Include="..\src\Utility\FileUtils.h" />
     <ClInclude Include="..\src\Utility\Property.h" />
     <ClInclude Include="..\src\Utility\SeekableData.h" />

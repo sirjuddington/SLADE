@@ -9,7 +9,7 @@ class HexEditorPanel;
 class HexEntryPanel : public EntryPanel
 {
 public:
-	HexEntryPanel(wxWindow* parent, bool frame = true);
+	HexEntryPanel(wxWindow* parent);
 	~HexEntryPanel() = default;
 
 	bool saveEntry() override;

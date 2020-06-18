@@ -1111,6 +1111,9 @@ void ArchiveManager::removeRecentFile(string_view path)
 // -----------------------------------------------------------------------------
 void ArchiveManager::addBookmark(const shared_ptr<ArchiveEntry>& entry)
 {
+	if (!entry)
+		return;
+
 	// Check the bookmark isn't already in the list
 	for (auto& bookmark : bookmarks_)
 	{
@@ -1122,7 +1125,7 @@ void ArchiveManager::addBookmark(const shared_ptr<ArchiveEntry>& entry)
 	bookmarks_.push_back(entry);
 
 	// Announce
-	signals_.bookmarks_changed();
+	signals_.bookmark_added(entry.get());
 }
 
 // -----------------------------------------------------------------------------
@@ -1139,7 +1142,7 @@ bool ArchiveManager::deleteBookmark(ArchiveEntry* entry)
 			bookmarks_.erase(bookmarks_.begin() + a);
 
 			// Announce
-			signals_.bookmarks_changed();
+			signals_.bookmarks_removed(vector<ArchiveEntry*>(1, entry));
 
 			return true;
 		}
@@ -1159,10 +1162,11 @@ bool ArchiveManager::deleteBookmark(unsigned index)
 		return false;
 
 	// Remove bookmark
+	auto* entry = bookmarks_[index].lock().get();
 	bookmarks_.erase(bookmarks_.begin() + index);
 
 	// Announce
-	signals_.bookmarks_changed();
+	signals_.bookmarks_removed(vector<ArchiveEntry*>(1, entry));
 
 	return true;
 }
@@ -1173,13 +1177,15 @@ bool ArchiveManager::deleteBookmark(unsigned index)
 bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 {
 	// Go through bookmarks
-	bool removed = false;
+	bool                  removed = false;
+	vector<ArchiveEntry*> removed_entries;
 	for (unsigned a = 0; a < bookmarks_.size(); a++)
 	{
 		// Check bookmarked entry's parent archive
 		auto bookmark = bookmarks_[a].lock();
 		if (!bookmark || bookmark->parent() == archive)
 		{
+			removed_entries.push_back(bookmark.get());
 			bookmarks_.erase(bookmarks_.begin() + a);
 			a--;
 			removed = true;
@@ -1189,7 +1195,7 @@ bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 	if (removed)
 	{
 		// Announce
-		signals_.bookmarks_changed();
+		signals_.bookmarks_removed(removed_entries);
 		return true;
 	}
 	else
@@ -1201,9 +1207,14 @@ bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 // -----------------------------------------------------------------------------
 bool ArchiveManager::deleteBookmarksInDir(ArchiveDir* node)
 {
-	// Go through bookmarks
 	auto archive = node->archive();
 	bool removed = deleteBookmark(node->dirEntry());
+
+	vector<ArchiveEntry*> removed_entries;
+	if (removed)
+		removed_entries.push_back(node->dirEntry());
+
+	// Go through bookmarks
 	for (unsigned a = 0; a < bookmarks_.size(); ++a)
 	{
 		// Check bookmarked entry's parent archive
@@ -1229,6 +1240,7 @@ bool ArchiveManager::deleteBookmarksInDir(ArchiveDir* node)
 
 			if (remove)
 			{
+				removed_entries.push_back(bookmark.get());
 				bookmarks_.erase(bookmarks_.begin() + a);
 				--a;
 				removed = true;
@@ -1239,7 +1251,7 @@ bool ArchiveManager::deleteBookmarksInDir(ArchiveDir* node)
 	if (removed)
 	{
 		// Announce
-		signals_.bookmarks_changed();
+		signals_.bookmarks_removed(removed_entries);
 		return true;
 	}
 	else
@@ -1253,8 +1265,12 @@ void ArchiveManager::deleteAllBookmarks()
 {
 	if (!bookmarks_.empty())
 	{
+		vector<ArchiveEntry*> removed;
+		for (const auto& entry : bookmarks_)
+			removed.push_back(entry.lock().get());
+
 		bookmarks_.clear();
-		signals_.bookmarks_changed();
+		signals_.bookmarks_removed(removed);
 	}
 }
 

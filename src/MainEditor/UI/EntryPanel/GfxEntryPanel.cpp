@@ -77,7 +77,7 @@ EXTERN_CVAR(Int, last_tint_amount)
 // -----------------------------------------------------------------------------
 // GfxEntryPanel class constructor
 // -----------------------------------------------------------------------------
-GfxEntryPanel::GfxEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent, "gfx", frame, true)
+GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
 {
 	// Init variables
 	prev_translation_.addRange(TransRange::Type::Palette, 0);

@@ -250,7 +250,8 @@ void ResourceManager::addArchive(Archive* archive)
 
 	// Update entries from the archive when changed (added/removed/modified)
 	archive->signals().entry_added.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, false, true); });
-	archive->signals().entry_removed.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, true, false); });
+	archive->signals().entry_removed.connect(
+		[this](Archive&, ArchiveDir&, ArchiveEntry& e) { updateEntry(e, true, false); });
 	archive->signals().entry_state_changed.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, true, true); });
 
 	// Update entries from the archive when renamed
@@ -364,8 +365,7 @@ void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry)
 		bool addToFpOnly = true;
 
 		// Check for patch entry
-		if (type->extraProps().contains("patch") || entry->isInNamespace("patches")
-			|| entry->isInNamespace("sprites"))
+		if (type->extraProps().contains("patch") || entry->isInNamespace("patches") || entry->isInNamespace("sprites"))
 		{
 			if (patches_[name].length() == 0)
 			{

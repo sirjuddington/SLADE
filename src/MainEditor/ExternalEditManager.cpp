@@ -39,9 +39,9 @@
 #include "Conversions.h"
 #include "General/Executables.h"
 #include "General/Misc.h"
+#include "Graphics/Graphics.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
-#include "Graphics/Graphics.h"
 #include "MainEditor.h"
 #include "Utility/FileMonitor.h"
 #include "Utility/FileUtils.h"
@@ -60,16 +60,14 @@ class ExternalEditFileMonitor : public FileMonitor
 {
 public:
 	ExternalEditFileMonitor(ArchiveEntry& entry, ExternalEditManager* manager) :
-		FileMonitor("", false),
-		entry_(&entry),
-		archive_{ entry.parent() },
-		manager_(manager)
+		FileMonitor("", false), entry_(&entry), archive_{ entry.parent() }, manager_(manager)
 	{
 		// Stop monitoring if the entry is removed
-		sc_entry_removed_ = archive_->signals().entry_removed.connect([this](Archive&, ArchiveEntry& entry) {
-			if (&entry == entry_)
-				delete this;
-		});
+		sc_entry_removed_ = archive_->signals().entry_removed.connect(
+			[this](Archive&, ArchiveDir&, ArchiveEntry& entry) {
+				if (&entry == entry_)
+					delete this;
+			});
 	}
 
 	virtual ~ExternalEditFileMonitor() { manager_->monitorStopped(this); }
@@ -274,8 +272,7 @@ class SfxExternalFileMonitor : public ExternalEditFileMonitor
 {
 public:
 	SfxExternalFileMonitor(ArchiveEntry& entry, ExternalEditManager* manager) :
-		ExternalEditFileMonitor(entry, manager),
-		doom_sound_(true)
+		ExternalEditFileMonitor(entry, manager), doom_sound_(true)
 	{
 	}
 	virtual ~SfxExternalFileMonitor() = default;

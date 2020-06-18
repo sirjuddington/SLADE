@@ -604,7 +604,7 @@ private:
 // -----------------------------------------------------------------------------
 // PaletteEntryPanel class constructor
 // -----------------------------------------------------------------------------
-PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent, bool frame) : EntryPanel(parent, "palette", frame, true)
+PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "palette", true)
 {
 	// Setup custom menu
 	menu_custom_ = new wxMenu();

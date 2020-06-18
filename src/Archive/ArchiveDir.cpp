@@ -52,8 +52,7 @@ using namespace slade;
 // ArchiveDir class constructor
 // -----------------------------------------------------------------------------
 ArchiveDir::ArchiveDir(string_view name, const shared_ptr<ArchiveDir>& parent, Archive* archive) :
-	archive_{ archive },
-	parent_dir_{ parent }
+	archive_{ archive }, parent_dir_{ parent }
 {
 	// Init dir entry
 	dir_entry_          = std::make_unique<ArchiveEntry>(name);
@@ -639,7 +638,13 @@ shared_ptr<ArchiveEntry> ArchiveDir::entryAtPath(const shared_ptr<ArchiveDir>& r
 // Entries within [dir] are added at [position] within [target].
 // Returns false if [dir] is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveDir::merge(shared_ptr<ArchiveDir>& target, ArchiveDir* dir, unsigned position, ArchiveEntry::State state)
+bool ArchiveDir::merge(
+	shared_ptr<ArchiveDir>&           target,
+	ArchiveDir*                       dir,
+	unsigned                          position,
+	ArchiveEntry::State               state,
+	vector<shared_ptr<ArchiveDir>>*   created_dirs,
+	vector<shared_ptr<ArchiveEntry>>* created_entries)
 {
 	// Check dir was given to merge
 	if (!dir)
@@ -651,6 +656,8 @@ bool ArchiveDir::merge(shared_ptr<ArchiveDir>& target, ArchiveDir* dir, unsigned
 		auto nentry = std::make_shared<ArchiveEntry>(*entry);
 		target->addEntry(nentry, position);
 		nentry->setState(state, true);
+		if (created_entries)
+			created_entries->push_back(nentry);
 
 		if (position < target->entries_.size())
 			++position;
@@ -659,8 +666,8 @@ bool ArchiveDir::merge(shared_ptr<ArchiveDir>& target, ArchiveDir* dir, unsigned
 	// Merge subdirectories
 	for (auto&& merge_subdir : dir->subdirs_)
 	{
-		auto target_subdir = getOrCreateSubdir(target, merge_subdir->name());
-		merge(target_subdir, merge_subdir.get(), -1, state);
+		auto target_subdir = getOrCreateSubdir(target, merge_subdir->name(), created_dirs);
+		merge(target_subdir, merge_subdir.get(), -1, state, created_dirs, created_entries);
 		target_subdir->dir_entry_->setState(state, true);
 	}
 
@@ -672,7 +679,10 @@ bool ArchiveDir::merge(shared_ptr<ArchiveDir>& target, ArchiveDir* dir, unsigned
 // If the subdir doesn't exist, it will be created (including any other subdirs
 // required to get to it)
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveDir> ArchiveDir::getOrCreateSubdir(shared_ptr<ArchiveDir>& root, string_view path)
+shared_ptr<ArchiveDir> ArchiveDir::getOrCreateSubdir(
+	shared_ptr<ArchiveDir>&         root,
+	string_view                     path,
+	vector<shared_ptr<ArchiveDir>>* created_dirs)
 {
 	auto subdir_name = strutil::beforeFirstV(path, '/');
 
@@ -683,6 +693,8 @@ shared_ptr<ArchiveDir> ArchiveDir::getOrCreateSubdir(shared_ptr<ArchiveDir>& roo
 		// Not found, create it
 		subdir = std::make_shared<ArchiveDir>(subdir_name, root, root->archive_);
 		root->addSubdir(subdir, -1);
+		if (created_dirs)
+			created_dirs->push_back(subdir);
 	}
 
 	// Check if there is more of [path] to follow
@@ -690,7 +702,7 @@ shared_ptr<ArchiveDir> ArchiveDir::getOrCreateSubdir(shared_ptr<ArchiveDir>& roo
 	if (path_rest.empty() || path_rest == path)
 		return subdir;
 	else
-		return getOrCreateSubdir(subdir, path_rest);
+		return getOrCreateSubdir(subdir, path_rest, created_dirs);
 }
 
 // -----------------------------------------------------------------------------
@@ -717,6 +729,9 @@ void ArchiveDir::entryTreeAsList(ArchiveDir* root, vector<shared_ptr<ArchiveEntr
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveDir> ArchiveDir::getShared(ArchiveDir* dir)
 {
+	if (!dir)
+		return nullptr;
+
 	auto parent = dir->parent_dir_.lock();
 	if (!parent)
 	{
@@ -730,6 +745,24 @@ shared_ptr<ArchiveDir> ArchiveDir::getShared(ArchiveDir* dir)
 	for (const auto& subdir : parent->subdirs_)
 		if (subdir.get() == dir)
 			return subdir;
+
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Finds the ArchiveDir for the given directory [entry] within (and including)
+// [dir_root].
+// Note that in this case [entry] is the target ArchiveDir's dirEntry(), *not*
+// an entry contained within it
+// -----------------------------------------------------------------------------
+shared_ptr<ArchiveDir> slade::ArchiveDir::findDirByDirEntry(shared_ptr<ArchiveDir> dir_root, const ArchiveEntry& entry)
+{
+	if (dir_root->dir_entry_.get() == &entry)
+		return dir_root;
+
+	for (auto subdir : dir_root->subdirs_)
+		if (auto dir = findDirByDirEntry(subdir, entry))
+			return dir;
 
 	return nullptr;
 }
