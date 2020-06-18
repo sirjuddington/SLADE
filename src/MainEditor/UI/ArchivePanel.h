@@ -1,26 +1,23 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/SAction.h"
 #include "General/UndoRedo.h"
 #include "MainEditor/ExternalEditManager.h"
-#include "UI/Lists/ArchiveEntryList.h"
+#include "UI/Lists/ArchiveEntryTree.h"
+#include <wx/splitter.h>
 
 class wxStaticText;
 class wxBitmapButton;
-class EntryPanel;
 
-class ArchivePanel : public wxPanel, public Listener, SActionHandler
+namespace slade
+{
+class EntryPanel;
+class SToolBar;
+
+class ArchivePanel : public wxPanel, SActionHandler
 {
 public:
-	enum class NewEntry
-	{
-		Empty = 0,
-		Palette,
-		Animated,
-		Switches,
-	};
-
 	ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive);
 	virtual ~ArchivePanel() = default;
 
@@ -39,8 +36,8 @@ public:
 	// Archive manipulation actions
 	bool save();
 	bool saveAs();
-	bool newEntry(NewEntry type = NewEntry::Empty);
-	bool newDirectory() const;
+	bool newEntry();
+	bool newDirectory();
 	bool importFiles();
 	bool convertArchiveTo() const;
 	bool cleanupArchive() const;
@@ -99,19 +96,18 @@ public:
 	bool    openEntryAsHex(ArchiveEntry* entry);
 	bool    showEntryPanel(EntryPanel* new_area, bool ask_save = true);
 	void    focusOnEntry(ArchiveEntry* entry) const;
-	void    focusEntryList() const { entry_list_->SetFocus(); }
+	void    focusEntryList() const { entry_tree_->SetFocus(); }
 	void    refreshPanel();
 	void    closeCurrentEntry();
 	wxMenu* createEntryOpenMenu(const wxString& category);
+	bool    switchToDefaultEntryPanel();
 
 	// SAction handler
 	bool handleAction(string_view id) override;
 
-	// Listener
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
-
 	// Static functions
 	static EntryPanel* createPanelForEntry(ArchiveEntry* entry, wxWindow* parent);
+	static wxMenu*     createMaintenanceMenu();
 
 protected:
 	weak_ptr<Archive>       archive_;
@@ -124,13 +120,14 @@ protected:
 	vector<string>                  current_external_exes_;
 
 	// Controls
-	ArchiveEntryList* entry_list_          = nullptr;
-	wxTextCtrl*       text_filter_         = nullptr;
-	wxButton*         btn_clear_filter_    = nullptr;
-	wxChoice*         choice_category_     = nullptr;
-	wxStaticText*     label_path_          = nullptr;
-	wxBitmapButton*   btn_updir_           = nullptr;
-	wxSizer*          sizer_path_controls_ = nullptr;
+	ui::ArchiveEntryTree* entry_tree_       = nullptr;
+	wxTextCtrl*           text_filter_      = nullptr;
+	wxButton*             btn_clear_filter_ = nullptr;
+	wxChoice*             choice_category_  = nullptr;
+	wxStaticText*         label_path_       = nullptr;
+	SToolBar*             toolbar_elist_    = nullptr;
+	wxPanel*              panel_filter_     = nullptr;
+	wxSplitterWindow*     splitter_         = nullptr;
 
 	// Entry panels
 	EntryPanel* cur_area_      = nullptr;
@@ -148,20 +145,31 @@ protected:
 	EntryPanel* audio_area_    = nullptr;
 	EntryPanel* data_area_     = nullptr;
 
+	// Signal connections
+	sigslot::scoped_connection sc_archive_saved_;
+	sigslot::scoped_connection sc_entry_removed_;
+	sigslot::scoped_connection sc_bookmarks_changed_;
+
+	bool canMoveEntries();
+	void selectionChanged();
+	void updateFilter();
+
 	// Events
-	void         onEntryListSelectionChange(wxCommandEvent& e);
-	void         onEntryListFocusChange(wxListEvent& e);
-	void         onEntryListRightClick(wxListEvent& e);
+	void         onEntryListSelectionChange(wxDataViewEvent& e);
+	void         onEntryListRightClick(wxDataViewEvent& e);
 	void         onEntryListKeyDown(wxKeyEvent& e);
-	virtual void onEntryListActivated(wxListEvent& e);
+	virtual void onEntryListActivated(wxDataViewEvent& e);
 	void         onDEPEditAsText(wxCommandEvent& e);
 	void         onDEPViewAsHex(wxCommandEvent& e);
 	void         onMEPEditAsText(wxCommandEvent& e);
 	void         onTextFilterChanged(wxCommandEvent& e);
 	void         onChoiceCategoryChanged(wxCommandEvent& e);
-	void         onDirChanged(wxCommandEvent& e);
-	void         onBtnUpDir(wxCommandEvent& e);
 	void         onBtnClearFilter(wxCommandEvent& e);
+
+private:
+	void     setup(Archive* archive);
+	void     bindEvents(Archive* archive);
+	wxPanel* createEntryListPanel(wxWindow* parent);
 };
 
 class EntryDataUS : public UndoStep
@@ -182,3 +190,4 @@ private:
 	int      index_   = -1;
 	Archive* archive_ = nullptr;
 };
+} // namespace slade

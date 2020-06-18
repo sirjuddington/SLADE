@@ -3,6 +3,8 @@
 #include "MapObjectList.h"
 #include "SLADEMap/MapObject/MapSide.h"
 
+namespace slade
+{
 class SideList : public MapObjectList<MapSide>
 {
 public:
@@ -18,3 +20,4 @@ public:
 private:
 	mutable std::map<string, int> usage_tex_;
 };
+} // namespace slade

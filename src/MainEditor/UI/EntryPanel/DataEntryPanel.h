@@ -2,6 +2,8 @@
 
 #include "EntryPanel.h"
 
+namespace slade
+{
 class DataEntryPanel;
 
 class DataEntryTable : public wxGridTableBase
@@ -116,3 +118,4 @@ private:
 	void onGridCursorChanged(wxGridEvent& e);
 	void onComboCellValueSet(wxCommandEvent& e);
 };
+} // namespace slade

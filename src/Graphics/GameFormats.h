@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Graphics
+namespace slade::gfx
 {
 // The header of a Doom-format gfx image
 struct PatchHeader
@@ -61,4 +61,4 @@ struct IMGZHeader
 	uint8_t  compression;
 	uint8_t  reserved[11];
 };
-} // namespace Graphics
+} // namespace slade::gfx

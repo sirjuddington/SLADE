@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -39,6 +39,8 @@
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include <filesystem>
+
+using namespace slade;
 
 
 
@@ -89,11 +91,11 @@ bool PaletteManager::addPalette(unique_ptr<Palette> pal, string_view name)
 Palette* PaletteManager::globalPalette()
 {
 	// Check if a base resource archive is open
-	if (!App::archiveManager().baseResourceArchive())
+	if (!app::archiveManager().baseResourceArchive())
 		return &pal_default_;
 
 	// Return the palette contained in the base resource archive
-	Misc::loadPaletteFromArchive(&pal_global_, App::archiveManager().baseResourceArchive());
+	misc::loadPaletteFromArchive(&pal_global_, app::archiveManager().baseResourceArchive());
 	return &pal_global_;
 }
 
@@ -158,7 +160,7 @@ string PaletteManager::palName(Palette* pal)
 bool PaletteManager::loadResourcePalettes()
 {
 	// Get the 'palettes' directory of SLADE.pk3
-	auto res_archive  = App::archiveManager().programResourceArchive();
+	auto res_archive  = app::archiveManager().programResourceArchive();
 	auto dir_palettes = res_archive->dirAtPath("palettes");
 
 	// Check it exists
@@ -187,9 +189,9 @@ bool PaletteManager::loadResourcePalettes()
 bool PaletteManager::loadCustomPalettes()
 {
 	// If the directory doesn't exist create it
-	auto custom_path = App::path("palettes", App::Dir::User);
-	if (!FileUtil::dirExists(custom_path))
-		FileUtil::createDir(custom_path);
+	auto custom_path = app::path("palettes", app::Dir::User);
+	if (!fileutil::dirExists(custom_path))
+		fileutil::createDir(custom_path);
 
 	for (const auto& item : std::filesystem::directory_iterator{ custom_path })
 	{
@@ -204,7 +206,7 @@ bool PaletteManager::loadCustomPalettes()
 		pal->loadMem(mc);
 
 		// Add the palette
-		addPalette(std::move(pal), StrUtil::Path::fileNameOf(file_path, false));
+		addPalette(std::move(pal), strutil::Path::fileNameOf(file_path, false));
 	}
 
 	return true;

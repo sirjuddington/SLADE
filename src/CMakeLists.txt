@@ -72,6 +72,7 @@ set(SFML_FIND_COMPONENTS system audio window graphics network)
 ADD_DEFINITIONS(-DUSE_SFML_RENDERWINDOW)
 else (USE_SFML_RENDERWINDOW)
 set(SFML_FIND_COMPONENTS system audio window network)
+find_package(FTGL REQUIRED)
 endif(USE_SFML_RENDERWINDOW)
 
 # Fluidsynth
@@ -100,18 +101,18 @@ endif()
 
 find_package(FreeImage REQUIRED)
 find_package(SFML COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
-find_package(FTGL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-find_package(Freetype REQUIRED)
 find_package(CURL REQUIRED)
+find_package(Lua REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 include_directories(
 	${FREEIMAGE_INCLUDE_DIR}
 	${SFML_INCLUDE_DIR}
 	${FTGL_INCLUDE_DIR}
-	${FREETYPE_INCLUDE_DIRS}
 	${GLEW_INCLUDE_PATH}
 	${CURL_INCLUDE_DIR}
+	${LUA_INCLUDE_DIR}
 	.
 	..
 	../thirdparty/dumb
@@ -161,8 +162,11 @@ if(APPLE)
 	set_source_files_properties(${OSX_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 endif(APPLE)
 
-# enable SSE instructions for dumb library
+# Enable SSE instructions for dumb library
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
+
+# Enable debug symbols for glib (so gdb debugging works properly with strings etc.)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
 
 # External libraries are compiled separately to enable unity builds
 add_subdirectory(../thirdparty external)
@@ -181,9 +185,10 @@ target_link_libraries(slade
 	${SFML_LIBRARY}
 	${FTGL_LIBRARIES}
 	${OPENGL_LIBRARIES}
-	${FREETYPE_LIBRARIES}
 	${GLEW_LIBRARY}
 	${CURL_LIBRARIES}
+	${LUA_LIBRARIES}
+	fmt::fmt
 	-lstdc++fs
 )
 
@@ -225,8 +230,8 @@ else(APPLE)
 			DESTINATION share/applications/
 			)
 
-		install(FILES "${PROJECT_SOURCE_DIR}/net.mancubus.SLADE.appdata.xml"
-			DESTINATION share/appdata/
+		install(FILES "${PROJECT_SOURCE_DIR}/net.mancubus.SLADE.metainfo.xml"
+			DESTINATION share/metainfo/
 			)
 	endif(UNIX)
 endif(APPLE)

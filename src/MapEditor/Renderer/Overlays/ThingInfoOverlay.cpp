@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -41,6 +41,8 @@
 #include "OpenGL/OpenGL.h"
 #include "SLADEMap/MapObject/MapThing.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -61,7 +63,7 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 // ThingInfoOverlay class constructor
 // -----------------------------------------------------------------------------
 ThingInfoOverlay::ThingInfoOverlay() :
-	text_box_{ "", Drawing::Font::Condensed, 100, int(16 * (Drawing::fontSize() / 12.0)) }
+	text_box_{ "", drawing::Font::Condensed, 100, int(16 * (drawing::fontSize() / 12.0)) }
 {
 }
 
@@ -78,12 +80,12 @@ void ThingInfoOverlay::update(MapThing* thing)
 	translation_    = "";
 	palette_        = "";
 	icon_           = "";
-	auto map_format = MapEditor::editContext().mapDesc().format;
+	auto map_format = mapeditor::editContext().mapDesc().format;
 
 	// Index + type
-	auto& tt   = Game::configuration().thingType(thing->type());
+	auto& tt   = game::configuration().thingType(thing->type());
 	auto  type = fmt::format("{} (Type {})", tt.name(), thing->type());
-	if (Global::debug)
+	if (global::debug)
 		info_text += fmt::format("Thing #{} ({}): {}\n", thing->index(), thing->objId(), type);
 	else
 		info_text += fmt::format("Thing #{}: {}\n", thing->index(), type);
@@ -118,10 +120,10 @@ void ThingInfoOverlay::update(MapThing* thing)
 
 	// Special and Args (if in hexen format or udmf with thing args)
 	if (map_format == MapFormat::Hexen
-		|| (map_format == MapFormat::UDMF && Game::configuration().getUDMFProperty("arg0", MapObject::Type::Thing)))
+		|| (map_format == MapFormat::UDMF && game::configuration().getUDMFProperty("arg0", MapObject::Type::Thing)))
 	{
 		int as_id = thing->special();
-		info_text += fmt::format("Special: {} ({})\n", as_id, Game::configuration().actionSpecialName(as_id));
+		info_text += fmt::format("Special: {} ({})\n", as_id, game::configuration().actionSpecialName(as_id));
 		string argxstr[2];
 		argxstr[0] = thing->stringProperty("arg0str");
 		argxstr[1] = thing->stringProperty("arg1str");
@@ -129,7 +131,7 @@ void ThingInfoOverlay::update(MapThing* thing)
 		if (tt.argSpec().count > 0)
 			argstr = tt.argSpec().stringDesc(thing->args().data(), argxstr);
 		else
-			argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(thing->args().data(), argxstr);
+			argstr = game::configuration().actionSpecial(as_id).argSpec().stringDesc(thing->args().data(), argxstr);
 
 		if (!argstr.empty())
 			info_text += fmt::format("{}\n", argstr);
@@ -139,7 +141,7 @@ void ThingInfoOverlay::update(MapThing* thing)
 
 	// Flags
 	if (map_format != MapFormat::UDMF)
-		info_text += fmt::format("Flags: {}\n", Game::configuration().thingFlagsString(thing->flags()));
+		info_text += fmt::format("Flags: {}\n", game::configuration().thingFlagsString(thing->flags()));
 
 	// TID (if in doom64/hexen/udmf format)
 	if (map_format != MapFormat::Doom)
@@ -185,36 +187,36 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 	bottom += height * alpha_inv * alpha_inv;
 
 	// Get colours
-	auto col_bg = ColourConfiguration::colour("map_overlay_background");
-	auto col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	auto col_bg = colourconfig::colour("map_overlay_background");
+	auto col_fg = colourconfig::colour("map_overlay_foreground");
 	col_fg.a    = col_fg.a * alpha;
 	col_bg.a    = col_bg.a * alpha;
 	ColRGBA col_border(0, 0, 0, 140);
 
 	// Draw overlay background
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	Drawing::drawBorderedRect(0, bottom - height - 4, right, bottom + 2, col_bg, col_border);
+	drawing::drawBorderedRect(0, bottom - height - 4, right, bottom + 2, col_bg, col_border);
 
 	// Draw info text lines
-	text_box_.setLineHeight(16 * (Drawing::fontSize() / 12.0));
+	text_box_.setLineHeight(16 * (drawing::fontSize() / 12.0));
 	text_box_.draw(2, bottom - height, col_fg);
 
 	// Draw sprite
 	bool isicon = false;
-	auto tex    = MapEditor::textureManager().sprite(sprite_, translation_, palette_).gl_id;
+	auto tex    = mapeditor::textureManager().sprite(sprite_, translation_, palette_).gl_id;
 	if (!tex)
 	{
 		if (use_zeth_icons && zeth_icon_ >= 0)
-			tex = MapEditor::textureManager().editorImage(fmt::format("zethicons/zeth{:02d}", zeth_icon_)).gl_id;
+			tex = mapeditor::textureManager().editorImage(fmt::format("zethicons/zeth{:02d}", zeth_icon_)).gl_id;
 		if (!tex)
-			tex = MapEditor::textureManager().editorImage(fmt::format("thing/{}", icon_)).gl_id;
+			tex = mapeditor::textureManager().editorImage(fmt::format("thing/{}", icon_)).gl_id;
 		isicon = true;
 	}
 	glEnable(GL_TEXTURE_2D);
-	OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
+	gl::setColour(255, 255, 255, 255 * alpha, gl::Blend::Normal);
 	if (tex)
 	{
-		auto&  tex_info = OpenGL::Texture::info(tex);
+		auto&  tex_info = gl::Texture::info(tex);
 		double twidth   = tex_info.size.x;
 		double theight  = tex_info.size.y;
 		if (twidth > 128.0 || theight > 128.0)
@@ -228,7 +230,7 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 			twidth  = 64;
 			theight = 64;
 		}
-		OpenGL::Texture::bind(tex);
+		gl::Texture::bind(tex);
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0f, 0.0f);
 		glVertex2d(right - 8 - twidth, bottom - 8 - theight);

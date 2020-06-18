@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class DatArchive : public TreelessArchive
 {
 public:
@@ -9,7 +11,7 @@ public:
 	~DatArchive() = default;
 
 	// Dat specific
-	uint32_t getEntryOffset(ArchiveEntry* entry) const { return uint32_t((int)entry->exProp("Offset")); }
+	uint32_t getEntryOffset(ArchiveEntry* entry) const { return entry->exProp<int>("Offset"); }
 	void     setEntryOffset(ArchiveEntry* entry, uint32_t offset) const { entry->exProp("Offset") = (int)offset; }
 	void     updateNamespaces();
 
@@ -48,3 +50,4 @@ private:
 	int flats_[2];
 	int walls_[2];
 };
+} // namespace slade

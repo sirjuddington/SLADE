@@ -186,7 +186,7 @@ private:
 				uint32_t grpsz = mc.readL32(imgofs + 4);
 				if (grpsz == 0)
 				{
-					Global::error = "Quake sprite data contains empty group";
+					global::error = "Quake sprite data contains empty group";
 					return 0;
 				}
 				// Move to end of group header
@@ -201,7 +201,7 @@ private:
 					imgofs += 16 + pw * ph;
 					if (imgofs > (unsigned)mc.size())
 					{
-						Global::error = "Quake sprite data too short";
+						global::error = "Quake sprite data too short";
 						return 0;
 					}
 				}
@@ -222,7 +222,7 @@ private:
 			}
 			if (imgofs > mc.size())
 			{
-				Global::error = "Quake sprite data too short";
+				global::error = "Quake sprite data too short";
 				return 0;
 			}
 		}
@@ -343,7 +343,7 @@ protected:
 		size_t data_offset = data.readL32(40 + (index << 2));
 		if (!info.width || !info.height || !data_offset || data.size() < data_offset + (info.width * info.height))
 		{
-			Global::error = "WAL file: invalid data for mip level";
+			global::error = "WAL file: invalid data for mip level";
 			return false;
 		}
 

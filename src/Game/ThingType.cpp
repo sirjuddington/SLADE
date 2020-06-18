@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,7 +35,8 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
-using namespace Game;
+using namespace slade;
+using namespace game;
 
 
 // -----------------------------------------------------------------------------
@@ -57,10 +58,7 @@ ThingType ThingType::unknown_;
 // ThingType class constructor
 // -----------------------------------------------------------------------------
 ThingType::ThingType(string_view name, string_view group, string_view class_name) :
-	name_{ name },
-	group_{ group },
-	tagged_{ TagType::None },
-	class_name_{ class_name }
+	name_{ name }, group_{ group }, tagged_{ TagType::None }, class_name_{ class_name }
 {
 }
 
@@ -70,27 +68,29 @@ ThingType::ThingType(string_view name, string_view group, string_view class_name
 // -----------------------------------------------------------------------------
 void ThingType::copy(const ThingType& copy)
 {
-	angled_      = copy.angled_;
-	hanging_     = copy.hanging_;
-	shrink_      = copy.shrink_;
-	colour_      = copy.colour_;
-	radius_      = copy.radius_;
-	height_      = copy.height_;
-	scale_       = copy.scale_;
-	fullbright_  = copy.fullbright_;
-	decoration_  = copy.decoration_;
-	decorate_    = copy.decorate_;
-	solid_       = copy.solid_;
-	zeth_icon_   = copy.zeth_icon_;
-	next_type_   = copy.next_type_;
-	next_args_   = copy.next_args_;
-	flags_       = copy.flags_;
-	tagged_      = copy.tagged_;
-	args_        = copy.args_;
-	sprite_      = copy.sprite_;
-	icon_        = copy.icon_;
-	translation_ = copy.translation_;
-	palette_     = copy.palette_;
+	angled_            = copy.angled_;
+	hanging_           = copy.hanging_;
+	shrink_            = copy.shrink_;
+	colour_            = copy.colour_;
+	radius_            = copy.radius_;
+	height_            = copy.height_;
+	scale_             = copy.scale_;
+	fullbright_        = copy.fullbright_;
+	decoration_        = copy.decoration_;
+	decorate_          = copy.decorate_;
+	solid_             = copy.solid_;
+	zeth_icon_         = copy.zeth_icon_;
+	next_type_         = copy.next_type_;
+	next_args_         = copy.next_args_;
+	flags_             = copy.flags_;
+	tagged_            = copy.tagged_;
+	args_              = copy.args_;
+	sprite_            = copy.sprite_;
+	icon_              = copy.icon_;
+	translation_       = copy.translation_;
+	palette_           = copy.palette_;
+	z_height_absolute_ = copy.z_height_absolute_;
+	point_light_       = copy.point_light_;
 }
 
 // -----------------------------------------------------------------------------
@@ -109,27 +109,29 @@ void ThingType::define(int number, string_view name, string_view group)
 void ThingType::reset()
 {
 	// Reset variables
-	name_        = "Unknown";
-	group_       = "";
-	sprite_      = "";
-	icon_        = "";
-	translation_ = "";
-	palette_     = "";
-	angled_      = true;
-	hanging_     = false;
-	shrink_      = false;
-	colour_      = ColRGBA::WHITE;
-	radius_      = 20;
-	height_      = -1;
-	scale_       = { 1.0, 1.0 };
-	fullbright_  = false;
-	decoration_  = false;
-	solid_       = false;
-	zeth_icon_   = -1;
-	next_type_   = 0;
-	next_args_   = 0;
-	flags_       = 0;
-	tagged_      = TagType::None;
+	name_              = "Unknown";
+	group_             = "";
+	sprite_            = "";
+	icon_              = "";
+	translation_       = "";
+	palette_           = "";
+	angled_            = true;
+	hanging_           = false;
+	shrink_            = false;
+	colour_            = ColRGBA::WHITE;
+	radius_            = 20;
+	height_            = -1;
+	scale_             = { 1.0, 1.0 };
+	fullbright_        = false;
+	decoration_        = false;
+	solid_             = false;
+	zeth_icon_         = -1;
+	next_type_         = 0;
+	next_args_         = 0;
+	flags_             = 0;
+	tagged_            = TagType::None;
+	z_height_absolute_ = false;
+	point_light_       = "";
 
 	// Reset args
 	args_.count = 0;
@@ -151,7 +153,7 @@ void ThingType::parse(ParseTreeNode* node)
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
 		auto child = node->childPTN(a);
-		auto name  = StrUtil::lower(child->name());
+		auto name  = strutil::lower(child->name());
 		int  arg   = -1;
 
 		// Name
@@ -277,7 +279,15 @@ void ThingType::parse(ParseTreeNode* node)
 
 		// Some things tag other things directly
 		else if (name == "tagged")
-			tagged_ = Game::parseTagged(child);
+			tagged_ = parseTagged(child);
+
+		// Z Height is absolute rather than relative to the floor/ceiling
+		else if (name == "z_height_absolute")
+			z_height_absolute_ = child->boolValue();
+
+		// Thing is a point light
+		else if (name == "point_light")
+			point_light_ = strutil::lower(child->stringValue());
 
 		// Parse arg definition if it was one
 		if (arg >= 0)
@@ -315,11 +325,11 @@ void ThingType::parse(ParseTreeNode* node)
 				string atype;
 				if (val)
 					atype = val->stringValue();
-				if (StrUtil::equalCI(atype, "yesno"))
+				if (strutil::equalCI(atype, "yesno"))
 					args_[arg].type = Arg::Type::YesNo;
-				else if (StrUtil::equalCI(atype, "noyes"))
+				else if (strutil::equalCI(atype, "noyes"))
 					args_[arg].type = Arg::Type::NoYes;
-				else if (StrUtil::equalCI(atype, "angle"))
+				else if (strutil::equalCI(atype, "angle"))
 					args_[arg].type = Arg::Type::Angle;
 				else
 					args_[arg].type = Arg::Type::Number;
@@ -365,26 +375,26 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 	decorate_ = decorate;
 
 	// Sprite
-	if (props["sprite"].hasValue())
+	if (auto sprite = props.getIf<string>("sprite"))
 	{
-		if (StrUtil::equalCI(props["sprite"].stringValue(), "tnt1a?"))
+		if (strutil::equalCI(*sprite, "tnt1a?"))
 		{
-			if ((!(props["icon"].hasValue())) && icon_.empty())
+			if (!props.contains("icon"))
 				icon_ = "tnt1a0";
 		}
 		else
-			sprite_ = props["sprite"].stringValue();
+			sprite_ = *sprite;
 	}
 
 	// Colour
-	if (props["colour"].hasValue())
+	if (auto colour = props.getIf<string>("colour"))
 	{
 		// SLADE Colour
-		wxColour wxc(props["colour"].stringValue());
+		wxColour wxc(*colour);
 		if (wxc.IsOk())
-			colour_.set(COLWX(wxc));
+			colour_.set(wxc);
 	}
-	else if (props["color"].hasValue())
+	else if (auto color = props.getIf<int>("color"))
 	{
 		// Translate DB2 color indices to RGB values
 		static vector<ColRGBA> db2_colours{
@@ -410,48 +420,47 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 			{ 0xDA, 0xA5, 0x20, 0xFF }, // Goldenrod		ARGB value of #FFDAA520
 		};
 
-		int color = props["color"].intValue();
-		if (color < (int)db2_colours.size())
-			colour_ = db2_colours[color];
+		if (*color < (int)db2_colours.size())
+			colour_ = db2_colours[*color];
 	}
 
 	// Other props
-	if (props["radius"].hasValue())
-		radius_ = props["radius"].intValue();
-	if (props["height"].hasValue())
-		height_ = props["height"].intValue();
-	if (props["scalex"].hasValue())
-		scale_.x = props["scalex"].floatValue();
-	if (props["scaley"].hasValue())
-		scale_.y = props["scaley"].floatValue();
-	if (props["hanging"].hasValue())
-		hanging_ = props["hanging"].boolValue();
-	if (props["angled"].hasValue())
-		angled_ = props["angled"].boolValue();
-	if (props["bright"].hasValue())
-		fullbright_ = props["bright"].boolValue();
-	if (props["decoration"].hasValue())
-		decoration_ = props["decoration"].boolValue();
-	if (props["icon"].hasValue())
-		icon_ = props["icon"].stringValue();
-	if (props["translation"].hasValue())
-		translation_ = props["translation"].stringValue();
-	if (props["solid"].hasValue())
-		solid_ = props["solid"].boolValue();
-	if (props["obsolete"].hasValue())
+	if (auto val = props.getIf<int>("radius"))
+		radius_ = *val;
+	if (auto val = props.getIf<int>("height"))
+		height_ = *val;
+	if (auto val = props.getIf<double>("scalex"))
+		scale_.x = *val;
+	if (auto val = props.getIf<double>("scaley"))
+		scale_.y = *val;
+	if (auto val = props.getIf<bool>("hanging"))
+		hanging_ = *val;
+	if (auto val = props.getIf<bool>("angled"))
+		angled_ = *val;
+	if (auto val = props.getIf<bool>("bright"))
+		fullbright_ = *val;
+	if (auto val = props.getIf<bool>("decoration"))
+		decoration_ = *val;
+	if (auto val = props.getIf<string>("icon"))
+		icon_ = *val;
+	if (auto val = props.getIf<string>("translation"))
+		translation_ = *val;
+	if (auto val = props.getIf<bool>("solid"))
+		solid_ = *val;
+	if (auto val = props.getIf<bool>("obsolete"))
 		flags_ |= Obsolete;
 
 	// ZScript-only props
 	if (zscript)
 	{
-		if (props["scale"].hasValue())
-			scale_.x = scale_.y = props["scale"].floatValue();
-		if (props["scale.x"].hasValue())
-			scale_.x = props["scale.x"].floatValue();
-		if (props["scale.y"].hasValue())
-			scale_.y = props["scale.y"].floatValue();
-		if (props["spawnceiling"].hasValue())
-			hanging_ = props["spawnceiling"].boolValue();
+		if (auto val = props.getIf<double>("scale"))
+			scale_.x = scale_.y = *val;
+		if (auto val = props.getIf<double>("scale.x"))
+			scale_.x = *val;
+		if (auto val = props.getIf<double>("scale.y"))
+			scale_.y = *val;
+		if (auto val = props.getIf<bool>("spawnceiling"))
+			hanging_ = *val;
 	}
 }
 

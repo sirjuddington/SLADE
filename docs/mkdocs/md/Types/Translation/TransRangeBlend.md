@@ -1,4 +1,5 @@
-<article-head>TransRangeBlend</article-head>
+<subhead>Type</subhead>
+<header>TransRangeBlend</header>
 
 A custom translation range that blends with a colour. See [Translation](https://zdoom.org/wiki/Translation) for more info.
 
@@ -16,6 +17,6 @@ All properties and functions of <type>[TransRange](TransRange.md)</type> can be 
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[Translation.AddBlendRange](Translation.md#addblendrange)</code>

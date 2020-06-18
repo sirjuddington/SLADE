@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,6 +35,8 @@
 #include "SideList.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -58,9 +60,9 @@ void SideList::clear()
 void SideList::add(MapSide* side)
 {
 	// Update texture counts
-	usage_tex_[StrUtil::upper(side->tex_upper_)] += 1;
-	usage_tex_[StrUtil::upper(side->tex_middle_)] += 1;
-	usage_tex_[StrUtil::upper(side->tex_lower_)] += 1;
+	usage_tex_[strutil::upper(side->tex_upper_)] += 1;
+	usage_tex_[strutil::upper(side->tex_middle_)] += 1;
+	usage_tex_[strutil::upper(side->tex_lower_)] += 1;
 
 	MapObjectList::add(side);
 }
@@ -74,9 +76,9 @@ void SideList::remove(unsigned index)
 		return;
 
 	// Update texture counts
-	usage_tex_[StrUtil::upper(objects_[index]->tex_upper_)] -= 1;
-	usage_tex_[StrUtil::upper(objects_[index]->tex_middle_)] -= 1;
-	usage_tex_[StrUtil::upper(objects_[index]->tex_lower_)] -= 1;
+	usage_tex_[strutil::upper(objects_[index]->tex_upper_)] -= 1;
+	usage_tex_[strutil::upper(objects_[index]->tex_middle_)] -= 1;
+	usage_tex_[strutil::upper(objects_[index]->tex_lower_)] -= 1;
 
 	MapObjectList::remove(index);
 }
@@ -86,7 +88,7 @@ void SideList::remove(unsigned index)
 // -----------------------------------------------------------------------------
 void SideList::updateTexUsage(string_view tex, int adjust) const
 {
-	usage_tex_[StrUtil::upper(tex)] += adjust;
+	usage_tex_[strutil::upper(tex)] += adjust;
 }
 
 // -----------------------------------------------------------------------------
@@ -94,5 +96,5 @@ void SideList::updateTexUsage(string_view tex, int adjust) const
 // -----------------------------------------------------------------------------
 int SideList::texUsageCount(string_view tex) const
 {
-	return usage_tex_[StrUtil::upper(tex)];
+	return usage_tex_[strutil::upper(tex)];
 }

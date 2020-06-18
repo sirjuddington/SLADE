@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,6 +36,8 @@
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include "WadJArchive.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -115,7 +117,7 @@ namespace
 // -----------------------------------------------------------------------------
 bool isNamespaceEntry(ArchiveEntry* entry)
 {
-	return StrUtil::endsWith(entry->upperName(), "_START") || StrUtil::endsWith(entry->upperName(), "_END");
+	return strutil::endsWith(entry->upperName(), "_START") || strutil::endsWith(entry->upperName(), "_END");
 }
 } // namespace
 
@@ -144,7 +146,7 @@ uint32_t WadArchive::getEntryOffset(ArchiveEntry* entry)
 	if (!checkEntry(entry))
 		return 0;
 
-	return (uint32_t)(int)entry->exProp("Offset");
+	return (uint32_t)entry->exProp<int>("Offset");
 }
 
 // -----------------------------------------------------------------------------
@@ -174,16 +176,16 @@ void WadArchive::updateNamespaces()
 		auto entry = rootDir()->entryAt(a);
 
 		// Check for namespace begin
-		if (StrUtil::endsWith(entry->upperName(), "_START"))
+		if (strutil::endsWith(entry->upperName(), "_START"))
 		{
-			Log::debug("Found namespace start marker {} at index {}", entry->name(), entryIndex(entry));
+			log::debug("Found namespace start marker {} at index {}", entry->name(), entryIndex(entry));
 
 			// Create new namespace
 			NSPair      ns(entry, nullptr);
 			string_view name = entry->name();
 			ns.name          = name.substr(0, name.size() - 6);
 			ns.start_index   = entryIndex(ns.start);
-			StrUtil::lowerIP(ns.name);
+			strutil::lowerIP(ns.name);
 
 			// Convert some special cases (because technically PP_START->P_END is a valid namespace)
 			if (ns.name == "pp")
@@ -195,20 +197,20 @@ void WadArchive::updateNamespaces()
 			if (ns.name == "tt")
 				ns.name = "t";
 
-			Log::debug("Added namespace {}", ns.name);
+			log::debug("Added namespace {}", ns.name);
 
 			// Add to namespace list
 			namespaces_.push_back(ns);
 		}
 		// Check for namespace end
-		// else if (StrUtil::matches(entry->upperName(), "?_END") || StrUtil::matches(entry->upperName(), "??_END"))
-		else if (StrUtil::endsWith(entry->upperName(), "_END"))
+		// else if (strutil::matches(entry->upperName(), "?_END") || strutil::matches(entry->upperName(), "??_END"))
+		else if (strutil::endsWith(entry->upperName(), "_END"))
 		{
-			Log::debug("Found namespace end marker {} at index {}", entry->name(), entryIndex(entry));
+			log::debug("Found namespace end marker {} at index {}", entry->name(), entryIndex(entry));
 
 			// Get namespace 'name'
-			auto ns_name = StrUtil::lower(entry->name());
-			StrUtil::removeLastIP(ns_name, 4);
+			auto ns_name = strutil::lower(entry->name());
+			strutil::removeLastIP(ns_name, 4);
 
 			// Convert some special cases (because technically P_START->PP_END is a valid namespace)
 			if (ns_name == "pp")
@@ -220,7 +222,7 @@ void WadArchive::updateNamespaces()
 			if (ns_name == "tt")
 				ns_name = "t";
 
-			Log::debug("Namespace name {}", ns_name);
+			log::debug("Namespace name {}", ns_name);
 
 			// Check if it's the end of an existing namespace
 			// Remember entry is getEntry(a)? index is 'a'
@@ -235,7 +237,7 @@ void WadArchive::updateNamespaces()
 				// Can't close an already-closed namespace
 				if (ns.end != nullptr)
 					continue;
-				if (StrUtil::equalCI(ns.name, ns_name))
+				if (strutil::equalCI(ns.name, ns_name))
 				{
 					found        = true;
 					ns.end       = entry;
@@ -294,7 +296,7 @@ void WadArchive::updateNamespaces()
 		ns.end_index   = entryIndex(ns.end);
 
 		// Testing
-		// Log::info(1, "Namespace %s from %s (%d) to %s (%d)", ns.name,
+		// log::info(1, "Namespace %s from %s (%d) to %s (%d)", ns.name,
 		//	ns.start->getName(), ns.start_index, ns.end->getName(), ns.end_index);
 	}
 }
@@ -337,8 +339,8 @@ bool WadArchive::open(MemChunk& mc)
 	// Check the header
 	if (wad_type[1] != 'W' || wad_type[2] != 'A' || wad_type[3] != 'D')
 	{
-		Log::error("WadArchive::openFile: File {} has invalid header", filename_);
-		Global::error = "Invalid wad header";
+		log::error("WadArchive::openFile: File {} has invalid header", filename_);
+		global::error = "Invalid wad header";
 		return false;
 	}
 
@@ -347,17 +349,17 @@ bool WadArchive::open(MemChunk& mc)
 		iwad_ = true;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	vector<uint32_t> offsets;
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
-	UI::setSplashProgressMessage("Reading wad archive data");
+	ui::setSplashProgressMessage("Reading wad archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		char     name[9] = "";
@@ -378,12 +380,12 @@ bool WadArchive::open(MemChunk& mc)
 		{
 			if (offset == 0)
 			{
-				Log::info(2, "No.");
+				log::info(2, "No.");
 				continue;
 			}
 			if (VECTOR_EXISTS(offsets, offset))
 			{
-				Log::warning("Ignoring entry {}: {}, is a clone of a previous entry", d, name);
+				log::warning("Ignoring entry {}: {}, is a clone of a previous entry", d, name);
 				continue;
 			}
 			offsets.push_back(offset);
@@ -435,10 +437,9 @@ bool WadArchive::open(MemChunk& mc)
 		// the wadfile is invalid
 		if (offset + actualsize > mc.size())
 		{
-			Log::error("WadArchive::open: Wad archive is invalid or corrupt");
-			Global::error = fmt::format(
+			log::error("WadArchive::open: Wad archive is invalid or corrupt");
+			global::error = fmt::format(
 				"Archive is invalid and/or corrupt (lump {}: {} data goes past end of file)", d, name);
-			setMuted(false);
 			return false;
 		}
 
@@ -464,11 +465,11 @@ bool WadArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)numEntries())));
+		ui::setSplashProgress((((float)a / (float)numEntries())));
 
 		// Get entry
 		auto entry = entryAt(a);
@@ -480,11 +481,11 @@ bool WadArchive::open(MemChunk& mc)
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->size());
 			if (entry->encryption() != ArchiveEntry::Encryption::None)
 			{
-				if (entry->exProps().propertyExists("FullSize")
-					&& (unsigned)(int)(entry->exProp("FullSize")) > entry->size())
-					edata.reSize((int)(entry->exProp("FullSize")), true);
+				if (entry->exProps().contains("FullSize")
+					&& (unsigned)(entry->exProp<int>("FullSize")) > entry->size())
+					edata.reSize((entry->exProp<int>("FullSize")), true);
 				if (!WadJArchive::jaguarDecode(edata))
-					Log::warning(
+					log::warning(
 						"{}: {} (following {}), did not decode properly",
 						a,
 						entry->name(),
@@ -508,15 +509,14 @@ bool WadArchive::open(MemChunk& mc)
 	detectIncludes();
 
 	// Detect maps (will detect map entry types)
-	UI::setSplashProgressMessage("Detecting maps");
+	ui::setSplashProgressMessage("Detecting maps");
 	detectMaps();
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -530,7 +530,7 @@ bool WadArchive::write(MemChunk& mc, bool update)
 	// Don't write if iwad
 	if (iwad_ && iwad_lock)
 	{
-		Global::error = "IWAD saving disabled";
+		global::error = "IWAD saving disabled";
 		return false;
 	}
 
@@ -549,7 +549,7 @@ bool WadArchive::write(MemChunk& mc, bool update)
 	mc.seek(0, SEEK_SET);
 	if (!mc.reSize(dir_offset + numEntries() * 16))
 	{
-		Global::error = "Failed to allocate sufficient memory";
+		global::error = "Failed to allocate sufficient memory";
 		return false;
 	}
 
@@ -605,7 +605,7 @@ bool WadArchive::write(string_view filename, bool update)
 	// Don't write if iwad
 	if (iwad_ && iwad_lock)
 	{
-		Global::error = "IWAD saving disabled";
+		global::error = "IWAD saving disabled";
 		return false;
 	}
 
@@ -614,7 +614,7 @@ bool WadArchive::write(string_view filename, bool update)
 	file.Open(wxString{ filename.data(), filename.size() }, wxFile::write);
 	if (!file.IsOpened())
 	{
-		Global::error = "Unable to open file for writing";
+		global::error = "Unable to open file for writing";
 		return false;
 	}
 
@@ -700,7 +700,7 @@ bool WadArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error("WadArchive::loadEntryData: Failed to open wadfile {}", filename_);
+		log::error("WadArchive::loadEntryData: Failed to open wadfile {}", filename_);
 		return false;
 	}
 
@@ -750,7 +750,7 @@ shared_ptr<ArchiveEntry> WadArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 	// Find requested namespace
 	for (auto& ns : namespaces_)
 	{
-		if (StrUtil::equalCI(ns.name, add_namespace))
+		if (strutil::equalCI(ns.name, add_namespace))
 		{
 			// Namespace found, add entry before end marker
 			return addEntry(entry, ns.end_index++, nullptr);
@@ -957,7 +957,7 @@ Archive::MapDesc WadArchive::mapDesc(ArchiveEntry* maphead)
 			else if (a == LUMP_GL_HEADER)
 			{
 				string name{ maphead->upperNameNoExt() };
-				StrUtil::prependIP(name, "GL_");
+				strutil::prependIP(name, "GL_");
 				if (entry->upperName() == name)
 				{
 					mapentry              = true;
@@ -1282,7 +1282,7 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 	// Init search variables
 	unsigned index     = 0;
 	auto     index_end = numEntries();
-	StrUtil::upperIP(options.match_name);
+	strutil::upperIP(options.match_name);
 
 	// "graphics" namespace is the global namespace in a wad
 	if (options.match_namespace == "graphics")
@@ -1330,7 +1330,7 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 		// Check name
 		if (!options.match_name.empty())
 		{
-			if (!StrUtil::matches(options.match_name, entry->upperName()))
+			if (!strutil::matches(options.match_name, entry->upperName()))
 				continue;
 		}
 
@@ -1351,7 +1351,7 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 	// Init search variables
 	int index       = numEntries() - 1;
 	int index_start = 0;
-	StrUtil::upperIP(options.match_name);
+	strutil::upperIP(options.match_name);
 
 	// "graphics" namespace is the global namespace in a wad
 	if (options.match_namespace == "graphics")
@@ -1403,7 +1403,7 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 		// Check name
 		if (!options.match_name.empty())
 		{
-			if (!StrUtil::matches(entry->upperName(), options.match_name))
+			if (!strutil::matches(entry->upperName(), options.match_name))
 				continue;
 		}
 
@@ -1423,7 +1423,7 @@ vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options)
 	// Init search variables
 	unsigned index     = 0;
 	auto     index_end = numEntries();
-	StrUtil::upperIP(options.match_name);
+	strutil::upperIP(options.match_name);
 	vector<ArchiveEntry*> ret;
 
 	// "graphics" namespace is the global namespace in a wad
@@ -1472,7 +1472,7 @@ vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options)
 		// Check name
 		if (!options.match_name.empty())
 		{
-			if (!StrUtil::matches(entry->upperName(), options.match_name))
+			if (!strutil::matches(entry->upperName(), options.match_name))
 				continue;
 		}
 

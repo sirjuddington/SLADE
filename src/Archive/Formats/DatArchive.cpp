@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,8 @@
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -47,7 +49,7 @@ namespace
 // -----------------------------------------------------------------------------
 bool isNamespaceEntry(ArchiveEntry* entry)
 {
-	return StrUtil::startsWith(entry->upperName(), "START") || StrUtil::startsWith(entry->upperName(), "END");
+	return strutil::startsWith(entry->upperName(), "START") || strutil::startsWith(entry->upperName(), "END");
 }
 } // namespace
 
@@ -85,15 +87,15 @@ bool DatArchive::open(MemChunk& mc)
 	size_t namecount = 0;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
-	UI::setSplashProgressMessage("Reading dat archive data");
+	ui::setSplashProgressMessage("Reading dat archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		uint32_t offset  = 0;
@@ -116,9 +118,8 @@ bool DatArchive::open(MemChunk& mc)
 		// the data file is invalid
 		if (offset + size > mc.size())
 		{
-			Log::error("DatArchive::open: Dat archive is invalid or corrupt at entry {}", d);
-			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
+			log::error("DatArchive::open: Dat archive is invalid or corrupt at entry {}", d);
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
@@ -169,11 +170,11 @@ bool DatArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)num_lumps)));
+		ui::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		auto entry = entryAt(a);
@@ -198,11 +199,10 @@ bool DatArchive::open(MemChunk& mc)
 	// detectMaps();
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -296,7 +296,7 @@ shared_ptr<ArchiveEntry> DatArchive::addEntry(shared_ptr<ArchiveEntry> entry, un
 shared_ptr<ArchiveEntry> DatArchive::addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
 {
 	// Find requested namespace, only three non-global namespaces are valid in this format
-	if (StrUtil::equalCI(add_namespace, "textures"))
+	if (strutil::equalCI(add_namespace, "textures"))
 	{
 		if (walls_[1] >= 0)
 			return addEntry(entry, walls_[1], nullptr);
@@ -307,7 +307,7 @@ shared_ptr<ArchiveEntry> DatArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 			return addEntry(entry, add_namespace);
 		}
 	}
-	else if (StrUtil::equalCI(add_namespace, "flats"))
+	else if (strutil::equalCI(add_namespace, "flats"))
 	{
 		if (flats_[1] >= 0)
 			return addEntry(entry, flats_[1], nullptr);
@@ -318,7 +318,7 @@ shared_ptr<ArchiveEntry> DatArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 			return addEntry(entry, add_namespace);
 		}
 	}
-	else if (StrUtil::equalCI(add_namespace, "sprites"))
+	else if (strutil::equalCI(add_namespace, "sprites"))
 	{
 		if (sprites_[1] >= 0)
 			return addEntry(entry, sprites_[1], nullptr);
@@ -351,7 +351,7 @@ bool DatArchive::removeEntry(ArchiveEntry* entry)
 	if (ok)
 	{
 		// Update namespaces if necessary
-		if (StrUtil::startsWith(name, "START") || StrUtil::startsWith(name, "END"))
+		if (strutil::startsWith(name, "START") || strutil::startsWith(name, "END"))
 			updateNamespaces();
 
 		return true;
@@ -560,7 +560,7 @@ bool DatArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error("DatArchive::loadEntryData: Failed to open datfile {}", filename_);
+		log::error("DatArchive::loadEntryData: Failed to open datfile {}", filename_);
 		return false;
 	}
 

@@ -25,6 +25,15 @@ entry_types
 		image_format = "raw_flat";
 	}
 
+	gfx_encore : gfx_raw
+	{
+		name = "Graphic (SRB2 Encore)";
+		size = 256;
+		extra = image;
+		reliability = 30;
+		image_format = "raw_flat";
+	}
+
 	gfx_autopage : gfx_raw
 	{
 		name = "Graphic (Autopage)";
@@ -53,7 +62,7 @@ entry_types
 		extra = image;
 		image_format = "raw_flat";
 	}
-	
+
 	gfx_base
 	{
 		icon = "e_gfx";
@@ -92,6 +101,7 @@ entry_types
 		extra = image;
 		export_ext = "lmp";
 		image_format = "doom_snea";
+		reliability = 200;
 	}
 
 	gfx_doom_gnum : gfx_base

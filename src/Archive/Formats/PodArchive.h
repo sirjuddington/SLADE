@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class PodArchive : public Archive
 {
 public:
@@ -34,3 +36,4 @@ private:
 		uint32_t offset;
 	};
 };
+} // namespace slade

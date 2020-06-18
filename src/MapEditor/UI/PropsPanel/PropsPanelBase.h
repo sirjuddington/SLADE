@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class MapObject;
 
 class PropsPanelBase : public wxPanel
@@ -14,3 +16,4 @@ public:
 protected:
 	vector<MapObject*> objects_;
 };
+} // namespace slade

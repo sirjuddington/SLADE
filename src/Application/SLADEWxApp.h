@@ -1,8 +1,8 @@
 #pragma once
 
 class wxSingleInstanceChecker;
-class MainAppFileListener;
 
+class MainAppFileListener;
 class SLADEWxApp : public wxApp
 {
 public:

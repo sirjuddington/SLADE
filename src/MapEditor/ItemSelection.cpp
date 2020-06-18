@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -38,23 +38,25 @@
 #include "UI/MapCanvas.h"
 #include "Utility/MathStuff.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
 // ItemSelection Class Functions
 //
 // -----------------------------------------------------------------------------
-using MapEditor::ItemType;
-using MapEditor::Mode;
-using MapEditor::SectorMode;
+using mapeditor::ItemType;
+using mapeditor::Mode;
+using mapeditor::SectorMode;
 
 // -----------------------------------------------------------------------------
 // Returns the currently selected items, or the currently hilighted item if
 // nothing is selected
 // -----------------------------------------------------------------------------
-vector<MapEditor::Item> ItemSelection::selectionOrHilight()
+vector<mapeditor::Item> ItemSelection::selectionOrHilight()
 {
-	vector<MapEditor::Item> list;
+	vector<mapeditor::Item> list;
 
 	if (!selection_.empty())
 		list.assign(selection_.begin(), selection_.end());
@@ -68,7 +70,7 @@ vector<MapEditor::Item> ItemSelection::selectionOrHilight()
 // Returns the first selected item, or the currently hilighted item if nothing
 // is selected
 // -----------------------------------------------------------------------------
-MapEditor::Item ItemSelection::firstSelectedOrHilight()
+mapeditor::Item ItemSelection::firstSelectedOrHilight()
 {
 	if (!selection_.empty())
 		return selection_[0];
@@ -81,7 +83,7 @@ MapEditor::Item ItemSelection::firstSelectedOrHilight()
 // -----------------------------------------------------------------------------
 // Sets the current hilight to [item]. Returns true if the hilight was changed
 // -----------------------------------------------------------------------------
-bool ItemSelection::setHilight(const MapEditor::Item& item)
+bool ItemSelection::setHilight(const mapeditor::Item& item)
 {
 	if (item != hilight_)
 	{
@@ -150,16 +152,16 @@ bool ItemSelection::updateHilight(Vec2d mouse_pos, double dist_scale)
 		auto nearest = map.things().multiNearest(mouse_pos);
 		if (nearest.size() == 1)
 		{
-			auto& type = Game::configuration().thingType(nearest[0]->type());
-			if (MathStuff::distance(mouse_pos, nearest[0]->position()) <= type.radius() + (32 / dist_scale))
+			auto& type = game::configuration().thingType(nearest[0]->type());
+			if (math::distance(mouse_pos, nearest[0]->position()) <= type.radius() + (32 / dist_scale))
 				hilight_.index = nearest[0]->index();
 		}
 		else
 		{
 			for (auto& t : nearest)
 			{
-				auto& type = Game::configuration().thingType(t->type());
-				if (MathStuff::distance(mouse_pos, t->position()) <= type.radius() + (32 / dist_scale))
+				auto& type = game::configuration().thingType(t->type());
+				if (math::distance(mouse_pos, t->position()) <= type.radius() + (32 / dist_scale))
 					hilight_.index = t->index();
 			}
 		}
@@ -174,10 +176,10 @@ bool ItemSelection::updateHilight(Vec2d mouse_pos, double dist_scale)
 	{
 		switch (context_->editMode())
 		{
-		case Mode::Vertices: MapEditor::openObjectProperties(map.vertex(hilight_.index)); break;
-		case Mode::Lines: MapEditor::openObjectProperties(map.line(hilight_.index)); break;
-		case Mode::Sectors: MapEditor::openObjectProperties(map.sector(hilight_.index)); break;
-		case Mode::Things: MapEditor::openObjectProperties(map.thing(hilight_.index)); break;
+		case Mode::Vertices: mapeditor::openObjectProperties(map.vertex(hilight_.index)); break;
+		case Mode::Lines: mapeditor::openObjectProperties(map.line(hilight_.index)); break;
+		case Mode::Sectors: mapeditor::openObjectProperties(map.sector(hilight_.index)); break;
+		case Mode::Things: mapeditor::openObjectProperties(map.thing(hilight_.index)); break;
 		default: break;
 		}
 
@@ -208,7 +210,7 @@ void ItemSelection::clear()
 // Changes the selection status of [item] to [select].
 // If [new_change] is true, a new change set is started
 // -----------------------------------------------------------------------------
-void ItemSelection::select(const MapEditor::Item& item, bool select, bool new_change)
+void ItemSelection::select(const mapeditor::Item& item, bool select, bool new_change)
 {
 	// Start new change set if specified
 	if (new_change)
@@ -221,7 +223,7 @@ void ItemSelection::select(const MapEditor::Item& item, bool select, bool new_ch
 // Changes the selection status of all items in [items] to [select].
 // If [new_change] is true, a new change set is started
 // -----------------------------------------------------------------------------
-void ItemSelection::select(const vector<MapEditor::Item>& items, bool select, bool new_change)
+void ItemSelection::select(const vector<mapeditor::Item>& items, bool select, bool new_change)
 {
 	// Start new change set if specified
 	if (new_change)
@@ -585,7 +587,7 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 
 	// Get selected objects
 	vector<MapObject*> list;
-	MapObject* o;
+	MapObject*         o;
 	for (auto& item : selection_)
 		if ((o = context_->map().object(type, item.index)))
 			list.push_back(o);
@@ -606,7 +608,7 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 // -----------------------------------------------------------------------------
 void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 {
-	std::set<MapEditor::Item> new_selection;
+	std::set<mapeditor::Item> new_selection;
 
 	// 3D to 2D: select anything of the right type
 	if (from_edit_mode == Mode::Visual)
@@ -734,7 +736,7 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 // Selects or deselects [item] depending on the value of [select] and updates
 // the current ChangeSet
 // -----------------------------------------------------------------------------
-void ItemSelection::selectItem(const MapEditor::Item& item, bool select)
+void ItemSelection::selectItem(const mapeditor::Item& item, bool select)
 {
 	// Check if already selected
 	bool selected = VECTOR_EXISTS(selection_, item);

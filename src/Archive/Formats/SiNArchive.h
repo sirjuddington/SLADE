@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class SiNArchive : public Archive
 {
 public:
@@ -19,3 +21,4 @@ public:
 	static bool isSiNArchive(MemChunk& mc);
 	static bool isSiNArchive(const string& filename);
 };
+} // namespace slade

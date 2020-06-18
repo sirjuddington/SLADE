@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,6 +36,8 @@
 #include "General/UI.h"
 #include "MainEditor/BinaryControlLump.h"
 #include "MainEditor/MainEditor.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -395,7 +397,7 @@ wxGridCellAttr* DataEntryTable::GetAttr(int row, int col, wxGridCellAttr::wxAttr
 	{
 		if (i == row)
 		{
-			attr->SetTextColour(WXCOL(ColourConfiguration::colour("new")));
+			attr->SetTextColour(colourconfig::colour("new").toWx());
 			new_row = true;
 			break;
 		}
@@ -408,7 +410,7 @@ wxGridCellAttr* DataEntryTable::GetAttr(int row, int col, wxGridCellAttr::wxAttr
 		{
 			if (cell.x == row && cell.y == col)
 			{
-				attr->SetTextColour(WXCOL(ColourConfiguration::colour("modified")));
+				attr->SetTextColour(colourconfig::colour("modified").toWx());
 				break;
 			}
 		}
@@ -446,7 +448,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	// VERTEXES
 	if (type == "map_vertexes")
 	{
-		if (entry->exProp("MapFormat") == "doom64")
+		if (entry->exProp<string>("MapFormat") == "doom64")
 		{
 			columns_.emplace_back("X Position", ColType::Fixed, 4, 0);
 			columns_.emplace_back("Y Position", ColType::Fixed, 4, 4);
@@ -464,7 +466,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	else if (type == "map_linedefs")
 	{
 		// Doom format
-		if (entry->exProp("MapFormat") == "doom")
+		if (entry->exProp<string>("MapFormat") == "doom")
 		{
 			columns_.emplace_back("Vertex 1", ColType::IntUnsigned, 2, 0);
 			columns_.emplace_back("Vertex 2", ColType::IntUnsigned, 2, 2);
@@ -477,7 +479,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		}
 
 		// Hexen format
-		else if (entry->exProp("MapFormat") == "hexen")
+		else if (entry->exProp<string>("MapFormat") == "hexen")
 		{
 			columns_.emplace_back("Vertex 1", ColType::IntUnsigned, 2, 0);
 			columns_.emplace_back("Vertex 2", ColType::IntUnsigned, 2, 2);
@@ -494,7 +496,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		}
 
 		// Doom 64 format
-		else if (entry->exProp("MapFormat") == "doom64")
+		else if (entry->exProp<string>("MapFormat") == "doom64")
 		{
 			columns_.emplace_back("Vertex 1", ColType::IntUnsigned, 2, 0);
 			columns_.emplace_back("Vertex 2", ColType::IntUnsigned, 2, 2);
@@ -511,7 +513,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	else if (type == "map_sidedefs")
 	{
 		// Doom 64 format
-		if (entry->exProp("MapFormat") == "doom64")
+		if (entry->exProp<string>("MapFormat") == "doom64")
 		{
 			columns_.emplace_back("X Offset", ColType::IntSigned, 2, 0);
 			columns_.emplace_back("Y Offset", ColType::IntSigned, 2, 2);
@@ -539,7 +541,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	else if (type == "map_sectors")
 	{
 		// Doom 64 format
-		if (entry->exProp("MapFormat") == "doom64")
+		if (entry->exProp<string>("MapFormat") == "doom64")
 		{
 			columns_.emplace_back("Floor Height", ColType::IntSigned, 2, 0);
 			columns_.emplace_back("Ceiling Height", ColType::IntSigned, 2, 2);
@@ -574,7 +576,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	else if (type == "map_things")
 	{
 		// Doom format
-		if (entry->exProp("MapFormat") == "doom")
+		if (entry->exProp<string>("MapFormat") == "doom")
 		{
 			columns_.emplace_back("X Position", ColType::IntSigned, 2, 0);
 			columns_.emplace_back("Y Position", ColType::IntSigned, 2, 2);
@@ -585,7 +587,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		}
 
 		// Hexen format
-		else if (entry->exProp("MapFormat") == "hexen")
+		else if (entry->exProp<string>("MapFormat") == "hexen")
 		{
 			columns_.emplace_back("ID", ColType::IntUnsigned, 2, 0);
 			columns_.emplace_back("X Position", ColType::IntSigned, 2, 2);
@@ -677,9 +679,9 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		columns_.emplace_back("On Texture", ColType::String, 8, 9);
 
 		Column col_type("Type", ColType::CustomValue, 2, 18);
-		col_type.addCustomValue(SwitchTypes::DEMO, "Shareware");
-		col_type.addCustomValue(SwitchTypes::FULL, "Registered");
-		col_type.addCustomValue(SwitchTypes::COMM, "Commercial");
+		col_type.addCustomValue(switchtype::DEMO, "Shareware");
+		col_type.addCustomValue(switchtype::FULL, "Registered");
+		col_type.addCustomValue(switchtype::COMM, "Commercial");
 		columns_.push_back(col_type);
 
 		row_stride_ = 20;
@@ -763,7 +765,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 
 		// Voice data
 		unsigned offset = 4;
-		for (size_t i = 1; i < 3; ++i)
+		for (unsigned i = 1; i < 3; ++i)
 		{
 			columns_.emplace_back(wxString::Format("V%d: Mod Multi", i), ColType::IntUnsigned, 1, offset + 0);
 			columns_.emplace_back(wxString::Format("V%d: Mod Attack", i), ColType::IntUnsigned, 1, offset + 1);
@@ -863,17 +865,18 @@ void DataEntryTable::pasteRows(int row)
 // -----------------------------------------------------------------------------
 // DataEntryPanel class constructor
 // -----------------------------------------------------------------------------
-DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), table_data_{ new DataEntryTable(this) }
+DataEntryPanel::DataEntryPanel(wxWindow* parent) :
+	EntryPanel(parent, "data"), table_data_{ new DataEntryTable(this) }
 {
 	// Cell value combo box
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	sizer_main_->Add(vbox, 1, wxEXPAND);
 	combo_cell_value_ = new wxComboBox(this, -1, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxTE_PROCESS_ENTER);
-	vbox->Add(combo_cell_value_, 0, wxEXPAND | wxBOTTOM, UI::pad());
+	vbox->Add(combo_cell_value_, 0, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Create grid
 	grid_data_ = new wxGrid(this, -1);
-	vbox->Add(grid_data_, 1, wxEXPAND | wxBOTTOM, UI::pad());
+	vbox->Add(grid_data_, 1, wxEXPAND | wxBOTTOM, ui::pad());
 
 	// Add actions to toolbar
 	wxArrayString actions;
@@ -904,7 +907,7 @@ bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 	combo_cell_value_->Clear();
 
 	// Set column widths
-	grid_data_->SetColMinimalAcceptableWidth(UI::scalePx(64));
+	grid_data_->SetColMinimalAcceptableWidth(ui::scalePx(64));
 	for (int a = 0; a < table_data_->GetNumberCols(); a++)
 		grid_data_->AutoSizeColLabelSize(a);
 	grid_data_->ForceRefresh();
@@ -1083,7 +1086,7 @@ void DataEntryPanel::changeValue() const
 	}
 
 	// Create dialog
-	wxDialog dlg(MainEditor::windowWx(), -1, "Change Value");
+	wxDialog dlg(maineditor::windowWx(), -1, "Change Value");
 
 	auto          ci = table_data_->columnInfo(selection[0].y);
 	wxArrayString choices;
@@ -1222,7 +1225,7 @@ void DataEntryPanel::onGridRightClick(wxGridEvent& e)
 {
 	// Check if only one column is selected
 	int col = getColWithSelection();
-	Log::info(2, wxString::Format("Column %d", col));
+	log::info(2, wxString::Format("Column %d", col));
 
 	wxMenu menu;
 	SAction::fromId("data_add_row")->addToMenu(&menu);

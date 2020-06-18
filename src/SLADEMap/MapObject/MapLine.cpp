@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -37,6 +37,8 @@
 #include "Utility/MathStuff.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -212,9 +214,9 @@ int MapLine::s2Index() const
 // -----------------------------------------------------------------------------
 bool MapLine::boolProperty(string_view key)
 {
-	if (StrUtil::startsWith(key, "side1.") && side1_)
+	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->boolProperty(key.substr(6));
-	else if (StrUtil::startsWith(key, "side2.") && side2_)
+	else if (strutil::startsWith(key, "side2.") && side2_)
 		return side2_->boolProperty(key.substr(6));
 	else
 		return MapObject::boolProperty(key);
@@ -227,9 +229,9 @@ bool MapLine::boolProperty(string_view key)
 // -----------------------------------------------------------------------------
 int MapLine::intProperty(string_view key)
 {
-	if (StrUtil::startsWith(key, "side1.") && side1_)
+	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->intProperty(key.substr(6));
-	if (StrUtil::startsWith(key, "side2.") && side2_)
+	if (strutil::startsWith(key, "side2.") && side2_)
 		return side2_->intProperty(key.substr(6));
 
 	if (key == PROP_V1)
@@ -267,9 +269,9 @@ int MapLine::intProperty(string_view key)
 // -----------------------------------------------------------------------------
 double MapLine::floatProperty(string_view key)
 {
-	if (StrUtil::startsWith(key, "side1.") && side1_)
+	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->floatProperty(key.substr(6));
-	else if (StrUtil::startsWith(key, "side2.") && side2_)
+	else if (strutil::startsWith(key, "side2.") && side2_)
 		return side2_->floatProperty(key.substr(6));
 	else
 		return MapObject::floatProperty(key);
@@ -282,9 +284,9 @@ double MapLine::floatProperty(string_view key)
 // -----------------------------------------------------------------------------
 string MapLine::stringProperty(string_view key)
 {
-	if (StrUtil::startsWith(key, "side1.") && side1_)
+	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->stringProperty(key.substr(6));
-	else if (StrUtil::startsWith(key, "side2.") && side2_)
+	else if (strutil::startsWith(key, "side2.") && side2_)
 		return side2_->stringProperty(key.substr(6));
 	else
 		return MapObject::stringProperty(key);
@@ -298,14 +300,14 @@ string MapLine::stringProperty(string_view key)
 void MapLine::setBoolProperty(string_view key, bool value)
 {
 	// Front side property
-	if (StrUtil::startsWith(key, "side1."))
+	if (strutil::startsWith(key, "side1."))
 	{
 		if (side1_)
 			return side1_->setBoolProperty(key.substr(6), value);
 	}
 
 	// Back side property
-	else if (StrUtil::startsWith(key, "side2."))
+	else if (strutil::startsWith(key, "side2."))
 	{
 		if (side2_)
 			return side2_->setBoolProperty(key.substr(6), value);
@@ -324,7 +326,7 @@ void MapLine::setBoolProperty(string_view key, bool value)
 void MapLine::setIntProperty(string_view key, int value)
 {
 	// Front side property
-	if (StrUtil::startsWith(key, "side1."))
+	if (strutil::startsWith(key, "side1."))
 	{
 		if (side1_)
 			side1_->setIntProperty(key.substr(6), value);
@@ -332,7 +334,7 @@ void MapLine::setIntProperty(string_view key, int value)
 	}
 
 	// Back side property
-	else if (StrUtil::startsWith(key, "side2."))
+	else if (strutil::startsWith(key, "side2."))
 	{
 		if (side2_)
 			side2_->setIntProperty(key.substr(6), value);
@@ -417,14 +419,14 @@ void MapLine::setIntProperty(string_view key, int value)
 void MapLine::setFloatProperty(string_view key, double value)
 {
 	// Front side property
-	if (StrUtil::startsWith(key, "side1."))
+	if (strutil::startsWith(key, "side1."))
 	{
 		if (side1_)
 			return side1_->setFloatProperty(key.substr(6), value);
 	}
 
 	// Back side property
-	else if (StrUtil::startsWith(key, "side2."))
+	else if (strutil::startsWith(key, "side2."))
 	{
 		if (side2_)
 			return side2_->setFloatProperty(key.substr(6), value);
@@ -443,14 +445,14 @@ void MapLine::setFloatProperty(string_view key, double value)
 void MapLine::setStringProperty(string_view key, string_view value)
 {
 	// Front side property
-	if (StrUtil::startsWith(key, "side1."))
+	if (strutil::startsWith(key, "side1."))
 	{
 		if (side1_)
 			return side1_->setStringProperty(key.substr(6), value);
 	}
 
 	// Back side property
-	else if (StrUtil::startsWith(key, "side2."))
+	else if (strutil::startsWith(key, "side2."))
 	{
 		if (side2_)
 			return side2_->setStringProperty(key.substr(6), value);
@@ -474,7 +476,10 @@ bool MapLine::scriptCanModifyProp(string_view key)
 // -----------------------------------------------------------------------------
 void MapLine::setS1(MapSide* side)
 {
-	if (!side1_ && parent_map_)
+	if (!side)
+		side1_ = nullptr;
+
+	else if (!side1_ && parent_map_)
 		parent_map_->setLineSide(this, side, true);
 }
 
@@ -483,7 +488,10 @@ void MapLine::setS1(MapSide* side)
 // -----------------------------------------------------------------------------
 void MapLine::setS2(MapSide* side)
 {
-	if (!side2_ && parent_map_)
+	if (!side)
+		side2_ = nullptr;
+
+	else if (!side2_ && parent_map_)
 		parent_map_->setLineSide(this, side, false);
 }
 
@@ -788,7 +796,7 @@ bool MapLine::overlaps(MapLine* other) const
 // -----------------------------------------------------------------------------
 bool MapLine::intersects(MapLine* other, Vec2d& intersect_point) const
 {
-	return MathStuff::linesIntersect(seg(), other->seg(), intersect_point);
+	return math::linesIntersect(seg(), other->seg(), intersect_point);
 }
 
 // -----------------------------------------------------------------------------
@@ -910,8 +918,8 @@ void MapLine::writeBackup(Backup* backup)
 void MapLine::readBackup(Backup* backup)
 {
 	// Vertices
-	auto v1 = parent_map_->mapData().getObjectById(backup->props_internal[PROP_V1]);
-	auto v2 = parent_map_->mapData().getObjectById(backup->props_internal[PROP_V2]);
+	auto v1 = parent_map_->mapData().getObjectById(backup->props_internal.get<unsigned>(PROP_V1));
+	auto v2 = parent_map_->mapData().getObjectById(backup->props_internal.get<unsigned>(PROP_V2));
 	if (v1)
 	{
 		vertex1_->disconnectLine(this);
@@ -928,8 +936,8 @@ void MapLine::readBackup(Backup* backup)
 	}
 
 	// Sides
-	auto s1 = parent_map_->mapData().getObjectById(backup->props_internal["s1"]);
-	auto s2 = parent_map_->mapData().getObjectById(backup->props_internal["s2"]);
+	auto s1 = parent_map_->mapData().getObjectById(backup->props_internal.get<unsigned>("s1"));
+	auto s2 = parent_map_->mapData().getObjectById(backup->props_internal.get<unsigned>("s2"));
 	side1_  = dynamic_cast<MapSide*>(s1);
 	side2_  = dynamic_cast<MapSide*>(s2);
 	if (side1_)
@@ -938,16 +946,16 @@ void MapLine::readBackup(Backup* backup)
 		side2_->parent_ = this;
 
 	// Flags
-	flags_ = backup->props_internal[PROP_FLAGS];
+	flags_ = backup->props_internal.get<int>(PROP_FLAGS);
 
 	// Special
-	special_ = backup->props_internal[PROP_SPECIAL];
-	id_      = backup->props_internal[PROP_ID];
-	args_[0] = backup->props_internal[PROP_ARG0];
-	args_[1] = backup->props_internal[PROP_ARG1];
-	args_[2] = backup->props_internal[PROP_ARG2];
-	args_[3] = backup->props_internal[PROP_ARG3];
-	args_[4] = backup->props_internal[PROP_ARG4];
+	special_ = backup->props_internal.get<int>(PROP_SPECIAL);
+	id_      = backup->props_internal.get<int>(PROP_ID);
+	args_[0] = backup->props_internal.get<int>(PROP_ARG0);
+	args_[1] = backup->props_internal.get<int>(PROP_ARG1);
+	args_[2] = backup->props_internal.get<int>(PROP_ARG2);
+	args_[3] = backup->props_internal.get<int>(PROP_ARG3);
+	args_[4] = backup->props_internal.get<int>(PROP_ARG4);
 }
 
 // -----------------------------------------------------------------------------
@@ -983,7 +991,7 @@ void MapLine::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 void MapLine::writeUDMF(string& def)
 {
-	def = fmt::format("linedef//#{}\n{\n", index_);
+	def = fmt::format("linedef//#{}\n{{\n", index_);
 
 	// Basic properties
 	def += fmt::format("v1={};\nv2={};\nsidefront={};\n", v1Index(), v2Index(), s1Index());
@@ -1000,7 +1008,7 @@ void MapLine::writeUDMF(string& def)
 			def += fmt::format("arg{}={};\n", i, args_[i]);
 
 	// Other properties
-	if (!properties_.isEmpty())
+	if (!properties_.empty())
 		def += properties_.toString(true);
 
 	def += "}\n\n";

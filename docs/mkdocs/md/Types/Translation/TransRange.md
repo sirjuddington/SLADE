@@ -1,6 +1,18 @@
-<article-head>TransRange</article-head>
+<subhead>Type</subhead>
+<header>TransRange</header>
 
 A single 'part' of a custom <type>[Translation](Translation.md)</type>, which can be made up of multiple (each one corresponding to a range in the palette).
+
+### Derived Types
+
+The following types inherit all <type>TransRange</type> properties and functions:
+
+* <type>[TransRangePalette](TransRangePalette.md)</type>
+* <type>[TransRangeColour](TransRangeColour.md)</type>
+* <type>[TransRangeDesat](TransRangeDesat.md)</type>
+* <type>[TransRangeBlend](TransRangeBlend.md)</type>
+* <type>[TransRangeTint](TransRangeTint.md)</type>
+* <type>[TransRangeSpecial](TransRangeSpecial.md)</type>
 
 ## Constants
 
@@ -17,24 +29,40 @@ A single 'part' of a custom <type>[Translation](Translation.md)</type>, which ca
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop class="ro">type</prop> | <type>number</type> | The type of translation for this range (see `TYPE_` constants)
-<prop class="rw">rangeStart</prop> | <type>number</type> | The first palette index of the range (`0` - `255`)
-<prop class="rw">rangeEnd</prop> | <type>number</type> | The last palette index of the range (`0` - `255`)
+<prop class="ro">type</prop> | <type>integer</type> | The type of translation for this range (see `TYPE_` constants)
+<prop class="rw">rangeStart</prop> | <type>integer</type> | The first palette index of the range (`0` - `255`)
+<prop class="rw">rangeEnd</prop> | <type>integer</type> | The last palette index of the range (`0` - `255`)
 
 ## Constructors
 
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[Translation.AddRange](Translation.md#addrange)</code>
 
 ## Functions
 
+### Overview
+
+#### General
+
+<fdef>[AsText](#astext)() -> <type>string</type></fdef>
+
+#### Derived Type Casts
+
+<fdef>[AsPaletteRange](#aspaletterange)() -> <type>[TransRangePalette](TransRangePalette.md)</type></fdef>
+<fdef>[AsColourRange](#ascolourrange)() -> <type>[TransRangeColour](TransRangeColour.md)</type></fdef>
+<fdef>[AsDesatRange](#asdesatrange)() -> <type>[TransRangeDesat](TransRangeDesat.md)</type></fdef>
+<fdef>[AsBlendRange](#asblendrange)() -> <type>[TransRangeBlend](TransRangeBlend.md)</type></fdef>
+<fdef>[AsTintRange](#astintrange)() -> <type>[TransRangeTint](TransRangeTint.md)</type></fdef>
+<fdef>[AsSpecialRange](#asspecialrange)() -> <type>[TransRangeSpecial](TransRangeSpecial.md)</type></fdef>
+
+---
 ### AsText
 
-<fdef>function <type>TransRange</type>.<func>AsText</func>(<arg>*self*</arg>)</fdef>
+Gets the text definition for this translation range (in ZDoom format).
 
 <listhead>Returns</listhead>
 
@@ -43,7 +71,7 @@ A single 'part' of a custom <type>[Translation](Translation.md)</type>, which ca
 ---
 ### AsPaletteRange
 
-<fdef>function <type>TransRange</type>.<func>AsPaletteRange</func>(<arg>*self*</arg>)</fdef>
+Casts to a <type>[TransRangePalette](TransRangePalette.md)</type>, if it is one.
 
 <listhead>Returns</listhead>
 
@@ -52,7 +80,7 @@ A single 'part' of a custom <type>[Translation](Translation.md)</type>, which ca
 ---
 ### AsColourRange
 
-<fdef>function <type>TransRange</type>.<func>AsColourRange</func>(<arg>*self*</arg>)</fdef>
+Casts to a <type>[TransRangeColour](TransRangeColour.md)</type>, if it is one.
 
 <listhead>Returns</listhead>
 
@@ -61,7 +89,7 @@ A single 'part' of a custom <type>[Translation](Translation.md)</type>, which ca
 ---
 ### AsDesatRange
 
-<fdef>function <type>TransRange</type>.<func>AsDesatRange</func>(<arg>*self*</arg>)</fdef>
+Casts to a <type>[TransRangeDesat](TransRangeDesat.md)</type>, if it is one.
 
 <listhead>Returns</listhead>
 
@@ -70,7 +98,7 @@ A single 'part' of a custom <type>[Translation](Translation.md)</type>, which ca
 ---
 ### AsBlendRange
 
-<fdef>function <type>TransRange</type>.<func>AsBlendRange</func>(<arg>*self*</arg>)</fdef>
+Casts to a <type>[TransRangeBlend](TransRangeBlend.md)</type>, if it is one.
 
 <listhead>Returns</listhead>
 
@@ -79,7 +107,7 @@ A single 'part' of a custom <type>[Translation](Translation.md)</type>, which ca
 ---
 ### AsTintRange
 
-<fdef>function <type>TransRange</type>.<func>AsTintRange</func>(<arg>*self*</arg>)</fdef>
+Casts to a <type>[TransRangeTint](TransRangeTint.md)</type>, if it is one.
 
 <listhead>Returns</listhead>
 
@@ -88,7 +116,7 @@ A single 'part' of a custom <type>[Translation](Translation.md)</type>, which ca
 ---
 ### AsSpecialRange
 
-<fdef>function <type>TransRange</type>.<func>AsSpecialRange</func>(<arg>*self*</arg>)</fdef>
+Casts to a <type>[TransRangeSpecial](TransRangeSpecial.md)</type>, if it is one.
 
 <listhead>Returns</listhead>
 

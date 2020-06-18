@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,6 +36,8 @@
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -59,8 +61,8 @@ void SectorList::clear()
 void SectorList::add(MapSector* sector)
 {
 	// Update texture counts
-	usage_tex_[StrUtil::upper(sector->floor().texture)] += 1;
-	usage_tex_[StrUtil::upper(sector->ceiling().texture)] += 1;
+	usage_tex_[strutil::upper(sector->floor().texture)] += 1;
+	usage_tex_[strutil::upper(sector->ceiling().texture)] += 1;
 
 	MapObjectList::add(sector);
 }
@@ -74,8 +76,8 @@ void SectorList::remove(unsigned index)
 		return;
 
 	// Update texture counts
-	usage_tex_[StrUtil::upper(objects_[index]->floor().texture)] -= 1;
-	usage_tex_[StrUtil::upper(objects_[index]->ceiling().texture)] -= 1;
+	usage_tex_[strutil::upper(objects_[index]->floor().texture)] -= 1;
+	usage_tex_[strutil::upper(objects_[index]->ceiling().texture)] -= 1;
 
 	MapObjectList::remove(index);
 }
@@ -132,14 +134,14 @@ BBox SectorList::allSectorBounds() const
 // -----------------------------------------------------------------------------
 void SectorList::initPolygons()
 {
-	UI::setSplashProgressMessage("Building sector polygons");
-	UI::setSplashProgress(0.0f);
+	ui::setSplashProgressMessage("Building sector polygons");
+	ui::setSplashProgress(0.0f);
 	for (unsigned i = 0; i < count_; ++i)
 	{
-		UI::setSplashProgress((float)i / (float)count_);
+		ui::setSplashProgress((float)i / (float)count_);
 		objects_[i]->polygon();
 	}
-	UI::setSplashProgress(1.0f);
+	ui::setSplashProgress(1.0f);
 }
 
 // -----------------------------------------------------------------------------
@@ -206,7 +208,7 @@ int SectorList::firstFreeId() const
 // -----------------------------------------------------------------------------
 void SectorList::updateTexUsage(string_view tex, int adjust) const
 {
-	usage_tex_[StrUtil::upper(tex)] += adjust;
+	usage_tex_[strutil::upper(tex)] += adjust;
 }
 
 // -----------------------------------------------------------------------------
@@ -214,5 +216,5 @@ void SectorList::updateTexUsage(string_view tex, int adjust) const
 // -----------------------------------------------------------------------------
 int SectorList::texUsageCount(string_view tex) const
 {
-	return usage_tex_[StrUtil::upper(tex)];
+	return usage_tex_[strutil::upper(tex)];
 }

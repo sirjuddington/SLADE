@@ -4,9 +4,12 @@
 #include "Graphics/CTexture/TextureXList.h"
 #include "UI/Lists/VirtualListView.h"
 
+namespace slade
+{
 class TextureXEditor;
 class TextureEditorPanel;
 class UndoManager;
+class SToolBar;
 
 class TextureXListView : public VirtualListView
 {
@@ -85,18 +88,12 @@ private:
 	UndoManager*    undo_manager_ = nullptr;
 
 	// Controls
-	TextureXListView*   list_textures_      = nullptr;
-	TextureEditorPanel* texture_editor_     = nullptr;
-	wxButton*           btn_new_texture_    = nullptr;
-	wxButton*           btn_remove_texture_ = nullptr;
-	wxButton*           btn_new_from_patch_ = nullptr;
-	wxButton*           btn_new_from_file_  = nullptr;
-	wxButton*           btn_move_up_        = nullptr;
-	wxButton*           btn_move_down_      = nullptr;
-	wxStaticText*       label_tx_format_    = nullptr;
-	wxButton*           btn_save_           = nullptr;
-	wxTextCtrl*         text_filter_        = nullptr;
-	wxButton*           btn_clear_filter_   = nullptr;
+	TextureXListView*   list_textures_    = nullptr;
+	TextureEditorPanel* texture_editor_   = nullptr;
+	wxStaticBox*        frame_textures_   = nullptr;
+	wxTextCtrl*         text_filter_      = nullptr;
+	wxButton*           btn_clear_filter_ = nullptr;
+	SToolBar*           toolbar_          = nullptr;
 
 	// Events
 	void onTextureListSelect(wxListEvent& e);
@@ -105,3 +102,4 @@ private:
 	void onTextFilterChanged(wxCommandEvent& e);
 	void onBtnClearFitler(wxCommandEvent& e);
 };
+} // namespace slade

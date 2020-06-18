@@ -1,17 +1,23 @@
-<article-head>Game</article-head>
+<subhead>Namespace</subhead>
+<header>Game</header>
 
 The `Game` scripting namespace contains functions related to the currently loaded game configuration in SLADE.
 
 ## Functions
 
+### Overview
+
+#### Thing Types
+
+<fdef>[ThingType](#thingtype)(<arg>doomednum</arg>) -> <type>[ThingType](../Types/Game/ThingType.md)</type></fdef>
+
+---
 ### ThingType
 
-<fdef>function Game.<func>ThingType</func>(<arg>type</arg>)</fdef>
+#### Parameters
 
-<listhead>Parameters</listhead>
+* <arg>doomednum</arg> (<type>integer</type>): The editor number (DoomEdNum) of the type
 
-* <arg>type</arg> (<type>number</type>): The editor number (DoomEdNum) of the type
-
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[ThingType](../Types/Game/ThingType.md)</type>: Thing type info for the given editor number

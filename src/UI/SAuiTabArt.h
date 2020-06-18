@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class wxAuiCommandCapture : public wxEvtHandler
 {
 public:
@@ -87,3 +89,4 @@ private:
 	wxColour caption_back_colour_;
 	wxColour caption_accent_colour_;
 };
+} // namespace slade

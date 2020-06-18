@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,8 @@
 #include <SFML/Network.hpp>
 #include <thread>
 
+using namespace slade;
+
 wxDEFINE_EVENT(wxEVT_THREAD_WEBGET_COMPLETED, wxThreadEvent);
 
 
@@ -47,7 +49,7 @@ wxDEFINE_EVENT(wxEVT_THREAD_WEBGET_COMPLETED, wxThreadEvent);
 // -----------------------------------------------------------------------------
 // Gets a response via http from [host]/[url] (blocking)
 // -----------------------------------------------------------------------------
-string Web::getHttp(const string& host, const string& uri)
+string web::getHttp(const string& host, const string& uri)
 {
 	// Setup connection & request
 	sf::Http          http(host);
@@ -69,7 +71,7 @@ string Web::getHttp(const string& host, const string& uri)
 // Gets a response via http from [host]/[url] (non-blocking). When the response
 // is received, an event is sent to [event_handler]
 // -----------------------------------------------------------------------------
-void Web::getHttpAsync(const string& host, const string& uri, wxEvtHandler* event_handler)
+void web::getHttpAsync(const string& host, const string& uri, wxEvtHandler* event_handler)
 {
 	std::thread thread([=]() {
 		// Queue wx event with http request response

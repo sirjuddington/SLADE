@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -37,6 +37,8 @@
 #include "General/Misc.h"
 #include "Graphics/Palette/PaletteManager.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -51,14 +53,14 @@
 PaletteChooser::PaletteChooser(wxWindow* parent, int id) : wxChoice(parent, id)
 {
 	// Init variables
-	pal_global_.copyPalette(App::paletteManager()->globalPalette());
+	pal_global_.copyPalette(app::paletteManager()->globalPalette());
 
 	// Add first 'existing' item
 	Append("Existing/Global");
 
 	// Add palette names from palette manager
-	for (int a = 0; a < App::paletteManager()->numPalettes(); a++)
-		Append(App::paletteManager()->palName(a));
+	for (int a = 0; a < app::paletteManager()->numPalettes(); a++)
+		Append(app::paletteManager()->palName(a));
 
 	// Add greyscale palette
 	Append("Greyscale");
@@ -75,7 +77,7 @@ PaletteChooser::PaletteChooser(wxWindow* parent, int id) : wxChoice(parent, id)
 // -----------------------------------------------------------------------------
 void PaletteChooser::onPaletteChanged(wxCommandEvent& e)
 {
-	announce("main_palette_changed");
+	signals_.palette_changed();
 }
 
 // -----------------------------------------------------------------------------
@@ -85,9 +87,9 @@ void PaletteChooser::onPaletteChanged(wxCommandEvent& e)
 void PaletteChooser::setGlobalFromArchive(Archive* archive, int lump)
 {
 	if (!archive)
-		pal_global_.copyPalette(App::paletteManager()->globalPalette());
+		pal_global_.copyPalette(app::paletteManager()->globalPalette());
 
-	else if (!Misc::loadPaletteFromArchive(&pal_global_, archive, lump))
+	else if (!misc::loadPaletteFromArchive(&pal_global_, archive, lump))
 		setGlobalFromArchive(archive->parentArchive(), lump);
 }
 
@@ -97,9 +99,9 @@ void PaletteChooser::setGlobalFromArchive(Archive* archive, int lump)
 Palette* PaletteChooser::selectedPalette(ArchiveEntry* entry)
 {
 	if (GetSelection() > 0)
-		return App::paletteManager()->palette(GetSelection() - 1);
+		return app::paletteManager()->palette(GetSelection() - 1);
 	else if (entry)
-		Misc::loadPaletteFromArchive(&pal_global_, entry->parent(), Misc::detectPaletteHack(entry));
+		misc::loadPaletteFromArchive(&pal_global_, entry->parent(), misc::detectPaletteHack(entry));
 	return &pal_global_;
 }
 

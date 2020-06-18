@@ -2,6 +2,8 @@
 
 #include "EntryPanel.h"
 
+namespace slade
+{
 class HexEditorPanel;
 
 class HexEntryPanel : public EntryPanel
@@ -18,3 +20,4 @@ protected:
 private:
 	HexEditorPanel* hex_editor_ = nullptr;
 };
+} // namespace slade

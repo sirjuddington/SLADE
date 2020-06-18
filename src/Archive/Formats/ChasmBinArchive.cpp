@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,8 @@
 #include "ChasmBinArchive.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -87,25 +89,25 @@ bool ChasmBinArchive::open(MemChunk& mc)
 
 	if (magic[0] != 'C' || magic[1] != 'S' || magic[2] != 'i' || magic[3] != 'd')
 	{
-		Log::error("ChasmBinArchive::open: Opening failed, invalid header");
-		Global::error = "Invalid Chasm bin header";
+		log::error("ChasmBinArchive::open: Opening failed, invalid header");
+		global::error = "Invalid Chasm bin header";
 		return false;
 	}
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	uint16_t num_entries = 0;
 	mc.read(&num_entries, sizeof num_entries);
 	num_entries = wxUINT16_SWAP_ON_BE(num_entries);
 
 	// Read the directory
-	UI::setSplashProgressMessage("Reading Chasm bin archive data");
+	ui::setSplashProgressMessage("Reading Chasm bin archive data");
 
 	for (uint16_t i = 0; i < num_entries; ++i)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(static_cast<float>(i) / num_entries);
+		ui::setSplashProgress(static_cast<float>(i) / num_entries);
 
 		// Read entry info
 		char name[NAME_SIZE] = {};
@@ -122,9 +124,8 @@ bool ChasmBinArchive::open(MemChunk& mc)
 		// Check offset+size
 		if (offset + size > mc.size())
 		{
-			Log::error("ChasmBinArchive::open: Bin archive is invalid or corrupt (entry goes past end of file)");
-			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
+			log::error("ChasmBinArchive::open: Bin archive is invalid or corrupt (entry goes past end of file)");
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
@@ -142,7 +143,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	}
 
 	// Detect all entry types
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 
 	vector<ArchiveEntry*> all_entries;
 	putEntryTreeAsList(all_entries);
@@ -152,7 +153,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	for (size_t i = 0; i < all_entries.size(); ++i)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(static_cast<float>(i) / num_entries);
+		ui::setSplashProgress(static_cast<float>(i) / num_entries);
 
 		// Get entry
 		const auto entry = all_entries[i];
@@ -161,7 +162,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, static_cast<int>(entry->exProp("Offset")), entry->size());
+			mc.exportMemChunk(edata, entry->exProp<int>("Offset"), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -178,11 +179,10 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -205,8 +205,9 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 
 	if (num_entries > MAX_ENTRY_COUNT)
 	{
-		Log::error("ChasmBinArchive::write: Bin archive can contain no more than {} entries", MAX_ENTRY_COUNT);
-		Global::error = "Maximum number of entries exceeded for Chasm: The Rift bin archive";
+		log::error(
+			"ChasmBinArchive::write: Bin archive can contain no more than {} entries", (unsigned)MAX_ENTRY_COUNT);
+		global::error = "Maximum number of entries exceeded for Chasm: The Rift bin archive";
 		return false;
 	}
 
@@ -241,8 +242,8 @@ bool ChasmBinArchive::write(MemChunk& mc, bool update)
 
 		if (name_length > NAME_SIZE - 1)
 		{
-			Log::warning("Entry {} name is too long, it will be truncated", name);
-			StrUtil::truncateIP(name, NAME_SIZE - 1);
+			log::warning("Entry {} name is too long, it will be truncated", name);
+			strutil::truncateIP(name, NAME_SIZE - 1);
 			name_length = static_cast<uint8_t>(NAME_SIZE - 1);
 		}
 
@@ -300,12 +301,12 @@ bool ChasmBinArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error("ChasmBinArchive::loadEntryData: Unable to open archive file {}", filename_);
+		log::error("ChasmBinArchive::loadEntryData: Unable to open archive file {}", filename_);
 		return false;
 	}
 
 	// Seek to entry offset in file and read it in
-	file.Seek(static_cast<int>(entry->exProp("Offset")), wxFromStart);
+	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
 	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded

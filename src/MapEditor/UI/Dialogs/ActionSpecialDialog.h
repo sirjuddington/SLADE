@@ -3,11 +3,15 @@
 #include "UI/Controls/STabCtrl.h"
 #include "UI/SDialog.h"
 
-namespace Game
-{
-struct ArgSpec;
-}
 class wxFlexGridSizer;
+
+namespace slade
+{
+namespace game
+{
+	struct ArgSpec;
+}
+
 class ArgsControl;
 class GenLineSpecialPanel;
 class MapObject;
@@ -48,7 +52,7 @@ public:
 	ArgsPanel(wxWindow* parent);
 	~ArgsPanel() = default;
 
-	void setup(const Game::ArgSpec& args, bool udmf);
+	void setup(const game::ArgSpec& args, bool udmf);
 	void setValues(int args[5]);
 	int  argValue(int index);
 	void onSize(wxSizeEvent& event);
@@ -121,3 +125,4 @@ private:
 	ArgsPanel*          panel_args_    = nullptr;
 	TabControl*         stc_tabs_      = nullptr;
 };
+} // namespace slade

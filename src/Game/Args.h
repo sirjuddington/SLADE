@@ -1,54 +1,57 @@
 #pragma once
 
+namespace slade
+{
 class ParseTreeNode;
 
-namespace Game
+namespace game
 {
-struct ArgValue
-{
-	string name;
-	int    value;
-};
-
-struct Arg
-{
-	enum Type
+	struct ArgValue
 	{
-		Number = 0,
-		YesNo,
-		NoYes,
-		Angle,
-		Choice,
-		Flags,
-		Speed,
+		string name;
+		int    value;
 	};
 
-	typedef std::map<string, Arg> SpecialMap;
+	struct Arg
+	{
+		enum Type
+		{
+			Number = 0,
+			YesNo,
+			NoYes,
+			Angle,
+			Choice,
+			Flags,
+			Speed,
+		};
 
-	string           name;
-	string           desc;
-	int              type = Number;
-	vector<ArgValue> custom_values;
-	vector<ArgValue> custom_flags;
+		typedef std::map<string, Arg> SpecialMap;
 
-	Arg() {}
-	Arg(string_view name) : name{ name } {}
+		string           name;
+		string           desc;
+		int              type = Number;
+		vector<ArgValue> custom_values;
+		vector<ArgValue> custom_flags;
 
-	string valueString(int value) const;
-	string speedLabel(int value) const;
-	void   parse(ParseTreeNode* node, SpecialMap* shared_args);
-};
+		Arg() {}
+		Arg(string_view name) : name{ name } {}
 
-struct ArgSpec
-{
-	Arg args[5];
-	int count;
+		string valueString(int value) const;
+		string speedLabel(int value) const;
+		void   parse(ParseTreeNode* node, SpecialMap* shared_args);
+	};
 
-	ArgSpec() : args{ { "Arg1" }, { "Arg2" }, { "Arg3" }, { "Arg4" }, { "Arg5" } }, count{ 0 } {}
+	struct ArgSpec
+	{
+		Arg args[5];
+		int count;
 
-	Arg&       operator[](int index) { return args[index]; }
-	const Arg& operator[](int index) const { return args[index]; }
+		ArgSpec() : args{ { "Arg1" }, { "Arg2" }, { "Arg3" }, { "Arg4" }, { "Arg5" } }, count{ 0 } {}
 
-	string stringDesc(const int values[5], string values_str[2]) const;
-};
-} // namespace Game
+		Arg&       operator[](int index) { return args[index]; }
+		const Arg& operator[](int index) const { return args[index]; }
+
+		string stringDesc(const int values[5], string values_str[2]) const;
+	};
+} // namespace game
+} // namespace slade

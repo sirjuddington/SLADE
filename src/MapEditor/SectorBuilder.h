@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 // Forward declarations
 class MapLine;
 class MapVertex;
@@ -56,3 +58,4 @@ private:
 	BBox         o_bbox_;
 	MapVertex*   vertex_right_ = nullptr;
 };
+} // namespace slade

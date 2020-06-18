@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,11 +33,14 @@
 #include "Main.h"
 #include "EntryPanel.h"
 #include "General/UI.h"
+#include "Graphics/Icons.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchivePanel.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -58,22 +61,20 @@ CVAR(Bool, confirm_entry_revert, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // EntryPanel class constructor
 // -----------------------------------------------------------------------------
-EntryPanel::EntryPanel(wxWindow* parent, const wxString& id) : wxPanel(parent, -1), id_{ id }
+EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar) :
+	wxPanel(parent, -1), id_{ id }
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	// Create & set sizer & border
-	frame_          = new wxStaticBox(this, -1, "Entry Contents");
-	auto framesizer = new wxStaticBoxSizer(frame_, wxVERTICAL);
-	sizer->Add(framesizer, 1, wxEXPAND | wxALL, UI::pad());
 	wxWindow::Show(false);
 
 	// Add toolbar
-	toolbar_ = new SToolBar(this);
-	toolbar_->drawBorder(false);
-	framesizer->Add(toolbar_, 0, wxEXPAND | wxLEFT | wxRIGHT, UI::pad());
-	framesizer->AddSpacer(UI::px(UI::Size::PadMinimum));
+	toolbar_     = new SToolBar(this);
+	auto pad_min = ui::px(ui::Size::PadMinimum);
+	sizer->AddSpacer(pad_min);
+	sizer->Add(toolbar_, 0, wxEXPAND | wxLEFT | wxRIGHT, pad_min);
+	sizer->AddSpacer(pad_min);
 
 	// Default entry toolbar group
 	auto tb_group = new SToolBarGroup(toolbar_, "Entry");
@@ -82,11 +83,24 @@ EntryPanel::EntryPanel(wxWindow* parent, const wxString& id) : wxPanel(parent, -
 	toolbar_->addGroup(tb_group);
 	toolbar_->enableGroup("Entry", false);
 
+	// Create left toolbar
+	if (left_toolbar)
+		toolbar_left_ = new SToolBar(this, false, wxVERTICAL);
+
 	// Setup sizer positions
 	sizer_bottom_ = new wxBoxSizer(wxHORIZONTAL);
 	sizer_main_   = new wxBoxSizer(wxVERTICAL);
-	framesizer->Add(sizer_main_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
-	framesizer->Add(sizer_bottom_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	if (left_toolbar)
+	{
+		auto* hbox = new wxBoxSizer(wxHORIZONTAL);
+		hbox->AddSpacer(pad_min);
+		hbox->Add(toolbar_left_, 0, wxEXPAND | wxRIGHT, pad_min);
+		hbox->Add(sizer_main_, 1, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
+		sizer->Add(hbox, 1, wxEXPAND);
+	}
+	else
+		sizer->Add(sizer_main_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(sizer_bottom_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Bind button events
 	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &EntryPanel::onToolbarButton, this, toolbar_->GetId());
@@ -126,7 +140,7 @@ void EntryPanel::setModified(bool c)
 // -----------------------------------------------------------------------------
 bool EntryPanel::openEntry(ArchiveEntry* entry)
 {
-	return openEntry(entry->getShared());
+	return openEntry(entry ? entry->getShared() : nullptr);
 }
 bool EntryPanel::openEntry(shared_ptr<ArchiveEntry> entry)
 {
@@ -145,18 +159,21 @@ bool EntryPanel::openEntry(shared_ptr<ArchiveEntry> entry)
 	entry_data_.importMem(entry->rawData(true), entry->size());
 
 	// Load the entry
+	Freeze();
 	if (loadEntry(entry.get()))
 	{
 		entry_ = entry;
 		updateStatus();
 		toolbar_->updateLayout(true);
 		Layout();
+		Thaw();
 		return true;
 	}
 	else
 	{
 		theMainWindow->SetStatusText("", 1);
 		theMainWindow->SetStatusText("", 2);
+		Thaw();
 		return false;
 	}
 }
@@ -167,7 +184,7 @@ bool EntryPanel::openEntry(shared_ptr<ArchiveEntry> entry)
 // -----------------------------------------------------------------------------
 bool EntryPanel::loadEntry(ArchiveEntry* entry)
 {
-	Global::error = "Cannot open an entry with the base EntryPanel class";
+	global::error = "Cannot open an entry with the base EntryPanel class";
 	return false;
 }
 
@@ -177,7 +194,7 @@ bool EntryPanel::loadEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 bool EntryPanel::saveEntry()
 {
-	Global::error = "Cannot save an entry with the base EntryPanel class";
+	global::error = "Cannot save an entry with the base EntryPanel class";
 	return false;
 }
 
@@ -287,7 +304,7 @@ void EntryPanel::removeCustomMenu() const
 // -----------------------------------------------------------------------------
 bool EntryPanel::isActivePanel()
 {
-	return (IsShown() && MainEditor::currentEntryPanel() == this);
+	return (IsShown() && maineditor::currentEntryPanel() == this);
 }
 
 // -----------------------------------------------------------------------------

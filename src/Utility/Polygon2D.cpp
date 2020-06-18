@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -37,6 +37,8 @@
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
 #include "SLADEMap/SLADEMap.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -153,7 +155,7 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 		return;
 
 	// Check dimensions and scale
-	auto&  tex_info = OpenGL::Texture::info(texture_);
+	auto&  tex_info = gl::Texture::info(texture_);
 	double width    = tex_info.size.x;
 	double height   = tex_info.size.y;
 	if (scale_x == 0)
@@ -181,7 +183,7 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 			// Apply rotation if any
 			if (rotation != 0)
 			{
-				Vec2d np = MathStuff::rotatePoint(Vec2d(0, 0), Vec2d(x, y), rotation);
+				Vec2d np = math::rotatePoint(Vec2d(0, 0), Vec2d(x, y), rotation);
 				x        = np.x;
 				y        = np.y;
 			}
@@ -367,7 +369,7 @@ int PolygonSplitter::findNextEdge(int edge, bool ignore_done, bool only_convex, 
 	auto& v1 = vertices_[e.v1];
 
 	// Go through all edges starting from the end of this one
-	double min_angle = 2 * MathStuff::PI;
+	double min_angle = 2 * math::PI;
 	int    next      = -1;
 	for (unsigned a = 0; a < v2.edges_out.size(); a++)
 	{
@@ -390,7 +392,7 @@ int PolygonSplitter::findNextEdge(int edge, bool ignore_done, bool only_convex, 
 			continue;
 
 		// Determine angle between edges
-		double angle = MathStuff::angle2DRad(
+		double angle = math::angle2DRad(
 			Vec2d(v1.x, v1.y), Vec2d(v2.x, v2.y), Vec2d(vertices_[out.v2].x, vertices_[out.v2].y));
 		if (angle < min_angle)
 		{
@@ -400,7 +402,7 @@ int PolygonSplitter::findNextEdge(int edge, bool ignore_done, bool only_convex, 
 	}
 
 	last_angle_ = min_angle;
-	return only_convex && min_angle > MathStuff::PI ? -1 : next;
+	return only_convex && min_angle > math::PI ? -1 : next;
 }
 
 void PolygonSplitter::flipEdge(int edge)
@@ -487,7 +489,7 @@ bool PolygonSplitter::detectUnclosed()
 			info += fmt::format("{:1.2f}", vertices_[end_vert].y);
 			info += " ";
 		}
-		Log::info(info);
+		log::info(info);
 		info = "Vertices with no incoming edges: ";
 		for (int start_vert : start_verts)
 		{
@@ -496,7 +498,7 @@ bool PolygonSplitter::detectUnclosed()
 			info += fmt::format("{:1.2f}", vertices_[start_vert].y);
 			info += " ";
 		}
-		Log::info(info);
+		log::info(info);
 	}
 
 	// Check if any of this is caused by flipped edges
@@ -617,7 +619,7 @@ bool PolygonSplitter::tracePolyOutline(int edge_start)
 		}
 
 		// Check for concavity
-		if (last_angle_ > MathStuff::PI)
+		if (last_angle_ > math::PI)
 			poly.convex = false;
 
 		// Stop if we're back at the start
@@ -631,7 +633,7 @@ bool PolygonSplitter::tracePolyOutline(int edge_start)
 	if (a >= 99999)
 	{
 		if (verbose_)
-			Log::info("Possible infinite loop in tracePolyOutline");
+			log::info("Possible infinite loop in tracePolyOutline");
 		return false;
 	}
 
@@ -655,7 +657,7 @@ bool PolygonSplitter::tracePolyOutline(int edge_start)
 			info += "clockwise";
 		else
 			info += "anticlockwise";
-		Log::info(info);
+		log::info(info);
 	}
 
 	return true;
@@ -689,7 +691,7 @@ bool PolygonSplitter::testTracePolyOutline(int edge_start)
 	if (a >= 99999)
 	{
 		if (verbose_)
-			Log::info("Possible infinite loop in tracePolyOutline");
+			log::info("Possible infinite loop in tracePolyOutline");
 		return false;
 	}
 
@@ -719,9 +721,9 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	int    closest  = -1;
 	for (unsigned a = 0; a < vertices_.size(); a++)
 	{
-		if (MathStuff::lineSide(vertices_[a], Seg2d(vertices_[v1], vertices_[v2])) > 0 && vertices_[a].ok)
+		if (math::lineSide(vertices_[a], Seg2d(vertices_[v1], vertices_[v2])) > 0 && vertices_[a].ok)
 		{
-			vertices_[a].distance = MathStuff::distance(vertices_[v2], vertices_[a]);
+			vertices_[a].distance = math::distance(vertices_[v2], vertices_[a]);
 			if (vertices_[a].distance < min_dist)
 			{
 				min_dist = vertices_[a].distance;
@@ -747,7 +749,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 			continue;
 
 		// Intersection test
-		if (MathStuff::linesIntersect(
+		if (math::linesIntersect(
 				Seg2d(vertices_[v2], vertices_[closest]), Seg2d(vertices_[edge.v1], vertices_[edge.v2]), pointi))
 		{
 			intersect = true;
@@ -792,8 +794,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 				continue;
 
 			// Intersection test
-			if (MathStuff::linesIntersect(
-					Seg2d(vertices_[v2], vert), Seg2d(vertices_[edge.v1], vertices_[edge.v2]), pointi))
+			if (math::linesIntersect(Seg2d(vertices_[v2], vert), Seg2d(vertices_[edge.v1], vertices_[edge.v2]), pointi))
 			{
 				intersect = true;
 				break;
@@ -892,7 +893,7 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		tracePolyOutline(a);
 	}
 	if (verbose_)
-		Log::info("{} Polygon outlines detected", polygon_outlines_.size());
+		log::info("{} Polygon outlines detected", polygon_outlines_.size());
 
 	// Check if any edges are not part of a polygon outline
 	for (auto& edge : edges_)
@@ -923,7 +924,7 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		if (separate && polygon_outlines_[a].clockwise && polygon_outlines_[a].convex)
 		{
 			if (verbose_)
-				Log::info("Separate, convex polygon exists, cutting (valid)");
+				log::info("Separate, convex polygon exists, cutting (valid)");
 			for (int edge : polygon_outlines_[a].edges)
 			{
 				// Set the edge to 'done' so it is ignored, but still used to build polygons
@@ -944,7 +945,7 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		else if (separate && !polygon_outlines_[a].clockwise)
 		{
 			if (verbose_)
-				Log::info("Separate, anticlockwise polygon exists, cutting (invalid)");
+				log::info("Separate, anticlockwise polygon exists, cutting (invalid)");
 			for (int edge : polygon_outlines_[a].edges)
 			{
 				// Set the edge to 'done' so it is ignored, but still used to build polygons
@@ -1052,7 +1053,7 @@ void PolygonSplitter::testRender()
 {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// Draw vertices
-	OpenGL::setColour(255, 255, 255, 255, OpenGL::Blend::Normal);
+	gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
 	glBegin(GL_POINTS);
 	for (auto& vertex : vertices_)
 		glVertex2d(vertex.x, vertex.y);

@@ -1,4 +1,5 @@
-<article-head>MapLine</article-head>
+<subhead>Type</subhead>
+<header>MapLine</header>
 
 Represents a map linedef.
 
@@ -9,33 +10,47 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop class="ro">x1</prop> | <type>number</type> | The X coordinate of the line's first vertex
-<prop class="ro">y1</prop> | <type>number</type> | The Y coordinate of the line's first vertex
-<prop class="ro">x2</prop> | <type>number</type> | The X coordinate of the line's second vertex
-<prop class="ro">y2</prop> | <type>number</type> | The Y coordinate of the line's second vertex
+<prop class="ro">x1</prop> | <type>float</type> | The X coordinate of the line's first vertex
+<prop class="ro">y1</prop> | <type>float</type> | The Y coordinate of the line's first vertex
+<prop class="ro">x2</prop> | <type>float</type> | The X coordinate of the line's second vertex
+<prop class="ro">y2</prop> | <type>float</type> | The Y coordinate of the line's second vertex
 <prop class="ro">vertex1</prop> | <type>[MapVertex](MapVertex.md)</type> | The line's first vertex
 <prop class="ro">vertex2</prop> | <type>[MapVertex](MapVertex.md)</type> | The line's second vertex
 <prop class="ro">side1</prop> | <type>[MapSide](MapSide.md)</type> | The line's first (front) side
 <prop class="ro">side2</prop> | <type>[MapSide](MapSide.md)</type> | The line's second (back) side
-<prop class="ro">special</prop> | <type>number</type> | The line's action special
-<prop class="ro">length</prop> | <type>number</type> | The length of the line in map units
+<prop class="ro">special</prop> | <type>integer</type> | The line's action special
+<prop class="ro">length</prop> | <type>float</type> | The length of the line in map units
 
 ## Constructors
 
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
+**See:**
+
+* <code>[Map.linedefs](Map.md#properties)</code>
+
 ## Functions
 
+### Overview
+
+#### Info
+
+<fdef>[Flag](#flag)</func>(<arg>flagName</arg>) -> <type>boolean</type></fdef>
+<fdef>[VisibleTextures](#visibletextures)</func>() -> <type>table</type></fdef>
+
+#### Modification
+
+<fdef>[Flip](#flip)</func>(<arg>[swapSides]</arg>)</fdef>
+
+---
 ### Flag
 
-<fdef>function <type>MapLine</type>.<func>Flag</func>(<arg>*self*</arg>, <arg>flagName</arg>)</fdef>
-
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>flagName</arg> (<type>string</type>): The name of the flag to check
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if the given flag is set
 
@@ -49,24 +64,11 @@ If the parent <type>[Map](Map.md)</type>'s format is UDMF, this behaves exactly 
 * `dontpegbottom`
 
 ---
-### Flip
-
-<fdef>function <type>MapLine</type>.<func>Flip</func>(<arg>*self*</arg>, <arg>swapSides</arg>)</fdef>
-
-Flips the line so that it faces the opposite direction. If <arg>swapSides</arg> is `true`, <prop>side1</prop> and <prop>side2</prop> will also be swapped so that they stay on the same spatial "side" of the line.
-
-<listhead>Parameters</listhead>
-
-* <arg>[swapSides]</arg> (<type>boolean</type>, default `true`): Whether to swap the sides
-
----
 ### VisibleTextures
-
-<fdef>function <type>MapLine</type>.<func>VisibleTextures</func>(<arg>*self*</arg>)</fdef>
 
 Determines what textures (parts) of the line are showing.
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>table</type>: A table containing the following <type>boolean</type> values:
     * `frontUpper`
@@ -89,3 +91,12 @@ if visible.frontUpper == true then
     end
 end
 ```
+
+---
+### Flip
+
+Flips the line so that it faces the opposite direction. If <arg>swapSides</arg> is `true`, <prop>side1</prop> and <prop>side2</prop> will also be swapped so that they stay on the same spatial "side" of the line.
+
+#### Parameters
+
+* <arg>[swapSides]</arg> (<type>boolean</type>): Whether to swap the sides. Default is `true`

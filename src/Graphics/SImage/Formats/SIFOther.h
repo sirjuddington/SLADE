@@ -39,7 +39,7 @@ protected:
 		size_t data_offset = data.readL32(24 + (index << 2));
 		if (!info.width || !info.height || !data_offset || data.size() < data_offset + (info.width * info.height))
 		{
-			Global::error = "HLT file: invalid data for mip level";
+			global::error = "HLT file: invalid data for mip level";
 			return false;
 		}
 
@@ -48,14 +48,14 @@ protected:
 		size_t  pal_offset = data.readL32(36) + ((data.readL32(16) >> 3) * (data.readL32(20) >> 3));
 		if (data.size() < pal_offset + 5)
 		{
-			Global::error = "HLT file: invalid palette offset";
+			global::error = "HLT file: invalid palette offset";
 			return false;
 		}
 		size_t palsize = data.readL16(pal_offset);
 		if (palsize == 0 || palsize > 256 || data.size() < (pal_offset + 2 + (palsize * 3)))
 		{
-			Log::error(wxString::Format("palsize %d, paloffset %d, entry size %d", palsize, pal_offset, data.size()));
-			Global::error = "HLT file: invalid palette size";
+			log::error(wxString::Format("palsize %d, paloffset %d, entry size %d", palsize, pal_offset, data.size()));
+			global::error = "HLT file: invalid palette size";
 			return false;
 		}
 		for (size_t c = 0; c < palsize; ++c)
@@ -197,7 +197,7 @@ public:
 		SImage::Info info;
 
 		// Read header
-		Graphics::PatchHeader header;
+		gfx::PatchHeader header;
 		mc.read(&header, 8, 0);
 
 		// Set info
@@ -215,7 +215,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Setup variables
-		Graphics::PatchHeader header;
+		gfx::PatchHeader header;
 		data.read(&header, 8, 0);
 		int width    = wxINT16_SWAP_ON_BE(header.width);
 		int height   = wxINT16_SWAP_ON_BE(header.height);
@@ -398,7 +398,10 @@ protected:
 
 		// Check
 		if (datastart < 16 || datastart >= data.size())
-			return false;
+		{
+			image.create(0, 0, SImage::Type::PalMask, nullptr, index, info.numimages);
+			return true;
+		}
 
 		// Create image (swapped width/height because column-major)
 		image.create(info.height, info.width, SImage::Type::PalMask, nullptr, index, info.numimages);
@@ -431,21 +434,30 @@ protected:
 private:
 	unsigned getTileInfo(SImage::Info& info, MemChunk& mc, int index) const
 	{
+		size_t headeroffset = 0;
+
+		// Test for "BUILDART" magic string (for Ion Fury)
+		if (mc[0] == 'B' && mc[1] == 'U' && mc[2] == 'I' && mc[3] == 'L' && mc[4] == 'D' && mc[5] == 'A' && mc[6] == 'R'
+			&& mc[7] == 'T')
+		{
+			headeroffset = 8;
+		}
+
 		// Get tile info
-		uint32_t firsttile = wxUINT32_SWAP_ON_BE(((uint32_t*)mc.data())[2]);
-		uint32_t lasttile  = wxUINT32_SWAP_ON_BE(((uint32_t*)mc.data())[3]);
+		uint32_t firsttile = wxUINT32_SWAP_ON_BE(((uint32_t*)(mc.data() + headeroffset))[2]);
+		uint32_t lasttile  = wxUINT32_SWAP_ON_BE(((uint32_t*)(mc.data() + headeroffset))[3]);
 
 		// Set number of images
 		info.numimages = 1 + lasttile - firsttile;
 
 		// Each tile has a 2-byte width, a 2-byte height, and a 4-byte
 		// picanm struct. The header itself is 16 bytes.
-		size_t x_offs = 16;
+		size_t x_offs = 16 + headeroffset;
 		size_t y_offs = x_offs + (info.numimages << 1);
 		size_t o_offs = y_offs + (info.numimages << 1);
 
 		// Compute the address where our tile's graphic data starts
-		size_t datastart = (info.numimages * 8) + 16;
+		size_t datastart = (info.numimages * 8) + 16 + headeroffset;
 		if (index > 0)
 		{
 			// We can skip these steps if looking at the first tile in the ART file.

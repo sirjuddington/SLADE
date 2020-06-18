@@ -4,13 +4,15 @@
 #include "UI/Canvas/OGLCanvas.h"
 #include "UI/Controls/STabCtrl.h"
 
+namespace slade
+{
 class NumberTextCtrl;
 class MapObjectPropsPanel;
 class ArgsPanel;
 class ActionSpecialPanel;
-namespace Game
+namespace game
 {
-class ThingType;
+	class ThingType;
 }
 
 class SpriteTexCanvas : public OGLCanvas
@@ -20,7 +22,7 @@ public:
 	~SpriteTexCanvas() = default;
 
 	wxString texName() const { return texname_; }
-	void     setSprite(const Game::ThingType& type);
+	void     setSprite(const game::ThingType& type);
 	void     draw() override;
 
 private:
@@ -94,6 +96,7 @@ private:
 	AngleControl*        ac_direction_  = nullptr;
 	NumberTextCtrl*      text_id_       = nullptr;
 	NumberTextCtrl*      text_height_   = nullptr;
+	wxButton*            btn_new_id_    = nullptr;
 
 	vector<wxString> udmf_flags_;
 	vector<wxString> udmf_flags_extra_;
@@ -104,3 +107,4 @@ private:
 
 	void onSpriteClicked(wxMouseEvent& e);
 };
+} // namespace slade

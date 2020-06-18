@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Compression
+namespace slade::compression
 {
 bool genericInflate(MemChunk& in, MemChunk& out, int windowbits, const char* function);
 bool genericDeflate(MemChunk& in, MemChunk& out, int level, int windowbits, const char* function);
@@ -15,4 +15,4 @@ bool zipUnshrink(MemChunk& in, MemChunk& out, size_t maxsize);
 bool bzip2Decompress(MemChunk& in, MemChunk& out, size_t maxsize = 0);
 bool bzip2Compress(MemChunk& in, MemChunk& out);
 bool lzmaDecompress(MemChunk& in, MemChunk& out, size_t size);
-} // namespace Compression
+} // namespace slade::compression

@@ -2,7 +2,7 @@
 
 #include "Structs.h"
 
-namespace MathStuff
+namespace slade::math
 {
 constexpr double PI = 3.1415926535897932384;
 
@@ -28,4 +28,4 @@ double distanceRayPlane(Vec3d ray_origin, Vec3d ray_dir, Plane plane);
 bool   boxLineIntersect(Rectf box, Seg2d line);
 Plane  planeFromTriangle(Vec3d p1, Vec3d p2, Vec3d p3);
 
-} // namespace MathStuff
+} // namespace slade::math

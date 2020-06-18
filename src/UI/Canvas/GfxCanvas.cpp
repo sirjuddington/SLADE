@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,6 +39,8 @@
 #include "OpenGL/GLTexture.h"
 #include "UI/SBrush.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -63,10 +65,10 @@ CVAR(Bool, gfx_arc, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // GfxCanvas class constructor
 // -----------------------------------------------------------------------------
-GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id), scale_{ UI::scaleFactor() }
+GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id), scale_{ ui::scaleFactor() }
 {
-	// Listen to the image for changes
-	listenTo(&image_);
+	// Update texture when the image changes
+	sc_image_changed_ = image_.signals().image_changed.connect(&GfxCanvas::updateImageTexture, this);
 
 	// Bind events
 	Bind(wxEVT_LEFT_DOWN, &GfxCanvas::onMouseLeftDown, this);
@@ -82,7 +84,7 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id), scale_{ 
 // -----------------------------------------------------------------------------
 void GfxCanvas::setScale(double scale)
 {
-	scale_ = scale * UI::scaleFactor();
+	scale_ = scale * ui::scaleFactor();
 }
 
 // -----------------------------------------------------------------------------
@@ -106,7 +108,7 @@ void GfxCanvas::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
+	if (gl::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Draw the background
@@ -145,7 +147,7 @@ void GfxCanvas::drawOffsetLines() const
 {
 	if (view_type_ == View::Sprite)
 	{
-		OpenGL::setColour(ColRGBA::BLACK, OpenGL::Blend::Normal);
+		gl::setColour(ColRGBA::BLACK, gl::Blend::Normal);
 
 		glBegin(GL_LINES);
 		glVertex2d(-9999, 0);
@@ -160,7 +162,7 @@ void GfxCanvas::drawOffsetLines() const
 		glPushMatrix();
 		glEnable(GL_LINE_SMOOTH);
 		glScaled(scale_, yscale, 1);
-		Drawing::drawHud();
+		drawing::drawHud();
 		glDisable(GL_LINE_SMOOTH);
 		glPopMatrix();
 	}
@@ -208,8 +210,8 @@ void GfxCanvas::drawImage()
 			memset(drawing_mask_, false, image_.width() * image_.height());
 		}
 
-		OpenGL::Texture::clear(tex_image_);
-		tex_image_ = OpenGL::Texture::createFromImage(image_, &palette_);
+		gl::Texture::clear(tex_image_);
+		tex_image_ = gl::Texture::createFromImage(image_, &palette_);
 
 		update_texture_ = false;
 	}
@@ -222,44 +224,44 @@ void GfxCanvas::drawImage()
 	if (view_type_ == View::Tiled)
 	{
 		// Draw tiled image
-		OpenGL::setColour(255, 255, 255, 255, OpenGL::Blend::Normal);
-		Drawing::drawTextureTiled(tex_image_, GetSize().x / scale_, GetSize().y / scale_);
+		gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
+		drawing::drawTextureTiled(tex_image_, GetSize().x / scale_, GetSize().y / scale_);
 	}
 	else if (drag_origin_.x < 0) // If not dragging
 	{
 		// Draw the image
-		OpenGL::setColour(255, 255, 255, 255, OpenGL::Blend::Normal);
-		Drawing::drawTexture(tex_image_);
+		gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
+		drawing::drawTexture(tex_image_);
 
 		// Draw hilight otherwise
 		if (image_hilight_ && gfx_hilight_mouseover && editing_mode_ == EditMode::None)
 		{
-			OpenGL::setColour(255, 255, 255, 80, OpenGL::Blend::Additive);
-			Drawing::drawTexture(tex_image_);
+			gl::setColour(255, 255, 255, 80, gl::Blend::Additive);
+			drawing::drawTexture(tex_image_);
 
 			// Reset colour
-			OpenGL::setColour(255, 255, 255, 255, OpenGL::Blend::Normal);
+			gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
 		}
 	}
 	else // Dragging
 	{
 		// Draw the original
-		OpenGL::setColour(ColRGBA(0, 0, 0, 180), OpenGL::Blend::Normal);
-		Drawing::drawTexture(tex_image_);
+		gl::setColour(ColRGBA(0, 0, 0, 180), gl::Blend::Normal);
+		drawing::drawTexture(tex_image_);
 
 		// Draw the dragged image
 		int off_x = (drag_pos_.x - drag_origin_.x) / scale_;
 		int off_y = (drag_pos_.y - drag_origin_.y) / scale_;
 		glTranslated(off_x, off_y, 0);
-		OpenGL::setColour(255, 255, 255, 255, OpenGL::Blend::Normal);
-		Drawing::drawTexture(tex_image_);
+		gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
+		drawing::drawTexture(tex_image_);
 	}
 	// Draw brush shadow when in editing mode
 	if (editing_mode_ != EditMode::None && cursor_pos_ != Vec2i{ -1, -1 })
 	{
-		OpenGL::setColour(255, 255, 255, 160, OpenGL::Blend::Normal);
-		Drawing::drawTexture(tex_brush_);
-		OpenGL::setColour(255, 255, 255, 255, OpenGL::Blend::Normal);
+		gl::setColour(255, 255, 255, 160, gl::Blend::Normal);
+		drawing::drawTexture(tex_brush_);
+		gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
 	}
 
 	// Disable textures
@@ -268,7 +270,7 @@ void GfxCanvas::drawImage()
 	// Draw outline
 	if (gfx_show_border)
 	{
-		OpenGL::setColour(0, 0, 0, 64);
+		gl::setColour(0, 0, 0, 64);
 		glBegin(GL_LINE_LOOP);
 		glVertex2d(0, 0);
 		glVertex2d(0, y);
@@ -519,18 +521,8 @@ void GfxCanvas::generateBrushShadow()
 			}
 
 	// Load it as a GL texture
-	OpenGL::Texture::clear(tex_brush_);
-	tex_brush_ = OpenGL::Texture::createFromImage(img);
-}
-
-// -----------------------------------------------------------------------------
-// Called when an announcement is recieved from the image that this GfxCanvas is
-// displaying
-// -----------------------------------------------------------------------------
-void GfxCanvas::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	if (announcer == &image_ && event_name == "image_changed")
-		update_texture_ = true;
+	gl::Texture::clear(tex_brush_);
+	tex_brush_ = gl::Texture::createFromImage(img);
 }
 
 

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -40,6 +40,8 @@
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -90,7 +92,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 
 	// Jump To toolbar group
 	auto group_jump_to = new SToolBarGroup(toolbar, "Jump To", true);
-	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, WxUtils::scaledSize(200, -1));
+	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxutil::scaledSize(200, -1));
 	group_jump_to->addCustomControl(choice_jump_to_);
 	toolbar->addGroup(group_jump_to);
 
@@ -102,10 +104,10 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 
 	text_editor_ = new TextEditorCtrl(this, -1);
 	text_editor_->setJumpToControl(choice_jump_to_);
-	vbox->Add(text_editor_, 1, wxEXPAND | wxALL, UI::pad());
+	vbox->Add(text_editor_, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Set language
-	wxString lang = Game::configuration().scriptLanguage();
+	wxString lang = game::configuration().scriptLanguage();
 	if (S_CMPNOCASE(lang, "acs_hexen"))
 	{
 		text_editor_->setLanguage(TextLanguage::fromId("acs"));
@@ -124,13 +126,13 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 	// Add Find+Replace panel
 	panel_fr_ = new FindReplacePanel(this, *text_editor_);
 	text_editor_->setFindReplacePanel(panel_fr_);
-	vbox->Add(panel_fr_, 0, wxEXPAND | wxALL, UI::pad());
+	vbox->Add(panel_fr_, 0, wxEXPAND | wxALL, ui::pad());
 	panel_fr_->Hide();
 
 	// Add function/constants list
 	list_words_ = new wxTreeListCtrl(this, -1);
-	list_words_->SetInitialSize(WxUtils::scaledSize(200, -10));
-	hbox->Add(list_words_, 0, wxEXPAND | wxALL, UI::pad());
+	list_words_->SetInitialSize(wxutil::scaledSize(200, -10));
+	hbox->Add(list_words_, 0, wxEXPAND | wxALL, ui::pad());
 	populateWordList();
 	list_words_->Show(script_show_language_list);
 
@@ -155,10 +157,10 @@ bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled
 		entry_compiled_->importEntry(compiled);
 
 	// Process ACS open scripts
-	wxString lang = Game::configuration().scriptLanguage();
+	wxString lang = game::configuration().scriptLanguage();
 	if (entry_script_->size() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
-		auto& map = MapEditor::editContext().map();
+		auto& map = mapeditor::editContext().map();
 		map.mapSpecials()->processACSScripts(entry_script_.get());
 		map.mapSpecials()->updateTaggedSectors(&map);
 	}
@@ -215,10 +217,10 @@ void ScriptEditorPanel::saveScripts() const
 	entry_script_->importMem(buf, buf.length());
 
 	// Process ACS open scripts
-	wxString lang = Game::configuration().scriptLanguage();
+	wxString lang = game::configuration().scriptLanguage();
 	if (entry_script_->size() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
-		auto map = &(MapEditor::editContext().map());
+		auto map = &(mapeditor::editContext().map());
 		map->mapSpecials()->processACSScripts(entry_script_.get());
 		map->mapSpecials()->updateTaggedSectors(map);
 	}
@@ -245,13 +247,13 @@ bool ScriptEditorPanel::handleAction(string_view name)
 		saveScripts();
 
 		// Compile depending on language
-		wxString lang = Game::configuration().scriptLanguage();
+		wxString lang = game::configuration().scriptLanguage();
 		if (lang == "acs_hexen")
-			EntryOperations::compileACS(
-				entry_script_.get(), true, entry_compiled_.get(), dynamic_cast<wxFrame*>(MapEditor::windowWx()));
+			entryoperations::compileACS(
+				entry_script_.get(), true, entry_compiled_.get(), dynamic_cast<wxFrame*>(mapeditor::windowWx()));
 		else if (lang == "acs_zdoom")
-			EntryOperations::compileACS(
-				entry_script_.get(), false, entry_compiled_.get(), dynamic_cast<wxFrame*>(MapEditor::windowWx()));
+			entryoperations::compileACS(
+				entry_script_.get(), false, entry_compiled_.get(), dynamic_cast<wxFrame*>(mapeditor::windowWx()));
 	}
 
 	// Save Script

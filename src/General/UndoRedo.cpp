@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "General/UndoRedo.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -75,7 +77,7 @@ string UndoLevel::timeStamp(bool date, bool time) const
 // -----------------------------------------------------------------------------
 bool UndoLevel::doUndo()
 {
-	Log::info(3, "Performing undo \"{}\" ({} steps)", name_, undo_steps_.size());
+	log::info(3, "Performing undo \"{}\" ({} steps)", name_, undo_steps_.size());
 	bool ok = true;
 	for (int a = (int)undo_steps_.size() - 1; a >= 0; a--)
 	{
@@ -91,7 +93,7 @@ bool UndoLevel::doUndo()
 // -----------------------------------------------------------------------------
 bool UndoLevel::doRedo()
 {
-	Log::info(3, "Performing redo \"{}\" ({} steps)", name_, undo_steps_.size());
+	log::info(3, "Performing redo \"{}\" ({} steps)", name_, undo_steps_.size());
 	bool ok = true;
 	for (auto& undo_step : undo_steps_)
 	{
@@ -159,7 +161,7 @@ void UndoManager::beginRecord(string_view name)
 		endRecord(true);
 
 	// Begin new UndoLevel
-	// Log::info(1, "Recording undo level \"%s\"", name);
+	// log::info(1, "Recording undo level \"%s\"", name);
 	current_level_ = std::make_unique<UndoLevel>(name);
 }
 
@@ -175,7 +177,7 @@ void UndoManager::endRecord(bool success)
 	// If failed, delete current undo level
 	if (!success)
 	{
-		// Log::info(1, "Recording undo level \"%s\" failed", current_level->getName());
+		// log::info(1, "Recording undo level \"%s\" failed", current_level->getName());
 		current_level_.reset(nullptr);
 		return;
 	}
@@ -183,12 +185,12 @@ void UndoManager::endRecord(bool success)
 	// Remove any undo levels after the current
 	while ((int)undo_levels_.size() - 1 > current_level_index_)
 	{
-		// Log::info(1, "Removing undo level \"%s\"", undo_levels.back()->getName());
+		// log::info(1, "Removing undo level \"%s\"", undo_levels.back()->getName());
 		undo_levels_.pop_back();
 	}
 
 	// Add current level to levels
-	// Log::info(1, "Recording undo level \"%s\" succeeded", current_level->getName());
+	// log::info(1, "Recording undo level \"%s\" succeeded", current_level->getName());
 	undo_levels_.push_back(std::move(current_level_));
 	current_level_.reset(nullptr);
 	current_level_index_ = undo_levels_.size() - 1;
@@ -196,7 +198,7 @@ void UndoManager::endRecord(bool success)
 	// Clear current undo manager
 	current_undo_manager = nullptr;
 
-	announce("level_recorded");
+	signals_.level_recorded();
 }
 
 // -----------------------------------------------------------------------------
@@ -244,12 +246,12 @@ string UndoManager::undo()
 	current_undo_manager = this;
 	auto& level          = undo_levels_[current_level_index_];
 	if (!level->doUndo())
-		Log::warning("Undo operation \"{}\" failed", level->name());
+		log::warning("Undo operation \"{}\" failed", level->name());
 	undo_running_        = false;
 	current_undo_manager = nullptr;
 	current_level_index_--;
 
-	announce("undo");
+	signals_.undo();
 
 	return level->name();
 }
@@ -276,7 +278,7 @@ string UndoManager::redo()
 	undo_running_        = false;
 	current_undo_manager = nullptr;
 
-	announce("redo");
+	signals_.redo();
 
 	return level->name();
 }
@@ -350,7 +352,7 @@ bool UndoManager::createMergedLevel(UndoManager* manager, string_view name)
 // -----------------------------------------------------------------------------
 // Returns true if the current undo manager is currently recording an undo level
 // -----------------------------------------------------------------------------
-bool UndoRedo::currentlyRecording()
+bool undoredo::currentlyRecording()
 {
 	if (current_undo_manager)
 		return current_undo_manager->currentlyRecording();
@@ -362,7 +364,7 @@ bool UndoRedo::currentlyRecording()
 // Returns the 'current' undo manager, this is usually the manager that is
 // currently recording an undo level
 // -----------------------------------------------------------------------------
-UndoManager* UndoRedo::currentManager()
+UndoManager* undoredo::currentManager()
 {
 	return current_undo_manager;
 }
@@ -370,7 +372,7 @@ UndoManager* UndoRedo::currentManager()
 // -----------------------------------------------------------------------------
 // Returns the 'current' map, associated with the current undo manager
 // -----------------------------------------------------------------------------
-SLADEMap* UndoRedo::currentMap()
+SLADEMap* undoredo::currentMap()
 {
 	if (current_undo_manager)
 		return current_undo_manager->map();

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,7 +35,8 @@
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
-using namespace Game;
+using namespace slade;
+using namespace game;
 
 
 // -----------------------------------------------------------------------------
@@ -95,7 +96,7 @@ int MapInfo::doomEdNumForClass(string_view actor_class)
 {
 	// Find DoomEdNum def with matching class
 	for (auto& i : editor_nums_)
-		if (StrUtil::equalCI(i.second.actor_class, actor_class))
+		if (strutil::equalCI(i.second.actor_class, actor_class))
 			return i.first;
 
 	// Invalid
@@ -105,31 +106,31 @@ int MapInfo::doomEdNumForClass(string_view actor_class)
 // -----------------------------------------------------------------------------
 // Reads and parses all MAPINFO entries in [archive]
 // -----------------------------------------------------------------------------
-bool MapInfo::readMapInfo(Archive* archive)
+bool MapInfo::readMapInfo(const Archive& archive)
 {
-	vector<ArchiveEntry*> entries;
-	archive->putEntryTreeAsList(entries);
-
-	for (auto entry : entries)
+	for (const auto& entry : archive.rootDir()->entries())
 	{
 		// ZMapInfo
 		if (entry->type()->id() == "zmapinfo")
-			parseZMapInfo(entry);
+			return parseZMapInfo(entry.get());
 
 		// TODO: EMapInfo
-		else if (entry->type()->id() == "emapinfo")
-			Log::info("EMAPINFO not implemented");
+		if (entry->type()->id() == "emapinfo")
+			log::info("EMAPINFO parsing not yet implemented");
 
 		// MapInfo
 		else if (entry->type()->id() == "mapinfo")
 		{
 			// Detect format
-			auto format = detectMapInfoType(entry);
-
-			if (format == Format::ZDoomNew)
-				parseZMapInfo(entry);
-			else
-				Log::info("MAPINFO not implemented");
+			switch (detectMapInfoType(entry.get()))
+			{
+			case Format::Hexen:
+			case Format::ZDoomOld: log::info("MAPINFO (Hexen/Old ZDoom) parsing not yet implemented"); break;
+			case Format::ZDoomNew: return parseZMapInfo(entry.get());
+			case Format::Eternity: log::info("EMAPINFO parsing not yet implemented"); break;
+			case Format::Universal: log::info("UMAPINFO parsing not yet implemented"); break;
+			default: break;
+			}
 		}
 	}
 
@@ -143,7 +144,7 @@ bool MapInfo::checkEqualsToken(Tokenizer& tz, string_view parsing) const
 {
 	if (tz.next() != "=")
 	{
-		Log::error("Error Parsing {}: Expected \"=\", got \"{}\" at line {}", parsing, tz.current().text, tz.lineNo());
+		log::error("Error Parsing {}: Expected \"=\", got \"{}\" at line {}", parsing, tz.current().text, tz.lineNo());
 		return false;
 	}
 
@@ -160,12 +161,12 @@ bool MapInfo::strToCol(const string& str, ColRGBA& col) const
 	if (!wxcol.Set(str))
 	{
 		// Parse RR GG BB string
-		auto components = StrUtil::splitV(str, ' ');
+		auto components = strutil::splitV(str, ' ');
 		if (components.size() >= 3)
 		{
-			col.r = StrUtil::asInt(components[0], 16);
-			col.g = StrUtil::asInt(components[1], 16);
-			col.b = StrUtil::asInt(components[2], 16);
+			col.r = strutil::asInt(components[0], 16);
+			col.g = strutil::asInt(components[1], 16);
+			col.b = strutil::asInt(components[2], 16);
 			return true;
 		}
 	}
@@ -195,11 +196,11 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		if (tz.check("include"))
 		{
 			// Get entry at include path
-			auto include_entry = entry->parent()->entryAtPath(tz.next().text);
+			auto* include_entry = entry->parent()->entryAtPath(tz.next().text);
 
 			if (!include_entry)
 			{
-				Log::warning(
+				log::warning(
 					"Warning - Parsing ZMapInfo \"{}\": Unable to include \"{}\" at line {}",
 					entry->name(),
 					tz.current().text,
@@ -212,7 +213,8 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		// Map
 		else if (tz.check("map") || tz.check("defaultmap") || tz.check("adddefaultmap"))
 		{
-			if (!parseZMap(tz, tz.current().text))
+			auto type = tz.current().text;
+			if (!parseZMap(tz, type))
 				return false;
 		}
 
@@ -226,7 +228,7 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		// Unknown block (skip it)
 		else if (tz.check("{"))
 		{
-			Log::warning(2, "Warning - Parsing ZMapInfo \"{}\": Skipping {{}} block", entry->name());
+			log::warning(2, "Warning - Parsing ZMapInfo \"{}\": Skipping {{}} block", entry->name());
 
 			tz.adv();
 			tz.skipSection("{", "}");
@@ -236,13 +238,13 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		// Unknown
 		else
 		{
-			Log::warning(2, R"(Warning - Parsing ZMapInfo "{}": Unknown token "{}")", entry->name(), tz.current().text);
+			log::warning(2, R"(Warning - Parsing ZMapInfo "{}": Unknown token "{}")", entry->name(), tz.current().text);
 		}
 
 		tz.adv();
 	}
 
-	Log::info(2, "Parsed ZMapInfo entry {} successfully", entry->name());
+	log::info(2, "Parsed ZMapInfo entry {} successfully", entry->name());
 
 	return true;
 }
@@ -281,7 +283,7 @@ bool MapInfo::parseZMap(Tokenizer& tz, string_view type)
 
 	if (!tz.advIf("{"))
 	{
-		Log::error(R"(Error Parsing ZMapInfo: Expecting "{{", got "{}" at line {})", tz.current().text, tz.lineNo());
+		log::error(R"(Error Parsing ZMapInfo: Expecting "{{", got "{}" at line {})", tz.current().text, tz.lineNo());
 		return false;
 	}
 
@@ -411,7 +413,7 @@ bool MapInfo::parseZMap(Tokenizer& tz, string_view type)
 
 	if (type == "map")
 	{
-		Log::info(2, "Parsed ZMapInfo Map {} ({}) successfully", map.entry_name, map.name);
+		log::info(2, "Parsed ZMapInfo Map {} ({}) successfully", map.entry_name, map.name);
 
 		// Update existing map
 		bool updated = false;
@@ -441,7 +443,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 	// Opening brace
 	if (!tz.advIfNext("{", 2))
 	{
-		Log::error(R"(Error Parsing ZMapInfo: Expecting "{{", got "{}" at line {})", tz.peek().text, tz.lineNo());
+		log::error(R"(Error Parsing ZMapInfo: Expecting "{{", got "{}" at line {})", tz.peek().text, tz.lineNo());
 		return false;
 	}
 
@@ -450,7 +452,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 		// Editor number
 		if (!tz.current().isInteger())
 		{
-			Log::error(
+			log::error(
 				"Error Parsing ZMapInfo DoomEdNums: Expecting editor number, got \"{}\" at line {}",
 				tz.current().text,
 				tz.lineNo());
@@ -466,7 +468,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 		// =
 		if (!tz.advIfNext("="))
 		{
-			Log::error(
+			log::error(
 				R"(Error Parsing ZMapInfo DoomEdNums: Expecting "=", got "{}" at line {})",
 				tz.current().text,
 				tz.lineNo());
@@ -492,7 +494,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 			{
 				if (!tz.current().isInteger() && !tz.check("+"))
 				{
-					Log::error(
+					log::error(
 						"Error Parsing ZMapInfo DoomEdNums: Expecting arg value, got \"{}\" at line {}",
 						tz.current().text,
 						tz.current().line_no);
@@ -507,7 +509,7 @@ bool MapInfo::parseDoomEdNums(Tokenizer& tz)
 		tz.adv();
 	}
 
-	Log::info(2, "Parsed ZMapInfo DoomEdNums successfully");
+	log::info(2, "Parsed ZMapInfo DoomEdNums successfully");
 
 	return true;
 }
@@ -562,7 +564,7 @@ void MapInfo::dumpDoomEdNums()
 		if (num.second.actor_class.empty())
 			continue;
 
-		Log::info(
+		log::info(
 			R"(DoomEdNum {}: Class "{}", Special "{}", Args {},{},{},{},{})",
 			num.first,
 			num.second.actor_class,
@@ -578,17 +580,17 @@ void MapInfo::dumpDoomEdNums()
 
 
 // TEMP TESTING STUFF
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "MainEditor/MainEditor.h"
 
 CONSOLE_COMMAND(test_parse_zmapinfo, 1, false)
 {
-	auto archive = MainEditor::currentArchive();
+	auto* archive = maineditor::currentArchive();
 	if (archive)
 	{
-		auto entry = archive->entryAtPath(args[0]);
+		auto* entry = archive->entryAtPath(args[0]);
 		if (!entry)
-			Log::console("Invalid entry path");
+			log::console("Invalid entry path");
 		else
 		{
 			MapInfo test;

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -37,6 +37,8 @@
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -111,11 +113,8 @@ bool CTextureCanvas::patchSelected(int index)
 // -----------------------------------------------------------------------------
 void CTextureCanvas::clearTexture()
 {
-	// Stop listening to the current texture (if it exists)
-	if (texture_)
-		stopListening(texture_);
-
-	// Clear texture;
+	// Clear texture
+	sc_patches_modified_.disconnect();
 	texture_ = nullptr;
 
 	// Clear patch textures
@@ -129,7 +128,7 @@ void CTextureCanvas::clearTexture()
 	hilight_patch_ = -1;
 
 	// Clear full preview
-	OpenGL::Texture::clear(tex_preview_);
+	gl::Texture::clear(tex_preview_);
 	tex_preview_ = 0;
 
 	// Refresh canvas
@@ -155,12 +154,12 @@ void CTextureCanvas::updatePatchTextures()
 	// Unload single patch textures
 	for (auto& patch_texture : patch_textures_)
 	{
-		OpenGL::Texture::clear(patch_texture);
+		gl::Texture::clear(patch_texture);
 		patch_texture = 0;
 	}
 
 	// Unload full preview
-	OpenGL::Texture::clear(tex_preview_);
+	gl::Texture::clear(tex_preview_);
 	tex_preview_ = 0;
 }
 
@@ -170,7 +169,7 @@ void CTextureCanvas::updatePatchTextures()
 void CTextureCanvas::updateTexturePreview()
 {
 	// Unload full preview
-	OpenGL::Texture::clear(tex_preview_);
+	gl::Texture::clear(tex_preview_);
 	tex_preview_ = 0;
 }
 
@@ -191,14 +190,29 @@ bool CTextureCanvas::openTexture(CTexture* tex, Archive* parent)
 	for (uint32_t a = 0; a < tex->nPatches(); a++)
 	{
 		// Create GL texture
-		patch_textures_.push_back(OpenGL::Texture::create());
+		patch_textures_.push_back(gl::Texture::create());
 
 		// Set selection
 		selected_patches_.push_back(false);
 	}
 
-	// Listen to it
-	listenTo(tex);
+	// Update when texture patches are modified
+	sc_patches_modified_ = tex->signals().patches_modified.connect([this](CTexture&) {
+		// Reload patches
+		selected_patches_.clear();
+		clearPatchTextures();
+		hilight_patch_ = -1;
+		for (uint32_t a = 0; a < texture_->nPatches(); a++)
+		{
+			// Create GL texture
+			patch_textures_.push_back(gl::Texture::create());
+
+			// Set selection
+			selected_patches_.push_back(false);
+		}
+
+		redraw(true);
+	});
 
 	// Redraw
 	Refresh();
@@ -227,7 +241,7 @@ void CTextureCanvas::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
+	if (gl::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Draw background
@@ -304,7 +318,7 @@ void CTextureCanvas::drawTexture()
 	}
 
 	// Reset colouring
-	OpenGL::setColour(ColRGBA::WHITE, OpenGL::Blend::Normal);
+	gl::setColour(ColRGBA::WHITE, gl::Blend::Normal);
 
 	// If we're currently dragging, draw a 'basic' preview of the texture using opengl
 	if (dragging_)
@@ -331,18 +345,18 @@ void CTextureCanvas::drawTexture()
 			// CTexture -> temp Image -> GLTexture
 			SImage temp(type);
 			texture_->toImage(temp, parent_, &palette_, blend_rgba_);
-			tex_preview_ = OpenGL::Texture::createFromImage(temp, &palette_);
+			tex_preview_ = gl::Texture::createFromImage(temp, &palette_);
 		}
 
 		// Draw it
-		Drawing::drawTexture(tex_preview_);
+		drawing::drawTexture(tex_preview_);
 	}
 
 	// Disable textures
 	glDisable(GL_TEXTURE_2D);
 
 	// Now loop through selected patches and draw selection outlines
-	OpenGL::setColour(70, 210, 220, 255, OpenGL::Blend::Normal);
+	gl::setColour(70, 210, 220, 255, gl::Blend::Normal);
 	glEnable(GL_LINE_SMOOTH);
 	glLineWidth(1.5f);
 	for (size_t a = 0; a < selected_patches_.size(); a++)
@@ -356,7 +370,7 @@ void CTextureCanvas::drawTexture()
 		auto epatch = dynamic_cast<CTPatchEx*>(patch);
 
 		// Check for rotation
-		auto& tex_info = OpenGL::Texture::info(patch_textures_[a]);
+		auto& tex_info = gl::Texture::info(patch_textures_[a]);
 		if (texture_->isExtended() && (epatch->rotation() == 90 || epatch->rotation() == -90))
 		{
 			// Draw outline, width/height swapped
@@ -383,7 +397,7 @@ void CTextureCanvas::drawTexture()
 	if (hilight_patch_ >= 0 && hilight_patch_ < (int)texture_->nPatches())
 	{
 		// Set colour
-		OpenGL::setColour(255, 255, 255, 150, OpenGL::Blend::Additive);
+		gl::setColour(255, 255, 255, 150, gl::Blend::Additive);
 
 		// Get patch
 		auto patch         = texture_->patch(hilight_patch_);
@@ -391,7 +405,7 @@ void CTextureCanvas::drawTexture()
 		auto patch_texture = patch_textures_[hilight_patch_];
 
 		// Check for rotation
-		auto& tex_info = OpenGL::Texture::info(patch_texture);
+		auto& tex_info = gl::Texture::info(patch_texture);
 		if (texture_->isExtended() && (epatch->rotation() == 90 || epatch->rotation() == -90))
 		{
 			// Draw outline, width/height swapped
@@ -433,16 +447,16 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 		return;
 
 	// Load the patch as an opengl texture if it isn't already
-	if (!OpenGL::Texture::isLoaded(patch_textures_[num]))
+	if (!gl::Texture::isLoaded(patch_textures_[num]))
 	{
 		SImage temp(SImage::Type::PalMask);
 		if (texture_->loadPatchImage(num, temp, parent_, &palette_))
 		{
 			// Load the image as a texture
-			OpenGL::Texture::loadImage(patch_textures_[num], temp, &palette_);
+			gl::Texture::loadImage(patch_textures_[num], temp, &palette_);
 		}
 		else
-			patch_textures_[num] = OpenGL::Texture::missingTexture();
+			patch_textures_[num] = gl::Texture::missingTexture();
 	}
 
 	// Translate to position
@@ -470,7 +484,7 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 			flipy = true;
 
 		// Rotation
-		auto& tex_info = OpenGL::Texture::info(patch_textures_[num]);
+		auto& tex_info = gl::Texture::info(patch_textures_[num]);
 		if (epatch->rotation() == 90)
 		{
 			glTranslated(tex_info.size.y, 0, 0);
@@ -495,7 +509,7 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 		glColor4f(col.fr(), col.fg(), col.fb(), alpha);
 
 	// Draw the patch
-	Drawing::drawTexture(patch_textures_[num], 0, 0, flipx, flipy);
+	drawing::drawTexture(patch_textures_[num], 0, 0, flipx, flipy);
 
 	glPopMatrix();
 }
@@ -508,7 +522,7 @@ void CTextureCanvas::drawTextureBorder() const
 	// Draw the texture border
 	double ext = 0.11;
 	glLineWidth(2.0f);
-	OpenGL::setColour(ColRGBA::BLACK, OpenGL::Blend::Normal);
+	gl::setColour(ColRGBA::BLACK, gl::Blend::Normal);
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(-ext, -ext);
 	glVertex2d(-ext, texture_->height() + ext);
@@ -615,7 +629,7 @@ void CTextureCanvas::drawOffsetLines() const
 {
 	if (view_type_ == View::Sprite)
 	{
-		OpenGL::setColour(ColRGBA::BLACK, OpenGL::Blend::Normal);
+		gl::setColour(ColRGBA::BLACK, gl::Blend::Normal);
 
 		glBegin(GL_LINES);
 		glVertex2d(-9999, 0);
@@ -628,7 +642,7 @@ void CTextureCanvas::drawOffsetLines() const
 	{
 		glPushMatrix();
 		glEnable(GL_LINE_SMOOTH);
-		Drawing::drawHud();
+		drawing::drawHud();
 		glDisable(GL_LINE_SMOOTH);
 		glPopMatrix();
 	}
@@ -756,7 +770,7 @@ int CTextureCanvas::patchAt(int x, int y)
 	{
 		// Check if x,y is within patch bounds
 		auto  patch    = texture_->patch(a);
-		auto& tex_info = OpenGL::Texture::info(patch_textures_[a]);
+		auto& tex_info = gl::Texture::info(patch_textures_[a]);
 		if (x >= patch->xOffset() && x < patch->xOffset() + tex_info.size.x && y >= patch->yOffset()
 			&& y < patch->yOffset() + tex_info.size.y)
 		{
@@ -789,36 +803,6 @@ bool CTextureCanvas::swapPatches(size_t p1, size_t p2)
 
 	// Swap patches in the texture itself
 	return texture_->swapPatches(p1, p2);
-}
-
-// -----------------------------------------------------------------------------
-// Called when the texture canvas recieves an announcement from the texture
-// being displayed
-// -----------------------------------------------------------------------------
-void CTextureCanvas::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	// If the announcer isn't this canvas' texture, ignore it
-	if (announcer != texture_)
-		return;
-
-	// Patches modified
-	if (event_name == "patches_modified")
-	{
-		// Reload patches
-		selected_patches_.clear();
-		clearPatchTextures();
-		hilight_patch_ = -1;
-		for (uint32_t a = 0; a < texture_->nPatches(); a++)
-		{
-			// Create GL texture
-			patch_textures_.push_back(OpenGL::Texture::create());
-
-			// Set selection
-			selected_patches_.push_back(false);
-		}
-
-		redraw(true);
-	}
 }
 
 // -----------------------------------------------------------------------------

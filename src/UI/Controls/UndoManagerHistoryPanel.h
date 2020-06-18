@@ -1,18 +1,18 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
 #include "UI/Lists/VirtualListView.h"
 
+namespace slade
+{
 class UndoManager;
 
-class UndoListView : public VirtualListView, public Listener
+class UndoListView : public VirtualListView
 {
 public:
 	UndoListView(wxWindow* parent, UndoManager* manager);
 	~UndoListView() {}
 
 	void setManager(UndoManager* manager);
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
 
 protected:
 	// Virtual wxListCtrl overrides
@@ -23,7 +23,13 @@ protected:
 private:
 	UndoManager* manager_ = nullptr;
 
+	// Signal connections
+	sigslot::scoped_connection sc_recorded_;
+	sigslot::scoped_connection sc_undo_;
+	sigslot::scoped_connection sc_redo_;
+
 	void updateFromManager();
+	void connectManagerSignals();
 };
 
 class UndoManagerHistoryPanel : public wxPanel
@@ -42,3 +48,4 @@ private:
 	void onItemRightClick(wxCommandEvent& e);
 	void onMenu(wxCommandEvent& e);
 };
+} // namespace slade

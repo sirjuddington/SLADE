@@ -2,6 +2,8 @@
 
 #include "MapObject.h"
 
+namespace slade
+{
 class VertexList;
 
 class MapVertex : public MapObject
@@ -60,3 +62,4 @@ private:
 	// Internal info
 	vector<MapLine*> connected_lines_;
 };
+} // namespace slade

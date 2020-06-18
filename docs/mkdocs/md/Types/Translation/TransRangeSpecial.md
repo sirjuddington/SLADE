@@ -1,4 +1,5 @@
-<article-head>TransRangePalette</article-head>
+<subhead>Type</subhead>
+<header>TransRangeSpecial</header>
 
 A custom translation range that maps to a built-in colour translation.
 
@@ -19,6 +20,6 @@ All properties and functions of <type>[TransRange](TransRange.md)</type> can be 
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[Translation.AddSpecialRange](Translation.md#addspecialrange)</code>

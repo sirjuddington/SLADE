@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -38,20 +38,22 @@
 #include "Scripting/Lua.h"
 #include "thirdparty/sol/sol.hpp"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
 // Lua Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace Lua
+namespace slade::lua
 {
 // -----------------------------------------------------------------------------
 // Writes a log [message] of [type]
 // -----------------------------------------------------------------------------
-void logMessage(string_view message, Log::MessageType type = Log::MessageType::Script)
+void logMessage(string_view message, log::MessageType type = log::MessageType::Script)
 {
-	Log::message(type, message);
+	log::message(type, message);
 }
 
 // -----------------------------------------------------------------------------
@@ -62,7 +64,7 @@ bool showArchive(Archive* archive)
 	if (!archive)
 		return false;
 
-	MainEditor::openArchiveTab(archive);
+	maineditor::openArchiveTab(archive);
 	return true;
 }
 
@@ -84,8 +86,8 @@ template<typename T> sol::object memChunkRead(MemChunk& self, unsigned offset)
 	// just to return 0 if the read fails, rather than nil
 	T val;
 	if (!self.read(offset, &val, sizeof(T)))
-		return sol::make_object(Lua::state().lua_state(), sol::nil);
-	return sol::make_object(Lua::state().lua_state(), val);
+		return sol::make_object(lua::state().lua_state(), sol::nil);
+	return sol::make_object(lua::state().lua_state(), val);
 }
 
 // -----------------------------------------------------------------------------
@@ -202,6 +204,40 @@ std::tuple<double, double, double> colourAsLAB(ColRGBA& self)
 }
 
 // -----------------------------------------------------------------------------
+// Registers the Colour (ColRGBA) type with lua
+// -----------------------------------------------------------------------------
+void registerColourType(sol::state& lua)
+{
+	auto lua_colour = lua.new_usertype<ColRGBA>(
+		"Colour", sol::constructors<ColRGBA(), ColRGBA(u8, u8, u8), ColRGBA(u8, u8, u8, u8)>());
+
+	// Constants
+	// -------------------------------------------------------------------------
+	lua_colour["FORMAT_RGB"]   = sol::property([]() { return ColRGBA::StringFormat::RGB; });
+	lua_colour["FORMAT_RGBA"]  = sol::property([]() { return ColRGBA::StringFormat::RGBA; });
+	lua_colour["FORMAT_HEX"]   = sol::property([]() { return ColRGBA::StringFormat::HEX; });
+	lua_colour["FORMAT_ZDOOM"] = sol::property([]() { return ColRGBA::StringFormat::ZDoom; });
+
+	// Properties
+	// -------------------------------------------------------------------------
+	lua_colour["r"]  = &ColRGBA::r;
+	lua_colour["g"]  = &ColRGBA::g;
+	lua_colour["b"]  = &ColRGBA::b;
+	lua_colour["a"]  = &ColRGBA::a;
+	lua_colour["fr"] = sol::property(&ColRGBA::fr);
+	lua_colour["fg"] = sol::property(&ColRGBA::fg);
+	lua_colour["fb"] = sol::property(&ColRGBA::fb);
+	lua_colour["fa"] = sol::property(&ColRGBA::fa);
+
+	// Functions
+	// -------------------------------------------------------------------------
+	lua_colour["AsHSL"]    = &colourAsHSL;
+	lua_colour["AsLAB"]    = &colourAsLAB;
+	lua_colour["AsString"] = &ColRGBA::toString;
+	lua_colour["FromHSL"]  = sol::resolve<void(double, double, double)>(&ColRGBA::fromHSL);
+}
+
+// -----------------------------------------------------------------------------
 // Registers some misc. types with lua
 // -----------------------------------------------------------------------------
 void registerMiscTypes(sol::state& lua)
@@ -212,17 +248,7 @@ void registerMiscTypes(sol::state& lua)
 	lua_vec2f["y"] = &Vec2d::y;
 
 	// Colour type
-	auto lua_colour = lua.new_usertype<ColRGBA>(
-		"Colour",
-		sol::
-			constructors<ColRGBA(), ColRGBA(uint8_t, uint8_t, uint8_t), ColRGBA(uint8_t, uint8_t, uint8_t, uint8_t)>());
-	lua_colour["r"]       = &ColRGBA::r;
-	lua_colour["g"]       = &ColRGBA::g;
-	lua_colour["b"]       = &ColRGBA::b;
-	lua_colour["a"]       = &ColRGBA::a;
-	lua_colour["AsHSL"]   = &colourAsHSL;
-	lua_colour["AsLAB"]   = &colourAsLAB;
-	lua_colour["FromHSL"] = sol::resolve<void(double, double, double)>(&ColRGBA::fromHSL);
+	registerColourType(lua);
 
 	// Plane type
 	auto lua_plane = lua.new_usertype<Plane>(
@@ -246,16 +272,16 @@ void registerAppNamespace(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	app["LogMessage"]            = [](string_view message) { logMessage(message, Log::MessageType::Script); };
-	app["LogWarning"]            = [](string_view message) { logMessage(message, Log::MessageType::Warning); };
-	app["LogError"]              = [](string_view message) { logMessage(message, Log::MessageType::Error); };
-	app["CurrentArchive"]        = &MainEditor::currentArchive;
-	app["CurrentEntry"]          = &MainEditor::currentEntry;
-	app["CurrentEntrySelection"] = &MainEditor::currentEntrySelection;
-	app["CurrentPalette"] = sol::overload(&MainEditor::currentPalette, []() { return MainEditor::currentPalette(); });
+	app["LogMessage"]            = [](string_view message) { logMessage(message, log::MessageType::Script); };
+	app["LogWarning"]            = [](string_view message) { logMessage(message, log::MessageType::Warning); };
+	app["LogError"]              = [](string_view message) { logMessage(message, log::MessageType::Error); };
+	app["CurrentArchive"]        = &maineditor::currentArchive;
+	app["CurrentEntry"]          = &maineditor::currentEntry;
+	app["CurrentEntrySelection"] = &maineditor::currentEntrySelection;
+	app["CurrentPalette"] = sol::overload(&maineditor::currentPalette, []() { return maineditor::currentPalette(); });
 	app["ShowArchive"]    = &showArchive;
-	app["ShowEntry"]      = &MainEditor::openEntry;
-	app["MapEditor"]      = &MapEditor::editContext;
+	app["ShowEntry"]      = &maineditor::openEntry;
+	app["MapEditor"]      = &mapeditor::editContext;
 }
 
-} // namespace Lua
+} // namespace slade::lua

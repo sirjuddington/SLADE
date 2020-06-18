@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,8 @@
 #include "KeyBind.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -74,7 +76,7 @@ string Keypress::asString() const
 
 	string keyname = key;
 	std::replace(keyname.begin(), keyname.end(), '_', ' ');
-	StrUtil::capitalizeIP(keyname);
+	strutil::capitalizeIP(keyname);
 	ret += keyname;
 
 	return ret;
@@ -114,7 +116,7 @@ string KeyBind::keysAsString()
 
 		auto keyname = keys_[a].key;
 		std::replace(keyname.begin(), keyname.end(), '_', ' ');
-		StrUtil::capitalizeIP(keyname);
+		strutil::capitalizeIP(keyname);
 		ret += keyname;
 
 		if (a < keys_.size() - 1)
@@ -512,6 +514,7 @@ void KeyBind::initBinds()
 	addBind("el_import_files", Keypress("I", KPM_CTRL | KPM_SHIFT), "Import Files", group);
 	addBind("el_export", Keypress("E", KPM_CTRL), "Export Entry", group);
 	addBind("el_up_dir", Keypress("backspace"), "Up one directory", group);
+	addBind("el_bookmark", Keypress("B", KPM_CTRL), "Toggle Bookmark", group);
 
 	// Text editor (ted*)
 	group = "Text Editor";
@@ -821,8 +824,8 @@ bool KeyBind::readBinds(Tokenizer& tz)
 			string key, mods;
 			if (keystr.find('|') != string::npos)
 			{
-				mods = StrUtil::beforeFirst(keystr, '|');
-				key  = StrUtil::afterFirst(keystr, '|');
+				mods = strutil::beforeFirst(keystr, '|');
+				key  = strutil::afterFirst(keystr, '|');
 			}
 			else
 				key = keystr;

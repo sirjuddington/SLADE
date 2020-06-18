@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,9 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+using namespace game;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -62,12 +65,12 @@ void UDMFProperty::parse(ParseTreeNode* node, string_view group)
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
 		auto prop     = node->childPTN(a);
-		auto pn_lower = StrUtil::lower(prop->name());
+		auto pn_lower = strutil::lower(prop->name());
 
 		// Property type
 		if (pn_lower == "type")
 		{
-			auto val_lower = StrUtil::lower(prop->stringValue());
+			auto val_lower = strutil::lower(prop->stringValue());
 
 			if (val_lower == "bool")
 				type_ = Type::Boolean;
@@ -121,7 +124,7 @@ void UDMFProperty::parse(ParseTreeNode* node, string_view group)
 			// Not sure why I have to do this here, but for whatever reason prop->getIntValue() doesn't work
 			// if the value parsed was hex (or it could be to do with the colour type? who knows)
 			if (type_ == Type::Colour)
-				default_value_ = StrUtil::asInt(prop->stringValue());
+				default_value_ = strutil::asInt(prop->stringValue());
 
 			has_default_ = true;
 		}
@@ -195,7 +198,7 @@ string UDMFProperty::getStringRep()
 	{
 		if (type_ == Type::Boolean)
 		{
-			if ((bool)default_value_)
+			if (property::value<bool>(default_value_, false))
 				ret += ", default = true";
 			else
 				ret += ", default = false";
@@ -203,11 +206,11 @@ string UDMFProperty::getStringRep()
 		else if (
 			type_ == Type::Int || type_ == Type::ActionSpecial || type_ == Type::SectorSpecial
 			|| type_ == Type::ThingType || type_ == Type::Colour)
-			ret += fmt::format(", default = {}", default_value_.intValue());
+			ret += fmt::format(", default = {}", property::value<int>(default_value_, 0));
 		else if (type_ == Type::Float)
-			ret += fmt::format(", default = {:1.2f}", (double)default_value_);
+			ret += fmt::format(", default = {:1.2f}", property::value<double>(default_value_, 0.));
 		else
-			ret += fmt::format(", default = \"{}\"", default_value_.stringValue());
+			ret += fmt::format(", default = \"{}\"", property::value<string>(default_value_, {}));
 	}
 	else
 		ret += ", no valid default";
@@ -222,7 +225,7 @@ string UDMFProperty::getStringRep()
 		ret += "\nPossible values: ";
 		for (unsigned a = 0; a < values_.size(); a++)
 		{
-			ret += values_[a].stringValue();
+			ret += property::value<string>(values_[a], {});
 			if (a < values_.size() - 1)
 				ret += ", ";
 		}

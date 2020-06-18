@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,14 +34,16 @@
 #include "TextureXEditor.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "Dialogs/ExtMessageDialog.h"
 #include "General/ResourceManager.h"
 #include "General/UndoRedo.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/UndoManagerHistoryPanel.h"
+#include "UI/Dialogs/ExtMessageDialog.h"
 #include "UI/WxUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -63,34 +65,34 @@ public:
 		// --- Format options ---
 		auto frame      = new wxStaticBox(this, -1, "Format");
 		auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		m_vbox->Add(framesizer, 0, wxEXPAND | wxALL, UI::pad());
+		m_vbox->Add(framesizer, 0, wxEXPAND | wxALL, ui::pad());
 
 		// Doom format
 		rb_format_doom_ = new wxRadioButton(
 			this, -1, "Doom (TEXTURE1 + PNAMES)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 		rb_format_strife_   = new wxRadioButton(this, -1, "Strife (TEXTURE1 + PNAMES)");
 		rb_format_textures_ = new wxRadioButton(this, -1, "ZDoom (TEXTURES)");
-		WxUtils::layoutVertically(
+		wxutil::layoutVertically(
 			framesizer,
 			{ rb_format_doom_, rb_format_strife_, rb_format_textures_ },
-			wxSizerFlags(1).Expand().Border(wxALL, UI::pad()));
+			wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
 
 
 		// --- Source options ---
 		frame      = new wxStaticBox(this, -1, "Source");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		m_vbox->Add(framesizer, 0, wxEXPAND | wxALL, UI::pad());
+		m_vbox->Add(framesizer, 0, wxEXPAND | wxALL, ui::pad());
 
 		// New list
 		rb_new_ = new wxRadioButton(this, -1, "Create New (Empty)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-		framesizer->Add(rb_new_, 0, wxEXPAND | wxALL, UI::pad());
+		framesizer->Add(rb_new_, 0, wxEXPAND | wxALL, ui::pad());
 
 		// Import from Base Resource Archive
 		rb_import_bra_ = new wxRadioButton(this, -1, "Import from Base Resource Archive:");
-		framesizer->Add(rb_import_bra_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+		framesizer->Add(rb_import_bra_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 		// Add buttons
-		m_vbox->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL, UI::pad());
+		m_vbox->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL, ui::pad());
 
 		// Bind events
 		rb_new_->Bind(wxEVT_RADIOBUTTON, &CreateTextureXDialog::onRadioNewSelected, this);
@@ -200,22 +202,27 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Add tabs
 	tabs_ = STabCtrl::createControl(this);
-	sizer->Add(tabs_, 1, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(tabs_, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Bind events
 	Bind(wxEVT_SHOW, &TextureXEditor::onShow, this);
 
-	// Palette chooser
-	listenTo(theMainWindow->paletteChooser());
-	updateTexturePalette();
+	// Update patch browser & palette when resources are updated or the patch table is modified
+	sc_resources_updated_ = app::resources().signals().resources_updated.connect([this]() {
+		pb_update_ = true;
+		updateTexturePalette();
+	});
+	sc_ptable_modified_   = patch_table_.signals().modified.connect([this]() {
+        pb_update_ = true;
+        updateTexturePalette();
+    });
 
-	// Listen to patch table
-	listenTo(&patch_table_);
-
-	// Listen to resource manager
-	listenTo(&App::resources());
+	// Update the editor palette if the main palette is changed
+	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect(
+		[this]() { updateTexturePalette(); });
 
 	// Update + layout
+	updateTexturePalette();
 	wxWindowBase::Layout();
 	wxWindow::Show();
 }
@@ -263,7 +270,7 @@ bool TextureXEditor::openArchive(Archive* archive)
 		{
 			Archive::SearchOptions opt;
 			opt.match_type = EntryType::fromId("pnames");
-			entry_pnames   = App::archiveManager().findResourceEntry(opt, archive);
+			entry_pnames   = app::archiveManager().findResourceEntry(opt, archive);
 		}
 		else
 			pnames_ = entry_pnames; // If PNAMES was found in the archive,
@@ -473,7 +480,7 @@ bool TextureXEditor::removePatch(unsigned index, bool delete_entry)
 		texture_editor->txList().removePatch(name);
 
 	// Delete patch entry if it's part of this archive (and delete_entry is true)
-	auto entry = App::resources().getPatchEntry(name, "patches", archive_);
+	auto entry = app::resources().getPatchEntry(name, "patches", archive_);
 	if (delete_entry && entry && entry->parent() == archive_)
 		archive_->removeEntry(entry);
 
@@ -551,9 +558,9 @@ bool TextureXEditor::checkTextures()
 				// Extended texture, check if each patch exists in any open archive (or as a composite texture)
 				for (unsigned p = 0; p < tex->nPatches(); p++)
 				{
-					auto pentry = App::resources().getPatchEntry(tex->patch(p)->name());
-					auto fentry = App::resources().getFlatEntry(tex->patch(p)->name());
-					auto ptex   = App::resources().getTexture(tex->patch(p)->name());
+					auto pentry = app::resources().getPatchEntry(tex->patch(p)->name());
+					auto fentry = app::resources().getFlatEntry(tex->patch(p)->name());
+					auto ptex   = app::resources().getTexture(tex->patch(p)->name());
 					if (!pentry && !fentry && !ptex)
 						problems += wxString::Format(
 							"Texture %s contains invalid/unknown patch %s\n", tex->name(), tex->patch(p)->name());
@@ -577,7 +584,7 @@ bool TextureXEditor::checkTextures()
 	{
 		// Check patch entry is valid
 		auto& patch = patch_table_.patch(a);
-		auto  entry = App::resources().getPatchEntry(patch.name, "patches", archive_);
+		auto  entry = app::resources().getPatchEntry(patch.name, "patches", archive_);
 
 		if (!entry)
 		{
@@ -590,7 +597,7 @@ bool TextureXEditor::checkTextures()
 				EntryType::detectEntryType(*entry);
 			auto type = entry->type();
 
-			if (!type->extraProps().propertyExists("patch"))
+			if (!type->extraProps().contains("patch"))
 				problems += wxString::Format(
 					"Patch %s is of type \"%s\", which is not a valid gfx format for patches. "
 					"Convert it to either Doom Gfx or PNG\n",
@@ -691,29 +698,6 @@ void TextureXEditor::redo()
 	{
 		for (auto& texture_editor : texture_editors_)
 			texture_editor->onRedo(action);
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Handles any announcements from the current texture
-// -----------------------------------------------------------------------------
-void TextureXEditor::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	if (announcer == theMainWindow->paletteChooser() && event_name == "main_palette_changed")
-	{
-		updateTexturePalette();
-	}
-
-	if (announcer == &patch_table_ && event_name == "modified")
-	{
-		patch_browser_->openPatchTable(&patch_table_);
-		pb_update_ = true;
-	}
-
-	if (announcer == &App::resources() && event_name == "resources_updated")
-	{
-		pb_update_ = true;
-		updateTexturePalette();
 	}
 }
 
@@ -820,7 +804,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 						PatchTable ptt;
 
 						// Create dummy patch
-						auto dpatch = App::archiveManager().programResourceArchive()->entryAtPath("s3dummy.lmp");
+						auto dpatch = app::archiveManager().programResourceArchive()->entryAtPath("s3dummy.lmp");
 						archive->addEntry(std::make_shared<ArchiveEntry>(*dpatch), "patches");
 						ptt.addPatch("S3DUMMY");
 
@@ -869,7 +853,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 				else
 				{
 					// User selected to import texture definitions from the base resource archive
-					auto bra = App::archiveManager().baseResourceArchive();
+					auto bra = app::archiveManager().baseResourceArchive();
 
 					if (!bra)
 					{
@@ -927,7 +911,7 @@ bool TextureXEditor::setupTextureEntries(Archive* archive)
 		{
 			Archive::SearchOptions opt;
 			opt.match_type = EntryType::fromId("pnames");
-			entry_pnames   = App::archiveManager().findResourceEntry(opt, archive);
+			entry_pnames   = app::archiveManager().findResourceEntry(opt, archive);
 		}
 
 		// If no PNAMES entry is found at all, show an error and abort

@@ -4,6 +4,8 @@
 #include "Scripting/ScriptManager.h"
 #include "UI/STopWindow.h"
 
+namespace slade
+{
 class STabCtrl;
 class ScriptPanel;
 
@@ -13,15 +15,15 @@ public:
 	ScriptManagerWindow();
 	virtual ~ScriptManagerWindow() = default;
 
-	void                   openScriptTab(ScriptManager::Script* script) const;
-	ScriptManager::Script* currentScript() const;
+	void                   openScriptTab(scriptmanager::Script* script) const;
+	scriptmanager::Script* currentScript() const;
 	string                 currentScriptText() const;
 
 private:
-	ScriptManager::Script  script_scratchbox_;
-	ScriptManager::Script* script_clicked_ = nullptr;
+	scriptmanager::Script  script_scratchbox_;
+	scriptmanager::Script* script_clicked_ = nullptr;
 
-	std::map<ScriptManager::ScriptType, wxTreeItemId> editor_script_nodes_;
+	std::map<scriptmanager::ScriptType, wxTreeItemId> editor_script_nodes_;
 
 	// Documentation tab
 #if USE_WEBVIEW_STARTPAGE
@@ -43,13 +45,14 @@ private:
 	void         setupToolbar();
 	void         bindEvents();
 	wxPanel*     setupScriptTreePanel();
-	void         populateEditorScriptsTree(ScriptManager::ScriptType type);
-	void         addEditorScriptsNode(wxTreeItemId parent_node, ScriptManager::ScriptType type, const wxString& name);
+	void         populateEditorScriptsTree(scriptmanager::ScriptType type);
+	void         addEditorScriptsNode(wxTreeItemId parent_node, scriptmanager::ScriptType type, const wxString& name);
 	void         populateScriptsTree();
 	ScriptPanel* currentPage() const;
-	void         closeScriptTab(ScriptManager::Script* script) const;
+	void         closeScriptTab(scriptmanager::Script* script) const;
 	void         showDocs(const wxString& url = "");
 
 	// SActionHandler
 	bool handleAction(string_view id) override;
 };
+} // namespace slade

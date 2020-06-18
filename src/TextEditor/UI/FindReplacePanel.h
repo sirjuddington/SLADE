@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class TextEditorCtrl;
 
 class FindReplacePanel : public wxPanel
@@ -31,3 +33,4 @@ private:
 	// Events
 	void onKeyDown(wxKeyEvent& e);
 };
+} // namespace slade

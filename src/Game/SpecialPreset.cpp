@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,7 +35,8 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
-using namespace Game;
+using namespace slade;
+using namespace game;
 
 
 // -----------------------------------------------------------------------------
@@ -43,7 +44,7 @@ using namespace Game;
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace Game
+namespace slade::game
 {
 vector<SpecialPreset> custom_presets;
 }
@@ -67,28 +68,28 @@ void SpecialPreset::parse(ParseTreeNode* node)
 		auto child = node->childPTN(a);
 
 		// Group
-		if (StrUtil::equalCI(child->name(), "group"))
+		if (strutil::equalCI(child->name(), "group"))
 			group = child->stringValue();
 
 		// Special
-		else if (StrUtil::equalCI(child->name(), "special"))
+		else if (strutil::equalCI(child->name(), "special"))
 			special = child->intValue();
 
 		// Flags
-		else if (StrUtil::equalCI(child->name(), "flags"))
+		else if (strutil::equalCI(child->name(), "flags"))
 			for (auto& flag : child->values())
-				flags.push_back(flag.stringValue());
+				flags.push_back(property::asString(flag));
 
 		// Args
-		else if (StrUtil::equalCI(child->name(), "arg1"))
+		else if (strutil::equalCI(child->name(), "arg1"))
 			args[0] = child->intValue();
-		else if (StrUtil::equalCI(child->name(), "arg2"))
+		else if (strutil::equalCI(child->name(), "arg2"))
 			args[1] = child->intValue();
-		else if (StrUtil::equalCI(child->name(), "arg3"))
+		else if (strutil::equalCI(child->name(), "arg3"))
 			args[2] = child->intValue();
-		else if (StrUtil::equalCI(child->name(), "arg4"))
+		else if (strutil::equalCI(child->name(), "arg4"))
 			args[3] = child->intValue();
-		else if (StrUtil::equalCI(child->name(), "arg5"))
+		else if (strutil::equalCI(child->name(), "arg5"))
 			args[4] = child->intValue();
 	}
 }
@@ -104,7 +105,7 @@ ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
 
 	// Group
 	string_view ex_group = group;
-	if (StrUtil::startsWith(ex_group, "Custom/"))
+	if (strutil::startsWith(ex_group, "Custom/"))
 		ex_group.remove_prefix(7);
 	if (ex_group != "Custom")
 		node->addChildPTN("group")->addStringValue(ex_group);
@@ -136,7 +137,7 @@ ParseTreeNode* SpecialPreset::write(ParseTreeNode* parent)
 // -----------------------------------------------------------------------------
 // Returns all loaded custom special presets
 // -----------------------------------------------------------------------------
-const vector<SpecialPreset>& Game::customSpecialPresets()
+const vector<SpecialPreset>& game::customSpecialPresets()
 {
 	return custom_presets;
 }
@@ -146,10 +147,10 @@ const vector<SpecialPreset>& Game::customSpecialPresets()
 // user data directory.
 // Returns true on success or false if loading failed
 // -----------------------------------------------------------------------------
-bool Game::loadCustomSpecialPresets()
+bool game::loadCustomSpecialPresets()
 {
 	// Check file exists
-	auto file = App::path("special_presets.cfg", App::Dir::User);
+	auto file = app::path("special_presets.cfg", app::Dir::User);
 	if (!wxFileExists(file))
 		return true;
 
@@ -169,7 +170,7 @@ bool Game::loadCustomSpecialPresets()
 		for (unsigned a = 0; a < node->nChildren(); a++)
 		{
 			auto child = node->childPTN(a);
-			if (StrUtil::equalCI(child->type(), "preset"))
+			if (strutil::equalCI(child->type(), "preset"))
 			{
 				custom_presets.push_back({});
 				custom_presets.back().parse(child);
@@ -191,16 +192,16 @@ bool Game::loadCustomSpecialPresets()
 // the user data directory.
 // Returns true on success or false if writing failed
 // -----------------------------------------------------------------------------
-bool Game::saveCustomSpecialPresets()
+bool game::saveCustomSpecialPresets()
 {
 	if (custom_presets.empty())
 		return true;
 
 	// Open file
 	wxFile file;
-	if (!file.Open(App::path("special_presets.cfg", App::Dir::User), wxFile::write))
+	if (!file.Open(app::path("special_presets.cfg", app::Dir::User), wxFile::write))
 	{
-		Log::error("Unable to open special_presets.cfg file for writing");
+		log::error("Unable to open special_presets.cfg file for writing");
 		return false;
 	}
 
@@ -215,7 +216,7 @@ bool Game::saveCustomSpecialPresets()
 	root.write(presets);
 	if (!file.Write(presets))
 	{
-		Log::error("Writing to special_presets.cfg failed");
+		log::error("Writing to special_presets.cfg failed");
 		return false;
 	}
 
@@ -224,7 +225,7 @@ bool Game::saveCustomSpecialPresets()
 
 
 // Testing
-#include "General/Console/Console.h"
+#include "General/Console.h"
 
 CONSOLE_COMMAND(test_preset_export, 0, false)
 {
@@ -235,5 +236,5 @@ CONSOLE_COMMAND(test_preset_export, 0, false)
 
 	string out;
 	root.write(out);
-	Log::console(out);
+	log::console(out);
 }

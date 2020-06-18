@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,9 +36,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ColourBox.h"
-#include "Dialogs/PaletteDialog.h"
 #include "Graphics/Palette/Palette.h"
+#include "UI/Dialogs/PaletteDialog.h"
 #include "UI/WxUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -60,7 +62,7 @@ DEFINE_EVENT_TYPE(wxEVT_COLOURBOX_CHANGED)
 // ColourBox class constructor
 // -----------------------------------------------------------------------------
 ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode) :
-	wxPanel{ parent, id, wxDefaultPosition, WxUtils::scaledSize(32, 22), wxNO_BORDER },
+	wxPanel{ parent, id, wxDefaultPosition, wxutil::scaledSize(32, 22), wxNO_BORDER },
 	alpha_{ enable_alpha },
 	altmode_{ mode }
 {
@@ -73,12 +75,17 @@ ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode) :
 // -----------------------------------------------------------------------------
 // Alternate ColourBox class constructor
 // -----------------------------------------------------------------------------
-ColourBox::ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha, bool mode) :
-	wxPanel{ parent, id, wxDefaultPosition, WxUtils::scaledSize(32, 22), wxNO_BORDER },
+ColourBox::ColourBox(wxWindow* parent, int id, ColRGBA col, bool enable_alpha, bool mode, int size) :
+	wxPanel{ parent, id, wxDefaultPosition, wxDefaultSize, wxNO_BORDER },
 	colour_{ col },
 	alpha_{ enable_alpha },
 	altmode_{ mode }
 {
+	if (size > 0)
+		SetInitialSize({ size, size });
+	else
+		SetInitialSize(wxutil::scaledSize(32, 22));
+	
 	// Bind events
 	Bind(wxEVT_PAINT, &ColourBox::onPaint, this);
 	Bind(wxEVT_LEFT_DOWN, &ColourBox::onMouseLeftDown, this);
@@ -159,8 +166,8 @@ void ColourBox::popAlphaSlider()
 	auto     box = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(box);
 	auto slider = new wxSlider(&dlg, -1, colour_.a, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
-	box->Add(slider, 1, wxEXPAND | wxALL, UI::padLarge());
-	box->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
+	box->Add(slider, 1, wxEXPAND | wxALL, ui::padLarge());
+	box->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 	dlg.SetInitialSize();
 
 	if (dlg.ShowModal() == wxID_OK)
@@ -191,8 +198,8 @@ void ColourBox::onPaint(wxPaintEvent& e)
 
 	if (alpha_)
 	{
-		int a_height       = UI::scalePx(4);
-		int a_border_width = (int)UI::scaleFactor();
+		int a_height       = ui::scalePx(4);
+		int a_border_width = (int)ui::scaleFactor();
 		int a_point        = colour_.fa() * (GetClientSize().x - (2 * a_border_width));
 
 		dc.SetBrush(wxBrush(wxColour(0, 0, 0)));

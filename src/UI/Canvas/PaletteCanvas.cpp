@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "PaletteCanvas.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -74,7 +76,7 @@ void PaletteCanvas::draw()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
+	if (gl::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Setup some variables
@@ -96,7 +98,7 @@ void PaletteCanvas::draw()
 		for (int x = 0; x < cols; x++)
 		{
 			// Set colour
-			OpenGL::setColour(palette_.colour(c), OpenGL::Blend::Normal);
+			gl::setColour(palette_.colour(c), gl::Blend::Normal);
 
 			// Draw square
 			glBegin(GL_QUADS);
@@ -109,7 +111,7 @@ void PaletteCanvas::draw()
 			// Draw selection outline if needed
 			if (c >= sel_begin_ && c <= sel_end_)
 			{
-				OpenGL::setColour(ColRGBA::WHITE);
+				gl::setColour(ColRGBA::WHITE);
 				glBegin(GL_LINES);
 				glVertex2d(x * size, y * size);
 				glVertex2d(x * size + size, y * size);
@@ -117,7 +119,7 @@ void PaletteCanvas::draw()
 				glVertex2d(x * size + size, y * size + size - 1);
 				glEnd();
 
-				OpenGL::setColour(ColRGBA::BLACK);
+				gl::setColour(ColRGBA::BLACK);
 				glBegin(GL_LINES);
 				glVertex2d(x * size + 1, y * size + 1);
 				glVertex2d(x * size + size - 1, y * size + 1);
@@ -128,13 +130,13 @@ void PaletteCanvas::draw()
 				// Selection beginning
 				if (c == sel_begin_)
 				{
-					OpenGL::setColour(ColRGBA::WHITE);
+					gl::setColour(ColRGBA::WHITE);
 					glBegin(GL_LINES);
 					glVertex2d(x * size, y * size);
 					glVertex2d(x * size, y * size + size);
 					glEnd();
 
-					OpenGL::setColour(ColRGBA::BLACK);
+					gl::setColour(ColRGBA::BLACK);
 					glBegin(GL_LINES);
 					glVertex2d(x * size + 1, y * size + 1);
 					glVertex2d(x * size + 1, y * size + size - 1);
@@ -144,13 +146,13 @@ void PaletteCanvas::draw()
 				// Selection ending
 				if (c == sel_end_)
 				{
-					OpenGL::setColour(ColRGBA::WHITE);
+					gl::setColour(ColRGBA::WHITE);
 					glBegin(GL_LINES);
 					glVertex2d(x * size + size - 1, y * size + size - 2);
 					glVertex2d(x * size + size - 1, y * size);
 					glEnd();
 
-					OpenGL::setColour(ColRGBA::BLACK);
+					gl::setColour(ColRGBA::BLACK);
 					glBegin(GL_LINES);
 					glVertex2d(x * size + size - 2, y * size + 1);
 					glVertex2d(x * size + size - 2, y * size + size - 1);

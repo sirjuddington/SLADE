@@ -5,6 +5,8 @@
 
 class wxSpinCtrlDouble;
 
+namespace slade
+{
 class ZTextureEditorPanel : public TextureEditorPanel
 {
 public:
@@ -80,3 +82,4 @@ private:
 	void onBtnEditTranslation(wxCommandEvent& e);
 	void onTextTranslationEnter(wxCommandEvent& e);
 };
+} // namespace slade

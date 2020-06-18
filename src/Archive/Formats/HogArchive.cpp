@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,8 @@
 #include "HogArchive.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -105,7 +107,7 @@ uint8_t* encodeTxb(MemChunk& mc)
 // -----------------------------------------------------------------------------
 bool shouldEncodeTxb(string_view name)
 {
-	return StrUtil::endsWithCI(name, ".txb") || StrUtil::endsWithCI(name, ".ctb");
+	return strutil::endsWithCI(name, ".txb") || strutil::endsWithCI(name, ".ctb");
 }
 } // namespace
 
@@ -126,7 +128,7 @@ uint32_t HogArchive::getEntryOffset(ArchiveEntry* entry)
 	if (!checkEntry(entry))
 		return 0;
 
-	return (uint32_t)(int)entry->exProp("Offset");
+	return (uint32_t)entry->exProp<int>("Offset");
 }
 
 // -----------------------------------------------------------------------------
@@ -161,24 +163,23 @@ bool HogArchive::open(MemChunk& mc)
 		return false;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Iterate through files to see if the size seems okay
-	UI::setSplashProgressMessage("Reading hog archive data");
+	ui::setSplashProgressMessage("Reading hog archive data");
 	size_t   iter_offset = 3;
 	uint32_t num_lumps   = 0;
 	while (iter_offset < archive_size)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)iter_offset / (float)archive_size));
+		ui::setSplashProgress(((float)iter_offset / (float)archive_size));
 
 		// If the lump data goes past the end of the file,
 		// the hogfile is invalid
 		if (iter_offset + 17 > archive_size)
 		{
-			Log::error("HogArchive::open: hog archive is invalid or corrupt");
-			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
+			log::error("HogArchive::open: hog archive is invalid or corrupt");
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
@@ -212,11 +213,11 @@ bool HogArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)num_lumps)));
+		ui::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		auto entry = entryAt(a);
@@ -243,11 +244,10 @@ bool HogArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -332,7 +332,7 @@ bool HogArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error("HogArchive::loadEntryData: Failed to open hogfile {}", filename_);
+		log::error("HogArchive::loadEntryData: Failed to open hogfile {}", filename_);
 		return false;
 	}
 

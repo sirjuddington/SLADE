@@ -3,6 +3,8 @@
 #include "TextEditor/TextLanguage.h"
 #include "Utility/Colour.h"
 
+namespace slade
+{
 class SCallTip : public wxPopupWindow
 {
 public:
@@ -73,3 +75,4 @@ private:
 	void onMouseDown(wxMouseEvent& e);
 	void onShow(wxShowEvent& e);
 };
+} // namespace slade

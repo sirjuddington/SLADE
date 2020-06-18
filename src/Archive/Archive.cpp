@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,6 +35,8 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include <filesystem>
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -148,10 +150,7 @@ class EntrySwapUS : public UndoStep
 {
 public:
 	EntrySwapUS(ArchiveDir* dir, unsigned index1, unsigned index2) :
-		archive_{ dir->archive() },
-		path_{ dir->path() },
-		index1_{ index1 },
-		index2_{ index2 }
+		archive_{ dir->archive() }, path_{ dir->path() }, index1_{ index1 }, index2_{ index2 }
 	{
 	}
 
@@ -223,11 +222,9 @@ class DirCreateDeleteUS : public UndoStep
 {
 public:
 	DirCreateDeleteUS(bool created, ArchiveDir* dir) :
-		created_{ created },
-		archive_{ dir->archive() },
-		path_{ dir->path() }
+		created_{ created }, archive_{ dir->archive() }, path_{ dir->path() }
 	{
-		StrUtil::removePrefixIP(path_, '/');
+		strutil::removePrefixIP(path_, '/');
 
 		// Backup child entries and subdirs if deleting
 		if (!created)
@@ -356,9 +353,9 @@ string Archive::fileExtensionString() const
 		vector<string> ext_strings;
 		for (const auto& ext : fmt.extensions)
 		{
-			auto ext_case = fmt::format("*.{};", StrUtil::lower(ext.first));
-			ext_case += fmt::format("*.{};", StrUtil::upper(ext.first));
-			ext_case += fmt::format("*.{}", StrUtil::capitalize(ext.first));
+			auto ext_case = fmt::format("*.{};", strutil::lower(ext.first));
+			ext_case += fmt::format("*.{};", strutil::upper(ext.first));
+			ext_case += fmt::format("*.{}", strutil::capitalize(ext.first));
 
 			ext_all += fmt::format("{};", ext_case);
 			ext_strings.push_back(fmt::format("{} File (*.{})|{}", ext.second, ext.first, ext_case));
@@ -375,9 +372,9 @@ string Archive::fileExtensionString() const
 	if (fmt.extensions.size() == 1)
 	{
 		auto& ext      = fmt.extensions[0];
-		auto  ext_case = fmt::format("*.{};", StrUtil::lower(ext.first));
-		ext_case += fmt::format("*.{};", StrUtil::upper(ext.first));
-		ext_case += fmt::format("*.{}", StrUtil::capitalize(ext.first));
+		auto  ext_case = fmt::format("*.{};", strutil::lower(ext.first));
+		ext_case += fmt::format("*.{};", strutil::upper(ext.first));
+		ext_case += fmt::format("*.{}", strutil::capitalize(ext.first));
 
 		return fmt::format("{} File (*.{})|{}", ext.second, ext.first, ext_case);
 	}
@@ -398,10 +395,10 @@ string Archive::filename(bool full) const
 		if (parentArchive())
 			parent_archive = parentArchive()->filename(false) + "/";
 
-		return parent_archive.append(StrUtil::Path::fileNameOf(parent->name(), false));
+		return parent_archive.append(strutil::Path::fileNameOf(parent->name(), false));
 	}
 
-	return full ? filename_ : string{ StrUtil::Path::fileNameOf(filename_) };
+	return full ? filename_ : string{ strutil::Path::fileNameOf(filename_) };
 }
 
 // -----------------------------------------------------------------------------
@@ -414,7 +411,7 @@ bool Archive::open(string_view filename)
 	MemChunk mc;
 	if (!mc.importFile(filename))
 	{
-		Global::error = "Unable to open file. Make sure it isn't in use by another program.";
+		global::error = "Unable to open file. Make sure it isn't in use by another program.";
 		return false;
 	}
 
@@ -426,7 +423,7 @@ bool Archive::open(string_view filename)
 	sf::Clock timer;
 	if (open(mc))
 	{
-		Log::info(2, "Archive::open took {}ms", timer.getElapsedTime().asMilliseconds());
+		log::info(2, "Archive::open took {}ms", timer.getElapsedTime().asMilliseconds());
 		on_disk_ = true;
 		return true;
 	}
@@ -460,11 +457,12 @@ bool Archive::open(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 void Archive::setModified(bool modified)
 {
-	// Set modified
+	// Update modified flag
 	modified_ = modified;
 
-	// Announce
-	announce("modified");
+	// Emit signal if changing to modified
+	if (modified)
+		signals_.modified(*this);
 }
 
 // -----------------------------------------------------------------------------
@@ -532,7 +530,7 @@ int Archive::entryIndex(ArchiveEntry* entry, ArchiveDir* dir) const
 ArchiveEntry* Archive::entryAtPath(string_view path) const
 {
 	// Get [path] as Path for processing
-	StrUtil::Path fn(StrUtil::startsWith(path, '/') ? path.substr(1) : path);
+	strutil::Path fn(strutil::startsWith(path, '/') ? path.substr(1) : path);
 
 	// Get directory from path
 	ArchiveDir* dir;
@@ -556,7 +554,7 @@ ArchiveEntry* Archive::entryAtPath(string_view path) const
 shared_ptr<ArchiveEntry> Archive::entryAtPathShared(string_view path) const
 {
 	// Get path as wxFileName for processing
-	StrUtil::Path fn(StrUtil::startsWith(path, '/') ? path.substr(1) : path);
+	strutil::Path fn(strutil::startsWith(path, '/') ? path.substr(1) : path);
 
 	// Get directory from path
 	ArchiveDir* dir;
@@ -602,7 +600,7 @@ bool Archive::save(string_view filename)
 	// Check if the archive is read-only
 	if (read_only_)
 	{
-		Global::error = "Archive is read-only";
+		global::error = "Archive is read-only";
 		return false;
 	}
 
@@ -634,7 +632,7 @@ bool Archive::save(string_view filename)
 			{
 				// Copy current file contents to new backup file
 				auto bakfile = filename_ + ".bak";
-				Log::info("Creating backup {}", bakfile);
+				log::info("Creating backup {}", bakfile);
 				wxCopyFile(filename_, bakfile, true);
 			}
 
@@ -650,7 +648,7 @@ bool Archive::save(string_view filename)
 	if (success)
 	{
 		setModified(false);
-		announce("saved");
+		signals_.saved(*this);
 	}
 
 	return success;
@@ -669,14 +667,11 @@ unsigned Archive::numEntries()
 // -----------------------------------------------------------------------------
 void Archive::close()
 {
-	// Announce
-	announce("closing");
-
 	// Clear the root dir
 	dir_root_->clear();
 
 	// Announce
-	announce("closed");
+	signals_.closed(*this);
 }
 
 // -----------------------------------------------------------------------------
@@ -689,14 +684,8 @@ void Archive::entryStateChanged(ArchiveEntry* entry)
 	if (!checkEntry(entry))
 		return;
 
-	// Get the entry index and announce the change
-	MemChunk  mc(8);
-	wxUIntPtr ptr   = wxPtrToUInt(entry);
-	uint32_t  index = entryIndex(entry);
-	mc.write(&index, sizeof(uint32_t));
-	mc.write(&ptr, sizeof(wxUIntPtr));
-	announce("entry_state_changed", mc);
-
+	// Signal entry state change
+	signals_.entry_state_changed(*this, *entry);
 
 	// If entry was set to unmodified, don't set the archive to modified
 	if (entry->state() == ArchiveEntry::State::Unmodified)
@@ -756,8 +745,19 @@ bool Archive::paste(ArchiveDir* tree, unsigned position, shared_ptr<ArchiveDir> 
 	// Set modified
 	setModified(true);
 
-	// Just do a merge
-	return ArchiveDir::merge(base, tree, position);
+	// Do merge
+	vector<shared_ptr<ArchiveEntry>> created_entries;
+	vector<shared_ptr<ArchiveDir>>   created_dirs;
+	if (!ArchiveDir::merge(base, tree, position, ArchiveEntry::State::New, &created_dirs, &created_entries))
+		return false;
+
+	// Signal changes
+	for (const auto& cdir : created_dirs)
+		signals_.dir_added(*this, *cdir);
+	for (const auto& entry : created_entries)
+		signals_.entry_added(*this, *entry);
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -789,24 +789,27 @@ shared_ptr<ArchiveDir> Archive::createDir(string_view path, shared_ptr<ArchiveDi
 	if (!base)
 		base = dir_root_;
 
+	if (strutil::startsWith(path, '/'))
+		path.remove_prefix(1);
+
 	if (path.empty())
 		return base;
 
 	// Create the directory
-	auto dir = ArchiveDir::getOrCreateSubdir(base, path);
+	vector<shared_ptr<ArchiveDir>> created_dirs;
+	auto                           dir = ArchiveDir::getOrCreateSubdir(base, path, &created_dirs);
 
-	// Record undo step
-	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(std::make_unique<DirCreateDeleteUS>(true, dir.get()));
+	// Record undo step(s)
+	if (undoredo::currentlyRecording())
+		for (const auto& cdir : created_dirs)
+			undoredo::currentManager()->recordUndoStep(std::make_unique<DirCreateDeleteUS>(true, cdir.get()));
 
 	// Set the archive state to modified
 	setModified(true);
 
-	// Announce
-	MemChunk  mc;
-	wxUIntPtr ptr = wxPtrToUInt(dir.get());
-	mc.write(&ptr, sizeof(wxUIntPtr));
-	announce("directory_added", mc);
+	// Signal directory addition
+	for (const auto& cdir : created_dirs)
+		signals_.dir_added(*this, *cdir);
 
 	return dir;
 }
@@ -830,14 +833,18 @@ shared_ptr<ArchiveDir> Archive::removeDir(string_view path, ArchiveDir* base)
 		return nullptr;
 
 	// Record undo step
-	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(std::make_unique<DirCreateDeleteUS>(false, dir));
+	if (undoredo::currentlyRecording())
+		undoredo::currentManager()->recordUndoStep(std::make_unique<DirCreateDeleteUS>(false, dir));
 
 	// Remove the dir from its parent
-	auto removed = dir->parent_dir_.lock()->removeSubdir(dir->name());
+	auto& parent  = *dir->parent_dir_.lock();
+	auto  removed = parent.removeSubdir(dir->name());
 
 	// Set the archive state to modified
 	setModified(true);
+
+	// Signal directory removal
+	signals_.dir_removed(*this, parent, *dir);
 
 	return removed;
 }
@@ -857,22 +864,16 @@ bool Archive::renameDir(ArchiveDir* dir, string_view new_name)
 		return false;
 
 	// Rename the directory if needed
-	if (dir->name() == new_name)
+	if (dir->name() != new_name)
 	{
-		if (UndoRedo::currentlyRecording())
-			UndoRedo::currentManager()->recordUndoStep(std::make_unique<DirRenameUS>(dir, new_name));
+		if (undoredo::currentlyRecording())
+			undoredo::currentManager()->recordUndoStep(std::make_unique<DirRenameUS>(dir, new_name));
 
 		dir->setName(new_name);
 		dir->dirEntry()->setState(ArchiveEntry::State::Modified);
 	}
 	else
 		return true;
-
-	// Announce
-	MemChunk  mc;
-	wxUIntPtr ptr = wxPtrToUInt(dir);
-	mc.write(&ptr, sizeof(wxUIntPtr));
-	announce("directory_modified", mc);
 
 	// Update variables etc
 	setModified(true);
@@ -910,16 +911,12 @@ shared_ptr<ArchiveEntry> Archive::addEntry(shared_ptr<ArchiveEntry> entry, unsig
 	setModified(true);
 	entry->state_ = ArchiveEntry::State::New;
 
-	// Announce
-	MemChunk  mc;
-	wxUIntPtr ptr = wxPtrToUInt(entry.get());
-	mc.write(&position, sizeof(uint32_t));
-	mc.write(&ptr, sizeof(wxUIntPtr));
-	announce("entry_added", mc);
+	// Signal entry addition
+	signals_.entry_added(*this, *entry);
 
 	// Create undo step
-	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntryCreateDeleteUS>(true, entry.get()));
+	if (undoredo::currentlyRecording())
+		undoredo::currentManager()->recordUndoStep(std::make_unique<EntryCreateDeleteUS>(true, entry.get()));
 
 	return entry;
 }
@@ -992,18 +989,14 @@ bool Archive::removeEntry(ArchiveEntry* entry)
 		return false;
 
 	// Create undo step
-	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntryCreateDeleteUS>(false, entry));
+	if (undoredo::currentlyRecording())
+		undoredo::currentManager()->recordUndoStep(std::make_unique<EntryCreateDeleteUS>(false, entry));
 
 	// Get the entry index
 	int index = dir->entryIndex(entry);
 
-	// Announce (before actually removing in case entry is still needed)
-	MemChunk  mc;
-	wxUIntPtr ptr = wxPtrToUInt(entry);
-	mc.write(&index, sizeof(int));
-	mc.write(&ptr, sizeof(wxUIntPtr));
-	announce("entry_removing", mc);
+	// Get a shared pointer to the entry to ensure it's kept around until this function ends
+	auto entry_shared = entry->getShared();
 
 	// Remove it from its directory
 	bool ok = dir->removeEntry(index);
@@ -1011,8 +1004,8 @@ bool Archive::removeEntry(ArchiveEntry* entry)
 	// If it was removed ok
 	if (ok)
 	{
-		// Announce removed
-		announce("entry_removed", mc);
+		// Signal entry removed
+		signals_.entry_removed(*this, *dir, *entry);
 
 		// Update variables etc
 		setModified(true);
@@ -1037,17 +1030,17 @@ bool Archive::swapEntries(unsigned index1, unsigned index2, ArchiveDir* dir)
 		return false;
 
 	// Create undo step
-	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntrySwapUS>(dir, index1, index2));
+	if (undoredo::currentlyRecording())
+		undoredo::currentManager()->recordUndoStep(std::make_unique<EntrySwapUS>(dir, index1, index2));
 
 	// Do swap
 	if (dir->swapEntries(index1, index2))
 	{
-		// Announce the swap
-		announce("entries_swapped");
-
 		// Set modified
 		setModified(true);
+
+		// Signal
+		signals_.entries_swapped(*this, *dir, index1, index2);
 
 		return true;
 	}
@@ -1084,7 +1077,7 @@ bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 	// Check they are both in the same directory
 	if (entry2->parentDir() != dir)
 	{
-		Log::error("Can't swap two entries in different directories");
+		log::error("Can't swap two entries in different directories");
 		return false;
 	}
 
@@ -1097,17 +1090,17 @@ bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 		return false;
 
 	// Create undo step
-	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntrySwapUS>(dir, i1, i2));
+	if (undoredo::currentlyRecording())
+		undoredo::currentManager()->recordUndoStep(std::make_unique<EntrySwapUS>(dir, i1, i2));
 
 	// Swap entries
 	dir->swapEntries(i1, i2);
 
-	// Announce the swap
-	announce("entries_swapped");
-
 	// Set modified
 	setModified(true);
+
+	// Signal
+	signals_.entries_swapped(*this, *dir, i1, i2);
 
 	// Return success
 	return true;
@@ -1179,17 +1172,12 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name)
 	if (entry->type() == EntryType::folderType())
 		return renameDir(dirAtPath(entry->path(true)), name);
 
-	// Announce (before actually renaming in case old name is still needed)
-	MemChunk  mc;
-	int       index = entryIndex(entry);
-	wxUIntPtr ptr   = wxPtrToUInt(entry);
-	mc.write(&index, sizeof(int));
-	mc.write(&ptr, sizeof(wxUIntPtr));
-	announce("entry_renaming", mc);
+	// Keep current name for renamed signal
+	auto prev_name = entry->name();
 
 	// Create undo step
-	if (UndoRedo::currentlyRecording())
-		UndoRedo::currentManager()->recordUndoStep(std::make_unique<EntryRenameUS>(entry, name));
+	if (undoredo::currentlyRecording())
+		undoredo::currentManager()->recordUndoStep(std::make_unique<EntryRenameUS>(entry, name));
 
 	// Rename the entry
 	entry->setName(name);
@@ -1197,6 +1185,7 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name)
 	entry->setState(ArchiveEntry::State::Modified, true);
 
 	// Announce modification
+	signals_.entry_renamed(*this, *entry, prev_name);
 	entryStateChanged(entry);
 
 	return true;
@@ -1217,14 +1206,14 @@ bool Archive::importDir(string_view directory)
 	// Go through files
 	for (const auto& file : files)
 	{
-		StrUtil::Path fn{ StrUtil::replace(file, directory, "") }; // Remove directory from entry name
+		strutil::Path fn{ strutil::replace(file, directory, "") }; // Remove directory from entry name
 
 		// Split filename into dir+name
 		auto ename = fn.fileName();
 		auto edir  = fn.path();
 
 		// Remove beginning \ or / from dir
-		if (StrUtil::startsWith(edir, '\\') || StrUtil::startsWith(edir, '/'))
+		if (strutil::startsWith(edir, '\\') || strutil::startsWith(edir, '/'))
 			edir.remove_prefix(1);
 
 		// Add the entry
@@ -1304,7 +1293,7 @@ string Archive::detectNamespace(ArchiveEntry* entry)
 
 	// Namespace is the directory's name (in lowercase)
 	if (dir)
-		return StrUtil::lower(dir->name());
+		return strutil::lower(dir->name());
 	else
 		return "global"; // Error, just return global
 }
@@ -1319,7 +1308,7 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 	auto dir = options.dir;
 	if (!dir)
 		dir = dir_root_.get();
-	StrUtil::upperIP(options.match_name); // Force case-insensitive
+	strutil::upperIP(options.match_name); // Force case-insensitive
 
 	// Begin search
 
@@ -1345,14 +1334,14 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 		{
 			// Cut extension if ignoring
 			auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
-			if (!StrUtil::matches(check_name, options.match_name))
+			if (!strutil::matches(check_name, options.match_name))
 				continue;
 		}
 
 		// Check namespace
 		if (!options.match_namespace.empty())
 		{
-			if (!StrUtil::equalCI(detectNamespace(entry), options.match_namespace))
+			if (!strutil::equalCI(detectNamespace(entry), options.match_namespace))
 				continue;
 		}
 
@@ -1389,7 +1378,7 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 	auto dir = options.dir;
 	if (!dir)
 		dir = dir_root_.get();
-	StrUtil::upperIP(options.match_name); // Force case-insensitive
+	strutil::upperIP(options.match_name); // Force case-insensitive
 
 	// Begin search
 
@@ -1415,14 +1404,14 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 		{
 			// Cut extension if ignoring
 			auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
-			if (!StrUtil::matches(check_name, options.match_name))
+			if (!strutil::matches(check_name, options.match_name))
 				continue;
 		}
 
 		// Check namespace
 		if (!options.match_namespace.empty())
 		{
-			if (!StrUtil::equalCI(detectNamespace(entry), options.match_namespace))
+			if (!strutil::equalCI(detectNamespace(entry), options.match_namespace))
 				continue;
 		}
 
@@ -1459,7 +1448,7 @@ vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
 	if (!dir)
 		dir = dir_root_.get();
 	vector<ArchiveEntry*> ret;
-	StrUtil::upperIP(options.match_name); // Force case-insensitive
+	strutil::upperIP(options.match_name); // Force case-insensitive
 
 	// Begin search
 
@@ -1485,14 +1474,14 @@ vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
 		{
 			// Cut extension if ignoring
 			auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
-			if (!StrUtil::matches(check_name, options.match_name))
+			if (!strutil::matches(check_name, options.match_name))
 				continue;
 		}
 
 		// Check namespace
 		if (!options.match_namespace.empty())
 		{
-			if (!StrUtil::equalCI(detectNamespace(entry), options.match_namespace))
+			if (!strutil::equalCI(detectNamespace(entry), options.match_namespace))
 				continue;
 		}
 
@@ -1554,6 +1543,29 @@ vector<ArchiveEntry*> Archive::findModifiedEntries(ArchiveDir* dir)
 	return ret;
 }
 
+// -----------------------------------------------------------------------------
+// Blocks or unblocks signals for archive/entry modifications
+// -----------------------------------------------------------------------------
+void Archive::blockModificationSignals(bool block)
+{
+	if (block)
+	{
+		signals_.modified.block();
+		signals_.entry_added.block();
+		signals_.entry_removed.block();
+		signals_.entry_state_changed.block();
+		signals_.entry_renamed.block();
+	}
+	else
+	{
+		signals_.modified.unblock();
+		signals_.entry_added.unblock();
+		signals_.entry_removed.unblock();
+		signals_.entry_state_changed.unblock();
+		signals_.entry_renamed.unblock();
+	}
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -1583,27 +1595,27 @@ bool Archive::loadFormats(MemChunk& mc)
 			auto prop = (ParseTreeNode*)fmt_desc->child(p);
 
 			// Format name
-			if (StrUtil::equalCI(prop->name(), "name"))
+			if (prop->nameIsCI("name"))
 				fmt.name = prop->stringValue();
 
 			// Supports dirs
-			else if (StrUtil::equalCI(prop->name(), "supports_dirs"))
+			else if (prop->nameIsCI("supports_dirs"))
 				fmt.supports_dirs = prop->boolValue();
 
 			// Entry names have extensions
-			else if (StrUtil::equalCI(prop->name(), "names_extensions"))
+			else if (prop->nameIsCI("names_extensions"))
 				fmt.names_extensions = prop->boolValue();
 
 			// Max entry name length
-			else if (StrUtil::equalCI(prop->name(), "max_name_length"))
+			else if (prop->nameIsCI("max_name_length"))
 				fmt.max_name_length = prop->intValue();
 
 			// Entry format (id)
-			else if (StrUtil::equalCI(prop->name(), "entry_format"))
+			else if (prop->nameIsCI("entry_format"))
 				fmt.entry_format = prop->stringValue();
 
 			// Extensions
-			else if (StrUtil::equalCI(prop->name(), "extensions"))
+			else if (prop->nameIsCI("extensions"))
 			{
 				for (unsigned e = 0; e < prop->nChildren(); e++)
 				{
@@ -1613,19 +1625,23 @@ bool Archive::loadFormats(MemChunk& mc)
 			}
 
 			// Prefer uppercase entry names
-			else if (StrUtil::equalCI(prop->name(), "prefer_uppercase"))
+			else if (prop->nameIsCI("prefer_uppercase"))
 				fmt.prefer_uppercase = prop->boolValue();
+
+			// Can be created
+			else if (prop->nameIsCI("create"))
+				fmt.create = prop->boolValue();
 		}
 
-		Log::info(3, wxString::Format("Read archive format %s: \"%s\"", fmt.id, fmt.name));
+		log::info(3, wxString::Format("Read archive format %s: \"%s\"", fmt.id, fmt.name));
 		if (fmt.supports_dirs)
-			Log::info(3, "  Supports folders");
+			log::info(3, "  Supports folders");
 		if (fmt.names_extensions)
-			Log::info(3, "  Entry names have extensions");
+			log::info(3, "  Entry names have extensions");
 		if (fmt.max_name_length >= 0)
-			Log::info(3, wxString::Format("  Max entry name length: %d", fmt.max_name_length));
+			log::info(3, wxString::Format("  Max entry name length: %d", fmt.max_name_length));
 		for (auto ext : fmt.extensions)
-			Log::info(3, wxString::Format("  Extension \"%s\" = \"%s\"", ext.first, ext.second));
+			log::info(3, wxString::Format("  Extension \"%s\" = \"%s\"", ext.first, ext.second));
 
 		formats_.push_back(fmt);
 	}

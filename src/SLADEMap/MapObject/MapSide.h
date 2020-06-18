@@ -2,6 +2,8 @@
 
 #include "MapObject.h"
 
+namespace slade
+{
 class MapSide : public MapObject
 {
 	friend class SLADEMap;
@@ -70,3 +72,4 @@ private:
 	string     tex_lower_  = "-";
 	Vec2i      tex_offset_ = { 0, 0 };
 };
+} // namespace slade

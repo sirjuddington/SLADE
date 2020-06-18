@@ -2,6 +2,8 @@
 
 #include "EntryPanel.h"
 
+namespace slade
+{
 class MapPreviewCanvas;
 class ArchiveEntry;
 
@@ -25,3 +27,4 @@ private:
 
 	void onCBShowThings(wxCommandEvent& e);
 };
+} // namespace slade

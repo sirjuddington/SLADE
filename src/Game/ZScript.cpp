@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,12 +31,14 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ZScript.h"
+#include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
-using namespace ZScript;
+using namespace slade;
+using namespace zscript;
 
 
 // -----------------------------------------------------------------------------
@@ -44,7 +46,7 @@ using namespace ZScript;
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace ZScript
+namespace slade::zscript
 {
 EntryType* etype_zscript = nullptr;
 
@@ -62,7 +64,7 @@ bool dump_parsed_states    = false;
 bool dump_parsed_functions = false;
 
 string db_comment = "//$";
-} // namespace ZScript
+} // namespace slade::zscript
 
 
 // -----------------------------------------------------------------------------
@@ -70,18 +72,18 @@ string db_comment = "//$";
 // Functions
 //
 // -----------------------------------------------------------------------------
-namespace ZScript
+namespace slade::zscript
 {
 // -----------------------------------------------------------------------------
 // Writes a log [message] of [type] beginning with the location of [statement]
 // -----------------------------------------------------------------------------
-void logParserMessage(ParsedStatement& statement, Log::MessageType type, string_view message)
+void logParserMessage(ParsedStatement& statement, log::MessageType type, string_view message)
 {
 	string location = "<unknown location>";
 	if (statement.entry)
 		location = statement.entry->path(true);
 
-	Log::message(type, fmt::format("{}:{}: {}", location, statement.line, message));
+	log::message(type, fmt::format("{}:{}: {}", location, statement.line, message));
 }
 
 // -----------------------------------------------------------------------------
@@ -94,7 +96,7 @@ string parseType(const vector<string>& tokens, unsigned& index)
 	// Qualifiers
 	while (index < tokens.size())
 	{
-		if (StrUtil::equalCI(tokens[index], "in") || StrUtil::equalCI(tokens[index], "out"))
+		if (strutil::equalCI(tokens[index], "in") || strutil::equalCI(tokens[index], "out"))
 			type.append(tokens[index++]).append(" ");
 		else
 			break;
@@ -174,7 +176,7 @@ bool checkKeywordValueStatement(const vector<string>& tokens, unsigned index, st
 	if (index + 3 >= tokens.size())
 		return false;
 
-	if (StrUtil::equalCI(tokens[index], word) && tokens[index + 1] == '(' && tokens[index + 3] == ')')
+	if (strutil::equalCI(tokens[index], word) && tokens[index + 1] == '(' && tokens[index + 3] == ')')
 	{
 		value = tokens[index + 2];
 		return true;
@@ -199,7 +201,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<Ar
 	while (!tz.atEnd())
 	{
 		// Preprocessor
-		if (StrUtil::startsWith(tz.current().text, '#'))
+		if (strutil::startsWith(tz.current().text, '#'))
 		{
 			if (tz.checkNC("#include"))
 			{
@@ -208,7 +210,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<Ar
 				// Check #include path could be resolved
 				if (!inc_entry)
 				{
-					Log::warning(
+					log::warning(
 						"Warning parsing ZScript entry {}: "
 						"Unable to find #included entry \"{}\" at line {}, skipping",
 						entry->name(),
@@ -217,7 +219,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<Ar
 				}
 				else if (VECTOR_EXISTS(entry_stack, inc_entry))
 				{
-					Log::warning(
+					log::warning(
 						"Warning parsing ZScript entry {}: "
 						"Detected circular #include \"{}\" on line {}, skipping",
 						entry->name(),
@@ -259,13 +261,13 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<Ar
 bool isKeyword(string_view word)
 {
 	for (auto& kw : keywords)
-		if (StrUtil::equalCI(word, kw))
+		if (strutil::equalCI(word, kw))
 			return true;
 
 	return false;
 }
 
-} // namespace ZScript
+} // namespace slade::zscript
 
 
 // -----------------------------------------------------------------------------
@@ -359,27 +361,27 @@ bool Function::parse(ParsedStatement& statement)
 	int      last_qualifier = -1;
 	for (index = 0; index < statement.tokens.size(); index++)
 	{
-		if (StrUtil::equalCI(statement.tokens[index], "virtual"))
+		if (strutil::equalCI(statement.tokens[index], "virtual"))
 		{
 			virtual_       = true;
 			last_qualifier = index;
 		}
-		else if (StrUtil::equalCI(statement.tokens[index], "static"))
+		else if (strutil::equalCI(statement.tokens[index], "static"))
 		{
 			static_        = true;
 			last_qualifier = index;
 		}
-		else if (StrUtil::equalCI(statement.tokens[index], "native"))
+		else if (strutil::equalCI(statement.tokens[index], "native"))
 		{
 			native_        = true;
 			last_qualifier = index;
 		}
-		else if (StrUtil::equalCI(statement.tokens[index], "action"))
+		else if (strutil::equalCI(statement.tokens[index], "action"))
 		{
 			action_        = true;
 			last_qualifier = index;
 		}
-		else if (StrUtil::equalCI(statement.tokens[index], "override"))
+		else if (strutil::equalCI(statement.tokens[index], "override"))
 		{
 			override_      = true;
 			last_qualifier = index;
@@ -398,14 +400,14 @@ bool Function::parse(ParsedStatement& statement)
 
 	if (name_.empty() || return_type_.empty())
 	{
-		logParserMessage(statement, Log::MessageType::Warning, "Function parse failed");
+		logParserMessage(statement, log::MessageType::Warning, "Function parse failed");
 		return false;
 	}
 
 	// Name can't be a keyword
 	if (isKeyword(name_))
 	{
-		logParserMessage(statement, Log::MessageType::Warning, "Function name can't be a keyword");
+		logParserMessage(statement, log::MessageType::Warning, "Function name can't be a keyword");
 		return false;
 	}
 
@@ -428,7 +430,7 @@ bool Function::parse(ParsedStatement& statement)
 	}
 
 	if (dump_parsed_functions)
-		Log::debug(asString());
+		log::debug(asString());
 
 	return true;
 }
@@ -485,7 +487,7 @@ bool Function::isFunction(ParsedStatement& statement)
 		if (!special_func && token == '(')
 			return true;
 
-		if (StrUtil::equalCI(token, "deprecated") || StrUtil::equalCI(token, "version"))
+		if (strutil::equalCI(token, "deprecated") || strutil::equalCI(token, "version"))
 			special_func = true;
 		else if (special_func && token == ')')
 			special_func = false;
@@ -559,7 +561,7 @@ bool StateTable::parse(ParsedStatement& states)
 				for (auto b = index; b < a; ++b)
 					state += statement.tokens[b];
 
-				StrUtil::lowerIP(state);
+				strutil::lowerIP(state);
 				current_states.push_back(state);
 				if (state_first_.empty())
 					state_first_ = state;
@@ -573,15 +575,15 @@ bool StateTable::parse(ParsedStatement& states)
 		{
 			logParserMessage(
 				statement,
-				Log::MessageType::Warning,
+				log::MessageType::Warning,
 				fmt::format("Failed to parse states block beginning on line {}", states.line));
 			continue;
 		}
 
 		// Ignore state commands
-		if (StrUtil::equalCI(statement.tokens[index], "stop") || StrUtil::equalCI(statement.tokens[index], "goto")
-			|| StrUtil::equalCI(statement.tokens[index], "loop") || StrUtil::equalCI(statement.tokens[index], "wait")
-			|| StrUtil::equalCI(statement.tokens[index], "fail"))
+		if (strutil::equalCI(statement.tokens[index], "stop") || strutil::equalCI(statement.tokens[index], "goto")
+			|| strutil::equalCI(statement.tokens[index], "loop") || strutil::equalCI(statement.tokens[index], "wait")
+			|| strutil::equalCI(statement.tokens[index], "fail"))
 			continue;
 
 		if (index + 2 < statement.tokens.size())
@@ -591,26 +593,26 @@ bool StateTable::parse(ParsedStatement& states)
 			if (statement.tokens[index + 2] == '-' && index + 3 < statement.tokens.size())
 			{
 				// Negative number
-				StrUtil::toInt(statement.tokens[index + 3], duration);
+				strutil::toInt(statement.tokens[index + 3], duration);
 				duration = -duration;
 			}
 			else
-				StrUtil::toInt(statement.tokens[index + 2], duration);
+				strutil::toInt(statement.tokens[index + 2], duration);
 
 			for (auto& state : current_states)
 				states_[state].frames.push_back({ statement.tokens[index], statement.tokens[index + 1], duration });
 		}
 	}
 
-	states_.erase(StrUtil::EMPTY);
+	states_.erase(strutil::EMPTY);
 
 	if (dump_parsed_states)
 	{
 		for (auto& state : states_)
 		{
-			Log::debug("State {}:", state.first);
+			log::debug("State {}:", state.first);
 			for (auto& frame : state.second.frames)
-				Log::debug(
+				log::debug(
 					"Sprite: {}, Frames: {}, Duration: {}", frame.sprite_base, frame.sprite_frame, frame.duration);
 		}
 	}
@@ -650,11 +652,11 @@ string StateTable::editorSprite()
 // -----------------------------------------------------------------------------
 // Parses a class definition statement/block [class_statement]
 // -----------------------------------------------------------------------------
-bool Class::parse(ParsedStatement& class_statement)
+bool Class::parse(ParsedStatement& class_statement, const vector<Class>& parsed_classes)
 {
 	if (class_statement.tokens.size() < 2)
 	{
-		logParserMessage(class_statement, Log::MessageType::Warning, "Class parse failed");
+		logParserMessage(class_statement, log::MessageType::Warning, "Class parse failed");
 		return false;
 	}
 
@@ -664,10 +666,18 @@ bool Class::parse(ParsedStatement& class_statement)
 	{
 		// Inherits
 		if (class_statement.tokens[a] == ':' && a < class_statement.tokens.size() - 1)
+		{
 			inherits_class_ = class_statement.tokens[a + 1];
+			for (const auto& pclass : parsed_classes)
+				if (strutil::equalCI(pclass.name_, inherits_class_))
+				{
+					inherit(pclass);
+					break;
+				}
+		}
 
 		// Native
-		else if (StrUtil::equalCI(class_statement.tokens[a], "native"))
+		else if (strutil::equalCI(class_statement.tokens[a], "native"))
 			native_ = true;
 
 		// Deprecated
@@ -681,7 +691,7 @@ bool Class::parse(ParsedStatement& class_statement)
 
 	if (!parseClassBlock(class_statement.block))
 	{
-		logParserMessage(class_statement, Log::MessageType::Warning, "Class parse failed");
+		logParserMessage(class_statement, log::MessageType::Warning, "Class parse failed");
 		return false;
 	}
 
@@ -692,34 +702,34 @@ bool Class::parse(ParsedStatement& class_statement)
 	for (auto& i : db_properties_)
 	{
 		// Sprite
-		if (StrUtil::equalCI(i.first, "EditorSprite") || StrUtil::equalCI(i.first, "Sprite"))
+		if (strutil::equalCI(i.first, "EditorSprite") || strutil::equalCI(i.first, "Sprite"))
 			default_properties_["sprite"] = i.second;
 
 		// Angled
-		else if (StrUtil::equalCI(i.first, "Angled"))
+		else if (strutil::equalCI(i.first, "Angled"))
 			default_properties_["angled"] = true;
-		else if (StrUtil::equalCI(i.first, "NotAngled"))
+		else if (strutil::equalCI(i.first, "NotAngled"))
 			default_properties_["angled"] = false;
 
 		// Is Decoration
-		else if (StrUtil::equalCI(i.first, "IsDecoration"))
+		else if (strutil::equalCI(i.first, "IsDecoration"))
 			default_properties_["decoration"] = true;
 
 		// Icon
-		else if (StrUtil::equalCI(i.first, "Icon"))
+		else if (strutil::equalCI(i.first, "Icon"))
 			default_properties_["icon"] = i.second;
 
 		// DB2 Color
-		else if (StrUtil::equalCI(i.first, "Color"))
+		else if (strutil::equalCI(i.first, "Color"))
 			default_properties_["color"] = i.second;
 
 		// SLADE 3 Colour (overrides DB2 color)
 		// Good thing US spelling differs from ABC (Aussie/Brit/Canuck) spelling! :p
-		else if (StrUtil::equalCI(i.first, "Colour"))
+		else if (strutil::equalCI(i.first, "Colour"))
 			default_properties_["colour"] = i.second;
 
 		// Obsolete thing
-		else if (StrUtil::equalCI(i.first, "Obsolete"))
+		else if (strutil::equalCI(i.first, "Obsolete"))
 			default_properties_["obsolete"] = true;
 	}
 
@@ -735,18 +745,31 @@ bool Class::extend(ParsedStatement& block)
 	return parseClassBlock(block.block);
 }
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// 'Inherits' data from the given [parent] class
+// ----------------------------------------------------------------------------
+void Class::inherit(const Class& parent)
+{
+	// variables_ = parent.variables_;
+	// functions_ = parent.functions_;
+	// enumerators_ = parent.enumerators_;
+	default_properties_ = parent.default_properties_;
+	states_             = parent.states_;
+	db_properties_      = parent.db_properties_;
+}
+
+// ----------------------------------------------------------------------------
 // Adds this class as a ThingType to [parsed], or updates an existing ThingType
 // definition in [types] or [parsed]
-// -----------------------------------------------------------------------------
-void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::ThingType>& parsed)
+// ----------------------------------------------------------------------------
+void Class::toThingType(std::map<int, game::ThingType>& types, vector<game::ThingType>& parsed)
 {
 	// Find existing definition
-	Game::ThingType* def = nullptr;
+	game::ThingType* def = nullptr;
 
 	// Check types with ednums first
 	for (auto& type : types)
-		if (StrUtil::equalCI(name_, type.second.className()))
+		if (strutil::equalCI(name_, type.second.className()))
 		{
 			def = &type.second;
 			break;
@@ -755,7 +778,7 @@ void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::Thin
 	{
 		// Check all parsed types
 		for (auto& type : parsed)
-			if (StrUtil::equalCI(name_, type.className()))
+			if (strutil::equalCI(name_, type.className()))
 			{
 				def = &type;
 				break;
@@ -774,9 +797,9 @@ void Class::toThingType(std::map<int, Game::ThingType>& types, vector<Game::Thin
 	string group = "ZScript";
 	for (auto& prop : db_properties_)
 	{
-		if (StrUtil::equalCI(prop.first, "Title"))
+		if (strutil::equalCI(prop.first, "Title"))
 			title = prop.second;
-		else if (StrUtil::equalCI(prop.first, "Group") || StrUtil::equalCI(prop.first, "Category"))
+		else if (strutil::equalCI(prop.first, "Group") || strutil::equalCI(prop.first, "Category"))
 			group = "ZScript/" + prop.second;
 	}
 	def->define(def->number(), title, group);
@@ -797,14 +820,14 @@ bool Class::parseClassBlock(vector<ParsedStatement>& block)
 
 		// Default block
 		string_view first_token = statement.tokens[0];
-		if (StrUtil::equalCI(first_token, "default"))
+		if (strutil::equalCI(first_token, "default"))
 		{
 			if (!parseDefaults(statement.block))
 				return false;
 		}
 
 		// Enum
-		else if (StrUtil::equalCI(first_token, "enum"))
+		else if (strutil::equalCI(first_token, "enum"))
 		{
 			Enumerator e;
 			if (!e.parse(statement))
@@ -814,11 +837,11 @@ bool Class::parseClassBlock(vector<ParsedStatement>& block)
 		}
 
 		// States
-		else if (StrUtil::equalCI(first_token, "states"))
+		else if (strutil::equalCI(first_token, "states"))
 			states_.parse(statement);
 
 		// DB property comment
-		else if (StrUtil::startsWith(first_token, db_comment))
+		else if (strutil::startsWith(first_token, db_comment))
 		{
 			if (statement.tokens.size() > 1)
 				db_properties_.emplace_back(first_token.substr(3), statement.tokens[1]);
@@ -829,7 +852,7 @@ bool Class::parseClassBlock(vector<ParsedStatement>& block)
 		// Function
 		else if (Function::isFunction(statement))
 		{
-			Function fn;
+			Function fn{ {}, name_ };
 			if (fn.parse(statement))
 				functions_.push_back(fn);
 		}
@@ -853,7 +876,7 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 			continue;
 
 		// DB property comment
-		if (StrUtil::startsWith(statement.tokens[0], db_comment))
+		if (strutil::startsWith(statement.tokens[0], db_comment))
 		{
 			string_view prop = statement.tokens[0];
 			prop.remove_prefix(3);
@@ -870,9 +893,9 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 		while (t < count)
 		{
 			if (statement.tokens[t] == '+')
-				default_properties_[StrUtil::lower(statement.tokens[++t])] = true;
+				default_properties_[strutil::lower(statement.tokens[++t])] = true;
 			else if (statement.tokens[t] == '-')
-				default_properties_[StrUtil::lower(statement.tokens[++t])] = false;
+				default_properties_[strutil::lower(statement.tokens[++t])] = false;
 			else
 				break;
 
@@ -895,11 +918,11 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 		// so stuff like arithmetic expressions or comma separated lists won't
 		// really work properly yet
 		if (t + 1 < count)
-			default_properties_[StrUtil::lower(name)] = statement.tokens[t + 1];
+			default_properties_[strutil::lower(name)] = statement.tokens[t + 1];
 
 		// Name only (no value), set as boolean true
 		else if (t < count)
-			default_properties_[StrUtil::lower(name)] = true;
+			default_properties_[strutil::lower(name)] = true;
 	}
 
 	return true;
@@ -930,12 +953,12 @@ void Definitions::clear()
 bool Definitions::parseZScript(ArchiveEntry* entry)
 {
 	// Parse into tree of expressions and blocks
-	auto                    start = App::runTimer();
+	auto                    start = app::runTimer();
 	vector<ParsedStatement> parsed;
 	vector<ArchiveEntry*>   entry_stack;
 	parseBlocks(entry, parsed, entry_stack);
-	Log::debug(2, "parseBlocks: {}ms", App::runTimer() - start);
-	start = App::runTimer();
+	log::debug(2, "parseBlocks: {}ms", app::runTimer() - start);
+	start = app::runTimer();
 
 	for (auto& block : parsed)
 	{
@@ -946,22 +969,22 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 			block.dump();
 
 		// Class
-		if (StrUtil::equalCI(block.tokens[0], "class"))
+		if (strutil::equalCI(block.tokens[0], "class"))
 		{
 			Class nc(Class::Type::Class);
 
-			if (!nc.parse(block))
+			if (!nc.parse(block, classes_))
 				return false;
 
 			classes_.push_back(nc);
 		}
 
 		// Struct
-		else if (StrUtil::equalCI(block.tokens[0], "struct"))
+		else if (strutil::equalCI(block.tokens[0], "struct"))
 		{
 			Class nc(Class::Type::Struct);
 
-			if (!nc.parse(block))
+			if (!nc.parse(block, classes_))
 				return false;
 
 			classes_.push_back(nc);
@@ -969,11 +992,11 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 
 		// Extend Class
 		else if (
-			block.tokens.size() > 2 && StrUtil::equalCI(block.tokens[0], "extend")
-			&& StrUtil::equalCI(block.tokens[1], "class"))
+			block.tokens.size() > 2 && strutil::equalCI(block.tokens[0], "extend")
+			&& strutil::equalCI(block.tokens[1], "class"))
 		{
 			for (auto& c : classes_)
-				if (StrUtil::equalCI(c.name(), block.tokens[2]))
+				if (strutil::equalCI(c.name(), block.tokens[2]))
 				{
 					c.extend(block);
 					break;
@@ -981,7 +1004,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 		}
 
 		// Enum
-		else if (StrUtil::equalCI(block.tokens[0], "enum"))
+		else if (strutil::equalCI(block.tokens[0], "enum"))
 		{
 			Enumerator e;
 
@@ -992,7 +1015,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 		}
 	}
 
-	Log::debug(2, "ZScript: {}ms", App::runTimer() - start);
+	log::debug(2, "ZScript: {}ms", app::runTimer() - start);
 
 	return true;
 }
@@ -1010,7 +1033,7 @@ bool Definitions::parseZScript(Archive* archive)
 	if (zscript_enries.empty())
 		return false;
 
-	Log::info(2, "Parsing ZScript entries found in archive {}", archive->filename());
+	log::info(2, "Parsing ZScript entries found in archive {}", archive->filename());
 
 	// Get ZScript entry type (all parsed ZScript entries will be set to this)
 	etype_zscript = EntryType::fromId("zscript");
@@ -1030,7 +1053,7 @@ bool Definitions::parseZScript(Archive* archive)
 // Exports all classes to ThingTypes in [types] and [parsed] (from a
 // Game::Configuration object)
 // -----------------------------------------------------------------------------
-void Definitions::exportThingTypes(std::map<int, Game::ThingType>& types, vector<Game::ThingType>& parsed)
+void Definitions::exportThingTypes(std::map<int, game::ThingType>& types, vector<game::ThingType>& parsed)
 {
 	for (auto& cdef : classes_)
 		cdef.toThingType(types, parsed);
@@ -1080,7 +1103,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 			return true;
 
 		// DB comment
-		if (StrUtil::startsWith(tz.current().text, db_comment))
+		if (strutil::startsWith(tz.current().text, db_comment))
 		{
 			tokens.emplace_back(tz.current().text);
 			tokens.emplace_back(tz.getLine());
@@ -1104,7 +1127,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 
 		if (tz.atEnd())
 		{
-			Log::debug("Failed parsing zscript statement/block beginning line {}", line);
+			log::debug("Failed parsing zscript statement/block beginning line {}", line);
 			return false;
 		}
 
@@ -1134,7 +1157,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 
 		if (tz.atEnd())
 		{
-			Log::debug("Failed parsing zscript statement/block beginning line {}", line);
+			log::debug("Failed parsing zscript statement/block beginning line {}", line);
 			return false;
 		}
 
@@ -1157,7 +1180,7 @@ void ParsedStatement::dump(int indent)
 	// Tokens
 	for (auto& token : tokens)
 		line += token + " ";
-	Log::debug(line);
+	log::debug(line);
 
 	// Blocks
 	for (auto& b : block)
@@ -1171,7 +1194,7 @@ void ParsedStatement::dump(int indent)
 
 
 // TESTING CONSOLE COMMANDS
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "MainEditor/MainEditor.h"
 
 CONSOLE_COMMAND(test_parse_zscript, 0, false)
@@ -1183,29 +1206,29 @@ CONSOLE_COMMAND(test_parse_zscript, 0, false)
 
 	for (auto& arg : args)
 	{
-		if (StrUtil::equalCI(arg, "dump"))
+		if (strutil::equalCI(arg, "dump"))
 			dump_parsed_blocks = true;
-		else if (StrUtil::equalCI(arg, "states"))
+		else if (strutil::equalCI(arg, "states"))
 			dump_parsed_states = true;
-		else if (StrUtil::equalCI(arg, "func"))
+		else if (strutil::equalCI(arg, "func"))
 			dump_parsed_functions = true;
 		else if (!entry)
-			entry = MainEditor::currentArchive()->entryAtPath(arg);
+			entry = maineditor::currentArchive()->entryAtPath(arg);
 	}
 
 	if (!entry)
-		entry = MainEditor::currentEntry();
+		entry = maineditor::currentEntry();
 
 	if (entry)
 	{
 		Definitions test;
 		if (test.parseZScript(entry))
-			Log::console("Parsed Successfully");
+			log::console("Parsed Successfully");
 		else
-			Log::console("Parsing failed");
+			log::console("Parsing failed");
 	}
 	else
-		Log::console("Select an entry or enter a valid entry name/path");
+		log::console("Select an entry or enter a valid entry name/path");
 
 	dump_parsed_blocks    = false;
 	dump_parsed_states    = false;
@@ -1215,12 +1238,12 @@ CONSOLE_COMMAND(test_parse_zscript, 0, false)
 
 CONSOLE_COMMAND(test_parseblocks, 1, false)
 {
-	int  num   = StrUtil::asInt(args[0]);
-	auto entry = MainEditor::currentEntry();
+	int  num   = strutil::asInt(args[0]);
+	auto entry = maineditor::currentEntry();
 	if (!entry)
 		return;
 
-	auto                    start = App::runTimer();
+	auto                    start = app::runTimer();
 	vector<ParsedStatement> parsed;
 	vector<ArchiveEntry*>   entry_stack;
 	for (auto a = 0; a < num; ++a)
@@ -1228,5 +1251,5 @@ CONSOLE_COMMAND(test_parseblocks, 1, false)
 		parseBlocks(entry, parsed, entry_stack);
 		parsed.clear();
 	}
-	Log::console(fmt::format("Took {}ms", App::runTimer() - start));
+	log::console(fmt::format("Took {}ms", app::runTimer() - start));
 }

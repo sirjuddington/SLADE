@@ -3,14 +3,20 @@
 #include "General/SAction.h"
 #include "UI/Lists/ListView.h"
 
+namespace slade
+{
 class TextureXEditor;
 class TextureXList;
 class CTextureCanvas;
 class CTexture;
 class Palette;
-class SZoomSlider;
+class SToolBar;
+namespace ui
+{
+	class ZoomControl;
+}
 
-class TextureEditorPanel : public wxPanel, SActionHandler
+class TextureEditorPanel : public wxPanel
 {
 public:
 	TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_editor);
@@ -45,7 +51,7 @@ public:
 	void         duplicatePatch(int xoff = 8, int yoff = 8);
 
 	// SAction handler
-	bool handleAction(string_view id) override;
+	bool handleSAction(string_view id);
 
 	// Events
 	void onDrawOutsideChanged(wxCommandEvent& e);
@@ -72,14 +78,14 @@ protected:
 	bool                 tex_modified_ = false;
 
 	// View controls
-	SZoomSlider*    slider_zoom_     = nullptr;
-	wxCheckBox*     cb_draw_outside_ = nullptr;
-	wxCheckBox*     cb_blend_rgba_   = nullptr;
-	wxCheckBox*     cb_tex_scale_    = nullptr;
-	wxCheckBox*     cb_tex_arc_      = nullptr;
-	wxStaticText*   label_viewtype_  = nullptr;
-	wxChoice*       choice_viewtype_ = nullptr;
-	CTextureCanvas* tex_canvas_      = nullptr;
+	ui::ZoomControl* zc_zoom_         = nullptr;
+	wxCheckBox*      cb_draw_outside_ = nullptr;
+	wxCheckBox*      cb_blend_rgba_   = nullptr;
+	wxCheckBox*      cb_tex_scale_    = nullptr;
+	wxCheckBox*      cb_tex_arc_      = nullptr;
+	wxStaticText*    label_viewtype_  = nullptr;
+	wxChoice*        choice_viewtype_ = nullptr;
+	CTextureCanvas*  tex_canvas_      = nullptr;
 
 	// Texture controls
 	wxTextCtrl*   text_tex_name_        = nullptr;
@@ -91,13 +97,8 @@ protected:
 	wxCheckBox*   cb_tex_world_panning_ = nullptr;
 
 	// Texture patches list + related controls
-	ListView* list_patches_        = nullptr;
-	wxButton* btn_patch_add_       = nullptr;
-	wxButton* btn_patch_remove_    = nullptr;
-	wxButton* btn_patch_back_      = nullptr;
-	wxButton* btn_patch_forward_   = nullptr;
-	wxButton* btn_patch_replace_   = nullptr;
-	wxButton* btn_patch_duplicate_ = nullptr;
+	ListView* list_patches_ = nullptr;
+	SToolBar* tb_patches_   = nullptr;
 
 	// Patch controls
 	wxSpinCtrl* spin_patch_left_ = nullptr;
@@ -106,3 +107,4 @@ protected:
 	// Input
 	bool alt_press_ = false;
 };
+} // namespace slade

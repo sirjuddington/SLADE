@@ -1,14 +1,15 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
 #include "OGLCanvas.h"
 
 wxDECLARE_EVENT(EVT_DRAG_END, wxCommandEvent);
 
+namespace slade
+{
 class CTexture;
 class Archive;
 
-class CTextureCanvas : public OGLCanvas, Listener
+class CTextureCanvas : public OGLCanvas
 {
 public:
 	enum class View
@@ -58,8 +59,6 @@ public:
 
 	bool swapPatches(size_t p1, size_t p2);
 
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
-
 private:
 	CTexture*        texture_ = nullptr;
 	Archive*         parent_  = nullptr;
@@ -77,6 +76,10 @@ private:
 	bool             tex_scale_    = false;
 	View             view_type_    = View::Normal;
 
+	// Signal connections
+	sigslot::scoped_connection sc_patches_modified_;
+
 	// Events
 	void onMouseEvent(wxMouseEvent& e);
 };
+} // namespace slade

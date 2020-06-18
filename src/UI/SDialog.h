@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class SDialog : public wxDialog
 {
 public:
@@ -22,3 +24,4 @@ public:
 private:
 	string id_;
 };
+} // namespace slade

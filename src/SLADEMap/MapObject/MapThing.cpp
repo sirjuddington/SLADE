@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,8 @@
 #include "Main.h"
 #include "MapThing.h"
 #include "Utility/Parser.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -73,11 +75,13 @@ MapThing::MapThing(const Vec3d& pos, short type, ParseTreeNode* def) :
 		prop = def->childPTN(a);
 
 		// Skip required properties
-		if (prop->name() == PROP_X || prop->name() == PROP_Y || prop->name() == PROP_Z || prop->name() == PROP_TYPE)
+		if (prop->name() == PROP_X || prop->name() == PROP_Y || prop->name() == PROP_TYPE)
 			continue;
 
 		// Builtin properties
-		if (prop->name() == PROP_ANGLE)
+		if (prop->name() == PROP_Z)
+			z_ = prop->floatValue();
+		else if (prop->name() == PROP_ANGLE)
 			angle_ = prop->intValue();
 		else if (prop->name() == PROP_FLAGS)
 			flags_ = prop->intValue();
@@ -399,19 +403,19 @@ void MapThing::writeBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 void MapThing::readBackup(Backup* backup)
 {
-	type_       = backup->props_internal[PROP_TYPE].intValue();
-	position_.x = backup->props_internal[PROP_X].floatValue();
-	position_.y = backup->props_internal[PROP_Y].floatValue();
-	z_          = backup->props_internal[PROP_Z].floatValue();
-	angle_      = backup->props_internal[PROP_ANGLE].intValue();
-	flags_      = backup->props_internal[PROP_FLAGS].intValue();
-	args_[0]    = backup->props_internal[PROP_ARG0].intValue();
-	args_[1]    = backup->props_internal[PROP_ARG1].intValue();
-	args_[2]    = backup->props_internal[PROP_ARG2].intValue();
-	args_[3]    = backup->props_internal[PROP_ARG3].intValue();
-	args_[4]    = backup->props_internal[PROP_ARG4].intValue();
-	id_         = backup->props_internal[PROP_ID].intValue();
-	special_    = backup->props_internal[PROP_SPECIAL].intValue();
+	type_       = backup->props_internal.get<int>(PROP_TYPE);
+	position_.x = backup->props_internal.get<double>(PROP_X);
+	position_.y = backup->props_internal.get<double>(PROP_Y);
+	z_          = backup->props_internal.get<double>(PROP_Z);
+	angle_      = backup->props_internal.get<int>(PROP_ANGLE);
+	flags_      = backup->props_internal.get<int>(PROP_FLAGS);
+	args_[0]    = backup->props_internal.get<int>(PROP_ARG0);
+	args_[1]    = backup->props_internal.get<int>(PROP_ARG1);
+	args_[2]    = backup->props_internal.get<int>(PROP_ARG2);
+	args_[3]    = backup->props_internal.get<int>(PROP_ARG3);
+	args_[4]    = backup->props_internal.get<int>(PROP_ARG4);
+	id_         = backup->props_internal.get<int>(PROP_ID);
+	special_    = backup->props_internal.get<int>(PROP_SPECIAL);
 }
 
 // -----------------------------------------------------------------------------
@@ -419,7 +423,7 @@ void MapThing::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 void MapThing::writeUDMF(string& def)
 {
-	def = fmt::format("thing//#{}\n{\n", index_);
+	def = fmt::format("thing//#{}\n{{\n", index_);
 
 	// Basic properties
 	def += fmt::format("x={:1.3f};\ny={:1.3f};\ntype={};\n", position_.x, position_.y, type_);
@@ -438,7 +442,7 @@ void MapThing::writeUDMF(string& def)
 		def += fmt::format("special={};\n", special_);
 
 	// Other properties
-	if (!properties_.isEmpty())
+	if (!properties_.empty())
 		def += properties_.toString(true);
 
 	def += "}\n\n";

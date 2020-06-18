@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class BZip2Archive : public TreelessArchive
 {
 public:
@@ -50,3 +52,4 @@ public:
 	static bool isBZip2Archive(MemChunk& mc);
 	static bool isBZip2Archive(const string& filename);
 };
+} // namespace slade

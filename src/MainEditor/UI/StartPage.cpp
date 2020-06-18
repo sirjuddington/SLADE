@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -38,7 +38,10 @@
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
 #include "General/Web.h"
+#include "Graphics/Icons.h"
 #include "Utility/Tokenizer.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -47,6 +50,15 @@
 //
 // -----------------------------------------------------------------------------
 CVAR(Bool, web_dark_theme, false, CVar::Flag::Save)
+
+
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
+EXTERN_CVAR(String, iconset_general)
+EXTERN_CVAR(String, iconset_entry_list)
 
 
 // -----------------------------------------------------------------------------
@@ -76,7 +88,7 @@ void SStartPage::init()
 #ifdef USE_WEBVIEW_STARTPAGE
 	html_startpage_ = wxWebView::New(
 		this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxWebViewBackendDefault, wxBORDER_NONE);
-	html_startpage_->SetZoomType(App::platform() == App::MacOS ? wxWEBVIEW_ZOOM_TYPE_TEXT : wxWEBVIEW_ZOOM_TYPE_LAYOUT);
+	html_startpage_->SetZoomType(app::platform() == app::MacOS ? wxWEBVIEW_ZOOM_TYPE_TEXT : wxWEBVIEW_ZOOM_TYPE_LAYOUT);
 
 	// wxHtmlWindow
 #else
@@ -91,10 +103,10 @@ void SStartPage::init()
 	html_startpage_->Bind(wxEVT_WEBVIEW_NAVIGATING, &SStartPage::onHTMLLinkClicked, this);
 
 	html_startpage_->Bind(wxEVT_WEBVIEW_ERROR, [&](wxWebViewEvent& e) {
-		Log::error(wxString::Format("wxWebView Error: %s", e.GetString()));
+		log::error(wxString::Format("wxWebView Error: %s", e.GetString()));
 	});
 
-	if (App::platform() == App::Platform::Windows)
+	if (app::platform() == app::Platform::Windows)
 	{
 		html_startpage_->Bind(wxEVT_WEBVIEW_LOADED, [&](wxWebViewEvent& e) { html_startpage_->Reload(); });
 	}
@@ -114,11 +126,11 @@ void SStartPage::init()
 #endif
 
 	// Get data used to build the page
-	auto res_archive = App::archiveManager().programResourceArchive();
+	auto res_archive = app::archiveManager().programResourceArchive();
 	if (res_archive)
 	{
 		entry_base_html_ = res_archive->entryAtPath(
-			App::useWebView() ? "html/startpage.htm" : "html/startpage_basic.htm");
+			app::useWebView() ? "html/startpage.htm" : "html/startpage_basic.htm");
 
 		entry_css_ = res_archive->entryAtPath(web_dark_theme ? "html/theme-dark.css" : "html/theme-light.css");
 
@@ -129,15 +141,14 @@ void SStartPage::init()
 		entry_export_.push_back(res_archive->entryAtPath("fonts/FiraSans-Bold.woff"));
 		entry_export_.push_back(res_archive->entryAtPath("fonts/FiraSans-Heavy.woff"));
 		entry_export_.push_back(res_archive->entryAtPath("logo_icon.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/Rounded/archive.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/Rounded/wad.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/Rounded/zip.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/Rounded/folder.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/general/open.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/general/newarchive.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/general/newzip.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/general/mapeditor.png"));
-		entry_export_.push_back(res_archive->entryAtPath("icons/general/wiki.png"));
+		entry_export_.push_back(icons::getIconEntry(icons::Entry, "archive", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::Entry, "wad", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::Entry, "zip", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::Entry, "folder", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::General, "open", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::General, "newarchive", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::General, "mapeditor", 16));
+		entry_export_.push_back(icons::getIconEntry(icons::General, "wiki", 16));
 
 		// Load tips
 		auto entry_tips = res_archive->entryAtPath("tips.txt");
@@ -162,12 +173,12 @@ void SStartPage::load(bool new_tip)
 {
 	// Get latest news post
 	if (latest_news_.empty())
-		Web::getHttpAsync("slade.mancubus.net", "/news-latest.php", this);
+		web::getHttpAsync("slade.mancubus.net", "/news-latest.php", this);
 
 	// Can't do anything without html entry
 	if (!entry_base_html_)
 	{
-		Log::error("No start page resource found");
+		log::error("No start page resource found");
 		html_startpage_->SetPage(
 			"<html><head><title>SLADE</title></head><body><center><h1>"
 			"Something is wrong with slade.pk3 :(</h1><center></body></html>",
@@ -205,15 +216,15 @@ void SStartPage::load(bool new_tip)
 
 	// Generate recent files string
 	wxString recent;
-	if (App::archiveManager().numRecentFiles() > 0)
+	if (app::archiveManager().numRecentFiles() > 0)
 	{
 		for (unsigned a = 0; a < 12; a++)
 		{
-			if (a >= App::archiveManager().numRecentFiles())
+			if (a >= app::archiveManager().numRecentFiles())
 				break; // No more recent files
 
 			// Determine icon
-			wxString fn   = App::archiveManager().recentFile(a);
+			wxString fn   = app::archiveManager().recentFile(a);
 			wxString icon = "archive";
 			if (fn.EndsWith(".wad"))
 				icon = "wad";
@@ -241,7 +252,7 @@ void SStartPage::load(bool new_tip)
 	html.Replace("#recent#", recent);
 	html.Replace("#totd#", tip);
 	html.Replace("#news#", latest_news_);
-	html.Replace("#version#", App::version().toString());
+	html.Replace("#version#", app::version().toString());
 	if (update_version_.empty())
 		html.Replace("/*#hideupdate#*/", "#update { display: none; }");
 	else
@@ -249,20 +260,20 @@ void SStartPage::load(bool new_tip)
 
 	// Write html and images to temp folder
 	for (auto& a : entry_export_)
-		a->exportFile(App::path(a->name(), App::Dir::Temp));
-	wxString html_file = App::path("startpage.htm", App::Dir::Temp);
+		a->exportFile(app::path(a->name(), app::Dir::Temp));
+	wxString html_file = app::path("startpage.htm", app::Dir::Temp);
 	wxFile   outfile(html_file, wxFile::write);
 	outfile.Write(html);
 	outfile.Close();
 
-	if (App::platform() == App::Linux)
+	if (app::platform() == app::Linux)
 		html_file = "file://" + html_file;
 
 	// Load page
 	html_startpage_->ClearHistory();
 	html_startpage_->LoadURL(html_file);
 
-	if (App::platform() == App::Windows)
+	if (app::platform() == app::Windows)
 		html_startpage_->Reload();
 }
 
@@ -275,7 +286,7 @@ void SStartPage::load(bool new_tip)
 void SStartPage::load(bool new_tip)
 {
 	// Get relevant resource entries
-	Archive* res_archive = App::archiveManager().programResourceArchive();
+	Archive* res_archive = app::archiveManager().programResourceArchive();
 	if (!res_archive)
 		return;
 	ArchiveEntry* entry_html = res_archive->entryAtPath("html/startpage_basic.htm");
@@ -312,14 +323,14 @@ void SStartPage::load(bool new_tip)
 
 		last_tip_index_ = tipindex;
 		tip = tips_[tipindex];
-		Log::debug(wxString::Format("Tip index %d/%lu", last_tip_index_, (int)tips_.size()));
+		log::debug(wxString::Format("Tip index %d/%lu", last_tip_index_, (int)tips_.size()));
 	}
 
 	// Generate recent files string
 	string recent;
 	for (unsigned a = 0; a < 12; a++)
 	{
-		if (a >= App::archiveManager().numRecentFiles())
+		if (a >= app::archiveManager().numRecentFiles())
 			break; // No more recent files
 
 		// Add line break if needed
@@ -327,7 +338,7 @@ void SStartPage::load(bool new_tip)
 			recent += "<br/>\n";
 
 		// Add recent file link
-		recent += wxString::Format("<a href=\"recent://%d\">%s</a>", a, App::archiveManager().recentFile(a));
+		recent += wxString::Format("<a href=\"recent://%d\">%s</a>", a, app::archiveManager().recentFile(a));
 	}
 
 	// Insert tip and recent files into html
@@ -336,8 +347,8 @@ void SStartPage::load(bool new_tip)
 
 	// Write html and images to temp folder
 	if (entry_logo)
-		entry_logo->exportFile(App::path("logo.png", App::Dir::Temp));
-	string html_file = App::path("startpage_basic.htm", App::Dir::Temp);
+		entry_logo->exportFile(app::path("logo.png", app::Dir::Temp));
+	string html_file = app::path("startpage_basic.htm", app::Dir::Temp);
 	wxFile outfile(html_file, wxFile::write);
 	outfile.Write(html);
 	outfile.Close();
@@ -347,7 +358,7 @@ void SStartPage::load(bool new_tip)
 
 	// Clean up
 	wxRemoveFile(html_file);
-	wxRemoveFile(App::path("logo.png", App::Dir::Temp));
+	wxRemoveFile(app::path("logo.png", app::Dir::Temp));
 }
 
 #endif
@@ -412,10 +423,8 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 		// Action
 		if (href.EndsWith("open"))
 			SActionHandler::doAction("aman_open");
-		else if (href.EndsWith("newwad"))
-			SActionHandler::doAction("aman_newwad");
-		else if (href.EndsWith("newzip"))
-			SActionHandler::doAction("aman_newzip");
+		else if (href.EndsWith("newarchive"))
+			SActionHandler::doAction("aman_newarchive");
 		else if (href.EndsWith("newmap"))
 		{
 			SActionHandler::doAction("aman_newmap");
@@ -444,14 +453,14 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 		// Navigating to file, open it
 		if (!href.EndsWith("startpage.htm"))
 		{
-			App::archiveManager().openArchive(href.ToStdString());
+			app::archiveManager().openArchive(href.ToStdString());
 			ev.Veto();
 		}
 	}
 	else if (wxDirExists(href))
 	{
 		// Navigating to folder, open it
-		App::archiveManager().openDirArchive(href.ToStdString());
+		app::archiveManager().openDirArchive(href.ToStdString());
 		ev.Veto();
 	}
 }

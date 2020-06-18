@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,9 +32,11 @@
 #include "Main.h"
 #include "ConsolePanel.h"
 #include "App.h"
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "TextEditor/TextStyle.h"
 #include "UI/WxUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -75,17 +77,17 @@ void ConsolePanel::initLayout()
 	text_log_->SetEditable(false);
 	text_log_->SetWrapMode(wxSTC_WRAP_WORD);
 	text_log_->SetSizeHints(wxSize(-1, 0));
-	vbox->Add(text_log_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::pad());
+	vbox->Add(text_log_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::pad());
 
 	// Create and add the command entry textbox
 	text_command_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	vbox->AddSpacer(UI::px(UI::Size::PadMinimum));
-	vbox->Add(text_command_, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, UI::pad());
+	vbox->AddSpacer(ui::px(ui::Size::PadMinimum));
+	vbox->Add(text_command_, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, ui::pad());
 
 	Layout();
 
 	// Set console font to default+monospace
-	auto font = WxUtils::monospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
+	auto font = wxutil::monospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
 	text_command_->SetFont(font);
 
 	setupTextArea();
@@ -110,10 +112,10 @@ void ConsolePanel::setupTextArea() const
 		hsl.l = 0.8;
 	if (hsl.l < 0.2)
 		hsl.l = 0.2;
-	text_log_->StyleSetForeground(200, WXCOL(ColHSL(0.99, 1., hsl.l).asRGB()));
-	text_log_->StyleSetForeground(201, WXCOL(ColHSL(0.1, 1., hsl.l).asRGB()));
-	text_log_->StyleSetForeground(202, WXCOL(ColHSL(0.5, 0.8, hsl.l).asRGB()));
-	text_log_->StyleSetForeground(203, WXCOL(ColHSL(hsl.h, hsl.s, 0.5).asRGB()));
+	text_log_->StyleSetForeground(200, ColHSL(0.99, 1., hsl.l).asRGB().toWx());
+	text_log_->StyleSetForeground(201, ColHSL(0.1, 1., hsl.l).asRGB().toWx());
+	text_log_->StyleSetForeground(202, ColHSL(0.5, 0.8, hsl.l).asRGB().toWx());
+	text_log_->StyleSetForeground(203, ColHSL(hsl.h, hsl.s, 0.5).asRGB().toWx());
 }
 
 // -----------------------------------------------------------------------------
@@ -124,7 +126,7 @@ void ConsolePanel::update()
 	setupTextArea();
 
 	// Check if any new log messages were added since the last update
-	auto& log = Log::history();
+	auto& log = log::history();
 	if (log.size() <= next_message_index_)
 	{
 		// None added, check again in 500ms
@@ -134,7 +136,7 @@ void ConsolePanel::update()
 
 	// Add new log messages to log text area
 	text_log_->SetEditable(true);
-	int line_no = next_message_index_ + 1;
+	int line_no = next_message_index_;
 	for (auto a = next_message_index_; a < log.size(); ++a)
 	{
 		if (a > 0)
@@ -149,10 +151,10 @@ void ConsolePanel::update()
 		text_log_->StartStyling(text_log_->GetLineEndPosition(line_no) - text_log_->GetLineLength(line_no), 0);
 		switch (log[a].type)
 		{
-		case Log::MessageType::Error: text_log_->SetStyling(text_log_->GetLineLength(line_no), 200); break;
-		case Log::MessageType::Warning: text_log_->SetStyling(text_log_->GetLineLength(line_no), 201); break;
-		case Log::MessageType::Script: text_log_->SetStyling(text_log_->GetLineLength(line_no), 202); break;
-		case Log::MessageType::Debug: text_log_->SetStyling(text_log_->GetLineLength(line_no), 203); break;
+		case log::MessageType::Error: text_log_->SetStyling(text_log_->GetLineLength(line_no), 200); break;
+		case log::MessageType::Warning: text_log_->SetStyling(text_log_->GetLineLength(line_no), 201); break;
+		case log::MessageType::Script: text_log_->SetStyling(text_log_->GetLineLength(line_no), 202); break;
+		case log::MessageType::Debug: text_log_->SetStyling(text_log_->GetLineLength(line_no), 203); break;
 		default: break;
 		}
 
@@ -160,7 +162,7 @@ void ConsolePanel::update()
 	}
 	text_log_->SetEditable(false);
 
-	next_message_index_ = Log::history().size();
+	next_message_index_ = log::history().size();
 	text_log_->ScrollToEnd();
 
 	// Check again in 100ms
@@ -180,7 +182,7 @@ void ConsolePanel::update()
 // -----------------------------------------------------------------------------
 void ConsolePanel::onCommandEnter(wxCommandEvent& e)
 {
-	App::console()->execute(WxUtils::strToView(e.GetString()));
+	app::console()->execute(wxutil::strToView(e.GetString()));
 	update();
 	text_command_->Clear();
 	cmd_log_index_ = 0;
@@ -193,15 +195,15 @@ void ConsolePanel::onCommandKeyDown(wxKeyEvent& e)
 {
 	if (e.GetKeyCode() == WXK_UP)
 	{
-		text_command_->SetValue(App::console()->prevCommand(cmd_log_index_));
+		text_command_->SetValue(app::console()->prevCommand(cmd_log_index_));
 		text_command_->SetInsertionPointEnd();
-		if (cmd_log_index_ < App::console()->numPrevCommands() - 1)
+		if (cmd_log_index_ < app::console()->numPrevCommands() - 1)
 			cmd_log_index_++;
 	}
 	else if (e.GetKeyCode() == WXK_DOWN)
 	{
 		cmd_log_index_--;
-		text_command_->SetValue(App::console()->prevCommand(cmd_log_index_));
+		text_command_->SetValue(app::console()->prevCommand(cmd_log_index_));
 		text_command_->SetInsertionPointEnd();
 		if (cmd_log_index_ < 0)
 			cmd_log_index_ = 0;

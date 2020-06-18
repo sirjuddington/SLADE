@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -69,6 +69,8 @@
 #include "RffArchive.h"
 #include "General/UI.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -130,7 +132,7 @@ uint32_t RffArchive::getEntryOffset(ArchiveEntry* entry)
 	if (!checkEntry(entry))
 		return 0;
 
-	return (uint32_t)(int)entry->exProp("Offset");
+	return (uint32_t)entry->exProp<int>("Offset");
 }
 
 // -----------------------------------------------------------------------------
@@ -173,24 +175,24 @@ bool RffArchive::open(MemChunk& mc)
 	// Check the header
 	if (magic[0] != 'R' || magic[1] != 'F' || magic[2] != 'F' || magic[3] != 0x1A || version != 0x301)
 	{
-		Log::error("RffArchive::openFile: File {} has invalid header", filename_);
-		Global::error = "Invalid rff header";
+		log::error("RffArchive::openFile: File {} has invalid header", filename_);
+		global::error = "Invalid rff header";
 		return false;
 	}
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
 	auto lumps = new RFFLump[num_lumps];
 	mc.seek(dir_offset, SEEK_SET);
-	UI::setSplashProgressMessage("Reading rff archive data");
+	ui::setSplashProgressMessage("Reading rff archive data");
 	mc.read(lumps, num_lumps * sizeof(RFFLump));
 	bloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		char     name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -212,9 +214,8 @@ bool RffArchive::open(MemChunk& mc)
 		// the rfffile is invalid
 		if (offset + size > mc.size())
 		{
-			Log::error("RffArchive::open: rff archive is invalid or corrupt");
-			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
+			log::error("RffArchive::open: rff archive is invalid or corrupt");
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
@@ -235,11 +236,11 @@ bool RffArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)num_lumps)));
+		ui::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		auto entry = entryAt(a);
@@ -277,11 +278,10 @@ bool RffArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -292,7 +292,7 @@ bool RffArchive::open(MemChunk& mc)
 // -----------------------------------------------------------------------------
 bool RffArchive::write(MemChunk& mc, bool update)
 {
-	Log::warning("Saving RFF files is not implemented because the format is not entirely known.");
+	log::warning("Saving RFF files is not implemented because the format is not entirely known.");
 	return false;
 }
 
@@ -320,7 +320,7 @@ bool RffArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error("RffArchive::loadEntryData: Failed to open rff file {}", filename_);
+		log::error("RffArchive::loadEntryData: Failed to open rff file {}", filename_);
 		return false;
 	}
 
@@ -366,7 +366,7 @@ bool RffArchive::isRffArchive(MemChunk& mc)
 	// Compute total size
 	auto lumps = new RFFLump[num_lumps];
 	mc.seek(dir_offset, SEEK_SET);
-	UI::setSplashProgressMessage("Reading rff archive data");
+	ui::setSplashProgressMessage("Reading rff archive data");
 	mc.read(lumps, num_lumps * sizeof(RFFLump));
 	bloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
 	uint32_t totalsize = 12 + num_lumps * sizeof(RFFLump);
@@ -423,7 +423,7 @@ bool RffArchive::isRffArchive(const string& filename)
 	// Compute total size
 	auto lumps = new RFFLump[num_lumps];
 	file.Seek(dir_offset, wxFromStart);
-	UI::setSplashProgressMessage("Reading rff archive data");
+	ui::setSplashProgressMessage("Reading rff archive data");
 	file.Read(lumps, num_lumps * sizeof(RFFLump));
 	bloodCrypt(lumps, dir_offset, num_lumps * sizeof(RFFLump));
 	uint32_t totalsize = 12 + num_lumps * sizeof(RFFLump);

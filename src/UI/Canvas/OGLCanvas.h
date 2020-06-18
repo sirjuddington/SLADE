@@ -4,8 +4,11 @@
 #include "OpenGL/OpenGL.h"
 
 class wxWindow;
+
+namespace slade
+{
 #ifdef USE_SFML_RENDERWINDOW
-class OGLCanvas : public wxControl, public sf::RenderWindow
+class OGLCanvas : public wxGLCanvas, public sf::RenderWindow
 {
 #else
 class OGLCanvas : public wxGLCanvas
@@ -18,7 +21,7 @@ public:
 	virtual Palette& palette() { return palette_; }
 	void             setPalette(Palette* pal) { palette_.copyPalette(pal); }
 	bool             setContext();
-	void             createSFML();
+	bool             createSFML();
 	void             init();
 	virtual void     draw() = 0;
 	virtual void     update(long frametime) {}
@@ -28,7 +31,11 @@ public:
 	void             setup2D() const;
 
 #ifdef USE_SFML_RENDERWINDOW
-	void SwapBuffers() { display(); }
+	bool SwapBuffers() override
+	{
+		display();
+		return true;
+	}
 #endif
 
 protected:
@@ -44,3 +51,4 @@ protected:
 	void onTimer(wxTimerEvent& e);
 	void onResize(wxSizeEvent& e);
 };
+} // namespace slade

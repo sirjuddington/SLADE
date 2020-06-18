@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,7 +36,6 @@
 #include "Archive/ArchiveManager.h"
 #include "ArchiveManagerPanel.h"
 #include "ArchivePanel.h"
-#include "Dialogs/Preferences/PreferencesDialog.h"
 #include "General/Misc.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/MapEditor.h"
@@ -48,14 +47,18 @@
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Controls/UndoManagerHistoryPanel.h"
+#include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #ifdef USE_WEBVIEW_STARTPAGE
 #include "DocsPage.h"
 #endif
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -95,7 +98,7 @@ public:
 	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) override
 	{
 		for (const auto& filename : filenames)
-			App::archiveManager().openArchive(filename.ToStdString());
+			app::archiveManager().openArchive(filename.ToStdString());
 
 		return true;
 	}
@@ -139,7 +142,7 @@ void MainWindow::loadLayout() const
 {
 	// Open layout file
 	Tokenizer tz;
-	if (!tz.openFile(App::path("mainwindow.layout", App::Dir::User)))
+	if (!tz.openFile(app::path("mainwindow.layout", app::Dir::User)))
 		return;
 
 	// Parse layout
@@ -165,7 +168,7 @@ void MainWindow::loadLayout() const
 void MainWindow::saveLayout() const
 {
 	// Open layout file
-	wxFile file(App::path("mainwindow.layout", App::Dir::User), wxFile::write);
+	wxFile file(app::path("mainwindow.layout", app::Dir::User), wxFile::write);
 
 	// Write component layout
 
@@ -199,8 +202,8 @@ void MainWindow::setupLayout()
 	wxAuiPaneInfo p_inf;
 
 	// Set icon
-	auto icon_filename = App::path(App::iconFile(), App::Dir::Temp);
-	App::archiveManager().programResourceArchive()->entry(App::iconFile())->exportFile(icon_filename);
+	auto icon_filename = app::path(app::iconFile(), app::Dir::Temp);
+	app::archiveManager().programResourceArchive()->entry(app::iconFile())->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
 
@@ -219,7 +222,7 @@ void MainWindow::setupLayout()
 	if (show_start_page)
 	{
 		stc_tabs_->AddPage(start_page_, "Start Page");
-		stc_tabs_->SetPageBitmap(0, Icons::getIcon(Icons::General, "logo"));
+		stc_tabs_->SetPageBitmap(0, icons::getIcon(icons::General, "logo"));
 		start_page_->init();
 		createStartPage();
 	}
@@ -232,9 +235,9 @@ void MainWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Float();
-	p_inf.FloatingSize(WxUtils::scaledSize(600, 400));
-	p_inf.FloatingPosition(WxUtils::scaledPoint(100, 100));
-	p_inf.MinSize(WxUtils::scaledSize(-1, 192));
+	p_inf.FloatingSize(wxutil::scaledSize(600, 400));
+	p_inf.FloatingPosition(wxutil::scaledPoint(100, 100));
+	p_inf.MinSize(wxutil::scaledSize(-1, 192));
 	p_inf.Show(false);
 	p_inf.Caption("Console");
 	p_inf.Name("console");
@@ -247,7 +250,7 @@ void MainWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Left();
-	p_inf.BestSize(WxUtils::scaledSize(192, 480));
+	p_inf.BestSize(wxutil::scaledSize(192, 480));
 	p_inf.Caption("Archive Manager");
 	p_inf.Name("archive_manager");
 	p_inf.Show(true);
@@ -261,7 +264,7 @@ void MainWindow::setupLayout()
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
 	p_inf.Right();
-	p_inf.BestSize(WxUtils::scaledSize(128, 480));
+	p_inf.BestSize(wxutil::scaledSize(128, 480));
 	p_inf.Caption("Undo History");
 	p_inf.Name("undo_history");
 	p_inf.Show(false);
@@ -275,18 +278,17 @@ void MainWindow::setupLayout()
 
 	// File menu
 	auto file_new_menu = new wxMenu("");
-	SAction::fromId("aman_newwad")->addToMenu(file_new_menu, "&Wad Archive");
-	SAction::fromId("aman_newzip")->addToMenu(file_new_menu, "&Zip Archive");
+	SAction::fromId("aman_newarchive")->addToMenu(file_new_menu, "&Archive");
 	SAction::fromId("aman_newmap")->addToMenu(file_new_menu, "&Map");
 	auto file_menu = new wxMenu("");
-	file_menu->AppendSubMenu(file_new_menu, "&New", "Create a new Archive");
+	file_menu->AppendSubMenu(file_new_menu, "&New");
 	SAction::fromId("aman_open")->addToMenu(file_menu);
 	SAction::fromId("aman_opendir")->addToMenu(file_menu);
+	file_menu->AppendSubMenu(panel_archivemanager_->recentFilesMenu(), "&Recent Files");
 	file_menu->AppendSeparator();
 	SAction::fromId("aman_save")->addToMenu(file_menu);
 	SAction::fromId("aman_saveas")->addToMenu(file_menu);
 	SAction::fromId("aman_saveall")->addToMenu(file_menu);
-	file_menu->AppendSubMenu(panel_archivemanager_->getRecentMenu(), "&Recent Files");
 	file_menu->AppendSeparator();
 	SAction::fromId("aman_close")->addToMenu(file_menu);
 	SAction::fromId("aman_closeall")->addToMenu(file_menu);
@@ -337,8 +339,7 @@ void MainWindow::setupLayout()
 
 	// Create File toolbar
 	auto tbg_file = new SToolBarGroup(toolbar_, "_File");
-	tbg_file->addActionButton("aman_newwad");
-	tbg_file->addActionButton("aman_newzip");
+	tbg_file->addActionButton("aman_newarchive");
 	tbg_file->addActionButton("aman_open");
 	tbg_file->addActionButton("aman_opendir");
 	tbg_file->addActionButton("aman_save");
@@ -350,37 +351,34 @@ void MainWindow::setupLayout()
 
 	// Create Archive toolbar
 	auto tbg_archive = new SToolBarGroup(toolbar_, "_Archive");
-	tbg_archive->addActionButton("arch_newentry");
-	tbg_archive->addActionButton("arch_newdir");
-	tbg_archive->addActionButton("arch_importfiles");
 	tbg_archive->addActionButton("arch_texeditor");
 	tbg_archive->addActionButton("arch_mapeditor");
 	tbg_archive->addActionButton("arch_run");
+	auto* b_maint = tbg_archive->addActionButton(
+		"arch_maintenance", "Maintenance", "wrench", "Archive maintenance/cleanup tools");
+	b_maint->setMenu(ArchivePanel::createMaintenanceMenu());
 	toolbar_->addGroup(tbg_archive);
 
-	// Create Entry toolbar
-	auto tbg_entry = new SToolBarGroup(toolbar_, "_Entry");
-	tbg_entry->addActionButton("arch_entry_rename");
-	tbg_entry->addActionButton("arch_entry_delete");
-	tbg_entry->addActionButton("arch_entry_import");
-	tbg_entry->addActionButton("arch_entry_export");
-	tbg_entry->addActionButton("arch_entry_moveup");
-	tbg_entry->addActionButton("arch_entry_movedown");
-	toolbar_->addGroup(tbg_entry);
+	// Create Boomkarks toolbar
+	auto* tbg_bookmarks = new SToolBarGroup(toolbar_, "_Bookmarks");
+	auto* b_bookmarks   = tbg_bookmarks->addActionButton(
+        "bookmarks", "Bookmarks", "bookmark", "Go to a bookmarked entry");
+	b_bookmarks->setMenu(panel_archivemanager_->bookmarksMenu());
+	toolbar_->addGroup(tbg_bookmarks);
 
 	// Create Base Resource Archive toolbar
 	auto tbg_bra = new SToolBarGroup(toolbar_, "_Base Resource", true);
 	auto brc     = new BaseResourceChooser(tbg_bra);
 	tbg_bra->addCustomControl(brc);
 	tbg_bra->addActionButton("main_setbra", "settings");
-	toolbar_->addGroup(tbg_bra);
+	toolbar_->addGroup(tbg_bra, true);
 
 	// Create Palette Chooser toolbar
 	auto tbg_palette = new SToolBarGroup(toolbar_, "_Palette", true);
 	palette_chooser_ = new PaletteChooser(tbg_palette, -1);
 	palette_chooser_->selectPalette(global_palette);
 	tbg_palette->addCustomControl(palette_chooser_);
-	toolbar_->addGroup(tbg_palette);
+	toolbar_->addGroup(tbg_palette, true);
 
 	// Archive and Entry toolbars are initially disabled
 	toolbar_->enableGroup("_archive", false);
@@ -452,8 +450,8 @@ bool MainWindow::exitProgram()
 	}
 
 	// Check if we can close the map editor
-	if (MapEditor::windowCreated() && MapEditor::windowWx()->IsShown())
-		if (!MapEditor::windowWx()->Close())
+	if (mapeditor::windowCreated() && mapeditor::windowWx()->IsShown())
+		if (!mapeditor::windowWx()->Close())
 			return false;
 
 	// Close all archives
@@ -465,13 +463,13 @@ bool MainWindow::exitProgram()
 	saveLayout();
 	mw_maximized = IsMaximized();
 	if (!IsMaximized())
-		Misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+		misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 
 	// Save selected palette
-	global_palette = WxUtils::strToView(palette_chooser_->GetStringSelection());
+	global_palette = wxutil::strToView(palette_chooser_->GetStringSelection());
 
 	// Exit application
-	App::exit(true);
+	app::exit(true);
 
 	return true;
 }
@@ -509,7 +507,7 @@ void MainWindow::openStartPageTab()
 	start_page_ = new SStartPage(stc_tabs_);
 	start_page_->init();
 	stc_tabs_->AddPage(start_page_, "Start Page");
-	stc_tabs_->SetPageBitmap(0, Icons::getIcon(Icons::General, "logo"));
+	stc_tabs_->SetPageBitmap(0, icons::getIcon(icons::General, "logo"));
 	createStartPage();
 }
 
@@ -540,7 +538,7 @@ void MainWindow::openDocs(const wxString& page_name)
 
 		// Add tab
 		stc_tabs_->AddPage(docs_page_, "Documentation", true, -1);
-		stc_tabs_->SetPageBitmap(stc_tabs_->GetPageCount() - 1, Icons::getIcon(Icons::General, "wiki"));
+		stc_tabs_->SetPageBitmap(stc_tabs_->GetPageCount() - 1, icons::getIcon(icons::General, "wiki"));
 	}
 
 	// Load specified page, if any
@@ -560,7 +558,7 @@ void MainWindow::openDocs(const wxString& page_name)
 bool MainWindow::handleAction(string_view id)
 {
 	// We're only interested in "main_" actions
-	if (!StrUtil::startsWith(id, "main_"))
+	if (!strutil::startsWith(id, "main_"))
 		return false;
 
 	// File->Exit
@@ -616,7 +614,7 @@ bool MainWindow::handleAction(string_view id)
 		auto  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
 		auto& p_inf = m_mgr->GetPane("console");
 		p_inf.Show(!p_inf.IsShown());
-		p_inf.MinSize(WxUtils::scaledSize(200, 128));
+		p_inf.MinSize(wxutil::scaledSize(200, 128));
 		m_mgr->Update();
 		return true;
 	}
@@ -638,7 +636,7 @@ bool MainWindow::handleAction(string_view id)
 	// Tools->Run Script
 	if (id == "main_runscript")
 	{
-		ScriptManager::open();
+		scriptmanager::open();
 		return true;
 	}
 
@@ -647,16 +645,16 @@ bool MainWindow::handleAction(string_view id)
 	{
 		wxAboutDialogInfo info;
 		info.SetName("SLADE");
-		wxString version = "v" + App::version().toString();
-		if (!Global::sc_rev.empty())
-			version = version + " (Git Rev " + Global::sc_rev + ")";
+		wxString version = "v" + app::version().toString();
+		if (!global::sc_rev.empty())
+			version = version + " (Git Rev " + global::sc_rev + ")";
 		info.SetVersion(version);
 		info.SetWebSite("http://slade.mancubus.net");
 		info.SetDescription("It's a Doom Editor");
 
 		// Set icon
-		auto icon_filename = App::path(App::iconFile(), App::Dir::Temp);
-		App::archiveManager().programResourceArchive()->entry(App::iconFile())->exportFile(icon_filename);
+		auto icon_filename = app::path(app::iconFile(), app::Dir::Temp);
+		app::archiveManager().programResourceArchive()->entry(app::iconFile())->exportFile(icon_filename);
 		info.SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 		wxRemoveFile(icon_filename);
 
@@ -739,7 +737,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 	// Update toolbar layout (if needed)
 	toolbar_->updateLayout();
 #ifndef __WXMSW__
-	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->minHeight());
+	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->getBarHeight());
 	aui_mgr_->Update();
 #endif
 
@@ -755,7 +753,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 void MainWindow::onToolBarLayoutChanged(wxEvent& e)
 {
 	// Update toolbar size
-	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->minHeight());
+	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->getBarHeight());
 	aui_mgr_->Update();
 }
 
@@ -764,7 +762,7 @@ void MainWindow::onToolBarLayoutChanged(wxEvent& e)
 // -----------------------------------------------------------------------------
 void MainWindow::onActivate(wxActivateEvent& e)
 {
-	if (!e.GetActive() || this->IsBeingDeleted() || App::isExiting())
+	if (!e.GetActive() || this->IsBeingDeleted() || app::isExiting())
 	{
 		e.Skip();
 		return;

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,10 +31,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ArchiveOperations.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"
-#include "Dialogs/ExtMessageDialog.h"
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "General/ResourceManager.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "MainEditor/MainEditor.h"
@@ -44,10 +44,12 @@
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapThing.h"
+#include "UI/Dialogs/ExtMessageDialog.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -71,7 +73,7 @@ typedef std::map<int, vector<ArchiveEntry*>>      CRCMap;
 // Removes any patches and associated entries from [archive] that are not used
 // in any texture definitions
 // -----------------------------------------------------------------------------
-bool ArchiveOperations::removeUnusedPatches(Archive* archive)
+bool archiveoperations::removeUnusedPatches(Archive* archive)
 {
 	if (!archive)
 		return false;
@@ -117,7 +119,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 			// Unused
 
 			// If its entry is in the archive, flag it to be removed
-			auto entry = App::resources().getPatchEntry(p.name, "patches", archive);
+			auto entry = app::resources().getPatchEntry(p.name, "patches", archive);
 			if (entry && entry->parent() == archive)
 				to_remove.push_back(entry);
 
@@ -126,7 +128,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 				tx_list->removePatch(p.name);
 
 			// Remove the patch from the patch table
-			Log::info(wxString::Format("Removed patch %s", p.name));
+			log::info(wxString::Format("Removed patch %s", p.name));
 			removed++;
 			ptable.removePatch(a--);
 		}
@@ -135,7 +137,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 	// Remove unused patch entries
 	for (auto& a : to_remove)
 	{
-		Log::info(wxString::Format("Removed entry %s", a->name()));
+		log::info(wxString::Format("Removed entry %s", a->name()));
 		archive->removeEntry(a);
 	}
 
@@ -163,7 +165,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive)
 // Checks [archive] for multiple entries of the same name, and displays a list
 // of duplicate entry names if any are found
 // -----------------------------------------------------------------------------
-bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive)
+bool archiveoperations::checkDuplicateEntryNames(Archive* archive)
 {
 	StrIntMap map_namecounts;
 	PathMap   map_entries;
@@ -248,11 +250,11 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive)
 // Compare the archive's entries with those sharing the same name and namespace
 // in the base resource archive, deleting duplicates
 // -----------------------------------------------------------------------------
-void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
+void archiveoperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 {
 	// Do nothing if there is no base resource archive,
 	// or if the archive *is* the base resource archive.
-	auto bra = App::archiveManager().baseResourceArchive();
+	auto bra = app::archiveManager().baseResourceArchive();
 	if (bra == nullptr || bra == archive || archive == nullptr)
 		return;
 
@@ -316,7 +318,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 // Checks [archive] for multiple entries with the same data, and displays a list
 // of the duplicate entries' names if any are found
 // -----------------------------------------------------------------------------
-bool ArchiveOperations::checkDuplicateEntryContent(Archive* archive)
+bool archiveoperations::checkDuplicateEntryContent(Archive* archive)
 {
 	CRCMap map_entries;
 
@@ -404,7 +406,7 @@ struct texused_t
 	texused_t() { used = false; }
 };
 WX_DECLARE_STRING_HASH_MAP(texused_t, TexUsedMap);
-void ArchiveOperations::removeUnusedTextures(Archive* archive)
+void archiveoperations::removeUnusedTextures(Archive* archive)
 {
 	// Check archive was given
 	if (!archive)
@@ -545,7 +547,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 		unused_tex);
 
 	// Get base resource textures (if any)
-	auto                  base_resource = App::archiveManager().baseResourceArchive();
+	auto                  base_resource = app::archiveManager().baseResourceArchive();
 	vector<ArchiveEntry*> base_tx_entries;
 	if (base_resource)
 		base_tx_entries = base_resource->findAll(opt);
@@ -591,7 +593,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 		{
 			if (texture.CmpNoCase(unused_tex[a]) == 0)
 			{
-				Log::info(3, "Texture " + texture + " is in base resource");
+				log::info(3, "Texture " + texture + " is in base resource");
 				br_tex = true;
 				break;
 			}
@@ -618,7 +620,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 			for (int i : selection)
 			{
 				// Get texture index
-				int index = txlist.textureIndex(WxUtils::strToView(unused_tex[i]));
+				int index = txlist.textureIndex(wxutil::strToView(unused_tex[i]));
 
 				// Delete it from the list (if found)
 				if (index >= 0)
@@ -636,7 +638,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 	wxMessageBox(wxString::Format("Removed %d unused textures", n_removed));
 }
 
-void ArchiveOperations::removeUnusedFlats(Archive* archive)
+void archiveoperations::removeUnusedFlats(Archive* archive)
 {
 	// Check archive was given
 	if (!archive)
@@ -742,7 +744,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 			if (flatname == flat_anim_start[b])
 			{
 				anim = true;
-				Log::info(wxString::Format("%s anim start", flatname));
+				log::info(wxString::Format("%s anim start", flatname));
 				break;
 			}
 		}
@@ -755,7 +757,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 			{
 				anim    = false;
 				thisend = true;
-				Log::info(wxString::Format("%s anim end", flatname));
+				log::info(wxString::Format("%s anim end", flatname));
 				break;
 			}
 		}
@@ -799,18 +801,24 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 
 CONSOLE_COMMAND(test_cleantex, 0, false)
 {
-	auto current = MainEditor::currentArchive();
+	auto current = maineditor::currentArchive();
 	if (current)
-		ArchiveOperations::removeUnusedTextures(current);
+		archiveoperations::removeUnusedTextures(current);
 }
 
 CONSOLE_COMMAND(test_cleanflats, 0, false)
 {
-	auto current = MainEditor::currentArchive();
+	auto current = maineditor::currentArchive();
 	if (current)
-		ArchiveOperations::removeUnusedFlats(current);
+		archiveoperations::removeUnusedFlats(current);
 }
 
+void importEntryDataKeepType(ArchiveEntry* entry, const void* data, unsigned size)
+{
+	auto type = entry->type();
+	entry->importMem(data, size);
+	entry->setType(type, type->reliability());
+}
 size_t replaceThingsDoom(ArchiveEntry* entry, int oldtype, int newtype)
 {
 	if (entry == nullptr)
@@ -834,7 +842,7 @@ size_t replaceThingsDoom(ArchiveEntry* entry, int oldtype, int newtype)
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(things, size);
+		importEntryDataKeepType(entry, things, size);
 	delete[] things;
 
 	return changed;
@@ -862,7 +870,7 @@ size_t replaceThingsDoom64(ArchiveEntry* entry, int oldtype, int newtype)
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(things, size);
+		importEntryDataKeepType(entry, things, size);
 	delete[] things;
 
 	return changed;
@@ -890,7 +898,7 @@ size_t replaceThingsHexen(ArchiveEntry* entry, int oldtype, int newtype)
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(things, size);
+		importEntryDataKeepType(entry, things, size);
 	delete[] things;
 
 	return changed;
@@ -909,7 +917,7 @@ size_t replaceThingsUDMF(ArchiveEntry* entry, int oldtype, int newtype)
 	}
 	return changed;
 }
-size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newtype)
+size_t archiveoperations::replaceThings(Archive* archive, int oldtype, int newtype)
 {
 	size_t changed = 0;
 	// Check archive was given
@@ -934,7 +942,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 			auto temp_archive = std::make_shared<WadArchive>();
 			if (temp_archive->open(m_head->data()))
 			{
-				achanged = ArchiveOperations::replaceThings(temp_archive.get(), oldtype, newtype);
+				achanged = archiveoperations::replaceThings(temp_archive.get(), oldtype, newtype);
 				MemChunk mc;
 				if (!(temp_archive->write(mc, true)))
 				{
@@ -987,31 +995,31 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 				case MapFormat::Hexen: achanged = replaceThingsHexen(things, oldtype, newtype); break;
 				case MapFormat::Doom64: achanged = replaceThingsDoom64(things, oldtype, newtype); break;
 				case MapFormat::UDMF: achanged = replaceThingsUDMF(things, oldtype, newtype); break;
-				default: Log::warning("Unknown map format for " + m_head->name()); break;
+				default: log::warning("Unknown map format for " + m_head->name()); break;
 				}
 			}
 		}
 		report += wxString::Format("%s:\t%i things changed\n", m_head->name(), achanged);
 		changed += achanged;
 	}
-	Log::info(1, report);
+	log::info(1, report);
 	return changed;
 }
 
 CONSOLE_COMMAND(replacethings, 2, true)
 {
-	auto current = MainEditor::currentArchive();
+	auto current = maineditor::currentArchive();
 	int  oldtype, newtype;
 
-	if (current && StrUtil::toInt(args[0], oldtype) && StrUtil::toInt(args[1], newtype))
+	if (current && strutil::toInt(args[0], oldtype) && strutil::toInt(args[1], newtype))
 	{
-		ArchiveOperations::replaceThings(current, oldtype, newtype);
+		archiveoperations::replaceThings(current, oldtype, newtype);
 	}
 }
 
 CONSOLE_COMMAND(convertmapchex1to3, 0, false)
 {
-	Archive* current    = MainEditor::currentArchive();
+	Archive* current    = maineditor::currentArchive();
 	long     rep[23][2] = {
         //  #	Chex 1 actor			==>	Chex 3 actor			(unwanted replacement)
         { 25, 78 },   //  0	ChexTallFlower2			==> PropFlower1				(PropGlobeStand)
@@ -1044,13 +1052,13 @@ CONSOLE_COMMAND(convertmapchex1to3, 0, false)
 	};
 	for (auto& i : rep)
 	{
-		ArchiveOperations::replaceThings(current, i[0], i[1]);
+		archiveoperations::replaceThings(current, i[0], i[1]);
 	}
 }
 
 CONSOLE_COMMAND(convertmapchex2to3, 0, false)
 {
-	auto current    = MainEditor::currentArchive();
+	auto current    = maineditor::currentArchive();
 	long rep[20][2] = {
 		{ 3001, 9057 }, //  0	Quadrumpus
 		{ 3002, 9050 }, //  1	Larva
@@ -1074,7 +1082,7 @@ CONSOLE_COMMAND(convertmapchex2to3, 0, false)
 	};
 	for (int i = 0; i < 19; ++i)
 	{
-		ArchiveOperations::replaceThings(current, rep[i][0], rep[i][1]);
+		archiveoperations::replaceThings(current, rep[i][0], rep[i][1]);
 	}
 }
 
@@ -1106,7 +1114,7 @@ size_t replaceSpecialsDoom(ArchiveEntry* entry, int oldtype, int newtype, bool t
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(lines, size);
+		importEntryDataKeepType(entry, lines, size);
 	delete[] lines;
 
 	return changed;
@@ -1178,7 +1186,7 @@ size_t replaceSpecialsHexen(
 		// Import the changes if needed
 		if (lchanged > 0)
 		{
-			l_entry->importMem(lines, size);
+			importEntryDataKeepType(l_entry, lines, size);
 			changed += lchanged;
 		}
 		delete[] lines;
@@ -1220,7 +1228,7 @@ size_t replaceSpecialsHexen(
 		// Import the changes if needed
 		if (tchanged > 0)
 		{
-			t_entry->importMem(things, size);
+			importEntryDataKeepType(t_entry, things, size);
 			changed += tchanged;
 		}
 		delete[] things;
@@ -1260,7 +1268,7 @@ size_t replaceSpecialsUDMF(
 	}
 	return changed;
 }
-size_t ArchiveOperations::replaceSpecials(
+size_t archiveoperations::replaceSpecials(
 	Archive* archive,
 	int      oldtype,
 	int      newtype,
@@ -1305,7 +1313,7 @@ size_t ArchiveOperations::replaceSpecials(
 			Archive* temp_archive = new WadArchive();
 			if (temp_archive->open(m_head.get()))
 			{
-				achanged = ArchiveOperations::replaceSpecials(
+				achanged = archiveoperations::replaceSpecials(
 					temp_archive,
 					oldtype,
 					newtype,
@@ -1440,20 +1448,20 @@ size_t ArchiveOperations::replaceSpecials(
 						newarg3,
 						newarg4);
 					break;
-				default: Log::warning("Unknown map format for " + m_head->name()); break;
+				default: log::warning("Unknown map format for " + m_head->name()); break;
 				}
 			}
 		}
 		report += wxString::Format("%s:\t%i specials changed\n", m_head->name(), achanged);
 		changed += achanged;
 	}
-	Log::info(1, report);
+	log::info(1, report);
 	return changed;
 }
 
 CONSOLE_COMMAND(replacespecials, 2, true)
 {
-	Archive* current = MainEditor::currentArchive();
+	Archive* current = maineditor::currentArchive();
 	int      oldtype, newtype;
 	bool     arg0 = false, arg1 = false, arg2 = false, arg3 = false, arg4 = false;
 	int      oldarg0, oldarg1, oldarg2, oldarg3, oldarg4;
@@ -1467,19 +1475,19 @@ CONSOLE_COMMAND(replacespecials, 2, true)
 	{
 		switch (fullarg)
 		{
-		case 12: arg4 = StrUtil::toInt(args[oldtail--], oldarg4) && StrUtil::toInt(args[newtail--], newarg4);
-		case 10: arg3 = StrUtil::toInt(args[oldtail--], oldarg3) && StrUtil::toInt(args[newtail--], newarg3);
-		case 8: arg2 = StrUtil::toInt(args[oldtail--], oldarg2) && StrUtil::toInt(args[newtail--], newarg2);
-		case 6: arg1 = StrUtil::toInt(args[oldtail--], oldarg1) && StrUtil::toInt(args[newtail--], newarg1);
-		case 4: arg0 = StrUtil::toInt(args[oldtail--], oldarg0) && StrUtil::toInt(args[newtail--], newarg0);
-		case 2: run = StrUtil::toInt(args[oldtail--], oldtype) && StrUtil::toInt(args[newtail--], newtype); break;
-		default: Log::warning(wxString::Format("Invalid number of arguments: %d", fullarg));
+		case 12: arg4 = strutil::toInt(args[oldtail--], oldarg4) && strutil::toInt(args[newtail--], newarg4);
+		case 10: arg3 = strutil::toInt(args[oldtail--], oldarg3) && strutil::toInt(args[newtail--], newarg3);
+		case 8: arg2 = strutil::toInt(args[oldtail--], oldarg2) && strutil::toInt(args[newtail--], newarg2);
+		case 6: arg1 = strutil::toInt(args[oldtail--], oldarg1) && strutil::toInt(args[newtail--], newarg1);
+		case 4: arg0 = strutil::toInt(args[oldtail--], oldarg0) && strutil::toInt(args[newtail--], newarg0);
+		case 2: run = strutil::toInt(args[oldtail--], oldtype) && strutil::toInt(args[newtail--], newtype); break;
+		default: log::warning(wxString::Format("Invalid number of arguments: %d", fullarg));
 		}
 	}
 
 	if (current && run)
 	{
-		ArchiveOperations::replaceSpecials(
+		archiveoperations::replaceSpecials(
 			current,
 			oldtype,
 			newtype,
@@ -1565,7 +1573,7 @@ size_t replaceFlatsDoomHexen(
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(sectors, size);
+		importEntryDataKeepType(entry, sectors, size);
 	delete[] sectors;
 
 	return changed;
@@ -1606,7 +1614,7 @@ size_t replaceWallsDoomHexen(
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(sides, size);
+		importEntryDataKeepType(entry, sides, size);
 	delete[] sides;
 
 	return changed;
@@ -1621,8 +1629,8 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, const wxString& oldtex, const wxS
 	bool   fchanged, cchanged;
 	size_t changed = 0;
 
-	uint16_t oldhash = App::resources().getTextureHash(oldtex.ToStdString());
-	uint16_t newhash = App::resources().getTextureHash(newtex.ToStdString());
+	uint16_t oldhash = app::resources().getTextureHash(oldtex.ToStdString());
+	uint16_t newhash = app::resources().getTextureHash(newtex.ToStdString());
 
 	auto sectors = new Doom64MapFormat::Sector[numsectors];
 	memcpy(sectors, entry->rawData(), size);
@@ -1646,7 +1654,7 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, const wxString& oldtex, const wxS
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(sectors, size);
+		importEntryDataKeepType(entry, sectors, size);
 	delete[] sectors;
 
 	return changed;
@@ -1667,8 +1675,8 @@ size_t replaceWallsDoom64(
 	bool   lchanged, mchanged, uchanged;
 	size_t changed = 0;
 
-	uint16_t oldhash = App::resources().getTextureHash(oldtex.ToStdString());
-	uint16_t newhash = App::resources().getTextureHash(newtex.ToStdString());
+	uint16_t oldhash = app::resources().getTextureHash(oldtex.ToStdString());
+	uint16_t newhash = app::resources().getTextureHash(newtex.ToStdString());
 
 	auto sides = new Doom64MapFormat::SideDef[numsides];
 	memcpy(sides, entry->rawData(), size);
@@ -1697,7 +1705,7 @@ size_t replaceWallsDoom64(
 	}
 	// Import the changes if needed
 	if (changed > 0)
-		entry->importMem(sides, size);
+		importEntryDataKeepType(entry, sides, size);
 	delete[] sides;
 
 	return changed;
@@ -1724,7 +1732,7 @@ size_t replaceTexturesUDMF(
 	}
 	return changed;
 }
-size_t ArchiveOperations::replaceTextures(
+size_t archiveoperations::replaceTextures(
 	Archive*        archive,
 	const wxString& oldtex,
 	const wxString& newtex,
@@ -1757,7 +1765,7 @@ size_t ArchiveOperations::replaceTextures(
 			Archive* temp_archive = new WadArchive();
 			if (temp_archive->open(m_head.get()))
 			{
-				achanged = ArchiveOperations::replaceTextures(
+				achanged = archiveoperations::replaceTextures(
 					temp_archive, oldtex, newtex, floor, ceiling, lower, middle, upper);
 				MemChunk mc;
 				if (!(temp_archive->write(mc, true)))
@@ -1836,23 +1844,23 @@ size_t ArchiveOperations::replaceTextures(
 				case MapFormat::UDMF:
 					achanged = replaceTexturesUDMF(sectors, oldtex, newtex, floor, ceiling, lower, middle, upper);
 					break;
-				default: Log::warning("Unknown map format for " + m_head->name()); break;
+				default: log::warning("Unknown map format for " + m_head->name()); break;
 				}
 			}
 		}
 		report += wxString::Format("%s:\t%i elements changed\n", m_head->name(), achanged);
 		changed += achanged;
 	}
-	Log::info(1, report);
+	log::info(1, report);
 	return changed;
 }
 
 CONSOLE_COMMAND(replacetextures, 2, true)
 {
-	auto current = MainEditor::currentArchive();
+	auto current = maineditor::currentArchive();
 
 	if (current)
 	{
-		ArchiveOperations::replaceTextures(current, args[0], args[1], true, true, true, true, true);
+		archiveoperations::replaceTextures(current, args[0], args[1], true, true, true, true, true);
 	}
 }

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,6 +36,8 @@
 #include "Main.h"
 #include "ListView.h"
 #include "General/ColourConfiguration.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -184,11 +186,11 @@ bool ListView::setItemStatus(int item, ItemStatus status)
 	switch (status)
 	{
 	case ItemStatus::Normal: SetItemTextColour(item, wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
-	case ItemStatus::Modified: SetItemTextColour(item, WXCOL(ColourConfiguration::colour("modified"))); break;
-	case ItemStatus::New: SetItemTextColour(item, WXCOL(ColourConfiguration::colour("new"))); break;
-	case ItemStatus::Locked: SetItemTextColour(item, WXCOL(ColourConfiguration::colour("locked"))); break;
-	case ItemStatus::Error: SetItemTextColour(item, WXCOL(ColourConfiguration::colour("error")));
-	case ItemStatus::Disabled: SetItemTextColour(item, WXCOL(disabledColour()));
+	case ItemStatus::Modified: SetItemTextColour(item, colourconfig::colour("modified").toWx()); break;
+	case ItemStatus::New: SetItemTextColour(item, colourconfig::colour("new").toWx()); break;
+	case ItemStatus::Locked: SetItemTextColour(item, colourconfig::colour("locked").toWx()); break;
+	case ItemStatus::Error: SetItemTextColour(item, colourconfig::colour("error").toWx());
+	case ItemStatus::Disabled: SetItemTextColour(item, disabledColour().toWx());
 	}
 
 	return true;

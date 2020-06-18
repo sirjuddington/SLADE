@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "DockPanel.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------

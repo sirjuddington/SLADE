@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,11 +32,14 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Archive/Archive.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/All.h"
 #include "General/Misc.h"
 #include "Utility/StringUtils.h"
 #include "thirdparty/sol/sol.hpp"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -44,7 +47,7 @@
 // Lua Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace Lua
+namespace slade::lua
 {
 // -----------------------------------------------------------------------------
 // Returns the name of entry [self] with requested formatting:
@@ -75,13 +78,25 @@ vector<shared_ptr<ArchiveEntry>> archiveAllEntries(Archive& self)
 }
 
 // -----------------------------------------------------------------------------
-// Creates a new entry in archive [self] at [full_path],[position-1].
+// Creates a new directory in archive [self] at [path].
+// Returns the created directory or nullptr if the archive doesn't support them
+// -----------------------------------------------------------------------------
+shared_ptr<ArchiveDir> archiveCreateDir(Archive& self, string_view path)
+{
+	if (self.formatDesc().supports_dirs)
+		return self.createDir(path);
+	else
+		return {};
+}
+
+// -----------------------------------------------------------------------------
+// Creates a new entry in archive [self] at [full_path],[position].
 // Returns the created entry
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> archiveCreateEntry(Archive& self, string_view full_path, int position)
 {
-	auto dir = self.dirAtPath(StrUtil::beforeLast(full_path, '/'));
-	return self.addNewEntry(StrUtil::afterLast(full_path, '/'), position - 1, dir)->getShared();
+	auto dir = self.dirAtPath(strutil::beforeLast(full_path, '/'));
+	return self.addNewEntry(strutil::afterLast(full_path, '/'), position, dir)->getShared();
 }
 
 // -----------------------------------------------------------------------------
@@ -92,17 +107,6 @@ shared_ptr<ArchiveEntry> archiveCreateEntryInNamespace(Archive& self, string_vie
 {
 	return self.addNewEntry(name, ns)->getShared();
 }
-
-//// -----------------------------------------------------------------------------
-//// Returns a list of all subdirs in the archive dir [self]
-//// -----------------------------------------------------------------------------
-// vector<ArchiveDir*> archiveDirSubDirs(const ArchiveDir& self)
-//{
-//	vector<ArchiveDir*> dirs;
-//	for (auto& child : self.subdirs())
-//		dirs.push_back(child.get());
-//	return dirs;
-//}
 
 // -----------------------------------------------------------------------------
 // Wrapper for Archive::findFirst that returns a shared pointer
@@ -196,11 +200,12 @@ void registerArchive(sol::state& lua)
 	lua_archive["DirAtPath"]              = [](Archive& self, const string& path) { return self.dirAtPath(path); };
 	lua_archive["CreateEntry"]            = &archiveCreateEntry;
 	lua_archive["CreateEntryInNamespace"] = &archiveCreateEntryInNamespace;
+	lua_archive["CreateDir"]              = &archiveCreateDir;
 	lua_archive["RemoveEntry"]            = &Archive::removeEntry;
 	lua_archive["RenameEntry"]            = &Archive::renameEntry;
 	lua_archive["Save"]                   = sol::overload(
-        [](Archive& self) { return std::make_tuple(self.save(), Global::error); },
-        [](Archive& self, const string& filename) { return std::make_tuple(self.save(filename), Global::error); });
+        [](Archive& self) { return std::make_tuple(self.save(), global::error); },
+        [](Archive& self, const string& filename) { return std::make_tuple(self.save(filename), global::error); });
 	lua_archive["FindFirst"] = &archiveFindFirst;
 	lua_archive["FindLast"]  = &archiveFindLast;
 	lua_archive["FindAll"]   = &archiveFindAll;
@@ -239,7 +244,7 @@ void registerArchive(sol::state& lua)
 // -----------------------------------------------------------------------------
 std::tuple<bool, string> entryImportString(ArchiveEntry& self, const string& string)
 {
-	return std::make_tuple(self.importMem(string.data(), string.size()), Global::error);
+	return std::make_tuple(self.importMem(string.data(), string.size()), global::error);
 }
 
 // -----------------------------------------------------------------------------
@@ -247,7 +252,7 @@ std::tuple<bool, string> entryImportString(ArchiveEntry& self, const string& str
 // -----------------------------------------------------------------------------
 std::tuple<bool, string> entryImportMC(ArchiveEntry& self, MemChunk& mc)
 {
-	return std::make_tuple(self.importMemChunk(mc), Global::error);
+	return std::make_tuple(self.importMemChunk(mc), global::error);
 }
 
 // -----------------------------------------------------------------------------
@@ -260,6 +265,25 @@ bool entryRename(ArchiveEntry& self, string_view new_name)
 		return self.parent()->renameEntry(&self, new_name);
 	else
 		return self.rename(new_name);
+}
+
+// -----------------------------------------------------------------------------
+// Returns entry [self]'s parent archive as a shared pointer if possible
+// -----------------------------------------------------------------------------
+shared_ptr<Archive> entryParent(ArchiveEntry& self)
+{
+	return app::archiveManager().shareArchive(self.parent());
+}
+
+// -----------------------------------------------------------------------------
+// Returns entry [self]'s parent directory as a shared pointer if possible
+// -----------------------------------------------------------------------------
+shared_ptr<ArchiveDir> entryDir(ArchiveEntry& self)
+{
+	if (self.parentDir())
+		return ArchiveDir::getShared(self.parentDir());
+
+	return nullptr;
 }
 
 // -----------------------------------------------------------------------------
@@ -276,9 +300,11 @@ void registerArchiveEntry(sol::state& lua)
 	lua_entry["path"]  = sol::property([](ArchiveEntry& self) { return self.path(); });
 	lua_entry["type"]  = sol::property(&ArchiveEntry::type);
 	lua_entry["size"]  = sol::property(&ArchiveEntry::size);
-	lua_entry["index"] = sol::property([](ArchiveEntry& self) { return self.index() + 1; });
-	lua_entry["crc32"] = sol::property([](ArchiveEntry& self) { return Misc::crc(self.rawData(), self.size()); });
+	lua_entry["index"] = sol::property(&ArchiveEntry::index);
+	lua_entry["crc32"] = sol::property([](ArchiveEntry& self) { return misc::crc(self.rawData(), self.size()); });
 	lua_entry["data"]  = sol::property([](ArchiveEntry& self) { return &self.data(); });
+	lua_entry["parentArchive"] = sol::property(&entryParent);
+	lua_entry["parentDir"]     = sol::property(&entryDir);
 
 	// Functions
 	// -------------------------------------------------------------------------
@@ -291,14 +317,14 @@ void registerArchiveEntry(sol::state& lua)
 		&formattedEntryName);
 	lua_entry["FormattedSize"] = &ArchiveEntry::sizeString;
 	lua_entry["ImportFile"]    = [](ArchiveEntry& self, string_view filename) {
-        return std::make_tuple(self.importFile(filename), Global::error);
+        return std::make_tuple(self.importFile(filename), global::error);
 	};
 	lua_entry["ImportEntry"] = [](ArchiveEntry& self, ArchiveEntry* entry) {
-		return std::make_tuple(self.importEntry(entry), Global::error);
+		return std::make_tuple(self.importEntry(entry), global::error);
 	};
 	lua_entry["ImportData"] = sol::overload(&entryImportString, &entryImportMC);
 	lua_entry["ExportFile"] = [](ArchiveEntry& self, string_view filename) {
-		return std::make_tuple(self.exportFile(filename), Global::error);
+		return std::make_tuple(self.exportFile(filename), global::error);
 	};
 	lua_entry["Rename"] = &entryRename;
 }
@@ -347,27 +373,27 @@ void registerArchivesNamespace(sol::state& lua)
 	auto archives = lua.create_table("Archives");
 
 	archives["All"] = sol::overload(
-		[](bool res) { return App::archiveManager().allArchives(res); },
-		[]() { return App::archiveManager().allArchives(false); });
+		[](bool res) { return app::archiveManager().allArchives(res); },
+		[]() { return app::archiveManager().allArchives(false); });
 	archives["Create"] = [](string_view format) {
-		return std::make_tuple(App::archiveManager().newArchive(format), Global::error);
+		return std::make_tuple(app::archiveManager().newArchive(format), global::error);
 	};
 	archives["OpenFile"] = [](string_view filename) {
-		return std::make_tuple(App::archiveManager().openArchive(filename), Global::error);
+		return std::make_tuple(app::archiveManager().openArchive(filename), global::error);
 	};
 	archives["Close"] = sol::overload(
-		[](Archive* archive) { return App::archiveManager().closeArchive(archive); },
-		[](int index) { return App::archiveManager().closeArchive(index); });
-	archives["CloseAll"]             = []() { App::archiveManager().closeAll(); };
-	archives["FileExtensionsString"] = []() { return App::archiveManager().getArchiveExtensionsString(); };
-	archives["BaseResource"]         = []() { return App::archiveManager().baseResourceArchive(); };
-	archives["BaseResourcePaths"]    = []() { return App::archiveManager().baseResourcePaths(); };
-	archives["OpenBaseResource"]     = [](int index) { return App::archiveManager().openBaseResource(index - 1); };
-	archives["ProgramResource"]      = []() { return App::archiveManager().programResourceArchive(); };
-	archives["RecentFiles"]          = []() { return App::archiveManager().recentFiles(); };
-	archives["Bookmarks"]            = []() { return App::archiveManager().bookmarks(); };
-	archives["AddBookmark"]    = [](ArchiveEntry* entry) { App::archiveManager().addBookmark(entry->getShared()); };
-	archives["RemoveBookmark"] = [](ArchiveEntry* entry) { App::archiveManager().deleteBookmark(entry); };
+		[](Archive* archive) { return app::archiveManager().closeArchive(archive); },
+		[](int index) { return app::archiveManager().closeArchive(index); });
+	archives["CloseAll"]             = []() { app::archiveManager().closeAll(); };
+	archives["FileExtensionsString"] = []() { return app::archiveManager().getArchiveExtensionsString(); };
+	archives["BaseResource"]         = []() { return app::archiveManager().baseResourceArchive(); };
+	archives["BaseResourcePaths"]    = []() { return app::archiveManager().baseResourcePaths(); };
+	archives["OpenBaseResource"]     = [](int index) { return app::archiveManager().openBaseResource(index); };
+	archives["ProgramResource"]      = []() { return app::archiveManager().programResourceArchive(); };
+	archives["RecentFiles"]          = []() { return app::archiveManager().recentFiles(); };
+	archives["Bookmarks"]            = []() { return app::archiveManager().bookmarks(); };
+	archives["AddBookmark"]    = [](ArchiveEntry* entry) { app::archiveManager().addBookmark(entry->getShared()); };
+	archives["RemoveBookmark"] = [](ArchiveEntry* entry) { app::archiveManager().deleteBookmark(entry); };
 	archives["EntryType"]      = &EntryType::fromId;
 }
 
@@ -384,4 +410,4 @@ void registerArchiveTypes(sol::state& lua)
 	registerArchiveTreeNode(lua);
 }
 
-} // namespace Lua
+} // namespace slade::lua

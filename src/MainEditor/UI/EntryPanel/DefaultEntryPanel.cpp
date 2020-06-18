@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,12 +34,15 @@
 #include "Main.h"
 #include "DefaultEntryPanel.h"
 #include "Archive/ArchiveManager.h"
-#include "Dialogs/ModifyOffsetsDialog.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
 #include "General/UI.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/ArchivePanel.h"
+#include "UI/Dialogs/ModifyOffsetsDialog.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -58,33 +61,33 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 
 	// Add index label
 	label_index_ = new wxStaticText(this, -1, "Index");
-	sizer_main_->Add(label_index_, 0, wxALL | wxALIGN_CENTER, UI::pad());
+	sizer_main_->Add(label_index_, 0, wxALL | wxALIGN_CENTER, ui::pad());
 
 	// Add type label
 	label_type_ = new wxStaticText(this, -1, "Type");
-	sizer_main_->Add(label_type_, 0, wxALL | wxALIGN_CENTER, UI::pad());
+	sizer_main_->Add(label_type_, 0, wxALL | wxALIGN_CENTER, ui::pad());
 
 	// Add size label
 	label_size_ = new wxStaticText(this, -1, "Size");
-	sizer_main_->Add(label_size_, 0, wxALL | wxALIGN_CENTER, UI::pad());
+	sizer_main_->Add(label_size_, 0, wxALL | wxALIGN_CENTER, ui::pad());
 
 	// Add actions frame
 	frame_actions_  = new wxStaticBox(this, -1, "Actions");
 	auto framesizer = new wxStaticBoxSizer(frame_actions_, wxVERTICAL);
-	sizer_main_->Add(framesizer, 0, wxALL | wxALIGN_CENTER, UI::pad());
+	sizer_main_->Add(framesizer, 0, wxALL | wxALIGN_CENTER, ui::pad());
 
 	// Add 'Convert Gfx' button
 	btn_gfx_convert_ = new wxButton(this, -1, "Convert Gfx To...");
 	framesizer->AddSpacer(4);
-	framesizer->Add(btn_gfx_convert_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	framesizer->Add(btn_gfx_convert_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Add 'Modify Gfx Offsets' button
 	btn_gfx_modify_offsets_ = new wxButton(this, -1, "Modify Gfx Offsets");
-	framesizer->Add(btn_gfx_modify_offsets_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	framesizer->Add(btn_gfx_modify_offsets_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Add 'Edit Textures' button
 	btn_texture_edit_ = new wxButton(this, -1, "Edit Textures");
-	framesizer->Add(btn_texture_edit_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	framesizer->Add(btn_texture_edit_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	sizer_main_->AddStretchSpacer(1);
 
@@ -93,7 +96,7 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 	btn_gfx_modify_offsets_->Bind(wxEVT_BUTTON, &DefaultEntryPanel::onBtnGfxModifyOffsets, this);
 	btn_texture_edit_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) {
 		if (auto entry = entry_.lock())
-			MainEditor::openTextureEditor(entry->parent(), entry.get());
+			maineditor::openTextureEditor(entry->parent(), entry.get());
 	});
 
 	// Hide save/revert toolbar
@@ -127,7 +130,7 @@ bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 	frame_actions_->Show(false);
 
 	// Check for gfx entry
-	if (entry->type()->extraProps().propertyExists("image"))
+	if (entry->type()->extraProps().contains("image"))
 	{
 		frame_actions_->Show(true);
 		btn_gfx_convert_->Show(true);
@@ -153,11 +156,11 @@ bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 {
 	// Update labels
-	label_type_->SetLabel(wxString::Format("%lu selected entries", entries.size()));
+	label_type_->SetLabel(wxString::Format("%llu selected entries", entries.size()));
 	unsigned size = 0;
 	for (auto& entry : entries)
 		size += entry->size();
-	label_size_->SetLabel(wxString::Format("Total Size: %s", Misc::sizeAsString(size)));
+	label_size_->SetLabel(wxString::Format("Total Size: %s", misc::sizeAsString(size)));
 
 	// Setup actions frame
 	btn_gfx_convert_->Show(false);
@@ -179,7 +182,7 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 			max = index;
 
 		// Check for gfx entry
-		if (entry->type()->extraProps().propertyExists("image"))
+		if (entry->type()->extraProps().contains("image"))
 			gfx = true;
 
 		// Check for TEXTUREx related entry
@@ -233,8 +236,17 @@ void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e)
 	if (mod.ShowModal() == wxID_CANCEL)
 		return;
 
-	// Apply offsets to selected entries
+	// Begin recording undo level
+	undo_manager_->beginRecord("Gfx Modify Offsets");
+
+	// Go through selected entries
 	for (auto& entry : entries_)
-		EntryOperations::modifyGfxOffsets(entry, &mod);
-	MainEditor::currentEntryPanel()->callRefresh();
+	{
+		undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
+		mod.apply(*entry);
+	}
+	maineditor::currentEntryPanel()->callRefresh();
+
+	// Finish recording undo level
+	undo_manager_->endRecord(true);
 }

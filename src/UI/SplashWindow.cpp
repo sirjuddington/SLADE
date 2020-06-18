@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,6 +36,8 @@
 #include "Archive/ArchiveManager.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -118,22 +120,22 @@ void SplashWindow::init()
 		return;
 
 	// Load logo image
-	auto tempfile = App::path("temp.png", App::Dir::Temp);
-	auto logo     = App::archiveManager().programResourceArchive()->entry("logo.png");
+	auto tempfile = app::path("temp.png", app::Dir::Temp);
+	auto logo     = app::archiveManager().programResourceArchive()->entry("logo.png");
 	if (logo)
 	{
 		logo->exportFile(tempfile);
 
 		wxImage img;
 		img.LoadFile(tempfile, wxBITMAP_TYPE_PNG);
-		if (UI::scaleFactor() != 1.)
-			img = img.Scale(UI::scalePx(img.GetWidth()), UI::scalePx(img.GetHeight()), wxIMAGE_QUALITY_BICUBIC);
+		if (ui::scaleFactor() != 1.)
+			img = img.Scale(ui::scalePx(img.GetWidth()), ui::scalePx(img.GetHeight()), wxIMAGE_QUALITY_BICUBIC);
 
 		bm_logo = wxBitmap(img);
 	}
 
-	img_width  = UI::scalePx(300);
-	img_height = UI::scalePx(204);
+	img_width  = ui::scalePx(300);
+	img_height = ui::scalePx(204);
 
 	// Clean up
 	wxRemoveFile(tempfile);
@@ -152,14 +154,14 @@ void SplashWindow::show(const wxString& message, bool progress, wxWindow* parent
 	{
 		show_progress_ = true;
 		setProgress(0.0f);
-		rheight += UI::scalePx(10);
+		rheight += ui::scalePx(10);
 	}
 	else
 		show_progress_ = false;
 
 	// Set parent
-	if (!parent && App::isInitialised())
-		SetParent(MainEditor::windowWx());
+	if (!parent && app::isInitialised())
+		SetParent(maineditor::windowWx());
 	else
 		SetParent(parent);
 
@@ -167,7 +169,7 @@ void SplashWindow::show(const wxString& message, bool progress, wxWindow* parent
 #ifndef __WXGTK__
 	SetInitialSize({ img_width, rheight });
 #else
-	SetInitialSize({ img_width + UI::scalePx(6), rheight + UI::scalePx(6) });
+	SetInitialSize({ img_width + ui::scalePx(6), rheight + ui::scalePx(6) });
 #endif
 	setMessage(message);
 	Show();
@@ -224,10 +226,10 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	dc.SetFont(font);
 
 	// Draw version
-	wxString vers      = "v" + App::version().toString();
+	wxString vers      = "v" + app::version().toString();
 	auto     text_size = dc.GetTextExtent(vers);
-	auto     x         = img_width - text_size.GetWidth() - UI::scalePx(8);
-	auto     y         = UI::scalePx(190) - text_size.GetHeight();
+	auto     x         = img_width - text_size.GetWidth() - ui::scalePx(8);
+	auto     y         = ui::scalePx(190) - text_size.GetHeight();
 	dc.DrawText(vers, x, y);
 
 	// Draw message
@@ -243,7 +245,7 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	if (show_progress_)
 	{
 		// Setup progress bar
-		wxRect rect_pbar(0, img_height - UI::scalePx(4), img_width, UI::scalePx(14));
+		wxRect rect_pbar(0, img_height - ui::scalePx(4), img_width, ui::scalePx(14));
 
 		// Draw background
 		dc.SetBrush(wxBrush(wxColour(40, 40, 56)));
@@ -285,7 +287,7 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 		dc.SetFont(font);
 		text_size = dc.GetTextExtent(message_progress_);
 		x         = (img_width * 0.5) - int((double)text_size.GetWidth() * 0.5);
-		y         = img_height - UI::scalePx(4);
+		y         = img_height - ui::scalePx(4);
 		dc.SetTextForeground(wxColour(200, 210, 255));
 		dc.DrawText(message_progress_, x, y);
 	}

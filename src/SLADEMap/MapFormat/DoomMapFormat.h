@@ -2,6 +2,8 @@
 
 #include "MapFormatHandler.h"
 
+namespace slade
+{
 class ThingList;
 class SectorList;
 class LineList;
@@ -62,8 +64,6 @@ public:
 	vector<unique_ptr<ArchiveEntry>> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
 		override;
 
-	string udmfNamespace() override { return ""; }
-
 protected:
 	virtual bool readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_data) const;
 	virtual bool readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map_data) const;
@@ -77,3 +77,4 @@ protected:
 	virtual unique_ptr<ArchiveEntry> writeSECTORS(const SectorList& sectors) const;
 	virtual unique_ptr<ArchiveEntry> writeTHINGS(const ThingList& things) const;
 };
+} // namespace slade

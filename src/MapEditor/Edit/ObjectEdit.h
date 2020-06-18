@@ -2,6 +2,8 @@
 
 #include "Utility/Structs.h"
 
+namespace slade
+{
 class MapEditContext;
 class MapVertex;
 class MapLine;
@@ -133,3 +135,4 @@ private:
 	State           state_    = State::None;
 	bool            rotating_ = false;
 };
+} // namespace slade

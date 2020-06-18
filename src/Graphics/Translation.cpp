@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -40,11 +40,14 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Translation.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "MainEditor/MainEditor.h"
 #include "Palette/Palette.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -102,7 +105,7 @@ void Translation::parse(string_view def)
 {
 	// Test for ZDoom built-in translation
 	string def_str{ def };
-	auto   test = StrUtil::lower(def);
+	auto   test = strutil::lower(def);
 	if (test == "inverse")
 	{
 		built_in_name_ = "Inverse";
@@ -133,18 +136,18 @@ void Translation::parse(string_view def)
 		built_in_name_ = "Ice";
 		return;
 	}
-	else if (StrUtil::startsWith(test, "desaturate,"))
+	else if (strutil::startsWith(test, "desaturate,"))
 	{
 		built_in_name_ = "Desaturate";
-		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(StrUtil::asInt(def.substr(11)), 31), 1);
+		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(strutil::asInt(def.substr(11)), 31), 1);
 		return;
 	}
 
 	// Get Hexen tables
-	else if (StrUtil::startsWith(test, "\"$@"))
+	else if (strutil::startsWith(test, "\"$@"))
 	{
 		def.remove_suffix(1); // remove the closing '\"'
-		auto trantbl = App::archiveManager().getResourceEntry(def.substr(3));
+		auto trantbl = app::archiveManager().getResourceEntry(def.substr(3));
 
 		if (trantbl && trantbl->size() == 256)
 		{
@@ -174,7 +177,7 @@ TransRange* Translation::parseRange(string_view range)
 	Tokenizer tz;
 	tz.setSpecialCharacters("[]:%,=#@$");
 	tz.openString(range);
-	Log::debug("Processing range {}", range);
+	log::debug("Processing range {}", range);
 
 	// Read original range
 	int o_start, o_end;
@@ -372,7 +375,7 @@ void Translation::read(const uint8_t* data)
 		}
 		val = data[i];
 	}
-	Log::info(3, "Translation table analyzed as " + asText());
+	log::info(3, "Translation table analyzed as " + asText());
 }
 
 // -----------------------------------------------------------------------------
@@ -390,7 +393,7 @@ string Translation::asText()
 
 		// If any translations were defined, remove last ", "
 		if (!ret.empty())
-			StrUtil::removeLastIP(ret, 2);
+			strutil::removeLastIP(ret, 2);
 	}
 	else
 	{
@@ -460,7 +463,7 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 {
 	ColRGBA colour(col);
 	if (pal == nullptr)
-		pal = MainEditor::currentPalette();
+		pal = maineditor::currentPalette();
 	uint8_t i = (col.index == -1) ? pal->nearestColour(col) : col.index;
 
 	// Handle ZDoom's predefined texture blending:
@@ -468,19 +471,19 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 	if (!built_in_name_.empty())
 	{
 		int type = SpecialBlend::Invalid;
-		if (StrUtil::equalCI(built_in_name_, "ice"))
+		if (strutil::equalCI(built_in_name_, "ice"))
 			type = SpecialBlend::Ice;
-		else if (StrUtil::equalCI(built_in_name_, "inverse"))
+		else if (strutil::equalCI(built_in_name_, "inverse"))
 			type = SpecialBlend::Inverse;
-		else if (StrUtil::equalCI(built_in_name_, "red"))
+		else if (strutil::equalCI(built_in_name_, "red"))
 			type = SpecialBlend::Red;
-		else if (StrUtil::equalCI(built_in_name_, "green"))
+		else if (strutil::equalCI(built_in_name_, "green"))
 			type = SpecialBlend::Green;
-		else if (StrUtil::equalCI(built_in_name_, "blue"))
+		else if (strutil::equalCI(built_in_name_, "blue"))
 			type = SpecialBlend::Blue;
-		else if (StrUtil::equalCI(built_in_name_, "gold"))
+		else if (strutil::equalCI(built_in_name_, "gold"))
 			type = SpecialBlend::Gold;
-		else if (StrUtil::equalCI(built_in_name_, "desaturate"))
+		else if (strutil::equalCI(built_in_name_, "desaturate"))
 			type = desat_amount_; // min 1, max 31 required
 
 		return specialBlend(col, type, pal);
@@ -606,23 +609,23 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 			auto        ts   = dynamic_cast<TransRangeSpecial*>(range.get());
 			const auto& spec = ts->special();
 			uint8_t     type = Invalid;
-			if (StrUtil::equalCI(spec, "ice"))
+			if (strutil::equalCI(spec, "ice"))
 				type = SpecialBlend::Ice;
-			else if (StrUtil::equalCI(spec, "inverse"))
+			else if (strutil::equalCI(spec, "inverse"))
 				type = SpecialBlend::Inverse;
-			else if (StrUtil::equalCI(spec, "red"))
+			else if (strutil::equalCI(spec, "red"))
 				type = SpecialBlend::Red;
-			else if (StrUtil::equalCI(spec, "green"))
+			else if (strutil::equalCI(spec, "green"))
 				type = SpecialBlend::Green;
-			else if (StrUtil::equalCI(spec, "blue"))
+			else if (strutil::equalCI(spec, "blue"))
 				type = SpecialBlend::Blue;
-			else if (StrUtil::equalCI(spec, "gold"))
+			else if (strutil::equalCI(spec, "gold"))
 				type = SpecialBlend::Gold;
-			else if (StrUtil::startsWithCI(spec, "desat"))
+			else if (strutil::startsWithCI(spec, "desat"))
 			{
 				// This relies on SpecialBlend::1 to ::31 being occupied with desat
 				int temp;
-				if (StrUtil::toInt(StrUtil::rightV(spec, 2), temp) && temp < 32 && temp > 0)
+				if (strutil::toInt(strutil::rightV(spec, 2), temp) && temp < 32 && temp > 0)
 					type = temp;
 			}
 			return specialBlend(col, type, pal);

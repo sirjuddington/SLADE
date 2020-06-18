@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class DockPanel : public wxPanel
 {
 public:
@@ -20,3 +22,4 @@ protected:
 	};
 	Orient current_layout_ = Orient::Uninitialised;
 };
+} // namespace slade

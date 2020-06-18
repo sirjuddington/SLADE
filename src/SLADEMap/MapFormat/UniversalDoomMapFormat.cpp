@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -42,6 +42,8 @@
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -65,8 +67,8 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 		return false;
 
 	// --- Parse UDMF text ---
-	UI::setSplashProgressMessage("Parsing TEXTMAP");
-	UI::setSplashProgress(-100.0f);
+	ui::setSplashProgressMessage("Parsing TEXTMAP");
+	ui::setSplashProgress(-100.0f);
 	Parser parser;
 	if (!parser.parseText(textmap->data()))
 		return false;
@@ -77,7 +79,7 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 	// be created in the correct order (verts->sides->lines->sectors->things),
 	// even if they aren't defined in that order.
 	// Unknown definitions are also kept, just in case
-	UI::setSplashProgressMessage("Sorting definitions");
+	ui::setSplashProgressMessage("Sorting definitions");
 	auto                   root = parser.parseTreeRoot();
 	vector<ParseTreeNode*> defs_vertices;
 	vector<ParseTreeNode*> defs_lines;
@@ -87,32 +89,32 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 	vector<ParseTreeNode*> defs_other;
 	for (unsigned a = 0; a < root->nChildren(); a++)
 	{
-		UI::setSplashProgress((float)a / root->nChildren());
+		ui::setSplashProgress((float)a / root->nChildren());
 
 		auto node = root->childPTN(a);
 
 		// Vertex definition
-		if (StrUtil::equalCI(node->name(), "vertex"))
+		if (strutil::equalCI(node->name(), "vertex"))
 			defs_vertices.push_back(node);
 
 		// Line definition
-		else if (StrUtil::equalCI(node->name(), "linedef"))
+		else if (strutil::equalCI(node->name(), "linedef"))
 			defs_lines.push_back(node);
 
 		// Side definition
-		else if (StrUtil::equalCI(node->name(), "sidedef"))
+		else if (strutil::equalCI(node->name(), "sidedef"))
 			defs_sides.push_back(node);
 
 		// Sector definition
-		else if (StrUtil::equalCI(node->name(), "sector"))
+		else if (strutil::equalCI(node->name(), "sector"))
 			defs_sectors.push_back(node);
 
 		// Thing definition
-		else if (StrUtil::equalCI(node->name(), "thing"))
+		else if (strutil::equalCI(node->name(), "thing"))
 			defs_things.push_back(node);
 
 		// Namespace
-		else if (StrUtil::equalCI(node->name(), "namespace"))
+		else if (strutil::equalCI(node->name(), "namespace"))
 			udmf_namespace_ = node->stringValue();
 
 		// Unknown
@@ -123,15 +125,15 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 	// Now create map structures from parsed data, in the right order
 
 	// Create vertices from parsed data
-	UI::setSplashProgressMessage("Reading Vertices");
+	ui::setSplashProgressMessage("Reading Vertices");
 	for (unsigned a = 0; a < defs_vertices.size(); a++)
 	{
-		UI::setSplashProgress(((float)a / defs_vertices.size()) * 0.2f);
+		ui::setSplashProgress(((float)a / defs_vertices.size()) * 0.2f);
 
 		auto vertex = createVertex(defs_vertices[a]);
 		if (!vertex)
 		{
-			Log::warning("Invalid UDMF vertex definition {}, not added", a);
+			log::warning("Invalid UDMF vertex definition {}, not added", a);
 			continue;
 		}
 
@@ -139,15 +141,15 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 	}
 
 	// Create sectors from parsed data
-	UI::setSplashProgressMessage("Reading Sectors");
+	ui::setSplashProgressMessage("Reading Sectors");
 	for (unsigned a = 0; a < defs_sectors.size(); a++)
 	{
-		UI::setSplashProgress(0.2f + ((float)a / defs_sectors.size()) * 0.2f);
+		ui::setSplashProgress(0.2f + ((float)a / defs_sectors.size()) * 0.2f);
 
 		auto sector = createSector(defs_sectors[a]);
 		if (!sector)
 		{
-			Log::warning("Invalid UDMF sector definition {}, not added", a);
+			log::warning("Invalid UDMF sector definition {}, not added", a);
 			continue;
 		}
 
@@ -155,15 +157,15 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 	}
 
 	// Create sides from parsed data
-	UI::setSplashProgressMessage("Reading Sides");
+	ui::setSplashProgressMessage("Reading Sides");
 	for (unsigned a = 0; a < defs_sides.size(); a++)
 	{
-		UI::setSplashProgress(0.4f + ((float)a / defs_sides.size()) * 0.2f);
+		ui::setSplashProgress(0.4f + ((float)a / defs_sides.size()) * 0.2f);
 
 		auto side = createSide(defs_sides[a], map_data);
 		if (!side)
 		{
-			Log::warning("Invalid UDMF side definition {}, not added", a);
+			log::warning("Invalid UDMF side definition {}, not added", a);
 			continue;
 		}
 
@@ -171,15 +173,15 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 	}
 
 	// Create lines from parsed data
-	UI::setSplashProgressMessage("Reading Lines");
+	ui::setSplashProgressMessage("Reading Lines");
 	for (unsigned a = 0; a < defs_lines.size(); a++)
 	{
-		UI::setSplashProgress(0.6f + ((float)a / defs_lines.size()) * 0.2f);
+		ui::setSplashProgress(0.6f + ((float)a / defs_lines.size()) * 0.2f);
 
 		auto line = createLine(defs_lines[a], map_data);
 		if (!line)
 		{
-			Log::warning("Invalid UDMF line definition {}, not added", a);
+			log::warning("Invalid UDMF line definition {}, not added", a);
 			continue;
 		}
 
@@ -187,15 +189,15 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 	}
 
 	// Create things from parsed data
-	UI::setSplashProgressMessage("Reading Things");
+	ui::setSplashProgressMessage("Reading Things");
 	for (unsigned a = 0; a < defs_things.size(); a++)
 	{
-		UI::setSplashProgress(0.8f + ((float)a / defs_things.size()) * 0.2f);
+		ui::setSplashProgress(0.8f + ((float)a / defs_things.size()) * 0.2f);
 
 		auto thing = createThing(defs_things[a]);
 		if (!thing)
 		{
-			Log::warning("Invalid UDMF thing definition {}, not added", a);
+			log::warning("Invalid UDMF thing definition {}, not added", a);
 			continue;
 		}
 
@@ -211,7 +213,7 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 		// TODO: Unknown blocks
 	}
 
-	UI::setSplashProgressMessage("Init map data");
+	ui::setSplashProgressMessage("Init map data");
 
 	return true;
 }
@@ -228,7 +230,7 @@ vector<unique_ptr<ArchiveEntry>> UniversalDoomMapFormat::writeMap(
 	entries.push_back(std::make_unique<ArchiveEntry>("TEXTMAP"));
 
 	// Open temp text file
-	wxFile tempfile(App::path("sladetemp.txt", App::Dir::Temp), wxFile::write);
+	wxFile tempfile(app::path("sladetemp.txt", app::Dir::Temp), wxFile::write);
 
 	// Write map namespace
 	tempfile.Write("// Written by SLADE3\n");
@@ -248,77 +250,77 @@ vector<unique_ptr<ArchiveEntry>> UniversalDoomMapFormat::writeMap(
 	for (const auto& thing : map_data.things())
 	{
 		// Cleanup properties
-		if (!thing->props().isEmpty())
+		if (!thing->props().empty())
 		{
-			thing->props().removeProperty("flags");
-			Game::configuration().cleanObjectUDMFProps(thing);
+			thing->props().remove("flags");
+			game::configuration().cleanObjectUDMFProps(thing);
 		}
 
 		thing->writeUDMF(object_def);
 		tempfile.Write(object_def);
 	}
-	// Log::info(1, "Writing things took %dms", clock.getElapsedTime().asMilliseconds());
+	// log::info(1, "Writing things took %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Write lines
 	// clock.restart();
 	for (const auto& line : map_data.lines())
 	{
 		// Cleanup properties
-		if (!line->props().isEmpty())
+		if (!line->props().empty())
 		{
-			line->props().removeProperty("flags");
-			Game::configuration().cleanObjectUDMFProps(line);
+			line->props().remove("flags");
+			game::configuration().cleanObjectUDMFProps(line);
 		}
 
 		line->writeUDMF(object_def);
 		tempfile.Write(object_def);
 	}
-	// Log::info(1, "Writing lines took %dms", clock.getElapsedTime().asMilliseconds());
+	// log::info(1, "Writing lines took %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Write sides
 	// clock.restart();
 	for (const auto& side : map_data.sides())
 	{
 		// Cleanup properties
-		if (!side->props().isEmpty())
-			Game::configuration().cleanObjectUDMFProps(side);
+		if (!side->props().empty())
+			game::configuration().cleanObjectUDMFProps(side);
 
 		side->writeUDMF(object_def);
 		tempfile.Write(object_def);
 	}
-	// Log::info(1, "Writing sides took %dms", clock.getElapsedTime().asMilliseconds());
+	// log::info(1, "Writing sides took %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Write vertices
 	// clock.restart();
 	for (const auto& vertex : map_data.vertices())
 	{
 		// Cleanup properties
-		if (!vertex->props().isEmpty())
-			Game::configuration().cleanObjectUDMFProps(vertex);
+		if (!vertex->props().empty())
+			game::configuration().cleanObjectUDMFProps(vertex);
 
 		vertex->writeUDMF(object_def);
 		tempfile.Write(object_def);
 	}
-	// Log::info(1, "Writing vertices took %dms", clock.getElapsedTime().asMilliseconds());
+	// log::info(1, "Writing vertices took %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Write sectors
 	// clock.restart();
 	for (const auto& sector : map_data.sectors())
 	{
 		// Cleanup properties
-		if (!sector->props().isEmpty())
-			Game::configuration().cleanObjectUDMFProps(sector);
+		if (!sector->props().empty())
+			game::configuration().cleanObjectUDMFProps(sector);
 
 		sector->writeUDMF(object_def);
 		tempfile.Write(object_def);
 	}
-	// Log::info(1, "Writing sectors took %dms", clock.getElapsedTime().asMilliseconds());
+	// log::info(1, "Writing sectors took %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Close file
 	tempfile.Close();
 
 	// Load file to entry
-	entries[0]->importFile(App::path("sladetemp.txt", App::Dir::Temp));
+	entries[0]->importFile(app::path("sladetemp.txt", app::Dir::Temp));
 
 	return entries;
 }

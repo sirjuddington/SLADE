@@ -2,15 +2,17 @@
 
 #include "UI/Browser/BrowserWindow.h"
 
-namespace Game
+namespace slade
 {
-class ThingType;
+namespace game
+{
+	class ThingType;
 }
 
 class ThingBrowserItem : public BrowserItem
 {
 public:
-	ThingBrowserItem(const wxString& name, const Game::ThingType& type, unsigned index) :
+	ThingBrowserItem(const wxString& name, const game::ThingType& type, unsigned index) :
 		BrowserItem{ name, index },
 		type_{ type }
 	{
@@ -20,7 +22,7 @@ public:
 	bool loadImage() override;
 
 private:
-	Game::ThingType const& type_;
+	game::ThingType const& type_;
 };
 
 class ThingTypeBrowser : public BrowserWindow
@@ -38,3 +40,4 @@ private:
 	// Events
 	void onViewTilesClicked(wxCommandEvent& e);
 };
+} // namespace slade

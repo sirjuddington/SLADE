@@ -1,36 +1,51 @@
 #pragma once
 
 // Forward declarations
+class wxWindow;
+
+namespace slade
+{
 class Archive;
 class ArchiveEntry;
+class ArchivePanel;
 class EntryPanel;
 class MainWindow;
 class Palette;
-class wxWindow;
 
-namespace MainEditor
+namespace maineditor
 {
-bool init();
+	enum class NewEntryType
+	{
+		Empty,
+		Text,
+		Palette,
+		Animated,
+		Switches
+	};
 
-MainWindow*           window();
-wxWindow*             windowWx();
-Archive*              currentArchive();
-ArchiveEntry*         currentEntry();
-vector<ArchiveEntry*> currentEntrySelection();
-Palette*              currentPalette(ArchiveEntry* entry = nullptr);
-EntryPanel*           currentEntryPanel();
+	bool init();
 
-void openTextureEditor(Archive* archive, ArchiveEntry* entry = nullptr);
-void openMapEditor(Archive* archive);
-void openArchiveTab(Archive* archive);
-void openEntry(ArchiveEntry* entry);
+	MainWindow*           window();
+	wxWindow*             windowWx();
+	Archive*              currentArchive();
+	ArchiveEntry*         currentEntry();
+	vector<ArchiveEntry*> currentEntrySelection();
+	Palette*              currentPalette(ArchiveEntry* entry = nullptr);
+	ArchivePanel*         currentArchivePanel();
+	EntryPanel*           currentEntryPanel();
 
-void setGlobalPaletteFromArchive(Archive* archive);
+	void openTextureEditor(Archive* archive, ArchiveEntry* entry = nullptr);
+	void openMapEditor(Archive* archive);
+	void openArchiveTab(Archive* archive);
+	void openEntry(ArchiveEntry* entry);
+
+	void setGlobalPaletteFromArchive(Archive* archive);
 
 #ifdef USE_WEBVIEW_STARTPAGE
-void openDocs(string_view page_name = "");
+	void openDocs(string_view page_name = "");
 #endif
-}; // namespace MainEditor
+}; // namespace maineditor
+} // namespace slade
 
-// Define for less cumbersome MainEditor::window()
-#define theMainWindow MainEditor::window()
+// Define for less cumbersome maineditor::window()
+#define theMainWindow maineditor::window()

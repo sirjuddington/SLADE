@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,6 +35,8 @@
 #include "MainEditor/BinaryControlLump.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -165,7 +167,7 @@ bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
 		auto formatnode = pt_formats->childPTN(a);
 
 		// Create+add new data format
-		new EntryDataFormat(StrUtil::lower(formatnode->name()));
+		new EntryDataFormat(strutil::lower(formatnode->name()));
 	}
 
 	return true;

@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Archive/ArchiveEntry.h"
-#include "General/ListenerAnnouncer.h"
 #include "Graphics/Translation.h"
 
+namespace slade
+{
 class SImage;
 class Tokenizer;
 
@@ -97,7 +98,7 @@ class TextureXList;
 class SImage;
 class Palette;
 
-class CTexture : public Announcer
+class CTexture
 {
 	friend class TextureXList;
 
@@ -177,6 +178,13 @@ public:
 	bool loadPatchImage(unsigned pindex, SImage& image, Archive* parent = nullptr, Palette* pal = nullptr);
 	bool toImage(SImage& image, Archive* parent = nullptr, Palette* pal = nullptr, bool force_rgba = false);
 
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<CTexture&> patches_modified;
+	};
+	Signals& signals() { return signals_; }
+
 private:
 	// Basic info
 	string                      name_;
@@ -199,4 +207,8 @@ private:
 	// Editor info
 	uint8_t       state_   = 0;
 	TextureXList* in_list_ = nullptr;
+
+	// Signals
+	Signals signals_;
 };
+} // namespace slade

@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class Tokenizer
 {
 public:
@@ -227,3 +229,4 @@ private:
 	bool     readNext() { return readNext(&token_next_); }
 	void     resetToLineStart();
 };
+} // namespace slade

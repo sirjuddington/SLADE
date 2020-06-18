@@ -3,8 +3,9 @@
 #include "ArchiveDir.h"
 #include "ArchiveEntry.h"
 #include "General/Defs.h"
-#include "General/ListenerAnnouncer.h"
 
+namespace slade
+{
 struct ArchiveFormat
 {
 	string             id;
@@ -15,11 +16,12 @@ struct ArchiveFormat
 	string             entry_format;
 	vector<StringPair> extensions;
 	bool               prefer_uppercase = false;
+	bool               create           = false;
 
 	ArchiveFormat(string_view id) : id{ id }, name{ id } {}
 };
 
-class Archive : public Announcer
+class Archive
 {
 public:
 	struct MapDesc
@@ -156,6 +158,23 @@ public:
 	virtual vector<ArchiveEntry*> findAll(SearchOptions& options);
 	virtual vector<ArchiveEntry*> findModifiedEntries(ArchiveDir* dir = nullptr);
 
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<Archive&>                                  modified;
+		sigslot::signal<Archive&>                                  saved;
+		sigslot::signal<Archive&>                                  closed;
+		sigslot::signal<Archive&, ArchiveEntry&>                   entry_added;
+		sigslot::signal<Archive&, ArchiveDir&, ArchiveEntry&>      entry_removed; // Archive, Parent Dir, Removed Entry
+		sigslot::signal<Archive&, ArchiveEntry&>                   entry_state_changed;
+		sigslot::signal<Archive&, ArchiveEntry&, string_view>      entry_renamed;
+		sigslot::signal<Archive&, ArchiveDir&, unsigned, unsigned> entries_swapped; // Archive, Dir, Index 1, Index 2
+		sigslot::signal<Archive&, ArchiveDir&>                     dir_added;
+		sigslot::signal<Archive&, ArchiveDir&, ArchiveDir&>        dir_removed; // Archive, Parent dir, Removed Dir
+	};
+	Signals& signals() { return signals_; }
+	void     blockModificationSignals(bool block = true);
+
 	// Static functions
 	static bool                   loadFormats(MemChunk& mc);
 	static vector<ArchiveFormat>& allFormats() { return formats_; }
@@ -170,6 +189,7 @@ protected:
 private:
 	bool                   modified_;
 	shared_ptr<ArchiveDir> dir_root_;
+	Signals                signals_;
 
 	static vector<ArchiveFormat> formats_;
 };
@@ -238,3 +258,17 @@ public:
 	string detectNamespace(ArchiveEntry* entry) override { return "global"; }
 	string detectNamespace(size_t index, ArchiveDir* dir = nullptr) override { return "global"; }
 };
+
+// Simple class that will block and unblock modification signals for an archive via RAII
+class ArchiveModSignalBlocker
+{
+public:
+	ArchiveModSignalBlocker(Archive& archive) : archive_{ &archive } { archive_->blockModificationSignals(); }
+	~ArchiveModSignalBlocker() { archive_->blockModificationSignals(false); }
+
+	void unblock() const { archive_->blockModificationSignals(false); }
+
+private:
+	Archive* archive_;
+};
+} // namespace slade

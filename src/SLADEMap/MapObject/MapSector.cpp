@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -37,6 +37,8 @@
 #include "Utility/MathStuff.h"
 #include "Utility/Parser.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -62,7 +64,7 @@ MapSector::MapSector(
 	light_{ light },
 	special_{ special },
 	id_{ id },
-	geometry_updated_{ App::runTimer() }
+	geometry_updated_{ app::runTimer() }
 {
 }
 
@@ -148,7 +150,7 @@ void MapSector::copy(MapObject* obj)
 // -----------------------------------------------------------------------------
 void MapSector::setGeometryUpdated()
 {
-	geometry_updated_ = App::runTimer();
+	geometry_updated_ = app::runTimer();
 }
 
 // -----------------------------------------------------------------------------
@@ -201,16 +203,16 @@ void MapSector::setStringProperty(string_view key, string_view value)
 // -----------------------------------------------------------------------------
 void MapSector::setFloatProperty(string_view key, double value)
 {
-	using Game::UDMFFeature;
+	using game::UDMFFeature;
 
 	// Check if flat offset/scale/rotation is changing (if UDMF)
 	if (parent_map_->currentFormat() == MapFormat::UDMF)
 	{
-		if ((Game::configuration().featureSupported(UDMFFeature::FlatPanning)
+		if ((game::configuration().featureSupported(UDMFFeature::FlatPanning)
 			 && (key == "xpanningfloor" || key == "ypanningfloor"))
-			|| (Game::configuration().featureSupported(UDMFFeature::FlatScaling)
+			|| (game::configuration().featureSupported(UDMFFeature::FlatScaling)
 				&& (key == "xscalefloor" || key == "yscalefloor" || key == "xscaleceiling" || key == "yscaleceiling"))
-			|| (Game::configuration().featureSupported(UDMFFeature::FlatRotation)
+			|| (game::configuration().featureSupported(UDMFFeature::FlatRotation)
 				&& (key == "rotationfloor" || key == "rotationceiling")))
 			polygon_.setTexture(0); // Clear texture to force update
 	}
@@ -431,7 +433,7 @@ bool MapSector::containsPoint(Vec2d point)
 		return false;
 
 	// Check the side of the nearest line
-	double side = MathStuff::lineSide(point, nline->seg());
+	double side = math::lineSide(point, nline->seg());
 	if (side >= 0 && nline->frontSector() == this)
 		return true;
 	else if (side < 0 && nline->backSector() == this)
@@ -453,16 +455,16 @@ double MapSector::distanceTo(Vec2d point, double maxdist)
 	if (!bbox_.isValid())
 		updateBBox();
 	double min_dist = 9999999;
-	double dist     = MathStuff::distanceToLine(point, bbox_.leftSide());
+	double dist     = math::distanceToLine(point, bbox_.leftSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = MathStuff::distanceToLine(point, bbox_.topSide());
+	dist = math::distanceToLine(point, bbox_.topSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = MathStuff::distanceToLine(point, bbox_.rightSide());
+	dist = math::distanceToLine(point, bbox_.rightSide());
 	if (dist < min_dist)
 		min_dist = dist;
-	dist = MathStuff::distanceToLine(point, bbox_.bottomSide());
+	dist = math::distanceToLine(point, bbox_.bottomSide());
 	if (dist < min_dist)
 		min_dist = dist;
 
@@ -547,7 +549,7 @@ uint8_t MapSector::lightAt(int where)
 {
 	// Check for UDMF + flat lighting
 	if (parent_map_->currentFormat() == MapFormat::UDMF
-		&& Game::configuration().featureSupported(Game::UDMFFeature::FlatLighting))
+		&& game::configuration().featureSupported(game::UDMFFeature::FlatLighting))
 	{
 		// Get general light level
 		int l = light_;
@@ -609,7 +611,7 @@ void MapSector::changeLight(int amount, int where)
 
 	// Check for UDMF + flat lighting independent from the sector
 	bool separate = parent_map_->currentFormat() == MapFormat::UDMF
-					&& Game::configuration().featureSupported(Game::UDMFFeature::FlatLighting);
+					&& game::configuration().featureSupported(game::UDMFFeature::FlatLighting);
 
 	// Change light level by amount
 	if (where == 1 && separate)
@@ -635,7 +637,7 @@ void MapSector::changeLight(int amount, int where)
 // -----------------------------------------------------------------------------
 ColRGBA MapSector::colourAt(int where, bool fullbright)
 {
-	using Game::UDMFFeature;
+	using game::UDMFFeature;
 
 	// Check for sector colour set in open script
 	// TODO: Test if this is correct behaviour
@@ -664,12 +666,12 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 
 	// Check for UDMF
 	if (parent_map_->currentFormat() == MapFormat::UDMF
-		&& (Game::configuration().featureSupported(UDMFFeature::SectorColor)
-			|| Game::configuration().featureSupported(UDMFFeature::FlatLighting)))
+		&& (game::configuration().featureSupported(UDMFFeature::SectorColor)
+			|| game::configuration().featureSupported(UDMFFeature::FlatLighting)))
 	{
 		// Get sector light colour
 		wxColour wxcol;
-		if (Game::configuration().featureSupported(UDMFFeature::SectorColor))
+		if (game::configuration().featureSupported(UDMFFeature::SectorColor))
 		{
 			int intcol = MapObject::intProperty("lightcolor");
 			wxcol      = wxColour(intcol);
@@ -685,7 +687,7 @@ ColRGBA MapSector::colourAt(int where, bool fullbright)
 		// Get sector light level
 		int ll = light_;
 
-		if (Game::configuration().featureSupported(UDMFFeature::FlatLighting))
+		if (game::configuration().featureSupported(UDMFFeature::FlatLighting))
 		{
 			// Get specific light level
 			if (where == 1)
@@ -752,7 +754,7 @@ ColRGBA MapSector::fogColour()
 
 	// udmf
 	if (parent_map_->currentFormat() == MapFormat::UDMF
-		&& Game::configuration().featureSupported(Game::UDMFFeature::SectorFog))
+		&& game::configuration().featureSupported(game::UDMFFeature::SectorFog))
 	{
 		int intcol = MapObject::intProperty("fadecolor");
 
@@ -784,7 +786,7 @@ void MapSector::findTextPoint()
 	for (auto& connected_side : connected_sides_)
 	{
 		auto   l    = connected_side->parentLine();
-		double dist = MathStuff::distanceToLineFast(text_point_, l->seg());
+		double dist = math::distanceToLineFast(text_point_, l->seg());
 
 		if (dist < min_dist)
 		{
@@ -808,7 +810,7 @@ void MapSector::findTextPoint()
 			continue;
 
 		auto   line = connected_side->parentLine();
-		double dist = MathStuff::distanceRayLine(r_o, r_o + r_d, line->start(), line->end());
+		double dist = math::distanceRayLine(r_o, r_o + r_d, line->start(), line->end());
 
 		if (dist > 0 && dist < min_dist)
 			min_dist = dist;
@@ -874,15 +876,15 @@ void MapSector::readBackup(Backup* backup)
 	parent_map_->sectors().updateTexUsage(floor_.texture, -1);
 	parent_map_->sectors().updateTexUsage(ceiling_.texture, -1);
 
-	floor_.texture   = backup->props_internal[PROP_TEXFLOOR].stringValue();
-	ceiling_.texture = backup->props_internal[PROP_TEXCEILING].stringValue();
-	floor_.height    = backup->props_internal[PROP_HEIGHTFLOOR].intValue();
-	ceiling_.height  = backup->props_internal[PROP_HEIGHTCEILING].intValue();
+	floor_.texture   = backup->props_internal.get<string>(PROP_TEXFLOOR);
+	ceiling_.texture = backup->props_internal.get<string>(PROP_TEXCEILING);
+	floor_.height    = backup->props_internal.get<int>(PROP_HEIGHTFLOOR);
+	ceiling_.height  = backup->props_internal.get<int>(PROP_HEIGHTCEILING);
 	floor_.plane.set(0, 0, 1, floor_.height);
 	ceiling_.plane.set(0, 0, 1, ceiling_.height);
-	light_   = backup->props_internal[PROP_LIGHTLEVEL].intValue();
-	special_ = backup->props_internal[PROP_SPECIAL].intValue();
-	id_      = backup->props_internal[PROP_ID].intValue();
+	light_   = backup->props_internal.get<int>(PROP_LIGHTLEVEL);
+	special_ = backup->props_internal.get<int>(PROP_SPECIAL);
+	id_      = backup->props_internal.get<int>(PROP_ID);
 
 	// Update texture counts (increment new)
 	parent_map_->sectors().updateTexUsage(floor_.texture, 1);
@@ -899,7 +901,7 @@ void MapSector::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 void MapSector::writeUDMF(string& def)
 {
-	def = fmt::format("sector//#{}\n{\n", index_);
+	def = fmt::format("sector//#{}\n{{\n", index_);
 
 	// Basic properties
 	def += fmt::format("texturefloor=\"{}\";\ntextureceiling=\"{}\";\n", floor_.texture, ceiling_.texture);
@@ -914,9 +916,75 @@ void MapSector::writeUDMF(string& def)
 	if (id_ != 0)
 		def += fmt::format("id={};\n", id_);
 
-	// Other properties
-	if (!properties_.isEmpty())
+	// For UDMF sector planes, ALL values must be added, or else GZDoom
+	// will consider them invalid.
+	// Check for UDMF floor planes, and if they are present, copy the
+	// values from the existing floor planes, and remove the floor plane
+	// properties so that they can be put in order.
+	double floor_a = 0, floor_b = 0, floor_c = 0, floor_d = 0;
+	bool   hasFloorPlane =
+		(hasProp("floorplane_a") || hasProp("floorplane_b") || hasProp("floorplane_c") || hasProp("floorplane_d"));
+	if (hasFloorPlane)
+	{
+		// The ABC values are internally negated to compensate for the
+		// differences in the point height calculations between SLADE and
+		// GZDoom
+		floor_a = -floor_.plane.a;
+		floor_b = -floor_.plane.b;
+		floor_c = -floor_.plane.c;
+		floor_d = floor_.plane.d;
+		// Write the floor/ceiling plane properties in order later
+		properties_.remove("floorplane_a");
+		properties_.remove("floorplane_b");
+		properties_.remove("floorplane_c");
+		properties_.remove("floorplane_d");
+	}
+	// Do the same for the ceiling plane
+	double ceiling_a = 0, ceiling_b = 0, ceiling_c = 0, ceiling_d = 0;
+	bool   hasCeilingPlane =
+		(hasProp("ceilingplane_a") || hasProp("ceilingplane_b") || hasProp("ceilingplane_c")
+		 || hasProp("ceilingplane_d"));
+	if (hasCeilingPlane)
+	{
+		ceiling_a = -ceiling_.plane.a;
+		ceiling_b = -ceiling_.plane.b;
+		ceiling_c = -ceiling_.plane.c;
+		ceiling_d = ceiling_.plane.d;
+		properties_.remove("ceilingplane_a");
+		properties_.remove("ceilingplane_b");
+		properties_.remove("ceilingplane_c");
+		properties_.remove("ceilingplane_d");
+	}
+
+	// Other properties (that are not related to floor/ceiling planes
+	if (!properties_.empty())
 		def += properties_.toString(true);
+
+	// Write the floor and ceiling plane values in order
+	if (hasFloorPlane)
+	{
+		def += fmt::format("floorplane_a = {};", floor_a);
+		def += fmt::format("floorplane_b = {};", floor_b);
+		def += fmt::format("floorplane_c = {};", floor_c);
+		def += fmt::format("floorplane_d = {};", floor_d);
+		// Persist between multiple saves
+		properties_["floorplane_a"] = floor_a;
+		properties_["floorplane_b"] = floor_b;
+		properties_["floorplane_c"] = floor_c;
+		properties_["floorplane_d"] = floor_d;
+	}
+	if (hasCeilingPlane)
+	{
+		def += fmt::format("ceilingplane_a = {};", ceiling_a);
+		def += fmt::format("ceilingplane_b = {};", ceiling_b);
+		def += fmt::format("ceilingplane_c = {};", ceiling_c);
+		def += fmt::format("ceilingplane_d = {};", ceiling_d);
+		// Persist between multiple saves
+		properties_["ceilingplane_a"] = ceiling_a;
+		properties_["ceilingplane_b"] = ceiling_b;
+		properties_["ceilingplane_c"] = ceiling_c;
+		properties_["ceilingplane_d"] = ceiling_d;
+	}
 
 	def += "}\n\n";
 }

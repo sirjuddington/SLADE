@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -37,6 +37,8 @@
 #include "StringUtils.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -57,7 +59,7 @@ EXTERN_CVAR(String, dir_last)
 // Shows a dialog to open a single file.
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
-bool SFileDialog::openFile(
+bool filedialog::openFile(
 	FDInfo&     info,
 	string_view caption,
 	string_view extensions,
@@ -68,10 +70,10 @@ bool SFileDialog::openFile(
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		WxUtils::strFromView(caption),
+		wxutil::strFromView(caption),
 		dir_last,
-		WxUtils::strFromView(fn_default),
-		WxUtils::strFromView(extensions),
+		wxutil::strFromView(fn_default),
+		wxutil::strFromView(extensions),
 		wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	// Select default extension
@@ -81,7 +83,7 @@ bool SFileDialog::openFile(
 	if (fd.ShowModal() == wxID_OK)
 	{
 		// Set file dialog info
-		StrUtil::Path fn(fd.GetPath().ToStdString());
+		strutil::Path fn(fd.GetPath().ToStdString());
 		info.filenames.push_back(fn.fullPath());
 		info.extension = fn.extension();
 		info.ext_index = fd.GetFilterIndex();
@@ -100,7 +102,7 @@ bool SFileDialog::openFile(
 // Shows a dialog to open multiple files.
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
-bool SFileDialog::openFiles(
+bool filedialog::openFiles(
 	FDInfo&     info,
 	string_view caption,
 	string_view extensions,
@@ -111,10 +113,10 @@ bool SFileDialog::openFiles(
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		WxUtils::strFromView(caption),
+		wxutil::strFromView(caption),
 		dir_last,
-		WxUtils::strFromView(fn_default),
-		WxUtils::strFromView(extensions),
+		wxutil::strFromView(fn_default),
+		wxutil::strFromView(extensions),
 		wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
 
 	// Select default extension
@@ -129,7 +131,7 @@ bool SFileDialog::openFiles(
 		// Set file dialog info
 		for (const auto& path : paths)
 			info.filenames.emplace_back(path);
-		StrUtil::Path fn(info.filenames[0]);
+		strutil::Path fn(info.filenames[0]);
 		info.extension = fn.extension();
 		info.ext_index = fd.GetFilterIndex();
 		info.path      = fn.path(true);
@@ -147,7 +149,7 @@ bool SFileDialog::openFiles(
 // Shows a dialog to save a single file.
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------
-bool SFileDialog::saveFile(
+bool filedialog::saveFile(
 	FDInfo&     info,
 	string_view caption,
 	string_view extensions,
@@ -158,10 +160,10 @@ bool SFileDialog::saveFile(
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		WxUtils::strFromView(caption),
+		wxutil::strFromView(caption),
 		dir_last,
-		WxUtils::strFromView(fn_default),
-		WxUtils::strFromView(extensions),
+		wxutil::strFromView(fn_default),
+		wxutil::strFromView(extensions),
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	// Select default extension
@@ -171,7 +173,7 @@ bool SFileDialog::saveFile(
 	if (fd.ShowModal() == wxID_OK)
 	{
 		// Set file dialog info
-		StrUtil::Path fn(fd.GetPath().ToStdString());
+		strutil::Path fn(fd.GetPath().ToStdString());
 		info.filenames.push_back(fn.fullPath());
 		info.extension = fn.extension();
 		info.ext_index = fd.GetFilterIndex();
@@ -191,20 +193,15 @@ bool SFileDialog::saveFile(
 // Returns true and sets [info] if the user clicked ok, false otherwise.
 // This is used to replace wxDirDialog, which sucks
 // -----------------------------------------------------------------------------
-bool SFileDialog::saveFiles(
-	FDInfo&     info,
-	string_view caption,
-	string_view extensions,
-	wxWindow*   parent,
-	int         ext_default)
+bool filedialog::saveFiles(FDInfo& info, string_view caption, string_view extensions, wxWindow* parent, int ext_default)
 {
 	// Create file dialog
 	wxFileDialog fd(
 		parent,
-		WxUtils::strFromView(caption),
+		wxutil::strFromView(caption),
 		dir_last,
 		"ignored",
-		WxUtils::strFromView(extensions),
+		wxutil::strFromView(extensions),
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	// Select default extension
@@ -231,9 +228,9 @@ bool SFileDialog::saveFiles(
 // -----------------------------------------------------------------------------
 // Returns the executable file filter string depending on the current OS
 // -----------------------------------------------------------------------------
-string SFileDialog::executableExtensionString()
+string filedialog::executableExtensionString()
 {
-	if (App::platform() == App::Platform::Windows)
+	if (app::platform() == app::Platform::Windows)
 		return "Executable Files (*.exe)|*.exe";
 	else
 		return "Executable Files|*.*";
@@ -242,9 +239,9 @@ string SFileDialog::executableExtensionString()
 // -----------------------------------------------------------------------------
 // Returns [exe_name] with a .exe extension if in Windows
 // -----------------------------------------------------------------------------
-string SFileDialog::executableFileName(string_view exe_name)
+string filedialog::executableFileName(string_view exe_name)
 {
-	if (App::platform() == App::Platform::Windows)
+	if (app::platform() == app::Platform::Windows)
 		return string{ exe_name } + ".exe";
 	else
 		return string{ exe_name };

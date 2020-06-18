@@ -3,6 +3,8 @@
 
 // CVar classes, a lot of ideas taken from the ZDoom source
 
+namespace slade
+{
 class CVar
 {
 public:
@@ -147,6 +149,7 @@ public:
 		return *this;
 	}
 };
+} // namespace slade
 
 #define CVAR(type, name, val, flags) C##type##CVar name(#name, val, flags);
 

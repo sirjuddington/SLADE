@@ -2,6 +2,8 @@
 
 #include "EntryPanel.h"
 
+namespace slade
+{
 class TextEditorCtrl;
 class FindReplacePanel;
 
@@ -38,3 +40,4 @@ private:
 	void onChoiceLanguageChanged(wxCommandEvent& e);
 	void onUpdateUI(wxStyledTextEvent& e);
 };
+} // namespace slade

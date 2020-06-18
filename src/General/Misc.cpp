@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,6 +39,8 @@
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -49,7 +51,7 @@ CVAR(Bool, size_as_string, true, CVar::Flag::Save)
 CVAR(Bool, percent_encoding, false, CVar::Flag::Save)
 EXTERN_CVAR(Float, col_cie_tristim_x)
 EXTERN_CVAR(Float, col_cie_tristim_z)
-namespace Misc
+namespace slade::misc
 {
 vector<WindowInfo> window_info;
 }
@@ -66,7 +68,7 @@ vector<WindowInfo> window_info;
 // Loads an image from [entry] into [image].
 // Returns false if the given entry wasn't a valid image, true otherwise
 // -----------------------------------------------------------------------------
-bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
+bool misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 {
 	if (!entry)
 		return false;
@@ -76,16 +78,16 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 		EntryType::detectEntryType(*entry);
 
 	// Check for format "image" property
-	if (!entry->type()->extraProps().propertyExists("image"))
+	if (!entry->type()->extraProps().contains("image"))
 	{
-		Global::error = "Entry type is not a valid image";
+		global::error = "Entry type is not a valid image";
 		return false;
 	}
 
 	// Get image format hint from type, if any
-	string format_hint = "";
-	if (entry->type()->extraProps().propertyExists("image_format"))
-		format_hint = entry->type()->extraProps()["image_format"].stringValue();
+	string format_hint;
+	if (entry->type()->extraProps().contains("image_format"))
+		format_hint = entry->type()->extraProps().getOr<string>("image_format", {});
 
 	// Font formats are still manually loaded for now
 	auto format = entry->type()->formatId();
@@ -113,7 +115,7 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 		if (parent == nullptr)
 			return false;
 		ArchiveEntry* data = parent->entryAt(parent->entryIndex(entry) + 1);
-		if (data && StrUtil::equalCI(data->name(), "."))
+		if (data && strutil::equalCI(data->name(), "."))
 			return image->loadJaguarSprite(entry->rawData(), entry->size(), data->rawData(), data->size());
 		else
 			return false;
@@ -143,7 +145,7 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 		return SIFormat::generalFormat()->loadImage(*image, entry->data());
 
 	// Unknown image type
-	Global::error = "Entry is not a known image format";
+	global::error = "Entry is not a known image format";
 	return false;
 }
 
@@ -151,50 +153,50 @@ bool Misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 // Detects the few known cases where a picture does not use PLAYPAL as its
 // default palette.
 // -----------------------------------------------------------------------------
-int Misc::detectPaletteHack(ArchiveEntry* entry)
+int misc::detectPaletteHack(ArchiveEntry* entry)
 {
 	if (entry == nullptr || entry->type() == nullptr)
-		return PaletteHack::NONE;
+		return palhack::NONE;
 	else if (entry->type()->formatId() == "img_doom_arah" && entry->name() == "TITLEPIC")
-		return PaletteHack::ALPHA; // Doom Alpha 0.2
+		return palhack::ALPHA; // Doom Alpha 0.2
 	else if (entry->type()->formatId() == "img_doom_snea" && entry->name() == "TITLEPIC")
-		return PaletteHack::ALPHA; // Doom Alpha 0.4 and 0.5
+		return palhack::ALPHA; // Doom Alpha 0.4 and 0.5
 	else if (entry->type()->formatId() == "img_raw" && entry->name() == "E2END")
-		return PaletteHack::HERETIC; // Heretic
+		return palhack::HERETIC; // Heretic
 	else if (entry->type()->formatId() == "img_doom_arah" && entry->name() == "shadowpage")
-		return PaletteHack::SHADOW; // Shadowcaster
+		return palhack::SHADOW; // Shadowcaster
 	else if (entry->type()->formatId() == "img_rott" && entry->name() == "NICOLAS")
-		return PaletteHack::ROTT_N; // Rise of the Triad
+		return palhack::ROTT_N; // Rise of the Triad
 	else if (entry->type()->formatId() == "img_rott" && entry->name() == "FINLDOOR")
-		return PaletteHack::ROTT_D; // Rise of the Triad
+		return palhack::ROTT_D; // Rise of the Triad
 	else if (entry->type()->formatId() == "img_rott" && entry->name() == "FINLFIRE")
-		return PaletteHack::ROTT_F; // Rise of the Triad
+		return palhack::ROTT_F; // Rise of the Triad
 	else if (
 		(entry->type()->formatId() == "img_rott" && entry->name() == "AP_TITL")
 		|| (entry->type()->formatId() == "img_rottraw" && entry->name() == "AP_WRLD"))
-		return PaletteHack::ROTT_A; // Rise of the Triad
-	else if (entry->type()->formatId() == "img_wolfpic" && StrUtil::startsWith(entry->upperName(), "IDG*"))
-		return PaletteHack::SOD_ID; // Spear of Destiny team screens
-	else if (entry->type()->formatId() == "img_wolfpic" && StrUtil::startsWith(entry->upperName(), "TIT*"))
-		return PaletteHack::SOD_TITLE; // Spear of Destiny title screens
-	else if (entry->type()->formatId() == "img_wolfpic" && StrUtil::startsWith(entry->upperName(), "END*"))
+		return palhack::ROTT_A; // Rise of the Triad
+	else if (entry->type()->formatId() == "img_wolfpic" && strutil::startsWith(entry->upperName(), "IDG*"))
+		return palhack::SOD_ID; // Spear of Destiny team screens
+	else if (entry->type()->formatId() == "img_wolfpic" && strutil::startsWith(entry->upperName(), "TIT*"))
+		return palhack::SOD_TITLE; // Spear of Destiny title screens
+	else if (entry->type()->formatId() == "img_wolfpic" && strutil::startsWith(entry->upperName(), "END*"))
 	{
 		// Spear of Destiny ending screens (extra-hacky!)
 		// TODO: Check if endscreen 0 is valid, will need to change if it is
-		auto endscreen = StrUtil::asInt(entry->name().substr(entry->name().size() - 3));
+		auto endscreen = strutil::asInt(entry->name().substr(entry->name().size() - 3));
 		if (endscreen > 0)
-			return PaletteHack::SOD_END + endscreen - 81;
+			return palhack::SOD_END + endscreen - 81;
 	}
 
 	// Default:
-	return PaletteHack::NONE;
+	return palhack::NONE;
 }
 
 // -----------------------------------------------------------------------------
 // Writes palette information from the PLAYPAL entry in [archive] to [pal].
 // Returns false if PLAYPAL entry was missing or invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
+bool misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 {
 	// Check parameters
 	if (!pal || !archive)
@@ -203,27 +205,27 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 	// Find PLAYPAL entry
 	bool          sixbit  = false;
 	ArchiveEntry* playpal = nullptr;
-	if (lump == PaletteHack::ALPHA)
+	if (lump == palhack::ALPHA)
 		playpal = archive->entry("TITLEPAL", true);
-	else if (lump == PaletteHack::HERETIC)
+	else if (lump == palhack::HERETIC)
 		playpal = archive->entry("E2PAL", true);
-	else if (lump == PaletteHack::SHADOW)
+	else if (lump == palhack::SHADOW)
 		playpal = archive->entry("shadowpage+1", true), sixbit = true;
-	else if (lump == PaletteHack::ROTT_N)
+	else if (lump == palhack::ROTT_N)
 		playpal = archive->entry("NICPAL", true);
-	else if (lump == PaletteHack::ROTT_D)
+	else if (lump == palhack::ROTT_D)
 		playpal = archive->entry("FINDRPAL", true);
-	else if (lump == PaletteHack::ROTT_F)
+	else if (lump == palhack::ROTT_F)
 		playpal = archive->entry("FINFRPAL", true);
-	else if (lump == PaletteHack::ROTT_A)
+	else if (lump == palhack::ROTT_A)
 		playpal = archive->entry("AP_PAL", true);
-	else if (lump == PaletteHack::SOD_ID)
+	else if (lump == palhack::SOD_ID)
 		playpal = archive->entry("PAL00163", true), sixbit = true;
-	else if (lump == PaletteHack::SOD_TITLE)
+	else if (lump == palhack::SOD_TITLE)
 		playpal = archive->entry("PAL00153", true), sixbit = true;
-	else if (lump >= PaletteHack::SOD_END)
+	else if (lump >= palhack::SOD_END)
 	{
-		int endscreen = lump - PaletteHack::SOD_END;
+		int endscreen = lump - palhack::SOD_END;
 		endscreen += 154;
 		auto palname = fmt::format("PAL{:05d}", endscreen);
 		playpal      = archive->entry(palname, true);
@@ -289,7 +291,7 @@ bool Misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 // Converts [size] to a string representing it as a 'bytes' size, ie "1.24kb",
 // "4.00mb". Sizes under 1kb aren't given an appendage
 // -----------------------------------------------------------------------------
-string Misc::sizeAsString(uint32_t size)
+string misc::sizeAsString(uint32_t size)
 {
 	if (size < 1024 || !size_as_string)
 	{
@@ -312,7 +314,7 @@ string Misc::sizeAsString(uint32_t size)
 // ZDoom merely substitutes \ to ^, but Doomsday requires percent encoding of
 // every non-alphanumeric character.
 // -----------------------------------------------------------------------------
-string Misc::lumpNameToFileName(string_view lump)
+string misc::lumpNameToFileName(string_view lump)
 {
 	if (percent_encoding)
 	{
@@ -342,7 +344,7 @@ string Misc::lumpNameToFileName(string_view lump)
 // -----------------------------------------------------------------------------
 // Turns a file name into a lump name
 // -----------------------------------------------------------------------------
-string Misc::fileNameToLumpName(string_view file)
+string misc::fileNameToLumpName(string_view file)
 {
 	if (percent_encoding)
 	{
@@ -353,7 +355,7 @@ string Misc::fileNameToLumpName(string_view file)
 			{
 				auto     code = file.substr(a + 1, 2);
 				unsigned percent;
-				if (!StrUtil::toUInt(code, percent, 16))
+				if (!strutil::toUInt(code, percent, 16))
 					percent = 0;
 				lump += fmt::format("{:c}", percent);
 				a += 2;
@@ -374,7 +376,7 @@ string Misc::fileNameToLumpName(string_view file)
 // -----------------------------------------------------------------------------
 // Creates a mass rename filter string from [names]
 // -----------------------------------------------------------------------------
-string Misc::massRenameFilter(vector<string>& names)
+string misc::massRenameFilter(vector<string>& names)
 {
 	// Check any names were given
 	if (names.empty())
@@ -410,7 +412,7 @@ string Misc::massRenameFilter(vector<string>& names)
 // Performs a mass rename on [names] using the filter [name_filter].
 // Any * in the filter means that character should not be changed
 // -----------------------------------------------------------------------------
-void Misc::doMassRename(vector<string>& names, string_view name_filter)
+void misc::doMassRename(vector<string>& names, string_view name_filter)
 {
 	// Go through names
 	for (auto& name : names)
@@ -421,7 +423,7 @@ void Misc::doMassRename(vector<string>& names, string_view name_filter)
 
 		// If the filter string is shorter than the name, just truncate the name
 		if (name_filter.size() < name.size())
-			StrUtil::truncateIP(name, name_filter.size());
+			strutil::truncateIP(name, name_filter.size());
 
 		// Go through filter characters
 		for (unsigned c = 0; c < name_filter.size(); c++)
@@ -498,7 +500,7 @@ uint32_t update_crc(uint32_t crc, const uint8_t* buf, uint32_t len)
 }
 
 /* Return the CRC of the bytes buf[0..len-1]. */
-uint32_t Misc::crc(const uint8_t* buf, uint32_t len)
+uint32_t misc::crc(const uint8_t* buf, uint32_t len)
 {
 	return update_crc(0xffffffffL, buf, len) ^ 0xffffffffL;
 }
@@ -509,7 +511,7 @@ uint32_t Misc::crc(const uint8_t* buf, uint32_t len)
 // the dimensions.
 // In case the texture is not found, the dimensions returned are null
 // -----------------------------------------------------------------------------
-Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string_view name)
+Vec2i misc::findJaguarTextureDimensions(ArchiveEntry* entry, string_view name)
 {
 	Vec2i dimensions;
 	dimensions.x = 0;
@@ -538,7 +540,7 @@ Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string_view name)
 	for (size_t t = 0; t < numtex; ++t, offset += 32)
 	{
 		memcpy(texture, data.data() + offset, 8);
-		if (StrUtil::equalCI(name, texture))
+		if (strutil::equalCI(name, texture))
 		{
 			// We have our texture! Let's get the width and heigth and get out of here
 			dimensions.x = data.readL16(offset + 12);
@@ -553,7 +555,7 @@ Vec2i Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string_view name)
 // -----------------------------------------------------------------------------
 // Gets the saved window info for [id]
 // -----------------------------------------------------------------------------
-Misc::WindowInfo Misc::getWindowInfo(string_view id)
+misc::WindowInfo misc::getWindowInfo(string_view id)
 {
 	for (auto& a : window_info)
 	{
@@ -567,7 +569,7 @@ Misc::WindowInfo Misc::getWindowInfo(string_view id)
 // -----------------------------------------------------------------------------
 // Sets the saved window info for [id]
 // -----------------------------------------------------------------------------
-void Misc::setWindowInfo(string_view id, int width, int height, int left, int top)
+void misc::setWindowInfo(string_view id, int width, int height, int left, int top)
 {
 	if (id.empty())
 		return;
@@ -594,7 +596,7 @@ void Misc::setWindowInfo(string_view id, int width, int height, int left, int to
 // -----------------------------------------------------------------------------
 // Reads saved window info from tokenizer [tz]
 // -----------------------------------------------------------------------------
-void Misc::readWindowInfo(Tokenizer& tz)
+void misc::readWindowInfo(Tokenizer& tz)
 {
 	// Read definitions
 	tz.advIf("{");
@@ -613,7 +615,7 @@ void Misc::readWindowInfo(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 // Writes all saved window info to [file]
 // -----------------------------------------------------------------------------
-void Misc::writeWindowInfo(wxFile& file)
+void misc::writeWindowInfo(wxFile& file)
 {
 	for (auto& a : window_info)
 		file.Write(wxString::Format("\t%s %d %d %d %d\n", a.id, a.width, a.height, a.left, a.top));

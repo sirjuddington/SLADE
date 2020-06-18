@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,8 @@
 #include "MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Parser.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -219,8 +221,8 @@ void MapVertex::writeBackup(Backup* backup)
 void MapVertex::readBackup(Backup* backup)
 {
 	// Position
-	position_.x = backup->props_internal[PROP_X].floatValue();
-	position_.y = backup->props_internal[PROP_Y].floatValue();
+	position_.x = backup->props_internal.get<double>(PROP_X);
+	position_.y = backup->props_internal.get<double>(PROP_Y);
 }
 
 // -----------------------------------------------------------------------------
@@ -228,13 +230,13 @@ void MapVertex::readBackup(Backup* backup)
 // -----------------------------------------------------------------------------
 void MapVertex::writeUDMF(string& def)
 {
-	def = fmt::format("vertex//#{}\n{\n", index_);
+	def = fmt::format("vertex//#{}\n{{\n", index_);
 
 	// Basic properties
 	def += fmt::format("x={:1.3f};\ny={:1.3f};\n", position_.x, position_.y);
 
 	// Other properties
-	if (!properties_.isEmpty())
+	if (!properties_.empty())
 		def += properties_.toString(true);
 
 	def += "}\n\n";

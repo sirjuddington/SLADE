@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class ConsolePanel : public wxPanel
 {
 public:
@@ -21,3 +23,4 @@ private:
 	void onCommandEnter(wxCommandEvent& e);
 	void onCommandKeyDown(wxKeyEvent& e);
 };
+} // namespace slade

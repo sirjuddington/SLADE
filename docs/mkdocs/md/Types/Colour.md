@@ -1,81 +1,123 @@
-<article-head>Colour</article-head>
+<subhead>Type</subhead>
+<header>Colour</header>
 
 Represents an RGBA colour. Note that colour each component is an 8-bit integer (ie. must be between `0` and `255`).
+
+## Constants
+
+| Name | Value |
+|:-----|:------|
+`FORMAT_RGB` | 0
+`FORMAT_RGBA` | 1
+`FORMAT_HEX` | 2
+`FORMAT_ZDOOM` | 3
 
 ## Properties
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop class="rw">r</prop> | <type>number</type> | Red component
-<prop class="rw">g</prop> | <type>number</type> | Green component
-<prop class="rw">b</prop> | <type>number</type> | Blue component
-<prop class="rw">a</prop> | <type>number</type> | Alpha component (transparency)
+<prop class="rw">r</prop> | <type>integer</type> | Red component
+<prop class="rw">g</prop> | <type>integer</type> | Green component
+<prop class="rw">b</prop> | <type>integer</type> | Blue component
+<prop class="rw">a</prop> | <type>integer</type> | Alpha component (transparency)
+<prop class="ro">fr</prop> | <type>float</type> | Red component as a float (`0.0`-`1.0`)
+<prop class="ro">fg</prop> | <type>float</type> | Green component as a float (`0.0`-`1.0`)
+<prop class="ro">fb</prop> | <type>float</type> | Blue component as a float (`0.0`-`1.0`)
+<prop class="ro">fa</prop> | <type>float</type> | Alpha component as a float (`0.0`-`1.0`)
 
 ## Constructors
 
-<fdef>function <type>Colour</type>.<func>new</func>()</fdef>
+<code><type>Colour</type>.<func>new</func>()</code>
 
 Creates a new colour with all components set to `0`.
 
 ---
-<fdef>function <type>Colour</type>.<func>new</func>(<arg>r</arg>, <arg>g</arg>, <arg>b</arg>)</fdef>
+<code><type>Colour</type>.<func>new</func>(<arg>r</arg>, <arg>g</arg>, <arg>b</arg>)</code>
 
 Creates a new colour with the given <arg>r</arg>, <arg>g</arg> and <arg>b</arg> components. The <prop>a</prop> component is set to `255`.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
-* <arg>r</arg> (<type>number</type>): Red component (`0` - `255`)
-* <arg>g</arg> (<type>number</type>): Green component (`0` - `255`)
-* <arg>b</arg> (<type>number</type>): Blue component (`0` - `255`)
+* <arg>r</arg> (<type>integer</type>): Red component (`0` - `255`)
+* <arg>g</arg> (<type>integer</type>): Green component (`0` - `255`)
+* <arg>b</arg> (<type>integer</type>): Blue component (`0` - `255`)
 
 ---
-<fdef>function <type>Colour</type>.<func>new</func>(<arg>r</arg>, <arg>g</arg>, <arg>b</arg>, <arg>a</arg>)</fdef>
+<code><type>Colour</type>.<func>new</func>(<arg>r</arg>, <arg>g</arg>, <arg>b</arg>, <arg>a</arg>)</code>
 
 Creates a new colour with the given <arg>r</arg>, <arg>g</arg>, <arg>b</arg> and <arg>a</arg> components.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
-* <arg>r</arg> (<type>number</type>): Red component (`0` - `255`)
-* <arg>g</arg> (<type>number</type>): Green component (`0` - `255`)
-* <arg>b</arg> (<type>number</type>): Blue component (`0` - `255`)
-* <arg>a</arg> (<type>number</type>): Alpha component (`0` - `255`)
+* <arg>r</arg> (<type>integer</type>): Red component (`0` - `255`)
+* <arg>g</arg> (<type>integer</type>): Green component (`0` - `255`)
+* <arg>b</arg> (<type>integer</type>): Blue component (`0` - `255`)
+* <arg>a</arg> (<type>integer</type>): Alpha component (`0` - `255`)
 
 ## Functions
 
-### AsHSL
+### Overview
 
-<fdef>function <type>Colour</type>.<func>AsHSL</func>(<arg>*self*</arg>)</fdef>
+#### Conversion
+
+<fdef>[AsHSL](#ashsl)() -> <type>float</type>, <type>float</type>, <type>float</type></fdef>
+<fdef>[AsLAB](#aslab)() -> <type>float</type>, <type>float</type>, <type>float</type></fdef>
+<fdef>[AsString](#aslab)(<arg>format</arg>) -> <type>string</type></fdef>
+<fdef>[FromHSL](#fromhsl)(<arg>hue</arg>, <arg>saturation</arg>, <arg>lightness</arg>)</fdef>
+
+---
+### AsHSL
 
 Gets the colour in [HSL](https://en.wikipedia.org/wiki/HSL_and_HSV) colourspace.
 
-<listhead>Returns</listhead>
+#### Returns
 
-* <type>number</type>: The hue value (`0.0` - `1.0`)
-* <type>number</type>: The saturation value (`0.0` - `1.0`)
-* <type>number</type>: The lightness value (`0.0` - `1.0`)
+* <type>float</type>: The hue value (`0.0` - `1.0`)
+* <type>float</type>: The saturation value (`0.0` - `1.0`)
+* <type>float</type>: The lightness value (`0.0` - `1.0`)
 
 ---
 ### AsLAB
 
-<fdef>function <type>Colour</type>.<func>AsLAB</func>(<arg>*self*</arg>)</fdef>
-
 Gets the colour in [CIELAB](https://en.wikipedia.org/wiki/CIELAB_color_space) colourspace.
 
-<listhead>Returns</listhead>
+#### Returns
 
-* <type>number</type>: The lightness value (`0.0` - `1.0`)
-* <type>number</type>: The green-red value (`0.0` - `1.0`)
-* <type>number</type>: The blue-yellow value (`0.0` - `1.0`)
+* <type>float</type>: The lightness value (`0.0` - `1.0`)
+* <type>float</type>: The green-red value (`0.0` - `1.0`)
+* <type>float</type>: The blue-yellow value (`0.0` - `1.0`)
+
+---
+### AsString
+
+Gets a string representation of the colour in the specified <arg>format</arg>.
+
+#### Parameters
+
+* <arg>format</arg> (<type>integer</type>): The format of the string representation. See `FORMAT_` constants above
+
+#### Returns
+
+* <type>string</type>: The colour as a string of the specified format
+
+#### Example
+
+```lua
+local colour = Colour.new(100, 150, 200, 150)
+
+App.LogMessage(colour:AsString(Colour.FORMAT_RGB))   -- rgb(100, 150, 200)
+App.LogMessage(colour:AsString(Colour.FORMAT_RGBA))  -- rgba(100, 150, 200, 150)
+App.LogMessage(colour:AsString(Colour.FORMAT_HEX))   -- #6496C8
+App.LogMessage(colour:AsString(Colour.FORMAT_ZDOOM)) -- "64 96 C8"
+```
 
 ---
 ### FromHSL
 
-<fdef>function <type>Colour</type>.<func>FromHSL</func>(<arg>*self*</arg>, <arg>hue</arg>, <arg>saturation</arg>, <arg>lightness</arg>)</fdef>
-
 Sets the colour from the given HSL colourspace values.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
-* <arg>hue</arg> (<type>number</type>): The hue value to set
-* <arg>saturation</arg> (<type>number</type>): The saturation value to set
-* <arg>lightness</arg> (<type>number</type>): The lightness value to set
+* <arg>hue</arg> (<type>float</type>): The hue value to set (`0.0` - `1.0`)
+* <arg>saturation</arg> (<type>float</type>): The saturation value to set (`0.0` - `1.0`)
+* <arg>lightness</arg> (<type>float</type>): The lightness value to set (`0.0` - `1.0`)

@@ -2,6 +2,8 @@
 
 #include "EntryPanel.h"
 
+namespace slade
+{
 class DefaultEntryPanel : public EntryPanel
 {
 public:
@@ -30,3 +32,4 @@ private:
 	// Events
 	void onBtnGfxModifyOffsets(wxCommandEvent& e);
 };
+} // namespace slade

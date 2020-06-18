@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -37,6 +37,8 @@
 #include "UI/WxUtils.h"
 #include "Utility/Colour.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -53,7 +55,7 @@ UndoListView::UndoListView(wxWindow* parent, UndoManager* manager) : VirtualList
 	if (manager)
 	{
 		SetItemCount(manager->nUndoLevels());
-		listenTo(manager);
+		connectManagerSignals();
 	}
 }
 
@@ -101,9 +103,9 @@ void UndoListView::updateItemAttr(long item, long column, long index) const
 	item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
 
 	if (item == manager_->currentIndex())
-		item_attr_->SetTextColour(WXCOL(ColRGBA(0, 170, 0)));
+		item_attr_->SetTextColour(ColRGBA(0, 170, 0).toWx());
 	else if (item > manager_->currentIndex())
-		item_attr_->SetTextColour(WXCOL(ColRGBA(150, 150, 150)));
+		item_attr_->SetTextColour(ColRGBA(150, 150, 150).toWx());
 }
 
 // -----------------------------------------------------------------------------
@@ -111,23 +113,8 @@ void UndoListView::updateItemAttr(long item, long column, long index) const
 // -----------------------------------------------------------------------------
 void UndoListView::setManager(UndoManager* manager)
 {
-	if (manager_)
-		stopListening(manager_);
-
 	manager_ = manager;
-	listenTo(manager);
-
-	updateFromManager();
-}
-
-// -----------------------------------------------------------------------------
-// Called when an announcement is received from the undo manager
-// -----------------------------------------------------------------------------
-void UndoListView::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	if (announcer != manager_)
-		return;
-
+	connectManagerSignals();
 	updateFromManager();
 }
 
@@ -142,6 +129,16 @@ void UndoListView::updateFromManager()
 	int current_index = manager_->currentIndex();
 	if (current_index >= 0)
 		EnsureVisible(current_index);
+}
+
+// -----------------------------------------------------------------------------
+// Connect to the current UndoManager's signals
+// -----------------------------------------------------------------------------
+void UndoListView::connectManagerSignals()
+{
+	sc_recorded_ = manager_->signals().level_recorded.connect([this]() { updateFromManager(); });
+	sc_undo_     = manager_->signals().undo.connect([this]() { updateFromManager(); });
+	sc_redo_     = manager_->signals().redo.connect([this]() { updateFromManager(); });
 }
 
 
@@ -165,9 +162,9 @@ UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* 
 
 	// Add undo levels list
 	list_levels_ = new UndoListView(this, manager);
-	sizer->Add(list_levels_, 1, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(list_levels_, 1, wxEXPAND | wxALL, ui::pad());
 
-	list_levels_->AppendColumn("Action", wxLIST_FORMAT_LEFT, UI::scalePx(160));
+	list_levels_->AppendColumn("Action", wxLIST_FORMAT_LEFT, ui::scalePx(160));
 	list_levels_->AppendColumn("Time", wxLIST_FORMAT_RIGHT);
 	list_levels_->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &UndoManagerHistoryPanel::onItemRightClick, this);
 	Bind(wxEVT_MENU, &UndoManagerHistoryPanel::onMenu, this);

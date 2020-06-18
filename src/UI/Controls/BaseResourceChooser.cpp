@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -33,8 +33,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "BaseResourceChooser.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "UI/WxUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -62,18 +65,23 @@ BaseResourceChooser::BaseResourceChooser(wxWindow* parent, bool load_change) :
 	// Populate
 	populateChoices();
 
-	// Listen to the archive manager
-	listenTo(&App::archiveManager());
-
 	// Bind events
 	Bind(wxEVT_CHOICE, [&](wxCommandEvent&) {
 		// Open the selected base resource
 		if (load_change_)
-			App::archiveManager().openBaseResource(GetSelection() - 1);
+			app::archiveManager().openBaseResource(GetSelection() - 1);
 	});
 
-	if (App::platform() != App::Platform::Linux)
-		wxWindowBase::SetMinSize(WxUtils::scaledSize(128, -1));
+	// Handle base resource change signals from the Archive Manager
+	auto& am_signals = app::archiveManager().signals();
+	signal_connections_ += am_signals.base_res_path_added.connect([this](unsigned) { populateChoices(); });
+	signal_connections_ += am_signals.base_res_path_removed.connect([this](unsigned) { populateChoices(); });
+	signal_connections_ += am_signals.base_res_current_cleared.connect([this]() { SetSelection(0); });
+	signal_connections_ += am_signals.base_res_current_changed.connect(
+		[this](unsigned) { SetSelection(base_resource + 1); });
+
+	if (app::platform() != app::Platform::Linux)
+		wxWindowBase::SetMinSize(wxutil::scaledSize(128, -1));
 }
 
 // -----------------------------------------------------------------------------
@@ -89,30 +97,12 @@ void BaseResourceChooser::populateChoices()
 	AppendString("<none>");
 
 	// Populate with base resource paths
-	for (unsigned a = 0; a < App::archiveManager().numBaseResourcePaths(); a++)
+	for (unsigned a = 0; a < app::archiveManager().numBaseResourcePaths(); a++)
 	{
-		wxFileName fn(App::archiveManager().getBaseResourcePath(a));
+		wxFileName fn(app::archiveManager().getBaseResourcePath(a));
 		AppendString(fn.GetFullName());
 	}
 
 	// Select current base resource
 	SetSelection(base_resource + 1);
-}
-
-// -----------------------------------------------------------------------------
-// Called when an announcement is received from the ArchiveManager
-// -----------------------------------------------------------------------------
-void BaseResourceChooser::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	// Check the announcer
-	if (announcer != &App::archiveManager())
-		return;
-
-	// Base resource archive changed
-	if (event_name == "base_resource_changed")
-		SetSelection(base_resource + 1);
-
-	// Base resource path list changed
-	if (event_name == "base_resource_path_added" || event_name == "base_resource_path_removed")
-		populateChoices();
 }

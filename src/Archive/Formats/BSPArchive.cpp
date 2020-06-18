@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -41,6 +41,8 @@
 #include "BSPArchive.h"
 #include "General/UI.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -66,7 +68,7 @@ uint32_t BSPArchive::entryOffset(ArchiveEntry* entry)
 	if (!checkEntry(entry))
 		return 0;
 
-	return (uint32_t)(int)entry->exProp("Offset");
+	return (uint32_t)entry->exProp<int>("Offset");
 }
 
 // -----------------------------------------------------------------------------
@@ -79,8 +81,8 @@ bool BSPArchive::open(MemChunk& mc)
 	size_t size = mc.size();
 	if (size < 64)
 	{
-		Log::error("BSPArchive::open: Opening failed, invalid header");
-		Global::error = "Invalid BSP header";
+		log::error("BSPArchive::open: Opening failed, invalid header");
+		global::error = "Invalid BSP header";
 		return false;
 	}
 
@@ -93,13 +95,13 @@ bool BSPArchive::open(MemChunk& mc)
 	version = wxINT32_SWAP_ON_BE(version);
 	if (version != 0x17 && version != 0x1D)
 	{
-		Log::error("BSPArchive::open: Opening failed, unknown BSP version");
-		Global::error = "Unknown BSP version";
+		log::error("BSPArchive::open: Opening failed, unknown BSP version");
+		global::error = "Unknown BSP version";
 		return false;
 	}
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Validate directory to make sure it's the correct format.
 	// This mean checking each of the 15 entries, even if only
@@ -113,8 +115,8 @@ bool BSPArchive::open(MemChunk& mc)
 		// Check that content stays within bounds
 		if (wxINT32_SWAP_ON_BE(sz) + wxINT32_SWAP_ON_BE(ofs) > size)
 		{
-			Log::error("BSPArchive::open: Opening failed, invalid header (data out of bounds)");
-			Global::error = "Invalid BSP header";
+			log::error("BSPArchive::open: Opening failed, invalid header (data out of bounds)");
+			global::error = "Invalid BSP header";
 			return false;
 		}
 		// Grab the miptex entry data
@@ -126,8 +128,8 @@ bool BSPArchive::open(MemChunk& mc)
 			// If there are no textures, no need to bother
 			if (texsize == 0)
 			{
-				Log::error("BSPArchive::open: Opening failed, no texture");
-				Global::error = "No texture content";
+				log::error("BSPArchive::open: Opening failed, no texture");
+				global::error = "No texture content";
 				return false;
 			}
 		}
@@ -138,13 +140,13 @@ bool BSPArchive::open(MemChunk& mc)
 	mc.seek(texoffset, wxFromStart);
 	mc.read(&numtex, 4);
 	numtex = wxINT32_SWAP_ON_BE(numtex);
-	UI::setSplashProgressMessage("Reading BSP texture data");
+	ui::setSplashProgressMessage("Reading BSP texture data");
 
 	// Check that the offset table is within bounds
 	if (texoffset + ((numtex + 1) << 2) > size)
 	{
-		Log::error("BSPArchive::open: Opening failed, miptex entry out of bounds");
-		Global::error = "Out of bounds";
+		log::error("BSPArchive::open: Opening failed, miptex entry out of bounds");
+		global::error = "Out of bounds";
 		return false;
 	}
 
@@ -152,7 +154,7 @@ bool BSPArchive::open(MemChunk& mc)
 	for (size_t a = 0; a < numtex; ++a)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)a / (float)numtex));
+		ui::setSplashProgress(((float)a / (float)numtex));
 
 		size_t offset;
 		mc.read(&offset, 4);
@@ -234,11 +236,11 @@ bool BSPArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)numtex)));
+		ui::setSplashProgress((((float)a / (float)numtex)));
 
 		// Get entry
 		auto entry = entryAt(a);
@@ -263,11 +265,10 @@ bool BSPArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -278,7 +279,7 @@ bool BSPArchive::open(MemChunk& mc)
 // -----------------------------------------------------------------------------
 bool BSPArchive::write(MemChunk& mc, bool update)
 {
-	Global::error = "Sorry, not implemented";
+	global::error = "Sorry, not implemented";
 	return false;
 }
 
@@ -306,12 +307,12 @@ bool BSPArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error("BSPArchive::loadEntryData: Unable to open archive file {}", filename_);
+		log::error("BSPArchive::loadEntryData: Unable to open archive file {}", filename_);
 		return false;
 	}
 
 	// Seek to entry offset in file and read it in
-	file.Seek((int)entry->exProp("Offset"), wxFromStart);
+	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
 	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,8 +39,10 @@
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
+#include "Scripting/Lua.h"
 #include "thirdparty/sol/sol.hpp"
 
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -48,7 +50,7 @@
 // Lua Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace Lua
+namespace slade::lua
 {
 // -----------------------------------------------------------------------------
 // Registers the ImageConvertOptions (SIFormat::ConvertOptions) type with lua
@@ -171,8 +173,8 @@ bool imageDrawImage(
 // -----------------------------------------------------------------------------
 std::tuple<bool, string> imageLoadEntry(SImage& self, ArchiveEntry* entry, int index)
 {
-	bool ok = Misc::loadImageFromEntry(&self, entry, index);
-	return std::make_tuple(ok, Global::error);
+	bool ok = misc::loadImageFromEntry(&self, entry, index);
+	return std::make_tuple(ok, global::error);
 }
 
 // -----------------------------------------------------------------------------
@@ -498,7 +500,7 @@ void registerTranslationType(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_translation["Range"]           = [](Translation& self, unsigned index) { return self.range(index - 1); };
+	lua_translation["Range"]           = &Translation::range;
 	lua_translation["Parse"]           = &Translation::parse;
 	lua_translation["AddRange"]        = &Translation::parseRange;
 	lua_translation["AddPaletteRange"] = [](Translation& self, int range_start, int range_end) {
@@ -526,8 +528,8 @@ void registerTranslationType(sol::state& lua)
 	lua_translation["IsEmpty"]   = &Translation::isEmpty;
 	lua_translation["Translate"] = sol::overload(
 		&Translation::translate, [](Translation& self, ColRGBA col) { return self.translate(col); });
-	lua_translation["RemoveRange"] = [](Translation& self, int pos) { self.removeRange(pos - 1); };
-	lua_translation["SwapRanges"]  = [](Translation& self, int pos1, int pos2) { self.swapRanges(pos1 - 1, pos2 - 1); };
+	lua_translation["RemoveRange"] = &Translation::removeRange;
+	lua_translation["SwapRanges"]  = &Translation::swapRanges;
 
 	registerTranslationRangeTypes(lua);
 }
@@ -594,22 +596,6 @@ void registerCTexturePatchTypes(sol::state& lua)
 }
 
 // -----------------------------------------------------------------------------
-// Wrapper for CTexture::addPatch that changes the index to be 1-based
-// -----------------------------------------------------------------------------
-void cTextureAddPatch(CTexture& self, string_view patch, int x, int y, int index)
-{
-	self.addPatch(patch, x, y, index - 1);
-}
-
-// -----------------------------------------------------------------------------
-// Wrapper for CTexture::duplicatePatch that changes the index to be 1-based
-// -----------------------------------------------------------------------------
-bool cTextureDuplicatePatch(CTexture& self, int index, int offset_x, int offset_y)
-{
-	return self.duplicatePatch(index - 1, offset_x, offset_y);
-}
-
-// -----------------------------------------------------------------------------
 // Registers the CTexture type with lua
 // -----------------------------------------------------------------------------
 void registerCTextureType(sol::state& lua)
@@ -639,16 +625,14 @@ void registerCTextureType(sol::state& lua)
 		&CTexture::copyTexture, [](CTexture& self, const CTexture& tex) { return self.copyTexture(tex, false); });
 	lua_ctexture["Clear"]    = &CTexture::clear;
 	lua_ctexture["AddPatch"] = sol::overload(
-		&cTextureAddPatch,
-		[](CTexture& self, string_view patch) { return cTextureAddPatch(self, patch, 0, 0, 0); },
-		[](CTexture& self, string_view patch, int x, int y) { return cTextureAddPatch(self, patch, x, y, 0); });
-	lua_ctexture["RemovePatch"]  = [](CTexture& self, int index) { return self.removePatch(index - 1); };
-	lua_ctexture["ReplacePatch"] = [](CTexture& self, int index, string_view patch) {
-		return self.replacePatch(index - 1, patch);
-	};
+		&CTexture::addPatch,
+		[](CTexture& self, string_view patch) { return self.addPatch(patch, 0, 0, 0); },
+		[](CTexture& self, string_view patch, int x, int y) { return self.addPatch(patch, x, y, 0); });
+	lua_ctexture["RemovePatch"]    = [](CTexture& self, int index) { return self.removePatch(index); };
+	lua_ctexture["ReplacePatch"]   = &CTexture::replacePatch;
 	lua_ctexture["DuplicatePatch"] = sol::overload(
-		&cTextureDuplicatePatch, [](CTexture& self, int index) { cTextureDuplicatePatch(self, index, 8, 8); });
-	lua_ctexture["SwapPatches"]     = [](CTexture& self, int p1, int p2) { return self.swapPatches(p1 - 1, p2 - 1); };
+		&CTexture::duplicatePatch, [](CTexture& self, int index) { self.duplicatePatch(index, 8, 8); });
+	lua_ctexture["SwapPatches"]     = &CTexture::swapPatches;
 	lua_ctexture["AsText"]          = &CTexture::asText;
 	lua_ctexture["ConvertExtended"] = &CTexture::convertExtended;
 	lua_ctexture["ConvertRegular"]  = &CTexture::convertRegular;
@@ -679,28 +663,26 @@ void registerPatchTableType(sol::state& lua)
 
 	// Functions
 	// -------------------------------------------------------------------------
-	lua_ptable["Patch"]      = [](PatchTable& self, unsigned index) { return self.patch(index - 1).name; };
+	lua_ptable["Patch"]      = [](PatchTable& self, unsigned index) { return self.patch(index).name; };
 	lua_ptable["PatchEntry"] = sol::overload(
-		[](PatchTable& self, int index) { return self.patchEntry(index - 1); },
+		[](PatchTable& self, int index) { return self.patchEntry(index); },
 		sol::resolve<ArchiveEntry*(string_view)>(&PatchTable::patchEntry));
-	lua_ptable["RemovePatch"]  = [](PatchTable& self, int index) { self.removePatch(index - 1); };
-	lua_ptable["ReplacePatch"] = [](PatchTable& self, int index, string_view name) {
-		self.replacePatch(index - 1, name);
-	};
-	lua_ptable["AddPatch"]    = &PatchTable::addPatch;
-	lua_ptable["LoadPNAMES"]  = [](PatchTable& self, ArchiveEntry* pnames) { return self.loadPNAMES(pnames); };
-	lua_ptable["WritePNAMES"] = &PatchTable::writePNAMES;
+	lua_ptable["RemovePatch"]  = [](PatchTable& self, int index) { self.removePatch(index); };
+	lua_ptable["ReplacePatch"] = [](PatchTable& self, int index, string_view name) { self.replacePatch(index, name); };
+	lua_ptable["AddPatch"]     = &PatchTable::addPatch;
+	lua_ptable["LoadPNAMES"]   = [](PatchTable& self, ArchiveEntry* pnames) { return self.loadPNAMES(pnames); };
+	lua_ptable["WritePNAMES"]  = &PatchTable::writePNAMES;
 }
 
 // -----------------------------------------------------------------------------
-// Wrapper for TextureXList::addTexture that changes the index to be 1-based and
-// returns a pointer to the added texture
+// Wrapper for TextureXList::addTexture that returns a pointer to the added
+// texture
 // -----------------------------------------------------------------------------
 CTexture* addTexture(TextureXList& self, string_view name, bool extended, int position)
 {
 	auto tex     = std::make_unique<CTexture>(name, extended);
 	auto tex_ptr = tex.get();
-	self.addTexture(std::move(tex), position - 1);
+	self.addTexture(std::move(tex), position);
 	return tex_ptr;
 }
 
@@ -729,13 +711,13 @@ void registerTextureXListType(sol::state& lua)
 	// Functions
 	// -------------------------------------------------------------------------
 	lua_txlist["Texture"]      = sol::resolve<CTexture*(string_view)>(&TextureXList::texture);
-	lua_txlist["TextureIndex"] = [](TextureXList& self, string_view name) { return self.textureIndex(name) + 1; };
+	lua_txlist["TextureIndex"] = &TextureXList::textureIndex;
 	lua_txlist["AddTexture"]   = sol::overload(
         &addTexture,
         [](TextureXList& self, string_view name) { return addTexture(self, name, false, 0); },
         [](TextureXList& self, string_view name, bool extended) { return addTexture(self, name, extended, 0); });
-	lua_txlist["RemoveTexture"]     = [](TextureXList& self, int index) { self.removeTexture(index - 1); };
-	lua_txlist["SwapTextures"]      = [](TextureXList& self, int i1, int i2) { self.swapTextures(i1 - 1, i2 - 1); };
+	lua_txlist["RemoveTexture"]     = [](TextureXList& self, int index) { self.removeTexture(index); };
+	lua_txlist["SwapTextures"]      = &TextureXList::swapTextures;
 	lua_txlist["Clear"]             = [](TextureXList& self) { self.clear(); };
 	lua_txlist["RemovePatch"]       = &TextureXList::removePatch;
 	lua_txlist["ReadTEXTUREXData"]  = &TextureXList::readTEXTUREXData;
@@ -753,12 +735,40 @@ void registerGraphicsTypes(sol::state& lua)
 {
 	registerImageConvertOptionsType(lua);
 	registerImageFormatType(lua);
+	registerImageDrawOptionsType(lua);
 	registerImageType(lua);
 	registerTranslationType(lua);
 	registerCTexturePatchTypes(lua);
 	registerCTextureType(lua);
 	registerPatchTableType(lua);
 	registerTextureXListType(lua);
+}
+
+// -----------------------------------------------------------------------------
+// Returns a table with info (SImage::Info struct) about the image in [data]
+// -----------------------------------------------------------------------------
+sol::table getImageInfo(MemChunk& data, int index)
+{
+	auto* format = SIFormat::determineFormat(data);
+	auto  info   = format->info(data, index);
+
+	return lua::state().create_table_with(
+		"width",
+		info.width,
+		"height",
+		info.height,
+		"type",
+		info.colformat,
+		"format",
+		info.format,
+		"imageCount",
+		info.numimages,
+		"offsetX",
+		info.offset_x,
+		"offsetY",
+		info.offset_y,
+		"hasPalette",
+		info.has_palette);
 }
 
 // -----------------------------------------------------------------------------
@@ -785,6 +795,7 @@ void registerGraphicsNamespace(sol::state& lua)
 		return formats;
 	};
 	gfx["DetectImageFormat"] = [](MemChunk& mc) { return SIFormat::determineFormat(mc); };
+	gfx["GetImageInfo"]      = sol::overload(&getImageInfo, [](MemChunk& data) { return getImageInfo(data, 0); });
 }
 
-} // namespace Lua
+} // namespace slade::lua

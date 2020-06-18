@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -46,6 +46,16 @@
 #endif
 #endif
 
+using namespace slade;
+
+
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
+EXTERN_CVAR(Int, gl_depth_buffer_size)
+
 
 // -----------------------------------------------------------------------------
 //
@@ -59,9 +69,9 @@
 // OGLCanvas class constructor, SFML implementation
 // -----------------------------------------------------------------------------
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval) :
-	wxControl(parent, id, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
+	wxGLCanvas(parent, id, gl::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
 	timer_{ this },
-	last_time_{ App::runTimer() }
+	last_time_{ app::runTimer() }
 {
 	if (handle_timer)
 		timer_.Start(timer_interval);
@@ -77,22 +87,22 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 		Bind(wxEVT_TIMER, &OGLCanvas::onTimer, this);
 	Bind(wxEVT_SIZE, &OGLCanvas::onResize, this);
 
-	OpenGL::Texture::resetBackgroundTexture();
+	gl::Texture::resetBackgroundTexture();
 }
 #else
 // -----------------------------------------------------------------------------
 // OGLCanvas class constructor, wxGLCanvas implementation
 // -----------------------------------------------------------------------------
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval) :
-	wxGLCanvas(parent, id, OpenGL::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
+	wxGLCanvas(parent, id, gl::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
 	timer_{ this },
-	last_time_{ App::runTimer() }
+	last_time_{ app::runTimer() }
 {
 	// Bind events
 	Bind(wxEVT_PAINT, &OGLCanvas::onPaint, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::onEraseBackground, this);
 
-	OpenGL::Texture::resetBackgroundTexture();
+	gl::Texture::resetBackgroundTexture();
 }
 #endif
 
@@ -104,7 +114,7 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 bool OGLCanvas::setContext()
 {
 #ifndef USE_SFML_RENDERWINDOW
-	auto context = OpenGL::getContext(this);
+	auto context = gl::getContext(this);
 
 	if (context)
 	{
@@ -118,29 +128,30 @@ bool OGLCanvas::setContext()
 #endif
 }
 
-void OGLCanvas::createSFML()
+bool OGLCanvas::createSFML()
 {
 #ifdef USE_SFML_RENDERWINDOW
 	// Code taken from SFML wxWidgets integration example
 	sf::WindowHandle handle;
 #ifdef __WXGTK__
-	// GTK implementation requires to go deeper to find the
-	// low-level X11 identifier of the widget
-	gtk_widget_realize(m_wxwindow);
-	gtk_widget_set_double_buffered(m_wxwindow, false);
-	GdkWindow* Win = gtk_widget_get_window(m_wxwindow);
-	XFlush(GDK_WINDOW_XDISPLAY(Win));
-	// sf::RenderWindow::Create(GDK_WINDOW_XWINDOW(Win));
-	handle = GDK_WINDOW_XWINDOW(Win);
+	auto widget = GetHandle();
+	if (!widget)
+		return false;
+	auto window = gtk_widget_get_window(widget);
+	if (!window)
+		return false;
+	handle = gdk_x11_window_get_xid(window);
 #else
 	handle = GetHandle();
 #endif
 	// Context settings
 	sf::ContextSettings settings;
-	settings.depthBits   = 24;
-	settings.stencilBits = 8;
+	settings.stencilBits    = 8;
+	settings.depthBits      = gl_depth_buffer_size;
+	settings.attributeFlags = sf::ContextSettings::Default;
 	sf::RenderWindow::create(handle, settings);
 #endif
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -148,7 +159,7 @@ void OGLCanvas::createSFML()
 // -----------------------------------------------------------------------------
 void OGLCanvas::init()
 {
-	OpenGL::init();
+	gl::init();
 
 	glViewport(0, 0, GetSize().x, GetSize().y);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -188,11 +199,11 @@ void OGLCanvas::drawCheckeredBackground() const
 	glEnable(GL_TEXTURE_2D);
 
 	// Bind background texture
-	OpenGL::Texture::bind(OpenGL::Texture::backgroundTexture());
+	gl::Texture::bind(gl::Texture::backgroundTexture());
 
 	// Draw background
 	Rectf rect(0, 0, GetSize().x, GetSize().y);
-	OpenGL::setColour(ColRGBA::WHITE);
+	gl::setColour(ColRGBA::WHITE);
 	glBegin(GL_QUADS);
 	glTexCoord2d(rect.x1() * 0.0625, rect.y1() * 0.0625);
 	glVertex2d(rect.x1(), rect.y1());
@@ -251,7 +262,7 @@ bool OGLCanvas::setActive()
 	if (!sf::RenderWindow::setActive())
 		return false;
 
-	Drawing::setRenderTarget(this);
+	drawing::setRenderTarget(this);
 	resetGLStates();
 	setView(sf::View(sf::FloatRect(0.0f, 0.0f, GetSize().x, GetSize().y)));
 
@@ -282,7 +293,7 @@ void OGLCanvas::setup2D() const
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
+	if (gl::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
 }
 
@@ -303,7 +314,9 @@ void OGLCanvas::onPaint(wxPaintEvent& e)
 
 	if (recreate_)
 	{
-		createSFML();
+		if (!createSFML())
+			return;
+
 		recreate_ = false;
 	}
 
@@ -318,7 +331,7 @@ void OGLCanvas::onPaint(wxPaintEvent& e)
 			init();
 
 		// Draw content
-		OpenGL::resetBlend();
+		gl::resetBlend();
 		draw();
 	}
 }
@@ -338,8 +351,8 @@ void OGLCanvas::onEraseBackground(wxEraseEvent& e)
 void OGLCanvas::onTimer(wxTimerEvent& e)
 {
 	// Get time since last redraw
-	long frametime = App::runTimer() - last_time_;
-	last_time_     = App::runTimer();
+	long frametime = app::runTimer() - last_time_;
+	last_time_     = app::runTimer();
 
 	// Update/refresh
 	update(frametime);

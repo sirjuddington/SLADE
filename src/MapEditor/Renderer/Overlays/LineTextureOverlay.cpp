@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -41,6 +41,8 @@
 #include "OpenGL/Drawing.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSide.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -134,7 +136,7 @@ void LineTextureOverlay::close(bool cancel)
 	// Apply texture changes if not cancelled
 	if (!cancel)
 	{
-		MapEditor::editContext().beginUndoRecord("Change Line Texture", true, false, false);
+		mapeditor::editContext().beginUndoRecord("Change Line Texture", true, false, false);
 
 		// Go through lines
 		for (auto& line : lines_)
@@ -165,7 +167,7 @@ void LineTextureOverlay::close(bool cancel)
 				line->s2()->setTexLower(textures_[BackLower].textures[0]);
 		}
 
-		MapEditor::editContext().endUndoRecord();
+		mapeditor::editContext().endUndoRecord();
 	}
 
 	// Deactivate
@@ -248,8 +250,8 @@ void LineTextureOverlay::draw(int width, int height, float fade)
 
 	// Draw background
 	glDisable(GL_TEXTURE_2D);
-	ColourConfiguration::setGLColour("map_overlay_background", fade);
-	Drawing::drawFilledRect(0, 0, width, height);
+	colourconfig::setGLColour("map_overlay_background", fade);
+	drawing::drawFilledRect(0, 0, width, height);
 
 	// Draw textures
 	glEnable(GL_LINE_SMOOTH);
@@ -276,29 +278,29 @@ void LineTextureOverlay::draw(int width, int height, float fade)
 void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string_view position) const
 {
 	// Get colours
-	ColRGBA col_bg  = ColourConfiguration::colour("map_overlay_background");
-	ColRGBA col_fg  = ColourConfiguration::colour("map_overlay_foreground");
-	ColRGBA col_sel = ColourConfiguration::colour("map_hilight");
+	ColRGBA col_bg  = colourconfig::colour("map_overlay_background");
+	ColRGBA col_fg  = colourconfig::colour("map_overlay_foreground");
+	ColRGBA col_sel = colourconfig::colour("map_hilight");
 	col_fg.a        = col_fg.a * alpha;
 
 	// Draw background
 	int halfsize = size * 0.5;
 	glEnable(GL_TEXTURE_2D);
-	OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
+	gl::setColour(255, 255, 255, 255 * alpha, gl::Blend::Normal);
 	glPushMatrix();
 	glTranslated(tex.position.x - halfsize, tex.position.y - halfsize, 0);
-	Drawing::drawTextureTiled(OpenGL::Texture::backgroundTexture(), size, size);
+	drawing::drawTextureTiled(gl::Texture::backgroundTexture(), size, size);
 	glPopMatrix();
 
 	unsigned tex_first = 0;
 	if (!tex.textures.empty())
 	{
 		// Draw first texture
-		OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
-		tex_first = MapEditor::textureManager()
-						.texture(tex.textures[0], Game::configuration().featureSupported(Game::Feature::MixTexFlats))
+		gl::setColour(255, 255, 255, 255 * alpha, gl::Blend::Normal);
+		tex_first = mapeditor::textureManager()
+						.texture(tex.textures[0], game::configuration().featureSupported(game::Feature::MixTexFlats))
 						.gl_id;
-		Drawing::drawTextureWithin(
+		drawing::drawTextureWithin(
 			tex_first,
 			tex.position.x - halfsize,
 			tex.position.y - halfsize,
@@ -308,15 +310,15 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string
 			2);
 
 		// Draw up to 4 subsequent textures (overlaid)
-		OpenGL::setColour(255, 255, 255, 127 * alpha, OpenGL::Blend::Normal);
+		gl::setColour(255, 255, 255, 127 * alpha, gl::Blend::Normal);
 		for (unsigned a = 1; a < tex.textures.size() && a < 5; a++)
 		{
-			auto gl_tex = MapEditor::textureManager()
+			auto gl_tex = mapeditor::textureManager()
 							  .texture(
-								  tex.textures[a], Game::configuration().featureSupported(Game::Feature::MixTexFlats))
+								  tex.textures[a], game::configuration().featureSupported(game::Feature::MixTexFlats))
 							  .gl_id;
 
-			Drawing::drawTextureWithin(
+			drawing::drawTextureWithin(
 				gl_tex,
 				tex.position.x - halfsize,
 				tex.position.y - halfsize,
@@ -332,31 +334,31 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string
 	// Draw outline
 	if (tex.hover)
 	{
-		OpenGL::setColour(col_sel.r, col_sel.g, col_sel.b, 255 * alpha, OpenGL::Blend::Normal);
+		gl::setColour(col_sel.r, col_sel.g, col_sel.b, 255 * alpha, gl::Blend::Normal);
 		glLineWidth(3.0f);
 	}
 	else
 	{
-		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, OpenGL::Blend::Normal);
+		gl::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, gl::Blend::Normal);
 		glLineWidth(1.5f);
 	}
-	Drawing::drawRect(
+	drawing::drawRect(
 		tex.position.x - halfsize, tex.position.y - halfsize, tex.position.x + halfsize, tex.position.y + halfsize);
 
 	// Draw position text
-	Drawing::drawText(
+	drawing::drawText(
 		fmt::format("{}:", position),
 		tex.position.x,
 		tex.position.y - halfsize - 18,
 		col_fg,
-		Drawing::Font::Bold,
-		Drawing::Align::Center);
+		drawing::Font::Bold,
+		drawing::Align::Center);
 
 	// Determine texture name text
 	string str_texture;
 	if (tex.textures.size() == 1)
 	{
-		auto& tex_info = OpenGL::Texture::info(tex_first);
+		auto& tex_info = gl::Texture::info(tex_first);
 		str_texture    = fmt::format("{} ({}x{})", tex.textures[0], tex_info.size.x, tex_info.size.y);
 	}
 	else if (tex.textures.size() > 1)
@@ -365,13 +367,13 @@ void LineTextureOverlay::drawTexture(float alpha, int size, TexInfo& tex, string
 		str_texture = "- (None)";
 
 	// Draw texture name
-	Drawing::drawText(
+	drawing::drawText(
 		str_texture,
 		tex.position.x,
 		tex.position.y + halfsize + 2,
 		col_fg,
-		Drawing::Font::Bold,
-		Drawing::Align::Center);
+		drawing::Font::Bold,
+		drawing::Align::Center);
 }
 
 // -----------------------------------------------------------------------------
@@ -471,7 +473,7 @@ void LineTextureOverlay::browseTexture(TexInfo& tex, string_view position)
 
 	// Open texture browser
 	MapTextureBrowser browser(
-		MapEditor::windowWx(), MapEditor::TextureType::Texture, texture, &(MapEditor::editContext().map()));
+		mapeditor::windowWx(), mapeditor::TextureType::Texture, texture, &(mapeditor::editContext().map()));
 	browser.SetTitle(fmt::format("Browse {} Texture", position));
 	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 	{

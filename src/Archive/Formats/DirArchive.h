@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 struct DirEntryChange
 {
 	enum class Action
@@ -106,3 +108,4 @@ private:
 	vector<string>& paths_;
 	vector<string>& dirs_;
 };
+} // namespace slade

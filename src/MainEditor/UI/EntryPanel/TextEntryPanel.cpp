@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,13 +31,15 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextEntryPanel.h"
-#include "Dialogs/Preferences/EditingPrefsPanel.h"
 #include "Game/Configuration.h"
 #include "General/UI.h"
 #include "MainEditor/EntryOperations.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
+#include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
 #include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -68,12 +70,12 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	panel_fr_ = new FindReplacePanel(this, *text_area_);
 	text_area_->setFindReplacePanel(panel_fr_);
 	panel_fr_->Hide();
-	sizer_main_->Add(panel_fr_, 0, wxEXPAND | wxTOP, UI::padLarge());
+	sizer_main_->Add(panel_fr_, 0, wxEXPAND | wxTOP, ui::padLarge());
 	// sizer_main_->AddSpacer(UI::pad());
 
 	// Add 'Text Language' choice to toolbar
 	auto group_language = new SToolBarGroup(toolbar_, "Text Language", true);
-	auto languages      = WxUtils::arrayStringStd(TextLanguage::languageNames());
+	auto languages      = wxutil::arrayStringStd(TextLanguage::languageNames());
 	languages.Sort();
 	languages.Insert("None", 0, 1);
 	choice_text_language_ = new wxChoice(group_language, -1, wxDefaultPosition, wxDefaultSize, languages);
@@ -83,7 +85,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 
 	// Add 'Jump To' choice to toolbar
 	auto group_jump_to = new SToolBarGroup(toolbar_, "Jump To", true);
-	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(UI::scalePx(200), -1));
+	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(ui::scalePx(200), -1));
 	group_jump_to->addCustomControl(choice_jump_to_);
 	toolbar_->addGroup(group_jump_to);
 	text_area_->setJumpToControl(choice_jump_to_);
@@ -92,10 +94,6 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	choice_text_language_->Bind(wxEVT_CHOICE, &TextEntryPanel::onChoiceLanguageChanged, this);
 	text_area_->Bind(wxEVT_TEXT_CHANGED, &TextEntryPanel::onTextModified, this);
 	text_area_->Bind(wxEVT_STC_UPDATEUI, &TextEntryPanel::onUpdateUI, this);
-
-	// Custom toolbar
-	custom_toolbar_actions_ = "arch_scripts_compileacs;arch_scripts_compilehacs";
-	toolbar_->addActionGroup("Scripts", wxSplit(custom_toolbar_actions_, ';'));
 
 
 	// --- Custom menu ---
@@ -134,8 +132,8 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 		return false;
 
 	// Scroll to previous position (if any)
-	if (entry->exProps().propertyExists("TextPosition"))
-		text_area_->GotoPos((int)(entry->exProp("TextPosition")));
+	if (auto pos = entry->exProps().getIf<int>("TextPosition"))
+		text_area_->GotoPos(*pos);
 
 	// --- Attempt to determine text language ---
 	TextLanguage* tl = nullptr;
@@ -145,12 +143,13 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 		tl = TextLanguage::fromId("fragglescript");
 
 	// From entry language hint
-	if (entry->exProps().propertyExists("TextLanguage"))
-		tl = TextLanguage::fromId(entry->exProp("TextLanguage").stringValue());
+	if (auto lang = entry->exProps().getIf<string>("TextLanguage"))
+		tl = TextLanguage::fromId(*lang);
 
 	// Or, from entry type
-	if (!tl && entry->type()->extraProps().propertyExists("text_language"))
-		tl = TextLanguage::fromId(entry->type()->extraProps()["text_language"].stringValue());
+	if (!tl)
+		if (auto lang = entry->type()->extraProps().getIf<string>("text_language"))
+			tl = TextLanguage::fromId(*lang);
 
 	// Load language
 	text_area_->setLanguage(tl);
@@ -160,7 +159,7 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	{
 		for (auto a = 0u; a < choice_text_language_->GetCount(); ++a)
 		{
-			if (StrUtil::equalCI(tl->name(), WxUtils::strToView(choice_text_language_->GetString(a))))
+			if (strutil::equalCI(tl->name(), wxutil::strToView(choice_text_language_->GetString(a))))
 			{
 				choice_text_language_->Select(a);
 				break;
@@ -209,7 +208,7 @@ bool TextEntryPanel::saveEntry()
 	// Update custom definitions if decorate or zscript
 	if (text_area_->language()
 		&& (text_area_->language()->id() == "decorate" || text_area_->language()->id() == "zscript"))
-		Game::updateCustomDefinitions();
+		game::updateCustomDefinitions();
 
 	// Update variables
 	setModified(false);
@@ -263,15 +262,18 @@ wxString TextEntryPanel::statusString()
 // -----------------------------------------------------------------------------
 bool TextEntryPanel::undo()
 {
+	if (!HasFocus() && !text_area_->HasFocus())
+		return false;
+
 	if (text_area_->CanUndo())
 	{
 		text_area_->Undo();
 		// If we have undone all the way back, it is not modified anymore
 		if (!text_area_->CanUndo())
 			setModified(false);
-		return true;
 	}
-	return false;
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -279,12 +281,13 @@ bool TextEntryPanel::undo()
 // -----------------------------------------------------------------------------
 bool TextEntryPanel::redo()
 {
+	if (!HasFocus() && !text_area_->HasFocus())
+		return false;
+
 	if (text_area_->CanRedo())
-	{
 		text_area_->Redo();
-		return true;
-	}
-	return false;
+
+	return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -329,10 +332,10 @@ bool TextEntryPanel::handleEntryPanelAction(string_view id)
 
 	// compileACS
 	else if (id == "arch_scripts_compileacs" && entry)
-		EntryOperations::compileACS(entry.get(), false, nullptr, nullptr);
+		entryoperations::compileACS(entry.get(), false, nullptr, nullptr);
 
 	else if (id == "arch_scripts_compilehacs" && entry)
-		EntryOperations::compileACS(entry.get(), true, nullptr, nullptr);
+		entryoperations::compileACS(entry.get(), true, nullptr, nullptr);
 
 	// Not handled
 	else
@@ -365,7 +368,7 @@ void TextEntryPanel::onTextModified(wxCommandEvent& e)
 void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 {
 	// Get selected language
-	auto tl = TextLanguage::fromName(WxUtils::strToView(choice_text_language_->GetStringSelection()));
+	auto tl = TextLanguage::fromName(wxutil::strToView(choice_text_language_->GetStringSelection()));
 
 	// Set text editor language
 	text_area_->setLanguage(tl);
@@ -376,7 +379,7 @@ void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 		if (tl)
 			entry->exProp("TextLanguage") = tl->id();
 		else
-			entry->exProps().removeProperty("TextLanguage");
+			entry->exProps().remove("TextLanguage");
 	}
 }
 

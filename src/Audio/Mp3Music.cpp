@@ -3,7 +3,10 @@
 #include "Mp3Music.h"
 #include <iostream>
 
-namespace
+using namespace slade;
+using namespace audio;
+
+namespace slade::audio
 {
 struct Mp3MemoryData
 {
@@ -54,7 +57,7 @@ void memoryDataCleanup(void* raw_mp3_data)
 	delete raw_mp3_data;
 }
 
-} // namespace
+} // namespace slade::audio
 
 
 Mp3Music::Mp3Music()
@@ -120,7 +123,7 @@ bool Mp3Music::openFromFile(const std::string& filename)
 	sampling_rate_ = rate;
 
 	buffer_size_ = mpg123_outblock(handle_);
-	buffer_     = new unsigned char[buffer_size_];
+	buffer_      = new unsigned char[buffer_size_];
 	if (!buffer_)
 	{
 		std::cerr << "Failed to reserve memory for decoding one frame for \"" << filename << "\"" << std::endl;
@@ -148,12 +151,12 @@ bool Mp3Music::loadFromMemory(void* data, size_t size_in_bytes)
 	auto mp3_data = new Mp3MemoryData{ data, size_in_bytes, 0 };
 	if (!mp3_data)
 	{
-		Log::error("Failed to reserve memory for keeping track of Memory Object");
+		log::error("Failed to reserve memory for keeping track of Memory Object");
 	}
 
 	if (mpg123_open_handle(handle_, mp3_data) != MPG123_OK)
 	{
-		Log::error(mpg123_strerror(handle_));
+		log::error(mpg123_strerror(handle_));
 		delete mp3_data;
 		mp3_data = nullptr;
 		return false;
@@ -163,20 +166,20 @@ bool Mp3Music::loadFromMemory(void* data, size_t size_in_bytes)
 	int  channels = 0, encoding = 0;
 	if (mpg123_getformat(handle_, &rate, &channels, &encoding) != MPG123_OK)
 	{
-		Log::error("Failed to get format information for Memory Object");
+		log::error("Failed to get format information for Memory Object");
 		return false;
 	}
 	sampling_rate_ = rate;
 
 	buffer_size_ = mpg123_outblock(handle_);
-	buffer_     = new unsigned char[buffer_size_];
+	buffer_      = new unsigned char[buffer_size_];
 	if (!buffer_)
 	{
-		Log::error("Failed to reserve memory for decoding one frame for Memory Object");
+		log::error("Failed to reserve memory for decoding one frame for Memory Object");
 		return false;
 	}
 
-	Log::info("rate {}, channels {}", rate, channels);
+	log::info("rate {}, channels {}", rate, channels);
 
 	initialize(channels, rate);
 
@@ -188,10 +191,10 @@ sf::Time Mp3Music::duration() const
 	if (!handle_ || sampling_rate_ == 0)
 		return {};
 
-	auto len = mpg123_length(handle_);
+	auto len  = mpg123_length(handle_);
 	auto secs = (float)len / (float)sampling_rate_;
-	
-	Log::info("len {} rate {} secs {}", len, sampling_rate_, secs);
+
+	log::info("len {} rate {} secs {}", len, sampling_rate_, secs);
 
 	return sf::seconds(secs);
 }

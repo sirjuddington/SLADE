@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -38,6 +38,8 @@
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObjectCollection.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -53,24 +55,24 @@ bool HexenMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_
 {
 	if (!entry)
 	{
-		Global::error = "Map has no LINEDEFS entry!";
-		Log::info(Global::error);
+		global::error = "Map has no LINEDEFS entry!";
+		log::info(global::error);
 		return false;
 	}
 
 	// Check for empty entry
 	if (entry->size() < sizeof(LineDef))
 	{
-		Log::info(3, "Read 0 lines");
+		log::info(3, "Read 0 lines");
 		return true;
 	}
 
 	auto     line_data = (LineDef*)entry->rawData(true);
 	unsigned nl        = entry->size() / sizeof(LineDef);
-	float    p         = UI::getSplashProgress();
+	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
 	{
-		UI::setSplashProgress(p + ((float)a / nl) * 0.2f);
+		ui::setSplashProgress(p + ((float)a / nl) * 0.2f);
 		const auto& data = line_data[a];
 
 		// Check vertices exist
@@ -78,7 +80,7 @@ bool HexenMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_
 		auto v2 = map_data.vertices().at(data.vertex2);
 		if (!v1 || !v2)
 		{
-			Log::warning("Line {} invalid, not added", a);
+			log::warning("Line {} invalid, not added", a);
 			continue;
 		}
 
@@ -112,17 +114,17 @@ bool HexenMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_
 		// Handle some special cases
 		if (data.type)
 		{
-			switch (Game::configuration().actionSpecial(data.type).needsTag())
+			switch (game::configuration().actionSpecial(data.type).needsTag())
 			{
-			case Game::TagType::LineId:
-			case Game::TagType::LineId1Line2: line->setId(data.args[0]); break;
-			case Game::TagType::LineIdHi5: line->setId((data.args[0] + (data.args[4] << 8))); break;
+			case game::TagType::LineId:
+			case game::TagType::LineId1Line2: line->setId(data.args[0]); break;
+			case game::TagType::LineIdHi5: line->setId((data.args[0] + (data.args[4] << 8))); break;
 			default: break;
 			}
 		}
 	}
 
-	Log::info(3, "Read {} lines", map_data.lines().size());
+	log::info(3, "Read {} lines", map_data.lines().size());
 
 	return true;
 }
@@ -134,25 +136,25 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 {
 	if (!entry)
 	{
-		Global::error = "Map has no THINGS entry!";
-		Log::info(Global::error);
+		global::error = "Map has no THINGS entry!";
+		log::info(global::error);
 		return false;
 	}
 
 	// Check for empty entry
 	if (entry->size() < sizeof(Thing))
 	{
-		Log::info(3, "Read 0 things");
+		log::info(3, "Read 0 things");
 		return true;
 	}
 
 	auto              thng_data = (Thing*)entry->rawData(true);
 	unsigned          nt        = entry->size() / sizeof(Thing);
-	float             p         = UI::getSplashProgress();
+	float             p         = ui::getSplashProgress();
 	MapObject::ArgSet args;
 	for (size_t a = 0; a < nt; a++)
 	{
-		UI::setSplashProgress(p + ((float)a / nt) * 0.2f);
+		ui::setSplashProgress(p + ((float)a / nt) * 0.2f);
 		const auto& data = thng_data[a];
 
 		// Set args
@@ -170,7 +172,7 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 			data.special));
 	}
 
-	Log::info(3, "Read {} things", map_data.things().size());
+	log::info(3, "Read {} things", map_data.things().size());
 
 	return true;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class MapPreviewCanvas;
 class Archive;
 class ZipArchive;
@@ -24,3 +26,4 @@ private:
 	unique_ptr<Archive>    archive_mapdata_;
 	ArchiveDir*            dir_current_ = nullptr;
 };
+} // namespace slade

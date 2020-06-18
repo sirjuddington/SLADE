@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,6 +35,8 @@
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -60,7 +62,7 @@ uint32_t LfdArchive::getEntryOffset(ArchiveEntry* entry)
 	if (!checkEntry(entry))
 		return 0;
 
-	return (uint32_t)(int)entry->exProp("Offset");
+	return (uint32_t)entry->exProp<int>("Offset");
 }
 
 // -----------------------------------------------------------------------------
@@ -107,16 +109,16 @@ bool LfdArchive::open(MemChunk& mc)
 	uint32_t num_lumps = dir_len / 16;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read each entry
-	UI::setSplashProgressMessage("Reading lfd archive data");
+	ui::setSplashProgressMessage("Reading lfd archive data");
 	size_t offset = dir_len + 16;
 	size_t size   = mc.size();
 	for (uint32_t d = 0; offset < size; d++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		uint32_t length  = 0;
@@ -139,14 +141,13 @@ bool LfdArchive::open(MemChunk& mc)
 		// the gobfile is invalid
 		if (offset + length > size)
 		{
-			Log::error("LfdArchive::open: lfd archive is invalid or corrupt");
-			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
+			log::error("LfdArchive::open: lfd archive is invalid or corrupt");
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
 		// Create & setup lump
-		StrUtil::Path fn(name);
+		strutil::Path fn(name);
 		fn.setExtension(type);
 		auto nlump = std::make_shared<ArchiveEntry>(fn.fileName(), length);
 		nlump->setLoaded(false);
@@ -162,15 +163,15 @@ bool LfdArchive::open(MemChunk& mc)
 	}
 
 	if (num_lumps != numEntries())
-		Log::warning("Computed {} lumps, but actually {} entries", num_lumps, numEntries());
+		log::warning("Computed {} lumps, but actually {} entries", num_lumps, numEntries());
 
 	// Detect all entry types
 	MemChunk edata;
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)num_lumps)));
+		ui::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		auto entry = entryAt(a);
@@ -195,11 +196,10 @@ bool LfdArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -311,7 +311,7 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error("LfdArchive::loadEntryData: Failed to open lfdfile {}", filename_);
+		log::error("LfdArchive::loadEntryData: Failed to open lfdfile {}", filename_);
 		return false;
 	}
 

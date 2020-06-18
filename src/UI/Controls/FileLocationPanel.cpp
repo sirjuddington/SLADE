@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,6 +35,8 @@
 #include "SIconButton.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 wxDEFINE_EVENT(wxEVT_COMMAND_FLP_LOCATION_CHANGED, wxCommandEvent);
 
 // -----------------------------------------------------------------------------
@@ -65,16 +67,16 @@ FileLocationPanel::FileLocationPanel(
 	sizer->Add(text_path_, wxSizerFlags(1).Expand());
 
 	btn_browse_ = new SIconButton(this, "open", browse_caption);
-	sizer->Add(btn_browse_, wxSizerFlags(0).Expand().Border(wxLEFT, UI::px(UI::Size::PadMinimum)));
+	sizer->Add(btn_browse_, wxSizerFlags(0).Expand().Border(wxLEFT, ui::px(ui::Size::PadMinimum)));
 
 	btn_browse_->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) {
-		SFileDialog::FDInfo inf;
-		if (SFileDialog::openFile(
+		filedialog::FDInfo inf;
+		if (filedialog::openFile(
 				inf,
-				WxUtils::strToView(browse_caption_),
-				WxUtils::strToView(browse_extensions_),
+				wxutil::strToView(browse_caption_),
+				wxutil::strToView(browse_extensions_),
 				this,
-				WxUtils::strToView(browse_default_filename_)))
+				wxutil::strToView(browse_default_filename_)))
 		{
 			text_path_->SetValue(inf.filenames[0]);
 			wxCommandEvent event(wxEVT_COMMAND_FLP_LOCATION_CHANGED, GetId());

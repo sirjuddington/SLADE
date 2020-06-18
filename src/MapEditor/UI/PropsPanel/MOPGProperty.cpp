@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -34,7 +34,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MOPGProperty.h"
-#include "Dialogs/Preferences/EditingPrefsPanel.h"
 #include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
@@ -44,8 +43,10 @@
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
 #include "SLADEMap/SLADEMap.h"
+#include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
 
-using namespace MapEditor;
+using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -81,8 +82,7 @@ void MOPGProperty::resetValue()
 // MOPGBoolProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGBoolProperty::MOPGBoolProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxBoolProperty(label, name, false)
+	MOPGProperty{ name }, wxBoolProperty(label, name, false)
 {
 }
 
@@ -126,7 +126,7 @@ void MOPGBoolProperty::openObjects(vector<MapObject*>& objects)
 void MOPGBoolProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().boolValue() == GetValue().GetBool())
+		&& property::asBool(udmf_prop_->defaultValue()) == GetValue().GetBool())
 		Hide(true);
 	else
 		Hide(false);
@@ -164,8 +164,7 @@ void MOPGBoolProperty::applyValue()
 // MOPGIntProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGIntProperty::MOPGIntProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxIntProperty(label, name, 0)
+	MOPGProperty{ name }, wxIntProperty(label, name, 0)
 {
 }
 
@@ -209,7 +208,7 @@ void MOPGIntProperty::openObjects(vector<MapObject*>& objects)
 void MOPGIntProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().intValue() == GetValue().GetInteger())
+		&& property::asInt(udmf_prop_->defaultValue()) == GetValue().GetInteger())
 		Hide(true);
 	else
 		Hide(false);
@@ -247,8 +246,7 @@ void MOPGIntProperty::applyValue()
 // MOPGFloatProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGFloatProperty::MOPGFloatProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxFloatProperty(label, name, 0)
+	MOPGProperty{ name }, wxFloatProperty(label, name, 0)
 {
 }
 
@@ -292,7 +290,7 @@ void MOPGFloatProperty::openObjects(vector<MapObject*>& objects)
 void MOPGFloatProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().floatValue() == GetValue().GetDouble())
+		&& property::asFloat(udmf_prop_->defaultValue()) == GetValue().GetDouble())
 		Hide(true);
 	else
 		Hide(false);
@@ -330,15 +328,14 @@ void MOPGFloatProperty::applyValue()
 // MOPGStringProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGStringProperty::MOPGStringProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxStringProperty(label, name, "")
+	MOPGProperty{ name }, wxStringProperty(label, name, "")
 {
 }
 
 // -----------------------------------------------------------------------------
 // Load a list of possible choices from the given UDMF prop, if any
 // -----------------------------------------------------------------------------
-void MOPGStringProperty::setUDMFProp(UDMFProperty* prop)
+void MOPGStringProperty::setUDMFProp(game::UDMFProperty* prop)
 {
 	MOPGProperty::setUDMFProp(prop);
 
@@ -350,7 +347,7 @@ void MOPGStringProperty::setUDMFProp(UDMFProperty* prop)
 		auto choices = wxPGChoices();
 
 		for (auto& val : prop->possibleValues())
-			choices.Add(val.stringValue());
+			choices.Add(property::asString(val));
 
 		SetChoices(choices);
 		SetEditor(wxPGEditor_ComboBox);
@@ -397,7 +394,7 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
 void MOPGStringProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().stringValue() == GetValue().GetString())
+		&& property::asString(udmf_prop_->defaultValue()) == GetValue().GetString())
 		Hide(true);
 	else
 		Hide(false);
@@ -463,7 +460,7 @@ void MOPGIntWithArgsProperty::updateArgs(wxPGProperty* args[5])
 	unsigned argcount;
 
 	if (udmf_prop_)
-		default_value = udmf_prop_->defaultValue().intValue();
+		default_value = property::asInt(udmf_prop_->defaultValue());
 
 	if (parent_->showAll())
 		argcount = 5;
@@ -550,10 +547,10 @@ void MOPGIntWithArgsProperty::OnSetValue()
 // -----------------------------------------------------------------------------
 // Returns a little object describing the args for this thing type
 // -----------------------------------------------------------------------------
-const Game::ArgSpec& MOPGActionSpecialProperty::argSpec()
+const game::ArgSpec& MOPGActionSpecialProperty::argSpec()
 {
 	int special = m_value.GetInteger();
-	return Game::configuration().actionSpecial(special).argSpec();
+	return game::configuration().actionSpecial(special).argSpec();
 }
 
 // -----------------------------------------------------------------------------
@@ -567,7 +564,7 @@ wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, int argFlags
 	if (special == 0)
 		return "0: None";
 	else
-		return wxString::Format("%d: %s", special, Game::configuration().actionSpecial(special).name());
+		return wxString::Format("%d: %s", special, game::configuration().actionSpecial(special).name());
 }
 
 // -----------------------------------------------------------------------------
@@ -579,7 +576,7 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		int                 special = -1;
-		ActionSpecialDialog dlg(MapEditor::windowWx());
+		ActionSpecialDialog dlg(mapeditor::windowWx());
 		dlg.setSpecial(GetValue().GetInteger());
 		if (dlg.ShowModal() == wxID_OK)
 			special = dlg.selectedSpecial();
@@ -602,9 +599,9 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 // -----------------------------------------------------------------------------
 // Returns a little object describing the args for this thing type
 // -----------------------------------------------------------------------------
-const Game::ArgSpec& MOPGThingTypeProperty::argSpec()
+const game::ArgSpec& MOPGThingTypeProperty::argSpec()
 {
-	return Game::configuration().thingType(m_value.GetInteger()).argSpec();
+	return game::configuration().thingType(m_value.GetInteger()).argSpec();
 }
 
 // -----------------------------------------------------------------------------
@@ -618,7 +615,7 @@ wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) co
 	if (type == 0)
 		return "0: None";
 
-	auto& tt = Game::configuration().thingType(type);
+	auto& tt = game::configuration().thingType(type);
 	return wxString::Format("%d: %s", type, tt.name());
 }
 
@@ -635,7 +632,7 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
 			init_type = GetValue().GetInteger();
 
 		// Open thing browser
-		ThingTypeBrowser browser(MapEditor::windowWx(), init_type);
+		ThingTypeBrowser browser(mapeditor::windowWx(), init_type);
 		if (browser.ShowModal() == wxID_OK)
 		{
 			// Set the value if a type was selected
@@ -660,8 +657,7 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
 // MOPGLineFlagProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGLineFlagProperty::MOPGLineFlagProperty(const wxString& label, const wxString& name, int index) :
-	MOPGBoolProperty(label, name),
-	index_{ index }
+	MOPGBoolProperty(label, name), index_{ index }
 {
 }
 
@@ -679,12 +675,12 @@ void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Check flag against first object
-	bool first = Game::configuration().lineFlagSet(index_, (MapLine*)objects[0]);
+	bool first = game::configuration().lineFlagSet(index_, (MapLine*)objects[0]);
 
 	// Check whether all objects share the same flag setting
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (Game::configuration().lineFlagSet(index_, (MapLine*)objects[a]) != first)
+		if (game::configuration().lineFlagSet(index_, (MapLine*)objects[a]) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -716,7 +712,7 @@ void MOPGLineFlagProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		Game::configuration().setLineFlag(index_, (MapLine*)object, GetValue());
+		game::configuration().setLineFlag(index_, (MapLine*)object, GetValue());
 }
 
 
@@ -731,8 +727,7 @@ void MOPGLineFlagProperty::applyValue()
 // MOPGThingFlagProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGThingFlagProperty::MOPGThingFlagProperty(const wxString& label, const wxString& name, int index) :
-	MOPGBoolProperty(label, name),
-	index_{ index }
+	MOPGBoolProperty(label, name), index_{ index }
 {
 }
 
@@ -750,12 +745,12 @@ void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Check flag against first object
-	bool first = Game::configuration().thingFlagSet(index_, (MapThing*)objects[0]);
+	bool first = game::configuration().thingFlagSet(index_, (MapThing*)objects[0]);
 
 	// Check whether all objects share the same flag setting
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (Game::configuration().thingFlagSet(index_, (MapThing*)objects[a]) != first)
+		if (game::configuration().thingFlagSet(index_, (MapThing*)objects[a]) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -787,7 +782,7 @@ void MOPGThingFlagProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		Game::configuration().setThingFlag(index_, (MapThing*)object, GetValue());
+		game::configuration().setThingFlag(index_, (MapThing*)object, GetValue());
 }
 
 
@@ -802,8 +797,7 @@ void MOPGThingFlagProperty::applyValue()
 // MOPGAngleProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGAngleProperty::MOPGAngleProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxEditEnumProperty(label, name)
+	MOPGProperty{ name }, wxEditEnumProperty(label, name)
 {
 	// Setup combo box choices
 	wxArrayString labels;
@@ -868,7 +862,7 @@ void MOPGAngleProperty::openObjects(vector<MapObject*>& objects)
 void MOPGAngleProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().intValue() == GetValue().GetInteger())
+		&& property::asInt(udmf_prop_->defaultValue()) == GetValue().GetInteger())
 		Hide(true);
 	else
 		Hide(false);
@@ -927,8 +921,7 @@ wxString MOPGAngleProperty::ValueToString(wxVariant& value, int arg_flags) const
 // MOPGColourProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGColourProperty::MOPGColourProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxColourProperty(label, name)
+	MOPGProperty{ name }, wxColourProperty(label, name)
 {
 }
 
@@ -1013,8 +1006,7 @@ void MOPGColourProperty::applyValue()
 // MOPGTextureProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGTextureProperty::MOPGTextureProperty(TextureType textype, const wxString& label, const wxString& name) :
-	MOPGStringProperty(label, name),
-	textype_{ textype }
+	MOPGStringProperty(label, name), textype_{ textype }
 {
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
@@ -1068,7 +1060,7 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 			tex_current = GetValueAsString();
 
 		// Open map texture browser
-		MapTextureBrowser browser(MapEditor::windowWx(), textype_, tex_current, &(MapEditor::editContext().map()));
+		MapTextureBrowser browser(mapeditor::windowWx(), textype_, tex_current, &(mapeditor::editContext().map()));
 		if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 			GetGrid()->ChangePropertyValue(this, browser.selectedItem()->name());
 
@@ -1091,14 +1083,13 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 // MOPGSPACTriggerProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxEnumProperty(label, name)
+	MOPGProperty{ name }, wxEnumProperty(label, name)
 {
 	// Set to combo box editor
 	SetEditor(wxPGEditor_ComboBox);
 
 	// Setup combo box choices
-	auto labels = WxUtils::arrayStringStd(Game::configuration().allSpacTriggers());
+	auto labels = wxutil::arrayStringStd(game::configuration().allSpacTriggers());
 	SetChoices(wxPGChoices(labels));
 }
 
@@ -1116,13 +1107,13 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	auto     map_format = MapEditor::editContext().mapDesc().format;
-	wxString first      = Game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[0]), map_format);
+	auto     map_format = mapeditor::editContext().mapDesc().format;
+	wxString first      = game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[0]), map_format);
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (Game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[a]), map_format) != first)
+		if (game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[a]), map_format) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -1143,7 +1134,7 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 void MOPGSPACTriggerProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& udmf_prop_->defaultValue().intValue() == GetValue().GetInteger())
+		&& property::asInt(udmf_prop_->defaultValue()) == GetValue().GetInteger())
 		Hide(true);
 	else
 		Hide(false);
@@ -1166,7 +1157,7 @@ void MOPGSPACTriggerProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		Game::configuration().setLineSpacTrigger(GetChoiceSelection(), dynamic_cast<MapLine*>(object));
+		game::configuration().setLineSpacTrigger(GetChoiceSelection(), dynamic_cast<MapLine*>(object));
 }
 
 
@@ -1182,8 +1173,7 @@ void MOPGSPACTriggerProperty::applyValue()
 // MOPGTagProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGTagProperty::MOPGTagProperty(IdType id_type, const wxString& label, const wxString& name) :
-	MOPGIntProperty(label, name),
-	id_type_{ id_type }
+	MOPGIntProperty(label, name), id_type_{ id_type }
 {
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
@@ -1311,7 +1301,7 @@ wxString MOPGSectorSpecialProperty::ValueToString(wxVariant& value, int argFlags
 {
 	int type = value.GetInteger();
 
-	return wxString::Format("%d: %s", type, Game::configuration().sectorTypeName(type));
+	return wxString::Format("%d: %s", type, game::configuration().sectorTypeName(type));
 }
 
 // -----------------------------------------------------------------------------
@@ -1322,7 +1312,7 @@ bool MOPGSectorSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 	// '...' button clicked
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
-		SectorSpecialDialog dlg(MapEditor::windowWx());
+		SectorSpecialDialog dlg(mapeditor::windowWx());
 		dlg.setup(m_value.GetInteger());
 		if (dlg.ShowModal() == wxID_OK)
 			GetGrid()->ChangePropertyValue(this, dlg.getSelectedSpecial());

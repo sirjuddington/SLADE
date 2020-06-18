@@ -2,6 +2,8 @@
 
 #include "Utility/Colour.h"
 
+namespace slade
+{
 class ListView : public wxListCtrl
 {
 public:
@@ -47,3 +49,4 @@ private:
 	bool icons_        = true;
 	bool update_width_ = true;
 };
+} // namespace slade

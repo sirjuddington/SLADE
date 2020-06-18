@@ -1,20 +1,27 @@
 #pragma once
 
-class ArchiveDir;
 
-namespace Icons
+namespace slade
 {
-enum Type
-{
-	Any     = -1,
-	General = 0,
-	Entry,
-	TextEditor,
-};
+class ArchiveEntry;
 
-bool           loadIcons();
-wxBitmap       getIcon(Type type, string_view name, bool large, bool log_missing = true);
-wxBitmap       getIcon(Type type, string_view name);
-bool           exportIconPNG(Type type, string_view name, string_view path);
-vector<string> iconSets(Type type);
-} // namespace Icons
+namespace icons
+{
+	enum Type
+	{
+		Any     = -1,
+		General = 0,
+		Entry,
+		TextEditor,
+	};
+
+	bool           loadIcons();
+	wxBitmap       getIcon(Type type, string_view name, int size, bool log_missing = true);
+	wxBitmap       getPaddedIcon(Type type, string_view name, int size, Point2i padding = { 1, 1 });
+	wxBitmap       getIcon(Type type, string_view name);
+	bool           iconExists(Type type, string_view name);
+	ArchiveEntry*  getIconEntry(Type type, string_view name, int size);
+	bool           exportIconPNG(Type type, string_view name, string_view path);
+	vector<string> iconSets(Type type);
+} // namespace icons
+} // namespace slade

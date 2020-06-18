@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -32,6 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Colour.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -294,8 +296,8 @@ string ColRGBA::toString(StringFormat format) const
 	{
 	case StringFormat::RGB: return fmt::format("RGB({}, {}, {})", r, g, b);
 	case StringFormat::RGBA: return fmt::format("RGBA({}, {}, {}, {})", r, g, b, a);
-	case StringFormat::CSS: return {};   // TODO #RRGGBB
-	case StringFormat::ZDoom: return {}; // TODO "RR GG BB"
+	case StringFormat::HEX: return fmt::format("#{:X}{:X}{:X}", r, g, b);
+	case StringFormat::ZDoom: return fmt::format("\"{:X} {:X} {:X}\"", r, g, b);
 	default: return {};
 	}
 }

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,6 +39,8 @@
 #include "StringUtils.h"
 #include <filesystem>
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -58,7 +60,7 @@ FileMonitor::FileMonitor(string_view filename, bool start) : filename_{ filename
 	// Start timer (updates every 1 sec)
 	if (start)
 	{
-		file_modified_ = FileUtil::fileModifiedTime(filename);
+		file_modified_ = fileutil::fileModifiedTime(filename);
 		wxTimer::Start(1000);
 	}
 
@@ -72,7 +74,7 @@ FileMonitor::FileMonitor(string_view filename, bool start) : filename_{ filename
 void FileMonitor::Notify()
 {
 	// Check if the file has been modified since last update
-	auto modified = FileUtil::fileModifiedTime(filename_);
+	auto modified = fileutil::fileModifiedTime(filename_);
 	if (modified > file_modified_)
 	{
 		// Modified, update modification time and run any custom code
@@ -90,7 +92,7 @@ void FileMonitor::onEndProcess(wxProcessEvent& e)
 	processTerminated();
 
 	// Check if the file has been modified since last update
-	auto modified = FileUtil::fileModifiedTime(filename_);
+	auto modified = fileutil::fileModifiedTime(filename_);
 	if (modified > file_modified_)
 	{
 		// Modified, update modification time and run any custom code
@@ -139,7 +141,7 @@ void DB2MapFileMonitor::fileModified()
 	// Get map info for target archive
 	for (auto& map : archive_->detectMaps())
 	{
-		if (StrUtil::equalCI(map.name, map_name_))
+		if (strutil::equalCI(map.name, map_name_))
 		{
 			// Check for simple case (map is in zip archive)
 			if (map.archive)
@@ -182,7 +184,7 @@ void DB2MapFileMonitor::processTerminated()
 	// Get map info for target archive
 	for (auto& map : archive_->detectMaps())
 	{
-		if (StrUtil::equalCI(map.name, map_name_))
+		if (strutil::equalCI(map.name, map_name_))
 		{
 			// Unlock map entries
 			auto index     = archive_->entryIndex(map.head.lock().get());

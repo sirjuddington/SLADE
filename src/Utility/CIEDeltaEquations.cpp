@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -44,6 +44,8 @@
 #include "CIEDeltaEquations.h"
 #include "MathStuff.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -81,7 +83,7 @@ CVAR(Float, col_cie_tristim_z, 108.82, CVar::Flag::Save) // to illuminant D65 an
 // The oldest and simplest formula, merely the geometric distance between two
 // points in the colorspace.
 // -----------------------------------------------------------------------------
-double CIE::CIE76(const ColLAB& col1, const ColLAB& col2)
+double cie::CIE76(const ColLAB& col1, const ColLAB& col2)
 {
 	double dl = col1.l - col2.l;
 	double da = col1.a - col2.a;
@@ -94,7 +96,7 @@ double CIE::CIE76(const ColLAB& col1, const ColLAB& col2)
 // This one starts to become complicated as it transforms the Lab colorspace
 // into an LCh colorspace to try to be more accurate.
 // -----------------------------------------------------------------------------
-double CIE::CIE94(const ColLAB& col1, const ColLAB& col2)
+double cie::CIE94(const ColLAB& col1, const ColLAB& col2)
 {
 	double dl = col1.l - col2.l;
 	double da = col1.a - col2.a;
@@ -117,11 +119,11 @@ double CIE::CIE94(const ColLAB& col1, const ColLAB& col2)
 // Adds hue rotation and multiple compensations.
 // But it really is a lot better than CIE94 for color matching.
 // -----------------------------------------------------------------------------
-double CIE::CIEDE2000(const ColLAB& col1, const ColLAB& col2)
+double cie::CIEDE2000(const ColLAB& col1, const ColLAB& col2)
 {
-	constexpr double doublePi = 2.0 * MathStuff::PI;
-	constexpr double pi6      = MathStuff::PI / 6.0;
-	constexpr double pi30     = MathStuff::PI / 30.0;
+	constexpr double doublePi = 2.0 * math::PI;
+	constexpr double pi6      = math::PI / 6.0;
+	constexpr double pi30     = math::PI / 30.0;
 
 	// Compute chroma values
 	double c1   = sqrt(col1.a * col1.a + col1.b * col1.b);
@@ -167,9 +169,9 @@ double CIE::CIEDE2000(const ColLAB& col1, const ColLAB& col2)
 	if (cp1 * cp2 != 0.0)
 	{
 		dhmp = hp2 - hp1;
-		if (dhmp > MathStuff::PI)
+		if (dhmp > math::PI)
 			dhmp -= doublePi;
-		else if (dhmp < -MathStuff::PI)
+		else if (dhmp < -math::PI)
 			dhmp += doublePi;
 	}
 
@@ -184,7 +186,7 @@ double CIE::CIEDE2000(const ColLAB& col1, const ColLAB& col2)
 	double hpavg = hp1 + hp2;
 	if (cp1 * cp2 != 0)
 	{
-		if (fabs(hp1 - hp2) > MathStuff::PI)
+		if (fabs(hp1 - hp2) > math::PI)
 		{
 			if (hp1 + hp2 < doublePi)
 				hpavg += doublePi;
@@ -196,10 +198,10 @@ double CIE::CIEDE2000(const ColLAB& col1, const ColLAB& col2)
 
 	// Compute T
 	double t = 1.0 - 0.17 * cos(hpavg - pi6) + 0.24 * cos(hpavg * 2.0) + 0.32 * cos(hpavg * 3.0 + pi30)
-			   - 0.20 * cos(hpavg * 4.0 - (21.0 * MathStuff::PI / 60.0));
+			   - 0.20 * cos(hpavg * 4.0 - (21.0 * math::PI / 60.0));
 
 	// Compute Delta-Theta (we need to convert to degrees for proper exp())
-	double dtdegree = (hpavg * 180.0 / MathStuff::PI) - 275;
+	double dtdegree = (hpavg * 180.0 / math::PI) - 275;
 	double dt       = 30.0 * exp(-1.0 * dtdegree * dtdegree / 625.0);
 
 	// Compute RC
@@ -216,7 +218,7 @@ double CIE::CIEDE2000(const ColLAB& col1, const ColLAB& col2)
 	double sh = 1 + 0.015 * cpavg * t;
 
 	// Compute RT (we need to get back into radians for proper sin())
-	double dtradian = dt * MathStuff::PI / 180.0;
+	double dtradian = dt * math::PI / 180.0;
 	double rt       = 0.0 - sin(2.0 * dtradian) * rc;
 
 	// And finally, finally, compute Delta-E (without sqrt)
@@ -229,7 +231,7 @@ double CIE::CIEDE2000(const ColLAB& col1, const ColLAB& col2)
 
 #ifdef DEBUGCIEDE2000
 // This can be moved to before the "return" line in CIE::CIEDE2000() and de-commented to investigate incorrect results.
-/*	Log::info(wxString::Format(	// Fun fact: this call hits the parameter limit for wx's log system. One more and it
+/*	log::info(wxString::Format(	// Fun fact: this call hits the parameter limit for wx's log system. One more and it
    breaks. "Lab1 (%f; %f; %f), Lab2 (%f; %f; %f), c1 %f, c2 %f, average c %f, a'1 %f, a'2 %f, C'1 %f, C'2 %f, " "h'1 %f,
    h'2 %f, h' avg %f, G %f, T %f, DL' %f, DC' %f, DH' %f, dTheta %f, RT %f, RC %f, SL %f, SC %f, SH %f, " "d1 %f, d2 %f,
    d3 %f\n", col1.l, col1.a, col1.b, col2.l, col2.a, col2.b, c1, c2, cavg, ap1, ap2, cp1, cp2, hp1, hp2, hpavg, g, t,
@@ -240,7 +242,7 @@ double CIE::CIEDE2000(const ColLAB& col1, const ColLAB& col2)
  * The provided results have a precision of four decimal points, so it's the margin of
  * precision that'll be used. The results are only valid if KL, KC and KH are set to 1.
  */
-#include "General/Console/Console.h"
+#include "General/Console.h"
 CONSOLE_COMMAND(testciede, 0)
 {
 	lab_t labs[34][2] = {
@@ -308,6 +310,6 @@ CONSOLE_COMMAND(testciede, 0)
 		report += wxString::Format("\nThere were %d error%s in the results.", errors, (errors > 1 ? "s" : ""));
 	else
 		report += "\nAll results are accurate enough.";
-	Log::info(report);
+	log::info(report);
 }
 #endif // DEBUGCIEDE2000

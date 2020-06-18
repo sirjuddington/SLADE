@@ -2,6 +2,8 @@
 
 #include "UI/Canvas/OGLCanvas.h"
 
+namespace slade
+{
 class MapSide;
 class NumberTextCtrl;
 
@@ -57,3 +59,4 @@ private:
 	void onTextureChanged(wxCommandEvent& e);
 	void onTextureClicked(wxMouseEvent& e);
 };
+} // namespace slade

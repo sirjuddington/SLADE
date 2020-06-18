@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -45,6 +45,8 @@
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 // FlatTexCanvas Class Functions
@@ -61,7 +63,7 @@ FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 {
 	// Init variables
 	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
-	SetInitialSize(WxUtils::scaledSize(136, 136));
+	SetInitialSize(wxutil::scaledSize(136, 136));
 }
 
 // -----------------------------------------------------------------------------
@@ -73,8 +75,8 @@ void FlatTexCanvas::setTexture(const wxString& tex)
 	if (tex.empty() || tex == "-")
 		texture_ = 0;
 	else
-		texture_ = MapEditor::textureManager()
-					   .flat(tex.ToStdString(), Game::configuration().featureSupported(Game::Feature::MixTexFlats))
+		texture_ = mapeditor::textureManager()
+					   .flat(tex.ToStdString(), game::configuration().featureSupported(game::Feature::MixTexFlats))
 					   .gl_id;
 
 	Refresh();
@@ -101,25 +103,25 @@ void FlatTexCanvas::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (OpenGL::accuracyTweak())
+	if (gl::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Draw background
 	drawCheckeredBackground();
 
 	// Draw texture
-	if (texture_ && texture_ != OpenGL::Texture::missingTexture())
+	if (texture_ && texture_ != gl::Texture::missingTexture())
 	{
 		glEnable(GL_TEXTURE_2D);
-		Drawing::drawTextureWithin(texture_, 0, 0, GetSize().x, GetSize().y, 0, 100.0);
+		drawing::drawTextureWithin(texture_, 0, 0, GetSize().x, GetSize().y, 0, 100.0);
 	}
-	else if (texture_ == OpenGL::Texture::missingTexture())
+	else if (texture_ == gl::Texture::missingTexture())
 	{
 		// Draw unknown icon
-		auto tex = MapEditor::textureManager().editorImage("thing/unknown").gl_id;
+		auto tex = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
 		glEnable(GL_TEXTURE_2D);
-		OpenGL::setColour(180, 0, 0);
-		Drawing::drawTextureWithin(tex, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
+		gl::setColour(180, 0, 0);
+		drawing::drawTextureWithin(tex, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
 	}
 
 	// Swap buffers (ie show what was drawn)
@@ -169,18 +171,18 @@ void FlatComboBox::onDropDown(wxCommandEvent& e)
 	wxString text = GetValue().Upper();
 
 	// Populate dropdown with matching flat names
-	auto&         textures = MapEditor::textureManager().allFlatsInfo();
+	auto&         textures = mapeditor::textureManager().allFlatsInfo();
 	wxArrayString list;
 	list.Add("-");
 	for (auto& texture : textures)
 	{
-		if (StrUtil::startsWith(texture.short_name, text.ToStdString()))
+		if (strutil::startsWith(texture.short_name, text.ToStdString()))
 		{
 			list.Add(texture.short_name);
 		}
-		if (Game::configuration().featureSupported(Game::Feature::LongNames))
+		if (game::configuration().featureSupported(game::Feature::LongNames))
 		{
-			if (StrUtil::startsWith(texture.long_name, text.ToStdString()))
+			if (strutil::startsWith(texture.long_name, text.ToStdString()))
 			{
 				list.Add(texture.long_name);
 			}
@@ -243,7 +245,7 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 
 	// Other Properties tab
 
-	if (MapEditor::editContext().mapDesc().format == MapFormat::UDMF)
+	if (mapeditor::editContext().mapDesc().format == MapFormat::UDMF)
 	{
 		mopp_all_props_ = new MapObjectPropsPanel(stc_tabs_, true);
 		mopp_all_props_->hideProperty("texturefloor");
@@ -280,14 +282,14 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 
 	// --- Floor ---
 	auto m_hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(m_hbox, 0, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(m_hbox, 0, wxEXPAND | wxALL, ui::pad());
 	auto frame      = new wxStaticBox(panel, -1, "Floor");
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	m_hbox->Add(framesizer, 1, wxALIGN_CENTER | wxRIGHT, UI::pad());
+	m_hbox->Add(framesizer, 1, wxALIGN_CENTER | wxRIGHT, ui::pad());
 
 	// Texture
-	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::pad());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 	gb_sizer->Add(gfx_floor_ = new FlatTexCanvas(panel), { 0, 0 }, { 1, 2 }, wxALIGN_CENTER);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Texture:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(fcb_floor_ = new FlatComboBox(panel), { 1, 1 }, { 1, 1 }, wxEXPAND);
@@ -305,8 +307,8 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 	m_hbox->Add(framesizer, 1, wxALIGN_CENTER);
 
 	// Texture
-	gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::pad());
+	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 	gb_sizer->Add(gfx_ceiling_ = new FlatTexCanvas(panel), { 0, 0 }, { 1, 2 }, wxALIGN_CENTER);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Texture:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(fcb_ceiling_ = new FlatComboBox(panel), { 1, 1 }, { 1, 1 }, wxEXPAND);
@@ -321,9 +323,9 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 	// -- General ---
 	frame      = new wxStaticBox(panel, -1, "General");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 0, wxEXPAND | wxALL, UI::pad());
-	gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(framesizer, 0, wxEXPAND | wxALL, ui::pad());
+	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Light level
 	gb_sizer->Add(new wxStaticText(panel, -1, "Light Level:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -352,14 +354,14 @@ wxPanel* SectorPropsPanel::setupSpecialPanel()
 	panel->SetSizer(sizer);
 
 	// Add special panel
-	sizer->Add(panel_special_ = new SectorSpecialPanel(panel), 1, wxEXPAND | wxALL, UI::pad());
+	sizer->Add(panel_special_ = new SectorSpecialPanel(panel), 1, wxEXPAND | wxALL, ui::pad());
 
 	// Add override checkbox
 	sizer->Add(
 		cb_override_special_ = new wxCheckBox(panel, -1, "Override Special"),
 		0,
 		wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,
-		UI::pad());
+		ui::pad());
 	cb_override_special_->SetToolTip(
 		"Differing specials detected, tick this to set the special for all selected sectors");
 
@@ -523,7 +525,7 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 	}
 
 	// Browse
-	MapTextureBrowser browser(this, MapEditor::TextureType::Flat, tc->texName(), &MapEditor::editContext().map());
+	MapTextureBrowser browser(this, mapeditor::TextureType::Flat, tc->texName(), &mapeditor::editContext().map());
 	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 		cb->SetValue(browser.selectedItem()->name());
 }
@@ -533,6 +535,6 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void SectorPropsPanel::onBtnNewTag(wxCommandEvent& e)
 {
-	int tag = MapEditor::editContext().map().sectors().firstFreeId();
+	int tag = mapeditor::editContext().map().sectors().firstFreeId();
 	text_tag_->SetValue(wxString::Format("%d", tag));
 }

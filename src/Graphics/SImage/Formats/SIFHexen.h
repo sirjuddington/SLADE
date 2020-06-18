@@ -148,20 +148,20 @@ protected:
 		// Check if data is paletted
 		if (image.type() != SImage::Type::PalMask)
 		{
-			Log::error("Cannot convert truecolour image to planar format - convert to 16-colour first.");
+			log::error("Cannot convert truecolour image to planar format - convert to 16-colour first.");
 			return false;
 		}
 
 		if (image.countColours() > 16)
 		{
-			Log::error(wxString::Format("Cannot convert to planar format, too many colors (%d)", image.countColours()));
+			log::error(wxString::Format("Cannot convert to planar format, too many colors (%d)", image.countColours()));
 			return false;
 		}
 
 		// Check image size
 		if (!(image.width() == 640 && image.height() == 480))
 		{
-			Log::error("Cannot convert to planar format, invalid size (must be 640x480)");
+			log::error("Cannot convert to planar format, invalid size (must be 640x480)");
 			return false;
 		}
 
@@ -336,21 +336,21 @@ protected:
 		// Check if data is paletted
 		if (image.type() != SImage::Type::PalMask)
 		{
-			Log::error(
+			log::error(
 				wxString::Format("Cannot convert truecolour image to 4-bit format - convert to 16-colour first."));
 			return false;
 		}
 
 		if (image.countColours() > 16)
 		{
-			Log::error(wxString::Format("Cannot convert to 4-bit format, too many colors (%d)", image.countColours()));
+			log::error(wxString::Format("Cannot convert to 4-bit format, too many colors (%d)", image.countColours()));
 			return false;
 		}
 
 		// Check image size
 		if (!((image.width() == 4 && image.height() == 16) || (image.width() == 16 && image.height() == 23)))
 		{
-			Log::error(wxString::Format(
+			log::error(wxString::Format(
 				"No point in converting to 4-bit format, image isn't a valid Hexen size (4x16 or 16x23)"));
 			return false;
 		}

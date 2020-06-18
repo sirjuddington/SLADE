@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -37,13 +37,15 @@
 #include "Scripting/Lua.h"
 #include "thirdparty/sol/sol.hpp"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
 // Lua Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace Lua
+namespace slade::lua
 {
 // -----------------------------------------------------------------------------
 // Sets a boolean property [key] on the MapObject [self] to [value].
@@ -54,7 +56,7 @@ void objectSetBoolProperty(MapObject& self, string_view key, bool value)
 	if (self.scriptCanModifyProp(key))
 		self.setBoolProperty(key, value);
 	else
-		Log::warning("{} boolean property \"{}\" can not be modified via script", self.typeName(), key);
+		log::warning("{} boolean property \"{}\" can not be modified via script", self.typeName(), key);
 }
 
 // -----------------------------------------------------------------------------
@@ -66,7 +68,7 @@ void objectSetIntProperty(MapObject& self, string_view key, int value)
 	if (self.scriptCanModifyProp(key))
 		self.setIntProperty(key, value);
 	else
-		Log::warning("{} integer property \"{}\" can not be modified via script", self.typeName(), key);
+		log::warning("{} integer property \"{}\" can not be modified via script", self.typeName(), key);
 }
 
 // -----------------------------------------------------------------------------
@@ -78,7 +80,7 @@ void objectSetFloatProperty(MapObject& self, string_view key, double value)
 	if (self.scriptCanModifyProp(key))
 		self.setFloatProperty(key, value);
 	else
-		Log::warning("{} float property \"{}\" can not be modified via script", self.typeName(), key);
+		log::warning("{} float property \"{}\" can not be modified via script", self.typeName(), key);
 }
 
 // -----------------------------------------------------------------------------
@@ -90,7 +92,7 @@ void objectSetStringProperty(MapObject& self, string_view key, string_view value
 	if (self.scriptCanModifyProp(key))
 		self.setStringProperty(key, value);
 	else
-		Log::warning("{} string property \"{}\" can not be modified via script", self.typeName(), key);
+		log::warning("{} string property \"{}\" can not be modified via script", self.typeName(), key);
 }
 
 // -----------------------------------------------------------------------------
@@ -118,7 +120,7 @@ void registerSLADEMap(sol::state& lua)
 void selectMapObject(MapEditContext& self, MapObject* object, bool select)
 {
 	if (object)
-		self.selection().select({ (int)object->index(), MapEditor::itemTypeFromObject(object) }, select);
+		self.selection().select({ (int)object->index(), mapeditor::itemTypeFromObject(object) }, select);
 }
 
 // -----------------------------------------------------------------------------
@@ -126,11 +128,11 @@ void selectMapObject(MapEditContext& self, MapObject* object, bool select)
 // -----------------------------------------------------------------------------
 void setEditMode(
 	MapEditContext&       self,
-	MapEditor::Mode       mode,
-	MapEditor::SectorMode sector_mode = MapEditor::SectorMode::Both)
+	mapeditor::Mode       mode,
+	mapeditor::SectorMode sector_mode = mapeditor::SectorMode::Both)
 {
 	self.setEditMode(mode);
-	if (mode == MapEditor::Mode::Sectors)
+	if (mode == mapeditor::Mode::Sectors)
 		self.setSectorEditMode(sector_mode);
 }
 
@@ -151,14 +153,14 @@ void registerMapEditor(sol::state& lua)
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_mapeditor["MODE_VERTICES"]      = sol::property([]() { return MapEditor::Mode::Vertices; });
-	lua_mapeditor["MODE_LINES"]         = sol::property([]() { return MapEditor::Mode::Lines; });
-	lua_mapeditor["MODE_SECTORS"]       = sol::property([]() { return MapEditor::Mode::Sectors; });
-	lua_mapeditor["MODE_THINGS"]        = sol::property([]() { return MapEditor::Mode::Things; });
-	lua_mapeditor["MODE_VISUAL"]        = sol::property([]() { return MapEditor::Mode::Visual; });
-	lua_mapeditor["SECTORMODE_BOTH"]    = sol::property([]() { return MapEditor::SectorMode::Both; });
-	lua_mapeditor["SECTORMODE_FLOOR"]   = sol::property([]() { return MapEditor::SectorMode::Floor; });
-	lua_mapeditor["SECTORMODE_CEILING"] = sol::property([]() { return MapEditor::SectorMode::Ceiling; });
+	lua_mapeditor["MODE_VERTICES"]      = sol::property([]() { return mapeditor::Mode::Vertices; });
+	lua_mapeditor["MODE_LINES"]         = sol::property([]() { return mapeditor::Mode::Lines; });
+	lua_mapeditor["MODE_SECTORS"]       = sol::property([]() { return mapeditor::Mode::Sectors; });
+	lua_mapeditor["MODE_THINGS"]        = sol::property([]() { return mapeditor::Mode::Things; });
+	lua_mapeditor["MODE_VISUAL"]        = sol::property([]() { return mapeditor::Mode::Visual; });
+	lua_mapeditor["SECTORMODE_BOTH"]    = sol::property([]() { return mapeditor::SectorMode::Both; });
+	lua_mapeditor["SECTORMODE_FLOOR"]   = sol::property([]() { return mapeditor::SectorMode::Floor; });
+	lua_mapeditor["SECTORMODE_CEILING"] = sol::property([]() { return mapeditor::SectorMode::Ceiling; });
 
 	// Functions
 	// -------------------------------------------------------------------------
@@ -178,8 +180,8 @@ void registerMapEditor(sol::state& lua)
 	lua_mapeditor["Select"]         = sol::overload(
         &selectMapObject, [](MapEditContext& self, MapObject* object) { selectMapObject(self, object, true); });
 	lua_mapeditor["SetEditMode"] = sol::overload(
-		[](MapEditContext& self, MapEditor::Mode mode) { setEditMode(self, mode); },
-		[](MapEditContext& self, MapEditor::Mode mode, MapEditor::SectorMode sector_mode) {
+		[](MapEditContext& self, mapeditor::Mode mode) { setEditMode(self, mode); },
+		[](MapEditContext& self, mapeditor::Mode mode, mapeditor::SectorMode sector_mode) {
 			setEditMode(self, mode, sector_mode);
 		});
 }
@@ -206,7 +208,7 @@ void registerMapVertex(sol::state& lua)
 sol::table lineVisibleTextures(MapLine& self)
 {
 	auto needs_tex = self.needsTexture();
-	return Lua::state().create_table_with(
+	return lua::state().create_table_with(
 		"frontUpper",
 		(needs_tex & MapLine::Part::FrontUpper) != 0,
 		"frontMiddle",
@@ -226,10 +228,10 @@ sol::table lineVisibleTextures(MapLine& self)
 // -----------------------------------------------------------------------------
 bool lineFlag(MapLine& self, const string& flag)
 {
-	if (Game::configuration().lineBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
+	if (game::configuration().lineBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
 		return true;
 
-	return Game::configuration().lineFlagSet(flag, &self, self.parentMap()->currentFormat());
+	return game::configuration().lineFlagSet(flag, &self, self.parentMap()->currentFormat());
 }
 
 // -----------------------------------------------------------------------------
@@ -316,10 +318,10 @@ void registerMapSector(sol::state& lua)
 // -----------------------------------------------------------------------------
 bool thingFlag(MapThing& self, const string& flag)
 {
-	if (Game::configuration().thingBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
+	if (game::configuration().thingBasicFlagSet(flag, &self, self.parentMap()->currentFormat()))
 		return true;
 
-	return Game::configuration().thingFlagSet(flag, &self, self.parentMap()->currentFormat());
+	return game::configuration().thingFlagSet(flag, &self, self.parentMap()->currentFormat());
 }
 
 // -----------------------------------------------------------------------------
@@ -396,4 +398,4 @@ void registerMapEditorTypes(sol::state& lua)
 	registerMapThing(lua);
 }
 
-} // namespace Lua
+} // namespace slade::lua

@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class TextEditorCtrl;
 class TextLanguage;
 
@@ -30,7 +32,9 @@ public:
 
 	virtual void loadLanguage(TextLanguage* language);
 
-	virtual bool doStyling(TextEditorCtrl* editor, int start, int end);
+	virtual void doStyling(TextEditorCtrl* editor, int start, int end);
+	void         updateComments(TextEditorCtrl* editor, int start, int end);
+
 	virtual void addWord(string_view word, int style);
 	virtual void clearWords() { word_list_.clear(); }
 	virtual void resetLineInfo() { lines_.clear(); }
@@ -49,7 +53,6 @@ protected:
 	{
 		Unknown,
 		Word,
-		Comment,
 		String,
 		Char,
 		Number,
@@ -68,7 +71,6 @@ protected:
 	bool                  fold_comments_     = false;
 	bool                  fold_preprocessor_ = false;
 	char                  preprocessor_char_;
-	int                   curr_comment_idx_ = -1;
 
 	struct WLIndex
 	{
@@ -79,12 +81,18 @@ protected:
 
 	struct LineInfo
 	{
-		int  comment_idx;
 		int  fold_increment;
 		bool has_word;
-		LineInfo() : comment_idx{ -1 }, fold_increment{ 0 }, has_word{ false } {}
+		LineInfo() : fold_increment{ 0 }, has_word{ false } {}
 	};
 	std::map<int, LineInfo> lines_;
+
+	struct CommentBlock
+	{
+		int start_pos = -1;
+		int end_pos   = -1;
+	};
+	vector<CommentBlock> comment_blocks_;
 
 	struct LexerState
 	{
@@ -98,7 +106,6 @@ protected:
 		TextEditorCtrl* editor;
 	};
 	bool processUnknown(LexerState& state);
-	bool processComment(LexerState& state);
 	bool processWord(LexerState& state);
 	bool processString(LexerState& state);
 	bool processChar(LexerState& state);
@@ -106,8 +113,9 @@ protected:
 	bool processWhitespace(LexerState& state);
 
 	virtual void styleWord(LexerState& state, string_view word);
-	bool         checkToken(LexerState& state, int pos, string_view token) const;
-	bool         checkToken(LexerState& state, int pos, vector<string>& tokens, int* found_idx = nullptr) const;
+	bool         checkToken(TextEditorCtrl* editor, int pos, string_view token) const;
+	bool checkToken(TextEditorCtrl* editor, int pos, const vector<string>& tokens, int* found_idx = nullptr) const;
+	int  isWithinComment(int pos);
 };
 
 class ZScriptLexer : public Lexer
@@ -125,3 +133,4 @@ protected:
 private:
 	vector<string> functions_;
 };
+} // namespace slade

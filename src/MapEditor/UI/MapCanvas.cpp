@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -39,8 +39,9 @@
 #include "UI/WxUtils.h"
 #include "Utility/MathStuff.h"
 
+using namespace slade;
 
-using MapEditor::Mode;
+using mapeditor::Mode;
 
 
 // -----------------------------------------------------------------------------
@@ -170,7 +171,7 @@ void MapCanvas::mouseLook3d()
 		if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
 		{
 			// Get relative mouse movement (scale with dpi on macOS)
-			const double scale     = App::platform() == App::MacOS ? GetContentScaleFactor() : 1.;
+			const double scale     = app::platform() == app::MacOS ? GetContentScaleFactor() : 1.;
 			const double threshold = scale - 1.0;
 
 			wxRealPoint mouse_pos = wxGetMousePosition();
@@ -226,7 +227,7 @@ void MapCanvas::onKeyBindPress(string_view name)
 		date.SetToCurrent();
 		auto timestamp = date.FormatISOCombined('-');
 		timestamp.Replace(":", "");
-		auto filename = App::path(fmt::format("sladeshot-{}.png", WxUtils::strToView(timestamp)), App::Dir::User);
+		auto filename = app::path(fmt::format("sladeshot-{}.png", wxutil::strToView(timestamp)), app::Dir::User);
 		if (shot.saveToFile(filename))
 		{
 			// Editor message if the file is actually written, with full path
@@ -270,20 +271,20 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 	context_->input().keyDown(KeyBind::keyName(e.GetKeyCode()));
 
 	// Testing
-	if (Global::debug)
+	if (global::debug)
 	{
 		if (e.GetKeyCode() == WXK_F6)
 		{
 			Polygon2D poly;
 			sf::Clock clock;
-			Log::info(1, "Generating polygons...");
+			log::info(1, "Generating polygons...");
 			for (unsigned a = 0; a < context_->map().nSectors(); a++)
 			{
 				if (!poly.openSector(context_->map().sector(a)))
-					Log::info(1, wxString::Format("Splitting failed for sector %d", a));
+					log::info(1, wxString::Format("Splitting failed for sector %d", a));
 			}
 			// int ms = clock.GetElapsedTime() * 1000;
-			// Log::info(1, "Polygon generation took %dms", ms);
+			// log::info(1, "Polygon generation took %dms", ms);
 		}
 		if (e.GetKeyCode() == WXK_F7)
 		{
@@ -294,7 +295,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 				SectorBuilder sbuilder;
 
 				// Determine line side
-				double side = MathStuff::lineSide(context_->input().mousePosMap(), line->seg());
+				double side = math::lineSide(context_->input().mousePosMap(), line->seg());
 				if (side >= 0)
 					sbuilder.traceSector(&(context_->map()), line, true);
 				else
@@ -361,7 +362,7 @@ void MapCanvas::onKeyUp(wxKeyEvent& e)
 // -----------------------------------------------------------------------------
 void MapCanvas::onMouseDown(wxMouseEvent& e)
 {
-	using namespace MapEditor;
+	using namespace mapeditor;
 
 	// Send to editor context
 	bool skip = true;
@@ -401,7 +402,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void MapCanvas::onMouseUp(wxMouseEvent& e)
 {
-	using namespace MapEditor;
+	using namespace mapeditor;
 
 	// Send to editor context
 	bool skip = true;

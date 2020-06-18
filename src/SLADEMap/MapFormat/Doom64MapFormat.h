@@ -2,6 +2,8 @@
 
 #include "MapFormatHandler.h"
 
+namespace slade
+{
 class Doom64MapFormat : public MapFormatHandler
 {
 public:
@@ -60,8 +62,6 @@ public:
 	vector<unique_ptr<ArchiveEntry>> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
 		override;
 
-	string udmfNamespace() override { return ""; }
-
 private:
 	virtual bool readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map_data) const;
 	virtual bool readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map_data) const;
@@ -69,3 +69,4 @@ private:
 	virtual bool readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_data) const;
 	virtual bool readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_data) const;
 };
+} // namespace slade

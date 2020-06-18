@@ -1,8 +1,10 @@
 #pragma once
 
 #include "EntryType/EntryType.h"
-#include "Utility/PropertyList/PropertyList.h"
+#include "Utility/Property.h"
 
+namespace slade
+{
 struct ArchiveFormat;
 class ArchiveDir;
 class Archive;
@@ -49,6 +51,7 @@ public:
 	PropertyList&            exProps() { return ex_props_; }
 	const PropertyList&      exProps() const { return ex_props_; }
 	Property&                exProp(const string& key) { return ex_props_[key]; }
+	template<typename T> T   exProp(const string& key) { return std::get<T>(ex_props_[key]); }
 	State                    state() const { return state_; }
 	bool                     isLocked() const { return locked_; }
 	bool                     isLoaded() const { return data_loaded_; }
@@ -74,6 +77,7 @@ public:
 	void lockState() { state_locked_ = true; }
 	void unlockState() { state_locked_ = false; }
 	void formatName(const ArchiveFormat& format);
+	void updateSize() { size_ = data_.size(); }
 
 	// Entry modification (will change entry state)
 	bool rename(string_view new_name);
@@ -128,3 +132,4 @@ private:
 	int    reliability_ = 0; // The reliability of the entry's identification
 	size_t index_guess_ = 0; // for speed
 };
+} // namespace slade

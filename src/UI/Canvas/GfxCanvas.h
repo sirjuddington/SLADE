@@ -1,16 +1,17 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
 #include "Graphics/SImage/SImage.h"
 #include "OGLCanvas.h"
 #include "OpenGL/GLTexture.h"
 
+namespace slade
+{
 class SImage;
 class SBrush;
 class GLTexture;
 class Translation;
 
-class GfxCanvas : public OGLCanvas, Listener
+class GfxCanvas : public OGLCanvas
 {
 public:
 	enum class View
@@ -65,8 +66,6 @@ public:
 	bool  onImage(int x, int y);
 	Vec2i imageCoords(int x, int y) const;
 
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
-
 private:
 	SImage       image_;
 	View         view_type_ = View::Default;
@@ -90,6 +89,9 @@ private:
 	Vec2i        prev_pos_     = { -1, -1 };     // previous position of cursor
 	unsigned     tex_brush_;                     // preview the effect of the brush
 
+	// Signal connections
+	sigslot::scoped_connection sc_image_changed_;
+
 	// Events
 	void onMouseLeftDown(wxMouseEvent& e);
 	void onMouseRightDown(wxMouseEvent& e);
@@ -98,6 +100,7 @@ private:
 	void onMouseLeaving(wxMouseEvent& e);
 	void onKeyDown(wxKeyEvent& e);
 };
+} // namespace slade
 
 DECLARE_EVENT_TYPE(wxEVT_GFXCANVAS_OFFSET_CHANGED, -1)
 DECLARE_EVENT_TYPE(wxEVT_GFXCANVAS_PIXELS_CHANGED, -1)

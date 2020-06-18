@@ -2,6 +2,8 @@
 
 #include "EntryPanel.h"
 
+namespace slade
+{
 class ANSICanvas;
 
 class ANSIEntryPanel : public EntryPanel
@@ -21,3 +23,4 @@ private:
 	ANSICanvas*     ansi_canvas_ = nullptr;
 	vector<uint8_t> ansi_chardata_;
 };
+} // namespace slade

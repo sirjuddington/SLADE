@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class GZipArchive : public TreelessArchive
 {
 public:
@@ -68,3 +70,4 @@ private:
 	static const int FLG_FCMNT = 0x10;
 	static const int FLG_FUNKN = 0xE0;
 };
+} // namespace slade

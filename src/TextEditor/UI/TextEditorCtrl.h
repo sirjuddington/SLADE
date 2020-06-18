@@ -6,16 +6,18 @@
 #include "TextEditor/TextStyle.h"
 #include <utility>
 
-
 class wxButton;
 class wxCheckBox;
 class wxTextCtrl;
-class FindReplacePanel;
-class SCallTip;
 class wxChoice;
 
 wxDECLARE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 wxDECLARE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
+
+namespace slade
+{
+class FindReplacePanel;
+class SCallTip;
 
 class JumpToCalculator : public wxThread
 {
@@ -143,3 +145,4 @@ private:
 	void onUpdateTimer(wxTimerEvent& e);
 	void onStyleNeeded(wxStyledTextEvent& e);
 };
+} // namespace slade

@@ -22,9 +22,11 @@
 #include "Renderer/Renderer.h"
 #include "SLADEMap/SLADEMap.h"
 
-namespace UI
+namespace slade
 {
-enum class MouseCursor;
+namespace ui
+{
+	enum class MouseCursor;
 }
 
 class MapCanvas;
@@ -44,11 +46,11 @@ public:
 	~MapEditContext() = default;
 
 	SLADEMap&             map() { return map_; }
-	MapEditor::Mode       editMode() const { return edit_mode_; }
-	MapEditor::SectorMode sectorEditMode() const { return sector_mode_; }
+	mapeditor::Mode       editMode() const { return edit_mode_; }
+	mapeditor::SectorMode sectorEditMode() const { return sector_mode_; }
 	double                gridSize() const;
 	ItemSelection&        selection() { return selection_; }
-	MapEditor::Item       hilightItem() const { return selection_.hilight(); }
+	mapeditor::Item       hilightItem() const { return selection_.hilight(); }
 	vector<MapSector*>&   taggedSectors() { return tagged_sectors_; }
 	vector<MapLine*>&     taggedLines() { return tagged_lines_; }
 	vector<MapThing*>&    taggedThings() { return tagged_things_; }
@@ -59,13 +61,13 @@ public:
 	UndoManager*          undoManager() const { return undo_manager_.get(); }
 	Archive::MapDesc&     mapDesc() { return map_desc_; }
 	MapCanvas*            canvas() const { return canvas_; }
-	MapEditor::Renderer&  renderer() { return renderer_; }
-	MapEditor::Input&     input() { return input_; }
+	mapeditor::Renderer&  renderer() { return renderer_; }
+	mapeditor::Input&     input() { return input_; }
 	bool                  mouseLocked() const { return mouse_locked_; }
 
-	void setEditMode(MapEditor::Mode mode);
+	void setEditMode(mapeditor::Mode mode);
 	void setPrevEditMode() { setEditMode(edit_mode_prev_); }
-	void setSectorEditMode(MapEditor::SectorMode mode);
+	void setSectorEditMode(mapeditor::SectorMode mode);
 	void cycleSectorEditMode();
 	void setCanvas(MapCanvas* canvas) { canvas_ = canvas; }
 	void lockMouse(bool lock);
@@ -141,7 +143,7 @@ public:
 	void   updateDisplay();
 	void   updateStatusText() const;
 	void   updateThingLists();
-	void   setCursor(UI::MouseCursor cursor) const;
+	void   setCursor(ui::MouseCursor cursor) const;
 	void   forceRefreshRenderer();
 
 
@@ -159,11 +161,11 @@ private:
 	unique_ptr<UndoStep>    us_create_delete_ = nullptr;
 
 	// Editor state
-	MapEditor::Mode       edit_mode_      = MapEditor::Mode::Lines;
-	MapEditor::Mode       edit_mode_prev_ = MapEditor::Mode::Lines;
+	mapeditor::Mode       edit_mode_      = mapeditor::Mode::Lines;
+	mapeditor::Mode       edit_mode_prev_ = mapeditor::Mode::Lines;
 	ItemSelection         selection_      = ItemSelection(this);
 	int                   grid_size_      = 9;
-	MapEditor::SectorMode sector_mode_    = MapEditor::SectorMode::Both;
+	mapeditor::SectorMode sector_mode_    = mapeditor::SectorMode::Both;
 	bool                  grid_snap_      = true;
 	int                   current_tag_    = 0;
 	bool                  mouse_locked_   = false;
@@ -211,10 +213,10 @@ private:
 	int   player_start_dir_ = 0;
 
 	// Renderer
-	MapEditor::Renderer renderer_ = MapEditor::Renderer(*this);
+	mapeditor::Renderer renderer_ = mapeditor::Renderer(*this);
 
 	// Input
-	MapEditor::Input input_ = MapEditor::Input(*this);
+	mapeditor::Input input_ = mapeditor::Input(*this);
 
 	// Full-Screen Overlay
 	unique_ptr<MCOverlay> overlay_current_ = nullptr;
@@ -264,3 +266,4 @@ private:
 	vector<unique_ptr<MapThing>> things_;
 	Vec2d                        midpoint_;
 };
+} // namespace slade

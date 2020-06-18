@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -36,8 +36,9 @@
 #include "Graphics/Translation.h"
 #include "SIFormat.h"
 #include "Utility/MathStuff.h"
-
 #undef BOOL
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -56,6 +57,25 @@ EXTERN_CVAR(Float, col_greyscale_b)
 //
 // -----------------------------------------------------------------------------
 
+
+// -----------------------------------------------------------------------------
+// SImage class copy constructor
+// -----------------------------------------------------------------------------
+SImage::SImage(const SImage& img) :
+	width_{ img.width_ },
+	height_{ img.height_ },
+	type_{ img.type_ },
+	palette_{ img.palette_ },
+	has_palette_{ img.has_palette_ },
+	offset_x_{ img.offset_x_ },
+	offset_y_{ img.offset_y_ },
+	format_{ img.format_ },
+	imgindex_{ img.imgindex_ },
+	numimages_{ img.numimages_ }
+{
+	data_.importMem(img.data_);
+	mask_.importMem(img.mask_);
+}
 
 // -----------------------------------------------------------------------------
 // Loads the image as RGBA data into [mc].
@@ -308,7 +328,7 @@ void SImage::setXOffset(int offset)
 	offset_x_ = offset;
 
 	// Announce change
-	announce("offsets_changed");
+	signals_.offsets_changed(offset_x_, offset_y_);
 }
 
 // -----------------------------------------------------------------------------
@@ -320,7 +340,7 @@ void SImage::setYOffset(int offset)
 	offset_y_ = offset;
 
 	// Announce change
-	announce("offsets_changed");
+	signals_.offsets_changed(offset_x_, offset_y_);
 }
 
 // -----------------------------------------------------------------------------
@@ -403,7 +423,7 @@ void SImage::clear()
 	offset_y_ = 0;
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 }
 
 // -----------------------------------------------------------------------------
@@ -433,7 +453,7 @@ void SImage::fillAlpha(uint8_t alpha)
 		data_.fillData(alpha);
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 }
 
 // -----------------------------------------------------------------------------
@@ -564,7 +584,7 @@ bool SImage::copyImage(SImage* image)
 		mask_.importMem(image->mask_);
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	return true;
 }
@@ -612,7 +632,7 @@ bool SImage::convertRGBA(Palette* pal)
 	has_palette_ = false;
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	// Done
 	return true;
@@ -674,7 +694,7 @@ bool SImage::convertPaletted(Palette* pal_target, Palette* pal_current)
 	has_palette_ = true;
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	// Success
 	return true;
@@ -712,7 +732,7 @@ bool SImage::convertAlphaMap(AlphaSource alpha_source, Palette* pal)
 	}
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	return true;
 }
@@ -759,7 +779,7 @@ bool SImage::maskFromColour(ColRGBA colour, Palette* pal)
 		return false;
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	return true;
 }
@@ -799,7 +819,7 @@ bool SImage::maskFromBrightness(Palette* pal)
 	// ALPHAMASK type is already a brightness mask
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	return true;
 }
@@ -849,7 +869,7 @@ bool SImage::cutoffMask(uint8_t threshold)
 		return false;
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	return true;
 }
@@ -887,7 +907,7 @@ bool SImage::setPixel(int x, int y, ColRGBA colour, Palette* pal)
 	}
 
 	// Announce
-	announce("image_changed");
+	signals_.image_changed();
 
 	return true;
 }
@@ -933,7 +953,7 @@ bool SImage::setPixel(int x, int y, uint8_t pal_index, uint8_t alpha)
 		return false;
 
 	// Announce
-	announce("image_changed");
+	signals_.image_changed();
 
 	// Invalid type
 	return true;
@@ -1027,7 +1047,7 @@ bool SImage::rotate(int angle)
 		}
 		if (j >= numpixels)
 		{
-			Log::error("Pixel {} remapped to {}, how did this even happen?", i, j);
+			log::error("Pixel {} remapped to {}, how did this even happen?", i, j);
 			return false;
 		}
 		for (k = 0; k < numbpp; ++k)
@@ -1047,7 +1067,7 @@ bool SImage::rotate(int angle)
 	height_ = new_height;
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -1082,7 +1102,7 @@ bool SImage::mirror(bool vertical)
 			j = ((i / width_) * width_) + ((width_ - 1) - (i % width_));
 		if (j >= numpixels)
 		{
-			Log::error("Pixel {} remapped to {}, how did this even happen?", i, j);
+			log::error("Pixel {} remapped to {}, how did this even happen?", i, j);
 			return false;
 		}
 		for (k = 0; k < numbpp; ++k)
@@ -1100,7 +1120,7 @@ bool SImage::mirror(bool vertical)
 		mask_.importMem(new_mask.data(), new_mask.size());
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -1170,7 +1190,7 @@ bool SImage::crop(long x1, long y1, long x2, long y2)
 	height_ = new_height;
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 	return true;
 }
 
@@ -1230,7 +1250,7 @@ bool SImage::resize(int nwidth, int nheight)
 		mask_.importMem(new_mask.data(), new_mask.size());
 
 	// Announce change
-	announce("image_changed");
+	signals_.image_changed();
 
 	return true;
 }
@@ -1249,7 +1269,7 @@ bool SImage::setImageData(const vector<uint8_t>& ndata, int nwidth, int nheight,
 		data_.importMem(ndata.data(), ndata.size());
 
 		// Announce change
-		announce("image_changed");
+		signals_.image_changed();
 
 		return true;
 	}
@@ -1398,40 +1418,40 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 	if (properties.blend == BlendType::Add)
 	{
 		d_colour.set(
-			MathStuff::clamp(d_colour.r + colour.r * alpha, 0, 255),
-			MathStuff::clamp(d_colour.g + colour.g * alpha, 0, 255),
-			MathStuff::clamp(d_colour.b + colour.b * alpha, 0, 255),
-			MathStuff::clamp(d_colour.a + colour.a, 0, 255));
+			math::clamp(d_colour.r + colour.r * alpha, 0, 255),
+			math::clamp(d_colour.g + colour.g * alpha, 0, 255),
+			math::clamp(d_colour.b + colour.b * alpha, 0, 255),
+			math::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
 	// Subtractive blending
 	else if (properties.blend == BlendType::Subtract)
 	{
 		d_colour.set(
-			MathStuff::clamp(d_colour.r - colour.r * alpha, 0, 255),
-			MathStuff::clamp(d_colour.g - colour.g * alpha, 0, 255),
-			MathStuff::clamp(d_colour.b - colour.b * alpha, 0, 255),
-			MathStuff::clamp(d_colour.a + colour.a, 0, 255));
+			math::clamp(d_colour.r - colour.r * alpha, 0, 255),
+			math::clamp(d_colour.g - colour.g * alpha, 0, 255),
+			math::clamp(d_colour.b - colour.b * alpha, 0, 255),
+			math::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
 	// Reverse-Subtractive blending
 	else if (properties.blend == BlendType::ReverseSubtract)
 	{
 		d_colour.set(
-			MathStuff::clamp((-d_colour.r) + colour.r * alpha, 0, 255),
-			MathStuff::clamp((-d_colour.g) + colour.g * alpha, 0, 255),
-			MathStuff::clamp((-d_colour.b) + colour.b * alpha, 0, 255),
-			MathStuff::clamp(d_colour.a + colour.a, 0, 255));
+			math::clamp((-d_colour.r) + colour.r * alpha, 0, 255),
+			math::clamp((-d_colour.g) + colour.g * alpha, 0, 255),
+			math::clamp((-d_colour.b) + colour.b * alpha, 0, 255),
+			math::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
 	// 'Modulate' blending
 	else if (properties.blend == BlendType::Modulate)
 	{
 		d_colour.set(
-			MathStuff::clamp(colour.r * (double)d_colour.r / 255., 0, 255),
-			MathStuff::clamp(colour.g * (double)d_colour.g / 255., 0, 255),
-			MathStuff::clamp(colour.b * (double)d_colour.b / 255., 0, 255),
-			MathStuff::clamp(d_colour.a + colour.a, 0, 255));
+			math::clamp(colour.r * (double)d_colour.r / 255., 0, 255),
+			math::clamp(colour.g * (double)d_colour.g / 255., 0, 255),
+			math::clamp(colour.b * (double)d_colour.b / 255., 0, 255),
+			math::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
 	// Normal blending (or unknown blend type)
@@ -1442,7 +1462,7 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 			d_colour.r * inv_alpha + colour.r * alpha,
 			d_colour.g * inv_alpha + colour.g * alpha,
 			d_colour.b * inv_alpha + colour.b * alpha,
-			MathStuff::clamp(d_colour.a + colour.a, 0, 255));
+			math::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
 	// Apply new colour

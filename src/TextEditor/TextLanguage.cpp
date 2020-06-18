@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,11 +34,14 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextLanguage.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/ZScript.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -175,7 +178,7 @@ void TLFunction::addContext(
 // -----------------------------------------------------------------------------
 void TLFunction::addContext(
 	string_view              context,
-	const ZScript::Function& func,
+	const zscript::Function& func,
 	bool                     custom,
 	string_view              desc,
 	string_view              dep_f)
@@ -191,7 +194,7 @@ void TLFunction::addContext(
 	if (func.parameters().empty())
 		ctx.params.push_back({ "void", "", "", false });
 	else
-		for (auto& p : func.parameters())
+		for (const auto& p : func.parameters())
 			ctx.params.push_back({ p.type, p.name, p.default_value, !p.default_value.empty() });
 }
 
@@ -213,7 +216,7 @@ void TLFunction::clearCustomContexts()
 bool TLFunction::hasContext(string_view name)
 {
 	for (auto& c : contexts_)
-		if (StrUtil::equalCI(c.context, name))
+		if (strutil::equalCI(c.context, name))
 			return true;
 
 	return false;
@@ -308,14 +311,14 @@ void TextLanguage::addFunction(
 	// Split out context from name
 	string context;
 	string func_name{ name };
-	if (StrUtil::contains(name, '.'))
+	if (strutil::contains(name, '.'))
 	{
-		context   = StrUtil::beforeFirst(name, '.');
-		func_name = StrUtil::afterFirst(name, '.');
+		context   = strutil::beforeFirst(name, '.');
+		func_name = strutil::afterFirst(name, '.');
 	}
 
 	// Check if the function exists
-	auto func = function(func_name);
+	auto* func = function(func_name);
 
 	// If it doesn't, create it
 	if (!func)
@@ -339,23 +342,23 @@ void TextLanguage::addFunction(
 // -----------------------------------------------------------------------------
 // Loads types (classes) and functions from parsed ZScript definitions [defs]
 // -----------------------------------------------------------------------------
-void TextLanguage::loadZScript(ZScript::Definitions& defs, bool custom)
+void TextLanguage::loadZScript(zscript::Definitions& defs, bool custom)
 {
 	// Classes
-	for (auto& c : defs.classes())
+	for (const auto& c : defs.classes())
 	{
 		// Add class as type
 		addWord(Type, c.name(), custom);
 
 		// Add class functions
-		for (auto& f : c.functions())
+		for (const auto& f : c.functions())
 		{
 			// Ignore overriding functions
 			if (f.isOverride())
 				continue;
 
 			// Check if the function exists
-			auto func = function(f.name());
+			auto* func = function(f.name());
 
 			// If it doesn't, create it
 			if (!func)
@@ -365,7 +368,7 @@ void TextLanguage::loadZScript(ZScript::Definitions& defs, bool custom)
 			}
 
 			// Add the context
-			if (!func->hasContext(c.name()))
+			if (!func->hasContext(f.baseClass()))
 				func->addContext(
 					c.name(),
 					f,
@@ -426,20 +429,20 @@ string TextLanguage::autocompletionList(string_view start, bool include_custom)
 	for (unsigned type = 0; type < 4; type++)
 	{
 		for (auto& word : word_lists_[type].list)
-			if (StrUtil::startsWithCI(word, start))
+			if (strutil::startsWithCI(word, start))
 				list.push_back(fmt::format("{}?{}", word, type + 1));
 
 		if (!include_custom)
 			continue;
 
 		for (auto& word : word_lists_custom_[type].list)
-			if (StrUtil::startsWithCI(word, start))
+			if (strutil::startsWithCI(word, start))
 				list.push_back(fmt::format("{}?{}", word, type + 1));
 	}
 
 	// Add functions
 	for (auto& func : functions_)
-		if (StrUtil::startsWithCI(func.name(), start))
+		if (strutil::startsWithCI(func.name(), start))
 			list.push_back(fmt::format("{}{}", func.name(), "?5"));
 
 	// Sort the list
@@ -529,7 +532,7 @@ TLFunction* TextLanguage::function(string_view name)
 	else
 	{
 		for (auto& func : functions_)
-			if (StrUtil::equalCI(func.name(), name))
+			if (strutil::equalCI(func.name(), name))
 				return &func;
 	}
 
@@ -576,7 +579,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 	// Open the given text data
 	if (!tz.openMem(mc, source))
 	{
-		Log::warning("Unable to open language definition {}", source);
+		log::warning("Unable to open language definition {}", source);
 		return false;
 	}
 
@@ -588,26 +591,26 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 	// Get parsed data
 	for (unsigned a = 0; a < root.nChildren(); a++)
 	{
-		auto node = root.childPTN(a);
+		auto* node = root.childPTN(a);
 
 		// Create language
-		auto lang = new TextLanguage(node->name());
+		auto* lang = new TextLanguage(node->name());
 
 		// Check for inheritance
 		if (!node->inherit().empty())
 		{
-			auto inherit = fromId(node->inherit());
+			auto* inherit = fromId(node->inherit());
 			if (inherit)
 				inherit->copyTo(lang);
 			else
-				Log::warning("Warning: Language {} inherits from undefined language {}", node->name(), node->inherit());
+				log::warning("Warning: Language {} inherits from undefined language {}", node->name(), node->inherit());
 		}
 
 		// Parse language info
 		for (unsigned c = 0; c < node->nChildren(); c++)
 		{
-			auto child    = node->childPTN(c);
-			auto pn_lower = StrUtil::lower(child->name());
+			auto* child    = node->childPTN(c);
+			auto  pn_lower = strutil::lower(child->name());
 
 			// Language name
 			if (pn_lower == "name")
@@ -712,7 +715,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 					auto val = child->stringValue(v);
 
 					// Check for '$override'
-					if (StrUtil::equalCI(val, "$override"))
+					if (strutil::equalCI(val, "$override"))
 					{
 						// Clear any inherited keywords
 						lang->clearWordList(WordType::Keyword);
@@ -733,7 +736,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 					auto val = child->stringValue(v);
 
 					// Check for '$override'
-					if (StrUtil::equalCI(val, "$override"))
+					if (strutil::equalCI(val, "$override"))
 					{
 						// Clear any inherited constants
 						lang->clearWordList(WordType::Constant);
@@ -754,7 +757,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 					auto val = child->stringValue(v);
 
 					// Check for '$override'
-					if (StrUtil::equalCI(val, "$override"))
+					if (strutil::equalCI(val, "$override"))
 					{
 						// Clear any inherited constants
 						lang->clearWordList(WordType::Type);
@@ -775,7 +778,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 					auto val = child->stringValue(v);
 
 					// Check for '$override'
-					if (StrUtil::equalCI(val, "$override"))
+					if (strutil::equalCI(val, "$override"))
 					{
 						// Clear any inherited constants
 						lang->clearWordList(WordType::Property);
@@ -796,7 +799,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 					// Go through children (functions)
 					for (unsigned f = 0; f < child->nChildren(); f++)
 					{
-						auto   child_func = child->childPTN(f);
+						auto*  child_func = child->childPTN(f);
 						string params;
 
 						// Simple definition
@@ -820,7 +823,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 								params,
 								"",
 								"",
-								!StrUtil::contains(child_func->name(), '.'),
+								!strutil::contains(child_func->name(), '.'),
 								child_func->type());
 
 							// Add args
@@ -837,7 +840,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 							string         deprecated;
 							for (unsigned p = 0; p < child_func->nChildren(); p++)
 							{
-								auto child_prop = child_func->childPTN(p);
+								auto* child_prop = child_func->childPTN(p);
 								if (child_prop->name() == "args")
 								{
 									for (unsigned v = 0; v < child_prop->nValues(); v++)
@@ -863,10 +866,10 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 					ZFuncExProp ex_prop;
 					for (unsigned f = 0; f < child->nChildren(); f++)
 					{
-						auto child_func = child->childPTN(f);
+						auto* child_func = child->childPTN(f);
 						for (unsigned p = 0; p < child_func->nChildren(); ++p)
 						{
-							auto child_prop = child_func->childPTN(p);
+							auto* child_prop = child_func->childPTN(p);
 							if (child_prop->name() == "description")
 								ex_prop.description = child_prop->stringValue();
 							else if (child_prop->name() == "deprecated_f")
@@ -888,13 +891,13 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string_view source)
 bool TextLanguage::loadLanguages()
 {
 	// Get slade resource archive
-	auto res_archive = App::archiveManager().programResourceArchive();
+	auto* res_archive = app::archiveManager().programResourceArchive();
 
 	// Read language definitions from resource archive
 	if (res_archive)
 	{
 		// Get 'config/languages' directly
-		auto dir = res_archive->dirAtPath("config/languages");
+		auto* dir = res_archive->dirAtPath("config/languages");
 
 		if (dir)
 		{
@@ -909,11 +912,11 @@ bool TextLanguage::loadLanguages()
 			});
 
 			// Read all (sorted) entries in this dir
-			for (auto entry : defs)
+			for (auto* entry : defs)
 				readLanguageDefinition(entry->data(), entry->name());
 		}
 		else
-			Log::warning(
+			log::warning(
 				1, "Warning: 'config/languages' not found in slade.pk3, no builtin text language definitions loaded");
 	}
 
@@ -957,7 +960,7 @@ TextLanguage* TextLanguage::fromName(string_view name)
 	// Find text language matching [name]
 	for (auto& text_language : text_languages)
 	{
-		if (StrUtil::equalCI(text_language->name_, name))
+		if (strutil::equalCI(text_language->name_, name))
 			return text_language;
 	}
 

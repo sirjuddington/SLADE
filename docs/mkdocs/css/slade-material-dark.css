@@ -1,44 +1,66 @@
 
-@import url('https://fonts.googleapis.com/css?family=Fira+Sans:400,400i,500,700,700i,800');
-@import url('https://fonts.googleapis.com/css?family=Fira+Mono:500,600');
-/*@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');*/
+/* ---- Fonts ---- */
+
+@import url('https://fonts.googleapis.com/css?family=Fira+Sans:300,300i,400,500,600,800');
+@import url('https://fonts.googleapis.com/css?family=Fira+Code:400,500');
+
+body, h1, h2, h3, h4, h5, h6 {
+	font-family: 'Fira Sans', 'Segoe UI', sans-serif;
+}
+
+type,
+arg,
+prop,
+prop.ro,
+prop.rw,
+code,
+function,
+.admonition code,
+.md-typeset code,
+fdef {
+	font-family: 'Fira Code', 'Consolas', monospace !important;
+}
+
+
+
 
 li,
-p {
-	font-size: 0.97em;
-	line-height: 1.5em;
+p,
+td {
+	font-size: 0.75rem;
+	line-height: 1.4em;
+	font-weight: 300;
+}
+
+strong {
+	font-weight: 600;
 }
 
 body,
 .md-nav {
-	/* background-color: hsla(220, 20%, 15%, 1); */
 	background-color: hsl(220, 10%, 16%);
 }
 
 html .md-nav--primary .md-nav__title ~ .md-nav__list {
 	background: inherit;
-	/* background-color: hsla(220, 35%, 30%, 1); */
 }
 
 html .md-nav--primary .md-nav__title {
-	/* background-color: hsla(220, 35%, 40%, 1); */
 	color: hsl(220, 10%, 85%);
 }
 
-body, h1, h2, h3, h4, h5, h6 {
-	font-family: 'Fira Sans', 'Segoe UI', sans-serif;
-	color: hsl(220, 10%, 85%);
+body, h1, h2, h3, h4, h5,h h6 {
+	color: hsl(220, 10%, 90%);
+}
+
+article {
+	font-size: 0.9em;
 }
 
 article a {
-    font-weight: 500;
-    font-size: 0.99em;
+    font-weight: 400;
 }
 
-strong,
-b {
-	font-size: 0.98em;
-}
 
 
 article A:link,
@@ -62,28 +84,73 @@ article code A:active,
 	color: hsla(220, 25%, 40%, 1);
 }
 
+li.md-nav__item.md-nav__item--active > a {
+	color: hsl(220, 48%, 73%);
+	font-weight: 400;
+}
+
 .md-header {
 	background-color: hsla(220, 35%, 40%, 1);
+}
+
+article > header {
+	font-size: 2.3em;
+	font-weight: 600;
+	color: hsl(220, 48%, 73%);
+	display: block;
+	border-bottom: 0.05em solid hsl(220, 15%, 30%);
+    padding-bottom: 0;
+	margin-top: -0.7em;
+	margin-bottom: 0.6em;
+}
+
+subhead {
+	font-size: 0.9em;
+    color: hsl(220, 20%, 55%);
+	font-weight: 500 !important;
+	display: block;
+	margin-top: -1em;
+	text-transform: uppercase;
 }
 
 .md-typeset h1,
 .md-typeset h2,
 .md-typeset h3,
-.md-typeset h3 code,
+.md-typeset h3 code {
+	color: hsl(220, 48%, 73%) !important;
+}
+
+.md-typeset h1 {
+	font-weight: 600 !important;
+	display: none;
+}
+
+.md-typeset h2 {
+	font-weight: 500 !important;
+	font-size: 1.8em;
+}
+
+.md-typeset h3 {
+	font-size: 1.4em;
+	font-weight: 400 !important;
+}
+
 .md-typeset h4,
 .md-typeset h5 {
-	color: hsl(220, 48%, 73%) !important;
-	font-weight: 600 !important;
+	/* color: hsl(220, 48%, 73%) !important; */
+	color: hsl(220, 100%, 95%);
+	font-weight: 400 !important;
+	font-size: 1.0em;
 }
 
 .md-typeset h2,
 .md-typeset h1 {
-	border-bottom: 0.1em solid hsl(220, 15%, 30%);
+	border-bottom: 0.05em solid hsl(220, 15%, 30%);
     padding-bottom: 0.2em;
 }
 
 .md-typeset hr {
-	border-top: 0.1em solid hsl(220, 15%, 30%);
+	border-top: 0.05em solid hsl(220, 15%, 30%);
 	border-bottom: none;
 }
 
@@ -96,8 +163,8 @@ code,
 function,
 .admonition code,
 .md-typeset code {
-    font-family: 'Fira Mono', 'Consolas', monospace !important;
-    font-size: 0.9em;
+	font-size: 1.0em;
+	font-weight: 400;
     background-color: inherit;
     box-shadow: none;
 }
@@ -112,38 +179,37 @@ code,
 	margin: 0;
 }
 
-code a {
-	font-weight: 600;
-}
+/* code a {
+	font-weight: 500;
+} */
 
 type,
 type a {
-	/*color: hsl(40, 98%, 33%) !important;*/
-	color: hsl(80, 48%, 63%) !important;
+	color: hsl(130, 36%, 65%) !important;
 }
 
-type a {
-	font-weight: 500;
+type a,
+code a,
+fdef a {
 	text-decoration: underline;
+	font-weight: 400 !important;
 }
 
 type a:hover {
-	/*color: hsl(40, 100%, 45%) !important;*/
-	color: hsl(80, 58%, 83%) !important;
+	color: hsl(130, 86%, 85%) !important;
 }
 
 arg,
 prop,
 prop.ro,
 prop.rw {
-	font-weight: 600;
-	color: hsl(270, 58%, 63%);
+	color: hsl(293, 56%, 77%);
 }
 
 prop,
 prop.ro,
 prop.rw {
-	color: hsl(170, 68%, 43%);
+	color: hsl(180, 83%, 70%);
 }
 
 prop.ro::before {
@@ -162,11 +228,14 @@ prop.rw::before {
 
 pre code,
 .codehilite pre {
-	font-family: 'Fira Mono', 'Consolas', monospace !important;
 	background: none repeat scroll 0 0 rgb(37, 37, 37) !important;
 	border: 1px solid hsl(220, 20%, 34%);
 	line-height: 1.5em !important;
 	font-size: 0.8em;
+}
+
+#__code_0 > code {
+	font-variant-ligatures: none;
 }
 
 .codehilite pre .n,
@@ -198,7 +267,8 @@ pre code,
 }
 
 .codehilite pre .s1,
-.codehilite pre .se {
+.codehilite pre .se,
+.codehilite pre .s2 {
 	color: rgb(216, 101, 84);
 }
 
@@ -223,7 +293,12 @@ table tbody {
 }
 
 .md-typeset table:not([class]) td {
-	padding: 1.0rem 1.6rem;
+	padding: 0.6rem 1.2rem;
+}
+
+.md-typeset table:not([class]) th {
+	padding: 0.8rem 1.2rem;
+	color: hsl(222, 100%, 98%);
 }
 
 .md-typeset table:not([class]) {
@@ -238,7 +313,7 @@ listhead {
 	margin-bottom: -0.9em;
 }
 
-.admonition {
+.md-typeset .admonition {
 	font-size: 0.97em;
 }
 
@@ -246,4 +321,17 @@ listhead {
 	padding-left: 1.2rem;
 	border-left: .4rem solid hsla(220, 35%, 40%, 1);
 	color: hsl(220, 10%, 75%);
+}
+
+fdef {
+	display: block;
+	color: hsl(220, 68%, 83%);
+	margin-bottom: 0.3em;
+	padding-left: 1.5rem;
+	text-indent: -1rem;
+}
+
+fdef > block {
+	display: inline-block;
+	vertical-align: text-top;
 }

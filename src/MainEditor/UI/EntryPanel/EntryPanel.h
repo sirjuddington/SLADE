@@ -1,17 +1,18 @@
 #pragma once
 
 #include "Archive/ArchiveEntry.h"
-#include "General/ListenerAnnouncer.h"
 #include "General/SAction.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
 
+namespace slade
+{
 class UndoManager;
 
-class EntryPanel : public wxPanel, public Listener, protected SActionHandler
+class EntryPanel : public wxPanel, protected SActionHandler
 {
 public:
-	EntryPanel(wxWindow* parent, const wxString& id);
+	EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar = false);
 	~EntryPanel();
 
 	wxString      name() const { return id_; }
@@ -53,18 +54,17 @@ protected:
 	wxMenu*   menu_custom_ = nullptr;
 	wxString  custom_menu_name_;
 	wxString  custom_toolbar_actions_;
-	SToolBar* toolbar_ = nullptr;
+	SToolBar* toolbar_      = nullptr;
+	SToolBar* toolbar_left_ = nullptr;
 
 	void         setModified(bool c = true);
 	virtual bool loadEntry(ArchiveEntry* entry);
-	void         onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override {}
 	virtual bool handleEntryPanelAction(string_view id) { return false; }
 	void         onToolbarButton(wxCommandEvent& e);
 
 private:
-	bool         modified_;
-	wxStaticBox* frame_;
-	wxString     id_;
+	bool     modified_ = false;
+	wxString id_;
 
 	bool handleAction(string_view id) override
 	{
@@ -74,3 +74,4 @@ private:
 		return false;
 	}
 };
+} // namespace slade

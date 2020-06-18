@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,7 +35,8 @@
 #include "OpenGL/OpenGL.h"
 #include "Utility/MathStuff.h"
 
-using namespace MapEditor;
+using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -235,7 +236,7 @@ Vec2d RenderView::mapPos(const Vec2i& screen_pos, bool inter) const
 // -----------------------------------------------------------------------------
 int RenderView::screenX(double map_x) const
 {
-	return MathStuff::round((size_.x * 0.5) + ((map_x - offset_inter_.x) * scale_inter_));
+	return math::round((size_.x * 0.5) + ((map_x - offset_inter_.x) * scale_inter_));
 }
 
 // -----------------------------------------------------------------------------
@@ -243,7 +244,7 @@ int RenderView::screenX(double map_x) const
 // -----------------------------------------------------------------------------
 int RenderView::screenY(double map_y) const
 {
-	return MathStuff::round((size_.y * 0.5) - ((map_y - offset_inter_.y) * scale_inter_));
+	return math::round((size_.y * 0.5) - ((map_y - offset_inter_.y) * scale_inter_));
 }
 
 // -----------------------------------------------------------------------------
@@ -263,7 +264,7 @@ void RenderView::apply() const
 	glDisable(GL_DEPTH_TEST);
 
 	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implemenataions)
-	if (OpenGL::accuracyTweak())
+	if (gl::accuracyTweak())
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Translate to middle of screen
@@ -290,7 +291,7 @@ void RenderView::setOverlayCoords(bool set) const
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
 		glLoadIdentity();
-		if (OpenGL::accuracyTweak())
+		if (gl::accuracyTweak())
 			glTranslatef(0.375f, 0.375f, 0);
 	}
 	else

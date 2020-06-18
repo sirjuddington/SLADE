@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,11 +32,15 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ArchiveEntryList.h"
+#include "App.h"
+#include "Archive/ArchiveManager.h"
 #include "General/ColourConfiguration.h"
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -58,6 +62,8 @@ CVAR(Bool, elist_type_bgcol, false, CVar::Flag::Save)
 CVAR(Float, elist_type_bgcol_intensity, 0.18, CVar::Flag::Save)
 CVAR(Bool, elist_name_monospace, false, CVar::Flag::Save)
 CVAR(Bool, elist_alt_row_colour, false, CVar::Flag::Save)
+CVAR(Int, elist_icon_size, 16, CVar::Flag::Save)
+CVAR(Int, elist_icon_padding, 1, CVar::Flag::Save)
 wxDEFINE_EVENT(EVT_AEL_DIR_CHANGED, wxCommandEvent);
 
 
@@ -91,12 +97,14 @@ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 	setupColumns();
 
 	// Setup entry icons
-	auto image_list   = WxUtils::createSmallImageList();
-	auto et_icon_list = EntryType::iconList();
+	auto  icon_size    = Point2i{ elist_icon_size + 2, elist_icon_size + elist_icon_padding * 2 };
+	auto  pad          = Point2i{ 1, elist_icon_padding };
+	auto* image_list   = new wxImageList(icon_size.x, icon_size.y, false, 0);
+	auto  et_icon_list = EntryType::iconList();
 	for (const auto& name : et_icon_list)
 	{
-		if (image_list->Add(Icons::getIcon(Icons::Entry, name)) < 0)
-			image_list->Add(Icons::getIcon(Icons::Entry, "default"));
+		if (image_list->Add(icons::getPaddedIcon(icons::Entry, name, elist_icon_size, pad)) < 0)
+			image_list->Add(icons::getPaddedIcon(icons::Entry, "default", elist_icon_size, pad));
 	}
 
 	wxListCtrl::SetImageList(image_list, wxIMAGE_LIST_SMALL);
@@ -195,7 +203,7 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 
 	// Init attributes
 	auto col_bg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX);
-	item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("error")));
+	item_attr_->SetTextColour(colourconfig::colour("error").toWx());
 	item_attr_->SetBackgroundColour(col_bg);
 
 	// If entry doesn't exist, return error colour
@@ -208,6 +216,9 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 	else
 		item_attr_->SetFont(list_font_monospace ? font_monospace_ : font_normal_);
 
+	if (app::archiveManager().isBookmarked(entry) && column == 0)
+		item_attr_->SetFont(item_attr_->GetFont().Bold());
+
 	// Set background colour defined in entry type (if any)
 	auto col = entry->type()->colour();
 	if ((col.r != 255 || col.g != 255 || col.b != 255) && elist_type_bgcol)
@@ -218,7 +229,7 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 		bcol.g = (col.g * elist_type_bgcol_intensity) + (col_bg.Green() * (1.0 - elist_type_bgcol_intensity));
 		bcol.b = (col.b * elist_type_bgcol_intensity) + (col_bg.Blue() * (1.0 - elist_type_bgcol_intensity));
 
-		item_attr_->SetBackgroundColour(WXCOL(bcol));
+		item_attr_->SetBackgroundColour(bcol.toWx());
 	}
 
 	// Alternating row colour
@@ -231,16 +242,14 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 	// Set colour depending on entry state
 	switch (entry->state())
 	{
-	case ArchiveEntry::State::Modified:
-		item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("modified")));
-		break;
-	case ArchiveEntry::State::New: item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("new"))); break;
+	case ArchiveEntry::State::Modified: item_attr_->SetTextColour(colourconfig::colour("modified").toWx()); break;
+	case ArchiveEntry::State::New: item_attr_->SetTextColour(colourconfig::colour("new").toWx()); break;
 	default: item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
 	};
 
 	// Locked state overrides others
 	if (entry->isLocked())
-		item_attr_->SetTextColour(WXCOL(ColourConfiguration::colour("locked")));
+		item_attr_->SetTextColour(colourconfig::colour("locked").toWx());
 }
 
 // -----------------------------------------------------------------------------
@@ -248,18 +257,14 @@ void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 // -----------------------------------------------------------------------------
 void ArchiveEntryList::setArchive(const shared_ptr<Archive>& archive)
 {
-	// Stop listening to current archive (if any)
-	if (auto cur_archive = archive_.lock())
-		stopListening(cur_archive.get());
-
 	// Set archive (allow null)
 	archive_ = archive;
 
 	// Init new archive if given
 	if (archive)
 	{
-		// Listen to it
-		listenTo(archive.get());
+		// Update list when archive is modified
+		sc_archive_modified_ = archive->signals().modified.connect([this](Archive&) { updateEntries(); });
 
 		// Open root directory
 		current_dir_ = archive->rootDir();
@@ -430,7 +435,7 @@ void ArchiveEntryList::applyFilter()
 		else
 		{
 			// Check for category match
-			if (StrUtil::equalCI(entry->type()->category(), filter_category_.ToStdString()))
+			if (strutil::equalCI(entry->type()->category(), filter_category_.ToStdString()))
 				items_.push_back(index);
 		}
 
@@ -441,18 +446,18 @@ void ArchiveEntryList::applyFilter()
 	if (!filter_text_.IsEmpty())
 	{
 		// Split filter by ,
-		auto terms = StrUtil::split(filter_text_.ToStdString(), ',');
+		auto terms = strutil::split(filter_text_.ToStdString(), ',');
 
 		// Process filter strings
 		for (auto& term : terms)
 		{
 			// Remove spaces
-			StrUtil::replaceIP(term, " ", "");
+			strutil::replaceIP(term, " ", "");
 
 			// Set to uppercase and add * to the end
 			if (!term.empty())
 			{
-				StrUtil::upperIP(term);
+				strutil::upperIP(term);
 				term += "*";
 			}
 		}
@@ -470,7 +475,7 @@ void ArchiveEntryList::applyFilter()
 			bool match = false;
 			for (const auto& term : terms)
 			{
-				if (entry == entry_dir_back_.get() || StrUtil::matches(entry->upperName(), term))
+				if (entry == entry_dir_back_.get() || strutil::matches(entry->upperName(), term))
 				{
 					match = true;
 					continue;
@@ -517,6 +522,14 @@ bool ArchiveEntryList::setDir(const shared_ptr<ArchiveDir>& dir)
 	return true;
 }
 
+void ArchiveEntryList::updateEntries()
+{
+	if (entries_update_)
+	{
+		applyFilter();
+	}
+}
+
 // -----------------------------------------------------------------------------
 // Opens the parent directory of the current directory (if it exists)
 // -----------------------------------------------------------------------------
@@ -560,7 +573,7 @@ void ArchiveEntryList::sortItems()
 
 		// Name sort
 		if (col_name_ >= 0 && col_name_ == sortColumn())
-			return sort_descend_ ? le->name() > re->name() : le->name() < re->name();
+			return sort_descend_ ? le->upperName() > re->upperName() : le->upperName() < re->upperName();
 
 		// Size sort
 		if (col_size_ >= 0 && col_size_ == sortColumn())
@@ -786,18 +799,6 @@ void ArchiveEntryList::labelEdited(int col, int index, const wxString& new_label
 }
 
 // -----------------------------------------------------------------------------
-// Called when an announcement is recieved from the archive being managed
-// -----------------------------------------------------------------------------
-void ArchiveEntryList::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
-{
-	if (entries_update_ && announcer == archive_.lock().get() && event_name != "closed")
-	{
-		// updateList();
-		applyFilter();
-	}
-}
-
-// -----------------------------------------------------------------------------
 // Handles the action [id].
 // Returns true if the action was handled, false otherwise
 // -----------------------------------------------------------------------------
@@ -808,7 +809,7 @@ bool ArchiveEntryList::handleAction(string_view id)
 		return false;
 
 	// Only interested in actions beginning with aelt_
-	if (!StrUtil::startsWith(id, "aelt_"))
+	if (!strutil::startsWith(id, "aelt_"))
 		return false;
 
 	if (id == "aelt_sizecol")
@@ -945,7 +946,7 @@ void ArchiveEntryList::onListItemActivated(wxListEvent& e)
 		// Check it exists (really should)
 		if (!dir)
 		{
-			Log::error("Error: Trying to open nonexistant directory");
+			log::error("Error: Trying to open nonexistant directory");
 			return;
 		}
 

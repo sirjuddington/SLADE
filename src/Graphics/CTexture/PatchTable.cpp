@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,6 +36,8 @@
 #include "CTexture.h"
 #include "General/ResourceManager.h"
 #include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -81,7 +83,7 @@ const string& PatchTable::patchName(size_t index) const
 {
 	// Check index
 	if (index >= patches_.size())
-		return StrUtil::EMPTY;
+		return strutil::EMPTY;
 
 	// Return name at index
 	return patches_[index].name;
@@ -98,9 +100,9 @@ ArchiveEntry* PatchTable::patchEntry(size_t index)
 		return nullptr;
 
 	// Patches namespace > graphics
-	auto entry = App::resources().getPatchEntry(patches_[index].name, "patches", parent_);
+	auto entry = app::resources().getPatchEntry(patches_[index].name, "patches", parent_);
 	if (!entry)
-		entry = App::resources().getPatchEntry(patches_[index].name, "graphics", parent_);
+		entry = app::resources().getPatchEntry(patches_[index].name, "graphics", parent_);
 
 	return entry;
 }
@@ -114,7 +116,7 @@ ArchiveEntry* PatchTable::patchEntry(string_view name)
 	// Search for patch by name
 	for (size_t a = 0; a < patches_.size(); a++)
 	{
-		if (StrUtil::equalCI(patches_[a].name, name))
+		if (strutil::equalCI(patches_[a].name, name))
 			return patchEntry(a);
 	}
 
@@ -130,7 +132,7 @@ int32_t PatchTable::patchIndex(string_view name) const
 	// Search for patch by name
 	for (size_t a = 0; a < patches_.size(); a++)
 	{
-		if (StrUtil::equalCI(patches_[a].name, name))
+		if (strutil::equalCI(patches_[a].name, name))
 			return a;
 	}
 
@@ -147,7 +149,7 @@ int32_t PatchTable::patchIndex(ArchiveEntry* entry) const
 	// Search for patch by entry
 	for (size_t a = 0; a < patches_.size(); a++)
 	{
-		if (App::resources().getPatchEntry(patches_[a].name, "patches", parent_) == entry)
+		if (app::resources().getPatchEntry(patches_[a].name, "patches", parent_) == entry)
 			return a;
 	}
 
@@ -169,7 +171,7 @@ bool PatchTable::removePatch(unsigned index)
 	patches_.erase(patches_.begin() + index);
 
 	// Announce
-	announce("modified");
+	signals_.modified();
 
 	return true;
 }
@@ -190,7 +192,7 @@ bool PatchTable::replacePatch(unsigned index, string_view newname)
 	patches_[index].name = newname;
 
 	// Announce
-	announce("modified");
+	signals_.modified();
 
 	return true;
 }
@@ -214,7 +216,7 @@ bool PatchTable::addPatch(string_view name, bool allow_dup)
 	patches_.emplace_back(name);
 
 	// Announce
-	announce("modified");
+	signals_.modified();
 
 	return true;
 }
@@ -229,7 +231,7 @@ bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent)
 		return false;
 
 	// Mute while loading
-	setMuted(true);
+	signals_.modified.block();
 
 	// Clear current table
 	patches_.clear();
@@ -243,7 +245,7 @@ bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent)
 	pnames->seek(0, SEEK_SET);
 	if (!pnames->read(&n_pnames, 4))
 	{
-		Log::error("PNAMES lump is corrupt");
+		log::error("PNAMES lump is corrupt");
 		return false;
 	}
 
@@ -256,20 +258,20 @@ bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent)
 		// Try to read pname
 		if (!pnames->read(&pname, 8))
 		{
-			Log::error("PNAMES entry {} is corrupt", a);
+			log::error("PNAMES entry {} is corrupt", a);
 			return false;
 		}
 
 		// Add new patch
-		addPatch(StrUtil::upper(pname), true);
+		addPatch(strutil::upper(pname), true);
 	}
 
 	// Update variables
 	parent_ = parent;
-	setMuted(false);
+	signals_.modified.unblock();
 
 	// Announce
-	announce("modified");
+	signals_.modified();
 
 	return true;
 }
@@ -321,7 +323,7 @@ void PatchTable::clearPatchUsage()
 		patch.used_in.clear();
 
 	// Announce
-	announce("modified");
+	signals_.modified();
 }
 
 // -----------------------------------------------------------------------------
@@ -338,5 +340,5 @@ void PatchTable::updatePatchUsage(CTexture* tex)
 		patch(tex->patch(a)->name()).used_in.push_back(tex->name());
 
 	// Announce
-	announce("modified");
+	signals_.modified();
 }

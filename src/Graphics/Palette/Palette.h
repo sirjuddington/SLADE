@@ -1,6 +1,8 @@
 #pragma once
 #include "Utility/Colour.h"
 
+namespace slade
+{
 class Translation;
 
 class Palette
@@ -74,3 +76,4 @@ private:
 
 	double colourDiff(const ColRGBA& rgb, const ColHSL& hsl, const ColLAB& lab, int index, ColourMatch match);
 };
+} // namespace slade

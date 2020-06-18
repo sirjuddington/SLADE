@@ -23,7 +23,7 @@ public:
 		SImage::Info info;
 
 		// Read header
-		Graphics::PatchHeader hdr;
+		gfx::PatchHeader hdr;
 		mc.read(&hdr, 8, 0);
 
 		// Setup info
@@ -102,7 +102,7 @@ protected:
 		}
 		else
 		{
-			auto header = (Graphics::PatchHeader*)gfx_data;
+			auto header = (gfx::PatchHeader*)gfx_data;
 			width       = wxINT16_SWAP_ON_BE(header->width);
 			height      = wxINT16_SWAP_ON_BE(header->height);
 			offset_x    = wxINT16_SWAP_ON_BE(header->left);
@@ -343,7 +343,7 @@ protected:
 		out.seek(0, SEEK_SET);
 
 		// Setup header
-		Graphics::PatchHeader header;
+		gfx::PatchHeader header;
 		header.top    = image.offset().y;
 		header.left   = image.offset().x;
 		header.width  = image.width();
@@ -497,7 +497,7 @@ public:
 		SImage::Info info;
 
 		// Read header
-		Graphics::PatchHeader header;
+		gfx::PatchHeader header;
 		mc.read(&header, 8, 0);
 
 		// Set info
@@ -515,7 +515,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Setup variables
-		Graphics::PatchHeader header;
+		gfx::PatchHeader header;
 		data.read(&header, 8, 0);
 		int width    = wxINT16_SWAP_ON_BE(header.width);
 		int height   = wxINT16_SWAP_ON_BE(header.height);
@@ -628,7 +628,7 @@ public:
 		SImage::Info info;
 
 		// Read header
-		Graphics::PatchHeader header;
+		gfx::PatchHeader header;
 		mc.read(&header, 8, 0);
 
 		// Set info
@@ -646,7 +646,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Setup variables
-		Graphics::PSXPicHeader header;
+		gfx::PSXPicHeader header;
 		data.read(&header, 8, 0);
 		int width    = wxINT16_SWAP_ON_BE(header.width);
 		int height   = wxINT16_SWAP_ON_BE(header.height);
@@ -690,7 +690,7 @@ public:
 		SImage::Info info;
 
 		// Read header
-		Graphics::JagPicHeader header;
+		gfx::JagPicHeader header;
 		mc.read(&header, 16, 0);
 
 		// Set info
@@ -708,7 +708,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Setup variables
-		Graphics::JagPicHeader header;
+		gfx::JagPicHeader header;
 		data.read(&header, 16, 0);
 		int width  = wxINT16_SWAP_ON_LE(header.width);
 		int height = wxINT16_SWAP_ON_LE(header.height);

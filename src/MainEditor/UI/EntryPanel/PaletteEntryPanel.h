@@ -15,6 +15,9 @@
  *   the full complement of 34 including one unused (a legacy of the Doom
  *   beta version which used a green colormap for the light amp visors).
  */
+
+namespace slade
+{
 class PaletteCanvas;
 class ArchiveEntry;
 
@@ -70,3 +73,4 @@ private:
 	// Events
 	void onPalCanvasMouseEvent(wxMouseEvent& e);
 };
+} // namespace slade

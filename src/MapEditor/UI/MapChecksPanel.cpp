@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,6 +39,8 @@
 #include "SLADEMap/SLADEMap.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -138,15 +140,15 @@ void MapChecksPanel::showCheckItem(unsigned index)
 		auto obj = check_items_[index].check->getObject(check_items_[index].index);
 		switch (obj->objType())
 		{
-		case MapObject::Type::Vertex: MapEditor::editContext().setEditMode(MapEditor::Mode::Vertices); break;
-		case MapObject::Type::Line: MapEditor::editContext().setEditMode(MapEditor::Mode::Lines); break;
-		case MapObject::Type::Sector: MapEditor::editContext().setEditMode(MapEditor::Mode::Sectors); break;
-		case MapObject::Type::Thing: MapEditor::editContext().setEditMode(MapEditor::Mode::Things); break;
+		case MapObject::Type::Vertex: mapeditor::editContext().setEditMode(mapeditor::Mode::Vertices); break;
+		case MapObject::Type::Line: mapeditor::editContext().setEditMode(mapeditor::Mode::Lines); break;
+		case MapObject::Type::Sector: mapeditor::editContext().setEditMode(mapeditor::Mode::Sectors); break;
+		case MapObject::Type::Thing: mapeditor::editContext().setEditMode(mapeditor::Mode::Things); break;
 		default: break;
 		}
 
 		// Scroll to object
-		MapEditor::editContext().showItem(obj->index());
+		mapeditor::editContext().showItem(obj->index());
 
 		// Update UI
 		btn_edit_object_->Enable(true);
@@ -247,25 +249,25 @@ void MapChecksPanel::layoutVertical()
 	SetSizer(sizer);
 
 	// Checks
-	sizer->Add(WxUtils::createLabelVBox(this, "Check for:", clb_active_checks_), 0, wxEXPAND | wxALL, UI::pad());
-	sizer->Add(btn_check_, 0, wxALIGN_RIGHT | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	sizer->Add(wxutil::createLabelVBox(this, "Check for:", clb_active_checks_), 0, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(btn_check_, 0, wxALIGN_RIGHT | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Results
-	sizer->Add(label_status_, 0, wxEXPAND | wxLEFT | wxRIGHT, UI::pad());
-	sizer->AddSpacer(UI::px(UI::Size::PadMinimum));
-	sizer->Add(lb_errors_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	sizer->Add(label_status_, 0, wxEXPAND | wxLEFT | wxRIGHT, ui::pad());
+	sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
+	sizer->Add(lb_errors_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Result actions
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
-	hbox->Add(btn_edit_object_, 0, wxEXPAND | wxRIGHT, UI::pad());
+	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	hbox->Add(btn_edit_object_, 0, wxEXPAND | wxRIGHT, ui::pad());
 	hbox->AddStretchSpacer();
 	hbox->Add(btn_export_, 0, wxEXPAND);
 	sizer->Add(
-		WxUtils::layoutHorizontally(vector<wxObject*>{ btn_fix1_, btn_fix2_ }),
+		wxutil::layoutHorizontally(vector<wxObject*>{ btn_fix1_, btn_fix2_ }),
 		0,
 		wxLEFT | wxRIGHT | wxBOTTOM,
-		UI::pad());
+		ui::pad());
 }
 
 // -----------------------------------------------------------------------------
@@ -275,8 +277,8 @@ void MapChecksPanel::layoutVertical()
 void MapChecksPanel::layoutHorizontal()
 {
 	SetSizer(new wxBoxSizer(wxVERTICAL));
-	auto sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	GetSizer()->Add(sizer, 1, wxEXPAND | wxALL, UI::pad());
+	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	GetSizer()->Add(sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Checks
 	sizer->Add(new wxStaticText(this, -1, "Check for:"), { 0, 0 }, { 1, 1 }, wxEXPAND);
@@ -288,7 +290,7 @@ void MapChecksPanel::layoutHorizontal()
 	sizer->Add(lb_errors_, { 1, 1 }, { 2, 1 }, wxEXPAND);
 
 	// Result actions
-	auto layout = WxUtils::layoutVertically(vector<wxObject*>{ btn_export_, btn_edit_object_, btn_fix1_, btn_fix2_ });
+	auto layout = wxutil::layoutVertically(vector<wxObject*>{ btn_export_, btn_edit_object_, btn_fix1_, btn_fix2_ });
 	sizer->Add(layout, { 1, 2 }, { 2, 1 }, wxEXPAND);
 
 	sizer->AddGrowableCol(1, 1);
@@ -326,7 +328,7 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 		if (clb_active_checks_->IsChecked(a))
 		{
 			active_checks_.emplace_back(
-				MapCheck::standardCheck(static_cast<MapCheck::StandardCheck>(a), map_, &MapEditor::textureManager()));
+				MapCheck::standardCheck(static_cast<MapCheck::StandardCheck>(a), map_, &mapeditor::textureManager()));
 		}
 	}
 
@@ -374,11 +376,11 @@ void MapChecksPanel::onBtnFix1(wxCommandEvent& e)
 	int selected = lb_errors_->GetSelection();
 	if (selected >= 0 && selected < (int)check_items_.size())
 	{
-		MapEditor::editContext().beginUndoRecord(WxUtils::strToView(btn_fix1_->GetLabel()));
-		MapEditor::editContext().selection().clear();
+		mapeditor::editContext().beginUndoRecord(wxutil::strToView(btn_fix1_->GetLabel()));
+		mapeditor::editContext().selection().clear();
 		bool fixed = check_items_[selected].check->fixProblem(
-			check_items_[selected].index, 0, &MapEditor::editContext());
-		MapEditor::editContext().endUndoRecord(fixed);
+			check_items_[selected].index, 0, &mapeditor::editContext());
+		mapeditor::editContext().endUndoRecord(fixed);
 		if (fixed)
 		{
 			refreshList();
@@ -395,11 +397,11 @@ void MapChecksPanel::onBtnFix2(wxCommandEvent& e)
 	int selected = lb_errors_->GetSelection();
 	if (selected >= 0 && selected < (int)check_items_.size())
 	{
-		MapEditor::editContext().beginUndoRecord(WxUtils::strToView(btn_fix2_->GetLabel()));
-		MapEditor::editContext().selection().clear();
+		mapeditor::editContext().beginUndoRecord(wxutil::strToView(btn_fix2_->GetLabel()));
+		mapeditor::editContext().selection().clear();
 		bool fixed = check_items_[selected].check->fixProblem(
-			check_items_[selected].index, 1, &MapEditor::editContext());
-		MapEditor::editContext().endUndoRecord(fixed);
+			check_items_[selected].index, 1, &mapeditor::editContext());
+		mapeditor::editContext().endUndoRecord(fixed);
 		if (fixed)
 		{
 			refreshList();
@@ -418,7 +420,7 @@ void MapChecksPanel::onBtnEditObject(wxCommandEvent& e)
 	{
 		vector<MapObject*> list;
 		list.push_back(check_items_[selected].check->getObject(check_items_[selected].index));
-		MapEditor::openMultiObjectProperties(list);
+		mapeditor::openMultiObjectProperties(list);
 	}
 }
 
@@ -427,13 +429,13 @@ void MapChecksPanel::onBtnEditObject(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void MapChecksPanel::onBtnExport(wxCommandEvent& e)
 {
-	auto                map_name = MapEditor::editContext().mapDesc().name;
-	SFileDialog::FDInfo info;
-	if (SFileDialog::saveFile(
+	auto               map_name = mapeditor::editContext().mapDesc().name;
+	filedialog::FDInfo info;
+	if (filedialog::saveFile(
 			info,
 			"Export Map Check Results",
 			"Text Files (*.txt)|*.txt",
-			MapEditor::windowWx(),
+			mapeditor::windowWx(),
 			map_name + "-Problems"))
 	{
 		auto text = fmt::format("{} problems found in map {}:\n\n", check_items_.size(), map_name);

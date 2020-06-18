@@ -3,6 +3,8 @@
 #include <SFML/Audio.hpp>
 #include <mpg123.h>
 
+namespace slade::audio
+{
 class Mp3Music : public sf::SoundStream
 {
 public:
@@ -24,3 +26,4 @@ private:
 	sf::Mutex      mutex_;
 	long           sampling_rate_ = 0;
 };
+} // namespace slade::audio

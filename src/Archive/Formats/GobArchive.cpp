@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,8 @@
 #include "GobArchive.h"
 #include "General/UI.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -59,7 +61,7 @@ uint32_t GobArchive::getEntryOffset(ArchiveEntry* entry)
 	if (!checkEntry(entry))
 		return 0;
 
-	return (uint32_t)(int)entry->exProp("Offset");
+	return (uint32_t)entry->exProp<int>("Offset");
 }
 
 // -----------------------------------------------------------------------------
@@ -114,14 +116,14 @@ bool GobArchive::open(MemChunk& mc)
 		return false;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
-	UI::setSplashProgressMessage("Reading gob archive data");
+	ui::setSplashProgressMessage("Reading gob archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		uint32_t offset   = 0;
@@ -140,9 +142,8 @@ bool GobArchive::open(MemChunk& mc)
 		// the gobfile is invalid
 		if (offset + size > mc.size())
 		{
-			Log::error("GobArchive::open: gob archive is invalid or corrupt");
-			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
+			log::error("GobArchive::open: gob archive is invalid or corrupt");
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
@@ -158,11 +159,11 @@ bool GobArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)num_lumps)));
+		ui::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		auto entry = entryAt(a);
@@ -187,11 +188,10 @@ bool GobArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -281,7 +281,7 @@ bool GobArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error("GobArchive::loadEntryData: Failed to open gobfile {}", filename_);
+		log::error("GobArchive::loadEntryData: Failed to open gobfile {}", filename_);
 		return false;
 	}
 

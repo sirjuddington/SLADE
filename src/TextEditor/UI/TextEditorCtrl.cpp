@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -43,6 +43,8 @@
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -72,6 +74,7 @@ CVAR(Int, txed_hilight_current_line, 2, CVar::Flag::Save)
 CVAR(Int, txed_line_extra_height, 0, CVar::Flag::Save)
 CVAR(Bool, txed_tab_spaces, false, CVar::Flag::Save)
 CVAR(Int, txed_show_whitespace, 0, CVar::Flag::Save)
+CVAR(Bool, txed_calltips_argset_kb, true, CVar::Flag::Save)
 
 wxDEFINE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
@@ -109,7 +112,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 		{
 			// Get jump block keyword
 			long skip = 0;
-			if (StrUtil::contains(block, ':'))
+			if (strutil::contains(block, ':'))
 			{
 				auto sp = wxSplit(block, ':');
 				sp.back().ToLong(&skip);
@@ -168,7 +171,7 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 	wxStyledTextCtrl(parent, id),
 	call_tip_{ new SCallTip(this) },
 	lexer_{ std::make_unique<Lexer>() },
-	last_modified_{ App::runTimer() },
+	last_modified_{ app::runTimer() },
 	timer_update_{ this }
 {
 	// Line numbers by default
@@ -182,11 +185,11 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 	SetMarginWidth(2, 4);
 
 	// Register icons for autocompletion list
-	RegisterImage(1, Icons::getIcon(Icons::TextEditor, "key"));
-	RegisterImage(2, Icons::getIcon(Icons::TextEditor, "const"));
-	RegisterImage(3, Icons::getIcon(Icons::TextEditor, "func")); // TODO: Icon (type)
-	RegisterImage(4, Icons::getIcon(Icons::TextEditor, "func")); // TODO: Icon (property)
-	RegisterImage(5, Icons::getIcon(Icons::TextEditor, "func"));
+	RegisterImage(1, icons::getIcon(icons::TextEditor, "key"));
+	RegisterImage(2, icons::getIcon(icons::TextEditor, "const"));
+	RegisterImage(3, icons::getIcon(icons::TextEditor, "func")); // TODO: Icon (type)
+	RegisterImage(4, icons::getIcon(icons::TextEditor, "func")); // TODO: Icon (property)
+	RegisterImage(5, icons::getIcon(icons::TextEditor, "func"));
 
 	// Init w/no language
 	setLanguage(nullptr);
@@ -257,7 +260,7 @@ void TextEditorCtrl::setup()
 		SetWhitespaceSize(3);
 
 		// TODO: separate colour
-		SetWhitespaceForeground(true, WXCOL(StyleSet::currentSet()->style("guides")->foreground()));
+		SetWhitespaceForeground(true, StyleSet::currentSet()->style("guides")->foreground().toWx());
 	}
 	else
 		SetViewWhiteSpace(wxSTC_WS_INVISIBLE);
@@ -275,7 +278,7 @@ void TextEditorCtrl::setup()
 	StyleSetChangeable(wxSTC_STYLE_CALLTIP, true);
 	wxFont font_ct(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 	StyleSetFont(wxSTC_STYLE_CALLTIP, font_ct);
-	CallTipSetForegroundHighlight(WXCOL(StyleSet::currentSet()->style("calltip_hl")->foreground()));
+	CallTipSetForegroundHighlight(StyleSet::currentSet()->style("calltip_hl")->foreground().toWx());
 
 	// Set folding options
 	setupFolding();
@@ -311,13 +314,13 @@ void TextEditorCtrl::setupFoldMargin(TextStyle* margin_style)
 	wxColour col_fg, col_bg;
 	if (margin_style)
 	{
-		col_fg = WXCOL(margin_style->foreground());
-		col_bg = WXCOL(margin_style->background());
+		col_fg = margin_style->foreground().toWx();
+		col_bg = margin_style->background().toWx();
 	}
 	else
 	{
-		col_fg = WXCOL(StyleSet::currentSet()->style("foldmargin")->foreground());
-		col_bg = WXCOL(StyleSet::currentSet()->style("foldmargin")->background());
+		col_fg = StyleSet::currentSet()->style("foldmargin")->foreground().toWx();
+		col_bg = StyleSet::currentSet()->style("foldmargin")->background().toWx();
 	}
 
 	SetMarginType(1, wxSTC_MARGIN_SYMBOL);
@@ -415,7 +418,7 @@ bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 	// Check that the entry exists
 	if (!entry)
 	{
-		Global::error = "Invalid archive entry given";
+		global::error = "Invalid archive entry given";
 		return false;
 	}
 
@@ -431,7 +434,7 @@ bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
 
 	// Load text into editor
 	SetText(text);
-	last_modified_ = App::runTimer();
+	last_modified_ = app::runTimer();
 
 	// Update line numbers margin width
 	wxString numlines = wxString::Format("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
@@ -512,6 +515,7 @@ void TextEditorCtrl::showFindReplacePanel(bool show)
 
 	// Show the F+R panel
 	panel_fr_->Show();
+	panel_fr_->Layout();
 	panel_fr_->GetParent()->Layout();
 	panel_fr_->setFindText(find);
 }
@@ -663,7 +667,7 @@ int TextEditorCtrl::replaceAll(const wxString& find, const wxString& replace, in
 			replaced++;
 
 			// Continue from end of replaced text
-			SetSelection(found + find.length(), found + find.length());
+			SetSelection(found + replace.length(), found + replace.length());
 		}
 	}
 
@@ -1002,7 +1006,7 @@ void TextEditorCtrl::updateJumpToList()
 	// Begin jump to calculation thread
 	choice_jump_to_->Enable(false);
 	jump_to_calculator_ = new JumpToCalculator(
-		this, WxUtils::strToView(GetText()), language_->jumpBlocks(), language_->jumpBlocksIgnored());
+		this, wxutil::strToView(GetText()), language_->jumpBlocks(), language_->jumpBlocksIgnored());
 	jump_to_calculator_->Run();
 }
 
@@ -1352,7 +1356,8 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 	}
 
 	// Check for up/down keys while calltip with multiple arg sets is open
-	if (call_tip_->IsShown() && ct_function_ && ct_function_->contexts().size() > 1 && !ct_dwell_)
+	if (txed_calltips_argset_kb && call_tip_->IsShown() && ct_function_ && ct_function_->contexts().size() > 1
+		&& !ct_dwell_)
 	{
 		if (e.GetKeyCode() == WXK_UP)
 		{
@@ -1772,7 +1777,7 @@ void TextEditorCtrl::onModified(wxStyledTextEvent& e)
 	// (Re)start update timer for jump to list if text has changed
 	if (prev_text_length_ != GetTextLength())
 	{
-		last_modified_  = App::runTimer();
+		last_modified_  = app::runTimer();
 		update_jump_to_ = true;
 		timer_update_.Start(1000, true);
 
@@ -1815,10 +1820,13 @@ void TextEditorCtrl::onStyleNeeded(wxStyledTextEvent& e)
 		block_comment_closed_ = false;
 	}
 
+	// Update comment block info
+	lexer_->updateComments(
+		this, line_start == 0 ? 0 : GetLineEndPosition(line_start - 1), GetLineEndPosition(line_end));
+
 	// Lex until done (end of lines, end of file or end of block comment)
-	int  l          = line_start;
-	bool force_next = false;
-	while (l <= GetNumberOfLines() && (l <= line_end || force_next))
+	int l = line_start;
+	while (l <= GetNumberOfLines() && (l <= line_end))
 	{
 		int end   = GetLineEndPosition(l) - 1;
 		int start = end - GetLineLength(l) + 1;
@@ -1826,7 +1834,7 @@ void TextEditorCtrl::onStyleNeeded(wxStyledTextEvent& e)
 		if (start > end)
 			end = start;
 
-		force_next = lexer_->doStyling(this, start, end);
+		lexer_->doStyling(this, start, end);
 		l++;
 	}
 

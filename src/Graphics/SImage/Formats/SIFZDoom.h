@@ -12,7 +12,7 @@ public:
 		SImage::Info info;
 
 		// Get width & height
-		auto header = (Graphics::IMGZHeader*)mc.data();
+		auto header = (gfx::IMGZHeader*)mc.data();
 		info.width  = wxINT16_SWAP_ON_BE(header->width);
 		info.height = wxINT16_SWAP_ON_BE(header->height);
 
@@ -27,7 +27,7 @@ protected:
 	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
 		// Setup variables
-		auto header   = (Graphics::IMGZHeader*)data.data();
+		auto header   = (gfx::IMGZHeader*)data.data();
 		int  width    = wxINT16_SWAP_ON_BE(header->width);
 		int  height   = wxINT16_SWAP_ON_BE(header->height);
 		int  offset_x = wxINT16_SWAP_ON_BE(header->left);
@@ -40,14 +40,14 @@ protected:
 		if (!header->compression)
 		{
 			// No compression
-			memcpy(img_data, data.data() + sizeof(Graphics::IMGZHeader), data.size() - sizeof(Graphics::IMGZHeader));
+			memcpy(img_data, data.data() + sizeof(gfx::IMGZHeader), data.size() - sizeof(gfx::IMGZHeader));
 
 			return true;
 		}
 		else
 		{
 			// We'll use wandering pointers. The original pointer is kept for cleanup.
-			auto read    = data.data() + sizeof(Graphics::IMGZHeader);
+			auto read    = data.data() + sizeof(gfx::IMGZHeader);
 			auto readend = read + data.size() - 1;
 			auto dest    = img_data;
 			auto destend = dest + width * height;

@@ -31,6 +31,8 @@
 
 #include "mus2mid.h"
 
+using namespace slade;
+
 // MUS event codes
 enum musevent
 {

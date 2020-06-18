@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,8 +31,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
-#include "thirdparty/fmt/fmt/time.h"
+#include <fmt/chrono.h>
+#include <fmt/format.h>
 #include <fstream>
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -40,32 +43,32 @@
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace Log
+namespace slade::log
 {
 vector<Message> log;
 std::ofstream   log_file;
-} // namespace Log
+} // namespace slade::log
 CVAR(Int, log_verbosity, 1, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
-// Formatter for fmt so that Log::MessageType can be written to a string
+// Formatter for fmt so that log::MessageType can be written to a string
 // -----------------------------------------------------------------------------
 namespace fmt
 {
-template<> struct formatter<Log::MessageType>
+template<> struct formatter<log::MessageType>
 {
 	template<typename ParseContext> constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
-	template<typename FormatContext> auto          format(const Log::MessageType& type, FormatContext& ctx)
+	template<typename FormatContext> auto          format(const log::MessageType& type, FormatContext& ctx)
 	{
 		switch (type)
 		{
-		case Log::MessageType::Info: return format_to(ctx.begin(), " [Info]");
-		case Log::MessageType::Warning: return format_to(ctx.begin(), " [Warn]");
-		case Log::MessageType::Error: return format_to(ctx.begin(), "[Error]");
-		case Log::MessageType::Debug: return format_to(ctx.begin(), "[Debug]");
-		case Log::MessageType::Script: return format_to(ctx.begin(), "[Script]");
-		default: return format_to(ctx.begin(), "  [Log]");
+		case log::MessageType::Info: return format_to(ctx.out(), " [Info]");
+		case log::MessageType::Warning: return format_to(ctx.out(), " [Warn]");
+		case log::MessageType::Error: return format_to(ctx.out(), "[Error]");
+		case log::MessageType::Debug: return format_to(ctx.out(), "[Debug]");
+		case log::MessageType::Script: return format_to(ctx.out(), "[Script]");
+		default: return format_to(ctx.out(), "  [Log]");
 		}
 	}
 };
@@ -89,13 +92,13 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
 		error += fmt::format("[{}] ", FreeImage_GetFormatFromFIF(fif));
 	error += message;
 
-	Log::error(error);
+	log::error(error);
 }
 
 
 // -----------------------------------------------------------------------------
 //
-// Log::Message Struct Functions
+// log::Message Struct Functions
 //
 // -----------------------------------------------------------------------------
 
@@ -104,7 +107,7 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
 // Returns the log entry as a formatted string:
 // HH:MM:SS: <message>
 // -----------------------------------------------------------------------------
-string Log::Message::formattedMessageLine() const
+string log::Message::formattedMessageLine() const
 {
 	return fmt::format("{:%H:%M:%S}: {} {}", timestamp, type, message);
 }
@@ -120,19 +123,21 @@ string Log::Message::formattedMessageLine() const
 // -----------------------------------------------------------------------------
 // Initialises the log file and logging stuff
 // -----------------------------------------------------------------------------
-void Log::init()
+void log::init()
 {
 	// Redirect sf::err output to the log file
-	log_file.open(App::path("slade3.log", App::Dir::User));
+	log_file.open(app::path("slade3.log", app::Dir::User));
 	sf::err().rdbuf(log_file.rdbuf());
 
 	// Write logfile header
 	auto t  = std::time(nullptr);
 	auto tm = std::localtime(&t);
 	info("SLADE - It's a Doom Editor");
-	info(fmt::format("Version {}", App::version().toString()));
-	if (!Global::sc_rev.empty())
-		info(fmt::format("Git Revision {}", Global::sc_rev));
+	info(fmt::format("Version {}", app::version().toString()));
+	if (!global::sc_rev.empty())
+		info(fmt::format("Git Revision {}", global::sc_rev));
+    if (app::platform() == app::Platform::Windows)
+		info(fmt::format("{} Windows Build", app::isWin64Build() ? "64bit" : "32bit"));
 	info(fmt::format("Written by Simon Judd, 2008-{:%Y}", *tm));
 #ifdef SFML_VERSION_MAJOR
 	info(fmt::format(
@@ -155,7 +160,7 @@ void Log::init()
 // -----------------------------------------------------------------------------
 // Returns the log message history
 // -----------------------------------------------------------------------------
-const vector<Log::Message>& Log::history()
+const vector<log::Message>& log::history()
 {
 	return log;
 }
@@ -164,7 +169,7 @@ const vector<Log::Message>& Log::history()
 // Returns the current log verbosity level, log messages with a higher level
 // than the current verbosity will not be logged
 // -----------------------------------------------------------------------------
-int Log::verbosity()
+int log::verbosity()
 {
 	return log_verbosity;
 }
@@ -172,7 +177,7 @@ int Log::verbosity()
 // -----------------------------------------------------------------------------
 // Sets the log verbosity level to [verbosity]
 // -----------------------------------------------------------------------------
-void Log::setVerbosity(int verbosity)
+void log::setVerbosity(int verbosity)
 {
 	log_verbosity = verbosity;
 }
@@ -180,7 +185,7 @@ void Log::setVerbosity(int verbosity)
 // -----------------------------------------------------------------------------
 // Logs a message [text] of [type]
 // -----------------------------------------------------------------------------
-void Log::message(MessageType type, string_view text)
+void log::message(MessageType type, string_view text)
 {
 	// Add log message
 	auto t = std::time(nullptr);
@@ -191,12 +196,12 @@ void Log::message(MessageType type, string_view text)
 		sf::err() << log.back().formattedMessageLine() << "\n";
 }
 
-void Log::message(MessageType type, int level, string_view text, fmt::format_args args)
+void log::message(MessageType type, int level, string_view text, fmt::format_args args)
 {
 	message(type, level, fmt::vformat(text, args));
 }
 
-void Log::message(MessageType type, string_view text, fmt::format_args args)
+void log::message(MessageType type, string_view text, fmt::format_args args)
 {
 	message(type, fmt::vformat(text, args));
 }
@@ -204,7 +209,7 @@ void Log::message(MessageType type, string_view text, fmt::format_args args)
 // -----------------------------------------------------------------------------
 // Returns a list of log messages of [type] that have been recorded since [time]
 // -----------------------------------------------------------------------------
-vector<Log::Message*> Log::since(time_t time, MessageType type)
+vector<log::Message*> log::since(time_t time, MessageType type)
 {
 	vector<Message*> list;
 	for (auto& msg : log)
@@ -216,37 +221,37 @@ vector<Log::Message*> Log::since(time_t time, MessageType type)
 // -----------------------------------------------------------------------------
 // Logs a debug message [text] at verbosity [level] only if debug mode is on
 // -----------------------------------------------------------------------------
-void Log::debug(int level, const wxString& text)
+void log::debug(int level, const wxString& text)
 {
-	if (Global::debug)
+	if (global::debug)
 		message(MessageType::Debug, level, text.ToStdString());
 }
 
 // -----------------------------------------------------------------------------
 // Logs a debug message [text] only if debug mode is on
 // -----------------------------------------------------------------------------
-void Log::debug(const wxString& text)
+void log::debug(const wxString& text)
 {
-	if (Global::debug)
+	if (global::debug)
 		message(MessageType::Debug, text.ToStdString());
 }
 
-void Log::debug(int level, string_view text, fmt::format_args args)
+void log::debug(int level, string_view text, fmt::format_args args)
 {
-	if (Global::debug)
+	if (global::debug)
 		message(MessageType::Debug, level, text, args);
 }
 
-void Log::debug(string_view text, fmt::format_args args)
+void log::debug(string_view text, fmt::format_args args)
 {
-	if (Global::debug)
+	if (global::debug)
 		message(MessageType::Debug, text, args);
 }
 
 // -----------------------------------------------------------------------------
 // Logs a message [text] of [type] at verbosity [level]
 // -----------------------------------------------------------------------------
-void Log::message(MessageType type, int level, string_view text)
+void log::message(MessageType type, int level, string_view text)
 {
 	if (level > log_verbosity)
 		return;

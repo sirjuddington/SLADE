@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -35,6 +35,9 @@
 #include "Archive/ArchiveManager.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
+#include <wx/mstream.h>
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -45,14 +48,20 @@
 CVAR(String, iconset_general, "Default", CVar::Flag::Save)
 CVAR(String, iconset_entry_list, "Default", CVar::Flag::Save)
 
-namespace Icons
+namespace slade::icons
 {
 struct Icon
 {
-	wxImage       image;
-	wxImage       image_large;
-	string        name;
-	ArchiveEntry* resource_entry;
+	struct Image
+	{
+		wxImage       wx_image;
+		ArchiveEntry* resource_entry = nullptr;
+	};
+
+	string name;
+	Image  i16;
+	Image  i24;
+	Image  i32;
 };
 
 vector<Icon>   icons_general;
@@ -61,7 +70,7 @@ vector<Icon>   icons_entry;
 wxBitmap       icon_empty;
 vector<string> iconsets_entry;
 vector<string> iconsets_general;
-} // namespace Icons
+} // namespace slade::icons
 
 
 // -----------------------------------------------------------------------------
@@ -69,7 +78,7 @@ vector<string> iconsets_general;
 // Icons Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace Icons
+namespace slade::icons
 {
 // -----------------------------------------------------------------------------
 // Returns a list of all icons of [type]
@@ -85,147 +94,222 @@ vector<Icon>& iconList(Type type)
 }
 
 // -----------------------------------------------------------------------------
-// Loads all icons in [dir] to the list for [type]
+// Loads all icons in [dir] to the list for [type].
+// If [append_default] is true, we are only loading icons from the default set
+// that don't already exist in the icon list
 // -----------------------------------------------------------------------------
-bool loadIconsDir(Type type, ArchiveDir* dir)
+bool loadIconsDir(Type type, ArchiveDir* dir, bool append_default)
 {
 	if (!dir)
 		return false;
 
 	// Check for icon set dirs
-	for (const auto& subdir : dir->subdirs())
+	if (!append_default)
 	{
-		if (subdir->name() != "large")
+		for (const auto& subdir : dir->subdirs())
 		{
-			if (type == General)
-				iconsets_general.push_back(subdir->name());
-			else if (type == Entry)
-				iconsets_entry.push_back(subdir->name());
+			if (subdir->name() != "16" && subdir->name() != "24" && subdir->name() != "32")
+			{
+				if (type == General)
+					iconsets_general.push_back(subdir->name());
+				else if (type == Entry)
+					iconsets_entry.push_back(subdir->name());
+			}
 		}
 	}
 
 	// Get icon set dir
 	string icon_set_dir = "Default";
-	if (type == Entry)
+	if (type == Entry && !append_default)
 		icon_set_dir = iconset_entry_list;
-	if (type == General)
+	if (type == General && !append_default)
 		icon_set_dir = iconset_general;
-	if (icon_set_dir != "Default" && dir->subdir(icon_set_dir))
-		dir = dir->subdir(icon_set_dir).get();
+	if (icon_set_dir != "Default")
+		if (auto subdir = dir->subdir(icon_set_dir))
+			dir = subdir.get();
 
-	auto& icons    = iconList(type);
-	auto  tempfile = App::path("sladetemp", App::Dir::Temp);
+	auto& icons = iconList(type);
 
-	// Go through each entry in the directory
-	for (size_t a = 0; a < dir->numEntries(false); a++)
+	// Load 16x16 icons (these must exist)
+	bool  found  = false;
+	auto* dir_16 = dir->subdir("16").get();
+	if (!dir_16)
 	{
-		auto entry = dir->entryAt(a);
-
+		log::error("Error loading icons, no 16x16 dir exists for set \"{}\" (in {})", icon_set_dir, dir->path());
+		return false;
+	}
+	for (const auto& entry : dir_16->allEntries())
+	{
 		// Ignore anything not png format
-		if (!StrUtil::endsWith(entry->upperName(), ".PNG"))
+		if (!strutil::endsWithCI(entry->name(), ".png"))
+		{
+			log::warning("Invalid 16x16 image format for icon \"{}\", must be png", entry->nameNoExt());
 			continue;
+		}
 
-		// Export entry data to a temporary file
-		entry->exportFile(tempfile);
+		if (append_default)
+		{
+			found = false;
+			for (const auto& icon : icons)
+				if (icon.name == entry->nameNoExt())
+				{
+					found = true;
+					break;
+				}
+			if (found)
+				continue;
+		}
 
-		// Create / setup icon
+		// Load 16x16 icon image
 		Icon n_icon;
-		n_icon.image.LoadFile(tempfile);            // Load image from temp file
-		n_icon.name           = entry->nameNoExt(); // Set icon name
-		n_icon.resource_entry = entry;
+		auto stream = wxMemoryInputStream(entry->rawData(), entry->size());
+		if (!n_icon.i16.wx_image.LoadFile(stream, wxBITMAP_TYPE_PNG))
+		{
+			log::warning("Unable to load 16x16 image for icon \"{}\" (is it not png format?)", entry->nameNoExt());
+			continue;
+		}
 
 		// Add the icon
+		n_icon.name               = entry->nameNoExt();
+		n_icon.i16.resource_entry = entry.get();
 		icons.push_back(n_icon);
-
-		// Delete the temporary file
-		wxRemoveFile(tempfile);
 	}
 
-	// Go through large icons
-	auto dir_large = dir->subdir("large");
-	if (dir_large)
+	// Load 24x24 icons
+	if (auto* dir_24 = dir->subdir("24").get())
 	{
-		for (size_t a = 0; a < dir_large->numEntries(false); a++)
+		for (const auto& entry : dir_24->allEntries())
 		{
-			auto entry = dir_large->entryAt(a);
-
 			// Ignore anything not png format
-			if (!StrUtil::endsWith(entry->upperName(), ".PNG"))
+			if (!strutil::endsWithCI(entry->name(), ".png"))
+			{
+				log::warning("Invalid 24x24 image format for icon \"{}\", must be png", entry->nameNoExt());
 				continue;
+			}
 
-			// Export entry data to a temporary file
-			entry->exportFile(tempfile);
-
-			// Create / setup icon
-			bool found = false;
-			auto name  = entry->nameNoExt();
+			// Find existing icon
+			auto name = entry->nameNoExt();
 			for (auto& icon : icons)
 			{
 				if (icon.name == name)
 				{
-					icon.image_large.LoadFile(tempfile);
-					found = true;
+					// Load 24x24 icon image
+					auto stream = wxMemoryInputStream(entry->rawData(), entry->size());
+					if (!icon.i24.wx_image.LoadFile(stream, wxBITMAP_TYPE_PNG))
+						log::warning(
+							"Unable to load 24x24 image for icon \"{}\" (is it not png format?)", entry->nameNoExt());
+					icon.i24.resource_entry = entry.get();
+
 					break;
 				}
 			}
+		}
+	}
 
-			if (!found)
+	// Load 32x32 icons
+	if (auto* dir_32 = dir->subdir("32").get())
+	{
+		for (const auto& entry : dir_32->allEntries())
+		{
+			// Ignore anything not png format
+			if (!strutil::endsWithCI(entry->name(), ".png"))
 			{
-				Icon n_icon;
-				n_icon.image_large.LoadFile(tempfile);      // Load image from temp file
-				n_icon.name           = entry->nameNoExt(); // Set icon name
-				n_icon.resource_entry = entry;
-
-				// Add the icon
-				icons.push_back(n_icon);
+				log::warning("Invalid 32x32 image format for icon \"{}\", must be png", entry->nameNoExt());
+				continue;
 			}
 
-			// Delete the temporary file
-			wxRemoveFile(tempfile);
+			// Find existing icon
+			auto name = entry->nameNoExt();
+			for (auto& icon : icons)
+			{
+				if (icon.name == name)
+				{
+					// Load 32x32 icon image
+					auto stream = wxMemoryInputStream(entry->rawData(), entry->size());
+					if (!icon.i32.wx_image.LoadFile(stream, wxBITMAP_TYPE_PNG))
+						log::warning(
+							"Unable to load 32x32 image for icon \"{}\" (is it not png format?)", entry->nameNoExt());
+					icon.i32.resource_entry = entry.get();
+
+					break;
+				}
+			}
 		}
 	}
 
 	// Generate any missing large icons
 	for (auto& icon : icons)
 	{
-		if (!icon.image_large.IsOk())
+		if (!icon.i24.wx_image.IsOk())
 		{
-			icon.image_large = icon.image.Copy();
-			icon.image_large.Rescale(32, 32, wxIMAGE_QUALITY_BICUBIC);
+			icon.i24.resource_entry = icon.i16.resource_entry;
+			icon.i24.wx_image       = icon.i16.wx_image.Copy();
+			icon.i24.wx_image.Rescale(24, 24, wxIMAGE_QUALITY_BICUBIC);
+		}
+
+		if (!icon.i32.wx_image.IsOk())
+		{
+			icon.i32.resource_entry = icon.i16.resource_entry;
+			icon.i32.wx_image       = icon.i16.wx_image.Copy();
+			icon.i32.wx_image.Rescale(32, 32, wxIMAGE_QUALITY_BICUBIC);
 		}
 	}
 
 	return true;
 }
-} // namespace Icons
+
+const Icon::Image& validImageForSize(const Icon& icon_def, int size)
+{
+	if (size <= 16)
+		return icon_def.i16;
+
+	if (size <= 24)
+	{
+		if (icon_def.i24.wx_image.IsOk())
+			return icon_def.i24;
+		else
+			return icon_def.i16;
+	}
+
+	// Size >= 25
+	if (icon_def.i32.wx_image.IsOk())
+		return icon_def.i32;
+
+	return icon_def.i16;
+}
+} // namespace slade::icons
 
 // -----------------------------------------------------------------------------
 // Loads all icons from slade.pk3 (in the icons/ dir)
 // -----------------------------------------------------------------------------
-bool Icons::loadIcons()
+bool icons::loadIcons()
 {
-	auto tempfile = App::path("sladetemp", App::Dir::Temp);
+	auto tempfile = app::path("sladetemp", app::Dir::Temp);
 
 	// Get slade.pk3
-	auto res_archive = App::archiveManager().programResourceArchive();
+	auto* res_archive = app::archiveManager().programResourceArchive();
 
 	// Do nothing if it doesn't exist
 	if (!res_archive)
 		return false;
 
 	// Get the icons directory of the archive
-	auto dir_icons = res_archive->dirAtPath("icons");
+	auto* dir_icons = res_archive->dirAtPath("icons");
 
 	// Load general icons
 	iconsets_general.emplace_back("Default");
-	loadIconsDir(General, dir_icons->subdir("general").get());
+	loadIconsDir(General, dir_icons->subdir("general").get(), false);
 
 	// Load entry list icons
 	iconsets_entry.emplace_back("Default");
-	loadIconsDir(Entry, dir_icons->subdir("entry_list").get());
+	loadIconsDir(Entry, dir_icons->subdir("entry_list").get(), false);
 
 	// Load text editor icons
-	loadIconsDir(TextEditor, dir_icons->subdir("text_editor").get());
+	loadIconsDir(TextEditor, dir_icons->subdir("text_editor").get(), false);
+
+	// Load any missing icons from the default set
+	if (iconset_general != "Default")
+		loadIconsDir(General, dir_icons->subdir("general").get(), true);
 
 	return true;
 }
@@ -236,44 +320,64 @@ bool Icons::loadIcons()
 // If [type] is less than 0, try all icon types.
 // If [log_missing] is true, log an error message if the icon was not found
 // -----------------------------------------------------------------------------
-wxBitmap Icons::getIcon(Type type, string_view name, bool large, bool log_missing)
+wxBitmap icons::getIcon(Type type, string_view name, int size, bool log_missing)
 {
 	// Check all types if [type] is < 0
 	if (type == Any)
 	{
-		auto icon = getIcon(General, name, large, false);
+		auto icon = getIcon(General, name, size, false);
 		if (!icon.IsOk())
-			icon = getIcon(Entry, name, large, false);
+			icon = getIcon(Entry, name, size, false);
 		if (!icon.IsOk())
-			icon = getIcon(TextEditor, name, large, false);
+			icon = getIcon(TextEditor, name, size, false);
 
 		if (!icon.IsOk() && log_missing)
-			Log::warning(2, "Icon \"{}\" does not exist", name);
+			log::warning(2, "Icon \"{}\" does not exist", name);
 
 		return icon;
 	}
 
-	auto& icons = iconList(type);
-
-	size_t icons_size = icons.size();
-	for (size_t a = 0; a < icons_size; a++)
-	{
-		if (icons[a].name == name)
-		{
-			if (large)
-			{
-				if (icons[a].image_large.IsOk())
-					return wxBitmap(icons[a].image_large);
-				else
-					return wxBitmap(icons[a].image);
-			}
-			else
-				return wxBitmap(icons[a].image);
-		}
-	}
+	for (const auto& icon : iconList(type))
+		if (icon.name == name)
+			return wxBitmap(validImageForSize(icon, size).wx_image);
 
 	if (log_missing)
-		Log::warning(2, "Icon \"{}\" does not exist", name);
+		log::warning(2, "Icon \"{}\" does not exist", name);
+
+	return wxNullBitmap;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the icon matching [name] of [type] as a wxBitmap (for toolbars etc)
+// with [padding] pixels transparent border, or an empty bitmap if no icon was
+// found.
+// If [type] is less than 0, try all icon types.
+// -----------------------------------------------------------------------------
+wxBitmap icons::getPaddedIcon(Type type, string_view name, int size, Point2i padding)
+{
+	// Check all types if [type] is < 0
+	if (type == Any)
+	{
+		auto icon = getPaddedIcon(General, name, size, padding);
+		if (!icon.IsOk())
+			icon = getPaddedIcon(Entry, name, size, padding);
+		if (!icon.IsOk())
+			icon = getPaddedIcon(TextEditor, name, size, padding);
+
+		return icon;
+	}
+
+	for (const auto& icon : iconList(type))
+		if (icon.name == name)
+		{
+			const auto& image = validImageForSize(icon, size).wx_image;
+			wxImage     padded(image.GetWidth() + padding.x * 2, image.GetHeight() + padding.y * 2);
+			padded.SetMaskColour(0, 0, 0);
+			padded.InitAlpha();
+			padded.Paste(image, padding.x, padding.y);
+
+			return wxBitmap(padded);
+		}
 
 	return wxNullBitmap;
 }
@@ -281,22 +385,76 @@ wxBitmap Icons::getIcon(Type type, string_view name, bool large, bool log_missin
 // -----------------------------------------------------------------------------
 // Returns the icon [name] of [type]
 // -----------------------------------------------------------------------------
-wxBitmap Icons::getIcon(Type type, string_view name)
+wxBitmap icons::getIcon(Type type, string_view name)
 {
-	return getIcon(type, name, UI::scaleFactor() > 1.25);
+	return getIcon(type, name, 16 * ui::scaleFactor());
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if an icon with [name] of [type] exists
+// -----------------------------------------------------------------------------
+bool icons::iconExists(Type type, string_view name)
+{
+	// Check all types if [type] is < 0
+	if (type == Any)
+	{
+		bool exists = iconExists(General, name);
+		if (!exists)
+			exists = iconExists(Entry, name);
+		if (!exists)
+			exists = iconExists(TextEditor, name);
+
+		return exists;
+	}
+
+	auto& icons = iconList(type);
+	for (const auto& icon : icons)
+		if (icon.name == name)
+			return true;
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the resource entry for the icon matching [name] of [type], or nullptr
+// if no matching icon was found.
+// If [type] is less than 0, try all icon types.
+// -----------------------------------------------------------------------------
+ArchiveEntry* icons::getIconEntry(Type type, string_view name, int size)
+{
+	// Check all types if [type] is < 0
+	if (type == Any)
+	{
+		auto* entry = getIconEntry(General, name, size);
+		if (!entry)
+			entry = getIconEntry(Entry, name, size);
+		if (!entry)
+			entry = getIconEntry(TextEditor, name, size);
+
+		return entry;
+	}
+
+	auto& icons = iconList(type);
+	for (const auto& icon : icons)
+	{
+		if (icon.name == name)
+			return validImageForSize(icon, size).resource_entry;
+	}
+
+	return nullptr;
 }
 
 // -----------------------------------------------------------------------------
 // Exports icon [name] of [type] to a png image file at [path]
 // -----------------------------------------------------------------------------
-bool Icons::exportIconPNG(Type type, string_view name, string_view path)
+bool icons::exportIconPNG(Type type, string_view name, string_view path)
 {
 	auto& icons = iconList(type);
 
 	for (auto& icon : icons)
 	{
 		if (icon.name == name)
-			return icon.resource_entry->exportFile(path);
+			return icon.i16.resource_entry->exportFile(path);
 	}
 
 	return false;
@@ -305,7 +463,7 @@ bool Icons::exportIconPNG(Type type, string_view name, string_view path)
 // -----------------------------------------------------------------------------
 // Returns a list of currently available icon sets for [type]
 // -----------------------------------------------------------------------------
-vector<string> Icons::iconSets(Type type)
+vector<string> icons::iconSets(Type type)
 {
 	if (type == General)
 		return iconsets_general;

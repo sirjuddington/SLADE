@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -44,6 +44,8 @@
 #include "OpenGL/OpenGL.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -69,13 +71,13 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 
 		// Determine texture type
 		int initial = 0;
-		if (!Game::configuration().featureSupported(Game::Feature::MixTexFlats))
+		if (!game::configuration().featureSupported(game::Feature::MixTexFlats))
 		{
 			sel_walls_ = false;
 			for (unsigned a = 0; a < sel.size(); a++)
 			{
-				if (sel[a].type != MapEditor::ItemType::Thing && sel[a].type != MapEditor::ItemType::Ceiling
-					&& sel[a].type != MapEditor::ItemType::Floor)
+				if (sel[a].type != mapeditor::ItemType::Thing && sel[a].type != mapeditor::ItemType::Ceiling
+					&& sel[a].type != mapeditor::ItemType::Floor)
 				{
 					sel_walls_ = true;
 					initial    = a;
@@ -86,15 +88,15 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 
 		// Get initial texture
 		string tex_init;
-		if (sel[initial].type == MapEditor::ItemType::Ceiling)
+		if (sel[initial].type == mapeditor::ItemType::Ceiling)
 			tex_init = editor->map().sector(sel[initial].index)->ceiling().texture;
-		else if (sel[initial].type == MapEditor::ItemType::Floor)
+		else if (sel[initial].type == mapeditor::ItemType::Floor)
 			tex_init = editor->map().sector(sel[initial].index)->floor().texture;
-		else if (sel[initial].type == MapEditor::ItemType::WallTop)
+		else if (sel[initial].type == mapeditor::ItemType::WallTop)
 			tex_init = editor->map().side(sel[initial].index)->texUpper();
-		else if (sel[initial].type == MapEditor::ItemType::WallMiddle)
+		else if (sel[initial].type == mapeditor::ItemType::WallMiddle)
 			tex_init = editor->map().side(sel[initial].index)->texMiddle();
-		else if (sel[initial].type == MapEditor::ItemType::WallBottom)
+		else if (sel[initial].type == mapeditor::ItemType::WallBottom)
 			tex_init = editor->map().side(sel[initial].index)->texLower();
 
 		auto map_format = editor->map().currentFormat();
@@ -104,7 +106,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 
 		if (sel_walls_)
 		{
-			for (auto& tex_info : MapEditor::textureManager().allTexturesInfo())
+			for (auto& tex_info : mapeditor::textureManager().allTexturesInfo())
 			{
 				bool skip = false;
 				for (auto& texname : tex_names)
@@ -116,8 +118,8 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 					}
 				}
 
-				if (map_format == MapFormat::UDMF && Game::configuration().featureSupported(Game::Feature::LongNames)
-					&& !StrUtil::equalCI(tex_info.short_name, tex_info.long_name))
+				if (map_format == MapFormat::UDMF && game::configuration().featureSupported(game::Feature::LongNames)
+					&& !strutil::equalCI(tex_info.short_name, tex_info.long_name))
 					tex_names.push_back(tex_info.long_name);
 
 				if (skip)
@@ -129,7 +131,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 		}
 		if (sel_flats_)
 		{
-			for (auto& tex_info : MapEditor::textureManager().allFlatsInfo())
+			for (auto& tex_info : mapeditor::textureManager().allFlatsInfo())
 			{
 				bool skip = false;
 				for (auto& texname : tex_names)
@@ -141,8 +143,8 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor) : MCOverlay
 					}
 				}
 
-				if (map_format == MapFormat::UDMF && Game::configuration().featureSupported(Game::Feature::LongNames)
-					&& !StrUtil::equalCI(tex_info.short_name, tex_info.long_name))
+				if (map_format == MapFormat::UDMF && game::configuration().featureSupported(game::Feature::LongNames)
+					&& !strutil::equalCI(tex_info.short_name, tex_info.long_name))
 					tex_names.push_back(tex_info.long_name);
 
 				if (skip)
@@ -173,7 +175,7 @@ void QuickTextureOverlay3d::setTexture(string_view name)
 {
 	for (unsigned a = 0; a < textures_.size(); a++)
 	{
-		if (StrUtil::equalCI(textures_[a].name, name))
+		if (strutil::equalCI(textures_[a].name, name))
 		{
 			current_index_ = a;
 			anim_offset_   = a;
@@ -200,18 +202,18 @@ void QuickTextureOverlay3d::applyTexture()
 		for (auto& item : selection)
 		{
 			// Thing (skip)
-			if (item.type == MapEditor::ItemType::Thing)
+			if (item.type == mapeditor::ItemType::Thing)
 				continue;
 
 			// Floor
-			if (item.type == MapEditor::ItemType::Floor && sel_flats_)
+			if (item.type == mapeditor::ItemType::Floor && sel_flats_)
 			{
 				if (auto sector = item.asSector(editor_->map()))
 					sector->setFloorTexture(textures_[current_index_].name);
 			}
 
 			// Ceiling
-			else if (item.type == MapEditor::ItemType::Ceiling && sel_flats_)
+			else if (item.type == mapeditor::ItemType::Ceiling && sel_flats_)
 			{
 				if (auto sector = item.asSector(editor_->map()))
 					sector->setCeilingTexture(textures_[current_index_].name);
@@ -223,13 +225,13 @@ void QuickTextureOverlay3d::applyTexture()
 				if (auto side = item.asSide(editor_->map()))
 				{
 					// Upper
-					if (item.type == MapEditor::ItemType::WallTop)
+					if (item.type == mapeditor::ItemType::WallTop)
 						side->setTexUpper(textures_[current_index_].name);
 					// Middle
-					else if (item.type == MapEditor::ItemType::WallMiddle)
+					else if (item.type == mapeditor::ItemType::WallMiddle)
 						side->setTexMiddle(textures_[current_index_].name);
 					// Lower
-					else if (item.type == MapEditor::ItemType::WallBottom)
+					else if (item.type == mapeditor::ItemType::WallBottom)
 						side->setTexLower(textures_[current_index_].name);
 				}
 			}
@@ -264,7 +266,7 @@ void QuickTextureOverlay3d::draw(int width, int height, float fade)
 	// Draw background
 	glColor4f(0.0f, 0.0f, 0.0f, fade * 0.6f);
 	glDisable(GL_TEXTURE_2D);
-	Drawing::drawFilledRect(0, height - 120, width, height);
+	drawing::drawFilledRect(0, height - 120, width, height);
 
 	// Draw current tex name
 	glEnable(GL_TEXTURE_2D);
@@ -300,28 +302,28 @@ void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom,
 	if (!textures_[index].texture)
 	{
 		if (sel_walls_ && !sel_flats_)
-			textures_[index].texture = MapEditor::textureManager().texture(textures_[index].name, false).gl_id;
+			textures_[index].texture = mapeditor::textureManager().texture(textures_[index].name, false).gl_id;
 		else if (!sel_walls_ && sel_flats_)
-			textures_[index].texture = MapEditor::textureManager().flat(textures_[index].name, false).gl_id;
+			textures_[index].texture = mapeditor::textureManager().flat(textures_[index].name, false).gl_id;
 		else
-			textures_[index].texture = MapEditor::textureManager().texture(textures_[index].name, true).gl_id;
+			textures_[index].texture = mapeditor::textureManager().texture(textures_[index].name, true).gl_id;
 	}
 
 	// Draw name
 	double brightness = 0.5 + (size - 1.0);
-	Drawing::drawText(
+	drawing::drawText(
 		textures_[index].name,
 		x,
 		bottom + 2,
 		ColRGBA(brightness * 255, brightness * 255, brightness * 255, brightness * 255 * fade),
-		index == current_index_ ? Drawing::Font::Bold : Drawing::Font::Normal,
-		Drawing::Align::Center);
+		index == current_index_ ? drawing::Font::Bold : drawing::Font::Normal,
+		drawing::Align::Center);
 
 	// Draw texture
-	auto rect = Drawing::fitTextureWithin(
+	auto rect = drawing::fitTextureWithin(
 		textures_[index].texture, x - 48 * size, bottom - (96 * size), x + 48 * size, bottom, 0, 2);
 	glColor4f(brightness, brightness, brightness, brightness * fade);
-	OpenGL::Texture::bind(textures_[index].texture);
+	gl::Texture::bind(textures_[index].texture);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.0f);
 	glVertex2d(rect.x1(), rect.y1());
@@ -374,7 +376,7 @@ void QuickTextureOverlay3d::doSearch()
 	{
 		for (unsigned a = 0; a < textures_.size(); a++)
 		{
-			if (StrUtil::startsWithCI(textures_[a].name, search_))
+			if (strutil::startsWithCI(textures_[a].name, search_))
 			{
 				current_index_ = a;
 				applyTexture();
@@ -426,7 +428,7 @@ bool QuickTextureOverlay3d::ok(const ItemSelection& sel)
 	bool ok = false;
 	for (auto item : sel)
 	{
-		if (item.type != MapEditor::ItemType::Thing)
+		if (item.type != mapeditor::ItemType::Thing)
 		{
 			ok = true;
 			break;

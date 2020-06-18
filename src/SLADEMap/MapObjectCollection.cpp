@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,6 +36,8 @@
 #include "MapObject/MapLine.h"
 #include "MapObject/MapSector.h"
 #include "SLADEMap.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -325,7 +327,7 @@ bool MapObjectCollection::removeLine(unsigned index)
 	if (index >= lines_.size())
 		return false;
 
-	Log::info(4, "id {}  index {}  objindex {}", lines_[index]->obj_id_, index, lines_[index]->index_);
+	log::info(4, "id {}  index {}  objindex {}", lines_[index]->obj_id_, index, lines_[index]->index_);
 
 	// Init
 	auto line = lines_[index];
@@ -383,8 +385,11 @@ bool MapObjectCollection::removeSide(unsigned index, bool remove_from_line)
 			l->setS2(nullptr);
 
 		// Set appropriate line flags
-		Game::configuration().setLineBasicFlag("blocking", l, current_format_, true);
-		Game::configuration().setLineBasicFlag("twosided", l, current_format_, false);
+		if (parent_map_)
+		{
+			game::configuration().setLineBasicFlag("blocking", l, parent_map_->currentFormat(), true);
+			game::configuration().setLineBasicFlag("twosided", l, parent_map_->currentFormat(), false);
+		}
 	}
 
 	// Remove side from its sector, if any

@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class PakArchive : public Archive
 {
 public:
@@ -19,3 +21,4 @@ public:
 	static bool isPakArchive(MemChunk& mc);
 	static bool isPakArchive(const string& filename);
 };
+} // namespace slade

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,7 +36,8 @@
 #include "MapEditor/MapEditor.h"
 #include "Utility/MathStuff.h"
 
-using namespace MapEditor;
+using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -95,7 +96,7 @@ bool LineDraw::addPoint(Vec2d point, bool nearest)
 	{
 		// End line drawing
 		end(true);
-		MapEditor::showShapeDrawPanel(false);
+		mapeditor::showShapeDrawPanel(false);
 		return true;
 	}
 
@@ -106,7 +107,7 @@ bool LineDraw::addPoint(Vec2d point, bool nearest)
 	if (draw_points_.size() > 1 && point.x == draw_points_[0].x && point.y == draw_points_[0].y)
 	{
 		end(true);
-		MapEditor::showShapeDrawPanel(false);
+		mapeditor::showShapeDrawPanel(false);
 		return true;
 	}
 
@@ -122,7 +123,7 @@ void LineDraw::removePoint()
 	if (draw_points_.empty())
 	{
 		end(false);
-		MapEditor::showShapeDrawPanel(false);
+		mapeditor::showShapeDrawPanel(false);
 	}
 	else
 	{
@@ -234,7 +235,7 @@ void LineDraw::updateShape(Vec2d point)
 		for (int a = 0; a < shapedraw_sides; a++)
 		{
 			// Calculate point (rounded)
-			Vec2d p(MathStuff::round(mid.x + sin(rot) * width), MathStuff::round(mid.y - cos(rot) * height));
+			Vec2d p(math::round(mid.x + sin(rot) * width), math::round(mid.y - cos(rot) * height));
 
 			// Add point
 			draw_points_.push_back(p);
@@ -268,7 +269,7 @@ void LineDraw::begin(bool shape)
 								  fmt::format("{} = Cancel", key_cancel),
 								  "Left Click = Draw point",
 								  "Right Click = Undo previous point" });
-		MapEditor::showShapeDrawPanel(true);
+		mapeditor::showShapeDrawPanel(true);
 	}
 	else
 	{
@@ -287,7 +288,7 @@ void LineDraw::begin(bool shape)
 void LineDraw::end(bool apply)
 {
 	// Hide shape draw panel
-	MapEditor::showShapeDrawPanel(true);
+	mapeditor::showShapeDrawPanel(true);
 
 	// Do nothing if we don't need to create any lines
 	if (!apply || draw_points_.size() <= 1)
@@ -324,7 +325,7 @@ void LineDraw::end(bool apply)
 		// Check for intersections
 		Seg2d line_seg{ draw_points_[a], draw_points_[a + 1] };
 		auto  intersect = map.lines().cutPoints(line_seg);
-		Log::info(2, "{} intersect points", intersect.size());
+		log::info(2, "{} intersect points", intersect.size());
 
 		// Create line normally if no intersections
 		if (intersect.empty())

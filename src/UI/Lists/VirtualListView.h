@@ -3,6 +3,8 @@
 // An event to indicate when the selection has changed
 wxDECLARE_EVENT(EVT_VLV_SELECTION_CHANGED, wxCommandEvent);
 
+namespace slade
+{
 class VirtualListView : public wxListCtrl
 {
 public:
@@ -96,6 +98,7 @@ protected:
 	void onLabelEditEnd(wxListEvent& e);
 	void onColumnLeftClick(wxListEvent& e);
 	void onItemSelected(wxListEvent& e);
+	void onIdle(wxIdleEvent& e);
 
 private:
 	wxString search_;
@@ -103,6 +106,9 @@ private:
 	int      col_search_         = 0;
 	bool     cols_editable_[100] = {}; // Never really going to have more than 100 columns
 	bool     selection_updating_ = false;
+	int      prev_idle_selcount_ = 0;
+	long     prev_idle_index_    = -1;
 
 	void sendSelectionChangedEvent();
 };
+} // namespace slade

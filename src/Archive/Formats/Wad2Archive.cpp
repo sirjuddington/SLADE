@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,8 @@
 #include "Main.h"
 #include "Wad2Archive.h"
 #include "General/UI.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -77,23 +79,23 @@ bool Wad2Archive::open(MemChunk& mc)
 	// Check the header
 	if (wad_type[0] != 'W' || wad_type[1] != 'A' || wad_type[2] != 'D' || (wad_type[3] != '2' && wad_type[3] != '3'))
 	{
-		Log::error("Wad2Archive::open: Invalid header");
-		Global::error = "Invalid wad2 header";
+		log::error("Wad2Archive::open: Invalid header");
+		global::error = "Invalid wad2 header";
 		return false;
 	}
 	if (wad_type[3] == '3')
 		wad3_ = true;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
-	UI::setSplashProgressMessage("Reading wad archive data");
+	ui::setSplashProgressMessage("Reading wad archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		Wad2Entry info;
@@ -108,9 +110,8 @@ bool Wad2Archive::open(MemChunk& mc)
 		// the wadfile is invalid
 		if ((unsigned)(info.offset + info.dsize) > mc.size())
 		{
-			Log::error("Wad2Archive::open: Wad2 archive is invalid or corrupt");
-			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
+			log::error("Wad2Archive::open: Wad2 archive is invalid or corrupt");
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
@@ -129,11 +130,11 @@ bool Wad2Archive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)num_lumps)));
+		ui::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		auto entry = entryAt(a);
@@ -142,7 +143,7 @@ bool Wad2Archive::open(MemChunk& mc)
 		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->size());
+			mc.exportMemChunk(edata, entry->exProp<int>("Offset"), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -158,15 +159,14 @@ bool Wad2Archive::open(MemChunk& mc)
 	}
 
 	// Detect maps (will detect map entry types)
-	UI::setSplashProgressMessage("Detecting maps");
+	ui::setSplashProgressMessage("Detecting maps");
 	detectMaps();
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -219,11 +219,11 @@ bool Wad2Archive::write(MemChunk& mc, bool update)
 		Wad2Entry info;
 		memset(info.name, 0, 16);
 		memcpy(info.name, entry->name().data(), entry->name().size());
-		info.cmprs  = (bool)entry->exProp("W2Comp");
+		info.cmprs  = entry->exProp<bool>("W2Comp");
 		info.dsize  = entry->size();
 		info.size   = entry->size();
-		info.offset = (int)entry->exProp("Offset");
-		info.type   = (int)entry->exProp("W2Type");
+		info.offset = entry->exProp<int>("Offset");
+		info.type   = entry->exProp<int>("W2Type");
 
 		// Write it
 		mc.write(&info, 32);
@@ -259,12 +259,12 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error("Wad2Archive::loadEntryData: Failed to open wadfile {}", filename_);
+		log::error("Wad2Archive::loadEntryData: Failed to open wadfile {}", filename_);
 		return false;
 	}
 
 	// Seek to lump offset in file and read it in
-	file.Seek((int)entry->exProp("Offset"), wxFromStart);
+	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
 	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded

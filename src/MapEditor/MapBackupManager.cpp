@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -40,6 +40,7 @@
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -73,7 +74,7 @@ bool MapBackupManager::writeBackup(
 	std::string_view                  map_name) const
 {
 	// Create backup directory if needed
-	auto backup_dir = App::path("backups", App::Dir::User);
+	auto backup_dir = app::path("backups", app::Dir::User);
 	if (!wxDirExists(backup_dir))
 		wxMkdir(backup_dir);
 
@@ -93,7 +94,7 @@ bool MapBackupManager::writeBackup(
 		bool ignored = false;
 		for (auto& ignore_entry : mb_ignore_entries)
 		{
-			if (StrUtil::equalCI(ignore_entry, entry->name()))
+			if (strutil::equalCI(ignore_entry, entry->name()))
 			{
 				ignored = true;
 				break;
@@ -124,8 +125,8 @@ bool MapBackupManager::writeBackup(
 					break;
 				}
 
-				uint32_t crc1 = Misc::crc(e1->rawData(), e1->size());
-				uint32_t crc2 = Misc::crc(e2->rawData(), e2->size());
+				uint32_t crc1 = misc::crc(e1->rawData(), e1->size());
+				uint32_t crc2 = misc::crc(e2->rawData(), e2->size());
 				if (crc1 != crc2)
 				{
 					same = false;
@@ -136,14 +137,14 @@ bool MapBackupManager::writeBackup(
 
 		if (same)
 		{
-			Log::info(2, "Same data as previous backup - ignoring");
+			log::info(2, "Same data as previous backup - ignoring");
 			return true;
 		}
 	}
 
 	// Add map data to backup
 	auto timestamp = wxDateTime::Now().FormatISOCombined('_').ToStdString();
-	StrUtil::replaceIP(timestamp, ":", "");
+	strutil::replaceIP(timestamp, ":", "");
 	auto dir = fmt::format("{}/{}", map_name, timestamp);
 	for (auto& entry : backup_entries)
 		backup->addEntry(std::make_shared<ArchiveEntry>(*entry), dir);
@@ -167,7 +168,7 @@ bool MapBackupManager::writeBackup(
 // -----------------------------------------------------------------------------
 Archive* MapBackupManager::openBackup(string_view archive_name, string_view map_name) const
 {
-	SDialog dlg(MapEditor::windowWx(), fmt::format("Restore {} backup", map_name), "map_backup", 500, 400);
+	SDialog dlg(mapeditor::windowWx(), fmt::format("Restore {} backup", map_name), "map_backup", 500, 400);
 	auto    sizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(sizer);
 	auto panel_backup = new MapBackupPanel(&dlg);
@@ -176,7 +177,7 @@ Archive* MapBackupManager::openBackup(string_view archive_name, string_view map_
 	sizer->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT, 6);
 	sizer->AddSpacer(10);
 
-	if (panel_backup->loadBackups(WxUtils::strFromView(archive_name), WxUtils::strFromView(map_name)))
+	if (panel_backup->loadBackups(wxutil::strFromView(archive_name), wxutil::strFromView(map_name)))
 	{
 		if (dlg.ShowModal() == wxID_OK)
 			return panel_backup->selectedMapData();
@@ -186,7 +187,7 @@ Archive* MapBackupManager::openBackup(string_view archive_name, string_view map_
 			fmt::format("No backups exist for {} of {}", map_name, archive_name),
 			"Restore Backup",
 			wxICON_INFORMATION,
-			MapEditor::windowWx());
+			mapeditor::windowWx());
 
 	return nullptr;
 }

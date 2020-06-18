@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,11 +35,13 @@
 #include "App.h"
 #include "Formats/All.h"
 #include "Formats/DirArchive.h"
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "General/ResourceManager.h"
 #include "General/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -60,14 +62,6 @@ CVAR(Bool, auto_open_wads_root, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
-// ArchiveManager class destructor
-// -----------------------------------------------------------------------------
-ArchiveManager::~ArchiveManager()
-{
-	clearAnnouncers();
-}
-
-// -----------------------------------------------------------------------------
 // Checks that the given directory is actually a suitable resource directory
 // for SLADE 3, and not just a directory named 'res' that happens to be there
 // (possibly because the user installed SLADE in the same folder as an
@@ -85,8 +79,8 @@ bool ArchiveManager::validResDir(string_view dir) const
 		"fonts/dejavu_sans.ttf",
 		"html/box-title-back.png",
 		"html/startpage.htm",
-		"icons/entry_list/archive.png",
-		"icons/general/wiki.png",
+		"icons/entry_list/16/archive.png",
+		"icons/general/16/wiki.png",
 		"images/arrow.png",
 		"logo.png",
 		"palettes/Doom .pal",
@@ -99,9 +93,9 @@ bool ArchiveManager::validResDir(string_view dir) const
 
 	for (const auto& path : paths)
 	{
-		if (!FileUtil::fileExists(fmt::format("{}/{}", dir, path)))
+		if (!fileutil::fileExists(fmt::format("{}/{}", dir, path)))
 		{
-			Log::warning(
+			log::warning(
 				"Resource {} was not found in dir {}!\n"
 				"This resource folder cannot be used. "
 				"(Did you install SLADE 3 in a SLumpEd folder?)",
@@ -121,44 +115,44 @@ bool ArchiveManager::init()
 	program_resource_archive_ = std::make_unique<ZipArchive>();
 
 #ifdef __WXOSX__
-	auto resdir = App::path("../Resources", App::Dir::Executable); // Use Resources dir within bundle on mac
+	auto resdir = app::path("../Resources", app::Dir::Executable); // Use Resources dir within bundle on mac
 #else
-	auto resdir = App::path("res", App::Dir::Executable);
+	auto resdir = app::path("res", app::Dir::Executable);
 #endif
 
-	if (FileUtil::dirExists(resdir) && validResDir(resdir))
+	if (fileutil::dirExists(resdir) && validResDir(resdir))
 	{
 		program_resource_archive_->importDir(resdir);
 		res_archive_open_ = (program_resource_archive_->numEntries() > 0);
 
 		if (!initArchiveFormats())
-			Log::error("An error occurred reading archive formats configuration");
+			log::error("An error occurred reading archive formats configuration");
 
 		return res_archive_open_;
 	}
 
 	// Find slade3.pk3 directory
-	auto dir_slade_pk3 = App::path("slade.pk3", App::Dir::Resources);
-	if (!FileUtil::fileExists(dir_slade_pk3))
-		dir_slade_pk3 = App::path("slade.pk3", App::Dir::Data);
-	if (!FileUtil::fileExists(dir_slade_pk3))
-		dir_slade_pk3 = App::path("slade.pk3", App::Dir::Executable);
-	if (!FileUtil::fileExists(dir_slade_pk3))
-		dir_slade_pk3 = App::path("slade.pk3", App::Dir::User);
-	if (!FileUtil::fileExists(dir_slade_pk3))
+	auto dir_slade_pk3 = app::path("slade.pk3", app::Dir::Resources);
+	if (!fileutil::fileExists(dir_slade_pk3))
+		dir_slade_pk3 = app::path("slade.pk3", app::Dir::Data);
+	if (!fileutil::fileExists(dir_slade_pk3))
+		dir_slade_pk3 = app::path("slade.pk3", app::Dir::Executable);
+	if (!fileutil::fileExists(dir_slade_pk3))
+		dir_slade_pk3 = app::path("slade.pk3", app::Dir::User);
+	if (!fileutil::fileExists(dir_slade_pk3))
 		dir_slade_pk3 = "slade.pk3";
 
 	// Open slade.pk3
 	if (!program_resource_archive_->open(dir_slade_pk3))
 	{
-		Log::error("Unable to find slade.pk3!");
+		log::error("Unable to find slade.pk3!");
 		res_archive_open_ = false;
 	}
 	else
 		res_archive_open_ = true;
 
 	if (!initArchiveFormats())
-		Log::error("An error occurred reading archive formats configuration");
+		log::error("An error occurred reading archive formats configuration");
 
 	return res_archive_open_;
 }
@@ -193,14 +187,16 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 		n_archive.resource = true;
 		open_archives_.push_back(n_archive);
 
-		// Listen to the archive
-		listenTo(archive.get());
+		// Emit archive changed/saved signal when received from the archive
+		archive->signals().modified.connect(
+			[this](Archive& archive) { signals_.archive_modified(archiveIndex(&archive)); });
+		archive->signals().saved.connect([this](Archive& archive) { signals_.archive_saved(archiveIndex(&archive)); });
 
 		// Announce the addition
-		announce("archive_added");
+		signals_.archive_added(open_archives_.size() - 1);
 
 		// Add to resource manager
-		App::resources().addArchive(archive.get());
+		app::resources().addArchive(archive.get());
 
 		// ZDoom also loads any WADs found in the root of a PK3 or directory
 		if ((archive->formatId() == "zip" || archive->formatId() == "folder") && auto_open_wads_root)
@@ -275,24 +271,19 @@ shared_ptr<Archive> ArchiveManager::getArchive(ArchiveEntry* parent)
 shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manage, bool silent)
 {
 	// Check for directory
-	if (FileUtil::dirExists(filename))
+	if (fileutil::dirExists(filename))
 		return openDirArchive(filename, manage, silent);
 
 	auto new_archive = getArchive(filename);
 
-	Log::info("Opening archive {}", filename);
+	log::info("Opening archive {}", filename);
 
 	// If the archive is already open, just return it
 	if (new_archive)
 	{
 		// Announce open
 		if (!silent)
-		{
-			MemChunk mc;
-			uint32_t index = archiveIndex(new_archive.get());
-			mc.write(&index, 4);
-			announce("archive_opened", mc);
-		}
+			signals_.archive_opened(archiveIndex(new_archive.get()));
 
 		return new_archive;
 	}
@@ -348,7 +339,7 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 	else
 	{
 		// Unsupported format
-		Global::error = "Unsupported or invalid Archive format";
+		global::error = "Unsupported or invalid Archive format";
 		return nullptr;
 	}
 
@@ -359,16 +350,12 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 		if (manage)
 		{
 			// Add the archive
+			auto index = open_archives_.size();
 			addArchive(new_archive);
 
 			// Announce open
 			if (!silent)
-			{
-				MemChunk mc;
-				uint32_t index = archiveIndex(new_archive.get());
-				mc.write(&index, 4);
-				announce("archive_opened", mc);
-			}
+				signals_.archive_opened(index);
 
 			// Add to recent files
 			addRecentFile(filename);
@@ -379,7 +366,7 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 	}
 	else
 	{
-		Log::error(Global::error);
+		log::error(global::error);
 		return nullptr;
 	}
 }
@@ -400,12 +387,7 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 		{
 			// Announce open
 			if (!silent)
-			{
-				MemChunk mc;
-				uint32_t index = archiveIndex(open_archive.archive.get());
-				mc.write(&index, 4);
-				announce("archive_opened", mc);
-			}
+				signals_.archive_opened(archiveIndex(open_archive.archive.get()));
 
 			return open_archive.archive;
 		}
@@ -453,7 +435,7 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 		new_archive = std::make_shared<TarArchive>();
 	else if (DiskArchive::isDiskArchive(entry->data()))
 		new_archive = std::make_shared<DiskArchive>();
-	else if (StrUtil::endsWithCI(entry->name(), ".pod") && PodArchive::isPodArchive(entry->data()))
+	else if (strutil::endsWithCI(entry->name(), ".pod") && PodArchive::isPodArchive(entry->data()))
 		new_archive = std::make_shared<PodArchive>();
 	else if (ChasmBinArchive::isChasmBinArchive(entry->data()))
 		new_archive = std::make_shared<ChasmBinArchive>();
@@ -462,7 +444,7 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 	else
 	{
 		// Unsupported format
-		Global::error = "Unsupported or invalid Archive format";
+		global::error = "Unsupported or invalid Archive format";
 		return nullptr;
 	}
 
@@ -480,16 +462,12 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 				open_archives_[index_parent].open_children.emplace_back(new_archive);
 
 			// Add the new archive
+			auto index = open_archives_.size();
 			addArchive(new_archive);
 
 			// Announce open
 			if (!silent)
-			{
-				MemChunk mc;
-				uint32_t index = archiveIndex(new_archive.get());
-				mc.write(&index, 4);
-				announce("archive_opened", mc);
-			}
+				signals_.archive_opened(index);
 
 			entry->lock();
 		}
@@ -498,7 +476,7 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 	}
 	else
 	{
-		Log::error(Global::error);
+		log::error(global::error);
 		return nullptr;
 	}
 }
@@ -511,19 +489,14 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 {
 	auto new_archive = getArchive(dir);
 
-	Log::info("Opening directory {} as archive", dir);
+	log::info("Opening directory {} as archive", dir);
 
 	// If the archive is already open, just return it
 	if (new_archive)
 	{
 		// Announce open
 		if (!silent)
-		{
-			MemChunk mc;
-			uint32_t index = archiveIndex(new_archive.get());
-			mc.write(&index, 4);
-			announce("archive_opened", mc);
-		}
+			signals_.archive_opened(archiveIndex(new_archive.get()));
 
 		return new_archive;
 	}
@@ -537,16 +510,12 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 		if (manage)
 		{
 			// Add the archive
+			auto index = open_archives_.size();
 			addArchive(new_archive);
 
 			// Announce open
 			if (!silent)
-			{
-				MemChunk mc;
-				uint32_t index = archiveIndex(new_archive.get());
-				mc.write(&index, 4);
-				announce("archive_opened", mc);
-			}
+				signals_.archive_opened(index);
 
 			// Add to recent files
 			addRecentFile(dir);
@@ -557,7 +526,7 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 	}
 	else
 	{
-		Log::error(Global::error);
+		log::error(global::error);
 		return nullptr;
 	}
 }
@@ -575,10 +544,14 @@ shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
 		new_archive = std::make_shared<WadArchive>();
 	else if (format == "zip")
 		new_archive = std::make_shared<ZipArchive>();
+	else if (format == "grp")
+		new_archive = std::make_shared<GrpArchive>();
+	else if (format == "pak")
+		new_archive = std::make_shared<PakArchive>();
 	else
 	{
-		Global::error = fmt::format("Can not create archive of format: {}", format);
-		Log::error(Global::error);
+		global::error = fmt::format("Can not create archive of format: {}", format);
+		log::error(global::error);
 		return nullptr;
 	}
 
@@ -604,16 +577,13 @@ bool ArchiveManager::closeArchive(int index)
 		return false;
 
 	// Announce archive closing
-	MemChunk mc;
-	int32_t  temp = index;
-	mc.write(&temp, 4);
-	announce("archive_closing", mc);
+	signals_.archive_closing(index);
 
 	// Delete any bookmarked entries contained in the archive
 	deleteBookmarksInArchive(open_archives_[index].archive.get());
 
 	// Remove from resource manager
-	App::resources().removeArchive(open_archives_[index].archive.get());
+	app::resources().removeArchive(open_archives_[index].archive.get());
 
 	// Close any open child archives
 	// Clear out the open_children vector first, lest the children try to remove themselves from it
@@ -658,7 +628,7 @@ bool ArchiveManager::closeArchive(int index)
 	open_archives_.erase(open_archives_.begin() + index);
 
 	// Announce closed
-	announce("archive_closed", mc);
+	signals_.archive_closed(index);
 
 	return true;
 }
@@ -765,9 +735,9 @@ string ArchiveManager::getArchiveExtensionsString() const
 	{
 		for (const auto& ext : fmt.extensions)
 		{
-			auto ext_case = fmt::format("*.{};", StrUtil::lower(ext.first));
-			ext_case += fmt::format("*.{};", StrUtil::upper(ext.first));
-			ext_case += fmt::format("*.{}", StrUtil::capitalize(ext.first));
+			auto ext_case = fmt::format("*.{};", strutil::lower(ext.first));
+			ext_case += fmt::format("*.{};", strutil::upper(ext.first));
+			ext_case += fmt::format("*.{}", strutil::capitalize(ext.first));
 
 			ext_all += fmt::format("{};", ext_case);
 			ext_strings.push_back(fmt::format("{} files (*.{})|{}", ext.second, ext.first, ext_case));
@@ -809,9 +779,9 @@ void ArchiveManager::setArchiveResource(Archive* archive, bool resource)
 
 		// Update resource manager
 		if (resource && !was_resource)
-			App::resources().addArchive(archive);
+			app::resources().addArchive(archive);
 		else if (!resource && was_resource)
-			App::resources().removeArchive(archive);
+			app::resources().removeArchive(archive);
 	}
 }
 
@@ -836,6 +806,9 @@ vector<shared_ptr<Archive>> ArchiveManager::allArchives(bool resource_only)
 // -----------------------------------------------------------------------------
 shared_ptr<Archive> ArchiveManager::shareArchive(Archive* const archive)
 {
+	if (archive == base_resource_archive_.get())
+		return base_resource_archive_;
+
 	for (const auto& oa : open_archives_)
 		if (oa.archive.get() == archive)
 			return oa.archive;
@@ -849,7 +822,7 @@ shared_ptr<Archive> ArchiveManager::shareArchive(Archive* const archive)
 bool ArchiveManager::addBaseResourcePath(string_view path)
 {
 	// Firstly, check the file exists
-	if (!FileUtil::fileExists(path))
+	if (!fileutil::fileExists(path))
 		return false;
 
 	// Second, check the path doesn't already exist
@@ -863,7 +836,7 @@ bool ArchiveManager::addBaseResourcePath(string_view path)
 	base_resource_paths_.emplace_back(path);
 
 	// Announce
-	announce("base_resource_path_added");
+	signals_.base_res_path_added(base_resource_paths_.size() - 1);
 
 	return true;
 }
@@ -889,7 +862,7 @@ void ArchiveManager::removeBaseResourcePath(unsigned index)
 	base_resource_paths_.erase(base_resource_paths_.begin() + index);
 
 	// Announce
-	announce("base_resource_path_removed");
+	signals_.base_res_path_removed(index);
 }
 
 // -----------------------------------------------------------------------------
@@ -916,7 +889,7 @@ bool ArchiveManager::openBaseResource(int index)
 	// Close/delete current base resource archive
 	if (base_resource_archive_)
 	{
-		App::resources().removeArchive(base_resource_archive_.get());
+		app::resources().removeArchive(base_resource_archive_.get());
 		base_resource_archive_ = nullptr;
 	}
 
@@ -924,7 +897,7 @@ bool ArchiveManager::openBaseResource(int index)
 	if (index < 0 || (unsigned)index >= base_resource_paths_.size())
 	{
 		base_resource = -1;
-		announce("base_resource_changed");
+		signals_.base_res_current_cleared();
 		return false;
 	}
 
@@ -938,18 +911,18 @@ bool ArchiveManager::openBaseResource(int index)
 		return false;
 
 	// Attempt to open the file
-	UI::showSplash(fmt::format("Opening {}...", filename), true);
+	ui::showSplash(fmt::format("Opening {}...", filename), true);
 	if (base_resource_archive_->open(filename))
 	{
 		base_resource = index;
-		UI::hideSplash();
-		App::resources().addArchive(base_resource_archive_.get());
-		announce("base_resource_changed");
+		ui::hideSplash();
+		app::resources().addArchive(base_resource_archive_.get());
+		signals_.base_res_current_changed(index);
 		return true;
 	}
 	base_resource_archive_ = nullptr;
-	UI::hideSplash();
-	announce("base_resource_changed");
+	ui::hideSplash();
+	signals_.base_res_current_changed(index);
 	return false;
 }
 
@@ -1063,7 +1036,7 @@ string ArchiveManager::recentFile(unsigned index)
 void ArchiveManager::addRecentFile(string_view path)
 {
 	// Check the path is valid
-	if (!(FileUtil::fileExists(path) || FileUtil::dirExists(path)))
+	if (!(fileutil::fileExists(path) || fileutil::dirExists(path)))
 		return;
 
 	// Replace \ with /
@@ -1080,7 +1053,7 @@ void ArchiveManager::addRecentFile(string_view path)
 			recent_files_.insert(recent_files_.begin(), file_path);
 
 			// Announce
-			announce("recent_files_changed");
+			signals_.recent_files_changed();
 
 			return;
 		}
@@ -1094,7 +1067,7 @@ void ArchiveManager::addRecentFile(string_view path)
 		recent_files_.pop_back();
 
 	// Announce
-	announce("recent_files_changed");
+	signals_.recent_files_changed();
 }
 
 // -----------------------------------------------------------------------------
@@ -1103,7 +1076,7 @@ void ArchiveManager::addRecentFile(string_view path)
 void ArchiveManager::addRecentFiles(const vector<string>& paths)
 {
 	// Mute annoucements
-	setMuted(true);
+	signals_.recent_files_changed.block();
 
 	// Clear existing list
 	recent_files_.clear();
@@ -1113,8 +1086,8 @@ void ArchiveManager::addRecentFiles(const vector<string>& paths)
 		addRecentFile(path);
 
 	// Announce
-	setMuted(false);
-	announce("recent_files_changed");
+	signals_.recent_files_changed.unblock();
+	signals_.recent_files_changed();
 }
 
 // -----------------------------------------------------------------------------
@@ -1127,7 +1100,7 @@ void ArchiveManager::removeRecentFile(string_view path)
 		if (recent_files_[a] == path)
 		{
 			recent_files_.erase(recent_files_.begin() + a);
-			announce("recent_files_changed");
+			signals_.recent_files_changed();
 			return;
 		}
 	}
@@ -1138,6 +1111,9 @@ void ArchiveManager::removeRecentFile(string_view path)
 // -----------------------------------------------------------------------------
 void ArchiveManager::addBookmark(const shared_ptr<ArchiveEntry>& entry)
 {
+	if (!entry)
+		return;
+
 	// Check the bookmark isn't already in the list
 	for (auto& bookmark : bookmarks_)
 	{
@@ -1149,7 +1125,7 @@ void ArchiveManager::addBookmark(const shared_ptr<ArchiveEntry>& entry)
 	bookmarks_.push_back(entry);
 
 	// Announce
-	announce("bookmarks_changed");
+	signals_.bookmark_added(entry.get());
 }
 
 // -----------------------------------------------------------------------------
@@ -1166,7 +1142,7 @@ bool ArchiveManager::deleteBookmark(ArchiveEntry* entry)
 			bookmarks_.erase(bookmarks_.begin() + a);
 
 			// Announce
-			announce("bookmarks_changed");
+			signals_.bookmarks_removed(vector<ArchiveEntry*>(1, entry));
 
 			return true;
 		}
@@ -1186,10 +1162,11 @@ bool ArchiveManager::deleteBookmark(unsigned index)
 		return false;
 
 	// Remove bookmark
+	auto* entry = bookmarks_[index].lock().get();
 	bookmarks_.erase(bookmarks_.begin() + index);
 
 	// Announce
-	announce("bookmarks_changed");
+	signals_.bookmarks_removed(vector<ArchiveEntry*>(1, entry));
 
 	return true;
 }
@@ -1200,13 +1177,15 @@ bool ArchiveManager::deleteBookmark(unsigned index)
 bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 {
 	// Go through bookmarks
-	bool removed = false;
+	bool                  removed = false;
+	vector<ArchiveEntry*> removed_entries;
 	for (unsigned a = 0; a < bookmarks_.size(); a++)
 	{
 		// Check bookmarked entry's parent archive
 		auto bookmark = bookmarks_[a].lock();
 		if (!bookmark || bookmark->parent() == archive)
 		{
+			removed_entries.push_back(bookmark.get());
 			bookmarks_.erase(bookmarks_.begin() + a);
 			a--;
 			removed = true;
@@ -1216,7 +1195,7 @@ bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 	if (removed)
 	{
 		// Announce
-		announce("bookmarks_changed");
+		signals_.bookmarks_removed(removed_entries);
 		return true;
 	}
 	else
@@ -1228,9 +1207,14 @@ bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 // -----------------------------------------------------------------------------
 bool ArchiveManager::deleteBookmarksInDir(ArchiveDir* node)
 {
-	// Go through bookmarks
 	auto archive = node->archive();
 	bool removed = deleteBookmark(node->dirEntry());
+
+	vector<ArchiveEntry*> removed_entries;
+	if (removed)
+		removed_entries.push_back(node->dirEntry());
+
+	// Go through bookmarks
 	for (unsigned a = 0; a < bookmarks_.size(); ++a)
 	{
 		// Check bookmarked entry's parent archive
@@ -1256,6 +1240,7 @@ bool ArchiveManager::deleteBookmarksInDir(ArchiveDir* node)
 
 			if (remove)
 			{
+				removed_entries.push_back(bookmark.get());
 				bookmarks_.erase(bookmarks_.begin() + a);
 				--a;
 				removed = true;
@@ -1266,11 +1251,27 @@ bool ArchiveManager::deleteBookmarksInDir(ArchiveDir* node)
 	if (removed)
 	{
 		// Announce
-		announce("bookmarks_changed");
+		signals_.bookmarks_removed(removed_entries);
 		return true;
 	}
 	else
 		return false;
+}
+
+// -----------------------------------------------------------------------------
+// Clears all bookmarks
+// -----------------------------------------------------------------------------
+void ArchiveManager::deleteAllBookmarks()
+{
+	if (!bookmarks_.empty())
+	{
+		vector<ArchiveEntry*> removed;
+		for (const auto& entry : bookmarks_)
+			removed.push_back(entry.lock().get());
+
+		bookmarks_.clear();
+		signals_.bookmarks_removed(removed);
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1286,33 +1287,15 @@ ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
 }
 
 // -----------------------------------------------------------------------------
-// Called when an announcement is recieved from one of the archives in the list
+// Returns true if [entry] exists in the bookmarks list
 // -----------------------------------------------------------------------------
-void ArchiveManager::onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data)
+bool slade::ArchiveManager::isBookmarked(ArchiveEntry* entry)
 {
-	// Reset event data for reading
-	event_data.seek(0, SEEK_SET);
+	for (const auto& bm : bookmarks_)
+		if (bm.lock().get() == entry)
+			return true;
 
-	// Check that the announcement came from an archive in the list
-	int32_t index = archiveIndex((Archive*)announcer);
-	if (index >= 0)
-	{
-		// If the archive was saved
-		if (event_name == "saved")
-		{
-			MemChunk mc;
-			mc.write(&index, 4);
-			announce("archive_saved", mc);
-		}
-
-		// If the archive was modified
-		if (event_name == "modified" || event_name == "entry_modified")
-		{
-			MemChunk mc;
-			mc.write(&index, 4);
-			announce("archive_modified", mc);
-		}
-	}
+	return false;
 }
 
 
@@ -1328,12 +1311,12 @@ void ArchiveManager::onAnnouncement(Announcer* announcer, string_view event_name
 // -----------------------------------------------------------------------------
 CONSOLE_COMMAND(list_archives, 0, true)
 {
-	Log::info("{} Open Archives:", App::archiveManager().numArchives());
+	log::info("{} Open Archives:", app::archiveManager().numArchives());
 
-	for (int a = 0; a < App::archiveManager().numArchives(); a++)
+	for (int a = 0; a < app::archiveManager().numArchives(); a++)
 	{
-		auto archive = App::archiveManager().getArchive(a);
-		Log::info("{}: \"{}\"", a + 1, archive->filename());
+		auto archive = app::archiveManager().getArchive(a);
+		log::info("{}: \"{}\"", a + 1, archive->filename());
 	}
 }
 
@@ -1343,6 +1326,6 @@ CONSOLE_COMMAND(list_archives, 0, true)
 void c_open(const vector<string>& args)
 {
 	for (const auto& arg : args)
-		App::archiveManager().openArchive(arg);
+		app::archiveManager().openArchive(arg);
 }
 ConsoleCommand am_open("open", &c_open, 1, true); // Can't use the macro with this name

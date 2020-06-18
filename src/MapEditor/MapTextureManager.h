@@ -1,13 +1,14 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
 #include "OpenGL/GLTexture.h"
 
+namespace slade
+{
 class ArchiveDir;
 class Archive;
 class Palette;
 
-class MapTextureManager : public Listener
+class MapTextureManager
 {
 public:
 	enum class Category
@@ -25,7 +26,7 @@ public:
 		unsigned gl_id         = 0;
 		bool     world_panning = false;
 		Vec2d    scale         = { 1., 1. };
-		~Texture() { OpenGL::Texture::clear(gl_id); }
+		~Texture() { gl::Texture::clear(gl_id); }
 	};
 	typedef std::map<string, Texture> MapTexHashMap;
 
@@ -55,11 +56,11 @@ public:
 		}
 	};
 
-	MapTextureManager(Archive* archive = nullptr);
+	MapTextureManager(shared_ptr<Archive> archive = nullptr);
 	~MapTextureManager() = default;
 
 	void init();
-	void setArchive(Archive* archive);
+	void setArchive(shared_ptr<Archive> archive);
 	void refreshResources();
 	void buildTexInfoList();
 
@@ -73,10 +74,8 @@ public:
 	vector<TexInfo>& allTexturesInfo() { return tex_info_; }
 	vector<TexInfo>& allFlatsInfo() { return flat_info_; }
 
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
-
 private:
-	Archive*            archive_ = nullptr;
+	weak_ptr<Archive>   archive_;
 	MapTexHashMap       textures_;
 	MapTexHashMap       flats_;
 	MapTexHashMap       sprites_;
@@ -86,5 +85,10 @@ private:
 	vector<TexInfo>     tex_info_;
 	vector<TexInfo>     flat_info_;
 
+	// Signal connections
+	sigslot::scoped_connection sc_resources_updated_;
+	sigslot::scoped_connection sc_palette_changed_;
+
 	void importEditorImages(MapTexHashMap& map, ArchiveDir* dir, string_view path) const;
 };
+} // namespace slade

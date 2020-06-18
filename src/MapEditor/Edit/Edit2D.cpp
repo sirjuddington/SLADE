@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,6 +39,8 @@
 #include "MapEditor/UndoSteps.h"
 #include "Utility/MathStuff.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -70,7 +72,7 @@ Edit2D::Edit2D(MapEditContext& context) :
 // -----------------------------------------------------------------------------
 void Edit2D::mirror(bool x_axis) const
 {
-	using MapEditor::Mode;
+	using mapeditor::Mode;
 
 	// Mirror things
 	if (context_.editMode() == Mode::Things)
@@ -181,13 +183,13 @@ void Edit2D::editObjectProperties()
 	for (auto item : selection)
 		context_.recordPropertyChangeUndoStep(item);
 
-	bool done = MapEditor::editObjectProperties(selection);
+	bool done = mapeditor::editObjectProperties(selection);
 	if (done)
 	{
 		context_.renderer().forceUpdate();
 		context_.updateDisplay();
 
-		if (context_.editMode() == MapEditor::Mode::Things && selection[0]->objType() == MapObject::Type::Thing)
+		if (context_.editMode() == mapeditor::Mode::Things && selection[0]->objType() == MapObject::Type::Thing)
 		{
 			copy_thing_.copy(selection[0]);
 			thing_copied_ = true;
@@ -216,7 +218,7 @@ void Edit2D::splitLine(double x, double y, double min_dist) const
 	context_.beginUndoRecord("Split Line", true, true, false);
 
 	// Get closest point on the line
-	auto closest = MathStuff::closestPointOnLine(point, line->seg());
+	auto closest = math::closestPointOnLine(point, line->seg());
 
 	// Create vertex there
 	auto vertex = context_.map().createVertex(closest);
@@ -242,7 +244,7 @@ void Edit2D::flipLines(bool sides) const
 	context_.undoManager()->beginRecord("Flip Line");
 	for (auto& line : lines)
 	{
-		context_.undoManager()->recordUndoStep(std::make_unique<MapEditor::PropertyChangeUS>(line));
+		context_.undoManager()->recordUndoStep(std::make_unique<mapeditor::PropertyChangeUS>(line));
 		line->flip(sides);
 	}
 	context_.undoManager()->endRecord(true);
@@ -286,7 +288,7 @@ void Edit2D::correctLineSectors() const
 void Edit2D::changeSectorHeight(int amount, bool floor, bool ceiling) const
 {
 	// Do nothing if not in sectors mode
-	if (context_.editMode() != MapEditor::Mode::Sectors)
+	if (context_.editMode() != mapeditor::Mode::Sectors)
 		return;
 
 	// Get selected sectors (if any)
@@ -297,9 +299,9 @@ void Edit2D::changeSectorHeight(int amount, bool floor, bool ceiling) const
 	// If we're modifying both heights, take sector_mode into account
 	if (floor && ceiling)
 	{
-		if (context_.sectorEditMode() == MapEditor::SectorMode::Floor)
+		if (context_.sectorEditMode() == mapeditor::SectorMode::Floor)
 			ceiling = false;
-		if (context_.sectorEditMode() == MapEditor::SectorMode::Ceiling)
+		if (context_.sectorEditMode() == mapeditor::SectorMode::Ceiling)
 			floor = false;
 	}
 
@@ -348,7 +350,7 @@ void Edit2D::changeSectorHeight(int amount, bool floor, bool ceiling) const
 void Edit2D::changeSectorLight(bool up, bool fine) const
 {
 	// Do nothing if not in sectors mode
-	if (context_.editMode() != MapEditor::Mode::Sectors)
+	if (context_.editMode() != mapeditor::Mode::Sectors)
 		return;
 
 	// Get selected sectors (if any)
@@ -367,9 +369,9 @@ void Edit2D::changeSectorLight(bool up, bool fine) const
 
 		// Increment/decrement
 		if (up)
-			light = fine ? light + 1 : Game::configuration().upLightLevel(light);
+			light = fine ? light + 1 : game::configuration().upLightLevel(light);
 		else
-			light = fine ? light - 1 : Game::configuration().downLightLevel(light);
+			light = fine ? light - 1 : game::configuration().downLightLevel(light);
 
 		// Change light level
 		sector->setLightLevel(light);
@@ -379,7 +381,7 @@ void Edit2D::changeSectorLight(bool up, bool fine) const
 	context_.endUndoRecord();
 
 	// Add editor message
-	int amount = fine ? 1 : Game::configuration().lightLevelInterval();
+	int amount = fine ? 1 : game::configuration().lightLevelInterval();
 	context_.addEditorMessage(fmt::format("Light level {} by {}", up ? "increased" : "decreased", amount));
 
 	// Update display
@@ -393,7 +395,7 @@ void Edit2D::changeSectorLight(bool up, bool fine) const
 // -----------------------------------------------------------------------------
 void Edit2D::changeSectorTexture() const
 {
-	using MapEditor::SectorMode;
+	using mapeditor::SectorMode;
 
 	// Get selected sectors
 	auto selection = context_.selection().selectedSectors();
@@ -426,7 +428,7 @@ void Edit2D::changeSectorTexture() const
 	context_.selection().lockHilight();
 
 	// Open texture browser
-	auto selected_tex = MapEditor::browseTexture(texture, MapEditor::TextureType::Flat, context_.map(), browser_title);
+	auto selected_tex = mapeditor::browseTexture(texture, mapeditor::TextureType::Flat, context_.map(), browser_title);
 	if (!selected_tex.empty())
 	{
 		// Set texture depending on edit mode
@@ -453,7 +455,7 @@ void Edit2D::changeSectorTexture() const
 void Edit2D::joinSectors(bool remove_lines) const
 {
 	// Check edit mode
-	if (context_.editMode() != MapEditor::Mode::Sectors)
+	if (context_.editMode() != mapeditor::Mode::Sectors)
 		return;
 
 	// Get sectors to merge
@@ -539,7 +541,7 @@ void Edit2D::joinSectors(bool remove_lines) const
 // -----------------------------------------------------------------------------
 // Opens the thing type browser for the currently selected thing(s)
 // -----------------------------------------------------------------------------
-void Edit2D::changeThingType() const
+void Edit2D::changeThingType()
 {
 	// Get selected things (if any)
 	auto selection = context_.selection().selectedThings();
@@ -549,7 +551,7 @@ void Edit2D::changeThingType() const
 		return;
 
 	// Browse thing type
-	int newtype = MapEditor::browseThingType(selection[0]->type(), context_.map());
+	int newtype = mapeditor::browseThingType(selection[0]->type(), context_.map());
 	if (newtype >= 0)
 	{
 		// Go through selection
@@ -559,11 +561,14 @@ void Edit2D::changeThingType() const
 		context_.endUndoRecord(true);
 
 		// Add editor message
-		auto type_name = Game::configuration().thingType(newtype).name();
+		auto type_name = game::configuration().thingType(newtype).name();
 		if (selection.size() == 1)
 			context_.addEditorMessage(fmt::format("Changed type to \"{}\"", type_name));
 		else
 			context_.addEditorMessage(fmt::format("Changed {} things to type \"{}\"", selection.size(), type_name));
+
+		// Update 'copy' thing with new type
+		copy_thing_.setIntProperty("type", newtype);
 
 		// Update display
 		context_.updateDisplay();
@@ -576,7 +581,7 @@ void Edit2D::changeThingType() const
 void Edit2D::thingQuickAngle(Vec2d mouse_pos) const
 {
 	// Do nothing if not in things mode
-	if (context_.editMode() != MapEditor::Mode::Things)
+	if (context_.editMode() != mapeditor::Mode::Things)
 		return;
 
 	for (auto thing : context_.selection().selectedThings())
@@ -588,7 +593,7 @@ void Edit2D::thingQuickAngle(Vec2d mouse_pos) const
 // -----------------------------------------------------------------------------
 void Edit2D::copy() const
 {
-	using MapEditor::Mode;
+	using mapeditor::Mode;
 	auto mode = context_.editMode();
 
 	// Can't copy/paste vertices (no point)
@@ -599,7 +604,7 @@ void Edit2D::copy() const
 	}
 
 	// Clear current clipboard contents
-	App::clipboard().clear();
+	app::clipboard().clear();
 
 	// Copy lines
 	if (mode == Mode::Lines || mode == Mode::Sectors)
@@ -618,7 +623,7 @@ void Edit2D::copy() const
 		auto c = std::make_unique<MapArchClipboardItem>();
 		c->addLines(lines);
 		auto info = c->info();
-		App::clipboard().add(std::move(c));
+		app::clipboard().add(std::move(c));
 
 		// Editor message
 		context_.addEditorMessage(fmt::format("Copied {}", info));
@@ -634,7 +639,7 @@ void Edit2D::copy() const
 		auto c = std::make_unique<MapThingsClipboardItem>();
 		c->addThings(things);
 		auto info = c->info();
-		App::clipboard().add(std::move(c));
+		app::clipboard().add(std::move(c));
 
 		// Editor message
 		context_.addEditorMessage(fmt::format("Copied {}", info));
@@ -647,13 +652,13 @@ void Edit2D::copy() const
 void Edit2D::paste(Vec2d mouse_pos) const
 {
 	// Go through clipboard items
-	for (unsigned a = 0; a < App::clipboard().size(); a++)
+	for (unsigned a = 0; a < app::clipboard().size(); a++)
 	{
 		// Map architecture
-		if (App::clipboard().item(a)->type() == ClipboardItem::Type::MapArchitecture)
+		if (app::clipboard().item(a)->type() == ClipboardItem::Type::MapArchitecture)
 		{
 			context_.beginUndoRecord("Paste Map Architecture");
-			auto clip = dynamic_cast<MapArchClipboardItem*>(App::clipboard().item(a));
+			auto clip = dynamic_cast<MapArchClipboardItem*>(app::clipboard().item(a));
 			// Snap the geometry in such a way that it stays in the same position relative to the grid
 			auto pos       = context_.relativeSnapToGrid(clip->midpoint(), mouse_pos);
 			auto new_verts = clip->pasteToMap(&context_.map(), pos);
@@ -663,10 +668,10 @@ void Edit2D::paste(Vec2d mouse_pos) const
 		}
 
 		// Things
-		else if (App::clipboard().item(a)->type() == ClipboardItem::Type::MapThings)
+		else if (app::clipboard().item(a)->type() == ClipboardItem::Type::MapThings)
 		{
 			context_.beginUndoRecord("Paste Things", false, true, false);
-			auto clip = dynamic_cast<MapThingsClipboardItem*>(App::clipboard().item(a));
+			auto clip = dynamic_cast<MapThingsClipboardItem*>(app::clipboard().item(a));
 			// Snap the geometry in such a way that it stays in the same position relative to the grid
 			auto pos = context_.relativeSnapToGrid(clip->midpoint(), mouse_pos);
 			clip->pasteToMap(&context_.map(), pos);
@@ -687,7 +692,7 @@ void Edit2D::copyProperties()
 		return;
 
 	// Sectors mode
-	if (context_.editMode() == MapEditor::Mode::Sectors)
+	if (context_.editMode() == mapeditor::Mode::Sectors)
 	{
 		copy_sector_.copy(copy_object);
 		sector_copied_ = true;
@@ -696,7 +701,7 @@ void Edit2D::copyProperties()
 	}
 
 	// Things mode
-	else if (context_.editMode() == MapEditor::Mode::Things)
+	else if (context_.editMode() == mapeditor::Mode::Things)
 	{
 		copy_thing_.copy(copy_object);
 		thing_copied_ = true;
@@ -705,7 +710,7 @@ void Edit2D::copyProperties()
 	}
 
 	// Lines mode
-	else if (context_.editMode() == MapEditor::Mode::Lines)
+	else if (context_.editMode() == mapeditor::Mode::Lines)
 	{
 		copy_line_.copy(copy_object);
 		line_copied_ = true;
@@ -724,7 +729,7 @@ void Edit2D::pasteProperties()
 		return;
 
 	// Sectors mode
-	if (context_.editMode() == MapEditor::Mode::Sectors)
+	if (context_.editMode() == mapeditor::Mode::Sectors)
 	{
 		// Do nothing if no properties have been copied
 		if (!sector_copied_)
@@ -741,7 +746,7 @@ void Edit2D::pasteProperties()
 	}
 
 	// Things mode
-	if (context_.editMode() == MapEditor::Mode::Things)
+	if (context_.editMode() == mapeditor::Mode::Things)
 	{
 		// Do nothing if no properties have been copied
 		if (!thing_copied_)
@@ -765,7 +770,7 @@ void Edit2D::pasteProperties()
 	}
 
 	// Lines mode
-	else if (context_.editMode() == MapEditor::Mode::Lines)
+	else if (context_.editMode() == mapeditor::Mode::Lines)
 	{
 		// Do nothing if no properties have been copied
 		if (!line_copied_)
@@ -790,7 +795,7 @@ void Edit2D::pasteProperties()
 // -----------------------------------------------------------------------------
 void Edit2D::createObject(Vec2d pos) const
 {
-	using MapEditor::Mode;
+	using mapeditor::Mode;
 
 	// Vertices mode
 	if (context_.editMode() == Mode::Vertices)
@@ -871,7 +876,7 @@ void Edit2D::createThing(Vec2d pos) const
 	auto thing = context_.map().createThing(pos);
 
 	// Setup properties
-	Game::configuration().applyDefaults(thing, context_.map().currentFormat() == MapFormat::UDMF);
+	game::configuration().applyDefaults(thing, context_.map().currentFormat() == MapFormat::UDMF);
 	if (thing_copied_ && thing)
 	{
 		// Copy type and angle from the last copied thing
@@ -900,11 +905,11 @@ void Edit2D::createSector(Vec2d pos) const
 		return;
 
 	// Determine side
-	double side = MathStuff::lineSide(pos, line->seg());
+	double side = math::lineSide(pos, line->seg());
 
 	// Get sector to copy if we're in sectors mode
 	MapSector* sector_copy = nullptr;
-	if (context_.editMode() == MapEditor::Mode::Sectors && !context_.selection().empty())
+	if (context_.editMode() == mapeditor::Mode::Sectors && !context_.selection().empty())
 		sector_copy = context_.selection()[0].asSector(map);
 
 	// Run sector builder
@@ -926,7 +931,7 @@ void Edit2D::createSector(Vec2d pos) const
 		builder.createSector(nullptr, sector_copy);
 
 		// Flash
-		context_.renderer().animateSelectionChange({ (int)map.nSectors() - 1, MapEditor::ItemType::Sector });
+		context_.renderer().animateSelectionChange({ (int)map.nSectors() - 1, mapeditor::ItemType::Sector });
 	}
 
 	// Set some sector defaults from game configuration if needed
@@ -934,7 +939,7 @@ void Edit2D::createSector(Vec2d pos) const
 	{
 		auto new_sector = map.sector(map.nSectors() - 1);
 		if (new_sector->ceiling().texture.empty())
-			Game::configuration().applyDefaults(new_sector, map.currentFormat() == MapFormat::UDMF);
+			game::configuration().applyDefaults(new_sector, map.currentFormat() == MapFormat::UDMF);
 	}
 
 	// Editor message
@@ -952,7 +957,7 @@ void Edit2D::createSector(Vec2d pos) const
 // -----------------------------------------------------------------------------
 void Edit2D::deleteObject() const
 {
-	using MapEditor::Mode;
+	using mapeditor::Mode;
 
 	switch (context_.editMode())
 	{

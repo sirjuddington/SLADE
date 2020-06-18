@@ -3,7 +3,8 @@
 #include "UndoSteps.h"
 #include "SLADEMap/SLADEMap.h"
 
-using namespace MapEditor;
+using namespace slade;
+using namespace mapeditor;
 
 PropertyChangeUS::PropertyChangeUS(MapObject* object) : backup_{ new MapObject::Backup() }
 {
@@ -20,7 +21,7 @@ void PropertyChangeUS::doSwap(MapObject* obj)
 
 bool PropertyChangeUS::doUndo()
 {
-	auto obj = UndoRedo::currentMap()->mapData().getObjectById(backup_->id);
+	auto obj = undoredo::currentMap()->mapData().getObjectById(backup_->id);
 	if (obj)
 		doSwap(obj);
 
@@ -29,7 +30,7 @@ bool PropertyChangeUS::doUndo()
 
 bool PropertyChangeUS::doRedo()
 {
-	auto obj = UndoRedo::currentMap()->mapData().getObjectById(backup_->id);
+	auto obj = undoredo::currentMap()->mapData().getObjectById(backup_->id);
 	if (obj)
 		doSwap(obj);
 
@@ -39,7 +40,7 @@ bool PropertyChangeUS::doRedo()
 
 MapObjectCreateDeleteUS::MapObjectCreateDeleteUS()
 {
-	auto map = UndoRedo::currentMap();
+	auto map = undoredo::currentMap();
 	map->mapData().putObjectIdList(MapObject::Type::Vertex, vertices_);
 	map->mapData().putObjectIdList(MapObject::Type::Line, lines_);
 	map->mapData().putObjectIdList(MapObject::Type::Side, sides_);
@@ -55,7 +56,7 @@ void MapObjectCreateDeleteUS::swapLists()
 	vector<unsigned> sides;
 	vector<unsigned> sectors;
 	vector<unsigned> things;
-	auto             map = UndoRedo::currentMap();
+	auto             map = undoredo::currentMap();
 	if (isValid(vertices_))
 		map->mapData().putObjectIdList(MapObject::Type::Vertex, vertices);
 	if (isValid(lines_))
@@ -111,7 +112,7 @@ bool MapObjectCreateDeleteUS::doRedo()
 
 void MapObjectCreateDeleteUS::checkChanges()
 {
-	auto map = UndoRedo::currentMap();
+	auto map = undoredo::currentMap();
 
 	// Check vertices changed
 	bool vertices_changed = false;
@@ -129,7 +130,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		// No change, clear
 		vertices_.clear();
 		vertices_.push_back(0);
-		Log::info(3, "MapObjectCreateDeleteUS: No vertices added/deleted");
+		log::info(3, "MapObjectCreateDeleteUS: No vertices added/deleted");
 	}
 
 	// Check lines changed
@@ -148,7 +149,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		// No change, clear
 		lines_.clear();
 		lines_.push_back(0);
-		Log::info(3, "MapObjectCreateDeleteUS: No lines added/deleted");
+		log::info(3, "MapObjectCreateDeleteUS: No lines added/deleted");
 	}
 
 	// Check sides changed
@@ -167,7 +168,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		// No change, clear
 		sides_.clear();
 		sides_.push_back(0);
-		Log::info(3, "MapObjectCreateDeleteUS: No sides added/deleted");
+		log::info(3, "MapObjectCreateDeleteUS: No sides added/deleted");
 	}
 
 	// Check sectors changed
@@ -186,7 +187,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		// No change, clear
 		sectors_.clear();
 		sectors_.push_back(0);
-		Log::info(3, "MapObjectCreateDeleteUS: No sectors added/deleted");
+		log::info(3, "MapObjectCreateDeleteUS: No sectors added/deleted");
 	}
 
 	// Check things changed
@@ -205,7 +206,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 		// No change, clear
 		things_.clear();
 		things_.push_back(0);
-		Log::info(3, "MapObjectCreateDeleteUS: No things added/deleted");
+		log::info(3, "MapObjectCreateDeleteUS: No things added/deleted");
 	}
 }
 
@@ -222,23 +223,23 @@ bool MapObjectCreateDeleteUS::isOk()
 MultiMapObjectPropertyChangeUS::MultiMapObjectPropertyChangeUS()
 {
 	// Get backups of recently modified map objects
-	auto objects = UndoRedo::currentMap()->mapData().allModifiedObjects(MapObject::propBackupTime());
+	auto objects = undoredo::currentMap()->mapData().allModifiedObjects(MapObject::propBackupTime());
 	for (auto& object : objects)
 	{
 		auto bak = object->backup(true);
 		if (bak)
 		{
 			backups_.emplace_back(bak);
-			// Log::info(1, "%s #%d modified", objects[a]->getTypeName(), objects[a]->getIndex());
+			// log::info(1, "%s #%d modified", objects[a]->getTypeName(), objects[a]->getIndex());
 		}
 	}
 
-	if (Log::verbosity() >= 2)
+	if (log::verbosity() >= 2)
 	{
 		string msg = "Modified ids: ";
 		for (auto& backup : backups_)
 			msg += fmt::format("{}, ", backup->id);
-		Log::info(msg);
+		log::info(msg);
 	}
 }
 
@@ -254,7 +255,7 @@ bool MultiMapObjectPropertyChangeUS::doUndo()
 {
 	for (unsigned a = 0; a < backups_.size(); a++)
 	{
-		auto obj = UndoRedo::currentMap()->mapData().getObjectById(backups_[a]->id);
+		auto obj = undoredo::currentMap()->mapData().getObjectById(backups_[a]->id);
 		if (obj)
 			doSwap(obj, a);
 	}
@@ -264,10 +265,10 @@ bool MultiMapObjectPropertyChangeUS::doUndo()
 
 bool MultiMapObjectPropertyChangeUS::doRedo()
 {
-	// Log::info(2, "Restore %lu objects", backups.size());
+	// log::info(2, "Restore %lu objects", backups.size());
 	for (unsigned a = 0; a < backups_.size(); a++)
 	{
-		auto obj = UndoRedo::currentMap()->mapData().getObjectById(backups_[a]->id);
+		auto obj = undoredo::currentMap()->mapData().getObjectById(backups_[a]->id);
 		if (obj)
 			doSwap(obj, a);
 	}

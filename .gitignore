@@ -32,11 +32,11 @@
 /cmake-build-debug
 /.idea/
 /msvc/.vs
+/msvc/x64/
 /.vs
+/out/
 
 /dist/*
 !/dist/res
 !/dist/CMakeLists.txt
 !/dist/makebuild.ps1
-
-out/

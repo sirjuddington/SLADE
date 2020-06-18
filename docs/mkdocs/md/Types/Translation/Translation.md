@@ -1,4 +1,5 @@
-<article-head>Translation</article-head>
+<subhead>Type</subhead>
+<header>Translation</header>
 
 A colour translation definition. Can either be a built in translation or a custom translation made up of one or more <type>[TransRange](TransRange.md)</type>s.
 
@@ -10,25 +11,51 @@ See the [Translation](https://zdoom.org/wiki/Translation) page on the ZDoom wiki
 | Property | Type | Description |
 |:---------|:-----|:------------|
 <prop class="ro">ranges</prop> | <type>[TransRange](TransRange.md)\[\]</type> | An array of all custom ranges in the translation
-<prop class="ro">rangeCount</prop> | <type>number</type> | The number of custom ranges in the translation
+<prop class="ro">rangeCount</prop> | <type>integer</type> | The number of custom ranges in the translation
 <prop class="rw">standardName</prop> | <type>string</type> | The name of the 'built in' translation to use (for TEXTURES). If this is set the <prop>ranges</prop> above will be ignored. See [TEXTURES](https://zdoom.org/wiki/TEXTURES) for information on the available options.
-<prop class="rw">desatAmount</prop> | <type>number</type> | The desaturation amount (`1` - `31`) if <prop>standardName</prop> is `desaturate`
+<prop class="rw">desatAmount</prop> | <type>integer</type> | The desaturation amount (`1` - `31`) if <prop>standardName</prop> is `desaturate`
 
 
 ## Constructors
 
-<fdef>function <type>Translation</type>.<func>new</func>()</fdef>
+<code><type>Translation</type>.<func>new</func>()</code>
 
 Creates a new, empty translation.
 
 
-## Functions - General
+## Functions
 
+### Overview
+
+#### General
+
+<fdef>[AsText](#astext)() -> <type>string</type></fdef>
+<fdef>[Clear](#clear)()</fdef>
+<fdef>[Copy](#copy)(<arg>other</arg>)</fdef>
+<fdef>[IsEmpty](#isempty)() -> <type>boolean</type></fdef>
+<fdef>[Parse](#parse)(<arg>definition</arg>)</fdef>
+<fdef>[Translate](#translate)(<arg>colour</arg>, <arg>[palette]</arg>) -> <type>[Colour](../Colour.md)</type></fdef>
+
+#### Custom Ranges
+
+<fdef>[Range](#range)(<arg>index</arg>) -> <type>[TransRange](TransRange.md)</type></fdef>
+<fdef>[AddRange](#addrange)(<arg>definition</arg>) -> <type>[TransRange](TransRange.md)</type></fdef>
+<fdef>[AddPaletteRange](#addpaletterange)(<arg>rangeStart</arg>, <arg>rangeEnd</arg>) -> <type>[TransRangePalette](TransRangePalette.md)</type></fdef>
+<fdef>[AddColourRange](#addcolourrange)(<arg>rangeStart</arg>, <arg>rangeEnd</arg>) -> <type>[TransRangeColour](TransRangeColour.md)</type></fdef>
+<fdef>[AddDesatRange](#adddesatrange)(<arg>rangeStart</arg>, <arg>rangeEnd</arg>) -> <type>[TransRangeDesat](TransRangeDesat.md)</type></fdef>
+<fdef>[AddBlendRange](#addblendrange)(<arg>rangeStart</arg>, <arg>rangeEnd</arg>) -> <type>[TransRangeBlend](TransRangeBlend.md)</type></fdef>
+<fdef>[AddTintRange](#addtintrange)(<arg>rangeStart</arg>, <arg>rangeEnd</arg>) -> <type>[TransRangeTint](TransRangeTint.md)</type></fdef>
+<fdef>[AddSpecialRange](#addspecialrange)(<arg>rangeStart</arg>, <arg>rangeEnd</arg>) -> <type>[TransRangeSpecial](TransRangeSpecial.md)</type></fdef>
+<fdef>[ReadTable](#readtable)(<arg>data</arg>)</fdef>
+<fdef>[RemoveRange](#removerange)(<arg>index</arg>)</fdef>
+<fdef>[SwapRanges](#swapranges)(<arg>index1</arg>, <arg>index2</arg>)</fdef>
+
+---
 ### AsText
 
-<fdef>function <type>Translation</type>.<func>AsText</func>(<arg>*self*</arg>)</fdef>
+Gets the translation as a text string (in ZDoom format).
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>string</type>: A text representation of the translation (in ZDoom format)
 
@@ -53,100 +80,86 @@ App.LogMessage(translation:AsText()) -- "0:10=100:110", "40:50=[100,0,0]:[255,10
 ---
 ### Clear
 
-<fdef>function <type>Translation</type>.<func>Clear</func>(<arg>*self*</arg>)</fdef>
-
 Clears all custom <prop>ranges</prop> in the translation as well as <prop>standardName</prop> if it is set.
 
 ---
 ### Copy
 
-<fdef>function <type>Translation</type>.<func>Copy</func>(<arg>*self*</arg>, <arg>other</arg>)</fdef>
-
 Copies all translation info from another <type>Translation</type>
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>other</arg> (<type>Translation</type>): The translation to copy from
 
 ---
 ### IsEmpty
 
-<fdef>function <type>Translation</type>.<func>IsEmpty</func>(<arg>*self*</arg>)</fdef>
+Returns `true` if the translation is 'empty' (ie. the <prop>ranges</prop> and <prop>standardName</prop> properties are both empty).
 
-<listhead>Returns</listhead>
+#### Returns
 
-* <type>boolean</type>: `true` if the <prop>ranges</prop> and <prop>standardName</prop> properties are both empty (ie. the translation will do nothing)
+* <type>boolean</type>: `true` if the translation is 'empty'
 
 ---
 ### Parse
 
-<fdef>function <type>Translation</type>.<func>Parse</func>(<arg>*self*</arg>, <arg>definition</arg>)</fdef>
-
 Clears the current translation and loads new translation information from the given text <arg>definition</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>definition</arg> (<type>string</type>) : A full (comma-separated) [translation](https://zdoom.org/wiki/Translation) definition in text format
 
 ---
 ### Translate
 
-<fdef>function <type>Translation</type>.<func>Translate</func>(<arg>self</arg>, <arg>colour</arg>, <arg>palette</arg>)</fdef>
+Applies the translation to a colour.
 
-Applies the translation to a colour
-
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>colour</arg> (<type>[Colour](../Colour.md)</type>): The colour to apply the translation to
-* <arg>[palette]</arg> (<type>[Palette](../Graphics/Palette.md)</type>, default `nil`): The palette to use for the translation. If `nil`, the currently selected global palette will be used
+* <arg>[palette]</arg> (<type>[Palette](../Graphics/Palette.md)</type>): The palette to use for the translation. Default is `nil`, which means the currently selected global palette will be used
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[Colour](../Colour.md)</type>: The translated colour
 
-
-## Functions - Custom Ranges
-
+---
 ### Range
 
-<fdef>function <type>Translation</type>.<func>Range</func>(<arg>*self*</arg>, <arg>index</arg>)</fdef>
+Gets a single part (<type>[TransRange](TransRange.md)</type>) of the translation.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
-* <arg>index</arg> (<type>number</type>) : The index of the range to get
+* <arg>index</arg> (<type>integer</type>) : The index of the range to get
 
-<listhead>Returns</listhead>
+#### Returns
 
-* <type>[TransRange](TransRange.md)</type> : The range at the specified <arg>index</arg> in this translation, or `nil` if <arg>index</arg> was out of bounds
+* <type>[TransRange](TransRange.md)</type>: The range at the specified <arg>index</arg> in this translation, or `nil` if <arg>index</arg> was out of bounds
 
 ---
 ### AddRange
 
-<fdef>function <type>Translation</type>.<func>AddRange</func>(<arg>*self*</arg>, <arg>definition</arg>)</fdef>
-
 Adds a new custom translation range to the translation, parsed from the given text <arg>definition</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>definition</arg> (<type>string</type>): A single [translation](https://zdoom.org/wiki/Translation) range definition in text format
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[TransRange](TransRange.md)</type>: The created translation range, or `nil` if the given <arg>definition</arg> was invalid
 
 ---
 ### AddPaletteRange
 
-<fdef>function <type>Translation</type>.<func>AddPaletteRange</func>(<arg>*self*</arg>, <arg>rangeStart</arg>, <arg>rangeEnd</arg>)</fdef>
-
 Adds a new custom translation range of type <type>[TransRangePalette](TransRangePalette.md)</type> to the translation, from <arg>rangeStart</arg> to <arg>rangeEnd</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
-* <arg>rangeStart</arg> (<type>number</type>): The first palette index of the range (`0` - `255`)
-* <arg>rangeEnd</arg> (<type>number</type>): The last palette index of the range (`0` - `255`)
+* <arg>rangeStart</arg> (<type>integer</type>): The first palette index of the range (`0` - `255`)
+* <arg>rangeEnd</arg> (<type>integer</type>): The last palette index of the range (`0` - `255`)
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[TransRangePalette](TransRangePalette.md)</type>: The new range that was added
 
@@ -163,113 +176,97 @@ App.LogMessage(translation:AsText()) -- '0:20=50:60'
 ---
 ### AddColourRange
 
-<fdef>function <type>Translation</type>.<func>AddColourRange</func>(<arg>*self*</arg>, <arg>rangeStart</arg>, <arg>rangeEnd</arg>)</fdef>
-
 Adds a new custom translation range of type <type>[TransRangeColour](TransRangeColour.md)</type> to the translation, from <arg>rangeStart</arg> to <arg>rangeEnd</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
-* <arg>rangeStart</arg> (<type>number</type>): The first palette index of the range (`0` - `255`)
-* <arg>rangeEnd</arg> (<type>number</type>): The last palette index of the range (`0` - `255`)
+* <arg>rangeStart</arg> (<type>integer</type>): The first palette index of the range (`0` - `255`)
+* <arg>rangeEnd</arg> (<type>integer</type>): The last palette index of the range (`0` - `255`)
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[TransRangeColour](TransRangeColour.md)</type>: The new range that was added
 
 ---
 ### AddDesatRange
 
-<fdef>function <type>Translation</type>.<func>AddDesatRange</func>(<arg>*self*</arg>, <arg>rangeStart</arg>, <arg>rangeEnd</arg>)</fdef>
-
 Adds a new custom translation range of type <type>[TransRangeDesat](TransRangeDesat.md)</type> to the translation, from <arg>rangeStart</arg> to <arg>rangeEnd</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
-* <arg>rangeStart</arg> (<type>number</type>): The first palette index of the range (`0` - `255`)
-* <arg>rangeEnd</arg> (<type>number</type>): The last palette index of the range (`0` - `255`)
+* <arg>rangeStart</arg> (<type>integer</type>): The first palette index of the range (`0` - `255`)
+* <arg>rangeEnd</arg> (<type>integer</type>): The last palette index of the range (`0` - `255`)
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[TransRangeDesat](TransRangeDesat.md)</type>: The new range that was added
 
 ---
 ### AddBlendRange
 
-<fdef>function <type>Translation</type>.<func>AddBlendRange</func>(<arg>*self*</arg>, <arg>rangeStart</arg>, <arg>rangeEnd</arg>)</fdef>
-
 Adds a new custom translation range of type <type>[TransRangeBlend](TransRangeBlend.md)</type> to the translation, from <arg>rangeStart</arg> to <arg>rangeEnd</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
-* <arg>rangeStart</arg> (<type>number</type>): The first palette index of the range (`0` - `255`)
-* <arg>rangeEnd</arg> (<type>number</type>): The last palette index of the range (`0` - `255`)
+* <arg>rangeStart</arg> (<type>integer</type>): The first palette index of the range (`0` - `255`)
+* <arg>rangeEnd</arg> (<type>integer</type>): The last palette index of the range (`0` - `255`)
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[TransRangeBlend](TransRangeBlend.md)</type>: The new range that was added
 
 ---
 ### AddTintRange
 
-<fdef>function <type>Translation</type>.<func>AddTintRange</func>(<arg>*self*</arg>, <arg>rangeStart</arg>, <arg>rangeEnd</arg>)</fdef>
-
 Adds a new custom translation range of type <type>[TransRangeTint](TransRangeTint.md)</type> to the translation, from <arg>rangeStart</arg> to <arg>rangeEnd</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
-* <arg>rangeStart</arg> (<type>number</type>): The first palette index of the range (`0` - `255`)
-* <arg>rangeEnd</arg> (<type>number</type>): The last palette index of the range (`0` - `255`)
+* <arg>rangeStart</arg> (<type>integer</type>): The first palette index of the range (`0` - `255`)
+* <arg>rangeEnd</arg> (<type>integer</type>): The last palette index of the range (`0` - `255`)
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[TransRangeTint](TransRangeTint.md)</type>: The new range that was added
 
 ---
 ### AddSpecialRange
 
-<fdef>function <type>Translation</type>.<func>AddSpecialRange</func>(<arg>*self*</arg>, <arg>rangeStart</arg>, <arg>rangeEnd</arg>)</fdef>
-
 Adds a new custom translation range of type <type>[TransRangeSpecial](TransRangeSpecial.md)</type> to the translation, from <arg>rangeStart</arg> to <arg>rangeEnd</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
-* <arg>rangeStart</arg> (<type>number</type>): The first palette index of the range (`0` - `255`)
-* <arg>rangeEnd</arg> (<type>number</type>): The last palette index of the range (`0` - `255`)
+* <arg>rangeStart</arg> (<type>integer</type>): The first palette index of the range (`0` - `255`)
+* <arg>rangeEnd</arg> (<type>integer</type>): The last palette index of the range (`0` - `255`)
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[TransRangeSpecial](TransRangeSpecial.md)</type>: The new range that was added
 
 ---
 ### ReadTable
 
-<fdef>function <type>Translation</type>.<func>ReadTable</func>(<arg>*self*</arg>, <arg>data</arg>)</fdef>
-
 Adds translation ranges from the given translation table <arg>data</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>data</arg> (<type>string</type>): The translation table binary data to read
 
 ---
 ### RemoveRange
 
-<fdef>function <type>Translation</type>.<func>RemoveRange</func>(<arg>*self*</arg>, <arg>index</arg>)</fdef>
-
 Removes the custom translation range at <arg>index</arg> in <prop>ranges</prop>
 
-<listhead>Parameters</listhead>
+#### Parameters
 
-* <arg>index</arg> (<type>number</type>): The index of the range to remove
+* <arg>index</arg> (<type>integer</type>): The index of the range to remove
 
 ---
 ### SwapRanges
 
-<fdef>function <type>Translation</type>.<func>SwapRanges</func>(<arg>*self*</arg>, <arg>index1</arg>, <arg>index2</arg>)</fdef>
-
 Swaps the custom translation ranges at <arg>index1</arg> and <arg>index2</arg> in <prop>ranges</prop>
 
-<listhead>Parameters</listhead>
+#### Parameters
 
-* <arg>index1</arg> (<type>number</type>): The index of the first range to swap
-* <arg>index2</arg> (<type>number</type>): The index of the second range to swap
+* <arg>index1</arg> (<type>integer</type>): The index of the first range to swap
+* <arg>index2</arg> (<type>integer</type>): The index of the second range to swap

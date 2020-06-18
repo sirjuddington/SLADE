@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -38,6 +38,8 @@
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include "WadArchive.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -76,31 +78,31 @@ DirArchive::DirArchive() : Archive("folder")
 // -----------------------------------------------------------------------------
 bool DirArchive::open(string_view filename)
 {
-	UI::setSplashProgressMessage("Reading directory structure");
-	UI::setSplashProgress(0);
+	ui::setSplashProgressMessage("Reading directory structure");
+	ui::setSplashProgress(0);
 	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
 	wxDir               dir(string{ filename });
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
-	UI::setSplashProgressMessage("Reading files");
+	ui::setSplashProgressMessage("Reading files");
 	for (unsigned a = 0; a < files.size(); a++)
 	{
-		UI::setSplashProgress((float)a / (float)files.size());
+		ui::setSplashProgress((float)a / (float)files.size());
 
 		// Cut off directory to get entry name + relative path
 		auto name = files[a];
 		name.erase(0, filename.size());
-		if (StrUtil::startsWith(name, separator_))
+		if (strutil::startsWith(name, separator_))
 			name.erase(0, 1);
 
-		// Log::info(3, fn.GetPath(true, wxPATH_UNIX));
+		// log::info(3, fn.GetPath(true, wxPATH_UNIX));
 
 		// Create entry
-		auto fn        = StrUtil::Path{ name };
+		auto fn        = strutil::Path{ name };
 		auto new_entry = std::make_shared<ArchiveEntry>(fn.fileName());
 
 		// Setup entry info
@@ -131,7 +133,7 @@ bool DirArchive::open(string_view filename)
 	{
 		auto name = subdir;
 		name.erase(0, filename.size());
-		StrUtil::removePrefixIP(name, separator_);
+		strutil::removePrefixIP(name, separator_);
 		std::replace(name.begin(), name.end(), '\\', '/');
 
 		auto ndir                            = createDir(name);
@@ -145,14 +147,14 @@ bool DirArchive::open(string_view filename)
 		entry->setState(ArchiveEntry::State::Unmodified);
 
 	// Enable announcements
-	setMuted(false);
+	sig_blocker.unblock();
 
 	// Setup variables
 	filename_ = filename;
 	setModified(false);
 	on_disk_ = true;
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -162,7 +164,7 @@ bool DirArchive::open(string_view filename)
 // -----------------------------------------------------------------------------
 bool DirArchive::open(ArchiveEntry* entry)
 {
-	Global::error = "Cannot open Folder Archive from entry";
+	global::error = "Cannot open Folder Archive from entry";
 	return false;
 }
 
@@ -171,7 +173,7 @@ bool DirArchive::open(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 bool DirArchive::open(MemChunk& mc)
 {
-	Global::error = "Cannot open Folder Archive from memory";
+	global::error = "Cannot open Folder Archive from memory";
 	return false;
 }
 
@@ -180,7 +182,7 @@ bool DirArchive::open(MemChunk& mc)
 // -----------------------------------------------------------------------------
 bool DirArchive::write(MemChunk& mc, bool update)
 {
-	Global::error = "Cannot write Folder Archive to memory";
+	global::error = "Cannot write Folder Archive to memory";
 	return false;
 }
 
@@ -211,22 +213,22 @@ bool DirArchive::save(string_view filename)
 	}
 
 	// Get current directory structure
-	long                time = App::runTimer();
+	long                time = app::runTimer();
 	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
 	wxDir               dir(filename_);
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
-	Log::info(2, "GetAllFiles took {}ms", App::runTimer() - time);
+	log::info(2, "GetAllFiles took {}ms", app::runTimer() - time);
 
 	// Check for any files to remove
-	time = App::runTimer();
+	time = app::runTimer();
 	std::error_code ec;
 	for (const auto& removed_file : removed_files_)
 	{
-		if (FileUtil::fileExists(removed_file))
+		if (fileutil::fileExists(removed_file))
 		{
-			Log::info(2, "Removing file {}", removed_file);
-			FileUtil::removeFile(removed_file);
+			log::info(2, "Removing file {}", removed_file);
+			fileutil::removeFile(removed_file);
 		}
 	}
 
@@ -248,9 +250,9 @@ bool DirArchive::save(string_view filename)
 		// (Note that this will fail if there are any untracked files in the
 		// directory)
 		if (!found && wxRmdir(dirs[a]))
-			Log::info(2, "Removing directory {}", dirs[a]);
+			log::info(2, "Removing directory {}", dirs[a]);
 	}
-	Log::info(2, "Remove check took {}ms", App::runTimer() - time);
+	log::info(2, "Remove check took {}ms", app::runTimer() - time);
 
 	// Go through entries
 	vector<string> files_written;
@@ -273,12 +275,13 @@ bool DirArchive::save(string_view filename)
 
 		// Check if entry needs to be (re)written
 		if (entries[a]->state() == ArchiveEntry::State::Unmodified
-			&& path == entries[a]->exProp("filePath").stringValue())
+			&& entries[a]->exProps().contains("filePath")
+			&& path == entries[a]->exProp<string>("filePath"))
 			continue;
 
 		// Write entry to file
 		if (!entries[a]->exportFile(path))
-			Log::error("Unable to save entry {}: {}", entries[a]->name(), Global::error);
+			log::error("Unable to save entry {}: {}", entries[a]->name(), global::error);
 		else
 			files_written.push_back(path);
 
@@ -299,9 +302,9 @@ bool DirArchive::save(string_view filename)
 // -----------------------------------------------------------------------------
 bool DirArchive::loadEntryData(ArchiveEntry* entry)
 {
-	if (entry->importFile(entry->exProp("filePath").stringValue()))
+	if (entry->importFile(entry->exProp<string>("filePath")))
 	{
-		file_modification_times_[entry] = wxFileModificationTime(entry->exProp("filePath").stringValue());
+		file_modification_times_[entry] = wxFileModificationTime(entry->exProp<string>("filePath"));
 		return true;
 	}
 
@@ -336,8 +339,11 @@ shared_ptr<ArchiveDir> DirArchive::removeDir(string_view path, ArchiveDir* base)
 	// Add to removed files list
 	for (auto& entry : entries)
 	{
-		Log::info(2, entry->exProp("filePath").stringValue());
-		removed_files_.push_back(entry->exProp("filePath").stringValue());
+		if (!entry->exProps().contains("filePath"))
+			continue;
+		
+		log::info(2, entry->exProp<string>("filePath"));
+		removed_files_.push_back(entry->exProp<string>("filePath"));
 	}
 
 	// Do normal dir remove
@@ -355,7 +361,7 @@ bool DirArchive::renameDir(ArchiveDir* dir, string_view new_name)
 		std::replace(path.begin(), path.end(), '/', separator_);
 	StringPair rename(path + dir->name(), fmt::format("{}{}", path, new_name));
 	renamed_dirs_.push_back(rename);
-	Log::info(2, "RENAME {} to {}", rename.first, rename.second);
+	log::info(2, "RENAME {} to {}", rename.first, rename.second);
 
 	return Archive::renameDir(dir, new_name);
 }
@@ -369,12 +375,16 @@ bool DirArchive::renameDir(ArchiveDir* dir, string_view new_name)
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> DirArchive::addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
 {
+	// Check entry
+	if (!checkEntry(entry.get()))
+		return nullptr;
+
 	// Check namespace
 	if (add_namespace.empty() || add_namespace == "global")
 		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr);
 
 	// Get/Create namespace dir
-	auto dir = createDir(StrUtil::lower(add_namespace));
+	auto dir = createDir(strutil::lower(add_namespace));
 
 	// Add the entry to the dir
 	return Archive::addEntry(entry, 0xFFFFFFFF, dir.get());
@@ -387,11 +397,20 @@ shared_ptr<ArchiveEntry> DirArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 // -----------------------------------------------------------------------------
 bool DirArchive::removeEntry(ArchiveEntry* entry)
 {
-	auto old_name = entry->exProp("filePath").stringValue();
-	bool success  = Archive::removeEntry(entry);
-	if (success)
-		removed_files_.push_back(old_name);
-	return success;
+	// Check entry
+	if (!checkEntry(entry))
+		return false;
+
+	if (entry->exProps().contains("filePath"))
+	{
+		auto old_name = entry->exProp<string>("filePath");
+		bool success  = Archive::removeEntry(entry);
+		if (success)
+			removed_files_.push_back(old_name);
+		return success;
+	}
+
+	return Archive::removeEntry(entry);
 }
 
 // -----------------------------------------------------------------------------
@@ -399,18 +418,27 @@ bool DirArchive::removeEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name)
 {
+	// Check entry
+	if (!checkEntry(entry))
+		return false;
+
 	// Check rename won't result in duplicated name
 	if (entry->parentDir()->entry(name))
 	{
-		Global::error = fmt::format("An entry named {} already exists", name);
+		global::error = fmt::format("An entry named {} already exists", name);
 		return false;
 	}
 
-	auto old_name = entry->exProp("filePath").stringValue();
-	bool success  = Archive::renameEntry(entry, name);
-	if (success)
-		removed_files_.push_back(old_name);
-	return success;
+	if (entry->exProps().contains("filePath"))
+	{
+		auto old_name = entry->exProp<string>("filePath");
+		bool success  = Archive::renameEntry(entry, name);
+		if (success)
+			removed_files_.push_back(old_name);
+		return success;
+	}
+
+	return Archive::renameEntry(entry, name);
 }
 
 // -----------------------------------------------------------------------------
@@ -630,7 +658,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 		{
 			auto name = change.file_path;
 			name.erase(0, filename_.size());
-			StrUtil::removePrefixIP(name, separator_);
+			strutil::removePrefixIP(name, separator_);
 			std::replace(name.begin(), name.end(), '\\', '/');
 
 			auto ndir = createDir(name);
@@ -643,12 +671,12 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 		{
 			auto name = change.file_path;
 			name.erase(0, filename_.size());
-			if (StrUtil::startsWith(name, separator_))
+			if (strutil::startsWith(name, separator_))
 				name.erase(0, 1);
 			std::replace(name.begin(), name.end(), '\\', '/');
 
 			// Create entry
-			StrUtil::Path fn(name);
+			strutil::Path fn(name);
 			auto          new_entry = std::make_shared<ArchiveEntry>(fn.fileName());
 
 			// Setup entry info
@@ -663,7 +691,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 			new_entry->importFile(change.file_path);
 			new_entry->setLoaded(true);
 
-			file_modification_times_[new_entry.get()] = FileUtil::fileModifiedTime(change.file_path);
+			file_modification_times_[new_entry.get()] = fileutil::fileModifiedTime(change.file_path);
 
 			// Detect entry type
 			EntryType::detectEntryType(*new_entry);

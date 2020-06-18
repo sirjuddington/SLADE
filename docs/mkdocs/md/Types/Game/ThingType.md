@@ -1,4 +1,5 @@
-<article-head>ThingType</article-head>
+<subhead>Type</subhead>
+<header>ThingType</header>
 
 Represents a thing type definition from the current game configuration (or parsed from DECORATE/ZScript etc.)
 
@@ -8,10 +9,10 @@ Represents a thing type definition from the current game configuration (or parse
 |:---------|:-----|:------------|
 <prop class="ro">name</prop> | <type>string</type> | Thing type name
 <prop class="ro">group</prop> | <type>string</type> | Thing type group, can be a path for nested groups eg. `Monsters/Stealth`
-<prop class="ro">radius</prop> | <type>number</type> | Thing type radius in map units
-<prop class="ro">height</prop> | <type>number</type> | Thing type height in map units
-<prop class="ro">scaleY</prop> | <type>number</type> | X scaling factor for the sprite
-<prop class="ro">scaleX</prop> | <type>number</type> | Y scaling factor for the sprite
+<prop class="ro">radius</prop> | <type>integer</type> | Thing type radius in map units
+<prop class="ro">height</prop> | <type>integer</type> | Thing type height in map units
+<prop class="ro">scaleY</prop> | <type>float</type> | X scaling factor for the sprite
+<prop class="ro">scaleX</prop> | <type>float</type> | Y scaling factor for the sprite
 <prop class="ro">angled</prop> | <type>boolean</type> | True if things of this type should show a direction arrow in 2d mode
 <prop class="ro">hanging</prop> | <type>boolean</type> | True if things of this type should hang from the ceiling in 3d mode
 <prop class="ro">fullbright</prop> | <type>boolean</type> | True if things of this type aren't affected by sector brightness
@@ -27,6 +28,6 @@ Represents a thing type definition from the current game configuration (or parse
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[Game.ThingType](../../Namespaces/Game.md#thingtype)</code>

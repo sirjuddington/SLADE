@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "CTexture.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
@@ -39,6 +40,8 @@
 #include "TextureXList.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -61,15 +64,15 @@ CTPatch::CTPatch(string_view name, int16_t offset_x, int16_t offset_y) : name_{ 
 ArchiveEntry* CTPatch::patchEntry(Archive* parent)
 {
 	// Default patches should be in patches namespace
-	auto entry = App::resources().getPatchEntry(name_, "patches", parent);
+	auto entry = app::resources().getPatchEntry(name_, "patches", parent);
 
 	// Not found in patches, check in graphics namespace
 	if (!entry)
-		entry = App::resources().getPatchEntry(name_, "graphics", parent);
+		entry = app::resources().getPatchEntry(name_, "graphics", parent);
 
 	// Not found in patches, check in stand-alone texture namespace
 	if (!entry)
-		entry = App::resources().getPatchEntry(name_, "textures", parent);
+		entry = app::resources().getPatchEntry(name_, "textures", parent);
 
 	return entry;
 }
@@ -119,22 +122,22 @@ ArchiveEntry* CTPatchEx::patchEntry(Archive* parent)
 	// 'Patch' type: patches > graphics
 	if (type_ == Type::Patch)
 	{
-		auto entry = App::resources().getPatchEntry(name_, "patches", parent);
+		auto entry = app::resources().getPatchEntry(name_, "patches", parent);
 		if (!entry)
-			entry = App::resources().getFlatEntry(name_, parent);
+			entry = app::resources().getFlatEntry(name_, parent);
 		if (!entry)
-			entry = App::resources().getPatchEntry(name_, "graphics", parent);
+			entry = app::resources().getPatchEntry(name_, "graphics", parent);
 		return entry;
 	}
 
 	// 'Graphic' type: graphics > patches
 	if (type_ == Type::Graphic)
 	{
-		auto entry = App::resources().getPatchEntry(name_, "graphics", parent);
+		auto entry = app::resources().getPatchEntry(name_, "graphics", parent);
 		if (!entry)
-			entry = App::resources().getPatchEntry(name_, "patches", parent);
+			entry = app::resources().getPatchEntry(name_, "patches", parent);
 		if (!entry)
-			entry = App::resources().getFlatEntry(name_, parent);
+			entry = app::resources().getFlatEntry(name_, parent);
 		return entry;
 	}
 	// Silence warnings
@@ -148,7 +151,7 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 {
 	// Read basic info
 	type_ = type;
-	name_ = StrUtil::upper(tz.next().text);
+	name_ = strutil::upper(tz.next().text);
 	tz.adv(); // Skip ,
 	offset_.x = tz.next().asInt();
 	tz.adv(); // Skip ,
@@ -182,14 +185,14 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 				// Build translation string
 				string translate;
 				string temp = tz.next().text;
-				if (StrUtil::contains(temp, '='))
+				if (strutil::contains(temp, '='))
 					temp = fmt::format("\"{}\"", temp);
 				translate += temp;
 				while (tz.checkNext(","))
 				{
 					translate += tz.next().text; // add ','
 					temp = tz.next().text;
-					if (StrUtil::contains(temp, '='))
+					if (strutil::contains(temp, '='))
 						temp = fmt::format("\"{}\"", temp);
 					translate += temp;
 				}
@@ -212,7 +215,7 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 				if (!tz.checkNext(","))
 				{
 					col.Set(first);
-					colour_.set(COLWX(col));
+					colour_.set(col);
 				}
 				else
 				{
@@ -224,7 +227,8 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 					if (!tz.checkNext(","))
 					{
 						col.Set(first);
-						colour_.set(COLWX(col), second * 255);
+						colour_.set(col);
+						colour_.a  = second * 255;
 						blendtype_ = BlendType::Tint;
 					}
 					else
@@ -232,13 +236,13 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 						// Third value exists, must be R,G,B,A format
 						// RGB are ints in the 0-255 range; A is float in the 0.0-1.0 range
 						tz.adv(); // Skip ,
-						StrUtil::toDouble(first, val);
+						strutil::toDouble(first, val);
 						colour_.r = val;
 						colour_.g = second;
 						colour_.b = tz.next().asInt();
 						if (!tz.checkNext(","))
 						{
-							Log::error("Invalid TEXTURES definition, expected ',', got '{}'", tz.peek().text);
+							log::error("Invalid TEXTURES definition, expected ',', got '{}'", tz.peek().text);
 							return false;
 						}
 						tz.adv(); // Skip ,
@@ -277,7 +281,7 @@ string CTPatchEx::asText()
 
 	// Check if we need to write any extra properties
 	if (!flip_x_ && !flip_y_ && !use_offsets_ && rotation_ == 0 && blendtype_ == BlendType::None && alpha_ == 1.0f
-		&& StrUtil::equalCI(style_, "Copy"))
+		&& strutil::equalCI(style_, "Copy"))
 		return text;
 	else
 		text += "\t{\n";
@@ -309,7 +313,7 @@ string CTPatchEx::asText()
 	}
 	if (alpha_ < 1.0f)
 		text += fmt::format("\t\tAlpha {:1.2f}\n", alpha_);
-	if (!(StrUtil::equalCI(style_, "Copy")))
+	if (!(strutil::equalCI(style_, "Copy")))
 		text += fmt::format("\t\tStyle {}\n", style_);
 
 	// Write ending
@@ -453,7 +457,7 @@ bool CTexture::addPatch(string_view patch, int16_t offset_x, int16_t offset_y, i
 	defined_ = false;
 
 	// Announce
-	announce("patches_modified");
+	signals_.patches_modified(*this);
 
 	return true;
 }
@@ -475,7 +479,7 @@ bool CTexture::removePatch(size_t index)
 	defined_ = false;
 
 	// Announce
-	announce("patches_modified");
+	signals_.patches_modified(*this);
 
 	return true;
 }
@@ -502,7 +506,7 @@ bool CTexture::removePatch(string_view patch)
 	defined_ = false;
 
 	if (removed)
-		announce("patches_modified");
+		signals_.patches_modified(*this);
 
 	return removed;
 }
@@ -522,7 +526,7 @@ bool CTexture::replacePatch(size_t index, string_view newpatch)
 	patches_[index]->setName(newpatch);
 
 	// Announce
-	announce("patches_modified");
+	signals_.patches_modified(*this);
 
 	return true;
 }
@@ -558,7 +562,7 @@ bool CTexture::duplicatePatch(size_t index, int16_t offset_x, int16_t offset_y)
 	defined_ = false;
 
 	// Announce
-	announce("patches_modified");
+	signals_.patches_modified(*this);
 
 	return true;
 }
@@ -577,7 +581,7 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 	patches_[p1].swap(patches_[p2]);
 
 	// Announce
-	announce("patches_modified");
+	signals_.patches_modified(*this);
 
 	return true;
 }
@@ -595,7 +599,7 @@ bool CTexture::parse(Tokenizer& tz, string_view type)
 	type_     = type;
 	extended_ = true;
 	defined_  = false;
-	name_     = StrUtil::upper(tz.next().text);
+	name_     = strutil::upper(tz.next().text);
 	tz.adv(); // Skip ,
 	size_.x = tz.next().asInt();
 	tz.adv(); // Skip ,
@@ -610,7 +614,7 @@ bool CTexture::parse(Tokenizer& tz, string_view type)
 			// Check if end of text is reached (error)
 			if (tz.atEnd())
 			{
-				Log::error("Error parsing texture {}: End of text found, missing }} perhaps?", name_);
+				log::error("Error parsing texture {}: End of text found, missing }} perhaps?", name_);
 				return false;
 			}
 
@@ -674,11 +678,11 @@ bool CTexture::parseDefine(Tokenizer& tz)
 	type_       = "Define";
 	extended_   = true;
 	defined_    = true;
-	name_       = StrUtil::upper(tz.next().text);
+	name_       = strutil::upper(tz.next().text);
 	def_size_.x = tz.next().asInt();
 	def_size_.y = tz.next().asInt();
 	size_       = def_size_;
-	auto entry  = App::resources().getPatchEntry(name_);
+	auto entry  = app::resources().getPatchEntry(name_);
 	if (entry)
 	{
 		SImage image;
@@ -712,7 +716,7 @@ string CTexture::asText()
 	if (optional_)
 		text = fmt::format("{} Optional \"{}\", {}, {}\n{\n", type_, name_, size_.x, size_.y);
 	else
-		text = fmt::format("{} \"{}\", {}, {}\n{\n", type_, name_, size_.x, size_.y);
+		text = fmt::format("{} \"{}\", {}, {}\n{{\n", type_, name_, size_.x, size_.y);
 
 	// Write texture properties
 	if (scale_.x != 1.0)
@@ -733,7 +737,7 @@ string CTexture::asText()
 		text += dynamic_cast<CTPatchEx*>(patch.get())->asText();
 
 	// Write ending
-	text += "}\n\n";
+	text += "}}\n\n";
 
 	return text;
 }
@@ -913,7 +917,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 		// Add each patch to image
 		for (auto& patch : patches_)
 		{
-			if (Misc::loadImageFromEntry(&p_img, patch->patchEntry(parent)))
+			if (misc::loadImageFromEntry(&p_img, patch->patchEntry(parent)))
 				image.drawImage(p_img, patch->xOffset(), patch->yOffset(), dp, pal, pal);
 		}
 	}
@@ -935,7 +939,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 
 	// If the texture is extended, search for textures-as-patches first
 	// (as long as the patch name is different from this texture's name)
-	if (extended_ && !(StrUtil::equalCI(patch->name(), name_)))
+	if (extended_ && !(strutil::equalCI(patch->name(), name_)))
 	{
 		// Search the texture list we're in first
 		if (in_list_)
@@ -949,7 +953,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 					break;
 
 				// Check for name match
-				if (StrUtil::equalCI(tex->name(), patch->name()))
+				if (strutil::equalCI(tex->name(), patch->name()))
 				{
 					// Load texture to image
 					return tex->toImage(image, parent, pal);
@@ -959,7 +963,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 
 		// Otherwise, try the resource manager
 		// TODO: Something has to be ignored here. The entire archive or just the current list?
-		auto tex = App::resources().getTexture(patch->name(), parent);
+		auto tex = app::resources().getTexture(patch->name(), parent);
 		if (tex)
 			return tex->toImage(image, parent, pal);
 	}
@@ -969,13 +973,13 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 
 	// Load entry to image if valid
 	if (entry)
-		return Misc::loadImageFromEntry(&image, entry);
+		return misc::loadImageFromEntry(&image, entry);
 
 	// Maybe it's a texture?
-	entry = App::resources().getTextureEntry(patch->name(), "", parent);
+	entry = app::resources().getTextureEntry(patch->name(), "", parent);
 
 	if (entry)
-		return Misc::loadImageFromEntry(&image, entry);
+		return misc::loadImageFromEntry(&image, entry);
 
 	return false;
 }

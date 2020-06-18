@@ -18,7 +18,7 @@ public:
 		SImage::Info info;
 
 		// Read header
-		auto header   = (const Graphics::ROTTPatchHeader*)mc.data();
+		auto header   = (const gfx::ROTTPatchHeader*)mc.data();
 		info.width    = wxINT16_SWAP_ON_BE(header->width);
 		info.height   = wxINT16_SWAP_ON_BE(header->height);
 		info.offset_x = wxINT16_SWAP_ON_BE(header->left) + (wxINT16_SWAP_ON_BE(header->origsize) / 2);
@@ -38,7 +38,7 @@ protected:
 		auto info = this->info(data, 0);
 
 		// Setup variables
-		size_t hdr_size   = sizeof(Graphics::ROTTPatchHeader);
+		size_t hdr_size   = sizeof(gfx::ROTTPatchHeader);
 		short  translevel = 255;
 		if (mask)
 		{
@@ -239,7 +239,7 @@ public:
 		SImage::Info info;
 
 		// Read header
-		auto header   = (const Graphics::PatchHeader*)mc.data();
+		auto header   = (const gfx::PatchHeader*)mc.data();
 		info.width    = wxINT16_SWAP_ON_BE(header->width);
 		info.height   = wxINT16_SWAP_ON_BE(header->height);
 		info.offset_x = wxINT16_SWAP_ON_BE(header->left);

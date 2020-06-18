@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -36,6 +36,8 @@
 #include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "SIFormat.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -132,7 +134,7 @@ protected:
 		// Check it created/read ok
 		if (!bm)
 		{
-			Global::error = "Unable to read image data (unsupported format?)";
+			global::error = "Unable to read image data (unsupported format?)";
 			return false;
 		}
 
@@ -160,8 +162,8 @@ protected:
 		auto rgba = FreeImage_ConvertTo32Bits(bm);
 		if (!rgba)
 		{
-			Log::error("FreeImage_ConvertTo32Bits failed for image data");
-			Global::error = "Error reading PNG data";
+			log::error("FreeImage_ConvertTo32Bits failed for image data");
+			global::error = "Error reading PNG data";
 			return false;
 		}
 		FreeImage_FlipVertical(rgba);
@@ -217,23 +219,23 @@ private:
 uint32_t valid_flat_size[][3] = {
 	{ 2, 2, 0 },       // lol Heretic F_SKY1
 	{ 10, 12, 0 },     // gnum format
-	{ 16, 16, 0 },     // |
-	{ 32, 32, 0 },     // |
+	{ 16, 16, 1 },     // |
+	{ 32, 32, 1 },     // |
 	{ 32, 64, 0 },     // Strife startup sprite
 	{ 48, 48, 0 },     // |
 	{ 64, 64, 1 },     // standard flat size
 	{ 64, 65, 0 },     // Heretic flat size variant
 	{ 64, 128, 0 },    // Hexen flat size variant
-	{ 80, 50, 0 },     // SRB2 fade mask size 1
+	{ 80, 50, 1 },     // SRB2 fade mask size 1
 	{ 128, 128, 1 },   // |
-	{ 160, 100, 0 },   // SRB2 fade mask size 2
-	{ 256, 34, 0 },    // SRB2 colormap
+	{ 160, 100, 1 },   // SRB2 fade mask size 2
+	{ 256, 34, 1 },    // SRB2 colormap
 	{ 256, 66, 0 },    // Blake Stone colormap
 	{ 256, 200, 0 },   // Rise of the Triad sky
 	{ 256, 256, 1 },   // hires flat size
 	{ 320, 200, 0 },   // full screen format
 	{ 512, 512, 1 },   // hires flat size
-	{ 640, 400, 0 },   // SRB2 fade mask size 4
+	{ 640, 400, 1 },   // SRB2 fade mask size 4
 	{ 1024, 1024, 1 }, // hires flat size
 	{ 2048, 2048, 1 }, // super hires flat size (SRB2)
 	{ 4096, 4096, 1 }, // |

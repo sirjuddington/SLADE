@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class TarArchive : public Archive
 {
 public:
@@ -19,3 +21,4 @@ public:
 	static bool isTarArchive(MemChunk& mc);
 	static bool isTarArchive(const string& filename);
 };
+} // namespace slade

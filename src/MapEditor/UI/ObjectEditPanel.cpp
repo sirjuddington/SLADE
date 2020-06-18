@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,6 +39,8 @@
 #include "UI/Controls/SIconButton.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -55,7 +57,7 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 	wxIntegerValidator<int>          val_int(nullptr, wxNUM_VAL_DEFAULT);
 	wxIntegerValidator<unsigned int> val_uint(nullptr, wxNUM_VAL_DEFAULT);
 	wxFloatingPointValidator<double> val_double(2, nullptr, wxNUM_VAL_DEFAULT);
-	auto                             tb_size = WxUtils::scaledSize(64, -1);
+	auto                             tb_size = wxutil::scaledSize(64, -1);
 
 	// Create controls
 	text_xoff_      = new wxTextCtrl(this, -1, "", wxDefaultPosition, tb_size, 0, val_int);
@@ -70,7 +72,7 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 	btn_apply_      = new SIconButton(this, "tick", "Apply");
 
 	// Init controls
-	combo_rotation_->Set(WxUtils::arrayString({ "0", "45", "90", "135", "180", "225", "270", "315" }));
+	combo_rotation_->Set(wxutil::arrayString({ "0", "45", "90", "135", "180", "225", "270", "315" }));
 	combo_rotation_->SetValidator(val_double);
 	btn_preview_->SetDefault();
 
@@ -138,46 +140,46 @@ void ObjectEditPanel::setupLayout()
 	// Init sizer
 	SetSizer(new wxBoxSizer(wxVERTICAL));
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
-	GetSizer()->Add(sizer, 1, wxEXPAND | wxALL, UI::pad());
+	GetSizer()->Add(sizer, 1, wxEXPAND | wxALL, ui::pad());
 
 	// X offset
 	sizer->Add(
-		WxUtils::createLabelHBox(this, "X Offset:", text_xoff_), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::padLarge());
+		wxutil::createLabelHBox(this, "X Offset:", text_xoff_), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
 
 	// Y offset
 	sizer->Add(
-		WxUtils::createLabelHBox(this, "Y Offset:", text_yoff_), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::padLarge());
+		wxutil::createLabelHBox(this, "Y Offset:", text_yoff_), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
 
 	// X scale
 	sizer->Add(
-		WxUtils::createLabelHBox(this, "X Scale:", text_scalex_),
+		wxutil::createLabelHBox(this, "X Scale:", text_scalex_),
 		0,
 		wxALIGN_CENTER_VERTICAL | wxRIGHT,
-		UI::px(UI::Size::PadMinimum));
-	sizer->Add(new wxStaticText(this, -1, "%"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::padLarge());
+		ui::px(ui::Size::PadMinimum));
+	sizer->Add(new wxStaticText(this, -1, "%"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
 
 	// Y scale
 	sizer->Add(
-		WxUtils::createLabelHBox(this, "Y Scale:", text_scaley_),
+		wxutil::createLabelHBox(this, "Y Scale:", text_scaley_),
 		0,
 		wxALIGN_CENTER_VERTICAL | wxRIGHT,
-		UI::px(UI::Size::PadMinimum));
-	sizer->Add(new wxStaticText(this, -1, "%"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::padLarge());
+		ui::px(ui::Size::PadMinimum));
+	sizer->Add(new wxStaticText(this, -1, "%"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
 
 	// Rotation
 	sizer->Add(
-		WxUtils::createLabelHBox(this, "Rotation:", combo_rotation_),
+		wxutil::createLabelHBox(this, "Rotation:", combo_rotation_),
 		0,
 		wxALIGN_CENTER_VERTICAL | wxRIGHT,
-		UI::padLarge());
+		ui::padLarge());
 
 	// Mirror x/y
-	sizer->Add(cb_mirror_x_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::padLarge());
-	sizer->Add(cb_mirror_y_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::padLarge());
+	sizer->Add(cb_mirror_x_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
+	sizer->Add(cb_mirror_y_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::padLarge());
 
 	// Buttons
-	sizer->Add(btn_preview_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
-	sizer->Add(btn_cancel_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, UI::pad());
+	sizer->Add(btn_preview_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	sizer->Add(btn_cancel_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 	sizer->Add(btn_apply_, 0, wxALIGN_CENTER_VERTICAL);
 }
 
@@ -203,6 +205,6 @@ void ObjectEditPanel::onBtnPreviewClicked(wxCommandEvent& e)
 	bool mirror_x = cb_mirror_x_->GetValue();
 	bool mirror_y = cb_mirror_y_->GetValue();
 
-	MapEditor::editContext().objectEdit().group().doAll(
+	mapeditor::editContext().objectEdit().group().doAll(
 		xoff, yoff, xscale / 100.0, yscale / 100.0, rotation, mirror_x, mirror_y);
 }

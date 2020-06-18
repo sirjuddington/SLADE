@@ -39,6 +39,8 @@
 #include "templates.h"
 #include "portable_endian.h"
 
+using namespace slade;
+
 enum EMIDIType
 {
 	MIDI_NOTMIDI,

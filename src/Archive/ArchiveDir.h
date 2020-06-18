@@ -2,6 +2,8 @@
 
 #include "ArchiveEntry.h"
 
+namespace slade
+{
 class ArchiveDir
 {
 	friend class Archive;
@@ -57,16 +59,22 @@ public:
 	static ArchiveDir*              subdirAtPath(ArchiveDir* root, string_view path);
 	static shared_ptr<ArchiveEntry> entryAtPath(const shared_ptr<ArchiveDir>& root, string_view path);
 	static bool                     merge(
-							shared_ptr<ArchiveDir>& target,
-							ArchiveDir*             dir,
-							unsigned                position = -1,
-							ArchiveEntry::State     state    = ArchiveEntry::State::New);
-	static shared_ptr<ArchiveDir> getOrCreateSubdir(shared_ptr<ArchiveDir>& root, string_view path);
-	static void                   entryTreeAsList(
-						  ArchiveDir*                       root,
-						  vector<shared_ptr<ArchiveEntry>>& list,
-						  bool                              include_dir_entry = false);
+							shared_ptr<ArchiveDir>&           target,
+							ArchiveDir*                       dir,
+							unsigned                          position        = -1,
+							ArchiveEntry::State               state           = ArchiveEntry::State::New,
+							vector<shared_ptr<ArchiveDir>>*   created_dirs    = nullptr,
+							vector<shared_ptr<ArchiveEntry>>* created_entries = nullptr);
+	static shared_ptr<ArchiveDir> getOrCreateSubdir(
+		shared_ptr<ArchiveDir>&         root,
+		string_view                     path,
+		vector<shared_ptr<ArchiveDir>>* created_dirs = nullptr);
+	static void entryTreeAsList(
+		ArchiveDir*                       root,
+		vector<shared_ptr<ArchiveEntry>>& list,
+		bool                              include_dir_entry = false);
 	static shared_ptr<ArchiveDir> getShared(ArchiveDir* dir);
+	static shared_ptr<ArchiveDir> findDirByDirEntry(shared_ptr<ArchiveDir> dir_root, const ArchiveEntry& entry);
 
 private:
 	Archive*                         archive_;
@@ -78,3 +86,4 @@ private:
 
 	void ensureUniqueName(ArchiveEntry* entry);
 };
+} // namespace slade

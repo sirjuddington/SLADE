@@ -2,6 +2,8 @@
 
 #include "SImage.h"
 
+namespace slade
+{
 class ArchiveEntry;
 class SIFormat
 {
@@ -56,7 +58,7 @@ public:
 			image.clear();
 
 		// Announce
-		image.announce("image_changed");
+		image.signals_.image_changed();
 
 		return ok;
 	}
@@ -76,6 +78,7 @@ public:
 	bool saveImage(SImage& image, MemChunk& out, Palette* pal = nullptr, int index = 0)
 	{
 		// Attempt to write image data
+		out.seek(0, SEEK_SET);
 		bool ok = writeImage(image, out, pal, index);
 
 		// Set format if successful
@@ -108,3 +111,4 @@ protected:
 	virtual bool readImage(SImage& image, MemChunk& data, int index) = 0;
 	virtual bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index) { return false; }
 };
+} // namespace slade

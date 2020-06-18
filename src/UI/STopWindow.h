@@ -1,8 +1,9 @@
 #pragma once
 
+namespace slade
+{
 class SAction;
 class SToolBar;
-class wxMenu;
 
 class STopWindow : public wxFrame
 {
@@ -40,3 +41,4 @@ protected:
 	int             toolbar_menu_wx_id_  = -1;
 	SAction*        action_toolbar_menu_ = nullptr;
 };
+} // namespace slade

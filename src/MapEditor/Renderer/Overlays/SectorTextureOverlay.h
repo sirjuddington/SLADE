@@ -2,7 +2,10 @@
 
 #include "MCOverlay.h"
 
+namespace slade
+{
 class MapSector;
+
 class SectorTextureOverlay : public MCOverlay
 {
 public:
@@ -40,3 +43,4 @@ private:
 	int tex_size_ = 0;
 	int border_   = 0;
 };
+} // namespace slade

@@ -308,24 +308,24 @@ public:
 		const uint8_t* data = mc.data();
 
 		// Check size
-		if (mc.size() > sizeof(Graphics::PatchHeader))
+		if (mc.size() > sizeof(gfx::PatchHeader))
 		{
-			const Graphics::PatchHeader* header = (const Graphics::PatchHeader*)data;
+			const gfx::PatchHeader* header = (const gfx::PatchHeader*)data;
 
 			// Check header values are 'sane'
 			if (header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
 				&& header->top > -2000 && header->top < 2000 && header->left > -2000 && header->left < 2000)
 			{
-				uint32_t* col_offsets = (uint32_t*)((const uint8_t*)data + sizeof(Graphics::PatchHeader));
+				uint32_t* col_offsets = (uint32_t*)((const uint8_t*)data + sizeof(gfx::PatchHeader));
 
 				// Check there is room for needed column pointers
-				if (mc.size() < sizeof(Graphics::PatchHeader) + (header->width * sizeof(uint32_t)))
+				if (mc.size() < sizeof(gfx::PatchHeader) + (header->width * sizeof(uint32_t)))
 					return MATCH_FALSE;
 
 				// Check column pointers are within range
 				for (int a = 0; a < header->width; a++)
 				{
-					if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(Graphics::PatchHeader))
+					if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(gfx::PatchHeader))
 						return MATCH_FALSE;
 				}
 
@@ -333,7 +333,7 @@ public:
 				// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 				int numpixels  = (header->height + 2 + header->height % 2) / 2;
 				int maxcolsize = sizeof(uint32_t) + (numpixels * 5) + 1;
-				if (mc.size() > (sizeof(Graphics::PatchHeader) + (header->width * maxcolsize)))
+				if (mc.size() > (sizeof(gfx::PatchHeader) + (header->width * maxcolsize)))
 				{
 					return MATCH_UNLIKELY; // This may still be good anyway
 				}
@@ -356,32 +356,32 @@ public:
 	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
-		if (mc.size() > sizeof(Graphics::OldPatchHeader))
+		if (mc.size() > sizeof(gfx::OldPatchHeader))
 		{
 			// Check that it ends on a FF byte
 			if (mc[mc.size() - 1] != 0xFF)
 				return MATCH_FALSE;
 
-			const Graphics::OldPatchHeader* header = (const Graphics::OldPatchHeader*)mc.data();
+			const gfx::OldPatchHeader* header = (const gfx::OldPatchHeader*)mc.data();
 
 			// Check header values are 'sane'
 			if (header->width > 0 && header->height > 0)
 			{
 				// Check there is room for needed column pointers
-				if (mc.size() < sizeof(Graphics::OldPatchHeader) + (header->width * sizeof(uint16_t)))
+				if (mc.size() < sizeof(gfx::OldPatchHeader) + (header->width * sizeof(uint16_t)))
 					return MATCH_FALSE;
 
 				uint16_t col_offsets[255]; // Old format headers do not allow dimensions greater than 255.
 				for (uint16_t a = 0; a < header->width; a++)
 				{
-					col_offsets[a] = mc.readL16((sizeof(Graphics::OldPatchHeader) + a * sizeof(uint16_t)));
+					col_offsets[a] = mc.readL16((sizeof(gfx::OldPatchHeader) + a * sizeof(uint16_t)));
 				}
 
 
 				// Check column pointers are within range
 				for (int a = 0; a < header->width; a++)
 				{
-					if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(Graphics::OldPatchHeader))
+					if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(gfx::OldPatchHeader))
 						return MATCH_FALSE;
 				}
 
@@ -389,7 +389,7 @@ public:
 				// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 				int numpixels  = (header->height + 2 + header->height % 2) / 2;
 				int maxcolsize = sizeof(uint16_t) + (numpixels * 3) + 1;
-				if (mc.size() > (sizeof(Graphics::OldPatchHeader) + (header->width * maxcolsize)))
+				if (mc.size() > (sizeof(gfx::OldPatchHeader) + (header->width * maxcolsize)))
 				{
 					return MATCH_FALSE;
 				}
@@ -412,7 +412,7 @@ public:
 	int isThisFormat(MemChunk& mc) override
 	{
 		// Check size
-		if (mc.size() <= sizeof(Graphics::PatchHeader))
+		if (mc.size() <= sizeof(gfx::PatchHeader))
 			return MATCH_FALSE;
 
 		const uint8_t* data = mc.data();
@@ -432,22 +432,22 @@ public:
 			}
 		}
 
-		const Graphics::PatchHeader* header = (const Graphics::PatchHeader*)data;
+		const gfx::PatchHeader* header = (const gfx::PatchHeader*)data;
 
 		// Check header values are 'sane'
 		if (header->height > 0 && header->height < 256 && header->width > 0 && header->width < 384 && header->top > -200
 			&& header->top < 200 && header->left > -200 && header->left < 200)
 		{
-			uint16_t* col_offsets = (uint16_t*)((const uint8_t*)data + sizeof(Graphics::PatchHeader));
+			uint16_t* col_offsets = (uint16_t*)((const uint8_t*)data + sizeof(gfx::PatchHeader));
 
 			// Check there is room for needed column pointers
-			if (mc.size() < sizeof(Graphics::PatchHeader) + (header->width * sizeof(uint16_t)))
+			if (mc.size() < sizeof(gfx::PatchHeader) + (header->width * sizeof(uint16_t)))
 				return MATCH_FALSE;
 
 			// Check column pointers are within range
 			for (int a = 0; a < header->width; a++)
 			{
-				if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(Graphics::PatchHeader))
+				if (col_offsets[a] > mc.size() || col_offsets[a] < sizeof(gfx::PatchHeader))
 					return MATCH_FALSE;
 			}
 
@@ -455,7 +455,7 @@ public:
 			// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 			int numpixels  = (header->height + 2 + header->height % 2) / 2;
 			int maxcolsize = sizeof(uint16_t) + (numpixels * 3) + 1;
-			if (mc.size() > (sizeof(Graphics::PatchHeader) + (header->width * maxcolsize)))
+			if (mc.size() > (sizeof(gfx::PatchHeader) + (header->width * maxcolsize)))
 			{
 				return MATCH_FALSE;
 			}
@@ -520,11 +520,11 @@ public:
 	 */
 	int isThisFormat(MemChunk& mc) override
 	{
-		if (mc.size() < sizeof(Graphics::PatchHeader))
+		if (mc.size() < sizeof(gfx::PatchHeader))
 			return MATCH_FALSE;
 
-		const uint8_t*               data   = mc.data();
-		const Graphics::PatchHeader* header = (const Graphics::PatchHeader*)data;
+		const uint8_t*          data   = mc.data();
+		const gfx::PatchHeader* header = (const gfx::PatchHeader*)data;
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
@@ -532,7 +532,7 @@ public:
 			return MATCH_FALSE;
 
 		// Check the size matches
-		if (mc.size() != (sizeof(Graphics::PatchHeader) + (header->width * header->height)))
+		if (mc.size() != (sizeof(gfx::PatchHeader) + (header->width * header->height)))
 			return MATCH_FALSE;
 
 		return MATCH_TRUE;
@@ -549,12 +549,12 @@ public:
 	 */
 	int isThisFormat(MemChunk& mc) override
 	{
-		if (mc.size() < sizeof(Graphics::JagPicHeader))
+		if (mc.size() < sizeof(gfx::JagPicHeader))
 			return MATCH_FALSE;
 
-		const uint8_t*                data   = mc.data();
-		const Graphics::JagPicHeader* header = (const Graphics::JagPicHeader*)data;
-		int                           width, height, depth, size;
+		const uint8_t*           data   = mc.data();
+		const gfx::JagPicHeader* header = (const gfx::JagPicHeader*)data;
+		int                      width, height, depth, size;
 		width  = wxINT16_SWAP_ON_LE(header->width);
 		height = wxINT16_SWAP_ON_LE(header->height);
 		depth  = wxINT16_SWAP_ON_LE(header->depth);
@@ -567,7 +567,7 @@ public:
 		size = width * height;
 		if (depth == 2)
 			size >>= 1;
-		if (mc.size() < (sizeof(Graphics::JagPicHeader) + size))
+		if (mc.size() < (sizeof(gfx::JagPicHeader) + size))
 			return MATCH_FALSE;
 
 		return MATCH_TRUE;
@@ -651,11 +651,11 @@ public:
 
 	int isThisFormat(MemChunk& mc) override
 	{
-		if (mc.size() < sizeof(Graphics::PSXPicHeader))
+		if (mc.size() < sizeof(gfx::PSXPicHeader))
 			return MATCH_FALSE;
 
-		const uint8_t*                data   = mc.data();
-		const Graphics::PSXPicHeader* header = (const Graphics::PSXPicHeader*)data;
+		const uint8_t*           data   = mc.data();
+		const gfx::PSXPicHeader* header = (const gfx::PSXPicHeader*)data;
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
@@ -663,7 +663,7 @@ public:
 			return MATCH_FALSE;
 
 		// Check the size matches
-		size_t rawsize = (sizeof(Graphics::PSXPicHeader) + (header->width * header->height));
+		size_t rawsize = (sizeof(gfx::PSXPicHeader) + (header->width * header->height));
 		if (mc.size() < rawsize || mc.size() >= rawsize + 4)
 			return MATCH_FALSE;
 
@@ -682,11 +682,11 @@ public:
 		// A format created by Randy Heit and used by some crosshairs in ZDoom.
 		uint32_t size = mc.size();
 
-		if (size < sizeof(Graphics::IMGZHeader))
+		if (size < sizeof(gfx::IMGZHeader))
 			return MATCH_FALSE;
 
-		const uint8_t*              data   = mc.data();
-		const Graphics::IMGZHeader* header = (const Graphics::IMGZHeader*)data;
+		const uint8_t*         data   = mc.data();
+		const gfx::IMGZHeader* header = (const gfx::IMGZHeader*)data;
 
 		// Check signature
 		if (header->magic[0] != 'I' || header->magic[1] != 'M' || header->magic[2] != 'G' || header->magic[3] != 'Z')
@@ -889,11 +889,11 @@ public:
 		// If those were static functions, then I could
 		// just do this instead of such copypasta:
 		//	return DoomArahDataFormat::isThisFormat(mc);
-		if (mc.size() < sizeof(Graphics::PatchHeader))
+		if (mc.size() < sizeof(gfx::PatchHeader))
 			return MATCH_FALSE;
 
-		const uint8_t*               data   = mc.data();
-		const Graphics::PatchHeader* header = (const Graphics::PatchHeader*)data;
+		const uint8_t*          data   = mc.data();
+		const gfx::PatchHeader* header = (const gfx::PatchHeader*)data;
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
@@ -901,7 +901,7 @@ public:
 			return MATCH_FALSE;
 
 		// Check the size matches
-		if (mc.size() != (sizeof(Graphics::PatchHeader) + (header->width * header->height)))
+		if (mc.size() != (sizeof(gfx::PatchHeader) + (header->width * header->height)))
 			return MATCH_FALSE;
 
 		return MATCH_TRUE;
@@ -1011,17 +1011,24 @@ public:
 		size_t size = mc.size();
 		if (size < 16)
 			return MATCH_FALSE;
-		uint32_t version = mc.readL32(0);
+		// Check for "BUILDART" magic string (for Ion Fury)
+		size_t headeroffset = 0;
+		if (mc[0] == 'B' && mc[1] == 'U' && mc[2] == 'I' && mc[3] == 'L' && mc[4] == 'D' && mc[5] == 'A' && mc[6] == 'R'
+			&& mc[7] == 'T')
+		{
+			headeroffset = 8;
+		}
+		uint32_t version = mc.readL32(0 + headeroffset);
 		if (version != 1)
 			return MATCH_FALSE;
-		uint32_t firsttile = mc.readL32(8);
-		uint32_t lasttile  = mc.readL16(12);
+		uint32_t firsttile = mc.readL32(8 + headeroffset);
+		uint32_t lasttile  = mc.readL32(12 + headeroffset);
 		uint32_t tilecount = 1 + lasttile - firsttile;
-		size_t   datastart = (16 + (tilecount * 8));
+		size_t   datastart = (16 + headeroffset + (tilecount * 8));
 		if (size < datastart)
 			return MATCH_FALSE;
 		size_t gfxdatasize = 0;
-		size_t xofs        = 16;
+		size_t xofs        = 16 + headeroffset;
 		size_t yofs        = xofs + (tilecount << 1);
 		for (size_t a = 0; a < tilecount; ++a)
 		{
@@ -1145,25 +1152,25 @@ public:
 		const uint8_t* data = mc.data();
 
 		// Check size
-		if (mc.size() > sizeof(Graphics::ROTTPatchHeader))
+		if (mc.size() > sizeof(gfx::ROTTPatchHeader))
 		{
-			const Graphics::ROTTPatchHeader* header = (const Graphics::ROTTPatchHeader*)data;
+			const gfx::ROTTPatchHeader* header = (const gfx::ROTTPatchHeader*)data;
 
 			// Check header values are 'sane'
 			if (header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
 				&& header->top > -2000 && header->top < 2000 && header->left > -2000 && header->left < 2000)
 			{
-				uint16_t* col_offsets = (uint16_t*)((const uint8_t*)data + sizeof(Graphics::ROTTPatchHeader));
+				uint16_t* col_offsets = (uint16_t*)((const uint8_t*)data + sizeof(gfx::ROTTPatchHeader));
 
 				// Check there is room for needed column pointers
-				if (mc.size() < sizeof(Graphics::ROTTPatchHeader) + (header->width * sizeof(uint16_t)))
+				if (mc.size() < sizeof(gfx::ROTTPatchHeader) + (header->width * sizeof(uint16_t)))
 					return MATCH_FALSE;
 
 				// Check column pointers are within range
 				for (int a = 0; a < header->width; a++)
 				{
 					if (col_offsets[a] > mc.size()
-						|| col_offsets[a] < (header->width << 1) + sizeof(Graphics::ROTTPatchHeader))
+						|| col_offsets[a] < (header->width << 1) + sizeof(gfx::ROTTPatchHeader))
 						return MATCH_FALSE;
 				}
 
@@ -1171,7 +1178,7 @@ public:
 				// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 				int numpixels  = (header->height + 2 + header->height % 2) / 2;
 				int maxcolsize = sizeof(uint32_t) + (numpixels * 3) + 1;
-				if (mc.size() > (2 + sizeof(Graphics::ROTTPatchHeader) + (header->width * maxcolsize)))
+				if (mc.size() > (2 + sizeof(gfx::ROTTPatchHeader) + (header->width * maxcolsize)))
 				{
 					return MATCH_UNLIKELY; // This may still be good anyway
 				}
@@ -1195,25 +1202,25 @@ public:
 		const uint8_t* data = mc.data();
 
 		// Check size
-		if (mc.size() > sizeof(Graphics::ROTTPatchHeader))
+		if (mc.size() > sizeof(gfx::ROTTPatchHeader))
 		{
-			const Graphics::ROTTPatchHeader* header = (const Graphics::ROTTPatchHeader*)data;
+			const gfx::ROTTPatchHeader* header = (const gfx::ROTTPatchHeader*)data;
 
 			// Check header values are 'sane'
 			if (header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
 				&& header->top > -2000 && header->top < 2000 && header->left > -2000 && header->left < 2000)
 			{
-				uint16_t* col_offsets = (uint16_t*)(2 + (const uint8_t*)data + sizeof(Graphics::ROTTPatchHeader));
+				uint16_t* col_offsets = (uint16_t*)(2 + (const uint8_t*)data + sizeof(gfx::ROTTPatchHeader));
 
 				// Check there is room for needed column pointers
-				if (mc.size() < 2 + sizeof(Graphics::ROTTPatchHeader) + (header->width * sizeof(uint16_t)))
+				if (mc.size() < 2 + sizeof(gfx::ROTTPatchHeader) + (header->width * sizeof(uint16_t)))
 					return MATCH_FALSE;
 
 				// Check column pointers are within range
 				for (int a = 0; a < header->width; a++)
 				{
 					if (col_offsets[a] > mc.size()
-						|| col_offsets[a] < (header->width << 1) + sizeof(Graphics::ROTTPatchHeader))
+						|| col_offsets[a] < (header->width << 1) + sizeof(gfx::ROTTPatchHeader))
 						return MATCH_FALSE;
 				}
 
@@ -1221,7 +1228,7 @@ public:
 				// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 				int numpixels  = (header->height + 2 + header->height % 2) / 2;
 				int maxcolsize = sizeof(uint32_t) + (numpixels * 3) + 1;
-				if (mc.size() > (2 + sizeof(Graphics::ROTTPatchHeader) + (header->width * maxcolsize)))
+				if (mc.size() > (2 + sizeof(gfx::ROTTPatchHeader) + (header->width * maxcolsize)))
 				{
 					return MATCH_UNLIKELY; // This may still be good anyway
 				}
@@ -1269,11 +1276,11 @@ public:
 	 */
 	int isThisFormat(MemChunk& mc) override
 	{
-		if (mc.size() < sizeof(Graphics::PatchHeader))
+		if (mc.size() < sizeof(gfx::PatchHeader))
 			return MATCH_FALSE;
 
-		const uint8_t*               data   = mc.data();
-		const Graphics::PatchHeader* header = (const Graphics::PatchHeader*)data;
+		const uint8_t*          data   = mc.data();
+		const gfx::PatchHeader* header = (const gfx::PatchHeader*)data;
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 && header->width > 0 && header->width < 4096
@@ -1281,7 +1288,7 @@ public:
 			return MATCH_FALSE;
 
 		// Check the size matches
-		if (mc.size() != (sizeof(Graphics::PatchHeader) + (header->width * header->height)))
+		if (mc.size() != (sizeof(gfx::PatchHeader) + (header->width * header->height)))
 			return MATCH_FALSE;
 
 		return MATCH_TRUE;

@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class SeekableData
 {
 public:
@@ -25,3 +27,4 @@ public:
 		return var;
 	}
 };
+} // namespace slade

@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class ADatArchive : public Archive
 {
 public:
@@ -25,3 +27,4 @@ public:
 private:
 	static const int DIRENTRY = 144;
 };
+} // namespace slade

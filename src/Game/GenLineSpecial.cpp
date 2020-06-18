@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GenLineSpecial.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -130,10 +132,10 @@
 
 // -----------------------------------------------------------------------------
 //
-// BoomGenLineSpecial Namespace
+// genlinespecial Namespace
 //
 // -----------------------------------------------------------------------------
-namespace BoomGenLineSpecial
+namespace slade::genlinespecial
 {
 static const char* Triggers[] = {
 	"W1", "WR", "S1", "SR", "G1", "GR", "D1", "DR",
@@ -614,4 +616,4 @@ int generateSpecial(SpecialType type, const int* props)
 
 	return special;
 }
-} // namespace BoomGenLineSpecial
+} // namespace slade::genlinespecial

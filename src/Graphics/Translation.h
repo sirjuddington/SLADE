@@ -1,6 +1,8 @@
 #pragma once
 #include "Utility/Colour.h"
 
+namespace slade
+{
 class Translation;
 
 class TransRange
@@ -292,3 +294,4 @@ private:
 	string                         built_in_name_;
 	uint8_t                        desat_amount_ = 0;
 };
+} // namespace slade

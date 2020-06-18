@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #ifndef USE_SFML_RENDERWINDOW
+#include "App.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Drawing.h"
@@ -38,12 +39,15 @@
 #include "Utility/MathStuff.h"
 #include <FTGL/ftgl.h>
 
+using namespace slade;
+
+
 // -----------------------------------------------------------------------------
 //
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace Drawing
+namespace slade::drawing
 {
 FTFont* font_normal        = nullptr;
 FTFont* font_condensed     = nullptr;
@@ -51,7 +55,7 @@ FTFont* font_bold          = nullptr;
 FTFont* font_boldcondensed = nullptr;
 FTFont* font_mono          = nullptr;
 FTFont* font_small         = nullptr;
-} // namespace Drawing
+} // namespace slade::drawing
 
 
 // -----------------------------------------------------------------------------
@@ -59,20 +63,20 @@ FTFont* font_small         = nullptr;
 // External Variables
 //
 // -----------------------------------------------------------------------------
-namespace Drawing
+namespace slade::drawing
 {
 extern double  text_outline_width;
 extern ColRGBA outline_colour;
-} // namespace Drawing
+} // namespace slade::drawing
 EXTERN_CVAR(Int, gl_font_size)
 
 
 // -----------------------------------------------------------------------------
 //
-// Drawing Namespace Functions
+// drawing Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace Drawing
+namespace slade::drawing
 {
 // -----------------------------------------------------------------------------
 // Loads all needed fonts for rendering. Non-SFML implementation
@@ -114,11 +118,11 @@ int initFonts()
 	}
 
 	// Normal
-	auto entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
+	auto entry = app::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
 	if (entry)
 	{
 		font_normal = new FTTextureFont(entry->rawData(), entry->size());
-		font_normal->FaceSize(UI::scalePx(gl_font_size));
+		font_normal->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_normal->Error())
@@ -131,11 +135,11 @@ int initFonts()
 	}
 
 	// Condensed
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
+	entry = app::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
 	if (entry)
 	{
 		font_condensed = new FTTextureFont(entry->rawData(), entry->size());
-		font_condensed->FaceSize(UI::scalePx(gl_font_size));
+		font_condensed->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_condensed->Error())
@@ -148,11 +152,11 @@ int initFonts()
 	}
 
 	// Bold
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
+	entry = app::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
 	if (entry)
 	{
 		font_bold = new FTTextureFont(entry->rawData(), entry->size());
-		font_bold->FaceSize(UI::scalePx(gl_font_size));
+		font_bold->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_bold->Error())
@@ -165,11 +169,11 @@ int initFonts()
 	}
 
 	// Condensed bold
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
+	entry = app::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
 	if (entry)
 	{
 		font_boldcondensed = new FTTextureFont(entry->rawData(), entry->size());
-		font_boldcondensed->FaceSize(UI::scalePx(gl_font_size));
+		font_boldcondensed->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_boldcondensed->Error())
@@ -182,11 +186,11 @@ int initFonts()
 	}
 
 	// Monospace
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
+	entry = app::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
 	if (entry)
 	{
 		font_mono = new FTTextureFont(entry->rawData(), entry->size());
-		font_mono->FaceSize(UI::scalePx(gl_font_size));
+		font_mono->FaceSize(ui::scalePx(gl_font_size));
 
 		// Check it loaded ok
 		if (font_mono->Error())
@@ -199,11 +203,11 @@ int initFonts()
 	}
 
 	// Small
-	entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
+	entry = app::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
 	if (entry)
 	{
 		font_small = new FTTextureFont(entry->rawData(), entry->size());
-		font_small->FaceSize((UI::scalePx(gl_font_size) * 0.6) + 1);
+		font_small->FaceSize((ui::scalePx(gl_font_size) * 0.6) + 1);
 
 		// Check it loaded ok
 		if (font_small->Error())
@@ -247,13 +251,13 @@ FTFont* getFont(Font font)
 	default: return font_normal;
 	};
 }
-} // namespace Drawing
+} // namespace slade::drawing
 
 // -----------------------------------------------------------------------------
 // Draws [text] at [x,y]. If [bounds] is not null, the bounding coordinates of
 // the rendered text string are written to it.
 // -----------------------------------------------------------------------------
-void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
+void drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font font, Align alignment, Rectd* bounds)
 {
 	// Get desired font
 	auto ftgl_font = getFont(font);
@@ -271,7 +275,7 @@ void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font fo
 	if (alignment != Align::Left)
 	{
 		if (alignment == Align::Center)
-			xpos -= MathStuff::round(width * 0.5);
+			xpos -= math::round(width * 0.5);
 		else
 			xpos -= width;
 	}
@@ -291,7 +295,7 @@ void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font fo
 	if (text_outline_width > 0)
 	{
 		// Draw outline if set
-		OpenGL::setColour(outline_colour);
+		gl::setColour(outline_colour);
 		glTranslatef(-2.0f, -1.0f, 0.0f);
 		ftgl_font->Render(text.c_str(), -1);
 		glTranslatef(0.0f, 2.0f, 0.0f);
@@ -302,7 +306,7 @@ void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font fo
 		ftgl_font->Render(text.c_str(), -1);
 		glTranslatef(-2.0f, 1.0f, 0.0f);
 	}
-	OpenGL::setColour(colour);
+	gl::setColour(colour);
 	ftgl_font->Render(text.c_str(), -1);
 	glPopMatrix();
 }
@@ -310,7 +314,7 @@ void Drawing::drawText(const string& text, int x, int y, ColRGBA colour, Font fo
 // -----------------------------------------------------------------------------
 // Returns the width and height of [text] when drawn with [font]
 // -----------------------------------------------------------------------------
-Vec2d Drawing::textExtents(const string& text, Font font)
+Vec2d drawing::textExtents(const string& text, Font font)
 {
 	// Get desired font
 	auto ftgl_font = getFont(font);
@@ -328,12 +332,12 @@ Vec2d Drawing::textExtents(const string& text, Font font)
 // Sets or restores (depending on [set]) the OpenGL state for SFML text
 // rendering (does nothing for FTGL)
 // -----------------------------------------------------------------------------
-void Drawing::setTextState(bool set) {}
+void drawing::setTextState(bool set) {}
 
 // -----------------------------------------------------------------------------
 // When enabled, the OpenGL state is set for text rendering each time drawText
 // is called and restored after (SFML only, does nothing for FTGL)
 // -----------------------------------------------------------------------------
-void Drawing::enableTextStateReset(bool enable) {}
+void drawing::enableTextStateReset(bool enable) {}
 
 #endif

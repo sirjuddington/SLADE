@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 #ifdef WIN32
 class STabCtrl;
 typedef STabCtrl TabControl;
@@ -30,3 +32,4 @@ public:
 protected:
 	wxSize DoGetBestClientSize() const override;
 };
+} // namespace slade

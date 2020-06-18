@@ -1,6 +1,9 @@
 #pragma once
 
+namespace slade
+{
 class MapVertex;
+
 class VertexInfoOverlay
 {
 public:
@@ -11,6 +14,6 @@ public:
 	void draw(int bottom, int right, float alpha = 1.0f) const;
 
 private:
-	string info_;
-	bool   pos_frac_ = false;
+	vector<string> info_;
 };
+} // namespace slade

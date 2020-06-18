@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,8 @@
 #include "GrpArchive.h"
 #include "General/UI.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -59,7 +61,7 @@ uint32_t GrpArchive::getEntryOffset(ArchiveEntry* entry)
 	if (!checkEntry(entry))
 		return 0;
 
-	return (uint32_t)(int)entry->exProp("Offset");
+	return (uint32_t)entry->exProp<int>("Offset");
 }
 
 // -----------------------------------------------------------------------------
@@ -100,23 +102,23 @@ bool GrpArchive::open(MemChunk& mc)
 	// Check the header
 	if (string_view{ ken_magic } != "KenSilverman")
 	{
-		Log::error("GrpArchive::openFile: File {} has invalid header", filename_);
-		Global::error = "Invalid grp header";
+		log::error("GrpArchive::openFile: File {} has invalid header", filename_);
+		global::error = "Invalid grp header";
 		return false;
 	}
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// The header takes as much space as a directory entry
 	uint32_t entryoffset = 16 * (1 + num_lumps);
 
 	// Read the directory
-	UI::setSplashProgressMessage("Reading grp archive data");
+	ui::setSplashProgressMessage("Reading grp archive data");
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		char     name[13] = "";
@@ -137,9 +139,8 @@ bool GrpArchive::open(MemChunk& mc)
 		// the grpfile is invalid
 		if (offset + size > mc.size())
 		{
-			Log::error("GrpArchive::open: grp archive is invalid or corrupt");
-			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
+			log::error("GrpArchive::open: grp archive is invalid or corrupt");
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
@@ -155,11 +156,11 @@ bool GrpArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)num_lumps)));
+		ui::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		auto entry = entryAt(a);
@@ -184,11 +185,10 @@ bool GrpArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -265,7 +265,7 @@ bool GrpArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error("GrpArchive::loadEntryData: Failed to open grpfile {}", filename_);
+		log::error("GrpArchive::loadEntryData: Failed to open grpfile {}", filename_);
 		return false;
 	}
 
@@ -380,12 +380,12 @@ bool GrpArchive::isGrpArchive(const string& filename)
 // Console Commands
 //
 // -----------------------------------------------------------------------------
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "MainEditor/MainEditor.h"
 
 CONSOLE_COMMAND(lookupdat, 0, false)
 {
-	auto entry = MainEditor::currentEntry();
+	auto entry = maineditor::currentEntry();
 
 	if (!entry)
 		return;
@@ -467,7 +467,7 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 
 CONSOLE_COMMAND(palettedat, 0, false)
 {
-	auto entry = MainEditor::currentEntry();
+	auto entry = maineditor::currentEntry();
 
 	if (!entry)
 		return;
@@ -517,7 +517,7 @@ CONSOLE_COMMAND(palettedat, 0, false)
 
 CONSOLE_COMMAND(tablesdat, 0, false)
 {
-	auto entry = MainEditor::currentEntry();
+	auto entry = maineditor::currentEntry();
 
 	if (!entry)
 		return;

@@ -4,6 +4,8 @@
 #include "MapEditor/MapEditContext.h"
 #include "UI/Canvas/OGLCanvas.h"
 
+namespace slade
+{
 class MapCanvas : public OGLCanvas, public KeyBindHandler
 {
 public:
@@ -41,3 +43,4 @@ private:
 	void onRTimer(wxTimerEvent& e);
 	void onFocus(wxFocusEvent& e);
 };
+} // namespace slade

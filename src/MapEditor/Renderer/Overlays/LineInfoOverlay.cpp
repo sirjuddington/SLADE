@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -46,6 +46,8 @@
 #include "Utility/MathStuff.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -58,8 +60,8 @@
 // LineInfoOverlay class constructor
 // -----------------------------------------------------------------------------
 LineInfoOverlay::LineInfoOverlay() :
-	scale_{ Drawing::fontSize() / 12.0 },
-	text_box_{ "", Drawing::Font::Condensed, 100, int(16 * scale_) }
+	scale_{ drawing::fontSize() / 12.0 },
+	text_box_{ "", drawing::Font::Condensed, 100, int(16 * scale_) }
 {
 }
 
@@ -73,28 +75,28 @@ void LineInfoOverlay::update(MapLine* line)
 
 	// info.clear();
 	string info_text;
-	auto   map_format = MapEditor::editContext().mapDesc().format;
+	auto   map_format = mapeditor::editContext().mapDesc().format;
 
 	// General line info
-	if (Global::debug)
+	if (global::debug)
 		info_text += (fmt::format("Line #{} ({})\n", line->index(), line->objId()));
 	else
 		info_text += (fmt::format("Line #{}\n", line->index()));
-	info_text += (fmt::format("Length: {}\n", MathStuff::round(line->length())));
+	info_text += (fmt::format("Length: {}\n", math::round(line->length())));
 
 	// Line special
 	int as_id = line->special();
-	if (line->props().propertyExists("macro"))
+	if (line->hasProp("macro"))
 	{
 		int macro = line->intProperty("macro");
 		info_text += (fmt::format("Macro: #{}\n", macro));
 	}
 	else
-		info_text += (fmt::format("Special: {} ({})\n", as_id, Game::configuration().actionSpecialName(as_id)));
+		info_text += (fmt::format("Special: {} ({})\n", as_id, game::configuration().actionSpecialName(as_id)));
 
 	// Line trigger
 	if (map_format == MapFormat::Hexen || map_format == MapFormat::UDMF)
-		info_text += (fmt::format("Trigger: {}\n", Game::configuration().spacTriggerString(line, map_format)));
+		info_text += (fmt::format("Trigger: {}\n", game::configuration().spacTriggerString(line, map_format)));
 
 	// Line args (or sector tag)
 	if (map_format == MapFormat::Hexen || map_format == MapFormat::UDMF)
@@ -102,7 +104,7 @@ void LineInfoOverlay::update(MapLine* line)
 		string argxstr[2];
 		argxstr[0]    = line->stringProperty("arg0str");
 		argxstr[1]    = line->stringProperty("arg1str");
-		string argstr = Game::configuration().actionSpecial(as_id).argSpec().stringDesc(line->args().data(), argxstr);
+		string argstr = game::configuration().actionSpecial(as_id).argSpec().stringDesc(line->args().data(), argxstr);
 		if (!argstr.empty())
 			info_text += (fmt::format("{}", argstr));
 		else
@@ -113,7 +115,7 @@ void LineInfoOverlay::update(MapLine* line)
 
 	// Line flags
 	if (map_format != MapFormat::UDMF)
-		info_text += (fmt::format("\nFlags: {}", Game::configuration().lineFlagsString(line)));
+		info_text += (fmt::format("\nFlags: {}", game::configuration().lineFlagsString(line)));
 
 	// Setup text box
 	text_box_.setText(info_text);
@@ -126,7 +128,7 @@ void LineInfoOverlay::update(MapLine* line)
 	if (s)
 	{
 		side_front_.exists = true;
-		if (Global::debug)
+		if (global::debug)
 			side_front_.info = fmt::format(
 				"Front Side #{} ({}) (Sector {})", s->index(), s->objId(), s->sector()->index());
 		else
@@ -147,7 +149,7 @@ void LineInfoOverlay::update(MapLine* line)
 	if (s)
 	{
 		side_back_.exists = true;
-		if (Global::debug)
+		if (global::debug)
 			side_back_.info = fmt::format(
 				"Back Side #{} ({}) (Sector {})", s->index(), s->objId(), s->sector()->index());
 		else
@@ -191,8 +193,8 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 	int height = text_box_.height() + 4;
 
 	// Get colours
-	ColRGBA col_bg = ColourConfiguration::colour("map_overlay_background");
-	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	ColRGBA col_bg = colourconfig::colour("map_overlay_background");
+	ColRGBA col_fg = colourconfig::colour("map_overlay_foreground");
 	col_fg.a       = col_fg.a * alpha;
 	col_bg.a       = col_bg.a * alpha;
 	ColRGBA col_border(0, 0, 0, 140);
@@ -209,13 +211,13 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 		n_side_panels++;
 
 	// Draw overlay background
-	scale_             = Drawing::fontSize() / 12.0;
+	scale_             = drawing::fontSize() / 12.0;
 	int tex_box_size   = 80 * scale_;
 	int sinf_size      = ((tex_box_size * 3) + 16);
 	int main_panel_end = right - (n_side_panels * (sinf_size + 2));
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glLineWidth(1.0f);
-	Drawing::drawBorderedRect(0, bottom - height - 4, main_panel_end, bottom + 2, col_bg, col_border);
+	drawing::drawBorderedRect(0, bottom - height - 4, main_panel_end, bottom + 2, col_bg, col_border);
 
 	// Draw info text lines
 	text_box_.setLineHeight(16 * scale_);
@@ -227,7 +229,7 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 	{
 		// Background
 		glDisable(GL_TEXTURE_2D);
-		Drawing::drawBorderedRect(x, bottom - height - 4, x + sinf_size, bottom + 2, col_bg, col_border);
+		drawing::drawBorderedRect(x, bottom - height - 4, x + sinf_size, bottom + 2, col_bg, col_border);
 
 		drawSide(bottom - 4, right, alpha, side_front_, x);
 		x -= (sinf_size + 2);
@@ -236,7 +238,7 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 	{
 		// Background
 		glDisable(GL_TEXTURE_2D);
-		Drawing::drawBorderedRect(x, bottom - height - 4, x + sinf_size, bottom + 2, col_bg, col_border);
+		drawing::drawBorderedRect(x, bottom - height - 4, x + sinf_size, bottom + 2, col_bg, col_border);
 
 		drawSide(bottom - 4, right, alpha, side_back_, x);
 	}
@@ -251,14 +253,14 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 void LineInfoOverlay::drawSide(int bottom, int right, float alpha, Side& side, int xstart)
 {
 	// Get colours
-	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	ColRGBA col_fg = colourconfig::colour("map_overlay_foreground");
 	col_fg.a       = col_fg.a * alpha;
 
 	// Index and sector index
-	Drawing::drawText(side.info, xstart + 4, bottom - (32 * scale_), col_fg, Drawing::Font::Condensed);
+	drawing::drawText(side.info, xstart + 4, bottom - (32 * scale_), col_fg, drawing::Font::Condensed);
 
 	// Texture offsets
-	Drawing::drawText(side.offsets, xstart + 4, bottom - (16 * scale_), col_fg, Drawing::Font::Condensed);
+	drawing::drawText(side.offsets, xstart + 4, bottom - (16 * scale_), col_fg, drawing::Font::Condensed);
 
 	// Textures
 	int tex_box_size = 80 * scale_;
@@ -283,45 +285,45 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string_view texture
 	int  line_height  = 16 * scale_;
 
 	// Get colours
-	ColRGBA col_fg = ColourConfiguration::colour("map_overlay_foreground");
+	ColRGBA col_fg = colourconfig::colour("map_overlay_foreground");
 	col_fg.a       = col_fg.a * alpha;
 
 	// Get texture
-	auto tex = MapEditor::textureManager()
-				   .texture(texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats))
+	auto tex = mapeditor::textureManager()
+				   .texture(texture, game::configuration().featureSupported(game::Feature::MixTexFlats))
 				   .gl_id;
 
 	// Valid texture
-	if (texture != MapSide::TEX_NONE && tex != OpenGL::Texture::missingTexture())
+	if (texture != MapSide::TEX_NONE && tex != gl::Texture::missingTexture())
 	{
 		// Draw background
 		glEnable(GL_TEXTURE_2D);
-		OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
+		gl::setColour(255, 255, 255, 255 * alpha, gl::Blend::Normal);
 		glPushMatrix();
 		glTranslated(x, y - tex_box_size - line_height, 0);
-		Drawing::drawTextureTiled(OpenGL::Texture::backgroundTexture(), tex_box_size, tex_box_size);
+		drawing::drawTextureTiled(gl::Texture::backgroundTexture(), tex_box_size, tex_box_size);
 		glPopMatrix();
 
 		// Draw texture
-		OpenGL::setColour(255, 255, 255, 255 * alpha, OpenGL::Blend::Normal);
-		Drawing::drawTextureWithin(tex, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0);
+		gl::setColour(255, 255, 255, 255 * alpha, gl::Blend::Normal);
+		drawing::drawTextureWithin(tex, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0);
 
 		glDisable(GL_TEXTURE_2D);
 
 		// Draw outline
-		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, OpenGL::Blend::Normal);
+		gl::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, gl::Blend::Normal);
 		glDisable(GL_LINE_SMOOTH);
-		Drawing::drawRect(x, y - tex_box_size - line_height, x + tex_box_size, y - line_height);
+		drawing::drawRect(x, y - tex_box_size - line_height, x + tex_box_size, y - line_height);
 	}
 
 	// Unknown texture
-	else if (tex == OpenGL::Texture::missingTexture() && texture != MapSide::TEX_NONE)
+	else if (tex == gl::Texture::missingTexture() && texture != MapSide::TEX_NONE)
 	{
 		// Draw unknown icon
-		auto icon = MapEditor::textureManager().editorImage("thing/unknown").gl_id;
+		auto icon = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
 		glEnable(GL_TEXTURE_2D);
-		OpenGL::setColour(180, 0, 0, 255 * alpha, OpenGL::Blend::Normal);
-		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);
+		gl::setColour(180, 0, 0, 255 * alpha, gl::Blend::Normal);
+		drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);
 
 		// Set colour to red (for text)
 		col_fg = col_fg.ampf(1.0f, 0.0f, 0.0f, 1.0f);
@@ -331,10 +333,10 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string_view texture
 	else if (required)
 	{
 		// Draw missing icon
-		auto icon = MapEditor::textureManager().editorImage("thing/minus").gl_id;
+		auto icon = mapeditor::textureManager().editorImage("thing/minus").gl_id;
 		glEnable(GL_TEXTURE_2D);
-		OpenGL::setColour(180, 0, 0, 255 * alpha, OpenGL::Blend::Normal);
-		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);
+		gl::setColour(180, 0, 0, 255 * alpha, gl::Blend::Normal);
+		drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);
 
 		// Set colour to red (for text)
 		col_fg = col_fg.ampf(1.0f, 0.0f, 0.0f, 1.0f);
@@ -349,6 +351,6 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string_view texture
 	else
 		tex_str = fmt::format("{}:{}", pos, texture);
 
-	Drawing::drawText(
-		tex_str, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::Font::Condensed, Drawing::Align::Center);
+	drawing::drawText(
+		tex_str, x + (tex_box_size * 0.5), y - line_height, col_fg, drawing::Font::Condensed, drawing::Align::Center);
 }

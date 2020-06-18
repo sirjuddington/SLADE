@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,8 @@
 #include "STabCtrl.h"
 #include "General/UI.h"
 #include "UI/SAuiTabArt.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -74,7 +76,7 @@ STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int h
 
 	// Setup tabs
 	SetArtProvider(new SAuiTabArt(close_buttons, main_tabs));
-	wxAuiNotebook::SetTabCtrlHeight(UI::scalePx(height));
+	wxAuiNotebook::SetTabCtrlHeight(ui::scalePx(height));
 }
 
 // -----------------------------------------------------------------------------

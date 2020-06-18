@@ -1,14 +1,16 @@
 #pragma once
 
 #include "Archive/Archive.h"
-#include "General/ListenerAnnouncer.h"
 #include "General/SAction.h"
 #include "VirtualListView.h"
 
 wxDECLARE_EVENT(EVT_AEL_DIR_CHANGED, wxCommandEvent);
 
+namespace slade
+{
 class UndoManager;
-class ArchiveEntryList : public VirtualListView, public Listener, public SActionHandler
+
+class ArchiveEntryList : public VirtualListView, public SActionHandler
 {
 public:
 	ArchiveEntryList(wxWindow* parent);
@@ -33,6 +35,7 @@ public:
 	bool setDir(const shared_ptr<ArchiveDir>& dir);
 
 	void setEntriesAutoUpdate(bool update) { entries_update_ = update; }
+	void updateEntries();
 
 	// Sorting
 	void sortItems() override;
@@ -46,8 +49,6 @@ public:
 
 	// Label editing
 	void labelEdited(int col, int index, const wxString& new_label) override;
-
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
 
 	// SAction handler
 	bool handleAction(string_view id) override;
@@ -76,5 +77,9 @@ private:
 	int                      col_type_       = 0;
 	bool                     entries_update_ = true;
 
+	// Signal connections
+	sigslot::scoped_connection sc_archive_modified_;
+
 	int entrySize(long index) const;
 };
+} // namespace slade

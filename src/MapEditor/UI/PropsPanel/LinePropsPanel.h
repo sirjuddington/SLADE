@@ -3,6 +3,8 @@
 #include "PropsPanelBase.h"
 #include "UI/Controls/STabCtrl.h"
 
+namespace slade
+{
 class MapObject;
 class MapObjectPropsPanel;
 class ActionSpecialPanel;
@@ -42,3 +44,4 @@ private:
 	};
 	vector<FlagHolder> flags_;
 };
+} // namespace slade

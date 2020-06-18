@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class MapEditContext;
 
 class LineDraw
@@ -34,3 +36,4 @@ private:
 	MapEditContext& context_;
 	State           state_current_ = State::Line;
 };
+} // namespace slade

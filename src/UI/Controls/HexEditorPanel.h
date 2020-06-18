@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class HexTable : public wxGridTableBase
 {
 public:
@@ -80,3 +82,4 @@ private:
 	void onBtnGoToOffset(wxCommandEvent& e);
 	void onRBViewType(wxCommandEvent& e);
 };
+} // namespace slade

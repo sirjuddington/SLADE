@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class WolfArchive : public TreelessArchive
 {
 public:
@@ -50,3 +52,4 @@ private:
 	uint16_t spritestart_;
 	uint16_t soundstart_;
 };
+} // namespace slade

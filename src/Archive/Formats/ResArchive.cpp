@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,8 @@
 #include "ResArchive.h"
 #include "General/UI.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -58,7 +60,7 @@ uint32_t ResArchive::getEntryOffset(ArchiveEntry* entry)
 	if (!checkEntry(entry))
 		return 0;
 
-	return (uint32_t)(int)entry->exProp("Offset");
+	return (uint32_t)entry->exProp<int>("Offset");
 }
 
 // -----------------------------------------------------------------------------
@@ -81,15 +83,15 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 {
 	if (!parent)
 	{
-		Log::error("ReadDir: No parent node");
-		Global::error = "Archive is invalid and/or corrupt";
+		log::error("ReadDir: No parent node");
+		global::error = "Archive is invalid and/or corrupt";
 		return false;
 	}
 	mc.seek(dir_offset, SEEK_SET);
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)d / (float)num_lumps));
+		ui::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		char     magic[4] = "";
@@ -108,8 +110,8 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 		// Check the identifier
 		if (magic[0] != 'R' || magic[1] != 'e' || magic[2] != 'S' || magic[3] != 0)
 		{
-			Log::error("ResArchive::readDir: Entry {} ({}@0x{:x}) has invalid directory entry", name, size, offset);
-			Global::error = "Archive is invalid and/or corrupt";
+			log::error("ResArchive::readDir: Entry {} ({}@0x{:x}) has invalid directory entry", name, size, offset);
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
@@ -120,27 +122,26 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 
 		mc.read(&dumze, 2);
 		if (dumze)
-			Log::info("Flag guard not null for entry {}", name);
+			log::info("Flag guard not null for entry {}", name);
 		mc.read(&flags, 1);
 		if (flags != 1 && flags != 17)
-			Log::info("Unknown flag value for entry {}", name);
+			log::info("Unknown flag value for entry {}", name);
 		mc.read(&dumzero1, 4);
 		if (dumzero1)
-			Log::info("Near-end values not set to zero for entry {}", name);
+			log::info("Near-end values not set to zero for entry {}", name);
 		mc.read(&dumff, 2);
 		if (dumff != 0xFFFF)
-			Log::info("Dummy set to a non-FF value for entry {}", name);
+			log::info("Dummy set to a non-FF value for entry {}", name);
 		mc.read(&dumzero2, 4);
 		if (dumzero2)
-			Log::info("Trailing values not set to zero for entry {}", name);
+			log::info("Trailing values not set to zero for entry {}", name);
 
 		// If the lump data goes past the end of the file,
 		// the resfile is invalid
 		if (offset + size > mc.size())
 		{
-			Log::error("ResArchive::readDirectory: Res archive is invalid or corrupt, offset overflow");
-			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
+			log::error("ResArchive::readDirectory: Res archive is invalid or corrupt, offset overflow");
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
@@ -166,7 +167,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 			auto ndir = createDir(name, parent);
 			if (ndir)
 			{
-				UI::setSplashProgressMessage(fmt::format("Reading res archive data: {} directory", name));
+				ui::setSplashProgressMessage(fmt::format("Reading res archive data: {} directory", name));
 				// Save offset to restore it once the recursion is done
 				size_t myoffset = mc.currentPos();
 				readDirectory(mc, d_o, n_l, ndir);
@@ -219,38 +220,37 @@ bool ResArchive::open(MemChunk& mc)
 	// Check the header
 	if (magic[0] != 'R' || magic[1] != 'e' || magic[2] != 's' || magic[3] != '!')
 	{
-		Log::error("ResArchive::openFile: File {} has invalid header", filename_);
-		Global::error = "Invalid res header";
+		log::error("ResArchive::openFile: File {} has invalid header", filename_);
+		global::error = "Invalid res header";
 		return false;
 	}
 
 	if (dir_size % RESDIRENTRYSIZE)
 	{
-		Log::error("ResArchive::openFile: File {} has invalid directory size", filename_);
-		Global::error = "Invalid res directory size";
+		log::error("ResArchive::openFile: File {} has invalid directory size", filename_);
+		global::error = "Invalid res directory size";
 		return false;
 	}
 	uint32_t num_lumps = dir_size / RESDIRENTRYSIZE;
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
-	UI::setSplashProgressMessage("Reading res archive data");
+	ui::setSplashProgressMessage("Reading res archive data");
 	if (!readDirectory(mc, dir_offset, num_lumps, rootDir()))
 		return false;
 
 	// Detect maps (will detect map entry types)
-	UI::setSplashProgressMessage("Detecting maps");
+	ui::setSplashProgressMessage("Detecting maps");
 	detectMaps();
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -334,7 +334,7 @@ bool ResArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error("ResArchive::loadEntryData: Failed to open resfile {}", filename_);
+		log::error("ResArchive::loadEntryData: Failed to open resfile {}", filename_);
 		return false;
 	}
 

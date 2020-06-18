@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,6 +39,8 @@
 #include "Utility/StringUtils.h"
 #include "WadArchive.h"
 #include <fstream>
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -86,8 +88,8 @@ struct ZipFileHeader
 // -----------------------------------------------------------------------------
 ZipArchive::~ZipArchive()
 {
-	if (FileUtil::fileExists(temp_file_))
-		FileUtil::removeFile(temp_file_);
+	if (fileutil::fileExists(temp_file_))
+		fileutil::removeFile(temp_file_);
 }
 
 // -----------------------------------------------------------------------------
@@ -97,21 +99,21 @@ ZipArchive::~ZipArchive()
 bool ZipArchive::open(string_view filename)
 {
 	// Check the file exists
-	if (!FileUtil::fileExists(filename))
+	if (!fileutil::fileExists(filename))
 	{
-		Global::error = "File does not exist";
+		global::error = "File does not exist";
 		return false;
 	}
 
 	// Copy the zip to a temp file (for use when saving)
 	generateTempFileName(filename);
-	FileUtil::copyFile(filename, temp_file_);
+	fileutil::copyFile(filename, temp_file_);
 
 	// Open the file
-	wxFFileInputStream in(WxUtils::strFromView(filename));
+	wxFFileInputStream in(wxutil::strFromView(filename));
 	if (!in.IsOk())
 	{
-		Global::error = "Unable to open file";
+		global::error = "Unable to open file";
 		return false;
 	}
 
@@ -119,35 +121,34 @@ bool ZipArchive::open(string_view filename)
 	wxZipInputStream zip(in);
 	if (!zip.IsOk())
 	{
-		Global::error = "Invalid zip file";
+		global::error = "Invalid zip file";
 		return false;
 	}
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Go through all zip entries
 	int  entry_index = 0;
 	auto zip_entry   = zip.GetNextEntry();
-	UI::setSplashProgressMessage("Reading zip data");
+	ui::setSplashProgressMessage("Reading zip data");
 	while (zip_entry)
 	{
-		UI::setSplashProgress(-1.0f);
+		ui::setSplashProgress(-1.0f);
 		if (zip_entry->GetMethod() != wxZIP_METHOD_DEFLATE && zip_entry->GetMethod() != wxZIP_METHOD_STORE)
 		{
-			Global::error = "Unsupported zip compression method";
-			setMuted(false);
+			global::error = "Unsupported zip compression method";
 			return false;
 		}
 
 		if (!zip_entry->IsDir())
 		{
 			// Get the entry name as a Path (so we can break it up)
-			StrUtil::Path fn(WxUtils::strToView(zip_entry->GetName(wxPATH_UNIX)));
+			strutil::Path fn(wxutil::strToView(zip_entry->GetName(wxPATH_UNIX)));
 
 			// Create entry
 			auto new_entry = std::make_shared<ArchiveEntry>(
-				Misc::fileNameToLumpName(fn.fileName()), zip_entry->GetSize());
+				misc::fileNameToLumpName(fn.fileName()), zip_entry->GetSize());
 
 			// Setup entry info
 			new_entry->setLoaded(false);
@@ -178,15 +179,14 @@ bool ZipArchive::open(string_view filename)
 			}
 			else
 			{
-				Global::error = fmt::format("Entry too large: {} is {} mb", fn.fullPath(), ze_size / (1 << 20));
-				setMuted(false);
+				global::error = fmt::format("Entry too large: {} is {} mb", fn.fullPath(), ze_size / (1 << 20));
 				return false;
 			}
 		}
 		else
 		{
 			// Zip entry is a directory, add it to the directory tree
-			StrUtil::Path fn(WxUtils::strToView(zip_entry->GetName(wxPATH_UNIX)));
+			strutil::Path fn(wxutil::strToView(zip_entry->GetName(wxPATH_UNIX)));
 			createDir(fn.path(true));
 		}
 
@@ -195,7 +195,7 @@ bool ZipArchive::open(string_view filename)
 		zip_entry = zip.GetNextEntry();
 		entry_index++;
 	}
-	UI::updateSplash();
+	ui::updateSplash();
 
 	// Set all entries/directories to unmodified
 	vector<ArchiveEntry*> entry_list;
@@ -204,14 +204,14 @@ bool ZipArchive::open(string_view filename)
 		entry->setState(ArchiveEntry::State::Unmodified);
 
 	// Enable announcements
-	setMuted(false);
+	sig_blocker.unblock();
 
 	// Setup variables
 	filename_ = filename;
 	setModified(false);
 	on_disk_ = true;
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -223,14 +223,14 @@ bool ZipArchive::open(string_view filename)
 bool ZipArchive::open(MemChunk& mc)
 {
 	// Write the MemChunk to a temp file
-	auto tempfile = App::path("slade-temp-open.zip", App::Dir::Temp);
+	auto tempfile = app::path("slade-temp-open.zip", app::Dir::Temp);
 	mc.exportFile(tempfile);
 
 	// Load the file
 	bool success = open(tempfile);
 
 	// Clean up
-	FileUtil::removeFile(tempfile);
+	fileutil::removeFile(tempfile);
 
 	return success;
 }
@@ -244,7 +244,7 @@ bool ZipArchive::write(MemChunk& mc, bool update)
 	bool success = false;
 
 	// Write to a temporary file
-	auto tempfile = App::path("slade-temp-write.zip", App::Dir::Temp);
+	auto tempfile = app::path("slade-temp-write.zip", app::Dir::Temp);
 	if (write(tempfile, true))
 	{
 		// Load file into MemChunk
@@ -264,10 +264,10 @@ bool ZipArchive::write(MemChunk& mc, bool update)
 bool ZipArchive::write(string_view filename, bool update)
 {
 	// Open the file
-	wxFFileOutputStream out(WxUtils::strFromView(filename));
+	wxFFileOutputStream out(wxutil::strFromView(filename));
 	if (!out.IsOk())
 	{
-		Global::error = "Unable to open file for saving. Make sure it isn't in use by another program.";
+		global::error = "Unable to open file for saving. Make sure it isn't in use by another program.";
 		return false;
 	}
 
@@ -275,7 +275,7 @@ bool ZipArchive::write(string_view filename, bool update)
 	wxZipOutputStream zip(out, 9);
 	if (!zip.IsOk())
 	{
-		Global::error = "Unable to create zip for saving";
+		global::error = "Unable to create zip for saving";
 		return false;
 	}
 
@@ -286,7 +286,7 @@ bool ZipArchive::write(string_view filename, bool update)
 	unique_ptr<wxFFileInputStream> in;
 	unique_ptr<wxZipInputStream>   inzip;
 	vector<wxZipEntry*>            c_entries;
-	if (FileUtil::fileExists(temp_file_))
+	if (fileutil::fileExists(temp_file_))
 	{
 		in    = std::make_unique<wxFFileInputStream>(temp_file_);
 		inzip = std::make_unique<wxZipInputStream>(*in);
@@ -323,10 +323,10 @@ bool ZipArchive::write(string_view filename, bool update)
 
 		// Get entry zip index
 		int index = -1;
-		if (entries[a]->exProps().propertyExists("ZipIndex"))
-			index = entries[a]->exProp("ZipIndex");
+		if (entries[a]->exProps().contains("ZipIndex"))
+			index = entries[a]->exProp<int>("ZipIndex");
 
-		auto saname = Misc::lumpNameToFileName(entries[a]->name());
+		auto saname = misc::lumpNameToFileName(entries[a]->name());
 		if (!inzip || entries[a]->state() != ArchiveEntry::State::Unmodified || index < 0
 			|| index >= inzip->GetTotalEntries())
 		{
@@ -359,7 +359,7 @@ bool ZipArchive::write(string_view filename, bool update)
 	// Update the temp file
 	if (temp_file_.empty())
 		generateTempFileName(filename);
-	FileUtil::copyFile(filename, temp_file_);
+	fileutil::copyFile(filename, temp_file_);
 
 	return true;
 }
@@ -374,7 +374,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Check that the entry belongs to this archive
 	if (entry->parent() != this)
 	{
-		Log::error("ZipArchive::loadEntryData: Entry {} attempting to load data from wrong parent!", entry->name());
+		log::error("ZipArchive::loadEntryData: Entry {} attempting to load data from wrong parent!", entry->name());
 		return false;
 	}
 
@@ -388,11 +388,11 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 
 	// Check that the entry has a zip index
 	int zip_index;
-	if (entry->exProps().propertyExists("ZipIndex"))
-		zip_index = entry->exProp("ZipIndex");
+	if (entry->exProps().contains("ZipIndex"))
+		zip_index = entry->exProp<int>("ZipIndex");
 	else
 	{
-		Log::error("ZipArchive::loadEntryData: Entry {} has no zip entry index!", entry->name());
+		log::error("ZipArchive::loadEntryData: Entry {} has no zip entry index!", entry->name());
 		return false;
 	}
 
@@ -400,7 +400,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	wxFFileInputStream in(filename_);
 	if (!in.IsOk())
 	{
-		Log::error("ZipArchive::loadEntryData: Unable to open zip file \"{}\"!", filename_);
+		log::error("ZipArchive::loadEntryData: Unable to open zip file \"{}\"!", filename_);
 		return false;
 	}
 
@@ -408,7 +408,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	wxZipInputStream zip(in);
 	if (!zip.IsOk())
 	{
-		Log::error("ZipArchive::loadEntryData: Invalid zip file \"{}\"!", filename_);
+		log::error("ZipArchive::loadEntryData: Invalid zip file \"{}\"!", filename_);
 		return false;
 	}
 
@@ -426,7 +426,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Abort if entry doesn't exist in zip (some kind of error)
 	if (!zentry)
 	{
-		Log::error("Error: ZipEntry for entry \"{}\" does not exist in zip", entry->name());
+		log::error("Error: ZipEntry for entry \"{}\" does not exist in zip", entry->name());
 		return false;
 	}
 
@@ -460,7 +460,7 @@ shared_ptr<ArchiveEntry> ZipArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr);
 
 	// Get/Create namespace dir
-	auto dir = createDir(StrUtil::lower(add_namespace));
+	auto dir = createDir(strutil::lower(add_namespace));
 
 	// Add the entry to the dir
 	return Archive::addEntry(entry, 0xFFFFFFFF, dir.get());
@@ -643,8 +643,8 @@ vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 // -----------------------------------------------------------------------------
 void ZipArchive::generateTempFileName(string_view filename)
 {
-	StrUtil::Path tfn(filename);
-	temp_file_ = App::path(tfn.fileName(), App::Dir::Temp);
+	strutil::Path tfn(filename);
+	temp_file_ = app::path(tfn.fileName(), app::Dir::Temp);
 	if (wxFileExists(temp_file_))
 	{
 		// Make sure we don't overwrite an existing temp file
@@ -652,7 +652,7 @@ void ZipArchive::generateTempFileName(string_view filename)
 		int n = 1;
 		while (true)
 		{
-			temp_file_ = App::path(fmt::format("{}.{}", tfn.fileName(), n), App::Dir::Temp);
+			temp_file_ = app::path(fmt::format("{}.{}", tfn.fileName(), n), app::Dir::Temp);
 			if (!wxFileExists(temp_file_))
 				break;
 

@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class GfxCanvas;
 class CTextureCanvas;
 
@@ -27,3 +29,4 @@ private:
 
 	void setup();
 };
+} // namespace slade

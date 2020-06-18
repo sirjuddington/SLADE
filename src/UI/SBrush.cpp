@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,8 +31,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SBrush.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -59,19 +62,19 @@ vector<unique_ptr<SBrush>> brushes;
 // -----------------------------------------------------------------------------
 SBrush::SBrush(const wxString& name) : name_{ name }, icon_{ name.AfterFirst('_') }
 {
-	auto res = App::archiveManager().programResourceArchive();
+	auto res = app::archiveManager().programResourceArchive();
 	if (res == nullptr)
 		return;
 	auto file = res->entryAtPath(fmt::format("icons/general/{}.png", icon_.ToStdString()));
 	if (file == nullptr || file->size() == 0)
 	{
-		Log::error(2, wxString::Format("error, no file at icons/general/%s.png", icon_));
+		log::error(2, wxString::Format("error, no file at icons/general/%s.png", icon_));
 		return;
 	}
 	image_ = std::make_unique<SImage>();
 	if (!image_->open(file->data(), 0, "png"))
 	{
-		Log::error(2, wxString::Format("couldn't load image data for icons/general/%s.png", icon_));
+		log::error(2, wxString::Format("couldn't load image data for icons/general/%s.png", icon_));
 		return;
 	}
 	image_->convertAlphaMap(SImage::AlphaSource::Alpha);

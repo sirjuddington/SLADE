@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,8 @@
 #include "Graphics/Icons.h"
 #include "MapEditor/UI/MapCanvas.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -45,14 +47,19 @@
 // -----------------------------------------------------------------------------
 // SIconButton class constructor
 // -----------------------------------------------------------------------------
-SIconButton::SIconButton(wxWindow* parent, Icons::Type icon_type, const wxString& icon, const wxString& tooltip) :
+SIconButton::SIconButton(
+	wxWindow*       parent,
+	icons::Type     icon_type,
+	const wxString& icon,
+	const wxString& tooltip,
+	int             icon_size) :
 	wxBitmapButton{ parent, -1, wxNullBitmap }
 {
 	// Create icon
-	auto bmp = Icons::getIcon(icon_type, icon.ToStdString(), UI::scaleFactor() > 1.);
+	auto size = ui::scalePx(icon_size);
+	auto bmp  = icons::getIcon(icon_type, icon.ToStdString(), size);
 
 	// Scale icon if required
-	auto size = UI::scalePx(16);
 	if (bmp.GetWidth() != size)
 	{
 		auto img = bmp.ConvertToImage();

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -35,7 +35,14 @@
 #include "ShowItemDialog.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
 
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 namespace
 {
 vector<MapObject::Type> obj_types{ MapObject::Type::Vertex,
@@ -61,8 +68,8 @@ ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show It
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
-	auto gb_sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	sizer->Add(gb_sizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::padLarge());
+	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
+	sizer->Add(gb_sizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
 
 	// Object type
 	wxString types[] = { "Vertex", "Line", "Side", "Sector", "Thing" };
@@ -76,12 +83,12 @@ ShowItemDialog::ShowItemDialog(wxWindow* parent) : wxDialog(parent, -1, "Show It
 	gb_sizer->Add(text_index_, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
 
 	// Dialog buttons
-	sizer->AddSpacer(UI::pad());
-	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
+	sizer->AddSpacer(ui::pad());
+	sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 
 	// Init layout
 	gb_sizer->AddGrowableCol(1, 1);
-	SetInitialSize(WxUtils::scaledSize(300, -1));
+	SetInitialSize(wxutil::scaledSize(300, -1));
 	CenterOnParent();
 	wxWindowBase::Layout();
 	text_index_->SetFocus();

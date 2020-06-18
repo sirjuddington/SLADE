@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade
+{
 class NumberTextCtrl : public wxTextCtrl
 {
 public:
@@ -26,3 +28,4 @@ private:
 	void onChar(wxKeyEvent& e);
 	void onChanged(wxCommandEvent& e);
 };
+} // namespace slade

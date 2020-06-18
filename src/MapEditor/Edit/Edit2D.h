@@ -5,6 +5,8 @@
 #include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObject/MapThing.h"
 
+namespace slade
+{
 class MapObject;
 class MapEditContext;
 
@@ -29,7 +31,7 @@ public:
 	void joinSectors(bool remove_lines) const;
 
 	// Things
-	void changeThingType() const;
+	void changeThingType();
 	void thingQuickAngle(Vec2d mouse_pos) const;
 
 	// Copy / Paste
@@ -62,3 +64,4 @@ private:
 	bool      sector_copied_ = false;
 	bool      thing_copied_  = false;
 };
+} // namespace slade

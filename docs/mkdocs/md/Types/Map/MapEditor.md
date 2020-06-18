@@ -1,4 +1,5 @@
-<article-head>MapEditor</article-head>
+<subhead>Type</subhead>
+<header>MapEditor</header>
 
 Map editing context for the currently open map editor in SLADE.
 
@@ -6,9 +7,9 @@ Map editing context for the currently open map editor in SLADE.
 
 | Property | Type | Description |
 |:---------|:-----|:------------|
-<prop class="ro">editMode</prop>        | <type>number</type> | The current edit mode (see `MODE_` constants below)
-<prop class="ro">sectorEditMode</prop>  | <type>number</type> | The current sector edit mode (see `SECTORMODE_` constants below)
-<prop class="ro">gridSize</prop>        | <type>number</type> | The current grid size
+<prop class="ro">editMode</prop>        | <type>integer</type> | The current edit mode (see `MODE_` constants below)
+<prop class="ro">sectorEditMode</prop>  | <type>integer</type> | The current sector edit mode (see `SECTORMODE_` constants below)
+<prop class="ro">gridSize</prop>        | <type>integer</type> | The current grid size
 <prop class="ro">map</prop>             | <type>[Map](Map.md)</type> | The map associated with this editor
 
 ## Constants
@@ -29,53 +30,60 @@ Map editing context for the currently open map editor in SLADE.
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[App.MapEditor](../../Namespaces/App.md#mapeditor)</code>
 
-## Functions - General
+## Functions
 
+### Overview
+
+#### General
+
+<fdef>[SetEditMode](#seteditmode)(<arg>mode</arg>, <arg>[sectorMode]</arg>)</fdef>
+
+#### Selection
+
+<fdef>[ClearSelection](#clearselection)()</fdef>
+<fdef>[Select](#select)(<arg>object</arg>, <arg>[add]</arg>)</fdef>
+<fdef>[SelectedLines](#selectedlines)(<arg>[tryHighlight]</arg>) -> <type>[MapLine](MapLine.md)\[\]</type></fdef>
+<fdef>[SelectedSectors](#selectedsectors)(<arg>[tryHighlight]</arg>) -> <type>[MapSector](MapSector.md)\[\]</type></fdef>
+<fdef>[SelectedThings](#selectedthings)(<arg>[tryHighlight]</arg>) -> <type>[MapThing](MapThing.md)\[\]</type></fdef>
+<fdef>[SelectedVertices](#selectedvertices)(<arg>[tryHighlight]</arg>) -> <type>[MapVertex](MapVertex.md)\[\]</type></fdef>
+
+---
 ### SetEditMode
-
-<fdef>function <type>MapEditor</type>.<func>SetEditMode</func>(<arg>*self*</arg>, <arg>mode</arg>, <arg>sectorMode</arg>)</fdef>
 
 Sets the edit mode to the given <arg>mode</arg>. If the mode is being set to `MODE_SECTORS`, the <arg>sectorMode</arg> parameter can be given to specify the sector edit mode.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
-* <arg>mode</arg> (<type>number</type>): The edit mode to switch to (see `MODE_` constants)
-* <arg>[sectorMode]</arg> (<type>number</type>, default `SECTORMODE_BOTH`): The sector edit mode to switch to (see `SECTORMODE_` constants)
+* <arg>mode</arg> (<type>integer</type>): The edit mode to switch to (see `MODE_` constants)
+* <arg>[sectorMode]</arg> (<type>integer</type>): The sector edit mode to switch to (see `SECTORMODE_` constants). Default is `SECTORMODE_BOTH`
 
-## Functions - Selection
-
+---
 ### ClearSelection
-
-<fdef>function <type>MapEditor</type>.<func>ClearSelection</func>(<arg>*self*</arg>)</fdef>
 
 Deselects all currently selected items
 
 ---
 ### Select
 
-<fdef>function <type>MapEditor</type>.<func>Select</func>(<arg>*self*</arg>, <arg>object</arg>, <arg>add</arg>)</fdef>
-
 Selects or deselects the given <type>[MapObject](MapObject.md)</type> (or derived type), depending on <arg>add</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>object</arg> (<type>[MapObject](MapObject.md)</type>): The <type>[MapObject](MapObject.md)</type> to (de)select
-* <arg>[add]</arg> (<type>boolean</type>, default `true`): Whether to add (`true`) or remove (`false`) from the current selection
+* <arg>[add]</arg> (<type>boolean</type>): Whether to add (`true`) or remove (`false`) from the current selection. Default is `true`
 
 ---
 ### SelectedLines
 
-<fdef>function <type>MapEditor</type>.<func>SelectedLines</func>(<arg>*self*</arg>, <arg>tryHighlight</arg>)</fdef>
+#### Parameters
 
-<listhead>Parameters</listhead>
+* <arg>[tryHighlight]</arg> (<type>boolean</type>): Whether to get the current highlight if nothing is selected. Default is `false`
 
-* <arg>[tryHighlight]</arg> (<type>boolean</type>, default `false`): Whether to get the current highlight if nothing is selected
-
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[MapLine](MapLine.md)\[\]</type>: An array of all currently selected lines
 
@@ -86,13 +94,11 @@ If nothing is selected and <arg>tryHighlight</arg> is `true`, the currently high
 ---
 ### SelectedSectors
 
-<fdef>function <type>MapEditor</type>.<func>SelectedSectors</func>(<arg>*self*</arg>, <arg>tryHighlight</arg>)</fdef>
+#### Parameters
 
-<listhead>Parameters</listhead>
+* <arg>[tryHighlight]</arg> (<type>boolean</type>): Whether to get the current highlight if nothing is selected. Default is `false`
 
-* <arg>[tryHighlight]</arg> (<type>boolean</type>, default `false`): Whether to get the current highlight if nothing is selected
-
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[MapSector](MapSector.md)\[\]</type>: An array of all currently selected sectors
 
@@ -103,13 +109,11 @@ If nothing is selected and <arg>tryHighlight</arg> is `true`, the currently high
 ---
 ### SelectedThings
 
-<fdef>function <type>MapEditor</type>.<func>SelectedThings</func>(<arg>*self*</arg>, <arg>tryHighlight</arg>)</fdef>
+#### Parameters
 
-<listhead>Parameters</listhead>
+* <arg>[tryHighlight]</arg> (<type>boolean</type>): Whether to get the current highlight if nothing is selected. Default is `false`
 
-* <arg>[tryHighlight]</arg> (<type>boolean</type>, default `false`): Whether to get the current highlight if nothing is selected
-
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[MapThing](MapThing.md)\[\]</type>: An array of all currently selected things
 
@@ -120,13 +124,11 @@ If nothing is selected and <arg>tryHighlight</arg> is `true`, the currently high
 ---
 ### SelectedVertices
 
-<fdef>function <type>MapEditor</type>.<func>SelectedVertices</func>(<arg>*self*</arg>, <arg>tryHighlight</arg>)</fdef>
+#### Parameters
 
-<listhead>Parameters</listhead>
+* <arg>[tryHighlight]</arg> (<type>boolean</type>): Whether to get the current highlight if nothing is selected. Default is `false`
 
-* <arg>[tryHighlight]</arg> (<type>boolean</type>, default `false`): Whether to get the current highlight if nothing is selected
-
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[MapVertex](MapVertex.md)\[\]</type>: An array of all currently selected vertices
 

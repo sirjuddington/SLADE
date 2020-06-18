@@ -2,6 +2,8 @@
 
 #include "OGLCanvas.h"
 
+namespace slade
+{
 class ANSICanvas : public OGLCanvas
 {
 public:
@@ -24,3 +26,4 @@ private:
 	int            char_width_  = 8;
 	int            char_height_ = 8;
 };
+} // namespace slade

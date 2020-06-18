@@ -1,4 +1,5 @@
-<article-head>TransRangeColour</article-head>
+<subhead>Type</subhead>
+<header>TransRangeColour</header>
 
 A custom translation range that maps to a colour gradient. See [Translation](https://zdoom.org/wiki/Translation) for more info.
 
@@ -17,6 +18,6 @@ All properties and functions of <type>[TransRange](TransRange.md)</type> can be 
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[Translation.AddColourRange](Translation.md#addcolourrange)</code>

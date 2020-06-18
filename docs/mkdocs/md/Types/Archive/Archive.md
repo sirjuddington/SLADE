@@ -1,4 +1,5 @@
-<article-head>Archive</article-head>
+<subhead>Type</subhead>
+<header>Archive</header>
 
 The <type>Archive</type> type represents an archive (wad/pk3/etc) in SLADE.
 
@@ -16,22 +17,44 @@ The <type>Archive</type> type represents an archive (wad/pk3/etc) in SLADE.
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
 
-<listhead>See:</listhead>
+**See:**
 
 * <code>[Archives.Create](../../Namespaces/Archives.md#create)</code>
 * <code>[Archives.OpenFile](../../Namespaces/Archives.md#openfile)</code>
 
-## Functions - General
+## Functions
 
+### Overview
+
+#### General
+
+<fdef>[DirAtPath](#diratpath)(<arg>path</arg>) -> <type>[ArchiveDir](ArchiveDir.md)</type></fdef>
+<fdef>[EntryAtPath](#entryatpath)(<arg>path</arg>) -> <type>[ArchiveEntry](ArchiveEntry.md)</type></fdef>
+<fdef>[FilenameNoPath](#filenamenopath)() -> <type>string</type></fdef>
+<fdef>[Save](#save)(<arg>[path]</arg>) -> <type>boolean</type>, <type>string</type></fdef>
+
+#### Entry Manipulation
+
+<fdef>[CreateDir](#createdir)(<arg>path</arg>) -> <type>[ArchiveDir](ArchiveDir.md)</type></fdef>
+<fdef>[CreateEntry](#createentry)(<arg>fullPath</arg>, <arg>index</arg>) -> <type>[ArchiveEntry](ArchiveEntry.md)</type></fdef>
+<fdef>[CreateEntryInNamespace](#createentryinnamespace)(<arg>name</arg>, <arg>namespace</arg>) -> <type>[ArchiveEntry](ArchiveEntry.md)</type></fdef>
+<fdef>[RemoveEntry](#removeentry)(<arg>entry</arg>) -> <type>boolean</type></fdef>
+<fdef>[RenameEntry](#renameentry)(<arg>entry</arg>, <arg>name</arg>) -> <type>boolean</type></fdef>
+
+#### Entry Search
+
+<fdef>[FindFirst](#findfirst)(<arg>options</arg>) -> <type>[ArchiveEntry](ArchiveEntry.md)</type></fdef>
+<fdef>[FindLast](#findlast)(<arg>options</arg>) -> <type>[ArchiveEntry](ArchiveEntry.md)</type></fdef>
+<fdef>[FindAll](#findall)(<arg>options</arg>) -> <type>[ArchiveEntry](ArchiveEntry.md)\[\]</type></fdef>
+
+---
 ### DirAtPath
 
-<fdef>function <type>Archive</type>.<func>DirAtPath</func>(<arg>*self*</arg>, <arg>path</arg>)</fdef>
-
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>path</arg> (<type>string</type>): The path of the directory to get
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[ArchiveDir](ArchiveDir.md)</type>: The directory in the archive at <arg>path</arg>, or `nil` if the path does not exist
 
@@ -42,13 +65,11 @@ If the archive does not support directories (eg. Doom Wad format) the 'root' dir
 ---
 ### EntryAtPath
 
-<fdef>function <type>Archive</type>.<func>EntryAtPath</func>(<arg>*self*</arg>, <arg>path</arg>)</fdef>
-
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>path</arg> (<type>string</type>): The path of the entry to get
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[ArchiveEntry](ArchiveEntry.md)</type>: The entry in the archive at <arg>path</arg>, or `nil` if no entry at the given path exists
 
@@ -59,9 +80,9 @@ If multiple entries exist with the same <arg>path</arg>, the first match is retu
 ---
 ### FilenameNoPath
 
-<fdef>function <type>Archive</type>.<func>FilenameNoPath</func>(<arg>*self*</arg>)</fdef>
+Gets the archive's <prop>filename</prop> without the full path
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>string</type>: The archive's <prop>filename</prop> without the full path
 
@@ -75,15 +96,13 @@ App.LogMessage(archive:FilenameNoPath) -- 'archive.wad'
 ---
 ### Save
 
-<fdef>function <type>Archive</type>.<func>Save</func>(<arg>*self*</arg>, <arg>path</arg>)</fdef>
-
 Saves the archive to disk.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
-* <arg>[path]</arg> (<type>string</type>, defaults to <prop>filename</prop>): The full path to the file to save as
+* <arg>[path]</arg> (<type>string</type>): The full path to the file to save as. Default is `""`, which will use the archive's existing <prop>filename</prop>
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `true` if saving succeeded
 * <type>string</type>: An error message if saving failed
@@ -114,20 +133,30 @@ end
 App.LogMessage(archive.filename) -- 'c:/newfile.wad'
 ```
 
-## Functions - Entry Manipulation
+---
+### CreateDir
 
+Creates a new directory at <arg>path</arg> in the archive. Has no effect if the archive format doesn't support directories.
+
+#### Parameters
+
+* <arg>path</arg> (<type>string</type>): The path of the directory to create
+
+#### Returns
+
+* <type>[ArchiveDir](ArchiveDir.md)</type>: The directory that was created or `nil` if the archive format doesn't support directories
+
+---
 ### CreateEntry
-
-<fdef>function <type>Archive</type>.<func>CreateEntry</func>(<arg>*self*</arg>, <arg>fullPath</arg>, <arg>index</arg>)</fdef>
 
 Creates a new entry named <arg>fullPath</arg> in the archive at <arg>index</arg> within the target directory.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>fullPath</arg> (<type>string</type>): The full path and name of the entry to create
-* <arg>index</arg> (<type>number</type>): The index to insert the entry
+* <arg>index</arg> (<type>integer</type>): The index to insert the entry
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[ArchiveEntry](ArchiveEntry.md)</type>: The created entry
 
@@ -135,7 +164,7 @@ Creates a new entry named <arg>fullPath</arg> in the archive at <arg>index</arg>
 
 If the Archive is a format that supports directories, <arg>fullPath</arg> can optionally contain a path eg. `Scripts/NewScript.txt`.
 
-The new entry will be inserted at <arg>index</arg> in the directory it is added to (always the root for Archives that don't support directories). If <arg>index</arg> is `0` or larger than the number of entries in the destination directory, the new entry will be added at the end.
+The new entry will be inserted at <arg>index</arg> in the directory it is added to (always the root for Archives that don't support directories). If <arg>index</arg> is `-1` or larger than the number of entries in the destination directory, the new entry will be added at the end.
 
 #### Example
 
@@ -153,16 +182,14 @@ newEntry = wad:CreateEntry('NEWENTRY', 12)
 ---
 ### CreateEntryInNamespace
 
-<fdef>function <type>Archive</type>.<func>CreateEntryInNamespace</func>(<arg>*self*</arg>, <arg>name</arg>, <arg>namespace</arg>)</fdef>
-
 Creates a new entry named <arg>name</arg> in the Archive, at the end of <arg>namespace</arg>.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>name</arg> (<type>string</type>): The name of the entry
 * <arg>namespace</arg> (<type>string</type>): The namespace to add the entry to
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[ArchiveEntry](ArchiveEntry.md)</type>: The created entry
 
@@ -188,45 +215,38 @@ See below for a list of supported namespaces:
 ---
 ### RemoveEntry
 
-<fdef>function <type>Archive</type>.<func>RemoveEntry</func>(<arg>*self*</arg>, <arg>entry</arg>)</fdef>
-
 Removes the given <arg>entry</arg> from the archive (but does not delete it).
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>entry</arg> (<type>[ArchiveEntry](ArchiveEntry.md)</type>): The entry to remove
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>boolean</type>: `false` if the entry was not found in the archive
 
 ---
 ### RenameEntry
 
-<fdef>function <type>Archive</type>.<func>RenameEntry</func>(<arg>*self*</arg>, <arg>entry</arg>, <arg>name</arg>)</fdef>
-
 Renames the given entry.
 
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>entry</arg> (<type>[ArchiveEntry](ArchiveEntry.md)</type>): The entry to rename
 * <arg>name</arg> (<type>string</type>): The new name for the entry
 
-<listhead>Parameters</listhead>
+#### Returns
 
 * <type>boolean</type>: `false` if the entry was not found in the archive
 
-## Functions - Entry Search
-
+---
 ### FindFirst
 
-<fdef>function <type>Archive</type>.<func>FindFirst</func>(<arg>*self*</arg>, <arg>options</arg>)</fdef>
-
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>options</arg> (<type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type>): The search criteria
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[ArchiveEntry](ArchiveEntry.md)</type>: The **first** entry found in the archive matching the given <arg>options</arg>, or `nil` if no match was found
 
@@ -237,13 +257,11 @@ If <prop>searchSubdirs</prop> is true in the <arg>options</arg>, subdirectories 
 ---
 ### FindLast
 
-<fdef>function <type>Archive</type>.<func>FindLast</func>(<arg>*self*</arg>, <arg>options</arg>)</fdef>
-
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>options</arg> (<type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type>): The search criteria
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[ArchiveEntry](ArchiveEntry.md)</type>: The **last** entry found in the archive matching the given <arg>options</arg>, or `nil` if no match was found
 
@@ -254,12 +272,10 @@ If <prop>searchSubdirs</prop> is true in the <arg>options</arg>, subdirectories 
 ---
 ### FindAll
 
-<fdef>function <type>Archive</type>.<func>FindAll</func>(<arg>*self*</arg>, <arg>options</arg>)</fdef>
-
-<listhead>Parameters</listhead>
+#### Parameters
 
 * <arg>options</arg> (<type>[ArchiveSearchOptions](ArchiveSearchOptions.md)</type>): The search criteria
 
-<listhead>Returns</listhead>
+#### Returns
 
 * <type>[ArchiveEntry](ArchiveEntry.md)\[\]</type>: All entries found in the archive matching the given <arg>options</arg>, or an empty array if no match is found

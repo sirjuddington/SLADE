@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,8 @@
 #include "Main.h"
 #include "Tree.h"
 #include "StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -100,7 +102,7 @@ STreeNode* STreeNode::child(string_view name)
 		return nullptr;
 
 	// If name ends with /, remove it
-	if (StrUtil::endsWith(name, '/') || StrUtil::endsWith(name, '\\'))
+	if (strutil::endsWith(name, '/') || strutil::endsWith(name, '\\'))
 		name.remove_suffix(1);
 
 	// If no directories were given
@@ -110,7 +112,7 @@ STreeNode* STreeNode::child(string_view name)
 		// Find child of this node
 		for (auto& child : children_)
 		{
-			if (StrUtil::equalCI(name, child->name()))
+			if (strutil::equalCI(name, child->name()))
 				return child;
 		}
 
@@ -147,7 +149,7 @@ vector<STreeNode*> STreeNode::children(string_view name)
 		return ret;
 
 	// If name ends with /, remove it
-	if (StrUtil::endsWith(name, '/') || StrUtil::endsWith(name, '\\'))
+	if (strutil::endsWith(name, '/') || strutil::endsWith(name, '\\'))
 		name.remove_suffix(1);
 
 	// If no directories were given
@@ -157,7 +159,7 @@ vector<STreeNode*> STreeNode::children(string_view name)
 		// Find child of this node
 		for (auto child : children_)
 		{
-			if (StrUtil::equalCI(name, child->name()))
+			if (strutil::equalCI(name, child->name()))
 				ret.push_back(child);
 		}
 	}
@@ -199,7 +201,7 @@ STreeNode* STreeNode::addChild(string_view name)
 		return nullptr;
 
 	// If name ends with /, remove it
-	if (StrUtil::endsWith(name, '/') || StrUtil::endsWith(name, '\\'))
+	if (strutil::endsWith(name, '/') || strutil::endsWith(name, '\\'))
 		name.remove_suffix(1);
 
 	// If no directories were given

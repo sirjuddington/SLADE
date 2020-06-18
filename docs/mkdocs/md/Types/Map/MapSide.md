@@ -1,4 +1,5 @@
-<article-head>MapSide</article-head>
+<subhead>Type</subhead>
+<header>MapSide</header>
 
 Represents a map sidedef.
 
@@ -14,10 +15,14 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 <prop class="ro">textureBottom</prop> | <type>string</type> | The side's bottom (lower) texture
 <prop class="ro">textureMiddle</prop> | <type>string</type> | The side's middle texture
 <prop class="ro">textureTop</prop> | <type>string</type> | The side's top (upper) texture
-<prop class="ro">offsetX</prop> | <type>number</type> | Texture X offset
-<prop class="ro">offsetY</prop> | <type>number</type> | Texture Y offset
+<prop class="ro">offsetX</prop> | <type>integer</type> | Texture X offset
+<prop class="ro">offsetY</prop> | <type>integer</type> | Texture Y offset
 
 ## Constructors
 
 !!! attention "No Constructors"
     This type can not be created directly in scripts.
+
+**See:**
+
+* <code>[Map.sidedefs](Map.md#properties)</code>

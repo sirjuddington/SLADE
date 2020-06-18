@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,6 +35,8 @@
 #include "UI/Canvas/CTextureCanvas.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/WxUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -70,14 +72,14 @@ SZoomSlider::SZoomSlider(wxWindow* parent, CTextureCanvas* linked_canvas) :
 void SZoomSlider::setup()
 {
 	// Create controls
-	slider_zoom_ = new wxSlider(this, -1, 100, 20, 800, wxDefaultPosition, WxUtils::scaledSize(150, -1));
+	slider_zoom_ = new wxSlider(this, -1, 100, 20, 800, wxDefaultPosition, wxutil::scaledSize(150, -1));
 	slider_zoom_->SetLineSize(10);
 	slider_zoom_->SetPageSize(100);
 	label_zoom_amount_ = new wxStaticText(this, -1, "100%");
 
 	// Layout
 	SetSizer(new wxBoxSizer(wxHORIZONTAL));
-	GetSizer()->Add(WxUtils::createLabelHBox(this, "Zoom:", slider_zoom_), 1, wxEXPAND | wxRIGHT, UI::pad());
+	GetSizer()->Add(wxutil::createLabelHBox(this, "Zoom:", slider_zoom_), 1, wxEXPAND | wxRIGHT, ui::pad());
 	GetSizer()->Add(label_zoom_amount_, 0, wxALIGN_CENTER_VERTICAL);
 
 	// Slider change event

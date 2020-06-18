@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -40,7 +40,7 @@
 #include "OpenGL/OpenGL.h"
 #include "Utility/StringUtils.h"
 
-
+using namespace slade;
 using NameType = BrowserCanvas::NameType;
 using ItemView = BrowserCanvas::ItemView;
 
@@ -79,7 +79,7 @@ void BrowserItem::draw(
 	int            size,
 	int            x,
 	int            y,
-	Drawing::Font  font,
+	drawing::Font  font,
 	NameType       nametype,
 	ItemView       viewtype,
 	const ColRGBA& colour,
@@ -98,16 +98,16 @@ void BrowserItem::draw(
 		// textures/aquatex/AQCONC13.png -> t./a./AQCONC13.png
 		// textures/AQDIRT01.png -> t./AQDIRT01.png
 		string_view draw_name_v{ draw_name };
-		if (StrUtil::contains(draw_name, '/'))
+		if (strutil::contains(draw_name, '/'))
 		{
 			int    last_pos = 0;
 			string new_draw_name;
-			while (StrUtil::contains(draw_name_v.substr(last_pos), '/'))
+			while (strutil::contains(draw_name_v.substr(last_pos), '/'))
 			{
 				new_draw_name.append(draw_name_v.substr(last_pos, 1)).append("./");
 				last_pos += draw_name_v.substr(last_pos).find('/') + 1;
 			}
-			draw_name = new_draw_name + StrUtil::afterLast(draw_name, '/');
+			draw_name = new_draw_name + strutil::afterLast(draw_name, '/');
 		}
 		else
 			draw_name = fmt::format("{}...", string_view{ draw_name.data(), 8 });
@@ -117,16 +117,16 @@ void BrowserItem::draw(
 	if (viewtype == ItemView::Normal)
 	{
 		if (text_shadow)
-			Drawing::drawText(
-				draw_name, x + (size * 0.5 + 1), y + size + 5, ColRGBA::BLACK, font, Drawing::Align::Center);
-		Drawing::drawText(draw_name, x + (size * 0.5), y + size + 4, colour, font, Drawing::Align::Center);
+			drawing::drawText(
+				draw_name, x + (size * 0.5 + 1), y + size + 5, ColRGBA::BLACK, font, drawing::Align::Center);
+		drawing::drawText(draw_name, x + (size * 0.5), y + size + 4, colour, font, drawing::Align::Center);
 	}
 	else if (viewtype == ItemView::Tiles)
 	{
 		// Create text box if needed
 		if (!text_box_)
 			text_box_ = std::make_unique<TextBox>(
-				fmt::format("{}\n{}", index_, name_.c_str()), font, UI::scalePx(144), UI::scalePx(16));
+				fmt::format("{}\n{}", index_, name_.c_str()), font, ui::scalePx(144), ui::scalePx(16));
 
 		int top = y;
 		top += ((size - text_box_->height()) * 0.5);
@@ -141,11 +141,11 @@ void BrowserItem::draw(
 		return;
 
 	// Try to load image if it isn't already
-	if (!image_tex_ || (image_tex_ && !OpenGL::Texture::isLoaded(image_tex_)))
+	if (!image_tex_ || (image_tex_ && !gl::Texture::isLoaded(image_tex_)))
 		loadImage();
 
 	// If it still isn't just draw a red box with an X
-	if (!image_tex_ || (image_tex_ && !OpenGL::Texture::isLoaded(image_tex_)))
+	if (!image_tex_ || (image_tex_ && !gl::Texture::isLoaded(image_tex_)))
 	{
 		glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
 
@@ -174,7 +174,7 @@ void BrowserItem::draw(
 	}
 
 	// Determine texture dimensions
-	auto&  tex_info = OpenGL::Texture::info(image_tex_);
+	auto&  tex_info = gl::Texture::info(image_tex_);
 	double width    = tex_info.size.x;
 	double height   = tex_info.size.y;
 
@@ -212,8 +212,8 @@ void BrowserItem::draw(
 	double left = x + ((double)size * 0.5) - (width * 0.5);
 
 	// Draw
-	OpenGL::Texture::bind(image_tex_);
-	OpenGL::setColour(ColRGBA::WHITE);
+	gl::Texture::bind(image_tex_);
+	gl::setColour(ColRGBA::WHITE);
 
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.0f);

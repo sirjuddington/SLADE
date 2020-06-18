@@ -1,6 +1,6 @@
 #pragma once
 
-namespace MapEditor
+namespace slade::mapeditor
 {
 class RenderView
 {
@@ -51,4 +51,4 @@ private:
 
 	void updateMapBounds();
 };
-} // namespace MapEditor
+} // namespace slade::mapeditor

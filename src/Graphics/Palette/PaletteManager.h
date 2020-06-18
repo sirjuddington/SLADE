@@ -2,6 +2,8 @@
 
 #include "Palette.h"
 
+namespace slade
+{
 class PaletteManager
 {
 public:
@@ -27,3 +29,4 @@ private:
 	Palette                     pal_default_; // A greyscale palette
 	Palette                     pal_global_;  // The global palette (read from the base resource archive)
 };
+} // namespace slade

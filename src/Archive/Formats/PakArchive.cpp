@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,8 @@
 #include "PakArchive.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -72,22 +74,22 @@ bool PakArchive::open(MemChunk& mc)
 	// Check it
 	if (pack[0] != 'P' || pack[1] != 'A' || pack[2] != 'C' || pack[3] != 'K')
 	{
-		Log::error("PakArchive::open: Opening failed, invalid header");
-		Global::error = "Invalid pak header";
+		log::error("PakArchive::open: Opening failed, invalid header");
+		global::error = "Invalid pak header";
 		return false;
 	}
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
+	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
 	size_t num_entries = dir_size / 64;
 	mc.seek(dir_offset, SEEK_SET);
-	UI::setSplashProgressMessage("Reading pak archive data");
+	ui::setSplashProgressMessage("Reading pak archive data");
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress(((float)d / (float)num_entries));
+		ui::setSplashProgress(((float)d / (float)num_entries));
 
 		// Read entry info
 		char    name[56];
@@ -104,17 +106,16 @@ bool PakArchive::open(MemChunk& mc)
 		// Check offset+size
 		if ((unsigned)(offset + size) > mc.size())
 		{
-			Log::error("PakArchive::open: Pak archive is invalid or corrupt (entry goes past end of file)");
-			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
+			log::error("PakArchive::open: Pak archive is invalid or corrupt (entry goes past end of file)");
+			global::error = "Archive is invalid and/or corrupt";
 			return false;
 		}
 
 		// Create directory if needed
-		auto dir = createDir(StrUtil::Path::pathOf(name));
+		auto dir = createDir(strutil::Path::pathOf(name));
 
 		// Create entry
-		auto entry              = std::make_shared<ArchiveEntry>(StrUtil::Path::fileNameOf(name), size);
+		auto entry              = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(name), size);
 		entry->exProp("Offset") = (int)offset;
 		entry->setLoaded(false);
 		entry->setState(ArchiveEntry::State::Unmodified);
@@ -127,11 +128,11 @@ bool PakArchive::open(MemChunk& mc)
 	MemChunk              edata;
 	vector<ArchiveEntry*> all_entries;
 	putEntryTreeAsList(all_entries);
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)num_entries)));
+		ui::setSplashProgress((((float)a / (float)num_entries)));
 
 		// Get entry
 		auto entry = all_entries[a];
@@ -140,7 +141,7 @@ bool PakArchive::open(MemChunk& mc)
 		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->size());
+			mc.exportMemChunk(edata, entry->exProp<int>("Offset"), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -156,11 +157,10 @@ bool PakArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -223,11 +223,11 @@ bool PakArchive::write(MemChunk& mc, bool update)
 		name.erase(name.begin()); // Remove leading /
 		if (name.size() > 56)
 		{
-			Log::warning(
+			log::warning(
 				"Warning: Entry {} path is too long (> 56 characters), putting it in the root directory", name);
-			name = StrUtil::Path::fileNameOf(name);
+			name = strutil::Path::fileNameOf(name);
 			if (name.size() > 56)
-				StrUtil::truncateIP(name, 56);
+				strutil::truncateIP(name, 56);
 		}
 
 		// Write entry name
@@ -286,12 +286,12 @@ bool PakArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error("PakArchive::loadEntryData: Unable to open archive file {}", filename_);
+		log::error("PakArchive::loadEntryData: Unable to open archive file {}", filename_);
 		return false;
 	}
 
 	// Seek to entry offset in file and read it in
-	file.Seek((int)entry->exProp("Offset"), wxFromStart);
+	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
 	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded

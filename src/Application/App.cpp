@@ -1,12 +1,12 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    App.cpp
-// Description: The App namespace, with various general application related
+// Description: The app namespace, with various general application related
 //              functions
 //
 // This program is free software; you can redistribute it and/or modify it
@@ -33,11 +33,10 @@
 #include "Main.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "Game/Configuration.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
 #include "General/Misc.h"
@@ -56,6 +55,7 @@
 #include "Scripting/ScriptManager.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/TextStyle.h"
+#include "UI/Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "UI/SBrush.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
@@ -63,13 +63,15 @@
 #include "thirdparty/dumb/dumb.h"
 #include <filesystem>
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace App
+namespace slade::app
 {
 wxStopWatch     timer;
 int             temp_fail_count = 0;
@@ -81,11 +83,11 @@ std::thread::id main_thread_id;
 Version version_num{ 3, 2, 0, 1 };
 
 // Directory paths
-string dir_data = "";
-string dir_user = "";
-string dir_app  = "";
-string dir_res  = "";
-string dir_temp = "";
+string dir_data;
+string dir_user;
+string dir_app;
+string dir_res;
+string dir_temp;
 #ifdef WIN32
 string dir_separator = "\\";
 #else
@@ -98,7 +100,7 @@ PaletteManager  palette_manager;
 ArchiveManager  archive_manager;
 Clipboard       clip_board;
 ResourceManager resource_manager;
-} // namespace App
+} // namespace slade::app
 
 CVAR(Int, temp_location, 0, CVar::Flag::Save)
 CVAR(String, temp_location_custom, "", CVar::Flag::Save)
@@ -107,7 +109,7 @@ CVAR(Bool, setup_wizard_run, false, CVar::Flag::Save)
 
 // -----------------------------------------------------------------------------
 //
-// App::Version Struct Functions
+// app::Version Struct Functions
 //
 // ----------------------------------------------------------------------------
 
@@ -116,7 +118,7 @@ CVAR(Bool, setup_wizard_run, false, CVar::Flag::Save)
 // Compares with another version [rhs].
 // Returns 0 if equal, 1 if this is newer or -1 if this is older
 // ----------------------------------------------------------------------------
-int App::Version::cmp(const Version& rhs) const
+int app::Version::cmp(const Version& rhs) const
 {
 	if (major == rhs.major)
 	{
@@ -146,7 +148,7 @@ int App::Version::cmp(const Version& rhs) const
 // ----------------------------------------------------------------------------
 // Returns a string representation of the version (eg. "3.2.1 beta 4")
 // ----------------------------------------------------------------------------
-string App::Version::toString() const
+string app::Version::toString() const
 {
 	auto vers = fmt::format("{}.{}.{}", major, minor, revision);
 	if (beta > 0)
@@ -160,7 +162,7 @@ string App::Version::toString() const
 // App Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace App
+namespace slade::app
 {
 // -----------------------------------------------------------------------------
 // Checks for and creates necessary application directories. Returns true
@@ -176,7 +178,7 @@ bool initDirectories()
 #endif // defined(__UNIX__) && defined(INSTALL_PREFIX)
 
 	// Setup app dir
-	dir_app = StrUtil::Path::pathOf(wxStandardPaths::Get().GetExecutablePath().ToStdString(), false);
+	dir_app = strutil::Path::pathOf(wxStandardPaths::Get().GetExecutablePath().ToStdString(), false);
 
 	// Check for portable install
 	if (wxFileExists(path("portable", Dir::Executable)))
@@ -233,7 +235,7 @@ void readConfigFile()
 {
 	// Open SLADE.cfg
 	Tokenizer tz;
-	if (!tz.openFile(App::path("slade3.cfg", App::Dir::User)))
+	if (!tz.openFile(path("slade3.cfg", Dir::User)))
 		return;
 
 	// Go through the file with the tokenizer
@@ -285,7 +287,7 @@ void readConfigFile()
 		{
 			while (!tz.checkOrEnd("}"))
 			{
-				NodeBuilders::addBuilderPath(tz.current().text, tz.peek().text);
+				nodebuilders::addBuilderPath(tz.current().text, tz.peek().text);
 				tz.adv(2);
 			}
 
@@ -297,7 +299,7 @@ void readConfigFile()
 		{
 			while (!tz.checkOrEnd("}"))
 			{
-				Executables::setGameExePath(tz.current().text, tz.peek().text);
+				executables::setGameExePath(tz.current().text, tz.peek().text);
 				tz.adv(2);
 			}
 
@@ -306,7 +308,7 @@ void readConfigFile()
 
 		// Read window size/position info
 		if (tz.advIf("window_info", 2))
-			Misc::readWindowInfo(tz);
+			misc::readWindowInfo(tz);
 
 		// Next token
 		tz.adv();
@@ -324,33 +326,33 @@ vector<string> processCommandLine(vector<string>& args)
 	for (auto& arg : args)
 	{
 		// -nosplash: Disable splash window
-		if (StrUtil::equalCI(arg, "-nosplash"))
-			UI::enableSplash(false);
+		if (strutil::equalCI(arg, "-nosplash"))
+			ui::enableSplash(false);
 
 		// -debug: Enable debug mode
-		else if (StrUtil::equalCI(arg, "-debug"))
+		else if (strutil::equalCI(arg, "-debug"))
 		{
-			Global::debug = true;
-			Log::info("Debugging stuff enabled");
+			global::debug = true;
+			log::info("Debugging stuff enabled");
 		}
 
 		// Other (no dash), open as archive
-		else if (!StrUtil::startsWith(arg, '-'))
+		else if (!strutil::startsWith(arg, '-'))
 			to_open.push_back(arg);
 
 		// Unknown parameter
 		else
-			Log::warning("Unknown command line parameter: \"{}\"", arg);
+			log::warning("Unknown command line parameter: \"{}\"", arg);
 	}
 
 	return to_open;
 }
-} // namespace App
+} // namespace slade::app
 
 // -----------------------------------------------------------------------------
 // Returns true if the application has been initialised
 // -----------------------------------------------------------------------------
-bool App::isInitialised()
+bool app::isInitialised()
 {
 	return init_ok;
 }
@@ -358,7 +360,7 @@ bool App::isInitialised()
 // -----------------------------------------------------------------------------
 // Returns the global Console
 // -----------------------------------------------------------------------------
-Console* App::console()
+Console* app::console()
 {
 	return &console_main;
 }
@@ -366,7 +368,7 @@ Console* App::console()
 // -----------------------------------------------------------------------------
 // Returns the Palette Manager
 // -----------------------------------------------------------------------------
-PaletteManager* App::paletteManager()
+PaletteManager* app::paletteManager()
 {
 	return &palette_manager;
 }
@@ -374,7 +376,7 @@ PaletteManager* App::paletteManager()
 // -----------------------------------------------------------------------------
 // Returns the Archive Manager
 // -----------------------------------------------------------------------------
-ArchiveManager& App::archiveManager()
+ArchiveManager& app::archiveManager()
 {
 	return archive_manager;
 }
@@ -382,7 +384,7 @@ ArchiveManager& App::archiveManager()
 // -----------------------------------------------------------------------------
 // Returns the Clipboard
 // -----------------------------------------------------------------------------
-Clipboard& App::clipboard()
+Clipboard& app::clipboard()
 {
 	return clip_board;
 }
@@ -390,7 +392,7 @@ Clipboard& App::clipboard()
 // -----------------------------------------------------------------------------
 // Returns the Resource Manager
 // -----------------------------------------------------------------------------
-ResourceManager& App::resources()
+ResourceManager& app::resources()
 {
 	return resource_manager;
 }
@@ -398,7 +400,7 @@ ResourceManager& App::resources()
 // -----------------------------------------------------------------------------
 // Returns the number of ms elapsed since the application was started
 // -----------------------------------------------------------------------------
-long App::runTimer()
+long app::runTimer()
 {
 	return timer.Time();
 }
@@ -406,7 +408,7 @@ long App::runTimer()
 // -----------------------------------------------------------------------------
 // Returns true if the application is exiting
 // -----------------------------------------------------------------------------
-bool App::isExiting()
+bool app::isExiting()
 {
 	return exiting;
 }
@@ -414,7 +416,7 @@ bool App::isExiting()
 // -----------------------------------------------------------------------------
 // Application initialisation
 // -----------------------------------------------------------------------------
-bool App::init(vector<string>& args, double ui_scale)
+bool app::init(vector<string>& args, double ui_scale)
 {
 	// Get the id of the current thread (should be the main one)
 	main_thread_id = std::this_thread::get_id();
@@ -428,7 +430,10 @@ bool App::init(vector<string>& args, double ui_scale)
 		return false;
 
 	// Init log
-	Log::init();
+	log::init();
+
+	// Init FreeImage
+	FreeImage_Initialise();
 
 	// Process the command line arguments
 	auto paths_to_open = processCommandLine(args);
@@ -437,11 +442,11 @@ bool App::init(vector<string>& args, double ui_scale)
 	KeyBind::initBinds();
 
 	// Load configuration file
-	Log::info("Loading configuration");
+	log::info("Loading configuration");
 	readConfigFile();
 
 	// Check that SLADE.pk3 can be found
-	Log::info("Loading resources");
+	log::info("Loading resources");
 	archive_manager.init();
 	if (!archive_manager.resArchiveOK())
 	{
@@ -454,22 +459,22 @@ bool App::init(vector<string>& args, double ui_scale)
 	}
 
 	// Init SActions
-	SAction::initWxId(26000);
+	SAction::setBaseWxId(26000);
 	SAction::initActions();
 
 	// Init lua
-	Lua::init();
+	lua::init();
 
 	// Init UI
-	UI::init(ui_scale);
+	ui::init(ui_scale);
 
 	// Show splash screen
-	UI::showSplash("Starting up...");
+	ui::showSplash("Starting up...");
 
 	// Init palettes
 	if (!palette_manager.init())
 	{
-		Log::error("Failed to initialise palettes");
+		log::error("Failed to initialise palettes");
 		return false;
 	}
 
@@ -480,74 +485,74 @@ bool App::init(vector<string>& args, double ui_scale)
 	SBrush::initBrushes();
 
 	// Load program icons
-	Log::info("Loading icons");
-	Icons::loadIcons();
+	log::info("Loading icons");
+	icons::loadIcons();
 
 	// Load program fonts
-	Drawing::initFonts();
+	drawing::initFonts();
 
 	// Load entry types
-	Log::info("Loading entry types");
+	log::info("Loading entry types");
 	EntryDataFormat::initBuiltinFormats();
 	EntryType::loadEntryTypes();
 
 	// Load text languages
-	Log::info("Loading text languages");
+	log::info("Loading text languages");
 	TextLanguage::loadLanguages();
 
 	// Init text stylesets
-	Log::info("Loading text style sets");
+	log::info("Loading text style sets");
 	StyleSet::loadResourceStyles();
 	StyleSet::loadCustomStyles();
 
 	// Init colour configuration
-	Log::info("Loading colour configuration");
-	ColourConfiguration::init();
+	log::info("Loading colour configuration");
+	colourconfig::init();
 
 	// Init nodebuilders
-	NodeBuilders::init();
+	nodebuilders::init();
 
 	// Init game executables
-	Executables::init();
+	executables::init();
 
 	// Init main editor
-	MainEditor::init();
+	maineditor::init();
 
 	// Init base resource
-	Log::info("Loading base resource");
+	log::info("Loading base resource");
 	archive_manager.initBaseResource();
-	Log::info("Base resource loaded");
+	log::info("Base resource loaded");
 
 	// Init game configuration
-	Log::info("Loading game configurations");
-	Game::init();
+	log::info("Loading game configurations");
+	game::init();
 
 	// Init script manager
-	ScriptManager::init();
+	scriptmanager::init();
 
 	// Show the main window
-	MainEditor::windowWx()->Show(true);
-	wxGetApp().SetTopWindow(MainEditor::windowWx());
-	UI::showSplash("Starting up...", false, MainEditor::windowWx());
+	maineditor::windowWx()->Show(true);
+	wxGetApp().SetTopWindow(maineditor::windowWx());
+	ui::showSplash("Starting up...", false, maineditor::windowWx());
 
 	// Open any archives from the command line
 	for (auto& path : paths_to_open)
 		archive_manager.openArchive(path);
 
 	// Hide splash screen
-	UI::hideSplash();
+	ui::hideSplash();
 
 	init_ok = true;
-	Log::info("SLADE Initialisation OK");
+	log::info("SLADE Initialisation OK");
 
 	// Show Setup Wizard if needed
 	if (!setup_wizard_run)
 	{
-		SetupWizardDialog dlg(MainEditor::windowWx());
+		SetupWizardDialog dlg(maineditor::windowWx());
 		dlg.ShowModal();
 		setup_wizard_run = true;
-		MainEditor::windowWx()->Update();
-		MainEditor::windowWx()->Refresh();
+		maineditor::windowWx()->Update();
+		maineditor::windowWx()->Refresh();
 	}
 
 	return true;
@@ -556,10 +561,10 @@ bool App::init(vector<string>& args, double ui_scale)
 // -----------------------------------------------------------------------------
 // Saves the SLADE configuration file
 // -----------------------------------------------------------------------------
-void App::saveConfigFile()
+void app::saveConfigFile()
 {
 	// Open SLADE.cfg for writing text
-	wxFile file(App::path("slade3.cfg", App::Dir::User), wxFile::write);
+	wxFile file(app::path("slade3.cfg", app::Dir::User), wxFile::write);
 
 	// Do nothing if it didn't open correctly
 	if (!file.IsOpened())
@@ -601,16 +606,16 @@ void App::saveConfigFile()
 
 	// Write nodebuilder paths
 	file.Write("\n");
-	NodeBuilders::saveBuilderPaths(file);
+	nodebuilders::saveBuilderPaths(file);
 
 	// Write game exe paths
 	file.Write("\nexecutable_paths\n{\n");
-	file.Write(Executables::writePaths());
+	file.Write(executables::writePaths());
 	file.Write("}\n");
 
 	// Write window info
 	file.Write("\nwindow_info\n{\n");
-	Misc::writeWindowInfo(file);
+	misc::writeWindowInfo(file);
 	file.Write("}\n");
 
 	// Close configuration file
@@ -621,7 +626,7 @@ void App::saveConfigFile()
 // Application exit, shuts down and cleans everything up.
 // If [save_config] is true, saves all configuration related files
 // -----------------------------------------------------------------------------
-void App::exit(bool save_config)
+void app::exit(bool save_config)
 {
 	exiting = true;
 
@@ -635,42 +640,42 @@ void App::exit(bool save_config)
 
 		// Save colour configuration
 		MemChunk ccfg;
-		ColourConfiguration::writeConfiguration(ccfg);
-		ccfg.exportFile(App::path("colours.cfg", App::Dir::User));
+		colourconfig::writeConfiguration(ccfg);
+		ccfg.exportFile(app::path("colours.cfg", app::Dir::User));
 
 		// Save game exes
 		wxFile f;
-		f.Open(App::path("executables.cfg", App::Dir::User), wxFile::write);
-		f.Write(Executables::writeExecutables());
+		f.Open(app::path("executables.cfg", app::Dir::User), wxFile::write);
+		f.Write(executables::writeExecutables());
 		f.Close();
 
 		// Save custom special presets
-		Game::saveCustomSpecialPresets();
+		game::saveCustomSpecialPresets();
 
 		// Save custom scripts
-		ScriptManager::saveUserScripts();
+		scriptmanager::saveUserScripts();
 	}
 
 	// Close all open archives
 	archive_manager.closeAll();
 
 	// Clean up
-	Drawing::cleanupFonts();
-	OpenGL::Texture::clearAll();
+	drawing::cleanupFonts();
+	gl::Texture::clearAll();
 
 	// Clear temp folder
 	std::error_code error;
-	for (auto& item : std::filesystem::directory_iterator{ App::path("", App::Dir::Temp) })
+	for (auto& item : std::filesystem::directory_iterator{ app::path("", app::Dir::Temp) })
 	{
 		if (!item.is_regular_file())
 			continue;
 
 		if (!std::filesystem::remove(item, error))
-			Log::warning("Could not clean up temporary file \"{}\": {}", item.path().string(), error.message());
+			log::warning("Could not clean up temporary file \"{}\": {}", item.path().string(), error.message());
 	}
 
 	// Close lua
-	Lua::close();
+	lua::close();
 
 	// Close DUMB
 	dumb_exit();
@@ -683,7 +688,7 @@ void App::exit(bool save_config)
 // ----------------------------------------------------------------------------
 // Returns the current version of SLADE
 // ----------------------------------------------------------------------------
-const App::Version& App::version()
+const app::Version& app::version()
 {
 	return version_num;
 }
@@ -691,12 +696,12 @@ const App::Version& App::version()
 // -----------------------------------------------------------------------------
 // Prepends an application-related path to a [filename]
 //
-// App::Dir::Data: SLADE application data directory (for SLADE.pk3)
-// App::Dir::User: User configuration and resources directory
-// App::Dir::Executable: Directory of the SLADE executable
-// App::Dir::Temp: Temporary files directory
+// app::Dir::Data: SLADE application data directory (for SLADE.pk3)
+// app::Dir::User: User configuration and resources directory
+// app::Dir::Executable: Directory of the SLADE executable
+// app::Dir::Temp: Temporary files directory
 // -----------------------------------------------------------------------------
-string App::path(string_view filename, Dir dir)
+string app::path(string_view filename, Dir dir)
 {
 	switch (dir)
 	{
@@ -709,7 +714,7 @@ string App::path(string_view filename, Dir dir)
 	}
 }
 
-App::Platform App::platform()
+app::Platform app::platform()
 {
 #ifdef __WXMSW__
 	return Platform::Windows;
@@ -722,7 +727,7 @@ App::Platform App::platform()
 #endif
 }
 
-bool App::useWebView()
+bool app::useWebView()
 {
 #ifdef USE_WEBVIEW_STARTPAGE
 	return true;
@@ -731,7 +736,7 @@ bool App::useWebView()
 #endif
 }
 
-bool App::useSFMLRenderWindow()
+bool app::useSFMLRenderWindow()
 {
 #ifdef USE_SFML_RENDERWINDOW
 	return true;
@@ -740,13 +745,22 @@ bool App::useSFMLRenderWindow()
 #endif
 }
 
-const string& App::iconFile()
+const string& app::iconFile()
 {
 	static string icon = "slade.ico";
 	return icon;
 }
 
-std::thread::id App::mainThreadId()
+bool app::isWin64Build()
+{
+#if defined(_WIN64)
+	return true;
+#else
+	return false;
+#endif
+}
+
+std::thread::id app::mainThreadId()
 {
 	return main_thread_id;
 }
@@ -754,6 +768,6 @@ std::thread::id App::mainThreadId()
 
 CONSOLE_COMMAND(setup_wizard, 0, false)
 {
-	SetupWizardDialog dlg(MainEditor::windowWx());
+	SetupWizardDialog dlg(maineditor::windowWx());
 	dlg.ShowModal();
 }

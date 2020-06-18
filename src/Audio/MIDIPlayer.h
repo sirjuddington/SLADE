@@ -1,5 +1,7 @@
 #pragma once
 
+namespace slade::audio
+{
 class MIDIPlayer
 {
 public:
@@ -50,8 +52,6 @@ protected:
 	bool isReady() override { return false; }
 };
 
-namespace MIDI
-{
-MIDIPlayer& player();
-void        resetPlayer();
-} // namespace MIDI
+MIDIPlayer& midiPlayer();
+void        resetMIDIPlayer();
+} // namespace slade::audio

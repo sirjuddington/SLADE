@@ -1,7 +1,7 @@
 ﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -40,6 +40,9 @@
 #include <CommCtrl.h>
 #endif
 
+using namespace slade;
+
+
 // -----------------------------------------------------------------------------
 //
 // Variables
@@ -77,7 +80,7 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	wxListCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_VIRTUAL),
 #endif
 	font_normal_{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) },
-	font_monospace_{ WxUtils::monospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)) }
+	font_monospace_{ wxutil::monospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)) }
 {
 	item_attr_ = std::make_unique<wxListItemAttr>();
 
@@ -95,6 +98,7 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	Bind(wxEVT_LIST_BEGIN_LABEL_EDIT, &VirtualListView::onLabelEditBegin, this);
 	Bind(wxEVT_LIST_END_LABEL_EDIT, &VirtualListView::onLabelEditEnd, this);
 	Bind(wxEVT_LIST_COL_CLICK, &VirtualListView::onColumnLeftClick, this);
+	Bind(wxEVT_IDLE, &VirtualListView::onIdle, this);
 #ifdef __WXGTK__
 	// Not sure if this is needed any more - causes duplicate selection events in linux
 	// Bind(wxEVT_LIST_ITEM_SELECTED, &VirtualListView::onItemSelected, this);
@@ -183,7 +187,7 @@ void VirtualListView::selectAll()
 	for (int a = 0; a < itemcount; a++)
 		SetItemState(a, 0xFFFF, wxLIST_STATE_SELECTED);
 
-	sendSelectionChangedEvent();
+	//sendSelectionChangedEvent();
 }
 
 // -----------------------------------------------------------------------------
@@ -377,7 +381,7 @@ void VirtualListView::focusOnIndex(long index)
 		selectItem(index);
 		focusItem(index);
 		EnsureVisible(index);
-		sendSelectionChangedEvent();
+		//sendSelectionChangedEvent();
 	}
 }
 
@@ -503,7 +507,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 				selectItem(focus - 1);
 				focusItem(focus - 1);
 				EnsureVisible(focus - 1);
-				sendSelectionChangedEvent();
+				//sendSelectionChangedEvent();
 			}
 		}
 		else if (e.GetModifiers() == wxMOD_NONE)
@@ -518,7 +522,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 				selectItem(focus - 1);
 				focusItem(focus - 1);
 				EnsureVisible(focus - 1);
-				sendSelectionChangedEvent();
+				//sendSelectionChangedEvent();
 			}
 		}
 		search_ = "";
@@ -536,7 +540,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 				selectItem(focus + 1);
 				focusItem(focus + 1);
 				EnsureVisible(focus + 1);
-				sendSelectionChangedEvent();
+				//sendSelectionChangedEvent();
 			}
 		}
 		else if (e.GetModifiers() == wxMOD_NONE)
@@ -551,7 +555,7 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 				selectItem(focus + 1);
 				focusItem(focus + 1);
 				EnsureVisible(focus + 1);
-				sendSelectionChangedEvent();
+				//sendSelectionChangedEvent();
 			}
 		}
 		search_ = "";
@@ -674,11 +678,11 @@ void VirtualListView::onColumnLeftClick(wxListEvent& e)
 
 	if (sort_column_ >= 0)
 	{
-		Log::info(2, wxString::Format("Sort column %d (%s)", sort_column_, sort_descend_ ? "descending" : "ascending"));
+		log::info(2, wxString::Format("Sort column %d (%s)", sort_column_, sort_descend_ ? "descending" : "ascending"));
 	}
 	else
 	{
-		Log::info(2, "No sorting");
+		log::info(2, "No sorting");
 	}
 
 	updateList();
@@ -694,4 +698,13 @@ void VirtualListView::onItemSelected(wxListEvent& e)
 		selection_updating_ = true;
 		CallAfter(&VirtualListView::sendSelectionChangedEvent);
 	}
+}
+
+void VirtualListView::onIdle(wxIdleEvent& e)
+{
+	if (GetSelectedItemCount() != prev_idle_selcount_ || firstSelected() != prev_idle_index_)
+		CallAfter(&VirtualListView::sendSelectionChangedEvent);
+
+	prev_idle_selcount_ = GetSelectedItemCount();
+	prev_idle_index_ = firstSelected();
 }

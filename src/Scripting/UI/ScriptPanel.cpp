@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -41,6 +41,8 @@
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -52,7 +54,7 @@
 // -----------------------------------------------------------------------------
 // ScriptPanel class constructor
 // -----------------------------------------------------------------------------
-ScriptPanel::ScriptPanel(wxWindow* parent, ScriptManager::Script* script) : wxPanel(parent, -1), script_{ script }
+ScriptPanel::ScriptPanel(wxWindow* parent, scriptmanager::Script* script) : wxPanel(parent, -1), script_{ script }
 {
 	wxPanel::SetName("script");
 
@@ -61,23 +63,25 @@ ScriptPanel::ScriptPanel(wxWindow* parent, ScriptManager::Script* script) : wxPa
 
 	// Toolbar
 	auto toolbar = setupToolbar();
-	sizer->Add(toolbar, 0, wxEXPAND | wxLEFT | wxRIGHT, UI::pad());
+	sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
+	sizer->Add(toolbar, 0, wxEXPAND | wxLEFT | wxRIGHT, ui::pad());
+	sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
 
 	// Text Editor
 	text_editor_ = new TextEditorCtrl(this, -1);
 	text_editor_->setLanguage(TextLanguage::fromId("sladescript"));
 	if (script_)
 		text_editor_->SetText(script_->text);
-	sizer->Add(text_editor_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	sizer->Add(text_editor_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 
 	// Find+Replace panel
 	find_replace_panel_ = new FindReplacePanel(this, *text_editor_);
-	sizer->Add(find_replace_panel_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+	sizer->Add(find_replace_panel_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
 	find_replace_panel_->Show(false);
 
 	text_editor_->setFindReplacePanel(find_replace_panel_);
 
-	last_saved_ = App::runTimer();
+	last_saved_ = app::runTimer();
 }
 
 // -----------------------------------------------------------------------------
@@ -119,7 +123,7 @@ bool ScriptPanel::close()
 // -----------------------------------------------------------------------------
 bool ScriptPanel::save()
 {
-	last_saved_ = App::runTimer();
+	last_saved_ = app::runTimer();
 
 	if (script_ && !script_->read_only)
 	{

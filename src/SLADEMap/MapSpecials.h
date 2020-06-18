@@ -2,6 +2,8 @@
 
 #include "SLADEMap/MapObject/MapSector.h"
 
+namespace slade
+{
 class MapVertex;
 class MapThing;
 class MapLine;
@@ -53,3 +55,4 @@ private:
 	template<MapSector::SurfaceType>
 	void applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights) const;
 };
+} // namespace slade

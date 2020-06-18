@@ -1,19 +1,21 @@
 #pragma once
 
 #include "Archive/Formats/DirArchive.h"
-#include "General/ListenerAnnouncer.h"
 #include "General/SAction.h"
+#include "General/Sigslot.h"
 #include "UI/Controls/DockPanel.h"
 #include "UI/Lists/ListView.h"
 
+wxDECLARE_EVENT(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, wxThreadEvent);
+
+namespace slade
+{
 class ArchiveManagerPanel;
 class ArchivePanel;
 class Archive;
 class STabCtrl;
 class TextureXEditor;
 class EntryPanel;
-
-wxDECLARE_EVENT(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, wxThreadEvent);
 
 struct DirArchiveChangeList
 {
@@ -42,10 +44,7 @@ private:
 			const wxString& file_path     = "",
 			bool            is_dir        = false,
 			time_t          file_modified = 0) :
-			entry_path{ entry_path },
-			file_path{ file_path },
-			is_dir{ is_dir },
-			file_modified{ file_modified }
+			entry_path{ entry_path }, file_path{ file_path }, is_dir{ is_dir }, file_modified{ file_modified }
 		{
 		}
 	};
@@ -70,13 +69,14 @@ public:
 	void onItemActivated(wxTreeEvent& e);
 };
 
-class ArchiveManagerPanel : public DockPanel, Listener, SActionHandler
+class ArchiveManagerPanel : public DockPanel, SActionHandler
 {
 public:
 	ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives);
 	~ArchiveManagerPanel() = default;
 
-	wxMenu* getRecentMenu() const { return menu_recent_; }
+	wxMenu* recentFilesMenu() const { return menu_recent_; }
+	wxMenu* bookmarksMenu() const { return menu_bookmarks_; }
 
 	// DockPanel layout
 	void createArchivesPanel();
@@ -155,8 +155,6 @@ public:
 	vector<int> selectedBookmarks() const;
 	vector<int> selectedFiles() const;
 
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
-
 	// Event handlers
 	void onListArchivesChanged(wxListEvent& e);
 	void onListArchivesActivated(wxListEvent& e);
@@ -180,9 +178,16 @@ private:
 	ListView*        list_bookmarks_              = nullptr;
 	WMFileBrowser*   file_browser_                = nullptr;
 	wxMenu*          menu_recent_                 = nullptr;
+	wxMenu*          menu_bookmarks_              = nullptr;
 	Archive*         current_maps_                = nullptr;
 	Archive*         pending_closed_archive_      = nullptr;
 	bool             asked_save_unchanged_        = false;
 	bool             checked_dir_archive_changes_ = false;
 	vector<Archive*> checking_archives_;
+
+	// Signal connections
+	ScopedConnectionList signal_connections;
+
+	void connectSignals();
 };
+} // namespace slade

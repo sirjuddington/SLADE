@@ -2,5 +2,5 @@
 -- Archive scripts can be selected and run from the "Archive->Scripts" menu
 
 function Execute(archive)
-    -- Write your archive script here
+   -- Write your archive script here
 end

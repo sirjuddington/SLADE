@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,9 @@
 #include "Main.h"
 #include "ModMusic.h"
 #include "thirdparty/dumb/dumb.h"
+
+using namespace slade;
+using namespace audio;
 
 
 // -----------------------------------------------------------------------------
@@ -79,7 +82,7 @@ bool ModMusic::openFromFile(const string& filename)
 	}
 	else
 	{
-		Log::error(fmt::format("Failed to load module music file \"{}\"", filename.c_str()));
+		log::error(fmt::format("Failed to load module music file \"{}\"", filename.c_str()));
 		return false;
 	}
 }
@@ -106,7 +109,7 @@ bool ModMusic::loadFromMemory(const uint8_t* data, const uint32_t size)
 	}
 	else
 	{
-		Log::error("Failed to load module music data");
+		log::error("Failed to load module music data");
 		return false;
 	}
 }

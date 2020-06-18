@@ -2,6 +2,8 @@
 
 #include "Archive/Archive.h"
 
+namespace slade
+{
 class ChasmBinArchive : public Archive
 {
 public:
@@ -24,3 +26,4 @@ private:
 	static const uint32_t ENTRY_SIZE      = NAME_SIZE + 4 + 4; // name + size + offset
 	static const uint16_t MAX_ENTRY_COUNT = 2048;              // the same for Demo and Full versions
 };
+} // namespace slade

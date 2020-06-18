@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -38,7 +38,8 @@
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
-using namespace Game;
+using namespace slade;
+using namespace game;
 
 
 // -----------------------------------------------------------------------------
@@ -78,9 +79,9 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 		if (tz.checkNext(":"))
 		{
 			// Add to list of current states
-			states.emplace_back(StrUtil::lower(tz.current().text));
+			states.emplace_back(strutil::lower(tz.current().text));
 			if (state_first.empty())
-				state_first = StrUtil::lower(tz.current().text);
+				state_first = strutil::lower(tz.current().text);
 
 			tz.adv();
 		}
@@ -97,7 +98,7 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 			}
 
 			// Set sprite for current states (if it is defined)
-			if (!(StrUtil::contains(tz.current().text, '#') || StrUtil::contains(tz.current().text, '-')))
+			if (!(strutil::contains(tz.current().text, '#') || strutil::contains(tz.current().text, '-')))
 				for (auto& state : states)
 					state_sprites[state] = tz.current().text + tz.peek().text[0];
 
@@ -128,7 +129,7 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 	if (!state_sprites[state_first].empty())
 		props["sprite"] = state_sprites[state_first] + "?";
 
-	Log::debug(2, "Parsed states, got sprite {}", props["sprite"].stringValue());
+	log::debug(2, "Parsed states, got sprite {}", property::asString(props["sprite"]));
 
 
 
@@ -220,7 +221,7 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 	//			{
 	//				priority = mypriority;
 	//				props["sprite"] = sprite;
-	//				//Log::info(3, "Actor %s found sprite %s from state %s", name, sprite, spritestate);
+	//				//log::info(3, "Actor %s found sprite %s from state %s", name, sprite, spritestate);
 	//				lastpriority = -1;
 	//			}
 	//		}
@@ -330,7 +331,11 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 
 			// Scale
 			else if (tz.checkNC("scale"))
-				found_props["scalex"] = found_props["scaley"] = tz.next().asFloat();
+			{
+				auto val              = tz.next().asFloat();
+				found_props["scalex"] = val;
+				found_props["scaley"] = val;
+			}
 			else if (tz.checkNC("xscale"))
 				found_props["scalex"] = tz.next().asFloat();
 			else if (tz.checkNC("yscale"))
@@ -400,7 +405,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 				found_props["solid"] = true;
 
 			// Unrecognised DB comment prop
-			else if (StrUtil::startsWith(tz.current().text, "//$"))
+			else if (strutil::startsWith(tz.current().text, "//$"))
 			{
 				tz.advToNextLine();
 				continue;
@@ -416,10 +421,10 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 			tz.adv();
 		}
 
-		Log::info(3, "Parsed actor {}: {}", name, ednum);
+		log::info(3, "Parsed actor {}: {}", name, ednum);
 	}
 	else
-		Log::warning("Warning: Invalid actor definition for {}", name);
+		log::warning("Warning: Invalid actor definition for {}", name);
 
 	// Ignore actors filtered for other games,
 	// and actors with a negative or null type
@@ -432,7 +437,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 		if (ednum <= 0)
 		{
 			for (auto& ptype : parsed)
-				if (StrUtil::equalCI(ptype.className(), actor_name))
+				if (strutil::equalCI(ptype.className(), actor_name))
 				{
 					def = &ptype;
 					break;
@@ -461,7 +466,7 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 		// Inherit from parent
 		if (!parent.empty())
 			for (auto& ptype : parsed)
-				if (StrUtil::equalCI(ptype.className(), parent))
+				if (strutil::equalCI(ptype.className(), parent))
 				{
 					def->copy(ptype);
 					break;
@@ -557,10 +562,10 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 		// Set parsed properties
 		types[type].loadProps(found_props);
 
-		Log::info(3, "Parsed {} {}: {}", group.length() ? group : "decoration", name, type);
+		log::info(3, "Parsed {} {}: {}", group.length() ? group : "decoration", name, type);
 	}
 	else
-		Log::info(3, "Not adding {} {}, no editor number", group.length() ? group : "decoration", name);
+		log::info(3, "Not adding {} {}, no editor number", group.length() ? group : "decoration", name);
 }
 
 // -----------------------------------------------------------------------------
@@ -585,7 +590,7 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 			// Check #include path could be resolved
 			if (!inc_entry)
 			{
-				Log::warning(
+				log::warning(
 					"Warning parsing DECORATE entry {}: "
 					"Unable to find #included entry \"{}\" at line {}, skipping",
 					entry->name(),
@@ -625,7 +630,7 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 // -----------------------------------------------------------------------------
 // Parses all DECORATE thing definitions in [archive] and adds them to [types]
 // -----------------------------------------------------------------------------
-bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, vector<ThingType>& parsed)
+bool game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, vector<ThingType>& parsed)
 {
 	if (!archive)
 		return false;
@@ -638,7 +643,7 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, v
 	if (decorate_entries.empty())
 		return false;
 
-	Log::info(2, "Parsing DECORATE entries found in archive {}", archive->filename());
+	log::info(2, "Parsing DECORATE entries found in archive {}", archive->filename());
 
 	// Get DECORATE entry type (all parsed DECORATE entries will be set to this)
 	etype_decorate = EntryType::fromId("decorate");
@@ -660,34 +665,34 @@ bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, v
 // -----------------------------------------------------------------------------
 
 
-#include "General/Console/Console.h"
+#include "General/Console.h"
 #include "MainEditor/MainEditor.h"
 CONSOLE_COMMAND(test_decorate, 0, false)
 {
-	auto archive = MainEditor::currentArchive();
+	auto archive = maineditor::currentArchive();
 	if (!archive)
 		return;
 
-	std::map<int, Game::ThingType> types;
+	std::map<int, game::ThingType> types;
 	vector<ThingType>              parsed;
 
 	if (args.empty())
-		Game::readDecorateDefs(archive, types, parsed);
+		game::readDecorateDefs(archive, types, parsed);
 	else
 	{
 		auto entry = archive->entryAtPath(args[0]);
 		if (entry)
 			parseDecorateEntry(entry, types, parsed);
 		else
-			Log::console("Entry not found");
+			log::console("Entry not found");
 	}
 
 	for (auto& i : types)
-		Log::console(fmt::format("{}: {}", i.first, i.second.stringDesc()));
+		log::console(fmt::format("{}: {}", i.first, i.second.stringDesc()));
 	if (!parsed.empty())
 	{
-		Log::console("Parsed types with no DoomEdNum:");
+		log::console("Parsed types with no DoomEdNum:");
 		for (auto& i : parsed)
-			Log::console(fmt::format("{}: {}", i.className(), i.stringDesc()));
+			log::console(fmt::format("{}: {}", i.className(), i.stringDesc()));
 	}
 }

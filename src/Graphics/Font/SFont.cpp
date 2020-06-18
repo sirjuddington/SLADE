@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,11 +33,13 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SFont.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
 
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -142,8 +144,8 @@ bool SFont::loadFontM(MemChunk& mc)
 
 	// Load the generated image to the font texture
 	if (texture_ > 0)
-		OpenGL::Texture::clear(texture_);
-	texture_ = OpenGL::Texture::createFromImage(image);
+		gl::Texture::clear(texture_);
+	texture_ = gl::Texture::createFromImage(image);
 
 	return true;
 }
@@ -162,14 +164,14 @@ bool SFont::loadBMF(MemChunk& mc)
 void SFont::drawCharacter(char c, ColRGBA colour)
 {
 	// Check texture is loaded
-	if (!OpenGL::Texture::isLoaded(texture_))
+	if (!gl::Texture::isLoaded(texture_))
 		return;
 
 	// Bind texture
-	OpenGL::Texture::bind(texture_);
+	gl::Texture::bind(texture_);
 
 	// Set colour
-	OpenGL::setColour(colour);
+	gl::setColour(colour);
 
 	// Get character to draw
 	auto& ch = characters_[(uint8_t)c];
@@ -178,7 +180,7 @@ void SFont::drawCharacter(char c, ColRGBA colour)
 
 	// Draw it
 	Rectf tex_rect;
-	auto& tex_info = OpenGL::Texture::info(texture_);
+	auto& tex_info = gl::Texture::info(texture_);
 	tex_rect.tl.set(
 		(double)ch.tex_bounds_.x1() / (double)tex_info.size.x, (double)ch.tex_bounds_.y1() / (double)tex_info.size.y);
 	tex_rect.br.set(
@@ -201,14 +203,14 @@ void SFont::drawCharacter(char c, ColRGBA colour)
 void SFont::drawString(string_view str, ColRGBA colour, SFont::Align align)
 {
 	// Check texture is loaded
-	if (!OpenGL::Texture::isLoaded(texture_))
+	if (!gl::Texture::isLoaded(texture_))
 		return;
 
 	// Bind texture
-	OpenGL::Texture::bind(texture_);
+	gl::Texture::bind(texture_);
 
 	// Set colour
-	OpenGL::setColour(colour);
+	gl::setColour(colour);
 
 	// Determine string length (for alignment)
 	int total_width = 0;
@@ -245,7 +247,7 @@ void SFont::drawString(string_view str, ColRGBA colour, SFont::Align align)
 
 		// Draw it
 		Rectf tex_rect;
-		auto& tex_info = OpenGL::Texture::info(texture_);
+		auto& tex_info = gl::Texture::info(texture_);
 		tex_rect.tl.set(
 			(double)ch.tex_bounds_.x1() / (double)tex_info.size.x,
 			(double)ch.tex_bounds_.y1() / (double)tex_info.size.y);
@@ -299,7 +301,7 @@ SFont& SFont::vgaFont()
 	if (!font_vga_.texture_)
 	{
 		// Get vga font entry
-		auto entry_vgafont = App::archiveManager().programResourceArchive()->entryAtPath("vga-rom-font.16");
+		auto entry_vgafont = app::archiveManager().programResourceArchive()->entryAtPath("vga-rom-font.16");
 
 		// Load font
 		if (entry_vgafont)

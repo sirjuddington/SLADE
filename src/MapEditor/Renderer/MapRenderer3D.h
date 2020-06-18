@@ -1,18 +1,19 @@
 #pragma once
 
-#include "General/ListenerAnnouncer.h"
 #include "MapEditor/Edit/Edit3D.h"
 #include "SLADEMap/SLADEMap.h"
 
+namespace slade
+{
 class ItemSelection;
 class Polygon2D;
 
-namespace Game
+namespace game
 {
-class ThingType;
+	class ThingType;
 }
 
-class MapRenderer3D : public Listener
+class MapRenderer3D
 {
 public:
 	// Structs
@@ -65,7 +66,7 @@ public:
 	struct Thing
 	{
 		uint8_t                flags        = 0;
-		Game::ThingType const* type         = nullptr;
+		game::ThingType const* type         = nullptr;
 		MapSector*             sector       = nullptr;
 		float                  z            = 0.f;
 		float                  height       = 0.f;
@@ -99,11 +100,12 @@ public:
 
 	bool init();
 	void refresh();
+	void refreshTextures();
 	void clearData();
 	void buildSkyCircle();
 
-	Quad* getQuad(MapEditor::Item item);
-	Flat* getFlat(MapEditor::Item item);
+	Quad* getQuad(mapeditor::Item item);
+	Flat* getFlat(mapeditor::Item item);
 
 	// Camera
 	void cameraMove(double distance, bool z = true);
@@ -178,11 +180,8 @@ public:
 	void  checkVisibleFlats();
 
 	// Hilight
-	MapEditor::Item determineHilight();
-	void            renderHilight(MapEditor::Item hilight, float alpha = 1.0f);
-
-	// Listener stuff
-	void onAnnouncement(Announcer* announcer, string_view event_name, MemChunk& event_data) override;
+	mapeditor::Item determineHilight();
+	void            renderHilight(mapeditor::Item hilight, float alpha = 1.0f);
 
 private:
 	SLADEMap* map_;
@@ -235,4 +234,9 @@ private:
 	ColRGBA skycol_top_;
 	ColRGBA skycol_bottom_;
 	Vec2d   sky_circle_[32];
+
+	// Signal connections
+	sigslot::scoped_connection sc_resources_updated_;
+	sigslot::scoped_connection sc_palette_changed_;
 };
+} // namespace slade

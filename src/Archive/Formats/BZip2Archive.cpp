@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,6 +34,8 @@
 #include "Utility/Compression.h"
 #include "Utility/StringUtils.h"
 
+using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -61,33 +63,27 @@ bool BZip2Archive::open(MemChunk& mc)
 		return false;
 
 	// Build name from filename
-	StrUtil::Path fn(filename(false));
+	strutil::Path fn(filename(false));
 	auto          ext = fn.extension();
-	if (StrUtil::equalCI(ext, "tbz") || StrUtil::equalCI(ext, "tb2") || StrUtil::equalCI(ext, "tbz2"))
+	if (strutil::equalCI(ext, "tbz") || strutil::equalCI(ext, "tb2") || strutil::equalCI(ext, "tbz2"))
 		fn.setExtension("tar");
-	else if (StrUtil::equalCI(ext, "bz2"))
+	else if (strutil::equalCI(ext, "bz2"))
 		fn.setExtension({});
 
 	// Let's create the entry
-	setMuted(true);
-	auto     entry = std::make_shared<ArchiveEntry>(fn.fileName(), size);
-	MemChunk xdata;
-	if (Compression::bzip2Decompress(mc, xdata))
-	{
+	ArchiveModSignalBlocker sig_blocker{ *this };
+	auto                    entry = std::make_shared<ArchiveEntry>(fn.fileName(), size);
+	MemChunk                xdata;
+	if (compression::bzip2Decompress(mc, xdata))
 		entry->importMemChunk(xdata);
-	}
 	else
-	{
-		setMuted(false);
 		return false;
-	}
 	rootDir()->addEntry(entry);
 	EntryType::detectEntryType(*entry);
 	entry->setState(ArchiveEntry::State::Unmodified);
 
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
 	// Finish
 	return true;
@@ -100,7 +96,7 @@ bool BZip2Archive::open(MemChunk& mc)
 bool BZip2Archive::write(MemChunk& mc, bool update)
 {
 	if (numEntries() == 1)
-		return Compression::bzip2Compress(entryAt(0)->data(), mc);
+		return compression::bzip2Compress(entryAt(0)->data(), mc);
 
 	return false;
 }
@@ -130,7 +126,7 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		Log::error("BZip2Archive::loadEntryData: Failed to open gzip file {}", filename_);
+		log::error("BZip2Archive::loadEntryData: Failed to open gzip file {}", filename_);
 		return false;
 	}
 
@@ -151,7 +147,7 @@ bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
 ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 {
 	// Init search variables
-	StrUtil::upperIP(options.match_name);
+	strutil::upperIP(options.match_name);
 	auto entry = entryAt(0);
 	if (entry == nullptr)
 		return entry;
@@ -175,7 +171,7 @@ ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
 	// Check name
 	if (!options.match_name.empty())
 	{
-		if (!StrUtil::matches(entry->upperName(), options.match_name))
+		if (!strutil::matches(entry->upperName(), options.match_name))
 		{
 			return nullptr;
 		}

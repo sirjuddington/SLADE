@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,8 @@
 #include "TarArchive.h"
 #include "General/UI.h"
 #include "Utility/StringUtils.h"
+
+using namespace slade;
 
 
 // -----------------------------------------------------------------------------
@@ -271,8 +273,8 @@ bool TarArchive::open(MemChunk& mc)
 	mc.seek(0, SEEK_SET);
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	setMuted(true);
-	UI::setSplashProgressMessage("Reading tar archive data");
+	ArchiveModSignalBlocker sig_blocker{ *this };
+	ui::setSplashProgressMessage("Reading tar archive data");
 
 	// Two consecutive empty blocks mark the end of the file
 	int blankcount = 0;
@@ -282,12 +284,12 @@ bool TarArchive::open(MemChunk& mc)
 	{
 		// Update splash window progress
 		// Since there is no directory in Unix tape archives, use the size
-		UI::setSplashProgress(((float)mc.currentPos() / (float)mc.size()));
+		ui::setSplashProgress(((float)mc.currentPos() / (float)mc.size()));
 
 		// Read tar header
 		TarHeader header;
 		mc.read(&header, 512);
-		if (!StrUtil::equalCI(header.magic, TMAGIC))
+		if (!strutil::equalCI(header.magic, TMAGIC))
 		{
 			if (tarMakeChecksum(&header) == 0)
 			{
@@ -305,7 +307,7 @@ bool TarArchive::open(MemChunk& mc)
 
 		if (!tarChecksum(&header))
 		{
-			Log::warning("Invalid checksum for block at 0x{:x}", mc.currentPos() - 512);
+			log::warning("Invalid checksum for block at 0x{:x}", mc.currentPos() - 512);
 			continue;
 		}
 
@@ -324,10 +326,10 @@ bool TarArchive::open(MemChunk& mc)
 		if ((int)header.typeflag == AREGTYPE || (int)header.typeflag == REGTYPE)
 		{
 			// Create directory if needed
-			auto dir = createDir(StrUtil::Path::pathOf(name));
+			auto dir = createDir(strutil::Path::pathOf(name));
 
 			// Create entry
-			auto entry              = std::make_shared<ArchiveEntry>(StrUtil::Path::fileNameOf(name), size);
+			auto entry              = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(name), size);
 			entry->exProp("Offset") = (int)mc.currentPos();
 			entry->setLoaded(false);
 			entry->setState(ArchiveEntry::State::Unmodified);
@@ -357,11 +359,11 @@ bool TarArchive::open(MemChunk& mc)
 	MemChunk              edata;
 	vector<ArchiveEntry*> all_entries;
 	putEntryTreeAsList(all_entries);
-	UI::setSplashProgressMessage("Detecting entry types");
+	ui::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
 		// Update splash window progress
-		UI::setSplashProgress((((float)a / (float)all_entries.size())));
+		ui::setSplashProgress((((float)a / (float)all_entries.size())));
 
 		// Get entry
 		auto entry = all_entries[a];
@@ -370,7 +372,7 @@ bool TarArchive::open(MemChunk& mc)
 		if (entry->size() > 0)
 		{
 			// Read the entry data
-			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->size());
+			mc.exportMemChunk(edata, entry->exProp<int>("Offset"), entry->size());
 			entry->importMemChunk(edata);
 		}
 
@@ -386,11 +388,10 @@ bool TarArchive::open(MemChunk& mc)
 	}
 
 	// Setup variables
-	setMuted(false);
+	sig_blocker.unblock();
 	setModified(false);
-	announce("opened");
 
-	UI::setSplashProgressMessage("");
+	ui::setSplashProgressMessage("");
 
 	return true;
 }
@@ -425,8 +426,8 @@ bool TarArchive::write(MemChunk& mc, bool update)
 		name.erase(0, 1); // Remove leading /
 		if (name.size() > 99)
 		{
-			Log::warning("Entry %s path is too long (> 99 characters), putting it in the root directory", name);
-			auto fname = StrUtil::Path::fileNameOf(name);
+			log::warning("Entry %s path is too long (> 99 characters), putting it in the root directory", name);
+			auto fname = strutil::Path::fileNameOf(name);
 			name       = fname.size() > 99 ? fname.substr(0, 99) : fname;
 		}
 		memcpy(header.name, name.data(), name.size());
@@ -485,12 +486,12 @@ bool TarArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		Log::error("TarArchive::loadEntryData: Unable to open archive file {}", filename_);
+		log::error("TarArchive::loadEntryData: Unable to open archive file {}", filename_);
 		return false;
 	}
 
 	// Seek to entry offset in file and read it in
-	file.Seek((int)entry->exProp("Offset"), wxFromStart);
+	file.Seek(entry->exProp<int>("Offset"), wxFromStart);
 	entry->importFileStream(file, entry->size());
 
 	// Set the lump to loaded
@@ -519,7 +520,7 @@ bool TarArchive::isTarArchive(MemChunk& mc)
 		// Read tar header
 		TarHeader header;
 		mc.read(&header, 512);
-		if (!StrUtil::equalCI(header.magic, TMAGIC))
+		if (!strutil::equalCI(header.magic, TMAGIC))
 		{
 			if (tarMakeChecksum(&header) == 0)
 			{
@@ -573,7 +574,7 @@ bool TarArchive::isTarArchive(const string& filename)
 		// Read tar header
 		TarHeader header;
 		file.Read(&header, 512);
-		if (!StrUtil::equalCI(header.magic, TMAGIC))
+		if (!strutil::equalCI(header.magic, TMAGIC))
 		{
 			if (tarMakeChecksum(&header) == 0)
 			{
