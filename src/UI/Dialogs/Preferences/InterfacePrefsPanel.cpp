@@ -245,7 +245,8 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	int row = 0;
 	gb_sizer->Add(cb_size_as_string_, { row++, 0 }, { 1, 4 }, wxEXPAND);
 	gb_sizer->Add(cb_filter_dirs_, { row++, 0 }, { 1, 4 }, wxEXPAND);
-	gb_sizer->Add(cb_elist_bgcol_, { row++, 0 }, { 1, 4 }, wxEXPAND);
+	//gb_sizer->Add(cb_elist_bgcol_, { row++, 0 }, { 1, 4 }, wxEXPAND);
+	cb_elist_bgcol_->Show(false);
 	gb_sizer->Add(cb_context_submenus_, { row++, 0 }, { 1, 4 }, wxEXPAND);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Icon size:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(choice_elist_icon_size_, { row, 1 }, { 1, 1 }, wxEXPAND);

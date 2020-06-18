@@ -645,14 +645,10 @@ void ArchivePanel::addMenus() const
 	if (!menu_archive)
 	{
 		// Archive menu
-		auto menu_new = new wxMenu("");
-		SAction::fromId("arch_newentry")->addToMenu(menu_new, "&Entry");
-		SAction::fromId("arch_newdir")->addToMenu(menu_new, "&Directory");
-		SAction::fromId("arch_newpalette")->addToMenu(menu_new, "&PLAYPAL");
-		SAction::fromId("arch_newanimated")->addToMenu(menu_new, "&ANIMATED");
-		SAction::fromId("arch_newswitches")->addToMenu(menu_new, "&SWITCHES");
 		menu_archive = new wxMenu();
-		menu_archive->AppendSubMenu(menu_new, "&New");
+		SAction::fromId("arch_newentry")->addToMenu(menu_archive);
+		SAction::fromId("arch_newdir")->addToMenu(menu_archive);
+		menu_archive->AppendSeparator();
 		SAction::fromId("arch_importfiles")->addToMenu(menu_archive);
 		SAction::fromId("arch_buildarchive")->addToMenu(menu_archive);
 		menu_archive->AppendSeparator();
