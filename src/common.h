@@ -50,7 +50,6 @@
 #include <wx/listbox.h>
 #include <wx/listctrl.h>
 #include <wx/log.h>
-#include <wx/mediactrl.h>
 #include <wx/menu.h>
 #include <wx/minifram.h>
 #include <wx/msgdlg.h>

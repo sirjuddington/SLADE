@@ -6,14 +6,14 @@
 namespace slade::audio
 {
 class ModMusic;
-}
+class Mp3Music;
+} // namespace slade::audio
 namespace sf
 {
 class SoundBuffer;
 class Sound;
 class Music;
 } // namespace sf
-class wxMediaCtrl;
 
 namespace slade
 {
@@ -37,8 +37,8 @@ private:
 		Sound,
 		Music,
 		MIDI,
-		Media,
 		Mod,
+		Mp3,
 		Emu,
 		OPL,
 	};
@@ -59,7 +59,6 @@ private:
 	wxSlider*       slider_seek_   = nullptr;
 	wxSlider*       slider_volume_ = nullptr;
 	wxTimer*        timer_seek_    = nullptr;
-	wxMediaCtrl*    media_ctrl_    = nullptr;
 	wxStaticText*   txt_title_     = nullptr;
 	wxStaticText*   txt_track_     = nullptr;
 	wxTextCtrl*     txt_info_      = nullptr;
@@ -68,12 +67,13 @@ private:
 	unique_ptr<sf::Sound>       sound_;
 	unique_ptr<sf::Music>       music_;
 	unique_ptr<audio::ModMusic> mod_;
+	unique_ptr<audio::Mp3Music> mp3_;
 
 	bool open(ArchiveEntry* entry);
 	bool openAudio(MemChunk& audio, const wxString& filename);
 	bool openMidi(MemChunk& data, const wxString& filename);
 	bool openMod(MemChunk& data);
-	bool openMedia(const wxString& filename);
+	bool openMp3(MemChunk& data);
 	bool updateInfo() const;
 	void startStream();
 	void stopStream() const;
