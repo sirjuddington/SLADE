@@ -630,7 +630,7 @@ public:
 	// -------------------------------------------------------------------------
 	// TimidityMIDIPlayer class destructor
 	// -------------------------------------------------------------------------
-	virtual ~TimidityMIDIPlayer() { delete program_; }
+	virtual ~TimidityMIDIPlayer() { stop(); }
 
 	// -------------------------------------------------------------------------
 	// Returns true if the MIDIPlayer has a soundfont loaded
@@ -677,11 +677,15 @@ public:
 		stop();
 		timer_.restart();
 
-		auto commandline = fmt::format("{} {} {}", snd_timidity_path, file_, snd_timidity_options);
-		if (!((program_ = wxProcess::Open(commandline))))
-			return false;
+		// Setup environment and command line to run
+		wxExecuteEnv env;
+		env.cwd          = string{ strutil::Path::pathOf(snd_timidity_path) };
+		auto commandline = fmt::format("\"{}\" \"{}\" {}", snd_timidity_path, file_, snd_timidity_options);
 
-		return wxProcess::Exists(program_->GetPid());
+		// Execute program
+		pid_ = wxExecute(commandline, wxEXEC_ASYNC | wxEXEC_HIDE_CONSOLE, nullptr, &env);
+
+		return pid_ > 0 && wxProcess::Exists(pid_);
 	}
 
 	// -------------------------------------------------------------------------
@@ -702,18 +706,18 @@ public:
 	{
 		bool stopped = false;
 
-		if (program_)
+		if (pid_ > 0)
 		{
-			int pid = program_->GetPid();
 			if (isPlaying())
 			{
 				if (app::platform() == app::Platform::Windows)
-					wxProcess::Kill(pid, wxSIGKILL, wxKILL_CHILDREN);
+					wxProcess::Kill(pid_, wxSIGKILL, wxKILL_CHILDREN);
 				else
-					wxProcess::Kill(pid);
+					wxProcess::Kill(pid_);
 			}
 
-			stopped = !(wxProcess::Exists(pid));
+			stopped = !(wxProcess::Exists(pid_));
+			pid_    = 0;
 		}
 
 		return stopped;
@@ -724,11 +728,10 @@ public:
 	// -------------------------------------------------------------------------
 	bool isPlaying() override
 	{
-		if (!program_)
+		if (pid_ <= 0)
 			return false;
 
-		int pid = program_->GetPid();
-		return !(!pid || !wxProcess::Exists(pid)); // also ignore zero pid
+		return !(!pid_ || !wxProcess::Exists(pid_)); // also ignore zero pid
 	}
 
 	// -------------------------------------------------------------------------
@@ -759,7 +762,7 @@ public:
 	}
 
 private:
-	wxProcess* program_ = nullptr;
+	long pid_ = 0;
 };
 
 
