@@ -976,20 +976,20 @@ bool ArchiveManagerPanel::entryIsOpenInTab(ArchiveEntry* entry) const
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 {
-	// Close the same entry in archive tab
-	auto panel = tabForArchive(entry->parent());
-	panel->closeCurrentEntry();
-
 	// First check if the entry is already open in a tab
 	if (redirectToTab(entry))
+		return;
+
+	// Switch to the default entry panel in the archive tab
+	auto panel = tabForArchive(entry->parent());
+	if (!panel->switchToDefaultEntryPanel())
 		return;
 
 	// Create an EntryPanel for the entry
 	auto ep = ArchivePanel::createPanelForEntry(entry, stc_archives_);
 	ep->openEntry(entry);
 
-	// Don't bother with the default entry panel
-	// (it's absolutely useless to open in a tab)
+	// Don't bother with the default entry panel (it's absolutely useless to open in a tab)
 	if (ep->name() == "default")
 	{
 		delete ep;

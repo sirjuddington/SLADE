@@ -3038,10 +3038,7 @@ bool ArchivePanel::openEntryAsText(ArchiveEntry* entry)
 	// First check if the entry is already open in its own tab
 	auto panel = theMainWindow->archiveManagerPanel();
 	if (panel->redirectToTab(entry))
-	{
-		// closeCurrentEntry();
 		return true;
-	}
 
 	// Load the current entry into the panel
 	if (!text_area_->openEntry(entry))
@@ -3063,10 +3060,7 @@ bool ArchivePanel::openEntryAsHex(ArchiveEntry* entry)
 	// First check if the entry is already open in its own tab
 	auto panel = theMainWindow->archiveManagerPanel();
 	if (panel->redirectToTab(entry))
-	{
-		// closeCurrentEntry();
 		return true;
-	}
 
 	// Load the current entry into the panel
 	if (!hex_area_->openEntry(entry))
@@ -3151,7 +3145,7 @@ bool ArchivePanel::showEntryPanel(EntryPanel* new_area, bool ask_save)
 void ArchivePanel::refreshPanel()
 {
 	// Refresh entry list
-	// entry_list_->applyFilter();
+	updateFilter();
 
 	// Refresh current entry panel
 	cur_area_->refreshPanel();
@@ -3205,6 +3199,22 @@ wxMenu* ArchivePanel::createEntryOpenMenu(const wxString& category)
 	SAction::fromId("arch_entry_setup_external")->addToMenu(menu_open);
 
 	return menu_open;
+}
+
+// -----------------------------------------------------------------------------
+// Switches to the default entry panel.
+// Returns false if the current entry couldn't be opened in the default entry
+// panel, or if the current panel has unsaved changes and the user cancelled
+// -----------------------------------------------------------------------------
+bool ArchivePanel::switchToDefaultEntryPanel()
+{
+	if (cur_area_ == default_area_)
+		return true;
+
+	if (default_area_->openEntry(cur_area_->entry()))
+		return showEntryPanel(default_area_);
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------

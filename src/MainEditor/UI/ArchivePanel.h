@@ -100,6 +100,7 @@ public:
 	void    refreshPanel();
 	void    closeCurrentEntry();
 	wxMenu* createEntryOpenMenu(const wxString& category);
+	bool    switchToDefaultEntryPanel();
 
 	// SAction handler
 	bool handleAction(string_view id) override;
