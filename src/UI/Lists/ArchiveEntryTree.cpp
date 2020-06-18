@@ -84,6 +84,7 @@ EXTERN_CVAR(Bool, elist_filter_dirs)
 EXTERN_CVAR(Bool, elist_colsize_show)
 EXTERN_CVAR(Bool, elist_coltype_show)
 EXTERN_CVAR(Bool, elist_colindex_show)
+EXTERN_CVAR(Bool, list_font_monospace)
 
 
 // -----------------------------------------------------------------------------
@@ -115,7 +116,7 @@ bool archiveSupportsDirs(Archive* archive)
 // -----------------------------------------------------------------------------
 void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* undo_manager)
 {
-	archive_ = archive;
+	archive_      = archive;
 	undo_manager_ = undo_manager;
 
 	// Add root items
@@ -353,7 +354,7 @@ bool ArchiveViewModel::SetValue(const wxVariant& variant, const wxDataViewItem& 
 	// Name column
 	if (col == 0)
 	{
-		bool ok = false;
+		bool               ok = false;
 		wxDataViewIconText value;
 		value << variant;
 		auto new_name = value.GetText();
@@ -392,7 +393,7 @@ bool ArchiveViewModel::SetValue(const wxVariant& variant, const wxDataViewItem& 
 
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -631,6 +632,8 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 {
 	// Init settings
 	SetRowHeight(ui::scalePx(elist_icon_size + (elist_icon_padding * 2) + 2));
+	if (list_font_monospace)
+		SetFont(wxutil::monospaceFont(GetFont()));
 
 	// Create & associate model
 	model_ = new ArchiveViewModel();
