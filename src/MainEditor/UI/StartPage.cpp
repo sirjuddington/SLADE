@@ -303,7 +303,7 @@ void SStartPage::load(bool new_tip)
 	}
 
 	// Get html as string
-	string html = wxString::FromAscii((const char*)(entry_html->rawData()), entry_html->size());
+	wxString html = wxString::FromAscii((const char*)(entry_html->rawData()), entry_html->size());
 
 	// Generate tip of the day string
 	string tip;
@@ -474,14 +474,14 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 void SStartPage::onHTMLLinkClicked(wxEvent& e)
 {
 	wxHtmlLinkEvent& ev = (wxHtmlLinkEvent&)e;
-	string href = ev.GetLinkInfo().GetHref();
+	wxString href = ev.GetLinkInfo().GetHref();
 
 	if (href.StartsWith("http://") || href.StartsWith("https://"))
 		wxLaunchDefaultBrowser(ev.GetLinkInfo().GetHref());
 	else if (href.StartsWith("recent://"))
 	{
 		// Recent file
-		string rs = href.Mid(9);
+		wxString rs = href.Mid(9);
 		unsigned long index = 0;
 		rs.ToULong(&index);
 		SActionHandler::setWxIdOffset(index);
