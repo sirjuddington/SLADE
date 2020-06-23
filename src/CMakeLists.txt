@@ -105,7 +105,8 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(CURL REQUIRED)
 find_package(Lua REQUIRED)
-find_package(fmt CONFIG REQUIRED)
+pkg_check_modules(fmt REQUIRED fmt>=6)
+include_directories(${fmt_INCLUDE_DIRS})
 find_package(MPG123 REQUIRED)
 include_directories(
 	${FREEIMAGE_INCLUDE_DIR}
@@ -191,7 +192,7 @@ target_link_libraries(slade
 	${CURL_LIBRARIES}
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
-	fmt::fmt
+	${fmt_LIBRARIES}
 	-lstdc++fs
 )
 
