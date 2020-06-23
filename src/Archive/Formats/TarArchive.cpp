@@ -520,7 +520,7 @@ bool TarArchive::isTarArchive(MemChunk& mc)
 		// Read tar header
 		TarHeader header;
 		mc.read(&header, 512);
-		if (!strutil::equalCI(header.magic, TMAGIC))
+		if (!strutil::equalCI({header.magic, sizeof(header.magic)}, TMAGIC))
 		{
 			if (tarMakeChecksum(&header) == 0)
 			{
