@@ -120,7 +120,12 @@ bool MemChunk::reSize(uint32_t new_size, bool preserve_data)
 		return false;
 
 	// Preserve existing data if specified
-	if (preserve_data)
+	if (!preserve_data)
+	{
+		clear();
+		data_ = ndata;
+	}
+	else if (data_ != nullptr)
 	{
 		memcpy(ndata, data_, size_ * sizeof(uint8_t));
 		delete[] data_;
@@ -128,7 +133,7 @@ bool MemChunk::reSize(uint32_t new_size, bool preserve_data)
 	}
 	else
 	{
-		clear();
+		memset(ndata, 0, size_ * sizeof(uint8_t));
 		data_ = ndata;
 	}
 
