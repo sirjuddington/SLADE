@@ -566,7 +566,7 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
 	RunConfigDialog dlg(this, "Edit Run Config", name, params, custom);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		wxString name         = dlg.name().IsEmpty() ? configs[index].first : dlg.name();
+		wxString name         = dlg.name().IsEmpty() ? wxString(configs[index].first) : dlg.name();
 		configs[index].first  = name;
 		configs[index].second = dlg.params();
 		choice_config_->SetString(index, name);
