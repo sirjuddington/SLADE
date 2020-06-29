@@ -657,7 +657,9 @@ void ArchivePanel::addMenus() const
 		auto menu_clean = createMaintenanceMenu();
 		menu_archive->AppendSubMenu(menu_clean, "&Maintenance")->SetBitmap(icons::getIcon(icons::Type::Any, "wrench"));
 		auto menu_scripts = new wxMenu();
+#ifdef USE_LUA
 		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Archive, "arch_script");
+#endif
 		menu_archive->AppendSubMenu(menu_scripts, "&Run Script");
 	}
 	if (!menu_entry)
@@ -681,7 +683,9 @@ void ArchivePanel::addMenus() const
 		menu_entry->AppendSeparator();
 		// SAction::fromId("arch_entry_bookmark")->addToMenu(menu_entry);
 		auto menu_scripts = new wxMenu();
+#ifdef USE_LUA
 		scriptmanager::populateEditorScriptMenu(menu_scripts, scriptmanager::ScriptType::Entry, "arch_entry_script");
+#endif
 		menu_entry->AppendSubMenu(menu_scripts, "&Run Script");
 	}
 
@@ -3324,9 +3328,11 @@ bool ArchivePanel::handleAction(string_view id)
 		dlg.ShowModal();
 	}
 
+#ifdef USE_LUA
 	// Archive->Scripts->...
 	else if (id == "arch_script")
 		scriptmanager::runArchiveScript(archive.get(), wx_id_offset_);
+#endif
 
 
 	// ------------------------------------------------------------------------
@@ -3404,9 +3410,11 @@ bool ArchivePanel::handleAction(string_view id)
 	else if (id == "arch_entry_openext")
 		openEntryExternal();
 
+#ifdef USE_LUA
 	// Entry->Run Script
 	else if (id == "arch_entry_script")
 		scriptmanager::runEntryScript(entry_tree_->selectedEntries(), wx_id_offset_, maineditor::windowWx());
+#endif
 
 
 	// Context menu actions
@@ -3943,6 +3951,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 #endif
 	}
 
+#ifdef USE_LUA
 	// Entry scripts
 	if (!scriptmanager::editorScripts(scriptmanager::ScriptType::Entry).empty())
 	{
@@ -3951,6 +3960,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		context.AppendSeparator();
 		context.AppendSubMenu(menu_scripts, "Run &Script");
 	}
+#endif
 
 	// Popup the context menu
 	PopupMenu(&context);

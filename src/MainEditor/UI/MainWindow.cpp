@@ -633,12 +633,14 @@ bool MainWindow::handleAction(string_view id)
 	if (id == "main_showstartpage")
 		openStartPageTab();
 
+#ifdef USE_LUA
 	// Tools->Run Script
 	if (id == "main_runscript")
 	{
 		scriptmanager::open();
 		return true;
 	}
+#endif
 
 	// Help->About
 	if (id == "main_about")

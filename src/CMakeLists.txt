@@ -104,7 +104,9 @@ find_package(SFML COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(CURL REQUIRED)
-find_package(Lua REQUIRED)
+if (NOT NO_LUA)
+	find_package(Lua REQUIRED)
+endif()
 pkg_check_modules(fmt REQUIRED fmt>=6)
 include_directories(${fmt_INCLUDE_DIRS})
 find_package(MPG123 REQUIRED)
@@ -134,6 +136,7 @@ endif()
 
 set(SLADE_SOURCES
 )
+set(SLADE_SCRIPTING_SOURCES)
 # Don't include external libraries here as they should be compiled separately
 file(GLOB_RECURSE SLADE_SOURCES
 	Application/*.cpp
@@ -146,12 +149,17 @@ file(GLOB_RECURSE SLADE_SOURCES
 	MainEditor/*.cpp
 	MapEditor/*.cpp
 	OpenGL/*.cpp
-	Scripting/*.cpp
 	SLADEMap/*.cpp
 	TextEditor/*.cpp
 	UI/*.cpp
 	Utility/*.cpp
 	)
+if (NOT NO_LUA)
+	file(GLOB_RECURSE SLADE_SCRIPTING_SOURCES Scripting/*.cpp)
+	set(SLADE_SOURCES ${SLADE_SOURCES} ${SLADE_SCRIPTING_SOURCES})
+	ADD_DEFINITIONS(-DUSE_LUA)
+else ()
+endif ()
 set(SLADE_HEADERS
 )
 file(GLOB_RECURSE SLADE_HEADERS *.h *.hpp)

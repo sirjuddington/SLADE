@@ -266,7 +266,9 @@ void MapEditorWindow::setupMenu()
 	// Tools menu
 	auto menu_tools = new wxMenu("");
 	menu_scripts_   = new wxMenu();
+#ifdef USE_LUA
 	scriptmanager::populateEditorScriptMenu(menu_scripts_, scriptmanager::ScriptType::Map, "mapw_script");
+#endif
 	menu_tools->AppendSubMenu(menu_scripts_, "Run Script");
 	SAction::fromId("mapw_runscript")->addToMenu(menu_tools);
 	menu->Append(menu_tools, "&Tools");
@@ -1060,7 +1062,9 @@ void MapEditorWindow::reloadScriptsMenu() const
 	while (menu_scripts_->FindItemByPosition(0))
 		menu_scripts_->Delete(menu_scripts_->FindItemByPosition(0));
 
+#ifdef USE_LUA
 	scriptmanager::populateEditorScriptMenu(menu_scripts_, scriptmanager::ScriptType::Map, "mapw_script");
+#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -1354,6 +1358,7 @@ bool MapEditorWindow::handleAction(string_view id)
 		return true;
 	}
 
+#ifdef USE_LUA
 	// Tools->Run Script
 	else if (id == "mapw_script")
 	{
@@ -1367,6 +1372,7 @@ bool MapEditorWindow::handleAction(string_view id)
 		scriptmanager::open();
 		return true;
 	}
+#endif
 
 	return false;
 }
