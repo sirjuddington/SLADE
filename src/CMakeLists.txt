@@ -107,7 +107,8 @@ find_package(CURL REQUIRED)
 if (NOT NO_LUA)
 	find_package(Lua REQUIRED)
 endif()
-find_package(fmt CONFIG REQUIRED)
+pkg_check_modules(fmt REQUIRED fmt>=6)
+include_directories(${fmt_INCLUDE_DIRS})
 find_package(MPG123 REQUIRED)
 include_directories(
 	${FREEIMAGE_INCLUDE_DIR}
@@ -199,7 +200,7 @@ target_link_libraries(slade
 	${CURL_LIBRARIES}
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
-	fmt::fmt
+	${fmt_LIBRARIES}
 	-lstdc++fs
 )
 

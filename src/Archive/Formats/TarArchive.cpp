@@ -289,7 +289,7 @@ bool TarArchive::open(MemChunk& mc)
 		// Read tar header
 		TarHeader header;
 		mc.read(&header, 512);
-		if (!strutil::equalCI(header.magic, TMAGIC))
+		if (!strutil::equalCI({header.magic, sizeof(header.magic)}, TMAGIC))
 		{
 			if (tarMakeChecksum(&header) == 0)
 			{
@@ -574,7 +574,7 @@ bool TarArchive::isTarArchive(const string& filename)
 		// Read tar header
 		TarHeader header;
 		file.Read(&header, 512);
-		if (!strutil::equalCI(header.magic, TMAGIC))
+		if (!strutil::equalCI({header.magic, sizeof(header.magic)}, TMAGIC))
 		{
 			if (tarMakeChecksum(&header) == 0)
 			{
