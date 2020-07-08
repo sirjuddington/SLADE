@@ -43,7 +43,10 @@ namespace game
 		bool                      isTrigger() const { return trigger_; }
 		bool                      showAlways() const { return show_always_; }
 		bool                      internalOnly() const { return internal_only_; }
-		template<typename T> bool isDefault(T value) const { return property::value<T>(default_value_) == value; }
+		template<typename T> bool isDefault(T value) const
+		{
+			return has_default_ && property::value<T>(default_value_) == value;
+		}
 
 		void parse(ParseTreeNode* node, string_view group);
 
