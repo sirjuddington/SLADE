@@ -5,6 +5,10 @@ srb2lua {
 	comment_end =  "]]", "*/";
 	comment_line = "--", "//";
 	case_sensitive = true;
+	block_begin = "{";
+	block_end = "}";
+	word_block_begin = "do", "function", "if";
+	word_block_end = "end";
 
 	keywords = {
 		and, break, continue, do, else, elseif, end, false, for, function,
@@ -13,6 +17,10 @@ srb2lua {
 	}
 
 	constants = {
+		false,
+		true,
+		nil,
+
 		// userdata types
 		valid,
 
@@ -100,6 +108,9 @@ srb2lua {
 		FRACUNIT,
 		FRACBITS,
 		TICRATE,
+		NEWTICRATERATIO,
+		NEWTICRATE,
+		MUSICRATE,
 		RING_DIST,
 		PUSHACCEL,
 		MODID,
@@ -112,6 +123,7 @@ srb2lua {
 		MISSILERANGE,
 		ONFLOORZ,
 		ONCEILINGZ,
+		INFLIVES,
 
 		// translucency levels
 		TR_TRANS10,
@@ -125,6 +137,252 @@ srb2lua {
 		TR_TRANS90,
 		NUMTRANSMAPS,
 
+		// frame settings
+		FF_FRAMEMASK,
+		FF_SPR2SUPER,
+		FF_SPR2ENDSTATE,
+		FF_SPR2MIDSTART,
+		FF_TRANSMASK,
+		FF_TRANSSHIFT,
+		FF_TRANS10,
+		FF_TRANS20,
+		FF_TRANS30,
+		FF_TRANS40,
+		FF_TRANS50,
+		FF_TRANS60,
+		FF_TRANS70,
+		FF_TRANS80,
+		FF_TRANS90,
+		FF_FULLBRIGHT,
+		FF_VERTICALFLIP,
+		FF_PAPERSPRITE,
+		FF_ANIMATE,
+		FF_RANDOMANIM,
+		FF_GLOBALANIM,
+		FF_HORIZONTALFLIP,
+
+		// translation colormaps
+		TC_DEFAULT,
+		TC_BOSS,
+		TC_METALSONIC,
+		TC_ALLWHITE,
+		TC_RAINBOW,
+		TC_BLINK,
+		TC_DASHMODE,
+
+		// A_Chase directions
+		DI_NODIR,
+		DI_EAST,
+		DI_NORTHEAST,
+		DI_NORTH,
+		DI_NORTHWEST,
+		DI_WEST,
+		DI_SOUTHWEST,
+		DI_SOUTH,
+		DI_SOUTHEAST,
+		NUMDIRS,
+
+		// damage/death types
+		DMG_WATER,
+		DMG_FIRE,
+		DMG_ELECTRIC,
+		DMG_SPIKE,
+		DMG_NUKE,
+		DMG_INSTAKILL,
+		DMG_DROWNED,
+		DMG_SPACEDROWN,
+		DMG_DEATHPIT,
+		DMG_CRUSHED,
+		DMG_SPECTATOR,
+		DMG_CANHURTSELF,
+		DMG_DEATHMASK,
+
+		// skin flags
+		SF_SUPER,
+		SF_NOSUPERSPIN,
+		SF_NOSPINDASHDUST,
+		SF_HIRES,
+		SF_NOSKID,
+		SF_NOSPEEDADJUST,
+		SF_RUNONWATER,
+		SF_NOJUMPSPIN,
+		SF_NOJUMPDAMAGE,
+		SF_STOMPDAMAGE,
+		SF_MARIODAMAGE,
+		SF_MACHINE,
+		SF_DASHMODE,
+		SF_FASTEDGE,
+		SF_MULTIABILITY,
+		SF_NONIGHTSROTATION,
+		SF_NOSUPERSPRITES,
+
+		// Character abilities
+		CA_NONE,
+		CA_THOK,
+		CA_FLY,
+		CA_GLIDEANDCLIMB,
+		CA_HOMINGTHOK,
+		CA_SWIM,
+		CA_DOUBLEJUMP,
+		CA_FLOAT,
+		CA_SLOWFALL,
+		CA_TELEKINESIS,
+		CA_FALLSWITCH,
+		CA_JUMPBOOST,
+		CA_AIRDRILL,
+		CA_JUMPTHOK,
+		CA_BOUNCE,
+		CA_TWINSPIN,
+		CA2_NONE,
+		CA2_SPINDASH,
+		CA2_GUNSLINGER,
+		CA2_MELEE,
+
+		// player states
+		PST_LIVE,
+		PST_DEAD,
+		PST_REBORN,
+
+		// skin sounds
+		SKSSPIN,
+		SKSPUTPUT,
+		SKSPUDPUD,
+		SKSPLPAN1,
+		SKSPLPAN2,
+		SKSPLPAN3,
+		SKSPLPAN4,
+		SKSPLDET1,
+		SKSPLDET2,
+		SKSPLDET3,
+		SKSPLDET4,
+		SKSPLVCT1,
+		SKSPLVCT2,
+		SKSPLVCT3,
+		SKSPLVCT4,
+		SKSTHOK,
+		SKSSPNDSH,
+		SKSZOOM,
+		SKSSKID,
+		SKSGASP,
+		SKSJUMP,
+
+		// internal player flags
+		PF_FLIPCAM,
+		PF_ANALOGMODE,
+		PF_DIRECTIONCHAR,
+		PF_AUTOBRAKE,
+		PF_GODMODE,
+		PF_NOCLIP,
+		PF_INVIS,
+		PF_ATTACKDOWN,
+		PF_USEDOWN,
+		PF_JUMPDOWN,
+		PF_WPNDOWN,
+		PF_STASIS,
+		PF_JUMPSTASIS,
+		PF_FULLSTASIS,
+		PF_APPLYAUTOBRAKE,
+		PF_STARTJUMP,
+		PF_JUMPED,
+		PF_NOJUMPDAMAGE,
+		PF_STARTDASH,
+		PF_THOKKED,
+		PF_SHIELDABILITY,
+		PF_GLIDING,
+		PF_BOUNCING,
+		PF_SLIDING,
+		PF_TRANSFERTOCLOSEST,
+		PF_DRILLING,
+		PF_GAMETYPEOVER,
+		PF_TAGIT,
+		PF_FORCESTRAFE,
+		PF_CANCARRY,
+		PF_FINISHED,
+
+		// player animations
+		PA_ETC,
+		PA_IDLE,
+		PA_EDGE,
+		PA_WALK,
+		PA_RUN,
+		PA_DASH,
+		PA_PAIN,
+		PA_ROLL,
+		PA_JUMP,
+		PA_SPRING,
+		PA_FALL,
+		PA_ABILITY,
+		PA_ABILITY2,
+		PA_RIDE,
+
+		// shield types
+		SH_NONE,
+		SH_PITY,
+		SH_WHIRLWIND,
+		SH_ARMAGEDDON,
+		SH_PINK,
+		SH_ELEMENTAL,
+		SH_ATTRACT,
+		SH_FLAMEAURA,
+		SH_BUBBLEWRAP,
+		SH_THUNDERCOIN,
+		SH_FORCE,
+		SH_FORCEHP,
+		SH_FIREFLOWER,
+		SH_STACK,
+		SH_NOSTACK,
+		SH_PROTECTFIRE,
+		SH_PROTECTWATER,
+		SH_PROTECTELECTRIC,
+		SH_PROTECTSPIKE,
+
+		// carry types
+		CR_NONE,
+		CR_GENERIC,
+		CR_PLAYER,
+		CR_NIGHTSMODE,
+		CR_NIGHTSFALL,
+		CR_BRAKGOOP,
+		CR_ZOOMTUBE,
+		CR_ROPEHANG,
+		CR_MACESPIN,
+		CR_MINECART,
+		CR_ROLLOUT,
+		CR_PTERABYTE,
+
+		// emerald flags
+		EMERALD1,
+		EMERALD2,
+		EMERALD3,
+		EMERALD4,
+		EMERALD5,
+		EMERALD6,
+		EMERALD7,
+
+		// button flags
+		BT_WEAPONMASK,
+		BT_WEAPONNEXT,
+		BT_WEAPONPREV,
+		BT_ATTACK,
+		BT_USE,
+		BT_CAMLEFT,
+		BT_CAMRIGHT,
+		BT_TOSSFLAG,
+		BT_JUMP,
+		BT_FIRENORMAL,
+		BT_CUSTOM1,
+		BT_CUSTOM2,
+		BT_CUSTOM3,
+
+		// current weapon
+		WEP_AUTO,
+		WEP_BOUNCE,
+		WEP_SCATTER,
+		WEP_GRENADE,
+		WEP_EXPLODE,
+		WEP_RAIL,
+		NUM_WEAPONS,
+
 		// kick reasons
 		KR_KICK,
 		KR_BAN,
@@ -135,14 +393,132 @@ srb2lua {
 
 		// slope flags
 		SL_NOPHYSICS,
-		SL_NODYNAMIC,
-		SL_ANCHORVERTEX,
-		SL_VERTEXSLOPE,
+		SL_DYNAMIC,
 
-		// save override
-		SAVE_NEVER,
-		SAVE_DEFAULT,
-		SAVE_ALWAYS
+		// emblem flags
+		GE_NIGHTSPULL,
+		GE_NIGHTSITEM,
+		ME_ALLEMERALDS,
+		ME_ULTIMATE,
+		ME_PERFECT,
+
+		// jingle types
+		JT_NONE,
+		JT_OTHER,
+		JT_MASTER,
+		JT_1UP,
+		JT_SHOES,
+		JT_INV,
+		JT_MINV,
+		JT_DROWN,
+		JT_SUPER,
+		JT_GOVER,
+		JT_NIGHTSTIMEOUT,
+		JT_SSTIMEOUT,
+
+		// player powers
+		pw_invulnerability,
+		pw_sneakers,
+		pw_flashing,
+		pw_shield,
+		pw_carry,
+		pw_tailsfly,
+		pw_underwater,
+		pw_spacetime,
+		pw_extralife,
+		pw_pushing,
+		pw_justsprung,
+		pw_noautobrake,
+		pw_super,
+		pw_gravityboots,
+		pw_infinityring,
+		pw_automaticring,
+		pw_bouncering,
+		pw_scatterring,
+		pw_grenadering,
+		pw_explosionring,
+		pw_railring,
+		pw_emeralds,
+		pw_nights_superloop,
+		pw_nights_helper,
+		pw_nights_linkfreeze,
+		pw_nocontrol,
+		pw_dye,
+		pw_justlaunched,
+		pw_ignorelatch,
+
+		// gametype rules
+		GTR_CAMPAIGN,
+		GTR_RINGSLINGER,
+		GTR_SPECTATORS,
+		GTR_LIVES,
+		GTR_TEAMS,
+		GTR_FIRSTPERSON,
+		GTR_POWERSTONES,
+		GTR_TEAMFLAGS,
+		GTR_FRIENDLY,
+		GTR_SPECIALSTAGES,
+		GTR_EMERALDTOKENS,
+		GTR_EMERALDHUNT,
+		GTR_RACE,
+		GTR_TAG,
+		GTR_POINTLIMIT,
+		GTR_TIMELIMIT,
+		GTR_OVERTIME,
+		GTR_HURTMESSAGES,
+		GTR_FRIENDLYFIRE,
+		GTR_STARTCOUNTDOWN,
+		GTR_HIDEFROZEN,
+		GTR_BLINDFOLDED,
+		GTR_RESPAWNDELAY,
+		GTR_PITYSHIELD,
+		GTR_DEATHPENALTY,
+		GTR_NOSPECTATORSPAWN,
+		GTR_DEATHMATCHSTARTS,
+		GTR_SPAWNINVUL,
+		GTR_SPAWNENEMIES,
+		GTR_ALLOWEXIT,
+		GTR_NOTITLECARD,
+		GTR_CUTSCENES,
+
+		// P_FlashPal palettes
+		PAL_WHITE,
+		PAL_MIXUP,
+		PAL_RECYCLE,
+		PAL_NUKE,
+
+		// TypeOfLevel flags
+		TOL_SP,
+		TOL_COOP,
+		TOL_COMPETITION,
+		TOL_RACE,
+		TOL_MATCH,
+		TOL_TAG,
+		TOL_CTF,
+		TOL_CUSTOM,
+		TOL_2D,
+		TOL_MARIO,
+		TOL_NIGHTS,
+		TOL_ERZ3,
+		TOL_XMAS,
+
+		// Linedef flags
+		ML_IMPASSIBLE,
+		ML_BLOCKMONSTERS,
+		ML_TWOSIDED,
+		ML_DONTPEGTOP,
+		ML_DONTPEGBOTTOM,
+		ML_EFFECT1,
+		ML_NOCLIMB,
+		ML_EFFECT2,
+		ML_EFFECT3,
+		ML_EFFECT4,
+		ML_EFFECT5,
+		ML_NETONLY,
+		ML_NONET,
+		ML_EFFECT6,
+		ML_BOUNCY,
+		ML_TFERLINE,
 	}
 
 	functions {
@@ -152,8 +528,9 @@ srb2lua {
 		freeslot = "string resource, [string resource2], [...]";
 		super = "mobj_t actor, int var1, int var2";
 		addHook = "string hook, function(?) fn, [int extra]";
-		EvalMath = "string word";
 		IsPlayerAdmin = "player_t player";
+		userdataType = "* v";
+		reserveLuabanks;
 
 		// math
 		abs = "int a";
@@ -205,7 +582,10 @@ srb2lua {
 
 		// p_mobj
 		P_SpawnMobj = "fixed x, fixed y, fixed z, int type";
+		P_SpawnMobjFromMobj = "mobj_t origin, fixed x, fixed y, fixed z, int type";
 		P_RemoveMobj = "mobj_t mobj";
+		P_IsValidSprite2 = "mobj_t mobj, int sprite2";
+		P_SpawnLockOn = "player_t player, mobj_t target, state_t state";
 		P_SpawnMissile = "mobj_t source, mobj_t dest, int type";
 		P_SpawnXYZMissile = "mobj_t source, mobj_t dest, int type, fixed x, fixed y, fixed z";
 		P_SpawnPointMissile = "mobj_t source, fixed dest_x, fixed dest_y, fixed dest_z, int type, fixed x, fixed y, fixed z";
@@ -235,18 +615,23 @@ srb2lua {
 		P_GetPlayerSpinHeight = "player_t player";
 		P_GetPlayerControlDirection = "player_t player";
 		P_AddPlayerScore = "player_t player, int amount";
+		P_StealPlayerScore = "player_t player, int amount";
+		P_GetJumpFlags = "player_t player";
 		P_PlayerInPain = "player_t player";
 		P_DoPlayerPain = "player_t player, [mobj_t source], [mobj_t inflictor]";
 		P_ResetPlayer = "player_t player";
+		P_PlayerCanDamage = "player_t player, mobj_t mobj";
 		P_IsObjectOnGround = "mobj_t mobj";
 		P_SetObjectMomZ = "mobj_t mobj, fixed momz, [boolean relative?]";
 		P_RestoreMusic = "player_t player";
+		P_SpawnShieldOrb = "player_t player";
 		P_SpawnGhostMobj = "mobj_t mobj";
 		P_GivePlayerRings = "player_t player, int amount";
 		P_GivePlayerLives = "player_t player, int amount";
+		P_GiveCoopLives = "player_t player, int amount, [boolean playsound]";
 		P_ResetScore = "player_t player";
 		P_BlackOw = "player_t player";
-		P_ElementalFireTrail = "player_t player";
+		P_ElementalFire = "player_t player";
 		P_DoPlayerExit = "player_t player";
 		P_InstaThrust = "mobj_t mobj, angle angle, fixed move";
 		P_ReturnThrustX = "mobj_t mobj, angle angle, fixed move";
@@ -257,10 +642,16 @@ srb2lua {
 		P_SpawnThokMobj = "player_t player";
 		P_SpawnSpinMobj = "player_t player, int type";
 		P_Telekinesis = "player_t player, fixed_t thrust, fixed_t range";
+		P_SwitchShield = "player_t player, int shield";
+		P_PlayJingle = "player_t player, int jingletype";
+		P_PlayJingleMusic = "player_t player, string musname, [int musflags], [boolean looping], [int jingletype]";
 		P_InQuicksand = "mobj_t mobj";
 		P_InSpaceSector = "mobj_t mobj";
 		P_DoJumpShield = "player_t player";
+		P_DoBubbleBounce = "player_t player";
 		P_IsObjectInGoop = "mobj_t mobj";
+		P_SpawnSkidDust = "player_t player, fixed_t radius, [int sound]";
+		P_Earthquake = "mobj_t inflictor, mobj_t source, fixed_t radius";
 
 		// r_data
 		R_TextureNumForName = "string name";
@@ -275,13 +666,12 @@ srb2lua {
 		P_BounceMove = "mobj_t mo";
 		P_CheckSight = "mobj_t source, mobj_t target";
 		P_CheckHoopPosition = "mobj_t hoop, fixed x, fixed y, fixed z, fixed radius";
-		P_RadiusAttack = "mobj_t inflictor, mobj_t source, fixed radius";
+		P_RadiusAttack = "mobj_t inflictor, mobj_t source, fixed radius, [int damagetype], [boolean sightcheck]";
 		P_FloorzAtPos = "fixed x, fixed y, fixed z, fixed height";
 		P_DoSpring = "mobj_t spring, mobj_t object";
 
 		// p_inter
 		P_RemoveShield = "player_t player";
-		P_SpawnShieldOrb = "player_t player";
 		P_DamageMobj = "mobj_t target, [mobj_t inflictor], [mobj_t source], [int damage]";
 		P_KillMobj = "mobj_t target, [mobj_t inflictor], [mobj_t source]";
 		P_PlayerRingBurst = "player_t player, [int numrings]";
@@ -295,6 +685,7 @@ srb2lua {
 		P_PlayLivesJingle = "player_t player";
 		P_CanPickupItem = "player_t player, [boolean weapon?]";
 		P_DoNightsScore = "player_t player";
+		P_DoMatchSuper = "player_t player";
 
 		// p_spec
 		P_Thrust = "mobj_t mobj, angle angle, fixed move";
@@ -306,13 +697,14 @@ srb2lua {
 		P_SwitchWeather = "int weather, [player_t player]";
 		P_LinedefExecute = "int tag, [mobj_t actor], [sector_t caller]";
 		P_SpawnLightningFlash = "sector_t sector";
-		P_FadeLight = "int tag, int destvalue, int speed";
+		P_FadeLight = "int tag, int destvalue, int speed, [boolean ticbased, [boolean force]";
 		P_ThingOnSpecial3DFloor = "mobj_t mobj";
 		P_SetupLevelSky = "int skynum, [player player]";
 		P_SetSkyboxMobj = "mobj_t mobj, [boolean centerpoint?], [player_t user]";
 		P_StartQuake = "fixed intensity, int time, [table{x/y/z} epicenter], [fixed radius]";
 		P_IsFlagAtBase = "int type";
 		EV_CrumbleChain = "sector_t sector, ffloor_t rover";
+		EV_StartCrumble = "sector_t sector, ffloor_t rover, [boolean floating], [player_t player], [fixed origalpha], [boolean crumblereturn]";
 
 		// r_defs
 		R_PointToAngle = "fixed x, fixed y";
@@ -325,24 +717,39 @@ srb2lua {
 		R_Char2Frame = "string char";
 		R_Frame2Char = "int frame";
 		R_SetPlayerSkin = "player_t player, int/string skin";
+		R_SkinUsable = "player_t player, int/string skin";
+
+		// r_draw
+		R_GetColorByName = "string colorname";
+		R_GetNameByColor = "int color";
 
 		// s_sound
 		S_StartSound = "mobj_t origin, int soundnum, [player_t player]";
 		S_StartSoundAtVolume = "mobj_t origin, int soundnum, int volume, [player_t player]";
 		S_StopSound = "mobj_t origin";
-		S_ChangeMusic = "int musicnum, [boolean looping?], [player_t player]";
+		S_ChangeMusic = "int musicnum, [[boolean looping?, [player_t player, [int tracknum, [int position, [int prefadems], [int fadeinms]";
 		S_SpeedMusic = "fixed musicspeed, [player_t player]";
 		S_StopMusic = "[player_t player]";
+		S_SetInternalMusicVolume = "int volume, [player_t player]";
+		S_StopFadingMusic = "[player_t player]";
+		S_FadeMusic = "int target_volume, int ms, [player_t player]";
+		S_FadeOutStopMusic = "int ms, [player_t player]";
 		S_OriginPlaying = "mobj_t origin";
 		S_IdPlaying = "int soundnum";
 		S_SoundPlaying = "mobj_t origin, int soundnum";
+		S_StartMusicCaption = "player_t player, string caption, int lifespan";
+		S_GetMusicLength;
+		S_GetMusicPosition;
+		S_SetMusicPosition = "int position";
 
 		// g_game
 		G_BuildMapName = "int map";
+		G_EnoughPlayersFinished;
 		G_DoReborn = "int playernum";
 		G_ExitLevel = "[int nextmap], [boolean skipstats]";
-		G_SetCustomExitVars = "[int nextmap], [boolean skipstats]";
+		G_SetCustomExitVars = "[int nextmap], [int skipstats]";
 		G_IsSpecialStage = "int map";
+		G_AddGametype = "table t";
 		G_GametypeUsesLives;
 		G_GametypeHasTeams;
 		G_GametypeHasSpectators;
@@ -360,6 +767,7 @@ srb2lua {
 		COM_BufAddText = "player_t player, string text";
 		COM_BufInsertText = "player_t player, string text";
 		CV_RegisterVar = "table{string name/string defaultvalue/int flags/PossibleValue pv/function() fn}, [...]";
+		CV_FindVar = "string var";
 		CONS_Printf = "player_t player, string text";
 
 		// blockmap search
@@ -367,7 +775,7 @@ srb2lua {
 
 		// iterators
 		players.iterate;
-		thinkers.iterate = "string type";
+		mobjs.iterate;
 		skins.iterate;
 		sectors.iterate;
 		subsectors.iterate;
@@ -383,21 +791,36 @@ srb2lua {
 		// technically these are a part of the video code but you can rename that whatever you want...
 		draw = "int x, int y, patch patch, [int flags], [colormap c]";
 		drawScaled = "fixed x, fixed y, fixed scale, patch patch, [int flags], [colormap c]";
+		drawStreched = "fixed x, fixed y, fixed hscale, fixed vscale, patch_t patch, [int flags], [colormap c]";
 		drawNum = "int x, int y, int num, [int flags]";
 		drawPaddedNum = "int x, int y, int num, [int digits], [int flags]";
 		drawFill = "[int x], [int y], [int w], [int h], [int color]";
 		drawString = "fixed x, fixed y, string str, [int flags], [string alignment]";
+		drawNameTag = "int x, int y, string text, [int flags], [int basecolor], [int outlinecolor]";
+		drawScaledNameTag = "int x, int y, string text, [int flags], [int scale], [int basecolor], [int outlinecolor]";
 		patchExists = "string name";
 		cachePatch = "string name";
 		getColormap = "[string/int skin], [int color]";
+		fadeScreen = "int color, int strength";
+		getSpritePatch = "int sprite, [int frame], [int angle]";
+		getSprite2Patch = "string/int skin, string/int sprite2, [boolean super?], [int frame], [int rotation], [angle rollangle]";
 		stringWidth = "string string, [int flags], [string widthtype]";
-		getLocalTransFlag;
+		nameTagWidth = "string text";
+		localTransFlag;
+		userTransFlag;
+		RandomFixed;
+		RandomByte;
+		RandomKey = "int a";
+		RandomRange = "int a";
+		SignedRandom;
+		RandomChance = "fixed p";
 
 		// basic Lua
 		assert = "boolean assert, [string errormsg]";
 		collectgarbage = "[string opt], [string arg]";
 		error = "string message, [int level]";
-		gcinfo = "(unknown)";
+		dofile = "string file";
+		gcinfo;
 		getfenv = "function(*) fn";
 		getmetatable = "object obj";
 		ipairs = "table{} t";
@@ -415,6 +838,11 @@ srb2lua {
 		type = "* v";
 		unpack = "table{} list, [int start], [int end]";
 		xpcall = "function(?) call, function(boolean status) errortrap";
+		io.open = "string filename, [string mode], function callback";
+		io.openlocal = "string filename, [string mode], function callback";
+		io.close = "file file";
+		io.tmpfile;
+		io.type = "* obj";
 
 		coroutine.create = "function(?) fn";
 		coroutine.resume = "coroutine co, [* val], [...]";
