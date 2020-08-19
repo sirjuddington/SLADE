@@ -144,7 +144,9 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 
 	// Dir added
 	connections_ += archive->signals().dir_added.connect([this](Archive& archive, ArchiveDir& dir) {
-		ItemAdded(createItemForDirectory(*dir.parent().get()), wxDataViewItem(dir.dirEntry()));
+		auto parent = createItemForDirectory(*dir.parent());
+		log::info("Dir added (parent {}, dir {})", parent.GetID(), static_cast<void*>(dir.dirEntry()));
+		ItemAdded(parent, wxDataViewItem(dir.dirEntry()));
 	});
 
 	// Dir removed
@@ -426,6 +428,7 @@ bool ArchiveViewModel::IsContainer(const wxDataViewItem& item) const
 		if (entry->type() != EntryType::folderType())
 			return false;
 
+#ifdef __WXMSW__
 		// Empty folder
 		else if (auto* archive = archive_.lock().get())
 		{
@@ -433,6 +436,7 @@ bool ArchiveViewModel::IsContainer(const wxDataViewItem& item) const
 				if (dir->entries().size() == 0 && dir->subdirs().size() == 0)
 					return false;
 		}
+#endif
 	}
 
 	return true;
