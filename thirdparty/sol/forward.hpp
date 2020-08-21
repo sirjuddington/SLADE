@@ -34,7 +34,7 @@
 
 // beginning of sol/version.hpp
 
-#include <sol/config.hpp>
+#include "config.hpp"
 
 #include <cstdint>
 

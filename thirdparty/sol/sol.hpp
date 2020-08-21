@@ -60,7 +60,7 @@
 
 // beginning of sol/version.hpp
 
-#include <sol/config.hpp>
+#include "config.hpp"
 
 #include <cstdint>
 
@@ -17462,7 +17462,7 @@ namespace function_detail {
 		using function_type = std::remove_pointer_t<std::decay_t<Function>>;
 		using traits_type = meta::bind_traits<function_type>;
 
-		static int real_call(lua_State* L) noexcept(traits_type::is_noexcept) {
+		static int real_call(lua_State* L) /*noexcept(traits_type::is_noexcept)*/ {
 			auto udata = stack::stack_detail::get_as_upvalues<function_type*>(L);
 			function_type* fx = udata.first;
 			return call_detail::call_wrapped<void, true, false>(L, fx);
@@ -17597,7 +17597,7 @@ namespace function_detail {
 		typedef std::remove_pointer_t<std::decay_t<Function>> function_type;
 		typedef lua_bind_traits<function_type> traits_type;
 
-		static int real_call(lua_State* L) noexcept(traits_type::is_noexcept) {
+		static int real_call(lua_State* L) /*noexcept(traits_type::is_noexcept)*/ {
 			// Layout:
 			// idx 1...n: verbatim data of member variable pointer
 			function_type& memfx = stack::get<user<function_type>>(L, upvalue_index(2));
