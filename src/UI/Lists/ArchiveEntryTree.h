@@ -26,6 +26,7 @@ namespace ui
 		vector<string>       filter_name_;
 		string               filter_category_;
 		UndoManager*         undo_manager_ = nullptr;
+		bool                 sort_enabled_ = true;
 
 		// wxDataViewModel
 		unsigned int   GetColumnCount() const override { return 4; }
@@ -37,7 +38,7 @@ namespace ui
 		bool           IsContainer(const wxDataViewItem& item) const override;
 		unsigned int   GetChildren(const wxDataViewItem& item, wxDataViewItemArray& children) const override;
 		bool           IsListModel() const override;
-		bool           HasDefaultCompare() const override { return true; }
+		bool           HasDefaultCompare() const override { return sort_enabled_; }
 		int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned int column, bool ascending)
 			const override;
 

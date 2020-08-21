@@ -3656,8 +3656,8 @@ void ArchivePanel::updateFilter()
 // -----------------------------------------------------------------------------
 void ArchivePanel::onEntryListSelectionChange(wxDataViewEvent& e)
 {
-	// Do nothing if not shown
-	if (!IsShown())
+	// Do nothing if not shown or frozen (refreshing)
+	if (!IsShown() || entry_tree_->IsFrozen())
 		return;
 
 	selectionChanged();
