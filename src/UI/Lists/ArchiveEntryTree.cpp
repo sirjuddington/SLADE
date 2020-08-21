@@ -144,9 +144,7 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 
 	// Dir added
 	connections_ += archive->signals().dir_added.connect([this](Archive& archive, ArchiveDir& dir) {
-		auto parent = createItemForDirectory(*dir.parent());
-		log::info("Dir added (parent {}, dir {})", parent.GetID(), static_cast<void*>(dir.dirEntry()));
-		ItemAdded(parent, wxDataViewItem(dir.dirEntry()));
+		ItemAdded(createItemForDirectory(*dir.parent()), wxDataViewItem(dir.dirEntry()));
 	});
 
 	// Dir removed
