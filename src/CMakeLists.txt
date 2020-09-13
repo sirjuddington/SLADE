@@ -173,9 +173,6 @@ if(APPLE)
 	set_source_files_properties(${OSX_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 endif(APPLE)
 
-# Enable SSE instructions for dumb library
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
-
 # Enable debug symbols for glib (so gdb debugging works properly with strings etc.)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
 
