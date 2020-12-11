@@ -195,7 +195,7 @@ private:
 	int                         index_ = -1;
 
 	// Extended (TEXTURES) info
-	string         type_;
+	string         type_         = "Texture";
 	bool           extended_     = false;
 	bool           defined_      = false;
 	bool           optional_     = false;

@@ -64,7 +64,7 @@ CTPatch::CTPatch(string_view name, int16_t offset_x, int16_t offset_y) : name_{ 
 ArchiveEntry* CTPatch::patchEntry(Archive* parent)
 {
 	// Default patches should be in patches namespace
-	auto entry = app::resources().getPatchEntry(name_, "patches", parent);
+	auto* entry = app::resources().getPatchEntry(name_, "patches", parent);
 
 	// Not found in patches, check in graphics namespace
 	if (!entry)
@@ -89,8 +89,7 @@ ArchiveEntry* CTPatch::patchEntry(Archive* parent)
 // CTPatchEx class constructor w/basic initial values
 // -----------------------------------------------------------------------------
 CTPatchEx::CTPatchEx(string_view name, int16_t offset_x, int16_t offset_y, Type type) :
-	CTPatch{ name, offset_x, offset_y },
-	type_{ type }
+	CTPatch{ name, offset_x, offset_y }, type_{ type }
 {
 }
 
@@ -122,7 +121,7 @@ ArchiveEntry* CTPatchEx::patchEntry(Archive* parent)
 	// 'Patch' type: patches > graphics
 	if (type_ == Type::Patch)
 	{
-		auto entry = app::resources().getPatchEntry(name_, "patches", parent);
+		auto* entry = app::resources().getPatchEntry(name_, "patches", parent);
 		if (!entry)
 			entry = app::resources().getFlatEntry(name_, parent);
 		if (!entry)
@@ -133,7 +132,7 @@ ArchiveEntry* CTPatchEx::patchEntry(Archive* parent)
 	// 'Graphic' type: graphics > patches
 	if (type_ == Type::Graphic)
 	{
-		auto entry = app::resources().getPatchEntry(name_, "graphics", parent);
+		auto* entry = app::resources().getPatchEntry(name_, "graphics", parent);
 		if (!entry)
 			entry = app::resources().getPatchEntry(name_, "patches", parent);
 		if (!entry)
@@ -307,7 +306,7 @@ string CTPatchEx::asText()
 		text += fmt::format("\t\tBlend \"{}\"", col.GetAsString(wxC2S_HTML_SYNTAX).ToStdString());
 
 		if (blendtype_ == BlendType::Tint)
-			text += fmt::format(", {:1.1f}\n", (double)colour_.a / 255.0);
+			text += fmt::format(", {:1.1f}\n", static_cast<double>(colour_.a) / 255.0);
 		else
 			text += "\n";
 	}
@@ -376,12 +375,12 @@ void CTexture::copyTexture(const CTexture& tex, bool keep_type)
 	// Copy patches
 	for (unsigned a = 0; a < tex.nPatches(); a++)
 	{
-		auto patch = tex.patch(a);
+		auto* patch = tex.patch(a);
 
 		if (extended_)
 		{
 			if (tex.extended_)
-				patches_.push_back(std::make_unique<CTPatchEx>(*(CTPatchEx*)patch));
+				patches_.push_back(std::make_unique<CTPatchEx>(*dynamic_cast<CTPatchEx*>(patch)));
 			else
 				patches_.push_back(std::make_unique<CTPatchEx>(*patch));
 		}
@@ -448,7 +447,7 @@ bool CTexture::addPatch(string_view patch, int16_t offset_x, int16_t offset_y, i
 		np = std::make_unique<CTPatch>(patch, offset_x, offset_y);
 
 	// Add it either after [index] or at the end
-	if (index >= 0 && (unsigned)index < patches_.size())
+	if (index >= 0 && static_cast<unsigned>(index) < patches_.size())
 		patches_.insert(patches_.begin() + index, std::move(np));
 	else
 		patches_.push_back(std::move(np));
@@ -543,12 +542,12 @@ bool CTexture::duplicatePatch(size_t index, int16_t offset_x, int16_t offset_y)
 		return false;
 
 	// Get patch info
-	auto dp = patches_[index].get();
+	auto* dp = patches_[index].get();
 
 	// Add duplicate patch
 	if (extended_)
 	{
-		auto ex_patch = dynamic_cast<CTPatchEx*>(patches_[index].get());
+		auto* ex_patch = dynamic_cast<CTPatchEx*>(patches_[index].get());
 		patches_.insert(patches_.begin() + index, std::make_unique<CTPatchEx>(*ex_patch));
 	}
 	else
@@ -649,7 +648,7 @@ bool CTexture::parse(Tokenizer& tz, string_view type)
 			// Patch
 			else if (tz.checkNC("Patch"))
 			{
-				auto patch = new CTPatchEx();
+				auto* patch = new CTPatchEx();
 				patch->parse(tz);
 				patches_.emplace_back(patch);
 			}
@@ -657,7 +656,7 @@ bool CTexture::parse(Tokenizer& tz, string_view type)
 			// Graphic
 			else if (tz.checkNC("Graphic"))
 			{
-				auto patch = new CTPatchEx();
+				auto* patch = new CTPatchEx();
 				patch->parse(tz, CTPatchEx::Type::Graphic);
 				patches_.emplace_back(patch);
 			}
@@ -682,7 +681,7 @@ bool CTexture::parseDefine(Tokenizer& tz)
 	def_size_.x = tz.next().asInt();
 	def_size_.y = tz.next().asInt();
 	size_       = def_size_;
-	auto entry  = app::resources().getPatchEntry(name_);
+	auto* entry = app::resources().getPatchEntry(name_);
 	if (entry)
 	{
 		SImage image;
@@ -690,8 +689,8 @@ bool CTexture::parseDefine(Tokenizer& tz)
 		{
 			size_.x  = image.width();
 			size_.y  = image.height();
-			scale_.x = (double)size_.x / (double)def_size_.x;
-			scale_.y = (double)size_.y / (double)def_size_.y;
+			scale_.x = static_cast<double>(size_.x) / static_cast<double>(def_size_.x);
+			scale_.y = static_cast<double>(size_.y) / static_cast<double>(def_size_.y);
 		}
 	}
 	patches_.push_back(std::make_unique<CTPatchEx>(name_));
@@ -714,7 +713,7 @@ string CTexture::asText()
 	// Init text string
 	string text;
 	if (optional_)
-		text = fmt::format("{} Optional \"{}\", {}, {}\n{\n", type_, name_, size_.x, size_.y);
+		text = fmt::format("{} Optional \"{}\", {}, {}\n{{\n", type_, name_, size_.x, size_.y);
 	else
 		text = fmt::format("{} \"{}\", {}, {}\n{{\n", type_, name_, size_.x, size_.y);
 
@@ -737,7 +736,7 @@ string CTexture::asText()
 		text += dynamic_cast<CTPatchEx*>(patch.get())->asText();
 
 	// Write ending
-	text += "}}\n\n";
+	text += "}\n\n";
 
 	return text;
 }
@@ -764,12 +763,13 @@ bool CTexture::convertExtended()
 	// Convert all patches over to extended format
 	for (auto& patch : patches_)
 	{
-		auto expatch = new CTPatchEx(*patch);
+		auto* expatch = new CTPatchEx(*patch);
 		patch.reset(expatch);
 	}
 
-	// Set extended flag
+	// Set extended flag and type
 	extended_ = true;
+	type_     = "Texture";
 
 	return true;
 }
@@ -796,7 +796,7 @@ bool CTexture::convertRegular()
 	// Convert all patches over to normal format
 	for (auto& patch : patches_)
 	{
-		auto npatch = new CTPatch(patch->name(), patch->xOffset(), patch->yOffset());
+		auto* npatch = new CTPatch(patch->name(), patch->xOffset(), patch->yOffset());
 		patch.reset(npatch);
 	}
 
@@ -828,8 +828,8 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 		size_.x = p_img.width();
 		size_.y = p_img.height();
 		image.resize(size_.x, size_.y);
-		scale_.x = (double)size_.x / (double)def_size_.x;
-		scale_.y = (double)size_.y / (double)def_size_.y;
+		scale_.x = static_cast<double>(size_.x) / static_cast<double>(def_size_.x);
+		scale_.y = static_cast<double>(size_.y) / static_cast<double>(def_size_.y);
 		image.drawImage(p_img, 0, 0, dp, pal, pal);
 	}
 	else if (extended_)
@@ -839,7 +839,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 		// Add each patch to image
 		for (unsigned a = 0; a < patches_.size(); a++)
 		{
-			auto patch = dynamic_cast<CTPatchEx*>(patches_[a].get());
+			auto* patch = dynamic_cast<CTPatchEx*>(patches_[a].get());
 
 			// Load patch entry
 			if (!loadPatchImage(a, p_img, parent, pal))
@@ -935,7 +935,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 	if (pindex >= patches_.size())
 		return false;
 
-	auto patch = patches_[pindex].get();
+	auto* patch = patches_[pindex].get();
 
 	// If the texture is extended, search for textures-as-patches first
 	// (as long as the patch name is different from this texture's name)
@@ -946,7 +946,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 		{
 			for (unsigned a = 0; a < in_list_->size(); a++)
 			{
-				auto tex = in_list_->texture(a);
+				auto* tex = in_list_->texture(a);
 
 				// Don't look past this texture in the list
 				if (tex->name() == name_)
@@ -963,13 +963,13 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 
 		// Otherwise, try the resource manager
 		// TODO: Something has to be ignored here. The entire archive or just the current list?
-		auto tex = app::resources().getTexture(patch->name(), parent);
+		auto* tex = app::resources().getTexture(patch->name(), parent);
 		if (tex)
 			return tex->toImage(image, parent, pal);
 	}
 
 	// Get patch entry
-	auto entry = patch->patchEntry(parent);
+	auto* entry = patch->patchEntry(parent);
 
 	// Load entry to image if valid
 	if (entry)
