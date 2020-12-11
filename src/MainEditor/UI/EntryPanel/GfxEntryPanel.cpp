@@ -300,18 +300,29 @@ bool GfxEntryPanel::saveEntry()
 	}
 	// Otherwise just set offsets
 	else
+	{
 		gfx::setImageOffsets(entry->data(), spin_xoffset_->GetValue(), spin_yoffset_->GetValue());
+		entry->setState(ArchiveEntry::State::Modified);
+	}
 
 	// Apply alPh/tRNS options
 	if (entry->type()->formatId() == "img_png")
 	{
+		// alPh
 		bool alph = gfx::pngGetalPh(entry->data());
-		bool trns = gfx::pngGettRNS(entry->data());
-
 		if (alph != menu_custom_->IsChecked(SAction::fromId("pgfx_alph")->wxId()))
+		{
 			gfx::pngSetalPh(entry->data(), !alph);
+			entry->setState(ArchiveEntry::State::Modified);
+		}
+
+		// tRNS
+		bool trns = gfx::pngGettRNS(entry->data());
 		if (trns != menu_custom_->IsChecked(SAction::fromId("pgfx_trns")->wxId()))
+		{
 			gfx::pngSettRNS(entry->data(), !trns);
+			entry->setState(ArchiveEntry::State::Modified);
+		}
 	}
 
 	if (ok)
