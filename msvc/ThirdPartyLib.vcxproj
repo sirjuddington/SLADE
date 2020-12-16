@@ -65,6 +65,7 @@
     <ClInclude Include="..\thirdparty\lzma\C\XzCrc64.h" />
     <ClInclude Include="..\thirdparty\lzma\C\XzEnc.h" />
     <ClInclude Include="..\thirdparty\sigslot\signal.hpp" />
+    <ClInclude Include="..\thirdparty\sol\config.hpp" />
     <ClInclude Include="..\thirdparty\sol\forward.hpp" />
     <ClInclude Include="..\thirdparty\sol\sol.hpp" />
   </ItemGroup>

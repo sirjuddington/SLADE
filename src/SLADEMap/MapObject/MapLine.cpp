@@ -893,11 +893,11 @@ void MapLine::writeBackup(Backup* backup)
 	if (side1_)
 		backup->props_internal["s1"] = side1_->objId();
 	else
-		backup->props_internal["s1"] = 0;
+		backup->props_internal["s1"] = (unsigned)0;
 	if (side2_)
 		backup->props_internal["s2"] = side2_->objId();
 	else
-		backup->props_internal["s2"] = 0;
+		backup->props_internal["s2"] = (unsigned)0;
 
 	// Flags
 	backup->props_internal[PROP_FLAGS] = flags_;
