@@ -123,7 +123,7 @@ private:
 	EntryResourceMap	satextures_;	// Stand Alone textures (e.g., between TX_ or T_ markers)
 	EntryResourceMap	satextures_fp_;
 	//EntryResourceMap	satextures_fp_only_; // Probably not needed
-	TextureResourceMap	textures_;		// Composite textures (defined in a TEXTUREx/TEXTURES lump)
+	TextureResourceMap	composites_;		// Composite textures (defined in a TEXTUREx/TEXTURES lump)
 
 	static ResourceManager*	instance_;
 	static string			doom64_hash_table_[65536];
