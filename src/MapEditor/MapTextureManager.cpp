@@ -29,6 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/Configuration.h"
 #include "General/Misc.h"
@@ -145,11 +146,6 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 	// Look for stand-alone textures first
 	ArchiveEntry* etex = theResourceManager->getTextureEntry(name, "hires", archive);
 	int textypefound = TEXTYPE_HIRES;
-	if (etex == nullptr)
-	{
-		etex = theResourceManager->getTextureEntry(name, "textures", archive);
-		textypefound = TEXTYPE_TEXTURE;
-	}
 	if (etex)
 	{
 		SImage image;
@@ -180,6 +176,11 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 				}
 			}
 		}
+	}
+	else
+	{
+		etex = theResourceManager->getTextureEntry(name, "textures", archive);
+		textypefound = TEXTYPE_TEXTURE;
 	}
 
 	// Try composite textures then
@@ -250,35 +251,17 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 		}
 	}
 
-	if (mixed)
+	// Search textures folder
+	if (mixed && !mtex.texture)
 	{
-		CTexture* ctex = theResourceManager->getTexture(name, archive);
-		if (ctex && ctex->isExtended() && ctex->getType() != "WallTexture")
-		{
-			SImage image;
-			if (ctex->toImage(image, archive, palette, true))
-			{
-				mtex.texture = new GLTexture(false);
-				mtex.texture->setFilter(filter);
-				mtex.texture->loadImage(&image, palette);
-				double sx = ctex->getScaleX(); if (sx == 0) sx = 1.0;
-				double sy = ctex->getScaleY(); if (sy == 0) sy = 1.0;
-				mtex.texture->setScale(1.0/sx, 1.0/sy);
-				mtex.texture->setWorldPanning(ctex->worldPanning());
-				return mtex.texture;
-			}
-		}
+		mtex.texture = getTexture(name, false);
 	}
 
-	// Flat not found, look for it
-	//Palette8bit* pal = getResourcePalette();
-	if (!mtex.texture)
+	// Prioritize flats, and use the flat if there is a composite texture with
+	// the same name.
+	if (!mtex.texture || theResourceManager->getTexture(name, archive))
 	{
-		ArchiveEntry* entry = theResourceManager->getTextureEntry(name, "hires", archive);
-		if (entry == nullptr)
-			entry = theResourceManager->getTextureEntry(name, "flats", archive);
-		if (entry == nullptr)
-			entry = theResourceManager->getFlatEntry(name, archive);
+		ArchiveEntry* entry = theResourceManager->getFlatEntry(name, archive);
 		if (entry)
 		{
 			SImage image;
@@ -288,19 +271,28 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 				mtex.texture->setFilter(filter);
 				mtex.texture->loadImage(&image, palette);
 			}
+
+			/*
+			// Check for hi-res equivalent
+			ArchiveEntry* hires_entry = theResourceManager->getTextureEntry(name, "hires", archive);
+			if (hires_entry)
+			{
+				SImage hires_image;
+				if (Misc::loadImageFromEntry(&hires_image, hires_entry))
+				{
+					double scaleX = (double)image.getWidth() / (double)hires_image.getWidth();
+					double scaleY = (double)image.getHeight() / (double)hires_image.getHeight();
+					mtex.texture->setScale(scaleX, scaleY);
+				}
+			}
+			*/
 		}
 	}
 
 	// Not found
 	if (!mtex.texture)
 	{
-		// Try textures if mixed
-		if (mixed)
-			return getTexture(name, false);
-
-		// Otherwise use missing texture
-		else
-			mtex.texture = &(GLTexture::missingTex());
+		mtex.texture = &(GLTexture::missingTex());
 	}
 
 	return mtex.texture;
