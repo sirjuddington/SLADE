@@ -251,15 +251,14 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 		}
 	}
 
-	// Search textures folder
-	if (mixed && !mtex.texture)
+	// Prioritize standalone textures
+	if (mixed && theResourceManager->getTextureEntry(name, "textures", archive))
 	{
-		mtex.texture = getTexture(name, false);
+		return getTexture(name, false);
 	}
 
-	// Prioritize flats, and use the flat if there is a composite texture with
-	// the same name.
-	if (!mtex.texture || theResourceManager->getTexture(name, archive))
+	// Try to search for an actual flat
+	if (!mtex.texture)
 	{
 		ArchiveEntry* entry = theResourceManager->getFlatEntry(name, archive);
 		if (entry)
@@ -292,6 +291,12 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 	// Not found
 	if (!mtex.texture)
 	{
+		// Try to search for a composite texture instead
+		if (mixed)
+		{
+			return getTexture(name, false);
+		}
+
 		mtex.texture = &(GLTexture::missingTex());
 	}
 
