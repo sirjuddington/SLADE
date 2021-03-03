@@ -144,7 +144,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 	//Palette8bit* pal = getResourcePalette();
 
 	// Look for stand-alone textures first
-	ArchiveEntry* etex = theResourceManager->getTextureEntry(name, "hires", archive);
+	ArchiveEntry* etex = theResourceManager->getHiresEntry(name, archive);
 	int textypefound = TEXTYPE_HIRES;
 	if (etex)
 	{
@@ -181,6 +181,14 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 	{
 		etex = theResourceManager->getTextureEntry(name, "textures", archive);
 		textypefound = TEXTYPE_TEXTURE;
+		SImage image;
+		// Get image format hint from type, if any
+		if (Misc::loadImageFromEntry(&image, etex))
+		{
+			mtex.texture = new GLTexture(false);
+			mtex.texture->setFilter(filter);
+			mtex.texture->loadImage(&image, palette);
+		}
 	}
 
 	// Try composite textures then
@@ -271,9 +279,8 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 				mtex.texture->loadImage(&image, palette);
 			}
 
-			/*
 			// Check for hi-res equivalent
-			ArchiveEntry* hires_entry = theResourceManager->getTextureEntry(name, "hires", archive);
+			ArchiveEntry* hires_entry = theResourceManager->getHiresEntry(name, archive);
 			if (hires_entry)
 			{
 				SImage hires_image;
@@ -281,10 +288,11 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 				{
 					double scaleX = (double)image.getWidth() / (double)hires_image.getWidth();
 					double scaleY = (double)image.getHeight() / (double)hires_image.getHeight();
+					mtex.texture->setFilter(filter);
+					mtex.texture->loadImage(&hires_image, palette);
 					mtex.texture->setScale(scaleX, scaleY);
 				}
 			}
-			*/
 		}
 	}
 

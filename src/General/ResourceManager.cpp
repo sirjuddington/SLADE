@@ -31,6 +31,7 @@
 //
 // ----------------------------------------------------------------------------
 #include "Main.h"
+#include "Archive/ArchiveEntry.h"
 #include "ResourceManager.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Console/Console.h"
@@ -408,7 +409,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 		}
 
 		// Check for stand-alone texture entry
-		if (entry->isInNamespace("textures") || entry->isInNamespace("hires"))
+		if (entry->isInNamespace("textures"))
 		{
 			satextures_[name].add(entry);
 			if (!entry->getParent()->isTreeless())
@@ -418,7 +419,10 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 
 			// Add name to hash table
 			ResourceManager::doom64_hash_table_[getTextureHash(name)] = name;
-
+		}
+		else if (entry->isInNamespace("hires"))
+		{ // Handle hi-res textures
+			hires_[name].add(entry);
 		}
 	}
 
@@ -722,6 +726,15 @@ ArchiveEntry* ResourceManager::getTextureEntry(const string& texture, const stri
 	if (entry)
 		return entry;
 
+	return nullptr;
+}
+
+ArchiveEntry* ResourceManager::getHiresEntry(const string& texture, Archive* priority)
+{
+	// Hi-res textures can only be used with a short name
+	ArchiveEntry* entry = hires_[texture.Upper()].getEntry(priority, "hires", true);
+	if (entry)
+		return entry;
 	return nullptr;
 }
 
