@@ -269,29 +269,33 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 	if (!mtex.texture)
 	{
 		ArchiveEntry* entry = theResourceManager->getFlatEntry(name, archive);
-		if (entry)
+		ArchiveEntry* hires_entry = theResourceManager->getHiresEntry(name, archive);
+		ArchiveEntry* image_entry = hires_entry;
+		ArchiveEntry* scale_entry = entry;
+		// No high-res texture found
+		if (!image_entry)
 		{
-			SImage image;
-			if (Misc::loadImageFromEntry(&image, entry))
+			image_entry = entry;
+			scale_entry = nullptr;
+		}
+		// Load the image
+		SImage image;
+		if (Misc::loadImageFromEntry(&image, image_entry))
+		{
+			mtex.texture = new GLTexture(false);
+			mtex.texture->setFilter(filter);
+			mtex.texture->loadImage(&image, palette);
+		}
+		// Get high-res texture scale
+		if (scale_entry)
+		{
+			SImage lores_image;
+			if (Misc::loadImageFromEntry(&lores_image, scale_entry))
 			{
-				mtex.texture = new GLTexture(false);
-				mtex.texture->setFilter(filter);
-				mtex.texture->loadImage(&image, palette);
-			}
-
-			// Check for hi-res equivalent
-			ArchiveEntry* hires_entry = theResourceManager->getHiresEntry(name, archive);
-			if (hires_entry)
-			{
-				SImage hires_image;
-				if (Misc::loadImageFromEntry(&hires_image, hires_entry))
-				{
-					double scaleX = (double)image.getWidth() / (double)hires_image.getWidth();
-					double scaleY = (double)image.getHeight() / (double)hires_image.getHeight();
-					mtex.texture->setFilter(filter);
-					mtex.texture->loadImage(&hires_image, palette);
-					mtex.texture->setScale(scaleX, scaleY);
-				}
+				double scaleX = (double)lores_image.getWidth() / (double)image.getWidth();
+				double scaleY = (double)lores_image.getHeight() / (double)image.getHeight();
+				mtex.texture->setWorldPanning(true);
+				mtex.texture->setScale(scaleX, scaleY);
 			}
 		}
 	}
