@@ -591,7 +591,7 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 bool CTexture::parse(Tokenizer& tz, string_view type)
 {
 	// Check if optional
-	if (tz.advIfNext("optional"))
+	if (tz.advIfNextNC("optional"))
 		optional_ = true;
 
 	// Read basic info
