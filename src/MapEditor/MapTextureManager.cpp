@@ -193,6 +193,8 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 
 	// Try composite textures then
 	CTexture* ctex = theResourceManager->getTexture(name, "", archive);
+	CTexture* wallctex = theResourceManager->getTexture(name, "WallTexture", archive);
+	if (wallctex) ctex = wallctex;
 	if (ctex) // Composite textures take precedence over the textures directory
 	{
 		textypefound = TEXTYPE_WALLTEXTURE;
