@@ -90,7 +90,7 @@ bool PatchBrowserItem::loadImage()
 	if (type_ == 1)
 	{
 		// Find texture
-		CTexture* tex = theResourceManager->getTexture(name_, archive_);
+		CTexture* tex = theResourceManager->getTexture(name_, "", archive_);
 
 		// Load texture to image, if it exists
 		if (tex)

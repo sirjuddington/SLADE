@@ -744,7 +744,7 @@ ArchiveEntry* ResourceManager::getHiresEntry(const string& texture, Archive* pri
 // Returns the most appropriate managed texture for [texture], or nullptr if no
 // match found
 // ----------------------------------------------------------------------------
-CTexture* ResourceManager::getTexture(const string& texture, Archive* priority, Archive* ignore)
+CTexture* ResourceManager::getTexture(const string& texture, const string& type, Archive* priority, Archive* ignore)
 {
 	// Check texture resource with matching name exists
 	TextureResource& res = composites_[texture.Upper()];
@@ -756,6 +756,10 @@ CTexture* ResourceManager::getTexture(const string& texture, Archive* priority, 
 	Archive* parent = res.textures_[0].get()->parent;
 	for (auto& res_tex : res.textures_)
 	{
+		// Skip if it's not the desired type
+		if (type != "" && res_tex->tex.getType() != type)
+			continue;
+
 		// Skip if it's in the 'ignore' archive
 		if (res_tex->parent == ignore)
 			continue;

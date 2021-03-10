@@ -106,7 +106,7 @@ public:
 	ArchiveEntry*	getFlatEntry(const string& flat, Archive* priority = nullptr);
 	ArchiveEntry*	getTextureEntry(const string& texture, const string& nspace = "textures", Archive* priority = nullptr);
 	ArchiveEntry*	getHiresEntry(const string& texture, Archive* priority = nullptr);
-	CTexture*		getTexture(const string& texture, Archive* priority = nullptr, Archive* ignore = nullptr);
+	CTexture*		getTexture(const string& texture, const string& type = "", Archive* priority = nullptr, Archive* ignore = nullptr);
 	uint16_t		getTextureHash(const string& name);
 
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
