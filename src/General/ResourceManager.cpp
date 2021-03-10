@@ -752,7 +752,7 @@ CTexture* ResourceManager::getTexture(const string& texture, const string& type,
 		return nullptr;
 
 	// Go through resource textures
-	CTexture* tex = &res.textures_[0].get()->tex;
+	CTexture* tex = nullptr;
 	Archive* parent = res.textures_[0].get()->parent;
 	for (auto& res_tex : res.textures_)
 	{
@@ -779,11 +779,7 @@ CTexture* ResourceManager::getTexture(const string& texture, const string& type,
 
 	// Return the most relevant texture
 	if (parent != ignore)
-	{
-		if (type != "" && type != tex->getType())
-			return nullptr;
 		return tex;
-	}
 	else
 		return nullptr;
 }
