@@ -779,7 +779,11 @@ CTexture* ResourceManager::getTexture(const string& texture, const string& type,
 
 	// Return the most relevant texture
 	if (parent != ignore)
+	{
+		if (type != "" && type != tex->getType())
+			return nullptr;
 		return tex;
+	}
 	else
 		return nullptr;
 }

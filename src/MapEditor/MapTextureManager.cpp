@@ -266,20 +266,23 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 	}
 
 	// Try composite flat texture
-	CTexture* ctex = theResourceManager->getTexture(name, "Flat", archive);
-	if (ctex)
+	if (mixed)
 	{
-		SImage image;
-		if (ctex->toImage(image, archive, palette, true))
+		CTexture* ctex = theResourceManager->getTexture(name, "Flat", archive);
+		if (ctex)
 		{
-			mtex.texture = new GLTexture(false);
-			mtex.texture->setFilter(filter);
-			mtex.texture->loadImage(&image, palette);
-			double sx = ctex->getScaleX(); if (sx == 0) sx = 1.0;
-			double sy = ctex->getScaleY(); if (sy == 0) sy = 1.0;
-			mtex.texture->setWorldPanning(ctex->worldPanning());
-			mtex.texture->setScale(1.0/sx, 1.0/sy);
-			return mtex.texture;
+			SImage image;
+			if (ctex->toImage(image, archive, palette, true))
+			{
+				mtex.texture = new GLTexture(false);
+				mtex.texture->setFilter(filter);
+				mtex.texture->loadImage(&image, palette);
+				double sx = ctex->getScaleX(); if (sx == 0) sx = 1.0;
+				double sy = ctex->getScaleY(); if (sy == 0) sy = 1.0;
+				mtex.texture->setWorldPanning(ctex->worldPanning());
+				mtex.texture->setScale(1.0/sx, 1.0/sy);
+				return mtex.texture;
+			}
 		}
 	}
 
