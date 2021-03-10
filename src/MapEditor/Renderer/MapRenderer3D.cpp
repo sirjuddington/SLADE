@@ -150,12 +150,12 @@ void MapRenderer3D::refresh()
 	dist_sectors.clear();
 	if (quads)
 	{
-		delete quads;
+		delete[] quads;
 		quads = nullptr;
 	}
 	if (flats)
 	{
-		delete flats;
+		delete[] flats;
 		flats = nullptr;
 	}
 
@@ -2554,7 +2554,8 @@ void MapRenderer3D::checkVisibleQuads()
 {
 	// Create quads array if empty
 	if (!quads)
-		quads = (quad_3d_t**)malloc(sizeof(quad_3d_t*) * map->nLines() * 4);
+		// quads = (quad_3d_t**)malloc(sizeof(quad_3d_t*) * map->nLines() * 4);
+		quads = new quad_3d_t*[map->nLines() * 4];
 
 	// Go through lines
 	MapLine* line;
@@ -2638,7 +2639,8 @@ void MapRenderer3D::checkVisibleFlats()
 {
 	// Create flats array if empty
 	if (!flats)
-		flats = (flat_3d_t**)malloc(sizeof(flat_3d_t*) * map->nSectors() * 2);
+		// flats = (flat_3d_t**)malloc(sizeof(flat_3d_t*) * map->nSectors() * 2);
+		flats = new flat_3d_t*[map->nSectors() * 2];
 
 	// Go through sectors
 	MapSector* sector;
