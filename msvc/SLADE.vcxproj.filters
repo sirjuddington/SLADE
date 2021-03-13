@@ -1010,7 +1010,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="..\thirdparty\zreaders\files.h">
       <Filter>ThirdParty\ZReaders</Filter>
     </ClInclude>
@@ -1928,6 +1927,7 @@
     <ClInclude Include="..\src\UI\Dialogs\NewEntryDialog.h">
       <Filter>UI\Dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />
@@ -1937,9 +1937,6 @@
     <None Include="..\dist\makebuild.ps1">
       <Filter>Installer</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="SLADE.rc" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="SLADE.manifest" />
@@ -1976,5 +1973,8 @@
     <Text Include="..\dist\res\config\entry_types\types_text.txt">
       <Filter>Archive\EntryType\Config</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SLADE.rc" />
   </ItemGroup>
 </Project>

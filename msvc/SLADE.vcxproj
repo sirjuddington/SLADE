@@ -937,7 +937,6 @@
     <ClInclude Include="..\src\Utility\Tokenizer.h" />
     <ClInclude Include="..\src\Utility\Tree.h" />
     <ClInclude Include="..\thirdparty\mus2mid\mus2mid.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="..\thirdparty\zreaders\files.h" />
     <ClInclude Include="..\thirdparty\zreaders\i_music.h" />
     <ClInclude Include="..\thirdparty\zreaders\i_musicinterns.h" />
@@ -945,14 +944,12 @@
     <ClInclude Include="..\thirdparty\zreaders\m_alloc.h" />
     <ClInclude Include="..\thirdparty\zreaders\tarray.h" />
     <ClInclude Include="..\thirdparty\zreaders\templates.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\dist\makebuild.ps1" />
     <None Include="slade.ico" />
     <None Include="..\win_installer\SLADE.iss" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="SLADE.rc" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="SLADE.manifest" />
@@ -969,6 +966,9 @@
     <Text Include="..\dist\res\config\entry_types\types_model.txt" />
     <Text Include="..\dist\res\config\entry_types\types_text.txt" />
     <Text Include="..\misc\stuff.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SLADE.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
