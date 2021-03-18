@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Archive/ArchiveEntry.h"
 #include "common.h"
 #include "Archive/Archive.h"
 #include "General/ListenerAnnouncer.h"
@@ -104,7 +105,8 @@ public:
 	ArchiveEntry*	getPatchEntry(const string& patch, const string& nspace = "patches", Archive* priority = nullptr);
 	ArchiveEntry*	getFlatEntry(const string& flat, Archive* priority = nullptr);
 	ArchiveEntry*	getTextureEntry(const string& texture, const string& nspace = "textures", Archive* priority = nullptr);
-	CTexture*		getTexture(const string& texture, Archive* priority = nullptr, Archive* ignore = nullptr);
+	ArchiveEntry*	getHiresEntry(const string& texture, Archive* priority = nullptr);
+	CTexture*		getTexture(const string& texture, const string& type = "", Archive* priority = nullptr, Archive* ignore = nullptr);
 	uint16_t		getTextureHash(const string& name);
 
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) override;
@@ -123,7 +125,8 @@ private:
 	EntryResourceMap	satextures_;	// Stand Alone textures (e.g., between TX_ or T_ markers)
 	EntryResourceMap	satextures_fp_;
 	//EntryResourceMap	satextures_fp_only_; // Probably not needed
-	TextureResourceMap	textures_;		// Composite textures (defined in a TEXTUREx/TEXTURES lump)
+	EntryResourceMap	hires_;
+	TextureResourceMap	composites_;		// Composite textures (defined in a TEXTUREx/TEXTURES lump)
 
 	static ResourceManager*	instance_;
 	static string			doom64_hash_table_[65536];

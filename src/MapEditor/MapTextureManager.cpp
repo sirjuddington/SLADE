@@ -29,6 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/Configuration.h"
 #include "General/Misc.h"
@@ -143,13 +144,8 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 	//Palette8bit* pal = getResourcePalette();
 
 	// Look for stand-alone textures first
-	ArchiveEntry* etex = theResourceManager->getTextureEntry(name, "hires", archive);
+	ArchiveEntry* etex = theResourceManager->getHiresEntry(name, archive);
 	int textypefound = TEXTYPE_HIRES;
-	if (etex == nullptr)
-	{
-		etex = theResourceManager->getTextureEntry(name, "textures", archive);
-		textypefound = TEXTYPE_TEXTURE;
-	}
 	if (etex)
 	{
 		SImage image;
@@ -181,9 +177,24 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 			}
 		}
 	}
+	else
+	{
+		etex = theResourceManager->getTextureEntry(name, "textures", archive);
+		textypefound = TEXTYPE_TEXTURE;
+		SImage image;
+		// Get image format hint from type, if any
+		if (Misc::loadImageFromEntry(&image, etex))
+		{
+			mtex.texture = new GLTexture(false);
+			mtex.texture->setFilter(filter);
+			mtex.texture->loadImage(&image, palette);
+		}
+	}
 
 	// Try composite textures then
-	CTexture* ctex = theResourceManager->getTexture(name, archive);
+	CTexture* ctex = theResourceManager->getTexture(name, "", archive);
+	CTexture* wallctex = theResourceManager->getTexture(name, "WallTexture", archive);
+	if (wallctex) ctex = wallctex;
 	if (ctex) // Composite textures take precedence over the textures directory
 	{
 		textypefound = TEXTYPE_WALLTEXTURE;
@@ -250,10 +261,17 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 		}
 	}
 
+	// Prioritize standalone textures
+	if (mixed && theResourceManager->getTextureEntry(name, "textures", archive))
+	{
+		return getTexture(name, false);
+	}
+
+	// Try composite flat texture
 	if (mixed)
 	{
-		CTexture* ctex = theResourceManager->getTexture(name, archive);
-		if (ctex && ctex->isExtended() && ctex->getType() != "WallTexture")
+		CTexture* ctex = theResourceManager->getTexture(name, "Flat", archive);
+		if (ctex)
 		{
 			SImage image;
 			if (ctex->toImage(image, archive, palette, true))
@@ -263,30 +281,44 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 				mtex.texture->loadImage(&image, palette);
 				double sx = ctex->getScaleX(); if (sx == 0) sx = 1.0;
 				double sy = ctex->getScaleY(); if (sy == 0) sy = 1.0;
-				mtex.texture->setScale(1.0/sx, 1.0/sy);
 				mtex.texture->setWorldPanning(ctex->worldPanning());
+				mtex.texture->setScale(1.0/sx, 1.0/sy);
 				return mtex.texture;
 			}
 		}
 	}
 
-	// Flat not found, look for it
-	//Palette8bit* pal = getResourcePalette();
+	// Try to search for an actual flat
 	if (!mtex.texture)
 	{
-		ArchiveEntry* entry = theResourceManager->getTextureEntry(name, "hires", archive);
-		if (entry == nullptr)
-			entry = theResourceManager->getTextureEntry(name, "flats", archive);
-		if (entry == nullptr)
-			entry = theResourceManager->getFlatEntry(name, archive);
-		if (entry)
+		ArchiveEntry* entry = theResourceManager->getFlatEntry(name, archive);
+		ArchiveEntry* hires_entry = theResourceManager->getHiresEntry(name, archive);
+		ArchiveEntry* image_entry = hires_entry;
+		ArchiveEntry* scale_entry = entry;
+		// No high-res texture found
+		if (!image_entry)
 		{
-			SImage image;
-			if (Misc::loadImageFromEntry(&image, entry))
+			image_entry = entry;
+			scale_entry = nullptr;
+		}
+		// Load the image
+		SImage image;
+		if (Misc::loadImageFromEntry(&image, image_entry))
+		{
+			mtex.texture = new GLTexture(false);
+			mtex.texture->setFilter(filter);
+			mtex.texture->loadImage(&image, palette);
+		}
+		// Get high-res texture scale
+		if (scale_entry)
+		{
+			SImage lores_image;
+			if (Misc::loadImageFromEntry(&lores_image, scale_entry))
 			{
-				mtex.texture = new GLTexture(false);
-				mtex.texture->setFilter(filter);
-				mtex.texture->loadImage(&image, palette);
+				double scaleX = (double)lores_image.getWidth() / (double)image.getWidth();
+				double scaleY = (double)lores_image.getHeight() / (double)image.getHeight();
+				mtex.texture->setWorldPanning(true);
+				mtex.texture->setScale(scaleX, scaleY);
 			}
 		}
 	}
@@ -294,13 +326,13 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 	// Not found
 	if (!mtex.texture)
 	{
-		// Try textures if mixed
+		// Try to search for a composite texture instead
 		if (mixed)
+		{
 			return getTexture(name, false);
+		}
 
-		// Otherwise use missing texture
-		else
-			mtex.texture = &(GLTexture::missingTex());
+		mtex.texture = &(GLTexture::missingTex());
 	}
 
 	return mtex.texture;
@@ -370,7 +402,7 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 	}
 	else  	// Try composite textures then
 	{
-		CTexture* ctex = theResourceManager->getTexture(name, archive);
+		CTexture* ctex = theResourceManager->getTexture(name, "", archive);
 		if (ctex && ctex->toImage(image, archive, this->palette, true))
 			found = true;
 	}

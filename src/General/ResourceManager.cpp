@@ -31,6 +31,7 @@
 //
 // ----------------------------------------------------------------------------
 #include "Main.h"
+#include "Archive/ArchiveEntry.h"
 #include "ResourceManager.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Console/Console.h"
@@ -296,7 +297,7 @@ void ResourceManager::removeArchive(Archive* archive)
 	removeArchiveFromMap(satextures_fp_, archive);
 
 	// Remove any textures in the archive
-	for (auto& i : textures_)
+	for (auto& i : composites_)
 		i.second.remove(archive);
 
 	// Announce resource update
@@ -408,7 +409,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 		}
 
 		// Check for stand-alone texture entry
-		if (entry->isInNamespace("textures") || entry->isInNamespace("hires"))
+		if (entry->isInNamespace("textures"))
 		{
 			satextures_[name].add(entry);
 			if (!entry->getParent()->isTreeless())
@@ -418,7 +419,10 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 
 			// Add name to hash table
 			ResourceManager::doom64_hash_table_[getTextureHash(name)] = name;
-
+		}
+		else if (entry->isInNamespace("hires"))
+		{ // Handle hi-res textures
+			hires_[name].add(entry);
 		}
 	}
 
@@ -452,7 +456,7 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry, bool log)
 		for (unsigned a = 0; a < tx.nTextures(); a++)
 		{
 			tex = tx.getTexture(a);
-			textures_[tex->getName()].add(tex, entry->getParent());
+			composites_[tex->getName()].add(tex, entry->getParent());
 		}
 	}
 }
@@ -509,7 +513,7 @@ void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry, bool log, bool full
 
 		// Remove all texture resources
 		for (unsigned a = 0; a < tx.nTextures(); a++)
-			textures_[tx.getTexture(a)->getName()].remove(entry->getParent());
+			composites_[tx.getTexture(a)->getName()].remove(entry->getParent());
 	}
 }
 
@@ -562,7 +566,7 @@ void ResourceManager::getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* p
 void ResourceManager::getAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore)
 {
 	// Add all primary textures to the list
-	for (auto& i : textures_)
+	for (auto& i : composites_)
 	{
 		// Skip if no entries
 		if (i.second.length() == 0)
@@ -602,7 +606,7 @@ void ResourceManager::getAllTextures(vector<TextureResource::Texture*>& list, Ar
 void ResourceManager::getAllTextureNames(vector<string>& list)
 {
 	// Add all primary textures to the list
-	for (auto& i : textures_)
+	for (auto& i : composites_)
 		if (i.second.length() > 0)	// Ignore if no entries
 			list.push_back(i.first);
 }
@@ -725,24 +729,37 @@ ArchiveEntry* ResourceManager::getTextureEntry(const string& texture, const stri
 	return nullptr;
 }
 
+ArchiveEntry* ResourceManager::getHiresEntry(const string& texture, Archive* priority)
+{
+	// Hi-res textures can only be used with a short name
+	ArchiveEntry* entry = hires_[texture.Upper()].getEntry(priority, "hires", true);
+	if (entry)
+		return entry;
+	return nullptr;
+}
+
 // ----------------------------------------------------------------------------
 // ResourceManager::getTexture
 //
 // Returns the most appropriate managed texture for [texture], or nullptr if no
 // match found
 // ----------------------------------------------------------------------------
-CTexture* ResourceManager::getTexture(const string& texture, Archive* priority, Archive* ignore)
+CTexture* ResourceManager::getTexture(const string& texture, const string& type, Archive* priority, Archive* ignore)
 {
 	// Check texture resource with matching name exists
-	TextureResource& res = textures_[texture.Upper()];
+	TextureResource& res = composites_[texture.Upper()];
 	if (res.textures_.empty())
 		return nullptr;
 
 	// Go through resource textures
-	CTexture* tex = &res.textures_[0].get()->tex;
+	CTexture* tex = nullptr;
 	Archive* parent = res.textures_[0].get()->parent;
 	for (auto& res_tex : res.textures_)
 	{
+		// Skip if it's not the desired type
+		if (type != "" && res_tex->tex.getType() != type)
+			continue;
+
 		// Skip if it's in the 'ignore' archive
 		if (res_tex->parent == ignore)
 			continue;
