@@ -238,6 +238,7 @@ z_mapinfo {
 		noclustertext, noinfiniteflightpowerup, nomonsterfallingdamage, nostatistics,
 		notexturefill, partime, pausemusicinmenus, resetitems, skyrotate2, sndinfo, sndseq,
 		soundinfo, specialaction_lowerfloortohighest, warptrans, wrapmidtextures,
+		propermonsterfallingdamage, disableskyboxao, enableskyboxao,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate, PixelRatio,
@@ -248,7 +249,7 @@ z_mapinfo {
 		Aggressiveness, SpawnFilter, ACSReturn, Key, MustConfirm, Name, PlayerClassName, PicName, TextColor, EasyBossBrain,
 		FastMonsters, SlowMonsters, DisableCheats, AutoUseHealth, ReplaceActor, MonsterHealth, FriendlyHealth, NoPain,
 		DefaultSkill, ArmorFactor, EasyKey, HealthFactor, KickbackFactor, NoMenu, baby, easy, hard, nightmare, normal,
-		playerrespawn,
+		playerrespawn, SpawnMulti, InstantReaction,
 
 		// GameInfo definitions
 		GameInfo, AddCreditPage, AddInfoPage, AddPlayerClasses, AddQuitMessages, AdvisoryTime, Border, BackpackType,
@@ -264,7 +265,7 @@ z_mapinfo {
 		StatScreen_FinishedFont, StatScreen_EnteringFont, Dialogue, StatScreen_Single, StatScreen_Coop, StatScreen_DM,
 		BlurAmount, CorrectPrintBold, MenuSliderColor, althudclass, forcenogfxsubstitution, forcetextinmenus,
 		fullscreenautoaspect, nomergepickupmsg, normforwardmove, normsidemove, statscreen_authorfont,
-		statscreen_contentfont,
+		statscreen_contentfont, menusliderbackcolor, hidepartimes,
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,
@@ -303,25 +304,25 @@ z_menudef {
 	keyword_link = "http://zdoom.org/wiki/MENUDEF";
 	constant_link = "http://zdoom.org/wiki/MENUDEF";
 	function_link = "http://zdoom.org/wiki/MENUDEF";
-	blocks = "listmenu", "optionmenu", addoptionmenu, "optionvalue", "optionstring";
+	blocks = "listmenu", "addlistmenu", "optionmenu", addoptionmenu, "optionvalue", "optionstring";
 	
 	keywords = { 
-		ListMenu, OptionMenu, AddOptionMenu, OptionValue, OptionString, 
+		ListMenu, AddListMenu, OptionMenu, AddOptionMenu, OptionValue, OptionString, 
 		DefaultListMenu, DefaultOptionMenu, OptionMenuSettings, 
 		Font, Linespacing, LabelOffset, PlayerDisplay, Position, Selector, StaticText, 
 		StaticTextSwitchable, ScrollTop, SafeCommand, ColorPicker, Class, ScreenResolution, 
 		StaticPatch, Control, Option, Slider, PatchItem, TextItem, Submenu, Command,
 		NetgameMessage, StaticPatchCentered, StaticTextCentered, MouseWindow, CenterMenu,
 		Title, PlayerNameBox, ValueText, MapControl, Else, TextField, NumberField,
-		ScaleSlider
+		ScaleSlider, Size, AnimatedTransition, FlagOption, Before, After
 	}
 	
 	functions { ifgame = "game, [...]"; ifoption = "option, [...]"; }
 	
 	constants = { 
 		doom, heretic, hexen, strife, chex, readthis, swapmenu, windows, unix, mac,
-		LoadMenu, SaveMenu, PlayerMenu, JoystickConfigMenu, 
-		GameplayMenu, CompatibilityMenu, VideoModeMenu, 
+		openal, LoadMenu, SaveMenu, PlayerMenu, JoystickConfigMenu, 
+		GameplayMenu, CompatibilityMenu, VideoModeMenu,
 	}
 }
 
