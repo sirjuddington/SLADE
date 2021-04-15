@@ -908,7 +908,7 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 			if (conf.user)
 			{
 				// Config is in user dir
-				auto filename = app::path("games/", app::Dir::User) + conf.filename + ".cfg";
+				auto filename = app::path("ports/", app::Dir::User) + conf.filename + ".cfg";
 				if (wxFileExists(filename))
 					strutil::processIncludes(filename, full_config);
 				else

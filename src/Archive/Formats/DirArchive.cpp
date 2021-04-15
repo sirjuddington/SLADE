@@ -293,6 +293,7 @@ bool DirArchive::save(string_view filename)
 
 	removed_files_.clear();
 	setModified(false);
+	signals().saved(*this);
 
 	return true;
 }

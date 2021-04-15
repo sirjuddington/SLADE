@@ -253,13 +253,14 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 	// Name column
 	if (col == 0)
 	{
-		auto pad      = Point2i{ 1, elist_icon_padding };
-		auto icon_bmp = elist_icon_padding > 0 ?
-							icons::getPaddedIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size, pad) :
-							icons::getIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size);
+		const auto pad  = Point2i{ 1, elist_icon_padding };
+		const auto size = scalePx(elist_icon_size);
+		const auto bmp  = elist_icon_padding > 0 ?
+                              icons::getPaddedIcon(icons::Type::Entry, entry->type()->icon(), size, pad) :
+                              icons::getIcon(icons::Type::Entry, entry->type()->icon(), size);
 
 		wxIcon icon;
-		icon.CopyFromBitmap(icon_bmp);
+		icon.CopyFromBitmap(bmp);
 		wxString name = entry->name();
 		if (entry->state() != ArchiveEntry::State::Unmodified)
 			variant << wxDataViewIconText(entry->name() + " *", icon);
