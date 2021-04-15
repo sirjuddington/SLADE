@@ -306,7 +306,7 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 	name_ = misc::fileNameToLumpName(name_);
 
 	// Max length
-	if (format.max_name_length > 0 && (int)name_.size() > format.max_name_length)
+	if (format.max_name_length > 0 && static_cast<int>(name_.size()) > format.max_name_length)
 	{
 		strutil::truncateIP(name_, format.max_name_length);
 		changed = true;
@@ -317,7 +317,7 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 		strutil::upperIP(name_);
 
 	// Remove \ or / if the format supports folders
-	if (format.supports_dirs && name_.find('/') != string::npos || name_.find('\\') != string::npos)
+	if (format.supports_dirs && (name_.find('/') != string::npos || name_.find('\\') != string::npos))
 	{
 		name_   = misc::lumpNameToFileName(name_);
 		changed = true;
@@ -325,7 +325,7 @@ void ArchiveEntry::formatName(const ArchiveFormat& format)
 
 	// Remove extension if the format doesn't have them
 	if (!format.names_extensions)
-		if (auto pos = name_.find('.'); pos != string::npos)
+		if (const auto pos = name_.find('.'); pos != string::npos)
 			strutil::truncateIP(name_, pos);
 
 	// Update upper name
