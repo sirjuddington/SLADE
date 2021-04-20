@@ -211,7 +211,7 @@ bool SImage::putIndexedData(MemChunk& mc) const
 	{
 	case Type::RGBA: return false; // Cannot do this for trucolor graphics.
 	case Type::PalMask:
-	case Type::AlphaMap: return mc.importMem(data_);
+	case Type::AlphaMap: return mc.write(data_.data(), data_.size());
 	default: return false;
 	}
 }

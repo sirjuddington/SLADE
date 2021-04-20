@@ -642,6 +642,40 @@ public:
 		return info;
 	}
 
+	Writable canWrite(SImage& image) override
+	{
+		// Must be converted to paletted to be written
+		if (image.type() == SImage::Type::PalMask)
+			return Writable::Yes;
+		else
+			return Writable::Convert;
+	}
+
+	bool canWriteType(SImage::Type type) override
+	{
+		// PSX format gfx can only be written as paletted
+		if (type == SImage::Type::PalMask)
+			return true;
+		else
+			return false;
+	}
+
+	bool convertWritable(SImage& image, ConvertOptions opt) override
+	{
+		// Do mask conversion
+		if (!opt.transparency)
+			image.fillAlpha(255);
+		else if (opt.mask_source == Mask::Colour)
+			image.maskFromColour(opt.mask_colour, opt.pal_target);
+		else if (opt.mask_source == Mask::Alpha)
+			image.cutoffMask(opt.alpha_threshold);
+
+		// Convert to paletted
+		image.convertPaletted(opt.pal_target, opt.pal_current);
+
+		return true;
+	}
+
 protected:
 	bool readImage(SImage& image, MemChunk& data, int index) override
 	{
@@ -672,6 +706,26 @@ protected:
 		// Setup other image properties
 		image.setXOffset(offset_x);
 		image.setYOffset(offset_y);
+
+		return true;
+	}
+
+	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override
+	{
+		// Write the PSX image header (in little endian format)
+		out.clear();
+		out.seek(0, SEEK_SET);
+
+		gfx::PSXPicHeader header;
+		header.width	= wxINT16_SWAP_ON_BE((short) image.width());
+		header.height	= wxINT16_SWAP_ON_BE((short) image.height());
+		header.left		= wxINT16_SWAP_ON_BE((short) image.offset().x);
+		header.top		= wxINT16_SWAP_ON_BE((short) image.offset().y);
+
+		out.write(&header, sizeof(header));
+
+		// Write the image data
+		image.putIndexedData(out);
 
 		return true;
 	}
