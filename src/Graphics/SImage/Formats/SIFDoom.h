@@ -670,8 +670,9 @@ public:
 		else if (opt.mask_source == Mask::Alpha)
 			image.cutoffMask(opt.alpha_threshold);
 
-		// Convert to paletted
+		// Convert to paletted and correct for opaque black (0,0,0) being considered fully transparent by the PSX hardware
 		image.convertPaletted(opt.pal_target, opt.pal_current);
+		correctOpaqueBlackForPsx(image);
 
 		return true;
 	}
@@ -728,6 +729,44 @@ protected:
 		image.putIndexedData(out);
 
 		return true;
+	}
+
+	// Helper: corrects for the opaque RGB colour '0,0,0' being considered fully transparent by the PSX hardware.
+	// Swaps it for the next nearest colour to black in the palette, otherwise there may be unwanted holes in the image where black is used.
+	static void correctOpaqueBlackForPsx(SImage& image)
+	{
+		if (!image.palette())
+			return;
+
+		const short nearBlackIndex = findClosestNearBlackColourIndex(*image.palette());
+
+		for (int y = 0; y < image.height(); ++y)
+		{
+			for (int x = 0; x < image.width(); ++x)
+			{
+				ColRGBA colour = image.pixelAt(x, y);
+
+				if (colour.a != 0 && colour.equals(ColRGBA::BLACK))
+				{
+					image.setPixel(x, y, nearBlackIndex);
+				}
+			}
+		}
+	}
+
+	// Helper: finds the closest colour in the given palette to ColRGBA::BLACK that isn't ColRGBA::BLACK
+	static short findClosestNearBlackColourIndex(Palette& palette)
+	{
+		for (short i = 1; i < 256; i++)
+		{
+			short colourIdx = palette.nearestColour(ColRGBA(i, i, i));
+			ColRGBA colour = palette.colour(colourIdx);
+			
+			if (!colour.equals(ColRGBA::BLACK))
+				return colourIdx;
+		}
+
+		return 0;	// Give up...
 	}
 };
 
