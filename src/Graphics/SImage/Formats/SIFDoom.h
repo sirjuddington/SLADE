@@ -750,7 +750,8 @@ protected:
 			{
 				ColRGBA colour = image.pixelAt(x, y);
 
-				if (colour.a != 0 && colour.equals(ColRGBA::BLACK))
+				// Note: only do the correction if color index '0' (transparent) is being used but opaque black was intended
+				if (colour.index == 0 && colour.a != 0 && colour.equals(ColRGBA::BLACK))
 				{
 					image.setPixel(x, y, blackColorIndex);
 				}
