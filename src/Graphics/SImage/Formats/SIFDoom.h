@@ -670,8 +670,9 @@ public:
 		else if (opt.mask_source == Mask::Alpha)
 			image.cutoffMask(opt.alpha_threshold);
 
-		// Convert to paletted
+		// Convert to paletted and correct for opaque black (0,0,0) being considered fully transparent by the PSX hardware
 		image.convertPaletted(opt.pal_target, opt.pal_current);
+		correctOpaqueBlackForPsx(image);
 
 		return true;
 	}
@@ -728,6 +729,63 @@ protected:
 		image.putIndexedData(out);
 
 		return true;
+	}
+
+	// Helper: corrects for the opaque RGB colour '0,0,0' being considered fully transparent by the PSX hardware.
+	// Swaps it for the next nearest colour to black in the palette, otherwise there may be unwanted holes in the image where black is used.
+	// Black with the semi-transparency flag set will be used as the swap color, if it is found in the palette.
+	// This special PSX color can be used to achieve true black since most geometry in PSX Doom is rendered with opaque draw commands.
+	// For more on this problem, and the 'black with semi-transparency flag' workaround see the 'No$PSX Specifications' under the 
+	// "GPU Video Memory (VRAM) -> Texture Color Black Limitations" section: http://problemkaputt.de/psx-spx.htm#gpuvideomemoryvram
+	static void correctOpaqueBlackForPsx(SImage& image)
+	{
+		if (!image.palette())
+			return;
+
+		const short blackColorIndex = getPsxOpaqueBlackColorIndex(*image.palette());
+
+		for (int y = 0; y < image.height(); ++y)
+		{
+			for (int x = 0; x < image.width(); ++x)
+			{
+				ColRGBA colour = image.pixelAt(x, y);
+
+				// Note: only do the correction if color index '0' (transparent) is being used but opaque black was intended
+				if (colour.index == 0 && colour.a != 0 && colour.equals(ColRGBA::BLACK))
+				{
+					image.setPixel(x, y, blackColorIndex);
+				}
+			}
+		}
+	}
+
+	// Helper: returns a color index to represent ColRGBA::BLACK (opaque black) for the PSX palette.
+	// Will return a color index that represents black with the PSX 'semi-transparency' (0x8000) bit set if that color is found in the palette.
+	// Failing that, the color index closest to black will be returned. Note that all color indexes other than '0' which are black are assumed
+	// to be black with the 'semi transparency' flag set. We have to make this assumption because SLADE does not have the concept of the PSX
+	// semi-transparency flag in it's color model...
+	static short getPsxOpaqueBlackColorIndex(Palette& palette)
+	{
+		// Search for for black with the 'semi-transparency' bit set first (any black with color index other than '0')
+		const std::vector<slade::ColRGBA>& colors = palette.colours();
+
+		for (short i = 1; i < colors.size(); ++i)
+		{
+			if (colors[i].equals(ColRGBA::BLACK))
+				return i;
+		}
+
+		// Failing that try to find a color in the palette that is close to black, but not black
+		for (short i = 1; i < 256; i++)
+		{
+			short colourIdx = palette.nearestColour(ColRGBA(i, i, i));
+			ColRGBA colour = palette.colour(colourIdx);
+			
+			if (!colour.equals(ColRGBA::BLACK))
+				return colourIdx;
+		}
+
+		return 0;	// Give up...
 	}
 };
 
