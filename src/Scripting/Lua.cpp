@@ -179,7 +179,7 @@ bool lua::init()
             for i,v in ipairs({...}) do\
                line = line .. tostring(v) .. ' '\
             end\
-            App.logMessage(line)\
+            App.LogMessage(line)\
          end";
 	lua.script(new_print);
 
