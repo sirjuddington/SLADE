@@ -963,7 +963,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 
 		// Otherwise, try the resource manager
 		// TODO: Something has to be ignored here. The entire archive or just the current list?
-		auto* tex = app::resources().getTexture(patch->name(), parent);
+		auto* tex = app::resources().getTexture(patch->name(), "", parent);
 		if (tex)
 			return tex->toImage(image, parent, pal);
 	}

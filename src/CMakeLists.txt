@@ -179,6 +179,11 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
 # Enable debug symbols for glib (so gdb debugging works properly with strings etc.)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
 
+if(USE_SANITIZER)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+endif(USE_SANITIZER)
+
 # External libraries are compiled separately to enable unity builds
 add_subdirectory(../thirdparty external)
 

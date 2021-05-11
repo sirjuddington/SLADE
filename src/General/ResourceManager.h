@@ -95,8 +95,13 @@ public:
 	ArchiveEntry* getPatchEntry(string_view patch, string_view nspace = "patches", Archive* priority = nullptr);
 	ArchiveEntry* getFlatEntry(string_view flat, Archive* priority = nullptr);
 	ArchiveEntry* getTextureEntry(string_view texture, string_view nspace = "textures", Archive* priority = nullptr);
-	CTexture*     getTexture(string_view texture, Archive* priority = nullptr, Archive* ignore = nullptr);
-	uint16_t      getTextureHash(string_view name) const;
+	ArchiveEntry* getHiresEntry(string_view texture, Archive* priority = nullptr);
+	CTexture*     getTexture(
+			string_view texture,
+			string_view type     = {},
+			Archive*    priority = nullptr,
+			Archive*    ignore   = nullptr);
+	uint16_t getTextureHash(string_view name) const;
 
 	// Signals
 	struct Signals
@@ -108,18 +113,18 @@ public:
 	static string doom64TextureName(uint16_t hash) { return doom64_hash_table_[hash]; }
 
 private:
-	EntryResourceMap palettes_;
-	EntryResourceMap patches_;
-	EntryResourceMap patches_fp_;      // Full path
-	EntryResourceMap patches_fp_only_; // Patches that can only be used by their full path name
-	EntryResourceMap graphics_;
-	EntryResourceMap flats_;
-	EntryResourceMap flats_fp_;
-	EntryResourceMap flats_fp_only_;
-	EntryResourceMap satextures_; // Stand Alone textures (e.g., between TX_ or T_ markers)
-	EntryResourceMap satextures_fp_;
-	// EntryResourceMap	satextures_fp_only_; // Probably not needed
-	TextureResourceMap textures_; // Composite textures (defined in a TEXTUREx/TEXTURES lump)
+	EntryResourceMap   palettes_;
+	EntryResourceMap   patches_;
+	EntryResourceMap   patches_fp_;      // Full path
+	EntryResourceMap   patches_fp_only_; // Patches that can only be used by their full path name
+	EntryResourceMap   graphics_;
+	EntryResourceMap   flats_;
+	EntryResourceMap   flats_fp_;
+	EntryResourceMap   flats_fp_only_;
+	EntryResourceMap   satextures_; // Stand Alone textures (e.g., between TX_ or T_ markers)
+	EntryResourceMap   satextures_fp_;
+	EntryResourceMap   hires_;
+	TextureResourceMap composites_; // Composite textures (defined in a TEXTUREx/TEXTURES lump)
 	Signals            signals_;
 
 	static string doom64_hash_table_[65536];

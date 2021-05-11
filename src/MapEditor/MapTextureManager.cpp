@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "MapTextureManager.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/Configuration.h"
 #include "General/Misc.h"
@@ -133,41 +134,52 @@ const MapTextureManager::Texture& MapTextureManager::texture(string_view name, b
 	if (mtex.gl_id)
 	{
 		// If the texture filter matches the desired one, return it
-		auto& tex_info = gl::Texture::info(mtex.gl_id);
-		if (tex_info.filter == filter)
+		if (gl::Texture::info(mtex.gl_id).filter == filter)
 			return mtex;
-		else
-		{
-			// Otherwise, reload the texture
-			gl::Texture::clear(mtex.gl_id);
-			mtex.gl_id = 0;
-		}
+
+		// Otherwise, reload the texture
+		gl::Texture::clear(mtex.gl_id);
+		mtex.gl_id = 0;
 	}
 
 	// Texture not found or unloaded, look for it
 
-	// Look for stand-alone textures first
-	auto archive      = archive_.lock().get();
-	auto etex         = app::resources().getTextureEntry(name, "hires", archive);
-	auto textypefound = CTexture::Type::HiRes;
-	if (etex == nullptr)
-	{
-		etex         = app::resources().getTextureEntry(name, "textures", archive);
-		textypefound = CTexture::Type::Texture;
-	}
-	if (etex)
+	// Look for composite textures first
+	auto  archive = archive_.lock().get();
+	auto* ctex    = app::resources().getTexture(name, "WallTexture", archive);
+	if (!ctex)
+		ctex = app::resources().getTexture(name, "", archive);
+	if (ctex)
 	{
 		SImage image;
-		// Get image format hint from type, if any
-		if (misc::loadImageFromEntry(&image, etex))
+		if (ctex->toImage(image, archive, palette_.get(), true))
 		{
 			mtex.gl_id = gl::Texture::createFromImage(image, palette_.get(), filter);
 
-			// Handle hires texture scale
-			if (textypefound == CTexture::Type::HiRes)
+			double sx = ctex->scaleX();
+			if (sx == 0.0)
+				sx = 1.0;
+			double sy = ctex->scaleY();
+			if (sy == 0.0)
+				sy = 1.0;
+
+			mtex.world_panning = ctex->worldPanning();
+			mtex.scale         = { 1.0 / sx, 1.0 / sy };
+		}
+	}
+
+	// No composite match, look for stand-alone textures
+	else
+	{
+		// HIRES
+		if (auto* etex = app::resources().getHiresEntry(name, archive))
+		{
+			SImage image;
+			if (misc::loadImageFromEntry(&image, etex))
 			{
-				auto ref = app::resources().getTextureEntry(name, "textures", archive);
-				if (ref)
+				mtex.gl_id = gl::Texture::createFromImage(image, palette_.get(), filter);
+
+				if (auto* ref = app::resources().getTextureEntry(name, "textures", archive))
 				{
 					SImage imgref;
 					if (misc::loadImageFromEntry(&imgref, ref))
@@ -183,27 +195,14 @@ const MapTextureManager::Texture& MapTextureManager::texture(string_view name, b
 				}
 			}
 		}
-	}
 
-	// Try composite textures then
-	auto ctex = app::resources().getTexture(name, archive);
-	if (ctex) // Composite textures take precedence over the textures directory
-	{
-		textypefound = CTexture::Type::WallTexture;
-		SImage image;
-		if (ctex->toImage(image, archive, palette_.get(), true))
+		// TEXTURES
+		else
 		{
-			mtex.gl_id = gl::Texture::createFromImage(image, palette_.get(), filter);
-
-			double sx = ctex->scaleX();
-			if (sx == 0)
-				sx = 1.0;
-			double sy = ctex->scaleY();
-			if (sy == 0)
-				sy = 1.0;
-
-			mtex.world_panning = ctex->worldPanning();
-			mtex.scale         = { 1.0 / sx, 1.0 / sy };
+			SImage image;
+			etex = app::resources().getTextureEntry(name, "textures", archive);
+			if (misc::loadImageFromEntry(&image, etex))
+				mtex.gl_id = gl::Texture::createFromImage(image, palette_.get(), filter);
 		}
 	}
 
@@ -245,22 +244,25 @@ const MapTextureManager::Texture& MapTextureManager::flat(string_view name, bool
 	if (mtex.gl_id)
 	{
 		// If the texture filter matches the desired one, return it
-		auto& tex_info = gl::Texture::info(mtex.gl_id);
-		if (tex_info.filter == filter)
+		if (gl::Texture::info(mtex.gl_id).filter == filter)
 			return mtex;
-		else
-		{
-			// Otherwise, reload the texture
-			gl::Texture::clear(mtex.gl_id);
-			mtex.gl_id = 0;
-		}
+		
+		// Otherwise, reload the texture
+		gl::Texture::clear(mtex.gl_id);
+		mtex.gl_id = 0;
 	}
 
+	// Prioritize standalone textures
 	auto archive = archive_.lock().get();
+	if (mixed && app::resources().getTextureEntry(name, "textures", archive))
+	{
+		return texture(name, false);
+	}
+
+	// Try composite flat texture
 	if (mixed)
 	{
-		auto ctex = app::resources().getTexture(name, archive);
-		if (ctex && ctex->isExtended() && ctex->type() != "WallTexture")
+		if (auto * ctex = app::resources().getTexture(name, "Flat", archive))
 		{
 			SImage image;
 			if (ctex->toImage(image, archive, palette_.get(), true))
@@ -268,47 +270,63 @@ const MapTextureManager::Texture& MapTextureManager::flat(string_view name, bool
 				mtex.gl_id = gl::Texture::createFromImage(image, palette_.get(), filter);
 
 				double sx = ctex->scaleX();
-				if (sx == 0)
+				if (sx == 0.0)
 					sx = 1.0;
 				double sy = ctex->scaleY();
-				if (sy == 0)
+				if (sy == 0.0)
 					sy = 1.0;
 
-				mtex.scale         = { 1.0 / sx, 1.0 / sy };
 				mtex.world_panning = ctex->worldPanning();
+				mtex.scale         = { 1.0 / sx, 1.0 / sy };
 
 				return mtex;
 			}
 		}
 	}
 
-	// Flat not found, look for it
-	// Palette8bit* pal = getResourcePalette();
+	// Try to search for an actual flat
 	if (!mtex.gl_id)
 	{
-		auto entry = app::resources().getTextureEntry(name, "hires", archive);
-		if (entry == nullptr)
-			entry = app::resources().getTextureEntry(name, "flats", archive);
-		if (entry == nullptr)
-			entry = app::resources().getFlatEntry(name, archive);
-		if (entry)
+		auto* entry = app::resources().getFlatEntry(name, archive);
+		auto* hires_entry = app::resources().getHiresEntry(name, archive);
+		auto* image_entry = hires_entry;
+		auto* scale_entry = entry;
+		
+		// No high-res texture found
+		if (!image_entry)
 		{
-			SImage image;
-			if (misc::loadImageFromEntry(&image, entry))
-				mtex.gl_id = gl::Texture::createFromImage(image, palette_.get(), filter);
+			image_entry = entry;
+			scale_entry = nullptr;
+		}
+		
+		// Load the image
+		SImage image;
+		if (misc::loadImageFromEntry(&image, image_entry))
+			mtex.gl_id = gl::Texture::createFromImage(image, palette_.get(), filter);
+		
+		// Get high-res texture scale
+		if (scale_entry)
+		{
+			SImage lores_image;
+			if (misc::loadImageFromEntry(&lores_image, scale_entry))
+			{
+				double scale_x = static_cast<double>(lores_image.width()) / static_cast<double>(image.width());
+				double scale_y = static_cast<double>(lores_image.height()) / static_cast<double>(image.height());
+				mtex.world_panning = true;
+				mtex.scale = { scale_x, scale_y };
+			}
 		}
 	}
 
 	// Not found
 	if (!mtex.gl_id)
 	{
-		// Try textures if mixed
+		// Try to search for a composite texture instead
 		if (mixed)
 			return texture(name, false);
 
 		// Otherwise use missing texture
-		else
-			mtex.gl_id = gl::Texture::missingTexture();
+		mtex.gl_id = gl::Texture::missingTexture();
 	}
 
 	return mtex;
@@ -328,11 +346,6 @@ const MapTextureManager::Texture& MapTextureManager::sprite(
 		return tex_invalid;
 
 	// Get sprite matching name
-	/*auto hashname = strutil::upper(name);
-	if (!translation.empty())
-		hashname += strutil::lower(translation);
-	if (!palette.empty())
-		hashname += strutil::upper(palette);*/
 	auto hashname = fmt::format("{}{}{}", name, translation, palette);
 	strutil::upperIP(hashname);
 	auto& mtex = sprites_[hashname];
@@ -389,7 +402,7 @@ const MapTextureManager::Texture& MapTextureManager::sprite(
 	}
 	else // Try composite textures then
 	{
-		auto ctex = app::resources().getTexture(name, archive);
+		auto ctex = app::resources().getTexture(name, "", archive);
 		if (ctex && ctex->toImage(image, archive, palette_.get(), true))
 			found = true;
 	}

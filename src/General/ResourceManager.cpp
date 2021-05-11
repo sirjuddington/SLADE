@@ -31,6 +31,7 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Archive/ArchiveEntry.h"
 #include "ResourceManager.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
@@ -295,7 +296,7 @@ void ResourceManager::removeArchive(Archive* archive)
 	removeArchiveFromMap(satextures_fp_, archive);
 
 	// Remove any textures in the archive
-	for (auto& i : textures_)
+	for (auto& i : composites_)
 		i.second.remove(archive);
 
 	// Announce resource update
@@ -314,9 +315,9 @@ uint16_t ResourceManager::getTextureHash(string_view name) const
 
 	uint32_t hash = 1315423911;
 	for (uint32_t i = 0; i < 8 && str[i] != '\0'; ++i)
-		hash ^= ((hash << 5) + toupper((int)str[i]) + (hash >> 2));
+		hash ^= ((hash << 5) + toupper(str[i]) + (hash >> 2));
 	hash %= 65536;
-	return (uint16_t)hash;
+	return static_cast<uint16_t>(hash);
 }
 
 // -----------------------------------------------------------------------------
@@ -324,7 +325,7 @@ uint16_t ResourceManager::getTextureHash(string_view name) const
 // -----------------------------------------------------------------------------
 void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry)
 {
-	if (!entry.get())
+	if (!entry)
 		return;
 
 	// Detect type if unknown
@@ -403,7 +404,7 @@ void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry)
 		}
 
 		// Check for stand-alone texture entry
-		if (entry->isInNamespace("textures") || entry->isInNamespace("hires"))
+		if (entry->isInNamespace("textures"))
 		{
 			satextures_[name].add(entry);
 			if (!entry->parent()->isTreeless())
@@ -413,6 +414,10 @@ void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry)
 
 			// Add name to hash table
 			doom64_hash_table_[getTextureHash(name)] = name;
+		}
+		else if (entry->isInNamespace("hires"))
+		{ // Handle hi-res textures
+			hires_[name].add(entry);
 		}
 	}
 
@@ -446,7 +451,7 @@ void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry)
 		for (unsigned a = 0; a < tx.size(); a++)
 		{
 			tex = tx.texture(a);
-			textures_[tex->name()].add(tex, entry->parent());
+			composites_[tex->name()].add(tex, entry->parent());
 		}
 	}
 }
@@ -456,7 +461,7 @@ void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry)
 // -----------------------------------------------------------------------------
 void ResourceManager::removeEntry(shared_ptr<ArchiveEntry>& entry, string_view entry_name, bool full_check)
 {
-	if (!entry.get())
+	if (!entry)
 		return;
 
 	// Get resource name (extension cut, uppercase)
@@ -502,7 +507,7 @@ void ResourceManager::removeEntry(shared_ptr<ArchiveEntry>& entry, string_view e
 
 		// Remove all texture resources
 		for (unsigned a = 0; a < tx.size(); a++)
-			textures_[tx.texture(a)->name()].remove(entry->parent());
+			composites_[tx.texture(a)->name()].remove(entry->parent());
 	}
 }
 
@@ -549,7 +554,7 @@ void ResourceManager::putAllPatchEntries(vector<ArchiveEntry*>& list, Archive* p
 void ResourceManager::putAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore)
 {
 	// Add all primary textures to the list
-	for (auto& i : textures_)
+	for (auto& i : composites_)
 	{
 		// Skip if no entries
 		if (i.second.length() == 0)
@@ -593,7 +598,7 @@ void ResourceManager::putAllTextures(vector<TextureResource::Texture*>& list, Ar
 void ResourceManager::putAllTextureNames(vector<string>& list)
 {
 	// Add all primary textures to the list
-	for (auto& i : textures_)
+	for (auto& i : composites_)
 		if (i.second.length() > 0) // Ignore if no entries
 			list.push_back(i.first);
 }
@@ -711,10 +716,10 @@ ArchiveEntry* ResourceManager::getTextureEntry(string_view texture, string_view 
 // Returns the most appropriate managed texture for [texture], or nullptr if no
 // match found
 // -----------------------------------------------------------------------------
-CTexture* ResourceManager::getTexture(string_view texture, Archive* priority, Archive* ignore)
+CTexture* ResourceManager::getTexture(string_view texture, string_view type, Archive* priority, Archive* ignore)
 {
 	// Check texture resource with matching name exists
-	auto& res = textures_[strutil::upper(texture)];
+	auto& res = composites_[strutil::upper(texture)];
 	if (res.textures_.empty())
 		return nullptr;
 
@@ -723,6 +728,10 @@ CTexture* ResourceManager::getTexture(string_view texture, Archive* priority, Ar
 	auto* parent = res.textures_[0]->parent.lock().get();
 	for (auto& res_tex : res.textures_)
 	{
+		// Skip if it's not the desired type
+		if (type != "" && res_tex->tex.type() != type)
+			continue;
+
 		// Skip if it's in the 'ignore' archive
 		auto* rt_parent = res_tex->parent.lock().get();
 		if (!rt_parent || rt_parent == ignore)
@@ -745,6 +754,12 @@ CTexture* ResourceManager::getTexture(string_view texture, Archive* priority, Ar
 		return tex;
 	else
 		return nullptr;
+}
+
+ArchiveEntry* ResourceManager::getHiresEntry(string_view texture, Archive* priority)
+{
+	// Hi-res textures can only be used with a short name
+	return hires_[strutil::upper(texture)].getEntry(priority, "hires", true);
 }
 
 void ResourceManager::updateEntry(ArchiveEntry& entry, bool remove, bool add)

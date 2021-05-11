@@ -90,7 +90,7 @@ bool PatchBrowserItem::loadImage()
 	if (type_ == Type::CTexture)
 	{
 		// Find texture
-		auto tex = app::resources().getTexture(name_.ToStdString(), archive_);
+		auto tex = app::resources().getTexture(name_.ToStdString(), "", archive_);
 
 		// Load texture to image, if it exists
 		if (tex)

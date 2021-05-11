@@ -214,7 +214,7 @@ acs_z : acs
 		BT_ATTACK, BT_USE, BT_JUMP, BT_CROUCH, BT_TURN180, BT_ALTATTACK, BT_RELOAD, 
 		BT_ZOOM, BT_SPEED, BT_STRAFE, BT_MOVERIGHT, BT_MOVELEFT, BT_BACK, BT_FORWARD, 
 		BT_RIGHT, BT_LEFT, BT_LOOKUP, BT_LOOKDOWN, BT_MOVEUP, BT_MOVEDOWN, 
-		BT_SHOWSCORES, BT_USER1, BT_USER2, BT_USER3, BT_USER4, 
+		BT_SHOWSCORES, BT_USER1, BT_USER2, BT_USER3, BT_USER4, BT_RUN,
 
 		CR_UNTRANSLATED, CR_BRICK, CR_TAN, CR_GRAY, CR_GREY, CR_GREEN, CR_BROWN, 
 		CR_GOLD, CR_RED, CR_BLUE, CR_ORANGE, CR_WHITE, CR_YELLOW, CR_BLACK, 
@@ -449,7 +449,15 @@ acs_z : acs
 
 		// CheckProximity flags
 		CPXF_ANCESTOR, CPXF_CHECKSIGHT, CPXF_CLOSEST, CPXF_COUNTDEAD, CPXF_DEADONLY, CPXF_EXACT, CPXF_FARTHEST,
-		CPXF_LESSOREQUAL, CPXF_NOZ, CPXF_SETMASTER, CPXF_SETONPTR, CPXF_SETTARGET, CPXF_SETTRACER
+		CPXF_LESSOREQUAL, CPXF_NOZ, CPXF_SETMASTER, CPXF_SETONPTR, CPXF_SETTARGET, CPXF_SETTRACER,
+
+		// Line_SetAutomapFlags
+		AMLF_Secret, AMLF_DontDraw, AMLF_Mapped, AMLF_Revealed,
+
+		// Line_SetAutomapStyle
+		AMLS_Default, AMLS_OneSided, AMLS_TwoSided, AMLS_FloorDiff, AMLS_CeilingDiff, AMLS_ExtraFloor,
+		AMLS_Special, AMLS_Secret, AMLS_NotSeen, AMLS_Locked, AMLS_IntraTeleport, AMLS_InterTeleport,
+		AMLS_UnexploredSecret, AMLS_Portal
 	}
 
 	functions
@@ -885,6 +893,7 @@ acs_z : acs
 		SetSectorGlow = "int tag, bool which, int red, int green, int blue, int height";
 		SetSectorTerrain = "int tag, int whichplane, str terraintype";
 		SetSkyScrollSpeed = "int sky, float skyspeed";
+		SetSubtitleNumber = "int num, str sound";
 		SetThingSpecial = "int tid, int special, [int arg1], [int arg2], [int arg3], [int arg4], [int arg5]";
 		SetTranslation = "int tid, str transname";
 		SetUserArray = "int tid, str name, int pos, int value";
