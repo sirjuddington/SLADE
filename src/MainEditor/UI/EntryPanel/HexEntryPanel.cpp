@@ -71,11 +71,3 @@ bool HexEntryPanel::loadEntry(ArchiveEntry* entry)
 	// Load entry data to hex editor
 	return hex_editor_->loadData(entry->data());
 }
-
-// -----------------------------------------------------------------------------
-// Saves changes to the entry
-// -----------------------------------------------------------------------------
-bool HexEntryPanel::saveEntry()
-{
-	return true;
-}

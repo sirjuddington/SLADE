@@ -242,13 +242,8 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 // -----------------------------------------------------------------------------
 // Saves any changes to the entry
 // -----------------------------------------------------------------------------
-bool GfxEntryPanel::saveEntry()
+bool GfxEntryPanel::writeEntry(ArchiveEntry& entry)
 {
-	// Check entry is open
-	auto entry = entry_.lock();
-	if (!entry)
-		return false;
-
 	// Set offsets
 	auto* image = this->image();
 	image->setXOffset(spin_xoffset_->GetValue());
@@ -276,7 +271,7 @@ bool GfxEntryPanel::saveEntry()
 				log::info("Image converted for writing");
 			}
 
-			if (format->saveImage(*image, entry->data(), &gfx_canvas_->palette()))
+			if (format->saveImage(*image, entry.data(), &gfx_canvas_->palette()))
 				ok = true;
 			else
 				error = "Error writing image";
@@ -285,15 +280,15 @@ bool GfxEntryPanel::saveEntry()
 		if (ok)
 		{
 			// Set modified
-			entry->setState(ArchiveEntry::State::Modified);
+			entry.setState(ArchiveEntry::State::Modified);
 
 			// Re-detect type
-			auto* oldtype = entry->type();
-			EntryType::detectEntryType(*entry);
+			auto* oldtype = entry.type();
+			EntryType::detectEntryType(entry);
 
 			// Update extension if type changed
-			if (oldtype != entry->type())
-				entry->setExtensionByType();
+			if (oldtype != entry.type())
+				entry.setExtensionByType();
 		}
 		else
 			wxMessageBox(wxString("Cannot save changes to image: ") + error, "Error", wxICON_ERROR);
@@ -301,32 +296,29 @@ bool GfxEntryPanel::saveEntry()
 	// Otherwise just set offsets
 	else
 	{
-		gfx::setImageOffsets(entry->data(), spin_xoffset_->GetValue(), spin_yoffset_->GetValue());
-		entry->setState(ArchiveEntry::State::Modified);
+		gfx::setImageOffsets(entry.data(), spin_xoffset_->GetValue(), spin_yoffset_->GetValue());
+		entry.setState(ArchiveEntry::State::Modified);
 	}
 
 	// Apply alPh/tRNS options
-	if (entry->type()->formatId() == "img_png")
+	if (entry.type()->formatId() == "img_png")
 	{
 		// alPh
-		bool alph = gfx::pngGetalPh(entry->data());
+		bool alph = gfx::pngGetalPh(entry.data());
 		if (alph != menu_custom_->IsChecked(SAction::fromId("pgfx_alph")->wxId()))
 		{
-			gfx::pngSetalPh(entry->data(), !alph);
-			entry->setState(ArchiveEntry::State::Modified);
+			gfx::pngSetalPh(entry.data(), !alph);
+			entry.setState(ArchiveEntry::State::Modified);
 		}
 
 		// tRNS
-		bool trns = gfx::pngGettRNS(entry->data());
+		bool trns = gfx::pngGettRNS(entry.data());
 		if (trns != menu_custom_->IsChecked(SAction::fromId("pgfx_trns")->wxId()))
 		{
-			gfx::pngSettRNS(entry->data(), !trns);
-			entry->setState(ArchiveEntry::State::Modified);
+			gfx::pngSettRNS(entry.data(), !trns);
+			entry.setState(ArchiveEntry::State::Modified);
 		}
 	}
-
-	if (ok)
-		setModified(false);
 
 	return ok;
 }

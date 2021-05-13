@@ -845,7 +845,6 @@ bool ArchivePanel::newEntry()
 	// Add the entry to the archive
 	undo_manager_->beginRecord("Add Entry");
 	auto new_entry = archive->addNewEntry(dlg->entryName().ToStdString(), index, dir);
-	undo_manager_->endRecord(true);
 
 	// Deal with specific entry type that we may want created
 	using NewEntry = maineditor::NewEntryType;
@@ -910,6 +909,8 @@ bool ArchivePanel::newEntry()
 		focusOnEntry(new_entry.get());
 		selectionChanged();
 	}
+
+	undo_manager_->endRecord(!!new_entry);
 
 	// Return whether the entry was created ok
 	return !!new_entry;

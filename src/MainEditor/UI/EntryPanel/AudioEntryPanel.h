@@ -21,9 +21,8 @@ class AudioEntryPanel : public EntryPanel
 {
 public:
 	AudioEntryPanel(wxWindow* parent);
-	~AudioEntryPanel();
+	~AudioEntryPanel() override;
 
-	bool     saveEntry() override;
 	wxString statusString() override;
 	void     setAudioDuration(int duration);
 

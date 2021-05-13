@@ -189,13 +189,32 @@ bool EntryPanel::loadEntry(ArchiveEntry* entry)
 }
 
 // -----------------------------------------------------------------------------
-// Saves the entrypanel content to the entry (does nothing here, to be
-// overridden by child classes)
+// Saves any changes to the entry 
 // -----------------------------------------------------------------------------
 bool EntryPanel::saveEntry()
 {
-	global::error = "Cannot save an entry with the base EntryPanel class";
-	return false;
+	if (!modified_)
+		return false;
+	
+	auto* entry = entry_.lock().get();
+	if (!entry)
+		return false;
+	
+	if (undo_manager_)
+	{
+		undo_manager_->beginRecord("Save Entry Modifications");
+		undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
+	}
+
+	bool ok = writeEntry(*entry);
+
+	if (undo_manager_)
+		undo_manager_->endRecord(ok);
+
+	if (ok)
+		setModified(false);
+
+	return ok;
 }
 
 // -----------------------------------------------------------------------------
@@ -223,11 +242,20 @@ bool EntryPanel::revertEntry(bool confirm)
 
 		if (ok)
 		{
+			if (undo_manager_)
+			{
+				undo_manager_->beginRecord("Revert Entry Modifications");
+				undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry.get()));
+			}
+			
 			auto state = entry->state();
 			entry->importMemChunk(entry_data_);
 			entry->setState(state);
 			EntryType::detectEntryType(*entry);
 			loadEntry(entry.get());
+
+			if (undo_manager_)
+				undo_manager_->endRecord(true);
 		}
 
 		return true;
@@ -333,27 +361,7 @@ void EntryPanel::onToolbarButton(wxCommandEvent& e)
 
 	// Save
 	if (button == "save")
-	{
-		auto entry = entry_.lock();
-
-		if (modified_ && entry)
-		{
-			if (undo_manager_)
-			{
-				undo_manager_->beginRecord("Save Entry Modifications");
-				undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry.get()));
-			}
-
-			if (saveEntry())
-			{
-				modified_ = false;
-				if (undo_manager_)
-					undo_manager_->endRecord(true);
-			}
-			else if (undo_manager_)
-				undo_manager_->endRecord(false);
-		}
-	}
+		saveEntry();
 
 	// Revert
 	else if (button == "revert")

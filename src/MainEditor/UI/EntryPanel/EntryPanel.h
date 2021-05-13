@@ -13,7 +13,7 @@ class EntryPanel : public wxPanel, protected SActionHandler
 {
 public:
 	EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar = false);
-	~EntryPanel();
+	~EntryPanel() override;
 
 	wxString      name() const { return id_; }
 	ArchiveEntry* entry() const { return entry_.lock().get(); }
@@ -24,7 +24,7 @@ public:
 
 	bool             openEntry(ArchiveEntry* entry);
 	bool             openEntry(shared_ptr<ArchiveEntry> entry);
-	virtual bool     saveEntry();
+	bool             saveEntry();
 	virtual bool     revertEntry(bool confirm = true);
 	virtual void     refreshPanel();
 	virtual void     closeEntry();
@@ -59,6 +59,7 @@ protected:
 
 	void         setModified(bool c = true);
 	virtual bool loadEntry(ArchiveEntry* entry);
+	virtual bool writeEntry(ArchiveEntry& entry) { return false; }
 	virtual bool handleEntryPanelAction(string_view id) { return false; }
 	void         onToolbarButton(wxCommandEvent& e);
 

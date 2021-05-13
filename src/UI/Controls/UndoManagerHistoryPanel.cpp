@@ -123,6 +123,13 @@ void UndoListView::setManager(UndoManager* manager)
 // -----------------------------------------------------------------------------
 void UndoListView::updateFromManager()
 {
+	if (!manager_)
+	{
+		SetItemCount(0);
+		Refresh();
+		return;
+	}
+
 	SetItemCount(manager_->nUndoLevels());
 	Refresh();
 
@@ -136,9 +143,18 @@ void UndoListView::updateFromManager()
 // -----------------------------------------------------------------------------
 void UndoListView::connectManagerSignals()
 {
-	sc_recorded_ = manager_->signals().level_recorded.connect([this]() { updateFromManager(); });
-	sc_undo_     = manager_->signals().undo.connect([this]() { updateFromManager(); });
-	sc_redo_     = manager_->signals().redo.connect([this]() { updateFromManager(); });
+	if (manager_)
+	{
+		sc_recorded_ = manager_->signals().level_recorded.connect([this]() { updateFromManager(); });
+		sc_undo_     = manager_->signals().undo.connect([this]() { updateFromManager(); });
+		sc_redo_     = manager_->signals().redo.connect([this]() { updateFromManager(); });
+	}
+	else
+	{
+		sc_recorded_.disconnect();
+		sc_undo_.disconnect();
+		sc_redo_.disconnect();
+	}
 }
 
 
@@ -153,8 +169,7 @@ void UndoListView::connectManagerSignals()
 // UndoManagerHistoryPanel class constructor
 // -----------------------------------------------------------------------------
 UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* manager) :
-	wxPanel{ parent, -1 },
-	manager_{ manager }
+	wxPanel{ parent, -1 }, manager_{ manager }
 {
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -193,7 +208,6 @@ void UndoManagerHistoryPanel::setManager(UndoManager* manager)
 void UndoManagerHistoryPanel::onItemRightClick(wxCommandEvent& e)
 {
 	long index = list_levels_->focusedIndex();
-	// wxMessageBox(wxString::Format("Item %d", index));
 
 	wxMenu context;
 	if (index == manager_->currentIndex())

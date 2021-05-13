@@ -278,8 +278,8 @@ void MainWindow::setupLayout()
 
 	// File menu
 	auto file_new_menu = new wxMenu("");
-	SAction::fromId("aman_newarchive")->addToMenu(file_new_menu, "&Archive");
-	SAction::fromId("aman_newmap")->addToMenu(file_new_menu, "&Map");
+	SAction::fromId("aman_newarchive")->addToMenu(file_new_menu, true, "&Archive");
+	SAction::fromId("aman_newmap")->addToMenu(file_new_menu, true, "&Map");
 	auto file_menu = new wxMenu("");
 	file_menu->AppendSubMenu(file_new_menu, "&New");
 	SAction::fromId("aman_open")->addToMenu(file_menu);
@@ -417,10 +417,15 @@ void MainWindow::setupLayout()
 	Bind(wxEVT_STOOLBAR_LAYOUT_UPDATED, &MainWindow::onToolBarLayoutChanged, this, toolbar_->GetId());
 	Bind(wxEVT_ACTIVATE, &MainWindow::onActivate, this);
 	Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, [&](wxAuiNotebookEvent& e) {
-		// Null start_page pointer if start page tab is closed
-		auto page = stc_tabs_->GetPage(stc_tabs_->GetSelection());
-		if (page && page->GetName() == "startpage")
+		// Null start_page pointer if start page tab is being closed
+		if (auto page = stc_tabs_->GetPage(stc_tabs_->GetSelection()); page && page->GetName() == "startpage")
 			start_page_ = nullptr;
+	});
+	Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSED, [&](wxAuiNotebookEvent& e)
+	{
+		// Clear undo history panel if all tabs closed
+		if (stc_tabs_->GetSelection() == wxNOT_FOUND)
+			panel_undo_history_->setManager(nullptr);
 	});
 
 	// Initial focus to toolbar
@@ -721,6 +726,7 @@ void MainWindow::onTabChanged(wxAuiNotebookEvent& e)
 		createStartPage();
 		SetStatusText("", 1);
 		SetStatusText("", 2);
+		panel_undo_history_->setManager(nullptr);
 	}
 
 	// Archive tab, update undo history panel
@@ -755,7 +761,7 @@ void MainWindow::onSize(wxSizeEvent& e)
 void MainWindow::onToolBarLayoutChanged(wxEvent& e)
 {
 	// Update toolbar size
-	aui_mgr_->GetPane(toolbar_).MinSize(-1, toolbar_->getBarHeight());
+	aui_mgr_->GetPane(toolbar_).MinSize(-1, SToolBar::getBarHeight());
 	aui_mgr_->Update();
 }
 

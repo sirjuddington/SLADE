@@ -684,14 +684,10 @@ bool PaletteEntryPanel::loadEntry(ArchiveEntry* entry)
 }
 
 // -----------------------------------------------------------------------------
-// Writes all loaded palettes in the palette entry
+// Writes all loaded palettes to [entry]
 // -----------------------------------------------------------------------------
-bool PaletteEntryPanel::saveEntry()
+bool PaletteEntryPanel::writeEntry(ArchiveEntry& entry)
 {
-	auto entry = entry_.lock();
-	if (!entry)
-		return false;
-
 	MemChunk full;
 	MemChunk mc;
 
@@ -701,8 +697,7 @@ bool PaletteEntryPanel::saveEntry()
 		palette->saveMem(mc);
 		full.write(mc.data(), 768);
 	}
-	entry->importMemChunk(full);
-	setModified(false);
+	entry.importMemChunk(full);
 
 	return true;
 }

@@ -25,9 +25,8 @@ class PaletteEntryPanel : public EntryPanel
 {
 public:
 	PaletteEntryPanel(wxWindow* parent);
-	~PaletteEntryPanel() = default;
+	~PaletteEntryPanel() override = default;
 
-	bool     saveEntry() override;
 	wxString statusString() override;
 	void     refreshPanel() override;
 	void     toolbarButtonClick(const wxString& action_id) override;
@@ -60,6 +59,7 @@ public:
 
 protected:
 	bool loadEntry(ArchiveEntry* entry) override;
+	bool writeEntry(ArchiveEntry& entry) override;
 
 private:
 	PaletteCanvas*              pal_canvas_ = nullptr;

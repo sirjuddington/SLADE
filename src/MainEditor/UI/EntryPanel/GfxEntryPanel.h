@@ -16,11 +16,10 @@ class GfxEntryPanel : public EntryPanel
 {
 public:
 	GfxEntryPanel(wxWindow* parent);
-	~GfxEntryPanel() = default;
+	~GfxEntryPanel() override = default;
 
 	Translation& prevTranslation() { return prev_translation_; }
 
-	bool            saveEntry() override;
 	void            setupToolbars();
 	void            fillBrushMenu(wxMenu* bm) const;
 	void            updateImagePalette() const;
@@ -46,6 +45,7 @@ public:
 protected:
 	bool loadEntry(ArchiveEntry* entry) override;
 	bool loadEntry(ArchiveEntry* entry, int index);
+	bool writeEntry(ArchiveEntry& entry) override;
 
 private:
 	bool        alph_                = false;

@@ -10,14 +10,13 @@ class ANSIEntryPanel : public EntryPanel
 {
 public:
 	ANSIEntryPanel(wxWindow* parent);
-	~ANSIEntryPanel() = default;
-
-	bool saveEntry() override;
+	~ANSIEntryPanel() override = default;
 
 	static const int DATASIZE = 4000;
 
 protected:
 	bool loadEntry(ArchiveEntry* entry) override;
+	bool writeEntry(ArchiveEntry& entry) override;
 
 private:
 	ANSICanvas*     ansi_canvas_ = nullptr;

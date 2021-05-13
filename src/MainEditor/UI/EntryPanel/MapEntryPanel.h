@@ -11,9 +11,8 @@ class MapEntryPanel : public EntryPanel
 {
 public:
 	MapEntryPanel(wxWindow* parent);
-	~MapEntryPanel() = default;
+	~MapEntryPanel() override = default;
 
-	bool saveEntry() override;
 	bool createImage();
 	void toolbarButtonClick(const wxString& action_id) override;
 

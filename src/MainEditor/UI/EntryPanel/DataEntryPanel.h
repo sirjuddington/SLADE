@@ -91,7 +91,6 @@ public:
 	DataEntryPanel(wxWindow* parent);
 	~DataEntryPanel() = default;
 
-	bool saveEntry() override;
 	void setDataModified(bool modified) { EntryPanel::setModified(modified); }
 
 	void deleteRow();
@@ -106,6 +105,7 @@ public:
 
 protected:
 	bool loadEntry(ArchiveEntry* entry) override;
+	bool writeEntry(ArchiveEntry& entry) override;
 
 private:
 	wxGrid*         grid_data_        = nullptr;

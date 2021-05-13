@@ -83,15 +83,9 @@ bool ANSIEntryPanel::loadEntry(ArchiveEntry* entry)
 }
 
 // -----------------------------------------------------------------------------
-// Saves changes to the entry
+// Writes the current content to [entry]
 // -----------------------------------------------------------------------------
-bool ANSIEntryPanel::saveEntry()
+bool ANSIEntryPanel::writeEntry(ArchiveEntry& entry)
 {
-	if (auto entry = entry_.lock())
-	{
-		entry->importMem(ansi_chardata_.data(), DATASIZE);
-		return true;
-	}
-
-	return false;
+	return entry.importMem(ansi_chardata_.data(), DATASIZE);
 }

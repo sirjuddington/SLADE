@@ -152,14 +152,6 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 }
 
 // -----------------------------------------------------------------------------
-// Saves any changes to the entry (does nothing in map viewer)
-// -----------------------------------------------------------------------------
-bool MapEntryPanel::saveEntry()
-{
-	return true;
-}
-
-// -----------------------------------------------------------------------------
 // Creates and saves a PNG image of the map preview
 // -----------------------------------------------------------------------------
 bool MapEntryPanel::createImage()

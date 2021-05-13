@@ -210,14 +210,6 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 	return true;
 }
 
-// -----------------------------------------------------------------------------
-// Saves any changes to the entry
-// -----------------------------------------------------------------------------
-bool DefaultEntryPanel::saveEntry()
-{
-	return true;
-}
-
 
 // -----------------------------------------------------------------------------
 //

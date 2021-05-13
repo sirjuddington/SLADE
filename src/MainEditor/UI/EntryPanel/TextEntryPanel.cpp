@@ -179,14 +179,10 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 }
 
 // -----------------------------------------------------------------------------
-// Saves any changes to the entry
+// Writes the current content to [entry]
 // -----------------------------------------------------------------------------
-bool TextEntryPanel::saveEntry()
+bool TextEntryPanel::writeEntry(ArchiveEntry& entry)
 {
-	auto entry = entry_.lock();
-	if (!entry)
-		return false;
-
 	// Trim whitespace
 	if (txed_trim_whitespace)
 		text_area_->trimWhitespace();
@@ -194,24 +190,21 @@ bool TextEntryPanel::saveEntry()
 	// Write raw text to the entry
 	MemChunk mc;
 	text_area_->getRawText(mc);
-	entry->importMemChunk(mc);
-	if (entry->state() == ArchiveEntry::State::Unmodified)
-		entry->setState(ArchiveEntry::State::Modified);
+	entry.importMemChunk(mc);
+	if (entry.state() == ArchiveEntry::State::Unmodified)
+		entry.setState(ArchiveEntry::State::Modified);
 
 	// Re-detect entry type
-	EntryType::detectEntryType(*entry);
+	EntryType::detectEntryType(entry);
 
 	// Set text if unknown
-	if (entry->type() == EntryType::unknownType())
-		entry->setType(EntryType::fromId("text"));
+	if (entry.type() == EntryType::unknownType())
+		entry.setType(EntryType::fromId("text"));
 
 	// Update custom definitions if decorate or zscript
 	if (text_area_->language()
 		&& (text_area_->language()->id() == "decorate" || text_area_->language()->id() == "zscript"))
 		game::updateCustomDefinitions();
-
-	// Update variables
-	setModified(false);
 
 	return true;
 }

@@ -11,9 +11,8 @@ class TextEntryPanel : public EntryPanel
 {
 public:
 	TextEntryPanel(wxWindow* parent);
-	~TextEntryPanel() {}
+	~TextEntryPanel() override = default;
 
-	bool     saveEntry() override;
 	void     refreshPanel() override;
 	void     closeEntry() override;
 	wxString statusString() override;
@@ -25,14 +24,12 @@ public:
 
 protected:
 	bool loadEntry(ArchiveEntry* entry) override;
+	bool writeEntry(ArchiveEntry& entry) override;
 
 private:
 	TextEditorCtrl*   text_area_            = nullptr;
 	FindReplacePanel* panel_fr_             = nullptr;
-	wxButton*         btn_find_replace_     = nullptr;
 	wxChoice*         choice_text_language_ = nullptr;
-	wxCheckBox*       cb_wordwrap_          = nullptr;
-	wxButton*         btn_jump_to_          = nullptr;
 	wxChoice*         choice_jump_to_       = nullptr;
 
 	// Events

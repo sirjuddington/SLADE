@@ -918,16 +918,12 @@ bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 }
 
 // -----------------------------------------------------------------------------
-// Saves any changes to the entry
+// Writes the current content to [entry]
 // -----------------------------------------------------------------------------
-bool DataEntryPanel::saveEntry()
+bool DataEntryPanel::writeEntry(ArchiveEntry& entry)
 {
-	auto entry = entry_.lock();
-	if (!entry)
-		return false;
-
 	// Special handling for certain entry types
-	auto type = entry->type()->id();
+	auto type = entry.type()->id();
 	if (type == "pnames" || type == "notpnames")
 	{
 		// PNAMES
@@ -950,8 +946,8 @@ bool DataEntryPanel::saveEntry()
 			return false;
 	}
 
-	entry->importMemChunk(table_data_->data());
-	setModified(false);
+	entry.importMemChunk(table_data_->data());
+	
 	return true;
 }
 

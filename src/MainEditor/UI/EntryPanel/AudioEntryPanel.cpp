@@ -213,14 +213,6 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 }
 
 // -----------------------------------------------------------------------------
-// Saves any changes to the entry (does nothing here)
-// -----------------------------------------------------------------------------
-bool AudioEntryPanel::saveEntry()
-{
-	return true;
-}
-
-// -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
 // -----------------------------------------------------------------------------
 wxString AudioEntryPanel::statusString()
