@@ -24,9 +24,22 @@ $buildbinaries = Read-Host
 # Build SLADE
 if ($buildbinaries.ToLower() -eq "y")
 {
+	# Find devenv path (community or professional)
 	$devenvpath19 = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\IDE\devenv.com"
-	& $devenvpath19 (resolve-path ..\msvc\SLADE.sln).Path /rebuild "Release|Win32" /project SLADE.vcxproj
-	& $devenvpath19 (resolve-path ..\msvc\SLADE.sln).Path /rebuild "Release|x64" /project SLADE.vcxproj
+	if (-not (Test-Path $devenvpath19))
+	{
+		$devenvpath19 = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.com"
+	}
+	if (-not (Test-Path $devenvpath19))
+	{
+		Write-Host "`nCould not find Visual Studio 2019 path" -ForegroundColor Red
+		Exit-PSSession
+	}
+	else
+	{
+		& $devenvpath19 (resolve-path ..\msvc\SLADE.sln).Path /rebuild "Release|Win32" /project SLADE.vcxproj
+	    & $devenvpath19 (resolve-path ..\msvc\SLADE.sln).Path /rebuild "Release|x64" /project SLADE.vcxproj
+	}
 }
 
 # Determine release directory + platforms
