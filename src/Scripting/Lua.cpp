@@ -156,6 +156,14 @@ void processError(sol::protected_function_result& result)
 	);
 }
 
+sol::protected_function_result handleError(lua_State* L, sol::protected_function_result pfr)
+{
+	processError(pfr);
+	Log::error(S_FMT("%s Error running Lua script: %d: %s", script_error.type, script_error.line_no, script_error.message));
+
+	return pfr;
+}
+
 // ----------------------------------------------------------------------------
 // Lua::runEditorScript
 //
@@ -171,7 +179,7 @@ bool runEditorScript(const string& script, T param)
 
 	// Load script
 	sol::environment sandbox(lua, sol::create, lua.globals());
-	auto load_result = lua.script(CHR(script), sandbox, sol::simple_on_error);
+	auto load_result = lua.script(CHR(script), sandbox, handleError);
 	if (!load_result.valid())
 	{
 		processError(load_result);
@@ -302,7 +310,7 @@ bool Lua::run(string program)
 	script_start_time = wxDateTime::Now().GetTicks();
 
 	sol::environment sandbox(lua, sol::create, lua.globals());
-	auto result = lua.script(CHR(program), sandbox, sol::simple_on_error);
+	auto result = lua.script(CHR(program), sandbox, handleError);
 	lua.collect_garbage();
 
 	if (!result.valid())
@@ -331,7 +339,7 @@ bool Lua::runFile(string filename)
 	script_start_time = wxDateTime::Now().GetTicks();
 
 	sol::environment sandbox(lua, sol::create, lua.globals());
-	auto result = lua.script_file(CHR(filename), sandbox, sol::simple_on_error);
+	auto result = lua.script_file(CHR(filename), sandbox, handleError);
 	lua.collect_garbage();
 
 	if (!result.valid())
