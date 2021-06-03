@@ -1253,6 +1253,7 @@ void TextureXPanel::copy()
 		copy_items.emplace_back(new TextureClipboardItem(*texturex_.texture(index), tx_editor_->archive()));
 
 	// Add list to clipboard
+	app::clipboard().clear();
 	app::clipboard().add(copy_items);
 }
 
