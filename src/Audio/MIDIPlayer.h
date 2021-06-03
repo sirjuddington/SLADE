@@ -25,9 +25,6 @@ public:
 	virtual bool setPosition(int pos)  = 0;
 	virtual bool setVolume(int volume) = 0;
 
-	virtual int    length();
-	virtual string info();
-
 protected:
 	string    file_;
 	MemChunk  data_;
@@ -54,4 +51,6 @@ protected:
 
 MIDIPlayer& midiPlayer();
 void        resetMIDIPlayer();
+int         midiLength(const MemChunk& data);
+string      midiInfo(const MemChunk& data);
 } // namespace slade::audio

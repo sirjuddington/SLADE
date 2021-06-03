@@ -73,7 +73,7 @@ private:
 	bool openMidi(MemChunk& data, const wxString& filename);
 	bool openMod(MemChunk& data);
 	bool openMp3(MemChunk& data);
-	bool updateInfo() const;
+	bool updateInfo(ArchiveEntry& entry) const;
 	void startStream();
 	void stopStream() const;
 	void resetStream() const;

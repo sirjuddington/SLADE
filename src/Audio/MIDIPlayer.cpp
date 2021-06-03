@@ -70,260 +70,6 @@ EXTERN_CVAR(Int, snd_volume)
 // -----------------------------------------------------------------------------
 
 
-// -----------------------------------------------------------------------------
-// Returns the length (or maximum position) of the currently loaded MIDI stream,
-// in milliseconds.
-//
-// MIDI time division is the number of pulses per quarter note, aka PPQN, or
-// clock tick per beat; but it doesn't tell us how long a beat or a tick lasts.
-// To know that we also need to know the tempo which is a meta event and
-// therefore optional. The tempo tells us how many microseconds there are in a
-// quarter note, so from that and the PPQN we can compute how many microseconds
-// a time division lasts.
-// tempo / time_div = microseconds per tick
-// time_div / tempo = ticks per microsecond
-// We can also theoretically get the BPM this way, but in most game midi files
-// this value will be kinda meaningless since conversion between variant formats
-// can squeeze or stretch notes to fit a set PPQN, so ticks per microseconds
-// will generally be more accurate.
-// 60000000 / tempo = BPM
-// -----------------------------------------------------------------------------
-int MIDIPlayer::length()
-{
-	size_t   microseconds  = 0;
-	size_t   pos           = 0;
-	size_t   end           = data_.size();
-	size_t   track_counter = 0;
-	uint16_t num_tracks    = 0;
-	uint16_t format        = 0;
-	uint16_t time_div      = 0;
-	int      tempo         = 500000; // Default value to assume if there are no tempo change event
-	bool     smpte         = false;
-
-	while (pos + 8 < end)
-	{
-		size_t chunk_name = data_.readB32(pos);
-		size_t chunk_size = data_.readB32(pos + 4);
-		pos += 8;
-		size_t  chunk_end      = pos + chunk_size;
-		uint8_t running_status = 0;
-		if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('h' << 8) | 'd')) // MThd
-		{
-			format     = data_.readB16(pos);
-			num_tracks = data_.readB16(pos + 2);
-			time_div   = data_.readB16(pos + 4);
-			if (data_[pos + 4] & 0x80)
-			{
-				smpte    = true;
-				time_div = (256 - data_[pos + 4]) * data_[pos + 5];
-			}
-			if (time_div == 0) // Not a valid MIDI file
-				return 0;
-		}
-		else if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('r' << 8) | 'k')) // MTrk
-		{
-			size_t tpos        = pos;
-			size_t tracklength = 0;
-			while (tpos + 4 < chunk_end)
-			{
-				// Read delta time
-				size_t dtime = 0;
-				for (int a = 0; a < 4; ++a)
-				{
-					dtime = (dtime << 7) + (data_[tpos] & 0x7F);
-					if ((data_[tpos++] & 0x80) != 0x80)
-						break;
-				}
-				// Compute length in microseconds
-				if (smpte)
-					tracklength += dtime * time_div;
-				else
-					tracklength += dtime * tempo / time_div;
-
-				// Update status
-				uint8_t evtype = 0;
-				uint8_t status = data_[tpos++];
-				size_t  evsize = 0;
-				if (status < 0x80)
-				{
-					evtype = status;
-					status = running_status;
-				}
-				else
-				{
-					running_status = status;
-					evtype         = data_[tpos++];
-				}
-				// Handle meta events
-				if (status == 0xFF)
-				{
-					evsize = 0;
-					for (int a = 0; a < 4; ++a)
-					{
-						evsize = (evsize << 7) + (data_[tpos] & 0x7F);
-						if ((data_[tpos++] & 0x80) != 0x80)
-							break;
-					}
-
-					// Tempo event is important
-					if (evtype == 0x51)
-						tempo = data_.readB24(tpos);
-
-					tpos += evsize;
-				}
-				// Handle other events. Program change and channel aftertouch
-				// have only one parameter, other non-meta events have two.
-				// Sysex events have variable length
-				else
-					switch (status & 0xF0)
-					{
-					case 0xC0: // Program Change
-					case 0xD0: // Channel Aftertouch
-						break;
-					case 0xF0: // Sysex events
-						evsize = 0;
-						for (int a = 0; a < 4; ++a)
-						{
-							evsize = (evsize << 7) + (data_[tpos] & 0x7F);
-							if ((data_[tpos++] & 0x80) != 0x80)
-								break;
-						}
-						tpos += evsize;
-						break;
-					default: tpos++; // Skip next parameter
-					}
-			}
-			// Is this the longest track yet?
-			// [TODO] MIDI Format 2 has different songs on different tracks
-			if (tracklength > microseconds)
-				microseconds = tracklength;
-		}
-		pos = chunk_end;
-	}
-	// MIDI durations are in microseconds
-	return (int)(microseconds / 1000);
-}
-
-// -----------------------------------------------------------------------------
-// Parses the MIDI data to find text events, and return a string where they are
-// each on a separate line. MIDI text events include:
-// Text event (FF 01)
-// Copyright notice (FF 02)
-// Track title (FF 03)
-// Instrument name (FF 04)
-// Lyrics (FF 05)
-// Marker (FF 06)
-// Cue point (FF 07)
-// -----------------------------------------------------------------------------
-string MIDIPlayer::info()
-{
-	string   ret;
-	size_t   pos           = 0;
-	size_t   end           = data_.size();
-	size_t   track_counter = 0;
-	uint16_t num_tracks    = 0;
-	uint16_t format        = 0;
-
-	while (pos + 8 < end)
-	{
-		size_t chunk_name = data_.readB32(pos);
-		size_t chunk_size = data_.readB32(pos + 4);
-		pos += 8;
-		size_t  chunk_end      = pos + chunk_size;
-		uint8_t running_status = 0;
-		if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('h' << 8) | 'd')) // MThd
-		{
-			format            = data_.readB16(pos);
-			num_tracks        = data_.readB16(pos + 2);
-			uint16_t time_div = data_.readB16(pos + 4);
-			if (format == 0)
-				ret += fmt::format("MIDI format 0 with time division {}\n", time_div);
-			else
-				ret += fmt::format(
-					"MIDI format {} with {} tracks and time division {}\n", format, num_tracks, time_div);
-		}
-		else if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('r' << 8) | 'k')) // MTrk
-		{
-			if (format == 2)
-				ret += fmt::format("\nTrack {}/{}\n", ++track_counter, num_tracks);
-			size_t tpos = pos;
-			while (tpos + 4 < chunk_end)
-			{
-				// Skip past delta time
-				for (int a = 0; a < 4; ++a)
-					if ((data_[tpos++] & 0x80) != 0x80)
-						break;
-
-				// Update status
-				uint8_t evtype = 0;
-				uint8_t status = data_[tpos++];
-				size_t  evsize = 0;
-				if (status < 0x80)
-				{
-					evtype = status;
-					status = running_status;
-				}
-				else
-				{
-					running_status = status;
-					evtype         = data_[tpos++];
-				}
-				// Handle meta events
-				if (status == 0xFF)
-				{
-					evsize = 0;
-					for (int a = 0; a < 4; ++a)
-					{
-						evsize = (evsize << 7) + (data_[tpos] & 0x7F);
-						if ((data_[tpos++] & 0x80) != 0x80)
-							break;
-					}
-
-					string tmp;
-					if (evtype > 0 && evtype < 8 && evsize)
-						tmp.append((const char*)(&data_[tpos]), evsize);
-
-					switch (evtype)
-					{
-					case 1: ret += fmt::format("Text: {}\n", tmp); break;
-					case 2: ret += fmt::format("Copyright: {}\n", tmp); break;
-					case 3: ret += fmt::format("Title: {}\n", tmp); break;
-					case 4: ret += fmt::format("Instrument: {}\n", tmp); break;
-					case 5: ret += fmt::format("Lyrics: {}\n", tmp); break;
-					case 6: ret += fmt::format("Marker: {}\n", tmp); break;
-					case 7: ret += fmt::format("Cue point: {}\n", tmp); break;
-					default: break;
-					}
-					tpos += evsize;
-				}
-				// Handle other events. Program change and channel aftertouch
-				// have only one parameter, other non-meta events have two.
-				// Sysex events have variable length
-				else
-					switch (status & 0xF0)
-					{
-					case 0xC0: // Program Change
-					case 0xD0: // Channel Aftertouch
-						break;
-					case 0xF0: // Sysex events
-						evsize = 0;
-						for (int a = 0; a < 4; ++a)
-						{
-							evsize = (evsize << 7) + (data_[tpos] & 0x7F);
-							if ((data_[tpos++] & 0x80) != 0x80)
-								break;
-						}
-						tpos += evsize;
-						break;
-					default: tpos++; // Skip next parameter
-					}
-			}
-		}
-		pos = chunk_end;
-	}
-	return ret;
-}
-
 
 // -----------------------------------------------------------------------------
 // FluidSynthMIDIPlayer Class
@@ -806,5 +552,258 @@ void resetMIDIPlayer()
 {
 	if (midi_player)
 		midi_player.reset(nullptr);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the length (or maximum position) of the MIDI [data], in milliseconds.
+//
+// MIDI time division is the number of pulses per quarter note, aka PPQN, or
+// clock tick per beat; but it doesn't tell us how long a beat or a tick lasts.
+// To know that we also need to know the tempo which is a meta event and
+// therefore optional. The tempo tells us how many microseconds there are in a
+// quarter note, so from that and the PPQN we can compute how many microseconds
+// a time division lasts.
+// tempo / time_div = microseconds per tick
+// time_div / tempo = ticks per microsecond
+// We can also theoretically get the BPM this way, but in most game midi files
+// this value will be kinda meaningless since conversion between variant formats
+// can squeeze or stretch notes to fit a set PPQN, so ticks per microseconds
+// will generally be more accurate.
+// 60000000 / tempo = BPM
+// -----------------------------------------------------------------------------
+int midiLength(const MemChunk& data)
+{
+	size_t   microseconds  = 0;
+	size_t   pos           = 0;
+	size_t   end           = data.size();
+	size_t   track_counter = 0;
+	uint16_t num_tracks    = 0;
+	uint16_t format        = 0;
+	uint16_t time_div      = 0;
+	int      tempo         = 500000; // Default value to assume if there are no tempo change event
+	bool     smpte         = false;
+
+	while (pos + 8 < end)
+	{
+		size_t chunk_name = data.readB32(pos);
+		size_t chunk_size = data.readB32(pos + 4);
+		pos += 8;
+		size_t  chunk_end      = pos + chunk_size;
+		uint8_t running_status = 0;
+		if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('h' << 8) | 'd')) // MThd
+		{
+			format     = data.readB16(pos);
+			num_tracks = data.readB16(pos + 2);
+			time_div   = data.readB16(pos + 4);
+			if (data[pos + 4] & 0x80)
+			{
+				smpte    = true;
+				time_div = (256 - data[pos + 4]) * data[pos + 5];
+			}
+			if (time_div == 0) // Not a valid MIDI file
+				return 0;
+		}
+		else if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('r' << 8) | 'k')) // MTrk
+		{
+			size_t tpos        = pos;
+			size_t tracklength = 0;
+			while (tpos + 4 < chunk_end)
+			{
+				// Read delta time
+				size_t dtime = 0;
+				for (int a = 0; a < 4; ++a)
+				{
+					dtime = (dtime << 7) + (data[tpos] & 0x7F);
+					if ((data[tpos++] & 0x80) != 0x80)
+						break;
+				}
+				// Compute length in microseconds
+				if (smpte)
+					tracklength += dtime * time_div;
+				else
+					tracklength += dtime * tempo / time_div;
+
+				// Update status
+				uint8_t evtype = 0;
+				uint8_t status = data[tpos++];
+				size_t  evsize = 0;
+				if (status < 0x80)
+				{
+					evtype = status;
+					status = running_status;
+				}
+				else
+				{
+					running_status = status;
+					evtype         = data[tpos++];
+				}
+				// Handle meta events
+				if (status == 0xFF)
+				{
+					evsize = 0;
+					for (int a = 0; a < 4; ++a)
+					{
+						evsize = (evsize << 7) + (data[tpos] & 0x7F);
+						if ((data[tpos++] & 0x80) != 0x80)
+							break;
+					}
+
+					// Tempo event is important
+					if (evtype == 0x51)
+						tempo = data.readB24(tpos);
+
+					tpos += evsize;
+				}
+				// Handle other events. Program change and channel aftertouch
+				// have only one parameter, other non-meta events have two.
+				// Sysex events have variable length
+				else
+					switch (status & 0xF0)
+					{
+					case 0xC0: // Program Change
+					case 0xD0: // Channel Aftertouch
+						break;
+					case 0xF0: // Sysex events
+						evsize = 0;
+						for (int a = 0; a < 4; ++a)
+						{
+							evsize = (evsize << 7) + (data[tpos] & 0x7F);
+							if ((data[tpos++] & 0x80) != 0x80)
+								break;
+						}
+						tpos += evsize;
+						break;
+					default: tpos++; // Skip next parameter
+					}
+			}
+			// Is this the longest track yet?
+			// [TODO] MIDI Format 2 has different songs on different tracks
+			if (tracklength > microseconds)
+				microseconds = tracklength;
+		}
+		pos = chunk_end;
+	}
+	// MIDI durations are in microseconds
+	return (int)(microseconds / 1000);
+}
+
+// -----------------------------------------------------------------------------
+// Parses the MIDI [data] to find text events, and return a string where they
+// are each on a separate line. MIDI text events include:
+// Text event (FF 01)
+// Copyright notice (FF 02)
+// Track title (FF 03)
+// Instrument name (FF 04)
+// Lyrics (FF 05)
+// Marker (FF 06)
+// Cue point (FF 07)
+// -----------------------------------------------------------------------------
+string midiInfo(const MemChunk& data)
+{
+	string   ret;
+	size_t   pos           = 0;
+	size_t   end           = data.size();
+	size_t   track_counter = 0;
+	uint16_t num_tracks    = 0;
+	uint16_t format        = 0;
+
+	while (pos + 8 < end)
+	{
+		size_t chunk_name = data.readB32(pos);
+		size_t chunk_size = data.readB32(pos + 4);
+		pos += 8;
+		size_t  chunk_end      = pos + chunk_size;
+		uint8_t running_status = 0;
+		if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('h' << 8) | 'd')) // MThd
+		{
+			format            = data.readB16(pos);
+			num_tracks        = data.readB16(pos + 2);
+			uint16_t time_div = data.readB16(pos + 4);
+			if (format == 0)
+				ret += fmt::format("MIDI format 0 with time division {}\n", time_div);
+			else
+				ret += fmt::format(
+					"MIDI format {} with {} tracks and time division {}\n", format, num_tracks, time_div);
+		}
+		else if (chunk_name == (size_t)(('M' << 24) | ('T' << 16) | ('r' << 8) | 'k')) // MTrk
+		{
+			if (format == 2)
+				ret += fmt::format("\nTrack {}/{}\n", ++track_counter, num_tracks);
+			size_t tpos = pos;
+			while (tpos + 4 < chunk_end)
+			{
+				// Skip past delta time
+				for (int a = 0; a < 4; ++a)
+					if ((data[tpos++] & 0x80) != 0x80)
+						break;
+
+				// Update status
+				uint8_t evtype = 0;
+				uint8_t status = data[tpos++];
+				size_t  evsize = 0;
+				if (status < 0x80)
+				{
+					evtype = status;
+					status = running_status;
+				}
+				else
+				{
+					running_status = status;
+					evtype         = data[tpos++];
+				}
+				// Handle meta events
+				if (status == 0xFF)
+				{
+					evsize = 0;
+					for (int a = 0; a < 4; ++a)
+					{
+						evsize = (evsize << 7) + (data[tpos] & 0x7F);
+						if ((data[tpos++] & 0x80) != 0x80)
+							break;
+					}
+
+					string tmp;
+					if (evtype > 0 && evtype < 8 && evsize)
+						tmp.append((const char*)(&data[tpos]), evsize);
+
+					switch (evtype)
+					{
+					case 1: ret += fmt::format("Text: {}\n", tmp); break;
+					case 2: ret += fmt::format("Copyright: {}\n", tmp); break;
+					case 3: ret += fmt::format("Title: {}\n", tmp); break;
+					case 4: ret += fmt::format("Instrument: {}\n", tmp); break;
+					case 5: ret += fmt::format("Lyrics: {}\n", tmp); break;
+					case 6: ret += fmt::format("Marker: {}\n", tmp); break;
+					case 7: ret += fmt::format("Cue point: {}\n", tmp); break;
+					default: break;
+					}
+					tpos += evsize;
+				}
+				// Handle other events. Program change and channel aftertouch
+				// have only one parameter, other non-meta events have two.
+				// Sysex events have variable length
+				else
+					switch (status & 0xF0)
+					{
+					case 0xC0: // Program Change
+					case 0xD0: // Channel Aftertouch
+						break;
+					case 0xF0: // Sysex events
+						evsize = 0;
+						for (int a = 0; a < 4; ++a)
+						{
+							evsize = (evsize << 7) + (data[tpos] & 0x7F);
+							if ((data[tpos++] & 0x80) != 0x80)
+								break;
+						}
+						tpos += evsize;
+						break;
+					default: tpos++; // Skip next parameter
+					}
+			}
+		}
+		pos = chunk_end;
+	}
+	return ret;
 }
 } // namespace slade::audio

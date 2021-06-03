@@ -314,10 +314,7 @@ bool AudioEntryPanel::open(ArchiveEntry* entry)
 
 	// MIDI format
 	if (strutil::startsWith(entry->type()->formatId(), "midi_"))
-	{
-		audio_type_ = MIDI;
 		openMidi(data_, path.GetFullPath());
-	}
 
 	// MOD format
 	else if (strutil::startsWith(entry->type()->formatId(), "mod_"))
@@ -336,7 +333,7 @@ bool AudioEntryPanel::open(ArchiveEntry* entry)
 
 	txt_title_->SetLabel(entry->path(true));
 	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
-	updateInfo();
+	updateInfo(*entry);
 
 	// Disable prev/next track buttons if only one track is available
 	if (num_tracks_ < 2)
@@ -412,6 +409,8 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, const wxString& filename)
 // -----------------------------------------------------------------------------
 bool AudioEntryPanel::openMidi(MemChunk& data, const wxString& filename)
 {
+	audio_type_ = MIDI;
+
 	// Enable volume control
 	slider_volume_->Enable(true);
 
@@ -426,7 +425,7 @@ bool AudioEntryPanel::openMidi(MemChunk& data, const wxString& filename)
 			btn_stop_->Enable();
 
 			// Setup seekbar
-			setAudioDuration(audio::midiPlayer().length());
+			setAudioDuration(audio::midiLength(data));
 
 			return true;
 		}
@@ -553,72 +552,68 @@ void AudioEntryPanel::resetStream() const
 // -----------------------------------------------------------------------------
 // Used to update the info area, returns true if info is non-empty
 // -----------------------------------------------------------------------------
-bool AudioEntryPanel::updateInfo() const
+bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 {
 	txt_info_->Clear();
 
-	auto entry = entry_.lock();
-	if (!entry)
-		return false;
-
-	wxString info = entry->typeString() + "\n";
-	auto&    mc   = entry->data();
+	wxString info = entry.typeString() + "\n";
+	auto&    mc   = entry.data();
 	switch (audio_type_)
 	{
 	case Sound:
 	case Music:
 	case Mp3:
-		if (entry->type() == EntryType::fromId("snd_doom"))
+		if (entry.type() == EntryType::fromId("snd_doom"))
 		{
 			size_t samplerate = mc.readL16(2);
 			size_t samples    = mc.readL16(4);
 			info += wxString::Format("%lu samples at %lu Hz", (unsigned long)samples, (unsigned long)samplerate);
 		}
-		else if (entry->type() == EntryType::fromId("snd_speaker"))
+		else if (entry.type() == EntryType::fromId("snd_speaker"))
 		{
 			size_t samples = mc.readL16(2);
 			info += wxString::Format("%lu samples", (unsigned long)samples);
 		}
-		else if (entry->type() == EntryType::fromId("snd_audiot"))
+		else if (entry.type() == EntryType::fromId("snd_audiot"))
 		{
 			size_t samples = mc.readL16(0);
 			info += wxString::Format("%lu samples", (unsigned long)samples);
 		}
-		else if (entry->type() == EntryType::fromId("snd_sun"))
+		else if (entry.type() == EntryType::fromId("snd_sun"))
 			info += audio::getSunInfo(mc);
-		else if (entry->type() == EntryType::fromId("snd_voc"))
+		else if (entry.type() == EntryType::fromId("snd_voc"))
 			info += audio::getVocInfo(mc);
-		else if (entry->type() == EntryType::fromId("snd_wav"))
+		else if (entry.type() == EntryType::fromId("snd_wav"))
 			info += audio::getWavInfo(mc);
-		else if (entry->type() == EntryType::fromId("snd_mp3"))
+		else if (entry.type() == EntryType::fromId("snd_mp3"))
 			info += audio::getID3Tag(mc);
-		else if (entry->type() == EntryType::fromId("snd_ogg"))
+		else if (entry.type() == EntryType::fromId("snd_ogg"))
 			info += audio::getOggComments(mc);
-		else if (entry->type() == EntryType::fromId("snd_flac"))
+		else if (entry.type() == EntryType::fromId("snd_flac"))
 			info += audio::getFlacComments(mc);
-		else if (entry->type() == EntryType::fromId("snd_aiff"))
+		else if (entry.type() == EntryType::fromId("snd_aiff"))
 			info += audio::getAiffInfo(mc);
 		break;
 	case Mod:
-		if (entry->type() == EntryType::fromId("mod_it"))
+		if (entry.type() == EntryType::fromId("mod_it"))
 			info += audio::getITComments(mc);
-		else if (entry->type() == EntryType::fromId("mod_mod"))
+		else if (entry.type() == EntryType::fromId("mod_mod"))
 			info += audio::getModComments(mc);
-		else if (entry->type() == EntryType::fromId("mod_s3m"))
+		else if (entry.type() == EntryType::fromId("mod_s3m"))
 			info += audio::getS3MComments(mc);
-		else if (entry->type() == EntryType::fromId("mod_xm"))
+		else if (entry.type() == EntryType::fromId("mod_xm"))
 			info += audio::getXMComments(mc);
 		break;
 	case MIDI:
-		info += audio::midiPlayer().info();
-		if (entry->type() == EntryType::fromId("midi_rmid"))
+		info += audio::midiInfo(mc);
+		if (entry.type() == EntryType::fromId("midi_rmid"))
 			info += audio::getRmidInfo(mc);
 		break;
 	/*case AUTYPE_EMU:
 		info += theGMEPlayer->getInfo(subsong);
 		break;
 	case AUTYPE_OPL:
-		if (entry->getType() == EntryType::getType("opl_audiot"))
+		if (entry.getType() == EntryType::getType("opl_audiot"))
 		{
 			size_t samples = READ_L32(mc, 0);
 			info += wxString::Format("%zu samples", samples);
@@ -686,15 +681,16 @@ void AudioEntryPanel::onBtnPrev(wxCommandEvent& e)
 
 	if (auto entry = entry_.lock(); entry && entry->type()->formatId() == "xmi")
 	{
-		MemChunk& mcdata = entry->data();
-		MemChunk  convdata;
-		if (conversion::zmusToMidi(mcdata, convdata, subsong_))
+		MemChunk convdata;
+		if (conversion::zmusToMidi(entry->data(), convdata, subsong_))
 			openMidi(convdata, prevfile_);
+
+		updateInfo(*entry);
 	}
 	// else if (entry->getType()->getFormat().StartsWith("gme"))
 	//	theGMEPlayer->play(subsong);
+
 	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
-	updateInfo();
 }
 
 // -----------------------------------------------------------------------------
@@ -705,10 +701,11 @@ void AudioEntryPanel::onBtnNext(wxCommandEvent& e)
 	int newsong = (subsong_ + 1) % num_tracks_;
 	if (auto entry = entry_.lock(); entry && entry->type()->formatId() == "xmi")
 	{
-		MemChunk& mcdata = entry->data();
-		MemChunk  convdata;
-		if (conversion::zmusToMidi(mcdata, convdata, newsong) && openMidi(convdata, prevfile_))
+		MemChunk convdata;
+		if (conversion::zmusToMidi(entry->data(), convdata, newsong) && openMidi(convdata, prevfile_))
 			subsong_ = newsong;
+
+		updateInfo(*entry);
 	}
 	/*else if (entry->getType()->getFormat().StartsWith("gme"))
 	{
@@ -716,7 +713,6 @@ void AudioEntryPanel::onBtnNext(wxCommandEvent& e)
 			subsong = newsong;
 	}*/
 	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
-	updateInfo();
 }
 
 // -----------------------------------------------------------------------------
