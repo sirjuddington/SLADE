@@ -201,7 +201,7 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 		// ZDoom also loads any WADs found in the root of a PK3 or directory
 		if ((archive->formatId() == "zip" || archive->formatId() == "folder") && auto_open_wads_root)
 		{
-			for (const auto& entry : archive->rootDir()->allEntries())
+			for (const auto& entry : archive->rootDir()->entries())
 			{
 				if (entry->type() == EntryType::unknownType())
 					EntryType::detectEntryType(*entry);
