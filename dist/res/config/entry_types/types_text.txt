@@ -597,6 +597,13 @@ entry_types
 		text_language = "z_iwadinfo";
 	}
 
+	umapinfo : text
+	{
+		name = "Universal MapInfo";
+		match_name = "umapinfo";
+		text_language = "umapinfo";
+	}
+
 	txt : text
 	{
 		name = "Text";
