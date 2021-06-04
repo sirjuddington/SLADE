@@ -82,31 +82,36 @@ double asFloat(const Property& prop)
 	switch (prop.index())
 	{
 	case 0: return std::get<bool>(prop) ? 1. : 0.;
-	case 1: return static_cast<double>(std::get<int>(prop));
-	case 2: return static_cast<double>(std::get<unsigned int>(prop));
+	case 1: return std::get<int>(prop);
+	case 2: return std::get<unsigned int>(prop);
 	case 3: return std::get<double>(prop);
 	case 4: return strutil::asDouble(std::get<string>(prop));
 	default: return 0.;
 	}
 }
 
-string asString(const Property& prop)
+string asString(const Property& prop, int float_precision)
 {
 	switch (prop.index())
 	{
 	case 0: return std::get<bool>(prop) ? "true" : "false";
 	case 1: return fmt::format("{}", std::get<int>(prop));
 	case 2: return fmt::format("{}", std::get<unsigned int>(prop));
-	case 3: return fmt::format("{}", std::get<double>(prop));
+	case 3:
+	{
+		if (float_precision <= 0)
+			return fmt::format("{}", std::get<double>(prop));
+		else
+			return fmt::format("{:.{}f}", std::get<double>(prop), float_precision);
+	}
 	case 4: return std::get<string>(prop);
 	default: return {};
 	}
 }
+} // namespace slade::property
 
 
-} // namespace property
-
-string PropertyList::toString(bool condensed) const
+string PropertyList::toString(bool condensed, int float_precision) const
 {
 	// Init return string
 	string ret;
@@ -115,7 +120,7 @@ string PropertyList::toString(bool condensed) const
 	for (const auto& prop : properties_)
 	{
 		// Add "key = value;\n" to the return string
-		auto val = property::asString(prop.value);
+		auto val = property::asString(prop.value, float_precision);
 
 		if (property::valueType(prop.value) == property::ValueType::String)
 		{

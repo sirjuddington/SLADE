@@ -958,7 +958,7 @@ void MapSector::writeUDMF(string& def)
 
 	// Other properties (that are not related to floor/ceiling planes
 	if (!properties_.empty())
-		def += properties_.toString(true);
+		def += properties_.toString(true, 3);
 
 	// Write the floor and ceiling plane values in order
 	if (hasFloorPlane)

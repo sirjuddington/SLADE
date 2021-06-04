@@ -397,7 +397,7 @@ void MapSide::writeUDMF(string& def)
 
 	// Other properties
 	if (!properties_.empty())
-		def += properties_.toString(true);
+		def += properties_.toString(true, 3);
 
 	def += "}\n\n";
 }

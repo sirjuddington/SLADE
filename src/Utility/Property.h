@@ -49,7 +49,7 @@ namespace property
 	int          asInt(const Property& prop);
 	unsigned int asUInt(const Property& prop);
 	double       asFloat(const Property& prop);
-	string       asString(const Property& prop);
+	string       asString(const Property& prop, int float_precision = 0);
 
 } // namespace property
 
@@ -142,7 +142,7 @@ public:
 		return false;
 	}
 
-	string toString(bool condensed = false) const;
+	string toString(bool condensed = false, int float_precision = 0) const;
 
 private:
 	vector<Named<Property>> properties_;

@@ -162,9 +162,11 @@ bool MapObject::boolProperty(string_view key)
 // -----------------------------------------------------------------------------
 int MapObject::intProperty(string_view key)
 {
-	// If the property exists already, return it
-	if (auto val = properties_.getIf<int>(key))
-		return *val;
+	// If the property exists already (as int or float), return it
+	if (auto ival = properties_.getIf<int>(key))
+		return *ival;
+	if (auto fval = properties_.getIf<double>(key))
+		return std::floor(*fval);
 
 	// Otherwise check the game configuration for a default value
 	if (auto* prop = game::configuration().getUDMFProperty(string{ key }, type_))
@@ -178,9 +180,11 @@ int MapObject::intProperty(string_view key)
 // -----------------------------------------------------------------------------
 double MapObject::floatProperty(string_view key)
 {
-	// If the property exists already, return it
-	if (auto val = properties_.getIf<double>(key))
-		return *val;
+	// If the property exists already (as float or int), return it
+	if (auto fval = properties_.getIf<double>(key))
+		return *fval;
+	if (auto ival = properties_.getIf<int>(key))
+		return *ival;
 
 	// Otherwise check the game configuration for a default value
 	if (auto* prop = game::configuration().getUDMFProperty(string{ key }, type_))
