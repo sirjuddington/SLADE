@@ -54,7 +54,7 @@ off_t memoryDataLSeek(void* raw_mp3_data, off_t offset, int whence)
 
 void memoryDataCleanup(void* raw_mp3_data)
 {
-	delete raw_mp3_data;
+	delete static_cast<Mp3MemoryData*>(raw_mp3_data);
 }
 
 } // namespace slade::audio
