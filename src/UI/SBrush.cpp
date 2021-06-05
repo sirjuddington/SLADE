@@ -33,7 +33,6 @@
 #include "SBrush.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "General/SAction.h"
 
 using namespace slade;
 
@@ -43,7 +42,6 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-// SBrushManager* SBrushManager::instance_ = nullptr;
 namespace
 {
 vector<unique_ptr<SBrush>> brushes;
@@ -62,19 +60,19 @@ vector<unique_ptr<SBrush>> brushes;
 // -----------------------------------------------------------------------------
 SBrush::SBrush(const wxString& name) : name_{ name }, icon_{ name.AfterFirst('_') }
 {
-	auto res = app::archiveManager().programResourceArchive();
+	const auto res = app::archiveManager().programResourceArchive();
 	if (res == nullptr)
 		return;
-	auto file = res->entryAtPath(fmt::format("icons/general/{}.png", icon_.ToStdString()));
+	auto file = res->entryAtPath(fmt::format("icons/general/16/{}.png", icon_.ToStdString()));
 	if (file == nullptr || file->size() == 0)
 	{
-		log::error(2, wxString::Format("error, no file at icons/general/%s.png", icon_));
+		log::error(2, wxString::Format("error, no file at icons/general/16/%s.png", icon_));
 		return;
 	}
 	image_ = std::make_unique<SImage>();
 	if (!image_->open(file->data(), 0, "png"))
 	{
-		log::error(2, wxString::Format("couldn't load image data for icons/general/%s.png", icon_));
+		log::error(2, wxString::Format("couldn't load image data for icons/general/16/%s.png", icon_));
 		return;
 	}
 	image_->convertAlphaMap(SImage::AlphaSource::Alpha);
@@ -91,7 +89,7 @@ uint8_t SBrush::pixel(int x, int y) const
 	x += center_.x;
 	y += center_.y;
 	if (image_ && x >= 0 && x < image_->width() && y >= 0 && y < image_->height())
-		return image_->pixelIndexAt((unsigned)x, (unsigned)y);
+		return image_->pixelIndexAt(static_cast<unsigned>(x), static_cast<unsigned>(y));
 	return 0;
 }
 
