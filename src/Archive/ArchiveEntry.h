@@ -51,7 +51,7 @@ public:
 	PropertyList&            exProps() { return ex_props_; }
 	const PropertyList&      exProps() const { return ex_props_; }
 	Property&                exProp(const string& key) { return ex_props_[key]; }
-	template<typename T> T   exProp(const string& key) { return std::get<T>(ex_props_[key]); }
+	template<typename T> T   exProp(const string& key);
 	State                    state() const { return state_; }
 	bool                     isLocked() const { return locked_; }
 	bool                     isLoaded() const { return data_loaded_; }
@@ -132,4 +132,13 @@ private:
 	int    reliability_ = 0; // The reliability of the entry's identification
 	size_t index_guess_ = 0; // for speed
 };
+
+template<typename T> T ArchiveEntry::exProp(const string& key)
+{
+	if (auto val = std::get_if<T>(&ex_props_[key]))
+		return *val;
+
+	return T{};
+}
+
 } // namespace slade

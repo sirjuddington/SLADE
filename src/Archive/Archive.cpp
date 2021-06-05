@@ -297,6 +297,44 @@ vector<ArchiveEntry*> Archive::MapDesc::entries(const Archive& parent, bool incl
 	return list;
 }
 
+// -----------------------------------------------------------------------------
+// Sets the appropriate 'MapFormat' extra property in all entries for the map
+// -----------------------------------------------------------------------------
+void Archive::MapDesc::updateMapFormatHints() const
+{
+	// Get parent archive
+	Archive* parent = nullptr;
+	if (const auto entry = head.lock())
+		parent = entry->parent();
+	if (!parent)
+		return;
+
+	// Determine map format name
+	string fmt_name;
+	switch (format)
+	{
+	case MapFormat::Doom: fmt_name = "doom"; break;
+	case MapFormat::Hexen: fmt_name = "hexen"; break;
+	case MapFormat::Doom64: fmt_name = "doom64"; break;
+	case MapFormat::UDMF: fmt_name = "udmf"; break;
+	case MapFormat::Unknown:
+	default: fmt_name = "unknown"; break;
+	}
+
+	// Set format hint in map entries
+	auto m_entry = head.lock();
+	auto m_index = parent->entryIndex(m_entry.get());
+	while (m_entry)
+	{
+		m_entry->exProp("MapFormat") = fmt_name;
+
+		if (m_entry == end.lock())
+			break;
+
+		m_entry = parent->rootDir()->sharedEntryAt(++m_index);
+	}
+}
+
 
 // -----------------------------------------------------------------------------
 //

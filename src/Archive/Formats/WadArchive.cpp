@@ -482,7 +482,7 @@ bool WadArchive::open(MemChunk& mc)
 			if (entry->encryption() != ArchiveEntry::Encryption::None)
 			{
 				if (entry->exProps().contains("FullSize")
-					&& (unsigned)(entry->exProp<int>("FullSize")) > entry->size())
+					&& static_cast<unsigned>(entry->exProp<int>("FullSize")) > entry->size())
 					edata.reSize((entry->exProp<int>("FullSize")), true);
 				if (!WadJArchive::jaguarDecode(edata))
 					log::warning(
@@ -1162,29 +1162,7 @@ vector<Archive::MapDesc> WadArchive::detectMaps()
 
 	// Update entry map format hints
 	for (auto& map : maps)
-	{
-		string format;
-		if (map.format == MapFormat::Doom)
-			format = "doom";
-		else if (map.format == MapFormat::Doom64)
-			format = "doom64";
-		else if (map.format == MapFormat::Hexen)
-			format = "hexen";
-		else
-			format = "udmf";
-
-		auto m_entry = map.head.lock();
-		auto m_index = entryIndex(m_entry.get());
-		while (m_entry)
-		{
-			m_entry->exProp("MapFormat") = format;
-
-			if (m_entry == map.end.lock())
-				break;
-
-			m_entry = rootDir()->sharedEntryAt(++m_index);
-		}
-	}
+		map.updateMapFormatHints();
 
 	return maps;
 }

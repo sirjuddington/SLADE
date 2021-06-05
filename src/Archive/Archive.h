@@ -41,6 +41,7 @@ public:
 		}
 
 		vector<ArchiveEntry*> entries(const Archive& parent, bool include_head = false) const;
+		void                  updateMapFormatHints() const;
 	};
 
 	static bool save_backup;

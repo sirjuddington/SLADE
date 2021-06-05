@@ -921,6 +921,7 @@ bool MapEditorWindow::saveMap()
 		mdesc_current.end = entry_end; // Update map description
 
 	// Finish
+	mdesc_current.updateMapFormatHints();
 	lockMapEntries();
 	mapeditor::editContext().map().setOpenedTime();
 
