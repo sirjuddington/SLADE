@@ -35,7 +35,6 @@
 #include "General/Misc.h"
 #include "General/UI.h"
 #include "Graphics/Graphics.h"
-#include "Graphics/Icons.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
@@ -49,7 +48,6 @@
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Dialogs/TranslationEditorDialog.h"
 #include "UI/SBrush.h"
-#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
 
@@ -93,8 +91,8 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) : EntryPanel(parent, "gfx", true)
 	gfx_canvas_->setTranslation(&edit_translation_);
 
 	// Offsets
-	wxSize spinsize = { ui::px(ui::Size::SpinCtrlWidth), -1 };
-	spin_xoffset_   = new wxSpinCtrl(
+	const wxSize spinsize = { ui::px(ui::Size::SpinCtrlWidth), -1 };
+	spin_xoffset_         = new wxSpinCtrl(
         this,
         -1,
         wxEmptyString,
@@ -255,9 +253,9 @@ bool GfxEntryPanel::writeEntry(ArchiveEntry& entry)
 	{
 		auto* format = image->format();
 
-		wxString error = "";
-		ok             = false;
-		auto writable  = format ? format->canWrite(*image) : SIFormat::Writable::No;
+		wxString error      = "";
+		ok                  = false;
+		const auto writable = format ? format->canWrite(*image) : SIFormat::Writable::No;
 		if (!format || format == SIFormat::unknownFormat())
 			error = "Image is of unknown format";
 		else if (writable == SIFormat::Writable::No)
@@ -304,7 +302,7 @@ bool GfxEntryPanel::writeEntry(ArchiveEntry& entry)
 	if (entry.type()->formatId() == "img_png")
 	{
 		// alPh
-		bool alph = gfx::pngGetalPh(entry.data());
+		const bool alph = gfx::pngGetalPh(entry.data());
 		if (alph != menu_custom_->IsChecked(SAction::fromId("pgfx_alph")->wxId()))
 		{
 			gfx::pngSetalPh(entry.data(), !alph);
@@ -312,7 +310,7 @@ bool GfxEntryPanel::writeEntry(ArchiveEntry& entry)
 		}
 
 		// tRNS
-		bool trns = gfx::pngGettRNS(entry.data());
+		const bool trns = gfx::pngGettRNS(entry.data());
 		if (trns != menu_custom_->IsChecked(SAction::fromId("pgfx_trns")->wxId()))
 		{
 			gfx::pngSettRNS(entry.data(), !trns);
@@ -427,7 +425,7 @@ void GfxEntryPanel::fillBrushMenu(wxMenu* bm) const
 // -----------------------------------------------------------------------------
 bool GfxEntryPanel::extractAll() const
 {
-	auto entry = entry_.lock();
+	const auto entry = entry_.lock();
 	if (!entry)
 		return false;
 
@@ -435,14 +433,14 @@ bool GfxEntryPanel::extractAll() const
 		return false;
 
 	// Remember where we are
-	int imgindex = image()->index();
+	const int imgindex = image()->index();
 
 	auto* parent = entry->parent();
 	if (parent == nullptr)
 		return false;
 
-	int      index = parent->entryIndex(entry.get(), entry->parentDir());
-	wxString name  = wxFileName(entry->name()).GetName();
+	const int      index = parent->entryIndex(entry.get(), entry->parentDir());
+	const wxString name  = wxFileName(entry->name()).GetName();
 
 	// Loop through subimages and get things done
 	int pos = 0;
@@ -489,12 +487,12 @@ void GfxEntryPanel::refresh(ArchiveEntry* entry)
 	spin_yoffset_->SetValue(image()->offset().y);
 
 	// Get some needed menu ids
-	int menu_gfxep_pngopt      = SAction::fromId("pgfx_pngopt")->wxId();
-	int menu_gfxep_alph        = SAction::fromId("pgfx_alph")->wxId();
-	int menu_gfxep_trns        = SAction::fromId("pgfx_trns")->wxId();
-	int menu_gfxep_extract     = SAction::fromId("pgfx_extract")->wxId();
-	int menu_gfxep_translate   = SAction::fromId("pgfx_remap")->wxId();
-	int menu_archgfx_exportpng = SAction::fromId("arch_gfx_exportpng")->wxId();
+	const int menu_gfxep_pngopt      = SAction::fromId("pgfx_pngopt")->wxId();
+	const int menu_gfxep_alph        = SAction::fromId("pgfx_alph")->wxId();
+	const int menu_gfxep_trns        = SAction::fromId("pgfx_trns")->wxId();
+	const int menu_gfxep_extract     = SAction::fromId("pgfx_extract")->wxId();
+	const int menu_gfxep_translate   = SAction::fromId("pgfx_remap")->wxId();
+	const int menu_archgfx_exportpng = SAction::fromId("arch_gfx_exportpng")->wxId();
 
 	// Set PNG check menus
 	if (entry->type() != nullptr && entry->type()->formatId() == "img_png")
@@ -619,8 +617,8 @@ GfxCanvas::View GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
 
 	// Check what section of the archive the entry is in -- only PNGs or images
 	// in the sprites section can be HUD or sprite
-	bool is_sprite = ("sprites" == entry->parent()->detectNamespace(entry));
-	bool is_png    = ("img_png" == entry->type()->formatId());
+	const bool is_sprite = ("sprites" == entry->parent()->detectNamespace(entry));
+	const bool is_png    = ("img_png" == entry->type()->formatId());
 	if (!is_sprite && !is_png)
 		return GfxCanvas::View::Default;
 
@@ -628,13 +626,13 @@ GfxCanvas::View GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
 	if (is_png && img->offset().x == 0 && img->offset().y == 0)
 		return GfxCanvas::View::Default;
 
-	int width        = img->width();
-	int height       = img->height();
-	int left         = -img->offset().x;
-	int right        = left + width;
-	int top          = -img->offset().y;
-	int bottom       = top + height;
-	int horiz_center = (left + right) / 2;
+	const int width        = img->width();
+	const int height       = img->height();
+	const int left         = -img->offset().x;
+	const int right        = left + width;
+	const int top          = -img->offset().y;
+	const int bottom       = top + height;
+	const int horiz_center = (left + right) / 2;
 
 	// Determine sprite vs. HUD with a rough heuristic: give each one a
 	// penalty, measuring how far (in pixels) the offsets are from the "ideal"
@@ -655,7 +653,7 @@ GfxCanvas::View GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
 	// line and the bottom edge.  Some sprites are vertically centered whereas
 	// some use a small bottom margin for feet, so split the difference and use
 	// 1/4 up from the bottom.
-	int bottom_quartile = (bottom * 3 + top) / 4;
+	const int bottom_quartile = (bottom * 3 + top) / 4;
 	sprite_penalty += abs(bottom_quartile - 0);
 	sprite_penalty += abs(horiz_center - 0);
 	// It's extremely unusual for the sprite to not contain the origin, which
@@ -686,7 +684,7 @@ void GfxEntryPanel::applyViewType(ArchiveEntry* entry) const
 	else
 	{
 		// Set gfx canvas view type depending on the offset combobox selection
-		int sel = choice_offset_type_->GetSelection();
+		const int sel = choice_offset_type_->GetSelection();
 		switch (sel)
 		{
 		case 0: gfx_canvas_->setViewType(detectOffsetType(entry)); break;
@@ -711,7 +709,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	if (!strutil::startsWith(id, "pgfx_"))
 		return false;
 
-	auto entry = entry_.lock();
+	const auto entry = entry_.lock();
 
 	// For pgfx_brush actions, the string after pgfx is a brush name
 	if (strutil::startsWith(id, "pgfx_brush"))
@@ -781,8 +779,8 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 	else if (id == "pgfx_rotate")
 	{
 		// Prompt for rotation angle
-		wxString angles[] = { "90", "180", "270" };
-		int      choice   = wxGetSingleChoiceIndex("Select rotation angle", "Rotate", 3, angles, 0);
+		wxString  angles[] = { "90", "180", "270" };
+		const int choice   = wxGetSingleChoiceIndex("Select rotation angle", "Rotate", 3, angles, 0);
 
 		// Rotate image
 		switch (choice)
@@ -876,7 +874,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			setModified();
 		}
 		last_tint_colour = gtd.colour().toString(ColRGBA::StringFormat::RGB);
-		last_tint_amount = (int)(gtd.amount() * 100.0);
+		last_tint_amount = static_cast<int>(gtd.amount() * 100.0);
 	}
 
 	// Crop
@@ -890,7 +888,7 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 		if (gcd.ShowModal() == wxID_OK)
 		{
 			// Prompt to adjust offsets
-			auto crop = gcd.cropRect();
+			const auto crop = gcd.cropRect();
 			if (crop.tl.x > 0 || crop.tl.y > 0)
 			{
 				if (wxMessageBox(
@@ -975,10 +973,10 @@ bool GfxEntryPanel::handleEntryPanelAction(string_view id)
 			setModified();
 
 			// Fix tRNS status if we converted to paletted PNG
-			int MENU_GFXEP_PNGOPT      = SAction::fromId("pgfx_pngopt")->wxId();
-			int MENU_GFXEP_ALPH        = SAction::fromId("pgfx_alph")->wxId();
-			int MENU_GFXEP_TRNS        = SAction::fromId("pgfx_trns")->wxId();
-			int MENU_ARCHGFX_EXPORTPNG = SAction::fromId("arch_gfx_exportpng")->wxId();
+			const int MENU_GFXEP_PNGOPT      = SAction::fromId("pgfx_pngopt")->wxId();
+			const int MENU_GFXEP_ALPH        = SAction::fromId("pgfx_alph")->wxId();
+			const int MENU_GFXEP_TRNS        = SAction::fromId("pgfx_trns")->wxId();
+			const int MENU_ARCHGFX_EXPORTPNG = SAction::fromId("arch_gfx_exportpng")->wxId();
 			if (format->name() == "PNG")
 			{
 				menu_custom_->Enable(MENU_GFXEP_ALPH, true);
@@ -1082,7 +1080,7 @@ void GfxEntryPanel::onPaintColourChanged(wxEvent& e)
 void GfxEntryPanel::onXOffsetChanged(wxCommandEvent& e)
 {
 	// Ignore if the value wasn't changed
-	int offset = spin_xoffset_->GetValue();
+	const int offset = spin_xoffset_->GetValue();
 	if (offset == image()->offset().x)
 		return;
 
@@ -1098,7 +1096,7 @@ void GfxEntryPanel::onXOffsetChanged(wxCommandEvent& e)
 void GfxEntryPanel::onYOffsetChanged(wxCommandEvent& e)
 {
 	// Ignore if the value wasn't changed
-	int offset = spin_yoffset_->GetValue();
+	const int offset = spin_yoffset_->GetValue();
 	if (offset == image()->offset().y)
 		return;
 
@@ -1144,9 +1142,9 @@ void GfxEntryPanel::onGfxPixelsChanged(wxEvent& e)
 // -----------------------------------------------------------------------------
 void GfxEntryPanel::onCurImgChanged(wxCommandEvent& e)
 {
-	int   num      = gfx_canvas_->image().size();
-	auto* entry    = entry_.lock().get();
-	int   newindex = spin_curimg_->GetValue() - 1;
+	const int num      = gfx_canvas_->image().size();
+	auto*     entry    = entry_.lock().get();
+	const int newindex = spin_curimg_->GetValue() - 1;
 	if (num > 1 && entry && newindex != cur_index_)
 	{
 		loadEntry(entry, newindex);
@@ -1164,7 +1162,7 @@ void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		// Calculate new offsets
-		Vec2i offsets = dlg.calculateOffsets(
+		const Vec2i offsets = dlg.calculateOffsets(
 			spin_xoffset_->GetValue(),
 			spin_yoffset_->GetValue(),
 			gfx_canvas_->image().width(),
@@ -1195,7 +1193,7 @@ void GfxEntryPanel::onColourPicked(wxEvent& e)
 // -----------------------------------------------------------------------------
 void GfxEntryPanel::onToolSelected(wxCommandEvent& e)
 {
-	auto id = e.GetString();
+	const auto id = e.GetString();
 
 	toolbar_left_->group("Tool")->setAllButtonsChecked(false);
 
@@ -1271,8 +1269,8 @@ GfxEntryPanel* getCurrentGfxPanel()
 
 CONSOLE_COMMAND(rotate, 1, true)
 {
-	double   val;
-	wxString bluh = args[0];
+	double         val;
+	const wxString bluh = args[0];
 	if (!bluh.ToDouble(&val))
 	{
 		if (!bluh.CmpNoCase("l") || !bluh.CmpNoCase("left"))
@@ -1287,7 +1285,7 @@ CONSOLE_COMMAND(rotate, 1, true)
 			return;
 		}
 	}
-	int angle = (int)val;
+	const int angle = (int)val;
 	if (angle % 90)
 	{
 		log::error(wxString::Format("Invalid parameter: %i is not a multiple of 90.", angle));
@@ -1328,8 +1326,8 @@ CONSOLE_COMMAND(rotate, 1, true)
 
 CONSOLE_COMMAND(mirror, 1, true)
 {
-	bool     vertical;
-	wxString bluh = args[0];
+	bool           vertical;
+	const wxString bluh = args[0];
 	if (!bluh.CmpNoCase("y") || !bluh.CmpNoCase("v") || !bluh.CmpNoCase("vert") || !bluh.CmpNoCase("vertical"))
 		vertical = true;
 	else if (!bluh.CmpNoCase("x") || !bluh.CmpNoCase("h") || !bluh.CmpNoCase("horz") || !bluh.CmpNoCase("horizontal"))

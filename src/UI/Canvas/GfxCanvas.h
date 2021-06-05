@@ -60,10 +60,10 @@ public:
 	void pickColour(int x, int y);
 	void generateBrushShadow();
 
-	void zoomToFit(bool mag = true, float padding = 0.0f);
+	void zoomToFit(bool mag = true, double padding = 0.0f);
 	void resetOffsets() { offset_.x = offset_.y = 0; }
 
-	bool  onImage(int x, int y);
+	bool  onImage(int x, int y) const;
 	Vec2i imageCoords(int x, int y) const;
 
 private:
@@ -71,7 +71,7 @@ private:
 	View         view_type_ = View::Default;
 	double       scale_     = 1.;
 	Vec2d        offset_; // panning offsets (not image offsets)
-	unsigned     tex_image_;
+	unsigned     tex_image_      = 0;
 	bool         update_texture_ = false;
 	bool         image_hilight_  = false;
 	bool         allow_drag_     = false;
@@ -87,7 +87,7 @@ private:
 	SBrush*      brush_        = nullptr;        // the brush used to paint the image
 	Vec2i        cursor_pos_   = { -1, -1 };     // position of cursor, relative to image
 	Vec2i        prev_pos_     = { -1, -1 };     // previous position of cursor
-	unsigned     tex_brush_;                     // preview the effect of the brush
+	unsigned     tex_brush_    = 0;              // preview the effect of the brush
 
 	// Signal connections
 	sigslot::scoped_connection sc_image_changed_;

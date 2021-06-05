@@ -28,4 +28,17 @@ double distanceRayPlane(Vec3d ray_origin, Vec3d ray_dir, Plane plane);
 bool   boxLineIntersect(Rectf box, Seg2d line);
 Plane  planeFromTriangle(Vec3d p1, Vec3d p2, Vec3d p3);
 
+template<typename T> T scale(T value, double scale)
+{
+	return static_cast<T>(static_cast<double>(value) * scale);
+}
+
+template<typename T> T scaleInverse(T value, double scale)
+{
+	if (scale != 0.0)
+		return static_cast<T>(static_cast<double>(value) / scale);
+
+	return 0.0;
+}
+
 } // namespace slade::math

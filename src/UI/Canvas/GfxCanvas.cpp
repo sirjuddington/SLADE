@@ -38,6 +38,7 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "UI/SBrush.h"
+#include "Utility/MathStuff.h"
 
 using namespace slade;
 
@@ -121,8 +122,8 @@ void GfxCanvas::draw()
 	// Pan if offsets
 	if (view_type_ == View::Centered || view_type_ == View::Sprite || view_type_ == View::HUD)
 	{
-		int mid_x = GetSize().x / 2;
-		int mid_y = GetSize().y / 2;
+		const int mid_x = GetSize().x / 2;
+		const int mid_y = GetSize().y / 2;
 		glTranslated(mid_x, mid_y, 0);
 	}
 
@@ -158,7 +159,7 @@ void GfxCanvas::drawOffsetLines() const
 	}
 	else if (view_type_ == View::HUD)
 	{
-		double yscale = (gfx_arc ? scale_ * 1.2 : scale_);
+		const double yscale = (gfx_arc ? scale_ * 1.2 : scale_);
 		glPushMatrix();
 		glEnable(GL_LINE_SMOOTH);
 		glScaled(scale_, yscale, 1);
@@ -182,7 +183,7 @@ void GfxCanvas::drawImage()
 	glPushMatrix();
 
 	// Zoom
-	double yscale = (gfx_arc ? scale_ * 1.2 : scale_);
+	const double yscale = (gfx_arc ? scale_ * 1.2 : scale_);
 	glScaled(scale_, yscale, 1.0);
 
 	// Pan
@@ -217,15 +218,16 @@ void GfxCanvas::drawImage()
 	}
 
 	// Determine (texture)coordinates
-	double x = (double)image_.width();
-	double y = (double)image_.height();
+	const double x = image_.width();
+	const double y = image_.height();
 
 	// If tiled view
 	if (view_type_ == View::Tiled)
 	{
 		// Draw tiled image
 		gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
-		drawing::drawTextureTiled(tex_image_, GetSize().x / scale_, GetSize().y / scale_);
+		drawing::drawTextureTiled(
+			tex_image_, math::scaleInverse(GetSize().x, scale_), math::scaleInverse(GetSize().y, scale_));
 	}
 	else if (drag_origin_.x < 0) // If not dragging
 	{
@@ -250,8 +252,8 @@ void GfxCanvas::drawImage()
 		drawing::drawTexture(tex_image_);
 
 		// Draw the dragged image
-		int off_x = (drag_pos_.x - drag_origin_.x) / scale_;
-		int off_y = (drag_pos_.y - drag_origin_.y) / scale_;
+		const auto off_x = static_cast<double>(drag_pos_.x - drag_origin_.x) / scale_;
+		const auto off_y = static_cast<double>(drag_pos_.y - drag_origin_.y) / scale_;
 		glTranslated(off_x, off_y, 0);
 		gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
 		drawing::drawTexture(tex_image_);
@@ -299,18 +301,18 @@ void GfxCanvas::updateImageTexture()
 // Leaves a border around the image if <padding> is specified
 // (0.0f = no border, 1.0f = border 100% of canvas size)
 // -----------------------------------------------------------------------------
-void GfxCanvas::zoomToFit(bool mag, float padding)
+void GfxCanvas::zoomToFit(bool mag, double padding)
 {
 	// Determine padding
-	double pad = (double)std::min<int>(GetSize().x, GetSize().y) * padding;
+	const double pad = static_cast<double>(std::min<int>(GetSize().x, GetSize().y)) * padding;
 
 	// Get image dimensions
-	double x_dim = (double)image_.width();
-	double y_dim = (double)image_.height();
+	const double x_dim = image_.width();
+	const double y_dim = image_.height();
 
 	// Get max scale for x and y (including padding)
-	double x_scale = ((double)GetSize().x - pad) / x_dim;
-	double y_scale = ((double)GetSize().y - pad) / y_dim;
+	const double x_scale = (static_cast<double>(GetSize().x) - pad) / x_dim;
+	const double y_scale = (static_cast<double>(GetSize().y) - pad) / y_dim;
 
 	// Set scale to smallest of the 2 (so that none of the image will be clipped)
 	scale_ = std::min<double>(x_scale, y_scale);
@@ -323,7 +325,7 @@ void GfxCanvas::zoomToFit(bool mag, float padding)
 // -----------------------------------------------------------------------------
 // Returns true if the given coordinates are 'on' top of the image
 // -----------------------------------------------------------------------------
-bool GfxCanvas::onImage(int x, int y)
+bool GfxCanvas::onImage(int x, int y) const
 {
 	// Don't disable in editing mode; it can be quite useful
 	// to have a live preview of how a graphic will tile.
@@ -341,9 +343,9 @@ bool GfxCanvas::onImage(int x, int y)
 Vec2i GfxCanvas::imageCoords(int x, int y) const
 {
 	// Determine top-left coordinates of image in screen coords
-	double left   = GetSize().x * 0.5 + offset_.x;
-	double top    = GetSize().y * 0.5 + offset_.y;
-	double yscale = scale_ * (gfx_arc ? 1.2 : 1);
+	double       left   = GetSize().x * 0.5 + offset_.x;
+	double       top    = GetSize().y * 0.5 + offset_.y;
+	const double yscale = scale_ * (gfx_arc ? 1.2 : 1);
 
 	if (view_type_ == View::Default || view_type_ == View::Tiled)
 	{
@@ -352,8 +354,8 @@ Vec2i GfxCanvas::imageCoords(int x, int y) const
 	}
 	else if (view_type_ == View::Centered)
 	{
-		left -= (double)image_.width() * 0.5 * scale_;
-		top -= (double)image_.height() * 0.5 * yscale;
+		left -= static_cast<double>(image_.width()) * 0.5 * scale_;
+		top -= static_cast<double>(image_.height()) * 0.5 * yscale;
 	}
 	else if (view_type_ == View::Sprite)
 	{
@@ -369,19 +371,19 @@ Vec2i GfxCanvas::imageCoords(int x, int y) const
 	}
 
 	// Determine bottom-right coordinates of image in screen coords
-	double right  = left + image_.width() * scale_;
-	double bottom = top + image_.height() * yscale;
+	const double right  = left + image_.width() * scale_;
+	const double bottom = top + image_.height() * yscale;
 
 	// Check if the pointer is within the image
 	if (x >= left && x <= right && y >= top && y <= bottom)
 	{
 		// Determine where in the image it is
-		double w    = right - left;
-		double h    = bottom - top;
-		double xpos = double(x - left) / w;
-		double ypos = double(y - top) / h;
+		const double w    = right - left;
+		const double h    = bottom - top;
+		const double xpos = (x - left) / w;
+		const double ypos = (y - top) / h;
 
-		return { int(xpos * image_.width()), int(ypos * image_.height()) };
+		return { static_cast<int>(xpos * image_.width()), static_cast<int>(ypos * image_.height()) };
 	}
 	else
 		return { -1, -1 };
@@ -393,8 +395,8 @@ Vec2i GfxCanvas::imageCoords(int x, int y) const
 void GfxCanvas::endOffsetDrag()
 {
 	// Get offset
-	int x = (drag_pos_.x - drag_origin_.x) / scale_;
-	int y = (drag_pos_.y - drag_origin_.y) / scale_;
+	const auto x = math::scaleInverse(drag_pos_.x - drag_origin_.x, scale_);
+	const auto y = math::scaleInverse(drag_pos_.y - drag_origin_.y, scale_);
 
 	// If there was a change
 	if (x != 0 || y != 0)
@@ -429,7 +431,7 @@ void GfxCanvas::paintPixel(int x, int y)
 	// of mouse events can happen while the mouse moves, leading
 	// to the same pixel being processed over and over, and that
 	// does not play well when applying translations.
-	size_t pos = x + image_.width() * y;
+	const size_t pos = x + image_.width() * y;
 	if (drawing_mask_[pos])
 		return;
 
@@ -440,10 +442,10 @@ void GfxCanvas::paintPixel(int x, int y)
 	{
 		if (translation_ != nullptr)
 		{
-			auto    ocol  = image_.pixelAt(x, y, &palette_);
-			uint8_t alpha = ocol.a;
-			auto    ncol  = (translation_->translate(ocol, &palette_));
-			ncol.a        = alpha;
+			const auto    ocol  = image_.pixelAt(x, y, &palette_);
+			const uint8_t alpha = ocol.a;
+			auto          ncol  = (translation_->translate(ocol, &palette_));
+			ncol.a              = alpha;
 			if (!ocol.equals(ncol, false, true))
 				painted = image_.setPixel(x, y, ncol);
 		}
@@ -469,7 +471,7 @@ void GfxCanvas::brushCanvas(int x, int y)
 {
 	if (brush_ == nullptr)
 		return;
-	auto coord = imageCoords(x, y);
+	const auto coord = imageCoords(x, y);
 	for (int i = -4; i < 5; ++i)
 		for (int j = -4; j < 5; ++j)
 			if (brush_->pixel(i, j))
@@ -482,7 +484,7 @@ void GfxCanvas::brushCanvas(int x, int y)
 void GfxCanvas::pickColour(int x, int y)
 {
 	// Get the pixel
-	auto coord = imageCoords(x, y);
+	const auto coord = imageCoords(x, y);
 
 	// Pick its colour
 	paint_colour_ = image_.pixelAt(coord.x, coord.y, &palette_);
@@ -538,9 +540,9 @@ void GfxCanvas::generateBrushShadow()
 // -----------------------------------------------------------------------------
 void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
 {
-	int  x        = e.GetPosition().x;
-	int  y        = e.GetPosition().y;
-	bool on_image = onImage(x, y - 2);
+	const int  x        = e.GetPosition().x;
+	const int  y        = e.GetPosition().y;
+	const bool on_image = onImage(x, y - 2);
 
 	// Left mouse down
 	if (e.LeftDown() && on_image)
@@ -569,8 +571,8 @@ void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void GfxCanvas::onMouseRightDown(wxMouseEvent& e)
 {
-	int x = e.GetPosition().x;
-	int y = e.GetPosition().y - 2;
+	const int x = e.GetPosition().x;
+	const int y = e.GetPosition().y - 2;
 
 	// Right mouse down
 	if (e.RightDown() && onImage(x, y))
@@ -607,10 +609,10 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	bool refresh = false;
 
 	// Check if the mouse is over the image
-	int  x        = e.GetPosition().x;
-	int  y        = e.GetPosition().y - 2;
-	bool on_image = onImage(x, y);
-	cursor_pos_   = imageCoords(x, y);
+	const int  x        = e.GetPosition().x;
+	const int  y        = e.GetPosition().y - 2;
+	const bool on_image = onImage(x, y);
+	cursor_pos_         = imageCoords(x, y);
 	if (on_image && editing_mode_ != EditMode::None)
 	{
 		if (cursor_pos_ != prev_pos_)
