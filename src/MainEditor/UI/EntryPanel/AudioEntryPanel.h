@@ -47,7 +47,9 @@ private:
 	wxSlider*		slider_seek_	= nullptr;
 	wxSlider*		slider_volume_	= nullptr;
 	wxTimer*		timer_seek_		= nullptr;
+#if wxUSE_MEDIACTRL
 	wxMediaCtrl*	media_ctrl_		= nullptr;
+#endif
 	wxStaticText*	txt_title_		= nullptr;
 	wxStaticText*	txt_track_		= nullptr;
 	wxTextCtrl*		txt_info_		= nullptr;
