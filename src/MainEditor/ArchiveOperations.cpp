@@ -303,7 +303,7 @@ void archiveoperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 	}
 
 	wxString message = wxString::Format(
-		"The following %d entr%s duplicated from the base resource archive and deleted:",
+		"The following %ld entr%s duplicated from the base resource archive and deleted:",
 		count,
 		(count > 1) ? "ies were" : "y was");
 

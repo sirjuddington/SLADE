@@ -323,7 +323,7 @@ void SStartPage::load(bool new_tip)
 
 		last_tip_index_ = tipindex;
 		tip = tips_[tipindex];
-		log::debug(wxString::Format("Tip index %d/%lu", last_tip_index_, (int)tips_.size()));
+		//log::debug(wxString::Format("Tip index %d/%lu", last_tip_index_, (int)tips_.size()));
 	}
 
 	// Generate recent files string

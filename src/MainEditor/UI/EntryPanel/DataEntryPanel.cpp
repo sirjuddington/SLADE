@@ -81,13 +81,13 @@ wxString DataEntryTable::GetValue(int row, int col)
 		{
 			int8_t val;
 			data_.read(&val, 1);
-			return wxString::Format("%d", val);
+			return wxString::Format("%hhd", val);
 		}
 		else if (columns_[col].size == 2)
 		{
 			int16_t val;
 			data_.read(&val, 2);
-			return wxString::Format("%d", val);
+			return wxString::Format("%hd", val);
 		}
 		else if (columns_[col].size == 4)
 		{
@@ -99,7 +99,7 @@ wxString DataEntryTable::GetValue(int row, int col)
 		{
 			int64_t val;
 			data_.read(&val, 8);
-			return wxString::Format("%d", val);
+			return wxString::Format("%lld", val);
 		}
 		return "INVALID SIZE";
 	}
@@ -111,13 +111,13 @@ wxString DataEntryTable::GetValue(int row, int col)
 		{
 			uint8_t val;
 			data_.read(&val, 1);
-			return wxString::Format("%d", val);
+			return wxString::Format("%hhd", val);
 		}
 		else if (columns_[col].size == 2)
 		{
 			uint16_t val;
 			data_.read(&val, 2);
-			return wxString::Format("%d", val);
+			return wxString::Format("%hd", val);
 		}
 		else if (columns_[col].size == 4)
 		{
@@ -129,7 +129,7 @@ wxString DataEntryTable::GetValue(int row, int col)
 		{
 			uint64_t val;
 			data_.read(&val, 8);
-			return wxString::Format("%d", val);
+			return wxString::Format("%lld", (long long)val);
 		}
 		return "INVALID SIZE";
 	}
@@ -765,7 +765,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 
 		// Voice data
 		unsigned offset = 4;
-		for (unsigned i = 1; i < 3; ++i)
+		for (int i = 1; i < 3; ++i)
 		{
 			columns_.emplace_back(wxString::Format("V%d: Mod Multi", i), ColType::IntUnsigned, 1, offset + 0);
 			columns_.emplace_back(wxString::Format("V%d: Mod Attack", i), ColType::IntUnsigned, 1, offset + 1);
@@ -865,8 +865,7 @@ void DataEntryTable::pasteRows(int row)
 // -----------------------------------------------------------------------------
 // DataEntryPanel class constructor
 // -----------------------------------------------------------------------------
-DataEntryPanel::DataEntryPanel(wxWindow* parent) :
-	EntryPanel(parent, "data"), table_data_{ new DataEntryTable(this) }
+DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), table_data_{ new DataEntryTable(this) }
 {
 	// Cell value combo box
 	auto vbox = new wxBoxSizer(wxVERTICAL);
@@ -947,7 +946,7 @@ bool DataEntryPanel::writeEntry(ArchiveEntry& entry)
 	}
 
 	entry.importMemChunk(table_data_->data());
-	
+
 	return true;
 }
 
@@ -1112,8 +1111,8 @@ void DataEntryPanel::changeValue() const
 		}
 
 		// Apply value to selected cells
-		for (auto& cell : selection)
-			grid_data_->SetCellValue(cell.x, cell.y, wxString::Format("%d", lval));
+		for (unsigned a = 0; a < selection.size(); a++)
+			grid_data_->SetCellValue(selection[a].x, selection[a].y, wxString::Format("%ld", lval));
 		grid_data_->ForceRefresh();
 	}
 }

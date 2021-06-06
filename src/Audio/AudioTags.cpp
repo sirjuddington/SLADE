@@ -692,7 +692,7 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 				size_t min     = (milsec / 60000) % 60;
 				size_t hor     = (milsec / 3600000) % 24;
 				milsec %= 1000;
-				bextstr += wxString::Format("Time Reference: %d:%02d:%02d.%03d\n", hor, min, sec, milsec);
+				bextstr += wxString::Format("Time Reference: %ld:%02ld:%02ld.%03ld\n", hor, min, sec, milsec);
 			}
 			bextstr += wxString::Format("BWFVersion: %d\n", wxUINT16_SWAP_ON_BE(bext->Version));
 			if (bext->LoudnessValue)
@@ -804,7 +804,7 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 					memset(alreadylisted, false, numcuepoints * sizeof(bool));
 					if (cuesize >= 4 + numcuepoints * sizeof(WavCue))
 					{
-						wxString liststr   = wxString::Format("Associated Data List:\n%d cue points\n", numcuepoints);
+						wxString liststr   = wxString::Format("Associated Data List:\n%ld cue points\n", numcuepoints);
 						auto     cuepoints = (const WavCue*)(data + cueofs + 4);
 						size_t   ioffset   = offset + 4;
 						while (ioffset < end)
@@ -825,7 +825,7 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 							if (cpindex >= 0 && !alreadylisted[cpindex])
 							{
 								liststr += wxString::Format(
-									"Cue point %d: sample %d from %s, offset %d, block offset %d, chunk %d\n",
+									"Cue point %ld: sample %d from %s, offset %d, block offset %d, chunk %d\n",
 									cuepoint,
 									wxUINT32_SWAP_ON_BE(cuepoints[cpindex].dwPosition),
 									wxString::From8BitData(cuepoints[cpindex].fccChunk, 4),
@@ -838,13 +838,13 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 							{
 								wxString content = wxString::From8BitData(data + ioffset + 4, isize - 4);
 								content.Trim();
-								liststr += wxString::Format("Cue point %d label: %s\n", cuepoint, content);
+								liststr += wxString::Format("Cue point %ld label: %s\n", cuepoint, content);
 							}
 							else if (
 								note->id[0] == 'l' && note->id[1] == 't' && note->id[2] == 'x' && note->id[3] == 't')
 							{
 								liststr += wxString::Format(
-									"Cue point %d: sample length %d, purpose %s\n",
+									"Cue point %ld: sample length %d, purpose %s\n",
 									cuepoint,
 									memory::readL32(udata, (ioffset + 4)),
 									wxString::From8BitData(data + ioffset + 8, 4));
@@ -854,7 +854,7 @@ wxString parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChun
 							{
 								wxString content = wxString::From8BitData(data + ioffset + 4, isize - 4);
 								content.Trim();
-								liststr += wxString::Format("Cue point %d note: %s\n", cuepoint, content);
+								liststr += wxString::Format("Cue point %ld note: %s\n", cuepoint, content);
 							}
 
 							ioffset += isize;
@@ -1291,13 +1291,13 @@ wxString audio::getSunInfo(MemChunk& mc)
 	case 6:
 	case 7: format += wxString::Format("PCM (float)"); break;
 	case 27: format += wxString::Format("a-Law"); break;
-	default: format += wxString::Format("Unknown (%u)", codec); break;
+	default: format += wxString::Format("Unknown (%lu)", codec); break;
 	}
 	wxString ret = "Mono";
 	if (channels == 2)
 		ret = "Stereo";
 	else if (channels > 2)
-		ret = wxString::Format("%u channels", channels);
+		ret = wxString::Format("%lu channels", channels);
 	int bps = 1;
 	if (codec > 1 && codec < 6)
 		bps = codec - 1;
@@ -1305,7 +1305,7 @@ wxString audio::getSunInfo(MemChunk& mc)
 		bps = codec - 2;
 	size_t samples = datasize / bps;
 	ret += wxString::Format(" %u-bit", bps * 8);
-	ret += wxString::Format(" sound with %u samples at %u Hz\n%s\n", samples, samplerate, format);
+	ret += wxString::Format(" sound with %lu samples at %lu Hz\n%s\n", samples, samplerate, format);
 
 	return ret;
 }
@@ -1406,7 +1406,7 @@ wxString audio::getVocInfo(MemChunk& mc)
 		ret = wxString::Format("%u channels", fmtchunk.channels);
 	size_t samples = datasize / (codec == 4 ? 2 : 1);
 	ret += wxString::Format(" %u-bit", codec == 4 ? 16 : 8);
-	ret += wxString::Format(" sound with %u samples at %u Hz\n%s\n", samples, fmtchunk.samplerate, format);
+	ret += wxString::Format(" sound with %lu samples at %u Hz\n%s\n", samples, fmtchunk.samplerate, format);
 	ret += wxString::Format("%d blocks\n", blockcount);
 	return ret;
 }
@@ -1487,7 +1487,7 @@ wxString audio::getWavInfo(MemChunk& mc)
 	if (channels == 2)
 		ret = "Stereo";
 	else if (channels > 2)
-		ret = wxString::Format("%u channels", channels);
+		ret = wxString::Format("%lu channels", channels);
 	size_t smplsize = fmt->blocksize;
 	size_t datasize = wdat->size;
 	size_t samples  = datasize / (smplsize > 0 ? smplsize : 1);
@@ -1502,9 +1502,9 @@ wxString audio::getWavInfo(MemChunk& mc)
 	if (bps == 0)
 		ret += wxString::Format(" variable bit rate");
 	else
-		ret += wxString::Format(" %u-bit", bps);
+		ret += wxString::Format(" %lu-bit", bps);
 	size_t samplerate = wxUINT32_SWAP_ON_BE(fmt->samplerate);
-	ret += wxString::Format(" sound with %u samples at %u Hz\n%s\n", samples, samplerate, format);
+	ret += wxString::Format(" sound with %lu samples at %lu Hz\n%s\n", samples, samplerate, format);
 	if (tag == 65534 && fmt->channelmask > 0)
 	{
 		size_t   channelmask = wxUINT32_SWAP_ON_BE(fmt->channelmask);
@@ -1637,16 +1637,16 @@ wxString audio::getAiffInfo(MemChunk& mc)
 	if (channels == 2)
 		ret = "Stereo";
 	else if (channels > 2)
-		ret = wxString::Format("%u channels", channels);
+		ret = wxString::Format("%lu channels", channels);
 	size_t frames  = wxUINT32_SWAP_ON_LE(comm->frames);
 	size_t samples = frames * channels;
 	size_t bps     = wxUINT16_SWAP_ON_LE(comm->bitsize);
-	ret += wxString::Format(" %u-bit", bps);
+	ret += wxString::Format(" %lu-bit", bps);
 	if (channels > 1)
 		ret += wxString::Format(
-			" sound with %u samples in %u frames at %u Hz\n%s\n", samples, frames, samplerate, format);
+			" sound with %lu samples in %lu frames at %lu Hz\n%s\n", samples, frames, samplerate, format);
 	else
-		ret += wxString::Format(" sound with %u samples at %u Hz\n%s\n", samples, samplerate, format);
+		ret += wxString::Format(" sound with %lu samples at %lu Hz\n%s\n", samples, samplerate, format);
 
 
 	// Find data chunks

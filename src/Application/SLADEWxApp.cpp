@@ -71,7 +71,7 @@ string sc_rev;
 #ifdef DEBUG
 bool debug = true;
 #else
-bool   debug = false;
+bool debug = false;
 #endif
 
 int win_version_major = 0;
@@ -143,15 +143,15 @@ public:
 	{
 		wxString location = "[unknown location] ";
 		if (frame.HasSourceLocation())
-			location = wxString::Format("(%s:%d) ", frame.GetFileName(), frame.GetLine());
+			location = wxString::Format("(%s:%ld) ", frame.GetFileName(), frame.GetLine());
 
 		wxUIntPtr address   = wxPtrToUInt(frame.GetAddress());
 		wxString  func_name = frame.GetName();
 		if (func_name.IsEmpty())
-			func_name = wxString::Format("[unknown:%d]", address);
+			func_name = wxString::Format("[unknown:%lu]", address);
 
 		wxString line = wxString::Format("%s%s", location, func_name);
-		stack_trace_.Append(wxString::Format("%d: %s\n", frame.GetLevel(), line));
+		stack_trace_.Append(wxString::Format("%ld: %s\n", frame.GetLevel(), line));
 
 		if (frame.GetLevel() == 0)
 			top_level_ = line;
@@ -519,7 +519,7 @@ bool SLADEWxApp::OnInit()
 #ifdef __WINDOWS__
 	wxApp::SetAppName("SLADE3");
 #else
-    wxApp::SetAppName("slade3");
+	wxApp::SetAppName("slade3");
 #endif
 
 	// Handle exceptions using wxDebug stuff, but only in release mode
@@ -533,12 +533,12 @@ bool SLADEWxApp::OnInit()
 #ifdef __APPLE__
 	// Should be constant, wxWidgets Cocoa backend scales everything under the hood
 	const double ui_scale = 1.0;
-#else  // !__APPLE__
-    // Calculate scaling factor (from system ppi)
-    wxMemoryDC dc;
-    double     ui_scale = (double)(dc.GetPPI().x) / 96.0;
-    if (ui_scale < 1.)
-        ui_scale = 1.;
+#else // !__APPLE__
+	// Calculate scaling factor (from system ppi)
+	wxMemoryDC dc;
+	double     ui_scale = (double)(dc.GetPPI().x) / 96.0;
+	if (ui_scale < 1.)
+		ui_scale = 1.;
 #endif // __APPLE__
 
 	// Get Windows version
