@@ -866,6 +866,42 @@ string_view strutil::Path::pathOf(string_view full_path, bool include_end_sep)
 											   full_path.substr(0, include_end_sep ? last_sep_pos + 1 : last_sep_pos);
 }
 
+bool strutil::Path::filePathsMatch(string_view left, string_view right)
+{
+	auto sz = left.size();
+	if (right.size() != sz)
+		return false;
+
+	if (app::platform() == app::Platform::Linux)
+	{
+		for (auto a = 0u; a < sz; ++a)
+		{
+			// Backslash and forward-slash are the same
+			if (left[a] == '\\' && right[a] == '/' || left[a] == '/' && right[a] == '\\')
+				continue;
+
+			// Case-sensitive
+			if (left[a] != right[a])
+				return false;
+		}
+	}
+	else
+	{
+		for (auto a = 0u; a < sz; ++a)
+		{
+			// Backslash and forward-slash are the same
+			if (left[a] == '\\' && right[a] == '/' || left[a] == '/' && right[a] == '\\')
+				continue;
+
+			// Case-insensitive
+			if (tolower(left[a]) != tolower(right[a]))
+				return false;
+		}
+	}
+
+	return true;
+}
+
 // -----------------------------------------------------------------------------
 // StringUtils::processIncludes
 //

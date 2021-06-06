@@ -153,6 +153,7 @@ namespace strutil
 		static string_view fileNameOf(string_view full_path, bool include_extension = true);
 		static string_view extensionOf(string_view full_path);
 		static string_view pathOf(string_view full_path, bool include_end_sep = true);
+		static bool        filePathsMatch(string_view left, string_view right);
 
 	private:
 		string            full_path_;

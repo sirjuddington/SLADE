@@ -241,7 +241,7 @@ shared_ptr<Archive> ArchiveManager::getArchive(string_view filename)
 	for (auto& open_archive : open_archives_)
 	{
 		// If the filename matches, return it
-		if (open_archive.archive->filename() == filename)
+		if (strutil::Path::filePathsMatch(open_archive.archive->filename(), filename))
 			return open_archive.archive;
 	}
 
