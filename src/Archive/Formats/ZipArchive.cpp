@@ -53,31 +53,6 @@ EXTERN_CVAR(Bool, archive_load_data)
 
 // -----------------------------------------------------------------------------
 //
-// Structs
-//
-// -----------------------------------------------------------------------------
-namespace
-{
-// Struct representing a zip file header
-struct ZipFileHeader
-{
-	uint32_t sig;
-	uint16_t version;
-	uint16_t flag;
-	uint16_t compression;
-	uint16_t mod_time;
-	uint16_t mod_date;
-	uint32_t crc;
-	uint32_t size_comp;
-	uint32_t size_orig;
-	uint16_t len_fn;
-	uint16_t len_extra;
-};
-} // namespace
-
-
-// -----------------------------------------------------------------------------
-//
 // ZipArchive Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -126,7 +101,7 @@ bool ZipArchive::open(string_view filename)
 	}
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	ArchiveModSignalBlocker sig_blocker{ *this };
+	const ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Go through all zip entries
 	int  entry_index = 0;
@@ -158,15 +133,13 @@ bool ZipArchive::open(string_view filename)
 			auto ndir = createDir(fn.path(true));
 			ndir->addEntry(new_entry);
 
-			// Read the data, if possible
-			auto ze_size = zip_entry->GetSize();
-			if (ze_size < 250 * 1024 * 1024)
+			if (const auto ze_size = zip_entry->GetSize(); ze_size < 250 * 1024 * 1024)
 			{
 				if (ze_size > 0)
 				{
 					vector<uint8_t> data(ze_size);
 					zip.Read(data.data(), ze_size); // Note: this is where exceedingly large files cause an exception.
-					new_entry->importMem(data.data(), ze_size);
+					new_entry->importMem(data.data(), static_cast<uint32_t>(ze_size));
 				}
 				new_entry->setLoaded(true);
 
@@ -223,11 +196,11 @@ bool ZipArchive::open(string_view filename)
 bool ZipArchive::open(MemChunk& mc)
 {
 	// Write the MemChunk to a temp file
-	auto tempfile = app::path("slade-temp-open.zip", app::Dir::Temp);
+	const auto tempfile = app::path("slade-temp-open.zip", app::Dir::Temp);
 	mc.exportFile(tempfile);
 
 	// Load the file
-	bool success = open(tempfile);
+	const bool success = open(tempfile);
 
 	// Clean up
 	fileutil::removeFile(tempfile);
@@ -244,7 +217,7 @@ bool ZipArchive::write(MemChunk& mc, bool update)
 	bool success = false;
 
 	// Write to a temporary file
-	auto tempfile = app::path("slade-temp-write.zip", app::Dir::Temp);
+	const auto tempfile = app::path("slade-temp-write.zip", app::Dir::Temp);
 	if (write(tempfile, true))
 	{
 		// Load file into MemChunk
@@ -279,17 +252,12 @@ bool ZipArchive::write(string_view filename, bool update)
 		return false;
 	}
 
-	// Open old zip for copying, from the temp file that was copied on opening.
-	// This is used to copy any entries that have been previously saved/compressed
-	// and are unmodified, to greatly speed up zip file saving by not having to
-	// recompress unchanged entries
-	unique_ptr<wxFFileInputStream> in;
 	unique_ptr<wxZipInputStream>   inzip;
 	vector<wxZipEntry*>            c_entries;
 	if (fileutil::fileExists(temp_file_))
 	{
-		in    = std::make_unique<wxFFileInputStream>(temp_file_);
-		inzip = std::make_unique<wxZipInputStream>(*in);
+		auto in = std::make_unique<wxFFileInputStream>(temp_file_);
+		inzip   = std::make_unique<wxZipInputStream>(*in);
 
 		if (inzip->IsOk())
 		{
@@ -332,7 +300,7 @@ bool ZipArchive::write(string_view filename, bool update)
 		{
 			// If the current entry has been changed, or doesn't exist in the old zip,
 			// (re)compress its data and write it to the zip
-			auto zipentry = new wxZipEntry(entries[a]->path() + saname);
+			const auto zipentry = new wxZipEntry(entries[a]->path() + saname);
 			zip.PutNextEntry(zipentry);
 			zip.Write(entries[a]->rawData(), entries[a]->size());
 		}
@@ -348,7 +316,7 @@ bool ZipArchive::write(string_view filename, bool update)
 		if (update)
 		{
 			entries[a]->setState(ArchiveEntry::State::Unmodified);
-			entries[a]->exProp("ZipIndex") = (int)a;
+			entries[a]->exProp("ZipIndex") = static_cast<int>(a);
 		}
 	}
 
@@ -433,7 +401,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Read the data
 	vector<uint8_t> data(zentry->GetSize());
 	zip.Read(data.data(), zentry->GetSize());
-	entry->importMem(data.data(), zentry->GetSize());
+	entry->importMem(data.data(), static_cast<uint32_t>(zentry->GetSize()));
 
 	// Set the entry to loaded
 	entry->setLoaded();
@@ -460,7 +428,7 @@ shared_ptr<ArchiveEntry> ZipArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr);
 
 	// Get/Create namespace dir
-	auto dir = createDir(strutil::lower(add_namespace));
+	const auto dir = createDir(strutil::lower(add_namespace));
 
 	// Add the entry to the dir
 	return Archive::addEntry(entry, 0xFFFFFFFF, dir.get());
@@ -504,7 +472,7 @@ vector<Archive::MapDesc> ZipArchive::detectMaps()
 	vector<MapDesc> ret;
 
 	// Get the maps directory
-	auto mapdir = dirAtPath("maps");
+	const auto mapdir = dirAtPath("maps");
 	if (!mapdir)
 		return ret;
 
@@ -643,7 +611,7 @@ vector<ArchiveEntry*> ZipArchive::findAll(SearchOptions& options)
 // -----------------------------------------------------------------------------
 void ZipArchive::generateTempFileName(string_view filename)
 {
-	strutil::Path tfn(filename);
+	const strutil::Path tfn(filename);
 	temp_file_ = app::path(tfn.fileName(), app::Dir::Temp);
 	if (wxFileExists(temp_file_))
 	{
@@ -675,16 +643,17 @@ void ZipArchive::generateTempFileName(string_view filename)
 bool ZipArchive::isZipArchive(MemChunk& mc)
 {
 	// Check size
-	if (mc.size() < sizeof(ZipFileHeader))
+	if (mc.size() < 22)
 		return false;
 
-	// Read first file header
-	ZipFileHeader header;
+	// Read first 4 bytes
+	uint32_t sig;
 	mc.seek(0, SEEK_SET);
-	mc.read(&header, sizeof(ZipFileHeader));
+	mc.read(&sig, sizeof(uint32_t));
 
-	// Check header signature
-	if (header.sig != 0x04034b50)
+	// Check for signature
+	if (sig != 0x04034b50 && // File header
+		sig != 0x06054b50)   // End of central directory
 		return false;
 
 	// The zip format is horrendous, so this will do for checking
@@ -703,12 +672,13 @@ bool ZipArchive::isZipArchive(const string& filename)
 	if (!file.IsOpened())
 		return false;
 
-	// Read first file header
-	ZipFileHeader header;
-	file.Read(&header, sizeof(ZipFileHeader));
+	// Read first 4 bytes
+	uint32_t sig;
+	file.Read(&sig, sizeof(uint32_t));
 
-	// Check header signature
-	if (header.sig != 0x04034b50)
+	// Check for signature
+	if (sig != 0x04034b50 && // File header
+		sig != 0x06054b50)   // End of central directory
 		return false;
 
 	// The zip format is horrendous, so this will do for checking
