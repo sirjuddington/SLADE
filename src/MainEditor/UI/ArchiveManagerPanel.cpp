@@ -980,6 +980,13 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 	if (redirectToTab(entry))
 		return;
 
+	// If the entry is an archive, open it
+	if (entry->type()->formatId().substr(0, 8) == "archive_")
+	{
+		app::archiveManager().openArchive(entry);
+		return;
+	}
+
 	// Switch to the default entry panel in the archive tab
 	auto panel = tabForArchive(entry->parent());
 	if (!panel->switchToDefaultEntryPanel())
