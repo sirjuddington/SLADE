@@ -368,6 +368,10 @@ bool ArchiveViewModel::SetValue(const wxVariant& variant, const wxDataViewItem& 
 		if (new_name.EndsWith(" *"))
 			new_name.RemoveLast(2);
 
+		// Ignore if no change
+		if (new_name.ToStdString() == entry->name())
+			return true;
+
 		// Directory
 		if (entry->type() == EntryType::folderType())
 		{
