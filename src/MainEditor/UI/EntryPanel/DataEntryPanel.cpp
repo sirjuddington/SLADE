@@ -85,13 +85,13 @@ string DataEntryTable::GetValue(int row, int col)
 		{
 			int8_t val;
 			data_.read(&val, 1);
-			return S_FMT("%d", val);
+			return S_FMT("%hhd", val);
 		}
 		else if (columns_[col].size == 2)
 		{
 			int16_t val;
 			data_.read(&val, 2);
-			return S_FMT("%d", val);
+			return S_FMT("%hd", val);
 		}
 		else if (columns_[col].size == 4)
 		{
@@ -103,7 +103,7 @@ string DataEntryTable::GetValue(int row, int col)
 		{
 			int64_t val;
 			data_.read(&val, 8);
-			return S_FMT("%d", val);
+			return S_FMT("%lld", (long long)val);
 		}
 		return "INVALID SIZE";
 	}
@@ -115,13 +115,13 @@ string DataEntryTable::GetValue(int row, int col)
 		{
 			uint8_t val;
 			data_.read(&val, 1);
-			return S_FMT("%d", val);
+			return S_FMT("%hhd", val);
 		}
 		else if (columns_[col].size == 2)
 		{
 			uint16_t val;
 			data_.read(&val, 2);
-			return S_FMT("%d", val);
+			return S_FMT("%hd", val);
 		}
 		else if (columns_[col].size == 4)
 		{
@@ -133,7 +133,7 @@ string DataEntryTable::GetValue(int row, int col)
 		{
 			uint64_t val;
 			data_.read(&val, 8);
-			return S_FMT("%d", val);
+			return S_FMT("%lld", (long long)val);
 		}
 		return "INVALID SIZE";
 	}
@@ -785,7 +785,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 
 		// Voice data
 		unsigned offset = 4;
-		for (size_t i = 1; i < 3; ++i)
+		for (int i = 1; i < 3; ++i)
 		{
 			columns_.push_back(Column(S_FMT("V%d: Mod Multi", i), IntUnsigned, 1, offset + 0));
 			columns_.push_back(Column(S_FMT("V%d: Mod Attack", i), IntUnsigned, 1, offset + 1));
@@ -1157,7 +1157,7 @@ void DataEntryPanel::changeValue()
 
 		// Apply value to selected cells
 		for (unsigned a = 0; a < selection.size(); a++)
-			grid_data_->SetCellValue(selection[a].x, selection[a].y, S_FMT("%d", lval));
+			grid_data_->SetCellValue(selection[a].x, selection[a].y, S_FMT("%ld", lval));
 		grid_data_->ForceRefresh();
 	}
 }

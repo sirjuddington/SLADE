@@ -598,7 +598,7 @@ string MIDIPlayer::getInfo()
 		else if (chunk_name == (size_t)(('M'<<24)|('T'<<16)|('r'<<8)|'k')) // MTrk
 		{
 			if (format == 2)
-				ret += S_FMT("\nTrack %u/%u\n", ++track_counter, num_tracks);
+				ret += S_FMT("\nTrack %lu/%u\n", ++track_counter, num_tracks);
 			size_t tpos = pos;
 			while (tpos + 4 < chunk_end)
 			{

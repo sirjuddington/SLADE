@@ -142,7 +142,7 @@ bool DatArchive::open(MemChunk& mc)
 		}
 		else
 		{
-			myname = S_FMT("%s+%d", lastname, ++namecount);
+			myname = S_FMT("%s+%ld", lastname, ++namecount);
 		}
 
 		// Create & setup lump

@@ -638,7 +638,7 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const wav_chunk
 				size_t min = (milsec / 60000) % 60;
 				size_t hor = (milsec / 3600000) % 24;
 				milsec %= 1000;
-				bextstr += S_FMT("Time Reference: %d:%02d:%02d.%03d\n", hor, min, sec, milsec);
+				bextstr += S_FMT("Time Reference: %ld:%02ld:%02ld.%03ld\n", hor, min, sec, milsec);
 			}
 			bextstr += S_FMT("BWFVersion: %d\n", wxUINT16_SWAP_ON_BE(bext->Version));
 			if (bext->LoudnessValue)		bextstr += S_FMT("Integrated Loudness: %d\n", wxUINT16_SWAP_ON_BE(bext->LoudnessValue));
@@ -722,7 +722,7 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const wav_chunk
 					memset(alreadylisted, false, numcuepoints * sizeof(bool));
 					if (cuesize >= 4 + numcuepoints * sizeof(wav_cue_t))
 					{
-						string liststr = S_FMT("Associated Data List:\n%d cue points\n", numcuepoints);
+						string liststr = S_FMT("Associated Data List:\n%ld cue points\n", numcuepoints);
 						const wav_cue_t * cuepoints = (const wav_cue_t *)(data + cueofs + 4);
 						size_t ioffset = offset + 4;
 						while (ioffset < end)
@@ -742,7 +742,7 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const wav_chunk
 							}
 							if (cpindex >= 0 && !alreadylisted[cpindex])
 							{
-								liststr += S_FMT("Cue point %d: sample %d from %s, offset %d, block offset %d, chunk %d\n",
+								liststr += S_FMT("Cue point %ld: sample %d from %s, offset %d, block offset %d, chunk %d\n",
 									cuepoint, wxUINT32_SWAP_ON_BE(cuepoints[cpindex].dwPosition),
 									string::From8BitData(cuepoints[cpindex].fccChunk, 4), 
 									wxUINT32_SWAP_ON_BE(cuepoints[cpindex].dwSampleOffset), 
@@ -753,17 +753,17 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const wav_chunk
 							if (note->id[0] == 'l' && note->id[1] == 'a' && note->id[2] == 'b' && note->id[3] == 'l')
 							{
 								string content = string::From8BitData(data+ioffset+4, isize-4); content.Trim();
-								liststr += S_FMT("Cue point %d label: %s\n", cuepoint, content);
+								liststr += S_FMT("Cue point %ld label: %s\n", cuepoint, content);
 							}
 							else if (note->id[0] == 'l' && note->id[1] == 't' && note->id[2] == 'x' && note->id[3] == 't')
 							{
-								liststr += S_FMT("Cue point %d: sample length %d, purpose %s\n", cuepoint, READ_L32(udata, (ioffset+4)),
+								liststr += S_FMT("Cue point %ld: sample length %d, purpose %s\n", cuepoint, READ_L32(udata, (ioffset+4)),
 									string::From8BitData(data+ioffset+8, 4));
 							}
 							else if (note->id[0] == 'n' && note->id[1] == 'o' && note->id[2] == 't' && note->id[3] == 'e')
 							{
 								string content = string::From8BitData(data+ioffset+4, isize-4); content.Trim();
-								liststr += S_FMT("Cue point %d note: %s\n", cuepoint, content);
+								liststr += S_FMT("Cue point %ld note: %s\n", cuepoint, content);
 							}
 
 							ioffset += isize;
@@ -1169,19 +1169,19 @@ string Audio::getSunInfo(MemChunk& mc)
 	case 6:	
 	case 7:		format += S_FMT("PCM (float)");					break;
 	case 27:	format += S_FMT("a-Law");						break;
-	default:	format += S_FMT("Unknown (%u)", codec);			break;
+	default:	format += S_FMT("Unknown (%lu)", codec);			break;
 	}
 	string ret = "Mono";
 	if (channels == 2)
 		ret = "Stereo";
 	else if (channels > 2)
-		ret = S_FMT("%u channels", channels);
+		ret = S_FMT("%lu channels", channels);
 	int bps = 1;
 	if (codec > 1 && codec < 6) bps = codec - 1;
 	else if (codec == 6 || codec == 7) bps = codec - 2;
 	size_t samples = datasize / bps;
 	ret += S_FMT(" %u-bit", bps * 8);
-	ret += S_FMT(" sound with %u samples at %u Hz\n%s\n", samples, samplerate, format);
+	ret += S_FMT(" sound with %lu samples at %lu Hz\n%s\n", samples, samplerate, format);
 
 	return ret;
 }
@@ -1281,7 +1281,7 @@ string Audio::getVocInfo(MemChunk& mc)
 		ret = S_FMT("%u channels", fmtchunk.channels);
 	size_t samples = datasize / (codec == 4 ? 2 : 1);
 	ret += S_FMT(" %u-bit", codec == 4 ? 16 : 8);
-	ret += S_FMT(" sound with %u samples at %u Hz\n%s\n", samples, fmtchunk.samplerate, format);
+	ret += S_FMT(" sound with %lu samples at %u Hz\n%s\n", samples, fmtchunk.samplerate, format);
 	ret += S_FMT("%d blocks\n", blockcount);
 	return ret;
 }
@@ -1353,7 +1353,7 @@ string Audio::getWavInfo(MemChunk& mc)
 	if (channels == 2)
 		ret = "Stereo";
 	else if (channels > 2)
-		ret = S_FMT("%u channels", channels);
+		ret = S_FMT("%lu channels", channels);
 	size_t smplsize = fmt->blocksize;
 	size_t datasize = wdat->size;
 	size_t samples = datasize / (smplsize > 0 ? smplsize : 1);
@@ -1367,9 +1367,9 @@ string Audio::getWavInfo(MemChunk& mc)
 		bps = wxUINT16_SWAP_ON_BE(fmt->vbps);
 	if (bps == 0)
 		ret += S_FMT(" variable bit rate");
-	else ret += S_FMT(" %u-bit", bps);
+	else ret += S_FMT(" %lu-bit", bps);
 	size_t samplerate = wxUINT32_SWAP_ON_BE(fmt->samplerate);
-	ret += S_FMT(" sound with %u samples at %u Hz\n%s\n", samples, samplerate, format);
+	ret += S_FMT(" sound with %lu samples at %lu Hz\n%s\n", samples, samplerate, format);
 	if (tag == 65534 && fmt->channelmask > 0)
 	{
 		size_t channelmask = wxUINT32_SWAP_ON_BE(fmt->channelmask);
@@ -1483,14 +1483,14 @@ string Audio::getAiffInfo(MemChunk& mc)
 	if (channels == 2)
 		ret = "Stereo";
 	else if (channels > 2)
-		ret = S_FMT("%u channels", channels);
+		ret = S_FMT("%lu channels", channels);
 	size_t frames = wxUINT32_SWAP_ON_LE(comm->frames);
 	size_t samples = frames * channels;
 	size_t bps = wxUINT16_SWAP_ON_LE(comm->bitsize);
-	ret += S_FMT(" %u-bit", bps);
+	ret += S_FMT(" %lu-bit", bps);
 	if (channels > 1)
-		ret += S_FMT(" sound with %u samples in %u frames at %u Hz\n%s\n", samples, frames, samplerate, format);
-	else 	ret += S_FMT(" sound with %u samples at %u Hz\n%s\n", samples, samplerate, format);
+		ret += S_FMT(" sound with %lu samples in %lu frames at %lu Hz\n%s\n", samples, frames, samplerate, format);
+	else 	ret += S_FMT(" sound with %lu samples at %lu Hz\n%s\n", samples, samplerate, format);
 
 
 	// Find data chunks

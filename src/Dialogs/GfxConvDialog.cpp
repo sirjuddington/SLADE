@@ -206,7 +206,7 @@ bool GfxConvDialog::nextItem()
 
 	// Update UI
 	updatePreviewGfx();
-	UI::setSplashProgressMessage(S_FMT("%d of %lu", current_item, items.size()));
+	UI::setSplashProgressMessage(S_FMT("%ld of %lu", current_item, items.size()));
 	UI::setSplashProgress((float)current_item / (float)items.size());
 
 	return ok;
