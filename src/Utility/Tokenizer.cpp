@@ -1011,7 +1011,7 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 
 	long new_time = App::runTimer() - time;
 
-	Log::info(S_FMT("Tokenize x%d took %dms", num, new_time));
+	Log::info(S_FMT("Tokenize x%ld took %ldms", num, new_time));
 
 
 	// Test old tokenizer also

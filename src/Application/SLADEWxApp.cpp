@@ -153,15 +153,15 @@ public:
 	{
 		string location = "[unknown location] ";
 		if (frame.HasSourceLocation())
-			location = S_FMT("(%s:%d) ", frame.GetFileName(), frame.GetLine());
+			location = S_FMT("(%s:%ld) ", frame.GetFileName(), frame.GetLine());
 
 		wxUIntPtr address = wxPtrToUInt(frame.GetAddress());
 		string func_name = frame.GetName();
 		if (func_name.IsEmpty())
-			func_name = S_FMT("[unknown:%d]", address);
+			func_name = S_FMT("[unknown:%lu]", address);
 
 		string line = S_FMT("%s%s", location, func_name);
-		stack_trace.Append(S_FMT("%d: %s\n", frame.GetLevel(), line));
+		stack_trace.Append(S_FMT("%ld: %s\n", frame.GetLevel(), line));
 
 		if (frame.GetLevel() == 0)
 			top_level = line;

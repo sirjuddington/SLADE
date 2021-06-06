@@ -859,7 +859,7 @@ void Edit2D::createObject(double x, double y)
 			context_.endUndoRecord(true);
 
 			// Editor message
-			context_.addEditorMessage(S_FMT("Created %lu line(s)", context_.selection().size() - 1));
+			context_.addEditorMessage(S_FMT("Created %u line(s)", context_.selection().size() - 1));
 
 			// Clear selection
 			context_.selection().clear();

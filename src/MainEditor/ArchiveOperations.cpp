@@ -285,7 +285,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 		return;
 	}
 
-	string message = S_FMT("The following %d entr%s duplicated from the base resource archive and deleted:",
+	string message = S_FMT("The following %ld entr%s duplicated from the base resource archive and deleted:",
 						   count, (count > 1) ? "ies were" : "y was");
 
 	// Display list of deleted duplicate entries

@@ -1265,7 +1265,7 @@ void MapEditContext::updateStatusText()
 
 	if (edit_mode_ != Mode::Visual && selection_.size() > 0)
 	{
-		mode += S_FMT(" (%lu selected)", (int) selection_.size());
+		mode += S_FMT(" (%u selected)", selection_.size());
 	}
 
 	MapEditor::setStatusText(mode, 1);
@@ -2209,7 +2209,7 @@ CONSOLE_COMMAND(mobj_info, 1, false)
 	{
 		mobj_backup_t bak;
 		obj->backup(&bak);
-		Log::console(S_FMT("Object %d: %s #%lu", id, obj->getTypeName(), obj->getIndex()));
+		Log::console(S_FMT("Object %ld: %s #%u", id, obj->getTypeName(), obj->getIndex()));
 		Log::console("Properties:");
 		Log::console(bak.properties.toString());
 		Log::console("Properties (internal):");

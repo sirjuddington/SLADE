@@ -107,7 +107,7 @@ void ThingTypeReplacePanel::doReplace(Archive* archive)
 {
 	size_t count = ArchiveOperations::replaceThings(archive, spin_from->GetValue(), spin_to->GetValue());
 	wxMessageBox(
-		S_FMT("Replaced %d occurrences. See console log for more detailed information.", count),
+		S_FMT("Replaced %ld occurrences. See console log for more detailed information.", count),
 		"Replace Things"
 	);
 }
@@ -237,7 +237,7 @@ void SpecialReplacePanel::doReplace(Archive* archive)
 	               cb_args[3]->GetValue(), spin_args_from[3]->GetValue(), spin_args_to[3]->GetValue(),
 	               cb_args[4]->GetValue(), spin_args_from[4]->GetValue(), spin_args_to[4]->GetValue());
 
-	wxMessageBox(S_FMT("Replaced %d occurrences. See console log for more detailed information.", count), "Replace Specials");
+	wxMessageBox(S_FMT("Replaced %ld occurrences. See console log for more detailed information.", count), "Replace Specials");
 }
 
 
@@ -328,7 +328,7 @@ void TextureReplacePanel::doReplace(Archive* archive)
 	               cb_floor->GetValue(), cb_ceiling->GetValue(),
 	               cb_lower->GetValue(), cb_middle->GetValue(), cb_upper->GetValue());
 
-	wxMessageBox(S_FMT("Replaced %d occurrences. See console log for more detailed information.", count), "Replace Textures");
+	wxMessageBox(S_FMT("Replaced %ld occurrences. See console log for more detailed information.", count), "Replace Textures");
 }
 
 
