@@ -242,7 +242,19 @@ public:
 
 			// Restore entries/subdirs if needed
 			if (dir && tree_)
-				ArchiveDir::merge(dir, tree_.get(), 0, ArchiveEntry::State::Unmodified);
+			{
+				// Do merge
+				vector<shared_ptr<ArchiveEntry>> created_entries;
+				vector<shared_ptr<ArchiveDir>>   created_dirs;
+				ArchiveDir::merge(
+					dir, tree_.get(), 0, ArchiveEntry::State::Unmodified, &created_dirs, &created_entries);
+
+				// Signal changes
+				for (const auto& cdir : created_dirs)
+					archive_->signals().dir_added(*archive_, *cdir);
+				for (const auto& entry : created_entries)
+					archive_->signals().entry_added(*archive_, *entry);
+			}
 
 			if (dir)
 				dir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
