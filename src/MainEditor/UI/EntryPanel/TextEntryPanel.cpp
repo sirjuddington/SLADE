@@ -37,7 +37,9 @@
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
+#include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "Utility/StringUtils.h"
+#include "MainEditor/MainEditor.h"
 
 using namespace slade;
 
@@ -90,6 +92,9 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	toolbar_->addGroup(group_jump_to);
 	text_area_->setJumpToControl(choice_jump_to_);
 
+	// Add 'Compile ACS' to end of toolbar
+	toolbar_->addActionGroup("Compile", { "arch_scripts_compileacs" }, true);
+
 	// Bind events
 	choice_text_language_->Bind(wxEVT_CHOICE, &TextEntryPanel::onChoiceLanguageChanged, this);
 	text_area_->Bind(wxEVT_TEXT_CHANGED, &TextEntryPanel::onTextModified, this);
@@ -113,9 +118,17 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	SAction::fromId("arch_scripts_compileacs")->addToMenu(menu_scripts);
 	SAction::fromId("arch_scripts_compilehacs")->addToMenu(menu_scripts);
 
-	menu_custom_->AppendSeparator();
+	// 'Colour Scheme' submenu
+	auto menu_colour = new wxMenu();
+	menu_custom_->AppendSubMenu(menu_colour, "Colour Scheme");
+	SAction::fromId("ptxt_theme_light")->addToMenu(menu_colour);
+	SAction::fromId("ptxt_theme_dark")->addToMenu(menu_colour);
+	SAction::fromId("ptxt_theme_other")->addToMenu(menu_colour);
 
+	menu_custom_->AppendSeparator();
 	SAction::fromId("ptxt_wrap")->addToMenu(menu_custom_);
+
+	
 	custom_menu_name_ = "Text";
 
 
@@ -329,6 +342,24 @@ bool TextEntryPanel::handleEntryPanelAction(string_view id)
 
 	else if (id == "arch_scripts_compilehacs" && entry)
 		entryoperations::compileACS(entry.get(), true, nullptr, nullptr);
+
+	// Light colour scheme
+	else if (id == "ptxt_theme_light")
+	{
+		StyleSet::loadSet("SLADE (Light)");
+		StyleSet::applyCurrent(text_area_);
+	}
+
+	// Dark colour scheme
+	else if (id == "ptxt_theme_dark")
+	{
+		StyleSet::loadSet("SLADE (Dark)");
+		StyleSet::applyCurrent(text_area_);
+	}
+
+	// Other colour scheme
+	else if (id == "ptxt_theme_other")
+		PreferencesDialog::openPreferences(maineditor::windowWx(), "Fonts & Colours");
 
 	// Not handled
 	else
