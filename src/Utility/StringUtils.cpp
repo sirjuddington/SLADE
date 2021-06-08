@@ -100,7 +100,7 @@ bool strutil::isFloat(string_view str)
 
 bool strutil::equalCI(string_view left, string_view right)
 {
-	auto sz = left.size();
+	const auto sz = left.size();
 	if (right.size() != sz)
 		return false;
 
@@ -362,7 +362,7 @@ string strutil::replace(string_view str, string_view from, string_view to)
 
 string& strutil::replaceFirstIP(string& str, string_view from, string_view to)
 {
-	auto pos = str.find(from.data(), 0);
+	const auto pos = str.find(from.data(), 0);
 	if (pos != string::npos)
 		str.replace(pos, from.length(), to.data(), to.size());
 	return str;
@@ -447,8 +447,8 @@ string& strutil::capitalizeIP(string& str)
 	if (str.empty())
 		return str;
 
-	transform(str.begin(), str.end(), str.begin(), ::tolower);
-	str[0] = ::toupper(str[0]);
+	transform(str.begin(), str.end(), str.begin(), tolower);
+	str[0] = static_cast<char>(toupper(str[0]));
 
 	return str;
 }
@@ -459,8 +459,8 @@ string strutil::capitalize(string_view str)
 		return {};
 
 	auto s = string{ str };
-	transform(s.begin(), s.end(), s.begin(), ::tolower);
-	s[0] = ::toupper(s[0]);
+	transform(s.begin(), s.end(), s.begin(), tolower);
+	s[0] = static_cast<char>(toupper(s[0]));
 	return s;
 }
 
@@ -524,7 +524,7 @@ string_view strutil::rightV(string_view str, unsigned n)
 
 string strutil::afterLast(string_view str, char chr)
 {
-	for (int i = str.size() - 1; i >= 0; --i)
+	for (int i = static_cast<int>(str.size()) - 1; i >= 0; --i)
 		if (str[i] == chr)
 			return string{ str.substr(i + 1) };
 
@@ -533,7 +533,7 @@ string strutil::afterLast(string_view str, char chr)
 
 string_view strutil::afterLastV(string_view str, char chr)
 {
-	for (int i = str.size() - 1; i >= 0; --i)
+	for (int i = static_cast<int>(str.size()) - 1; i >= 0; --i)
 		if (str[i] == chr)
 			return str.substr(i + 1);
 
@@ -560,7 +560,7 @@ string_view strutil::afterFirstV(string_view str, char chr)
 
 string strutil::beforeLast(string_view str, char chr)
 {
-	for (int i = str.size() - 1; i >= 0; --i)
+	for (int i = static_cast<int>(str.size()) - 1; i >= 0; --i)
 		if (str[i] == chr)
 			return string{ str.substr(0, i) };
 
@@ -569,7 +569,7 @@ string strutil::beforeLast(string_view str, char chr)
 
 string_view strutil::beforeLastV(string_view str, char chr)
 {
-	for (int i = str.size() - 1; i >= 0; --i)
+	for (int i = static_cast<int>(str.size()) - 1; i >= 0; --i)
 		if (str[i] == chr)
 			return str.substr(0, i);
 
@@ -597,7 +597,7 @@ string_view strutil::beforeFirstV(string_view str, char chr)
 vector<string> strutil::split(string_view str, char separator)
 {
 	unsigned       start = 0;
-	auto           size  = str.size();
+	const auto     size  = str.size();
 	vector<string> split;
 	for (unsigned c = 0; c < size; ++c)
 	{
@@ -616,7 +616,7 @@ vector<string> strutil::split(string_view str, char separator)
 vector<string_view> strutil::splitV(string_view str, char separator)
 {
 	unsigned            start = 0;
-	auto                size  = str.size();
+	const auto          size  = str.size();
 	vector<string_view> split;
 	for (unsigned c = 0; c < size; ++c)
 	{
@@ -698,10 +698,10 @@ strutil::Path::Path(string_view full_path) : full_path_{ full_path.data(), full_
 	// Enforce / as separators
 	std::replace(full_path_.begin(), full_path_.end(), '\\', '/');
 
-	auto last_sep_pos = full_path_.find_last_of('/');
-	filename_start_   = last_sep_pos == string::npos ? 0 : last_sep_pos + 1;
-	auto ext_pos      = full_path_.find('.', last_sep_pos);
-	filename_end_     = ext_pos == string::npos ? full_path_.size() : ext_pos;
+	const auto last_sep_pos = full_path_.find_last_of('/');
+	filename_start_         = last_sep_pos == string::npos ? 0 : last_sep_pos + 1;
+	const auto ext_pos      = full_path_.find_last_of('.');
+	filename_end_           = ext_pos == string::npos ? full_path_.size() : ext_pos;
 }
 
 string_view strutil::Path::path(bool include_end_sep) const
@@ -710,7 +710,7 @@ string_view strutil::Path::path(bool include_end_sep) const
 		return {};
 
 	return include_end_sep ? string_view{ full_path_.data(), filename_start_ } :
-							 string_view{ full_path_.data(), filename_start_ - 1 };
+                             string_view{ full_path_.data(), filename_start_ - 1 };
 }
 
 string_view strutil::Path::fileName(bool include_extension) const
@@ -719,7 +719,7 @@ string_view strutil::Path::fileName(bool include_extension) const
 		return {};
 
 	return include_extension ? string_view{ full_path_.data() + filename_start_ } :
-							   string_view{ full_path_.data() + filename_start_, filename_end_ - filename_start_ };
+                               string_view{ full_path_.data() + filename_start_, filename_end_ - filename_start_ };
 }
 
 string_view strutil::Path::extension() const
@@ -750,10 +750,10 @@ void strutil::Path::set(string_view full_path)
 	// Enforce / as separators
 	std::replace(full_path_.begin(), full_path_.end(), '\\', '/');
 
-	auto last_sep_pos = full_path_.find_last_of('/');
-	filename_start_   = last_sep_pos == string::npos ? 0 : last_sep_pos + 1;
-	auto ext_pos      = full_path_.find('.');
-	filename_end_     = ext_pos == string::npos ? full_path_.size() : ext_pos;
+	const auto last_sep_pos = full_path_.find_last_of('/');
+	filename_start_         = last_sep_pos == string::npos ? 0 : last_sep_pos + 1;
+	const auto ext_pos      = full_path_.find_last_of('.');
+	filename_end_           = ext_pos == string::npos ? full_path_.size() : ext_pos;
 }
 
 void strutil::Path::setPath(string_view path)
@@ -778,8 +778,8 @@ void strutil::Path::setPath(string_view path)
 	else
 	{
 		full_path_.replace(0, filename_start_ - 1, path.data(), path.size());
-		auto fn_start_old = filename_start_;
-		filename_start_   = path.size() + 1;
+		const auto fn_start_old = filename_start_;
+		filename_start_         = path.size() + 1;
 		filename_end_ -= fn_start_old - filename_start_;
 	}
 }
@@ -834,13 +834,13 @@ void strutil::Path::setExtension(string_view extension)
 string_view strutil::Path::fileNameOf(string_view full_path, bool include_extension)
 {
 	int pos;
-	for (pos = full_path.size() - 1; pos > 0; --pos)
+	for (pos = static_cast<int>(full_path.size()) - 1; pos > 0; --pos)
 		if (full_path[pos - 1] == '/' || full_path[pos - 1] == '\\')
 			break;
 
 	if (!include_extension)
 	{
-		auto ext_pos = full_path.find('.', pos);
+		const auto ext_pos = full_path.find_last_of('.');
 		if (ext_pos != string_view::npos)
 			full_path.remove_suffix(full_path.size() - ext_pos);
 	}
@@ -850,25 +850,20 @@ string_view strutil::Path::fileNameOf(string_view full_path, bool include_extens
 
 string_view strutil::Path::extensionOf(string_view full_path)
 {
-	// Ignore any '.' in path
-	auto last_sep_pos = full_path.find_last_of("/\\");
-	if (last_sep_pos == string_view::npos)
-		last_sep_pos = 0;
-
-	auto ext_pos = full_path.find('.', last_sep_pos);
+	const auto ext_pos = full_path.find_last_of('.');
 	return ext_pos == string_view::npos ? string_view{} : full_path.substr(ext_pos + 1);
 }
 
 string_view strutil::Path::pathOf(string_view full_path, bool include_end_sep)
 {
-	auto last_sep_pos = full_path.find_last_of("/\\");
+	const auto last_sep_pos = full_path.find_last_of("/\\");
 	return last_sep_pos == string_view::npos ? string_view{} :
-											   full_path.substr(0, include_end_sep ? last_sep_pos + 1 : last_sep_pos);
+                                               full_path.substr(0, include_end_sep ? last_sep_pos + 1 : last_sep_pos);
 }
 
 bool strutil::Path::filePathsMatch(string_view left, string_view right)
 {
-	auto sz = left.size();
+	const auto sz = left.size();
 	if (right.size() != sz)
 		return false;
 
@@ -916,8 +911,8 @@ void strutil::processIncludes(const string& filename, string& out)
 		return;
 
 	// Get file path
-	Path fn(filename);
-	auto path = fn.path(true);
+	const Path fn(filename);
+	auto       path = fn.path(true);
 
 	// Go through line-by-line
 	string    line = file.GetNextLine().ToStdString();
@@ -957,7 +952,7 @@ void strutil::processIncludes(ArchiveEntry* entry, string& out, bool use_res)
 		return;
 
 	// Write entry to temp file
-	auto filename = app::path(entry->name(), app::Dir::Temp);
+	const auto filename = app::path(entry->name(), app::Dir::Temp);
 	entry->exportFile(filename);
 
 	// Open file
@@ -1021,8 +1016,8 @@ void strutil::processIncludes(ArchiveEntry* entry, string& out, bool use_res)
 
 int strutil::asInt(string_view str, int base)
 {
-	int  val    = 0;
-	auto result = std::from_chars(str.data(), str.data() + str.size(), val, base);
+	int        val    = 0;
+	const auto result = std::from_chars(str.data(), str.data() + str.size(), val, base);
 	if (result.ec == std::errc::invalid_argument)
 		log::error("Can't convert \"{}\" to an integer (invalid)", str);
 	else if (result.ec == std::errc::result_out_of_range)
@@ -1033,8 +1028,8 @@ int strutil::asInt(string_view str, int base)
 
 unsigned strutil::asUInt(string_view str, int base)
 {
-	unsigned val    = 0;
-	auto     result = std::from_chars(str.data(), str.data() + str.size(), val, base);
+	unsigned   val    = 0;
+	const auto result = std::from_chars(str.data(), str.data() + str.size(), val, base);
 	if (result.ec == std::errc::invalid_argument)
 		log::error("Can't convert \"{}\" to an unsigned integer (invalid)", str);
 	else if (result.ec == std::errc::result_out_of_range)
@@ -1048,7 +1043,7 @@ float strutil::asFloat(string_view str)
 	float val = 0;
 
 #ifdef _MSC_VER
-	auto result = std::from_chars(str.data(), str.data() + str.size(), val);
+	const auto result = std::from_chars(str.data(), str.data() + str.size(), val);
 	if (result.ec == std::errc::invalid_argument)
 		log::error("Can't convert \"{}\" to a float (invalid)", str);
 	else if (result.ec == std::errc::result_out_of_range)
@@ -1074,7 +1069,7 @@ double strutil::asDouble(string_view str)
 	double val = 0;
 
 #ifdef _MSC_VER
-	auto result = std::from_chars(str.data(), str.data() + str.size(), val);
+	const auto result = std::from_chars(str.data(), str.data() + str.size(), val);
 	if (result.ec == std::errc::invalid_argument)
 		log::error("Can't convert \"{}\" to a double (invalid)", str);
 	else if (result.ec == std::errc::result_out_of_range)
@@ -1103,7 +1098,7 @@ bool strutil::asBoolean(string_view str)
 
 bool strutil::toInt(string_view str, int& target, int base)
 {
-	auto result = std::from_chars(str.data(), str.data() + str.size(), target, base);
+	const auto result = std::from_chars(str.data(), str.data() + str.size(), target, base);
 
 	if (result.ec == std::errc::invalid_argument)
 	{
@@ -1121,7 +1116,7 @@ bool strutil::toInt(string_view str, int& target, int base)
 
 bool strutil::toUInt(string_view str, unsigned& target, int base)
 {
-	auto result = std::from_chars(str.data(), str.data() + str.size(), target, base);
+	const auto result = std::from_chars(str.data(), str.data() + str.size(), target, base);
 
 	if (result.ec == std::errc::invalid_argument)
 	{
@@ -1140,7 +1135,7 @@ bool strutil::toUInt(string_view str, unsigned& target, int base)
 bool strutil::toFloat(string_view str, float& target)
 {
 #ifdef _MSC_VER
-	auto result = std::from_chars(str.data(), str.data() + str.size(), target);
+	const auto result = std::from_chars(str.data(), str.data() + str.size(), target);
 
 	if (result.ec == std::errc::invalid_argument)
 	{
@@ -1171,7 +1166,7 @@ bool strutil::toFloat(string_view str, float& target)
 bool strutil::toDouble(string_view str, double& target)
 {
 #ifdef _MSC_VER
-	auto result = std::from_chars(str.data(), str.data() + str.size(), target);
+	const auto result = std::from_chars(str.data(), str.data() + str.size(), target);
 
 	if (result.ec == std::errc::invalid_argument)
 	{
@@ -1205,7 +1200,7 @@ bool strutil::toDouble(string_view str, double& target)
 // -----------------------------------------------------------------------------
 string strutil::toString(string_view str)
 {
-	auto end = str.find('\0');
+	const auto end = str.find('\0');
 	return string{ str.data(), end == string_view::npos ? str.size() : end };
 }
 
@@ -1302,7 +1297,7 @@ void wxStringUtils::processIncludes(ArchiveEntry* entry, wxString& out, bool use
 		return;
 
 	// Write entry to temp file
-	auto filename = app::path(entry->name(), app::Dir::Temp);
+	const auto filename = app::path(entry->name(), app::Dir::Temp);
 	entry->exportFile(filename);
 
 	// Open file
@@ -1411,7 +1406,7 @@ float wxStringUtils::toFloat(const wxString& str)
 {
 	double tmp;
 	if (str.ToDouble(&tmp))
-		return tmp;
+		return static_cast<float>(tmp);
 
 	log::error(wxString::Format("Can't convert \"%s\" to a float", str));
 	return 0.f;

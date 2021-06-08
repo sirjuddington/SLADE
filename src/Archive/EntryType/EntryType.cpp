@@ -142,11 +142,11 @@ int EntryType::isThisType(ArchiveEntry& entry)
 		return EntryDataFormat::MATCH_FALSE;
 
 	// Check min size
-	if (size_limit_[0] >= 0 && entry.size() < (unsigned)size_limit_[0])
+	if (size_limit_[0] >= 0 && entry.size() < static_cast<unsigned>(size_limit_[0]))
 		return EntryDataFormat::MATCH_FALSE;
 
 	// Check max size
-	if (size_limit_[1] >= 0 && entry.size() > (unsigned)size_limit_[1])
+	if (size_limit_[1] >= 0 && entry.size() > static_cast<unsigned>(size_limit_[1]))
 		return EntryDataFormat::MATCH_FALSE;
 
 	// Check for archive match if needed
@@ -206,8 +206,8 @@ int EntryType::isThisType(ArchiveEntry& entry)
 	// Check for size multiple match if needed
 	if (!size_multiple_.empty())
 	{
-		bool   match              = false;
-		size_t size_multiple_size = size_multiple_.size();
+		bool         match              = false;
+		const size_t size_multiple_size = size_multiple_.size();
 		for (size_t a = 0; a < size_multiple_size; a++)
 		{
 			if (entry.size() % size_multiple_[a] == 0)
@@ -232,8 +232,8 @@ int EntryType::isThisType(ArchiveEntry& entry)
 	if (!match_name_.empty() || !match_extension_.empty())
 	{
 		// Get entry name (lowercase), find extension separator
-		string_view fn      = entry.upperName();
-		size_t      ext_sep = fn.find_first_of('.', 0);
+		const string_view fn      = entry.upperName();
+		const size_t      ext_sep = fn.find_last_of('.');
 
 		// Check for name match if needed
 		if (!match_name_.empty())
@@ -264,7 +264,7 @@ int EntryType::isThisType(ArchiveEntry& entry)
 			bool match = false;
 			if (ext_sep != string::npos)
 			{
-				auto ext = fn.substr(ext_sep + 1);
+				const auto ext = fn.substr(ext_sep + 1);
 				for (const auto& match_ext : match_extension_)
 				{
 					if (ext == match_ext)
@@ -287,7 +287,7 @@ int EntryType::isThisType(ArchiveEntry& entry)
 		if (!entry.parent())
 			return EntryDataFormat::MATCH_FALSE;
 
-		auto e_section = entry.parent()->detectNamespace(&entry);
+		const auto e_section = entry.parent()->detectNamespace(&entry);
 
 		r = EntryDataFormat::MATCH_FALSE;
 		for (const auto& ns : section_)
@@ -304,7 +304,7 @@ int EntryType::isThisType(ArchiveEntry& entry)
 // -----------------------------------------------------------------------------
 void slade::EntryType::initTypes()
 {
-	auto fmt_any = EntryDataFormat::anyFormat();
+	const auto fmt_any = EntryDataFormat::anyFormat();
 
 	// Setup unknown type
 	auto et_unknown          = std::make_unique<EntryType>("unknown");
@@ -313,7 +313,7 @@ void slade::EntryType::initTypes()
 	et_unknown->detectable_  = false;
 	et_unknown->reliability_ = 0;
 	etype_unknown            = et_unknown.get();
-	etype_unknown->index_    = entry_types.size();
+	etype_unknown->index_    = static_cast<int>(entry_types.size());
 	entry_types.push_back(std::move(et_unknown));
 
 	// Setup folder type
@@ -323,7 +323,7 @@ void slade::EntryType::initTypes()
 	et_folder->name_       = "Folder";
 	et_folder->detectable_ = false;
 	etype_folder           = et_folder.get();
-	etype_folder->index_   = entry_types.size();
+	etype_folder->index_   = static_cast<int>(entry_types.size());
 	entry_types.push_back(std::move(et_folder));
 
 	// Setup marker type
@@ -334,7 +334,7 @@ void slade::EntryType::initTypes()
 	et_marker->detectable_ = false;
 	et_marker->category_   = ""; // No category, markers only appear when 'All' categories shown
 	etype_marker           = et_marker.get();
-	et_marker->index_      = entry_types.size();
+	et_marker->index_      = static_cast<int>(entry_types.size());
 	entry_types.push_back(std::move(et_marker));
 
 	// Setup map marker type
@@ -346,7 +346,7 @@ void slade::EntryType::initTypes()
 	et_map->detectable_ = false;
 	et_map->colour_     = ColRGBA(0, 255, 0);
 	etype_map           = et_map.get();
-	etype_map->index_   = entry_types.size();
+	etype_map->index_   = static_cast<int>(entry_types.size());
 	entry_types.push_back(std::move(et_map));
 }
 
@@ -357,7 +357,7 @@ void slade::EntryType::initTypes()
 bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 {
 	// Parse the definition
-	Parser p;
+	const Parser p;
 	p.parseText(mc, source);
 
 	// Get entry_types tree
@@ -465,7 +465,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 			}
 			else if (fn_name == "reliability") // Reliability field
 			{
-				ntype->reliability_ = fieldnode->intValue();
+				ntype->reliability_ = static_cast<uint8_t>(fieldnode->intValue());
 			}
 			else if (fn_name == "match_archive") // Archive field
 			{
@@ -499,7 +499,10 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 			else if (fn_name == "colour") // Colour
 			{
 				if (fieldnode->nValues() >= 3)
-					ntype->colour_ = ColRGBA(fieldnode->intValue(0), fieldnode->intValue(1), fieldnode->intValue(2));
+					ntype->colour_ = ColRGBA(
+						static_cast<uint8_t>(fieldnode->intValue(0)),
+						static_cast<uint8_t>(fieldnode->intValue(1)),
+						static_cast<uint8_t>(fieldnode->intValue(2)));
 				else
 					log::warning("Not enough colour components defined for entry type {}", ntype->id());
 			}
@@ -511,7 +514,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 		}
 
 		// ntype->dump();
-		ntype->index_ = entry_types.size();
+		ntype->index_ = static_cast<int>(entry_types.size());
 		entry_types.push_back(std::move(ntype));
 	}
 
@@ -524,7 +527,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc, string_view source)
 bool EntryType::loadEntryTypes()
 {
 	// Get builtin entry types from resource archive
-	auto res_archive = app::archiveManager().programResourceArchive();
+	const auto res_archive = app::archiveManager().programResourceArchive();
 
 	// Check resource archive exists
 	if (!res_archive)
@@ -534,7 +537,7 @@ bool EntryType::loadEntryTypes()
 	}
 
 	// Get entry types directory
-	auto et_dir = res_archive->dirAtPath("config/entry_types/");
+	const auto et_dir = res_archive->dirAtPath("config/entry_types/");
 
 	// Check it exists
 	if (!et_dir)
@@ -544,8 +547,8 @@ bool EntryType::loadEntryTypes()
 	}
 
 	// Read in each file in the directory
-	bool         etypes_read       = false;
-	unsigned int et_dir_numEntries = et_dir->numEntries();
+	bool               etypes_read       = false;
+	const unsigned int et_dir_numEntries = et_dir->numEntries();
 	for (unsigned a = 0; a < et_dir_numEntries; a++)
 	{
 		if (readEntryTypeDefinition(et_dir->entryAt(a)->data(), et_dir->entryAt(a)->name()))
@@ -601,7 +604,7 @@ bool EntryType::detectEntryType(ArchiveEntry& entry)
 	entry.setType(etype_unknown);
 
 	// Go through all registered types
-	size_t entry_types_size = entry_types.size();
+	const size_t entry_types_size = entry_types.size();
 	for (size_t a = 0; a < entry_types_size; a++)
 	{
 		// If the current type is more 'reliable' than this one, skip it
@@ -609,7 +612,7 @@ bool EntryType::detectEntryType(ArchiveEntry& entry)
 			continue;
 
 		// Check for possible type match
-		int r = entry_types[a]->isThisType(entry);
+		const int r = entry_types[a]->isThisType(entry);
 		if (r > 0)
 		{
 			// Type matches, set it
@@ -714,10 +717,10 @@ CONSOLE_COMMAND(type, 0, true)
 	if (args.empty())
 	{
 		// List existing types and their IDs
-		string listing   = "List of entry types:\n\t";
-		string separator = "]\n\t";
-		string colon     = ": ";
-		string paren     = " [";
+		string       listing   = "List of entry types:\n\t";
+		const string separator = "]\n\t";
+		const string colon     = ": ";
+		const string paren     = " [";
 		for (size_t a = 3; a < all_types.size(); a++)
 		{
 			listing += all_types[a]->name();
@@ -804,7 +807,7 @@ CONSOLE_COMMAND(type, 0, true)
 
 CONSOLE_COMMAND(size, 0, true)
 {
-	auto meep = maineditor::currentEntry();
+	const auto meep = maineditor::currentEntry();
 	if (!meep)
 	{
 		log::info("No entry selected");

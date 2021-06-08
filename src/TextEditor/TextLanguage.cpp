@@ -545,15 +545,13 @@ TLFunction* TextLanguage::function(string_view name)
 // -----------------------------------------------------------------------------
 void TextLanguage::clearCustomDefs()
 {
-	for (auto i = functions_.begin(); i != functions_.end();)
+	for (auto i = static_cast<int>(functions_.size()) - 1; i >= 0; --i)
 	{
-		i->clearCustomContexts();
+		functions_[i].clearCustomContexts();
 
 		// Remove function if only contexts were custom
-		if (i->contexts().empty())
-			i = functions_.erase(i);
-		else
-			++i;
+		if (functions_[i].contexts().empty())
+			functions_.erase(functions_.begin() + i);
 	}
 
 	for (auto& a : word_lists_custom_)
