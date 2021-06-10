@@ -73,21 +73,21 @@ namespace ui
 		wxDataViewItem        lastSelectedItem() const;
 		ArchiveDir*           currentSelectedDir() const;
 		ArchiveDir*           selectedEntriesDir() const;
+		vector<ArchiveDir*>   expandedDirs() const;
 
 		void setFilter(string_view name, string_view category);
 		void collapseAll(const ArchiveDir& dir_start);
 
 	private:
 		weak_ptr<Archive> archive_;
-		ArchiveViewModel* model_         = nullptr;
-		wxDataViewColumn* col_name_      = nullptr;
-		wxDataViewColumn* col_size_      = nullptr;
-		wxDataViewColumn* col_type_      = nullptr;
-		wxDataViewColumn* col_index_     = nullptr;
-		int               id_reset_sort_ = -1;
+		ArchiveViewModel* model_     = nullptr;
+		wxDataViewColumn* col_name_  = nullptr;
+		wxDataViewColumn* col_size_  = nullptr;
+		wxDataViewColumn* col_type_  = nullptr;
+		wxDataViewColumn* col_index_ = nullptr;
 
 		void setupColumns();
-		void saveColumnWidths();
+		void saveColumnWidths() const;
 		void updateColumnWidths();
 	};
 

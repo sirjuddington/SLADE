@@ -38,7 +38,6 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/ColourConfiguration.h"
-#include "General/SAction.h"
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
 #include "UI/WxUtils.h"
@@ -196,7 +195,7 @@ void ArchiveViewModel::setFilter(string_view name, string_view category)
 	if (!name.empty())
 	{
 		auto filter_parts = strutil::splitV(name, ',');
-		for (auto p : filter_parts)
+		for (const auto p : filter_parts)
 		{
 			auto filter_part = strutil::trim(p);
 			if (filter_part.empty())
@@ -309,28 +308,28 @@ bool ArchiveViewModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 		// Init precalculated status text colours if necessary
 		if (col_text_modified.Alpha() == 0)
 		{
-			auto col_modified = ColRGBA(0, 85, 255);
-			auto col_new      = ColRGBA(0, 255, 0);
-			auto col_locked   = ColRGBA(255, 0, 0);
-			auto col_text     = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
-			auto intensity    = 0.65;
+			const auto col_modified = ColRGBA(0, 85, 255);
+			const auto col_new      = ColRGBA(0, 255, 0);
+			const auto col_locked   = ColRGBA(255, 0, 0);
+			const auto col_text     = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
+			const auto intensity    = 0.65;
 
 			col_text_modified.Set(
-				(col_modified.r * intensity) + (col_text.Red() * (1.0 - intensity)),
-				(col_modified.g * intensity) + (col_text.Green() * (1.0 - intensity)),
-				(col_modified.b * intensity) + (col_text.Blue() * (1.0 - intensity)),
+				static_cast<uint8_t>(col_modified.r * intensity + col_text.Red() * (1.0 - intensity)),
+				static_cast<uint8_t>(col_modified.g * intensity + col_text.Green() * (1.0 - intensity)),
+				static_cast<uint8_t>(col_modified.b * intensity + col_text.Blue() * (1.0 - intensity)),
 				255);
 
 			col_text_new.Set(
-				(col_new.r * intensity) + (col_text.Red() * (1.0 - intensity)),
-				(col_new.g * intensity) + (col_text.Green() * (1.0 - intensity)),
-				(col_new.b * intensity) + (col_text.Blue() * (1.0 - intensity)),
+				static_cast<uint8_t>(col_new.r * intensity + col_text.Red() * (1.0 - intensity)),
+				static_cast<uint8_t>(col_new.g * intensity + col_text.Green() * (1.0 - intensity)),
+				static_cast<uint8_t>(col_new.b * intensity + col_text.Blue() * (1.0 - intensity)),
 				255);
 
 			col_text_locked.Set(
-				(col_locked.r * intensity) + (col_text.Red() * (1.0 - intensity)),
-				(col_locked.g * intensity) + (col_text.Green() * (1.0 - intensity)),
-				(col_locked.b * intensity) + (col_text.Blue() * (1.0 - intensity)),
+				static_cast<uint8_t>(col_locked.r * intensity + col_text.Red() * (1.0 - intensity)),
+				static_cast<uint8_t>(col_locked.g * intensity + col_text.Green() * (1.0 - intensity)),
+				static_cast<uint8_t>(col_locked.b * intensity + col_text.Blue() * (1.0 - intensity)),
 				255);
 		}
 
@@ -361,7 +360,7 @@ bool ArchiveViewModel::SetValue(const wxVariant& variant, const wxDataViewItem& 
 	// Name column
 	if (col == 0)
 	{
-		bool               ok = false;
+		bool               ok;
 		wxDataViewIconText value;
 		value << variant;
 		auto new_name = value.GetText();
@@ -379,7 +378,7 @@ bool ArchiveViewModel::SetValue(const wxVariant& variant, const wxDataViewItem& 
 				undo_manager_->beginRecord("Rename Directory");
 
 			// Rename the entry
-			auto dir = ArchiveDir::findDirByDirEntry(archive->rootDir(), *entry);
+			const auto dir = ArchiveDir::findDirByDirEntry(archive->rootDir(), *entry);
 			if (dir)
 				ok = archive->renameDir(dir.get(), wxutil::strToView(new_name));
 			else
@@ -442,7 +441,7 @@ bool ArchiveViewModel::IsContainer(const wxDataViewItem& item) const
 		else if (auto* archive = archive_.lock().get())
 		{
 			if (auto* dir = archive->dirAtPath(entry->path(true)))
-				if (dir->entries().size() == 0 && dir->subdirs().size() == 0)
+				if (dir->entries().empty() && dir->subdirs().empty())
 					return false;
 		}
 #endif
@@ -476,7 +475,7 @@ unsigned int ArchiveViewModel::GetChildren(const wxDataViewItem& item, wxDataVie
 	// Get items for directory subdirs + entries
 	getDirChildItems(children, *dir);
 
-	return children.size();
+	return static_cast<unsigned int>(children.size());
 }
 
 // -----------------------------------------------------------------------------
@@ -529,7 +528,7 @@ int ArchiveViewModel::Compare(
 	// Entry <-> Entry
 	else
 	{
-		int cmpval = 0;
+		int cmpval;
 
 		// Name column (order by name only)
 		if (column == 0)
@@ -558,7 +557,7 @@ int ArchiveViewModel::Compare(
 		else
 		{
 			// Directory archives default to alphabetical order
-			if (auto archive = archive_.lock(); archive->formatId() == "folder")
+			if (const auto archive = archive_.lock(); archive->formatId() == "folder")
 				cmpval = e1->upperName().compare(e2->upperName());
 
 			// Everything else defaults to index order
@@ -575,7 +574,7 @@ int ArchiveViewModel::Compare(
 // -----------------------------------------------------------------------------
 wxDataViewItem ArchiveViewModel::createItemForDirectory(const ArchiveDir& dir) const
 {
-	if (auto archive = archive_.lock())
+	if (const auto archive = archive_.lock())
 	{
 		if (&dir == archive->rootDir().get())
 			return {};
@@ -825,7 +824,7 @@ ArchiveEntry* ArchiveEntryTree::lastSelectedEntry(bool include_dirs) const
 	GetSelections(selection);
 
 	// Find last (non-folder) entry in selected items
-	for (int i = selection.size() - 1; i >= 0; --i)
+	for (int i = static_cast<int>(selection.size()) - 1; i >= 0; --i)
 		if (auto* entry = static_cast<ArchiveEntry*>(selection[i].GetID()))
 			if (include_dirs || entry->type() != EntryType::folderType())
 				return entry;
@@ -852,7 +851,7 @@ vector<ArchiveDir*> ArchiveEntryTree::selectedDirectories() const
 	GetSelections(selection);
 
 	// Add dirs from selected items
-	auto dir_root = archive->rootDir();
+	const auto dir_root = archive->rootDir();
 	for (const auto& item : selection)
 		if (auto* entry = static_cast<ArchiveEntry*>(item.GetID()))
 			if (entry->type() == EntryType::folderType())
@@ -879,11 +878,11 @@ ArchiveDir* ArchiveEntryTree::firstSelectedDirectory() const
 	GetSelections(selection);
 
 	// Find first directory in selected items
-	auto dir_root = archive->rootDir();
+	const auto dir_root = archive->rootDir();
 	for (const auto& item : selection)
 		if (auto* entry = static_cast<ArchiveEntry*>(item.GetID()))
 			if (entry->type() == EntryType::folderType())
-				if (auto dir = ArchiveDir::findDirByDirEntry(dir_root, *entry))
+				if (const auto dir = ArchiveDir::findDirByDirEntry(dir_root, *entry))
 					return dir.get();
 
 	return nullptr;
@@ -906,11 +905,11 @@ ArchiveDir* ArchiveEntryTree::lastSelectedDirectory() const
 	GetSelections(selection);
 
 	// Find first directory in selected items
-	auto dir_root = archive->rootDir();
-	for (int i = selection.size() - 1; i >= 0; --i)
+	const auto dir_root = archive->rootDir();
+	for (int i = static_cast<int>(selection.size()) - 1; i >= 0; --i)
 		if (auto* entry = static_cast<ArchiveEntry*>(selection[i].GetID()))
 			if (entry->type() == EntryType::folderType())
-				if (auto dir = ArchiveDir::findDirByDirEntry(dir_root, *entry))
+				if (const auto dir = ArchiveDir::findDirByDirEntry(dir_root, *entry))
 					return dir.get();
 
 	return nullptr;
@@ -951,7 +950,7 @@ ArchiveDir* ArchiveEntryTree::currentSelectedDir() const
 	if (!archive)
 		return nullptr;
 
-	auto item = lastSelectedItem();
+	const auto item = lastSelectedItem();
 	if (auto* entry = static_cast<ArchiveEntry*>(item.GetID()))
 	{
 		if (entry->type() == EntryType::folderType())
@@ -994,12 +993,30 @@ ArchiveDir* ArchiveEntryTree::selectedEntriesDir() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns a list of all expanded directories
+// -----------------------------------------------------------------------------
+vector<ArchiveDir*> ArchiveEntryTree::expandedDirs() const
+{
+	vector<ArchiveDir*> expanded_dirs;
+	
+	auto dirs = archive_.lock()->rootDir()->allDirectories();
+	for (const auto dir : dirs)
+		if (IsExpanded(wxDataViewItem(dir->dirEntry())))
+			expanded_dirs.push_back(dir.get());
+
+	return expanded_dirs;
+}
+
+// -----------------------------------------------------------------------------
 // Set the filter options on the model
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::setFilter(string_view name, string_view category)
 {
 	Freeze();
+	auto expanded = expandedDirs();
 	model_->setFilter(name, category);
+	for (auto* dir : expanded)
+		Expand(wxDataViewItem(dir->dirEntry()));
 	Thaw();
 }
 
@@ -1019,7 +1036,7 @@ void ArchiveEntryTree::collapseAll(const ArchiveDir& dir_start)
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::setupColumns()
 {
-	auto archive = archive_.lock();
+	const auto archive = archive_.lock();
 	if (!archive)
 		return;
 
@@ -1064,11 +1081,11 @@ void ArchiveEntryTree::setupColumns()
 // -----------------------------------------------------------------------------
 // Saves the current column widths to their respective cvars
 // -----------------------------------------------------------------------------
-void ArchiveEntryTree::saveColumnWidths()
+void ArchiveEntryTree::saveColumnWidths() const
 {
 	// Get the last visible column (we don't want to save the width of this column since it stretches)
 	wxDataViewColumn* last_col = nullptr;
-	for (auto i = GetColumnCount() - 1; i >= 0; --i)
+	for (int i = static_cast<int>(GetColumnCount()) - 1; i >= 0; --i)
 		if (!GetColumn(i)->IsHidden())
 		{
 			last_col = GetColumn(i);
@@ -1098,13 +1115,13 @@ void ArchiveEntryTree::saveColumnWidths()
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::updateColumnWidths()
 {
-	auto archive = archive_.lock();
+	const auto archive = archive_.lock();
 	if (!archive)
 		return;
 
 	// Get the last visible column (we don't want to save the width of this column since it stretches)
 	wxDataViewColumn* last_col = nullptr;
-	for (auto i = GetColumnCount() - 1; i >= 0; --i)
+	for (int i = static_cast<int>(GetColumnCount()) - 1; i >= 0; --i)
 		if (!GetColumn(i)->IsHidden())
 		{
 			last_col = GetColumn(i);

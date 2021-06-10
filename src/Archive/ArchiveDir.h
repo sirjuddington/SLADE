@@ -34,6 +34,7 @@ public:
 	unsigned                         numEntries(bool inc_subdirs = false) const;
 	int                              entryIndex(ArchiveEntry* entry, size_t startfrom = 0) const;
 	vector<shared_ptr<ArchiveEntry>> allEntries() const;
+	vector<shared_ptr<ArchiveDir>>   allDirectories() const;
 
 	// Entry Operations
 	bool addEntry(shared_ptr<ArchiveEntry> entry, unsigned index = 0xFFFFFFFF);

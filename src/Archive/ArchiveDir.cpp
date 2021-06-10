@@ -40,6 +40,27 @@
 
 using namespace slade;
 
+namespace
+{
+void buildEntryList(vector<shared_ptr<ArchiveEntry>>& list, ArchiveDir const* dir)
+{
+	for (const auto& subdir : dir->subdirs())
+		buildEntryList(list, subdir.get());
+
+	for (auto& entry : dir->entries())
+		list.push_back(entry);
+}
+
+void buildDirList(vector<shared_ptr<ArchiveDir>>& list, ArchiveDir const* dir)
+{
+	for (const auto& subdir : dir->subdirs())
+	{
+		list.push_back(subdir);
+		buildDirList(list, subdir.get());
+	}
+}
+} // namespace
+
 
 // -----------------------------------------------------------------------------
 //
@@ -83,7 +104,7 @@ const string& ArchiveDir::name() const
 // -----------------------------------------------------------------------------
 string ArchiveDir::path(bool include_name) const
 {
-	auto parent = parent_dir_.lock();
+	const auto parent = parent_dir_.lock();
 	if (include_name)
 		return parent ? fmt::format("{}{}/", parent->path(), name()) : name() + "/";
 	else
@@ -119,7 +140,7 @@ int ArchiveDir::entryIndex(ArchiveEntry* entry, size_t startfrom) const
 			if (entries_[a].get() == entry)
 			{
 				entry->index_guess_ = a;
-				return (int)a;
+				return static_cast<int>(a);
 			}
 		}
 	}
@@ -130,7 +151,7 @@ int ArchiveDir::entryIndex(ArchiveEntry* entry, size_t startfrom) const
 			if (entries_[a].get() == entry)
 			{
 				entry->index_guess_ = a;
-				return (int)a;
+				return static_cast<int>(a);
 			}
 		}
 		for (auto a = startfrom; a < entry->index_guess_; a++)
@@ -138,7 +159,7 @@ int ArchiveDir::entryIndex(ArchiveEntry* entry, size_t startfrom) const
 			if (entries_[a].get() == entry)
 			{
 				entry->index_guess_ = a;
-				return (int)a;
+				return static_cast<int>(a);
 			}
 		}
 	}
@@ -154,20 +175,18 @@ int ArchiveDir::entryIndex(ArchiveEntry* entry, size_t startfrom) const
 vector<shared_ptr<ArchiveEntry>> ArchiveDir::allEntries() const
 {
 	vector<shared_ptr<ArchiveEntry>> entries;
-
-	// Recursive lambda function to build entry list
-	std::function<void(vector<shared_ptr<ArchiveEntry>>&, ArchiveDir const*)> build_list =
-		[&](vector<shared_ptr<ArchiveEntry>>& list, ArchiveDir const* dir) {
-			for (const auto& subdir : dir->subdirs_)
-				build_list(list, subdir.get());
-
-			for (auto& entry : dir->entries_)
-				list.push_back(entry);
-		};
-
-	build_list(entries, this);
-
+	buildEntryList(entries, this);
 	return entries;
+}
+
+// -----------------------------------------------------------------------------
+// Returns a flat list of all subdirs in this directory (recursive)
+// -----------------------------------------------------------------------------
+vector<shared_ptr<ArchiveDir>> ArchiveDir::allDirectories() const
+{
+	vector<shared_ptr<ArchiveDir>> dirs;
+	buildDirList(dirs, this);
+	return dirs;
 }
 
 // -----------------------------------------------------------------------------
@@ -401,7 +420,7 @@ shared_ptr<ArchiveDir> ArchiveDir::removeSubdir(string_view name)
 {
 	shared_ptr<ArchiveDir> removed;
 
-	auto count = subdirs_.size();
+	const auto count = subdirs_.size();
 	for (unsigned i = 0; i < count; ++i)
 		if (strutil::equalCI(name, subdirs_[i]->name()))
 		{
@@ -451,7 +470,7 @@ shared_ptr<ArchiveDir> ArchiveDir::clone(shared_ptr<ArchiveDir> parent)
 	// Copy entries
 	for (auto& entry : entries_)
 	{
-		auto entry_copy = std::make_shared<ArchiveEntry>(*entry);
+		const auto entry_copy = std::make_shared<ArchiveEntry>(*entry);
 		copy->addEntry(entry_copy);
 	}
 
@@ -625,7 +644,7 @@ ArchiveDir* ArchiveDir::subdirAtPath(ArchiveDir* root, string_view path)
 shared_ptr<ArchiveEntry> ArchiveDir::entryAtPath(const shared_ptr<ArchiveDir>& root, string_view path)
 {
 	// Find given subdir
-	auto subdir = subdirAtPath(root, strutil::Path::pathOf(path, false));
+	const auto subdir = subdirAtPath(root, strutil::Path::pathOf(path, false));
 	if (!subdir)
 		return nullptr;
 
@@ -698,7 +717,7 @@ shared_ptr<ArchiveDir> ArchiveDir::getOrCreateSubdir(
 	}
 
 	// Check if there is more of [path] to follow
-	auto path_rest = strutil::afterFirstV(path, '/');
+	const auto path_rest = strutil::afterFirstV(path, '/');
 	if (path_rest.empty() || path_rest == path)
 		return subdir;
 	else
@@ -755,12 +774,12 @@ shared_ptr<ArchiveDir> ArchiveDir::getShared(ArchiveDir* dir)
 // Note that in this case [entry] is the target ArchiveDir's dirEntry(), *not*
 // an entry contained within it
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveDir> slade::ArchiveDir::findDirByDirEntry(shared_ptr<ArchiveDir> dir_root, const ArchiveEntry& entry)
+shared_ptr<ArchiveDir> ArchiveDir::findDirByDirEntry(shared_ptr<ArchiveDir> dir_root, const ArchiveEntry& entry)
 {
 	if (dir_root->dir_entry_.get() == &entry)
 		return dir_root;
 
-	for (auto subdir : dir_root->subdirs_)
+	for (const auto subdir : dir_root->subdirs_)
 		if (auto dir = findDirByDirEntry(subdir, entry))
 			return dir;
 
