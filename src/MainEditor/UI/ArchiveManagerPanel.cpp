@@ -49,6 +49,7 @@
 #include "UI/Dialogs/DirArchiveUpdateDialog.h"
 #include "UI/Dialogs/NewArchiveDiaog.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -1358,6 +1359,20 @@ bool ArchiveManagerPanel::saveArchive(Archive* archive) const
 
 	if (archive->canSave())
 	{
+		// Check if the file has been modified on disk
+		if (fileutil::fileModifiedTime(archive->filename()) > archive->fileModifiedTime())
+		{
+			if (wxMessageBox(
+					wxString::Format(
+						"The file %s has been modified on disk since the archive was last saved, are you sure you want "
+						"to continue with saving?",
+						archive->filename(false)),
+					"File Modified",
+					wxICON_WARNING | wxYES_NO)
+				== wxNO)
+				return false;
+		}
+
 		// Save the archive if possible
 		if (!archive->save())
 		{

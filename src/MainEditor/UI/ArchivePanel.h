@@ -34,8 +34,6 @@ public:
 	void redo() const;
 
 	// Archive manipulation actions
-	bool save();
-	bool saveAs();
 	bool newEntry();
 	bool newDirectory();
 	bool importFiles();

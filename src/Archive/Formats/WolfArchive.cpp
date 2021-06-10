@@ -445,8 +445,9 @@ bool WolfArchive::open(string_view filename)
 	if (opened)
 	{
 		// Update variables
-		filename_.assign(filename.data(), filename.size());
-		on_disk_ = true;
+		filename_      = filename;
+		file_modified_ = fileutil::fileModifiedTime(filename);
+		on_disk_       = true;
 
 		return true;
 	}

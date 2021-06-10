@@ -58,6 +58,7 @@ public:
 	bool                   isOnDisk() const { return on_disk_; }
 	bool                   isReadOnly() const { return read_only_; }
 	virtual bool           isWritable() { return true; }
+	time_t                 fileModifiedTime() const { return file_modified_; }
 
 	void setModified(bool modified);
 	void setFilename(string_view filename) { filename_ = filename; }
@@ -186,6 +187,7 @@ protected:
 	weak_ptr<ArchiveEntry> parent_;
 	bool                   on_disk_; // Specifies whether the archive exists on disk (as opposed to being newly created)
 	bool                   read_only_; // If true, the archive cannot be modified
+	time_t                 file_modified_;
 
 private:
 	bool                   modified_;

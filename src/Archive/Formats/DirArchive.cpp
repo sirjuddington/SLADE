@@ -342,7 +342,7 @@ shared_ptr<ArchiveDir> DirArchive::removeDir(string_view path, ArchiveDir* base)
 	{
 		if (!entry->exProps().contains("filePath"))
 			continue;
-		
+
 		log::info(2, entry->exProp<string>("filePath"));
 		removed_files_.push_back(entry->exProp<string>("filePath"));
 	}

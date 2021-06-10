@@ -741,70 +741,6 @@ void ArchivePanel::redo() const
 }
 
 // -----------------------------------------------------------------------------
-// Saves the archive
-// -----------------------------------------------------------------------------
-bool ArchivePanel::save()
-{
-	// Check the archive is still open
-	auto archive = archive_.lock();
-	if (!archive)
-		return false;
-
-	// Save any changes in the current entry panel
-	saveEntryChanges();
-
-	// Check the archive has been previously saved
-	if (!archive->canSave())
-		return saveAs();
-
-	// Save the archive
-	if (!archive->save())
-	{
-		// If there was an error pop up a message box
-		wxMessageBox(wxString::Format("Error:\n%s", global::error), "Error", wxICON_ERROR);
-		return false;
-	}
-
-	// Refresh entry list
-	// entry_list_->updateList();
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Saves the archive to a new file
-// -----------------------------------------------------------------------------
-bool ArchivePanel::saveAs()
-{
-	// Check the archive is still open
-	auto archive = archive_.lock();
-	if (!archive)
-		return false;
-
-	// Do save dialog
-	filedialog::FDInfo info;
-	if (filedialog::saveFile(
-			info, "Save Archive " + archive->filename(false) + " As", archive->fileExtensionString(), this))
-	{
-		// Save the archive
-		if (!archive->save(info.filenames[0]))
-		{
-			// If there was an error pop up a message box
-			wxMessageBox(wxString::Format("Error:\n%s", global::error), "Error", wxICON_ERROR);
-			return false;
-		}
-	}
-
-	// Refresh entry list
-	// entry_list_->updateList();
-
-	// Add as recent file
-	app::archiveManager().addRecentFile(info.filenames[0]);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
 // Adds a new entry to the archive after the last selected entry in the list.
 // If nothing is selected it is added at the end of the list.
 // Pops up a NewEntryDialog to get the name/type/(directory) for the new entry.
@@ -2598,7 +2534,7 @@ bool ArchivePanel::basConvert(bool animdefs)
 	// Create new entry
 	auto output = archive->addNewEntry(
 		(animdefs ? (archive->formatId() == "wad" ? "ANIMDEFS" : "animdefs.txt") :
-					(archive->formatId() == "wad" ? "SWANTBLS" : "swantbls.dat")),
+                    (archive->formatId() == "wad" ? "SWANTBLS" : "swantbls.dat")),
 		index,
 		currentEntry()->parentDir());
 

@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "Archive.h"
 #include "General/UndoRedo.h"
+#include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 #include <filesystem>
@@ -468,6 +469,7 @@ bool Archive::open(string_view filename)
 	// Update filename before opening
 	auto backupname = filename_;
 	filename_       = filename;
+	file_modified_  = fileutil::fileModifiedTime(filename);
 
 	// Load from MemChunk
 	sf::Clock timer;
@@ -671,7 +673,8 @@ bool Archive::save(string_view filename)
 				filename_ = filename;
 
 			// Update variables
-			on_disk_ = true;
+			on_disk_       = true;
+			file_modified_ = fileutil::fileModifiedTime(filename_);
 		}
 		else if (!filename_.empty())
 		{
@@ -690,7 +693,8 @@ bool Archive::save(string_view filename)
 			success = write(filename_);
 
 			// Update variables
-			on_disk_ = true;
+			on_disk_       = true;
+			file_modified_ = fileutil::fileModifiedTime(filename_);
 		}
 	}
 
