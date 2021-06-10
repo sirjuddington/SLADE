@@ -163,8 +163,8 @@ public:
 
 		sizer->AddGrowableCol(1);
 
-		wxWindowBase::Layout();
-		msizer->Fit(this);
+		wxDialog::Layout();
+		SetInitialSize({ ui::scalePx(250), -1 });
 		CenterOnParent();
 	}
 
@@ -281,7 +281,7 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 
 	// Dialog buttons
 	sizer->AddSpacer(ui::pad());
-	btn_ok_ = new wxButton(this, wxID_OK, "Open Map");
+	btn_ok_ = new wxButton(this, wxID_OK, creating_ ? "Create Map" : "Open Map");
 	btn_ok_->SetDefault();
 	btn_cancel_ = new wxButton(this, wxID_CANCEL, "Cancel");
 	sizer->Add(wxutil::createDialogButtonBox(btn_ok_, btn_cancel_), 0, wxEXPAND);
@@ -299,8 +299,8 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 		btn_new_map_->Bind(wxEVT_BUTTON, &MapEditorConfigDialog::onBtnNewMap, this);
 	}
 
-	wxWindowBase::Layout();
-	wxWindowBase::SetMinClientSize(mainsizer->GetMinSize());
+	wxDialog::Layout();
+	wxDialog::SetMinClientSize(mainsizer->GetMinSize());
 	CenterOnParent();
 
 	// Select first map
@@ -447,7 +447,6 @@ Archive::MapDesc MapEditorConfigDialog::selectedMap()
 		// Show new map dialog
 		vector<Archive::MapDesc> temp;
 		NewMapDialog             dlg(this, sel_game, sel_port, temp, archive_);
-		dlg.SetInitialSize(wxSize(250, -1));
 		if (dlg.ShowModal() == wxID_OK)
 		{
 			// Get selected map name
@@ -579,7 +578,6 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 	NewMapDialog dlg(this, sel_game, sel_port, maps_, archive_);
 
 	// Show it
-	dlg.SetInitialSize(wxSize(250, -1));
 	dlg.CenterOnParent();
 	if (dlg.ShowModal() == wxID_OK)
 	{

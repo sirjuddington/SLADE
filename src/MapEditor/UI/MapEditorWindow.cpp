@@ -526,7 +526,7 @@ void MapEditorWindow::lockMapEntries(bool lock) const
 // -----------------------------------------------------------------------------
 bool MapEditorWindow::chooseMap(Archive* archive)
 {
-	MapEditorConfigDialog dlg(maineditor::windowWx(), archive, (bool)archive, !(bool)archive);
+	MapEditorConfigDialog dlg(maineditor::windowWx(), archive, archive != nullptr, archive == nullptr);
 
 	if (dlg.ShowModal() == wxID_OK)
 	{
@@ -546,17 +546,17 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 			return false;
 		}
 
-		// Show md editor window
+		// Show map editor window
 		if (IsIconized())
 			Restore();
 		Raise();
 
-		// Attempt to open md
+		// Attempt to open map
 		if (!openMap(md))
 		{
 			Hide();
 			wxMessageBox(
-				wxString::Format("Unable to open md %s: %s", md.name, global::error), "Invalid md error", wxICON_ERROR);
+				wxString::Format("Unable to open map %s: %s", md.name, global::error), "Invalid map error", wxICON_ERROR);
 			return false;
 		}
 		else
