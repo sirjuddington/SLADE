@@ -746,7 +746,7 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 			ExtMessageDialog dlg(nullptr, success ? "ACC Output" : "Error Compiling");
 			dlg.setMessage(
 				success ? "The following errors were encountered while compiling, please fix them and recompile:" :
-						  "Compiler output shown below: ");
+                          "Compiler output shown below: ");
 			dlg.setExt(errors);
 			dlg.ShowModal();
 		}
@@ -980,14 +980,14 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	if (grabchunk)
 		gfx::setImageOffsets(entry->data(), grabchunk->x, grabchunk->y);
 
-	log::info(wxString::Format(
-		"PNG %s size %i =PNGCrush=> %i =PNGout=> %i =DeflOpt=> %i =+grAb/alPh=> %i",
+	log::info(
+		"PNG {} size {} =PNGCrush=> {} =PNGout=> {} =DeflOpt=> {} =+grAb/alPh=> {}",
 		entry->name(),
 		oldsize,
 		crushsize,
 		outsize,
 		deflsize,
-		entry->size()));
+		entry->size());
 
 
 	if (!crushed && !outed && !errormessages.IsEmpty())
