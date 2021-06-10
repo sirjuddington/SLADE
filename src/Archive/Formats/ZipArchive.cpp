@@ -180,7 +180,8 @@ bool ZipArchive::open(string_view filename)
 	sig_blocker.unblock();
 
 	// Setup variables
-	filename_ = filename;
+	filename_      = filename;
+	file_modified_ = fileutil::fileModifiedTime(filename);
 	setModified(false);
 	on_disk_ = true;
 
@@ -252,12 +253,17 @@ bool ZipArchive::write(string_view filename, bool update)
 		return false;
 	}
 
+	// Open old zip for copying, from the temp file that was copied on opening.
+	// This is used to copy any entries that have been previously saved/compressed
+	// and are unmodified, to greatly speed up zip file saving by not having to
+	// recompress unchanged entries
 	unique_ptr<wxZipInputStream>   inzip;
+	unique_ptr<wxFFileInputStream> in;
 	vector<wxZipEntry*>            c_entries;
 	if (fileutil::fileExists(temp_file_))
 	{
-		auto in = std::make_unique<wxFFileInputStream>(temp_file_);
-		inzip   = std::make_unique<wxZipInputStream>(*in);
+		in    = std::make_unique<wxFFileInputStream>(temp_file_);
+		inzip = std::make_unique<wxZipInputStream>(*in);
 
 		if (inzip->IsOk())
 		{
@@ -265,6 +271,7 @@ bool ZipArchive::write(string_view filename, bool update)
 			c_entries.resize(inzip->GetTotalEntries());
 			for (unsigned a = 0; a < c_entries.size(); a++)
 				c_entries[a] = inzip->GetNextEntry();
+			inzip->Reset();
 		}
 		else
 		{
