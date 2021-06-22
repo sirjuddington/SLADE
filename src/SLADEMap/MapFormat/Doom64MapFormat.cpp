@@ -45,7 +45,7 @@ bool Doom64MapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_dat
 {
 	log::info(2, "Reading Doom64 format map");
 
-	auto m_head = map.head.lock();
+	const auto m_head = map.head.lock();
 	if (!m_head)
 		return false;
 
@@ -139,14 +139,14 @@ bool Doom64MapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map
 		return true;
 	}
 
-	auto     vert_data = (Vertex*)entry->rawData(true);
-	unsigned nv        = entry->size() / sizeof(Vertex);
-	float    p         = ui::getSplashProgress();
+	const auto     vert_data = reinterpret_cast<const Vertex*>(entry->rawData(true));
+	const unsigned nv        = entry->size() / sizeof(Vertex);
+	const float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nv; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / nv) * 0.2f);
-		map_data.addVertex(
-			std::make_unique<MapVertex>(Vec2d{ (double)vert_data[a].x / 65536, (double)vert_data[a].y / 65536 }));
+		ui::setSplashProgress(p + static_cast<float>(a) / static_cast<float>(nv) * 0.2f);
+		map_data.addVertex(std::make_unique<MapVertex>(
+			Vec2d{ static_cast<double>(vert_data[a].x) / 65536, static_cast<double>(vert_data[a].y) / 65536 }));
 	}
 
 	log::info(3, "Read {} vertices", map_data.vertices().size());
@@ -173,12 +173,12 @@ bool Doom64MapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 		return true;
 	}
 
-	auto     side_data = (SideDef*)entry->rawData(true);
-	unsigned ns        = entry->size() / sizeof(SideDef);
-	float    p         = ui::getSplashProgress();
+	const auto     side_data = reinterpret_cast<const SideDef*>(entry->rawData(true));
+	const unsigned ns        = entry->size() / sizeof(SideDef);
+	const float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / ns) * 0.2f);
+		ui::setSplashProgress(p + static_cast<float>(a) / static_cast<float>(ns) * 0.2f);
 
 		// Add side
 		map_data.addSide(std::make_unique<MapSide>(
@@ -213,12 +213,12 @@ bool Doom64MapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 		return true;
 	}
 
-	auto     line_data = (LineDef*)entry->rawData(true);
-	unsigned nl        = entry->size() / sizeof(LineDef);
-	float    p         = ui::getSplashProgress();
+	const auto     line_data = reinterpret_cast<const LineDef*>(entry->rawData(true));
+	const unsigned nl        = entry->size() / sizeof(LineDef);
+	const float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / nl) * 0.2f);
+		ui::setSplashProgress(p + static_cast<float>(a) / static_cast<float>(nl) * 0.2f);
 		const auto& data = line_data[a];
 
 		// Check vertices exist
@@ -280,12 +280,12 @@ bool Doom64MapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_
 		return true;
 	}
 
-	auto     sect_data = (Sector*)entry->rawData(true);
-	unsigned ns        = entry->size() / sizeof(Sector);
-	float    p         = ui::getSplashProgress();
+	const auto     sect_data = reinterpret_cast<const Sector*>(entry->rawData(true));
+	const unsigned ns        = entry->size() / sizeof(Sector);
+	const float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / ns) * 0.2f);
+		ui::setSplashProgress(p + static_cast<float>(a) / static_cast<float>(ns) * 0.2f);
 		const auto& data = sect_data[a];
 
 		// Add sector
@@ -300,9 +300,9 @@ bool Doom64MapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_
 
 		// Set properties
 		sector->setIntProperty("flags", data.flags);
-		sector->setIntProperty("color_things", data.color[0]);
-		sector->setIntProperty("color_floor", data.color[1]);
-		sector->setIntProperty("color_ceiling", data.color[2]);
+		sector->setIntProperty("color_floor", data.color[0]);
+		sector->setIntProperty("color_ceiling", data.color[1]);
+		sector->setIntProperty("color_things", data.color[2]);
 		sector->setIntProperty("color_upper", data.color[3]);
 		sector->setIntProperty("color_lower", data.color[4]);
 	}
@@ -331,18 +331,18 @@ bool Doom64MapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_d
 		return true;
 	}
 
-	auto              thng_data = (Thing*)entry->rawData(true);
-	unsigned          nt        = entry->size() / sizeof(Thing);
-	float             p         = ui::getSplashProgress();
+	const auto        thng_data = reinterpret_cast<const Thing*>(entry->rawData(true));
+	const unsigned    nt        = entry->size() / sizeof(Thing);
+	const float       p         = ui::getSplashProgress();
 	MapObject::ArgSet args;
 	for (size_t a = 0; a < nt; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / nt) * 0.2f);
+		ui::setSplashProgress(p + static_cast<float>(a) / static_cast<float>(nt) * 0.2f);
 		const auto& data = thng_data[a];
 
 		// Create thing
-		auto thing = map_data.addThing(std::make_unique<MapThing>(
-			Vec3d{ (double)data.x, (double)data.y, (double)data.z },
+		map_data.addThing(std::make_unique<MapThing>(
+			Vec3d{ static_cast<double>(data.x), static_cast<double>(data.y), static_cast<double>(data.z) },
 			data.type,
 			data.angle,
 			data.flags,
@@ -498,9 +498,9 @@ bool SLADEMap::writeDoom64Sectors(ArchiveEntry* entry)
 		d64_sector.c_tex = App::resources().getTextureHash(sector->stringProperty("textureceiling"));
 
 		// Colors
-		d64_sector.color[0] = sector->intProperty("color_things");
-		d64_sector.color[1] = sector->intProperty("color_floor");
-		d64_sector.color[2] = sector->intProperty("color_ceiling");
+		d64_sector.color[0] = sector->intProperty("color_floor");
+		d64_sector.color[1] = sector->intProperty("color_ceiling");
+		d64_sector.color[2] = sector->intProperty("color_things");
 		d64_sector.color[3] = sector->intProperty("color_upper");
 		d64_sector.color[4] = sector->intProperty("color_lower");
 
