@@ -32,7 +32,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "CTextureCanvas.h"
-#include "General/Misc.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Drawing.h"
@@ -75,7 +74,7 @@ CTextureCanvas::CTextureCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 void CTextureCanvas::selectPatch(int index)
 {
 	// Check patch index is ok
-	if (index < 0 || (unsigned)index >= texture_->nPatches())
+	if (index < 0 || static_cast<unsigned>(index) >= texture_->nPatches())
 		return;
 
 	// Select the patch
@@ -88,7 +87,7 @@ void CTextureCanvas::selectPatch(int index)
 void CTextureCanvas::deSelectPatch(int index)
 {
 	// Check patch index is ok
-	if (index < 0 || (unsigned)index >= texture_->nPatches())
+	if (index < 0 || static_cast<unsigned>(index) >= texture_->nPatches())
 		return;
 
 	// De-Select the patch
@@ -101,7 +100,7 @@ void CTextureCanvas::deSelectPatch(int index)
 bool CTextureCanvas::patchSelected(int index)
 {
 	// Check index is ok
-	if (index < 0 || (unsigned)index >= texture_->nPatches())
+	if (index < 0 || static_cast<unsigned>(index) >= texture_->nPatches())
 		return false;
 
 	// Return if patch index is selected
@@ -270,7 +269,7 @@ void CTextureCanvas::drawTexture()
 	glTranslated(GetSize().x * 0.5, GetSize().y * 0.5, 0);
 
 	// Zoom
-	double yscale = (tx_arc ? scale_ * 1.2 : scale_);
+	const double yscale = tx_arc ? scale_ * 1.2 : scale_;
 	glScaled(scale_, yscale, 1);
 
 	// Draw offset guides if needed
@@ -291,9 +290,9 @@ void CTextureCanvas::drawTexture()
 	}
 
 	// Calculate top-left position of texture (for glScissor, since it ignores the current translation/scale)
-	auto screen_tl = texToScreenPosition(0, 0);
-	int  left      = screen_tl.x;
-	int  top       = screen_tl.y;
+	const auto screen_tl = texToScreenPosition(0, 0);
+	const int  left      = screen_tl.x;
+	const int  top       = screen_tl.y;
 
 	// Translate by offsets if needed
 	if (view_type_ == View::Normal) // No offsets
@@ -325,7 +324,10 @@ void CTextureCanvas::drawTexture()
 	{
 		glEnable(GL_SCISSOR_TEST);
 		glScissor(
-			left, top, texture_->width() * scale_ * (1.0 / tscalex), texture_->height() * yscale * (1.0 / tscaley));
+			left,
+			top,
+			static_cast<GLint>(texture_->width() * scale_ * (1.0 / tscalex)),
+			static_cast<GLint>(texture_->height() * yscale * (1.0 / tscaley)));
 		for (uint32_t a = 0; a < texture_->nPatches(); a++)
 			drawPatch(a);
 		glDisable(GL_SCISSOR_TEST);
@@ -366,8 +368,8 @@ void CTextureCanvas::drawTexture()
 			continue;
 
 		// Get patch
-		auto patch  = texture_->patch(a);
-		auto epatch = dynamic_cast<CTPatchEx*>(patch);
+		const auto patch  = texture_->patch(a);
+		const auto epatch = dynamic_cast<CTPatchEx*>(patch);
 
 		// Check for rotation
 		auto& tex_info = gl::Texture::info(patch_textures_[a]);
@@ -394,15 +396,15 @@ void CTextureCanvas::drawTexture()
 	}
 
 	// Finally, draw a hilight outline if anything is hilighted
-	if (hilight_patch_ >= 0 && hilight_patch_ < (int)texture_->nPatches())
+	if (hilight_patch_ >= 0 && hilight_patch_ < static_cast<int>(texture_->nPatches()))
 	{
 		// Set colour
 		gl::setColour(255, 255, 255, 150, gl::Blend::Additive);
 
 		// Get patch
-		auto patch         = texture_->patch(hilight_patch_);
-		auto epatch        = dynamic_cast<CTPatchEx*>(patch);
-		auto patch_texture = patch_textures_[hilight_patch_];
+		const auto patch         = texture_->patch(hilight_patch_);
+		const auto epatch        = dynamic_cast<CTPatchEx*>(patch);
+		const auto patch_texture = patch_textures_[hilight_patch_];
 
 		// Check for rotation
 		auto& tex_info = gl::Texture::info(patch_texture);
@@ -440,7 +442,7 @@ void CTextureCanvas::drawTexture()
 void CTextureCanvas::drawPatch(int num, bool outside)
 {
 	// Get patch to draw
-	auto patch = texture_->patch(num);
+	const auto patch = texture_->patch(num);
 
 	// Check it exists
 	if (!patch)
@@ -450,7 +452,7 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 	if (!gl::Texture::isLoaded(patch_textures_[num]))
 	{
 		SImage temp(SImage::Type::PalMask);
-		if (texture_->loadPatchImage(num, temp, parent_, &palette_))
+		if (texture_->loadPatchImage(num, temp, parent_, &palette_, blend_rgba_))
 		{
 			// Load the image as a texture
 			gl::Texture::loadImage(patch_textures_[num], temp, &palette_);
@@ -467,15 +469,14 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Setup extended features
-	bool   flipx        = false;
-	bool   flipy        = false;
-	double alpha        = 1.0;
-	bool   shade_select = true;
-	auto   col          = ColRGBA::WHITE;
+	bool         flipx = false;
+	bool         flipy = false;
+	const double alpha = 1.0;
+	const auto   col   = ColRGBA::WHITE;
 	if (texture_->isExtended())
 	{
 		// Get extended patch
-		auto epatch = dynamic_cast<CTPatchEx*>(patch);
+		const auto epatch = dynamic_cast<CTPatchEx*>(patch);
 
 		// Flips
 		if (epatch->flipX())
@@ -520,7 +521,7 @@ void CTextureCanvas::drawPatch(int num, bool outside)
 void CTextureCanvas::drawTextureBorder() const
 {
 	// Draw the texture border
-	double ext = 0.11;
+	const double ext = 0.11;
 	glLineWidth(2.0f);
 	gl::setColour(ColRGBA::BLACK, gl::Blend::Normal);
 	glBegin(GL_LINE_LOOP);
@@ -687,18 +688,18 @@ Vec2i CTextureCanvas::screenToTexPosition(int x, int y) const
 	int top  = GetSize().y * 0.5 + offset_.y;
 
 	// Adjust for view type
-	double yscale = (tx_arc ? scale_ * 1.2 : scale_);
+	const double yscale = tx_arc ? scale_ * 1.2 : scale_;
 	if (view_type_ == View::Normal)
 	{
 		// None (centered)
-		left -= ((double)texture_->width() / scalex) * 0.5 * scale_;
-		top -= ((double)texture_->height() / scaley) * 0.5 * yscale;
+		left -= static_cast<double>(texture_->width()) / scalex * 0.5 * scale_;
+		top -= static_cast<double>(texture_->height()) / scaley * 0.5 * yscale;
 	}
 	if (view_type_ == View::Sprite || view_type_ == View::HUD)
 	{
 		// Sprite
-		left -= ((double)texture_->offsetX() / scalex) * scale_;
-		top -= ((double)texture_->offsetY() / scaley) * yscale;
+		left -= static_cast<double>(texture_->offsetX()) / scalex * scale_;
+		top -= static_cast<double>(texture_->offsetY()) / scaley * yscale;
 	}
 	if (view_type_ == View::HUD)
 	{
@@ -707,7 +708,8 @@ Vec2i CTextureCanvas::screenToTexPosition(int x, int y) const
 		top -= 100 * yscale;
 	}
 
-	return { int(double(x - left) / scale_ * scalex), int(double(y - top) / yscale * scaley) };
+	return { static_cast<int>(static_cast<double>(x - left) / scale_ * scalex),
+			 static_cast<int>(static_cast<double>(y - top) / yscale * scaley) };
 }
 
 // -----------------------------------------------------------------------------
@@ -732,27 +734,27 @@ Vec2i CTextureCanvas::texToScreenPosition(int x, int y) const
 	tscaley = 1.0 / tscaley;
 
 	// Get top/left
-	double yscale = (tx_arc ? scale_ * 1.2 : scale_);
-	double halfx  = (texture_->width() * 0.5 * scale_ * tscalex);
-	double halfy  = (texture_->height() * 0.5 * yscale * tscaley);
-	double left   = offset_.x + (GetSize().x * 0.5) - halfx;
-	double top    = -offset_.y + (GetSize().y * 0.5) - halfy;
+	const double yscale = tx_arc ? scale_ * 1.2 : scale_;
+	const double halfx  = texture_->width() * 0.5 * scale_ * tscalex;
+	const double halfy  = texture_->height() * 0.5 * yscale * tscaley;
+	double       left   = offset_.x + GetSize().x * 0.5 - halfx;
+	double       top    = -offset_.y + GetSize().y * 0.5 - halfy;
 
 	// Adjust for view types
 	if (view_type_ == View::Sprite || view_type_ == View::HUD)
 	{
 		// Sprite
-		left -= (texture_->offsetX() * scale_ * tscalex) - halfx;
-		top += (texture_->offsetY() * yscale * tscaley) - halfy;
+		left -= texture_->offsetX() * scale_ * tscalex - halfx;
+		top += texture_->offsetY() * yscale * tscaley - halfy;
 	}
 	if (view_type_ == View::HUD)
 	{
 		// HUD
-		left -= (160 * scale_);
-		top += (100 * yscale);
+		left -= 160 * scale_;
+		top += 100 * yscale;
 	}
 
-	return { (int)left, (int)top };
+	return { static_cast<int>(left), static_cast<int>(top) };
 }
 
 // -----------------------------------------------------------------------------
@@ -766,11 +768,11 @@ int CTextureCanvas::patchAt(int x, int y)
 		return -1;
 
 	// Go through texture patches backwards (ie from frontmost to back)
-	for (int a = texture_->nPatches() - 1; a >= 0; a--)
+	for (int a = static_cast<int>(texture_->nPatches()) - 1; a >= 0; a--)
 	{
 		// Check if x,y is within patch bounds
-		auto  patch    = texture_->patch(a);
-		auto& tex_info = gl::Texture::info(patch_textures_[a]);
+		const auto patch    = texture_->patch(a);
+		auto&      tex_info = gl::Texture::info(patch_textures_[a]);
 		if (x >= patch->xOffset() && x < patch->xOffset() + tex_info.size.x && y >= patch->yOffset()
 			&& y < patch->yOffset() + tex_info.size.y)
 		{
@@ -797,7 +799,7 @@ bool CTextureCanvas::swapPatches(size_t p1, size_t p2)
 		return false;
 
 	// Swap patch gl textures
-	unsigned tmp        = patch_textures_[p1];
+	const unsigned tmp  = patch_textures_[p1];
 	patch_textures_[p1] = patch_textures_[p2];
 	patch_textures_[p2] = tmp;
 
@@ -828,8 +830,8 @@ void CTextureCanvas::onMouseEvent(wxMouseEvent& e)
 			dragging_ = true;
 
 		// Check if patch hilight changes
-		auto pos   = screenToTexPosition(e.GetX(), e.GetY());
-		int  patch = patchAt(pos.x, pos.y);
+		const auto pos   = screenToTexPosition(e.GetX(), e.GetY());
+		const int  patch = patchAt(pos.x, pos.y);
 		if (hilight_patch_ != patch)
 		{
 			hilight_patch_ = patch;

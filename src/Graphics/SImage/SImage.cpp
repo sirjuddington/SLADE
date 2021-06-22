@@ -267,10 +267,10 @@ SImage::Info SImage::info() const
 ColRGBA SImage::pixelAt(unsigned x, unsigned y, Palette* pal)
 {
 	// Get pixel index
-	unsigned index = y * stride() + x * bpp();
+	const unsigned index = y * stride() + x * bpp();
 
 	// Check it
-	if (index >= unsigned(width_ * height_ * bpp()))
+	if (index >= static_cast<unsigned>(width_ * height_ * bpp()))
 		return { 0, 0, 0, 0 };
 
 	// Get colour at pixel
@@ -310,10 +310,10 @@ ColRGBA SImage::pixelAt(unsigned x, unsigned y, Palette* pal)
 uint8_t SImage::pixelIndexAt(unsigned x, unsigned y) const
 {
 	// Get pixel index
-	unsigned index = y * stride() + x * bpp();
+	const unsigned index = y * stride() + x * bpp();
 
 	// Check it
-	if (index >= unsigned(width_ * height_ * bpp()) || type_ == Type::RGBA)
+	if (index >= static_cast<unsigned>(width_ * height_ * bpp()) || type_ == Type::RGBA)
 		return 0;
 
 	return data_[index];
@@ -400,7 +400,7 @@ void SImage::create(int width, int height, Type type, Palette* pal, int index, i
 void SImage::create(Info info, Palette* pal)
 {
 	// Normal creation
-	create(info.width, info.height, (Type)info.colformat, pal, info.imgindex, info.numimages);
+	create(info.width, info.height, info.colformat, pal, info.imgindex, info.numimages);
 
 	// Set other info
 	offset_x_    = info.offset_x;
@@ -424,6 +424,11 @@ void SImage::clear()
 
 	// Announce change
 	signals_.image_changed();
+}
+void SImage::clear(Type new_type)
+{
+	clear();
+	type_ = new_type;
 }
 
 // -----------------------------------------------------------------------------
@@ -494,7 +499,7 @@ size_t SImage::countColours() const
 	if (type_ != Type::PalMask)
 		return 0;
 
-	auto usedcolours = new bool[256];
+	const auto usedcolours = new bool[256];
 	memset(usedcolours, 0, 256);
 	size_t used = 0;
 
@@ -718,9 +723,10 @@ bool SImage::convertAlphaMap(AlphaSource alpha_source, Palette* pal)
 	for (int a = 0; a < width_ * height_; a++)
 	{
 		// Determine alpha for this pixel
-		uint8_t alpha = 0;
+		uint8_t alpha;
 		if (alpha_source == AlphaSource::Brightness) // Pixel brightness
-			alpha = double(rgba[c]) * 0.3 + double(rgba[c + 1]) * 0.59 + double(rgba[c + 2]) * 0.11;
+			alpha = static_cast<double>(rgba[c]) * 0.3 + static_cast<double>(rgba[c + 1]) * 0.59
+					+ static_cast<double>(rgba[c + 2]) * 0.11;
 		else // Existing alpha
 			alpha = rgba[c + 3];
 
@@ -800,8 +806,9 @@ bool SImage::maskFromBrightness(Palette* pal)
 		for (int a = 0; a < width_ * height_; a++)
 		{
 			// Set mask from pixel colour brightness value
-			ColRGBA col = pal->colour(data_[a]);
-			mask_[a]    = ((double)col.r * 0.3) + ((double)col.g * 0.59) + ((double)col.b * 0.11);
+			const ColRGBA col = pal->colour(data_[a]);
+			mask_[a]          = (static_cast<double>(col.r) * 0.3) + (static_cast<double>(col.g) * 0.59)
+					   + (static_cast<double>(col.b) * 0.11);
 		}
 	}
 	else if (type_ == Type::RGBA)
@@ -811,7 +818,8 @@ bool SImage::maskFromBrightness(Palette* pal)
 		for (int a = 0; a < width_ * height_; a++)
 		{
 			// Set alpha from pixel colour brightness value
-			data_[c + 3] = (double)data_[c] * 0.3 + (double)data_[c + 1] * 0.59 + (double)data_[c + 2] * 0.11;
+			data_[c + 3] = static_cast<double>(data_[c]) * 0.3 + static_cast<double>(data_[c + 1]) * 0.59
+						   + static_cast<double>(data_[c + 2]) * 0.11;
 			// Skip alpha
 			c += 4;
 		}
@@ -845,7 +853,6 @@ bool SImage::cutoffMask(uint8_t threshold)
 	else if (type_ == Type::RGBA)
 	{
 		// RGBA format, go through alpha channel
-		uint32_t c = 0;
 		for (int a = 3; a < width_ * height_ * 4; a += 4)
 		{
 			if (data_[a] > threshold)
@@ -894,7 +901,7 @@ bool SImage::setPixel(int x, int y, ColRGBA colour, Palette* pal)
 			pal = &palette_;
 
 		// Get color index to use (the ColRGBA's index if defined, nearest colour otherwise)
-		uint8_t index = (colour.index == -1) ? pal->nearestColour(colour) : colour.index;
+		const uint8_t index = (colour.index == -1) ? pal->nearestColour(colour) : colour.index;
 
 		data_[y * width_ + x] = index;
 		if (mask_.hasData())
@@ -965,7 +972,7 @@ bool SImage::setPixel(int x, int y, uint8_t pal_index, uint8_t alpha)
 // -----------------------------------------------------------------------------
 void SImage::setWidth(int w)
 {
-	int numpixels = width_ * height_;
+	const int numpixels = width_ * height_;
 	if ((numpixels > w) && ((numpixels % w) == 0))
 	{
 		width_  = w;
@@ -979,7 +986,7 @@ void SImage::setWidth(int w)
 // -----------------------------------------------------------------------------
 void SImage::setHeight(int h)
 {
-	int numpixels = width_ * height_;
+	const int numpixels = width_ * height_;
 	if ((numpixels > h) && ((numpixels % h) == 0))
 	{
 		height_ = h;
@@ -1018,8 +1025,8 @@ bool SImage::rotate(int angle)
 		new_width  = width_;
 		new_height = height_;
 	}
-	int numpixels = width_ * height_;
-	int numbpp    = 0;
+	const int numpixels = width_ * height_;
+	int       numbpp;
 	if (type_ == Type::PalMask)
 		numbpp = 1;
 	else if (type_ == Type::RGBA)
@@ -1077,8 +1084,8 @@ bool SImage::rotate(int angle)
 bool SImage::mirror(bool vertical)
 {
 	// Compute numbers of pixels and bytes
-	int numpixels = width_ * height_;
-	int numbpp    = 0;
+	const int numpixels = width_ * height_;
+	int       numbpp;
 	if (type_ == Type::PalMask)
 		numbpp = 1;
 	else if (type_ == Type::RGBA)
@@ -1129,9 +1136,9 @@ bool SImage::mirror(bool vertical)
 // -----------------------------------------------------------------------------
 bool SImage::imgconv()
 {
-	int oldwidth = width_;
-	width_       = height_;
-	height_      = oldwidth;
+	const int oldwidth = width_;
+	width_             = height_;
+	height_            = oldwidth;
 	rotate(90);
 	mirror(true);
 	return true;
@@ -1151,12 +1158,12 @@ bool SImage::crop(long x1, long y1, long x2, long y2)
 	if (x2 <= x1 || y2 <= y1 || x1 > width_ || y1 > height_)
 		return false;
 
-	size_t new_width  = x2 - x1;
-	size_t new_height = y2 - y1;
+	const size_t new_width  = x2 - x1;
+	const size_t new_height = y2 - y1;
 
 	// Compute numbers of pixels and bytes
-	int numpixels = new_width * new_height;
-	int numbpp    = 0;
+	const int numpixels = new_width * new_height;
+	int       numbpp;
 	if (type_ == Type::PalMask || type_ == Type::AlphaMap)
 		numbpp = 1;
 	else if (type_ == Type::RGBA)
@@ -1225,9 +1232,9 @@ bool SImage::resize(int nwidth, int nheight)
 		new_mask.resize(nwidth * nheight, 0);
 
 	// Write new image data
-	unsigned offset = 0;
-	unsigned rowlen = std::min<unsigned>(width_, nwidth) * bpp;
-	unsigned nrows  = std::min<unsigned>(height_, nheight);
+	unsigned       offset = 0;
+	const unsigned rowlen = std::min<unsigned>(width_, nwidth) * bpp;
+	const unsigned nrows  = std::min<unsigned>(height_, nheight);
 	for (unsigned y = 0; y < nrows; y++)
 	{
 		// Copy data row
@@ -1292,13 +1299,13 @@ bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 	// Handle truecolor images
 	if (type_ == Type::RGBA)
 		truecolor = true;
-	size_t bpp = this->bpp();
+	const size_t bpp = this->bpp();
 
 	// Get palette to use
 	if (has_palette_ || !pal)
 		pal = &palette_;
 
-	uint8_t* newdata = nullptr;
+	uint8_t* newdata;
 	if (truecolor && type_ == Type::PalMask)
 	{
 		newdata = new uint8_t[width_ * height_ * 4];
@@ -1390,7 +1397,7 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 		return true;
 
 	// Get pixel index
-	unsigned p = y * stride() + x * bpp();
+	const unsigned p = y * stride() + x * bpp();
 
 	// Check for simple case (normal blending, no transparency involved)
 	if (colour.a == 255 && properties.blend == BlendType::Normal)
@@ -1412,7 +1419,7 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 		d_colour = pal->colour(data_[p]);
 	else
 		d_colour.set(data_[p], data_[p + 1], data_[p + 2], data_[p + 3]);
-	float alpha = (float)colour.a / 255.0f;
+	const float alpha = static_cast<float>(colour.a) / 255.0f;
 
 	// Additive blending
 	if (properties.blend == BlendType::Add)
@@ -1448,16 +1455,16 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 	else if (properties.blend == BlendType::Modulate)
 	{
 		d_colour.set(
-			math::clamp(colour.r * (double)d_colour.r / 255., 0, 255),
-			math::clamp(colour.g * (double)d_colour.g / 255., 0, 255),
-			math::clamp(colour.b * (double)d_colour.b / 255., 0, 255),
+			math::clamp(colour.r * static_cast<double>(d_colour.r) / 255., 0, 255),
+			math::clamp(colour.g * static_cast<double>(d_colour.g) / 255., 0, 255),
+			math::clamp(colour.b * static_cast<double>(d_colour.b) / 255., 0, 255),
 			math::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
 	// Normal blending (or unknown blend type)
 	else
 	{
-		float inv_alpha = 1.0f - alpha;
+		const float inv_alpha = 1.0f - alpha;
 		d_colour.set(
 			d_colour.r * inv_alpha + colour.r * alpha,
 			d_colour.g * inv_alpha + colour.g * alpha,
@@ -1497,9 +1504,9 @@ bool SImage::drawImage(SImage& img, int x_pos, int y_pos, DrawProps& properties,
 		pal_dest = &palette_;
 
 	// Go through pixels
-	unsigned s_stride = img.stride();
-	uint8_t  s_bpp    = img.bpp();
-	unsigned sp       = 0;
+	const unsigned s_stride = img.stride();
+	const uint8_t  s_bpp    = img.bpp();
+	unsigned       sp       = 0;
 	for (int y = y_pos; y < y_pos + img.height_; y++) // Rows
 	{
 		// Skip out-of-bounds rows
@@ -1569,8 +1576,8 @@ bool SImage::colourise(ColRGBA colour, Palette* pal, int start, int stop)
 		pal = &palette_;
 
 	// Go through all pixels
-	uint8_t bpp = this->bpp();
-	ColRGBA col;
+	const uint8_t bpp = this->bpp();
+	ColRGBA       col;
 	for (int a = 0; a < width_ * height_ * bpp; a += bpp)
 	{
 		// Skip colors out of range if desired
@@ -1620,8 +1627,8 @@ bool SImage::tint(ColRGBA colour, float amount, Palette* pal, int start, int sto
 		pal = &palette_;
 
 	// Go through all pixels
-	uint8_t bpp = this->bpp();
-	ColRGBA col;
+	const uint8_t bpp = this->bpp();
+	ColRGBA       col;
 	for (int a = 0; a < width_ * height_ * bpp; a += bpp)
 	{
 		// Skip colors out of range if desired
@@ -1638,7 +1645,7 @@ bool SImage::tint(ColRGBA colour, float amount, Palette* pal, int start, int sto
 			col.set(pal->colour(data_[a]));
 
 		// Tint it
-		float inv_amt = 1.0f - amount;
+		const float inv_amt = 1.0f - amount;
 		col.set(
 			col.r * inv_amt + colour.r * amount,
 			col.g * inv_amt + colour.g * amount,
@@ -1670,7 +1677,7 @@ bool SImage::adjust()
 	{
 		for (int i = 0; i < y2; ++i)
 		{
-			size_t p = i * width_ + x1; // Pixel position
+			const size_t p = i * width_ + x1; // Pixel position
 			switch (type_)
 			{
 			case Type::PalMask: // Transparency is mask[p] == 0
@@ -1704,7 +1711,7 @@ bool SImage::adjust()
 	{
 		for (int i = 0; i < y2; ++i)
 		{
-			size_t p = i * width_ + x2 - 1;
+			const size_t p = i * width_ + x2 - 1;
 			switch (type_)
 			{
 			case Type::PalMask:
@@ -1735,7 +1742,7 @@ bool SImage::adjust()
 	{
 		for (int i = x1; i < x2; ++i)
 		{
-			size_t p = y1 * width_ + i;
+			const size_t p = y1 * width_ + i;
 			switch (type_)
 			{
 			case Type::PalMask:
@@ -1767,7 +1774,7 @@ bool SImage::adjust()
 	{
 		for (int i = x1; i < x2; ++i)
 		{
-			size_t p = (y2 - 1) * width_ + i;
+			const size_t p = (y2 - 1) * width_ + i;
 			switch (type_)
 			{
 			case Type::PalMask:
@@ -1811,8 +1818,8 @@ bool SImage::mirrorpad()
 
 	// Now we need to pad. Padding to the right can be done just by resizing the image,
 	// padding to the left requires flipping it, resizing it, and flipping it back.
-	bool needflip = offset_x_ < width_ / 2;
-	int  extra    = abs((offset_x_ * 2) - width_);
+	const bool needflip = offset_x_ < width_ / 2;
+	const int  extra    = abs((offset_x_ * 2) - width_);
 
 	bool success = true;
 	if (needflip)

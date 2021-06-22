@@ -55,7 +55,7 @@ public:
 	CTPatchEx(string_view name, int16_t offset_x = 0, int16_t offset_y = 0, Type type = Type::Patch);
 	CTPatchEx(const CTPatch& copy) : CTPatch{ copy } {}
 	CTPatchEx(const CTPatchEx& copy);
-	~CTPatchEx() = default;
+	~CTPatchEx() override = default;
 
 	bool         flipX() const { return flip_x_; }
 	bool         flipY() const { return flip_y_; }
@@ -175,7 +175,12 @@ public:
 
 	bool convertExtended();
 	bool convertRegular();
-	bool loadPatchImage(unsigned pindex, SImage& image, Archive* parent = nullptr, Palette* pal = nullptr);
+	bool loadPatchImage(
+		unsigned pindex,
+		SImage&  image,
+		Archive* parent     = nullptr,
+		Palette* pal        = nullptr,
+		bool     force_rgba = false);
 	bool toImage(SImage& image, Archive* parent = nullptr, Palette* pal = nullptr, bool force_rgba = false);
 
 	// Signals
