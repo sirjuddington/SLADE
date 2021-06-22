@@ -15,8 +15,9 @@ struct ArchiveFormat
 	int                max_name_length  = -1;
 	string             entry_format;
 	vector<StringPair> extensions;
-	bool               prefer_uppercase = false;
-	bool               create           = false;
+	bool               prefer_uppercase      = false;
+	bool               create                = false;
+	bool               allow_duplicate_names = true;
 
 	ArchiveFormat(string_view id) : id{ id }, name{ id } {}
 };
@@ -133,7 +134,7 @@ public:
 	virtual MapDesc         mapDesc(ArchiveEntry* maphead) { return MapDesc(); }
 	virtual vector<MapDesc> detectMaps() { return {}; }
 	virtual string          detectNamespace(ArchiveEntry* entry);
-	virtual string          detectNamespace(size_t index, ArchiveDir* dir = nullptr);
+	virtual string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr);
 
 	// Search
 	struct SearchOptions
@@ -185,12 +186,12 @@ protected:
 	string                 format_;
 	string                 filename_;
 	weak_ptr<ArchiveEntry> parent_;
-	bool                   on_disk_; // Specifies whether the archive exists on disk (as opposed to being newly created)
-	bool                   read_only_; // If true, the archive cannot be modified
-	time_t                 file_modified_;
+	bool   on_disk_       = false; // Specifies whether the archive exists on disk (as opposed to being newly created)
+	bool   read_only_     = false; // If true, the archive cannot be modified
+	time_t file_modified_ = 0;
 
 private:
-	bool                   modified_;
+	bool                   modified_ = true;
 	shared_ptr<ArchiveDir> dir_root_;
 	Signals                signals_;
 
@@ -202,7 +203,7 @@ class TreelessArchive : public Archive
 {
 public:
 	TreelessArchive(string_view format = "") : Archive(format) {}
-	virtual ~TreelessArchive() = default;
+	~TreelessArchive() override = default;
 
 	// Entry retrieval/info
 	ArchiveEntry* entry(string_view name, bool cut_ext = false, ArchiveDir* dir = nullptr) const override
@@ -220,7 +221,7 @@ public:
 
 	// Misc
 	unsigned numEntries() override { return rootDir()->numEntries(); }
-	void     getEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveDir* start = nullptr)
+	void     getEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveDir* start = nullptr) const
 	{
 		return Archive::putEntryTreeAsList(list, nullptr);
 	}
@@ -259,7 +260,7 @@ public:
 
 	// Detection
 	string detectNamespace(ArchiveEntry* entry) override { return "global"; }
-	string detectNamespace(size_t index, ArchiveDir* dir = nullptr) override { return "global"; }
+	string detectNamespace(unsigned index, ArchiveDir* dir = nullptr) override { return "global"; }
 };
 
 // Simple class that will block and unblock modification signals for an archive via RAII

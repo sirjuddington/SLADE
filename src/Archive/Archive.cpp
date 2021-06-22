@@ -72,11 +72,11 @@ public:
 	bool doUndo() override
 	{
 		// Get entry parent dir
-		auto dir = archive_->dirAtPath(entry_path_);
+		const auto dir = archive_->dirAtPath(entry_path_);
 		if (dir)
 		{
 			// Rename entry
-			auto entry = dir->entryAt(entry_index_);
+			const auto entry = dir->entryAt(entry_index_);
 			return archive_->renameEntry(entry, old_name_);
 		}
 
@@ -86,11 +86,11 @@ public:
 	bool doRedo() override
 	{
 		// Get entry parent dir
-		auto dir = archive_->dirAtPath(entry_path_);
+		const auto dir = archive_->dirAtPath(entry_path_);
 		if (dir)
 		{
 			// Rename entry
-			auto entry = dir->entryAt(entry_index_);
+			const auto entry = dir->entryAt(entry_index_);
 			return archive_->renameEntry(entry, new_name_);
 		}
 
@@ -119,7 +119,7 @@ public:
 
 	void swapNames()
 	{
-		auto dir = archive_->dirAtPath(path_);
+		const auto dir = archive_->dirAtPath(path_);
 		archive_->renameDir(dir, old_name_);
 		old_name_ = new_name_;
 		new_name_ = dir->name();
@@ -189,14 +189,14 @@ public:
 	bool deleteEntry() const
 	{
 		// Get parent dir
-		auto dir = archive_->dirAtPath(path_);
+		const auto dir = archive_->dirAtPath(path_);
 		return dir ? archive_->removeEntry(dir->entryAt(index_)) : false;
 	}
 
 	bool createEntry() const
 	{
 		// Get parent dir
-		auto dir = archive_->dirAtPath(path_);
+		const auto dir = archive_->dirAtPath(path_);
 		if (dir)
 		{
 			archive_->addEntry(std::make_shared<ArchiveEntry>(*entry_copy_), index_, dir);
@@ -299,8 +299,8 @@ vector<ArchiveEntry*> Archive::MapDesc::entries(const Archive& parent, bool incl
 	if (archive)
 		return list;
 
-	auto index     = include_head ? parent.entryIndex(head.lock().get()) : parent.entryIndex(head.lock().get()) + 1;
-	auto index_end = parent.entryIndex(end.lock().get());
+	auto       index = include_head ? parent.entryIndex(head.lock().get()) : parent.entryIndex(head.lock().get()) + 1;
+	const auto index_end = parent.entryIndex(end.lock().get());
 	if (index < 0 || index_end < 0)
 		return list;
 
@@ -359,13 +359,9 @@ void Archive::MapDesc::updateMapFormatHints() const
 // -----------------------------------------------------------------------------
 // Archive class constructor
 // -----------------------------------------------------------------------------
-Archive::Archive(string_view format) :
-	format_{ format },
-	on_disk_{ false },
-	read_only_{ false },
-	modified_{ true },
-	dir_root_{ new ArchiveDir("", nullptr, this) }
+Archive::Archive(string_view format) : format_{ format }, dir_root_{ new ArchiveDir("", nullptr, this) }
 {
+	dir_root_->allowDuplicateNames(formatDesc().allow_duplicate_names);
 }
 
 // -----------------------------------------------------------------------------
@@ -440,7 +436,7 @@ string Archive::fileExtensionString() const
 string Archive::filename(bool full) const
 {
 	// If the archive is within another archive, return "<parent archive>/<entry name>"
-	if (auto parent = parent_.lock())
+	if (const auto parent = parent_.lock())
 	{
 		string parent_archive;
 		if (parentArchive())
@@ -467,12 +463,12 @@ bool Archive::open(string_view filename)
 	}
 
 	// Update filename before opening
-	auto backupname = filename_;
-	filename_       = filename;
-	file_modified_  = fileutil::fileModifiedTime(filename);
+	const auto backupname = filename_;
+	filename_             = filename;
+	file_modified_        = fileutil::fileModifiedTime(filename);
 
 	// Load from MemChunk
-	sf::Clock timer;
+	const sf::Clock timer;
 	if (open(mc))
 	{
 		log::info(2, "Archive::open took {}ms", timer.getElapsedTime().asMilliseconds());
@@ -582,7 +578,7 @@ int Archive::entryIndex(ArchiveEntry* entry, ArchiveDir* dir) const
 ArchiveEntry* Archive::entryAtPath(string_view path) const
 {
 	// Get [path] as Path for processing
-	strutil::Path fn(strutil::startsWith(path, '/') ? path.substr(1) : path);
+	const strutil::Path fn(strutil::startsWith(path, '/') ? path.substr(1) : path);
 
 	// Get directory from path
 	ArchiveDir* dir;
@@ -606,7 +602,7 @@ ArchiveEntry* Archive::entryAtPath(string_view path) const
 shared_ptr<ArchiveEntry> Archive::entryAtPathShared(string_view path) const
 {
 	// Get path as wxFileName for processing
-	strutil::Path fn(strutil::startsWith(path, '/') ? path.substr(1) : path);
+	const strutil::Path fn(strutil::startsWith(path, '/') ? path.substr(1) : path);
 
 	// Get directory from path
 	ArchiveDir* dir;
@@ -684,7 +680,7 @@ bool Archive::save(string_view filename)
 			if (backup_archives && wxFileName::FileExists(filename_) && save_backup)
 			{
 				// Copy current file contents to new backup file
-				auto bakfile = filename_ + ".bak";
+				const auto bakfile = filename_ + ".bak";
 				log::info("Creating backup {}", bakfile);
 				wxCopyFile(filename_, bakfile, true);
 			}
@@ -1047,13 +1043,13 @@ bool Archive::removeEntry(ArchiveEntry* entry)
 		undoredo::currentManager()->recordUndoStep(std::make_unique<EntryCreateDeleteUS>(false, entry));
 
 	// Get the entry index
-	int index = dir->entryIndex(entry);
+	const int index = dir->entryIndex(entry);
 
 	// Get a shared pointer to the entry to ensure it's kept around until this function ends
 	auto entry_shared = entry->getShared();
 
 	// Remove it from its directory
-	bool ok = dir->removeEntry(index);
+	const bool ok = dir->removeEntry(index);
 
 	// If it was removed ok
 	if (ok)
@@ -1180,7 +1176,7 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 		return false;
 
 	// Get the entry's current directory
-	auto cdir = entry->parentDir();
+	const auto cdir = entry->parentDir();
 
 	// Error if no dir
 	if (!cdir)
@@ -1191,7 +1187,7 @@ bool Archive::moveEntry(ArchiveEntry* entry, unsigned position, ArchiveDir* dir)
 		dir = dir_root_.get();
 
 	// Remove the entry from its current dir
-	auto sptr = entry->getShared(); // Get a shared pointer so it isn't deleted
+	const auto sptr = entry->getShared(); // Get a shared pointer so it isn't deleted
 	removeEntry(entry);
 
 	// Add it to the destination dir
@@ -1227,7 +1223,7 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name)
 		return renameDir(dirAtPath(entry->path(true)), name);
 
 	// Keep current name for renamed signal
-	auto prev_name = entry->name();
+	const auto prev_name = entry->name();
 
 	// Create undo step
 	if (undoredo::currentlyRecording())
@@ -1236,6 +1232,8 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name)
 	// Rename the entry
 	entry->setName(name);
 	entry->formatName(formatDesc());
+	if (!formatDesc().allow_duplicate_names)
+		entry->parentDir()->ensureUniqueName(entry);
 	entry->setState(ArchiveEntry::State::Modified, true);
 
 	// Announce modification
@@ -1263,8 +1261,8 @@ bool Archive::importDir(string_view directory)
 		strutil::Path fn{ strutil::replace(file, directory, "") }; // Remove directory from entry name
 
 		// Split filename into dir+name
-		auto ename = fn.fileName();
-		auto edir  = fn.path();
+		const auto ename = fn.fileName();
+		auto       edir  = fn.path();
 
 		// Remove beginning \ or / from dir
 		if (strutil::startsWith(edir, '\\') || strutil::startsWith(edir, '/'))
@@ -1319,7 +1317,7 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace of the entry at [index] within [dir]
 // -----------------------------------------------------------------------------
-string Archive::detectNamespace(size_t index, ArchiveDir* dir)
+string Archive::detectNamespace(unsigned index, ArchiveDir* dir)
 {
 	if (dir && index < dir->numEntries())
 		return detectNamespace(dir->entryAt(index));
@@ -1369,7 +1367,7 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 	// Search entries
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
-		auto entry = dir->entryAt(a);
+		const auto entry = dir->entryAt(a);
 
 		// Check type
 		if (options.match_type)
@@ -1387,7 +1385,7 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 		if (!options.match_name.empty())
 		{
 			// Cut extension if ignoring
-			auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
+			const auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
 			if (!strutil::matches(check_name, options.match_name))
 				continue;
 		}
@@ -1408,9 +1406,9 @@ ArchiveEntry* Archive::findFirst(SearchOptions& options)
 	{
 		for (unsigned a = 0; a < dir->numSubdirs(); a++)
 		{
-			auto opt   = options;
-			opt.dir    = dir->subdirAt(a).get();
-			auto match = findFirst(opt);
+			auto opt         = options;
+			opt.dir          = dir->subdirAt(a).get();
+			const auto match = findFirst(opt);
 
 			// If a match was found in this subdir, return it
 			if (match)
@@ -1437,9 +1435,9 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 	// Begin search
 
 	// Search entries (bottom-up)
-	for (int a = dir->numEntries() - 1; a >= 0; a--)
+	for (int a = static_cast<int>(dir->numEntries()) - 1; a >= 0; a--)
 	{
-		auto entry = dir->entryAt(a);
+		const auto entry = dir->entryAt(a);
 
 		// Check type
 		if (options.match_type)
@@ -1457,7 +1455,7 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 		if (!options.match_name.empty())
 		{
 			// Cut extension if ignoring
-			auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
+			const auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
 			if (!strutil::matches(check_name, options.match_name))
 				continue;
 		}
@@ -1476,11 +1474,11 @@ ArchiveEntry* Archive::findLast(SearchOptions& options)
 	// Search subdirectories (if needed) (bottom-up)
 	if (options.search_subdirs)
 	{
-		for (int a = dir->numSubdirs() - 1; a >= 0; a--)
+		for (int a = static_cast<int>(dir->numSubdirs()) - 1; a >= 0; a--)
 		{
-			auto opt   = options;
-			opt.dir    = dir->subdirAt(a).get();
-			auto match = findLast(opt);
+			auto opt         = options;
+			opt.dir          = dir->subdirAt(a).get();
+			const auto match = findLast(opt);
 
 			// If a match was found in this subdir, return it
 			if (match)
@@ -1527,7 +1525,7 @@ vector<ArchiveEntry*> Archive::findAll(SearchOptions& options)
 		if (!options.match_name.empty())
 		{
 			// Cut extension if ignoring
-			auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
+			const auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
 			if (!strutil::matches(check_name, options.match_name))
 				continue;
 		}
@@ -1641,12 +1639,12 @@ bool Archive::loadFormats(MemChunk& mc)
 	auto formats_node = root->child("archive_formats");
 	for (unsigned a = 0; a < formats_node->nChildren(); a++)
 	{
-		auto          fmt_desc = (ParseTreeNode*)formats_node->child(a);
+		auto          fmt_desc = dynamic_cast<ParseTreeNode*>(formats_node->child(a));
 		ArchiveFormat fmt{ fmt_desc->name() };
 
 		for (unsigned p = 0; p < fmt_desc->nChildren(); p++)
 		{
-			auto prop = (ParseTreeNode*)fmt_desc->child(p);
+			auto prop = fmt_desc->childPTN(p);
 
 			// Format name
 			if (prop->nameIsCI("name"))
@@ -1673,7 +1671,7 @@ bool Archive::loadFormats(MemChunk& mc)
 			{
 				for (unsigned e = 0; e < prop->nChildren(); e++)
 				{
-					auto ext = (ParseTreeNode*)prop->child(e);
+					auto ext = prop->childPTN(e);
 					fmt.extensions.emplace_back(ext->name(), ext->stringValue());
 				}
 			}
@@ -1685,6 +1683,10 @@ bool Archive::loadFormats(MemChunk& mc)
 			// Can be created
 			else if (prop->nameIsCI("create"))
 				fmt.create = prop->boolValue();
+
+			// Allow duplicate entry names (within same directory)
+			else if (prop->nameIsCI("allow_duplicate_names"))
+				fmt.allow_duplicate_names = prop->boolValue();
 		}
 
 		log::info(3, wxString::Format("Read archive format %s: \"%s\"", fmt.id, fmt.name));
@@ -1694,17 +1696,18 @@ bool Archive::loadFormats(MemChunk& mc)
 			log::info(3, "  Entry names have extensions");
 		if (fmt.max_name_length >= 0)
 			log::info(3, wxString::Format("  Max entry name length: %d", fmt.max_name_length));
-		for (auto ext : fmt.extensions)
-			log::info(3, wxString::Format("  Extension \"%s\" = \"%s\"", ext.first, ext.second));
+		for (const auto& ext : fmt.extensions)
+			log::info(3, wxString::Format(R"(  Extension "%s" = "%s")", ext.first, ext.second));
 
 		formats_.push_back(fmt);
 	}
 
 	// Add builtin 'folder' format
 	ArchiveFormat fmt_folder("folder");
-	fmt_folder.name             = "Folder";
-	fmt_folder.names_extensions = true;
-	fmt_folder.supports_dirs    = true;
+	fmt_folder.name                  = "Folder";
+	fmt_folder.names_extensions      = true;
+	fmt_folder.supports_dirs         = true;
+	fmt_folder.allow_duplicate_names = false;
 	formats_.push_back(fmt_folder);
 
 	return true;

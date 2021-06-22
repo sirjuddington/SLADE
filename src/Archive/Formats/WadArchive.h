@@ -46,7 +46,7 @@ public:
 	MapDesc         mapDesc(ArchiveEntry* maphead) override;
 	vector<MapDesc> detectMaps() override;
 	string          detectNamespace(ArchiveEntry* entry) override;
-	string          detectNamespace(size_t index, ArchiveDir* dir = nullptr) override;
+	string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr) override;
 	void            detectIncludes();
 	bool            hasFlatHack() override;
 

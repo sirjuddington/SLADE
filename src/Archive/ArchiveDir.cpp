@@ -32,9 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ArchiveDir.h"
-#include "App.h"
 #include "Archive.h"
-#include "General/Misc.h"
 #include "Utility/StringUtils.h"
 #include <filesystem>
 
@@ -280,10 +278,10 @@ shared_ptr<ArchiveEntry> ArchiveDir::sharedEntry(ArchiveEntry* entry) const
 unsigned ArchiveDir::numEntries(bool inc_subdirs) const
 {
 	if (!inc_subdirs)
-		return entries_.size();
+		return static_cast<unsigned>(entries_.size());
 	else
 	{
-		unsigned count = entries_.size();
+		auto count = static_cast<unsigned>(entries_.size());
 		for (auto& subdir : subdirs_)
 			count += subdir->numEntries(true);
 
@@ -396,7 +394,7 @@ bool ArchiveDir::addSubdir(shared_ptr<ArchiveDir> subdir, unsigned index)
 	}
 	if (subdir->parent_dir_.lock().get() != this)
 	{
-		log::warning("Can't add subdir \"{}\" to dir \"{}\" - it is not the parent", subdir->name(), name());
+		log::warning(R"(Can't add subdir "{}" to dir "{}" - it is not the parent)", subdir->name(), name());
 		return false;
 	}
 
@@ -532,7 +530,7 @@ void ArchiveDir::ensureUniqueName(ArchiveEntry* entry)
 
 		if (strutil::equalCI(entries_[index]->name(), name))
 		{
-			fn.setFileName(fmt::format("{}{}", entry->nameNoExt(), ++number));
+			fn.setFileName(fmt::format("{} ({})", entry->nameNoExt(), ++number));
 			name  = fn.fileName();
 			index = 0;
 			continue;
@@ -542,7 +540,7 @@ void ArchiveDir::ensureUniqueName(ArchiveEntry* entry)
 	}
 
 	if (number > 0)
-		entry->rename(name);
+		entry->setName(name);
 }
 
 
@@ -573,15 +571,15 @@ shared_ptr<ArchiveDir> ArchiveDir::subdirAtPath(const shared_ptr<ArchiveDir>& ro
 
 	// Begin trace from this dir
 	auto cur_dir = root;
-	for (unsigned i = 0; i < parts.size(); ++i)
+	for (auto& part : parts)
 	{
 		if (!cur_dir)
 			return nullptr; // Path doesn't exist
 
-		if (parts[i].empty() || parts[i] == ".")
+		if (part.empty() || part == ".")
 			continue; // '.' or empty path part, stay at current dir
 
-		if (parts[i] == "..")
+		if (part == "..")
 		{
 			// '..', go up one dir
 			cur_dir = cur_dir->parent_dir_.lock();
@@ -589,7 +587,7 @@ shared_ptr<ArchiveDir> ArchiveDir::subdirAtPath(const shared_ptr<ArchiveDir>& ro
 		}
 
 		// Go to subdir with current path part name
-		cur_dir = cur_dir->subdir(parts[i]);
+		cur_dir = cur_dir->subdir(part);
 	}
 
 	return cur_dir;
@@ -615,15 +613,15 @@ ArchiveDir* ArchiveDir::subdirAtPath(ArchiveDir* root, string_view path)
 
 	// Begin trace from this dir
 	auto cur_dir = root;
-	for (unsigned i = 0; i < parts.size(); ++i)
+	for (auto& part : parts)
 	{
 		if (!cur_dir)
 			return nullptr; // Path doesn't exist
 
-		if (parts[i].empty() || parts[i] == ".")
+		if (part.empty() || part == ".")
 			continue; // '.' or empty path part, stay at current dir
 
-		if (parts[i] == "..")
+		if (part == "..")
 		{
 			// '..', go up one dir
 			cur_dir = cur_dir->parent_dir_.lock().get();
@@ -631,7 +629,7 @@ ArchiveDir* ArchiveDir::subdirAtPath(ArchiveDir* root, string_view path)
 		}
 
 		// Go to subdir with current path part name
-		cur_dir = cur_dir->subdir(parts[i]).get();
+		cur_dir = cur_dir->subdir(part).get();
 	}
 
 	return cur_dir;

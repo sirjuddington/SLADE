@@ -39,7 +39,7 @@ public:
 	bool renameEntry(ArchiveEntry* entry, string_view name) override;
 
 	// Detection
-	string detectNamespace(size_t index, ArchiveDir* dir = nullptr) override;
+	string detectNamespace(unsigned index, ArchiveDir* dir = nullptr) override;
 	string detectNamespace(ArchiveEntry* entry) override;
 
 	static bool isDatArchive(MemChunk& mc);

@@ -82,16 +82,16 @@ bool DirArchive::open(string_view filename)
 	ui::setSplashProgress(0);
 	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
-	wxDir               dir(string{ filename });
+	const wxDir         dir(string{ filename });
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
-	ArchiveModSignalBlocker sig_blocker{ *this };
+	const ArchiveModSignalBlocker sig_blocker{ *this };
 
 	ui::setSplashProgressMessage("Reading files");
 	for (unsigned a = 0; a < files.size(); a++)
 	{
-		ui::setSplashProgress((float)a / (float)files.size());
+		ui::setSplashProgress(static_cast<float>(a) / static_cast<float>(files.size()));
 
 		// Cut off directory to get entry name + relative path
 		auto name = files[a];
@@ -136,7 +136,7 @@ bool DirArchive::open(string_view filename)
 		strutil::removePrefixIP(name, separator_);
 		std::replace(name.begin(), name.end(), '\\', '/');
 
-		auto ndir                            = createDir(name);
+		const auto ndir                      = createDir(name);
 		ndir->dirEntry()->exProp("filePath") = subdir;
 	}
 
@@ -216,13 +216,12 @@ bool DirArchive::save(string_view filename)
 	long                time = app::runTimer();
 	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
-	wxDir               dir(filename_);
+	const wxDir         dir(filename_);
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
 	log::info(2, "GetAllFiles took {}ms", app::runTimer() - time);
 
 	// Check for any files to remove
 	time = app::runTimer();
-	std::error_code ec;
 	for (const auto& removed_file : removed_files_)
 	{
 		if (fileutil::fileExists(removed_file))
@@ -233,7 +232,7 @@ bool DirArchive::save(string_view filename)
 	}
 
 	// Check for any directories to remove
-	for (int a = dirs.size() - 1; a >= 0; a--)
+	for (int a = static_cast<int>(dirs.size()) - 1; a >= 0; a--)
 	{
 		// Check if dir path matches an existing dir
 		bool found = false;
@@ -274,8 +273,7 @@ bool DirArchive::save(string_view filename)
 		}
 
 		// Check if entry needs to be (re)written
-		if (entries[a]->state() == ArchiveEntry::State::Unmodified
-			&& entries[a]->exProps().contains("filePath")
+		if (entries[a]->state() == ArchiveEntry::State::Unmodified && entries[a]->exProps().contains("filePath")
 			&& path == entries[a]->exProp<string>("filePath"))
 			continue;
 
@@ -327,7 +325,7 @@ shared_ptr<ArchiveDir> DirArchive::removeDir(string_view path, ArchiveDir* base)
 		return nullptr;
 
 	// Get the dir to remove
-	auto dir = dirAtPath(path, base);
+	const auto dir = dirAtPath(path, base);
 
 	// Check it exists (and that it isn't the root dir)
 	if (!dir || dir == rootDir().get())
@@ -360,9 +358,8 @@ bool DirArchive::renameDir(ArchiveDir* dir, string_view new_name)
 	auto path = dir->parent()->path();
 	if (separator_ != '/')
 		std::replace(path.begin(), path.end(), '/', separator_);
-	StringPair rename(path + dir->name(), fmt::format("{}{}", path, new_name));
+	const StringPair rename(path + dir->name(), fmt::format("{}{}", path, new_name));
 	renamed_dirs_.push_back(rename);
-	log::info(2, "RENAME {} to {}", rename.first, rename.second);
 
 	return Archive::renameDir(dir, new_name);
 }
@@ -385,7 +382,7 @@ shared_ptr<ArchiveEntry> DirArchive::addEntry(shared_ptr<ArchiveEntry> entry, st
 		return Archive::addEntry(entry, 0xFFFFFFFF, nullptr);
 
 	// Get/Create namespace dir
-	auto dir = createDir(strutil::lower(add_namespace));
+	const auto dir = createDir(strutil::lower(add_namespace));
 
 	// Add the entry to the dir
 	return Archive::addEntry(entry, 0xFFFFFFFF, dir.get());
@@ -404,8 +401,8 @@ bool DirArchive::removeEntry(ArchiveEntry* entry)
 
 	if (entry->exProps().contains("filePath"))
 	{
-		auto old_name = entry->exProp<string>("filePath");
-		bool success  = Archive::removeEntry(entry);
+		const auto old_name = entry->exProp<string>("filePath");
+		const bool success  = Archive::removeEntry(entry);
 		if (success)
 			removed_files_.push_back(old_name);
 		return success;
@@ -423,17 +420,11 @@ bool DirArchive::renameEntry(ArchiveEntry* entry, string_view name)
 	if (!checkEntry(entry))
 		return false;
 
-	// Check rename won't result in duplicated name
-	if (entry->parentDir()->entry(name))
-	{
-		global::error = fmt::format("An entry named {} already exists", name);
-		return false;
-	}
-
+	// Check if entry exists on disk
 	if (entry->exProps().contains("filePath"))
 	{
-		auto old_name = entry->exProp<string>("filePath");
-		bool success  = Archive::renameEntry(entry, name);
+		const auto old_name = entry->exProp<string>("filePath");
+		const bool success  = Archive::renameEntry(entry, name);
 		if (success)
 			removed_files_.push_back(old_name);
 		return success;
@@ -480,7 +471,7 @@ vector<Archive::MapDesc> DirArchive::detectMaps()
 	vector<MapDesc> ret;
 
 	// Get the maps directory
-	auto mapdir = dirAtPath("maps");
+	const auto mapdir = dirAtPath("maps");
 	if (!mapdir)
 		return ret;
 
@@ -626,7 +617,7 @@ void DirArchive::ignoreChangedEntries(vector<DirEntryChange>& changes)
 // -----------------------------------------------------------------------------
 void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 {
-	bool was_modified = isModified();
+	const bool was_modified = isModified();
 
 	for (auto& change : changes)
 	{
@@ -644,7 +635,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 		// Deleted Entries
 		else if (change.action == DirEntryChange::Action::DeletedFile)
 		{
-			auto entry = entryAtPath(change.entry_path);
+			const auto entry = entryAtPath(change.entry_path);
 			// If the parent directory was already removed, this entry no longer exists
 			if (entry)
 				removeEntry(entry);
@@ -662,7 +653,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 			strutil::removePrefixIP(name, separator_);
 			std::replace(name.begin(), name.end(), '\\', '/');
 
-			auto ndir = createDir(name);
+			const auto ndir = createDir(name);
 			ndir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
 			ndir->dirEntry()->exProp("filePath") = change.file_path;
 		}
@@ -715,16 +706,16 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 // -----------------------------------------------------------------------------
 bool DirArchive::shouldIgnoreEntryChange(DirEntryChange& change)
 {
-	auto it = ignored_file_changes_.find(change.file_path);
+	const auto it = ignored_file_changes_.find(change.file_path);
 	// If we've never seen this file before, definitely don't ignore the change
 	if (it == ignored_file_changes_.end())
 		return false;
 
-	auto old_change = it->second;
-	bool was_deleted =
+	const auto old_change = it->second;
+	const bool was_deleted =
 		(old_change.action == DirEntryChange::Action::DeletedFile
 		 || old_change.action == DirEntryChange::Action::DeletedDir);
-	bool is_deleted =
+	const bool is_deleted =
 		(change.action == DirEntryChange::Action::DeletedFile || change.action == DirEntryChange::Action::DeletedDir);
 
 	// Was deleted, is still deleted, nothing's changed

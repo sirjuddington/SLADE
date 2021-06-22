@@ -1178,7 +1178,7 @@ string WadArchive::detectNamespace(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-string WadArchive::detectNamespace(size_t index, ArchiveDir* dir)
+string WadArchive::detectNamespace(unsigned index, ArchiveDir* dir)
 {
 	// Go through namespaces
 	for (auto& ns : namespaces_)

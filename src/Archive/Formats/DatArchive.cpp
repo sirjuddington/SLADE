@@ -218,7 +218,7 @@ string DatArchive::detectNamespace(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-string DatArchive::detectNamespace(size_t index, ArchiveDir* dir)
+string DatArchive::detectNamespace(unsigned index, ArchiveDir* dir)
 {
 	// Textures
 	if (index > (unsigned)walls_[0] && index < (unsigned)walls_[1])
