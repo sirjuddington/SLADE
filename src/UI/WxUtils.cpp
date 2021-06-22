@@ -33,6 +33,7 @@
 #include "UI/WxUtils.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
+#include "thirdparty/lunasvg/include/document.h"
 
 using namespace slade;
 
@@ -97,7 +98,7 @@ wxFont wxutil::monospaceFont(wxFont base)
 // -----------------------------------------------------------------------------
 wxImageList* wxutil::createSmallImageList()
 {
-	auto icon_size = ui::scaleFactor() > 1.25 ? 32 : 16;
+	const auto icon_size = ui::scaleFactor() > 1.25 ? 32 : 16;
 	return new wxImageList(icon_size, icon_size, false, 0);
 }
 
@@ -211,7 +212,7 @@ wxSizer* wxutil::layoutHorizontally(vector<wxObject*> widgets, int expand_col)
 	// Add widgets/sizers
 	for (auto a = 0u; a < widgets.size(); ++a)
 	{
-		auto widget = widgets[a];
+		const auto widget = widgets[a];
 
 		// Widget
 		if (widget->IsKindOf(&wxWindow::ms_classInfo))
@@ -257,7 +258,7 @@ wxSizer* wxutil::layoutVertically(vector<wxObject*> widgets, int expand_row)
 	// Add widgets/sizers
 	for (auto a = 0u; a < widgets.size(); ++a)
 	{
-		auto widget = widgets[a];
+		const auto widget = widgets[a];
 
 		// Widget
 		if (widget->IsKindOf(&wxWindow::ms_classInfo))
@@ -345,4 +346,38 @@ void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
 	wxIcon wx_icon;
 	wx_icon.CopyFromBitmap(icons::getIcon(icons::General, icon));
 	window->SetIcon(wx_icon);
+}
+
+// -----------------------------------------------------------------------------
+// Creates a wxImage from the given [svg_text] data, sized to [width x height].
+// Returns an invalid (empty) wxImage if the SVG data was invalid
+// -----------------------------------------------------------------------------
+wxImage wxutil::createImageFromSVG(const string& svg_text, int width, int height)
+{
+	// Load SVG
+	const auto svg = lunasvg::Document::loadFromData(svg_text);
+	if (!svg)
+		return {};
+
+	// Render SVG
+	const auto bmp = svg->renderToBitmap(width, height);
+
+	// Split image data to separate rgb + alpha channels
+	const auto bmp_data    = bmp.data();
+	const auto n_pixels    = width * height;
+	auto       rgb_data    = MemChunk(n_pixels * 3);
+	auto       alpha_data  = MemChunk(n_pixels);
+	auto       data_index  = 0;
+	auto       rgb_index   = 0;
+	auto       alpha_index = 0;
+	for (auto p = 0; p < n_pixels; ++p)
+	{
+		rgb_data[rgb_index++]     = bmp_data[data_index++];
+		rgb_data[rgb_index++]     = bmp_data[data_index++];
+		rgb_data[rgb_index++]     = bmp_data[data_index++];
+		alpha_data[alpha_index++] = bmp_data[data_index++];
+	}
+
+	// Create wxImage
+	return wxImage(width, height, rgb_data.data(), alpha_data.data());
 }

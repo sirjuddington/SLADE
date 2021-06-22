@@ -50,5 +50,6 @@ wxPoint scaledPoint(int x, int y);
 wxRect  scaledRect(int x, int y, int width, int height);
 
 // Misc
-void setWindowIcon(wxTopLevelWindow* window, string_view icon);
+void    setWindowIcon(wxTopLevelWindow* window, string_view icon);
+wxImage createImageFromSVG(const string& svg_text, int width, int height);
 } // namespace slade::wxutil
