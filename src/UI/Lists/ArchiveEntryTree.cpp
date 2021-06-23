@@ -261,7 +261,7 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 		wxIcon icon;
 		icon.CopyFromBitmap(bmp);
 		wxString name = entry->name();
-		if (entry->state() != ArchiveEntry::State::Unmodified)
+		if (modified_indicator_ && entry->state() != ArchiveEntry::State::Unmodified)
 			variant << wxDataViewIconText(entry->name() + " *", icon);
 		else
 			variant << wxDataViewIconText(entry->name(), icon);
@@ -678,6 +678,20 @@ ArchiveEntryTree::ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive
 	// Update column width cvars when we can
 	Bind(wxEVT_IDLE, [this](wxIdleEvent&) { saveColumnWidths(); });
 
+	// Disable modified indicator (" *" after name) when in-place editing entry names
+	Bind(wxEVT_DATAVIEW_ITEM_EDITING_STARTED, [this](wxDataViewEvent& e) {
+		if (e.GetColumn() == 0)
+			model_->showModifiedIndicators(false);
+	});
+	Bind(wxEVT_DATAVIEW_ITEM_START_EDITING, [this](wxDataViewEvent& e) {
+		if (e.GetColumn() == 0)
+			model_->showModifiedIndicators(false);
+	});
+	Bind(wxEVT_DATAVIEW_ITEM_EDITING_DONE, [this](wxDataViewEvent& e) {
+		if (e.GetColumn() == 0)
+			model_->showModifiedIndicators(true);
+	});
+
 	// Header right click
 	Bind(wxEVT_DATAVIEW_COLUMN_HEADER_RIGHT_CLICK, [this](wxDataViewEvent& e) {
 		// Popup context menu
@@ -998,7 +1012,7 @@ ArchiveDir* ArchiveEntryTree::selectedEntriesDir() const
 vector<ArchiveDir*> ArchiveEntryTree::expandedDirs() const
 {
 	vector<ArchiveDir*> expanded_dirs;
-	
+
 	auto dirs = archive_.lock()->rootDir()->allDirectories();
 	for (const auto dir : dirs)
 		if (IsExpanded(wxDataViewItem(dir->dirEntry())))
@@ -1020,7 +1034,7 @@ void ArchiveEntryTree::setFilter(string_view name, string_view category)
 	Thaw();
 }
 
-// -----------------------------------------------------------------------------'
+// -----------------------------------------------------------------------------
 // Collapses all currently expanded directory items
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::collapseAll(const ArchiveDir& dir_start)
