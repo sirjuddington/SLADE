@@ -254,9 +254,10 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 	{
 		const auto pad  = Point2i{ 1, elist_icon_padding };
 		const auto size = scalePx(elist_icon_size);
-		const auto bmp  = elist_icon_padding > 0 ?
-                              icons::getPaddedIcon(icons::Type::Entry, entry->type()->icon(), size, pad) :
-                              icons::getIcon(icons::Type::Entry, entry->type()->icon(), size);
+		//const auto bmp  = elist_icon_padding > 0 ?
+        //                      icons::getPaddedIcon(icons::Type::Entry, entry->type()->icon(), size, pad) :
+        //                      icons::getIcon(icons::Type::Entry, entry->type()->icon(), size);
+		const auto bmp = icons::getSVGIcon(icons::Type::Entry, entry->type()->icon(), size, pad);
 
 		wxIcon icon;
 		icon.CopyFromBitmap(bmp);

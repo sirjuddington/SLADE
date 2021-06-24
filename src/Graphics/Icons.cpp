@@ -34,6 +34,7 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/UI.h"
+#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include <wx/mstream.h>
 
@@ -62,6 +63,7 @@ struct Icon
 	Image  i16;
 	Image  i24;
 	Image  i32;
+	string svg_data;
 };
 
 vector<Icon>   icons_general;
@@ -388,6 +390,48 @@ wxBitmap icons::getPaddedIcon(Type type, string_view name, int size, Point2i pad
 wxBitmap icons::getIcon(Type type, string_view name)
 {
 	return getIcon(type, name, 16 * ui::scaleFactor());
+}
+
+wxBitmap icons::getSVGIcon(Type type, string_view name, int size, Point2i padding)
+{
+	// Get slade.pk3
+	auto* res_archive = app::archiveManager().programResourceArchive();
+
+	// Do nothing if it doesn't exist
+	if (!res_archive)
+		return {};
+
+	string dirname;
+	switch (type)
+	{
+	case Any:
+	case General: dirname = "general"; break;
+	case Entry: dirname = "entry_list"; break;
+	case TextEditor: dirname = "text_editor"; break;
+	default: dirname = "general";
+	}
+
+	if (auto* dir = res_archive->dirAtPath(fmt::format("icons/{}/svg", dirname)))
+	{
+		if (auto* entry = dir->entry(fmt::format("{}.svg", name)))
+		{
+			string svg;
+			svg.assign(reinterpret_cast<const char*>(entry->rawData()), entry->size());
+			const auto img = wxutil::createImageFromSVG(svg, size, size);
+			if (padding.x > 0 || padding.y > 0)
+			{
+				wxImage padded(img.GetWidth() + padding.x * 2, img.GetHeight() + padding.y * 2);
+				padded.SetMaskColour(0, 0, 0);
+				padded.InitAlpha();
+				padded.Paste(img, padding.x, padding.y);
+				return wxBitmap(padded);
+			}
+
+			return wxBitmap(img);
+		}
+	}
+
+	return {};
 }
 
 // -----------------------------------------------------------------------------

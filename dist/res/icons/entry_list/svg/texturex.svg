@@ -1,0 +1,31 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16px"
+    height="16px"
+    viewBox="0 0 24 24">
+    <rect
+        x="1"
+        y="1"
+        width="22"
+        height="22"
+        fill="#FFFFFF"
+        stroke="#000000"
+        stroke-width="1.5"
+        rx="5"
+        ry="12"
+    />
+    <g transform="scale(1.4, 1.4)">
+        <path
+            transform="translate(-5.5, -3.5)"
+            d="M9 7v2h2v8h2V9h2V7H9z"
+            fill="#000000"
+        />
+    </g>
+    <g transform="scale(1.1, 1)">
+        <path
+            transform="translate(2, 1.9)"
+            d="M9 7l2 5-2 5h2l1-2.5 1 2.5h2l-2-5 2-5h-2l-1 2.5L11 7H9z"
+            fill="#000000"
+        />
+    </g>
+</svg>

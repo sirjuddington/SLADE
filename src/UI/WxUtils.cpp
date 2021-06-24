@@ -361,12 +361,14 @@ wxImage wxutil::createImageFromSVG(const string& svg_text, int width, int height
 
 	// Render SVG
 	const auto bmp = svg->renderToBitmap(width, height);
+	if (!bmp.valid())
+		return {};
 
 	// Split image data to separate rgb + alpha channels
 	const auto bmp_data    = bmp.data();
 	const auto n_pixels    = width * height;
-	auto       rgb_data    = MemChunk(n_pixels * 3);
-	auto       alpha_data  = MemChunk(n_pixels);
+	const auto rgb_data    = new uint8_t[n_pixels * 3]; // wxImage below will take ownership
+	const auto alpha_data  = new uint8_t[n_pixels];     // ^
 	auto       data_index  = 0;
 	auto       rgb_index   = 0;
 	auto       alpha_index = 0;
@@ -379,5 +381,5 @@ wxImage wxutil::createImageFromSVG(const string& svg_text, int width, int height
 	}
 
 	// Create wxImage
-	return wxImage(width, height, rgb_data.data(), alpha_data.data());
+	return wxImage(width, height, rgb_data, alpha_data, false);
 }
