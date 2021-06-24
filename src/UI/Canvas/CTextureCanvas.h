@@ -63,7 +63,7 @@ private:
 	CTexture*        texture_ = nullptr;
 	Archive*         parent_  = nullptr;
 	vector<unsigned> patch_textures_;
-	unsigned         tex_preview_;
+	unsigned         tex_preview_ = 0;
 	vector<bool>     selected_patches_;
 	int              hilight_patch_ = -1;
 	Vec2d            offset_;

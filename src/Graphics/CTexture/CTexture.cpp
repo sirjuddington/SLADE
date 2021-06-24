@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "CTexture.h"
 #include "App.h"
-#include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "Graphics/SImage/SImage.h"
@@ -220,14 +219,14 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 				{
 					// Second value could be alpha or green
 					tz.adv(); // Skip ,
-					double second = tz.next().asFloat();
+					const double second = tz.next().asFloat();
 
 					// If no third value, it's an alpha value
 					if (!tz.checkNext(","))
 					{
 						col.Set(first);
 						colour_.set(col);
-						colour_.a  = second * 255;
+						colour_.a  = static_cast<uint8_t>(second * 255.0);
 						blendtype_ = BlendType::Tint;
 					}
 					else
@@ -236,8 +235,8 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 						// RGB are ints in the 0-255 range; A is float in the 0.0-1.0 range
 						tz.adv(); // Skip ,
 						strutil::toDouble(first, val);
-						colour_.r = val;
-						colour_.g = second;
+						colour_.r = static_cast<uint8_t>(val);
+						colour_.g = static_cast<uint8_t>(second);
 						colour_.b = tz.next().asInt();
 						if (!tz.checkNext(","))
 						{
@@ -245,7 +244,7 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 							return false;
 						}
 						tz.adv(); // Skip ,
-						colour_.a  = tz.next().asFloat() * 255;
+						colour_.a  = static_cast<uint8_t>(tz.next().asFloat() * 255.0);
 						blendtype_ = BlendType::Tint;
 					}
 				}
@@ -818,12 +817,12 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 	image.resize(size_.x, size_.y);
 
 	// Add patches
-	SImage            p_img(SImage::Type::PalMask);
+	SImage            p_img(force_rgba ? SImage::Type::RGBA : SImage::Type::PalMask);
 	SImage::DrawProps dp;
 	dp.src_alpha = false;
 	if (defined_)
 	{
-		if (!loadPatchImage(0, p_img, parent, pal))
+		if (!loadPatchImage(0, p_img, parent, pal, force_rgba))
 			return false;
 		size_.x = p_img.width();
 		size_.y = p_img.height();
@@ -841,8 +840,12 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 		{
 			auto* patch = dynamic_cast<CTPatchEx*>(patches_[a].get());
 
+			// If the patch has a translation, ensure the image is paletted
+			if (patch->blendType() == CTPatchEx::BlendType::Translation && p_img.type() != SImage::Type::PalMask)
+				p_img.clear(SImage::Type::PalMask);
+
 			// Load patch entry
-			if (!loadPatchImage(a, p_img, parent, pal))
+			if (!loadPatchImage(a, p_img, parent, pal, force_rgba))
 				continue;
 
 			// Handle offsets
@@ -929,7 +932,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 // Loads the image for the patch at [pindex] into [image].
 // Can deal with textures-as-patches
 // -----------------------------------------------------------------------------
-bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, Palette* pal)
+bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, Palette* pal, bool force_rgba)
 {
 	// Check patch index
 	if (pindex >= patches_.size())
@@ -956,7 +959,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 				if (strutil::equalCI(tex->name(), patch->name()))
 				{
 					// Load texture to image
-					return tex->toImage(image, parent, pal);
+					return tex->toImage(image, parent, pal, force_rgba);
 				}
 			}
 		}
@@ -965,7 +968,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 		// TODO: Something has to be ignored here. The entire archive or just the current list?
 		auto* tex = app::resources().getTexture(patch->name(), "", parent);
 		if (tex)
-			return tex->toImage(image, parent, pal);
+			return tex->toImage(image, parent, pal, force_rgba);
 	}
 
 	// Get patch entry

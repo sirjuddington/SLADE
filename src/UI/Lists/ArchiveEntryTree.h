@@ -19,6 +19,7 @@ namespace ui
 
 		void openArchive(shared_ptr<Archive> archive, UndoManager* undo_manager);
 		void setFilter(string_view name, string_view category);
+		void showModifiedIndicators(bool show) { modified_indicator_ = show; }
 
 	private:
 		weak_ptr<Archive>    archive_;
@@ -27,6 +28,7 @@ namespace ui
 		string               filter_category_;
 		UndoManager*         undo_manager_ = nullptr;
 		bool                 sort_enabled_ = true;
+		bool                 modified_indicator_ = true;
 
 		// wxDataViewModel
 		unsigned int   GetColumnCount() const override { return 4; }
