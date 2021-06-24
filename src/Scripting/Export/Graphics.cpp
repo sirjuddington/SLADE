@@ -140,7 +140,7 @@ bool imageSetPixelCol(SImage& self, int x, int y, const ColRGBA& colour, Palette
 // -----------------------------------------------------------------------------
 bool imageSetPixelIndex(SImage& self, int x, int y, int index, int alpha)
 {
-	return self.setPixel(x, y, index, alpha);
+	return self.setPixel(x, y, std::clamp<uint8_t>(index, 0, 255), std::clamp<uint8_t>(alpha, 0, 255));
 }
 
 // -----------------------------------------------------------------------------
@@ -212,7 +212,7 @@ void registerImageType(sol::state& lua)
 	lua_image["PixelIndexAt"]       = &SImage::pixelIndexAt;
 	lua_image["FindUnusedColour"]   = &SImage::findUnusedColour;
 	lua_image["CountUniqueColours"] = &SImage::countColours;
-	lua_image["Clear"]              = &SImage::clear;
+	lua_image["Clear"]              = sol::resolve<void()>(&SImage::clear);
 	lua_image["Create"]             = sol::overload(
         [](SImage& self, int w, int h, SImage::Type type, Palette* pal) { self.create(w, h, type, pal); },
         [](SImage& self, int w, int h, SImage::Type type) { self.create(w, h, type); });
@@ -278,7 +278,7 @@ void registerImageType(sol::state& lua)
 // -----------------------------------------------------------------------------
 bool paletteLoadData(Palette& self, string_view data)
 {
-	return self.loadMem((const uint8_t*)data.data(), data.size());
+	return self.loadMem(reinterpret_cast<const uint8_t*>(data.data()), data.size());
 }
 
 // -----------------------------------------------------------------------------
@@ -286,7 +286,7 @@ bool paletteLoadData(Palette& self, string_view data)
 // -----------------------------------------------------------------------------
 bool paletteLoadDataFormatted(Palette& self, string_view data, Palette::Format format)
 {
-	MemChunk mc{ (const uint8_t*)data.data(), (uint32_t)data.size() };
+	MemChunk mc{ reinterpret_cast<const uint8_t*>(data.data()), static_cast<uint32_t>(data.size()) };
 	return self.loadMem(mc, format);
 }
 
@@ -527,7 +527,7 @@ void registerTranslationType(sol::state& lua)
 	lua_translation["Copy"]      = &Translation::copy;
 	lua_translation["IsEmpty"]   = &Translation::isEmpty;
 	lua_translation["Translate"] = sol::overload(
-		&Translation::translate, [](Translation& self, ColRGBA col) { return self.translate(col); });
+		&Translation::translate, [](Translation& self, const ColRGBA& col) { return self.translate(col); });
 	lua_translation["RemoveRange"] = &Translation::removeRange;
 	lua_translation["SwapRanges"]  = &Translation::swapRanges;
 
@@ -680,8 +680,8 @@ void registerPatchTableType(sol::state& lua)
 // -----------------------------------------------------------------------------
 CTexture* addTexture(TextureXList& self, string_view name, bool extended, int position)
 {
-	auto tex     = std::make_unique<CTexture>(name, extended);
-	auto tex_ptr = tex.get();
+	auto       tex     = std::make_unique<CTexture>(name, extended);
+	const auto tex_ptr = tex.get();
 	self.addTexture(std::move(tex), position);
 	return tex_ptr;
 }

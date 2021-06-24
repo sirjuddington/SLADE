@@ -110,6 +110,7 @@ public:
 
 	// Misc
 	void   clear();
+	void   clear(Type new_type);
 	void   create(int width, int height, Type type, Palette* pal = nullptr, int index = 0, int numimages = 1);
 	void   create(Info info, Palette* pal = nullptr);
 	void   fillAlpha(uint8_t alpha = 0);
