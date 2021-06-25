@@ -195,7 +195,7 @@ bool SImage::loadFont1(const uint8_t* gfx_data, int size)
 	}
 	delete[] tempdata;
 	// Add transparency to mask
-	for (size_t i = 0; i < (unsigned)(width_ * height_); ++i)
+	for (size_t i = 0; i < static_cast<unsigned>(width_ * height_); ++i)
 		if (data_[i] == 0)
 			mask_[i] = 0x00;
 
@@ -244,10 +244,10 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 	numimages_ = 1;
 	imgindex_  = 0;
 
-	if (size < (int)sizeof(Font2Header))
+	if (size < static_cast<int>(sizeof(Font2Header)))
 		return false;
 
-	const Font2Header* header = (Font2Header*)gfx_data;
+	const Font2Header* header = reinterpret_cast<const Font2Header*>(gfx_data);
 	width_                    = 0;
 	height_                   = wxUINT16_SWAP_ON_BE(header->charheight);
 
@@ -266,10 +266,10 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 	auto*  chars    = new Font2Char[numchars];
 	for (size_t i = 0; i < numchars; ++i)
 	{
-		chars[i].width = wxUINT16_SWAP_ON_BE(*(uint16_t*)p);
+		chars[i].width = wxUINT16_SWAP_ON_BE(*reinterpret_cast<const uint16_t*>(p));
 		// Let's increase the total width
 		width_ += chars[i].width;
-		if (chars[1].width > 0) // Add spacing between characters
+		if (chars[i].width > 0) // Add spacing between characters
 			width_++;
 		// The width information is enumerated for each character only if they are
 		// not constant width. Regardless, move the read pointer away after the last.
@@ -351,7 +351,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 	data_.reSize(width_ * height_);
 	data_.fillData(0);
 	uint8_t* d = data_.data();
-	for (size_t i = 0; i < (unsigned)height_; ++i)
+	for (size_t i = 0; i < static_cast<unsigned>(height_); ++i)
 	{
 		d = data_.data() + i * width_;
 		for (size_t j = 0; j < numchars; ++j)
@@ -359,7 +359,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 			if (chars[j].width)
 			{
 				memcpy(d, chars[j].data + (i * chars[j].width), chars[j].width);
-				d += chars[j].width;
+				d += chars[j].width + 1;
 			}
 		}
 	}
@@ -372,7 +372,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 	// Now transparency for the mask
 	mask_.reSize(width_ * height_);
 	mask_.fillData(0xFF);
-	for (size_t i = 0; i < (unsigned)(width_ * height_); ++i)
+	for (size_t i = 0; i < static_cast<unsigned>(width_ * height_); ++i)
 		if (data_[i] == 0)
 			mask_[i] = 0;
 
@@ -422,7 +422,7 @@ struct BMFFont
 	const char* info      = nullptr;
 	BMFChar*    chars     = nullptr;
 
-	BMFFont(BMFFont* other)
+	BMFFont(const BMFFont* other)
 	{
 		lineheight = other->lineheight;
 		size_over  = other->size_over;
@@ -443,7 +443,7 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size)
 		return false;
 	const uint8_t* eod = gfx_data + size;
 
-	BMFFont mf((BMFFont*)gfx_data);
+	BMFFont mf(reinterpret_cast<const BMFFont*>(gfx_data));
 
 	// Check for invalid data, we need at least one visible color
 	if (mf.pal_size == 0)
@@ -485,7 +485,7 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size)
 	mf.info_size = ofs[0];
 	if (mf.info_size > 0)
 	{
-		mf.info = (char*)ofs + 1;
+		mf.info = reinterpret_cast<const char*>(ofs) + 1;
 	}
 	ofs += mf.info_size + 1;
 	mf.num_chars = memory::readL16(ofs, 0);
@@ -613,7 +613,7 @@ bool SImage::loadFontM(const uint8_t* gfx_data, int size)
 	imgindex_  = 0;
 
 	// Each pixel is described as a single bit, either on or off
-	for (size_t i = 0; i < (unsigned)size; ++i)
+	for (size_t i = 0; i < static_cast<unsigned>(size); ++i)
 	{
 		for (size_t p = 0; p < 8; ++p)
 			mask_[(i * 8) + p] = ((gfx_data[i] >> (7 - p)) & 1) * 255;
