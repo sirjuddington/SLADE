@@ -141,8 +141,8 @@ private:
 	string              udmf_namespace_;
 	PropertyList        udmf_props_;
 	string              name_;
-	MapFormat           current_format_;
-	long                opened_time_ = 0;
+	MapFormat           current_format_ = MapFormat::Unknown;
+	long                opened_time_    = 0;
 	MapSpecials         map_specials_;
 
 	vector<ArchiveEntry*> udmf_extra_entries_; // UDMF Extras
