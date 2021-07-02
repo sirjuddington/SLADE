@@ -1326,23 +1326,55 @@ void ArchiveManagerPanel::createNewArchive(const wxString& format) const
 // -----------------------------------------------------------------------------
 bool ArchiveManagerPanel::saveEntryChanges(Archive* archive) const
 {
+	bool changes = false;
+	
 	// Go through tabs
 	for (size_t a = 0; a < stc_archives_->GetPageCount(); a++)
 	{
 		// Check page type is "archive"
-		if (stc_archives_->GetPage(a)->GetName().CmpNoCase("archive"))
-			continue;
-
-		// Check for archive match
-		auto ap = dynamic_cast<ArchivePanel*>(stc_archives_->GetPage(a));
-		if (ap->archive() == archive)
+		if (!stc_archives_->GetPage(a)->GetName().CmpNoCase("archive"))
 		{
-			// Save entry changes
-			return ap->saveEntryChanges();
+			// Check for archive match
+			auto ap = dynamic_cast<ArchivePanel*>(stc_archives_->GetPage(a));
+			if (ap->archive() == archive)
+			{
+				// Save entry changes
+				if (ap->saveEntryChanges())
+					changes = true;
+			}
+		}
+
+		// Check page type is "entry"
+		if (!stc_archives_->GetPage(a)->GetName().CmpNoCase("entry"))
+		{
+			// Check for entry parent archive match
+			auto ep = dynamic_cast<EntryPanel*>(stc_archives_->GetPage(a));
+			if (ep->entry()->parent() == archive)
+			{
+				if (ep->isModified() && autosave_entry_changes > 0)
+				{
+					// Ask if needed
+					if (autosave_entry_changes > 1)
+					{
+						int result = wxMessageBox(
+							wxString::Format("Save changes to entry \"%s\"?", ep->entry()->name()),
+							"Unsaved Changes",
+							wxYES_NO | wxICON_QUESTION);
+
+						// Don't save if user clicked no
+						if (result == wxNO)
+							continue;
+					}
+
+					// Save entry changes
+					if (ep->saveEntry())
+						changes = true;
+				}
+			}
 		}
 	}
 
-	return false;
+	return changes;
 }
 
 // -----------------------------------------------------------------------------
