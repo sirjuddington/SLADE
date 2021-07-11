@@ -14,11 +14,7 @@ struct ColRGBA
 	// Constructors
 	ColRGBA() = default;
 	ColRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, char blend = -1, short index = -1) :
-		r{ r },
-		g{ g },
-		b{ b },
-		a{ a },
-		index{ index }
+		r{ r }, g{ g }, b{ b }, a{ a }, index{ index }
 	{
 	}
 	ColRGBA(const ColRGBA& c) : r{ c.r }, g{ c.g }, b{ c.b }, a{ c.a }, index{ c.index } {}
@@ -98,7 +94,7 @@ struct ColRGBA
 		if (na < 0)
 			na = 0;
 
-		return { (uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, -1 };
+		return { (uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, (char)-1 };
 	}
 
 	// Amplify/fade colour components by factors
@@ -126,7 +122,7 @@ struct ColRGBA
 		if (na < 0)
 			na = 0;
 
-		return { (uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, -1 };
+		return { (uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, (char)-1 };
 	}
 
 	void write(uint8_t* ptr) const
