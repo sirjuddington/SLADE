@@ -192,22 +192,25 @@ add_executable(slade WIN32 MACOSX_BUNDLE
 	${SLADE_HEADERS}
 )
 
+
 target_link_libraries(slade
-	${ZLIB_LIBRARY}
-	${BZIP2_LIBRARIES}
-	${EXTERNAL_LIBRARIES}
-	${wxWidgets_LIBRARIES}
-	${FREEIMAGE_LIBRARIES}
-	${SFML_LIBRARY}
-	${FTGL_LIBRARIES}
-	${OPENGL_LIBRARIES}
-	${GLEW_LIBRARY}
-	${CURL_LIBRARIES}
-	${LUA_LIBRARIES}
-	${MPG123_LIBRARIES}
-	${fmt_LIBRARIES}
-	-lstdc++fs
+		${ZLIB_LIBRARY}
+		${BZIP2_LIBRARIES}
+		${EXTERNAL_LIBRARIES}
+		${wxWidgets_LIBRARIES}
+		${FREEIMAGE_LIBRARIES}
+		${SFML_LIBRARY}
+		${FTGL_LIBRARIES}
+		${OPENGL_LIBRARIES}
+		${GLEW_LIBRARY}
+		${CURL_LIBRARIES}
+		${LUA_LIBRARIES}
+		${MPG123_LIBRARIES}
+		${fmt_LIBRARIES}
 )
+if(LINUX)
+	target_link_libraries(slade -lstdc++fs)
+endif() 
 
 if (WX_GTK3)
 	target_link_libraries(slade ${GTK3_LIBRARIES})
