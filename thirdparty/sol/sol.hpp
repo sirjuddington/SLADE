@@ -53,6 +53,9 @@
 #pragma warning(disable : 4505) // unreferenced local function has been removed GEE THANKS
 #endif					  // clang++ vs. g++ vs. VC++
 
+#include <map>
+#include <unordered_map>
+
 // beginning of sol/forward.hpp
 
 #ifndef SOL_FORWARD_HPP

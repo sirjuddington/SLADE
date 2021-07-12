@@ -39,6 +39,7 @@
 #include "Utility/StringUtils.h"
 #include "thirdparty/sol/sol.hpp"
 
+
 using namespace slade;
 
 
