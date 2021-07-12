@@ -206,6 +206,9 @@ target_link_libraries(slade
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
 	${fmt_LIBRARIES}
+	if(NOT APPLE) 
+		-lstdc++fs
+	endif() 
 
 )
 
