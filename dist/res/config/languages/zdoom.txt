@@ -81,7 +81,10 @@ z_gameinfo {
 	constant_link = "http://zdoom.org/wiki/GAMEINFO";
 	function_link = "http://zdoom.org/wiki/GAMEINFO";
 
-	keywords = { IWAD, LOAD, NOSPRITERENAME, STARTUPTITLE, STARTUPCOLORS, STARTUPTYPE, STARTUPSONG  }
+	keywords = {
+		IWAD, LOAD, NOSPRITERENAME, STARTUPTITLE, STARTUPCOLORS, STARTUPTYPE, STARTUPSONG,
+		LOADLIGHTS, LOADBRIGHTMAPS, LOADWIDESCREEN
+	}
 }
 
 z_gldefs {
@@ -117,8 +120,9 @@ z_iwadinfo
 
 	properties =
 	{
-		Name, Autoname, Game, Config, IWADName, Mapinfo, Compatibility, MustContain,
-		BannerColors, Required, Load
+		Name, AutoName, Game, Config, IWADName, MapInfo, MustContain, BannerColors,
+		StartupType, StartupSong, Compatibility, Required, Load, IgnoreTitlePatches,
+		DeleteLumps, NoKeyboardCheats
 	}
 }
 
@@ -238,7 +242,8 @@ z_mapinfo {
 		noclustertext, noinfiniteflightpowerup, nomonsterfallingdamage, nostatistics,
 		notexturefill, partime, pausemusicinmenus, resetitems, skyrotate2, sndinfo, sndseq,
 		soundinfo, specialaction_lowerfloortohighest, warptrans, wrapmidtextures,
-		propermonsterfallingdamage, disableskyboxao, enableskyboxao,
+		propermonsterfallingdamage, disableskyboxao, enableskyboxao, e1m8special,
+		e2m8special, e3m8special, e4m6special, e4m8special, disableshadowmap, enableshadowmap,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate, PixelRatio,
@@ -265,7 +270,7 @@ z_mapinfo {
 		StatScreen_FinishedFont, StatScreen_EnteringFont, Dialogue, StatScreen_Single, StatScreen_Coop, StatScreen_DM,
 		BlurAmount, CorrectPrintBold, MenuSliderColor, althudclass, forcenogfxsubstitution, forcetextinmenus,
 		fullscreenautoaspect, nomergepickupmsg, normforwardmove, normsidemove, statscreen_authorfont,
-		statscreen_contentfont, menusliderbackcolor, hidepartimes,
+		statscreen_contentfont, menusliderbackcolor, hidepartimes, adddialogues,
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,
