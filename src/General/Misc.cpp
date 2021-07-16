@@ -431,19 +431,17 @@ void misc::doMassRename(vector<string>& names, string_view name_filter)
 			// Check character
 			if (name_filter[c] == '*')
 				continue; // Skip if *
-			else
-			{
-				// First check that we aren't past the end of the name
-				if (c >= name.size())
-				{
-					// If we are, pad it with spaces
-					while (name.size() <= c)
-						name += " ";
-				}
 
-				// Replace character
-				name[c] = name_filter[c];
+			// First check that we aren't past the end of the name
+			if (c >= name.size())
+			{
+				// If we are, pad it with spaces
+				while (name.size() <= c)
+					name += " ";
 			}
+
+			// Replace character
+			name[c] = name_filter[c];
 		}
 	}
 }

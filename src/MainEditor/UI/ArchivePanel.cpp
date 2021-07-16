@@ -1098,7 +1098,7 @@ bool ArchivePanel::renameEntry(bool each) const
 	// Begin recording undo level
 	undo_manager_->beginRecord("Rename Entry");
 
-	/* Define alphabet */
+	// Define alphabet
 	static const string alphabet       = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	static const string alphabet_lower = "abcdefghijklmnopqrstuvwxyz";
 
@@ -1162,9 +1162,8 @@ bool ArchivePanel::renameEntry(bool each) const
 				if (fn.fileName(false) != names[a])
 				{
 					auto filename = names[a];
-					/* file renaming syntax */
-					int num = a / alphabet.size();
-					int cn  = a - (num * alphabet.size());
+					int  num      = a / alphabet.size();
+					int  cn       = a - (num * alphabet.size());
 					strutil::replaceIP(filename, "^^", { alphabet_lower.data() + cn, 1 });
 					strutil::replaceIP(filename, "^", { alphabet.data() + cn, 1 });
 					strutil::replaceIP(filename, "%%", fmt::format("{}", num));
