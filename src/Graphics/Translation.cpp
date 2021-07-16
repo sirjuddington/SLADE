@@ -104,8 +104,8 @@ enum SpecialBlend
 void Translation::parse(string_view def)
 {
 	// Test for ZDoom built-in translation
-	string def_str{ def };
-	auto   test = strutil::lower(def);
+	string     def_str{ def };
+	const auto test = strutil::lower(def);
 	if (test == "inverse")
 	{
 		built_in_name_ = "Inverse";
@@ -230,8 +230,8 @@ TransRange* Translation::parseRange(string_view range)
 			return nullptr;
 
 		// Add translation
-		ColRGBA col_start{ (uint8_t)sr, (uint8_t)sg, (uint8_t)sb };
-		ColRGBA col_end{ (uint8_t)sr, (uint8_t)sg, (uint8_t)sb };
+		const ColRGBA col_start{ static_cast<uint8_t>(sr), static_cast<uint8_t>(sg), static_cast<uint8_t>(sb) };
+		const ColRGBA col_end{ static_cast<uint8_t>(sr), static_cast<uint8_t>(sg), static_cast<uint8_t>(sb) };
 		if (reverse)
 			translations_.emplace_back(new TransRangeColour{ { o_end, o_start }, col_end, col_start });
 		else
@@ -296,7 +296,8 @@ TransRange* Translation::parseRange(string_view range)
 		if (!tz.advIfNext(']'))
 			return nullptr;
 
-		translations_.emplace_back(new TransRangeBlend{ { o_start, o_end }, { (uint8_t)r, (uint8_t)g, (uint8_t)b } });
+		translations_.emplace_back(new TransRangeBlend{
+			{ o_start, o_end }, { static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b) } });
 	}
 	else if (tz.advIfNext('@'))
 	{
@@ -317,7 +318,9 @@ TransRange* Translation::parseRange(string_view range)
 			return nullptr;
 
 		translations_.emplace_back(
-			new TransRangeTint{ { o_start, o_end }, { (uint8_t)r, (uint8_t)g, (uint8_t)b }, (uint8_t)amount });
+			new TransRangeTint{ { o_start, o_end },
+								{ static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b) },
+								static_cast<uint8_t>(amount) });
 	}
 	else if (tz.advIfNext('$'))
 	{
@@ -459,12 +462,12 @@ TransRange* Translation::range(unsigned index)
 // -----------------------------------------------------------------------------
 // Apply the translation to the given color
 // -----------------------------------------------------------------------------
-ColRGBA Translation::translate(ColRGBA col, Palette* pal)
+ColRGBA Translation::translate(const ColRGBA& col, Palette* pal)
 {
 	ColRGBA colour(col);
 	if (pal == nullptr)
 		pal = maineditor::currentPalette();
-	uint8_t i = (col.index == -1) ? pal->nearestColour(col) : col.index;
+	const uint8_t i = (col.index == -1) ? pal->nearestColour(col) : col.index;
 
 	// Handle ZDoom's predefined texture blending:
 	// blue, gold, green, red, ice, inverse, and desaturate
@@ -490,7 +493,7 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 	}
 
 	// Check for perfect palette matches
-	bool match = col.equals(pal->colour(i));
+	const bool match = col.equals(pal->colour(i));
 
 	// Go through each translation component
 	// for (unsigned a = 0; a < nRanges(); a++)
@@ -509,18 +512,18 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 		// Palette range translation
 		if (range->type() == TransRange::Type::Palette)
 		{
-			auto tp = dynamic_cast<TransRangePalette*>(range.get());
+			const auto tp = dynamic_cast<TransRangePalette*>(range.get());
 
 			// Figure out how far along the range this colour is
 			double range_frac = 0;
 			if (tp->start() != tp->end())
-				range_frac = double(i - tp->start()) / double(tp->end() - tp->start());
+				range_frac = static_cast<double>(i - tp->start()) / static_cast<double>(tp->end() - tp->start());
 
 			// Determine destination palette index
-			uint8_t di = tp->dStart() + range_frac * (tp->dEnd() - tp->dStart());
+			const uint8_t di = tp->dStart() + range_frac * (tp->dEnd() - tp->dStart());
 
 			// Apply new colour
-			auto c       = pal->colour(di);
+			const auto c = pal->colour(di);
 			colour.r     = c.r;
 			colour.g     = c.g;
 			colour.b     = c.b;
@@ -531,12 +534,12 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 		// Colour range
 		else if (range->type() == TransRange::Type::Colour)
 		{
-			auto tc = dynamic_cast<TransRangeColour*>(range.get());
+			const auto tc = dynamic_cast<TransRangeColour*>(range.get());
 
 			// Figure out how far along the range this colour is
 			double range_frac = 0;
 			if (tc->start() != tc->end())
-				range_frac = double(i - tc->start()) / double(tc->end() - tc->start());
+				range_frac = static_cast<double>(i - tc->start()) / static_cast<double>(tc->end() - tc->start());
 
 			// Apply new colour
 			colour.r     = tc->startColour().r + range_frac * (tc->endColour().r - tc->startColour().r);
@@ -548,34 +551,33 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 		// Desaturated colour range
 		else if (range->type() == TransRange::Type::Desat)
 		{
-			auto td = dynamic_cast<TransRangeDesat*>(range.get());
+			const auto td = dynamic_cast<TransRangeDesat*>(range.get());
 
 			// Get greyscale colour
-			auto  gcol = pal->colour(i);
-			float grey = (gcol.r * 0.3f + gcol.g * 0.59f + gcol.b * 0.11f) / 255.0f;
+			const auto  gcol = pal->colour(i);
+			const float grey = (gcol.r * 0.3f + gcol.g * 0.59f + gcol.b * 0.11f) / 255.0f;
 
 			// Apply new colour
-			colour.r = std::min<uint8_t>(
-				255, int((td->rgbStart().r + grey * (td->rgbEnd().r - td->rgbStart().r)) * 255.0f));
-			colour.g = std::min<uint8_t>(
-				255, int((td->rgbStart().g + grey * (td->rgbEnd().g - td->rgbStart().g)) * 255.0f));
-			colour.b = std::min<uint8_t>(
-				255, int((td->rgbStart().b + grey * (td->rgbEnd().b - td->rgbStart().b)) * 255.0f));
+			auto& start  = td->rgbStart();
+			auto& end    = td->rgbEnd();
+			colour.r     = std::min(255, static_cast<int>((start.r + grey * (end.r - start.r)) * 255.0f));
+			colour.g     = std::min(255, static_cast<int>((start.g + grey * (end.g - start.g)) * 255.0f));
+			colour.b     = std::min(255, static_cast<int>((start.b + grey * (end.b - start.b)) * 255.0f));
 			colour.index = pal->nearestColour(colour);
 		}
 
 		// Blended range
 		else if (range->type() == TransRange::Type::Blend)
 		{
-			auto tc = dynamic_cast<TransRangeBlend*>(range.get());
+			const auto tc = dynamic_cast<TransRangeBlend*>(range.get());
 
 			// Get colours
-			auto blend = tc->colour();
+			const auto& blend = tc->colour();
 
 			// Colourise
 			float grey = (col.r * col_greyscale_r + col.g * col_greyscale_g + col.b * col_greyscale_b) / 255.0f;
-			if (grey > 1.0)
-				grey = 1.0;
+			if (grey > 1.0f)
+				grey = 1.0f;
 
 			// Apply new colour
 			colour.r     = blend.r * grey;
@@ -587,14 +589,14 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 		// Tinted range
 		else if (range->type() == TransRange::Type::Tint)
 		{
-			auto tt = dynamic_cast<TransRangeTint*>(range.get());
+			const auto tt = dynamic_cast<TransRangeTint*>(range.get());
 
 			// Get colours
-			auto tint = tt->colour();
+			const auto tint = tt->colour();
 
 			// Colourise
-			float amount  = tt->amount() * 0.01f;
-			float inv_amt = 1.0f - amount;
+			const float amount  = tt->amount() * 0.01f;
+			const float inv_amt = 1.0f - amount;
 
 			// Apply new colour
 			colour.r     = col.r * inv_amt + tint.r * amount;
@@ -606,7 +608,7 @@ ColRGBA Translation::translate(ColRGBA col, Palette* pal)
 		// Special range
 		else if (range->type() == TransRange::Type::Special)
 		{
-			auto        ts   = dynamic_cast<TransRangeSpecial*>(range.get());
+			const auto  ts   = dynamic_cast<TransRangeSpecial*>(range.get());
 			const auto& spec = ts->special();
 			uint8_t     type = Invalid;
 			if (strutil::equalCI(spec, "ice"))
@@ -654,8 +656,8 @@ TransRange* Translation::addRange(TransRange::Type type, int pos, int range_star
 	}
 
 	// Add to list
-	auto ptr = tr.get();
-	if (pos < 0 || pos >= (int)translations_.size())
+	const auto ptr = tr.get();
+	if (pos < 0 || pos >= static_cast<int>(translations_.size()))
 		translations_.push_back(std::move(tr));
 	else
 		translations_.insert(translations_.begin() + pos, std::move(tr));
@@ -669,7 +671,7 @@ TransRange* Translation::addRange(TransRange::Type type, int pos, int range_star
 void Translation::removeRange(int pos)
 {
 	// Check position
-	if (pos < 0 || pos >= (int)translations_.size())
+	if (pos < 0 || pos >= static_cast<int>(translations_.size()))
 		return;
 
 	// Remove it
@@ -682,7 +684,8 @@ void Translation::removeRange(int pos)
 void Translation::swapRanges(int pos1, int pos2)
 {
 	// Check positions
-	if (pos1 < 0 || pos2 < 0 || pos1 >= (int)translations_.size() || pos2 >= (int)translations_.size())
+	if (pos1 < 0 || pos2 < 0 || pos1 >= static_cast<int>(translations_.size())
+		|| pos2 >= static_cast<int>(translations_.size()))
 		return;
 
 	// Swap them
@@ -693,7 +696,7 @@ void Translation::swapRanges(int pos1, int pos2)
 // Apply one of the special colour blending modes from ZDoom:
 // Desaturate, Ice, Inverse, Blue, Gold, Green, Red.
 // -----------------------------------------------------------------------------
-ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal)
+ColRGBA Translation::specialBlend(const ColRGBA& col, uint8_t type, Palette* pal)
 {
 	// Abort just in case
 	if (type == SpecialBlend::Invalid)
@@ -702,29 +705,29 @@ ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal)
 	auto colour = col;
 
 	// Get greyscale using ZDoom formula
-	float grey = (col.r * 77 + col.g * 143 + col.b * 37) / 256.f;
+	const float grey = (col.r * 77 + col.g * 143 + col.b * 37) / 256.f;
 
 	// Ice is a special case as it uses a colour range derived
 	// from the Hexen palette instead of a linear gradient.
 	if (type == Ice)
 	{
 		// Determine destination palette index in IceRange
-		uint8_t di   = std::min<uint8_t>(((int)grey >> 4), 15);
-		auto    c    = IceRange[di];
-		colour.r     = c.r;
-		colour.g     = c.g;
-		colour.b     = c.b;
-		colour.a     = c.a;
-		colour.index = pal->nearestColour(colour);
+		const uint8_t di = std::min((static_cast<int>(grey) >> 4), 15);
+		const auto    c  = IceRange[di];
+		colour.r         = c.r;
+		colour.g         = c.g;
+		colour.b         = c.b;
+		colour.a         = c.a;
+		colour.index     = pal->nearestColour(colour);
 	}
 	// Desaturated blending goes from no effect to nearly fully desaturated
 	else if (type >= DesatFirst && type <= DesatLast)
 	{
-		float amount = type - 1; // get value between 0 and 30
+		const float amount = type - 1; // get value between 0 and 30
 
-		colour.r     = std::min<uint8_t>(255, int((colour.r * (31 - amount) + grey * amount) / 31));
-		colour.g     = std::min<uint8_t>(255, int((colour.g * (31 - amount) + grey * amount) / 31));
-		colour.b     = std::min<uint8_t>(255, int((colour.b * (31 - amount) + grey * amount) / 31));
+		colour.r     = std::min(255, static_cast<int>((colour.r * (31 - amount) + grey * amount) / 31));
+		colour.g     = std::min(255, static_cast<int>((colour.g * (31 - amount) + grey * amount) / 31));
+		colour.b     = std::min(255, static_cast<int>((colour.b * (31 - amount) + grey * amount) / 31));
 		colour.index = pal->nearestColour(colour);
 	}
 	// All others are essentially preset desaturated translations
@@ -765,9 +768,9 @@ ColRGBA Translation::specialBlend(ColRGBA col, uint8_t type, Palette* pal)
 		default: break;
 		}
 		// Apply new colour
-		colour.r     = std::min<uint8_t>(255, int(sr + grey * (er - sr)));
-		colour.g     = std::min<uint8_t>(255, int(sg + grey * (eg - sg)));
-		colour.b     = std::min<uint8_t>(255, int(sb + grey * (eb - sb)));
+		colour.r     = std::min(255, static_cast<int>(sr + grey * (er - sr)));
+		colour.g     = std::min(255, static_cast<int>(sg + grey * (eg - sg)));
+		colour.b     = std::min(255, static_cast<int>(sb + grey * (eb - sb)));
 		colour.index = pal->nearestColour(colour);
 	}
 	return colour;
