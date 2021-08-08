@@ -209,8 +209,11 @@ target_link_libraries(slade
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
 	${fmt_LIBRARIES}
-	-lstdc++fs
 )
+
+if(LINUX)
+	target_link_libraries(slade -lstdc++fs)
+endif()
 
 if (WX_GTK3)
 	target_link_libraries(slade ${GTK3_LIBRARIES})
