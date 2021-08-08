@@ -143,6 +143,7 @@
 #include <cmath>
 #include <memory>
 #include <optional>
+#include <unordered_map>
 
 // C
 #include <locale.h>
