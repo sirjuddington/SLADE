@@ -72,6 +72,7 @@ set(SFML_FIND_COMPONENTS system audio window graphics network)
 ADD_DEFINITIONS(-DUSE_SFML_RENDERWINDOW)
 else (USE_SFML_RENDERWINDOW)
 set(SFML_FIND_COMPONENTS system audio window network)
+find_package(Freetype REQUIRED)
 find_package(FTGL REQUIRED)
 endif(USE_SFML_RENDERWINDOW)
 
@@ -113,6 +114,7 @@ find_package(MPG123 REQUIRED)
 include_directories(
 	${FREEIMAGE_INCLUDE_DIR}
 	${SFML_INCLUDE_DIR}
+	${FREETYPE_INCLUDE_DIRS}
 	${FTGL_INCLUDE_DIR}
 	${GLEW_INCLUDE_PATH}
 	${CURL_INCLUDE_DIR}
@@ -199,6 +201,7 @@ target_link_libraries(slade
 	${wxWidgets_LIBRARIES}
 	${FREEIMAGE_LIBRARIES}
 	${SFML_LIBRARY}
+	${FREETYPE_LIBRARIES}
 	${FTGL_LIBRARIES}
 	${OPENGL_LIBRARIES}
 	${GLEW_LIBRARY}
@@ -206,8 +209,11 @@ target_link_libraries(slade
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
 	${fmt_LIBRARIES}
-	-lstdc++fs
 )
+
+if(LINUX)
+	target_link_libraries(slade -lstdc++fs)
+endif()
 
 if (WX_GTK3)
 	target_link_libraries(slade ${GTK3_LIBRARIES})

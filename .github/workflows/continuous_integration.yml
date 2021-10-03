@@ -1,0 +1,56 @@
+name: Continuous Integration
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "macOS",
+            os: macos-10.15,
+            deps_cmdline: "brew install fluidsynth fmt freeimage ftgl glew lua mpg123 sfml wxwidgets"
+          }
+        - {
+            name: "Linux GCC",
+            os: ubuntu-20.04,
+            deps_cmdline: "sudo apt update && sudo apt install \
+                           libcurl4-openssl-dev libfluidsynth-dev libfmt-dev libfreeimage-dev \
+                           libftgl-dev libglew-dev libgtk-3-dev liblua5.3-dev libmpg123-dev libsfml-dev \
+                           libwxgtk3.0-gtk3-dev libwxgtk-media3.0-gtk3-dev libwxgtk-webview3.0-gtk3-dev"
+          }
+        - {
+            name: "Linux Clang",
+            os: ubuntu-20.04,
+            extra_options: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++",
+            deps_cmdline: "sudo apt update && sudo apt install \
+                           libcurl4-openssl-dev libfluidsynth-dev libfmt-dev libfreeimage-dev \
+                           libftgl-dev libglew-dev libgtk-3-dev liblua5.3-dev libmpg123-dev libsfml-dev \
+                           libwxgtk3.0-gtk3-dev libwxgtk-media3.0-gtk3-dev libwxgtk-webview3.0-gtk3-dev"
+          }
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        if [[ ! -z "${{ matrix.config.deps_cmdline }}" ]]; then
+          eval ${{ matrix.config.deps_cmdline }}
+        fi
+
+    - name: Configure
+      shell: bash
+      run: |
+        mkdir build
+        cmake -B build ${{ matrix.config.extra_options }} .
+
+    - name: Build
+      shell: bash
+      run: |
+        export MAKEFLAGS=--keep-going
+        cmake --build build --parallel 3

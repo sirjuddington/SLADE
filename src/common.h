@@ -123,6 +123,11 @@
 #define FREEIMAGE_LIB
 #include <FreeImage.h>
 
+// Undefine _WINDOWS_ that has been defined by FreeImage
+#ifndef _WIN32
+#undef _WINDOWS_
+#endif
+
 // fmt
 #include <fmt/core.h>
 
@@ -138,6 +143,7 @@
 #include <cmath>
 #include <memory>
 #include <optional>
+#include <unordered_map>
 
 // C
 #include <locale.h>

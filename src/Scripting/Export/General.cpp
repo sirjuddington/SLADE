@@ -86,7 +86,7 @@ template<typename T> sol::object memChunkRead(MemChunk& self, unsigned offset)
 	// just to return 0 if the read fails, rather than nil
 	T val;
 	if (!self.read(offset, &val, sizeof(T)))
-		return sol::make_object(lua::state().lua_state(), sol::nil);
+		return sol::make_object(lua::state().lua_state(), sol::lua_nil);
 	return sol::make_object(lua::state().lua_state(), val);
 }
 
