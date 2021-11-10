@@ -344,8 +344,11 @@ void BaseResourceArchivesPanel::onBtnRemove(wxCommandEvent& e)
 {
 	// Get the selected item index and remove it
 	int index = list_base_archive_paths_->GetSelection();
-	list_base_archive_paths_->Delete(index);
+	if (index >= 0)
+	{
+		list_base_archive_paths_->Delete(index);
 
-	// Also remove it from the archive manager
-	app::archiveManager().removeBaseResourcePath(index);
+		// Also remove it from the archive manager
+		app::archiveManager().removeBaseResourcePath(index);
+	}
 }
