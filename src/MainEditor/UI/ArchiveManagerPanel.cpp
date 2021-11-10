@@ -1312,11 +1312,21 @@ void ArchiveManagerPanel::checkDirArchives()
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::createNewArchive(const wxString& format) const
 {
-	auto* na_dlg = new ui::NewArchiveDialog(maineditor::windowWx());
-	if (na_dlg->ShowModal() == wxID_OK)
+	if (format != "")
 	{
-		if (na_dlg->createdArchive())
-			openTab(app::archiveManager().archiveIndex(na_dlg->createdArchive()));
+		Archive *archive = app::archiveManager().newArchive(format.ToStdString()).get();
+
+		if (archive)
+			openTab(app::archiveManager().archiveIndex(archive));
+	}
+	else
+	{
+		auto* na_dlg = new ui::NewArchiveDialog(maineditor::windowWx());
+		if (na_dlg->ShowModal() == wxID_OK)
+		{
+			if (na_dlg->createdArchive())
+				openTab(app::archiveManager().archiveIndex(na_dlg->createdArchive()));
+		}
 	}
 }
 
@@ -1732,7 +1742,12 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	// File->New Archive
 	if (id == "aman_newarchive")
 		createNewArchive("");
-
+	// Start Page: Create Wad Archive (File->New Archive->wad)
+	else if (id == "aman_newwad")
+		createNewArchive("wad");
+	// Start Page: Create Zip Archive (File->New Archive->zip)
+	else if (id == "aman_newzip")
+		createNewArchive("zip");
 	// File->New Map
 	else if (id == "aman_newmap")
 	{
