@@ -100,12 +100,13 @@ void SpriteTexCanvas::setSprite(const game::ThingType& type)
 void SpriteTexCanvas::draw()
 {
 	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	glViewport(0, 0, size.x, size.y);
 
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
+	glOrtho(0, size.x, size.y, 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -127,13 +128,13 @@ void SpriteTexCanvas::draw()
 	{
 		// Sprite
 		glEnable(GL_TEXTURE_2D);
-		drawing::drawTextureWithin(texture_, 0, 0, GetSize().x, GetSize().y, 4, 2);
+		drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 4, 2);
 	}
 	else if (texture_ && icon_)
 	{
 		// Icon
 		glEnable(GL_TEXTURE_2D);
-		drawing::drawTextureWithin(texture_, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
+		drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 0, 0.25);
 	}
 
 	// Swap buffers (ie show what was drawn)
@@ -219,7 +220,8 @@ void ThingDirCanvas::setAngle(int angle)
 void ThingDirCanvas::draw()
 {
 	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	glViewport(0, 0, size.x, size.y);
 
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
@@ -300,8 +302,9 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 		if (app::runTimer() > last_check_ + 15)
 		{
 			// Get cursor position in canvas coordinates
-			double x = -1.2 + ((double)e.GetX() / (double)GetSize().x) * 2.4;
-			double y = -1.2 + ((double)e.GetY() / (double)GetSize().y) * 2.4;
+			const wxSize size = GetSize();
+			double x = -1.2 + ((double)e.GetX() / (double)size.x) * 2.4;
+			double y = -1.2 + ((double)e.GetY() / (double)size.y) * 2.4;
 			Vec2d  cursor_pos(x, y);
 
 			// Find closest dir point to cursor

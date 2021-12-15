@@ -1406,8 +1406,9 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 
 	// Save current layout
 	saveLayout();
+	const wxSize size = GetSize() * GetContentScaleFactor();
 	if (!IsMaximized())
-		misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+		misc::setWindowInfo(id_, size.x, size.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
 
 	Show(false);
 	closeMap();

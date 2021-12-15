@@ -76,12 +76,13 @@ GradientBox::GradientBox(wxWindow* parent, int steps) : OGLCanvas(parent, -1), s
 void GradientBox::draw()
 {
 	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	glViewport(0, 0, size.x, size.y);
 
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
+	glOrtho(0, size.x, size.y, 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -101,10 +102,10 @@ void GradientBox::draw()
 		glBegin(GL_QUADS);
 		gl::setColour(col_start_);
 		glVertex2d(0, 0);
-		glVertex2d(0, GetSize().y);
+		glVertex2d(0, size.y);
 		gl::setColour(col_end_);
-		glVertex2d(GetSize().x, GetSize().y);
-		glVertex2d(GetSize().x, 0);
+		glVertex2d(size.x, size.y);
+		glVertex2d(size.x, 0);
 		glEnd();
 	}
 
@@ -1318,7 +1319,7 @@ void TranslationEditorDialog::onBtnSave(wxCommandEvent& e)
 void TranslationEditorDialog::onGfxPreviewMouseMotion(wxMouseEvent& e)
 {
 	// Get the image coordinates at the mouse pointer
-	auto pos = gfx_preview_->imageCoords(e.GetX(), e.GetY() - 2);
+	auto pos = gfx_preview_->imageCoords(e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor() - 2);
 
 	int index = pal_canvas_preview_->selectionStart();
 

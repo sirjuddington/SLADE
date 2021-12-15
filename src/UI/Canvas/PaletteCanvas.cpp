@@ -60,12 +60,13 @@ PaletteCanvas::PaletteCanvas(wxWindow* parent, int id) : OGLCanvas(parent, id)
 void PaletteCanvas::draw()
 {
 	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	const wxSize contentSize = GetSize() * GetContentScaleFactor();
+	glViewport(0, 0, contentSize.x, contentSize.y);
 
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
+	glOrtho(0, contentSize.x, contentSize.y, 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -87,8 +88,8 @@ void PaletteCanvas::draw()
 		rows = 8;
 		cols = 32;
 	}
-	int x_size = (GetSize().x) / cols;
-	int y_size = (GetSize().y) / rows;
+	int x_size = contentSize.x / cols;
+	int y_size = contentSize.y / rows;
 	int size   = std::min<int>(x_size, y_size);
 
 	// Draw palette
@@ -223,11 +224,12 @@ void PaletteCanvas::onMouseLeftDown(wxMouseEvent& e)
 			rows = 8;
 			cols = 32;
 		}
-		int x_size = (GetSize().x) / cols;
-		int y_size = (GetSize().y) / rows;
+		const wxSize contentSize = GetSize() * GetContentScaleFactor();
+		int x_size = contentSize.x / cols;
+		int y_size = contentSize.y / rows;
 		int size   = std::min<int>(x_size, y_size);
-		int x      = e.GetX() / size;
-		int y      = e.GetY() / size;
+		int x      = ( e.GetX() * GetContentScaleFactor() ) / size;
+		int y      = ( e.GetY() * GetContentScaleFactor() ) / size;
 
 		// If it was within the palette box, select the cell
 		if (x >= 0 && x < cols && y >= 0 && y < rows)
@@ -268,11 +270,12 @@ void PaletteCanvas::onMouseMotion(wxMouseEvent& e)
 			rows = 8;
 			cols = 32;
 		}
-		int x_size = (GetSize().x) / cols;
-		int y_size = (GetSize().y) / rows;
+		const wxSize contentSize = GetSize() * GetContentScaleFactor();
+		int x_size = contentSize.x / cols;
+		int y_size = contentSize.y / rows;
 		int size   = std::min<int>(x_size, y_size);
-		int x      = e.GetX() / size;
-		int y      = e.GetY() / size;
+		int x      = ( e.GetX() * GetContentScaleFactor() ) / size;
+		int y      = ( e.GetY() * GetContentScaleFactor() ) / size;
 
 		// Set selection accordingly
 		if (x >= 0 && x < cols && y >= 0 && y < rows)
