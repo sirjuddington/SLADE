@@ -83,9 +83,19 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 	{
 		if (canvas->IsShown())
 		{
+			log::info("Setting up the OpenGL context");
 			context = new wxGLContext(canvas);
-			context->SetCurrent(*canvas);
-			init();
+			if (!context->SetCurrent(*canvas))
+			{
+				log::error("Failed to setup the OpenGL context");
+				delete context;
+				return nullptr;
+			}
+			if (!init())
+			{
+				delete context;
+				return nullptr;
+			}
 		}
 		else
 			log::warning("Can't create global GL context, wxGLCanvas is hidden");
@@ -100,6 +110,8 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 // -----------------------------------------------------------------------------
 bool gl::init()
 {
+	GLenum ret;
+
 	if (initialised)
 		return true;
 
@@ -123,7 +135,11 @@ bool gl::init()
 	log::info("Max Texture Size: {}x{}", max_tex_size, max_tex_size);
 
 	// Initialise GLEW
-	glewInit();
+	if ((ret = glewInit()) != GLEW_OK)
+	{
+		log::error("OpenGL initialization failed: {}", glewGetErrorString(ret));
+		return false;
+	}
 
 	// Test extensions
 	log::info("Checking extensions...");

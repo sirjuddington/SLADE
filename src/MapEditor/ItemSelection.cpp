@@ -666,9 +666,9 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 					new_selection.insert({ (int)back->index(), ItemType::WallBottom });
 
 				// Also include any two-sided middle textures
-				if (front && (textures & MapLine::Part::FrontMiddle || !front->texMiddle().empty()))
+				if (front && (textures & MapLine::Part::FrontMiddle || front->texMiddle() != MapSide::TEX_NONE))
 					new_selection.insert({ (int)front->index(), ItemType::WallMiddle });
-				if (back && (textures & MapLine::Part::BackMiddle || !back->texMiddle().empty()))
+				if (back && (textures & MapLine::Part::BackMiddle || back->texMiddle() != MapSide::TEX_NONE))
 					new_selection.insert({ (int)back->index(), ItemType::WallMiddle });
 			}
 
