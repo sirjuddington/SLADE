@@ -3398,6 +3398,8 @@ bool ArchivePanel::handleAction(string_view id)
 		convertTextures();
 	else if (id == "arch_texturex_finderrors")
 		findTextureErrors();
+    else if (id == "arch_zdtextures_clean")
+        findTextureErrors();    // TODO: make it open the clean zdtextures dialog
 	else if (id == "arch_map_opendb2")
 		mapOpenDb2();
 	else if (id == "arch_entry_setup_external")
@@ -3618,6 +3620,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 	bool text_selected     = false;
 	bool unknown_selected  = false;
 	bool texturex_selected = false;
+    bool zdtextures_selected = false;
 	bool modified_selected = false;
 	bool map_selected      = false;
 	bool swan_selected     = false;
@@ -3685,6 +3688,11 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 			if (entry->type()->formatId() == "texturex")
 				texturex_selected = true;
 		}
+        if (!zdtextures_selected)
+        {
+            if (entry->type()->id() == "zdtextures")
+                zdtextures_selected = true;
+        }
 		if (!modified_selected)
 		{
 			if (entry->state() == ArchiveEntry::State::Modified)
@@ -3780,6 +3788,12 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		SAction::fromId("arch_texturex_convertzd")->addToMenu(&context, true);
 		SAction::fromId("arch_texturex_finderrors")->addToMenu(&context, true);
 	}
+    
+    // Add zdtextures related menu items if needed
+    if (zdtextures_selected)
+    {
+        SAction::fromId("arch_zdtextures_clean")->addToMenu(&context, true);
+    }
 
 	// 'View As' menu
 	if (context_submenus)
