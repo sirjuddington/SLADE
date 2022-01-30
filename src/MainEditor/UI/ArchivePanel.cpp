@@ -2847,6 +2847,22 @@ bool ArchivePanel::findTextureErrors() const
 }
 
 // -----------------------------------------------------------------------------
+// Clean texture entries that are duplicates of entries in the iwad
+// -----------------------------------------------------------------------------
+bool ArchivePanel::cleanTextureIwadDupes() const
+{
+    return entryoperations::cleanTextureIwadDupes(entry_tree_->selectedEntries());
+}
+
+// -----------------------------------------------------------------------------
+// Clean ZDTEXTURES entries that are just a single patch
+// -----------------------------------------------------------------------------
+bool ArchivePanel::cleanZdTextureSinglePatch() const
+{
+    return entryoperations::cleanZdTextureSinglePatch(entry_tree_->selectedEntries());
+}
+
+// -----------------------------------------------------------------------------
 // Opens the currently selected entry in Doom Builder 2 if it is a valid map
 // entry (either a map header or archive in maps/)
 // -----------------------------------------------------------------------------
@@ -3398,8 +3414,10 @@ bool ArchivePanel::handleAction(string_view id)
 		convertTextures();
 	else if (id == "arch_texturex_finderrors")
 		findTextureErrors();
-    else if (id == "arch_zdtextures_clean")
-        findTextureErrors();    // TODO: make it open the clean zdtextures dialog
+    else if (id == "arch_texture_clean_iwaddupes")
+        cleanTextureIwadDupes();
+    else if (id == "arch_zdtextures_clean_singlepatch")
+        cleanZdTextureSinglePatch();
 	else if (id == "arch_map_opendb2")
 		mapOpenDb2();
 	else if (id == "arch_entry_setup_external")
@@ -3789,10 +3807,16 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		SAction::fromId("arch_texturex_finderrors")->addToMenu(&context, true);
 	}
     
+    // Add texturex/zdtextures related menu items if needed
+    if (texturex_selected || zdtextures_selected)
+    {
+        SAction::fromId("arch_texture_clean_iwaddupes")->addToMenu(&context, true);
+    }
+    
     // Add zdtextures related menu items if needed
     if (zdtextures_selected)
     {
-        SAction::fromId("arch_zdtextures_clean")->addToMenu(&context, true);
+        SAction::fromId("arch_zdtextures_clean_singlepatch")->addToMenu(&context, true);
     }
 
 	// 'View As' menu

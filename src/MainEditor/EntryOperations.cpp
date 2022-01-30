@@ -559,6 +559,22 @@ bool entryoperations::findTextureErrors(const vector<ArchiveEntry*>& entries)
 }
 
 // -----------------------------------------------------------------------------
+// Clean texture entries that are duplicates of entries in the iwad
+// -----------------------------------------------------------------------------
+bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries)
+{
+    return false;
+}
+
+// -----------------------------------------------------------------------------
+// Clean ZDTEXTURES entries that are just a single patch
+// -----------------------------------------------------------------------------
+bool entryoperations::cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& entries)
+{
+    return false;
+}
+
+// -----------------------------------------------------------------------------
 // Attempts to compile [entry] as an ACS script.
 // If the entry is named SCRIPTS, the compiled data is imported to the BEHAVIOR
 // entry previous to it, otherwise it is imported to a same-name compiled
