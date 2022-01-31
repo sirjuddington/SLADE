@@ -568,9 +568,9 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
         return false;
     
     int dialogAnswer = wxMessageBox(
-        "This can clean redundant texture entries from a pwad/archive. Newer more advanced source ports like GZDoom can still properly access iwad textures if you don't include their entries in a pwad. However, running this operation should be avoided for wads not intended to run in modern more advanced source ports since they may rely on the TEXTURE1/TEXTURE2 entries in the pwad having all of the same entries as the iwad.",
+        "Don't run this on TEXTURE entries unless your wad/archive is intended for newer more advanced source ports like GZDoom. The newer source ports can still properly access iwad textures if you don't include their entries in a pwad. However, older engines may rely on all of the iwad TEXTUREs being redefined in a pwad to work correctly. You should have nothing to worry about for ZDoom Format TEXTURES files.",
         "Remove duplicate texture entries.",
-        wxOK | wxCANCEL | wxCENTRE | wxICON_INFORMATION);
+        wxOK | wxCANCEL | wxICON_WARNING);
     
     if (dialogAnswer != wxOK)
     {
@@ -696,6 +696,21 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
         {
             log::info(wxString::Format("Found no entries to clean from: %s.", entry->name()));
         }
+    }
+    
+    if (ret)
+    {
+        wxMessageBox(
+            "Found duplicate texture entries to remove. Check the console for output info. The PATCH table was left untouched. You can either delete it or clean it using the Remove Unused Patches tool.",
+            "Remove duplicate texture entries.",
+            wxOK | wxCENTER | wxICON_INFORMATION);
+    }
+    else
+    {
+        wxMessageBox(
+            "Didn't find any duplicate texture entries to remove. Check the console for output info.",
+            "Remove duplicate texture entries.",
+            wxOK | wxCENTER | wxICON_INFORMATION);
     }
     
     return ret;

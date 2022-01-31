@@ -902,9 +902,33 @@ bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
         CTexture* otherTexture = texture_list.texture(otherTextureIndex);
         
         // Compare the textures by simply checking if their asText values are identical
-        // It may be slightly less fast to do it this way but it's very future proof and
-        // deals with textures being extended in one list and not extended format in the other list
-        if (thisTexture->asText() == otherTexture->asText())
+        // It may be slightly less fast to do it this way but it should be fairly future proof if more
+        // things get added and it deals with textures being extended in one list and not extended in
+        // the other list
+        
+        // Copy the textures over to a copy that is extended so asText works and we don't need to worry
+        // about messing with original copies
+        CTexture thisTextureCopy(true);
+        CTexture otherTextureCopy(true);
+        
+        thisTextureCopy.copyTexture(*thisTexture, true);
+        otherTextureCopy.copyTexture(*otherTexture, true);
+        
+        // Force a null texture because that value doesn't transfer from TEXTUREX defs
+        if (a == 0 && otherTextureIndex == 0
+            && (thisTexture->name() == "AASHITTY"
+            || thisTexture->name() == "AASTINKY"
+            || thisTexture->name() == "BADPATCH"
+            || thisTexture->name() == "ABADONE"))
+        {
+            thisTextureCopy.setNullTexture(true);
+            otherTextureCopy.setNullTexture(true);
+        }
+        
+        string thisTextureText = thisTextureCopy.asText();
+        string otherTextureText = otherTextureCopy.asText();
+        
+        if (thisTextureText == otherTextureText)
         {
             log::info(wxString::Format("DELETE Texture: %s. It's FOUND in the other list and IS identical.", thisTexture->name()));
             indicesToRemove.push_back(a);
@@ -913,10 +937,13 @@ bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
         {
             log::info(wxString::Format("KEEP Texture: %s. It's FOUND in the other list but IS NOT identical.", thisTexture->name()));
         }
+        
+        log::info(thisTextureCopy.asText());
+        log::info(otherTextureCopy.asText());
     }
     
     // Remove textures while going through the list back to front
-    for (unsigned a = indicesToRemove.size() - 1; a >= 0; a--)
+    for (int a = indicesToRemove.size() - 1; a >= 0; a--)
     {
         removeTexture(indicesToRemove[a]);
     }
