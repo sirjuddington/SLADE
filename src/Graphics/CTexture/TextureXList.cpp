@@ -895,6 +895,7 @@ bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
         if (otherTextureIndex < 0)
         {
             // Other texture with this name not found
+            log::info(wxString::Format("KEEP Texture: %s. It's NOT in the other list.", thisTexture->name()));
             continue;
         }
         
@@ -902,10 +903,15 @@ bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
         
         // Compare the textures by simply checking if their asText values are identical
         // It may be slightly less fast to do it this way but it's very future proof and
-        // deals with textures being extended format in one list and not extended format in the other list
+        // deals with textures being extended in one list and not extended format in the other list
         if (thisTexture->asText() == otherTexture->asText())
         {
+            log::info(wxString::Format("DELETE Texture: %s. It's FOUND in the other list and IS identical.", thisTexture->name()));
             indicesToRemove.push_back(a);
+        }
+        else
+        {
+            log::info(wxString::Format("KEEP Texture: %s. It's FOUND in the other list but IS NOT identical.", thisTexture->name()));
         }
     }
     

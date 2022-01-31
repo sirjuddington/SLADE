@@ -624,7 +624,10 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
     
     // If we ended up not loading textures from base resource archive
     if (!braTxList.size())
+    {
+        log::error("Base resource archive has no texture entries to compare against");
         return false;
+    }
 
     // Find patch table in parent archive
     auto pnames    = parent->findLast(opt);
@@ -650,9 +653,11 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
             {
                 tx.readTEXTUREXData(entry, ptable, true);
                 isTexturex = true;
+                log::info(wxString::Format("Cleaning duplicate entries from TEXTUREx entry %s.", entry->name()));
             }
             else
             {
+                log::error(wxString::Format("Skipping cleaning TEXTUREx entry %s since this archive has no patch table.", entry->name()));
                 // Skip cleaning this texturex entry if there is no patch table for us to load it with
                 continue;
             }
@@ -660,10 +665,13 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
         else if (entry->type()->id() == "zdtextures")
         {
             tx.readTEXTURESData(entry);
+            log::info(wxString::Format("Cleaning duplicate entries from ZDoom TEXTURES entry %s.", entry->name()));
         }
         
         if (tx.removeDupesFoundIn(braTxList))
         {
+            log::info(wxString::Format("Cleaned entries from: %s.", entry->name()));
+            
             if (tx.size())
             {
                 if (isTexturex)
@@ -679,9 +687,14 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
             {
                 // If we emptied out the entry, just delete it
                 parent->removeEntry(entry);
+                log::info(wxString::Format("%s no longer has any entries so deleting it.", entry->name()));
             }
             
             ret = true;
+        }
+        else
+        {
+            log::info(wxString::Format("Found no entries to clean from: %s.", entry->name()));
         }
     }
     
