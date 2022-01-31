@@ -64,6 +64,7 @@ public:
 	bool convertToTEXTURES();
 	bool findErrors();
     bool removeDupesFoundIn(TextureXList& texture_list);
+    bool cleanTEXTURESsinglePatch(Archive* currentArchive);
 
 private:
 	vector<unique_ptr<CTexture>> textures_;

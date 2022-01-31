@@ -721,7 +721,79 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 // -----------------------------------------------------------------------------
 bool entryoperations::cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& entries)
 {
-    return false;
+    // Check any entries were given
+    if (entries.empty())
+        return false;
+    
+    // Get parent archive of entries
+    auto parent = entries[0]->parent();
+
+    // Can't do anything if entry isn't in an archive
+    if (!parent)
+        return false;
+    
+    if (parent->formatDesc().supports_dirs)
+    {
+        int dialogAnswer = wxMessageBox(
+            "This will remove all textures that are made out of a basic single patch from this textures entry. It will also rename all of the patches to the texture name and move them into the textures folder.",
+            "Clean single patch texture entries.",
+            wxOK | wxCANCEL | wxICON_WARNING);
+        
+        if (dialogAnswer != wxOK)
+        {
+            return false;
+        }
+    }
+    else
+    {
+        // Warn that patch to texture conversion only works archives that support folders
+        wxMessageBox(
+            "This can convert patches for single patch textures into textures but this is only supported for archives that can contain folders. This will move patches into the textures folder for the zdoom format.",
+            "Clean single patch texture entries.",
+            wxOK | wxICON_WARNING);
+    }
+    
+    bool ret = false;
+    
+    for (auto& entry : entries)
+    {
+        TextureXList tx;
+        tx.readTEXTURESData(entry);
+        if (tx.cleanTEXTURESsinglePatch(parent))
+        {
+            log::info(wxString::Format("Cleaned entries from: %s.", entry->name()));
+            
+            if (tx.size())
+            {
+                tx.writeTEXTURESData(entry);
+            }
+            else
+            {
+                // If we emptied out the entry, just delete it
+                parent->removeEntry(entry);
+                log::info(wxString::Format("%s no longer has any entries so deleting it.", entry->name()));
+            }
+            
+            ret = true;
+        }
+    }
+    
+    if (ret)
+    {
+        wxMessageBox(
+            "Found texture entries to clean. Check the console for output info.",
+            "Clean single patch texture entries.",
+            wxOK | wxCENTER | wxICON_INFORMATION);
+    }
+    else
+    {
+        wxMessageBox(
+            "Didn't find any texture entries to clean. Check the console for output info.",
+            "Clean single patch texture entries.",
+            wxOK | wxCENTER | wxICON_INFORMATION);
+    }
+    
+    return ret;
 }
 
 // -----------------------------------------------------------------------------
