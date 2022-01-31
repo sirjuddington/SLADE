@@ -1159,7 +1159,7 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* currentArchive)
         // Currently only supporting converting patch to texture in archives that support directories
         if(!currentArchive->formatDesc().supports_dirs)
         {
-            removalMessages[iter.second] = wxString::Format("DELETE Texture: %s. Would Patch: %s to Texture File: %s but can't since archive doesn't support directories.", texture->name(), patchEntry->name(), texture->name());
+            removalMessages[iter.second] = wxString::Format("DELETE Texture: %s. Would convert Patch: %s to Texture File: %s but can't since archive doesn't support directories.", texture->name(), patchEntry->name(), texture->name());
         }
         else
         {
