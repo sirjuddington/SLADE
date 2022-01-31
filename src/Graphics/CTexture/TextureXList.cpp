@@ -879,3 +879,41 @@ bool TextureXList::findErrors()
 	}
 	return ret;
 }
+
+// -----------------------------------------------------------------------------
+// Find and remove duplicates that exist in another texture list
+// -----------------------------------------------------------------------------
+bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
+{
+    vector<unsigned int> indicesToRemove;
+    
+    for (unsigned a = 0; a < textures_.size(); a++)
+    {
+        CTexture* thisTexture = textures_[a].get();
+        int otherTextureIndex = texture_list.textureIndex(thisTexture->name());
+        
+        if (otherTextureIndex < 0)
+        {
+            // Other texture with this name not found
+            continue;
+        }
+        
+        CTexture* otherTexture = texture_list.texture(otherTextureIndex);
+        
+        // Compare the textures by simply checking if their asText values are identical
+        // It may be slightly less fast to do it this way but it's very future proof and
+        // deals with textures being extended format in one list and not extended format in the other list
+        if (thisTexture->asText() == otherTexture->asText())
+        {
+            indicesToRemove.push_back(a);
+        }
+    }
+    
+    // Remove textures while going through the list back to front
+    for (unsigned a = indicesToRemove.size() - 1; a >= 0; a--)
+    {
+        removeTexture(indicesToRemove[a]);
+    }
+    
+    return indicesToRemove.size();
+}

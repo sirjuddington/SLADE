@@ -63,6 +63,7 @@ public:
 
 	bool convertToTEXTURES();
 	bool findErrors();
+    bool removeDupesFoundIn(TextureXList& texture_list);
 
 private:
 	vector<unique_ptr<CTexture>> textures_;

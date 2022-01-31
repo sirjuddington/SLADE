@@ -563,7 +563,129 @@ bool entryoperations::findTextureErrors(const vector<ArchiveEntry*>& entries)
 // -----------------------------------------------------------------------------
 bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries)
 {
-    return false;
+    // Check any entries were given
+    if (entries.empty())
+        return false;
+    
+    int dialogAnswer = wxMessageBox(
+        "This can clean redundant texture entries from a pwad/archive. Newer more advanced source ports like GZDoom can still properly access iwad textures if you don't include their entries in a pwad. However, running this operation should be avoided for wads not intended to run in modern more advanced source ports since they may rely on the TEXTURE1/TEXTURE2 entries in the pwad having all of the same entries as the iwad.",
+        "Remove duplicate texture entries.",
+        wxOK | wxCANCEL | wxCENTRE | wxICON_INFORMATION);
+    
+    if (dialogAnswer != wxOK)
+    {
+        return false;
+    }
+
+    // Get parent archive of entries
+    auto parent = entries[0]->parent();
+
+    // Can't do anything if entry isn't in an archive
+    if (!parent)
+        return false;
+    
+    // Do nothing if there is no base resource archive,
+    // or if the archive *is* the base resource archive.
+    auto bra = app::archiveManager().baseResourceArchive();
+    if (bra == nullptr || bra == parent)
+        return false;
+    
+    // Now load base resource archive textures into a single list
+    TextureXList braTxList;
+    
+    Archive::SearchOptions opt;
+    opt.match_type = EntryType::fromId("pnames");
+    auto braPnames    = bra->findLast(opt);
+    
+    // Load patch table
+    PatchTable braPtable;
+    if (braPnames)
+    {
+        braPtable.loadPNAMES(braPnames);
+    
+        // Load all Texturex entries
+        Archive::SearchOptions texturexopt;
+        texturexopt.match_type = EntryType::fromId("texturex");
+        
+        for (ArchiveEntry* texturexentry: bra->findAll(texturexopt))
+        {
+            braTxList.readTEXTUREXData(texturexentry, braPtable, true);
+        }
+    }
+    
+    // Load all zdtextures entries
+    Archive::SearchOptions zdtexturesopt;
+    zdtexturesopt.match_type = EntryType::fromId("zdtextures");
+    
+    for (ArchiveEntry* texturesentry: bra->findAll(zdtexturesopt))
+    {
+        braTxList.readTEXTURESData(texturesentry);
+    }
+    
+    // If we ended up not loading textures from base resource archive
+    if (!braTxList.size())
+        return false;
+
+    // Find patch table in parent archive
+    auto pnames    = parent->findLast(opt);
+
+    // Load patch table if we have it
+    PatchTable ptable;
+    if (pnames)
+        ptable.loadPNAMES(pnames);
+
+    bool ret = false;
+    
+    // For each selected entry, perform the clean operation and save it out
+    for (auto& entry : entries)
+    {
+        TextureXList tx;
+        
+        bool isTexturex = false;
+        
+        // If it's a texturex entry
+        if (entry->type()->id() == "texturex")
+        {
+            if (pnames)
+            {
+                tx.readTEXTUREXData(entry, ptable, true);
+                isTexturex = true;
+            }
+            else
+            {
+                // Skip cleaning this texturex entry if there is no patch table for us to load it with
+                continue;
+            }
+        }
+        else if (entry->type()->id() == "zdtextures")
+        {
+            tx.readTEXTURESData(entry);
+        }
+        
+        if (tx.removeDupesFoundIn(braTxList))
+        {
+            if (tx.size())
+            {
+                if (isTexturex)
+                {
+                    tx.writeTEXTUREXData(entry, ptable);
+                }
+                else
+                {
+                    tx.writeTEXTURESData(entry);
+                }
+            }
+            else
+            {
+                // If we emptied out the entry, just delete it
+                parent->removeEntry(entry);
+            }
+            
+            ret = true;
+        }
+    }
+    
+    return ret;
 }
 
 // -----------------------------------------------------------------------------
