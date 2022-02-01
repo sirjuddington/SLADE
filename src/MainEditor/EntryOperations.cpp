@@ -735,7 +735,7 @@ bool entryoperations::cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& ent
     if (parent->formatDesc().supports_dirs)
     {
         int dialogAnswer = wxMessageBox(
-            "This will remove all textures that are made out of a basic single patch from this textures entry. It will also rename all of the patches to the texture name and move them into the textures folder.",
+            "This will remove all textures that are made out of a basic single patch from this textures entry. It will also rename all of the patches to the texture name and move them from the patches to the textures folder.",
             "Clean single patch texture entries.",
             wxOK | wxCANCEL | wxICON_WARNING);
         
@@ -748,9 +748,10 @@ bool entryoperations::cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& ent
     {
         // Warn that patch to texture conversion only works archives that support folders
         wxMessageBox(
-            "This can convert patches for single patch textures into textures but this is only supported for archives that can contain folders. This will move patches into the textures folder for the zdoom format.",
+            "This currently only works with archives that support directories",
             "Clean single patch texture entries.",
             wxOK | wxICON_WARNING);
+        return false;
     }
     
     bool ret = false;

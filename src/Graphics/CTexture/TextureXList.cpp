@@ -965,6 +965,12 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* currentArchive)
         return false;
     }
     
+    if (!currentArchive->formatDesc().supports_dirs)
+    {
+        global::error = "Archive doesn't support directories";
+        return false;
+    }
+    
     std::map<ArchiveEntry*, unsigned int> patchEntryToSinglePatchTextures;
     std::set<ArchiveEntry*> patchEntriesToOmit;
     
@@ -1015,6 +1021,25 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* currentArchive)
         {
             log::info(wxString::Format("KEEP Texture: %s. Its single patch is from a different archive.", texture->name()));
             continue;
+        }
+        
+        // Check if the patch is in the patches directory
+        {
+            ArchiveDir* patchParentDir = patchEntry->parentDir();
+            
+            if (patchParentDir)
+            {
+                while(patchParentDir->parent()->parent())
+                {
+                    patchParentDir = patchParentDir->parent().get();
+                }
+                
+                if (patchParentDir->dirEntry()->upperName() != "PATCHES")
+                {
+                    log::info(wxString::Format("KEEP Texture: %s. Its single patch is not from the patches directory. Found in: \"%s\".", texture->name(), patchParentDir->dirEntry()->name()));
+                    continue;
+                }
+            }
         }
         
         // Check if this patch entry is used in another texture
@@ -1156,27 +1181,20 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* currentArchive)
         
         indicesToRemove.push_back(iter.second);
         
-        // Currently only supporting converting patch to texture in archives that support directories
-        if(!currentArchive->formatDesc().supports_dirs)
-        {
-            removalMessages[iter.second] = wxString::Format("DELETE Texture: %s. Would convert Patch: %s to Texture File: %s but can't since archive doesn't support directories.", texture->name(), patchEntry->name(), texture->name());
-        }
-        else
-        {
-            string::size_type patchExtensionPos = patchEntry->name().find_last_of('.');
-            string patchExtension = patchExtensionPos != string::npos
-                ? patchEntry->name().substr(patchExtensionPos, patchEntry->name().size())
-                : "";
-            
-            string textureFileName = texture->name();
-            textureFileName.append(patchExtension);
-            
-            removalMessages[iter.second] = wxString::Format("DELETE Texture: %s. Convert Patch: %s to Texture File: %s.", texture->name(), patchEntry->name(), textureFileName);
-            
-            auto texturesDir = currentArchive->createDir("textures");
-            patchEntry->rename(textureFileName);
-            currentArchive->moveEntry(patchEntry, 0, texturesDir.get());
-        }
+        // Currently only supporting converting patch to texture in archives that support directories so just move things from patches to textures
+        string::size_type patchExtensionPos = patchEntry->name().find_last_of('.');
+        string patchExtension = patchExtensionPos != string::npos
+            ? patchEntry->name().substr(patchExtensionPos, patchEntry->name().size())
+            : "";
+        
+        string textureFileName = texture->name();
+        textureFileName.append(patchExtension);
+        
+        removalMessages[iter.second] = wxString::Format("DELETE Texture: %s. Convert Patch: %s to Texture File: %s.", texture->name(), patchEntry->name(), textureFileName);
+        
+        auto texturesDir = currentArchive->createDir("textures");
+        patchEntry->rename(textureFileName);
+        currentArchive->moveEntry(patchEntry, 0, texturesDir.get());
     }
     
     std::sort(indicesToRemove.begin(), indicesToRemove.end());
