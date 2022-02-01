@@ -17,8 +17,8 @@ namespace entryoperations
 	bool createTexture(const vector<ArchiveEntry*>& entries);
 	bool convertTextures(const vector<ArchiveEntry*>& entries);
 	bool findTextureErrors(const vector<ArchiveEntry*>& entries);
-    bool cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries);
-    bool cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& entries);
+	bool cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries);
+	bool cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& entries);
 	bool compileACS(ArchiveEntry* entry, bool hexen = false, ArchiveEntry* target = nullptr, wxFrame* parent = nullptr);
 	bool exportAsPNG(ArchiveEntry* entry, const wxString& filename);
 	bool optimizePNG(ArchiveEntry* entry);
