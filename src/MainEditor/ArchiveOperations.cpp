@@ -798,6 +798,19 @@ void archiveoperations::removeUnusedFlats(Archive* archive)
 	wxMessageBox(wxString::Format("Removed %d unused flats", n_removed));
 }
 
+bool archiveoperations::removeUnusedZDoomTextures(Archive* archive)
+{
+	// Check archive was given
+	if (!archive)
+		return;
+
+	// --- Build list of used flats ---
+	TexUsedMap used_textures;
+	int        total_maps = 0;
+	
+	return false;
+}
+
 
 CONSOLE_COMMAND(test_cleantex, 0, false)
 {
@@ -811,6 +824,13 @@ CONSOLE_COMMAND(test_cleanflats, 0, false)
 	auto current = maineditor::currentArchive();
 	if (current)
 		archiveoperations::removeUnusedFlats(current);
+}
+
+CONSOLE_COMMAND(test_cleanzdoomtex, 0, false)
+{
+	auto current = maineditor::currentArchive();
+	if (current)
+		archiveoperations::removeUnusedZDoomTextures(current);
 }
 
 void importEntryDataKeepType(ArchiveEntry* entry, const void* data, unsigned size)

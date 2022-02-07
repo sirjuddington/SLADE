@@ -3260,6 +3260,9 @@ bool ArchivePanel::handleAction(string_view id)
 	// Archive->Maintenance->Remove Unused Flats
 	else if (id == "arch_clean_flats")
 		archiveoperations::removeUnusedFlats(archive.get());
+	
+	else if (id == "arch_clean_zdoom_textures")
+		archiveoperations::removeUnusedZDoomTextures(archive.get());
 
 	// Archive->Maintenance->Check Duplicate Entry Names
 	else if (id == "arch_check_duplicates")
@@ -3511,6 +3514,7 @@ wxMenu* ArchivePanel::createMaintenanceMenu()
 	SAction::fromId("arch_clean_patches")->addToMenu(menu_clean);
 	SAction::fromId("arch_clean_textures")->addToMenu(menu_clean);
 	SAction::fromId("arch_clean_flats")->addToMenu(menu_clean);
+	SAction::fromId("arch_clean_zdoom_textures")->addToMenu(menu_clean);
 	SAction::fromId("arch_clean_iwaddupes")->addToMenu(menu_clean);
 	SAction::fromId("arch_check_duplicates")->addToMenu(menu_clean);
 	SAction::fromId("arch_check_duplicates2")->addToMenu(menu_clean);
