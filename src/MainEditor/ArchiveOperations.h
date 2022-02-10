@@ -9,7 +9,7 @@ bool checkDuplicateEntryNames(Archive* archive);
 bool checkDuplicateEntryContent(Archive* archive);
 void removeUnusedTextures(Archive* archive);
 void removeUnusedFlats(Archive* archive);
-bool removeUnusedZDoomTextures(Archive* archive);
+void removeUnusedZDoomTextures(Archive* archive);
 void removeEntriesUnchangedFromIWAD(Archive* archive);
 
 // Search and replace in maps
