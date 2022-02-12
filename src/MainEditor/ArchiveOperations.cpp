@@ -808,7 +808,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	// It can take over 30 seconds to remove 50 entries! I did a little debugging and found that processing the removedEntry signal is what takes long, but having the archive open in a minimal unmanaged state seems to help
 	
 	int dialogAnswer = wxMessageBox(
-		"This operation is extremely slow if the archive has many entries and is open in SLADE with a tab. This tool will close the archive and reopen it in the background to process it, and save changes when done. You should make sure to save any changes now if you have any. Also, keep in mind this tool won't find any textures you reference in scripts. There is currently limited support for animated and switch textures so the tool will deselect all such textures found in ANIMDEFS by default and you can manually choose to delete them.",
+		"This operation is extremely slow if the archive has many entries and is open in SLADE with a tab. This tool will close the archive and reopen it in the background to process it, and save changes when done. You should make sure to save any changes now if you have any. Also, keep in mind this tool won't find any textures you reference in scripts. There is currently limited support for animated and switch textures so the tool will deselect all such textures found in ANIMDEFS by default and you can manually choose to delete them later. The ANIMDEFS parser itself is not quite reliable yet either and may not handle particularly complex syntax.",
 		"Clean Zdoom Texture Entries.",
 		wxOK | wxCANCEL | wxICON_WARNING);
 	
@@ -981,6 +981,8 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	// Extremely limited animdef parser to just find all PIC entries and parse all RANGE entries
 	for (auto& animdef : animdefs)
 	{
+		log::info(wxString::Format("Found animdef %s.", animdef->name()));
+		
 		Tokenizer tz;
 		tz.setSpecialCharacters("");
 		
@@ -1056,12 +1058,18 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 					exclude_tex[currFullTexName].used = true;
 					exclude_tex[token].used = true;
 					
+					log::info(wxString::Format("Found range animated texture definition %s.", currFullTexName));
+					
 					// Get the range in between
 					for (int texRange = currTexNum + 1; texRange < lastTexNum; ++texRange)
 					{
 						wxString animatedTexName = getAnimatedTexName(lastTexName, texRange, lastTexNumberDigitChars);
 						exclude_tex[animatedTexName].used = true;
+						
+						log::info(wxString::Format("Found range animated texture definition %s.", animatedTexName));
 					}
+					
+					log::info(wxString::Format("Found range animated texture definition %s.", token));
 				}
 			}
 			else if (token == "pic")
@@ -1079,16 +1087,23 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 					{
 						wxString animatedTexName = getAnimatedTexName(currFullTexName, texNum, currTexNumberDigitChars);
 						exclude_tex[animatedTexName].used = true;
+						
+						log::info(wxString::Format("Found pic animated texture definition %s.", animatedTexName));
 					}
 					else
 					{
 						exclude_tex[token].used = true;
+						
+						log::info(wxString::Format("Found pic animated texture definition %s.", token));
 					}
 				}
 			}
 			else if (token == "cameratexture")
 			{
-				exclude_tex[tz.getToken()].used = true;
+				token = tz.getToken();
+				exclude_tex[token].used = true;
+				
+				log::info(wxString::Format("Found cameratexture animated texture definition %s.", token));
 			}
 			
 			// Next token
