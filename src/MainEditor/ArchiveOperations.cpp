@@ -976,6 +976,8 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	animDefsOpt.match_type = EntryType::fromId("z_animdefs");
 	auto animdefs  = archive->findAll(animDefsOpt);
 	
+	TexUsedMap exclude_tex;
+	
 	// Extremely limited animdef parser to just find all PIC entries and parse all RANGE entries
 	for (auto& animdef : animdefs)
 	{
@@ -985,10 +987,112 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		// Open in tokenizer
 		tz.openMem(animdef->data(), "ZDOOM ANIMDEF");
 
+		auto getTexNameAndRangeNum = [](const wxString& texFullName, wxString& texName, long& rangeNumber, int& numberDigitChars)
+		{
+			// If the full thing is a number
+			if (texFullName.ToLong(&rangeNumber))
+			{
+				numberDigitChars = texFullName.length();
+				return true;
+			}
+			
+			size_t texNameEndPos;
+			
+			for (texNameEndPos = texFullName.size() - 1; texNameEndPos >= 0; texNameEndPos--)
+			{
+				wxChar ch = texName[texNameEndPos];
+				
+				if (!wxIsdigit(ch))
+				{
+					break;
+				}
+			}
+			
+			if (texNameEndPos == texFullName.length() - 1)
+			{
+				return false;
+			}
+			
+			texName.assign(texName.SubString(0, texNameEndPos));
+			numberDigitChars = texFullName.size() - texNameEndPos - 1;
+			return texName.Mid(texNameEndPos + 1).ToLong(&rangeNumber);
+		};
+		
+		auto getAnimatedTexName = [](const wxString& texNamePrefix, long texNameNum, int numberDigitChars)
+		{
+			wxString animatedTexName = texNamePrefix;
+			wxString animatexTexNumFormat = wxString::Format("%%0%dd", numberDigitChars);
+			wxString animatedTexNum = wxString::Format(animatexTexNumFormat, texNameNum);
+			
+			animatedTexName.append(animatedTexNum);
+			
+			return animatedTexName;
+		};
+		
 		// Go through text tokens
 		wxString token = tz.getToken();
+		wxString currFullTexName;
+		wxString currTexName;
+		long currTexNum;
+		int currTexNumberDigitChars;
+
 		while (!token.IsEmpty())
 		{
+			if (token == "texture" || token == "flat")
+			{
+				currFullTexName = tz.getToken();
+				getTexNameAndRangeNum(currFullTexName, currTexName, currTexNum, currTexNumberDigitChars);
+			}
+			else if (token == "range")
+			{
+				wxString lastTexName;
+				long lastTexNum;
+				int lastTexNumberDigitChars;
+				
+				token = tz.getToken();
+				
+				if (getTexNameAndRangeNum(token, lastTexName, lastTexNum, lastTexNumberDigitChars))
+				{
+					exclude_tex[currFullTexName].used = true;
+					exclude_tex[token].used = true;
+					
+					// Get the range in between
+					for (int texRange = currTexNum + 1; texRange < lastTexNum; ++texRange)
+					{
+						wxString animatedTexName = getAnimatedTexName(lastTexName, texRange, lastTexNumberDigitChars);
+						exclude_tex[animatedTexName].used = true;
+					}
+				}
+			}
+			else if (token == "pic")
+			{
+				wxString texName;
+				long texNum;
+				int texNumberDigitChars;
+				
+				token = tz.getToken();
+				
+				if (getTexNameAndRangeNum(token, texName, texNum, texNumberDigitChars))
+				{
+					// If the name part is empty, we just have a number
+					if (texName.empty())
+					{
+						wxString animatedTexName = getAnimatedTexName(currFullTexName, texNum, currTexNumberDigitChars);
+						exclude_tex[animatedTexName].used = true;
+					}
+					else
+					{
+						exclude_tex[token].used = true;
+					}
+				}
+			}
+			else if (token == "cameratexture")
+			{
+				exclude_tex[tz.getToken()].used = true;
+			}
+			
+			// Next token
+			token = tz.getToken();
 		}
 	}
 	
@@ -1008,7 +1112,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 		string textureName{ texture->nameNoExt() };
 
-		// TODO: Add if not animated or in a switch
+		// TODO: When animdefs parser is more reliable, exclude animated textures here
 		if (!used_textures[textureName].used)
 		{
 			unused_tex.Add(textureName);
@@ -1019,21 +1123,24 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	// Pop up a dialog with a checkbox list of unused flats
 	wxMultiChoiceDialog texturesDialog(
 		theMainWindow,
-		"The following textures are not used in any map,\nselect which textures to delete. (Note: This tool currently does not handle animated and switch textures, so be careful of removing entries in a set of animated textures.)",
+		"The following textures are not used in any map,\nselect which textures to delete. Textures found in Animdefs are unselected by default.",
 		"Delete Unused Textures",
 		unused_tex);
 
 	// Select all textures initially
 	wxArrayInt selection;
 	for (unsigned a = 0; a < unused_tex.size(); a++)
-		selection.push_back(a);
+	{
+		if (!exclude_tex[unused_tex[a]].used)
+			selection.push_back(a);
+	}
 	texturesDialog.SetSelections(selection);
 
 	int n_removed = 0;
 	if (texturesDialog.ShowModal() == wxID_OK)
 	{
 		// Go through selected flats
-		selection           = texturesDialog.GetSelections();
+		selection = texturesDialog.GetSelections();
 		for (int i : selection)
 		{
 			archive->removeEntry(unused_entries[i]);
@@ -1059,26 +1166,28 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 		string flatname{ flat->nameNoExt() };
 
-		// TODO: Add if not animated or in a switch
+		// TODO: When animdefs parser is more reliable, exclude animated textures here
 		if (!used_textures[flatname].used)
 		{
 			unused_tex.Add(flatname);
 			unused_entries.push_back(flat);
 		}
-			
 	}
 	
 	// Pop up a dialog with a checkbox list of unused flats
 	wxMultiChoiceDialog flatsDialog(
 		theMainWindow,
-		"The following flats are not used in any map,\nselect which flats to delete. (Note: This tool currently does not handle animated and switch textures, so be careful of removing entries in a set of animated textures.)",
+		"The following flats are not used in any map,\nselect which flats to delete. Textures found in Animdefs are unselected by default.",
 		"Delete Unused Flats",
 		unused_tex);
 
 	// Select all flats initially
 	selection.clear();
 	for (unsigned a = 0; a < unused_tex.size(); a++)
-		selection.push_back(a);
+	{
+		if (!exclude_tex[unused_tex[a]].used)
+			selection.push_back(a);
+	}
 	flatsDialog.SetSelections(selection);
 
 	n_removed = 0;
@@ -1095,7 +1204,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 	wxMessageBox(wxString::Format("Removed %d unused flats", n_removed));
 	
-	auto processTextureList = [archive, &used_textures, &unused_tex, &selection, &n_removed]
+	auto processTextureList = [archive, &used_textures, &exclude_tex, &unused_tex, &selection, &n_removed]
 		(ArchiveEntry* textureArchiveEntry, TextureXList& textureList, PatchTable* ptable)
 	{
 		for (unsigned textureIndex = 0; textureIndex < textureList.size(); textureIndex++)
@@ -1111,7 +1220,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 				continue;
 			}
 			
-			// TODO: Add if not animated or in a switch
+			// TODO: When animdefs parser is more reliable, exclude animated textures here
 			if (!used_textures[texture->name()].used)
 				unused_tex.Add(texture->name());
 		}
@@ -1119,14 +1228,17 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		// Pop up a dialog with a checkbox list of unused flats
 		wxMultiChoiceDialog texturesDialog(
 			theMainWindow,
-			wxString::Format("The following textures in entry %s are not used in any map,\nselect which textures to delete. (Note: This tool currently does not handle animated and switch textures, so be careful of removing entries in a set of animated textures.)", textureArchiveEntry->name()),
+			wxString::Format("The following textures in entry %s are not used in any map,\nselect which textures to delete. Textures found in Animdefs are unselected by default.", textureArchiveEntry->name()),
 			"Delete Unused Textures",
 			unused_tex);
 
 		// Select all textures initially
 		selection.clear();
 		for (unsigned a = 0; a < unused_tex.size(); a++)
-			selection.push_back(a);
+		{
+			if (!exclude_tex[unused_tex[a]].used)
+				selection.push_back(a);
+		}
 		texturesDialog.SetSelections(selection);
 
 		n_removed = 0;
