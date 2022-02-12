@@ -973,8 +973,8 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	
 	// Load all animdefs
 	Archive::SearchOptions animDefsOpt;
-	animDefsOpt.match_type = EntryType::fromId("z_animdefs");
-	auto animdefs  = archive->findAll(animDefsOpt);
+	animDefsOpt.match_type = EntryType::fromId("animdefs");
+	auto animdefs = archive->findAll(animDefsOpt);
 	
 	TexUsedMap exclude_tex;
 	
@@ -998,11 +998,11 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 				return true;
 			}
 			
-			size_t texNameEndPos;
+			size_t texNameEndPos = texFullName.size() - 1;
 			
-			for (texNameEndPos = texFullName.size() - 1; texNameEndPos >= 0; texNameEndPos--)
+			for (; texNameEndPos >= 0; texNameEndPos--)
 			{
-				wxChar ch = texName[texNameEndPos];
+				wxChar ch = texFullName[texNameEndPos];
 				
 				if (!wxIsdigit(ch))
 				{
@@ -1015,15 +1015,15 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 				return false;
 			}
 			
-			texName.assign(texName.SubString(0, texNameEndPos));
+			texName.assign(texFullName.SubString(0, texNameEndPos));
 			numberDigitChars = texFullName.size() - texNameEndPos - 1;
-			return texName.Mid(texNameEndPos + 1).ToLong(&rangeNumber);
+			return texFullName.Mid(texNameEndPos + 1).ToLong(&rangeNumber);
 		};
 		
 		auto getAnimatedTexName = [](const wxString& texNamePrefix, long texNameNum, int numberDigitChars)
 		{
 			wxString animatedTexName = texNamePrefix;
-			wxString animatexTexNumFormat = wxString::Format("%%0%dd", numberDigitChars);
+			wxString animatexTexNumFormat = wxString::Format("%%0%dld", numberDigitChars);
 			wxString animatedTexNum = wxString::Format(animatexTexNumFormat, texNameNum);
 			
 			animatedTexName.append(animatedTexNum);
@@ -1040,12 +1040,16 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 		while (!token.IsEmpty())
 		{
-			if (token == "texture" || token == "flat")
+			if (token.CmpNoCase("texture") == 0 || token.CmpNoCase("flat") == 0)
 			{
 				currFullTexName = tz.getToken();
 				getTexNameAndRangeNum(currFullTexName, currTexName, currTexNum, currTexNumberDigitChars);
+				
+				exclude_tex[currFullTexName].used = true;
+				
+				log::info(wxString::Format("Found texture/flat animated texture definition %s.", currFullTexName));
 			}
-			else if (token == "range")
+			else if (token.CmpNoCase("range") == 0)
 			{
 				wxString lastTexName;
 				long lastTexNum;
@@ -1055,10 +1059,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 				
 				if (getTexNameAndRangeNum(token, lastTexName, lastTexNum, lastTexNumberDigitChars))
 				{
-					exclude_tex[currFullTexName].used = true;
 					exclude_tex[token].used = true;
-					
-					log::info(wxString::Format("Found range animated texture definition %s.", currFullTexName));
 					
 					// Get the range in between
 					for (int texRange = currTexNum + 1; texRange < lastTexNum; ++texRange)
@@ -1072,7 +1073,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 					log::info(wxString::Format("Found range animated texture definition %s.", token));
 				}
 			}
-			else if (token == "pic")
+			else if (token.CmpNoCase("pic") == 0)
 			{
 				wxString texName;
 				long texNum;
@@ -1097,13 +1098,33 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 						log::info(wxString::Format("Found pic animated texture definition %s.", token));
 					}
 				}
+				else
+				{
+					exclude_tex[token].used = true;
+					
+					log::info(wxString::Format("Found pic animated texture definition %s.", token));
+				}
 			}
-			else if (token == "cameratexture")
+			else if (token.CmpNoCase("cameratexture") == 0)
 			{
 				token = tz.getToken();
 				exclude_tex[token].used = true;
 				
 				log::info(wxString::Format("Found cameratexture animated texture definition %s.", token));
+			}
+			else if (token.CmpNoCase("switch") == 0)
+			{
+				token = tz.getToken();
+				exclude_tex[token].used = true;
+				
+				log::info(wxString::Format("Found switch animated texture definition %s.", token));
+			}
+			else if (token.CmpNoCase("animateddoor") == 0)
+			{
+				token = tz.getToken();
+				exclude_tex[token].used = true;
+				
+				log::info(wxString::Format("Found animated door animated texture definition %s.", token));
 			}
 			
 			// Next token
