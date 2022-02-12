@@ -803,6 +803,26 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	// Check archive was given
 	if (!archive)
 		return;
+	
+	// Remove entry is super slow if the archive is open in a tab, so warn the user we are closing the tab
+	// It can take over 30 seconds to remove 50 entries! I did a little debugging and found that processing the removedEntry signal is what takes long, but having the archive open in a minimal unmanaged state seems to help
+	
+	int dialogAnswer = wxMessageBox(
+		"This operation is extremely slow if the archive has many entries and is open in SLADE with a tab. This tool will close the archive and reopen it in the background to process it, and save changes when done. You should make sure to save any changes now if you have any. Also, keep in mind this tool won't find any textures you reference in scripts. There is currently limited support for animated and switch textures so the tool will deselect all such textures found in ANIMDEFS by default and you can manually choose to delete them.",
+		"Clean Zdoom Texture Entries.",
+		wxOK | wxCANCEL | wxICON_WARNING);
+	
+	if (dialogAnswer != wxOK)
+	{
+		return;
+	}
+	
+	app::archiveManager().closeArchive(archive);
+	
+	// must keep this smart pointer around or the archive gets dealloced immediately
+	// from the heap and we get huge memory issues while referencing a dangling pointer
+	auto archiveSmartPtr = app::archiveManager().openDirArchive(archive->filename(), false, true);
+	archive = archiveSmartPtr.get();
 
 	// --- Build list of used textures ---
 	TexUsedMap used_textures;
@@ -946,9 +966,31 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	
 	// Check if any maps were found
 	if (total_maps == 0)
-		return false;
+	{
+		wxMessageBox(wxString::Format("Didn't find any maps, so doing no cleanup."));
+		return;
+	}
 	
-	// TODO: read all animation and switch entries so we know which textures are part of an animation set
+	// Load all animdefs
+	Archive::SearchOptions animDefsOpt;
+	animDefsOpt.match_type = EntryType::fromId("z_animdefs");
+	auto animdefs  = archive->findAll(animDefsOpt);
+	
+	// Extremely limited animdef parser to just find all PIC entries and parse all RANGE entries
+	for (auto& animdef : animdefs)
+	{
+		Tokenizer tz;
+		tz.setSpecialCharacters("");
+		
+		// Open in tokenizer
+		tz.openMem(animdef->data(), "ZDOOM ANIMDEF");
+
+		// Go through text tokens
+		wxString token = tz.getToken();
+		while (!token.IsEmpty())
+		{
+		}
+	}
 	
 	// Find all textures
 	Archive::SearchOptions texOpt;
@@ -957,6 +999,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	
 	// Create list of all unused textures
 	wxArrayString unused_tex;
+	vector<ArchiveEntry*> unused_entries;
 	for (auto& texture : textures)
 	{
 		// Skip markers
@@ -967,7 +1010,10 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 		// TODO: Add if not animated or in a switch
 		if (!used_textures[textureName].used)
+		{
 			unused_tex.Add(textureName);
+			unused_entries.push_back(texture);
+		}
 	}
 	
 	// Pop up a dialog with a checkbox list of unused flats
@@ -977,7 +1023,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		"Delete Unused Textures",
 		unused_tex);
 
-	// Select all flats initially
+	// Select all textures initially
 	wxArrayInt selection;
 	for (unsigned a = 0; a < unused_tex.size(); a++)
 		selection.push_back(a);
@@ -990,9 +1036,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		selection           = texturesDialog.GetSelections();
 		for (int i : selection)
 		{
-			texOpt.match_name      = unused_tex[i];
-			ArchiveEntry* entry = archive->findFirst(texOpt);
-			archive->removeEntry(entry);
+			archive->removeEntry(unused_entries[i]);
 			n_removed++;
 		}
 	}
@@ -1006,6 +1050,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	
 	// Create list of all unused flats
 	unused_tex.clear();
+	unused_entries.clear();
 	for (auto& flat : flats)
 	{
 		// Skip markers
@@ -1016,7 +1061,11 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 		// TODO: Add if not animated or in a switch
 		if (!used_textures[flatname].used)
+		{
 			unused_tex.Add(flatname);
+			unused_entries.push_back(flat);
+		}
+			
 	}
 	
 	// Pop up a dialog with a checkbox list of unused flats
@@ -1027,6 +1076,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		unused_tex);
 
 	// Select all flats initially
+	selection.clear();
 	for (unsigned a = 0; a < unused_tex.size(); a++)
 		selection.push_back(a);
 	flatsDialog.SetSelections(selection);
@@ -1035,12 +1085,10 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	if (flatsDialog.ShowModal() == wxID_OK)
 	{
 		// Go through selected flats
-		selection           = flatsDialog.GetSelections();
+		selection = flatsDialog.GetSelections();
 		for (int i : selection)
 		{
-			flatOpt.match_name      = unused_tex[i];
-			ArchiveEntry* entry = archive->findFirst(flatOpt);
-			archive->removeEntry(entry);
+			archive->removeEntry(unused_entries[i]);
 			n_removed++;
 		}
 	}
@@ -1076,6 +1124,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 			unused_tex);
 
 		// Select all textures initially
+		selection.clear();
 		for (unsigned a = 0; a < unused_tex.size(); a++)
 			selection.push_back(a);
 		texturesDialog.SetSelections(selection);
@@ -1146,6 +1195,11 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		
 		processTextureList(texturesentry, textureList, nullptr);
 	}
+	
+	archive->save();
+	
+	wxMessageBox(wxString::Format("Archive %s has been saved to disk. You can reopen it in SLADE now.", archive->filename()));
+	app::archiveManager().closeArchive(archive);
 }
 
 
