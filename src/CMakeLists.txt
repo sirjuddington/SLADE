@@ -21,6 +21,7 @@ if (UNIX OR MINGW)
     else()
         set(WX_TOOL ${wxWidgets_CONFIG_EXECUTABLE})
     endif()
+    set(WX_TOOL /usr/local/bin/wx-config)
     if (NOT WX_TOOL)
         message(FATAL_ERROR
 "\nNo functional wx_config script was found in your PATH.\nIs the wxWidgets development package installed?\nIf you built wxWidgets yourself, you can specify the path to your built wx-config executable via WITH_WXPATH\neg. -DWITH_WXPATH=\"/path/to/wx-config/\""
