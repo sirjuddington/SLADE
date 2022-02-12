@@ -821,7 +821,9 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	
 	// must keep this smart pointer around or the archive gets dealloced immediately
 	// from the heap and we get huge memory issues while referencing a dangling pointer
-	auto archiveSmartPtr = app::archiveManager().openDirArchive(archive->filename(), false, true);
+	auto archiveSmartPtr = archive->formatId() == "folder"
+		? app::archiveManager().openDirArchive(archive->filename(), false, true)
+		: app::archiveManager().openArchive(archive->filename(), false, true);
 	archive = archiveSmartPtr.get();
 
 	// --- Build list of used textures ---
