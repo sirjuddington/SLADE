@@ -1298,10 +1298,9 @@ bool ArchivePanel::deleteEntry(bool confirm)
 	undo_manager_->endRecord(true);
 
 	// Switch to blank entry panel
-	auto sizer = GetSizer();
 	cur_area_->Show(false);
 	cur_area_->nullEntry();
-	sizer->Replace(cur_area_, entry_area_);
+	splitter_->ReplaceWindow(cur_area_, entry_area_);
 	cur_area_ = entry_area_;
 	cur_area_->Show(true);
 	Layout();
