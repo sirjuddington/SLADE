@@ -78,6 +78,8 @@ public:
 	bool compileACS(bool hexen = false) const;
 	bool convertTextures() const;
 	bool findTextureErrors() const;
+	bool cleanTextureIwadDupes() const;
+	bool cleanZdTextureSinglePatch() const;
 	bool mapOpenDb2() const;
 	bool crc32() const;
 
