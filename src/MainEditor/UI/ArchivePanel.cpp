@@ -1049,7 +1049,7 @@ bool ArchivePanel::buildArchive()
 				edir.remove_prefix(1);
 
 			// Skip hidden files
-			if (archive_build_skip_hidden && (edir[0] == '.' || ename[0] == '.'))
+			if (archive_build_skip_hidden && (!edir.empty() && edir[0] == '.' || ename[0] == '.'))
 				continue;
 
 			// Add the entry
