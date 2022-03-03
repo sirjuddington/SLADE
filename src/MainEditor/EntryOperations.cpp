@@ -38,13 +38,11 @@
 #include "BinaryControlLump.h"
 #include "General/Console.h"
 #include "General/Misc.h"
-#include "Graphics/GameFormats.h"
 #include "Graphics/Graphics.h"
+#include "Graphics/SImage/SIFormat.h"
 #include "MainEditor/MainEditor.h"
 #include "SLADEWxApp.h"
-#include "UI/Controls/PaletteChooser.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
-#include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
 #include "UI/TextureXEditor/TextureXEditor.h"
 #include "Utility/FileMonitor.h"
@@ -67,52 +65,6 @@ CVAR(String, path_pngcrush, "", CVar::Flag::Save);
 CVAR(String, path_deflopt, "", CVar::Flag::Save);
 CVAR(String, path_db2, "", CVar::Flag::Save)
 CVAR(Bool, acc_always_show_output, false, CVar::Flag::Save);
-
-
-// -----------------------------------------------------------------------------
-//
-// Structs
-//
-// -----------------------------------------------------------------------------
-namespace
-{
-// Define some png chunk structures
-struct Ihdr
-{
-	uint32_t id;
-	uint32_t width;
-	uint32_t height;
-	uint8_t  cinfo[5];
-};
-
-struct GrabChunk
-{
-	char    name[4];
-	int32_t xoff;
-	int32_t yoff;
-};
-
-struct AlphChunk
-{
-	char name[4];
-};
-
-struct TrnsChunk
-{
-	char    name[4];
-	uint8_t entries[256];
-};
-
-struct TransChunk
-{
-	char name[5];
-};
-
-struct ChunkSize
-{
-	uint32_t size;
-};
-} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -566,13 +518,16 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 	// Check any entries were given
 	if (entries.empty())
 		return false;
-	
-	int dialogAnswer = wxMessageBox(
-		"Don't run this on TEXTURE entries unless your wad/archive is intended for newer more advanced source ports like GZDoom. The newer source ports can still properly access iwad textures if you don't include their entries in a pwad. However, older engines may rely on all of the iwad TEXTUREs being redefined in a pwad to work correctly. You should have nothing to worry about for ZDoom Format TEXTURES files.",
+
+	int dialog_answer = wxMessageBox(
+		"Don't run this on TEXTURE entries unless your wad/archive is intended for newer more advanced source ports "
+		"like GZDoom. The newer source ports can still properly access iwad textures if you don't include their "
+		"entries in a pwad. However, older engines may rely on all of the iwad TEXTUREs being redefined in a pwad to "
+		"work correctly. You should have nothing to worry about for ZDoom Format TEXTURES files.",
 		"Remove duplicate texture entries.",
 		wxOK | wxCANCEL | wxICON_WARNING);
-	
-	if (dialogAnswer != wxOK)
+
+	if (dialog_answer != wxOK)
 	{
 		return false;
 	}
@@ -583,54 +538,54 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 	// Can't do anything if entry isn't in an archive
 	if (!parent)
 		return false;
-	
+
 	// Do nothing if there is no base resource archive,
 	// or if the archive *is* the base resource archive.
 	auto bra = app::archiveManager().baseResourceArchive();
 	if (bra == nullptr || bra == parent)
 		return false;
-	
+
 	// Now load base resource archive textures into a single list
-	TextureXList braTxList;
-	
+	TextureXList bra_tx_list;
+
 	Archive::SearchOptions opt;
-	opt.match_type = EntryType::fromId("pnames");
-	auto braPnames	= bra->findLast(opt);
-	
+	opt.match_type  = EntryType::fromId("pnames");
+	auto bra_pnames = bra->findLast(opt);
+
 	// Load patch table
-	PatchTable braPtable;
-	if (braPnames)
+	PatchTable bra_ptable;
+	if (bra_pnames)
 	{
-		braPtable.loadPNAMES(braPnames);
-	
+		bra_ptable.loadPNAMES(bra_pnames);
+
 		// Load all Texturex entries
 		Archive::SearchOptions texturexopt;
 		texturexopt.match_type = EntryType::fromId("texturex");
-		
-		for (ArchiveEntry* texturexentry: bra->findAll(texturexopt))
+
+		for (ArchiveEntry* texturexentry : bra->findAll(texturexopt))
 		{
-			braTxList.readTEXTUREXData(texturexentry, braPtable, true);
+			bra_tx_list.readTEXTUREXData(texturexentry, bra_ptable, true);
 		}
 	}
-	
+
 	// Load all zdtextures entries
 	Archive::SearchOptions zdtexturesopt;
 	zdtexturesopt.match_type = EntryType::fromId("zdtextures");
-	
-	for (ArchiveEntry* texturesentry: bra->findAll(zdtexturesopt))
+
+	for (ArchiveEntry* texturesentry : bra->findAll(zdtexturesopt))
 	{
-		braTxList.readTEXTURESData(texturesentry);
+		bra_tx_list.readTEXTURESData(texturesentry);
 	}
-	
+
 	// If we ended up not loading textures from base resource archive
-	if (!braTxList.size())
+	if (!bra_tx_list.size())
 	{
 		log::error("Base resource archive has no texture entries to compare against");
 		return false;
 	}
 
 	// Find patch table in parent archive
-	auto pnames	= parent->findLast(opt);
+	auto pnames = parent->findLast(opt);
 
 	// Load patch table if we have it
 	PatchTable ptable;
@@ -638,26 +593,27 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 		ptable.loadPNAMES(pnames);
 
 	bool ret = false;
-	
+
 	// For each selected entry, perform the clean operation and save it out
 	for (auto& entry : entries)
 	{
 		TextureXList tx;
-		
-		bool isTexturex = false;
-		
+
+		bool is_texturex = false;
+
 		// If it's a texturex entry
 		if (entry->type()->id() == "texturex")
 		{
 			if (pnames)
 			{
 				tx.readTEXTUREXData(entry, ptable, true);
-				isTexturex = true;
+				is_texturex = true;
 				log::info(wxString::Format("Cleaning duplicate entries from TEXTUREx entry %s.", entry->name()));
 			}
 			else
 			{
-				log::error(wxString::Format("Skipping cleaning TEXTUREx entry %s since this archive has no patch table.", entry->name()));
+				log::error(wxString::Format(
+					"Skipping cleaning TEXTUREx entry %s since this archive has no patch table.", entry->name()));
 				// Skip cleaning this texturex entry if there is no patch table for us to load it with
 				continue;
 			}
@@ -667,14 +623,14 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 			tx.readTEXTURESData(entry);
 			log::info(wxString::Format("Cleaning duplicate entries from ZDoom TEXTURES entry %s.", entry->name()));
 		}
-		
-		if (tx.removeDupesFoundIn(braTxList))
+
+		if (tx.removeDupesFoundIn(bra_tx_list))
 		{
 			log::info(wxString::Format("Cleaned entries from: %s.", entry->name()));
-			
+
 			if (tx.size())
 			{
-				if (isTexturex)
+				if (is_texturex)
 				{
 					tx.writeTEXTUREXData(entry, ptable);
 				}
@@ -689,7 +645,7 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 				parent->removeEntry(entry);
 				log::info(wxString::Format("%s no longer has any entries so deleting it.", entry->name()));
 			}
-			
+
 			ret = true;
 		}
 		else
@@ -697,11 +653,12 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 			log::info(wxString::Format("Found no entries to clean from: %s.", entry->name()));
 		}
 	}
-	
+
 	if (ret)
 	{
 		wxMessageBox(
-			"Found duplicate texture entries to remove. Check the console for output info. The PATCH table was left untouched. You can either delete it or clean it using the Remove Unused Patches tool.",
+			"Found duplicate texture entries to remove. Check the console for output info. The PATCH table was left "
+			"untouched. You can either delete it or clean it using the Remove Unused Patches tool.",
 			"Remove duplicate texture entries.",
 			wxOK | wxCENTER | wxICON_INFORMATION);
 	}
@@ -712,7 +669,7 @@ bool entryoperations::cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries
 			"Remove duplicate texture entries.",
 			wxOK | wxCENTER | wxICON_INFORMATION);
 	}
-	
+
 	return ret;
 }
 
@@ -724,22 +681,23 @@ bool entryoperations::cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& ent
 	// Check any entries were given
 	if (entries.empty())
 		return false;
-	
+
 	// Get parent archive of entries
 	auto parent = entries[0]->parent();
 
 	// Can't do anything if entry isn't in an archive
 	if (!parent)
 		return false;
-	
+
 	if (parent->formatDesc().supports_dirs)
 	{
-		int dialogAnswer = wxMessageBox(
-			"This will remove all textures that are made out of a basic single patch from this textures entry. It will also rename all of the patches to the texture name and move them from the patches to the textures folder.",
+		int dialog_answer = wxMessageBox(
+			"This will remove all textures that are made out of a basic single patch from this textures entry. It will "
+			"also rename all of the patches to the texture name and move them from the patches to the textures folder.",
 			"Clean single patch texture entries.",
 			wxOK | wxCANCEL | wxICON_WARNING);
-		
-		if (dialogAnswer != wxOK)
+
+		if (dialog_answer != wxOK)
 		{
 			return false;
 		}
@@ -753,9 +711,9 @@ bool entryoperations::cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& ent
 			wxOK | wxICON_WARNING);
 		return false;
 	}
-	
+
 	bool ret = false;
-	
+
 	for (auto& entry : entries)
 	{
 		TextureXList tx;
@@ -763,7 +721,7 @@ bool entryoperations::cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& ent
 		if (tx.cleanTEXTURESsinglePatch(parent))
 		{
 			log::info(wxString::Format("Cleaned entries from: %s.", entry->name()));
-			
+
 			if (tx.size())
 			{
 				tx.writeTEXTURESData(entry);
@@ -774,11 +732,11 @@ bool entryoperations::cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& ent
 				parent->removeEntry(entry);
 				log::info(wxString::Format("%s no longer has any entries so deleting it.", entry->name()));
 			}
-			
+
 			ret = true;
 		}
 	}
-	
+
 	if (ret)
 	{
 		wxMessageBox(
@@ -793,7 +751,7 @@ bool entryoperations::cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& ent
 			"Clean single patch texture entries.",
 			wxOK | wxCENTER | wxICON_INFORMATION);
 	}
-	
+
 	return ret;
 }
 

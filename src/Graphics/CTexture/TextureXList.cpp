@@ -150,7 +150,7 @@ CTexture* TextureXList::texture(string_view name)
 // -----------------------------------------------------------------------------
 // Returns the index of the texture matching [name], or -1 if no match was found
 // -----------------------------------------------------------------------------
-int TextureXList::textureIndex(string_view name)
+int TextureXList::textureIndex(string_view name) const
 {
 	// Search for texture by name
 	for (unsigned a = 0; a < textures_.size(); a++)
@@ -247,7 +247,7 @@ void TextureXList::clear(bool clear_patches)
 // -----------------------------------------------------------------------------
 // Updates all textures in the list to 'remove' [patch]
 // -----------------------------------------------------------------------------
-void TextureXList::removePatch(string_view patch)
+void TextureXList::removePatch(string_view patch) const
 {
 	// Go through all textures
 	for (auto& texture : textures_)
@@ -488,7 +488,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, const PatchTable& pa
 // for patch information.
 // Returns true on success, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table)
+bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table) const
 {
 	// Check entry was given
 	if (!texturex)
@@ -536,10 +536,10 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 
 	// Write header
 	txdata.seek(0, SEEK_SET);
-	SAFEFUNC(txdata.write(&foo, 4));
+	SAFEFUNC(txdata.write(&foo, 4))
 
 	// Go to beginning of texture definitions
-	SAFEFUNC(txdata.seek(4 + (numtextures * 4), SEEK_SET));
+	SAFEFUNC(txdata.seek(4 + (numtextures * 4), SEEK_SET))
 
 	// Write texture entries
 	for (size_t i = 0; i < numtextures; ++i)
@@ -575,7 +575,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 				txdef.flags |= Flags::WorldPanning;
 
 			// Write texture definition
-			SAFEFUNC(txdata.write(&txdef, 22));
+			SAFEFUNC(txdata.write(&txdef, 22))
 
 			break;
 		}
@@ -593,7 +593,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 			txdef.patchcount   = tex->nPatches();
 
 			// Write texture definition
-			SAFEFUNC(txdata.write(&txdef, 8));
+			SAFEFUNC(txdata.write(&txdef, 8))
 
 			break;
 		}
@@ -617,7 +617,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 				txdef.flags |= Flags::WorldPanning;
 
 			// Write texture definition
-			SAFEFUNC(txdata.write(&txdef, 18));
+			SAFEFUNC(txdata.write(&txdef, 18))
 
 			break;
 		}
@@ -649,20 +649,20 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 									// should never happen with the texture editor, though.
 
 			// Write common data
-			SAFEFUNC(txdata.write(&pdef, 6));
+			SAFEFUNC(txdata.write(&pdef, 6))
 
 			// In non-Strife formats, there's some added rubbish
 			if (txformat_ != Format::Strife11)
 			{
 				foo = 0;
-				SAFEFUNC(txdata.write(&foo, 4));
+				SAFEFUNC(txdata.write(&foo, 4))
 			}
 		}
 	}
 
 	// Write offsets
-	SAFEFUNC(txdata.seek(4, SEEK_SET));
-	SAFEFUNC(txdata.write(offsets.data(), 4 * numtextures));
+	SAFEFUNC(txdata.seek(4, SEEK_SET))
+	SAFEFUNC(txdata.write(offsets.data(), 4 * numtextures))
 
 	// Write data to the TEXTUREx entry
 	texturex->importMemChunk(txdata);
@@ -758,7 +758,7 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* textures)
 // Writes the texture list in TEXTURES format to [entry].
 // Returns true on success, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureXList::writeTEXTURESData(ArchiveEntry* textures)
+bool TextureXList::writeTEXTURESData(ArchiveEntry* textures) const
 {
 	// Check format
 	if (txformat_ != Format::Textures)
@@ -822,7 +822,7 @@ bool TextureXList::convertToTEXTURES()
 // -----------------------------------------------------------------------------
 // Search for errors in texture list, return true if any are found
 // -----------------------------------------------------------------------------
-bool TextureXList::findErrors()
+bool TextureXList::findErrors() const
 {
 	bool ret = false;
 
@@ -885,70 +885,70 @@ bool TextureXList::findErrors()
 // -----------------------------------------------------------------------------
 bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
 {
-	vector<unsigned int> indicesToRemove;
-	
+	vector<unsigned int> indices_to_remove;
+
 	for (unsigned a = 0; a < textures_.size(); a++)
 	{
-		CTexture* thisTexture = textures_[a].get();
-		int otherTextureIndex = texture_list.textureIndex(thisTexture->name());
-		
-		if (otherTextureIndex < 0)
+		CTexture* this_texture       = textures_[a].get();
+		int       other_texture_index = texture_list.textureIndex(this_texture->name());
+
+		if (other_texture_index < 0)
 		{
 			// Other texture with this name not found
-			log::info(wxString::Format("KEEP Texture: %s. It's NOT in the other list.", thisTexture->name()));
+			log::info(wxString::Format("KEEP Texture: %s. It's NOT in the other list.", this_texture->name()));
 			continue;
 		}
-		
-		CTexture* otherTexture = texture_list.texture(otherTextureIndex);
-		
+
+		CTexture* other_texture = texture_list.texture(other_texture_index);
+
 		// Compare the textures by simply checking if their asText values are identical
 		// It may be slightly less fast to do it this way but it should be fairly future proof if more
 		// things get added and it deals with textures being extended in one list and not extended in
 		// the other list
-		
+
 		// Copy the textures over to a copy that is extended so asText works and we don't need to worry
 		// about messing with original copies
-		CTexture thisTextureCopy(true);
-		CTexture otherTextureCopy(true);
-		
-		thisTextureCopy.copyTexture(*thisTexture, true);
-		otherTextureCopy.copyTexture(*otherTexture, true);
-		
+		CTexture this_texture_copy(true);
+		CTexture other_texture_copy(true);
+
+		this_texture_copy.copyTexture(*this_texture, true);
+		other_texture_copy.copyTexture(*other_texture, true);
+
 		// Force a null texture because that value doesn't transfer from TEXTUREX defs
-		if (a == 0 && otherTextureIndex == 0
-			&& (thisTexture->name() == "AASHITTY"
-			|| thisTexture->name() == "AASTINKY"
-			|| thisTexture->name() == "BADPATCH"
-			|| thisTexture->name() == "ABADONE"))
+		if (a == 0 && other_texture_index == 0
+			&& (this_texture->name() == "AASHITTY" || this_texture->name() == "AASTINKY"
+				|| this_texture->name() == "BADPATCH" || this_texture->name() == "ABADONE"))
 		{
-			thisTextureCopy.setNullTexture(true);
-			otherTextureCopy.setNullTexture(true);
+			this_texture_copy.setNullTexture(true);
+			other_texture_copy.setNullTexture(true);
 		}
-		
-		string thisTextureText = thisTextureCopy.asText();
-		string otherTextureText = otherTextureCopy.asText();
-		
-		if (thisTextureText == otherTextureText)
+
+		string this_texture_text  = this_texture_copy.asText();
+		string other_texture_text = other_texture_copy.asText();
+
+		if (this_texture_text == other_texture_text)
 		{
-			log::info(wxString::Format("DELETE Texture: %s. It's FOUND in the other list and IS identical.", thisTexture->name()));
-			indicesToRemove.push_back(a);
+			log::info(wxString::Format(
+				"DELETE Texture: %s. It's FOUND in the other list and IS identical.", this_texture->name()));
+			indices_to_remove.push_back(a);
 		}
 		else
 		{
-			log::info(wxString::Format("KEEP Texture: %s. It's FOUND in the other list but IS NOT identical.", thisTexture->name()));
+			log::info(wxString::Format(
+				"KEEP Texture: %s. It's FOUND in the other list but IS NOT identical.", this_texture->name()));
 		}
-		
-		log::info(thisTextureCopy.asText());
-		log::info(otherTextureCopy.asText());
+
+		log::info(this_texture_copy.asText());
+		log::info(other_texture_copy.asText());
 	}
-	
+
 	// Remove textures while going through the list back to front
-	for (int a = indicesToRemove.size() - 1; a >= 0; a--)
+	for (int a = indices_to_remove.size() - 1; a >= 0; a--)
 	{
-		removeTexture(indicesToRemove[a]);
+		removeTexture(indices_to_remove[a]);
 	}
-	
-	return indicesToRemove.size();
+
+	return !indices_to_remove.empty();
 }
 
 // -----------------------------------------------------------------------------
@@ -956,7 +956,7 @@ bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
 // single patch textures with no special options
 // Will also try to move patch entries to the textures namespace
 // -----------------------------------------------------------------------------
-bool TextureXList::cleanTEXTURESsinglePatch(Archive* currentArchive)
+bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 {
 	// Check format is appropriate
 	if (txformat_ != Format::Textures)
@@ -964,252 +964,258 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* currentArchive)
 		global::error = "Not TEXTURES format";
 		return false;
 	}
-	
-	if (!currentArchive->formatDesc().supports_dirs)
+
+	if (!current_archive->formatDesc().supports_dirs)
 	{
 		global::error = "Archive doesn't support directories";
 		return false;
 	}
-	
-	std::map<ArchiveEntry*, unsigned int> patchEntryToSinglePatchTextures;
-	std::set<ArchiveEntry*> patchEntriesToOmit;
-	
+
+	std::map<ArchiveEntry*, unsigned int> single_patch_textures;
+	std::set<ArchiveEntry*>               patch_entries_to_omit;
+
 	for (unsigned a = 0; a < textures_.size(); a++)
 	{
 		CTexture* texture = textures_[a].get();
-		
+
 		if (!texture->isExtended())
 		{
 			log::info(wxString::Format("KEEP Texture: %s. It's not extended.", texture->name()));
 			continue;
 		}
-		
+
 		// Check the number of patches
 		if (texture->nPatches() != 1)
 		{
 			log::info(wxString::Format("KEEP Texture: %s. It has non-one number of patches.", texture->name()));
 			continue;
 		}
-		
+
 		// Check for any properties
-		if (texture->scaleX() != 1.0
-			|| texture->scaleY() != 1.0
-			|| texture->offsetX() != 0
-			|| texture->offsetY() != 0
-			|| texture->worldPanning()
-			|| texture->isOptional()
-			|| texture->noDecals()
-			|| texture->nullTexture())
+		if (texture->scaleX() != 1.0 || texture->scaleY() != 1.0 || texture->offsetX() != 0 || texture->offsetY() != 0
+			|| texture->worldPanning() || texture->isOptional() || texture->noDecals() || texture->nullTexture())
 		{
 			log::info(wxString::Format("KEEP Texture: %s. It has some special properties set.", texture->name()));
 			continue;
 		}
-		
+
 		// Check things about the single patch
 		CTPatchEx* patch = dynamic_cast<CTPatchEx*>(texture->patch(0));
-		
+
 		// Check if the single patch is actually a patch in another archive
-		ArchiveEntry* patchEntry = patch->patchEntry(nullptr);
-		
-		if (!patchEntry)
+		ArchiveEntry* patch_entry = patch->patchEntry(nullptr);
+
+		if (!patch_entry)
 		{
-			log::info(wxString::Format("KEEP Texture: %s. Its single patch %s failed to load.", texture->name(), patch->name()));
+			log::info(wxString::Format(
+				"KEEP Texture: %s. Its single patch %s failed to load.", texture->name(), patch->name()));
 			continue;
 		}
-		
-		if (patchEntry->parent() != currentArchive)
+
+		if (patch_entry->parent() != current_archive)
 		{
-			log::info(wxString::Format("KEEP Texture: %s. Its single patch is from a different archive.", texture->name()));
+			log::info(
+				wxString::Format("KEEP Texture: %s. Its single patch is from a different archive.", texture->name()));
 			continue;
 		}
-		
+
 		// Check if the patch is in the patches directory
 		{
-			ArchiveDir* patchParentDir = patchEntry->parentDir();
-			
-			if (patchParentDir)
+			ArchiveDir* patch_parent_dir = patch_entry->parentDir();
+
+			if (patch_parent_dir)
 			{
-				while(patchParentDir->parent()->parent())
+				while (patch_parent_dir->parent()->parent())
 				{
-					patchParentDir = patchParentDir->parent().get();
+					patch_parent_dir = patch_parent_dir->parent().get();
 				}
-				
-				if (patchParentDir->dirEntry()->upperName() != "PATCHES")
+
+				if (patch_parent_dir->dirEntry()->upperName() != "PATCHES")
 				{
-					log::info(wxString::Format("KEEP Texture: %s. Its single patch is not from the patches directory. Found in: \"%s\".", texture->name(), patchParentDir->dirEntry()->name()));
+					log::info(wxString::Format(
+						"KEEP Texture: %s. Its single patch is not from the patches directory. Found in: \"%s\".",
+						texture->name(),
+						patch_parent_dir->dirEntry()->name()));
 					continue;
 				}
 			}
 		}
-		
+
 		// Check if this patch entry is used in another texture
-		auto otherTextureIter = patchEntryToSinglePatchTextures.find(patchEntry);
-		if (otherTextureIter != patchEntryToSinglePatchTextures.end())
+		auto other_texture_iter = single_patch_textures.find(patch_entry);
+		if (other_texture_iter != single_patch_textures.end())
 		{
-			log::info(wxString::Format("KEEP Textures: %s and %s. They are both using the same single patch %s.", texture->name(), textures_[otherTextureIter->second]->name(), patch->name()));
-			patchEntriesToOmit.insert(patchEntry);
+			log::info(wxString::Format(
+				"KEEP Textures: %s and %s. They are both using the same single patch %s.",
+				texture->name(),
+				textures_[other_texture_iter->second]->name(),
+				patch->name()));
+			patch_entries_to_omit.insert(patch_entry);
 			continue;
 		}
-		
+
 		// Check if the single patch is at 0,0 with no other special placement, and matches the texture size
-		if (patch->xOffset() != 0
-			|| patch->yOffset() != 0)
+		if (patch->xOffset() != 0 || patch->yOffset() != 0)
 		{
 			log::info(wxString::Format("KEEP Texture: %s. Its single patch has non-zero offsets.", texture->name()));
 			continue;
 		}
-		
+
 		SImage img;
-		img.open(patchEntry->data());
-		
+		img.open(patch_entry->data());
+
 		// Check if the single patch size matches the texture size
-		if (img.width() != texture->width()
-			|| img.height() != texture->height())
+		if (img.width() != texture->width() || img.height() != texture->height())
 		{
-			log::info(wxString::Format("KEEP Texture: %s. Its single patch has different dimensions from the texture.", texture->name()));
+			log::info(wxString::Format(
+				"KEEP Texture: %s. Its single patch has different dimensions from the texture.", texture->name()));
 			continue;
 		}
-		
+
 		// Check for any properties
-		if (patch->flipX()
-			|| patch->flipY()
-			|| patch->useOffsets()
-			|| patch->rotation() != 0
-			|| patch->alpha() < 1.0f
-			|| !(strutil::equalCI(patch->style(), "Copy"))
-			|| patch->blendType() != CTPatchEx::BlendType::None)
+		if (patch->flipX() || patch->flipY() || patch->useOffsets() || patch->rotation() != 0 || patch->alpha() < 1.0f
+			|| !(strutil::equalCI(patch->style(), "Copy")) || patch->blendType() != CTPatchEx::BlendType::None)
 		{
-			log::info(wxString::Format("KEEP Texture: %s. Its single patch has some special properties set.", texture->name()));
+			log::info(wxString::Format(
+				"KEEP Texture: %s. Its single patch has some special properties set.", texture->name()));
 			continue;
 		}
-		
+
 		log::info(wxString::Format("MAYBE DELETE Texture: %s. It's a basic single patch texture.", texture->name()));
-		patchEntryToSinglePatchTextures[patchEntry] = a;
+		single_patch_textures[patch_entry] = a;
 	}
-	
-	// Remove all patchEntriesToOmit
-	for (ArchiveEntry* patchEntryToOmit : patchEntriesToOmit)
+
+	// Remove all patch_entries_to_omit
+	for (ArchiveEntry* patch_entry_to_omit : patch_entries_to_omit)
 	{
-		patchEntryToSinglePatchTextures.erase(patchEntryToSinglePatchTextures.find(patchEntryToOmit));
+		single_patch_textures.erase(single_patch_textures.find(patch_entry_to_omit));
 	}
-	
-	patchEntriesToOmit.clear();
-	
+
+	patch_entries_to_omit.clear();
+
 	// Now that it found all the single patch textures, make sure those patches aren't used in any other texture
-	if (!patchEntryToSinglePatchTextures.size())
+	if (single_patch_textures.empty())
 	{
 		return false;
 	}
-	
+
 	// Now load base resource archive textures into a single list
-	TextureXList archiveTxList;
-	
+	TextureXList archive_tx_list;
+
 	Archive::SearchOptions opt;
 	opt.match_type = EntryType::fromId("pnames");
-	auto pnames = currentArchive->findLast(opt);
-	
+	auto pnames    = current_archive->findLast(opt);
+
 	// Load patch table
 	PatchTable ptable;
 	if (pnames)
 	{
 		ptable.loadPNAMES(pnames);
-	
+
 		// Load all Texturex entries
 		Archive::SearchOptions texturexopt;
 		texturexopt.match_type = EntryType::fromId("texturex");
-		
-		for (ArchiveEntry* texturexentry: currentArchive->findAll(texturexopt))
+
+		for (ArchiveEntry* texturexentry : current_archive->findAll(texturexopt))
 		{
-			archiveTxList.readTEXTUREXData(texturexentry, ptable, true);
+			archive_tx_list.readTEXTUREXData(texturexentry, ptable, true);
 		}
 	}
-	
+
 	// Load all zdtextures entries
 	Archive::SearchOptions zdtexturesopt;
 	zdtexturesopt.match_type = EntryType::fromId("zdtextures");
-	
-	for (ArchiveEntry* texturesentry: currentArchive->findAll(zdtexturesopt))
+
+	for (ArchiveEntry* texturesentry : current_archive->findAll(zdtexturesopt))
 	{
-		archiveTxList.readTEXTURESData(texturesentry);
+		archive_tx_list.readTEXTURESData(texturesentry);
 	}
-	
+
 	// See if any other textures use any of the patch entries
-	for (int a = 0; a < archiveTxList.textures_.size(); a++)
+	for (auto& a : archive_tx_list.textures_)
 	{
-		CTexture* texture = archiveTxList.textures_[a].get();
-		
+		CTexture* texture = a.get();
+
 		for (int p = 0; p < texture->nPatches(); p++)
 		{
-			ArchiveEntry* patchEntry = texture->patches()[p]->patchEntry(nullptr);
-			
-			auto iter = patchEntryToSinglePatchTextures.find(patchEntry);
-			
+			ArchiveEntry* patch_entry = texture->patches()[p]->patchEntry(nullptr);
+
+			auto iter = single_patch_textures.find(patch_entry);
+
 			// If we found a texture that isn't the texture the patch is associated to
-			if (iter != patchEntryToSinglePatchTextures.end()
-				&& textures_[iter->second]->name() != texture->name())
+			if (iter != single_patch_textures.end() && textures_[iter->second]->name() != texture->name())
 			{
-				log::info(wxString::Format("KEEP Textures: %s and %s. They are both using patch %s.", texture->name(), textures_[iter->second]->name(), texture->patches()[p]->name()));
-				patchEntriesToOmit.insert(patchEntry);
+				log::info(wxString::Format(
+					"KEEP Textures: %s and %s. They are both using patch %s.",
+					texture->name(),
+					textures_[iter->second]->name(),
+					texture->patches()[p]->name()));
+				patch_entries_to_omit.insert(patch_entry);
 				continue;
 			}
 		}
 	}
-	
+
 	// Remove all patchEntriesToOmit
-	for (ArchiveEntry* patchEntryToOmit : patchEntriesToOmit)
+	for (ArchiveEntry* patch_entry_to_omit : patch_entries_to_omit)
 	{
-		patchEntryToSinglePatchTextures.erase(patchEntryToSinglePatchTextures.find(patchEntryToOmit));
+		single_patch_textures.erase(single_patch_textures.find(patch_entry_to_omit));
 	}
-	
-	patchEntriesToOmit.clear();
-	
-	if (!patchEntryToSinglePatchTextures.size())
+
+	patch_entries_to_omit.clear();
+
+	if (single_patch_textures.empty())
 	{
 		return false;
 	}
-	
+
 	// Now remove the texture entries and convert the patches to textures themselves
-	
+
 	// Build a list of texture indices to remove so we remove it in back to front order
-	vector<unsigned int> indicesToRemove;
-	std::map<unsigned int, wxString> removalMessages;
-	
-	for (auto iter : patchEntryToSinglePatchTextures)
+	vector<unsigned int>             indices_to_remove;
+	std::map<unsigned int, wxString> removal_messages;
+
+	for (auto iter : single_patch_textures)
 	{
-		ArchiveEntry* patchEntry = iter.first;
-		CTexture* texture = textures_[iter.second].get();
-		
-		indicesToRemove.push_back(iter.second);
-		
-		// Currently only supporting converting patch to texture in archives that support directories so just move things from patches to textures
-		string::size_type patchExtensionPos = patchEntry->name().find_last_of('.');
-		string patchExtension = patchExtensionPos != string::npos
-			? patchEntry->name().substr(patchExtensionPos, patchEntry->name().size())
-			: "";
-		
-		string textureFileName = texture->name();
-		textureFileName.append(patchExtension);
-		
-		removalMessages[iter.second] = wxString::Format("DELETE Texture: %s. Convert Patch: %s to Texture File: %s.", texture->name(), patchEntry->name(), textureFileName);
-		
-		auto texturesDir = currentArchive->createDir("textures");
-		patchEntry->rename(textureFileName);
-		currentArchive->moveEntry(patchEntry, 0, texturesDir.get());
+		ArchiveEntry* patch_entry = iter.first;
+		CTexture*     texture    = textures_[iter.second].get();
+
+		indices_to_remove.push_back(iter.second);
+
+		// Currently only supporting converting patch to texture in archives that support directories so just move
+		// things from patches to textures
+		string::size_type patch_extension_pos = patch_entry->name().find_last_of('.');
+		string            patch_extension    = patch_extension_pos != string::npos ?
+												  patch_entry->name().substr(patch_extension_pos, patch_entry->name().size()) :
+                                                  "";
+
+		string texture_file_name = texture->name();
+		texture_file_name.append(patch_extension);
+
+		removal_messages[iter.second] = wxString::Format(
+			"DELETE Texture: %s. Convert Patch: %s to Texture File: %s.",
+			texture->name(),
+			patch_entry->name(),
+			texture_file_name);
+
+		auto textures_dir = current_archive->createDir("textures");
+		patch_entry->rename(texture_file_name);
+		current_archive->moveEntry(patch_entry, 0, textures_dir.get());
 	}
-	
-	std::sort(indicesToRemove.begin(), indicesToRemove.end());
-	
+
+	std::sort(indices_to_remove.begin(), indices_to_remove.end());
+
 	// Print the removal messages in original alphabetical texture order so it's easier to parse the output log
-	for (int a = 0; a < indicesToRemove.size(); a++)
+	for (unsigned int& a : indices_to_remove)
 	{
-		log::info(removalMessages[indicesToRemove[a]]);
+		log::info(removal_messages[a]);
 	}
-	
+
 	// Remove textures while going through the list back to front
-	for (int a = indicesToRemove.size() - 1; a >= 0; a--)
+	for (int a = indices_to_remove.size() - 1; a >= 0; a--)
 	{
-		removeTexture(indicesToRemove[a]);
+		removeTexture(indices_to_remove[a]);
 	}
-	
+
 	return true;
 }

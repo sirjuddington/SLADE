@@ -476,36 +476,43 @@ void ArchivePanel::bindEvents(Archive* archive)
 	btn_clear_filter_->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnClearFilter, this);
 
 	// Update splitter position cvar when moved
-	splitter_->Bind(wxEVT_SPLITTER_SASH_POS_CHANGED, [this](wxSplitterEvent& e) {
-		if (auto archive = archive_.lock().get())
+	splitter_->Bind(
+		wxEVT_SPLITTER_SASH_POS_CHANGED,
+		[this](wxSplitterEvent& e)
 		{
-			if (archive->formatDesc().supports_dirs)
-				ap_splitter_position_tree = e.GetSashPosition();
-			else
-				ap_splitter_position_list = e.GetSashPosition();
-		}
-	});
+			if (auto archive = archive_.lock().get())
+			{
+				if (archive->formatDesc().supports_dirs)
+					ap_splitter_position_tree = e.GetSashPosition();
+				else
+					ap_splitter_position_list = e.GetSashPosition();
+			}
+		});
 
 	// Update entry moving toolbar if sorting changed
-	entry_tree_->Bind(wxEVT_DATAVIEW_COLUMN_SORTED, [this](wxDataViewEvent& e) {
-		toolbar_elist_->enableGroup("_Moving", canMoveEntries());
-	});
+	entry_tree_->Bind(
+		wxEVT_DATAVIEW_COLUMN_SORTED,
+		[this](wxDataViewEvent& e) { toolbar_elist_->enableGroup("_Moving", canMoveEntries()); });
 
 	// Update this tab's name in the parent notebook when the archive is saved
-	sc_archive_saved_ = archive->signals().saved.connect([this](Archive& a) {
-		auto parent = dynamic_cast<wxAuiNotebook*>(GetParent());
-		parent->SetPageText(parent->GetPageIndex(this), a.filename(false));
-	});
+	sc_archive_saved_ = archive->signals().saved.connect(
+		[this](Archive& a)
+		{
+			auto parent = dynamic_cast<wxAuiNotebook*>(GetParent());
+			parent->SetPageText(parent->GetPageIndex(this), a.filename(false));
+		});
 
 	// Close current entry panel if it's entry was removed
-	sc_entry_removed_ = archive->signals().entry_removed.connect([this](Archive&, ArchiveDir&, ArchiveEntry& entry) {
-		if (currentArea()->entry() == &entry)
+	sc_entry_removed_ = archive->signals().entry_removed.connect(
+		[this](Archive&, ArchiveDir&, ArchiveEntry& entry)
 		{
-			currentArea()->closeEntry();
-			currentArea()->openEntry(nullptr);
-			currentArea()->Show(false);
-		}
-	});
+			if (currentArea()->entry() == &entry)
+			{
+				currentArea()->closeEntry();
+				currentArea()->openEntry(nullptr);
+				currentArea()->Show(false);
+			}
+		});
 }
 
 // -----------------------------------------------------------------------------
@@ -3259,7 +3266,7 @@ bool ArchivePanel::handleAction(string_view id)
 	// Archive->Maintenance->Remove Unused Flats
 	else if (id == "arch_clean_flats")
 		archiveoperations::removeUnusedFlats(archive.get());
-	
+
 	else if (id == "arch_clean_zdoom_textures")
 		archiveoperations::removeUnusedZDoomTextures(archive.get());
 
@@ -3632,20 +3639,20 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 
 	// Check what types exist in the selection
 	// TODO: This stuff is absolutely terrible, nicer system needed
-	bool gfx_selected      = false;
-	bool png_selected      = false;
-	bool bas_selected      = false;
-	bool wav_selected      = false;
-	bool dsnd_selected     = false;
-	bool mus_selected      = false;
-	bool text_selected     = false;
-	bool unknown_selected  = false;
-	bool texturex_selected = false;
+	bool gfx_selected        = false;
+	bool png_selected        = false;
+	bool bas_selected        = false;
+	bool wav_selected        = false;
+	bool dsnd_selected       = false;
+	bool mus_selected        = false;
+	bool text_selected       = false;
+	bool unknown_selected    = false;
+	bool texturex_selected   = false;
 	bool zdtextures_selected = false;
-	bool modified_selected = false;
-	bool map_selected      = false;
-	bool swan_selected     = false;
-	bool voxel_selected    = false;
+	bool modified_selected   = false;
+	bool map_selected        = false;
+	bool swan_selected       = false;
+	bool voxel_selected      = false;
 	//	bool rle_selected = false;
 	wxString category = "";
 	for (auto& entry : selection)
