@@ -225,12 +225,13 @@ bool CTextureCanvas::openTexture(CTexture* tex, Archive* parent)
 void CTextureCanvas::draw()
 {
 	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	glViewport(0, 0, size.x, size.y);
 
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
+	glOrtho(0, size.x, size.y, 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -266,7 +267,8 @@ void CTextureCanvas::drawTexture()
 	glPushMatrix();
 
 	// Translate to middle of the canvas
-	glTranslated(GetSize().x * 0.5, GetSize().y * 0.5, 0);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	glTranslated(size.x * 0.5, size.y * 0.5, 0);
 
 	// Zoom
 	const double yscale = tx_arc ? scale_ * 1.2 : scale_;
@@ -684,8 +686,9 @@ Vec2i CTextureCanvas::screenToTexPosition(int x, int y) const
 	}
 
 	// Get top-left of texture in screen coordinates (ie relative to the top-left of the canvas)
-	int left = GetSize().x * 0.5 + offset_.x;
-	int top  = GetSize().y * 0.5 + offset_.y;
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	int left = size.x * 0.5 + offset_.x;
+	int top  = size.y * 0.5 + offset_.y;
 
 	// Adjust for view type
 	const double yscale = tx_arc ? scale_ * 1.2 : scale_;
@@ -737,8 +740,9 @@ Vec2i CTextureCanvas::texToScreenPosition(int x, int y) const
 	const double yscale = tx_arc ? scale_ * 1.2 : scale_;
 	const double halfx  = texture_->width() * 0.5 * scale_ * tscalex;
 	const double halfy  = texture_->height() * 0.5 * yscale * tscaley;
-	double       left   = offset_.x + GetSize().x * 0.5 - halfx;
-	double       top    = -offset_.y + GetSize().y * 0.5 - halfy;
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	double       left   = offset_.x + size.x * 0.5 - halfx;
+	double       top    = -offset_.y + size.y * 0.5 - halfy;
 
 	// Adjust for view types
 	if (view_type_ == View::Sprite || view_type_ == View::HUD)
@@ -822,7 +826,7 @@ void CTextureCanvas::onMouseEvent(wxMouseEvent& e)
 		// Pan if middle button is down
 		if (e.MiddleIsDown())
 		{
-			offset_   = offset_ + Vec2d(e.GetPosition().x - mouse_prev_.x, e.GetPosition().y - mouse_prev_.y);
+			offset_   = offset_ + Vec2d(e.GetPosition().x * GetContentScaleFactor() - mouse_prev_.x, e.GetPosition().y * GetContentScaleFactor() - mouse_prev_.y);
 			refresh   = true;
 			dragging_ = true;
 		}
@@ -867,5 +871,5 @@ void CTextureCanvas::onMouseEvent(wxMouseEvent& e)
 		Refresh();
 
 	// Update 'previous' mouse coordinates
-	mouse_prev_.set(e.GetPosition().x, e.GetPosition().y);
+	mouse_prev_.set(e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor());
 }

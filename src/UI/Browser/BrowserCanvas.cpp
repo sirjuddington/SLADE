@@ -81,7 +81,8 @@ int BrowserCanvas::getViewedIndex()
 	if (items_filter_.empty())
 		return -1;
 
-	int viewport_height = GetSize().y;
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	int viewport_height = size.y;
 	int row_height      = fullItemSizeY();
 	int viewport_mid_y  = yoff_ + viewport_height / 2.0;
 	int viewed_row      = viewport_mid_y / row_height;
@@ -148,12 +149,13 @@ int BrowserCanvas::fullItemSizeY() const
 void BrowserCanvas::draw()
 {
 	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	glViewport(0, 0, size.x, size.y);
 
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
+	glOrtho(0, size.x, size.y, 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -206,7 +208,7 @@ void BrowserCanvas::draw()
 	// Draw items
 	int x         = item_border_;
 	int y         = item_border_;
-	int col_width = GetSize().x / num_cols_;
+	int col_width = size.x / num_cols_;
 	int col       = 0;
 	top_index_    = -1;
 	for (unsigned a = 0; a < items_filter_.size(); a++)
@@ -221,7 +223,7 @@ void BrowserCanvas::draw()
 				y += fullItemSizeY();
 
 				// Canvas is filled, stop drawing
-				if (y > yoff_ + GetSize().y)
+				if (y > yoff_ + size.y)
 					break;
 			}
 			continue;
@@ -287,7 +289,7 @@ void BrowserCanvas::draw()
 			y += fullItemSizeY();
 
 			// Canvas is filled, stop drawing
-			if (y > yoff_ + GetSize().y)
+			if (y > yoff_ + size.y)
 				break;
 		}
 	}
@@ -323,7 +325,8 @@ void BrowserCanvas::updateLayout(int viewed_index)
 		viewed_index = getViewedIndex();
 
 	// Determine number of columns
-	num_cols_ = GetSize().x / fullItemSizeX();
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	num_cols_ = size.x / fullItemSizeX();
 	if (num_cols_ == 0)
 		num_cols_ = 1;
 
@@ -347,7 +350,7 @@ void BrowserCanvas::updateLayout(int viewed_index)
 		// Determine total height of all items
 		int rows            = (double)items_filter_.size() / (double)num_cols_ + 0.9999;
 		int total_height    = rows * fullItemSizeY();
-		int viewport_height = GetSize().y;
+		int viewport_height = size.y;
 
 		// Setup scrollbar
 		scrollbar_->SetScrollbar(scrollbar_->GetThumbPosition(), viewport_height, total_height, viewport_height);
@@ -484,7 +487,8 @@ void BrowserCanvas::showItem(int item, int where)
 		return;
 
 	// Determine y-position of item
-	int num_cols = GetSize().x / fullItemSizeX();
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	int num_cols = size.x / fullItemSizeX();
 	if (num_cols == 0)
 		return;
 	int y_top    = (item / num_cols) * fullItemSizeY();
@@ -492,18 +496,18 @@ void BrowserCanvas::showItem(int item, int where)
 
 	// Check if item is outside current view (but always center an item if
 	// asked)
-	if (y_top < yoff_ || y_bottom > yoff_ + GetSize().y || where == 0)
+	if (y_top < yoff_ || y_bottom > yoff_ + size.y || where == 0)
 	{
 		if (where > 0)
 			// Scroll view to show the item on the top row
 			yoff_ = y_top;
 		else if (where < 0)
 			// Scroll view to show the item on the bottom row
-			yoff_ = y_bottom - GetSize().y;
+			yoff_ = y_bottom - size.y;
 		else
 		{
 			// Scroll view to put the item's middle in the middle of the canvas
-			yoff_ = y_top + (fullItemSizeY() - GetSize().y) / 2;
+			yoff_ = y_top + (fullItemSizeY() - size.y) / 2;
 			if (yoff_ < 0)
 				yoff_ = 0;
 		}
@@ -636,7 +640,8 @@ void BrowserCanvas::onScrollLineDown(wxScrollEvent& e)
 void BrowserCanvas::onScrollPageUp(wxScrollEvent& e)
 {
 	// Scroll up by one screen
-	scrollbar_->SetThumbPosition(yoff_ - GetSize().y);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	scrollbar_->SetThumbPosition(yoff_ - size.y);
 
 	// Update y-offset and refresh
 	yoff_ = scrollbar_->GetThumbPosition();
@@ -650,7 +655,8 @@ void BrowserCanvas::onScrollPageUp(wxScrollEvent& e)
 void BrowserCanvas::onScrollPageDown(wxScrollEvent& e)
 {
 	// Scroll down by one screen
-	scrollbar_->SetThumbPosition(yoff_ + GetSize().y);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	scrollbar_->SetThumbPosition(yoff_ + size.y);
 
 	// Update y-offset and refresh
 	yoff_ = scrollbar_->GetThumbPosition();
@@ -686,11 +692,12 @@ void BrowserCanvas::onMouseEvent(wxMouseEvent& e)
 		item_selected_ = nullptr;
 
 		// Get column clicked & number of columns
-		int col_width = GetSize().x / num_cols_;
-		int col       = e.GetPosition().x / col_width;
+		const wxSize size = GetSize() * GetContentScaleFactor();
+		int col_width = size.x / num_cols_;
+		int col       = e.GetPosition().x * GetContentScaleFactor() / col_width;
 
 		// Get row clicked
-		int row = (e.GetPosition().y - top_y_) / (fullItemSizeY());
+		int row = (e.GetPosition().y * GetContentScaleFactor()  - top_y_) / (fullItemSizeY());
 
 		// Select item
 		selectItem(top_index_ + (row * num_cols_) + col);
@@ -705,7 +712,8 @@ void BrowserCanvas::onMouseEvent(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void BrowserCanvas::onKeyDown(wxKeyEvent& e)
 {
-	int num_cols = GetSize().x / fullItemSizeX();
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	int num_cols = size.x / fullItemSizeX();
 	int offset;
 
 	// Down arrow
@@ -726,11 +734,11 @@ void BrowserCanvas::onKeyDown(wxKeyEvent& e)
 
 	// Page up
 	else if (e.GetKeyCode() == WXK_PAGEUP)
-		offset = -1 * num_cols * max(GetSize().y / fullItemSizeY(), 1);
+		offset = -1 * num_cols * max(size.y / fullItemSizeY(), 1);
 
 	// Page down
 	else if (e.GetKeyCode() == WXK_PAGEDOWN)
-		offset = num_cols * max(GetSize().y / fullItemSizeY(), 1);
+		offset = num_cols * max(size.y / fullItemSizeY(), 1);
 
 	else
 	{

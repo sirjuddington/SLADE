@@ -642,8 +642,9 @@ void MapPreviewCanvas::showMap()
 	offset_       = { m_min.x + (width * 0.5), m_min.y + (height * 0.5) };
 
 	// Zoom to fit whole map
-	double x_scale = ((double)GetClientSize().x) / width;
-	double y_scale = ((double)GetClientSize().y) / height;
+	const wxSize ClientSize = GetClientSize() * GetContentScaleFactor();
+	double x_scale = ((double)ClientSize.x) / width;
+	double y_scale = ((double)ClientSize.y) / height;
 	zoom_          = std::min<double>(x_scale, y_scale);
 	zoom_ *= 0.95;
 }
@@ -662,12 +663,13 @@ void MapPreviewCanvas::draw()
 	auto col_view_thing        = colourconfig::colour("map_view_thing");
 
 	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	glViewport(0, 0, size.x, size.y);
 
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, GetSize().x, 0, GetSize().y, -1, 1);
+	glOrtho(0, size.x, 0, size.y, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -688,7 +690,7 @@ void MapPreviewCanvas::draw()
 	showMap();
 
 	// Translate to middle of canvas
-	glTranslated(GetSize().x * 0.5, GetSize().y * 0.5, 0);
+	glTranslated(size.x * 0.5, size.y * 0.5, 0);
 
 	// Zoom
 	glScaled(zoom_, zoom_, 1);

@@ -82,7 +82,8 @@ DirArchiveUpdateDialog::DirArchiveUpdateDialog(wxWindow* parent, DirArchive* arc
 
 	wxWindowBase::Layout();
 	wxWindowBase::Fit();
-	SetInitialSize(GetSize());
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	SetInitialSize(size);
 }
 
 // -----------------------------------------------------------------------------

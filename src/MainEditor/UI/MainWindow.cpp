@@ -467,8 +467,9 @@ bool MainWindow::exitProgram()
 	// main_window_layout = aui_mgr_->SavePerspective();
 	saveLayout();
 	mw_maximized = IsMaximized();
+	const wxSize size = GetSize() * GetContentScaleFactor();
 	if (!IsMaximized())
-		misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+		misc::setWindowInfo(id_, size.x, size.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
 
 	// Save selected palette
 	global_palette = wxutil::strToView(palette_chooser_->GetStringSelection());

@@ -725,7 +725,7 @@ void GfxConvDialog::onTransColourChanged(wxEvent& e)
 void GfxConvDialog::onPreviewCurrentMouseDown(wxMouseEvent& e)
 {
 	// Get image coordinates of the point clicked
-	auto imgcoord = gfx_current_->imageCoords(e.GetX(), e.GetY());
+	auto imgcoord = gfx_current_->imageCoords(e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor());
 	if (imgcoord.x < 0)
 		return;
 

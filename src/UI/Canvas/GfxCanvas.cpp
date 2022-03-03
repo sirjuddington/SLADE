@@ -94,12 +94,13 @@ void GfxCanvas::setScale(double scale)
 void GfxCanvas::draw()
 {
 	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	glViewport(0, 0, size.x, size.y);
 
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
+	glOrtho(0, size.x, size.y, 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -122,8 +123,8 @@ void GfxCanvas::draw()
 	// Pan if offsets
 	if (view_type_ == View::Centered || view_type_ == View::Sprite || view_type_ == View::HUD)
 	{
-		const int mid_x = GetSize().x / 2;
-		const int mid_y = GetSize().y / 2;
+		const int mid_x = size.x / 2;
+		const int mid_y = size.y / 2;
 		glTranslated(mid_x, mid_y, 0);
 	}
 
@@ -226,8 +227,9 @@ void GfxCanvas::drawImage()
 	{
 		// Draw tiled image
 		gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
+		const wxSize size = GetSize() * GetContentScaleFactor();
 		drawing::drawTextureTiled(
-			tex_image_, math::scaleInverse(GetSize().x, scale_), math::scaleInverse(GetSize().y, scale_));
+			tex_image_, math::scaleInverse(size.x, scale_), math::scaleInverse(size.y, scale_));
 	}
 	else if (drag_origin_.x < 0) // If not dragging
 	{
@@ -304,15 +306,16 @@ void GfxCanvas::updateImageTexture()
 void GfxCanvas::zoomToFit(bool mag, double padding)
 {
 	// Determine padding
-	const double pad = static_cast<double>(std::min<int>(GetSize().x, GetSize().y)) * padding;
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	const double pad = static_cast<double>(std::min<int>(size.x, size.y)) * padding;
 
 	// Get image dimensions
 	const double x_dim = image_.width();
 	const double y_dim = image_.height();
 
 	// Get max scale for x and y (including padding)
-	const double x_scale = (static_cast<double>(GetSize().x) - pad) / x_dim;
-	const double y_scale = (static_cast<double>(GetSize().y) - pad) / y_dim;
+	const double x_scale = (static_cast<double>(size.x) - pad) / x_dim;
+	const double y_scale = (static_cast<double>(size.y) - pad) / y_dim;
 
 	// Set scale to smallest of the 2 (so that none of the image will be clipped)
 	scale_ = std::min<double>(x_scale, y_scale);
@@ -343,8 +346,9 @@ bool GfxCanvas::onImage(int x, int y) const
 Vec2i GfxCanvas::imageCoords(int x, int y) const
 {
 	// Determine top-left coordinates of image in screen coords
-	double       left   = GetSize().x * 0.5 + offset_.x;
-	double       top    = GetSize().y * 0.5 + offset_.y;
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	double       left   = size.x * 0.5 + offset_.x;
+	double       top    = size.y * 0.5 + offset_.y;
 	const double yscale = scale_ * (gfx_arc ? 1.2 : 1);
 
 	if (view_type_ == View::Default || view_type_ == View::Tiled)
@@ -540,8 +544,8 @@ void GfxCanvas::generateBrushShadow()
 // -----------------------------------------------------------------------------
 void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
 {
-	const int  x        = e.GetPosition().x;
-	const int  y        = e.GetPosition().y;
+	const int  x        = e.GetPosition().x * GetContentScaleFactor();
+	const int  y        = e.GetPosition().y * GetContentScaleFactor();
 	const bool on_image = onImage(x, y - 2);
 
 	// Left mouse down
@@ -571,8 +575,8 @@ void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void GfxCanvas::onMouseRightDown(wxMouseEvent& e)
 {
-	const int x = e.GetPosition().x;
-	const int y = e.GetPosition().y - 2;
+	const int x = e.GetPosition().x * GetContentScaleFactor();
+	const int y = e.GetPosition().y * GetContentScaleFactor() - 2;
 
 	// Right mouse down
 	if (e.RightDown() && onImage(x, y))
@@ -609,8 +613,8 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	bool refresh = false;
 
 	// Check if the mouse is over the image
-	const int  x        = e.GetPosition().x;
-	const int  y        = e.GetPosition().y - 2;
+	const int  x        = e.GetPosition().x * GetContentScaleFactor();
+	const int  y        = e.GetPosition().y * GetContentScaleFactor() - 2;
 	const bool on_image = onImage(x, y);
 	cursor_pos_         = imageCoords(x, y);
 	if (on_image && editing_mode_ != EditMode::None)
@@ -644,13 +648,13 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 		}
 		else
 		{
-			drag_pos_.set(e.GetPosition().x, e.GetPosition().y);
+			drag_pos_.set(e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor());
 			refresh = true;
 		}
 	}
 	else if (e.MiddleIsDown())
 	{
-		offset_ = offset_ + Vec2d(e.GetPosition().x - mouse_prev_.x, e.GetPosition().y - mouse_prev_.y);
+		offset_ = offset_ + Vec2d(e.GetPosition().x * GetContentScaleFactor() - mouse_prev_.x, e.GetPosition().y * GetContentScaleFactor() - mouse_prev_.y);
 		refresh = true;
 	}
 	// Right mouse down
@@ -660,7 +664,7 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	if (refresh)
 		Refresh();
 
-	mouse_prev_.set(e.GetPosition().x, e.GetPosition().y);
+	mouse_prev_.set(e.GetPosition().x * GetContentScaleFactor(), e.GetPosition().y * GetContentScaleFactor());
 }
 
 // -----------------------------------------------------------------------------

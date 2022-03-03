@@ -85,12 +85,13 @@ void SideTexCanvas::setTexture(const wxString& tex)
 void SideTexCanvas::draw()
 {
 	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	glViewport(0, 0, size.x, size.y);
 
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
+	glOrtho(0, size.x, size.y, 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -110,7 +111,7 @@ void SideTexCanvas::draw()
 	if (texture_ && texture_ != gl::Texture::missingTexture())
 	{
 		glEnable(GL_TEXTURE_2D);
-		drawing::drawTextureWithin(texture_, 0, 0, GetSize().x, GetSize().y, 0);
+		drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 0);
 	}
 	else if (texture_ == gl::Texture::missingTexture())
 	{
@@ -118,7 +119,7 @@ void SideTexCanvas::draw()
 		auto tex = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
 		glEnable(GL_TEXTURE_2D);
 		gl::setColour(180, 0, 0);
-		drawing::drawTextureWithin(tex, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
+		drawing::drawTextureWithin(tex, 0, 0, size.x, size.y, 0, 0.25);
 	}
 
 	// Swap buffers (ie show what was drawn)
