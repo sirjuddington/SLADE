@@ -75,7 +75,9 @@ void SectorTextureOverlay::update(long frametime)
 void SectorTextureOverlay::draw(int width, int height, float fade)
 {
 	// Get colours
-	auto& col_fg = colourconfig::colDef("map_overlay_foreground");
+	auto& col_fg      = colourconfig::colDef("map_overlay_foreground");
+	auto  col_fg_rgba = col_fg.colour;
+	col_fg_rgba.a *= fade;
 
 	// Draw background
 	glDisable(GL_TEXTURE_2D);
@@ -136,14 +138,14 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 		"Floor:",
 		middlex_ - border_ - tex_size_ * 0.5,
 		middley_ - tex_size_ * 0.5 - 18,
-		col_fg.colour,
+		col_fg_rgba,
 		drawing::Font::Bold,
 		drawing::Align::Center);
 	drawing::drawText(
 		ftex,
 		middlex_ - border_ - tex_size_ * 0.5,
 		middley_ + tex_size_ * 0.5 + 2,
-		col_fg.colour,
+		col_fg_rgba,
 		drawing::Font::Bold,
 		drawing::Align::Center);
 
@@ -159,14 +161,14 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 		"Ceiling:",
 		middlex_ + border_ + tex_size_ * 0.5,
 		middley_ - tex_size_ * 0.5 - 18,
-		col_fg.colour,
+		col_fg_rgba,
 		drawing::Font::Bold,
 		drawing::Align::Center);
 	drawing::drawText(
 		ctex,
 		middlex_ + border_ + tex_size_ * 0.5,
 		middley_ + tex_size_ * 0.5 + 2,
-		col_fg.colour,
+		col_fg_rgba,
 		drawing::Font::Bold,
 		drawing::Align::Center);
 }
