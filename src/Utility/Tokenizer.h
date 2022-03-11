@@ -105,6 +105,8 @@ public:
 	bool          advIfNextNC(const char* check, size_t inc = 1);
 	void          advToNextLine();
 	void          advToEndOfLine();
+	void          advUntil(const char* end);
+	void          advUntilNC(const char* end);
 	void          skipSection(const char* begin, const char* end, bool allow_quoted = false);
 	vector<Token> getTokensUntil(const char* end);
 	vector<Token> getTokensUntilNC(const char* end);
