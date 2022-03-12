@@ -1125,14 +1125,25 @@ void Edit2D::deleteSector() const
 		else
 			continue;
 
-		if (side->texMiddle() != "-")
+		if (side->texMiddle() != MapSide::TEX_NONE)
 			continue;
 
 		// Inherit textures from upper or lower
-		if (side->texUpper() != "-")
+		if (side->texUpper() != MapSide::TEX_NONE)
 			side->setTexMiddle(side->texUpper());
-		else if (side->texLower() != "-")
+		else if (side->texLower() != MapSide::TEX_NONE)
 			side->setTexMiddle(side->texLower());
+
+		// If there still isn't a texture, find an adjacent texture to use
+		if (side->texMiddle() == MapSide::TEX_NONE)
+		{
+			auto adj_tex = context_.map().adjacentLineTexture(line->v1());
+			if (adj_tex == MapSide::TEX_NONE)
+				adj_tex = context_.map().adjacentLineTexture(line->v2());
+
+			if (adj_tex != MapSide::TEX_NONE)
+				side->setTexMiddle(adj_tex);
+		}
 
 		// Clear any existing textures, which are no longer visible
 		side->setTexUpper(MapSide::TEX_NONE);
