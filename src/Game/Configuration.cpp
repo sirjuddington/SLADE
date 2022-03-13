@@ -92,6 +92,7 @@ void Configuration::setDefaults()
 	supported_features_.clear();
 	udmf_features_.clear();
 	special_presets_.clear();
+	player_eye_height_ = 41;
 }
 
 // -----------------------------------------------------------------------------
@@ -388,6 +389,11 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 		else if (strutil::equalCI(node->name(), "long_names"))
 			supported_features_[Feature::LongNames] = node->boolValue();
 
+		// 3d mode camera eye height
+		else if (node->nameIsCI("player_eye_height"))
+			player_eye_height_ = node->intValue();
+
+		// UDMF features
 		READ_BOOL(udmf_features_[UDMFFeature::Slopes], udmf_slopes);                      // UDMF slopes
 		READ_BOOL(udmf_features_[UDMFFeature::FlatLighting], udmf_flat_lighting);         // UDMF flat lighting
 		READ_BOOL(udmf_features_[UDMFFeature::FlatPanning], udmf_flat_panning);           // UDMF flat panning
