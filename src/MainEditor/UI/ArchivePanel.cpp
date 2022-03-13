@@ -1742,7 +1742,12 @@ bool ArchivePanel::openTab() const
 
 	// Open each in its own tab
 	for (auto& entry : selection)
-		maineditor::openEntry(entry);
+	{
+		if (strutil::startsWith(entry->typeString(), "archive_"))
+			app::archiveManager().openArchive(entry);
+		else
+			maineditor::openEntry(entry);
+	}
 
 	return true;
 }
