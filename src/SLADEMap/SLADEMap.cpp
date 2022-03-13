@@ -1012,7 +1012,7 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 			VECTOR_ADD_UNIQUE(connected_lines, connected_line);
 
 	// Split lines (by vertices)
-	const double split_dist = 0.1;
+	constexpr double split_dist = 0.1;
 	// Split existing lines that vertices moved onto
 	for (auto* merged : merged_vertices)
 		splitLinesAt(merged, split_dist);
@@ -1103,7 +1103,7 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 			if (line1->vertex1_ == line2->vertex1_ && line1->vertex2_ == line2->vertex2_
 				|| line1->vertex1_ == line2->vertex2_ && line1->vertex2_ == line2->vertex1_)
 			{
-				auto* remove_line = mergeOverlappingLines(line2, line1);
+				auto* remove_line = mergeOverlappingLines(line1, line2);
 				VECTOR_ADD_UNIQUE(remove_lines, remove_line);
 
 				// Don't check against any more lines if we just decided to remove this one
@@ -1138,28 +1138,9 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 	if (!remove_lines.empty())
 		merged = true;
 
-	// Correct sector references
-	correctSectors(connected_lines, true);
-	/*if (merged)
-		correctSectors(connected_lines_, true);
-	else
-	{
-		for (unsigned a = 0; a < connected_lines_.size(); a++)
-		{
-			MapSector* s1 = getLineSideSector(connected_lines_[a], true);
-			MapSector* s2 = getLineSideSector(connected_lines_[a], false);
-
-			if (s1)
-				setLineSector(connected_lines_[a]->index, s1->index, true);
-			else
-				removeSide(connected_lines_[a]->side1);
-
-			if (s2)
-				setLineSector(connected_lines_[a]->index, s2->index, false);
-			else
-				removeSide(connected_lines_[a]->side2);
-		}
-	}*/
+	// Correct sector references if any merging was done
+	if (merged)
+		correctSectors(connected_lines, true);
 
 	// Flip any one-sided lines that only have a side 2
 	for (auto& connected_line : connected_lines)
@@ -1228,12 +1209,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		MapLine* line;
 		bool     front;
 		bool     ignore;
-		Edge(MapLine* line, bool front)
-		{
-			this->line  = line;
-			this->front = front;
-			ignore      = false;
-		}
+		Edge(MapLine* line, bool front) : line{ line }, front{ front }, ignore{ false } {}
 	};
 
 	// Create a list of line sides (edges) to perform sector creation with
