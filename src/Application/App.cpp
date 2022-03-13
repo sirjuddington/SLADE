@@ -259,7 +259,8 @@ void readConfigFile()
 		{
 			while (!tz.checkOrEnd("}"))
 			{
-				archive_manager.addBaseResourcePath(tz.current().text);
+				auto path = wxString::FromUTF8(tz.current().text.c_str());
+				archive_manager.addBaseResourcePath(wxutil::strToView(path));
 				tz.adv();
 			}
 
@@ -271,7 +272,8 @@ void readConfigFile()
 		{
 			while (!tz.checkOrEnd("}"))
 			{
-				archive_manager.addRecentFile(tz.current().text);
+				auto path = wxString::FromUTF8(tz.current().text.c_str());
+				archive_manager.addRecentFile(wxutil::strToView(path));
 				tz.adv();
 			}
 
