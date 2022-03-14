@@ -34,6 +34,7 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Tokenizer.h"
+#include "UI/WxUtils.h"
 #include <charconv>
 #include <regex>
 
@@ -1221,6 +1222,16 @@ string_view strutil::viewFromChars(const char* chars, unsigned max_length)
 	}
 
 	return { chars, size };
+}
+
+string strutil::toUTF8(string_view str)
+{
+	return wxutil::strFromView(str).ToUTF8().data();
+}
+
+string strutil::fromUTF8(string_view str)
+{
+	return wxString::FromUTF8(str.data(), str.length());
 }
 
 

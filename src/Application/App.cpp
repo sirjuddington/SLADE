@@ -247,7 +247,15 @@ void readConfigFile()
 			// Keep reading name/value pairs until we hit the ending '}'
 			while (!tz.checkOrEnd("}"))
 			{
-				CVar::set(tz.current().text, tz.peek().text);
+				if (tz.peek().quoted_string)
+				{
+					// String CVar values are written in UTF8
+					auto val = wxString::FromUTF8(tz.peek().text.c_str());
+					CVar::set(tz.current().text, val);
+				}
+				else
+					CVar::set(tz.current().text, tz.peek().text);
+
 				tz.adv(2);
 			}
 
@@ -289,7 +297,8 @@ void readConfigFile()
 		{
 			while (!tz.checkOrEnd("}"))
 			{
-				nodebuilders::addBuilderPath(tz.current().text, tz.peek().text);
+				auto path = wxString::FromUTF8(tz.peek().text.c_str());
+				nodebuilders::addBuilderPath(tz.current().text, wxutil::strToView(path));
 				tz.adv(2);
 			}
 
@@ -301,7 +310,8 @@ void readConfigFile()
 		{
 			while (!tz.checkOrEnd("}"))
 			{
-				executables::setGameExePath(tz.current().text, tz.peek().text);
+				auto path = wxString::FromUTF8(tz.peek().text.c_str());
+				executables::setGameExePath(tz.current().text, wxutil::strToView(path));
 				tz.adv(2);
 			}
 
@@ -586,7 +596,7 @@ void app::saveConfigFile()
 	file.Write(" *****************************************************/\n\n");
 
 	// Write cvars
-	file.Write(CVar::writeAll());
+	file.Write(CVar::writeAll(), wxConvUTF8);
 
 	// Write base resource archive paths
 	file.Write("\nbase_resource_paths\n{\n");
