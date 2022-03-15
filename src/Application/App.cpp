@@ -107,7 +107,7 @@ CVAR(String, temp_location_custom, "", CVar::Flag::Save)
 CVAR(Bool, setup_wizard_run, false, CVar::Flag::Save)
 
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 //
 // app::Version Struct Functions
 //
@@ -251,7 +251,7 @@ void readConfigFile()
 				{
 					// String CVar values are written in UTF8
 					auto val = wxString::FromUTF8(tz.peek().text.c_str());
-					CVar::set(tz.current().text, val);
+					CVar::set(tz.current().text, val.ToStdString());
 				}
 				else
 					CVar::set(tz.current().text, tz.peek().text);

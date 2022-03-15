@@ -1231,7 +1231,7 @@ string strutil::toUTF8(string_view str)
 
 string strutil::fromUTF8(string_view str)
 {
-	return wxString::FromUTF8(str.data(), str.length());
+	return wxString::FromUTF8(str.data(), str.length()).ToStdString();
 }
 
 
