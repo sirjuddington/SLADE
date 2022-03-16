@@ -32,7 +32,9 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "App.h"
 #include "FileUtils.h"
+#include "StringUtils.h"
 #include <filesystem>
 #include <fstream>
 
@@ -63,6 +65,35 @@ bool fileutil::dirExists(string_view path)
 {
 	auto fs_path = fs::path{ path };
 	return fs::exists(fs_path) && fs::is_directory(fs_path);
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if [path] is a valid executable (platform dependant)
+// -----------------------------------------------------------------------------
+bool fileutil::validExecutable(string_view path)
+{
+	// Special handling for MacOS .app dir
+	if (app::platform() == app::Platform::MacOS)
+	{
+		if (strutil::endsWithCI(path, ".app") && dirExists(path))
+			return true;
+	}
+
+	// Invalid if file doesn't exist
+	if (!fileExists(path))
+		return false;
+
+	// Check for .exe or .bat extension on Windows
+	if (app::platform() == app::Platform::Windows)
+	{
+		if (!strutil::endsWithCI(path, ".exe") && !strutil::endsWithCI(path, ".bat"))
+			return false;
+	}
+
+	// TODO: Check for executable permission on Linux/MacOS
+
+	// Passed all checks, is valid executable
+	return true;
 }
 
 // -----------------------------------------------------------------------------

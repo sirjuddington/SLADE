@@ -8,6 +8,7 @@ namespace fileutil
 {
 	bool           fileExists(string_view path);
 	bool           dirExists(string_view path);
+	bool           validExecutable(string_view path);
 	bool           removeFile(string_view path);
 	bool           copyFile(string_view from, string_view to, bool overwrite = true);
 	bool           readFileToString(const string& path, string& str);

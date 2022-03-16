@@ -18,6 +18,12 @@ bool openFile(
 	string_view fn_default  = "",
 	int         ext_default = 0);
 
+bool openExecutableFile(
+	FDInfo& info,
+	string_view caption,
+	wxWindow* parent = nullptr,
+	string_view fn_default = "");
+
 bool openFiles(
 	FDInfo&     info,
 	string_view caption,
