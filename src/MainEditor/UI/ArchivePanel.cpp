@@ -3252,11 +3252,7 @@ bool ArchivePanel::handleAction(string_view id)
 
 	// 'Up Folder' button
 	else if (id == "arch_elist_updir")
-	{
-		entry_tree_->Freeze();
 		entry_tree_->upDir();
-		entry_tree_->Thaw();
-	}
 
 
 	// ------------------------------------------------------------------------

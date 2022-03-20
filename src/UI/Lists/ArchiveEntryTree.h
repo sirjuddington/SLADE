@@ -110,7 +110,7 @@ namespace ui
 		}
 		void setFilter(string_view name, string_view category);
 		void collapseAll(const ArchiveDir& dir_start);
-		void upDir() const;
+		void upDir();
 
 		// Overrides
 		void EnsureVisible(const wxDataViewItem& item, const wxDataViewColumn* column = nullptr) override;

@@ -808,7 +808,9 @@ ArchiveEntryTree::ArchiveEntryTree(
 				}
 				else
 				{
+					Freeze();
 					model_->setRootDir(e.GetItem());
+					Thaw();
 				}
 			}
 			else
@@ -1188,7 +1190,7 @@ void ArchiveEntryTree::collapseAll(const ArchiveDir& dir_start)
 // -----------------------------------------------------------------------------
 // Go up a directory
 // -----------------------------------------------------------------------------
-void ArchiveEntryTree::upDir() const
+void ArchiveEntryTree::upDir()
 {
 	auto       dir_current = model_->rootDir();
 	const auto archive     = archive_.lock();
@@ -1198,7 +1200,9 @@ void ArchiveEntryTree::upDir() const
 		if (archive->rootDir().get() == dir_current)
 			return;
 
+		Freeze();
 		model_->setRootDir(dir_current->parent());
+		Thaw();
 	}
 }
 
