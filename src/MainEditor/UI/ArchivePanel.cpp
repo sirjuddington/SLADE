@@ -543,7 +543,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	if (has_dirs && elist_no_tree)
 	{
 		text_path_ = new wxTextCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
-		//text_path_->Enable(false);
+		// text_path_->Enable(false);
 		btn_up_dir_ = new SIconButton(panel, "upfolder");
 		entry_tree_->setPathTextCtrl(text_path_);
 	}
@@ -623,11 +623,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	hbox->Add(vbox, 1, wxEXPAND);
 	if (text_path_)
 	{
-		vbox->Add(
-			wxutil::layoutHorizontally({ text_path_, btn_up_dir_ }, 0),
-			0,
-			wxEXPAND | wxRIGHT | wxTOP,
-			ui::pad());
+		vbox->Add(wxutil::layoutHorizontally({ text_path_, btn_up_dir_ }, 0), 0, wxEXPAND | wxRIGHT | wxTOP, ui::pad());
 	}
 	vbox->Add(entry_tree_, 1, wxEXPAND | wxRIGHT | wxBOTTOM | wxTOP, ui::pad());
 	vbox->Add(panel_filter_, 0, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
@@ -784,7 +780,7 @@ bool ArchivePanel::newEntry()
 
 	// Show new entry dialog
 	auto* last_entry = entry_tree_->lastSelectedEntry(true);
-	auto* dlg        = new ui::NewEntryDialog(this, *archive, last_entry);
+	auto* dlg        = new ui::NewEntryDialog(this, *archive, entry_tree_->currentSelectedDir());
 	if (dlg->ShowModal() != wxID_OK)
 		return false;
 
@@ -893,8 +889,7 @@ bool ArchivePanel::newDirectory()
 		return false;
 
 	// Show new directory dialog
-	auto* last_entry = entry_tree_->lastSelectedEntry(true);
-	auto* dlg        = new ui::NewEntryDialog(this, *archive, last_entry, true);
+	auto* dlg = new ui::NewEntryDialog(this, *archive, entry_tree_->currentSelectedDir(), true);
 	if (dlg->ShowModal() != wxID_OK)
 		return false;
 
@@ -1135,17 +1130,17 @@ bool ArchivePanel::renameEntry(bool each) const
 	if (each || selection.size() == 1)
 	{
 		// If only one entry is selected, or "rename each" mode is desired, just do basic rename
-		for (unsigned a = 0; a < selection.size(); a++)
+		for (auto* entry : selection)
 		{
 			// Prompt for a new name
-			wxString new_name = wxGetTextFromUser("Enter new entry name:", "Rename", selection[a]->name());
+			wxString new_name = wxGetTextFromUser("Enter new entry name:", "Rename", entry->name());
 
 			// Rename entry (if needed)
-			if (!new_name.IsEmpty() && selection[a]->name() != new_name)
+			if (!new_name.IsEmpty() && entry->name() != new_name)
 			{
-				if (!archive->renameEntry(selection[a], new_name.ToStdString()))
+				if (!archive->renameEntry(entry, new_name.ToStdString()))
 					wxMessageBox(
-						wxString::Format("Unable to rename entry %s: %s", selection[a]->name(), global::error),
+						wxString::Format("Unable to rename entry %s: %s", entry->name(), global::error),
 						"Rename Entry",
 						wxICON_EXCLAMATION | wxOK);
 			}
@@ -1217,10 +1212,10 @@ bool ArchivePanel::renameEntry(bool each) const
 	auto selected_dirs = entry_tree_->selectedDirectories();
 
 	// Go through the list
-	for (size_t a = 0; a < selected_dirs.size(); a++)
+	for (auto* dir : selected_dirs)
 	{
 		// Get the current directory's name
-		auto old_name = selected_dirs[a]->name();
+		auto old_name = dir->name();
 
 		// Prompt for a new name
 		auto new_name = wxGetTextFromUser(
@@ -1236,7 +1231,7 @@ bool ArchivePanel::renameEntry(bool each) const
 
 		// Rename the directory if the new entered name is different from the original
 		if (new_name != old_name)
-			archive->renameDir(selected_dirs[a], new_name);
+			archive->renameDir(dir, new_name);
 	}
 
 	// Finish recording undo level

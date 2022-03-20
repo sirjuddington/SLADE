@@ -116,7 +116,12 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 		[this](Archive& archive, ArchiveEntry& entry)
 		{
 			if (entryIsInList(entry))
-				ItemAdded(createItemForDirectory(*entry.parentDir()), wxDataViewItem(&entry));
+			{
+				if (view_type_ == ViewType::Tree)
+					ItemAdded(createItemForDirectory(*entry.parentDir()), wxDataViewItem(&entry));
+				else
+					ItemAdded({}, wxDataViewItem(&entry));
+			}
 		});
 
 	// Entry removed
@@ -124,7 +129,12 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 		[this](Archive& archive, ArchiveDir& dir, ArchiveEntry& entry)
 		{
 			if (entryIsInList(entry))
-				ItemDeleted(createItemForDirectory(dir), wxDataViewItem(&entry));
+			{
+				if (view_type_ == ViewType::Tree)
+					ItemDeleted(createItemForDirectory(dir), wxDataViewItem(&entry));
+				else
+					ItemDeleted({}, wxDataViewItem(&entry));
+			}
 		});
 
 	// Entry modified
@@ -138,12 +148,28 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 	// Dir added
 	connections_ += archive->signals().dir_added.connect(
 		[this](Archive& archive, ArchiveDir& dir)
-		{ ItemAdded(createItemForDirectory(*dir.parent()), wxDataViewItem(dir.dirEntry())); });
+		{
+			if (dirIsInList(dir))
+			{
+				if (view_type_ == ViewType::Tree)
+					ItemAdded(createItemForDirectory(*dir.parent()), wxDataViewItem(dir.dirEntry()));
+				else
+					ItemAdded({}, wxDataViewItem(dir.dirEntry()));
+			}
+		});
 
 	// Dir removed
 	connections_ += archive->signals().dir_removed.connect(
 		[this](Archive& archive, ArchiveDir& parent, ArchiveDir& dir)
-		{ ItemDeleted(createItemForDirectory(parent), wxDataViewItem(dir.dirEntry())); });
+		{
+			if (dirIsInList(dir))
+			{
+				if (view_type_ == ViewType::Tree)
+					ItemDeleted(createItemForDirectory(parent), wxDataViewItem(dir.dirEntry()));
+				else
+					ItemDeleted({}, wxDataViewItem(dir.dirEntry()));
+			}
+		});
 
 	// Entries reordered within dir
 	connections_ += archive->signals().entries_swapped.connect(
@@ -666,7 +692,7 @@ wxDataViewItem ArchiveViewModel::createItemForDirectory(const ArchiveDir& dir) c
 {
 	if (const auto archive = archive_.lock())
 	{
-		if (&dir == archive->rootDir().get())
+		if (&dir == root_dir_.lock().get())
 			return {};
 		else
 			return wxDataViewItem{ dir.dirEntry() };
@@ -744,6 +770,18 @@ bool ArchiveViewModel::entryIsInList(const ArchiveEntry& entry) const
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if [dir] is contained within the current list (ignores filter)
+// -----------------------------------------------------------------------------
+bool ArchiveViewModel::dirIsInList(const ArchiveDir& dir) const
+{
+	switch (view_type_)
+	{
+	case ViewType::List: return dir.parent() == root_dir_.lock();
+	default: return true;
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Returns the ArchiveDir that [item] represents, or nullptr if it isn't a valid
 // directory item
 // -----------------------------------------------------------------------------
@@ -811,6 +849,11 @@ ArchiveEntryTree::ArchiveEntryTree(
 					Freeze();
 					model_->setRootDir(e.GetItem());
 					Thaw();
+
+					// Trigger selection change event (to update UI as needed)
+					wxDataViewEvent de;
+					de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
+					ProcessWindowEvent(de);
 				}
 			}
 			else
@@ -867,13 +910,17 @@ ArchiveEntryTree::ArchiveEntryTree(
 			if (e.GetId() == 0)
 			{
 				// Reset Sorting
-				col_name_->UnsetAsSortKey();
-				col_size_->UnsetAsSortKey();
-				col_type_->UnsetAsSortKey();
+				if (col_name_->IsSortKey())
+					col_name_->UnsetAsSortKey();
+				if (col_size_->IsSortKey())
+					col_size_->UnsetAsSortKey();
+				if (col_type_->IsSortKey())
+					col_type_->UnsetAsSortKey();
 #ifdef __WXGTK__
 				col_index_->SetSortOrder(true);
 #else
-				col_index_->UnsetAsSortKey();
+				if (col_index_->IsSortKey())
+					col_index_->UnsetAsSortKey();
 #endif
 				model_->Resort();
 				wxDataViewEvent de;
@@ -1102,6 +1149,10 @@ wxDataViewItem ArchiveEntryTree::lastSelectedItem() const
 // -----------------------------------------------------------------------------
 ArchiveDir* ArchiveEntryTree::currentSelectedDir() const
 {
+	// List view - just return the current root dir
+	if (model_->viewType() == ArchiveViewModel::ViewType::List)
+		return model_->rootDir();
+
 	auto* archive = archive_.lock().get();
 	if (!archive)
 		return nullptr;
@@ -1124,6 +1175,11 @@ ArchiveDir* ArchiveEntryTree::currentSelectedDir() const
 // -----------------------------------------------------------------------------
 ArchiveDir* ArchiveEntryTree::selectedEntriesDir() const
 {
+	// List view - just return the current root dir
+	if (model_->viewType() == ArchiveViewModel::ViewType::List)
+		return model_->rootDir();
+
+	// Tree view
 	wxDataViewItemArray selection;
 	GetSelections(selection);
 
@@ -1203,6 +1259,11 @@ void ArchiveEntryTree::upDir()
 		Freeze();
 		model_->setRootDir(dir_current->parent());
 		Thaw();
+
+		// Trigger selection change event (to update UI as needed)
+		wxDataViewEvent de;
+		de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
+		ProcessWindowEvent(de);
 	}
 }
 
