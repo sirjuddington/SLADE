@@ -3,17 +3,13 @@
 namespace slade
 {
 class Archive;
-class ArchiveEntry;
+class ArchiveDir;
 namespace ui
 {
 	class NewEntryDialog : public wxDialog
 	{
 	public:
-		NewEntryDialog(
-			wxWindow*           parent,
-			const Archive&      archive,
-			const ArchiveEntry* selected_entry,
-			bool                new_dir = false);
+		NewEntryDialog(wxWindow* parent, const Archive& archive, const ArchiveDir* current_dir, bool new_dir = false);
 
 		wxString entryName() const;
 		int      entryType() const;

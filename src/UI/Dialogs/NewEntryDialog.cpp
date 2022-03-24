@@ -69,25 +69,6 @@ void allDirs(const ArchiveDir& dir, wxArrayString& list)
 	for (const auto& subdir : dir.subdirs())
 		allDirs(*subdir, list);
 }
-
-// -----------------------------------------------------------------------------
-// Returns the path of [entry]'s parent dir (within [root])
-// -----------------------------------------------------------------------------
-wxString entryDirPath(const ArchiveEntry* entry, shared_ptr<ArchiveDir> root)
-{
-	if (!entry)
-		return "/";
-
-	if (entry->type() == EntryType::folderType())
-	{
-		if (auto dir = ArchiveDir::findDirByDirEntry(root, *entry))
-			return dir->path();
-	}
-	else if (auto* dir = entry->parentDir())
-		return dir->path();
-
-	return "/";
-}
 } // namespace slade::ui
 
 
@@ -100,11 +81,7 @@ wxString entryDirPath(const ArchiveEntry* entry, shared_ptr<ArchiveDir> root)
 // -----------------------------------------------------------------------------
 // NewEntryDialog Class Constructor
 // -----------------------------------------------------------------------------
-NewEntryDialog::NewEntryDialog(
-	wxWindow*           parent,
-	const Archive&      archive,
-	const ArchiveEntry* selected_entry,
-	bool                new_dir) :
+NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const ArchiveDir* current_dir, bool new_dir) :
 	wxDialog(parent, -1, new_dir ? "New Directory" : "New Entry")
 {
 	wxutil::setWindowIcon(this, new_dir ? "new_directory" : "new_entry");
@@ -119,7 +96,7 @@ NewEntryDialog::NewEntryDialog(
 	text_entry_name_   = new wxTextCtrl(this, -1);
 	choice_entry_type_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, types);
 	combo_parent_dir_  = new wxComboBox(
-        this, -1, entryDirPath(selected_entry, archive.rootDir()), wxDefaultPosition, wxDefaultSize, all_dirs);
+        this, -1, current_dir ? current_dir->path() : "/", wxDefaultPosition, wxDefaultSize, all_dirs);
 
 
 	// Setup controls
@@ -168,21 +145,24 @@ NewEntryDialog::NewEntryDialog(
 	// --- Bind events ---
 
 	// Entry type changed
-	choice_entry_type_->Bind(wxEVT_CHOICE, [this](wxCommandEvent& e) {
-		using namespace maineditor;
-		if (e.GetInt() == static_cast<int>(NewEntryType::Animated))
+	choice_entry_type_->Bind(
+		wxEVT_CHOICE,
+		[this](wxCommandEvent& e)
 		{
-			text_entry_name_->SetValue("ANIMATED");
-			text_entry_name_->Enable(false);
-		}
-		else if (e.GetInt() == static_cast<int>(NewEntryType::Switches))
-		{
-			text_entry_name_->SetValue("SWITCHES");
-			text_entry_name_->Enable(false);
-		}
-		else
-			text_entry_name_->Enable(true);
-	});
+			using namespace maineditor;
+			if (e.GetInt() == static_cast<int>(NewEntryType::Animated))
+			{
+				text_entry_name_->SetValue("ANIMATED");
+				text_entry_name_->Enable(false);
+			}
+			else if (e.GetInt() == static_cast<int>(NewEntryType::Switches))
+			{
+				text_entry_name_->SetValue("SWITCHES");
+				text_entry_name_->Enable(false);
+			}
+			else
+				text_entry_name_->Enable(true);
+		});
 
 
 	// Init dialog size

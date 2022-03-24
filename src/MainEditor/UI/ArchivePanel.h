@@ -121,10 +121,10 @@ protected:
 
 	// Controls
 	ui::ArchiveEntryTree* entry_tree_       = nullptr;
+	ui::ArchivePathPanel* etree_path_       = nullptr;
 	wxTextCtrl*           text_filter_      = nullptr;
 	wxButton*             btn_clear_filter_ = nullptr;
 	wxChoice*             choice_category_  = nullptr;
-	wxStaticText*         label_path_       = nullptr;
 	SToolBar*             toolbar_elist_    = nullptr;
 	wxPanel*              panel_filter_     = nullptr;
 	wxSplitterWindow*     splitter_         = nullptr;

@@ -59,6 +59,7 @@ EXTERN_CVAR(Bool, tabs_condensed)
 EXTERN_CVAR(Bool, web_dark_theme)
 EXTERN_CVAR(Int, elist_icon_size)
 EXTERN_CVAR(Int, elist_icon_padding)
+EXTERN_CVAR(Bool, elist_no_tree)
 
 
 // -----------------------------------------------------------------------------
@@ -129,6 +130,8 @@ void InterfacePrefsPanel::init()
 		choice_elist_icon_size_->Select(1);
 	else
 		choice_elist_icon_size_->Select(2);
+
+	choice_elist_tree_style_->Select(elist_no_tree ? 1 : 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -163,6 +166,8 @@ void InterfacePrefsPanel::applyPreferences()
 		elist_icon_size = 24;
 	else
 		elist_icon_size = 32;
+
+	elist_no_tree = choice_elist_tree_style_->GetSelection() == 1;
 }
 
 // -----------------------------------------------------------------------------
@@ -235,6 +240,9 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
         0,
         4,
         1);
+	wxString tree_styles[]   = { "Tree", "Flat List" };
+	choice_elist_tree_style_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 2, tree_styles);
+	choice_elist_tree_style_->SetToolTip("The list style to use when the archive supports folders");
 
 	// Layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -245,9 +253,12 @@ wxPanel* InterfacePrefsPanel::setupEntryListTab(wxWindow* stc_tabs)
 	int row = 0;
 	gb_sizer->Add(cb_size_as_string_, { row++, 0 }, { 1, 4 }, wxEXPAND);
 	gb_sizer->Add(cb_filter_dirs_, { row++, 0 }, { 1, 4 }, wxEXPAND);
-	//gb_sizer->Add(cb_elist_bgcol_, { row++, 0 }, { 1, 4 }, wxEXPAND);
-	cb_elist_bgcol_->Show(false);
 	gb_sizer->Add(cb_context_submenus_, { row++, 0 }, { 1, 4 }, wxEXPAND);
+	// gb_sizer->Add(cb_elist_bgcol_, { row++, 0 }, { 1, 4 }, wxEXPAND);
+	cb_elist_bgcol_->Show(false);
+	gb_sizer->Add(new wxStaticText(panel, -1, "Folder List Style:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(choice_elist_tree_style_, { row, 1 }, { 1, 3 }, wxEXPAND);
+	gb_sizer->Add(new wxStaticText(panel, -1, "*"), { row++, 4 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Icon size:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
 	gb_sizer->Add(choice_elist_icon_size_, { row, 1 }, { 1, 1 }, wxEXPAND);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Padding:"), { row, 2 }, { 1, 1 }, wxALIGN_CENTRE_VERTICAL);
