@@ -514,10 +514,6 @@ void ArchivePanel::bindEvents(Archive* archive)
 				currentArea()->Show(false);
 			}
 		});
-
-	// 'Up Directory' button
-	if (btn_up_dir_)
-		btn_up_dir_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { entry_tree_->upDir(); });
 }
 
 // -----------------------------------------------------------------------------
@@ -542,10 +538,8 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	// Create path controls if needed
 	if (has_dirs && elist_no_tree)
 	{
-		text_path_ = new wxTextCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
-		// text_path_->Enable(false);
-		btn_up_dir_ = new SIconButton(panel, "upfolder");
-		entry_tree_->setPathTextCtrl(text_path_);
+		etree_path_ = new ui::ArchivePathPanel(panel);
+		entry_tree_->setPathPanel(etree_path_);
 	}
 
 	// Entry list toolbar
@@ -621,11 +615,15 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	hbox->AddSpacer(min_pad);
 	auto* vbox = new wxBoxSizer(wxVERTICAL);
 	hbox->Add(vbox, 1, wxEXPAND);
-	if (text_path_)
+	if (etree_path_)
 	{
-		vbox->Add(wxutil::layoutHorizontally({ text_path_, btn_up_dir_ }, 0), 0, wxEXPAND | wxRIGHT | wxTOP, ui::pad());
+		vbox->AddSpacer(ui::scalePx(ui::px(ui::Size::PadMinimum)));
+		vbox->Add(etree_path_, 0, wxEXPAND | wxRIGHT, ui::pad());
+		vbox->AddSpacer(ui::scalePx(ui::px(ui::Size::PadMinimum)));
+		vbox->Add(entry_tree_, 1, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
 	}
-	vbox->Add(entry_tree_, 1, wxEXPAND | wxRIGHT | wxBOTTOM | wxTOP, ui::pad());
+	else
+		vbox->Add(entry_tree_, 1, wxEXPAND | wxRIGHT | wxBOTTOM | wxTOP, ui::pad());
 	vbox->Add(panel_filter_, 0, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
 
 	return panel;
@@ -3245,9 +3243,13 @@ bool ArchivePanel::handleAction(string_view id)
 		entry_tree_->Thaw();
 	}
 
-	// 'Up Folder' button
+	// 'Up Directory' button
 	else if (id == "arch_elist_updir")
 		entry_tree_->upDir();
+
+	// 'Home Directory' button
+	else if (id == "arch_elist_homedir")
+		entry_tree_->homeDir();
 
 
 	// ------------------------------------------------------------------------

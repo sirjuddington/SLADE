@@ -1,6 +1,7 @@
 #pragma once
 
 #include "General/Sigslot.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include <wx/dataview.h>
 
 namespace slade
@@ -12,6 +13,19 @@ class UndoManager;
 
 namespace ui
 {
+	class ArchivePathPanel : public wxPanel
+	{
+	public:
+		ArchivePathPanel(wxWindow* parent);
+
+		void setCurrentPath(ArchiveDir* dir) const;
+
+	private:
+		SToolBarButton* btn_home_  = nullptr;
+		SToolBarButton* btn_updir_ = nullptr;
+		wxStaticText*   text_path_ = nullptr;
+	};
+
 	class ArchiveViewModel : public wxDataViewModel
 	{
 	public:
@@ -30,7 +44,7 @@ namespace ui
 		void showModifiedIndicators(bool show) { modified_indicator_ = show; }
 		void setRootDir(shared_ptr<ArchiveDir> dir);
 		void setRootDir(const wxDataViewItem& item);
-		void setPathTextCtrl(wxTextCtrl* text_ctrl);
+		void setPathPanel(ArchivePathPanel* path_panel);
 
 		void openArchive(shared_ptr<Archive> archive, UndoManager* undo_manager, bool force_list = false);
 
@@ -50,7 +64,7 @@ namespace ui
 		bool                 sort_enabled_       = true;
 		bool                 modified_indicator_ = true;
 		ViewType             view_type_          = ViewType::Tree;
-		wxTextCtrl*          text_current_path_  = nullptr;
+		ArchivePathPanel*    path_panel_         = nullptr;
 
 		// wxDataViewModel
 		unsigned int   GetColumnCount() const override { return 4; }
@@ -104,14 +118,15 @@ namespace ui
 		ArchiveDir*           selectedEntriesDir() const;
 		vector<ArchiveDir*>   expandedDirs() const;
 
-		void setPathTextCtrl(wxTextCtrl* text_ctrl) const
+		void setPathPanel(ArchivePathPanel* path_panel) const
 		{
 			if (model_)
-				model_->setPathTextCtrl(text_ctrl);
+				model_->setPathPanel(path_panel);
 		}
 		void setFilter(string_view name, string_view category);
 		void collapseAll(const ArchiveDir& dir_start);
 		void upDir();
+		void homeDir();
 
 		// Overrides
 		void EnsureVisible(const wxDataViewItem& item, const wxDataViewColumn* column = nullptr) override;
@@ -127,6 +142,7 @@ namespace ui
 		void setupColumns();
 		void saveColumnWidths() const;
 		void updateColumnWidths();
+		void setDir(shared_ptr<ArchiveDir> dir);
 	};
 
 } // namespace ui

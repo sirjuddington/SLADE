@@ -88,6 +88,63 @@ EXTERN_CVAR(Bool, list_font_monospace)
 
 // -----------------------------------------------------------------------------
 //
+// ArchivePathPanel Class Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// ArchivePathPanel constructor
+// -----------------------------------------------------------------------------
+ArchivePathPanel::ArchivePathPanel(wxWindow* parent) : wxPanel{ parent }
+{
+	SetSizer(new wxBoxSizer(wxHORIZONTAL));
+
+	btn_home_ = new SToolBarButton(this, "arch_elist_homedir");
+	GetSizer()->Add(btn_home_, 0, wxEXPAND);
+
+	text_path_ = new wxStaticText(
+		this, -1, "", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_START | wxST_NO_AUTORESIZE);
+	GetSizer()->Add(text_path_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+
+	btn_updir_ = new SToolBarButton(this, "arch_elist_updir");
+	GetSizer()->Add(btn_updir_, 0, wxEXPAND);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the current path to where [dir] is in its Archive
+// -----------------------------------------------------------------------------
+void ArchivePathPanel::setCurrentPath(ArchiveDir* dir) const
+{
+	if (dir == nullptr)
+	{
+		text_path_->SetLabel("");
+		text_path_->UnsetToolTip();
+		return;
+	}
+
+	auto is_root = dir == dir->archive()->rootDir().get();
+
+	// Build path string
+	auto path = dir->path();
+	if (!is_root)
+		path.pop_back();                  // Remove ending / if not root dir
+	strutil::replaceIP(path, "/", " > "); // Replace / with >
+	strutil::trimIP(path);
+
+	// Update UI
+	text_path_->SetLabel(path);
+	if (is_root)
+		text_path_->UnsetToolTip();
+	else
+		text_path_->SetToolTip(path);
+	//text_path_->Refresh();
+	btn_updir_->Enable(!is_root);
+	btn_updir_->Refresh();
+}
+
+
+// -----------------------------------------------------------------------------
+//
 // ArchiveViewModel Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -284,8 +341,8 @@ void ArchiveViewModel::setRootDir(shared_ptr<ArchiveDir> dir)
 	sort_enabled_ = true;
 	Resort();
 
-	if (text_current_path_)
-		text_current_path_->SetValue("Path: " + dir->path(true));
+	if (path_panel_)
+		path_panel_->setCurrentPath(dir.get());
 }
 
 // -----------------------------------------------------------------------------
@@ -304,13 +361,13 @@ void ArchiveViewModel::setRootDir(const wxDataViewItem& item)
 // -----------------------------------------------------------------------------
 // Sets the associated path wxTextCtrl
 // -----------------------------------------------------------------------------
-void ArchiveViewModel::setPathTextCtrl(wxTextCtrl* text_ctrl)
+void ArchiveViewModel::setPathPanel(ArchivePathPanel* path_panel)
 {
-	text_current_path_ = text_ctrl;
+	path_panel_ = path_panel;
 
 	auto dir = root_dir_.lock();
-	if (text_current_path_ && dir)
-		text_current_path_->SetValue("Path: " + dir->path(true));
+	if (path_panel_ && dir)
+		path_panel_->setCurrentPath(dir.get());
 }
 
 // -----------------------------------------------------------------------------
@@ -1248,23 +1305,17 @@ void ArchiveEntryTree::collapseAll(const ArchiveDir& dir_start)
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::upDir()
 {
-	auto       dir_current = model_->rootDir();
-	const auto archive     = archive_.lock();
-	if (archive && dir_current)
-	{
-		// Do nothing if already at root
-		if (archive->rootDir().get() == dir_current)
-			return;
+	if (auto dir_current = model_->rootDir())
+		setDir(dir_current->parent());
+}
 
-		Freeze();
-		model_->setRootDir(dir_current->parent());
-		Thaw();
-
-		// Trigger selection change event (to update UI as needed)
-		wxDataViewEvent de;
-		de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
-		ProcessWindowEvent(de);
-	}
+// -----------------------------------------------------------------------------
+// Go to the root directory of the archive
+// -----------------------------------------------------------------------------
+void ArchiveEntryTree::homeDir()
+{
+	if (auto archive = archive_.lock())
+		setDir(archive->rootDir());
 }
 
 // -----------------------------------------------------------------------------
@@ -1388,4 +1439,26 @@ void ArchiveEntryTree::updateColumnWidths()
 	col_size_->SetWidth(col_size_ == last_col ? 0 : elist_colsize_size);
 	col_type_->SetWidth(col_type_ == last_col ? 0 : elist_colsize_type);
 	Thaw();
+}
+
+// -----------------------------------------------------------------------------
+// Sets the root directory to [dir] and updates UI accordingly
+// -----------------------------------------------------------------------------
+void ArchiveEntryTree::setDir(shared_ptr<ArchiveDir> dir)
+{
+	if (const auto archive = archive_.lock())
+	{
+		// Do nothing if already at dir
+		if (model_->rootDir() == dir.get())
+			return;
+
+		Freeze();
+		model_->setRootDir(dir);
+		Thaw();
+
+		// Trigger selection change event (to update UI as needed)
+		wxDataViewEvent de;
+		de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
+		ProcessWindowEvent(de);
+	}
 }
