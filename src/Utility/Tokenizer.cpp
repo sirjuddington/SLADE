@@ -381,6 +381,31 @@ void Tokenizer::advToEndOfLine()
 }
 
 // -----------------------------------------------------------------------------
+// Advances tokens until [end] is found
+// -----------------------------------------------------------------------------
+void Tokenizer::advUntil(const char* end)
+{
+	while (!atEnd())
+	{
+		adv();
+
+		if (token_current_ == end)
+			break;
+	}
+}
+
+void slade::Tokenizer::advUntilNC(const char* end)
+{
+	while (!atEnd())
+	{
+		adv();
+
+		if (strutil::equalCI(token_current_.text, end))
+			break;
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Advances tokens until [end] is found. Can also handle nesting if [begin] is
 // specified. If [allow_quoted] is true, section delimiters will count even if
 // within a quoted string.
@@ -433,7 +458,7 @@ vector<Tokenizer::Token> Tokenizer::getTokensUntilNC(const char* end)
 
 		adv();
 
-		if (token_current_ == end)
+		if (strutil::equalCI(token_current_.text, end))
 			break;
 	}
 

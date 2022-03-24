@@ -103,8 +103,8 @@ MapRenderer3D::MapRenderer3D(SLADEMap* map) : map_{ map }
 
 	// Refresh textures when resources are updated or the main palette is changed
 	sc_resources_updated_ = app::resources().signals().resources_updated.connect([this]() { refreshTextures(); });
-	sc_palette_changed_   = theMainWindow->paletteChooser()->signals().palette_changed.connect(
-        [this]() { refreshTextures(); });
+	sc_palette_changed_   = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]()
+                                                                                             { refreshTextures(); });
 }
 
 // -----------------------------------------------------------------------------
@@ -431,9 +431,8 @@ void MapRenderer3D::cameraApplyGravity(double mult)
 		return;
 
 	// Get target height
-	int view_height = (map_->currentFormat() == MapFormat::Doom64) ? 56 : 41;
-	int fheight     = sector->floor().plane.heightAt(cam_position_.get2d()) + view_height;
-	int cheight     = sector->ceiling().plane.heightAt(cam_position_.get2d());
+	auto fheight = sector->floor().plane.heightAt(cam_position_.get2d()) + game::configuration().playerEyeHeight();
+	auto cheight = sector->ceiling().plane.heightAt(cam_position_.get2d());
 	if (fheight > cheight - 4)
 		fheight = cheight - 4;
 
@@ -1571,9 +1570,10 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Setup quad coordinates
 		double top, bottom;
 		if ((map_->currentFormat() == MapFormat::Doom64)
-			|| ((map_->currentFormat() == MapFormat::UDMF
-				 && game::configuration().featureSupported(UDMFFeature::SideMidtexWrapping)
-				 && line->boolProperty("wrapmidtex"))))
+			|| ((
+				map_->currentFormat() == MapFormat::UDMF
+				&& game::configuration().featureSupported(UDMFFeature::SideMidtexWrapping)
+				&& line->boolProperty("wrapmidtex"))))
 		{
 			top    = lowceil;
 			bottom = highfloor;

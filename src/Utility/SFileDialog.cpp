@@ -99,6 +99,18 @@ bool filedialog::openFile(
 }
 
 // -----------------------------------------------------------------------------
+// Shows a dialog to open a single executable file.
+// Returns true and sets [info] if the user clicked ok, false otherwise
+// -----------------------------------------------------------------------------
+bool filedialog::openExecutableFile(FDInfo& info, string_view caption, wxWindow* parent, string_view fn_default)
+{
+	static auto extensions = app::platform() == app::Platform::Windows ? "Executable files (*.exe)|*.exe;*.bat" :
+                                                                         wxFileSelectorDefaultWildcardStr;
+
+	return openFile(info, caption, extensions, parent, fn_default);
+}
+
+// -----------------------------------------------------------------------------
 // Shows a dialog to open multiple files.
 // Returns true and sets [info] if the user clicked ok, false otherwise
 // -----------------------------------------------------------------------------

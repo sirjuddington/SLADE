@@ -192,8 +192,10 @@ void log::message(MessageType type, string_view text)
 	log.emplace_back(text, type, *std::localtime(&t));
 
 	// Write to log file
-	if (log_file.is_open() && type != MessageType::Console)
+	if (log_file.is_open() && type != MessageType::Console) {
 		sf::err() << log.back().formattedMessageLine() << "\n";
+		sf::err().flush();
+	}
 }
 
 void log::message(MessageType type, int level, string_view text, fmt::format_args args)

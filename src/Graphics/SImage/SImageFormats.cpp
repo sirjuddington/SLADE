@@ -952,7 +952,7 @@ bool SImage::loadJaguarTexture(const uint8_t* gfx_data, int size, int i_width, i
 	// reset data
 	clearData();
 	data_.reSize(width_ * height_);
-	data_.fillData(*gfx_data);
+	memcpy(data_.data(), gfx_data, width_ * height_);
 	mask_.reSize(width_ * height_);
 	mask_.fillData(0xFF);
 

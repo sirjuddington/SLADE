@@ -1312,11 +1312,21 @@ void ArchiveManagerPanel::checkDirArchives()
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::createNewArchive(const wxString& format) const
 {
-	auto* na_dlg = new ui::NewArchiveDialog(maineditor::windowWx());
-	if (na_dlg->ShowModal() == wxID_OK)
+	if (format != "")
 	{
-		if (na_dlg->createdArchive())
-			openTab(app::archiveManager().archiveIndex(na_dlg->createdArchive()));
+		Archive *archive = app::archiveManager().newArchive(format.ToStdString()).get();
+
+		if (archive)
+			openTab(app::archiveManager().archiveIndex(archive));
+	}
+	else
+	{
+		auto* na_dlg = new ui::NewArchiveDialog(maineditor::windowWx());
+		if (na_dlg->ShowModal() == wxID_OK)
+		{
+			if (na_dlg->createdArchive())
+				openTab(app::archiveManager().archiveIndex(na_dlg->createdArchive()));
+		}
 	}
 }
 
@@ -1326,23 +1336,55 @@ void ArchiveManagerPanel::createNewArchive(const wxString& format) const
 // -----------------------------------------------------------------------------
 bool ArchiveManagerPanel::saveEntryChanges(Archive* archive) const
 {
+	bool changes = false;
+	
 	// Go through tabs
 	for (size_t a = 0; a < stc_archives_->GetPageCount(); a++)
 	{
 		// Check page type is "archive"
-		if (stc_archives_->GetPage(a)->GetName().CmpNoCase("archive"))
-			continue;
-
-		// Check for archive match
-		auto ap = dynamic_cast<ArchivePanel*>(stc_archives_->GetPage(a));
-		if (ap->archive() == archive)
+		if (!stc_archives_->GetPage(a)->GetName().CmpNoCase("archive"))
 		{
-			// Save entry changes
-			return ap->saveEntryChanges();
+			// Check for archive match
+			auto ap = dynamic_cast<ArchivePanel*>(stc_archives_->GetPage(a));
+			if (ap->archive() == archive)
+			{
+				// Save entry changes
+				if (ap->saveEntryChanges())
+					changes = true;
+			}
+		}
+
+		// Check page type is "entry"
+		if (!stc_archives_->GetPage(a)->GetName().CmpNoCase("entry"))
+		{
+			// Check for entry parent archive match
+			auto ep = dynamic_cast<EntryPanel*>(stc_archives_->GetPage(a));
+			if (ep->entry()->parent() == archive)
+			{
+				if (ep->isModified() && autosave_entry_changes > 0)
+				{
+					// Ask if needed
+					if (autosave_entry_changes > 1)
+					{
+						int result = wxMessageBox(
+							wxString::Format("Save changes to entry \"%s\"?", ep->entry()->name()),
+							"Unsaved Changes",
+							wxYES_NO | wxICON_QUESTION);
+
+						// Don't save if user clicked no
+						if (result == wxNO)
+							continue;
+					}
+
+					// Save entry changes
+					if (ep->saveEntry())
+						changes = true;
+				}
+			}
 		}
 	}
 
-	return false;
+	return changes;
 }
 
 // -----------------------------------------------------------------------------
@@ -1700,7 +1742,12 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	// File->New Archive
 	if (id == "aman_newarchive")
 		createNewArchive("");
-
+	// Start Page: Create Wad Archive (File->New Archive->wad)
+	else if (id == "aman_newwad")
+		createNewArchive("wad");
+	// Start Page: Create Zip Archive (File->New Archive->zip)
+	else if (id == "aman_newzip")
+		createNewArchive("zip");
 	// File->New Map
 	else if (id == "aman_newmap")
 	{

@@ -113,7 +113,8 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, const Palett
 
 	// Setup dialog size
 	SetInitialSize(wxSize(-1, -1));
-	wxTopLevelWindowBase::SetMinSize(GetSize());
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	wxTopLevelWindowBase::SetMinSize(size);
 	CenterOnParent();
 
 	// Set values

@@ -43,7 +43,7 @@ public:
 	CTexture* texture(string_view name);
 	Format    format() const { return txformat_; }
 	string    textureXFormatString() const;
-	int       textureIndex(string_view name);
+	int       textureIndex(string_view name) const;
 
 	void setFormat(Format format) { txformat_ = format; }
 
@@ -53,16 +53,18 @@ public:
 	unique_ptr<CTexture> replaceTexture(unsigned index, unique_ptr<CTexture> replacement);
 
 	void clear(bool clear_patches = false);
-	void removePatch(string_view patch);
+	void removePatch(string_view patch) const;
 
 	bool readTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table, bool add = false);
-	bool writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table);
+	bool writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table) const;
 
 	bool readTEXTURESData(ArchiveEntry* textures);
-	bool writeTEXTURESData(ArchiveEntry* textures);
+	bool writeTEXTURESData(ArchiveEntry* textures) const;
 
 	bool convertToTEXTURES();
-	bool findErrors();
+	bool findErrors() const;
+	bool removeDupesFoundIn(TextureXList& texture_list);
+	bool cleanTEXTURESsinglePatch(Archive* current_archive);
 
 private:
 	vector<unique_ptr<CTexture>> textures_;

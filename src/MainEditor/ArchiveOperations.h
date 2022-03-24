@@ -6,9 +6,10 @@ namespace slade::archiveoperations
 {
 bool removeUnusedPatches(Archive* archive);
 bool checkDuplicateEntryNames(Archive* archive);
-bool checkDuplicateEntryContent(Archive* archive);
+bool checkDuplicateEntryContent(const Archive* archive);
 void removeUnusedTextures(Archive* archive);
 void removeUnusedFlats(Archive* archive);
+void removeUnusedZDoomTextures(Archive* archive);
 void removeEntriesUnchangedFromIWAD(Archive* archive);
 
 // Search and replace in maps

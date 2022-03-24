@@ -450,7 +450,7 @@ void VirtualListView::onMouseLeftDown(wxMouseEvent& e)
 
 	// Get item at click position
 	int  flags = 0;
-	long item  = this->HitTest(wxPoint(e.GetX(), e.GetY()), flags);
+	long item  = this->HitTest(wxPoint(e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor()), flags);
 	if (flags & wxLIST_HITTEST_ONITEM)
 	{
 		if (e.GetModifiers() == wxMOD_SHIFT)

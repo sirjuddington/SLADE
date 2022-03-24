@@ -514,13 +514,6 @@ void MOPGIntWithArgsProperty::applyValue()
 	for (auto& object : objects)
 	{
 		object->setIntProperty(GetName().ToStdString(), m_value.GetInteger());
-
-		for (int argn = 0; argn < argspec.count; argn++)
-		{
-			auto key = fmt::format("arg{}", argn);
-			if (!object->hasProp(key))
-				object->setIntProperty(key, 0);
-		}
 	}
 }
 

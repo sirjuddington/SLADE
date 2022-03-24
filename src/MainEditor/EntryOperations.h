@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Archive/ArchiveEntry.h"
-#include "Graphics/SImage/SIFormat.h"
 
 class wxFrame;
 
@@ -12,11 +11,12 @@ class ModifyOffsetsDialog;
 namespace entryoperations
 {
 	bool openMapDB2(ArchiveEntry* entry);
-	//bool modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog* dialog);
 	bool addToPatchTable(const vector<ArchiveEntry*>& entries);
 	bool createTexture(const vector<ArchiveEntry*>& entries);
 	bool convertTextures(const vector<ArchiveEntry*>& entries);
 	bool findTextureErrors(const vector<ArchiveEntry*>& entries);
+	bool cleanTextureIwadDupes(const vector<ArchiveEntry*>& entries);
+	bool cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& entries);
 	bool compileACS(ArchiveEntry* entry, bool hexen = false, ArchiveEntry* target = nullptr, wxFrame* parent = nullptr);
 	bool exportAsPNG(ArchiveEntry* entry, const wxString& filename);
 	bool optimizePNG(ArchiveEntry* entry);

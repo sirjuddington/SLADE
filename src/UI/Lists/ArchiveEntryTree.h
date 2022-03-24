@@ -1,6 +1,7 @@
 #pragma once
 
 #include "General/Sigslot.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include <wx/dataview.h>
 
 namespace slade
@@ -12,23 +13,58 @@ class UndoManager;
 
 namespace ui
 {
+	class ArchivePathPanel : public wxPanel
+	{
+	public:
+		ArchivePathPanel(wxWindow* parent);
+
+		void setCurrentPath(ArchiveDir* dir) const;
+
+	private:
+		SToolBarButton* btn_home_  = nullptr;
+		SToolBarButton* btn_updir_ = nullptr;
+		wxStaticText*   text_path_ = nullptr;
+	};
+
 	class ArchiveViewModel : public wxDataViewModel
 	{
 	public:
 		ArchiveViewModel() = default;
 
-		void openArchive(shared_ptr<Archive> archive, UndoManager* undo_manager);
+		enum class ViewType
+		{
+			Tree,
+			List
+		};
+
+		ViewType    viewType() const { return view_type_; }
+		ArchiveDir* rootDir() const { return root_dir_.lock().get(); }
+
 		void setFilter(string_view name, string_view category);
 		void showModifiedIndicators(bool show) { modified_indicator_ = show; }
+		void setRootDir(shared_ptr<ArchiveDir> dir);
+		void setRootDir(const wxDataViewItem& item);
+		void setPathPanel(ArchivePathPanel* path_panel);
+
+		void openArchive(shared_ptr<Archive> archive, UndoManager* undo_manager, bool force_list = false);
+
+		ArchiveEntry* entryForItem(const wxDataViewItem& item) const
+		{
+			return static_cast<ArchiveEntry*>(item.GetID());
+		}
+		ArchiveDir* dirForDirItem(const wxDataViewItem& item) const;
 
 	private:
 		weak_ptr<Archive>    archive_;
+		weak_ptr<ArchiveDir> root_dir_;
 		ScopedConnectionList connections_;
 		vector<string>       filter_name_;
 		string               filter_category_;
-		UndoManager*         undo_manager_ = nullptr;
-		bool                 sort_enabled_ = true;
+		UndoManager*         undo_manager_       = nullptr;
+		bool                 sort_enabled_       = true;
 		bool                 modified_indicator_ = true;
+		ViewType             view_type_          = ViewType::Tree;
+		ArchivePathPanel*    path_panel_         = nullptr;
 
 		// wxDataViewModel
 		unsigned int   GetColumnCount() const override { return 4; }
@@ -47,18 +83,23 @@ namespace ui
 		wxDataViewItem createItemForDirectory(const ArchiveDir& dir) const;
 		bool           matchesFilter(const ArchiveEntry& entry) const;
 		void           getDirChildItems(wxDataViewItemArray& items, const ArchiveDir& dir, bool filter = true) const;
+		bool           entryIsInList(const ArchiveEntry& entry) const;
+		bool           dirIsInList(const ArchiveDir& dir) const;
 	};
 
 	class ArchiveEntryTree : public wxDataViewCtrl
 	{
 	public:
-		ArchiveEntryTree(wxWindow* parent, shared_ptr<Archive> archive, UndoManager* undo_manager);
+		ArchiveEntryTree(
+			wxWindow*           parent,
+			shared_ptr<Archive> archive,
+			UndoManager*        undo_manager,
+			bool                force_list = false);
 
 		ArchiveEntry* entryForItem(const wxDataViewItem& item) const
 		{
-			return static_cast<ArchiveEntry*>(item.GetID());
+			return model_ ? model_->entryForItem(item) : nullptr;
 		}
-		ArchiveDir* dirForDirItem(const wxDataViewItem& item) const;
 
 		bool isSortedByName() const { return GetSortingColumn() == col_name_; }
 		bool isSortedBySize() const { return GetSortingColumn() == col_size_; }
@@ -77,8 +118,18 @@ namespace ui
 		ArchiveDir*           selectedEntriesDir() const;
 		vector<ArchiveDir*>   expandedDirs() const;
 
+		void setPathPanel(ArchivePathPanel* path_panel) const
+		{
+			if (model_)
+				model_->setPathPanel(path_panel);
+		}
 		void setFilter(string_view name, string_view category);
 		void collapseAll(const ArchiveDir& dir_start);
+		void upDir();
+		void homeDir();
+
+		// Overrides
+		void EnsureVisible(const wxDataViewItem& item, const wxDataViewColumn* column = nullptr) override;
 
 	private:
 		weak_ptr<Archive> archive_;
@@ -91,6 +142,7 @@ namespace ui
 		void setupColumns();
 		void saveColumnWidths() const;
 		void updateColumnWidths();
+		void setDir(shared_ptr<ArchiveDir> dir);
 	};
 
 } // namespace ui

@@ -249,9 +249,9 @@ MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x,
 	sector->putLines(lines);
 
 	// Get nearest line intersecting with line vector
-	MapLine* nearest = nullptr;
-	auto     mid     = line->getPoint(MapObject::Point::Mid);
-	auto     vec     = line->frontVector();
+	MapLine*   nearest = nullptr;
+	const auto mid     = line->getPoint(MapObject::Point::Mid);
+	auto       vec     = line->frontVector();
 	if (front)
 	{
 		vec.x = -vec.x;
@@ -263,7 +263,7 @@ MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x,
 		if (s_line == line)
 			continue;
 
-		double dist = math::distanceRayLine(mid, mid + vec, s_line->start(), s_line->end());
+		const double dist = math::distanceRayLine(mid, mid + vec, s_line->start(), s_line->end());
 
 		if (dist < min_dist && dist > 0)
 		{
@@ -275,8 +275,8 @@ MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x,
 	// Set intersection point
 	if (nearest)
 	{
-		hit_x = mid.x + (vec.x * min_dist);
-		hit_y = mid.y + (vec.y * min_dist);
+		hit_x = mid.x + vec.x * min_dist;
+		hit_y = mid.y + vec.y * min_dist;
 	}
 
 	return nearest;
@@ -317,7 +317,7 @@ void SLADEMap::putDragonTargets(MapThing* first, vector<MapThing*>& list)
 		string prop = "arg_";
 		for (int a = 0; a < 5; ++a)
 		{
-			prop[3] = ('0' + a);
+			prop[3] = '0' + a;
 			int val = list[i]->intProperty(prop);
 			if (val && used[val] == 0)
 			{
@@ -405,8 +405,8 @@ string SLADEMap::adjacentLineTexture(MapVertex* vertex, int tex_part) const
 MapSector* SLADEMap::lineSideSector(MapLine* line, bool front)
 {
 	// Get mid and direction points
-	auto mid = line->getPoint(MapObject::Point::Mid);
-	auto dir = line->frontVector();
+	const auto mid = line->getPoint(MapObject::Point::Mid);
+	auto       dir = line->frontVector();
 	if (front)
 		dir = mid - dir;
 	else
@@ -668,7 +668,7 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 	if (!v1 || !v2 || vertex1 == vertex2)
 		return;
 
-	// Go through lines of second vertex
+	// Disconnect all lines from v2, connect to v1 instead
 	vector<MapLine*> zlines;
 	for (unsigned a = 0; a < v2->connected_lines_.size(); a++)
 	{
@@ -695,6 +695,7 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 		if (line->vertex1_ == v1 && line->vertex2_ == v1)
 			zlines.push_back(line);
 	}
+	v2->connected_lines_.clear();
 
 	// Delete the vertex
 	log::info(4, "Merging vertices {} and {} (removing {})", vertex1, vertex2, vertex2);
@@ -787,8 +788,8 @@ MapLine* SLADEMap::splitLine(MapLine* line, MapVertex* vertex)
 	// Update x-offsets
 	if (map_split_auto_offset)
 	{
-		int xoff1 = line->intProperty("side1.offsetx");
-		int xoff2 = line->intProperty("side2.offsetx");
+		const int xoff1 = line->intProperty("side1.offsetx");
+		const int xoff2 = line->intProperty("side2.offsetx");
 		nl->setIntProperty("side1.offsetx", xoff1 + line->length());
 		line->setIntProperty("side2.offsetx", xoff2 + nl->length());
 	}
@@ -804,7 +805,7 @@ MapLine* SLADEMap::splitLine(MapLine* line, MapVertex* vertex)
 void SLADEMap::splitLinesAt(MapVertex* vertex, double split_dist)
 {
 	// Check if this vertex splits any lines (if needed)
-	auto nlines = data_.lines().size();
+	const auto nlines = data_.lines().size();
 	for (unsigned i = 0; i < nlines; ++i)
 	{
 		auto* line = this->line(i);
@@ -815,7 +816,13 @@ void SLADEMap::splitLinesAt(MapVertex* vertex, double split_dist)
 
 		if (line->distanceTo(vertex->position()) < split_dist)
 		{
-			log::info(2, "Vertex at ({:1.2f},{:1.2f}) splits line {}", vertex->position_.x, vertex->position_.y, i);
+			log::info(
+				2,
+				"Vertex {} at ({:1.2f},{:1.2f}) splits line {}",
+				vertex->index_,
+				vertex->position_.x,
+				vertex->position_.y,
+				i);
 			splitLine(line, vertex);
 		}
 	}
@@ -858,7 +865,7 @@ bool SLADEMap::setLineSector(unsigned line_index, unsigned sector_index, bool fr
 			line->side2_ = side;
 
 		// Set appropriate line flags
-		bool twosided = (line->side1_ && line->side2_);
+		const bool twosided = line->side1_ && line->side2_;
 		game::configuration().setLineBasicFlag("blocking", line, current_format_, !twosided);
 		game::configuration().setLineBasicFlag("twosided", line, current_format_, twosided);
 
@@ -987,49 +994,44 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 	if (nVertices() == 0 || nLines() == 0)
 		return false;
 
-	unsigned n_vertices  = nVertices();
-	unsigned n_lines     = nLines();
-	auto*    last_vertex = this->vertices().last();
-	auto*    last_line   = lines().last();
+	const unsigned n_vertices  = nVertices();
+	const unsigned n_lines     = nLines();
+	auto*          last_vertex = this->vertices().last();
+	auto*          last_line   = lines().last();
 
 	// Merge vertices
 	vector<MapVertex*> merged_vertices;
-	for (auto& vertex : vertices)
-	{
-		auto* v = mergeVerticesPoint(vertex->position_);
-		if (v)
+	for (const auto* vertex : vertices)
+		if (auto* v = mergeVerticesPoint(vertex->position_))
 			VECTOR_ADD_UNIQUE(merged_vertices, v);
-	}
 
 	// Get all connected lines
-	vector<MapLine*> connected_lines_;
-	for (auto& vertex : merged_vertices)
-	{
+	vector<MapLine*> connected_lines;
+	for (const auto* vertex : merged_vertices)
 		for (auto* connected_line : vertex->connected_lines_)
-			VECTOR_ADD_UNIQUE(connected_lines_, connected_line);
-	}
+			VECTOR_ADD_UNIQUE(connected_lines, connected_line);
 
 	// Split lines (by vertices)
-	const double split_dist = 0.1;
+	constexpr double split_dist = 0.1;
 	// Split existing lines that vertices moved onto
-	for (auto& merged_vertice : merged_vertices)
-		splitLinesAt(merged_vertice, split_dist);
+	for (auto* merged : merged_vertices)
+		splitLinesAt(merged, split_dist);
 
 	// Split lines that moved onto existing vertices
-	for (unsigned a = 0; a < connected_lines_.size(); a++)
+	for (unsigned a = 0; a < connected_lines.size(); a++)
 	{
-		unsigned nvertices = nVertices();
+		const unsigned nvertices = nVertices();
 		for (unsigned b = 0; b < nvertices; b++)
 		{
 			auto* vertex = this->vertex(b);
 
 			// Skip line if it shares the vertex
-			if (connected_lines_[a]->v1() == vertex || connected_lines_[a]->v2() == vertex)
+			if (connected_lines[a]->v1() == vertex || connected_lines[a]->v2() == vertex)
 				continue;
 
-			if (connected_lines_[a]->distanceTo(vertex->position()) < split_dist)
+			if (connected_lines[a]->distanceTo(vertex->position()) < split_dist)
 			{
-				connected_lines_.push_back(splitLine(connected_lines_[a], vertex));
+				connected_lines.push_back(splitLine(connected_lines[a], vertex));
 				VECTOR_ADD_UNIQUE(merged_vertices, vertex);
 			}
 		}
@@ -1037,13 +1039,13 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 
 	// Split lines (by lines)
 	Seg2d seg1;
-	for (unsigned a = 0; a < connected_lines_.size(); a++)
+	for (unsigned a = 0; a < connected_lines.size(); a++)
 	{
-		auto* line1 = connected_lines_[a];
+		auto* line1 = connected_lines[a];
 		seg1        = line1->seg();
 
-		unsigned n_lines = nLines();
-		for (unsigned b = 0; b < n_lines; b++)
+		const unsigned count = nLines();
+		for (unsigned b = 0; b < count; b++)
 		{
 			auto* line2 = line(b);
 
@@ -1062,9 +1064,9 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 
 				// Split lines
 				splitLine(line1, nv);
-				connected_lines_.push_back(lines().last());
+				connected_lines.push_back(lines().last());
 				splitLine(line2, nv);
-				connected_lines_.push_back(lines().last());
+				connected_lines.push_back(lines().last());
 
 				LOG_DEBUG("Lines", line1, "and", line2, "intersect");
 
@@ -1075,35 +1077,33 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 	}
 
 	// Refresh connected lines
-	connected_lines_.clear();
-	for (auto& vertex : merged_vertices)
-	{
+	connected_lines.clear();
+	for (const auto* vertex : merged_vertices)
 		for (auto* connected_line : vertex->connected_lines_)
-			VECTOR_ADD_UNIQUE(connected_lines_, connected_line);
-	}
+			VECTOR_ADD_UNIQUE(connected_lines, connected_line);
 
 	// Find overlapping lines
 	vector<MapLine*> remove_lines;
-	for (unsigned a = 0; a < connected_lines_.size(); a++)
+	for (unsigned a = 0; a < connected_lines.size(); a++)
 	{
-		auto* line1 = connected_lines_[a];
+		auto* line1 = connected_lines[a];
 
 		// Skip if removing already
 		if (VECTOR_EXISTS(remove_lines, line1))
 			continue;
 
-		for (unsigned l = a + 1; l < connected_lines_.size(); l++)
+		for (unsigned l = a + 1; l < connected_lines.size(); l++)
 		{
-			auto* line2 = connected_lines_[l];
+			auto* line2 = connected_lines[l];
 
 			// Skip if removing already
 			if (VECTOR_EXISTS(remove_lines, line2))
 				continue;
 
-			if ((line1->vertex1_ == line2->vertex1_ && line1->vertex2_ == line2->vertex2_)
-				|| (line1->vertex1_ == line2->vertex2_ && line1->vertex2_ == line2->vertex1_))
+			if (line1->vertex1_ == line2->vertex1_ && line1->vertex2_ == line2->vertex2_
+				|| line1->vertex1_ == line2->vertex2_ && line1->vertex2_ == line2->vertex1_)
 			{
-				auto* remove_line = mergeOverlappingLines(line2, line1);
+				auto* remove_line = mergeOverlappingLines(line1, line2);
 				VECTOR_ADD_UNIQUE(remove_lines, remove_line);
 
 				// Don't check against any more lines if we just decided to remove this one
@@ -1119,12 +1119,12 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 		log::info(4, "Removing overlapping line {} (#{})", remove_line->objId(), remove_line->index());
 		data_.removeLine(remove_line);
 	}
-	for (unsigned a = 0; a < connected_lines_.size(); a++)
+	for (unsigned a = 0; a < connected_lines.size(); a++)
 	{
-		if (VECTOR_EXISTS(remove_lines, connected_lines_[a]))
+		if (VECTOR_EXISTS(remove_lines, connected_lines[a]))
 		{
-			connected_lines_[a] = connected_lines_.back();
-			connected_lines_.pop_back();
+			connected_lines[a] = connected_lines.back();
+			connected_lines.pop_back();
 			a--;
 		}
 	}
@@ -1138,31 +1138,12 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 	if (!remove_lines.empty())
 		merged = true;
 
-	// Correct sector references
-	correctSectors(connected_lines_, true);
-	/*if (merged)
-		correctSectors(connected_lines_, true);
-	else
-	{
-		for (unsigned a = 0; a < connected_lines_.size(); a++)
-		{
-			MapSector* s1 = getLineSideSector(connected_lines_[a], true);
-			MapSector* s2 = getLineSideSector(connected_lines_[a], false);
-
-			if (s1)
-				setLineSector(connected_lines_[a]->index, s1->index, true);
-			else
-				removeSide(connected_lines_[a]->side1);
-
-			if (s2)
-				setLineSector(connected_lines_[a]->index, s2->index, false);
-			else
-				removeSide(connected_lines_[a]->side2);
-		}
-	}*/
+	// Correct sector references if any merging was done
+	if (merged)
+		correctSectors(connected_lines, true);
 
 	// Flip any one-sided lines that only have a side 2
-	for (auto& connected_line : connected_lines_)
+	for (auto& connected_line : connected_lines)
 	{
 		if (connected_line->side2_ && !connected_line->side1_)
 			connected_line->flip();
@@ -1228,12 +1209,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		MapLine* line;
 		bool     front;
 		bool     ignore;
-		Edge(MapLine* line, bool front)
-		{
-			this->line  = line;
-			this->front = front;
-			ignore      = false;
-		}
+		Edge(MapLine* line, bool front) : line{ line }, front{ front }, ignore{ false } {}
 	};
 
 	// Create a list of line sides (edges) to perform sector creation with
@@ -1244,7 +1220,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		{
 			// Add only existing sides as edges
 			// (or front side if line has none)
-			if (line->side1_ || (!line->side1_ && !line->side2_))
+			if (line->side1_ || !line->side1_ && !line->side2_)
 				edges.emplace_back(line, true);
 			if (line->side2_)
 				edges.emplace_back(line, false);
@@ -1462,10 +1438,10 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 // -----------------------------------------------------------------------------
 void SLADEMap::mapOpenChecks()
 {
-	int rverts  = data_.removeDetachedVertices();
-	int rsides  = data_.removeDetachedSides();
-	int rsec    = data_.removeDetachedSectors();
-	int risides = data_.removeInvalidSides();
+	const int rverts  = data_.removeDetachedVertices();
+	const int rsides  = data_.removeDetachedSides();
+	const int rsec    = data_.removeDetachedSectors();
+	const int risides = data_.removeInvalidSides();
 
 	log::info(
 		"Removed {} detached vertices, {} detached sides, {} invalid sides and {} detached sectors",
@@ -1498,9 +1474,9 @@ bool SLADEMap::convertToUDMF()
 		// Handle special cases for conversion from Hexen format
 		for (const auto& line : lines())
 		{
-			int special = line->special();
-			int flags   = 0;
-			int id, hi;
+			const int special = line->special();
+			int       flags   = 0;
+			int       id, hi;
 			switch (special)
 			{
 			case 1:
@@ -1518,7 +1494,7 @@ bool SLADEMap::convertToUDMF()
 			case 121:
 				id    = line->arg(0);
 				hi    = line->arg(4);
-				id    = (hi * 256) + id;
+				id    = hi * 256 + id;
 				flags = line->arg(1);
 
 				line->setSpecial(0);
@@ -1540,7 +1516,7 @@ bool SLADEMap::convertToUDMF()
 				else
 				{
 					id = line->arg(0);
-					line->setId((hi * 256) + id);
+					line->setId(hi * 256 + id);
 				}
 				line->setArg(4, 0);
 				flags = 0; // don't keep it set!

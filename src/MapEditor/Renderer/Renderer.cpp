@@ -1259,7 +1259,7 @@ void Renderer::draw()
 	context_.drawInfoOverlay(view_.size(), anim_info_fade_);
 
 	// Draw current fullscreen overlay
-	if (context_.currentOverlay())
+	if (context_.currentOverlay() && anim_overlay_fade_ > 0.01f)
 		context_.currentOverlay()->draw(view_.size().x, view_.size().y, anim_overlay_fade_);
 
 	// Draw crosshair if 3d mode

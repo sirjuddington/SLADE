@@ -76,7 +76,7 @@ SDialog::SDialog(wxWindow* parent, const wxString& title, const wxString& id, in
 SDialog::~SDialog()
 {
 	if (!id_.empty())
-		misc::setWindowInfo(id_, GetClientSize().x, GetClientSize().y, GetPosition().x, GetPosition().y);
+		misc::setWindowInfo(id_, GetClientSize().x * GetContentScaleFactor(), GetClientSize().y * GetContentScaleFactor(), GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
 }
 
 // -----------------------------------------------------------------------------
@@ -111,7 +111,8 @@ void SDialog::setSavedSize(int def_width, int def_height)
 void SDialog::onSize(wxSizeEvent& e)
 {
 	// Update window size settings
-	misc::setWindowInfo(id_, GetClientSize().x, GetClientSize().y, -2, -2);
+	const wxSize ClientSize = GetClientSize() * GetContentScaleFactor();
+	misc::setWindowInfo(id_, ClientSize.x, ClientSize.y, -2, -2);
 	e.Skip();
 }
 

@@ -128,6 +128,10 @@ namespace strutil
 		return stream.str();
 	}
 
+	// Encoding
+	string toUTF8(string_view str);
+	string fromUTF8(string_view str);
+
 	// Path class
 	class Path
 	{

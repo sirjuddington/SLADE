@@ -116,12 +116,13 @@ void ANSICanvas::writeRGBAData(uint8_t* dest) const
 void ANSICanvas::draw()
 {
 	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	glViewport(0, 0, size.x, size.y);
 
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
+	glOrtho(0, size.x, size.y, 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();

@@ -173,7 +173,8 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 
 	// Setup layout
 	Layout();
-	SetInitialSize(GetSize());
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	SetInitialSize(size);
 	//Fit();
 	SetMinSize(wxSize(ui::scalePx(800), ui::scalePx(600)));
 	CenterOnParent();

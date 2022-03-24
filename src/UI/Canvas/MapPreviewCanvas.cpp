@@ -153,50 +153,68 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 		// Start parsing
 		Tokenizer tz;
 		tz.openMem(udmfdata->data(), m_head->name());
-
-		// Get first token
-		wxString token       = tz.getToken();
-		size_t   vertcounter = 0, linecounter = 0, thingcounter = 0;
-		while (!token.IsEmpty())
+		size_t vertcounter = 0, linecounter = 0, thingcounter = 0;
+		while (!tz.atEnd())
 		{
-			if (!token.CmpNoCase("namespace"))
+			// Namespace
+			if (tz.checkNC("namespace"))
+				tz.advUntil(";");
+
+			// Sidedef
+			else if (tz.checkNC("sidedef"))
 			{
-				//  skip till we reach the ';'
-				do
-				{
-					token = tz.getToken();
-				} while (token.Cmp(";"));
+				// Just increase count
+				n_sides_++;
+				tz.advUntil("}");
 			}
-			else if (!token.CmpNoCase("vertex"))
+
+			// Sector
+			else if (tz.checkNC("sector"))
+			{
+				// Just increase count
+				n_sectors_++;
+				tz.advUntil("}");
+			}
+
+			// Vertex
+			else if (tz.checkNC("vertex"))
 			{
 				// Get X and Y properties
 				bool   gotx = false;
 				bool   goty = false;
 				double x    = 0.;
 				double y    = 0.;
-				do
+
+				tz.adv(2); // skip {
+
+				while (!tz.check("}"))
 				{
-					token = tz.getToken();
-					if (!token.CmpNoCase("x") || !token.CmpNoCase("y"))
+					if (tz.checkNC("x") || tz.checkNC("y"))
 					{
-						bool isx = !token.CmpNoCase("x");
-						token    = tz.getToken();
-						if (token.Cmp("="))
+						if (!tz.checkNext("="))
 						{
 							log::error(wxString::Format("Bad syntax for vertex %i in UDMF map data", vertcounter));
 							return false;
 						}
-						if (isx)
-							x = tz.getDouble(), gotx = true;
-						else
-							y = tz.getDouble(), goty = true;
-						// skip to end of declaration after each key
-						do
+
+						if (tz.checkNC("x"))
 						{
-							token = tz.getToken();
-						} while (token.Cmp(";"));
+							tz.adv(2);
+							x    = tz.current().asFloat();
+							gotx = true;
+						}
+						else
+						{
+							tz.adv(2);
+							y    = tz.current().asFloat();
+							goty = true;
+						}
 					}
-				} while (token.Cmp("}"));
+
+					tz.advUntil(";");
+					tz.adv();
+				}
+
 				if (gotx && goty)
 					addVertex(x, y);
 				else
@@ -204,55 +222,102 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 					log::error(wxString::Format("Wrong vertex %i in UDMF map data", vertcounter));
 					return false;
 				}
+
 				vertcounter++;
 			}
-			else if (!token.CmpNoCase("linedef"))
+
+			// Thing
+			else if (tz.checkNC("thing"))
 			{
-				bool   special  = false;
-				bool   twosided = false;
-				bool   gotv1 = false, gotv2 = false;
-				size_t v1 = 0, v2 = 0;
-				do
+				// Get X and Y properties
+				bool   gotx = false;
+				bool   goty = false;
+				double x    = 0.;
+				double y    = 0.;
+
+				tz.adv(2); // skip {
+
+				while (!tz.check("}"))
 				{
-					token = tz.getToken();
-					if (!token.CmpNoCase("v1") || !token.CmpNoCase("v2"))
+					if (tz.checkNC("x") || tz.checkNC("y"))
 					{
-						bool isv1 = !token.CmpNoCase("v1");
-						token     = tz.getToken();
-						if (token.Cmp("="))
+						if (!tz.checkNext("="))
+						{
+							log::error(wxString::Format("Bad syntax for thing %i in UDMF map data", thingcounter));
+							return false;
+						}
+
+						if (tz.checkNC("x"))
+						{
+							tz.adv(2);
+							x    = tz.current().asFloat();
+							gotx = true;
+						}
+						else
+						{
+							tz.adv(2);
+							y    = tz.current().asFloat();
+							goty = true;
+						}
+					}
+
+					tz.advUntil(";");
+					tz.adv();
+				}
+
+				if (gotx && goty)
+					addThing(x, y);
+				else
+				{
+					log::error(wxString::Format("Wrong thing %i in UDMF map data", thingcounter));
+					return false;
+				}
+
+				thingcounter++;
+			}
+
+			// Linedef
+			else if (tz.checkNC("linedef"))
+			{
+				bool     special  = false;
+				bool     twosided = false;
+				bool     gotv1 = false, gotv2 = false;
+				unsigned v1 = 0, v2 = 0;
+
+				tz.adv(2); // skip {
+
+				while (!tz.check("}"))
+				{
+					if (tz.checkNC("v1") || tz.checkNC("v2"))
+					{
+						if (!tz.checkNext("="))
 						{
 							log::error(wxString::Format("Bad syntax for linedef %i in UDMF map data", linecounter));
 							return false;
 						}
-						if (isv1)
-							v1 = tz.getInteger(), gotv1 = true;
+
+						if (tz.checkNC("v1"))
+						{
+							tz.adv(2);
+							v1    = tz.current().asInt();
+							gotv1 = true;
+						}
 						else
-							v2 = tz.getInteger(), gotv2 = true;
-						// skip to end of declaration after each key
-						do
 						{
-							token = tz.getToken();
-						} while (token.Cmp(";"));
+							tz.adv(2);
+							v2    = tz.current().asInt();
+							gotv2 = true;
+						}
 					}
-					else if (!token.CmpNoCase("special"))
-					{
+					else if (tz.checkNC("special"))
 						special = true;
-						// skip to end of declaration after each key
-						do
-						{
-							token = tz.getToken();
-						} while (token.Cmp(";"));
-					}
-					else if (!token.CmpNoCase("sideback"))
-					{
+					else if (tz.checkNC("sideback"))
 						twosided = true;
-						// skip to end of declaration after each key
-						do
-						{
-							token = tz.getToken();
-						} while (token.Cmp(";"));
-					}
-				} while (token.Cmp("}"));
+
+					tz.advUntil(";");
+					tz.adv();
+				}
+
 				if (gotv1 && gotv2)
 					addLine(v1, v2, twosided, special);
 				else
@@ -260,64 +325,11 @@ bool MapPreviewCanvas::openMap(Archive::MapDesc map)
 					log::error(wxString::Format("Wrong line %i in UDMF map data", linecounter));
 					return false;
 				}
+
 				linecounter++;
 			}
-			else if (S_CMPNOCASE(token, "thing"))
-			{
-				// Get X and Y properties
-				bool   gotx = false;
-				bool   goty = false;
-				double x    = 0.;
-				double y    = 0.;
-				do
-				{
-					token = tz.getToken();
-					if (!token.CmpNoCase("x") || !token.CmpNoCase("y"))
-					{
-						bool isx = !token.CmpNoCase("x");
-						token    = tz.getToken();
-						if (token.Cmp("="))
-						{
-							log::error(wxString::Format("Bad syntax for thing %i in UDMF map data", vertcounter));
-							return false;
-						}
-						if (isx)
-							x = tz.getDouble(), gotx = true;
-						else
-							y = tz.getDouble(), goty = true;
-						// skip to end of declaration after each key
-						do
-						{
-							token = tz.getToken();
-						} while (token.Cmp(";"));
-					}
-				} while (token.Cmp("}"));
-				if (gotx && goty)
-					addThing(x, y);
-				else
-				{
-					log::error(wxString::Format("Wrong thing %i in UDMF map data", vertcounter));
-					return false;
-				}
-				vertcounter++;
-			}
-			else
-			{
-				// Check for side or sector definition (increase counts)
-				if (S_CMPNOCASE(token, "sidedef"))
-					n_sides_++;
-				else if (S_CMPNOCASE(token, "sector"))
-					n_sectors_++;
 
-				// map preview ignores sidedefs, sectors, comments,
-				// unknown fields, etc. so skip to end of block
-				do
-				{
-					token = tz.getToken();
-				} while (token.Cmp("}") && !token.empty());
-			}
-			// Iterate to next token
-			token = tz.getToken();
+			tz.adv();
 		}
 	}
 
@@ -642,9 +654,10 @@ void MapPreviewCanvas::showMap()
 	offset_       = { m_min.x + (width * 0.5), m_min.y + (height * 0.5) };
 
 	// Zoom to fit whole map
-	double x_scale = ((double)GetClientSize().x) / width;
-	double y_scale = ((double)GetClientSize().y) / height;
-	zoom_          = std::min<double>(x_scale, y_scale);
+	const wxSize ClientSize = GetClientSize() * GetContentScaleFactor();
+	double       x_scale    = ((double)ClientSize.x) / width;
+	double       y_scale    = ((double)ClientSize.y) / height;
+	zoom_                   = std::min<double>(x_scale, y_scale);
 	zoom_ *= 0.95;
 }
 
@@ -662,12 +675,13 @@ void MapPreviewCanvas::draw()
 	auto col_view_thing        = colourconfig::colour("map_view_thing");
 
 	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
+	const wxSize size = GetSize() * GetContentScaleFactor();
+	glViewport(0, 0, size.x, size.y);
 
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, GetSize().x, 0, GetSize().y, -1, 1);
+	glOrtho(0, size.x, 0, size.y, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -688,7 +702,7 @@ void MapPreviewCanvas::draw()
 	showMap();
 
 	// Translate to middle of canvas
-	glTranslated(GetSize().x * 0.5, GetSize().y * 0.5, 0);
+	glTranslated(size.x * 0.5, size.y * 0.5, 0);
 
 	// Zoom
 	glScaled(zoom_, zoom_, 1);

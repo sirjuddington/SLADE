@@ -405,7 +405,7 @@ acs_z : acs
 		// LineAttack flags
 		FHF_NORANDOMPUFFZ, FHF_NOIMPACTDECAL,
 
-		SDF_ABSANGLE, SDF_PERMANENT,
+		SDF_ABSANGLE, SDF_PERMANENT, SDF_FIXED_ZOFF, SDF_FIXED_DISTANCE,
 
 		SOUND_Active, SOUND_Attack, SOUND_Bounce, SOUND_CrushPain, SOUND_Death, SOUND_Howl,
 		SOUND_Pain, SOUND_See, SOUND_Use, SOUND_WallBounce,
@@ -518,29 +518,42 @@ acs_z : acs
 		Ceiling_CrushStop = "int tag";
 		Ceiling_LowerAndCrush = "int tag, int speed, int damage, [int crushmode]";
 		Ceiling_LowerAndCrushDist = "int tag, int speed, int damage, int dist, [int crushmode]";
+		Ceiling_LowerByTexture = "int tag, int speed, [int change], [int damage]";
 		Ceiling_LowerByValue = "int tag, int speed, int value";
 		Ceiling_LowerByValueTimes8 = "int tag, int speed, int value";
 		Ceiling_LowerInstant = "int tag, int unused, int value";
 		Ceiling_LowerToFloor = "int tag, int speed";
 		Ceiling_LowerToHighestFloor = "int tag, int speed";
 		Ceiling_LowerToLowest = "int tag, int speed";
+		Ceiling_LowerToNearest = "int tag, int speed, [int change], [int damage]";
 		Ceiling_MoveToValue = "int tag, int speed, int value, int negative";
+		Ceiling_MoveToValueAndCrush = "int tag, int speed, int value, int damage, [int crushmode]";
 		Ceiling_MoveToValueTimes8 = "int tag, int speed, int value, int negative";
+		Ceiling_RaiseByTexture = "int tag, int speed, [int change]";
 		Ceiling_RaiseByValue = "int tag, int speed, int value";
 		Ceiling_RaiseByValueTimes8 = "int tag, int speed, int value";
 		Ceiling_RaiseInstant = "int tag, int unused, int value";
+		Ceiling_RaiseToHighest = "int tag, int speed, [int change]";
+		Ceiling_RaiseToHighestFloor = "int tag, int speed, [int change]";
+		Ceiling_RaiseToLowest = "int tag, int speed, [int change]";
 		Ceiling_RaiseToNearest = "int tag, int speed";
+		Ceiling_Stop = "int tag";
+		Ceiling_ToFloorInstant = "int tag, [int change], [int damage], [int gap]";
+		Ceiling_ToHighestInstant = "int tag, [int change], [int damage]";
 		Ceiling_Waggle = "int tag, int amplitude, int frequency, int delay, int time";
 		ChangeCamera = "int tid, int who, int revert";
 		ChangeSkill = "int level";
 		ClearForceField = "int tag";
 		DamageThing = "int damage, [int mod]";
 		Door_Animated = "int tag, int speed, int delay, int lock";
+		Door_AnimatedClose = "int tag, int speed";
 		Door_Close = "int tag, int speed, [int lighttag]";
 		Door_CloseWaitOpen = "int tag, int speed, int delay, [int lighttag]";
 		Door_LockedRaise = "int tag, int speed, int delay, int lock, [int lighttag]";
 		Door_Open = "int tag, int speed, [int lighttag]";
 		Door_Raise = "int tag, int speed, int delay, [int lighttag]";		
+		Door_WaitClose = "int tag, int speed, int wait, [int lighttag]";
+		Door_WaitRaise = "int tag, int speed, int delay, int wait, [int lighttag]";
 		Elevator_LowerToNearest = "int tag, int speed";
 		Elevator_MoveToFloor = "int tag, int speed";
 		Elevator_RaiseToNearest = "int tag, int speed";
@@ -548,14 +561,18 @@ acs_z : acs
 		Exit_Secret = "int position";
 		Floor_CrushStop = "int tag";
 		Floor_Donut = "int pillartag, int pillarspeed, int moatspeed";
+		Floor_LowerByTexture = "int tag, int speed, [int change]";
 		Floor_LowerByValue = "int tag, int speed, int value";
 		Floor_LowerByValueTimes8 = "int tag, int speed, int value";
 		Floor_LowerInstant = "int tag, int unused, int value";
 		Floor_LowerToHighest = "int tag, int speed, int adjust, [int always]";
+		Floor_LowerToHighestEE = "int tag, int speed, [int change]";
 		Floor_LowerToLowest = "int tag, int speed";
+		Floor_LowerToLowestCeiling = "int tag, int speed, [int change]";
 		Floor_LowerToLowestTxTy = "int tag, int speed";
 		Floor_LowerToNearest = "int tag, int speed";
 		Floor_MoveToValue = "int tag, int speed, int value, int negative";
+		Floor_MoveToValueAndCrush = "int tag, int speed, int value, int damage, [int crushmode]";
 		Floor_MoveToValueTimes8 = "int tag, int speed, int value, int negative";
 		Floor_RaiseAndCrush = "int tag, int speed, int damage, [int crushmode]";
 		Floor_RaiseAndCrushDoom = "int tag, int speed, int damage, [int crushmode]";
@@ -564,9 +581,13 @@ acs_z : acs
 		Floor_RaiseByValueTimes8 = "int tag, int speed, int value";
 		Floor_RaiseByValueTxTy = "int tag, int speed, int value";
 		Floor_RaiseInstant = "int tag, int unused, int value";
+		Floor_RaiseToCeiling = "int tag, int speed, [int change], [int damage], [int gap]";
 		Floor_RaiseToHighest = "int tag, int speed";
+		Floor_RaiseToLowest = "int tag, int change, [int damage]";
 		Floor_RaiseToLowestCeiling = "int tag, int speed";
 		Floor_RaiseToNearest = "int tag, int speed";
+		Floor_Stop = "int tag";
+		Floor_ToCeilingInstant = "int tag, [int change], [int damage], [int gap]";
 		Floor_TransferNumeric = "int tag";
 		Floor_TransferTrigger = "int tag";
 		Floor_Waggle = "int tag, int amp, int freq, int offset, int time";
@@ -636,6 +657,7 @@ acs_z : acs
 		Polyobj_RotateLeft = "int po, int speed, int angle";
 		Polyobj_RotateRight = "int po, int speed, int angle";
 		Polyobj_Stop = "int po";
+		Polyobj_StopSound = "int po";
 		Radius_Quake = "int intensity, int duration, int damrad, int tremrad, int tid";
 		Scroll_Ceiling = "int tag, int x-move, int y-move, int unused";
 		Scroll_Floor = "int tag, int x-move, int y-move, int mode";
@@ -643,6 +665,7 @@ acs_z : acs
 		Scroll_Wall = "int lineid, int x, int y, int side, int flags";
 		Sector_ChangeFlags = "int tag, int set, int clear";
 		Sector_ChangeSound = "int tag, int newsequence";
+		Sector_SetCeilingGlow = "int tag, int height, int red, int green, int blue";
 		Sector_SetCeilingPanning = "int tag, int x-int, int x-frac, int y-int, int y-frac";
 		Sector_SetCeilingScale = "int tag, int x-int, int x-frac, int y-int, int y-frac";
 		Sector_SetCeilingScale2 = "int tag, int x-factor, int y-factor";
@@ -650,6 +673,7 @@ acs_z : acs
 		Sector_SetCurrent = "int tag, int amount, int angle, int useline";
 		Sector_SetDamage = "int tag, int amount, int mod, int interval, int leaky";
 		Sector_SetFade = "int tag, int r, int g, int b";
+		Sector_SetFloorGlow = "int tag, int height, int red, int green, int blue";
 		Sector_SetFloorPanning = "int tag, int x-int, int x-frac, int y-int, int y-frac";
 		Sector_SetFloorScale = "int tag, int x-int, int x-frac, int y-int, int y-frac";
 		Sector_SetFloorScale2 = "int tag, int x-factor, int y-factor";
@@ -665,9 +689,13 @@ acs_z : acs
 		SetGlobalFogParameter = "int type, int value";
 		SetPlayerProperty = "int allplayers, int value, int which";
 		Stairs_BuildDown = "int tag, int speed, int height, int delay, int reset";
+		Stairs_BuildDownDoom = "int tag, int speed, int height, int delay, int reset";
+		Stairs_BuildDownDoomSync = "int tag, int speed, int height, int reset";
 		Stairs_BuildDownSync = "int tag, int speed, int height, int reset";
 		Stairs_BuildUp = "int tag, int speed, int height, int delay, int reset";
 		Stairs_BuildUpDoom = "int tag, int speed, int height, int delay, int reset";
+		Stairs_BuildUpDoomCrush = "int tag, int speed, int height, int delay, int reset";
+		Stairs_BuildUpDoomSync = "int tag, int speed, int height, int reset";
 		Stairs_BuildUpSync = "int tag, int speed, int height, int reset";
 		StartConversation = "int tid, [int facetalker]";
 		Teleport = "int tid, int tag, int nosourcefog";

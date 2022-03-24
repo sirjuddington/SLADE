@@ -280,13 +280,13 @@ public:
 	void setBuiltInName(string_view name) { built_in_name_ = name; }
 	void setDesaturationAmount(uint8_t amount) { desat_amount_ = amount; }
 
-	ColRGBA translate(ColRGBA col, Palette* pal = nullptr);
+	ColRGBA translate(const ColRGBA& col, Palette* pal = nullptr);
 
 	TransRange* addRange(TransRange::Type type, int pos = -1, int range_start = 0, int range_end = 0);
 	void        removeRange(int pos);
 	void        swapRanges(int pos1, int pos2);
 
-	static ColRGBA specialBlend(ColRGBA col, uint8_t type, Palette* pal = nullptr);
+	static ColRGBA specialBlend(const ColRGBA& col, uint8_t type, Palette* pal = nullptr);
 	static string  getPredefined(string_view def);
 
 private:

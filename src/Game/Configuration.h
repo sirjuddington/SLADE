@@ -83,6 +83,7 @@ namespace game
 		const string& skyFlat() const { return sky_flat_; }
 		const string& scriptLanguage() const { return script_language_; }
 		int           lightLevelInterval();
+		int           playerEyeHeight() const { return player_eye_height_; }
 
 		unsigned      nMapNames() const { return maps_.size(); }
 		const string& mapName(unsigned index);
@@ -207,6 +208,7 @@ namespace game
 		string                    sky_flat_;               // Sky flat for 3d mode
 		string                    script_language_;        // Scripting language (should be extended to allow multiple)
 		vector<int>               light_levels_;           // Light levels for up/down light in editor
+		int                       player_eye_height_;      // Player eye height for 3d mode camera
 
 		// Action specials
 		std::map<int, ActionSpecial> action_specials_;
