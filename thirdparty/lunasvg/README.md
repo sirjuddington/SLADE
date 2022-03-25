@@ -1,13 +1,15 @@
-# LunaSVG
+[![Releases](https://img.shields.io/badge/Version-2.3.1-orange.svg)](https://github.com/sammycage/lunasvg/releases)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/sammycage/lunasvg/blob/master/LICENSE)
+[![Build Status](https://github.com/sammycage/lunasvg/actions/workflows/ci.yml/badge.svg)](https://github.com/sammycage/lunasvg/actions)
 
-lunasvg is a standalone SVG rendering library in C++
+# LunaSVG - SVG rendering library in C++
 
-![svg2png generated PNG](luna.png)
+![LunaSVG](https://github.com/sammycage/lunasvg/blob/master/luna.png)
 
 ## Example
 
 ```cpp
-#include <lunasvg/document.h>
+#include <lunasvg.h>
 
 using namespace lunasvg;
 
@@ -34,13 +36,13 @@ int main()
 - Masks
 - ClipPaths
 - Markers
+- StyleSheet
 
 ## TODO
 
 - Texts
 - Filters
 - Images
-- StyleSheet
 
 ## Build
 
@@ -68,8 +70,20 @@ Run Demo.
 svg2png [filename] [resolution] [bgColor]
 ```
 
-## Support
+## Projects Using LunaSVG
 
-If you like the work lunasvg is doing please consider a small donation:
+- [OpenSiv3D](https://github.com/Siv3D/OpenSiv3D)
+- [PICsimLab](https://github.com/lcgamboa/picsimlab)
+- [MoneyManagerEx](https://github.com/moneymanagerex/moneymanagerex)
+- [RmlUi](https://github.com/mikke89/RmlUi)
+- [EKA2L1](https://github.com/EKA2L/EKA2L1)
+- [ObEngine](https://github.com/ObEngine/ObEngine)
+- [OTTO](https://github.com/bitfieldaudio/OTTO)
 
-<a href="https://www.buymeacoffee.com/sammycage"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=sammycage&button_colour=FFDD00&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=ffffff"></a>
+## Support Me
+
+If you like the work lunasvg is doing please consider a small donation :
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/sammycage)
+[![Donate](https://img.shields.io/badge/Donate-BuyMeACoffee-yellow.svg)](https://www.buymeacoffee.com/sammycage)
+[![Sponsor](https://img.shields.io/badge/Sponsor-Patreon-orange.svg)](https://patreon.com/sammycage)

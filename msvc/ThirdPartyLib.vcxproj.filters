@@ -195,9 +195,6 @@
     <ClInclude Include="..\thirdparty\sol\config.hpp">
       <Filter>Sol</Filter>
     </ClInclude>
-    <ClInclude Include="..\thirdparty\lunasvg\include\document.h">
-      <Filter>LunaSVG\include</Filter>
-    </ClInclude>
     <ClInclude Include="..\thirdparty\lunasvg\source\canvas.h">
       <Filter>LunaSVG\source</Filter>
     </ClInclude>
@@ -272,6 +269,12 @@
     </ClInclude>
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_types.h">
       <Filter>LunaSVG\3rdparty\software</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\styleelement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\include\lunasvg.h">
+      <Filter>LunaSVG\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -659,9 +662,6 @@
     <ClCompile Include="..\thirdparty\lunasvg\source\defselement.cpp">
       <Filter>LunaSVG\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\thirdparty\lunasvg\source\document.cpp">
-      <Filter>LunaSVG\source</Filter>
-    </ClCompile>
     <ClCompile Include="..\thirdparty\lunasvg\source\element.cpp">
       <Filter>LunaSVG\source</Filter>
     </ClCompile>
@@ -733,6 +733,12 @@
     </ClCompile>
     <ClCompile Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_stroker.c">
       <Filter>LunaSVG\3rdparty\software</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\lunasvg.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\styleelement.cpp">
+      <Filter>LunaSVG\source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

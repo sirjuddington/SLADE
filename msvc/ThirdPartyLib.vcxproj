@@ -40,7 +40,7 @@
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_raster.h" />
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_stroker.h" />
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_types.h" />
-    <ClInclude Include="..\thirdparty\lunasvg\include\document.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\include\lunasvg.h" />
     <ClInclude Include="..\thirdparty\lunasvg\source\canvas.h" />
     <ClInclude Include="..\thirdparty\lunasvg\source\clippathelement.h" />
     <ClInclude Include="..\thirdparty\lunasvg\source\defselement.h" />
@@ -57,6 +57,7 @@
     <ClInclude Include="..\thirdparty\lunasvg\source\property.h" />
     <ClInclude Include="..\thirdparty\lunasvg\source\stopelement.h" />
     <ClInclude Include="..\thirdparty\lunasvg\source\styledelement.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\styleelement.h" />
     <ClInclude Include="..\thirdparty\lunasvg\source\svgelement.h" />
     <ClInclude Include="..\thirdparty\lunasvg\source\symbolelement.h" />
     <ClInclude Include="..\thirdparty\lunasvg\source\useelement.h" />
@@ -642,12 +643,12 @@
     <ClCompile Include="..\thirdparty\lunasvg\source\canvas.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\clippathelement.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\defselement.cpp" />
-    <ClCompile Include="..\thirdparty\lunasvg\source\document.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\element.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\gelement.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\geometryelement.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\graphicselement.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\layoutcontext.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\lunasvg.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\markerelement.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\maskelement.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\paintelement.cpp" />
@@ -655,6 +656,7 @@
     <ClCompile Include="..\thirdparty\lunasvg\source\property.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\stopelement.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\styledelement.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\styleelement.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\svgelement.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\symbolelement.cpp" />
     <ClCompile Include="..\thirdparty\lunasvg\source\useelement.cpp" />

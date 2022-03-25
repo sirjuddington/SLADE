@@ -33,7 +33,7 @@
 #include "UI/WxUtils.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
-#include "thirdparty/lunasvg/include/document.h"
+#include "thirdparty/lunasvg/include/lunasvg.h"
 
 using namespace slade;
 
@@ -381,5 +381,5 @@ wxImage wxutil::createImageFromSVG(const string& svg_text, int width, int height
 	}
 
 	// Create wxImage
-	return wxImage(width, height, rgb_data, alpha_data, false);
+	return { width, height, rgb_data, alpha_data, false };
 }

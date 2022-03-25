@@ -1,6 +1,6 @@
 target_sources(lunasvg 
 PRIVATE
-    "${CMAKE_CURRENT_LIST_DIR}/document.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/lunasvg.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/element.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/property.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/parser.cpp"
@@ -16,6 +16,7 @@ PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/paintelement.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/stopelement.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/styledelement.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/styleelement.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/svgelement.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/symbolelement.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/useelement.cpp"
