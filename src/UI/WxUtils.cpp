@@ -98,7 +98,7 @@ wxFont wxutil::monospaceFont(wxFont base)
 // -----------------------------------------------------------------------------
 wxImageList* wxutil::createSmallImageList()
 {
-	const auto icon_size = ui::scaleFactor() > 1.25 ? 32 : 16;
+	const auto icon_size = ui::scalePx(16);
 	return new wxImageList(icon_size, icon_size, false, 0);
 }
 
@@ -304,7 +304,7 @@ wxArrayString wxutil::arrayString(vector<wxString> vector)
 // -----------------------------------------------------------------------------
 // Returns a wxArrayString containing the (std) strings in [vector]
 // -----------------------------------------------------------------------------
-wxArrayString wxutil::arrayStringStd(vector<string> vector)
+wxArrayString wxutil::arrayStringStd(const vector<string>& vector)
 {
 	wxArrayString list;
 	for (const auto& str : vector)

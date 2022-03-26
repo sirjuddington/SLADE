@@ -38,25 +38,25 @@ class GfxConvDialog : public SDialog
 {
 public:
 	GfxConvDialog(wxWindow* parent);
-	~GfxConvDialog();
+	~GfxConvDialog() override;
 
 	void setupLayout();
 
 	void openEntry(ArchiveEntry* entry);
-	void openEntries(vector<ArchiveEntry*> entries);
+	void openEntries(const vector<ArchiveEntry*>& entries);
 	void openTextures(
-		vector<CTexture*> textures,
-		Palette*          palette    = nullptr,
-		Archive*          archive    = nullptr,
-		bool              force_rgba = false);
+		const vector<CTexture*>& textures,
+		Palette*                 palette    = nullptr,
+		Archive*                 archive    = nullptr,
+		bool                     force_rgba = false);
 	void updatePreviewGfx();
 	void updateControls() const;
-	void convertOptions(SIFormat::ConvertOptions& opt);
+	void convertOptions(SIFormat::ConvertOptions& opt) const;
 
-	bool      itemModified(int index);
+	bool      itemModified(int index) const;
 	SImage*   itemImage(int index);
-	SIFormat* itemFormat(int index);
-	Palette*  itemPalette(int index);
+	SIFormat* itemFormat(int index) const;
+	Palette*  itemPalette(int index) const;
 
 	void applyConversion();
 
@@ -67,8 +67,7 @@ private:
 		SImage::Type coltype;
 
 		ConvFormat(SIFormat* format = nullptr, SImage::Type coltype = SImage::Type::RGBA) :
-			format{ format },
-			coltype{ coltype }
+			format{ format }, coltype{ coltype }
 		{
 		}
 	};
@@ -87,10 +86,7 @@ private:
 		ConvItem(ArchiveEntry* entry = nullptr) : entry{ entry } {}
 
 		ConvItem(CTexture* texture, Palette* palette = nullptr, Archive* archive = nullptr, bool force_rgba = false) :
-			texture{ texture },
-			palette{ palette },
-			archive{ archive },
-			force_rgba{ force_rgba }
+			texture{ texture }, palette{ palette }, archive{ archive }, force_rgba{ force_rgba }
 		{
 		}
 	};

@@ -36,7 +36,6 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "General/KeyBind.h"
-#include "Graphics/Icons.h"
 #include "UI/WxUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
@@ -80,7 +79,7 @@ SAction::SAction(
 	wx_id_{ 0 },
 	reserved_ids_{ reserve_ids },
 	text_{ text },
-	icons_{ string{ icon } },
+	icon_{ icon },
 	helptext_{ helptext },
 	shortcut_{ shortcut },
 	type_{ type },
@@ -88,18 +87,6 @@ SAction::SAction(
 	checked_{ false },
 	linked_cvar_{ nullptr }
 {
-}
-
-// -----------------------------------------------------------------------------
-// Returns the name of the icon to use for this action
-// -----------------------------------------------------------------------------
-string SAction::iconName() const
-{
-	for (const auto& name : icons_)
-		if (icons::iconExists(icons::Any, name))
-			return name;
-
-	return {};
 }
 
 // -----------------------------------------------------------------------------
@@ -222,7 +209,7 @@ bool SAction::addToMenu(
 // -----------------------------------------------------------------------------
 // Loads a parsed SAction definition
 // -----------------------------------------------------------------------------
-bool SAction::parse(ParseTreeNode* node)
+bool SAction::parse(const ParseTreeNode* node)
 {
 	string linked_cvar;
 	int    custom_wxid = 0;
@@ -238,8 +225,7 @@ bool SAction::parse(ParseTreeNode* node)
 
 		// Icon
 		else if (prop_name == "icon")
-			for (const auto& icon : prop->stringValues())
-				icons_.push_back(icon);
+			icon_ = prop->stringValue();
 
 		// Help Text
 		else if (prop_name == "help_text")

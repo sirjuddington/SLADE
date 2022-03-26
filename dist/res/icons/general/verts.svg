@@ -1,0 +1,12 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="16px"
+    height="16px"
+    viewBox="0 0 24 24"
+    transform="translate(0, 0)">
+    <ellipse cx="5" cy="5" rx="2.6" ry="2.6" fill="#2AC155" stroke="#145B27" />
+    <ellipse cx="19" cy="5" rx="2.6" ry="2.6" fill="#2AC155" stroke="#145B27" />
+    <ellipse cx="5" cy="19" rx="2.6" ry="2.6" fill="#2AC155" stroke="#145B27" />
+    <ellipse cx="19" cy="19" rx="2.6" ry="2.6" fill="#2AC155" stroke="#145B27" />
+</svg>

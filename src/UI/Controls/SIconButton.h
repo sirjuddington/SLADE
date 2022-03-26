@@ -17,6 +17,6 @@ public:
 		SIconButton(parent, icons::General, icon, tooltip, icon_size)
 	{
 	}
-	~SIconButton() = default;
+	~SIconButton() override = default;
 };
 } // namespace slade

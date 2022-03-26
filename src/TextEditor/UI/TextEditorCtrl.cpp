@@ -1186,7 +1186,7 @@ void TextEditorCtrl::blockComment()
 		comment_end   = comment_end.Prepend(space);
 
 		ReplaceTarget(text_string.Prepend(comment_begin).append(comment_end));
-		selection_end += int(comment_begin.Len() + comment_end.Len());
+		selection_end += static_cast<int>(comment_begin.Len() + comment_end.Len());
 	}
 	else if (text_string.StartsWith(comment_begin) && text_string.EndsWith(comment_end))
 	{
@@ -1196,7 +1196,7 @@ void TextEditorCtrl::blockComment()
 			comment_end_len = comment_end.Len();
 
 		ReplaceTarget(text_string.Remove(0, comment_begin_len).RemoveLast(comment_end_len));
-		selection_end -= int(comment_begin_len + comment_end_len);
+		selection_end -= static_cast<int>(comment_begin_len + comment_end_len);
 	}
 
 	SetSelection(selection_start, selection_end);

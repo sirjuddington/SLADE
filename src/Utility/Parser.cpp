@@ -65,6 +65,14 @@ bool ParseTreeNode::nameIsCI(string_view name) const
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if the node's type matches [type] (case-insensitive)
+// -----------------------------------------------------------------------------
+bool ParseTreeNode::typeIsCI(string_view type) const
+{
+	return strutil::equalCI(type_, type);
+}
+
+// -----------------------------------------------------------------------------
 // Returns the node's value at [index] as a Property.
 // If [index] is out of range, returns a false boolean Property
 // -----------------------------------------------------------------------------
@@ -81,7 +89,7 @@ Property ParseTreeNode::value(unsigned index)
 // Returns the node's value at [index] as a string.
 // If [index] is out of range, returns an empty string
 // -----------------------------------------------------------------------------
-string ParseTreeNode::stringValue(unsigned index)
+string ParseTreeNode::stringValue(unsigned index) const
 {
 	// Check index
 	if (index >= values_.size())
@@ -93,7 +101,7 @@ string ParseTreeNode::stringValue(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns the node's values as a string vector.
 // -----------------------------------------------------------------------------
-vector<string> ParseTreeNode::stringValues()
+vector<string> ParseTreeNode::stringValues() const
 {
 	vector<string> string_values;
 	for (const auto& value : values_)
@@ -105,7 +113,7 @@ vector<string> ParseTreeNode::stringValues()
 // Returns the node's value at [index] as an integer.
 // If [index] is out of range, returns 0
 // -----------------------------------------------------------------------------
-int ParseTreeNode::intValue(unsigned index)
+int ParseTreeNode::intValue(unsigned index) const
 {
 	// Check index
 	if (index >= values_.size())
@@ -118,7 +126,7 @@ int ParseTreeNode::intValue(unsigned index)
 // Returns the node's value at [index] as a boolean.
 // If [index] is out of range, returns false
 // -----------------------------------------------------------------------------
-bool ParseTreeNode::boolValue(unsigned index)
+bool ParseTreeNode::boolValue(unsigned index) const
 {
 	// Check index
 	if (index >= values_.size())
@@ -131,7 +139,7 @@ bool ParseTreeNode::boolValue(unsigned index)
 // Returns the node's value at [index] as a float.
 // If [index] is out of range, returns 0.0f
 // -----------------------------------------------------------------------------
-double ParseTreeNode::floatValue(unsigned index)
+double ParseTreeNode::floatValue(unsigned index) const
 {
 	// Check index
 	if (index >= values_.size())
@@ -617,7 +625,7 @@ void Parser::define(string_view def)
 // -----------------------------------------------------------------------------
 // Returns true if [def] has been previously #defined (case-insensitive)
 // -----------------------------------------------------------------------------
-bool Parser::defined(string_view def)
+bool Parser::defined(string_view def) const
 {
 	for (const auto& defined_str : defines_)
 		if (strutil::equalCI(defined_str, def))

@@ -18,7 +18,7 @@ class GradientBox : public OGLCanvas
 {
 public:
 	GradientBox(wxWindow* parent, int steps = -1);
-	~GradientBox() = default;
+	~GradientBox() override = default;
 
 	void setStartCol(ColRGBA col) { col_start_.set(col.r, col.g, col.b, 255); }
 	void setEndCol(ColRGBA col) { col_end_.set(col.r, col.g, col.b, 255); }
@@ -40,17 +40,17 @@ public:
 		const Palette&  pal,
 		const wxString& title         = "Edit Translation",
 		SImage*         preview_image = nullptr);
-	~TranslationEditorDialog() = default;
+	~TranslationEditorDialog() override = default;
 
 	Translation& getTranslation() { return translation_; }
 	bool         getTruecolor() const;
 
-	void openTranslation(Translation& trans);
+	void openTranslation(const Translation& trans);
 	void openRange(int index);
 	void updateListItem(int index);
-	void setStartColour(ColRGBA col);
-	void setEndColour(ColRGBA col);
-	void setTintColour(ColRGBA col);
+	void setStartColour(const ColRGBA& col);
+	void setEndColour(const ColRGBA& col);
+	void setTintColour(const ColRGBA& col);
 	void setTintAmount(int amount);
 	void showPaletteTarget();
 	void showGradientTarget();

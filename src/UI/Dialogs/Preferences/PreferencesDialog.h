@@ -14,12 +14,12 @@ class PreferencesDialog : public SDialog
 {
 public:
 	PreferencesDialog(wxWindow* parent);
-	~PreferencesDialog() = default;
+	~PreferencesDialog() override = default;
 
 	void     showPage(const wxString& name, const wxString& subsection = "");
 	wxString currentPage() const;
-	void     initPages();
-	void     applyPreferences();
+	void     initPages() const;
+	void     applyPreferences() const;
 
 	// Static functions
 	static void openPreferences(wxWindow* parent, wxString initial_page = "", const wxString& subsection = "");

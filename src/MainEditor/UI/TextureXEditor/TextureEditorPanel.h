@@ -1,6 +1,5 @@
 #pragma once
 
-#include "General/SAction.h"
 #include "UI/Lists/ListView.h"
 
 namespace slade
@@ -20,7 +19,7 @@ class TextureEditorPanel : public wxPanel
 {
 public:
 	TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_editor);
-	virtual ~TextureEditorPanel() = default;
+	~TextureEditorPanel() override = default;
 
 	bool      texModified() const { return tex_modified_; }
 	CTexture* texture() const { return tex_current_.get(); }
@@ -33,7 +32,7 @@ public:
 	virtual wxPanel* createPatchControls(wxWindow* parent);
 	virtual void     populatePatchList();
 	virtual void     updatePatchControls();
-	void             updateTextureName(const wxString& new_name);
+	void             updateTextureName(const wxString& new_name) const;
 
 	bool openTexture(CTexture* tex, TextureXList* list);
 	void clearTexture();

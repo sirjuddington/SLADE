@@ -1,0 +1,21 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="16px"
+    height="16px"
+    viewBox="0 0 24 24">
+    <!-- <rect x="0" y="0" width="24" height="24"/> -->
+    <g transform="scale(2, 2)">
+        <path
+            d="M9 7v2h2v8h2V9h2V7H9z"
+            fill="#476DBD"
+            transform="translate(-6, -6)"
+        />
+    </g>
+    <rect x="1" y="8" width="8" height="4" fill="#d42b2b"/>
+    <rect x="1" y="12" width="8" height="4" fill="#e4cb2d"/>
+    <rect x="1" y="16" width="8" height="4" fill="#26b95e"/>
+    <rect x="15" y="12" width="8" height="4" fill="#d42b2b"/>
+    <rect x="15" y="16" width="8" height="4" fill="#e4cb2d"/>
+    <rect x="15" y="8" width="8" height="4" fill="#26b95e"/>
+</svg>

@@ -42,7 +42,7 @@ inline wxString strFromView(string_view view)
 	return { view.data(), view.size() };
 }
 wxArrayString arrayString(vector<wxString> vector);
-wxArrayString arrayStringStd(vector<string> vector);
+wxArrayString arrayStringStd(const vector<string>& vector);
 
 // Scaling
 wxSize  scaledSize(int x, int y);

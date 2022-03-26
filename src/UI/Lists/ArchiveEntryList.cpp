@@ -37,7 +37,6 @@
 #include "General/ColourConfiguration.h"
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
-#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -103,8 +102,8 @@ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 	auto  et_icon_list = EntryType::iconList();
 	for (const auto& name : et_icon_list)
 	{
-		if (image_list->Add(icons::getPaddedIcon(icons::Entry, name, elist_icon_size, pad)) < 0)
-			image_list->Add(icons::getPaddedIcon(icons::Entry, "default", elist_icon_size, pad));
+		if (image_list->Add(icons::getIcon(icons::Entry, name, elist_icon_size, pad)) < 0)
+			image_list->Add(icons::getIcon(icons::Entry, "default", elist_icon_size, pad));
 	}
 
 	wxListCtrl::SetImageList(image_list, wxIMAGE_LIST_SMALL);
@@ -561,31 +560,35 @@ int ArchiveEntryList::entrySize(long index) const
 void ArchiveEntryList::sortItems()
 {
 	lv_current_ = this;
-	std::sort(items_.begin(), items_.end(), [&](long left, long right) {
-		auto le = entryAt(left, false);
-		auto re = entryAt(right, false);
+	std::sort(
+		items_.begin(),
+		items_.end(),
+		[&](long left, long right)
+		{
+			auto le = entryAt(left, false);
+			auto re = entryAt(right, false);
 
-		// Sort folder->entry first
-		if (le->type() == EntryType::folderType() && re->type() != EntryType::folderType())
-			return true;
-		if (re->type() == EntryType::folderType() && le->type() != EntryType::folderType())
-			return false;
+			// Sort folder->entry first
+			if (le->type() == EntryType::folderType() && re->type() != EntryType::folderType())
+				return true;
+			if (re->type() == EntryType::folderType() && le->type() != EntryType::folderType())
+				return false;
 
-		// Name sort
-		if (col_name_ >= 0 && col_name_ == sortColumn())
-			return sort_descend_ ? le->upperName() > re->upperName() : le->upperName() < re->upperName();
+			// Name sort
+			if (col_name_ >= 0 && col_name_ == sortColumn())
+				return sort_descend_ ? le->upperName() > re->upperName() : le->upperName() < re->upperName();
 
-		// Size sort
-		if (col_size_ >= 0 && col_size_ == sortColumn())
-			return sort_descend_ ? entrySize(left) > entrySize(right) : entrySize(left) < entrySize(right);
+			// Size sort
+			if (col_size_ >= 0 && col_size_ == sortColumn())
+				return sort_descend_ ? entrySize(left) > entrySize(right) : entrySize(left) < entrySize(right);
 
-		// Index sort
-		if (col_index_ >= 0 && col_index_ == sortColumn())
-			return sort_descend_ ? left > right : left < right;
+			// Index sort
+			if (col_index_ >= 0 && col_index_ == sortColumn())
+				return sort_descend_ ? left > right : left < right;
 
-		// Other (default) sort
-		return VirtualListView::defaultSort(left, right);
-	});
+			// Other (default) sort
+			return VirtualListView::defaultSort(left, right);
+		});
 }
 
 // -----------------------------------------------------------------------------

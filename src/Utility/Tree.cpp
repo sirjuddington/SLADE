@@ -81,7 +81,7 @@ string STreeNode::path()
 // -----------------------------------------------------------------------------
 // Returns the child node at [index], or NULL if index is invalid
 // -----------------------------------------------------------------------------
-STreeNode* STreeNode::child(unsigned index)
+STreeNode* STreeNode::child(unsigned index) const
 {
 	// Check index
 	if (index >= children_.size())
@@ -95,7 +95,7 @@ STreeNode* STreeNode::child(unsigned index)
 // Can also find deeper child nodes if a path is given in [name].
 // Returns null if no match is found
 // -----------------------------------------------------------------------------
-STreeNode* STreeNode::child(string_view name)
+STreeNode* STreeNode::child(string_view name) const
 {
 	// Check name was given
 	if (name.empty())
@@ -139,7 +139,7 @@ STreeNode* STreeNode::child(string_view name)
 // Returns a list of all the node's children matching [name].
 // Also handles paths as per getChild
 // -----------------------------------------------------------------------------
-vector<STreeNode*> STreeNode::children(string_view name)
+vector<STreeNode*> STreeNode::children(string_view name) const
 {
 	// Init return vector
 	vector<STreeNode*> ret;

@@ -79,8 +79,8 @@ bool ArchiveManager::validResDir(string_view dir) const
 		"fonts/dejavu_sans.ttf",
 		"html/box-title-back.png",
 		"html/startpage.htm",
-		"icons/entry_list/16/archive.png",
-		"icons/general/16/wiki.png",
+		"icons/entry_list/archive.svg",
+		"icons/general/wiki.svg",
 		"images/arrow.png",
 		"logo.png",
 		"palettes/Doom .pal",
@@ -188,8 +188,8 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 		open_archives_.push_back(n_archive);
 
 		// Emit archive changed/saved signal when received from the archive
-		archive->signals().modified.connect(
-			[this](Archive& archive) { signals_.archive_modified(archiveIndex(&archive)); });
+		archive->signals().modified.connect([this](Archive& archive)
+											{ signals_.archive_modified(archiveIndex(&archive)); });
 		archive->signals().saved.connect([this](Archive& archive) { signals_.archive_saved(archiveIndex(&archive)); });
 
 		// Announce the addition

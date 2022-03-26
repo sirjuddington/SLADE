@@ -7,7 +7,7 @@ class SetupWizardDialog : public wxDialog
 {
 public:
 	SetupWizardDialog(wxWindow* parent);
-	~SetupWizardDialog() = default;
+	~SetupWizardDialog() override = default;
 
 	void setupLayout();
 	void showPage(unsigned index);
@@ -19,7 +19,7 @@ private:
 	wxStaticText* label_page_description_ = nullptr;
 
 	vector<WizardPageBase*> pages_;
-	unsigned                current_page_;
+	unsigned                current_page_ = 0;
 
 	// Events
 	void onBtnNext(wxCommandEvent& e);

@@ -43,6 +43,7 @@
 #include "UI/Controls/ColourBox.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Dialogs/Preferences/PreferencesDialog.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -70,9 +71,7 @@ CVAR(Bool, gfx_extraconv, false, CVar::Flag::Save)
 GfxConvDialog::GfxConvDialog(wxWindow* parent) : SDialog(parent, "Graphic Format Conversion", "gfxconv")
 {
 	// Set dialog icon
-	wxIcon icon;
-	icon.CopyFromBitmap(icons::getIcon(icons::General, "convert"));
-	SetIcon(icon);
+	wxutil::setWindowIcon(this, "convert");
 
 	setupLayout();
 	CenterOnParent();
@@ -386,7 +385,7 @@ void GfxConvDialog::openEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Opens a list of image entries to be converted
 // -----------------------------------------------------------------------------
-void GfxConvDialog::openEntries(vector<ArchiveEntry*> entries)
+void GfxConvDialog::openEntries(const vector<ArchiveEntry*>& entries)
 {
 	// Add entries to item list
 	for (auto& entry : entries)
@@ -400,7 +399,7 @@ void GfxConvDialog::openEntries(vector<ArchiveEntry*> entries)
 // -----------------------------------------------------------------------------
 // Opens a list of composite textures to be converted
 // -----------------------------------------------------------------------------
-void GfxConvDialog::openTextures(vector<CTexture*> textures, Palette* palette, Archive* archive, bool force_rgba)
+void GfxConvDialog::openTextures(const vector<CTexture*>& textures, Palette* palette, Archive* archive, bool force_rgba)
 {
 	// Add entries to item list
 	for (auto& texture : textures)
@@ -452,9 +451,9 @@ void GfxConvDialog::updatePreviewGfx()
 
 
 	// Refresh
-	gfx_current_->zoomToFit(true, 0.05f);
+	gfx_current_->zoomToFit(true, 0.05);
 	gfx_current_->Refresh();
-	gfx_target_->zoomToFit(true, 0.05f);
+	gfx_target_->zoomToFit(true, 0.05);
 	gfx_target_->Refresh();
 }
 
@@ -499,7 +498,7 @@ void GfxConvDialog::updateControls() const
 // -----------------------------------------------------------------------------
 // Writes the state of the conversion option controls to [opt]
 // -----------------------------------------------------------------------------
-void GfxConvDialog::convertOptions(SIFormat::ConvertOptions& opt)
+void GfxConvDialog::convertOptions(SIFormat::ConvertOptions& opt) const
 {
 	// Set transparency options
 	opt.transparency = cb_enable_transparency_->GetValue();
@@ -527,7 +526,7 @@ void GfxConvDialog::convertOptions(SIFormat::ConvertOptions& opt)
 // -----------------------------------------------------------------------------
 // Returns true if the item at [index] has been modified, false otherwise
 // -----------------------------------------------------------------------------
-bool GfxConvDialog::itemModified(int index)
+bool GfxConvDialog::itemModified(int index) const
 {
 	// Check index
 	if (index < 0 || index >= (int)items_.size())
@@ -551,7 +550,7 @@ SImage* GfxConvDialog::itemImage(int index)
 // -----------------------------------------------------------------------------
 // Returns the format for the item at [index]
 // -----------------------------------------------------------------------------
-SIFormat* GfxConvDialog::itemFormat(int index)
+SIFormat* GfxConvDialog::itemFormat(int index) const
 {
 	// Check index
 	if (index < 0 || index >= (int)items_.size())
@@ -563,7 +562,7 @@ SIFormat* GfxConvDialog::itemFormat(int index)
 // -----------------------------------------------------------------------------
 // Returns the palette for the item at [index]
 // -----------------------------------------------------------------------------
-Palette* GfxConvDialog::itemPalette(int index)
+Palette* GfxConvDialog::itemPalette(int index) const
 {
 	// Check index
 	if (index < 0 || index >= (int)items_.size())
@@ -604,8 +603,8 @@ void GfxConvDialog::onResize(wxSizeEvent& e)
 {
 	OnSize(e);
 
-	gfx_current_->zoomToFit(true, 0.05f);
-	gfx_target_->zoomToFit(true, 0.05f);
+	gfx_current_->zoomToFit(true, 0.05);
+	gfx_target_->zoomToFit(true, 0.05);
 
 	e.Skip();
 }

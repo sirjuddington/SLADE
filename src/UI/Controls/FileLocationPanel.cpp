@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "FileLocationPanel.h"
-#include "Graphics/Icons.h"
 #include "SIconButton.h"
 #include "UI/WxUtils.h"
 
@@ -69,28 +68,35 @@ FileLocationPanel::FileLocationPanel(
 	btn_browse_ = new SIconButton(this, "open", browse_caption);
 	sizer->Add(btn_browse_, wxSizerFlags(0).Expand().Border(wxLEFT, ui::px(ui::Size::PadMinimum)));
 
-	btn_browse_->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) {
-		filedialog::FDInfo inf;
-		if (filedialog::openFile(
-				inf,
-				wxutil::strToView(browse_caption_),
-				wxutil::strToView(browse_extensions_),
-				this,
-				wxutil::strToView(browse_default_filename_)))
+	btn_browse_->Bind(
+		wxEVT_BUTTON,
+		[&](wxCommandEvent& e)
 		{
-			text_path_->SetValue(inf.filenames[0]);
+			filedialog::FDInfo inf;
+			if (filedialog::openFile(
+					inf,
+					wxutil::strToView(browse_caption_),
+					wxutil::strToView(browse_extensions_),
+					this,
+					wxutil::strToView(browse_default_filename_)))
+			{
+				text_path_->SetValue(inf.filenames[0]);
+				wxCommandEvent event(wxEVT_COMMAND_FLP_LOCATION_CHANGED, GetId());
+				event.SetEventObject(this);
+				event.SetString(inf.filenames[0]);
+				GetEventHandler()->ProcessEvent(event);
+			}
+		});
+
+	text_path_->Bind(
+		wxEVT_TEXT,
+		[&](wxCommandEvent& e)
+		{
 			wxCommandEvent event(wxEVT_COMMAND_FLP_LOCATION_CHANGED, GetId());
 			event.SetEventObject(this);
-			event.SetString(inf.filenames[0]);
+			event.SetString(text_path_->GetValue());
 			GetEventHandler()->ProcessEvent(event);
-		}
-	});
-	text_path_->Bind(wxEVT_TEXT, [&](wxCommandEvent& e) {
-		wxCommandEvent event(wxEVT_COMMAND_FLP_LOCATION_CHANGED, GetId());
-		event.SetEventObject(this);
-		event.SetString(text_path_->GetValue());
-		GetEventHandler()->ProcessEvent(event);
-	});
+		});
 }
 
 // -----------------------------------------------------------------------------

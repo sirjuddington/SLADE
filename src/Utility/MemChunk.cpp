@@ -551,6 +551,21 @@ uint32_t MemChunk::crc() const
 	return hasData() ? misc::crc(data_, size_) : 0;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the data as a string
+// -----------------------------------------------------------------------------
+string MemChunk::asString(uint32_t offset, uint32_t length) const
+{
+	if (offset >= size_)
+		offset = 0;
+	if (length == 0 || offset + length > size_)
+		length = size_ - offset;
+
+	string s;
+	s.assign(reinterpret_cast<char*>(data_) + offset, length);
+	return s;
+}
+
 
 // -----------------------------------------------------------------------------
 // Allocates [size] bytes of data and returns it, or null if the allocation

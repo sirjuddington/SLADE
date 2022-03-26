@@ -16,13 +16,13 @@ class MapEditorConfigDialog : public SDialog
 {
 public:
 	MapEditorConfigDialog(wxWindow* parent, Archive* archive = nullptr, bool show_maps = true, bool creating = false);
-	~MapEditorConfigDialog();
+	~MapEditorConfigDialog() override;
 
 	void             populateGameList();
 	void             populatePortList();
 	void             populateMapList();
 	Archive::MapDesc selectedMap();
-	bool             configMatchesMap(const Archive::MapDesc& map);
+	bool             configMatchesMap(const Archive::MapDesc& map) const;
 	wxString         selectedGame();
 	wxString         selectedPort();
 

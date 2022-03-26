@@ -423,46 +423,63 @@ void ScriptManagerWindow::setupToolbar()
 void ScriptManagerWindow::bindEvents()
 {
 	// Tree item activate
-	tree_scripts_->Bind(wxEVT_TREE_ITEM_ACTIVATED, [=](wxTreeEvent& e) {
-		auto data = dynamic_cast<ScriptTreeItemData*>(tree_scripts_->GetItemData(e.GetItem()));
-		if (data && data->script)
-			openScriptTab(data->script);
-		else if (tree_scripts_->ItemHasChildren(e.GetItem()))
-			tree_scripts_->Toggle(e.GetItem());
-	});
+	tree_scripts_->Bind(
+		wxEVT_TREE_ITEM_ACTIVATED,
+		[=](wxTreeEvent& e)
+		{
+			auto data = dynamic_cast<ScriptTreeItemData*>(tree_scripts_->GetItemData(e.GetItem()));
+			if (data && data->script)
+				openScriptTab(data->script);
+			else if (tree_scripts_->ItemHasChildren(e.GetItem()))
+				tree_scripts_->Toggle(e.GetItem());
+		});
 
 	// Tree item right click
-	tree_scripts_->Bind(wxEVT_TREE_ITEM_RIGHT_CLICK, [&](wxTreeEvent& e) {
-		auto data = dynamic_cast<ScriptTreeItemData*>(tree_scripts_->GetItemData(e.GetItem()));
-		if (data && data->script && !data->script->read_only)
+	tree_scripts_->Bind(
+		wxEVT_TREE_ITEM_RIGHT_CLICK,
+		[&](wxTreeEvent& e)
 		{
-			script_clicked_ = data->script;
-			wxMenu popup;
-			SAction::fromId("scrm_rename")->addToMenu(&popup);
-			SAction::fromId("scrm_delete")->addToMenu(&popup);
-			PopupMenu(&popup);
-		}
-	});
+			auto data = dynamic_cast<ScriptTreeItemData*>(tree_scripts_->GetItemData(e.GetItem()));
+			if (data && data->script && !data->script->read_only)
+			{
+				script_clicked_ = data->script;
+				wxMenu popup;
+				SAction::fromId("scrm_rename")->addToMenu(&popup);
+				SAction::fromId("scrm_delete")->addToMenu(&popup);
+				PopupMenu(&popup);
+			}
+		});
 
 	// Window close
-	Bind(wxEVT_CLOSE_WINDOW, [=](wxCloseEvent&) {
-		// Save Layout
-		saveLayout();
-		sm_maximized = IsMaximized();
-		const wxSize size = GetSize() * GetContentScaleFactor();
-		if (!IsMaximized())
-			misc::setWindowInfo(id_, size.x, size.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
+	Bind(
+		wxEVT_CLOSE_WINDOW,
+		[=](wxCloseEvent&)
+		{
+			// Save Layout
+			saveLayout();
+			sm_maximized      = IsMaximized();
+			const wxSize size = GetSize() * GetContentScaleFactor();
+			if (!IsMaximized())
+				misc::setWindowInfo(
+					id_,
+					size.x,
+					size.y,
+					GetPosition().x * GetContentScaleFactor(),
+					GetPosition().y * GetContentScaleFactor());
 
-		// Hide
-		Show(false);
-	});
+			// Hide
+			Show(false);
+		});
 
 	// Tab closing
-	tabs_scripts_->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, [&](wxAuiNotebookEvent& e) {
-		auto page = currentPage();
-		if (page && !page->close())
-			e.Veto();
-	});
+	tabs_scripts_->Bind(
+		wxEVT_AUINOTEBOOK_PAGE_CLOSE,
+		[&](wxAuiNotebookEvent& e)
+		{
+			auto page = currentPage();
+			if (page && !page->close())
+				e.Veto();
+		});
 }
 
 // -----------------------------------------------------------------------------
@@ -609,17 +626,20 @@ void ScriptManagerWindow::showDocs(const wxString& url)
 		webview_docs_->SetName("docs");
 
 		// Bind HTML link click event
-		webview_docs_->Bind(wxEVT_WEBVIEW_NAVIGATING, [&](wxEvent& e) {
-			auto&    ev   = dynamic_cast<wxWebViewEvent&>(e);
-			wxString href = ev.GetURL();
-
-			// Open external links externally
-			if (!href.StartsWith(docs_url))
+		webview_docs_->Bind(
+			wxEVT_WEBVIEW_NAVIGATING,
+			[&](wxEvent& e)
 			{
-				wxLaunchDefaultBrowser(href);
-				ev.Veto();
-			}
-		});
+				auto&    ev   = dynamic_cast<wxWebViewEvent&>(e);
+				wxString href = ev.GetURL();
+
+				// Open external links externally
+				if (!href.StartsWith(docs_url))
+				{
+					wxLaunchDefaultBrowser(href);
+					ev.Veto();
+				}
+			});
 
 		tabs_scripts_->AddPage(webview_docs_, "Scripting Documentation", true, icons::getIcon(icons::General, "wiki"));
 	}

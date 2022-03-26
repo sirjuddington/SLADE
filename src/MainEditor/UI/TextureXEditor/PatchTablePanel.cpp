@@ -36,14 +36,12 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
-#include "Graphics/Icons.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/PaletteChooser.h"
-#include "UI/Controls/SIconButton.h"
 #include "UI/Controls/ZoomControl.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/WxUtils.h"
@@ -173,7 +171,7 @@ bool PatchTableListView::usageSort(long left, long right)
 		return left < right;
 	else
 		return lv_current_->sortDescend() ? p2.used_in.size() < p1.used_in.size() :
-											p1.used_in.size() < p2.used_in.size();
+                                            p1.used_in.size() < p2.used_in.size();
 }
 
 // -----------------------------------------------------------------------------
@@ -223,8 +221,8 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	list_patches_->Bind(wxEVT_LIST_ITEM_SELECTED, &PatchTablePanel::onDisplayChanged, this);
 
 	// Update when main palette changed
-	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect(
-		[this]() { updateDisplay(); });
+	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]()
+																							 { updateDisplay(); });
 }
 
 // -----------------------------------------------------------------------------

@@ -33,15 +33,12 @@
 #include "TextureEditorPanel.h"
 #include "General/KeyBind.h"
 #include "Graphics/CTexture/TextureXList.h"
-#include "Graphics/Icons.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
-#include "UI/Controls/SIconButton.h"
 #include "UI/Controls/ZoomControl.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
-#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -183,10 +180,10 @@ void TextureEditorPanel::setupLayout()
 wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 {
 	// Create controls
-	const auto spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
-	const auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
-	auto       panel     = new wxPanel(parent, -1);
-	text_tex_name_       = new wxTextCtrl(panel, -1);
+	const auto     spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
+	constexpr auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
+	auto           panel     = new wxPanel(parent, -1);
+	text_tex_name_           = new wxTextCtrl(panel, -1);
 	text_tex_name_->SetMaxLength(8);
 	spin_tex_width_    = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
 	spin_tex_height_   = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
@@ -291,7 +288,7 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	// Create patches list
 	list_patches_ = new ListView(panel, -1);
 	list_patches_->enableSizeUpdate(false);
-	
+
 	// Create patches toolbar
 	tb_patches_ = new SToolBar(panel, false, wxVERTICAL);
 	tb_patches_->addActionGroup(
@@ -317,9 +314,9 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	sizer->Add(framesizer, 1, wxEXPAND);
 
 	// X Position
-	const auto spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
-	const auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
-	auto       hbox      = new wxBoxSizer(wxHORIZONTAL);
+	const auto     spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
+	constexpr auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
+	auto           hbox      = new wxBoxSizer(wxHORIZONTAL);
 	framesizer->Add(hbox, 0, wxEXPAND | wxALL, ui::pad());
 	spin_patch_left_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
 	hbox->Add(new wxStaticText(panel, -1, "X Position:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
@@ -406,7 +403,7 @@ void TextureEditorPanel::updatePatchControls()
 // ----------------------------------------------------------------------------
 // Updates the texture name textbox with [new_name]
 // ----------------------------------------------------------------------------
-void TextureEditorPanel::updateTextureName(const wxString& new_name)
+void TextureEditorPanel::updateTextureName(const wxString& new_name) const
 {
 	text_tex_name_->SetValue(new_name);
 }
@@ -844,7 +841,8 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 			if (list_patches_->GetSelectedItemCount() > 0)
 			{
 				// Get drag amount according to texture
-				Vec2i tex_cur  = tex_canvas_->screenToTexPosition(e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor());
+				Vec2i tex_cur = tex_canvas_->screenToTexPosition(
+					e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor());
 				Vec2i tex_prev = tex_canvas_->screenToTexPosition(
 					tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y);
 				Vec2i diff = tex_cur - tex_prev;
@@ -871,7 +869,8 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 				tex_current_ && tex_current_->isExtended() && tex_canvas_->viewType() != CTextureCanvas::View::Normal)
 			{
 				// Get drag amount according to texture
-				Vec2i tex_cur  = tex_canvas_->screenToTexPosition(e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor());
+				Vec2i tex_cur = tex_canvas_->screenToTexPosition(
+					e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor());
 				Vec2i tex_prev = tex_canvas_->screenToTexPosition(
 					tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y);
 				Vec2i diff = tex_cur - tex_prev;

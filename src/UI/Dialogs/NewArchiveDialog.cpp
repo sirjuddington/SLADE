@@ -34,7 +34,6 @@
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
-#include "Graphics/Icons.h"
 #include "NewArchiveDiaog.h"
 #include "UI/WxUtils.h"
 
@@ -63,9 +62,7 @@ CVAR(String, archive_last_created_format, "wad", CVar::Save)
 NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Create New Archive")
 {
 	// Set dialog icon
-	wxIcon icon;
-	icon.CopyFromBitmap(icons::getIcon(icons::General, "newarchive"));
-	SetIcon(icon);
+	wxutil::setWindowIcon(this, "newarchive");
 
 	// Create controls
 	auto* choice_type = new wxChoice(this, -1);
@@ -95,15 +92,18 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
 
 	// Create button click
-	btn_create->Bind(wxEVT_BUTTON, [this, choice_type](wxCommandEvent&) {
-		for (const auto& format : Archive::allFormats())
-			if (choice_type->GetString(choice_type->GetSelection()) == (format.name + " Archive"))
-			{
-				archive_created_            = app::archiveManager().newArchive(format.id).get();
-				archive_last_created_format = format.id;
-				EndModal(wxID_OK);
-			}
-	});
+	btn_create->Bind(
+		wxEVT_BUTTON,
+		[this, choice_type](wxCommandEvent&)
+		{
+			for (const auto& format : Archive::allFormats())
+				if (choice_type->GetString(choice_type->GetSelection()) == (format.name + " Archive"))
+				{
+					archive_created_            = app::archiveManager().newArchive(format.id).get();
+					archive_last_created_format = format.id;
+					EndModal(wxID_OK);
+				}
+		});
 
 	// Cancel button click
 	btn_cancel->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_CANCEL); });

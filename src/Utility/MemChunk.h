@@ -12,7 +12,7 @@ public:
 	MemChunk() = default;
 	MemChunk(uint32_t size);
 	MemChunk(const uint8_t* data, uint32_t size);
-	~MemChunk();
+	~MemChunk() override;
 
 	uint8_t& operator[](int a) const { return data_[a]; }
 
@@ -60,6 +60,7 @@ public:
 	// Misc
 	bool     fillData(uint8_t val) const;
 	uint32_t crc() const;
+	string   asString(uint32_t offset = 0, uint32_t length = 0) const;
 
 	// Platform-independent functions to read values in little (L##) or big (B##) endian
 	uint16_t readL16(unsigned i) const { return data_[i] + (data_[i + 1] << 8); }

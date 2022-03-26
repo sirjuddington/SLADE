@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SIconButton.h"
-#include "Graphics/Icons.h"
 #include "MapEditor/UI/MapCanvas.h"
 
 using namespace slade;
