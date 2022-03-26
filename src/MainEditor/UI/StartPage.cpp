@@ -144,14 +144,14 @@ void SStartPage::init()
 		entry_export_.push_back(res_archive->entryAtPath("fonts/FiraSans-Bold.woff"));
 		entry_export_.push_back(res_archive->entryAtPath("fonts/FiraSans-Heavy.woff"));
 		entry_export_.push_back(res_archive->entryAtPath("logo_icon.png"));
-		/*entry_export_.push_back(icons::getIconEntry(icons::Entry, "archive", 16));
-		entry_export_.push_back(icons::getIconEntry(icons::Entry, "wad", 16));
-		entry_export_.push_back(icons::getIconEntry(icons::Entry, "zip", 16));
-		entry_export_.push_back(icons::getIconEntry(icons::Entry, "folder", 16));
-		entry_export_.push_back(icons::getIconEntry(icons::General, "open", 16));
-		entry_export_.push_back(icons::getIconEntry(icons::General, "newarchive", 16));
-		entry_export_.push_back(icons::getIconEntry(icons::General, "mapeditor", 16));
-		entry_export_.push_back(icons::getIconEntry(icons::General, "wiki", 16));*/
+		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/archive.svg"));
+		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/wad.svg"));
+		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/zip.svg"));
+		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/folder.svg"));
+		entry_export_.push_back(res_archive->entryAtPath("icons/general/open.svg"));
+		entry_export_.push_back(res_archive->entryAtPath("icons/general/newarchive.svg"));
+		entry_export_.push_back(res_archive->entryAtPath("icons/general/mapeditor.svg"));
+		entry_export_.push_back(res_archive->entryAtPath("icons/general/wiki.svg"));
 
 		// Load tips
 		auto entry_tips = res_archive->entryAtPath("tips.txt");
@@ -160,7 +160,7 @@ void SStartPage::init()
 			Tokenizer tz;
 			tz.openMem((const char*)entry_tips->rawData(), entry_tips->size(), entry_tips->name());
 			while (!tz.atEnd() && !tz.peekToken().empty())
-				tips_.push_back(tz.getToken());
+				tips_.emplace_back(tz.getToken());
 		}
 	}
 }
@@ -239,7 +239,7 @@ void SStartPage::load(bool new_tip)
 			// Add recent file row
 			recent += wxString::Format(
 				"<div class=\"link\">"
-				"<img src=\"%s.png\" class=\"link\" />"
+				"<img src=\"%s.svg\" class=\"link\" />"
 				"<a class=\"link\" href=\"recent://%d\">%s</a>"
 				"</div>",
 				icon,
