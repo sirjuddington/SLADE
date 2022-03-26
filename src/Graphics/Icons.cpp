@@ -67,6 +67,7 @@ struct IconSet
 
 vector<IconSet> iconsets_entry;
 vector<IconSet> iconsets_general;
+IconSet         iconset_text_editor{ "Default" };
 } // namespace slade::icons
 
 
@@ -126,6 +127,7 @@ const IconDef* iconDef(Type type, string_view name)
 
 	if (type == Entry || type == Any)
 	{
+		// Find icon in current set
 		const auto& set = currentIconSet(Entry);
 		if (auto i = set.icons.find(name); i != set.icons.end())
 			return &i->second;
@@ -138,6 +140,10 @@ const IconDef* iconDef(Type type, string_view name)
 				return &i->second;
 		}
 	}
+
+	if (type == TextEditor || type == Any)
+		if (auto i = iconset_text_editor.icons.find(name); i != iconset_text_editor.icons.end())
+			return &i->second;
 
 	return nullptr;
 }
@@ -393,6 +399,9 @@ bool icons::loadIcons()
 
 		else if (node->nameIs("entry_list"))
 			parseEntryListBlock(*node, *res_archive);
+
+		else if (node->nameIs("text_editor"))
+			parseIconSet(*node, iconset_text_editor, *res_archive);
 	}
 
 	return true;

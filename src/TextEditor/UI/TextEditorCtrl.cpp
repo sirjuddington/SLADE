@@ -185,11 +185,11 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 	SetMarginWidth(2, 4);
 
 	// Register icons for autocompletion list
-	RegisterImage(1, icons::getIcon(icons::TextEditor, "key"));
-	RegisterImage(2, icons::getIcon(icons::TextEditor, "const"));
-	RegisterImage(3, icons::getIcon(icons::TextEditor, "func")); // TODO: Icon (type)
-	RegisterImage(4, icons::getIcon(icons::TextEditor, "func")); // TODO: Icon (property)
-	RegisterImage(5, icons::getIcon(icons::TextEditor, "func"));
+	RegisterImage(1, icons::getIcon(icons::TextEditor, "keyword", -1, { 1, 3 }));
+	RegisterImage(2, icons::getIcon(icons::TextEditor, "constant", -1, { 1, 3 }));
+	RegisterImage(3, icons::getIcon(icons::TextEditor, "type", -1, { 1, 3 }));
+	RegisterImage(4, icons::getIcon(icons::TextEditor, "property", -1, { 1, 3 }));
+	RegisterImage(5, icons::getIcon(icons::TextEditor, "function", -1, { 1, 3 }));
 
 	// Init w/no language
 	setLanguage(nullptr);
@@ -237,6 +237,7 @@ void TextEditorCtrl::setup()
 	SetUseAntiAliasing(true);
 	SetMouseDwellTime(300);
 	AutoCompSetIgnoreCase(true);
+	AutoCompSetMaxHeight(10);
 	SetIndentationGuides(txed_indent_guides);
 	SetExtraAscent(txed_line_extra_height);
 	SetExtraDescent(txed_line_extra_height);
