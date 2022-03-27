@@ -37,9 +37,9 @@ decorate : cstyle {
 
 		// Combat
 		Accuracy, Stamina, ReactionTime,
-		Damage, DamageFactor, DamageType, PoisonDamage, PoisonDamageType, 
-		ExplosionRadius, ExplosionDamage, RadiusDamageFactor, DontHurtShooter, 
-		MeleeDamage, MeleeThreshold, MeleeRange, MaxTargetRange, 
+		Damage, DamageFactor, DamageMultiply, DamageType, PoisonDamage, PoisonDamageType, 
+		ExplosionRadius, ExplosionDamage, SelfDamageFactor, RadiusDamageFactor, DontHurtShooter, 
+		MeleeDamage, MeleeThreshold, MeleeRange, MaxTargetRange, FriendlySeeBlocks,
 		MissileType, MissileHeight, MinMissileChance, 
 		WeaveIndexXY, WeaveIndexZ, ProjectileKickBack, 
 		RipperLevel, RipLevelMin, RipLevelMax,
@@ -48,17 +48,17 @@ decorate : cstyle {
 		// Physics
 		Gravity, Mass, Radius, Height, BounceFactor, BounceCount, BounceType, WallBounceFactor, PushFactor, 
 		DeathHeight, BurnHeight, ProjectilePassHeight, CameraHeight, MaxStepHeight, MaxDropOffHeight, 
-		Speed, VSpeed, FastSpeed, FloatSpeed, Friction,
+		Speed, VSpeed, FastSpeed, FloatSpeed, Friction, MaxSlopeSteepness, ThruBits,
 		
 		// Rendering
 		RenderStyle, None, Normal, Fuzzy, OptFuzzy, Translucent, SoulTrans, Stencil, AddStencil, StencilColor, Shaded, 
 		AddShaded, Shadow, Add, Subtract, DefaultAlpha, Alpha, XScale, YScale, Scale, Translation,
 		BloodColor, BloodType, Decal, FloatBobPhase, DistanceCheck, SpriteAngle, SpriteRotation, VisibleAngles,
-		VisiblePitch,
+		VisiblePitch, StealthAlpha, FloatBobStrength, RenderRadius, CameraFOV, 
 		
 		// Sounds
 		SeeSound, AttackSound, PainSound, BounceSound, CrushPainSound,
-		DeathSound, ActiveSound, MeleeSound, HowlSound, PainSound, WallBounceSound, 
+		DeathSound, ActiveSound, MeleeSound, HowlSound, PainSound, WallBounceSound, RipSound,
 		
 		// Multiplayer weirdness
 		DesignatedTeam, VisibleToTeam, VisibleToPlayerClass, 
@@ -71,12 +71,12 @@ decorate : cstyle {
 		AttackZOffset, JumpZ, SpawnClass, ViewHeight, ForwardMove, SideMove, MaxHealth, MugshotMaxHealth, 
 		RunHealth, MorphWeapon, FlechetteType, ScoreIcon, CrouchSprite, DamageScreenColor, StartItem, 
 		InvulnerabilityMode, HealRadiusType, HexenArmor, Portrait, WeaponSlot, FallingScreamSpeed, GruntSpeed,
-		AirCapacity, UseRange, ViewBob,
+		AirCapacity, UseRange, ViewBob, TeleportFreezeTime,
 		
 		// Inventory-specific properties
 		Inventory, RestrictedTo, ForbiddenTo, Amount, Icon, InterHubAmount, MaxAmount, 
 		DefMaxAmount, PickupFlash, PickupMessage, PickupSound, PickupAnnouncerEntry,
-		Respawntics, UseSound, GiveQuest,
+		Respawntics, UseSound, GiveQuest, AltHUDIcon,
 		
 		// Fake Inventory
 		FakeInventory, Respawns,
@@ -106,7 +106,7 @@ decorate : cstyle {
 		Weapon, Kickback, DefaultKickback, ReadySound, SelectionOrder, SisterWeapon, UpSound, YAdjust, 
 		AmmoGive, AmmoGive1, AmmoGive2, AmmoType, AmmoType1, AmmoType2, AmmoUse, AmmoUse1, AmmoUse2,
 		BobStyle, BobSpeed, BobRangeX, BobRangeY, SlotNumber, SlotPriority, PreferredSkin,
-		MinSelectionAmmo1, MinSelectionAmmo2,
+		MinSelectionAmmo1, MinSelectionAmmo2, WeaponScaleX, WeaponScaleY, LookScale,
 		
 		// Weapon piece
 		WeaponPiece, Number, Weapon, 
@@ -168,20 +168,27 @@ decorate : cstyle {
 		SPAWNSOUNDSOURCE, SPECIAL, SPECIALFIREDAMAGE, SPECIALFLOORCLIP, SPECTRAL, SPRITEANGLE, STANDSTILL, STAYMORPHED,
 		STEALTH, STEPMISSILE, STRIFEDAMAGE, SUMMONEDMONSTER, SYNCHRONIZED, TELEPORT, TELESTOMP, TERRAIN,
 		THRUACTORS, THRUGHOST, THRUREFLECT, THRUSPECIES, TOUCHY, USEBOUNCESTATE, USEKILLSCRIPTS, USESPECIAL,
-		VISIBILITYPULSE, VULNERABLE, WEAPONSPAWN, WINDTHRUST,
+		VISIBILITYPULSE, VULNERABLE, WEAPONSPAWN, WINDTHRUST, INTERPOLATEANGLES, SPRITEFLIP, XFLIP, YFLIP,
+		DONTINTERPOLATE, ZDOOMTRANS, ABSVIEWANGLES, CASTSPRITESHADOW, NOSPRITESHADOW, BLOCKASPLAYER, NOFRICTION,
+		NOFRICTIONBOUNCE, FALLDAMAGE, ALLOWTHRUBITS, DONTFACETALKER, AVOIDHAZARDS, STAYONLIFT, FRIGHTENING,
+		NOINFIGHTSPECIES, FORCEINFIGHTING, STOPRAILS, FULLVOLSEE, FORCEZERORADIUSDMG, POISONALWAYS, HITOWNER,
+		BOUNCEONUNRIPPABLES, DONTBOUNCEONSHOOTABLES, DONTBOUNCEONSKY, RETARGETAFTERSLAM, E1M8BOSS, E2M8BOSS,
+		E3M8BOSS, E4M6BOSS, E4M8BOSS, MAP07BOSS1, MAP07BOSS2, HIGHERMPROB,
 
 		// INVENTORY.
 		INVENTORY,
 		QUIET, AUTOACTIVATE, UNDROPPABLE, INVBAR, HUBPOWER, PERSISTENTPOWER, INTERHUBSTRIP,
 		PICKUPFLASH, ALWAYSPICKUP, FANCYPICKUPSOUND, BIGPOWERUP, KEEPDEPLETED, IGNORESKILL, 
 		ADDITIVETIME, UNTOSSABLE, RESTRICTABSOLUTELY, NEVERRESPAWN, NOSCREENFLASH,
-		NOATTENPICKUPSOUND, TOSSED, TRANSFER, NOTELEPORTFREEZE,
+		NOATTENPICKUPSOUND, TOSSED, TRANSFER, NOTELEPORTFREEZE, UNCLEARABLE, NOSCREENBLINK,
+		ISHEALTH, ISARMOR,
 		
 		// PLAYERPAWN.
 		PLAYERPAWN, 
 		CANSUPERMORPH,
 		CROUCHABLEMORPH,
 		NOTHRUSTWHENINVUL,
+		WEAPONLEVEL2ENDED,
 		
 		// POWERSPEED.
 		POWERSPEED,
@@ -193,7 +200,7 @@ decorate : cstyle {
 		AMMO_OPTIONAL, ALT_AMMO_OPTIONAL, AMMO_CHECKBOTH, PRIMARY_USES_BOTH,
 		ALT_USES_BOTH, WIMPY_WEAPON, POWERED_UP, STAFF2_KICKBACK, EXPLOSIVE,
 		MELEEWEAPON, BFG, CHEATNOTWEAPON, NO_AUTO_SWITCH, NOAUTOAIM, NODEATHDESELECT,
-		NODEATHINPUT,
+		NODEATHINPUT, NOAUTOSWITCHTO,
 
 		//thing activation
 		THINGSPEC_Default, THINGSPEC_ThingActs, THINGSPEC_TriggerActs, THINGSPEC_ThingTargets, THINGSPEC_TriggerTargets,
@@ -235,11 +242,15 @@ decorate : cstyle {
 		CBF_ABSOLUTEPOS, CBF_ABSOLUTEANGLE,
 
 		CHAN_5, CHAN_6, CHAN_7, CHAN_AUTO, CHAN_BODY, CHAN_ITEM, CHAN_LISTENERZ, CHAN_MAYBE_LOCAL,
-		CHAN_NOPAUSE, CHAN_UI, CHAN_VOICE, CHAN_WEAPON,
+		CHAN_NOPAUSE, CHAN_UI, CHAN_VOICE, CHAN_WEAPON, CHAN_LOOP, CHAN_PICKUP, CHAN_NOSTOP, CHAN_OVERLAP,
+
+		// A_StartSound flags
+		CHANF_DEFAULT, CHANF_LISTENERZ, CHANF_MAYBE_LOCAL, CHANF_UI, CHANF_NOPAUSE, CHANF_LOOP, CHANF_NOSTOP,
+		CHANF_OVERLAP, CHANF_LOCAL, CHANF_LOOPING,
 
 		// A_Chase flags
 		CHF_DONTMOVE, CHF_FASTCHASE, CHF_NIGHTMAREFAST, CHF_NOPLAYACTIVE, CHF_RESURRECT, CHF_NORANDOMTURN,
-		CHF_NODIRECTIONTURN, CHF_NOPOSTATTACKTURN, CHF_STOPIFBLOCKED, CHF_DONTTURN,
+		CHF_NODIRECTIONTURN, CHF_NOPOSTATTACKTURN, CHF_STOPIFBLOCKED, CHF_DONTTURN, CHF_DONTIDLE,
 
 		// A_CheckLOF flags
 		CLOFF_NOAIM_VERT, CLOFF_NOAIM_HORZ, CLOFF_AIM_VERT_NOOFFSET, CLOFF_FROMBASE, CLOFF_MUL_HEIGHT,
@@ -276,6 +287,9 @@ decorate : cstyle {
 		// A_FireBullets flags
 		FBF_EXPLICITANGLE, FBF_NOFLASH, FBF_NOPITCH, FBF_NORANDOM, FBF_USEAMMO, FBF_NORANDOMPUFFZ,
 		FBF_PUFFTARGET, FBF_PUFFMASTER, FBF_PUFFTRACER,
+
+		// A_ChangeCountFlags
+		FLAG_NO_CHANGE,
 
 		// A_FaceMovementDirection flags
 		FMDF_NOPITCH, FMDF_INTERPOLATE, FMDF_NOANGLE,
@@ -335,6 +349,9 @@ decorate : cstyle {
 
 		// A_RadiusDamageSelf flags
 		RDSF_BFGDAMAGE,
+
+		// A_RaiseSelf flags
+		RF_NOCHECKPOSITION,
 
 		// A_RailAttack and A_CustomRailgun flags
 		RGF_CENTERZ, RGF_EXPLICITANGLE, RGF_FULLBRIGHT, RGF_NOPIERCING, RGF_SILENT, RGF_NORANDOMPUFFZ,
@@ -403,7 +420,7 @@ decorate : cstyle {
 		WARPF_BOB, WARPF_MOVEPTR, WARPF_USETID, WARPF_COPYPITCH, WARPF_COPYVELOCITY,
 
 		// A_WeaponOffset flags
-		WOF_KEEPX, WOF_KEEPY, WOF_ADD,
+		WOF_KEEPX, WOF_KEEPY, WOF_ADD, WOF_INTERPOLATE, WOF_RELATIVE, WOF_ZEROY,
 
 		// A_WeaponReady flags
 		WRF_ALLOWRELOAD, WRF_ALLOWZOOM, WRF_NOBOB, WRF_NOFIRE, WRF_NOPRIMARY, WRF_NOSECONDARY, WRF_NOSWITCH, WRF_DISABLESWITCH,
@@ -433,6 +450,7 @@ decorate : cstyle {
 		A_Burst = "string classname";
 		A_CentaurDefend;
 		A_Chase = "[string MeleeState], [string RangedState], [int Flags]";
+		A_CheckForResurrection;
 		A_CheckLOF = "state jump, [int flags], [float range], [float minrange], [float angle], [float pitch], [float offsetheight], [float offsetwidth], [pointer target], [float offsetforward]";
 		A_ClearSoundTarget;
 		A_ClearTarget;
@@ -461,8 +479,10 @@ decorate : cstyle {
 		A_Look;
 		A_Look2;
 		A_LookEx = "[int flags], [fixed minseedist], [fixed maxseedist], [fixed maxheardist], [fixed fov], [state seestate]";
+		A_Morph = "string type, [int duration], [int style], [string morphflash], [string unmorphflash]";
 		A_RaiseChildren = "[bool copy]";
 		A_RaiseMaster = "[bool copy]";
+		A_RaiseSelf = "[int flags]";
 		A_RaiseSiblings = "[bool copy]";
 		A_Remove = "int ptr_select, [int flags], [string filter_class], [string species]";
 		A_RemoveChildren = "[bool remove_alive_too], [int flags], [string filter_class], [string species]";
@@ -481,6 +501,7 @@ decorate : cstyle {
 		A_TransferPointer = "pointer source, pointer recipient, pointer sourcefield, [pointer recipientfield], [int flags]";
 
 		A_CustomMissile = "string missiletype, [float spawnheight], [float spawnofs_horiz], [angle angle], [int aimflags], [angle pitch], [int pointer]";
+		A_SpawnProjectile = "string missiletype, [float spawnheight], [float spawnofs_xy], [float angle], [int flags], [float pitch], [int ptr]";
 		A_CustomBulletAttack = "float horz_spread, float vert_spread, int numbullets, int dmgperbullet, [string pufftype], [float range], [int flags], [int pointer], [string missile], [float spawnheight], [float spawnofs_xy]";
 		A_CustomRailgun = "int dmg, [int offset], [color ringcol], [color corecol], [int flags], [int aim], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [string spawnclass], [float spawnofs_z], [int spiraloffset], [int limit]";
 		A_CustomMeleeAttack = "[int damage], [string meleesound], [string misssound], [string damagetype], [bool bleed]";
@@ -511,11 +532,17 @@ decorate : cstyle {
 		A_PlaySound = "[string soundname], [int slot], [float volume], [bool looping], [float attenuation], [bool local]";
 		A_PlaySoundEx = "string soundname, string channel, [bool loop], [int attenuation]";
 		A_PlayWeaponSound = "string soundname";
+		A_StartSound = "string whattoplay, [int slot], [int flags], [float volume], [float attenuation], [float pitch], [float startTime]";
+		A_StartSoundIfNotSame = "string whattoplay, string checkagainst, [int slot], [int flags], [float volume], [float attenuation], [float pitch], [float startTime]";
 		A_ActiveSound;
 		A_LoopActiveSound;
 		A_FLoopActiveSound;
 		A_StopSound = "[int slot]";
+		A_StopSounds = "int chanmin, int chanmax";
+		A_StopAllSounds;
 		A_StopSoundEx = "string channel";
+		A_SoundPitch = "int slot, float pitch";
+		A_SoundVolume = "int slot, float volume";
 		A_Pain;
 		A_PigPain;
 		A_Scream;
@@ -552,6 +579,10 @@ decorate : cstyle {
 		A_SpawnItem = "[string type], [float distance], [float zpos], [bool useammo], [bool translation]";
 		A_SpawnItemEx = "string type, [float xoffset], [float yoffset], [float zoffset], [float xvelocity], [float yvelocity], [float zvelocity], [float angle], [int flags], [int failchance], [int tid]";
 		A_SpawnParticle = "string color1, [int flags], [int lifetime], [float size], [float angle], [float xoff], [float yoff], [float zoff], [float velx], [float vely], [float velz], [float accelx], [float accely], [float accelz], [float startalphaf], [float fadestepf], [float stepsize]";
+		A_SprayDecal = "string name, [float dist]";
+
+		A_AttachLightDef = "string lightid, string lightdef";
+		A_RemoveLight = "string lightid";
 
 		A_CheckCeiling = "string state", "int offset";
 		A_CheckFloor =	"string state", "int offset";
@@ -581,6 +612,7 @@ decorate : cstyle {
 		A_JumpIfHigherOrLower = "string high, string low, [float offsethigh], [float offsetlow], [bool includeheight], [pointer ptr]";
 
 		A_ClassBossHealth;
+		A_ChangeCountFlags = "[int kill], [int item], [int secret]";
 		A_ChangeFlag = "string flagname, bool value";
 		A_CheckFlag = "string flagname, state label, [pointer which_actor]";
 		A_SetFloorClip;
@@ -611,6 +643,7 @@ decorate : cstyle {
 		A_ClearShadow;
 		A_SetTranslucent = "float alpha, [int mode]";
 		A_SetRenderStyle = "float alpha, int style";
+		A_SpriteOffset = "[float ox], [float oy]";
 		A_FadeIn = "[float increase_amount], [int flags]";
 		A_FadeOut = "[float reduce_amount], [int flags]";
 		A_FadeTo = "float target, [float amount], [int flags]";
@@ -620,11 +653,14 @@ decorate : cstyle {
 		A_SetAngle = "[float angle], [int flags], [int pointer]";
 		A_SetArg = "int position, int value";
 		A_SetDamageType = "string damagetype";
+		A_SetFriendly = "bool set";
+		A_SetMugshotState = "string name";
 		A_SetPitch = "float pitch, [int flags], [int pointer]";
 		A_SetSpecial = "int special, [int arg0], [int arg1], [int arg2], [int arg3], [int arg4]";
 		A_SetSpeed = "float speed, [int pointer]";
 		A_SetFloatSpeed = "float speed, [int pointer]";
 		A_SetScale = "float scalex, [float scaley], [int pointer], [bool usezero]";
+		A_SetSize = "[float newradius], [float newheight], [bool testpos]";
 		A_SetMass = "int mass";
 		A_SetTeleFog = "string oldpos, string newpos";
 		A_SetRoll = "float roll, [int flags], [int pointer]";
@@ -646,6 +682,9 @@ decorate : cstyle {
 		A_SetChaseThreshold = "int threshold, [bool def], [int ptr]";
 		A_SetSpriteAngle = "[float angle], [int ptr]";
 		A_SetSpriteRotation = "[float angle], [int ptr]";
+		A_SetViewAngle = "[float angle], [int flags], [int ptr]";
+		A_SetViewPitch = "float pitch, [int flags], [int ptr]";
+		A_SetViewRoll = "float roll, [int flags], [int ptr]";
 		A_SetVisibleRotation = "[float anglestart], [float angleend], [float pitchstart], [float pitchend], [int flags], [int ptr]";
 		A_SetTranslation = "string transname";
 
@@ -679,8 +718,16 @@ decorate : cstyle {
 		A_WeaponReady = "[int flags]";
 		A_WeaponOffset = "[float x], [float y], [int flags]";
 		A_Overlay = "int layer, [state start], [bool nooverride]";
-		A_OverlayOffset = "[int layer], [float x], [float y], [int flags]";
+		A_OverlayAlpha = "int layer, float alph";
 		A_OverlayFlags = "int layer, int flags, bool set";
+		A_OverlayOffset = "[int layer], [float x], [float y], [int flags]";
+		A_OverlayPivot = "int layer, [float wx], [float wy], [int flags]";
+		A_OverlayPivotAlign = "int layer, int halign, int valign";
+		A_OverlayRenderstyle = "int layer, int style";
+		A_OverlayRotate = "int layer, [float degrees], [int flags]";
+		A_OverlayScale = "int layer, [float wx], [float wy], [int flags]";
+		A_OverlayTranslation = "int layer, string trname";
+		A_OverlayVertexOffset = "int layer, int index, float x, float y, [int flags]";
 		A_ClearOverlays = "[int sstart], [int sstop], [bool safety]";
 		A_Lower;
 		A_Raise;
@@ -704,6 +751,7 @@ decorate : cstyle {
 		A_CustomPunch = "int damage, [bool norandom], [int flags], [string pufftype], [float range], [float lifesteal], [int lifestealmax], [string armorbonustype], [string meleesound], [string misssound]";
 		A_FireBullets = "angle spread_horz, angle spread_vert, int numbullets, int damage, [string pufftype], [int flags], [float range], [string missile], [float spawnheight], [float spawnofs_xy]";
 		A_FireCustomMissile = "string missiletype, [angle angle], [bool useammo], [float spawnofs_horz], [float spawnheight], [int flags], [angle pitch]";
+		A_FireProjectile = "string missiletype, [float angle], [bool useammo], [float spawnofs_xy], [float spawnheight], [int flags], [float pitch]";
 		A_RailAttack = "int damage, [int spawnofs_horz], [bool useammo], [color ringcolor], [color corecolor], [int flags], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [class spawn], [float spawnofs_z], [int spiraloffset], [int limit]";
 		A_FireAssaultGun;
 		A_FireBFG;
