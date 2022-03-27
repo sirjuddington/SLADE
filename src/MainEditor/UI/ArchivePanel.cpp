@@ -128,7 +128,7 @@ class APEntryListDropTarget : public wxFileDropTarget
 {
 public:
 	APEntryListDropTarget(ArchivePanel* parent, wxDataViewCtrl* list) : parent_{ parent }, list_{ list } {}
-	virtual ~APEntryListDropTarget() = default;
+	~APEntryListDropTarget() override = default;
 
 	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) override
 	{
@@ -273,7 +273,7 @@ private:
 class EntryTreeClipboardItem : public ClipboardItem
 {
 public:
-	EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, vector<ArchiveDir*>& dirs) :
+	EntryTreeClipboardItem(const vector<ArchiveEntry*>& entries, const vector<ArchiveDir*>& dirs) :
 		ClipboardItem(Type::EntryTree), tree_{ new ArchiveDir("") }
 	{
 		// Copy entries
@@ -305,7 +305,7 @@ public:
 			tree_->addSubdir(dir->clone(tree_));
 	}
 
-	~EntryTreeClipboardItem() = default;
+	~EntryTreeClipboardItem() override = default;
 
 	ArchiveDir* tree() const { return tree_.get(); }
 
@@ -351,7 +351,7 @@ void initNamespaceVector(vector<wxString>& ns, bool flathack)
 // Checks through a MapDesc vector and returns which one, if any, the entry
 // index is in, -1 otherwise
 // -----------------------------------------------------------------------------
-int isInMap(size_t index, vector<Archive::MapDesc>& maps)
+int isInMap(size_t index, const vector<Archive::MapDesc>& maps)
 {
 	for (size_t m = 0; m < maps.size(); ++m)
 	{
@@ -375,7 +375,11 @@ int isInMap(size_t index, vector<Archive::MapDesc>& maps)
 // namespace vector. Also hacks around a bit to put less entries in the global
 // namespace and allow sorting a bit by categories.
 // -----------------------------------------------------------------------------
-size_t getNamespaceNumber(ArchiveEntry* entry, size_t index, vector<wxString>& ns, vector<Archive::MapDesc>& maps)
+size_t getNamespaceNumber(
+	const ArchiveEntry*             entry,
+	size_t                          index,
+	vector<wxString>&               ns,
+	const vector<Archive::MapDesc>& maps)
 {
 	auto ens = entry->parent()->detectNamespace(index);
 	if (strutil::equalCI(ens, "global"))
@@ -396,7 +400,7 @@ size_t getNamespaceNumber(ArchiveEntry* entry, size_t index, vector<wxString>& n
 		if (S_CMPNOCASE(ns[n], ens))
 			return n;
 
-	ns.push_back(ens);
+	ns.emplace_back(ens);
 	return ns.size();
 }
 
@@ -956,7 +960,7 @@ bool ArchivePanel::importFiles()
 			wxString name = wxFileName(info.filenames[a]).GetFullName();
 
 			// Update splash window
-			ui::setSplashProgress(float(a) / float(info.filenames.size()));
+			ui::setSplashProgress(static_cast<float>(a) / static_cast<float>(info.filenames.size()));
 			ui::setSplashProgressMessage(name.ToStdString());
 
 			// Add the entry to the archive
@@ -1336,7 +1340,7 @@ bool ArchivePanel::revertEntry() const
 // -----------------------------------------------------------------------------
 // Moves any selected entries up in the list
 // -----------------------------------------------------------------------------
-bool ArchivePanel::moveUp()
+bool ArchivePanel::moveUp() const
 {
 	auto archive = archive_.lock();
 
@@ -1386,7 +1390,7 @@ bool ArchivePanel::moveUp()
 // -----------------------------------------------------------------------------
 // Moves any selected entries down in the list
 // -----------------------------------------------------------------------------
-bool ArchivePanel::moveDown()
+bool ArchivePanel::moveDown() const
 {
 	auto archive = archive_.lock();
 
@@ -2013,7 +2017,7 @@ bool ArchivePanel::pasteEntry() const
 // -----------------------------------------------------------------------------
 // Opens selected entries in their configured external editors
 // -----------------------------------------------------------------------------
-bool ArchivePanel::openEntryExternal()
+bool ArchivePanel::openEntryExternal() const
 {
 	auto selection = entry_tree_->selectedEntries();
 	for (auto& entry : selection)
@@ -2114,9 +2118,8 @@ bool ArchivePanel::gfxRemap()
 		SImage   temp;
 		MemChunk mc;
 
-		for (unsigned a = 0; a < selection.size(); a++)
+		for (auto entry : selection)
 		{
-			auto entry = selection[a];
 			if (misc::loadImageFromEntry(&temp, entry))
 			{
 				// Apply translation
@@ -2166,9 +2169,8 @@ bool ArchivePanel::gfxColourise()
 		// Apply translation to all entry images
 		SImage   temp;
 		MemChunk mc;
-		for (unsigned a = 0; a < selection.size(); a++)
+		for (auto entry : selection)
 		{
-			auto entry = selection[a];
 			if (misc::loadImageFromEntry(&temp, entry))
 			{
 				// Apply translation
@@ -2215,9 +2217,8 @@ bool ArchivePanel::gfxTint()
 		// Apply translation to all entry images
 		SImage   temp;
 		MemChunk mc;
-		for (unsigned a = 0; a < selection.size(); a++)
+		for (auto entry : selection)
 		{
-			auto entry = selection[a];
 			if (misc::loadImageFromEntry(&temp, entry))
 			{
 				// Apply translation
@@ -2335,7 +2336,7 @@ bool ArchivePanel::gfxExportPNG()
 	return true;
 }
 
-bool ArchivePanel::voxelConvert()
+bool ArchivePanel::voxelConvert() const
 {
 	// Get selected entries
 	auto selection = entry_tree_->selectedEntries();
@@ -2345,22 +2346,22 @@ bool ArchivePanel::voxelConvert()
 
 	// Go through selection
 	bool errors = false;
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto* entry : selection)
 	{
-		if (selection[a]->type()->formatId() == "voxel_vox")
+		if (entry->type()->formatId() == "voxel_vox")
 		{
 			MemChunk kvx;
 			// Attempt conversion
-			if (!conversion::voxToKvx(selection[a]->data(), kvx))
+			if (!conversion::voxToKvx(entry->data(), kvx))
 			{
-				log::error(wxString::Format("Unable to convert entry %s: %s", selection[a]->name(), global::error));
+				log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
 				errors = true;
 				continue;
 			}
-			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a])); // Create undo step
-			selection[a]->importMemChunk(kvx);                                          // Load doom sound data
-			EntryType::detectEntryType(*selection[a]);                                  // Update entry type
-			selection[a]->setExtensionByType();                                         // Update extension if necessary
+			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry)); // Create undo step
+			entry->importMemChunk(kvx);                                          // Load doom sound data
+			EntryType::detectEntryType(*entry);                                  // Update entry type
+			entry->setExtensionByType();                                         // Update extension if necessary
 		}
 	}
 
@@ -2450,8 +2451,7 @@ bool ArchivePanel::swanConvert() const
 	// Close off SWITCHES lump if needed
 	if (mcs.size())
 	{
-		uint8_t buffer[20];
-		memset(buffer, 0, 20);
+		uint8_t buffer[20] = {};
 		error |= !mcs.reSize(mcs.size() + 20, true);
 		error |= !mcs.write(buffer, 20);
 	}
@@ -2597,23 +2597,23 @@ bool ArchivePanel::wavDSndConvert() const
 
 	// Go through selection
 	bool errors = false;
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto& entry : selection)
 	{
 		// Convert WAV -> Doom Sound if the entry is WAV format
-		if (selection[a]->type()->formatId() == "snd_wav")
+		if (entry->type()->formatId() == "snd_wav")
 		{
 			MemChunk dsnd;
 			// Attempt conversion
-			if (!conversion::wavToDoomSnd(selection[a]->data(), dsnd))
+			if (!conversion::wavToDoomSnd(entry->data(), dsnd))
 			{
-				log::error(wxString::Format("Unable to convert entry %s: %s", selection[a]->name(), global::error));
+				log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
 				errors = true;
 				continue;
 			}
-			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a])); // Create undo step
-			selection[a]->importMemChunk(dsnd);                                         // Load doom sound data
-			EntryType::detectEntryType(*selection[a]);                                  // Update entry type
-			selection[a]->setExtensionByType();                                         // Update extension if necessary
+			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry)); // Create undo step
+			entry->importMemChunk(dsnd);                                         // Load doom sound data
+			EntryType::detectEntryType(*entry);                                  // Update entry type
+			entry->setExtensionByType();                                         // Update extension if necessary
 		}
 	}
 
@@ -2640,41 +2640,40 @@ bool ArchivePanel::dSndWavConvert() const
 
 	// Go through selection
 	bool errors = false;
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto& entry : selection)
 	{
 		bool     worked = false;
 		MemChunk wav;
 		// Convert Doom Sound -> WAV if the entry is Doom Sound format
-		if (selection[a]->type()->formatId() == "snd_doom" || selection[a]->type()->formatId() == "snd_doom_mac")
-			worked = conversion::doomSndToWav(selection[a]->data(), wav);
+		if (entry->type()->formatId() == "snd_doom" || entry->type()->formatId() == "snd_doom_mac")
+			worked = conversion::doomSndToWav(entry->data(), wav);
 		// Or Doom Speaker sound format
-		else if (selection[a]->type()->formatId() == "snd_speaker")
-			worked = conversion::spkSndToWav(selection[a]->data(), wav);
+		else if (entry->type()->formatId() == "snd_speaker")
+			worked = conversion::spkSndToWav(entry->data(), wav);
 		// Or Jaguar Doom sound format
-		else if (selection[a]->type()->formatId() == "snd_jaguar")
-			worked = conversion::jagSndToWav(selection[a]->data(), wav);
+		else if (entry->type()->formatId() == "snd_jaguar")
+			worked = conversion::jagSndToWav(entry->data(), wav);
 		// Or Wolfenstein 3D sound format
-		else if (selection[a]->type()->formatId() == "snd_wolf")
-			worked = conversion::wolfSndToWav(selection[a]->data(), wav);
+		else if (entry->type()->formatId() == "snd_wolf")
+			worked = conversion::wolfSndToWav(entry->data(), wav);
 		// Or Creative Voice File format
-		else if (selection[a]->type()->formatId() == "snd_voc")
-			worked = conversion::vocToWav(selection[a]->data(), wav);
+		else if (entry->type()->formatId() == "snd_voc")
+			worked = conversion::vocToWav(entry->data(), wav);
 		// Or Blood SFX format (this one needs to be given the entry, not just the mem chunk)
-		else if (selection[a]->type()->formatId() == "snd_bloodsfx")
-			worked = conversion::bloodToWav(selection[a], wav);
+		else if (entry->type()->formatId() == "snd_bloodsfx")
+			worked = conversion::bloodToWav(entry, wav);
 		// If successfully converted, update the entry
 		if (worked)
 		{
-			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a])); // Create undo step
-			selection[a]->importMemChunk(wav);                                          // Load wav data
-			EntryType::detectEntryType(*selection[a]);                                  // Update entry type
-			selection[a]->setExtensionByType();                                         // Update extension if necessary
+			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry)); // Create undo step
+			entry->importMemChunk(wav);                                          // Load wav data
+			EntryType::detectEntryType(*entry);                                  // Update entry type
+			entry->setExtensionByType();                                         // Update extension if necessary
 		}
 		else
 		{
-			log::error(wxString::Format("Unable to convert entry %s: %s", selection[a]->name(), global::error));
+			log::error(wxString::Format("Unable to convert entry %s: %s", entry->name(), global::error));
 			errors = true;
-			continue;
 		}
 	}
 
@@ -2700,23 +2699,23 @@ bool ArchivePanel::musMidiConvert() const
 	undo_manager_->beginRecord("Convert Mus -> Midi");
 
 	// Go through selection
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto& entry : selection)
 	{
 		// Convert MUS -> MIDI if the entry is a MIDI-like format
-		const auto& format_id = selection[a]->type()->formatId();
+		const auto& format_id = entry->type()->formatId();
 		if (strutil::startsWith(format_id, "midi_") && format_id != "midi_smf")
 		{
 			MemChunk midi;
-			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a])); // Create undo step
+			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry)); // Create undo step
 			if (format_id == "midi_mus")
-				conversion::musToMidi(selection[a]->data(), midi); // Convert
+				conversion::musToMidi(entry->data(), midi); // Convert
 			else if (format_id == "midi_gmid")
-				conversion::gmidToMidi(selection[a]->data(), midi); // Convert
+				conversion::gmidToMidi(entry->data(), midi); // Convert
 			else
-				conversion::zmusToMidi(selection[a]->data(), midi); // Convert
-			selection[a]->importMemChunk(midi);                     // Load midi data
-			EntryType::detectEntryType(*selection[a]);              // Update entry type
-			selection[a]->setExtensionByType();                     // Update extension if necessary
+				conversion::zmusToMidi(entry->data(), midi); // Convert
+			entry->importMemChunk(midi);                     // Load midi data
+			EntryType::detectEntryType(*entry);              // Update entry type
+			entry->setExtensionByType();                     // Update extension if necessary
 		}
 	}
 
@@ -2735,10 +2734,10 @@ bool ArchivePanel::compileACS(bool hexen) const
 	auto selection = entry_tree_->selectedEntries();
 
 	// Go through selection
-	for (unsigned a = 0; a < selection.size(); a++)
+	for (auto& entry : selection)
 	{
 		// Compile ACS script
-		entryoperations::compileACS(selection[a], hexen, nullptr, theMainWindow);
+		entryoperations::compileACS(entry, hexen, nullptr, theMainWindow);
 	}
 
 	return true;
@@ -2775,7 +2774,7 @@ bool ArchivePanel::optimizePNG() const
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		ui::setSplashProgressMessage(selection[a]->nameNoExt());
-		ui::setSplashProgress(float(a) / float(selection.size()));
+		ui::setSplashProgress(static_cast<float>(a) / static_cast<float>(selection.size()));
 		if (selection[a]->type()->formatId() == "img_png")
 		{
 			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(selection[a]));
@@ -3471,7 +3470,7 @@ bool ArchivePanel::handleAction(string_view id)
 // -----------------------------------------------------------------------------
 // Creates the appropriate EntryPanel for [entry] and returns it
 // -----------------------------------------------------------------------------
-EntryPanel* ArchivePanel::createPanelForEntry(ArchiveEntry* entry, wxWindow* parent)
+EntryPanel* ArchivePanel::createPanelForEntry(const ArchiveEntry* entry, wxWindow* parent)
 {
 	EntryPanel* entry_panel;
 
@@ -3515,7 +3514,7 @@ wxMenu* ArchivePanel::createMaintenanceMenu()
 // -----------------------------------------------------------------------------
 // Returns true if entries can be moved up/down in the list
 // -----------------------------------------------------------------------------
-bool ArchivePanel::canMoveEntries()
+bool ArchivePanel::canMoveEntries() const
 {
 	// Can't move if entry tree is sorted
 	if (!entry_tree_->isDefaultSorted())
@@ -3577,7 +3576,7 @@ void ArchivePanel::selectionChanged()
 // -----------------------------------------------------------------------------
 // Updates the filtering on the entry tree
 // -----------------------------------------------------------------------------
-void ArchivePanel::updateFilter()
+void ArchivePanel::updateFilter() const
 {
 	if (elist_show_filter)
 	{

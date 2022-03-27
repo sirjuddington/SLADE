@@ -27,7 +27,7 @@ class DirArchiveCheck : public wxThread
 {
 public:
 	DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive);
-	virtual ~DirArchiveCheck() = default;
+	~DirArchiveCheck() override = default;
 
 	ExitCode Entry() override;
 
@@ -65,7 +65,7 @@ public:
 	ArchiveManagerPanel* parent;
 
 	WMFileBrowser(wxWindow* parent, ArchiveManagerPanel* wm, int id);
-	~WMFileBrowser() = default;
+	~WMFileBrowser() override = default;
 
 	void onItemActivated(wxTreeEvent& e);
 };
@@ -74,7 +74,7 @@ class ArchiveManagerPanel : public DockPanel, SActionHandler
 {
 public:
 	ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives);
-	~ArchiveManagerPanel() = default;
+	~ArchiveManagerPanel() override = default;
 
 	wxMenu* recentFilesMenu() const { return menu_recent_; }
 	wxMenu* bookmarksMenu() const { return menu_bookmarks_; }
@@ -117,7 +117,7 @@ public:
 	void            closeEntryTab(ArchiveEntry* entry) const;
 	void            closeEntryTabs(Archive* parent) const;
 	void            openFile(const wxString& filename) const;
-	void            openFiles(wxArrayString& files) const;
+	void            openFiles(const wxArrayString& files) const;
 	void            openDirAsArchive(const wxString& dir) const;
 	bool            redirectToTab(ArchiveEntry* entry) const;
 	bool            entryIsOpenInTab(ArchiveEntry* entry) const;

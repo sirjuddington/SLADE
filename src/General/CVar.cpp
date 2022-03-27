@@ -78,48 +78,35 @@ void addCVarList(CVar* cvar)
 // -----------------------------------------------------------------------------
 // CIntCVar class constructor
 // -----------------------------------------------------------------------------
-CIntCVar::CIntCVar(const string& NAME, int defval, uint16_t FLAGS)
+CIntCVar::CIntCVar(string_view name, int defval, uint16_t flags) : CVar{ Type::Integer, flags, name }, value{ defval }
 {
-	name  = NAME;
-	flags = FLAGS;
-	value = defval;
-	type  = Type::Integer;
 	addCVarList(this);
 }
 
 // -----------------------------------------------------------------------------
 // CBoolCVar class constructor
 // -----------------------------------------------------------------------------
-CBoolCVar::CBoolCVar(const string& NAME, bool defval, uint16_t FLAGS)
+CBoolCVar::CBoolCVar(string_view name, bool defval, uint16_t flags) :
+	CVar{ Type::Boolean, flags, name }, value{ defval }
 {
-	name  = NAME;
-	flags = FLAGS;
-	value = defval;
-	type  = Type::Boolean;
 	addCVarList(this);
 }
 
 // -----------------------------------------------------------------------------
 // CFloatCVar class constructor
 // -----------------------------------------------------------------------------
-CFloatCVar::CFloatCVar(const string& NAME, double defval, uint16_t FLAGS)
+CFloatCVar::CFloatCVar(string_view name, double defval, uint16_t flags) :
+	CVar{ Type::Float, flags, name }, value{ defval }
 {
-	name  = NAME;
-	flags = FLAGS;
-	value = defval;
-	type  = Type::Float;
 	addCVarList(this);
 }
 
 // -----------------------------------------------------------------------------
 // CStringCVar class constructor
 // -----------------------------------------------------------------------------
-CStringCVar::CStringCVar(const string& NAME, const string& defval, uint16_t FLAGS)
+CStringCVar::CStringCVar(string_view name, string_view defval, uint16_t flags) :
+	CVar{ Type::String, flags, name }, value{ defval }
 {
-	name  = NAME;
-	flags = FLAGS;
-	value = defval;
-	type  = Type::String;
 	addCVarList(this);
 }
 
@@ -221,8 +208,7 @@ void CVar::set(const string& name, const string& value)
 {
 	for (unsigned i = 0; i < n_cvars; ++i)
 	{
-		auto cvar = cvars[i];
-		if (name == cvar->name)
+		if (auto* cvar = cvars[i]; name == cvar->name)
 		{
 			if (cvar->type == Type::Integer)
 				*dynamic_cast<CIntCVar*>(cvar) = strutil::asInt(value);
@@ -231,7 +217,7 @@ void CVar::set(const string& name, const string& value)
 				*dynamic_cast<CBoolCVar*>(cvar) = strutil::asBoolean(value);
 
 			if (cvar->type == Type::Float)
-				*dynamic_cast<CFloatCVar*>(cvar) = strutil::asFloat(value);
+				*dynamic_cast<CFloatCVar*>(cvar) = strutil::asDouble(value);
 
 			if (cvar->type == Type::String)
 				*dynamic_cast<CStringCVar*>(cvar) = value;

@@ -19,7 +19,7 @@ class ArchivePanel : public wxPanel, SActionHandler
 {
 public:
 	ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive);
-	virtual ~ArchivePanel() = default;
+	~ArchivePanel() override = default;
 
 	Archive*     archive() const { return archive_.lock().get(); }
 	UndoManager* undoManager() const { return undo_manager_.get(); }
@@ -45,8 +45,8 @@ public:
 	bool renameEntry(bool each = false) const;
 	bool deleteEntry(bool confirm = true);
 	bool revertEntry() const;
-	bool moveUp();
-	bool moveDown();
+	bool moveUp() const;
+	bool moveDown() const;
 	bool sort() const;
 	bool bookmark() const;
 	bool openTab() const;
@@ -57,7 +57,7 @@ public:
 	bool copyEntry() const;
 	bool cutEntry();
 	bool pasteEntry() const;
-	bool openEntryExternal();
+	bool openEntryExternal() const;
 
 	// Other entry actions
 	bool gfxConvert() const;
@@ -66,7 +66,7 @@ public:
 	bool gfxTint();
 	bool gfxModifyOffsets() const;
 	bool gfxExportPNG();
-	bool voxelConvert();
+	bool voxelConvert() const;
 	bool swanConvert() const;
 	bool basConvert(bool animdefs = false);
 	bool palConvert() const;
@@ -106,7 +106,7 @@ public:
 	bool handleAction(string_view id) override;
 
 	// Static functions
-	static EntryPanel* createPanelForEntry(ArchiveEntry* entry, wxWindow* parent);
+	static EntryPanel* createPanelForEntry(const ArchiveEntry* entry, wxWindow* parent);
 	static wxMenu*     createMaintenanceMenu();
 
 protected:
@@ -150,9 +150,9 @@ protected:
 	sigslot::scoped_connection sc_entry_removed_;
 	sigslot::scoped_connection sc_bookmarks_changed_;
 
-	bool canMoveEntries();
+	bool canMoveEntries() const;
 	void selectionChanged();
-	void updateFilter();
+	void updateFilter() const;
 
 	// Events
 	void         onEntryListSelectionChange(wxDataViewEvent& e);

@@ -614,7 +614,7 @@ vector<ArchiveEntry*> DirArchive::findAll(SearchOptions& options)
 // -----------------------------------------------------------------------------
 // Remember to ignore the given files until they change again
 // -----------------------------------------------------------------------------
-void DirArchive::ignoreChangedEntries(vector<DirEntryChange>& changes)
+void DirArchive::ignoreChangedEntries(const vector<DirEntryChange>& changes)
 {
 	for (auto& change : changes)
 		ignored_file_changes_[change.file_path] = change;
@@ -712,7 +712,7 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 // -----------------------------------------------------------------------------
 // Returns true iff the user has previously indicated no interest in this change
 // -----------------------------------------------------------------------------
-bool DirArchive::shouldIgnoreEntryChange(DirEntryChange& change)
+bool DirArchive::shouldIgnoreEntryChange(const DirEntryChange& change)
 {
 	const auto it = ignored_file_changes_.find(change.file_path);
 	// If we've never seen this file before, definitely don't ignore the change

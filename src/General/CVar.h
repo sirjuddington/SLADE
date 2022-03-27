@@ -5,9 +5,8 @@
 
 namespace slade
 {
-class CVar
+struct CVar
 {
-public:
 	enum class Type
 	{
 		Boolean,
@@ -16,7 +15,8 @@ public:
 		String,
 	};
 
-	union Value {
+	union Value
+	{
 		int         Int;
 		bool        Bool;
 		double      Float;
@@ -35,7 +35,8 @@ public:
 	string   name;
 	CVar*    next = nullptr;
 
-	CVar()          = default;
+	CVar() = default;
+	CVar(Type type, uint16_t flags, string_view name) : flags{ flags }, type{ type }, name{ name } {}
 	virtual ~CVar() = default;
 
 	virtual Value getValue()
@@ -52,13 +53,12 @@ public:
 	static void   putList(vector<string>& list);
 };
 
-class CIntCVar : public CVar
+struct CIntCVar : CVar
 {
-public:
 	int value;
 
-	CIntCVar(const string& NAME, int defval, uint16_t FLAGS);
-	~CIntCVar() = default;
+	CIntCVar(string_view name, int defval, uint16_t flags);
+	~CIntCVar() override = default;
 
 	// Operators so the cvar name can be used like a normal variable
 		operator int() const { return value; }
@@ -78,13 +78,12 @@ public:
 	}
 };
 
-class CBoolCVar : public CVar
+struct CBoolCVar : CVar
 {
-public:
 	bool value;
 
-	CBoolCVar(const string& NAME, bool defval, uint16_t FLAGS);
-	~CBoolCVar() = default;
+	CBoolCVar(string_view name, bool defval, uint16_t flags);
+	~CBoolCVar() override = default;
 
 		 operator bool() const { return value; }
 	bool operator*() const { return value; }
@@ -103,13 +102,12 @@ public:
 	}
 };
 
-class CFloatCVar : public CVar
+struct CFloatCVar : CVar
 {
-public:
 	double value;
 
-	CFloatCVar(const string& NAME, double defval, uint16_t FLAGS);
-	~CFloatCVar() = default;
+	CFloatCVar(string_view name, double defval, uint16_t flags);
+	~CFloatCVar() override = default;
 
 		   operator double() const { return value; }
 	double operator*() const { return value; }
@@ -128,13 +126,12 @@ public:
 	}
 };
 
-class CStringCVar : public CVar
+struct CStringCVar : CVar
 {
-public:
 	string value;
 
-	CStringCVar(const string& NAME, const string& defval, uint16_t FLAGS);
-	~CStringCVar() = default;
+	CStringCVar(string_view name, string_view defval, uint16_t flags);
+	~CStringCVar() override = default;
 
 	bool empty() const { return value.empty(); }
 

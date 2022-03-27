@@ -22,10 +22,7 @@ struct DirEntryChange
 	time_t mtime;
 
 	DirEntryChange(Action action = Action::Updated, string_view file = "", string_view entry = "", time_t mtime = 0) :
-		entry_path{ entry },
-		file_path{ file },
-		action{ action },
-		mtime{ mtime }
+		entry_path{ entry }, file_path{ file }, action{ action }, mtime{ mtime }
 	{
 	}
 };
@@ -75,9 +72,9 @@ public:
 	vector<ArchiveEntry*> findAll(SearchOptions& options) override;
 
 	// DirArchive-specific
-	void ignoreChangedEntries(vector<DirEntryChange>& changes);
+	void ignoreChangedEntries(const vector<DirEntryChange>& changes);
 	void updateChangedEntries(vector<DirEntryChange>& changes);
-	bool shouldIgnoreEntryChange(DirEntryChange& change);
+	bool shouldIgnoreEntryChange(const DirEntryChange& change);
 
 private:
 	char                            separator_;

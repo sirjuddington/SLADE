@@ -7,7 +7,7 @@ class wxToolBar;
 namespace slade
 {
 class ParseTreeNode;
-class CBoolCVar;
+struct CBoolCVar;
 
 class SAction
 {

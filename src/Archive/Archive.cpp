@@ -108,7 +108,7 @@ private:
 class DirRenameUS : public UndoStep
 {
 public:
-	DirRenameUS(ArchiveDir* dir, string_view new_name) :
+	DirRenameUS(const ArchiveDir* dir, string_view new_name) :
 		archive_{ dir->archive() },
 		old_name_{ dir->name() },
 		new_name_{ new_name },
@@ -150,7 +150,7 @@ private:
 class EntrySwapUS : public UndoStep
 {
 public:
-	EntrySwapUS(ArchiveDir* dir, unsigned index1, unsigned index2) :
+	EntrySwapUS(const ArchiveDir* dir, unsigned index1, unsigned index2) :
 		archive_{ dir->archive() }, path_{ dir->path() }, index1_{ index1 }, index2_{ index2 }
 	{
 	}
@@ -383,7 +383,7 @@ ArchiveFormat Archive::formatDesc() const
 		if (fmt.id == format_)
 			return fmt;
 
-	return ArchiveFormat("unknown");
+	return { "unknown" };
 }
 
 // -----------------------------------------------------------------------------

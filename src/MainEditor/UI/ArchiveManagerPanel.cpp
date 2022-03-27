@@ -261,13 +261,9 @@ void WMFileBrowser::onItemActivated(wxTreeEvent& e)
 // -----------------------------------------------------------------------------
 // ArchiveManagerPanel class constructor
 // -----------------------------------------------------------------------------
-ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives) : DockPanel(parent)
+ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives) :
+	DockPanel(parent), stc_archives_{ nb_archives }
 {
-	stc_archives_                = nb_archives;
-	pending_closed_archive_      = nullptr;
-	checked_dir_archive_changes_ = false;
-	asked_save_unchanged_        = false;
-
 	// Create main sizer
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(vbox);
@@ -1109,7 +1105,7 @@ void ArchiveManagerPanel::openFile(const wxString& filename) const
 // -----------------------------------------------------------------------------
 // Opens each file in a supplied array of filenames
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::openFiles(wxArrayString& files) const
+void ArchiveManagerPanel::openFiles(const wxArrayString& files) const
 {
 	// Go through each filename in the array
 	for (const auto& file : files)
@@ -1313,9 +1309,9 @@ void ArchiveManagerPanel::checkDirArchives()
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::createNewArchive(const wxString& format) const
 {
-	if (format != "")
+	if (!format.empty())
 	{
-		Archive *archive = app::archiveManager().newArchive(format.ToStdString()).get();
+		Archive* archive = app::archiveManager().newArchive(format.ToStdString()).get();
 
 		if (archive)
 			openTab(app::archiveManager().archiveIndex(archive));
@@ -1338,7 +1334,7 @@ void ArchiveManagerPanel::createNewArchive(const wxString& format) const
 bool ArchiveManagerPanel::saveEntryChanges(Archive* archive) const
 {
 	bool changes = false;
-	
+
 	// Go through tabs
 	for (size_t a = 0; a < stc_archives_->GetPageCount(); a++)
 	{
@@ -1705,7 +1701,7 @@ void ArchiveManagerPanel::openSelection() const
 	// Get the list of selected archives
 	vector<wxString> selected_archives;
 	for (int index : selection)
-		selected_archives.push_back(app::archiveManager().recentFile(index));
+		selected_archives.emplace_back(app::archiveManager().recentFile(index));
 
 	// Open all selected archives
 	for (const auto& selected_archive : selected_archives)
@@ -2290,26 +2286,34 @@ void ArchiveManagerPanel::connectSignals()
 	auto& signals = app::archiveManager().signals();
 
 	// Update the archives list if an archive is added/closed/modified
-	signal_connections += signals.archive_added.connect([this](unsigned index) {
-		list_archives_->addItem(index, wxEmptyString);
-		updateOpenListItem(index);
-	});
+	signal_connections += signals.archive_added.connect(
+		[this](unsigned index)
+		{
+			list_archives_->addItem(index, wxEmptyString);
+			updateOpenListItem(index);
+		});
 	signal_connections += signals.archive_closed.connect([this](unsigned index) { list_archives_->DeleteItem(index); });
-	signal_connections += signals.archive_saved.connect([this](unsigned index) {
-		updateOpenListItem(index);
-		updateArchiveTabTitle(index);
-	});
-	signal_connections += signals.archive_modified.connect([this](unsigned index) {
-		updateOpenListItem(index);
-		updateArchiveTabTitle(index);
-	});
+	signal_connections += signals.archive_saved.connect(
+		[this](unsigned index)
+		{
+			updateOpenListItem(index);
+			updateArchiveTabTitle(index);
+		});
+	signal_connections += signals.archive_modified.connect(
+		[this](unsigned index)
+		{
+			updateOpenListItem(index);
+			updateArchiveTabTitle(index);
+		});
 
 	// When an archive is being closed, close any related tabs
-	signal_connections += signals.archive_closing.connect([this](unsigned index) {
-		closeTextureTab(index);
-		closeEntryTabs(app::archiveManager().getArchive(index).get());
-		closeTab(index);
-	});
+	signal_connections += signals.archive_closing.connect(
+		[this](unsigned index)
+		{
+			closeTextureTab(index);
+			closeEntryTabs(app::archiveManager().getArchive(index).get());
+			closeTab(index);
+		});
 
 	// When an archive is opened, open its tab
 	signal_connections += signals.archive_opened.connect([this](int index) { openTab(index); });
@@ -2319,6 +2323,6 @@ void ArchiveManagerPanel::connectSignals()
 
 	// Refresh bookmarks list when changed
 	signal_connections += signals.bookmark_added.connect([this](ArchiveEntry*) { refreshBookmarkList(); });
-	signal_connections += signals.bookmarks_removed.connect(
-		[this](const vector<ArchiveEntry*>&) { refreshBookmarkList(); });
+	signal_connections += signals.bookmarks_removed.connect([this](const vector<ArchiveEntry*>&)
+															{ refreshBookmarkList(); });
 }
