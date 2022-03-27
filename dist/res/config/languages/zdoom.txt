@@ -10,7 +10,8 @@ z_animdefs {
 
 	keywords = {
 		texture, flat, tics, rand, range, fit, switch, sound, animateddoor,
-		pic, warp, warp2, on, off, opensound, closesound, cameratexture, worldpanning
+		pic, warp, warp2, on, off, opensound, closesound, cameratexture, worldpanning,
+		notrim
 	}
 
 	constants = {
@@ -83,7 +84,7 @@ z_gameinfo {
 
 	keywords = {
 		IWAD, LOAD, NOSPRITERENAME, STARTUPTITLE, STARTUPCOLORS, STARTUPTYPE, STARTUPSONG,
-		LOADLIGHTS, LOADBRIGHTMAPS, LOADWIDESCREEN
+		LOADLIGHTS, LOADBRIGHTMAPS, LOADWIDESCREEN, DISCORDAPPID, STEAMAPPID
 	}
 }
 
@@ -122,7 +123,8 @@ z_iwadinfo
 	{
 		Name, AutoName, Game, Config, IWADName, MapInfo, MustContain, BannerColors,
 		StartupType, StartupSong, Compatibility, Required, Load, IgnoreTitlePatches,
-		DeleteLumps, NoKeyboardCheats
+		DeleteLumps, NoKeyboardCheats, LoadLights, LoadBrightmaps, LoadWidescreen,
+		DiscordAppId, SteamAppId
 	}
 }
 
@@ -244,6 +246,7 @@ z_mapinfo {
 		soundinfo, specialaction_lowerfloortohighest, warptrans, wrapmidtextures,
 		propermonsterfallingdamage, disableskyboxao, enableskyboxao, e1m8special,
 		e2m8special, e3m8special, e4m6special, e4m8special, disableshadowmap, enableshadowmap,
+		avoidmelee, compat_avoidhazards, compat_stayonlift, compat_nombf21,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate, PixelRatio,
@@ -270,7 +273,7 @@ z_mapinfo {
 		StatScreen_FinishedFont, StatScreen_EnteringFont, Dialogue, StatScreen_Single, StatScreen_Coop, StatScreen_DM,
 		BlurAmount, CorrectPrintBold, MenuSliderColor, althudclass, forcenogfxsubstitution, forcetextinmenus,
 		fullscreenautoaspect, nomergepickupmsg, normforwardmove, normsidemove, statscreen_authorfont,
-		statscreen_contentfont, menusliderbackcolor, hidepartimes, adddialogues,
+		statscreen_contentfont, menusliderbackcolor, hidepartimes, adddialogues, helpmenuclass, menudelegateclass,
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,
@@ -347,7 +350,8 @@ z_modeldef {
 
 	constants = {
 		PITCHFROMMOMENTUM, IGNORETRANSLATION, INTERPOLATEDOUBLEDFRAMES, ROTATING, NOINTERPOLATION,
-		INHERITACTORPITCH, INHERITACTORROLL, USEACTORPITCH, USEACTORROLL, DONTCULLBACKFACES
+		INHERITACTORPITCH, INHERITACTORROLL, USEACTORPITCH, USEACTORROLL, DONTCULLBACKFACES,
+		SCALEWEAPONFOV
 	}
 }
 
@@ -542,7 +546,7 @@ z_textures {
 		texture, patch, sprite, graphic, walltexture, flat, optional,
 		XScale, YScale, offset, worldpanning, NoDecals, NullTexture,
 		FlipX, FlipY, Rotate, Translation, Blend, Alpha, Style, define,
-		UseOffsets
+		UseOffsets, NoTrim
 	}
 
 	constants = {

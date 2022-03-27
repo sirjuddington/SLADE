@@ -37,9 +37,9 @@ decorate : cstyle {
 
 		// Combat
 		Accuracy, Stamina, ReactionTime,
-		Damage, DamageFactor, DamageType, PoisonDamage, PoisonDamageType, 
-		ExplosionRadius, ExplosionDamage, RadiusDamageFactor, DontHurtShooter, 
-		MeleeDamage, MeleeThreshold, MeleeRange, MaxTargetRange, 
+		Damage, DamageFactor, DamageMultiply, DamageType, PoisonDamage, PoisonDamageType, 
+		ExplosionRadius, ExplosionDamage, SelfDamageFactor, RadiusDamageFactor, DontHurtShooter, 
+		MeleeDamage, MeleeThreshold, MeleeRange, MaxTargetRange, FriendlySeeBlocks,
 		MissileType, MissileHeight, MinMissileChance, 
 		WeaveIndexXY, WeaveIndexZ, ProjectileKickBack, 
 		RipperLevel, RipLevelMin, RipLevelMax,
@@ -48,17 +48,17 @@ decorate : cstyle {
 		// Physics
 		Gravity, Mass, Radius, Height, BounceFactor, BounceCount, BounceType, WallBounceFactor, PushFactor, 
 		DeathHeight, BurnHeight, ProjectilePassHeight, CameraHeight, MaxStepHeight, MaxDropOffHeight, 
-		Speed, VSpeed, FastSpeed, FloatSpeed, Friction,
+		Speed, VSpeed, FastSpeed, FloatSpeed, Friction, MaxSlopeSteepness, ThruBits,
 		
 		// Rendering
 		RenderStyle, None, Normal, Fuzzy, OptFuzzy, Translucent, SoulTrans, Stencil, AddStencil, StencilColor, Shaded, 
 		AddShaded, Shadow, Add, Subtract, DefaultAlpha, Alpha, XScale, YScale, Scale, Translation,
 		BloodColor, BloodType, Decal, FloatBobPhase, DistanceCheck, SpriteAngle, SpriteRotation, VisibleAngles,
-		VisiblePitch,
+		VisiblePitch, StealthAlpha, FloatBobStrength, RenderRadius, CameraFOV, 
 		
 		// Sounds
 		SeeSound, AttackSound, PainSound, BounceSound, CrushPainSound,
-		DeathSound, ActiveSound, MeleeSound, HowlSound, PainSound, WallBounceSound, 
+		DeathSound, ActiveSound, MeleeSound, HowlSound, PainSound, WallBounceSound, RipSound,
 		
 		// Multiplayer weirdness
 		DesignatedTeam, VisibleToTeam, VisibleToPlayerClass, 
@@ -71,12 +71,12 @@ decorate : cstyle {
 		AttackZOffset, JumpZ, SpawnClass, ViewHeight, ForwardMove, SideMove, MaxHealth, MugshotMaxHealth, 
 		RunHealth, MorphWeapon, FlechetteType, ScoreIcon, CrouchSprite, DamageScreenColor, StartItem, 
 		InvulnerabilityMode, HealRadiusType, HexenArmor, Portrait, WeaponSlot, FallingScreamSpeed, GruntSpeed,
-		AirCapacity, UseRange, ViewBob,
+		AirCapacity, UseRange, ViewBob, TeleportFreezeTime,
 		
 		// Inventory-specific properties
 		Inventory, RestrictedTo, ForbiddenTo, Amount, Icon, InterHubAmount, MaxAmount, 
 		DefMaxAmount, PickupFlash, PickupMessage, PickupSound, PickupAnnouncerEntry,
-		Respawntics, UseSound, GiveQuest,
+		Respawntics, UseSound, GiveQuest, AltHUDIcon,
 		
 		// Fake Inventory
 		FakeInventory, Respawns,
@@ -106,7 +106,7 @@ decorate : cstyle {
 		Weapon, Kickback, DefaultKickback, ReadySound, SelectionOrder, SisterWeapon, UpSound, YAdjust, 
 		AmmoGive, AmmoGive1, AmmoGive2, AmmoType, AmmoType1, AmmoType2, AmmoUse, AmmoUse1, AmmoUse2,
 		BobStyle, BobSpeed, BobRangeX, BobRangeY, SlotNumber, SlotPriority, PreferredSkin,
-		MinSelectionAmmo1, MinSelectionAmmo2,
+		MinSelectionAmmo1, MinSelectionAmmo2, WeaponScaleX, WeaponScaleY, LookScale,
 		
 		// Weapon piece
 		WeaponPiece, Number, Weapon, 
@@ -168,20 +168,27 @@ decorate : cstyle {
 		SPAWNSOUNDSOURCE, SPECIAL, SPECIALFIREDAMAGE, SPECIALFLOORCLIP, SPECTRAL, SPRITEANGLE, STANDSTILL, STAYMORPHED,
 		STEALTH, STEPMISSILE, STRIFEDAMAGE, SUMMONEDMONSTER, SYNCHRONIZED, TELEPORT, TELESTOMP, TERRAIN,
 		THRUACTORS, THRUGHOST, THRUREFLECT, THRUSPECIES, TOUCHY, USEBOUNCESTATE, USEKILLSCRIPTS, USESPECIAL,
-		VISIBILITYPULSE, VULNERABLE, WEAPONSPAWN, WINDTHRUST,
+		VISIBILITYPULSE, VULNERABLE, WEAPONSPAWN, WINDTHRUST, INTERPOLATEANGLES, SPRITEFLIP, XFLIP, YFLIP,
+		DONTINTERPOLATE, ZDOOMTRANS, ABSVIEWANGLES, CASTSPRITESHADOW, NOSPRITESHADOW, BLOCKASPLAYER, NOFRICTION,
+		NOFRICTIONBOUNCE, FALLDAMAGE, ALLOWTHRUBITS, DONTFACETALKER, AVOIDHAZARDS, STAYONLIFT, FRIGHTENING,
+		NOINFIGHTSPECIES, FORCEINFIGHTING, STOPRAILS, FULLVOLSEE, FORCEZERORADIUSDMG, POISONALWAYS, HITOWNER,
+		BOUNCEONUNRIPPABLES, DONTBOUNCEONSHOOTABLES, DONTBOUNCEONSKY, RETARGETAFTERSLAM, E1M8BOSS, E2M8BOSS,
+		E3M8BOSS, E4M6BOSS, E4M8BOSS, MAP07BOSS1, MAP07BOSS2, HIGHERMPROB,
 
 		// INVENTORY.
 		INVENTORY,
 		QUIET, AUTOACTIVATE, UNDROPPABLE, INVBAR, HUBPOWER, PERSISTENTPOWER, INTERHUBSTRIP,
 		PICKUPFLASH, ALWAYSPICKUP, FANCYPICKUPSOUND, BIGPOWERUP, KEEPDEPLETED, IGNORESKILL, 
 		ADDITIVETIME, UNTOSSABLE, RESTRICTABSOLUTELY, NEVERRESPAWN, NOSCREENFLASH,
-		NOATTENPICKUPSOUND, TOSSED, TRANSFER, NOTELEPORTFREEZE,
+		NOATTENPICKUPSOUND, TOSSED, TRANSFER, NOTELEPORTFREEZE, UNCLEARABLE, NOSCREENBLINK,
+		ISHEALTH, ISARMOR,
 		
 		// PLAYERPAWN.
 		PLAYERPAWN, 
 		CANSUPERMORPH,
 		CROUCHABLEMORPH,
 		NOTHRUSTWHENINVUL,
+		WEAPONLEVEL2ENDED,
 		
 		// POWERSPEED.
 		POWERSPEED,
@@ -193,7 +200,7 @@ decorate : cstyle {
 		AMMO_OPTIONAL, ALT_AMMO_OPTIONAL, AMMO_CHECKBOTH, PRIMARY_USES_BOTH,
 		ALT_USES_BOTH, WIMPY_WEAPON, POWERED_UP, STAFF2_KICKBACK, EXPLOSIVE,
 		MELEEWEAPON, BFG, CHEATNOTWEAPON, NO_AUTO_SWITCH, NOAUTOAIM, NODEATHDESELECT,
-		NODEATHINPUT,
+		NODEATHINPUT, NOAUTOSWITCHTO,
 
 		//thing activation
 		THINGSPEC_Default, THINGSPEC_ThingActs, THINGSPEC_TriggerActs, THINGSPEC_ThingTargets, THINGSPEC_TriggerTargets,
@@ -243,7 +250,7 @@ decorate : cstyle {
 
 		// A_Chase flags
 		CHF_DONTMOVE, CHF_FASTCHASE, CHF_NIGHTMAREFAST, CHF_NOPLAYACTIVE, CHF_RESURRECT, CHF_NORANDOMTURN,
-		CHF_NODIRECTIONTURN, CHF_NOPOSTATTACKTURN, CHF_STOPIFBLOCKED, CHF_DONTTURN,
+		CHF_NODIRECTIONTURN, CHF_NOPOSTATTACKTURN, CHF_STOPIFBLOCKED, CHF_DONTTURN, CHF_DONTIDLE,
 
 		// A_CheckLOF flags
 		CLOFF_NOAIM_VERT, CLOFF_NOAIM_HORZ, CLOFF_AIM_VERT_NOOFFSET, CLOFF_FROMBASE, CLOFF_MUL_HEIGHT,
@@ -526,6 +533,7 @@ decorate : cstyle {
 		A_PlaySoundEx = "string soundname, string channel, [bool loop], [int attenuation]";
 		A_PlayWeaponSound = "string soundname";
 		A_StartSound = "string whattoplay, [int slot], [int flags], [float volume], [float attenuation], [float pitch], [float startTime]";
+		A_StartSoundIfNotSame = "string whattoplay, string checkagainst, [int slot], [int flags], [float volume], [float attenuation], [float pitch], [float startTime]";
 		A_ActiveSound;
 		A_LoopActiveSound;
 		A_FLoopActiveSound;
