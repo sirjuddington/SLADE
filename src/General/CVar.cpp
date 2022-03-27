@@ -162,19 +162,27 @@ void CVar::putList(vector<string>& list)
 // -----------------------------------------------------------------------------
 string CVar::writeAll()
 {
-	uint32_t max_size = 0;
+	vector<CVar*> all_cvars;
 	for (unsigned i = 0; i < n_cvars; ++i)
+		all_cvars.push_back(cvars[i]);
+
+	std::sort(
+		all_cvars.begin(),
+		all_cvars.end(),
+		[](const CVar* left, const CVar* right) { return left->name < right->name; });
+
+	uint32_t max_size = 0;
+	for (auto* cvar : all_cvars)
 	{
-		if (cvars[i]->name.size() > max_size)
-			max_size = cvars[i]->name.size();
+		if (cvar->name.size() > max_size)
+			max_size = cvar->name.size();
 	}
 
 	fmt::memory_buffer buf;
 	format_to(buf, "cvars\n{{\n");
 
-	for (unsigned i = 0; i < n_cvars; ++i)
+	for (auto* cvar : all_cvars)
 	{
-		auto cvar = cvars[i];
 		if (cvar->flags & Flag::Save)
 		{
 			format_to(buf, "\t{} ", cvar->name);
