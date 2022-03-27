@@ -48,6 +48,7 @@ EXTERN_CVAR(Bool, update_check)
 EXTERN_CVAR(Bool, update_check_beta)
 EXTERN_CVAR(Bool, confirm_exit)
 EXTERN_CVAR(Bool, backup_archives)
+EXTERN_CVAR(Bool, archive_dir_ignore_hidden)
 
 
 // -----------------------------------------------------------------------------
@@ -63,19 +64,25 @@ EXTERN_CVAR(Bool, backup_archives)
 GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create + Layout controls
-	SetSizer(wxutil::layoutVertically(
-		{ cb_archive_load_      = new wxCheckBox(this, -1, "Load all archive entry data to memory when opened"),
-		  cb_archive_close_tab_ = new wxCheckBox(this, -1, "Close archive when its tab is closed"),
-		  cb_wads_root_         = new wxCheckBox(this, -1, "Auto open nested wad archives"),
+	SetSizer(wxutil::layoutVertically({
+		cb_archive_load_              = new wxCheckBox(this, -1, "Load all archive entry data to memory when opened"),
+		cb_archive_close_tab_         = new wxCheckBox(this, -1, "Close archive when its tab is closed"),
+		cb_wads_root_                 = new wxCheckBox(this, -1, "Auto open nested wad archives"),
+		cb_backup_archives_           = new wxCheckBox(this, -1, "Back up archives"),
+		cb_archive_dir_ignore_hidden_ = new wxCheckBox(this, -1, "Ignore hidden files in directories"),
+		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL),
 #ifdef __WXMSW__
-		  cb_update_check_      = new wxCheckBox(this, -1, "Check for updates on startup"),
-		  cb_update_check_beta_ = new wxCheckBox(this, -1, "Include beta versions when checking for updates"),
+		cb_update_check_      = new wxCheckBox(this, -1, "Check for updates on startup"),
+		cb_update_check_beta_ = new wxCheckBox(this, -1, "Include beta versions when checking for updates"),
 #endif
-		  cb_confirm_exit_    = new wxCheckBox(this, -1, "Show confirmation dialog on exit"),
-		  cb_backup_archives_ = new wxCheckBox(this, -1, "Back up archives") }));
+		cb_confirm_exit_ = new wxCheckBox(this, -1, "Show confirmation dialog on exit"),
+	}));
 
 	cb_wads_root_->SetToolTip(
-		"When opening a zip or folder archive, automatically open all wad entries in the root directory");
+		"When opening a zip or directory, automatically open all wad entries in the root directory");
+
+	cb_archive_dir_ignore_hidden_->SetToolTip(
+		"When opening a directory, ignore any files or subdirectories beginning with a '.'");
 }
 
 // -----------------------------------------------------------------------------
@@ -92,6 +99,7 @@ void GeneralPrefsPanel::init()
 #endif
 	cb_confirm_exit_->SetValue(confirm_exit);
 	cb_backup_archives_->SetValue(backup_archives);
+	cb_archive_dir_ignore_hidden_->SetValue(archive_dir_ignore_hidden);
 }
 
 // -----------------------------------------------------------------------------
@@ -106,6 +114,7 @@ void GeneralPrefsPanel::applyPreferences()
 	update_check      = cb_update_check_->GetValue();
 	update_check_beta = cb_update_check_beta_->GetValue();
 #endif
-	confirm_exit    = cb_confirm_exit_->GetValue();
-	backup_archives = cb_backup_archives_->GetValue();
+	confirm_exit              = cb_confirm_exit_->GetValue();
+	backup_archives           = cb_backup_archives_->GetValue();
+	archive_dir_ignore_hidden = cb_archive_dir_ignore_hidden_->GetValue();
 }
