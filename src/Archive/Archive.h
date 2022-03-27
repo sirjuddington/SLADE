@@ -96,7 +96,7 @@ public:
 	void             putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, ArchiveDir* start = nullptr) const;
 	bool             canSave() const { return parent_.lock() || on_disk_; }
 	virtual bool     paste(ArchiveDir* tree, unsigned position = 0xFFFFFFFF, shared_ptr<ArchiveDir> base = nullptr);
-	virtual bool     importDir(string_view directory);
+	virtual bool     importDir(string_view directory, bool ignore_hidden = false);
 	virtual bool     hasFlatHack() { return false; }
 
 	// Directory stuff

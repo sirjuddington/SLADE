@@ -285,8 +285,14 @@ bool ZipArchive::write(string_view filename, bool update)
 	putEntryTreeAsList(entries);
 
 	// Go through all entries
-	for (size_t a = 0; a < entries.size(); a++)
+	auto n_entries = entries.size();
+	ui::setSplashProgressMessage("Writing zip entries");
+	ui::setSplashProgress(0.0f);
+	ui::updateSplash();
+	for (size_t a = 0; a < n_entries; a++)
 	{
+		ui::setSplashProgress(static_cast<float>(a) / static_cast<float>(n_entries));
+
 		if (entries[a]->type() == EntryType::folderType())
 		{
 			// If the current entry is a folder, just write a directory entry and continue
@@ -335,6 +341,8 @@ bool ZipArchive::write(string_view filename, bool update)
 	if (temp_file_.empty())
 		generateTempFileName(filename);
 	fileutil::copyFile(filename, temp_file_);
+
+	ui::setSplashProgressMessage("");
 
 	return true;
 }

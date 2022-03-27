@@ -1245,9 +1245,11 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name)
 
 // -----------------------------------------------------------------------------
 // Imports all files (including subdirectories) from [directory] into the
-// archive
+// archive.
+// If [ignore_hidden] is true, files and directories beginning with a '.' will
+// not be imported
 // -----------------------------------------------------------------------------
-bool Archive::importDir(string_view directory)
+bool Archive::importDir(string_view directory, bool ignore_hidden)
 {
 	// Get a list of all files in the directory
 	vector<string> files;
@@ -1263,6 +1265,26 @@ bool Archive::importDir(string_view directory)
 		// Split filename into dir+name
 		const auto ename = fn.fileName();
 		auto       edir  = fn.path();
+
+		// Ignore if hidden
+		if (ignore_hidden)
+		{
+			// Hidden file
+			if (strutil::startsWith(ename, '.'))
+				continue;
+
+			// Check if within hidden dir
+			bool hidden = false;
+			for (const auto dir : fn.pathParts())
+				if (strutil::startsWith(dir, '.'))
+				{
+					hidden = true;
+					break;
+				}
+
+			if (hidden)
+				continue;
+		}
 
 		// Remove beginning \ or / from dir
 		if (strutil::startsWith(edir, '\\') || strutil::startsWith(edir, '/'))

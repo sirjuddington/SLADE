@@ -101,7 +101,6 @@ CVAR(String, last_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
 CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVar::Flag::Save)
 CVAR(Int, last_tint_amount, 50, CVar::Flag::Save)
 CVAR(Bool, auto_entry_replace, false, CVar::Flag::Save)
-CVAR(Bool, archive_build_skip_hidden, true, CVar::Flag::Save)
 CVAR(Bool, elist_show_filter, false, CVar::Flag::Save)
 CVAR(Int, ap_splitter_position_tree, 300, CVar::Flag::Save)
 CVAR(Int, ap_splitter_position_list, 300, CVar::Flag::Save)
@@ -117,6 +116,7 @@ EXTERN_CVAR(String, path_pngout)
 EXTERN_CVAR(String, path_pngcrush)
 EXTERN_CVAR(String, path_deflopt)
 EXTERN_CVAR(Bool, confirm_entry_revert)
+EXTERN_CVAR(Bool, archive_dir_ignore_hidden)
 
 
 // -----------------------------------------------------------------------------
@@ -1024,7 +1024,7 @@ bool ArchivePanel::buildArchive()
 
 	// Create dialog
 	filedialog::FDInfo info;
-	if (filedialog::saveFile(info, "Build archive", zip.fileExtensionString(), this))
+	if (filedialog::saveFile(info, "Build Archive", zip.fileExtensionString(), this))
 	{
 		ui::showSplash("Building " + info.filenames[0], true);
 		ui::setSplashProgress(0.0f);
@@ -1034,55 +1034,11 @@ bool ArchivePanel::buildArchive()
 			wxRemoveFile(info.filenames[0]);
 
 		// Log
-		ui::setSplashMessage("Importing files... (Esc to cancel)");
+		ui::setSplashProgressMessage("Importing files...");
+		ui::setSplashProgress(-1.0f);
 
-		// import all files into new archive
-		// Get a list of all files in the directory
-		wxArrayString files;
-		wxDir::GetAllFiles(archive->filename(), &files);
-
-		// Go through files
-		for (unsigned a = 0; a < files.size(); a++)
-		{
-			// Cancel event
-			if (wxGetKeyState(WXK_ESCAPE))
-			{
-				ui::hideSplash();
-				return true;
-			}
-
-			wxString name = files[a];
-			name.Replace(archive->filename(), "", false); // Remove directory from entry name
-
-			// Split filename into dir+name
-			strutil::Path fn(name.ToStdString());
-			auto          ename = fn.fileName();
-			auto          edir  = fn.path();
-
-			// Remove beginning \ or / from dir
-			if (strutil::startsWith(edir, '\\') || strutil::startsWith(edir, '/'))
-				edir.remove_prefix(1);
-
-			// Skip hidden files
-			if (archive_build_skip_hidden && (!edir.empty() && edir[0] == '.' || ename[0] == '.'))
-				continue;
-
-			// Add the entry
-			auto dir   = zip.createDir(edir);
-			auto entry = zip.addNewEntry(ename, dir->numEntries() + 1, dir.get());
-
-			// Log
-			ui::setSplashProgressMessage(ename);
-			ui::setSplashProgress((float)a / files.size());
-
-			// Load data
-			entry->importFile(files[a].ToStdString());
-
-			// Set unmodified
-			entry->setState(ArchiveEntry::State::Unmodified);
-			dir->dirEntry()->setState(ArchiveEntry::State::Unmodified);
-		}
-
+		// Import all files into new archive
+		zip.importDir(archive->filename(), archive_dir_ignore_hidden);
 		ui::setSplashProgress(1.0f);
 		ui::setSplashMessage("Saving archive...");
 		ui::setSplashProgressMessage("");
