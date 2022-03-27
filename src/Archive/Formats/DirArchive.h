@@ -107,17 +107,16 @@ public:
 
 	wxDirTraverseResult OnDir(const wxString& dirname) override
 	{
-		auto path_str = dirname.ToStdString();
-
 		if (ignore_hidden_)
 		{
+			auto path_str = dirname.ToStdString();
 			std::replace(path_str.begin(), path_str.end(), '\\', '/');
 			auto dir = strutil::afterLastV(path_str, '/');
 			if (strutil::startsWith(dir, '.'))
 				return wxDIR_IGNORE;
 		}
 
-		dirs_.push_back(path_str);
+		dirs_.push_back(dirname.ToStdString());
 		return wxDIR_CONTINUE;
 	}
 

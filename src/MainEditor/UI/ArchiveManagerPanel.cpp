@@ -1399,7 +1399,8 @@ bool ArchiveManagerPanel::saveArchive(Archive* archive) const
 	if (archive->canSave())
 	{
 		// Check if the file has been modified on disk
-		if (fileutil::fileModifiedTime(archive->filename()) > archive->fileModifiedTime())
+		if (archive->formatId() != "folder"
+			&& fileutil::fileModifiedTime(archive->filename()) > archive->fileModifiedTime())
 		{
 			if (wxMessageBox(
 					wxString::Format(
