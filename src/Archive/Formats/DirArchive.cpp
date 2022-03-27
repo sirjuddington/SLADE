@@ -44,6 +44,14 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
+// Variables
+//
+// -----------------------------------------------------------------------------
+CVAR(Bool, archive_dir_ignore_hidden, true, CVar::Save)
+
+
+// -----------------------------------------------------------------------------
+//
 // External Variables
 //
 // -----------------------------------------------------------------------------
@@ -60,7 +68,7 @@ EXTERN_CVAR(Bool, archive_load_data)
 // -----------------------------------------------------------------------------
 // DirArchive class constructor
 // -----------------------------------------------------------------------------
-DirArchive::DirArchive() : Archive("folder")
+DirArchive::DirArchive() : Archive("folder"), ignore_hidden_{ archive_dir_ignore_hidden }
 {
 	// Setup separator character
 #ifdef WIN32
@@ -81,7 +89,7 @@ bool DirArchive::open(string_view filename)
 	ui::setSplashProgressMessage("Reading directory structure");
 	ui::setSplashProgress(0);
 	vector<string>      files, dirs;
-	DirArchiveTraverser traverser(files, dirs);
+	DirArchiveTraverser traverser(files, dirs, ignore_hidden_);
 	const wxDir         dir(string{ filename });
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
 
@@ -215,7 +223,7 @@ bool DirArchive::save(string_view filename)
 	// Get current directory structure
 	long                time = app::runTimer();
 	vector<string>      files, dirs;
-	DirArchiveTraverser traverser(files, dirs);
+	DirArchiveTraverser traverser(files, dirs, archive_dir_ignore_hidden);
 	const wxDir         dir(filename_);
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
 	log::info(2, "GetAllFiles took {}ms", app::runTimer() - time);

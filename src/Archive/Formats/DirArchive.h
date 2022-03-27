@@ -36,11 +36,12 @@ class DirArchive : public Archive
 {
 public:
 	DirArchive();
-	~DirArchive() = default;
+	~DirArchive() override = default;
 
 	// Accessors
 	const vector<string>& removedFiles() const { return removed_files_; }
 	time_t                fileModificationTime(ArchiveEntry* entry) { return file_modification_times_[entry]; }
+	bool                  hiddenFilesIgnored() const { return ignore_hidden_; }
 
 	// Opening
 	bool open(string_view filename) override; // Open from File
@@ -84,28 +85,48 @@ private:
 	std::map<ArchiveEntry*, time_t> file_modification_times_;
 	vector<string>                  removed_files_;
 	IgnoredFileChanges              ignored_file_changes_;
+	bool                            ignore_hidden_;
 };
 
 class DirArchiveTraverser : public wxDirTraverser
 {
 public:
-	DirArchiveTraverser(vector<string>& pathlist, vector<string>& dirlist) : paths_{ pathlist }, dirs_{ dirlist } {}
-	~DirArchiveTraverser() = default;
+	DirArchiveTraverser(vector<string>& pathlist, vector<string>& dirlist, bool ignore_hidden) :
+		paths_{ pathlist }, dirs_{ dirlist }, ignore_hidden_{ ignore_hidden }
+	{
+	}
+	~DirArchiveTraverser() override = default;
 
 	wxDirTraverseResult OnFile(const wxString& filename) override
 	{
-		paths_.push_back(filename.ToStdString());
+		auto path_str = filename.ToStdString();
+
+		if (ignore_hidden_ && strutil::startsWith(strutil::Path::fileNameOf(path_str), '.'))
+			return wxDIR_CONTINUE;
+
+		paths_.push_back(path_str);
 		return wxDIR_CONTINUE;
 	}
 
 	wxDirTraverseResult OnDir(const wxString& dirname) override
 	{
-		dirs_.push_back(dirname.ToStdString());
+		auto path_str = dirname.ToStdString();
+
+		if (ignore_hidden_)
+		{
+			std::replace(path_str.begin(), path_str.end(), '\\', '/');
+			auto dir = strutil::afterLastV(path_str, '/');
+			if (strutil::startsWith(dir, '.'))
+				return wxDIR_IGNORE;
+		}
+
+		dirs_.push_back(path_str);
 		return wxDIR_CONTINUE;
 	}
 
 private:
 	vector<string>& paths_;
 	vector<string>& dirs_;
+	bool            ignore_hidden_ = true;
 };
 } // namespace slade

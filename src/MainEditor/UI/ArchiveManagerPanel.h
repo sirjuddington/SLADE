@@ -54,6 +54,7 @@ private:
 	vector<EntryInfo>    entry_info_;
 	vector<string>       removed_files_;
 	DirArchiveChangeList change_list_;
+	bool                 ignore_hidden_ = true;
 
 	void addChange(DirEntryChange change);
 };

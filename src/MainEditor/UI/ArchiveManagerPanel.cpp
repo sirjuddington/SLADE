@@ -89,7 +89,8 @@ DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive) :
 	handler_{ handler },
 	dir_path_{ archive->filename() },
 	removed_files_{ archive->removedFiles() },
-	change_list_{ archive, {} }
+	change_list_{ archive, {} },
+	ignore_hidden_{ archive->hiddenFilesIgnored() }
 {
 	// Get flat entry list
 	vector<ArchiveEntry*> entries;
@@ -122,7 +123,7 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 {
 	// Get current directory structure
 	vector<string>      files, dirs;
-	DirArchiveTraverser traverser(files, dirs);
+	DirArchiveTraverser traverser(files, dirs, ignore_hidden_);
 	wxDir               dir(dir_path_);
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
 
