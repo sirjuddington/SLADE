@@ -970,6 +970,24 @@ bool ArchiveManagerPanel::entryIsOpenInTab(ArchiveEntry* entry) const
 }
 
 // -----------------------------------------------------------------------------
+// Closes the currently selected tab
+// -----------------------------------------------------------------------------
+void ArchiveManagerPanel::closeCurrentTab()
+{
+	auto index = stc_archives_->GetSelection();
+	if (prepareCloseTab(index))
+	{
+		stc_archives_->DeletePage(index);
+
+		if (pending_closed_archive_)
+		{
+			app::archiveManager().closeArchive(pending_closed_archive_);
+			pending_closed_archive_ = nullptr;
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Opens the appropriate EntryPanel for [entry] in a new tab
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
@@ -1840,7 +1858,7 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 
 	// File->Close
 	else if (id == "aman_close")
-		closeArchive(currentArchive());
+		closeCurrentTab();
 
 	// Archives context menu cannot needs its own functions!
 	else if (id == "aman_save_a")
@@ -2141,91 +2159,15 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 }
 
 // -----------------------------------------------------------------------------
-// Called when the user clicks the close button on an archive tab
+// Called when the user clicks the close button on a tab
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::onArchiveTabClose(wxAuiNotebookEvent& e)
 {
-	// Get tab that is closing
-	int  tabindex = e.GetSelection();
-	auto page     = stc_archives_->GetPage(tabindex);
-
-	if (tabindex < 0)
-		return;
-
-	// Close the tab's archive if needed
-	if (close_archive_with_tab && isArchivePanel(tabindex))
-	{
-		auto ap      = dynamic_cast<ArchivePanel*>(page);
-		auto archive = ap->archive();
-
-		// Close dependant archives first (if any)
-		auto deps = app::archiveManager().getDependentArchives(archive);
-
-		// Iterate in reverse order so the deepest-nested is closed first
-		for (unsigned a = deps.size(); a > 0; a--)
-		{
-			if (!beforeCloseArchive(deps[a - 1].get()))
-			{
-				e.Veto();
-				return;
-			}
-		}
-
-		// Close archive
-		if (!beforeCloseArchive(archive))
-		{
-			e.Veto();
-			return;
-		}
-
-		pending_closed_archive_ = archive;
-
+	// Veto the event if the tab shouldn't be closed
+	if (prepareCloseTab(e.GetSelection()))
 		e.Skip();
-		return;
-	}
-
-	if (isEntryPanel(tabindex))
-	{
-		auto ep = dynamic_cast<EntryPanel*>(page);
-		if (ep->isModified() && autosave_entry_changes > 0)
-		{
-			// Ask if needed
-			if (autosave_entry_changes > 1)
-			{
-				int result = wxMessageBox(
-					wxString::Format("Save changes to entry \"%s\"?", ep->entry()->name()),
-					"Unsaved Changes",
-					wxYES_NO | wxCANCEL | wxICON_QUESTION);
-
-				// Stop if user clicked cancel
-				if (result == wxCANCEL)
-				{
-					e.Veto();
-					return;
-				}
-
-				// Don't save if user clicked no
-				if (result == wxNO)
-				{
-					e.Skip();
-					return;
-				}
-			}
-
-			// Save entry changes
-			ep->saveEntry();
-		}
-	}
-
-	// Check for texture editor
-	else if (page->GetName() == "texture")
-	{
-		auto txed = dynamic_cast<TextureXEditor*>(page);
-		if (!txed->close())
-			e.Veto();
-	}
-
-	e.Skip();
+	else
+		e.Veto();
 }
 
 // -----------------------------------------------------------------------------
@@ -2326,4 +2268,78 @@ void ArchiveManagerPanel::connectSignals()
 	signal_connections += signals.bookmark_added.connect([this](ArchiveEntry*) { refreshBookmarkList(); });
 	signal_connections += signals.bookmarks_removed.connect([this](const vector<ArchiveEntry*>&)
 															{ refreshBookmarkList(); });
+}
+
+// -----------------------------------------------------------------------------
+// Checks if the tab at [index] can be safely closed, handling anything that
+// needs to be handled (unsaved changes etc.)
+// Returns true if the tab can be closed, false otherwise
+// -----------------------------------------------------------------------------
+bool ArchiveManagerPanel::prepareCloseTab(int index)
+{
+	auto page = stc_archives_->GetPage(index);
+	if (!page)
+		return false;
+
+	// Close the tab's archive if needed
+	if (close_archive_with_tab && isArchivePanel(index))
+	{
+		auto ap      = dynamic_cast<ArchivePanel*>(page);
+		auto archive = ap->archive();
+
+		// Close dependant archives first (if any)
+		auto deps = app::archiveManager().getDependentArchives(archive);
+
+		// Iterate in reverse order so the deepest-nested is closed first
+		for (unsigned a = deps.size(); a > 0; a--)
+		{
+			if (!beforeCloseArchive(deps[a - 1].get()))
+				return false;
+		}
+
+		// Close archive
+		if (!beforeCloseArchive(archive))
+			return false;
+
+		pending_closed_archive_ = archive;
+
+		return true;
+	}
+
+	if (isEntryPanel(index))
+	{
+		auto ep = dynamic_cast<EntryPanel*>(page);
+		if (ep->isModified() && autosave_entry_changes > 0)
+		{
+			// Ask if needed
+			if (autosave_entry_changes > 1)
+			{
+				int result = wxMessageBox(
+					wxString::Format("Save changes to entry \"%s\"?", ep->entry()->name()),
+					"Unsaved Changes",
+					wxYES_NO | wxCANCEL | wxICON_QUESTION);
+
+				// Stop if user clicked cancel
+				if (result == wxCANCEL)
+					return false;
+
+				// Don't save if user clicked no
+				if (result == wxNO)
+					return true;
+			}
+
+			// Save entry changes
+			ep->saveEntry();
+		}
+	}
+
+	// Check for texture editor
+	else if (page->GetName() == "texture")
+	{
+		auto txed = dynamic_cast<TextureXEditor*>(page);
+		if (!txed->close())
+			return false;
+	}
+
+	return true;
 }

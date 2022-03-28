@@ -121,6 +121,7 @@ public:
 	void            openDirAsArchive(const wxString& dir) const;
 	bool            redirectToTab(ArchiveEntry* entry) const;
 	bool            entryIsOpenInTab(ArchiveEntry* entry) const;
+	void            closeCurrentTab();
 
 	// General actions
 	bool undo() const;
@@ -190,5 +191,6 @@ private:
 	ScopedConnectionList signal_connections;
 
 	void connectSignals();
+	bool prepareCloseTab(int index);
 };
 } // namespace slade
