@@ -40,6 +40,7 @@
 #include "General/ColourConfiguration.h"
 #include "General/UndoRedo.h"
 #include "Graphics/Icons.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include <wx/headerctrl.h>
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "General/Sigslot.h"
-#include "UI/SToolBar/SToolBarButton.h"
 #include <wx/dataview.h>
 
 namespace slade
@@ -10,6 +9,7 @@ class Archive;
 class ArchiveEntry;
 class ArchiveDir;
 class UndoManager;
+class SToolBarButton;
 
 namespace ui
 {

@@ -612,20 +612,19 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	panel_filter_->Show(elist_show_filter);
 
 	// Layout entry list
-	hbox->Add(toolbar_elist_, 0, wxEXPAND | wxBOTTOM | wxTOP, min_pad);
+	hbox->Add(toolbar_elist_, 0, wxEXPAND);
 	hbox->AddSpacer(min_pad);
 	auto* vbox = new wxBoxSizer(wxVERTICAL);
 	hbox->Add(vbox, 1, wxEXPAND);
 	if (etree_path_)
 	{
-		vbox->AddSpacer(ui::scalePx(ui::px(ui::Size::PadMinimum)));
 		vbox->Add(etree_path_, 0, wxEXPAND | wxRIGHT, ui::pad());
-		vbox->AddSpacer(ui::scalePx(ui::px(ui::Size::PadMinimum)));
-		vbox->Add(entry_tree_, 1, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
+		vbox->AddSpacer(min_pad);
+		vbox->Add(entry_tree_, 1, wxEXPAND | wxRIGHT, ui::pad());
 	}
 	else
-		vbox->Add(entry_tree_, 1, wxEXPAND | wxRIGHT | wxBOTTOM | wxTOP, ui::pad());
-	vbox->Add(panel_filter_, 0, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
+		vbox->Add(entry_tree_, 1, wxEXPAND | wxRIGHT, ui::pad());
+	vbox->Add(panel_filter_, 0, wxEXPAND | wxRIGHT | wxTOP, ui::pad());
 
 	return panel;
 }
