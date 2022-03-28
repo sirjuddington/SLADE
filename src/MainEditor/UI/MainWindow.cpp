@@ -39,6 +39,7 @@
 #include "General/Misc.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/MapEditor.h"
+#include "Scripting/ScriptManager.h"
 #include "SLADEWxApp.h"
 #include "StartPage.h"
 #include "UI/Controls/BaseResourceChooser.h"

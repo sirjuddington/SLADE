@@ -175,8 +175,8 @@ void SStartPage::init()
 void SStartPage::load(bool new_tip)
 {
 	// Get latest news post
-	if (latest_news_.empty())
-		web::getHttpAsync("slade.mancubus.net", "/news-latest.php", this);
+	//if (latest_news_.empty())
+	//	web::getHttpAsync("slade.mancubus.net", "/news-latest.php", this);
 
 	// Can't do anything without html entry
 	if (!entry_base_html_)

@@ -10,15 +10,21 @@ set(BZIP2_LIBRARIES ${BZIP2_LIBRARIES} PARENT_SCOPE)
 set(EXTERNAL_SOURCES
 )
 file(GLOB_RECURSE EXTERNAL_SOURCES
-	*.cpp
-	*.cxx
 	dumb/*.c
-	lua/*.c
+	email/*.cpp
 	lzma/C/LzmaDec.c
-	fmt/*.cc
+	mus2mid/mus2mid.cpp
+	zreaders/*.cpp
 	${SLADE_HEADERS}
 	)
 
+# Add lunasvg
+add_library(lunasvg STATIC)
+add_subdirectory(lunasvg/include)
+add_subdirectory(lunasvg/source)
+add_subdirectory(lunasvg/3rdparty/software)
+add_subdirectory(lunasvg/3rdparty/plutovg)
+
 add_library(external STATIC ${EXTERNAL_SOURCES})
 target_link_libraries(external ${ZLIB_LIBRARY})
-set(EXTERNAL_LIBRARIES external PARENT_SCOPE)
+set(EXTERNAL_LIBRARIES external lunasvg PARENT_SCOPE)

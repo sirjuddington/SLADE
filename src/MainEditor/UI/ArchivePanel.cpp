@@ -60,6 +60,7 @@
 #include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
+#include "Scripting/ScriptManager.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Dialogs/GfxColouriseDialog.h"
