@@ -1267,20 +1267,35 @@ bool SImage::resize(int nwidth, int nheight)
 // -----------------------------------------------------------------------------
 bool SImage::setImageData(const vector<uint8_t>& ndata, int nwidth, int nheight, Type ntype)
 {
-	if (!ndata.empty())
-	{
-		clearData();
-		type_   = ntype;
-		width_  = nwidth;
-		height_ = nheight;
-		data_.importMem(ndata.data(), ndata.size());
+	if (ndata.empty())
+		return false;
+	
+	clearData();
+	type_   = ntype;
+	width_  = nwidth;
+	height_ = nheight;
+	data_.importMem(ndata.data(), ndata.size());
 
-		// Announce change
-		signals_.image_changed();
+	// Announce change
+	signals_.image_changed();
 
-		return true;
-	}
-	return false;
+	return true;
+}
+bool SImage::setImageData(const uint8_t* ndata, unsigned ndata_size, int nwidth, int nheight, Type ntype)
+{
+	if (!ndata)
+		return false;
+	
+	clearData();
+	type_   = ntype;
+	width_  = nwidth;
+	height_ = nheight;
+	data_.importMem(ndata, ndata_size);
+
+	// Announce change
+	signals_.image_changed();
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------

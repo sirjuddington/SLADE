@@ -34,7 +34,6 @@
 #include "Main.h"
 #include "GfxTintDialog.h"
 #include "General/Misc.h"
-#include "Graphics/Icons.h"
 #include "Graphics/SImage/SImage.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/ColourBox.h"

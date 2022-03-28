@@ -34,7 +34,6 @@
 #include "SToolBarButton.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/UI/MainWindow.h"
-#include "OpenGL/Drawing.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;

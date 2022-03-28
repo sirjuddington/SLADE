@@ -53,9 +53,10 @@ using namespace ui;
 // -----------------------------------------------------------------------------
 namespace slade::ui
 {
-wxColour col_text_modified(0, 0, 0, 0);
-wxColour col_text_new(0, 0, 0, 0);
-wxColour col_text_locked(0, 0, 0, 0);
+wxColour                           col_text_modified(0, 0, 0, 0);
+wxColour                           col_text_new(0, 0, 0, 0);
+wxColour                           col_text_locked(0, 0, 0, 0);
+std::unordered_map<string, wxIcon> icon_cache;
 } // namespace slade::ui
 
 CVAR(Int, elist_colsize_name_tree, 150, CVar::Save)
@@ -137,7 +138,7 @@ void ArchivePathPanel::setCurrentPath(ArchiveDir* dir) const
 		text_path_->UnsetToolTip();
 	else
 		text_path_->SetToolTip(path);
-	//text_path_->Refresh();
+	// text_path_->Refresh();
 	btn_updir_->Enable(!is_root);
 	btn_updir_->Refresh();
 }
@@ -398,19 +399,28 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 	// Name column
 	if (col == 0)
 	{
-		const auto pad  = Point2i{ 1, elist_icon_padding };
-		const auto size = scalePx(elist_icon_size);
-		const auto bmp  = elist_icon_padding > 0 ?
-							  icons::getPaddedIcon(icons::Type::Entry, entry->type()->icon(), size, pad) :
-                              icons::getIcon(icons::Type::Entry, entry->type()->icon(), size);
+		// Find icon in cache
+		if (icon_cache.find(entry->type()->icon()) == icon_cache.end())
+		{
+			// Not found, add to cache
+			const auto pad  = Point2i{ 1, elist_icon_padding };
+			const auto size = scalePx(elist_icon_size);
+			// const auto bmp  = elist_icon_padding > 0 ?
+			//                       icons::getPaddedIcon(icons::Type::Entry, entry->type()->icon(), size, pad) :
+			//                       icons::getIcon(icons::Type::Entry, entry->type()->icon(), size);
+			// const auto bmp = icons::getSVGIcon(icons::Type::Entry, entry->type()->icon(), size, pad);
+			const auto bmp = icons::getIcon(icons::Type::Entry, entry->type()->icon(), size, pad);
 
-		wxIcon icon;
-		icon.CopyFromBitmap(bmp);
+			wxIcon icon;
+			icon.CopyFromBitmap(bmp);
+			icon_cache[entry->type()->icon()] = icon;
+		}
+
 		wxString name = entry->name();
 		if (modified_indicator_ && entry->state() != ArchiveEntry::State::Unmodified)
-			variant << wxDataViewIconText(entry->name() + " *", icon);
+			variant << wxDataViewIconText(entry->name() + " *", icon_cache[entry->type()->icon()]);
 		else
-			variant << wxDataViewIconText(entry->name(), icon);
+			variant << wxDataViewIconText(entry->name(), icon_cache[entry->type()->icon()]);
 	}
 
 	// Size column

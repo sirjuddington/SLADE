@@ -34,9 +34,8 @@
 #include "SetupWizardDialog.h"
 #include "BaseResourceWizardPage.h"
 #include "General/UI.h"
-#include "Graphics/Icons.h"
 #include "NodeBuildersWizardPage.h"
-#include "TempFolderWizardPage.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -64,7 +63,6 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 	// pages_.push_back(new TempFolderWizardPage(this));
 	pages_.push_back(new BaseResourceWizardPage(this));
 	pages_.push_back(new NodeBuildersWizardPage(this));
-	current_page_ = 0;
 
 	// Hide all pages
 	for (auto& page : pages_)
@@ -74,9 +72,7 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 	setupLayout();
 
 	// Set icon
-	wxIcon icon;
-	icon.CopyFromBitmap(icons::getIcon(icons::General, "logo"));
-	SetIcon(icon);
+	wxutil::setWindowIcon(this, "logo");
 
 	// Setup layout
 	SetInitialSize(wxSize(ui::scalePx(600), ui::scalePx(500)));

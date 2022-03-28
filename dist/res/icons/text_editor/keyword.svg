@@ -1,0 +1,26 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+    width="16px"
+    height="16px"
+    style="-ms-transform:rotate(360deg);-webkit-transform:rotate(360deg)"
+    viewBox="0 0 24 24"
+    transform="rotate(360)">
+    <ellipse
+        cx="12"
+        cy="12"
+        rx="11"
+        ry="11"
+        fill="rgb(9, 78, 206)"
+        stroke="#000000"
+        stroke-width="1.5"
+    />
+    <g transform="translate(-5.75, -2.5)">
+        <g transform="scale(1.5, 1.2)">
+            <path
+                fill="#FFFFFF"
+                d="M9,7V17H11V13.67L13,17H15L12,12L15,7H13L11,10.33V7H9Z"
+            />
+        </g>
+    </g>
+</svg>

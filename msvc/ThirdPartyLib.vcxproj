@@ -34,6 +34,33 @@
     <ClInclude Include="..\thirdparty\email\wxEmailMessage.h" />
     <ClInclude Include="..\thirdparty\email\wxEmailMessageID.h" />
     <ClInclude Include="..\thirdparty\email\wxMailer.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-private.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_math.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_raster.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_stroker.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_types.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\include\lunasvg.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\canvas.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\clippathelement.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\defselement.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\element.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\gelement.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\geometryelement.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\graphicselement.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\layoutcontext.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\markerelement.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\maskelement.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\paintelement.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\parser.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\parserutils.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\property.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\stopelement.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\styledelement.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\styleelement.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\svgelement.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\symbolelement.h" />
+    <ClInclude Include="..\thirdparty\lunasvg\source\useelement.h" />
     <ClInclude Include="..\thirdparty\lzma\C\7z.h" />
     <ClInclude Include="..\thirdparty\lzma\C\7zAlloc.h" />
     <ClInclude Include="..\thirdparty\lzma\C\7zBuf.h" />
@@ -604,6 +631,35 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-blend.c" />
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-dash.c" />
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-geometry.c" />
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-paint.c" />
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-rle.c" />
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg.c" />
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_math.c" />
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_raster.c" />
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_stroker.c" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\canvas.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\clippathelement.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\defselement.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\element.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\gelement.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\geometryelement.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\graphicselement.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\layoutcontext.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\lunasvg.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\markerelement.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\maskelement.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\paintelement.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\parser.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\property.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\stopelement.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\styledelement.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\styleelement.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\svgelement.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\symbolelement.cpp" />
+    <ClCompile Include="..\thirdparty\lunasvg\source\useelement.cpp" />
     <ClCompile Include="..\thirdparty\lzma\C\7zAlloc.c" />
     <ClCompile Include="..\thirdparty\lzma\C\7zBuf.c" />
     <ClCompile Include="..\thirdparty\lzma\C\7zBuf2.c" />
@@ -702,25 +758,25 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Configuration)\</OutDir>
   </PropertyGroup>

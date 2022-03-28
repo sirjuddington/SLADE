@@ -1,0 +1,31 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+    width="16px"
+    height="16px"
+    viewBox="0 0 24 24"
+    transform="translate(0.5, 0.5)">
+    <rect
+        x="2"
+        y="1"
+        width="10"
+        height="10"
+        fill="#d42b2b"
+        stroke="#6B1616"
+    />
+    <ellipse
+        cx="15"
+        cy="10"
+        rx="6"
+        ry="6"
+        fill="#267eb9"
+        stroke="#154768"
+    />
+    <g transform="scale(1, 0.5)">
+        <path 
+            d="M4 15V9h8V4.16L19.84 12L12 19.84V15H4z"
+            fill="#476DBD"
+            transform="translate(0, 28)"
+        />
+    </g>
+</svg>

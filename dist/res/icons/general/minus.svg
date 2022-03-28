@@ -1,0 +1,11 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="16px"
+    height="16px"
+    viewBox="0 0 32 32">
+	<path 
+        d="M25.98 12.896h-20v6.666h20z"
+        fill="#476DBD"
+    />
+</svg>

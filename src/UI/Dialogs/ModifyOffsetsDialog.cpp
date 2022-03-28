@@ -35,7 +35,6 @@
 #include "General/UI.h"
 #include "Graphics/GameFormats.h"
 #include "Graphics/Graphics.h"
-#include "Graphics/Icons.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -261,7 +260,7 @@ Vec2i ModifyOffsetsDialog::calculateOffsets(int xoff, int yoff, int width, int h
 // the dialog.
 // Returns false if the entry is not an offset-supported format
 // -----------------------------------------------------------------------------
-bool ModifyOffsetsDialog::apply(ArchiveEntry& entry)
+bool ModifyOffsetsDialog::apply(ArchiveEntry& entry) const
 {
 	auto* type = entry.type();
 	if (type == nullptr)

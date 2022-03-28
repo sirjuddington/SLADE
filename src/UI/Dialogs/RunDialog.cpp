@@ -37,8 +37,8 @@
 #include "Archive/ArchiveManager.h"
 #include "General/Executables.h"
 #include "General/UI.h"
-#include "Graphics/Icons.h"
 #include "UI/Controls/ResourceArchiveChooser.h"
+#include "UI/Controls/SIconButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
@@ -189,9 +189,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	SDialog(parent, "Run", "run", 500, 400), run_map_{ run_map }
 {
 	// Set dialog icon
-	wxIcon icon;
-	icon.CopyFromBitmap(icons::getIcon(icons::General, "run"));
-	SetIcon(icon);
+	wxutil::setWindowIcon(this, "run");
 
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -205,9 +203,9 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 		new wxStaticText(this, -1, "Game Executable:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	choice_game_exes_ = new wxChoice(this, -1);
 	gb_sizer->Add(choice_game_exes_, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND | wxALIGN_CENTER_VERTICAL);
-	btn_add_game_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "plus"));
+	btn_add_game_ = new SIconButton(this, icons::General, "plus");
 	gb_sizer->Add(btn_add_game_, wxGBPosition(0, 3));
-	btn_remove_game_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "minus"));
+	btn_remove_game_ = new SIconButton(this, icons::General, "minus");
 	gb_sizer->Add(btn_remove_game_, wxGBPosition(0, 4));
 
 	// Executable path
@@ -215,7 +213,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 	text_exe_path_ = new wxTextCtrl(this, -1, "");
 	// text_exe_path_->Enable(false);
 	gb_sizer->Add(text_exe_path_, wxGBPosition(1, 1), wxGBSpan(1, 3), wxEXPAND | wxALIGN_CENTER_VERTICAL);
-	btn_browse_exe_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "open"));
+	btn_browse_exe_ = new SIconButton(this, icons::General, "open");
 	btn_browse_exe_->SetToolTip("Browse...");
 	gb_sizer->Add(btn_browse_exe_, wxGBPosition(1, 4));
 
@@ -224,12 +222,12 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb, 
 		new wxStaticText(this, -1, "Run Configuration:"), wxGBPosition(2, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	choice_config_ = new wxChoice(this, -1);
 	gb_sizer->Add(choice_config_, wxGBPosition(2, 1), wxDefaultSpan, wxEXPAND | wxALIGN_CENTER_VERTICAL);
-	btn_edit_config_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "settings"));
+	btn_edit_config_ = new SIconButton(this, icons::General, "settings");
 	btn_edit_config_->SetToolTip("Edit command line");
 	gb_sizer->Add(btn_edit_config_, wxGBPosition(2, 2));
-	btn_add_config_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "plus"));
+	btn_add_config_ = new SIconButton(this, icons::General, "plus");
 	gb_sizer->Add(btn_add_config_, wxGBPosition(2, 3));
-	btn_remove_config_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "minus"));
+	btn_remove_config_ = new SIconButton(this, icons::General, "minus");
 	btn_remove_config_->Enable(false);
 	gb_sizer->Add(btn_remove_config_, wxGBPosition(2, 4));
 

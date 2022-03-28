@@ -22,9 +22,9 @@ public:
 	virtual string        path();
 
 	unsigned                   nChildren() const { return children_.size(); }
-	STreeNode*                 child(unsigned index);
-	virtual STreeNode*         child(string_view name);
-	virtual vector<STreeNode*> children(string_view name);
+	STreeNode*                 child(unsigned index) const;
+	virtual STreeNode*         child(string_view name) const;
+	virtual vector<STreeNode*> children(string_view name) const;
 	virtual void               addChild(STreeNode* child);
 	virtual STreeNode*         addChild(string_view name);
 	virtual bool               removeChild(STreeNode* child);

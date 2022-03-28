@@ -17,7 +17,7 @@ public:
 		Parser*        parser      = nullptr,
 		ArchiveDir*    archive_dir = nullptr,
 		string_view    type        = "");
-	~ParseTreeNode() = default;
+	~ParseTreeNode() override = default;
 
 	const string& name() const override { return name_; }
 	void          setName(string_view name) override { name_ = name; }
@@ -28,18 +28,20 @@ public:
 
 	bool nameIs(string_view name) const { return name_ == name; }
 	bool nameIsCI(string_view name) const;
+	bool typeIs(string_view type) const { return type_ == type; }
+	bool typeIsCI(string_view type) const;
 
 	size_t         nValues() const { return values_.size(); }
 	Property       value(unsigned index = 0);
-	string         stringValue(unsigned index = 0);
-	vector<string> stringValues();
-	int            intValue(unsigned index = 0);
-	bool           boolValue(unsigned index = 0);
-	double         floatValue(unsigned index = 0);
+	string         stringValue(unsigned index = 0) const;
+	vector<string> stringValues() const;
+	int            intValue(unsigned index = 0) const;
+	bool           boolValue(unsigned index = 0) const;
+	double         floatValue(unsigned index = 0) const;
 
 	// To avoid need for casts everywhere
-	ParseTreeNode* childPTN(string_view name) { return dynamic_cast<ParseTreeNode*>(child(name)); }
-	ParseTreeNode* childPTN(unsigned index) { return dynamic_cast<ParseTreeNode*>(child(index)); }
+	ParseTreeNode* childPTN(string_view name) const { return dynamic_cast<ParseTreeNode*>(child(name)); }
+	ParseTreeNode* childPTN(unsigned index) const { return dynamic_cast<ParseTreeNode*>(child(index)); }
 
 	ParseTreeNode* addChildPTN(string_view name, string_view type = "");
 	void           addStringValue(string_view value) { values_.emplace_back(string{ value }); }
@@ -85,7 +87,7 @@ public:
 	bool parseText(MemChunk& mc, string_view source = "memory chunk") const;
 	bool parseText(string_view text, string_view source = "string") const;
 	void define(string_view def);
-	bool defined(string_view def);
+	bool defined(string_view def) const;
 
 	// To simplify casts from STreeNode to ParseTreeNode
 	static ParseTreeNode* node(STreeNode* node) { return dynamic_cast<ParseTreeNode*>(node); }

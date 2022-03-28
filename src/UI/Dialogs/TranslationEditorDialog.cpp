@@ -34,12 +34,11 @@
 #include "TranslationEditorDialog.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "General/Misc.h"
 #include "General/UI.h"
-#include "Graphics/Icons.h"
 #include "Graphics/SImage/SImage.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Canvas/PaletteCanvas.h"
+#include "UI/Controls/SIconButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/MathStuff.h"
 
@@ -129,8 +128,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	const Palette&  pal,
 	const wxString& title,
 	SImage*         preview_image) :
-	wxDialog(parent, -1, title),
-	palette_{ pal }
+	wxDialog(parent, -1, title), palette_{ pal }
 {
 	// Setup preview image
 	if (preview_image)
@@ -141,9 +139,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 	}
 
 	// Set dialog icon
-	wxIcon icon;
-	icon.CopyFromBitmap(icons::getIcon(icons::General, "remap"));
-	SetIcon(icon);
+	wxutil::setWindowIcon(this, "remap");
 
 	// Create sizer
 	auto mainsizer = new wxBoxSizer(wxVERTICAL);
@@ -163,23 +159,23 @@ TranslationEditorDialog::TranslationEditorDialog(
 	framesizer->Add(list_translations_, 1, wxEXPAND | wxALL, ui::pad());
 
 	// Add translation button
-	auto vbox = new wxBoxSizer(wxVERTICAL);
+	auto vbox    = new wxBoxSizer(wxVERTICAL);
 	auto min_pad = ui::px(ui::Size::PadMinimum);
 	framesizer->Add(vbox, 0, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT, ui::pad());
 
-	btn_add_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "plus"));
+	btn_add_ = new SIconButton(this, icons::General, "plus");
 	vbox->Add(btn_add_, 0, wxEXPAND | wxBOTTOM, min_pad);
 
 	// Remove translation button
-	btn_remove_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "minus"));
+	btn_remove_ = new SIconButton(this, icons::General, "minus");
 	vbox->Add(btn_remove_, 0, wxEXPAND | wxBOTTOM, min_pad);
 
 	// Move up button
-	btn_up_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "up"));
+	btn_up_ = new SIconButton(this, icons::General, "up");
 	vbox->Add(btn_up_, 0, wxEXPAND | wxBOTTOM, min_pad);
 
 	// Move down button
-	btn_down_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "down"));
+	btn_down_ = new SIconButton(this, icons::General, "down");
 	vbox->Add(btn_down_, 0, wxEXPAND);
 
 
@@ -402,7 +398,7 @@ TranslationEditorDialog::TranslationEditorDialog(
 // -----------------------------------------------------------------------------
 // Opens the translation [trans] for preview/modification
 // -----------------------------------------------------------------------------
-void TranslationEditorDialog::openTranslation(Translation& trans)
+void TranslationEditorDialog::openTranslation(const Translation& trans)
 {
 	// Read translation
 	translation_.copy(trans);
@@ -563,7 +559,7 @@ void TranslationEditorDialog::updateListItem(int index)
 // -----------------------------------------------------------------------------
 // Sets the current translation range's destination starting colour to [col]
 // -----------------------------------------------------------------------------
-void TranslationEditorDialog::setStartColour(ColRGBA col)
+void TranslationEditorDialog::setStartColour(const ColRGBA& col)
 {
 	// Get currently selected translation range
 	auto tr = translation_.range(list_translations_->GetSelection());
@@ -603,7 +599,7 @@ void TranslationEditorDialog::setStartColour(ColRGBA col)
 // -----------------------------------------------------------------------------
 // Sets the current translation range's destination ending colour to [col]
 // -----------------------------------------------------------------------------
-void TranslationEditorDialog::setEndColour(ColRGBA col)
+void TranslationEditorDialog::setEndColour(const ColRGBA& col)
 {
 	// Get currently selected translation range
 	auto tr = translation_.range(list_translations_->GetSelection());
@@ -643,7 +639,7 @@ void TranslationEditorDialog::setEndColour(ColRGBA col)
 // -----------------------------------------------------------------------------
 // Sets the current translation range's tint colour to [col]
 // -----------------------------------------------------------------------------
-void TranslationEditorDialog::setTintColour(ColRGBA col)
+void TranslationEditorDialog::setTintColour(const ColRGBA& col)
 {
 	// Get currently selected translation range
 	auto tr = translation_.range(list_translations_->GetSelection());
@@ -851,7 +847,7 @@ bool TranslationEditorDialog::getTruecolor() const
 void TranslationEditorDialog::onSize(wxSizeEvent& e)
 {
 	// Update image preview
-	gfx_preview_->zoomToFit(true, 0.05f);
+	gfx_preview_->zoomToFit(true, 0.05);
 
 	e.Skip();
 }

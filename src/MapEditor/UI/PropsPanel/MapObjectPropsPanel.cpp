@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "MapObjectPropsPanel.h"
 #include "Game/Configuration.h"
-#include "Graphics/Icons.h"
 #include "MOPGProperty.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/UI/MapEditorWindow.h"
@@ -64,8 +63,7 @@ CVAR(Bool, mobj_props_auto_apply, false, CVar::Flag::Save)
 // MapObjectPropsPanel class constructor
 // -----------------------------------------------------------------------------
 MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
-	PropsPanelBase{ parent },
-	no_apply_{ no_apply }
+	PropsPanelBase{ parent }, no_apply_{ no_apply }
 {
 	// Setup sizer
 	wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -846,7 +844,7 @@ void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
 		// Skip if hidden
 		if ((hide_flags_ && i.second.isFlag()) || (hide_triggers_ && i.second.isTrigger()))
 		{
-			hide_props_.push_back(i.second.propName());
+			hide_props_.emplace_back(i.second.propName());
 			continue;
 		}
 		if (VECTOR_EXISTS(hide_props_, i.second.propName()))
@@ -873,7 +871,7 @@ void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
 			// Skip if hidden
 			if ((hide_flags_ && i.second.isFlag()) || (hide_triggers_ && i.second.isTrigger()))
 			{
-				hide_props_.push_back(i.second.propName());
+				hide_props_.emplace_back(i.second.propName());
 				continue;
 			}
 			if (VECTOR_EXISTS(hide_props_, i.second.propName()))
@@ -888,7 +886,7 @@ void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
 			// Skip if hidden
 			if ((hide_flags_ && i.second.isFlag()) || (hide_triggers_ && i.second.isTrigger()))
 			{
-				hide_props_.push_back(i.second.propName());
+				hide_props_.emplace_back(i.second.propName());
 				continue;
 			}
 			if (VECTOR_EXISTS(hide_props_, i.second.propName()))

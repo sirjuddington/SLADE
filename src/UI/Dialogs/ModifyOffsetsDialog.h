@@ -8,7 +8,7 @@ class ModifyOffsetsDialog : public wxDialog
 {
 public:
 	ModifyOffsetsDialog();
-	~ModifyOffsetsDialog() = default;
+	~ModifyOffsetsDialog() override = default;
 
 	Vec2i offset() const;
 	int   alignType() const;
@@ -17,7 +17,7 @@ public:
 	bool  xOffChange() const;
 	bool  yOffChange() const;
 	Vec2i calculateOffsets(int xoff, int yoff, int width, int height) const;
-	bool  apply(ArchiveEntry& entry);
+	bool  apply(ArchiveEntry& entry) const;
 
 private:
 	wxChoice* combo_aligntype_ = nullptr;

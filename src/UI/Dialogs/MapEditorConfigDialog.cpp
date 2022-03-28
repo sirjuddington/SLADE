@@ -75,11 +75,11 @@ class NewMapDialog : public wxDialog
 {
 public:
 	NewMapDialog(
-		wxWindow*                 parent,
-		const wxString&           game,
-		const wxString&           port,
-		vector<Archive::MapDesc>& maps,
-		Archive*                  archive) :
+		wxWindow*                       parent,
+		const wxString&                 game,
+		const wxString&                 port,
+		const vector<Archive::MapDesc>& maps,
+		Archive*                        archive) :
 		wxDialog(parent, -1, "New Map")
 	{
 		// Setup dialog
@@ -141,7 +141,7 @@ public:
 		auto default_format = MapFormat::Unknown;
 		if (!maps.empty())
 			default_format = maps[0].format;
-		for (auto mf : map_formats)
+		for (const auto& mf : map_formats)
 		{
 			if (game::mapFormatSupported(mf.format, game.ToStdString(), port.ToStdString()))
 			{
@@ -329,7 +329,7 @@ void MapEditorConfigDialog::populateGameList()
 	int selection = 0;
 	for (auto& i : game::gameDefs())
 	{
-		games_list_.push_back(i.second.name);
+		games_list_.emplace_back(i.second.name);
 		choice_game_config_->Append(i.second.title);
 		if (game_current_ == i.second.name)
 			selection = games_list_.size() - 1;
@@ -359,7 +359,7 @@ void MapEditorConfigDialog::populatePortList()
 	{
 		if (i.second.supportsGame(game.name))
 		{
-			ports_list_.push_back(i.second.name);
+			ports_list_.emplace_back(i.second.name);
 			choice_port_config_->Append(i.second.title);
 			if (port_current_ == i.second.name)
 				selection = ports_list_.size();
@@ -407,7 +407,7 @@ void MapEditorConfigDialog::populateMapList()
 	{
 		// Setup format string
 		wxString fmt = "?";
-		for (auto mf : map_formats)
+		for (const auto& mf : map_formats)
 			if (mf.format == map.format)
 				fmt = mf.abbreviation;
 
@@ -455,7 +455,7 @@ Archive::MapDesc MapEditorConfigDialog::selectedMap()
 
 			// Get selected map format
 			auto map_format = MapFormat::Doom;
-			for (auto mf : map_formats)
+			for (const auto& mf : map_formats)
 				if (dlg.getMapFormat() == mf.name)
 				{
 					map_format = mf.format;
@@ -466,7 +466,7 @@ Archive::MapDesc MapEditorConfigDialog::selectedMap()
 			return mdesc;
 		}
 
-		return Archive::MapDesc();
+		return {};
 	}
 
 	// Get selected map
@@ -477,7 +477,7 @@ Archive::MapDesc MapEditorConfigDialog::selectedMap()
 
 	// Return it if valid
 	if ((unsigned)selection >= maps_.size())
-		return Archive::MapDesc();
+		return {};
 	else
 		return maps_[selection];
 }
@@ -485,11 +485,11 @@ Archive::MapDesc MapEditorConfigDialog::selectedMap()
 // -----------------------------------------------------------------------------
 // Returns true if the currently selected game/port supports the format of [map]
 // -----------------------------------------------------------------------------
-bool MapEditorConfigDialog::configMatchesMap(const Archive::MapDesc& map)
+bool MapEditorConfigDialog::configMatchesMap(const Archive::MapDesc& map) const
 {
 	// Get currently selected game/port
 	string game = games_list_[choice_game_config_->GetSelection()].ToStdString();
-	string port = "";
+	string port;
 	if (choice_port_config_->GetSelection() > 0)
 		port = ports_list_[choice_port_config_->GetSelection() - 1].ToStdString();
 

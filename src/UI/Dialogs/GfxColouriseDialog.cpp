@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "GfxColouriseDialog.h"
 #include "General/Misc.h"
-#include "Graphics/Icons.h"
 #include "Graphics/SImage/SImage.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Controls/ColourBox.h"
@@ -58,9 +57,7 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, co
 	palette_{ pal }
 {
 	// Set dialog icon
-	wxIcon icon;
-	icon.CopyFromBitmap(icons::getIcon(icons::General, "colourise"));
-	SetIcon(icon);
+	wxutil::setWindowIcon(this, "colourise");
 
 	// Setup main sizer
 	auto msizer = new wxBoxSizer(wxVERTICAL);
@@ -152,6 +149,6 @@ void GfxColouriseDialog::onColourChanged(wxEvent& e)
 void GfxColouriseDialog::onResize(wxSizeEvent& e)
 {
 	OnSize(e);
-	gfx_preview_->zoomToFit(true, 0.05f);
+	gfx_preview_->zoomToFit(true, 0.05);
 	e.Skip();
 }

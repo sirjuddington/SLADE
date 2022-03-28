@@ -32,12 +32,12 @@ public:
 	void     toolbarButtonClick(const wxString& action_id) override;
 
 	bool showPalette(uint32_t index);
-	bool addCustomPalette();
+	bool addCustomPalette() const;
 	bool exportAs();
 	bool importFrom();
 
 	// Palette manipulation functions
-	bool generateColormaps();
+	bool generateColormaps() const;
 	bool generatePalettes();
 	bool clearOne();
 	bool clearOthers();
@@ -48,10 +48,10 @@ public:
 	bool tweak();
 	bool invert();
 	bool gradient();
-	bool testPalette();
+	bool testPalette() const;
 
 	// Temporary analysis tool to help reverse engineer stuff
-	void analysePalettes();
+	void analysePalettes() const;
 
 	// SAction handler
 	bool handleEntryPanelAction(string_view id) override;

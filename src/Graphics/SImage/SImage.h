@@ -131,6 +131,7 @@ public:
 	bool loadJediFONT(const uint8_t* gfx_data, int size);
 	bool loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t* gfx_data, int size);
 	bool loadJaguarTexture(const uint8_t* gfx_data, int size, int i_width, int i_height);
+	bool loadSVG(const string& svg_text, int width, int height);
 
 	// Conversion stuff
 	bool convertRGBA(Palette* pal = nullptr);
@@ -149,6 +150,7 @@ public:
 	bool crop(long x1, long y1, long x2, long y2);
 	bool resize(int nwidth, int nheight);
 	bool setImageData(const vector<uint8_t>& ndata, int nwidth, int nheight, Type ntype);
+	bool setImageData(const uint8_t* ndata, unsigned ndata_size, int nwidth, int nheight, Type ntype);
 	bool applyTranslation(Translation* tr, Palette* pal = nullptr, bool truecolor = false);
 	bool applyTranslation(string_view tr, Palette* pal = nullptr, bool truecolor = false);
 	bool drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Palette* pal);

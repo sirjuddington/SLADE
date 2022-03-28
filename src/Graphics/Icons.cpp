@@ -33,8 +33,8 @@
 #include "Icons.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "General/UI.h"
-#include "Utility/StringUtils.h"
+#include "UI/WxUtils.h"
+#include "Utility/Parser.h"
 #include <wx/mstream.h>
 
 using namespace slade;
@@ -50,26 +50,24 @@ CVAR(String, iconset_entry_list, "Default", CVar::Flag::Save)
 
 namespace slade::icons
 {
-struct Icon
+struct IconDef
 {
-	struct Image
-	{
-		wxImage       wx_image;
-		ArchiveEntry* resource_entry = nullptr;
-	};
-
-	string name;
-	Image  i16;
-	Image  i24;
-	Image  i32;
+	string        svg_data;
+	ArchiveEntry* entry_png16 = nullptr;
+	ArchiveEntry* entry_png32 = nullptr;
 };
 
-vector<Icon>   icons_general;
-vector<Icon>   icons_text_editor;
-vector<Icon>   icons_entry;
-wxBitmap       icon_empty;
-vector<string> iconsets_entry;
-vector<string> iconsets_general;
+struct IconSet
+{
+	string                                 name;
+	std::map<string, IconDef, std::less<>> icons;
+
+	IconSet(string_view name) : name{ name } {}
+};
+
+vector<IconSet> iconsets_entry;
+vector<IconSet> iconsets_general;
+IconSet         iconset_text_editor{ "Default" };
 } // namespace slade::icons
 
 
@@ -81,394 +79,380 @@ vector<string> iconsets_general;
 namespace slade::icons
 {
 // -----------------------------------------------------------------------------
-// Returns a list of all icons of [type]
+// Returns the current icon set for [type]
 // -----------------------------------------------------------------------------
-vector<Icon>& iconList(Type type)
+const IconSet& currentIconSet(Type type)
 {
+	if (type == General || type == Any)
+	{
+		for (const auto& set : iconsets_general)
+			if (set.name == iconset_general)
+				return set;
+
+		return iconsets_general[0];
+	}
+
 	if (type == Entry)
-		return icons_entry;
-	else if (type == TextEditor)
-		return icons_text_editor;
-	else
-		return icons_general;
+	{
+		for (const auto& set : iconsets_entry)
+			if (set.name == iconset_entry_list)
+				return set;
+
+		return iconsets_entry[0];
+	}
+
+	return iconsets_general[0];
 }
 
 // -----------------------------------------------------------------------------
-// Loads all icons in [dir] to the list for [type].
-// If [append_default] is true, we are only loading icons from the default set
-// that don't already exist in the icon list
+// Returns the definition for icon [name] of [type], or nullptr if none found
 // -----------------------------------------------------------------------------
-bool loadIconsDir(Type type, ArchiveDir* dir, bool append_default)
+const IconDef* iconDef(Type type, string_view name)
 {
-	if (!dir)
-		return false;
-
-	// Check for icon set dirs
-	if (!append_default)
+	if (type == General || type == Any)
 	{
-		for (const auto& subdir : dir->subdirs())
+		// Find icon in current set
+		const auto& set = currentIconSet(General);
+		if (auto i = set.icons.find(name); i != set.icons.end())
+			return &i->second;
+
+		// If not found look in default set
+		if (set.name != "Default")
 		{
-			if (subdir->name() != "16" && subdir->name() != "24" && subdir->name() != "32")
-			{
-				if (type == General)
-					iconsets_general.push_back(subdir->name());
-				else if (type == Entry)
-					iconsets_entry.push_back(subdir->name());
-			}
+			const auto& default_set = iconsets_general[0];
+			if (auto i = default_set.icons.find(name); i != default_set.icons.end())
+				return &i->second;
 		}
 	}
 
-	// Get icon set dir
-	string icon_set_dir = "Default";
-	if (type == Entry && !append_default)
-		icon_set_dir = iconset_entry_list;
-	if (type == General && !append_default)
-		icon_set_dir = iconset_general;
-	if (icon_set_dir != "Default")
-		if (auto subdir = dir->subdir(icon_set_dir))
-			dir = subdir.get();
-
-	auto& icons = iconList(type);
-
-	// Load 16x16 icons (these must exist)
-	bool  found  = false;
-	auto* dir_16 = dir->subdir("16").get();
-	if (!dir_16)
+	if (type == Entry || type == Any)
 	{
-		log::error("Error loading icons, no 16x16 dir exists for set \"{}\" (in {})", icon_set_dir, dir->path());
-		return false;
-	}
-	for (const auto& entry : dir_16->allEntries())
-	{
-		// Ignore anything not png format
-		if (!strutil::endsWithCI(entry->name(), ".png"))
+		// Find icon in current set
+		const auto& set = currentIconSet(Entry);
+		if (auto i = set.icons.find(name); i != set.icons.end())
+			return &i->second;
+
+		// If not found look in default set
+		if (set.name != "Default")
 		{
-			log::warning("Invalid 16x16 image format for icon \"{}\", must be png", entry->nameNoExt());
-			continue;
-		}
-
-		if (append_default)
-		{
-			found = false;
-			for (const auto& icon : icons)
-				if (icon.name == entry->nameNoExt())
-				{
-					found = true;
-					break;
-				}
-			if (found)
-				continue;
-		}
-
-		// Load 16x16 icon image
-		Icon n_icon;
-		auto stream = wxMemoryInputStream(entry->rawData(), entry->size());
-		if (!n_icon.i16.wx_image.LoadFile(stream, wxBITMAP_TYPE_PNG))
-		{
-			log::warning("Unable to load 16x16 image for icon \"{}\" (is it not png format?)", entry->nameNoExt());
-			continue;
-		}
-
-		// Add the icon
-		n_icon.name               = entry->nameNoExt();
-		n_icon.i16.resource_entry = entry.get();
-		icons.push_back(n_icon);
-	}
-
-	// Load 24x24 icons
-	if (auto* dir_24 = dir->subdir("24").get())
-	{
-		for (const auto& entry : dir_24->allEntries())
-		{
-			// Ignore anything not png format
-			if (!strutil::endsWithCI(entry->name(), ".png"))
-			{
-				log::warning("Invalid 24x24 image format for icon \"{}\", must be png", entry->nameNoExt());
-				continue;
-			}
-
-			// Find existing icon
-			auto name = entry->nameNoExt();
-			for (auto& icon : icons)
-			{
-				if (icon.name == name)
-				{
-					// Load 24x24 icon image
-					auto stream = wxMemoryInputStream(entry->rawData(), entry->size());
-					if (!icon.i24.wx_image.LoadFile(stream, wxBITMAP_TYPE_PNG))
-						log::warning(
-							"Unable to load 24x24 image for icon \"{}\" (is it not png format?)", entry->nameNoExt());
-					icon.i24.resource_entry = entry.get();
-
-					break;
-				}
-			}
+			const auto& default_set = iconsets_entry[0];
+			if (auto i = default_set.icons.find(name); i != default_set.icons.end())
+				return &i->second;
 		}
 	}
 
-	// Load 32x32 icons
-	if (auto* dir_32 = dir->subdir("32").get())
-	{
-		for (const auto& entry : dir_32->allEntries())
-		{
-			// Ignore anything not png format
-			if (!strutil::endsWithCI(entry->name(), ".png"))
-			{
-				log::warning("Invalid 32x32 image format for icon \"{}\", must be png", entry->nameNoExt());
-				continue;
-			}
-
-			// Find existing icon
-			auto name = entry->nameNoExt();
-			for (auto& icon : icons)
-			{
-				if (icon.name == name)
-				{
-					// Load 32x32 icon image
-					auto stream = wxMemoryInputStream(entry->rawData(), entry->size());
-					if (!icon.i32.wx_image.LoadFile(stream, wxBITMAP_TYPE_PNG))
-						log::warning(
-							"Unable to load 32x32 image for icon \"{}\" (is it not png format?)", entry->nameNoExt());
-					icon.i32.resource_entry = entry.get();
-
-					break;
-				}
-			}
-		}
-	}
-
-	// Generate any missing large icons
-	for (auto& icon : icons)
-	{
-		if (!icon.i24.wx_image.IsOk())
-		{
-			icon.i24.resource_entry = icon.i16.resource_entry;
-			icon.i24.wx_image       = icon.i16.wx_image.Copy();
-			icon.i24.wx_image.Rescale(24, 24, wxIMAGE_QUALITY_BICUBIC);
-		}
-
-		if (!icon.i32.wx_image.IsOk())
-		{
-			icon.i32.resource_entry = icon.i16.resource_entry;
-			icon.i32.wx_image       = icon.i16.wx_image.Copy();
-			icon.i32.wx_image.Rescale(32, 32, wxIMAGE_QUALITY_BICUBIC);
-		}
-	}
-
-	return true;
-}
-
-const Icon::Image& validImageForSize(const Icon& icon_def, int size)
-{
-	if (size <= 16)
-		return icon_def.i16;
-
-	if (size <= 24)
-	{
-		if (icon_def.i24.wx_image.IsOk())
-			return icon_def.i24;
-		else
-			return icon_def.i16;
-	}
-
-	// Size >= 25
-	if (icon_def.i32.wx_image.IsOk())
-		return icon_def.i32;
-
-	return icon_def.i16;
-}
-} // namespace slade::icons
-
-// -----------------------------------------------------------------------------
-// Loads all icons from slade.pk3 (in the icons/ dir)
-// -----------------------------------------------------------------------------
-bool icons::loadIcons()
-{
-	auto tempfile = app::path("sladetemp", app::Dir::Temp);
-
-	// Get slade.pk3
-	auto* res_archive = app::archiveManager().programResourceArchive();
-
-	// Do nothing if it doesn't exist
-	if (!res_archive)
-		return false;
-
-	// Get the icons directory of the archive
-	auto* dir_icons = res_archive->dirAtPath("icons");
-
-	// Load general icons
-	iconsets_general.emplace_back("Default");
-	loadIconsDir(General, dir_icons->subdir("general").get(), false);
-
-	// Load entry list icons
-	iconsets_entry.emplace_back("Default");
-	loadIconsDir(Entry, dir_icons->subdir("entry_list").get(), false);
-
-	// Load text editor icons
-	loadIconsDir(TextEditor, dir_icons->subdir("text_editor").get(), false);
-
-	// Load any missing icons from the default set
-	if (iconset_general != "Default")
-		loadIconsDir(General, dir_icons->subdir("general").get(), true);
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the icon matching [name] of [type] as a wxBitmap (for toolbars etc),
-// or an empty bitmap if no icon was found.
-// If [type] is less than 0, try all icon types.
-// If [log_missing] is true, log an error message if the icon was not found
-// -----------------------------------------------------------------------------
-wxBitmap icons::getIcon(Type type, string_view name, int size, bool log_missing)
-{
-	// Check all types if [type] is < 0
-	if (type == Any)
-	{
-		auto icon = getIcon(General, name, size, false);
-		if (!icon.IsOk())
-			icon = getIcon(Entry, name, size, false);
-		if (!icon.IsOk())
-			icon = getIcon(TextEditor, name, size, false);
-
-		if (!icon.IsOk() && log_missing)
-			log::warning(2, "Icon \"{}\" does not exist", name);
-
-		return icon;
-	}
-
-	for (const auto& icon : iconList(type))
-		if (icon.name == name)
-			return wxBitmap(validImageForSize(icon, size).wx_image);
-
-	if (log_missing)
-		log::warning(2, "Icon \"{}\" does not exist", name);
-
-	return wxNullBitmap;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the icon matching [name] of [type] as a wxBitmap (for toolbars etc)
-// with [padding] pixels transparent border, or an empty bitmap if no icon was
-// found.
-// If [type] is less than 0, try all icon types.
-// -----------------------------------------------------------------------------
-wxBitmap icons::getPaddedIcon(Type type, string_view name, int size, Point2i padding)
-{
-	// Check all types if [type] is < 0
-	if (type == Any)
-	{
-		auto icon = getPaddedIcon(General, name, size, padding);
-		if (!icon.IsOk())
-			icon = getPaddedIcon(Entry, name, size, padding);
-		if (!icon.IsOk())
-			icon = getPaddedIcon(TextEditor, name, size, padding);
-
-		return icon;
-	}
-
-	for (const auto& icon : iconList(type))
-		if (icon.name == name)
-		{
-			const auto& image = validImageForSize(icon, size).wx_image;
-			wxImage     padded(image.GetWidth() + padding.x * 2, image.GetHeight() + padding.y * 2);
-			padded.SetMaskColour(0, 0, 0);
-			padded.InitAlpha();
-			padded.Paste(image, padding.x, padding.y);
-
-			return wxBitmap(padded);
-		}
-
-	return wxNullBitmap;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the icon [name] of [type]
-// -----------------------------------------------------------------------------
-wxBitmap icons::getIcon(Type type, string_view name)
-{
-	return getIcon(type, name, 16 * ui::scaleFactor());
-}
-
-// -----------------------------------------------------------------------------
-// Returns true if an icon with [name] of [type] exists
-// -----------------------------------------------------------------------------
-bool icons::iconExists(Type type, string_view name)
-{
-	// Check all types if [type] is < 0
-	if (type == Any)
-	{
-		bool exists = iconExists(General, name);
-		if (!exists)
-			exists = iconExists(Entry, name);
-		if (!exists)
-			exists = iconExists(TextEditor, name);
-
-		return exists;
-	}
-
-	auto& icons = iconList(type);
-	for (const auto& icon : icons)
-		if (icon.name == name)
-			return true;
-
-	return false;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the resource entry for the icon matching [name] of [type], or nullptr
-// if no matching icon was found.
-// If [type] is less than 0, try all icon types.
-// -----------------------------------------------------------------------------
-ArchiveEntry* icons::getIconEntry(Type type, string_view name, int size)
-{
-	// Check all types if [type] is < 0
-	if (type == Any)
-	{
-		auto* entry = getIconEntry(General, name, size);
-		if (!entry)
-			entry = getIconEntry(Entry, name, size);
-		if (!entry)
-			entry = getIconEntry(TextEditor, name, size);
-
-		return entry;
-	}
-
-	auto& icons = iconList(type);
-	for (const auto& icon : icons)
-	{
-		if (icon.name == name)
-			return validImageForSize(icon, size).resource_entry;
-	}
+	if (type == TextEditor || type == Any)
+		if (auto i = iconset_text_editor.icons.find(name); i != iconset_text_editor.icons.end())
+			return &i->second;
 
 	return nullptr;
 }
 
 // -----------------------------------------------------------------------------
-// Exports icon [name] of [type] to a png image file at [path]
+// Parses an icon definition from icons.cfg
 // -----------------------------------------------------------------------------
-bool icons::exportIconPNG(Type type, string_view name, string_view path)
+IconDef parseIconDefinition(const ParseTreeNode& node, const Archive& res_archive)
 {
-	auto& icons = iconList(type);
+	IconDef idef;
 
-	for (auto& icon : icons)
+	// SVG icon
+	if (node.typeIs("icon_svg"))
 	{
-		if (icon.name == name)
-			return icon.i16.resource_entry->exportFile(path);
+		auto* entry = res_archive.entryAtPath(node.stringValue());
+		if (entry)
+			idef.svg_data = entry->data().asString();
+		else
+			log::error("Icon entry \"{}\" does not exist in slade.pk3", node.stringValue());
 	}
 
-	return false;
+	// PNG icon
+	else if (node.typeIs("icon_png"))
+	{
+		for (auto i = 0u; i < node.nChildren(); ++i)
+		{
+			auto* child = node.childPTN(i);
+
+			if (child->nameIs("s16"))
+			{
+				idef.entry_png16 = res_archive.entryAtPath(child->stringValue());
+				if (!idef.entry_png16)
+					log::error("Icon entry \"{}\" does not exist in slade.pk3", child->stringValue());
+			}
+			else if (child->nameIs("s32"))
+			{
+				idef.entry_png32 = res_archive.entryAtPath(child->stringValue());
+				if (!idef.entry_png32)
+					log::error("Icon entry \"{}\" does not exist in slade.pk3", child->stringValue());
+			}
+		}
+	}
+
+	return idef;
 }
 
 // -----------------------------------------------------------------------------
-// Returns a list of currently available icon sets for [type]
+// Parses an icon set from icons.cfg
+// -----------------------------------------------------------------------------
+void parseIconSet(const ParseTreeNode& node, IconSet& icon_set, const Archive& res_archive)
+{
+	for (auto i = 0u; i < node.nChildren(); ++i)
+	{
+		auto* child = node.childPTN(i);
+
+		if (child->typeIs("icon_svg") || child->typeIs("icon_png"))
+			icon_set.icons[child->name()] = parseIconDefinition(*child, res_archive);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Parses an entry_list block from icons.cfg
+// -----------------------------------------------------------------------------
+void parseEntryListBlock(const ParseTreeNode& node, const Archive& res_archive)
+{
+	// Find default block
+	auto* ptn_default = node.childPTN("default");
+	if (!ptn_default)
+	{
+		log::error("No default entry list icons found in icons.cfg");
+		return;
+	}
+
+	// Parse default block
+	iconsets_entry.clear(); // Default set should always be first
+	iconsets_entry.emplace_back("Default");
+	parseIconSet(*ptn_default, iconsets_entry.back(), res_archive);
+
+	// Parse other sets
+	for (auto i = 0u; i < node.nChildren(); ++i)
+	{
+		auto* child = node.childPTN(i);
+
+		if (child->nameIs("default"))
+			continue;
+
+		if (child->typeIs("set"))
+		{
+			iconsets_entry.emplace_back(child->name());
+			parseIconSet(*child, iconsets_entry.back(), res_archive);
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Parses a general block from icons.cfg
+// -----------------------------------------------------------------------------
+void parseGeneralBlock(const ParseTreeNode& node, const Archive& res_archive)
+{
+	// Find default block
+	auto* ptn_default = node.childPTN("default");
+	if (!ptn_default)
+	{
+		log::error("No default general icons found in icons.cfg");
+		return;
+	}
+
+	// Parse default block
+	iconsets_general.clear(); // Default set should always be first
+	iconsets_general.emplace_back("Default");
+	parseIconSet(*ptn_default, iconsets_general.back(), res_archive);
+
+	// Parse other sets
+	for (auto i = 0u; i < node.nChildren(); ++i)
+	{
+		auto* child = node.childPTN(i);
+
+		if (child->nameIs("default"))
+			continue;
+
+		if (child->typeIs("set"))
+		{
+			iconsets_general.emplace_back(child->name());
+			parseIconSet(*child, iconsets_general.back(), res_archive);
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Loads an SVG [svg_data] of [size] into a wxBitmap, with optional [padding]
+// -----------------------------------------------------------------------------
+wxBitmap loadSVGIcon(const string& svg_data, int size, Point2i padding)
+{
+	const auto img = wxutil::createImageFromSVG(svg_data, size, size);
+
+	// Add padding if needed
+	if (padding.x > 0 || padding.y > 0)
+	{
+		wxImage padded(img.GetWidth() + padding.x * 2, img.GetHeight() + padding.y * 2);
+		padded.SetMaskColour(0, 0, 0);
+		padded.InitAlpha();
+		padded.Paste(img, padding.x, padding.y);
+		return { padded };
+	}
+
+	return { img };
+}
+
+// -----------------------------------------------------------------------------
+// Loads a PNG icon of [size] using the given [icon] definition into a wxBitmap,
+// with optional [padding]
+// -----------------------------------------------------------------------------
+wxBitmap loadPNGIcon(const IconDef& icon, int size, Point2i padding)
+{
+	// Check valid png icon definition
+	if (!icon.entry_png16 && !icon.entry_png32)
+		return wxNullBitmap;
+
+	wxImage image;
+
+	// Calculate image size to use (will be used to rescale if necessary)
+	// Only allow 'regular' sizes to avoid excessively blurry scaling
+	auto img_size = size;
+	if (img_size < 24)
+		img_size = 16;
+	else if (img_size < 32)
+		img_size = 24;
+	else if (img_size < 48)
+		img_size = 32;
+	else if (img_size < 64)
+		img_size = 48;
+	else
+		img_size = 64;
+
+	// Get appropriate png entry to load
+	ArchiveEntry* png_entry = nullptr;
+	if (icon.entry_png16 && (img_size < 32 || !icon.entry_png32))
+		png_entry = icon.entry_png16;
+	else if (icon.entry_png32)
+		png_entry = icon.entry_png32;
+
+	if (!png_entry)
+		return wxNullBitmap;
+
+	// Load png to image
+	auto stream = wxMemoryInputStream(png_entry->rawData(), png_entry->size());
+	if (!image.LoadFile(stream, wxBITMAP_TYPE_PNG))
+	{
+		log::warning("Unable to load icon image \"{}\" (is it not png format?)", png_entry->path(true));
+		return wxNullBitmap;
+	}
+
+	// Scale to desired size if necessary
+	if (image.GetWidth() != size)
+	{
+		// Scale to calculated size
+		image.Rescale(img_size, img_size, wxIMAGE_QUALITY_BICUBIC);
+
+		// If requested size is still larger than the image, add extra padding
+		if (image.GetWidth() < size)
+		{
+			padding.x += (size - img_size) / 2;
+			padding.y += (size - img_size) / 2;
+		}
+	}
+
+	// Add padding if needed
+	if (padding.x > 0 || padding.y > 0)
+	{
+		wxImage padded(image.GetWidth() + padding.x * 2, image.GetHeight() + padding.y * 2);
+		padded.SetMaskColour(0, 0, 0);
+		padded.InitAlpha();
+		padded.Paste(image, padding.x, padding.y);
+		return { padded };
+	}
+
+	return { image };
+}
+} // namespace slade::icons
+
+// -----------------------------------------------------------------------------
+// Loads all icon definitions from slade.pk3 (icons.cfg)
+// -----------------------------------------------------------------------------
+bool icons::loadIcons()
+{
+	// Get slade.pk3
+	auto* res_archive = app::archiveManager().programResourceArchive();
+	if (!res_archive)
+		return false;
+
+	// Get icons.cfg
+	auto* icons_entry = res_archive->entryAtPath("icons.cfg");
+	if (!icons_entry)
+	{
+		log::error("Could not find icons.cfg in slade.pk3");
+		return false;
+	}
+
+	// Parse
+	Parser p;
+	if (!p.parseText(icons_entry->data().asString(), "icons.cfg"))
+	{
+		log::error("Error parsing icons.cfg");
+		return false;
+	}
+
+	for (auto i = 0u; i < p.parseTreeRoot()->nChildren(); ++i)
+	{
+		auto* node = p.parseTreeRoot()->childPTN(i);
+
+		if (node->nameIs("general"))
+			parseGeneralBlock(*node, *res_archive);
+
+		else if (node->nameIs("entry_list"))
+			parseEntryListBlock(*node, *res_archive);
+
+		else if (node->nameIs("text_editor"))
+			parseIconSet(*node, iconset_text_editor, *res_archive);
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Loads the icon [name] of [type] into a wxBitmap of [size], with optional
+// [padding].
+//
+// NOTE: this does not use any kind of caching and will generate/load the icon
+// from svg/png data each time
+// -----------------------------------------------------------------------------
+wxBitmap icons::getIcon(Type type, string_view name, int size, Point2i padding)
+{
+	// Get icon definition
+	const auto* icon_def = iconDef(type, name);
+	if (!icon_def)
+	{
+		log::warning("Unknown icon \"{}\"", name);
+		return wxNullBitmap;
+	}
+
+	// Check size
+	if (size <= 0)
+		size = ui::scalePx(16);
+
+	// If there is SVG data use that
+	if (!icon_def->svg_data.empty())
+		return loadSVGIcon(icon_def->svg_data, size, padding);
+
+	// Otherwise load from png
+	if (icon_def->entry_png16 || icon_def->entry_png32)
+		return loadPNGIcon(*icon_def, size, padding);
+
+	return wxNullBitmap;
+}
+
+// -----------------------------------------------------------------------------
+// Returns a list of all defined icon sets for [type]
 // -----------------------------------------------------------------------------
 vector<string> icons::iconSets(Type type)
 {
-	if (type == General)
-		return iconsets_general;
-	else if (type == Entry)
-		return iconsets_entry;
+	vector<string> sets;
 
-	return {};
+	if (type == General)
+		for (const auto& set : iconsets_general)
+			sets.emplace_back(set.name);
+
+	else if (type == Entry)
+		for (const auto& set : iconsets_entry)
+			sets.emplace_back(set.name);
+
+	return sets;
 }

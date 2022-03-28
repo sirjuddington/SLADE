@@ -40,6 +40,7 @@
 #undef BOOL
 #include "General/Misc.h"
 #include "SIFormat.h"
+#include "thirdparty/lunasvg/include/lunasvg.h"
 
 using namespace slade;
 
@@ -395,11 +396,7 @@ struct BMFChar
 	uint8_t shift;  // 5
 	// Rest is not part of the header proper
 	const uint8_t* cdata;
-	BMFChar()
-	{
-		which = width = height = offsx = offsy = shift = 0;
-		cdata                                          = nullptr;
-	}
+	BMFChar() : cdata{ nullptr } { which = width = height = offsx = offsy = shift = 0; }
 };
 struct BMFFont
 {
@@ -421,18 +418,18 @@ struct BMFFont
 	const char* info      = nullptr;
 	BMFChar*    chars     = nullptr;
 
-	BMFFont(const BMFFont* other)
+	BMFFont(const BMFFont* other) :
+		lineheight{ other->lineheight },
+		size_over{ other->size_over },
+		size_under{ other->size_under },
+		add_space{ other->add_space },
+		size_inner{ other->size_inner },
+		num_colors{ other->num_colors },
+		top_color{ other->top_color },
+		pal_size{ other->pal_size },
+		info_size{ other->info_size },
+		num_chars{ other->num_chars }
 	{
-		lineheight = other->lineheight;
-		size_over  = other->size_over;
-		size_under = other->size_under;
-		add_space  = other->add_space;
-		size_inner = other->size_inner;
-		num_colors = other->num_colors;
-		top_color  = other->top_color;
-		pal_size   = other->pal_size;
-		info_size  = other->info_size;
-		num_chars  = other->num_chars;
 	}
 	~BMFFont() { delete[] chars; }
 };
@@ -962,4 +959,21 @@ bool SImage::loadJaguarTexture(const uint8_t* gfx_data, int size, int i_width, i
 	// Announce change and return success
 	signals_.image_changed();
 	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Loads an SVG image, sized to [width x height].
+// Returns false if the SVG data was invalid, true otherwise
+// -----------------------------------------------------------------------------
+bool SImage::loadSVG(const string& svg_text, int width, int height)
+{
+	// Load SVG
+	const auto svg = lunasvg::Document::loadFromData(svg_text);
+	if (!svg)
+		return false;
+
+	// Render SVG
+	const auto bmp = svg->renderToBitmap(width, height);
+
+	return setImageData(bmp.data(), bmp.width() * bmp.height() * 4, bmp.width(), bmp.height(), Type::RGBA);
 }

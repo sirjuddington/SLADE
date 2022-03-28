@@ -41,7 +41,6 @@
 #include "General/ResourceManager.h"
 #include "General/UI.h"
 #include "General/UndoRedo.h"
-#include "Graphics/Icons.h"
 #include "MainEditor/MainEditor.h"
 #include "TextureXEditor.h"
 #include "UI/Controls/SIconButton.h"
@@ -73,7 +72,7 @@ EXTERN_CVAR(Bool, wad_force_uppercase)
 // -----------------------------------------------------------------------------
 namespace
 {
-bool TxListIsTextures(TextureXList& tx)
+bool TxListIsTextures(const TextureXList& tx)
 {
 	return tx.format() == TextureXList::Format::Textures;
 }
@@ -121,14 +120,14 @@ public:
 				patch_entries_.emplace_back(new ArchiveEntry(*entry));
 		}
 	}
-	~TextureClipboardItem() = default;
+	~TextureClipboardItem() override = default;
 
 	const CTexture& texture() const { return *texture_; }
 
 	// -------------------------------------------------------------------------
 	// Returns the entry copy for the patch at [index] in the texture
 	// -------------------------------------------------------------------------
-	ArchiveEntry* patchEntry(const wxString& patch)
+	ArchiveEntry* patchEntry(const wxString& patch) const
 	{
 		// Find copied patch entry with matching name
 		for (auto& entry : patch_entries_)
@@ -211,22 +210,31 @@ public:
 		GetSizer()->Add(hbox, 0, wxEXPAND | wxALL, ui::padLarge());
 
 		// Bind events
-		rb_blank_->Bind(wxEVT_RADIOBUTTON, [this](wxCommandEvent&) {
-			spin_width_->Enable(rb_blank_->GetValue());
-			spin_height_->Enable(rb_blank_->GetValue());
-			btn_browse_patch_->Enable(!rb_blank_->GetValue());
-		});
-		rb_patch_->Bind(wxEVT_RADIOBUTTON, [this](wxCommandEvent&) {
-			spin_width_->Enable(rb_blank_->GetValue());
-			spin_height_->Enable(rb_blank_->GetValue());
-			btn_browse_patch_->Enable(!rb_blank_->GetValue());
-		});
+		rb_blank_->Bind(
+			wxEVT_RADIOBUTTON,
+			[this](wxCommandEvent&)
+			{
+				spin_width_->Enable(rb_blank_->GetValue());
+				spin_height_->Enable(rb_blank_->GetValue());
+				btn_browse_patch_->Enable(!rb_blank_->GetValue());
+			});
+		rb_patch_->Bind(
+			wxEVT_RADIOBUTTON,
+			[this](wxCommandEvent&)
+			{
+				spin_width_->Enable(rb_blank_->GetValue());
+				spin_height_->Enable(rb_blank_->GetValue());
+				btn_browse_patch_->Enable(!rb_blank_->GetValue());
+			});
 		btn_browse_patch_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { browsePatch(); });
 		btn_cancel->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_CANCEL); });
-		btn_create->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-			if (checkValues())
-				EndModal(wxID_OK);
-		});
+		btn_create->Bind(
+			wxEVT_BUTTON,
+			[this](wxCommandEvent&)
+			{
+				if (checkValues())
+					EndModal(wxID_OK);
+			});
 
 		// Setup dialog size
 		SetInitialSize({ ui::scalePx(400), -1 });
@@ -254,7 +262,7 @@ private:
 	wxTextCtrl*    text_patch_       = nullptr;
 	wxButton*      btn_browse_patch_ = nullptr;
 
-	bool checkValues()
+	bool checkValues() const
 	{
 		// Name
 		if (text_name_->GetValue().Trim().IsEmpty())
@@ -273,7 +281,7 @@ private:
 		return true;
 	}
 
-	void browsePatch()
+	void browsePatch() const
 	{
 		// Browse for patch
 		wxString patch;
@@ -483,7 +491,7 @@ public:
 		texturex_(texturex), index1_(index1), index2_(index2)
 	{
 	}
-	~TextureSwapUS() = default;
+	~TextureSwapUS() override = default;
 
 	bool doSwap() const
 	{
@@ -515,7 +523,7 @@ public:
 	{
 	}
 
-	~TextureCreateDeleteUS() = default;
+	~TextureCreateDeleteUS() override = default;
 
 	bool deleteTexture()
 	{
@@ -557,15 +565,15 @@ private:
 class TextureModificationUS : public UndoStep
 {
 public:
-	TextureModificationUS(TextureXPanel* tx_panel, const CTexture& texture) : tx_panel_(tx_panel)
+	TextureModificationUS(TextureXPanel* tx_panel, const CTexture& texture) :
+		tx_panel_{ tx_panel }, index_{ tx_panel->txList().textureIndex(tex_copy_->name()) }
 	{
 		tex_copy_ = std::make_unique<CTexture>();
 		tex_copy_->copyTexture(texture);
 		tex_copy_->setState(texture.state());
-		index_ = tx_panel->txList().textureIndex(tex_copy_->name());
 	}
 
-	~TextureModificationUS() = default;
+	~TextureModificationUS() override = default;
 
 	bool swapData()
 	{
@@ -1791,8 +1799,8 @@ void TextureXPanel::onTextureListRightClick(wxListEvent& e)
 		SAction::fromId("txed_rename_each")->addToMenu(&context, true);
 	if (TxListIsTextures(texturex_))
 		SAction::fromId("txed_offsets")->addToMenu(&context, true);
-	SAction::fromId("txed_export")->addToMenu(texport, "Archive (as image)");
-	SAction::fromId("txed_extract")->addToMenu(texport, "File");
+	SAction::fromId("txed_export")->addToMenu(texport, true, "Archive (as image)");
+	SAction::fromId("txed_extract")->addToMenu(texport, true, "File");
 	context.AppendSubMenu(texport, "&Export To");
 	context.AppendSeparator();
 	SAction::fromId("txed_copy")->addToMenu(&context, true);

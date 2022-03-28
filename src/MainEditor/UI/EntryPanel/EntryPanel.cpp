@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "EntryPanel.h"
 #include "General/UI.h"
-#include "Graphics/Icons.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchivePanel.h"
 #include "MainEditor/UI/MainWindow.h"
@@ -61,8 +60,7 @@ CVAR(Bool, confirm_entry_revert, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // EntryPanel class constructor
 // -----------------------------------------------------------------------------
-EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar) :
-	wxPanel(parent, -1), id_{ id }
+EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar) : wxPanel(parent, -1), id_{ id }
 {
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -189,17 +187,17 @@ bool EntryPanel::loadEntry(ArchiveEntry* entry)
 }
 
 // -----------------------------------------------------------------------------
-// Saves any changes to the entry 
+// Saves any changes to the entry
 // -----------------------------------------------------------------------------
 bool EntryPanel::saveEntry()
 {
 	if (!modified_)
 		return false;
-	
+
 	auto* entry = entry_.lock().get();
 	if (!entry)
 		return false;
-	
+
 	if (undo_manager_)
 	{
 		undo_manager_->beginRecord("Save Entry Modifications");
@@ -247,7 +245,7 @@ bool EntryPanel::revertEntry(bool confirm)
 				undo_manager_->beginRecord("Revert Entry Modifications");
 				undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry.get()));
 			}
-			
+
 			auto state = entry->state();
 			entry->importMemChunk(entry_data_);
 			entry->setState(state);

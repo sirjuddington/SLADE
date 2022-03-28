@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.4)
-project(Slade3)
+cmake_minimum_required(VERSION 3.3)
+project(Slade3 VERSION 3.2.0)
 
 if(COMMAND cmake_policy)
 	cmake_policy( SET CMP0012 NEW )

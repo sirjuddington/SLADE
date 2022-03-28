@@ -28,6 +28,24 @@
     <Filter Include="wxEmail">
       <UniqueIdentifier>{9bd8ef62-16e8-4c8f-a9b2-5430cd08c98a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="LunaSVG">
+      <UniqueIdentifier>{5698fb59-ee0b-4e25-9e5c-d6ebba29da8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LunaSVG\include">
+      <UniqueIdentifier>{441c3a57-b28e-4d23-887b-da563855fde9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LunaSVG\source">
+      <UniqueIdentifier>{17b0a52f-2cf2-4320-8c8b-d82e9cba8c88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LunaSVG\3rdparty">
+      <UniqueIdentifier>{8400d98f-7bd4-416a-b9eb-1bfccac2063e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LunaSVG\3rdparty\plutovg">
+      <UniqueIdentifier>{a9ede26c-0bb6-4642-afa2-42adec94522f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LunaSVG\3rdparty\software">
+      <UniqueIdentifier>{a5fb92b2-994f-4c54-abe1-1aac66bf0f2c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\sol\forward.hpp">
@@ -176,6 +194,87 @@
     </ClInclude>
     <ClInclude Include="..\thirdparty\sol\config.hpp">
       <Filter>Sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\canvas.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\clippathelement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\defselement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\element.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\gelement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\geometryelement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\graphicselement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\layoutcontext.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\markerelement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\maskelement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\paintelement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\parser.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\parserutils.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\property.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\stopelement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\styledelement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\svgelement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\symbolelement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\useelement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg.h">
+      <Filter>LunaSVG\3rdparty\plutovg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-private.h">
+      <Filter>LunaSVG\3rdparty\plutovg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_math.h">
+      <Filter>LunaSVG\3rdparty\software</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_raster.h">
+      <Filter>LunaSVG\3rdparty\software</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_stroker.h">
+      <Filter>LunaSVG\3rdparty\software</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_types.h">
+      <Filter>LunaSVG\3rdparty\software</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\source\styleelement.h">
+      <Filter>LunaSVG\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\lunasvg\include\lunasvg.h">
+      <Filter>LunaSVG\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -553,6 +652,93 @@
     </ClCompile>
     <ClCompile Include="..\thirdparty\email\wxMailer.cpp">
       <Filter>wxEmail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\canvas.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\clippathelement.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\defselement.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\element.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\gelement.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\geometryelement.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\graphicselement.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\layoutcontext.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\markerelement.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\maskelement.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\paintelement.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\parser.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\property.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\stopelement.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\styledelement.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\svgelement.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\symbolelement.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\useelement.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg.c">
+      <Filter>LunaSVG\3rdparty\plutovg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-blend.c">
+      <Filter>LunaSVG\3rdparty\plutovg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-dash.c">
+      <Filter>LunaSVG\3rdparty\plutovg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-geometry.c">
+      <Filter>LunaSVG\3rdparty\plutovg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-paint.c">
+      <Filter>LunaSVG\3rdparty\plutovg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-rle.c">
+      <Filter>LunaSVG\3rdparty\plutovg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_math.c">
+      <Filter>LunaSVG\3rdparty\software</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_raster.c">
+      <Filter>LunaSVG\3rdparty\software</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_stroker.c">
+      <Filter>LunaSVG\3rdparty\software</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\lunasvg.cpp">
+      <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\lunasvg\source\styleelement.cpp">
+      <Filter>LunaSVG\source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

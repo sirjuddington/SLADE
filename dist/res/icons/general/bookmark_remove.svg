@@ -1,0 +1,26 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="16px"
+    height="16px"
+    viewBox="0 0 512 512">
+    <defs>
+        <mask id="symbol">
+            <rect x="0" y="0" width="512" height="512" fill="#FFFFFF" />
+            <g transform="scale(10,10)">
+                <path
+                    transform="translate(9,3)"
+                    d="M24.778 21.42l-5.502-5.503l5.5-5.502l-2.827-2.83l-5.503 5.502l-5.502-5.502l-2.828 2.83l5.5 5.502l-5.5 5.502l2.83 2.828l5.5-5.502l5.5 5.502z"
+                    fill="#000000"
+                    stroke="#000000"
+                    stroke-width="3"
+                />
+            </g>
+        </mask>
+    </defs>
+	<path 
+        d="M400 480a16 16 0 0 1-10.63-4L256 357.41L122.63 476A16 16 0 0 1 96 464V96a64.07 64.07 0 0 1 64-64h192a64.07 64.07 0 0 1 64 64v368a16 16 0 0 1-16 16z"
+        fill="#BC274F"
+        mask="url(#symbol)"
+    />
+</svg>

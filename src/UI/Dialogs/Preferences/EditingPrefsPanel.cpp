@@ -34,7 +34,7 @@
 #include "Archive/EntryType/EntryType.h"
 #include "General/Executables.h"
 #include "General/UI.h"
-#include "Graphics/Icons.h"
+#include "UI/Controls/SIconButton.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
@@ -71,7 +71,7 @@ public:
 		AppendColumn("Path");
 	}
 
-	~ExternalEditorList() = default;
+	~ExternalEditorList() override = default;
 
 	void setCategory(string_view category)
 	{
@@ -106,8 +106,7 @@ class ExternalEditorDialog : public wxDialog
 {
 public:
 	ExternalEditorDialog(wxWindow* parent, bool browse_on_open, const wxString& name = "", const wxString& path = "") :
-		wxDialog(parent, -1, "External Editor"),
-		browse_on_open_(browse_on_open)
+		wxDialog(parent, -1, "External Editor"), browse_on_open_(browse_on_open)
 	{
 		auto sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
@@ -123,7 +122,7 @@ public:
 		gb_sizer->Add(new wxStaticText(this, -1, "Path:"), { 1, 0 }, wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 		text_path_ = new wxTextCtrl(this, -1, path, wxDefaultPosition, wxSize(ui::scalePx(300), -1));
 		gb_sizer->Add(text_path_, { 1, 1 }, wxDefaultSpan, wxEXPAND);
-		btn_browse_ = new wxBitmapButton(this, -1, icons::getIcon(icons::General, "open"));
+		btn_browse_ = new SIconButton(this, icons::General, "open");
 		gb_sizer->Add(btn_browse_, { 1, 2 }, wxDefaultSpan);
 
 		// Ok/Cancel
@@ -141,16 +140,19 @@ public:
 		btn_browse_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { browse(); });
 
 		// Show event
-		Bind(wxEVT_SHOW, [&](wxShowEvent& e) {
-			if (e.IsShown() && browse_on_open_ && text_path_->GetValue().IsEmpty())
-				browse();
-		});
+		Bind(
+			wxEVT_SHOW,
+			[&](wxShowEvent& e)
+			{
+				if (e.IsShown() && browse_on_open_ && text_path_->GetValue().IsEmpty())
+					browse();
+			});
 
 		wxWindowBase::Fit();
 		CenterOnParent();
 	}
 
-	~ExternalEditorDialog() = default;
+	~ExternalEditorDialog() override = default;
 
 	wxString getName() const { return text_name_->GetValue(); }
 	wxString getPath() const { return text_path_->GetValue(); }
@@ -211,9 +213,12 @@ EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	stc_tabs_->AddPage(setupExternalTab(), "External Editors", false);
 
 	// Bind events
-	choice_category_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&) {
-		((ExternalEditorList*)lv_ext_editors_)->setCategory(wxutil::strToView(choice_category_->GetStringSelection()));
-	});
+	choice_category_->Bind(
+		wxEVT_CHOICE,
+		[&](wxCommandEvent&) {
+			((ExternalEditorList*)lv_ext_editors_)
+				->setCategory(wxutil::strToView(choice_category_->GetStringSelection()));
+		});
 	btn_add_exe_->Bind(wxEVT_BUTTON, &EditingPrefsPanel::onBtnAddClicked, this);
 	btn_remove_exe_->Bind(wxEVT_BUTTON, &EditingPrefsPanel::onBtnRemoveClicked, this);
 	lv_ext_editors_->Bind(wxEVT_LIST_ITEM_ACTIVATED, &EditingPrefsPanel::onExternalExeActivated, this);
@@ -269,9 +274,9 @@ wxPanel* EditingPrefsPanel::setupExternalTab()
 	auto categories  = wxutil::arrayStringStd(EntryType::allCategories());
 	choice_category_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, categories);
 	lv_ext_editors_  = new ExternalEditorList(panel);
-	btn_add_exe_     = new wxBitmapButton(panel, -1, icons::getIcon(icons::General, "plus"));
+	btn_add_exe_     = new SIconButton(panel, icons::General, "plus");
 	btn_add_exe_->SetToolTip("Add External Editor");
-	btn_remove_exe_ = new wxBitmapButton(panel, -1, icons::getIcon(icons::General, "minus"));
+	btn_remove_exe_ = new SIconButton(panel, icons::General, "minus");
 	btn_remove_exe_->SetToolTip("Remove Selected External Editors");
 
 	// Layout
@@ -388,7 +393,7 @@ void EditingPrefsPanel::onBtnRemoveClicked(wxCommandEvent& e)
 	}
 
 	// Refresh list
-	((ExternalEditorList*)lv_ext_editors_)->setCategory(category);
+	static_cast<ExternalEditorList*>(lv_ext_editors_)->setCategory(category);
 }
 
 // -----------------------------------------------------------------------------

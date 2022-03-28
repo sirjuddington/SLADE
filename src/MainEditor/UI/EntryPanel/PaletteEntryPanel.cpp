@@ -34,15 +34,14 @@
 #include "PaletteEntryPanel.h"
 #include "App.h"
 #include "Archive/Archive.h"
-#include "General/Misc.h"
 #include "General/UI.h"
-#include "Graphics/Icons.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/Canvas/PaletteCanvas.h"
 #include "UI/Controls/PaletteChooser.h"
+#include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
@@ -89,9 +88,7 @@ public:
 		palette_{ pal }
 	{
 		// Set dialog icon
-		wxIcon icon;
-		icon.CopyFromBitmap(icons::getIcon(icons::General, "palette_colourise"));
-		SetIcon(icon);
+		wxutil::setWindowIcon(this, "palette_colourise");
 
 		// Setup main sizer
 		auto msizer = new wxBoxSizer(wxVERTICAL);
@@ -165,9 +162,7 @@ public:
 		palette_{ pal }
 	{
 		// Set dialog icon
-		wxIcon icon;
-		icon.CopyFromBitmap(icons::getIcon(icons::General, "palette_tint"));
-		SetIcon(icon);
+		wxutil::setWindowIcon(this, "palette_tint");
 
 		// Setup main sizer
 		auto msizer = new wxBoxSizer(wxVERTICAL);
@@ -210,10 +205,13 @@ public:
 
 		// Bind events
 		cp_colour_->Bind(wxEVT_COLOURPICKER_CHANGED, [&](wxColourPickerEvent&) { redraw(); });
-		slider_amount_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
-			redraw();
-			label_amount_->SetLabel(wxString::Format("%d%% ", slider_amount_->GetValue()));
-		});
+		slider_amount_->Bind(
+			wxEVT_SLIDER,
+			[&](wxCommandEvent&)
+			{
+				redraw();
+				label_amount_->SetLabel(wxString::Format("%d%% ", slider_amount_->GetValue()));
+			});
 		pal_preview_->Bind(wxEVT_LEFT_UP, [&](wxMouseEvent&) { redraw(); });
 
 		// Setup dialog size
@@ -273,9 +271,7 @@ public:
 		palette_{ pal }
 	{
 		// Set dialog icon
-		wxIcon icon;
-		icon.CopyFromBitmap(icons::getIcon(icons::General, "palette_tweak"));
-		SetIcon(icon);
+		wxutil::setWindowIcon(this, "palette_tweak");
 
 		// Setup main sizer
 		auto msizer = new wxBoxSizer(wxVERTICAL);
@@ -329,18 +325,27 @@ public:
 		wxWindowBase::Layout();
 
 		// Bind events
-		slider_hue_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
-			redraw();
-			label_hue_->SetLabel(wxString::Format("%1.3f", hue()));
-		});
-		slider_sat_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
-			redraw();
-			label_sat_->SetLabel(wxString::Format("%d%%", slider_sat_->GetValue()));
-		});
-		slider_lum_->Bind(wxEVT_SLIDER, [&](wxCommandEvent&) {
-			redraw();
-			label_lum_->SetLabel(wxString::Format("%d%%", slider_lum_->GetValue()));
-		});
+		slider_hue_->Bind(
+			wxEVT_SLIDER,
+			[&](wxCommandEvent&)
+			{
+				redraw();
+				label_hue_->SetLabel(wxString::Format("%1.3f", hue()));
+			});
+		slider_sat_->Bind(
+			wxEVT_SLIDER,
+			[&](wxCommandEvent&)
+			{
+				redraw();
+				label_sat_->SetLabel(wxString::Format("%d%%", slider_sat_->GetValue()));
+			});
+		slider_lum_->Bind(
+			wxEVT_SLIDER,
+			[&](wxCommandEvent&)
+			{
+				redraw();
+				label_lum_->SetLabel(wxString::Format("%d%%", slider_lum_->GetValue()));
+			});
 		pal_preview_->Bind(wxEVT_LEFT_UP, [&](wxMouseEvent&) { redraw(); });
 
 		// Setup dialog size
@@ -396,9 +401,7 @@ public:
 		palette_{ pal }
 	{
 		// Set dialog icon
-		wxIcon icon;
-		icon.CopyFromBitmap(icons::getIcon(icons::General, "palette_invert"));
-		SetIcon(icon);
+		wxutil::setWindowIcon(this, "palette_invert");
 
 		// Setup main sizer
 		auto msizer = new wxBoxSizer(wxVERTICAL);
@@ -466,9 +469,7 @@ public:
 			wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 	{
 		// Set dialog icon
-		wxIcon icon;
-		icon.CopyFromBitmap(icons::getIcon(icons::Entry, "palette"));
-		SetIcon(icon);
+		wxutil::setWindowIcon(this, "palette");
 
 		// Setup main sizer
 		auto msizer = new wxBoxSizer(wxVERTICAL);
@@ -523,9 +524,7 @@ public:
 		palette_{ pal }
 	{
 		// Set dialog icon
-		wxIcon icon;
-		icon.CopyFromBitmap(icons::getIcon(icons::General, "palette_gradient"));
-		SetIcon(icon);
+		wxutil::setWindowIcon(this, "palette_gradient");
 
 		// Setup main sizer
 		auto msizer = new wxBoxSizer(wxVERTICAL);
@@ -634,7 +633,7 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "pal
 	// Colour Operations
 	actions = "ppal_colourise;ppal_tint;ppal_invert;ppal_tweak;ppal_gradient";
 	toolbar_left_->addActionGroup("Colours", wxSplit(actions, ';'));
-	
+
 	// --- Palette canvas ---
 	pal_canvas_ = new PaletteCanvas(this, -1);
 	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
@@ -790,7 +789,7 @@ void PaletteEntryPanel::toolbarButtonClick(const wxString& action_id)
 // Adds the current palette to the custom user palettes folder, so it can be
 // selected via the palette selector
 // -----------------------------------------------------------------------------
-bool PaletteEntryPanel::addCustomPalette()
+bool PaletteEntryPanel::addCustomPalette() const
 {
 	// Get name to export as
 	auto name = wxGetTextFromUser("Enter name for Palette:", "Add to Palettes").ToStdString();
@@ -813,7 +812,7 @@ bool PaletteEntryPanel::addCustomPalette()
 // A "lite" version of addCustomPalette, which does not add to the palette
 // folder so the palette is only available for the current session.
 // -----------------------------------------------------------------------------
-bool PaletteEntryPanel::testPalette()
+bool PaletteEntryPanel::testPalette() const
 {
 	// Get name to export as
 	wxString name = "Test: " + wxGetTextFromUser("Enter name for Palette:", "Test Palettes");
@@ -1037,10 +1036,10 @@ bool PaletteEntryPanel::gradient()
 // Generates a COLORMAP lump from the current palette
 // -----------------------------------------------------------------------------
 #define DIMINISH(color, level) color = (uint8_t)((((float)(color)) * (32.0 - level) + 16.0) / 32.0)
-bool PaletteEntryPanel::generateColormaps()
+bool PaletteEntryPanel::generateColormaps() const
 {
-	static const int GREENMAP = 255;
-	static const int GRAYMAP  = 32;
+	constexpr int GREENMAP = 255;
+	constexpr int GRAYMAP  = 32;
 
 	auto entry = entry_.lock();
 	if (!entry || !entry->parent() || !palettes_[0])
@@ -1452,7 +1451,7 @@ void PaletteEntryPanel::onPalCanvasMouseEvent(wxMouseEvent& e)
 //  Just some reverse-engineering stuff.
 #define GPALCOMPANALYSIS
 #define PALETTECHECK 1
-void PaletteEntryPanel::analysePalettes()
+void PaletteEntryPanel::analysePalettes() const
 {
 	if (palettes_.size() < PALETTECHECK + 1)
 		return;

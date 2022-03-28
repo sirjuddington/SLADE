@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "GfxCropDialog.h"
 #include "General/UI.h"
-#include "Graphics/Icons.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
@@ -76,9 +75,9 @@ void CropCanvas::draw()
 	drawCheckeredBackground();
 
 	// Determine graphic position & scale
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	double width  = size.x;
-	double height = size.y;
+	const wxSize size   = GetSize() * GetContentScaleFactor();
+	double       width  = size.x;
+	double       height = size.y;
 
 	// Get image dimensions
 	auto&  tex_info = gl::Texture::info(texture_);
@@ -153,9 +152,7 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 	crop_rect_.set(0, 0, max_width_, max_height_);
 
 	// Set dialog icon
-	wxIcon icon;
-	icon.CopyFromBitmap(icons::getIcon(icons::General, "settings"));
-	SetIcon(icon);
+	wxutil::setWindowIcon(this, "crop");
 
 	// Setup main sizer
 	auto msizer = new wxBoxSizer(wxVERTICAL);
@@ -232,31 +229,43 @@ void GfxCropDialog::bindEvents()
 {
 	// Left text box
 	text_left_->Bind(wxEVT_TEXT_ENTER, &GfxCropDialog::onTextEnter, this);
-	text_left_->Bind(wxEVT_KILL_FOCUS, [&](wxFocusEvent& e) {
-		setLeft();
-		e.Skip();
-	});
+	text_left_->Bind(
+		wxEVT_KILL_FOCUS,
+		[&](wxFocusEvent& e)
+		{
+			setLeft();
+			e.Skip();
+		});
 
 	// Top text box
 	text_top_->Bind(wxEVT_TEXT_ENTER, &GfxCropDialog::onTextEnter, this);
-	text_top_->Bind(wxEVT_KILL_FOCUS, [&](wxFocusEvent& e) {
-		setTop();
-		e.Skip();
-	});
+	text_top_->Bind(
+		wxEVT_KILL_FOCUS,
+		[&](wxFocusEvent& e)
+		{
+			setTop();
+			e.Skip();
+		});
 
 	// Right text box
 	text_right_->Bind(wxEVT_TEXT_ENTER, &GfxCropDialog::onTextEnter, this);
-	text_right_->Bind(wxEVT_KILL_FOCUS, [&](wxFocusEvent& e) {
-		setRight();
-		e.Skip();
-	});
+	text_right_->Bind(
+		wxEVT_KILL_FOCUS,
+		[&](wxFocusEvent& e)
+		{
+			setRight();
+			e.Skip();
+		});
 
 	// Bottom text box
 	text_bottom_->Bind(wxEVT_TEXT_ENTER, &GfxCropDialog::onTextEnter, this);
-	text_bottom_->Bind(wxEVT_KILL_FOCUS, [&](wxFocusEvent& e) {
-		setBottom();
-		e.Skip();
-	});
+	text_bottom_->Bind(
+		wxEVT_KILL_FOCUS,
+		[&](wxFocusEvent& e)
+		{
+			setBottom();
+			e.Skip();
+		});
 
 	// Absolute/Relative radio buttons
 	rb_absolute_->Bind(wxEVT_RADIOBUTTON, [&](wxCommandEvent&) { updateValues(); });

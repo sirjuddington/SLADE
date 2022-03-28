@@ -52,7 +52,6 @@
 #include "General/KeyBind.h"
 #include "General/Misc.h"
 #include "General/UI.h"
-#include "Graphics/Icons.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/Conversions.h"
@@ -236,9 +235,7 @@ public:
 				  wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER }
 	{
 		// Set dialog icon
-		wxIcon icon;
-		icon.CopyFromBitmap(icons::getIcon(icons::Entry, "palette"));
-		SetIcon(icon);
+		wxutil::setWindowIcon(this, "palette");
 
 		// Setup main sizer
 		auto sizer = new wxBoxSizer(wxVERTICAL);

@@ -43,7 +43,6 @@
 #include "EditingPrefsPanel.h"
 #include "General/UI.h"
 #include "GeneralPrefsPanel.h"
-#include "Graphics/Icons.h"
 #include "GraphicsPrefsPanel.h"
 #include "HudOffsetsPrefsPanel.h"
 #include "InputPrefsPanel.h"
@@ -125,9 +124,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 	SetSizer(sizer);
 
 	// Set icon
-	wxIcon icon;
-	icon.CopyFromBitmap(icons::getIcon(icons::General, "settings"));
-	SetIcon(icon);
+	wxutil::setWindowIcon(this, "settings");
 
 	// Create preferences TreeBook
 	tree_prefs_ = new wxTreebook(this, -1, wxDefaultPosition, wxDefaultSize);
@@ -175,7 +172,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 	Layout();
 	const wxSize size = GetSize() * GetContentScaleFactor();
 	SetInitialSize(size);
-	//Fit();
+	// Fit();
 	SetMinSize(wxSize(ui::scalePx(800), ui::scalePx(600)));
 	CenterOnParent();
 
@@ -303,22 +300,22 @@ wxString PreferencesDialog::currentPage() const
 // -----------------------------------------------------------------------------
 // Initialises controls on all preference panels
 // -----------------------------------------------------------------------------
-void PreferencesDialog::initPages()
+void PreferencesDialog::initPages() const
 {
-	for (auto i : prefs_pages_)
-		if (i.second)
-			i.second->init();
+	for (auto& [name, panel] : prefs_pages_)
+		if (panel)
+			panel->init();
 	prefs_advanced_->init();
 }
 
 // -----------------------------------------------------------------------------
 // Applies preference values from all preference panels
 // -----------------------------------------------------------------------------
-void PreferencesDialog::applyPreferences()
+void PreferencesDialog::applyPreferences() const
 {
-	for (auto i : prefs_pages_)
-		if (i.second)
-			i.second->applyPreferences();
+	for (auto& [name, panel] : prefs_pages_)
+		if (panel)
+			panel->applyPreferences();
 	prefs_advanced_->applyPreferences();
 
 	// Write file so changes are not lost

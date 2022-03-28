@@ -39,8 +39,8 @@
 #include "General/Misc.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/MapEditor.h"
-#include "SLADEWxApp.h"
 #include "Scripting/ScriptManager.h"
+#include "SLADEWxApp.h"
 #include "StartPage.h"
 #include "UI/Controls/BaseResourceChooser.h"
 #include "UI/Controls/ConsolePanel.h"
@@ -92,8 +92,8 @@ EXTERN_CVAR(Bool, tabs_condensed)
 class MainWindowDropTarget : public wxFileDropTarget
 {
 public:
-	MainWindowDropTarget()  = default;
-	~MainWindowDropTarget() = default;
+	MainWindowDropTarget()           = default;
+	~MainWindowDropTarget() override = default;
 
 	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) override
 	{
@@ -416,17 +416,22 @@ void MainWindow::setupLayout()
 	Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &MainWindow::onTabChanged, this);
 	Bind(wxEVT_STOOLBAR_LAYOUT_UPDATED, &MainWindow::onToolBarLayoutChanged, this, toolbar_->GetId());
 	Bind(wxEVT_ACTIVATE, &MainWindow::onActivate, this);
-	Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, [&](wxAuiNotebookEvent& e) {
-		// Null start_page pointer if start page tab is being closed
-		if (auto page = stc_tabs_->GetPage(stc_tabs_->GetSelection()); page && page->GetName() == "startpage")
-			start_page_ = nullptr;
-	});
-	Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSED, [&](wxAuiNotebookEvent& e)
-	{
-		// Clear undo history panel if all tabs closed
-		if (stc_tabs_->GetSelection() == wxNOT_FOUND)
-			panel_undo_history_->setManager(nullptr);
-	});
+	Bind(
+		wxEVT_AUINOTEBOOK_PAGE_CLOSE,
+		[&](wxAuiNotebookEvent& e)
+		{
+			// Null start_page pointer if start page tab is being closed
+			if (auto page = stc_tabs_->GetPage(stc_tabs_->GetSelection()); page && page->GetName() == "startpage")
+				start_page_ = nullptr;
+		});
+	Bind(
+		wxEVT_AUINOTEBOOK_PAGE_CLOSED,
+		[&](wxAuiNotebookEvent& e)
+		{
+			// Clear undo history panel if all tabs closed
+			if (stc_tabs_->GetSelection() == wxNOT_FOUND)
+				panel_undo_history_->setManager(nullptr);
+		});
 
 	// Initial focus to toolbar
 	toolbar_->SetFocus();
@@ -466,10 +471,11 @@ bool MainWindow::exitProgram()
 	// Save current layout
 	// main_window_layout = aui_mgr_->SavePerspective();
 	saveLayout();
-	mw_maximized = IsMaximized();
+	mw_maximized      = IsMaximized();
 	const wxSize size = GetSize() * GetContentScaleFactor();
 	if (!IsMaximized())
-		misc::setWindowInfo(id_, size.x, size.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
+		misc::setWindowInfo(
+			id_, size.x, size.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
 
 	// Save selected palette
 	global_palette = wxutil::strToView(palette_chooser_->GetStringSelection());
