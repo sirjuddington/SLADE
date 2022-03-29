@@ -4035,6 +4035,12 @@ void ArchivePanel::onEntryListKeyDown(wxKeyEvent& e)
 			bookmark();
 			return;
 		}
+
+		else if (bind == "el_up_dir")
+		{
+			entry_tree_->upDir();
+			return;
+		}
 	}
 
 	// Not handled, send to parent
