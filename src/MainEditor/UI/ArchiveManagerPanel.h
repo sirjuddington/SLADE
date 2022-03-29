@@ -94,8 +94,9 @@ public:
 	void        updateRecentListItem(int index) const;
 	void        updateBookmarkListItem(int index) const;
 	void        updateArchiveTabTitle(int index) const;
-	bool        isArchivePanel(int tab_index) const;
-	bool        isEntryPanel(int tab_index) const;
+	bool        isArchiveTab(int tab_index) const;
+	bool        isEntryTab(int tab_index) const;
+	bool        isTextureEditorTab(int tab_index) const;
 	Archive*    archiveForTab(int tab_index) const;
 	int         currentTabIndex() const;
 	Archive*    currentArchive() const;
@@ -122,6 +123,7 @@ public:
 	bool            redirectToTab(ArchiveEntry* entry) const;
 	bool            entryIsOpenInTab(ArchiveEntry* entry) const;
 	void            closeCurrentTab();
+	bool            saveCurrentTab() const;
 
 	// General actions
 	bool undo() const;

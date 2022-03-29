@@ -490,7 +490,7 @@ void ArchiveManagerPanel::refreshAllTabs() const
 		auto tab = stc_archives_->GetPage(a);
 
 		// Refresh if it's an archive panel
-		if (isArchivePanel(a))
+		if (isArchiveTab(a))
 			dynamic_cast<ArchivePanel*>(tab)->refreshPanel();
 	}
 }
@@ -586,7 +586,7 @@ void ArchiveManagerPanel::updateArchiveTabTitle(int index) const
 // Checks if the tab at [tab_index] is an ArchivePanel.
 // Returns true if it is, false if not
 // -----------------------------------------------------------------------------
-bool ArchiveManagerPanel::isArchivePanel(int tab_index) const
+bool ArchiveManagerPanel::isArchiveTab(int tab_index) const
 {
 	// Check that tab index is in range
 	if ((unsigned)tab_index >= stc_archives_->GetPageCount())
@@ -600,7 +600,7 @@ bool ArchiveManagerPanel::isArchivePanel(int tab_index) const
 // Checks if the tab at [tab_index] is an EntryPanel.
 // Returns true if it is, false if not
 // -----------------------------------------------------------------------------
-bool ArchiveManagerPanel::isEntryPanel(int tab_index) const
+bool ArchiveManagerPanel::isEntryTab(int tab_index) const
 {
 	// Check that tab index is in range
 	if ((unsigned)tab_index >= stc_archives_->GetPageCount())
@@ -608,6 +608,20 @@ bool ArchiveManagerPanel::isEntryPanel(int tab_index) const
 
 	// Check the page's name
 	return !stc_archives_->GetPage(tab_index)->GetName().CmpNoCase("entry") ? true : false;
+}
+
+// -----------------------------------------------------------------------------
+// Checks if the tab at [tab_index] is a Texture Editor.
+// Returns true if it is, false if not
+// -----------------------------------------------------------------------------
+bool ArchiveManagerPanel::isTextureEditorTab(int tab_index) const
+{
+	// Check that tab index is in range
+	if ((unsigned)tab_index >= stc_archives_->GetPageCount())
+		return false;
+
+	// Check the page's name
+	return !stc_archives_->GetPage(tab_index)->GetName().CmpNoCase("texture") ? true : false;
 }
 
 // -----------------------------------------------------------------------------
@@ -621,7 +635,7 @@ Archive* ArchiveManagerPanel::archiveForTab(int tab_index) const
 		return nullptr;
 
 	// Check the specified tab is actually an archive tab
-	if (!isArchivePanel(tab_index))
+	if (!isArchiveTab(tab_index))
 		return nullptr;
 
 	// Get the archive associated with the tab
@@ -694,11 +708,11 @@ EntryPanel* ArchiveManagerPanel::currentArea() const
 	int selected = stc_archives_->GetSelection();
 
 	// Entry tab
-	if (isEntryPanel(selected))
+	if (isEntryTab(selected))
 		return dynamic_cast<EntryPanel*>(stc_archives_->GetPage(selected));
 
 	// Archive tab
-	if (isArchivePanel(selected))
+	if (isArchiveTab(selected))
 	{
 		auto ap = dynamic_cast<ArchivePanel*>(stc_archives_->GetPage(selected));
 		return ap->currentArea();
@@ -717,7 +731,7 @@ ArchiveEntry* ArchiveManagerPanel::currentEntry() const
 	int selected = stc_archives_->GetSelection();
 
 	// Check it's an archive tab
-	if (!isArchivePanel(selected))
+	if (!isArchiveTab(selected))
 		return nullptr;
 
 	// Get the archive panel
@@ -734,7 +748,7 @@ vector<ArchiveEntry*> ArchiveManagerPanel::currentEntrySelection() const
 	int selected = stc_archives_->GetSelection();
 
 	// Check it's an archive tab
-	if (!isArchivePanel(selected))
+	if (!isArchiveTab(selected))
 		return {};
 
 	// Get the archive panel
@@ -985,6 +999,36 @@ void ArchiveManagerPanel::closeCurrentTab()
 			pending_closed_archive_ = nullptr;
 		}
 	}
+}
+
+bool ArchiveManagerPanel::saveCurrentTab() const
+{
+	auto index = stc_archives_->GetSelection();
+	auto* tab = stc_archives_->GetPage(index);
+
+	// Archive Tab
+	if (isArchiveTab(index))
+	{
+		auto* archive_panel = dynamic_cast<ArchivePanel*>(tab);
+		return saveArchive(archive_panel->archive());
+	}
+
+	// Entry Tab
+	if (isEntryTab(index))
+	{
+		auto* entry_panel = dynamic_cast<EntryPanel*>(tab);
+		return entry_panel->saveEntry();
+	}
+
+	// Texture Editor Tab
+	if (isTextureEditorTab(index))
+	{
+		auto* texture_editor = dynamic_cast<TextureXEditor*>(tab);
+		texture_editor->saveChanges();
+		return true;
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -1842,7 +1886,7 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 
 	// File->Save
 	else if (id == "aman_save")
-		saveArchive(currentArchive());
+		saveCurrentTab();
 
 	// File->Save As
 	else if (id == "aman_saveas")
@@ -2140,7 +2184,7 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 	theMainWindow->enableToolBar("_entry", false);
 
 	// ArchivePanel
-	if (isArchivePanel(selection))
+	if (isArchiveTab(selection))
 	{
 		auto ap = dynamic_cast<ArchivePanel*>(stc_archives_->GetPage(selection));
 		ap->currentArea()->updateStatus();
@@ -2282,7 +2326,7 @@ bool ArchiveManagerPanel::prepareCloseTab(int index)
 		return false;
 
 	// Close the tab's archive if needed
-	if (close_archive_with_tab && isArchivePanel(index))
+	if (close_archive_with_tab && isArchiveTab(index))
 	{
 		auto ap      = dynamic_cast<ArchivePanel*>(page);
 		auto archive = ap->archive();
@@ -2306,7 +2350,7 @@ bool ArchiveManagerPanel::prepareCloseTab(int index)
 		return true;
 	}
 
-	if (isEntryPanel(index))
+	if (isEntryTab(index))
 	{
 		auto ep = dynamic_cast<EntryPanel*>(page);
 		if (ep->isModified() && autosave_entry_changes > 0)
