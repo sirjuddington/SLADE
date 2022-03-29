@@ -83,7 +83,7 @@ PatchTableListView::PatchTableListView(wxWindow* parent, PatchTable* patch_table
 	auto& am_signals = app::archiveManager().signals();
 	signal_connections_ += am_signals.archive_added.connect([this](unsigned) { updateList(); });
 	signal_connections_ += am_signals.archive_closed.connect([this](unsigned) { updateList(); });
-	signal_connections_ += am_signals.archive_modified.connect([this](unsigned) { updateList(); });
+	signal_connections_ += am_signals.archive_modified.connect([this](unsigned, bool) { updateList(); });
 	signal_connections_ += patch_table_->signals().modified.connect([this]() { updateList(); });
 }
 

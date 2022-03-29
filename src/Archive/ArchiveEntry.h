@@ -71,7 +71,7 @@ public:
 	}
 	void setState(State state, bool silent = false);
 	void setEncryption(Encryption enc) { encrypted_ = enc; }
-	void unloadData();
+	void unloadData(bool force = false);
 	void lock();
 	void unlock();
 	void lockState() { state_locked_ = true; }

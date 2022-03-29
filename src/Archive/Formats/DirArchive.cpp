@@ -312,6 +312,9 @@ bool DirArchive::loadEntryData(ArchiveEntry* entry)
 	if (entry->importFile(entry->exProp<string>("filePath")))
 	{
 		file_modification_times_[entry] = wxFileModificationTime(entry->exProp<string>("filePath"));
+		entry->setLoaded();
+		entry->setState(ArchiveEntry::State::Unmodified);
+
 		return true;
 	}
 

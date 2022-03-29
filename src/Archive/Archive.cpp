@@ -505,12 +505,11 @@ bool Archive::open(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 void Archive::setModified(bool modified)
 {
-	// Update modified flag
-	modified_ = modified;
-
-	// Emit signal if changing to modified
-	if (modified)
-		signals_.modified(*this);
+	if (modified_ != modified)
+	{
+		modified_ = modified;               // Update modified flag
+		signals_.modified(*this, modified); // Emit signal
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1325,15 +1324,15 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 		return true;
 
 	// Reload entry data from the archive on disk
-	entry->setState(ArchiveEntry::State::Unmodified);
-	entry->unloadData();
+	entry->unloadData(true);
 	if (loadEntryData(entry))
 	{
 		EntryType::detectEntryType(*entry);
+		entry->setState(ArchiveEntry::State::Unmodified);
 		return true;
 	}
-	else
-		return false;
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------

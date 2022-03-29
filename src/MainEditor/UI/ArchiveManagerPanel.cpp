@@ -2243,7 +2243,7 @@ void ArchiveManagerPanel::connectSignals()
 			updateArchiveTabTitle(index);
 		});
 	signal_connections += signals.archive_modified.connect(
-		[this](unsigned index)
+		[this](unsigned index, bool)
 		{
 			updateOpenListItem(index);
 			updateArchiveTabTitle(index);

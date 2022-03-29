@@ -252,16 +252,17 @@ void ArchiveEntry::setState(State state, bool silent)
 }
 
 // -----------------------------------------------------------------------------
-// 'Unloads' entry data from memory
+// 'Unloads' entry data from memory.
+// If [force] is true, data will be unloaded even if the entry is modified
 // -----------------------------------------------------------------------------
-void ArchiveEntry::unloadData()
+void ArchiveEntry::unloadData(bool force)
 {
 	// Check there is any data to be 'unloaded'
 	if (!data_.hasData() || !data_loaded_)
 		return;
 
 	// Only unload if the data wasn't modified
-	if (state_ != State::Unmodified)
+	if (!force && state_ != State::Unmodified)
 		return;
 
 	// Delete any data

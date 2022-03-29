@@ -77,7 +77,7 @@ public:
 	{
 		sigslot::signal<unsigned>                     archive_added;
 		sigslot::signal<unsigned>                     archive_opened;
-		sigslot::signal<unsigned>                     archive_modified;
+		sigslot::signal<unsigned, bool>               archive_modified;
 		sigslot::signal<unsigned>                     archive_saved;
 		sigslot::signal<unsigned>                     archive_closing;
 		sigslot::signal<unsigned>                     archive_closed;

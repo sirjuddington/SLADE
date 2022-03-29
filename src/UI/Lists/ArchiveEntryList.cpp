@@ -263,12 +263,11 @@ void ArchiveEntryList::setArchive(const shared_ptr<Archive>& archive)
 	if (archive)
 	{
 		// Update list when archive is modified
-		sc_archive_modified_ = archive->signals().modified.connect([this](Archive&) { updateEntries(); });
+		sc_archive_modified_ = archive->signals().modified.connect([this](Archive&, bool) { updateEntries(); });
 
 		// Open root directory
 		current_dir_ = archive->rootDir();
 		applyFilter();
-		updateList();
 	}
 }
 
@@ -511,9 +510,6 @@ bool ArchiveEntryList::setDir(const shared_ptr<ArchiveDir>& dir)
 	// Update filter
 	applyFilter();
 
-	// Update list
-	updateList();
-
 	// Fire event
 	wxCommandEvent evt(EVT_AEL_DIR_CHANGED, GetId());
 	ProcessWindowEvent(evt);
@@ -524,9 +520,7 @@ bool ArchiveEntryList::setDir(const shared_ptr<ArchiveDir>& dir)
 void ArchiveEntryList::updateEntries()
 {
 	if (entries_update_)
-	{
 		applyFilter();
-	}
 }
 
 // -----------------------------------------------------------------------------

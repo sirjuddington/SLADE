@@ -164,7 +164,7 @@ public:
 	// Signals
 	struct Signals
 	{
-		sigslot::signal<Archive&>                                  modified;
+		sigslot::signal<Archive&, bool>                            modified;
 		sigslot::signal<Archive&>                                  saved;
 		sigslot::signal<Archive&>                                  closed;
 		sigslot::signal<Archive&, ArchiveEntry&>                   entry_added;

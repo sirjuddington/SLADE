@@ -188,8 +188,8 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 		open_archives_.push_back(n_archive);
 
 		// Emit archive changed/saved signal when received from the archive
-		archive->signals().modified.connect([this](Archive& archive)
-											{ signals_.archive_modified(archiveIndex(&archive)); });
+		archive->signals().modified.connect([this](Archive& archive, bool modified)
+											{ signals_.archive_modified(archiveIndex(&archive), modified); });
 		archive->signals().saved.connect([this](Archive& archive) { signals_.archive_saved(archiveIndex(&archive)); });
 
 		// Announce the addition
