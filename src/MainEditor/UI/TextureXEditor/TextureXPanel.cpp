@@ -566,9 +566,10 @@ class TextureModificationUS : public UndoStep
 {
 public:
 	TextureModificationUS(TextureXPanel* tx_panel, const CTexture& texture) :
-		tx_panel_{ tx_panel }, index_{ tx_panel->txList().textureIndex(tex_copy_->name()) }
+		tx_panel_{ tx_panel },
+		tex_copy_{ std::make_unique<CTexture>() },
+		index_{ tx_panel->txList().textureIndex(tex_copy_->name()) }
 	{
-		tex_copy_ = std::make_unique<CTexture>();
 		tex_copy_->copyTexture(texture);
 		tex_copy_->setState(texture.state());
 	}
