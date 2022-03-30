@@ -519,7 +519,7 @@ bool SLADEWxApp::OnInit()
 #ifdef __WINDOWS__
 	wxApp::SetAppName("SLADE3");
 #else
-	wxApp::SetAppName("slade3");
+    wxApp::SetAppName("slade3");
 #endif
 
 	// Handle exceptions using wxDebug stuff, but only in release mode
@@ -533,12 +533,12 @@ bool SLADEWxApp::OnInit()
 #ifdef __APPLE__
 	// Should be constant, wxWidgets Cocoa backend scales everything under the hood
 	const double ui_scale = 1.0;
-#else // !__APPLE__
-	// Calculate scaling factor (from system ppi)
-	wxMemoryDC dc;
-	double     ui_scale = (double)(dc.GetPPI().x) / 96.0;
-	if (ui_scale < 1.)
-		ui_scale = 1.;
+#else  // !__APPLE__
+    // Calculate scaling factor (from system ppi)
+    wxMemoryDC dc;
+    double     ui_scale = (double)(dc.GetPPI().x) / 96.0;
+    if (ui_scale < 1.)
+        ui_scale = 1.;
 #endif // __APPLE__
 
 	// Get Windows version
@@ -556,10 +556,18 @@ bool SLADEWxApp::OnInit()
 		args.push_back(argv[a].ToStdString());
 
 	// Init application
-	if (!app::init(args, ui_scale))
-		return false;
+	try
+	{
+		if (!app::init(args, ui_scale))
+			return false;
+	}
+	catch (const std::exception& ex)
+	{
+		log::error("Exception during SLADE initialization: {}", ex.what());
+		throw;
+	}
 
-		// Check for updates
+	// Check for updates
 #ifdef __WXMSW__
 	wxHTTP::Initialize();
 	if (update_check)

@@ -54,8 +54,16 @@ namespace fs = std::filesystem;
 // -----------------------------------------------------------------------------
 bool fileutil::fileExists(string_view path)
 {
-	auto fs_path = fs::path{ path };
-	return fs::exists(fs_path) && fs::is_regular_file(fs_path);
+	try
+	{
+		auto fs_path = fs::path{ path };
+		return fs::exists(fs_path) && fs::is_regular_file(fs_path);
+	}
+	catch (std::exception& ex)
+	{
+		log::error("Error checking if file \"{}\" exists: {}", path, ex.what());
+		return false;
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -63,8 +71,16 @@ bool fileutil::fileExists(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::dirExists(string_view path)
 {
-	auto fs_path = fs::path{ path };
-	return fs::exists(fs_path) && fs::is_directory(fs_path);
+	try
+	{
+		auto fs_path = fs::path{ path };
+		return fs::exists(fs_path) && fs::is_directory(fs_path);
+	}
+	catch (std::exception& ex)
+	{
+		log::error("Error checking if dir \"{}\" exists: {}", path, ex.what());
+		return false;
+	}
 }
 
 // -----------------------------------------------------------------------------

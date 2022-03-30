@@ -6,8 +6,8 @@ class MainAppFileListener;
 class SLADEWxApp : public wxApp
 {
 public:
-	SLADEWxApp()  = default;
-	~SLADEWxApp() = default;
+	SLADEWxApp()           = default;
+	~SLADEWxApp() override = default;
 
 	bool OnInit() override;
 	int  OnExit() override;
