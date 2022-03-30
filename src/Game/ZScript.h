@@ -34,7 +34,7 @@ namespace zscript
 			int    value;
 		};
 
-		bool parse(ParsedStatement& statement);
+		bool parse(const ParsedStatement& statement);
 
 	private:
 		string        name_;
@@ -63,7 +63,7 @@ namespace zscript
 	{
 	public:
 		Variable(string_view name = "") : Identifier(name), type_{ "<unknown>" } {}
-		virtual ~Variable() = default;
+		~Variable() override = default;
 
 	private:
 		string type_;
@@ -77,7 +77,7 @@ namespace zscript
 		{
 		}
 
-		virtual ~Function() = default;
+		~Function() override = default;
 
 		struct Parameter
 		{
@@ -100,7 +100,7 @@ namespace zscript
 		bool   parse(ParsedStatement& statement);
 		string asString();
 
-		static bool isFunction(ParsedStatement& statement);
+		static bool isFunction(const ParsedStatement& statement);
 
 	private:
 		vector<Parameter> parameters_;
@@ -153,7 +153,7 @@ namespace zscript
 		};
 
 		Class(Type type, string_view name = "") : Identifier{ name }, type_{ type } {}
-		virtual ~Class() = default;
+		~Class() override = default;
 
 		const vector<Function>& functions() const { return functions_; }
 
@@ -161,6 +161,7 @@ namespace zscript
 		bool extend(ParsedStatement& block);
 		void inherit(const Class& parent);
 		void toThingType(std::map<int, game::ThingType>& types, vector<game::ThingType>& parsed);
+		bool isMixin() const { return is_mixin_; }
 
 	private:
 		Type               type_;
@@ -170,6 +171,7 @@ namespace zscript
 		vector<Enumerator> enumerators_;
 		PropertyList       default_properties_;
 		StateTable         states_;
+		bool               is_mixin_ = false;
 
 		vector<std::pair<string, string>> db_properties_;
 

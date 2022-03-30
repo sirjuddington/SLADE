@@ -280,7 +280,7 @@ bool isKeyword(string_view word)
 // -----------------------------------------------------------------------------
 // Parses an enumerator block [statement]
 // -----------------------------------------------------------------------------
-bool Enumerator::parse(ParsedStatement& statement)
+bool Enumerator::parse(const ParsedStatement& statement)
 {
 	// Check valid statement
 	if (statement.block.empty())
@@ -471,7 +471,7 @@ string Function::asString()
 // -----------------------------------------------------------------------------
 // Returns true if [statement] is a valid function declaration
 // -----------------------------------------------------------------------------
-bool Function::isFunction(ParsedStatement& statement)
+bool Function::isFunction(const ParsedStatement& statement)
 {
 	// Need at least type, name, (, )
 	if (statement.tokens.size() < 4)
@@ -660,7 +660,10 @@ bool Class::parse(ParsedStatement& class_statement, const vector<Class>& parsed_
 		return false;
 	}
 
-	name_ = class_statement.tokens[1];
+	if (strutil::equalCI(class_statement.tokens[0], "mixin"))
+		is_mixin_ = true;
+
+	name_ = class_statement.tokens[is_mixin_ ? 2 : 1];
 
 	for (unsigned a = 0; a < class_statement.tokens.size(); a++)
 	{
@@ -969,7 +972,8 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 			block.dump();
 
 		// Class
-		if (strutil::equalCI(block.tokens[0], "class"))
+		if (strutil::equalCI(block.tokens[0], "class")
+			|| strutil::equalCI(block.tokens[0], "mixin") && strutil::equalCI(block.tokens[1], "class"))
 		{
 			Class nc(Class::Type::Class);
 
@@ -1173,14 +1177,14 @@ bool ParsedStatement::parse(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 void ParsedStatement::dump(int indent)
 {
-	string line;
+	string text;
 	for (int a = 0; a < indent; a++)
-		line += "  ";
+		text += "  ";
 
 	// Tokens
 	for (auto& token : tokens)
-		line += token + " ";
-	log::debug(line);
+		text += token + " ";
+	log::debug(text);
 
 	// Blocks
 	for (auto& b : block)
