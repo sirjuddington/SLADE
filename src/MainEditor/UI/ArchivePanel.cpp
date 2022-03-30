@@ -556,6 +556,7 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	if (has_dirs)
 		tbg_create->addActionButton("arch_newdir");
 	tbg_create->addActionButton("arch_importfiles");
+	tbg_create->addActionButton("arch_importdir");
 	toolbar_elist_->addGroup(tbg_create);
 	auto* tbg_entry = new SToolBarGroup(toolbar_elist_, "_Entry");
 	tbg_entry->addActionButton("arch_entry_rename");
@@ -675,6 +676,7 @@ void ArchivePanel::addMenus() const
 		SAction::fromId("arch_newdir")->addToMenu(menu_archive);
 		menu_archive->AppendSeparator();
 		SAction::fromId("arch_importfiles")->addToMenu(menu_archive);
+		SAction::fromId("arch_importdir")->addToMenu(menu_archive);
 		SAction::fromId("arch_buildarchive")->addToMenu(menu_archive);
 		menu_archive->AppendSeparator();
 		SAction::fromId("arch_texeditor")->addToMenu(menu_archive);
@@ -984,7 +986,45 @@ bool ArchivePanel::importFiles()
 
 		return ok;
 	}
-	else // User cancelled, return false
+	else // User cancelled
+		return false;
+}
+
+// -----------------------------------------------------------------------------
+// Opens a dir selection dialog and imports any files within the selected
+// directory into the current directory, using the filenames as entry names
+// -----------------------------------------------------------------------------
+bool ArchivePanel::importDir()
+{
+	// Check the archive is still open
+	auto archive = archive_.lock();
+	if (!archive)
+		return false;
+
+	// Run open dir dialog
+	auto path = filedialog::openDirectory("Choose directory to import", this);
+	if (!path.empty())
+	{
+		auto dir = ArchiveDir::getShared(entry_tree_->currentSelectedDir());
+
+		// Begin recording undo level
+		undo_manager_->beginRecord("Import Directory");
+
+		entry_tree_->Freeze();
+		ui::showSplash("Importing Files...", true);
+
+		// Import the directory
+		auto ok = archive->importDir(path, archive_dir_ignore_hidden, dir);
+
+		ui::hideSplash();
+		entry_tree_->Thaw();
+
+		// End recording undo level
+		undo_manager_->endRecord(true);
+
+		return ok;
+	}
+	else // User cancelled
 		return false;
 }
 
@@ -3222,6 +3262,10 @@ bool ArchivePanel::handleAction(string_view id)
 	else if (id == "arch_importfiles")
 		importFiles();
 
+	// Archive->Import Directory
+	else if (id == "arch_importdir")
+		importDir();
+
 	// Archive->Build Archive
 	else if (id == "arch_buildarchive")
 		buildArchive();
@@ -4026,6 +4070,13 @@ void ArchivePanel::onEntryListKeyDown(wxKeyEvent& e)
 		else if (bind == "el_import_files")
 		{
 			importFiles();
+			return;
+		}
+
+		// Import Directory
+		else if (bind == "el_import_dir")
+		{
+			importDir();
 			return;
 		}
 

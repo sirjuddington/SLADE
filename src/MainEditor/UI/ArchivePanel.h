@@ -37,6 +37,7 @@ public:
 	bool newEntry();
 	bool newDirectory();
 	bool importFiles();
+	bool importDir();
 	bool convertArchiveTo() const;
 	bool cleanupArchive() const;
 	bool buildArchive();

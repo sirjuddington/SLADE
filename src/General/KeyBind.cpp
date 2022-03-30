@@ -512,6 +512,7 @@ void KeyBind::initBinds()
 	addBind("el_rename", Keypress("f2"));
 	addBind("el_import", Keypress("I", KPM_CTRL), "Import to Entry", group);
 	addBind("el_import_files", Keypress("I", KPM_CTRL | KPM_SHIFT), "Import Files", group);
+	addBind("el_import_dir", Keypress("I", KPM_CTRL | KPM_ALT), "Import Directory", group);
 	addBind("el_export", Keypress("E", KPM_CTRL), "Export Entry", group);
 	addBind("el_up_dir", Keypress("backspace"), "Up one directory", group);
 	addBind("el_bookmark", Keypress("B", KPM_CTRL), "Toggle Bookmark", group);

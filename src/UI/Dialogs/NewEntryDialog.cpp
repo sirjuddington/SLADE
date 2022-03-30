@@ -84,7 +84,7 @@ void allDirs(const ArchiveDir& dir, wxArrayString& list)
 NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const ArchiveDir* current_dir, bool new_dir) :
 	wxDialog(parent, -1, new_dir ? "New Directory" : "New Entry")
 {
-	wxutil::setWindowIcon(this, new_dir ? "new_directory" : "new_entry");
+	wxutil::setWindowIcon(this, new_dir ? "newfolder" : "newentry");
 
 	const auto&   archive_format = archive.formatDesc();
 	auto          types          = wxutil::arrayStringStd(type_names);

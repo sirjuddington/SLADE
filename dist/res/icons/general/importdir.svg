@@ -1,0 +1,17 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="16px"
+    height="16px"
+    viewBox="0 0 24 23">
+	<path
+		d="M5 16v2h14v-2H5m0 4v2h14v-2H5z"
+        fill="#209843"
+    />
+	<g transform="scale(1,1) translate(4,-1)">
+		<path
+			fill="#209843"
+			d="M9 4L7 2H0v13h16V4H9zm-1 9.5L4.5 10H7V6h2v4h2.5L8 13.5z"
+		/>
+	</g>
+</svg>

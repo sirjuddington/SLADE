@@ -238,6 +238,27 @@ bool filedialog::saveFiles(FDInfo& info, string_view caption, string_view extens
 }
 
 // -----------------------------------------------------------------------------
+// Shows a dialog to open a directory.
+// Returns the path of the selected directory or an empty string if cancelled
+// -----------------------------------------------------------------------------
+string filedialog::openDirectory(string_view caption, wxWindow* parent)
+{
+	// Open a directory browser dialog
+	wxDirDialog dialog_open(parent, wxutil::strFromView(caption), dir_last, wxDD_DIR_MUST_EXIST | wxDD_NEW_DIR_BUTTON);
+
+	// Run the dialog
+	if (dialog_open.ShowModal() == wxID_OK)
+	{
+		// Set last dir
+		dir_last = wxutil::strToView(dialog_open.GetPath());
+
+		return dialog_open.GetPath().ToStdString();
+	}
+
+	return {};
+}
+
+// -----------------------------------------------------------------------------
 // Returns the executable file filter string depending on the current OS
 // -----------------------------------------------------------------------------
 string filedialog::executableExtensionString()

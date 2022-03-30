@@ -1248,7 +1248,7 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name)
 // If [ignore_hidden] is true, files and directories beginning with a '.' will
 // not be imported
 // -----------------------------------------------------------------------------
-bool Archive::importDir(string_view directory, bool ignore_hidden)
+bool Archive::importDir(string_view directory, bool ignore_hidden, shared_ptr<ArchiveDir> base)
 {
 	// Get a list of all files in the directory
 	vector<string> files;
@@ -1290,7 +1290,7 @@ bool Archive::importDir(string_view directory, bool ignore_hidden)
 			edir.remove_prefix(1);
 
 		// Add the entry
-		auto dir   = createDir(edir);
+		auto dir   = createDir(edir, base);
 		auto entry = addNewEntry(ename, dir->numEntries() + 1, dir.get());
 
 		// Load data
