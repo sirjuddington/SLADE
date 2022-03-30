@@ -23,7 +23,7 @@ public:
 
 	Archive*     archive() const { return archive_.lock().get(); }
 	UndoManager* undoManager() const { return undo_manager_.get(); }
-	bool         saveEntryChanges() const;
+	bool         saveEntryChanges(bool force = false) const;
 	void         addMenus() const;
 	void         removeMenus() const;
 

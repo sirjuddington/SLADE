@@ -630,20 +630,22 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 }
 
 // -----------------------------------------------------------------------------
-// Saves any changes made to the currently open entry
+// Saves any changes made to the currently open entry.
+// If [force] is true the autosave_entry_changes cvar is ignored and the entry
+// will always be saved (if there are any changes)
 // -----------------------------------------------------------------------------
-bool ArchivePanel::saveEntryChanges() const
+bool ArchivePanel::saveEntryChanges(bool force) const
 {
 	// Ignore if no changes have been made (or no entry is open)
 	if (!cur_area_->isModified() || !cur_area_->entry())
 		return true;
 
 	// Don't save if autosave is off
-	if (autosave_entry_changes == 0)
+	if (!force && autosave_entry_changes == 0)
 		return false;
 
 	// Ask if needed
-	if (autosave_entry_changes > 1)
+	if (!force && autosave_entry_changes > 1)
 	{
 		int result = wxMessageBox(
 			wxString::Format("Save changes to entry \"%s\"?", cur_area_->entry()->name()),
@@ -689,6 +691,7 @@ void ArchivePanel::addMenus() const
 	{
 		// Entry menu
 		menu_entry = new wxMenu();
+		SAction::fromId("arch_entry_save")->addToMenu(menu_entry);
 		SAction::fromId("arch_entry_rename")->addToMenu(menu_entry);
 		SAction::fromId("arch_entry_delete")->addToMenu(menu_entry);
 		SAction::fromId("arch_entry_revert")->addToMenu(menu_entry);
@@ -3278,6 +3281,10 @@ bool ArchivePanel::handleAction(string_view id)
 	// ------------------------------------------------------------------------
 	// ENTRY MENU
 	// ------------------------------------------------------------------------
+
+	// Entry->Save
+	else if (id == "arch_entry_save")
+		saveEntryChanges(true);
 
 	// Entry->Rename
 	else if (id == "arch_entry_rename")
