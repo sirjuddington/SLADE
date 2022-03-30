@@ -478,7 +478,7 @@ bool app::init(vector<string>& args, double ui_scale)
 	SAction::setBaseWxId(26000);
 	SAction::initActions();
 
-#ifdef USE_LUA
+#ifndef NO_LUA
 	// Init lua
 	lua::init();
 #endif
@@ -544,7 +544,7 @@ bool app::init(vector<string>& args, double ui_scale)
 	log::info("Loading game configurations");
 	game::init();
 
-#ifdef USE_LUA
+#ifndef NO_LUA
 	// Init script manager
 	scriptmanager::init();
 #endif
@@ -671,7 +671,7 @@ void app::exit(bool save_config)
 		// Save custom special presets
 		game::saveCustomSpecialPresets();
 
-#ifdef USE_LUA
+#ifndef NO_LUA
 		// Save custom scripts
 		scriptmanager::saveUserScripts();
 #endif
@@ -695,7 +695,7 @@ void app::exit(bool save_config)
 			log::warning("Could not clean up temporary file \"{}\": {}", item.path().string(), error.message());
 	}
 
-#ifdef USE_LUA
+#ifndef NO_LUA
 	// Close lua
 	lua::close();
 #endif

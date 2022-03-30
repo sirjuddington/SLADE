@@ -645,7 +645,7 @@ bool MainWindow::handleAction(string_view id)
 	if (id == "main_showstartpage")
 		openStartPageTab();
 
-#ifdef USE_LUA
+#ifndef NO_LUA
 	// Tools->Run Script
 	if (id == "main_runscript")
 	{
