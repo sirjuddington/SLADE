@@ -76,6 +76,17 @@ void resetError()
 }
 
 // -----------------------------------------------------------------------------
+// Logs the given [error]
+// -----------------------------------------------------------------------------
+void logError(const Error& error)
+{
+	if (error.line_no >= 0)
+		log::error("{} Error running Lua script: {}: {}", error.type, error.line_no, error.message);
+	else
+		log::error("{} Error running Lua script: {}", error.type, error.message);
+}
+
+// -----------------------------------------------------------------------------
 // Processes error information from [result]
 // -----------------------------------------------------------------------------
 void processError(const sol::protected_function_result& result)
@@ -88,19 +99,28 @@ void processError(const sol::protected_function_result& result)
 	sol::error  error     = result;
 	string_view error_msg = error.what();
 
-	// Line No.
-	auto pos             = error_msg.find("]:");
-	auto pos_ln_end      = error_msg.find(':', pos + 2);
-	script_error.line_no = strutil::asInt(error_msg.substr(pos + 2, pos_ln_end - pos + 2));
-
-	// Actual error message
-	script_error.message = error_msg.substr(pos_ln_end + 2);
+	// Find Line No.
+	if (auto pos = error_msg.find("]:"); pos != string_view::npos)
+	{
+		auto pos_ln_end      = error_msg.find(':', pos + 2);
+		script_error.line_no = strutil::asInt(error_msg.substr(pos + 2, pos_ln_end - pos + 2)); // Line No.
+		script_error.message = error_msg.substr(pos_ln_end + 2);                                // Actual error message
+	}
+	else
+	{
+		// No line number in error message
+		script_error.line_no = -1;
+		script_error.message = error_msg;
+	}
 }
 
+// -----------------------------------------------------------------------------
+// Handles a lua error from a sol2 protected_function_result [pfr]
+// -----------------------------------------------------------------------------
 sol::protected_function_result handleError(lua_State* L, sol::protected_function_result pfr)
 {
 	processError(pfr);
-	log::error("{} Error running Lua script: {}: {}", script_error.type, script_error.line_no, script_error.message);
+	logError(script_error);
 
 	return pfr;
 }
@@ -121,22 +141,18 @@ template<class T> bool runEditorScript(const string& script, T param)
 	if (!load_result.valid())
 	{
 		processError(load_result);
-		log::error(
-			"{} Error running Lua script: {}: {}", script_error.type, script_error.line_no, script_error.message);
+		logError(script_error);
 		return false;
 	}
 
 	// Run script execute function
-	// sol::protected_function func        = sandbox["execute"];
-	// auto                    exec_result = func(param);
 	sol::protected_function        func(sandbox["Execute"]);
 	sol::protected_function_result exec_result = func(param);
 	if (!exec_result.valid())
 	{
 		sol::error error = exec_result;
 		processError(exec_result);
-		log::error(
-			"{} Error running Lua script: {}: {}", script_error.type, script_error.line_no, script_error.message);
+		logError(script_error);
 		return false;
 	}
 
@@ -213,12 +229,12 @@ void lua::showErrorDialog(wxWindow* parent, string_view title, string_view messa
 
 	ExtMessageDialog dlg(parent ? parent : current_window, wxutil::strFromView(title));
 	dlg.setMessage(wxutil::strFromView(message));
-	dlg.setExt(wxString::Format(
-		"%s Error\nLine %d: %s\n\nScript Output:\n%s",
-		lua::error().type,
-		lua::error().line_no,
-		lua::error().message,
-		output));
+	const auto& [type, error_msg, line_no] = lua::error();
+	if (line_no >= 0)
+		dlg.setExt(wxString::Format("%s Error\nLine %d: %s\n\nScript Output:\n%s", type, line_no, error_msg, output));
+	else
+		dlg.setExt(wxString::Format("%s Error\n%s\n\nScript Output:\n%s", type, error_msg, output));
+
 	dlg.CenterOnParent();
 	dlg.ShowModal();
 }
@@ -238,8 +254,7 @@ bool lua::run(const string& program)
 	if (!result.valid())
 	{
 		processError(result);
-		log::error(
-			"{} Error running Lua script: {}: {}", script_error.type, script_error.line_no, script_error.message);
+		logError(script_error);
 		return false;
 	}
 
@@ -261,8 +276,7 @@ bool lua::runFile(const string& filename)
 	if (!result.valid())
 	{
 		processError(result);
-		log::error(
-			"{} Error running Lua script: {}: {}", script_error.type, script_error.line_no, script_error.message);
+		logError(script_error);
 		return false;
 	}
 
