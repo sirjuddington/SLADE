@@ -330,7 +330,7 @@ void readConfigFile()
 // -----------------------------------------------------------------------------
 // Processes command line [args]
 // -----------------------------------------------------------------------------
-vector<string> processCommandLine(vector<string>& args)
+vector<string> processCommandLine(const vector<string>& args)
 {
 	vector<string> to_open;
 
@@ -428,14 +428,14 @@ bool app::isExiting()
 // -----------------------------------------------------------------------------
 // Application initialisation
 // -----------------------------------------------------------------------------
-bool app::init(vector<string>& args, double ui_scale)
+bool app::init(const vector<string>& args, double ui_scale)
 {
 	// Get the id of the current thread (should be the main one)
 	main_thread_id = std::this_thread::get_id();
 
-	// Set locale to C so that the tokenizer will work properly
+	// Set numeric locale to C so that the tokenizer will work properly
 	// even in locales where the decimal separator is a comma.
-	setlocale(LC_ALL, "C");
+	wxSetlocale(LC_NUMERIC, "C");
 
 	// Init application directories
 	if (!initDirectories())
