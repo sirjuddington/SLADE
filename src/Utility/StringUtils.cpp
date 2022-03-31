@@ -1224,14 +1224,272 @@ string_view strutil::viewFromChars(const char* chars, unsigned max_length)
 	return { chars, size };
 }
 
+// -----------------------------------------------------------------------------
+// Encodes [str] to UTF8
+// -----------------------------------------------------------------------------
 string strutil::toUTF8(string_view str)
 {
 	return wxutil::strFromView(str).ToUTF8().data();
 }
 
+// -----------------------------------------------------------------------------
+// Decodes [str] from UTF8
+// -----------------------------------------------------------------------------
 string strutil::fromUTF8(string_view str)
 {
 	return wxString::FromUTF8(str.data(), str.length()).ToStdString();
+}
+
+// -----------------------------------------------------------------------------
+// Splits [str] into tokens, using given [options]
+// -----------------------------------------------------------------------------
+vector<strutil::Token> strutil::tokenize(const string& str, const TokenizeOptions& options)
+{
+	vector<Token> tokens;
+	tokenize(tokens, str, options);
+	return tokens;
+}
+
+// -----------------------------------------------------------------------------
+// Splits [str] into [tokens], using given [options]
+// -----------------------------------------------------------------------------
+void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeOptions& options)
+{
+	auto     end           = str.size();
+	auto     pos           = 0u;
+	auto     line_no       = 1u;
+	auto     line_comment  = false;
+	auto     block_comment = 0; // 0=none, 1=c, 2=lua
+	unsigned token_start   = end;
+
+	while (pos < end)
+	{
+		auto& current = str[pos];
+
+		// Newline
+		if (current == '\n')
+		{
+			// Add current token if needed
+			if (token_start < end)
+			{
+				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				token_start = end;
+			}
+
+			++line_no;
+			++pos;
+			line_comment = false;
+
+			continue;
+		}
+
+		// Within line comment
+		if (line_comment)
+		{
+			++pos;
+			continue;
+		}
+
+		// Within block comment
+		if (block_comment > 0)
+		{
+			if ((block_comment == 1 && current == '*' && pos + 1 < end && str[pos + 1] == '/') || // C-style
+				(block_comment == 2 && current == ']' && pos + 1 < end && str[pos + 1] == ']'))   // Lua
+			{
+				pos += 2;
+				block_comment = 0;
+			}
+			else
+				++pos;
+
+			continue;
+		}
+
+		// Whitespace
+		//if (current == ' ' || current == '\t' || current == '\r' || current == '\f' || current == '\v')
+		if (options.whitespace_characters.find(current) != string::npos)
+		{
+			// Add current token if needed
+			if (token_start < end)
+			{
+				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				token_start = end;
+			}
+
+			++pos;
+			continue;
+		}
+
+		// C-style block comment
+		if (options.comments_cstyle && current == '/' && pos + 1 < end && str[pos + 1] == '*')
+		{
+			// Add current token if needed
+			if (token_start < end)
+			{
+				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				token_start = end;
+			}
+
+			pos += 2;
+			block_comment = 1;
+			continue;
+		}
+
+		// Lua-style comment (block or line)
+		if (options.comments_lua && current == '-' && pos + 1 < end && str[pos + 1] == '-')
+		{
+			// Add current token if needed
+			if (token_start < end)
+			{
+				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				token_start = end;
+			}
+
+			pos += 2;
+
+			// Check for block comment (--[[)
+			if (pos + 1 < end && str[pos] == '[' && str[pos + 1] == '[')
+			{
+				block_comment = 2;
+				pos += 2;
+			}
+			else
+				line_comment = true;
+
+			continue;
+		}
+
+		// CPP-style line comment
+		if (options.comments_cppstyle && current == '/' && pos + 1 < end && str[pos + 1] == '/')
+		{
+			// Add current token if needed
+			if (token_start < end)
+			{
+				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				token_start = end;
+			}
+
+			pos += 2;
+
+			// Check for DB editor comment
+			if (options.decorate && pos < end && str[pos] == '$')
+			{
+				// Read to the end of the line
+				token_start = pos - 2;
+				while (++pos < end)
+					if (str[pos] == '\n')
+						break;
+
+				// Add as token
+				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				token_start = end;
+			}
+			else
+				line_comment = true;
+
+			continue;
+		}
+
+		// Double hash line comment
+		if (options.comments_doublehash && current == '#' && pos + 1 < end && str[pos + 1] == '#')
+		{
+			// Add current token if needed
+			if (token_start < end)
+			{
+				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				token_start = end;
+			}
+
+			pos += 2;
+			line_comment = true;
+			continue;
+		}
+
+		// Single hash line comment
+		if (options.comments_hash && current == '#')
+		{
+			// Add current token if needed
+			if (token_start < end)
+			{
+				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				token_start = end;
+			}
+
+			++pos;
+			line_comment = true;
+			continue;
+		}
+
+		// Shell line comment
+		if (options.comments_shell && current == ';')
+		{
+			// Add current token if needed
+			if (token_start < end)
+			{
+				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				token_start = end;
+			}
+
+			++pos;
+			line_comment = true;
+			continue;
+		}
+
+		// Quoted string
+		if (current == '"' && pos + 1 < end)
+		{
+			// Add current token if needed
+			if (token_start < end)
+				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+
+			++pos;
+			token_start = pos;
+			while (pos < end)
+			{
+				if (str[pos] == '"')
+				{
+					tokens.push_back({ { str.data() + token_start, pos - token_start }, true, line_no, token_start });
+					++pos;
+					break;
+				}
+				if (str[pos] == options.string_escape)
+					++pos;
+
+				++pos;
+			}
+
+			token_start = end;
+			continue;
+		}
+
+		// Special character
+		if (options.special_characters.find(current) != string::npos)
+		{
+			// Add current token if needed
+			if (token_start < end)
+			{
+				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				token_start = end;
+			}
+
+			tokens.push_back({ { str.data() + pos, 1 }, false, line_no, pos });
+			++pos;
+			continue;
+		}
+
+		// Anything else - begin or continue token
+		if (token_start == end)
+			token_start = pos;
+
+		++pos;
+	}
+
+	// Add last token if needed
+	if (token_start < end)
+	{
+		tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+		token_start = end;
+	}
 }
 
 

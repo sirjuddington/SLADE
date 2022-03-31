@@ -165,6 +165,7 @@ namespace strutil
 		string::size_type filename_end_   = string::npos;
 	};
 
+	// String transformer (to chain different string transformations)
 	struct Transformer
 	{
 		string str;
@@ -206,6 +207,43 @@ namespace strutil
 			return *this;
 		}
 	};
+
+
+	// Simple Tokenizer function(s)
+	// Unlike the Tokenizer class, this will tokenize a string into a vector of Tokens
+	// (basically string_views with some extra info) all at once,
+	// so it's best to use if we know we won't want to 'abort' tokenizing part way through the source string
+
+	struct TokenizeOptions
+	{
+		// Comment types to skip
+		bool comments_cstyle     = false; // C comments (/* ... */)
+		bool comments_cppstyle   = false; // C++ comments (//)
+		bool comments_hash       = false; // Hash comments (#)
+		bool comments_doublehash = false; // Double hash comments (##)
+		bool comments_shell      = false; // Shell comments (;)
+		bool comments_lua        = false; // Lua comments (-- (line comment) and --[[ ... ]]-- (block comment))
+
+		string special_characters    = DEFAULT_SPECIAL_CHARACTERS;    // These will always be read as separate tokens
+		string whitespace_characters = DEFAULT_WHITESPACE_CHARACTERS; // Characters to count as whitespace
+		char   string_escape         = '\\';                          // Escape character for quoted strings
+		bool   decorate              = false;                         // Read //$ comments as tokens
+		bool   debug                 = false;                         // Log each token read
+
+		static inline string DEFAULT_SPECIAL_CHARACTERS    = ";,:|={}/";
+		static inline string DEFAULT_WHITESPACE_CHARACTERS = " \t\r\f\v";
+	};
+
+	struct Token
+	{
+		string_view text;
+		bool        quoted_string;
+		unsigned    line_no;
+		unsigned    position;
+	};
+
+	void          tokenize(vector<Token>& tokens, const string& str, const TokenizeOptions& options);
+	vector<Token> tokenize(const string& str, const TokenizeOptions& options);
 
 } // namespace strutil
 
