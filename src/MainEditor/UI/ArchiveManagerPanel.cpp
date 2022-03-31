@@ -289,7 +289,15 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	// Create/setup bookmarks tab
 	auto panel_bm = new wxPanel(stc_tabs_);
 	panel_bm->SetSizer(new wxBoxSizer(wxVERTICAL));
-	list_bookmarks_ = new ListView(panel_bm, -1);
+	list_bookmarks_     = new ListView(panel_bm, -1);
+	auto* bm_image_list = wxutil::createSmallImageList();
+	auto  et_icon_list  = EntryType::iconList();
+	for (const auto& name : et_icon_list)
+	{
+		if (bm_image_list->Add(icons::getIcon(icons::Entry, name)) < 0)
+			bm_image_list->Add(icons::getIcon(icons::Entry, "default"));
+	}
+	list_bookmarks_->SetImageList(bm_image_list, wxIMAGE_LIST_SMALL);
 	menu_bookmarks_ = new wxMenu();
 	panel_bm->GetSizer()->Add(list_bookmarks_, 1, wxEXPAND | wxALL, ui::pad());
 	refreshBookmarkList();
@@ -316,7 +324,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	list_archives_->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &ArchiveManagerPanel::onListArchivesRightClick, this);
 	list_recent_->Bind(wxEVT_LIST_ITEM_ACTIVATED, &ArchiveManagerPanel::onListRecentActivated, this);
 	list_recent_->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &ArchiveManagerPanel::onListRecentRightClick, this);
-	list_bookmarks_->Bind(wxEVT_LIST_ITEM_ACTIVATED, [&](wxListEvent&) { am_current_tab = stc_tabs_->GetSelection(); });
+	list_bookmarks_->Bind(wxEVT_LIST_ITEM_ACTIVATED, [&](wxListEvent& e) { goToBookmark(e.GetIndex()); });
 	list_bookmarks_->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &ArchiveManagerPanel::onListBookmarksRightClick, this);
 	stc_archives_->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGING, [&](wxAuiNotebookEvent& e) { e.Skip(); });
 	stc_archives_->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &ArchiveManagerPanel::onArchiveTabChanged, this);
@@ -1001,10 +1009,13 @@ void ArchiveManagerPanel::closeCurrentTab()
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Saves any changes in the currently selected tab
+// -----------------------------------------------------------------------------
 bool ArchiveManagerPanel::saveCurrentTab() const
 {
-	auto index = stc_archives_->GetSelection();
-	auto* tab = stc_archives_->GetPage(index);
+	auto  index = stc_archives_->GetSelection();
+	auto* tab   = stc_archives_->GetPage(index);
 
 	// Archive Tab
 	if (isArchiveTab(index))
@@ -1953,8 +1964,9 @@ void ArchiveManagerPanel::updateBookmarkListItem(int index) const
 		return;
 
 	// Set item name
+	list_bookmarks_->SetItemImage(index, entry->type()->index());
 	list_bookmarks_->setItemText(index, 0, entry->name());
-	list_bookmarks_->setItemText(index, 1, entry->parent()->filename());
+	list_bookmarks_->setItemText(index, 1, entry->parent()->filename(false));
 
 	// Set item status colour
 	using ItemStatus = ListView::ItemStatus;
