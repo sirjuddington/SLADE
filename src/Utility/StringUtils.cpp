@@ -74,29 +74,29 @@ std::regex re_float{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$" };
 // Returns true if [str] is a valid integer. If [allow_hex] is true, can also
 // be a valid hex string
 // -----------------------------------------------------------------------------
-bool strutil::isInteger(string_view str, bool allow_hex)
+bool strutil::isInteger(const string& str, bool allow_hex)
 {
-	return std::regex_search(str.data(), re_int1) || std::regex_search(str.data(), re_int2)
-		   || (allow_hex && std::regex_search(str.data(), re_int3));
+	return std::regex_search(str, re_int1) || std::regex_search(str, re_int2)
+		   || (allow_hex && std::regex_search(str, re_int3));
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if [str] is a valid hex string
 // -----------------------------------------------------------------------------
-bool strutil::isHex(string_view str)
+bool strutil::isHex(const string& str)
 {
-	return std::regex_search(str.data(), re_int3);
+	return std::regex_search(str, re_int3);
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if [str] is a valid floating-point number
 // -----------------------------------------------------------------------------
-bool strutil::isFloat(string_view str)
+bool strutil::isFloat(const string& str)
 {
 	if (str.empty() || str[0] == '$')
 		return false;
 
-	return std::regex_search(str.data(), re_float);
+	return std::regex_search(str, re_float);
 }
 
 bool strutil::equalCI(string_view left, string_view right)

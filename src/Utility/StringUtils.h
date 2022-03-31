@@ -34,9 +34,9 @@ namespace strutil
 
 	// String comparisons and checks
 	// CI = Case-Insensitive
-	bool isInteger(string_view str, bool allow_hex = true);
-	bool isHex(string_view str);
-	bool isFloat(string_view str);
+	bool isInteger(const string& str, bool allow_hex = true);
+	bool isHex(const string& str);
+	bool isFloat(const string& str);
 	bool equalCI(string_view left, string_view right);
 	// bool equalCI(string_view left, const char* right);
 	bool startsWith(string_view str, string_view check);

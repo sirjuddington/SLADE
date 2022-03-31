@@ -256,7 +256,7 @@ void Lexer::styleWord(LexerState& state, string_view word)
 	else
 	{
 		// Check for number
-		if (strutil::isInteger(word) || strutil::isFloat(word))
+		if (strutil::isInteger(word_str) || strutil::isFloat(word_str))
 			state.editor->SetStyling(word.length(), Style::Number);
 		else
 			state.editor->SetStyling(word.length(), Style::Default);
