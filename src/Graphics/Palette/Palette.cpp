@@ -36,7 +36,6 @@
 #include "Graphics/Translation.h"
 #include "Utility/CIEDeltaEquations.h"
 #include "Utility/StringUtils.h"
-#include "Utility/Tokenizer.h"
 
 using namespace slade;
 
@@ -212,79 +211,109 @@ bool Palette::loadMem(MemChunk& mc, Format format)
 		if (memchr(mc.data(), 0, mc.size() - 1))
 			return false; // Not text
 
-		Tokenizer tz;
-		tz.setSpecialCharacters(",:#");
-		tz.openMem(mc, "Palette Import");
+		// Tokenize text
+		strutil::TokenizeOptions opt;
+		opt.comments_hash      = true;
+		opt.special_characters = ",:#";
+		auto text_data         = mc.asString();
+		auto tokens            = strutil::tokenize(text_data, opt);
 
-		// Parse headers
+		// Check if there are even enough tokens
+		if (tokens.size() < 3)
+		{
+			global::error = "Invalid Palette";
+			return false;
+		}
+
+		// Begin parsing
+		auto       current  = 0u;
+		auto       n_tokens = tokens.size();
+		const auto csv      = format == Format::CSV;
+		auto       index    = 0;
+		auto       colour   = ColRGBA{ 0, 0, 0, 255 };
+
+		// Check header
 		if (format == Format::JASC)
 		{
-			if (!tz.checkToken("JASC-PAL") || !tz.checkToken("0100"))
+			if (n_tokens < 3 || tokens[0].text != "JASC-PAL" || tokens[1].text != "0100")
 			{
 				global::error = "Invalid JASC palette (unknown header)";
 				log::error(global::error);
 				return false;
 			}
-			int count = tz.getInteger();
-			if (count > 256 || count < 0)
+			int count = strutil::asInt(tokens[2].text);
+			if (count > 256 || count <= 0)
 			{
 				global::error = "Invalid JASC palette (wrong count)";
 				log::error(global::error);
 				return false;
 			}
+
+			current = 3;
 		}
 		else if (format == Format::GIMP)
 		{
-			if (!tz.checkToken("GIMP") || !tz.checkToken("Palette"))
+			if (n_tokens < 2 || tokens[0].text != "GIMP" || tokens[1].text != "Palette")
 			{
 				global::error = "Invalid GIMP palette (unknown header)";
 				log::error(global::error);
 				return false;
 			}
+
+			current = 2;
 		}
-		// Now, parse
-		string  s1, s2, s3;
-		ColRGBA col(0, 0, 0, 255);
-		int     c = 0;
-		do
+
+		// Parse rgb triplets
+		int val;
+		while (index < 256 && current < n_tokens)
 		{
-			// Get the first token. If it begins with #, it's a comment in GIMP. Ignore.
-			// Since the lexer expects ## for comments, not just #, tell it explicitly to skip.
-			s1 = tz.getToken();
-			if (format == Format::CSV)
-				tz.checkToken(",");
-			else if (format == Format::GIMP && s1 == "#")
+			auto line_no = tokens[current].line_no;
+
+			// Check for number
+			if (strutil::toInt(tokens[current].text, val))
 			{
-				tz.advToEndOfLine();
-				continue;
+				// Check we have enough tokens for a colour triplet
+				if (current + (csv ? 4 : 2) >= n_tokens)
+				{
+					global::error = "Invalid palette (unexpected end of data)";
+					log::error(global::error);
+					return false;
+				}
+
+				// Read colour from rgb tokens (Red first, already read above)
+				colour.r = val;
+				current += csv ? 2 : 1;
+
+				// Green
+				if (!strutil::toInt(tokens[current].text, val))
+				{
+					global::error = fmt::format(
+						"Invalid palette data (expected integer, got \"{}\")", tokens[current].text);
+					log::error(global::error);
+					return false;
+				}
+				colour.g = val;
+				current += csv ? 2 : 1;
+
+				// Blue
+				if (!strutil::toInt(tokens[current].text, val))
+				{
+					global::error = fmt::format(
+						"Invalid palette data (expected integer, got \"{}\")", tokens[current].text);
+					log::error(global::error);
+					return false;
+				}
+				colour.b = val;
+
+				// Set colour
+				colour.index = index;
+				setColour(index++, colour);
 			}
 
-			// Get the second token. If it is :, then that means the first word was a field name.
-			// Since we're ignoring them, skip the line.
-			s2 = tz.getToken();
-			if (format == Format::CSV)
-				tz.checkToken(",");
-			else if (format == Format::GIMP && s2 == ":")
-			{
-				tz.advToEndOfLine();
-				continue;
-			}
-
-			// Get the third token. In GIMP, the RGB values are followed by the color name, which
-			// can include spaces and is unquoted, so just skip the whole rest of the line.
-			s3 = tz.getToken();
-			if (format == Format::CSV)
-				tz.checkToken(",");
-			if (format == Format::GIMP)
-				tz.advToEndOfLine();
-
-			// If we haven't skipped this part from a continue, then we have a colour triplet.
-			col.r     = strutil::asInt(s1);
-			col.g     = strutil::asInt(s2);
-			col.b     = strutil::asInt(s3);
-			col.index = c;
-			setColour(c++, col);
-		} while (c < 256 && !tz.peekToken().empty());
+			// Skip to next line
+			while (current < n_tokens && tokens[current].line_no == line_no)
+				++current;
+		}
 
 		return true;
 	}
