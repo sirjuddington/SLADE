@@ -894,7 +894,6 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 
 		stc_archives_->AddPage(txed, wxString::Format("TEXTUREx Editor (%s)", archive->filename(false)), true);
 		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, icons::getIcon(icons::Entry, "texturex"));
-		txed->SetName("texture");
 		txed->setSelection(entry);
 		txed->Show(true);
 		// Select the new tab
@@ -2209,6 +2208,13 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 	{
 		auto ep = dynamic_cast<EntryPanel*>(stc_archives_->GetPage(selection));
 		ep->addCustomMenu();
+	}
+
+	// TextureXEditor
+	if (isTextureEditorTab(selection))
+	{
+		auto te = dynamic_cast<TextureXEditor*>(stc_archives_->GetPage(selection));
+		te->updateMenuStatus();
 	}
 
 	e.Skip();

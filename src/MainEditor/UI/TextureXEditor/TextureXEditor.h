@@ -29,7 +29,7 @@ public:
 	void showTextureMenu(bool show = true) const;
 	void setSelection(size_t index) const;
 	void setSelection(ArchiveEntry* entry) const;
-	void updateMenuStatus();
+	void updateMenuStatus() const;
 	void undo();
 	void redo();
 

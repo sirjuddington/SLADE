@@ -102,11 +102,9 @@ STopWindow::~STopWindow()
 void STopWindow::addCustomMenu(wxMenu* menu, const wxString& title)
 {
 	// Check menu doesn't already exist
-	for (unsigned a = 0; a < custom_menus_.size(); a++)
-	{
-		if (custom_menus_[a] == menu)
+	for (auto& custom_menu : custom_menus_)
+		if (custom_menu == menu)
 			return;
-	}
 
 	// Insert custom menu after the last existing custom menu
 	GetMenuBar()->Insert(custom_menus_begin_ + custom_menus_.size(), menu, title);
@@ -138,7 +136,7 @@ void STopWindow::removeCustomMenu(wxMenu* menu)
 void STopWindow::removeAllCustomMenus()
 {
 	// Remove all custom menus from menubar
-	while (custom_menus_.size() > 0)
+	while (!custom_menus_.empty())
 		removeCustomMenu(custom_menus_[0]);
 }
 

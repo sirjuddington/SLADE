@@ -159,7 +159,7 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Init variables
 	undo_manager_ = std::make_unique<UndoManager>();
-	wxWindowBase::SetName("texturex");
+	wxWindowBase::SetName("texture");
 
 	// Create texture menu
 	menu_texture_ = new wxMenu();
@@ -653,7 +653,7 @@ void TextureXEditor::setSelection(ArchiveEntry* entry) const
 // -----------------------------------------------------------------------------
 // Checks if the Texture menu needs to be displayed or not
 // -----------------------------------------------------------------------------
-void TextureXEditor::updateMenuStatus()
+void TextureXEditor::updateMenuStatus() const
 {
 	if (tabs_->GetSelection() < 0)
 		return;
