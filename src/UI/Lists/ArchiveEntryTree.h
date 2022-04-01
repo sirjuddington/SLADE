@@ -52,7 +52,8 @@ namespace ui
 		{
 			return static_cast<ArchiveEntry*>(item.GetID());
 		}
-		ArchiveDir* dirForDirItem(const wxDataViewItem& item) const;
+		ArchiveDir*    dirForDirItem(const wxDataViewItem& item) const;
+		wxDataViewItem createItemForDirectory(const ArchiveDir& dir) const;
 
 	private:
 		weak_ptr<Archive>    archive_;
@@ -80,11 +81,10 @@ namespace ui
 		int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned int column, bool ascending)
 			const override;
 
-		wxDataViewItem createItemForDirectory(const ArchiveDir& dir) const;
-		bool           matchesFilter(const ArchiveEntry& entry) const;
-		void           getDirChildItems(wxDataViewItemArray& items, const ArchiveDir& dir, bool filter = true) const;
-		bool           entryIsInList(const ArchiveEntry& entry) const;
-		bool           dirIsInList(const ArchiveDir& dir) const;
+		bool matchesFilter(const ArchiveEntry& entry) const;
+		void getDirChildItems(wxDataViewItemArray& items, const ArchiveDir& dir, bool filter = true) const;
+		bool entryIsInList(const ArchiveEntry& entry) const;
+		bool dirIsInList(const ArchiveDir& dir) const;
 	};
 
 	class ArchiveEntryTree : public wxDataViewCtrl
@@ -127,6 +127,7 @@ namespace ui
 		void collapseAll(const ArchiveDir& dir_start);
 		void upDir();
 		void homeDir();
+		void goToDir(shared_ptr<ArchiveDir> dir, bool expand = false);
 
 		// Overrides
 		void EnsureVisible(const wxDataViewItem& item, const wxDataViewColumn* column = nullptr) override;
@@ -142,7 +143,6 @@ namespace ui
 		void setupColumns();
 		void saveColumnWidths() const;
 		void updateColumnWidths();
-		void setDir(shared_ptr<ArchiveDir> dir);
 	};
 
 } // namespace ui

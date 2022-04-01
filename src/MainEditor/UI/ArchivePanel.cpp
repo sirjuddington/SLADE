@@ -1733,6 +1733,7 @@ bool ArchivePanel::sort() const
 // -----------------------------------------------------------------------------
 bool ArchivePanel::bookmark() const
 {
+	// Entry
 	if (auto entry = entry_tree_->firstSelectedEntry())
 	{
 		if (app::archiveManager().isBookmarked(entry))
@@ -1742,8 +1743,22 @@ bool ArchivePanel::bookmark() const
 
 		return true;
 	}
-	else
-		return false;
+
+	// Directory
+	if (auto dir = entry_tree_->firstSelectedDirectory())
+	{
+		auto dir_entry = dir->dirEntryShared();
+
+		if (app::archiveManager().isBookmarked(dir_entry.get()))
+			app::archiveManager().deleteBookmark(dir_entry.get());
+		else
+			app::archiveManager().addBookmark(dir_entry);
+
+		return true;
+	}
+
+	// Invalid selection
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -2944,26 +2959,21 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		EntryType::detectEntryType(*entry);
 
 	// Are we trying to open a directory? This can happen from bookmarks.
-	//if (entry->type() == EntryType::folderType())
-	//{
-	//	// Removes starting / from path
-	//	wxString name = entry->path(true);
-	//	if (name.StartsWith("/"))
-	//		name.Remove(0, 1);
+	if (entry->type() == EntryType::folderType())
+	{
+		// Get directory to open
+		auto dir = ArchiveDir::findDirByDirEntry(archive->rootDir(), *entry);
 
-	//	// Get directory to open
-	//	auto dir = ArchiveDir::subdirAtPath(archive->rootDir(), name.ToStdString());
+		// Check it exists (really should)
+		if (!dir)
+		{
+			log::error(wxString::Format("Trying to open nonexistant directory %s", entry->path(true)));
+			return false;
+		}
 
-	//	// Check it exists (really should)
-	//	if (!dir)
-	//	{
-	//		log::error(wxString::Format("Trying to open nonexistant directory %s", name));
-	//		return false;
-	//	}
-	//	// entry_list_->setDir(dir);
-	//}
-	//else
-	if (entry->type() != EntryType::folderType())
+		entry_tree_->goToDir(dir, true);
+	}
+	else
 	{
 		// Save changes if needed
 		saveEntryChanges();
@@ -3622,6 +3632,9 @@ void ArchivePanel::selectionChanged()
 	{
 		toolbar_elist_->findActionButton("arch_entry_rename")->Enable(true);
 		toolbar_elist_->findActionButton("arch_entry_delete")->Enable(true);
+
+		if (sel_dirs.size() == 1)
+			toolbar_elist_->findActionButton("arch_entry_bookmark")->Enable(true);
 	}
 
 	toolbar_elist_->Refresh();

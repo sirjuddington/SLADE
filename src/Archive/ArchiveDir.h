@@ -17,6 +17,7 @@ public:
 	const vector<shared_ptr<ArchiveEntry>>& entries() const { return entries_; }
 	const vector<shared_ptr<ArchiveDir>>&   subdirs() const { return subdirs_; }
 	ArchiveEntry*                           dirEntry() const { return dir_entry_.get(); }
+	shared_ptr<ArchiveEntry>                dirEntryShared() const { return dir_entry_; }
 	const string&                           name() const;
 	string                                  path(bool include_name = true) const;
 	shared_ptr<ArchiveDir>                  parent() const { return parent_dir_.lock(); }

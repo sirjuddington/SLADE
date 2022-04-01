@@ -1312,12 +1312,15 @@ void ArchiveEntryTree::collapseAll(const ArchiveDir& dir_start)
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::upDir()
 {
+	if (model_->viewType() != ArchiveViewModel::ViewType::List)
+		return;
+
 	if (auto dir_current = model_->rootDir())
 	{
 		if (!dir_current->parent())
 			return;
 
-		setDir(dir_current->parent());
+		goToDir(dir_current->parent());
 		Select(wxDataViewItem(dir_current->dirEntry()));
 	}
 }
@@ -1327,8 +1330,11 @@ void ArchiveEntryTree::upDir()
 // -----------------------------------------------------------------------------
 void ArchiveEntryTree::homeDir()
 {
+	if (model_->viewType() != ArchiveViewModel::ViewType::List)
+		return;
+
 	if (auto archive = archive_.lock())
-		setDir(archive->rootDir());
+		goToDir(archive->rootDir());
 }
 
 // -----------------------------------------------------------------------------
@@ -1457,21 +1463,45 @@ void ArchiveEntryTree::updateColumnWidths()
 // -----------------------------------------------------------------------------
 // Sets the root directory to [dir] and updates UI accordingly
 // -----------------------------------------------------------------------------
-void ArchiveEntryTree::setDir(shared_ptr<ArchiveDir> dir)
+void ArchiveEntryTree::goToDir(shared_ptr<ArchiveDir> dir, bool expand)
 {
 	if (const auto archive = archive_.lock())
 	{
-		// Do nothing if already at dir
-		if (model_->rootDir() == dir.get())
+		// Check dir is part of archive
+		if (dir->archive() != archive.get())
 			return;
 
-		Freeze();
-		model_->setRootDir(dir);
-		Thaw();
+		// List View
+		if (model_->viewType() == ArchiveViewModel::ViewType::List)
+		{
+			// Do nothing if already at dir
+			if (model_->rootDir() == dir.get())
+				return;
 
-		// Trigger selection change event (to update UI as needed)
-		wxDataViewEvent de;
-		de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
-		ProcessWindowEvent(de);
+			// Open dir
+			Freeze();
+			model_->setRootDir(dir);
+			Thaw();
+
+			// Trigger selection change event (to update UI as needed)
+			wxDataViewEvent de;
+			de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
+			ProcessWindowEvent(de);
+		}
+
+		// Tree View
+		else
+		{
+			auto dir_item = model_->createItemForDirectory(*dir);
+
+			// Select directory (only)
+			SetSelections({});
+			Select(dir_item);
+			EnsureVisible(dir_item);
+
+			// Expand if requested
+			if (expand)
+				Expand(dir_item);
+		}
 	}
 }
