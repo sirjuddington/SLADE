@@ -806,9 +806,9 @@ bool ArchivePanel::newEntry()
 	if (index >= 0)
 		index++;
 
-	// Add the entry to the archive
+	// Create the new entry
 	undo_manager_->beginRecord("Add Entry");
-	auto new_entry = archive->addNewEntry(dlg->entryName().ToStdString(), index, dir);
+	auto new_entry = std::make_shared<ArchiveEntry>(dlg->entryName().ToStdString());
 
 	// Deal with specific entry type that we may want created
 	using NewEntry = maineditor::NewEntryType;
@@ -827,6 +827,7 @@ bool ArchivePanel::newEntry()
 
 		case NewEntry::Palette:
 			// Import a palette from the available ones
+			cp.CenterOnParent();
 			if (cp.ShowModal() == wxID_OK)
 			{
 				Palette* pal;
@@ -842,7 +843,7 @@ bool ArchivePanel::newEntry()
 				mc.reSize(256 * 3);
 			}
 			new_entry->importMemChunk(mc);
-			EntryType::detectEntryType(*new_entry);
+			new_entry->setType(EntryType::fromId("palette"));
 			new_entry->setExtensionByType();
 			break;
 
@@ -868,11 +869,10 @@ bool ArchivePanel::newEntry()
 		}
 	}
 
-	if (new_entry)
-	{
-		focusOnEntry(new_entry.get());
-		selectionChanged();
-	}
+	// Add the entry to the archive
+	archive->addEntry(new_entry, index, dir);
+	focusOnEntry(new_entry.get());
+	selectionChanged();
 
 	undo_manager_->endRecord(!!new_entry);
 
