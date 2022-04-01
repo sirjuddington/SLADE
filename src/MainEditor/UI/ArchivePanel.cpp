@@ -1935,7 +1935,13 @@ bool ArchivePanel::exportEntry()
 
 				// Add file extension if it doesn't exist
 				if (!fn.HasExt())
+				{
 					fn.SetExt(entry->type()->extension());
+
+					// ...unless a file already exists with said extension
+					if (wxFileExists(fn.GetFullPath()))
+						fn.SetEmptyExt();
+				}
 
 				// Do export
 				entry->exportFile(fn.GetFullPath().ToStdString());
