@@ -483,7 +483,7 @@ shared_ptr<ArchiveDir> ArchiveDir::clone(shared_ptr<ArchiveDir> parent)
 // -----------------------------------------------------------------------------
 // Exports all entries and subdirs to the filesystem at [path]
 // -----------------------------------------------------------------------------
-bool ArchiveDir::exportTo(string_view path)
+bool ArchiveDir::exportTo(string_view path) const
 {
 	// Create directory if needed
 	if (!std::filesystem::exists(path))
@@ -514,7 +514,7 @@ bool ArchiveDir::exportTo(string_view path)
 // -----------------------------------------------------------------------------
 // Ensures [entry] has an unique name within this directory
 // -----------------------------------------------------------------------------
-void ArchiveDir::ensureUniqueName(ArchiveEntry* entry)
+void ArchiveDir::ensureUniqueName(ArchiveEntry* entry) const
 {
 	unsigned      index     = 0;
 	unsigned      number    = 0;
@@ -544,13 +544,39 @@ void ArchiveDir::ensureUniqueName(ArchiveEntry* entry)
 		entry->setName(name);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the first entry in the directory that has the same name as another,
+// or nullptr if all names are unique
+// -----------------------------------------------------------------------------
+ArchiveEntry* ArchiveDir::findDuplicateEntryName() const
+{
+	unsigned   i1        = 0;
+	const auto n_entries = entries_.size();
+	while (i1 < n_entries)
+	{
+		const auto& name = entries_[i1]->name();
+
+		unsigned i2 = i1 + 1;
+		while (i2 < n_entries)
+		{
+			if (strutil::equalCI(name, entries_[i2]->name()))
+				return entries_[i1].get();
+
+			++i2;
+		}
+
+		++i1;
+	}
+
+	return nullptr;
+}
+
 
 // -----------------------------------------------------------------------------
 //
 // ArchiveDir Class Static Functions
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // Returns the subdir at [path] within the directory [root].

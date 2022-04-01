@@ -237,6 +237,18 @@ bool ZipArchive::write(MemChunk& mc, bool update)
 // -----------------------------------------------------------------------------
 bool ZipArchive::write(string_view filename, bool update)
 {
+	// Check for entries with duplicate names (not allowed for zips)
+	auto all_dirs = rootDir()->allDirectories();
+	all_dirs.insert(all_dirs.begin(), rootDir());
+	for (const auto& dir : all_dirs)
+	{
+		if (auto* dup_entry = dir->findDuplicateEntryName())
+		{
+			global::error = fmt::format("Multiple entries named {} found in {}", dup_entry->name(), dup_entry->path());
+			return false;
+		}
+	}
+
 	// Open the file
 	wxFFileOutputStream out(wxutil::strFromView(filename));
 	if (!out.IsOk())
