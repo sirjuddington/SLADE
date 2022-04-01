@@ -70,13 +70,12 @@ EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar) 
 	// Add toolbar
 	toolbar_     = new SToolBar(this);
 	auto pad_min = ui::px(ui::Size::PadMinimum);
-	sizer->AddSpacer(pad_min);
-	sizer->Add(toolbar_, 0, wxEXPAND | wxLEFT | wxRIGHT, pad_min);
+	sizer->Add(toolbar_, 0, wxEXPAND);
 	sizer->AddSpacer(pad_min);
 
 	// Default entry toolbar group
 	auto tb_group = new SToolBarGroup(toolbar_, "Entry");
-	stb_save_   = tb_group->addActionButton("arch_entry_save", "save", true);
+	stb_save_     = tb_group->addActionButton("arch_entry_save", "save", true);
 	stb_revert_ = tb_group->addActionButton("revert", "Revert", "revert", "Revert any changes made to the entry", true);
 	toolbar_->addGroup(tb_group);
 	toolbar_->enableGroup("Entry", false);
@@ -91,14 +90,13 @@ EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar) 
 	if (left_toolbar)
 	{
 		auto* hbox = new wxBoxSizer(wxHORIZONTAL);
-		hbox->AddSpacer(pad_min);
 		hbox->Add(toolbar_left_, 0, wxEXPAND | wxRIGHT, pad_min);
-		hbox->Add(sizer_main_, 1, wxEXPAND | wxRIGHT | wxBOTTOM, ui::pad());
+		hbox->Add(sizer_main_, 1, wxEXPAND);
 		sizer->Add(hbox, 1, wxEXPAND);
 	}
 	else
-		sizer->Add(sizer_main_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
-	sizer->Add(sizer_bottom_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+		sizer->Add(sizer_main_, 1, wxEXPAND);
+	sizer->Add(sizer_bottom_, 0, wxEXPAND | wxTOP, ui::pad());
 
 	// Bind button events
 	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &EntryPanel::onToolbarButton, this, toolbar_->GetId());
@@ -131,6 +129,20 @@ void EntryPanel::setModified(bool c)
 		toolbar_->enableGroup("Entry", modified_);
 		callRefresh();
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Adds extra border padding to the EntryPanel
+// -----------------------------------------------------------------------------
+void EntryPanel::addBorderPadding()
+{
+	Freeze();
+	auto* sizer = GetSizer();
+	SetSizer(new wxBoxSizer(wxVERTICAL), false);
+	GetSizer()->AddSpacer(ui::pad());
+	GetSizer()->Add(sizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	Layout();
+	Thaw();
 }
 
 // -----------------------------------------------------------------------------

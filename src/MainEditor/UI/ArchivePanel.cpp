@@ -2938,25 +2938,26 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		EntryType::detectEntryType(*entry);
 
 	// Are we trying to open a directory? This can happen from bookmarks.
-	if (entry->type() == EntryType::folderType())
-	{
-		// Removes starting / from path
-		wxString name = entry->path(true);
-		if (name.StartsWith("/"))
-			name.Remove(0, 1);
+	//if (entry->type() == EntryType::folderType())
+	//{
+	//	// Removes starting / from path
+	//	wxString name = entry->path(true);
+	//	if (name.StartsWith("/"))
+	//		name.Remove(0, 1);
 
-		// Get directory to open
-		auto dir = ArchiveDir::subdirAtPath(archive->rootDir(), name.ToStdString());
+	//	// Get directory to open
+	//	auto dir = ArchiveDir::subdirAtPath(archive->rootDir(), name.ToStdString());
 
-		// Check it exists (really should)
-		if (!dir)
-		{
-			log::error(wxString::Format("Trying to open nonexistant directory %s", name));
-			return false;
-		}
-		// entry_list_->setDir(dir);
-	}
-	else
+	//	// Check it exists (really should)
+	//	if (!dir)
+	//	{
+	//		log::error(wxString::Format("Trying to open nonexistant directory %s", name));
+	//		return false;
+	//	}
+	//	// entry_list_->setDir(dir);
+	//}
+	//else
+	if (entry->type() != EntryType::folderType())
 	{
 		// Save changes if needed
 		saveEntryChanges();

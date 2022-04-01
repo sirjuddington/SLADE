@@ -820,6 +820,7 @@ void ArchiveManagerPanel::openTab(Archive* archive) const
 		}
 
 		// If tab isn't already open, open a new one
+		maineditor::window()->Freeze();
 		wp = new ArchivePanel(stc_archives_, sp_archive);
 
 		// Determine icon
@@ -837,6 +838,7 @@ void ArchiveManagerPanel::openTab(Archive* archive) const
 		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, icons::getIcon(icons::Entry, icon));
 		wp->addMenus();
 		wp->Show(true);
+		maineditor::window()->Thaw();
 		wp->SetFocus();
 		wp->focusEntryList();
 	}
@@ -884,11 +886,13 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 		}
 
 		// If tab isn't already open, open a new one
+		maineditor::window()->Freeze();
 		auto txed = new TextureXEditor(stc_archives_);
 		txed->Show(false);
 		if (!txed->openArchive(archive.get()))
 		{
 			delete txed;
+			maineditor::window()->Thaw();
 			return;
 		}
 
@@ -902,9 +906,12 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 			if (stc_archives_->GetPage(a) == txed)
 			{
 				stc_archives_->SetSelection(a);
+				maineditor::window()->Thaw();
 				return;
 			}
 		}
+
+		maineditor::window()->Thaw(); // Shouldn't get to this line but putting this here just in case
 	}
 }
 
@@ -1063,13 +1070,16 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 		return;
 
 	// Create an EntryPanel for the entry
+	maineditor::window()->Freeze();
 	auto ep = ArchivePanel::createPanelForEntry(entry, stc_archives_);
+	ep->addBorderPadding();
 	ep->openEntry(entry);
 
 	// Don't bother with the default entry panel (it's absolutely useless to open in a tab)
 	if (ep->name() == "default")
 	{
 		delete ep;
+		maineditor::window()->Thaw();
 		return;
 	}
 
@@ -1080,7 +1090,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 	ep->SetName("entry");
 	ep->Show(true);
 	ep->addCustomMenu();
-	ep->updateToolbar();
+	maineditor::window()->Thaw();
 
 	// Select the new tab
 	for (size_t a = 0; a < stc_archives_->GetPageCount(); a++)
@@ -1088,6 +1098,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 		if (stc_archives_->GetPage(a) == ep)
 		{
 			stc_archives_->SetSelection(a);
+			ep->updateToolbar();
 			return;
 		}
 	}
@@ -2189,6 +2200,7 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 	int selection = stc_archives_->GetSelection();
 
 	// Remove any current custom menus/toolbars
+	theMainWindow->Freeze();
 	theMainWindow->removeAllCustomMenus();
 	theMainWindow->removeAllCustomToolBars();
 	theMainWindow->enableToolBar("_archive", false);
@@ -2216,6 +2228,8 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 		auto te = dynamic_cast<TextureXEditor*>(stc_archives_->GetPage(selection));
 		te->updateMenuStatus();
 	}
+
+	theMainWindow->Thaw();
 
 	e.Skip();
 }

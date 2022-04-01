@@ -21,6 +21,7 @@ public:
 	bool          isActivePanel();
 	void          setUndoManager(UndoManager* manager) { undo_manager_ = manager; }
 	MemChunk*     entryData() { return &entry_data_; }
+	void          addBorderPadding();
 
 	bool             openEntry(ArchiveEntry* entry);
 	bool             openEntry(shared_ptr<ArchiveEntry> entry);
