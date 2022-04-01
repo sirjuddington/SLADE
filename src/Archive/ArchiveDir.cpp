@@ -291,9 +291,10 @@ unsigned ArchiveDir::numEntries(bool inc_subdirs) const
 
 // -----------------------------------------------------------------------------
 // Adds [entry] to this directory at [index], or at the end if [index] is out
-// of bounds
+// of bounds. If [ignore_requirements] is set, any naming requirements for the
+// entry will be ignored (eg. no duplicate names)
 // -----------------------------------------------------------------------------
-bool ArchiveDir::addEntry(shared_ptr<ArchiveEntry> entry, unsigned index)
+bool ArchiveDir::addEntry(shared_ptr<ArchiveEntry> entry, bool ignore_requirements, unsigned index)
 {
 	// Check entry
 	if (!entry)
@@ -311,7 +312,7 @@ bool ArchiveDir::addEntry(shared_ptr<ArchiveEntry> entry, unsigned index)
 		entries_.insert(entries_.begin() + index, entry); // Add it at index
 
 	// Check entry name if duplicate names aren't allowed
-	if (!allow_duplicate_names_)
+	if (!ignore_requirements && !allow_duplicate_names_)
 		ensureUniqueName(entry.get());
 
 	return true;

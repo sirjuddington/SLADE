@@ -131,7 +131,7 @@ bool ZipArchive::open(string_view filename)
 
 			// Add entry and directory to directory tree
 			auto ndir = createDir(fn.path(true));
-			ndir->addEntry(new_entry);
+			ndir->addEntry(new_entry, true);
 
 			if (const auto ze_size = zip_entry->GetSize(); ze_size < 250 * 1024 * 1024)
 			{

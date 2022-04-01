@@ -38,7 +38,8 @@ public:
 	vector<shared_ptr<ArchiveDir>>   allDirectories() const;
 
 	// Entry Operations
-	bool addEntry(shared_ptr<ArchiveEntry> entry, unsigned index = 0xFFFFFFFF);
+	bool addEntry(shared_ptr<ArchiveEntry> entry, bool ignore_requirements, unsigned index = 0xFFFFFFFF);
+	bool addEntry(shared_ptr<ArchiveEntry> entry, unsigned index = 0xFFFFFFFF) { return addEntry(entry, false, index); }
 	bool removeEntry(unsigned index);
 	bool swapEntries(unsigned index1, unsigned index2);
 
