@@ -839,6 +839,7 @@ void ArchiveManagerPanel::openTab(Archive* archive) const
 		wp->addMenus();
 		wp->Show(true);
 		maineditor::window()->Thaw();
+		wp->refreshPanel();
 		wp->SetFocus();
 		wp->focusEntryList();
 	}

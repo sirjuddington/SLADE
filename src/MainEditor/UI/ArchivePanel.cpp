@@ -3158,6 +3158,7 @@ void ArchivePanel::refreshPanel()
 
 	// Refresh entire panel
 	Freeze();
+	toolbar_elist_->updateLayout();
 	splitter_->GetWindow1()->Layout();
 	splitter_->GetWindow1()->Update();
 	splitter_->GetWindow1()->Refresh();
