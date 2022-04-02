@@ -1291,10 +1291,13 @@ bool Archive::importDir(string_view directory, bool ignore_hidden, shared_ptr<Ar
 
 		// Add the entry
 		auto dir   = createDir(edir, base);
-		auto entry = addNewEntry(ename, dir->numEntries() + 1, dir.get());
+		auto entry = std::make_shared<ArchiveEntry>(ename);
 
 		// Load data
-		entry->importFile(file);
+		if (entry->importFile(file))
+			addEntry(entry, dir->numEntries() + 1, dir.get());
+		else
+			log::error(global::error);
 
 		// Set unmodified
 		entry->setState(ArchiveEntry::State::Unmodified);

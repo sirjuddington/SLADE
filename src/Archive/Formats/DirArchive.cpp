@@ -56,6 +56,7 @@ CVAR(Bool, archive_dir_ignore_hidden, true, CVar::Save)
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, archive_load_data)
+EXTERN_CVAR(Int, max_entry_size_mb)
 
 
 // -----------------------------------------------------------------------------
@@ -123,7 +124,8 @@ bool DirArchive::open(string_view filename)
 		ndir->dirEntry()->exProp("filePath") = fmt::format("{}{}", filename, fn.path());
 
 		// Read entry data
-		new_entry->importFile(files[a]);
+		if (!new_entry->importFile(files[a]))
+			return false;
 		new_entry->setLoaded(true);
 
 		file_modification_times_[new_entry.get()] = wxFileModificationTime(files[a]);

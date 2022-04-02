@@ -49,6 +49,7 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, archive_load_data)
+EXTERN_CVAR(Int, max_entry_size_mb)
 
 
 // -----------------------------------------------------------------------------
@@ -133,7 +134,7 @@ bool ZipArchive::open(string_view filename)
 			auto ndir = createDir(fn.path(true));
 			ndir->addEntry(new_entry, true);
 
-			if (const auto ze_size = zip_entry->GetSize(); ze_size < 250 * 1024 * 1024)
+			if (const auto ze_size = zip_entry->GetSize(); ze_size < max_entry_size_mb * 1024 * 1024)
 			{
 				if (ze_size > 0)
 				{

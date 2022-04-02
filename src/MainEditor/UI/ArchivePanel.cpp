@@ -428,17 +428,17 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 void ArchivePanel::setup(Archive* archive)
 {
 	// Create controls
-	splitter_     = new ui::Splitter(this, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
-	entry_area_   = new EntryPanel(splitter_, "nil");
-	default_area_ = new DefaultEntryPanel(splitter_);
-	text_area_    = new TextEntryPanel(splitter_);
-	gfx_area_     = new GfxEntryPanel(splitter_);
-	pal_area_     = new PaletteEntryPanel(splitter_);
-	hex_area_     = new HexEntryPanel(splitter_);
-	ansi_area_    = new ANSIEntryPanel(splitter_);
-	map_area_     = new MapEntryPanel(splitter_);
-	audio_area_   = new AudioEntryPanel(splitter_);
-	data_area_    = new DataEntryPanel(splitter_);
+	splitter_         = new ui::Splitter(this, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
+	entry_area_       = new EntryPanel(splitter_, "nil");
+	default_area_     = new DefaultEntryPanel(splitter_);
+	text_area_        = new TextEntryPanel(splitter_);
+	gfx_area_         = new GfxEntryPanel(splitter_);
+	pal_area_         = new PaletteEntryPanel(splitter_);
+	hex_area_         = new HexEntryPanel(splitter_);
+	ansi_area_        = new ANSIEntryPanel(splitter_);
+	map_area_         = new MapEntryPanel(splitter_);
+	audio_area_       = new AudioEntryPanel(splitter_);
+	data_area_        = new DataEntryPanel(splitter_);
 	auto* elist_panel = createEntryListPanel(splitter_);
 
 	// Create sizer
@@ -953,7 +953,7 @@ bool ArchivePanel::importFiles()
 		undo_manager_->beginRecord("Import Files");
 
 		// Go through the list of files
-		bool ok = false;
+		bool ok = true;
 		entry_tree_->Freeze();
 		ui::showSplash("Importing Files...", true);
 		for (size_t a = 0; a < info.filenames.size(); a++)
@@ -965,15 +965,19 @@ bool ArchivePanel::importFiles()
 			ui::setSplashProgress(static_cast<float>(a) / static_cast<float>(info.filenames.size()));
 			ui::setSplashProgressMessage(name.ToStdString());
 
-			// Add the entry to the archive
-			auto new_entry = archive->addNewEntry(name.ToStdString(), index, dir);
+			// Create new entry
+			auto new_entry = std::make_shared<ArchiveEntry>(name.ToStdString());
 
-			// If the entry was created ok, load the file into it
-			if (new_entry)
+			// Import file to entry
+			if (new_entry->importFile(info.filenames[a]))
 			{
-				new_entry->importFile(info.filenames[a]); // Import file to entry
+				archive->addEntry(new_entry, index, dir); // Add the entry to the archive
 				EntryType::detectEntryType(*new_entry);   // Detect entry type
-				ok = true;
+			}
+			else
+			{
+				log::error(global::error);
+				ok = false;
 			}
 
 			if (index > 0)
@@ -1845,7 +1849,12 @@ bool ArchivePanel::importEntry()
 			undo_manager_->recordUndoStep(std::make_unique<EntryDataUS>(entry));
 
 			// If a file was selected, import it
-			entry->importFile(info.filenames[0]);
+			if (!entry->importFile(info.filenames[0]))
+			{
+				wxMessageBox(
+					wxString::Format("Failed to import file: %s", global::error), "Import Failed", wxICON_ERROR, this);
+				return false;
+			}
 
 			// Re-detect entry type
 			EntryType::detectEntryType(*entry);

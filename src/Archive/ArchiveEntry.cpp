@@ -47,6 +47,22 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 CVAR(Bool, wad_force_uppercase, true, CVar::Flag::Save)
+CVAR(Int, max_entry_size_mb, 512, CVar::Flag::Save)
+
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+unsigned maxEntrySizeBytes()
+{
+	constexpr unsigned MB_TO_BYTES = 1024 * 1024;
+	return max_entry_size_mb * MB_TO_BYTES;
+}
+}
 
 
 // -----------------------------------------------------------------------------
@@ -60,10 +76,7 @@ CVAR(Bool, wad_force_uppercase, true, CVar::Flag::Save)
 // ArchiveEntry class constructor
 // -----------------------------------------------------------------------------
 ArchiveEntry::ArchiveEntry(string_view name, uint32_t size) :
-	name_{ name },
-	upper_name_{ name },
-	size_{ size },
-	type_{ EntryType::unknownType() }
+	name_{ name }, upper_name_{ name }, size_{ size }, type_{ EntryType::unknownType() }
 {
 	strutil::upperIP(upper_name_);
 }
@@ -71,34 +84,22 @@ ArchiveEntry::ArchiveEntry(string_view name, uint32_t size) :
 // -----------------------------------------------------------------------------
 // ArchiveEntry class copy constructor
 // -----------------------------------------------------------------------------
-ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
+ArchiveEntry::ArchiveEntry(ArchiveEntry& copy) :
+	name_{ copy.name_ },
+	upper_name_{ copy.upper_name_ },
+	size_{ copy.size_ },
+	type_{ copy.type_ },
+	ex_props_{ copy.ex_props_ },
+	encrypted_{ copy.encrypted_ },
+	reliability_{ copy.reliability_ }
 {
-	// Initialise (copy) attributes
-	parent_      = nullptr;
-	name_        = copy.name_;
-	upper_name_  = copy.upper_name_;
-	size_        = copy.size_;
-	data_loaded_ = true;
-	type_        = copy.type_;
-	locked_      = false;
-	reliability_ = copy.reliability_;
-	encrypted_   = copy.encrypted_;
-	index_guess_ = 0;
-
 	// Copy data
 	data_.importMem(copy.rawData(true), copy.size());
-
-	// Copy extra properties
-	ex_props_ = copy.exProps();
 
 	// Clear properties that shouldn't be copied
 	ex_props_.remove("ZipIndex");
 	ex_props_.remove("Offset");
 	ex_props_.remove("filePath");
-
-	// Set entry state
-	state_        = State::New;
-	state_locked_ = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -178,7 +179,7 @@ MemChunk& ArchiveEntry::data(bool allow_load)
 	auto parent_archive = parent();
 
 	// Load the data if needed (and possible)
-	if (allow_load && !isLoaded() && parent_archive && size_ > 0)
+	if (allow_load && !isLoaded() && parent_archive && size_ > 0 && size_ <= maxEntrySizeBytes())
 	{
 		data_loaded_ = parent_archive->loadEntryData(this);
 		setState(State::Unmodified);
@@ -366,6 +367,13 @@ bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
 		return false;
 	}
 
+	// Check size
+	if (new_size > maxEntrySizeBytes())
+	{
+		global::error = "Over maximum entry size";
+		return false;
+	}
+
 	// Update attributes
 	setState(State::Modified);
 
@@ -407,6 +415,13 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 	if (locked_)
 	{
 		global::error = "Entry is locked";
+		return false;
+	}
+
+	// Check size
+	if (size > maxEntrySizeBytes())
+	{
+		global::error = "Over maximum entry size";
 		return false;
 	}
 
@@ -476,6 +491,13 @@ bool ArchiveEntry::importFile(string_view filename, uint32_t offset, uint32_t si
 	if (offset + size > file.Length())
 		return false;
 
+	// Check size
+	if (size > maxEntrySizeBytes())
+	{
+		global::error = fmt::format("File \"{}\" is over maximum entry size", filename);
+		return false;
+	}
+
 	// Create temporary buffer and load file contents
 	vector<uint8_t> temp_buf(size);
 	file.Seek(offset, wxFromStart);
@@ -496,6 +518,13 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 	if (locked_)
 	{
 		global::error = "Entry is locked";
+		return false;
+	}
+
+	// Check size
+	if (len > maxEntrySizeBytes())
+	{
+		global::error = "Over maximum entry size";
 		return false;
 	}
 
