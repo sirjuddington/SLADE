@@ -187,13 +187,10 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 	connections_ += archive->signals().entry_removed.connect(
 		[this](Archive& archive, ArchiveDir& dir, ArchiveEntry& entry)
 		{
-			if (entryIsInList(entry))
-			{
-				if (view_type_ == ViewType::Tree)
-					ItemDeleted(createItemForDirectory(dir), wxDataViewItem(&entry));
-				else
-					ItemDeleted({}, wxDataViewItem(&entry));
-			}
+			if (view_type_ == ViewType::Tree)
+				ItemDeleted(createItemForDirectory(dir), wxDataViewItem(&entry));
+			else if (root_dir_.lock().get() == &dir)
+				ItemDeleted({}, wxDataViewItem(&entry));
 		});
 
 	// Entry modified
@@ -221,13 +218,10 @@ void ArchiveViewModel::openArchive(shared_ptr<Archive> archive, UndoManager* und
 	connections_ += archive->signals().dir_removed.connect(
 		[this](Archive& archive, ArchiveDir& parent, ArchiveDir& dir)
 		{
-			if (dirIsInList(dir))
-			{
-				if (view_type_ == ViewType::Tree)
-					ItemDeleted(createItemForDirectory(parent), wxDataViewItem(dir.dirEntry()));
-				else
-					ItemDeleted({}, wxDataViewItem(dir.dirEntry()));
-			}
+			if (view_type_ == ViewType::Tree)
+				ItemDeleted(createItemForDirectory(parent), wxDataViewItem(dir.dirEntry()));
+			else if (root_dir_.lock().get() == &parent)
+				ItemDeleted({}, wxDataViewItem(dir.dirEntry()));
 		});
 
 	// Entries reordered within dir
