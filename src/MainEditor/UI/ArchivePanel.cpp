@@ -63,6 +63,7 @@
 #include "Scripting/ScriptManager.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/Controls/Splitter.h"
 #include "UI/Dialogs/GfxColouriseDialog.h"
 #include "UI/Dialogs/GfxConvDialog.h"
 #include "UI/Dialogs/GfxTintDialog.h"
@@ -427,7 +428,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, shared_ptr<Archive>& archive) :
 void ArchivePanel::setup(Archive* archive)
 {
 	// Create controls
-	splitter_     = new wxSplitterWindow(this, -1, wxDefaultPosition, wxDefaultSize, wxSP_3DSASH | wxSP_LIVE_UPDATE);
+	splitter_     = new ui::Splitter(this, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
 	entry_area_   = new EntryPanel(splitter_, "nil");
 	default_area_ = new DefaultEntryPanel(splitter_);
 	text_area_    = new TextEntryPanel(splitter_);
@@ -616,16 +617,16 @@ wxPanel* ArchivePanel::createEntryListPanel(wxWindow* parent)
 	hbox->Add(toolbar_elist_, 0, wxEXPAND);
 	hbox->AddSpacer(min_pad);
 	auto* vbox = new wxBoxSizer(wxVERTICAL);
-	hbox->Add(vbox, 1, wxEXPAND);
+	hbox->Add(vbox, 1, wxEXPAND | wxRIGHT, min_pad);
 	if (etree_path_)
 	{
-		vbox->Add(etree_path_, 0, wxEXPAND | wxRIGHT, ui::pad());
+		vbox->Add(etree_path_, 0, wxEXPAND);
 		vbox->AddSpacer(min_pad);
-		vbox->Add(entry_tree_, 1, wxEXPAND | wxRIGHT, ui::pad());
+		vbox->Add(entry_tree_, 1, wxEXPAND);
 	}
 	else
-		vbox->Add(entry_tree_, 1, wxEXPAND | wxRIGHT, ui::pad());
-	vbox->Add(panel_filter_, 0, wxEXPAND | wxRIGHT | wxTOP, ui::pad());
+		vbox->Add(entry_tree_, 1, wxEXPAND);
+	vbox->Add(panel_filter_, 0, wxEXPAND | wxTOP, ui::pad());
 
 	return panel;
 }
