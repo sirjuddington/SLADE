@@ -68,12 +68,12 @@ BEGIN
         BLOCK "0c0904b0"
         BEGIN
             VALUE "FileDescription", "SLADE"
-            VALUE "FileVersion", "3.2.0 Beta 3"
+            VALUE "FileVersion", "3.2.0 Beta 4"
             VALUE "InternalName", "SLADE.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2021"
+            VALUE "LegalCopyright", "Copyright (C) 2022"
             VALUE "OriginalFilename", "SLADE.exe"
             VALUE "ProductName", "SLADE"
-            VALUE "ProductVersion", "3.2.0 Beta 3"
+            VALUE "ProductVersion", "3.2.0 Beta 4"
         END
     END
     BLOCK "VarFileInfo"
