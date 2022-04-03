@@ -38,6 +38,7 @@
 #include "Archive/Formats/DirArchive.h"
 #include "ArchivePanel.h"
 #include "EntryPanel/EntryPanel.h"
+#include "General/Library.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/MainEditor.h"
@@ -404,7 +405,7 @@ void ArchiveManagerPanel::layoutHorizontal()
 // -----------------------------------------------------------------------------
 // Clears and rebuilds the recent file list in the menu and the tab
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::refreshRecentFileList() const
+void ArchiveManagerPanel::refreshRecentFileList()
 {
 	// Clear the list
 	list_recent_->ClearAll();
@@ -424,7 +425,8 @@ void ArchiveManagerPanel::refreshRecentFileList() const
 
 	// Add each recent archive (same logic as the recent files submenu)
 	list_recent_->enableSizeUpdate(false);
-	for (unsigned a = 0; a < app::archiveManager().numRecentFiles(); a++)
+	recent_file_paths_ = wxutil::arrayStringStd(library::recentFiles());
+	for (unsigned a = 0; a < recent_file_paths_.size(); a++)
 	{
 		list_recent_->addItem(a, wxEmptyString);
 		updateRecentListItem(a);
@@ -432,17 +434,17 @@ void ArchiveManagerPanel::refreshRecentFileList() const
 		if (a < 8)
 		{
 			// Get path and determine icon
-			auto   fn   = app::archiveManager().recentFile(a);
+			auto   fn   = recent_file_paths_[a];
 			string icon = "archive";
-			if (strutil::endsWith(fn, ".wad"))
+			if (fn.EndsWith(".wad"))
 				icon = "wad";
-			else if (strutil::endsWith(fn, ".zip") || strutil::endsWith(fn, ".pk3") || strutil::endsWith(fn, ".pke"))
+			else if (fn.EndsWith(".zip") || fn.EndsWith(".pk3") || fn.EndsWith(".pke"))
 				icon = "zip";
 			else if (wxDirExists(fn))
 				icon = "folder";
 
 			// Create and add menu item
-			a_recent->addToMenu(menu_recent_, fn, icon, a);
+			a_recent->addToMenu(menu_recent_, wxutil::strToView(fn), icon, a);
 			// wxMenuItem* mi = new wxMenuItem(menu_recent, id_recent_start + a, fn);
 			// mi->SetBitmap(Icons::getIcon(Icons::ENTRY, icon));
 			// menu_recent->Append(mi);
@@ -540,7 +542,7 @@ void ArchiveManagerPanel::updateOpenListItem(int index) const
 void ArchiveManagerPanel::updateRecentListItem(int index) const
 {
 	// Get path as wxFileName for processing
-	wxString   path = app::archiveManager().recentFile(index);
+	const auto& path = recent_file_paths_[index];
 	wxFileName fn(path);
 
 	// Set item name
@@ -1553,8 +1555,8 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive) const
 		wxFileName fn(filename);
 		dir_last = wxutil::strToView(fn.GetPath(true));
 
-		// Add recent file
-		app::archiveManager().addRecentFile(filename.ToStdString());
+		// Add to library
+		library::addOrUpdateArchive(filename.ToStdString(), *archive);
 	}
 	else
 		return false;
@@ -1786,7 +1788,7 @@ void ArchiveManagerPanel::openSelection() const
 	// Get the list of selected archives
 	vector<wxString> selected_archives;
 	for (int index : selection)
-		selected_archives.emplace_back(app::archiveManager().recentFile(index));
+		selected_archives.push_back(recent_file_paths_[index]);
 
 	// Open all selected archives
 	for (const auto& selected_archive : selected_archives)
@@ -1807,8 +1809,8 @@ void ArchiveManagerPanel::removeSelection() const
 
 	// Remove selected recent files (starting from the last and going backward,
 	// because the list reorders itself whenever an item is removed)
-	for (unsigned a = selection.size(); a > 0; --a)
-		app::archiveManager().removeRecentFile(app::archiveManager().recentFile(selection[a - 1]));
+	//for (unsigned a = selection.size(); a > 0; --a)
+	//	app::archiveManager().removeRecentFile(app::archiveManager().recentFile(selection[a - 1]));
 }
 
 // -----------------------------------------------------------------------------
@@ -1903,7 +1905,7 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 		unsigned index = wx_id_offset_;
 
 		// Open it
-		openFile(app::archiveManager().recentFile(index));
+		openFile(recent_file_paths_[index]);
 	}
 
 	// File->Save
@@ -2157,7 +2159,7 @@ void ArchiveManagerPanel::onListArchivesRightClick(wxListEvent& e)
 void ArchiveManagerPanel::onListRecentActivated(wxListEvent& e)
 {
 	// Open the archive
-	openFile(app::archiveManager().recentFile(e.GetIndex()));
+	openFile(recent_file_paths_[e.GetIndex()]);
 	// Refresh the list
 	refreshRecentFileList();
 }
@@ -2171,7 +2173,7 @@ void ArchiveManagerPanel::onListRecentRightClick(wxListEvent& e)
 	// Generate context menu
 	wxMenu context;
 	SAction::fromId("aman_recent_open")->addToMenu(&context, true);
-	SAction::fromId("aman_recent_remove")->addToMenu(&context, true);
+	//SAction::fromId("aman_recent_remove")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);
@@ -2338,8 +2340,8 @@ void ArchiveManagerPanel::connectSignals()
 	// When an archive is opened, open its tab
 	signal_connections += signals.archive_opened.connect([this](int index) { openTab(index); });
 
-	// Refresh recent files list when changed
-	signal_connections += signals.recent_files_changed.connect([this]() { refreshRecentFileList(); });
+	// Refresh recent files list when library updated
+	signal_connections += library::signalUpdated().connect([this]() { refreshRecentFileList(); });
 
 	// Refresh bookmarks list when changed
 	signal_connections += signals.bookmark_added.connect([this](ArchiveEntry*) { refreshBookmarkList(); });

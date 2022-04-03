@@ -1011,6 +1011,18 @@
     <ClCompile Include="..\src\UI\Controls\Splitter.cpp">
       <Filter>UI\Controls</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\General\Database.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\General\Library.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Utility\DateTime.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Utility\MD5.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\zreaders\files.h">
@@ -1933,6 +1945,18 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\src\UI\Controls\Splitter.h">
       <Filter>UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\General\Database.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\General\Library.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Utility\DateTime.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Utility\MD5.h">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

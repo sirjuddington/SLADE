@@ -44,4 +44,15 @@ int    scalePx(int px);
 int    pad();      // Shortcut for UI::px(UI::Size::Pad)
 int    padLarge(); // Shortcut for UI::px(UI::Size::PadLarge)
 
+// Window size, position & layout persistence
+struct WindowInfo
+{
+	string id;
+	int    left, top, width, height;
+};
+WindowInfo         getWindowInfo(const char* id);
+void               setWindowInfo(const char* id, int width, int height, int left, int top);
+vector<StringPair> getWindowLayout(const char* id);
+void               setWindowLayout(const char* id, const vector<StringPair>& layout);
+
 } // namespace slade::ui

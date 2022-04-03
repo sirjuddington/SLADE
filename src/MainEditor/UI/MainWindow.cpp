@@ -36,11 +36,10 @@
 #include "Archive/ArchiveManager.h"
 #include "ArchiveManagerPanel.h"
 #include "ArchivePanel.h"
-#include "General/Misc.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/MapEditor.h"
-#include "Scripting/ScriptManager.h"
 #include "SLADEWxApp.h"
+#include "Scripting/ScriptManager.h"
 #include "StartPage.h"
 #include "UI/Controls/BaseResourceChooser.h"
 #include "UI/Controls/ConsolePanel.h"
@@ -53,7 +52,6 @@
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
-#include "Utility/Tokenizer.h"
 #ifdef USE_WEBVIEW_STARTPAGE
 #include "DocsPage.h"
 #endif
@@ -140,26 +138,11 @@ MainWindow::~MainWindow()
 // -----------------------------------------------------------------------------
 void MainWindow::loadLayout() const
 {
-	// Open layout file
-	Tokenizer tz;
-	if (!tz.openFile(app::path("mainwindow.layout", app::Dir::User)))
-		return;
+	auto layout = ui::getWindowLayout(id_.c_str());
 
-	// Parse layout
-	while (true)
-	{
-		// Read component+layout pair
-		wxString component = tz.getToken();
-		wxString layout    = tz.getToken();
-
-		// Load layout to component
-		if (!component.IsEmpty() && !layout.IsEmpty())
-			aui_mgr_->LoadPaneInfo(layout, aui_mgr_->GetPane(component));
-
-		// Check if we're done
-		if (tz.peekToken().empty())
-			break;
-	}
+	for (const auto& component : layout)
+		if (!component.first.empty() && !component.second.empty())
+			aui_mgr_->LoadPaneInfo(component.second, aui_mgr_->GetPane(component.first));
 }
 
 // -----------------------------------------------------------------------------
@@ -167,28 +150,13 @@ void MainWindow::loadLayout() const
 // -----------------------------------------------------------------------------
 void MainWindow::saveLayout() const
 {
-	// Open layout file
-	wxFile file(app::path("mainwindow.layout", app::Dir::User), wxFile::write);
+	vector<StringPair> layout;
 
-	// Write component layout
+	layout.emplace_back("console", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("console")).ToStdString());
+	layout.emplace_back("archive_manager", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("archive_manager")).ToStdString());
+	layout.emplace_back("undo_history", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("undo_history")).ToStdString());
 
-	// Console pane
-	file.Write("\"console\" ");
-	wxString pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("console"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
-
-	// Archive Manager pane
-	file.Write("\"archive_manager\" ");
-	pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("archive_manager"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
-
-	// Undo History pane
-	file.Write("\"undo_history\" ");
-	pinf = aui_mgr_->SavePaneInfo(aui_mgr_->GetPane("undo_history"));
-	file.Write(wxString::Format("\"%s\"\n", pinf));
-
-	// Close file
-	file.Close();
+	ui::setWindowLayout(id_.c_str(), layout);
 }
 
 // -----------------------------------------------------------------------------
@@ -474,8 +442,12 @@ bool MainWindow::exitProgram()
 	mw_maximized      = IsMaximized();
 	const wxSize size = GetSize() * GetContentScaleFactor();
 	if (!IsMaximized())
-		misc::setWindowInfo(
-			id_, size.x, size.y, GetPosition().x * GetContentScaleFactor(), GetPosition().y * GetContentScaleFactor());
+		ui::setWindowInfo(
+			id_.c_str(),
+			size.x,
+			size.y,
+			GetPosition().x * GetContentScaleFactor(),
+			GetPosition().y * GetContentScaleFactor());
 
 	// Save selected palette
 	global_palette = wxutil::strToView(palette_chooser_->GetStringSelection());

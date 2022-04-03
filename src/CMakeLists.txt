@@ -123,6 +123,7 @@ include_directories(
 	.
 	..
 	../thirdparty/dumb
+	../thirdparty
 	./Application
 	)
 

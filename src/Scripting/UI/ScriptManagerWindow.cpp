@@ -33,8 +33,8 @@
 #include "ScriptManagerWindow.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "General/Misc.h"
 #include "General/SAction.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
@@ -58,8 +58,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
-wxString docs_url       = "https://slade.readthedocs.io/en/latest";
-int      layout_version = 1;
+wxString docs_url = "https://slade.readthedocs.io/en/latest";
 } // namespace
 
 CVAR(Bool, sm_maximized, false, CVar::Flag::Save)
@@ -221,33 +220,12 @@ ScriptManagerWindow::ScriptManagerWindow() : STopWindow("SLADE Script Manager", 
 // -----------------------------------------------------------------------------
 void ScriptManagerWindow::loadLayout()
 {
-	// Open layout file
-	wxFile file(app::path("scriptmanager.layout", app::Dir::User), wxFile::read);
+	auto* aui_mgr = wxAuiManager::GetManager(this);
+	auto  layout  = ui::getWindowLayout(id_.c_str());
 
-	// Read component layout
-	if (file.IsOpened())
-	{
-		wxString text, layout;
-		file.ReadAll(&text);
-
-		// Get layout version
-		wxString version = text.BeforeFirst('\n', &layout);
-
-		// Check version
-		long val;
-		if (version.ToLong(&val))
-		{
-			// Load layout only if correct version
-			if (val == layout_version)
-				wxAuiManager::GetManager(this)->LoadPerspective(layout);
-		}
-	}
-
-	// Close file
-	file.Close();
-
-	// Force calculated toolbar size
-	wxAuiManager::GetManager(this)->GetPane("toolbar").MinSize(-1, SToolBar::getBarHeight());
+	for (const auto& component : layout)
+		if (!component.first.empty() && !component.second.empty())
+			aui_mgr->LoadPaneInfo(component.second, aui_mgr->GetPane(component.first));
 }
 
 // -----------------------------------------------------------------------------
@@ -255,15 +233,13 @@ void ScriptManagerWindow::loadLayout()
 // -----------------------------------------------------------------------------
 void ScriptManagerWindow::saveLayout()
 {
-	// Open layout file
-	wxFile file(app::path("scriptmanager.layout", app::Dir::User), wxFile::write);
+	vector<StringPair> layout;
+	auto*              aui_mgr = wxAuiManager::GetManager(this);
 
-	// Write component layout
-	file.Write(wxString::Format("%d\n", layout_version));
-	file.Write(wxAuiManager::GetManager(this)->SavePerspective());
+	layout.emplace_back("console", aui_mgr->SavePaneInfo(aui_mgr->GetPane("console")).ToStdString());
+	layout.emplace_back("scripts_area", aui_mgr->SavePaneInfo(aui_mgr->GetPane("scripts_area")).ToStdString());
 
-	// Close file
-	file.Close();
+	ui::setWindowLayout(id_.c_str(), layout);
 }
 
 // -----------------------------------------------------------------------------
@@ -307,13 +283,14 @@ void ScriptManagerWindow::setupLayout()
 
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
-	p_inf.Float();
+	p_inf.Bottom();
 	p_inf.FloatingSize(wxutil::scaledSize(600, 400));
 	p_inf.FloatingPosition(100, 100);
 	p_inf.MinSize(wxutil::scaledSize(-1, 192));
 	p_inf.Show(false);
 	p_inf.Caption("Console");
 	p_inf.Name("console");
+	p_inf.Dock();
 	m_mgr->AddPane(panel_console, p_inf);
 
 	// Setup menu and toolbar
@@ -460,8 +437,8 @@ void ScriptManagerWindow::bindEvents()
 			sm_maximized      = IsMaximized();
 			const wxSize size = GetSize() * GetContentScaleFactor();
 			if (!IsMaximized())
-				misc::setWindowInfo(
-					id_,
+				ui::setWindowInfo(
+					id_.c_str(),
 					size.x,
 					size.y,
 					GetPosition().x * GetContentScaleFactor(),

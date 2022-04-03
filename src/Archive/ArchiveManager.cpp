@@ -36,6 +36,7 @@
 #include "Formats/All.h"
 #include "Formats/DirArchive.h"
 #include "General/Console.h"
+#include "General/Library.h"
 #include "General/ResourceManager.h"
 #include "General/UI.h"
 #include "Utility/FileUtils.h"
@@ -255,10 +256,10 @@ shared_ptr<Archive> ArchiveManager::getArchive(string_view filename)
 // ----------------------------------------------------------------------------
 shared_ptr<Archive> ArchiveManager::getArchive(ArchiveEntry* parent)
 {
-	for (unsigned a = 0; a < open_archives_.size(); ++a)
+	for (auto& open_archive : open_archives_)
 	{
-		if (open_archives_[a].archive->parentEntry() == parent)
-			return open_archives_[a].archive;
+		if (open_archive.archive->parentEntry() == parent)
+			return open_archive.archive;
 	}
 
 	return nullptr;
@@ -357,8 +358,9 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 			if (!silent)
 				signals_.archive_opened(index);
 
-			// Add to recent files
-			addRecentFile(filename);
+			// Add to library
+			// TODO: Don't do this here - connect to the archive_opened signal from the library somehow instead
+			library::addOrUpdateArchive(filename, *new_archive);
 		}
 
 		// Return the opened archive
@@ -517,8 +519,9 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 			if (!silent)
 				signals_.archive_opened(index);
 
-			// Add to recent files
-			addRecentFile(dir);
+			// Add to library
+			// TODO: Don't do this here - connect to the archive_opened signal from the library somehow instead
+			library::addOrUpdateArchive(dir, *new_archive);
 		}
 
 		// Return the opened archive
@@ -1016,94 +1019,6 @@ vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOpti
 	}
 
 	return ret;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the recent file path at [index]
-// -----------------------------------------------------------------------------
-string ArchiveManager::recentFile(unsigned index)
-{
-	// Check index
-	if (index >= recent_files_.size())
-		return "";
-
-	return recent_files_[index];
-}
-
-// -----------------------------------------------------------------------------
-// Adds a recent file to the list, if it doesn't exist already
-// -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFile(string_view path)
-{
-	// Check the path is valid
-	if (!(fileutil::fileExists(path) || fileutil::dirExists(path)))
-		return;
-
-	// Replace \ with /
-	auto file_path = string{ path };
-	std::replace(file_path.begin(), file_path.end(), '\\', '/');
-
-	// Check if the file is already in the list
-	for (unsigned a = 0; a < recent_files_.size(); a++)
-	{
-		if (recent_files_[a] == file_path)
-		{
-			// Move this file to the top of the list
-			recent_files_.erase(recent_files_.begin() + a);
-			recent_files_.insert(recent_files_.begin(), file_path);
-
-			// Announce
-			signals_.recent_files_changed();
-
-			return;
-		}
-	}
-
-	// Add the file to the top of the list
-	recent_files_.insert(recent_files_.begin(), file_path);
-
-	// Keep it trimmed
-	while (recent_files_.size() > (unsigned)max_recent_files)
-		recent_files_.pop_back();
-
-	// Announce
-	signals_.recent_files_changed();
-}
-
-// -----------------------------------------------------------------------------
-// Adds a list of recent file paths to the recent file list
-// -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFiles(const vector<string>& paths)
-{
-	// Mute annoucements
-	signals_.recent_files_changed.block();
-
-	// Clear existing list
-	recent_files_.clear();
-
-	// Add the files
-	for (const auto& path : paths)
-		addRecentFile(path);
-
-	// Announce
-	signals_.recent_files_changed.unblock();
-	signals_.recent_files_changed();
-}
-
-// -----------------------------------------------------------------------------
-// Removes the recent file matching [path]
-// -----------------------------------------------------------------------------
-void ArchiveManager::removeRecentFile(string_view path)
-{
-	for (unsigned a = 0; a < recent_files_.size(); a++)
-	{
-		if (recent_files_[a] == path)
-		{
-			recent_files_.erase(recent_files_.begin() + a);
-			signals_.recent_files_changed();
-			return;
-		}
-	}
 }
 
 // -----------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2020 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,8 +32,9 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "App.h"
 #include "FileUtils.h"
+#include "App.h"
+#include "MD5.h"
 #include "StringUtils.h"
 #include <filesystem>
 #include <fstream>
@@ -226,7 +227,8 @@ vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, b
 // -----------------------------------------------------------------------------
 time_t fileutil::fileModifiedTime(string_view path)
 {
-	return static_cast<time_t>(fs::last_write_time(path).time_since_epoch().count());
+	return wxFileModificationTime({ path.data(), path.size() });
+	// return static_cast<time_t>(fs::last_write_time(path).time_since_epoch().count());
 }
 
 
@@ -370,4 +372,37 @@ bool SFile::writeStr(string_view str) const
 		return fwrite(str.data(), 1, str.size(), handle_);
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Calculates the MD5 hash of the file and returns it as a string
+// -----------------------------------------------------------------------------
+string SFile::calculateMD5()
+{
+	MD5  md5;
+	auto current_pos = currentPos();
+	auto size        = this->size();
+
+	seekFromStart(0);
+	unsigned pos = 0;
+	md5.init();
+
+	// Read in 1mb chunks
+	unsigned chunk_size = 1024;
+	char     buffer[1024];
+	while (pos < size)
+	{
+		if (size - pos < chunk_size)
+			chunk_size = size - pos;
+
+		read(buffer, chunk_size);
+		md5.update(buffer, chunk_size);
+
+		pos += chunk_size;
+	}
+
+	md5.finalize();
+	seekFromStart(current_pos);
+
+	return md5.hexdigest();
 }

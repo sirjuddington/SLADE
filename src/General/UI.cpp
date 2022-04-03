@@ -33,6 +33,7 @@
 #include "UI.h"
 #include "App.h"
 #include "General/Console.h"
+#include "General/Database.h"
 #include "UI/SplashWindow.h"
 #include "Utility/StringUtils.h"
 
@@ -240,6 +241,126 @@ int ui::pad()
 int ui::padLarge()
 {
 	return px_pad;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the saved window info for window/dialog [id]
+// -----------------------------------------------------------------------------
+ui::WindowInfo ui::getWindowInfo(const char* id)
+{
+	WindowInfo inf{ {}, 0, 0, 0, 0 };
+
+	try
+	{
+		if (auto* sql = database::global().cacheQuery(
+				"get_window_info", "SELECT left, top, width, height FROM window_info WHERE window_id = ?"))
+		{
+			sql->bind(1, id);
+			if (sql->executeStep())
+			{
+				inf.id     = id;
+				inf.left   = sql->getColumn(0).getInt();
+				inf.top    = sql->getColumn(1).getInt();
+				inf.width  = sql->getColumn(2).getInt();
+				inf.height = sql->getColumn(3).getInt();
+			}
+
+			sql->reset();
+		}
+	}
+	catch (const SQLite::Exception& ex)
+	{
+		log::error("Error getting window info for \"{}\": {}", id, ex.what());
+	}
+
+	return inf;
+}
+
+// -----------------------------------------------------------------------------
+// Saves the window info for window/dialog [id]
+// -----------------------------------------------------------------------------
+void ui::setWindowInfo(const char* id, int width, int height, int left, int top)
+{
+	try
+	{
+		if (auto sql = database::global().cacheQuery(
+				"set_window_info",
+				"REPLACE INTO window_info (window_id, left, top, width, height) "
+				"VALUES (?,?,?,?,?)",
+				true))
+		{
+			sql->clearBindings();
+			sql->bind(1, id);
+			sql->bind(2, left);
+			sql->bind(3, top);
+			sql->bind(4, width);
+			sql->bind(5, height);
+
+			sql->exec();
+			sql->reset();
+		}
+	}
+	catch (const SQLite::Exception& ex)
+	{
+		log::error("Error writing window info for \"{}\": {}", id, ex.what());
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns the saved window AUI layout for window [id]
+// -----------------------------------------------------------------------------
+vector<StringPair> ui::getWindowLayout(const char* id)
+{
+	vector<StringPair> layout;
+
+	try
+	{
+		if (auto sql = database::global().cacheQuery(
+				"get_window_layout", "SELECT component, layout FROM window_layout WHERE window_id = ?"))
+		{
+			sql->bind(1, id);
+			while (sql->executeStep())
+				layout.emplace_back(sql->getColumn(0).getString(), sql->getColumn(1).getString());
+			sql->reset();
+		}
+	}
+	catch (const SQLite::Exception& ex)
+	{
+		log::error("Error getting window layout for \"{}\": {}", id, ex.what());
+	}
+
+	return layout;
+}
+
+// -----------------------------------------------------------------------------
+// Saves the AUI layout for window [id]
+// -----------------------------------------------------------------------------
+void ui::setWindowLayout(const char* id, const vector<StringPair>& layout)
+{
+	try
+	{
+		auto transaction = database::global().beginTransaction(true);
+
+		if (auto sql = database::global().cacheQuery(
+				"set_window_layout", "REPLACE INTO window_layout VALUES (?, ?, ?)", true))
+		{
+			sql->clearBindings();
+			sql->bind(1, id);
+			for (const auto& row : layout)
+			{
+				sql->bind(2, row.first);
+				sql->bind(3, row.second);
+				sql->exec();
+				sql->reset();
+			}
+		}
+
+		transaction.commit();
+	}
+	catch (const SQLite::Exception& ex)
+	{
+		log::error("Error writing window layout for \"{}\": {}", id, ex.what());
+	}
 }
 
 

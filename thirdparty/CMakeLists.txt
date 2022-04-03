@@ -1,10 +1,15 @@
 # Use system packages if available
-find_package(ZLIB REQUIRED)
-find_package(BZip2 REQUIRED)
+find_package(ZLIB)
+find_package(BZip2)
+find_package(SQLite3 REQUIRED)
 
 # Set in parent scope
 set(ZLIB_LIBRARY ${ZLIB_LIBRARY} PARENT_SCOPE)
 set(BZIP2_LIBRARIES ${BZIP2_LIBRARIES} PARENT_SCOPE)
+
+include_directories(
+	.
+)
 
 # Roll the rest up into a big ball and compile it by itself
 set(EXTERNAL_SOURCES
@@ -26,5 +31,5 @@ add_subdirectory(lunasvg/3rdparty/software)
 add_subdirectory(lunasvg/3rdparty/plutovg)
 
 add_library(external STATIC ${EXTERNAL_SOURCES})
-target_link_libraries(external ${ZLIB_LIBRARY})
-set(EXTERNAL_LIBRARIES external lunasvg PARENT_SCOPE)
+target_link_libraries(external ${ZLIB_LIBRARY} lunasvg sqlite3)
+set(EXTERNAL_LIBRARIES external PARENT_SCOPE)

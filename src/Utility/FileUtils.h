@@ -52,6 +52,8 @@ public:
 	bool write(const void* buffer, unsigned count) override;
 	bool writeStr(string_view str) const;
 
+	string calculateMD5();
+
 private:
 	FILE*       handle_ = nullptr;
 	struct stat stat_;

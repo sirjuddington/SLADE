@@ -559,7 +559,10 @@ bool SLADEWxApp::OnInit()
 	try
 	{
 		if (!app::init(args, ui_scale))
+		{
+			wxMessageBox(global::error, "SLADE Initialization Error", wxICON_ERROR);
 			return false;
+		}
 	}
 	catch (const std::exception& ex)
 	{

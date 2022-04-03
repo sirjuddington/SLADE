@@ -32,8 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "STopWindow.h"
-#include "General/Misc.h"
 #include "General/SAction.h"
+#include "General/UI.h"
 #include "SToolBar/SToolBar.h"
 #include "Utility/StringUtils.h"
 
@@ -67,14 +67,14 @@ STopWindow::STopWindow(const wxString& title, const wxString& id, int x, int y, 
 
 #ifndef __WXOSX__
 	// Init size/pos
-	auto info = misc::getWindowInfo(id_);
+	auto info = ui::getWindowInfo(id_.c_str());
 	if (!info.id.empty())
 	{
 		SetSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
-		misc::setWindowInfo(id_, width, height, x, y);
+		ui::setWindowInfo(id_.c_str(), width, height, x, y);
 #endif
 
 	// Init toolbar menu action(s)
@@ -93,7 +93,7 @@ STopWindow::STopWindow(const wxString& title, const wxString& id, int x, int y, 
 STopWindow::~STopWindow()
 {
 	if (!wxFrame::IsMaximized() && !wxFrame::IsFullScreen())
-		misc::setWindowInfo(id_, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+		ui::setWindowInfo(id_.c_str(), GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 }
 
 // -----------------------------------------------------------------------------

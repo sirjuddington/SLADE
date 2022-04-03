@@ -4,6 +4,7 @@
 
 namespace slade
 {
+class Archive;
 class ArchiveManager;
 class Console;
 class PaletteManager;
@@ -20,6 +21,7 @@ namespace app
 	ArchiveManager&  archiveManager();
 	Clipboard&       clipboard();
 	ResourceManager& resources();
+	Archive*         programResource();
 
 	bool init(const vector<string>& args, double ui_scale = 1.);
 	void saveConfigFile();

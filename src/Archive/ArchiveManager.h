@@ -37,7 +37,6 @@ public:
 	shared_ptr<Archive>         shareArchive(Archive* archive);
 
 	// General access
-	const vector<string>&                 recentFiles() const { return recent_files_; }
 	const vector<string>&                 baseResourcePaths() const { return base_resource_paths_; }
 	const vector<weak_ptr<ArchiveEntry>>& bookmarks() const { return bookmarks_; }
 
@@ -53,13 +52,6 @@ public:
 	ArchiveEntry*         getResourceEntry(string_view name, Archive* ignore = nullptr);
 	ArchiveEntry*         findResourceEntry(Archive::SearchOptions& options, Archive* ignore = nullptr);
 	vector<ArchiveEntry*> findAllResourceEntries(Archive::SearchOptions& options, Archive* ignore = nullptr);
-
-	// Recent files
-	string   recentFile(unsigned index);
-	unsigned numRecentFiles() const { return recent_files_.size(); }
-	void     addRecentFile(string_view path);
-	void     addRecentFiles(const vector<string>& paths);
-	void     removeRecentFile(string_view path);
 
 	// Bookmarks
 	void          addBookmark(const shared_ptr<ArchiveEntry>& entry);
@@ -85,7 +77,6 @@ public:
 		sigslot::signal<unsigned>                     base_res_path_removed;
 		sigslot::signal<unsigned>                     base_res_current_changed;
 		sigslot::signal<>                             base_res_current_cleared;
-		sigslot::signal<>                             recent_files_changed;
 		sigslot::signal<ArchiveEntry*>                bookmark_added;
 		sigslot::signal<const vector<ArchiveEntry*>&> bookmarks_removed;
 	};
@@ -104,7 +95,6 @@ private:
 	shared_ptr<Archive>            base_resource_archive_;
 	bool                           res_archive_open_ = false;
 	vector<string>                 base_resource_paths_;
-	vector<string>                 recent_files_;
 	vector<weak_ptr<ArchiveEntry>> bookmarks_;
 
 	// Signals

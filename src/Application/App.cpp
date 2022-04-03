@@ -37,6 +37,7 @@
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
 #include "General/Console.h"
+#include "General/Database.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
 #include "General/Misc.h"
@@ -201,7 +202,7 @@ bool initDirectories()
 	{
 		if (!wxMkdir(dir_user))
 		{
-			wxMessageBox(wxString::Format("Unable to create user directory \"%s\"", dir_user), "Error", wxICON_ERROR);
+			global::error = fmt::format("Unable to create user directory \"{}\"", dir_user);
 			return false;
 		}
 	}
@@ -212,7 +213,7 @@ bool initDirectories()
 	{
 		if (!wxMkdir(dir_temp))
 		{
-			wxMessageBox(wxString::Format("Unable to create temp directory \"%s\"", dir_temp), "Error", wxICON_ERROR);
+			global::error = fmt::format("Unable to create temp directory \"{}\"", dir_temp);
 			return false;
 		}
 	}
@@ -275,19 +276,6 @@ void readConfigFile()
 			tz.adv(); // Skip ending }
 		}
 
-		// Read recent files list
-		if (tz.advIf("recent_files", 2))
-		{
-			while (!tz.checkOrEnd("}"))
-			{
-				auto path = wxString::FromUTF8(tz.current().text.c_str());
-				archive_manager.addRecentFile(wxutil::strToView(path));
-				tz.adv();
-			}
-
-			tz.adv(); // Skip ending }
-		}
-
 		// Read keybinds
 		if (tz.advIf("keys", 2))
 			KeyBind::readBinds(tz);
@@ -317,10 +305,6 @@ void readConfigFile()
 
 			tz.adv(); // Skip ending }
 		}
-
-		// Read window size/position info
-		if (tz.advIf("window_info", 2))
-			misc::readWindowInfo(tz);
 
 		// Next token
 		tz.adv();
@@ -410,6 +394,14 @@ ResourceManager& app::resources()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the program resource archive (ie. slade.pk3)
+// -----------------------------------------------------------------------------
+Archive* app::programResource()
+{
+	return archive_manager.programResourceArchive();
+}
+
+// -----------------------------------------------------------------------------
 // Returns the number of ms elapsed since the application was started
 // -----------------------------------------------------------------------------
 long app::runTimer()
@@ -466,13 +458,13 @@ bool app::init(const vector<string>& args, double ui_scale)
 	archive_manager.init();
 	if (!archive_manager.resArchiveOK())
 	{
-		wxMessageBox(
-			"Unable to find slade.pk3, make sure it exists in the same directory as the "
-			"SLADE executable",
-			"Error",
-			wxICON_ERROR);
+		global::error = "Unable to find slade.pk3, make sure it exists in the same directory as the SLADE executable";
 		return false;
 	}
+
+	// Init database
+	if (!database::init())
+		return false;
 
 	// Init SActions
 	SAction::setBaseWxId(26000);
@@ -608,16 +600,6 @@ void app::saveConfigFile()
 	}
 	file.Write("}\n");
 
-	// Write recent files list (in reverse to keep proper order when reading back)
-	file.Write("\nrecent_files\n{\n");
-	for (int a = archive_manager.numRecentFiles() - 1; a >= 0; a--)
-	{
-		auto path = archive_manager.recentFile(a);
-		std::replace(path.begin(), path.end(), '\\', '/');
-		file.Write(wxString::Format("\t\"%s\"\n", path), wxConvUTF8);
-	}
-	file.Write("}\n");
-
 	// Write keybinds
 	file.Write("\nkeys\n{\n");
 	file.Write(KeyBind::writeBinds());
@@ -630,11 +612,6 @@ void app::saveConfigFile()
 	// Write game exe paths
 	file.Write("\nexecutable_paths\n{\n");
 	file.Write(executables::writePaths());
-	file.Write("}\n");
-
-	// Write window info
-	file.Write("\nwindow_info\n{\n");
-	misc::writeWindowInfo(file);
 	file.Write("}\n");
 
 	// Close configuration file
