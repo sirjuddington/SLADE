@@ -768,7 +768,7 @@ bool CTexture::convertExtended()
 
 	// Set extended flag and type
 	extended_ = true;
-	type_     = "Texture";
+	type_     = "WallTexture";
 
 	return true;
 }
@@ -932,7 +932,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 // Loads the image for the patch at [pindex] into [image].
 // Can deal with textures-as-patches
 // -----------------------------------------------------------------------------
-bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, Palette* pal, bool force_rgba)
+bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, Palette* pal, bool force_rgba) const
 {
 	// Check patch index
 	if (pindex >= patches_.size())
@@ -942,7 +942,7 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 
 	// If the texture is extended, search for textures-as-patches first
 	// (as long as the patch name is different from this texture's name)
-	if (extended_ && !(strutil::equalCI(patch->name(), name_)))
+	if (extended_ && !strutil::equalCI(patch->name(), name_))
 	{
 		// Search the texture list we're in first
 		if (in_list_)

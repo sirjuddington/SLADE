@@ -180,7 +180,7 @@ public:
 		SImage&  image,
 		Archive* parent     = nullptr,
 		Palette* pal        = nullptr,
-		bool     force_rgba = false);
+		bool     force_rgba = false) const;
 	bool toImage(SImage& image, Archive* parent = nullptr, Palette* pal = nullptr, bool force_rgba = false);
 
 	// Signals
