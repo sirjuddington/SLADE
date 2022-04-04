@@ -22,6 +22,7 @@ public:
 	void          setUndoManager(UndoManager* manager) { undo_manager_ = manager; }
 	MemChunk*     entryData() { return &entry_data_; }
 	void          addBorderPadding();
+	void          showSaveButton(bool show) const;
 
 	bool             openEntry(ArchiveEntry* entry);
 	bool             openEntry(shared_ptr<ArchiveEntry> entry);
