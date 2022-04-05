@@ -934,6 +934,15 @@ void TextEditorCtrl::updateCalltip()
 			return;
 		}
 
+		// Check for closing brace directly after opening (ie. "()")
+		if (GetCharAt(ct_start_) == ')')
+		{
+			// Close calltip
+			hideCalltip();
+			ct_function_ = nullptr;
+			return;
+		}
+
 		// Calltip currently showing, determine what arg we're at
 		int pos = ct_start_ + 1;
 		int arg = 0;
