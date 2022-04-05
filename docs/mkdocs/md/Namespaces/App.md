@@ -18,10 +18,10 @@ The `App` scripting namespace contains a set of functions for general interactio
 <fdef>[CurrentArchive](#currentarchive)() -> <type>[Archive](../Types/Archive/Archive.md)</type></fdef>
 <fdef>[CurrentEntry](#currententry)() -> <type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)</type></fdef>
 <fdef>[CurrentEntrySelection](#currententryselection)() -> <type>[ArchiveEntry](../Types/Archive/ArchiveEntry.md)\[\]</type></fdef>
-<fdef>[CurrentPalette](#currentpalette)(<arg>[entryFor]</arg>)</fdef>
+<fdef>[CurrentPalette](#currentpalette)(<arg>[entryFor]</arg>) -> <type>[Palette](../Types/Graphics/Palette.md)</type></fdef>
 <fdef>[ShowArchive](#showarchive)(<arg>archive</arg>)</fdef>
 <fdef>[ShowEntry](#showentry)(<arg>entry</arg>)</fdef>
-<fdef>[MapEditor](#mapeditor)()</fdef>
+<fdef>[MapEditor](#mapeditor)() -> <type>[MapEditor](../Types/Map/MapEditor.md)</type></fdef>
 
 ---
 ### LogMessage

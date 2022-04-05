@@ -61,7 +61,7 @@ Creates a new palette with <arg>count</arg> colours in a greyscale gradient.
 
 <fdef>[LoadData](#loaddata)(<arg>data</arg>, <arg>[format]</arg>) -> <type>boolean</type></fdef>
 <fdef>[LoadFile](#loadfile)(<arg>path</arg>, <arg>[format]</arg>) -> <type>boolean</type></fdef>
-<fdef>[SaveFile](#savefile)(<arg>path</arg>, <arg>[format]</arg>)</fdef>
+<fdef>[SaveFile](#savefile)(<arg>path</arg>, <arg>[format]</arg>) -> <type>boolean</type></fdef>
 
 #### Colour Modification
 

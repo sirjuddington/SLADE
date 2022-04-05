@@ -33,7 +33,7 @@ The `Archives` scripting namespace contains functions for managing archives.
 
 <fdef>[FileExtensionsString](#fileextensionsstring)() -> <type>string</type></fdef>
 <fdef>[RecentFiles](#recentfiles)() -> <type>string[]</type></fdef>
-<fdef>[EntryType](#entrytype)(<arg>type</arg>) -> <type>[EntryType](../Types/Archive/EntryType.md)</type></fdef>
+<fdef>[EntryType](#entrytype)(<arg>id</arg>) -> <type>[EntryType](../Types/Archive/EntryType.md)</type></fdef>
 
 ---
 ### All

@@ -44,7 +44,7 @@ All properties and functions of <type>[CTPatch](CTPatch.md)</type> can be used i
 
 ### Overview
 
-<fdef>[AsText](#astext)()</fdef>
+<fdef>[AsText](#astext)() -> <type>string</type></fdef>
 
 ---
 ### AsText
