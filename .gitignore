@@ -21,6 +21,7 @@
 /dist/*.log
 /dist/*.map
 /dist/portable
+/dist/res/.vscode/*
 /docs/build/
 /ipch
 /src/bzip2/Release
