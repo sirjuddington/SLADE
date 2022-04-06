@@ -466,6 +466,7 @@ IMPLEMENT_APP(SLADEWxApp)
 bool SLADEWxApp::singleInstanceCheck()
 {
 	single_instance_checker_ = new wxSingleInstanceChecker;
+	single_instance_checker_->Create(wxString::Format("SLADE-%s", app::version().toString()));
 
 	if (argc == 1)
 		return true;
