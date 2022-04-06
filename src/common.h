@@ -129,7 +129,7 @@
 #endif
 
 // fmt
-#include <fmt/core.h>
+#include "thirdparty/fmt/include/fmt/core.h"
 
 // Sigslot
 #include "thirdparty/sigslot/signal.hpp"
@@ -144,9 +144,6 @@
 #include <memory>
 #include <optional>
 #include <unordered_map>
-
-// C
-#include <locale.h>
 
 #endif // COMMON_H
 

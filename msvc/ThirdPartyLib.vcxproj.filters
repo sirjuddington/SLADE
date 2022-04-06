@@ -46,6 +46,9 @@
     <Filter Include="LunaSVG\3rdparty\software">
       <UniqueIdentifier>{a5fb92b2-994f-4c54-abe1-1aac66bf0f2c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fmt">
+      <UniqueIdentifier>{a5ed77d4-9d54-470e-9962-f242c7224aef}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\sol\forward.hpp">
@@ -275,6 +278,45 @@
     </ClInclude>
     <ClInclude Include="..\thirdparty\lunasvg\include\lunasvg.h">
       <Filter>LunaSVG\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\args.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\chrono.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\color.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\compile.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\core.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\format.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\format-inl.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\locale.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\os.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\ostream.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\printf.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\ranges.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\xchar.h">
+      <Filter>Fmt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -739,6 +781,12 @@
     </ClCompile>
     <ClCompile Include="..\thirdparty\lunasvg\source\styleelement.cpp">
       <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\fmt\src\format.cc">
+      <Filter>Fmt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\fmt\src\os.cc">
+      <Filter>Fmt</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
