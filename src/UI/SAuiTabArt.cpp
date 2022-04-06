@@ -217,7 +217,7 @@ void SAuiTabArt::DrawBackground(wxDC& dc, wxWindow* WXUNUSED(wnd), const wxRect&
 	wxColor bottom_color = (main_tabs_ && global::win_version_major >= 10) ? col_w10_bg : m_baseColour;
 	wxRect  r;
 
-	auto px1 = (int)ui::scaleFactor();
+	auto px1 = static_cast<int>(ui::scaleFactor());
 	auto px2 = ui::scalePx(2);
 	auto px4 = ui::scalePx(4);
 
@@ -294,10 +294,9 @@ void SAuiTabArt::DrawTab(
 
 	// I know :P This stuff should probably be completely rewritten,
 	// but this will do for now
-	auto px2 = ui::scalePx(2);
-	auto px3 = ui::scalePx(3);
-	auto px4 = ui::scalePx(4);
-	auto px5 = ui::scalePx(5);
+	auto px2 = ui::scalePxU(2);
+	auto px3 = ui::scalePxU(3);
+	auto px4 = ui::scalePxU(4);
 
 	wxCoord tab_height = m_tabCtrlHeight + px2;
 	wxCoord tab_width  = tab_size.x;
