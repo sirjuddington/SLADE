@@ -74,8 +74,7 @@ StyleSet*                    ss_current = nullptr;
 // TextStyle class constructor
 // -----------------------------------------------------------------------------
 TextStyle::TextStyle(string_view name, string_view description, int style_id) :
-	name_{ name },
-	description_{ description }
+	name_{ name }, description_{ description }
 {
 	// Init variables
 	if (style_id >= 0)
@@ -218,7 +217,8 @@ bool TextStyle::copyStyle(TextStyle* copy)
 // -----------------------------------------------------------------------------
 string TextStyle::textDefinition(unsigned tabs) const
 {
-	fmt::memory_buffer buf;
+	fmt::memory_buffer mem_buf;
+	auto               buf = fmt::appender(mem_buf);
 	string             indent(tabs, '\t');
 
 	// Write font
@@ -249,7 +249,7 @@ string TextStyle::textDefinition(unsigned tabs) const
 	if (underlined_ >= 0)
 		fmt::format_to(buf, "{}underlined = {};\n", indent, underlined_);
 
-	return fmt::to_string(buf);
+	return fmt::to_string(mem_buf);
 }
 
 
@@ -264,8 +264,7 @@ string TextStyle::textDefinition(unsigned tabs) const
 // StyleSet class constructor
 // -----------------------------------------------------------------------------
 StyleSet::StyleSet(string_view name) :
-	ts_default_("default", "Default", wxSTC_STYLE_DEFAULT),
-	ts_selection_("selection", "Selected Text")
+	ts_default_("default", "Default", wxSTC_STYLE_DEFAULT), ts_selection_("selection", "Selected Text")
 {
 	// Init default style
 	wxFont f(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
