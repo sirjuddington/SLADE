@@ -65,9 +65,12 @@ struct IconSet
 	IconSet(string_view name) : name{ name } {}
 };
 
+bool            ui_icons_dark = false;
 vector<IconSet> iconsets_entry;
 vector<IconSet> iconsets_general;
 IconSet         iconset_text_editor{ "Default" };
+IconSet         iconset_ui_dark{ "Dark" };
+IconSet         iconset_ui_light{ "Light" };
 } // namespace slade::icons
 
 
@@ -369,6 +372,9 @@ wxBitmap loadPNGIcon(const IconDef& icon, int size, Point2i padding)
 // -----------------------------------------------------------------------------
 bool icons::loadIcons()
 {
+	// Check for dark mode
+	ui_icons_dark = wxSystemSettings::GetAppearance().IsDark();
+
 	// Get slade.pk3
 	auto* res_archive = app::archiveManager().programResourceArchive();
 	if (!res_archive)
@@ -404,6 +410,16 @@ bool icons::loadIcons()
 			parseIconSet(*node, iconset_text_editor, *res_archive);
 	}
 
+	// Load UI icons (light)
+	auto* dir_ui_icons_light = res_archive->dirAtPath("icons/ui/light");
+	for (auto& icon_entry : dir_ui_icons_light->entries())
+		iconset_ui_light.icons[string{ icon_entry->nameNoExt() }].svg_data = icon_entry->data().asString();
+
+	// Load UI icons (dark)
+	auto* dir_ui_icons_dark = res_archive->dirAtPath("icons/ui/dark");
+	for (auto& icon_entry : dir_ui_icons_dark->entries())
+		iconset_ui_dark.icons[string{ icon_entry->nameNoExt() }].svg_data = icon_entry->data().asString();
+
 	return true;
 }
 
@@ -435,6 +451,45 @@ wxBitmap icons::getIcon(Type type, string_view name, int size, Point2i padding)
 	// Otherwise load from png
 	if (icon_def->entry_png16 || icon_def->entry_png32)
 		return loadPNGIcon(*icon_def, size, padding);
+
+	return wxNullBitmap;
+}
+
+// -----------------------------------------------------------------------------
+// Loads the interface icon [name] from [theme] into a wxBitmap of [size].
+//
+// NOTE: this does not use any kind of caching and will generate/load the icon
+// from svg/png data each time
+// -----------------------------------------------------------------------------
+wxBitmap icons::getInterfaceIcon(string_view name, int size, InterfaceTheme theme)
+{
+	// Get theme to use
+	bool dark = false;
+	switch (theme)
+	{
+	case System: dark = ui_icons_dark; break;
+	case Light: dark = false; break;
+	case Dark: dark = true; break;
+	}
+
+	// Get icon definition
+	auto& icon_set = dark ? iconset_ui_dark : iconset_ui_light;
+	IconDef* icon_def = nullptr;
+	if (auto i = icon_set.icons.find(name); i != icon_set.icons.end())
+		icon_def = &i->second;
+	if (!icon_def)
+	{
+		log::warning("Unknown interface icon \"{}\"", name);
+		return wxNullBitmap;
+	}
+
+	// Check size
+	if (size <= 0)
+		size = ui::scalePx(16);
+
+	// If there is SVG data use that
+	if (!icon_def->svg_data.empty())
+		return loadSVGIcon(icon_def->svg_data, size, {});
 
 	return wxNullBitmap;
 }
