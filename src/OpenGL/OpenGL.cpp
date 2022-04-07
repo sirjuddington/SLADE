@@ -137,7 +137,7 @@ bool gl::init()
 	// Initialise GLEW
 	if ((ret = glewInit()) != GLEW_OK)
 	{
-		log::error("OpenGL initialization failed: {}", glewGetErrorString(ret));
+		log::error("OpenGL initialization failed: {}", (char*)glewGetErrorString(ret));
 		return false;
 	}
 

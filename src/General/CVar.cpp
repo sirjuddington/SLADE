@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Utility/StringUtils.h"
-#include <fmt/format.h>
+#include "thirdparty/fmt/include/fmt/format.h"
 
 using namespace slade;
 
@@ -165,7 +165,8 @@ string CVar::writeAll()
 			max_size = cvar->name.size();
 	}
 
-	fmt::memory_buffer buf;
+	fmt::memory_buffer mem_buf;
+	auto buf = fmt::appender(mem_buf);
 	format_to(buf, "cvars\n{{\n");
 
 	for (auto* cvar : all_cvars)
@@ -176,7 +177,7 @@ string CVar::writeAll()
 
 			int spaces = max_size - cvar->name.size();
 			for (int a = 0; a < spaces; a++)
-				buf.push_back(' ');
+				mem_buf.push_back(' ');
 
 			if (cvar->type == Type::Integer)
 				format_to(buf, "{}\n", cvar->getValue().Int);
@@ -197,7 +198,7 @@ string CVar::writeAll()
 
 	format_to(buf, "}}\n\n");
 
-	return to_string(buf);
+	return to_string(mem_buf);
 }
 
 // -----------------------------------------------------------------------------

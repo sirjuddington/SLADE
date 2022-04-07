@@ -195,15 +195,28 @@ bool MapInfo::parseZMapInfo(ArchiveEntry* entry)
 		// Include
 		if (tz.check("include"))
 		{
+			string include_path;
+			if (tz.peek().quoted_string)
+				include_path = tz.next().text;
+			else
+				include_path = tz.getLine();
+
 			// Get entry at include path
-			auto* include_entry = entry->parent()->entryAtPath(tz.next().text);
+			auto* include_entry = entry->parent()->entryAtPath(include_path);
 
 			if (!include_entry)
 			{
 				log::warning(
-					"Warning - Parsing ZMapInfo \"{}\": Unable to include \"{}\" at line {}",
+					R"(Warning - Parsing ZMapInfo "{}": Unable to include "{}" at line {})",
 					entry->name(),
 					tz.current().text,
+					tz.lineNo());
+			}
+			else if (include_entry == entry)
+			{
+				log::warning(
+					"Warning - Parsing ZMapInfo \"{}\": Attempt to #include self at line {}",
+					entry->name(),
 					tz.lineNo());
 			}
 			else if (!parseZMapInfo(include_entry))

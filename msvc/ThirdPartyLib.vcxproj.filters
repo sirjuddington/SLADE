@@ -25,9 +25,6 @@
     <Filter Include="Lzma">
       <UniqueIdentifier>{fc74c1f5-c490-4931-8cfc-0f4da5eeed7e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="wxEmail">
-      <UniqueIdentifier>{9bd8ef62-16e8-4c8f-a9b2-5430cd08c98a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="LunaSVG">
       <UniqueIdentifier>{5698fb59-ee0b-4e25-9e5c-d6ebba29da8d}</UniqueIdentifier>
     </Filter>
@@ -45,6 +42,9 @@
     </Filter>
     <Filter Include="LunaSVG\3rdparty\software">
       <UniqueIdentifier>{a5fb92b2-994f-4c54-abe1-1aac66bf0f2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fmt">
+      <UniqueIdentifier>{a5ed77d4-9d54-470e-9962-f242c7224aef}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -183,15 +183,6 @@
     <ClInclude Include="..\thirdparty\lzma\C\XzEnc.h">
       <Filter>Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\thirdparty\email\wxEmailMessage.h">
-      <Filter>wxEmail</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\email\wxEmailMessageID.h">
-      <Filter>wxEmail</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\email\wxMailer.h">
-      <Filter>wxEmail</Filter>
-    </ClInclude>
     <ClInclude Include="..\thirdparty\sol\config.hpp">
       <Filter>Sol</Filter>
     </ClInclude>
@@ -275,6 +266,45 @@
     </ClInclude>
     <ClInclude Include="..\thirdparty\lunasvg\include\lunasvg.h">
       <Filter>LunaSVG\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\args.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\chrono.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\color.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\compile.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\core.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\format.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\format-inl.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\locale.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\os.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\ostream.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\printf.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\ranges.h">
+      <Filter>Fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\xchar.h">
+      <Filter>Fmt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -644,15 +674,6 @@
     <ClCompile Include="..\thirdparty\lzma\C\XzIn.c">
       <Filter>Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\thirdparty\email\wxEmailMessage.cpp">
-      <Filter>wxEmail</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\email\wxEmailMessageID.cpp">
-      <Filter>wxEmail</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\email\wxMailer.cpp">
-      <Filter>wxEmail</Filter>
-    </ClCompile>
     <ClCompile Include="..\thirdparty\lunasvg\source\canvas.cpp">
       <Filter>LunaSVG\source</Filter>
     </ClCompile>
@@ -739,6 +760,12 @@
     </ClCompile>
     <ClCompile Include="..\thirdparty\lunasvg\source\styleelement.cpp">
       <Filter>LunaSVG\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\fmt\src\format.cc">
+      <Filter>Fmt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\fmt\src\os.cc">
+      <Filter>Fmt</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

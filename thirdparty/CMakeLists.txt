@@ -23,6 +23,9 @@ file(GLOB_RECURSE EXTERNAL_SOURCES
 	${SLADE_HEADERS}
 	)
 
+# Add fmt
+add_subdirectory(fmt)
+
 # Add lunasvg
 add_library(lunasvg STATIC)
 add_subdirectory(lunasvg/include)
@@ -31,5 +34,5 @@ add_subdirectory(lunasvg/3rdparty/software)
 add_subdirectory(lunasvg/3rdparty/plutovg)
 
 add_library(external STATIC ${EXTERNAL_SOURCES})
-target_link_libraries(external ${ZLIB_LIBRARY} lunasvg sqlite3)
+target_link_libraries(external ${ZLIB_LIBRARY} lunasvg fmt sqlite3)
 set(EXTERNAL_LIBRARIES external PARENT_SCOPE)

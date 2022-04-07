@@ -88,7 +88,7 @@ Creates a new, empty image of <arg>pixelFormat</arg>.
 #### Pixel Format Conversion
 
 <fdef>[ConvertAlphaMap](#convertalphamap)(<arg>alphaSource</arg>, <arg>[palette]</arg>) -> <type>boolean</type></fdef>
-<fdef>[ConvertIndexed](#convertindexed)(<arg>newPalette</arg>, <arg>currentPalette</arg>) -> <type>boolean</type></fdef>
+<fdef>[ConvertIndexed](#convertindexed)(<arg>newPalette</arg>, <arg>[currentPalette]</arg>) -> <type>boolean</type></fdef>
 <fdef>[ConvertRGBA](#convertrgba)(<arg>[palette]</arg>) -> <type>boolean</type></fdef>
 
 #### General Modification
@@ -116,7 +116,7 @@ Creates a new, empty image of <arg>pixelFormat</arg>.
 
 #### Drawing
 
-<fdef>[DrawImage](#drawimage)(<arg>x</arg>, <arg>y</arg>, <arg>srcImage</arg>, <arg>drawOptions</arg>, <arg>[srcPalette]</arg>, <arg>[destPalette]</arg>)</fdef>
+<fdef>[DrawImage](#drawimage)(<arg>x</arg>, <arg>y</arg>, <arg>srcImage</arg>, <arg>drawOptions</arg>, <arg>[srcPalette]</arg>, <arg>[destPalette]</arg>) -> <type>boolean</type></fdef>
 <fdef>[DrawPixel](#drawpixel)(<arg>x</arg>, <arg>y</arg>, <arg>colour</arg>, <arg>drawOptions</arg>, <arg>[palette]</arg>) -> <type>boolean</type></fdef>
 
 
@@ -299,7 +299,7 @@ Converts the image to `PIXELFORMAT_INDEXED`.
 #### Parameters
 
 * <arg>newPalette</arg> (<type>[Palette](Palette.md)</type>): The new palette to convert to (the image's <prop>palette</prop> will also be set to this)
-* <arg>currentPalette</arg> (<type>[Palette](Palette.md)</type>, default `nil`): The 'current' palette to use if the image is `PIXELFORMAT_INDEXED` but doesn't have an internal <prop>palette</prop>
+* <arg>[currentPalette]</arg> (<type>[Palette](Palette.md)</type>): The 'current' palette to use if the image is `PIXELFORMAT_INDEXED` but doesn't have an internal <prop>palette</prop>. Default is `nil`
 
 #### Returns
 
@@ -513,6 +513,10 @@ Draws <arg>srcImage</arg> at (<arg>x</arg>,<arg>y</arg>) on the image.
 * <arg>drawOptions</arg> (<type>[ImageDrawOptions](ImageDrawOptions.md)</type>): Options for blending <arg>srcImage</arg>'s pixels with the existing image
 * <arg>[srcPalette]</arg> (<type>[Palette](Palette.md)</type>): The palette to use for <arg>srcImage</arg> if it is `PIXELFORMAT_INDEXED` but doesn't have an internal <prop>palette</prop>. Default is `nil`
 * <arg>[destPalette]</arg> (<type>[Palette](Palette.md)</type>): The palette to use if this image is `PIXELFORMAT_INDEXED` but doesn't have an internal <prop>palette</prop>. Default is `nil`
+
+#### Returns
+
+* <type>boolean</type>: `true` on success
 
 #### Notes
 

@@ -36,7 +36,7 @@ The `UI` scripting namespace contains functions for interacting with and display
 <fdef>[ShowSplash](#showsplash)</func>(<arg>message</arg>, <arg>[showProgress]</arg>)</fdef>
 <fdef>[HideSplash](#hidesplash)</func>()</fdef>
 <fdef>[UpdateSplash](#updatesplash)</func>()</fdef>
-<fdef>[SplashProgress](#splashprogress)</func>() -> <type>integer</type></fdef>
+<fdef>[SplashProgress](#splashprogress)</func>() -> <type>float</type></fdef>
 <fdef>[SetSplashMessage](#setsplashmessage)</func>(<arg>message</arg>)</fdef>
 <fdef>[SetSplashProgressMessage](#setsplashprogressmessage)</func>(<arg>message</arg>)</fdef>
 <fdef>[SetSplashProgress](#setsplashprogress)</func>(<arg>progress</arg>)</fdef>
@@ -230,7 +230,7 @@ Updates and redraws the splash window.
 
 #### Returns
 
-* <type>integer</type>: The current progress bar progress. This is a floating point number between `0.0` (empty) and `1.0` (full)
+* <type>float</type>: The current progress bar progress. This is a floating point number between `0.0` (empty) and `1.0` (full)
 
 ---
 ### SetSplashMessage
@@ -257,4 +257,4 @@ Sets the progress bar progress amount.
 
 #### Parameters
 
-* <arg>progress</arg> (<type>integer</type>): The progress amount. This is a floating point number between `0.0` (empty) and `1.0` (full)
+* <arg>progress</arg> (<type>float</type>): The progress amount. This is a floating point number between `0.0` (empty) and `1.0` (full)

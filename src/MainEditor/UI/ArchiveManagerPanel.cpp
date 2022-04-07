@@ -1075,6 +1075,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 	// Create an EntryPanel for the entry
 	maineditor::window()->Freeze();
 	auto ep = ArchivePanel::createPanelForEntry(entry, stc_archives_);
+	ep->showSaveButton(false);
 	ep->addBorderPadding();
 	ep->openEntry(entry);
 

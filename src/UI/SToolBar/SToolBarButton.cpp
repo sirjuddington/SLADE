@@ -267,7 +267,7 @@ void SToolBarButton::updateSize()
 	int height = pad_outer_ * 2 + pad_inner_ * 2 + icon_size_;
 	int width  = height + text_width_;
 	if (menu_dropdown_)
-		width += ui::scalePx(10);
+		width += icon_size_ * 0.6;
 
 	wxWindowBase::SetSizeHints(width, height, width, height);
 	wxWindowBase::SetMinSize(wxSize(width, height));
@@ -316,7 +316,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	int  width    = height + text_width_;
 	auto scale_px = ui::scaleFactor();
 	if (menu_dropdown_)
-		width += 10 * scale_px;
+		width += icon_size_ * 0.6;
 
 	// Draw toggled border/background
 	if (isChecked())
@@ -333,7 +333,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		// col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 		gc->SetBrush(*wxTRANSPARENT_BRUSH);
 		gc->SetPen(wxPen(col_hilight, scale_px));
-		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width - 1., height - 1., 1 * scale_px);
+		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width - 1., height - 1., ui::scalePxU(1));
 	}
 
 	// Draw border on mouseover
@@ -350,7 +350,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		// Draw border
 		gc->SetBrush(col_trans);
 		gc->SetPen(*wxTRANSPARENT_PEN);
-		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width, height, 1 * scale_px);
+		gc->DrawRoundedRectangle(pad_outer_, pad_outer_, width, height, ui::scalePxU(1));
 	}
 
 	if (icon_.IsOk())
@@ -384,14 +384,23 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 
 	if (menu_dropdown_)
 	{
-		gc->SetBrush(*wxTRANSPARENT_BRUSH);
+		static auto arrow_down = icons::getInterfaceIcon("arrow-down", icon_size_ * 0.75);
+
+		gc->DrawBitmap(
+			arrow_down,
+			width - arrow_down.GetWidth(),
+			height / 2. - arrow_down.GetHeight() / 2.,
+			arrow_down.GetWidth(),
+			arrow_down.GetHeight());
+
+		/*gc->SetBrush(*wxTRANSPARENT_BRUSH);
 		gc->SetPen(wxPen(dc.GetTextForeground(), 1));
 		wxPoint2DDouble points[] = {
 			wxPoint2DDouble(width - 9. * scale_px, height / 2. - 1.),
 			wxPoint2DDouble(width - 6. * scale_px, height / 2. + 2.),
 			wxPoint2DDouble(width - 3. * scale_px, height / 2. - 1.),
 		};
-		gc->DrawLines(3, points);
+		gc->DrawLines(3, points);*/
 	}
 
 	delete gc;

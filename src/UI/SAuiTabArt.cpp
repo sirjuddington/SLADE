@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SAuiTabArt.h"
+#include "Graphics/Icons.h"
 #include "OpenGL/Drawing.h"
 #include "WxUtils.h"
 
@@ -46,32 +47,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
-#if defined(__WXMAC__)
-static const unsigned char close_bits[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0x0F, 0xFE, 0x03, 0xF8, 0x01, 0xF0, 0x19,
-											0xF3, 0xB8, 0xE3, 0xF0, 0xE1, 0xE0, 0xE0, 0xF0, 0xE1, 0xB8, 0xE3,
-											0x19, 0xF3, 0x01, 0xF0, 0x03, 0xF8, 0x0F, 0xFE, 0xFF, 0xFF };
-#elif defined(__UGLY_CLOSE_BUTTON__)
-static const unsigned char close_bits[] = { 0xff, 0xff, 0xff, 0xff, 0x07, 0xf0, 0xfb, 0xef, 0xdb, 0xed, 0x8b,
-											0xe8, 0x1b, 0xec, 0x3b, 0xee, 0x1b, 0xec, 0x8b, 0xe8, 0xdb, 0xed,
-											0xfb, 0xef, 0x07, 0xf0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-#else
-static const unsigned char close_bits[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xe7, 0xf3, 0xcf,
-											0xf9, 0x9f, 0xfc, 0x3f, 0xfe, 0x3f, 0xfe, 0x9f, 0xfc, 0xcf, 0xf9,
-											0xe7, 0xf3, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-#endif
-
-static const unsigned char left_bits[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe, 0x7f, 0xfe, 0x3f,
-										   0xfe, 0x1f, 0xfe, 0x0f, 0xfe, 0x1f, 0xfe, 0x3f, 0xfe, 0x7f, 0xfe,
-										   0xff, 0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-
-static const unsigned char right_bits[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xdf, 0xff, 0x9f, 0xff, 0x1f,
-											0xff, 0x1f, 0xfe, 0x1f, 0xfc, 0x1f, 0xfe, 0x1f, 0xff, 0x9f, 0xff,
-											0xdf, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-
-static const unsigned char list_bits[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-										   0xff, 0x0f, 0xf8, 0xff, 0xff, 0x0f, 0xf8, 0x1f, 0xfc, 0x3f, 0xfe,
-										   0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-static const wxColor       col_w10_bg(250, 250, 250);
+const wxColor col_w10_bg(250, 250, 250);
 } // namespace
 
 
@@ -90,7 +66,7 @@ EXTERN_CVAR(Bool, tabs_condensed)
 // -----------------------------------------------------------------------------
 namespace
 {
-static wxString wxAuiChopText(wxDC& dc, const wxString& text, int max_size)
+wxString wxAuiChopText(const wxDC& dc, const wxString& text, int max_size)
 {
 	wxCoord x, y;
 
@@ -118,26 +94,13 @@ static wxString wxAuiChopText(wxDC& dc, const wxString& text, int max_size)
 	return ret;
 }
 
-static void IndentPressedBitmap(wxRect* rect, int button_state)
+void IndentPressedBitmap(wxRect* rect, int button_state)
 {
 	if (button_state == wxAUI_BUTTON_STATE_PRESSED)
 	{
 		rect->x++;
 		rect->y++;
 	}
-}
-
-wxBitmap bitmapFromBits(const unsigned char bits[], int w, int h, const wxColour& color)
-{
-	wxImage img = wxBitmap((const char*)bits, w, h).ConvertToImage();
-	img.Replace(0, 0, 0, 123, 123, 123);
-	img.Replace(255, 255, 255, color.Red(), color.Green(), color.Blue());
-	img.SetMaskColour(123, 123, 123);
-
-	if (ui::scaleFactor() > 1.)
-		img = img.Scale(ui::scalePx(img.GetWidth()), ui::scalePx(img.GetHeight()), wxIMAGE_QUALITY_BILINEAR);
-
-	return wxBitmap(img);
 }
 } // namespace
 
@@ -148,15 +111,12 @@ wxBitmap bitmapFromBits(const unsigned char bits[], int w, int h, const wxColour
 //
 // -----------------------------------------------------------------------------
 
-SAuiTabArt::SAuiTabArt(bool close_buttons, bool main_tabs)
+SAuiTabArt::SAuiTabArt(bool close_buttons, bool main_tabs) :
+	close_buttons_{ close_buttons }, main_tabs_{ main_tabs }, padding_(tabs_condensed ? ui::scalePx(4) : ui::scalePx(8))
 {
 	m_normalFont    = *wxNORMAL_FONT;
 	m_selectedFont  = *wxNORMAL_FONT;
 	m_measuringFont = m_selectedFont;
-	close_buttons_  = close_buttons;
-	main_tabs_      = main_tabs;
-	padding_        = tabs_condensed ? ui::scalePx(4) : ui::scalePx(8);
-
 	m_fixedTabWidth = ui::scalePx(100);
 	m_tabCtrlHeight = 0;
 
@@ -171,23 +131,23 @@ SAuiTabArt::SAuiTabArt(bool close_buttons, bool main_tabs)
 	m_baseColourPen   = wxPen(m_baseColour);
 	m_baseColourBrush = wxBrush(m_baseColour);
 
-	m_activeCloseBmp    = bitmapFromBits(close_bits, 16, 16, wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT));
-	close_bitmap_white_ = bitmapFromBits(close_bits, 16, 16, *wxWHITE);
-	m_disabledCloseBmp  = bitmapFromBits(close_bits, 16, 16, wxColour(128, 128, 128));
+	m_activeCloseBmp    = icons::getInterfaceIcon("cross");
+	close_bitmap_white_ = icons::getInterfaceIcon("cross", -1, icons::Dark);
+	m_disabledCloseBmp  = icons::getInterfaceIcon("cross").ConvertToDisabled();
 
-	m_activeLeftBmp   = bitmapFromBits(left_bits, 16, 16, *wxBLACK);
-	m_disabledLeftBmp = bitmapFromBits(left_bits, 16, 16, wxColour(128, 128, 128));
+	m_activeLeftBmp   = icons::getInterfaceIcon("arrow-left");
+	m_disabledLeftBmp = icons::getInterfaceIcon("arrow-left").ConvertToDisabled();
 
-	m_activeRightBmp   = bitmapFromBits(right_bits, 16, 16, *wxBLACK);
-	m_disabledRightBmp = bitmapFromBits(right_bits, 16, 16, wxColour(128, 128, 128));
+	m_activeRightBmp   = icons::getInterfaceIcon("arrow-right");
+	m_disabledRightBmp = icons::getInterfaceIcon("arrow-right").ConvertToDisabled();
 
-	m_activeWindowListBmp   = bitmapFromBits(list_bits, 16, 16, *wxBLACK);
-	m_disabledWindowListBmp = bitmapFromBits(list_bits, 16, 16, wxColour(128, 128, 128));
+	m_activeWindowListBmp   = icons::getInterfaceIcon("arrow-down");
+	m_disabledWindowListBmp = icons::getInterfaceIcon("arrow-down").ConvertToDisabled();
 
 	m_flags = 0;
 }
 
-SAuiTabArt::~SAuiTabArt() {}
+SAuiTabArt::~SAuiTabArt() = default;
 
 wxAuiTabArt* SAuiTabArt::Clone()
 {
@@ -217,7 +177,7 @@ void SAuiTabArt::DrawBackground(wxDC& dc, wxWindow* WXUNUSED(wnd), const wxRect&
 	wxColor bottom_color = (main_tabs_ && global::win_version_major >= 10) ? col_w10_bg : m_baseColour;
 	wxRect  r;
 
-	auto px1 = (int)ui::scaleFactor();
+	auto px1 = static_cast<int>(ui::scaleFactor());
 	auto px2 = ui::scalePx(2);
 	auto px4 = ui::scalePx(4);
 
@@ -294,10 +254,9 @@ void SAuiTabArt::DrawTab(
 
 	// I know :P This stuff should probably be completely rewritten,
 	// but this will do for now
-	auto px2 = ui::scalePx(2);
-	auto px3 = ui::scalePx(3);
-	auto px4 = ui::scalePx(4);
-	auto px5 = ui::scalePx(5);
+	auto px2 = ui::scalePxU(2);
+	auto px3 = ui::scalePxU(3);
+	auto px4 = ui::scalePxU(4);
 
 	wxCoord tab_height = m_tabCtrlHeight + px2;
 	wxCoord tab_width  = tab_size.x;
@@ -393,7 +352,7 @@ void SAuiTabArt::DrawTab(
 	// draw tab outline
 	dc.SetPen(m_borderPen);
 	dc.SetBrush(*wxTRANSPARENT_BRUSH);
-	dc.DrawPolygon(WXSIZEOF(border_points), border_points);
+	dc.DrawPolygon(std::size(border_points), border_points);
 
 	// there are two horizontal grey lines at the bottom of the tab control,
 	// this gets rid of the top one of those lines in the tab control
@@ -452,12 +411,12 @@ void SAuiTabArt::DrawTab(
 			dc.DrawRectangle(rect.x, rect.y + 1, rect.width - 1, rect.width - px2);
 
 			bmp = close_white ? close_bitmap_white_ : m_activeCloseBmp;
-			dc.DrawBitmap(bmp, rect.x, rect.y, true);
+			dc.DrawBitmap(bmp, rect.x, rect.y);
 		}
 		else
 		{
 			bmp = close_white ? close_bitmap_white_ : m_disabledCloseBmp;
-			dc.DrawBitmap(bmp, rect.x, rect.y, true);
+			dc.DrawBitmap(bmp, rect.x, rect.y);
 		}
 
 		*out_button_rect = rect;
@@ -513,7 +472,7 @@ wxSize SAuiTabArt::GetTabSize(
 
 	*x_extent = tab_width;
 
-	return wxSize(tab_width, tab_height);
+	return { tab_width, tab_height };
 }
 
 void SAuiTabArt::SetSelectedFont(const wxFont& font)
@@ -538,18 +497,18 @@ SAuiDockArt::SAuiDockArt()
 	float    b             = ((float)textColour.Blue() * 0.2f) + ((float)caption_back_colour_.Blue() * 0.8f);
 	caption_accent_colour_ = wxColor(r, g, b);
 
-	m_activeCloseBitmap   = bitmapFromBits(close_bits, 16, 16, wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT));
-	m_inactiveCloseBitmap = bitmapFromBits(close_bits, 16, 16, wxColour(128, 128, 128));
+	m_activeCloseBitmap   = icons::getInterfaceIcon("cross");
+	m_inactiveCloseBitmap = icons::getInterfaceIcon("cross").ConvertToDisabled();
 
 	if (global::win_version_major >= 10)
 		m_sashBrush = wxBrush(col_w10_bg);
 
-	m_captionSize = ui::scalePx(19);
-	m_sashSize    = ui::scalePx(4);
+	m_captionSize = ui::scalePxU(19);
+	m_sashSize    = ui::scalePxU(4);
 	m_buttonSize  = ui::scalePx(16);
 }
 
-SAuiDockArt::~SAuiDockArt() {}
+SAuiDockArt::~SAuiDockArt() = default;
 
 void SAuiDockArt::DrawCaption(wxDC& dc, wxWindow* window, const wxString& text, const wxRect& rect, wxAuiPaneInfo& pane)
 {
@@ -583,7 +542,19 @@ void SAuiDockArt::DrawCaption(wxDC& dc, wxWindow* window, const wxString& text, 
 	int caption_offset = 0;
 	if (pane.icon.IsOk())
 	{
-		DrawIcon(dc, rect, pane);
+	    // Ensure the icon fits into the title bar.
+	    wxSize iconSize = pane.icon.GetSize();
+	    if (iconSize.y > rect.height)
+	    {
+	        iconSize *= static_cast<double>(rect.height) / iconSize.y;
+	    }
+
+	    // Draw the icon centered vertically
+	    int xOffset = window->FromDIP(2);
+	    dc.DrawBitmap(pane.icon,
+	                  rect.x+xOffset, rect.y+(rect.height-pane.icon.GetHeight())/2,
+	                  true);
+
 		caption_offset += pane.icon.GetWidth() + px3;
 	}
 
@@ -664,7 +635,7 @@ void SAuiDockArt::DrawPaneButton(
 	wxRect rect = _rect;
 
 	int old_y   = rect.y;
-	rect.y      = rect.y + (rect.height / 2) - (bmp.GetHeight() / 2) + 1;
+	rect.y      = rect.y + (rect.height / 2) - (bmp.GetHeight() / 2);
 	rect.height = old_y + rect.height - rect.y - 1;
 
 

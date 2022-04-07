@@ -31,9 +31,19 @@
     <ClInclude Include="..\thirdparty\dumb\internal\riff.h" />
     <ClInclude Include="..\thirdparty\dumb\internal\stack_alloc.h" />
     <ClInclude Include="..\thirdparty\dumb\internal\tarray.h" />
-    <ClInclude Include="..\thirdparty\email\wxEmailMessage.h" />
-    <ClInclude Include="..\thirdparty\email\wxEmailMessageID.h" />
-    <ClInclude Include="..\thirdparty\email\wxMailer.h" />
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\args.h" />
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\chrono.h" />
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\color.h" />
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\compile.h" />
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\core.h" />
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\format-inl.h" />
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\format.h" />
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\locale.h" />
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\os.h" />
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\ostream.h" />
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\printf.h" />
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\ranges.h" />
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\xchar.h" />
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-private.h" />
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg.h" />
     <ClInclude Include="..\thirdparty\lunasvg\3rdparty\software\sw_ft_math.h" />
@@ -613,24 +623,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\thirdparty\email\wxEmailMessage.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\email\wxEmailMessageID.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\email\wxMailer.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="..\thirdparty\fmt\src\format.cc" />
+    <ClCompile Include="..\thirdparty\fmt\src\os.cc" />
     <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-blend.c" />
     <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-dash.c" />
     <ClCompile Include="..\thirdparty\lunasvg\3rdparty\plutovg\plutovg-geometry.c" />
@@ -758,25 +752,25 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\thirdparty\dumb;$(ProjectDir)..\src;$(ProjectDir)..\src\Application;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\software;$(ProjectDir)..\thirdparty\lunasvg\3rdparty\plutovg;$(ProjectDir)..\thirdparty\lunasvg\include;$(ProjectDir)..\thirdparty\fmt\include</IncludePath>
     <IntDir>..\build\thirdparty\$(Configuration)\</IntDir>
     <OutDir>..\build\lib\$(Configuration)\</OutDir>
   </PropertyGroup>

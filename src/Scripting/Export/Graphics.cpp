@@ -321,9 +321,9 @@ void registerPaletteType(sol::state& lua)
 	lua_palette["Colour"]   = &Palette::colour;
 	lua_palette["LoadData"] = sol::overload(&paletteLoadData, &paletteLoadDataFormatted);
 	lua_palette["LoadFile"] = sol::overload(
-		&Palette::loadFile, [](Palette& self, string_view file) { self.loadFile(file); });
+		&Palette::loadFile, [](Palette& self, string_view file) { return self.loadFile(file); });
 	lua_palette["SaveFile"] = sol::overload(
-		&Palette::saveFile, [](Palette& self, string_view file) { self.saveFile(file); });
+		&Palette::saveFile, [](Palette& self, string_view file) { return self.saveFile(file); });
 	lua_palette["SetColour"]     = &Palette::setColour;
 	lua_palette["SetColourR"]    = &Palette::setColourR;
 	lua_palette["SetColourG"]    = &Palette::setColourG;

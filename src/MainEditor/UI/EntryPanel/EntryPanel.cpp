@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "EntryPanel.h"
+#include "Archive/Archive.h"
 #include "General/UI.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchivePanel.h"
@@ -143,6 +144,18 @@ void EntryPanel::addBorderPadding()
 	GetSizer()->Add(sizer, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
 	Layout();
 	Thaw();
+}
+
+// -----------------------------------------------------------------------------
+// Shows/hides the 'save' button
+// -----------------------------------------------------------------------------
+void EntryPanel::showSaveButton(bool show) const
+{
+	if (auto* btn_save = toolbar_->findActionButton("arch_entry_save"))
+	{
+		btn_save->Show(show);
+		toolbar_->updateLayout();
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -266,6 +279,10 @@ bool EntryPanel::revertEntry(bool confirm)
 
 			if (undo_manager_)
 				undo_manager_->endRecord(true);
+
+			// Update archive modified status
+			if (auto* archive = entry->parent())
+				archive->findModifiedEntries();
 		}
 
 		return true;
@@ -369,12 +386,8 @@ void EntryPanel::onToolbarButton(wxCommandEvent& e)
 {
 	wxString button = e.GetString();
 
-	// Save
-	if (button == "save")
-		saveEntry();
-
 	// Revert
-	else if (button == "revert")
+	if (button == "revert")
 		revertEntry();
 
 	else

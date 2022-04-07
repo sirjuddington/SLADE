@@ -12,7 +12,7 @@ end
 -- Function to find [term] in text [entry]
 function FindTerm(entry, term)
    -- Get entry text and search term as uppercase to make the search case-insensitive
-   local text = string.upper(entry.data)
+   local text = string.upper(entry.data:AsString())
    local termUpper = string.upper(term)
 
    -- Search text

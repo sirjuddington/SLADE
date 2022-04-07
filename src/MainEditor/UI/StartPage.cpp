@@ -149,6 +149,7 @@ void SStartPage::init()
 		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/zip.svg"));
 		entry_export_.push_back(res_archive->entryAtPath("icons/entry_list/folder.svg"));
 		entry_export_.push_back(res_archive->entryAtPath("icons/general/open.svg"));
+		entry_export_.push_back(res_archive->entryAtPath("icons/general/opendir.svg"));
 		entry_export_.push_back(res_archive->entryAtPath("icons/general/newarchive.svg"));
 		entry_export_.push_back(res_archive->entryAtPath("icons/general/mapeditor.svg"));
 		entry_export_.push_back(res_archive->entryAtPath("icons/general/wiki.svg"));
@@ -427,6 +428,8 @@ void SStartPage::onHTMLLinkClicked(wxEvent& e)
 		// Action
 		if (href.EndsWith("open"))
 			SActionHandler::doAction("aman_open");
+		else if (href.EndsWith("opendir"))
+			SActionHandler::doAction("aman_opendir");
 		else if (href.EndsWith("newarchive"))
 			SActionHandler::doAction("aman_newarchive");
 		else if (href.EndsWith("newmap"))
